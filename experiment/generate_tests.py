@@ -20,19 +20,57 @@ Usage example:
 
   In $GOPATH/src/k8s.io/test-infra,
 
-  $ ./experiment/generate_tests.py \
+  $ bazel run //experiment:generate_tests \
       --yaml-config-path=experiment/test_config.yaml \
-      --json-config-path=jobs/config.json
+      --json-config-path=jobs/config.json \
+      --prow-config-path=prow/config.yaml
 """
 
 import argparse
 import hashlib
 import json
 import os
-import yaml
+import ruamel.yaml as yaml
 
 
 # TODO(yguo0905): Generate Prow and testgrid configurations.
+
+PROW_CONFIG_TEMPLATE = """
+    tags:
+    - generated # AUTO-GENERATED; DO NOT EDIT!
+    interval:
+    name:
+    spec:
+      containers:
+      - args:
+        - --bare
+        env:
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /etc/service-account/service-account.json
+        - name: USER
+          value: prow
+        - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+          value: /etc/ssh-key-secret/ssh-private
+        - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+          value: /etc/ssh-key-secret/ssh-public
+        image: gcr.io/k8s-testimages/kubekins-e2e-prow:v20170606-e69a3df0
+        volumeMounts:
+        - mountPath: /etc/service-account
+          name: service
+          readOnly: true
+        - mountPath: /etc/ssh-key-secret
+          name: ssh
+          readOnly: true
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
+      - name: ssh
+        secret:
+          defaultMode: 256
+          secretName: ssh-key-secret
+"""
+
 
 def get_sha1_hash(data):
     """Returns the SHA1 hash of the specified data."""
@@ -92,6 +130,15 @@ def write_job_defs_file(output_dir, job_defs):
         fp.write('\n')
 
 
+def write_prow_configs_file(output_dir, job_defs):
+    """Writes the Prow configurations into a file in output_dir."""
+    output_file = os.path.join(output_dir, 'config.yaml')
+    with open(output_file, 'w') as fp:
+        yaml.dump(
+            job_defs, fp, Dumper=yaml.RoundTripDumper, width=float("inf"))
+        fp.write('\n')
+
+
 def generate_envs(job_name, common, cloud_provider, image, k8s_version,
                   test_suite, job):
     """Returns a list of envs fetched from the given fields."""
@@ -118,6 +165,20 @@ def generate_args(job_name, common, cloud_provider, image, k8s_version,
     args.extend(get_args(job_name, test_suite))
     args.extend(get_args(job_name, job))
     return args
+
+
+def generate_prow_config(job_name, test_suite, job):
+    """Returns the Prow config for the job from the given fields."""
+    prow_config = yaml.round_trip_load(PROW_CONFIG_TEMPLATE)
+    prow_config['name'] = job_name
+    prow_config['interval'] = job['interval']
+    # Assumes that the value in --timeout is of minutes.
+    timeout = int(next(
+        x[10:-1] for x in test_suite['args'] if x.startswith('--timeout=')))
+    # Prow timeout = job timeout + 20min
+    prow_config['spec']['containers'][0]['args'].append(
+        '--timeout=%d' % (timeout + 20))
+    return prow_config
 
 
 def for_each_job(job_name, common, cloud_providers, images, k8s_versions,
@@ -148,7 +209,11 @@ def for_each_job(job_name, common, cloud_providers, images, k8s_versions,
         k8s_versions[k8s_version_name],
         test_suites[test_suite_name],
         jobs[job_name])
-    return envs, args
+    prow = generate_prow_config(
+        job_name,
+        test_suites[test_suite_name],
+        jobs[job_name])
+    return envs, args, prow
 
 
 def remove_generated_jobs(json_config):
@@ -159,7 +224,15 @@ def remove_generated_jobs(json_config):
         if 'generated' not in job_def.get('tags', [])}
 
 
-def main(json_config_path, yaml_config_path, output_dir):
+def remove_generated_prow_configs(prow_config):
+    """Removes all the generated Prow configurations."""
+    # TODO(yguo0905): Handle non-periodics jobs.
+    prow_config['periodics'] = [
+        job for job in prow_config.get('periodics', [])
+        if 'generated' not in job.get('tags', [])]
+
+
+def main(json_config_path, yaml_config_path, prow_config_path, output_dir):
     """Creates test job definitions.
 
     Converts the test configurations in yaml_config_path to the job definitions
@@ -171,12 +244,16 @@ def main(json_config_path, yaml_config_path, output_dir):
         json_config = json.load(fp)
     json_config = remove_generated_jobs(json_config)
 
+    with open(prow_config_path) as fp:
+        prow_config = yaml.round_trip_load(fp, preserve_quotes=True)
+    remove_generated_prow_configs(prow_config)
+
     with open(yaml_config_path) as fp:
         yaml_config = yaml.safe_load(fp)
 
     for job_name, _ in yaml_config['jobs'].items():
         # Get the envs and args for each job defined under "jobs".
-        envs, args = for_each_job(
+        envs, args, prow = for_each_job(
             job_name,
             yaml_config['common'],
             yaml_config['cloudProviders'],
@@ -189,9 +266,11 @@ def main(json_config_path, yaml_config_path, output_dir):
         # Add the job to the definitions.
         sig_owners = yaml_config['jobs'][job_name].get('sigOwners')
         json_config[job_name] = get_job_def(env_filename, args, sig_owners)
+        prow_config['periodics'].append(prow)
 
     # Write the job definitions to config.json.
     write_job_defs_file(output_dir, json_config)
+    write_prow_configs_file('prow', prow_config)
 
 
 if __name__ == '__main__':
@@ -199,8 +278,13 @@ if __name__ == '__main__':
         description='Create test definitions from the given yaml config')
     PARSER.add_argument('--yaml-config-path', help='Path to config.yaml')
     PARSER.add_argument('--json-config-path', help='Path to config.json')
+    PARSER.add_argument('--prow-config-path', help='Path to the Prow config')
     PARSER.add_argument(
         '--output-dir', help='Env files output dir', default='jobs')
     ARGS = PARSER.parse_args()
 
-    main(ARGS.json_config_path, ARGS.yaml_config_path, ARGS.output_dir)
+    main(
+        ARGS.json_config_path,
+        ARGS.yaml_config_path,
+        ARGS.prow_config_path,
+        ARGS.output_dir)

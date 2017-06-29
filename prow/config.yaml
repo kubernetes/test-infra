@@ -5438,13 +5438,15 @@ periodics:
         defaultMode: 256
         secretName: ssh-key-secret
 
-- interval: 2h
+- tags:
+  - generated   # AUTO-GENERATED; DO NOT EDIT!
+  interval: 2h
   name: ci-kubernetes-e2e-gce-ubuntustable1-k8sbeta-default
   spec:
     containers:
     - args:
-      - --timeout=70
       - --bare
+      - --timeout=70
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
         value: /etc/service-account/service-account.json
@@ -5470,14 +5472,15 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
-
-- interval: 2h
+- tags:
+  - generated   # AUTO-GENERATED; DO NOT EDIT!
+  interval: 2h
   name: ci-kubernetes-e2e-gce-ubuntustable1-k8sbeta-serial
   spec:
     containers:
     - args:
-      - --timeout=420
       - --bare
+      - --timeout=520
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
         value: /etc/service-account/service-account.json
@@ -5503,14 +5506,15 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
-
-- interval: 2h
+- tags:
+  - generated   # AUTO-GENERATED; DO NOT EDIT!
+  interval: 2h
   name: ci-kubernetes-e2e-gce-ubuntustable1-k8sbeta-slow
   spec:
     containers:
     - args:
-      - --timeout=170
       - --bare
+      - --timeout=170
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
         value: /etc/service-account/service-account.json
@@ -5536,14 +5540,15 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
-
-- interval: 2h
+- tags:
+  - generated   # AUTO-GENERATED; DO NOT EDIT!
+  interval: 2h
   name: ci-kubernetes-e2e-gce-ubuntustable1-k8sdev-default
   spec:
     containers:
     - args:
-      - --timeout=70
       - --bare
+      - --timeout=70
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
         value: /etc/service-account/service-account.json
@@ -5569,14 +5574,15 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
-
-- interval: 2h
+- tags:
+  - generated   # AUTO-GENERATED; DO NOT EDIT!
+  interval: 2h
   name: ci-kubernetes-e2e-gce-ubuntustable1-k8sdev-serial
   spec:
     containers:
     - args:
-      - --timeout=420
       - --bare
+      - --timeout=520
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
         value: /etc/service-account/service-account.json
@@ -5602,14 +5608,15 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
-
-- interval: 2h
+- tags:
+  - generated   # AUTO-GENERATED; DO NOT EDIT!
+  interval: 2h
   name: ci-kubernetes-e2e-gce-ubuntustable1-k8sdev-slow
   spec:
     containers:
     - args:
-      - --timeout=170
       - --bare
+      - --timeout=170
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
         value: /etc/service-account/service-account.json
@@ -5635,13 +5642,15 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
-- interval: 2h
+- tags:
+  - generated   # AUTO-GENERATED; DO NOT EDIT!
+  interval: 2h
   name: ci-kubernetes-e2e-gce-ubuntustable1-k8sstable1-default
   spec:
     containers:
     - args:
-      - --timeout=70
       - --bare
+      - --timeout=70
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
         value: /etc/service-account/service-account.json
@@ -5667,14 +5676,15 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
-
-- interval: 2h
+- tags:
+  - generated   # AUTO-GENERATED; DO NOT EDIT!
+  interval: 2h
   name: ci-kubernetes-e2e-gce-ubuntustable1-k8sstable1-serial
   spec:
     containers:
     - args:
-      - --timeout=420
       - --bare
+      - --timeout=520
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
         value: /etc/service-account/service-account.json
@@ -5700,14 +5710,15 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
-
-- interval: 2h
+- tags:
+  - generated   # AUTO-GENERATED; DO NOT EDIT!
+  interval: 2h
   name: ci-kubernetes-e2e-gce-ubuntustable1-k8sstable1-slow
   spec:
     containers:
     - args:
-      - --timeout=170
       - --bare
+      - --timeout=170
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
         value: /etc/service-account/service-account.json
@@ -5733,7 +5744,6 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
-
 - interval: 30m
   name: ci-kubernetes-e2e-gci-gce
   spec:
@@ -10567,13 +10577,15 @@ periodics:
         defaultMode: 256
         secretName: ssh-key-secret
 
-- interval: 2h
+- tags:
+  - generated   # AUTO-GENERATED; DO NOT EDIT!
+  interval: 2h
   name: ci-kubernetes-e2e-gke-ubuntustable1-k8sbeta-alphafeatures
   spec:
     containers:
     - args:
-      - --timeout=200
       - --bare
+      - --timeout=200
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
         value: /etc/service-account/service-account.json
@@ -10599,14 +10611,15 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
-
-- interval: 2h
+- tags:
+  - generated   # AUTO-GENERATED; DO NOT EDIT!
+  interval: 2h
   name: ci-kubernetes-e2e-gke-ubuntustable1-k8sbeta-autoscaling
   spec:
     containers:
     - args:
-      - --timeout=320
       - --bare
+      - --timeout=320
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
         value: /etc/service-account/service-account.json
@@ -10632,14 +10645,15 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
-
-- interval: 2h
+- tags:
+  - generated   # AUTO-GENERATED; DO NOT EDIT!
+  interval: 2h
   name: ci-kubernetes-e2e-gke-ubuntustable1-k8sbeta-default
   spec:
     containers:
     - args:
-      - --timeout=70
       - --bare
+      - --timeout=70
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
         value: /etc/service-account/service-account.json
@@ -10665,14 +10679,15 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
-
-- interval: 2h
+- tags:
+  - generated   # AUTO-GENERATED; DO NOT EDIT!
+  interval: 2h
   name: ci-kubernetes-e2e-gke-ubuntustable1-k8sbeta-flaky
   spec:
     containers:
     - args:
-      - --timeout=320
       - --bare
+      - --timeout=320
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
         value: /etc/service-account/service-account.json
@@ -10698,14 +10713,15 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
-
-- interval: 2h
+- tags:
+  - generated   # AUTO-GENERATED; DO NOT EDIT!
+  interval: 2h
   name: ci-kubernetes-e2e-gke-ubuntustable1-k8sbeta-ingress
   spec:
     containers:
     - args:
-      - --timeout=320
       - --bare
+      - --timeout=320
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
         value: /etc/service-account/service-account.json
@@ -10732,13 +10748,15 @@ periodics:
         defaultMode: 256
         secretName: ssh-key-secret
 
-- interval: 2h
+- tags:
+  - generated   # AUTO-GENERATED; DO NOT EDIT!
+  interval: 2h
   name: ci-kubernetes-e2e-gke-ubuntustable1-k8sbeta-reboot
   spec:
     containers:
     - args:
-      - --timeout=200
       - --bare
+      - --timeout=200
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
         value: /etc/service-account/service-account.json
@@ -10764,14 +10782,15 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
-
-- interval: 2h
+- tags:
+  - generated   # AUTO-GENERATED; DO NOT EDIT!
+  interval: 2h
   name: ci-kubernetes-e2e-gke-ubuntustable1-k8sbeta-serial
   spec:
     containers:
     - args:
-      - --timeout=320
       - --bare
+      - --timeout=520
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
         value: /etc/service-account/service-account.json
@@ -10797,14 +10816,15 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
-
-- interval: 2h
+- tags:
+  - generated   # AUTO-GENERATED; DO NOT EDIT!
+  interval: 2h
   name: ci-kubernetes-e2e-gke-ubuntustable1-k8sbeta-slow
   spec:
     containers:
     - args:
-      - --timeout=170
       - --bare
+      - --timeout=170
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
         value: /etc/service-account/service-account.json
@@ -10830,14 +10850,15 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
-
-- interval: 2h
+- tags:
+  - generated   # AUTO-GENERATED; DO NOT EDIT!
+  interval: 2h
   name: ci-kubernetes-e2e-gke-ubuntustable1-k8sbeta-updown
   spec:
     containers:
     - args:
-      - --timeout=50
       - --bare
+      - --timeout=50
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
         value: /etc/service-account/service-account.json
@@ -10863,7 +10884,6 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
-
 - name: ci-kubernetes-e2e-prow-canary
   interval: 24h
   spec:
