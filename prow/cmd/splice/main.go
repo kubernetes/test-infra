@@ -65,6 +65,9 @@ func getQueuedPRs(url string) ([]int, error) {
 	}
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
 
 	queue := struct {
 		E2EQueue []struct {
@@ -313,7 +316,6 @@ func main() {
 		}
 
 		queue, err := getQueuedPRs(*submitQueueURL)
-		log.Info("PRs in queue:", queue)
 		if err != nil {
 			log.WithError(err).Warning("Error getting queued PRs. Is the submit queue down?")
 			continue
@@ -322,23 +324,26 @@ func main() {
 		if len(queue) == 0 {
 			continue
 		}
+		log.Infof("PRs in queue: %v", queue)
 		batchPRs, err := splicer.findMergeable(*remoteURL, queue)
 		if err != nil {
 			log.WithError(err).Error("Error computing mergeable PRs.")
 			continue
 		}
-		log.Infof("Batch PRs: %v", batchPRs)
+		// No need to start batches for single PRs
 		if len(batchPRs) <= 1 {
 			continue
 		}
+		// Trim down to the desired batch size.
 		if len(batchPRs) > *maxBatchSize {
 			batchPRs = batchPRs[:*maxBatchSize]
 		}
+		log.Infof("Starting a batch for the following PRs: %v", batchPRs)
 		refs := splicer.makeBuildRefs(*orgName, *repoName, batchPRs)
 		presubmits := ca.Config().Presubmits[fmt.Sprintf("%s/%s", *orgName, *repoName)]
 		for _, job := range neededPresubmits(presubmits, currentJobs, refs) {
 			if _, err := kc.CreateProwJob(plank.NewProwJob(plank.BatchSpec(job, refs))); err != nil {
-				log.WithError(err).WithField("job", job.Name).Error("Error starting job.")
+				log.WithError(err).WithField("job", job.Name).Error("Error starting batch job.")
 			}
 		}
 		cooldown = 5
