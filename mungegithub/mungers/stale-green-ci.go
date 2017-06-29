@@ -47,7 +47,7 @@ type StaleGreenCI struct {
 func init() {
 	s := &StaleGreenCI{}
 	RegisterMungerOrDie(s)
-	RegisterStaleComments(s)
+	RegisterStaleIssueComments(s)
 }
 
 // Name is the name usable in --pr-mungers
@@ -115,7 +115,7 @@ func (s *StaleGreenCI) Munge(obj *github.MungeObject) {
 	}
 }
 
-func (s *StaleGreenCI) isStaleComment(obj *github.MungeObject, comment *githubapi.IssueComment) bool {
+func (s *StaleGreenCI) isStaleIssueComment(obj *github.MungeObject, comment *githubapi.IssueComment) bool {
 	if !mergeBotComment(comment) {
 		return false
 	}
@@ -129,9 +129,9 @@ func (s *StaleGreenCI) isStaleComment(obj *github.MungeObject, comment *githubap
 	return stale
 }
 
-// StaleComments returns a slice of stale comments
-func (s *StaleGreenCI) StaleComments(obj *github.MungeObject, comments []*githubapi.IssueComment) []*githubapi.IssueComment {
-	return forEachCommentTest(obj, comments, s.isStaleComment)
+// StaleIssueComments returns a slice of stale issue comments.
+func (s *StaleGreenCI) StaleIssueComments(obj *github.MungeObject, comments []*githubapi.IssueComment) []*githubapi.IssueComment {
+	return forEachCommentTest(obj, comments, s.isStaleIssueComment)
 }
 
 func commentBeforeLastCI(obj *github.MungeObject, comment *githubapi.IssueComment, requiredContexts []string) bool {

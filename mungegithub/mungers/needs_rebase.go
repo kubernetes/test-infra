@@ -45,7 +45,7 @@ const (
 func init() {
 	n := NeedsRebaseMunger{}
 	RegisterMungerOrDie(n)
-	RegisterStaleComments(n)
+	RegisterStaleIssueComments(n)
 }
 
 // Name is the name usable in --pr-mungers
@@ -89,7 +89,7 @@ func (NeedsRebaseMunger) Munge(obj *github.MungeObject) {
 	}
 }
 
-func (NeedsRebaseMunger) isStaleComment(obj *github.MungeObject, comment *githubapi.IssueComment) bool {
+func (NeedsRebaseMunger) isStaleIssueComment(obj *github.MungeObject, comment *githubapi.IssueComment) bool {
 	if !mergeBotComment(comment) {
 		return false
 	}
@@ -103,7 +103,7 @@ func (NeedsRebaseMunger) isStaleComment(obj *github.MungeObject, comment *github
 	return stale
 }
 
-// StaleComments returns a slice of comments which are stale
-func (n NeedsRebaseMunger) StaleComments(obj *github.MungeObject, comments []*githubapi.IssueComment) []*githubapi.IssueComment {
-	return forEachCommentTest(obj, comments, n.isStaleComment)
+// StaleIssueComments returns a slice of stale issue comments.
+func (n NeedsRebaseMunger) StaleIssueComments(obj *github.MungeObject, comments []*githubapi.IssueComment) []*githubapi.IssueComment {
+	return forEachCommentTest(obj, comments, n.isStaleIssueComment)
 }

@@ -31,7 +31,7 @@ const (
 
 var (
 	_        = glog.Infof
-	deleters = []StaleComment{}
+	deleters = []StaleIssueComment{}
 )
 
 // CommentDeleter looks for comments which are no longer useful
@@ -42,15 +42,15 @@ func init() {
 	RegisterMungerOrDie(CommentDeleter{})
 }
 
-// StaleComment is an interface for a munger which writes comments which might go stale
-// and which should be cleaned up
-type StaleComment interface {
-	StaleComments(*github.MungeObject, []*githubapi.IssueComment) []*githubapi.IssueComment
+// StaleIssueComment is an interface for a munger which writes issue comments which might go stale
+// and which should be cleaned up.
+type StaleIssueComment interface {
+	StaleIssueComments(*github.MungeObject, []*githubapi.IssueComment) []*githubapi.IssueComment
 }
 
-// RegisterStaleComments is the method for a munger to register that it creates comment
-// which might go stale and need to be cleaned up
-func RegisterStaleComments(s StaleComment) {
+// RegisterStaleIssueComments is the method for a munger to register that it creates issue comments
+// which might go stale and need to be cleaned up.
+func RegisterStaleIssueComments(s StaleIssueComment) {
 	deleters = append(deleters, s)
 }
 
@@ -102,7 +102,7 @@ func (CommentDeleter) Munge(obj *github.MungeObject) {
 		validComments = append(validComments, comment)
 	}
 	for _, d := range deleters {
-		stale := d.StaleComments(obj, validComments)
+		stale := d.StaleIssueComments(obj, validComments)
 		for _, comment := range stale {
 			obj.DeleteComment(comment)
 		}

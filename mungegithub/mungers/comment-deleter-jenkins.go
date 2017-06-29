@@ -51,15 +51,15 @@ type CommentDeleterJenkins struct{}
 
 func init() {
 	c := CommentDeleterJenkins{}
-	RegisterStaleComments(c)
+	RegisterStaleIssueComments(c)
 }
 
 func isJenkinsTestComment(body string) bool {
 	return updatedCommentRegexp.MatchString(body) || commentRegexp.MatchString(body)
 }
 
-// StaleComments returns a slice of comments which are stale
-func (CommentDeleterJenkins) StaleComments(obj *github.MungeObject, comments []*githubapi.IssueComment) []*githubapi.IssueComment {
+// StaleIssueComments returns a slice of stale issue comments.
+func (CommentDeleterJenkins) StaleIssueComments(obj *github.MungeObject, comments []*githubapi.IssueComment) []*githubapi.IssueComment {
 	out := []*githubapi.IssueComment{}
 	var last *githubapi.IssueComment
 

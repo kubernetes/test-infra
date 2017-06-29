@@ -43,7 +43,7 @@ type LabelUnapprovedPicks struct{}
 func init() {
 	l := LabelUnapprovedPicks{}
 	RegisterMungerOrDie(l)
-	RegisterStaleComments(l)
+	RegisterStaleIssueComments(l)
 }
 
 // Name is the name usable in --pr-mungers
@@ -87,7 +87,7 @@ func (LabelUnapprovedPicks) Munge(obj *github.MungeObject) {
 	obj.WriteComment(labelUnapprovedBody)
 }
 
-func (LabelUnapprovedPicks) isStaleComment(obj *github.MungeObject, comment *githubapi.IssueComment) bool {
+func (LabelUnapprovedPicks) isStaleIssueComment(obj *github.MungeObject, comment *githubapi.IssueComment) bool {
 	if !mergeBotComment(comment) {
 		return false
 	}
@@ -101,7 +101,7 @@ func (LabelUnapprovedPicks) isStaleComment(obj *github.MungeObject, comment *git
 	return stale
 }
 
-// StaleComments returns a list of stale comments
-func (l LabelUnapprovedPicks) StaleComments(obj *github.MungeObject, comments []*githubapi.IssueComment) []*githubapi.IssueComment {
-	return forEachCommentTest(obj, comments, l.isStaleComment)
+// StaleIssueComments returns a list of stale issue comments.
+func (l LabelUnapprovedPicks) StaleIssueComments(obj *github.MungeObject, comments []*githubapi.IssueComment) []*githubapi.IssueComment {
+	return forEachCommentTest(obj, comments, l.isStaleIssueComment)
 }

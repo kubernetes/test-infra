@@ -56,7 +56,7 @@ type StalePendingCI struct {
 func init() {
 	s := &StalePendingCI{}
 	RegisterMungerOrDie(s)
-	RegisterStaleComments(s)
+	RegisterStaleIssueComments(s)
 }
 
 // Name is the name usable in --pr-mungers
@@ -110,7 +110,7 @@ func (s *StalePendingCI) Munge(obj *github.MungeObject) {
 	}
 }
 
-func (s *StalePendingCI) isStaleComment(obj *github.MungeObject, comment *githubapi.IssueComment) bool {
+func (s *StalePendingCI) isStaleIssueComment(obj *github.MungeObject, comment *githubapi.IssueComment) bool {
 	if !mergeBotComment(comment) {
 		return false
 	}
@@ -124,10 +124,10 @@ func (s *StalePendingCI) isStaleComment(obj *github.MungeObject, comment *github
 	return stale
 }
 
-// StaleComments returns a slice of stale comments
-func (s *StalePendingCI) StaleComments(obj *github.MungeObject, comments []*githubapi.IssueComment) []*githubapi.IssueComment {
+// StaleIssueComments returns a slice of stale issue comments.
+func (s *StalePendingCI) StaleIssueComments(obj *github.MungeObject, comments []*githubapi.IssueComment) []*githubapi.IssueComment {
 	if s.features == nil {
 		return nil // munger not initialized, cannot clean stale comments
 	}
-	return forEachCommentTest(obj, comments, s.isStaleComment)
+	return forEachCommentTest(obj, comments, s.isStaleIssueComment)
 }

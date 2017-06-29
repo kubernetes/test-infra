@@ -44,7 +44,7 @@ type LGTMAfterCommitMunger struct{}
 func init() {
 	l := LGTMAfterCommitMunger{}
 	RegisterMungerOrDie(l)
-	RegisterStaleComments(l)
+	RegisterStaleIssueComments(l)
 }
 
 // Name is the name usable in --pr-mungers
@@ -92,7 +92,7 @@ func (LGTMAfterCommitMunger) Munge(obj *github.MungeObject) {
 	}
 }
 
-func (LGTMAfterCommitMunger) isStaleComment(obj *github.MungeObject, comment *githubapi.IssueComment) bool {
+func (LGTMAfterCommitMunger) isStaleIssueComment(obj *github.MungeObject, comment *githubapi.IssueComment) bool {
 	if !mergeBotComment(comment) {
 		return false
 	}
@@ -113,7 +113,7 @@ func (LGTMAfterCommitMunger) isStaleComment(obj *github.MungeObject, comment *gi
 	return stale
 }
 
-// StaleComments returns a list of comments which are stale
-func (l LGTMAfterCommitMunger) StaleComments(obj *github.MungeObject, comments []*githubapi.IssueComment) []*githubapi.IssueComment {
-	return forEachCommentTest(obj, comments, l.isStaleComment)
+// StaleIssueComments returns a list of stale issue comments.
+func (l LGTMAfterCommitMunger) StaleIssueComments(obj *github.MungeObject, comments []*githubapi.IssueComment) []*githubapi.IssueComment {
+	return forEachCommentTest(obj, comments, l.isStaleIssueComment)
 }

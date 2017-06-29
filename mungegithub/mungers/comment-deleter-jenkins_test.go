@@ -106,7 +106,7 @@ func comment(id int, body string) *githubapi.IssueComment {
 	return github_test.Comment(id, jenkinsBotName, time.Now(), passComment)
 }
 
-func TestJenkinsStaleComments(t *testing.T) {
+func TestJenkinsStaleIssueComments(t *testing.T) {
 	c := CommentDeleterJenkins{}
 
 	tests := []struct {
@@ -144,7 +144,7 @@ func TestJenkinsStaleComments(t *testing.T) {
 		},
 	}
 	for testNum, test := range tests {
-		out := c.StaleComments(nil, test.comments)
+		out := c.StaleIssueComments(nil, test.comments)
 		if len(out) != len(test.expected) {
 			t.Errorf("%d:%s: len(expected):%d, len(out):%d", testNum, test.name, len(test.expected), len(out))
 		}
