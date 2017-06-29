@@ -1,110 +1,157 @@
+# This file defines the list of tests whose definition and Prow configurations
+# that can be generated automatically.
+#
+# The name of the test job in this file must satisfy a predefined format, which
+# consists of several dimensions, such as cloud provider, OS image name,
+# Kubernetes version and test suites. The definition of each dimension is
+# provided separately from the job defintion. A tool can automatically generate
+# the test defintion and Prow configuration from the test name by pulling the
+# configs of each dimension in the test name and assembling them together.
+#
+# E.g., for test "ci-kubernetes-e2e-gce-ubuntustable1-k8sdev-serial", its
+# configuration will be generated from the configs of cloud provider "gce", the
+# image "ubuntustable1", the Kubernetes version "k8sdev" and the test suite
+# "serial".
+
+# To generate the test definitions and Prow configurations from this file:
+#
+#   bazel run //experiment:generate_tests -- \
+#     --yaml-config-path=experiment/test_config.yaml \
+#     --json-config-path=jobs/config.json \
+#     --prow-config-path=prow/config.yaml && bazel run //jobs:config_sort
+
+
 # The envs and args defined in "jobs" override the ones defined in each
 # dimension.
 jobs:
+  # Cluster E2E Tests
+  #
+  # Cluster E2E test name starts with "ci-kubernetes-e2e-" and must satisfy the
+  # following format:
+  #   ci-kubernetes-e2e-<cloudProvider>-<image>-<k8sVersion>-<testSuite>
+
   # Ubuntu image validation.
   ci-kubernetes-e2e-gce-ubuntustable1-k8sdev-default:
+    interval: 2h
     envs:
     - PROJECT=ubuntu-os-gke-cloud-tests # Canonical owned project.
     args:
     - --cluster=test-${job_name_hash}
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-ubuntustable1-k8sdev-slow:
+    interval: 2h
     envs:
     - PROJECT=ubuntu-os-gke-cloud-tests # Canonical owned project.
     args:
     - --cluster=test-${job_name_hash}
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-ubuntustable1-k8sdev-serial:
+    interval: 2h
     envs:
     - PROJECT=ubuntu-os-gke-cloud-tests # Canonical owned project.
     args:
     - --cluster=test-${job_name_hash}
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-ubuntustable1-k8sbeta-default:
+    interval: 2h
     envs:
     - PROJECT=ubuntu-os-gke-cloud-tests # Canonical owned project.
     args:
     - --cluster=test-${job_name_hash}
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-ubuntustable1-k8sbeta-slow:
+    interval: 2h
     envs:
     - PROJECT=ubuntu-os-gke-cloud-tests # Canonical owned project.
     args:
     - --cluster=test-${job_name_hash}
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-ubuntustable1-k8sbeta-serial:
+    interval: 2h
     envs:
     - PROJECT=ubuntu-os-gke-cloud-tests # Canonical owned project.
     args:
     - --cluster=test-${job_name_hash}
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-ubuntustable1-k8sstable1-default:
+    interval: 2h
     envs:
     - PROJECT=ubuntu-os-gke-cloud-tests # Canonical owned project.
     args:
     - --cluster=test-${job_name_hash}
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-ubuntustable1-k8sstable1-slow:
+    interval: 2h
     envs:
     - PROJECT=ubuntu-os-gke-cloud-tests # Canonical owned project.
     args:
     - --cluster=test-${job_name_hash}
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-ubuntustable1-k8sstable1-serial:
+    interval: 2h
     envs:
     - PROJECT=ubuntu-os-gke-cloud-tests # Canonical owned project.
     args:
     - --cluster=test-${job_name_hash}
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gke-ubuntustable1-k8sbeta-alphafeatures:
+    interval: 2h
     envs:
     - PROJECT=ubuntu-image-validation
     args:
     - --cluster=test-${job_name_hash}
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gke-ubuntustable1-k8sbeta-autoscaling:
+    interval: 2h
     envs:
     - PROJECT=ubuntu-image-validation
     args:
     - --cluster=test-${job_name_hash}
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gke-ubuntustable1-k8sbeta-default:
+    interval: 2h
     envs:
     - PROJECT=ubuntu-image-validation
     args:
     - --cluster=test-${job_name_hash}
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gke-ubuntustable1-k8sbeta-flaky:
+    interval: 2h
     envs:
     - PROJECT=ubuntu-image-validation
     args:
     - --cluster=test-${job_name_hash}
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gke-ubuntustable1-k8sbeta-ingress:
+    interval: 2h
     envs:
     - PROJECT=ubuntu-image-validation
     args:
     - --cluster=test-${job_name_hash}
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gke-ubuntustable1-k8sbeta-reboot:
+    interval: 2h
     envs:
     - PROJECT=ubuntu-image-validation
     args:
     - --cluster=test-${job_name_hash}
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gke-ubuntustable1-k8sbeta-serial:
+    interval: 2h
     envs:
     - PROJECT=ubuntu-image-validation
     args:
     - --cluster=test-${job_name_hash}
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gke-ubuntustable1-k8sbeta-slow:
+    interval: 2h
     envs:
     - PROJECT=ubuntu-image-validation
     args:
     - --cluster=test-${job_name_hash}
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gke-ubuntustable1-k8sbeta-updown:
+    interval: 2h
     envs:
     - PROJECT=ubuntu-image-validation
     args:
@@ -118,7 +165,7 @@ common:
 cloudProviders:
   gce:
     args:
-    - --check-leaked-resources=true
+    - --check-leaked-resources
     envs:
     - KUBERNETES_PROVIDER=gce
     - E2E_MIN_STARTUP_PODS=8
@@ -126,7 +173,7 @@ cloudProviders:
     - CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1
   gke:
     args:
-    - --check-leaked-resources=true
+    - --check-leaked-resources
     envs:
     - KUBERNETES_PROVIDER=gke
     - E2E_MIN_STARTUP_PODS=8
@@ -192,7 +239,7 @@ testSuites:
     - GINKGO_TEST_ARGS=--ginkgo.focus=\[Feature:Reboot\]
   serial:
     args:
-    - --timeout=300m
+    - --timeout=500m
     envs:
     - GINKGO_PARALLEL=n
     - GINKGO_TEST_ARGS=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\]

@@ -2216,7 +2216,7 @@
       "--mode=local",
       "--check-leaked-resources",
       "--extract=ci/latest-1.7",
-      "--timeout=300m",
+      "--timeout=500m",
       "--cluster=test-0ac5dfddd1"
     ],
     "scenario": "kubernetes_e2e",
@@ -2270,7 +2270,7 @@
       "--mode=local",
       "--check-leaked-resources",
       "--extract=ci/latest",
-      "--timeout=300m",
+      "--timeout=500m",
       "--cluster=test-c858633e76"
     ],
     "scenario": "kubernetes_e2e",
@@ -2324,7 +2324,7 @@
       "--mode=local",
       "--check-leaked-resources",
       "--extract=ci/latest-1.6",
-      "--timeout=300m",
+      "--timeout=500m",
       "--cluster=test-4c9af8b031"
     ],
     "scenario": "kubernetes_e2e",
@@ -5300,7 +5300,7 @@
       "--mode=local",
       "--check-leaked-resources",
       "--extract=ci/latest-1.7",
-      "--timeout=300m",
+      "--timeout=500m",
       "--cluster=test-ea2434d90d"
     ],
     "scenario": "kubernetes_e2e",

@@ -4,6 +4,17 @@ py_binary(
     deps = ["@requests//:requests"],
 )
 
+py_binary(
+    name = "generate_tests",
+    srcs = ["generate_tests.py"],
+    data = [
+        "test_config.yaml",
+        "//jobs",
+        "//prow:configs",
+    ],
+    deps = ["@ruamel_yaml//ruamel/yaml:ruamel.yaml"],
+)
+
 filegroup(
     name = "package-srcs",
     srcs = glob(["**"]),
