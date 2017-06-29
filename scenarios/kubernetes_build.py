@@ -58,6 +58,8 @@ def main(args):
         push_build_args.append('--bucket=%s' % args.release)
     if args.registry:
         push_build_args.append('--docker-registry=%s' % args.registry)
+    if args.hyperkube:
+        env['KUBE_BUILD_HYPERKUBE'] = 'y'
 
     for key, value in env.items():
         os.environ[key] = value
@@ -81,5 +83,7 @@ if __name__ == '__main__':
         help='Push federation images to the specified project')
     PARSER.add_argument(
         '--registry', help='Push images to the specified docker registry')
+    PARSER.add_argument(
+        '--hyperkube', action='store_true', help='Build hyperkube image')
     ARGS = PARSER.parse_args()
     main(ARGS)
