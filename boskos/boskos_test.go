@@ -22,7 +22,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
-	"strings"
 	"testing"
 	"time"
 
@@ -664,10 +663,6 @@ func TestProjectConfig(t *testing.T) {
 	for _, p := range data {
 		if p.Name == "" {
 			t.Errorf("Empty project name: %v\n", p.Name)
-		}
-
-		if !strings.Contains(p.Name, "FAKE") { // placeholder, change it to a valid pattern later.
-			t.Errorf("Invalid project: %v\n", p.Name)
 		}
 	}
 }
