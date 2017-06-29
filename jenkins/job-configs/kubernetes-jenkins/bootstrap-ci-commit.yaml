@@ -110,7 +110,7 @@
 
     - kubernetes-build-1.7:
         branch: release-1.7
-        commit-frequency: 'H/5 * * * *'
+        commit-frequency: ''
         giturl: 'https://github.com/kubernetes/kubernetes'
         job-name: ci-kubernetes-build-1.7
         repo-name: k8s.io/kubernetes
