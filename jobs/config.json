@@ -90,6 +90,8 @@
   },
   "ci-kubernetes-cross-build": {
     "args": [
+      "--hyperkube",
+      "--registry=gcr.io/kubernetes-ci-images",
       "--suffix=-cross"
     ],
     "scenario": "kubernetes_build",
