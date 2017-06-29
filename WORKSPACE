@@ -18,6 +18,23 @@ load("@org_pubref_rules_node//node:rules.bzl", "node_repositories", "npm_reposit
 
 node_repositories()
 
+load(":test_infra.bzl", "http_archive_with_pkg_path")
+
+http_archive_with_pkg_path(
+    name = "ruamel_yaml",
+    build_file_content = """
+py_library(
+    name = "ruamel.yaml",
+    srcs = glob(["*.py"]),
+    visibility = ["//visibility:public"],
+)
+""",
+    pkg_path = "ruamel/yaml",
+    sha256 = "350496f6fdd8c2bb17a0fa3fd2ec98431280cf12d72dae498b19ac0119c2bbad",
+    strip_prefix = "ruamel.yaml-0.15.9",
+    url = "https://pypi.python.org/packages/83/90/2eecde4bbd6a67805080091e83a29100c2f7d2afcaf926d75da5839f9283/ruamel.yaml-0.15.9.tar.gz",
+)
+
 npm_repository(
     name = "npm_mocha",
     deps = {
