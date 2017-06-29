@@ -27,7 +27,7 @@ import yaml
 
 TEMPLATE = {
     'name': '',
-    'interval': '2h',
+    'interval': '30m',
     'spec': {
         'containers': [{
             'image': 'gcr.io/k8s-testimages/kubekins-e2e-prow:v20170606-e69a3df0',

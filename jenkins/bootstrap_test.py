@@ -2018,9 +2018,9 @@ class JobTest(unittest.TestCase):
             'ci-kubernetes-e2e-gke-ubuntustable1-k8sbeta-updown.env': 'ci-kubernetes-e2e-gke-ubuntu*',
             # The 1.5 and 1.6 scalability jobs intentionally share projects.
             'ci-kubernetes-e2e-gce-scalability-release-1-7.env': 'ci-kubernetes-e2e-gce-scalability-release-*',
-            'ci-kubernetes-e2e-gce-scalability-release-1.6.env': 'ci-kubernetes-e2e-gce-scalability-release-*',
+            'ci-kubernetes-e2e-gce-scalability-release-1-6.env': 'ci-kubernetes-e2e-gce-scalability-release-*',
             'ci-kubernetes-e2e-gci-gce-scalability-release-1-7.env': 'ci-kubernetes-e2e-gci-gce-scalability-release-*',
-            'ci-kubernetes-e2e-gci-gce-scalability-release-1.6.env': 'ci-kubernetes-e2e-gci-gce-scalability-release-*',
+            'ci-kubernetes-e2e-gci-gce-scalability-release-1-6.env': 'ci-kubernetes-e2e-gci-gce-scalability-release-*',
             # TODO(fejta): remove these (found while migrating jobs)
             'ci-kubernetes-kubemark-100-gce.env': 'ci-kubernetes-kubemark-*',
             'ci-kubernetes-kubemark-5-gce.env': 'ci-kubernetes-kubemark-*',
