@@ -189,7 +189,7 @@ type Config struct {
 
 	// Webhook configuration
 	HookHandler *WebHook
-	GithubKey   string
+	GithubKey   string `json:"-"`
 
 	// Last fetch
 	since time.Time

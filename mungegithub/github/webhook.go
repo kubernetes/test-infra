@@ -25,7 +25,7 @@ import (
 
 // WebHook listen for events and list changed issues asynchronously
 type WebHook struct {
-	GithubKey string
+	GithubKey string `json:"-"`
 	Status    *StatusChange
 }
 
