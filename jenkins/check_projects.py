@@ -259,8 +259,8 @@ class Checker(object):
 
         with open(boskos) as fp:
             for res in json.loads(fp.read()):
-                if res['type'] == 'projects':
-                    boskos.append(res['name'])
+                if res['type'] == 'project':
+                    projects.add(res['name'])
 
         return projects
 
