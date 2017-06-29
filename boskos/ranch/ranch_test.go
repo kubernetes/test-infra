@@ -504,6 +504,120 @@ func TestUpdate(t *testing.T) {
 	}
 }
 
+func TestMetric(t *testing.T) {
+	var testcases = []struct {
+		name         string
+		resources    []common.Resource
+		metricType   string
+		expectErr    error
+		expectMetric common.Metric
+	}{
+		{
+			name:       "ranch has no resource",
+			resources:  []common.Resource{},
+			metricType: "t",
+			expectErr:  &ResourceNotFound{"t"},
+		},
+		{
+			name: "no matching resource",
+			resources: []common.Resource{
+				{
+					Name:  "res",
+					Type:  "t",
+					State: "s",
+					Owner: "merlin",
+				},
+			},
+			metricType: "foo",
+			expectErr:  &ResourceNotFound{"foo"},
+		},
+		{
+			name: "one resource",
+			resources: []common.Resource{
+				{
+					Name:  "res",
+					Type:  "t",
+					State: "s",
+					Owner: "merlin",
+				},
+			},
+			metricType: "t",
+			expectMetric: common.Metric{
+				Type: "t",
+				Current: map[string]int{
+					"s": 1,
+				},
+				Owners: map[string]int{
+					"merlin": 1,
+				},
+			},
+		},
+		{
+			name: "multiple resources",
+			resources: []common.Resource{
+				{
+					Name:  "res-1",
+					Type:  "t",
+					State: "s",
+					Owner: "merlin",
+				},
+				{
+					Name:  "res-2",
+					Type:  "t",
+					State: "p",
+					Owner: "pony",
+				},
+				{
+					Name:  "res-2",
+					Type:  "t",
+					State: "s",
+					Owner: "pony",
+				},
+				{
+					Name:  "res-3",
+					Type:  "foo",
+					State: "s",
+					Owner: "pony",
+				},
+				{
+					Name:  "res-4",
+					Type:  "t",
+					State: "d",
+					Owner: "merlin",
+				},
+			},
+			metricType: "t",
+			expectMetric: common.Metric{
+				Type: "t",
+				Current: map[string]int{
+					"s": 2,
+					"d": 1,
+					"p": 1,
+				},
+				Owners: map[string]int{
+					"merlin": 2,
+					"pony":   2,
+				},
+			},
+		},
+	}
+
+	for _, tc := range testcases {
+		c := MakeTestRanch(tc.resources)
+		metric, err := c.Metric(tc.metricType)
+		if !AreErrorsEqual(err, tc.expectErr) {
+			t.Errorf("%s - Got error %v, expect error %v", tc.name, err, tc.expectErr)
+			continue
+		}
+
+		if err == nil {
+			if !reflect.DeepEqual(metric, tc.expectMetric) {
+				t.Errorf("%s - wrong metric, got %v, want %v", tc.name, metric, tc.expectMetric)
+			}
+		}
+	}
+}
+
 func TestSyncConfig(t *testing.T) {
 	var testcases = []struct {
 		name   string

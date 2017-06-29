@@ -301,3 +301,35 @@ func (r *Ranch) SaveState() {
 		logrus.WithError(err).Fatal("Error rename file")
 	}
 }
+
+// Metric returns a metric object with metrics filled in
+func (r *Ranch) Metric(rtype string) (common.Metric, error) {
+	metric := common.Metric{
+		Type:    rtype,
+		Current: map[string]int{},
+		Owners:  map[string]int{},
+	}
+
+	for _, res := range r.Resources {
+		if res.Type != rtype {
+			continue
+		}
+
+		if _, ok := metric.Current[res.State]; !ok {
+			metric.Current[res.State] = 0
+		}
+
+		if _, ok := metric.Owners[res.Owner]; !ok {
+			metric.Owners[res.Owner] = 0
+		}
+
+		metric.Current[res.State]++
+		metric.Owners[res.Owner]++
+	}
+
+	if len(metric.Current) == 0 && len(metric.Owners) == 0 {
+		return metric, &ResourceNotFound{rtype}
+	}
+
+	return metric, nil
+}

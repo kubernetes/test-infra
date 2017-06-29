@@ -27,3 +27,10 @@ type Resource struct {
 	Owner      string    `json:"owner"`
 	LastUpdate time.Time `json:"lastupdate"`
 }
+
+type Metric struct {
+	Type    string         `json:"type"`
+	Current map[string]int `json:"current"`
+	Owners  map[string]int `json:"owner"`
+	// TODO: Implement state transition metrics
+}
