@@ -57,6 +57,9 @@ func handleConfig(gc githubClient, kc kubeClient, org, repo, commit string) erro
 	}
 
 	c := kube.ConfigMap{
+		Metadata: kube.ObjectMeta{
+			Name: "config",
+		},
 		Data: map[string]string{
 			"config": string(content),
 		},
@@ -73,6 +76,9 @@ func handlePlugin(gc githubClient, kc kubeClient, org, repo, commit string) erro
 	}
 
 	c := kube.ConfigMap{
+		Metadata: kube.ObjectMeta{
+			Name: "plugins",
+		},
 		Data: map[string]string{
 			"plugins": string(content),
 		},
