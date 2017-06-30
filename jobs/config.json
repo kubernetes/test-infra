@@ -2069,34 +2069,6 @@
       "UNKNOWN"
     ]
   },
-  "ci-kubernetes-e2e-gce-ubuntu": {
-    "args": [
-      "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/ci-kubernetes-e2e-gce-ubuntu.env",
-      "--mode=local",
-      "--timeout=50m",
-      "--extract=ci/latest",
-      "--check-leaked-resources"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "UNKNOWN"
-    ]
-  },
-  "ci-kubernetes-e2e-gce-ubuntu-1-6": {
-    "args": [
-      "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/ci-kubernetes-e2e-gce-ubuntu-1-6.env",
-      "--mode=local",
-      "--timeout=50m",
-      "--extract=ci/latest-1.6",
-      "--check-leaked-resources"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "UNKNOWN"
-    ]
-  },
   "ci-kubernetes-e2e-gce-ubuntu-1-6-node": {
     "args": [
       "--branch=release-1.6",
@@ -2117,34 +2089,6 @@
       "UNKNOWN"
     ]
   },
-  "ci-kubernetes-e2e-gce-ubuntu-1-6-serial": {
-    "args": [
-      "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/ci-kubernetes-e2e-gce-ubuntu-1-6-serial.env",
-      "--mode=local",
-      "--timeout=300m",
-      "--extract=ci/latest-1.6",
-      "--check-leaked-resources"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "UNKNOWN"
-    ]
-  },
-  "ci-kubernetes-e2e-gce-ubuntu-1-6-slow": {
-    "args": [
-      "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/ci-kubernetes-e2e-gce-ubuntu-1-6-slow.env",
-      "--mode=local",
-      "--timeout=150m",
-      "--extract=ci/latest-1.6",
-      "--check-leaked-resources"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "UNKNOWN"
-    ]
-  },
   "ci-kubernetes-e2e-gce-ubuntu-node": {
     "args": [
       "--properties=test/e2e_node/jenkins/jenkins-ci-ubuntu.properties"
@@ -2159,34 +2103,6 @@
       "--properties=test/e2e_node/jenkins/jenkins-serial-ubuntu.properties"
     ],
     "scenario": "kubernetes_kubelet",
-    "sigOwners": [
-      "UNKNOWN"
-    ]
-  },
-  "ci-kubernetes-e2e-gce-ubuntu-serial": {
-    "args": [
-      "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/ci-kubernetes-e2e-gce-ubuntu-serial.env",
-      "--mode=local",
-      "--timeout=300m",
-      "--extract=ci/latest",
-      "--check-leaked-resources"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "UNKNOWN"
-    ]
-  },
-  "ci-kubernetes-e2e-gce-ubuntu-slow": {
-    "args": [
-      "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/ci-kubernetes-e2e-gce-ubuntu-slow.env",
-      "--mode=local",
-      "--timeout=150m",
-      "--extract=ci/latest",
-      "--check-leaked-resources"
-    ],
-    "scenario": "kubernetes_e2e",
     "sigOwners": [
       "UNKNOWN"
     ]
