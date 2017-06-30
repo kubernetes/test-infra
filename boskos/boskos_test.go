@@ -18,7 +18,6 @@ package main
 
 import (
 	"encoding/json"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -745,15 +744,10 @@ func TestDefault(t *testing.T) {
 }
 
 func TestProjectConfig(t *testing.T) {
-	file, err := ioutil.ReadFile("resources.json")
+	r := MakeTestRanch([]common.Resource{})
+	data, err := r.ParseConfig("resources.json")
 	if err != nil {
-		t.Errorf("ReadFile error: %v\n", err)
-	}
-
-	var data []common.Resource
-	err = json.Unmarshal(file, &data)
-	if err != nil {
-		t.Errorf("Unmarshal error: %v\n", err)
+		t.Errorf("ParseConfig error: %v\n", err)
 	}
 
 	if len(data) == 0 {
@@ -762,7 +756,7 @@ func TestProjectConfig(t *testing.T) {
 
 	for _, p := range data {
 		if p.Name == "" {
-			t.Errorf("Empty project name: %v\n", p.Name)
+			t.Errorf("Empty resource name: %v\n", p.Name)
 		}
 	}
 }
