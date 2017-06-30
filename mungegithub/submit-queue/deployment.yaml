@@ -55,6 +55,7 @@ spec:
         - --context-url=$(CONTEXT_URL)
         - --use-reviewers=$(APPROVAL_ACTIVATED)
         - --gate-approved=$(APPROVAL_ACTIVATED)
+        - --gate-cla=$(CLA_ACTIVATED)
         - --github-key=$(GITHUB_KEY)
         - --triage-window=$(TRIAGE_WINDOW)
         - --triage-count=$(TRIAGE_COUNT)
@@ -266,6 +267,11 @@ spec:
               configMapKeyRef:
                 name: @@-sq-config
                 key: approval-activated
+          - name: CLA_ACTIVATED
+            valueFrom:
+              configMapKeyRef:
+                name: @@-sq-config
+                key: cla-activated
           - name: GITHUB_KEY
             valueFrom:
               secretKeyRef:

@@ -55,5 +55,5 @@ data:
   triage.count: "0"
   flakyjob.count: "0"
 
-  # Temporary gate approval process
   approval-activated: "true"
+  cla-activated: "true"

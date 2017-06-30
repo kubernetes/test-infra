@@ -57,3 +57,4 @@ data:
 
   # Temporary gate approval process
   approval-activated: "false"
+  cla-activated: "true"

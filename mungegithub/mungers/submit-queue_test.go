@@ -200,6 +200,7 @@ func getTestSQ(startThreads bool, config *github_util.Config, server *httptest.S
 	admin.Mux = admin.NewConcurrentMux()
 	sq := new(SubmitQueue)
 	sq.GateApproved = true
+	sq.GateCLA = true
 	sq.RequiredStatusContexts = []string{notRequiredReTestContext1, notRequiredReTestContext2}
 	sq.RequiredRetestContexts = []string{requiredReTestContext1, requiredReTestContext2}
 	sq.BlockingJobNames = []string{"foo"}

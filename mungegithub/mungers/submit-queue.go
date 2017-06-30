@@ -213,6 +213,7 @@ type SubmitQueue struct {
 	WeakStableJobNames  []string
 
 	GateApproved bool
+	GateCLA      bool
 
 	// If FakeE2E is true, don't try to connect to JenkinsHost, all jobs are passing.
 	FakeE2E bool
@@ -587,6 +588,7 @@ func (sq *SubmitQueue) AddFlags(cmd *cobra.Command, config *github.Config) {
 	cmd.Flags().StringVar(&sq.BatchURL, "batch-url", "", "Prow data.json URL to read batch results")
 	cmd.Flags().StringVar(&sq.ContextURL, "context-url", "", "URL where the submit queue is serving - used in Github status contexts")
 	cmd.Flags().BoolVar(&sq.GateApproved, "gate-approved", false, "Gate on approved label")
+	cmd.Flags().BoolVar(&sq.GateCLA, "gate-cla", false, "Gate on cla labels")
 }
 
 // Hold the lock
@@ -953,9 +955,11 @@ func (sq *SubmitQueue) validForMergeExt(obj *github.MungeObject, checkStatus boo
 	}
 
 	// Must pass CLA checks
-	if !obj.HasLabel(claYesLabel) && !obj.HasLabel(claHumanLabel) && !obj.HasLabel(cncfClaYesLabel) {
-		sq.SetMergeStatus(obj, noCLA)
-		return false
+	if sq.GateCLA {
+		if !obj.HasLabel(claYesLabel) && !obj.HasLabel(claHumanLabel) && !obj.HasLabel(cncfClaYesLabel) {
+			sq.SetMergeStatus(obj, noCLA)
+			return false
+		}
 	}
 
 	// Obviously must be mergeable
@@ -1460,7 +1464,9 @@ func (sq *SubmitQueue) serveMergeInfo(res http.ResponseWriter, req *http.Request
 	var out bytes.Buffer
 	out.WriteString("PRs must meet the following set of conditions to be considered for automatic merging by the submit queue.")
 	out.WriteString("<ol>")
-	out.WriteString(fmt.Sprintf("<li>The PR must have the label %q, %q or %q </li>", claYesLabel, cncfClaYesLabel, claHumanLabel))
+	if sq.GateCLA {
+		out.WriteString(fmt.Sprintf("<li>The PR must have the label %q, %q or %q </li>", claYesLabel, cncfClaYesLabel, claHumanLabel))
+	}
 	out.WriteString("<li>The PR must be mergeable. aka cannot need a rebase</li>")
 	if len(sq.RequiredStatusContexts) > 0 || len(sq.RequiredRetestContexts) > 0 {
 		out.WriteString("<li>All of the following github statuses must be green")
