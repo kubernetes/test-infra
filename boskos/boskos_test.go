@@ -747,16 +747,23 @@ func TestProjectConfig(t *testing.T) {
 	r := MakeTestRanch([]common.Resource{})
 	data, err := r.ParseConfig("resources.json")
 	if err != nil {
-		t.Errorf("ParseConfig error: %v\n", err)
+		t.Errorf("parseConfig error: %v", err)
 	}
 
 	if len(data) == 0 {
-		t.Errorf("Empty data!")
+		t.Errorf("empty data")
 	}
 
+	names := map[string]bool{}
 	for _, p := range data {
 		if p.Name == "" {
-			t.Errorf("Empty resource name: %v\n", p.Name)
+			t.Errorf("empty resource name: %v", p.Name)
+		}
+
+		if _, ok := names[p.Name]; ok {
+			t.Errorf("duplicated resource name: %v", p.Name)
+		} else {
+			names[p.Name] = true
 		}
 	}
 }
