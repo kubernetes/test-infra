@@ -3,11 +3,7 @@
 [![Build Status](https://travis-ci.org/kubernetes/test-infra.svg?branch=master)](https://travis-ci.org/kubernetes/test-infra)
 
 The test-infra repository contains a collection of tools for testing Kubernetes
-and displaying Kubernetes tests results. There is no merge bot here. Feel free
-to click the big green merge button once your code is reviewed and passes on
-Travis. You will need to be a member of
-[kubernetes/test-infra-maintainers](https://github.com/orgs/kubernetes/teams/test-infra-maintainers)
-to merge.
+and displaying Kubernetes tests results. See also [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Viewing test results
 
