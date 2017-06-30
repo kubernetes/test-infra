@@ -168,6 +168,10 @@ func (c *Controller) terminateDupes(pjs []kube.ProwJob) error {
 }
 
 func (c *Controller) syncJenkinsJob(pj kube.ProwJob) error {
+	if c.jc == nil {
+		return fmt.Errorf("jenkins client nil, not syncing job %s", pj.Metadata.Name)
+	}
+
 	var jerr error
 	if pj.Complete() {
 		return nil
