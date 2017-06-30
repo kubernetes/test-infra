@@ -18,6 +18,7 @@ package github
 
 import (
 	"bytes"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -672,4 +673,31 @@ func (c *Client) FindIssues(query string) ([]Issue, error) {
 		exitCodes: []int{200},
 	}, &issSearchResult)
 	return issSearchResult.Issues, err
+}
+
+// GetFile uses github repo contents API to retrieve the content of a file with commit sha.
+// If commit is empty, it will grab content from repo's default branch, usually master.
+// TODO(krzyzacy): Support retrieve a directory
+func (c *Client) GetFile(org, repo, filepath, commit string) ([]byte, error) {
+	c.log("GetFile", org, repo, filepath, commit)
+
+	url := fmt.Sprintf("%s/repos/%s/%s/contents/%s", c.base, org, repo, filepath)
+	if commit != "" {
+		url = fmt.Sprintf("%s?ref=%s", url, commit)
+	}
+
+	var res Content
+	_, err := c.request(&request{
+		method:    http.MethodGet,
+		path:      url,
+		exitCodes: []int{200},
+	}, &res)
+
+	if err != nil {
+		return nil, err
+	} else if decoded, err := base64.StdEncoding.DecodeString(res.Content); err != nil {
+		return nil, fmt.Errorf("error decoding %s : %v", res.Content, err)
+	} else {
+		return decoded, nil
+	}
 }

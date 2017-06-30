@@ -79,6 +79,7 @@ type PullRequest struct {
 	Body               string            `json:"body"`
 	RequestedReviewers []User            `json:"requested_reviewers"`
 	Assignees          []User            `json:"assignees"`
+	Merged             bool              `json:"merged"`
 }
 
 // PullRequestBranch contains information about a particular branch in a PR.
@@ -245,4 +246,10 @@ type ReviewComment struct {
 	Body     string `json:"body"`
 	Path     string `json:"path"`
 	HTMLURL  string `json:"html_url"`
+}
+
+// Content is some base64 encoded github file content
+type Content struct {
+	Content string `json:"content"`
+	SHA     string `json:"sha"`
 }

@@ -199,3 +199,8 @@ type VolumeMount struct {
 	ReadOnly  bool   `json:"readOnly,omitempty"`
 	MountPath string `json:"mountPath,omitempty"`
 }
+
+type ConfigMap struct {
+	Metadata ObjectMeta        `json:"metadata,omitempty"`
+	Data     map[string]string `json:"data,omitempty"`
+}

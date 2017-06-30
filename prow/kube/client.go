@@ -386,3 +386,27 @@ func (c *Client) GetLog(pod string) ([]byte, error) {
 		path:   fmt.Sprintf("/api/v1/namespaces/%s/pods/%s/log", c.namespace, pod),
 	})
 }
+
+func (c *Client) CreateConfigMap(content ConfigMap) (ConfigMap, error) {
+	c.log("CreateConfigMap")
+	var retConfigMap ConfigMap
+	err := c.request(&request{
+		method:      http.MethodPost,
+		path:        fmt.Sprintf("/api/v1/namespaces/%s/configmaps", c.namespace),
+		requestBody: &content,
+	}, &retConfigMap)
+
+	return retConfigMap, err
+}
+
+func (c *Client) ReplaceConfigMap(name string, config ConfigMap) (ConfigMap, error) {
+	c.log("ReplaceConfigMap", name)
+	var retConfigMap ConfigMap
+	err := c.request(&request{
+		method:      http.MethodPut,
+		path:        fmt.Sprintf("/api/v1/namespaces/%s/configmaps/%s", c.namespace, name),
+		requestBody: &config,
+	}, &retConfigMap)
+
+	return retConfigMap, err
+}
