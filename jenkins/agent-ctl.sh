@@ -54,8 +54,8 @@ usage() {
 set -o nounset
 set -o errexit
 
-DOCKER_VERSION='1.9.1-0~jessie'
-GO_VERSION='go1.6.2.linux-amd64'
+DOCKER_VERSION='1.11.2-0~jessie'
+GO_VERSION='go1.8.3.linux-amd64'
 TIMEZONE='America/Los_Angeles'
 
 FAKE=
@@ -309,7 +309,7 @@ which docker || curl -sSL https://get.docker.com/ | sh
 id jenkins || sudo useradd jenkins -m
 sudo usermod -aG docker jenkins
 
-# Downgrade to 1.9.1
+# Downgrade docker to 1.11.2, the version on COS
 # https://github.com/kubernetes/kubernetes/issues/21451
 sudo apt-get -y --force-yes install docker-engine="${DOCKER_VERSION}"
 sudo /etc/init.d/docker stop
@@ -322,7 +322,6 @@ sudo apt-mark hold docker-engine
 
 wget "https://storage.googleapis.com/golang/${GO_VERSION}.tar.gz"
 sudo tar xzvf "${GO_VERSION}.tar.gz" -C /usr/local
-sudo bash -c 'GOROOT=/usr/local/go PATH=\${GOROOT}/bin:\${PATH} CGO_ENABLED=0 go install -a -installsuffix cgo std'
 
 # install build tools
 sudo apt-get -y install build-essential
@@ -336,6 +335,9 @@ rm stack-install.sh install-logging-agent.sh
 
 # Install python
 sudo apt-get -y install python-openssl python-pyasn1 python-ndg-httpsclient
+
+# Install jq
+sudo apt-get -y install jq
 
 # Reboot on panic
 sudo touch /etc/sysctl.conf
