@@ -28,6 +28,7 @@ import (
 // It contains a token that allows to authenticate connection to post and work with channels in the domain
 type Client struct {
 	token string
+	fake  bool
 }
 
 const (
@@ -86,14 +87,24 @@ type ChannelList struct {
 	Channels []Channel `json:"channels"`
 }
 
-// Create a slack client with an API token.
+// NewClient creates a slack client with an API token.
 func NewClient(token string) *Client {
 	return &Client{
 		token: token,
 	}
 }
 
+// NewFakeClient returns a client that takes no actions.
+func NewFakeClient() *Client {
+	return &Client{
+		fake: true,
+	}
+}
+
 func (sl *Client) VerifyAPI() (bool, error) {
+	if sl.fake {
+		return true, nil
+	}
 	t, e := sl.postMessage(apiTest, sl.urlValues())
 	if e != nil {
 		return false, e
@@ -108,6 +119,9 @@ func (sl *Client) VerifyAPI() (bool, error) {
 }
 
 func (sl *Client) VerifyAuth() (bool, error) {
+	if sl.fake {
+		return true, nil
+	}
 	t, e := sl.postMessage(authTest, sl.urlValues())
 	if e != nil {
 		return false, e
@@ -143,6 +157,9 @@ func (sl *Client) postMessage(url string, uv *url.Values) ([]byte, error) {
 }
 
 func (sl *Client) GetChannels() ([]Channel, error) {
+	if sl.fake {
+		return []Channel{}, nil
+	}
 	var uv *url.Values = sl.urlValues()
 	t, _ := sl.postMessage(channelsList, uv)
 	var chanList ChannelList
@@ -154,6 +171,9 @@ func (sl *Client) GetChannels() ([]Channel, error) {
 }
 
 func (sl *Client) WriteMessage(text string, channel string) error {
+	if sl.fake {
+		return nil
+	}
 	var uv *url.Values = sl.urlValues()
 	uv.Add("channel", channel)
 	uv.Add("text", text)

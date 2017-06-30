@@ -247,13 +247,11 @@ func handle(gc githubClient, log *logrus.Entry, ae assignEvent, sc slackClient) 
 			}
 		}
 
-		if sc != nil {
-			//if sig matches then send a notification on slack
-			for _, sig := range sigMatches {
-				msg := fmt.Sprintf("Message: ```%s```\nIssue: %d, %s\nUrl: %s", ae.body, ae.issue.Number, ae.issue.Title, ae.issue.HTMLURL)
-				if err := sc.WriteMessage(plugins.FormatResponseRaw(ae.body, ae.url, ae.login, msg), "sig-"+sig[1]); err != nil {
-					log.WithError(err).Error("Failed to send message on slack channel: ", "sig-"+sig[1], " with message ", msg)
-				}
+		// If sig matches then send a notification on slack.
+		for _, sig := range sigMatches {
+			msg := fmt.Sprintf("Message: ```%s```\nIssue: %d, %s\nUrl: %s", ae.body, ae.issue.Number, ae.issue.Title, ae.issue.HTMLURL)
+			if err := sc.WriteMessage(plugins.FormatResponseRaw(ae.body, ae.url, ae.login, msg), "sig-"+sig[1]); err != nil {
+				log.WithError(err).Error("Failed to send message on slack channel: ", "sig-"+sig[1], " with message ", msg)
 			}
 		}
 	}
