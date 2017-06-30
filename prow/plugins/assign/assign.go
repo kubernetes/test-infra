@@ -30,8 +30,8 @@ import (
 const pluginName = "assign"
 
 var (
-	assignRe = regexp.MustCompile(`(?mi)^/(un)?assign(( @[-\w]+?)*)\s*$`)
-	ccRe     = regexp.MustCompile(`(?mi)^/(un)?cc(( +@[-\w]+?)*)\s*$`)
+	assignRe = regexp.MustCompile(`(?mi)^/(un)?assign(( @?[-\w]+?)*)\s*$`)
+	ccRe     = regexp.MustCompile(`(?mi)^/(un)?cc(( +@?[-\w]+?)*)\s*$`)
 )
 
 func init() {
