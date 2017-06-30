@@ -65,13 +65,17 @@ func main() {
 		}
 	}
 
-	jenkinsSecretRaw, err := ioutil.ReadFile(*jenkinsTokenFile)
-	if err != nil {
-		logrus.WithError(err).Fatalf("Could not read token file.")
-	}
-	jenkinsToken := string(bytes.TrimSpace(jenkinsSecretRaw))
+	var jc *jenkins.Client
 
-	jc := jenkins.NewClient(*jenkinsURL, *jenkinsUserName, jenkinsToken)
+	if *jenkinsTokenFile != "" {
+		jenkinsSecretRaw, err := ioutil.ReadFile(*jenkinsTokenFile)
+		if err != nil {
+			logrus.WithError(err).Fatalf("Could not read token file.")
+		}
+		jenkinsToken := string(bytes.TrimSpace(jenkinsSecretRaw))
+
+		jc = jenkins.NewClient(*jenkinsURL, *jenkinsUserName, jenkinsToken)
+	}
 
 	oauthSecretRaw, err := ioutil.ReadFile(*githubTokenFile)
 	if err != nil {
