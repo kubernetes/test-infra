@@ -86,7 +86,7 @@ func main() {
 	http.Handle("/log", gziphandler.GzipHandler(handleLog(ja)))
 	http.Handle("/rerun", gziphandler.GzipHandler(handleRerun(kc)))
 
-	logrus.WithError(http.ListenAndServe(":http", nil)).Fatal("ListenAndServe returned.")
+	logrus.WithError(http.ListenAndServe(":8080", nil)).Fatal("ListenAndServe returned.")
 }
 
 func handleData(ja *JobAgent) http.HandlerFunc {
