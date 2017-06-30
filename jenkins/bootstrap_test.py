@@ -1751,6 +1751,8 @@ class JobTest(unittest.TestCase):
                         match = re.match(r'--timeout=(\d+)', arg)
                         if match:
                             real_job['timeout'] = match.group(1)
+        if 'pull-' not in name and name in self.realjobs and name not in self.prowjobs:
+            self.fail('CI job %s exist in both Jenkins and Prow congfig!' % name)
         if name not in self.realjobs:
             self.realjobs[name] = real_job
             self.prowjobs.append(name)
