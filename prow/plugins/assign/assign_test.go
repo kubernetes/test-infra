@@ -189,6 +189,13 @@ func TestAssignAndReview(t *testing.T) {
 			assigned:  []string{"fejta"},
 		},
 		{
+			name:      "no @ works too",
+			action:    "created",
+			body:      "/assign fejta",
+			commenter: "rando",
+			assigned:  []string{"fejta"},
+		},
+		{
 			name:       "multi commands",
 			action:     "created",
 			body:       "/assign @fejta\n/unassign @spxtr",
@@ -210,10 +217,10 @@ func TestAssignAndReview(t *testing.T) {
 			body:      "/assign @Invalid$User",
 		},
 		{
-			name:      "require @",
+			name:      "bad login, no @",
 			action:    "created",
 			commenter: "rando",
-			body:      "/assign no at symbol",
+			body:      "/assign Invalid$User",
 		},
 		{
 			name:      "assign friends",
@@ -286,6 +293,13 @@ func TestAssignAndReview(t *testing.T) {
 			requested: []string{"cjwagner"},
 		},
 		{
+			name:      "no @ works too",
+			action:    "created",
+			body:      "/cc cjwagner ",
+			commenter: "rando",
+			requested: []string{"cjwagner"},
+		},
+		{
 			name:        "multi commands",
 			action:      "created",
 			body:        "/cc @cjwagner\n/uncc @spxtr",
@@ -307,10 +321,10 @@ func TestAssignAndReview(t *testing.T) {
 			body:      "/cc @Invalid$User",
 		},
 		{
-			name:      "require @",
+			name:      "bad login",
 			action:    "created",
 			commenter: "rando",
-			body:      "/cc no at symbol",
+			body:      "/cc Invalid$User",
 		},
 		{
 			name:      "request mulitple",
