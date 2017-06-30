@@ -2199,11 +2199,10 @@ class JobTest(unittest.TestCase):
                 self.assertTrue(os.access(scenario, os.X_OK|os.R_OK), job)
                 has_matching_env = False
                 right_mode = True
-                if job in self.prowjobs:
-                    right_mode = False
                 for arg in config[job].get('args', []):
-                    if arg == '--mode=local':
-                        right_mode = True
+                    if arg == '--mode=docker':
+                        if job in self.prowjobs:
+                            right_mode = False
                     match = re.match(r'--env-file=([^\"]+)\.env', arg)
                     if match:
                         env = match.group(1)
@@ -2246,6 +2245,8 @@ class JobTest(unittest.TestCase):
                             '--check-leaked-resources' not in args
                             and 'generated' in config[job].get('tags', [])):
                         self.fail('Generated job %s must have --check-leaked-resources=yes' % job)
+                    if '--mode=local' in args:
+                        self.fail('--mode=local is default now, drop that for %s' % job)
 
                     extracts = [a for a in args if '--extract=' in a]
                     if not extracts:
@@ -2260,18 +2261,18 @@ class JobTest(unittest.TestCase):
                     if len(extracts) != expected:
                         self.fail('Wrong number of --extract args (%d != %d) in %s' % (
                             len(extracts), expected, job))
-                    self.assertTrue(has_matching_env, job)
-                    self.assertTrue(right_mode, job)
+                    self.assertTrue(has_matching_env, 'jobs/%s.env does not exist' % job)
+                    self.assertTrue(right_mode, '%s: prow does not support docker mode' % job)
 
                     has_image_family = any(
                         [x for x in args if x.startswith('--image-family')])
                     has_image_project = any(
                         [x for x in args if x.startswith('--image-project')])
-                    local_mode = any(
-                        [x for x in args if x.startswith('--mode=local')])
+                    docker_mode = any(
+                        [x for x in args if x.startswith('--mode=docker')])
                     if (
                             (has_image_family or has_image_project)
-                            and not local_mode):
+                            and docker_mode):
                         self.fail('--image-family / --image-project is not '
                                   'supported in docker mode: %s' % job)
                     if has_image_family != has_image_project:

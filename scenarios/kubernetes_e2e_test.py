@@ -171,7 +171,7 @@ class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-method
 
     def test_local(self):
         """Make sure local mode is fine overall."""
-        args = kubernetes_e2e.parse_args(['--mode=local'])
+        args = kubernetes_e2e.parse_args()
         self.assertEqual(args.mode, 'local')
         with Stub(kubernetes_e2e, 'check_env', self.fake_check_env):
             kubernetes_e2e.main(args)
@@ -377,7 +377,7 @@ class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-method
 
     def test_docker(self):
         """Make sure docker mode is fine overall."""
-        args = kubernetes_e2e.parse_args()
+        args = kubernetes_e2e.parse_args(['--mode=docker'])
         self.assertEqual(args.mode, 'docker')
         with Stub(kubernetes_e2e, 'check_env', fake_bomb):
             kubernetes_e2e.main(args)
