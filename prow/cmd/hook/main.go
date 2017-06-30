@@ -102,7 +102,7 @@ func main() {
 		}
 		oauthSecret := string(bytes.TrimSpace(oauthSecretRaw))
 
-		teamToken := ""
+		var teamToken string
 		if *slackTokenFile != "" {
 			teamTokenRaw, err := ioutil.ReadFile(*slackTokenFile)
 			if err != nil {
@@ -126,8 +126,13 @@ func main() {
 		}
 
 		if !*dryRun && teamToken != "" {
+			logrus.Info("Using real slack client.")
 			slackClient = slack.NewClient(teamToken)
 		}
+	}
+	if slackClient == nil {
+		logrus.Info("Using fake slack client.")
+		slackClient = slack.NewFakeClient()
 	}
 
 	configAgent := &config.Agent{}
