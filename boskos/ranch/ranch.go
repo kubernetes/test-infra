@@ -218,24 +218,52 @@ func (r *Ranch) LogStatus() {
 	logrus.Infof("Current Resources : %v", string(resJSON))
 }
 
+// ResourceEntry is resource config format defined from resources.json
+type ResourceEntry struct {
+	Type  string   `json:"type"`
+	State string   `json:"state"`
+	Names []string `json:"names"`
+}
+
 // SyncConfig updates resource list from a file
 func (r *Ranch) SyncConfig(config string) error {
 	r.lock.Lock()
 	defer r.lock.Unlock()
 
-	file, err := ioutil.ReadFile(config)
-	if err != nil {
-		return err
-	}
-
-	var data []common.Resource
-	err = json.Unmarshal(file, &data)
+	data, err := r.ParseConfig(config)
 	if err != nil {
 		return err
 	}
 
 	r.syncConfigHelper(data)
 	return nil
+}
+
+// ParseConfig reads in configPath and returns a list of resource objects
+// on success.
+func (r *Ranch) ParseConfig(configPath string) ([]common.Resource, error) {
+	file, err := ioutil.ReadFile(configPath)
+	if err != nil {
+		return nil, err
+	}
+
+	data := []ResourceEntry{}
+	err = json.Unmarshal(file, &data)
+	if err != nil {
+		return nil, err
+	}
+
+	var resources []common.Resource
+	for _, res := range data {
+		for _, name := range res.Names {
+			resources = append(resources, common.Resource{
+				Type:  res.Type,
+				State: res.State,
+				Name:  name,
+			})
+		}
+	}
+	return resources, nil
 }
 
 // Boskos resource config will be updated every 10 mins.
