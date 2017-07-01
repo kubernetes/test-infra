@@ -49,14 +49,4 @@ for arg in "${@}" "${e2e_go_args[@]}"; do
   fi
 done
 
-if [[ "${E2E_TEST:-}" == "true" ]]; then
-  e2e_go_args+=(--test)
-  if [[ "${SKEW_KUBECTL:-}" == 'y' ]]; then
-      GINKGO_TEST_ARGS="${GINKGO_TEST_ARGS:-} --kubectl-path=$(pwd)/kubernetes_skew/cluster/kubectl.sh"
-  fi
-  if [[ -n "${GINKGO_TEST_ARGS:-}" ]]; then
-    e2e_go_args+=(--test_args="${GINKGO_TEST_ARGS}")
-  fi
-fi
-
 kubetest "${e2e_go_args[@]}" "${@}"

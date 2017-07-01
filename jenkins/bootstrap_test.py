@@ -2175,6 +2175,7 @@ class JobTest(unittest.TestCase):
                     ('FAIL_ON_GCP_RESOURCE_LEAK=', '--check-leaked-resources=true|false'),
                     ('FEDERATION_DOWN=', '--down=true|false'),
                     ('FEDERATION_UP=', '--up=true|false'),
+                    ('GINKGO_TEST_ARGS=', '--test_args=FOO'),
                     ('GINKGO_UPGRADE_TEST_ARGS=', '--upgrade_args=FOO'),
                     ('JENKINS_FEDERATION_PREFIX=', '--stage=gs://FOO'),
                     ('JENKINS_PUBLISHED_VERSION=', '--extract=V'),
@@ -2190,10 +2191,14 @@ class JobTest(unittest.TestCase):
                     ('JENKINS_USE_GCI_HEAD_IMAGE_FAMILY=', '--extract=gci/FAMILY'),
                     ('KUBEKINS_TIMEOUT=', '--timeout=XXm'),
                     ('PERF_TESTS=', '--perf'),
+                    ('SKEW_KUBECTL=', '--test_args=--kubectl-path=FOO'),
                     ('USE_KUBEMARK=', '--kubemark'),
                 ]
                 for env, fix in black:
-                    if 'JENKINS_PUBLISHED_VERSION' in env and 'kops' in job:
+                    if 'kops' in job and env in [
+                            'JENKINS_PUBLISHED_VERSION=',
+                            'GINKGO_TEST_ARGS=',
+                    ]:
                         continue  # TOOD(fejta): migrate kops jobs
                     if env in line:
                         self.fail('[%s]: Env %s: Convert %s to use %s in jobs/config.json' % (
