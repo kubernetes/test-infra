@@ -127,13 +127,14 @@ def main(job, jenkins_path, suffix, prow_path, config_path, delete):
             if not deleting:
                 sys.stdout.write(line)
 
-    # add mode=local to config.json
+    # remove mode=docker from config.json
     if config_path:
         with open(config_path, 'r+') as fp:
             configs = json.loads(fp.read())
             for jobn in job_names:
                 if jobn in configs:
-                    configs[jobn]['args'].append('--mode=local')
+                    if '--mode=docker' in configs[jobn]['args']:
+                        configs[jobn]['args'].remove('--mode=docker')
             fp.seek(0)
             fp.write(json.dumps(configs, sort_keys=True, indent=2, separators=(',', ': ')))
             fp.write('\n')

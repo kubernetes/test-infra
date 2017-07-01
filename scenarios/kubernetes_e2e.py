@@ -452,7 +452,7 @@ def create_parser():
     """Create argparser."""
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        '--mode', default='docker', choices=['local', 'docker'])
+        '--mode', default='local', choices=['local', 'docker'])
     parser.add_argument(
         '--env-file', action="append", help='Job specific environment file')
     parser.add_argument(

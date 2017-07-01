@@ -159,8 +159,6 @@ jobs:
     sigOwners: ['sig-node']
 
 common:
-  args:
-  - --mode=local
 
 cloudProviders:
   gce:
