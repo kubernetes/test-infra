@@ -49,6 +49,46 @@ for arg in "${@}" "${e2e_go_args[@]}"; do
   fi
 done
 
+if [[ -n "${KUBE_CONTAINER_RUNTIME:-}" ]]; then
+    echo "\$KUBE_CONTAINER_RUNTIME is deprecated"
+    GINKGO_TEST_ARGS="${GINKGO_TEST_ARGS:-} --container-runtime=${KUBE_CONTAINER_RUNTIME}"
+fi
+
+if [[ -n "${MASTER_OS_DISTRIBUTION:-}" ]]; then
+    echo "\$MASTER_OS_DISTRIBUTION is deprecated"
+    GINKGO_TEST_ARGS="${GINKGO_TEST_ARGS:-} --master-os-distro=${MASTER_OS_DISTRIBUTION}"
+fi
+
+if [[ -n "${NODE_OS_DISTRIBUTION:-}" ]]; then
+    echo "\$NODE_OS_DISTRIBUTION is deprecated"
+    GINKGO_TEST_ARGS="${GINKGO_TEST_ARGS:-} --node-os-distro=${NODE_OS_DISTRIBUTION}"
+fi
+
+if [[ -n "${NUM_NODES:-}" ]]; then
+    echo "\$NUM_NODES is deprecated"
+    GINKGO_TEST_ARGS="${GINKGO_TEST_ARGS:-} --num-nodes=${NUM_NODES}"
+fi
+
+if [[ -n "${E2E_CLEAN_START:-}" ]]; then
+    echo "\$E2E_CLEAN_START is deprecated"
+    GINKGO_TEST_ARGS="${GINKGO_TEST_ARGS:-} --clean-start=true"
+fi
+
+if [[ -n "${E2E_MIN_STARTUP_PODS:-}" ]]; then
+    echo "\$E2E_MIN_STARTUP_PODS is deprecated"
+    GINKGO_TEST_ARGS="${GINKGO_TEST_ARGS:-} --minStartupPods=${E2E_MIN_STARTUP_PODS}"
+fi
+
+if [[ -n "${E2E_REPORT_DIR:-}" ]]; then
+    echo "\$E2E_REPORT_DIR is deprecated"
+    GINKGO_TEST_ARGS="${GINKGO_TEST_ARGS:-} --report-dir=${E2E_REPORT_DIR}"
+fi
+
+if [[ -n "${E2E_REPORT_PREFIX:-}" ]]; then
+    echo "\$E2E_REPORT_PREFIX is deprecated"
+    GINKGO_TEST_ARGS="${GINKGO_TEST_ARGS:-} --report-prefix=${E2E_REPORT_PREFIX}"
+fi
+
 if [[ "${E2E_TEST:-}" == "true" ]]; then
   e2e_go_args+=(--test)
   if [[ "${SKEW_KUBECTL:-}" == 'y' ]]; then
