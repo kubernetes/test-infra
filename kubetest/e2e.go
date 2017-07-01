@@ -38,6 +38,18 @@ func run(deploy deployer, o options) error {
 	// force having batch/v2alpha1 always on for e2e tests
 	os.Setenv("KUBE_RUNTIME_CONFIG", "batch/v2alpha1=true")
 
+	dump := o.dump
+	if dump != "" {
+		if !filepath.IsAbs(dump) {
+			// Directory may change
+			if wd, err := os.Getwd(); err != nil {
+				return fmt.Errorf("failed to os.Getwd(): %v", err)
+			} else {
+				dump = filepath.Join(wd, dump)
+			}
+		}
+	}
+
 	if o.up {
 		if o.federation {
 			if err := xmlWrap("Federation TearDown Previous", FedDown); err != nil {
@@ -96,13 +108,13 @@ func run(deploy deployer, o options) error {
 		}
 		// Start the cluster using this version.
 		if err := xmlWrap("Up", deploy.Up); err != nil {
-			if o.dump != "" {
+			if dump != "" {
 				xmlWrap("DumpClusterLogs (--up failed)", func() error {
 					// This frequently means the cluster does not exist.
 					// Thus DumpClusterLogs() typically fails.
 					// Therefore always return null for this scenarios.
 					// TODO(fejta): report a green E in testgrid if it errors.
-					DumpClusterLogs(o.dump)
+					DumpClusterLogs(dump)
 					return nil
 				})
 			}
@@ -111,14 +123,14 @@ func run(deploy deployer, o options) error {
 		if o.federation {
 			if err := xmlWrap("Federation Up", FedUp); err != nil {
 				xmlWrap("DumpFederationLogs", func() error {
-					return DumpFederationLogs(o.dump)
+					return DumpFederationLogs(dump)
 				})
 				return fmt.Errorf("error starting federation: %s", err)
 			}
 		}
-		if o.dump != "" {
+		if dump != "" {
 			errs = appendError(errs, xmlWrap("list nodes", func() error {
-				return listNodes(o.dump)
+				return listNodes(dump)
 			}))
 		}
 	}
@@ -132,7 +144,7 @@ func run(deploy deployer, o options) error {
 
 	if o.upgradeArgs != "" {
 		errs = appendError(errs, xmlWrap("UpgradeTest", func() error {
-			return UpgradeTest(o.upgradeArgs, o.checkSkew)
+			return UpgradeTest(o.upgradeArgs, dump, o.checkSkew)
 		}))
 	}
 
@@ -143,7 +155,7 @@ func run(deploy deployer, o options) error {
 		}))
 		if o.skew {
 			errs = appendError(errs, xmlWrap("SkewTest", func() error {
-				return SkewTest(o.testArgs, o.checkSkew)
+				return SkewTest(o.testArgs, dump, o.checkSkew)
 			}))
 		} else {
 			if err := xmlWrap("IsUp", deploy.IsUp); err != nil {
@@ -155,7 +167,7 @@ func run(deploy deployer, o options) error {
 					}))
 				} else {
 					errs = appendError(errs, xmlWrap("Test", func() error {
-						return Test(o.testArgs)
+						return Test(o.testArgs, dump)
 					}))
 				}
 			}
@@ -164,7 +176,7 @@ func run(deploy deployer, o options) error {
 
 	if o.kubemark {
 		errs = appendError(errs, xmlWrap("Kubemark", func() error {
-			return KubemarkTest(o.dump)
+			return KubemarkTest(dump)
 		}))
 	}
 
@@ -176,13 +188,13 @@ func run(deploy deployer, o options) error {
 		errs = appendError(errs, xmlWrap("Perf Tests", PerfTest))
 	}
 
-	if len(errs) > 0 && o.dump != "" {
+	if len(errs) > 0 && dump != "" {
 		errs = appendError(errs, xmlWrap("DumpClusterLogs", func() error {
-			return DumpClusterLogs(o.dump)
+			return DumpClusterLogs(dump)
 		}))
 		if o.federation {
 			errs = appendError(errs, xmlWrap("DumpFederationLogs", func() error {
-				return DumpFederationLogs(o.dump)
+				return DumpFederationLogs(dump)
 			}))
 		}
 	}
@@ -229,7 +241,7 @@ func run(deploy deployer, o options) error {
 			errs = append(errs, err)
 		} else {
 			errs = appendError(errs, xmlWrap("DiffResources", func() error {
-				return DiffResources(beforeResources, upResources, downResources, afterResources, o.dump)
+				return DiffResources(beforeResources, upResources, downResources, afterResources, dump)
 			}))
 		}
 	}
@@ -448,17 +460,17 @@ func KubemarkTest(logDir string) error {
 	})
 
 	// Start new run
-	backups := []string{"NUM_NODES", "MASTER_SIZE"}
-	for _, item := range backups {
-		old, present := os.LookupEnv(item)
-		if present {
-			defer os.Setenv(item, old)
-		} else {
-			defer os.Unsetenv(item)
-		}
+	if popN, err := pushEnv("NUM_NODES", os.Getenv("KUBEMARK_NUM_NODES")); err != nil {
+		return err
+	} else {
+		defer popN()
 	}
-	os.Setenv("NUM_NODES", os.Getenv("KUBEMARK_NUM_NODES"))
-	os.Setenv("MASTER_SIZE", os.Getenv("KUBEMARK_MASTER_SIZE"))
+	if popM, err := pushEnv("MASTER_SIZE", os.Getenv("KUBEMARK_MASTER_SIZE")); err != nil {
+		return err
+	} else {
+		defer popM()
+	}
+
 	err = xmlWrap("Start kubemark", func() error {
 		return finishRunning(exec.Command("./test/kubemark/start-kubemark.sh"))
 	})
@@ -494,54 +506,56 @@ func KubemarkTest(logDir string) error {
 	return nil
 }
 
-func chdirSkew() (string, error) {
-	old, err := os.Getwd()
-	if err != nil {
-		return "", fmt.Errorf("failed to os.Getwd(): %v", err)
-	}
-	err = os.Chdir("../kubernetes_skew")
-	if err != nil {
-		return "", fmt.Errorf("failed to cd ../kubernetes_skew: %v", err)
-	}
-	return old, nil
-}
-
-func UpgradeTest(args string, checkSkew bool) error {
+func UpgradeTest(args, dump string, checkSkew bool) error {
 	// TODO(fejta): fix this
-	old, err := chdirSkew()
-	if err != nil {
+	if popS, err := pushd("../kubernetes_skew"); err != nil {
 		return err
-	}
-	defer os.Chdir(old)
-	previous, present := os.LookupEnv("E2E_REPORT_PREFIX")
-	if present {
-		defer os.Setenv("E2E_REPORT_PREFIX", previous)
 	} else {
-		defer os.Unsetenv("E2E_REPORT_PREFIX")
+		defer popS()
 	}
-	os.Setenv("E2E_REPORT_PREFIX", "upgrade")
-	return finishRunning(exec.Command(
-		kubetestPath,
-		"--test",
-		"--test_args="+args,
-		fmt.Sprintf("--v=%t", verbose),
-		fmt.Sprintf("--check-version-skew=%t", checkSkew)))
-}
-
-func SkewTest(args string, checkSkew bool) error {
-	old, err := chdirSkew()
-	if err != nil {
+	if popE, err := pushEnv("E2E_REPORT_PREFIX", "upgrade"); err != nil {
 		return err
+	} else {
+		defer popE()
 	}
-	defer os.Chdir(old)
 	return finishRunning(exec.Command(
 		kubetestPath,
 		"--test",
 		"--test_args="+args,
 		fmt.Sprintf("--v=%t", verbose),
-		fmt.Sprintf("--check-version-skew=%t", checkSkew)))
+		fmt.Sprintf("--check-version-skew=%t", checkSkew),
+		fmt.Sprintf("--dump=%s", dump),
+	))
 }
 
-func Test(testArgs string) error {
+func SkewTest(args, dump string, checkSkew bool) error {
+	if popS, err := pushd("../kubernetes_skew"); err != nil {
+		return err
+	} else {
+		defer popS()
+	}
+	if popE, err := pushEnv("E2E_REPORT_PREFIX", "skew"); err != nil {
+		return err
+	} else {
+		defer popE()
+	}
+	return finishRunning(exec.Command(
+		kubetestPath,
+		"--test",
+		"--test_args="+args,
+		fmt.Sprintf("--v=%t", verbose),
+		fmt.Sprintf("--check-version-skew=%t", checkSkew),
+		fmt.Sprintf("--dump=%s", dump),
+	))
+}
+
+func Test(testArgs, dump string) error {
+	if dump != "" {
+		if pop, err := pushEnv("E2E_REPORT_DIR", dump); err != nil {
+			return err
+		} else {
+			defer pop()
+		}
+	}
 	return finishRunning(exec.Command("./hack/ginkgo-e2e.sh", strings.Fields(testArgs)...))
 }

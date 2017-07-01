@@ -22,30 +22,32 @@ set -o xtrace
 
 export PS4='+(${BASH_SOURCE}:${LINENO}): ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
 
-# Have cmd/e2e run by goe2e.sh generate JUnit report in ${WORKSPACE}/junit*.xml
-ARTIFACTS=${WORKSPACE}/_artifacts
-mkdir -p ${ARTIFACTS}
-
-: ${KUBE_GCS_RELEASE_BUCKET:="kubernetes-release"}
-: ${KUBE_GCS_DEV_RELEASE_BUCKET:="kubernetes-release-dev"}
-
-# Explicitly set config path so staging gcloud (if installed) uses same path
-export CLOUDSDK_CONFIG="${WORKSPACE}/.config/gcloud"
-
+# TODO(fejta): consider moving this elsewhere
 echo "--------------------------------------------------------------------------------"
 echo "Test Environment:"
 printenv | sort
 echo "--------------------------------------------------------------------------------"
 
+# TODO(fejta): set KUBETEST_MANUAL_DUMP in kubernetes_e2e.py after new image
+if [[ -n "${KUBETEST_MANUAL_DUMP:-}" ]]; then
+  e2e_go_args=()
+else
+  e2e_go_args=( \
+    -v \
+    --dump="${WORKSPACE}/_artifacts" \
+  )
+fi
+
 # When run inside Docker, we need to make sure all files are world-readable
 # (since they will be owned by root on the host).
-trap "chmod -R o+r '${ARTIFACTS}'" EXIT SIGINT SIGTERM
-export E2E_REPORT_DIR=${ARTIFACTS}
-
-e2e_go_args=( \
-  -v \
-  --dump="${ARTIFACTS}" \
-)
+for arg in "${@}" "${e2e_go_args[@]}"; do
+  if [[ "${arg}" =~ --dump=(.+)$ ]]; then
+    dump="${BASH_REMATCH[1]}"
+    echo "Will chmod -R o+r ${dump} on EXIT SIGINT SIGTERM"
+    trap "chmod -R o+r '${dump}'" EXIT SIGINT SIGTERM
+    export E2E_REPORT_DIR="${dump}"  # TODO(fejta): remove after new image
+  fi
+done
 
 if [[ "${E2E_TEST:-}" == "true" ]]; then
   e2e_go_args+=(--test)
