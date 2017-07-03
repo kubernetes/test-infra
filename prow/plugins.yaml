@@ -36,6 +36,9 @@ kubernetes-incubator:
 - cla
 - assign
 
+kubernetes-incubator/kube-aws:
+- lgtm
+
 kubernetes-security/kubernetes:
 - trigger
 
