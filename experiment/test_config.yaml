@@ -30,7 +30,264 @@ jobs:
   # following format:
   #   ci-kubernetes-e2e-<cloudProvider>-<image>-<k8sVersion>-<testSuite>
 
+  # COS image validation.
+  #
+  # +------------+----------+----------+------------+------------+------------+
+  # |            |   k8sdev |  k8sbeta | k8sstable1 | k8sstable2 | k8sstable3 |
+  # +------------+----------+----------+------------+------------+------------+
+  # | cosdev     | every 2h | every 2h |   every 2h |      never |      never |
+  # +------------+----------+----------+------------+------------+------------+
+  # | cosbeta    | every 2h | every 2h |   every 2h |      never |      never |
+  # +------------+----------+----------+------------+------------+------------+
+  # | cosstable1 | every 2h | every 2h |   every 6h |   every 6h |   every 6h |
+  # +------------+----------+----------+------------+------------+------------+
+  # | cosstable2 |      n/a |      n/a |        n/a |        n/a |        n/a |
+  # +------------+----------+----------+------------+------------+------------+
+  ci-kubernetes-e2e-gce-cosdev-k8sdev-default:
+    interval: 2h
+    envs:
+    - PROJECT=cos-image-validation
+    args:
+    - --cluster=test-${job_name_hash}
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2e-gce-cosdev-k8sdev-slow:
+    interval: 2h
+    envs:
+    - PROJECT=cos-image-validation
+    args:
+    - --cluster=test-${job_name_hash}
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2e-gce-cosdev-k8sdev-serial:
+    interval: 2h
+    envs:
+    - PROJECT=cos-image-validation
+    args:
+    - --cluster=test-${job_name_hash}
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2e-gce-cosdev-k8sbeta-default:
+    interval: 2h
+    envs:
+    - PROJECT=cos-image-validation
+    args:
+    - --cluster=test-${job_name_hash}
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2e-gce-cosdev-k8sbeta-slow:
+    interval: 2h
+    envs:
+    - PROJECT=cos-image-validation
+    args:
+    - --cluster=test-${job_name_hash}
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2e-gce-cosdev-k8sbeta-serial:
+    interval: 2h
+    envs:
+    - PROJECT=cos-image-validation
+    args:
+    - --cluster=test-${job_name_hash}
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2e-gce-cosdev-k8sstable1-default:
+    interval: 2h
+    envs:
+    - PROJECT=cos-image-validation
+    args:
+    - --cluster=test-${job_name_hash}
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2e-gce-cosdev-k8sstable1-slow:
+    interval: 2h
+    envs:
+    - PROJECT=cos-image-validation
+    args:
+    - --cluster=test-${job_name_hash}
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2e-gce-cosdev-k8sstable1-serial:
+    interval: 2h
+    envs:
+    - PROJECT=cos-image-validation
+    args:
+    - --cluster=test-${job_name_hash}
+    sigOwners: ['sig-node']
+# ci-kubernetes-e2e-gce-cosbeta-k8sdev-default:
+#   interval: 2h
+#   envs:
+#   - PROJECT=cos-image-validation
+#   args:
+#   - --cluster=test-${job_name_hash}
+#   sigOwners: ['sig-node']
+# ci-kubernetes-e2e-gce-cosbeta-k8sdev-slow:
+#   interval: 2h
+#   envs:
+#   - PROJECT=cos-image-validation
+#   args:
+#   - --cluster=test-${job_name_hash}
+#   sigOwners: ['sig-node']
+# ci-kubernetes-e2e-gce-cosbeta-k8sdev-serial:
+#   interval: 2h
+#   envs:
+#   - PROJECT=cos-image-validation
+#   args:
+#   - --cluster=test-${job_name_hash}
+#   sigOwners: ['sig-node']
+# ci-kubernetes-e2e-gce-cosbeta-k8sbeta-default:
+#   interval: 2h
+#   envs:
+#   - PROJECT=cos-image-validation
+#   args:
+#   - --cluster=test-${job_name_hash}
+#   sigOwners: ['sig-node']
+# ci-kubernetes-e2e-gce-cosbeta-k8sbeta-slow:
+#   interval: 2h
+#   envs:
+#   - PROJECT=cos-image-validation
+#   args:
+#   - --cluster=test-${job_name_hash}
+#   sigOwners: ['sig-node']
+# ci-kubernetes-e2e-gce-cosbeta-k8sbeta-serial:
+#   interval: 2h
+#   envs:
+#   - PROJECT=cos-image-validation
+#   args:
+#   - --cluster=test-${job_name_hash}
+#   sigOwners: ['sig-node']
+# ci-kubernetes-e2e-gce-cosbeta-k8sstable1-default:
+#   interval: 2h
+#   envs:
+#   - PROJECT=cos-image-validation
+#   args:
+#   - --cluster=test-${job_name_hash}
+#   sigOwners: ['sig-node']
+# ci-kubernetes-e2e-gce-cosbeta-k8sstable1-slow:
+#   interval: 2h
+#   envs:
+#   - PROJECT=cos-image-validation
+#   args:
+#   - --cluster=test-${job_name_hash}
+#   sigOwners: ['sig-node']
+# ci-kubernetes-e2e-gce-cosbeta-k8sstable1-serial:
+#   interval: 2h
+#   envs:
+#   - PROJECT=cos-image-validation
+#   args:
+#   - --cluster=test-${job_name_hash}
+#   sigOwners: ['sig-node']
+  ci-kubernetes-e2e-gce-cosstable1-k8sdev-default:
+    interval: 2h
+    envs:
+    - PROJECT=cos-image-validation
+    args:
+    - --cluster=test-${job_name_hash}
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2e-gce-cosstable1-k8sdev-slow:
+    interval: 2h
+    envs:
+    - PROJECT=cos-image-validation
+    args:
+    - --cluster=test-${job_name_hash}
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2e-gce-cosstable1-k8sdev-serial:
+    interval: 2h
+    envs:
+    - PROJECT=cos-image-validation
+    args:
+    - --cluster=test-${job_name_hash}
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2e-gce-cosstable1-k8sbeta-default:
+    interval: 2h
+    envs:
+    - PROJECT=cos-image-validation
+    args:
+    - --cluster=test-${job_name_hash}
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2e-gce-cosstable1-k8sbeta-slow:
+    interval: 2h
+    envs:
+    - PROJECT=cos-image-validation
+    args:
+    - --cluster=test-${job_name_hash}
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2e-gce-cosstable1-k8sbeta-serial:
+    interval: 2h
+    envs:
+    - PROJECT=cos-image-validation
+    args:
+    - --cluster=test-${job_name_hash}
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2e-gce-cosstable1-k8sstable1-default:
+    interval: 6h
+    envs:
+    - PROJECT=cos-image-validation
+    args:
+    - --cluster=test-${job_name_hash}
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2e-gce-cosstable1-k8sstable1-slow:
+    interval: 6h
+    envs:
+    - PROJECT=cos-image-validation
+    args:
+    - --cluster=test-${job_name_hash}
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2e-gce-cosstable1-k8sstable1-serial:
+    interval: 6h
+    envs:
+    - PROJECT=cos-image-validation
+    args:
+    - --cluster=test-${job_name_hash}
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2e-gce-cosstable1-k8sstable2-default:
+    interval: 6h
+    envs:
+    - PROJECT=cos-image-validation
+    args:
+    - --cluster=test-${job_name_hash}
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2e-gce-cosstable1-k8sstable2-slow:
+    interval: 6h
+    envs:
+    - PROJECT=cos-image-validation
+    args:
+    - --cluster=test-${job_name_hash}
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2e-gce-cosstable1-k8sstable2-serial:
+    interval: 6h
+    envs:
+    - PROJECT=cos-image-validation
+    args:
+    - --cluster=test-${job_name_hash}
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2e-gce-cosstable1-k8sstable3-default:
+    interval: 6h
+    envs:
+    - PROJECT=cos-image-validation
+    args:
+    - --cluster=test-${job_name_hash}
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2e-gce-cosstable1-k8sstable3-slow:
+    interval: 6h
+    envs:
+    - PROJECT=cos-image-validation
+    args:
+    - --cluster=test-${job_name_hash}
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2e-gce-cosstable1-k8sstable3-serial:
+    interval: 6h
+    envs:
+    - PROJECT=cos-image-validation
+    args:
+    - --cluster=test-${job_name_hash}
+    sigOwners: ['sig-node']
+
   # Ubuntu image validation.
+  #
+  # +---------------+----------+----------+------------+------------+------------+
+  # |               |   k8sdev |  k8sbeta | k8sstable1 | k8sstable2 | k8sstable3 |
+  # +---------------+----------+----------+------------+------------+------------+
+  # | ubuntudev     |      n/a |      n/a |        n/a |        n/a |        n/a |
+  # +---------------+----------+----------+------------+------------+------------+
+  # | ubuntubeta    |      n/a |      n/a |        n/a |        n/a |        n/a |
+  # +---------------+----------+----------+------------+------------+------------+
+  # | ubuntustable1 | every 2h |      n/a |   every 2h |   every 6h |      never |
+  # +---------------+----------+----------+------------+------------+------------+
+  # | ubuntustable2 |      n/a |      n/a |        n/a |        n/a |        n/a |
+  # +---------------+----------+----------+------------+------------+------------+
   ci-kubernetes-e2e-gce-ubuntustable1-k8sdev-default:
     interval: 2h
     envs:
@@ -46,27 +303,6 @@ jobs:
     - --cluster=test-${job_name_hash}
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-ubuntustable1-k8sdev-serial:
-    interval: 2h
-    envs:
-    - PROJECT=ubuntu-os-gke-cloud-tests # Canonical owned project.
-    args:
-    - --cluster=test-${job_name_hash}
-    sigOwners: ['sig-node']
-  ci-kubernetes-e2e-gce-ubuntustable1-k8sbeta-default:
-    interval: 2h
-    envs:
-    - PROJECT=ubuntu-os-gke-cloud-tests # Canonical owned project.
-    args:
-    - --cluster=test-${job_name_hash}
-    sigOwners: ['sig-node']
-  ci-kubernetes-e2e-gce-ubuntustable1-k8sbeta-slow:
-    interval: 2h
-    envs:
-    - PROJECT=ubuntu-os-gke-cloud-tests # Canonical owned project.
-    args:
-    - --cluster=test-${job_name_hash}
-    sigOwners: ['sig-node']
-  ci-kubernetes-e2e-gce-ubuntustable1-k8sbeta-serial:
     interval: 2h
     envs:
     - PROJECT=ubuntu-os-gke-cloud-tests # Canonical owned project.
@@ -94,63 +330,84 @@ jobs:
     args:
     - --cluster=test-${job_name_hash}
     sigOwners: ['sig-node']
-  ci-kubernetes-e2e-gke-ubuntustable1-k8sbeta-alphafeatures:
+  ci-kubernetes-e2e-gce-ubuntustable1-k8sstable2-default:
+    interval: 6h
+    envs:
+    - PROJECT=ubuntu-os-gke-cloud-tests # Canonical owned project.
+    args:
+    - --cluster=test-${job_name_hash}
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2e-gce-ubuntustable1-k8sstable2-slow:
+    interval: 6h
+    envs:
+    - PROJECT=ubuntu-os-gke-cloud-tests # Canonical owned project.
+    args:
+    - --cluster=test-${job_name_hash}
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2e-gce-ubuntustable1-k8sstable2-serial:
+    interval: 6h
+    envs:
+    - PROJECT=ubuntu-os-gke-cloud-tests # Canonical owned project.
+    args:
+    - --cluster=test-${job_name_hash}
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-alphafeatures:
     interval: 2h
     envs:
     - PROJECT=ubuntu-image-validation
     args:
     - --cluster=test-${job_name_hash}
     sigOwners: ['sig-node']
-  ci-kubernetes-e2e-gke-ubuntustable1-k8sbeta-autoscaling:
+  ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-autoscaling:
     interval: 2h
     envs:
     - PROJECT=ubuntu-image-validation
     args:
     - --cluster=test-${job_name_hash}
     sigOwners: ['sig-node']
-  ci-kubernetes-e2e-gke-ubuntustable1-k8sbeta-default:
+  ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-default:
     interval: 2h
     envs:
     - PROJECT=ubuntu-image-validation
     args:
     - --cluster=test-${job_name_hash}
     sigOwners: ['sig-node']
-  ci-kubernetes-e2e-gke-ubuntustable1-k8sbeta-flaky:
+  ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-flaky:
     interval: 2h
     envs:
     - PROJECT=ubuntu-image-validation
     args:
     - --cluster=test-${job_name_hash}
     sigOwners: ['sig-node']
-  ci-kubernetes-e2e-gke-ubuntustable1-k8sbeta-ingress:
+  ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-ingress:
     interval: 2h
     envs:
     - PROJECT=ubuntu-image-validation
     args:
     - --cluster=test-${job_name_hash}
     sigOwners: ['sig-node']
-  ci-kubernetes-e2e-gke-ubuntustable1-k8sbeta-reboot:
+  ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-reboot:
     interval: 2h
     envs:
     - PROJECT=ubuntu-image-validation
     args:
     - --cluster=test-${job_name_hash}
     sigOwners: ['sig-node']
-  ci-kubernetes-e2e-gke-ubuntustable1-k8sbeta-serial:
+  ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-serial:
     interval: 2h
     envs:
     - PROJECT=ubuntu-image-validation
     args:
     - --cluster=test-${job_name_hash}
     sigOwners: ['sig-node']
-  ci-kubernetes-e2e-gke-ubuntustable1-k8sbeta-slow:
+  ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-slow:
     interval: 2h
     envs:
     - PROJECT=ubuntu-image-validation
     args:
     - --cluster=test-${job_name_hash}
     sigOwners: ['sig-node']
-  ci-kubernetes-e2e-gke-ubuntustable1-k8sbeta-updown:
+  ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-updown:
     interval: 2h
     envs:
     - PROJECT=ubuntu-image-validation
@@ -180,6 +437,24 @@ cloudProviders:
     - CLOUDSDK_BUCKET=gs://cloud-sdk-testing/ci/staging
 
 images:
+  cosdev:
+    args:
+    - --image-family=cos-dev
+    - --image-project=cos-cloud
+    envs:
+    - KUBE_NODE_OS_DISTRIBUTION=gci
+  cosbeta:
+    args:
+    - --image-family=cos-beta
+    - --image-project=cos-cloud
+    envs:
+    - KUBE_NODE_OS_DISTRIBUTION=gci
+  cosstable1:
+    envs:
+    - KUBE_GCE_NODE_IMAGE=cos-stable-59-9460-64-0
+    - KUBE_GCE_NODE_PROJECT=cos-cloud
+    - KUBE_NODE_OS_DISTRIBUTION=gci
+
   ubuntustable1:
     envs:
     - KUBE_NODE_OS_DISTRIBUTION=ubuntu
@@ -194,11 +469,15 @@ k8sVersions:
     - --extract=ci/latest
   beta:
     args:
-    - --extract=ci/latest-1.7
+    # Run against HEAD since there's currently no Kubernetes beta release.
+    - --extract=ci/latest
   stable1:
     args:
-    - --extract=ci/latest-1.6
+    - --extract=ci/latest-1.7
   stable2:
+    args:
+    - --extract=ci/latest-1.6
+  stable3:
     args:
     - --extract=ci/latest-1.5
 
