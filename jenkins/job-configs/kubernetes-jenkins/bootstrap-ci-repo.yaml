@@ -237,3 +237,10 @@
         job-name: ci-kubernetes-e2e-gce-ubuntu-1-6-node-serial
         repo-name: k8s.io/kubernetes
         timeout: 240
+
+    - kubernetes-release:
+        branch: master
+        frequency: '@hourly'
+        job-name: ci-kubernetes-release
+        repo-name: k8s.io/release
+        timeout: 90

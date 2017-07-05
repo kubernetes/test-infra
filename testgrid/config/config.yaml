@@ -558,6 +558,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/maintenance-ci-janitor
 - name: ci-kubernetes-build-debian-unstable
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-build-debian-unstable
+- name: ci-kubernetes-release
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-release
 - name: ci-kubernetes-e2e-gke-large-teardown
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-large-teardown
 - name: kubernetes-update-jenkins-jobs
@@ -2519,6 +2521,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-large-deploy
   - name: cross-build
     test_group_name: ci-kubernetes-cross-build
+  - name: release
+    test_group_name: ci-kubernetes-release
   - name: kops-build
     test_group_name: ci-kops-build
   - name: gce-enormous-deploy
