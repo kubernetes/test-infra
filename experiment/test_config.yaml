@@ -214,7 +214,7 @@ jobs:
   # +---------------+----------+----------+------------+------------+------------+
   # |               |   k8sdev |  k8sbeta | k8sstable1 | k8sstable2 | k8sstable3 |
   # +---------------+----------+----------+------------+------------+------------+
-  # | ubuntudev     |      n/a |      n/a |        n/a |        n/a |        n/a |
+  # | ubuntudev     | every 2h | every 2h |   every 2h |      never |      never |
   # +---------------+----------+----------+------------+------------+------------+
   # | ubuntubeta    |      n/a |      n/a |        n/a |        n/a |        n/a |
   # +---------------+----------+----------+------------+------------+------------+
@@ -222,6 +222,51 @@ jobs:
   # +---------------+----------+----------+------------+------------+------------+
   # | ubuntustable2 |      n/a |      n/a |        n/a |        n/a |        n/a |
   # +---------------+----------+----------+------------+------------+------------+
+  ci-kubernetes-e2e-gce-ubuntudev-k8sdev-default:
+    interval: 2h
+    envs:
+    - PROJECT=ubuntu-os-gke-cloud-dev-tests # Canonical owned project.
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2e-gce-ubuntudev-k8sdev-slow:
+    interval: 2h
+    envs:
+    - PROJECT=ubuntu-os-gke-cloud-dev-tests # Canonical owned project.
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2e-gce-ubuntudev-k8sdev-serial:
+    interval: 2h
+    envs:
+    - PROJECT=ubuntu-os-gke-cloud-dev-tests # Canonical owned project.
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2e-gce-ubuntudev-k8sbeta-default:
+    interval: 2h
+    envs:
+    - PROJECT=ubuntu-os-gke-cloud-dev-tests # Canonical owned project.
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2e-gce-ubuntudev-k8sbeta-slow:
+    interval: 2h
+    envs:
+    - PROJECT=ubuntu-os-gke-cloud-dev-tests # Canonical owned project.
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2e-gce-ubuntudev-k8sbeta-serial:
+    interval: 2h
+    envs:
+    - PROJECT=ubuntu-os-gke-cloud-dev-tests # Canonical owned project.
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2e-gce-ubuntudev-k8sstable1-default:
+    interval: 2h
+    envs:
+    - PROJECT=ubuntu-os-gke-cloud-dev-tests # Canonical owned project.
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2e-gce-ubuntudev-k8sstable1-slow:
+    interval: 2h
+    envs:
+    - PROJECT=ubuntu-os-gke-cloud-dev-tests # Canonical owned project.
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2e-gce-ubuntudev-k8sstable1-serial:
+    interval: 2h
+    envs:
+    - PROJECT=ubuntu-os-gke-cloud-dev-tests # Canonical owned project.
+    sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-ubuntustable1-k8sdev-default:
     interval: 2h
     envs:
@@ -354,7 +399,12 @@ images:
     - KUBE_GCE_NODE_IMAGE=cos-stable-59-9460-64-0
     - KUBE_GCE_NODE_PROJECT=cos-cloud
     - KUBE_NODE_OS_DISTRIBUTION=gci
-
+  ubuntudev:
+    args:
+    - --image-family=ubuntu-gke-1604-lts
+    - --image-project=ubuntu-os-gke-cloud-devel
+    envs:
+    - KUBE_NODE_OS_DISTRIBUTION=ubuntu
   ubuntustable1:
     envs:
     - KUBE_NODE_OS_DISTRIBUTION=ubuntu
