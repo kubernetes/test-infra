@@ -17,14 +17,12 @@ limitations under the License.
 package main
 
 import (
-	"bytes"
 	"flag"
 	"io/ioutil"
-	"net/http"
 
 	"github.com/Sirupsen/logrus"
 
-	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/phony"
 )
 
 var (
@@ -48,26 +46,9 @@ func main() {
 		body = d
 	}
 
-	req, err := http.NewRequest(http.MethodPost, *address, bytes.NewBuffer(body))
-	if err != nil {
-		logrus.WithError(err).Fatal("Could not make request.")
+	if err := phony.SendHook(*address, *event, body, []byte(*hmac)); err != nil {
+		logrus.WithError(err).Error("Error sending hook.")
+	} else {
+		logrus.Info("Hook sent.")
 	}
-	req.Header.Set("X-GitHub-Event", *event)
-	req.Header.Set("X-Hub-Signature", github.PayloadSignature(body, []byte(*hmac)))
-	req.Header.Set("content-type", "application/json")
-
-	c := &http.Client{}
-	resp, err := c.Do(req)
-	if err != nil {
-		logrus.WithError(err).Fatal("Error making HTTP request.")
-	}
-	defer resp.Body.Close()
-	rb, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		logrus.WithError(err).Fatal("Error reading response body.")
-	}
-	logrus.WithFields(logrus.Fields{
-		"code": resp.StatusCode,
-		"body": string(bytes.TrimSpace(rb)),
-	}).Info("HTTP response.")
 }

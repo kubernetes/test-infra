@@ -20,10 +20,7 @@ go_binary(
 
 go_test(
     name = "go_default_test",
-    srcs = [
-        "main_test.go",
-        "server_test.go",
-    ],
+    srcs = ["main_test.go"],
     data = [
         "//prow:configs",
     ],
@@ -34,15 +31,12 @@ go_test(
 
 go_library(
     name = "go_default_library",
-    srcs = [
-        "events.go",
-        "main.go",
-        "server.go",
-    ],
+    srcs = ["main.go"],
     tags = ["automanaged"],
     deps = [
         "//prow/config:go_default_library",
         "//prow/github:go_default_library",
+        "//prow/hook:go_default_library",
         "//prow/kube:go_default_library",
         "//prow/plugins:go_default_library",
         "//prow/plugins/assign:go_default_library",

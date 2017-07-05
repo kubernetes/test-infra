@@ -29,6 +29,7 @@ import (
 
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/hook"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/plugins"
 	"k8s.io/test-infra/prow/slack"
@@ -152,7 +153,7 @@ func main() {
 		logrus.WithError(err).Fatal("Error starting plugins.")
 	}
 
-	server := &Server{
+	server := &hook.Server{
 		HMACSecret:  webhookSecret,
 		ConfigAgent: configAgent,
 		Plugins:     pluginAgent,
