@@ -746,6 +746,10 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntu-1-6-node
 - name: ci-kubernetes-e2e-gce-ubuntu-1-6-node-serial
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntu-1-6-node-serial
+- name: ci-kubernetes-e2e-gce-ubuntu-1-7-node
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntu-1-7-node
+- name: ci-kubernetes-e2e-gce-ubuntu-1-7-node-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntu-1-7-node-serial
 - name: ci-kubernetes-e2e-gce-ubuntustable1-k8sdev-default
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntustable1-k8sdev-default
 - name: ci-kubernetes-e2e-gce-ubuntustable1-k8sdev-serial
@@ -1144,6 +1148,10 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-ubuntu-1-6-node
   - name: gce-ubuntu-1.6-node-serial
     test_group_name: ci-kubernetes-e2e-gce-ubuntu-1-6-node-serial
+  - name: gce-ubuntu-1.7-node
+    test_group_name: ci-kubernetes-e2e-gce-ubuntu-1-7-node
+  - name: gce-ubuntu-1.7-node-serial
+    test_group_name: ci-kubernetes-e2e-gce-ubuntu-1-7-node-serial
   - name: gce-ubuntustable1-k8sdev-default
     test_group_name: ci-kubernetes-e2e-gce-ubuntustable1-k8sdev-default
   - name: gce-ubuntustable1-k8sdev-serial
