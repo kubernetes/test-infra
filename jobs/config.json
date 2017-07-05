@@ -7464,6 +7464,22 @@
       "UNKNOWN"
     ]
   },
+  "pull-kops-e2e-kubernetes-aws-scenario": {
+    "args": [
+      "--extract=release/stable",
+      "--build-kops",
+      "--cluster=",
+      "--env-file=jobs/platform/kops_aws.env",
+      "--env-file=jobs/ci-kubernetes-e2e-kops-aws.env",
+      "--env-file=jobs/pull-kops-e2e-kubernetes-aws-scenario.env",
+      "--check-leaked-resources=false",
+      "--timeout=55m"
+    ],
+    "scenario": "kubernetes_kops_aws",
+    "sigOwners": [
+      "sig-aws"
+    ]
+  },
   "pull-kubernetes-cross": {
     "args": [
       "--env=KUBE_RELEASE_RUN_TESTS=n",
@@ -7600,6 +7616,23 @@
     "scenario": "kubernetes_e2e",
     "sigOwners": [
       "UNKNOWN"
+    ]
+  },
+  "pull-kubernetes-e2e-kops-aws-scenario": {
+    "args": [
+      "--build",
+      "--cluster=",
+      "--extract=local",
+      "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-kops-aws",
+      "--env-file=jobs/platform/kops_aws.env",
+      "--env-file=jobs/ci-kubernetes-e2e-kops-aws.env",
+      "--env-file=jobs/pull-kubernetes-e2e-kops-aws-scenario.env",
+      "--check-leaked-resources=false",
+      "--timeout=55m"
+    ],
+    "scenario": "kubernetes_kops_aws",
+    "sigOwners": [
+      "sig-aws"
     ]
   },
   "pull-kubernetes-e2e-kubeadm-gce": {

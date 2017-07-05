@@ -106,3 +106,13 @@
         job-name: pull-kubernetes-kubemark-e2e-gce-gci
         repo-name: 'k8s.io/kubernetes'
         timeout: 75
+    - kops-e2e-kubernetes-aws-scenario:
+        job-name: pull-kops-e2e-kubernetes-aws-scenario
+        max-total: 5
+        repo-name: 'k8s.io/kops'
+        timeout: 75
+    - kubernetes-e2e-kops-aws-scenario:
+        max-total: 5
+        job-name: pull-kubernetes-e2e-kops-aws-scenario
+        repo-name: 'k8s.io/kubernetes'
+        timeout: 75
