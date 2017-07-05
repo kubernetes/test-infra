@@ -258,9 +258,10 @@ class Checker(object):
                             raise ValueError(project)
 
         with open(boskos) as fp:
-            for res in json.loads(fp.read()):
-                if res['type'] == 'project':
-                    projects.add(res['name'])
+            for rtype in json.loads(fp.read()):
+                if rtype['type'] == 'project':
+                    for name in rtype['names']:
+                        projects.add(name)
 
         return projects
 
