@@ -30,6 +30,7 @@ filegroup(
         "//prow/hook:all-srcs",
         "//prow/jenkins:all-srcs",
         "//prow/kube:all-srcs",
+        "//prow/phony:all-srcs",
         "//prow/plank:all-srcs",
         "//prow/plugins:all-srcs",
         "//prow/slack:all-srcs",
