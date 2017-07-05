@@ -87,11 +87,16 @@ def substitute(job_name, lines):
 
 def get_envs(desc, field):
     """Returns a list of envs for the given field."""
-    return ['', '# The %s configurations.' % desc] + field.get('envs', [])
+    header = ['', '# The %s configurations.' % desc]
+    if not field:
+        return header
+    return header + field.get('envs', [])
 
 
 def get_args(job_name, field):
     """Returns a list of args for the given field."""
+    if not field:
+        return []
     return substitute(job_name, field.get('args', []))
 
 
