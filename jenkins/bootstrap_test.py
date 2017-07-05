@@ -2026,6 +2026,15 @@ class JobTest(unittest.TestCase):
             'ci-kubernetes-e2e-gce-cosstable1-k8sstable3-slow.env': 'ci-kubernetes-e2e-gce-cos*',
 
             # The ubuntu image validation jobs intentionally share projects.
+            'ci-kubernetes-e2e-gce-ubuntudev-k8sdev-default.env': 'ci-kubernetes-e2e-gce-ubuntu*',
+            'ci-kubernetes-e2e-gce-ubuntudev-k8sdev-serial.env': 'ci-kubernetes-e2e-gce-ubuntu*',
+            'ci-kubernetes-e2e-gce-ubuntudev-k8sdev-slow.env': 'ci-kubernetes-e2e-gce-ubuntu*',
+            'ci-kubernetes-e2e-gce-ubuntudev-k8sbeta-default.env': 'ci-kubernetes-e2e-gce-ubuntu*',
+            'ci-kubernetes-e2e-gce-ubuntudev-k8sbeta-serial.env': 'ci-kubernetes-e2e-gce-ubuntu*',
+            'ci-kubernetes-e2e-gce-ubuntudev-k8sbeta-slow.env': 'ci-kubernetes-e2e-gce-ubuntu*',
+            'ci-kubernetes-e2e-gce-ubuntudev-k8sstable1-default.env': 'ci-kubernetes-e2e-gce-ubuntu*',
+            'ci-kubernetes-e2e-gce-ubuntudev-k8sstable1-serial.env': 'ci-kubernetes-e2e-gce-ubuntu*',
+            'ci-kubernetes-e2e-gce-ubuntudev-k8sstable1-slow.env': 'ci-kubernetes-e2e-gce-ubuntu*',
             'ci-kubernetes-e2e-gce-ubuntustable1-k8sdev-default.env': 'ci-kubernetes-e2e-gce-ubuntu*',
             'ci-kubernetes-e2e-gce-ubuntustable1-k8sdev-serial.env': 'ci-kubernetes-e2e-gce-ubuntu*',
             'ci-kubernetes-e2e-gce-ubuntustable1-k8sdev-slow.env': 'ci-kubernetes-e2e-gce-ubuntu*',
