@@ -27,6 +27,7 @@ filegroup(
         "//prow/cmd/tot:all-srcs",
         "//prow/config:all-srcs",
         "//prow/github:all-srcs",
+        "//prow/hook:all-srcs",
         "//prow/jenkins:all-srcs",
         "//prow/kube:all-srcs",
         "//prow/plank:all-srcs",
