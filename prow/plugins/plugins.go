@@ -112,8 +112,6 @@ type PluginAgent struct {
 // Load attempts to load config from the path. It returns an error if either
 // the file can't be read or it contains an unknown plugin.
 func (pa *PluginAgent) Load(path string) error {
-	pa.mut.Lock()
-	defer pa.mut.Unlock()
 	b, err := ioutil.ReadFile(path)
 	if err != nil {
 		return err
@@ -122,6 +120,15 @@ func (pa *PluginAgent) Load(path string) error {
 	if err := yaml.Unmarshal(b, &np); err != nil {
 		return err
 	}
+	return pa.Set(np)
+}
+
+// Set attempts to set the plugins that are enabled on repos. The input is a
+// map from repositories to the list of plugins that are enabled on them.
+// Specifying simply an org name will also work, and will enable the plugin on
+// all repos in the org. It will return error if there are unknown or duplicated
+// plugins.
+func (pa *PluginAgent) Set(np map[string][]string) error {
 	// Check that there are no plugins that we don't know about.
 	for _, v := range np {
 		for _, p := range v {
@@ -143,6 +150,8 @@ func (pa *PluginAgent) Load(path string) error {
 			}
 		}
 	}
+	pa.mut.Lock()
+	defer pa.mut.Unlock()
 	pa.ps = np
 	return nil
 }
