@@ -12,10 +12,12 @@ Before running the tool on any node, create a secret with the gcloud service acc
 2. `kubectl create secret generic logexporter-service-account --from-file=service-account.json=/path/to/service-account.json`
 
 To run the tool as a pod on a single node:
+
 3. Fill in the template with environment variable values in cluster/pod.yaml
 4. `kubectl create -f pod.yaml` (for master, run this as a static pod or set nodeName field in the podspec)
 
 To run the tool as a run-to-completion job on an entire k8s cluster (we ensure exactly 1 logexporter pod runs per node using hard inter-pod anti-affinity):
+
 3. Fill in the template with environment variable values in cluster/job.yaml
 4. `kubectl create -f job.yaml`
 
