@@ -2305,7 +2305,7 @@
     ],
     "scenario": "kubernetes_kubelet",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-node"
     ]
   },
   "ci-kubernetes-e2e-gce-ubuntu-1-6-node-serial": {
@@ -2315,7 +2315,27 @@
     ],
     "scenario": "kubernetes_kubelet",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-node"
+    ]
+  },
+  "ci-kubernetes-e2e-gce-ubuntu-1-7-node": {
+    "args": [
+      "--branch=release-1.7",
+      "--properties=test/e2e_node/jenkins/jenkins-ci-ubuntu.properties"
+    ],
+    "scenario": "kubernetes_kubelet",
+    "sigOwners": [
+      "sig-node"
+    ]
+  },
+  "ci-kubernetes-e2e-gce-ubuntu-1-7-node-serial": {
+    "args": [
+      "--branch=release-1.7",
+      "--properties=test/e2e_node/jenkins/jenkins-serial-ubuntu.properties"
+    ],
+    "scenario": "kubernetes_kubelet",
+    "sigOwners": [
+      "sig-node"
     ]
   },
   "ci-kubernetes-e2e-gce-ubuntu-node": {
@@ -2324,7 +2344,7 @@
     ],
     "scenario": "kubernetes_kubelet",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-node"
     ]
   },
   "ci-kubernetes-e2e-gce-ubuntu-node-serial": {
@@ -2333,7 +2353,7 @@
     ],
     "scenario": "kubernetes_kubelet",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-node"
     ]
   },
   "ci-kubernetes-e2e-gce-ubuntustable1-k8sdev-default": {

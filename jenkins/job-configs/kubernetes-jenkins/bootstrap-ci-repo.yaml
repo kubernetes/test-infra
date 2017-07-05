@@ -237,3 +237,15 @@
         job-name: ci-kubernetes-e2e-gce-ubuntu-1-6-node-serial
         repo-name: k8s.io/kubernetes
         timeout: 240
+    - kubernetes-e2e-gce-ubuntu-1-7-node:  # @kubernetes/ubuntu-image on github
+        branch: release-1.7
+        frequency: 'H/30 * * * *'
+        job-name: ci-kubernetes-e2e-gce-ubuntu-1-7-node
+        repo-name: k8s.io/kubernetes
+        timeout: 90
+    - kubernetes-e2e-gce-ubuntu-1-7-node-serial:  # @kubernetes/ubuntu-image on github
+        branch: release-1.7
+        frequency: 'H H/2 * * *'
+        job-name: ci-kubernetes-e2e-gce-ubuntu-1-7-node-serial
+        repo-name: k8s.io/kubernetes
+        timeout: 240
