@@ -19,13 +19,17 @@ set -o pipefail
 set -o xtrace
 
 projects=(
-  kubernetes-pr-cri-validation
-  k8s-jkns-pr-kubemark
-  k8s-jkns-pr-gce
-  k8s-jkns-pr-gci-gce
-  k8s-jkns-pr-gci-kubemark
   k8s-jkns-pr-bldr-e2e-gce-fdrtn
+  k8s-jkns-pr-cnry-e2e-gce-fdrtn
+  k8s-jkns-pr-gce
+  k8s-jkns-pr-gce-bazel
   k8s-jkns-pr-gce-etcd3
+  k8s-jkns-pr-gci-gce
+  k8s-jkns-pr-gci-gke
+  k8s-jkns-pr-gci-kubemark
+  k8s-jkns-pr-gke
+  k8s-jkns-pr-kubeadm
+  k8s-jkns-pr-kubemark
   )
 
 for proj in "${projects[@]}"; do
