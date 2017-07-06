@@ -98,8 +98,9 @@ def kubeadm_version(mode):
 
 class LocalMode(object):
     """Runs e2e tests by calling e2e-runner.sh."""
-    def __init__(self, workspace):
+    def __init__(self, workspace, artifacts):
         self.workspace = workspace
+        self.artifacts = artifacts
         self.env = []
         self.os_env = []
         self.env_files = []
@@ -221,7 +222,7 @@ class LocalMode(object):
 
 class DockerMode(object):
     """Runs e2e tests via docker run kubekins-e2e."""
-    def __init__(self, container, workspace, sudo, tag, mount_paths):
+    def __init__(self, container, artifacts, sudo, tag, mount_paths):
         self.tag = tag
         try:  # Pull a newer version if one exists
             check('docker', 'pull', kubekins(tag))
@@ -231,10 +232,11 @@ class DockerMode(object):
         print 'Starting %s...' % container
 
         self.container = container
+        self.artifacts = '/workspace/_artifacts'
         self.cmd = [
             'docker', 'run', '--rm',
             '--name=%s' % container,
-            '-v', '%s/_artifacts:/workspace/_artifacts' % workspace,
+            '-v', '%s:%s' % (artifacts, self.artifacts),
             '-v', '/etc/localtime:/etc/localtime:ro',
         ]
         for path in mount_paths or []:
@@ -363,9 +365,9 @@ def main(args):
     container = '%s-%s' % (os.environ.get('JOB_NAME'), os.environ.get('BUILD_NUMBER'))
     if args.mode == 'docker':
         sudo = args.docker_in_docker or args.build is not None
-        mode = DockerMode(container, workspace, sudo, args.tag, args.mount_paths)
+        mode = DockerMode(container, artifacts, sudo, args.tag, args.mount_paths)
     elif args.mode == 'local':
-        mode = LocalMode(workspace)  # pylint: disable=bad-option-value
+        mode = LocalMode(workspace, artifacts)  # pylint: disable=bad-option-value
     else:
         raise ValueError(args.mode)
 
@@ -386,7 +388,12 @@ def main(args):
     if args.service_account:
         mode.add_service_account(args.service_account)
 
-    runner_args = []
+    mode.add_environment('KUBETEST_MANUAL_DUMP=y')  # TODO(fejta): remove
+    runner_args = [
+        '-v',
+        '--dump=%s' % mode.artifacts,
+    ]
+
     if args.build is not None:
         if args.build == '':
             # Empty string means --build was passed without any arguments;
@@ -408,8 +415,6 @@ def main(args):
         runner_args.append('--test')
 
     cluster = cluster_name(args.cluster, os.getenv('BUILD_NUMBER', 0))
-    # TODO(fejta): remove this add_environment after pushing new kubetest image
-    mode.add_environment('FAIL_ON_GCP_RESOURCE_LEAK=false')
     runner_args.extend(args.kubetest_args)
 
 
@@ -503,7 +508,7 @@ def create_parser():
     parser.add_argument(
         '--kubeadm', choices=['ci', 'periodic', 'pull'])
     parser.add_argument(
-        '--tag', default='v20170605-ed5d94ed', help='Use a specific kubekins-e2e tag if set')
+        '--tag', default='v20170630-78041cc6', help='Use a specific kubekins-e2e tag if set')
     parser.add_argument(
         '--test', default='true', help='If we need to run any actual test within kubetest')
     parser.add_argument(

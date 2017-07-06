@@ -180,45 +180,26 @@ class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-method
         for call in self.callstack:
             self.assertFalse(call.startswith('docker'))
 
-    def test_check_leaks_docker(self):
-        """Ensure we also set FAIL_ON_GCP_RESOURCE_LEAK when mode=docker."""
-        args = kubernetes_e2e.parse_args(['--mode=docker', '--check-leaked-resources'])
-        with Stub(kubernetes_e2e, 'check_env', self.fake_check_env):
-            kubernetes_e2e.main(args)
-            self.assertIn('--check-leaked-resources', self.callstack[-1])
-            self.assertIn('-e FAIL_ON_GCP_RESOURCE_LEAK=false', self.callstack[-1])
-
-    def test_check_leaks_false_docker(self):
-        """Ensure we also set FAIL_ON_GCP_RESOURCE_LEAK when mode=docker."""
-        args = kubernetes_e2e.parse_args(['--mode=docker', '--check-leaked-resources=false'])
-        with Stub(kubernetes_e2e, 'check_env', self.fake_check_env):
-            kubernetes_e2e.main(args)
-            self.assertIn('--check-leaked-resources=false', self.callstack[-1])
-            self.assertIn('-e FAIL_ON_GCP_RESOURCE_LEAK=false', self.callstack[-1])
-
     def test_check_leaks(self):
         """Ensure --check-leaked-resources=true sends flag to kubetest."""
-        args = kubernetes_e2e.parse_args(['--check-leaked-resources=true', '--mode=local'])
+        args = kubernetes_e2e.parse_args(['--check-leaked-resources=true'])
         with Stub(kubernetes_e2e, 'check_env', self.fake_check_env):
             kubernetes_e2e.main(args)
             self.assertIn('--check-leaked-resources=true', self.callstack[-1])
-            self.assertEquals('false', self.envs.get('FAIL_ON_GCP_RESOURCE_LEAK'))
 
     def test_check_leaks_false(self):
         """Ensure --check-leaked-resources=true sends flag to kubetest."""
-        args = kubernetes_e2e.parse_args(['--check-leaked-resources=false', '--mode=local'])
+        args = kubernetes_e2e.parse_args(['--check-leaked-resources=false'])
         with Stub(kubernetes_e2e, 'check_env', self.fake_check_env):
             kubernetes_e2e.main(args)
             self.assertIn('--check-leaked-resources=false', self.callstack[-1])
-            self.assertEquals('false', self.envs.get('FAIL_ON_GCP_RESOURCE_LEAK'))
 
     def test_check_leaks_default(self):
         """Ensure --check-leaked-resources=true sends flag to kubetest."""
-        args = kubernetes_e2e.parse_args(['--check-leaked-resources', '--mode=local'])
+        args = kubernetes_e2e.parse_args(['--check-leaked-resources'])
         with Stub(kubernetes_e2e, 'check_env', self.fake_check_env):
             kubernetes_e2e.main(args)
             self.assertIn('--check-leaked-resources', self.callstack[-1])
-            self.assertEquals('false', self.envs.get('FAIL_ON_GCP_RESOURCE_LEAK'))
 
     def test_check_leaks_unset(self):
         """Ensure --check-leaked-resources=true sends flag to kubetest."""
@@ -226,7 +207,6 @@ class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-method
         with Stub(kubernetes_e2e, 'check_env', self.fake_check_env):
             kubernetes_e2e.main(args)
             self.assertNotIn('--check-leaked-resources', self.callstack[-1])
-            self.assertEquals('false', self.envs.get('FAIL_ON_GCP_RESOURCE_LEAK'))
 
     def test_migrated_kubetest_args(self):
         migrated = [
@@ -298,9 +278,9 @@ class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-method
             Ensure that host variables (such as GOPATH) are included,
             and added envs/env files overwrite os environment.
         """
-        mode = kubernetes_e2e.LocalMode('/orig-workspace')
-        mode.add_environment(*('FOO=BAR', 'GOPATH=/go/path',
-                               'WORKSPACE=/new/workspace'))
+        mode = kubernetes_e2e.LocalMode('/orig-workspace', '/random-artifacts')
+        mode.add_environment(*(
+            'FOO=BAR', 'GOPATH=/go/path', 'WORKSPACE=/new/workspace'))
         mode.add_os_environment(*('USER=jenkins', 'FOO=BAZ', 'GOOS=linux'))
         with tempfile.NamedTemporaryFile() as temp:
             temp.write('USER=prow')

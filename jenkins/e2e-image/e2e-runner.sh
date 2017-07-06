@@ -40,7 +40,7 @@ fi
 
 # When run inside Docker, we need to make sure all files are world-readable
 # (since they will be owned by root on the host).
-for arg in "${@}" "${e2e_go_args[@]}"; do
+for arg in "${@}" "${e2e_go_args:+${e2e_go_args[@]}}"; do
   if [[ "${arg}" =~ --dump=(.+)$ ]]; then
     dump="${BASH_REMATCH[1]}"
     echo "Will chmod -R o+r ${dump} on EXIT SIGINT SIGTERM"

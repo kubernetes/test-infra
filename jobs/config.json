@@ -625,7 +625,6 @@
       "--extract=ci/latest-1.7",
       "--extract=ci/latest-1.6",
       "--check-leaked-resources",
-      "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --upgrade-target=ci/latest-1.7",
       "--check-version-skew=false",
       "--test_args=--ginkgo.focus=Variable.Expansion --kubectl-path=../kubernetes_skew/cluster/kubectl.sh"
     ],
