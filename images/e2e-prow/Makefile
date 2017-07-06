@@ -12,12 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+IMG = gcr.io/k8s-testimages/kubekins-e2e-prow
 TAG = $(shell date +v%Y%m%d)-$(shell git describe --tags --always --dirty)
 
+all: image
+
 image:
-	docker build -t "gcr.io/k8s-testimages/kubekins-e2e-prow:$(TAG)" .
+	docker build -t "$(IMG):$(TAG)" .
+	docker tag "$(IMG):$(TAG)" "$(IMG):latest"
+	@echo Built $(IMG):$(TAG) and tagged with :latest
 
 push: image
-	gcloud docker -- push "gcr.io/k8s-testimages/kubekins-e2e-prow:$(TAG)"
+	gcloud docker -- push "$(IMG):$(TAG)"
+	gcloud docker -- push "$(IMG):latest"
+	@echo Pushed $(IMG) with :latest and :$(TAG) tags
 
 .PHONY: image push
