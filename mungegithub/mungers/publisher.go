@@ -111,6 +111,12 @@ func (p *PublisherMunger) Initialize(config *github.Config, features *features.F
 				dst:  coordinate{repo: "client-go", branch: "release-3.0", dir: "./"},
 				deps: []coordinate{coordinate{repo: "apimachinery", branch: "release-1.6"}},
 			},
+			{
+				// rule for the client-go release-4.0 branch
+				src:  coordinate{repo: config.Project, branch: "release-1.7", dir: "staging/src/k8s.io/client-go"},
+				dst:  coordinate{repo: "client-go", branch: "release-4.0", dir: "./"},
+				deps: []coordinate{coordinate{repo: "apimachinery", branch: "release-1.7"}},
+			},
 		},
 		publishScript: "/publish_scripts/publish_client_go.sh",
 	}
@@ -127,6 +133,11 @@ func (p *PublisherMunger) Initialize(config *github.Config, features *features.F
 				// rule for the apimachinery 1.6 branch
 				src: coordinate{repo: config.Project, branch: "release-1.6", dir: "staging/src/k8s.io/apimachinery"},
 				dst: coordinate{repo: "apimachinery", branch: "release-1.6", dir: "./"},
+			},
+			{
+				// rule for the apimachinery 1.7 branch
+				src: coordinate{repo: config.Project, branch: "release-1.7", dir: "staging/src/k8s.io/apimachinery"},
+				dst: coordinate{repo: "apimachinery", branch: "release-1.7", dir: "./"},
 			},
 		},
 		publishScript: "/publish_scripts/publish_apimachinery.sh",
