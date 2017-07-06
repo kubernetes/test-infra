@@ -22,34 +22,19 @@ set -o xtrace
 
 export PS4='+(${BASH_SOURCE}:${LINENO}): ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
 
-# TODO(fejta): consider moving this elsewhere
-echo "--------------------------------------------------------------------------------"
-echo "Test Environment:"
-printenv | sort
-echo "--------------------------------------------------------------------------------"
+echo 'WARNING: e2e-runner.sh is deprecated! This will error on August 2nd' >&2
+echo 'Call kubetest directly' >&2
+echo 'More info: https://github.com/kubernetes/test-infra/issues/2829' >&2
 
-e2e_go_args=()
-# TODO(fejta): set KUBETEST_MANUAL_DUMP in kubernetes_e2e.py after new image
-if [[ -z "${KUBETEST_MANUAL_DUMP:-}" ]]; then
-  e2e_go_args=( \
-    -v \
-    --dump="${WORKSPACE}/_artifacts" \
-  )
+if [[ "$(date +%s)" -gt "$(date --date='August 1 2017' +%s)"]]; then
+  echo 'e2e-runner.sh expired on August 1st, failing'
+  exit 1
+elif [[ "$(date +%s)" -gt "$(date --date='July 25 2017' +%s)"]]; then
+  # Delay five minutes and spam the logs
+  for i in {1..100}; do
+    echo "e2e-runner.sh will expire in a week, please update job (notice ${i})" >&2
+    sleep 3
+  done
 fi
 
-# When run inside Docker, we need to make sure all files are world-readable
-# (since they will be owned by root on the host).
-for arg in "${@}" "${e2e_go_args:+${e2e_go_args[@]}}"; do
-  if [[ "${arg}" =~ --dump=(.+)$ ]]; then
-    dump="${BASH_REMATCH[1]}"
-    echo "Will chmod -R o+r ${dump} on EXIT SIGINT SIGTERM"
-    trap "chmod -R o+r '${dump}'" EXIT SIGINT SIGTERM
-    export E2E_REPORT_DIR="${dump}"  # TODO(fejta): remove after new image
-  fi
-done
-
-if [[ "${#e2e_go_args[@]}" -eq 0 ]]; then
-  kubetest "${@}"
-else
-  kubetest "${e2e_go_args[@]}" "${@}"
-fi
+kubetest "${@}"

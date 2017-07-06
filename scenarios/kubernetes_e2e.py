@@ -27,6 +27,7 @@ import shutil
 import signal
 import subprocess
 import sys
+import traceback
 
 ORIG_CWD = os.getcwd()  # Checkout changes cwd
 
@@ -97,7 +98,7 @@ def kubeadm_version(mode):
 
 
 class LocalMode(object):
-    """Runs e2e tests by calling e2e-runner.sh."""
+    """Runs e2e tests by calling kubetest."""
     def __init__(self, workspace, artifacts):
         self.workspace = workspace
         self.artifacts = artifacts
@@ -152,30 +153,6 @@ class LocalMode(object):
         """Sets GOOGLE_APPLICATION_CREDENTIALS to path."""
         self.add_environment('GOOGLE_APPLICATION_CREDENTIALS=%s' % path)
 
-    @property
-    def runner(self):
-        """Finds the best version of e2e-runner.sh."""
-        options = [
-          os.path.join(self.workspace, 'e2e-runner.sh'),
-          '/workspace/e2e-runner.sh',
-          test_infra('jenkins/e2e-image/e2e-runner.sh')
-        ]
-        for path in options:
-            if os.path.isfile(path):
-                return path
-        raise ValueError('Cannot find e2e-runner at any of %s' % ', '.join(options))
-
-
-    def install_prerequisites(self):
-        """Copies kubetest if needed."""
-        parent = os.path.dirname(self.runner)
-        if not os.path.isfile(os.path.join(parent, 'kubetest')):
-            print >>sys.stderr, 'Cannot find kubetest in %s, will install from test-infra' % parent
-            check('go', 'install', 'k8s.io/test-infra/kubetest')
-            shutil.copy(
-                os.path.expandvars('${GOPATH}/bin/kubetest'),
-                os.path.join(parent, 'kubetest'))
-
     def add_k8s(self, *a, **kw):
         """Add specified k8s.io repos (noop)."""
         pass
@@ -201,13 +178,12 @@ class LocalMode(object):
         print >>sys.stderr, 'Set KUBE_GCE_NODE_PROJECT=%s' % image_project
 
     def start(self, args):
-        """Runs e2e-runner.sh after setting env and installing prereqs."""
+        """Starts kubetest."""
         print >>sys.stderr, 'starts with local mode'
         env = {}
         env.update(self.os_env)
         env.update(self.env_files)
         env.update(self.env)
-        self.install_prerequisites()
         # Do not interfere with the local project
         project = env.get('PROJECT')
         if project:
@@ -217,7 +193,7 @@ class LocalMode(object):
                 print >>sys.stderr, 'Fail to set project %r', project
         else:
             print >>sys.stderr, 'PROJECT not set in job, will use local project'
-        check_env(env, self.runner, *args)
+        check_env(env, 'kubetest', *args)
 
 
 class DockerMode(object):
@@ -232,6 +208,7 @@ class DockerMode(object):
         print 'Starting %s...' % container
 
         self.container = container
+        self.local_artifacts = artifacts
         self.artifacts = '/workspace/_artifacts'
         self.cmd = [
             'docker', 'run', '--rm',
@@ -319,14 +296,20 @@ class DockerMode(object):
             '-e', 'GOOGLE_APPLICATION_CREDENTIALS=%s' % service])
 
     def start(self, args):
-        """Runs kubekins."""
+        """Runs kubetest inside a docker container."""
         print >>sys.stderr, 'starts with docker mode'
         cmd = list(self.cmd)
         cmd.append(kubekins(self.tag))
         cmd.extend(args)
         signal.signal(signal.SIGTERM, self.sig_handler)
         signal.signal(signal.SIGINT, self.sig_handler)
-        check(*cmd)
+        try:
+            check(*cmd)
+        finally:  # Ensure docker files are readable by bootstrap
+            try:
+                check('sudo', 'chmod', '-R', 'o+r', self.local_artifacts)
+            except subprocess.CalledProcessError:  # fails outside CI
+                traceback.print_exc()
 
     def sig_handler(self, _signo, _frame):
         """Stops container upon receive signal.SIGTERM and signal.SIGINT."""
@@ -388,7 +371,8 @@ def main(args):
     if args.service_account:
         mode.add_service_account(args.service_account)
 
-    mode.add_environment('KUBETEST_MANUAL_DUMP=y')  # TODO(fejta): remove
+    # TODO(fejta): remove after next image push
+    mode.add_environment('KUBETEST_MANUAL_DUMP=y')
     runner_args = [
         '-v',
         '--dump=%s' % mode.artifacts,
