@@ -435,51 +435,51 @@ testSuites:
   alphafeatures:
     args:
     - --timeout=180m
+    - --test_args=--ginkgo.focus=\[Feature:DynamicKubeletConfig\]
     envs:
-    - GINKGO_TEST_ARGS=--ginkgo.focus=\[Feature:DynamicKubeletConfig\]
   autoscaling:
     args:
     - --timeout=300m
+    - --test_args=--ginkgo.focus=\[Feature:ClusterSizeAutoscalingScaleUp\]|\[Feature:ClusterSizeAutoscalingScaleDown\] --ginkgo.skip=\[Flaky\]
     envs:
-    - GINKGO_TEST_ARGS=--ginkgo.focus=\[Feature:ClusterSizeAutoscalingScaleUp\]|\[Feature:ClusterSizeAutoscalingScaleDown\] --ginkgo.skip=\[Flaky\]
   default:
     args:
     - --timeout=50m
+    - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]
     envs:
     - GINKGO_PARALLEL=y
     - GINKGO_PARALLEL_NODES=30
-    - GINKGO_TEST_ARGS=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]
   flaky:
     args:
     - --timeout=300m
+    - --test_args=--ginkgo.focus=\[Flaky\] --ginkgo.skip=\[Feature:.+\]
     envs:
-    - GINKGO_TEST_ARGS=--ginkgo.focus=\[Flaky\] --ginkgo.skip=\[Feature:.+\]
   ingress:
     args:
     - --timeout=300m
+    - --test_args=--test_args=--ginkgo.focus=\[Feature:Ingress\]
     envs:
-    - GINKGO_TEST_ARGS=--ginkgo.focus=\[Feature:Ingress\]
   reboot:
     args:
     - --timeout=180m
+    - --test_args=--ginkgo.focus=\[Feature:Reboot\]
     envs:
-    - GINKGO_TEST_ARGS=--ginkgo.focus=\[Feature:Reboot\]
   serial:
     args:
     - --timeout=500m
+    - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\]
     envs:
     - GINKGO_PARALLEL=n
-    - GINKGO_TEST_ARGS=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\]
   slow:
     args:
     - --timeout=150m
+    - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]
     envs:
     - GINKGO_PARALLEL=y
     - GINKGO_PARALLEL_NODES=30
-    - GINKGO_TEST_ARGS=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]
   updown:
     args:
     - --timeout=30m
+    - --test_args=--ginkgo.focus=\[k8s.io\]\sNetworking.*\[Conformance\]
     envs:
     - GINKGO_PARALLEL=y
-    - GINKGO_TEST_ARGS=--ginkgo.focus=\[k8s.io\]\sNetworking.*\[Conformance\]

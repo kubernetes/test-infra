@@ -399,10 +399,13 @@ def main(args):
             raise ValueError(k8s)
         mode.add_k8s(os.path.dirname(k8s), 'kubernetes', 'release')
 
+    # TODO(fejta): move these out of this file
     if args.up == 'true':
         runner_args.append('--up')
     if args.down == 'true':
         runner_args.append('--down')
+    if args.test == 'true':
+        runner_args.append('--test')
 
     cluster = cluster_name(args.cluster, os.getenv('BUILD_NUMBER', 0))
     # TODO(fejta): remove this add_environment after pushing new kubetest image
@@ -430,7 +433,6 @@ def main(args):
       # Use default component update behavior
       'CLOUDSDK_EXPERIMENTAL_FAST_COMPONENT_UPDATE=false',
       # E2E
-      'E2E_TEST=%s' % args.test,
       'E2E_NAME=%s' % cluster,
       # AWS
       'KUBE_AWS_INSTANCE_PREFIX=%s' % cluster,

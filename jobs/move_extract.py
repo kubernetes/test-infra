@@ -33,62 +33,96 @@ def sort():
     with open(test_infra('jobs/config.json'), 'r+') as fp:
         configs = json.loads(fp.read())
     regexp = re.compile('|'.join([
-        r'E2E_OPT=(--check_version_skew=false|true)'
+        r'^GINKGO_TEST_ARGS=(.*)$|^SKEW_KUBECTL=(y)$'
     ]))
     problems = []
     for job, values in configs.items():
+        if values.get('scenario') != 'kubernetes_e2e':
+            continue
         if 'args' not in values:
             continue
-        new_args = []
-        found = False
-        for arg in values['args']:
-            if arg == '--check-leaked-resources=true':
-                found = True
-                new_args.append('--check-leaked-resources')
-            elif arg == '--check-leaked-resources=false':
-                found = True
-            elif arg == '--check_version_skew=false':
-                found = True
-                new_args.append('--check-version-skew=false')
-            else:
-                new_args.append(arg)
-        if not found:
+        args = values['args']
+        new_args = [a for a in args if a != '--test_args=None']
+        if new_args != args:
+            args = new_args
+            values['args'] = args
+        if any('None' in a for a in args):
+            problems.append('Bad flag with None: %s' % job)
             continue
-        if found and values.get('scenario') != 'kubernetes_e2e':
-            problems.append('Weird %s' % job)
+        if any(a.startswith('--test_args=') for a in args):
             continue
-        values['args'] = new_args
-        if values:
-            continue
-        # old stuff
         with open(test_infra('jobs/%s.env' % job)) as fp:
             env = fp.read()
+        tests = None
+        skew = False
         lines = []
-        skew = None
         for line in env.split('\n'):
             mat = regexp.search(line)
             if not mat:
                 lines.append(line)
                 continue
-            args = mat.group(1)
-            if args:
-                if skew:
+            group, now_skew = mat.groups()
+            if group:
+                if tests:
                     problems.append('Duplicate %s' % job)
                     break
-                skew = args
+                tests = group
                 continue
+            if now_skew:
+                if skew:
+                    problems.append('Duplicate skew %s' % job)
+                skew = now_skew
         else:
-            if not skew:
+            new_args = []
+            stop = False
+            for arg in args:
+                these = None
+                add = True
+                if (
+                        arg == '--env-file=jobs/pull-kubernetes-federation-e2e-gce.env'
+                        and not job == 'pull-kubernetes-federation-e2e-gce'):
+                    these = r'--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]'  # pylint: disable=line-too-long
+                elif (
+                        arg == '--env-file=jobs/pull-kubernetes-e2e.env'
+                        and not job.startswith('pull-kubernetes-federation-e2e-gce')):
+                    these = r'--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]'  # pylint: disable=line-too-long
+                elif arg == '--env-file=jobs/suite/slow.env':
+                    these = r'--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]'  # pylint: disable=line-too-long
+                elif arg == '--env-file=jobs/suite/serial.env':
+                    these = r'--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\]'  # pylint: disable=line-too-long
+                    add = False
+                elif arg == '--env-file=jobs/suite/default.env':
+                    these = r'--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]'  # pylint: disable=line-too-long
+                if add:
+                    new_args.append(arg)
+                if not these:
+                    continue
+                if tests:
+                    problems.append('Duplicate end %s' % job)
+                    stop = True
+                    break
+                tests = these
+            if stop:
                 continue
-            for arg in values['args']:
-                if not arg.startswith('--check_version_skew'):
-                    continue
-                if arg != skew:
-                    problems.append('Mismatch in %s: %s != %s' % (job, arg, skew))
-                    continue
-                break
-            else:
-                values['args'].append(skew)
+            args = new_args
+
+            testing = '--test=false' not in args
+
+            if not testing:
+                if skew:
+                    problems.append('Cannot skew kubectl without tests %s' % job)
+                if tests:
+                    problems.append('Cannot --test_args when --test=false %s' % job)
+                continue
+            if skew:
+                path = '--kubectl-path=../kubernetes_skew/cluster/kubectl.sh'
+                if tests:
+                    tests = '%s %s' % (tests, path)
+                else:
+                    tests = path
+            if tests:
+                args.append('--test_args=%s' % tests)
+            values['args'] = args
             with open(test_infra('jobs/%s.env' % job), 'w') as fp:
                 fp.write('\n'.join(lines))
     with open(test_infra('jobs/config.json'), 'w') as fp:
