@@ -1603,23 +1603,23 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-ubuntu-gke-1-6-slow
   - name: ubuntu-gke-1.6-updown
     test_group_name: ci-kubernetes-e2e-ubuntu-gke-1-6-updown
-  - name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-alphafeatures
+  - name: gke-ubuntustable1-k8sstable1-alphafeatures
     test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-alphafeatures
-  - name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-autoscaling
+  - name: gke-ubuntustable1-k8sstable1-autoscaling
     test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-autoscaling
-  - name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-default
+  - name: gke-ubuntustable1-k8sstable1-default
     test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-default
-  - name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-flaky
+  - name: gke-ubuntustable1-k8sstable1-flaky
     test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-flaky
-  - name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-ingress
+  - name: gke-ubuntustable1-k8sstable1-ingress
     test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-ingress
-  - name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-reboot
+  - name: gke-ubuntustable1-k8sstable1-reboot
     test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-reboot
-  - name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-serial
+  - name: gke-ubuntustable1-k8sstable1-serial
     test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-serial
-  - name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-slow
+  - name: gke-ubuntustable1-k8sstable1-slow
     test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-slow
-  - name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-updown
+  - name: gke-ubuntustable1-k8sstable1-updown
     test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-updown
 
 - name: google-gke-staging
