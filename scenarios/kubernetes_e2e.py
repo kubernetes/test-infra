@@ -413,6 +413,8 @@ def main(args):
         runner_args.append('--down')
     if args.test == 'true':
         runner_args.append('--test')
+    else:
+        mode.add_environment('E2E_TEST=false')
 
     cluster = cluster_name(args.cluster, os.getenv('BUILD_NUMBER', 0))
     runner_args.extend(args.kubetest_args)
