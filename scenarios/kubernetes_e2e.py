@@ -492,7 +492,7 @@ def create_parser():
     parser.add_argument(
         '--kubeadm', choices=['ci', 'periodic', 'pull'])
     parser.add_argument(
-        '--tag', default='v20170707-6440bde9', help='Use a specific kubekins-e2e tag if set')
+        '--tag', default='v20170707-c456ff0d', help='Use a specific kubekins-e2e tag if set')
     parser.add_argument(
         '--test', default='true', help='If we need to run any actual test within kubetest')
     parser.add_argument(
