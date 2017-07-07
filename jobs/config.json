@@ -1508,7 +1508,7 @@
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/ci-kubernetes-e2e-gce-gci-ci-master.env",
       "--timeout=50m",
-      "--extract=ci/latest",
+      "--extract=gci/gci-canary/latest",
       "--check-leaked-resources",
       "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]"
     ],
@@ -1520,7 +1520,7 @@
   "ci-kubernetes-e2e-gce-gci-ci-release-1-4": {
     "args": [
       "--env-file=jobs/platform/gce.env",
-      "--extract=ci/latest-1.4",
+      "--extract=gci/gci-56/latest-1.4",
       "--env-file=jobs/ci-kubernetes-e2e-gce-gci-ci-release-1-4.env",
       "--timeout=50m",
       "--check-leaked-resources",
@@ -1534,7 +1534,7 @@
   "ci-kubernetes-e2e-gce-gci-ci-release-1-5": {
     "args": [
       "--env-file=jobs/platform/gce.env",
-      "--extract=ci/latest-1.5",
+      "--extract=gci/gci-56/latest-1.5",
       "--env-file=jobs/ci-kubernetes-e2e-gce-gci-ci-release-1-5.env",
       "--timeout=50m",
       "--check-leaked-resources",
@@ -1550,7 +1550,7 @@
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/ci-kubernetes-e2e-gce-gci-ci-serial-master.env",
       "--timeout=300m",
-      "--extract=ci/latest",
+      "--extract=gci/gci-canary/latest",
       "--check-leaked-resources",
       "--test_args=--ginkgo.focus=\\[Serial\\]|\\[Disruptive\\] --ginkgo.skip=\\[Flaky\\]|\\[Feature:.+\\]"
     ],
@@ -1562,7 +1562,7 @@
   "ci-kubernetes-e2e-gce-gci-ci-serial-release-1-4": {
     "args": [
       "--env-file=jobs/platform/gce.env",
-      "--extract=ci/latest-1.4",
+      "--extract=gci/gci-56/latest-1.4",
       "--env-file=jobs/ci-kubernetes-e2e-gce-gci-ci-serial-release-1-4.env",
       "--timeout=300m",
       "--check-leaked-resources",
@@ -1576,7 +1576,7 @@
   "ci-kubernetes-e2e-gce-gci-ci-serial-release-1-5": {
     "args": [
       "--env-file=jobs/platform/gce.env",
-      "--extract=ci/latest-1.5",
+      "--extract=gci/gci-56/latest-1.5",
       "--env-file=jobs/ci-kubernetes-e2e-gce-gci-ci-serial-release-1-5.env",
       "--timeout=300m",
       "--check-leaked-resources",
@@ -1592,7 +1592,7 @@
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/ci-kubernetes-e2e-gce-gci-ci-slow-master.env",
       "--timeout=150m",
-      "--extract=ci/latest",
+      "--extract=gci/gci-canary/latest",
       "--check-leaked-resources",
       "--test_args=--ginkgo.focus=\\[Slow\\] --ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]"
     ],
@@ -1604,7 +1604,7 @@
   "ci-kubernetes-e2e-gce-gci-ci-slow-release-1-4": {
     "args": [
       "--env-file=jobs/platform/gce.env",
-      "--extract=ci/latest-1.4",
+      "--extract=gci/gci-56/latest-1.4",
       "--env-file=jobs/ci-kubernetes-e2e-gce-gci-ci-slow-release-1-4.env",
       "--timeout=150m",
       "--check-leaked-resources",
@@ -1618,7 +1618,7 @@
   "ci-kubernetes-e2e-gce-gci-ci-slow-release-1-5": {
     "args": [
       "--env-file=jobs/platform/gce.env",
-      "--extract=ci/latest-1.5",
+      "--extract=gci/gci-56/latest-1.5",
       "--env-file=jobs/ci-kubernetes-e2e-gce-gci-ci-slow-release-1-5.env",
       "--timeout=150m",
       "--check-leaked-resources",
@@ -2976,7 +2976,7 @@
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/ci-kubernetes-e2e-gci-gce-docker.env",
       "--timeout=50m",
-      "--extract=ci/latest",
+      "--extract=gci/gci-canary-test/latest",
       "--check-leaked-resources",
       "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]"
     ],
