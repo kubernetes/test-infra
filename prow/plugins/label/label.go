@@ -128,13 +128,10 @@ func getLabelsFromREMatches(matches [][]string) (labels []string) {
 }
 
 func (ae assignEvent) getRepeats(sigMatches [][]string, existingLabels map[string]string) (toRepeat []string) {
-
 	toRepeat = []string{}
 	for _, sigMatch := range sigMatches {
 		sigLabel := strings.ToLower("sig" + "/" + strings.TrimSpace(sigMatch[1]))
-		if ae.issue.HasLabel(sigLabel) {
-			continue
-		}
+
 		if _, ok := existingLabels[sigLabel]; ok {
 			toRepeat = append(toRepeat, sigMatch[0])
 		}
