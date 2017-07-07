@@ -474,6 +474,7 @@ def finish(gsutil, paths, success, artifacts, build, version, repos, call):
                 logging.warning('Failed to update %s', path)
 
 
+# Note the assumption that bootstrap is running from within the kubernetes/test-infra repo
 def test_infra(*paths):
     """Return path relative to root of test-infra repo."""
     return os.path.join(ORIG_CWD, os.path.dirname(__file__), '..', *paths)
@@ -735,14 +736,19 @@ def job_args(args):
     return [os.path.expandvars(a) for a in args]
 
 
-def job_script(job, use_json):
+def job_script(job, use_json, jobs_config_dir):
     """Return path to script for job."""
+    dir_resolver = test_infra
+
+    if not jobs_config_dir == '':
+        dir_resolver = lambda f: os.path.join(jobs_config_dir, f)
+
     if not use_json:
-        return [test_infra('jobs/%s.sh' % job)]
-    with open(test_infra('jobs/config.json')) as fp:
+        return [dir_resolver('jobs/%s.sh' % job)]
+    with open(dir_resolver('jobs/config.json')) as fp:
         config = json.loads(fp.read())
     job_config = config[job]
-    cmd = test_infra('scenarios/%s.py' % job_config['scenario'])
+    cmd = dir_resolver('scenarios/%s.py' % job_config['scenario'])
     return [cmd] + job_args(job_config.get('args', []))
 
 
@@ -889,7 +895,8 @@ def bootstrap(args):
             version = find_version(call)
         else:
             version = ''
-        setup_magic_environment(job)
+        if not args.no_magic_env:
+            setup_magic_environment(job)
         setup_credentials(call, args.service_account, upload)
         setup_creds = True
         logging.info('Start %s at %s...', build, version)
@@ -897,7 +904,7 @@ def bootstrap(args):
             start(gsutil, paths, started, node(), version, repos)
         success = False
         try:
-            call(job_script(job, use_json))
+            call(job_script(job, use_json, args.jobs_config_dir))
             logging.info('PASS: %s', job)
             success = True
         except subprocess.CalledProcessError:
@@ -967,6 +974,24 @@ def parse_args(arguments=None):
         '--clean',
         action='store_true',
         help='Clean the git repo before running tests.')
+    # Use "_no_-magic-env" because the default (current functionality)
+    # is to have magic environment, so the default value for this flag
+    # (false) needs to match this behavior.
+    parser.add_argument(
+        '--no-magic-env',
+        action='store_true',
+        help='Disable Jenkins magic environment')
+    # If specified, this is the (relative) path to jobs configuration directory
+    # the cloned repo.
+    parser.add_argument(
+        '--jobs-config-dir',
+        # The default behavior assumes that bootstrap.py is run from the jenkins/
+        # directory of the kubernetes/test-infra repo, and uses this assumption to
+        # find the path of the kubernetes/test-infra repo (assuming it has been
+        # cloned). Therefore it uses the root of the kubernetes/test-infra repo as
+        # the implicit jobs-config-dir.
+        default="",
+        help='Explicit location for where to look for job scripts relative to repo root.')
     args = parser.parse_args(arguments)
     if bool(args.repo) == bool(args.bare):
         raise argparse.ArgumentTypeError(
