@@ -28,10 +28,9 @@ echo "Test Environment:"
 printenv | sort
 echo "--------------------------------------------------------------------------------"
 
+e2e_go_args=()
 # TODO(fejta): set KUBETEST_MANUAL_DUMP in kubernetes_e2e.py after new image
-if [[ -n "${KUBETEST_MANUAL_DUMP:-}" ]]; then
-  e2e_go_args=()
-else
+if [[ -z "${KUBETEST_MANUAL_DUMP:-}" ]]; then
   e2e_go_args=( \
     -v \
     --dump="${WORKSPACE}/_artifacts" \
