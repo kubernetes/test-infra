@@ -65,7 +65,7 @@ func TestRequestRateLimit(t *testing.T) {
 
 func TestRetry404(t *testing.T) {
 	var slept int
-	timeSleep = func(d time.Duration) { slept += 1 }
+	timeSleep = func(d time.Duration) { slept++ }
 	defer func() { timeSleep = time.Sleep }()
 	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if slept == 0 {
@@ -504,7 +504,6 @@ func TestRequestReview(t *testing.T) {
 		}
 		//bad reviewer case
 		w.WriteHeader(http.StatusUnprocessableEntity)
-		json.NewEncoder(w).Encode(struct{ message, documentation_url string }{message: "Reviews may only be requested of collaborators.", documentation_url: "https://developer.github.com/v3/"})
 	}))
 	defer ts.Close()
 	c := getClient(ts.URL)

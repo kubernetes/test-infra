@@ -32,14 +32,14 @@ type Client struct {
 }
 
 const (
-	apiUrl = "https://slack.com/api/"
+	apiURL = "https://slack.com/api/"
 
-	authTest = apiUrl + "auth.test"
-	apiTest  = apiUrl + "api.test"
+	authTest = apiURL + "auth.test"
+	apiTest  = apiURL + "api.test"
 
-	channelsList = apiUrl + "channels.list"
+	channelsList = apiURL + "channels.list"
 
-	chatPostMessage = apiUrl + "chat.postMessage"
+	chatPostMessage = apiURL + "chat.postMessage"
 )
 
 type APIResponse struct {

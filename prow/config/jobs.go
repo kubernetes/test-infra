@@ -154,11 +154,11 @@ func (c *Config) SetPresubmits(jobs map[string][]Presubmit) error {
 		nj[k] = make([]Presubmit, len(v))
 		copy(nj[k], v)
 		for i := range v {
-			if re, err := regexp.Compile(v[i].Trigger); err != nil {
+			re, err := regexp.Compile(v[i].Trigger)
+			if err != nil {
 				return err
-			} else {
-				nj[k][i].re = re
 			}
+			nj[k][i].re = re
 		}
 	}
 	c.Presubmits = nj

@@ -222,9 +222,9 @@ func handle(gc githubClient, log *logrus.Entry, ae assignEvent, sc slackClient) 
 			log.WithError(err).Errorf("Github failed to add the following label: %s", sigLabel)
 		}
 
-		if kLabel, ok := kindMap[kind]; ok {
-			if err := gc.AddLabel(ae.org, ae.repo, ae.number, kLabel); err != nil {
-				log.WithError(err).Errorf("Github failed to add the following label: %s", sigLabel)
+		if kindLabel, ok := kindMap[kind]; ok {
+			if err := gc.AddLabel(ae.org, ae.repo, ae.number, kindLabel); err != nil {
+				log.WithError(err).Errorf("Github failed to add the following label: %s", kindLabel)
 			}
 		}
 	}

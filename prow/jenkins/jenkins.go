@@ -214,13 +214,12 @@ func (c *Client) Status(job, id string) (*Status, error) {
 				if p.Name == "buildId" && p.Value == id {
 					if build.Result == nil {
 						return &Status{Building: true, Number: build.Number}, nil
-					} else {
-						return &Status{
-							Building: false,
-							Success:  *build.Result == "SUCCESS",
-							Number:   build.Number,
-						}, nil
 					}
+					return &Status{
+						Building: false,
+						Success:  *build.Result == "SUCCESS",
+						Number:   build.Number,
+					}, nil
 				}
 			}
 		}

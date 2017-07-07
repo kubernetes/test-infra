@@ -10,7 +10,7 @@ load(
 
 go_test(
     name = "go_default_test",
-    srcs = ["update_config_test.go"],
+    srcs = ["updateconfig_test.go"],
     library = ":go_default_library",
     tags = ["automanaged"],
     deps = [
@@ -23,7 +23,7 @@ go_test(
 
 go_library(
     name = "go_default_library",
-    srcs = ["update_config.go"],
+    srcs = ["updateconfig.go"],
     tags = ["automanaged"],
     deps = [
         "//prow/github:go_default_library",

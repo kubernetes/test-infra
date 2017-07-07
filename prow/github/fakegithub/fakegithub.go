@@ -17,7 +17,6 @@ limitations under the License.
 package fakegithub
 
 import (
-	"errors"
 	"fmt"
 	"regexp"
 
@@ -150,7 +149,7 @@ func (f *FakeClient) AddLabel(owner, repo string, number int, label string) erro
 			return nil
 		}
 	}
-	return errors.New(fmt.Sprintf("Cannot add %v to %s/%s/#%d", label, owner, repo, number))
+	return fmt.Errorf("cannot add %v to %s/%s/#%d", label, owner, repo, number)
 }
 
 func (f *FakeClient) RemoveLabel(owner, repo string, number int, label string) error {
@@ -178,21 +177,21 @@ func (f *FakeClient) AssignIssue(owner, repo string, number int, assignees []str
 }
 
 func (f *FakeClient) GetFile(org, repo, file, commit string) ([]byte, error) {
-	if contents, ok := f.RemoteFiles[file]; !ok {
-		return nil, fmt.Errorf("Could not find file %s", file)
-	} else {
-		if commit == "" {
-			if master, ok := contents["master"]; ok {
-				return []byte(master), nil
-			}
-
-			return nil, fmt.Errorf("Could not find file %s in master", file)
-		}
-
-		if content, ok := contents[commit]; ok {
-			return []byte(content), nil
-		}
-
-		return nil, fmt.Errorf("Could not find file %s with ref %s", file, commit)
+	contents, ok := f.RemoteFiles[file]
+	if !ok {
+		return nil, fmt.Errorf("could not find file %s", file)
 	}
+	if commit == "" {
+		if master, ok := contents["master"]; ok {
+			return []byte(master), nil
+		}
+
+		return nil, fmt.Errorf("could not find file %s in master", file)
+	}
+
+	if content, ok := contents[commit]; ok {
+		return []byte(content), nil
+	}
+
+	return nil, fmt.Errorf("could not find file %s with ref %s", file, commit)
 }

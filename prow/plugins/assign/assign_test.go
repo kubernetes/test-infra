@@ -37,7 +37,7 @@ type fakeClient struct {
 
 func (c *fakeClient) UnassignIssue(owner, repo string, number int, assignees []string) error {
 	for _, who := range assignees {
-		c.unassigned[who] += 1
+		c.unassigned[who]++
 	}
 
 	return nil
@@ -47,7 +47,7 @@ func (c *fakeClient) AssignIssue(owner, repo string, number int, assignees []str
 	var missing github.MissingUsers
 	for _, who := range assignees {
 		if who != "evil" {
-			c.assigned[who] += 1
+			c.assigned[who]++
 		} else {
 			missing.Users = append(missing.Users, who)
 		}
@@ -63,7 +63,7 @@ func (c *fakeClient) RequestReview(org, repo string, number int, logins []string
 	var missing github.MissingUsers
 	for _, user := range logins {
 		if c.contributors[user] {
-			c.requested[user] += 1
+			c.requested[user]++
 		} else {
 			missing.Users = append(missing.Users, user)
 		}
@@ -76,7 +76,7 @@ func (c *fakeClient) RequestReview(org, repo string, number int, logins []string
 
 func (c *fakeClient) UnrequestReview(org, repo string, number int, logins []string) error {
 	for _, user := range logins {
-		c.unrequested[user] += 1
+		c.unrequested[user]++
 	}
 	return nil
 }
@@ -86,7 +86,7 @@ func (c *fakeClient) CreateComment(owner, repo string, number int, comment strin
 	return nil
 }
 
-func NewFakeClient(contribs []string) *fakeClient {
+func newFakeClient(contribs []string) *fakeClient {
 	c := &fakeClient{
 		contributors: make(map[string]bool),
 		requested:    make(map[string]int),
@@ -396,7 +396,7 @@ func TestAssignAndReview(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
-		fc := NewFakeClient([]string{"hello-world", "allow_underscore", "cjwagner", "merlin"})
+		fc := newFakeClient([]string{"hello-world", "allow_underscore", "cjwagner", "merlin"})
 		e := &event{
 			action: tc.action,
 			body:   tc.body,
