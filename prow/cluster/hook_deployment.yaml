@@ -30,10 +30,10 @@ spec:
       labels:
         app: hook
     spec:
-      terminationGracePeriodSeconds: 30
+      terminationGracePeriodSeconds: 180
       containers:
       - name: hook
-        image: gcr.io/k8s-prow/hook:0.119
+        image: gcr.io/k8s-prow/hook:0.120
         imagePullPolicy: Always
         args:
         - --dry-run=false

@@ -26,6 +26,7 @@ filegroup(
         "//prow/cmd/splice:all-srcs",
         "//prow/cmd/tot:all-srcs",
         "//prow/config:all-srcs",
+        "//prow/git:all-srcs",
         "//prow/github:all-srcs",
         "//prow/hook:all-srcs",
         "//prow/jenkins:all-srcs",
