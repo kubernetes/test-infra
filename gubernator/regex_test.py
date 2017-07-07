@@ -45,6 +45,7 @@ class RegexTest(unittest.TestCase):
             ('FAIL k8s.io/kubernetes/pkg/client/record', True),
             ('undefined: someVariable', True),
             ('\x1b[0;31mFAILED\x1b[0m', True),  # color codes
+            ('unbound variable', True),
         ]:
             self.assertEqual(bool(regex.error_re.search(text)), matches,
                 'error_re.search(%r) should be %r' % (text, matches))
