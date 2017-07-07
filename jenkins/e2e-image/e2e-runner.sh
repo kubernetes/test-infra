@@ -48,4 +48,8 @@ for arg in "${@}" "${e2e_go_args:+${e2e_go_args[@]}}"; do
   fi
 done
 
-kubetest "${e2e_go_args[@]:-}" "${@}"
+if [[ "${#e2e_go_args[@]}" -eq 0 ]]; then
+  kubetest "${@}"
+else
+  kubetest "${e2e_go_args[@]}" "${@}"
+fi
