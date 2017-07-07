@@ -54,6 +54,10 @@ const (
 	requiredReTestContext2    = "someRequiredRetestContext2"
 )
 
+var (
+	someJobNames = []string{"foo", "bar"}
+)
+
 func ValidPR() *github.PullRequest {
 	return github_test.PullRequest(someUserName, false, true, true)
 }
@@ -202,8 +206,7 @@ func getTestSQ(startThreads bool, config *github_util.Config, server *httptest.S
 	sq.GateApproved = true
 	sq.RequiredStatusContexts = []string{notRequiredReTestContext1, notRequiredReTestContext2}
 	sq.RequiredRetestContexts = []string{requiredReTestContext1, requiredReTestContext2}
-	sq.BlockingJobNames = []string{"foo"}
-	sq.WeakStableJobNames = []string{"bar"}
+	sq.NonBlockingJobNames = someJobNames
 	sq.githubE2EQueue = map[int]*github_util.MungeObject{}
 	sq.githubE2EPollTime = time.Millisecond
 
@@ -218,10 +221,7 @@ func getTestSQ(startThreads bool, config *github_util.Config, server *httptest.S
 
 	sq.DoNotMergeMilestones = []string{doNotMergeMilestone}
 
-	sq.e2e = &fake_e2e.FakeE2ETester{
-		JobNames:           sq.BlockingJobNames,
-		WeakStableJobNames: sq.WeakStableJobNames,
-	}
+	sq.e2e = &fake_e2e.FakeE2ETester{JobNames: sq.NonBlockingJobNames}
 
 	if startThreads {
 		sq.internalInitialize(config, nil, server.URL)
@@ -483,8 +483,6 @@ func TestSubmitQueue(t *testing.T) {
 		ciStatus         *github.CombinedStatus
 		lastBuildNumber  int
 		gcsResult        utils.FinishedFile
-		weakResults      map[int]utils.FinishedFile
-		gcsJunit         map[string][]byte
 		retest1Pass      bool
 		retest2Pass      bool
 		mergeAfterQueued bool
@@ -509,7 +507,6 @@ func TestSubmitQueue(t *testing.T) {
 			ciStatus:        SuccessStatus(),
 			lastBuildNumber: LastBuildNumber(),
 			gcsResult:       SuccessGCS(),
-			weakResults:     map[int]utils.FinishedFile{LastBuildNumber(): SuccessGCS()},
 			retest1Pass:     true,
 			retest2Pass:     true,
 			reason:          merged,
@@ -525,7 +522,6 @@ func TestSubmitQueue(t *testing.T) {
 			ciStatus:        SuccessStatus(),
 			lastBuildNumber: LastBuildNumber(),
 			gcsResult:       SuccessGCS(),
-			weakResults:     map[int]utils.FinishedFile{LastBuildNumber(): SuccessGCS()},
 			retest1Pass:     true,
 			retest2Pass:     true,
 			reason:          noLGTM,
@@ -542,7 +538,6 @@ func TestSubmitQueue(t *testing.T) {
 			ciStatus:           SuccessStatus(),
 			lastBuildNumber:    LastBuildNumber(),
 			gcsResult:          SuccessGCS(),
-			weakResults:        map[int]utils.FinishedFile{LastBuildNumber(): SuccessGCS()},
 			retest1Pass:        true,
 			retest2Pass:        true,
 			emergencyMergeStop: true,
@@ -561,7 +556,6 @@ func TestSubmitQueue(t *testing.T) {
 			ciStatus:        SuccessStatus(),
 			lastBuildNumber: LastBuildNumber(),
 			gcsResult:       SuccessGCS(),
-			weakResults:     map[int]utils.FinishedFile{LastBuildNumber(): SuccessGCS()},
 			retest1Pass:     true,
 			retest2Pass:     true,
 			reason:          merged,
@@ -583,7 +577,6 @@ func TestSubmitQueue(t *testing.T) {
 			ciStatus:        SuccessStatus(),
 			lastBuildNumber: LastBuildNumber(),
 			gcsResult:       SuccessGCS(),
-			weakResults:     map[int]utils.FinishedFile{LastBuildNumber(): SuccessGCS()},
 			// The test should never run, but if it does, make sure it fails
 			mergeAfterQueued: true,
 			reason:           mergedByHand,
@@ -599,7 +592,6 @@ func TestSubmitQueue(t *testing.T) {
 			ciStatus:        SuccessStatus(),
 			lastBuildNumber: LastBuildNumber(),
 			gcsResult:       SuccessGCS(),
-			weakResults:     map[int]utils.FinishedFile{LastBuildNumber(): SuccessGCS()},
 			retest1Pass:     false,
 			retest2Pass:     false,
 			reason:          mergedSkippedRetest,
@@ -616,7 +608,6 @@ func TestSubmitQueue(t *testing.T) {
 			// To avoid false errors in logs
 			lastBuildNumber: LastBuildNumber(),
 			gcsResult:       SuccessGCS(),
-			weakResults:     map[int]utils.FinishedFile{LastBuildNumber(): SuccessGCS()},
 		},
 		// Fail because we don't know if PR can automatically merge
 		{
@@ -628,7 +619,6 @@ func TestSubmitQueue(t *testing.T) {
 			// To avoid false errors in logs
 			lastBuildNumber: LastBuildNumber(),
 			gcsResult:       SuccessGCS(),
-			weakResults:     map[int]utils.FinishedFile{LastBuildNumber(): SuccessGCS()},
 		},
 		// Fail because the claYesLabel label was not applied
 		{
@@ -640,7 +630,6 @@ func TestSubmitQueue(t *testing.T) {
 			// To avoid false errors in logs
 			lastBuildNumber: LastBuildNumber(),
 			gcsResult:       SuccessGCS(),
-			weakResults:     map[int]utils.FinishedFile{LastBuildNumber(): SuccessGCS()},
 		},
 		// Fail because github CI tests have failed (or at least are not success)
 		{
@@ -652,7 +641,6 @@ func TestSubmitQueue(t *testing.T) {
 			// To avoid false errors in logs
 			lastBuildNumber: LastBuildNumber(),
 			gcsResult:       SuccessGCS(),
-			weakResults:     map[int]utils.FinishedFile{LastBuildNumber(): SuccessGCS()},
 		},
 		// Fail because missing LGTM label
 		{
@@ -665,7 +653,6 @@ func TestSubmitQueue(t *testing.T) {
 			// To avoid false errors in logs
 			lastBuildNumber: LastBuildNumber(),
 			gcsResult:       SuccessGCS(),
-			weakResults:     map[int]utils.FinishedFile{LastBuildNumber(): SuccessGCS()},
 		},
 		// Fail because we can't tell if LGTM was added before the last change
 		{
@@ -678,7 +665,6 @@ func TestSubmitQueue(t *testing.T) {
 			// To avoid false errors in logs
 			lastBuildNumber: LastBuildNumber(),
 			gcsResult:       SuccessGCS(),
-			weakResults:     map[int]utils.FinishedFile{LastBuildNumber(): SuccessGCS()},
 		},
 		// Fail because LGTM was added before the last change
 		{
@@ -701,7 +687,6 @@ func TestSubmitQueue(t *testing.T) {
 			commits:         Commits(), // Modified at time.Unix(7), 8, and 9
 			lastBuildNumber: LastBuildNumber(),
 			gcsResult:       FailGCS(),
-			weakResults:     map[int]utils.FinishedFile{LastBuildNumber(): SuccessGCS()},
 			reason:          ghE2EQueued,
 			state:           "success",
 		},
@@ -715,7 +700,6 @@ func TestSubmitQueue(t *testing.T) {
 			commits:         Commits(),
 			lastBuildNumber: LastBuildNumber(),
 			gcsResult:       SuccessGCS(),
-			weakResults:     map[int]utils.FinishedFile{LastBuildNumber(): SuccessGCS()},
 			reason:          ghE2EFailed,
 			state:           "pending",
 		},
@@ -729,7 +713,6 @@ func TestSubmitQueue(t *testing.T) {
 			commits:         Commits(), // Modified at time.Unix(7), 8, and 9
 			lastBuildNumber: LastBuildNumber(),
 			gcsResult:       SuccessGCS(),
-			weakResults:     map[int]utils.FinishedFile{LastBuildNumber(): SuccessGCS()},
 			reason:          ghE2EQueued,
 			// The state is unpredictable. When it goes on the queue it is success.
 			// When it fails the build it is pending. So state depends on how far along
@@ -746,7 +729,6 @@ func TestSubmitQueue(t *testing.T) {
 			commits:         Commits(), // Modified at time.Unix(7), 8, and 9
 			lastBuildNumber: LastBuildNumber(),
 			gcsResult:       SuccessGCS(),
-			weakResults:     map[int]utils.FinishedFile{LastBuildNumber(): SuccessGCS()},
 			reason:          ghE2EFailed,
 			state:           "pending",
 		},
@@ -759,7 +741,6 @@ func TestSubmitQueue(t *testing.T) {
 			ciStatus:        SuccessStatus(),
 			lastBuildNumber: LastBuildNumber(),
 			gcsResult:       SuccessGCS(),
-			weakResults:     map[int]utils.FinishedFile{LastBuildNumber(): SuccessGCS()},
 			retest1Pass:     true,
 			retest2Pass:     false,
 			reason:          ghE2EFailed,
@@ -774,7 +755,6 @@ func TestSubmitQueue(t *testing.T) {
 			ciStatus:        SuccessStatus(),
 			lastBuildNumber: LastBuildNumber(),
 			gcsResult:       SuccessGCS(),
-			weakResults:     map[int]utils.FinishedFile{LastBuildNumber(): SuccessGCS()},
 			retest1Pass:     false,
 			retest2Pass:     true,
 			reason:          ghE2EFailed,
@@ -789,7 +769,6 @@ func TestSubmitQueue(t *testing.T) {
 			ciStatus:        SuccessStatus(),
 			lastBuildNumber: LastBuildNumber(),
 			gcsResult:       SuccessGCS(),
-			weakResults:     map[int]utils.FinishedFile{LastBuildNumber(): SuccessGCS()},
 			retest1Pass:     true,
 			retest2Pass:     true,
 			reason:          noMerge,
@@ -805,7 +784,6 @@ func TestSubmitQueue(t *testing.T) {
 			ciStatus:        SuccessStatus(),
 			lastBuildNumber: LastBuildNumber(),
 			gcsResult:       SuccessGCS(),
-			weakResults:     map[int]utils.FinishedFile{LastBuildNumber(): SuccessGCS()},
 			retest1Pass:     true,
 			retest2Pass:     true,
 			reason:          unmergeableMilestone,
@@ -820,7 +798,6 @@ func TestSubmitQueue(t *testing.T) {
 			ciStatus:        RetestFailStatus(),
 			lastBuildNumber: LastBuildNumber(),
 			gcsResult:       SuccessGCS(),
-			weakResults:     map[int]utils.FinishedFile{LastBuildNumber(): SuccessGCS()},
 			retest1Pass:     true,
 			retest2Pass:     true,
 			reason:          fmt.Sprintf(ciFailureFmt, requiredReTestContext2),
@@ -835,7 +812,6 @@ func TestSubmitQueue(t *testing.T) {
 			ciStatus:        NoRetestFailStatus(),
 			lastBuildNumber: LastBuildNumber(),
 			gcsResult:       SuccessGCS(),
-			weakResults:     map[int]utils.FinishedFile{LastBuildNumber(): SuccessGCS()},
 			retest1Pass:     true,
 			retest2Pass:     true,
 			reason:          fmt.Sprintf(ciFailureFmt, notRequiredReTestContext2),
@@ -848,7 +824,6 @@ func TestSubmitQueue(t *testing.T) {
 			events:          OldApprovedEvents(),
 			commits:         Commits(), // Modified at time.Unix(7), 8, and 9
 			ciStatus:        SuccessStatus(),
-			weakResults:     map[int]utils.FinishedFile{LastBuildNumber(): SuccessGCS()},
 			lastBuildNumber: LastBuildNumber(),
 			gcsResult:       SuccessGCS(),
 			retest1Pass:     true,
@@ -870,7 +845,6 @@ func TestSubmitQueue(t *testing.T) {
 			ciStatus:        SuccessStatus(),
 			lastBuildNumber: LastBuildNumber(),
 			gcsResult:       FailGCS(),
-			weakResults:     map[int]utils.FinishedFile{LastBuildNumber(): SuccessGCS()},
 			retest1Pass:     true,
 			retest2Pass:     true,
 			reason:          merged,
@@ -886,90 +860,11 @@ func TestSubmitQueue(t *testing.T) {
 			ciStatus:        SuccessStatus(),
 			lastBuildNumber: LastBuildNumber(),
 			gcsResult:       FailGCS(),
-			weakResults:     map[int]utils.FinishedFile{LastBuildNumber(): SuccessGCS()},
 			retest1Pass:     false,
 			retest2Pass:     true,
 			reason:          ghE2EFailed,
 			state:           "pending",
 		},
-
-		// // Should pass even though last 'weakStable' build failed, as it wasn't "strong" failure
-		// // and because previous two builds succeeded.
-		// {
-		// 	name:            "Test20",
-		// 	pr:              ValidPR(),
-		// 	issue:           LGTMIssue(),
-		// 	events:          NewLGTMEvents(),
-		// 	commits:         Commits(), // Modified at time.Unix(7), 8, and 9
-		// 	ciStatus:        SuccessStatus(),
-		// 	lastBuildNumber: LastBuildNumber(),
-		// 	gcsResult:       SuccessGCS(),
-		// 	weakResults: map[int]utils.FinishedFile{
-		// 		LastBuildNumber():     FailGCS(),
-		// 		LastBuildNumber() - 1: SuccessGCS(),
-		// 		LastBuildNumber() - 2: SuccessGCS(),
-		// 	},
-		// 	gcsJunit: map[string][]byte{
-		// 		"junit_01.xml": getJUnit(5, 0),
-		// 		"junit_02.xml": getJUnit(6, 0),
-		// 		"junit_03.xml": getJUnit(7, 0),
-		// 	},
-		// 	retest1Pass:  true,
-		// 	retest2Pass: true,
-		// 	reason:   merged,
-		// 	state:    "success",
-		// },
-		// // Should fail because the failure of the weakStable job is a strong failure.
-		// {
-		// 	name:            "Test21",
-		// 	pr:              ValidPR(),
-		// 	issue:           LGTMIssue(),
-		// 	events:          NewLGTMEvents(),
-		// 	commits:         Commits(), // Modified at time.Unix(7), 8, and 9
-		// 	ciStatus:        SuccessStatus(),
-		// 	lastBuildNumber: LastBuildNumber(),
-		// 	gcsResult:       SuccessGCS(),
-		// 	weakResults: map[int]utils.FinishedFile{
-		// 		LastBuildNumber():     FailGCS(),
-		// 		LastBuildNumber() - 1: SuccessGCS(),
-		// 		LastBuildNumber() - 2: SuccessGCS(),
-		// 	},
-		// 	gcsJunit: map[string][]byte{
-		// 		"junit_01.xml": getJUnit(5, 0),
-		// 		"junit_02.xml": getJUnit(6, 1),
-		// 		"junit_03.xml": getJUnit(7, 0),
-		// 	},
-		// 	retest1Pass:  true,
-		// 	retest2Pass: true,
-		// 	reason:   e2eFailure,
-		// 	state:    "success",
-		// },
-		// // Should fail even though weakStable job weakly failed, because there was another failure in
-		// // previous two runs.
-		// {
-		// 	name:            "Test22",
-		// 	pr:              ValidPR(),
-		// 	issue:           LGTMIssue(),
-		// 	events:          NewLGTMEvents(),
-		// 	commits:         Commits(), // Modified at time.Unix(7), 8, and 9
-		// 	ciStatus:        SuccessStatus(),
-		// 	lastBuildNumber: LastBuildNumber(),
-		// 	gcsResult:       SuccessGCS(),
-		// 	weakResults: map[int]utils.FinishedFile{
-		// 		LastBuildNumber():     FailGCS(),
-		// 		LastBuildNumber() - 1: SuccessGCS(),
-		// 		LastBuildNumber() - 2: FailGCS(),
-		// 	},
-		// 	gcsJunit: map[string][]byte{
-		// 		"junit_01.xml": getJUnit(5, 0),
-		// 		"junit_02.xml": getJUnit(6, 0),
-		// 		"junit_03.xml": getJUnit(7, 0),
-		// 	},
-		// 	retest1Pass:  true,
-		// 	retest2Pass: true,
-		// 	reason:   e2eFailure,
-		// 	state:    "success",
-		// },
 	}
 	for testNum := range tests {
 		test := &tests[testNum]
@@ -990,76 +885,43 @@ func TestSubmitQueue(t *testing.T) {
 		stateSet := ""
 		wasMerged := false
 
-		numTestChecks := 0
-		path := "/bucket/logs/foo/latest-build.txt"
-		mux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
-			if r.Method != "GET" {
-				t.Errorf("Unexpected method: %s", r.Method)
-			}
-			w.WriteHeader(http.StatusOK)
-			w.Write([]byte(strconv.Itoa(test.lastBuildNumber)))
-
-			// There is no good spot for this, but this gets called
-			// before we queue the PR. So mark the PR as "merged".
-			// When the sq initializes, it will check the Jenkins status,
-			// so we don't want to modify the PR there. Instead we need
-			// to wait until the second time we check Jenkins, which happens
-			// we did the IsMerged() check.
-			numTestChecks = numTestChecks + 1
-			if numTestChecks == 2 && test.mergeAfterQueued {
-				test.pr.Merged = boolPtr(true)
-				test.pr.Mergeable = nil
-			}
-		})
-		path = fmt.Sprintf("/bucket/logs/foo/%v/finished.json", test.lastBuildNumber)
-		mux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
-			if r.Method != "GET" {
-				t.Errorf("Unexpected method: %s", r.Method)
-			}
-			w.WriteHeader(http.StatusOK)
-			data, err := json.Marshal(test.gcsResult)
-			if err != nil {
-				t.Errorf("Unexpected error: %v", err)
-			}
-			w.Write(data)
-		})
-		path = "/bucket/logs/bar/latest-build.txt"
-		mux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
-			if r.Method != "GET" {
-				t.Errorf("Unexpected method: %s", r.Method)
-			}
-			w.WriteHeader(http.StatusOK)
-			w.Write([]byte(strconv.Itoa(test.lastBuildNumber)))
-		})
-		for buildNumber := range test.weakResults {
-			path = fmt.Sprintf("/bucket/logs/bar/%v/finished.json", buildNumber)
-			// workaround go for loop semantics
-			buildNumberCopy := buildNumber
+		for _, job := range someJobNames {
+			numTestChecks := 0
+			path := fmt.Sprintf("/bucket/logs/%s/latest-build.txt", job)
 			mux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
 				if r.Method != "GET" {
 					t.Errorf("Unexpected method: %s", r.Method)
 				}
 				w.WriteHeader(http.StatusOK)
-				data, err := json.Marshal(test.weakResults[buildNumberCopy])
+				w.Write([]byte(strconv.Itoa(test.lastBuildNumber)))
+
+				// There is no good spot for this, but this gets called
+				// before we queue the PR. So mark the PR as "merged".
+				// When the sq initializes, it will check the Jenkins status,
+				// so we don't want to modify the PR there. Instead we need
+				// to wait until the second time we check Jenkins, which happens
+				// we did the IsMerged() check.
+				numTestChecks = numTestChecks + 1
+				if numTestChecks == 2 && test.mergeAfterQueued {
+					test.pr.Merged = boolPtr(true)
+					test.pr.Mergeable = nil
+				}
+			})
+			path = fmt.Sprintf("/bucket/logs/%s/%v/finished.json", job, test.lastBuildNumber)
+			mux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
+				if r.Method != "GET" {
+					t.Errorf("Unexpected method: %s", r.Method)
+				}
+				w.WriteHeader(http.StatusOK)
+				data, err := json.Marshal(test.gcsResult)
 				if err != nil {
 					t.Errorf("Unexpected error: %v", err)
 				}
 				w.Write(data)
 			})
 		}
-		for junitFile, xml := range test.gcsJunit {
-			path = fmt.Sprintf("/bucket/logs/bar/%v/artifacts/%v", test.lastBuildNumber, junitFile)
-			// workaround go for loop semantics
-			xmlCopy := xml
-			mux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
-				if r.Method != "GET" {
-					t.Errorf("Unexpected method: %s", r.Method)
-				}
-				w.WriteHeader(http.StatusOK)
-				w.Write(xmlCopy)
-			})
-		}
-		path = fmt.Sprintf("/repos/o/r/issues/%d/comments", issueNum)
+
+		path := fmt.Sprintf("/repos/o/r/issues/%d/comments", issueNum)
 		mux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
 			if r.Method == "POST" {
 				c := new(github.IssueComment)

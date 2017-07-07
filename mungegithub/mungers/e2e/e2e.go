@@ -29,14 +29,14 @@ import (
 	"k8s.io/kubernetes/pkg/util/sets"
 	cache "k8s.io/test-infra/mungegithub/mungers/flakesync"
 
-	"github.com/golang/glog"
 	"io/ioutil"
+
+	"github.com/golang/glog"
 )
 
 // E2ETester can be queried for E2E job stability.
 type E2ETester interface {
-	GCSBasedStable() (stable, ignorableFlakes bool)
-	GCSWeakStable() bool
+	LoadNonBlockingStatus()
 	GetBuildStatus() map[string]BuildInfo
 	Flakes() cache.Flakes
 }
@@ -50,9 +50,7 @@ type BuildInfo struct {
 // RealE2ETester is the object which will get status from a google bucket
 // information about recent jobs
 type RealE2ETester struct {
-	BlockingJobNames    []string
 	NonBlockingJobNames []string
-	WeakStableJobNames  []string
 
 	sync.Mutex
 	BuildStatus          map[string]BuildInfo // protect by mutex
@@ -264,25 +262,8 @@ func (e *RealE2ETester) LatestRunOfJob(jobName string) (int, error) {
 	return e.GoogleGCSBucketUtils.GetLastestBuildNumberFromJenkinsGoogleBucket(jobName)
 }
 
-// GCSBasedStable is a version of Stable function that depends on files stored in GCS instead of Jenkis
-func (e *RealE2ETester) GCSBasedStable() (allStable, ignorableFlakes bool) {
-	allStable = true
-
-	for _, job := range e.BlockingJobNames {
-		lastBuildNumber, err := e.GoogleGCSBucketUtils.GetLastestBuildNumberFromJenkinsGoogleBucket(job)
-		glog.V(4).Infof("Checking status of %v, %v", job, lastBuildNumber)
-		if err != nil {
-			glog.Errorf("Error while getting data for %v: %v", job, err)
-			e.setBuildStatus(job, "Not Stable", strconv.Itoa(lastBuildNumber))
-			continue
-		}
-
-		stable, flakes := e.checkPassFail(job, lastBuildNumber)
-		allStable = allStable && stable
-		ignorableFlakes = ignorableFlakes || flakes
-	}
-
-	// Also get status for non-blocking jobs
+// LoadNonBlockingStatus gets the build stability status for all the NonBlockingJobNames.
+func (e *RealE2ETester) LoadNonBlockingStatus() {
 	for _, job := range e.NonBlockingJobNames {
 		lastBuildNumber, err := e.GoogleGCSBucketUtils.GetLastestBuildNumberFromJenkinsGoogleBucket(job)
 		glog.V(4).Infof("Checking status of %v, %v", job, lastBuildNumber)
@@ -298,8 +279,6 @@ func (e *RealE2ETester) GCSBasedStable() (allStable, ignorableFlakes bool) {
 			e.setBuildStatus(job, "[nonblocking] Stable", strconv.Itoa(lastBuildNumber))
 		}
 	}
-
-	return allStable, ignorableFlakes
 }
 
 func getJUnitFailures(r io.Reader) (failures map[string]string, err error) {
@@ -391,64 +370,4 @@ func (e *RealE2ETester) failureReasons(job string, buildNumber int, completeList
 	}
 
 	return failedTests, nil
-}
-
-// GCSWeakStable is a version of GCSBasedStable with a slightly relaxed condition.
-// This function says that e2e's are unstable only if there were real test failures
-// (i.e. there was a test that failed, so no timeouts/cluster startup failures counts),
-// or test failed for any reason 3 times in a row.
-func (e *RealE2ETester) GCSWeakStable() bool {
-	allStable := true
-	for _, job := range e.WeakStableJobNames {
-		lastBuildNumber, err := e.GoogleGCSBucketUtils.GetLastestBuildNumberFromJenkinsGoogleBucket(job)
-		glog.V(4).Infof("Checking status of %v, %v", job, lastBuildNumber)
-		if err != nil {
-			glog.Errorf("Error while getting data for %v: %v", job, err)
-			e.setBuildStatus(job, "Not Stable", strconv.Itoa(lastBuildNumber))
-			continue
-		}
-		if stable, err := e.GoogleGCSBucketUtils.CheckFinishedStatus(job, lastBuildNumber); stable && err == nil {
-			e.setBuildStatus(job, "Stable", strconv.Itoa(lastBuildNumber))
-			continue
-		}
-
-		if e.resolutionTracker.Resolved(cache.Job(job), cache.Number(lastBuildNumber)) {
-			e.setBuildStatus(job, "Problem Resolved", strconv.Itoa(lastBuildNumber))
-			continue
-		}
-
-		failures, err := e.failureReasons(job, lastBuildNumber, false)
-		if err != nil {
-			glog.Errorf("Error while getting data for %v/%v: %v", job, lastBuildNumber, err)
-			e.setBuildStatus(job, "Not Stable", strconv.Itoa(lastBuildNumber))
-			continue
-		}
-
-		thisStable := len(failures) == 0
-
-		if thisStable == false {
-			allStable = false
-			e.setBuildStatus(job, "Not Stable", strconv.Itoa(lastBuildNumber))
-			glog.Infof("WeakStable failed because found a failure in JUnit file for build %v; %v and possibly more failed", lastBuildNumber, failures)
-			continue
-		}
-
-		// If we're here it means that we weren't able to find a test that failed, which means that the reason of build failure is coming from the infrastructure
-		// Check results of previous two builds.
-		unstable := make([]int, 0)
-		if stable, err := e.GoogleGCSBucketUtils.CheckFinishedStatus(job, lastBuildNumber-1); !stable || err != nil {
-			unstable = append(unstable, lastBuildNumber-1)
-		}
-		if stable, err := e.GoogleGCSBucketUtils.CheckFinishedStatus(job, lastBuildNumber-2); !stable || err != nil {
-			unstable = append(unstable, lastBuildNumber-2)
-		}
-		if len(unstable) > 1 {
-			e.setBuildStatus(job, "Not Stable", strconv.Itoa(lastBuildNumber))
-			allStable = false
-			glog.Infof("WeakStable failed because found a weak failure in build %v and builds %v failed.", lastBuildNumber, unstable)
-			continue
-		}
-		e.setBuildStatus(job, "Stable", strconv.Itoa(lastBuildNumber))
-	}
-	return allStable
 }

@@ -207,10 +207,7 @@ var (
 //  The google internal jenkins instance must be passing the BlockingJobNames e2e tests
 type SubmitQueue struct {
 	githubConfig        *github.Config
-	BlockingJobNames    []string
 	NonBlockingJobNames []string
-	PresubmitJobNames   []string
-	WeakStableJobNames  []string
 
 	GateApproved bool
 
@@ -439,10 +436,7 @@ func (sq *SubmitQueue) internalInitialize(config *github.Config, features *featu
 	defer sq.Unlock()
 
 	// Clean up all of our flags which we wish --flag="" to mean []string{}
-	sq.BlockingJobNames = cleanStringSlice(sq.BlockingJobNames)
 	sq.NonBlockingJobNames = cleanStringSlice(sq.NonBlockingJobNames)
-	sq.PresubmitJobNames = cleanStringSlice(sq.PresubmitJobNames)
-	sq.WeakStableJobNames = cleanStringSlice(sq.WeakStableJobNames)
 	sq.RequiredStatusContexts = cleanStringSlice(sq.RequiredStatusContexts)
 	sq.RequiredRetestContexts = cleanStringSlice(sq.RequiredRetestContexts)
 	sq.DoNotMergeMilestones = cleanStringSlice(sq.DoNotMergeMilestones)
@@ -452,10 +446,7 @@ func (sq *SubmitQueue) internalInitialize(config *github.Config, features *featu
 
 	// TODO: This is not how injection for tests should work.
 	if sq.FakeE2E {
-		sq.e2e = &fake_e2e.FakeE2ETester{
-			JobNames:           sq.BlockingJobNames,
-			WeakStableJobNames: sq.WeakStableJobNames,
-		}
+		sq.e2e = &fake_e2e.FakeE2ETester{}
 	} else {
 		var gcs *utils.Utils
 		if overrideUrl != "" {
@@ -468,9 +459,7 @@ func (sq *SubmitQueue) internalInitialize(config *github.Config, features *featu
 		}
 
 		sq.e2e = (&e2e.RealE2ETester{
-			BlockingJobNames:     sq.BlockingJobNames,
 			NonBlockingJobNames:  sq.NonBlockingJobNames,
-			WeakStableJobNames:   sq.WeakStableJobNames,
 			BuildStatus:          map[string]e2e.BuildInfo{},
 			GoogleGCSBucketUtils: gcs,
 		}).Init(admin.Mux)
@@ -572,11 +561,6 @@ func (sq *SubmitQueue) EachLoop() error {
 // AddFlags will add any request flags to the cobra `cmd`
 func (sq *SubmitQueue) AddFlags(cmd *cobra.Command, config *github.Config) {
 	cmd.Flags().StringSliceVar(&sq.NonBlockingJobNames, "nonblocking-jenkins-jobs", []string{}, "Comma separated list of jobs that don't block merges, but will have status reported and issues filed.")
-	cmd.Flags().StringSliceVar(&sq.BlockingJobNames, "jenkins-jobs", []string{}, "Comma separated list of jobs in Jenkins that should block merges if failing.")
-	cmd.Flags().StringSliceVar(&sq.PresubmitJobNames, "presubmit-jobs", []string{""}, "Comma separated list of jobs in Jenkins that run presubmit and should have issues filed for flakes.")
-	cmd.Flags().StringSliceVar(&sq.WeakStableJobNames, "weak-stable-jobs",
-		[]string{},
-		"Comma separated list of jobs in Jenkins to use for stability testing that needs only weak success")
 	cmd.Flags().StringSliceVar(&sq.RequiredStatusContexts, "required-contexts", []string{}, "Comma separate list of status contexts required for a PR to be considered ok to merge")
 	cmd.Flags().BoolVar(&sq.FakeE2E, "fake-e2e", false, "Whether to use a fake for testing E2E stability.")
 	cmd.Flags().StringSliceVar(&sq.DoNotMergeMilestones, "do-not-merge-milestones", []string{}, "List of milestones which, when applied, will cause the PR to not be merged")
@@ -596,11 +580,11 @@ func (sq *SubmitQueue) updateHealth() {
 		sq.healthHistory = sq.healthHistory[1:]
 	}
 	// Make the current record
-	stable, _ := sq.e2e.GCSBasedStable()
+	sq.e2e.LoadNonBlockingStatus()
 	emergencyStop := sq.emergencyMergeStop()
 	newEntry := healthRecord{
 		Time:    time.Now(),
-		Overall: stable && !emergencyStop,
+		Overall: !emergencyStop,
 		Jobs:    map[string]bool{},
 	}
 	for job, status := range sq.e2e.GetBuildStatus() {
@@ -616,7 +600,7 @@ func (sq *SubmitQueue) updateHealth() {
 	sq.health.TotalLoops = len(sq.healthHistory)
 	sq.health.NumStable = 0
 	sq.health.NumStablePerJob = map[string]int{}
-	sq.health.MergePossibleNow = stable && !emergencyStop
+	sq.health.MergePossibleNow = !emergencyStop
 	if sq.health.MergePossibleNow {
 		promMetrics.Blocked.Set(0)
 	} else {
@@ -641,20 +625,8 @@ func (sq *SubmitQueue) e2eStable(aboutToMerge bool) bool {
 	wentStable := false
 	wentUnstable := false
 
-	stable, ignorableFlakes := sq.e2e.GCSBasedStable()
-	if stable && sq.emergencyMergeStop() {
-		stable = false
-	}
-
-	weakStable := sq.e2e.GCSWeakStable()
-	if !weakStable {
-		stable = weakStable
-		glog.Errorf("E2E is not stable because weak stable check failed.")
-	}
-
-	if aboutToMerge && stable && ignorableFlakes {
-		atomic.AddInt32(&sq.flakesIgnored, 1)
-	}
+	sq.e2e.LoadNonBlockingStatus()
+	stable := !sq.emergencyMergeStop()
 
 	sq.Lock()
 	last := sq.lastE2EStable

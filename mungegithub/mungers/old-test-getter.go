@@ -75,7 +75,6 @@ func (p *OldTestGetter) EachLoop() error {
 	}
 
 	p.getOldPostsubmitTests(e2eTester)
-	p.getPresubmitTests(p.sq.PresubmitJobNames, e2eTester)
 
 	return nil
 }
@@ -97,29 +96,6 @@ func (p *OldTestGetter) getOldPostsubmitTests(e2eTester *e2e.RealE2ETester) {
 			}
 		}
 		p.ran[job] = true
-	}
-}
-
-func (p *OldTestGetter) getPresubmitTests(jobs []string, e2eTester *e2e.RealE2ETester) {
-	for _, job := range jobs {
-		mostRecent, err := e2eTester.LatestRunOfJob(job)
-		if err != nil {
-			glog.Errorf("Couldn't get run number for job %v: %v", job, err)
-			continue
-		}
-		lastLoad, ok := p.pullJobToLastRun[job]
-		if !ok {
-			lastLoad = mostRecent - p.NumberOfOldTestsToGet
-		}
-		for n := lastLoad + 1; n <= mostRecent; n++ {
-			glog.Infof("Getting results for past test result: %v %v", job, n)
-			if r, err := e2eTester.GetBuildResult(job, n); err != nil {
-				glog.Errorf("Couldn't get result for %v %v: %v", job, n, err)
-			} else {
-				glog.Infof("result from %v/%v:\n%#v", job, n, r)
-			}
-		}
-		p.pullJobToLastRun[job] = mostRecent
 	}
 }
 
