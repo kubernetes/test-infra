@@ -74,6 +74,6 @@ ADD ["e2e-runner.sh", \
     "https://raw.githubusercontent.com/kubernetes/kubernetes/master/cluster/get-kube.sh", \
     "/workspace/"]
 RUN ["chmod", "+x", "/workspace/get-kube.sh"]
-WORKDIR "/workspace"
 
-ENTRYPOINT ["/workspace/e2e-runner.sh"]
+WORKDIR "/workspace"
+ENTRYPOINT ["/workspace/kubetest"]

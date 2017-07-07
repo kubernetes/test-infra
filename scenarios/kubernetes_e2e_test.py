@@ -233,7 +233,7 @@ class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-method
         self.assertEquals(migrated, args.kubetest_args)
         with Stub(kubernetes_e2e, 'check_env', self.fake_check_env):
             kubernetes_e2e.main(args)
-        lastcall = self.callstack[-1]
+        lastcall = self.callstack[-2]
         for arg in migrated:
             self.assertIn(arg, lastcall)
 
@@ -363,8 +363,8 @@ class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-method
             kubernetes_e2e.main(args)
 
         self.assertEqual(self.envs, {})
-        for call in self.callstack:
-            self.assertTrue(call.startswith('docker'))
+        call = self.callstack[-2]
+        self.assertTrue(call.startswith('docker'), call)
 
     def test_default_tag(self):
         """Ensure the default tag exists on gcr.io."""
