@@ -111,7 +111,7 @@ func (e extractStrategy) name() string {
 	return filepath.Base(e.option)
 }
 
-func (l extractStrategies) Extract() error {
+func (l extractStrategies) Extract(project, zone string) error {
 	// rm -rf kubernetes*
 	if files, err := ioutil.ReadDir("."); err != nil {
 		return err
@@ -135,7 +135,7 @@ func (l extractStrategies) Extract() error {
 				return err
 			}
 		}
-		if err := e.Extract(); err != nil {
+		if err := e.Extract(project, zone); err != nil {
 			return err
 		}
 	}
@@ -324,7 +324,7 @@ func setReleaseFromGci(image string) error {
 	return getKube("https://storage.googleapis.com/kubernetes-release/release", strings.TrimSpace(r))
 }
 
-func (e extractStrategy) Extract() error {
+func (e extractStrategy) Extract(project, zone string) error {
 	switch e.mode {
 	case local:
 		url := k8s("kubernetes", "_output", "gcs-stage")
@@ -354,15 +354,13 @@ func (e extractStrategy) Extract() error {
 		}
 	case gke:
 		// TODO(fejta): prod v staging v test
-		p := os.Getenv("PROJECT")
-		if len(p) == 0 {
-			return fmt.Errorf("PROJECT is unset")
+		if project == "" {
+			return fmt.Errorf("--gcp-project unset")
 		}
-		z := os.Getenv("ZONE")
-		if len(z) == 0 {
-			return fmt.Errorf("ZONE is unset")
+		if zone == "" {
+			return fmt.Errorf("--gcp-zone unset")
 		}
-		ci, err := output(exec.Command("gcloud", "container", "get-server-config", fmt.Sprintf("--project=%v", p), fmt.Sprintf("--zone=%v", z), "--format=value(defaultClusterVersion)"))
+		ci, err := output(exec.Command("gcloud", "container", "get-server-config", fmt.Sprintf("--project=%v", project), fmt.Sprintf("--zone=%v", zone), "--format=value(defaultClusterVersion)"))
 		if err != nil {
 			return err
 		}
@@ -439,7 +437,7 @@ func loadState(save string) error {
 }
 
 func saveState(save string) error {
-	url := os.Getenv("KUBERNETES_RELEASE_URL")
+	url := os.Getenv("KUBERNETES_RELEASE_URL") // TODO(fejta): pass this in to saveState
 	version := os.Getenv("KUBERNETES_RELEASE")
 	log.Printf("Save U=%s R=%s to %s", url, version, save)
 	cUrl, err := joinUrl(save, "kube-config")

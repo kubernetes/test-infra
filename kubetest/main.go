@@ -65,9 +65,16 @@ type options struct {
 	dump                string
 	extract             extractStrategies
 	federation          bool
+	gcpCloudSdk         string
+	gcpProject          string
+	gcpServiceAccount   string
+	gcpZone             string
 	kubemark            bool
+	kubemarkMasterSize  string
+	kubemarkNodes       string // TODO(fejta): switch to int after migration
 	multipleFederations bool
 	perfTests           bool
+	provider            string
 	publish             string
 	save                string
 	skew                bool
@@ -89,15 +96,22 @@ func defineFlags() *options {
 	flag.StringVar(&o.dump, "dump", "", "If set, dump cluster logs to this location on test or cluster-up failure")
 	flag.Var(&o.extract, "extract", "Extract k8s binaries from the specified release location")
 	flag.BoolVar(&o.federation, "federation", false, "If true, start/tear down the federation control plane along with the clusters. To only start/tear down the federation control plane, specify --deploy=none")
+	flag.StringVar(&o.gcpCloudSdk, "gcp-cloud-sdk", "", "Install/upgrade google-cloud-sdk to the gs:// path if set")
+	flag.StringVar(&o.gcpProject, "gcp-project", "", "For use with gcloud commands")
+	flag.StringVar(&o.gcpServiceAccount, "gcp-service-account", "", "Service account to activate before using gcloud")
+	flag.StringVar(&o.gcpZone, "gcp-zone", "", "For use with gcloud commands")
 	flag.BoolVar(&o.kubemark, "kubemark", false, "If true, run kubemark tests.")
+	flag.StringVar(&o.kubemarkMasterSize, "kubemark-master-size", "", "Kubemark master size")
+	flag.StringVar(&o.kubemarkNodes, "kubemark-nodes", "", "Number of kubemark nodes to start")
 	flag.BoolVar(&o.multipleFederations, "multiple-federations", false, "If true, enable running multiple federation control planes in parallel")
 	flag.BoolVar(&o.perfTests, "perf-tests", false, "If true, run tests from perf-tests repo.")
+	flag.StringVar(&o.provider, "provider", "", "Kubernetes provider such as gce, gke, aws, etc")
 	flag.StringVar(&o.publish, "publish", "", "Publish version to the specified gs:// path on success")
+	flag.StringVar(&o.stage.dockerRegistry, "registry", "", "Push images to the specified docker registry (e.g. gcr.io/a-test-project)")
 	flag.StringVar(&o.save, "save", "", "Save credentials to gs:// path on --up if set (or load from there if not --up)")
 	flag.BoolVar(&o.skew, "skew", false, "If true, run tests in another version at ../kubernetes/hack/e2e.go")
 	flag.Var(&o.stage, "stage", "Upload binaries to gs://bucket/devel/job-suffix if set")
 	flag.StringVar(&o.stage.versionSuffix, "stage-suffix", "", "Append suffix to staged version when set")
-	flag.StringVar(&o.stage.dockerRegistry, "registry", "", "Push images to the specified docker registry (e.g. gcr.io/a-test-project)")
 	flag.BoolVar(&o.test, "test", false, "Run Ginkgo tests.")
 	flag.StringVar(&o.testArgs, "test_args", "", "Space-separated list of arguments to pass to Ginkgo test runner.")
 	flag.DurationVar(&timeout, "timeout", time.Duration(0), "Terminate testing after the timeout duration (s/m/h)")
@@ -171,14 +185,14 @@ type deployer interface {
 	Down() error
 }
 
-func getDeployer(deployment string) (deployer, error) {
+func getDeployer(deployment, project string) (deployer, error) {
 	switch deployment {
 	case "bash":
 		return bash{}, nil
 	case "kops":
 		return NewKops()
 	case "kubernetes-anywhere":
-		return NewKubernetesAnywhere()
+		return NewKubernetesAnywhere(project)
 	case "none":
 		return noneDeploy{}, nil
 	default:
@@ -220,7 +234,7 @@ func complete(o *options) error {
 		defer writeMetadata(o.dump)
 		defer writeXML(o.dump, time.Now())
 	}
-	if err := prepare(); err != nil {
+	if err := prepare(o); err != nil {
 		return fmt.Errorf("failed to prepare test environment: %v", err)
 	}
 	if err := prepareFederation(o); err != nil {
@@ -234,7 +248,7 @@ func complete(o *options) error {
 		return fmt.Errorf("called from invalid working directory: %v", err)
 	}
 
-	deploy, err := getDeployer(o.deployment)
+	deploy, err := getDeployer(o.deployment, o.gcpProject)
 	if err != nil {
 		return fmt.Errorf("error creating deployer: %v", err)
 	}
@@ -294,7 +308,9 @@ func acquireKubernetes(o *options) error {
 
 	// Potentially stage build binaries somewhere on GCS
 	if o.stage.Enabled() {
-		if err := xmlWrap("Stage", o.stage.Stage); err != nil {
+		if err := xmlWrap("Stage", func() error {
+			return o.stage.Stage(o.federation)
+		}); err != nil {
 			return err
 		}
 	}
@@ -318,7 +334,7 @@ func acquireKubernetes(o *options) error {
 				}
 			}
 			// New deployment, extract new version
-			return o.extract.Extract()
+			return o.extract.Extract(o.gcpProject, o.gcpZone)
 		})
 		if err != nil {
 			return err
@@ -410,13 +426,41 @@ func installGcloud(tarball string, location string) error {
 	return nil
 }
 
-func prepareGcp(kubernetesProvider string) error {
-	// Ensure project is set
-	p := os.Getenv("PROJECT")
-	if p == "" {
+func migrateGcpEnvAndOptions(o *options) error {
+	return migrateOptions([]migratedOption{
+		{
+			env:    "PROJECT",
+			option: &o.gcpProject,
+			name:   "--gcp-project",
+		},
+		{
+			env:    "ZONE",
+			option: &o.gcpZone,
+			name:   "--gcp-zone",
+		},
+		{
+			env:    "GOOGLE_APPLICATION_CREDENTIALS",
+			option: &o.gcpServiceAccount,
+			name:   "--gcp-service-account",
+		},
+		{
+			env:      "CLOUDSDK_BUCKET",
+			option:   &o.gcpCloudSdk,
+			name:     "--gcp-cloud-sdk",
+			skipPush: true,
+		},
+	})
+}
+
+func prepareGcp(o *options) error {
+	if err := migrateGcpEnvAndOptions(o); err != nil {
+		return err
+	}
+
+	if o.gcpProject == "" {
 		p, err := boskos.Acquire("project", "free", "busy")
 		if err != nil {
-			return fmt.Errorf("KUBERNETES_PROVIDER=%s boskos fail to acquire PROJECT:%s", kubernetesProvider, err)
+			return fmt.Errorf("--provider=%s boskos failed to acquire project: %v", o.provider, err)
 		}
 
 		go func(c *client.Client, proj string) {
@@ -426,10 +470,11 @@ func prepareGcp(kubernetesProvider string) error {
 				}
 			}
 		}(boskos, p)
+		o.gcpProject = p
 	}
 
 	// gcloud creds may have changed
-	if err := activateServiceAccount(); err != nil {
+	if err := activateServiceAccount(o.gcpServiceAccount); err != nil {
 		return err
 	}
 
@@ -444,23 +489,22 @@ func prepareGcp(kubernetesProvider string) error {
 		return err
 	}
 
-	log.Printf("Checking presence of public key in %s", p)
-	if o, err := output(exec.Command("gcloud", "compute", "--project="+p, "project-info", "describe")); err != nil {
+	log.Printf("Checking presence of public key in %s", o.gcpProject)
+	if out, err := output(exec.Command("gcloud", "compute", "--project="+o.gcpProject, "project-info", "describe")); err != nil {
 		return err
 	} else if b, err := ioutil.ReadFile(pk); err != nil {
 		return err
-	} else if !strings.Contains(string(b), string(o)) {
+	} else if !strings.Contains(string(b), string(out)) {
 		log.Print("Uploading public ssh key to project metadata...")
-		if err = finishRunning(exec.Command("gcloud", "compute", "--project="+p, "config-ssh")); err != nil {
+		if err = finishRunning(exec.Command("gcloud", "compute", "--project="+o.gcpProject, "config-ssh")); err != nil {
 			return err
 		}
 	}
 
 	// Install custom gcloud verion if necessary
-	if b := os.Getenv("CLOUDSDK_BUCKET"); b != "" {
-
+	if o.gcpCloudSdk != "" {
 		for i := 0; i < 3; i++ {
-			if err := finishRunning(exec.Command("gsutil", "-mq", "cp", "-r", b, home())); err == nil {
+			if err := finishRunning(exec.Command("gsutil", "-mq", "cp", "-r", o.gcpCloudSdk, home())); err == nil {
 				break // Success!
 			}
 			time.Sleep(1 << uint(i) * time.Second)
@@ -472,18 +516,22 @@ func prepareGcp(kubernetesProvider string) error {
 				}
 			}
 		}
-		if err := os.Rename(home(filepath.Base(b)), home("repo")); err != nil {
+		if err := os.Rename(home(filepath.Base(o.gcpCloudSdk)), home("repo")); err != nil {
 			return err
 		}
+
 		// Controls which gcloud components to install.
-		ccmsu := "CLOUDSDK_COMPONENT_MANAGER_SNAPSHOT_URL"
-		defer os.Setenv(ccmsu, os.Getenv(ccmsu))
-		os.Setenv(ccmsu, "file://"+home("repo", "components-2.json"))
+		if pop, err := pushEnv("CLOUDSDK_COMPONENT_MANAGER_SNAPSHOT_URL", "file://"+home("repo", "components-2.json")); err != nil {
+			return err
+		} else {
+			defer pop()
+		}
+
 		if err := installGcloud(home("repo", "google-cloud-sdk.tar.gz"), home("cloudsdk")); err != nil {
 			return err
 		}
 		// gcloud creds may have changed
-		if err := activateServiceAccount(); err != nil {
+		if err := activateServiceAccount(o.gcpServiceAccount); err != nil {
 			return err
 		}
 	}
@@ -495,11 +543,11 @@ func prepareAws() error {
 }
 
 // Activate GOOGLE_APPLICATION_CREDENTIALS if set or do nothing.
-func activateServiceAccount() error {
-	if k := os.Getenv("GOOGLE_APPLICATION_CREDENTIALS"); k != "" {
-		return finishRunning(exec.Command("gcloud", "auth", "activate-service-account", "--key-file="+k))
+func activateServiceAccount(path string) error {
+	if path == "" {
+		return nil
 	}
-	return nil
+	return finishRunning(exec.Command("gcloud", "auth", "activate-service-account", "--key-file="+path))
 }
 
 // Make all artifacts world readable.
@@ -509,11 +557,19 @@ func chmodArtifacts() error {
 	return finishRunning(exec.Command("chmod", "-R", "o+r", artifacts))
 }
 
-func prepare() error {
-	kp := os.Getenv("KUBERNETES_PROVIDER")
-	switch kp {
+func prepare(o *options) error {
+	if err := migrateOptions([]migratedOption{
+		{
+			env:    "KUBERNETES_PROVIDER",
+			option: &o.provider,
+			name:   "--provider",
+		},
+	}); err != nil {
+		return err
+	}
+	switch o.provider {
 	case "gce", "gke", "kubemark":
-		if err := prepareGcp(kp); err != nil {
+		if err := prepareGcp(o); err != nil {
 			return err
 		}
 	case "aws":
@@ -522,24 +578,16 @@ func prepare() error {
 		}
 	}
 
-	if err := activateServiceAccount(); err != nil {
-		return err
-	}
-
 	if err := os.MkdirAll(artifacts, 0777); err != nil { // Create artifacts
 		return err
 	}
 
-	if p := os.Getenv("PRIORITY_PATH"); p != "" {
-		if err := insertPath(p); err != nil {
-			return err
-		}
-	}
 	return nil
 }
 
 func prepareFederation(o *options) error {
 	if o.multipleFederations {
+		// TODO(fejta): use boskos to grab a federation cluster
 		// Note: EXECUTOR_NUMBER and NODE_NAME are Jenkins
 		// specific environment variables. So this doesn't work
 		// when we move away from Jenkins.

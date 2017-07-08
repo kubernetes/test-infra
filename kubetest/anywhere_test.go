@@ -24,10 +24,6 @@ import (
 )
 
 func TestNewKubernetesAnywhere(t *testing.T) {
-	if err := os.Setenv("PROJECT", "test-project"); err != nil {
-		t.Fatalf("couldn't set PROJECT environment: %v", err)
-	}
-
 	cases := []struct {
 		name              string
 		phase2            string
@@ -83,7 +79,7 @@ func TestNewKubernetesAnywhere(t *testing.T) {
 		*kubernetesAnywhereKubeadmVersion = tc.kubeadmVersion
 		*kubernetesAnywhereKubernetesVersion = tc.kubernetesVersion
 
-		_, err = NewKubernetesAnywhere()
+		_, err = NewKubernetesAnywhere("fake-project")
 		if err != nil {
 			t.Errorf("NewKubernetesAnywhere(%s) failed: %v", tc.name, err)
 			continue

@@ -346,3 +346,94 @@ func TestHttpFileScheme(t *testing.T) {
 		t.Errorf("httpRead(%s): expected %v, got %v", fileUrl, expected, buf)
 	}
 }
+
+func TestMigrateOptions(t *testing.T) {
+	ov := "option-value"
+	ev := "env-value"
+
+	cases := []struct {
+		name           string
+		setEnv         bool
+		setOption      bool
+		push           bool
+		expectedEnv    *string
+		expectedOption string
+	}{
+		{
+			name: "no flag or env results in no change",
+		},
+		{
+			name:           "flag and env, no push results in no change",
+			setEnv:         true,
+			setOption:      true,
+			expectedEnv:    &ev,
+			expectedOption: ov,
+		},
+		{
+			name:           "flag and env, push overwrites env",
+			setEnv:         true,
+			setOption:      true,
+			push:           true,
+			expectedEnv:    &ov,
+			expectedOption: ov,
+		},
+		{
+			name:           "flag and no env, no push results in no change",
+			setOption:      true,
+			expectedOption: ov,
+		},
+		{
+			name:           "flag and no env, push overwites env",
+			setOption:      true,
+			push:           true,
+			expectedEnv:    &ov,
+			expectedOption: ov,
+		},
+		{
+			name:           "no flag and env overwrites option",
+			setEnv:         true,
+			expectedEnv:    &ev,
+			expectedOption: ev,
+		},
+	}
+
+	env := "random-env"
+
+	for _, tc := range cases {
+		if tc.setEnv {
+			if err := os.Setenv(env, ev); err != nil {
+				t.Fatalf("%s: %v", tc.name, err)
+			}
+		} else if err := os.Unsetenv(env); err != nil {
+			t.Fatalf("%s: %v", tc.name, err)
+		}
+
+		opt := ""
+		if tc.setOption {
+			opt = ov
+		}
+		if err := migrateOptions([]migratedOption{
+			{
+				env:      env,
+				option:   &opt,
+				name:     "--random-flag",
+				skipPush: !tc.push,
+			},
+		}); err != nil {
+			t.Fatalf("%s: %v", tc.name, err)
+		}
+
+		val, present := os.LookupEnv(env)
+		if present && tc.expectedEnv == nil {
+			t.Errorf("%s: env should not be set", tc.name)
+		} else if tc.expectedEnv != nil && !present {
+			t.Errorf("%s: env should be set", tc.name)
+		} else if tc.expectedEnv != nil && val != *tc.expectedEnv {
+			t.Errorf("%s: env actual %s != expected %s", tc.name, val, *tc.expectedEnv)
+		}
+
+		if tc.expectedOption != opt {
+			t.Errorf("%s: option actual %s != expected %s", tc.name, opt, tc.expectedOption)
+		}
+	}
+}

@@ -31,17 +31,18 @@ import (
 
 var (
 	// kops specific flags.
-	kopsPath        = flag.String("kops", "", "(kops only) Path to the kops binary. Must be set for kops.")
-	kopsCluster     = flag.String("kops-cluster", "", "(kops only) Cluster name. Must be set for kops.")
-	kopsState       = flag.String("kops-state", os.Getenv("KOPS_STATE_STORE"), "(kops only) s3:// path to kops state store. Must be set. (This flag defaults to $KOPS_STATE_STORE, and overrides it if set.)")
-	kopsSSHKey      = flag.String("kops-ssh-key", os.Getenv("AWS_SSH_KEY"), "(kops only) Path to ssh key-pair for each node. (Defaults to $AWS_SSH_KEY or '~/.ssh/kube_aws_rsa'.)")
-	kopsKubeVersion = flag.String("kops-kubernetes-version", "", "(kops only) If set, the version of Kubernetes to deploy (can be a URL to a GCS path where the release is stored) (Defaults to kops default, latest stable release.).")
-	kopsZones       = flag.String("kops-zones", "us-west-2a", "(kops AWS only) AWS zones for kops deployment, comma delimited.")
-	kopsNodes       = flag.Int("kops-nodes", 2, "(kops only) Number of nodes to create.")
-	kopsUpTimeout   = flag.Duration("kops-up-timeout", 20*time.Minute, "(kops only) Time limit between 'kops config / kops update' and a response from the Kubernetes API.")
-	kopsAdminAccess = flag.String("kops-admin-access", "", "(kops only) If set, restrict apiserver access to this CIDR range.")
-	kopsImage       = flag.String("kops-image", "", "(kops only) Image (AMI) for nodes to use. (Defaults to kops default, a Debian image with a custom kubernetes kernel.)")
-	kopsArgs        = flag.String("kops-args", "", "(kops only) Additional space-separated args to pass unvalidated to 'kops create cluster', e.g. '--kops-args=\"--dns private --node-size t2.micro\"'")
+	kopsPath         = flag.String("kops", "", "(kops only) Path to the kops binary. Must be set for kops.")
+	kopsCluster      = flag.String("kops-cluster", "", "(kops only) Cluster name. Must be set for kops.")
+	kopsState        = flag.String("kops-state", "", "(kops only) s3:// path to kops state store. Must be set.")
+	kopsSSHKey       = flag.String("kops-ssh-key", "", "(kops only) Path to ssh key-pair for each node (defaults '~/.ssh/kube_aws_rsa' if unset.)")
+	kopsKubeVersion  = flag.String("kops-kubernetes-version", "", "(kops only) If set, the version of Kubernetes to deploy (can be a URL to a GCS path where the release is stored) (Defaults to kops default, latest stable release.).")
+	kopsZones        = flag.String("kops-zones", "us-west-2a", "(kops AWS only) AWS zones for kops deployment, comma delimited.")
+	kopsNodes        = flag.Int("kops-nodes", 2, "(kops only) Number of nodes to create.")
+	kopsUpTimeout    = flag.Duration("kops-up-timeout", 20*time.Minute, "(kops only) Time limit between 'kops config / kops update' and a response from the Kubernetes API.")
+	kopsAdminAccess  = flag.String("kops-admin-access", "", "(kops only) If set, restrict apiserver access to this CIDR range.")
+	kopsImage        = flag.String("kops-image", "", "(kops only) Image (AMI) for nodes to use. (Defaults to kops default, a Debian image with a custom kubernetes kernel.)")
+	kopsArgs         = flag.String("kops-args", "", "(kops only) Additional space-separated args to pass unvalidated to 'kops create cluster', e.g. '--kops-args=\"--dns private --node-size t2.micro\"'")
+	kopsPriorityPath = flag.String("kops-priority-path", "", "Insert into PATH if set")
 )
 
 type kops struct {
@@ -57,7 +58,33 @@ type kops struct {
 	kubecfg     string
 }
 
+func migrateKopsEnv() error {
+	return migrateOptions([]migratedOption{
+		{
+			env:      "KOPS_STATE_STORE",
+			option:   kopsState,
+			name:     "--kops-state",
+			skipPush: true,
+		},
+		{
+			env:      "AWS_SSH_KEY",
+			option:   kopsSSHKey,
+			name:     "--kops-ssh-key",
+			skipPush: true,
+		},
+		{
+			env:      "PRIORITY_PATH",
+			option:   kopsPriorityPath,
+			name:     "--kops-priority-path",
+			skipPush: true,
+		},
+	})
+}
+
 func NewKops() (*kops, error) {
+	if err := migrateKopsEnv(); err != nil {
+		return nil, err
+	}
 	if *kopsPath == "" {
 		return nil, fmt.Errorf("--kops must be set to a valid binary path for kops deployment.")
 	}
@@ -67,6 +94,13 @@ func NewKops() (*kops, error) {
 	if *kopsState == "" {
 		return nil, fmt.Errorf("--kops-state must be set to a valid S3 path for kops deployment.")
 	}
+	if *kopsPriorityPath != "" {
+		if err := insertPath(*kopsPriorityPath); err != nil {
+			return nil, err
+		}
+	}
+
+	// TODO(fejta): consider explicitly passing these env items where needed.
 	sshKey := *kopsSSHKey
 	if sshKey == "" {
 		usr, err := user.Current()
