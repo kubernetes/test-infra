@@ -69,7 +69,7 @@ if [[ -z "${EXTERNAL_IP}" ]]; then
 fi
 e2e_args+=(--kops-admin-access="${EXTERNAL_IP}/32")
 
-# Define a custom instance lister for cluster/log-dump.sh.
+# Define a custom instance lister for cluster/log-dump/log-dump.sh.
 function log_dump_custom_get_instances() {
   local -r role=$1
   local kops_regions
@@ -86,7 +86,7 @@ function log_dump_custom_get_instances() {
   done
 }
 pip install awscli # Only needed for log_dump_custom_get_instances
-export -f log_dump_custom_get_instances # Export to cluster/log-dump.sh
+export -f log_dump_custom_get_instances # Export to cluster/log-dump/log-dump.sh
 
 $(dirname "${BASH_SOURCE}")/e2e-runner.sh "${e2e_args[@]}" "${@}"
 

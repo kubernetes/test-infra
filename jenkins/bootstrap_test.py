@@ -1642,6 +1642,7 @@ class JobTest(unittest.TestCase):
             self.assertIn('trigger-job', job)
             self.assertNotIn('branch', job)
             self.assertNotIn('json', job)
+            self.assertNotIn('logexporter', job)
             self.assertGreater(job['timeout'], 0, job_name)
             self.assertGreaterEqual(job['jenkins-timeout'], job['timeout']+100, job_name)
             return job_name
@@ -1658,6 +1659,7 @@ class JobTest(unittest.TestCase):
             self.assertIn('giturl', job)
             self.assertIn('repo-name', job)
             self.assertIn('timeout', job)
+            self.assertNotIn('logexporter', job)
             self.assertGreater(job['timeout'], 0, job)
 
             return job_name
@@ -1674,6 +1676,7 @@ class JobTest(unittest.TestCase):
             self.assertIn('repo-name', job)
             self.assertIn('timeout', job)
             self.assertNotIn('json', job)
+            self.assertNotIn('logexporter', job)
             self.assertGreater(job['timeout'], 0, name)
             return job_name
 
@@ -1691,6 +1694,7 @@ class JobTest(unittest.TestCase):
             self.assertNotIn('branch', job)
             self.assertIn('timeout', job)
             self.assertIn('soak-repos', job)
+            self.assertNotIn('logexporter', job)
             self.assertGreater(job['timeout'], 0, name)
 
             return job_name
@@ -1706,6 +1710,7 @@ class JobTest(unittest.TestCase):
             self.assertIn('frequency', job)
             self.assertIn('repo-name', job)
             self.assertIn('timeout', job)
+            self.assertNotIn('logexporter', job)
             self.assertGreater(job['timeout'], 0, name)
             return job_name
 
