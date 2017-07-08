@@ -48,7 +48,7 @@ go_library(
         "//prow/plugins/releasenote:go_default_library",
         "//prow/plugins/reopen:go_default_library",
         "//prow/plugins/trigger:go_default_library",
-        "//prow/plugins/update_config:go_default_library",
+        "//prow/plugins/updateconfig:go_default_library",
         "//prow/plugins/yuks:go_default_library",
         "//prow/slack:go_default_library",
         "//vendor:github.com/Sirupsen/logrus",

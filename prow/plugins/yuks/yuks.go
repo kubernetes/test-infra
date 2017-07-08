@@ -35,7 +35,7 @@ var (
 
 const (
 	// Previously: https://tambal.azurewebsites.net/joke/random
-	jokeUrl    = realJoke("https://icanhazdadjoke.com")
+	jokeURL    = realJoke("https://icanhazdadjoke.com")
 	pluginName = "yuks"
 )
 
@@ -81,7 +81,7 @@ func (url realJoke) readJoke() (string, error) {
 }
 
 func handleIssueComment(pc plugins.PluginClient, ic github.IssueCommentEvent) error {
-	return handle(pc.GitHubClient, pc.Logger, ic, jokeUrl)
+	return handle(pc.GitHubClient, pc.Logger, ic, jokeURL)
 }
 
 func handle(gc githubClient, log *logrus.Entry, ic github.IssueCommentEvent, j joker) error {

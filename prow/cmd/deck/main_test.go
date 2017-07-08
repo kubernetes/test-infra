@@ -34,9 +34,8 @@ type flc int
 func (f flc) GetLog(name string) ([]byte, error) {
 	if name == "pn" {
 		return []byte("hello"), nil
-	} else {
-		return nil, errors.New("muahaha")
 	}
+	return nil, errors.New("muahaha")
 }
 
 func TestHandleLog(t *testing.T) {

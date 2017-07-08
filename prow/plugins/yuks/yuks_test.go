@@ -42,8 +42,8 @@ func TestRealJoke(t *testing.T) {
 	if !*human {
 		t.Skip("Real jokes disabled for automation. Manual users can add --human")
 	}
-	if joke, err := jokeUrl.readJoke(); err != nil {
-		t.Errorf("Could not read joke from %s: %v", jokeUrl, err)
+	if joke, err := jokeURL.readJoke(); err != nil {
+		t.Errorf("Could not read joke from %s: %v", jokeURL, err)
 	} else {
 		fmt.Println(joke)
 	}

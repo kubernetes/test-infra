@@ -56,7 +56,7 @@ filegroup(
         "//prow/plugins/releasenote:all-srcs",
         "//prow/plugins/reopen:all-srcs",
         "//prow/plugins/trigger:all-srcs",
-        "//prow/plugins/update_config:all-srcs",
+        "//prow/plugins/updateconfig:all-srcs",
         "//prow/plugins/yuks:all-srcs",
     ],
     tags = ["automanaged"],
