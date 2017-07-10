@@ -38,6 +38,15 @@ type Config struct {
 
 	Plank    Plank     `json:"plank,omitempty"`
 	Triggers []Trigger `json:"triggers,omitempty"`
+
+	// ProwJobNamespace is the namespace in the cluster that prow
+	// components will use for looking up ProwJobs. The namespace
+	// needs to exist and will not be created by prow.
+	ProwJobNamespace string `json:"prowjob_namespace,omitempty"`
+	// PodNamespace is the namespace in the cluster that prow
+	// components will use for looking up Pods owned by ProwJobs.
+	// The namespace needs to exist and will not be created by prow.
+	PodNamespace string `json:"pod_namespace,omitempty"`
 }
 
 // Plank is config for the plank controller.

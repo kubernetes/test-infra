@@ -34,18 +34,18 @@ func main() {
 	flag.Parse()
 	logrus.SetFormatter(&logrus.JSONFormatter{})
 
-	ca := config.Agent{}
-	if err := ca.Start(*configPath); err != nil {
+	configAgent := config.Agent{}
+	if err := configAgent.Start(*configPath); err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 
-	kc, err := kube.NewClientInCluster(kube.ProwNamespace)
+	kc, err := kube.NewClientInCluster(configAgent.Config().ProwJobNamespace)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting kube client.")
 	}
 
 	for now := range time.Tick(1 * time.Minute) {
-		if err := sync(kc, ca.Config(), now); err != nil {
+		if err := sync(kc, configAgent.Config(), now); err != nil {
 			logrus.WithError(err).Error("Error syncing periodic jobs.")
 		}
 	}

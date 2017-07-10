@@ -17,10 +17,12 @@ limitations under the License.
 package main
 
 import (
+	"flag"
 	"time"
 
 	"github.com/Sirupsen/logrus"
 
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/kube"
 )
 
@@ -38,15 +40,23 @@ type kubeClient interface {
 	DeleteProwJob(name string) error
 }
 
+var configPath = flag.String("config-path", "/etc/config/config", "Path to config.yaml.")
+
 func main() {
+	flag.Parse()
 	logrus.SetFormatter(&logrus.JSONFormatter{})
 
-	kc, err := kube.NewClientInCluster(kube.ProwNamespace)
+	configAgent := &config.Agent{}
+	if err := configAgent.Start(*configPath); err != nil {
+		logrus.WithError(err).Fatal("Error starting config agent.")
+	}
+
+	kc, err := kube.NewClientInCluster(configAgent.Config().ProwJobNamespace)
 	if err != nil {
 		logrus.WithError(err).Error("Error getting client.")
 		return
 	}
-	pkc := kc.Namespace(kube.TestPodNamespace)
+	pkc := kc.Namespace(configAgent.Config().PodNamespace)
 
 	// Clean now and regularly from now on.
 	clean(kc, pkc)

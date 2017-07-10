@@ -66,6 +66,11 @@ var (
 func main() {
 	flag.Parse()
 
+	configAgent := &config.Agent{}
+	if err := configAgent.Start(*configPath); err != nil {
+		logrus.WithError(err).Fatal("Error starting config agent.")
+	}
+
 	var webhookSecret []byte
 	var githubClient *github.Client
 	var kubeClient *kube.Client
@@ -122,7 +127,7 @@ func main() {
 			githubClient = github.NewClient(*githubBotName, oauthSecret)
 		}
 
-		kubeClient, err = kube.NewClientInCluster(kube.ProwNamespace)
+		kubeClient, err = kube.NewClientInCluster(configAgent.Config().ProwJobNamespace)
 		if err != nil {
 			logrus.WithError(err).Fatal("Error getting kube client.")
 		}
@@ -140,11 +145,6 @@ func main() {
 	gitClient, err := git.NewClient()
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting git client.")
-	}
-
-	configAgent := &config.Agent{}
-	if err := configAgent.Start(*configPath); err != nil {
-		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 
 	pluginAgent := &plugins.PluginAgent{

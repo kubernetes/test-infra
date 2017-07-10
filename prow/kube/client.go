@@ -163,7 +163,7 @@ func (c *Client) doRequest(method, urlPath string, query map[string]string, body
 // NewFakeClient creates a client that doesn't do anything.
 func NewFakeClient() *Client {
 	return &Client{
-		namespace: ProwNamespace,
+		namespace: "default",
 		fake:      true,
 	}
 }

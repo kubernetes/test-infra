@@ -33,7 +33,7 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: deck
-        image: gcr.io/k8s-prow/deck:0.32
+        image: gcr.io/k8s-prow/deck:0.33
         ports:
           - name: http
             containerPort: 8080
@@ -53,6 +53,9 @@ spec:
         - mountPath: /etc/cluster
           name: cluster
           readOnly: true
+        - name: config
+          mountPath: /etc/config
+          readOnly: true
       volumes:
       - name: jenkins
         secret:
@@ -62,3 +65,6 @@ spec:
         secret:
           defaultMode: 420
           secretName: build-cluster
+      - name: config
+        configMap:
+          name: config
