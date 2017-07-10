@@ -12807,7 +12807,6 @@ periodics:
     - args:
       - --timeout=70
       - --repo=github.com/foxish/mlkube.io
-      - --bare
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
         value: /etc/service-account/service-account.json
