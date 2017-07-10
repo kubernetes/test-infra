@@ -28,6 +28,7 @@ import (
 	"github.com/Sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/git"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/hook"
 	"k8s.io/test-infra/prow/kube"
@@ -136,6 +137,11 @@ func main() {
 		slackClient = slack.NewFakeClient()
 	}
 
+	gitClient, err := git.NewClient()
+	if err != nil {
+		logrus.WithError(err).Fatal("Error getting git client.")
+	}
+
 	configAgent := &config.Agent{}
 	if err := configAgent.Start(*configPath); err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
@@ -145,6 +151,7 @@ func main() {
 		PluginClient: plugins.PluginClient{
 			GitHubClient: githubClient,
 			KubeClient:   kubeClient,
+			GitClient:    gitClient,
 			SlackClient:  slackClient,
 			Logger:       logrus.NewEntry(logrus.StandardLogger()),
 		},

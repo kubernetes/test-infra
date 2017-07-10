@@ -27,6 +27,7 @@ import (
 	"github.com/ghodss/yaml"
 
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/git"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/slack"
@@ -64,15 +65,6 @@ func RegisterPullRequestHandler(name string, fn PullRequestHandler) {
 	pullRequestHandlers[name] = fn
 }
 
-// PluginClient may be used concurrently, so each entry must be thread-safe.
-type PluginClient struct {
-	GitHubClient *github.Client
-	KubeClient   *kube.Client
-	SlackClient  *slack.Client // This might be nil.
-	Config       *config.Config
-	Logger       *logrus.Entry
-}
-
 type StatusEventHandler func(PluginClient, github.StatusEvent) error
 
 func RegisterStatusEventHandler(name string, fn StatusEventHandler) {
@@ -99,6 +91,16 @@ type ReviewCommentEventHandler func(PluginClient, github.ReviewCommentEvent) err
 func RegisterReviewCommentEventHandler(name string, fn ReviewCommentEventHandler) {
 	allPlugins[name] = struct{}{}
 	reviewCommentEventHandlers[name] = fn
+}
+
+// PluginClient may be used concurrently, so each entry must be thread-safe.
+type PluginClient struct {
+	GitHubClient *github.Client
+	KubeClient   *kube.Client
+	GitClient    *git.Client
+	SlackClient  *slack.Client
+	Config       *config.Config
+	Logger       *logrus.Entry
 }
 
 type PluginAgent struct {

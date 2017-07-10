@@ -35,6 +35,7 @@ go_library(
     tags = ["automanaged"],
     deps = [
         "//prow/config:go_default_library",
+        "//prow/git:go_default_library",
         "//prow/github:go_default_library",
         "//prow/hook:go_default_library",
         "//prow/kube:go_default_library",
