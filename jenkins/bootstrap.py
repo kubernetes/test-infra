@@ -736,19 +736,19 @@ def job_args(args):
     return [os.path.expandvars(a) for a in args]
 
 
-def job_script(job, use_json, jobs_config_dir):
+def job_script(job, use_json, jobs_dir):
     """Return path to script for job."""
-    dir_resolver = test_infra
+    jobs_dir_resolver = lambda f: test_infra('jobs/%s' % f)
 
-    if not jobs_config_dir == '':
-        dir_resolver = lambda f: os.path.join(jobs_config_dir, f)
+    if not jobs_dir == '':
+        jobs_dir_resolver = lambda f: os.path.join(jobs_dir, f)
 
     if not use_json:
-        return [dir_resolver('jobs/%s.sh' % job)]
-    with open(dir_resolver('jobs/config.json')) as fp:
+        return [jobs_dir_resolver('%s.sh' % job)]
+    with open(jobs_dir_resolver('config.json')) as fp:
         config = json.loads(fp.read())
     job_config = config[job]
-    cmd = dir_resolver('scenarios/%s.py' % job_config['scenario'])
+    cmd = test_infra('scenarios/%s.py' % job_config['scenario'])
     return [cmd] + job_args(job_config.get('args', []))
 
 
@@ -904,7 +904,7 @@ def bootstrap(args):
             start(gsutil, paths, started, node(), version, repos)
         success = False
         try:
-            call(job_script(job, use_json, args.jobs_config_dir))
+            call(job_script(job, use_json, args.jobs_dir))
             logging.info('PASS: %s', job)
             success = True
         except subprocess.CalledProcessError:
@@ -984,12 +984,12 @@ def parse_args(arguments=None):
     # If specified, this is the (relative) path to jobs configuration directory
     # the cloned repo.
     parser.add_argument(
-        '--jobs-config-dir',
+        '--jobs-dir',
         # The default behavior assumes that bootstrap.py is run from the jenkins/
         # directory of the kubernetes/test-infra repo, and uses this assumption to
         # find the path of the kubernetes/test-infra repo (assuming it has been
-        # cloned). Therefore it uses the root of the kubernetes/test-infra repo as
-        # the implicit jobs-config-dir.
+        # cloned). It then uses the root of the kubernetes/test-infra repo as the
+        # implicit jobs-config-dir.
         default="",
         help='Explicit location for where to look for job scripts relative to repo root.')
     args = parser.parse_args(arguments)

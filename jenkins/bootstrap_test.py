@@ -1044,7 +1044,7 @@ class FakeArgs(object):
     upload = UPLOAD
     json = False
     no_magic_env = False
-    jobs_config_dir = ''
+    jobs_dir = ''
 
     def __init__(self, **kw):
         self.branch = BRANCH
