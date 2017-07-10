@@ -2642,6 +2642,8 @@ dashboards:
   dashboard_tab:
   - name: charts-gce
     test_group_name: ci-kubernetes-charts-gce
+  - name: mlkube-gke
+    test_group_name: ci-kubernetes-e2e-mlkube-gke
 
 - name: perf-tests
   dashboard_tab:
