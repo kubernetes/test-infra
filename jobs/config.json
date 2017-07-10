@@ -6050,6 +6050,22 @@
       "sig-cluster-lifecycle"
     ]
   },
+  "ci-kubernetes-e2e-mlkube-gke": {
+    "args": [
+      "--env-file=jobs/platform/gke.env",
+      "--env-file=jobs/ci-kubernetes-e2e-mlkube-gke.env",
+      "--test=false",
+      "--charts",
+      "--mount-paths=$GOPATH/src/github.com/foxish/mlkube.io:/src/k8s.io/charts",
+      "--timeout=50m",
+      "--extract=gke",
+      "--check-leaked-resources"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-big-data"
+    ]
+  },
   "ci-kubernetes-e2e-prow-canary": {
     "args": [
       "--cluster=canary-e2e-prow",
