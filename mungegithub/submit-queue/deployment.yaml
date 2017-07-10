@@ -28,9 +28,6 @@ spec:
         - --required-retest-contexts=$(REQUIRED_RETEST_CONTEXTS)
         - --required-contexts=$(REQUIRED_CONTEXTS)
         - --nonblocking-jenkins-jobs=$(NONBLOCKING_JENKINS_JOBS)
-        - --jenkins-jobs=$(JENKINS_JOBS)
-        - --presubmit-jobs=$(PRESUBMIT_JOBS)
-        - --weak-stable-jobs=$(WEAK_STABLE_JOBS)
         - --do-not-merge-milestones=$(DO_NOT_MERGE_MILESTONES)
         - --admin-port=$(ADMIN_PORT)
         - --gcs-bucket=$(GCS_BUCKET)
@@ -122,21 +119,6 @@ spec:
               configMapKeyRef:
                 name: @@-sq-config
                 key: submit-queue.nonblocking-jenkins-jobs
-          - name: JENKINS_JOBS
-            valueFrom:
-              configMapKeyRef:
-                name: @@-sq-config
-                key: submit-queue.jenkins-jobs
-          - name: PRESUBMIT_JOBS
-            valueFrom:
-              configMapKeyRef:
-                name: @@-sq-config
-                key: submit-queue.presubmit-jobs
-          - name: WEAK_STABLE_JOBS
-            valueFrom:
-              configMapKeyRef:
-                name: @@-sq-config
-                key: submit-queue.weak-stable-jobs
           - name: DO_NOT_MERGE_MILESTONES
             valueFrom:
               configMapKeyRef:

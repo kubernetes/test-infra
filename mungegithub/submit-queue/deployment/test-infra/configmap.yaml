@@ -23,9 +23,6 @@ data:
 
   submit-queue.required-contexts: "continuous-integration/travis-ci/pr"
   submit-queue.nonblocking-jenkins-jobs: "\"\""
-  submit-queue.jenkins-jobs: "\"\""
-  submit-queue.presubmit-jobs: "\"\""
-  submit-queue.weak-stable-jobs: "\"\""
   submit-queue.do-not-merge-milestones: "\"\""
   submit-queue.admin-port: "9999"
   submit-queue.chart-url: ""

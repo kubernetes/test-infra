@@ -213,25 +213,6 @@ func TestConfig(t *testing.T) {
 		t.Errorf("Unmarshal Error for SQ Data : %v", err)
 	}
 
-	sqJobs := strings.Split(sqData.Data["submit-queue.jenkins-jobs"], ",")
-	for _, sqJob := range sqJobs {
-		if sqJob == "\"\"" { // ignore empty list of jobs
-			continue
-		}
-		found := false
-		for i, job := range sqJobPool {
-			if sqJob == job {
-				found = true
-				sqJobPool = append(sqJobPool[:i], sqJobPool[i+1:]...)
-				break
-			}
-		}
-
-		if !found {
-			t.Errorf("Err : %v not found in testgrid config", sqJob)
-		}
-	}
-
 	for _, testgridJob := range sqJobPool {
 		t.Errorf("Err : testgrid job %v not found in SQ config", testgridJob)
 	}

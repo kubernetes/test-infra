@@ -23,9 +23,8 @@ import (
 
 // FakeE2ETester always reports builds as stable.
 type FakeE2ETester struct {
-	JobNames           []string
-	WeakStableJobNames []string
-	NotStableJobNames  []string
+	JobNames          []string
+	NotStableJobNames []string
 }
 
 // Flakes returns nil.
@@ -33,19 +32,13 @@ func (e *FakeE2ETester) Flakes() cache.Flakes {
 	return nil
 }
 
-// GCSBasedStable is always true.
-func (e *FakeE2ETester) GCSBasedStable() (bool, bool) { return true, false }
-
-// GCSWeakStable is always true.
-func (e *FakeE2ETester) GCSWeakStable() bool { return true }
+// LoadNonBlockingStatus is a no-op.
+func (e *FakeE2ETester) LoadNonBlockingStatus() {}
 
 // GetBuildStatus reports "Stable" and a latest build of "1" for each build.
 func (e *FakeE2ETester) GetBuildStatus() map[string]e2e.BuildInfo {
 	out := map[string]e2e.BuildInfo{}
 	for _, name := range e.JobNames {
-		out[name] = e2e.BuildInfo{"Stable", "1"}
-	}
-	for _, name := range e.WeakStableJobNames {
 		out[name] = e2e.BuildInfo{"Stable", "1"}
 	}
 	for _, name := range e.NotStableJobNames {

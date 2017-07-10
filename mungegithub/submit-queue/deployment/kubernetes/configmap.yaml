@@ -100,12 +100,6 @@ data:
     ci-kubernetes-soak-gke-gci-test,\
     ci-kubernetes-soak-gke-test,\
     ci-kubernetes-test-go"
-  # SQ-Blocking Jobs
-  # Please also update sq-blocking dashboard in testgrid config for test-infra presubmit to pass (@krzyzacy)
-  # https://github.com/kubernetes/test-infra/blob/master/testgrid/config/config.yaml
-  submit-queue.jenkins-jobs: "\"\""
-  submit-queue.presubmit-jobs: "\"\""
-  submit-queue.weak-stable-jobs: "\"\""
   submit-queue.do-not-merge-milestones: "\"\""
   submit-queue.admin-port: "9999"
   submit-queue.chart-url: https://storage.googleapis.com/kubernetes-test-history/k8s-queue-health.svg
