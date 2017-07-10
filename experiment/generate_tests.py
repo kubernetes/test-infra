@@ -266,7 +266,7 @@ def main(json_config_path, yaml_config_path, prow_config_path, output_dir):
             yaml_config['k8sVersions'],
             yaml_config['testSuites'],
             yaml_config['jobs'])
-        # Write the extacted envs into an env file for the job.
+        # Write the extracted envs into an env file for the job.
         env_filename = write_env_file(output_dir, job_name, envs)
         # Add the job to the definitions.
         sig_owners = yaml_config['jobs'][job_name].get('sigOwners')
