@@ -3301,6 +3301,7 @@
       "--cluster=e2e-scalability-1-6",
       "--timeout=120m",
       "--extract=ci/latest-1.6",
+      "--mode=docker",
       "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --gather-resource-usage=true --gather-metrics-at-teardown=true --gather-logs-sizes=true --output-print-type=json"
     ],
     "scenario": "kubernetes_e2e",
@@ -3315,6 +3316,7 @@
       "--extract=ci/latest-1.7",
       "--cluster=e2e-scalability-1-7",
       "--timeout=120m",
+      "--mode=docker",
       "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --gather-resource-usage=true --gather-metrics-at-teardown=true --gather-logs-sizes=true --output-print-type=json"
     ],
     "scenario": "kubernetes_e2e",
