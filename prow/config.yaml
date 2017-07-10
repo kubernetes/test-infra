@@ -12801,10 +12801,10 @@ periodics:
         defaultMode: 256
         secretName: ssh-key-secret
 - name: ci-kubernetes-e2e-prow-canary
-  interval: 24h
+  interval: 1h
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e-prow:v20170707-54693f85
+    - image: gcr.io/k8s-testimages/kubekins-e2e-prow:v20170710-f463d559
       args:
       - --bare
       - --timeout=60
