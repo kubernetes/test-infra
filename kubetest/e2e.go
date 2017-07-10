@@ -443,7 +443,15 @@ func ChartsTest() error {
 	return nil
 }
 
-func KubemarkTest(logDir string) error {
+func KubemarkTest(dump string) error {
+	if dump != "" {
+		if pop, err := pushEnv("E2E_REPORT_DIR", dump); err != nil {
+			return err
+		} else {
+			defer pop()
+		}
+	}
+
 	// Stop previous run
 	err := finishRunning(exec.Command("./test/kubemark/stop-kubemark.sh"))
 	if err != nil {
@@ -475,9 +483,9 @@ func KubemarkTest(logDir string) error {
 		return finishRunning(exec.Command("./test/kubemark/start-kubemark.sh"))
 	})
 	if err != nil {
-		if logDir != "" {
+		if dump != "" {
 			log.Printf("Start kubemark step failed, trying to dump logs from kubemark master...")
-			if logErr := finishRunning(exec.Command("./test/kubemark/master-log-dump.sh", logDir)); logErr != nil {
+			if logErr := finishRunning(exec.Command("./test/kubemark/master-log-dump.sh", dump)); logErr != nil {
 				// This can happen in case of non-SSH'able kubemark master.
 				log.Printf("Failed to dump logs from kubemark master: %v", logErr)
 			}
