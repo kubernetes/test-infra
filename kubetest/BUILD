@@ -31,6 +31,7 @@ go_library(
         "util.go",
     ],
     tags = ["automanaged"],
+    deps = ["//boskos/client:go_default_library"],
 )
 
 filegroup(
