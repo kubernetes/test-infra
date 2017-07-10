@@ -17,7 +17,9 @@ limitations under the License.
 package main
 
 import (
+	"flag"
 	"fmt"
+	"os"
 	"os/exec"
 	"time"
 
@@ -26,16 +28,41 @@ import (
 )
 
 var (
-	clean      = janitorClean
-	POOLSIZE   = 10 // Maximum concurrent janitor goroutines
-	BUFFERSIZE = 1  // Maximum holding resources
+	clean          = janitorClean
+	poolSize       = 10 // Maximum concurrent janitor goroutines
+	bufferSize     = 1  // Maximum holding resources
+	serviceAccount = flag.String("service-account", "", "Path to projects service account")
 )
+
+// exists returns whether the given file or directory exists or not
+func exists(path string) (bool, error) {
+	_, err := os.Stat(path)
+	if err == nil {
+		return true, nil
+	}
+	if os.IsNotExist(err) {
+		return false, nil
+	}
+	return true, err
+}
 
 func main() {
 	logrus.SetFormatter(&logrus.JSONFormatter{})
 	boskos := client.NewClient("Janitor", "http://boskos")
 	logrus.Info("Initialized boskos client!")
-	buffer := setup(boskos, POOLSIZE, BUFFERSIZE)
+
+	// Activate service account
+	flag.Parse()
+	if *serviceAccount == "" {
+		logrus.Fatal("--service-account cannot be empty!")
+	}
+
+	cmd := exec.Command("gcloud", "auth", "activate-service-account", "--key-file="+*serviceAccount)
+	if b, err := cmd.CombinedOutput(); err != nil {
+		logrus.WithError(err).Fatalf("fail to activate service account from %s : %s", *serviceAccount, string(b))
+	}
+
+	buffer := setup(boskos, poolSize, bufferSize)
 	for {
 		run(boskos, buffer)
 		time.Sleep(time.Minute)
@@ -44,8 +71,12 @@ func main() {
 
 // Clean by janitor script
 func janitorClean(proj string) error {
-	script := "../../jenkins/janitor.py"
-	return exec.Command(script, fmt.Sprintf("--project=%s", proj), "--hour=0").Run()
+	cmd := exec.Command("/janitor.py", fmt.Sprintf("--project=%s", proj), "--hour=0")
+	b, err := cmd.CombinedOutput()
+	if err != nil {
+		logrus.Infof("janitor.py has some issue: %s", string(b))
+	}
+	return err
 }
 
 type boskosClient interface {

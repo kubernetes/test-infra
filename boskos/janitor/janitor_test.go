@@ -108,7 +108,7 @@ func TestNormal(t *testing.T) {
 
 	fb := CreateFakeBoskos(1000)
 
-	buffer := setup(fb, POOLSIZE, BUFFERSIZE)
+	buffer := setup(fb, poolSize, bufferSize)
 	totalAcquire := run(fb, buffer)
 
 	if totalAcquire != len(fb.resources) {
@@ -172,11 +172,11 @@ func TestMalfunctionJanitor(t *testing.T) {
 
 	fb := CreateFakeBoskos(100)
 
-	buffer := setup(fb, POOLSIZE, BUFFERSIZE)
+	buffer := setup(fb, poolSize, bufferSize)
 
 	if totalClean, err := FakeRun(fb, buffer); err != nil {
 		t.Fatalf("Run failed unexpectedly : %v", err)
-	} else if totalClean != POOLSIZE+1 {
-		t.Errorf("Expect to clean %d from fake boskos, got %d", POOLSIZE+1, totalClean)
+	} else if totalClean != poolSize+1 {
+		t.Errorf("Expect to clean %d from fake boskos, got %d", poolSize+1, totalClean)
 	}
 }
