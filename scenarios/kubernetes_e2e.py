@@ -306,6 +306,8 @@ class DockerMode(object):
         try:
             check(*cmd)
         finally:  # Ensure docker files are readable by bootstrap
+            if not os.path.isdir(self.local_artifacts):  # May not exist
+                pass
             try:
                 check('sudo', 'chmod', '-R', 'o+r', self.local_artifacts)
             except subprocess.CalledProcessError:  # fails outside CI
