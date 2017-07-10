@@ -1149,6 +1149,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster
 - name: ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster-new
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster-new
+- name: ci-kubernetes-e2e-mlkube-gke
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-mlkube-gke
 # Add New Testgroups Here
 
 #
@@ -2956,6 +2958,11 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-cosbeta-k8sstable2-slow
   - name: cosbeta-k8sstable2-serial
     test_group_name: ci-kubernetes-e2e-gce-cosbeta-k8sstable2-serial
+
+- name: big-data
+  dashboard_tab:
+  - name: mlkube-gke
+    test_group_name: ci-kubernetes-e2e-mlkube-gke
 
 #
 # Start dashboard groups
