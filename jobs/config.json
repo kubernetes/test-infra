@@ -7600,12 +7600,11 @@
       "--mount-paths=$GOPATH/src/github.com/foxish/mlkube.io:/src/k8s.io/charts",
       "--timeout=50m",
       "--extract=gke",
-      "--check-leaked-resources",
-      "--mode=docker"
+      "--check-leaked-resources"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-big-data"
     ]
   }
 }
