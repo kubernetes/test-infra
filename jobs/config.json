@@ -4212,6 +4212,20 @@
       "UNKNOWN"
     ]
   },
+  "ci-kubernetes-e2e-gke-alpha-features-release-1-7": {
+    "args": [
+      "--env-file=jobs/platform/gke.env",
+      "--env-file=jobs/ci-kubernetes-e2e-gke-alpha-features-release-1-7.env",
+      "--timeout=180m",
+      "--extract=ci/latest-1.7",
+      "--check-leaked-resources",
+      "--test_args=--ginkgo.focus=\\[Feature:(ExternalTrafficLocalOnly|DynamicKubeletConfig)\\]|Initializers"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "UNKNOWN"
+    ]
+  },
   "ci-kubernetes-e2e-gke-autoscaling": {
     "args": [
       "--env-file=jobs/platform/gke.env",

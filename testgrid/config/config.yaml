@@ -998,6 +998,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-slow-release-1-7
 - name: ci-kubernetes-e2e-gci-gke-slow-release-1-7
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-slow-release-1-7
+- name: ci-kubernetes-e2e-gke-alpha-features-release-1-7
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-alpha-features-release-1-7
 - name: ci-kubernetes-e2e-gce-serial-release-1-7
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-serial-release-1-7
 - name: ci-kubernetes-e2e-gci-gce-serial-release-1-7
@@ -2819,6 +2821,8 @@ dashboards:
     test_group_name: periodic-kubernetes-bazel-build-1-7
   - name: periodic-bazel-test-1.7
     test_group_name: periodic-kubernetes-bazel-test-1-7
+  - name: gke-alpha-features-release-1-7
+    test_group_name: ci-kubernetes-e2e-gke-alpha-features-release-1-7
 
 # These are the release *blocking* tests.  These provide a valid binary signal
 # to gate releases (alpha, beta, official).
