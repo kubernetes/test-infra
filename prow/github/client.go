@@ -356,12 +356,12 @@ func (c *Client) GetPullRequest(org, repo string, number int) (*PullRequest, err
 }
 
 // GetPullRequestChanges gets a list of files modified in a pull request.
-func (c *Client) GetPullRequestChanges(pr PullRequest) ([]PullRequestChange, error) {
-	c.log("GetPullRequestChanges", pr.Number)
+func (c *Client) GetPullRequestChanges(org, repo string, number int) ([]PullRequestChange, error) {
+	c.log("GetPullRequestChanges", org, repo, number)
 	if c.fake {
 		return []PullRequestChange{}, nil
 	}
-	nextURL := fmt.Sprintf("%s/repos/%s/pulls/%d/files", c.base, pr.Base.Repo.FullName, pr.Number)
+	nextURL := fmt.Sprintf("%s/repos/%s/%s/pulls/%d/files", c.base, org, repo, number)
 	var changes []PullRequestChange
 	for nextURL != "" {
 		resp, err := c.requestRetry(http.MethodGet, nextURL, nil)
