@@ -50,7 +50,7 @@ func init() {
 type githubClient interface {
 	CreateCommentReaction(org, repo string, ID int, reaction string) error
 	CreateIssueReaction(org, repo string, ID int, reaction string) error
-	GetPullRequestChanges(pr github.PullRequest) ([]github.PullRequestChange, error)
+	GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error)
 }
 
 func handleIssueComment(pc plugins.PluginClient, ic github.IssueCommentEvent) error {
@@ -89,7 +89,10 @@ func handlePR(gc githubClient, log *logrus.Entry, pre github.PullRequestEvent) e
 		return nil
 	}
 
-	changes, err := gc.GetPullRequestChanges(pre.PullRequest)
+	org := pre.PullRequest.Base.Repo.Owner.Login
+	repo := pre.PullRequest.Base.Repo.Name
+
+	changes, err := gc.GetPullRequestChanges(org, repo, pre.PullRequest.Number)
 	if err != nil {
 		return err
 	}

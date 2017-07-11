@@ -157,7 +157,7 @@ func buildAll(c client, pr github.PullRequest) error {
 	for _, job := range c.Config.Presubmits[pr.Base.Repo.FullName] {
 		if job.RunIfChanged != "" {
 			if changes == nil {
-				changesFull, err := c.GitHubClient.GetPullRequestChanges(pr)
+				changesFull, err := c.GitHubClient.GetPullRequestChanges(org, repo, pr.Number)
 				if err != nil {
 					return err
 				}

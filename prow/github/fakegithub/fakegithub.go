@@ -101,8 +101,8 @@ func (f *FakeClient) GetPullRequest(owner, repo string, number int) (*github.Pul
 	return f.PullRequests[number], nil
 }
 
-func (f *FakeClient) GetPullRequestChanges(pr github.PullRequest) ([]github.PullRequestChange, error) {
-	return f.PullRequestChanges[pr.Number], nil
+func (f *FakeClient) GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error) {
+	return f.PullRequestChanges[number], nil
 }
 
 func (f *FakeClient) GetRef(owner, repo, ref string) (string, error) {

@@ -38,7 +38,7 @@ func init() {
 
 type githubClient interface {
 	CreateComment(owner, repo string, number int, comment string) error
-	GetPullRequestChanges(pr github.PullRequest) ([]github.PullRequestChange, error)
+	GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error)
 	GetFile(org, repo, filepath, commit string) ([]byte, error)
 }
 
@@ -99,14 +99,14 @@ func handle(gc githubClient, kc kubeClient, log *logrus.Entry, pre github.PullRe
 		return nil
 	}
 
+	org := pr.Base.Repo.Owner.Login
+	repo := pr.Base.Repo.Name
+
 	// Process change to prow/config.yaml and prow/plugin.yaml
-	changes, err := gc.GetPullRequestChanges(pr)
+	changes, err := gc.GetPullRequestChanges(org, repo, pr.Number)
 	if err != nil {
 		return err
 	}
-
-	org := pr.Base.Repo.Owner.Login
-	repo := pr.Base.Repo.Name
 
 	var msg string
 	for _, change := range changes {

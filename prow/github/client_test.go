@@ -212,13 +212,7 @@ func TestGetPullRequestChanges(t *testing.T) {
 	}))
 	defer ts.Close()
 	c := getClient(ts.URL)
-	pr := PullRequest{
-		Number: 12,
-		Base: PullRequestBranch{
-			Repo: Repo{FullName: "k8s/kuber"},
-		},
-	}
-	cs, err := c.GetPullRequestChanges(pr)
+	cs, err := c.GetPullRequestChanges("k8s", "kuber", 12)
 	if err != nil {
 		t.Errorf("Didn't expect error: %v", err)
 	}
