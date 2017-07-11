@@ -56,6 +56,10 @@
 			"Rev": "73d445a93680fa1a78ae23a5839bad48f32ba1ee"
 		},
 		{
+			"ImportPath": "github.com/golang/lint",
+			"Rev": "c5fb716d6688a859aae56d26d3e6070808df29f7"
+		},
+		{
 			"ImportPath": "github.com/go-sql-driver/mysql",
 			"Comment": "v1.2-194-g7ebe0a5",
 			"Rev": "7ebe0a500653eeb1859664bed5e48dec1e164e73"
@@ -243,6 +247,14 @@
 		{
 			"ImportPath": "golang.org/x/sys/unix",
 			"Rev": "a646d33e2ee3172a661fc09bca23bb4889a41bc8"
+		},
+		{
+			"ImportPath": "golang.org/x/tools/go/gcexportdata",
+			"Rev": "1f0f7f68c993a0ff4e0fe1793c08cdd14cc243cb"
+		},
+		{
+			"ImportPath": "golang.org/x/tools/go/gcimporter15",
+			"Rev": "1f0f7f68c993a0ff4e0fe1793c08cdd14cc243cb"
 		},
 		{
 			"ImportPath": "google.golang.org/api/gensupport",
