@@ -827,7 +827,7 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-alphafeatures
 - name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-autoscaling
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-autoscaling
-- name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-default 
+- name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-default
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-default
 - name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-flaky
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-flaky
@@ -835,11 +835,11 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-ingress
 - name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-reboot
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-reboot
-- name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-serial 
+- name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-serial
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-serial
 - name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-slow
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-slow
-- name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-updown 
+- name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-updown
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-updown
 # Canonical Distribution of Kubernetes (contact: @chuckbutler on github)
 - name: canonical-kubernetes-e2e-gce
@@ -872,11 +872,11 @@ test_groups:
 - name: ci-kubernetes-e2e-gci-gce-garbage
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-garbage
 # kubeadm tests
-- name: ci-kubernetes-e2e-kubeadm-gce    
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce   
-- name: ci-kubernetes-e2e-kubeadm-gce-1-6   
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-1-6   
-- name: ci-kubernetes-e2e-kubeadm-gce-1-7   
+- name: ci-kubernetes-e2e-kubeadm-gce
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce
+- name: ci-kubernetes-e2e-kubeadm-gce-1-6
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-1-6
+- name: ci-kubernetes-e2e-kubeadm-gce-1-7
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-1-7
 - name: ci-kubernetes-e2e-kubeadm-gce-1-6-on-1-7
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-1-6-on-1-7
@@ -1864,22 +1864,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke
     base_options: 'include-filter-by-regex=Kubectl%7Ckubectl'
     description: 'kubectl gke e2e tests for master branch'
-  - name: gce-1.6
-    test_group_name: ci-kubernetes-e2e-gce-release-1-6
-    base_options: 'include-filter-by-regex=Kubectl%7Ckubectl'
-    description: 'kubectl gce e2e tests for 1.6 branch'
-  - name: gke-1.6
-    test_group_name: ci-kubernetes-e2e-gke-release-1-6
-    base_options: 'include-filter-by-regex=Kubectl%7Ckubectl'
-    description: 'kubectl gke e2e tests for 1.6 branch'
-  - name: gce-1.5
-    test_group_name: ci-kubernetes-e2e-gce-release-1-5
-    base_options: 'include-filter-by-regex=Kubectl%7Ckubectl'
-    description: 'kubectl gce e2e tests for 1.5 branch'
-  - name: gke-1.5
-    test_group_name: ci-kubernetes-e2e-gke-release-1-5
-    base_options: 'include-filter-by-regex=Kubectl%7Ckubectl'
-    description: 'kubectl gke e2e tests for 1.5 branch'
   - name: gce-flaky
     test_group_name: ci-kubernetes-e2e-gce-flaky
     base_options: 'include-filter-by-regex=Kubectl%7Ckubectl'
@@ -1906,82 +1890,24 @@ dashboards:
     description: 'kubectl gke serial e2e tests for master branch'
   - name: unit-integration-cmd
     test_group_name: ci-kubernetes-test-go
-    # test-cmd, do not produce xml data right now
-    # So we have to rely on the Overall result until then
     base_options: 'include-filter-by-regex=kubectl%7COverall'
     description: 'unit, integration and cmd tests for master branch'
-  - name: unit-integration-cmd-1.6
-    test_group_name: ci-kubernetes-test-go-release-1.6
-    base_options: 'include-filter-by-regex=kubectl%7COverall'
-    description: 'unit, integration and cmd tests for 1.6 branch'
-  - name: unit-integration-cmd-1.5
-    test_group_name: ci-kubernetes-test-go-release-1.5
-    base_options: 'include-filter-by-regex=kubectl%7COverall'
-    description: 'unit, integration and cmd tests for 1.5 branch'
-  - name: gce-1.6-1-7-cvm-kubectl-skew
-    test_group_name: ci-kubernetes-e2e-gce-1-6-1-7-cvm-kubectl-skew
-    base_options: 'include-filter-by-regex=Kubectl%7Ckubectl'
-    description: 'kubectl e2e tests in gce-1.6-1-7-cvm-kubectl-skew'
-  - name: gke-1.6-1-7-cvm-kubectl-skew
-    test_group_name: ci-kubernetes-e2e-gke-1-6-1-7-cvm-kubectl-skew
-    base_options: 'include-filter-by-regex=Kubectl%7Ckubectl'
-    description: 'kubectl e2e tests in gke-1.6-1-7-cvm-kubectl-skew'
-  - name: gce-1.6-1-7-cvm-kubectl-skew-serial
-    test_group_name: ci-kubernetes-e2e-gce-1-6-1-7-cvm-kubectl-skew-serial
-    base_options: 'include-filter-by-regex=Kubectl%7Ckubectl'
-    description: 'kubectl e2e tests in gce-1.6-1-7-cvm-kubectl-skew-serial'
-  - name: gke-1.6-1-7-cvm-kubectl-skew-serial
-    test_group_name: ci-kubernetes-e2e-gke-1-6-1-7-cvm-kubectl-skew-serial
-    base_options: 'include-filter-by-regex=Kubectl%7Ckubectl'
-    description: 'kubectl e2e tests in gke-1.6-1-7-cvm-kubectl-skew-serial'
-  - name: gce-1.6-1-7-gci-kubectl-skew
-    test_group_name: ci-kubernetes-e2e-gce-1-6-1-7-gci-kubectl-skew
-    base_options: 'include-filter-by-regex=Kubectl%7Ckubectl'
-    description: 'kubectl e2e tests in gce-1.6-1-7-gci-kubectl-skew'
-  - name: gke-1.6-1-7-gci-kubectl-skew
-    test_group_name: ci-kubernetes-e2e-gke-1-6-1-7-gci-kubectl-skew
-    base_options: 'include-filter-by-regex=Kubectl%7Ckubectl'
-    description: 'kubectl e2e tests in gke-1.6-1-7-gci-kubectl-skew'
-  - name: gce-1.6-1-7-gci-kubectl-skew-serial
-    test_group_name: ci-kubernetes-e2e-gce-1-6-1-7-gci-kubectl-skew-serial
-    base_options: 'include-filter-by-regex=Kubectl%7Ckubectl'
-    description: 'kubectl e2e tests in gce-1.6-1-7-gci-kubectl-skew-serial'
-  - name: gke-1.6-1-7-gci-kubectl-skew-serial
-    test_group_name: ci-kubernetes-e2e-gke-1-6-1-7-gci-kubectl-skew-serial
-    base_options: 'include-filter-by-regex=Kubectl%7Ckubectl'
-    description: 'kubectl e2e tests in gke-1.6-1-7-gci-kubectl-skew-serial'
-  - name: gce-1-7-1.6-cvm-kubectl-skew
-    test_group_name: ci-kubernetes-e2e-gce-1-7-1-6-cvm-kubectl-skew
-    base_options: 'include-filter-by-regex=Kubectl%7Ckubectl'
-    description: 'kubectl e2e tests in gce-1-7-1.6-cvm-kubectl-skew'
-  - name: gke-1-7-1.6-cvm-kubectl-skew
-    test_group_name: ci-kubernetes-e2e-gke-1-7-1-6-cvm-kubectl-skew
-    base_options: 'include-filter-by-regex=Kubectl%7Ckubectl'
-    description: 'kubectl e2e tests in gke-1-7-1.6-cvm-kubectl-skew'
-  - name: gce-1-7-1.6-cvm-kubectl-skew-serial
-    test_group_name: ci-kubernetes-e2e-gce-1-7-1-6-cvm-kubectl-skew-serial
-    base_options: 'include-filter-by-regex=Kubectl%7Ckubectl'
-    description: 'kubectl e2e tests in gce-1-7-1.6-cvm-kubectl-skew-serial'
-  - name: gke-1-7-1.6-cvm-kubectl-skew-serial
-    test_group_name: ci-kubernetes-e2e-gke-1-7-1-6-cvm-kubectl-skew-serial
-    base_options: 'include-filter-by-regex=Kubectl%7Ckubectl'
-    description: 'kubectl e2e tests in gke-1-7-1.6-cvm-kubectl-skew-serial'
-  - name: gce-1-7-1.6-gci-kubectl-skew
-    test_group_name: ci-kubernetes-e2e-gce-1-7-1-6-gci-kubectl-skew
-    base_options: 'include-filter-by-regex=Kubectl%7Ckubectl'
-    description: 'kubectl e2e tests in gce-1-7-1.6-gci-kubectl-skew'
-  - name: gke-1-7-1.6-gci-kubectl-skew
-    test_group_name: ci-kubernetes-e2e-gke-1-7-1-6-gci-kubectl-skew
-    base_options: 'include-filter-by-regex=Kubectl%7Ckubectl'
-    description: 'kubectl e2e tests in gke-1-7-1.6-gci-kubectl-skew'
-  - name: gce-1-7-1.6-gci-kubectl-skew-serial
-    test_group_name: ci-kubernetes-e2e-gce-1-7-1-6-gci-kubectl-skew-serial
-    base_options: 'include-filter-by-regex=Kubectl%7Ckubectl'
-    description: 'kubectl e2e tests in gce-1-7-1.6-gci-kubectl-skew-serial'
-  - name: gke-1-7-1.6-gci-kubectl-skew-serial
-    test_group_name: ci-kubernetes-e2e-gke-1-7-1-6-gci-kubectl-skew-serial
-    base_options: 'include-filter-by-regex=Kubectl%7Ckubectl'
-    description: 'kubectl e2e tests in gke-1-7-1.6-gci-kubectl-skew-serial'
+  - name: gce-last_release-master-cvm-kubectl-skew
+    test_group_name: ci-kubernetes-e2e-gce-new-master-cvm-kubectl-skew
+  - name: gce-last_release-master-gci-kubectl-skew
+    test_group_name: ci-kubernetes-e2e-gce-new-master-gci-kubectl-skew
+  - name: gke-last_release-master-cvm-kubectl-skew
+    test_group_name: ci-kubernetes-e2e-gke-new-master-cvm-kubectl-skew
+  - name: gke-last_release-master-gci-kubectl-skew
+    test_group_name: ci-kubernetes-e2e-gke-new-master-gci-kubectl-skew
+  - name: gce-master-last_release-cvm-kubectl-skew
+    test_group_name: ci-kubernetes-e2e-gce-master-new-cvm-kubectl-skew
+  - name: gce-master-last_release-gci-kubectl-skew
+    test_group_name: ci-kubernetes-e2e-gce-master-new-gci-kubectl-skew
+  - name: gke-master-last_release-cvm-kubectl-skew
+    test_group_name: ci-kubernetes-e2e-gke-master-new-cvm-kubectl-skew
+  - name: gke-master-last_release-gci-kubectl-skew
+    test_group_name: ci-kubernetes-e2e-gke-master-new-gci-kubectl-skew
 
 - name: sig-cluster-lifecycle
   dashboard_tab:
@@ -2029,7 +1955,7 @@ dashboards:
   - name: ubuntu-gke-ingress
     test_group_name: ci-kubernetes-e2e-ubuntu-gke-ingress
   - name: ubuntu-gke-1-6-ingress
-    test_group_name: ci-kubernetes-e2e-ubuntu-gke-1-6-ingress    
+    test_group_name: ci-kubernetes-e2e-ubuntu-gke-1-6-ingress
 
 - name: sig-storage
   dashboard_tab:
