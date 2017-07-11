@@ -29,12 +29,14 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/ghodss/yaml"
 
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/jenkins"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/plank"
 )
 
 var (
+	configPath   = flag.String("config-path", "/etc/config/config", "Path to config.yaml.")
 	buildCluster = flag.String("build-cluster", "", "Path to file containing a YAML-marshalled kube.Cluster object. If empty, uses the local cluster.")
 
 	jenkinsURL       = flag.String("jenkins-url", "", "Jenkins URL")
@@ -47,18 +49,22 @@ var objReg = regexp.MustCompile(`^[\w-]+$`)
 
 func main() {
 	flag.Parse()
-
 	logrus.SetFormatter(&logrus.JSONFormatter{})
 
-	kc, err := kube.NewClientInCluster(kube.ProwNamespace)
+	configAgent := &config.Agent{}
+	if err := configAgent.Start(*configPath); err != nil {
+		logrus.WithError(err).Fatal("Error starting config agent.")
+	}
+
+	kc, err := kube.NewClientInCluster(configAgent.Config().ProwJobNamespace)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting client.")
 	}
 	var pkc *kube.Client
 	if *buildCluster == "" {
-		pkc = kc.Namespace(kube.TestPodNamespace)
+		pkc = kc.Namespace(configAgent.Config().PodNamespace)
 	} else {
-		pkc, err = kube.NewClientFromFile(*buildCluster, kube.TestPodNamespace)
+		pkc, err = kube.NewClientFromFile(*buildCluster, configAgent.Config().PodNamespace)
 		if err != nil {
 			logrus.WithError(err).Fatal("Error getting kube client to build cluster.")
 		}

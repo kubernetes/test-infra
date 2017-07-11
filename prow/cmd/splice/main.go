@@ -40,7 +40,7 @@ var (
 	orgName        = flag.String("org", "kubernetes", "Org name")
 	repoName       = flag.String("repo", "kubernetes", "Repo name")
 	logJSON        = flag.Bool("log-json", false, "output log in JSON format")
-	configPath     = flag.String("config-path", "/etc/config/config", "Where is config.yaml.")
+	configPath     = flag.String("config-path", "/etc/config/config", "Path to config.yaml.")
 	maxBatchSize   = flag.Int("batch-size", 5, "Maximum batch size")
 )
 
@@ -262,7 +262,6 @@ func neededPresubmits(presubmits []config.Presubmit, currentJobs []kube.ProwJob,
 
 func main() {
 	flag.Parse()
-
 	if *logJSON {
 		log.SetFormatter(&log.JSONFormatter{})
 	}
@@ -274,12 +273,12 @@ func main() {
 	}
 	defer splicer.cleanup()
 
-	ca := &config.Agent{}
-	if err := ca.Start(*configPath); err != nil {
-		log.WithError(err).Fatal("Could not start config agent.")
+	configAgent := &config.Agent{}
+	if err := configAgent.Start(*configPath); err != nil {
+		log.WithError(err).Fatal("Error starting config agent.")
 	}
 
-	kc, err := kube.NewClientInCluster(kube.ProwNamespace)
+	kc, err := kube.NewClientInCluster(configAgent.Config().ProwJobNamespace)
 	if err != nil {
 		log.WithError(err).Fatal("Error getting kube client.")
 	}
@@ -340,7 +339,7 @@ func main() {
 		}
 		log.Infof("Starting a batch for the following PRs: %v", batchPRs)
 		refs := splicer.makeBuildRefs(*orgName, *repoName, batchPRs)
-		presubmits := ca.Config().Presubmits[fmt.Sprintf("%s/%s", *orgName, *repoName)]
+		presubmits := configAgent.Config().Presubmits[fmt.Sprintf("%s/%s", *orgName, *repoName)]
 		for _, job := range neededPresubmits(presubmits, currentJobs, refs) {
 			if _, err := kc.CreateProwJob(plank.NewProwJob(plank.BatchSpec(job, refs))); err != nil {
 				log.WithError(err).WithField("job", job.Name).Error("Error starting batch job.")
