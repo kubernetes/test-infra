@@ -14,7 +14,7 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: boskos-janitor
-        image: gcr.io/k8s-testimages/janitor:v20170710-1b50279e
+        image: gcr.io/k8s-testimages/janitor:v20170711-1a80241f
         args:
         - --service-account=/etc/service-account/service-account.json
         volumeMounts:

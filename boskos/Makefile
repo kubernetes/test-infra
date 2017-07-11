@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-PROJECT ?= krzyzacy-k8s-test
+PROJECT ?= k8s-prow-builds
 ZONE ?= us-central1-f
-CLUSTER ?= boskos-test
+CLUSTER ?= prow
 
 TAG = $(shell date +v%Y%m%d)-$(shell git describe --tags --always --dirty)
 
