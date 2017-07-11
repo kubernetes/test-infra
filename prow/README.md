@@ -76,15 +76,19 @@ plugin to mimic.
 
 ## How to enable a plugin on a repo
 
-Add an entry to `plugins.yaml`. If you misspell the name then a unit test will
-fail. Once it is merged, run `make update-plugins`. This does not require
+Add an entry to [plugins.yaml](plugins.yaml). If you misspell the name then a 
+unit test will fail. If you have [update-config](plugins/updateconfig) plugin 
+deployed then the config will be automatically updated once the PR is merged, 
+else you will need to run `make update-plugins`. This does not require 
 redeploying the binaries, and will take effect within a minute.
 
 ## How to add new jobs
 
-To add a new job you'll need to add an entry into `config.yaml`. Then run `make
-update-config`. This does not require redeploying any binaries, and will take
-effect within a minute.
+To add a new job you'll need to add an entry into [config.yaml](config.yaml). 
+If you have [update-config](plugins/updateconfig) plugin deployed then the 
+config will be automatically updated once the PR is merged, else you will need 
+to run `make update-config`. This does not require redeploying any binaries, 
+and will take effect within a minute.
 
 Prow will inject the following environment variables into every container in
 your pod:
