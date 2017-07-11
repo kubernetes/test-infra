@@ -7,19 +7,16 @@ then actually exports them to the GCS path provided to it.
 
 ## How to run the tool?
 
-Before running the tool on any node, create a secret with the gcloud service account credentials:
-1. Prepare service-account.json file (that should have write access to specified GCS path)
-2. `kubectl create secret generic logexporter-service-account --from-file=service-account.json=/path/to/service-account.json`
-
 To run the tool as a pod on a single node:
 
-3. Fill in the template with environment variable values in cluster/pod.yaml
-4. `kubectl create -f pod.yaml` (for master, run this as a static pod or set nodeName field in the podspec)
+- Fill in the template variables with the right values in cluster/logexporter-pod.yaml
+- `kubectl create -f cluster/logexporter-pod.yaml` (for master, run this as a static pod)
 
-To run the tool as a run-to-completion job on an entire k8s cluster (we ensure exactly 1 logexporter pod runs per node using hard inter-pod anti-affinity):
+To run the tool as a daemonset on a k8s cluster:
 
-3. Fill in the template with environment variable values in cluster/job.yaml
-4. `kubectl create -f job.yaml`
+- Fill in the template variables with the right values in cluster/logexporter-daemonset.yaml
+- `kubectl create -f cluster/logexporter-pod.yaml`
+- Delete the daemonset after detecting all work has been done as the pods just sleep after uploading logs
 
 ## Why not other logging tools?
 
