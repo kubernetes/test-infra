@@ -67,6 +67,7 @@ See [config.proto](https://github.com/kubernetes/test-infra/blob/master/testgrid
 Add a short description to a dashboard tab describing its purpose.
 
 ```
+  dashboard_tab:
   - name: gce
     test_group_name: ci-kubernetes-e2e-gce
     base_options: 'include-filter-by-regex=Kubectl%7Ckubectl'
@@ -103,14 +104,12 @@ If you run multiple versions of a test against different parameters, show which 
 Narrow down where to search when searching for a regression between two builds/commits.
 
 ```
-test_groups:
-- name: ci-kubernetes-node-kubelet-benchmark
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-benchmark
-  test_name_config:
-    name_elements:
-    - target_config: Tests name
-    - target_config: Context
-    name_format: '%s [%s]'
+  dashboard_tab:
+  - name: bazel
+    description: Runs bazel test //... on the test-infra repo.
+    test_group_name: ci-test-infra-bazel
+    code_search_url_template:
+      url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
 ```
 
 ### Add a notification
