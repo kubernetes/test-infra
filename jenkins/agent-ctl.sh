@@ -54,7 +54,6 @@ usage() {
 set -o nounset
 set -o errexit
 
-DOCKER_VERSION='1.11.2-0~jessie'
 GO_VERSION='go1.8.3.linux-amd64'
 TIMEZONE='America/Los_Angeles'
 
@@ -62,7 +61,7 @@ FAKE=
 PR=
 
 # Defaults
-BASE_IMAGE='debian-8'
+BASE_IMAGE='debian-9'
 IMAGE='jenkins-agent'
 IMAGE_FLAG="--image-family=${IMAGE}"
 IMAGE_PROJECT='kubernetes-jenkins'
@@ -89,6 +88,9 @@ while true; do
       ;;
     --pr)
       PR=yes
+      if [[ "${IMAGE_PROJECT}" == 'kubernetes-jenkins' ]]; then
+        IMAGE_PROJECT='kubernetes-jenkins-pull'
+      fi
       shift
       ;;
     --base-image)
@@ -304,40 +306,40 @@ gcloud compute ssh "${INSTANCE}" << INSTANTIATE_DONE
 set -o verbose
 set -o errexit
 
+sudo apt-get -y update
+sudo apt-get -y install \
+  apt-transport-https \
+  ca-certificates \
+  curl \
+  gnupg2 \
+  software-properties-common \
+  python-openssl python-pyasn1 python-ndg-httpsclient \
+  build-essential \
+  tmpreaper \
+  jq
+
 # Install docker
-which docker || curl -sSL https://get.docker.com/ | sh
+curl -fsSL https://download.docker.com/linux/debian/gpg | sudo apt-key add -
+sudo apt-key fingerprint 0EBFCD88 | grep '9DC8 5822 9FC7 DD38 854A  E2D8 8D81 803C 0EBF CD88'
+sudo add-apt-repository -y "deb [arch=amd64] https://download.docker.com/linux/debian \$(lsb_release -cs) stable"
+sudo apt-get -y update
+sudo apt-get -y install docker-ce
+sudo docker run hello-world
 id jenkins || sudo useradd jenkins -m
 sudo usermod -aG docker jenkins
 
-# Downgrade docker to 1.11.2, the version on COS
-# https://github.com/kubernetes/kubernetes/issues/21451
-sudo apt-get -y --force-yes install docker-engine="${DOCKER_VERSION}"
-sudo /etc/init.d/docker stop
-sudo rm -rf /var/lib/docker/network  # https://github.com/docker/docker/issues/23630
-sudo /etc/init.d/docker start
-sudo docker run hello-world
-sudo apt-mark hold docker-engine
+# Use java8
+sudo apt-get -y update
+sudo apt-get -y install \
+  openjdk-8-jdk
+sudo update-alternatives --set java /usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java
+java -version 2>&1 | grep 1.8
 
 # Install go (needed for hack/e2e.go)
 
 wget "https://storage.googleapis.com/golang/${GO_VERSION}.tar.gz"
 sudo tar xzvf "${GO_VERSION}.tar.gz" -C /usr/local
 
-# install build tools
-sudo apt-get -y install build-essential
-
-# install stackdriver
-curl -O https://repo.stackdriver.com/stack-install.sh
-sudo bash stack-install.sh --write-gcm
-curl -sSO https://dl.google.com/cloudagents/install-logging-agent.sh
-sudo bash install-logging-agent.sh
-rm stack-install.sh install-logging-agent.sh
-
-# Install python
-sudo apt-get -y install python-openssl python-pyasn1 python-ndg-httpsclient
-
-# Install jq
-sudo apt-get -y install jq
 
 # Reboot on panic
 sudo touch /etc/sysctl.conf
@@ -348,7 +350,6 @@ END'
 sudo sysctl -p
 
 # Keep tmp clean
-sudo apt-get -y install tmpreaper
 sudo sh -c "cat << END > /etc/tmpreaper.conf
 TMPREAPER_PROTECT_EXTRA=''
 TMPREAPER_DIRS='/tmp/. /var/tmp/.'
