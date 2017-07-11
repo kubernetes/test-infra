@@ -2975,6 +2975,12 @@ dashboards:
 #
 
 dashboard_groups:
+- name: gce-all
+  dashboard_names:
+  - google-gce
+  - google-gci
+  - google-gci-dev
+
 - name: gke-all
   dashboard_names:
   - google-gke
@@ -2987,6 +2993,7 @@ dashboard_groups:
   - latest-upgrades
   - 1.5-1.7-upgrade
   - 1.6-1.7-upgrade
+  - release-1.6-upgrade-skew
 
 - name: master-health
   dashboard_names:
@@ -2994,3 +3001,13 @@ dashboard_groups:
   - master-kubectl-skew
   - master-upgrade
 
+- name: release-branch-health
+  dashboard_names:
+  - release-1.4-all
+  - release-1.4-blocking
+  - release-1.5-all
+  - release-1.5-blocking
+  - release-1.6-all
+  - release-1.6-blocking
+  - release-1.7-all
+  - release-1.7-blocking
