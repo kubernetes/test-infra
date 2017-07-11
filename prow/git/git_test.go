@@ -14,53 +14,35 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package git
+package git_test
 
 import (
 	"bytes"
-	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"testing"
+
+	"k8s.io/test-infra/prow/git/localgit"
 )
 
-// runCmd runs cmd in dir with arg.
-func runCmd(cmd, dir string, arg ...string) error {
-	c := exec.Command(cmd, arg...)
-	c.Dir = dir
-	if b, err := c.CombinedOutput(); err != nil {
-		return fmt.Errorf("%s %v: %v, %s", cmd, arg, err, string(b))
-	}
-	return nil
-}
-
 func TestClone(t *testing.T) {
-	c, err := NewClient()
+	lg, c, err := localgit.New()
 	if err != nil {
-		t.Fatalf("Making client: %v", err)
+		t.Fatalf("Making local git repo: %v", err)
 	}
 	defer func() {
+		if err := lg.Clean(); err != nil {
+			t.Errorf("Error cleaning LocalGit: %v", err)
+		}
 		if err := c.Clean(); err != nil {
-			t.Errorf("Cleaning up old client: %v", err)
+			t.Errorf("Error cleaning Client: %v", err)
 		}
 	}()
-	// Make fake local repositories in a temp dir.
-	tmp, err := ioutil.TempDir("", "test")
-	if err != nil {
-		t.Fatalf("Making tmpdir: %v", err)
-	}
-	defer func() {
-		if err := os.RemoveAll(tmp); err != nil {
-			t.Errorf("Cleaning up tmp dir: %v", err)
-		}
-	}()
-	c.base = tmp
-	if err := makeFakeRepo(c.git, tmp, "foo", "bar"); err != nil {
+	if err := lg.MakeFakeRepo("foo", "bar"); err != nil {
 		t.Fatalf("Making fake repo: %v", err)
 	}
-	if err := makeFakeRepo(c.git, tmp, "foo", "baz"); err != nil {
+	if err := lg.MakeFakeRepo("foo", "baz"); err != nil {
 		t.Fatalf("Making fake repo: %v", err)
 	}
 
@@ -87,7 +69,7 @@ func TestClone(t *testing.T) {
 	}()
 
 	// Make sure it fetches when we clone again.
-	if err := addCommit(c.git, filepath.Join(tmp, "foo", "bar"), "second"); err != nil {
+	if err := lg.AddCommit("foo", "bar", map[string][]byte{"second": []byte{}}); err != nil {
 		t.Fatalf("Adding second commit: %v", err)
 	}
 	r3, err := c.Clone("foo/bar")
@@ -100,7 +82,7 @@ func TestClone(t *testing.T) {
 		}
 	}()
 	log := exec.Command("git", "log", "--oneline")
-	log.Dir = r3.dir
+	log.Dir = r3.Dir
 	if b, err := log.CombinedOutput(); err != nil {
 		t.Fatalf("git log: %v, %s", err, string(b))
 	} else {
@@ -111,38 +93,43 @@ func TestClone(t *testing.T) {
 	}
 }
 
-func makeFakeRepo(git, tmp, org, repo string) error {
-	rdir := filepath.Join(tmp, org, repo)
-	if err := os.MkdirAll(rdir, os.ModePerm); err != nil {
-		return err
+func TestCheckoutPR(t *testing.T) {
+	lg, c, err := localgit.New()
+	if err != nil {
+		t.Fatalf("Making local git repo: %v", err)
+	}
+	defer func() {
+		if err := lg.Clean(); err != nil {
+			t.Errorf("Error cleaning LocalGit: %v", err)
+		}
+		if err := c.Clean(); err != nil {
+			t.Errorf("Error cleaning Client: %v", err)
+		}
+	}()
+	if err := lg.MakeFakeRepo("foo", "bar"); err != nil {
+		t.Fatalf("Making fake repo: %v", err)
+	}
+	r, err := c.Clone("foo/bar")
+	if err != nil {
+		t.Fatalf("Cloning: %v", err)
+	}
+	defer func() {
+		if err := r.Clean(); err != nil {
+			t.Errorf("Cleaning repo: %v", err)
+		}
+	}()
+
+	if err := lg.CheckoutNewBranch("foo", "bar", "pull/123/head"); err != nil {
+		t.Fatalf("Checkout new branch: %v", err)
+	}
+	if err := lg.AddCommit("foo", "bar", map[string][]byte{"wow": []byte{}}); err != nil {
+		t.Fatalf("Add commit: %v", err)
 	}
 
-	if err := runCmd(git, rdir, "init"); err != nil {
-		return err
+	if err := r.CheckoutPullRequest(123); err != nil {
+		t.Fatalf("Checking out PR: %v", err)
 	}
-	if err := runCmd(git, rdir, "config", "user.email", "test@test.test"); err != nil {
-		return err
+	if _, err := os.Stat(filepath.Join(r.Dir, "wow")); err != nil {
+		t.Errorf("Didn't find file in PR after checking out: %v", err)
 	}
-	if err := runCmd(git, rdir, "config", "user.name", "test test"); err != nil {
-		return err
-	}
-	if err := addCommit(git, rdir, "initial"); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func addCommit(git, rdir, name string) error {
-	if err := ioutil.WriteFile(filepath.Join(rdir, name), []byte("wow!"), os.ModePerm); err != nil {
-		return err
-	}
-
-	if err := runCmd(git, rdir, "add", name); err != nil {
-		return err
-	}
-	if err := runCmd(git, rdir, "commit", "-m", "wow"); err != nil {
-		return err
-	}
-	return nil
 }
