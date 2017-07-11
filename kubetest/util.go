@@ -296,3 +296,39 @@ func pushEnv(env, value string) (func() error, error) {
 		return os.Unsetenv(env)
 	}, nil
 }
+
+// Option that was an ENV that is now a --flag
+type migratedOption struct {
+	env      string  // env associated with --flag
+	option   *string // Value of --flag
+	name     string  // --flag name
+	skipPush bool    // Push option to env if false
+}
+
+// Read value from ENV if --flag unset, optionally pushing to ENV
+func migrateOptions(m []migratedOption) error {
+	for _, s := range m {
+		if *s.option == "" {
+			// Jobs may not be using --foo instead of FOO just yet, so ease the transition
+			// TODO(fejta): require --foo instead of FOO
+			v := os.Getenv(s.env) // expected Getenv
+			if v != "" {
+				// Tell people to use --foo=blah instead of FOO=blah
+				log.Printf("Please use kubetest %s=%s (instead of deprecated %s=%s)", s.name, v, s.env, v)
+				*s.option = v
+			}
+		}
+		if s.skipPush {
+			continue
+		}
+		// Script called by kubetest may expect these values to be set, so set them
+		// TODO(fejta): refactor the scripts below kubetest to use explicit config
+		if *s.option == "" {
+			continue
+		}
+		if err := os.Setenv(s.env, *s.option); err != nil {
+			return fmt.Errorf("could not set %s=%s: %v", s.env, *s.option, err)
+		}
+	}
+	return nil
+}

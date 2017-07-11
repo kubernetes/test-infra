@@ -79,7 +79,7 @@ type kubernetesAnywhere struct {
 	Cluster           string
 }
 
-func NewKubernetesAnywhere() (*kubernetesAnywhere, error) {
+func NewKubernetesAnywhere(project string) (*kubernetesAnywhere, error) {
 	if *kubernetesAnywherePath == "" {
 		return nil, fmt.Errorf("--kubernetes-anywhere-path is required")
 	}
@@ -88,9 +88,8 @@ func NewKubernetesAnywhere() (*kubernetesAnywhere, error) {
 		return nil, fmt.Errorf("--kubernetes-anywhere-cluster is required")
 	}
 
-	project, ok := os.LookupEnv("PROJECT")
-	if !ok {
-		return nil, fmt.Errorf("The PROJECT environment variable is required to be set for kubernetes-anywhere")
+	if project == "" {
+		return nil, fmt.Errorf("--provider=kubernetes-anywhere requires --gcp-project")
 	}
 
 	// Set KUBERNETES_CONFORMANCE_TEST so the auth info is picked up

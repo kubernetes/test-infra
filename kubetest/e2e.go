@@ -176,7 +176,7 @@ func run(deploy deployer, o options) error {
 
 	if o.kubemark {
 		errs = appendError(errs, xmlWrap("Kubemark", func() error {
-			return KubemarkTest(dump)
+			return KubemarkTest(dump, o)
 		}))
 	}
 
@@ -428,6 +428,7 @@ func DumpFederationLogs(location string) error {
 
 func PerfTest() error {
 	// Run perf tests
+	// TODO(fejta): GOPATH may be split by :
 	cmdline := fmt.Sprintf("%s/src/k8s.io/perf-tests/clusterloader/run-e2e.sh", os.Getenv("GOPATH"))
 	if err := finishRunning(exec.Command(cmdline)); err != nil {
 		return err
@@ -443,7 +444,30 @@ func ChartsTest() error {
 	return nil
 }
 
-func KubemarkTest(dump string) error {
+func KubemarkTest(dump string, o options) error {
+	if err := migrateOptions([]migratedOption{
+		{
+			env:      "KUBEMARK_NUM_NODES",
+			option:   &o.kubemarkNodes,
+			name:     "--kubemark-nodes",
+			skipPush: true,
+		},
+		{
+			env:      "KUBEMARK_MASTER_SIZE",
+			option:   &o.kubemarkMasterSize,
+			name:     "--kubemark-master-size",
+			skipPush: true,
+		},
+		{
+			env:      "KUBEMARK_TEST_ARGS",
+			option:   &o.testArgs,
+			name:     "--test_args",
+			skipPush: true,
+		},
+	}); err != nil {
+		return err
+	}
+
 	if dump != "" {
 		if pop, err := pushEnv("E2E_REPORT_DIR", dump); err != nil {
 			return err
@@ -451,7 +475,6 @@ func KubemarkTest(dump string) error {
 			defer pop()
 		}
 	}
-
 	// Stop previous run
 	err := finishRunning(exec.Command("./test/kubemark/stop-kubemark.sh"))
 	if err != nil {
@@ -468,12 +491,12 @@ func KubemarkTest(dump string) error {
 	})
 
 	// Start new run
-	if popN, err := pushEnv("NUM_NODES", os.Getenv("KUBEMARK_NUM_NODES")); err != nil {
+	if popN, err := pushEnv("NUM_NODES", o.kubemarkNodes); err != nil {
 		return err
 	} else {
 		defer popN()
 	}
-	if popM, err := pushEnv("MASTER_SIZE", os.Getenv("KUBEMARK_MASTER_SIZE")); err != nil {
+	if popM, err := pushEnv("MASTER_SIZE", o.kubemarkMasterSize); err != nil {
 		return err
 	} else {
 		defer popM()
@@ -494,13 +517,12 @@ func KubemarkTest(dump string) error {
 	}
 
 	// Run kubemark tests
-	focus, present := os.LookupEnv("KUBEMARK_TESTS")
+	focus, present := os.LookupEnv("KUBEMARK_TESTS") // TODO(fejta): migrate to --test_args
 	if !present {
 		focus = "starting\\s30\\pods"
 	}
-	test_args := os.Getenv("KUBEMARK_TEST_ARGS")
 
-	err = finishRunning(exec.Command("./test/kubemark/run-e2e-tests.sh", "--ginkgo.focus="+focus, test_args))
+	err = finishRunning(exec.Command("./test/kubemark/run-e2e-tests.sh", "--ginkgo.focus="+focus, o.testArgs))
 	if err != nil {
 		return err
 	}

@@ -18,7 +18,6 @@ package main
 
 import (
 	"fmt"
-	"os"
 	"os/exec"
 	"regexp"
 	"strings"
@@ -61,7 +60,7 @@ func (s *stageStrategy) Enabled() bool {
 
 // Stage the release build to GCS.
 // Essentially release/push-build.sh --bucket=B --ci? --gcs-suffix=S --federation? --noupdatelatest
-func (s *stageStrategy) Stage() error {
+func (s *stageStrategy) Stage(fed bool) error {
 	name := k8s("release", "push-build.sh")
 	b := s.bucket
 	if strings.HasPrefix(b, "gs://") {
@@ -85,7 +84,7 @@ func (s *stageStrategy) Stage() error {
 	if len(s.dockerRegistry) > 0 {
 		args = append(args, fmt.Sprintf("--docker-registry=%s", s.dockerRegistry))
 	}
-	if os.Getenv("FEDERATION") == "true" {
+	if fed {
 		args = append(args, "--federation")
 	}
 
