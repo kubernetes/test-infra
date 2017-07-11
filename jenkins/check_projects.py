@@ -259,7 +259,7 @@ class Checker(object):
 
         with open(boskos) as fp:
             for rtype in json.loads(fp.read()):
-                if rtype['type'] == 'project':
+                if rtype['type'] == 'gce-project' or rtype['type'] == 'gke-project':
                     for name in rtype['names']:
                         projects.add(name)
 

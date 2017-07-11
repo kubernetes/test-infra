@@ -11,12 +11,13 @@ spec:
       labels:
         app: boskos-janitor
     spec:
-      terminationGracePeriodSeconds: 30
+      terminationGracePeriodSeconds: 300
       containers:
       - name: boskos-janitor
-        image: gcr.io/k8s-testimages/janitor:v20170711-1a80241f
+        image: gcr.io/k8s-testimages/janitor:v20170712-0905b5f7
         args:
         - --service-account=/etc/service-account/service-account.json
+        - --resource-type=gce-project,gke-project
         volumeMounts:
         - mountPath: /etc/service-account
           name: service

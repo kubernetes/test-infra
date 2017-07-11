@@ -20,6 +20,7 @@ go_library(
     tags = ["automanaged"],
     deps = [
         "//boskos/client:go_default_library",
+        "//boskos/common:go_default_library",
         "//vendor:github.com/Sirupsen/logrus",
     ],
 )

@@ -24,6 +24,7 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"k8s.io/test-infra/boskos/client"
+	"k8s.io/test-infra/boskos/common"
 )
 
 var (
@@ -32,6 +33,12 @@ var (
 	bufferSize     = 1  // Maximum holding resources
 	serviceAccount = flag.String("service-account", "", "Path to projects service account")
 )
+
+var rTypes common.ResTypes
+
+func init() {
+	flag.Var(&rTypes, "resource-type", "comma-separated list of resources need to be cleaned up")
+}
 
 func main() {
 	logrus.SetFormatter(&logrus.JSONFormatter{})
@@ -44,14 +51,19 @@ func main() {
 		logrus.Fatal("--service-account cannot be empty!")
 	}
 
+	if len(rTypes) == 0 {
+		logrus.Fatal("--resource-type must not be empty!")
+	}
+
 	cmd := exec.Command("gcloud", "auth", "activate-service-account", "--key-file="+*serviceAccount)
 	if b, err := cmd.CombinedOutput(); err != nil {
 		logrus.WithError(err).Fatalf("fail to activate service account from %s :%s", *serviceAccount, string(b))
 	}
 
 	buffer := setup(boskos, poolSize, bufferSize)
+
 	for {
-		run(boskos, buffer)
+		run(boskos, buffer, rTypes)
 		time.Sleep(time.Minute)
 	}
 }
@@ -79,20 +91,34 @@ func setup(c boskosClient, janitorCount int, bufferSize int) chan string {
 	return buffer
 }
 
-func run(c boskosClient, buffer chan string) int {
+func run(c boskosClient, buffer chan string, rtypes []string) int {
 	totalAcquire := 0
+	res := make(map[string]int)
+	for _, s := range rtypes {
+		res[s] = 0
+	}
 
 	for {
-		if proj, err := c.Acquire("project", "dirty", "cleaning"); err != nil {
-			logrus.WithError(err).Error("Boskos acquire failed!")
-			return totalAcquire
-		} else if proj == "" {
-			return totalAcquire
-		} else {
-			buffer <- proj // will block until buffer has a free slot
-			totalAcquire++
+		for r := range res {
+			if proj, err := c.Acquire(r, "dirty", "cleaning"); err != nil {
+				logrus.WithError(err).Error("Boskos acquire failed!")
+				totalAcquire += res[r]
+				delete(res, r)
+			} else if proj == "" {
+				totalAcquire += res[r]
+				delete(res, r)
+			} else {
+				buffer <- proj // will block until buffer has a free slot
+				res[r]++
+			}
+		}
+
+		if len(res) == 0 {
+			break
 		}
 	}
+
+	return totalAcquire
 }
 
 // async janitor goroutine

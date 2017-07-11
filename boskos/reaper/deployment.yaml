@@ -1,3 +1,5 @@
+---
+# gce-project reaper
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
@@ -14,4 +16,6 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: boskos-reaper
-        image: gcr.io/k8s-testimages/reaper:v20170711-1a80241f
+        image: gcr.io/k8s-testimages/reaper:v20170712-0905b5f7
+        args:
+        - --resource-type=gce-project,gke-project
