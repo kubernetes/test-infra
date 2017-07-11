@@ -184,7 +184,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-cli"
     ]
   },
   "ci-kubernetes-e2e-gce-1-5-1-6-gci-kubectl-skew": {
@@ -200,7 +200,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-cli"
     ]
   },
   "ci-kubernetes-e2e-gce-1-5-1-6-upgrade-cluster": {
@@ -268,7 +268,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-cli"
     ]
   },
   "ci-kubernetes-e2e-gce-1-6-1-5-downgrade-cluster": {
@@ -300,7 +300,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-cli"
     ]
   },
   "ci-kubernetes-e2e-gce-1-6-1-7-cvm-kubectl-skew": {
@@ -316,7 +316,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-cli"
     ]
   },
   "ci-kubernetes-e2e-gce-1-6-1-7-cvm-kubectl-skew-serial": {
@@ -332,7 +332,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-cli"
     ]
   },
   "ci-kubernetes-e2e-gce-1-6-1-7-gci-kubectl-skew": {
@@ -348,7 +348,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-cli"
     ]
   },
   "ci-kubernetes-e2e-gce-1-6-1-7-gci-kubectl-skew-serial": {
@@ -364,7 +364,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-cli"
     ]
   },
   "ci-kubernetes-e2e-gce-1-6-1-7-upgrade-cluster": {
@@ -433,7 +433,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-cli"
     ]
   },
   "ci-kubernetes-e2e-gce-1-7-1-6-cvm-kubectl-skew-serial": {
@@ -450,7 +450,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-cli"
     ]
   },
   "ci-kubernetes-e2e-gce-1-7-1-6-gci-kubectl-skew": {
@@ -467,7 +467,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-cli"
     ]
   },
   "ci-kubernetes-e2e-gce-1-7-1-6-gci-kubectl-skew-serial": {
@@ -484,7 +484,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-cli"
     ]
   },
   "ci-kubernetes-e2e-gce-alpha-features": {
@@ -3984,7 +3984,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-cli"
     ]
   },
   "ci-kubernetes-e2e-gke-1-5-1-6-gci-kubectl-skew": {
@@ -4000,7 +4000,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-cli"
     ]
   },
   "ci-kubernetes-e2e-gke-1-6-1-5-cvm-kubectl-skew": {
@@ -4017,7 +4017,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-cli"
     ]
   },
   "ci-kubernetes-e2e-gke-1-6-1-5-gci-kubectl-skew": {
@@ -4034,7 +4034,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-cli"
     ]
   },
   "ci-kubernetes-e2e-gke-1-6-1-7-cvm-kubectl-skew": {
@@ -4050,7 +4050,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-cli"
     ]
   },
   "ci-kubernetes-e2e-gke-1-6-1-7-cvm-kubectl-skew-serial": {
@@ -4066,7 +4066,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-cli"
     ]
   },
   "ci-kubernetes-e2e-gke-1-6-1-7-gci-kubectl-skew": {
@@ -4082,7 +4082,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-cli"
     ]
   },
   "ci-kubernetes-e2e-gke-1-6-1-7-gci-kubectl-skew-serial": {
@@ -4098,7 +4098,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-cli"
     ]
   },
   "ci-kubernetes-e2e-gke-1-7-1-6-cvm-kubectl-skew": {
@@ -4115,7 +4115,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-cli"
     ]
   },
   "ci-kubernetes-e2e-gke-1-7-1-6-cvm-kubectl-skew-serial": {
@@ -4132,7 +4132,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-cli"
     ]
   },
   "ci-kubernetes-e2e-gke-1-7-1-6-gci-kubectl-skew": {
@@ -4149,7 +4149,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-cli"
     ]
   },
   "ci-kubernetes-e2e-gke-1-7-1-6-gci-kubectl-skew-serial": {
@@ -4166,7 +4166,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-cli"
     ]
   },
   "ci-kubernetes-e2e-gke-alpha-features": {
