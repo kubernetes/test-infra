@@ -19,7 +19,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"os"
 	"os/exec"
 	"time"
 
@@ -34,18 +33,6 @@ var (
 	serviceAccount = flag.String("service-account", "", "Path to projects service account")
 )
 
-// exists returns whether the given file or directory exists or not
-func exists(path string) (bool, error) {
-	_, err := os.Stat(path)
-	if err == nil {
-		return true, nil
-	}
-	if os.IsNotExist(err) {
-		return false, nil
-	}
-	return true, err
-}
-
 func main() {
 	logrus.SetFormatter(&logrus.JSONFormatter{})
 	boskos := client.NewClient("Janitor", "http://boskos")
@@ -59,7 +46,7 @@ func main() {
 
 	cmd := exec.Command("gcloud", "auth", "activate-service-account", "--key-file="+*serviceAccount)
 	if b, err := cmd.CombinedOutput(); err != nil {
-		logrus.WithError(err).Fatalf("fail to activate service account from %s : %s", *serviceAccount, string(b))
+		logrus.WithError(err).Fatalf("fail to activate service account from %s :%s", *serviceAccount, string(b))
 	}
 
 	buffer := setup(boskos, poolSize, bufferSize)

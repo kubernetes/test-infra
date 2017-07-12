@@ -75,14 +75,7 @@ def collect(project, age, resource, filt):
         '--project=%s' % project])
     print '%r' % cmd
 
-    try:
-        output = subprocess.check_output(cmd)
-    except subprocess.CalledProcessError as exc:
-        print >>sys.stderr, 'error while executing %r: %r' % (cmd, exc)
-        return None
-
-    for item in json.loads(output):
-
+    for item in json.loads(subprocess.check_output(cmd)):
         print '%r' % item
 
         if 'name' not in item or 'creationTimestamp' not in item:
