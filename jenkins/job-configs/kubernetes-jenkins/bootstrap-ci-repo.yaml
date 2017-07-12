@@ -64,13 +64,6 @@
         repo-name: github.com/google/cadvisor
         timeout: 90
 
-    - test-infra-test-history:
-        branch: master
-        frequency: 'H * * * *'
-        job-name: ci-test-infra-test-history
-        repo-name: github.com/kubernetes/test-infra
-        timeout: 30
-
     - kubernetes-verify-master:
         branch: master
         frequency: 'H/5 * * * *'

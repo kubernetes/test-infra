@@ -27,7 +27,6 @@ filegroup(
     srcs = [
         ":package-srcs",
         "//jenkins/job-configs:all-srcs",
-        "//jenkins/test_history:all-srcs",
     ],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],

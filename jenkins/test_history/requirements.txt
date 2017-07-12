@@ -1,3 +1,0 @@
-requests
-jinja2
-pyyaml

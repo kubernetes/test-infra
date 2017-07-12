@@ -48,8 +48,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-cadvisor-canarypush
 - name: ci-cadvisor-node-kubelet
   gcs_prefix: kubernetes-jenkins/logs/ci-cadvisor-node-kubelet
-- name: ci-test-infra-test-history
-  gcs_prefix: kubernetes-jenkins/logs/ci-test-infra-test-history
 - name: ci-kubernetes-node-kubelet-benchmark
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-benchmark
   test_name_config:
@@ -2372,11 +2370,6 @@ dashboards:
   - name: bazel
     description: Runs bazel test //... on the test-infra repo.
     test_group_name: ci-test-infra-bazel
-    code_search_url_template:
-      url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
-  - name: test-history
-    description: Deprecated website that will disappear in the near future
-    test_group_name: ci-test-infra-test-history
     code_search_url_template:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
   - name: testgrid-config-upload
