@@ -1667,38 +1667,6 @@ dashboards:
   - name: high-density-100-gce
     test_group_name: ci-kubernetes-kubemark-high-density-100-gce
 
-- name: sig-node
-  dashboard_tab:
-  - name: cadvisor-push
-    test_group_name: ci-cadvisor-canarypush
-  - name: cadvisor-kubelet
-    test_group_name: ci-cadvisor-node-kubelet
-  - name: kubelet-benchmark-gce-e2e
-    test_group_name: ci-kubernetes-node-kubelet-benchmark
-  - name: kubelet
-    test_group_name: ci-kubernetes-node-kubelet
-  - name: kubelet-serial-gce-e2e
-    test_group_name: ci-kubernetes-node-kubelet-serial
-  - name: kubelet-flaky-gce-e2e
-    test_group_name: ci-kubernetes-node-kubelet-flaky
-  - name: kubelet-conformance-gce-e2e
-    test_group_name: ci-kubernetes-node-kubelet-conformance
-  - name: kubelet-1.4
-    test_group_name: ci-kubernetes-node-kubelet-1.4
-  - name: kubelet-1.5
-    test_group_name: ci-kubernetes-node-kubelet-1.5
-  - name: kubelet-1.6
-    test_group_name: ci-kubernetes-node-kubelet-1.6
-  - name: kubelet-1.7
-    test_group_name: ci-kubernetes-node-kubelet-1.7
-  - name: docker-kubelet
-    test_group_name: ci-kubernetes-node-docker
-  - name: docker-e2e
-    test_group_name: ci-kubernetes-e2e-gci-gce-docker
-  - name: docker-kubelet-benchmark
-    test_group_name: ci-kubernetes-node-docker-benchmark
-
-
 - name: google-soak
   dashboard_tab:
   - name: gce-test
@@ -2956,7 +2924,36 @@ dashboards:
 
 # Move sig-network here
 
-# Move sig-node here
+- name: sig-node
+  dashboard_tab:
+  - name: cadvisor-push
+    test_group_name: ci-cadvisor-canarypush
+  - name: cadvisor-kubelet
+    test_group_name: ci-cadvisor-node-kubelet
+  - name: kubelet-benchmark-gce-e2e
+    test_group_name: ci-kubernetes-node-kubelet-benchmark
+  - name: kubelet
+    test_group_name: ci-kubernetes-node-kubelet
+  - name: kubelet-serial-gce-e2e
+    test_group_name: ci-kubernetes-node-kubelet-serial
+  - name: kubelet-flaky-gce-e2e
+    test_group_name: ci-kubernetes-node-kubelet-flaky
+  - name: kubelet-conformance-gce-e2e
+    test_group_name: ci-kubernetes-node-kubelet-conformance
+  - name: kubelet-1.4
+    test_group_name: ci-kubernetes-node-kubelet-1.4
+  - name: kubelet-1.5
+    test_group_name: ci-kubernetes-node-kubelet-1.5
+  - name: kubelet-1.6
+    test_group_name: ci-kubernetes-node-kubelet-1.6
+  - name: kubelet-1.7
+    test_group_name: ci-kubernetes-node-kubelet-1.7
+  - name: docker-kubelet
+    test_group_name: ci-kubernetes-node-docker
+  - name: docker-e2e
+    test_group_name: ci-kubernetes-e2e-gci-gce-docker
+  - name: docker-kubelet-benchmark
+    test_group_name: ci-kubernetes-node-docker-benchmark
 
 # Move sig-release here
 
