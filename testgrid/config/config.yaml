@@ -2844,6 +2844,18 @@ dashboards:
   - name: cosbeta-k8sstable2-serial
     test_group_name: ci-kubernetes-e2e-gce-cosbeta-k8sstable2-serial
 
+- name: wg-resource-management
+  dashboard_tab:
+  - name: gce-gpu
+    test_group_name: ci-kubernetes-e2e-gce-gpu
+  - name: gce-gpu-1-7
+    test_group_name: ci-kubernetes-e2e-gce-gpu-1-7
+  - name: gke-gpu
+    test_group_name: ci-kubernetes-e2e-gke-gpu
+  - name: kubelet-serial-gce-e2e
+    test_group_name: ci-kubernetes-node-kubelet-serial
+    base_options: 'include-filter-by-regex=GPU'
+
 - name: sig-api-machinery
   dashboard_tab:
   - name: TODO
@@ -2892,11 +2904,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-slow  # TODO(fejta): fix
 
 # Rename and move sig-federation here
-
-- name: sig-hardware-accelerators
-  dashboard_tab:
-  - name: TODO
-    test_group_name: ci-kubernetes-e2e-gce-slow  # TODO(fejta): fix
 
 - name: sig-instrumentation
   dashboard_tab:
