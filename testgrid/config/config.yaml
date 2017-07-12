@@ -2771,7 +2771,11 @@ dashboards:
 - name: sig-api-machinery
   dashboard_tab:
   - name: TODO
+    description: what does this tab do exactly
     test_group_name: ci-kubernetes-e2e-gce-slow  # TODO(fejta): fix
+  notifications:
+  - summary: Please configure this skeleton dashboard and remove this notification
+    context_link: https://github.com/kubernetes/test-infra/tree/master/testgrid/config
 
 - name: sig-apps # TODO(crimsonfaith91): add upgrade tests when k8s v1.9 rolls out
   dashboard_tab:
@@ -2807,12 +2811,20 @@ dashboards:
 - name: sig-auth
   dashboard_tab:
   - name: TODO
+    description: what does this tab do exactly
     test_group_name: ci-kubernetes-e2e-gce-slow  # TODO(fejta): fix
+  notifications:
+  - summary: Please configure this skeleton dashboard and remove this notification
+    context_link: https://github.com/kubernetes/test-infra/tree/master/testgrid/config
 
 - name: sig-big-data
   dashboard_tab:
   - name: mlkube-gke
+    description: what does this tab do exactly
     test_group_name: ci-kubernetes-e2e-mlkube-gke
+  notifications:
+  - summary: Please configure this skeleton dashboard and remove this notification
+    context_link: https://github.com/kubernetes/test-infra/tree/master/testgrid/config
 
 - name: sig-autoscaling
   dashboard_tab:
@@ -2908,7 +2920,11 @@ dashboards:
 - name: sig-cluster-ops
   dashboard_tab:
   - name: TODO
+    description: what does this tab do exactly
     test_group_name: ci-kubernetes-e2e-gce-slow  # TODO(fejta): fix
+  notifications:
+  - summary: Please configure this skeleton dashboard and remove this notification
+    context_link: https://github.com/kubernetes/test-infra/tree/master/testgrid/config
 
 - name: sig-federation
   dashboard_tab:
@@ -3062,6 +3078,9 @@ dashboards:
   dashboard_tab:
   - name: TODO
     test_group_name: ci-kubernetes-e2e-gce-slow  # TODO(fejta): fix
+  notifications:
+  - summary: Please configure this skeleton dashboard and remove this notification
+    context_link: https://github.com/kubernetes/test-infra/tree/master/testgrid/config
 
 - name: sig-storage
   dashboard_tab:
@@ -3120,6 +3139,9 @@ dashboards:
   dashboard_tab:
   - name: TODO
     test_group_name: ci-kubernetes-e2e-gce-slow  # TODO(fejta): fix
+  notifications:
+  - summary: Please configure this skeleton dashboard and remove this notification
+    context_link: https://github.com/kubernetes/test-infra/tree/master/testgrid/config
 
 #
 # Start dashboard groups
