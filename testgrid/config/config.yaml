@@ -2918,25 +2918,41 @@ dashboards:
 
 - name: sig-api-machinery
   dashboard_tab:
-  - name: TODO
+  - name: todo  # Basic tab setup, all rows
     test_group_name: ci-kubernetes-e2e-gce-slow  # TODO(fejta): fix
+  - name: todo_filtered  #
+    test_group_name: ci-kubernetes-e2e-gce-slow  # TODO(fejta): change job name
+    # Delete base options if every test in the job is relevant, otherwise fix regex
+    base_options: 'include-filter-by-regex=FIXME%7Csig-whatever'  # %7C=|
 
 - name: sig-apps
   dashboard_tab:
-  - name: TODO
+  - name: todo  # Basic tab setup, all rows
     test_group_name: ci-kubernetes-e2e-gce-slow  # TODO(fejta): fix
+  - name: todo_filtered  #
+    test_group_name: ci-kubernetes-e2e-gce-slow  # TODO(fejta): change job name
+    # Delete base options if every test in the job is relevant, otherwise fix regex
+    base_options: 'include-filter-by-regex=FIXME%7Csig-whatever'  # %7C=|
 
 - name: sig-auth
   dashboard_tab:
-  - name: TODO
+  - name: todo  # Basic tab setup, all rows
     test_group_name: ci-kubernetes-e2e-gce-slow  # TODO(fejta): fix
+  - name: todo_filtered  #
+    test_group_name: ci-kubernetes-e2e-gce-slow  # TODO(fejta): change job name
+    # Delete base options if every test in the job is relevant, otherwise fix regex
+    base_options: 'include-filter-by-regex=FIXME%7Csig-whatever'  # %7C=|
 
 # Rename and move sig-big-data here
 
 - name: sig-autoscaling
   dashboard_tab:
-  - name: TODO
+  - name: todo  # Basic tab setup, all rows
     test_group_name: ci-kubernetes-e2e-gce-slow  # TODO(fejta): fix
+  - name: todo_filtered  #
+    test_group_name: ci-kubernetes-e2e-gce-slow  # TODO(fejta): change job name
+    # Delete base options if every test in the job is relevant, otherwise fix regex
+    base_options: 'include-filter-by-regex=FIXME%7Csig-whatever'  # %7C=|
 
 # Move sig-cli
 
@@ -2944,20 +2960,32 @@ dashboards:
 
 - name: sig-cluster-ops
   dashboard_tab:
-  - name: TODO
+  - name: todo  # Basic tab setup, all rows
     test_group_name: ci-kubernetes-e2e-gce-slow  # TODO(fejta): fix
+  - name: todo_filtered  #
+    test_group_name: ci-kubernetes-e2e-gce-slow  # TODO(fejta): change job name
+    # Delete base options if every test in the job is relevant, otherwise fix regex
+    base_options: 'include-filter-by-regex=FIXME%7Csig-whatever'  # %7C=|
 
 # Rename and move sig-federation here
 
 - name: sig-hardware-accelerators
   dashboard_tab:
-  - name: TODO
+  - name: todo  # Basic tab setup, all rows
     test_group_name: ci-kubernetes-e2e-gce-slow  # TODO(fejta): fix
+  - name: todo_filtered  #
+    test_group_name: ci-kubernetes-e2e-gce-slow  # TODO(fejta): change job name
+    # Delete base options if every test in the job is relevant, otherwise fix regex
+    base_options: 'include-filter-by-regex=FIXME%7Csig-whatever'  # %7C=|
 
 - name: sig-instrumentation
   dashboard_tab:
-  - name: TODO
+  - name: todo  # Basic tab setup, all rows
     test_group_name: ci-kubernetes-e2e-gce-slow  # TODO(fejta): fix
+  - name: todo_filtered  #
+    test_group_name: ci-kubernetes-e2e-gce-slow  # TODO(fejta): change job name
+    # Delete base options if every test in the job is relevant, otherwise fix regex
+    base_options: 'include-filter-by-regex=FIXME%7Csig-whatever'  # %7C=|
 
 # Move sig-network here
 
