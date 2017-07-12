@@ -12804,7 +12804,7 @@ periodics:
   interval: 1h
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e-prow:v20170710-f463d559
+    - image: gcr.io/k8s-testimages/kubekins-e2e-prow:v20170712-d7179e51
       args:
       - --bare
       - --timeout=60
