@@ -852,7 +852,8 @@
       "--image-family=cos-dev",
       "--image-project=cos-cloud",
       "--extract=ci/latest",
-      "--timeout=150m"
+      "--timeout=150m",
+      "--test_args=--ginkgo.focus=\\[Slow\\] --ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -891,7 +892,8 @@
       "--image-family=cos-dev",
       "--image-project=cos-cloud",
       "--extract=ci/latest",
-      "--timeout=500m"
+      "--timeout=500m",
+      "--test_args=--ginkgo.focus=\\[Serial\\]|\\[Disruptive\\] --ginkgo.skip=\\[Flaky\\]|\\[Feature:.+\\]"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
