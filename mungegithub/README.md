@@ -4,7 +4,6 @@ Mungegithub provides a number of tools intended to automate github processes. Wh
 
 1. submit-queue: This looks at open PRs and attempts to help automate the process getting PRs from open to merged.
 1. cherrypick: This looks at open and closed PRs with the `cherry-pick-candidate` label and attempts to help the branch managers deal with the cherry-pick process.
-1. shame-mailer: This looks at open issues and e-mails assignees who have not closed their issues rapidly.
 
 One can see the specifics of how the `submit-queue` and `cherrypick` options are executed by looking at the deployment definition in their respective subdirectories.
 
