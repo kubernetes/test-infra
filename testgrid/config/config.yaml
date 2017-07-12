@@ -2915,6 +2915,75 @@ dashboards:
   - name: mlkube-gke
     test_group_name: ci-kubernetes-e2e-mlkube-gke
 
+
+- name: sig-api-machinery
+  dashboard_tab:
+  - name: TODO
+    test_group_name: ci-kubernetes-e2e-gce-slow  # TODO(fejta): fix
+
+- name: sig-apps
+  dashboard_tab:
+  - name: TODO
+    test_group_name: ci-kubernetes-e2e-gce-slow  # TODO(fejta): fix
+
+- name: sig-auth
+  dashboard_tab:
+  - name: TODO
+    test_group_name: ci-kubernetes-e2e-gce-slow  # TODO(fejta): fix
+
+# Rename and move sig-big-data here
+
+- name: sig-autoscaling
+  dashboard_tab:
+  - name: TODO
+    test_group_name: ci-kubernetes-e2e-gce-slow  # TODO(fejta): fix
+
+# Move sig-cli
+
+# Move sig-cluster-lifecycle
+
+- name: sig-cluster-ops
+  dashboard_tab:
+  - name: TODO
+    test_group_name: ci-kubernetes-e2e-gce-slow  # TODO(fejta): fix
+
+# Rename and move sig-federation here
+
+- name: sig-hardware-accelerators
+  dashboard_tab:
+  - name: TODO
+    test_group_name: ci-kubernetes-e2e-gce-slow  # TODO(fejta): fix
+
+- name: sig-instrumentation
+  dashboard_tab:
+  - name: TODO
+    test_group_name: ci-kubernetes-e2e-gce-slow  # TODO(fejta): fix
+
+# Move sig-network here
+
+# Move sig-node here
+
+# Move sig-release here
+
+- name: sig-scalability
+  dashboard_tab:
+  - name: TODO
+    test_group_name: ci-kubernetes-e2e-gce-slow  # TODO(fejta): fix
+
+- name: sig-scheduling
+  dashboard_tab:
+  - name: TODO
+    test_group_name: ci-kubernetes-e2e-gce-slow  # TODO(fejta): fix
+
+# Move sig-storage here
+
+# Move sig-testing here
+
+- name: sig-ui
+  dashboard_tab:
+  - name: TODO
+    test_group_name: ci-kubernetes-e2e-gce-slow  # TODO(fejta): fix
+
 #
 # Start dashboard groups
 #
