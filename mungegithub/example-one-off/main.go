@@ -56,6 +56,6 @@ func main() {
 		},
 	}
 	root.SetGlobalNormalizationFunc(utilflag.WordSepNormalizeFunc)
-	config.RegisterOptions(options.New("")) // Always uses defaults since Load is never called.
+	config.RegisterOptions(options.New()) // Always uses defaults since Load is never called.
 	root.Execute()
 }

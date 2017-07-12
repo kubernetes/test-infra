@@ -95,7 +95,9 @@ func doMungers(config *mungeConfig) error {
 			glog.Infof("Not sleeping as we took more than %v to complete one loop\n", config.period)
 		}
 		// Uncommenting will make configmap reload if changed.
-		// config.Load()
+		// if config.path != "" {
+		// 	config.Load(config.path)
+		// }
 	}
 	return nil
 }
@@ -106,9 +108,17 @@ func main() {
 		Use:   filepath.Base(os.Args[0]),
 		Short: "A program to add labels, check tests, and generally mess with outstanding PRs",
 		RunE: func(_ *cobra.Command, _ []string) error {
-			config.Options = options.New(config.path)
-			registerOptions(config)
-			config.Load()
+			optFlagsSpecified := config.Options.FlagsSpecified()
+			if config.path != "" && len(optFlagsSpecified) > 0 {
+				glog.Fatalf("Error: --config-path flag cannot be used with option flags. Option flag(s) %v were specified.", optFlagsSpecified)
+			}
+			if config.path != "" {
+				glog.Infof("Loading config from file '%s'.\n", config.path)
+				config.Load(config.path)
+			} else {
+				glog.Info("Loading config from flags.\n")
+				config.PopulateFromFlags()
+			}
 
 			glog.Info(config.CurrentValues())
 			if err := config.PreExecute(); err != nil {
@@ -136,11 +146,16 @@ func main() {
 			return doMungers(config)
 		},
 	}
+
+	config.Options = options.New()
+	registerOptions(config)
+	config.Options.ToFlags()
+
 	root.SetGlobalNormalizationFunc(utilflag.WordSepNormalizeFunc)
 
 	// Command line flags.
-	root.Flags().BoolVar(&config.DryRun, "dry-run", true, "If true, don't actually merge anything")
-	root.Flags().StringVar(&config.path, "config-path", "", "File path to yaml config map containing the values to use for options.")
+	flag.BoolVar(&config.DryRun, "dry-run", true, "If true, don't actually merge anything")
+	flag.StringVar(&config.path, "config-path", "", "File path to yaml config map containing the values to use for options.")
 	root.PersistentFlags().AddGoFlagSet(flag.CommandLine)
 
 	if err := root.Execute(); err != nil {

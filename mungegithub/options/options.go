@@ -18,6 +18,7 @@ package options
 
 import (
 	"bytes"
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"reflect"
@@ -40,15 +41,14 @@ import (
 // The defaultVal is used if the options does not have a value specified.
 // The description explains the option as an entry in the text returned by Descriptions().
 type Options struct {
-	configMapPath string
-	rawConfig     []byte
-	options       map[string]*option
+	rawConfig []byte
+	options   map[string]*option
 
 	callbacks []UpdateCallback
 }
 
-func New(configMapPath string) *Options {
-	return &Options{configMapPath: configMapPath, options: map[string]*option{}}
+func New() *Options {
+	return &Options{options: map[string]*option{}}
 }
 
 type UpdateCallback func()
@@ -84,9 +84,19 @@ type option struct {
 	raw string
 }
 
-func (o *Options) Load() {
+// ToFlags registers all options as string flags with the flag.CommandLine flagset.
+// All options should be registered before ToFlags is called.
+func (o *Options) ToFlags() {
+	for key, opt := range o.options {
+		flag.String(key, strings.Trim(toString(opt.optType, opt.defaultVal), "\""), opt.description)
+	}
+}
+
+// Load updates options based on the contents of a config file.
+// If the file cannot be read and options has not been loaded previously this is fatal.
+func (o *Options) Load(file string) {
 	firstLoad := o.rawConfig == nil
-	changed, err := o.tryLoad()
+	changed, err := o.tryLoad(file)
 	if err != nil {
 		if firstLoad {
 			// This is fatal since we have not previously loaded a configmap.
@@ -105,30 +115,69 @@ func (o *Options) Load() {
 // PopulateFromString loads values from the provided yaml string into the Options struct.
 // This function should only be used in tests where the config is not loaded from a file.
 func (o *Options) PopulateFromString(yaml string) {
-	if err := o.populate([]byte(yaml)); err != nil {
+	if err := o.populateFromYaml([]byte(yaml)); err != nil {
 		glog.Fatalf("Failed to populate Options with values from \"%s\". Err: %v.", yaml, err)
 	}
 }
 
-func (o *Options) tryLoad() (bool, error) {
-	b, err := ioutil.ReadFile(o.configMapPath)
+// PopulateFromFlags loads values into options from command line flags.
+// This function must be proceeded by a call to ToFlags and the flags must have been parsed since
+// then.
+func (o *Options) PopulateFromFlags() {
+	if !flag.Parsed() {
+		flag.Parse()
+	}
+
+	flags := map[string]string{}
+	flag.Visit(func(f *flag.Flag) {
+		flags[f.Name] = f.Value.String()
+	})
+
+	o.populateFromMap(flags)
+}
+
+// FlagsSpecified returns the names of the flags that were specified that correspond to options.
+// This function must have been proceeded by a call to ToFlags and the flags must have been parsed
+// since then.
+func (o *Options) FlagsSpecified() []string {
+	if !flag.Parsed() {
+		flag.Parse()
+	}
+
+	specified := []string{}
+	flag.Visit(func(f *flag.Flag) {
+		if _, ok := o.options[f.Name]; ok {
+			specified = append(specified, f.Name)
+		}
+	})
+	return specified
+}
+
+func (o *Options) tryLoad(file string) (bool, error) {
+	b, err := ioutil.ReadFile(file)
 	if err != nil || b == nil {
-		return false, fmt.Errorf("failed to read configmap from path '%s': %v", o.configMapPath, err)
+		return false, fmt.Errorf("failed to read configmap from file '%s': %v", file, err)
 	}
 	if reflect.DeepEqual(o.rawConfig, b) {
 		// ConfigMap has not changed so there is nothing to do.
 		return false, nil
 	}
 
-	return true, o.populate(b)
+	return true, o.populateFromYaml(b)
 }
 
-func (o *Options) populate(rawCM []byte) error {
+func (o *Options) populateFromYaml(rawCM []byte) error {
 	var configmap map[string]string
 	if err := yaml.Unmarshal(rawCM, &configmap); err != nil {
 		return fmt.Errorf("failed to unmarshal configmap from yaml: %v", err)
 	}
 
+	o.populateFromMap(configmap)
+	o.rawConfig = rawCM
+	return nil
+}
+
+func (o *Options) populateFromMap(configmap map[string]string) {
 	for key, opt := range o.options {
 		if opt.optType == typeUnknown {
 			delete(o.options, key)
@@ -148,11 +197,9 @@ func (o *Options) populate(rawCM []byte) error {
 			raw:     raw,
 		}
 	}
-
-	o.rawConfig = rawCM
-	return nil
 }
 
+// fromString converts opt.raw to opt.optType and moves the resulting value into opt.val.
 func (opt *option) fromString() {
 	var err error
 	var newVal interface{}
@@ -387,6 +434,9 @@ func toString(optType optionType, val interface{}) string {
 	case typeString:
 		return fmt.Sprintf("%q", *val.(*string))
 	case typeStringSlice:
+		if len(*val.(*[]string)) == 0 {
+			return "[]"
+		}
 		return fmt.Sprintf("[\"%s\"]", strings.Join(*val.(*[]string), "\", \""))
 	case typeInt:
 		return fmt.Sprintf("%d", *val.(*int))

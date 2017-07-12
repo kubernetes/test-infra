@@ -207,20 +207,20 @@ func TestOptions(t *testing.T) {
 		t.Error(err)
 	}
 	// Test simple load + register in both orders.
-	oLoadFirst := New(cfg.file.Name())
-	oRegisterFirst := New(cfg.file.Name())
-	oRegisterOnce := New(cfg.file.Name())
+	oLoadFirst := New()
+	oRegisterFirst := New()
+	oRegisterOnce := New()
 
-	oLoadFirst.Load()
+	oLoadFirst.Load(cfg.file.Name())
 	registerAll(oLoadFirst)
 	registerAll(oRegisterFirst)
-	oRegisterFirst.Load()
+	oRegisterFirst.Load(cfg.file.Name())
 	//Test Register only (no Load).
 	registerAll(oRegisterOnce)
 	if err = checkAll(oRegisterOnce, entries); err != nil {
 		t.Errorf("checkAll failed: %v", err)
 	}
-	oRegisterOnce.Load()
+	oRegisterOnce.Load(cfg.file.Name())
 
 	if err = checkAll(oLoadFirst, expected); err != nil {
 		t.Errorf("checkAll failed: %v", err)
@@ -237,11 +237,11 @@ func TestOptions(t *testing.T) {
 	}
 	// Test back to back loads and registers.
 	registerAll(oLoadFirst)
-	oLoadFirst.Load()
-	oRegisterFirst.Load()
+	oLoadFirst.Load(cfg.file.Name())
+	oRegisterFirst.Load(cfg.file.Name())
 	registerAll(oRegisterFirst)
 	// Test reload without reregister.
-	oRegisterOnce.Load()
+	oRegisterOnce.Load(cfg.file.Name())
 
 	if err = checkAll(oLoadFirst, expected2); err != nil {
 		t.Errorf("checkAll failed: %v", err)
@@ -254,7 +254,7 @@ func TestOptions(t *testing.T) {
 	}
 
 	// Test no-op reload of same config (sample_yaml2 again).
-	oRegisterOnce.Load()
+	oRegisterOnce.Load(cfg.file.Name())
 	if err = checkAll(oRegisterOnce, expected2); err != nil {
 		t.Errorf("checkAll failed: %v", err)
 	}
@@ -273,17 +273,17 @@ func TestDefaults(t *testing.T) {
 	}
 
 	// Test Load then Register.
-	oUseDefaults := New(cfg.file.Name())
-	oUseDefaults.Load()
+	oUseDefaults := New()
+	oUseDefaults.Load(cfg.file.Name())
 	registerAll(oUseDefaults)
 
 	if err = checkAll(oUseDefaults, expected2); err != nil {
 		t.Errorf("checkAll failed: %v", err)
 	}
 	// Test Register then Load.
-	oUseDefaults = New(cfg.file.Name())
+	oUseDefaults = New()
 	registerAll(oUseDefaults)
-	oUseDefaults.Load()
+	oUseDefaults.Load(cfg.file.Name())
 	if err = checkAll(oUseDefaults, expected2); err != nil {
 		t.Errorf("checkAll failed: %v", err)
 	}
@@ -292,20 +292,20 @@ func TestDefaults(t *testing.T) {
 	if err = cfg.SetContent(sample_yaml); err != nil {
 		t.Error(err)
 	}
-	oUseDefaults.Load()
+	oUseDefaults.Load(cfg.file.Name())
 	if err = checkAll(oUseDefaults, expected); err != nil {
 		t.Errorf("checkAll failed: %v", err)
 	}
 	if err = cfg.SetContent(sample_yaml2); err != nil {
 		t.Error(err)
 	}
-	oUseDefaults.Load()
+	oUseDefaults.Load(cfg.file.Name())
 	if err = checkAll(oUseDefaults, expected2); err != nil {
 		t.Errorf("checkAll failed: %v", err)
 	}
 }
 
-func TestDescriptions(t *testing.T) {
+func TestDescriptionsAndToString(t *testing.T) {
 	cfg, err := newTempConfig()
 	if err != nil {
 		t.Error(err)
@@ -316,7 +316,7 @@ func TestDescriptions(t *testing.T) {
 		t.Error(err)
 	}
 
-	o := New(cfg.file.Name())
+	o := New()
 	registerAll(o)
 	desc := o.Descriptions()
 	for _, entry := range entries {
