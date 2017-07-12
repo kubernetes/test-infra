@@ -436,12 +436,10 @@ testSuites:
     args:
     - --timeout=180m
     - --test_args=--ginkgo.focus=\[Feature:DynamicKubeletConfig\]
-    envs:
   autoscaling:
     args:
     - --timeout=300m
     - --test_args=--ginkgo.focus=\[Feature:ClusterSizeAutoscalingScaleUp\]|\[Feature:ClusterSizeAutoscalingScaleDown\] --ginkgo.skip=\[Flaky\]
-    envs:
   default:
     args:
     - --timeout=50m
@@ -453,17 +451,14 @@ testSuites:
     args:
     - --timeout=300m
     - --test_args=--ginkgo.focus=\[Flaky\] --ginkgo.skip=\[Feature:.+\]
-    envs:
   ingress:
     args:
     - --timeout=300m
-    - --test_args=--test_args=--ginkgo.focus=\[Feature:Ingress\]
-    envs:
+    - --test_args=--ginkgo.focus=\[Feature:Ingress\]
   reboot:
     args:
     - --timeout=180m
     - --test_args=--ginkgo.focus=\[Feature:Reboot\]
-    envs:
   serial:
     args:
     - --timeout=500m
