@@ -22,9 +22,9 @@ import (
 
 	"k8s.io/test-infra/mungegithub/features"
 	"k8s.io/test-infra/mungegithub/github"
+	"k8s.io/test-infra/mungegithub/options"
 
 	"github.com/golang/glog"
-	"github.com/spf13/cobra"
 )
 
 const (
@@ -56,8 +56,8 @@ func (c *ClearPickAfterMerge) Initialize(config *github.Config, features *featur
 // EachLoop is called at the start of every munge loop
 func (c *ClearPickAfterMerge) EachLoop() error { return nil }
 
-// AddFlags will add any request flags to the cobra `cmd`
-func (c *ClearPickAfterMerge) AddFlags(cmd *cobra.Command, config *github.Config) {}
+// RegisterOptions registers config options for this munger.
+func (c *ClearPickAfterMerge) RegisterOptions(opts *options.Options) {}
 
 func handleFound(obj *github.MungeObject, branch string) error {
 	msg := fmt.Sprintf("Commit found in the %q branch appears to be this PR. Removing the %q label. If this is an error find help to get your PR picked.", branch, cpCandidateLabel)

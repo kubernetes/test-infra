@@ -16,9 +16,9 @@ go_library(
     tags = ["automanaged"],
     deps = [
         "//mungegithub/github:go_default_library",
+        "//mungegithub/options:go_default_library",
         "//vendor:github.com/golang/glog",
         "//vendor:github.com/google/go-github/github",
-        "//vendor:github.com/spf13/cobra",
     ],
 )
 

@@ -33,6 +33,8 @@ import (
 
 	"k8s.io/test-infra/mungegithub/features"
 	"k8s.io/test-infra/mungegithub/github"
+	"k8s.io/test-infra/mungegithub/mungeopts"
+	"k8s.io/test-infra/mungegithub/options"
 
 	"encoding/base64"
 	"time"
@@ -40,7 +42,6 @@ import (
 	"github.com/NYTimes/gziphandler"
 	"github.com/golang/glog"
 	githubapi "github.com/google/go-github/github"
-	"github.com/spf13/cobra"
 )
 
 var _ Munger = &BulkLGTM{}
@@ -110,15 +111,15 @@ func (b *BulkLGTM) Munge(obj *github.MungeObject) {
 	b.currentPRList[*pr.Number] = obj
 }
 
-// AddFlags implements the Munger interface
-func (b *BulkLGTM) AddFlags(cmd *cobra.Command, config *github.Config) {
-	cmd.Flags().IntVar(&b.maxDiff, "bulk-lgtm-max-diff", 10, "The maximum number of differences (additions + deletions) for PRs to include in the bulk LGTM list")
-	cmd.Flags().IntVar(&b.maxChangedFiles, "bulk-lgtm-changed-files", 1, "The maximum number of changed files for PRs to include in the bulk LGTM list")
-	cmd.Flags().IntVar(&b.maxCommits, "bulk-lgtm-max-commits", 1, "The maximum number of commits for PRs to include in the bulk LGTM list")
-	cmd.Flags().DurationVar(&b.cookieDuration, "bulk-lgtm-cookie-duration", 24*time.Hour, "The duration for the cookie used to store github credentials.")
-	cmd.Flags().BoolVar(&b.disableSecureCookie, "bulk-lgtm-insecure-disable-secure-cookie", false, "If true, the cookie storing github credentials will be allowed on http")
-	cmd.Flags().StringVar(&githubOauthConfig.RedirectURL, "bulk-lgtm-github-oauth-redirect-url", "http://localhost:8080/bulkprs/callback", "The URL for the OAuth2 callback")
-	cmd.Flags().StringVar(&b.prefix, "bulk-lgtm-www-prefix", "", "The prefix for web pages served by the bulk-lgtm service")
+// RegisterOptions registers config options for this munger.
+func (b *BulkLGTM) RegisterOptions(opts *options.Options) {
+	opts.RegisterInt(&b.maxDiff, "bulk-lgtm-max-diff", 10, "The maximum number of differences (additions + deletions) for PRs to include in the bulk LGTM list")
+	opts.RegisterInt(&b.maxChangedFiles, "bulk-lgtm-changed-files", 1, "The maximum number of changed files for PRs to include in the bulk LGTM list")
+	opts.RegisterInt(&b.maxCommits, "bulk-lgtm-max-commits", 1, "The maximum number of commits for PRs to include in the bulk LGTM list")
+	opts.RegisterDuration(&b.cookieDuration, "bulk-lgtm-cookie-duration", 24*time.Hour, "The duration for the cookie used to store github credentials.")
+	opts.RegisterBool(&b.disableSecureCookie, "bulk-lgtm-insecure-disable-secure-cookie", false, "If true, the cookie storing github credentials will be allowed on http")
+	opts.RegisterString(&githubOauthConfig.RedirectURL, "bulk-lgtm-github-oauth-redirect-url", "http://localhost:8080/bulkprs/callback", "The URL for the OAuth2 callback")
+	opts.RegisterString(&b.prefix, "bulk-lgtm-www-prefix", "", "The prefix for web pages served by the bulk-lgtm service")
 }
 
 // Name implements the Munger interface
@@ -135,22 +136,22 @@ func (b *BulkLGTM) RequiredFeatures() []string {
 func (b *BulkLGTM) Initialize(config *github.Config, features *features.Features) error {
 	b.config = config
 
-	if len(config.Address) > 0 {
+	if len(mungeopts.Server.Address) > 0 {
 		http.HandleFunc(b.prefix+"/bulkprs/prs", b.ServePRs)
 		http.HandleFunc(b.prefix+"/bulkprs/prdiff", b.ServePRDiff)
 		http.HandleFunc(b.prefix+"/bulkprs/lgtm", b.ServeLGTM)
 		http.HandleFunc(b.prefix+"/bulkprs/auth", b.ServeLogin)
 		http.HandleFunc(b.prefix+"/bulkprs/callback", b.ServeCallback)
 		http.HandleFunc(b.prefix+"/bulkprs/user", b.ServeUser)
-		if len(config.WWWRoot) > 0 {
-			handler := gziphandler.GzipHandler(http.FileServer(http.Dir(config.WWWRoot)))
+		if len(mungeopts.Server.WWWRoot) > 0 {
+			handler := gziphandler.GzipHandler(http.FileServer(http.Dir(mungeopts.Server.WWWRoot)))
 			if len(b.prefix) > 0 {
 				handler = http.StripPrefix(b.prefix+"/", handler)
 			}
 			http.Handle(b.prefix+"/", handler)
 		}
 
-		go http.ListenAndServe(config.Address, nil)
+		go http.ListenAndServe(mungeopts.Server.Address, nil)
 	}
 
 	return nil

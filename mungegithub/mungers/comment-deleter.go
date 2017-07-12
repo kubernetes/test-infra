@@ -19,10 +19,10 @@ package mungers
 import (
 	"k8s.io/test-infra/mungegithub/features"
 	"k8s.io/test-infra/mungegithub/github"
+	"k8s.io/test-infra/mungegithub/options"
 
 	"github.com/golang/glog"
 	githubapi "github.com/google/go-github/github"
-	"github.com/spf13/cobra"
 )
 
 const (
@@ -66,8 +66,8 @@ func (CommentDeleter) Initialize(config *github.Config, features *features.Featu
 // EachLoop is called at the start of every munge loop
 func (CommentDeleter) EachLoop() error { return nil }
 
-// AddFlags will add any request flags to the cobra `cmd`
-func (CommentDeleter) AddFlags(cmd *cobra.Command, config *github.Config) {}
+// RegisterOptions registers config options for this munger.
+func (CommentDeleter) RegisterOptions(opts *options.Options) {}
 
 func validComment(comment *githubapi.IssueComment) bool {
 	if comment.User == nil || comment.User.Login == nil {

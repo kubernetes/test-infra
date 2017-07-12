@@ -20,24 +20,22 @@ import (
 	"fmt"
 
 	"k8s.io/test-infra/mungegithub/github"
+	"k8s.io/test-infra/mungegithub/options"
 
 	"github.com/golang/glog"
-	"github.com/spf13/cobra"
 )
 
 // Features are all features the code know about. Care should be taken
 // not to try to use a feature which isn't 'active'
 type Features struct {
-	Aliases     *Aliases
-	Repos       *RepoInfo
-	GCSInfo     *GCSInfo
-	TestOptions *TestOptions
-	active      []feature
+	Aliases *Aliases
+	Repos   *RepoInfo
+	active  []feature
 }
 
 type feature interface {
 	Name() string
-	AddFlags(cmd *cobra.Command)
+	RegisterOptions(opts *options.Options)
 	Initialize(config *github.Config) error
 	EachLoop() error
 }
@@ -64,10 +62,6 @@ func (f *Features) Initialize(config *github.Config, requestedFeatures []string)
 		switch name {
 		case RepoFeatureName:
 			f.Repos = feat.(*RepoInfo)
-		case GCSFeature:
-			f.GCSInfo = feat.(*GCSInfo)
-		case TestOptionsFeature:
-			f.TestOptions = feat.(*TestOptions)
 		case AliasesFeature:
 			f.Aliases = feat.(*Aliases)
 		}
@@ -85,12 +79,11 @@ func (f *Features) EachLoop() error {
 	return nil
 }
 
-// AddFlags allow every feature to add flags to the command
-func (f *Features) AddFlags(cmd *cobra.Command) error {
+// RegisterOptions registers the config options used by features.
+func (f *Features) RegisterOptions(opts *options.Options) {
 	for _, feat := range featureMap {
-		feat.AddFlags(cmd)
+		feat.RegisterOptions(opts)
 	}
-	return nil
 }
 
 // RegisterFeature should be called in `init()` by each feature to make itself

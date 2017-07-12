@@ -87,9 +87,10 @@ func TestAssignFixes(t *testing.T) {
 			w.Write(data)
 		})
 
-		config := &github_util.Config{}
-		config.Org = "o"
-		config.Project = "r"
+		config := &github_util.Config{
+			Org:     "o",
+			Project: "r",
+		}
 		config.SetClient(client)
 
 		c := AssignFixesMunger{}

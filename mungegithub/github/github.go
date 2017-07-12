@@ -20,7 +20,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	goflag "flag"
 	"fmt"
 	"io/ioutil"
 	"math"
@@ -34,13 +33,13 @@ import (
 	"time"
 
 	"k8s.io/kubernetes/pkg/util/sets"
+	"k8s.io/test-infra/mungegithub/options"
 
 	"github.com/golang/glog"
 	"github.com/google/go-github/github"
 	"github.com/gregjones/httpcache"
 	"github.com/gregjones/httpcache/diskcache"
 	"github.com/peterbourgon/diskv"
-	"github.com/spf13/cobra"
 	"golang.org/x/oauth2"
 )
 
@@ -155,24 +154,22 @@ func (r *zeroCacheRoundTripper) RoundTrip(req *http.Request) (*http.Response, er
 type Config struct {
 	client   *github.Client
 	apiLimit *callLimitRoundTripper
-	Org      string
-	Project  string
-	Url      string
+	opts     *options.Options
+
+	Org     string
+	Project string
+	Url     string
 
 	State  string
 	Labels []string
 
 	// token is private so it won't get printed in the logs.
 	token     string
-	TokenFile string
-	TokenObj  *oauth2.Token
+	tokenFile string
 
-	Address string // if a munger runs a web server, where it should live
-	WWWRoot string
-
+	httpCache     httpcache.Cache
 	HTTPCacheDir  string
 	HTTPCacheSize uint64
-	httpCache     httpcache.Cache
 
 	MinPRNumber int
 	MaxPRNumber int
@@ -189,7 +186,6 @@ type Config struct {
 
 	// Webhook configuration
 	HookHandler *WebHook
-	GithubKey   string `json:"-"`
 
 	// Last fetch
 	since time.Time
@@ -321,12 +317,12 @@ func (obj *MungeObject) Number() int {
 	return *obj.Issue.Number
 }
 
-// Project is getter for obj.config.Project
+// Project is getter for obj.config.Project.
 func (obj *MungeObject) Project() string {
 	return obj.config.Project
 }
 
-// Org is getter for obj.config.Org
+// Org is getter for obj.config.Org.
 func (obj *MungeObject) Org() string {
 	return obj.config.Org
 }
@@ -366,44 +362,42 @@ func SetCombinedStatusLifetime(lifetime time.Duration) {
 	combinedStatusLifetime = lifetime
 }
 
-// AddRootFlags will add all of the flags needed for the github config to the cobra command
-func (config *Config) AddRootFlags(cmd *cobra.Command) {
-	cmd.PersistentFlags().StringVar(&config.token, "token", "", "The OAuth Token to use for requests.")
-	cmd.PersistentFlags().StringVar(&config.TokenFile, "token-file", "", "The file containing the OAuth token to use for requests.")
-	cmd.PersistentFlags().IntVar(&config.MinPRNumber, "min-pr-number", 0, "The minimum PR to start with")
-	cmd.PersistentFlags().IntVar(&config.MaxPRNumber, "max-pr-number", maxInt, "The maximum PR to start with")
-	cmd.PersistentFlags().BoolVar(&config.DryRun, "dry-run", true, "If true, don't actually merge anything")
-	cmd.PersistentFlags().StringVar(&config.Org, "organization", "", "The github organization to scan")
-	cmd.PersistentFlags().StringVar(&config.Project, "project", "", "The github project to scan")
-	cmd.PersistentFlags().StringVar(&config.State, "state", "", "State of PRs to process: 'open', 'all', etc")
-	cmd.PersistentFlags().StringSliceVar(&config.Labels, "labels", []string{}, "CSV list of label which should be set on processed PRs. Unset is all labels.")
-	cmd.PersistentFlags().StringVar(&config.Address, "address", ":8080", "The address to listen on for HTTP Status")
-	cmd.PersistentFlags().StringVar(&config.WWWRoot, "www", "www", "Path to static web files to serve from the webserver")
-	cmd.PersistentFlags().StringVar(&config.HTTPCacheDir, "http-cache-dir", "", "Path to directory where github data can be cached across restarts, if unset use in memory cache")
-	cmd.PersistentFlags().Uint64Var(&config.HTTPCacheSize, "http-cache-size", 1000, "Maximum size for the HTTP cache (in MB)")
-	cmd.PersistentFlags().StringVar(&config.Url, "url", "", "The GitHub Enterprise server url (default: https://api.github.com/)")
-	cmd.PersistentFlags().StringVar(&config.GithubKey, "github-key", "", "Github secret key for webhooks")
-	cmd.PersistentFlags().AddGoFlagSet(goflag.CommandLine)
+// RegisterOptions registers options used by the github client.
+func (config *Config) RegisterOptions(opts *options.Options) {
+	opts.RegisterString(&config.Org, "organization", "", "The github organization to scan")
+	opts.RegisterString(&config.Project, "project", "", "The github project to scan")
+
+	opts.RegisterString(&config.token, "token", "", "The OAuth Token to use for requests.")
+	opts.RegisterString(&config.tokenFile, "token-file", "", "The file containing the OAuth token to use for requests.")
+	opts.RegisterInt(&config.MinPRNumber, "min-pr-number", 0, "The minimum PR to start with")
+	opts.RegisterInt(&config.MaxPRNumber, "max-pr-number", maxInt, "The maximum PR to start with")
+	opts.RegisterString(&config.State, "state", "", "State of PRs to process: 'open', 'all', etc")
+	opts.RegisterStringSlice(&config.Labels, "labels", []string{}, "CSV list of label which should be set on processed PRs. Unset is all labels.")
+	opts.RegisterString(&config.HTTPCacheDir, "http-cache-dir", "", "Path to directory where github data can be cached across restarts, if unset use in memory cache")
+	opts.RegisterUint64(&config.HTTPCacheSize, "http-cache-size", 1000, "Maximum size for the HTTP cache (in MB)")
+	opts.RegisterString(&config.Url, "url", "", "The GitHub Enterprise server url (default: https://api.github.com/)")
+
+	config.opts = opts
 }
 
-// Token returns the token
+// Token returns the token.
 func (config *Config) Token() string {
 	return config.token
 }
 
 // PreExecute will initialize the Config. It MUST be run before the config
-// may be used to get information from Github
+// may be used to get information from Github.
 func (config *Config) PreExecute() error {
 	if len(config.Org) == 0 {
-		glog.Fatalf("--organization is required.")
+		glog.Fatalf("The '%s' option is required.", "organization")
 	}
 	if len(config.Project) == 0 {
-		glog.Fatalf("--project is required.")
+		glog.Fatalf("The '%s' option is required.", "project")
 	}
 
 	token := config.token
-	if len(token) == 0 && len(config.TokenFile) != 0 {
-		data, err := ioutil.ReadFile(config.TokenFile)
+	if len(token) == 0 && len(config.tokenFile) != 0 {
+		data, err := ioutil.ReadFile(config.tokenFile)
 		if err != nil {
 			glog.Fatalf("error reading token file: %v", err)
 		}
@@ -450,11 +444,12 @@ func (config *Config) PreExecute() error {
 
 	transport = zeroCacheTransport
 
-	if len(token) > 0 && config.TokenObj == nil {
-		config.TokenObj = &oauth2.Token{AccessToken: token}
+	var tokenObj *oauth2.Token
+	if len(token) > 0 {
+		tokenObj = &oauth2.Token{AccessToken: token}
 	}
-	if config.TokenObj != nil {
-		ts := oauth2.StaticTokenSource(config.TokenObj)
+	if tokenObj != nil {
+		ts := oauth2.StaticTokenSource(tokenObj)
 		transport = &oauth2.Transport{
 			Base:   transport,
 			Source: oauth2.ReuseTokenSource(nil, ts),
@@ -465,11 +460,10 @@ func (config *Config) PreExecute() error {
 		Transport: transport,
 	}
 	config.client = github.NewClient(client)
-	rawurl := config.Url
-	if len(rawurl) > 0 {
-		url, err := url.Parse(rawurl)
+	if len(config.Url) > 0 {
+		url, err := url.Parse(config.Url)
 		if err != nil {
-			glog.Fatalf("Unable to parse url: %v: %v", rawurl, err)
+			glog.Fatalf("Unable to parse url: %v: %v", config.Url, err)
 		}
 		config.client.BaseURL = url
 	}
@@ -1013,8 +1007,8 @@ func (obj *MungeObject) AddLabels(labels []string) error {
 	}
 	_, _, err := config.client.Issues.AddLabelsToIssue(
 		context.Background(),
-		config.Org,
-		config.Project,
+		obj.Org(),
+		obj.Project(),
 		prNum,
 		labels,
 	)
@@ -1053,8 +1047,8 @@ func (obj *MungeObject) RemoveLabel(label string) error {
 	}
 	_, err := config.client.Issues.RemoveLabelForIssue(
 		context.Background(),
-		config.Org,
-		config.Project,
+		obj.Org(),
+		obj.Project(),
 		prNum,
 		label,
 	)
@@ -1105,13 +1099,13 @@ func (obj *MungeObject) GetHeadAndBase() (headSHA, baseRef string, ok bool) {
 func (obj *MungeObject) GetSHAFromRef(ref string) (sha string, ok bool) {
 	commit, response, err := obj.config.client.Repositories.GetCommit(
 		context.Background(),
-		obj.config.Org,
-		obj.config.Project,
+		obj.Org(),
+		obj.Project(),
 		ref,
 	)
 	obj.config.analytics.GetCommit.Call(obj.config, response)
 	if err != nil {
-		glog.Errorf("Failed to get commit for %v, %v, %v: %v", obj.config.Org, obj.config.Project, ref, err)
+		glog.Errorf("Failed to get commit for %v, %v, %v: %v", obj.Org(), obj.Project(), ref, err)
 		return "", false
 	}
 	if commit.SHA == nil {
@@ -1151,8 +1145,8 @@ func (obj *MungeObject) SetMilestone(title string) bool {
 
 	_, _, err := obj.config.client.Issues.Edit(
 		context.Background(),
-		obj.config.Org,
-		obj.config.Project,
+		obj.Org(),
+		obj.Project(),
 		*obj.Issue.Number,
 		&github.IssueRequest{Milestone: milestone.Number},
 	)
@@ -1322,8 +1316,8 @@ func (obj *MungeObject) GetEvents() ([]*github.IssueEvent, bool) {
 	for {
 		eventPage, response, err := config.client.Issues.ListIssueEvents(
 			context.Background(),
-			config.Org,
-			config.Project,
+			obj.Org(),
+			obj.Project(),
 			prNum,
 			&github.ListOptions{PerPage: 100, Page: page},
 		)
@@ -1411,8 +1405,8 @@ func (obj *MungeObject) getCombinedStatus() (status *github.CombinedStatus, ok b
 	// TODO If we have more than 100 statuses we need to deal with paging.
 	combinedStatus, response, err := config.client.Repositories.GetCombinedStatus(
 		context.Background(),
-		config.Org,
-		config.Project,
+		obj.Org(),
+		obj.Project(),
 		*pr.Head.SHA,
 		&github.ListOptions{},
 	)
@@ -1448,8 +1442,8 @@ func (obj *MungeObject) SetStatus(state, url, description, statusContext string)
 	}
 	_, _, err := config.client.Repositories.CreateStatus(
 		context.Background(),
-		config.Org,
-		config.Project,
+		obj.Org(),
+		obj.Project(),
 		ref,
 		status,
 	)
@@ -1611,8 +1605,8 @@ func (obj *MungeObject) GetCommits() ([]*github.RepositoryCommit, bool) {
 	for {
 		commitsPage, response, err := config.client.PullRequests.ListCommits(
 			context.Background(),
-			config.Org,
-			config.Project,
+			obj.Org(),
+			obj.Project(),
 			*obj.Issue.Number,
 			&github.ListOptions{PerPage: 100, Page: page},
 		)
@@ -1636,13 +1630,13 @@ func (obj *MungeObject) GetCommits() ([]*github.RepositoryCommit, bool) {
 		}
 		commit, response, err := config.client.Repositories.GetCommit(
 			context.Background(),
-			config.Org,
-			config.Project,
+			obj.Org(),
+			obj.Project(),
 			*c.SHA,
 		)
 		config.analytics.GetCommit.Call(config, response)
 		if err != nil {
-			glog.Errorf("Can't load commit %s %s %s: %v", config.Org, config.Project, *c.SHA, err)
+			glog.Errorf("Can't load commit %s %s %s: %v", obj.Org(), obj.Project(), *c.SHA, err)
 			continue
 		}
 		filledCommits = append(filledCommits, commit)
@@ -1674,8 +1668,8 @@ func (obj *MungeObject) ListFiles() ([]*github.CommitFile, bool) {
 		glog.V(8).Infof("Fetching page %d of changed files for issue %d", page, prNum)
 		files, response, err := obj.config.client.PullRequests.ListFiles(
 			context.Background(),
-			config.Org,
-			config.Project,
+			obj.Org(),
+			obj.Project(),
 			prNum,
 			listOpts,
 		)
@@ -1737,8 +1731,8 @@ func (obj *MungeObject) RemoveAssignees(assignees ...string) error {
 	}
 	_, _, err := config.client.Issues.RemoveAssignees(
 		context.Background(),
-		config.Org,
-		config.Project,
+		obj.Org(),
+		obj.Project(),
 		prNum,
 		assignees,
 	)
@@ -1772,8 +1766,8 @@ func (obj *MungeObject) AddAssignee(owner string) error {
 	}
 	_, _, err := config.client.Issues.AddAssignees(
 		context.Background(),
-		config.Org,
-		config.Project,
+		obj.Org(),
+		obj.Project(),
 		prNum,
 		[]string{owner},
 	)
@@ -1807,8 +1801,8 @@ func (obj *MungeObject) CloseIssuef(format string, args ...interface{}) error {
 	}
 	_, _, err := config.client.Issues.Edit(
 		context.Background(),
-		config.Org,
-		config.Project,
+		obj.Org(),
+		obj.Project(),
 		*obj.Issue.Number,
 		state,
 	)
@@ -1835,8 +1829,8 @@ func (obj *MungeObject) ClosePR() bool {
 	pr.State = &state
 	_, _, err := config.client.PullRequests.Edit(
 		context.Background(),
-		config.Org,
-		config.Project,
+		obj.Org(),
+		obj.Project(),
 		*pr.Number,
 		pr,
 	)
@@ -1868,8 +1862,8 @@ func (obj *MungeObject) OpenPR(numTries int) bool {
 	for tries := 0; tries < numTries; tries++ {
 		_, _, err := config.client.PullRequests.Edit(
 			context.Background(),
-			config.Org,
-			config.Project,
+			obj.Org(),
+			obj.Project(),
 			*pr.Number,
 			pr,
 		)
@@ -1895,8 +1889,8 @@ func (obj *MungeObject) GetFileContents(file, sha string) (string, error) {
 	}
 	output, _, response, err := config.client.Repositories.GetContents(
 		context.Background(),
-		config.Org,
-		config.Project,
+		obj.Org(),
+		obj.Project(),
 		file,
 		getOpts,
 	)
@@ -1986,8 +1980,8 @@ func (obj *MungeObject) MergePR(who string) bool {
 
 	_, _, err := config.client.PullRequests.Merge(
 		context.Background(),
-		config.Org,
-		config.Project,
+		obj.Org(),
+		obj.Project(),
 		prNum,
 		mergeBody,
 		nil,
@@ -2003,8 +1997,8 @@ func (obj *MungeObject) MergePR(who string) bool {
 		if mergeable, _ := obj.IsMergeable(); mergeable {
 			_, _, err = config.client.PullRequests.Merge(
 				context.Background(),
-				config.Org,
-				config.Project,
+				obj.Org(),
+				obj.Project(),
 				prNum,
 				mergeBody,
 				nil,
@@ -2063,8 +2057,8 @@ func (obj *MungeObject) ListReviewComments() ([]*github.PullRequestComment, bool
 		glog.V(8).Infof("Fetching page %d of comments for issue %d", page, prNum)
 		comments, response, err := obj.config.client.PullRequests.ListComments(
 			context.Background(),
-			config.Org,
-			config.Project,
+			obj.Org(),
+			obj.Project(),
 			prNum,
 			listOpts,
 		)
@@ -2123,8 +2117,8 @@ func (obj *MungeObject) ListComments() ([]*github.IssueComment, bool) {
 		glog.V(8).Infof("Fetching page %d of comments for issue %d", page, issueNum)
 		comments, response, err := obj.config.client.Issues.ListComments(
 			context.Background(),
-			config.Org,
-			config.Project,
+			obj.Org(),
+			obj.Project(),
 			issueNum,
 			listOpts,
 		)
@@ -2178,8 +2172,8 @@ func (obj *MungeObject) WriteComment(msg string) error {
 	}
 	_, _, err := config.client.Issues.CreateComment(
 		context.Background(),
-		config.Org,
-		config.Project,
+		obj.Org(),
+		obj.Project(),
 		prNum,
 		&github.IssueComment{Body: &msg},
 	)
@@ -2229,8 +2223,8 @@ func (obj *MungeObject) DeleteComment(comment *github.IssueComment) error {
 	}
 	_, err := config.client.Issues.DeleteComment(
 		context.Background(),
-		config.Org,
-		config.Project,
+		obj.Org(),
+		obj.Project(),
 		*comment.ID,
 	)
 	if err != nil {
@@ -2269,8 +2263,8 @@ func (obj *MungeObject) EditComment(comment *github.IssueComment, body string) e
 	patch := github.IssueComment{Body: &body}
 	resp, _, err := config.client.Issues.EditComment(
 		context.Background(),
-		config.Org,
-		config.Project,
+		obj.Org(),
+		obj.Project(),
 		*comment.ID,
 		&patch,
 	)
@@ -2379,8 +2373,8 @@ func (obj *MungeObject) ListReviews() ([]*github.PullRequestReview, bool) {
 		glog.V(8).Infof("Fetching page %d of reviews for pr %d", page, prNum)
 		reviews, response, err := obj.config.client.PullRequests.ListReviews(
 			context.Background(),
-			config.Org,
-			config.Project,
+			obj.Org(),
+			obj.Project(),
 			prNum,
 			listOpts,
 		)

@@ -18,9 +18,8 @@ package features
 
 import (
 	"k8s.io/test-infra/mungegithub/github"
-
-	"github.com/golang/glog"
-	"github.com/spf13/cobra"
+	"k8s.io/test-infra/mungegithub/mungeopts"
+	"k8s.io/test-infra/mungegithub/options"
 )
 
 const (
@@ -30,15 +29,14 @@ const (
 
 // BranchProtection is a features that sets branches as protected
 type BranchProtection struct {
-	cmd           *cobra.Command
-	config        *github.Config
+	config *github.Config
+
 	branches      []string
 	extraContexts []string
 }
 
 func init() {
-	bp := BranchProtection{}
-	RegisterFeature(&bp)
+	RegisterFeature(&BranchProtection{})
 }
 
 // Name is just going to return the name mungers use to request this feature
@@ -54,21 +52,10 @@ func (bp *BranchProtection) Initialize(config *github.Config) error {
 
 // EachLoop is called at the start of every munge loop
 func (bp *BranchProtection) EachLoop() error {
-	cmd := bp.cmd
 	contexts := []string{}
 	contexts = append(contexts, bp.extraContexts...)
-
-	if c, err := cmd.Flags().GetStringSlice("required-contexts"); err != nil {
-		glog.Errorf("unable to get flag `required-contexts`: %v", err)
-	} else {
-		contexts = append(contexts, c...)
-	}
-
-	if c, err := cmd.Flags().GetStringSlice("required-retest-contexts"); err != nil {
-		glog.Errorf("unable to get flag `required-retest-contexts`: %v", err)
-	} else {
-		contexts = append(contexts, c...)
-	}
+	contexts = append(contexts, mungeopts.RequiredContexts.Merge...)
+	contexts = append(contexts, mungeopts.RequiredContexts.Retest...)
 
 	for _, branch := range bp.branches {
 		bp.config.SetBranchProtection(branch, contexts)
@@ -76,9 +63,8 @@ func (bp *BranchProtection) EachLoop() error {
 	return nil
 }
 
-// AddFlags will add any request flags to the cobra `cmd`
-func (bp *BranchProtection) AddFlags(cmd *cobra.Command) {
-	bp.cmd = cmd
-	cmd.Flags().StringSliceVar(&bp.branches, "protected-branches", []string{}, "branches to be marked 'protected'.  required-contexts, required-retest-contexts, and protected-branches-extra-contexts will be marked as required for non-admins")
-	cmd.Flags().StringSliceVar(&bp.extraContexts, "protected-branches-extra-contexts", []string{}, "Contexts which will be marked as required in the Github UI but which the bot itself does not require")
+// RegisterOptions registers options used by the BranchProtection feature.
+func (bp *BranchProtection) RegisterOptions(opts *options.Options) {
+	opts.RegisterStringSlice(&bp.branches, "protected-branches", []string{}, "branches to be marked 'protected'.  required-contexts, required-retest-contexts, and protected-branches-extra-contexts will be marked as required for non-admins")
+	opts.RegisterStringSlice(&bp.extraContexts, "protected-branches-extra-contexts", []string{}, "Contexts which will be marked as required in the Github UI but which the bot itself does not require")
 }

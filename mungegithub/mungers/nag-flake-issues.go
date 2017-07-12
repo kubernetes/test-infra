@@ -20,11 +20,11 @@ import (
 	"time"
 
 	"github.com/google/go-github/github"
-	"github.com/spf13/cobra"
 	"k8s.io/test-infra/mungegithub/features"
 	mgh "k8s.io/test-infra/mungegithub/github"
 	c "k8s.io/test-infra/mungegithub/mungers/matchers/comment"
 	"k8s.io/test-infra/mungegithub/mungers/mungerutil"
+	"k8s.io/test-infra/mungegithub/options"
 )
 
 const (
@@ -70,9 +70,8 @@ func (NagFlakeIssues) Initialize(config *mgh.Config, features *features.Features
 // EachLoop is called at the start of every munge loop
 func (NagFlakeIssues) EachLoop() error { return nil }
 
-// AddFlags will add any request flags to the cobra `cmd`
-func (NagFlakeIssues) AddFlags(cmd *cobra.Command, config *mgh.Config) {
-}
+// RegisterOptions registers config options for this munger.
+func (NagFlakeIssues) RegisterOptions(opts *options.Options) {}
 
 // findTimePeriod returns how often we should ping based on priority
 func findTimePeriod(labels []github.Label) time.Duration {

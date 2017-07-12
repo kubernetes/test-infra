@@ -29,10 +29,10 @@ import (
 	"k8s.io/kubernetes/pkg/util/sets"
 	"k8s.io/kubernetes/pkg/util/yaml"
 	"k8s.io/test-infra/mungegithub/github"
+	"k8s.io/test-infra/mungegithub/options"
 
 	parseYaml "github.com/ghodss/yaml"
 	"github.com/golang/glog"
-	"github.com/spf13/cobra"
 )
 
 const (
@@ -51,9 +51,9 @@ type assignmentConfig struct {
 
 // RepoInfo provides information about users in OWNERS files in a git repo
 type RepoInfo struct {
-	BaseDir      string
-	EnableMdYaml bool
-	UseReviewers bool
+	baseDir      string
+	enableMdYaml bool
+	useReviewers bool
 
 	enabled    bool
 	projectDir string
@@ -103,7 +103,7 @@ func (o *RepoInfo) walkFunc(path string, info os.FileInfo, err error) error {
 
 	// '.md' files may contain assignees at the top of the file in a yaml header
 	// Flag guarded because this is only enabled in some repos
-	if o.EnableMdYaml && filename != ownerFilename && strings.HasSuffix(filename, "md") {
+	if o.enableMdYaml && filename != ownerFilename && strings.HasSuffix(filename, "md") {
 		// Parse the yaml header from the file if it exists and marshal into the config
 		if err := decodeAssignmentConfig(path, c); err != nil {
 			glog.Errorf("%v", err)
@@ -198,12 +198,12 @@ func (o *RepoInfo) updateRepoUsers() error {
 func (o *RepoInfo) Initialize(config *github.Config) error {
 	o.enabled = true
 	o.config = config
-	o.projectDir = path.Join(o.BaseDir, o.config.Project)
+	o.projectDir = path.Join(o.baseDir, o.config.Project)
 
-	if len(o.BaseDir) == 0 {
+	if len(o.baseDir) == 0 {
 		glog.Fatalf("--repo-dir is required with selected munger(s)")
 	}
-	finfo, err := os.Stat(o.BaseDir)
+	finfo, err := os.Stat(o.baseDir)
 	if err != nil {
 		return fmt.Errorf("Unable to stat --repo-dir: %v", err)
 	}
@@ -230,7 +230,7 @@ func (o *RepoInfo) cleanUp(path string) error {
 
 func (o *RepoInfo) cloneRepo() (string, error) {
 	cloneUrl := fmt.Sprintf("https://github.com/%s/%s.git", o.config.Org, o.config.Project)
-	output, err := o.gitCommandDir([]string{"clone", cloneUrl, o.projectDir}, o.BaseDir)
+	output, err := o.gitCommandDir([]string{"clone", cloneUrl, o.projectDir}, o.baseDir)
 	if err != nil {
 		glog.Errorf("Failed to clone github repo: %s", output)
 	}
@@ -249,11 +249,11 @@ func (o *RepoInfo) EachLoop() error {
 	return o.updateRepoUsers()
 }
 
-// AddFlags will add any request flags to the cobra `cmd`
-func (o *RepoInfo) AddFlags(cmd *cobra.Command) {
-	cmd.Flags().StringVar(&o.BaseDir, "repo-dir", "", "Path to perform checkout of repository")
-	cmd.Flags().BoolVar(&o.EnableMdYaml, "enable-md-yaml", false, "If true, look for assignees in md yaml headers.")
-	cmd.Flags().BoolVar(&o.UseReviewers, "use-reviewers", false, "Use \"reviewers\" rather than \"approvers\" for review")
+// RegisterOptions registers config options used by RepoInfo.
+func (o *RepoInfo) RegisterOptions(opts *options.Options) {
+	opts.RegisterString(&o.baseDir, "repo-dir", "", "Path to perform checkout of repository")
+	opts.RegisterBool(&o.enableMdYaml, "enable-md-yaml", false, "If true, look for assignees in md yaml headers.")
+	opts.RegisterBool(&o.useReviewers, "use-reviewers", false, "Use \"reviewers\" rather than \"approvers\" for review")
 }
 
 // GitCommand will execute the git command with the `args` within the project directory.
@@ -334,7 +334,7 @@ func peopleForPath(path string, people map[string]sets.String, leafOnly bool, en
 // requested file. If pkg/OWNERS has user1 and pkg/util/OWNERS has user2 this
 // will only return user2 for the path pkg/util/sets/file.go
 func (o *RepoInfo) LeafApprovers(path string) sets.String {
-	return peopleForPath(path, o.approvers, true, o.EnableMdYaml)
+	return peopleForPath(path, o.approvers, true, o.enableMdYaml)
 }
 
 // Approvers returns ALL of the users who are approvers for the
@@ -342,17 +342,17 @@ func (o *RepoInfo) LeafApprovers(path string) sets.String {
 // If pkg/OWNERS has user1 and pkg/util/OWNERS has user2 this
 // will return both user1 and user2 for the path pkg/util/sets/file.go
 func (o *RepoInfo) Approvers(path string) sets.String {
-	return peopleForPath(path, o.approvers, false, o.EnableMdYaml)
+	return peopleForPath(path, o.approvers, false, o.enableMdYaml)
 }
 
 // LeafReviewers returns a set of users who are the closest reviewers to the
 // requested file. If pkg/OWNERS has user1 and pkg/util/OWNERS has user2 this
 // will only return user2 for the path pkg/util/sets/file.go
 func (o *RepoInfo) LeafReviewers(path string) sets.String {
-	if !o.UseReviewers {
+	if !o.useReviewers {
 		return o.LeafApprovers(path)
 	}
-	return peopleForPath(path, o.reviewers, true, o.EnableMdYaml)
+	return peopleForPath(path, o.reviewers, true, o.enableMdYaml)
 }
 
 // Reviewers returns ALL of the users who are reviewers for the
@@ -360,8 +360,8 @@ func (o *RepoInfo) LeafReviewers(path string) sets.String {
 // If pkg/OWNERS has user1 and pkg/util/OWNERS has user2 this
 // will return both user1 and user2 for the path pkg/util/sets/file.go
 func (o *RepoInfo) Reviewers(path string) sets.String {
-	if !o.UseReviewers {
+	if !o.useReviewers {
 		return o.Approvers(path)
 	}
-	return peopleForPath(path, o.reviewers, false, o.EnableMdYaml)
+	return peopleForPath(path, o.reviewers, false, o.enableMdYaml)
 }

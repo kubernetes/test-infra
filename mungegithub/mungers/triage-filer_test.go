@@ -153,9 +153,9 @@ Volume Disk Format verify disk format type - eagerzeroedthick is honored for dyn
 // it can be used for testing.
 func NewTestTriageFiler() *TriageFiler {
 	return &TriageFiler{
-		topClustersCount: 3,
-		windowDays:       5, // This is the important value for testing.
 		creator:          &IssueCreator{},
+		topClustersCount: 3,
+		windowDays:       5,
 	}
 }
 

@@ -33,6 +33,7 @@ import (
 	"k8s.io/test-infra/mungegithub/admin"
 	github_util "k8s.io/test-infra/mungegithub/github"
 	github_test "k8s.io/test-infra/mungegithub/github/testing"
+	"k8s.io/test-infra/mungegithub/mungeopts"
 	"k8s.io/test-infra/mungegithub/mungers/e2e"
 	fake_e2e "k8s.io/test-infra/mungegithub/mungers/e2e/fake"
 	"k8s.io/test-infra/mungegithub/mungers/mungerutil"
@@ -40,9 +41,10 @@ import (
 	"github.com/google/go-github/github"
 )
 
-func stringPtr(val string) *string { return &val }
-func boolPtr(val bool) *bool       { return &val }
-func intPtr(val int) *int          { return &val }
+func stringPtr(val string) *string    { return &val }
+func boolPtr(val bool) *bool          { return &val }
+func intPtr(val int) *int             { return &val }
+func slicePtr(val []string) *[]string { return &val }
 
 const (
 	someUserName        = "someUserName"
@@ -203,11 +205,17 @@ func getTestSQ(startThreads bool, config *github_util.Config, server *httptest.S
 	// TODO: Remove this line when we fix the plumbing regarding the fake/real e2e tester.
 	admin.Mux = admin.NewConcurrentMux()
 	sq := new(SubmitQueue)
+
 	sq.GateApproved = true
 	sq.GateCLA = true
-	sq.RequiredStatusContexts = []string{notRequiredReTestContext1, notRequiredReTestContext2}
-	sq.RequiredRetestContexts = []string{requiredReTestContext1, requiredReTestContext2}
 	sq.NonBlockingJobNames = someJobNames
+	sq.DoNotMergeMilestones = []string{doNotMergeMilestone}
+
+	mungeopts.RequiredContexts.Merge = []string{notRequiredReTestContext1, notRequiredReTestContext2}
+	mungeopts.RequiredContexts.Retest = []string{requiredReTestContext1, requiredReTestContext2}
+	mungeopts.Server.Address = ""
+	mungeopts.Server.WWWRoot = "www"
+
 	sq.githubE2EQueue = map[int]*github_util.MungeObject{}
 	sq.githubE2EPollTime = time.Millisecond
 
@@ -219,8 +227,6 @@ func getTestSQ(startThreads bool, config *github_util.Config, server *httptest.S
 
 	sq.startTime = sq.clock.Now()
 	sq.healthHistory = make([]healthRecord, 0)
-
-	sq.DoNotMergeMilestones = []string{doNotMergeMilestone}
 
 	sq.e2e = &fake_e2e.FakeE2ETester{JobNames: sq.NonBlockingJobNames}
 
@@ -332,10 +338,8 @@ func TestQueueOrder(t *testing.T) {
 		},
 	}
 	for testNum, test := range tests {
-		config := &github_util.Config{}
+		config := &github_util.Config{Org: "o", Project: "r"}
 		client, server, mux := github_test.InitServer(t, nil, nil, github_test.MultiIssueEvents(test.issueToEvents, "labeled"), nil, nil, nil, nil)
-		config.Org = "o"
-		config.Project = "r"
 		config.SetClient(client)
 		sq := getTestSQ(false, config, server)
 		for i := range test.issues {
@@ -386,10 +390,8 @@ func TestValidateLGTMAfterPush(t *testing.T) {
 		},
 	}
 	for testNum, test := range tests {
-		config := &github_util.Config{}
+		config := &github_util.Config{Org: "o", Project: "r"}
 		client, server, _ := github_test.InitServer(t, nil, nil, test.issueEvents, test.commits, nil, nil, nil)
-		config.Org = "o"
-		config.Project = "r"
 		config.SetClient(client)
 
 		obj := github_util.NewTestObject(config, BareIssue(), nil, nil, nil)
@@ -876,9 +878,7 @@ func TestSubmitQueue(t *testing.T) {
 		test.issue.Number = &issueNum
 		client, server, mux := github_test.InitServer(t, test.issue, test.pr, test.events, test.commits, test.ciStatus, test.masterCommit, nil)
 
-		config := &github_util.Config{}
-		config.Org = "o"
-		config.Project = "r"
+		config := &github_util.Config{Org: "o", Project: "r"}
 		config.SetClient(client)
 		// Don't wait so long for retries (pending, mergeability)
 		config.BaseWaitTime = time.Millisecond

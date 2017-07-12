@@ -26,9 +26,10 @@ import (
 
 	"k8s.io/test-infra/mungegithub/features"
 	"k8s.io/test-infra/mungegithub/github"
+	"k8s.io/test-infra/mungegithub/mungeopts"
+	"k8s.io/test-infra/mungegithub/options"
 
 	"github.com/golang/glog"
-	"github.com/spf13/cobra"
 )
 
 const (
@@ -81,15 +82,15 @@ func (c *CherrypickQueue) Initialize(config *github.Config, features *features.F
 	c.Lock()
 	defer c.Unlock()
 
-	if len(config.Address) > 0 {
-		if len(config.WWWRoot) > 0 {
-			http.Handle("/", http.FileServer(http.Dir(config.WWWRoot)))
+	if len(mungeopts.Server.Address) > 0 {
+		if len(mungeopts.Server.WWWRoot) > 0 {
+			http.Handle("/", http.FileServer(http.Dir(mungeopts.Server.WWWRoot)))
 		}
 		http.HandleFunc("/queue", c.serveQueue)
 		http.HandleFunc("/raw", c.serveRaw)
 		http.HandleFunc("/queue-info", c.serveQueueInfo)
 		config.ServeDebugStats("/stats")
-		go http.ListenAndServe(config.Address, nil)
+		go http.ListenAndServe(mungeopts.Server.Address, nil)
 	}
 	c.mergedAndApproved = map[int]*github.MungeObject{}
 	c.merged = map[int]*github.MungeObject{}
@@ -100,8 +101,8 @@ func (c *CherrypickQueue) Initialize(config *github.Config, features *features.F
 // EachLoop is called at the start of every munge loop
 func (c *CherrypickQueue) EachLoop() error { return nil }
 
-// AddFlags will add any request flags to the cobra `cmd`
-func (c *CherrypickQueue) AddFlags(cmd *cobra.Command, config *github.Config) {}
+// RegisterOptions registers config options for this munger.
+func (c *CherrypickQueue) RegisterOptions(opts *options.Options) {}
 
 // Munge is the workhorse the will actually make updates to the PR
 func (c *CherrypickQueue) Munge(obj *github.MungeObject) {

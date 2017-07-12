@@ -21,10 +21,10 @@ import (
 
 	"k8s.io/test-infra/mungegithub/features"
 	"k8s.io/test-infra/mungegithub/github"
+	"k8s.io/test-infra/mungegithub/options"
 
 	"github.com/golang/glog"
 	githubapi "github.com/google/go-github/github"
-	"github.com/spf13/cobra"
 )
 
 const (
@@ -60,8 +60,8 @@ func (LabelUnapprovedPicks) Initialize(config *github.Config, features *features
 // EachLoop is called at the start of every munge loop
 func (LabelUnapprovedPicks) EachLoop() error { return nil }
 
-// AddFlags will add any request flags to the cobra `cmd`
-func (LabelUnapprovedPicks) AddFlags(cmd *cobra.Command, config *github.Config) {}
+// RegisterOptions registers config options for this munger.
+func (LabelUnapprovedPicks) RegisterOptions(opts *options.Options) {}
 
 // Munge is the workhorse the will actually make updates to the PR
 func (LabelUnapprovedPicks) Munge(obj *github.MungeObject) {

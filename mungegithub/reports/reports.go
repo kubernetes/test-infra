@@ -20,16 +20,16 @@ import (
 	"fmt"
 
 	"k8s.io/test-infra/mungegithub/github"
+	"k8s.io/test-infra/mungegithub/options"
 
 	"github.com/golang/glog"
-	"github.com/spf13/cobra"
 )
 
 // Report is the interface which all reports must implement to register
 type Report interface {
 	// Take action on a specific github issue:
 	Report(config *github.Config) error
-	AddFlags(cmd *cobra.Command, config *github.Config)
+	RegisterOptions(opts *options.Options)
 	Name() string
 }
 
@@ -83,4 +83,10 @@ func RunReports(cfg *github.Config, runReports ...string) error {
 		}
 	}
 	return nil
+}
+
+func RegisterOptions(opts *options.Options) {
+	for _, report := range reportMap {
+		report.RegisterOptions(opts)
+	}
 }

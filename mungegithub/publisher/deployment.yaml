@@ -14,48 +14,20 @@ spec:
       - name: publisher
         command:
         - /mungegithub
-        - --period=$(PERIOD)
         - --dry-run=true
-        - --organization=$(ORGANIZATION)
-        - --project=$(PROJECT)
-        - --pr-mungers=$(PR_MUNGERS)
-        - --token-file=$(TOKEN_FILE)
         - --alsologtostderr
+        - --config-path=/etc/munge-config/config
         - 2>&1
         image: gcr.io/google_containers/publisher:2016-05-24-86f86cd
         imagePullPolicy: Always
-        env:
-          - name: PERIOD
-            valueFrom:
-              configMapKeyRef:
-                name: @@-publisher-config
-                key: config.period
-          - name: ORGANIZATION
-            valueFrom:
-              configMapKeyRef:
-                name: @@-publisher-config
-                key: config.organization
-          - name: PROJECT
-            valueFrom:
-              configMapKeyRef:
-                name: @@-publisher-config
-                key: config.project
-          - name: PR_MUNGERS
-            valueFrom:
-              configMapKeyRef:
-                name: @@-publisher-config
-                key: config.pr-mungers
-          - name: TOKEN_FILE
-            valueFrom:
-              configMapKeyRef:
-                name: @@-publisher-config
-                key: config.token-file
         resources:
           requests:
             cpu: 2000m
           limits:
             cpu: 2000m
         volumeMounts:
+        - mountPath: /etc/munge-config
+          name: munge-config
         - mountPath: /etc/secret-volume
           name: secret-volume
         - mountPath: /netrc
@@ -63,6 +35,9 @@ spec:
         - mountPath: /gitrepos
           name: repo
       volumes:
+      - name: munge-config
+        configMap:
+          name: @@-publisher-config
       - name: secret-volume
         secret:
           secretName: @@-github-token

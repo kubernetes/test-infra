@@ -23,10 +23,10 @@ import (
 	"k8s.io/kubernetes/pkg/util/sets"
 	"k8s.io/test-infra/mungegithub/features"
 	"k8s.io/test-infra/mungegithub/github"
+	"k8s.io/test-infra/mungegithub/options"
 
 	"github.com/golang/glog"
 	githubapi "github.com/google/go-github/github"
-	"github.com/spf13/cobra"
 )
 
 // weightMap is a map of user to a weight for that user.
@@ -40,10 +40,11 @@ type BlunderbussConfig struct {
 // BlunderbussMunger will assign issues to users based on the config file
 // provided by --blunderbuss-config.
 type BlunderbussMunger struct {
-	config              *BlunderbussConfig
-	features            *features.Features
-	BlunderbussReassign bool
-	NumAssignees        int
+	config   *BlunderbussConfig
+	features *features.Features
+
+	blunderbussReassign bool
+	numAssignees        int
 }
 
 func init() {
@@ -68,10 +69,10 @@ func (b *BlunderbussMunger) Initialize(config *github.Config, features *features
 // EachLoop is called at the start of every munge loop
 func (b *BlunderbussMunger) EachLoop() error { return nil }
 
-// AddFlags will add any request flags to the cobra `cmd`
-func (b *BlunderbussMunger) AddFlags(cmd *cobra.Command, config *github.Config) {
-	cmd.Flags().BoolVar(&b.BlunderbussReassign, "blunderbuss-reassign", false, "Assign PRs even if they're already assigned; use with -dry-run to judge changes to the assignment algorithm")
-	cmd.Flags().IntVar(&b.NumAssignees, "blunderbuss-number-assignees", 2, "Number of assignees to select for each PR.")
+// RegisterOptions registers config options for this munger.
+func (b *BlunderbussMunger) RegisterOptions(opts *options.Options) {
+	opts.RegisterBool(&b.blunderbussReassign, "blunderbuss-reassign", false, "Assign PRs even if they're already assigned; use with -dry-run to judge changes to the assignment algorithm")
+	opts.RegisterInt(&b.numAssignees, "blunderbuss-number-assignees", 2, "Number of assignees to select for each PR.")
 }
 
 func chance(val, total int64) float64 {
@@ -169,8 +170,8 @@ func (b *BlunderbussMunger) Munge(obj *github.MungeObject) {
 	}
 
 	issue := obj.Issue
-	if !b.BlunderbussReassign && issue.Assignee != nil {
-		glog.V(6).Infof("skipping %v: reassign: %v assignee: %v", *issue.Number, b.BlunderbussReassign, github.DescribeUser(issue.Assignee))
+	if !b.blunderbussReassign && issue.Assignee != nil {
+		glog.V(6).Infof("skipping %v: reassign: %v assignee: %v", *issue.Number, b.blunderbussReassign, github.DescribeUser(issue.Assignee))
 		return
 	}
 
@@ -194,7 +195,7 @@ func (b *BlunderbussMunger) Munge(obj *github.MungeObject) {
 		glog.Infof("Current assignee %v has a %02.2f%% chance of having been chosen", cur, c)
 	}
 
-	owners := selectMultipleOwners(potentialOwners, weightSum, b.NumAssignees)
+	owners := selectMultipleOwners(potentialOwners, weightSum, b.numAssignees)
 
 	for _, owner := range owners {
 		c := chance(potentialOwners[owner], weightSum)

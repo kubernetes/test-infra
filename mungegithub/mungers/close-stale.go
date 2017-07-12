@@ -24,9 +24,9 @@ import (
 	"k8s.io/test-infra/mungegithub/features"
 	"k8s.io/test-infra/mungegithub/github"
 	"k8s.io/test-infra/mungegithub/mungers/mungerutil"
+	"k8s.io/test-infra/mungegithub/options"
 
 	githubapi "github.com/google/go-github/github"
-	"github.com/spf13/cobra"
 )
 
 const (
@@ -78,8 +78,8 @@ func (CloseStale) Initialize(config *github.Config, features *features.Features)
 // EachLoop is called at the start of every munge loop
 func (CloseStale) EachLoop() error { return nil }
 
-// AddFlags will add any request flags to the cobra `cmd`
-func (CloseStale) AddFlags(cmd *cobra.Command, config *github.Config) {}
+// RegisterOptions registers config options for this munger.
+func (CloseStale) RegisterOptions(opts *options.Options) {}
 
 func findLastHumanPullRequestUpdate(obj *github.MungeObject) (*time.Time, bool) {
 	pr, ok := obj.GetPR()

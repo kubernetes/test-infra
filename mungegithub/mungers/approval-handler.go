@@ -22,13 +22,13 @@ import (
 	"strconv"
 
 	githubapi "github.com/google/go-github/github"
-	"github.com/spf13/cobra"
 
 	"k8s.io/test-infra/mungegithub/features"
 	"k8s.io/test-infra/mungegithub/github"
 	"k8s.io/test-infra/mungegithub/mungers/approvers"
 	c "k8s.io/test-infra/mungegithub/mungers/matchers/comment"
 	"k8s.io/test-infra/mungegithub/mungers/matchers/event"
+	"k8s.io/test-infra/mungegithub/options"
 )
 
 const (
@@ -68,8 +68,8 @@ func (h *ApprovalHandler) Initialize(config *github.Config, features *features.F
 // EachLoop is called at the start of every munge loop
 func (*ApprovalHandler) EachLoop() error { return nil }
 
-// AddFlags will add any request flags to the cobra `cmd`
-func (*ApprovalHandler) AddFlags(cmd *cobra.Command, config *github.Config) {}
+// RegisterOptions registers config options for this munger.
+func (*ApprovalHandler) RegisterOptions(opts *options.Options) {}
 
 // Returns associated issue, or 0 if it can't find any.
 // This is really simple, and could be improved later.

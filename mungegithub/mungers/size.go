@@ -25,10 +25,10 @@ import (
 	"k8s.io/kubernetes/pkg/util/sets"
 	"k8s.io/test-infra/mungegithub/features"
 	"k8s.io/test-infra/mungegithub/github"
+	"k8s.io/test-infra/mungegithub/options"
 
 	"github.com/golang/glog"
 	githubapi "github.com/google/go-github/github"
-	"github.com/spf13/cobra"
 )
 
 const (
@@ -43,7 +43,7 @@ var (
 // It will exclude certain files in it's calculations based on the config
 // file provided in --generated-files-config
 type SizeMunger struct {
-	GeneratedFilesFile string
+	generatedFilesFile string
 	genFilePaths       sets.String
 	genFilePrefixes    sets.String
 	genFileNames       sets.String
@@ -57,24 +57,24 @@ func init() {
 }
 
 // Name is the name usable in --pr-mungers
-func (SizeMunger) Name() string { return "size" }
+func (*SizeMunger) Name() string { return "size" }
 
 // RequiredFeatures is a slice of 'features' that must be provided
-func (SizeMunger) RequiredFeatures() []string { return []string{} }
+func (*SizeMunger) RequiredFeatures() []string { return []string{} }
 
 // Initialize will initialize the munger
 func (s *SizeMunger) Initialize(config *github.Config, features *features.Features) error {
-	glog.Infof("generated-files-config: %#v\n", s.GeneratedFilesFile)
+	glog.Infof("generated-files-config: %#v\n", s.generatedFilesFile)
 
 	return nil
 }
 
 // EachLoop is called at the start of every munge loop
-func (SizeMunger) EachLoop() error { return nil }
+func (*SizeMunger) EachLoop() error { return nil }
 
-// AddFlags will add any request flags to the cobra `cmd`
-func (s *SizeMunger) AddFlags(cmd *cobra.Command, config *github.Config) {
-	cmd.Flags().StringVar(&s.GeneratedFilesFile, "generated-files-config", "", "file in the repo containing the generated file rules")
+// RegisterOptions registers config options for this munger.
+func (s *SizeMunger) RegisterOptions(opts *options.Options) {
+	opts.RegisterString(&s.generatedFilesFile, "generated-files-config", "", "file in the repo containing the generated file rules")
 }
 
 // getGeneratedFiles returns a list of all automatically generated files in the repo. These include
@@ -106,7 +106,7 @@ func (s *SizeMunger) getGeneratedFiles(obj *github.MungeObject) {
 	fileNames := sets.NewString()
 	pathPrefixes := sets.NewString()
 
-	file := s.GeneratedFilesFile
+	file := s.generatedFilesFile
 	if len(file) == 0 {
 		glog.Infof("No --generated-files-config= supplied, applying no labels")
 		return

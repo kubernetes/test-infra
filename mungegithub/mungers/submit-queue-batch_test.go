@@ -26,6 +26,8 @@ import (
 	"strings"
 	"testing"
 
+	"k8s.io/test-infra/mungegithub/mungeopts"
+
 	githubapi "github.com/google/go-github/github"
 )
 
@@ -87,10 +89,9 @@ func TestBatchRefToBatch(t *testing.T) {
 }
 
 func TestGetCompletedBatches(t *testing.T) {
-	sq := SubmitQueue{
-		RequiredRetestContexts: []string{"rt"},
-		RequiredStatusContexts: []string{"st"},
-	}
+	mungeopts.RequiredContexts.Retest = []string{"rt"}
+	mungeopts.RequiredContexts.Merge = []string{"st"}
+	sq := SubmitQueue{}
 	for _, test := range []struct {
 		jobs    prowJobs
 		batches []Batch

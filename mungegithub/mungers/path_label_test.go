@@ -146,13 +146,13 @@ func TestPathLabelMunge(t *testing.T) {
 
 		})
 
-		config := &github_util.Config{}
-		config.Org = "o"
-		config.Project = "r"
+		config := &github_util.Config{
+			Org:     "o",
+			Project: "r",
+		}
 		config.SetClient(client)
 
-		p := PathLabelMunger{}
-		p.PathLabelFile = "../path-label.txt"
+		p := PathLabelMunger{pathLabelFile: "../path-label.txt"}
 		err := p.Initialize(config, nil)
 		if err != nil {
 			t.Fatalf("%v", err)

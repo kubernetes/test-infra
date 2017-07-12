@@ -25,41 +25,40 @@ import (
 	"k8s.io/test-infra/mungegithub/features"
 	"k8s.io/test-infra/mungegithub/github"
 	"k8s.io/test-infra/mungegithub/mungers/matchers/event"
+	"k8s.io/test-infra/mungegithub/options"
 
 	"github.com/golang/glog"
-	"github.com/spf13/cobra"
 )
 
 // LabelMunger will update a label on a PR based on how many lines are changed.
 // It will exclude certain files in it's calculations based on the config
 // file provided in --generated-files-config
 type LabelMunger struct {
-	TriagerUrl string
+	triagerUrl string
 }
 
 // Initialize will initialize the munger
-func (LabelMunger) Initialize(config *github.Config, features *features.Features) error {
+func (*LabelMunger) Initialize(config *github.Config, features *features.Features) error {
 	return nil
 }
 
 // Name is the name usable in --pr-mungers
-func (LabelMunger) Name() string { return "issue-triager" }
+func (*LabelMunger) Name() string { return "issue-triager" }
 
 // RequiredFeatures is a slice of 'features' that must be provided
-func (LabelMunger) RequiredFeatures() []string { return []string{} }
+func (*LabelMunger) RequiredFeatures() []string { return []string{} }
 
-// AddFlags will add any request flags to the cobra `cmd`
-func (lm *LabelMunger) AddFlags(cmd *cobra.Command, config *github.Config) {
-	cmd.Flags().StringVar(&lm.TriagerUrl, "triager-url", "", "Url on which ml web service is listening")
+// RegisterOptions registers config options for this munger.
+func (lm *LabelMunger) RegisterOptions(opts *options.Options) {
+	opts.RegisterString(&lm.triagerUrl, "triager-url", "", "Url on which ml web service is listening")
 }
 
 func init() {
-	lm := &LabelMunger{}
-	RegisterMungerOrDie(lm)
+	RegisterMungerOrDie(&LabelMunger{})
 }
 
 // EachLoop is called at the start of every munge loop
-func (LabelMunger) EachLoop() error { return nil }
+func (*LabelMunger) EachLoop() error { return nil }
 
 // Munge is the workhorse the will actually make updates to the PR
 func (lm *LabelMunger) Munge(obj *github.MungeObject) {
@@ -75,12 +74,12 @@ func (lm *LabelMunger) Munge(obj *github.MungeObject) {
 	cLabels := github.GetLabelsWithPrefix(obj.Issue.Labels, "component/")
 
 	if len(tLabels) == 0 && len(cLabels) == 0 {
-		obj.AddLabels(getRoutingLabels(lm.TriagerUrl, obj.Issue.Title, obj.Issue.Body))
+		obj.AddLabels(getRoutingLabels(lm.triagerUrl, obj.Issue.Title, obj.Issue.Body))
 	}
 	// else {
 	// 	newLabels := needsUpdate(obj)
 	// 	if len(newLabels) != 0 {
-	// 		updateModel(lm.TriagerUrl, obj.Issue.Title, obj.Issue.Body, newLabels)
+	// 		updateModel(lm.triagerUrl, obj.Issue.Title, obj.Issue.Body, newLabels)
 	// 	}
 	// }
 }

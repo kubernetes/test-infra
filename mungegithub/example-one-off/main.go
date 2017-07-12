@@ -25,6 +25,7 @@ import (
 
 	utilflag "k8s.io/kubernetes/pkg/util/flag"
 	"k8s.io/test-infra/mungegithub/github"
+	"k8s.io/test-infra/mungegithub/options"
 )
 
 // MungeIssue is the real worker. It is called for every open github Issue
@@ -55,6 +56,6 @@ func main() {
 		},
 	}
 	root.SetGlobalNormalizationFunc(utilflag.WordSepNormalizeFunc)
-	config.AddRootFlags(root)
+	config.RegisterOptions(options.New("")) // Always uses defaults since Load is never called.
 	root.Execute()
 }

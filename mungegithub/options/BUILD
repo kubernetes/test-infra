@@ -4,26 +4,24 @@ licenses(["notice"])
 
 load(
     "@io_bazel_rules_go//go:def.bzl",
-    "go_binary",
     "go_library",
+    "go_test",
 )
 
-go_binary(
-    name = "example-one-off",
+go_test(
+    name = "go_default_test",
+    srcs = ["options_test.go"],
     library = ":go_default_library",
     tags = ["automanaged"],
 )
 
 go_library(
     name = "go_default_library",
-    srcs = ["main.go"],
+    srcs = ["options.go"],
     tags = ["automanaged"],
     deps = [
-        "//mungegithub/github:go_default_library",
-        "//mungegithub/options:go_default_library",
+        "//vendor:github.com/ghodss/yaml",
         "//vendor:github.com/golang/glog",
-        "//vendor:github.com/spf13/cobra",
-        "//vendor:k8s.io/kubernetes/pkg/util/flag",
     ],
 )
 

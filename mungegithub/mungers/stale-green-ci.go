@@ -22,10 +22,11 @@ import (
 
 	"k8s.io/test-infra/mungegithub/features"
 	"k8s.io/test-infra/mungegithub/github"
+	"k8s.io/test-infra/mungegithub/mungeopts"
+	"k8s.io/test-infra/mungegithub/options"
 
 	"github.com/golang/glog"
 	githubapi "github.com/google/go-github/github"
-	"github.com/spf13/cobra"
 )
 
 const (
@@ -54,13 +55,13 @@ func init() {
 func (s *StaleGreenCI) Name() string { return "stale-green-ci" }
 
 // RequiredFeatures is a slice of 'features' that must be provided
-func (s *StaleGreenCI) RequiredFeatures() []string { return []string{features.TestOptionsFeature} }
+func (s *StaleGreenCI) RequiredFeatures() []string { return []string{} }
 
 // Initialize will initialize the munger
 func (s *StaleGreenCI) Initialize(config *github.Config, features *features.Features) error {
 	s.features = features
 	s.getRetestContexts = func() []string {
-		return s.features.TestOptions.RequiredRetestContexts
+		return mungeopts.RequiredContexts.Retest
 	}
 	return nil
 }
@@ -68,8 +69,8 @@ func (s *StaleGreenCI) Initialize(config *github.Config, features *features.Feat
 // EachLoop is called at the start of every munge loop
 func (s *StaleGreenCI) EachLoop() error { return nil }
 
-// AddFlags will add any request flags to the cobra `cmd`
-func (s *StaleGreenCI) AddFlags(cmd *cobra.Command, config *github.Config) {}
+// RegisterOptions registers config options for this munger.
+func (s *StaleGreenCI) RegisterOptions(opts *options.Options) {}
 
 // Munge is the workhorse the will actually make updates to the PR
 func (s *StaleGreenCI) Munge(obj *github.MungeObject) {
@@ -122,7 +123,7 @@ func (s *StaleGreenCI) isStaleIssueComment(obj *github.MungeObject, comment *git
 	if *comment.Body != greenMsgBody {
 		return false
 	}
-	stale := commentBeforeLastCI(obj, comment, s.features.TestOptions.RequiredRetestContexts)
+	stale := commentBeforeLastCI(obj, comment, mungeopts.RequiredContexts.Retest)
 	if stale {
 		glog.V(6).Infof("Found stale StaleGreenCI comment")
 	}

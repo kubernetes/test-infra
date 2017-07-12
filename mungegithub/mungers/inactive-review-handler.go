@@ -18,13 +18,14 @@ package mungers
 
 import (
 	"fmt"
+	"time"
+
 	"github.com/golang/glog"
 	githubapi "github.com/google/go-github/github"
-	"github.com/spf13/cobra"
 	"k8s.io/test-infra/mungegithub/features"
 	"k8s.io/test-infra/mungegithub/github"
 	"k8s.io/test-infra/mungegithub/mungers/matchers"
-	"time"
+	"k8s.io/test-infra/mungegithub/options"
 )
 
 const (
@@ -58,8 +59,8 @@ func (i *InactiveReviewHandler) Initialize(config *github.Config, features *feat
 // EachLoop is called at the start of every munge loop
 func (i *InactiveReviewHandler) EachLoop() error { return nil }
 
-// AddFlags will add any request flags to the cobra `cmd`
-func (i *InactiveReviewHandler) AddFlags(cmd *cobra.Command, config *github.Config) {}
+// RegisterOptions registers config options for this munger.
+func (*InactiveReviewHandler) RegisterOptions(opts *options.Options) {}
 
 func (i *InactiveReviewHandler) haveNonAuthorHuman(authorName *string, comments []*githubapi.IssueComment, reviewComments []*githubapi.PullRequestComment) bool {
 	return !matchers.Items{}.

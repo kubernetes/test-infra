@@ -18,11 +18,12 @@ package mungers
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/golang/glog"
-	"github.com/spf13/cobra"
 	"k8s.io/test-infra/mungegithub/features"
 	"k8s.io/test-infra/mungegithub/github"
-	"strings"
+	"k8s.io/test-infra/mungegithub/options"
 )
 
 type SigMentionHandler struct{}
@@ -48,8 +49,8 @@ func (s *SigMentionHandler) Initialize(config *github.Config, features *features
 // EachLoop is called at the start of every munge loop
 func (*SigMentionHandler) EachLoop() error { return nil }
 
-// AddFlags will add any request flags to the cobra `cmd`
-func (*SigMentionHandler) AddFlags(cmd *cobra.Command, config *github.Config) {}
+// RegisterOptions registers config options for this munger.
+func (*SigMentionHandler) RegisterOptions(opts *options.Options) {}
 
 func (*SigMentionHandler) HasSigLabel(obj *github.MungeObject) bool {
 	labels := obj.Issue.Labels

@@ -30,9 +30,9 @@ import (
 	"k8s.io/test-infra/mungegithub/features"
 	"k8s.io/test-infra/mungegithub/github"
 	"k8s.io/test-infra/mungegithub/mungers/mungerutil"
+	"k8s.io/test-infra/mungegithub/options"
 
 	"github.com/golang/glog"
-	"github.com/spf13/cobra"
 )
 
 const (
@@ -122,10 +122,10 @@ func (f *TriageFiler) FileIssues() error {
 	return nil
 }
 
-// AddFlags will add any requested flags to the cobra `cmd`.
-func (f *TriageFiler) AddFlags(cmd *cobra.Command, config *github.Config) {
-	cmd.Flags().IntVar(&f.topClustersCount, "triage-count", 3, "The number of clusters to sync issues for on github.")
-	cmd.Flags().IntVar(&f.windowDays, "triage-window", 1, "The size of the sliding time window (in days) that is used to determine which failures to consider.")
+// RegisterOptions registers config options for this munger.
+func (f *TriageFiler) RegisterOptions(opts *options.Options) {
+	opts.RegisterInt(&f.topClustersCount, "triage-count", 3, "The number of clusters to sync issues for on github.")
+	opts.RegisterInt(&f.windowDays, "triage-window", 1, "The size of the sliding time window (in days) that is used to determine which failures to consider.")
 }
 
 // Munge is unused by the TriageFiler.

@@ -40,7 +40,7 @@ const (
 
 // Commit returns a filled out github.Commit which happened at time.Unix(t, 0)
 func getTestRepo() *RepoInfo {
-	testRepo := RepoInfo{BaseDir: baseDir, EnableMdYaml: false, UseReviewers: false}
+	testRepo := RepoInfo{enableMdYaml: false, useReviewers: false}
 	approvers := map[string]sets.String{}
 	baseApprovers := sets.NewString("Alice", "Bob")
 	leafApprovers := sets.NewString("Carl", "Dave")

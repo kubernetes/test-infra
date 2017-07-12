@@ -21,10 +21,10 @@ import (
 
 	"k8s.io/test-infra/mungegithub/features"
 	"k8s.io/test-infra/mungegithub/github"
+	"k8s.io/test-infra/mungegithub/options"
 
 	"github.com/golang/glog"
 	githubapi "github.com/google/go-github/github"
-	"github.com/spf13/cobra"
 )
 
 const (
@@ -59,8 +59,8 @@ func (PickMustHaveMilestone) Initialize(config *github.Config, features *feature
 // EachLoop is called at the start of every munge loop
 func (PickMustHaveMilestone) EachLoop() error { return nil }
 
-// AddFlags will add any request flags to the cobra `cmd`
-func (PickMustHaveMilestone) AddFlags(cmd *cobra.Command, config *github.Config) {}
+// RegisterOptions registers config options for this munger.
+func (PickMustHaveMilestone) RegisterOptions(opts *options.Options) {}
 
 // Munge is the workhorse the will actually make updates to the PR
 func (PickMustHaveMilestone) Munge(obj *github.MungeObject) {

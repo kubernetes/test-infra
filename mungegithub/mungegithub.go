@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"flag"
 	"os"
 	"path/filepath"
 	"time"
@@ -24,8 +25,9 @@ import (
 	utilflag "k8s.io/kubernetes/pkg/util/flag"
 	"k8s.io/test-infra/mungegithub/features"
 	github_util "k8s.io/test-infra/mungegithub/github"
+	"k8s.io/test-infra/mungegithub/mungeopts"
 	"k8s.io/test-infra/mungegithub/mungers"
-	"k8s.io/test-infra/mungegithub/mungers/mungerutil"
+	"k8s.io/test-infra/mungegithub/options"
 	"k8s.io/test-infra/mungegithub/reports"
 
 	"github.com/golang/glog"
@@ -34,24 +36,43 @@ import (
 
 type mungeConfig struct {
 	github_util.Config
-	MinIssueNumber   int
-	PRMungersList    []string
-	IssueReportsList []string
-	Once             bool
-	Period           time.Duration
+	*options.Options
 	features.Features
+
+	path string
+
+	once           bool
+	prMungers      []string
+	issueReports   []string
+	period         time.Duration
+	webhookKeyFile string
 }
 
-func addMungeFlags(config *mungeConfig, cmd *cobra.Command) {
-	cmd.Flags().BoolVar(&config.Once, "once", false, "If true, run one loop and exit")
-	cmd.Flags().StringSliceVar(&config.PRMungersList, "pr-mungers", []string{}, "A list of pull request mungers to run")
-	cmd.Flags().StringSliceVar(&config.IssueReportsList, "issue-reports", []string{}, "A list of issue reports to run. If set, will run the reports and exit.")
-	cmd.Flags().DurationVar(&config.Period, "period", 10*time.Minute, "The period for running mungers")
+func registerOptions(config *mungeConfig) {
+	config.RegisterBool(&config.once, "once", false, "If true, run one loop and exit")
+	config.RegisterStringSlice(&config.prMungers, "pr-mungers", []string{}, "A list of pull request mungers to run")
+	config.RegisterStringSlice(&config.issueReports, "issue-reports", []string{}, "A list of issue reports to run. If set, will run the reports and exit.")
+	config.RegisterDuration(&config.period, "period", 10*time.Minute, "The period for running mungers")
+	config.RegisterString(&config.webhookKeyFile, "github-key-file", "", "Github secret key for webhooks")
+
+	// Print the options whenever they are updated.
+	// This goes before registration of other sources to ensure the updated config is printed first
+	// when a new config is found.
+	config.RegisterUpdateCallback(func() {
+		glog.Infof("ConfigMap '%s' was updated.\n%s", config.path, config.CurrentValues())
+	})
+
+	// Register options from other sources.
+	config.Config.RegisterOptions(config.Options)   // github.Config
+	config.Features.RegisterOptions(config.Options) // Features (per feature opts)
+	reports.RegisterOptions(config.Options)         // Reports (per report opts)
+	mungers.RegisterOptions(config.Options)         // Mungers (per munger opts)
+	mungeopts.RegisterOptions(config.Options)       // MungeOpts (opts shared by mungers or features)
 }
 
 func doMungers(config *mungeConfig) error {
 	for {
-		nextRunStartTime := time.Now().Add(config.Period)
+		nextRunStartTime := time.Now().Add(config.period)
 		glog.Infof("Running mungers")
 		config.NextExpectedUpdate(nextRunStartTime)
 
@@ -63,7 +84,7 @@ func doMungers(config *mungeConfig) error {
 		}
 
 		config.ResetAPICount()
-		if config.Once {
+		if config.once {
 			break
 		}
 		if nextRunStartTime.After(time.Now()) {
@@ -71,8 +92,10 @@ func doMungers(config *mungeConfig) error {
 			glog.Infof("Sleeping for %v\n", sleepDuration)
 			time.Sleep(sleepDuration)
 		} else {
-			glog.Infof("Not sleeping as we took more than %v to complete one loop\n", config.Period)
+			glog.Infof("Not sleeping as we took more than %v to complete one loop\n", config.period)
 		}
+		// Uncommenting will make configmap reload if changed.
+		// config.Load()
 	}
 	return nil
 }
@@ -83,17 +106,21 @@ func main() {
 		Use:   filepath.Base(os.Args[0]),
 		Short: "A program to add labels, check tests, and generally mess with outstanding PRs",
 		RunE: func(_ *cobra.Command, _ []string) error {
-			glog.Info(mungerutil.PrettyString(config))
+			config.Options = options.New(config.path)
+			registerOptions(config)
+			config.Load()
+
+			glog.Info(config.CurrentValues())
 			if err := config.PreExecute(); err != nil {
 				return err
 			}
-			if len(config.IssueReportsList) > 0 {
-				return reports.RunReports(&config.Config, config.IssueReportsList...)
+			if len(config.issueReports) > 0 {
+				return reports.RunReports(&config.Config, config.issueReports...)
 			}
-			if len(config.PRMungersList) == 0 {
+			if len(config.prMungers) == 0 {
 				glog.Fatalf("must include at least one --pr-mungers")
 			}
-			if err := mungers.RegisterMungers(config.PRMungersList); err != nil {
+			if err := mungers.RegisterMungers(config.prMungers); err != nil {
 				glog.Fatalf("unable to find requested mungers: %v", err)
 			}
 			requestedFeatures := mungers.RequestedFeatures()
@@ -103,26 +130,18 @@ func main() {
 			if err := mungers.InitializeMungers(&config.Config, &config.Features); err != nil {
 				glog.Fatalf("unable to initialize mungers: %v", err)
 			}
-			if config.GithubKey != "" {
-				config.HookHandler = github_util.NewWebHookAndListen(config.GithubKey, config.Address)
+			if config.webhookKeyFile != "" {
+				config.HookHandler = github_util.NewWebHookAndListen(config.webhookKeyFile, mungeopts.Server.Address)
 			}
 			return doMungers(config)
 		},
 	}
 	root.SetGlobalNormalizationFunc(utilflag.WordSepNormalizeFunc)
-	config.AddRootFlags(root)
-	addMungeFlags(config, root)
-	config.Features.AddFlags(root)
 
-	allMungers := mungers.GetAllMungers()
-	for _, m := range allMungers {
-		m.AddFlags(root, &config.Config)
-	}
-
-	allReports := reports.GetAllReports()
-	for _, r := range allReports {
-		r.AddFlags(root, &config.Config)
-	}
+	// Command line flags.
+	root.Flags().BoolVar(&config.DryRun, "dry-run", true, "If true, don't actually merge anything")
+	root.Flags().StringVar(&config.path, "config-path", "", "File path to yaml config map containing the values to use for options.")
+	root.PersistentFlags().AddGoFlagSet(flag.CommandLine)
 
 	if err := root.Execute(); err != nil {
 		glog.Fatalf("%v\n", err)

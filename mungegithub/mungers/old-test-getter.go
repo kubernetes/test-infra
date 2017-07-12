@@ -23,15 +23,15 @@ import (
 	"k8s.io/test-infra/mungegithub/features"
 	"k8s.io/test-infra/mungegithub/github"
 	"k8s.io/test-infra/mungegithub/mungers/e2e"
+	"k8s.io/test-infra/mungegithub/options"
 
 	"github.com/golang/glog"
-	"github.com/spf13/cobra"
 )
 
 // OldTestGetter files issues for flaky tests.
 type OldTestGetter struct {
 	// Keep track of which jobs we've done this for.
-	NumberOfOldTestsToGet int
+	numberOfOldTestsToGet int
 	ran                   map[string]bool
 	pullJobToLastRun      map[string]int
 	sq                    *SubmitQueue
@@ -88,7 +88,7 @@ func (p *OldTestGetter) getOldPostsubmitTests(e2eTester *e2e.RealE2ETester) {
 		if lastRunNumber == 0 || err != nil {
 			continue
 		}
-		for i := 1; i <= p.NumberOfOldTestsToGet && i < lastRunNumber; i++ {
+		for i := 1; i <= p.numberOfOldTestsToGet && i < lastRunNumber; i++ {
 			n := lastRunNumber - i
 			glog.Infof("Getting results for past test result: %v %v", job, n)
 			if _, err := e2eTester.GetBuildResult(job, n); err != nil {
@@ -99,9 +99,9 @@ func (p *OldTestGetter) getOldPostsubmitTests(e2eTester *e2e.RealE2ETester) {
 	}
 }
 
-// AddFlags will add any request flags to the cobra `cmd`
-func (p *OldTestGetter) AddFlags(cmd *cobra.Command, config *github.Config) {
-	cmd.Flags().IntVar(&p.NumberOfOldTestsToGet, "number-of-old-test-results", 0, "The number of old test results to get (and therefore file issues for). In case submit queue has some downtime, set this to a higher number and it will file issues for older test runs.")
+// RegisterOptions registers config options for this munger.
+func (p *OldTestGetter) RegisterOptions(opts *options.Options) {
+	opts.RegisterInt(&p.numberOfOldTestsToGet, "number-of-old-test-results", 0, "The number of old test results to get (and therefore file issues for). In case submit queue has some downtime, set this to a higher number and it will file issues for older test runs.")
 }
 
 // Munge is unused by this munger.
