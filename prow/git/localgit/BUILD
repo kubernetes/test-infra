@@ -5,13 +5,13 @@ licenses(["notice"])
 load(
     "@io_bazel_rules_go//go:def.bzl",
     "go_library",
-    "go_test",
 )
 
 go_library(
     name = "go_default_library",
-    srcs = ["git.go"],
+    srcs = ["localgit.go"],
     tags = ["automanaged"],
+    deps = ["//prow/git:go_default_library"],
 )
 
 filegroup(
@@ -23,16 +23,6 @@ filegroup(
 
 filegroup(
     name = "all-srcs",
-    srcs = [
-        ":package-srcs",
-        "//prow/git/localgit:all-srcs",
-    ],
+    srcs = [":package-srcs"],
     tags = ["automanaged"],
-)
-
-go_test(
-    name = "go_default_xtest",
-    srcs = ["git_test.go"],
-    tags = ["automanaged"],
-    deps = ["//prow/git/localgit:go_default_library"],
 )

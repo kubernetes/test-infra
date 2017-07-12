@@ -71,6 +71,13 @@ func NewClient() (*Client, error) {
 	}, nil
 }
 
+// SetRemote sets the remote for the client. This is not thread-safe, and is
+// useful for testing. The client will clone from remote/org/repo, and Repo
+// objects spun out of the client will also hit that path.
+func (c *Client) SetRemote(remote string) {
+	c.base = remote
+}
+
 func (c *Client) lockRepo(repo string) {
 	c.rlm.Lock()
 	if _, ok := c.repoLocks[repo]; !ok {
@@ -125,21 +132,47 @@ func (c *Client) Clone(repo string) (*Repo, error) {
 		return nil, fmt.Errorf("git repo clone error: %v. output: %s", err, string(b))
 	}
 	return &Repo{
-		dir: t,
-		git: c.git,
+		Dir:  t,
+		git:  c.git,
+		base: c.base,
+		repo: repo,
 	}, nil
 }
 
 // Repo is a clone of a git repository. Create with Client.Clone, and don't
 // forget to clean it up after.
 type Repo struct {
-	// dir is the location of the git cache.
-	dir string
+	// Dir is the location of the git repo.
+	Dir string
+
 	// git is the path to the git binary.
 	git string
+	// base is the base path for remote git fetch calls.
+	base string
+	// repo is the full repo name: "org/repo".
+	repo string
 }
 
 // Clean deletes the repo. It is unusable after calling.
 func (r *Repo) Clean() error {
-	return os.RemoveAll(r.dir)
+	return os.RemoveAll(r.Dir)
+}
+
+func (r *Repo) gitCommand(arg ...string) *exec.Cmd {
+	cmd := exec.Command(r.git, arg...)
+	cmd.Dir = r.Dir
+	return cmd
+}
+
+// CheckoutPullRequest does exactly that.
+func (r *Repo) CheckoutPullRequest(number int) error {
+	fetch := r.gitCommand("fetch", filepath.Join(r.base, r.repo), fmt.Sprintf("pull/%d/head:pull%d", number, number))
+	if b, err := fetch.CombinedOutput(); err != nil {
+		return fmt.Errorf("git fetch failed for PR %d: %v. output: %s", number, err, string(b))
+	}
+	co := r.gitCommand("checkout", fmt.Sprintf("pull%d", number))
+	if b, err := co.CombinedOutput(); err != nil {
+		return fmt.Errorf("git checkout failed for PR %d: %v. output: %s", number, err, string(b))
+	}
+	return nil
 }
