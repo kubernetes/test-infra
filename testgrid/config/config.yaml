@@ -1873,61 +1873,6 @@ dashboards:
   - name: gke-master
     test_group_name: ci-kubernetes-e2e-gke-latest-upgrade-master
 
-- name: sig-cli
-  dashboard_tab:
-  - name: gce
-    test_group_name: ci-kubernetes-e2e-gce
-    base_options: 'include-filter-by-regex=Kubectl%7Ckubectl'
-    description: 'kubectl gce e2e tests for master branch'
-  - name: gke
-    test_group_name: ci-kubernetes-e2e-gke
-    base_options: 'include-filter-by-regex=Kubectl%7Ckubectl'
-    description: 'kubectl gke e2e tests for master branch'
-  - name: gce-flaky
-    test_group_name: ci-kubernetes-e2e-gce-flaky
-    base_options: 'include-filter-by-regex=Kubectl%7Ckubectl'
-    description: 'kubectl gce flaky e2e tests for master branch'
-  - name: gke-flaky
-    test_group_name: ci-kubernetes-e2e-gke-flaky
-    base_options: 'include-filter-by-regex=Kubectl%7Ckubectl'
-    description: 'kubectl gke flaky e2e tests for master branch'
-  - name: gce-slow
-    test_group_name: ci-kubernetes-e2e-gce-slow
-    base_options: 'include-filter-by-regex=Kubectl%7Ckubectl'
-    description: 'kubectl gce slow e2e tests for master branch'
-  - name: gke-slow
-    test_group_name: ci-kubernetes-e2e-gke-slow
-    base_options: 'include-filter-by-regex=Kubectl%7Ckubectl'
-    description: 'kubectl gke slow e2e tests for master branch'
-  - name: gce-serial
-    test_group_name: ci-kubernetes-e2e-gce-serial
-    base_options: 'include-filter-by-regex=Kubectl%7Ckubectl'
-    description: 'kubectl gce serial e2e tests for master branch'
-  - name: gke-serial
-    test_group_name: ci-kubernetes-e2e-gke-serial
-    base_options: 'include-filter-by-regex=Kubectl%7Ckubectl'
-    description: 'kubectl gke serial e2e tests for master branch'
-  - name: unit-integration-cmd
-    test_group_name: ci-kubernetes-test-go
-    base_options: 'include-filter-by-regex=kubectl%7COverall'
-    description: 'unit, integration and cmd tests for master branch'
-  - name: gce-last_release-master-cvm-kubectl-skew
-    test_group_name: ci-kubernetes-e2e-gce-new-master-cvm-kubectl-skew
-  - name: gce-last_release-master-gci-kubectl-skew
-    test_group_name: ci-kubernetes-e2e-gce-new-master-gci-kubectl-skew
-  - name: gke-last_release-master-cvm-kubectl-skew
-    test_group_name: ci-kubernetes-e2e-gke-new-master-cvm-kubectl-skew
-  - name: gke-last_release-master-gci-kubectl-skew
-    test_group_name: ci-kubernetes-e2e-gke-new-master-gci-kubectl-skew
-  - name: gce-master-last_release-cvm-kubectl-skew
-    test_group_name: ci-kubernetes-e2e-gce-master-new-cvm-kubectl-skew
-  - name: gce-master-last_release-gci-kubectl-skew
-    test_group_name: ci-kubernetes-e2e-gce-master-new-gci-kubectl-skew
-  - name: gke-master-last_release-cvm-kubectl-skew
-    test_group_name: ci-kubernetes-e2e-gke-master-new-cvm-kubectl-skew
-  - name: gke-master-last_release-gci-kubectl-skew
-    test_group_name: ci-kubernetes-e2e-gke-master-new-gci-kubectl-skew
-
 - name: etcd-upgrades
   dashboard_tab:
   - name: gce-latest
@@ -2848,7 +2793,60 @@ dashboards:
   - name: TODO
     test_group_name: ci-kubernetes-e2e-gce-slow  # TODO(fejta): fix
 
-# Move sig-cli
+- name: sig-cli
+  dashboard_tab:
+  - name: gce
+    test_group_name: ci-kubernetes-e2e-gce
+    base_options: 'include-filter-by-regex=Kubectl%7Ckubectl'
+    description: 'kubectl gce e2e tests for master branch'
+  - name: gke
+    test_group_name: ci-kubernetes-e2e-gke
+    base_options: 'include-filter-by-regex=Kubectl%7Ckubectl'
+    description: 'kubectl gke e2e tests for master branch'
+  - name: gce-flaky
+    test_group_name: ci-kubernetes-e2e-gce-flaky
+    base_options: 'include-filter-by-regex=Kubectl%7Ckubectl'
+    description: 'kubectl gce flaky e2e tests for master branch'
+  - name: gke-flaky
+    test_group_name: ci-kubernetes-e2e-gke-flaky
+    base_options: 'include-filter-by-regex=Kubectl%7Ckubectl'
+    description: 'kubectl gke flaky e2e tests for master branch'
+  - name: gce-slow
+    test_group_name: ci-kubernetes-e2e-gce-slow
+    base_options: 'include-filter-by-regex=Kubectl%7Ckubectl'
+    description: 'kubectl gce slow e2e tests for master branch'
+  - name: gke-slow
+    test_group_name: ci-kubernetes-e2e-gke-slow
+    base_options: 'include-filter-by-regex=Kubectl%7Ckubectl'
+    description: 'kubectl gke slow e2e tests for master branch'
+  - name: gce-serial
+    test_group_name: ci-kubernetes-e2e-gce-serial
+    base_options: 'include-filter-by-regex=Kubectl%7Ckubectl'
+    description: 'kubectl gce serial e2e tests for master branch'
+  - name: gke-serial
+    test_group_name: ci-kubernetes-e2e-gke-serial
+    base_options: 'include-filter-by-regex=Kubectl%7Ckubectl'
+    description: 'kubectl gke serial e2e tests for master branch'
+  - name: unit-integration-cmd
+    test_group_name: ci-kubernetes-test-go
+    base_options: 'include-filter-by-regex=kubectl%7COverall'
+    description: 'unit, integration and cmd tests for master branch'
+  - name: gce-last_release-master-cvm-kubectl-skew
+    test_group_name: ci-kubernetes-e2e-gce-new-master-cvm-kubectl-skew
+  - name: gce-last_release-master-gci-kubectl-skew
+    test_group_name: ci-kubernetes-e2e-gce-new-master-gci-kubectl-skew
+  - name: gke-last_release-master-cvm-kubectl-skew
+    test_group_name: ci-kubernetes-e2e-gke-new-master-cvm-kubectl-skew
+  - name: gke-last_release-master-gci-kubectl-skew
+    test_group_name: ci-kubernetes-e2e-gke-new-master-gci-kubectl-skew
+  - name: gce-master-last_release-cvm-kubectl-skew
+    test_group_name: ci-kubernetes-e2e-gce-master-new-cvm-kubectl-skew
+  - name: gce-master-last_release-gci-kubectl-skew
+    test_group_name: ci-kubernetes-e2e-gce-master-new-gci-kubectl-skew
+  - name: gke-master-last_release-cvm-kubectl-skew
+    test_group_name: ci-kubernetes-e2e-gke-master-new-cvm-kubectl-skew
+  - name: gke-master-last_release-gci-kubectl-skew
+    test_group_name: ci-kubernetes-e2e-gke-master-new-gci-kubectl-skew
 
 - name: sig-cluster-lifecycle
   dashboard_tab:
