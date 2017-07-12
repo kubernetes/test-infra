@@ -1928,39 +1928,6 @@ dashboards:
   - name: gke-master-last_release-gci-kubectl-skew
     test_group_name: ci-kubernetes-e2e-gke-master-new-gci-kubectl-skew
 
-- name: sig-network
-  dashboard_tab:
-  - name: cosbeta-no-snat
-    test_group_name: ci-kubernetes-e2e-gce-cosbeta-no-snat
-  - name: gce-ingress
-    test_group_name: ci-kubernetes-e2e-gce-ingress
-  - name: gci-gce-ingress
-    test_group_name: ci-kubernetes-e2e-gci-gce-ingress
-  - name: gci-gce-ingress-release-1-4
-    test_group_name: ci-kubernetes-e2e-gci-gce-ingress-release-1-4
-  - name: gci-gce-ingress-release-1-5
-    test_group_name: ci-kubernetes-e2e-gci-gce-ingress-release-1-5
-  - name: gci-gce-ingress-release-1-6
-    test_group_name: ci-kubernetes-e2e-gci-gce-ingress-release-1-6
-  - name: gci-gce-ingress-release-1-7
-    test_group_name: ci-kubernetes-e2e-gci-gce-ingress-release-1-7
-  - name: gci-gce-ip-alias
-    test_group_name: ci-kubernetes-e2e-gci-gce-ip-alias
-  - name: gci-gke-ingress
-    test_group_name: ci-kubernetes-e2e-gci-gke-ingress
-  - name: gci-gke-ingress-release-1-5
-    test_group_name: ci-kubernetes-e2e-gci-gke-ingress-release-1-5
-  - name: gci-gke-ingress-release-1-6
-    test_group_name: ci-kubernetes-e2e-gci-gke-ingress-release-1-6
-  - name: gci-gke-ingress-release-1-7
-    test_group_name: ci-kubernetes-e2e-gci-gke-ingress-release-1-7
-  - name: gke-ingress
-    test_group_name: ci-kubernetes-e2e-gke-ingress
-  - name: ubuntu-gke-ingress
-    test_group_name: ci-kubernetes-e2e-ubuntu-gke-ingress
-  - name: ubuntu-gke-1-6-ingress
-    test_group_name: ci-kubernetes-e2e-ubuntu-gke-1-6-ingress
-
 - name: etcd-upgrades
   dashboard_tab:
   - name: gce-latest
@@ -2910,7 +2877,38 @@ dashboards:
   - name: TODO
     test_group_name: ci-kubernetes-e2e-gce-slow  # TODO(fejta): fix
 
-# Move sig-network here
+- name: sig-network
+  dashboard_tab:
+  - name: cosbeta-no-snat
+    test_group_name: ci-kubernetes-e2e-gce-cosbeta-no-snat
+  - name: gce-ingress
+    test_group_name: ci-kubernetes-e2e-gce-ingress
+  - name: gci-gce-ingress
+    test_group_name: ci-kubernetes-e2e-gci-gce-ingress
+  - name: gci-gce-ingress-release-1-4
+    test_group_name: ci-kubernetes-e2e-gci-gce-ingress-release-1-4
+  - name: gci-gce-ingress-release-1-5
+    test_group_name: ci-kubernetes-e2e-gci-gce-ingress-release-1-5
+  - name: gci-gce-ingress-release-1-6
+    test_group_name: ci-kubernetes-e2e-gci-gce-ingress-release-1-6
+  - name: gci-gce-ingress-release-1-7
+    test_group_name: ci-kubernetes-e2e-gci-gce-ingress-release-1-7
+  - name: gci-gce-ip-alias
+    test_group_name: ci-kubernetes-e2e-gci-gce-ip-alias
+  - name: gci-gke-ingress
+    test_group_name: ci-kubernetes-e2e-gci-gke-ingress
+  - name: gci-gke-ingress-release-1-5
+    test_group_name: ci-kubernetes-e2e-gci-gke-ingress-release-1-5
+  - name: gci-gke-ingress-release-1-6
+    test_group_name: ci-kubernetes-e2e-gci-gke-ingress-release-1-6
+  - name: gci-gke-ingress-release-1-7
+    test_group_name: ci-kubernetes-e2e-gci-gke-ingress-release-1-7
+  - name: gke-ingress
+    test_group_name: ci-kubernetes-e2e-gke-ingress
+  - name: ubuntu-gke-ingress
+    test_group_name: ci-kubernetes-e2e-ubuntu-gke-ingress
+  - name: ubuntu-gke-1-6-ingress
+    test_group_name: ci-kubernetes-e2e-ubuntu-gke-1-6-ingress
 
 # Move sig-node here
 
