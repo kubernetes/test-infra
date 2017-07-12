@@ -4,6 +4,7 @@ metadata:
   name: boskos-reaper
   labels:
     app: boskos-reaper
+  namespace: test-pods
 spec:
   replicas: 1  # one canonical source of resources
   template:

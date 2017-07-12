@@ -4,6 +4,7 @@ metadata:
   name: boskos-janitor
   labels:
     app: boskos-janitor
+  namespace: test-pods
 spec:
   replicas: 1  # one canonical source of resources
   template:
