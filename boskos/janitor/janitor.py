@@ -76,7 +76,6 @@ def collect(project, age, resource, filt):
     print '%r' % cmd
 
     for item in json.loads(subprocess.check_output(cmd)):
-
         print '%r' % item
 
         if 'name' not in item or 'creationTimestamp' not in item:

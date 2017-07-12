@@ -14,4 +14,14 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: boskos-janitor
-        image: gcr.io/k8s-testimages/janitor:v20170502-b59bddad
+        image: gcr.io/k8s-testimages/janitor:v20170711-1a80241f
+        args:
+        - --service-account=/etc/service-account/service-account.json
+        volumeMounts:
+        - mountPath: /etc/service-account
+          name: service
+          readOnly: true
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account

@@ -12,8 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM alpine:3.5
+FROM gcr.io/k8s-testimages/gcloud-in-go:0.1
 MAINTAINER senlu@google.com
 
-ADD ["janitor", "/"]
+ADD ["janitor", \
+     "janitor.py", \
+     "/"]
+RUN ["chmod", "+x", "/janitor.py"]
 ENTRYPOINT ["/janitor"]

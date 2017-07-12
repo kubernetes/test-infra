@@ -14,4 +14,4 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: boskos-reaper
-        image: gcr.io/k8s-testimages/reaper:v20170502-1897e866
+        image: gcr.io/k8s-testimages/reaper:v20170711-1a80241f

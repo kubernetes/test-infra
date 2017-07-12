@@ -82,20 +82,20 @@ State is a string that tells the current status of the resource.
 			A sample object will look like:
 ```json
 			{
-				"type" : "project"
+				"type" : "project",
 				"Current": 
 				{
-					"total"   : 35 
-					"free"    : 20
-					"dirty"   : 10
+					"total"   : 35,
+					"free"    : 20,
+					"dirty"   : 10,
 					"injured" : 5
-				}
+				},
 				"Owners":
 				{
-					"fejta" : 1
-					"Senlu" : 1
-					"sig-testing" : 20
-					"Janitor" : 10
+					"fejta" : 1,
+					"Senlu" : 1,
+					"sig-testing" : 20,
+					"Janitor" : 10,
 					"None" : 20
 				}
 			}
