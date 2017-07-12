@@ -5336,7 +5336,8 @@
       "--extract=ci/latest",
       "--extract=ci/latest-1.7",
       "--check-leaked-resources",
-      "--check-version-skew=false"
+      "--check-version-skew=false",
+      "--test_args=--test_args=--ginkgo.focus=Kubectl --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
