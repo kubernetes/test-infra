@@ -1928,21 +1928,6 @@ dashboards:
   - name: gke-master-last_release-gci-kubectl-skew
     test_group_name: ci-kubernetes-e2e-gke-master-new-gci-kubectl-skew
 
-- name: sig-cluster-lifecycle
-  dashboard_tab:
-  - name: kubeadm-gce-1.6
-    test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-6
-  - name: periodic-kubeadm-gce-1.6
-    test_group_name: periodic-kubernetes-e2e-kubeadm-gce-1-6
-  - name: kubeadm-gce-1.7
-    test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-7
-  - name: kubeadm-gce-1.6-on-1.7
-    test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-6-on-1-7
-  - name: periodic-kubeadm-gce-1.7
-    test_group_name: periodic-kubernetes-e2e-kubeadm-gce-1-7
-  - name: kubeadm-gce
-    test_group_name: ci-kubernetes-e2e-kubeadm-gce
-
 - name: sig-network
   dashboard_tab:
   - name: cosbeta-no-snat
@@ -2940,7 +2925,20 @@ dashboards:
 
 # Move sig-cli
 
-# Move sig-cluster-lifecycle
+- name: sig-cluster-lifecycle
+  dashboard_tab:
+  - name: kubeadm-gce-1.6
+    test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-6
+  - name: periodic-kubeadm-gce-1.6
+    test_group_name: periodic-kubernetes-e2e-kubeadm-gce-1-6
+  - name: kubeadm-gce-1.7
+    test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-7
+  - name: kubeadm-gce-1.6-on-1.7
+    test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-6-on-1-7
+  - name: periodic-kubeadm-gce-1.7
+    test_group_name: periodic-kubernetes-e2e-kubeadm-gce-1-7
+  - name: kubeadm-gce
+    test_group_name: ci-kubernetes-e2e-kubeadm-gce
 
 - name: sig-cluster-ops
   dashboard_tab:
