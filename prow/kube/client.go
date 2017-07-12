@@ -105,7 +105,10 @@ func (c *Client) requestRetry(r *request) ([]byte, error) {
 	for retries := 0; retries < maxRetries; retries++ {
 		resp, err = c.doRequest(r.method, r.path, r.query, r.requestBody)
 		if err == nil {
-			break
+			if resp.StatusCode < 500 {
+				break
+			}
+			resp.Body.Close()
 		}
 
 		time.Sleep(backoff)
