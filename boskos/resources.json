@@ -14,7 +14,6 @@
       "k8s-jkns-e2e-ubuntu-gce-1-6",
       "k8s-jkns-non-cri-gce-sd-log",
       "ci-k8s-e2e-gci-tip-gce",
-      "k8s-jkns-gci-gke-alpha-1-4",
       "gce-gci-upg-lat-1-4-ctl-skew",
       "gce-cvm-upg-lat-1-4-ctl-skew",
       "gce-gci-upg-1-4-lat-ctl-skew",
