@@ -2741,10 +2741,44 @@ dashboards:
   - name: TODO
     test_group_name: ci-kubernetes-e2e-gce-slow  # TODO(fejta): fix
 
-- name: sig-apps
+- name: sig-apps # TODO(crimsonfaith91): add upgrade tests when k8s v1.9 rolls out
   dashboard_tab:
-  - name: TODO
-    test_group_name: ci-kubernetes-e2e-gce-slow  # TODO(fejta): fix
+  - name: gce
+    test_group_name: ci-kubernetes-e2e-gce
+    base_options: 'include-filter-by-regex=sig-apps'
+    description: 'apps gce e2e tests for master branch'
+  - name: gke
+    test_group_name: ci-kubernetes-e2e-gke
+    base_options: 'include-filter-by-regex=sig-apps'
+    description: 'apps gke e2e tests for master branch'
+  - name: gce-flaky
+    test_group_name: ci-kubernetes-e2e-gce-flaky
+    base_options: 'include-filter-by-regex=sig-apps'
+    description: 'apps gce flaky e2e tests for master branch'
+  - name: gke-flaky
+    test_group_name: ci-kubernetes-e2e-gke-flaky
+    base_options: 'include-filter-by-regex=sig-apps'
+    description: 'apps gke flaky e2e tests for master branch'
+  - name: gce-slow
+    test_group_name: ci-kubernetes-e2e-gce-slow
+    base_options: 'include-filter-by-regex=sig-apps'
+    description: 'apps gce slow e2e tests for master branch'
+  - name: gke-slow
+    test_group_name: ci-kubernetes-e2e-gke-slow
+    base_options: 'include-filter-by-regex=sig-apps'
+    description: 'apps gke slow e2e tests for master branch'
+  - name: gce-serial
+    test_group_name: ci-kubernetes-e2e-gce-serial
+    base_options: 'include-filter-by-regex=sig-apps'
+    description: 'apps gce serial e2e tests for master branch'
+  - name: gke-serial
+    test_group_name: ci-kubernetes-e2e-gke-serial
+    base_options: 'include-filter-by-regex=sig-apps'
+    description: 'apps gke serial e2e tests for master branch'
+  - name: gce-statefulset
+    test_group_name: ci-kubernetes-e2e-gce-statefulset
+    base_options: 'include-filter-by-regex=sig-apps'
+    description: 'apps gce statefulset e2e tests for master branch'
 
 - name: sig-auth
   dashboard_tab:
