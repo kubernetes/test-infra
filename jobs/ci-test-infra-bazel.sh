@@ -18,7 +18,6 @@ set -o nounset
 set -o pipefail
 
 pip install -r gubernator/test_requirements.txt
-pip install -r jenkins/test_history/requirements.txt
 
 # Cache location.
 export TEST_TMPDIR="/root/.cache/bazel"

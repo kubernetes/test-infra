@@ -19,7 +19,6 @@ set -o pipefail
 set -o xtrace
 
 pip install -r gubernator/test_requirements.txt
-pip install -r jenkins/test_history/requirements.txt
 cd gubernator
 ./test.sh --nologcapture
 ./lint.sh

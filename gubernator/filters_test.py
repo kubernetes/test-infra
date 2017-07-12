@@ -90,9 +90,9 @@ class HelperTest(unittest.TestCase):
         def expect(payload, expected, user=''):
             # strip the excess html from the result down to the text class,
             # the opticon class, and the rendered text
-            result = filters.do_render_status(payload, user)
+            result = str(filters.do_render_status(payload, user))
             result = re.sub(r'<span class="text-|octicon octicon-|</span>', '', result)
-            result = str(result).replace('">', ' ')
+            result = result.replace('">', ' ')
             self.assertEqual(result, expected)
 
         statuses = lambda *xs: {str(n): [x, '', ''] for n, x in enumerate(xs)}
