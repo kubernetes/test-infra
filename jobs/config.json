@@ -196,7 +196,7 @@
       "--extract=ci/latest-1.5",
       "--check-leaked-resources",
       "--check-version-skew=false",
-      "--test_args=--ginkgo.focus=Kubectl --kubectl-path=../kubernetes_skew/cluster/kubectl.sh"
+      "--test_args=--ginkgo.focus=Kubectl --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -213,7 +213,7 @@
       "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=ci/latest-1.6",
       "--check-version-skew=false",
-      "--test_args=--kubectl-path=../kubernetes_skew/cluster/kubectl.sh"
+      "--test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -247,7 +247,7 @@
       "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --upgrade-target=ci/latest-1.6",
       "--check-version-skew=false",
-      "--test_args=--kubectl-path=../kubernetes_skew/cluster/kubectl.sh"
+      "--test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -312,7 +312,7 @@
       "--extract=ci/latest-1.6",
       "--check-leaked-resources",
       "--check-version-skew=false",
-      "--test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\\[Serial\\] --kubectl-path=../kubernetes_skew/cluster/kubectl.sh"
+      "--test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\\[Serial\\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -328,7 +328,7 @@
       "--extract=ci/latest-1.6",
       "--check-leaked-resources",
       "--check-version-skew=false",
-      "--test_args=--ginkgo.focus=Kubectl.*\\[Serial\\] --kubectl-path=../kubernetes_skew/cluster/kubectl.sh"
+      "--test_args=--ginkgo.focus=Kubectl.*\\[Serial\\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -344,7 +344,7 @@
       "--extract=ci/latest-1.6",
       "--check-leaked-resources",
       "--check-version-skew=false",
-      "--test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\\[Serial\\] --kubectl-path=../kubernetes_skew/cluster/kubectl.sh"
+      "--test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\\[Serial\\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -360,7 +360,7 @@
       "--extract=ci/latest-1.6",
       "--check-leaked-resources",
       "--check-version-skew=false",
-      "--test_args=--ginkgo.focus=Kubectl.*\\[Serial\\] --kubectl-path=../kubernetes_skew/cluster/kubectl.sh"
+      "--test_args=--ginkgo.focus=Kubectl.*\\[Serial\\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -377,7 +377,7 @@
       "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=ci/latest-1.7",
       "--check-version-skew=false",
-      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --kubectl-path=../kubernetes_skew/cluster/kubectl.sh"
+      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -412,7 +412,7 @@
       "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --upgrade-target=ci/latest-1.7",
       "--check-version-skew=false",
-      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --kubectl-path=../kubernetes_skew/cluster/kubectl.sh"
+      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -626,7 +626,7 @@
       "--extract=ci/latest-1.6",
       "--check-leaked-resources",
       "--check-version-skew=false",
-      "--test_args=--ginkgo.focus=Variable.Expansion --kubectl-path=../kubernetes_skew/cluster/kubectl.sh"
+      "--test_args=--ginkgo.focus=Variable.Expansion --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -1977,7 +1977,7 @@
       "--extract=ci/latest-1.7",
       "--check-leaked-resources",
       "--check-version-skew=false",
-      "--test_args=--ginkgo.focus=Kubectl --kubectl-path=../kubernetes_skew/cluster/kubectl.sh"
+      "--test_args=--ginkgo.focus=Kubectl --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -1993,7 +1993,7 @@
       "--extract=ci/latest-1.7",
       "--check-leaked-resources",
       "--check-version-skew=false",
-      "--test_args=--ginkgo.focus=Kubectl --kubectl-path=../kubernetes_skew/cluster/kubectl.sh"
+      "--test_args=--ginkgo.focus=Kubectl --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -2010,7 +2010,7 @@
       "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=ci/latest",
       "--check-version-skew=false",
-      "--test_args=--kubectl-path=../kubernetes_skew/cluster/kubectl.sh"
+      "--test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -2044,7 +2044,7 @@
       "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --upgrade-target=ci/latest",
       "--check-version-skew=false",
-      "--test_args=--kubectl-path=../kubernetes_skew/cluster/kubectl.sh"
+      "--test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -3980,7 +3980,7 @@
       "--extract=ci/latest-1.5",
       "--check-leaked-resources",
       "--check-version-skew=false",
-      "--test_args=--ginkgo.focus=Kubectl --kubectl-path=../kubernetes_skew/cluster/kubectl.sh"
+      "--test_args=--ginkgo.focus=Kubectl --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -3996,7 +3996,7 @@
       "--extract=ci/latest-1.5",
       "--check-leaked-resources",
       "--check-version-skew=false",
-      "--test_args=--ginkgo.focus=Kubectl --kubectl-path=../kubernetes_skew/cluster/kubectl.sh"
+      "--test_args=--ginkgo.focus=Kubectl --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4046,7 +4046,7 @@
       "--extract=ci/latest-1.6",
       "--check-leaked-resources",
       "--check-version-skew=false",
-      "--test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\\[Serial\\] --kubectl-path=../kubernetes_skew/cluster/kubectl.sh"
+      "--test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\\[Serial\\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4062,7 +4062,7 @@
       "--extract=ci/latest-1.6",
       "--check-leaked-resources",
       "--check-version-skew=false",
-      "--test_args=--ginkgo.focus=Kubectl.*\\[Serial\\] --kubectl-path=../kubernetes_skew/cluster/kubectl.sh"
+      "--test_args=--ginkgo.focus=Kubectl.*\\[Serial\\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4078,7 +4078,7 @@
       "--extract=ci/latest-1.6",
       "--check-leaked-resources",
       "--check-version-skew=false",
-      "--test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\\[Serial\\] --kubectl-path=../kubernetes_skew/cluster/kubectl.sh"
+      "--test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\\[Serial\\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4094,7 +4094,7 @@
       "--extract=ci/latest-1.6",
       "--check-leaked-resources",
       "--check-version-skew=false",
-      "--test_args=--ginkgo.focus=Kubectl.*\\[Serial\\] --kubectl-path=../kubernetes_skew/cluster/kubectl.sh"
+      "--test_args=--ginkgo.focus=Kubectl.*\\[Serial\\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4250,7 +4250,7 @@
       "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=ci/latest-1.6 --upgrade-image=container_vm",
       "--check-version-skew=false",
-      "--test_args=--kubectl-path=../kubernetes_skew/cluster/kubectl.sh"
+      "--test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4284,7 +4284,7 @@
       "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --upgrade-target=ci/latest-1.6 --upgrade-image=container_vm",
       "--check-version-skew=false",
-      "--test_args=--kubectl-path=../kubernetes_skew/cluster/kubectl.sh"
+      "--test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4301,7 +4301,7 @@
       "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=ci/latest-1.7 --upgrade-image=container_vm",
       "--check-version-skew=false",
-      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --kubectl-path=../kubernetes_skew/cluster/kubectl.sh"
+      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4336,7 +4336,7 @@
       "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --upgrade-target=ci/latest-1.7 --upgrade-image=container_vm",
       "--check-version-skew=false",
-      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --kubectl-path=../kubernetes_skew/cluster/kubectl.sh"
+      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4353,7 +4353,7 @@
       "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=ci/latest-1.6 --upgrade-image=gci",
       "--check-version-skew=false",
-      "--test_args=--kubectl-path=../kubernetes_skew/cluster/kubectl.sh"
+      "--test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4387,7 +4387,7 @@
       "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --upgrade-target=ci/latest-1.6 --upgrade-image=gci",
       "--check-version-skew=false",
-      "--test_args=--kubectl-path=../kubernetes_skew/cluster/kubectl.sh"
+      "--test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4404,7 +4404,7 @@
       "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=ci/latest-1.7 --upgrade-image=gci",
       "--check-version-skew=false",
-      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --kubectl-path=../kubernetes_skew/cluster/kubectl.sh"
+      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4439,7 +4439,7 @@
       "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --upgrade-target=ci/latest-1.7 --upgrade-image=gci",
       "--check-version-skew=false",
-      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --kubectl-path=../kubernetes_skew/cluster/kubectl.sh"
+      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4456,7 +4456,7 @@
       "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=ci/latest-1.7 --upgrade-image=container_vm",
       "--check-version-skew=false",
-      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --kubectl-path=../kubernetes_skew/cluster/kubectl.sh"
+      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4491,7 +4491,7 @@
       "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --upgrade-target=ci/latest-1.7 --upgrade-image=container_vm",
       "--check-version-skew=false",
-      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --kubectl-path=../kubernetes_skew/cluster/kubectl.sh"
+      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4508,7 +4508,7 @@
       "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=ci/latest-1.7 --upgrade-image=gci",
       "--check-version-skew=false",
-      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --kubectl-path=../kubernetes_skew/cluster/kubectl.sh"
+      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4543,7 +4543,7 @@
       "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --upgrade-target=ci/latest-1.7 --upgrade-image=gci",
       "--check-version-skew=false",
-      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --kubectl-path=../kubernetes_skew/cluster/kubectl.sh"
+      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4560,7 +4560,7 @@
       "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=ci/latest --upgrade-image=container_vm",
       "--check-version-skew=false",
-      "--test_args=--kubectl-path=../kubernetes_skew/cluster/kubectl.sh"
+      "--test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4594,7 +4594,7 @@
       "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --upgrade-target=ci/latest --upgrade-image=container_vm",
       "--check-version-skew=false",
-      "--test_args=--kubectl-path=../kubernetes_skew/cluster/kubectl.sh"
+      "--test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4611,7 +4611,7 @@
       "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=ci/latest --upgrade-image=gci",
       "--check-version-skew=false",
-      "--test_args=--kubectl-path=../kubernetes_skew/cluster/kubectl.sh"
+      "--test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4645,7 +4645,7 @@
       "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --upgrade-target=ci/latest --upgrade-image=gci",
       "--check-version-skew=false",
-      "--test_args=--kubectl-path=../kubernetes_skew/cluster/kubectl.sh"
+      "--test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4662,7 +4662,7 @@
       "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --upgrade-target=ci/latest --upgrade-image=container_vm",
       "--check-version-skew=false",
-      "--test_args=--kubectl-path=../kubernetes_skew/cluster/kubectl.sh"
+      "--test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4679,7 +4679,7 @@
       "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --upgrade-target=ci/latest --upgrade-image=gci",
       "--check-version-skew=false",
-      "--test_args=--kubectl-path=../kubernetes_skew/cluster/kubectl.sh"
+      "--test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4710,7 +4710,7 @@
       "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=ci/latest-1.6 --upgrade-image=container_vm",
       "--check-version-skew=false",
-      "--test_args=--kubectl-path=../kubernetes_skew/cluster/kubectl.sh"
+      "--test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4744,7 +4744,7 @@
       "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --upgrade-target=ci/latest-1.6 --upgrade-image=container_vm",
       "--check-version-skew=false",
-      "--test_args=--kubectl-path=../kubernetes_skew/cluster/kubectl.sh"
+      "--test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4761,7 +4761,7 @@
       "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=ci/latest-1.7 --upgrade-image=container_vm",
       "--check-version-skew=false",
-      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --kubectl-path=../kubernetes_skew/cluster/kubectl.sh"
+      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4796,7 +4796,7 @@
       "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --upgrade-target=ci/latest-1.7 --upgrade-image=container_vm",
       "--check-version-skew=false",
-      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --kubectl-path=../kubernetes_skew/cluster/kubectl.sh"
+      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4813,7 +4813,7 @@
       "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=ci/latest-1.6 --upgrade-image=gci",
       "--check-version-skew=false",
-      "--test_args=--kubectl-path=../kubernetes_skew/cluster/kubectl.sh"
+      "--test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4847,7 +4847,7 @@
       "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --upgrade-target=ci/latest-1.6 --upgrade-image=gci",
       "--check-version-skew=false",
-      "--test_args=--kubectl-path=../kubernetes_skew/cluster/kubectl.sh"
+      "--test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4864,7 +4864,7 @@
       "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=ci/latest-1.7 --upgrade-image=gci",
       "--check-version-skew=false",
-      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --kubectl-path=../kubernetes_skew/cluster/kubectl.sh"
+      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4899,7 +4899,7 @@
       "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --upgrade-target=ci/latest-1.7 --upgrade-image=gci",
       "--check-version-skew=false",
-      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --kubectl-path=../kubernetes_skew/cluster/kubectl.sh"
+      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4916,7 +4916,7 @@
       "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=ci/latest-1.7 --upgrade-image=container_vm",
       "--check-version-skew=false",
-      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --kubectl-path=../kubernetes_skew/cluster/kubectl.sh"
+      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4951,7 +4951,7 @@
       "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --upgrade-target=ci/latest-1.7 --upgrade-image=container_vm",
       "--check-version-skew=false",
-      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --kubectl-path=../kubernetes_skew/cluster/kubectl.sh"
+      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4984,7 +4984,7 @@
       "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=ci/latest-1.7 --upgrade-image=gci",
       "--check-version-skew=false",
-      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --kubectl-path=../kubernetes_skew/cluster/kubectl.sh"
+      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -5019,7 +5019,7 @@
       "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --upgrade-target=ci/latest-1.7 --upgrade-image=gci",
       "--check-version-skew=false",
-      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --kubectl-path=../kubernetes_skew/cluster/kubectl.sh"
+      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -5050,7 +5050,7 @@
       "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=ci/latest --upgrade-image=container_vm",
       "--check-version-skew=false",
-      "--test_args=--kubectl-path=../kubernetes_skew/cluster/kubectl.sh"
+      "--test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -5084,7 +5084,7 @@
       "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --upgrade-target=ci/latest --upgrade-image=container_vm",
       "--check-version-skew=false",
-      "--test_args=--kubectl-path=../kubernetes_skew/cluster/kubectl.sh"
+      "--test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -5101,7 +5101,7 @@
       "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=ci/latest --upgrade-image=gci",
       "--check-version-skew=false",
-      "--test_args=--kubectl-path=../kubernetes_skew/cluster/kubectl.sh"
+      "--test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -5135,7 +5135,7 @@
       "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --upgrade-target=ci/latest --upgrade-image=gci",
       "--check-version-skew=false",
-      "--test_args=--kubectl-path=../kubernetes_skew/cluster/kubectl.sh"
+      "--test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -5168,7 +5168,7 @@
       "--check-leaked-resources",
       "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --upgrade-target=ci/latest --upgrade-image=gci",
       "--check-version-skew=false",
-      "--test_args=--kubectl-path=../kubernetes_skew/cluster/kubectl.sh"
+      "--test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -5336,7 +5336,8 @@
       "--extract=ci/latest",
       "--extract=ci/latest-1.7",
       "--check-leaked-resources",
-      "--check-version-skew=false"
+      "--check-version-skew=false",
+      "--test_args=--test_args=--ginkgo.focus=Kubectl --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -5352,7 +5353,7 @@
       "--extract=ci/latest-1.7",
       "--check-leaked-resources",
       "--check-version-skew=false",
-      "--test_args=--ginkgo.focus=Kubectl --kubectl-path=../kubernetes_skew/cluster/kubectl.sh"
+      "--test_args=--ginkgo.focus=Kubectl --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
