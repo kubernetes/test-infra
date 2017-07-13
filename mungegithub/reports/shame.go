@@ -27,18 +27,18 @@ import (
 	"time"
 
 	githubhelper "k8s.io/test-infra/mungegithub/github"
+	"k8s.io/test-infra/mungegithub/options"
 
 	"github.com/google/go-github/github"
-	"github.com/spf13/cobra"
 )
 
 // ShameReport lists flaky tests and writes group+individual email to nag people to fix them.
 type ShameReport struct {
-	Command             string
-	From                string
-	Cc                  string
-	ReplyTo             string
-	AllowedShameDomains string
+	command        string
+	from           string
+	cc             string
+	replyTo        string
+	allowedDomains []string
 }
 
 func init() {
@@ -48,13 +48,13 @@ func init() {
 // Name is the name usable in --issue-reports
 func (s *ShameReport) Name() string { return "shame" }
 
-// AddFlags will add any request flags to the cobra `cmd`
-func (s *ShameReport) AddFlags(cmd *cobra.Command, config *githubhelper.Config) {
-	cmd.Flags().StringVar(&s.Command, "shame-report-cmd", "tee -a shame.txt", "command to execute, passing the report as stdin")
-	cmd.Flags().StringVar(&s.From, "shame-from", "", "From: header for shame report")
-	cmd.Flags().StringVar(&s.Cc, "shame-cc", "", "Cc: header for shame report")
-	cmd.Flags().StringVar(&s.ReplyTo, "shame-reply-to", "", "Reply-To: header for shame report")
-	cmd.Flags().StringVar(&s.AllowedShameDomains, "allowed-shame-domains", "", "comma-separated list of domains we can send shame emails to")
+// RegisterOptions registers config options used by ShameReport.
+func (s *ShameReport) RegisterOptions(opts *options.Options) {
+	opts.RegisterString(&s.command, "shame-report-cmd", "tee -a shame.txt", "command to execute, passing the report as stdin")
+	opts.RegisterString(&s.from, "shame-from", "", "From: header for shame report")
+	opts.RegisterString(&s.cc, "shame-cc", "", "Cc: header for shame report")
+	opts.RegisterString(&s.replyTo, "shame-reply-to", "", "Reply-To: header for shame report")
+	opts.RegisterStringSlice(&s.allowedDomains, "allowed-shame-domains", []string{}, "comma-separated list of domains we can send shame emails to")
 }
 
 type reportData struct {
@@ -149,7 +149,7 @@ func gatherData(cfg *githubhelper.Config, labels []string, excludeLowPriority bo
 }
 
 func (s *ShameReport) runCmd(r io.Reader) error {
-	args := strings.Split(s.Command, " ")
+	args := strings.Split(s.command, " ")
 	bin := args[0]
 	args = args[1:]
 	cmd := exec.Command(bin, args...)
@@ -217,14 +217,14 @@ func (s *ShameReport) groupReport(r *reportData) (map[string]bool, error) {
 	dest := &bytes.Buffer{}
 
 	// Write the report
-	if s.From != "" {
-		fmt.Fprintf(dest, "From: %v\n", s.From)
+	if s.from != "" {
+		fmt.Fprintf(dest, "From: %v\n", s.from)
 	}
-	if s.ReplyTo != "" {
-		fmt.Fprintf(dest, "Reply-To: %v\n", s.ReplyTo)
+	if s.replyTo != "" {
+		fmt.Fprintf(dest, "Reply-To: %v\n", s.replyTo)
 	}
-	if s.Cc != "" {
-		fmt.Fprintf(dest, "Cc: %v\n", s.Cc)
+	if s.cc != "" {
+		fmt.Fprintf(dest, "Cc: %v\n", s.cc)
 	}
 	fmt.Fprintf(dest, "To: %v\n", strings.Join(to, ","))
 	fmt.Fprintf(dest, "Subject: Kubernetes flaky Test Report: %v flaky tests\n", r.totalTests)
@@ -253,7 +253,7 @@ be left off the group email, so please make your email address public in github!
 Note: only users with public email addresses ending in %v
 are emailed by this system.
 
-`, strings.Join(missingAddresses, ", "), s.AllowedShameDomains)
+`, strings.Join(missingAddresses, ", "), s.allowedDomains)
 	}
 
 	return needsIndividualEmail, s.runCmd(dest)
@@ -279,11 +279,11 @@ func (s *ShameReport) individualReport(user string, r *reportData) error {
 	dest := &bytes.Buffer{}
 
 	// Write the report
-	if s.From != "" {
-		fmt.Fprintf(dest, "From: %v\n", s.From)
+	if s.from != "" {
+		fmt.Fprintf(dest, "From: %v\n", s.from)
 	}
-	if s.ReplyTo != "" {
-		fmt.Fprintf(dest, "Reply-To: %v\n", s.ReplyTo)
+	if s.replyTo != "" {
+		fmt.Fprintf(dest, "Reply-To: %v\n", s.replyTo)
 	}
 	// No Cc on individual emails!
 	fmt.Fprintf(dest, "To: %v\n", strings.Join(to, ","))
@@ -302,7 +302,7 @@ Full report:
 }
 
 func (s *ShameReport) mayEmail(email string) bool {
-	for _, domain := range strings.Split(s.AllowedShameDomains, ",") {
+	for _, domain := range s.allowedDomains {
 		if strings.HasSuffix(email, "@"+domain) {
 			return true
 		}

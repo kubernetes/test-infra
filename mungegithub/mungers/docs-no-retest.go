@@ -21,9 +21,9 @@ import (
 	"regexp"
 
 	githubapi "github.com/google/go-github/github"
-	"github.com/spf13/cobra"
 	"k8s.io/test-infra/mungegithub/features"
 	"k8s.io/test-infra/mungegithub/github"
+	"k8s.io/test-infra/mungegithub/options"
 )
 
 const (
@@ -57,9 +57,8 @@ func (s *DocsNeedNoRetest) Initialize(config *github.Config, features *features.
 // EachLoop is called at the start of every munge loop
 func (DocsNeedNoRetest) EachLoop() error { return nil }
 
-// AddFlags will add any request flags to the cobra `cmd`
-func (DocsNeedNoRetest) AddFlags(cmd *cobra.Command, config *github.Config) {
-}
+// RegisterOptions registers config options for this munger.
+func (DocsNeedNoRetest) RegisterOptions(opts *options.Options) {}
 
 func areFilesDocOnly(files []*githubapi.CommitFile) bool {
 	for _, file := range files {

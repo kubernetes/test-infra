@@ -199,9 +199,10 @@ func TestReleaseNoteLabel(t *testing.T) {
 			})
 		}
 
-		config := &github_util.Config{}
-		config.Org = "o"
-		config.Project = "r"
+		config := &github_util.Config{
+			Org:     "o",
+			Project: "r",
+		}
 		config.SetClient(client)
 
 		r := ReleaseNoteLabel{}

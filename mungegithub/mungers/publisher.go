@@ -25,9 +25,9 @@ import (
 	"strings"
 
 	"github.com/golang/glog"
-	"github.com/spf13/cobra"
 	"k8s.io/test-infra/mungegithub/features"
 	"k8s.io/test-infra/mungegithub/github"
+	"k8s.io/test-infra/mungegithub/options"
 )
 
 // coordinate of a piece of code
@@ -392,8 +392,8 @@ func (p *PublisherMunger) EachLoop() error {
 	return nil
 }
 
-// AddFlags will add any request flags to the cobra `cmd`
-func (p *PublisherMunger) AddFlags(cmd *cobra.Command, config *github.Config) {}
+// RegisterOptions registers config options for this munger.
+func (p *PublisherMunger) RegisterOptions(opts *options.Options) {}
 
 // Munge is the workhorse the will actually make updates to the PR
 func (p *PublisherMunger) Munge(obj *github.MungeObject) {}

@@ -26,9 +26,9 @@ import (
 	"k8s.io/kubernetes/pkg/util/sets"
 	"k8s.io/test-infra/mungegithub/features"
 	"k8s.io/test-infra/mungegithub/github"
+	"k8s.io/test-infra/mungegithub/options"
 
 	"github.com/golang/glog"
-	"github.com/spf13/cobra"
 )
 
 var (
@@ -48,7 +48,7 @@ type labelMap struct {
 // PathLabelMunger will add labels to PRs based on what files it modified.
 // The mapping of files to labels if provided in a file in --path-label-config
 type PathLabelMunger struct {
-	PathLabelFile string
+	pathLabelFile string
 	labelMap      []labelMap
 	allLabels     sets.String
 }
@@ -67,7 +67,7 @@ func (p *PathLabelMunger) RequiredFeatures() []string { return []string{} }
 func (p *PathLabelMunger) Initialize(config *github.Config, features *features.Features) error {
 	allLabels := sets.NewString()
 	out := []labelMap{}
-	file := p.PathLabelFile
+	file := p.pathLabelFile
 	if len(file) == 0 {
 		glog.Infof("No --path-label-config= supplied, applying no labels")
 		return nil
@@ -113,9 +113,9 @@ func (p *PathLabelMunger) Initialize(config *github.Config, features *features.F
 // EachLoop is called at the start of every munge loop
 func (p *PathLabelMunger) EachLoop() error { return nil }
 
-// AddFlags will add any request flags to the cobra `cmd`
-func (p *PathLabelMunger) AddFlags(cmd *cobra.Command, config *github.Config) {
-	cmd.Flags().StringVar(&p.PathLabelFile, "path-label-config", "", "file containing the pathname to label mappings")
+// RegisterOptions registers config options for this munger.
+func (p *PathLabelMunger) RegisterOptions(opts *options.Options) {
+	opts.RegisterString(&p.pathLabelFile, "path-label-config", "", "file containing the pathname to label mappings")
 }
 
 // Munge is the workhorse the will actually make updates to the PR

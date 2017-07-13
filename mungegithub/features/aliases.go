@@ -24,10 +24,10 @@ import (
 	"k8s.io/kubernetes/pkg/util/sets"
 	"k8s.io/test-infra/mungegithub/github"
 	"k8s.io/test-infra/mungegithub/mungers/mungerutil"
+	"k8s.io/test-infra/mungegithub/options"
 
 	"github.com/ghodss/yaml"
 	"github.com/golang/glog"
-	"github.com/spf13/cobra"
 )
 
 const (
@@ -45,13 +45,13 @@ type aliasReader interface {
 }
 
 func (a *Aliases) read() ([]byte, error) {
-	return ioutil.ReadFile(a.AliasFile)
+	return ioutil.ReadFile(a.aliasFile)
 }
 
 // Aliases is a struct that handles parameters required by mungers
 // to expand and lookup aliases.
 type Aliases struct {
-	AliasFile string
+	aliasFile string
 	IsEnabled bool
 
 	data        *aliasData
@@ -76,7 +76,7 @@ func (a *Aliases) Initialize(config *github.Config) error {
 		AliasMap: map[string][]string{},
 	}
 
-	if len(a.AliasFile) == 0 {
+	if len(a.aliasFile) == 0 {
 		return nil
 	}
 
@@ -95,7 +95,7 @@ func (a *Aliases) EachLoop() error {
 	// read and check the alias-file.
 	fileContents, err := a.aliasReader.read()
 	if os.IsNotExist(err) {
-		glog.Infof("Missing alias-file (%s), using empty alias structure.", a.AliasFile)
+		glog.Infof("Missing alias-file (%s), using empty alias structure.", a.aliasFile)
 		a.data = &aliasData{
 			AliasMap: map[string][]string{},
 		}
@@ -118,9 +118,9 @@ func (a *Aliases) EachLoop() error {
 	return nil
 }
 
-// AddFlags will add any request flags to the cobra `cmd`
-func (a *Aliases) AddFlags(cmd *cobra.Command) {
-	cmd.Flags().StringVar(&a.AliasFile, "alias-file", "", "File wherein team members and aliases exist.")
+// RegisterOptions registers options used by the Aliases feature.
+func (a *Aliases) RegisterOptions(opts *options.Options) {
+	opts.RegisterString(&a.aliasFile, "alias-file", "", "File wherein team members and aliases exist.")
 }
 
 // Expand takes aliases and expands them into owner lists.

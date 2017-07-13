@@ -17,7 +17,9 @@ limitations under the License.
 package github
 
 import (
+	"io/ioutil"
 	"net/http"
+	"strings"
 
 	"github.com/golang/glog"
 	"github.com/google/go-github/github"
@@ -54,7 +56,13 @@ func (webhook WebHook) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 // NewWebHookAndListen creates a new WebHook and listen to it
-func NewWebHookAndListen(githubKey string, address string) *WebHook {
+func NewWebHookAndListen(githubKeyFile string, address string) *WebHook {
+	data, err := ioutil.ReadFile(githubKeyFile)
+	if err != nil {
+		glog.Fatalf("Error reading github webhook secret file '%s': %v", githubKeyFile, err)
+	}
+	githubKey := strings.TrimSpace(string(data))
+
 	webhook := WebHook{
 		Status:    NewStatusChange(),
 		GithubKey: githubKey,

@@ -19,9 +19,9 @@ package mungers
 import (
 	"k8s.io/test-infra/mungegithub/features"
 	"k8s.io/test-infra/mungegithub/github"
+	"k8s.io/test-infra/mungegithub/options"
 
 	"github.com/golang/glog"
-	"github.com/spf13/cobra"
 )
 
 // AssignFixesMunger will assign issues to users based on the config file
@@ -29,7 +29,7 @@ import (
 type AssignFixesMunger struct {
 	config              *github.Config
 	features            *features.Features
-	AssignfixesReassign bool
+	assignFixesReassign bool
 }
 
 func init() {
@@ -53,9 +53,9 @@ func (a *AssignFixesMunger) Initialize(config *github.Config, features *features
 // EachLoop is called at the start of every munge loop
 func (a *AssignFixesMunger) EachLoop() error { return nil }
 
-// AddFlags will add any request flags to the cobra `cmd`
-func (a *AssignFixesMunger) AddFlags(cmd *cobra.Command, config *github.Config) {
-	cmd.Flags().BoolVar(&a.AssignfixesReassign, "fixes-issue-reassign", false, "Assign fixes Issues even if they're already assigned")
+// RegisterOptions registers config options for this munger.
+func (a *AssignFixesMunger) RegisterOptions(opts *options.Options) {
+	opts.RegisterBool(&a.assignFixesReassign, "fixes-issue-reassign", false, "Assign fixes Issues even if they're already assigned")
 }
 
 // Munge is the workhorse the will actually make updates to the PR
@@ -83,8 +83,8 @@ func (a *AssignFixesMunger) Munge(obj *github.MungeObject) {
 			continue
 		}
 		issue := issueObj.Issue
-		if !a.AssignfixesReassign && issue.Assignee != nil {
-			glog.V(6).Infof("skipping %v: reassign: %v assignee: %v", *issue.Number, a.AssignfixesReassign, github.DescribeUser(issue.Assignee))
+		if !a.assignFixesReassign && issue.Assignee != nil {
+			glog.V(6).Infof("skipping %v: reassign: %v assignee: %v", *issue.Number, a.assignFixesReassign, github.DescribeUser(issue.Assignee))
 			continue
 		}
 		glog.Infof("Assigning %v to %v", *issue.Number, prOwner)

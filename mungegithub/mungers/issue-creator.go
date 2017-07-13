@@ -25,9 +25,9 @@ import (
 	"k8s.io/test-infra/mungegithub/features"
 	"k8s.io/test-infra/mungegithub/github"
 	"k8s.io/test-infra/mungegithub/mungers/testowner"
+	"k8s.io/test-infra/mungegithub/options"
 
 	"github.com/golang/glog"
-	"github.com/spf13/cobra"
 )
 
 var (
@@ -213,11 +213,11 @@ func (c *IssueCreator) RequiredFeatures() []string { return []string{} }
 // EachLoop is called at the start of every munge loop. The IssueCreator does not use this.
 func (c *IssueCreator) EachLoop() error { return nil }
 
-// AddFlags adds flags needed by the IssueCreator to the combra `cmd`.
-func (c *IssueCreator) AddFlags(cmd *cobra.Command, config *github.Config) {
-	cmd.Flags().StringVar(&c.ownerPath, "test-owners-csv", "", "file containing a CSV-exported test-owners spreadsheet")
-	cmd.Flags().IntVar(&c.maxSIGCount, "maxSIGs", 3, "The maximum number of SIG labels to attach to an issue.")
-	cmd.Flags().IntVar(&c.maxAssignees, "maxAssignees", 3, "The maximum number of users to assign to an issue.")
+// RegisterOptions registers config options for this munger.
+func (c *IssueCreator) RegisterOptions(opts *options.Options) {
+	opts.RegisterString(&c.ownerPath, "test-owners-csv", "", "file containing a CSV-exported test-owners spreadsheet")
+	opts.RegisterInt(&c.maxSIGCount, "maxSIGs", 3, "The maximum number of SIG labels to attach to an issue.")
+	opts.RegisterInt(&c.maxAssignees, "maxAssignees", 3, "The maximum number of users to assign to an issue.")
 }
 
 // Munge updates the IssueCreator's cache of issues if the munge object provided is an issue authored by the currently authenticated user.

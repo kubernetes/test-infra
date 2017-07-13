@@ -24,12 +24,12 @@ import (
 	"time"
 
 	"github.com/golang/glog"
-	"github.com/spf13/cobra"
 
 	githubapi "github.com/google/go-github/github"
 	"k8s.io/test-infra/mungegithub/features"
 	"k8s.io/test-infra/mungegithub/github"
 	"k8s.io/test-infra/mungegithub/mungers/mungerutil"
+	"k8s.io/test-infra/mungegithub/options"
 )
 
 // FlakyJob is a struct that represents a single job and the flake data associated with it.
@@ -91,11 +91,11 @@ func (fjr *FlakyJobReporter) Initialize(config *github.Config, features *feature
 	return nil
 }
 
-// AddFlags specifies flags to add to the cobra `cmd`.
-func (fjr *FlakyJobReporter) AddFlags(cmd *cobra.Command, config *github.Config) {
-	cmd.Flags().StringVar(&fjr.flakyJobDataURL, "flakyjob-url", "https://storage.googleapis.com/k8s-metrics/flakes-latest.json", "The url where flaky job JSON data can be found.")
-	cmd.Flags().IntVar(&fjr.syncCount, "flakyjob-count", 3, "The number of flaky jobs to try to sync to github.")
-	cmd.Flags().DurationVar(&fjr.syncFreq, "flakyjob-freq", time.Hour*24, "The frequency at which to run the FlakyJobReporter.")
+// RegisterOptions registers config options for this munger.
+func (fjr *FlakyJobReporter) RegisterOptions(opts *options.Options) {
+	opts.RegisterString(&fjr.flakyJobDataURL, "flakyjob-url", "https://storage.googleapis.com/k8s-metrics/flakes-latest.json", "The url where flaky job JSON data can be found.")
+	opts.RegisterInt(&fjr.syncCount, "flakyjob-count", 3, "The number of flaky jobs to try to sync to github.")
+	opts.RegisterDuration(&fjr.syncFreq, "flakyjob-freq", time.Hour*24, "The frequency at which to run the FlakyJobReporter.")
 }
 
 // EachLoop is called every munge loop.

@@ -15,68 +15,9 @@ spec:
         command:
         - /mungegithub
         - --dry-run=true
-        - --token-file=$(TOKEN_FILE)
-        - --organization=$(ORGANIZATION)
-        - --project=$(PROJECT)
-        - --pr-mungers=$(PR_MUNGERS)
-        - --state=$(STATE)
-        - --labels=$(LABELS)
-        - --http-cache-dir=$(HTTP_CACHE_DIR)
-        - --admin-port=$(ADMIN_PORT)
-        - --repo-dir=$(REPO_DIR)
-        - --period=$(PERIOD)
+        - --alsologtostderr
+        - --config-path=/etc/munge-config/config
         image: gcr.io/k8s-testimages/cherrypick:2016-03-14-7fb1dae
-        env:
-          - name: TOKEN_FILE
-            valueFrom:
-              configMapKeyRef:
-                name: @@-cp-config
-                key: config.token-file
-          - name: ORGANIZATION
-            valueFrom:
-              configMapKeyRef:
-                name: @@-cp-config
-                key: config.organization
-          - name: PROJECT
-            valueFrom:
-              configMapKeyRef:
-                name: @@-cp-config
-                key: config.project
-          - name: PR_MUNGERS
-            valueFrom:
-              configMapKeyRef:
-                name: @@-cp-config
-                key: config.pr-mungers
-          - name: STATE
-            valueFrom:
-              configMapKeyRef:
-                name: @@-cp-config
-                key: config.state
-          - name: LABELS
-            valueFrom:
-              configMapKeyRef:
-                name: @@-cp-config
-                key: config.labels
-          - name: HTTP_CACHE_DIR
-            valueFrom:
-              configMapKeyRef:
-                name: @@-cp-config
-                key: config.http-cache-dir
-          - name: ADMIN_PORT
-            valueFrom:
-              configMapKeyRef:
-                name: @@-cp-config
-                key: submit-queue.admin-port
-          - name: REPO_DIR
-            valueFrom:
-              configMapKeyRef:
-                name: @@-cp-config
-                key: gitrepo.repo-dir
-          - name: PERIOD
-            valueFrom:
-              configMapKeyRef:
-                name: @@-cp-config
-                key: config.period
         ports:
         - name: status
           containerPort: 8080
@@ -86,11 +27,16 @@ spec:
           limits:
             cpu: 600m
         volumeMounts:
+        - mountPath: /etc/munge-config
+          name: munge-config
         - mountPath: /etc/secret-volume
           name: cherrypick-secret-volume
         - mountPath: /gitrepo
           name: repo
       volumes:
+      - name: munge-config
+        configMap:
+          name: @@-cp-config
       - name: cherrypick-secret-volume
         secret:
           secretName: cherrypick-secret-volume

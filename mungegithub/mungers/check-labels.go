@@ -25,12 +25,13 @@ import (
 	"k8s.io/test-infra/mungegithub/features"
 	githubhelper "k8s.io/test-infra/mungegithub/github"
 	"k8s.io/test-infra/mungegithub/mungers/mungerutil"
+	"k8s.io/test-infra/mungegithub/options"
 
 	"bytes"
+	"io/ioutil"
+
 	"github.com/golang/glog"
 	"github.com/google/go-github/github"
-	"github.com/spf13/cobra"
-	"io/ioutil"
 )
 
 type labelAccessor interface {
@@ -41,7 +42,7 @@ type labelAccessor interface {
 // CheckLabelsMunger will check that the labels specified in the labels yaml file
 // are created.
 type CheckLabelsMunger struct {
-	LabelFilePath string
+	labelFilePath string
 	prevHash      string
 	labelAccessor labelAccessor
 	features      *features.Features
@@ -60,20 +61,20 @@ func (c *CheckLabelsMunger) RequiredFeatures() []string { return []string{featur
 
 // Initialize will initialize the munger.
 func (c *CheckLabelsMunger) Initialize(config *githubhelper.Config, features *features.Features) error {
-	if len(c.LabelFilePath) == 0 {
+	if len(c.labelFilePath) == 0 {
 		glog.Fatalf("No --label-file= supplied, cannot check labels")
 	}
 	c.labelAccessor = config
 	c.features = features
 	c.readFunc = func() ([]byte, error) {
-		bytes, err := ioutil.ReadFile(c.LabelFilePath)
+		bytes, err := ioutil.ReadFile(c.labelFilePath)
 		if err != nil {
 			return []byte{}, fmt.Errorf("Unable to read label file: %v", err)
 		}
 		return bytes, nil
 	}
 
-	if _, err := os.Stat(c.LabelFilePath); os.IsNotExist(err) {
+	if _, err := os.Stat(c.labelFilePath); os.IsNotExist(err) {
 		return fmt.Errorf("Failed to stat the check label config: %v", err)
 	}
 
@@ -125,9 +126,9 @@ func (c *CheckLabelsMunger) addMissingLabels(repoLabels, fileLabels []*github.La
 	}
 }
 
-// AddFlags will add any request flags to the cobra `cmd`.
-func (c *CheckLabelsMunger) AddFlags(cmd *cobra.Command, config *githubhelper.Config) {
-	cmd.Flags().StringVar(&c.LabelFilePath, "label-file", "", "Path from repository root to file containing"+
+// RegisterOptions registers config options for this munger.
+func (c *CheckLabelsMunger) RegisterOptions(opts *options.Options) {
+	opts.RegisterString(&c.labelFilePath, "label-file", "", "Path from repository root to file containing"+
 		" list of labels")
 }
 

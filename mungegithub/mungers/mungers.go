@@ -22,9 +22,9 @@ import (
 	"k8s.io/kubernetes/pkg/util/sets"
 	"k8s.io/test-infra/mungegithub/features"
 	"k8s.io/test-infra/mungegithub/github"
+	"k8s.io/test-infra/mungegithub/options"
 
 	"github.com/golang/glog"
-	"github.com/spf13/cobra"
 	"k8s.io/test-infra/mungegithub/mungers/mungerutil"
 )
 
@@ -32,7 +32,7 @@ import (
 type Munger interface {
 	// Take action on a specific github issue:
 	Munge(obj *github.MungeObject)
-	AddFlags(cmd *cobra.Command, config *github.Config)
+	RegisterOptions(opts *options.Options)
 	Name() string
 	RequiredFeatures() []string
 	Initialize(*github.Config, *features.Features) error
@@ -131,4 +131,10 @@ func MungeIssue(obj *github.MungeObject) error {
 		munger.Munge(obj)
 	}
 	return nil
+}
+
+func RegisterOptions(opts *options.Options) {
+	for _, munger := range mungerMap {
+		munger.RegisterOptions(opts)
+	}
 }

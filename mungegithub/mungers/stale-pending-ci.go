@@ -22,10 +22,11 @@ import (
 
 	"k8s.io/test-infra/mungegithub/features"
 	"k8s.io/test-infra/mungegithub/github"
+	"k8s.io/test-infra/mungegithub/mungeopts"
+	"k8s.io/test-infra/mungegithub/options"
 
 	"github.com/golang/glog"
 	githubapi "github.com/google/go-github/github"
-	"github.com/spf13/cobra"
 )
 
 const (
@@ -49,9 +50,7 @@ var (
 // But this is our world and so we should really do this for all PRs which
 // aren't likely to get another push (everything that is mergeable). Since that
 // can be a lot of PRs, I'm just doing it for the LGTM PRs automatically...
-type StalePendingCI struct {
-	features *features.Features
-}
+type StalePendingCI struct{}
 
 func init() {
 	s := &StalePendingCI{}
@@ -63,23 +62,21 @@ func init() {
 func (s *StalePendingCI) Name() string { return "stale-pending-ci" }
 
 // RequiredFeatures is a slice of 'features' that must be provided
-func (s *StalePendingCI) RequiredFeatures() []string { return []string{features.TestOptionsFeature} }
+func (s *StalePendingCI) RequiredFeatures() []string { return []string{} }
 
 // Initialize will initialize the munger
 func (s *StalePendingCI) Initialize(config *github.Config, features *features.Features) error {
-	s.features = features
 	return nil
 }
 
 // EachLoop is called at the start of every munge loop
 func (s *StalePendingCI) EachLoop() error { return nil }
 
-// AddFlags will add any request flags to the cobra `cmd`
-func (s *StalePendingCI) AddFlags(cmd *cobra.Command, config *github.Config) {}
+// RegisterOptions registers options used by this munger.
+func (s *StalePendingCI) RegisterOptions(opts *options.Options) {}
 
 // Munge is the workhorse the will actually make updates to the PR
 func (s *StalePendingCI) Munge(obj *github.MungeObject) {
-	requiredContexts := s.features.TestOptions.RequiredRetestContexts
 	if !obj.IsPR() {
 		return
 	}
@@ -92,12 +89,12 @@ func (s *StalePendingCI) Munge(obj *github.MungeObject) {
 		return
 	}
 
-	status, ok := obj.GetStatusState(requiredContexts)
+	status, ok := obj.GetStatusState(mungeopts.RequiredContexts.Retest)
 	if !ok || status != "pending" {
 		return
 	}
 
-	for _, context := range requiredContexts {
+	for _, context := range mungeopts.RequiredContexts.Retest {
 		statusTime, ok := obj.GetStatusTime(context)
 		if !ok || statusTime == nil {
 			glog.Errorf("%d: unable to determine time %q context was set", *obj.Issue.Number, context)
@@ -110,14 +107,14 @@ func (s *StalePendingCI) Munge(obj *github.MungeObject) {
 	}
 }
 
-func (s *StalePendingCI) isStaleIssueComment(obj *github.MungeObject, comment *githubapi.IssueComment) bool {
+func isStaleIssueComment(obj *github.MungeObject, comment *githubapi.IssueComment) bool {
 	if !mergeBotComment(comment) {
 		return false
 	}
 	if *comment.Body != pendingMsgBody {
 		return false
 	}
-	stale := commentBeforeLastCI(obj, comment, s.features.TestOptions.RequiredRetestContexts)
+	stale := commentBeforeLastCI(obj, comment, mungeopts.RequiredContexts.Retest)
 	if stale {
 		glog.V(6).Infof("Found stale StalePendingCI comment")
 	}
@@ -126,8 +123,8 @@ func (s *StalePendingCI) isStaleIssueComment(obj *github.MungeObject, comment *g
 
 // StaleIssueComments returns a slice of stale issue comments.
 func (s *StalePendingCI) StaleIssueComments(obj *github.MungeObject, comments []*githubapi.IssueComment) []*githubapi.IssueComment {
-	if s.features == nil {
-		return nil // munger not initialized, cannot clean stale comments
+	if mungeopts.RequiredContexts.Retest == nil {
+		return nil // mungers not initialized, cannot clean stale comments.
 	}
-	return forEachCommentTest(obj, comments, s.isStaleIssueComment)
+	return forEachCommentTest(obj, comments, isStaleIssueComment)
 }

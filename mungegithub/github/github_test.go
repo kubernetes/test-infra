@@ -404,10 +404,11 @@ func TestGetLastModified(t *testing.T) {
 	}
 	for _, test := range tests {
 		client, server, _ := github_test.InitServer(t, nil, nil, nil, test.commits, nil, nil, nil)
-		config := &Config{}
-		config.Org = "o"
-		config.Project = "r"
-		config.SetClient(client)
+		config := &Config{
+			client:  client,
+			Org:     "o",
+			Project: "r",
+		}
 
 		obj := &MungeObject{
 			config: config,
@@ -450,10 +451,11 @@ func TestRemoveLabel(t *testing.T) {
 	}
 	for testNum, test := range tests {
 		client, server, mux := github_test.InitServer(t, test.issue, nil, nil, nil, nil, nil, nil)
-		config := &Config{}
-		config.Org = "o"
-		config.Project = "r"
-		config.SetClient(client)
+		config := &Config{
+			client:  client,
+			Org:     "o",
+			Project: "r",
+		}
 		mux.HandleFunc(fmt.Sprintf("/repos/o/r/issues/1/labels/%s", test.remove), func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
 		})
@@ -511,10 +513,11 @@ this pr Fixes #23 and FIXES #45 but not fixxx #99`,
 	}
 	for testNum, test := range tests {
 		client, server, _ := github_test.InitServer(t, test.issue, nil, nil, nil, nil, nil, nil)
-		config := &Config{}
-		config.Org = "o"
-		config.Project = "r"
-		config.SetClient(client)
+		config := &Config{
+			client:  client,
+			Org:     "o",
+			Project: "r",
+		}
 
 		obj, err := config.GetObject(*test.issue.Number)
 		if err != nil {

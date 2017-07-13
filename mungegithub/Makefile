@@ -52,7 +52,7 @@ deploy: push deployment
 # A new configuration is pushed by using the configmap specified using $(TARGET) and $(APP).
 push_config:
 	# pushes a new configmap.
-	kubectl --kubeconfig=$(KUBECONFIG) apply -f $(APP)/deployment/$(TARGET)/configmap.yaml
+	kubectl --kubeconfig=$(KUBECONFIG) create configmap $(TARGET)-sq-config --from-file=config=$(APP)/deployment/$(TARGET)/configmap.yaml --dry-run -o yaml | kubectl replace configmap $(TARGET)-sq-config -f -
 
 # Creates a service resource spec for the specified target and app.
 service:

@@ -18,13 +18,14 @@ package mungers
 
 import (
 	"fmt"
-	githubapi "github.com/google/go-github/github"
-	"k8s.io/test-infra/mungegithub/github"
-	github_test "k8s.io/test-infra/mungegithub/github/testing"
 	"net/http"
 	"reflect"
 	"runtime"
 	"testing"
+
+	githubapi "github.com/google/go-github/github"
+	"k8s.io/test-infra/mungegithub/github"
+	github_test "k8s.io/test-infra/mungegithub/github/testing"
 )
 
 const (
@@ -137,10 +138,12 @@ func TestSigMentionHandler(t *testing.T) {
 
 	for testNum, test := range tests {
 		client, server, mux := github_test.InitServer(t, test.issue, nil, nil, nil, nil, nil, nil)
-		config := &github.Config{}
-		config.Org = "o"
-		config.Project = "r"
+		config := &github.Config{
+			Org:     "o",
+			Project: "r",
+		}
 		config.SetClient(client)
+
 		mux.HandleFunc(fmt.Sprintf("/repos/o/r/issues/1/labels/%s", needsSigLabel), func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
 		})

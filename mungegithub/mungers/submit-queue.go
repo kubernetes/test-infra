@@ -35,17 +35,18 @@ import (
 	"k8s.io/test-infra/mungegithub/admin"
 	"k8s.io/test-infra/mungegithub/features"
 	"k8s.io/test-infra/mungegithub/github"
+	"k8s.io/test-infra/mungegithub/mungeopts"
 	"k8s.io/test-infra/mungegithub/mungers/e2e"
 	fake_e2e "k8s.io/test-infra/mungegithub/mungers/e2e/fake"
 	"k8s.io/test-infra/mungegithub/mungers/mungerutil"
 	"k8s.io/test-infra/mungegithub/mungers/shield"
+	"k8s.io/test-infra/mungegithub/options"
 
 	"github.com/NYTimes/gziphandler"
 	"github.com/golang/glog"
 	githubapi "github.com/google/go-github/github"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/spf13/cobra"
 )
 
 const (
@@ -70,7 +71,7 @@ const (
 )
 
 var (
-	// This MUST cause a RETEST of everything in the sq.RequiredRetestContexts
+	// This MUST cause a RETEST of everything in the mungeopts.RequiredContexts.Retest
 	// TODO(juntee): remove oldRetestBody when the old command retires
 	newRetestBody = "/test all [submit-queue is verifying that this PR is safe to merge]"
 	oldRetestBody = fmt.Sprintf("@%s test this [submit-queue is verifying that this PR is safe to merge]", jenkinsBotName)
@@ -207,6 +208,7 @@ var (
 //  The google internal jenkins instance must be passing the BlockingJobNames e2e tests
 type SubmitQueue struct {
 	githubConfig        *github.Config
+	opts                *options.Options
 	NonBlockingJobNames []string
 
 	GateApproved bool
@@ -215,13 +217,10 @@ type SubmitQueue struct {
 	// If FakeE2E is true, don't try to connect to JenkinsHost, all jobs are passing.
 	FakeE2E bool
 
-	Committers             string
-	RequiredStatusContexts []string
-	DoNotMergeMilestones   []string
+	DoNotMergeMilestones []string
 
-	RequiredRetestContexts []string
-	Metadata               submitQueueMetadata
-	AdminPort              int
+	Metadata  submitQueueMetadata
+	AdminPort int
 
 	sync.Mutex
 	prStatus       map[string]submitStatus // protected by sync.Mutex
@@ -289,7 +288,7 @@ func (sq *SubmitQueue) Name() string { return "submit-queue" }
 
 // RequiredFeatures is a slice of 'features' that must be provided
 func (sq *SubmitQueue) RequiredFeatures() []string {
-	return []string{features.GCSFeature, features.TestOptionsFeature, features.BranchProtectionFeature}
+	return []string{features.BranchProtectionFeature}
 }
 
 func (sq *SubmitQueue) emergencyMergeStop() bool {
@@ -413,20 +412,9 @@ func (sq *SubmitQueue) calcMergeRateWithTail() float64 {
 	return calcMergeRate(sq.mergeRate, sq.lastMergeTime, now)
 }
 
-// Given a string slice with a single empty value this function will return a empty slice.
-// This is extremely useful for StringSlice flags, so the user can do --flag="" and instead
-// of getting []string{""} they will get []string{}
-func cleanStringSlice(in []string) []string {
-	if len(in) == 1 && len(in[0]) == 0 {
-		return []string{}
-	}
-	return in
-}
-
 // Initialize will initialize the munger
 func (sq *SubmitQueue) Initialize(config *github.Config, features *features.Features) error {
 	sq.features = features
-	sq.RequiredRetestContexts = features.TestOptions.RequiredRetestContexts
 	return sq.internalInitialize(config, features, "")
 }
 
@@ -436,11 +424,6 @@ func (sq *SubmitQueue) internalInitialize(config *github.Config, features *featu
 	sq.Lock()
 	defer sq.Unlock()
 
-	// Clean up all of our flags which we wish --flag="" to mean []string{}
-	sq.NonBlockingJobNames = cleanStringSlice(sq.NonBlockingJobNames)
-	sq.RequiredStatusContexts = cleanStringSlice(sq.RequiredStatusContexts)
-	sq.RequiredRetestContexts = cleanStringSlice(sq.RequiredRetestContexts)
-	sq.DoNotMergeMilestones = cleanStringSlice(sq.DoNotMergeMilestones)
 	sq.Metadata.RepoPullUrl = fmt.Sprintf("https://github.com/%s/%s/pulls/", config.Org, config.Project)
 	sq.Metadata.ProjectName = strings.Title(config.Project)
 	sq.githubConfig = config
@@ -454,8 +437,8 @@ func (sq *SubmitQueue) internalInitialize(config *github.Config, features *featu
 			gcs = utils.NewTestUtils("bucket", "logs", overrideUrl)
 		} else {
 			gcs = utils.NewWithPresubmitDetection(
-				sq.features.GCSInfo.BucketName, sq.features.GCSInfo.LogDir,
-				sq.features.GCSInfo.PullKey, sq.features.GCSInfo.PullLogDir,
+				mungeopts.GCS.BucketName, mungeopts.GCS.LogDir,
+				mungeopts.GCS.PullKey, mungeopts.GCS.PullLogDir,
 			)
 		}
 
@@ -468,9 +451,9 @@ func (sq *SubmitQueue) internalInitialize(config *github.Config, features *featu
 
 	sq.lgtmTimeCache = mungerutil.NewLabelTimeCache(lgtmLabel)
 
-	if len(config.Address) > 0 {
-		if len(config.WWWRoot) > 0 {
-			http.Handle("/", gziphandler.GzipHandler(http.FileServer(http.Dir(config.WWWRoot))))
+	if len(mungeopts.Server.Address) > 0 {
+		if len(mungeopts.Server.WWWRoot) > 0 {
+			http.Handle("/", gziphandler.GzipHandler(http.FileServer(http.Dir(mungeopts.Server.WWWRoot))))
 		}
 		http.Handle("/prometheus", promhttp.Handler())
 		http.Handle("/prs", gziphandler.GzipHandler(http.HandlerFunc(sq.servePRs)))
@@ -488,7 +471,7 @@ func (sq *SubmitQueue) internalInitialize(config *github.Config, features *featu
 			http.Handle("/batch", gziphandler.GzipHandler(http.HandlerFunc(sq.serveBatch)))
 		}
 		config.ServeDebugStats("/stats")
-		go http.ListenAndServe(config.Address, nil)
+		go http.ListenAndServe(mungeopts.Server.Address, nil)
 	}
 
 	admin.Mux.HandleFunc("/api/emergency/stop", sq.EmergencyStopHTTP)
@@ -559,20 +542,19 @@ func (sq *SubmitQueue) EachLoop() error {
 	return nil
 }
 
-// AddFlags will add any request flags to the cobra `cmd`
-func (sq *SubmitQueue) AddFlags(cmd *cobra.Command, config *github.Config) {
-	cmd.Flags().StringSliceVar(&sq.NonBlockingJobNames, "nonblocking-jenkins-jobs", []string{}, "Comma separated list of jobs that don't block merges, but will have status reported and issues filed.")
-	cmd.Flags().StringSliceVar(&sq.RequiredStatusContexts, "required-contexts", []string{}, "Comma separate list of status contexts required for a PR to be considered ok to merge")
-	cmd.Flags().BoolVar(&sq.FakeE2E, "fake-e2e", false, "Whether to use a fake for testing E2E stability.")
-	cmd.Flags().StringSliceVar(&sq.DoNotMergeMilestones, "do-not-merge-milestones", []string{}, "List of milestones which, when applied, will cause the PR to not be merged")
-	cmd.Flags().IntVar(&sq.AdminPort, "admin-port", 9999, "If non-zero, will serve administrative actions on this port.")
-	// If you create a StringSliceVar you may wish to check out 'cleanStringSliceVar()'
-	cmd.Flags().StringVar(&sq.Metadata.HistoryUrl, "history-url", "", "URL to access the submit-queue instance's health history.")
-	cmd.Flags().StringVar(&sq.Metadata.ChartUrl, "chart-url", "", "URL to access the submit-queue instance's health charts.")
-	cmd.Flags().StringVar(&sq.BatchURL, "batch-url", "", "Prow data.json URL to read batch results")
-	cmd.Flags().StringVar(&sq.ContextURL, "context-url", "", "URL where the submit queue is serving - used in Github status contexts")
-	cmd.Flags().BoolVar(&sq.GateApproved, "gate-approved", false, "Gate on approved label")
-	cmd.Flags().BoolVar(&sq.GateCLA, "gate-cla", false, "Gate on cla labels")
+// RegisterOptions registers options used by the SubmitQueue.
+func (sq *SubmitQueue) RegisterOptions(opts *options.Options) {
+	opts.RegisterStringSlice(&sq.NonBlockingJobNames, "nonblocking-jenkins-jobs", []string{}, "Comma separated list of jobs that don't block merges, but will have status reported and issues filed.")
+	opts.RegisterBool(&sq.FakeE2E, "fake-e2e", false, "Whether to use a fake for testing E2E stability.")
+	opts.RegisterStringSlice(&sq.DoNotMergeMilestones, "do-not-merge-milestones", []string{}, "List of milestones which, when applied, will cause the PR to not be merged")
+	opts.RegisterInt(&sq.AdminPort, "admin-port", 9999, "If non-zero, will serve administrative actions on this port.")
+	// If you create a StringSliceVar you may wish to check out 'cleanStringSlice()'
+	opts.RegisterString(&sq.Metadata.HistoryUrl, "history-url", "", "URL to access the submit-queue instance's health history.")
+	opts.RegisterString(&sq.Metadata.ChartUrl, "chart-url", "", "URL to access the submit-queue instance's health charts.")
+	opts.RegisterString(&sq.BatchURL, "batch-url", "", "Prow data.json URL to read batch results")
+	opts.RegisterString(&sq.ContextURL, "context-url", "", "URL where the submit queue is serving - used in Github status contexts")
+	opts.RegisterBool(&sq.GateApproved, "gate-approved", false, "Gate on approved label")
+	opts.RegisterBool(&sq.GateCLA, "gate-cla", false, "Gate on cla labels")
 }
 
 // Hold the lock
@@ -945,15 +927,15 @@ func (sq *SubmitQueue) validForMergeExt(obj *github.MungeObject, checkStatus boo
 
 	// Validate the status information for this PR
 	if checkStatus {
-		if len(sq.RequiredStatusContexts) > 0 {
-			if success, ok := obj.IsStatusSuccess(sq.RequiredStatusContexts); !ok || !success {
-				sq.setContextFailedStatus(obj, sq.RequiredStatusContexts)
+		if len(mungeopts.RequiredContexts.Merge) > 0 {
+			if success, ok := obj.IsStatusSuccess(mungeopts.RequiredContexts.Merge); !ok || !success {
+				sq.setContextFailedStatus(obj, mungeopts.RequiredContexts.Merge)
 				return false
 			}
 		}
-		if len(sq.RequiredRetestContexts) > 0 {
-			if success, ok := obj.IsStatusSuccess(sq.RequiredRetestContexts); !ok || !success {
-				sq.setContextFailedStatus(obj, sq.RequiredRetestContexts)
+		if len(mungeopts.RequiredContexts.Retest) > 0 {
+			if success, ok := obj.IsStatusSuccess(mungeopts.RequiredContexts.Retest); !ok || !success {
+				sq.setContextFailedStatus(obj, mungeopts.RequiredContexts.Retest)
 				return false
 			}
 		}
@@ -1325,7 +1307,7 @@ func (sq *SubmitQueue) doGithubE2EAndMerge(obj *github.MungeObject) bool {
 
 // Returns true if merge status changes, and false otherwise.
 func (sq *SubmitQueue) retestPR(obj *github.MungeObject) bool {
-	if len(sq.RequiredRetestContexts) == 0 {
+	if len(mungeopts.RequiredContexts.Retest) == 0 {
 		return false
 	}
 
@@ -1338,7 +1320,7 @@ func (sq *SubmitQueue) retestPR(obj *github.MungeObject) bool {
 	// Wait for the retest to start
 	sq.SetMergeStatus(obj, ghE2EWaitingStart)
 	atomic.AddInt32(&sq.prsTested, 1)
-	done := obj.WaitForPending(sq.RequiredRetestContexts)
+	done := obj.WaitForPending(mungeopts.RequiredContexts.Retest)
 	if !done {
 		sq.SetMergeStatus(obj, fmt.Sprintf("Timed out waiting for PR %d to start testing", obj.Number()))
 		return true
@@ -1346,14 +1328,14 @@ func (sq *SubmitQueue) retestPR(obj *github.MungeObject) bool {
 
 	// Wait for the status to go back to something other than pending
 	sq.SetMergeStatus(obj, ghE2ERunning)
-	done = obj.WaitForNotPending(sq.RequiredRetestContexts)
+	done = obj.WaitForNotPending(mungeopts.RequiredContexts.Retest)
 	if !done {
 		sq.SetMergeStatus(obj, fmt.Sprintf("Timed out waiting for PR %d to finish testing", obj.Number()))
 		return true
 	}
 
 	// Check if the thing we care about is success
-	if success, ok := obj.IsStatusSuccess(sq.RequiredRetestContexts); !success || !ok {
+	if success, ok := obj.IsStatusSuccess(mungeopts.RequiredContexts.Retest); !success || !ok {
 		sq.SetMergeStatus(obj, ghE2EFailed)
 		return true
 	}
@@ -1440,13 +1422,13 @@ func (sq *SubmitQueue) serveMergeInfo(res http.ResponseWriter, req *http.Request
 		out.WriteString(fmt.Sprintf("<li>The PR must have the label %q, %q or %q </li>", claYesLabel, cncfClaYesLabel, claHumanLabel))
 	}
 	out.WriteString("<li>The PR must be mergeable. aka cannot need a rebase</li>")
-	if len(sq.RequiredStatusContexts) > 0 || len(sq.RequiredRetestContexts) > 0 {
+	if len(mungeopts.RequiredContexts.Merge) > 0 || len(mungeopts.RequiredContexts.Retest) > 0 {
 		out.WriteString("<li>All of the following github statuses must be green")
 		out.WriteString("<ul>")
-		for _, context := range sq.RequiredStatusContexts {
+		for _, context := range mungeopts.RequiredContexts.Merge {
 			out.WriteString(fmt.Sprintf("<li>%s</li>", context))
 		}
-		for _, context := range sq.RequiredRetestContexts {
+		for _, context := range mungeopts.RequiredContexts.Retest {
 			out.WriteString(fmt.Sprintf("<li>%s</li>", context))
 		}
 		out.WriteString("</ul>")
@@ -1463,10 +1445,10 @@ func (sq *SubmitQueue) serveMergeInfo(res http.ResponseWriter, req *http.Request
 	out.WriteString("The PR can then be queued to re-test before merge. Once it reaches the top of the queue all of the above conditions must be true but so must the following:")
 	out.WriteString("<ol>")
 	out.WriteString(fmt.Sprintf("<li>All of the <a href=%s/#/e2e>continuously running e2e tests</a> must be passing</li>", sq.ContextURL))
-	if len(sq.RequiredRetestContexts) > 0 {
+	if len(mungeopts.RequiredContexts.Retest) > 0 {
 		out.WriteString("<li>All of the following tests must pass a second time")
 		out.WriteString("<ul>")
-		for _, context := range sq.RequiredRetestContexts {
+		for _, context := range mungeopts.RequiredContexts.Retest {
 			out.WriteString(fmt.Sprintf("<li>%s</li>", context))
 		}
 		out.WriteString("</ul>")
@@ -1563,7 +1545,7 @@ func (sq *SubmitQueue) isStaleIssueComment(obj *github.MungeObject, comment *git
 	if *comment.Body != newRetestBody && *comment.Body != oldRetestBody {
 		return false
 	}
-	stale := commentBeforeLastCI(obj, comment, sq.RequiredRetestContexts)
+	stale := commentBeforeLastCI(obj, comment, mungeopts.RequiredContexts.Retest)
 	if stale {
 		glog.V(6).Infof("Found stale SubmitQueue safe to merge comment")
 	}

@@ -24,9 +24,9 @@ import (
 
 	"k8s.io/test-infra/mungegithub/features"
 	"k8s.io/test-infra/mungegithub/github"
+	"k8s.io/test-infra/mungegithub/options"
 
 	"github.com/golang/glog"
-	"github.com/spf13/cobra"
 )
 
 const (
@@ -63,8 +63,8 @@ func (c *CherrypickAutoApprove) Initialize(config *github.Config, features *feat
 // EachLoop is called at the start of every munge loop
 func (c *CherrypickAutoApprove) EachLoop() error { return nil }
 
-// AddFlags will add any request flags to the cobra `cmd`
-func (c *CherrypickAutoApprove) AddFlags(cmd *cobra.Command, config *github.Config) {}
+// RegisterOptions registers config options for this munger.
+func (c *CherrypickAutoApprove) RegisterOptions(opts *options.Options) {}
 
 func getCherrypickParentPRs(obj *github.MungeObject, config *github.Config) []*github.MungeObject {
 	out := []*github.MungeObject{}

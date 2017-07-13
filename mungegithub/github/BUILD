@@ -31,12 +31,12 @@ go_library(
     ],
     tags = ["automanaged"],
     deps = [
+        "//mungegithub/options:go_default_library",
         "//vendor:github.com/golang/glog",
         "//vendor:github.com/google/go-github/github",
         "//vendor:github.com/gregjones/httpcache",
         "//vendor:github.com/gregjones/httpcache/diskcache",
         "//vendor:github.com/peterbourgon/diskv",
-        "//vendor:github.com/spf13/cobra",
         "//vendor:golang.org/x/oauth2",
         "//vendor:k8s.io/kubernetes/pkg/util/sets",
     ],

@@ -28,6 +28,7 @@ import (
 	"github.com/golang/glog"
 	githubapi "github.com/google/go-github/github"
 	"k8s.io/test-infra/mungegithub/github"
+	"k8s.io/test-infra/mungegithub/mungeopts"
 	"k8s.io/test-infra/mungegithub/mungers/mungerutil"
 )
 
@@ -148,12 +149,12 @@ func (sq *SubmitQueue) getCompleteBatches(jobs prowJobs) []Batch {
 	for batchRef, contexts := range batchContexts {
 		match := true
 		// Did this succeed in all the contexts we want?
-		for _, ctx := range sq.RequiredStatusContexts {
+		for _, ctx := range mungeopts.RequiredContexts.Merge {
 			if _, ok := contexts[ctx]; !ok {
 				match = false
 			}
 		}
-		for _, ctx := range sq.RequiredRetestContexts {
+		for _, ctx := range mungeopts.RequiredContexts.Retest {
 			if _, ok := contexts[ctx]; !ok {
 				match = false
 			}
