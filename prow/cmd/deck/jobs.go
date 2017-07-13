@@ -35,37 +35,39 @@ const (
 )
 
 type Job struct {
-	Type        string `json:"type"`
-	Repo        string `json:"repo"`
-	Refs        string `json:"refs"`
-	BaseRef     string `json:"base_ref"`
-	BaseSHA     string `json:"base_sha"`
-	PullSHA     string `json:"pull_sha"`
-	Number      int    `json:"number"`
-	Author      string `json:"author"`
-	Job         string `json:"job"`
-	Context     string `json:"context"`
-	Started     string `json:"started"`
-	Finished    string `json:"finished"`
-	Duration    string `json:"duration"`
-	State       string `json:"state"`
-	Description string `json:"description"`
-	URL         string `json:"url"`
-	PodName     string `json:"pod_name"`
-	Agent       string `json:"agent"`
-	ProwJob     string `json:"prow_job"`
+	Type        string            `json:"type"`
+	Repo        string            `json:"repo"`
+	Refs        string            `json:"refs"`
+	BaseRef     string            `json:"base_ref"`
+	BaseSHA     string            `json:"base_sha"`
+	PullSHA     string            `json:"pull_sha"`
+	Number      int               `json:"number"`
+	Author      string            `json:"author"`
+	Job         string            `json:"job"`
+	BuildID     string            `json:"build_id"`
+	Context     string            `json:"context"`
+	Started     string            `json:"started"`
+	Finished    string            `json:"finished"`
+	Duration    string            `json:"duration"`
+	State       string            `json:"state"`
+	Description string            `json:"description"`
+	URL         string            `json:"url"`
+	PodName     string            `json:"pod_name"`
+	Agent       kube.ProwJobAgent `json:"agent"`
+	ProwJob     string            `json:"prow_job"`
 
 	st time.Time
 	ft time.Time
 }
 
 type JobAgent struct {
-	kc      *kube.Client
-	pkc     *kube.Client
-	jc      *jenkins.Client
-	jobs    []Job
-	jobsMap map[string]Job // pod name -> Job
-	mut     sync.Mutex
+	kc        *kube.Client
+	pkc       *kube.Client
+	jc        *jenkins.Client
+	jobs      []Job
+	jobsMap   map[string]Job                     // pod name -> Job
+	jobsIDMap map[string]map[string]kube.ProwJob // job name -> id -> ProwJob
+	mut       sync.Mutex
 }
 
 func (ja *JobAgent) Start() {
@@ -88,6 +90,7 @@ func (ja *JobAgent) Jobs() []Job {
 
 var jobNameRE = regexp.MustCompile(`^([\w-]+)-(\d+)$`)
 
+// TODO(#3402): Remove this.
 func (ja *JobAgent) GetLog(name string) ([]byte, error) {
 	ja.mut.Lock()
 	job, ok := ja.jobsMap[name]
@@ -95,10 +98,10 @@ func (ja *JobAgent) GetLog(name string) ([]byte, error) {
 	if !ok {
 		return nil, fmt.Errorf("no such job %s", name)
 	}
-	if job.Agent == "" || job.Agent == "kubernetes" {
+	if job.Agent == kube.KubernetesAgent {
 		// running on Kubernetes
 		return ja.pkc.GetLog(name)
-	} else if ja.jc != nil && job.Agent == "jenkins" {
+	} else if ja.jc != nil && job.Agent == kube.JenkinsAgent {
 		// running on Jenkins
 		m := jobNameRE.FindStringSubmatch(name)
 		if m == nil {
@@ -111,6 +114,27 @@ func (ja *JobAgent) GetLog(name string) ([]byte, error) {
 		return ja.jc.GetLog(m[1], number)
 	}
 	return nil, fmt.Errorf("cannot get log for %s", name)
+}
+
+func (ja *JobAgent) GetJobLog(job, id string) ([]byte, error) {
+	var j kube.ProwJob
+	ja.mut.Lock()
+	idMap, ok := ja.jobsIDMap[job]
+	if ok {
+		j, ok = idMap[id]
+	}
+	ja.mut.Unlock()
+	if !ok {
+		return nil, fmt.Errorf("no such job %s %s", job, id)
+	}
+	if j.Spec.Agent == kube.KubernetesAgent {
+		return ja.pkc.GetLog(j.Status.PodName)
+	}
+	num, err := strconv.Atoi(id)
+	if err != nil {
+		return nil, err
+	}
+	return ja.jc.GetLog(job, num)
 }
 
 func (ja *JobAgent) tryUpdate() {
@@ -131,8 +155,13 @@ func (ja *JobAgent) update() error {
 		return err
 	}
 	var njs []Job
-	njsMap := map[string]Job{}
+	njsMap := make(map[string]Job)
+	njsIDMap := make(map[string]map[string]kube.ProwJob)
 	for _, j := range pjs {
+		buildID := j.Status.BuildID
+		if j.Spec.Agent == kube.JenkinsAgent {
+			buildID = j.Status.JenkinsBuildID
+		}
 		nj := Job{
 			Type:    string(j.Spec.Type),
 			Repo:    fmt.Sprintf("%s/%s", j.Spec.Refs.Org, j.Spec.Refs.Repo),
@@ -141,8 +170,9 @@ func (ja *JobAgent) update() error {
 			BaseSHA: j.Spec.Refs.BaseSHA,
 			Job:     j.Spec.Job,
 			Context: j.Spec.Context,
-			Agent:   string(j.Spec.Agent),
+			Agent:   j.Spec.Agent,
 			ProwJob: j.Metadata.Name,
+			BuildID: buildID,
 
 			Started:     j.Status.StartTime.Format(time.Stamp),
 			State:       string(j.Status.State),
@@ -168,6 +198,10 @@ func (ja *JobAgent) update() error {
 		if nj.PodName != "" {
 			njsMap[nj.PodName] = nj
 		}
+		if _, ok := njsIDMap[j.Spec.Job]; !ok {
+			njsIDMap[j.Spec.Job] = make(map[string]kube.ProwJob)
+		}
+		njsIDMap[j.Spec.Job][buildID] = j
 	}
 	sort.Sort(byStartTime(njs))
 

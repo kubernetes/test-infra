@@ -38,6 +38,13 @@ func (f flc) GetLog(name string) ([]byte, error) {
 	return nil, errors.New("muahaha")
 }
 
+func (f flc) GetJobLog(job, id string) ([]byte, error) {
+	if job == "job" && id == "123" {
+		return []byte("hello"), nil
+	}
+	return nil, errors.New("muahaha")
+}
+
 func TestHandleLog(t *testing.T) {
 	var testcases = []struct {
 		name string
@@ -73,6 +80,26 @@ func TestHandleLog(t *testing.T) {
 			name: "pod that does exist",
 			path: "?pod=pn",
 			code: http.StatusOK,
+		},
+		{
+			name: "job but no id",
+			path: "?job=job",
+			code: http.StatusBadRequest,
+		},
+		{
+			name: "id but no job",
+			path: "?id=123",
+			code: http.StatusBadRequest,
+		},
+		{
+			name: "id and job, found",
+			path: "?job=job&id=123",
+			code: http.StatusOK,
+		},
+		{
+			name: "id and job, not found",
+			path: "?job=ohno&id=123",
+			code: http.StatusNotFound,
 		},
 	}
 	handler := handleLog(flc(0))
