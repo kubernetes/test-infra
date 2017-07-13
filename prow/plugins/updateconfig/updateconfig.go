@@ -95,7 +95,7 @@ func handle(gc githubClient, kc kubeClient, log *logrus.Entry, pre github.PullRe
 	}
 
 	pr := pre.PullRequest
-	if !pr.Merged {
+	if !pr.Merged || pr.MergeSHA == nil {
 		return nil
 	}
 
@@ -111,14 +111,14 @@ func handle(gc githubClient, kc kubeClient, log *logrus.Entry, pre github.PullRe
 	var msg string
 	for _, change := range changes {
 		if change.Filename == configFile {
-			if err := handleConfig(gc, kc, org, repo, pr.Head.SHA); err != nil {
+			if err := handleConfig(gc, kc, org, repo, *pr.MergeSHA); err != nil {
 				return err
 			}
 
 			msg += fmt.Sprintf("I updated Prow config for you!")
 
 		} else if change.Filename == pluginFile {
-			if err := handlePlugin(gc, kc, org, repo, pr.Head.SHA); err != nil {
+			if err := handlePlugin(gc, kc, org, repo, *pr.MergeSHA); err != nil {
 				return err
 			}
 
