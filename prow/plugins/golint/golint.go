@@ -139,10 +139,10 @@ func handle(ghc githubClient, gc *git.Client, log *logrus.Entry, ic github.Issue
 	if len(problems) == 0 {
 		response = "no lint warnings"
 	} else {
-		response = fmt.Sprintf("%d warnings:\n\n", len(problems))
+		response = fmt.Sprintf("%d warning(s):\n\n", len(problems))
 		var warnings []string
 		for _, p := range problems {
-			warnings = append(warnings, fmt.Sprintf("%s:%d: %s", p.Position.Filename, p.Position.Line, p.Text))
+			warnings = append(warnings, fmt.Sprintf("`%s:%d`: %s", p.Position.Filename, p.Position.Line, p.Text))
 		}
 		response += strings.Join(warnings, "\n")
 	}
