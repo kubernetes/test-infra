@@ -1253,6 +1253,20 @@
       "generated"
     ]
   },
+  "ci-kubernetes-e2e-gce-enormous-cluster": {
+    "args": [
+      "--env-file=jobs/ci-kubernetes-e2e-gce-enormous-cluster.env",
+      "--cluster=e2e-enormous-cluster",
+      "--timeout=1400m",
+      "--extract=ci/latest",
+      "--mode=docker",
+      "--test_args=--ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --allowed-not-ready-nodes=50 --node-schedulable-timeout=120m --system-pods-startup-timeout=5m --kube-api-content-type=application/vnd.kubernetes.protobuf"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-scale"
+    ]
+  },
   "ci-kubernetes-e2e-gce-enormous-deploy": {
     "args": [
       "--env-file=jobs/ci-kubernetes-e2e-gce-enormous-deploy.env",
@@ -5190,6 +5204,20 @@
       "sig-network"
     ]
   },
+  "ci-kubernetes-e2e-gke-large-cluster": {
+    "args": [
+      "--env-file=jobs/platform/gke.env",
+      "--env-file=jobs/ci-kubernetes-e2e-gke-large-cluster.env",
+      "--cluster=gke-large-cluster",
+      "--timeout=600m",
+      "--extract=ci/latest",
+      "--test_args=--ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --allowed-not-ready-nodes=20 --node-schedulable-timeout=120m --system-pods-startup-timeout=5m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-scale"
+    ]
+  },
   "ci-kubernetes-e2e-gke-large-deploy": {
     "args": [
       "--env-file=jobs/platform/gke.env",
@@ -6383,6 +6411,23 @@
       "--kubemark",
       "--timeout=60m",
       "--extract=ci/latest",
+      "--mode=docker"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-scale"
+    ]
+  },
+  "ci-kubernetes-kubemark-5-gce-1.5": {
+    "args": [
+      "--env-file=jobs/platform/gce.env",
+      "--env-file=jobs/ci-kubernetes-kubemark-5-gce-1.5.env",
+      "--docker-in-docker",
+      "--cluster=kubemark-5-1-5",
+      "--test=false",
+      "--kubemark",
+      "--timeout=60m",
+      "--extract=ci/latest-1.5",
       "--mode=docker"
     ],
     "scenario": "kubernetes_e2e",
