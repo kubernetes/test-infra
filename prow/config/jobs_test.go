@@ -548,7 +548,7 @@ func TestNoDuplicateJobs(t *testing.T) {
 
 	allJobs := make(map[string]bool)
 	for _, j := range c.AllPresubmits() {
-		if allJobs[j] == true {
+		if allJobs[j] {
 			t.Errorf("Found duplicate job in presubmit: %s.", j)
 		}
 		allJobs[j] = true
@@ -556,7 +556,7 @@ func TestNoDuplicateJobs(t *testing.T) {
 
 	allJobs = make(map[string]bool)
 	for _, j := range c.AllPostsubmits() {
-		if allJobs[j] == true {
+		if allJobs[j] {
 			t.Errorf("Found duplicate job in postsubmit: %s.", j)
 		}
 		allJobs[j] = true
@@ -564,7 +564,7 @@ func TestNoDuplicateJobs(t *testing.T) {
 
 	allJobs = make(map[string]bool)
 	for _, j := range c.AllPeriodics() {
-		if allJobs[j] == true {
+		if allJobs[j] {
 			t.Errorf("Found duplicate job in periodic %s.", j)
 		}
 		allJobs[j] = true

@@ -131,7 +131,7 @@ func handle(gc githubClient, kc kubeClient, log *logrus.Entry, pre github.PullRe
 	}
 
 	if msg != "" {
-		if gc.CreateComment(org, repo, pr.Number, plugins.FormatResponseRaw(pr.Body, pr.HTMLURL, pr.User.Login, msg)); err != nil {
+		if err := gc.CreateComment(org, repo, pr.Number, plugins.FormatResponseRaw(pr.Body, pr.HTMLURL, pr.User.Login, msg)); err != nil {
 			return fmt.Errorf("comment err: %v", err)
 		}
 	}

@@ -147,10 +147,16 @@ func TestFindMergeable(t *testing.T) {
 	// findMergeable should work if repeated-- the repo should be
 	// reset into a state so it can try to merge again.
 	mergeable, err = s.findMergeable(up.dir, []int{3, 2, 1, 4})
+	if err != nil {
+		t.Fatal(err)
+	}
 	expectEqual(t, "mergeable PRs", mergeable, []int{3, 2, 1})
 
 	// PRs that cause merge conflicts should be skipped
 	mergeable, err = s.findMergeable(up.dir, []int{1, 4, 2, 3})
+	if err != nil {
+		t.Fatal(err)
+	}
 	expectEqual(t, "mergeable PRs", mergeable, []int{1, 2, 3})
 
 	// doing a force push should work as well!
@@ -161,6 +167,9 @@ func TestFindMergeable(t *testing.T) {
 		t.Fatal(err)
 	}
 	mergeable, err = s.findMergeable(up.dir, []int{3, 2, 1, 4})
+	if err != nil {
+		t.Fatal(err)
+	}
 	expectEqual(t, "mergeable PRs", mergeable, []int{3, 2})
 
 }

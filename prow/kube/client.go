@@ -372,16 +372,6 @@ func (c *Client) CreatePod(p Pod) (Pod, error) {
 	return retPod, err
 }
 
-func (c *Client) ReplaceSecret(name string, s Secret) error {
-	// Ommission of the secret from the logs is purposeful.
-	c.log("ReplaceSecret", name)
-	return c.request(&request{
-		method:      http.MethodPut,
-		path:        fmt.Sprintf("/api/v1/namespaces/%s/secrets/%s", c.namespace, name),
-		requestBody: &s,
-	}, nil)
-}
-
 func (c *Client) GetLog(pod string) ([]byte, error) {
 	c.log("GetLog", pod)
 	return c.requestRetry(&request{
