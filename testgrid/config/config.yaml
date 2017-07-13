@@ -2746,14 +2746,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke
     base_options: 'include-filter-by-regex=sig-apps'
     description: 'apps gke e2e tests for master branch'
-  - name: gce-flaky
-    test_group_name: ci-kubernetes-e2e-gce-flaky
-    base_options: 'include-filter-by-regex=sig-apps'
-    description: 'apps gce flaky e2e tests for master branch'
-  - name: gke-flaky
-    test_group_name: ci-kubernetes-e2e-gke-flaky
-    base_options: 'include-filter-by-regex=sig-apps'
-    description: 'apps gke flaky e2e tests for master branch'
   - name: gce-slow
     test_group_name: ci-kubernetes-e2e-gce-slow
     base_options: 'include-filter-by-regex=sig-apps'
