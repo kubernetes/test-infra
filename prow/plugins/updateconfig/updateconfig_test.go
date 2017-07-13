@@ -50,9 +50,6 @@ func TestUpdateConfig(t *testing.T) {
 				Name: "kubernetes",
 			},
 		},
-		Head: github.PullRequestBranch{
-			SHA: "12345",
-		},
 		User: github.User{
 			Login: "foo",
 		},
@@ -62,6 +59,7 @@ func TestUpdateConfig(t *testing.T) {
 		name          string
 		prAction      string
 		merged        bool
+		mergeCommit   string
 		changes       []github.PullRequestChange
 		configUpdate  bool
 		pluginsUpdate bool
@@ -99,9 +97,21 @@ func TestUpdateConfig(t *testing.T) {
 			},
 		},
 		{
-			name:     "changed config.yaml, 1 update",
+			name:     "For whatever reason no merge commit SHA",
 			prAction: "closed",
 			merged:   true,
+			changes: []github.PullRequestChange{
+				{
+					Filename:  "prow/config.yaml",
+					Additions: 1,
+				},
+			},
+		},
+		{
+			name:        "changed config.yaml, 1 update",
+			prAction:    "closed",
+			merged:      true,
+			mergeCommit: "12345",
 			changes: []github.PullRequestChange{
 				{
 					Filename:  "prow/config.yaml",
@@ -111,9 +121,10 @@ func TestUpdateConfig(t *testing.T) {
 			configUpdate: true,
 		},
 		{
-			name:     "changed plugins.yaml, 1 update",
-			prAction: "closed",
-			merged:   true,
+			name:        "changed plugins.yaml, 1 update",
+			prAction:    "closed",
+			merged:      true,
+			mergeCommit: "12345",
 			changes: []github.PullRequestChange{
 				{
 					Filename:  "prow/plugins.yaml",
@@ -123,9 +134,10 @@ func TestUpdateConfig(t *testing.T) {
 			pluginsUpdate: true,
 		},
 		{
-			name:     "changed config.yaml and plugins.yaml, 2 update",
-			prAction: "closed",
-			merged:   true,
+			name:        "changed config.yaml and plugins.yaml, 2 update",
+			prAction:    "closed",
+			merged:      true,
+			mergeCommit: "12345",
 			changes: []github.PullRequestChange{
 				{
 					Filename:  "prow/plugins.yaml",
@@ -149,6 +161,7 @@ func TestUpdateConfig(t *testing.T) {
 			PullRequest: basicPR,
 		}
 		event.PullRequest.Merged = tc.merged
+		event.PullRequest.MergeSHA = &tc.mergeCommit
 
 		fgc := &fakegithub.FakeClient{
 			PullRequests: map[int]*github.PullRequest{

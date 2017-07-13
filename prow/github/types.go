@@ -80,6 +80,11 @@ type PullRequest struct {
 	RequestedReviewers []User            `json:"requested_reviewers"`
 	Assignees          []User            `json:"assignees"`
 	Merged             bool              `json:"merged"`
+	// ref https://developer.github.com/v3/pulls/#get-a-single-pull-request
+	// If Merged is true, MergeSHA is the SHA of the merge commit, or squashed commit
+	// If Merged is false, MergeSHA is a commit SHA that github created to test if
+	// the PR can be merged automatically.
+	MergeSHA *string `json:"merge_commit_sha"`
 }
 
 // PullRequestBranch contains information about a particular branch in a PR.
