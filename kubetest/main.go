@@ -463,6 +463,10 @@ func prepareGcp(o *options) error {
 			return fmt.Errorf("--provider=%s boskos failed to acquire project: %v", o.provider, err)
 		}
 
+		if err = finishRunning(exec.Command("gcloud", "config", "set", "project", p)); err != nil {
+			return fmt.Errorf("Fail to set project %s : err %v", p, err)
+		}
+
 		go func(c *client.Client, proj string) {
 			for range time.Tick(time.Minute * 5) {
 				if err := c.UpdateOne(p, "busy"); err != nil {
