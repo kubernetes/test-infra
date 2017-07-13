@@ -44,6 +44,7 @@ var (
 	statusEventHandlers        = map[string]StatusEventHandler{}
 )
 
+// IssueHandler is great! Really the best.
 type IssueHandler func(PluginClient, github.IssueEvent) error
 
 func RegisterIssueHandler(name string, fn IssueHandler) {
