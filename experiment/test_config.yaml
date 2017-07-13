@@ -37,7 +37,7 @@ jobs:
   # +------------+----------+----------+------------+------------+------------+
   # | cosdev     | every 2h | every 2h |   every 2h |      never |      never |
   # +------------+----------+----------+------------+------------+------------+
-  # | cosbeta    | every 2h | every 2h |   every 2h |      never |      never |
+  # | cosbeta    | every 2h | every 2h |   every 2h |   every 2h |      never |
   # +------------+----------+----------+------------+------------+------------+
   # | cosstable1 | every 2h | every 2h |   every 6h |   every 6h |   every 6h |
   # +------------+----------+----------+------------+------------+------------+
@@ -106,69 +106,90 @@ jobs:
     envs:
     - PROJECT=cos-image-validation
     sigOwners: ['sig-node']
-# ci-kubernetes-e2e-gce-cosbeta-k8sdev-default:
-#   interval: 2h
-#   args:
-#   - --check-leaked-resources=false # disabled since it uses shared project.
-#   envs:
-#   - PROJECT=cos-image-validation
-#   sigOwners: ['sig-node']
-# ci-kubernetes-e2e-gce-cosbeta-k8sdev-slow:
-#   interval: 2h
-#   args:
-#   - --check-leaked-resources=false # disabled since it uses shared project.
-#   envs:
-#   - PROJECT=cos-image-validation
-#   sigOwners: ['sig-node']
-# ci-kubernetes-e2e-gce-cosbeta-k8sdev-serial:
-#   interval: 2h
-#   args:
-#   - --check-leaked-resources=false # disabled since it uses shared project.
-#   envs:
-#   - PROJECT=cos-image-validation
-#   sigOwners: ['sig-node']
-# ci-kubernetes-e2e-gce-cosbeta-k8sbeta-default:
-#   interval: 2h
-#   args:
-#   - --check-leaked-resources=false # disabled since it uses shared project.
-#   envs:
-#   - PROJECT=cos-image-validation
-#   sigOwners: ['sig-node']
-# ci-kubernetes-e2e-gce-cosbeta-k8sbeta-slow:
-#   interval: 2h
-#   args:
-#   - --check-leaked-resources=false # disabled since it uses shared project.
-#   envs:
-#   - PROJECT=cos-image-validation
-#   sigOwners: ['sig-node']
-# ci-kubernetes-e2e-gce-cosbeta-k8sbeta-serial:
-#   interval: 2h
-#   args:
-#   - --check-leaked-resources=false # disabled since it uses shared project.
-#   envs:
-#   - PROJECT=cos-image-validation
-#   sigOwners: ['sig-node']
-# ci-kubernetes-e2e-gce-cosbeta-k8sstable1-default:
-#   interval: 2h
-#   args:
-#   - --check-leaked-resources=false # disabled since it uses shared project.
-#   envs:
-#   - PROJECT=cos-image-validation
-#   sigOwners: ['sig-node']
-# ci-kubernetes-e2e-gce-cosbeta-k8sstable1-slow:
-#   interval: 2h
-#   args:
-#   - --check-leaked-resources=false # disabled since it uses shared project.
-#   envs:
-#   - PROJECT=cos-image-validation
-#   sigOwners: ['sig-node']
-# ci-kubernetes-e2e-gce-cosbeta-k8sstable1-serial:
-#   interval: 2h
-#   args:
-#   - --check-leaked-resources=false # disabled since it uses shared project.
-#   envs:
-#   - PROJECT=cos-image-validation
-#   sigOwners: ['sig-node']
+  ci-kubernetes-e2e-gce-cosbeta-k8sdev-default:
+    interval: 2h
+    args:
+    - --check-leaked-resources=false # disabled since it uses shared project.
+    envs:
+    - PROJECT=cos-image-validation
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2e-gce-cosbeta-k8sdev-slow:
+    interval: 2h
+    args:
+    - --check-leaked-resources=false # disabled since it uses shared project.
+    envs:
+    - PROJECT=cos-image-validation
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2e-gce-cosbeta-k8sdev-serial:
+    interval: 2h
+    args:
+    - --check-leaked-resources=false # disabled since it uses shared project.
+    envs:
+    - PROJECT=cos-image-validation
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2e-gce-cosbeta-k8sbeta-default:
+    interval: 2h
+    args:
+    - --check-leaked-resources=false # disabled since it uses shared project.
+    envs:
+    - PROJECT=cos-image-validation
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2e-gce-cosbeta-k8sbeta-slow:
+    interval: 2h
+    args:
+    - --check-leaked-resources=false # disabled since it uses shared project.
+    envs:
+    - PROJECT=cos-image-validation
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2e-gce-cosbeta-k8sbeta-serial:
+    interval: 2h
+    args:
+    - --check-leaked-resources=false # disabled since it uses shared project.
+    envs:
+    - PROJECT=cos-image-validation
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2e-gce-cosbeta-k8sstable1-default:
+    interval: 2h
+    args:
+    - --check-leaked-resources=false # disabled since it uses shared project.
+    envs:
+    - PROJECT=cos-image-validation
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2e-gce-cosbeta-k8sstable1-slow:
+    interval: 2h
+    args:
+    - --check-leaked-resources=false # disabled since it uses shared project.
+    envs:
+    - PROJECT=cos-image-validation
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2e-gce-cosbeta-k8sstable1-serial:
+    interval: 2h
+    args:
+    - --check-leaked-resources=false # disabled since it uses shared project.
+    envs:
+    - PROJECT=cos-image-validation
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2e-gce-cosbeta-k8sstable2-default:
+    interval: 2h
+    args:
+    - --check-leaked-resources=false # disabled since it uses shared project.
+    envs:
+    - PROJECT=cos-image-validation
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2e-gce-cosbeta-k8sstable2-slow:
+    interval: 2h
+    args:
+    - --check-leaked-resources=false # disabled since it uses shared project.
+    envs:
+    - PROJECT=cos-image-validation
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2e-gce-cosbeta-k8sstable2-serial:
+    interval: 2h
+    args:
+    - --check-leaked-resources=false # disabled since it uses shared project.
+    envs:
+    - PROJECT=cos-image-validation
+    sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-cosstable1-k8sdev-default:
     interval: 2h
     args:
@@ -460,6 +481,13 @@ jobs:
     - PROJECT=k8s-test-7f37c1d417
     sigOwners: ['sig-node']
 
+  # Others
+  ci-kubernetes-e2e-gce-cosbeta-k8sdev-nosnat:
+    interval: 24h
+    envs:
+    - PROJECT=k8s-e2e-170223
+    sigOwners: ['sig-network']
+
 common:
   args:
   - --cluster=test-${job_name_hash}
@@ -583,3 +611,11 @@ testSuites:
     - --test_args=--ginkgo.focus=\[k8s.io\]\sNetworking.*\[Conformance\]
     envs:
     - GINKGO_PARALLEL=y
+  nosnat:
+    args:
+    - --timeout=20m
+    - --test_args=--ginkgo.focus=\\[Feature:NoSNAT\\]
+    envs:
+    - GINKGO_PARALLEL=n
+    - GINKGO_PARALLEL_NODES=1
+    - NUM_NODES=3
