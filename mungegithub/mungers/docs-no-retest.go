@@ -21,6 +21,7 @@ import (
 	"regexp"
 
 	githubapi "github.com/google/go-github/github"
+	"k8s.io/kubernetes/pkg/util/sets"
 	"k8s.io/test-infra/mungegithub/features"
 	"k8s.io/test-infra/mungegithub/github"
 	"k8s.io/test-infra/mungegithub/options"
@@ -57,8 +58,8 @@ func (s *DocsNeedNoRetest) Initialize(config *github.Config, features *features.
 // EachLoop is called at the start of every munge loop
 func (DocsNeedNoRetest) EachLoop() error { return nil }
 
-// RegisterOptions registers config options for this munger.
-func (DocsNeedNoRetest) RegisterOptions(opts *options.Options) {}
+// RegisterOptions registers options for this munger; returns any that require a restart when changed.
+func (DocsNeedNoRetest) RegisterOptions(opts *options.Options) sets.String { return nil }
 
 func areFilesDocOnly(files []*githubapi.CommitFile) bool {
 	for _, file := range files {

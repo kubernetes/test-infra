@@ -25,6 +25,7 @@ import (
 	"strings"
 
 	"github.com/golang/glog"
+	"k8s.io/kubernetes/pkg/util/sets"
 	"k8s.io/test-infra/mungegithub/features"
 	"k8s.io/test-infra/mungegithub/github"
 	"k8s.io/test-infra/mungegithub/options"
@@ -60,12 +61,6 @@ type repoRules struct {
 
 // PublisherMunger publishes content from one repository to another one.
 type PublisherMunger struct {
-	// Command for the 'publisher' munger to run periodically.
-	PublishCommand string
-	// location to write the netrc file needed for github authentication
-	netrcDir string
-	// location of the plog output
-	logDir       string
 	reposRules   []repoRules
 	features     *features.Features
 	githubConfig *github.Config
@@ -76,8 +71,7 @@ type PublisherMunger struct {
 }
 
 func init() {
-	publisherMunger := &PublisherMunger{}
-	RegisterMungerOrDie(publisherMunger)
+	RegisterMungerOrDie(&PublisherMunger{})
 }
 
 // Name is the name usable in --pr-mungers
@@ -392,8 +386,17 @@ func (p *PublisherMunger) EachLoop() error {
 	return nil
 }
 
-// RegisterOptions registers config options for this munger.
-func (p *PublisherMunger) RegisterOptions(opts *options.Options) {}
+// RegisterOptions registers options for this munger; returns any that require a restart when changed.
+func (p *PublisherMunger) RegisterOptions(opts *options.Options) sets.String {
+	opts.RegisterUpdateCallback(func(changed sets.String) error {
+		// project is used to init repo rules so if it changes we must re-initialize.
+		if changed.Has("project") {
+			return p.Initialize(p.githubConfig, p.features)
+		}
+		return nil
+	})
+	return nil
+}
 
 // Munge is the workhorse the will actually make updates to the PR
 func (p *PublisherMunger) Munge(obj *github.MungeObject) {}

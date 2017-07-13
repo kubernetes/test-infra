@@ -26,6 +26,7 @@ import (
 	"github.com/golang/glog"
 
 	githubapi "github.com/google/go-github/github"
+	"k8s.io/kubernetes/pkg/util/sets"
 	"k8s.io/test-infra/mungegithub/features"
 	"k8s.io/test-infra/mungegithub/github"
 	"k8s.io/test-infra/mungegithub/mungers/mungerutil"
@@ -91,11 +92,12 @@ func (fjr *FlakyJobReporter) Initialize(config *github.Config, features *feature
 	return nil
 }
 
-// RegisterOptions registers config options for this munger.
-func (fjr *FlakyJobReporter) RegisterOptions(opts *options.Options) {
+// RegisterOptions registers options for this munger; returns any that require a restart when changed.
+func (fjr *FlakyJobReporter) RegisterOptions(opts *options.Options) sets.String {
 	opts.RegisterString(&fjr.flakyJobDataURL, "flakyjob-url", "https://storage.googleapis.com/k8s-metrics/flakes-latest.json", "The url where flaky job JSON data can be found.")
 	opts.RegisterInt(&fjr.syncCount, "flakyjob-count", 3, "The number of flaky jobs to try to sync to github.")
 	opts.RegisterDuration(&fjr.syncFreq, "flakyjob-freq", time.Hour*24, "The frequency at which to run the FlakyJobReporter.")
+	return nil
 }
 
 // EachLoop is called every munge loop.

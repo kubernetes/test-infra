@@ -57,8 +57,8 @@ func (b *OwnerLabelMunger) Initialize(config *github.Config, features *features.
 // EachLoop is called at the start of every munge loop
 func (b *OwnerLabelMunger) EachLoop() error { return nil }
 
-// RegisterOptions registers config options for this munger.
-func (b *OwnerLabelMunger) RegisterOptions(opts *options.Options) {}
+// RegisterOptions registers options for this munger; returns any that require a restart when changed.
+func (b *OwnerLabelMunger) RegisterOptions(opts *options.Options) sets.String { return nil }
 
 func (b *OwnerLabelMunger) getLabels(files []*githubapi.CommitFile) sets.String {
 	labels := sets.String{}

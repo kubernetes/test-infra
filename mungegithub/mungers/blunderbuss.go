@@ -69,10 +69,11 @@ func (b *BlunderbussMunger) Initialize(config *github.Config, features *features
 // EachLoop is called at the start of every munge loop
 func (b *BlunderbussMunger) EachLoop() error { return nil }
 
-// RegisterOptions registers config options for this munger.
-func (b *BlunderbussMunger) RegisterOptions(opts *options.Options) {
+// RegisterOptions registers options for this munger; returns any that require a restart when changed.
+func (b *BlunderbussMunger) RegisterOptions(opts *options.Options) sets.String {
 	opts.RegisterBool(&b.blunderbussReassign, "blunderbuss-reassign", false, "Assign PRs even if they're already assigned; use with -dry-run to judge changes to the assignment algorithm")
 	opts.RegisterInt(&b.numAssignees, "blunderbuss-number-assignees", 2, "Number of assignees to select for each PR.")
+	return nil
 }
 
 func chance(val, total int64) float64 {
@@ -116,7 +117,7 @@ func getPotentialOwners(author string, feats *features.Features, files []*github
 			glog.Warningf("Couldn't find an owner for: %s", *file.Filename)
 		}
 
-		if aliases != nil && aliases.IsEnabled {
+		if aliases != nil {
 			fileOwners = aliases.Expand(fileOwners)
 		}
 

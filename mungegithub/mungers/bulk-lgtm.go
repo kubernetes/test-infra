@@ -31,6 +31,7 @@ import (
 
 	"golang.org/x/oauth2"
 
+	"k8s.io/kubernetes/pkg/util/sets"
 	"k8s.io/test-infra/mungegithub/features"
 	"k8s.io/test-infra/mungegithub/github"
 	"k8s.io/test-infra/mungegithub/mungeopts"
@@ -111,15 +112,17 @@ func (b *BulkLGTM) Munge(obj *github.MungeObject) {
 	b.currentPRList[*pr.Number] = obj
 }
 
-// RegisterOptions registers config options for this munger.
-func (b *BulkLGTM) RegisterOptions(opts *options.Options) {
+// RegisterOptions registers options for this munger; returns any that require a restart when changed.
+func (b *BulkLGTM) RegisterOptions(opts *options.Options) sets.String {
 	opts.RegisterInt(&b.maxDiff, "bulk-lgtm-max-diff", 10, "The maximum number of differences (additions + deletions) for PRs to include in the bulk LGTM list")
 	opts.RegisterInt(&b.maxChangedFiles, "bulk-lgtm-changed-files", 1, "The maximum number of changed files for PRs to include in the bulk LGTM list")
 	opts.RegisterInt(&b.maxCommits, "bulk-lgtm-max-commits", 1, "The maximum number of commits for PRs to include in the bulk LGTM list")
 	opts.RegisterDuration(&b.cookieDuration, "bulk-lgtm-cookie-duration", 24*time.Hour, "The duration for the cookie used to store github credentials.")
 	opts.RegisterBool(&b.disableSecureCookie, "bulk-lgtm-insecure-disable-secure-cookie", false, "If true, the cookie storing github credentials will be allowed on http")
-	opts.RegisterString(&githubOauthConfig.RedirectURL, "bulk-lgtm-github-oauth-redirect-url", "http://localhost:8080/bulkprs/callback", "The URL for the OAuth2 callback")
+	opts.RegisterString(&b.redirectURL, "bulk-lgtm-github-oauth-redirect-url", "http://localhost:8080/bulkprs/callback", "The URL for the OAuth2 callback")
 	opts.RegisterString(&b.prefix, "bulk-lgtm-www-prefix", "", "The prefix for web pages served by the bulk-lgtm service")
+
+	return sets.NewString("bulk-lgtm-cookie-duration", "bulk-lgtm-insecure-disable-secure-cookie", "bulk-lgtm-github-oauth-redirect-url", "bulk-lgtm-www-prefix")
 }
 
 // Name implements the Munger interface
@@ -135,13 +138,14 @@ func (b *BulkLGTM) RequiredFeatures() []string {
 // Initialize implements the Munger interface
 func (b *BulkLGTM) Initialize(config *github.Config, features *features.Features) error {
 	b.config = config
+	githubOauthConfig.RedirectURL = b.redirectURL
 
 	if len(mungeopts.Server.Address) > 0 {
 		http.HandleFunc(b.prefix+"/bulkprs/prs", b.ServePRs)
 		http.HandleFunc(b.prefix+"/bulkprs/prdiff", b.ServePRDiff)
 		http.HandleFunc(b.prefix+"/bulkprs/lgtm", b.ServeLGTM)
 		http.HandleFunc(b.prefix+"/bulkprs/auth", b.ServeLogin)
-		http.HandleFunc(b.prefix+"/bulkprs/callback", b.ServeCallback)
+		http.HandleFunc(b.prefix+"/bulkprs/callback", b.ServeCallback(!b.disableSecureCookie, b.cookieDuration))
 		http.HandleFunc(b.prefix+"/bulkprs/user", b.ServeUser)
 		if len(mungeopts.Server.WWWRoot) > 0 {
 			handler := gziphandler.GzipHandler(http.FileServer(http.Dir(mungeopts.Server.WWWRoot)))
@@ -343,47 +347,49 @@ func (b *BulkLGTM) ServeLogin(res http.ResponseWriter, req *http.Request) {
 	http.Redirect(res, req, url, http.StatusTemporaryRedirect)
 }
 
-func (b *BulkLGTM) ServeCallback(res http.ResponseWriter, req *http.Request) {
-	state := req.FormValue("state")
-	if state != b.oauthStateString {
-		glog.Errorf("invalid oauth state, expected '%s', got '%s'\n", b.oauthStateString, state)
-		http.Redirect(res, req, "/bulkprs/auth", http.StatusTemporaryRedirect)
-		return
-	}
+func (b *BulkLGTM) ServeCallback(secureCookie bool, cookieDur time.Duration) func(res http.ResponseWriter, req *http.Request) {
+	return func(res http.ResponseWriter, req *http.Request) {
+		state := req.FormValue("state")
+		if state != b.oauthStateString {
+			glog.Errorf("invalid oauth state, expected '%s', got '%s'\n", b.oauthStateString, state)
+			http.Redirect(res, req, "/bulkprs/auth", http.StatusTemporaryRedirect)
+			return
+		}
 
-	code := req.FormValue("code")
-	token, err := githubOauthConfig.Exchange(oauth2.NoContext, code)
-	if err != nil {
-		glog.Errorf("Code exchange failed with '%s'\n", err)
-		http.Redirect(res, req, "/bulkprs/auth", http.StatusTemporaryRedirect)
-		return
-	}
+		code := req.FormValue("code")
+		token, err := githubOauthConfig.Exchange(oauth2.NoContext, code)
+		if err != nil {
+			glog.Errorf("Code exchange failed with '%s'\n", err)
+			http.Redirect(res, req, "/bulkprs/auth", http.StatusTemporaryRedirect)
+			return
+		}
 
-	data, err := json.Marshal(token)
-	if err != nil {
-		res.WriteHeader(http.StatusInternalServerError)
-		res.Write([]byte(err.Error()))
-		return
-	}
-	encoded := base64.URLEncoding.EncodeToString(data)
-	cookie := &http.Cookie{
-		Name:   tokenName,
-		Value:  encoded,
-		Secure: !b.disableSecureCookie,
-	}
-	if !b.disableSecureCookie {
-		cookie.Expires = time.Now().Add(b.cookieDuration)
-	}
-	http.SetCookie(res, cookie)
+		data, err := json.Marshal(token)
+		if err != nil {
+			res.WriteHeader(http.StatusInternalServerError)
+			res.Write([]byte(err.Error()))
+			return
+		}
+		encoded := base64.URLEncoding.EncodeToString(data)
+		cookie := &http.Cookie{
+			Name:   tokenName,
+			Value:  encoded,
+			Secure: secureCookie,
+		}
+		if secureCookie {
+			cookie.Expires = time.Now().Add(cookieDur)
+		}
+		http.SetCookie(res, cookie)
 
-	ix := strings.Index(state, "/")
-	if ix == -1 {
-		res.WriteHeader(http.StatusOK)
-		fmt.Fprintf(res, "OK\n")
-		return
+		ix := strings.Index(state, "/")
+		if ix == -1 {
+			res.WriteHeader(http.StatusOK)
+			fmt.Fprintf(res, "OK\n")
+			return
+		}
+		url := state[ix+1:]
+		http.Redirect(res, req, url, http.StatusTemporaryRedirect)
 	}
-	url := state[ix+1:]
-	http.Redirect(res, req, url, http.StatusTemporaryRedirect)
 }
 
 func makeGithubClient(req *http.Request) (*githubapi.Client, error) {

@@ -15,6 +15,7 @@ go_library(
         "//mungegithub/github:go_default_library",
         "//mungegithub/options:go_default_library",
         "//vendor:github.com/golang/glog",
+        "//vendor:k8s.io/kubernetes/pkg/util/sets",
     ],
 )
 

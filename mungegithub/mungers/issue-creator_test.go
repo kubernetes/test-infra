@@ -90,10 +90,6 @@ func (c *fakeClient) getProject() string {
 	return c.project
 }
 
-func (c *fakeClient) RealConfig() *github.Config {
-	return nil
-}
-
 // Verify checks that exactly 1 issue in c.issues matches the parameters and that no
 // issues in c.issues have an empty body string (since that means they shouldn't have been created).
 func (c *fakeClient) Verify(title, body string, owners, labels []string) bool {

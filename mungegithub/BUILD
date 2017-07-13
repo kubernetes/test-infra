@@ -28,6 +28,7 @@ go_library(
         "//vendor:github.com/golang/glog",
         "//vendor:github.com/spf13/cobra",
         "//vendor:k8s.io/kubernetes/pkg/util/flag",
+        "//vendor:k8s.io/kubernetes/pkg/util/sets",
     ],
 )
 

@@ -41,6 +41,7 @@ go_test(
         "//mungegithub/mungers/e2e/fake:go_default_library",
         "//mungegithub/mungers/mungerutil:go_default_library",
         "//mungegithub/mungers/testowner:go_default_library",
+        "//mungegithub/options:go_default_library",
         "//vendor:github.com/golang/glog",
         "//vendor:github.com/google/go-github/github",
         "//vendor:k8s.io/contrib/test-utils/utils",

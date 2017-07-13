@@ -16,7 +16,10 @@ limitations under the License.
 
 package mungeopts
 
-import "k8s.io/test-infra/mungegithub/options"
+import (
+	"k8s.io/kubernetes/pkg/util/sets"
+	"k8s.io/test-infra/mungegithub/options"
+)
 
 var (
 	// Server holds the values of options used by mungers that serve web services.
@@ -46,7 +49,9 @@ var (
 	}
 )
 
-func RegisterOptions(opts *options.Options) {
+// RegisterOptions registers options that may be used by any munger, feature, or report. It returns
+// any options that require a restart when changed.
+func RegisterOptions(opts *options.Options) sets.String {
 	// Options for mungers that run web servers.
 	opts.RegisterString(&Server.Address, "address", ":8080", "The address to listen on for HTTP Status")
 	opts.RegisterString(&Server.WWWRoot, "www", "www", "Path to static web files to serve from the webserver")
@@ -61,4 +66,5 @@ func RegisterOptions(opts *options.Options) {
 	opts.RegisterStringSlice(&RequiredContexts.Retest, "required-retest-contexts", []string{}, "Comma separate list of statuses which will be retested and which must come back green after the `retest-body` comment is posted to a PR")
 	opts.RegisterStringSlice(&RequiredContexts.Merge, "required-contexts", []string{}, "Comma separate list of status contexts required for a PR to be considered ok to merge")
 
+	return sets.NewString("address", "www")
 }

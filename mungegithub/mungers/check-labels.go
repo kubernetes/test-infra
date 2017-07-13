@@ -61,23 +61,22 @@ func (c *CheckLabelsMunger) RequiredFeatures() []string { return []string{featur
 
 // Initialize will initialize the munger.
 func (c *CheckLabelsMunger) Initialize(config *githubhelper.Config, features *features.Features) error {
-	if len(c.labelFilePath) == 0 {
-		glog.Fatalf("No --label-file= supplied, cannot check labels")
-	}
 	c.labelAccessor = config
 	c.features = features
 	c.readFunc = func() ([]byte, error) {
-		bytes, err := ioutil.ReadFile(c.labelFilePath)
-		if err != nil {
-			return []byte{}, fmt.Errorf("Unable to read label file: %v", err)
-		}
-		return bytes, nil
+		return ioutil.ReadFile(c.labelFilePath)
 	}
 
+	return c.validateFilePath()
+}
+
+func (c *CheckLabelsMunger) validateFilePath() error {
+	if len(c.labelFilePath) == 0 {
+		return fmt.Errorf("no 'label-file' option specified, cannot check labels")
+	}
 	if _, err := os.Stat(c.labelFilePath); os.IsNotExist(err) {
-		return fmt.Errorf("Failed to stat the check label config: %v", err)
+		return fmt.Errorf("failed to stat the check label config: %v", err)
 	}
-
 	return nil
 }
 
@@ -126,10 +125,16 @@ func (c *CheckLabelsMunger) addMissingLabels(repoLabels, fileLabels []*github.La
 	}
 }
 
-// RegisterOptions registers config options for this munger.
-func (c *CheckLabelsMunger) RegisterOptions(opts *options.Options) {
-	opts.RegisterString(&c.labelFilePath, "label-file", "", "Path from repository root to file containing"+
-		" list of labels")
+// RegisterOptions registers options for this munger; returns any that require a restart when changed.
+func (c *CheckLabelsMunger) RegisterOptions(opts *options.Options) sets.String {
+	opts.RegisterString(&c.labelFilePath, "label-file", "", "Path from repository root to file containing list of labels.")
+	opts.RegisterUpdateCallback(func(changed sets.String) error {
+		if changed.Has("label-file") {
+			return c.validateFilePath()
+		}
+		return nil
+	})
+	return nil
 }
 
 // Munge is unused by this munger.

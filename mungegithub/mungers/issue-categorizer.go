@@ -22,6 +22,7 @@ import (
 	"net/url"
 	"strings"
 
+	"k8s.io/kubernetes/pkg/util/sets"
 	"k8s.io/test-infra/mungegithub/features"
 	"k8s.io/test-infra/mungegithub/github"
 	"k8s.io/test-infra/mungegithub/mungers/matchers/event"
@@ -48,9 +49,10 @@ func (*LabelMunger) Name() string { return "issue-triager" }
 // RequiredFeatures is a slice of 'features' that must be provided
 func (*LabelMunger) RequiredFeatures() []string { return []string{} }
 
-// RegisterOptions registers config options for this munger.
-func (lm *LabelMunger) RegisterOptions(opts *options.Options) {
+// RegisterOptions registers options for this munger; returns any that require a restart when changed.
+func (lm *LabelMunger) RegisterOptions(opts *options.Options) sets.String {
 	opts.RegisterString(&lm.triagerUrl, "triager-url", "", "Url on which ml web service is listening")
+	return nil
 }
 
 func init() {

@@ -19,6 +19,7 @@ package features
 import (
 	"fmt"
 
+	"k8s.io/kubernetes/pkg/util/sets"
 	"k8s.io/test-infra/mungegithub/github"
 	"k8s.io/test-infra/mungegithub/options"
 
@@ -35,7 +36,7 @@ type Features struct {
 
 type feature interface {
 	Name() string
-	RegisterOptions(opts *options.Options)
+	RegisterOptions(opts *options.Options) sets.String
 	Initialize(config *github.Config) error
 	EachLoop() error
 }
@@ -79,11 +80,14 @@ func (f *Features) EachLoop() error {
 	return nil
 }
 
-// RegisterOptions registers the config options used by features.
-func (f *Features) RegisterOptions(opts *options.Options) {
+// RegisterOptions registers the options used by features and returns any options that should
+// trigger a restart when they are changed.
+func (f *Features) RegisterOptions(opts *options.Options) sets.String {
+	immutables := sets.NewString()
 	for _, feat := range featureMap {
-		feat.RegisterOptions(opts)
+		immutables = immutables.Union(feat.RegisterOptions(opts))
 	}
+	return immutables
 }
 
 // RegisterFeature should be called in `init()` by each feature to make itself

@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"time"
 
+	"k8s.io/kubernetes/pkg/util/sets"
 	"k8s.io/test-infra/mungegithub/features"
 	"k8s.io/test-infra/mungegithub/github"
 	"k8s.io/test-infra/mungegithub/mungeopts"
@@ -72,8 +73,8 @@ func (s *StalePendingCI) Initialize(config *github.Config, features *features.Fe
 // EachLoop is called at the start of every munge loop
 func (s *StalePendingCI) EachLoop() error { return nil }
 
-// RegisterOptions registers options used by this munger.
-func (s *StalePendingCI) RegisterOptions(opts *options.Options) {}
+// RegisterOptions registers options for this munger; returns any that require a restart when changed.
+func (s *StalePendingCI) RegisterOptions(opts *options.Options) sets.String { return nil }
 
 // Munge is the workhorse the will actually make updates to the PR
 func (s *StalePendingCI) Munge(obj *github.MungeObject) {

@@ -21,6 +21,7 @@ import (
 	"os"
 	"regexp"
 
+	"k8s.io/kubernetes/pkg/util/sets"
 	"k8s.io/kubernetes/pkg/util/yaml"
 	"k8s.io/test-infra/mungegithub/features"
 	"k8s.io/test-infra/mungegithub/github"
@@ -66,46 +67,62 @@ func (b *BlockPath) RequiredFeatures() []string { return []string{} }
 
 // Initialize will initialize the munger
 func (b *BlockPath) Initialize(config *github.Config, features *features.Features) error {
+	return b.loadConfig()
+}
+
+func (b *BlockPath) loadConfig() error {
 	if len(b.path) == 0 {
-		glog.Fatalf("--block-path-config is required with the block-path munger")
+		return fmt.Errorf("'block-path-config' option is required with the block-path munger")
 	}
 	file, err := os.Open(b.path)
 	if err != nil {
-		glog.Fatalf("Failed to load block-path config: %v", err)
+		return fmt.Errorf("Failed to load block-path config: %v", err)
 	}
 	defer file.Close()
 
 	c := &configBlockPath{}
 	if err := yaml.NewYAMLToJSONDecoder(file).Decode(c); err != nil {
-		glog.Fatalf("Failed to decode the block-path config: %v", err)
+		return fmt.Errorf("Failed to decode the block-path config: %v", err)
 	}
 
-	b.blockRegexp = []*regexp.Regexp{}
+	blockRegexp := []*regexp.Regexp{}
 	for _, str := range c.BlockRegexp {
 		reg, err := regexp.Compile(str)
 		if err != nil {
 			return err
 		}
-		b.blockRegexp = append(b.blockRegexp, reg)
+		blockRegexp = append(blockRegexp, reg)
 	}
 
-	b.doNotBlockRegexp = []*regexp.Regexp{}
+	doNotBlockRegexp := []*regexp.Regexp{}
 	for _, str := range c.DoNotBlockRegexp {
 		reg, err := regexp.Compile(str)
 		if err != nil {
 			return err
 		}
-		b.doNotBlockRegexp = append(b.doNotBlockRegexp, reg)
+		doNotBlockRegexp = append(doNotBlockRegexp, reg)
 	}
+
+	b.blockRegexp = blockRegexp
+	b.doNotBlockRegexp = doNotBlockRegexp
 	return nil
 }
 
 // EachLoop is called at the start of every munge loop
 func (b *BlockPath) EachLoop() error { return nil }
 
-// RegisterOptions registers config options for this munger.
-func (b *BlockPath) RegisterOptions(opts *options.Options) {
+// RegisterOptions registers options for this munger; returns any that require a restart when changed.
+func (b *BlockPath) RegisterOptions(opts *options.Options) sets.String {
 	opts.RegisterString(&b.path, "block-path-config", "", "file containing the pathnames to block or not block")
+	opts.RegisterUpdateCallback(func(changed sets.String) error {
+		if changed.Has("block-path-config") {
+			if err := b.loadConfig(); err != nil {
+				glog.Errorf("error reloading block-path-config: %v", err)
+			}
+		}
+		return nil
+	})
+	return nil
 }
 
 func matchesAny(path string, regs []*regexp.Regexp) bool {

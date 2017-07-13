@@ -20,6 +20,7 @@ import (
 	"time"
 
 	"github.com/google/go-github/github"
+	"k8s.io/kubernetes/pkg/util/sets"
 	"k8s.io/test-infra/mungegithub/features"
 	mgh "k8s.io/test-infra/mungegithub/github"
 	c "k8s.io/test-infra/mungegithub/mungers/matchers/comment"
@@ -70,8 +71,8 @@ func (NagFlakeIssues) Initialize(config *mgh.Config, features *features.Features
 // EachLoop is called at the start of every munge loop
 func (NagFlakeIssues) EachLoop() error { return nil }
 
-// RegisterOptions registers config options for this munger.
-func (NagFlakeIssues) RegisterOptions(opts *options.Options) {}
+// RegisterOptions registers options for this munger; returns any that require a restart when changed.
+func (NagFlakeIssues) RegisterOptions(opts *options.Options) sets.String { return nil }
 
 // findTimePeriod returns how often we should ping based on priority
 func findTimePeriod(labels []github.Label) time.Duration {

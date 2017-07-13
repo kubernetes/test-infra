@@ -64,17 +64,27 @@ func (*SizeMunger) RequiredFeatures() []string { return []string{} }
 
 // Initialize will initialize the munger
 func (s *SizeMunger) Initialize(config *github.Config, features *features.Features) error {
-	glog.Infof("generated-files-config: %#v\n", s.generatedFilesFile)
-
 	return nil
 }
 
 // EachLoop is called at the start of every munge loop
 func (*SizeMunger) EachLoop() error { return nil }
 
-// RegisterOptions registers config options for this munger.
-func (s *SizeMunger) RegisterOptions(opts *options.Options) {
+// RegisterOptions registers options for this munger; returns any that require a restart when changed.
+func (s *SizeMunger) RegisterOptions(opts *options.Options) sets.String {
 	opts.RegisterString(&s.generatedFilesFile, "generated-files-config", "", "file in the repo containing the generated file rules")
+	opts.RegisterUpdateCallback(func(changed sets.String) error {
+		if changed.Has("generated-files-config") {
+			// Force 'getGeneratedFiles' to re-read config next time it is called.
+			s.genFilePaths = nil
+			s.genFilePrefixes = nil
+			s.genFileNames = nil
+			s.genPathPrefixes = nil
+		}
+		return nil
+	})
+
+	return nil
 }
 
 // getGeneratedFiles returns a list of all automatically generated files in the repo. These include
@@ -108,7 +118,7 @@ func (s *SizeMunger) getGeneratedFiles(obj *github.MungeObject) {
 
 	file := s.generatedFilesFile
 	if len(file) == 0 {
-		glog.Infof("No --generated-files-config= supplied, applying no labels")
+		glog.Infof("No 'generated-files-config' option supplied, applying no labels.")
 		return
 	}
 

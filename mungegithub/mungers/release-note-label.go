@@ -19,6 +19,7 @@ package mungers
 import (
 	"fmt"
 
+	"k8s.io/kubernetes/pkg/util/sets"
 	"k8s.io/test-infra/mungegithub/features"
 	"k8s.io/test-infra/mungegithub/github"
 	"k8s.io/test-infra/mungegithub/options"
@@ -81,8 +82,8 @@ func (r *ReleaseNoteLabel) Initialize(config *github.Config, features *features.
 // EachLoop is called at the start of every munge loop
 func (r *ReleaseNoteLabel) EachLoop() error { return nil }
 
-// RegisterOptions registers config options for this munger.
-func (r *ReleaseNoteLabel) RegisterOptions(opts *options.Options) {}
+// RegisterOptions registers options for this munger; returns any that require a restart when changed.
+func (r *ReleaseNoteLabel) RegisterOptions(opts *options.Options) sets.String { return nil }
 
 func (r *ReleaseNoteLabel) prMustFollowRelNoteProcess(obj *github.MungeObject) bool {
 	boolean, ok := obj.IsForBranch("master")

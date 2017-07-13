@@ -90,12 +90,16 @@ func (sq *SubmitQueue) getCompleteBatches(jobs prowJobs) []Batch {
 	for batchRef, contexts := range batchContexts {
 		match := true
 		// Did this succeed in all the contexts we want?
-		for _, ctx := range mungeopts.RequiredContexts.Merge {
+		sq.opts.Lock()
+		mergeContexts := mungeopts.RequiredContexts.Merge
+		retestContexts := mungeopts.RequiredContexts.Retest
+		sq.opts.Unlock()
+		for _, ctx := range mergeContexts {
 			if _, ok := contexts[ctx]; !ok {
 				match = false
 			}
 		}
-		for _, ctx := range mungeopts.RequiredContexts.Retest {
+		for _, ctx := range retestContexts {
 			if _, ok := contexts[ctx]; !ok {
 				match = false
 			}
@@ -208,9 +212,12 @@ func (sq *SubmitQueue) batchIsApplicable(batch Batch) (int, error) {
 func (sq *SubmitQueue) handleGithubE2EBatchMerge() {
 	repo := sq.githubConfig.Org + "/" + sq.githubConfig.Project
 	for range time.Tick(1 * time.Minute) {
-		allJobs, err := getJobs(sq.ProwURL)
+		sq.opts.Lock()
+		url := sq.ProwURL
+		sq.opts.Unlock()
+		allJobs, err := getJobs(url)
 		if err != nil {
-			glog.Errorf("Error reading batch jobs from Prow URL %v: %v", sq.ProwURL, err)
+			glog.Errorf("Error reading batch jobs from Prow URL %v: %v", url, err)
 			continue
 		}
 		batchJobs := allJobs.batch().repo(repo)

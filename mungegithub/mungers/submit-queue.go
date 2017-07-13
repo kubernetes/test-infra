@@ -31,6 +31,7 @@ import (
 	"time"
 
 	utilclock "k8s.io/kubernetes/pkg/util/clock"
+	"k8s.io/kubernetes/pkg/util/sets"
 
 	"k8s.io/contrib/test-utils/utils"
 	"k8s.io/test-infra/mungegithub/admin"
@@ -160,8 +161,14 @@ type submitQueueInterruptedObject struct {
 type submitQueueMetadata struct {
 	ProjectName string
 
-	ChartUrl    string
-	HistoryUrl  string
+	ChartUrl   string
+	HistoryUrl string
+	// chartUrl and historyUrl are option storage locations. They are distinct from ChartUrl and
+	// HistoryUrl since the the public variables are used asynchronously by a fileserver and updates
+	// to the options values should not cause a race condition.
+	chartUrl   string
+	historyUrl string
+
 	RepoPullUrl string
 }
 
@@ -426,6 +433,8 @@ func (sq *SubmitQueue) internalInitialize(config *github.Config, features *featu
 	sq.Lock()
 	defer sq.Unlock()
 
+	sq.Metadata.ChartUrl = sq.Metadata.chartUrl
+	sq.Metadata.HistoryUrl = sq.Metadata.historyUrl
 	sq.Metadata.RepoPullUrl = fmt.Sprintf("https://github.com/%s/%s/pulls/", config.Org, config.Project)
 	sq.Metadata.ProjectName = strings.Title(config.Project)
 	sq.githubConfig = config
@@ -449,7 +458,8 @@ func (sq *SubmitQueue) internalInitialize(config *github.Config, features *featu
 		}
 
 		sq.e2e = (&e2e.RealE2ETester{
-			NonBlockingJobNames:  sq.NonBlockingJobNames,
+			Opts:                 sq.opts,
+			NonBlockingJobNames:  &sq.NonBlockingJobNames,
 			BuildStatus:          map[string]e2e.BuildInfo{},
 			GoogleGCSBucketUtils: gcs,
 		}).Init(admin.Mux)
@@ -547,20 +557,47 @@ func (sq *SubmitQueue) EachLoop() error {
 	return nil
 }
 
-// RegisterOptions registers options used by the SubmitQueue.
-func (sq *SubmitQueue) RegisterOptions(opts *options.Options) {
+// RegisterOptions registers options for this munger; returns any that require a restart when changed.
+func (sq *SubmitQueue) RegisterOptions(opts *options.Options) sets.String {
+	sq.opts = opts
 	opts.RegisterStringSlice(&sq.NonBlockingJobNames, "nonblocking-jobs", []string{}, "Comma separated list of jobs that don't block merges, but will have status reported and issues filed.")
 	opts.RegisterBool(&sq.FakeE2E, "fake-e2e", false, "Whether to use a fake for testing E2E stability.")
 	opts.RegisterStringSlice(&sq.DoNotMergeMilestones, "do-not-merge-milestones", []string{}, "List of milestones which, when applied, will cause the PR to not be merged")
 	opts.RegisterInt(&sq.AdminPort, "admin-port", 9999, "If non-zero, will serve administrative actions on this port.")
-	// If you create a StringSliceVar you may wish to check out 'cleanStringSlice()'
-	opts.RegisterString(&sq.Metadata.HistoryUrl, "history-url", "", "URL to access the submit-queue instance's health history.")
-	opts.RegisterString(&sq.Metadata.ChartUrl, "chart-url", "", "URL to access the submit-queue instance's health charts.")
+	opts.RegisterString(&sq.Metadata.historyUrl, "history-url", "", "URL to access the submit-queue instance's health history.")
+	opts.RegisterString(&sq.Metadata.chartUrl, "chart-url", "", "URL to access the submit-queue instance's health charts.")
 	opts.RegisterString(&sq.ProwURL, "prow-url", "", "Prow data.json URL to read batch results")
 	opts.RegisterBool(&sq.BatchEnabled, "batch-enabled", false, "Do batch merges (requires prow/splice coordination).")
 	opts.RegisterString(&sq.ContextURL, "context-url", "", "URL where the submit queue is serving - used in Github status contexts")
 	opts.RegisterBool(&sq.GateApproved, "gate-approved", false, "Gate on approved label")
 	opts.RegisterBool(&sq.GateCLA, "gate-cla", false, "Gate on cla labels")
+
+	opts.RegisterUpdateCallback(func(changed sets.String) error {
+		if changed.HasAny("prow-url", "batch-enabled") {
+			if sq.BatchEnabled && sq.ProwURL == "" {
+				return fmt.Errorf("batch merges require prow-url to be set!")
+			}
+		}
+		return nil
+	})
+
+	return sets.NewString(
+		"batch-enabled", // Need to start or kill batch processing.
+		"context-url",   // Need to remunge all PRs to update statuses with new url.
+		"admin-port",    // Need to restart server on new port.
+		// For the following: need to restart fileserver.
+		"chart-url",
+		"history-url",
+		// For the following: need to re-initialize e2e which is used by other goroutines.
+		"fake-e2e",
+		"gcs-bucket",
+		"gcs-logs-dir",
+		"pull-logs-dir",
+		"pull-key",
+		// For the following: need to remunge all PRs if changed from true to false.
+		"gate-cla",
+		"gate-approved",
+	)
 }
 
 // Hold the lock
@@ -739,7 +776,10 @@ func (sq *SubmitQueue) SetMergeStatus(obj *github.MungeObject, reason string) {
 	status, ok := obj.GetStatus(sqContext)
 	if !ok || status == nil || *status.Description != reason {
 		state := reasonToState(reason)
-		url := fmt.Sprintf("%s/#/prs?prDisplay=%d&historyDisplay=%d", sq.ContextURL, *obj.Issue.Number, *obj.Issue.Number)
+		sq.opts.Lock()
+		contextURL := sq.ContextURL
+		sq.opts.Unlock()
+		url := fmt.Sprintf("%s/#/prs?prDisplay=%d&historyDisplay=%d", contextURL, *obj.Issue.Number, *obj.Issue.Number)
 		_ = obj.SetStatus(state, url, reason, sqContext)
 	}
 
@@ -900,13 +940,22 @@ func (sq *SubmitQueue) validForMergeExt(obj *github.MungeObject, checkStatus boo
 		return false
 	}
 
+	// Lock to get options since we may be running on a goroutine besides the main one.
+	sq.opts.Lock()
+	gateCLA := sq.GateCLA
+	gateApproved := sq.GateApproved
+	doNotMergeMilestones := sq.DoNotMergeMilestones
+	mergeContexts := mungeopts.RequiredContexts.Merge
+	retestContexts := mungeopts.RequiredContexts.Retest
+	sq.opts.Unlock()
+
 	if milestone := obj.Issue.Milestone; true {
 		title := ""
 		// Net set means the empty milestone, ""
 		if milestone != nil && milestone.Title != nil {
 			title = *milestone.Title
 		}
-		for _, blocked := range sq.DoNotMergeMilestones {
+		for _, blocked := range doNotMergeMilestones {
 			if title == blocked {
 				sq.SetMergeStatus(obj, unmergeableMilestone)
 				return false
@@ -915,7 +964,7 @@ func (sq *SubmitQueue) validForMergeExt(obj *github.MungeObject, checkStatus boo
 	}
 
 	// Must pass CLA checks
-	if sq.GateCLA {
+	if gateCLA {
 		if !obj.HasLabel(claYesLabel) && !obj.HasLabel(claHumanLabel) && !obj.HasLabel(cncfClaYesLabel) {
 			sq.SetMergeStatus(obj, noCLA)
 			return false
@@ -933,15 +982,15 @@ func (sq *SubmitQueue) validForMergeExt(obj *github.MungeObject, checkStatus boo
 
 	// Validate the status information for this PR
 	if checkStatus {
-		if len(mungeopts.RequiredContexts.Merge) > 0 {
-			if success, ok := obj.IsStatusSuccess(mungeopts.RequiredContexts.Merge); !ok || !success {
-				sq.setContextFailedStatus(obj, mungeopts.RequiredContexts.Merge)
+		if len(mergeContexts) > 0 {
+			if success, ok := obj.IsStatusSuccess(mergeContexts); !ok || !success {
+				sq.setContextFailedStatus(obj, mergeContexts)
 				return false
 			}
 		}
-		if len(mungeopts.RequiredContexts.Retest) > 0 {
-			if success, ok := obj.IsStatusSuccess(mungeopts.RequiredContexts.Retest); !ok || !success {
-				sq.setContextFailedStatus(obj, mungeopts.RequiredContexts.Retest)
+		if len(retestContexts) > 0 {
+			if success, ok := obj.IsStatusSuccess(retestContexts); !ok || !success {
+				sq.setContextFailedStatus(obj, retestContexts)
 				return false
 			}
 		}
@@ -961,7 +1010,7 @@ func (sq *SubmitQueue) validForMergeExt(obj *github.MungeObject, checkStatus boo
 		return false
 	}
 
-	if sq.GateApproved {
+	if gateApproved {
 		if !obj.HasLabel(approvedLabel) {
 			sq.SetMergeStatus(obj, noApproved)
 			return false
@@ -1313,7 +1362,11 @@ func (sq *SubmitQueue) doGithubE2EAndMerge(obj *github.MungeObject) bool {
 
 // Returns true if merge status changes, and false otherwise.
 func (sq *SubmitQueue) retestPR(obj *github.MungeObject) bool {
-	if len(mungeopts.RequiredContexts.Retest) == 0 {
+	sq.opts.Lock()
+	retestContexts := mungeopts.RequiredContexts.Retest
+	sq.opts.Unlock()
+
+	if len(retestContexts) == 0 {
 		return false
 	}
 
@@ -1326,7 +1379,7 @@ func (sq *SubmitQueue) retestPR(obj *github.MungeObject) bool {
 	// Wait for the retest to start
 	sq.SetMergeStatus(obj, ghE2EWaitingStart)
 	atomic.AddInt32(&sq.prsTested, 1)
-	done := obj.WaitForPending(mungeopts.RequiredContexts.Retest)
+	done := obj.WaitForPending(retestContexts)
 	if !done {
 		sq.SetMergeStatus(obj, fmt.Sprintf("Timed out waiting for PR %d to start testing", obj.Number()))
 		return true
@@ -1334,14 +1387,14 @@ func (sq *SubmitQueue) retestPR(obj *github.MungeObject) bool {
 
 	// Wait for the status to go back to something other than pending
 	sq.SetMergeStatus(obj, ghE2ERunning)
-	done = obj.WaitForNotPending(mungeopts.RequiredContexts.Retest)
+	done = obj.WaitForNotPending(retestContexts)
 	if !done {
 		sq.SetMergeStatus(obj, fmt.Sprintf("Timed out waiting for PR %d to finish testing", obj.Number()))
 		return true
 	}
 
 	// Check if the thing we care about is success
-	if success, ok := obj.IsStatusSuccess(mungeopts.RequiredContexts.Retest); !success || !ok {
+	if success, ok := obj.IsStatusSuccess(retestContexts); !success || !ok {
 		sq.SetMergeStatus(obj, ghE2EFailed)
 		return true
 	}
@@ -1419,30 +1472,40 @@ func (sq *SubmitQueue) serveBatch(res http.ResponseWriter, req *http.Request) {
 }
 
 func (sq *SubmitQueue) serveMergeInfo(res http.ResponseWriter, req *http.Request) {
+	// Lock to get options since we are not running in the main goroutine.
+	sq.opts.Lock()
+	doNotMergeMilestones := sq.DoNotMergeMilestones
+	gateApproved := sq.GateApproved
+	gateCLA := sq.GateCLA
+	mergeContexts := mungeopts.RequiredContexts.Merge
+	retestContexts := mungeopts.RequiredContexts.Retest
+	contextUrl := sq.ContextURL
+	sq.opts.Unlock()
+
 	res.Header().Set("Content-type", "text/plain")
 	res.WriteHeader(http.StatusOK)
 	var out bytes.Buffer
 	out.WriteString("PRs must meet the following set of conditions to be considered for automatic merging by the submit queue.")
 	out.WriteString("<ol>")
-	if sq.GateCLA {
+	if gateCLA {
 		out.WriteString(fmt.Sprintf("<li>The PR must have the label %q, %q or %q </li>", claYesLabel, cncfClaYesLabel, claHumanLabel))
 	}
 	out.WriteString("<li>The PR must be mergeable. aka cannot need a rebase</li>")
-	if len(mungeopts.RequiredContexts.Merge) > 0 || len(mungeopts.RequiredContexts.Retest) > 0 {
+	if len(mergeContexts) > 0 || len(retestContexts) > 0 {
 		out.WriteString("<li>All of the following github statuses must be green")
 		out.WriteString("<ul>")
-		for _, context := range mungeopts.RequiredContexts.Merge {
+		for _, context := range mergeContexts {
 			out.WriteString(fmt.Sprintf("<li>%s</li>", context))
 		}
-		for _, context := range mungeopts.RequiredContexts.Retest {
+		for _, context := range retestContexts {
 			out.WriteString(fmt.Sprintf("<li>%s</li>", context))
 		}
 		out.WriteString("</ul>")
 	}
-	out.WriteString(fmt.Sprintf("<li>The PR cannot have any of the following milestones: %q</li>", sq.DoNotMergeMilestones))
+	out.WriteString(fmt.Sprintf("<li>The PR cannot have any of the following milestones: %q</li>", doNotMergeMilestones))
 	out.WriteString(fmt.Sprintf(`<li>The PR must have the %q label</li>`, lgtmLabel))
 	out.WriteString(fmt.Sprintf("<li>The PR must not have been updated since the %q label was applied</li>", lgtmLabel))
-	if sq.GateApproved {
+	if gateApproved {
 		out.WriteString(fmt.Sprintf(`<li>The PR must have the %q label</li>`, approvedLabel))
 		out.WriteString(fmt.Sprintf("<li>The PR must not have been updated since the %q label was applied</li>", approvedLabel))
 	}
@@ -1450,11 +1513,11 @@ func (sq *SubmitQueue) serveMergeInfo(res http.ResponseWriter, req *http.Request
 	out.WriteString(`</ol><br>`)
 	out.WriteString("The PR can then be queued to re-test before merge. Once it reaches the top of the queue all of the above conditions must be true but so must the following:")
 	out.WriteString("<ol>")
-	out.WriteString(fmt.Sprintf("<li>All of the <a href=%s/#/e2e>continuously running e2e tests</a> must be passing</li>", sq.ContextURL))
-	if len(mungeopts.RequiredContexts.Retest) > 0 {
+	out.WriteString(fmt.Sprintf("<li>All of the <a href=%s/#/e2e>continuously running e2e tests</a> must be passing</li>", contextUrl))
+	if len(retestContexts) > 0 {
 		out.WriteString("<li>All of the following tests must pass a second time")
 		out.WriteString("<ul>")
-		for _, context := range mungeopts.RequiredContexts.Retest {
+		for _, context := range retestContexts {
 			out.WriteString(fmt.Sprintf("<li>%s</li>", context))
 		}
 		out.WriteString("</ul>")
