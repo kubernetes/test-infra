@@ -1314,8 +1314,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-stackdriver
   - name: gce-container-vm
     test_group_name: ci-kubernetes-e2e-gce-container-vm
-  - name: gce-enormous-cluster
-    test_group_name: ci-kubernetes-e2e-gce-enormous-cluster
   - name: gce-es-logging
     test_group_name: ci-kubernetes-e2e-gce-es-logging
   - name: gci-gce-es-logging
@@ -1410,6 +1408,27 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-taint-evict
   - name: gce-gpu
     test_group_name: ci-kubernetes-e2e-gce-gpu
+
+- name: google-gce-scale
+  dashboard_tab:
+  - name: gce
+    test_group_name: ci-kubernetes-e2e-gce-scalability
+  - name: gce-1.6
+    test_group_name: ci-kubernetes-e2e-gce-scalability-release-1-6
+  - name: gce-1.7
+    test_group_name: ci-kubernetes-e2e-gce-scalability-release-1-7
+  - name: gce-enormous-cluster
+    test_group_name: ci-kubernetes-e2e-gce-enormous-cluster
+  - name: gce-enormous-deploy
+    test_group_name: ci-kubernetes-e2e-gce-enormous-deploy
+  - name: gce-enormous-teardown
+    test_group_name: ci-kubernetes-e2e-gce-enormous-teardown
+  - name: gci-gce
+    test_group_name: ci-kubernetes-e2e-gci-gce-scalability
+  - name: gce-gce-1.6
+    test_group_name: ci-kubernetes-e2e-gci-gce-scalability-release-1-6
+  - name: gce-gce-1.7
+    test_group_name: ci-kubernetes-e2e-gci-gce-scalability-release-1-7
 
 # "google-gci-dev" is a tab for tests that are used for GCI(aka COS) image
 # development and qualification. It should not be confused with the "google-gci"
@@ -1522,8 +1541,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gci-gke-ingress
   - name: gci-gke-ingress-1.5
     test_group_name: ci-kubernetes-e2e-gci-gke-ingress-release-1-5
-  - name: gke-large-cluster
-    test_group_name: ci-kubernetes-e2e-gke-large-cluster
   - name: gke-multizone
     test_group_name: ci-kubernetes-e2e-gke-multizone
   - name: gci-gke-multizone
@@ -1626,6 +1643,15 @@ dashboards:
   - name: gke-ubuntustable1-k8sstable1-updown
     test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-updown
 
+- name: google-gke-scale
+  dashboard_tab:
+  - name: gke-large-cluster
+    test_group_name: ci-kubernetes-e2e-gke-large-cluster
+  - name: gke-large-deploy
+    test_group_name: ci-kubernetes-e2e-gke-large-deploy
+  - name: gke-large-teardown
+    test_group_name: ci-kubernetes-e2e-gke-large-teardown
+
 - name: google-gke-staging
   dashboard_tab:
   - name: gke-staging
@@ -1654,18 +1680,18 @@ dashboards:
 
 - name: google-kubemark
   dashboard_tab:
-  - name: 100-gce
+  - name: kubemark-100
     test_group_name: ci-kubernetes-kubemark-100-gce
-  - name: 5-gce
-    test_group_name: ci-kubernetes-kubemark-5-gce
-  - name: 5-gce-1.5
-    test_group_name: ci-kubernetes-kubemark-5-gce-1.5
-  - name: 500-gce
-    test_group_name: ci-kubernetes-kubemark-500-gce
-  - name: gce-scale
-    test_group_name: ci-kubernetes-kubemark-gce-scale
-  - name: high-density-100-gce
+  - name: kubemark-100-high-density
     test_group_name: ci-kubernetes-kubemark-high-density-100-gce
+  - name: kubemark-small
+    test_group_name: ci-kubernetes-kubemark-5-gce
+  - name: kubemark-small-1.5
+    test_group_name: ci-kubernetes-kubemark-5-gce-1.5
+  - name: kubemark-500
+    test_group_name: ci-kubernetes-kubemark-500-gce
+  - name: kubemark-5000
+    test_group_name: ci-kubernetes-kubemark-gce-scale
 
 - name: google-soak
   dashboard_tab:
@@ -2297,20 +2323,12 @@ dashboards:
 
 - name: misc
   dashboard_tab:
-  - name: gce-enormous-teardown
-    test_group_name: ci-kubernetes-e2e-gce-enormous-teardown
-  - name: gke-large-deploy
-    test_group_name: ci-kubernetes-e2e-gke-large-deploy
   - name: cross-build
     test_group_name: ci-kubernetes-cross-build
   - name: kops-build
     test_group_name: ci-kops-build
-  - name: gce-enormous-deploy
-    test_group_name: ci-kubernetes-e2e-gce-enormous-deploy
   - name: debian-unstable
     test_group_name: ci-kubernetes-build-debian-unstable
-  - name: gke-large-teardown
-    test_group_name: ci-kubernetes-e2e-gke-large-teardown
   - name: update-jenkins-jobs
     test_group_name: kubernetes-update-jenkins-jobs
   - name: garbage-collector
@@ -2941,11 +2959,6 @@ dashboards:
 
 # Move sig-release here
 
-- name: sig-scalability
-  dashboard_tab:
-  - name: TODO
-    test_group_name: ci-kubernetes-e2e-gce-slow  # TODO(fejta): fix
-
 - name: sig-scheduling
   dashboard_tab:
   - name: TODO
@@ -3050,3 +3063,9 @@ dashboard_groups:
   - release-1.6-blocking
   - release-1.7-all
   - release-1.7-blocking
+
+- name: sig-scalability-all
+  dashboard_names:
+  - google-gce-scale
+  - google-gke-scale
+  - google-kubemark
