@@ -1169,3 +1169,32 @@ go_library(
     srcs = ["github.com/bwmarrin/snowflake/snowflake.go"],
     tags = ["automanaged"],
 )
+
+go_library(
+    name = "github.com/golang/lint",
+    srcs = ["github.com/golang/lint/lint.go"],
+    tags = ["automanaged"],
+    deps = ["//vendor:golang.org/x/tools/go/gcexportdata"],
+)
+
+go_library(
+    name = "golang.org/x/tools/go/gcexportdata",
+    srcs = [
+        "golang.org/x/tools/go/gcexportdata/gcexportdata.go",
+        "golang.org/x/tools/go/gcexportdata/importer.go",
+    ],
+    tags = ["automanaged"],
+    deps = ["//vendor:golang.org/x/tools/go/gcimporter15"],
+)
+
+go_library(
+    name = "golang.org/x/tools/go/gcimporter15",
+    srcs = [
+        "golang.org/x/tools/go/gcimporter15/bexport.go",
+        "golang.org/x/tools/go/gcimporter15/bimport.go",
+        "golang.org/x/tools/go/gcimporter15/exportdata.go",
+        "golang.org/x/tools/go/gcimporter15/gcimporter.go",
+        "golang.org/x/tools/go/gcimporter15/isAlias18.go",
+    ],
+    tags = ["automanaged"],
+)
