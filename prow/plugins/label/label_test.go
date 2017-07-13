@@ -206,7 +206,6 @@ func TestLabel(t *testing.T) {
 		expectedRemovedLabels []string
 		repoLabels            []string
 		issueLabels           []string
-		isPr                  bool
 	}
 	testcases := []testCase{
 		{

@@ -76,11 +76,7 @@ func (s *store) save() error {
 	if err != nil {
 		return err
 	}
-	err = os.Rename(s.storagePath+".tmp", s.storagePath)
-	if err != nil {
-		return err
-	}
-	return nil
+	return os.Rename(s.storagePath+".tmp", s.storagePath)
 }
 
 func (s *store) vend(b string) int {
@@ -170,7 +166,7 @@ func (f fallbackHandler) get(b string) int {
 		} else {
 			log.WithError(err).Errorf("Failed to GET %s", url)
 		}
-		time.Sleep(2)
+		time.Sleep(2 * time.Second)
 	}
 
 	n, err := strconv.Atoi(strings.TrimSpace(string(body)))
