@@ -1,0 +1,79 @@
+# Update SVG with this command:
+# dot architecture.dot -Tsvg -oarchitecture.svg
+
+digraph G {
+	label="Last updated 2017-07-13"  # UPDATE WHEN CHANGED!
+
+	# external services
+	legend_ext, GCS, PubSub, GitHub, BigQuery [style=filled, fillcolor=gray, shape=square]
+
+	# things that host websites
+	legend_site, Triage, Mungegithub, Deck, Testgrid, Gubernator [shape=house, fillcolor=lightblue, style=filled]
+
+	# handy links!
+	Triage [href="https://go.k8s.io/triage"]
+	Gubernator [href="https://k8s-gubernator.appspot.com"]
+	Testgrid [href="https://testgrid.k8s.io"]
+	Deck [href="https://prow.k8s.io"]
+	Mungegithub [href="https://submit-queue.k8s.io"]
+	BigQuery [href="https://bigquery.cloud.google.com/table/k8s-gubernator:build.week"]
+
+	subgraph cluster_Prow {
+		label="Prow"
+		color=blue
+		Hook [label="Hook\nhandle GitHub events"]
+		Splice [label="Splice\nstart batch jobs"]
+		Deck [label="Deck\nfrontend"]
+		Plank [label="Plank\nProwJob controller"]
+		Tot [label="Tot\nvend build numbers"]
+		Sinker [label="Sinker\ndeletes old\npods/ProwJobs"]
+		Horologium [label="Horologium\ncreate periodic ProwJobs"]
+		Job
+		ApiServer [label="Kubernetes\nAPI Server" shape=septagon]
+	}
+
+	subgraph cluster_legend {
+		label="Legend"
+		rank=sink
+		legend_ext [label="External\nService"]
+		legend_site [label="Serves\nHTTP"]
+	}
+
+	# CONNECTIONS START HERE:
+	# graphviz's dot rendering engine generally tries to lay things out
+	# top to bottom, following edges. dir="back" is an orientation hint
+	# to the layout engine, to try to keep hierarchy in a sensible order.
+	# hack to get legend near the bottom
+	Testgrid -> legend_ext [style="invis"]
+
+	Kettle [label="Kettle\nget GCS results into BQ"]
+
+	GitHub -> Gubernator [label="PR events"]
+	GitHub -> Mungegithub [dir="both"]
+	Mungegithub -> Splice [dir="back", label="read\nqueue"]
+	GitHub -> Hook [label="events"]
+	Mungegithub -> Deck [label="read\nbatch\njobs"]
+	GCS -> Gubernator [dir="back"]
+	Job -> GCS [label="publish\nstarted.json, finished.json,\nbuild-log.txt, artifacts/"]
+
+	Plank -> GitHub [label="update PR status\ncomment failures"]
+
+	subgraph cluster_Prow {
+		Plank -> ApiServer
+		Plank -> Tot
+		Splice -> ApiServer
+		Deck -> ApiServer [label="read"]
+		Hook -> ApiServer [label="create ProwJob"]
+		ApiServer -> Job [label="start Pod"]
+		ApiServer -> Sinker [dir="back"]
+		ApiServer -> Horologium [dir="back"]
+	}
+
+	GCS -> PubSub
+	Kettle -> GCS [label="read"]
+	Kettle -> PubSub [label="read"]
+	Kettle -> BigQuery [label="write"]
+	BigQuery -> Triage [dir="back"]
+	GCS -> Testgrid [dir="back"]
+
+}

@@ -5,6 +5,9 @@
 The test-infra repository contains a collection of tools for testing Kubernetes
 and displaying Kubernetes tests results. See also [CONTRIBUTING.md](CONTRIBUTING.md).
 
+See the [architecture diagram](docs/architecture.svg) for an overview of how
+the different services interact.
+
 ## Viewing test results
 
 * The [Kubernetes TestGrid](https://k8s-testgrid.appspot.com/) shows historical test results.
