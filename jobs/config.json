@@ -494,7 +494,7 @@
       "--timeout=180m",
       "--extract=ci/latest",
       "--check-leaked-resources",
-      "--test_args=--ginkgo.focus=\\[Feature:(DynamicKubeletConfig|Audit)\\]|Initializers"
+      "--test_args=--ginkgo.focus=\\[Feature:(DynamicKubeletConfig|Audit|LocalPersistentVolumes)\\]|Initializers"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -2855,7 +2855,7 @@
       "--timeout=180m",
       "--extract=ci/latest",
       "--check-leaked-resources",
-      "--test_args=--ginkgo.focus=\\[Feature:Audit\\]"
+      "--test_args=--ginkgo.focus=\\[Feature:(Audit|LocalPersistentVolumes)\\]"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
