@@ -139,7 +139,7 @@ function redraw() {
         var r = document.createElement("tr");
         r.appendChild(stateCell(build.state));
         if (build.pod_name) {
-            r.appendChild(createLinkCell("\u2261", "log?pod=" + build.pod_name, "Build log."));
+            r.appendChild(createLinkCell("\u2261", "log?job=" + build.job + "&id=" + build.build_id, "Build log."));
         } else {
             r.appendChild(createTextCell(""));
         }
