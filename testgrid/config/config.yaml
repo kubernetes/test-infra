@@ -135,6 +135,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-stackdriver
 - name: ci-kubernetes-e2e-gce-container-vm
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-container-vm
+- name: ci-kubernetes-e2e-gce-enormous-cluster
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-enormous-cluster
 - name: ci-kubernetes-e2e-gce-es-logging
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-es-logging
 - name: ci-kubernetes-e2e-gci-gce-es-logging
@@ -321,6 +323,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-ingress
 - name: ci-kubernetes-e2e-gci-gke-ingress-release-1-5
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-ingress-release-1-5
+- name: ci-kubernetes-e2e-gke-large-cluster
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-large-cluster
 - name: ci-kubernetes-e2e-gke-multizone
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-multizone
 - name: ci-kubernetes-e2e-gci-gke-multizone
@@ -393,6 +397,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-kubemark-100-gce
 - name: ci-kubernetes-kubemark-5-gce
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-kubemark-5-gce
+- name: ci-kubernetes-kubemark-5-gce-1.5
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-kubemark-5-gce-1.5
 - name: ci-kubernetes-kubemark-500-gce
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-kubemark-500-gce
 - name: ci-kubernetes-kubemark-gce-scale
@@ -1411,6 +1417,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-scalability-release-1-6
   - name: gce-1.7
     test_group_name: ci-kubernetes-e2e-gce-scalability-release-1-7
+  - name: gce-enormous-cluster
+    test_group_name: ci-kubernetes-e2e-gce-enormous-cluster
   - name: gce-enormous-deploy
     test_group_name: ci-kubernetes-e2e-gce-enormous-deploy
   - name: gce-enormous-teardown
@@ -1637,6 +1645,8 @@ dashboards:
 
 - name: google-gke-scale
   dashboard_tab:
+  - name: gke-large-cluster
+    test_group_name: ci-kubernetes-e2e-gke-large-cluster
   - name: gke-large-deploy
     test_group_name: ci-kubernetes-e2e-gke-large-deploy
   - name: gke-large-teardown
@@ -1674,8 +1684,10 @@ dashboards:
     test_group_name: ci-kubernetes-kubemark-100-gce
   - name: kubemark-100-high-density
     test_group_name: ci-kubernetes-kubemark-high-density-100-gce
-  - name: kubemark-5
+  - name: kubemark-small
     test_group_name: ci-kubernetes-kubemark-5-gce
+  - name: kubemark-small-1.5
+    test_group_name: ci-kubernetes-kubemark-5-gce-1.5
   - name: kubemark-500
     test_group_name: ci-kubernetes-kubemark-500-gce
   - name: kubemark-5000

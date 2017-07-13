@@ -76,6 +76,7 @@ data:
     ci-kubernetes-e2e-gci-gke-subnet,\
     ci-kubernetes-e2e-gci-gke-test,\
     ci-kubernetes-e2e-gci-gke-updown,\
+    ci-kubernetes-e2e-gke-large-cluster,\
     ci-kubernetes-e2e-gke-serial,\
     ci-kubernetes-e2e-gke-staging,\
     ci-kubernetes-e2e-gke-staging-parallel,\
