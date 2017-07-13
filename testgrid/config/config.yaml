@@ -1852,29 +1852,6 @@ dashboards:
   - name: gce-rollback-1.5
     test_group_name: ci-kubernetes-e2e-gce-gci-1-5-rollback-etcd
 
-- name: cluster-federation
-  dashboard_tab:
-  - name: gce
-    test_group_name: ci-kubernetes-e2e-gce-federation
-  - name: gce-serial
-    test_group_name: ci-kubernetes-e2e-gce-federation-serial
-  - name: gce-1.6
-    test_group_name: ci-kubernetes-e2e-gce-federation-release-1-6
-  - name: soak-gce-deploy
-    test_group_name: ci-kubernetes-soak-gce-federation-deploy
-  - name: soak-gce-test
-    test_group_name: ci-kubernetes-soak-gce-federation-test
-  - name: pull-gce-deploy
-    test_group_name: ci-kubernetes-pull-gce-federation-deploy
-  - name: pull-gce-deploy-canary
-    test_group_name: ci-kubernetes-pull-gce-federation-deploy-canary
-  - name: build
-    test_group_name: ci-kubernetes-federation-build
-  - name: build-1.6
-    test_group_name: ci-kubernetes-federation-build-1.6
-  - name: build-1.7
-    test_group_name: ci-kubernetes-federation-build-1.7
-
 - name: release-1.6-all
   dashboard_tab:
   - name: build-1.6
@@ -2870,7 +2847,28 @@ dashboards:
   - name: TODO
     test_group_name: ci-kubernetes-e2e-gce-slow  # TODO(fejta): fix
 
-# Rename and move sig-federation here
+- name: sig-federation
+  dashboard_tab:
+  - name: gce
+    test_group_name: ci-kubernetes-e2e-gce-federation
+  - name: gce-serial
+    test_group_name: ci-kubernetes-e2e-gce-federation-serial
+  - name: gce-1.6
+    test_group_name: ci-kubernetes-e2e-gce-federation-release-1-6
+  - name: soak-gce-deploy
+    test_group_name: ci-kubernetes-soak-gce-federation-deploy
+  - name: soak-gce-test
+    test_group_name: ci-kubernetes-soak-gce-federation-test
+  - name: pull-gce-deploy
+    test_group_name: ci-kubernetes-pull-gce-federation-deploy
+  - name: pull-gce-deploy-canary
+    test_group_name: ci-kubernetes-pull-gce-federation-deploy-canary
+  - name: build
+    test_group_name: ci-kubernetes-federation-build
+  - name: build-1.6
+    test_group_name: ci-kubernetes-federation-build-1.6
+  - name: build-1.7
+    test_group_name: ci-kubernetes-federation-build-1.7
 
 - name: sig-instrumentation
   dashboard_tab:
