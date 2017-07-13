@@ -1153,10 +1153,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster-new
 - name: ci-kubernetes-e2e-mlkube-gke
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-mlkube-gke
-
-#ppc64le test results
-- name: ppc64le-conformance
-  gcs_prefix: ppc64le-kubernetes/logs/ci-kubernetes-conformance
 # Add New Testgroups Here
 
 #
@@ -3012,12 +3008,6 @@ dashboards:
   dashboard_tab:
   - name: TODO
     test_group_name: ci-kubernetes-e2e-gce-slow  # TODO(fejta): fix
-
-- name: ppc64le
-  dashboard_tab:
-  -name: conformance
-   test_group_name: ppc64le-conformance
-
 
 #
 # Start dashboard groups
