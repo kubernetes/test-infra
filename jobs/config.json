@@ -6087,7 +6087,6 @@
     "args": [
       "--cluster=canary-e2e-prow",
       "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/ci-kubernetes-e2e-gce.env",
       "--env-file=jobs/ci-kubernetes-e2e-prow-canary.env",
       "--tag=latest",
       "--timeout=40m",
