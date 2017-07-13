@@ -2281,10 +2281,6 @@ class JobTest(unittest.TestCase):
                             and '--check-leaked-resources' in args
                             and 'generated' not in config[job].get('tags', [])):
                         self.fail('Only GCP jobs can --check-leaked-resources, not %s' % job)
-                    if (
-                            '--check-leaked-resources' not in args
-                            and 'generated' in config[job].get('tags', [])):
-                        self.fail('Generated job %s must have --check-leaked-resources=yes' % job)
                     if '--mode=local' in args:
                         self.fail('--mode=local is default now, drop that for %s' % job)
 

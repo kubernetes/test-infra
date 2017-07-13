@@ -85,12 +85,12 @@ def substitute(job_name, lines):
             for line in lines]
 
 
-def get_envs(desc, field):
+def get_envs(job_name, desc, field):
     """Returns a list of envs for the given field."""
     header = ['', '# The %s configurations.' % desc]
     if not field:
         return header
-    return header + field.get('envs', [])
+    return header + substitute(job_name, field.get('envs', []))
 
 
 def get_args(job_name, field):
@@ -98,11 +98,6 @@ def get_args(job_name, field):
     if not field:
         return []
     return substitute(job_name, field.get('args', []))
-
-
-def get_project_id(job_name):
-    """Returns the project id generated from the given job_name."""
-    return 'k8s-test-%s' % get_sha1_hash(job_name)[:10]
 
 
 def get_job_def(env_filename, args, sig_owners):
@@ -144,18 +139,28 @@ def write_prow_configs_file(output_dir, job_defs):
         fp.write('\n')
 
 
+def apply_job_overrides(envs_or_args, job_envs_or_args):
+    '''Applies the envs or args overrides defined in the job level'''
+    for job_env_or_arg in job_envs_or_args:
+        name = job_env_or_arg.split('=', 1)[0]
+        env_or_arg = next(
+            (x for x in envs_or_args if (x.strip().startswith('%s=' % name) or
+                                         x.strip() == name)), None)
+        if env_or_arg:
+            envs_or_args.remove(env_or_arg)
+        envs_or_args.append(job_env_or_arg)
+
+
 def generate_envs(job_name, common, cloud_provider, image, k8s_version,
                   test_suite, job):
     """Returns a list of envs fetched from the given fields."""
     envs = ['# AUTO-GENERATED - DO NOT EDIT.']
-    envs.extend(get_envs('common', common))
-    envs.extend(get_envs('cloud provider', cloud_provider))
-    envs.extend(get_envs('image', image))
-    envs.extend(get_envs('k8s version', k8s_version))
-    envs.extend(get_envs('test suite', test_suite))
-    envs.extend(get_envs('job', job))
-    if not any(e.strip().startswith('PROJECT=') for e in envs):
-        envs.extend(['', 'PROJECT=%s' % get_project_id(job_name)])
+    envs.extend(get_envs(job_name, 'common', common))
+    envs.extend(get_envs(job_name, 'cloud provider', cloud_provider))
+    envs.extend(get_envs(job_name, 'image', image))
+    envs.extend(get_envs(job_name, 'k8s version', k8s_version))
+    envs.extend(get_envs(job_name, 'test suite', test_suite))
+    apply_job_overrides(envs, get_envs(job_name, 'job', job))
     return envs
 
 
@@ -168,7 +173,7 @@ def generate_args(job_name, common, cloud_provider, image, k8s_version,
     args.extend(get_args(job_name, image))
     args.extend(get_args(job_name, k8s_version))
     args.extend(get_args(job_name, test_suite))
-    args.extend(get_args(job_name, job))
+    apply_job_overrides(args, get_args(job_name, job))
     return args
 
 

@@ -45,166 +45,232 @@ jobs:
   # +------------+----------+----------+------------+------------+------------+
   ci-kubernetes-e2e-gce-cosdev-k8sdev-default:
     interval: 2h
+    args:
+    - --check-leaked-resources=false # disabled since it uses shared project.
     envs:
     - PROJECT=cos-image-validation
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-cosdev-k8sdev-slow:
     interval: 2h
+    args:
+    - --check-leaked-resources=false # disabled since it uses shared project.
     envs:
     - PROJECT=cos-image-validation
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-cosdev-k8sdev-serial:
     interval: 2h
+    args:
+    - --check-leaked-resources=false # disabled since it uses shared project.
     envs:
     - PROJECT=cos-image-validation
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-cosdev-k8sbeta-default:
     interval: 2h
+    args:
+    - --check-leaked-resources=false # disabled since it uses shared project.
     envs:
     - PROJECT=cos-image-validation
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-cosdev-k8sbeta-slow:
     interval: 2h
+    args:
+    - --check-leaked-resources=false # disabled since it uses shared project.
     envs:
     - PROJECT=cos-image-validation
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-cosdev-k8sbeta-serial:
     interval: 2h
+    args:
+    - --check-leaked-resources=false # disabled since it uses shared project.
     envs:
     - PROJECT=cos-image-validation
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-cosdev-k8sstable1-default:
     interval: 2h
+    args:
+    - --check-leaked-resources=false # disabled since it uses shared project.
     envs:
     - PROJECT=cos-image-validation
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-cosdev-k8sstable1-slow:
     interval: 2h
+    args:
+    - --check-leaked-resources=false # disabled since it uses shared project.
     envs:
     - PROJECT=cos-image-validation
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-cosdev-k8sstable1-serial:
     interval: 2h
+    args:
+    - --check-leaked-resources=false # disabled since it uses shared project.
     envs:
     - PROJECT=cos-image-validation
     sigOwners: ['sig-node']
 # ci-kubernetes-e2e-gce-cosbeta-k8sdev-default:
 #   interval: 2h
+#   args:
+#   - --check-leaked-resources=false # disabled since it uses shared project.
 #   envs:
 #   - PROJECT=cos-image-validation
 #   sigOwners: ['sig-node']
 # ci-kubernetes-e2e-gce-cosbeta-k8sdev-slow:
 #   interval: 2h
+#   args:
+#   - --check-leaked-resources=false # disabled since it uses shared project.
 #   envs:
 #   - PROJECT=cos-image-validation
 #   sigOwners: ['sig-node']
 # ci-kubernetes-e2e-gce-cosbeta-k8sdev-serial:
 #   interval: 2h
+#   args:
+#   - --check-leaked-resources=false # disabled since it uses shared project.
 #   envs:
 #   - PROJECT=cos-image-validation
 #   sigOwners: ['sig-node']
 # ci-kubernetes-e2e-gce-cosbeta-k8sbeta-default:
 #   interval: 2h
+#   args:
+#   - --check-leaked-resources=false # disabled since it uses shared project.
 #   envs:
 #   - PROJECT=cos-image-validation
 #   sigOwners: ['sig-node']
 # ci-kubernetes-e2e-gce-cosbeta-k8sbeta-slow:
 #   interval: 2h
+#   args:
+#   - --check-leaked-resources=false # disabled since it uses shared project.
 #   envs:
 #   - PROJECT=cos-image-validation
 #   sigOwners: ['sig-node']
 # ci-kubernetes-e2e-gce-cosbeta-k8sbeta-serial:
 #   interval: 2h
+#   args:
+#   - --check-leaked-resources=false # disabled since it uses shared project.
 #   envs:
 #   - PROJECT=cos-image-validation
 #   sigOwners: ['sig-node']
 # ci-kubernetes-e2e-gce-cosbeta-k8sstable1-default:
 #   interval: 2h
+#   args:
+#   - --check-leaked-resources=false # disabled since it uses shared project.
 #   envs:
 #   - PROJECT=cos-image-validation
 #   sigOwners: ['sig-node']
 # ci-kubernetes-e2e-gce-cosbeta-k8sstable1-slow:
 #   interval: 2h
+#   args:
+#   - --check-leaked-resources=false # disabled since it uses shared project.
 #   envs:
 #   - PROJECT=cos-image-validation
 #   sigOwners: ['sig-node']
 # ci-kubernetes-e2e-gce-cosbeta-k8sstable1-serial:
 #   interval: 2h
+#   args:
+#   - --check-leaked-resources=false # disabled since it uses shared project.
 #   envs:
 #   - PROJECT=cos-image-validation
 #   sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-cosstable1-k8sdev-default:
     interval: 2h
+    args:
+    - --check-leaked-resources=false # disabled since it uses shared project.
     envs:
     - PROJECT=cos-image-validation
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-cosstable1-k8sdev-slow:
     interval: 2h
+    args:
+    - --check-leaked-resources=false # disabled since it uses shared project.
     envs:
     - PROJECT=cos-image-validation
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-cosstable1-k8sdev-serial:
     interval: 2h
+    args:
+    - --check-leaked-resources=false # disabled since it uses shared project.
     envs:
     - PROJECT=cos-image-validation
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-cosstable1-k8sbeta-default:
     interval: 2h
+    args:
+    - --check-leaked-resources=false # disabled since it uses shared project.
     envs:
     - PROJECT=cos-image-validation
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-cosstable1-k8sbeta-slow:
     interval: 2h
+    args:
+    - --check-leaked-resources=false # disabled since it uses shared project.
     envs:
     - PROJECT=cos-image-validation
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-cosstable1-k8sbeta-serial:
     interval: 2h
+    args:
+    - --check-leaked-resources=false # disabled since it uses shared project.
     envs:
     - PROJECT=cos-image-validation
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-cosstable1-k8sstable1-default:
     interval: 6h
+    args:
+    - --check-leaked-resources=false # disabled since it uses shared project.
     envs:
     - PROJECT=cos-image-validation
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-cosstable1-k8sstable1-slow:
     interval: 6h
+    args:
+    - --check-leaked-resources=false # disabled since it uses shared project.
     envs:
     - PROJECT=cos-image-validation
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-cosstable1-k8sstable1-serial:
     interval: 6h
+    args:
+    - --check-leaked-resources=false # disabled since it uses shared project.
     envs:
     - PROJECT=cos-image-validation
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-cosstable1-k8sstable2-default:
     interval: 6h
+    args:
+    - --check-leaked-resources=false # disabled since it uses shared project.
     envs:
     - PROJECT=cos-image-validation
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-cosstable1-k8sstable2-slow:
     interval: 6h
+    args:
+    - --check-leaked-resources=false # disabled since it uses shared project.
     envs:
     - PROJECT=cos-image-validation
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-cosstable1-k8sstable2-serial:
     interval: 6h
+    args:
+    - --check-leaked-resources=false # disabled since it uses shared project.
     envs:
     - PROJECT=cos-image-validation
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-cosstable1-k8sstable3-default:
     interval: 6h
+    args:
+    - --check-leaked-resources=false # disabled since it uses shared project.
     envs:
     - PROJECT=cos-image-validation
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-cosstable1-k8sstable3-slow:
     interval: 6h
+    args:
+    - --check-leaked-resources=false # disabled since it uses shared project.
     envs:
     - PROJECT=cos-image-validation
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-cosstable1-k8sstable3-serial:
     interval: 6h
+    args:
+    - --check-leaked-resources=false # disabled since it uses shared project.
     envs:
     - PROJECT=cos-image-validation
     sigOwners: ['sig-node']
@@ -224,91 +290,127 @@ jobs:
   # +---------------+----------+----------+------------+------------+------------+
   ci-kubernetes-e2e-gce-ubuntudev-k8sdev-default:
     interval: 2h
+    args:
+    - --check-leaked-resources=false # disabled since it uses shared project.
     envs:
     - PROJECT=ubuntu-os-gke-cloud-dev-tests # Canonical owned project.
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-ubuntudev-k8sdev-slow:
     interval: 2h
+    args:
+    - --check-leaked-resources=false # disabled since it uses shared project.
     envs:
     - PROJECT=ubuntu-os-gke-cloud-dev-tests # Canonical owned project.
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-ubuntudev-k8sdev-serial:
     interval: 2h
+    args:
+    - --check-leaked-resources=false # disabled since it uses shared project.
     envs:
     - PROJECT=ubuntu-os-gke-cloud-dev-tests # Canonical owned project.
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-ubuntudev-k8sbeta-default:
     interval: 2h
+    args:
+    - --check-leaked-resources=false # disabled since it uses shared project.
     envs:
     - PROJECT=ubuntu-os-gke-cloud-dev-tests # Canonical owned project.
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-ubuntudev-k8sbeta-slow:
     interval: 2h
+    args:
+    - --check-leaked-resources=false # disabled since it uses shared project.
     envs:
     - PROJECT=ubuntu-os-gke-cloud-dev-tests # Canonical owned project.
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-ubuntudev-k8sbeta-serial:
     interval: 2h
+    args:
+    - --check-leaked-resources=false # disabled since it uses shared project.
     envs:
     - PROJECT=ubuntu-os-gke-cloud-dev-tests # Canonical owned project.
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-ubuntudev-k8sstable1-default:
     interval: 2h
+    args:
+    - --check-leaked-resources=false # disabled since it uses shared project.
     envs:
     - PROJECT=ubuntu-os-gke-cloud-dev-tests # Canonical owned project.
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-ubuntudev-k8sstable1-slow:
     interval: 2h
+    args:
+    - --check-leaked-resources=false # disabled since it uses shared project.
     envs:
     - PROJECT=ubuntu-os-gke-cloud-dev-tests # Canonical owned project.
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-ubuntudev-k8sstable1-serial:
     interval: 2h
+    args:
+    - --check-leaked-resources=false # disabled since it uses shared project.
     envs:
     - PROJECT=ubuntu-os-gke-cloud-dev-tests # Canonical owned project.
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-ubuntustable1-k8sdev-default:
     interval: 2h
+    args:
+    - --check-leaked-resources=false # disabled since it uses shared project.
     envs:
     - PROJECT=ubuntu-os-gke-cloud-tests # Canonical owned project.
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-ubuntustable1-k8sdev-slow:
     interval: 2h
+    args:
+    - --check-leaked-resources=false # disabled since it uses shared project.
     envs:
     - PROJECT=ubuntu-os-gke-cloud-tests # Canonical owned project.
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-ubuntustable1-k8sdev-serial:
     interval: 2h
+    args:
+    - --check-leaked-resources=false # disabled since it uses shared project.
     envs:
     - PROJECT=ubuntu-os-gke-cloud-tests # Canonical owned project.
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-ubuntustable1-k8sstable1-default:
     interval: 2h
+    args:
+    - --check-leaked-resources=false # disabled since it uses shared project.
     envs:
     - PROJECT=ubuntu-os-gke-cloud-tests # Canonical owned project.
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-ubuntustable1-k8sstable1-slow:
     interval: 2h
+    args:
+    - --check-leaked-resources=false # disabled since it uses shared project.
     envs:
     - PROJECT=ubuntu-os-gke-cloud-tests # Canonical owned project.
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-ubuntustable1-k8sstable1-serial:
     interval: 2h
+    args:
+    - --check-leaked-resources=false # disabled since it uses shared project.
     envs:
     - PROJECT=ubuntu-os-gke-cloud-tests # Canonical owned project.
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-ubuntustable1-k8sstable2-default:
     interval: 6h
+    args:
+    - --check-leaked-resources=false # disabled since it uses shared project.
     envs:
     - PROJECT=ubuntu-os-gke-cloud-tests # Canonical owned project.
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-ubuntustable1-k8sstable2-slow:
     interval: 6h
+    args:
+    - --check-leaked-resources=false # disabled since it uses shared project.
     envs:
     - PROJECT=ubuntu-os-gke-cloud-tests # Canonical owned project.
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-ubuntustable1-k8sstable2-serial:
     interval: 6h
+    args:
+    - --check-leaked-resources=false # disabled since it uses shared project.
     envs:
     - PROJECT=ubuntu-os-gke-cloud-tests # Canonical owned project.
     sigOwners: ['sig-node']
@@ -361,6 +463,9 @@ jobs:
 common:
   args:
   - --cluster=test-${job_name_hash}
+  envs:
+  # If PROJECT is not specified in 'job', use this as the default one.
+  - PROJECT=k8s-test-${job_name_hash}
 
 cloudProviders:
   gce:
