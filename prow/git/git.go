@@ -104,7 +104,7 @@ func (c *Client) Clone(repo string) (*Repo, error) {
 	c.lockRepo(repo)
 	defer c.unlockRepo(repo)
 
-	remote := filepath.Join(c.base, repo)
+	remote := c.base + "/" + repo
 	cache := filepath.Join(c.dir, repo) + ".git"
 	if _, err := os.Stat(cache); os.IsNotExist(err) {
 		// Cache miss, clone it now.
@@ -166,7 +166,7 @@ func (r *Repo) gitCommand(arg ...string) *exec.Cmd {
 
 // CheckoutPullRequest does exactly that.
 func (r *Repo) CheckoutPullRequest(number int) error {
-	fetch := r.gitCommand("fetch", filepath.Join(r.base, r.repo), fmt.Sprintf("pull/%d/head:pull%d", number, number))
+	fetch := r.gitCommand("fetch", r.base+"/"+r.repo, fmt.Sprintf("pull/%d/head:pull%d", number, number))
 	if b, err := fetch.CombinedOutput(); err != nil {
 		return fmt.Errorf("git fetch failed for PR %d: %v. output: %s", number, err, string(b))
 	}
