@@ -107,7 +107,7 @@ func (s *SigMentionHandler) Munge(obj *github.MungeObject) {
 There are no sig labels on this issue. Please [add a sig label](https://github.com/kubernetes/test-infra/blob/master/commands.md) by:
 	
 1. mentioning a sig: `+"`@kubernetes/sig-<group-name>-<group-suffix>`"+`
-    e.g., `+"`@kubernetes/contributor-experience-<group-suffix>`"+` to notify the contributor experience sig, OR
+    e.g., `+"`@kubernetes/sig-contributor-experience-<group-suffix>`"+` to notify the contributor experience sig, OR
 
 2. specifying the label manually: `+"`/sig <label>`"+`
     e.g., `+"`/sig scalability`"+` to apply the `+"`sig/scalability`"+` label
