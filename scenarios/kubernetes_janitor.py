@@ -84,6 +84,7 @@ PR_PROJECTS = {
     'k8s-jkns-pr-gke': 3,
     'k8s-jkns-pr-kubeadm': 3,
     'k8s-jkns-pr-kubemark': 3,
+    'k8s-jkns-pr-node-e2e': 3,
 }
 
 def check_pr_jobs():
@@ -108,6 +109,8 @@ def check_ci_jobs():
         if project in PR_PROJECTS:
             continue # CI janitor skips all PR jobs
         clean_project(project)
+    # Hard code node-ci project here
+    clean_project('k8s-jkns-ci-node-e2e')
 
 
 def main(args):

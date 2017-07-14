@@ -40,13 +40,6 @@
     jobs:
     - 'maintenance-pull-{suffix}'
     suffix:
-    - clean-projects:
-        branch: master
-        frequency: 'H H/3 * * *'
-        job-name: maintenance-pull-clean-projects
-        json: 0
-        repo-name: 'k8s.io/test-infra'
-        timeout: 0
     - clean-ssh-keys:
         branch: master
         frequency: '@daily'

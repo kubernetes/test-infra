@@ -41,13 +41,6 @@
     jobs:
     - 'maintenance-ci-{suffix}'
     suffix:
-    - clean-projects:
-        branch: master
-        job-name: maintenance-ci-clean-projects
-        json: 0
-        frequency: 'H H/3 * * *'
-        repo-name: 'k8s.io/test-infra'
-        timeout: 30
     - aws-janitor:
         branch: master
         frequency: 'H * * * *'

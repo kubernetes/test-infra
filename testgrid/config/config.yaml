@@ -550,8 +550,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/maintenance-hourly
 - name: maintenance-all-hourly
   gcs_prefix: kubernetes-jenkins/logs/maintenance-all-hourly
-- name: maintenance-ci-clean-projects
-  gcs_prefix: kubernetes-jenkins/logs/maintenance-ci-clean-projects
 - name: maintenance-ci-aws-janitor
   gcs_prefix: kubernetes-jenkins/logs/maintenance-ci-aws-janitor
 - name: maintenance-ci-janitor
@@ -2412,11 +2410,6 @@ dashboards:
   - name: all-hourly
     description: Schedules hourly maintenance on all attached agents
     test_group_name: maintenance-all-hourly
-    code_search_url_template:
-      url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
-  - name: ci-clean-projects
-    description: Deletes old resources from GCP projects
-    test_group_name: maintenance-ci-clean-projects
     code_search_url_template:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
   - name: maintenance-aws-janitor
