@@ -102,6 +102,7 @@ var timeSleep = time.Sleep
 type request struct {
 	method      string
 	path        string
+	accept      string
 	requestBody interface{}
 	exitCodes   []int
 }
@@ -112,7 +113,7 @@ func (c *Client) request(r *request, ret interface{}) (int, error) {
 	if c.fake || (c.dry && r.method != http.MethodGet) {
 		return r.exitCodes[0], nil
 	}
-	resp, err := c.requestRetry(r.method, r.path, r.requestBody)
+	resp, err := c.requestRetry(r.method, r.path, r.accept, r.requestBody)
 	if err != nil {
 		return 0, err
 	}
@@ -141,12 +142,12 @@ func (c *Client) request(r *request, ret interface{}) (int, error) {
 
 // Retry on transport failures. Retries on 500s, retries after sleep on
 // ratelimit exceeded, and retries 404s a couple times.
-func (c *Client) requestRetry(method, path string, body interface{}) (*http.Response, error) {
+func (c *Client) requestRetry(method, path, accept string, body interface{}) (*http.Response, error) {
 	var resp *http.Response
 	var err error
 	backoff := initialDelay
 	for retries := 0; retries < maxRetries; retries++ {
-		resp, err = c.doRequest(method, path, body)
+		resp, err = c.doRequest(method, path, accept, body)
 		if err == nil {
 			if resp.StatusCode == 404 && retries < max404Retries {
 				// Retry 404s a couple times. Sometimes GitHub is inconsistent in
@@ -190,7 +191,7 @@ func (c *Client) requestRetry(method, path string, body interface{}) (*http.Resp
 	return resp, err
 }
 
-func (c *Client) doRequest(method, path string, body interface{}) (*http.Response, error) {
+func (c *Client) doRequest(method, path, accept string, body interface{}) (*http.Response, error) {
 	var buf io.Reader
 	if body != nil {
 		b, err := json.Marshal(body)
@@ -204,12 +205,10 @@ func (c *Client) doRequest(method, path string, body interface{}) (*http.Respons
 		return nil, err
 	}
 	req.Header.Set("Authorization", "Token "+c.token)
-	if strings.HasSuffix(path, "reactions") {
-		req.Header.Add("Accept", "application/vnd.github.squirrel-girl-preview")
-	} else if strings.HasSuffix(path, "requested_reviewers") {
-		req.Header.Add("Accept", "application/vnd.github.black-cat-preview+json")
-	} else {
+	if accept == "" {
 		req.Header.Add("Accept", "application/vnd.github.v3+json")
+	} else {
+		req.Header.Add("Accept", accept)
 	}
 	// Disable keep-alive so that we don't get flakes when GitHub closes the
 	// connection prematurely.
@@ -291,6 +290,7 @@ func (c *Client) CreateCommentReaction(org, repo string, ID int, reaction string
 	_, err := c.request(&request{
 		method:      http.MethodPost,
 		path:        fmt.Sprintf("%s/repos/%s/%s/issues/comments/%d/reactions", c.base, org, repo, ID),
+		accept:      "application/vnd.github.squirrel-girl-preview",
 		exitCodes:   []int{201},
 		requestBody: &r,
 	}, nil)
@@ -303,6 +303,7 @@ func (c *Client) CreateIssueReaction(org, repo string, ID int, reaction string) 
 	_, err := c.request(&request{
 		method:      http.MethodPost,
 		path:        fmt.Sprintf("%s/repos/%s/%s/issues/%d/reactions", c.base, org, repo, ID),
+		accept:      "application/vnd.github.squirrel-girl-preview",
 		requestBody: &r,
 		exitCodes:   []int{200, 201},
 	}, nil)
@@ -319,7 +320,7 @@ func (c *Client) ListIssueComments(org, repo string, number int) ([]IssueComment
 	nextURL := fmt.Sprintf("%s/repos/%s/%s/issues/%d/comments?per_page=100", c.base, org, repo, number)
 	var comments []IssueComment
 	for nextURL != "" {
-		resp, err := c.requestRetry(http.MethodGet, nextURL, nil)
+		resp, err := c.requestRetry(http.MethodGet, nextURL, "", nil)
 		if err != nil {
 			return nil, err
 		}
@@ -364,7 +365,7 @@ func (c *Client) GetPullRequestChanges(org, repo string, number int) ([]PullRequ
 	nextURL := fmt.Sprintf("%s/repos/%s/%s/pulls/%d/files", c.base, org, repo, number)
 	var changes []PullRequestChange
 	for nextURL != "" {
-		resp, err := c.requestRetry(http.MethodGet, nextURL, nil)
+		resp, err := c.requestRetry(http.MethodGet, nextURL, "", nil)
 		if err != nil {
 			return nil, err
 		}
@@ -420,7 +421,7 @@ func (c *Client) getLabels(path string) ([]Label, error) {
 	nextURL := strings.Join([]string{c.base, path}, "")
 	var labels []Label
 	for nextURL != "" {
-		resp, err := c.requestRetry(http.MethodGet, nextURL, nil)
+		resp, err := c.requestRetry(http.MethodGet, nextURL, "", nil)
 		if err != nil {
 			return nil, err
 		}
@@ -550,12 +551,26 @@ func (c *Client) UnassignIssue(org, repo string, number int, logins []string) er
 	return nil
 }
 
+// CreateReview creates a review using the draft.
+func (c *Client) CreateReview(org, repo string, number int, r DraftReview) error {
+	c.log("CreateReview", org, repo, number, r)
+	_, err := c.request(&request{
+		method:      http.MethodPost,
+		path:        fmt.Sprintf("%s/repos/%s/%s/pulls/%d/reviews", c.base, org, repo, number),
+		accept:      "application/vnd.github.black-cat-preview+json",
+		requestBody: r,
+		exitCodes:   []int{200},
+	}, nil)
+	return err
+}
+
 func (c *Client) tryRequestReview(org, repo string, number int, logins []string) (int, error) {
 	c.log("RequestReview", org, repo, number, logins)
 	var pr PullRequest
 	return c.request(&request{
 		method:      http.MethodPost,
 		path:        fmt.Sprintf("%s/repos/%s/%s/pulls/%d/requested_reviewers", c.base, org, repo, number),
+		accept:      "application/vnd.github.black-cat-preview+json",
 		requestBody: map[string][]string{"reviewers": logins},
 		exitCodes:   []int{http.StatusCreated /*201*/},
 	}, &pr)
@@ -600,6 +615,7 @@ func (c *Client) UnrequestReview(org, repo string, number int, logins []string) 
 	_, err := c.request(&request{
 		method:      http.MethodDelete,
 		path:        fmt.Sprintf("%s/repos/%s/%s/pulls/%d/requested_reviewers", c.base, org, repo, number),
+		accept:      "application/vnd.github.black-cat-preview+json",
 		requestBody: map[string][]string{"reviewers": logins},
 		exitCodes:   []int{http.StatusOK /*200*/},
 	}, &pr)

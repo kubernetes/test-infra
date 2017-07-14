@@ -17,7 +17,6 @@ limitations under the License.
 package golint
 
 import (
-	"strings"
 	"testing"
 
 	"github.com/Sirupsen/logrus"
@@ -48,15 +47,15 @@ func Qux() error {
 
 type ghc struct {
 	changes []github.PullRequestChange
-	comment string
+	comment github.DraftReview
 }
 
 func (g *ghc) GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error) {
 	return g.changes, nil
 }
 
-func (g *ghc) CreateComment(org, repo string, number int, body string) error {
-	g.comment = body
+func (g *ghc) CreateReview(org, repo string, number int, r github.DraftReview) error {
+	g.comment = r
 	return nil
 }
 
@@ -112,24 +111,24 @@ func TestLint(t *testing.T) {
 	}); err != nil {
 		t.Fatalf("Got error from handle: %v", err)
 	}
-	if !strings.Contains(gh.comment, "qux.go:3") {
-		t.Errorf("Should have seen an error on line 3 of qux.go in comment: %s", gh.comment)
+	if len(gh.comment.Comments) != 2 {
+		t.Fatalf("Expected two comments, got %d: %v.", len(gh.comment.Comments), gh.comment.Comments)
 	}
 }
 
 func TestAddedLines(t *testing.T) {
 	var testcases = []struct {
 		patch string
-		lines []int
+		lines map[int]int
 		err   bool
 	}{
 		{
 			patch: "@@ -0,0 +1,5 @@\n+package bar\n+\n+func Qux() error {\n+   return nil\n+}",
-			lines: []int{1, 2, 3, 4, 5},
+			lines: map[int]int{1: 1, 2: 2, 3: 3, 4: 4, 5: 5},
 		},
 		{
 			patch: "@@ -29,12 +29,14 @@ import (\n \t\"github.com/Sirupsen/logrus\"\n \t\"github.com/ghodss/yaml\"\n \n+\t\"k8s.io/test-infra/prow/config\"\n \t\"k8s.io/test-infra/prow/jenkins\"\n \t\"k8s.io/test-infra/prow/kube\"\n \t\"k8s.io/test-infra/prow/plank\"\n )\n \n var (\n+\tconfigPath   = flag.String(\"config-path\", \"/etc/config/config\", \"Path to config.yaml.\")\n \tbuildCluster = flag.String(\"build-cluster\", \"\", \"Path to file containing a YAML-marshalled kube.Cluster object. If empty, uses the local cluster.\")\n \n \tjenkinsURL       = flag.String(\"jenkins-url\", \"\", \"Jenkins URL\")\n@@ -47,18 +49,22 @@ var objReg = regexp.MustCompile(`^[\\w-]+$`)\n \n func main() {\n \tflag.Parse()\n-\n \tlogrus.SetFormatter(&logrus.JSONFormatter{})\n \n-\tkc, err := kube.NewClientInCluster(kube.ProwNamespace)\n+\tconfigAgent := &config.Agent{}\n+\tif err := configAgent.Start(*configPath); err != nil {\n+\t\tlogrus.WithError(err).Fatal(\"Error starting config agent.\")\n+\t}\n+\n+\tkc, err := kube.NewClientInCluster(configAgent.Config().ProwJobNamespace)\n \tif err != nil {\n \t\tlogrus.WithError(err).Fatal(\"Error getting client.\")\n \t}\n \tvar pkc *kube.Client\n \tif *buildCluster == \"\" {\n-\t\tpkc = kc.Namespace(kube.TestPodNamespace)\n+\t\tpkc = kc.Namespace(configAgent.Config().PodNamespace)\n \t} else {\n-\t\tpkc, err = kube.NewClientFromFile(*buildCluster, kube.TestPodNamespace)\n+\t\tpkc, err = kube.NewClientFromFile(*buildCluster, configAgent.Config().PodNamespace)\n \t\tif err != nil {\n \t\t\tlogrus.WithError(err).Fatal(\"Error getting kube client to build cluster.\")\n \t\t}",
-			lines: []int{32, 39, 54, 55, 56, 57, 58, 59, 65, 67},
+			lines: map[int]int{4: 32, 11: 39, 23: 54, 24: 55, 25: 56, 26: 57, 27: 58, 28: 59, 35: 65, 38: 67},
 		},
 		{
 			patch: "@@ -1 +0,0 @@\n-such",
@@ -139,11 +138,11 @@ func TestAddedLines(t *testing.T) {
 		},
 		{
 			patch: "@@ -0,0 +1 @@\n+wow",
-			lines: []int{1},
+			lines: map[int]int{1: 1},
 		},
 		{
 			patch: "@@ -1 +1 @@\n-doge\n+wow",
-			lines: []int{1},
+			lines: map[int]int{2: 1},
 		},
 		{
 			patch: "something strange",
@@ -164,16 +163,12 @@ func TestAddedLines(t *testing.T) {
 			t.Errorf("For patch %s\nExpected error %v, got error %v", tc.patch, tc.err, err)
 			continue
 		}
-		for _, l := range tc.lines {
-			if !als[l] {
-				t.Errorf("For patch %s\nExpected added line %d, but didn't see it in %v", tc.patch, l, als)
-			} else {
-				als[l] = false
-			}
+		if len(als) != len(tc.lines) {
+			t.Errorf("For patch %s\nAdded lines has wrong length. Got %v, expected %v", tc.patch, als, tc.lines)
 		}
-		for l, missed := range als {
-			if missed {
-				t.Errorf("For patch %s\nSaw line %d but didn't expect it.", tc.patch, l)
+		for pl, l := range tc.lines {
+			if als[l] != pl {
+				t.Errorf("For patch %s\nExpected added line %d to be %d, but got %d", tc.patch, l, pl, als[l])
 			}
 		}
 	}

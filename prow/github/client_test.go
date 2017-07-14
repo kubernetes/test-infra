@@ -53,7 +53,7 @@ func TestRequestRateLimit(t *testing.T) {
 	}))
 	defer ts.Close()
 	c := getClient(ts.URL)
-	resp, err := c.requestRetry(http.MethodGet, c.base, nil)
+	resp, err := c.requestRetry(http.MethodGet, c.base, "", nil)
 	if err != nil {
 		t.Errorf("Error from request: %v", err)
 	} else if resp.StatusCode != 200 {
@@ -74,7 +74,7 @@ func TestRetry404(t *testing.T) {
 	}))
 	defer ts.Close()
 	c := getClient(ts.URL)
-	resp, err := c.requestRetry(http.MethodGet, c.base, nil)
+	resp, err := c.requestRetry(http.MethodGet, c.base, "", nil)
 	if err != nil {
 		t.Errorf("Error from request: %v", err)
 	} else if resp.StatusCode != 200 {
