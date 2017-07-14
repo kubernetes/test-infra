@@ -7381,15 +7381,6 @@
       "UNKNOWN"
     ]
   },
-  "ci-test-infra-test-history": {
-    "args": [
-      "./jenkins/test_history/gen_history"
-    ],
-    "scenario": "execute",
-    "sigOwners": [
-      "UNKNOWN"
-    ]
-  },
   "maintenance-ci-janitor": {
     "scenario": "kubernetes_janitor",
     "sigOwners": [
