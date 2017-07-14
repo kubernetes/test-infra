@@ -19,8 +19,20 @@
 set -o errexit
 set -o nounset
 set -o pipefail
+set -o xtrace
 
-pip install -r gubernator/test_requirements.txt
+# TODO(fejta): bake dependencies into bazel rather than installing them via pip
+test_requirements=(
+  gubernator/test_requirements.txt
+  jenkins/test_history/requirements.txt  # TODO(fejta): remove
+  verify/test_requirements.txt
+)
+for path in ${test_requirements[@]}; do
+  if [[ ! -f "${path}" ]]; then
+    continue
+  fi
+  pip install -r "${path}"
+done
 
 # Cache location.
 export TEST_TMPDIR="/root/.cache/bazel"
