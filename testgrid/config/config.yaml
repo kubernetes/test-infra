@@ -2367,24 +2367,7 @@ dashboards:
   - name: gci-garbage-collector
     test_group_name: ci-kubernetes-e2e-gci-gce-garbage
 
-- name: maintenance
-  dashboard_tab:
-  - name: daily
-    test_group_name: maintenance-daily
-  - name: all-daily
-    test_group_name: maintenance-all-daily
-  - name: hourly
-    test_group_name: maintenance-hourly
-  - name: all-hourly
-    test_group_name: maintenance-all-hourly
-  - name: ci-clean-projects
-    test_group_name: maintenance-ci-clean-projects
-  - name: aws-janitor
-    test_group_name: maintenance-ci-aws-janitor
-  - name: ci-janitor
-    test_group_name: maintenance-ci-janitor
-
-- name: test-infra
+- name: sig-testing
   dashboard_tab:
   - name: bazel
     description: Runs bazel test //... on the test-infra repo.
@@ -2392,10 +2375,12 @@ dashboards:
     code_search_url_template:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
   - name: test-history
+    description: Deprecated website that will disappear in the near future
     test_group_name: ci-test-infra-test-history
     code_search_url_template:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
   - name: testgrid-config-upload
+    description: Compiles and uploads testgrid config on test-infra pushes
     test_group_name: maintenance-ci-testgrid-config-upload
     code_search_url_template:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
@@ -2422,6 +2407,41 @@ dashboards:
   - name: metrics-bigquery
     description: Runs BigQuery queries to generate data for metrics.
     test_group_name: metrics-bigquery
+    code_search_url_template:
+      url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+  - name: daily
+    description: Completes daily maintenance on an agent
+    test_group_name: maintenance-daily
+    code_search_url_template:
+      url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+  - name: all-daily
+    description: Schedules daily maintenance on all attached agents
+    test_group_name: maintenance-all-daily
+    code_search_url_template:
+      url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+  - name: hourly
+    description: Completes hourly maintenance on an agent
+    test_group_name: maintenance-hourly
+    code_search_url_template:
+      url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+  - name: all-hourly
+    description: Schedules hourly maintenance on all attached agents
+    test_group_name: maintenance-all-hourly
+    code_search_url_template:
+      url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+  - name: ci-clean-projects
+    description: Deletes old resources from GCP projects
+    test_group_name: maintenance-ci-clean-projects
+    code_search_url_template:
+      url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+  - name: maintenance-aws-janitor
+    description: Deletes old resources from AWS projects
+    test_group_name: maintenance-ci-aws-janitor
+    code_search_url_template:
+      url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+  - name: ci-janitor
+    description: Deletes old GCP resources from periodic jobs
+    test_group_name: maintenance-ci-janitor
     code_search_url_template:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
 
