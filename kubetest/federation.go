@@ -25,7 +25,14 @@ func FedUp() error {
 	return finishRunning(exec.Command("./federation/cluster/federation-up.sh"))
 }
 
-func FederationTest(testArgs string) error {
+func FederationTest(testArgs, dump string) error {
+	if dump != "" {
+		if pop, err := pushEnv("E2E_REPORT_DIR", dump); err != nil {
+			return err
+		} else {
+			defer pop()
+		}
+	}
 	if testArgs == "" {
 		testArgs = "--ginkgo.focus=\\[Feature:Federation\\]"
 	}
