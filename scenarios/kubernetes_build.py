@@ -60,6 +60,8 @@ def main(args):
         push_build_args.append('--docker-registry=%s' % args.registry)
     if args.hyperkube:
         env['KUBE_BUILD_HYPERKUBE'] = 'y'
+    if args.extra_publish_file:
+        push_build_args.append('--extra-publish-file=%s' % args.extra_publish_file)
 
     for key, value in env.items():
         os.environ[key] = value
@@ -85,5 +87,7 @@ if __name__ == '__main__':
         '--registry', help='Push images to the specified docker registry')
     PARSER.add_argument(
         '--hyperkube', action='store_true', help='Build hyperkube image')
+    PARSER.add_argument(
+        '--extra-publish-file', help='Additional version file uploads to')
     ARGS = PARSER.parse_args()
     main(ARGS)

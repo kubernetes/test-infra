@@ -36,31 +36,43 @@
     ],
     "scenario": "kubernetes_build",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-release"
     ]
   },
   "ci-kubernetes-build-1.4": {
+    "args": [
+      "--extra-publish-file=k8s-stable4"
+    ],
     "scenario": "kubernetes_build",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-release"
     ]
   },
   "ci-kubernetes-build-1.5": {
+    "args": [
+      "--extra-publish-file=k8s-stable3"
+    ],
     "scenario": "kubernetes_build",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-release"
     ]
   },
   "ci-kubernetes-build-1.6": {
+    "args": [
+      "--extra-publish-file=k8s-stable2"
+    ],
     "scenario": "kubernetes_build",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-release"
     ]
   },
   "ci-kubernetes-build-1.7": {
+    "args": [
+      "--extra-publish-file=k8s-stable1"
+    ],
     "scenario": "kubernetes_build",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-release"
     ]
   },
   "ci-kubernetes-build-debian-unstable": {
