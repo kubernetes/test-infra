@@ -248,6 +248,30 @@ type ReviewComment struct {
 	HTMLURL  string `json:"html_url"`
 }
 
+type ReviewAction string
+
+const (
+	Approve        ReviewAction = "APPROVE"
+	RequestChanges              = "REQUEST_CHANGES"
+	Comment                     = "COMMENT"
+)
+
+type DraftReview struct {
+	// If unspecified, defaults to the most recent commit in the PR.
+	CommitSHA string `json:"commit_id,omitempty"`
+	Body      string `json:"body"`
+	// If unspecified, defaults to PENDING.
+	Action   ReviewAction         `json:"event,omitempty"`
+	Comments []DraftReviewComment `json:"comments,omitempty"`
+}
+
+type DraftReviewComment struct {
+	Path string `json:"path"`
+	// Position in the patch, not the line number in the file.
+	Position int    `json:"position"`
+	Body     string `json:"body"`
+}
+
 // Content is some base64 encoded github file content
 type Content struct {
 	Content string `json:"content"`

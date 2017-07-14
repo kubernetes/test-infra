@@ -550,6 +550,17 @@ func (c *Client) UnassignIssue(org, repo string, number int, logins []string) er
 	return nil
 }
 
+func (c *Client) CreateReview(org, repo string, number int, r DraftReview) error {
+	c.log("CreateReview", org, repo, number, r)
+	_, err := c.request(&request{
+		method:      http.MethodPost,
+		path:        fmt.Sprintf("%s/repos/%s/%s/pulls/%d/reviews", c.base, org, repo, number),
+		requestBody: r,
+		exitCodes:   []int{200},
+	}, nil)
+	return err
+}
+
 func (c *Client) tryRequestReview(org, repo string, number int, logins []string) (int, error) {
 	c.log("RequestReview", org, repo, number, logins)
 	var pr PullRequest
