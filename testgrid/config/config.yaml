@@ -1308,14 +1308,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-audit
   - name: gci-gce-audit
     test_group_name: ci-kubernetes-e2e-gci-gce-audit
-  - name: gce-autoscaling
-    test_group_name: ci-kubernetes-e2e-gce-autoscaling
-  - name: gci-gce-autoscaling
-    test_group_name: ci-kubernetes-e2e-gci-gce-autoscaling
-  - name: gce-autoscaling-migs
-    test_group_name: ci-kubernetes-e2e-gce-autoscaling-migs
-  - name: gci-gce-autoscaling-migs
-    test_group_name: ci-kubernetes-e2e-gci-gce-autoscaling-migs
   - name: gce-stackdriver
     test_group_name: ci-kubernetes-e2e-gce-stackdriver
   - name: gce-container-vm
@@ -1525,10 +1517,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gci-gke-alpha-features
   - name: gke-alpha-features-1.5
     test_group_name: ci-kubernetes-e2e-gke-alpha-features-release-1-5
-  - name: gke-autoscaling
-    test_group_name: ci-kubernetes-e2e-gke-autoscaling
-  - name: gci-gke-autoscaling
-    test_group_name: ci-kubernetes-e2e-gci-gke-autoscaling
   - name: gke-stackdriver
     test_group_name: ci-kubernetes-e2e-gke-stackdriver
   - name: gke-flaky
@@ -1598,8 +1586,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-ubuntu-gke
   - name: ubuntu-gke-alpha-features
     test_group_name: ci-kubernetes-e2e-ubuntu-gke-alpha-features
-  - name: ubuntu-gke-autoscaling
-    test_group_name: ci-kubernetes-e2e-ubuntu-gke-autoscaling
   - name: ubuntu-gke-flaky
     test_group_name: ci-kubernetes-e2e-ubuntu-gke-flaky
   - name: ubuntu-gke-ingress
@@ -1616,8 +1602,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-ubuntu-gke-1-6
   - name: ubuntu-gke-1.6-alpha-features
     test_group_name: ci-kubernetes-e2e-ubuntu-gke-1-6-alpha-features
-  - name: ubuntu-gke-1.6-autoscaling
-    test_group_name: ci-kubernetes-e2e-ubuntu-gke-1-6-autoscaling
   - name: ubuntu-gke-1.6-flaky
     test_group_name: ci-kubernetes-e2e-ubuntu-gke-1-6-flaky
   - name: ubuntu-gke-1.6-ingress
@@ -1632,8 +1616,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-ubuntu-gke-1-6-updown
   - name: gke-ubuntustable1-k8sstable1-alphafeatures
     test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-alphafeatures
-  - name: gke-ubuntustable1-k8sstable1-autoscaling
-    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-autoscaling
   - name: gke-ubuntustable1-k8sstable1-default
     test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-default
   - name: gke-ubuntustable1-k8sstable1-flaky
@@ -2791,8 +2773,24 @@ dashboards:
 
 - name: sig-autoscaling
   dashboard_tab:
-  - name: TODO
-    test_group_name: ci-kubernetes-e2e-gce-slow  # TODO(fejta): fix
+  - name: gce-autoscaling
+    test_group_name: ci-kubernetes-e2e-gce-autoscaling
+  - name: gci-gce-autoscaling
+    test_group_name: ci-kubernetes-e2e-gci-gce-autoscaling
+  - name: gce-autoscaling-migs
+    test_group_name: ci-kubernetes-e2e-gce-autoscaling-migs
+  - name: gci-gce-autoscaling-migs
+    test_group_name: ci-kubernetes-e2e-gci-gce-autoscaling-migs
+  - name: gke-autoscaling
+    test_group_name: ci-kubernetes-e2e-gke-autoscaling
+  - name: gci-gke-autoscaling
+    test_group_name: ci-kubernetes-e2e-gci-gke-autoscaling
+  - name: ubuntu-gke-autoscaling
+    test_group_name: ci-kubernetes-e2e-ubuntu-gke-autoscaling
+  - name: ubuntu-gke-1.6-autoscaling
+    test_group_name: ci-kubernetes-e2e-ubuntu-gke-1-6-autoscaling
+  - name: gke-ubuntustable1-k8sstable1-autoscaling
+    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-autoscaling
 
 - name: sig-cli
   dashboard_tab:
