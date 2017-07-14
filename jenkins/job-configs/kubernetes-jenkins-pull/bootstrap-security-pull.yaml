@@ -98,6 +98,12 @@
         json: 0
         repo-name: 'github.com/kubernetes-security/kubernetes'
         timeout: 0
+    - kubernetes-e2e-kops-aws-scenario:
+        max-total: 5
+        job-name: pull-kubernetes-e2e-kops-aws-scenario
+        json: 1
+        repo-name: 'github.com/kubernetes-security/kubernetes'
+        timeout: 75
     - kubernetes-kubemark-e2e-gce:
         max-total: 12
         job-name: pull-kubernetes-kubemark-e2e-gce

@@ -1568,8 +1568,7 @@ class JobTest(unittest.TestCase):
             check, use_json=True)
 
     def test_bootstrap_pull_yaml(self):
-        bads = ['kops', 'federation-e2e']
-        is_modern = lambda n: all(b not in n for b in bads)
+        is_modern = lambda n: 'kops' not in n
         def check(job, name):
             job_name = 'pull-%s' % name
             self.assertIn('max-total', job)
@@ -1588,8 +1587,7 @@ class JobTest(unittest.TestCase):
             check, use_json=is_modern)
 
     def test_bootstrap_security_pull(self):
-        bads = ['kops', 'federation-e2e']
-        is_modern = lambda n: all(b not in n for b in bads)
+        is_modern = lambda n: n != 'kubernetes-e2e-kops-aws'
         def check(job, name):
             job_name = 'pull-%s' % name
             self.assertIn('max-total', job)

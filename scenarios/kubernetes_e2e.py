@@ -264,7 +264,6 @@ class DockerMode(object):
         for repo in repos:
             self.cmd.extend([
                 '-v', '%s/%s:/go/src/k8s.io/%s' % (k8s, repo, repo)])
-        self.cmd.extend(['-v', '%s/release:/go/src/k8s.io/release' % k8s])
 
     def add_aws_cred(self, priv, pub, cred):
         """Mounts aws keys/creds inside the container."""

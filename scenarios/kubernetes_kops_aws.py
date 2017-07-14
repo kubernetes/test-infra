@@ -20,6 +20,7 @@
 """Runs kubernetes e2e test with specified config"""
 
 import argparse
+import hashlib
 import os
 import random
 import signal
@@ -46,6 +47,10 @@ def check(*cmd):
     print >>sys.stderr, 'Run:', cmd
     subprocess.check_call(cmd)
 
+def check_output(*cmd):
+    """Log and run the command, raising on errors, return output"""
+    print >>sys.stderr, 'Run:', cmd
+    return subprocess.check_output(cmd)
 
 def setup_signal_handlers(container):
     """Establish a signal handler to kill 'container'."""
@@ -62,6 +67,19 @@ def kubekins(tag):
     """Return full path to kubekins-e2e:tag."""
     return 'gcr.io/k8s-testimages/kubekins-e2e:%s' % tag
 
+def add_k8s(self, k8s, *repos):
+    """Add the specified k8s.io repos into container."""
+    for repo in repos:
+        self.cmd.extend([
+            '-v', '%s/%s:/go/src/k8s.io/%s' % (k8s, repo, repo)])
+
+def cluster_name(cluster, build):
+    """Return or select a cluster name."""
+    if cluster:
+        return cluster
+    if len(build) < 20:
+        return 'e2e-%s' % build
+    return 'e2e-%s' % hashlib.md5(build).hexdigest()[:10]
 
 def main(args):
     """Set up env, start kops-runner, handle termination. """
@@ -100,6 +118,16 @@ def main(args):
       '-v', '/etc/localtime:/etc/localtime:ro',
       '--entrypoint=/workspace/kops-e2e-runner.sh'
     ]
+
+    if args.build_kops:
+        if not os.path.basename(workspace) == 'kops':
+            raise ValueError(workspace)
+        version = 'pull-' + check_output('git', 'describe', '--always')
+        check('make', 'gcs-publish-ci', 'VERSION=%s' % version)
+        gcs = 'gs://kops-ci/pulls/pull-kops-e2e-kubernetes-aws-scenario'
+        gapi = 'https://storage.googleapis.com'
+        cmd.extend(['-e', 'KOPS_BASE_URL=%s/gs://%s/%s' % (gcs, gapi, version),
+                    '-e', 'GCS_LOCATION=%s' % gcs])
 
     # Rules for env var priority here in docker:
     # -e FOO=a -e FOO=b -> FOO=b
@@ -159,14 +187,26 @@ def main(args):
             #'us-east-2b',
         ])
     regions = ','.join([zone[:-1] for zone in zones.split(',')])
+    cluster = cluster_name(args.cluster, os.getenv('BUILD_NUMBER', 0))
 
     extra_args = [
-        '--kops-cluster %s' % args.cluster,
+        '--kops-cluster %s' % cluster,
         '--kops-zones=%s ' % zones,
         '--kops-state=%s' % args.state,
         '--kops-nodes=%s' % args.nodes,
         '--kops-ssh-key=%s' % aws_ssh,
     ]
+
+    if args.build is not None:
+        if args.build == '':
+            # Empty string means --build was passed without any arguments;
+            # if --build wasn't passed, args.build would be None
+            extra_args.append('--build')
+        else:
+            extra_args.append('--build=%s' % args.build)
+        if not os.path.basename(workspace) == 'kubernetes':
+            raise ValueError(workspace)
+        add_k8s(os.path.dirname(workspace), 'kubernetes', 'release')
 
     if args.image:
         extra_args.append(' --kops-image=%s' % args.image)
@@ -255,7 +295,12 @@ if __name__ == '__main__':
 
     # Assume we're upping, testing, and downing a cluster by default
     PARSER.add_argument(
-        '--cluster', required=True, help='Name of the aws cluster (required)')
+        '--build', nargs='?', default=None, const='',
+        help='Build kubernetes binaries if set, optionally specifying strategy')
+    PARSER.add_argument(
+        '--build-kops', action='store_true', help='If we need to build kops locally')
+    PARSER.add_argument(
+        '--cluster', help='Name of the aws cluster (required)')
     PARSER.add_argument(
         '--down', default='true', help='If we need to set --down in e2e.go')
     PARSER.add_argument(
