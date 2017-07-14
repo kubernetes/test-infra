@@ -1,5 +1,5 @@
-#!/usr/bin/env bash
-# Copyright 2017 The Kubernetes Authors.
+#!/bin/bash
+# Copyright 2016 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,8 +17,18 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-export PYLINTHOME=$(mktemp -d)
-pylint="$(dirname $0)/pylint_bin"
+# A wrapper script for running kettle
 
-shopt -s extglob globstar
-${pylint} !(gubernator|external|mungegithub|bazel-*)/**/*.py
+# Update gcloud
+gcloud components update
+
+# Authenticate gcloud
+if [[ -n "${GOOGLE_APPLICATION_CREDENTIALS:-}" ]]; then
+  gcloud auth activate-service-account --key-file="${GOOGLE_APPLICATION_CREDENTIALS}"
+fi
+
+bq show <<< $'\n' > /dev/null  # create initial bq config
+
+while true; do
+  /kettle/update.py
+done

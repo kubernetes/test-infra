@@ -1,5 +1,4 @@
-#!/usr/bin/env bash
-# Copyright 2017 The Kubernetes Authors.
+# Copyright 2016 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,12 +12,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set -o errexit
-set -o nounset
-set -o pipefail
+IMG = gcr.io/k8s-testimages/kettle
+TAG = $(shell date +v%Y%m%d)-$(shell git describe --tags --always --dirty)
 
-export PYLINTHOME=$(mktemp -d)
-pylint="$(dirname $0)/pylint_bin"
+build:
+	cp ../buckets.yaml .
+	docker build -t $(IMG):$(TAG) .
+	rm buckets.yaml
+	docker tag $(IMG):$(TAG) $(IMG):latest
+	echo Built $(IMG):$(TAG) and tagged with $(IMG):latest ;
 
-shopt -s extglob globstar
-${pylint} !(gubernator|external|mungegithub|bazel-*)/**/*.py
+push: build
+	gcloud docker -- push $(IMG):$(TAG)
+	gcloud docker -- push $(IMG):latest
+	echo Pushed $(IMG):latest and $(IMG):$(TAG)
+
+
+.PHONY: all build push
+
+all: build

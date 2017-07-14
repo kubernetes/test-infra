@@ -33,6 +33,7 @@ class Database(object):
             create table if not exists build(gcs_path primary key, started_json, finished_json, finished_time);
             create table if not exists file(path string primary key, data);
             create table if not exists build_junit_grabbed(build_id integer primary key);
+            create index if not exists build_finished_time_idx on build(finished_time)
             ''')
 
     def commit(self):
@@ -45,7 +46,6 @@ class Database(object):
         A build is already present if it has a finished.json, or if it's older than
         five days with no finished.json.
         """
-        jobs_like = jobs_dir + '%'
         builds_have_paths = self.db.execute(
             'select gcs_path from build'
             ' where gcs_path LIKE ?'
@@ -73,12 +73,16 @@ class Database(object):
         """
         started_json = started and json.dumps(started, sort_keys=True)
         finished_json = finished and json.dumps(finished, sort_keys=True)
-        if not self.db.execute('select 1 from build where gcs_path=? '
+        if not self.db.execute(
+                'select 1 from build where gcs_path=? '
                 'and started_json=? and finished_json=?',
                 (build_dir, started_json, finished_json)).fetchone():
-            self.db.execute('replace into build values(?,?,?,?)',
-                 (build_dir, started_json, finished_json,
-                  finished and finished.get('timestamp', None)))
+            self.db.execute(
+                'replace into build values(?,?,?,?)',
+                (build_dir, started_json, finished_json,
+                 finished and finished.get('timestamp', None)))
+            return True
+        return False
 
     def get_builds_missing_junit(self):
         """
@@ -106,6 +110,13 @@ class Database(object):
         """
         self.db.execute('create table if not exists %s(build_id integer primary key, gen)' % table)
 
+    @staticmethod
+    def _get_builds(results):
+        for rowid, path, started, finished in results:
+            started = started and json.loads(started)
+            finished = finished and json.loads(finished)
+            yield rowid, path, started, finished
+
     def get_builds(self, path='', min_started=None, incremental_table=DEFAULT_INCREMENTAL_TABLE):
         """
         Iterate through (buildid, gcs_path, started, finished) for each build under
@@ -118,12 +129,18 @@ class Database(object):
             ' and finished_time >= ?' +
             ' and rowid not in (select build_id from %s)'
             ' order by finished_time' % incremental_table
-        #   ' limit 10000'
             , (path + '%', min_started or 0)).fetchall()
-        for rowid, path, started, finished in results:
-            started = started and json.loads(started)
-            finished = finished and json.loads(finished)
-            yield rowid, path, started, finished
+        return self._get_builds(results)
+
+    def get_builds_from_paths(self, paths, incremental_table=DEFAULT_INCREMENTAL_TABLE):
+        self._init_incremental(incremental_table)
+        results = self.db.execute(
+            'select rowid, gcs_path, started_json, finished_json from build '
+            'where gcs_path in (%s)'
+            ' and rowid not in (select build_id from %s)'
+            ' order by finished_time' % (','.join(['?'] * len(paths)), incremental_table)
+            , paths).fetchall()
+        return self._get_builds(results)
 
     def test_results_for_build(self, path):
         """
@@ -146,7 +163,8 @@ class Database(object):
         gen, = self.db.execute('select max(gen)+1 from %s' % incremental_table).fetchone()
         if not gen:
             gen = 0
-        self.db.executemany('insert into %s values(?,?)' % incremental_table, ((row, gen) for row in rows_emitted))
+        self.db.executemany(
+            'insert into %s values(?,?)' % incremental_table,
+            ((row, gen) for row in rows_emitted))
         self.db.commit()
         return gen
-

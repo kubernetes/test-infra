@@ -14,12 +14,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Generate JSON for BigQuery importing."""
+
 import argparse
-import hashlib
 import logging
 import json
 import os
-import sqlite3
 import subprocess
 import sys
 import time
@@ -37,20 +37,20 @@ def parse_junit(xml):
     # NOTE: this is modified from gubernator/view_build.py
     tree = ET.fromstring(xml)
 
-    def make_result(name, time, failure_text, skipped):
+    # pylint: disable=redefined-outer-name
+
+    def make_result(name, time, failure_text):
         if failure_text:
             if time is None:
                 return {'name': name, 'failed': True, 'failure_text': failure_text}
-            else:
-                return {'name': name, 'time': time, 'failed': True, 'failure_text': failure_text}
-        else:
-            if time is None:
-                return {'name': name}
-            else:
-                return {'name': name, 'time': time}
+            return {'name': name, 'time': time, 'failed': True, 'failure_text': failure_text}
+        if time is None:
+            return {'name': name}
+        return {'name': name, 'time': time}
 
     # Note: skipped tests are ignored because they make rows too large for BigQuery.
-    # Knowing that a given build could have ran a test but didn't for some reason isn't very interesting.
+    # Knowing that a given build could have ran a test but didn't for some reason
+    # isn't very interesting.
     if tree.tag == 'testsuite':
         for child in tree:
             name = child.attrib['name']
@@ -61,7 +61,7 @@ def parse_junit(xml):
             skipped = child.findall('skipped')
             if skipped:
                 continue
-            yield make_result(name, time, failure_text, skipped)
+            yield make_result(name, time, failure_text)
     elif tree.tag == 'testsuites':
         for testsuite in tree:
             suite_name = testsuite.attrib['name']
@@ -74,7 +74,7 @@ def parse_junit(xml):
                 skipped = child.findall('skipped')
                 if skipped:
                     continue
-                yield make_result(name, time, failure_text, skipped)
+                yield make_result(name, time, failure_text)
     else:
         logging.error('unable to find failures, unexpected tag %s', tree.tag)
 
@@ -149,10 +149,10 @@ def row_for_build(path, started, finished, results):
                 metadata.pop('job-version')
             if metadata.get('version') == build_version:
                 metadata.pop('version')
-            for k, v in metadata.items():
-                if not isinstance(v, basestring):
+            for key, value in metadata.items():
+                if not isinstance(value, basestring):
                     # the schema specifies a string value. force it!
-                    metadata[k] = json.dumps(v)
+                    metadata[key] = json.dumps(value)
         if not metadata:
             return None
         return [{'key': k, 'value': v} for k, v in sorted(metadata.items())]
@@ -165,41 +165,56 @@ def row_for_build(path, started, finished, results):
     return build
 
 
+def get_table(days):
+    if days:
+        return ('build_emitted_%g' % days).replace('.', '_')
+    return 'build_emitted'
+
+
 def parse_args(args):
     parser = argparse.ArgumentParser()
-    parser.add_argument('--day', action='store_true',
-                        help='Grab data for builds in the last day')
-    parser.add_argument('--days', type=float,
+    parser.add_argument('--days', type=float, default=0,
                         help='Grab data for builds within N days')
     parser.add_argument('--reset-emitted', action='store_true',
                         help='Clear list of already-emitted builds.')
+    parser.add_argument('paths', nargs='*',
+                        help='Options list of gs:// paths to dump rows for.')
     return parser.parse_args(args)
 
-def main(db, opts, outfile):
-    incremental_table = 'build_emitted'
 
+def make_rows(db, builds):
+    for rowid, path, started, finished in builds:
+        try:
+            results = db.test_results_for_build(path)
+            yield rowid, row_for_build(path, started, finished, results)
+        except IOError:
+            return
+        except:  # pylint: disable=bare-except
+            logging.exception('error on %s', path)
+
+
+def main(db, opts, outfile):
     min_started = None
-    if opts.day or opts.days:
+    if opts.days:
         min_started = time.time() - (opts.days or 1) * 24 * 60 * 60
-        incremental_table = ('build_emitted_%g' % (opts.days or 1)).replace('.', '_')
+    incremental_table = get_table(opts.days)
 
     if opts.reset_emitted:
         db.reset_emitted(incremental_table)
 
-    builds = db.get_builds(min_started=min_started, incremental_table=incremental_table)
+    if opts.paths:
+        # When asking for rows for specific builds, use a dummy table and clear it first.
+        incremental_table = 'incremental_manual'
+        db.reset_emitted(incremental_table)
+        builds = list(db.get_builds_from_paths(opts.paths, incremental_table))
+    else:
+        builds = db.get_builds(min_started=min_started, incremental_table=incremental_table)
 
     rows_emitted = set()
-    for rowid, path, started, finished in builds:
-        try:
-            results = db.test_results_for_build(path)
-            row = row_for_build(path, started, finished, results)
-            json.dump(row, outfile, sort_keys=True)
-            outfile.write('\n')
-            rows_emitted.add(rowid)
-        except IOError:
-            return
-        except:
-            logging.exception('error on %s', path)
+    for rowid, row in make_rows(db, builds):
+        json.dump(row, outfile, sort_keys=True)
+        outfile.write('\n')
+        rows_emitted.add(rowid)
 
     if rows_emitted:
         gen = db.insert_emitted(rows_emitted, incremental_table=incremental_table)
@@ -209,6 +224,6 @@ def main(db, opts, outfile):
 
 
 if __name__ == '__main__':
-    db = model.Database('build.db')
-    opts = parse_args(sys.argv[1:])
-    main(db, opts, sys.stdout)
+    DB = model.Database('build.db')
+    OPTIONS = parse_args(sys.argv[1:])
+    main(DB, OPTIONS, sys.stdout)

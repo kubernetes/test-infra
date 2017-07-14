@@ -16,22 +16,18 @@
 
 """Tests for make_db."""
 
-import json
-import os
-import shutil
-import tempfile
+import time
 import unittest
 
 import make_db
 import model
 
-import time
 
 
 TEST_BUCKETS_DATA = {
-    'gs://kubernetes-jenkins/logs/': { 'prefix': '' },
-    'gs://bucket1/': { 'prefix': 'bucket1_prefix' },
-    'gs://bucket2/': { 'prefix': 'bucket2_prefix' }
+    'gs://kubernetes-jenkins/logs/': {'prefix': ''},
+    'gs://bucket1/': {'prefix': 'bucket1_prefix'},
+    'gs://bucket2/': {'prefix': 'bucket2_prefix'}
 }
 
 
@@ -51,7 +47,8 @@ class MockedClient(make_db.GCSClient):
         ART_DIR.replace('123', '122'): [],
     }
     gets = {
-        JOB_DIR + 'finished.json': {'timestamp': NOW},
+        JOB_DIR + 'finished.json': {'timestamp': NOW, 'result': 'SUCCESS'},
+        JOB_DIR + 'started.json': {'timestamp': NOW - 5},
         LOG_DIR + 'latest/latest-build.txt': '4',
         LOG_DIR + 'bad-latest/latest-build.txt': 'asdf',
         LOG_DIR + 'fake/122/finished.json': {'timestamp': 123},
@@ -67,15 +64,17 @@ class MockedClient(make_db.GCSClient):
     </testsuite>
     '''}
 
-    def get(self, path, **kwargs):
+    def get(self, path, as_json=True):
         return self.gets.get(path)
 
-    def ls(self, path, **kwargs):
+    def ls(self, path, **_kwargs):  # pylint: disable=arguments-differ
         return self.lists[path]
 
 
 class GCSClientTest(unittest.TestCase):
     """Unit tests for GCSClient"""
+
+    # pylint: disable=protected-access
 
     JOBS_DIR = 'gs://kubernetes-jenkins/logs/'
 
@@ -84,9 +83,9 @@ class GCSClientTest(unittest.TestCase):
 
     def test_get_junits(self):
         junits = self.client.get_junits_from_build(self.JOBS_DIR + 'fake/123')
-        self.assertEqual(sorted(junits),
-            ['gs://kubernetes-jenkins/logs/fake/123/artifacts/junit_01.xml']
-        )
+        self.assertEqual(
+            sorted(junits),
+            ['gs://kubernetes-jenkins/logs/fake/123/artifacts/junit_01.xml'])
 
     def test_get_builds_normal_list(self):
         # normal case: lists a directory
@@ -99,7 +98,7 @@ class GCSClientTest(unittest.TestCase):
         self.assertEqual(['4', '3', '2', '1'], list(gen))
 
 
-    def test_get_builds_latest_list_fallback(self):
+    def test_get_builds_latest_fallback(self):
         # fallback: still lists a directory when build-latest.txt isn't an int
         self.assertEqual((True, ['6']), self.client._get_builds('bad-latest'))
 
@@ -114,13 +113,21 @@ class MainTest(unittest.TestCase):
     """End-to-end test of the main function's output."""
     JOBS_DIR = GCSClientTest.JOBS_DIR
 
-    def get_expected_builds(self):
+    def test_remove_system_out(self):
+        self.assertEqual(make_db.remove_system_out('not<xml<lol'), 'not<xml<lol')
+        self.assertEqual(
+            make_db.remove_system_out('<a><b>c<system-out>bar</system-out></b></a>'),
+            '<a><b>c</b></a>')
+
+    @staticmethod
+    def get_expected_builds():
         return {
             MockedClient.JOB_DIR.replace('123', '122')[:-1]:
                 (None, {'timestamp': 123}, []),
             MockedClient.JOB_DIR[:-1]:
-                (None, {'timestamp': MockedClient.NOW},
-                    [MockedClient.gets[MockedClient.ART_DIR + 'junit_01.xml']])
+                ({'timestamp': MockedClient.NOW - 5},
+                 {'timestamp': MockedClient.NOW, 'result': 'SUCCESS'},
+                 [MockedClient.gets[MockedClient.ART_DIR + 'junit_01.xml']])
         }
 
     def assert_main_output(self, threads, expected=None, db=None,
@@ -129,7 +136,7 @@ class MainTest(unittest.TestCase):
             expected = self.get_expected_builds()
         if db is None:
             db = model.Database(':memory:')
-        make_db.main(db, {self.JOBS_DIR: {}}, 1, True, client)
+        make_db.main(db, {self.JOBS_DIR: {}}, threads, True, client)
 
         result = {path: (started, finished, db.test_results_for_build(path))
                   for _rowid, path, started, finished in db.get_builds()}
@@ -144,7 +151,7 @@ class MainTest(unittest.TestCase):
     def test_incremental_new(self):
         db = self.assert_main_output(1)
 
-        NEW_JUNIT = '''
+        new_junit = '''
             <testsuite>
                 <testcase name="New" time="8"/>
                 <testcase name="Foo" time="2.3"/>
@@ -164,12 +171,12 @@ class MainTest(unittest.TestCase):
             }
             gets = {
                 JOB_DIR + 'finished.json': {'timestamp': NOW},
-                ART_DIR + 'junit_01.xml': NEW_JUNIT,
+                ART_DIR + 'junit_01.xml': new_junit,
             }
 
         expected = self.get_expected_builds()
-        expected[MockedClientNewer.JOB_DIR[:-1]] = (None,
-            {'timestamp': MockedClientNewer.NOW}, [NEW_JUNIT])
+        expected[MockedClientNewer.JOB_DIR[:-1]] = (
+            None, {'timestamp': MockedClientNewer.NOW}, [new_junit])
 
         self.assert_main_output(1, expected, db, MockedClientNewer)
 

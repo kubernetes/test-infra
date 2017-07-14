@@ -12,19 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Generates a JSON file containing test history for the last day.
-
-Writes the JSON out to tests.json.
-"""
+"""Generates a SQLite DB containing test data downloaded from GCS."""
 
 from __future__ import print_function
 
 import argparse
-import datetime
-import hashlib
 import logging
 import os
-import re
 import random
 import re
 import signal
@@ -34,16 +28,18 @@ import urllib2
 from xml.etree import cElementTree as ET
 
 import multiprocessing
+import multiprocessing.pool
 import requests
 import yaml
 
 import model
 
 
-def pad_numbers(s):
+def pad_numbers(string):
     """Modify a string to make its numbers suitable for natural sorting."""
-    return re.sub(r'\d+', lambda m: m.group(0).rjust(16, '0'), s)
+    return re.sub(r'\d+', lambda m: m.group(0).rjust(16, '0'), string)
 
+WORKER_CLIENT = None  # used for multiprocessing
 
 class GCSClient(object):
     def __init__(self, jobs_dir, metadata=None):
@@ -67,13 +63,13 @@ class GCSClient(object):
                 resp.raise_for_status()
                 if as_json:
                     return resp.json()
-                else:
-                    return resp.content
+                return resp.content
             except requests.exceptions.RequestException:
                 logging.exception('request failed %s', url)
             time.sleep(random.random() * min(60, 2 ** retry))
 
-    def _parse_uri(self, path):
+    @staticmethod
+    def _parse_uri(path):
         if not path.startswith('gs://'):
             raise ValueError("Bad GCS path")
         bucket, prefix = path[5:].split('/', 1)
@@ -83,10 +79,12 @@ class GCSClient(object):
         """Get an object from GCS."""
         bucket, path = self._parse_uri(path)
         return self._request('%s/o/%s' % (bucket, urllib2.quote(path, '')),
-                           {'alt': 'media'}, as_json=as_json)
+                             {'alt': 'media'}, as_json=as_json)
 
     def ls(self, path, dirs=True, files=True, delim=True, item_field='name'):
         """Lists objects under a path on gcs."""
+        # pylint: disable=invalid-name
+
         bucket, path = self._parse_uri(path)
         params = {'prefix': path, 'fields': 'nextPageToken'}
         if delim:
@@ -145,8 +143,9 @@ class GCSClient(object):
                 return False, (str(n) for n in xrange(latest_build, 0, -1))
         # Invalid latest-build or bucket is using timestamps
         build_paths = self.ls_dirs('%s%s/' % (self.jobs_dir, job))
-        return True, sorted((os.path.basename(os.path.dirname(b))
-                            for b in build_paths), key=pad_numbers, reverse=True)
+        return True, sorted(
+            (os.path.basename(os.path.dirname(b)) for b in build_paths),
+            key=pad_numbers, reverse=True)
 
     def get_started_finished(self, job, build):
         if self.metadata.get('pr'):
@@ -159,7 +158,6 @@ class GCSClient(object):
 
     def get_builds(self, builds_have):
         """Generates all (job, build) pairs ever."""
-        now = time.time()
         if self.metadata.get('pr'):
             files = self.ls(self.jobs_dir + '/directory/', delim=False)
             for fname in files:
@@ -183,15 +181,16 @@ class GCSClient(object):
                 yield job, build
 
 
-def mp_init_worker(jobs_dir, metadata, client_class):
+def mp_init_worker(jobs_dir, metadata, client_class, use_signal=True):
     """
     Initialize the environment for multiprocessing-based multithreading.
     """
 
-    signal.signal(signal.SIGINT, signal.SIG_IGN)
-    # Multiprocessing doesn't allow local variables for each worker, so 77 need
+    if use_signal:
+        signal.signal(signal.SIGINT, signal.SIG_IGN)
+    # Multiprocessing doesn't allow local variables for each worker, so we need
     # to make a GCSClient global variable.
-    global WORKER_CLIENT
+    global WORKER_CLIENT  # pylint: disable=global-statement
     WORKER_CLIENT = client_class(jobs_dir, metadata)
 
 def get_started_finished((job, build)):
@@ -236,7 +235,7 @@ def get_builds(db, jobs_dir, metadata, threads, client_class):
         builds_iterator = pool.imap_unordered(
             get_started_finished, jobs_and_builds)
     else:
-        global WORKER_CLIENT
+        global WORKER_CLIENT  # pylint: disable=global-statement
         WORKER_CLIENT = gcs
         builds_iterator = (
             get_started_finished(job_build) for job_build in jobs_and_builds)
@@ -255,7 +254,22 @@ def get_builds(db, jobs_dir, metadata, threads, client_class):
     else:
         if pool:
             pool.close()
+            pool.join()
     db.commit()
+
+
+def remove_system_out(data):
+    """Strip bloated system-out annotations."""
+    if 'system-out' in data:
+        try:
+            root = ET.fromstring(data)
+            for parent in root.findall('*//system-out/..'):
+                for child in parent.findall('system-out'):
+                    parent.remove(child)
+            return ET.tostring(root)
+        except ET.ParseError:
+            pass
+    return data
 
 
 def download_junit(db, threads, client_class):
@@ -263,34 +277,27 @@ def download_junit(db, threads, client_class):
     builds_to_grab = db.get_builds_missing_junit()
     pool = None
     if threads > 1:
-        pool = multiprocessing.Pool(threads, mp_init_worker,
-                                    ('', {}, client_class))
+        pool = multiprocessing.pool.ThreadPool(
+            threads, mp_init_worker, ('', {}, client_class, False))
         test_iterator = pool.imap_unordered(
             get_junits, builds_to_grab)
     else:
-        global WORKER_CLIENT
+        global WORKER_CLIENT  # pylint: disable=global-statement
         WORKER_CLIENT = client_class('', {})
         test_iterator = (
             get_junits(build_path) for build_path in builds_to_grab)
     for n, (build_id, build_path, junits) in enumerate(test_iterator, 1):
         print('%d/%d' % (n, len(builds_to_grab)),
               build_path, len(junits), len(''.join(junits.values())))
-        # strip bloated system-out annotations
-        for path, data in junits.items():
-            if 'system-out' in data:
-                try:
-                    root = ET.fromstring(data)
-                    for parent in root.findall('*//system-out/..'):
-                        for child in parent.findall('system-out'):
-                            parent.remove(child)
-                    junits[path] = ET.tostring(root)
-                except ET.ParseError:
-                    continue
+        junits = {k: remove_system_out(v) for k, v in junits.iteritems()}
 
         db.insert_build_junits(build_id, junits)
         if n % 100 == 0:
             db.commit()
     db.commit()
+    if pool:
+        pool.close()
+        pool.join()
 
 
 def main(db, jobs_dirs, threads, get_junit, client_class=GCSClient):
@@ -310,7 +317,7 @@ def get_options(argv):
     parser = argparse.ArgumentParser()
     parser.add_argument(
         '--buckets',
-        help='JSON file with GCS bucket locations',
+        help='YAML file with GCS bucket locations',
         required=True,
     )
     parser.add_argument(
@@ -329,6 +336,7 @@ def get_options(argv):
 
 if __name__ == '__main__':
     OPTIONS = get_options(sys.argv[1:])
-    jobs_dirs = yaml.load(open(OPTIONS.buckets))
-    db = model.Database('build.db')
-    main(db, jobs_dirs, OPTIONS.threads, OPTIONS.junit)
+    main(model.Database('build.db'),
+         yaml.load(open(OPTIONS.buckets)),
+         OPTIONS.threads,
+         OPTIONS.junit)
