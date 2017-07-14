@@ -47,6 +47,10 @@ func getTestRepo() *RepoInfo {
 	approvers[baseDir] = baseApprovers
 	approvers[leafDir] = leafApprovers
 	testRepo.approvers = approvers
+	testRepo.labels = map[string]sets.String{
+		baseDir: sets.NewString("sig/godzilla"),
+		leafDir: sets.NewString("wg/save-tokyo"),
+	}
 
 	return &testRepo
 }
@@ -100,6 +104,48 @@ func TestGetApprovers(t *testing.T) {
 		if foundOwnersPath != test.expectedOwnersPath {
 			t.Errorf("The Owners Path Found Does Not Match Expected For Test %d: %s", testNum, test.testName)
 			t.Errorf("\tExpected Owners: %v\tFound Owners: %v ", test.expectedOwnersPath, foundOwnersPath)
+		}
+	}
+}
+
+func TestLabels(t *testing.T) {
+	tests := []struct {
+		testName       string
+		inputPath      string
+		expectedLabels sets.String
+	}{
+		{
+			testName:       "base 1",
+			inputPath:      "foo.txt",
+			expectedLabels: sets.NewString("sig/godzilla"),
+		}, {
+			testName:       "base 2",
+			inputPath:      "./foo.txt",
+			expectedLabels: sets.NewString("sig/godzilla"),
+		}, {
+			testName:       "base 3",
+			inputPath:      "",
+			expectedLabels: sets.NewString("sig/godzilla"),
+		}, {
+			testName:       "base 4",
+			inputPath:      ".",
+			expectedLabels: sets.NewString("sig/godzilla"),
+		}, {
+			testName:       "leaf 1",
+			inputPath:      "a/b/c/foo.txt",
+			expectedLabels: sets.NewString("sig/godzilla", "wg/save-tokyo"),
+		}, {
+			testName:       "leaf 2",
+			inputPath:      "a/b/foo.txt",
+			expectedLabels: sets.NewString("sig/godzilla"),
+		},
+	}
+
+	TestRepo := getTestRepo()
+	for _, tt := range tests {
+		got := TestRepo.FindLabelsForPath(tt.inputPath)
+		if !got.Equal(tt.expectedLabels) {
+			t.Errorf("%v: expected %v, got %v", tt.testName, tt.expectedLabels, got)
 		}
 	}
 }

@@ -47,6 +47,7 @@ type assignmentConfig struct {
 	Assignees []string `json:"assignees" yaml:"assignees"`
 	Approvers []string `json:"approvers" yaml:"approvers"`
 	Reviewers []string `json:"reviewers" yaml:"reviewers"`
+	Labels    []string `json:"labels" yaml:"labels"`
 }
 
 // RepoInfo provides information about users in OWNERS files in a git repo
@@ -55,11 +56,13 @@ type RepoInfo struct {
 	enableMdYaml bool
 	useReviewers bool
 
-	enabled    bool
-	projectDir string
-	approvers  map[string]sets.String
-	reviewers  map[string]sets.String
-	config     *github.Config
+	enabled           bool
+	projectDir        string
+	approvers         map[string]sets.String
+	reviewers         map[string]sets.String
+	labels            map[string]sets.String
+	allPossibleLabels sets.String
+	config            *github.Config
 }
 
 func init() {
@@ -148,6 +151,10 @@ func (o *RepoInfo) walkFunc(path string, info os.FileInfo, err error) error {
 	o.approvers[path] = sets.NewString(c.Approvers...)
 	o.approvers[path].Insert(c.Assignees...)
 	o.reviewers[path] = sets.NewString(c.Reviewers...)
+	if len(c.Labels) > 0 {
+		o.labels[path] = sets.NewString(c.Labels...)
+		o.allPossibleLabels.Insert(c.Labels...)
+	}
 	return nil
 }
 
@@ -184,6 +191,8 @@ func (o *RepoInfo) updateRepoUsers() error {
 
 	o.approvers = map[string]sets.String{}
 	o.reviewers = map[string]sets.String{}
+	o.labels = map[string]sets.String{}
+	o.allPossibleLabels = sets.String{}
 	err = filepath.Walk(o.projectDir, o.walkFunc)
 	if err != nil {
 		glog.Errorf("Got error %v", err)
@@ -297,6 +306,31 @@ func (o *RepoInfo) FindApproverOwnersForPath(path string) string {
 // that contains a reviewers section
 func (o *RepoInfo) FindReviewersForPath(path string) string {
 	return findOwnersForPath(path, o.reviewers)
+}
+
+// AllPossibleOwnerLabels returns all labels found in any owners files
+func (o *RepoInfo) AllPossibleOwnerLabels() sets.String {
+	return sets.NewString(o.allPossibleLabels.List()...)
+}
+
+// FindLabelsForPath returns a set of labels which should be applied to PRs
+// modifying files under the given path.
+func (o *RepoInfo) FindLabelsForPath(path string) sets.String {
+	s := sets.String{}
+
+	d := path
+	for {
+		l, ok := o.labels[d]
+		if ok && len(l) > 0 {
+			s = s.Union(l)
+		}
+		if d == baseDirConvention {
+			break
+		}
+		d = filepath.Dir(d)
+		d = canonicalize(d)
+	}
+	return s
 }
 
 // peopleForPath returns a set of users who are assignees to the
