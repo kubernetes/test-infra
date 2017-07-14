@@ -163,7 +163,7 @@ func run(deploy deployer, o options) error {
 			} else {
 				if o.federation {
 					errs = appendError(errs, xmlWrap("FederationTest", func() error {
-						return FederationTest(o.testArgs)
+						return FederationTest(o.testArgs, dump)
 					}))
 				} else {
 					errs = appendError(errs, xmlWrap("Test", func() error {
