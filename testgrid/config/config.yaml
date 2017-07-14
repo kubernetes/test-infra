@@ -1709,21 +1709,6 @@ dashboards:
   - name: gci-gke-prod-smoke
     test_group_name: ci-kubernetes-e2e-gci-gke-prod-smoke
 
-- name: google-kubemark
-  dashboard_tab:
-  - name: kubemark-100
-    test_group_name: ci-kubernetes-kubemark-100-gce
-  - name: kubemark-100-high-density
-    test_group_name: ci-kubernetes-kubemark-high-density-100-gce
-  - name: kubemark-small
-    test_group_name: ci-kubernetes-kubemark-5-gce
-  - name: kubemark-small-1.5
-    test_group_name: ci-kubernetes-kubemark-5-gce-1.5
-  - name: kubemark-500
-    test_group_name: ci-kubernetes-kubemark-500-gce
-  - name: kubemark-5000
-    test_group_name: ci-kubernetes-kubemark-gce-scale
-
 - name: google-soak
   dashboard_tab:
   - name: gce-test
@@ -3120,6 +3105,22 @@ dashboards:
 
 # Move sig-release here
 
+- name: sig-scalability  # Previously google-kubemark
+  dashboard_tab:
+  - name: kubemark-100
+    test_group_name: ci-kubernetes-kubemark-100-gce
+  - name: kubemark-100-high-density
+    test_group_name: ci-kubernetes-kubemark-high-density-100-gce
+  - name: kubemark-small
+    test_group_name: ci-kubernetes-kubemark-5-gce
+  - name: kubemark-small-1.5
+    test_group_name: ci-kubernetes-kubemark-5-gce-1.5
+  - name: kubemark-500
+    test_group_name: ci-kubernetes-kubemark-500-gce
+  - name: kubemark-5000
+    test_group_name: ci-kubernetes-kubemark-gce-scale
+
+
 - name: sig-scheduling
   dashboard_tab:
   - name: TODO
@@ -3231,8 +3232,8 @@ dashboard_groups:
   - release-1.7-all
   - release-1.7-blocking
 
-- name: sig-scalability-all
+- name: sig-scalability-all  # TODO(fejta): rename this to sig-scalability
   dashboard_names:
+  - sig-scalability  # TODO(fejta): rename this google-kubemark 
   - google-gce-scale
   - google-gke-scale
-  - google-kubemark
