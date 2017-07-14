@@ -33,6 +33,7 @@ var (
 	int1           int
 	uint1          uint64
 	bool1          bool
+	bool2          bool
 	dur1           time.Duration
 
 	entries = []optEntry{
@@ -41,6 +42,7 @@ var (
 		{key: "intvar", val: 5, ptr: &int1},
 		{key: "uintvar", val: uint64(5), ptr: &uint1},
 		{key: "boolvar", val: true, ptr: &bool1},
+		{key: "boolvar2", val: false, ptr: &bool2},
 		{key: "durvar", val: time.Second * 2, ptr: &dur1},
 		{key: "emptyslicevar", val: []string{"def"}, ptr: &slice2},
 		{key: "emptystringvar", val: "def", ptr: &str2},
@@ -51,6 +53,7 @@ strslicevar: Hello world., string2
 intvar: 5
 uintvar: 6
 boolvar: false
+boolvar2: true
 durvar: 15s
 emptyslicevar:
 emptystringvar: ""`
@@ -60,6 +63,7 @@ emptystringvar: ""`
 		{key: "intvar", val: 5, ptr: &int1},
 		{key: "uintvar", val: uint64(6), ptr: &uint1},
 		{key: "boolvar", val: false, ptr: &bool1},
+		{key: "boolvar2", val: true, ptr: &bool2},
 		{key: "durvar", val: time.Second * 15, ptr: &dur1},
 		{key: "emptyslicevar", val: []string{}, ptr: &slice2},
 		{key: "emptystringvar", val: "", ptr: &str2},
@@ -74,6 +78,7 @@ emptyslicevar: ""`
 		{key: "intvar", val: 700, ptr: &int1},
 		{key: "uintvar", val: uint64(5), ptr: &uint1},
 		{key: "boolvar", val: true, ptr: &bool1},
+		{key: "boolvar2", val: false, ptr: &bool2},
 		{key: "durvar", val: time.Second * 5, ptr: &dur1},
 		{key: "emptyslicevar", val: []string{}, ptr: &slice2},
 		{key: "emptystringvar", val: "def", ptr: &str2},
