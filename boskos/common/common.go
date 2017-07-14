@@ -17,6 +17,9 @@ limitations under the License.
 package common
 
 import (
+	"errors"
+	"fmt"
+	"strings"
 	"time"
 )
 
@@ -33,4 +36,20 @@ type Metric struct {
 	Current map[string]int `json:"current"`
 	Owners  map[string]int `json:"owner"`
 	// TODO: Implement state transition metrics
+}
+
+type ResTypes []string
+
+func (r *ResTypes) String() string {
+	return fmt.Sprint(*r)
+}
+
+func (rtypes *ResTypes) Set(value string) error {
+	if len(*rtypes) > 0 {
+		return errors.New("resTypes flag already set")
+	}
+	for _, rtype := range strings.Split(value, ",") {
+		*rtypes = append(*rtypes, rtype)
+	}
+	return nil
 }

@@ -752,6 +752,37 @@ func TestSyncConfig(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "append/delete mixed type",
+			oldRes: []common.Resource{
+				{
+					Name: "res-1",
+					Type: "t",
+				},
+			},
+			newRes: []common.Resource{
+				{
+					Name: "res-2",
+					Type: "t",
+				},
+				{
+					Name: "res-3",
+					Type: "t2",
+				},
+			},
+			expect: []common.Resource{
+				{
+					Name:  "res-2",
+					Type:  "t",
+					State: "free",
+				},
+				{
+					Name:  "res-3",
+					Type:  "t2",
+					State: "free",
+				},
+			},
+		},
 	}
 
 	for _, tc := range testcases {

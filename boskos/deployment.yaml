@@ -18,6 +18,7 @@ metadata:
   labels:
     app: boskos
   name: boskos-storage
+  namespace: test-pods
 spec:
   capacity:
     storage: 1Gi
@@ -35,6 +36,7 @@ metadata:
   labels:
     app: boskos
   name: boskos-storage
+  namespace: test-pods
 spec:
   accessModes:
     - ReadWriteOnce
@@ -49,12 +51,14 @@ metadata:
   name: boskos
   labels:
     app: boskos
+  namespace: test-pods
 spec:
   replicas: 1  # one canonical source of resources
   template:
     metadata:
       labels:
         app: boskos
+      namespace: test-pods
     spec:
       terminationGracePeriodSeconds: 30
       containers:

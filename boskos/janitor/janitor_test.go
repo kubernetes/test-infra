@@ -19,6 +19,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"math/rand"
 	"sync"
 	"sync/atomic"
 	"testing"
@@ -34,13 +35,14 @@ type fakeBoskos struct {
 }
 
 // Create a fake client
-func CreateFakeBoskos(resources int) *fakeBoskos {
+func CreateFakeBoskos(resources int, types []string) *fakeBoskos {
 	fb := &fakeBoskos{}
+	r := rand.New(rand.NewSource(99))
 	for i := 0; i < resources; i++ {
 		fb.resources = append(fb.resources,
 			common.Resource{
 				Name:  fmt.Sprintf("res-%d", i),
-				Type:  "project",
+				Type:  types[r.Intn(len(types))],
 				State: "dirty",
 			})
 	}
@@ -106,10 +108,11 @@ func TestNormal(t *testing.T) {
 		return nil
 	}
 
-	fb := CreateFakeBoskos(1000)
+	types := []string{"a", "b", "c", "d"}
+	fb := CreateFakeBoskos(1000, types)
 
 	buffer := setup(fb, poolSize, bufferSize)
-	totalAcquire := run(fb, buffer)
+	totalAcquire := run(fb, buffer, []string{"t"})
 
 	if totalAcquire != len(fb.resources) {
 		t.Errorf("Expect to acquire all resources(%d) from fake boskos, got %d", len(fb.resources), totalAcquire)
@@ -130,7 +133,7 @@ func TestNormal(t *testing.T) {
 	}
 }
 
-func FakeRun(fb *fakeBoskos, buffer chan string) (int, error) {
+func FakeRun(fb *fakeBoskos, buffer chan string, res string) (int, error) {
 	timeout := time.NewTimer(5 * time.Second).C
 
 	totalClean := 0
@@ -140,7 +143,7 @@ func FakeRun(fb *fakeBoskos, buffer chan string) (int, error) {
 		case <-timeout:
 			return totalClean, nil
 		default:
-			if proj, err := fb.Acquire("project", "dirty", "cleaning"); err != nil {
+			if proj, err := fb.Acquire(res, "dirty", "cleaning"); err != nil {
 				return totalClean, fmt.Errorf("Acquire failed with %v", err)
 			} else if proj == "" {
 				return totalClean, errors.New("Not expect to run out of resources!")
@@ -170,11 +173,11 @@ func TestMalfunctionJanitor(t *testing.T) {
 		return nil
 	}
 
-	fb := CreateFakeBoskos(100)
+	fb := CreateFakeBoskos(100, []string{"t"})
 
 	buffer := setup(fb, poolSize, bufferSize)
 
-	if totalClean, err := FakeRun(fb, buffer); err != nil {
+	if totalClean, err := FakeRun(fb, buffer, "t"); err != nil {
 		t.Fatalf("Run failed unexpectedly : %v", err)
 	} else if totalClean != poolSize+1 {
 		t.Errorf("Expect to clean %d from fake boskos, got %d", poolSize+1, totalClean)

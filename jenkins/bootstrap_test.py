@@ -2094,9 +2094,10 @@ class JobTest(unittest.TestCase):
         projects = collections.defaultdict(set)
         boskos = []
         with open(bootstrap.test_infra('boskos/resources.json')) as fp:
-            for res in json.loads(fp.read()):
-                if res['type'] == 'projects':
-                    boskos.append(res['name'])
+            for rtype in json.loads(fp.read()):
+                if rtype['type'] == 'gce-project' or rtype['type'] == 'gke-project':
+                    for name in rtype['names']:
+                        boskos.append(name)
 
         for job, job_path in self.jobs:
             with open(job_path) as fp:
