@@ -385,17 +385,21 @@ def append_result(gsutil, path, build, version, passed):
             logging.warning('Failed to append to %s#%s', path, gen)
         errors += 1
 
-
-def metadata(repos, artifacts, call):
-    """Return metadata associated for the build, including inside artifacts."""
-    path = os.path.join(artifacts or '', 'metadata.json')
-    meta = None
+def mergeMetadata(meta,dir,file):
+    path = os.path.join(dir or '', file)
     if os.path.isfile(path):
         try:
             with open(path) as fp:
-                meta = json.loads(fp.read())
+                meta.update(json.loads(fp.read()))
         except (IOError, ValueError):
             pass
+
+def metadata(repos, artifacts, call):
+    """Return metadata associated for the build, including inside artifacts."""
+    meta = dict()
+    files = ['metadata.json', 'images.json']
+    for f in files:
+      mergeMetadata(meta, artifacts or '', f)
 
     if not meta or not isinstance(meta, dict):
         meta = {}
