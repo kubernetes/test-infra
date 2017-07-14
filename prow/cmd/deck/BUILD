@@ -17,7 +17,10 @@ go_binary(
 
 go_test(
     name = "go_default_test",
-    srcs = ["main_test.go"],
+    srcs = [
+        "jobs_test.go",
+        "main_test.go",
+    ],
     library = ":go_default_library",
     tags = ["automanaged"],
     deps = [

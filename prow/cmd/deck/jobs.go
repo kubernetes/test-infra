@@ -60,9 +60,17 @@ type Job struct {
 	ft time.Time
 }
 
+type listPJClient interface {
+	ListProwJobs(labels map[string]string) ([]kube.ProwJob, error)
+}
+
+type podLogClient interface {
+	GetLog(pod string) ([]byte, error)
+}
+
 type JobAgent struct {
-	kc        *kube.Client
-	pkc       *kube.Client
+	kc        listPJClient
+	pkc       podLogClient
 	jc        *jenkins.Client
 	jobs      []Job
 	jobsMap   map[string]Job                     // pod name -> Job
@@ -159,9 +167,6 @@ func (ja *JobAgent) update() error {
 	njsIDMap := make(map[string]map[string]kube.ProwJob)
 	for _, j := range pjs {
 		buildID := j.Status.BuildID
-		if j.Spec.Agent == kube.JenkinsAgent {
-			buildID = j.Status.JenkinsBuildID
-		}
 		nj := Job{
 			Type:    string(j.Spec.Type),
 			Repo:    fmt.Sprintf("%s/%s", j.Spec.Refs.Org, j.Spec.Refs.Repo),
@@ -209,5 +214,6 @@ func (ja *JobAgent) update() error {
 	defer ja.mut.Unlock()
 	ja.jobs = njs
 	ja.jobsMap = njsMap
+	ja.jobsIDMap = njsIDMap
 	return nil
 }
