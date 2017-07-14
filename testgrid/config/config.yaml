@@ -2894,8 +2894,62 @@ dashboards:
 
 - name: sig-instrumentation
   dashboard_tab:
-  - name: TODO
-    test_group_name: ci-kubernetes-e2e-gce-slow  # TODO(fejta): fix
+  - name: gce
+    test_group_name: ci-kubernetes-e2e-gce
+    base_options: 'include-filter-by-regex=sig-instrumentation'
+    description: 'instrumentation gce e2e tests for master branch'
+  - name: gke
+    test_group_name: ci-kubernetes-e2e-gke
+    base_options: 'include-filter-by-regex=sig-instrumentation'
+    description: 'instrumentation gke e2e tests for master branch'
+  - name: gce-1.7
+    test_group_name: ci-kubernetes-e2e-gce-release-1-7
+    base_options: 'include-filter-by-regex=sig-instrumentation'
+    description: 'instrumentation gce e2e tests for 1.7 branch'
+  - name: gke-1.7
+    test_group_name: ci-kubernetes-e2e-gke-release-1-7
+    base_options: 'include-filter-by-regex=sig-instrumentation'
+    description: 'instrumentation gke e2e tests for 1.7 branch'
+  - name: gce-1.6
+    test_group_name: ci-kubernetes-e2e-gce-release-1-6
+    base_options: 'include-filter-by-regex=sig-instrumentation'
+    description: 'instrumentation gce e2e tests for 1.6 branch'
+  - name: gke-1.6
+    test_group_name: ci-kubernetes-e2e-gke-release-1-6
+    base_options: 'include-filter-by-regex=sig-instrumentation'
+    description: 'instrumentation gke e2e tests for 1.6 branch'
+  - name: gce-1.5
+    test_group_name: ci-kubernetes-e2e-gce-release-1-5
+    base_options: 'include-filter-by-regex=sig-instrumentation'
+    description: 'instrumentation gce e2e tests for 1.5 branch'
+  - name: gke-1.5
+    test_group_name: ci-kubernetes-e2e-gke-release-1-5
+    base_options: 'include-filter-by-regex=sig-instrumentation'
+    description: 'instrumentation gke e2e tests for 1.5 branch'
+  - name: gce-serial
+    test_group_name: ci-kubernetes-e2e-gce-serial
+    base_options: 'include-filter-by-regex=sig-instrumentation'
+    description: 'instrumentation gce serial e2e tests for master branch'
+  - name: gke-serial
+    test_group_name: ci-kubernetes-e2e-gke-serial
+    base_options: 'include-filter-by-regex=sig-instrumentation'
+    description: 'sig-instrumentation gke serial e2e tests for master branch'
+  - name: gce-es-logging
+    test_group_name: ci-kubernetes-e2e-gce-es-logging
+    base_options: 'include-filter-by-regex=sig-instrumentation'
+    description: 'sig-instrumentation gce elasticsearch logging e2e tests for master branch'
+  - name: gce-sd-logging
+    test_group_name: ci-kubernetes-e2e-gce-sd-logging
+    base_options: 'include-filter-by-regex=sig-instrumentation'
+    description: 'sig-instrumentation gce stackdriver logging e2e tests for master branch'
+  - name: gce-sd-monitoring
+    test_group_name: ci-kubernetes-e2e-gce-stackdriver
+    base_options: 'include-filter-by-regex=sig-instrumentation'
+    description: 'sig-instrumentation gce stackdriver monitoring e2e tests for master branch'
+  - name: gke-sd-monitoring
+    test_group_name: ci-kubernetes-e2e-gke-stackdriver
+    base_options: 'include-filter-by-regex=sig-instrumentation'
+    description: 'sig-instrumentation gke stackdriver monitoring e2e tests for master branch'
 
 - name: sig-network
   dashboard_tab:
