@@ -18,6 +18,7 @@ package yuks
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"regexp"
@@ -98,13 +99,18 @@ func handle(gc githubClient, log *logrus.Entry, ic github.IssueCommentEvent, j j
 	repo := ic.Repo.Name
 	number := ic.Issue.Number
 
-	resp, err := j.readJoke()
-	if err != nil {
-		return err
+	for i := 0; i < 10; i++ {
+		resp, err := j.readJoke()
+		if err != nil {
+			return err
+		}
+		if simple.MatchString(resp) {
+			log.Infof("Commenting with \"%s\".", resp)
+			return gc.CreateComment(org, repo, number, plugins.FormatICResponse(ic.Comment, resp))
+		}
+
+		log.Errorf("joke contains invalid characters: %v", resp)
 	}
-	if !simple.MatchString(resp) {
-		return fmt.Errorf("joke contains invalid characters: %v", resp)
-	}
-	log.Infof("Commenting with \"%s\".", resp)
-	return gc.CreateComment(org, repo, number, plugins.FormatICResponse(ic.Comment, resp))
+
+	return errors.New("all 10 jokes contain invalid character... such an unlucky day")
 }
