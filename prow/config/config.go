@@ -27,6 +27,8 @@ import (
 	"github.com/ghodss/yaml"
 )
 
+type ThisIsPublic int
+
 // Config is a read-only snapshot of the config.
 type Config struct {
 	// Full repo name (such as "kubernetes/kubernetes") -> list of jobs.
@@ -133,6 +135,8 @@ func parseConfig(c *Config) error {
 	c.Plank.ReportTemplate = reportTmpl
 	return nil
 }
+
+type ThisIsFarAway int
 
 func setRegexes(js []Presubmit) error {
 	for i, j := range js {
