@@ -1515,8 +1515,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-alpha-features
   - name: gci-gke-alpha-features
     test_group_name: ci-kubernetes-e2e-gci-gke-alpha-features
-  - name: gke-alpha-features-1.5
-    test_group_name: ci-kubernetes-e2e-gke-alpha-features-release-1-5
   - name: gke-stackdriver
     test_group_name: ci-kubernetes-e2e-gke-stackdriver
   - name: gke-flaky
@@ -1533,8 +1531,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-ingress
   - name: gci-gke-ingress
     test_group_name: ci-kubernetes-e2e-gci-gke-ingress
-  - name: gci-gke-ingress-1.5
-    test_group_name: ci-kubernetes-e2e-gci-gke-ingress-release-1-5
   - name: gke-multizone
     test_group_name: ci-kubernetes-e2e-gke-multizone
   - name: gci-gke-multizone
@@ -1547,26 +1543,10 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-reboot
   - name: gci-gke-reboot
     test_group_name: ci-kubernetes-e2e-gci-gke-reboot
-  - name: gke-reboot-1.5
-    test_group_name: ci-kubernetes-e2e-gke-reboot-release-1-5
-  - name: gci-gke-reboot-1.5
-    test_group_name: ci-kubernetes-e2e-gci-gke-reboot-release-1-5
-  - name: gke-1.5
-    test_group_name: ci-kubernetes-e2e-gke-release-1-5
-  - name: gci-gke-1.5
-    test_group_name: ci-kubernetes-e2e-gci-gke-release-1-5
   - name: gke-serial
     test_group_name: ci-kubernetes-e2e-gke-serial
-  - name: gke-serial-1.5
-    test_group_name: ci-kubernetes-e2e-gke-serial-release-1-5
-  - name: gci-gke-serial-1.5
-    test_group_name: ci-kubernetes-e2e-gci-gke-serial-release-1-5
   - name: gke-slow
     test_group_name: ci-kubernetes-e2e-gke-slow
-  - name: gke-slow-1.5
-    test_group_name: ci-kubernetes-e2e-gke-slow-release-1-5
-  - name: gci-gke-slow-1.5
-    test_group_name: ci-kubernetes-e2e-gci-gke-slow-release-1-5
   - name: gke-subnet
     test_group_name: ci-kubernetes-e2e-gke-subnet
   - name: gci-gke-subnet
@@ -1581,6 +1561,69 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gci-gke-updown
   - name: gke-gpu
     test_group_name: ci-kubernetes-e2e-gke-gpu
+  # K8S 1.5 branch on GKE
+  - name: gke-alpha-features-1.5
+    test_group_name: ci-kubernetes-e2e-gke-alpha-features-release-1-5
+  - name: gci-gke-ingress-1.5
+    test_group_name: ci-kubernetes-e2e-gci-gke-ingress-release-1-5
+  - name: gke-reboot-1.5
+    test_group_name: ci-kubernetes-e2e-gke-reboot-release-1-5
+  - name: gci-gke-reboot-1.5
+    test_group_name: ci-kubernetes-e2e-gci-gke-reboot-release-1-5
+  - name: gke-1.5
+    test_group_name: ci-kubernetes-e2e-gke-release-1-5
+  - name: gci-gke-1.5
+    test_group_name: ci-kubernetes-e2e-gci-gke-release-1-5
+  - name: gke-serial-1.5
+    test_group_name: ci-kubernetes-e2e-gke-serial-release-1-5
+  - name: gci-gke-serial-1.5
+    test_group_name: ci-kubernetes-e2e-gci-gke-serial-release-1-5
+  - name: gke-slow-1.5
+    test_group_name: ci-kubernetes-e2e-gke-slow-release-1-5
+  - name: gci-gke-slow-1.5
+    test_group_name: ci-kubernetes-e2e-gci-gke-slow-release-1-5
+  # K8S 1.6 branch on GKE
+  - name: gke-alpha-features-1.6
+    test_group_name: ci-kubernetes-e2e-gke-alpha-features-release-1-6
+  - name: gci-gke-ingress-1.6
+    test_group_name: ci-kubernetes-e2e-gci-gke-ingress-release-1-6
+  - name: gke-reboot-1.6
+    test_group_name: ci-kubernetes-e2e-gke-reboot-release-1-6
+  - name: gci-gke-reboot-1.6
+    test_group_name: ci-kubernetes-e2e-gci-gke-reboot-release-1-6
+  - name: gke-1.6
+    test_group_name: ci-kubernetes-e2e-gke-release-1-6
+  - name: gci-gke-1.6
+    test_group_name: ci-kubernetes-e2e-gci-gke-release-1-6
+  - name: gke-serial-1.6
+    test_group_name: ci-kubernetes-e2e-gke-serial-release-1-6
+  - name: gci-gke-serial-1.6
+    test_group_name: ci-kubernetes-e2e-gci-gke-serial-release-1-6
+  - name: gke-slow-1.6
+    test_group_name: ci-kubernetes-e2e-gke-slow-release-1-6
+  - name: gci-gke-slow-1.6
+    test_group_name: ci-kubernetes-e2e-gci-gke-slow-release-1-6
+  # K8S 1.7 branch on GKE
+  - name: gke-alpha-features-1.7
+    test_group_name: ci-kubernetes-e2e-gke-alpha-features-release-1-7
+  - name: gci-gke-ingress-1.7
+    test_group_name: ci-kubernetes-e2e-gci-gke-ingress-release-1-7
+  - name: gke-reboot-1.7
+    test_group_name: ci-kubernetes-e2e-gke-reboot-release-1-7
+  - name: gci-gke-reboot-1.7
+    test_group_name: ci-kubernetes-e2e-gci-gke-reboot-release-1-7
+  - name: gke-1.7
+    test_group_name: ci-kubernetes-e2e-gke-release-1-7
+  - name: gci-gke-1.7
+    test_group_name: ci-kubernetes-e2e-gci-gke-release-1-7
+  - name: gke-serial-1.7
+    test_group_name: ci-kubernetes-e2e-gke-serial-release-1-7
+  - name: gci-gke-serial-1.7
+    test_group_name: ci-kubernetes-e2e-gci-gke-serial-release-1-7
+  - name: gke-slow-1.7
+    test_group_name: ci-kubernetes-e2e-gke-slow-release-1-7
+  - name: gci-gke-slow-1.7
+    test_group_name: ci-kubernetes-e2e-gci-gke-slow-release-1-7
     # Ubuntu cluster/node e2e tests on GKE (contact: @kubernetes/ubuntu-image on github)
   - name: ubuntu-gke
     test_group_name: ci-kubernetes-e2e-ubuntu-gke
