@@ -1399,24 +1399,10 @@
       "generated"
     ]
   },
-  "ci-kubernetes-e2e-gce-enormous-cluster": {
-    "args": [
-      "--env-file=jobs/ci-kubernetes-e2e-gce-enormous-cluster.env",
-      "--cluster=e2e-enormous-cluster",
-      "--timeout=1400m",
-      "--extract=ci/latest",
-      "--mode=docker",
-      "--test_args=--ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --allowed-not-ready-nodes=50 --node-schedulable-timeout=120m --system-pods-startup-timeout=5m --kube-api-content-type=application/vnd.kubernetes.protobuf"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-scale"
-    ]
-  },
   "ci-kubernetes-e2e-gce-enormous-deploy": {
     "args": [
       "--env-file=jobs/ci-kubernetes-e2e-gce-enormous-deploy.env",
-      "--cluster=e2e-enormous-deploy",
+      "--cluster=gce-enormous-deploy",
       "--down=false",
       "--timeout=300m",
       "--extract=ci/latest-1.6",
@@ -1431,7 +1417,7 @@
   "ci-kubernetes-e2e-gce-enormous-teardown": {
     "args": [
       "--env-file=jobs/ci-kubernetes-e2e-gce-enormous-teardown.env",
-      "--cluster=e2e-enormous-deploy",
+      "--cluster=gce-enormous-deploy",
       "--up=false",
       "--test=false",
       "--timeout=180m",
@@ -2033,6 +2019,34 @@
       "sig-network"
     ]
   },
+  "ci-kubernetes-e2e-gce-large-correctness": {
+    "args": [
+      "--env-file=jobs/ci-kubernetes-e2e-gce-large-correctness.env",
+      "--cluster=gce-large-cluster",
+      "--timeout=600m",
+      "--extract=ci/latest",
+      "--mode=docker",
+      "--test_args=--ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --allowed-not-ready-nodes=20 --node-schedulable-timeout=30m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-scale"
+    ]
+  },
+  "ci-kubernetes-e2e-gce-large-performance": {
+    "args": [
+      "--env-file=jobs/ci-kubernetes-e2e-gce-large-performance.env",
+      "--cluster=gce-large-cluster",
+      "--timeout=1000m",
+      "--extract=ci/latest",
+      "--mode=docker",
+      "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --allowed-not-ready-nodes=20 --node-schedulable-timeout=30m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-scale"
+    ]
+  },
   "ci-kubernetes-e2e-gce-latest-upgrade-cluster": {
     "args": [
       "--env-file=jobs/platform/gce.env",
@@ -2384,6 +2398,34 @@
     "scenario": "kubernetes_e2e",
     "sigOwners": [
       "UNKNOWN"
+    ]
+  },
+  "ci-kubernetes-e2e-gce-scale-correctness": {
+    "args": [
+      "--env-file=jobs/ci-kubernetes-e2e-gce-scale-correctness.env",
+      "--cluster=gce-scale-cluster",
+      "--timeout=1200m",
+      "--extract=ci/latest",
+      "--mode=docker",
+      "--test_args=--ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --allowed-not-ready-nodes=50 --node-schedulable-timeout=60m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-scale"
+    ]
+  },
+  "ci-kubernetes-e2e-gce-scale-performance": {
+    "args": [
+      "--env-file=jobs/ci-kubernetes-e2e-gce-scale-performance.env",
+      "--cluster=gce-scale-cluster",
+      "--timeout=1400m",
+      "--extract=ci/latest",
+      "--mode=docker",
+      "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --allowed-not-ready-nodes=50 --node-schedulable-timeout=60m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-scale"
     ]
   },
   "ci-kubernetes-e2e-gce-sd-logging": {
@@ -5350,14 +5392,14 @@
       "sig-network"
     ]
   },
-  "ci-kubernetes-e2e-gke-large-cluster": {
+  "ci-kubernetes-e2e-gke-large-correctness": {
     "args": [
       "--env-file=jobs/platform/gke.env",
-      "--env-file=jobs/ci-kubernetes-e2e-gke-large-cluster.env",
+      "--env-file=jobs/ci-kubernetes-e2e-gke-large-correctness.env",
       "--cluster=gke-large-cluster",
       "--timeout=600m",
       "--extract=ci/latest",
-      "--test_args=--ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --allowed-not-ready-nodes=20 --node-schedulable-timeout=120m --system-pods-startup-timeout=5m"
+      "--test_args=--ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --allowed-not-ready-nodes=20 --node-schedulable-timeout=30m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -5373,6 +5415,20 @@
       "--timeout=1200m",
       "--extract=ci/latest",
       "--test_args=--ginkgo.focus=\\[Feature:Empty\\] --allowed-not-ready-nodes=0 --node-schedulable-timeout=360m --system-pods-startup-timeout=60m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-scale"
+    ]
+  },
+  "ci-kubernetes-e2e-gke-large-performance": {
+    "args": [
+      "--env-file=jobs/platform/gke.env",
+      "--env-file=jobs/ci-kubernetes-e2e-gke-large-performance.env",
+      "--cluster=gke-large-cluster",
+      "--timeout=1000m",
+      "--extract=ci/latest",
+      "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --allowed-not-ready-nodes=20 --node-schedulable-timeout=30m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -5663,6 +5719,20 @@
     "scenario": "kubernetes_e2e",
     "sigOwners": [
       "UNKNOWN"
+    ]
+  },
+  "ci-kubernetes-e2e-gke-scale-correctness": {
+    "args": [
+      "--env-file=jobs/platform/gke.env",
+      "--env-file=jobs/ci-kubernetes-e2e-gke-scale-correctness.env",
+      "--cluster=gke-scale-cluster",
+      "--timeout=1200m",
+      "--extract=ci/latest",
+      "--test_args=--ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --allowed-not-ready-nodes=50 --node-schedulable-timeout=60m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-scale"
     ]
   },
   "ci-kubernetes-e2e-gke-serial": {
