@@ -647,160 +647,264 @@
       "UNKNOWN"
     ]
   },
-  "ci-kubernetes-e2e-gce-cosbeta-k8sdev-default": {
+  "ci-kubernetes-e2e-gce-cosbeta-k8sbeta-default": {
+    "_comment": "AUTO-GENERATED - DO NOT EDIT.",
     "args": [
-      "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/image/cosbeta.env",
-      "--env-file=jobs/suite/default.env",
-      "--env-file=jobs/ci-kubernetes-e2e-gce-cosbeta-k8sdev-default.env",
-      "--extract=ci/latest-1.7",
-      "--timeout=150m",
-      "--check-leaked-resources",
-      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-node"
-    ]
-  },
-  "ci-kubernetes-e2e-gce-cosbeta-k8sdev-serial": {
-    "args": [
-      "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/image/cosbeta.env",
-      "--env-file=jobs/ci-kubernetes-e2e-gce-cosbeta-k8sdev-serial.env",
-      "--extract=ci/latest-1.7",
-      "--timeout=300m",
-      "--check-leaked-resources",
-      "--test_args=--ginkgo.focus=\\[Serial\\]|\\[Disruptive\\] --ginkgo.skip=\\[Flaky\\]|\\[Feature:.+\\]"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-node"
-    ]
-  },
-  "ci-kubernetes-e2e-gce-cosbeta-k8sdev-slow": {
-    "args": [
-      "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/image/cosbeta.env",
-      "--env-file=jobs/suite/slow.env",
-      "--env-file=jobs/ci-kubernetes-e2e-gce-cosbeta-k8sdev-slow.env",
-      "--extract=ci/latest-1.7",
-      "--timeout=150m",
-      "--check-leaked-resources",
-      "--test_args=--ginkgo.focus=\\[Slow\\] --ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-node"
-    ]
-  },
-  "ci-kubernetes-e2e-gce-cosbeta-k8sstable1-default": {
-    "args": [
-      "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/image/cosbeta.env",
-      "--env-file=jobs/suite/default.env",
-      "--env-file=jobs/ci-kubernetes-e2e-gce-cosbeta-k8sstable1-default.env",
-      "--extract=ci/latest-1.6",
-      "--timeout=150m",
-      "--check-leaked-resources",
-      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-node"
-    ]
-  },
-  "ci-kubernetes-e2e-gce-cosbeta-k8sstable1-serial": {
-    "args": [
-      "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/image/cosbeta.env",
-      "--env-file=jobs/ci-kubernetes-e2e-gce-cosbeta-k8sstable1-serial.env",
-      "--extract=ci/latest-1.6",
-      "--timeout=300m",
-      "--check-leaked-resources",
-      "--test_args=--ginkgo.focus=\\[Serial\\]|\\[Disruptive\\] --ginkgo.skip=\\[Flaky\\]|\\[Feature:.+\\]"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-node"
-    ]
-  },
-  "ci-kubernetes-e2e-gce-cosbeta-k8sstable1-slow": {
-    "args": [
-      "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/image/cosbeta.env",
-      "--env-file=jobs/suite/slow.env",
-      "--env-file=jobs/ci-kubernetes-e2e-gce-cosbeta-k8sstable1-slow.env",
-      "--extract=ci/latest-1.6",
-      "--timeout=150m",
-      "--check-leaked-resources",
-      "--test_args=--ginkgo.focus=\\[Slow\\] --ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-node"
-    ]
-  },
-  "ci-kubernetes-e2e-gce-cosbeta-k8sstable2-default": {
-    "args": [
-      "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/image/cosbeta.env",
-      "--env-file=jobs/suite/default.env",
-      "--env-file=jobs/ci-kubernetes-e2e-gce-cosbeta-k8sstable2-default.env",
-      "--extract=ci/latest-1.5",
-      "--timeout=150m",
-      "--check-leaked-resources",
-      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-node"
-    ]
-  },
-  "ci-kubernetes-e2e-gce-cosbeta-k8sstable2-serial": {
-    "args": [
-      "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/image/cosbeta.env",
-      "--env-file=jobs/ci-kubernetes-e2e-gce-cosbeta-k8sstable2-serial.env",
-      "--extract=ci/latest-1.5",
-      "--timeout=300m",
-      "--check-leaked-resources",
-      "--test_args=--ginkgo.focus=\\[Serial\\]|\\[Disruptive\\] --ginkgo.skip=\\[Flaky\\]|\\[Feature:.+\\]"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-node"
-    ]
-  },
-  "ci-kubernetes-e2e-gce-cosbeta-k8sstable2-slow": {
-    "args": [
-      "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/image/cosbeta.env",
-      "--env-file=jobs/suite/slow.env",
-      "--env-file=jobs/ci-kubernetes-e2e-gce-cosbeta-k8sstable2-slow.env",
-      "--extract=ci/latest-1.5",
-      "--timeout=150m",
-      "--check-leaked-resources",
-      "--test_args=--ginkgo.focus=\\[Slow\\] --ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-node"
-    ]
-  },
-  "ci-kubernetes-e2e-gce-cosbeta-no-snat": {
-    "args": [
-      "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/image/cosbeta.env",
-      "--env-file=jobs/ci-kubernetes-e2e-gce-cosbeta-no-snat.env",
-      "--timeout=20m",
+      "--env-file=jobs/ci-kubernetes-e2e-gce-cosbeta-k8sbeta-default.env",
+      "--cluster=test-e629d25701",
+      "--image-family=cos-beta",
+      "--image-project=cos-cloud",
       "--extract=ci/latest",
+      "--timeout=50m",
+      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]",
+      "--check-leaked-resources=false"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-node"
+    ],
+    "tags": [
+      "generated"
+    ]
+  },
+  "ci-kubernetes-e2e-gce-cosbeta-k8sbeta-serial": {
+    "_comment": "AUTO-GENERATED - DO NOT EDIT.",
+    "args": [
+      "--env-file=jobs/ci-kubernetes-e2e-gce-cosbeta-k8sbeta-serial.env",
+      "--cluster=test-c41a7aaf03",
+      "--image-family=cos-beta",
+      "--image-project=cos-cloud",
+      "--extract=ci/latest",
+      "--timeout=500m",
+      "--test_args=--ginkgo.focus=\\[Serial\\]|\\[Disruptive\\] --ginkgo.skip=\\[Flaky\\]|\\[Feature:.+\\]",
+      "--check-leaked-resources=false"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-node"
+    ],
+    "tags": [
+      "generated"
+    ]
+  },
+  "ci-kubernetes-e2e-gce-cosbeta-k8sbeta-slow": {
+    "_comment": "AUTO-GENERATED - DO NOT EDIT.",
+    "args": [
+      "--env-file=jobs/ci-kubernetes-e2e-gce-cosbeta-k8sbeta-slow.env",
+      "--cluster=test-d4e43e5c09",
+      "--image-family=cos-beta",
+      "--image-project=cos-cloud",
+      "--extract=ci/latest",
+      "--timeout=150m",
+      "--test_args=--ginkgo.focus=\\[Slow\\] --ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]",
+      "--check-leaked-resources=false"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-node"
+    ],
+    "tags": [
+      "generated"
+    ]
+  },
+  "ci-kubernetes-e2e-gce-cosbeta-k8sdev-default": {
+    "_comment": "AUTO-GENERATED - DO NOT EDIT.",
+    "args": [
+      "--env-file=jobs/ci-kubernetes-e2e-gce-cosbeta-k8sdev-default.env",
+      "--cluster=test-4ebf21441e",
+      "--image-family=cos-beta",
+      "--image-project=cos-cloud",
+      "--extract=ci/latest",
+      "--timeout=50m",
+      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]",
+      "--check-leaked-resources=false"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-node"
+    ],
+    "tags": [
+      "generated"
+    ]
+  },
+  "ci-kubernetes-e2e-gce-cosbeta-k8sdev-nosnat": {
+    "_comment": "AUTO-GENERATED - DO NOT EDIT.",
+    "args": [
+      "--env-file=jobs/ci-kubernetes-e2e-gce-cosbeta-k8sdev-nosnat.env",
+      "--cluster=test-eb37105e71",
       "--check-leaked-resources",
-      "--test_args=--ginkgo.focus=\\[Feature:NoSNAT\\]"
+      "--image-family=cos-beta",
+      "--image-project=cos-cloud",
+      "--extract=ci/latest",
+      "--timeout=20m",
+      "--test_args=--ginkgo.focus=\\\\[Feature:NoSNAT\\\\]"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
       "sig-network"
+    ],
+    "tags": [
+      "generated"
+    ]
+  },
+  "ci-kubernetes-e2e-gce-cosbeta-k8sdev-serial": {
+    "_comment": "AUTO-GENERATED - DO NOT EDIT.",
+    "args": [
+      "--env-file=jobs/ci-kubernetes-e2e-gce-cosbeta-k8sdev-serial.env",
+      "--cluster=test-52f5d909b5",
+      "--image-family=cos-beta",
+      "--image-project=cos-cloud",
+      "--extract=ci/latest",
+      "--timeout=500m",
+      "--test_args=--ginkgo.focus=\\[Serial\\]|\\[Disruptive\\] --ginkgo.skip=\\[Flaky\\]|\\[Feature:.+\\]",
+      "--check-leaked-resources=false"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-node"
+    ],
+    "tags": [
+      "generated"
+    ]
+  },
+  "ci-kubernetes-e2e-gce-cosbeta-k8sdev-slow": {
+    "_comment": "AUTO-GENERATED - DO NOT EDIT.",
+    "args": [
+      "--env-file=jobs/ci-kubernetes-e2e-gce-cosbeta-k8sdev-slow.env",
+      "--cluster=test-0cc7e0a4a8",
+      "--image-family=cos-beta",
+      "--image-project=cos-cloud",
+      "--extract=ci/latest",
+      "--timeout=150m",
+      "--test_args=--ginkgo.focus=\\[Slow\\] --ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]",
+      "--check-leaked-resources=false"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-node"
+    ],
+    "tags": [
+      "generated"
+    ]
+  },
+  "ci-kubernetes-e2e-gce-cosbeta-k8sstable1-default": {
+    "_comment": "AUTO-GENERATED - DO NOT EDIT.",
+    "args": [
+      "--env-file=jobs/ci-kubernetes-e2e-gce-cosbeta-k8sstable1-default.env",
+      "--cluster=test-45011ec97a",
+      "--image-family=cos-beta",
+      "--image-project=cos-cloud",
+      "--extract=ci/latest-1.7",
+      "--timeout=50m",
+      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]",
+      "--check-leaked-resources=false"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-node"
+    ],
+    "tags": [
+      "generated"
+    ]
+  },
+  "ci-kubernetes-e2e-gce-cosbeta-k8sstable1-serial": {
+    "_comment": "AUTO-GENERATED - DO NOT EDIT.",
+    "args": [
+      "--env-file=jobs/ci-kubernetes-e2e-gce-cosbeta-k8sstable1-serial.env",
+      "--cluster=test-2d7a8aa9e6",
+      "--image-family=cos-beta",
+      "--image-project=cos-cloud",
+      "--extract=ci/latest-1.7",
+      "--timeout=500m",
+      "--test_args=--ginkgo.focus=\\[Serial\\]|\\[Disruptive\\] --ginkgo.skip=\\[Flaky\\]|\\[Feature:.+\\]",
+      "--check-leaked-resources=false"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-node"
+    ],
+    "tags": [
+      "generated"
+    ]
+  },
+  "ci-kubernetes-e2e-gce-cosbeta-k8sstable1-slow": {
+    "_comment": "AUTO-GENERATED - DO NOT EDIT.",
+    "args": [
+      "--env-file=jobs/ci-kubernetes-e2e-gce-cosbeta-k8sstable1-slow.env",
+      "--cluster=test-6a3a13513d",
+      "--image-family=cos-beta",
+      "--image-project=cos-cloud",
+      "--extract=ci/latest-1.7",
+      "--timeout=150m",
+      "--test_args=--ginkgo.focus=\\[Slow\\] --ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]",
+      "--check-leaked-resources=false"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-node"
+    ],
+    "tags": [
+      "generated"
+    ]
+  },
+  "ci-kubernetes-e2e-gce-cosbeta-k8sstable2-default": {
+    "_comment": "AUTO-GENERATED - DO NOT EDIT.",
+    "args": [
+      "--env-file=jobs/ci-kubernetes-e2e-gce-cosbeta-k8sstable2-default.env",
+      "--cluster=test-981311ee2d",
+      "--image-family=cos-beta",
+      "--image-project=cos-cloud",
+      "--extract=ci/latest-1.6",
+      "--timeout=50m",
+      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]",
+      "--check-leaked-resources=false"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-node"
+    ],
+    "tags": [
+      "generated"
+    ]
+  },
+  "ci-kubernetes-e2e-gce-cosbeta-k8sstable2-serial": {
+    "_comment": "AUTO-GENERATED - DO NOT EDIT.",
+    "args": [
+      "--env-file=jobs/ci-kubernetes-e2e-gce-cosbeta-k8sstable2-serial.env",
+      "--cluster=test-ed00047953",
+      "--image-family=cos-beta",
+      "--image-project=cos-cloud",
+      "--extract=ci/latest-1.6",
+      "--timeout=500m",
+      "--test_args=--ginkgo.focus=\\[Serial\\]|\\[Disruptive\\] --ginkgo.skip=\\[Flaky\\]|\\[Feature:.+\\]",
+      "--check-leaked-resources=false"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-node"
+    ],
+    "tags": [
+      "generated"
+    ]
+  },
+  "ci-kubernetes-e2e-gce-cosbeta-k8sstable2-slow": {
+    "_comment": "AUTO-GENERATED - DO NOT EDIT.",
+    "args": [
+      "--env-file=jobs/ci-kubernetes-e2e-gce-cosbeta-k8sstable2-slow.env",
+      "--cluster=test-d29293ae78",
+      "--image-family=cos-beta",
+      "--image-project=cos-cloud",
+      "--extract=ci/latest-1.6",
+      "--timeout=150m",
+      "--test_args=--ginkgo.focus=\\[Slow\\] --ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]",
+      "--check-leaked-resources=false"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-node"
+    ],
+    "tags": [
+      "generated"
     ]
   },
   "ci-kubernetes-e2e-gce-cosdev-k8sbeta-default": {
