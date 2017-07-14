@@ -464,7 +464,7 @@ func prepareGcp(o *options) error {
 		}
 
 		if err = finishRunning(exec.Command("gcloud", "config", "set", "project", p)); err != nil {
-			return fmt.Errorf("Fail to set project %s : err %v", p, err)
+			return fmt.Errorf("fail to set project %s : err %v", p, err)
 		}
 
 		go func(c *client.Client, proj string) {
