@@ -228,7 +228,7 @@ func (opt *option) fromString() {
 		newVal = &ui
 	case typeBool:
 		var b bool
-		if newVal, err = strconv.ParseBool(opt.raw); err != nil {
+		if b, err = strconv.ParseBool(opt.raw); err != nil {
 			glog.Fatalf("Cannot convert %q to type 'bool'.", opt.raw)
 		}
 		newVal = &b
