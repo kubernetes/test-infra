@@ -253,6 +253,35 @@ type ReviewComment struct {
 	HTMLURL  string `json:"html_url"`
 }
 
+// ReviewAction is the action that a review can be made with.
+type ReviewAction string
+
+// Possible review actions. Leave Action blank for a pending review.
+const (
+	Approve        ReviewAction = "APPROVE"
+	RequestChanges              = "REQUEST_CHANGES"
+	Comment                     = "COMMENT"
+)
+
+// DraftReview is what we give GitHub when we want to make a PR Review. This is
+// different than what we receive when we ask for a Review.
+type DraftReview struct {
+	// If unspecified, defaults to the most recent commit in the PR.
+	CommitSHA string `json:"commit_id,omitempty"`
+	Body      string `json:"body"`
+	// If unspecified, defaults to PENDING.
+	Action   ReviewAction         `json:"event,omitempty"`
+	Comments []DraftReviewComment `json:"comments,omitempty"`
+}
+
+// DraftReviewComment is a comment in a draft review.
+type DraftReviewComment struct {
+	Path string `json:"path"`
+	// Position in the patch, not the line number in the file.
+	Position int    `json:"position"`
+	Body     string `json:"body"`
+}
+
 // Content is some base64 encoded github file content
 type Content struct {
 	Content string `json:"content"`

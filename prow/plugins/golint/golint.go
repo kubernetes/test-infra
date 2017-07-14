@@ -42,7 +42,7 @@ func init() {
 
 type githubClient interface {
 	GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error)
-	CreateComment(org, repo string, number int, body string) error
+	CreateReview(org, repo string, number int, r github.DraftReview) error
 }
 
 func handleIC(pc plugins.PluginClient, ic github.IssueCommentEvent) error {
@@ -66,10 +66,10 @@ func modifiedGoFiles(ghc githubClient, org, repo string, number int) (map[string
 	return modifiedFiles, nil
 }
 
-// problemsInPatches runs golint on the files. It returns all lint problems
-// that are in added lines in the files' patches.
-func problemsInFiles(r *git.Repo, files map[string]string) ([]lint.Problem, error) {
-	var problems []lint.Problem
+// problemsInFiles runs golint on the files. It returns a map from the line
+// in the patch to the problem.
+func problemsInFiles(r *git.Repo, files map[string]string) (map[int]lint.Problem, error) {
+	problems := make(map[int]lint.Problem)
 	l := new(lint.Linter)
 	for f, patch := range files {
 		src, err := ioutil.ReadFile(filepath.Join(r.Dir, f))
@@ -85,8 +85,8 @@ func problemsInFiles(r *git.Repo, files map[string]string) ([]lint.Problem, erro
 			return nil, err
 		}
 		for _, p := range ps {
-			if al[p.Position.Line] {
-				problems = append(problems, p)
+			if pl, ok := al[p.Position.Line]; ok {
+				problems[pl] = p
 			}
 		}
 	}
@@ -136,26 +136,34 @@ func handle(ghc githubClient, gc *git.Client, log *logrus.Entry, ic github.Issue
 
 	// Respond.
 	var response string
+	var comments []github.DraftReviewComment
 	if len(problems) == 0 {
 		response = "no lint warnings"
 	} else {
-		response = fmt.Sprintf("%d warning(s):\n\n", len(problems))
-		var warnings []string
-		for _, p := range problems {
-			warnings = append(warnings, fmt.Sprintf("`%s:%d`: %s", p.Position.Filename, p.Position.Line, p.Text))
+		response = fmt.Sprintf("%d warning(s)", len(problems))
+		for patchPath, problem := range problems {
+			comments = append(comments, github.DraftReviewComment{
+				Path:     problem.Position.Filename,
+				Position: patchPath,
+				Body:     problem.Text,
+			})
 		}
-		response += strings.Join(warnings, "\n")
 	}
 
-	return ghc.CreateComment(org, repo, ic.Issue.Number, plugins.FormatICResponse(ic.Comment, response))
+	return ghc.CreateReview(org, repo, ic.Issue.Number, github.DraftReview{
+		Body:     plugins.FormatICResponse(ic.Comment, response),
+		Action:   github.Comment,
+		Comments: comments,
+	})
 }
 
-// addedLines returns a set of line numbers that were added in the patch.
+// addedLines returns line numbers that were added in the patch, along with
+// their line in the patch itself as a map from line to patch line.
 // https://www.gnu.org/software/diffutils/manual/diffutils.html#Detailed-Unified
 // GitHub omits the ---/+++ lines since that information is in the
 // PullRequestChange object.
-func addedLines(patch string) (map[int]bool, error) {
-	result := make(map[int]bool)
+func addedLines(patch string) (map[int]int, error) {
+	result := make(map[int]int)
 	lines := strings.Split(patch, "\n")
 	for i := 0; i < len(lines); i++ {
 		_, oldLen, newLine, newLen, err := parseHunkLine(lines[i])
@@ -176,7 +184,7 @@ func addedLines(patch string) (map[int]bool, error) {
 			case '-':
 				oldAdd++
 			case '+':
-				result[newLine+newAdd] = true
+				result[newLine+newAdd] = i
 				newAdd++
 			default:
 				return nil, fmt.Errorf("bad line in patch: %s", lines[i])
