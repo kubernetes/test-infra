@@ -2,6 +2,9 @@
 
 Prow is the system that handles GitHub events and commands for Kubernetes. It
 currently comprises several related pieces that live in a Kubernetes cluster.
+See the [GoDoc](https://godoc.org/k8s.io/test-infra/prow) for library docs.
+Please note that these libraries are intended for use by prow only, and we do
+not make any attempt to preserve backwards compatability.
 
 * `cmd/hook` is the most important piece. It is a stateless server that listens
   for GitHub webhooks and dispatches them to the appropriate handlers.
