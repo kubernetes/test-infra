@@ -1104,6 +1104,8 @@
     "args": [
       "--env-file=jobs/ci-kubernetes-e2e-gce-cosstable1-k8sbeta-default.env",
       "--cluster=test-860e3c0e94",
+      "--image-family=cos-stable",
+      "--image-project=cos-cloud",
       "--extract=ci/latest",
       "--timeout=50m",
       "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]",
@@ -1122,6 +1124,8 @@
     "args": [
       "--env-file=jobs/ci-kubernetes-e2e-gce-cosstable1-k8sbeta-serial.env",
       "--cluster=test-85dd292325",
+      "--image-family=cos-stable",
+      "--image-project=cos-cloud",
       "--extract=ci/latest",
       "--timeout=500m",
       "--test_args=--ginkgo.focus=\\[Serial\\]|\\[Disruptive\\] --ginkgo.skip=\\[Flaky\\]|\\[Feature:.+\\]",
@@ -1140,6 +1144,8 @@
     "args": [
       "--env-file=jobs/ci-kubernetes-e2e-gce-cosstable1-k8sbeta-slow.env",
       "--cluster=test-2448497393",
+      "--image-family=cos-stable",
+      "--image-project=cos-cloud",
       "--extract=ci/latest",
       "--timeout=150m",
       "--test_args=--ginkgo.focus=\\[Slow\\] --ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]",
@@ -1158,6 +1164,8 @@
     "args": [
       "--env-file=jobs/ci-kubernetes-e2e-gce-cosstable1-k8sdev-default.env",
       "--cluster=test-f76fffef8e",
+      "--image-family=cos-stable",
+      "--image-project=cos-cloud",
       "--extract=ci/latest",
       "--timeout=50m",
       "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]",
@@ -1176,6 +1184,8 @@
     "args": [
       "--env-file=jobs/ci-kubernetes-e2e-gce-cosstable1-k8sdev-serial.env",
       "--cluster=test-b829ee97f8",
+      "--image-family=cos-stable",
+      "--image-project=cos-cloud",
       "--extract=ci/latest",
       "--timeout=500m",
       "--test_args=--ginkgo.focus=\\[Serial\\]|\\[Disruptive\\] --ginkgo.skip=\\[Flaky\\]|\\[Feature:.+\\]",
@@ -1194,6 +1204,8 @@
     "args": [
       "--env-file=jobs/ci-kubernetes-e2e-gce-cosstable1-k8sdev-slow.env",
       "--cluster=test-0eae043a2d",
+      "--image-family=cos-stable",
+      "--image-project=cos-cloud",
       "--extract=ci/latest",
       "--timeout=150m",
       "--test_args=--ginkgo.focus=\\[Slow\\] --ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]",
@@ -1212,6 +1224,8 @@
     "args": [
       "--env-file=jobs/ci-kubernetes-e2e-gce-cosstable1-k8sstable1-default.env",
       "--cluster=test-63180d3429",
+      "--image-family=cos-stable",
+      "--image-project=cos-cloud",
       "--extract=ci/latest-1.7",
       "--timeout=50m",
       "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]",
@@ -1230,6 +1244,8 @@
     "args": [
       "--env-file=jobs/ci-kubernetes-e2e-gce-cosstable1-k8sstable1-serial.env",
       "--cluster=test-ba4378bb1a",
+      "--image-family=cos-stable",
+      "--image-project=cos-cloud",
       "--extract=ci/latest-1.7",
       "--timeout=500m",
       "--test_args=--ginkgo.focus=\\[Serial\\]|\\[Disruptive\\] --ginkgo.skip=\\[Flaky\\]|\\[Feature:.+\\]",
@@ -1248,6 +1264,8 @@
     "args": [
       "--env-file=jobs/ci-kubernetes-e2e-gce-cosstable1-k8sstable1-slow.env",
       "--cluster=test-86260199f2",
+      "--image-family=cos-stable",
+      "--image-project=cos-cloud",
       "--extract=ci/latest-1.7",
       "--timeout=150m",
       "--test_args=--ginkgo.focus=\\[Slow\\] --ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]",
@@ -1266,6 +1284,8 @@
     "args": [
       "--env-file=jobs/ci-kubernetes-e2e-gce-cosstable1-k8sstable2-default.env",
       "--cluster=test-fa64f85611",
+      "--image-family=cos-stable",
+      "--image-project=cos-cloud",
       "--extract=ci/latest-1.6",
       "--timeout=50m",
       "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]",
@@ -1284,6 +1304,8 @@
     "args": [
       "--env-file=jobs/ci-kubernetes-e2e-gce-cosstable1-k8sstable2-serial.env",
       "--cluster=test-f76dcc51ae",
+      "--image-family=cos-stable",
+      "--image-project=cos-cloud",
       "--extract=ci/latest-1.6",
       "--timeout=500m",
       "--test_args=--ginkgo.focus=\\[Serial\\]|\\[Disruptive\\] --ginkgo.skip=\\[Flaky\\]|\\[Feature:.+\\]",
@@ -1302,6 +1324,8 @@
     "args": [
       "--env-file=jobs/ci-kubernetes-e2e-gce-cosstable1-k8sstable2-slow.env",
       "--cluster=test-58d04d5cd7",
+      "--image-family=cos-stable",
+      "--image-project=cos-cloud",
       "--extract=ci/latest-1.6",
       "--timeout=150m",
       "--test_args=--ginkgo.focus=\\[Slow\\] --ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]",
@@ -1320,6 +1344,8 @@
     "args": [
       "--env-file=jobs/ci-kubernetes-e2e-gce-cosstable1-k8sstable3-default.env",
       "--cluster=test-28f4c52467",
+      "--image-family=cos-stable",
+      "--image-project=cos-cloud",
       "--extract=ci/latest-1.5",
       "--timeout=50m",
       "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]",
@@ -1338,6 +1364,8 @@
     "args": [
       "--env-file=jobs/ci-kubernetes-e2e-gce-cosstable1-k8sstable3-serial.env",
       "--cluster=test-9f6a2cfa0f",
+      "--image-family=cos-stable",
+      "--image-project=cos-cloud",
       "--extract=ci/latest-1.5",
       "--timeout=500m",
       "--test_args=--ginkgo.focus=\\[Serial\\]|\\[Disruptive\\] --ginkgo.skip=\\[Flaky\\]|\\[Feature:.+\\]",
@@ -1356,6 +1384,8 @@
     "args": [
       "--env-file=jobs/ci-kubernetes-e2e-gce-cosstable1-k8sstable3-slow.env",
       "--cluster=test-3e0b31d18c",
+      "--image-family=cos-stable",
+      "--image-project=cos-cloud",
       "--extract=ci/latest-1.5",
       "--timeout=150m",
       "--test_args=--ginkgo.focus=\\[Slow\\] --ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]",
