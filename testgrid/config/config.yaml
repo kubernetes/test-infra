@@ -2934,15 +2934,6 @@ dashboards:
   - name: kubeadm-gce
     test_group_name: ci-kubernetes-e2e-kubeadm-gce
 
-- name: sig-cluster-ops
-  dashboard_tab:
-  - name: TODO
-    description: what does this tab do exactly
-    test_group_name: ci-kubernetes-e2e-gce-slow  # TODO(fejta): fix
-  notifications:
-  - summary: Please configure this skeleton dashboard and remove this notification
-    context_link: https://github.com/kubernetes/test-infra/tree/master/testgrid/config
-
 - name: sig-federation
   dashboard_tab:
   - name: gce
