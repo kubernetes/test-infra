@@ -15,22 +15,23 @@
 all: build test
 
 
-HOOK_VERSION       = 0.126
-SINKER_VERSION     = 0.13
-DECK_VERSION       = 0.38
-SPLICE_VERSION     = 0.24
-TOT_VERSION        = 0.3
-HOROLOGIUM_VERSION = 0.5
-PLANK_VERSION      = 0.28
+HOOK_VERSION       ?= 0.126
+SINKER_VERSION     ?= 0.13
+DECK_VERSION       ?= 0.38
+SPLICE_VERSION     ?= 0.24
+TOT_VERSION        ?= 0.3
+HOROLOGIUM_VERSION ?= 0.5
+PLANK_VERSION      ?= 0.28
 
 # These are the usual GKE variables.
-PROJECT ?= k8s-prow
+PROJECT       ?= k8s-prow
 BUILD_PROJECT ?= k8s-prow-builds
-ZONE ?= us-central1-f
-CLUSTER ?= prow
+ZONE          ?= us-central1-f
+CLUSTER       ?= prow
+
 # Build and push specific variables.
 REGISTRY ?= gcr.io
-PUSH ?= gcloud docker -- push
+PUSH     ?= gcloud docker -- push
 
 DOCKER_LABELS=--label io.k8s.prow.git-describe="$(shell git describe --tags --always --dirty)"
 
