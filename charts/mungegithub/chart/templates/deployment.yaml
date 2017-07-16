@@ -15,77 +15,38 @@ spec:
       - name: submit-queue
         command:
         - /mungegithub
-        - --dry-run={{ .Values.dryRun }}
-        - --stderrthreshold={{ .Values.stderrThreshold }}
-        - --period={{ .Values.loopPeriod }}
-        - --http-cache-dir={{ .Values.httpCacheDir }}
-        - --organization={{ .Values.organization }}
-        - --project={{ .Values.repository }}
-        - --pr-mungers={{ .Values.prMungers }}
-        - --state={{ .Values.state }}
-        - --token-file={{ .Values.tokenFile }}
-        - --protected-branches={{ .Values.protectedBranches }}
-        - --protected-branches-extra-contexts={{ .Values.protectedBranchesExtraContexts }}
-        - --required-retest-contexts={{ .Values.requiredRetestContexts }}
-        - --required-contexts={{ .Values.requiredContexts }}
-        - --nonblocking-jenkins-jobs={{ .Values.nonBlockingJenkinsJobs }}
-        - --do-not-merge-milestones={{ .Values.doNotMergeMilestones }}
-        - --admin-port={{ .Values.adminPort }}
-        - --gcs-bucket={{ .Values.gcsBucket }}
-        - --gcs-logs-dir={{ .Values.gcsLogsDir }}
-        - --pull-logs-dir={{ .Values.pullLogsDir }}
-        - --pull-key={{ .Values.pullKey }}
-        - --path-label-config={{ .Values.pathLabelConfig }}
-        - --block-path-config={{ .Values.blockPathConfig }}
-        - --repo-dir={{ .Values.repoDir }}
-        - --test-owners-csv={{ .Values.testOwnersCSV }}
-        - --number-of-old-test-results={{ .Values.numberOldTestResults }}
-        - --fixes-issue-reassign={{ .Values.fixesIssueReassign }}
-        - --blunderbuss-reassign={{ .Values.blunderbussReassign }}
-        - --generated-files-config={{ .Values.generatedFilesConfig }}
-        - --chart-url={{ .Values.chartUrl }}
-        - --history-url={{ .Values.historyUrl }}
-        - --enable-md-yaml={{ .Values.enableMdYaml }}
-        - --label-file={{ .Values.labelFile }}
-        - --triager-url={{ .Values.triagerUrls }}
-        - --alias-file={{ .Values.aliasFile }}
-        - --batch-url={{ .Values.batchUrl }}
-        - --context-url={{ .Values.contextUrl }}
-        - --use-reviewers={{ .Values.approvalActivated }}
-        - --gate-approved={{ .Values.approvalActivated }}
-        - --gate-cla={{ .Values.claActivated }}
-        - --github-key={{ .Values.githubKey }}
-        - --triage-window={{ .Values.triageWindow }}
-        - --triage-count={{ .Values.triageCount }}
-        - --flakyjob-count={{ .Values.flakyJobCount }}
-        - --github-key=$(GITHUB_KEY)
+        - --dry-run=true
+        - --stderrthreshold=INFO
+        - --config-path=/etc/munge-config/config
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}
-        env:
-          - name: GITHUB_KEY
-            valueFrom:
-              secretKeyRef:
-                name: {{ .Values.githubWebhookSecretName }}
-                key: secret
         ports:
         - name: status
           containerPort: 8080
         resources:
           requests:
             cpu: 100m
-          limits:
-            cpu: 100m
         volumeMounts:
+        - mountPath: /etc/munge-config
+          name: munge-config
         - mountPath: /etc/secret-volume
           name: secret-volume
+        - mountPath: /etc/hook-secret-volume
+          name: hook-secret-volume
         - mountPath: /gitrepos
           name: repo
         - mountPath: /cache
           name: cache-volume
       volumes:
+      - name: munge-config
+        configMap:
+          name: {{ .Release.Name }}
       - name: secret-volume
         secret:
-          secretName: {{ .Values.githubTokenSecretName }}
+          secretName: {{ .Values.secret.token }}
+      - name: hook-secret-volume
+        secret:
+          secretName: {{ .Values.secret.webhook }}
       - name: repo
         emptyDir: {}
       - name: cache-volume

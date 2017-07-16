@@ -16,4 +16,3 @@ spec:
     org: {{ .Values.organization }}
     repo: {{ .Values.repository }}
   type: NodePort
-
