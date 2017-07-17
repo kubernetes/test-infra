@@ -472,6 +472,10 @@ func prepareGcp(o *options) error {
 			return fmt.Errorf("--provider=%s boskos failed to acquire project: %v", o.provider, err)
 		}
 
+		if p == "" {
+			return fmt.Errorf("boskos does not have a free %s at the moment", p)
+		}
+
 		if err = finishRunning(exec.Command("gcloud", "config", "set", "project", p)); err != nil {
 			return fmt.Errorf("fail to set project %s : err %v", p, err)
 		}
