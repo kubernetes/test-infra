@@ -67,10 +67,11 @@ def kubekins(tag):
     """Return full path to kubekins-e2e:tag."""
     return 'gcr.io/k8s-testimages/kubekins-e2e:%s' % tag
 
-def add_k8s(self, k8s, *repos):
+# TODO(krzyzacy): use self.cmd once merge with e2e scenario
+def add_k8s(cmd, k8s, *repos):
     """Add the specified k8s.io repos into container."""
     for repo in repos:
-        self.cmd.extend([
+        cmd.extend([
             '-v', '%s/%s:/go/src/k8s.io/%s' % (k8s, repo, repo)])
 
 def cluster_name(cluster, build):
@@ -206,7 +207,7 @@ def main(args):
             extra_args.append('--build=%s' % args.build)
         if not os.path.basename(workspace) == 'kubernetes':
             raise ValueError(workspace)
-        add_k8s(os.path.dirname(workspace), 'kubernetes', 'release')
+        add_k8s(cmd, os.path.dirname(workspace), 'kubernetes', 'release')
 
     if args.image:
         extra_args.append(' --kops-image=%s' % args.image)
