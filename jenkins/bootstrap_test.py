@@ -2181,7 +2181,10 @@ class JobTest(unittest.TestCase):
                 # TODO(fejta): sort this list
                 black = [
                     ('CHARTS_TEST=', '--charts-tests'),
+                    ('CLUSTER_IP_RANGE=', '--test_args=--cluster-ip-range=FOO'),
+                    ('E2E_CLEAN_START=', '--test_args=--clean-start=true'),
                     ('E2E_DOWN=', '--down=true|false'),
+                    ('E2E_MIN_STARTUP_PODS=', '--test_args=--minStartupPods=FOO'),
                     ('E2E_NAME=', '--cluster=whatever'),
                     ('E2E_PUBLISH_PATH=', '--publish=gs://FOO'),
                     ('E2E_REPORT_DIR=', '--test_args=--report-dir=FOO'),
