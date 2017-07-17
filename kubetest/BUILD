@@ -52,7 +52,7 @@ go_test(
     srcs = [
         "anywhere_test.go",
         "extract_test.go",
-        "outputs_test.go",
+        "main_test.go",
         "util_test.go",
     ],
     library = ":go_default_library",

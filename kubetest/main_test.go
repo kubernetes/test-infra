@@ -1,3 +1,19 @@
+/*
+Copyright 2017 The Kubernetes Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package main
 
 import (
@@ -39,7 +55,7 @@ func TestWriteMetadata(t *testing.T) {
 	writeTmpMetadataSource := func(filePath string, md mdata) {
 		outputBytes, _ := json.MarshalIndent(md, "", "  ")
 		if err := ioutil.WriteFile(filePath, outputBytes, 0644); err != nil {
-			t.Fatal("write to %q: %v", filePath, err)
+			t.Fatalf("write to %q: %v", filePath, err)
 		}
 	}
 
@@ -58,7 +74,7 @@ func TestWriteMetadata(t *testing.T) {
 		}
 
 		if err := ioutil.WriteFile(filepath.Join(topDir, "version"), []byte(tc.version+"\n"), 0644); err != nil {
-			t.Fatal("write %q/version: %v", topDir, err)
+			t.Fatalf("write %q/version: %v", topDir, err)
 		}
 		sourceNames := []string{}
 		for filename, metadata := range tc.sources {
