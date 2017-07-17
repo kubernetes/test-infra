@@ -377,7 +377,7 @@ func (config *Config) RegisterOptions(opts *options.Options) {
 	opts.RegisterString(&config.HTTPCacheDir, "http-cache-dir", "", "Path to directory where github data can be cached across restarts, if unset use in memory cache")
 	opts.RegisterUint64(&config.HTTPCacheSize, "http-cache-size", 1000, "Maximum size for the HTTP cache (in MB)")
 	opts.RegisterString(&config.Url, "url", "", "The GitHub Enterprise server url (default: https://api.github.com/)")
-	opts.RegisterString(&config.mergeMethod, "merge-method", "merge", "The merge method to use: merge/squash/rebase, default merge")
+	opts.RegisterString(&config.mergeMethod, "merge-method", "merge", "The merge method to use: merge/squash/rebase")
 
 	config.opts = opts
 }
