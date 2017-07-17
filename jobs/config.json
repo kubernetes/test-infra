@@ -1975,7 +1975,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-scheduling"
     ]
   },
   "ci-kubernetes-e2e-gce-gpu-1-7": {
@@ -1990,7 +1990,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-scheduling"
     ]
   },
   "ci-kubernetes-e2e-gce-ha-master": {
@@ -5376,7 +5376,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "sig-node"
+      "sig-scheduling"
     ]
   },
   "ci-kubernetes-e2e-gke-gpu-1-7": {
@@ -5395,7 +5395,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "sig-node"
+      "sig-scheduling"
     ]
   },
   "ci-kubernetes-e2e-gke-ingress": {
