@@ -468,13 +468,6 @@ func KubemarkTest(dump string, o options) error {
 		return err
 	}
 
-	if dump != "" {
-		if pop, err := pushEnv("E2E_REPORT_DIR", dump); err != nil {
-			return err
-		} else {
-			defer pop()
-		}
-	}
 	// Stop previous run
 	err := finishRunning(exec.Command("./test/kubemark/stop-kubemark.sh"))
 	if err != nil {
@@ -516,13 +509,16 @@ func KubemarkTest(dump string, o options) error {
 		return err
 	}
 
+	testArgs := strings.Fields(o.testArgs)
+	testArgs = setReportDir(testArgs, dump)
 	// Run kubemark tests
 	focus, present := os.LookupEnv("KUBEMARK_TESTS") // TODO(fejta): migrate to --test_args
 	if !present {
 		focus = "starting\\s30\\pods"
 	}
+	testArgs = setFieldDefault(testArgs, "--ginkgo.focus", focus)
 
-	err = finishRunning(exec.Command("./test/kubemark/run-e2e-tests.sh", "--ginkgo.focus="+focus, o.testArgs))
+	err = finishRunning(exec.Command("./test/kubemark/run-e2e-tests.sh", testArgs...))
 	if err != nil {
 		return err
 	}
@@ -543,15 +539,12 @@ func UpgradeTest(args, dump string, checkSkew bool) error {
 	} else {
 		defer popS()
 	}
-	if popE, err := pushEnv("E2E_REPORT_PREFIX", "upgrade"); err != nil {
-		return err
-	} else {
-		defer popE()
-	}
+	f := strings.Fields(args)
+	f = appendField(f, "--report-prefix", "upgrade")
 	return finishRunning(exec.Command(
 		kubetestPath,
 		"--test",
-		"--test_args="+args,
+		"--test_args="+strings.Join(f, " "),
 		fmt.Sprintf("--v=%t", verbose),
 		fmt.Sprintf("--check-version-skew=%t", checkSkew),
 		fmt.Sprintf("--dump=%s", dump),
@@ -564,15 +557,13 @@ func SkewTest(args, dump string, checkSkew bool) error {
 	} else {
 		defer popS()
 	}
-	if popE, err := pushEnv("E2E_REPORT_PREFIX", "skew"); err != nil {
-		return err
-	} else {
-		defer popE()
-	}
+
+	f := strings.Fields(args)
+	f = appendField(f, "--report-prefix", "skew")
 	return finishRunning(exec.Command(
 		kubetestPath,
 		"--test",
-		"--test_args="+args,
+		"--test_args="+strings.Join(f, " "),
 		fmt.Sprintf("--v=%t", verbose),
 		fmt.Sprintf("--check-version-skew=%t", checkSkew),
 		fmt.Sprintf("--dump=%s", dump),
@@ -580,12 +571,7 @@ func SkewTest(args, dump string, checkSkew bool) error {
 }
 
 func Test(testArgs, dump string) error {
-	if dump != "" {
-		if pop, err := pushEnv("E2E_REPORT_DIR", dump); err != nil {
-			return err
-		} else {
-			defer pop()
-		}
-	}
-	return finishRunning(exec.Command("./hack/ginkgo-e2e.sh", strings.Fields(testArgs)...))
+	f := strings.Fields(testArgs)
+	f = setReportDir(f, dump)
+	return finishRunning(exec.Command("./hack/ginkgo-e2e.sh", f...))
 }

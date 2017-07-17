@@ -332,3 +332,54 @@ func migrateOptions(m []migratedOption) error {
 	}
 	return nil
 }
+
+func appendField(fields []string, flag, prefix string) []string {
+	fields, cur, _ := extractField(fields, flag)
+	if len(cur) == 0 {
+		cur = prefix
+	} else {
+		cur = cur + "-" + prefix
+	}
+	return append(fields, flag+"="+cur)
+}
+
+func setFieldDefault(fields []string, flag, val string) []string {
+	fields, cur, present := extractField(fields, flag)
+	if !present {
+		cur = val
+	}
+	return append(fields, flag+"="+cur)
+}
+
+func setReportDir(fields []string, dir string) []string {
+	if len(dir) == 0 {
+		return fields
+	}
+	return setFieldDefault(fields, "--report-dir", dir)
+}
+
+// extractField("--a=this --b=that --c=other", "--b") returns [--a=this, --c=other"], "that"
+func extractField(fields []string, target string) ([]string, string, bool) {
+	f := []string{}
+	prefix := target + "="
+	consumeNext := false
+	done := false
+	r := ""
+	for _, field := range fields {
+		switch {
+		case done:
+			f = append(f, field)
+		case consumeNext:
+			r = field
+			done = true
+		case field == target:
+			consumeNext = true
+		case strings.HasPrefix(field, prefix):
+			r = strings.SplitN(field, "=", 2)[1]
+			done = true
+		default:
+			f = append(f, field)
+		}
+	}
+	return f, r, done
+}

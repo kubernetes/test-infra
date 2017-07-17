@@ -26,17 +26,10 @@ func FedUp() error {
 }
 
 func FederationTest(testArgs, dump string) error {
-	if dump != "" {
-		if pop, err := pushEnv("E2E_REPORT_DIR", dump); err != nil {
-			return err
-		} else {
-			defer pop()
-		}
-	}
-	if testArgs == "" {
-		testArgs = "--ginkgo.focus=\\[Feature:Federation\\]"
-	}
-	return finishRunning(exec.Command("./hack/federated-ginkgo-e2e.sh", strings.Fields(testArgs)...))
+	f := strings.Fields(testArgs)
+	f = setReportDir(f, dump)
+	f = setFieldDefault(f, "--ginkgo.focus", "\\[Feature:Federation\\]")
+	return finishRunning(exec.Command("./hack/federated-ginkgo-e2e.sh", f...))
 }
 
 func FedDown() error {
