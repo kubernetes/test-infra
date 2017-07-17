@@ -52,6 +52,7 @@ def sort():
         lines = []
         found = {}
         def check(key, val):
+            # pylint: disable=cell-var-from-loop
             if not val:
                 return False
             if key in found:
@@ -64,12 +65,12 @@ def sort():
             if not mat:
                 lines.append(line)
                 continue
-            pods, clean, ip = mat.groups()
+            pods, clean, ip_range = mat.groups()
             if check('--minStartupPods', pods):
                 break
             if check('--clean-start', clean):
                 break
-            if check('--cluster-ip-range', ip):
+            if check('--cluster-ip-range', ip_range):
                 break
         else:
             stop = False
@@ -88,7 +89,8 @@ def sort():
                     if check('--minStartupPods', '8'):
                         stop = True
                         break
-            stop = True
+            if stop:
+                continue
 
             new_args = []
             for arg in args:
