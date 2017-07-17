@@ -2184,6 +2184,8 @@ class JobTest(unittest.TestCase):
                     ('E2E_DOWN=', '--down=true|false'),
                     ('E2E_NAME=', '--cluster=whatever'),
                     ('E2E_PUBLISH_PATH=', '--publish=gs://FOO'),
+                    ('E2E_REPORT_DIR=', '--test_args=--report-dir=FOO'),
+                    ('E2E_REPORT_PREFIX=', '--test_args=--report-prefix=FOO'),
                     ('E2E_TEST=', '--test=true|false'),
                     ('E2E_UPGRADE_TEST=', '--upgrade_args=FOO'),
                     ('E2E_UP=', '--up=true|false'),
