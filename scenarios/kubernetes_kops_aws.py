@@ -211,6 +211,8 @@ def main(args):
     if args.image:
         extra_args.append(' --kops-image=%s' % args.image)
 
+    extra_args.extend(args.kubetest_args)
+
     cmd.extend([
       # Boilerplate envs
       # Jenkins required variables
@@ -322,8 +324,14 @@ if __name__ == '__main__':
         '--kops-args', help='Additional space-separated list of args')
     PARSER.add_argument(
         '--timeout', help='Terminate testing after this golang duration (eg --timeout=100m).')
+    PARSER.add_argument(
+        '--kubetest_args',
+        action='append',
+        default=[],
+        help='Send unrecognized args directly to kubetest')
 
-    ARGS = PARSER.parse_args()
+    ARGS, EXTRA = PARSER.parse_known_args()
+    ARGS.kubetest_args += EXTRA
 
     # If aws keys are missing, try to fetch from HOME dir
     if not ARGS.aws_ssh or not ARGS.aws_pub or not ARGS.aws_cred:
