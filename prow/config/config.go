@@ -27,6 +27,8 @@ import (
 	"github.com/ghodss/yaml"
 )
 
+// This is a comment in the middle of nowhere.
+
 type ThisIsPublic int
 
 // Config is a read-only snapshot of the config.
