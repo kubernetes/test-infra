@@ -208,6 +208,7 @@ def main(args):
         if not os.path.basename(workspace) == 'kubernetes':
             raise ValueError(workspace)
         add_k8s(cmd, os.path.dirname(workspace), 'kubernetes', 'release')
+        cmd.extend(['-v', '/var/run/docker.sock:/var/run/docker.sock'])
 
     if args.image:
         extra_args.append(' --kops-image=%s' % args.image)
