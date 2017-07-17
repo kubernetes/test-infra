@@ -299,6 +299,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke
 - name: ci-kubernetes-e2e-gke-gpu
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gpu
+- name: ci-kubernetes-e2e-gke-gpu-1-7
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gpu-1-7
 - name: ci-kubernetes-e2e-gke-alpha-features
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-alpha-features
 - name: ci-kubernetes-e2e-gci-gke-alpha-features
@@ -1640,6 +1642,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-slow-release-1-7
   - name: gci-gke-slow-1.7
     test_group_name: ci-kubernetes-e2e-gci-gke-slow-release-1-7
+  - name: gke-gpu-1-7
+    test_group_name: ci-kubernetes-e2e-gke-gpu-1-7
     # Ubuntu cluster/node e2e tests on GKE (contact: @kubernetes/ubuntu-image on github)
   - name: ubuntu-gke
     test_group_name: ci-kubernetes-e2e-ubuntu-gke
@@ -2061,6 +2065,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-kops-aws
   - name: gce-gpu
     test_group_name: ci-kubernetes-e2e-gce-gpu
+  - name: gke-gpu
+    test_group_name: ci-kubernetes-e2e-gke-gpu
   - name: gce-slow
     test_group_name: ci-kubernetes-e2e-gce-slow
   - name: gci-gce-slow
@@ -2607,6 +2613,8 @@ dashboards:
     test_group_name: ci-kubernetes-soak-gci-gce-1-7-test
   - name: gce-gpu-1-7
     test_group_name: ci-kubernetes-e2e-gce-gpu-1-7
+  - name: gke-gpu-1-7
+    test_group_name: ci-kubernetes-e2e-gke-gpu-1-7
   - name: ci-gce-kubeadm-1.7
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-7
   - name: ci-gce-kubeadm-1.6-on-1.7
@@ -2695,6 +2703,8 @@ dashboards:
     test_group_name: ci-kubernetes-soak-gci-gce-1-7-test
   - name: gce-gpu-1-7
     test_group_name: ci-kubernetes-e2e-gce-gpu-1-7
+  - name: gke-gpu-1-7
+    test_group_name: ci-kubernetes-e2e-gke-gpu-1-7
 
 - name: cos-image-validation
   dashboard_tab:
@@ -2779,6 +2789,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-gpu-1-7
   - name: gke-gpu
     test_group_name: ci-kubernetes-e2e-gke-gpu
+  - name: gke-gpu-1-7
+    test_group_name: ci-kubernetes-e2e-gke-gpu-1-7
   - name: kubelet-serial-gce-e2e
     test_group_name: ci-kubernetes-node-kubelet-serial
     base_options: 'include-filter-by-regex=GPU'
