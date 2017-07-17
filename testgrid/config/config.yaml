@@ -1419,9 +1419,9 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-enormous-teardown
   - name: gci-gce
     test_group_name: ci-kubernetes-e2e-gci-gce-scalability
-  - name: gce-gce-1.6
+  - name: gci-gce-1.6
     test_group_name: ci-kubernetes-e2e-gci-gce-scalability-release-1-6
-  - name: gce-gce-1.7
+  - name: gci-gce-1.7
     test_group_name: ci-kubernetes-e2e-gci-gce-scalability-release-1-7
 
 # "google-gci-dev" is a tab for tests that are used for GCI(aka COS) image
