@@ -233,7 +233,7 @@ func complete(o *options) error {
 	}
 
 	if o.dump != "" {
-		defer writeMetadata(o)
+		defer writeMetadata(o.dump, o.metadataSources)
 		defer writeXML(o.dump, time.Now())
 	}
 	if err := prepare(o); err != nil {
@@ -378,12 +378,11 @@ func maybeMergeJSON(meta map[string]string, path string) {
 }
 
 // Write metadata.json, including version and env arg data.
-func writeMetadata(o *options) error {
-	path := o.dump
+func writeMetadata(path, metadataSources string) error {
 	m := make(map[string]string)
 
 	// Look for any sources of metadata and load 'em
-	for _, f := range strings.Split(o.metadataSources, ",") {
+	for _, f := range strings.Split(metadataSources, ",") {
 		maybeMergeJSON(m, filepath.Join(path, f))
 	}
 
