@@ -7747,7 +7747,8 @@
       "--env-file=jobs/ci-kubernetes-e2e-kops-aws.env",
       "--env-file=jobs/pull-kubernetes-e2e-kops-aws-scenario.env",
       "--check-leaked-resources=false",
-      "--timeout=55m"
+      "--timeout=55m",
+      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]|\\[HPA\\]|Dashboard|Services.*functioning.*NodePort"
     ],
     "scenario": "kubernetes_kops_aws",
     "sigOwners": [

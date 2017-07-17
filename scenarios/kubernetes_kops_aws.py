@@ -74,13 +74,13 @@ def add_k8s(cmd, k8s, *repos):
         cmd.extend([
             '-v', '%s/%s:/go/src/k8s.io/%s' % (k8s, repo, repo)])
 
-def cluster_name(cluster, build):
+def cluster_name(cluster, build, domain):
     """Return or select a cluster name."""
     if cluster:
         return cluster
     if len(build) < 20:
-        return 'e2e-%s' % build
-    return 'e2e-%s' % hashlib.md5(build).hexdigest()[:10]
+        return 'e2e-%s.%s' % (build, domain)
+    return 'e2e-%s.%s' % (hashlib.md5(build).hexdigest()[:10], domain)
 
 def main(args):
     """Set up env, start kops-runner, handle termination. """
@@ -188,7 +188,7 @@ def main(args):
             #'us-east-2b',
         ])
     regions = ','.join([zone[:-1] for zone in zones.split(',')])
-    cluster = cluster_name(args.cluster, os.getenv('BUILD_NUMBER', 0))
+    cluster = cluster_name(args.cluster, os.getenv('BUILD_NUMBER', 0), args.cluster_domain)
 
     extra_args = [
         '--kops-cluster %s' % cluster,
@@ -305,6 +305,10 @@ if __name__ == '__main__':
         '--build-kops', action='store_true', help='If we need to build kops locally')
     PARSER.add_argument(
         '--cluster', help='Name of the aws cluster (required)')
+    PARSER.add_argument(
+        '--cluster-domain',
+        default='test-aws.k8s.io',
+        help='Domain of the aws cluster for pr jobs')
     PARSER.add_argument(
         '--down', default='true', help='If we need to set --down in e2e.go')
     PARSER.add_argument(
