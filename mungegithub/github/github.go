@@ -2463,6 +2463,11 @@ func (config *Config) ForEachIssueDo(fn MungeFunction) error {
 		config.since = time.Time{}
 	}
 
+	// It's a new day, let's restart from scratch.
+	if time.Now().Format("Jan 2 2006") != config.since.Format("Jan 2 2006") {
+		config.since = time.Time{}
+	}
+
 	since := time.Now()
 	for {
 		glog.V(4).Infof("Fetching page %d of issues", page)
