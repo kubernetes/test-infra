@@ -231,6 +231,7 @@ def main(args):
     # TODO(krzyzacy) change this to a whitelist
     docker_env_ignore = [
       'GOOGLE_APPLICATION_CREDENTIALS',
+      'GOPATH',
       'GOROOT',
       'HOME',
       'PATH',
