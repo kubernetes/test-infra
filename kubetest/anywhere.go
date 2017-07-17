@@ -79,6 +79,8 @@ type kubernetesAnywhere struct {
 	Cluster           string
 }
 
+var _ deployer = kubernetesAnywhere{}
+
 func NewKubernetesAnywhere(project string) (*kubernetesAnywhere, error) {
 	if *kubernetesAnywherePath == "" {
 		return nil, fmt.Errorf("--kubernetes-anywhere-path is required")
@@ -159,7 +161,7 @@ func (k kubernetesAnywhere) IsUp() error {
 	return isUp(k)
 }
 
-func (k kubernetesAnywhere) SetupKubecfg() error {
+func (k kubernetesAnywhere) TestSetup() error {
 	o, err := output(exec.Command("make", "--silent", "-C", k.path, "kubeconfig-path"))
 	if err != nil {
 		return fmt.Errorf("Could not get kubeconfig-path: %v", err)

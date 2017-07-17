@@ -383,3 +383,12 @@ func extractField(fields []string, target string) ([]string, string, bool) {
 	}
 	return f, r, done
 }
+
+// execError returns a string format of err including stderr if the
+// err is an ExitError, useful for errors from e.g. exec.Cmd.Output().
+func execError(err error) string {
+	if ee, ok := err.(*exec.ExitError); ok {
+		return fmt.Sprintf("%v (output: %q)", err, string(ee.Stderr))
+	}
+	return err.Error()
+}
