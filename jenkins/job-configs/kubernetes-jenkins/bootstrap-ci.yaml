@@ -119,11 +119,29 @@
         trigger-job: ''
     # END AWS
 
-    # gce-manual-jobs #gmarek
-    - kubernetes-e2e-gce-enormous-cluster:
-        job-name: ci-kubernetes-e2e-gce-enormous-cluster
-        jenkins-timeout: 1600
-        timeout: 1500
+    # gce high-scale tests #shyamjvs
+    - kubernetes-e2e-gce-large-correctness:
+        job-name: ci-kubernetes-e2e-gce-large-correctness
+        jenkins-timeout: 720
+        timeout: 620
+        frequency: '' #manual
+        trigger-job: ''
+    - kubernetes-e2e-gce-large-performance:
+        job-name: ci-kubernetes-e2e-gce-large-performance
+        jenkins-timeout: 1120
+        timeout: 1020
+        frequency: '' #manual
+        trigger-job: ''
+    - kubernetes-e2e-gce-scale-correctness:
+        job-name: ci-kubernetes-e2e-gce-scale-correctness
+        jenkins-timeout: 1320
+        timeout: 1220
+        frequency: '' #manual
+        trigger-job: ''
+    - kubernetes-e2e-gce-scale-performance:
+        job-name: ci-kubernetes-e2e-gce-scale-performance
+        jenkins-timeout: 1520
+        timeout: 1420
         frequency: '' #manual
         trigger-job: ''
     - kubernetes-e2e-gce-enormous-deploy:
@@ -175,13 +193,18 @@
         use-blocker: true
         blocker: 'ci-kubernetes-e2e-gci-gce-scalability-release-1-7'
 
-    # gke-large
-    - kubernetes-e2e-gke-large-cluster:
-        job-name: ci-kubernetes-e2e-gke-large-cluster
+    # gke high-scale tests #shyamjvs
+    - kubernetes-e2e-gke-large-correctness:
+        job-name: ci-kubernetes-e2e-gke-large-correctness
         jenkins-timeout: 720
         timeout: 620
-        # enable when we finish with manual testing for 1.7
-        frequency: '' #'0 17 * * *'
+        frequency: '' #manual
+        trigger-job: ''
+    - kubernetes-e2e-gke-large-performance:
+        job-name: ci-kubernetes-e2e-gke-large-performance
+        jenkins-timeout: 1120
+        timeout: 1020
+        frequency: '' #manual
         trigger-job: ''
     - kubernetes-e2e-gke-large-deploy:
         job-name: ci-kubernetes-e2e-gke-large-deploy
@@ -193,6 +216,12 @@
         job-name: ci-kubernetes-e2e-gke-large-teardown
         jenkins-timeout: 300
         timeout: 200
+        frequency: '' #manual
+        trigger-job: ''
+    - kubernetes-e2e-gke-scale-correctness:
+        job-name: ci-kubernetes-e2e-gke-scale-correctness
+        jenkins-timeout: 1320
+        timeout: 1220
         frequency: '' #manual
         trigger-job: ''
 

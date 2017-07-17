@@ -133,10 +133,16 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-stackdriver
 - name: ci-kubernetes-e2e-gce-container-vm
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-container-vm
-- name: ci-kubernetes-e2e-gce-enormous-cluster
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-enormous-cluster
 - name: ci-kubernetes-e2e-gce-es-logging
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-es-logging
+- name: ci-kubernetes-e2e-gce-large-correctness
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-large-correctness
+- name: ci-kubernetes-e2e-gce-large-performance
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-large-performance
+- name: ci-kubernetes-e2e-gce-scale-correctness
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-scale-correctness
+- name: ci-kubernetes-e2e-gce-scale-performance
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-scale-performance
 - name: ci-kubernetes-e2e-gci-gce-es-logging
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-es-logging
 - name: ci-kubernetes-e2e-gce-sd-logging
@@ -321,14 +327,18 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-ingress
 - name: ci-kubernetes-e2e-gci-gke-ingress-release-1-5
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-ingress-release-1-5
-- name: ci-kubernetes-e2e-gke-large-cluster
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-large-cluster
+- name: ci-kubernetes-e2e-gke-large-correctness
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-large-correctness
+- name: ci-kubernetes-e2e-gke-large-performance
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-large-performance
 - name: ci-kubernetes-e2e-gke-multizone
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-multizone
 - name: ci-kubernetes-e2e-gci-gke-multizone
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-multizone
 - name: ci-kubernetes-e2e-gke-pre-release
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-pre-release
+- name: ci-kubernetes-e2e-gke-scale-correctness
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-scale-correctness
 - name: ci-kubernetes-e2e-gci-gke-pre-release
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-pre-release
 - name: ci-kubernetes-e2e-gke-prod
@@ -1411,12 +1421,18 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-scalability-release-1-6
   - name: gce-1.7
     test_group_name: ci-kubernetes-e2e-gce-scalability-release-1-7
-  - name: gce-enormous-cluster
-    test_group_name: ci-kubernetes-e2e-gce-enormous-cluster
   - name: gce-enormous-deploy
     test_group_name: ci-kubernetes-e2e-gce-enormous-deploy
   - name: gce-enormous-teardown
     test_group_name: ci-kubernetes-e2e-gce-enormous-teardown
+  - name: gce-large-correctness
+    test_group_name: ci-kubernetes-e2e-gce-large-correctness
+  - name: gce-large-performance
+    test_group_name: ci-kubernetes-e2e-gce-large-performance
+  - name: gce-scale-correctness
+    test_group_name: ci-kubernetes-e2e-gce-scale-correctness
+  - name: gce-scale-performance
+    test_group_name: ci-kubernetes-e2e-gce-scale-performance
   - name: gci-gce
     test_group_name: ci-kubernetes-e2e-gci-gce-scalability
   - name: gci-gce-1.6
@@ -1672,12 +1688,16 @@ dashboards:
 
 - name: google-gke-scale
   dashboard_tab:
-  - name: gke-large-cluster
-    test_group_name: ci-kubernetes-e2e-gke-large-cluster
+  - name: gke-large-correctness
+    test_group_name: ci-kubernetes-e2e-gke-large-correctness
+  - name: gke-large-performance
+    test_group_name: ci-kubernetes-e2e-gke-large-performance
   - name: gke-large-deploy
     test_group_name: ci-kubernetes-e2e-gke-large-deploy
   - name: gke-large-teardown
     test_group_name: ci-kubernetes-e2e-gke-large-teardown
+  - name: gke-scale-correctness
+    test_group_name: ci-kubernetes-e2e-gke-scale-correctness
 
 - name: google-gke-staging
   dashboard_tab:
