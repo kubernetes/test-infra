@@ -156,9 +156,10 @@ type Config struct {
 	apiLimit *callLimitRoundTripper
 	opts     *options.Options
 
-	Org     string
-	Project string
-	Url     string
+	Org         string
+	Project     string
+	Url         string
+	mergeMethod string
 
 	State  string
 	Labels []string
@@ -376,6 +377,7 @@ func (config *Config) RegisterOptions(opts *options.Options) {
 	opts.RegisterString(&config.HTTPCacheDir, "http-cache-dir", "", "Path to directory where github data can be cached across restarts, if unset use in memory cache")
 	opts.RegisterUint64(&config.HTTPCacheSize, "http-cache-size", 1000, "Maximum size for the HTTP cache (in MB)")
 	opts.RegisterString(&config.Url, "url", "", "The GitHub Enterprise server url (default: https://api.github.com/)")
+	opts.RegisterString(&config.mergeMethod, "merge-method", "merge", "The merge method to use: merge/squash/rebase, default merge")
 
 	config.opts = opts
 }
@@ -1978,13 +1980,17 @@ func (obj *MungeObject) MergePR(who string) bool {
 		mergeBody = fmt.Sprintf("%s\n\n%s", mergeBody, issueBody)
 	}
 
+	option := &github.PullRequestOptions{
+		MergeMethod: config.mergeMethod,
+	}
+
 	_, _, err := config.client.PullRequests.Merge(
 		context.Background(),
 		obj.Org(),
 		obj.Project(),
 		prNum,
 		mergeBody,
-		nil,
+		option,
 	)
 
 	// The github API https://developer.github.com/v3/pulls/#merge-a-pull-request-merge-button indicates
