@@ -2092,7 +2092,28 @@ class JobTest(unittest.TestCase):
             'ci-kubernetes-pull-gce-federation-deploy-canary.env': 'pull-kubernetes-federation-e2e-gce-*',
             'pull-kubernetes-e2e-gce.env': 'pull-kubernetes-e2e-gce-*',
             'pull-kubernetes-e2e-gce-canary.env': 'pull-kubernetes-e2e-gce-*',
+            'ci-kubernetes-e2e-gce.env': 'ci-kubernetes-e2e-gce-*',
+            'ci-kubernetes-e2e-gce-canary.env': 'ci-kubernetes-e2e-gce-*',
         }
+        for soak_prefix in [
+                'ci-kubernetes-soak-gce-1.5',
+                'ci-kubernetes-soak-gce-1-7',
+                'ci-kubernetes-soak-gce-1.4',
+                'ci-kubernetes-soak-gce-1.6',
+                'ci-kubernetes-soak-gce-2',
+                'ci-kubernetes-soak-gce',
+                'ci-kubernetes-soak-gci-gce-1.5',
+                'ci-kubernetes-soak-gce-gci',
+                'ci-kubernetes-soak-gke-gci',
+                'ci-kubernetes-soak-gce-federation',
+                'ci-kubernetes-soak-gci-gce-1.4',
+                'ci-kubernetes-soak-gci-gce-1.6',
+                'ci-kubernetes-soak-gci-gce-1-7',
+                'ci-kubernetes-soak-cos-docker-validation',
+                'ci-kubernetes-soak-gke',
+        ]:
+            allowed_list['%s-deploy.env' % soak_prefix] = '%s-*' % soak_prefix
+            allowed_list['%s-test.env' % soak_prefix] = '%s-*' % soak_prefix
         # pylint: enable=line-too-long
         projects = collections.defaultdict(set)
         boskos = []
@@ -2102,9 +2123,13 @@ class JobTest(unittest.TestCase):
                     for name in rtype['names']:
                         boskos.append(name)
 
+        with open(bootstrap.test_infra('jobs/config.json')) as fp:
+            job_config = json.load(fp)
+
         for job, job_path in self.jobs:
             with open(job_path) as fp:
                 lines = list(fp)
+            project = ''
             for line in lines:
                 line = line.strip()
                 if not line.startswith('PROJECT='):
@@ -2121,7 +2146,15 @@ class JobTest(unittest.TestCase):
                     project = re.search(r'PROJECT=([^"]+)', line).group(1)
                 if project in boskos:
                     self.fail('Project %s cannot be in boskos/resources.json!' % project)
+            cfg = job_config.get(job.rsplit('.', 1)[0], {})
+            if not project and cfg.get('scenario') == 'kubernetes_e2e':
+                for arg in cfg.get('args', []):
+                    if not arg.startswith('--gcp-project='):
+                        continue
+                    project = arg.split('=', 1)[1]
+            if project:
                 projects[project].add(allowed_list.get(job, job))
+
         duplicates = [(p, j) for p, j in projects.items() if len(j) > 1]
         if duplicates:
             self.fail('Jobs duplicate projects:\n  %s' % (
@@ -2182,6 +2215,7 @@ class JobTest(unittest.TestCase):
                 black = [
                     ('CHARTS_TEST=', '--charts-tests'),
                     ('CLUSTER_IP_RANGE=', '--test_args=--cluster-ip-range=FOO'),
+                    ('CLOUDSDK_BUCKET=', '--gcp-cloud-sdk=gs://foo'),
                     ('E2E_CLEAN_START=', '--test_args=--clean-start=true'),
                     ('E2E_DOWN=', '--down=true|false'),
                     ('E2E_MIN_STARTUP_PODS=', '--test_args=--minStartupPods=FOO'),
@@ -2210,8 +2244,12 @@ class JobTest(unittest.TestCase):
                     ('JENKINS_USE_SERVER_VERSION=', '--extract=gke'),
                     ('JENKINS_USE_GCI_VERSION=', '--extract=gci/FAMILY'),
                     ('JENKINS_USE_GCI_HEAD_IMAGE_FAMILY=', '--extract=gci/FAMILY'),
+                    ('KUBE_GCE_ZONE=', '--gcp-zone='),
                     ('KUBEKINS_TIMEOUT=', '--timeout=XXm'),
+                    ('KUBEMARK_TESTS=', '--test_args=--ginkgo.focus=FOO'),
+                    ('KUBERNETES_PROVIDER=', '--provider=FOO'),
                     ('PERF_TESTS=', '--perf'),
+                    ('PROJECT=', '--gcp-project=FOO'),
                     ('SKEW_KUBECTL=', '--test_args=--kubectl-path=FOO'),
                     ('USE_KUBEMARK=', '--kubemark'),
                 ]
@@ -2219,9 +2257,10 @@ class JobTest(unittest.TestCase):
                     if 'kops' in job and env in [
                             'JENKINS_PUBLISHED_VERSION=',
                             'GINKGO_TEST_ARGS=',
+                            'KUBERNETES_PROVIDER=',
                     ]:
                         continue  # TOOD(fejta): migrate kops jobs
-                    if env in line:
+                    if line.startswith(env):
                         self.fail('[%s]: Env %s: Convert %s to use %s in jobs/config.json' % (
                             job, line, env, fix))
 
