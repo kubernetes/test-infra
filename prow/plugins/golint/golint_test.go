@@ -46,8 +46,9 @@ func Qux() error {
 }
 
 type ghc struct {
-	changes []github.PullRequestChange
-	comment github.DraftReview
+	changes     []github.PullRequestChange
+	oldComments []github.ReviewComment
+	comment     github.DraftReview
 }
 
 func (g *ghc) GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error) {
@@ -57,6 +58,10 @@ func (g *ghc) GetPullRequestChanges(org, repo string, number int) ([]github.Pull
 func (g *ghc) CreateReview(org, repo string, number int, r github.DraftReview) error {
 	g.comment = r
 	return nil
+}
+
+func (g *ghc) ListPullRequestComments(org, repo string, number int) ([]github.ReviewComment, error) {
+	return g.oldComments, nil
 }
 
 func TestLint(t *testing.T) {
@@ -113,6 +118,35 @@ func TestLint(t *testing.T) {
 	}
 	if len(gh.comment.Comments) != 2 {
 		t.Fatalf("Expected two comments, got %d: %v.", len(gh.comment.Comments), gh.comment.Comments)
+	}
+	for _, c := range gh.comment.Comments {
+		pos := c.Position
+		gh.oldComments = append(gh.oldComments, github.ReviewComment{
+			Path:     c.Path,
+			Position: &pos,
+			Body:     c.Body,
+		})
+	}
+	if err := handle(gh, c, logrus.NewEntry(logrus.New()), github.IssueCommentEvent{
+		Action: "created",
+		Issue: github.Issue{
+			State:       "open",
+			Number:      42,
+			PullRequest: &struct{}{},
+		},
+		Comment: github.IssueComment{
+			Body: "/lint",
+		},
+		Repo: github.Repo{
+			Owner:    github.User{Login: "foo"},
+			Name:     "bar",
+			FullName: "foo/bar",
+		},
+	}); err != nil {
+		t.Fatalf("Got error from handle on second try: %v", err)
+	}
+	if len(gh.comment.Comments) != 0 {
+		t.Fatalf("Expected no comments, got %d: %v", len(gh.comment.Comments), gh.comment.Comments)
 	}
 }
 

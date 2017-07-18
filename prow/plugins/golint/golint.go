@@ -32,7 +32,10 @@ import (
 	"k8s.io/test-infra/prow/plugins"
 )
 
-const pluginName = "golint"
+const (
+	pluginName = "golint"
+	commentTag = "<!-- golint -->"
+)
 
 var lintRe = regexp.MustCompile(`(?mi)^/lint\s*$`)
 
@@ -43,6 +46,7 @@ func init() {
 type githubClient interface {
 	GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error)
 	CreateReview(org, repo string, number int, r github.DraftReview) error
+	ListPullRequestComments(org, repo string, number int) ([]github.ReviewComment, error)
 }
 
 func handleIC(pc plugins.PluginClient, ic github.IssueCommentEvent) error {
@@ -66,12 +70,36 @@ func modifiedGoFiles(ghc githubClient, org, repo string, number int) (map[string
 	return modifiedFiles, nil
 }
 
-// problemsInFiles runs golint on the files. It returns a map from the line
-// in the patch to the problem.
-func problemsInFiles(r *git.Repo, files map[string]string) (map[int]lint.Problem, error) {
-	problems := make(map[int]lint.Problem)
+// newProblems compares the list of problems with the list of past comments on
+// the PR to decide which are new.
+func newProblems(cs []github.ReviewComment, ps map[string]map[int]lint.Problem) map[string]map[int]lint.Problem {
+	// Make a copy, then remove the old elements.
+	res := make(map[string]map[int]lint.Problem)
+	for f, ls := range ps {
+		res[f] = make(map[int]lint.Problem)
+		for l, p := range ls {
+			res[f][l] = p
+		}
+	}
+	for _, c := range cs {
+		if c.Position == nil {
+			continue
+		}
+		if !strings.Contains(c.Body, commentTag) {
+			continue
+		}
+		delete(res[c.Path], *c.Position)
+	}
+	return res
+}
+
+// problemsInFiles runs golint on the files. It returns a map from the file to
+// a map from the line in the patch to the problem.
+func problemsInFiles(r *git.Repo, files map[string]string) (map[string]map[int]lint.Problem, error) {
+	problems := make(map[string]map[int]lint.Problem)
 	l := new(lint.Linter)
 	for f, patch := range files {
+		problems[f] = make(map[int]lint.Problem)
 		src, err := ioutil.ReadFile(filepath.Join(r.Dir, f))
 		if err != nil {
 			return nil, err
@@ -86,7 +114,7 @@ func problemsInFiles(r *git.Repo, files map[string]string) (map[int]lint.Problem
 		}
 		for _, p := range ps {
 			if pl, ok := al[p.Position.Line]; ok {
-				problems[pl] = p
+				problems[f][pl] = p
 			}
 		}
 	}
@@ -133,20 +161,44 @@ func handle(ghc githubClient, gc *git.Client, log *logrus.Entry, ic github.Issue
 	if err != nil {
 		return err
 	}
+	oldComments, err := ghc.ListPullRequestComments(org, repo, ic.Issue.Number)
+	if err != nil {
+		return err
+	}
+	nps := newProblems(oldComments, problems)
 
 	// Respond.
 	var response string
 	var comments []github.DraftReviewComment
-	if len(problems) == 0 {
-		response = "no lint warnings"
-	} else {
-		response = fmt.Sprintf("%d warning(s)", len(problems))
-		for patchPath, problem := range problems {
+	for f, ls := range nps {
+		for l, p := range ls {
+			var body string
+			if p.Link == "" {
+				body = fmt.Sprintf("Golint %s: %s. %s", p.Category, p.Text, commentTag)
+			} else {
+				body = fmt.Sprintf("Golint %s: %s. [More info](%s). %s", p.Category, p.Text, p.Link, commentTag)
+			}
 			comments = append(comments, github.DraftReviewComment{
-				Path:     problem.Position.Filename,
-				Position: patchPath,
-				Body:     problem.Text,
+				Path:     f,
+				Position: l,
+				Body:     body,
 			})
+		}
+	}
+
+	totalProblems := numProblems(problems)
+	newProblems := numProblems(nps)
+	if newProblems == 0 {
+		if totalProblems == 0 {
+			response = "no lint warnings"
+		} else {
+			response = fmt.Sprintf("no new warnings, %d remaining warning(s)", totalProblems)
+		}
+	} else {
+		if totalProblems == 0 {
+			response = fmt.Sprintf("%d new warning(s)", newProblems)
+		} else {
+			response = fmt.Sprintf("%d new warning(s), %d remaining warning(s)", newProblems, totalProblems)
 		}
 	}
 
@@ -155,6 +207,14 @@ func handle(ghc githubClient, gc *git.Client, log *logrus.Entry, ic github.Issue
 		Action:   github.Comment,
 		Comments: comments,
 	})
+}
+
+func numProblems(ps map[string]map[int]lint.Problem) int {
+	var num int
+	for _, m := range ps {
+		num += len(m)
+	}
+	return num
 }
 
 // addedLines returns line numbers that were added in the patch, along with

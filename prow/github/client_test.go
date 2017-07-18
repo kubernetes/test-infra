@@ -450,6 +450,42 @@ func TestUnassignIssue(t *testing.T) {
 	}
 }
 
+func TestListPullRequestComments(t *testing.T) {
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			t.Errorf("Bad method: %s", r.Method)
+		}
+		if r.URL.Path == "/repos/k8s/kuber/pulls/15/comments" {
+			prcs := []ReviewComment{{ID: 1}}
+			b, err := json.Marshal(prcs)
+			if err != nil {
+				t.Fatalf("Didn't expect error: %v", err)
+			}
+			w.Header().Set("Link", fmt.Sprintf(`<blorp>; rel="first", <https://%s/someotherpath>; rel="next"`, r.Host))
+			fmt.Fprint(w, string(b))
+		} else if r.URL.Path == "/someotherpath" {
+			prcs := []ReviewComment{{ID: 2}}
+			b, err := json.Marshal(prcs)
+			if err != nil {
+				t.Fatalf("Didn't expect error: %v", err)
+			}
+			fmt.Fprint(w, string(b))
+		} else {
+			t.Errorf("Bad request path: %s", r.URL.Path)
+		}
+	}))
+	defer ts.Close()
+	c := getClient(ts.URL)
+	prcs, err := c.ListPullRequestComments("k8s", "kuber", 15)
+	if err != nil {
+		t.Errorf("Didn't expect error: %v", err)
+	} else if len(prcs) != 2 {
+		t.Errorf("Expected two comments, found %d: %v", len(prcs), prcs)
+	} else if prcs[0].ID != 1 || prcs[1].ID != 2 {
+		t.Errorf("Wrong issue IDs: %v", prcs)
+	}
+}
+
 func TestRequestReview(t *testing.T) {
 	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
