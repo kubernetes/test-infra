@@ -145,7 +145,7 @@ def parse_args():
     parser = argparse.ArgumentParser(
         description=__doc__, formatter_class=RawTextHelpFormatter)
     parser.add_argument(
-        '--filter', default=r'^.+$',
+        '--filter', default=r'^.+\.(env|sh)$',
         help='Only look for projects with the specified names')
     parser.add_argument(
         '--fix', action='store_true', help='Add missing memberships')
@@ -187,7 +187,7 @@ class Checker(object):
                 prop.check_and_maybe_update(self.config, project, fix)
 
         projects = self.load_projects(
-            '%s/../jobs/config.json' % os.path.dirname(__file__),
+            '%s/../jobs' % os.path.dirname(__file__),
             '%s/../boskos/resources.json' % os.path.dirname(__file__),
             filt)
         _log.info('Checking %d projects', len(projects))
@@ -239,21 +239,23 @@ class Checker(object):
     def load_projects(configs, boskos, filt):
         """Scans the project directories for GCP projects to check."""
         filter_re = re.compile(filt)
-        match_re = re.compile(r'--gcp-project=(.+)')
+        project_re = re.compile('^PROJECT="?([^"\r\n]+)"?$', re.MULTILINE)
+
         projects = set()
 
-        with open(configs) as fp:
-            config = json.load(fp)
-
-        for value in config.values():
-            for arg in value.get('args', []):
-                mat = match_re.match(arg)
-                if not mat:
+        for dirname, _, files in os.walk(configs):
+            for path in files:
+                full_path = os.path.join(dirname, path)
+                _log.debug('Path = %s', path)
+                if not filter_re.match(path):
                     continue
-                project = mat.group(1)
-                if not filter_re.match(project):
-                    continue
-                projects.add(project)
+                with open(full_path) as fp:
+                    for project in project_re.findall(fp.read()):
+                        if '{' not in project:
+                            projects.add(project)
+                            continue
+                        else:
+                            raise ValueError(project)
 
         with open(boskos) as fp:
             for rtype in json.loads(fp.read()):
