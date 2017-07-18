@@ -163,8 +163,8 @@ func (p *PublisherMunger) Initialize(config *github.Config, features *features.F
 				src: coordinate{repo: config.Project, branch: "release-1.7", dir: "staging/src/k8s.io/apiserver"},
 				dst: coordinate{repo: "apiserver", branch: "release-1.7", dir: "./"},
 				deps: []coordinate{
-					coordinate{repo: "apimachinery", branch: "release-1.7"},
-					coordinate{repo: "client-go", branch: "release-4.0"},
+					{repo: "apimachinery", branch: "release-1.7"},
+					{repo: "client-go", branch: "release-4.0"},
 				},
 			},
 		},
@@ -199,9 +199,9 @@ func (p *PublisherMunger) Initialize(config *github.Config, features *features.F
 				src: coordinate{repo: config.Project, branch: "release-1.7", dir: "staging/src/k8s.io/kube-aggregator"},
 				dst: coordinate{repo: "kube-aggregator", branch: "release-1.7", dir: "./"},
 				deps: []coordinate{
-					coordinate{repo: "apimachinery", branch: "release-1.7"},
-					coordinate{repo: "client-go", branch: "release-4.0"},
-					coordinate{repo: "apiserver", branch: "release-1.7"},
+					{repo: "apimachinery", branch: "release-1.7"},
+					{repo: "client-go", branch: "release-4.0"},
+					{repo: "apiserver", branch: "release-1.7"},
 				},
 			},
 		},
@@ -236,9 +236,9 @@ func (p *PublisherMunger) Initialize(config *github.Config, features *features.F
 				src: coordinate{repo: config.Project, branch: "release-1.7", dir: "staging/src/k8s.io/sample-apiserver"},
 				dst: coordinate{repo: "sample-apiserver", branch: "release-1.7", dir: "./"},
 				deps: []coordinate{
-					coordinate{repo: "apimachinery", branch: "release-1.7"},
-					coordinate{repo: "client-go", branch: "release-4.0"},
-					coordinate{repo: "apiserver", branch: "release-1.7"},
+					{repo: "apimachinery", branch: "release-1.7"},
+					{repo: "client-go", branch: "release-4.0"},
+					{repo: "apiserver", branch: "release-1.7"},
 				},
 			},
 		},
@@ -263,9 +263,9 @@ func (p *PublisherMunger) Initialize(config *github.Config, features *features.F
 				src: coordinate{repo: config.Project, branch: "release-1.7", dir: "staging/src/k8s.io/apiextensions-apiserver"},
 				dst: coordinate{repo: "apiextensions-apiserver", branch: "release-1.7", dir: "./"},
 				deps: []coordinate{
-					coordinate{repo: "apimachinery", branch: "release-1.7"},
-					coordinate{repo: "client-go", branch: "release-4.0"},
-					coordinate{repo: "apiserver", branch: "release-1.7"},
+					{repo: "apimachinery", branch: "release-1.7"},
+					{repo: "client-go", branch: "release-4.0"},
+					{repo: "apiserver", branch: "release-1.7"},
 				},
 			},
 		},
@@ -286,8 +286,34 @@ func (p *PublisherMunger) Initialize(config *github.Config, features *features.F
 		},
 		publishScript: "/publish_scripts/publish_api.sh",
 	}
+
+	metrics := repoRules{
+		dstRepo: "metrics",
+		srcToDst: []branchRule{
+			{
+				// rule for the metrics master branch
+				src: coordinate{repo: config.Project, branch: "master", dir: "staging/src/k8s.io/metrics"},
+				dst: coordinate{repo: "metrics", branch: "master", dir: "./"},
+				deps: []coordinate{
+					{repo: "apimachinery", branch: "master"},
+					{repo: "client-go", branch: "master"},
+				},
+			},
+			{
+				// rule for the sample-apiserver 1.7 branch
+				src: coordinate{repo: config.Project, branch: "release-1.7", dir: "staging/src/k8s.io/metrics"},
+				dst: coordinate{repo: "metrics", branch: "release-1.7", dir: "./"},
+				deps: []coordinate{
+					{repo: "apimachinery", branch: "release-1.7"},
+					{repo: "client-go", branch: "release-4.0"},
+				},
+			},
+		},
+		publishScript: "/publish_scripts/publish_metrics.sh",
+	}
+
 	// NOTE: Order of the repos is sensitive!!! A dependent repo needs to be published first, so that other repos can vendor its latest revision.
-	p.reposRules = []repoRules{apimachinery, api, clientGo, apiserver, kubeAggregator, sampleAPIServer, apiExtensionsAPIServer}
+	p.reposRules = []repoRules{apimachinery, api, clientGo, apiserver, kubeAggregator, sampleAPIServer, apiExtensionsAPIServer, metrics}
 	glog.Infof("publisher munger rules: %#v\n", p.reposRules)
 	p.features = features
 	p.githubConfig = config
