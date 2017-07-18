@@ -18,6 +18,7 @@ go_test(
         "flakyjob-reporter_test.go",
         "inactive-review-handler_test.go",
         "issue-creator_test.go",
+        "owner-label_test.go",
         "path_label_test.go",
         "release-note-label_test.go",
         "sig-mention-handler_test.go",
@@ -44,6 +45,7 @@ go_test(
         "//vendor:github.com/google/go-github/github",
         "//vendor:k8s.io/contrib/test-utils/utils",
         "//vendor:k8s.io/kubernetes/pkg/util/clock",
+        "//vendor:k8s.io/kubernetes/pkg/util/sets",
     ],
 )
 
@@ -75,6 +77,7 @@ go_library(
         "nag-flake-issues.go",
         "needs_rebase.go",
         "old-test-getter.go",
+        "owner-label.go",
         "path_label.go",
         "publisher.go",
         "publisher_logger.go",

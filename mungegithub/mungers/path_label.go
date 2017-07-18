@@ -138,19 +138,36 @@ func (p *PathLabelMunger) Munge(obj *github.MungeObject) {
 		}
 	}
 
-	// This is all labels on the issue that the path munger controls
-	hasLabels := obj.LabelSet().Intersection(p.allLabels)
+	SyncLabels(p.allLabels, needsLabels, obj)
+}
 
-	missingLabels := needsLabels.Difference(hasLabels)
+type labelApplicator interface {
+	LabelSet() sets.String
+	AddLabels([]string) error
+	RemoveLabel(string) error
+	LabelCreator(string) (string, bool)
+}
+
+// SyncLabels properly syncs a set of labels. 'allLabels' must be a superset of
+// 'desiredLabels'; to disable removing labels, set them to be the same set.
+// Multiple mungers must somehow coordinate on which labels the bot ought to
+// apply, otherwise the bot will fight with itself.
+//
+// TODO: fix error handling.
+func SyncLabels(allLabels, desiredLabels sets.String, obj labelApplicator) error {
+	hasLabels := obj.LabelSet().Intersection(allLabels)
+
+	missingLabels := desiredLabels.Difference(hasLabels)
 	if missingLabels.Len() != 0 {
-		obj.AddLabels(needsLabels.List())
+		obj.AddLabels(missingLabels.List())
 	}
 
-	extraLabels := hasLabels.Difference(needsLabels)
+	extraLabels := hasLabels.Difference(desiredLabels)
 	for _, label := range extraLabels.List() {
 		creator, ok := obj.LabelCreator(label)
 		if ok && creator == botName {
 			obj.RemoveLabel(label)
 		}
 	}
+	return nil
 }

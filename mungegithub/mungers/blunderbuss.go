@@ -38,7 +38,7 @@ type BlunderbussConfig struct {
 }
 
 // BlunderbussMunger will assign issues to users based on the config file
-// provided by --blunderbuss-config.
+// provided by --blunderbuss-config and/or OWNERS files.
 type BlunderbussMunger struct {
 	config   *BlunderbussConfig
 	features *features.Features
