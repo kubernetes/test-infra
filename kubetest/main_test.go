@@ -38,14 +38,14 @@ func TestWriteMetadata(t *testing.T) {
 			version: "v1.8.0-alpha.2.251+ba2bdb1aead615",
 		},
 		{
-			sources: map[string]mdata{"images.json": mdata{"imgkey": "imgval"}},
+			sources: map[string]mdata{"images.json": {"imgkey": "imgval"}},
 			key:     "imgkey",
 			version: "v1.8.0-alpha.2.251+ba2bdb1aead615",
 		},
 		{
 			sources: map[string]mdata{
-				"images.json": mdata{"imgkey": "imgval"},
-				"foo.json":    mdata{"fookey": "fooval"},
+				"images.json": {"imgkey": "imgval"},
+				"foo.json":    {"fookey": "fooval"},
 			},
 			key:     "fookey",
 			version: "v1.8.0-alpha.2.251+ba2bdb1aead615",
@@ -93,6 +93,66 @@ func TestWriteMetadata(t *testing.T) {
 
 		if _, exists := metadata[tc.key]; !exists {
 			t.Errorf("Expcected metadata key %q, but read in map %#v\n", tc.key, metadata)
+		}
+	}
+}
+
+func TestMigrateGcpEnvAndOptions(t *testing.T) {
+	proj := "fake-project"
+	zone := "fake-zone"
+	cases := []struct {
+		name        string
+		provider    string
+		expectedArg string
+	}{
+		{
+			name:        "gce sets KUBE_GCE_ZONE",
+			provider:    "gce",
+			expectedArg: "KUBE_GCE_ZONE",
+		},
+		{
+			name:        "gke sets ZONE",
+			provider:    "gke",
+			expectedArg: "ZONE",
+		},
+		{
+			name:        "random provider sets KUBE_GCE_ZONE",
+			provider:    "random",
+			expectedArg: "KUBE_GCE_ZONE",
+		},
+	}
+
+	// Preserve original ZONE, KUBE_GCE_ZONE state
+	if pz, err := pushEnv("ZONE", "unset"); err != nil {
+		t.Fatalf("Could not set ZONE: %v", err)
+	} else {
+		defer pz()
+	}
+	if pkgz, err := pushEnv("KUBE_GCE_ZONE", "unset"); err != nil {
+		t.Fatalf("Could not set KUBE_GCE_ZONE: %v", err)
+	} else {
+		defer pkgz()
+	}
+
+	for _, tc := range cases {
+		if err := os.Unsetenv("KUBE_GCE_ZONE"); err != nil {
+			t.Fatalf("%s: could not unset KUBE_GCE_ZONE", tc.name)
+		}
+		if err := os.Unsetenv("ZONE"); err != nil {
+			t.Fatalf("%s: could not unset ZONE", tc.name)
+		}
+		o := options{
+			gcpProject: proj,
+			gcpZone:    zone,
+			provider:   tc.provider,
+		}
+		if err := migrateGcpEnvAndOptions(&o); err != nil {
+			t.Errorf("%s: failed to migrate: %v", tc.name, err)
+		}
+
+		z := os.Getenv(tc.expectedArg)
+		if z != zone {
+			t.Errorf("%s: %s is '%s' not expected '%s'", tc.name, tc.expectedArg, z, zone)
 		}
 	}
 }

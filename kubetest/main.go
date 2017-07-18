@@ -442,6 +442,13 @@ func installGcloud(tarball string, location string) error {
 }
 
 func migrateGcpEnvAndOptions(o *options) error {
+	var z string
+	switch o.provider {
+	case "gke":
+		z = "ZONE"
+	default:
+		z = "KUBE_GCE_ZONE"
+	}
 	return migrateOptions([]migratedOption{
 		{
 			env:    "PROJECT",
@@ -449,7 +456,7 @@ func migrateGcpEnvAndOptions(o *options) error {
 			name:   "--gcp-project",
 		},
 		{
-			env:    "ZONE",
+			env:    z,
 			option: &o.gcpZone,
 			name:   "--gcp-zone",
 		},
@@ -471,7 +478,6 @@ func prepareGcp(o *options) error {
 	if err := migrateGcpEnvAndOptions(o); err != nil {
 		return err
 	}
-
 	if o.gcpProject == "" {
 		var resType string
 		if o.provider == "gce" {
