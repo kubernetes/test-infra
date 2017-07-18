@@ -17,6 +17,7 @@ limitations under the License.
 package close
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/Sirupsen/logrus"
@@ -25,8 +26,9 @@ import (
 )
 
 type fakeClient struct {
-	commented bool
-	closed    bool
+	commented      bool
+	closed         bool
+	AssigneesAdded []string
 }
 
 func (c *fakeClient) CreateComment(owner, repo string, number int, comment string) error {
@@ -44,6 +46,21 @@ func (c *fakeClient) ClosePR(owner, repo string, number int) error {
 	return nil
 }
 
+func (c *fakeClient) IsMember(owner, login string) (bool, error) {
+	if login == "non-member" {
+		return false, nil
+	}
+	return true, nil
+}
+
+func (c *fakeClient) AssignIssue(owner, repo string, number int, assignees []string) error {
+	if assignees[0] == "non-member" || assignees[0] == "non-owner-assign-error" {
+		return errors.New("Failed to assign")
+	}
+	c.AssigneesAdded = append(c.AssigneesAdded, assignees...)
+	return nil
+}
+
 func TestCloseComment(t *testing.T) {
 	// "a" is the author, "r1", and "r2" are reviewers.
 	var testcases = []struct {
@@ -54,6 +71,7 @@ func TestCloseComment(t *testing.T) {
 		commenter     string
 		shouldClose   bool
 		shouldComment bool
+		shouldAssign  bool
 	}{
 		{
 			name:          "non-close comment",
@@ -110,13 +128,34 @@ func TestCloseComment(t *testing.T) {
 			shouldComment: false,
 		},
 		{
-			name:          "close by other person",
+			name:          "close by other person, non-member cannot close",
 			action:        "created",
 			state:         "open",
 			body:          "/close",
-			commenter:     "o",
+			commenter:     "non-member",
 			shouldClose:   false,
 			shouldComment: true,
+			shouldAssign:  false,
+		},
+		{
+			name:          "close by other person, failed to assign",
+			action:        "created",
+			state:         "open",
+			body:          "/close",
+			commenter:     "non-owner-assign-error",
+			shouldClose:   false,
+			shouldComment: true,
+			shouldAssign:  false,
+		},
+		{
+			name:          "close by other person, assign and close",
+			action:        "created",
+			state:         "open",
+			body:          "/close",
+			commenter:     "non-owner",
+			shouldClose:   true,
+			shouldComment: false,
+			shouldAssign:  true,
 		},
 	}
 	for _, tc := range testcases {
@@ -147,6 +186,11 @@ func TestCloseComment(t *testing.T) {
 			t.Errorf("For case %s, should have commented but didn't.", tc.name)
 		} else if !tc.shouldComment && fc.commented {
 			t.Errorf("For case %s, should not have commented but did.", tc.name)
+		}
+		if tc.shouldAssign && len(fc.AssigneesAdded) != 1 {
+			t.Errorf("For case %s, should have assigned but didn't.", tc.name)
+		} else if !tc.shouldAssign && len(fc.AssigneesAdded) == 1 {
+			t.Errorf("For case %s, should not have assigned but did.", tc.name)
 		}
 	}
 }

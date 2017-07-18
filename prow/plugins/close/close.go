@@ -17,6 +17,7 @@ limitations under the License.
 package close
 
 import (
+	"fmt"
 	"regexp"
 
 	"github.com/Sirupsen/logrus"
@@ -37,6 +38,8 @@ type githubClient interface {
 	CreateComment(owner, repo string, number int, comment string) error
 	CloseIssue(owner, repo string, number int) error
 	ClosePR(owner, repo string, number int) error
+	IsMember(owner, login string) (bool, error)
+	AssignIssue(owner, repo string, number int, assignees []string) error
 }
 
 func handleIssueComment(pc plugins.PluginClient, ic github.IssueCommentEvent) error {
@@ -61,9 +64,20 @@ func handle(gc githubClient, log *logrus.Entry, ic github.IssueCommentEvent) err
 
 	// Allow assignees and authors to close issues.
 	if !ic.Issue.IsAuthor(commentAuthor) && !ic.Issue.IsAssignee(commentAuthor) {
-		resp := "you can't close an issue/PR unless you authored it or you are assigned to it"
-		log.Infof("Commenting \"%s\".", resp)
-		return gc.CreateComment(org, repo, number, plugins.FormatICResponse(ic.Comment, resp))
+		log.Infof("Assigning %s/%s#%d to %s", org, repo, number, commentAuthor)
+		if err := gc.AssignIssue(org, repo, number, []string{commentAuthor}); err != nil {
+			msg := "Assigning you to the issue failed."
+			if ok, merr := gc.IsMember(org, commentAuthor); merr == nil && !ok {
+				msg = "Only kubernetes org members may be assigned issues."
+			} else if merr != nil {
+				log.WithError(merr).Errorf("Failed IsMember(%s, %s)", org, commentAuthor)
+			} else {
+				log.WithError(err).Errorf("Failed AssignIssue(%s, %s, %d, %s)", org, repo, number, commentAuthor)
+			}
+			resp := fmt.Sprintf("you can't close an issue unless you authored it or you are assigned to it, %s", msg)
+			log.Infof("Commenting \"%s\".", resp)
+			return gc.CreateComment(org, repo, number, plugins.FormatICResponse(ic.Comment, resp))
+		}
 	}
 
 	if ic.Issue.IsPullRequest() {
