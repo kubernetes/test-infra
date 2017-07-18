@@ -35,7 +35,6 @@ import (
 
 var (
 	port        = flag.Int("port", 8888, "port to listen on")
-	logJSON     = flag.Bool("log-json", false, "output log in JSON format")
 	storagePath = flag.String("storage", "tot.json", "where to store the results")
 
 	// TODO(rmmh): remove this once we have no jobs running on Jenkins
@@ -120,24 +119,24 @@ func (s *store) handle(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "GET":
 		n := s.vend(b)
-		log.Infof("vending %s number %d to %s", b, n, r.RemoteAddr)
+		log.Infof("Vending %s number %d to %s.", b, n, r.RemoteAddr)
 		fmt.Fprintf(w, "%d", n)
 	case "HEAD":
 		n := s.peek(b)
-		log.Infof("peeking %s number %d to %s", b, n, r.RemoteAddr)
+		log.Infof("Peeking %s number %d to %s.", b, n, r.RemoteAddr)
 		fmt.Fprintf(w, "%d", n)
 	case "POST":
 		body, err := ioutil.ReadAll(r.Body)
 		if err != nil {
-			log.WithError(err).Error("unable to read body")
+			log.WithError(err).Error("Unable to read body.")
 			return
 		}
 		n, err := strconv.Atoi(string(body))
 		if err != nil {
-			log.WithError(err).Error("unable to parse number")
+			log.WithError(err).Error("Unable to parse number.")
 			return
 		}
-		log.Infof("setting %s to %d from %s", b, n, r.RemoteAddr)
+		log.Infof("Setting %s to %d from %s.", b, n, r.RemoteAddr)
 		s.set(b, n)
 	}
 }
@@ -164,7 +163,7 @@ func (f fallbackHandler) get(b string) int {
 				}
 			}
 		} else {
-			log.WithError(err).Errorf("Failed to GET %s", url)
+			log.WithError(err).Errorf("Failed to GET %s.", url)
 		}
 		time.Sleep(2 * time.Second)
 	}
@@ -180,10 +179,7 @@ func (f fallbackHandler) get(b string) int {
 func main() {
 	flag.Parse()
 
-	if *logJSON {
-		log.SetFormatter(&log.JSONFormatter{})
-	}
-	log.SetLevel(log.DebugLevel)
+	log.SetFormatter(&log.JSONFormatter{})
 
 	s, err := newStore(*storagePath)
 	if err != nil {

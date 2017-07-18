@@ -13,13 +13,11 @@ spec:
     spec:
       containers:
       - name: splice
-        image: gcr.io/k8s-prow/splice:0.25
+        image: gcr.io/k8s-prow/splice:0.26
         volumeMounts:
         - name: config
           mountPath: /etc/config
           readOnly: true
-        args:
-        - -log-json
       volumes:
       - name: config
         configMap:

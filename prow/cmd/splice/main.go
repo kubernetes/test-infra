@@ -39,7 +39,6 @@ var (
 	remoteURL      = flag.String("remote-url", "https://github.com/kubernetes/kubernetes", "Remote Git URL")
 	orgName        = flag.String("org", "kubernetes", "Org name")
 	repoName       = flag.String("repo", "kubernetes", "Repo name")
-	logJSON        = flag.Bool("log-json", false, "output log in JSON format")
 	configPath     = flag.String("config-path", "/etc/config/config", "Path to config.yaml.")
 	maxBatchSize   = flag.Int("batch-size", 5, "Maximum batch size")
 )
@@ -50,7 +49,7 @@ func call(binary string, args ...string) (string, error) {
 	for _, arg := range args {
 		cmdout += arg + " "
 	}
-	log.Debug(cmdout)
+	log.Info(cmdout)
 
 	cmd := exec.Command(binary, args...)
 	output, err := cmd.CombinedOutput()
@@ -111,7 +110,7 @@ func makeSplicer() (*splicer, error) {
 		s.cleanup()
 		return nil, err
 	}
-	log.Debug("splicer created in", dir)
+	log.Infof("Splicer created in %s.", dir)
 	return s, nil
 }
 
@@ -125,7 +124,7 @@ func (s *splicer) gitCall(args ...string) error {
 	fullArgs := append([]string{"-C", s.dir}, args...)
 	output, err := call("git", fullArgs...)
 	if len(output) > 0 {
-		log.Debug(output)
+		log.Info(output)
 	}
 	return err
 }
@@ -262,10 +261,7 @@ func neededPresubmits(presubmits []config.Presubmit, currentJobs []kube.ProwJob,
 
 func main() {
 	flag.Parse()
-	if *logJSON {
-		log.SetFormatter(&log.JSONFormatter{})
-	}
-	log.SetLevel(log.DebugLevel)
+	log.SetFormatter(&log.JSONFormatter{})
 
 	splicer, err := makeSplicer()
 	if err != nil {
