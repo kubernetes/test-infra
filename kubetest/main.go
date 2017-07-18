@@ -495,6 +495,11 @@ func prepareGcp(o *options) error {
 			return fmt.Errorf("fail to set project %s : err %v", p, err)
 		}
 
+		// TODO(krzyzacy):Remove this when we retire migrateGcpEnvAndOptions
+		if err := os.Setenv("PROJECT", p); err != nil {
+			return fmt.Errorf("fail to set env var PROJECT %s : err %v", p, err)
+		}
+
 		go func(c *client.Client, proj string) {
 			for range time.Tick(time.Minute * 5) {
 				if err := c.UpdateOne(p, "busy"); err != nil {
