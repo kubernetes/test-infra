@@ -123,7 +123,7 @@ def main(args):
     if args.build_kops:
         if not os.path.basename(workspace) == 'kops':
             raise ValueError(workspace)
-        version = 'pull-' + check_output('git', 'describe', '--always')
+        version = 'pull-' + check_output('git', 'describe', '--always').strip()
         check('make', 'gcs-publish-ci', 'VERSION=%s' % version)
         gcs = 'gs://kops-ci/pulls/pull-kops-e2e-kubernetes-aws-scenario'
         gapi = 'https://storage.googleapis.com'
