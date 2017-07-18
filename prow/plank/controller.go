@@ -25,6 +25,7 @@ import (
 	"time"
 
 	"github.com/bwmarrin/snowflake"
+	"github.com/satori/go.uuid"
 
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
@@ -343,11 +344,7 @@ func (c *Controller) startPod(pj kube.ProwJob) (string, string, error) {
 	}
 	spec := pj.Spec.PodSpec
 	spec.RestartPolicy = "Never"
-	// Keep this synchronized with get_running_build_log in Gubernator!
-	podName := fmt.Sprintf("%s-%s", pj.Spec.Job, buildID)
-	if len(podName) > 60 {
-		podName = podName[len(podName)-60:]
-	}
+	podName := uuid.NewV1().String()
 
 	// Set environment variables in each container in the pod spec. We don't
 	// want to update the spec in place, since that will update the ProwJob
