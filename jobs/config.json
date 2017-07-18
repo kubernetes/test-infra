@@ -9001,7 +9001,22 @@
   "maintenance-ci-janitor": {
     "scenario": "kubernetes_janitor",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-testing"
+    ]
+  },
+  "maintenance-daily": {
+    "scenario": "maintenance",
+    "sigOwners": [
+      "sig-testing"
+    ]
+  },
+  "maintenance-hourly": {
+    "args": [
+      "./jenkins/hourly_maintenance.py"
+    ],
+    "scenario": "execute",
+    "sigOwners": [
+      "sig-testing"
     ]
   },
   "maintenance-pull-janitor": {
@@ -9010,7 +9025,7 @@
     ],
     "scenario": "kubernetes_janitor",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-testing"
     ]
   },
   "metrics-bigquery": {
@@ -9425,6 +9440,15 @@
     "scenario": "kubernetes_verify",
     "sigOwners": [
       "UNKNOWN"
+    ]
+  },
+  "pull-test-infra-verify-bazel": {
+    "args": [
+      "./verify/verify-bazel.sh"
+    ],
+    "scenario": "execute",
+    "sigOwners": [
+      "sig-testing"
     ]
   }
 }
