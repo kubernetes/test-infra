@@ -72,6 +72,7 @@ type options struct {
 	kubemark            bool
 	kubemarkMasterSize  string
 	kubemarkNodes       string // TODO(fejta): switch to int after migration
+	metadataSources     string
 	multipleFederations bool
 	perfTests           bool
 	provider            string
@@ -107,6 +108,7 @@ func defineFlags() *options {
 	flag.BoolVar(&o.perfTests, "perf-tests", false, "If true, run tests from perf-tests repo.")
 	flag.StringVar(&o.provider, "provider", "", "Kubernetes provider such as gce, gke, aws, etc")
 	flag.StringVar(&o.publish, "publish", "", "Publish version to the specified gs:// path on success")
+	flag.StringVar(&o.metadataSources, "metadata-sources", "images.json", "Comma-seperated list of files inside ./artifacts to merge into metadata.json")
 	flag.StringVar(&o.stage.dockerRegistry, "registry", "", "Push images to the specified docker registry (e.g. gcr.io/a-test-project)")
 	flag.StringVar(&o.save, "save", "", "Save credentials to gs:// path on --up if set (or load from there if not --up)")
 	flag.BoolVar(&o.skew, "skew", false, "If true, run tests in another version at ../kubernetes/hack/e2e.go")
@@ -231,7 +233,7 @@ func complete(o *options) error {
 	}
 
 	if o.dump != "" {
-		defer writeMetadata(o.dump)
+		defer writeMetadata(o.dump, o.metadataSources)
 		defer writeXML(o.dump, time.Now())
 	}
 	if err := prepare(o); err != nil {
@@ -368,9 +370,22 @@ func findVersion() string {
 	return "unknown" // Sad trombone
 }
 
+// maybeMergeMetadata will add new keyvals into the map; quietly eats errors.
+func maybeMergeJSON(meta map[string]string, path string) {
+	if data, err := ioutil.ReadFile(path); err == nil {
+		json.Unmarshal(data, &meta)
+	}
+}
+
 // Write metadata.json, including version and env arg data.
-func writeMetadata(path string) error {
+func writeMetadata(path, metadataSources string) error {
 	m := make(map[string]string)
+
+	// Look for any sources of metadata and load 'em
+	for _, f := range strings.Split(metadataSources, ",") {
+		maybeMergeJSON(m, filepath.Join(path, f))
+	}
+
 	ver := findVersion()
 	m["version"] = ver // TODO(fejta): retire
 	m["job-version"] = ver
