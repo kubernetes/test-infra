@@ -33,11 +33,7 @@ def sort():
     with open(test_infra('jobs/config.json'), 'r+') as fp:
         configs = json.loads(fp.read())
     regexp = re.compile('|'.join([
-        r'^KUBERNETES_PROVIDER=(.*)$',
-        r'^(?:KUBE_GCE_)?ZONE=(.*)$',
-        r'^CLOUDSDK_BUCKET=(.*)$',
-        r'^PROJECT=(.*)$',
-        r'^KUBEMARK_TESTS=(.*)$',
+        r'^KUBEMARK_TEST_ARGS=(.*)$',
     ]))
     problems = []
     for job, values in configs.items():
@@ -55,56 +51,35 @@ def sort():
         new_args = {}
         processed = []
         for arg in args:
-            if re.search(r'^(--provider|--gcp-zone|--gcp-cloud-sdk|--gcp-project)=', arg):
+            if re.search(r'^(--test_args)=', arg):
                 key, val = arg.split('=', 1)
                 new_args[key] = val
             else:
                 processed.append(arg)
-            if arg == '--env-file=jobs/platform/gke.env':
-                new_args.update({
-                    '--provider': 'gke',
-                    '--gcp-cloud-sdk': 'gs://cloud-sdk-testing/ci/staging',
-                    '--gcp-zone': 'us-central1-f',
-                })
-            if arg == '--env-file=jobs/platform/gce.env':
-                new_args.update({
-                    '--provider': 'gce',
-                    '--gcp-zone': 'us-central1-f',
-                })
-            if arg == '--env-file=jobs/ci-kubernetes-e2e-gce-gpu.env':
-                new_args.update({
-                    '--gcp-zone': 'us-west1-b',
-                })
-            if arg == '--env-file=jobs/ci-kubernetes-e2e-gke-gpu.env':
-                new_args.update({
-                    '--gcp-zone': 'us-west1-b',
-                })
-            if arg == '--env-file=jobs/ci-kubernetes-e2e-gce-canary.env':
-                new_args['--gcp-project'] = 'k8s-jkns-e2e-gce'
         args = processed
         okay = False
+        mod = False
         for line in env.split('\n'):
             mat = regexp.search(line)
             if not mat:
                 lines.append(line)
                 continue
-            prov, zone, sdk, proj, kubemark = mat.groups()
+            kubemark = mat.group(1)
             stop = False
             for key, val in {
-                    '--provider': prov,
-                    '--gcp-zone': zone,
-                    '--gcp-cloud-sdk': sdk,
-                    '--gcp-project': proj,
-                    '--test_args': kubemark and '--ginkgo.focus=%s' % kubemark,
+                    '--test_args': kubemark,
             }.items():
                 if not val:
                     continue
+                if key in new_args:
+                    val = '%s %s' % (new_args[key], val)
                 new_args[key] = val
+                mod = True
             if stop:
                 break
         else:
             okay = True
-        if not okay:
+        if not okay or not mod:
             continue
         args = list(args)
         for key, val in new_args.items():

@@ -8004,7 +8004,7 @@
       "--gcp-project=k8s-jenkins-kubemark",
       "--provider=gce",
       "--gcp-zone=us-central1-f",
-      "--test_args=--ginkgo.focus=\\[Feature:Performance\\]"
+      "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --gather-resource-usage=true --gather-metrics-at-teardown=true --output-print-type=json"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -8025,7 +8025,7 @@
       "--gcp-project=k8s-jenkins-kubemark",
       "--provider=gce",
       "--gcp-zone=us-central1-f",
-      "--test_args=--ginkgo.focus=\\[Feature:Empty\\]"
+      "--test_args=--ginkgo.focus=\\[Feature:Empty\\] --gather-resource-usage=true --gather-metrics-at-teardown=true --output-print-type=json"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -8046,7 +8046,7 @@
       "--gcp-project=k8s-kubemark-1-5",
       "--provider=gce",
       "--gcp-zone=us-central1-f",
-      "--test_args=--ginkgo.focus=\\[Feature:Empty\\]"
+      "--test_args=--ginkgo.focus=\\[Feature:Empty\\] --gather-resource-usage=true --gather-metrics-at-teardown=true --output-print-type=json"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -8067,7 +8067,7 @@
       "--gcp-project=k8s-jenkins-blocking-kubemark",
       "--provider=gce",
       "--gcp-zone=us-central1-f",
-      "--test_args=--ginkgo.focus=\\[Feature:Performance\\]"
+      "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --gather-resource-usage=true --gather-metrics-at-teardown=true --output-print-type=json"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -8088,7 +8088,7 @@
       "--gcp-project=kubernetes-scale",
       "--provider=gce",
       "--gcp-zone=us-central1-b",
-      "--test_args=--ginkgo.focus=\\[Feature:Performance\\]"
+      "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --gather-resource-usage=true --gather-metrics-at-teardown=true --output-print-type=json"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -8109,7 +8109,7 @@
       "--gcp-project=k8s-jenkins-kubemark",
       "--provider=gce",
       "--gcp-zone=us-central1-f",
-      "--test_args=--ginkgo.focus=\\[Feature:HighDensityPerformance\\]"
+      "--test_args=--ginkgo.focus=\\[Feature:HighDensityPerformance\\] --gather-resource-usage=true --gather-metrics-at-teardown=true --output-print-type=json"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -9368,7 +9368,7 @@
       "--gcp-project=k8s-jkns-pr-kubemark",
       "--provider=gce",
       "--gcp-zone=us-central1-f",
-      "--test_args=--ginkgo.focus=\\[Feature:Empty\\]"
+      "--test_args=--ginkgo.focus=\\[Feature:Empty\\] --gather-resource-usage=true --garbage-collector-enabled=true"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -9391,7 +9391,7 @@
       "--gcp-project=k8s-jkns-pr-gci-kubemark",
       "--provider=gce",
       "--gcp-zone=us-central1-f",
-      "--test_args=--ginkgo.focus=\\[Feature:Empty\\]"
+      "--test_args=--ginkgo.focus=\\[Feature:Empty\\] --gather-resource-usage=true --garbage-collector-enabled=true"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
