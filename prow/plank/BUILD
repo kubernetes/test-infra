@@ -38,6 +38,7 @@ go_library(
         "//prow/jenkins:go_default_library",
         "//prow/kube:go_default_library",
         "//prow/plugins:go_default_library",
+        "//vendor:github.com/Sirupsen/logrus",
         "//vendor:github.com/bwmarrin/snowflake",
         "//vendor:github.com/satori/go.uuid",
     ],

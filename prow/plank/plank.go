@@ -19,7 +19,7 @@ package plank
 import (
 	"time"
 
-	"github.com/satori/go.uuid"
+	uuid "github.com/satori/go.uuid"
 
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/kube"
@@ -48,9 +48,10 @@ func PresubmitSpec(p config.Presubmit, refs kube.Refs) kube.ProwJobSpec {
 		Job:  p.Name,
 		Refs: refs,
 
-		Report:       !p.SkipReport,
-		Context:      p.Context,
-		RerunCommand: p.RerunCommand,
+		Report:         !p.SkipReport,
+		Context:        p.Context,
+		RerunCommand:   p.RerunCommand,
+		MaxConcurrency: p.MaxConcurrency,
 	}
 	if p.Spec == nil {
 		pjs.Agent = kube.JenkinsAgent
@@ -67,9 +68,10 @@ func PresubmitSpec(p config.Presubmit, refs kube.Refs) kube.ProwJobSpec {
 // PostsubmitSpec initializes a ProwJobSpec for a given postsubmit job.
 func PostsubmitSpec(p config.Postsubmit, refs kube.Refs) kube.ProwJobSpec {
 	pjs := kube.ProwJobSpec{
-		Type: kube.PostsubmitJob,
-		Job:  p.Name,
-		Refs: refs,
+		Type:           kube.PostsubmitJob,
+		Job:            p.Name,
+		Refs:           refs,
+		MaxConcurrency: p.MaxConcurrency,
 	}
 	if p.Spec == nil {
 		pjs.Agent = kube.JenkinsAgent
