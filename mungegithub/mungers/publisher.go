@@ -286,8 +286,34 @@ func (p *PublisherMunger) Initialize(config *github.Config, features *features.F
 		},
 		publishScript: "/publish_scripts/publish_api.sh",
 	}
+
+	metrics := repoRules{
+		dstRepo: "metrics",
+		srcToDst: []branchRule{
+			{
+				// rule for the metrics master branch
+				src: coordinate{repo: config.Project, branch: "master", dir: "staging/src/k8s.io/metrics"},
+				dst: coordinate{repo: "metrics", branch: "master", dir: "./"},
+				deps: []coordinate{
+					coordinate{repo: "apimachinery", branch: "master"},
+					coordinate{repo: "client-go", branch: "master"},
+				},
+			},
+			{
+				// rule for the sample-apiserver 1.7 branch
+				src: coordinate{repo: config.Project, branch: "release-1.7", dir: "staging/src/k8s.io/metrics"},
+				dst: coordinate{repo: "metrics", branch: "release-1.7", dir: "./"},
+				deps: []coordinate{
+					{repo: "apimachinery", branch: "release-1.7"},
+					{repo: "client-go", branch: "release-4.0"},
+				},
+			},
+		},
+		publishScript: "/publish_scripts/publish_metrics.sh",
+	}
+
 	// NOTE: Order of the repos is sensitive!!! A dependent repo needs to be published first, so that other repos can vendor its latest revision.
-	p.reposRules = []repoRules{apimachinery, api, clientGo, apiserver, kubeAggregator, sampleAPIServer, apiExtensionsAPIServer}
+	p.reposRules = []repoRules{apimachinery, api, clientGo, apiserver, kubeAggregator, sampleAPIServer, apiExtensionsAPIServer, metrics}
 	glog.Infof("publisher munger rules: %#v\n", p.reposRules)
 	p.features = features
 	p.githubConfig = config
