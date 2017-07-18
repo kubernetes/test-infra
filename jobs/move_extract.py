@@ -33,9 +33,11 @@ def sort():
     with open(test_infra('jobs/config.json'), 'r+') as fp:
         configs = json.loads(fp.read())
     regexp = re.compile('|'.join([
-        r'^E2E_MIN_STARTUP_PODS=(.*)$',
-        r'^E2E_CLEAN_START=(true)$',
-        r'^CLUSTER_IP_RANGE=(.*)$',
+        r'^KUBERNETES_PROVIDER=(.*)$',
+        r'^(?:KUBE_GCE_)?ZONE=(.*)$',
+        r'^CLOUDSDK_BUCKET=(.*)$',
+        r'^PROJECT=(.*)$',
+        r'^KUBEMARK_TESTS=(.*)$',
     ]))
     problems = []
     for job, values in configs.items():
@@ -50,61 +52,91 @@ def sort():
         with open(test_infra('jobs/%s.env' % job)) as fp:
             env = fp.read()
         lines = []
-        found = {}
-        def check(key, val):
-            # pylint: disable=cell-var-from-loop
-            if not val:
-                return False
-            if key in found:
-                problems.append('Duplicate %s in %s' % (key, job))
-                return True
-            found[key] = val
-            return False
+        new_args = {}
+        processed = []
+        for arg in args:
+            if re.search(r'^(--provider|--gcp-zone|--gcp-cloud-sdk|--gcp-project)=', arg):
+                key, val = arg.split('=', 1)
+                new_args[key] = val
+            else:
+                processed.append(arg)
+            if arg == '--env-file=jobs/platform/gke.env':
+                new_args.update({
+                    '--provider': 'gke',
+                    '--gcp-cloud-sdk': 'gs://cloud-sdk-testing/ci/staging',
+                    '--gcp-zone': 'us-central1-f',
+                })
+            if arg == '--env-file=jobs/platform/gce.env':
+                new_args.update({
+                    '--provider': 'gce',
+                    '--gcp-zone': 'us-central1-f',
+                })
+            if arg == '--env-file=jobs/ci-kubernetes-e2e-gce-gpu.env':
+                new_args.update({
+                    '--gcp-zone': 'us-west1-b',
+                })
+            if arg == '--env-file=jobs/ci-kubernetes-e2e-gke-gpu.env':
+                new_args.update({
+                    '--gcp-zone': 'us-west1-b',
+                })
+            if arg == '--env-file=jobs/ci-kubernetes-e2e-gce-canary.env':
+                new_args['--gcp-project'] = 'k8s-jkns-e2e-gce'
+        args = processed
+        okay = False
         for line in env.split('\n'):
             mat = regexp.search(line)
             if not mat:
                 lines.append(line)
                 continue
-            pods, clean, ip_range = mat.groups()
-            if check('--minStartupPods', pods):
-                break
-            if check('--clean-start', clean):
-                break
-            if check('--cluster-ip-range', ip_range):
+            prov, zone, sdk, proj, kubemark = mat.groups()
+            stop = False
+            for key, val in {
+                    '--provider': prov,
+                    '--gcp-zone': zone,
+                    '--gcp-cloud-sdk': sdk,
+                    '--gcp-project': proj,
+                    '--test_args': kubemark and '--ginkgo.focus=%s' % kubemark,
+            }.items():
+                if not val:
+                    continue
+                new_args[key] = val
+            if stop:
                 break
         else:
-            stop = False
-            for arg in args:
-                if '--minStartupPods' in found:
-                    break
-                if arg == '--env-file=jobs/pull-kubernetes-e2e.env':
-                    if check('--minStartupPods', '1'):
-                        stop = True
-                        break
-                if arg == '--env-file=jobs/platform/gce.env':
-                    if check('--minStartupPods', '8'):
-                        stop = True
-                        break
-                if arg == '--env-file=jobs/platform/gke.env':
-                    if check('--minStartupPods', '8'):
-                        stop = True
-                        break
-            if stop:
+            okay = True
+        if not okay:
+            continue
+        args = list(args)
+        for key, val in new_args.items():
+            args.append('%s=%s' % (key, val))
+        if not any(a.startswith('--provider=') for a in args):
+            problems.append('Missing --provider: %s' % job)
+            continue
+        if '-gce' in job or '-gke' in job:
+            if not any(a.startswith('--gcp-zone=') for a in args):
+                problems.append('Missing --gcp-zone: %s' % job)
                 continue
-
-            new_args = []
-            for arg in args:
-                if not arg.startswith('--test_args='):
-                    new_args.append(arg)
-                    continue
-                _, val = arg.split('=', 1)
-                vals = [val]
-                for key, val in found.items():
-                    vals.append('%s=%s' % (key, val))
-                new_args.append('--test_args=%s' % ' '.join(vals))
-            values['args'] = new_args
-            with open(test_infra('jobs/%s.env' % job), 'w') as fp:
-                fp.write('\n'.join(lines))
+            if not any(a.startswith('--gcp-project=') for a in args):
+                problems.append('Missing --gcp-project: %s' % job)
+        flags = set()
+        okay = False
+        for arg in args:
+            try:
+                flag, _ = arg.split('=', 1)
+            except ValueError:
+                flag = ''
+            if flag and flag not in ['--env-file', '--extract']:
+                if flag in flags:
+                    problems.append('Multiple %s in %s' % (flag, job))
+                    break
+                flags.add(flag)
+        else:
+            okay = True
+        if not okay:
+            continue
+        values['args'] = args
+        with open(test_infra('jobs/%s.env' % job), 'w') as fp:
+            fp.write('\n'.join(lines))
     with open(test_infra('jobs/config.json'), 'w') as fp:
         fp.write(json.dumps(configs, sort_keys=True, indent=2, separators=(',', ': ')))
         fp.write('\n')
