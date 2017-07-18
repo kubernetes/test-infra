@@ -124,11 +124,11 @@ def main(args):
         if not os.path.basename(workspace) == 'kops':
             raise ValueError(workspace)
         version = 'pull-' + check_output('git', 'describe', '--always').strip()
-        check('make', 'gcs-publish-ci', 'VERSION=%s' % version)
-        gcs = 'gs://kops-ci/pulls/pull-kops-e2e-kubernetes-aws-scenario'
+        gcs = 'gs://kops-ci/pulls/%s' % os.getenv('JOB_NAME', 'pull-kops-e2e-kubernetes-aws')
         gapi = 'https://storage.googleapis.com'
         cmd.extend(['-e', 'KOPS_BASE_URL=%s/gs://%s/%s' % (gcs, gapi, version),
                     '-e', 'GCS_LOCATION=%s' % gcs])
+        check('make', 'gcs-publish-ci', 'VERSION=%s' % version, 'GCS_LOCATION=%s' % gcs)
 
     # Rules for env var priority here in docker:
     # -e FOO=a -e FOO=b -> FOO=b
