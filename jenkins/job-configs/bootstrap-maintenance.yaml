@@ -7,9 +7,11 @@
         './test-infra/jenkins/bootstrap.py' \
             --branch='{branch}' \
             --job='{job-name}' \
+            --json \
             --repo='{repo-name}' \
             --root="${{GOPATH}}/src" \
             --service-account="${{GOOGLE_APPLICATION_CREDENTIALS}}" \
+            --timeout='{timeout}' \
             --upload='gs://kubernetes-jenkins/logs'
     concurrent: true
     properties:
@@ -92,8 +94,10 @@
         frequency: '@daily'
         job-name: maintenance-daily
         repo-name: 'k8s.io/test-infra'
+        timeout: 30
     - hourly:
         branch: master
         frequency: '@hourly'
         job-name: maintenance-hourly
         repo-name: 'k8s.io/test-infra'
+        timeout: 30
