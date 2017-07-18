@@ -422,7 +422,7 @@ func TestSyncKubernetesJob(t *testing.T) {
 		pods []kube.Pod
 
 		expectedState      kube.ProwJobState
-		expectedPodName    string
+		expectedPodHasName bool
 		expectedNumPods    int
 		expectedComplete   bool
 		expectedCreatedPJs int
@@ -460,7 +460,6 @@ func TestSyncKubernetesJob(t *testing.T) {
 			},
 			expectedState:    kube.FailureState,
 			expectedNumPods:  0,
-			expectedPodName:  "",
 			expectedComplete: true,
 		},
 		{
@@ -474,7 +473,6 @@ func TestSyncKubernetesJob(t *testing.T) {
 			},
 			expectedState:    kube.FailureState,
 			expectedNumPods:  0,
-			expectedPodName:  "",
 			expectedComplete: true,
 		},
 		{
@@ -487,10 +485,10 @@ func TestSyncKubernetesJob(t *testing.T) {
 					State: kube.TriggeredState,
 				},
 			},
-			expectedState:   kube.PendingState,
-			expectedPodName: "boop-42",
-			expectedNumPods: 1,
-			expectedReport:  true,
+			expectedState:      kube.PendingState,
+			expectedPodHasName: true,
+			expectedNumPods:    1,
+			expectedReport:     true,
 		},
 		{
 			name: "reset when pod goes missing",
@@ -500,8 +498,7 @@ func TestSyncKubernetesJob(t *testing.T) {
 					PodName: "boop-41",
 				},
 			},
-			expectedState:   kube.PendingState,
-			expectedPodName: "",
+			expectedState: kube.PendingState,
 		},
 		{
 			name: "delete pod in unknown state",
@@ -522,7 +519,6 @@ func TestSyncKubernetesJob(t *testing.T) {
 				},
 			},
 			expectedState:   kube.PendingState,
-			expectedPodName: "",
 			expectedNumPods: 0,
 		},
 		{
@@ -548,7 +544,7 @@ func TestSyncKubernetesJob(t *testing.T) {
 			},
 			expectedComplete:   true,
 			expectedState:      kube.SuccessState,
-			expectedPodName:    "boop-42",
+			expectedPodHasName: true,
 			expectedNumPods:    1,
 			expectedCreatedPJs: 1,
 			expectedReport:     true,
@@ -574,11 +570,11 @@ func TestSyncKubernetesJob(t *testing.T) {
 					},
 				},
 			},
-			expectedComplete: true,
-			expectedState:    kube.FailureState,
-			expectedPodName:  "boop-42",
-			expectedNumPods:  1,
-			expectedReport:   true,
+			expectedComplete:   true,
+			expectedState:      kube.FailureState,
+			expectedPodHasName: true,
+			expectedNumPods:    1,
+			expectedReport:     true,
 		},
 		{
 			name: "evicted pod",
@@ -601,7 +597,6 @@ func TestSyncKubernetesJob(t *testing.T) {
 			},
 			expectedComplete: false,
 			expectedState:    kube.PendingState,
-			expectedPodName:  "",
 			expectedNumPods:  1,
 		},
 		{
@@ -625,9 +620,9 @@ func TestSyncKubernetesJob(t *testing.T) {
 					},
 				},
 			},
-			expectedState:   kube.PendingState,
-			expectedPodName: "boop-42",
-			expectedNumPods: 1,
+			expectedState:      kube.PendingState,
+			expectedPodHasName: true,
+			expectedNumPods:    1,
 		},
 	}
 	for _, tc := range testcases {
@@ -657,8 +652,10 @@ func TestSyncKubernetesJob(t *testing.T) {
 		if actual.Status.State != tc.expectedState {
 			t.Errorf("for case %s got state %v", tc.name, actual.Status.State)
 		}
-		if actual.Status.PodName != tc.expectedPodName {
-			t.Errorf("for case %s got pod name %s", tc.name, actual.Status.PodName)
+		if (actual.Status.PodName == "") && tc.expectedPodHasName {
+			t.Errorf("for case %s got no pod name, expected one", tc.name)
+		} else if (actual.Status.PodName != "") && !tc.expectedPodHasName {
+			t.Errorf("for case %s got pod name, expected none", tc.name)
 		}
 		if len(fpc.pods) != tc.expectedNumPods {
 			t.Errorf("for case %s got %d pods", tc.name, len(fc.pods))
@@ -795,9 +792,6 @@ func TestPeriodic(t *testing.T) {
 	}
 	if len(fc.pods) != 1 {
 		t.Fatal("Didn't create pod on first sync.")
-	}
-	if fc.pods[0].Metadata.Name != "ci-periodic-job-42" {
-		t.Fatalf("Wrong pod name: %s", fc.pods[0].Metadata.Name)
 	}
 	if len(fc.pods[0].Spec.Containers) != 1 {
 		t.Fatal("Wiped container list.")
