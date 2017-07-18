@@ -7,7 +7,7 @@
         './test-infra/jenkins/bootstrap.py' \
             --branch='{branch}' \
             --job='{job-name}' \
-            --json='{json}' \
+            --json \
             --repo='{repo-name}' \
             --root="${{GOPATH}}/src" \
             --service-account="${{GOOGLE_APPLICATION_CREDENTIALS}}" \
@@ -40,17 +40,9 @@
     jobs:
     - 'maintenance-pull-{suffix}'
     suffix:
-    - clean-ssh-keys:
-        branch: master
-        frequency: '@daily'
-        job-name: maintenance-pull-clean-ssh-keys
-        json: 0
-        repo-name: 'k8s.io/test-infra'
-        timeout: 0
     - janitor:
         branch: master
         frequency: '@hourly'
         job-name: maintenance-pull-janitor
-        json: 1
         repo-name: 'k8s.io/test-infra'
         timeout: 30

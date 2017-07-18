@@ -1534,23 +1534,19 @@ class JobTest(unittest.TestCase):
                                   check, use_json=is_modern)
 
     def test_bootstrap_maintenance_pull(self):
-        is_modern = lambda n: 'janitor' in n
         def check(job, name):
             job_name = 'maintenance-pull-%s' % name
             self.assertIn('frequency', job)
             self.assertIn('repo-name', job)
             self.assertIn('.', job['repo-name'])  # Has domain
             self.assertIn('timeout', job)
-            self.assertIn('json', job)
-            modern = is_modern(name)  # TODO(krzyzacy): all modern
-            self.assertEquals(modern, job['json'])
-            if is_modern(name):
-                self.assertGreater(job['timeout'], 0)
+            self.assertNotIn('json', job)
+            self.assertGreater(job['timeout'], 0)
             return job_name
 
         self.check_bootstrap_yaml(
             'job-configs/kubernetes-jenkins-pull/bootstrap-maintenance-pull.yaml',
-            check, use_json=is_modern)
+            check, use_json=True)
 
     def test_bootstrap_pull_json_yaml(self):
         def check(job, name):
