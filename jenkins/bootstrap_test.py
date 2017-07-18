@@ -2246,6 +2246,7 @@ class JobTest(unittest.TestCase):
                     ('JENKINS_USE_GCI_HEAD_IMAGE_FAMILY=', '--extract=gci/FAMILY'),
                     ('KUBE_GCE_ZONE=', '--gcp-zone='),
                     ('KUBEKINS_TIMEOUT=', '--timeout=XXm'),
+                    ('KUBEMARK_TEST_ARGS=', '--test_args=FOO'),
                     ('KUBEMARK_TESTS=', '--test_args=--ginkgo.focus=FOO'),
                     ('KUBERNETES_PROVIDER=', '--provider=FOO'),
                     ('PERF_TESTS=', '--perf'),

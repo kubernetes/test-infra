@@ -458,12 +458,6 @@ func KubemarkTest(dump string, o options) error {
 			name:     "--kubemark-master-size",
 			skipPush: true,
 		},
-		{
-			env:      "KUBEMARK_TEST_ARGS",
-			option:   &o.testArgs,
-			name:     "--test_args",
-			skipPush: true,
-		},
 	}); err != nil {
 		return err
 	}
@@ -512,11 +506,7 @@ func KubemarkTest(dump string, o options) error {
 	testArgs := strings.Fields(o.testArgs)
 	testArgs = setReportDir(testArgs, dump)
 	// Run kubemark tests
-	focus, present := os.LookupEnv("KUBEMARK_TESTS") // TODO(fejta): migrate to --test_args
-	if !present {
-		focus = "starting\\s30\\pods"
-	}
-	testArgs = setFieldDefault(testArgs, "--ginkgo.focus", focus)
+	testArgs = setFieldDefault(testArgs, "--ginkgo.focus", "starting\\s30\\pods")
 
 	err = finishRunning(exec.Command("./test/kubemark/run-e2e-tests.sh", testArgs...))
 	if err != nil {
