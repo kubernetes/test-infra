@@ -158,6 +158,15 @@ func (p *PublisherMunger) Initialize(config *github.Config, features *features.F
 					{repo: "client-go", branch: "release-3.0"},
 				},
 			},
+			{
+				// rule for the apiserver 1.7 branch
+				src: coordinate{repo: config.Project, branch: "release-1.7", dir: "staging/src/k8s.io/apiserver"},
+				dst: coordinate{repo: "apiserver", branch: "release-1.7", dir: "./"},
+				deps: []coordinate{
+					{repo: "apimachinery", branch: "release-1.7"},
+					{repo: "client-go", branch: "release-4.0"},
+				},
+			},
 		},
 		publishScript: "/publish_scripts/publish_apiserver.sh",
 	}
@@ -183,6 +192,16 @@ func (p *PublisherMunger) Initialize(config *github.Config, features *features.F
 					{repo: "apimachinery", branch: "release-1.6"},
 					{repo: "client-go", branch: "release-3.0"},
 					{repo: "apiserver", branch: "release-1.6"},
+				},
+			},
+			{
+				// rule for the kube-aggregator 1.7 branch
+				src: coordinate{repo: config.Project, branch: "release-1.7", dir: "staging/src/k8s.io/kube-aggregator"},
+				dst: coordinate{repo: "kube-aggregator", branch: "release-1.7", dir: "./"},
+				deps: []coordinate{
+					{repo: "apimachinery", branch: "release-1.7"},
+					{repo: "client-go", branch: "release-4.0"},
+					{repo: "apiserver", branch: "release-1.7"},
 				},
 			},
 		},
@@ -212,6 +231,16 @@ func (p *PublisherMunger) Initialize(config *github.Config, features *features.F
 					{repo: "apiserver", branch: "release-1.6"},
 				},
 			},
+			{
+				// rule for the sample-apiserver 1.7 branch
+				src: coordinate{repo: config.Project, branch: "release-1.7", dir: "staging/src/k8s.io/sample-apiserver"},
+				dst: coordinate{repo: "sample-apiserver", branch: "release-1.7", dir: "./"},
+				deps: []coordinate{
+					{repo: "apimachinery", branch: "release-1.7"},
+					{repo: "client-go", branch: "release-4.0"},
+					{repo: "apiserver", branch: "release-1.7"},
+				},
+			},
 		},
 		publishScript: "/publish_scripts/publish_sample_apiserver.sh",
 	}
@@ -227,6 +256,16 @@ func (p *PublisherMunger) Initialize(config *github.Config, features *features.F
 					{repo: "apimachinery", branch: "master"},
 					{repo: "client-go", branch: "master"},
 					{repo: "apiserver", branch: "master"},
+				},
+			},
+			{
+				// rule for the sample-apiserver 1.7 branch
+				src: coordinate{repo: config.Project, branch: "release-1.7", dir: "staging/src/k8s.io/apiextensions-apiserver"},
+				dst: coordinate{repo: "apiextensions-apiserver", branch: "release-1.7", dir: "./"},
+				deps: []coordinate{
+					{repo: "apimachinery", branch: "release-1.7"},
+					{repo: "client-go", branch: "release-4.0"},
+					{repo: "apiserver", branch: "release-1.7"},
 				},
 			},
 		},
