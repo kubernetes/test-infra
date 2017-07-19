@@ -124,9 +124,10 @@ def main(args):
         if not os.path.basename(workspace) == 'kops':
             raise ValueError(workspace)
         version = 'pull-' + check_output('git', 'describe', '--always').strip()
-        gcs = 'gs://kops-ci/pulls/%s' % os.getenv('JOB_NAME', 'pull-kops-e2e-kubernetes-aws')
-        gapi = 'https://storage.googleapis.com'
-        cmd.extend(['-e', 'KOPS_BASE_URL=%s/kops-ci/pulls/%s' % (gapi, version),
+        job = os.getenv('JOB_NAME', 'pull-kops-e2e-kubernetes-aws')
+        gcs = 'gs://kops-ci/pulls/%s' % job
+        gapi = 'https://storage.googleapis.com/kops-ci/pulls/%s' % job
+        cmd.extend(['-e', 'KOPS_BASE_URL=%s/%s' % (gapi, version),
                     '-e', 'GCS_LOCATION=%s' % gcs])
         check('make', 'gcs-publish-ci', 'VERSION=%s' % version, 'GCS_LOCATION=%s' % gcs)
 
