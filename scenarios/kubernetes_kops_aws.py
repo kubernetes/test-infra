@@ -126,7 +126,7 @@ def main(args):
         version = 'pull-' + check_output('git', 'describe', '--always').strip()
         gcs = 'gs://kops-ci/pulls/%s' % os.getenv('JOB_NAME', 'pull-kops-e2e-kubernetes-aws')
         gapi = 'https://storage.googleapis.com'
-        cmd.extend(['-e', 'KOPS_BASE_URL=%s/gs://%s/%s' % (gcs, gapi, version),
+        cmd.extend(['-e', 'KOPS_BASE_URL=%s/kops-ci/pulls/%s' % (gapi, version),
                     '-e', 'GCS_LOCATION=%s' % gcs])
         check('make', 'gcs-publish-ci', 'VERSION=%s' % version, 'GCS_LOCATION=%s' % gcs)
 
