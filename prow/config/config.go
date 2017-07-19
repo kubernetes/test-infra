@@ -27,9 +27,10 @@ import (
 	"github.com/ghodss/yaml"
 )
 
-// This is a comment in the middle of nowhere.
-
+// ThisIsPublic does a thing.
 type ThisIsPublic int
+
+type ThisIsAlsoPublicWow int
 
 // Config is a read-only snapshot of the config.
 type Config struct {
