@@ -17,6 +17,8 @@ limitations under the License.
 package golint
 
 import (
+	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/Sirupsen/logrus"
@@ -64,6 +66,23 @@ func (g *ghc) ListPullRequestComments(org, repo string, number int) ([]github.Re
 	return g.oldComments, nil
 }
 
+var ice = github.IssueCommentEvent{
+	Action: "created",
+	Issue: github.Issue{
+		State:       "open",
+		Number:      42,
+		PullRequest: &struct{}{},
+	},
+	Comment: github.IssueComment{
+		Body: "/lint",
+	},
+	Repo: github.Repo{
+		Owner:    github.User{Login: "foo"},
+		Name:     "bar",
+		FullName: "foo/bar",
+	},
+}
+
 func TestLint(t *testing.T) {
 	lg, c, err := localgit.New()
 	if err != nil {
@@ -98,22 +117,7 @@ func TestLint(t *testing.T) {
 			},
 		},
 	}
-	if err := handle(gh, c, logrus.NewEntry(logrus.New()), github.IssueCommentEvent{
-		Action: "created",
-		Issue: github.Issue{
-			State:       "open",
-			Number:      42,
-			PullRequest: &struct{}{},
-		},
-		Comment: github.IssueComment{
-			Body: "/lint",
-		},
-		Repo: github.Repo{
-			Owner:    github.User{Login: "foo"},
-			Name:     "bar",
-			FullName: "foo/bar",
-		},
-	}); err != nil {
+	if err := handle(gh, c, logrus.NewEntry(logrus.New()), ice); err != nil {
 		t.Fatalf("Got error from handle: %v", err)
 	}
 	if len(gh.comment.Comments) != 2 {
@@ -127,26 +131,31 @@ func TestLint(t *testing.T) {
 			Body:     c.Body,
 		})
 	}
-	if err := handle(gh, c, logrus.NewEntry(logrus.New()), github.IssueCommentEvent{
-		Action: "created",
-		Issue: github.Issue{
-			State:       "open",
-			Number:      42,
-			PullRequest: &struct{}{},
-		},
-		Comment: github.IssueComment{
-			Body: "/lint",
-		},
-		Repo: github.Repo{
-			Owner:    github.User{Login: "foo"},
-			Name:     "bar",
-			FullName: "foo/bar",
-		},
-	}); err != nil {
+	if err := handle(gh, c, logrus.NewEntry(logrus.New()), ice); err != nil {
 		t.Fatalf("Got error from handle on second try: %v", err)
 	}
 	if len(gh.comment.Comments) != 0 {
 		t.Fatalf("Expected no comments, got %d: %v", len(gh.comment.Comments), gh.comment.Comments)
+	}
+
+	// Test that we limit comments.
+	badFileLines := []string{"package baz", ""}
+	for i := 0; i < maxComments+5; i++ {
+		badFileLines = append(badFileLines, fmt.Sprintf("type PublicType%d int", i))
+	}
+	gh.changes = append(gh.changes, github.PullRequestChange{
+		Filename: "baz.go",
+		Patch:    fmt.Sprintf("@@ -0,0 +1,%d @@\n+%s", len(badFileLines), strings.Join(badFileLines, "\n+")),
+	})
+	if err := lg.AddCommit("foo", "bar", map[string][]byte{"baz.go": []byte(strings.Join(badFileLines, "\n"))}); err != nil {
+		t.Fatalf("Adding PR commit: %v", err)
+	}
+	gh.oldComments = nil
+	if err := handle(gh, c, logrus.NewEntry(logrus.New()), ice); err != nil {
+		t.Fatalf("Got error from handle on third try: %v", err)
+	}
+	if len(gh.comment.Comments) != maxComments {
+		t.Fatalf("Expected %d comments, got %d: %v", maxComments, len(gh.comment.Comments), gh.comment.Comments)
 	}
 }
 

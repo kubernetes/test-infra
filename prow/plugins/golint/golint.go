@@ -33,8 +33,9 @@ import (
 )
 
 const (
-	pluginName = "golint"
-	commentTag = "<!-- golint -->"
+	pluginName  = "golint"
+	commentTag  = "<!-- golint -->"
+	maxComments = 20
 )
 
 var lintRe = regexp.MustCompile(`(?mi)^/lint\s*$`)
@@ -167,8 +168,7 @@ func handle(ghc githubClient, gc *git.Client, log *logrus.Entry, ic github.Issue
 	}
 	nps := newProblems(oldComments, problems)
 
-	// Respond.
-	var response string
+	// Make the list of comments.
 	var comments []github.DraftReviewComment
 	for f, ls := range nps {
 		for l, p := range ls {
@@ -186,22 +186,25 @@ func handle(ghc githubClient, gc *git.Client, log *logrus.Entry, ic github.Issue
 		}
 	}
 
+	// Trim down the number of comments if necessary.
 	totalProblems := numProblems(problems)
 	newProblems := numProblems(nps)
 	oldProblems := totalProblems - newProblems
-	if newProblems == 0 {
-		if totalProblems == 0 {
-			response = "no lint warnings"
-		} else {
-			response = fmt.Sprintf("no new warnings, %d total warning(s)", totalProblems)
-		}
-	} else {
-		if oldProblems == 0 {
-			response = fmt.Sprintf("%d new warning(s)", newProblems)
-		} else {
-			response = fmt.Sprintf("%d new warning(s), %d old warning(s)", newProblems, oldProblems)
-		}
+
+	allowedComments := maxComments - oldProblems
+	if allowedComments < 0 {
+		allowedComments = 0
 	}
+	if len(comments) > allowedComments {
+		comments = comments[:allowedComments]
+	}
+
+	// Make the review body.
+	s := "s"
+	if totalProblems == 1 {
+		s = ""
+	}
+	response := fmt.Sprintf("%d warning%s", totalProblems, s)
 
 	return ghc.CreateReview(org, repo, ic.Issue.Number, github.DraftReview{
 		Body:     plugins.FormatICResponse(ic.Comment, response),
