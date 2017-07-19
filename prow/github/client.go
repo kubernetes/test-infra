@@ -389,6 +389,40 @@ func (c *Client) GetPullRequestChanges(org, repo string, number int) ([]PullRequ
 	return changes, nil
 }
 
+// ListPullRequestComments returns all comments on a pull request. This may use
+// more than one API token.
+func (c *Client) ListPullRequestComments(org, repo string, number int) ([]ReviewComment, error) {
+	c.log("ListPullRequestComments", org, repo, number)
+	if c.fake {
+		return nil, nil
+	}
+	nextURL := fmt.Sprintf("%s/repos/%s/%s/pulls/%d/comments?per_page=100", c.base, org, repo, number)
+	var comments []ReviewComment
+	for nextURL != "" {
+		resp, err := c.requestRetry(http.MethodGet, nextURL, "", nil)
+		if err != nil {
+			return nil, err
+		}
+		defer resp.Body.Close()
+		if resp.StatusCode < 200 || resp.StatusCode > 299 {
+			return nil, fmt.Errorf("return code not 2XX: %s", resp.Status)
+		}
+
+		b, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return nil, err
+		}
+
+		var cs []ReviewComment
+		if err := json.Unmarshal(b, &cs); err != nil {
+			return nil, err
+		}
+		comments = append(comments, cs...)
+		nextURL = parseLinks(resp.Header.Get("Link"))["next"]
+	}
+	return comments, nil
+}
+
 // CreateStatus creates or updates the status of a commit.
 func (c *Client) CreateStatus(org, repo, ref string, s Status) error {
 	c.log("CreateStatus", org, repo, ref, s)

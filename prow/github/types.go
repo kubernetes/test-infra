@@ -257,6 +257,9 @@ type ReviewComment struct {
 	Body     string `json:"body"`
 	Path     string `json:"path"`
 	HTMLURL  string `json:"html_url"`
+	// Position will be nil if the code has changed such that the comment is no
+	// longer relevant.
+	Position *int `json:"position"`
 }
 
 // ReviewAction is the action that a review can be made with.
