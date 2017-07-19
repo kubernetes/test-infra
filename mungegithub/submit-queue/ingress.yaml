@@ -31,6 +31,12 @@ spec:
         - backend:
             serviceName: docs-sq-status
             servicePort: 80
+  - host: kops.submit-queue.k8s.io
+    http:
+      paths:
+        - backend:
+            serviceName: kops-sq-status
+            servicePort: 80
   - host: test-infra.submit-queue.k8s.io
     http:
       paths:
@@ -42,5 +48,6 @@ spec:
     - kubernetes.submit-queue.k8s.io
     - contrib.submit-queue.k8s.io
     - docs.submit-queue.k8s.io
+    - kops.submit-queue.k8s.io
     - submit-queue.k8s.io
     secretName: submit-queue-tls

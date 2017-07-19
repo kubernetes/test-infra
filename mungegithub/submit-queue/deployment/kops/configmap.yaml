@@ -12,7 +12,7 @@ github-key-file: /etc/hook-secret-volume/secret
 # status contexts options.
 required-contexts: "continuous-integration/travis-ci/pr"
 required-retest-contexts: "pull-kops-e2e-kubernetes-aws"
-protected-branches-extra-contexts: ""
+protected-branches-extra-contexts: "cla/linuxfoundation"
 
 # submit-queue options.
 protected-branches: "master"
