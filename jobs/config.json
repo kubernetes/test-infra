@@ -2373,7 +2373,7 @@
       "--timeout=600m",
       "--extract=ci/latest",
       "--mode=docker",
-      "--test_args=--ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --allowed-not-ready-nodes=20 --node-schedulable-timeout=30m --cluster-ip-range=10.160.0.0/11 --minStartupPods=8",
+      "--test_args=--ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --allowed-not-ready-nodes=20 --node-schedulable-timeout=30m --cluster-ip-range=10.160.0.0/13 --minStartupPods=8",
       "--gcp-project=kubernetes-scale",
       "--provider=gce",
       "--gcp-zone=us-east1-a"
@@ -2390,7 +2390,7 @@
       "--timeout=1000m",
       "--extract=ci/latest",
       "--mode=docker",
-      "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --allowed-not-ready-nodes=20 --node-schedulable-timeout=30m --cluster-ip-range=10.160.0.0/11 --minStartupPods=8",
+      "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --allowed-not-ready-nodes=20 --node-schedulable-timeout=30m --cluster-ip-range=10.160.0.0/13 --minStartupPods=8",
       "--gcp-project=kubernetes-scale",
       "--provider=gce",
       "--gcp-zone=us-east1-a"
@@ -2829,7 +2829,7 @@
       "--timeout=1200m",
       "--extract=ci/latest",
       "--mode=docker",
-      "--test_args=--ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --allowed-not-ready-nodes=50 --node-schedulable-timeout=60m --cluster-ip=range=10.160.0.0/11 --minStartupPods=8",
+      "--test_args=--ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --allowed-not-ready-nodes=50 --node-schedulable-timeout=60m --cluster-ip-range=10.160.0.0/11 --minStartupPods=8",
       "--gcp-project=kubernetes-scale",
       "--provider=gce",
       "--gcp-zone=us-east1-a"
