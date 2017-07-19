@@ -114,7 +114,7 @@ func run(deploy deployer, o options) error {
 					// Thus DumpClusterLogs() typically fails.
 					// Therefore always return null for this scenarios.
 					// TODO(fejta): report a green E in testgrid if it errors.
-					DumpClusterLogs(dump)
+					DumpClusterLogs(dump, o.logexporterGCSPath)
 					return nil
 				})
 			}
@@ -190,7 +190,7 @@ func run(deploy deployer, o options) error {
 
 	if len(errs) > 0 && dump != "" {
 		errs = appendError(errs, xmlWrap("DumpClusterLogs", func() error {
-			return DumpClusterLogs(dump)
+			return DumpClusterLogs(dump, o.logexporterGCSPath)
 		}))
 		if o.federation {
 			errs = appendError(errs, xmlWrap("DumpFederationLogs", func() error {
@@ -409,9 +409,16 @@ func waitForNodes(d deployer, nodes int, timeout time.Duration) error {
 	return fmt.Errorf("waiting for nodes timed out")
 }
 
-func DumpClusterLogs(location string) error {
-	log.Printf("Dumping cluster logs to: %v", location)
-	return finishRunning(exec.Command("./cluster/log-dump.sh", location))
+func DumpClusterLogs(localArtifactsDir, logexporterGCSPath string) error {
+	var cmd *exec.Cmd
+	if logexporterGCSPath != "" {
+		log.Printf("Dumping logs from nodes to GCS directly at path: %v", logexporterGCSPath)
+		cmd = exec.Command("./cluster/log-dump/log-dump.sh", localArtifactsDir, logexporterGCSPath)
+	} else {
+		log.Printf("Dumping logs locally to: %v", localArtifactsDir)
+		cmd = exec.Command("./cluster/log-dump/log-dump.sh", localArtifactsDir)
+	}
+	return finishRunning(cmd)
 }
 
 func DumpFederationLogs(location string) error {

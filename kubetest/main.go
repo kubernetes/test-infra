@@ -72,6 +72,7 @@ type options struct {
 	kubemark            bool
 	kubemarkMasterSize  string
 	kubemarkNodes       string // TODO(fejta): switch to int after migration
+	logexporterGCSPath  string
 	metadataSources     string
 	multipleFederations bool
 	perfTests           bool
@@ -104,6 +105,7 @@ func defineFlags() *options {
 	flag.BoolVar(&o.kubemark, "kubemark", false, "If true, run kubemark tests.")
 	flag.StringVar(&o.kubemarkMasterSize, "kubemark-master-size", "", "Kubemark master size")
 	flag.StringVar(&o.kubemarkNodes, "kubemark-nodes", "", "Number of kubemark nodes to start")
+	flag.StringVar(&o.logexporterGCSPath, "logexporter-gcs-path", "", "Path to the GCS artifacts directory to dump logs from nodes. Logexporter gets enabled if this is non-empty")
 	flag.BoolVar(&o.multipleFederations, "multiple-federations", false, "If true, enable running multiple federation control planes in parallel")
 	flag.BoolVar(&o.perfTests, "perf-tests", false, "If true, run tests from perf-tests repo.")
 	flag.StringVar(&o.provider, "provider", "", "Kubernetes provider such as gce, gke, aws, etc")
@@ -235,6 +237,9 @@ func complete(o *options) error {
 	if o.dump != "" {
 		defer writeMetadata(o.dump, o.metadataSources)
 		defer writeXML(o.dump, time.Now())
+	}
+	if o.logexporterGCSPath != "" {
+		o.testArgs += fmt.Sprintf(" --logexporter-gcs-path=%s", o.logexporterGCSPath)
 	}
 	if err := prepare(o); err != nil {
 		return fmt.Errorf("failed to prepare test environment: %v", err)

@@ -603,6 +603,7 @@ JOB_ENV = 'JOB_NAME'
 NODE_ENV = 'NODE_NAME'
 SERVICE_ACCOUNT_ENV = 'GOOGLE_APPLICATION_CREDENTIALS'
 WORKSPACE_ENV = 'WORKSPACE'
+GCS_ARTIFACTS_ENV = 'GCS_ARTIFACTS_DIR'
 
 
 def build_name(started):
@@ -863,6 +864,8 @@ def bootstrap(args):
         else:
             paths = ci_paths(upload, job, build)
         logging.info('Gubernator results at %s', gubernator_uri(paths))
+        # TODO(fejta): Replace env var below with a flag eventually.
+        os.environ[GCS_ARTIFACTS_ENV] = paths.artifacts
 
     version = 'unknown'
     exc_type = None
