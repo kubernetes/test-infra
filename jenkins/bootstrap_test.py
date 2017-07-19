@@ -2216,7 +2216,9 @@ class JobTest(unittest.TestCase):
                 # TODO(fejta): sort this list
                 black = [
                     ('CHARTS_TEST=', '--charts-tests'),
-                    ('CLUSTER_IP_RANGE=', '--test_args=--cluster-ip-range=FOO'),
+                    # TODO(krzyzacy,fejta): This env is still being used in
+                    # https://github.com/kubernetes/kubernetes/blob/master/cluster/gce/config-test.sh#L95
+                    # ('CLUSTER_IP_RANGE=', '--test_args=--cluster-ip-range=FOO'),
                     ('CLOUDSDK_BUCKET=', '--gcp-cloud-sdk=gs://foo'),
                     ('E2E_CLEAN_START=', '--test_args=--clean-start=true'),
                     ('E2E_DOWN=', '--down=true|false'),
