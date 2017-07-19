@@ -18,7 +18,7 @@ spec:
         - --alsologtostderr
         - --config-path=/etc/munge-config/config
         - 2>&1
-        image: gcr.io/google_containers/publisher:2016-05-24-86f86cd
+        image: gcr.io/k8s-testimages/publisher:2016-05-24-86f86cd
         imagePullPolicy: Always
         resources:
           requests:
