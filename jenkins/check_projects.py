@@ -145,8 +145,11 @@ def parse_args():
     parser = argparse.ArgumentParser(
         description=__doc__, formatter_class=RawTextHelpFormatter)
     parser.add_argument(
+        '--boskos', action='store_true',
+        help='If need to check boskos projects')
+    parser.add_argument(
         '--filter', default=r'^.+$',
-        help='Only look for projects with the specified names')
+        help='Only look for jobs with the specified names')
     parser.add_argument(
         '--fix', action='store_true', help='Add missing memberships')
     parser.add_argument(
@@ -176,7 +179,7 @@ class Checker(object):
         self.rl_exec = RateLimitedExec()
         self.results = Results()
 
-    def run(self, filt, fix=False):
+    def run(self, filt, fix=False, boskos=False):
         """Checks projects for correct settings."""
         def check(project, fix):
             self.results.report_project(project)
@@ -186,9 +189,12 @@ class Checker(object):
                 _log.info('Checking project %s for %s', project, prop.name())
                 prop.check_and_maybe_update(self.config, project, fix)
 
+        boskos_path = None
+        if boskos:
+            boskos_path = '%s/../boskos/resources.json' % os.path.dirname(__file__)
         projects = self.load_projects(
             '%s/../jobs/config.json' % os.path.dirname(__file__),
-            '%s/../boskos/resources.json' % os.path.dirname(__file__),
+            boskos_path,
             filt)
         _log.info('Checking %d projects', len(projects))
 
@@ -245,15 +251,17 @@ class Checker(object):
         with open(configs) as fp:
             config = json.load(fp)
 
-        for value in config.values():
+        for job, value in config.iteritems():
+            if not filter_re.match(job):
+                continue
             for arg in value.get('args', []):
                 mat = match_re.match(arg)
                 if not mat:
                     continue
-                project = mat.group(1)
-                if not filter_re.match(project):
-                    continue
-                projects.add(project)
+                projects.add(mat.group(1))
+
+        if not boskos:
+            return projects
 
         with open(boskos) as fp:
             for rtype in json.loads(fp.read()):
@@ -439,7 +447,7 @@ def main():
     logging.basicConfig(
         format="%(asctime)s %(levelname)s %(name)s] %(message)s",
         level=logging.DEBUG if args.verbose else logging.INFO)
-    Checker(args.config).run(args.filter, args.fix)
+    Checker(args.config).run(args.filter, args.fix, args.boskos)
 
 
 if __name__ == '__main__':
