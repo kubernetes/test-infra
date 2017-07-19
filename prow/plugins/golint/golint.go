@@ -23,6 +23,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/golang/lint"
@@ -107,11 +108,11 @@ func problemsInFiles(r *git.Repo, files map[string]string) (map[string]map[int]l
 		}
 		ps, err := l.Lint(f, src)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("linting %s: %v", f, err)
 		}
 		al, err := addedLines(patch)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("computing added lines in %s: %v", f, err)
 		}
 		for _, p := range ps {
 			if pl, ok := al[p.Position.Line]; ok {
@@ -142,12 +143,17 @@ func handle(ghc githubClient, gc *git.Client, log *logrus.Entry, ic github.Issue
 	if len(modifiedFiles) == 0 {
 		return nil
 	}
+	log.Infof("Will lint %d modified go files.", len(modifiedFiles))
 
 	// Clone the repo, checkout the PR.
+	log.Info("Cloning.")
+	cloneStart := time.Now()
 	r, err := gc.Clone(ic.Repo.FullName)
 	if err != nil {
 		return err
 	}
+	cloneFinish := time.Now()
+	log.WithField("duration", cloneFinish.Sub(cloneStart)).Info("Cloned.")
 	defer func() {
 		if err := r.Clean(); err != nil {
 			log.WithError(err).Error("Error cleaning up repo.")
@@ -156,12 +162,16 @@ func handle(ghc githubClient, gc *git.Client, log *logrus.Entry, ic github.Issue
 	if err := r.CheckoutPullRequest(ic.Issue.Number); err != nil {
 		return err
 	}
+	checkoutFinish := time.Now()
+	log.WithField("duration", checkoutFinish.Sub(cloneFinish)).Info("Checked out PR.")
 
 	// Compute lint errors.
 	problems, err := problemsInFiles(r, modifiedFiles)
 	if err != nil {
 		return err
 	}
+	log.WithField("duration", time.Since(checkoutFinish)).Info("Linted.")
+
 	oldComments, err := ghc.ListPullRequestComments(org, repo, ic.Issue.Number)
 	if err != nil {
 		return err

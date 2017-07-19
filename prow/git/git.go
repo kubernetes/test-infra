@@ -114,6 +114,11 @@ func (c *Client) Clone(repo string) (*Repo, error) {
 		if b, err := exec.Command(c.git, "clone", "--mirror", remote, cache).CombinedOutput(); err != nil {
 			return nil, fmt.Errorf("git cache clone error: %v. output: %s", err, string(b))
 		}
+		pbs := exec.Command(c.git, "config", "http.postBuffer", "524288000")
+		pbs.Dir = cache
+		if b, err := pbs.CombinedOutput(); err != nil {
+			return nil, fmt.Errorf("git config error: %v. output: %s", err, string(b))
+		}
 	} else if err != nil {
 		return nil, err
 	} else {
