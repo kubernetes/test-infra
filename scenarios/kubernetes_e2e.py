@@ -402,7 +402,7 @@ def main(args):
     cluster = cluster_name(args.cluster, os.getenv('BUILD_NUMBER', 0))
     runner_args.extend(args.kubetest_args)
 
-    if args.logexporter:
+    if args.use_logexporter:
         # TODO(fejta): Take the below value through a flag instead of env var.
         runner_args.append('--logexporter-gcs-path=%s' % os.environ.get('GCS_ARTIFACTS_DIR', ''))
 
@@ -504,7 +504,7 @@ def create_parser():
     parser.add_argument(
         '--up', default='true', help='If we need to bring up a e2e cluster')
     parser.add_argument(
-        '--logexporter',
+        '--use-logexporter',
         action='store_true',
         help='If we need to use logexporter tool to upload logs from nodes to GCS directly')
     parser.add_argument(

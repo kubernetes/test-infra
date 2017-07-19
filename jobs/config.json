@@ -2832,7 +2832,8 @@
       "--test_args=--ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --allowed-not-ready-nodes=50 --node-schedulable-timeout=60m --cluster-ip-range=10.160.0.0/11 --minStartupPods=8",
       "--gcp-project=kubernetes-scale",
       "--provider=gce",
-      "--gcp-zone=us-east1-a"
+      "--gcp-zone=us-east1-a",
+      "--use-logexporter"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -2849,7 +2850,8 @@
       "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --allowed-not-ready-nodes=50 --node-schedulable-timeout=60m --cluster-ip-range=10.160.0.0/11 --minStartupPods=8",
       "--gcp-project=kubernetes-scale",
       "--provider=gce",
-      "--gcp-zone=us-east1-a"
+      "--gcp-zone=us-east1-a",
+      "--use-logexporter"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
