@@ -188,17 +188,18 @@ func handle(ghc githubClient, gc *git.Client, log *logrus.Entry, ic github.Issue
 
 	totalProblems := numProblems(problems)
 	newProblems := numProblems(nps)
+	oldProblems := totalProblems - newProblems
 	if newProblems == 0 {
 		if totalProblems == 0 {
 			response = "no lint warnings"
 		} else {
-			response = fmt.Sprintf("no new warnings, %d remaining warning(s)", totalProblems)
+			response = fmt.Sprintf("no new warnings, %d total warning(s)", totalProblems)
 		}
 	} else {
-		if totalProblems == 0 {
+		if oldProblems == 0 {
 			response = fmt.Sprintf("%d new warning(s)", newProblems)
 		} else {
-			response = fmt.Sprintf("%d new warning(s), %d remaining warning(s)", newProblems, totalProblems)
+			response = fmt.Sprintf("%d new warning(s), %d old warning(s)", newProblems, oldProblems)
 		}
 	}
 

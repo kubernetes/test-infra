@@ -21,13 +21,13 @@ kubernetes/kubernetes:
 kubernetes/test-infra:
 - trigger
 - config-updater
-- golint
 
 kubernetes:
 - assign
 - cla
 - close
 - reopen
+- golint
 - heart
 - label
 - lgtm
