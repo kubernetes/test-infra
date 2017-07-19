@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM alpine:3.4
+FROM alpine:3.6
 MAINTAINER spxtr@google.com
 
 RUN apk add --no-cache ca-certificates && update-ca-certificates
