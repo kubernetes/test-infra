@@ -162,7 +162,7 @@
         job-name: ci-kubernetes-e2e-gce-scalability-release-1-7
         jenkins-timeout: 240
         timeout: 140
-        frequency: '@hourly'
+        frequency: '@daily'
         trigger-job: 'ci-kubernetes-build-1.7'
         use-blocker: true
         blocker: 'ci-kubernetes-e2e-gce-scalability-release-1-6'
