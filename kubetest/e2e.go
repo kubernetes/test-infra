@@ -128,6 +128,8 @@ func run(deploy deployer, o options) error {
 				return fmt.Errorf("error starting federation: %s", err)
 			}
 		}
+		// Check that the api is reachable before proceeding with further steps.
+		errs = appendError(errs, xmlWrap("Check APIReachability", checkAPIReachability))
 		if dump != "" {
 			errs = appendError(errs, xmlWrap("list nodes", func() error {
 				return listNodes(dump)
@@ -261,6 +263,22 @@ func run(deploy deployer, o options) error {
 		return fmt.Errorf("encountered %d errors: %v", len(errs), errs)
 	}
 	return nil
+}
+
+func checkAPIReachability() error {
+	retries := 5
+	for {
+		_, err := output(exec.Command("./cluster/kubectl.sh", "--match-server-version=false", "version"))
+		if err == nil {
+			return nil
+		}
+		retries--
+		if retries == 0 {
+			return err
+		}
+		log.Print("Failed to reach api. Sleeping for 10 seconds before retrying...")
+		time.Sleep(10 * time.Second)
+	}
 }
 
 func listNodes(dump string) error {
