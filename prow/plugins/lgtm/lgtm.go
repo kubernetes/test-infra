@@ -178,7 +178,7 @@ func handle(gc githubClient, log *logrus.Entry, e *event) error {
 		if err := gc.AssignIssue(e.org, e.repo, e.number, []string{e.commentAuthor}); err != nil {
 			msg := "assigning you to the PR failed"
 			if ok, merr := gc.IsMember(e.org, e.commentAuthor); merr == nil && !ok {
-				msg = "only kubernetes org members may be assigned issues"
+				msg = fmt.Sprintf("only %s org members may be assigned issues", e.org)
 			} else if merr != nil {
 				log.WithError(merr).Errorf("Failed IsMember(%s, %s)", e.org, e.commentAuthor)
 			} else {
