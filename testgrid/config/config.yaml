@@ -15,6 +15,7 @@ default_test_group:
   tests_name_policy: 2 # replace the name of the test
   column_header:
   - configuration_value: Commit # Shows the commit number on column header
+  - configuration_value: infra-commit
   use_kubernetes_client: true # These two fields are depricated and should always be true
   is_external: true
   alert_stale_results_hours: 0 # Deprecated, set to 0.

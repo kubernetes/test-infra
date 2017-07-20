@@ -409,6 +409,17 @@ def metadata(repos, artifacts, call):
             meta['repo-commit'] = commit.strip()
     except subprocess.CalledProcessError:
         pass
+
+    cwd = os.getcwd()
+    os.chdir(test_infra('/'))
+    try:
+        commit = call(['git', 'rev-parse', 'HEAD'], output=True)
+        if commit:
+            meta['infra-commit'] = commit.strip()
+    except subprocess.CalledProcessError:
+        pass
+    os.chdir(cwd)
+
     return meta
 
 
