@@ -20,6 +20,7 @@
 """Dig through jobs/FOO.env, and execute a janitor pass for each of the project"""
 
 import argparse
+import json
 import os
 import re
 import subprocess
@@ -104,20 +105,23 @@ def check_pr_jobs():
 
 def check_ci_jobs():
     """Handle CI jobs"""
-    for job in os.listdir(test_infra('jobs')):
-        if not job.endswith('.env'):
-            continue
+    with open(test_infra('jobs/config.json')) as fp:
+        config = json.load(fp)
 
-        project = parse_project(test_infra('jobs/%s' % job))
-        if not project:
-            print >>sys.stderr, 'Job %r does not have a project!' % job
-            continue
-        if any(b in project for b in BLACKLIST):
-            print >>sys.stderr, 'Project %r is blacklisted in ci-janitor' % project
-            continue
-        if project in PR_PROJECTS:
-            continue # CI janitor skips all PR jobs
-        clean_project(project)
+    match_re = re.compile(r'--gcp-project=(.+)')
+    for value in config.values():
+        for arg in value.get('args', []):
+            mat = match_re.match(arg)
+            if not mat:
+                continue
+            project = mat.group(1)
+            if any(b in project for b in BLACKLIST):
+                print >>sys.stderr, 'Project %r is blacklisted in ci-janitor' % project
+                continue
+            if project in PR_PROJECTS:
+                continue # CI janitor skips all PR jobs
+            clean_project(project)
+
     # Hard code node-ci project here
     clean_project('k8s-jkns-ci-node-e2e')
 
