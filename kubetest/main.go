@@ -502,15 +502,6 @@ func prepareGcp(o *options) error {
 			return fmt.Errorf("boskos does not have a free %s at the moment", p)
 		}
 
-		if err = finishRunning(exec.Command("gcloud", "config", "set", "project", p)); err != nil {
-			return fmt.Errorf("fail to set project %s : err %v", p, err)
-		}
-
-		// TODO(krzyzacy):Remove this when we retire migrateGcpEnvAndOptions
-		if err := os.Setenv("PROJECT", p); err != nil {
-			return fmt.Errorf("fail to set env var PROJECT %s : err %v", p, err)
-		}
-
 		go func(c *client.Client, proj string) {
 			for range time.Tick(time.Minute * 5) {
 				if err := c.UpdateOne(p, "busy"); err != nil {
@@ -519,6 +510,16 @@ func prepareGcp(o *options) error {
 			}
 		}(boskos, p)
 		o.gcpProject = p
+	}
+
+	if err := finishRunning(exec.Command("gcloud", "config", "set", "project", o.gcpProject)); err != nil {
+		return fmt.Errorf("fail to set project %s : err %v", o.gcpProject, err)
+	}
+
+	// TODO(krzyzacy):Remove this when we retire migrateGcpEnvAndOptions
+	// Note that a lot of scripts are still depend on this env in k/k repo.
+	if err := os.Setenv("PROJECT", o.gcpProject); err != nil {
+		return fmt.Errorf("fail to set env var PROJECT %s : err %v", o.gcpProject, err)
 	}
 
 	// gcloud creds may have changed
