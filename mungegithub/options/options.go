@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"reflect"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -456,12 +457,27 @@ func toString(optType optionType, val interface{}) string {
 	}
 }
 
+func (o *Options) keysSortedAndWidth() ([]string, int) {
+	keys := make([]string, 0, len(o.options))
+	width := 0
+	for key, _ := range o.options {
+		keys = append(keys, key)
+		if len(key) > width {
+			width = len(key)
+		}
+	}
+	sort.Strings(keys)
+	return keys, width
+}
+
 func (o *Options) Descriptions() string {
 	var buf bytes.Buffer
 	fmt.Fprint(&buf, "The below options are available. They are listed in the format 'option: (default value) \"Description\"'.\n")
-	for key, opt := range o.options {
-		if opt.optType != typeUnknown {
-			fmt.Fprintf(&buf, "%s: (%s) %q\n", key, toString(opt.optType, opt.defaultVal), opt.description)
+	sorted, width := o.keysSortedAndWidth()
+	width++
+	for _, key := range sorted {
+		if opt := o.options[key]; opt.optType != typeUnknown {
+			fmt.Fprintf(&buf, "%-*s (%s) %q\n", width, key+":", toString(opt.optType, opt.defaultVal), opt.description)
 		}
 	}
 	return buf.String()
@@ -470,9 +486,11 @@ func (o *Options) Descriptions() string {
 func (o *Options) CurrentValues() string {
 	var buf bytes.Buffer
 	fmt.Fprint(&buf, "Currently configured option values:\n")
-	for key, opt := range o.options {
-		if opt.optType != typeUnknown {
-			fmt.Fprintf(&buf, "%s: %s\n", key, toString(opt.optType, opt.val))
+	sorted, width := o.keysSortedAndWidth()
+	width++
+	for _, key := range sorted {
+		if opt := o.options[key]; opt.optType != typeUnknown {
+			fmt.Fprintf(&buf, "%-*s %s\n", width, key+":", toString(opt.optType, opt.val))
 		}
 	}
 	return buf.String()
