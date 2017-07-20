@@ -203,6 +203,8 @@ presubmits:
         - "--json"
         - "--clean"
         env:
+        - name: USER
+          value: prow
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: /etc/service-account/service-account.json
         - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
@@ -472,6 +474,8 @@ presubmits:
         - "--json"
         - "--clean"
         env:
+        - name: USER
+          value: prow
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: /etc/service-account/service-account.json
         - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
@@ -773,6 +777,8 @@ postsubmits:
             - "--timeout=320"
             - "--upload=gs://kubernetes-jenkins/logs"
             env:
+            - name: USER
+              value: prow
             - name: GOOGLE_APPLICATION_CREDENTIALS
               value: /etc/service-account/service-account.json
             - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
@@ -880,6 +886,8 @@ postsubmits:
             - "--timeout=320"
             - "--upload=gs://kubernetes-jenkins/logs"
             env:
+            - name: USER
+              value: prow
             - name: GOOGLE_APPLICATION_CREDENTIALS
               value: /etc/service-account/service-account.json
             - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
@@ -987,6 +995,8 @@ postsubmits:
             - "--timeout=320"
             - "--upload=gs://kubernetes-jenkins/logs"
             env:
+            - name: USER
+              value: prow
             - name: GOOGLE_APPLICATION_CREDENTIALS
               value: /etc/service-account/service-account.json
             - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
@@ -1028,6 +1038,8 @@ postsubmits:
             - "--timeout=320"
             - "--upload=gs://kubernetes-jenkins/logs"
             env:
+            - name: USER
+              value: prow
             - name: GOOGLE_APPLICATION_CREDENTIALS
               value: /etc/service-account/service-account.json
             - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
@@ -13885,6 +13897,8 @@ periodics:
           - "--timeout=320"
           - "--upload=gs://kubernetes-jenkins/logs"
           env:
+          - name: USER
+            value: prow
           - name: REPO_NAME
             value: kubernetes=release-1.6
           - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -13995,6 +14009,8 @@ periodics:
           - "--timeout=320"
           - "--upload=gs://kubernetes-jenkins/logs"
           env:
+          - name: USER
+            value: prow
           - name: REPO_NAME
             value: kubernetes=release-1.7
           - name: GOOGLE_APPLICATION_CREDENTIALS
