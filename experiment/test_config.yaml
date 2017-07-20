@@ -443,7 +443,6 @@ cloudProviders:
   gce:
     args:
     - --check-leaked-resources
-    - --minStartupPods=8
     - --provider=gce
     - --gcp-zone=us-central1-f
     envs:
@@ -451,10 +450,11 @@ cloudProviders:
   gke:
     args:
     - --check-leaked-resources
-    - --minStartupPods=8
     - --provider=gke
     - --gcp-zone=us-central1-f
     - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
+    envs:
+    - CLOUDSDK_API_ENDPOINT_OVERRIDES_CONTAINER=https://test-container.sandbox.googleapis.com/
 
 images:
   cosdev:
@@ -511,53 +511,53 @@ testSuites:
   alphafeatures:
     args:
     - --timeout=180m
-    - --test_args=--ginkgo.focus=\[Feature:DynamicKubeletConfig\]
+    - --test_args=--ginkgo.focus=\[Feature:DynamicKubeletConfig\] --minStartupPods=8
   autoscaling:
     args:
     - --timeout=300m
-    - --test_args=--ginkgo.focus=\[Feature:ClusterSizeAutoscalingScaleUp\]|\[Feature:ClusterSizeAutoscalingScaleDown\] --ginkgo.skip=\[Flaky\]
+    - --test_args=--ginkgo.focus=\[Feature:ClusterSizeAutoscalingScaleUp\]|\[Feature:ClusterSizeAutoscalingScaleDown\] --ginkgo.skip=\[Flaky\] --minStartupPods=8
   default:
     args:
     - --timeout=50m
-    - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]
+    - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
     envs:
     - GINKGO_PARALLEL=y
     - GINKGO_PARALLEL_NODES=30
   flaky:
     args:
     - --timeout=300m
-    - --test_args=--ginkgo.focus=\[Flaky\] --ginkgo.skip=\[Feature:.+\]
+    - --test_args=--ginkgo.focus=\[Flaky\] --ginkgo.skip=\[Feature:.+\] --minStartupPods=8
   ingress:
     args:
     - --timeout=300m
-    - --test_args=--ginkgo.focus=\[Feature:Ingress\]
+    - --test_args=--ginkgo.focus=\[Feature:Ingress\] --minStartupPods=8
   reboot:
     args:
     - --timeout=180m
-    - --test_args=--ginkgo.focus=\[Feature:Reboot\]
+    - --test_args=--ginkgo.focus=\[Feature:Reboot\] --minStartupPods=8
   serial:
     args:
     - --timeout=500m
-    - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\]
+    - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
     envs:
     - GINKGO_PARALLEL=n
   slow:
     args:
     - --timeout=150m
-    - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\]
+    - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
     envs:
     - GINKGO_PARALLEL=y
     - GINKGO_PARALLEL_NODES=30
   updown:
     args:
     - --timeout=30m
-    - --test_args=--ginkgo.focus=\[k8s.io\]\sNetworking.*\[Conformance\]
+    - --test_args=--ginkgo.focus=\[k8s.io\]\sNetworking.*\[Conformance\] --minStartupPods=8
     envs:
     - GINKGO_PARALLEL=y
   nosnat:
     args:
     - --timeout=20m
-    - --test_args=--ginkgo.focus=\\[Feature:NoSNAT\\]
+    - --test_args=--ginkgo.focus=\\[Feature:NoSNAT\\] --minStartupPods=8
     envs:
     - GINKGO_PARALLEL=n
     - GINKGO_PARALLEL_NODES=1
