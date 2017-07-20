@@ -319,6 +319,7 @@ func TestCheckGCSBuilds(t *testing.T) {
 		e2e.Init(nil)
 
 		e2e.LoadNonBlockingStatus()
+		e2e.LoadPreSubmitStatus()
 		if !reflect.DeepEqual(test.expectedStatus, e2e.BuildStatus) {
 			t.Errorf("%v: expected: %v, saw: %v", index, test.expectedStatus, e2e.BuildStatus)
 		}
