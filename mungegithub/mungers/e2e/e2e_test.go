@@ -61,6 +61,9 @@ func TestCheckGCSBuilds(t *testing.T) {
 	latestBuildNumberFoo := 42
 	latestBuildNumberBar := 44
 	latestBuildNumberBaz := 99
+	latestBuildNumberQux := 100
+	latestBuildNumberQuux := 110
+	latestBuildNumberQuz := 111
 	tests := []struct {
 		paths             map[string][]byte
 		expectedLastBuild int
@@ -83,12 +86,30 @@ func TestCheckGCSBuilds(t *testing.T) {
 					Result:    "UNSTABLE",
 					Timestamp: 1234,
 				}, t),
+				"/bucket/logs/qux/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberQux)),
+				fmt.Sprintf("/bucket/logs/qux/%v/finished.json", latestBuildNumberQux): marshalOrDie(utils.FinishedFile{
+					Result:    "SUCCESS",
+					Timestamp: 1234,
+				}, t),
+				"/bucket/logs/quux/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberQuux)),
+				fmt.Sprintf("/bucket/logs/quux/%v/finished.json", latestBuildNumberQuux): marshalOrDie(utils.FinishedFile{
+					Result:    "SUCCESS",
+					Timestamp: 1234,
+				}, t),
+				"/bucket/logs/quz/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberQuz)),
+				fmt.Sprintf("/bucket/logs/quz/%v/finished.json", latestBuildNumberQuz): marshalOrDie(utils.FinishedFile{
+					Result:    "UNSTABLE",
+					Timestamp: 1234,
+				}, t),
 				"/storage/v1/b/bucket/o": genMockGCSListResponse(),
 			},
 			expectedStatus: map[string]BuildInfo{
-				"foo": {Status: "[nonblocking] Stable", ID: "42"},
-				"bar": {Status: "[nonblocking] Stable", ID: "44"},
-				"baz": {Status: "[nonblocking] Not Stable", ID: "99"},
+				"foo":  {Status: "[nonblocking] Stable", ID: "42"},
+				"bar":  {Status: "[nonblocking] Stable", ID: "44"},
+				"baz":  {Status: "[nonblocking] Not Stable", ID: "99"},
+				"qux":  {Status: "[presubmit] Stable", ID: "100"},
+				"quux": {Status: "[presubmit] Stable", ID: "110"},
+				"quz":  {Status: "[presubmit] Not Stable", ID: "111"},
 			},
 		},
 		{
@@ -108,12 +129,30 @@ func TestCheckGCSBuilds(t *testing.T) {
 					Result:    "SUCCESS",
 					Timestamp: 1234,
 				}, t),
+				"/bucket/logs/qux/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberQux)),
+				fmt.Sprintf("/bucket/logs/qux/%v/finished.json", latestBuildNumberQux): marshalOrDie(utils.FinishedFile{
+					Result:    "SUCCESS",
+					Timestamp: 1234,
+				}, t),
+				"/bucket/logs/quux/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberQuux)),
+				fmt.Sprintf("/bucket/logs/quux/%v/finished.json", latestBuildNumberQuux): marshalOrDie(utils.FinishedFile{
+					Result:    "UNSTABLE",
+					Timestamp: 1234,
+				}, t),
+				"/bucket/logs/quz/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberQuz)),
+				fmt.Sprintf("/bucket/logs/quz/%v/finished.json", latestBuildNumberQuz): marshalOrDie(utils.FinishedFile{
+					Result:    "SUCCESS",
+					Timestamp: 1234,
+				}, t),
 				"/storage/v1/b/bucket/o": genMockGCSListResponse(),
 			},
 			expectedStatus: map[string]BuildInfo{
-				"foo": {Status: "[nonblocking] Stable", ID: "42"},
-				"bar": {Status: "[nonblocking] Not Stable", ID: "44"},
-				"baz": {Status: "[nonblocking] Stable", ID: "99"},
+				"foo":  {Status: "[nonblocking] Stable", ID: "42"},
+				"bar":  {Status: "[nonblocking] Not Stable", ID: "44"},
+				"baz":  {Status: "[nonblocking] Stable", ID: "99"},
+				"qux":  {Status: "[presubmit] Stable", ID: "100"},
+				"quux": {Status: "[presubmit] Not Stable", ID: "110"},
+				"quz":  {Status: "[presubmit] Stable", ID: "111"},
 			},
 		},
 		{
@@ -138,6 +177,26 @@ func TestCheckGCSBuilds(t *testing.T) {
 					Result:    "UNSTABLE",
 					Timestamp: 999,
 				}, t),
+				"/bucket/logs/qux/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberQux)),
+				fmt.Sprintf("/bucket/logs/qux/%v/finished.json", latestBuildNumberQux): marshalOrDie(utils.FinishedFile{
+					Result:    "SUCCESS",
+					Timestamp: 1234,
+				}, t),
+				"/bucket/logs/quux/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberQuux)),
+				fmt.Sprintf("/bucket/logs/quux/%v/finished.json", latestBuildNumberQuux): marshalOrDie(utils.FinishedFile{
+					Result:    "UNSTABLE",
+					Timestamp: 1234,
+				}, t),
+				fmt.Sprintf("/bucket/logs/quux/%v/artifacts/junit_01.xml", latestBuildNumberQuux-1): getJUnit(5, 0),
+				fmt.Sprintf("/bucket/logs/quux/%v/artifacts/junit_02.xml", latestBuildNumberQuux-1): getRealJUnitFailure(),
+				fmt.Sprintf("/bucket/logs/quux/%v/artifacts/junit_03.xml", latestBuildNumberQuux-1): getJUnit(5, 0),
+				fmt.Sprintf("/bucket/logs/quux/%v/artifacts/junit_01.xml", latestBuildNumberQuux):   getJUnit(5, 0),
+				fmt.Sprintf("/bucket/logs/quux/%v/artifacts/junit_02.xml", latestBuildNumberQuux):   getRealJUnitFailure(),
+				fmt.Sprintf("/bucket/logs/quux/%v/artifacts/junit_03.xml", latestBuildNumberQuux):   getJUnit(5, 0),
+				fmt.Sprintf("/bucket/logs/quux/%v/finished.json", latestBuildNumberQuux-1): marshalOrDie(utils.FinishedFile{
+					Result:    "UNSTABLE",
+					Timestamp: 999,
+				}, t),
 				"/storage/v1/b/bucket/o": genMockGCSListResponse(
 					fmt.Sprintf("/bucket/logs/bar/%v/artifacts/junit_01.xml", latestBuildNumberBar-1),
 					fmt.Sprintf("/bucket/logs/bar/%v/artifacts/junit_02.xml", latestBuildNumberBar-1),
@@ -145,12 +204,21 @@ func TestCheckGCSBuilds(t *testing.T) {
 					fmt.Sprintf("/bucket/logs/bar/%v/artifacts/junit_01.xml", latestBuildNumberBar),
 					fmt.Sprintf("/bucket/logs/bar/%v/artifacts/junit_02.xml", latestBuildNumberBar),
 					fmt.Sprintf("/bucket/logs/bar/%v/artifacts/junit_03.xml", latestBuildNumberBar),
+					fmt.Sprintf("/bucket/logs/quux/%v/artifacts/junit_01.xml", latestBuildNumberQuux-1),
+					fmt.Sprintf("/bucket/logs/quux/%v/artifacts/junit_02.xml", latestBuildNumberQuux-1),
+					fmt.Sprintf("/bucket/logs/quux/%v/artifacts/junit_03.xml", latestBuildNumberQuux-1),
+					fmt.Sprintf("/bucket/logs/quux/%v/artifacts/junit_01.xml", latestBuildNumberQuux),
+					fmt.Sprintf("/bucket/logs/quux/%v/artifacts/junit_02.xml", latestBuildNumberQuux),
+					fmt.Sprintf("/bucket/logs/quux/%v/artifacts/junit_03.xml", latestBuildNumberQuux),
 				),
 			},
 			expectedStatus: map[string]BuildInfo{
-				"foo": {Status: "[nonblocking] Stable", ID: "42"},
-				"bar": {Status: "[nonblocking] Not Stable", ID: "44"},
-				"baz": {Status: "[nonblocking] Not Stable", ID: "-1"},
+				"foo":  {Status: "[nonblocking] Stable", ID: "42"},
+				"bar":  {Status: "[nonblocking] Not Stable", ID: "44"},
+				"baz":  {Status: "[nonblocking] Not Stable", ID: "-1"},
+				"qux":  {Status: "[presubmit] Stable", ID: "100"},
+				"quux": {Status: "[presubmit] Not Stable", ID: "110"},
+				"quz":  {Status: "[presubmit] Not Stable", ID: "-1"},
 			},
 		},
 
@@ -166,12 +234,25 @@ func TestCheckGCSBuilds(t *testing.T) {
 					Result:    "FAILURE",
 					Timestamp: 1234,
 				}, t),
+				"/bucket/logs/qux/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberQux)),
+				fmt.Sprintf("/bucket/logs/qux/%v/finished.json", latestBuildNumberQux): marshalOrDie(utils.FinishedFile{
+					Result:    "SUCCESS",
+					Timestamp: 1234,
+				}, t),
+				"/bucket/logs/quux/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberQuux)),
+				fmt.Sprintf("/bucket/logs/quux/%v/finished.json", latestBuildNumberQuux): marshalOrDie(utils.FinishedFile{
+					Result:    "FAILURE",
+					Timestamp: 1234,
+				}, t),
 				"/storage/v1/b/bucket/o": genMockGCSListResponse(),
 			},
 			expectedStatus: map[string]BuildInfo{
-				"foo": {Status: "[nonblocking] Stable", ID: "42"},
-				"bar": {Status: "[nonblocking] Not Stable", ID: "44"},
-				"baz": {Status: "[nonblocking] Not Stable", ID: "-1"},
+				"foo":  {Status: "[nonblocking] Stable", ID: "42"},
+				"bar":  {Status: "[nonblocking] Not Stable", ID: "44"},
+				"baz":  {Status: "[nonblocking] Not Stable", ID: "-1"},
+				"qux":  {Status: "[presubmit] Stable", ID: "100"},
+				"quux": {Status: "[presubmit] Not Stable", ID: "110"},
+				"quz":  {Status: "[presubmit] Not Stable", ID: "-1"},
 			},
 		},
 		{
@@ -186,12 +267,25 @@ func TestCheckGCSBuilds(t *testing.T) {
 					Result:    "UNSTABLE",
 					Timestamp: 1234,
 				}, t),
+				"/bucket/logs/qux/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberQux)),
+				fmt.Sprintf("/bucket/logs/qux/%v/finished.json", latestBuildNumberQux): marshalOrDie(utils.FinishedFile{
+					Result:    "FAILURE",
+					Timestamp: 1234,
+				}, t),
+				"/bucket/logs/quux/latest-build.txt": []byte(strconv.Itoa(latestBuildNumberQuux)),
+				fmt.Sprintf("/bucket/logs/quux/%v/finished.json", latestBuildNumberQuux): marshalOrDie(utils.FinishedFile{
+					Result:    "UNSTABLE",
+					Timestamp: 1234,
+				}, t),
 				"/storage/v1/b/bucket/o": genMockGCSListResponse(),
 			},
 			expectedStatus: map[string]BuildInfo{
-				"foo": {Status: "[nonblocking] Not Stable", ID: "42"},
-				"bar": {Status: "[nonblocking] Not Stable", ID: "44"},
-				"baz": {Status: "[nonblocking] Not Stable", ID: "-1"},
+				"foo":  {Status: "[nonblocking] Not Stable", ID: "42"},
+				"bar":  {Status: "[nonblocking] Not Stable", ID: "44"},
+				"baz":  {Status: "[nonblocking] Not Stable", ID: "-1"},
+				"qux":  {Status: "[presubmit] Not Stable", ID: "100"},
+				"quux": {Status: "[presubmit] Not Stable", ID: "110"},
+				"quz":  {Status: "[presubmit] Not Stable", ID: "-1"},
 			},
 		},
 	}
@@ -214,12 +308,18 @@ func TestCheckGCSBuilds(t *testing.T) {
 				"bar",
 				"baz",
 			},
+			PreSubmitJobNames: []string{
+				"qux",
+				"quux",
+				"quz",
+			},
 			BuildStatus:          map[string]BuildInfo{},
 			GoogleGCSBucketUtils: utils.NewTestUtils("bucket", "logs", server.URL),
 		}
 		e2e.Init(nil)
 
 		e2e.LoadNonBlockingStatus()
+		e2e.LoadPreSubmitStatus()
 		if !reflect.DeepEqual(test.expectedStatus, e2e.BuildStatus) {
 			t.Errorf("%v: expected: %v, saw: %v", index, test.expectedStatus, e2e.BuildStatus)
 		}

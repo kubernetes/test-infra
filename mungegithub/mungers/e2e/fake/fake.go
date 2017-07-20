@@ -35,6 +35,9 @@ func (e *FakeE2ETester) Flakes() cache.Flakes {
 // LoadNonBlockingStatus is a no-op.
 func (e *FakeE2ETester) LoadNonBlockingStatus() {}
 
+// LoadPreSubmitStatus is a no-op.
+func (e *FakeE2ETester) LoadPreSubmitStatus() {}
+
 // GetBuildStatus reports "Stable" and a latest build of "1" for each build.
 func (e *FakeE2ETester) GetBuildStatus() map[string]e2e.BuildInfo {
 	out := map[string]e2e.BuildInfo{}

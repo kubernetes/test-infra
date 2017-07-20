@@ -28,6 +28,15 @@ protected-branches-extra-contexts: "cla/linuxfoundation"
 
 # submit-queue options. Keep job lists sorted!
 protected-branches: "master"
+presubmit-jenkins-jobs: "\
+  pull-kubernetes-unit,\
+  pull-kubernetes-verify,\
+  pull-kubernetes-node-e2e,\
+  pull-kubernetes-kubemark-e2e-gce,\
+  pull-kubernetes-e2e-gce-etcd3,\
+  pull-kubernetes-bazel,\
+  pull-kubernetes-e2e-kops-aws,\
+  pull-kubernetes-federation-e2e-gce"
 nonblocking-jenkins-jobs: "\
   ci-kubernetes-bazel-build,\
   ci-kubernetes-bazel-test,\
