@@ -37,6 +37,7 @@ import (
 // E2ETester can be queried for E2E job stability.
 type E2ETester interface {
 	LoadNonBlockingStatus()
+	LoadPreSubmitStatus()
 	GetBuildStatus() map[string]BuildInfo
 	Flakes() cache.Flakes
 }
@@ -51,6 +52,7 @@ type BuildInfo struct {
 // information about recent jobs
 type RealE2ETester struct {
 	NonBlockingJobNames []string
+	PreSubmitJobNames   []string
 
 	sync.Mutex
 	BuildStatus          map[string]BuildInfo // protect by mutex
@@ -262,23 +264,33 @@ func (e *RealE2ETester) LatestRunOfJob(jobName string) (int, error) {
 	return e.GoogleGCSBucketUtils.GetLastestBuildNumberFromJenkinsGoogleBucket(jobName)
 }
 
-// LoadNonBlockingStatus gets the build stability status for all the NonBlockingJobNames.
-func (e *RealE2ETester) LoadNonBlockingStatus() {
-	for _, job := range e.NonBlockingJobNames {
+// loadJobStatuses gets the build stability status for all the jobs in jobNames.
+func (e *RealE2ETester) loadJobStatuses(jobNames []string, jobType string) {
+	for _, job := range jobNames {
 		lastBuildNumber, err := e.GoogleGCSBucketUtils.GetLastestBuildNumberFromJenkinsGoogleBucket(job)
 		glog.V(4).Infof("Checking status of %v, %v", job, lastBuildNumber)
 		if err != nil {
 			glog.Errorf("Error while getting data for %v: %v", job, err)
-			e.setBuildStatus(job, "[nonblocking] Not Stable", strconv.Itoa(lastBuildNumber))
+			e.setBuildStatus(job, fmt.Sprintf("[%s] Not Stable", jobType), strconv.Itoa(lastBuildNumber))
 			continue
 		}
 
 		if thisResult, err := e.GetBuildResult(job, lastBuildNumber); err != nil || thisResult.Status != cache.ResultStable {
-			e.setBuildStatus(job, "[nonblocking] Not Stable", strconv.Itoa(lastBuildNumber))
+			e.setBuildStatus(job, fmt.Sprintf("[%s] Not Stable", jobType), strconv.Itoa(lastBuildNumber))
 		} else {
-			e.setBuildStatus(job, "[nonblocking] Stable", strconv.Itoa(lastBuildNumber))
+			e.setBuildStatus(job, fmt.Sprintf("[%s] Stable", jobType), strconv.Itoa(lastBuildNumber))
 		}
 	}
+}
+
+// LoadNonBlockingStatus gets the build stability status for all the NonBlockingJobNames.
+func (e *RealE2ETester) LoadNonBlockingStatus() {
+	e.loadJobStatuses(e.NonBlockingJobNames, "nonblocking")
+}
+
+// LoadPreSubmitStatus gets the build stability status for all the PreSubmitJobNames.
+func (e *RealE2ETester) LoadPreSubmitStatus() {
+	e.loadJobStatuses(e.PreSubmitJobNames, "presubmit")
 }
 
 func getJUnitFailures(r io.Reader) (failures map[string]string, err error) {

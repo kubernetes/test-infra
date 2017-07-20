@@ -210,6 +210,7 @@ type SubmitQueue struct {
 	githubConfig        *github.Config
 	opts                *options.Options
 	NonBlockingJobNames []string
+	PreSubmitJobNames   []string
 
 	GateApproved bool
 	GateCLA      bool
@@ -444,6 +445,7 @@ func (sq *SubmitQueue) internalInitialize(config *github.Config, features *featu
 
 		sq.e2e = (&e2e.RealE2ETester{
 			NonBlockingJobNames:  sq.NonBlockingJobNames,
+			PreSubmitJobNames:    sq.PreSubmitJobNames,
 			BuildStatus:          map[string]e2e.BuildInfo{},
 			GoogleGCSBucketUtils: gcs,
 		}).Init(admin.Mux)
@@ -545,6 +547,7 @@ func (sq *SubmitQueue) EachLoop() error {
 // RegisterOptions registers options used by the SubmitQueue.
 func (sq *SubmitQueue) RegisterOptions(opts *options.Options) {
 	opts.RegisterStringSlice(&sq.NonBlockingJobNames, "nonblocking-jenkins-jobs", []string{}, "Comma separated list of jobs that don't block merges, but will have status reported and issues filed.")
+	opts.RegisterStringSlice(&sq.PreSubmitJobNames, "presubmit-jenkins-jobs", []string{}, "Comma separated list of jobs that run before merging code.")
 	opts.RegisterBool(&sq.FakeE2E, "fake-e2e", false, "Whether to use a fake for testing E2E stability.")
 	opts.RegisterStringSlice(&sq.DoNotMergeMilestones, "do-not-merge-milestones", []string{}, "List of milestones which, when applied, will cause the PR to not be merged")
 	opts.RegisterInt(&sq.AdminPort, "admin-port", 9999, "If non-zero, will serve administrative actions on this port.")
