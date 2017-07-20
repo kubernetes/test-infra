@@ -24,6 +24,9 @@ import (
 	"os/exec"
 	"path/filepath"
 	"sync"
+	"time"
+
+	"github.com/Sirupsen/logrus"
 )
 
 const github = "https://github.com"
@@ -31,6 +34,9 @@ const github = "https://github.com"
 // Client can clone repos. It keeps a local cache, so successive clones of the
 // same repo should be quick. Create with NewClient. Be sure to clean it up.
 type Client struct {
+	// Logger will be used to log git operations and must be set.
+	Logger *logrus.Entry
+
 	// dir is the location of the git cache.
 	dir string
 	// git is the path to the git binary.
@@ -108,19 +114,19 @@ func (c *Client) Clone(repo string) (*Repo, error) {
 	cache := filepath.Join(c.dir, repo) + ".git"
 	if _, err := os.Stat(cache); os.IsNotExist(err) {
 		// Cache miss, clone it now.
+		c.Logger.Infof("Cloning %s for the first time.", repo)
 		if err := os.Mkdir(filepath.Dir(cache), os.ModePerm); err != nil && !os.IsExist(err) {
 			return nil, err
 		}
-		if b, err := exec.Command(c.git, "clone", "--mirror", remote, cache).CombinedOutput(); err != nil {
+		if b, err := retryCmd(c.Logger, "", c.git, "clone", "--mirror", remote, cache); err != nil {
 			return nil, fmt.Errorf("git cache clone error: %v. output: %s", err, string(b))
 		}
 	} else if err != nil {
 		return nil, err
 	} else {
 		// Cache hit. Do a git fetch to keep updated.
-		cmd := exec.Command(c.git, "fetch")
-		cmd.Dir = cache
-		if b, err := cmd.CombinedOutput(); err != nil {
+		c.Logger.Infof("Fetching %s.", repo)
+		if b, err := retryCmd(c.Logger, cache, c.git, "fetch"); err != nil {
 			return nil, fmt.Errorf("git fetch error: %v. output: %s", err, string(b))
 		}
 	}
@@ -132,10 +138,11 @@ func (c *Client) Clone(repo string) (*Repo, error) {
 		return nil, fmt.Errorf("git repo clone error: %v. output: %s", err, string(b))
 	}
 	return &Repo{
-		Dir:  t,
-		git:  c.git,
-		base: c.base,
-		repo: repo,
+		Dir:    t,
+		logger: c.Logger,
+		git:    c.git,
+		base:   c.base,
+		repo:   repo,
 	}, nil
 }
 
@@ -151,6 +158,8 @@ type Repo struct {
 	base string
 	// repo is the full repo name: "org/repo".
 	repo string
+
+	logger *logrus.Entry
 }
 
 // Clean deletes the repo. It is unusable after calling.
@@ -166,8 +175,8 @@ func (r *Repo) gitCommand(arg ...string) *exec.Cmd {
 
 // CheckoutPullRequest does exactly that.
 func (r *Repo) CheckoutPullRequest(number int) error {
-	fetch := r.gitCommand("fetch", r.base+"/"+r.repo, fmt.Sprintf("pull/%d/head:pull%d", number, number))
-	if b, err := fetch.CombinedOutput(); err != nil {
+	r.logger.Infof("Fetching and checking out %s#%d.", r.repo, number)
+	if b, err := retryCmd(r.logger, r.Dir, r.git, "fetch", r.base+"/"+r.repo, fmt.Sprintf("pull/%d/head:pull%d", number, number)); err != nil {
 		return fmt.Errorf("git fetch failed for PR %d: %v. output: %s", number, err, string(b))
 	}
 	co := r.gitCommand("checkout", fmt.Sprintf("pull%d", number))
@@ -175,4 +184,25 @@ func (r *Repo) CheckoutPullRequest(number int) error {
 		return fmt.Errorf("git checkout failed for PR %d: %v. output: %s", number, err, string(b))
 	}
 	return nil
+}
+
+// retryCmd will retry the command a few times with backoff. Use this for any
+// commands that will be talking to GitHub, such as clones or fetches.
+func retryCmd(l *logrus.Entry, dir, cmd string, arg ...string) ([]byte, error) {
+	var b []byte
+	var err error
+	sleepyTime := time.Second
+	for i := 0; i < 3; i++ {
+		cmd := exec.Command(cmd, arg...)
+		cmd.Dir = dir
+		b, err = cmd.CombinedOutput()
+		if err != nil {
+			l.Warningf("Running %s %v returned error %v with output %s.", cmd, arg, err, string(b))
+			time.Sleep(sleepyTime)
+			sleepyTime *= 2
+			continue
+		}
+		break
+	}
+	return b, err
 }
