@@ -18,12 +18,13 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-if [ ! $# -eq 1 ]; then
-    echo "usage: $0 github_user_name"
+if [ ! $# -eq 2 ]; then
+    echo "usage: $0 github_user_name kube_root"
     exit 1
 fi
 
 USER="${1}"
+KUBE_ROOT="${2}"
 
 REPOS="apimachinery,api,client-go,apiserver,kube-aggregator,sample-apiserver,apiextensions-apiserver"
 
@@ -35,7 +36,7 @@ echo "safety check"
 echo "=================="
 # safety check
 for (( i=0; i<${repo_count}; i++ )); do
-    cd $K1/../"${repos[i]}"
+    cd $KUBE_ROOT/../"${repos[i]}"
     if [[ $(git config --get remote.origin.url) != *"${USER}"* ]]; then
         echo "origin is not right, expect to contain ${USER}, got $(git config --get remote.origin.url)"
         exit 1
@@ -46,7 +47,7 @@ echo "=================="
 echo " sync masters"
 echo "=================="
 for (( i=0; i<${repo_count}; i++ )); do
-    cd $K1/../"${repos[i]}"
+    cd $KUBE_ROOT/../"${repos[i]}"
     echo "repo=${repos[i]}"
     git fetch upstream
     git checkout master
@@ -62,7 +63,7 @@ REPOS="apimachinery,apiserver,kube-aggregator,sample-apiserver"
 IFS=',' read -a repos <<< "${REPOS}"
 repo_count=${#repos[@]}
 for (( i=0; i<${repo_count}; i++ )); do
-    cd $K1/../"${repos[i]}"
+    cd $KUBE_ROOT/../"${repos[i]}"
     echo "repo=${repos[i]}"
     git branch -f release-1.6 upstream/release-1.6
     git push -f origin release-1.6
@@ -76,22 +77,23 @@ REPOS="apimachinery"
 IFS=',' read -a repos <<< "${REPOS}"
 repo_count=${#repos[@]}
 for (( i=0; i<${repo_count}; i++ )); do
-    cd $K1/../"${repos[i]}"
+    cd $KUBE_ROOT/../"${repos[i]}"
     echo "repo=${repos[i]}"
     git branch -f release-1.7 upstream/release-1.7
     git push -f origin release-1.7
 done
 
+# client-go follows semver, so its versions are different from kubernetes.
 echo "=================="
-echo "sync client-go release-3.0"
+echo "sync client-go release-2.0,release-3.0 and release-4.0"
 echo "=================="
 
-REPOS="client-go"
-IFS=',' read -a repos <<< "${REPOS}"
-repo_count=${#repos[@]}
-for (( i=0; i<${repo_count}; i++ )); do
-    cd $K1/../"${repos[i]}"
-    echo "repo=${repos[i]}"
-    git branch -f release-3.0 upstream/release-3.0
-    git push -f origin release-3.0
+BRANCHES="release-2.0,release-3.0,release-4.0"
+IFS=',' read -a branches <<< "${BRANCHES}"
+branch_count=${#branches[@]}
+for (( i=0; i<${branch_count}; i++ )); do
+    cd "$KUBE_ROOT/../client-go"
+    echo "repo=client-go"
+    git branch -f "${branches[i]}" upstream/"${branches[i]}" 
+    git push -f origin "${branches[i]}"
 done
