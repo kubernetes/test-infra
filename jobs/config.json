@@ -597,7 +597,6 @@
       "--extract=ci/latest-1.4",
       "--check-leaked-resources",
       "--test_args=--ginkgo.focus=\\[Feature:(ExternalTrafficLocalOnly|PetSet|DynamicKubeletConfig)\\] --minStartupPods=8",
-      "--gcp-project=k8s-jkns-e2e-gce-alpha1-4",
       "--provider=gce",
       "--gcp-zone=us-central1-f"
     ],
@@ -614,7 +613,6 @@
       "--extract=ci/latest-1.5",
       "--check-leaked-resources",
       "--test_args=--ginkgo.focus=\\[Feature:(ExternalTrafficLocalOnly|DynamicKubeletConfig)\\] --minStartupPods=8",
-      "--gcp-project=k8s-e2e-gce-alpha1-5",
       "--provider=gce",
       "--gcp-zone=us-central1-f"
     ],
@@ -1928,7 +1926,6 @@
       "--timeout=50m",
       "--check-leaked-resources",
       "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
-      "--gcp-project=kubekins-gce-gci-ci-1-4",
       "--provider=gce",
       "--gcp-zone=us-central1-f"
     ],
@@ -1945,7 +1942,6 @@
       "--timeout=50m",
       "--check-leaked-resources",
       "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
-      "--gcp-project=kubekins-gce-gci-ci-1-5",
       "--provider=gce",
       "--gcp-zone=us-central1-f"
     ],
@@ -1979,7 +1975,6 @@
       "--timeout=300m",
       "--check-leaked-resources",
       "--test_args=--ginkgo.focus=\\[Serial\\]|\\[Disruptive\\] --ginkgo.skip=\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
-      "--gcp-project=kubekins-gce-gci-ci-serial-1-4",
       "--provider=gce",
       "--gcp-zone=us-central1-f"
     ],
@@ -1996,7 +1991,6 @@
       "--timeout=300m",
       "--check-leaked-resources",
       "--test_args=--ginkgo.focus=\\[Serial\\]|\\[Disruptive\\] --ginkgo.skip=\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
-      "--gcp-project=kubekins-gce-gci-ci-serial-1-5",
       "--provider=gce",
       "--gcp-zone=us-central1-f"
     ],
@@ -2030,7 +2024,6 @@
       "--timeout=150m",
       "--check-leaked-resources",
       "--test_args=--ginkgo.focus=\\[Slow\\] --ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
-      "--gcp-project=kubekins-gce-gci-ci-slow-1-4",
       "--provider=gce",
       "--gcp-zone=us-central1-f"
     ],
@@ -2047,7 +2040,6 @@
       "--timeout=150m",
       "--check-leaked-resources",
       "--test_args=--ginkgo.focus=\\[Slow\\] --ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
-      "--gcp-project=kubekins-gce-gci-ci-slow-1-5",
       "--provider=gce",
       "--gcp-zone=us-central1-f"
     ],
@@ -2639,7 +2631,6 @@
       "--extract=ci/latest-1.4",
       "--check-leaked-resources",
       "--test_args=--ginkgo.focus=\\[Feature:Reboot\\] --minStartupPods=8",
-      "--gcp-project=k8s-jkns-gce-reboot-1-4",
       "--provider=gce",
       "--gcp-zone=us-central1-f"
     ],
@@ -2656,7 +2647,6 @@
       "--extract=ci/latest-1.5",
       "--check-leaked-resources",
       "--test_args=--ginkgo.focus=\\[Feature:Reboot\\] --minStartupPods=8",
-      "--gcp-project=k8s-gce-reboot-1-5",
       "--provider=gce",
       "--gcp-zone=us-central1-f"
     ],
@@ -2709,7 +2699,6 @@
       "--extract=ci/latest-1.4",
       "--check-leaked-resources",
       "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
-      "--gcp-project=k8s-jkns-gce-1-4",
       "--provider=gce",
       "--gcp-zone=us-central1-f"
     ],
@@ -2726,7 +2715,6 @@
       "--extract=ci/latest-1.5",
       "--check-leaked-resources",
       "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
-      "--gcp-project=k8s-gce-1-5",
       "--provider=gce",
       "--gcp-zone=us-central1-f"
     ],
@@ -2900,7 +2888,6 @@
       "--extract=ci/latest-1.4",
       "--check-leaked-resources",
       "--test_args=--ginkgo.focus=\\[Serial\\]|\\[Disruptive\\] --ginkgo.skip=\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
-      "--gcp-project=k8s-jkns-gce-serial-1-4",
       "--provider=gce",
       "--gcp-zone=us-central1-f"
     ],
@@ -2917,7 +2904,6 @@
       "--extract=ci/latest-1.5",
       "--check-leaked-resources",
       "--test_args=--ginkgo.focus=\\[Serial\\]|\\[Disruptive\\] --ginkgo.skip=\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
-      "--gcp-project=k8s-gce-serial-1-5",
       "--provider=gce",
       "--gcp-zone=us-central1-f"
     ],
@@ -2985,7 +2971,6 @@
       "--extract=ci/latest-1.4",
       "--check-leaked-resources",
       "--test_args=--ginkgo.focus=\\[Slow\\] --ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
-      "--gcp-project=k8s-jkns-gce-slow-1-4",
       "--provider=gce",
       "--gcp-zone=us-central1-f"
     ],
@@ -3002,7 +2987,6 @@
       "--extract=ci/latest-1.5",
       "--check-leaked-resources",
       "--test_args=--ginkgo.focus=\\[Slow\\] --ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
-      "--gcp-project=k8s-gce-slow-1-5",
       "--provider=gce",
       "--gcp-zone=us-central1-f"
     ],
@@ -3590,7 +3574,6 @@
       "--extract=ci/latest-1.4",
       "--check-leaked-resources",
       "--test_args=--ginkgo.focus=\\[Feature:(ExternalTrafficLocalOnly|DynamicKubeletConfig)\\] --minStartupPods=8",
-      "--gcp-project=k8s-jkns-e2e-gci-gce-alpha1-4",
       "--provider=gce",
       "--gcp-zone=us-central1-f"
     ],
@@ -3607,7 +3590,6 @@
       "--extract=ci/latest-1.5",
       "--check-leaked-resources",
       "--test_args=--ginkgo.focus=\\[Feature:(ExternalTrafficLocalOnly|DynamicKubeletConfig)\\] --minStartupPods=8",
-      "--gcp-project=k8s-e2e-gci-gce-alpha1-5",
       "--provider=gce",
       "--gcp-zone=us-central1-f"
     ],
@@ -3845,7 +3827,6 @@
       "--extract=ci/latest-1.4",
       "--check-leaked-resources",
       "--test_args=--ginkgo.focus=\\[Feature:Ingress\\] --minStartupPods=8",
-      "--gcp-project=k8s-jkns-gci-gce-ingress1-4",
       "--provider=gce",
       "--gcp-zone=us-central1-f"
     ],
@@ -3862,7 +3843,6 @@
       "--extract=ci/latest-1.5",
       "--check-leaked-resources",
       "--test_args=--ginkgo.focus=\\[Feature:Ingress\\] --minStartupPods=8",
-      "--gcp-project=k8s-gci-gce-ingress1-5",
       "--provider=gce",
       "--gcp-zone=us-central1-f"
     ],
@@ -3965,7 +3945,6 @@
       "--extract=ci/latest-1.4",
       "--check-leaked-resources",
       "--test_args=--ginkgo.focus=\\[Feature:Reboot\\] --minStartupPods=8",
-      "--gcp-project=k8s-jkns-gci-gce-reboot-1-4",
       "--provider=gce",
       "--gcp-zone=us-central1-f"
     ],
@@ -3982,7 +3961,6 @@
       "--extract=ci/latest-1.5",
       "--check-leaked-resources",
       "--test_args=--ginkgo.focus=\\[Feature:Reboot\\] --minStartupPods=8",
-      "--gcp-project=k8s-gci-gce-reboot-1-5",
       "--provider=gce",
       "--gcp-zone=us-central1-f"
     ],
@@ -4033,7 +4011,6 @@
       "--extract=ci/latest-1.4",
       "--check-leaked-resources",
       "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
-      "--gcp-project=e2e-gce-gci-ci-1-4",
       "--provider=gce",
       "--gcp-zone=us-central1-f"
     ],
@@ -4050,7 +4027,6 @@
       "--extract=ci/latest-1.5",
       "--check-leaked-resources",
       "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
-      "--gcp-project=e2e-gce-gci-ci-1-5",
       "--provider=gce",
       "--gcp-zone=us-central1-f"
     ],
@@ -4188,7 +4164,6 @@
       "--extract=ci/latest-1.4",
       "--check-leaked-resources",
       "--test_args=--ginkgo.focus=\\[Serial\\]|\\[Disruptive\\] --ginkgo.skip=\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
-      "--gcp-project=e2e-gce-gci-ci-serial-1-4",
       "--provider=gce",
       "--gcp-zone=us-central1-f"
     ],
@@ -4205,7 +4180,6 @@
       "--extract=ci/latest-1.5",
       "--check-leaked-resources",
       "--test_args=--ginkgo.focus=\\[Serial\\]|\\[Disruptive\\] --ginkgo.skip=\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
-      "--gcp-project=e2e-gce-gci-ci-serial-1-5",
       "--provider=gce",
       "--gcp-zone=us-central1-f"
     ],
@@ -4273,7 +4247,6 @@
       "--extract=ci/latest-1.4",
       "--check-leaked-resources",
       "--test_args=--ginkgo.focus=\\[Slow\\] --ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
-      "--gcp-project=e2e-gce-gci-ci-slow-1-4",
       "--provider=gce",
       "--gcp-zone=us-central1-f"
     ],
@@ -4290,7 +4263,6 @@
       "--extract=ci/latest-1.5",
       "--check-leaked-resources",
       "--test_args=--ginkgo.focus=\\[Slow\\] --ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
-      "--gcp-project=e2e-gce-gci-ci-slow-1-5",
       "--provider=gce",
       "--gcp-zone=us-central1-f"
     ],
@@ -4665,7 +4637,6 @@
       "--check-leaked-resources",
       "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
       "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
-      "--gcp-project=k8s-gci-gke-1-5",
       "--provider=gke",
       "--gcp-zone=us-central1-a"
     ],
@@ -4736,7 +4707,6 @@
       "--extract=ci/latest-1.5",
       "--check-leaked-resources",
       "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
-      "--gcp-project=k8s-gci-gke-serial-1-5",
       "--provider=gke",
       "--gcp-zone=us-central1-a"
     ],
@@ -4808,7 +4778,6 @@
       "--check-leaked-resources",
       "--test_args=--ginkgo.focus=\\[Slow\\] --ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
       "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
-      "--gcp-project=k8s-gci-gke-slow-1-5",
       "--provider=gke",
       "--gcp-zone=us-central1-a"
     ],
@@ -5238,7 +5207,6 @@
       "--check-leaked-resources",
       "--test_args=--ginkgo.focus=\\[Feature:(ExternalTrafficLocalOnly)\\] --minStartupPods=8",
       "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
-      "--gcp-project=k8s-e2e-gke-alpha-1-5",
       "--provider=gke",
       "--gcp-zone=us-central1-a"
     ],
@@ -6827,7 +6795,6 @@
       "--check-leaked-resources",
       "--test_args=--ginkgo.focus=\\[Feature:Reboot\\] --minStartupPods=8",
       "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
-      "--gcp-project=k8s-gke-reboot-1-5",
       "--provider=gke",
       "--gcp-zone=us-central1-a"
     ],
@@ -6881,7 +6848,6 @@
       "--check-leaked-resources",
       "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
       "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
-      "--gcp-project=k8s-gke-1-5",
       "--provider=gke",
       "--gcp-zone=us-central1-a"
     ],
@@ -6972,7 +6938,6 @@
       "--check-leaked-resources",
       "--test_args=--ginkgo.focus=\\[Serial\\]|\\[Disruptive\\] --ginkgo.skip=\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
       "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
-      "--gcp-project=k8s-gke-serial-1-5",
       "--provider=gke",
       "--gcp-zone=us-central1-a"
     ],
@@ -7044,7 +7009,6 @@
       "--check-leaked-resources",
       "--test_args=--ginkgo.focus=\\[Slow\\] --ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
       "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
-      "--gcp-project=k8s-gke-slow-1-5",
       "--provider=gke",
       "--gcp-zone=us-central1-a"
     ],
