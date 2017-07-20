@@ -17,7 +17,9 @@ limitations under the License.
 package golint
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"strings"
 	"testing"
 
@@ -213,6 +215,25 @@ func TestAddedLines(t *testing.T) {
 			if als[l] != pl {
 				t.Errorf("For patch %s\nExpected added line %d to be %d, but got %d", tc.patch, l, pl, als[l])
 			}
+		}
+	}
+}
+
+func TestRealChanges(t *testing.T) {
+	b, err := ioutil.ReadFile("test_changes.json")
+	if err != nil {
+		t.Fatalf("Reading test file: %v", err)
+	}
+	var changes []github.PullRequestChange
+	if err := json.Unmarshal(b, &changes); err != nil {
+		t.Fatalf("Unmarshaling test file: %v", err)
+	}
+	if len(changes) == 0 {
+		t.Fatal("No changes.")
+	}
+	for _, c := range changes {
+		if _, err := addedLines(c.Patch); err != nil {
+			t.Errorf("Error in %s: %v", c.Filename, err)
 		}
 	}
 }

@@ -11,6 +11,7 @@ load(
 go_test(
     name = "go_default_test",
     srcs = ["golint_test.go"],
+    data = ["test_changes.json"],
     library = ":go_default_library",
     tags = ["automanaged"],
     deps = [
