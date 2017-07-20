@@ -52,10 +52,6 @@ presubmits:
     context: pull-kops-e2e-kubernetes-aws
     rerun_command: "/test pull-kops-e2e-kubernetes-aws"
     trigger: "((?m)^@k8s-bot (pull-kops-e2e-kubernetes-aws )?test this,?(\\s+|$)|(?m)^/test( all| pull-kops-e2e-kubernetes-aws),?(\\s+|$))"
-  - name: pull-kops-e2e-kubernetes-aws-scenario
-    context: pull-kops-e2e-kubernetes-aws-scenario
-    rerun_command: "/test pull-kops-e2e-kubernetes-aws-scenario"
-    trigger: "((?m)^@k8s-bot pull-kops-e2e-kubernetes-aws-scenario test this,?(\\s+|$)|(?m)^/test pull-kops-e2e-kubernetes-aws-scenario,?(\\s+|$))"
   kubernetes/kubernetes:
   - name: pull-kubernetes-bazel
     context: pull-kubernetes-bazel
@@ -190,10 +186,6 @@ presubmits:
     context: pull-kubernetes-e2e-kops-aws
     rerun_command: "/test pull-kubernetes-e2e-kops-aws"
     trigger: "((?m)^@k8s-bot (pull-kubernetes-e2e-kops-aws )?test this,?(\\s+|$)|(?m)^/test( all| pull-kubernetes-e2e-kops-aws),?(\\s+|$))"
-  - name: pull-kubernetes-e2e-kops-aws-scenario
-    context: pull-kubernetes-e2e-kops-aws-scenario
-    rerun_command: "/test pull-kubernetes-e2e-kops-aws-scenario"
-    trigger: "((?m)^@k8s-bot pull-kubernetes-e2e-kops-aws-scenario test this,?(\\s+|$)|(?m)^/test pull-kubernetes-e2e-kops-aws-scenario,?(\\s+|$))"
   - name: pull-kubernetes-e2e-kubeadm-gce
     context: pull-kubernetes-e2e-kubeadm-gce
     always_run: false
@@ -463,10 +455,6 @@ presubmits:
     context: pull-security-kubernetes-e2e-kops-aws
     rerun_command: "/test pull-security-kubernetes-e2e-kops-aws"
     trigger: "((?m)^@k8s-bot (pull-security-kubernetes-e2e-kops-aws )?test this,?(\\s+|$)|(?m)^/test( all| pull-security-kubernetes-e2e-kops-aws),?(\\s+|$))"
-  - name: pull-security-kubernetes-e2e-kops-aws-scenario
-    context: pull-security-kubernetes-e2e-kops-aws-scenario
-    rerun_command: "/test pull-security-kubernetes-e2e-kops-aws-scenario"
-    trigger: "((?m)^@k8s-bot pull-security-kubernetes-e2e-kops-aws-scenario test this,?(\\s+|$)|(?m)^/test pull-security-kubernetes-e2e-kops-aws-scenario,?(\\s+|$))"
   - name: pull-security-kubernetes-e2e-kubeadm-gce
     context: pull-security-kubernetes-e2e-kubeadm-gce
     always_run: false

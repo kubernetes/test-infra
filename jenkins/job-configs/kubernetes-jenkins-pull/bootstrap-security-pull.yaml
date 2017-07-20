@@ -55,7 +55,7 @@
         git clone https://github.com/kubernetes/test-infra -b master
         './test-infra/jenkins/bootstrap.py' \
             --job='{job-name}' \
-            --json='{json}' \
+            --json \
             --pull="${{PULL_REFS}}" \
             --repo='{repo-name}' \
             --root="${{GOPATH}}/src" \
@@ -71,66 +71,50 @@
     - kubernetes-cross:
         max-total: 12
         job-name: pull-kubernetes-cross
-        json: 1
         repo-name: 'github.com/kubernetes-security/kubernetes'
         timeout: 80
     - kubernetes-e2e-gce:
         max-total: 12
         job-name: pull-kubernetes-e2e-gce
-        json: 1
         repo-name: 'github.com/kubernetes-security/kubernetes'
         timeout: 75
     - kubernetes-e2e-gce-gci:
         max-total: 12
         job-name: pull-kubernetes-e2e-gce-gci
-        json: 1
         repo-name: 'github.com/kubernetes-security/kubernetes'
         timeout: 75
     - kubernetes-e2e-gce-etcd3:
         max-total: 12
         job-name: pull-kubernetes-e2e-gce-etcd3
-        json: 1
         repo-name: 'github.com/kubernetes-security/kubernetes'
         timeout: 85
     - kubernetes-e2e-kops-aws:
         max-total: 12
         job-name: pull-kubernetes-e2e-kops-aws
-        json: 0
-        repo-name: 'github.com/kubernetes-security/kubernetes'
-        timeout: 0
-    - kubernetes-e2e-kops-aws-scenario:
-        max-total: 5
-        job-name: pull-kubernetes-e2e-kops-aws-scenario
-        json: 1
         repo-name: 'github.com/kubernetes-security/kubernetes'
         timeout: 75
     - kubernetes-kubemark-e2e-gce:
         max-total: 12
         job-name: pull-kubernetes-kubemark-e2e-gce
-        json: 1
         repo-name: 'github.com/kubernetes-security/kubernetes'
         timeout: 65
     - kubernetes-kubemark-e2e-gce-gci:
         max-total: 12
         job-name: pull-kubernetes-kubemark-e2e-gce-gci
-        json: 1
         repo-name: 'github.com/kubernetes-security/kubernetes'
         timeout: 75
     - kubernetes-node-e2e:
         max-total: 12
         job-name: pull-kubernetes-node-e2e
-        json: 1
         repo-name: 'github.com/kubernetes-security/kubernetes'
         timeout: 90
     - kubernetes-verify:
         max-total: 12
         job-name: pull-kubernetes-verify
-        json: 1
         repo-name: 'github.com/kubernetes-security/kubernetes'
         timeout: 60
     - kubernetes-unit:
         max-total: 12
         job-name: pull-kubernetes-unit
-        json: 1
         repo-name: 'github.com/kubernetes-security/kubernetes'
         timeout: 60

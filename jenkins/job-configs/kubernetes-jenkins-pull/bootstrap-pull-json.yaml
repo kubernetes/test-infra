@@ -106,13 +106,48 @@
         job-name: pull-kubernetes-kubemark-e2e-gce-gci
         repo-name: 'k8s.io/kubernetes'
         timeout: 75
-    - kops-e2e-kubernetes-aws-scenario:
-        job-name: pull-kops-e2e-kubernetes-aws-scenario
+    - cadvisor-e2e:  # owner: stclair@google.com
+        job-name: pull-cadvisor-e2e
+        max-total: 5
+        repo-name: 'github.com/google/cadvisor'
+        timeout: 10
+    - charts-e2e:
+        job-name: pull-charts-e2e
+        max-total: 5
+        repo-name: 'k8s.io/charts'
+        timeout: 10
+    - heapster-e2e:  # owner: pszczesniak@google.com
+        job-name: pull-heapster-e2e
+        max-total: 5
+        repo-name: 'k8s.io/heapster'
+        timeout: 40
+    - kops-e2e-kubernetes-aws:  # owner: zml@google.com
+        job-name: pull-kops-e2e-kubernetes-aws
         max-total: 5
         repo-name: 'k8s.io/kops'
         timeout: 75
-    - kubernetes-e2e-kops-aws-scenario:
-        max-total: 5
-        job-name: pull-kubernetes-e2e-kops-aws-scenario
+    - kubernetes-cross:
+        max-total: 12
+        job-name: pull-kubernetes-cross
+        repo-name: 'k8s.io/kubernetes'
+        timeout: 80
+    - kubernetes-e2e-kops-aws:
+        max-total: 12
+        job-name: pull-kubernetes-e2e-kops-aws
         repo-name: 'k8s.io/kubernetes'
         timeout: 75
+    - kubernetes-node-e2e:
+        max-total: 12
+        job-name: pull-kubernetes-node-e2e
+        repo-name: 'k8s.io/kubernetes'
+        timeout: 90
+    - kubernetes-verify:
+        max-total: 12
+        job-name: pull-kubernetes-verify
+        repo-name: 'k8s.io/kubernetes'
+        timeout: 60
+    - kubernetes-unit:
+        max-total: 12
+        job-name: pull-kubernetes-unit
+        repo-name: 'k8s.io/kubernetes'
+        timeout: 60

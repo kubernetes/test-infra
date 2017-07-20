@@ -9104,14 +9104,14 @@
       "UNKNOWN"
     ]
   },
-  "pull-kops-e2e-kubernetes-aws-scenario": {
+  "pull-kops-e2e-kubernetes-aws": {
     "args": [
       "--extract=release/stable",
       "--build-kops",
       "--cluster=",
       "--env-file=jobs/platform/kops_aws.env",
       "--env-file=jobs/ci-kubernetes-e2e-kops-aws.env",
-      "--env-file=jobs/pull-kops-e2e-kubernetes-aws-scenario.env",
+      "--env-file=jobs/pull-kops-e2e-kubernetes-aws.env",
       "--check-leaked-resources=false",
       "--timeout=55m"
     ],
@@ -9281,7 +9281,7 @@
       "UNKNOWN"
     ]
   },
-  "pull-kubernetes-e2e-kops-aws-scenario": {
+  "pull-kubernetes-e2e-kops-aws": {
     "args": [
       "--build",
       "--cluster=",
@@ -9289,7 +9289,7 @@
       "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-kops-aws",
       "--env-file=jobs/platform/kops_aws.env",
       "--env-file=jobs/ci-kubernetes-e2e-kops-aws.env",
-      "--env-file=jobs/pull-kubernetes-e2e-kops-aws-scenario.env",
+      "--env-file=jobs/pull-kubernetes-e2e-kops-aws.env",
       "--check-leaked-resources=false",
       "--timeout=55m",
       "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]|\\[HPA\\]|Dashboard|Services.*functioning.*NodePort"
