@@ -1,17 +1,19 @@
-git_repository(
+http_archive(
     name = "io_bazel_rules_go",
-    commit = "bfad99993ea297e85ac3606226debcc26ee54972",
-    remote = "https://github.com/bazelbuild/rules_go.git",
+    sha256 = "2f9bd28ee44269283ba7ff0b7cd56cb878d5c5aacb0e4e95577f97e94d9e08e4",
+    strip_prefix = "rules_go-8da86576c32b10a834c78f8afe71dea9e9da86ff",
+    urls = ["https://github.com/bazelbuild/rules_go/archive/8da86576c32b10a834c78f8afe71dea9e9da86ff.tar.gz"],
 )
 
 load("@io_bazel_rules_go//go:def.bzl", "go_repositories")
 
 go_repositories()
 
-git_repository(
+http_archive(
     name = "org_pubref_rules_node",
-    commit = "bd14a465063da90f632bad46c1efbf802c339e68",
-    remote = "https://github.com/pubref/rules_node.git",
+    sha256 = "a249ddad5819878d9de4761c76260856c6bede2d6339f54175303474f4b2542e",
+    strip_prefix = "rules_node-bd14a465063da90f632bad46c1efbf802c339e68",
+    urls = ["https://github.com/pubref/rules_node/archive/bd14a465063da90f632bad46c1efbf802c339e68.tar.gz"],
 )
 
 load("@org_pubref_rules_node//node:rules.bzl", "node_repositories", "npm_repository")

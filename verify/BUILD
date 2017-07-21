@@ -13,7 +13,7 @@ sh_test(
     srcs = ["verify-gofmt.sh"],
     data = [
         "//:all-srcs",
-        "@io_bazel_rules_go_toolchain//:toolchain",
+        "@io_bazel_rules_go_toolchain//:go_toolchain",
     ],
 )
 
@@ -22,7 +22,7 @@ sh_test(
     srcs = ["verify-govet.sh"],
     data = [
         "//:all-srcs",
-        "@io_bazel_rules_go_toolchain//:toolchain",
+        "@io_bazel_rules_go_toolchain//:go_toolchain",
     ],
 )
 
