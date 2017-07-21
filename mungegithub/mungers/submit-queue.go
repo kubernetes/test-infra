@@ -258,10 +258,11 @@ type SubmitQueue struct {
 
 	features *features.Features
 
-	mergeLock   sync.Mutex // acquired when attempting to merge a specific PR
-	BatchURL    string
-	ContextURL  string
-	batchStatus submitQueueBatchStatus
+	mergeLock    sync.Mutex // acquired when attempting to merge a specific PR
+	ProwDataURL  string
+	BatchEnabled bool
+	ContextURL   string
+	batchStatus  submitQueueBatchStatus
 }
 
 func init() {
@@ -467,7 +468,7 @@ func (sq *SubmitQueue) internalInitialize(config *github.Config, features *featu
 		http.Handle("/sq-stats", gziphandler.GzipHandler(http.HandlerFunc(sq.serveSQStats)))
 		http.Handle("/flakes", gziphandler.GzipHandler(http.HandlerFunc(sq.serveFlakes)))
 		http.Handle("/metadata", gziphandler.GzipHandler(http.HandlerFunc(sq.serveMetadata)))
-		if sq.BatchURL != "" {
+		if sq.BatchEnabled {
 			http.Handle("/batch", gziphandler.GzipHandler(http.HandlerFunc(sq.serveBatch)))
 		}
 		config.ServeDebugStats("/stats")
@@ -486,9 +487,8 @@ func (sq *SubmitQueue) internalInitialize(config *github.Config, features *featu
 
 	go sq.handleGithubE2EAndMerge()
 	go sq.updateGoogleE2ELoop()
-	if sq.BatchURL != "" {
+	if sq.BatchEnabled {
 		go sq.handleGithubE2EBatchMerge()
-
 	}
 
 	if sq.AdminPort != 0 {
@@ -551,7 +551,8 @@ func (sq *SubmitQueue) RegisterOptions(opts *options.Options) {
 	// If you create a StringSliceVar you may wish to check out 'cleanStringSlice()'
 	opts.RegisterString(&sq.Metadata.HistoryUrl, "history-url", "", "URL to access the submit-queue instance's health history.")
 	opts.RegisterString(&sq.Metadata.ChartUrl, "chart-url", "", "URL to access the submit-queue instance's health charts.")
-	opts.RegisterString(&sq.BatchURL, "batch-url", "", "Prow data.json URL to read batch results")
+	opts.RegisterString(&sq.ProwDataURL, "prow-data-url", "", "Prow data.json URL to read batch results")
+	opts.RegisterBool(&sq.BatchEnabled, "batch-enabled", false, "Batch merge")
 	opts.RegisterString(&sq.ContextURL, "context-url", "", "URL where the submit queue is serving - used in Github status contexts")
 	opts.RegisterBool(&sq.GateApproved, "gate-approved", false, "Gate on approved label")
 	opts.RegisterBool(&sq.GateCLA, "gate-cla", false, "Gate on cla labels")
