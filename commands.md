@@ -19,7 +19,7 @@ Command | Implemented By | Who can run it | Description
 `/lgtm` | prow [lgtm](./prow/plugins/lgtm) | assignees | adds the `lgtm` label
 `/lgtm cancel` | prow [lgtm](./prow/plugins/lgtm) | authors and assignees | removes the `lgtm` label
 `/approve` | mungegithub [approvers](./mungegithub/mungers/approvers) | owners | approve all the files for which you are an approver
-`/approve no-issue` | mungegithub [approvers](./mungegithub/mungers/approvers) | owners | approve when a PR doesn't have associated issue
+`/approve no-issue` | mungegithub [approvers](./mungegithub/mungers/approvers) | owners | approve when a PR doesn't have an associated issue
 `/approve cancel` | mungegithub [approvers](./mungegithub/mungers/approvers) | owners | removes your approval on this pull-request
 `/close` | prow [close](./prow/plugins/close) | authors and assignees | closes the issue
 `/reopen` | prow [reopen](./prow/plugins/reopen) | authors and assignees | reopens a closed issue
