@@ -22,6 +22,7 @@ import json
 import os
 import subprocess
 
+# This is a public service announcement. This is only a test.
 def load_projects(configs):
     """Scans the project directories for GCP projects to check."""
     filter_re = re.compile(r'^.+\.(env|sh)$')
