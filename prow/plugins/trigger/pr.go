@@ -32,6 +32,7 @@ const (
 func handlePR(c client, pr github.PullRequestEvent) error {
 	org := pr.PullRequest.Base.Repo.Owner.Login
 	repo := pr.PullRequest.Base.Repo.Name
+	author := pr.PullRequest.User.Login
 	var trustedOrg string
 	if tr := triggerConfig(c.Config, org, repo); tr != nil && tr.TrustedOrg == "" {
 		c.Logger.Info("Ignoring PR Event, no TrustedOrg set in config.")
@@ -44,16 +45,16 @@ func handlePR(c client, pr github.PullRequestEvent) error {
 		// When a PR is opened, if the author is in the org then build it.
 		// Otherwise, ask for "ok to test". There's no need to look for previous
 		// "ok to test" comments since the PR was just opened!
-		member, err := c.GitHubClient.IsMember(trustedOrg, pr.PullRequest.User.Login)
+		member, err := c.GitHubClient.IsMember(trustedOrg, author)
 		if err != nil {
 			return fmt.Errorf("could not check membership: %s", err)
 		} else if member {
 			c.Logger.Info("Starting all jobs for new PR.")
 			return buildAll(c, pr.PullRequest)
 		} else {
-			c.Logger.Info("Asking PR author to join the org.")
-			if err := askToJoin(c.GitHubClient, pr.PullRequest, trustedOrg); err != nil {
-				return fmt.Errorf("could not ask to join: %s", err)
+			c.Logger.Infof("Welcome message to PR author %q.", author)
+			if err := welcomeMsg(c.GitHubClient, pr.PullRequest, trustedOrg); err != nil {
+				return fmt.Errorf("could not welcome non-org member %q: %v", author, err)
 			}
 		}
 	case "reopened", "synchronize":
@@ -82,7 +83,7 @@ func handlePR(c client, pr github.PullRequestEvent) error {
 	return nil
 }
 
-func askToJoin(ghc githubClient, pr github.PullRequest, trustedOrg string) error {
+func welcomeMsg(ghc githubClient, pr github.PullRequest, trustedOrg string) error {
 	commentTemplate := `Hi @%s. Thanks for your PR.
 
 I'm waiting for a [%s](https://github.com/orgs/%s/people) member to verify that this patch is reasonable to test. If it is, they should reply with ` + "`/ok-to-test`" + ` on its own line. Until that is done, I will not automatically test new commits in this PR, but the usual testing commands by org members will still work. Regular contributors should join the org to skip this step.
@@ -101,7 +102,7 @@ I understand the commands that are listed [here](https://github.com/kubernetes/t
 	err1 := ghc.AddLabel(owner, name, pr.Number, needsOkToTest)
 	err2 := ghc.CreateComment(owner, name, pr.Number, comment)
 	if err1 != nil || err2 != nil {
-		return fmt.Errorf("askToJoin: error adding label: %v, error creating comment: %v", err1, err2)
+		return fmt.Errorf("welcomeMsg: error adding label: %v, error creating comment: %v", err1, err2)
 	}
 	return nil
 }
