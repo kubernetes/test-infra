@@ -25,6 +25,8 @@ import (
 	"os/exec"
 	"path/filepath"
 
+	"github.com/Sirupsen/logrus"
+
 	"k8s.io/test-infra/prow/git"
 )
 
@@ -52,6 +54,7 @@ func New() (*LocalGit, *git.Client, error) {
 		os.RemoveAll(t)
 		return nil, nil, err
 	}
+	c.Logger = logrus.NewEntry(logrus.StandardLogger())
 	c.SetRemote(t)
 	return &LocalGit{
 		Dir: t,

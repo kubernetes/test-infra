@@ -71,6 +71,7 @@ func main() {
 	if err := configAgent.Start(*configPath); err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
+	logger := logrus.StandardLogger()
 
 	var webhookSecret []byte
 	var githubClient *github.Client
@@ -86,10 +87,7 @@ func main() {
 			*githubBotName = "fake-robot"
 		}
 		githubClient = github.NewFakeClient(*githubBotName)
-		githubClient.Logger = logrus.StandardLogger()
-
 		kubeClient = kube.NewFakeClient()
-		kubeClient.Logger = logrus.StandardLogger()
 	} else {
 		logrus.SetFormatter(&logrus.JSONFormatter{})
 
@@ -147,6 +145,10 @@ func main() {
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting git client.")
 	}
+
+	githubClient.Logger = logger.WithField("client", "github")
+	kubeClient.Logger = logger.WithField("client", "kube")
+	gitClient.Logger = logger.WithField("client", "git")
 
 	pluginAgent := &plugins.PluginAgent{
 		PluginClient: plugins.PluginClient{

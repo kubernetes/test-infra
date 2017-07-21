@@ -12,6 +12,7 @@ go_library(
     name = "go_default_library",
     srcs = ["git.go"],
     tags = ["automanaged"],
+    deps = ["//vendor:github.com/Sirupsen/logrus"],
 )
 
 filegroup(
