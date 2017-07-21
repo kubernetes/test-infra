@@ -9,16 +9,12 @@ load(
 
 go_library(
     name = "go_default_library",
-    srcs = [
-        "reports.go",
-        "shame.go",
-    ],
+    srcs = ["reports.go"],
     tags = ["automanaged"],
     deps = [
         "//mungegithub/github:go_default_library",
         "//mungegithub/options:go_default_library",
         "//vendor:github.com/golang/glog",
-        "//vendor:github.com/google/go-github/github",
     ],
 )
 
