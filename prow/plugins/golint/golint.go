@@ -235,11 +235,14 @@ func numProblems(ps map[string]map[int]lint.Problem) int {
 // PullRequestChange object.
 func addedLines(patch string) (map[int]int, error) {
 	result := make(map[int]int)
+	if patch == "" {
+		return result, nil
+	}
 	lines := strings.Split(patch, "\n")
 	for i := 0; i < len(lines); i++ {
 		_, oldLen, newLine, newLen, err := parseHunkLine(lines[i])
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("couldn't parse hunk on line %d in patch %s: %v", i, patch, err)
 		}
 		oldAdd := 0
 		newAdd := 0
@@ -258,7 +261,7 @@ func addedLines(patch string) (map[int]int, error) {
 				result[newLine+newAdd] = i
 				newAdd++
 			default:
-				return nil, fmt.Errorf("bad line in patch: %s", lines[i])
+				return nil, fmt.Errorf("bad prefix on line %d in patch %s", i, patch)
 			}
 		}
 	}

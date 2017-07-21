@@ -199,6 +199,9 @@ func TestAddedLines(t *testing.T) {
 			patch: "@@ -1 +1 @@",
 			err:   true,
 		},
+		{
+			patch: "",
+		},
 	}
 	for _, tc := range testcases {
 		als, err := addedLines(tc.patch)
