@@ -19,6 +19,7 @@ package mungers
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"math"
 	"net/http"
@@ -259,7 +260,7 @@ type SubmitQueue struct {
 	features *features.Features
 
 	mergeLock    sync.Mutex // acquired when attempting to merge a specific PR
-	ProwDataURL  string
+	ProwURL      string     // prow json jobs results page
 	BatchEnabled bool
 	ContextURL   string
 	batchStatus  submitQueueBatchStatus
@@ -429,6 +430,10 @@ func (sq *SubmitQueue) internalInitialize(config *github.Config, features *featu
 	sq.Metadata.ProjectName = strings.Title(config.Project)
 	sq.githubConfig = config
 
+	if sq.BatchEnabled && sq.ProwURL == "" {
+		return errors.New("batch merges require prow-url to be set!")
+	}
+
 	// TODO: This is not how injection for tests should work.
 	if sq.FakeE2E {
 		sq.e2e = &fake_e2e.FakeE2ETester{}
@@ -551,8 +556,8 @@ func (sq *SubmitQueue) RegisterOptions(opts *options.Options) {
 	// If you create a StringSliceVar you may wish to check out 'cleanStringSlice()'
 	opts.RegisterString(&sq.Metadata.HistoryUrl, "history-url", "", "URL to access the submit-queue instance's health history.")
 	opts.RegisterString(&sq.Metadata.ChartUrl, "chart-url", "", "URL to access the submit-queue instance's health charts.")
-	opts.RegisterString(&sq.ProwDataURL, "prow-data-url", "", "Prow data.json URL to read batch results")
-	opts.RegisterBool(&sq.BatchEnabled, "batch-enabled", false, "Batch merge")
+	opts.RegisterString(&sq.ProwURL, "prow-url", "", "Prow data.json URL to read batch results")
+	opts.RegisterBool(&sq.BatchEnabled, "batch-enabled", false, "Do batch merges (requires prow/splice coordination).")
 	opts.RegisterString(&sq.ContextURL, "context-url", "", "URL where the submit queue is serving - used in Github status contexts")
 	opts.RegisterBool(&sq.GateApproved, "gate-approved", false, "Gate on approved label")
 	opts.RegisterBool(&sq.GateCLA, "gate-cla", false, "Gate on cla labels")
