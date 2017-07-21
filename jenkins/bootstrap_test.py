@@ -1405,6 +1405,10 @@ class IntegrationTest(unittest.TestCase):
 
     def test_commit_in_meta(self):
         sha = subprocess.check_output(['git', 'rev-parse', 'HEAD']).strip()
+        cwd = os.getcwd()
+        os.chdir(bootstrap.test_infra('.'))
+        infra_sha = subprocess.check_output(['git', 'rev-parse', 'HEAD']).strip()
+        os.chdir(cwd)
 
         # Commit SHA should in meta
         call = lambda *a, **kw: bootstrap._call(5, *a, **kw)
@@ -1413,6 +1417,9 @@ class IntegrationTest(unittest.TestCase):
         self.assertIn('repo-commit', meta)
         self.assertEquals(sha, meta['repo-commit'])
         self.assertEquals(40, len(meta['repo-commit']))
+        self.assertIn('infra-commit', meta)
+        self.assertEquals(infra_sha, meta['infra-commit'])
+        self.assertEquals(40, len(meta['infra-commit']))
         self.assertIn(REPO, meta.get('repos'))
         self.assertIn('other-repo', meta.get('repos'))
         self.assertEquals(REPO, meta.get('repo'))

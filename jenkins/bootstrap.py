@@ -411,7 +411,7 @@ def metadata(repos, artifacts, call):
         pass
 
     cwd = os.getcwd()
-    os.chdir(test_infra('/'))
+    os.chdir(test_infra('.'))
     try:
         commit = call(['git', 'rev-parse', 'HEAD'], output=True)
         if commit:
