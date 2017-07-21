@@ -71,17 +71,17 @@ presubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:0.13
+      - image: gcr.io/k8s-testimages/bazelbuild:v20170728-71064cf4
         args:
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--git-cache=/root/.cache/git"
         - "--clean"
+        - "--git-cache=/root/.cache/git"
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        env:
-        - name: GOOGLE_APPLICATION_CREDENTIALS
-          value: /etc/service-account/service-account.json
         volumeMounts:
         - name: service
           mountPath: /etc/service-account
@@ -342,17 +342,17 @@ presubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:0.13
+      - image: gcr.io/k8s-testimages/bazelbuild:v20170728-71064cf4
         args:
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--git-cache=/root/.cache/git"
         - "--clean"
+        - "--git-cache=/root/.cache/git"
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        env:
-        - name: GOOGLE_APPLICATION_CREDENTIALS
-          value: /etc/service-account/service-account.json
         volumeMounts:
         - name: service
           mountPath: /etc/service-account
@@ -613,17 +613,17 @@ presubmits:
     trigger: "((?m)^@k8s-bot (pull-test-infra-bazel )?test this,?(\\s+|$)|(?m)^/test( all| pull-test-infra-bazel),?(\\s+|$))"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:0.13
+      - image: gcr.io/k8s-testimages/bazelbuild:v20170728-71064cf4
         args:
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--git-cache=/root/.cache/git"
         - "--clean"
+        - "--git-cache=/root/.cache/git"
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        env:
-        - name: GOOGLE_APPLICATION_CREDENTIALS
-          value: /etc/service-account/service-account.json
         volumeMounts:
         - name: service
           mountPath: /etc/service-account
@@ -788,18 +788,18 @@ postsubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:0.13
+      - image: gcr.io/k8s-testimages/bazelbuild:v20170728-71064cf4
         args:
-        - "--upload=gs://kubernetes-jenkins/logs"
-        - "--git-cache=/root/.cache/git"
         - "--clean"
+        - "--git-cache=/root/.cache/git"
+        - "--job=$(JOB_NAME)"
         - "--json"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/logs"
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        env:
-        - name: GOOGLE_APPLICATION_CREDENTIALS
-          value: /etc/service-account/service-account.json
         volumeMounts:
         - name: service
           mountPath: /etc/service-account
@@ -820,17 +820,17 @@ postsubmits:
     - name: ci-kubernetes-bazel-test
       spec:
         containers:
-        - image: gcr.io/k8s-testimages/bazelbuild:0.13
+        - image: gcr.io/k8s-testimages/bazelbuild:v20170728-71064cf4
           args:
-          - "--upload=gs://kubernetes-jenkins/logs"
-          - "--git-cache=/root/.cache/git"
           - "--clean"
+          - "--git-cache=/root/.cache/git"
+          - "--job=$(JOB_NAME)"
           - "--json"
+          - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+          - "--service-account=/etc/service-account/service-account.json"
+          - "--upload=gs://kubernetes-jenkins/logs"
           securityContext:
             privileged: true
-          env:
-          - name: GOOGLE_APPLICATION_CREDENTIALS
-            value: /etc/service-account/service-account.json
           volumeMounts:
           - name: service
             mountPath: /etc/service-account
@@ -897,18 +897,18 @@ postsubmits:
     - release-1.6
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:0.13
+      - image: gcr.io/k8s-testimages/bazelbuild:v20170728-71064cf4
         args:
-        - "--upload=gs://kubernetes-jenkins/logs"
-        - "--git-cache=/root/.cache/git"
         - "--clean"
+        - "--git-cache=/root/.cache/git"
+        - "--job=$(JOB_NAME)"
         - "--json"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/logs"
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        env:
-        - name: GOOGLE_APPLICATION_CREDENTIALS
-          value: /etc/service-account/service-account.json
         volumeMounts:
         - name: service
           mountPath: /etc/service-account
@@ -929,17 +929,17 @@ postsubmits:
     - name: ci-kubernetes-bazel-test-1-6
       spec:
         containers:
-        - image: gcr.io/k8s-testimages/bazelbuild:0.13
+        - image: gcr.io/k8s-testimages/bazelbuild:v20170728-71064cf4
           args:
-          - "--upload=gs://kubernetes-jenkins/logs"
-          - "--git-cache=/root/.cache/git"
           - "--clean"
+          - "--git-cache=/root/.cache/git"
+          - "--job=$(JOB_NAME)"
           - "--json"
+          - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+          - "--service-account=/etc/service-account/service-account.json"
+          - "--upload=gs://kubernetes-jenkins/logs"
           securityContext:
             privileged: true
-          env:
-          - name: GOOGLE_APPLICATION_CREDENTIALS
-            value: /etc/service-account/service-account.json
           volumeMounts:
           - name: service
             mountPath: /etc/service-account
@@ -1006,18 +1006,19 @@ postsubmits:
     - release-1.7
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:0.13
+      - image: gcr.io/k8s-testimages/bazelbuild:v20170728-71064cf4
         args:
-        - "--upload=gs://kubernetes-jenkins/logs"
-        - "--git-cache=/root/.cache/git"
         - "--clean"
+        - "--git-cache=/root/.cache/git"
+        - "--job=$(JOB_NAME)"
         - "--json"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/logs"
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
         env:
-        - name: GOOGLE_APPLICATION_CREDENTIALS
-          value: /etc/service-account/service-account.json
         # Make Bazel use shared cache for its root
         # https://docs.bazel.build/versions/master/output_directories.html#documentation-of-the-current-bazel-output-directory-layout
         - name: TEST_TMPDIR
@@ -1042,17 +1043,18 @@ postsubmits:
     - name: ci-kubernetes-bazel-test-1-7
       spec:
         containers:
-        - image: gcr.io/k8s-testimages/bazelbuild:0.13
+        - image: gcr.io/k8s-testimages/bazelbuild:v20170728-71064cf4
           args:
-          - "--upload=gs://kubernetes-jenkins/logs"
-          - "--git-cache=/root/.cache/git"
           - "--clean"
+          - "--git-cache=/root/.cache/git"
+          - "--job=$(JOB_NAME)"
           - "--json"
+          - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+          - "--service-account=/etc/service-account/service-account.json"
+          - "--upload=gs://kubernetes-jenkins/logs"
           securityContext:
             privileged: true
           env:
-          - name: GOOGLE_APPLICATION_CREDENTIALS
-            value: /etc/service-account/service-account.json
           # Make Bazel use shared cache for its root
           # https://docs.bazel.build/versions/master/output_directories.html#documentation-of-the-current-bazel-output-directory-layout
           - name: TEST_TMPDIR
@@ -1167,17 +1169,17 @@ postsubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:0.13
+      - image: gcr.io/k8s-testimages/bazelbuild:v20170728-71064cf4
         args:
-        - "--upload=gs://kubernetes-jenkins/logs"
-        - "--git-cache=/root/.cache/git"
         - "--clean"
+        - "--git-cache=/root/.cache/git"
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/logs"
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
-        env:
-        - name: GOOGLE_APPLICATION_CREDENTIALS
-          value: /etc/service-account/service-account.json
         volumeMounts:
         - name: service
           mountPath: /etc/service-account
@@ -1200,10 +1202,15 @@ postsubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:0.13
+      - image: gcr.io/k8s-testimages/bazelbuild:v20170728-71064cf4
         args:
-        - "--upload=gs://kubernetes-jenkins/logs"
+        - "--clean"
+        - "--git-cache=/root/.cache/git"
+        - "--job=$(JOB_NAME)"
         - "--json"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/logs"
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: /etc/service-account/service-account.json
@@ -14022,19 +14029,17 @@ periodics:
   interval: 1h
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bazelbuild:0.13
+    - image: gcr.io/k8s-testimages/bazelbuild:v20170728-71064cf4
       args:
-      - "--upload=gs://kubernetes-jenkins/logs"
-      - "--git-cache=/root/.cache/git"
       - "--clean"
+      - "--git-cache=/root/.cache/git"
+      - "--job=$(JOB_NAME)"
+      - "--repo=k8s.io/test-infra=master"
+      - "--service-account=/etc/service-account/service-account.json"
+      - "--upload=gs://kubernetes-jenkins/logs"
       # Bazel needs privileged mode in order to sandbox builds.
       securityContext:
         privileged: true
-      env:
-      - name: REPO_NAME
-        value: test-infra
-      - name: GOOGLE_APPLICATION_CREDENTIALS
-        value: /etc/service-account/service-account.json
       volumeMounts:
       - name: service
         mountPath: /etc/service-account
@@ -14099,20 +14104,18 @@ periodics:
   interval: 2h
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bazelbuild:0.13
+    - image: gcr.io/k8s-testimages/bazelbuild:v20170728-71064cf4
       args:
-      - "--upload=gs://kubernetes-jenkins/logs"
-      - "--git-cache=/root/.cache/git"
       - "--clean"
+      - "--git-cache=/root/.cache/git"
+      - "--job=$(JOB_NAME)"
       - "--json"
+      - "--repo=k8s.io/kubernetes=release-1.6"
+      - "--service-account=/etc/service-account/service-account.json"
+      - "--upload=gs://kubernetes-jenkins/logs"
       # Bazel needs privileged mode in order to sandbox builds.
       securityContext:
         privileged: true
-      env:
-      - name: REPO_NAME
-        value: kubernetes=release-1.6
-      - name: GOOGLE_APPLICATION_CREDENTIALS
-        value: /etc/service-account/service-account.json
       volumeMounts:
       - name: service
         mountPath: /etc/service-account
@@ -14133,19 +14136,17 @@ periodics:
   - name: periodic-kubernetes-bazel-test-1-6
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:0.13
+      - image: gcr.io/k8s-testimages/bazelbuild:v20170728-71064cf4
         args:
-        - "--upload=gs://kubernetes-jenkins/logs"
-        - "--git-cache=/root/.cache/git"
         - "--clean"
+        - "--git-cache=/root/.cache/git"
+        - "--job=$(JOB_NAME)"
         - "--json"
+        - "--repo=k8s.io/kubernetes=release-1.6"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/logs"
         securityContext:
           privileged: true
-        env:
-        - name: REPO_NAME
-          value: kubernetes=release-1.6
-        - name: GOOGLE_APPLICATION_CREDENTIALS
-          value: /etc/service-account/service-account.json
         volumeMounts:
         - name: service
           mountPath: /etc/service-account
@@ -14213,20 +14214,19 @@ periodics:
   interval: 2h
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bazelbuild:0.13
+    - image: gcr.io/k8s-testimages/bazelbuild:v20170728-71064cf4
       args:
-      - "--upload=gs://kubernetes-jenkins/logs"
-      - "--git-cache=/root/.cache/git"
       - "--clean"
+      - "--git-cache=/root/.cache/git"
+      - "--job=$(JOB_NAME)"
       - "--json"
+      - "--repo=k8s.io/kubernetes=release-1.7"
+      - "--service-account=/etc/service-account/service-account.json"
+      - "--upload=gs://kubernetes-jenkins/logs"
       # Bazel needs privileged mode in order to sandbox builds.
       securityContext:
         privileged: true
       env:
-      - name: REPO_NAME
-        value: kubernetes=release-1.7
-      - name: GOOGLE_APPLICATION_CREDENTIALS
-        value: /etc/service-account/service-account.json
       # Make Bazel use shared cache for its root
       # https://docs.bazel.build/versions/master/output_directories.html#documentation-of-the-current-bazel-output-directory-layout
       - name: TEST_TMPDIR
@@ -14251,19 +14251,18 @@ periodics:
   - name: periodic-kubernetes-bazel-test-1-7
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:0.13
+      - image: gcr.io/k8s-testimages/bazelbuild:v20170728-71064cf4
         args:
-        - "--upload=gs://kubernetes-jenkins/logs"
-        - "--git-cache=/root/.cache/git"
         - "--clean"
+        - "--git-cache=/root/.cache/git"
+        - "--job=$(JOB_NAME)"
         - "--json"
+        - "--repo=k8s.io/kubernetes=release-1.7"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/logs"
         securityContext:
           privileged: true
         env:
-        - name: REPO_NAME
-          value: kubernetes=release-1.7
-        - name: GOOGLE_APPLICATION_CREDENTIALS
-          value: /etc/service-account/service-account.json
         # Make Bazel use shared cache for its root
         # https://docs.bazel.build/versions/master/output_directories.html#documentation-of-the-current-bazel-output-directory-layout
         - name: TEST_TMPDIR
