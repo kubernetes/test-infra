@@ -16,10 +16,8 @@
 set -o errexit
 set -o nounset
 set -o pipefail
+set -o xtrace
 
 git clone https://github.com/kubernetes/test-infra
 ./test-infra/jenkins/bootstrap.py \
-    --repo="k8s.io/${REPO_NAME}=${PULL_REFS:-master}" \
-    --job=${JOB_NAME} \
-    --service-account=${GOOGLE_APPLICATION_CREDENTIALS} \
     "$@"
