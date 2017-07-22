@@ -362,7 +362,7 @@ func (c *Client) GetPullRequestChanges(org, repo string, number int) ([]PullRequ
 	if c.fake {
 		return []PullRequestChange{}, nil
 	}
-	nextURL := fmt.Sprintf("%s/repos/%s/%s/pulls/%d/files", c.base, org, repo, number)
+	nextURL := fmt.Sprintf("%s/repos/%s/%s/pulls/%d/files?per_page=100", c.base, org, repo, number)
 	var changes []PullRequestChange
 	for nextURL != "" {
 		resp, err := c.requestRetry(http.MethodGet, nextURL, "", nil)
