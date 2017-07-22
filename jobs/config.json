@@ -8276,29 +8276,6 @@
       "sig-scale"
     ]
   },
-  "ci-kubernetes-kubemark-5-gce-1.5": {
-    "args": [
-      "--cluster=kubemark-5-1-5",
-      "--docker-in-docker",
-      "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/ci-kubernetes-kubemark-5-gce-1.5.env",
-      "--extract=ci/latest-1.5",
-      "--gcp-project=k8s-kubemark-1-5",
-      "--gcp-zone=us-central1-f",
-      "--kubemark",
-      "--kubemark-master-size=n1-standard-1",
-      "--kubemark-nodes=5",
-      "--mode=docker",
-      "--provider=gce",
-      "--test=false",
-      "--test_args=--ginkgo.focus=\\[Feature:Empty\\] --gather-resource-usage=true --gather-metrics-at-teardown=true --output-print-type=json",
-      "--timeout=60m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-scale"
-    ]
-  },
   "ci-kubernetes-kubemark-500-gce": {
     "args": [
       "--cluster=kubemark-500",
