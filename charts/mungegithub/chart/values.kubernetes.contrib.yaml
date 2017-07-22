@@ -19,7 +19,7 @@ config:
 
   # submit-queue options.
   protected-branches: "master"
-  nonblocking-jenkins-jobs: ""
+  nonblocking-jobs: ""
   do-not-merge-milestones: ""
   admin-port: 9999
   context-url: https://contrib.submit-queue.k8s.io
