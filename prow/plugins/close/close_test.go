@@ -39,6 +39,11 @@ func (c *fakeClient) CloseIssue(owner, repo string, number int) error {
 	return nil
 }
 
+func (c *fakeClient) ClosePR(owner, repo string, number int) error {
+	c.closed = true
+	return nil
+}
+
 func TestCloseComment(t *testing.T) {
 	// "a" is the author, "r1", and "r2" are reviewers.
 	var testcases = []struct {
