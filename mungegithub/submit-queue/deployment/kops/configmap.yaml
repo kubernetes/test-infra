@@ -2,7 +2,7 @@
 http-cache-dir: /cache/httpcache
 organization: kubernetes
 project: kops
-pr-mungers: lgtm-after-commit,submit-queue,needs-rebase
+pr-mungers: check-labels,approval-handler,lgtm-after-commit,submit-queue,needs-rebase
 state: open
 token-file: /etc/secret-volume/token
 period: 30s
@@ -22,6 +22,7 @@ admin-port: 9999
 context-url: https://kops.submit-queue.k8s.io
 
 # munger specific options.
-# label-file: "/gitrepos/kops/labels.yaml"
+label-file: /gitrepos/kops/labels.yaml
 
 gate-cla: true
+gate-approved: true
