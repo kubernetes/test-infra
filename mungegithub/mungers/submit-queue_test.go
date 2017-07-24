@@ -24,6 +24,7 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -888,6 +889,7 @@ func TestSubmitQueue(t *testing.T) {
 
 		for _, job := range someJobNames {
 			numTestChecks := 0
+			var testChecksLock sync.Mutex
 			path := fmt.Sprintf("/bucket/logs/%s/latest-build.txt", job)
 			mux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
 				if r.Method != "GET" {
@@ -902,6 +904,8 @@ func TestSubmitQueue(t *testing.T) {
 				// so we don't want to modify the PR there. Instead we need
 				// to wait until the second time we check Jenkins, which happens
 				// we did the IsMerged() check.
+				testChecksLock.Lock()
+				defer testChecksLock.Unlock()
 				numTestChecks = numTestChecks + 1
 				if numTestChecks == 2 && test.mergeAfterQueued {
 					test.pr.Merged = boolPtr(true)
@@ -1014,12 +1018,14 @@ func TestSubmitQueue(t *testing.T) {
 					return
 				}
 				found := false
+				sq.Lock()
 				for _, status := range sq.statusHistory {
 					if status.Reason == test.reason {
 						found = true
 						break
 					}
 				}
+				sq.Unlock()
 				if found {
 					done <- true
 					return
