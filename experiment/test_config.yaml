@@ -37,7 +37,7 @@ jobs:
   # +------------+----------+----------+------------+------------+------------+
   # | cosdev     | every 2h | every 2h |   every 2h |      never |      never |
   # +------------+----------+----------+------------+------------+------------+
-  # | cosbeta    | every 2h | every 2h |   every 2h |   every 2h |      never |
+  # | cosbeta    | every 2h | every 2h |   every 2h |   every 2h |   every 2h |
   # +------------+----------+----------+------------+------------+------------+
   # | cosstable1 | every 2h | every 2h |   every 6h |   every 6h |   every 6h |
   # +------------+----------+----------+------------+------------+------------+
@@ -164,6 +164,24 @@ jobs:
     - --gcp-project=cos-image-validation
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-cosbeta-k8sstable2-serial:
+    interval: 2h
+    args:
+    - --check-leaked-resources=false # disabled since it uses shared project.
+    - --gcp-project=cos-image-validation
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2e-gce-cosbeta-k8sstable3-default:
+    interval: 2h
+    args:
+    - --check-leaked-resources=false # disabled since it uses shared project.
+    - --gcp-project=cos-image-validation
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2e-gce-cosbeta-k8sstable3-slow:
+    interval: 2h
+    args:
+    - --check-leaked-resources=false # disabled since it uses shared project.
+    - --gcp-project=cos-image-validation
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2e-gce-cosbeta-k8sstable3-serial:
     interval: 2h
     args:
     - --check-leaked-resources=false # disabled since it uses shared project.
