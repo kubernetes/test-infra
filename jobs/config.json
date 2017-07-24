@@ -9416,5 +9416,23 @@
     "sigOwners": [
       "sig-testing"
     ]
+  },
+  "pull-test-infra-verify-gofmt": {
+    "args": [
+      "./verify/verify-gofmt.sh"
+    ],
+    "scenario": "execute",
+    "sigOwners": [
+      "sig-testing"
+    ]
+  },
+  "pull-test-infra-verify-govet": {
+    "args": [
+      "./verify/verify-govet.sh"
+    ],
+    "scenario": "execute",
+    "sigOwners": [
+      "sig-testing"
+    ]
   }
 }

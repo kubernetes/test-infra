@@ -698,6 +698,80 @@ presubmits:
         hostPath:
           path: /mnt/disks/ssd0
 
+  - name: pull-test-infra-verify-gofmt
+    context: pull-test-infra-verify-gofmt
+    branches:
+    - master
+    rerun_command: "/test pull-test-infra-verify-gofmt"
+    trigger: "/test( all| pull-test-infra-verify-gofmt)"
+    always_run: true
+    skip_report: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/gcloud-in-go:0.1
+        args:
+        - "--pull=$(PULL_REFS)"
+        - "--json"
+        - "--root=/go/src"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--clean"
+        env:
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /etc/service-account/service-account.json
+        volumeMounts:
+        - name: service
+          mountPath: /etc/service-account
+          readOnly: true
+        - name: cache-ssd
+          mountPath: /root/.cache
+        ports:
+        - containerPort: 9999
+          hostPort: 9999
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
+      - name: cache-ssd
+        hostPath:
+          path: /mnt/disks/ssd0
+
+  - name: pull-test-infra-verify-govet
+    context: pull-test-infra-verify-govet
+    branches:
+    - master
+    rerun_command: "/test pull-test-infra-verify-govet"
+    trigger: "/test( all| pull-test-infra-verify-govet)"
+    always_run: true
+    skip_report: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/gcloud-in-go:0.1
+        args:
+        - "--pull=$(PULL_REFS)"
+        - "--json"
+        - "--root=/go/src"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--clean"
+        env:
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /etc/service-account/service-account.json
+        volumeMounts:
+        - name: service
+          mountPath: /etc/service-account
+          readOnly: true
+        - name: cache-ssd
+          mountPath: /root/.cache
+        ports:
+        - containerPort: 9999
+          hostPort: 9999
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
+      - name: cache-ssd
+        hostPath:
+          path: /mnt/disks/ssd0
+
 postsubmits:
   kubernetes/kubernetes:
   - name: ci-kubernetes-bazel-build
