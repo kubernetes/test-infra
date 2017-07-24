@@ -5366,7 +5366,6 @@
       "--check-leaked-resources",
       "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
       "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
-      "--gcp-project=k8s-jkns-e2e-gke-ci-canary",
       "--provider=gke",
       "--gcp-zone=us-central1-f",
       "--kubetest_args=--cluster=e2e-gke-canary",
