@@ -1,0 +1,27 @@
+# basic config options.
+http-cache-dir: /cache/httpcache
+organization: kubernetes
+project: community
+pr-mungers: size, submit-queue,needs-rebase, sig-mention-handler, 
+state: open
+token-file: /etc/secret-volume/token
+period: 5m
+repo-dir: /gitrepos
+github-key-file: /etc/hook-secret-volume/secret
+
+# status contexts options.
+required-contexts: "continuous-integration/travis-ci/pr"
+protected-branches-extra-contexts: ""
+required-retest-contexts: ""
+
+# submit-queue options.
+protected-branches: "master"
+nonblocking-jenkins-jobs: ""
+do-not-merge-milestones: ""
+admin-port: 9999
+context-url: ""
+
+# munger specific options.
+# label-file: "/gitrepos/community/labels.yaml"
+
+gate-cla: true
