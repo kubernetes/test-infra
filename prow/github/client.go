@@ -159,19 +159,24 @@ func (c *Client) requestRetry(method, path, accept string, body interface{}) (*h
 				resp.Body.Close()
 				timeSleep(backoff)
 				backoff *= 2
-			} else if resp.StatusCode == 403 && resp.Header.Get("X-RateLimit-Remaining") == "0" {
-				// If we are out of API tokens, sleep first. The X-RateLimit-Reset
-				// header tells us the time at which we can request again.
-				var t int
-				if t, err = strconv.Atoi(resp.Header.Get("X-RateLimit-Reset")); err == nil {
-					// Sleep an extra second plus how long GitHub wants us to
-					// sleep. If it's going to take too long, then break.
-					sleepTime := time.Until(time.Unix(int64(t), 0)) + time.Second
-					if sleepTime > 0 && sleepTime < maxSleepTime {
-						timeSleep(sleepTime)
-					} else {
-						break
+			} else if resp.StatusCode == 403 {
+				if resp.Header.Get("X-RateLimit-Remaining") == "0" {
+					// If we are out of API tokens, sleep first. The X-RateLimit-Reset
+					// header tells us the time at which we can request again.
+					var t int
+					if t, err = strconv.Atoi(resp.Header.Get("X-RateLimit-Reset")); err == nil {
+						// Sleep an extra second plus how long GitHub wants us to
+						// sleep. If it's going to take too long, then break.
+						sleepTime := time.Until(time.Unix(int64(t), 0)) + time.Second
+						if sleepTime > 0 && sleepTime < maxSleepTime {
+							timeSleep(sleepTime)
+						} else {
+							break
+						}
 					}
+				} else if oauthScopes := resp.Header.Get("X-Accepted-OAuth-Scopes"); len(oauthScopes) > 0 {
+					err = fmt.Errorf("is %s using at least one of the following oauth scopes?: %s", c.botName, oauthScopes)
+					break
 				}
 				resp.Body.Close()
 			} else if resp.StatusCode < 500 {
