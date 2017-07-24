@@ -79,6 +79,7 @@ go_library(
         "old-test-getter.go",
         "owner-label.go",
         "path_label.go",
+        "prow.go",
         "publisher.go",
         "publisher_logger.go",
         "release-note-label.go",

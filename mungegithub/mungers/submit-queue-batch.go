@@ -17,7 +17,6 @@ limitations under the License.
 package mungers
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"strconv"
@@ -29,65 +28,7 @@ import (
 	githubapi "github.com/google/go-github/github"
 	"k8s.io/test-infra/mungegithub/github"
 	"k8s.io/test-infra/mungegithub/mungeopts"
-	"k8s.io/test-infra/mungegithub/mungers/mungerutil"
 )
-
-// xref k8s.io/test-infra/prow/cmd/deck/jobs.go
-type prowJob struct {
-	Type    string `json:"type"`
-	Repo    string `json:"repo"`
-	Refs    string `json:"refs"`
-	State   string `json:"state"`
-	Context string `json:"context"`
-}
-
-type prowJobs []prowJob
-
-// getJobs reads job information as JSON from a given URL.
-func getJobs(url string) (prowJobs, error) {
-	body, err := mungerutil.ReadHTTP(url)
-	if err != nil {
-		return nil, err
-	}
-
-	jobs := prowJobs{}
-	err = json.Unmarshal(body, &jobs)
-	if err != nil {
-		return nil, err
-	}
-	return jobs, nil
-}
-
-func (j prowJobs) filter(pred func(prowJob) bool) prowJobs {
-	out := prowJobs{}
-	for _, job := range j {
-		if pred(job) {
-			out = append(out, job)
-		}
-	}
-	return out
-}
-
-func (j prowJobs) repo(repo string) prowJobs {
-	return j.filter(func(job prowJob) bool { return job.Repo == repo })
-}
-
-func (j prowJobs) batch() prowJobs {
-	return j.filter(func(job prowJob) bool { return job.Type == "batch" })
-}
-
-func (j prowJobs) successful() prowJobs {
-	return j.filter(func(job prowJob) bool { return job.State == "success" })
-}
-
-func (j prowJobs) firstUnfinished() *prowJob {
-	for _, job := range j {
-		if job.State == "triggered" || job.State == "pending" {
-			return &job
-		}
-	}
-	return nil
-}
 
 type batchPull struct {
 	Number int
