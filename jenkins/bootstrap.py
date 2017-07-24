@@ -415,7 +415,7 @@ def metadata(repos, artifacts, call):
     try:
         commit = call(['git', 'rev-parse', 'HEAD'], output=True)
         if commit:
-            meta['infra-commit'] = commit.strip()
+            meta['infra-commit'] = commit.strip()[:9]
     except subprocess.CalledProcessError:
         pass
     os.chdir(cwd)
