@@ -151,26 +151,29 @@ func run(deploy deployer, o options) error {
 	}
 
 	if o.test {
-		errs = appendError(errs, xmlWrap("get kubeconfig", deploy.SetupKubecfg))
-		errs = appendError(errs, xmlWrap("kubectl version", func() error {
-			return finishRunning(exec.Command("./cluster/kubectl.sh", "version", "--match-server-version=false"))
-		}))
-		if o.skew {
-			errs = appendError(errs, xmlWrap("SkewTest", func() error {
-				return SkewTest(o.testArgs, dump, o.checkSkew)
-			}))
+		if err := xmlWrap("test setup", deploy.TestSetup); err != nil {
+			errs = appendError(errs, err)
 		} else {
-			if err := xmlWrap("IsUp", deploy.IsUp); err != nil {
-				errs = appendError(errs, err)
+			errs = appendError(errs, xmlWrap("kubectl version", func() error {
+				return finishRunning(exec.Command("./cluster/kubectl.sh", "version", "--match-server-version=false"))
+			}))
+			if o.skew {
+				errs = appendError(errs, xmlWrap("SkewTest", func() error {
+					return SkewTest(o.testArgs, dump, o.checkSkew)
+				}))
 			} else {
-				if o.federation {
-					errs = appendError(errs, xmlWrap("FederationTest", func() error {
-						return FederationTest(o.testArgs, dump)
-					}))
+				if err := xmlWrap("IsUp", deploy.IsUp); err != nil {
+					errs = appendError(errs, err)
 				} else {
-					errs = appendError(errs, xmlWrap("Test", func() error {
-						return Test(o.testArgs, dump)
-					}))
+					if o.federation {
+						errs = appendError(errs, xmlWrap("FederationTest", func() error {
+							return FederationTest(o.testArgs, dump)
+						}))
+					} else {
+						errs = appendError(errs, xmlWrap("Test", func() error {
+							return Test(o.testArgs, dump)
+						}))
+					}
 				}
 			}
 		}
@@ -358,7 +361,7 @@ func ListResources() ([]byte, error) {
 }
 
 func clusterSize(deploy deployer) (int, error) {
-	if err := deploy.SetupKubecfg(); err != nil {
+	if err := deploy.TestSetup(); err != nil {
 		return -1, err
 	}
 	o, err := output(exec.Command("kubectl", "get", "nodes", "--no-headers"))

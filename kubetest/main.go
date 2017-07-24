@@ -60,12 +60,14 @@ type options struct {
 	charts              bool
 	checkLeaks          bool
 	checkSkew           bool
+	cluster             string
 	deployment          string
 	down                bool
 	dump                string
 	extract             extractStrategies
 	federation          bool
 	gcpCloudSdk         string
+	gcpNetwork          string
 	gcpProject          string
 	gcpServiceAccount   string
 	gcpZone             string
@@ -93,7 +95,7 @@ func defineFlags() *options {
 	flag.BoolVar(&o.charts, "charts", false, "If true, run charts tests")
 	flag.BoolVar(&o.checkSkew, "check-version-skew", true, "Verify client and server versions match")
 	flag.BoolVar(&o.checkLeaks, "check-leaked-resources", false, "Ensure project ends with the same resources")
-	flag.StringVar(&o.deployment, "deployment", "bash", "Choices: none/bash/kops/kubernetes-anywhere")
+	flag.StringVar(&o.deployment, "deployment", "bash", "Choices: none/bash/gke/kops/kubernetes-anywhere")
 	flag.BoolVar(&o.down, "down", false, "If true, tear down the cluster before exiting.")
 	flag.StringVar(&o.dump, "dump", "", "If set, dump cluster logs to this location on test or cluster-up failure")
 	flag.Var(&o.extract, "extract", "Extract k8s binaries from the specified release location")
@@ -102,6 +104,8 @@ func defineFlags() *options {
 	flag.StringVar(&o.gcpProject, "gcp-project", "", "For use with gcloud commands")
 	flag.StringVar(&o.gcpServiceAccount, "gcp-service-account", "", "Service account to activate before using gcloud")
 	flag.StringVar(&o.gcpZone, "gcp-zone", "", "For use with gcloud commands")
+	flag.StringVar(&o.gcpNetwork, "gcp-network", "e2e", "Cluster network. Must be set for --deployment=gke (TODO: other deployments).")
+	flag.StringVar(&o.cluster, "cluster", "", "Cluster name. Must be set for --deployment=gke (TODO: other deployments).")
 	flag.BoolVar(&o.kubemark, "kubemark", false, "If true, run kubemark tests.")
 	flag.StringVar(&o.kubemarkMasterSize, "kubemark-master-size", "", "Kubemark master size")
 	flag.StringVar(&o.kubemarkNodes, "kubemark-nodes", "", "Number of kubemark nodes to start")
@@ -185,22 +189,24 @@ func writeXML(dump string, start time.Time) {
 type deployer interface {
 	Up() error
 	IsUp() error
-	SetupKubecfg() error
+	TestSetup() error
 	Down() error
 }
 
-func getDeployer(deployment, project string) (deployer, error) {
-	switch deployment {
+func getDeployer(o *options) (deployer, error) {
+	switch o.deployment {
 	case "bash":
 		return bash{}, nil
+	case "gke":
+		return newGKE(o.provider, o.gcpProject, o.gcpZone, o.gcpNetwork, o.cluster)
 	case "kops":
 		return NewKops()
 	case "kubernetes-anywhere":
-		return NewKubernetesAnywhere(project)
+		return NewKubernetesAnywhere(o.gcpProject)
 	case "none":
 		return noneDeploy{}, nil
 	default:
-		return nil, fmt.Errorf("Unknown deployment strategy %q", deployment)
+		return nil, fmt.Errorf("unknown deployment strategy %q", o.deployment)
 	}
 }
 
@@ -234,6 +240,13 @@ func complete(o *options) error {
 		interrupt.Reset(timeout)
 	}
 
+	// Get the deployer first so any additional flag verifications
+	// happen early.
+	deploy, err := getDeployer(o)
+	if err != nil {
+		return fmt.Errorf("error creating deployer: %v", err)
+	}
+
 	if o.dump != "" {
 		defer writeMetadata(o.dump, o.metadataSources)
 		defer writeXML(o.dump, time.Now())
@@ -250,14 +263,8 @@ func complete(o *options) error {
 	if err := acquireKubernetes(o); err != nil {
 		return fmt.Errorf("failed to acquire k8s binaries: %v", err)
 	}
-
 	if err := validWorkingDirectory(); err != nil {
 		return fmt.Errorf("called from invalid working directory: %v", err)
-	}
-
-	deploy, err := getDeployer(o.deployment, o.gcpProject)
-	if err != nil {
-		return fmt.Errorf("error creating deployer: %v", err)
 	}
 
 	if o.down {

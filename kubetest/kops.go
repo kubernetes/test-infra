@@ -58,6 +58,8 @@ type kops struct {
 	kubecfg     string
 }
 
+var _ deployer = kops{}
+
 func migrateKopsEnv() error {
 	return migrateOptions([]migratedOption{
 		{
@@ -193,7 +195,7 @@ func (k kops) IsUp() error {
 	return isUp(k)
 }
 
-func (k kops) SetupKubecfg() error {
+func (k kops) TestSetup() error {
 	info, err := os.Stat(k.kubecfg)
 	if err != nil {
 		return err

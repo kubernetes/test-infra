@@ -22,6 +22,8 @@ import (
 
 type noneDeploy struct{}
 
+var _ deployer = noneDeploy{}
+
 func (n noneDeploy) Up() error {
 	log.Print("Noop Up()")
 	return nil
@@ -32,8 +34,8 @@ func (n noneDeploy) IsUp() error {
 	return nil
 }
 
-func (n noneDeploy) SetupKubecfg() error {
-	log.Print("Noop SetupKubecfg()")
+func (n noneDeploy) TestSetup() error {
+	log.Print("Noop TestSetup()")
 	return nil
 }
 

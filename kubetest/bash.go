@@ -22,6 +22,8 @@ import (
 
 type bash struct{}
 
+var _ deployer = bash{}
+
 func (b bash) Up() error {
 	return finishRunning(exec.Command("./hack/e2e-internal/e2e-up.sh"))
 }
@@ -30,7 +32,7 @@ func (b bash) IsUp() error {
 	return finishRunning(exec.Command("./hack/e2e-internal/e2e-status.sh"))
 }
 
-func (b bash) SetupKubecfg() error {
+func (b bash) TestSetup() error {
 	return nil
 }
 

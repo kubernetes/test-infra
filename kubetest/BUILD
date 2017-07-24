@@ -24,6 +24,7 @@ go_library(
         "e2e.go",
         "extract.go",
         "federation.go",
+        "gke.go",
         "kops.go",
         "main.go",
         "none.go",
