@@ -7496,7 +7496,7 @@
       "--deployment=kubernetes-anywhere",
       "--timeout=300m",
       "--extract=ci/latest",
-      "--test_args=--ginkgo.focus=\\[Conformance\\] --minStartupPods=8",
+      "--test_args=--ginkgo.focus=\\[Conformance\\]|\\[Feature:BootstrapTokens\\] --minStartupPods=8",
       "--gcp-project=k8s-jkns-e2e-kubeadm-gce-ci",
       "--provider=kubernetes-anywhere",
       "--gcp-zone=us-central1-f"
