@@ -40,6 +40,9 @@ py_test(
         ":package-srcs",
     ],
     data = ["schema.json"],
+    deps = [
+        "@requests//:requests",
+    ],
 )
 
 py_test(

@@ -17,12 +17,4 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-# Prefer go from io_bazel_rules_go_toolchain.
-go="external/io_bazel_rules_go_toolchain/bin/go"
-if [[ -x "${go}" ]]; then
-  export GOROOT="external/io_bazel_rules_go_toolchain"
-else
-  go=$(which go)
-fi
-
-find . -name "*.go" | grep -v "\/vendor\/" | xargs -n 1 "${go}" vet
+find . -name "*.go" | grep -v "\/vendor\/" | xargs -n 1 go vet

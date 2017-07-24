@@ -9,24 +9,6 @@ py_test(
 )
 
 sh_test(
-    name = "verify-gofmt",
-    srcs = ["verify-gofmt.sh"],
-    data = [
-        "//:all-srcs",
-        "@io_bazel_rules_go_toolchain//:toolchain",
-    ],
-)
-
-sh_test(
-    name = "verify-govet",
-    srcs = ["verify-govet.sh"],
-    data = [
-        "//:all-srcs",
-        "@io_bazel_rules_go_toolchain//:toolchain",
-    ],
-)
-
-sh_test(
     name = "verify-pylint",
     srcs = ["verify-pylint.sh"],
     data = [
@@ -38,8 +20,6 @@ sh_test(
 test_suite(
     name = "verify-all",
     tests = [
-        "verify-gofmt",
-        "verify-govet",
         "verify-pylint",
         "verify_boilerplate",
     ],
