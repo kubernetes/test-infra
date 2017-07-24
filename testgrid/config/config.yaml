@@ -2880,12 +2880,30 @@ dashboards:
 
 - name: sig-auth
   dashboard_tab:
-  - name: TODO
-    description: what does this tab do exactly
-    test_group_name: ci-kubernetes-e2e-gce-slow  # TODO(fejta): fix
-  notifications:
-  - summary: Please configure this skeleton dashboard and remove this notification
-    context_link: https://github.com/kubernetes/test-infra/tree/master/testgrid/config
+  - name: gce
+    test_group_name: ci-kubernetes-e2e-gce
+    base_options: 'include-filter-by-regex=sig-auth'
+    description: 'apps gce e2e tests for master branch'
+  - name: gke
+    test_group_name: ci-kubernetes-e2e-gke
+    base_options: 'include-filter-by-regex=sig-auth'
+    description: 'apps gke e2e tests for master branch'
+  - name: gce-slow
+    test_group_name: ci-kubernetes-e2e-gce-slow
+    base_options: 'include-filter-by-regex=sig-auth'
+    description: 'apps gce slow e2e tests for master branch'
+  - name: gke-slow
+    test_group_name: ci-kubernetes-e2e-gke-slow
+    base_options: 'include-filter-by-regex=sig-auth'
+    description: 'apps gke slow e2e tests for master branch'
+  - name: gce-serial
+    test_group_name: ci-kubernetes-e2e-gce-serial
+    base_options: 'include-filter-by-regex=sig-auth'
+    description: 'apps gce serial e2e tests for master branch'
+  - name: gke-serial
+    test_group_name: ci-kubernetes-e2e-gke-serial
+    base_options: 'include-filter-by-regex=sig-auth'
+    description: 'apps gke serial e2e tests for master branch'
 
 - name: sig-big-data
   dashboard_tab:
