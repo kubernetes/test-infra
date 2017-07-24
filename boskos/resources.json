@@ -11,10 +11,6 @@
       "k8s-gke-1-5",
       "k8s-gke-serial-1-5",
       "k8s-gke-slow-1-5",
-      "ci-kubernetes-e2e-gke-gpu",
-      "k8s-jkns-e2e-gke-ubuntu-slow",
-      "k8s-jkns-e2e-gke-ubuntu-serial",
-      "k8s-jkns-e2e-gke-ubuntu",
       "gke-up-g1-4-g1-5-up-mas",
       "gke-up-g1-4-g1-5-up-clu-n",
       "gke-up-g1-4-g1-5-up-clu",
@@ -187,7 +183,11 @@
       "k8s-jkns-gce-ubuntu-1-6",
       "k8s-jkns-e2e-gce-ubuntu-serial",
       "k8s-jkns-e2e-gce-ubuntu-slow",
-      "k8s-jkns-e2e-gce-ubuntu"
+      "k8s-jkns-e2e-gce-ubuntu",
+      "ci-kubernetes-e2e-gke-gpu",
+      "k8s-jkns-e2e-gke-ubuntu-slow",
+      "k8s-jkns-e2e-gke-ubuntu-serial",
+      "k8s-jkns-e2e-gke-ubuntu"
     ]
   }
 ]
