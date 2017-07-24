@@ -39,6 +39,11 @@ func (c *fakeClient) ReopenIssue(owner, repo string, number int) error {
 	return nil
 }
 
+func (c *fakeClient) ReopenPR(owner, repo string, number int) error {
+	c.open = true
+	return nil
+}
+
 func TestOpenComment(t *testing.T) {
 	// "a" is the author, "r1", and "r2" are reviewers.
 	var testcases = []struct {

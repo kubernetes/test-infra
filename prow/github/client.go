@@ -675,6 +675,7 @@ func (c *Client) UnrequestReview(org, repo string, number int, logins []string) 
 	return nil
 }
 
+// CloseIssue closes the existing, open issue provided
 func (c *Client) CloseIssue(org, repo string, number int) error {
 	c.log("CloseIssue", org, repo, number)
 	_, err := c.request(&request{
@@ -692,6 +693,30 @@ func (c *Client) ReopenIssue(org, repo string, number int) error {
 	_, err := c.request(&request{
 		method:      http.MethodPatch,
 		path:        fmt.Sprintf("%s/repos/%s/%s/issues/%d", c.base, org, repo, number),
+		requestBody: map[string]string{"state": "open"},
+		exitCodes:   []int{200},
+	}, nil)
+	return err
+}
+
+// ClosePR closes the existing, open PR provided
+func (c *Client) ClosePR(org, repo string, number int) error {
+	c.log("ClosePR", org, repo, number)
+	_, err := c.request(&request{
+		method:      http.MethodPatch,
+		path:        fmt.Sprintf("%s/repos/%s/%s/pull/%d", c.base, org, repo, number),
+		requestBody: map[string]string{"state": "closed"},
+		exitCodes:   []int{200},
+	}, nil)
+	return err
+}
+
+// ReopenPR re-opens the existing, closed PR provided
+func (c *Client) ReopenPR(org, repo string, number int) error {
+	c.log("ReopenPR", org, repo, number)
+	_, err := c.request(&request{
+		method:      http.MethodPatch,
+		path:        fmt.Sprintf("%s/repos/%s/%s/pull/%d", c.base, org, repo, number),
 		requestBody: map[string]string{"state": "open"},
 		exitCodes:   []int{200},
 	}, nil)

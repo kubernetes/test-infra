@@ -36,6 +36,7 @@ func init() {
 type githubClient interface {
 	CreateComment(owner, repo string, number int, comment string) error
 	CloseIssue(owner, repo string, number int) error
+	ClosePR(owner, repo string, number int) error
 }
 
 func handleIssueComment(pc plugins.PluginClient, ic github.IssueCommentEvent) error {
@@ -44,7 +45,7 @@ func handleIssueComment(pc plugins.PluginClient, ic github.IssueCommentEvent) er
 
 func handle(gc githubClient, log *logrus.Entry, ic github.IssueCommentEvent) error {
 	// Only consider open issues and new comments.
-	if ic.Issue.State != "open" || ic.Issue.IsPullRequest() || ic.Action != "created" {
+	if ic.Issue.State != "open" || ic.Action != "created" {
 		return nil
 	}
 
@@ -60,9 +61,14 @@ func handle(gc githubClient, log *logrus.Entry, ic github.IssueCommentEvent) err
 
 	// Allow assignees and authors to close issues.
 	if !ic.Issue.IsAuthor(commentAuthor) && !ic.Issue.IsAssignee(commentAuthor) {
-		resp := "you can't close an issue unless you authored it or you are assigned to it"
+		resp := "you can't close an issue/PR unless you authored it or you are assigned to it"
 		log.Infof("Commenting \"%s\".", resp)
 		return gc.CreateComment(org, repo, number, plugins.FormatICResponse(ic.Comment, resp))
+	}
+
+	if ic.Issue.IsPullRequest() {
+		log.Info("Closing PR.")
+		return gc.ClosePR(org, repo, number)
 	}
 
 	log.Info("Closing issue.")
