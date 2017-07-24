@@ -17,13 +17,7 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-# Prefer gofmt from io_bazel_rules_go_toolchain.
-gofmt="external/io_bazel_rules_go_toolchain/bin/gofmt"
-if [[ ! -x "${gofmt}" ]]; then
-  gofmt=$(which gofmt)
-fi
-
-diff=$(find . -name "*.go" | grep -v "\/vendor\/" | xargs "${gofmt}" -d 2>&1)
+diff=$(find . -name "*.go" | grep -v "\/vendor\/" | xargs gofmt -d 2>&1)
 if [[ -n "${diff}" ]]; then
   echo "${diff}"
   exit 1
