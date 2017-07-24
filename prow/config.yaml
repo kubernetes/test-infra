@@ -705,7 +705,6 @@ presubmits:
     rerun_command: "/test pull-test-infra-verify-gofmt"
     trigger: "/test( all| pull-test-infra-verify-gofmt)"
     always_run: true
-    skip_report: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/gcloud-in-go:0.1
@@ -742,7 +741,6 @@ presubmits:
     rerun_command: "/test pull-test-infra-verify-govet"
     trigger: "/test( all| pull-test-infra-verify-govet)"
     always_run: true
-    skip_report: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/gcloud-in-go:0.1
