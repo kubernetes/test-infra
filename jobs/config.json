@@ -5269,6 +5269,26 @@
       "UNKNOWN"
     ]
   },
+  "ci-kubernetes-e2e-gke-canary": {
+    "args": [
+      "--env-file=jobs/platform/gke.env",
+      "--env-file=jobs/ci-kubernetes-e2e-gke-canary.env",
+      "--timeout=50m",
+      "--extract=ci/latest",
+      "--check-leaked-resources",
+      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
+      "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
+      "--gcp-project=k8s-jkns-e2e-gke-ci-canary",
+      "--provider=gke",
+      "--gcp-zone=us-central1-f",
+      "--kubetest_args=--cluster=e2e-gke-canary",
+      "--deployment=gke"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-cluster-lifecycle"
+    ]
+  },
   "ci-kubernetes-e2e-gke-cvm-1-5-cvm-1-6-upgrade-cluster": {
     "args": [
       "--env-file=jobs/platform/gke.env",
