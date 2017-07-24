@@ -87,6 +87,7 @@ type options struct {
 	test                bool
 	up                  bool
 	upgradeArgs         string
+	runtimeConfig       string
 }
 
 func defineFlags() *options {
@@ -125,6 +126,7 @@ func defineFlags() *options {
 	flag.DurationVar(&timeout, "timeout", time.Duration(0), "Terminate testing after the timeout duration (s/m/h)")
 	flag.BoolVar(&o.up, "up", false, "If true, start the the e2e cluster. If cluster is already up, recreate it.")
 	flag.StringVar(&o.upgradeArgs, "upgrade_args", "", "If set, run upgrade tests before other tests")
+	flag.StringVar(&o.runtimeConfig, "runtime-config", "batch/v2alpha1=true", "If set, API versions can be turned on or off while bringing up the API server.")
 
 	flag.BoolVar(&verbose, "v", false, "If true, print all command output.")
 	return &o

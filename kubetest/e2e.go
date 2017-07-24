@@ -35,8 +35,7 @@ func run(deploy deployer, o options) error {
 		os.Setenv("KUBECTL", "./cluster/kubectl.sh")
 	}
 	os.Setenv("KUBE_CONFIG_FILE", "config-test.sh")
-	// force having batch/v2alpha1 always on for e2e tests
-	os.Setenv("KUBE_RUNTIME_CONFIG", "batch/v2alpha1=true")
+	os.Setenv("KUBE_RUNTIME_CONFIG", o.runtimeConfig)
 
 	dump := o.dump
 	if dump != "" {
