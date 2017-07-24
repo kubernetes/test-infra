@@ -30,6 +30,25 @@
       "UNKNOWN"
     ]
   },
+  "ci-kubernetes-bazel-build-1-7": {
+    "args": [
+      "--build=//cmd/... //pkg/... //federation/... //plugin/... //third_party/... //examples/... //test/... //vendor/k8s.io/...",
+      "--release=//build/release-tars"
+    ],
+    "scenario": "kubernetes_bazel",
+    "sigOwners": [
+      "sig-testing"
+    ]
+  },
+  "ci-kubernetes-bazel-test-1-7": {
+    "args": [
+      "--test=--test_tag_filters=-integration --flaky_test_attempts=3 //cmd/... //pkg/... //federation/... //plugin/... //third_party/... //hack/... //hack:verify-all //vendor/k8s.io/..."
+    ],
+    "scenario": "kubernetes_bazel",
+    "sigOwners": [
+      "sig-testing"
+    ]
+  },
   "ci-kubernetes-build": {
     "args": [
       "--fast"
@@ -9026,6 +9045,25 @@
     "scenario": "execute",
     "sigOwners": [
       "UNKNOWN"
+    ]
+  },
+  "periodic-kubernetes-bazel-build-1-7": {
+    "args": [
+      "--build=//cmd/... //pkg/... //federation/... //plugin/... //third_party/... //examples/... //test/... //vendor/k8s.io/...",
+      "--release=//build/release-tars"
+    ],
+    "scenario": "kubernetes_bazel",
+    "sigOwners": [
+      "sig-testing"
+    ]
+  },
+  "periodic-kubernetes-bazel-test-1-7": {
+    "args": [
+      "--test=--test_tag_filters=-integration --flaky_test_attempts=3 //cmd/... //pkg/... //federation/... //plugin/... //third_party/... //hack/... //hack:verify-all //vendor/k8s.io/..."
+    ],
+    "scenario": "kubernetes_bazel",
+    "sigOwners": [
+      "sig-testing"
     ]
   },
   "periodic-kubernetes-e2e-kubeadm-gce-1-6": {

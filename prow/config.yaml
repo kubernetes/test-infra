@@ -133,6 +133,7 @@ presubmits:
         - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
           value: /etc/ssh-key-secret/ssh-public
         # Make Bazel use shared cache for its root
+        # https://docs.bazel.build/versions/master/output_directories.html#documentation-of-the-current-bazel-output-directory-layout
         - name: TEST_TMPDIR
           value: /root/.cache/bazel
         image: gcr.io/k8s-testimages/kubekins-e2e-prow:v20170720-69a2043d
@@ -404,6 +405,7 @@ presubmits:
         - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
           value: /etc/ssh-key-secret/ssh-public
         # Make Bazel use shared cache for its root
+        # https://docs.bazel.build/versions/master/output_directories.html#documentation-of-the-current-bazel-output-directory-layout
         - name: TEST_TMPDIR
           value: /root/.cache/bazel
         image: gcr.io/k8s-testimages/kubekins-e2e-prow:v20170720-69a2043d
@@ -678,6 +680,7 @@ presubmits:
         - "--root=/go/src"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--clean"
+        - "--json"
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: /etc/service-account/service-account.json
@@ -1001,12 +1004,17 @@ postsubmits:
         - "--upload=gs://kubernetes-jenkins/logs"
         - "--git-cache=/root/.cache/git"
         - "--clean"
+        - "--json"
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: /etc/service-account/service-account.json
+        # Make Bazel use shared cache for its root
+        # https://docs.bazel.build/versions/master/output_directories.html#documentation-of-the-current-bazel-output-directory-layout
+        - name: TEST_TMPDIR
+          value: /root/.cache/bazel
         volumeMounts:
         - name: service
           mountPath: /etc/service-account
@@ -1033,11 +1041,16 @@ postsubmits:
           - "--upload=gs://kubernetes-jenkins/logs"
           - "--git-cache=/root/.cache/git"
           - "--clean"
+          - "--json"
           securityContext:
             privileged: true
           env:
           - name: GOOGLE_APPLICATION_CREDENTIALS
             value: /etc/service-account/service-account.json
+          # Make Bazel use shared cache for its root
+          # https://docs.bazel.build/versions/master/output_directories.html#documentation-of-the-current-bazel-output-directory-layout
+          - name: TEST_TMPDIR
+            value: /root/.cache/bazel
           volumeMounts:
           - name: service
             mountPath: /etc/service-account
@@ -14044,6 +14057,7 @@ periodics:
       - "--upload=gs://kubernetes-jenkins/logs"
       - "--git-cache=/root/.cache/git"
       - "--clean"
+      - "--json"
       # Bazel needs privileged mode in order to sandbox builds.
       securityContext:
         privileged: true
@@ -14052,6 +14066,10 @@ periodics:
         value: kubernetes=release-1.7
       - name: GOOGLE_APPLICATION_CREDENTIALS
         value: /etc/service-account/service-account.json
+      # Make Bazel use shared cache for its root
+      # https://docs.bazel.build/versions/master/output_directories.html#documentation-of-the-current-bazel-output-directory-layout
+      - name: TEST_TMPDIR
+        value: /root/.cache/bazel
       volumeMounts:
       - name: service
         mountPath: /etc/service-account
@@ -14077,6 +14095,7 @@ periodics:
         - "--upload=gs://kubernetes-jenkins/logs"
         - "--git-cache=/root/.cache/git"
         - "--clean"
+        - "--json"
         securityContext:
           privileged: true
         env:
@@ -14084,6 +14103,10 @@ periodics:
           value: kubernetes=release-1.7
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: /etc/service-account/service-account.json
+        # Make Bazel use shared cache for its root
+        # https://docs.bazel.build/versions/master/output_directories.html#documentation-of-the-current-bazel-output-directory-layout
+        - name: TEST_TMPDIR
+          value: /root/.cache/bazel
         volumeMounts:
         - name: service
           mountPath: /etc/service-account
