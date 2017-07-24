@@ -88,11 +88,11 @@ def create_parser():
     """Create argparser."""
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        '--build', default=None, help='Bazel build')
+        '--build', help='Bazel build')
     parser.add_argument(
-        '--release', default=None, help='Bazel release')
+        '--release', help='Bazel release')
     parser.add_argument(
-        '--test', default=None, help='Bazel test')
+        '--test', help='Bazel test')
     parser.add_argument(
         '--gcs',
         default='gs://kubernetes-release-dev/bazel',
