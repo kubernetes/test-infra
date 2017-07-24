@@ -404,6 +404,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-updown
 - name: ci-kubernetes-e2e-gke-gci-ci-master
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-ci-master
+- name: ci-kubernetes-e2e-gke-canary
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-canary
 - name: ci-kubernetes-kubemark-100-gce
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-kubemark-100-gce
 - name: ci-kubernetes-kubemark-5-gce
@@ -1580,6 +1582,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gci-gke-updown
   - name: gke-gpu
     test_group_name: ci-kubernetes-e2e-gke-gpu
+  - name: gke-canary
+    test_group_name: ci-kubernetes-e2e-gke-canary
   # K8S 1.5 branch on GKE
   - name: gke-alpha-features-1.5
     test_group_name: ci-kubernetes-e2e-gke-alpha-features-release-1-5
