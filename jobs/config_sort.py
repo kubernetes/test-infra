@@ -51,6 +51,26 @@ def sort_job_config():
         fp.truncate()
 
 
+def sorted_boskos_config():
+    """Get the sorted boskos configuration."""
+    with open(test_infra('boskos/resources.json'), 'r') as fp:
+        configs = json.loads(fp.read())
+    for rtype in configs:
+        rtype["names"] = sorted(rtype["names"])
+    output = cStringIO.StringIO()
+    json.dump(
+        configs, output, sort_keys=True, indent=2, separators=(',', ': '))
+    output.write('\n')
+    return output
+
+def sort_boskos_config():
+    """Sort boskos/resources.json alphabetically."""
+    output = sorted_boskos_config()
+    with open(test_infra('boskos/resources.json'), 'w+') as fp:
+        fp.write(output.getvalue())
+    output.close()
+
+
 def sorted_prow_config():
     """Get the sorted Prow configuration."""
     with open(test_infra('prow/config.yaml'), 'r') as fp:
@@ -79,3 +99,4 @@ if __name__ == '__main__':
 
     sort_job_config()
     sort_prow_config()
+    sort_boskos_config()
