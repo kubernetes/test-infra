@@ -2271,11 +2271,7 @@ class JobTest(unittest.TestCase):
                 self.assertTrue(os.path.isfile(scenario), job)
                 self.assertTrue(os.access(scenario, os.X_OK|os.R_OK), job)
                 has_matching_env = False
-                right_mode = True
                 for arg in config[job].get('args', []):
-                    if arg == '--mode=docker':
-                        if job in self.prowjobs:
-                            right_mode = False
                     match = re.match(r'--env-file=([^\"]+)\.env', arg)
                     if match:
                         env = match.group(1)
@@ -2295,6 +2291,12 @@ class JobTest(unittest.TestCase):
                                 )
                 if config[job]['scenario'] == 'kubernetes_e2e':
                     args = config[job]['args']
+                    if job in self.prowjobs:
+                        for arg in args:
+                            # --mode=local is default now
+                            self.assertNotIn('--mode', args, job)
+                    else:
+                        self.assertIn('--mode=docker', args, job)
                     self.assertNotIn('--charts-tests', args)  # Use --charts
                     if any('--check_version_skew' in a for a in args):
                         self.fail('Use --check-version-skew, not --check_version_skew in %s' % job)
@@ -2331,7 +2333,6 @@ class JobTest(unittest.TestCase):
                         self.fail('Wrong number of --extract args (%d != %d) in %s' % (
                             len(extracts), expected, job))
                     self.assertTrue(has_matching_env, 'jobs/%s.env does not exist' % job)
-                    self.assertTrue(right_mode, '%s: prow does not support docker mode' % job)
 
                     has_image_family = any(
                         [x for x in args if x.startswith('--image-family')])

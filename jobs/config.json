@@ -6489,7 +6489,8 @@
       "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
       "--gcp-project=kubernetes-scale",
       "--provider=gke",
-      "--gcp-zone=us-east1-a"
+      "--gcp-zone=us-east1-a",
+      "--mode=docker"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -6508,7 +6509,8 @@
       "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
       "--gcp-project=kubernetes-scale",
       "--provider=gke",
-      "--gcp-zone=us-east1-a"
+      "--gcp-zone=us-east1-a",
+      "--mode=docker"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -6526,7 +6528,8 @@
       "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
       "--gcp-project=kubernetes-scale",
       "--provider=gke",
-      "--gcp-zone=us-east1-a"
+      "--gcp-zone=us-east1-a",
+      "--mode=docker"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -6545,7 +6548,8 @@
       "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
       "--gcp-project=kubernetes-scale",
       "--provider=gke",
-      "--gcp-zone=us-east1-a"
+      "--gcp-zone=us-east1-a",
+      "--mode=docker"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -6904,7 +6908,8 @@
       "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
       "--gcp-project=kubernetes-scale",
       "--provider=gke",
-      "--gcp-zone=us-east1-a"
+      "--gcp-zone=us-east1-a",
+      "--mode=docker"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
