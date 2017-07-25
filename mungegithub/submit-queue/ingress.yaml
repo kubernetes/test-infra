@@ -19,6 +19,12 @@ spec:
         - backend:
             serviceName: nginx-https-redirect 
             servicePort: 80
+  - host: community.submit-queue.k8s.io
+    http:
+      paths:
+        - backend:
+            serviceName: nginx-https-redirect 
+            servicePort: 80
   - host: contrib.submit-queue.k8s.io
     http:
       paths:
