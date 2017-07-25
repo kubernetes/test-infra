@@ -74,6 +74,7 @@
       "k8s-jkns-e2e-gci-gke-slow-1-2",
       "k8s-jkns-e2e-gke-1-1-features",
       "k8s-jkns-e2e-gke-1-2",
+      "k8s-jkns-e2e-gke-ci-canary",
       "k8s-jkns-e2e-gke-release-1-1",
       "k8s-jkns-e2e-gke-serial-1-2",
       "k8s-jkns-e2e-gke-slow-1-2",
