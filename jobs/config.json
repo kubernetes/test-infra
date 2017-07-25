@@ -8082,7 +8082,9 @@
       "--gcp-project=k8s-jenkins-kubemark",
       "--provider=gce",
       "--gcp-zone=us-central1-f",
-      "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --gather-resource-usage=true --gather-metrics-at-teardown=true --output-print-type=json"
+      "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --gather-resource-usage=true --gather-metrics-at-teardown=true --output-print-type=json",
+      "--kubemark-nodes=100",
+      "--kubemark-master-size=n1-standard-4"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -8103,7 +8105,9 @@
       "--gcp-project=k8s-jenkins-kubemark",
       "--provider=gce",
       "--gcp-zone=us-central1-f",
-      "--test_args=--ginkgo.focus=\\[Feature:Empty\\] --gather-resource-usage=true --gather-metrics-at-teardown=true --output-print-type=json"
+      "--test_args=--ginkgo.focus=\\[Feature:Empty\\] --gather-resource-usage=true --gather-metrics-at-teardown=true --output-print-type=json",
+      "--kubemark-nodes=5",
+      "--kubemark-master-size=n1-standard-1"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -8124,7 +8128,9 @@
       "--gcp-project=k8s-kubemark-1-5",
       "--provider=gce",
       "--gcp-zone=us-central1-f",
-      "--test_args=--ginkgo.focus=\\[Feature:Empty\\] --gather-resource-usage=true --gather-metrics-at-teardown=true --output-print-type=json"
+      "--test_args=--ginkgo.focus=\\[Feature:Empty\\] --gather-resource-usage=true --gather-metrics-at-teardown=true --output-print-type=json",
+      "--kubemark-nodes=5",
+      "--kubemark-master-size=n1-standard-1"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -8145,7 +8151,9 @@
       "--gcp-project=k8s-jenkins-blocking-kubemark",
       "--provider=gce",
       "--gcp-zone=us-central1-f",
-      "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --gather-resource-usage=true --gather-metrics-at-teardown=true --output-print-type=json"
+      "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --gather-resource-usage=true --gather-metrics-at-teardown=true --output-print-type=json",
+      "--kubemark-nodes=500",
+      "--kubemark-master-size=n1-standard-16"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -8166,7 +8174,9 @@
       "--gcp-project=kubernetes-scale",
       "--provider=gce",
       "--gcp-zone=us-central1-b",
-      "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --gather-resource-usage=true --gather-metrics-at-teardown=true --output-print-type=json"
+      "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --gather-resource-usage=true --gather-metrics-at-teardown=true --output-print-type=json",
+      "--kubemark-nodes=5000",
+      "--kubemark-master-size=n1-standard-64"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -8187,7 +8197,9 @@
       "--gcp-project=k8s-jenkins-kubemark",
       "--provider=gce",
       "--gcp-zone=us-central1-f",
-      "--test_args=--ginkgo.focus=\\[Feature:HighDensityPerformance\\] --gather-resource-usage=true --gather-metrics-at-teardown=true --output-print-type=json"
+      "--test_args=--ginkgo.focus=\\[Feature:HighDensityPerformance\\] --gather-resource-usage=true --gather-metrics-at-teardown=true --output-print-type=json",
+      "--kubemark-nodes=600",
+      "--kubemark-master-size=n1-standard-32"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -9480,7 +9492,9 @@
       "--gcp-project=k8s-jkns-pr-kubemark",
       "--provider=gce",
       "--gcp-zone=us-central1-f",
-      "--test_args=--ginkgo.focus=\\[Feature:Empty\\] --gather-resource-usage=true --garbage-collector-enabled=true"
+      "--test_args=--ginkgo.focus=\\[Feature:Empty\\] --gather-resource-usage=true --garbage-collector-enabled=true",
+      "--kubemark-nodes=5",
+      "--kubemark-master-size=n1-standard-1"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -9503,7 +9517,9 @@
       "--gcp-project=k8s-jkns-pr-gci-kubemark",
       "--provider=gce",
       "--gcp-zone=us-central1-f",
-      "--test_args=--ginkgo.focus=\\[Feature:Empty\\] --gather-resource-usage=true --garbage-collector-enabled=true"
+      "--test_args=--ginkgo.focus=\\[Feature:Empty\\] --gather-resource-usage=true --garbage-collector-enabled=true",
+      "--kubemark-nodes=5",
+      "--kubemark-master-size=n1-standard-1"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
