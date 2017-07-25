@@ -98,7 +98,8 @@ func NewRanch(config string, storage string) (*Ranch, error) {
 	return newRanch, nil
 }
 
-// Acquire checks out a type of resource in certain state without an owner
+// Acquire checks out a type of resource in certain state without an owner,
+// and move the checked out resource to the end of the resource list.
 // In: rtype - name of the target resource
 //     state - current state of the requested resource
 //     dest - destination state of the requested resource
@@ -110,12 +111,15 @@ func (r *Ranch) Acquire(rtype string, state string, dest string, owner string) (
 	defer r.lock.Unlock()
 
 	for idx := range r.Resources {
-		res := &r.Resources[idx]
+		res := r.Resources[idx]
 		if rtype == res.Type && state == res.State && res.Owner == "" {
 			res.LastUpdate = time.Now()
 			res.Owner = owner
 			res.State = dest
-			return res, nil
+
+			copy(r.Resources[idx:], r.Resources[idx+1:])
+			r.Resources[len(r.Resources)-1] = res
+			return &res, nil
 		}
 	}
 
