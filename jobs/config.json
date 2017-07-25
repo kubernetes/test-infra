@@ -7921,16 +7921,19 @@
   },
   "ci-kubernetes-e2e-kops-aws-canary": {
     "args": [
-      "--cluster=e2e-kops-aws-canary.test-aws.k8s.io",
+      "--aws-cluster-domain=test-aws.k8s.io",
+      "--cluster=e2e-kops-aws-canary",
       "--env-file=jobs/platform/kops_aws.env",
-      "--env-file=jobs/ci-kubernetes-e2e-kops-aws.env",
       "--env-file=jobs/ci-kubernetes-e2e-kops-aws-canary.env",
+      "--extract=ci/latest",
+      "--mode=docker",
       "--tag=latest",
+      "--test-args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]|\\[HPA\\]|Dashboard|Services.*functioning.*NodePort",
       "--timeout=120m"
     ],
-    "scenario": "kubernetes_kops_aws",
+    "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-testing"
     ]
   },
   "ci-kubernetes-e2e-kops-aws-release-1-7": {

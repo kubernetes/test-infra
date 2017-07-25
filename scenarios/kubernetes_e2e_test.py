@@ -424,6 +424,34 @@ class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-method
         lastcall = self.callstack[-1]
         self.assertIn('--gcp-network=test', lastcall)
 
+    def test_aws(self):
+        temp = tempfile.NamedTemporaryFile()
+        args = kubernetes_e2e.parse_args([
+            '--aws',
+            '--cluster=foo',
+            '--aws-cluster-domain=test-aws.k8s.io',
+            '--aws-ssh=%s' % temp.name,
+            '--aws-pub=%s' % temp.name,
+            '--aws-cred=%s' % temp.name,
+            ])
+        with Stub(kubernetes_e2e, 'check_env', self.fake_check_env):
+            kubernetes_e2e.main(args)
+
+        lastcall = self.callstack[-1]
+        self.assertIn('kops-e2e-runner.sh', lastcall)
+        self.assertIn('--kops-cluster=foo.test-aws.k8s.io', lastcall)
+        self.assertIn('--kops-zones', lastcall)
+        self.assertIn('--kops-state=s3://k8s-kops-jenkins/', lastcall)
+        self.assertIn('--kops-nodes=4', lastcall)
+        self.assertIn('--kops-ssh-key', lastcall)
+
+        self.assertEqual(
+            self.envs['JENKINS_AWS_SSH_PRIVATE_KEY_FILE'], temp.name)
+        self.assertEqual(
+            self.envs['JENKINS_AWS_SSH_PUBLIC_KEY_FILE'], temp.name)
+        self.assertEqual(
+            self.envs['JENKINS_AWS_CREDENTIALS_FILE'], temp.name)
+
 
 if __name__ == '__main__':
     unittest.main()

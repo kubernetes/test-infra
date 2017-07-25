@@ -22,11 +22,13 @@
 import argparse
 import hashlib
 import os
+import random
 import re
 import shutil
 import signal
 import subprocess
 import sys
+import tempfile
 import traceback
 
 ORIG_CWD = os.getcwd()  # Checkout changes cwd
@@ -100,6 +102,7 @@ def kubeadm_version(mode):
 class LocalMode(object):
     """Runs e2e tests by calling kubetest."""
     def __init__(self, workspace, artifacts):
+        self.command = 'kubetest'
         self.workspace = workspace
         self.artifacts = artifacts
         self.env = []
@@ -158,6 +161,10 @@ class LocalMode(object):
         """Add specified k8s.io repos (noop)."""
         pass
 
+    def add_aws_profile(self, _name, _config):
+        """Add aws profile envs."""
+        self.add_environment('AWS_SDK_LOAD_CONFIG=true')
+
     def use_latest_image(self, image_family, image_project):
         """Gets the latest image from the image_family in the image_project."""
         out = check_output(
@@ -178,6 +185,11 @@ class LocalMode(object):
         print >>sys.stderr, 'Set KUBE_GCE_NODE_IMAGE=%s' % latest_image
         print >>sys.stderr, 'Set KUBE_GCE_NODE_PROJECT=%s' % image_project
 
+    def add_aws_runner(self):
+        """Start with kops-e2e-runner.sh"""
+        # TODO(Krzyzacy):retire kops-e2e-runner.sh
+        self.command = '/workspace/kops-e2e-runner.sh'
+
     def start(self, args):
         """Starts kubetest."""
         print >>sys.stderr, 'starts with local mode'
@@ -185,7 +197,7 @@ class LocalMode(object):
         env.update(self.os_env)
         env.update(self.env_files)
         env.update(self.env)
-        check_env(env, 'kubetest', *args)
+        check_env(env, self.command, *args)
 
 
 class DockerMode(object):
@@ -257,6 +269,14 @@ class DockerMode(object):
             self.cmd.extend([
                 '-v', '%s/%s:/go/src/k8s.io/%s' % (k8s, repo, repo)])
 
+    def add_aws_profile(self, name, config):
+        """Add aws profile envs."""
+        self.add_environment('AWS_SDK_LOAD_CONFIG=true')
+        self.cmd.extend([
+          '-v', '%s:%s:ro' % (name, config),
+          '-e', 'AWS_SDK_LOAD_CONFIG=true',
+        ])
+
     def add_aws_cred(self, priv, pub, cred):
         """Mounts aws keys/creds inside the container."""
         aws_ssh = '/workspace/.ssh/kube_aws_rsa'
@@ -267,6 +287,12 @@ class DockerMode(object):
           '-v', '%s:%s:ro' % (priv, aws_ssh),
           '-v', '%s:%s:ro' % (pub, aws_pub),
           '-v', '%s:%s:ro' % (cred, aws_cred),
+        ])
+
+    def add_aws_runner(self):
+        """Run kops_aws_runner for kops-aws jobs."""
+        self.cmd.append([
+          '--entrypoint=/workspace/kops-e2e-runner.sh'
         ])
 
     def add_gce_ssh(self, priv, pub):
@@ -318,6 +344,71 @@ def cluster_name(cluster, build):
     return 'e2e-%s' % hashlib.md5(build).hexdigest()[:10]
 
 
+# TODO(krzyzacy): Move this into kubetest
+def build_kops(workspace, mode):
+    """Build kops, set kops related envs."""
+    if not os.path.basename(workspace) == 'kops':
+        raise ValueError(workspace)
+    version = 'pull-' + check_output('git', 'describe', '--always').strip()
+    job = os.getenv('JOB_NAME', 'pull-kops-e2e-kubernetes-aws')
+    gcs = 'gs://kops-ci/pulls/%s' % job
+    gapi = 'https://storage.googleapis.com/kops-ci/pulls/%s' % job
+    mode.add_environment([
+        'KOPS_BASE_URL=%s/%s' % (gapi, version),
+        'GCS_LOCATION=%s' % gcs
+        ])
+    check('make', 'gcs-publish-ci', 'VERSION=%s' % version, 'GCS_LOCATION=%s' % gcs)
+
+
+def set_up_aws(args, mode, cluster, runner_args):
+    """Set up aws related envs."""
+    for path in [args.aws_ssh, args.aws_pub, args.aws_cred]:
+        if not os.path.isfile(os.path.expandvars(path)):
+            raise IOError(path, os.path.expandvars(path))
+    mode.add_aws_cred(args.aws_ssh, args.aws_pub, args.aws_cred)
+
+    aws_config = '/workspace/.aws/config'
+    aws_ssh = '/workspace/.ssh/kube_aws_rsa'
+    profile = args.aws_profile
+    if args.aws_role_arn:
+        with tempfile.NamedTemporaryFile(prefix='aws-config', delete=False) as cfg:
+            cfg.write(
+                '[profile jenkins-assumed-role]\nrole_arn = %s\nsource_profile = %s\n' % (
+                    args.aws_role_arn, profile))
+            mode.add_aws_profile(cfg.name, aws_config)
+    profile = 'jenkins-assumed-role'
+
+    zones = args.kops_zones or random.choice([
+        'us-west-1a',
+        'us-west-1c',
+        'us-west-2a',
+        'us-west-2b',
+        'us-east-1a',
+        'us-east-1d',
+        'us-east-2a',
+        'us-east-2b',
+    ])
+    regions = ','.join([zone[:-1] for zone in zones.split(',')])
+
+    mode.add_environment(
+      'AWS_PROFILE=%s' % profile,
+      'AWS_DEFAULT_PROFILE=%s' % profile,
+      'KOPS_REGIONS=%s' % regions,
+    )
+
+    if args.aws_cluster_domain:
+        cluster = '%s.%s' % (cluster, args.aws_cluster_domain)
+
+    runner_args.extend([
+        '--kops-cluster=%s' % cluster,
+        '--kops-zones=%s ' % zones,
+        '--kops-state=%s' % args.kops_state,
+        '--kops-nodes=%s' % args.kops_nodes,
+        '--kops-ssh-key=%s' % aws_ssh,
+    ])
+    # TODO(krzyzacy):Remove after retire kops-e2e-runner.sh
+    mode.add_aws_runner()
+
 def main(args):
     """Set up env, start kubekins-e2e, handle termination. """
     # pylint: disable=too-many-branches,too-many-statements
@@ -349,14 +440,6 @@ def main(args):
     if args.env_file:
         for env_file in args.env_file:
             mode.add_file(test_infra(env_file))
-
-    if args.aws:
-        # Enforce aws credential/keys exists
-        for path in [args.aws_ssh, args.aws_pub, args.aws_cred]:
-            if not os.path.isfile(os.path.expandvars(path)):
-                raise IOError(path, os.path.expandvars(path))
-        mode.add_aws_cred(args.aws_ssh, args.aws_pub, args.aws_cred)
-
     if args.gce_ssh:
         mode.add_gce_ssh(args.gce_ssh, args.gce_pub)
 
@@ -383,6 +466,9 @@ def main(args):
             raise ValueError(k8s)
         mode.add_k8s(os.path.dirname(k8s), 'kubernetes', 'release')
 
+    if args.kops_build:
+        build_kops(workspace, mode)
+
     # TODO(fejta): move these out of this file
     if args.up == 'true':
         runner_args.append('--up')
@@ -408,6 +494,9 @@ def main(args):
             '--kubernetes-anywhere-cluster=%s' % cluster,
             '--kubernetes-anywhere-kubeadm-version=%s' % version,
         ])
+
+    if args.aws:
+        set_up_aws(args, mode, cluster, runner_args)
 
     # TODO(fejta): delete this?
     mode.add_os_environment(*(
@@ -444,20 +533,6 @@ def create_parser():
     parser.add_argument(
         '--image-project',
         help='The image project from which to fetch the test images')
-    parser.add_argument(
-        '--aws', action='store_true', help='E2E job runs in aws')
-    parser.add_argument(
-        '--aws-ssh',
-        default=os.environ.get('JENKINS_AWS_SSH_PRIVATE_KEY_FILE'),
-        help='Path to private aws ssh keys')
-    parser.add_argument(
-        '--aws-pub',
-        default=os.environ.get('JENKINS_AWS_SSH_PUBLIC_KEY_FILE'),
-        help='Path to pub aws ssh key')
-    parser.add_argument(
-        '--aws-cred',
-        default=os.environ.get('JENKINS_AWS_CREDENTIALS_FILE'),
-        help='Path to aws credential file')
     parser.add_argument(
         '--gce-ssh',
         default=os.environ.get('JENKINS_GCE_SSH_PRIVATE_KEY_FILE'),
@@ -500,6 +575,46 @@ def create_parser():
         action='append',
         default=[],
         help='Send unrecognized args directly to kubetest')
+
+    # aws
+    parser.add_argument(
+        '--aws', action='store_true', help='E2E job runs in aws')
+    parser.add_argument(
+        '--aws-profile',
+        default=(
+            os.environ.get('AWS_PROFILE') or
+            os.environ.get('AWS_DEFAULT_PROFILE') or
+            'default'
+        ),
+        help='Profile within --aws-cred to use')
+    parser.add_argument(
+        '--aws-role-arn',
+        default=os.environ.get('KOPS_E2E_ROLE_ARN'),
+        help='Use --aws-profile to run as --aws-role-arn if set')
+    parser.add_argument(
+        '--aws-ssh',
+        default=os.environ.get('JENKINS_AWS_SSH_PRIVATE_KEY_FILE'),
+        help='Path to private aws ssh keys')
+    parser.add_argument(
+        '--aws-pub',
+        default=os.environ.get('JENKINS_AWS_SSH_PUBLIC_KEY_FILE'),
+        help='Path to pub aws ssh key')
+    parser.add_argument(
+        '--aws-cred',
+        default=os.environ.get('JENKINS_AWS_CREDENTIALS_FILE'),
+        help='Path to aws credential file')
+    parser.add_argument(
+        '--aws-cluster-domain', help='Domain of the aws cluster for aws-pr jobs')
+    parser.add_argument(
+        '--kops-nodes', default=4, type=int, help='Number of nodes to start')
+    parser.add_argument(
+        '--kops-state', default='s3://k8s-kops-jenkins/',
+        help='Name of the aws state storage')
+    parser.add_argument(
+        '--kops-zones', help='Comma-separated list of zones else random choice')
+    parser.add_argument(
+        '--kops-build', action='store_true', help='If we need to build kops locally')
+
     return parser
 
 
@@ -515,6 +630,22 @@ def parse_args(args=None):
     if bool(args.image_family) != bool(args.image_project):
         raise ValueError(
             '--image-family and --image-project must be both set or unset')
+
+    if args.aws:
+        # If aws keys are missing, try to fetch from HOME dir
+        if not args.aws_ssh or not args.aws_pub or not args.aws_cred:
+            home = os.environ.get('HOME')
+            if not home:
+                raise ValueError('HOME dir not set!')
+            if not args.aws_ssh:
+                args.aws_ssh = '%s/.ssh/kube_aws_rsa' % home
+                print >>sys.stderr, '-aws-ssh key not set. Defaulting to %s' % args.aws_ssh
+            if not args.aws_pub:
+                args.aws_pub = '%s/.ssh/kube_aws_rsa.pub' % home
+                print >>sys.stderr, '--aws-pub key not set. Defaulting to %s' % args.aws_pub
+            if not args.aws_cred:
+                args.aws_cred = '%s/.aws/credentials' % home
+                print >>sys.stderr, '--aws-cred not set. Defaulting to %s' % args.aws_cred
     return args
 
 
