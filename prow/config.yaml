@@ -786,6 +786,7 @@ postsubmits:
         - "--upload=gs://kubernetes-jenkins/logs"
         - "--git-cache=/root/.cache/git"
         - "--clean"
+        - "--json"
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
@@ -818,6 +819,7 @@ postsubmits:
           - "--upload=gs://kubernetes-jenkins/logs"
           - "--git-cache=/root/.cache/git"
           - "--clean"
+          - "--json"
           securityContext:
             privileged: true
           env:
@@ -895,6 +897,7 @@ postsubmits:
         - "--upload=gs://kubernetes-jenkins/logs"
         - "--git-cache=/root/.cache/git"
         - "--clean"
+        - "--json"
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
@@ -927,6 +930,7 @@ postsubmits:
           - "--upload=gs://kubernetes-jenkins/logs"
           - "--git-cache=/root/.cache/git"
           - "--clean"
+          - "--json"
           securityContext:
             privileged: true
           env:
@@ -14047,6 +14051,7 @@ periodics:
       - "--upload=gs://kubernetes-jenkins/logs"
       - "--git-cache=/root/.cache/git"
       - "--clean"
+      - "--json"
       # Bazel needs privileged mode in order to sandbox builds.
       securityContext:
         privileged: true
@@ -14080,6 +14085,7 @@ periodics:
         - "--upload=gs://kubernetes-jenkins/logs"
         - "--git-cache=/root/.cache/git"
         - "--clean"
+        - "--json"
         securityContext:
           privileged: true
         env:
