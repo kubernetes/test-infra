@@ -20,7 +20,10 @@ go_test(
     srcs = ["main_test.go"],
     library = ":go_default_library",
     tags = ["automanaged"],
-    deps = ["//prow/kube:go_default_library"],
+    deps = [
+        "//prow/config:go_default_library",
+        "//prow/kube:go_default_library",
+    ],
 )
 
 go_library(

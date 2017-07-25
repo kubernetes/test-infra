@@ -21,6 +21,7 @@ import (
 	"testing"
 	"time"
 
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/kube"
 )
 
@@ -88,6 +89,31 @@ func labelsMatch(l1 map[string]string, l2 map[string]string) bool {
 		}
 	}
 	return true
+}
+
+const (
+	maxProwJobAge = 2 * 24 * time.Hour
+	maxPodAge     = 12 * time.Hour
+)
+
+type fca struct {
+	c *config.Config
+}
+
+func newFakeConfigAgent() *fca {
+	return &fca{
+		c: &config.Config{
+			Sinker: config.Sinker{
+				MaxProwJobAge: maxProwJobAge,
+				MaxPodAge:     maxPodAge,
+			},
+		},
+	}
+
+}
+
+func (f *fca) Config() *config.Config {
+	return f.c
 }
 
 func TestClean(t *testing.T) {
@@ -167,7 +193,7 @@ func TestClean(t *testing.T) {
 		Pods:     pods,
 		ProwJobs: prowJobs,
 	}
-	clean(kc, kc)
+	clean(kc, kc, newFakeConfigAgent())
 	if len(deletedPods) != len(kc.DeletedPods) {
 		t.Errorf("Deleted wrong number of pods: got %v expected %v", kc.DeletedPods, deletedPods)
 	}
