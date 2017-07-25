@@ -125,10 +125,24 @@ def check_ci_jobs():
     # Hard code node-ci project here
     clean_project('k8s-jkns-ci-node-e2e')
 
+def clean_aws(image, cred):
+    """Handle aws jobs"""
+    check('gcloud', 'docker', '--', 'pull', image)
+    check(
+        'docker', 'run', '-v', '%s:/root/.aws/credentials:ro' % cred,
+        image,
+        '--path', 's3://janitor-jenkins/objs.json',
+        '--ttl', '2h30m'
+        )
 
-def main(args):
+
+def main(mode, aws_image, aws_cred):
     """Run janitor for each project."""
-    if args.pr_janitor:
+    if mode == 'aws':
+        if not aws_image:
+            raise ValueError('--aws-image must be set for aws janitor')
+        clean_aws(aws_image, aws_cred)
+    elif mode == 'pr':
         check_pr_jobs()
     else:
         check_ci_jobs()
@@ -146,6 +160,14 @@ if __name__ == '__main__':
     FAILED = []
     PARSER = argparse.ArgumentParser()
     PARSER.add_argument(
-        '--pr-janitor', action="store_true", help='Job specific environment file')
+        '--mode', default='ci', choices=['ci', 'pr', 'aws'],
+        help='Which type of projects to clear')
+    PARSER.add_argument(
+        '--aws-image',
+        help='AWS janitor image path')
+    PARSER.add_argument(
+        '--aws-cred',
+        default=os.environ.get('JENKINS_AWS_CREDENTIALS_FILE'),
+        help='AWS credential for aws janitor')
     ARGS = PARSER.parse_args()
-    main(ARGS)
+    main(ARGS.mode, ARGS.aws_image, ARGS.aws_cred)

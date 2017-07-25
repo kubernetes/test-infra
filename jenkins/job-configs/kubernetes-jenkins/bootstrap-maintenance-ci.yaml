@@ -7,7 +7,7 @@
         './test-infra/jenkins/bootstrap.py' \
             --branch='{branch}' \
             --job='{job-name}' \
-            --json='{json}' \
+            --json \
             --repo='{repo-name}' \
             --root="${{GOPATH}}/src" \
             --service-account="${{GOOGLE_APPLICATION_CREDENTIALS}}" \
@@ -45,13 +45,11 @@
         branch: master
         frequency: 'H * * * *'
         job-name: maintenance-ci-aws-janitor
-        json: 0
         repo-name: 'k8s.io/test-infra'
         timeout: 30
     - janitor:
         branch: master
         frequency: '@daily'
         job-name: maintenance-ci-janitor
-        json: 1
         repo-name: 'k8s.io/test-infra'
         timeout: 600
