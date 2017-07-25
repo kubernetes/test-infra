@@ -38,6 +38,7 @@ import (
 	"k8s.io/test-infra/mungegithub/mungers/e2e"
 	fake_e2e "k8s.io/test-infra/mungegithub/mungers/e2e/fake"
 	"k8s.io/test-infra/mungegithub/mungers/mungerutil"
+	"k8s.io/test-infra/mungegithub/options"
 
 	"github.com/google/go-github/github"
 )
@@ -206,6 +207,7 @@ func getTestSQ(startThreads bool, config *github_util.Config, server *httptest.S
 	// TODO: Remove this line when we fix the plumbing regarding the fake/real e2e tester.
 	admin.Mux = admin.NewConcurrentMux()
 	sq := new(SubmitQueue)
+	sq.opts = options.New()
 
 	sq.GateApproved = true
 	sq.GateCLA = true

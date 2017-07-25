@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"time"
 
+	"k8s.io/kubernetes/pkg/util/sets"
 	"k8s.io/test-infra/mungegithub/features"
 	"k8s.io/test-infra/mungegithub/github"
 	"k8s.io/test-infra/mungegithub/mungeopts"
@@ -60,21 +61,18 @@ func (s *StaleGreenCI) RequiredFeatures() []string { return []string{} }
 // Initialize will initialize the munger
 func (s *StaleGreenCI) Initialize(config *github.Config, features *features.Features) error {
 	s.features = features
-	s.getRetestContexts = func() []string {
-		return mungeopts.RequiredContexts.Retest
-	}
 	return nil
 }
 
 // EachLoop is called at the start of every munge loop
 func (s *StaleGreenCI) EachLoop() error { return nil }
 
-// RegisterOptions registers config options for this munger.
-func (s *StaleGreenCI) RegisterOptions(opts *options.Options) {}
+// RegisterOptions registers options for this munger; returns any that require a restart when changed.
+func (s *StaleGreenCI) RegisterOptions(opts *options.Options) sets.String { return nil }
 
 // Munge is the workhorse the will actually make updates to the PR
 func (s *StaleGreenCI) Munge(obj *github.MungeObject) {
-	requiredContexts := s.getRetestContexts()
+	requiredContexts := mungeopts.RequiredContexts.Retest
 	if !obj.IsPR() {
 		return
 	}

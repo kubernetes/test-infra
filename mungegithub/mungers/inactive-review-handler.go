@@ -22,6 +22,7 @@ import (
 
 	"github.com/golang/glog"
 	githubapi "github.com/google/go-github/github"
+	"k8s.io/kubernetes/pkg/util/sets"
 	"k8s.io/test-infra/mungegithub/features"
 	"k8s.io/test-infra/mungegithub/github"
 	"k8s.io/test-infra/mungegithub/mungers/matchers"
@@ -59,8 +60,8 @@ func (i *InactiveReviewHandler) Initialize(config *github.Config, features *feat
 // EachLoop is called at the start of every munge loop
 func (i *InactiveReviewHandler) EachLoop() error { return nil }
 
-// RegisterOptions registers config options for this munger.
-func (*InactiveReviewHandler) RegisterOptions(opts *options.Options) {}
+// RegisterOptions registers options for this munger; returns any that require a restart when changed.
+func (*InactiveReviewHandler) RegisterOptions(opts *options.Options) sets.String { return nil }
 
 func (i *InactiveReviewHandler) haveNonAuthorHuman(authorName *string, comments []*githubapi.IssueComment, reviewComments []*githubapi.PullRequestComment) bool {
 	return !matchers.Items{}.

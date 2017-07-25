@@ -29,6 +29,7 @@ import (
 	"strings"
 
 	"k8s.io/contrib/test-utils/utils"
+	"k8s.io/test-infra/mungegithub/options"
 )
 
 type testHandler struct {
@@ -208,12 +209,10 @@ func TestCheckGCSBuilds(t *testing.T) {
 				res.Write(data)
 			},
 		})
+		jobs := []string{"foo", "bar", "baz"}
 		e2e := &RealE2ETester{
-			NonBlockingJobNames: []string{
-				"foo",
-				"bar",
-				"baz",
-			},
+			Opts:                 options.New(),
+			NonBlockingJobNames:  &jobs,
 			BuildStatus:          map[string]BuildInfo{},
 			GoogleGCSBucketUtils: utils.NewTestUtils("bucket", "logs", server.URL),
 		}

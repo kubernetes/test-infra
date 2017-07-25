@@ -19,6 +19,7 @@ package reports
 import (
 	"fmt"
 
+	"k8s.io/kubernetes/pkg/util/sets"
 	"k8s.io/test-infra/mungegithub/github"
 	"k8s.io/test-infra/mungegithub/options"
 
@@ -29,7 +30,7 @@ import (
 type Report interface {
 	// Take action on a specific github issue:
 	Report(config *github.Config) error
-	RegisterOptions(opts *options.Options)
+	RegisterOptions(opts *options.Options) sets.String
 	Name() string
 }
 
@@ -85,8 +86,12 @@ func RunReports(cfg *github.Config, runReports ...string) error {
 	return nil
 }
 
-func RegisterOptions(opts *options.Options) {
+// RegisterOptions registers options used by reports and returns any options that should trigger a
+// restart if they are changed.
+func RegisterOptions(opts *options.Options) sets.String {
+	immutables := sets.NewString()
 	for _, report := range reportMap {
-		report.RegisterOptions(opts)
+		immutables = immutables.Union(report.RegisterOptions(opts))
 	}
+	return immutables
 }

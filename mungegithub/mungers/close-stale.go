@@ -21,6 +21,7 @@ import (
 	"regexp"
 	"time"
 
+	"k8s.io/kubernetes/pkg/util/sets"
 	"k8s.io/test-infra/mungegithub/features"
 	"k8s.io/test-infra/mungegithub/github"
 	"k8s.io/test-infra/mungegithub/mungers/mungerutil"
@@ -78,8 +79,8 @@ func (CloseStale) Initialize(config *github.Config, features *features.Features)
 // EachLoop is called at the start of every munge loop
 func (CloseStale) EachLoop() error { return nil }
 
-// RegisterOptions registers config options for this munger.
-func (CloseStale) RegisterOptions(opts *options.Options) {}
+// RegisterOptions registers options for this munger; returns any that require a restart when changed.
+func (CloseStale) RegisterOptions(opts *options.Options) sets.String { return nil }
 
 func findLastHumanPullRequestUpdate(obj *github.MungeObject) (*time.Time, bool) {
 	pr, ok := obj.GetPR()

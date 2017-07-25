@@ -23,6 +23,7 @@ import (
 
 	githubapi "github.com/google/go-github/github"
 
+	"k8s.io/kubernetes/pkg/util/sets"
 	"k8s.io/test-infra/mungegithub/features"
 	"k8s.io/test-infra/mungegithub/github"
 	"k8s.io/test-infra/mungegithub/mungers/approvers"
@@ -68,8 +69,8 @@ func (h *ApprovalHandler) Initialize(config *github.Config, features *features.F
 // EachLoop is called at the start of every munge loop
 func (*ApprovalHandler) EachLoop() error { return nil }
 
-// RegisterOptions registers config options for this munger.
-func (*ApprovalHandler) RegisterOptions(opts *options.Options) {}
+// RegisterOptions registers options for this munger; returns any that require a restart when changed.
+func (*ApprovalHandler) RegisterOptions(opts *options.Options) sets.String { return nil }
 
 // Returns associated issue, or 0 if it can't find any.
 // This is really simple, and could be improved later.

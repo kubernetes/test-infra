@@ -56,7 +56,6 @@ type RepoInfo struct {
 	enableMdYaml bool
 	useReviewers bool
 
-	enabled           bool
 	projectDir        string
 	approvers         map[string]sets.String
 	reviewers         map[string]sets.String
@@ -205,7 +204,6 @@ func (o *RepoInfo) updateRepoUsers() error {
 
 // Initialize will initialize the munger
 func (o *RepoInfo) Initialize(config *github.Config) error {
-	o.enabled = true
 	o.config = config
 	o.projectDir = path.Join(o.baseDir, o.config.Project)
 
@@ -248,9 +246,6 @@ func (o *RepoInfo) cloneRepo() (string, error) {
 
 // EachLoop is called at the start of every munge loop
 func (o *RepoInfo) EachLoop() error {
-	if !o.enabled {
-		return nil
-	}
 	_, err := o.GitCommand([]string{"remote", "update"})
 	if err != nil {
 		glog.Errorf("Unable to git remote update: %v", err)
@@ -258,11 +253,12 @@ func (o *RepoInfo) EachLoop() error {
 	return o.updateRepoUsers()
 }
 
-// RegisterOptions registers config options used by RepoInfo.
-func (o *RepoInfo) RegisterOptions(opts *options.Options) {
+// RegisterOptions registers options for this feature; returns any that require a restart when changed.
+func (o *RepoInfo) RegisterOptions(opts *options.Options) sets.String {
 	opts.RegisterString(&o.baseDir, "repo-dir", "", "Path to perform checkout of repository")
 	opts.RegisterBool(&o.enableMdYaml, "enable-md-yaml", false, "If true, look for assignees in md yaml headers.")
 	opts.RegisterBool(&o.useReviewers, "use-reviewers", false, "Use \"reviewers\" rather than \"approvers\" for review")
+	return sets.NewString("repo-dir")
 }
 
 // GitCommand will execute the git command with the `args` within the project directory.

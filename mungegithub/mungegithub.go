@@ -18,11 +18,13 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"os"
 	"path/filepath"
 	"time"
 
 	utilflag "k8s.io/kubernetes/pkg/util/flag"
+	"k8s.io/kubernetes/pkg/util/sets"
 	"k8s.io/test-infra/mungegithub/features"
 	github_util "k8s.io/test-infra/mungegithub/github"
 	"k8s.io/test-infra/mungegithub/mungeopts"
@@ -55,19 +57,36 @@ func registerOptions(config *mungeConfig) {
 	config.RegisterDuration(&config.period, "period", 10*time.Minute, "The period for running mungers")
 	config.RegisterString(&config.webhookKeyFile, "github-key-file", "", "Github secret key for webhooks")
 
-	// Print the options whenever they are updated.
-	// This goes before registration of other sources to ensure the updated config is printed first
-	// when a new config is found.
-	config.RegisterUpdateCallback(func() {
-		glog.Infof("ConfigMap '%s' was updated.\n%s", config.path, config.CurrentValues())
+	// options that necessitate a full restart when they change.
+	immutables := sets.NewString("once", "pr-mungers", "issue-reports", "github-key-file")
+	// Register config update callback. This goes before registration of other sources to ensure:
+	// 1) If an immutable option is changed, we fail before calling other update callbacks.
+	// 2) The updated config is printed before anything else when a new config is found.
+	config.RegisterUpdateCallback(func(changed sets.String) error {
+		if common := immutables.Intersection(changed); len(common) > 0 {
+			return fmt.Errorf("option key(s) %q was updated necessitating a restart", common.List())
+		}
+
+		glog.Infof(
+			"ConfigMap '%s' was updated.\nOptions changed: %q\n%s",
+			config.path,
+			changed.List(),
+			config.CurrentValues(),
+		)
+		return nil
 	})
 
 	// Register options from other sources.
-	config.Config.RegisterOptions(config.Options)   // github.Config
-	config.Features.RegisterOptions(config.Options) // Features (per feature opts)
-	reports.RegisterOptions(config.Options)         // Reports (per report opts)
-	mungers.RegisterOptions(config.Options)         // Mungers (per munger opts)
-	mungeopts.RegisterOptions(config.Options)       // MungeOpts (opts shared by mungers or features)
+	// github.Config
+	immutables = immutables.Union(config.Config.RegisterOptions(config.Options))
+	// Features (per feature opts)
+	immutables = immutables.Union(config.Features.RegisterOptions(config.Options))
+	// Reports (per report opts)
+	immutables = immutables.Union(reports.RegisterOptions(config.Options))
+	// MungeOpts (opts shared by mungers or features)
+	immutables = immutables.Union(mungeopts.RegisterOptions(config.Options))
+	// Mungers (per munger opts)
+	immutables = immutables.Union(mungers.RegisterOptions(config.Options))
 }
 
 func doMungers(config *mungeConfig) error {
@@ -94,10 +113,17 @@ func doMungers(config *mungeConfig) error {
 		} else {
 			glog.Infof("Not sleeping as we took more than %v to complete one loop\n", config.period)
 		}
-		// Uncommenting will make configmap reload if changed.
-		// if config.path != "" {
-		// 	config.Load(config.path)
-		// }
+
+		if config.path == "" {
+			continue
+		}
+		if _, err := config.Load(config.path); err != nil {
+			if _, ok := err.(*options.UpdateCallbackError); ok {
+				return err // Fatal
+			}
+			// Non-fatal since the config has previously been loaded successfully.
+			glog.Errorf("Error reloading config (ignored): %v", err)
+		}
 	}
 	return nil
 }
@@ -110,11 +136,13 @@ func main() {
 		RunE: func(_ *cobra.Command, _ []string) error {
 			optFlagsSpecified := config.Options.FlagsSpecified()
 			if config.path != "" && len(optFlagsSpecified) > 0 {
-				glog.Fatalf("Error: --config-path flag cannot be used with option flags. Option flag(s) %v were specified.", optFlagsSpecified)
+				glog.Fatalf("Error: --config-path flag cannot be used with option flags. Option flag(s) %v were specified.", optFlagsSpecified.List())
 			}
 			if config.path != "" {
 				glog.Infof("Loading config from file '%s'.\n", config.path)
-				config.Load(config.path)
+				if _, err := config.Load(config.path); err != nil {
+					glog.Fatalf("Error loading options: %v", err)
+				}
 			} else {
 				glog.Info("Loading config from flags.\n")
 				config.PopulateFromFlags()

@@ -69,7 +69,7 @@ func (p *PathLabelMunger) Initialize(config *github.Config, features *features.F
 	out := []labelMap{}
 	file := p.pathLabelFile
 	if len(file) == 0 {
-		glog.Infof("No --path-label-config= supplied, applying no labels")
+		glog.Infof("No 'path-label-config' option supplied, applying no labels.")
 		return nil
 	}
 	fp, err := os.Open(file)
@@ -113,9 +113,16 @@ func (p *PathLabelMunger) Initialize(config *github.Config, features *features.F
 // EachLoop is called at the start of every munge loop
 func (p *PathLabelMunger) EachLoop() error { return nil }
 
-// RegisterOptions registers config options for this munger.
-func (p *PathLabelMunger) RegisterOptions(opts *options.Options) {
+// RegisterOptions registers options for this munger; returns any that require a restart when changed.
+func (p *PathLabelMunger) RegisterOptions(opts *options.Options) sets.String {
 	opts.RegisterString(&p.pathLabelFile, "path-label-config", "", "file containing the pathname to label mappings")
+	opts.RegisterUpdateCallback(func(changed sets.String) error {
+		if changed.Has("path-label-config") {
+			return p.Initialize(nil, nil) // Initialize doesn't use config or features.
+		}
+		return nil
+	})
+	return nil
 }
 
 // Munge is the workhorse the will actually make updates to the PR

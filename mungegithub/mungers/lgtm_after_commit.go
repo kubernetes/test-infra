@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"regexp"
 
+	"k8s.io/kubernetes/pkg/util/sets"
 	"k8s.io/test-infra/mungegithub/features"
 	"k8s.io/test-infra/mungegithub/github"
 	"k8s.io/test-infra/mungegithub/mungers/mungerutil"
@@ -61,8 +62,8 @@ func (LGTMAfterCommitMunger) Initialize(config *github.Config, features *feature
 // EachLoop is called at the start of every munge loop
 func (LGTMAfterCommitMunger) EachLoop() error { return nil }
 
-// RegisterOptions registers config options for this munger.
-func (LGTMAfterCommitMunger) RegisterOptions(opts *options.Options) {}
+// RegisterOptions registers options for this munger; returns any that require a restart when changed.
+func (LGTMAfterCommitMunger) RegisterOptions(opts *options.Options) sets.String { return nil }
 
 // Munge is the workhorse the will actually make updates to the PR
 func (LGTMAfterCommitMunger) Munge(obj *github.MungeObject) {

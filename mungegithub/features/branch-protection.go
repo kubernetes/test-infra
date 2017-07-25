@@ -17,6 +17,7 @@ limitations under the License.
 package features
 
 import (
+	"k8s.io/kubernetes/pkg/util/sets"
 	"k8s.io/test-infra/mungegithub/github"
 	"k8s.io/test-infra/mungegithub/mungeopts"
 	"k8s.io/test-infra/mungegithub/options"
@@ -63,8 +64,9 @@ func (bp *BranchProtection) EachLoop() error {
 	return nil
 }
 
-// RegisterOptions registers options used by the BranchProtection feature.
-func (bp *BranchProtection) RegisterOptions(opts *options.Options) {
+// RegisterOptions registers options for this feature; returns any that require a restart when changed.
+func (bp *BranchProtection) RegisterOptions(opts *options.Options) sets.String {
 	opts.RegisterStringSlice(&bp.branches, "protected-branches", []string{}, "branches to be marked 'protected'.  required-contexts, required-retest-contexts, and protected-branches-extra-contexts will be marked as required for non-admins")
 	opts.RegisterStringSlice(&bp.extraContexts, "protected-branches-extra-contexts", []string{}, "Contexts which will be marked as required in the Github UI but which the bot itself does not require")
+	return nil
 }

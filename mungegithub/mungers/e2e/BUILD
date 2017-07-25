@@ -16,7 +16,10 @@ go_test(
     ],
     library = ":go_default_library",
     tags = ["automanaged"],
-    deps = ["//vendor:k8s.io/contrib/test-utils/utils"],
+    deps = [
+        "//mungegithub/options:go_default_library",
+        "//vendor:k8s.io/contrib/test-utils/utils",
+    ],
 )
 
 go_library(
@@ -28,6 +31,7 @@ go_library(
     tags = ["automanaged"],
     deps = [
         "//mungegithub/mungers/flakesync:go_default_library",
+        "//mungegithub/options:go_default_library",
         "//vendor:github.com/golang/glog",
         "//vendor:k8s.io/contrib/test-utils/utils",
         "//vendor:k8s.io/kubernetes/pkg/util/sets",

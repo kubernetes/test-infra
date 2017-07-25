@@ -25,14 +25,13 @@ import (
 	"k8s.io/test-infra/mungegithub/options"
 
 	"github.com/golang/glog"
-	"k8s.io/test-infra/mungegithub/mungers/mungerutil"
 )
 
 // Munger is the interface which all mungers must implement to register
 type Munger interface {
 	// Take action on a specific github issue:
 	Munge(obj *github.MungeObject)
-	RegisterOptions(opts *options.Options)
+	RegisterOptions(opts *options.Options) sets.String
 	Name() string
 	RequiredFeatures() []string
 	Initialize(*github.Config, *features.Features) error
@@ -86,12 +85,10 @@ func RegisterMungers(requestedMungers []string) error {
 // InitializeMungers will call munger.Initialize() for the requested mungers.
 func InitializeMungers(config *github.Config, features *features.Features) error {
 	for _, munger := range mungers {
-		m := munger.Name()
 		if err := munger.Initialize(config, features); err != nil {
-			return fmt.Errorf("could not initialize %s: %v", m, err)
+			return fmt.Errorf("could not initialize %s: %v", munger.Name(), err)
 		}
-		glog.Infof(mungerutil.PrettyString(munger))
-		glog.Infof("Initialized munger: %s", m)
+		glog.Infof("Initialized munger: %s", munger.Name())
 	}
 	return nil
 }
@@ -133,8 +130,10 @@ func MungeIssue(obj *github.MungeObject) error {
 	return nil
 }
 
-func RegisterOptions(opts *options.Options) {
+func RegisterOptions(opts *options.Options) sets.String {
+	immutables := sets.NewString()
 	for _, munger := range mungerMap {
-		munger.RegisterOptions(opts)
+		immutables = immutables.Union(munger.RegisterOptions(opts))
 	}
+	return immutables
 }

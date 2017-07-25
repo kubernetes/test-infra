@@ -28,6 +28,7 @@ import (
 	"k8s.io/contrib/test-utils/utils"
 	"k8s.io/kubernetes/pkg/util/sets"
 	cache "k8s.io/test-infra/mungegithub/mungers/flakesync"
+	"k8s.io/test-infra/mungegithub/options"
 
 	"io/ioutil"
 
@@ -50,7 +51,8 @@ type BuildInfo struct {
 // RealE2ETester is the object which will get status from a google bucket
 // information about recent jobs
 type RealE2ETester struct {
-	NonBlockingJobNames []string
+	Opts                *options.Options
+	NonBlockingJobNames *[]string
 
 	sync.Mutex
 	BuildStatus          map[string]BuildInfo // protect by mutex
@@ -264,7 +266,10 @@ func (e *RealE2ETester) LatestRunOfJob(jobName string) (int, error) {
 
 // LoadNonBlockingStatus gets the build stability status for all the NonBlockingJobNames.
 func (e *RealE2ETester) LoadNonBlockingStatus() {
-	for _, job := range e.NonBlockingJobNames {
+	e.Opts.Lock()
+	jobs := *e.NonBlockingJobNames
+	e.Opts.Unlock()
+	for _, job := range jobs {
 		lastBuildNumber, err := e.GoogleGCSBucketUtils.GetLastestBuildNumberFromJenkinsGoogleBucket(job)
 		glog.V(4).Infof("Checking status of %v, %v", job, lastBuildNumber)
 		if err != nil {

@@ -17,6 +17,7 @@ limitations under the License.
 package mungers
 
 import (
+	"k8s.io/kubernetes/pkg/util/sets"
 	"k8s.io/test-infra/mungegithub/features"
 	"k8s.io/test-infra/mungegithub/github"
 	"k8s.io/test-infra/mungegithub/options"
@@ -53,9 +54,10 @@ func (a *AssignFixesMunger) Initialize(config *github.Config, features *features
 // EachLoop is called at the start of every munge loop
 func (a *AssignFixesMunger) EachLoop() error { return nil }
 
-// RegisterOptions registers config options for this munger.
-func (a *AssignFixesMunger) RegisterOptions(opts *options.Options) {
+// RegisterOptions registers options for this munger; returns any that require a restart when changed.
+func (a *AssignFixesMunger) RegisterOptions(opts *options.Options) sets.String {
 	opts.RegisterBool(&a.assignFixesReassign, "fixes-issue-reassign", false, "Assign fixes Issues even if they're already assigned")
+	return nil
 }
 
 // Munge is the workhorse the will actually make updates to the PR

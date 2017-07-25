@@ -27,6 +27,7 @@ import (
 
 	github_util "k8s.io/test-infra/mungegithub/github"
 	github_test "k8s.io/test-infra/mungegithub/github/testing"
+	"k8s.io/test-infra/mungegithub/mungeopts"
 
 	"github.com/golang/glog"
 	"github.com/google/go-github/github"
@@ -149,9 +150,7 @@ func TestOldUnitTestMunge(t *testing.T) {
 			t.Fatalf("%v", err)
 		}
 
-		s.getRetestContexts = func() []string {
-			return requiredContexts
-		}
+		mungeopts.RequiredContexts.Retest = requiredContexts
 		s.Munge(obj)
 
 		if tested != test.tested {

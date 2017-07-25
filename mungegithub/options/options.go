@@ -25,7 +25,10 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
+
+	"k8s.io/kubernetes/pkg/util/sets"
 
 	"github.com/ghodss/yaml"
 	"github.com/golang/glog"
@@ -42,17 +45,27 @@ import (
 // The defaultVal is used if the options does not have a value specified.
 // The description explains the option as an entry in the text returned by Descriptions().
 type Options struct {
-	rawConfig []byte
+	rawConfig map[string]string
 	options   map[string]*option
 
 	callbacks []UpdateCallback
+
+	sync.Mutex
 }
 
 func New() *Options {
 	return &Options{options: map[string]*option{}}
 }
 
-type UpdateCallback func()
+type UpdateCallbackError struct {
+	err error
+}
+
+func (e *UpdateCallbackError) Error() string {
+	return fmt.Sprintf("error from option update callback: %v", e.err)
+}
+
+type UpdateCallback func(changed sets.String) error
 
 func (o *Options) RegisterUpdateCallback(callback UpdateCallback) {
 	o.callbacks = append(o.callbacks, callback)
@@ -93,32 +106,37 @@ func (o *Options) ToFlags() {
 	}
 }
 
-// Load updates options based on the contents of a config file.
-// If the file cannot be read and options has not been loaded previously this is fatal.
-func (o *Options) Load(file string) {
+// Load updates options based on the contents of a config file and returns the set of changed options.
+func (o *Options) Load(file string) (sets.String, error) {
 	firstLoad := o.rawConfig == nil
-	changed, err := o.tryLoad(file)
+
+	b, err := ioutil.ReadFile(file)
+	if err != nil || b == nil {
+		return nil, fmt.Errorf("could not read config file %q: %v", file, err)
+	}
+	changed, err := o.populateFromYaml(b)
 	if err != nil {
-		if firstLoad {
-			// This is fatal since we have not previously loaded a configmap.
-			glog.Fatalf("Failed to load options: %v.", err)
-		}
-		glog.Errorf("Failed to reload options: %v.", err)
-		return
+		return changed, err
 	}
-	if changed && !firstLoad {
+
+	if len(changed) > 0 && !firstLoad {
 		for _, callback := range o.callbacks {
-			callback()
+			if err = callback(changed); err != nil {
+				return changed, &UpdateCallbackError{err: err}
+			}
 		}
 	}
+	return changed, nil
 }
 
-// PopulateFromString loads values from the provided yaml string into the Options struct.
+// PopulateFromString loads values from the provided yaml string and returns the set of changed options.
 // This function should only be used in tests where the config is not loaded from a file.
-func (o *Options) PopulateFromString(yaml string) {
-	if err := o.populateFromYaml([]byte(yaml)); err != nil {
-		glog.Fatalf("Failed to populate Options with values from \"%s\". Err: %v.", yaml, err)
+func (o *Options) PopulateFromString(yaml string) sets.String {
+	changed, err := o.populateFromYaml([]byte(yaml))
+	if err != nil {
+		glog.Fatalf("Failed to populate Options with values from %q. Err: %v.", yaml, err)
 	}
+	return changed
 }
 
 // PopulateFromFlags loads values into options from command line flags.
@@ -140,45 +158,34 @@ func (o *Options) PopulateFromFlags() {
 // FlagsSpecified returns the names of the flags that were specified that correspond to options.
 // This function must have been proceeded by a call to ToFlags and the flags must have been parsed
 // since then.
-func (o *Options) FlagsSpecified() []string {
+func (o *Options) FlagsSpecified() sets.String {
 	if !flag.Parsed() {
 		flag.Parse()
 	}
 
-	specified := []string{}
+	specified := sets.String{}
 	flag.Visit(func(f *flag.Flag) {
 		if _, ok := o.options[f.Name]; ok {
-			specified = append(specified, f.Name)
+			specified.Insert(f.Name)
 		}
 	})
 	return specified
 }
 
-func (o *Options) tryLoad(file string) (bool, error) {
-	b, err := ioutil.ReadFile(file)
-	if err != nil || b == nil {
-		return false, fmt.Errorf("failed to read configmap from file '%s': %v", file, err)
-	}
-	if reflect.DeepEqual(o.rawConfig, b) {
-		// ConfigMap has not changed so there is nothing to do.
-		return false, nil
-	}
-
-	return true, o.populateFromYaml(b)
-}
-
-func (o *Options) populateFromYaml(rawCM []byte) error {
+func (o *Options) populateFromYaml(rawCM []byte) (sets.String, error) {
 	var configmap map[string]string
 	if err := yaml.Unmarshal(rawCM, &configmap); err != nil {
-		return fmt.Errorf("failed to unmarshal configmap from yaml: %v", err)
+		return nil, fmt.Errorf("failed to unmarshal configmap from yaml: %v", err)
 	}
 
-	o.populateFromMap(configmap)
-	o.rawConfig = rawCM
-	return nil
+	return o.populateFromMap(configmap), nil
 }
 
-func (o *Options) populateFromMap(configmap map[string]string) {
+func (o *Options) populateFromMap(configmap map[string]string) sets.String {
+	o.Lock()
+	defer o.Unlock()
+
+	changed := sets.NewString()
 	for key, opt := range o.options {
 		if opt.optType == typeUnknown {
 			delete(o.options, key)
@@ -186,10 +193,16 @@ func (o *Options) populateFromMap(configmap map[string]string) {
 		}
 		if raw, ok := configmap[key]; ok {
 			opt.raw = raw
-			opt.fromString()
+			if opt.fromString() {
+				// The value changed.
+				changed.Insert(key)
+			}
 			delete(configmap, key)
 		} else {
-			opt.moveToVal(opt.defaultVal)
+			if opt.moveToVal(opt.defaultVal) {
+				// The value changed.
+				changed.Insert(key)
+			}
 		}
 	}
 	for key, raw := range configmap {
@@ -198,10 +211,13 @@ func (o *Options) populateFromMap(configmap map[string]string) {
 			raw:     raw,
 		}
 	}
+	o.rawConfig = configmap
+	return changed
 }
 
 // fromString converts opt.raw to opt.optType and moves the resulting value into opt.val.
-func (opt *option) fromString() {
+// iff the value changed 'true' is returned.
+func (opt *option) fromString() bool {
 	var err error
 	var newVal interface{}
 	switch opt.optType {
@@ -242,11 +258,13 @@ func (opt *option) fromString() {
 	default:
 		glog.Fatalf("Unrecognized type '%s'.", opt.optType)
 	}
-	opt.moveToVal(newVal)
+	return opt.moveToVal(newVal)
 }
 
 // moveToVal moves the specified value to 'val', maintaining the original 'val' ptr.
-func (opt *option) moveToVal(newVal interface{}) {
+// iff the value changed 'true' is returned.
+func (opt *option) moveToVal(newVal interface{}) bool {
+	changed := !reflect.DeepEqual(opt.val, newVal)
 	switch opt.optType {
 	case typeString, typeSecret:
 		*opt.val.(*string) = *newVal.(*string)
@@ -263,6 +281,7 @@ func (opt *option) moveToVal(newVal interface{}) {
 	default:
 		glog.Fatalf("Unrecognized type '%s'.", opt.optType)
 	}
+	return changed
 }
 
 // register tries to register an option of any optionType (with the exception of typeUnknown).

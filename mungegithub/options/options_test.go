@@ -25,6 +25,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"k8s.io/kubernetes/pkg/util/sets"
 )
 
 var (
@@ -216,16 +218,22 @@ func TestOptions(t *testing.T) {
 	oRegisterFirst := New()
 	oRegisterOnce := New()
 
-	oLoadFirst.Load(cfg.file.Name())
+	if _, err = oLoadFirst.Load(cfg.file.Name()); err != nil {
+		t.Errorf("Load failed: %v", err)
+	}
 	registerAll(oLoadFirst)
 	registerAll(oRegisterFirst)
-	oRegisterFirst.Load(cfg.file.Name())
+	if _, err = oRegisterFirst.Load(cfg.file.Name()); err != nil {
+		t.Errorf("Load failed: %v", err)
+	}
 	//Test Register only (no Load).
 	registerAll(oRegisterOnce)
 	if err = checkAll(oRegisterOnce, entries); err != nil {
 		t.Errorf("checkAll failed: %v", err)
 	}
-	oRegisterOnce.Load(cfg.file.Name())
+	if _, err = oRegisterOnce.Load(cfg.file.Name()); err != nil {
+		t.Errorf("Load failed: %v", err)
+	}
 
 	if err = checkAll(oLoadFirst, expected); err != nil {
 		t.Errorf("checkAll failed: %v", err)
@@ -242,11 +250,17 @@ func TestOptions(t *testing.T) {
 	}
 	// Test back to back loads and registers.
 	registerAll(oLoadFirst)
-	oLoadFirst.Load(cfg.file.Name())
-	oRegisterFirst.Load(cfg.file.Name())
+	if _, err = oLoadFirst.Load(cfg.file.Name()); err != nil {
+		t.Errorf("Load failed: %v", err)
+	}
+	if _, err = oRegisterFirst.Load(cfg.file.Name()); err != nil {
+		t.Errorf("Load failed: %v", err)
+	}
 	registerAll(oRegisterFirst)
 	// Test reload without reregister.
-	oRegisterOnce.Load(cfg.file.Name())
+	if _, err = oRegisterOnce.Load(cfg.file.Name()); err != nil {
+		t.Errorf("Load failed: %v", err)
+	}
 
 	if err = checkAll(oLoadFirst, expected2); err != nil {
 		t.Errorf("checkAll failed: %v", err)
@@ -259,7 +273,9 @@ func TestOptions(t *testing.T) {
 	}
 
 	// Test no-op reload of same config (sample_yaml2 again).
-	oRegisterOnce.Load(cfg.file.Name())
+	if _, err = oRegisterOnce.Load(cfg.file.Name()); err != nil {
+		t.Errorf("Load failed: %v", err)
+	}
 	if err = checkAll(oRegisterOnce, expected2); err != nil {
 		t.Errorf("checkAll failed: %v", err)
 	}
@@ -279,7 +295,9 @@ func TestDefaults(t *testing.T) {
 
 	// Test Load then Register.
 	oUseDefaults := New()
-	oUseDefaults.Load(cfg.file.Name())
+	if _, err = oUseDefaults.Load(cfg.file.Name()); err != nil {
+		t.Errorf("Load failed: %v", err)
+	}
 	registerAll(oUseDefaults)
 
 	if err = checkAll(oUseDefaults, expected2); err != nil {
@@ -288,7 +306,9 @@ func TestDefaults(t *testing.T) {
 	// Test Register then Load.
 	oUseDefaults = New()
 	registerAll(oUseDefaults)
-	oUseDefaults.Load(cfg.file.Name())
+	if _, err = oUseDefaults.Load(cfg.file.Name()); err != nil {
+		t.Errorf("Load failed: %v", err)
+	}
 	if err = checkAll(oUseDefaults, expected2); err != nil {
 		t.Errorf("checkAll failed: %v", err)
 	}
@@ -297,14 +317,18 @@ func TestDefaults(t *testing.T) {
 	if err = cfg.SetContent(sample_yaml); err != nil {
 		t.Error(err)
 	}
-	oUseDefaults.Load(cfg.file.Name())
+	if _, err = oUseDefaults.Load(cfg.file.Name()); err != nil {
+		t.Errorf("Load failed: %v", err)
+	}
 	if err = checkAll(oUseDefaults, expected); err != nil {
 		t.Errorf("checkAll failed: %v", err)
 	}
 	if err = cfg.SetContent(sample_yaml2); err != nil {
 		t.Error(err)
 	}
-	oUseDefaults.Load(cfg.file.Name())
+	if _, err = oUseDefaults.Load(cfg.file.Name()); err != nil {
+		t.Errorf("Load failed: %v", err)
+	}
 	if err = checkAll(oUseDefaults, expected2); err != nil {
 		t.Errorf("checkAll failed: %v", err)
 	}
@@ -339,9 +363,70 @@ func TestDescriptionsAndToString(t *testing.T) {
 	}
 }
 
-// Tests:
-// Load real munger options to ensure that there are not option name conflicts
-// Test that returned pointers remain valid after reloads and reregisters.
-// Test CurrentValues()?
+func TestUpdateCallback(t *testing.T) {
+	cfg, err := newTempConfig()
+	if err != nil {
+		t.Error(err)
+	}
+	defer cfg.Clean()
 
-//TODO: implement --help
+	if err = cfg.SetContent(sample_yaml); err != nil {
+		t.Error(err)
+	}
+
+	o := New()
+	registerAll(o)
+	o.RegisterUpdateCallback(func(changed sets.String) error {
+		return fmt.Errorf("some error")
+	})
+	if _, err = o.Load(cfg.file.Name()); err != nil {
+		if _, ok := err.(*UpdateCallbackError); ok {
+			t.Errorf("Unexpected UpdateCallbackError from first load (should not have called callback): %v", err)
+		} else {
+			t.Errorf("Load failed: %v", err)
+		}
+	}
+
+	if err = cfg.SetContent(sample_yaml2); err != nil {
+		t.Error(err)
+	}
+	if _, err = o.Load(cfg.file.Name()); err == nil {
+		t.Errorf("Expected an UpdateCallbackError but no error was returned.")
+	} else if _, ok := err.(*UpdateCallbackError); !ok {
+		t.Errorf("Expected an UpdateCallbackError but got a different error: %v", err)
+	}
+}
+
+func TestChanged(t *testing.T) {
+	cfg, err := newTempConfig()
+	if err != nil {
+		t.Error(err)
+	}
+	defer cfg.Clean()
+
+	if err = cfg.SetContent(sample_yaml); err != nil {
+		t.Error(err)
+	}
+
+	o := New()
+	registerAll(o)
+	var changed sets.String
+	if changed, err = o.Load(cfg.file.Name()); err != nil {
+		t.Errorf("Load failed: %v", err)
+	}
+
+	if err = cfg.SetContent(sample_yaml2); err != nil {
+		t.Error(err)
+	}
+	expectedChanges := sets.NewString("durvar", "intvar", "strvar", "strslicevar", "uintvar", "boolvar", "boolvar2", "emptystringvar")
+	if changed, err = o.Load(cfg.file.Name()); err != nil {
+		t.Errorf("Load failed: %v", err)
+	}
+	if !changed.Equal(expectedChanges) {
+		t.Errorf(
+			"Error: expected options %q to be changed, but %q were changed.",
+			expectedChanges.List(),
+			changed.List(),
+		)
+	}
+}

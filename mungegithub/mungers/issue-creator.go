@@ -22,6 +22,7 @@ import (
 	"strings"
 
 	githubapi "github.com/google/go-github/github"
+	"k8s.io/kubernetes/pkg/util/sets"
 	"k8s.io/test-infra/mungegithub/features"
 	"k8s.io/test-infra/mungegithub/github"
 	"k8s.io/test-infra/mungegithub/mungers/testowner"
@@ -45,44 +46,39 @@ type RepoClient interface {
 	isDryRun() bool
 	getOrg() string
 	getProject() string
-
-	// RealConfig gets the underlying *github.Config or returns nil if the RepoClient is a testing instance.
-	RealConfig() *github.Config
 }
 
 // gihubConfig is a type alias of github.Config that implements the RepoClient interface.
-type githubConfig github.Config
-
-func (c *githubConfig) RealConfig() *github.Config {
-	return (*github.Config)(c)
+type githubConfig struct {
+	*github.Config
 }
 
-func (c *githubConfig) getOrg() string {
+func (c githubConfig) getOrg() string {
 	return c.Org
 }
 
-func (c *githubConfig) getProject() string {
+func (c githubConfig) getProject() string {
 	return c.Project
 }
 
-func (c *githubConfig) isDryRun() bool {
+func (c githubConfig) isDryRun() bool {
 	return c.DryRun
 }
 
-func (c *githubConfig) GetUser(login string) (*githubapi.User, error) {
-	return ((*github.Config)(c)).GetUser(login)
+func (c githubConfig) GetUser(login string) (*githubapi.User, error) {
+	return c.Config.GetUser(login)
 }
 
-func (c *githubConfig) GetLabels() ([]*githubapi.Label, error) {
-	return ((*github.Config)(c)).GetLabels()
+func (c githubConfig) GetLabels() ([]*githubapi.Label, error) {
+	return c.Config.GetLabels()
 }
 
-func (c *githubConfig) ListAllIssues(options *githubapi.IssueListByRepoOptions) ([]*githubapi.Issue, error) {
-	return ((*github.Config)(c)).ListAllIssues(options)
+func (c githubConfig) ListAllIssues(options *githubapi.IssueListByRepoOptions) ([]*githubapi.Issue, error) {
+	return c.Config.ListAllIssues(options)
 }
 
-func (c *githubConfig) NewIssue(title, body string, labels, owners []string) (*github.MungeObject, error) {
-	return ((*github.Config)(c)).NewIssue(title, body, labels, owners)
+func (c githubConfig) NewIssue(title, body string, labels, owners []string) (*github.MungeObject, error) {
+	return c.Config.NewIssue(title, body, labels, owners)
 }
 
 // OwnerMapper finds an owner for a given test name.
@@ -150,20 +146,25 @@ func init() {
 // This includes determining the currently authenticated user, fetching all issues created by that user
 // from github, fetching the labels that are valid for the repo, and initializing the test owner and sig data.
 func (c *IssueCreator) Initialize(config *github.Config, feats *features.Features) error {
-	cfg := githubConfig(*config)
-	c.config = RepoClient(&cfg)
+	c.config = RepoClient(githubConfig{config})
 
-	var err error
-	if c.ownerPath != "" {
-		c.owners, err = testowner.NewReloadingOwnerList(c.ownerPath)
-		if err != nil {
-			return err
-		}
+	if err := c.initOwners(); err != nil {
+		return err
 	}
-	if err = c.loadCache(); err != nil {
+	if err := c.loadCache(); err != nil {
 		return err
 	}
 	return nil
+}
+
+func (c *IssueCreator) initOwners() error {
+	var err error
+	if c.ownerPath == "" {
+		c.owners = nil
+	} else {
+		c.owners, err = testowner.NewReloadingOwnerList(c.ownerPath)
+	}
+	return err
 }
 
 // loadCache loads the valid labels for the repo, the currently authenticated user, and the issue cache from github.
@@ -213,11 +214,27 @@ func (c *IssueCreator) RequiredFeatures() []string { return []string{} }
 // EachLoop is called at the start of every munge loop. The IssueCreator does not use this.
 func (c *IssueCreator) EachLoop() error { return nil }
 
-// RegisterOptions registers config options for this munger.
-func (c *IssueCreator) RegisterOptions(opts *options.Options) {
+// RegisterOptions registers options for this munger; returns any that require a restart when changed.
+func (c *IssueCreator) RegisterOptions(opts *options.Options) sets.String {
 	opts.RegisterString(&c.ownerPath, "test-owners-csv", "", "file containing a CSV-exported test-owners spreadsheet")
 	opts.RegisterInt(&c.maxSIGCount, "maxSIGs", 3, "The maximum number of SIG labels to attach to an issue.")
 	opts.RegisterInt(&c.maxAssignees, "maxAssignees", 3, "The maximum number of users to assign to an issue.")
+
+	opts.RegisterUpdateCallback(func(changed sets.String) error {
+		if changed.Has("test-owners-csv") {
+			if err := c.initOwners(); err != nil {
+				return err
+			}
+		}
+		// 'token' and 'token-file' necessitate cache reload if changed since this could have changed
+		// the currently authenticated user.
+		if changed.HasAny("token", "token-file") {
+			return c.loadCache()
+		}
+		return nil
+	})
+
+	return nil
 }
 
 // Munge updates the IssueCreator's cache of issues if the munge object provided is an issue authored by the currently authenticated user.

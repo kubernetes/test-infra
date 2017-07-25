@@ -154,7 +154,6 @@ func (r *zeroCacheRoundTripper) RoundTrip(req *http.Request) (*http.Response, er
 type Config struct {
 	client   *github.Client
 	apiLimit *callLimitRoundTripper
-	opts     *options.Options
 
 	Org         string
 	Project     string
@@ -165,8 +164,9 @@ type Config struct {
 	Labels []string
 
 	// token is private so it won't get printed in the logs.
-	token     string
-	tokenFile string
+	token      string
+	tokenFile  string
+	tokenInUse string
 
 	httpCache     httpcache.Cache
 	HTTPCacheDir  string
@@ -363,8 +363,9 @@ func SetCombinedStatusLifetime(lifetime time.Duration) {
 	combinedStatusLifetime = lifetime
 }
 
-// RegisterOptions registers options used by the github client.
-func (config *Config) RegisterOptions(opts *options.Options) {
+// RegisterOptions registers options for the github client and returns any that require a restart
+// if they are changed.
+func (config *Config) RegisterOptions(opts *options.Options) sets.String {
 	opts.RegisterString(&config.Org, "organization", "", "The github organization to scan")
 	opts.RegisterString(&config.Project, "project", "", "The github project to scan")
 
@@ -379,12 +380,12 @@ func (config *Config) RegisterOptions(opts *options.Options) {
 	opts.RegisterString(&config.Url, "url", "", "The GitHub Enterprise server url (default: https://api.github.com/)")
 	opts.RegisterString(&config.mergeMethod, "merge-method", "merge", "The merge method to use: merge/squash/rebase")
 
-	config.opts = opts
+	return sets.NewString("token", "token-file", "min-pr-number", "max-pr-number", "state", "labels", "http-cache-dir", "http-cache-size", "url")
 }
 
 // Token returns the token.
 func (config *Config) Token() string {
-	return config.token
+	return config.tokenInUse
 }
 
 // PreExecute will initialize the Config. It MUST be run before the config
@@ -404,7 +405,7 @@ func (config *Config) PreExecute() error {
 			glog.Fatalf("error reading token file: %v", err)
 		}
 		token = strings.TrimSpace(string(data))
-		config.token = token
+		config.tokenInUse = token
 	}
 
 	// We need to get our Transport/RoundTripper in order based on arguments

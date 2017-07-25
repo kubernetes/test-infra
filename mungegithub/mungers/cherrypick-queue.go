@@ -24,6 +24,7 @@ import (
 	"sync"
 	"time"
 
+	"k8s.io/kubernetes/pkg/util/sets"
 	"k8s.io/test-infra/mungegithub/features"
 	"k8s.io/test-infra/mungegithub/github"
 	"k8s.io/test-infra/mungegithub/mungeopts"
@@ -101,8 +102,8 @@ func (c *CherrypickQueue) Initialize(config *github.Config, features *features.F
 // EachLoop is called at the start of every munge loop
 func (c *CherrypickQueue) EachLoop() error { return nil }
 
-// RegisterOptions registers config options for this munger.
-func (c *CherrypickQueue) RegisterOptions(opts *options.Options) {}
+// RegisterOptions registers options for this munger; returns any that require a restart when changed.
+func (c *CherrypickQueue) RegisterOptions(opts *options.Options) sets.String { return nil }
 
 // Munge is the workhorse the will actually make updates to the PR
 func (c *CherrypickQueue) Munge(obj *github.MungeObject) {

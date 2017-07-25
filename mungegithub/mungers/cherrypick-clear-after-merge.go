@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"strings"
 
+	"k8s.io/kubernetes/pkg/util/sets"
 	"k8s.io/test-infra/mungegithub/features"
 	"k8s.io/test-infra/mungegithub/github"
 	"k8s.io/test-infra/mungegithub/options"
@@ -56,8 +57,8 @@ func (c *ClearPickAfterMerge) Initialize(config *github.Config, features *featur
 // EachLoop is called at the start of every munge loop
 func (c *ClearPickAfterMerge) EachLoop() error { return nil }
 
-// RegisterOptions registers config options for this munger.
-func (c *ClearPickAfterMerge) RegisterOptions(opts *options.Options) {}
+// RegisterOptions registers options for this munger; returns any that require a restart when changed.
+func (c *ClearPickAfterMerge) RegisterOptions(opts *options.Options) sets.String { return nil }
 
 func handleFound(obj *github.MungeObject, branch string) error {
 	msg := fmt.Sprintf("Commit found in the %q branch appears to be this PR. Removing the %q label. If this is an error find help to get your PR picked.", branch, cpCandidateLabel)

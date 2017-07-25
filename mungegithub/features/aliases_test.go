@@ -74,14 +74,12 @@ func TestExpandAliases(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		a := Aliases{
-			aliasReader: &aliasTest{},
-			IsEnabled:   true,
-		}
+		a := Aliases{aliasFile: "dummy.file"}
 
 		if err := a.Initialize(&github_util.Config{}); err != nil {
 			t.Fatalf("%v", err)
 		}
+		a.aliasReader = &aliasTest{}
 
 		if err := a.EachLoop(); err != nil {
 			t.Fatalf("%v", err)

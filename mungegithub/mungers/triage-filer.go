@@ -27,6 +27,7 @@ import (
 	"time"
 
 	githubapi "github.com/google/go-github/github"
+	"k8s.io/kubernetes/pkg/util/sets"
 	"k8s.io/test-infra/mungegithub/features"
 	"k8s.io/test-infra/mungegithub/github"
 	"k8s.io/test-infra/mungegithub/mungers/mungerutil"
@@ -122,10 +123,11 @@ func (f *TriageFiler) FileIssues() error {
 	return nil
 }
 
-// RegisterOptions registers config options for this munger.
-func (f *TriageFiler) RegisterOptions(opts *options.Options) {
+// RegisterOptions registers options for this munger; returns any that require a restart when changed.
+func (f *TriageFiler) RegisterOptions(opts *options.Options) sets.String {
 	opts.RegisterInt(&f.topClustersCount, "triage-count", 3, "The number of clusters to sync issues for on github.")
 	opts.RegisterInt(&f.windowDays, "triage-window", 1, "The size of the sliding time window (in days) that is used to determine which failures to consider.")
+	return nil
 }
 
 // Munge is unused by the TriageFiler.

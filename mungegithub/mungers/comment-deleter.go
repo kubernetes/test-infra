@@ -17,6 +17,7 @@ limitations under the License.
 package mungers
 
 import (
+	"k8s.io/kubernetes/pkg/util/sets"
 	"k8s.io/test-infra/mungegithub/features"
 	"k8s.io/test-infra/mungegithub/github"
 	"k8s.io/test-infra/mungegithub/options"
@@ -66,8 +67,8 @@ func (CommentDeleter) Initialize(config *github.Config, features *features.Featu
 // EachLoop is called at the start of every munge loop
 func (CommentDeleter) EachLoop() error { return nil }
 
-// RegisterOptions registers config options for this munger.
-func (CommentDeleter) RegisterOptions(opts *options.Options) {}
+// RegisterOptions registers options for this munger; returns any that require a restart when changed.
+func (CommentDeleter) RegisterOptions(opts *options.Options) sets.String { return nil }
 
 func validComment(comment *githubapi.IssueComment) bool {
 	if comment.User == nil || comment.User.Login == nil {

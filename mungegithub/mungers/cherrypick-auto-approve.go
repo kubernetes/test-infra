@@ -22,6 +22,7 @@ import (
 	"strconv"
 	"strings"
 
+	"k8s.io/kubernetes/pkg/util/sets"
 	"k8s.io/test-infra/mungegithub/features"
 	"k8s.io/test-infra/mungegithub/github"
 	"k8s.io/test-infra/mungegithub/options"
@@ -63,8 +64,8 @@ func (c *CherrypickAutoApprove) Initialize(config *github.Config, features *feat
 // EachLoop is called at the start of every munge loop
 func (c *CherrypickAutoApprove) EachLoop() error { return nil }
 
-// RegisterOptions registers config options for this munger.
-func (c *CherrypickAutoApprove) RegisterOptions(opts *options.Options) {}
+// RegisterOptions registers options for this munger; returns any that require a restart when changed.
+func (c *CherrypickAutoApprove) RegisterOptions(opts *options.Options) sets.String { return nil }
 
 func getCherrypickParentPRs(obj *github.MungeObject, config *github.Config) []*github.MungeObject {
 	out := []*github.MungeObject{}

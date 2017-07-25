@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"strconv"
 
+	"k8s.io/kubernetes/pkg/util/sets"
 	"k8s.io/test-infra/mungegithub/features"
 	"k8s.io/test-infra/mungegithub/github"
 	"k8s.io/test-infra/mungegithub/mungers/e2e"
@@ -99,9 +100,10 @@ func (p *OldTestGetter) getOldPostsubmitTests(e2eTester *e2e.RealE2ETester) {
 	}
 }
 
-// RegisterOptions registers config options for this munger.
-func (p *OldTestGetter) RegisterOptions(opts *options.Options) {
+// RegisterOptions registers options for this munger; returns any that require a restart when changed.
+func (p *OldTestGetter) RegisterOptions(opts *options.Options) sets.String {
 	opts.RegisterInt(&p.numberOfOldTestsToGet, "number-of-old-test-results", 0, "The number of old test results to get (and therefore file issues for). In case submit queue has some downtime, set this to a higher number and it will file issues for older test runs.")
+	return nil
 }
 
 // Munge is unused by this munger.

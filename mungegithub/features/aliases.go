@@ -52,7 +52,6 @@ func (a *Aliases) read() ([]byte, error) {
 // to expand and lookup aliases.
 type Aliases struct {
 	aliasFile string
-	IsEnabled bool
 
 	data        *aliasData
 	prevHash    string
@@ -72,23 +71,15 @@ func (a *Aliases) Name() string {
 
 // Initialize will initialize the feature.
 func (a *Aliases) Initialize(config *github.Config) error {
-	a.data = &aliasData{
-		AliasMap: map[string][]string{},
-	}
-
-	if len(a.aliasFile) == 0 {
-		return nil
-	}
-
-	// We can enable alias files.
-	a.IsEnabled = true
+	a.data = &aliasData{}
 	a.aliasReader = a
+
 	return nil
 }
 
 // EachLoop is called at the start of every munge loop
 func (a *Aliases) EachLoop() error {
-	if !a.IsEnabled {
+	if len(a.aliasFile) == 0 {
 		return nil
 	}
 
@@ -96,9 +87,7 @@ func (a *Aliases) EachLoop() error {
 	fileContents, err := a.aliasReader.read()
 	if os.IsNotExist(err) {
 		glog.Infof("Missing alias-file (%s), using empty alias structure.", a.aliasFile)
-		a.data = &aliasData{
-			AliasMap: map[string][]string{},
-		}
+		a.data = &aliasData{}
 		a.prevHash = ""
 		return nil
 	}
@@ -118,9 +107,10 @@ func (a *Aliases) EachLoop() error {
 	return nil
 }
 
-// RegisterOptions registers options used by the Aliases feature.
-func (a *Aliases) RegisterOptions(opts *options.Options) {
+// RegisterOptions registers options for this feature; returns any that require a restart when changed.
+func (a *Aliases) RegisterOptions(opts *options.Options) sets.String {
 	opts.RegisterString(&a.aliasFile, "alias-file", "", "File wherein team members and aliases exist.")
+	return nil
 }
 
 // Expand takes aliases and expands them into owner lists.
