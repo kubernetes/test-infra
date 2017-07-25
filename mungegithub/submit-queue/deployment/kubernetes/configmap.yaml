@@ -14,16 +14,17 @@ repo-dir: /gitrepos
 github-key-file: /etc/hook-secret-volume/secret
 
 # status context options.
+# Please keep these lists in sorted order.
 required-contexts: ""
 required-retest-contexts: "\
-  pull-kubernetes-unit,\
-  pull-kubernetes-verify,\
-  pull-kubernetes-node-e2e,\
-  pull-kubernetes-kubemark-e2e-gce,\
-  pull-kubernetes-e2e-gce-etcd3,\
   pull-kubernetes-bazel,\
+  pull-kubernetes-e2e-gce-etcd3,\
   pull-kubernetes-e2e-kops-aws,\
-  pull-kubernetes-federation-e2e-gce"
+  pull-kubernetes-federation-e2e-gce,\
+  pull-kubernetes-kubemark-e2e-gce,\
+  pull-kubernetes-node-e2e,\
+  pull-kubernetes-unit,\
+  pull-kubernetes-verify"
 protected-branches-extra-contexts: "cla/linuxfoundation"
 
 # submit-queue options. Keep job lists sorted!
@@ -89,13 +90,13 @@ nonblocking-jobs: "\
   ci-kubernetes-node-kubelet,\
   ci-kubernetes-node-kubelet-serial,\
   ci-kubernetes-soak-gce-deploy,\
-  ci-kubernetes-verify-master,\
   ci-kubernetes-soak-gce-test,\
   ci-kubernetes-soak-gke-deploy,\
   ci-kubernetes-soak-gke-gci-deploy,\
   ci-kubernetes-soak-gke-gci-test,\
   ci-kubernetes-soak-gke-test,\
-  ci-kubernetes-test-go"
+  ci-kubernetes-test-go,\
+  ci-kubernetes-verify-master"
 do-not-merge-milestones: ""
 admin-port: 9999
 chart-url: https://storage.googleapis.com/kubernetes-test-history/k8s-queue-health.svg
