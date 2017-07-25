@@ -9539,6 +9539,15 @@
       "UNKNOWN"
     ]
   },
+  "pull-test-infra-gubernator": {
+    "args": [
+      "./gubernator/test-gubernator.sh"
+    ],
+    "scenario": "execute",
+    "sigOwners": [
+      "sig-testing"
+    ]
+  },
   "pull-test-infra-verify-bazel": {
     "args": [
       "./verify/verify-bazel.sh"

@@ -18,8 +18,8 @@ set -o nounset
 set -o pipefail
 set -o xtrace
 
-pip install -r gubernator/test_requirements.txt
-cd gubernator
+cd "$(dirname "$0")"
+pip install -r test_requirements.txt
 ./test.sh --nologcapture
 ./lint.sh
 mocha static/build_test.js
