@@ -208,9 +208,9 @@ func (sq *SubmitQueue) batchIsApplicable(batch Batch) (int, error) {
 func (sq *SubmitQueue) handleGithubE2EBatchMerge() {
 	repo := sq.githubConfig.Org + "/" + sq.githubConfig.Project
 	for range time.Tick(1 * time.Minute) {
-		allJobs, err := getJobs(sq.BatchURL)
+		allJobs, err := getJobs(sq.ProwURL)
 		if err != nil {
-			glog.Errorf("Error reading batch jobs from Prow URL %v: %v", sq.BatchURL, err)
+			glog.Errorf("Error reading batch jobs from Prow URL %v: %v", sq.ProwURL, err)
 			continue
 		}
 		batchJobs := allJobs.batch().repo(repo)
