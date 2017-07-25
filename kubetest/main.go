@@ -240,13 +240,6 @@ func complete(o *options) error {
 		interrupt.Reset(timeout)
 	}
 
-	// Get the deployer first so any additional flag verifications
-	// happen early.
-	deploy, err := getDeployer(o)
-	if err != nil {
-		return fmt.Errorf("error creating deployer: %v", err)
-	}
-
 	if o.dump != "" {
 		defer writeMetadata(o.dump, o.metadataSources)
 		defer writeXML(o.dump, time.Now())
@@ -259,6 +252,12 @@ func complete(o *options) error {
 	}
 	if err := prepareFederation(o); err != nil {
 		return fmt.Errorf("failed to prepare federation test environment: %v", err)
+	}
+	// Get the deployer before we acquire k8s so any additional flag
+	// verifications happen early.
+	deploy, err := getDeployer(o)
+	if err != nil {
+		return fmt.Errorf("error creating deployer: %v", err)
 	}
 	if err := acquireKubernetes(o); err != nil {
 		return fmt.Errorf("failed to acquire k8s binaries: %v", err)
