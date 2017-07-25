@@ -130,13 +130,13 @@ func (o *RepoInfo) walkFunc(path string, info os.FileInfo, err error) error {
 
 	file, err := os.Open(path)
 	if err != nil {
-		glog.Errorf("%v", err)
+		glog.Errorf("Could not open %q: %v", path, err)
 		return nil
 	}
 	defer file.Close()
 
 	if err := yaml.NewYAMLToJSONDecoder(file).Decode(c); err != nil {
-		glog.Errorf("%v", err)
+		glog.Errorf("Could not decode %q: %v", path, err)
 		return nil
 	}
 
