@@ -70,26 +70,26 @@ class StreamTest(unittest.TestCase):
         db = model.Database(':memory:')
         fakesub = FakeSub([
             [
-                ('a', Attrs({'event_type': 'OBJECT_DELETE'})),
+                ('a', Attrs({'eventType': 'OBJECT_DELETE'})),
             ],
             [
                 ('b', Attrs({
-                    'event_type': 'OBJECT_FINALIZE',
-                    'object_id': 'logs/fake/123/finished.json',
-                    'bucket_id': 'kubernetes-jenkins'})),
+                    'eventType': 'OBJECT_FINALIZE',
+                    'objectId': 'logs/fake/123/finished.json',
+                    'bucketId': 'kubernetes-jenkins'})),
             ],
             [],
             [
                 ('c', Attrs({
-                    'event_type': 'OBJECT_FINALIZE',
-                    'object_id': 'logs/fake/123/finished.json',
-                    'bucket_id': 'kubernetes-jenkins'})),
+                    'eventType': 'OBJECT_FINALIZE',
+                    'objectId': 'logs/fake/123/finished.json',
+                    'bucketId': 'kubernetes-jenkins'})),
             ],
             [],
             [
                 ('d', Attrs({
-                    'event_type': 'OBJECT_FINALIZE',
-                    'object_id': 'logs/fake/124/started.json'})),
+                    'eventType': 'OBJECT_FINALIZE',
+                    'objectId': 'logs/fake/124/started.json'})),
             ],
             [],
         ])

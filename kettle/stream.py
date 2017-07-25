@@ -47,15 +47,15 @@ def process_changes(results):
 
     # process results, find finished builds to process
     for ack_id, message in results:
-        if message.attributes['event_type'] != 'OBJECT_FINALIZE':
+        if message.attributes['eventType'] != 'OBJECT_FINALIZE':
             acks.append(ack_id)
             continue
-        obj = message.attributes['object_id']
+        obj = message.attributes['objectId']
         if not obj.endswith('/finished.json'):
             acks.append(ack_id)
             continue
         job, build = obj[:-len('/finished.json')].rsplit('/', 1)
-        job = 'gs://%s/%s' % (message.attributes['bucket_id'], job)
+        job = 'gs://%s/%s' % (message.attributes['bucketId'], job)
         todo.append((ack_id, job, build))
 
     return acks, todo
