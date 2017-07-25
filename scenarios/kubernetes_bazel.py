@@ -48,7 +48,7 @@ def echo_result(res):
 def get_version():
     """Return kubernetes version"""
     with open('bazel-genfiles/version') as fp:
-        return fp.read.strip()
+        return fp.read().strip()
 
 def main(args):
     """Trigger a bazel build/test run, and upload results."""
