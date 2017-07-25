@@ -61,6 +61,7 @@ type options struct {
 	checkLeaks          bool
 	checkSkew           bool
 	cluster             string
+	clusterIPRange      string
 	deployment          string
 	down                bool
 	dump                string
@@ -107,6 +108,7 @@ func defineFlags() *options {
 	flag.StringVar(&o.gcpZone, "gcp-zone", "", "For use with gcloud commands")
 	flag.StringVar(&o.gcpNetwork, "gcp-network", "e2e", "Cluster network. Must be set for --deployment=gke (TODO: other deployments).")
 	flag.StringVar(&o.cluster, "cluster", "", "Cluster name. Must be set for --deployment=gke (TODO: other deployments).")
+	flag.StringVar(&o.clusterIPRange, "cluster-ip-range", "", "Specify CLUSTER_IP_RANGE during --up and --test")
 	flag.BoolVar(&o.kubemark, "kubemark", false, "If true, run kubemark tests.")
 	flag.StringVar(&o.kubemarkMasterSize, "kubemark-master-size", "", "Kubemark master size")
 	flag.StringVar(&o.kubemarkNodes, "kubemark-nodes", "", "Number of kubemark nodes to start")
@@ -199,7 +201,7 @@ type deployer interface {
 func getDeployer(o *options) (deployer, error) {
 	switch o.deployment {
 	case "bash":
-		return bash{}, nil
+		return bash{&o.clusterIPRange}, nil
 	case "gke":
 		return newGKE(o.provider, o.gcpProject, o.gcpZone, o.gcpNetwork, o.cluster)
 	case "kops":
@@ -635,6 +637,7 @@ func prepare(o *options) error {
 	}); err != nil {
 		return err
 	}
+
 	switch o.provider {
 	case "gce", "gke", "kubemark":
 		if err := prepareGcp(o); err != nil {

@@ -20,11 +20,20 @@ import (
 	"os/exec"
 )
 
-type bash struct{}
+type bash struct {
+	clusterIPRange *string
+}
 
 var _ deployer = bash{}
 
 func (b bash) Up() error {
+	if b.clusterIPRange != nil && *b.clusterIPRange != "" {
+		pop, err := pushEnv("CLUSTER_IP_RANGE", *b.clusterIPRange)
+		if err != nil {
+			return err
+		}
+		defer pop()
+	}
 	return finishRunning(exec.Command("./hack/e2e-internal/e2e-up.sh"))
 }
 

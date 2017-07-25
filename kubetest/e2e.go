@@ -28,6 +28,18 @@ import (
 	"time"
 )
 
+// Add more default --test_args as we migrate them
+func argFields(args, dump, ipRange string) []string {
+	f := strings.Fields(args)
+	if dump != "" {
+		f = setFieldDefault(f, "--report-dir", dump)
+	}
+	if ipRange != "" {
+		f = setFieldDefault(f, "--cluster-ip-range", ipRange)
+	}
+	return f
+}
+
 func run(deploy deployer, o options) error {
 	if o.checkSkew {
 		os.Setenv("KUBECTL", "./cluster/kubectl.sh --match-server-version")
@@ -145,10 +157,11 @@ func run(deploy deployer, o options) error {
 
 	if o.upgradeArgs != "" {
 		errs = appendError(errs, xmlWrap("UpgradeTest", func() error {
-			return UpgradeTest(o.upgradeArgs, dump, o.checkSkew)
+			return skewTest(argFields(o.upgradeArgs, dump, o.clusterIPRange), "upgrade", o.checkSkew)
 		}))
 	}
 
+	testArgs := argFields(o.testArgs, dump, o.clusterIPRange)
 	if o.test {
 		if err := xmlWrap("test setup", deploy.TestSetup); err != nil {
 			errs = appendError(errs, err)
@@ -156,7 +169,7 @@ func run(deploy deployer, o options) error {
 			errs = appendError(errs, xmlWrap("kubectl version", getKubectlVersion))
 			if o.skew {
 				errs = appendError(errs, xmlWrap("SkewTest", func() error {
-					return SkewTest(o.testArgs, dump, o.checkSkew)
+					return skewTest(testArgs, "skew", o.checkSkew)
 				}))
 			} else {
 				if err := xmlWrap("IsUp", deploy.IsUp); err != nil {
@@ -164,11 +177,11 @@ func run(deploy deployer, o options) error {
 				} else {
 					if o.federation {
 						errs = appendError(errs, xmlWrap("FederationTest", func() error {
-							return FederationTest(o.testArgs, dump)
+							return federationTest(testArgs)
 						}))
 					} else {
 						errs = appendError(errs, xmlWrap("Test", func() error {
-							return Test(o.testArgs, dump)
+							return test(testArgs)
 						}))
 					}
 				}
@@ -178,7 +191,7 @@ func run(deploy deployer, o options) error {
 
 	if o.kubemark {
 		errs = appendError(errs, xmlWrap("Kubemark", func() error {
-			return KubemarkTest(dump, o)
+			return kubemarkTest(testArgs, dump, o.kubemarkNodes, o.kubemarkMasterSize, o.clusterIPRange)
 		}))
 	}
 
@@ -469,17 +482,17 @@ func ChartsTest() error {
 	return nil
 }
 
-func KubemarkTest(dump string, o options) error {
+func kubemarkTest(testArgs []string, dump, nodes, masterSize, ipRange string) error {
 	if err := migrateOptions([]migratedOption{
 		{
 			env:      "KUBEMARK_NUM_NODES",
-			option:   &o.kubemarkNodes,
+			option:   &nodes,
 			name:     "--kubemark-nodes",
 			skipPush: true,
 		},
 		{
 			env:      "KUBEMARK_MASTER_SIZE",
-			option:   &o.kubemarkMasterSize,
+			option:   &masterSize,
 			name:     "--kubemark-master-size",
 			skipPush: true,
 		},
@@ -503,16 +516,21 @@ func KubemarkTest(dump string, o options) error {
 	})
 
 	// Start new run
-	if popN, err := pushEnv("NUM_NODES", o.kubemarkNodes); err != nil {
+	popN, err := pushEnv("NUM_NODES", nodes)
+	if err != nil {
 		return err
-	} else {
-		defer popN()
 	}
-	if popM, err := pushEnv("MASTER_SIZE", o.kubemarkMasterSize); err != nil {
+	defer popN()
+	popM, err := pushEnv("MASTER_SIZE", masterSize)
+	if err != nil {
 		return err
-	} else {
-		defer popM()
 	}
+	defer popM()
+	popC, err := pushEnv("CLUSTER_IP_RANGE", ipRange)
+	if err != nil {
+		return err
+	}
+	defer popC()
 
 	err = xmlWrap("Start kubemark", func() error {
 		return finishRunning(exec.Command("./test/kubemark/start-kubemark.sh"))
@@ -528,8 +546,9 @@ func KubemarkTest(dump string, o options) error {
 		return err
 	}
 
-	testArgs := strings.Fields(o.testArgs)
-	testArgs = setReportDir(testArgs, dump)
+	if err := os.Unsetenv("CLUSTER_IP_RANGE"); err != nil { // Handled by --cluster-ip-range
+		return err
+	}
 	// Run kubemark tests
 	testArgs = setFieldDefault(testArgs, "--ginkgo.focus", "starting\\s30\\pods")
 
@@ -547,46 +566,24 @@ func KubemarkTest(dump string, o options) error {
 	return nil
 }
 
-func UpgradeTest(args, dump string, checkSkew bool) error {
-	// TODO(fejta): fix this
+// Runs tests in the kubernetes_skew directory, appending --repor-prefix flag to the run
+func skewTest(args []string, prefix string, checkSkew bool) error {
+	// TODO(fejta): run this inside this kubetest process, do not spawn a new one.
 	if popS, err := pushd("../kubernetes_skew"); err != nil {
 		return err
 	} else {
 		defer popS()
 	}
-	f := strings.Fields(args)
-	f = appendField(f, "--report-prefix", "upgrade")
+	args = appendField(args, "--report-prefix", prefix)
 	return finishRunning(exec.Command(
 		kubetestPath,
 		"--test",
-		"--test_args="+strings.Join(f, " "),
+		"--test_args="+strings.Join(args, " "),
 		fmt.Sprintf("--v=%t", verbose),
 		fmt.Sprintf("--check-version-skew=%t", checkSkew),
-		fmt.Sprintf("--dump=%s", dump),
 	))
 }
 
-func SkewTest(args, dump string, checkSkew bool) error {
-	if popS, err := pushd("../kubernetes_skew"); err != nil {
-		return err
-	} else {
-		defer popS()
-	}
-
-	f := strings.Fields(args)
-	f = appendField(f, "--report-prefix", "skew")
-	return finishRunning(exec.Command(
-		kubetestPath,
-		"--test",
-		"--test_args="+strings.Join(f, " "),
-		fmt.Sprintf("--v=%t", verbose),
-		fmt.Sprintf("--check-version-skew=%t", checkSkew),
-		fmt.Sprintf("--dump=%s", dump),
-	))
-}
-
-func Test(testArgs, dump string) error {
-	f := strings.Fields(testArgs)
-	f = setReportDir(f, dump)
-	return finishRunning(exec.Command("./hack/ginkgo-e2e.sh", f...))
+func test(testArgs []string) error {
+	return finishRunning(exec.Command("./hack/ginkgo-e2e.sh", testArgs...))
 }

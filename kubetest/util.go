@@ -351,13 +351,6 @@ func setFieldDefault(fields []string, flag, val string) []string {
 	return append(fields, flag+"="+cur)
 }
 
-func setReportDir(fields []string, dir string) []string {
-	if len(dir) == 0 {
-		return fields
-	}
-	return setFieldDefault(fields, "--report-dir", dir)
-}
-
 // extractField("--a=this --b=that --c=other", "--b") returns [--a=this, --c=other"], "that"
 func extractField(fields []string, target string) ([]string, string, bool) {
 	f := []string{}
