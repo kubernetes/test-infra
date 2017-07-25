@@ -16,7 +16,7 @@ protected-branches-extra-contexts: "cla/linuxfoundation"
 
 # submit-queue options.
 protected-branches: "master"
-nonblocking-jenkins-jobs: ""
+nonblocking-jobs: ""
 do-not-merge-milestones: ""
 admin-port: 9999
 context-url: https://kops.submit-queue.k8s.io

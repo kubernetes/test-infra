@@ -549,7 +549,7 @@ func (sq *SubmitQueue) EachLoop() error {
 
 // RegisterOptions registers options used by the SubmitQueue.
 func (sq *SubmitQueue) RegisterOptions(opts *options.Options) {
-	opts.RegisterStringSlice(&sq.NonBlockingJobNames, "nonblocking-jenkins-jobs", []string{}, "Comma separated list of jobs that don't block merges, but will have status reported and issues filed.")
+	opts.RegisterStringSlice(&sq.NonBlockingJobNames, "nonblocking-jobs", []string{}, "Comma separated list of jobs that don't block merges, but will have status reported and issues filed.")
 	opts.RegisterBool(&sq.FakeE2E, "fake-e2e", false, "Whether to use a fake for testing E2E stability.")
 	opts.RegisterStringSlice(&sq.DoNotMergeMilestones, "do-not-merge-milestones", []string{}, "List of milestones which, when applied, will cause the PR to not be merged")
 	opts.RegisterInt(&sq.AdminPort, "admin-port", 9999, "If non-zero, will serve administrative actions on this port.")

@@ -26,7 +26,7 @@ config:
 
   # submit-queue options.
   protected-branches: ""
-  nonblocking-jenkins-jobs: ""
+  nonblocking-jobs: ""
   do-not-merge-milestones: ""
   admin-port: "9999"
   context-url: ""
