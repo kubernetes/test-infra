@@ -185,6 +185,57 @@ func TestAcquire(t *testing.T) {
 	}
 }
 
+func TestAcquireRoundRobin(t *testing.T) {
+	FakeNow := time.Now()
+	resources := []common.Resource{
+		{
+			Name:       "res-1",
+			Type:       "t",
+			State:      "s",
+			Owner:      "",
+			LastUpdate: FakeNow,
+		},
+		{
+			Name:       "res-2",
+			Type:       "t",
+			State:      "s",
+			Owner:      "",
+			LastUpdate: FakeNow,
+		},
+		{
+			Name:       "res-3",
+			Type:       "t",
+			State:      "s",
+			Owner:      "",
+			LastUpdate: FakeNow,
+		},
+		{
+			Name:       "res-4",
+			Type:       "t",
+			State:      "s",
+			Owner:      "",
+			LastUpdate: FakeNow,
+		},
+	}
+
+	expected := []string{"res-3", "res-4", "res-1", "res-2"}
+
+	c := MakeTestRanch(resources)
+	for i := 0; i < 2; i++ {
+		_, err := c.Acquire("t", "s", "d", "foo")
+		if err != nil {
+			t.Fatalf("Unexpected error: %v", err)
+		}
+	}
+
+	for idx, _ := range c.Resources {
+		if c.Resources[idx].Name != expected[idx] {
+			t.Errorf("Resource %d, expected %v, got %v", idx, expected[idx], c.Resources[idx].Name)
+		}
+	}
+
+}
+
 func TestRelease(t *testing.T) {
 	FakeNow := time.Now()
 	var testcases = []struct {
