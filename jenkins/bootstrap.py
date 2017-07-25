@@ -95,7 +95,7 @@ def terminate(end, proc, kill):
     return True
 
 
-def _call(end, cmd, stdin=None, check=True, output=None):
+def _call(end, cmd, stdin=None, check=True, output=None, log_failures=True):
     """Start a subprocess."""
     logging.info('Call:  %s', ' '.join(pipes.quote(c) for c in cmd))
     begin = time.time()
@@ -137,8 +137,8 @@ def _call(end, cmd, stdin=None, check=True, output=None):
     if timeout:
         code = code or 124
         logging.error('Build timed out')
-    if code:
-        logging.error('Build failed')
+    if code and log_failures:
+        logging.error('Command failed')
     logging.info(
         'process %d exited with code %d after %.1fm',
         proc.pid, code, elapsed(begin))
@@ -297,7 +297,7 @@ class GSUtil(object):
     def stat(self, path):
         """Return metadata about the object, such as generation."""
         cmd = [self.gsutil, 'stat', path]
-        return self.call(cmd, output=True)
+        return self.call(cmd, output=True, log_failures=False)
 
     def upload_json(self, path, jdict, generation=None):
         """Upload the dictionary object to path."""
