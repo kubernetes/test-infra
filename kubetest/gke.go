@@ -62,7 +62,6 @@ type gkeDeployer struct {
 	cluster         string
 	shape           map[string]gkeNodePool
 	network         string
-	version         string
 
 	setup          bool
 	kubecfg        string
@@ -114,10 +113,6 @@ func newGKE(provider, project, zone, network, cluster string) (*gkeDeployer, err
 		return nil, fmt.Errorf("--gke-shape must include a node pool named 'default', found %q", *gkeShape)
 	}
 
-	// TODO(zmerlynn): The version should be plumbed through Extract
-	// or a separate flag rather than magic env variables.
-	g.version = os.Getenv("CLUSTER_API_VERSION")
-
 	// Override kubecfg to a temporary file rather than trashing the user's.
 	f, err := ioutil.TempFile("", "gke-kubecfg")
 	if err != nil {
@@ -129,6 +124,34 @@ func newGKE(provider, project, zone, network, cluster string) (*gkeDeployer, err
 		return nil, err
 	}
 	g.kubecfg = kubecfg
+
+	// We want no KUBERNETES_PROVIDER, but to set
+	// KUBERNETES_CONFORMANCE_PROVIDER and
+	// KUBERNETES_CONFORMANCE_TEST. This prevents ginkgo-e2e.sh from
+	// using the cluster/gke functions.
+	//
+	// We do this in the deployer constructor so that
+	// cluster/gce/list-resources.sh outputs the same provider for the
+	// extent of the binary. (It seems like it belongs in TestSetup,
+	// but that way leads to madness.)
+	//
+	// TODO(zmerlynn): This is gross.
+	if err := os.Unsetenv("KUBERNETES_PROVIDER"); err != nil {
+		return nil, err
+	}
+	if err := os.Setenv("KUBERNETES_CONFORMANCE_TEST", "yes"); err != nil {
+		return nil, err
+	}
+	if err := os.Setenv("KUBERNETES_CONFORMANCE_PROVIDER", "gke"); err != nil {
+		return nil, err
+	}
+
+	// TODO(zmerlynn): Another snafu of cluster/gke/list-resources.sh:
+	// Set KUBE_GCE_INSTANCE_PREFIX so that we don't accidentally pick
+	// up CLUSTER_NAME later.
+	if err := os.Setenv("KUBE_GCE_INSTANCE_PREFIX", "gke-"+g.cluster); err != nil {
+		return nil, err
+	}
 
 	return g, nil
 }
@@ -157,8 +180,10 @@ func (g *gkeDeployer) Up() error {
 	if g.additionalZones != "" {
 		args = append(args, "--additional-zones="+g.additionalZones)
 	}
-	if g.version != "" {
-		args = append(args, "--cluster-version="+g.version)
+	// TODO(zmerlynn): The version should be plumbed through Extract
+	// or a separate flag rather than magic env variables.
+	if v := os.Getenv("CLUSTER_API_VERSION"); v != "" {
+		args = append(args, "--cluster-version="+v)
 	}
 	if err := finishRunning(exec.Command("gcloud", args...)); err != nil {
 		return fmt.Errorf("error creating cluster: %v", err)
@@ -228,22 +253,6 @@ func (g *gkeDeployer) getKubeConfig() error {
 // would be nice to handle this elsewhere, and not with env
 // variables. c.f. kubernetes/test-infra#3330.
 func (g *gkeDeployer) setupEnv() error {
-	// We want no KUBERNETES_PROVIDER, but to set
-	// KUBERNETES_CONFORMANCE_PROVIDER and
-	// KUBERNETES_CONFORMANCE_TEST. This prevents ginkgo-e2e.sh from
-	// using the cluster/gke functions.
-	//
-	// TODO(zmerlynn): This is gross.
-	if err := os.Unsetenv("KUBERNETES_PROVIDER"); err != nil {
-		return err
-	}
-	if err := os.Setenv("KUBERNETES_CONFORMANCE_TEST", "yes"); err != nil {
-		return err
-	}
-	if err := os.Setenv("KUBERNETES_CONFORMANCE_PROVIDER", "gke"); err != nil {
-		return err
-	}
-
 	// Set NODE_INSTANCE_GROUP to the names of the instance groups in
 	// the cluster's primary zone. (e2e expects this).
 	var filt []string
@@ -254,19 +263,6 @@ func (g *gkeDeployer) setupEnv() error {
 	}
 	if err := os.Setenv("NODE_INSTANCE_GROUP", strings.Join(filt, ",")); err != nil {
 		return fmt.Errorf("error setting NODE_INSTANCE_GROUP: %v", err)
-	}
-
-	if err := os.Setenv("ZONE", g.zone); err != nil {
-		return fmt.Errorf("error setting ZONE: %v", err)
-	}
-	if err := os.Setenv("PROJECT", g.project); err != nil {
-		return fmt.Errorf("error setting PROJECT: %v", err)
-	}
-	if err := os.Setenv("CLUSTER_NAME", g.cluster); err != nil {
-		return fmt.Errorf("error setting CLUSTER_NAME: %v", err)
-	}
-	if err := os.Setenv("NETWORK", g.network); err != nil {
-		return fmt.Errorf("error setting NETWORK: %v", err)
 	}
 	return nil
 }
@@ -340,7 +336,7 @@ func (g *gkeDeployer) getClusterFirewall() (string, error) {
 	// that maps to the cluster nodes, but the target tag for the
 	// nodes can be slow to get. Use the hash from the lexically first
 	// node pool instead.
-	return "e2e-ports-" + g.instanceGroups[0].name, nil
+	return "e2e-ports-" + g.instanceGroups[0].uniq, nil
 }
 
 func (g *gkeDeployer) Down() error {
