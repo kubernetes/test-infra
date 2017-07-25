@@ -1056,84 +1056,284 @@ test_groups:
 # cos image validation.
 - name: ci-kubernetes-e2e-gce-cosdev-k8sdev-default
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cosdev-k8sdev-default
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gce-cosdev-k8sdev-slow
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cosdev-k8sdev-slow
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gce-cosdev-k8sdev-serial
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cosdev-k8sdev-serial
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gce-cosdev-k8sbeta-default
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cosdev-k8sbeta-default
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gce-cosdev-k8sbeta-slow
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cosdev-k8sbeta-slow
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gce-cosdev-k8sbeta-serial
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cosdev-k8sbeta-serial
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gce-cosdev-k8sstable1-default
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cosdev-k8sstable1-default
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gce-cosdev-k8sstable1-slow
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cosdev-k8sstable1-slow
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gce-cosdev-k8sstable1-serial
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cosdev-k8sstable1-serial
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gce-cosbeta-k8sdev-default
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cosbeta-k8sdev-default
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gce-cosbeta-k8sdev-slow
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cosbeta-k8sdev-slow
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gce-cosbeta-k8sdev-serial
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cosbeta-k8sdev-serial
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gce-cosbeta-k8sbeta-default
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cosbeta-k8sbeta-default
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gce-cosbeta-k8sbeta-serial
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cosbeta-k8sbeta-serial
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gce-cosbeta-k8sbeta-slow
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cosbeta-k8sbeta-slow
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gce-cosbeta-k8sstable1-default
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cosbeta-k8sstable1-default
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gce-cosbeta-k8sstable1-serial
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cosbeta-k8sstable1-serial
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gce-cosbeta-k8sstable1-slow
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cosbeta-k8sstable1-slow
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gce-cosbeta-k8sstable2-default
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cosbeta-k8sstable2-default
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gce-cosbeta-k8sstable2-serial
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cosbeta-k8sstable2-serial
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gce-cosbeta-k8sstable2-slow
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cosbeta-k8sstable2-slow
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gce-cosbeta-k8sstable3-default
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cosbeta-k8sstable3-default
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gce-cosbeta-k8sstable3-serial
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cosbeta-k8sstable3-serial
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gce-cosbeta-k8sstable3-slow
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cosbeta-k8sstable3-slow
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gce-cosbeta-k8sdev-nosnat
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cosbeta-k8sdev-nosnat
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gce-cosstable1-k8sdev-default
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cosstable1-k8sdev-default
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gce-cosstable1-k8sdev-slow
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cosstable1-k8sdev-slow
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gce-cosstable1-k8sdev-serial
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cosstable1-k8sdev-serial
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gce-cosstable1-k8sbeta-default
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cosstable1-k8sbeta-default
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gce-cosstable1-k8sbeta-slow
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cosstable1-k8sbeta-slow
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gce-cosstable1-k8sbeta-serial
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cosstable1-k8sbeta-serial
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gce-cosstable1-k8sstable1-default
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cosstable1-k8sstable1-default
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gce-cosstable1-k8sstable1-slow
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cosstable1-k8sstable1-slow
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gce-cosstable1-k8sstable1-serial
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cosstable1-k8sstable1-serial
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gce-cosstable1-k8sstable2-default
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cosstable1-k8sstable2-default
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gce-cosstable1-k8sstable2-slow
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cosstable1-k8sstable2-slow
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gce-cosstable1-k8sstable2-serial
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cosstable1-k8sstable2-serial
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gce-cosstable1-k8sstable3-default
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cosstable1-k8sstable3-default
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gce-cosstable1-k8sstable3-slow
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cosstable1-k8sstable3-slow
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gce-cosstable1-k8sstable3-serial
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cosstable1-k8sstable3-serial
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 # master-2 to master
 - name: ci-kubernetes-e2e-gke-cvm-stable-cvm-master-upgrade-master
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cvm-stable-cvm-master-upgrade-master
