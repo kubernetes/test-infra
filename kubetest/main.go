@@ -479,6 +479,11 @@ func migrateGcpEnvAndOptions(o *options) error {
 			name:   "--gcp-service-account",
 		},
 		{
+			env:    "NETWORK",
+			option: &o.gcpNetwork,
+			name:   "--gcp-network",
+		},
+		{
 			env:      "CLOUDSDK_BUCKET",
 			option:   &o.gcpCloudSdk,
 			name:     "--gcp-cloud-sdk",
@@ -620,6 +625,11 @@ func prepare(o *options) error {
 			env:    "KUBERNETES_PROVIDER",
 			option: &o.provider,
 			name:   "--provider",
+		},
+		{
+			env:    "CLUSTER_NAME",
+			option: &o.cluster,
+			name:   "--cluster",
 		},
 	}); err != nil {
 		return err
