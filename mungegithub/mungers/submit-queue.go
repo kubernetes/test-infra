@@ -170,6 +170,7 @@ type submitQueueMetadata struct {
 	historyUrl string
 
 	RepoPullUrl string
+	ProwUrl     string
 }
 
 type submitQueueBatchStatus struct {
@@ -267,7 +268,7 @@ type SubmitQueue struct {
 	features *features.Features
 
 	mergeLock    sync.Mutex // acquired when attempting to merge a specific PR
-	ProwUrl      string     // prow json jobs results page
+	ProwUrl      string     // prow base page
 	BatchEnabled bool
 	ContextURL   string
 	batchStatus  submitQueueBatchStatus
@@ -435,6 +436,7 @@ func (sq *SubmitQueue) internalInitialize(config *github.Config, features *featu
 
 	sq.Metadata.ChartUrl = sq.Metadata.chartUrl
 	sq.Metadata.HistoryUrl = sq.Metadata.historyUrl
+	sq.Metadata.ProwUrl = sq.ProwUrl
 	sq.Metadata.RepoPullUrl = fmt.Sprintf("https://github.com/%s/%s/pulls/", config.Org, config.Project)
 	sq.Metadata.ProjectName = strings.Title(config.Project)
 	sq.githubConfig = config
@@ -566,7 +568,7 @@ func (sq *SubmitQueue) RegisterOptions(opts *options.Options) sets.String {
 	opts.RegisterInt(&sq.AdminPort, "admin-port", 9999, "If non-zero, will serve administrative actions on this port.")
 	opts.RegisterString(&sq.Metadata.historyUrl, "history-url", "", "URL to access the submit-queue instance's health history.")
 	opts.RegisterString(&sq.Metadata.chartUrl, "chart-url", "", "URL to access the submit-queue instance's health charts.")
-	opts.RegisterString(&sq.ProwUrl, "prow-url", "", "Prow data.json URL to read batch results")
+	opts.RegisterString(&sq.ProwUrl, "prow-url", "", "Prow deployment base URL to read batch results and direct users to.")
 	opts.RegisterBool(&sq.BatchEnabled, "batch-enabled", false, "Do batch merges (requires prow/splice coordination).")
 	opts.RegisterString(&sq.ContextURL, "context-url", "", "URL where the submit queue is serving - used in Github status contexts")
 	opts.RegisterBool(&sq.GateApproved, "gate-approved", false, "Gate on approved label")
