@@ -9125,6 +9125,16 @@
       "UNKNOWN"
     ]
   },
+  "maintenance-ci-aws-janitor": {
+    "args": [
+      "--mode=aws",
+      "--aws-image=gcr.io/k8s-test-infra-aws/aws-janitor"
+    ],
+    "scenario": "kubernetes_janitor",
+    "sigOwners": [
+      "sig-testing"
+    ]
+  },
   "maintenance-ci-janitor": {
     "scenario": "kubernetes_janitor",
     "sigOwners": [
@@ -9148,7 +9158,7 @@
   },
   "maintenance-pull-janitor": {
     "args": [
-      "--pr-janitor"
+      "--mode=pr"
     ],
     "scenario": "kubernetes_janitor",
     "sigOwners": [
