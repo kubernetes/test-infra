@@ -18,18 +18,15 @@ package main
 
 import (
 	"os/exec"
-	"strings"
 )
 
 func FedUp() error {
 	return finishRunning(exec.Command("./federation/cluster/federation-up.sh"))
 }
 
-func FederationTest(testArgs, dump string) error {
-	f := strings.Fields(testArgs)
-	f = setReportDir(f, dump)
-	f = setFieldDefault(f, "--ginkgo.focus", "\\[Feature:Federation\\]")
-	return finishRunning(exec.Command("./hack/federated-ginkgo-e2e.sh", f...))
+func federationTest(testArgs []string) error {
+	testArgs = setFieldDefault(testArgs, "--ginkgo.focus", "\\[Feature:Federation\\]")
+	return finishRunning(exec.Command("./hack/federated-ginkgo-e2e.sh", testArgs...))
 }
 
 func FedDown() error {
