@@ -149,9 +149,10 @@ class LocalMode(object):
             'JENKINS_GCE_SSH_PUBLIC_KEY_FILE=%s' % gce_pub,
         )
 
-    def add_service_account(self, path):
-        """Sets GOOGLE_APPLICATION_CREDENTIALS to path."""
-        self.add_environment('GOOGLE_APPLICATION_CREDENTIALS=%s' % path)
+    @staticmethod
+    def add_service_account(path):
+        """Returns path."""
+        return path
 
     def add_k8s(self, *a, **kw):
         """Add specified k8s.io repos (noop)."""
@@ -279,11 +280,10 @@ class DockerMode(object):
           '-e', 'JENKINS_GCE_SSH_PUBLIC_KEY_FILE=%s' % gce_pub])
 
     def add_service_account(self, path):
-        """Mounts GOOGLE_APPLICATION_CREDENTIALS inside the container."""
+        """Mounts path at /service-account.json inside the container."""
         service = '/service-account.json'
-        self.cmd.extend([
-            '-v', '%s:%s:ro' % (path, service),
-            '-e', 'GOOGLE_APPLICATION_CREDENTIALS=%s' % service])
+        self.cmd.extend(['-v', '%s:%s:ro' % (path, service)])
+        return service
 
     def start(self, args):
         """Runs kubetest inside a docker container."""
@@ -360,15 +360,16 @@ def main(args):
     if args.gce_ssh:
         mode.add_gce_ssh(args.gce_ssh, args.gce_pub)
 
-    if args.service_account:
-        mode.add_service_account(args.service_account)
-
     # TODO(fejta): remove after next image push
     mode.add_environment('KUBETEST_MANUAL_DUMP=y')
     runner_args = [
         '-v',
         '--dump=%s' % mode.artifacts,
     ]
+
+    if args.service_account:
+        runner_args.append(
+            '--gcp-service-account=%s' % mode.add_service_account(args.service_account))
 
     if args.build is not None:
         if args.build == '':
@@ -391,6 +392,7 @@ def main(args):
         runner_args.append('--test')
 
     cluster = cluster_name(args.cluster, os.getenv('BUILD_NUMBER', 0))
+    runner_args.append('--cluster=%s' % cluster)
     runner_args.extend(args.kubetest_args)
 
     if args.use_logexporter:
@@ -416,8 +418,6 @@ def main(args):
       'CLOUDSDK_COMPONENT_MANAGER_DISABLE_UPDATE_CHECK=true',
       # Use default component update behavior
       'CLOUDSDK_EXPERIMENTAL_FAST_COMPONENT_UPDATE=false',
-      # E2E
-      'E2E_NAME=%s' % cluster,
       # AWS
       'KUBE_AWS_INSTANCE_PREFIX=%s' % cluster,
       # GCE
@@ -425,7 +425,6 @@ def main(args):
       'KUBE_GCE_NETWORK=%s' % cluster,
       'KUBE_GCE_INSTANCE_PREFIX=%s' % cluster,
       # GKE
-      'CLUSTER_NAME=%s' % cluster,
       'KUBE_GKE_NETWORK=%s' % cluster,
     )
 

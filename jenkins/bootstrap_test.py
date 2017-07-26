@@ -2161,6 +2161,7 @@ class JobTest(unittest.TestCase):
                     # https://github.com/kubernetes/kubernetes/blob/master/cluster/gce/config-test.sh#L95
                     # ('CLUSTER_IP_RANGE=', '--test_args=--cluster-ip-range=FOO'),
                     ('CLOUDSDK_BUCKET=', '--gcp-cloud-sdk=gs://foo'),
+                    ('CLUSTER_NAME=', '--cluster=FOO'),
                     ('E2E_CLEAN_START=', '--test_args=--clean-start=true'),
                     ('E2E_DOWN=', '--down=true|false'),
                     ('E2E_MIN_STARTUP_PODS=', '--test_args=--minStartupPods=FOO'),
