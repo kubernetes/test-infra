@@ -461,16 +461,13 @@ func installGcloud(tarball string, location string) error {
 
 func migrateGcpEnvAndOptions(o *options) error {
 	var network string
-	var nodeImage string
 	var zone string
 	switch o.provider {
 	case "gke":
 		network = "KUBE_GKE_NETWORK"
-		nodeImage = "KUBE_GKE_IMAGE_TYPE"
 		zone = "ZONE"
 	default:
 		network = "KUBE_GCE_NETWORK"
-		nodeImage = "KUBE_NODE_OS_DISTRIBUTION"
 		zone = "KUBE_GCE_ZONE"
 	}
 	return migrateOptions([]migratedOption{
@@ -495,7 +492,7 @@ func migrateGcpEnvAndOptions(o *options) error {
 			name:   "--gcp-network",
 		},
 		{
-			env:    nodeImage,
+			env:    "KUBE_NODE_OS_DISTRIBUTION",
 			option: &o.gcpNodeImage,
 			name:   "--gcp-node-image",
 		},
@@ -512,6 +509,11 @@ func prepareGcp(o *options) error {
 	if err := migrateGcpEnvAndOptions(o); err != nil {
 		return err
 	}
+	if o.provider == "gke" && o.gcpNodeImage != "" {
+		// GKE needs both KUBE_NODE_OS_DISTRIBUTION and KUBE_GKE_IMAGE_TYPE
+		os.Setenv("KUBE_GKE_IMAGE_TYPE", o.gcpNodeImage)
+	}
+
 	if o.gcpProject == "" {
 		var resType string
 		if o.provider == "gce" {
