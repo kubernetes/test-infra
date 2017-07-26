@@ -1479,7 +1479,6 @@ func (sq *SubmitQueue) serveMergeInfo(res http.ResponseWriter, req *http.Request
 	gateCLA := sq.GateCLA
 	mergeContexts := mungeopts.RequiredContexts.Merge
 	retestContexts := mungeopts.RequiredContexts.Retest
-	contextUrl := sq.ContextURL
 	sq.opts.Unlock()
 
 	res.Header().Set("Content-type", "text/plain")
@@ -1507,13 +1506,11 @@ func (sq *SubmitQueue) serveMergeInfo(res http.ResponseWriter, req *http.Request
 	out.WriteString(fmt.Sprintf("<li>The PR must not have been updated since the %q label was applied</li>", lgtmLabel))
 	if gateApproved {
 		out.WriteString(fmt.Sprintf(`<li>The PR must have the %q label</li>`, approvedLabel))
-		out.WriteString(fmt.Sprintf("<li>The PR must not have been updated since the %q label was applied</li>", approvedLabel))
 	}
 	out.WriteString(fmt.Sprintf("<li>The PR must not have the %q label</li>", doNotMergeLabel))
 	out.WriteString(`</ol><br>`)
 	out.WriteString("The PR can then be queued to re-test before merge. Once it reaches the top of the queue all of the above conditions must be true but so must the following:")
 	out.WriteString("<ol>")
-	out.WriteString(fmt.Sprintf("<li>All of the <a href=%s/#/e2e>continuously running e2e tests</a> must be passing</li>", contextUrl))
 	if len(retestContexts) > 0 {
 		out.WriteString("<li>All of the following tests must pass a second time")
 		out.WriteString("<ul>")
