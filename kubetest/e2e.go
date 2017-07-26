@@ -128,7 +128,7 @@ func run(deploy deployer, o options) error {
 			}
 		}
 		// Check that the api is reachable before proceeding with further steps.
-		errs = appendError(errs, xmlWrap("Check APIReachability", checkAPIReachability))
+		errs = appendError(errs, xmlWrap("Check APIReachability", getKubectlVersion))
 		if dump != "" {
 			errs = appendError(errs, xmlWrap("list nodes", func() error {
 				return listNodes(dump)
@@ -153,9 +153,7 @@ func run(deploy deployer, o options) error {
 		if err := xmlWrap("test setup", deploy.TestSetup); err != nil {
 			errs = appendError(errs, err)
 		} else {
-			errs = appendError(errs, xmlWrap("kubectl version", func() error {
-				return finishRunning(exec.Command("./cluster/kubectl.sh", "version", "--match-server-version=false"))
-			}))
+			errs = appendError(errs, xmlWrap("kubectl version", getKubectlVersion))
 			if o.skew {
 				errs = appendError(errs, xmlWrap("SkewTest", func() error {
 					return SkewTest(o.testArgs, dump, o.checkSkew)
@@ -267,7 +265,7 @@ func run(deploy deployer, o options) error {
 	return nil
 }
 
-func checkAPIReachability() error {
+func getKubectlVersion() error {
 	retries := 5
 	for {
 		_, err := output(exec.Command("./cluster/kubectl.sh", "--match-server-version=false", "version"))
