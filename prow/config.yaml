@@ -643,10 +643,11 @@ presubmits:
     run_if_changed: 'gubernator'
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gubernator:0.2
-        env:
-        - name: GOOGLE_APPLICATION_CREDENTIALS
-          value: /etc/service-account/service-account.json
+      - image: gcr.io/k8s-testimages/gubernator:0.3
+        args:
+        - --upload=gs://kubernetes-jenkins/pr-logs
+        - --service-account=/etc/service-account/service-account.json
+        - --json
         volumeMounts:
         - name: service
           mountPath: /etc/service-account
