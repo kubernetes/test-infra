@@ -88,7 +88,7 @@ function log_dump_custom_get_instances() {
 pip install awscli # Only needed for log_dump_custom_get_instances
 export -f log_dump_custom_get_instances # Export to cluster/log-dump/log-dump.sh
 
-$(dirname "${BASH_SOURCE}")/e2e-runner.sh "${e2e_args[@]}" "${@}"
+kubetest "${e2e_args[@]}" "${@}"
 
 if [[ -n "${KOPS_PUBLISH_GREEN_PATH:-}" ]]; then
   export CLOUDSDK_CONFIG="/workspace/.config/gcloud"
