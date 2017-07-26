@@ -68,6 +68,7 @@ type options struct {
 	federation          bool
 	gcpCloudSdk         string
 	gcpNetwork          string
+	gcpNodeImage        string
 	gcpProject          string
 	gcpServiceAccount   string
 	gcpZone             string
@@ -106,6 +107,7 @@ func defineFlags() *options {
 	flag.StringVar(&o.gcpServiceAccount, "gcp-service-account", "", "Service account to activate before using gcloud")
 	flag.StringVar(&o.gcpZone, "gcp-zone", "", "For use with gcloud commands")
 	flag.StringVar(&o.gcpNetwork, "gcp-network", "e2e", "Cluster network. Must be set for --deployment=gke (TODO: other deployments).")
+	flag.StringVar(&o.gcpNodeImage, "gcp-node-image", "", "Node image type (cos|container_vm on GKE, cos|debian on GCE)")
 	flag.StringVar(&o.cluster, "cluster", "", "Cluster name. Must be set for --deployment=gke (TODO: other deployments).")
 	flag.BoolVar(&o.kubemark, "kubemark", false, "If true, run kubemark tests.")
 	flag.StringVar(&o.kubemarkMasterSize, "kubemark-master-size", "", "Kubemark master size")
@@ -201,7 +203,7 @@ func getDeployer(o *options) (deployer, error) {
 	case "bash":
 		return bash{}, nil
 	case "gke":
-		return newGKE(o.provider, o.gcpProject, o.gcpZone, o.gcpNetwork, o.cluster)
+		return newGKE(o.provider, o.gcpProject, o.gcpZone, o.gcpNetwork, o.gcpNodeImage, o.cluster)
 	case "kops":
 		return NewKops()
 	case "kubernetes-anywhere":
@@ -456,12 +458,18 @@ func installGcloud(tarball string, location string) error {
 }
 
 func migrateGcpEnvAndOptions(o *options) error {
-	var z string
+	var network string
+	var nodeImage string
+	var zone string
 	switch o.provider {
 	case "gke":
-		z = "ZONE"
+		network = "KUBE_GKE_NETWORK"
+		nodeImage = "KUBE_GKE_IMAGE_TYPE"
+		zone = "ZONE"
 	default:
-		z = "KUBE_GCE_ZONE"
+		network = "KUBE_GCE_NETWORK"
+		nodeImage = "KUBE_NODE_OS_DISTRIBUTION"
+		zone = "KUBE_GCE_ZONE"
 	}
 	return migrateOptions([]migratedOption{
 		{
@@ -470,7 +478,7 @@ func migrateGcpEnvAndOptions(o *options) error {
 			name:   "--gcp-project",
 		},
 		{
-			env:    z,
+			env:    zone,
 			option: &o.gcpZone,
 			name:   "--gcp-zone",
 		},
@@ -480,9 +488,14 @@ func migrateGcpEnvAndOptions(o *options) error {
 			name:   "--gcp-service-account",
 		},
 		{
-			env:    "NETWORK",
+			env:    network,
 			option: &o.gcpNetwork,
 			name:   "--gcp-network",
+		},
+		{
+			env:    nodeImage,
+			option: &o.gcpNodeImage,
+			name:   "--gcp-node-image",
 		},
 		{
 			env:      "CLOUDSDK_BUCKET",
