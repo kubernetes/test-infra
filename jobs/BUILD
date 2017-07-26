@@ -5,6 +5,7 @@ py_binary(
     srcs = ["config_sort.py"],
     data = [
         ":jobs",
+        "//boskos:resources.json",
         "//prow:configs",
     ],
     deps = ["@ruamel_yaml//ruamel/yaml:ruamel.yaml"],
@@ -16,6 +17,7 @@ py_test(
         "config_test.py",
     ],
     data = [
+        "//boskos:resources.json",
         "//jobs",
         "//prow:config.yaml",
     ],

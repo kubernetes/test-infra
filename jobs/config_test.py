@@ -26,7 +26,7 @@ import config_sort
 class JobTest(unittest.TestCase):
 
     def test_config_is_sorted(self):
-        """Test jobs/config.json and prow/config.yaml are sorted."""
+        """Test jobs/config.json, prow/config.yaml and boskos/resources.json are sorted."""
         with open(config_sort.test_infra('jobs/config.json')) as fp:
             original = fp.read()
             expect = json.dumps(
@@ -43,6 +43,12 @@ class JobTest(unittest.TestCase):
             expect = config_sort.sorted_prow_config().getvalue()
             if original != expect:
                 self.fail('prow/config.yaml is not sorted, please run '
+                          '`bazel run //jobs:config_sort`')
+        with open(config_sort.test_infra('boskos/resources.json')) as fp:
+            original = fp.read()
+            expect = config_sort.sorted_boskos_config().getvalue()
+            if original != expect:
+                self.fail('boskos/resources.json is not sorted, please run '
                           '`bazel run //jobs:config_sort`')
 
 
