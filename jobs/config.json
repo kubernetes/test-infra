@@ -5367,7 +5367,7 @@
       "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
       "--provider=gke",
       "--gcp-zone=us-central1-f",
-      "--kubetest_args=--cluster=e2e-gke-canary",
+      "--gcp-node-image=cos",
       "--deployment=gke"
     ],
     "scenario": "kubernetes_e2e",

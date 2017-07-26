@@ -63,6 +63,7 @@ type gkeDeployer struct {
 	cluster         string
 	shape           map[string]gkeNodePool
 	network         string
+	image           string
 
 	setup          bool
 	kubecfg        string
@@ -78,7 +79,7 @@ type ig struct {
 
 var _ deployer = &gkeDeployer{}
 
-func newGKE(provider, project, zone, network, cluster string) (*gkeDeployer, error) {
+func newGKE(provider, project, zone, network, image, cluster string) (*gkeDeployer, error) {
 	if provider != "gke" {
 		return nil, fmt.Errorf("--provider must be 'gke' for GKE deployment, found %q", provider)
 	}
@@ -103,6 +104,11 @@ func newGKE(provider, project, zone, network, cluster string) (*gkeDeployer, err
 		return nil, fmt.Errorf("--gcp-network must be set for GKE deployment")
 	}
 	g.network = network
+
+	if image == "" {
+		return nil, fmt.Errorf("--gcp-node-image must be set for GKE deployment")
+	}
+	g.image = image
 
 	g.additionalZones = *gkeAdditionalZones
 
@@ -175,6 +181,7 @@ func (g *gkeDeployer) Up() error {
 		"--project=" + g.project,
 		"--zone=" + g.zone,
 		"--machine-type=" + def.MachineType,
+		"--image-type=" + g.image,
 		"--num-nodes=" + strconv.Itoa(def.Nodes),
 		"--network=" + g.network,
 	}
@@ -401,17 +408,23 @@ func (g *gkeDeployer) Down() error {
 	}
 	g.instanceGroups = nil
 
+	// We best-effort try all of these and report errors as appropriate.
 	errCluster := finishRunning(exec.Command(
 		"gcloud", "container", "clusters", "delete", "-q", g.cluster,
 		"--project="+g.project,
 		"--zone="+g.zone))
 	errFirewall := finishRunning(exec.Command("gcloud", "compute", "firewall-rules", "delete", "-q", firewall,
 		"--project="+g.project))
+	errNetwork := finishRunning(exec.Command("gcloud", "compute", "networks", "delete", "-q", g.network,
+		"--project="+g.project))
 	if errCluster != nil {
 		return fmt.Errorf("error deleting cluster: %v", errCluster)
 	}
 	if errFirewall != nil {
 		return fmt.Errorf("error deleting firewall: %v", errFirewall)
+	}
+	if errNetwork != nil {
+		return fmt.Errorf("error deleting network: %v", errNetwork)
 	}
 	return nil
 }
