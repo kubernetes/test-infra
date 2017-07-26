@@ -33,7 +33,8 @@ def sort():
     with open(test_infra('jobs/config.json'), 'r+') as fp:
         configs = json.loads(fp.read())
     regexp = re.compile('|'.join([
-        r'^KUBEMARK_TEST_ARGS=(.*)$',
+        r'^KUBEMARK_MASTER_SIZE=(.*)$',
+        r'^KUBEMARK_NUM_NODES=(.*)$',
     ]))
     problems = []
     for job, values in configs.items():
@@ -64,10 +65,11 @@ def sort():
             if not mat:
                 lines.append(line)
                 continue
-            kubemark = mat.group(1)
+            master, nodes = mat.groups()
             stop = False
             for key, val in {
-                    '--test_args': kubemark,
+                    '--kubemark-master-size': master,
+                    '--kubemark-nodes': nodes,
             }.items():
                 if not val:
                     continue
@@ -84,15 +86,6 @@ def sort():
         args = list(args)
         for key, val in new_args.items():
             args.append('%s=%s' % (key, val))
-        if not any(a.startswith('--provider=') for a in args):
-            problems.append('Missing --provider: %s' % job)
-            continue
-        if '-gce' in job or '-gke' in job:
-            if not any(a.startswith('--gcp-zone=') for a in args):
-                problems.append('Missing --gcp-zone: %s' % job)
-                continue
-            if not any(a.startswith('--gcp-project=') for a in args):
-                problems.append('Missing --gcp-project: %s' % job)
         flags = set()
         okay = False
         for arg in args:

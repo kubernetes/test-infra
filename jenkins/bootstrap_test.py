@@ -2222,6 +2222,8 @@ class JobTest(unittest.TestCase):
                     ('KUBEKINS_TIMEOUT=', '--timeout=XXm'),
                     ('KUBEMARK_TEST_ARGS=', '--test_args=FOO'),
                     ('KUBEMARK_TESTS=', '--test_args=--ginkgo.focus=FOO'),
+                    ('KUBEMARK_MASTER_SIZE=', '--kubemark-master-size=FOO'),
+                    ('KUBEMARK_NUM_NODES=', '--kubemark-nodes=FOO'),
                     ('KUBERNETES_PROVIDER=', '--provider=FOO'),
                     ('PERF_TESTS=', '--perf'),
                     ('PROJECT=', '--gcp-project=FOO'),
