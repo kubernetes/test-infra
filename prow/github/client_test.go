@@ -660,7 +660,7 @@ func TestClosePR(t *testing.T) {
 		if r.Method != http.MethodPatch {
 			t.Errorf("Bad method: %s", r.Method)
 		}
-		if r.URL.Path != "/repos/k8s/kuber/pull/5" {
+		if r.URL.Path != "/repos/k8s/kuber/pulls/5" {
 			t.Errorf("Bad request path: %s", r.URL.Path)
 		}
 		b, err := ioutil.ReadAll(r.Body)
@@ -688,7 +688,7 @@ func TestReopenPR(t *testing.T) {
 		if r.Method != http.MethodPatch {
 			t.Errorf("Bad method: %s", r.Method)
 		}
-		if r.URL.Path != "/repos/k8s/kuber/pull/5" {
+		if r.URL.Path != "/repos/k8s/kuber/pulls/5" {
 			t.Errorf("Bad request path: %s", r.URL.Path)
 		}
 		b, err := ioutil.ReadAll(r.Body)
