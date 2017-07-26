@@ -17,7 +17,6 @@
 """Tests for config.json and Prow configuration."""
 
 
-import json
 import unittest
 
 import config_sort
@@ -29,12 +28,7 @@ class JobTest(unittest.TestCase):
         """Test jobs/config.json, prow/config.yaml and boskos/resources.json are sorted."""
         with open(config_sort.test_infra('jobs/config.json')) as fp:
             original = fp.read()
-            expect = json.dumps(
-                json.loads(original),
-                sort_keys=True,
-                indent=2,
-                separators=(',', ': ')
-                ) + '\n'
+            expect = config_sort.sorted_job_config().getvalue()
             if original != expect:
                 self.fail('jobs/config.json is not sorted, please run '
                           '`bazel run //jobs:config_sort`')

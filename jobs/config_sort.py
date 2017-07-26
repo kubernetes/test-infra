@@ -34,6 +34,8 @@ def sorted_seq(jobs):
     return yaml.comments.CommentedSeq(
         sorted(jobs, key=lambda job: job['name']))
 
+def sorted_args(args):
+    return sorted(args, key=lambda arg: arg.split("=")[0])
 
 def sorted_map(jobs):
     for key, value in jobs.items():
@@ -41,15 +43,25 @@ def sorted_map(jobs):
     return jobs
 
 
-def sort_job_config():
+def sorted_job_config():
     """Sort config.json alphabetically."""
-    with open(test_infra('jobs/config.json'), 'r+') as fp:
+    with open(test_infra('jobs/config.json'), 'r') as fp:
         configs = json.loads(fp.read())
-        fp.seek(0)
-        fp.write(json.dumps(configs, sort_keys=True, indent=2, separators=(',', ': ')))
-        fp.write('\n')
-        fp.truncate()
+    for _, config in configs.items():
+        # The execute scenario is a free-for-all, don't sort.
+        if config["scenario"] != "execute" and "args" in config:
+            config["args"] = sorted_args(config["args"])
+    output = cStringIO.StringIO()
+    json.dump(
+        configs, output, sort_keys=True, indent=2, separators=(',', ': '))
+    output.write('\n')
+    return output
 
+def sort_job_config():
+    output = sorted_job_config()
+    with open(test_infra('jobs/config.json'), 'w+') as fp:
+        fp.write(output.getvalue())
+    output.close()
 
 def sorted_boskos_config():
     """Get the sorted boskos configuration."""
