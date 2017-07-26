@@ -710,7 +710,7 @@ def setup_magic_environment(job):
     # TODO(fejta): jenkins sets WORKSPACE and pieces of our infra expect this
     #              value. Consider doing something else in the future.
     os.environ[WORKSPACE_ENV] = cwd
-    # TODO(fejta): jenkins/dockerized-e2e-runner.sh also sets HOME to WORKSPACE,
+    # TODO(fejta): Previously dockerized-e2e-runner.sh also sets HOME to WORKSPACE,
     #              probably to minimize leakage between jobs.
     #              Consider accomplishing this another way.
     os.environ[HOME_ENV] = cwd

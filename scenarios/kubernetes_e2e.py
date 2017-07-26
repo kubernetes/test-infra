@@ -331,7 +331,7 @@ def main(args):
     # So if you overwrite FOO=c for a local run it will take precedence.
     #
 
-    # dockerized-e2e-runner goodies setup
+    # Set up workspace/artifacts dir
     workspace = os.environ.get('WORKSPACE', os.getcwd())
     artifacts = '%s/_artifacts' % workspace
     if not os.path.isdir(artifacts):
