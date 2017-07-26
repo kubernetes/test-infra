@@ -15,5 +15,4 @@ install:
 # Do not add anything new here.
 script:
     - ./jenkins/diff-job-config-patch.sh
-    - ./jenkins/diff-e2e-runner.sh
     - ./testgrid/jenkins_verify/verify.sh

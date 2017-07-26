@@ -95,7 +95,7 @@ def main(args):
                         for _ in range(8)))
     container = '%s-%s' % (job_name, build_number)
 
-    # dockerized-e2e-runner goodies setup
+    # Set up workspace/artifacts dir
     workspace = os.environ.get('WORKSPACE', os.getcwd())
     artifacts = '%s/_artifacts' % workspace
     if not os.path.isdir(artifacts):

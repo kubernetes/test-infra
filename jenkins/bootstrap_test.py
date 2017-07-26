@@ -1469,7 +1469,6 @@ class JobTest(unittest.TestCase):
         'validOwners.json', # Contains a list of current sigs; sigs are allowed to own jobs
         'config_sort.py', # Tool script to sort config.json
         'config_test.py', # Script for testing config.json and Prow config.
-        'move_timeout.py', # Tool to migrate timeouts to config.json
         'move_extract.py',
     ]
 
@@ -1859,10 +1858,7 @@ class JobTest(unittest.TestCase):
 
     def test_valid_timeout(self):
         """All jobs set a timeout less than 120m or set DOCKER_TIMEOUT."""
-        default_timeout = int(re.search(
-            r'\$\{DOCKER_TIMEOUT:-(\d+)m',
-            open('%s/dockerized-e2e-runner.sh' % os.path.dirname(__file__)).read()
-        ).group(1))
+        default_timeout = 60
         bad_jobs = set()
         with open(bootstrap.test_infra('jobs/config.json')) as fp:
             config = json.loads(fp.read())
@@ -1892,49 +1888,28 @@ class JobTest(unittest.TestCase):
                     bad_jobs.add(job)
                 if '{rc}' in line:
                     bad_jobs.add(job)
-            if job.endswith('.sh'):  # --json=False type jobs, TODO(fejta): deprecate
-                for line in lines:
-                    if line.startswith('export DOCKER_TIMEOUT='):
-                        container_timeout = int(re.match(
-                            r'export DOCKER_TIMEOUT="(\d+)m".*', line).group(1))
-                    if 'KUBEKINS_TIMEOUT=' not in line:
-                        continue
-                    mat = re.match(r'export KUBEKINS_TIMEOUT="(\d+)m".*', line)
-                    self.assertTrue(mat, 'Bad KUBEKINS_TIMEOUT in %s' % job)
-                    kubetest_timeout = int(mat.group(1))
-            elif not modern:
-                realjob = self.get_real_bootstrap_job(job)
-                self.assertTrue(realjob)
-                self.assertIn('timeout', realjob, job)
-                container_timeout = int(realjob['timeout'])
-                for line in lines:
-                    if 'DOCKER_TIMEOUT=' in line:
-                        self.fail('Set docker timeout in bootstrap yaml: %s' % job)
-                    if 'KUBEKINS_TIMEOUT=' not in line:
-                        continue
-                    mat = re.match(r'KUBEKINS_TIMEOUT=(\d+)m.*', line)
-                    self.assertTrue(mat, line)
-                    kubetest_timeout = int(mat.group(1))
-            else:
-                realjob = self.get_real_bootstrap_job(job)
-                self.assertTrue(realjob)
-                self.assertIn('timeout', realjob, job)
-                container_timeout = int(realjob['timeout'])
-                for line in lines:
-                    if 'DOCKER_TIMEOUT=' in line:
-                        self.fail('Set container timeout in prow and/or bootstrap yaml: %s' % job)
-                    if 'KUBEKINS_TIMEOUT=' in line:
-                        self.fail(
-                            'Set kubetest --timeout in config.json, not KUBEKINS_TIMEOUT: %s'
-                            % job
-                        )
-                for arg in config[job_name]['args']:
-                    if arg == '--timeout=None':
-                        bad_jobs.add(('Must specify a timeout', job, arg))
-                    mat = re.match(r'--timeout=(\d+)m', arg)
-                    if not mat:
-                        continue
-                    kubetest_timeout = int(mat.group(1))
+            self.assertFalse(job.endswith('.sh'))
+            self.assertTrue(modern)
+
+            realjob = self.get_real_bootstrap_job(job)
+            self.assertTrue(realjob)
+            self.assertIn('timeout', realjob, job)
+            container_timeout = int(realjob['timeout'])
+            for line in lines:
+                if 'DOCKER_TIMEOUT=' in line:
+                    self.fail('Set container timeout in prow and/or bootstrap yaml: %s' % job)
+                if 'KUBEKINS_TIMEOUT=' in line:
+                    self.fail(
+                        'Set kubetest --timeout in config.json, not KUBEKINS_TIMEOUT: %s'
+                        % job
+                    )
+            for arg in config[job_name]['args']:
+                if arg == '--timeout=None':
+                    bad_jobs.add(('Must specify a timeout', job, arg))
+                mat = re.match(r'--timeout=(\d+)m', arg)
+                if not mat:
+                    continue
+                kubetest_timeout = int(mat.group(1))
             if kubetest_timeout is None:
                 self.fail('Missing timeout: %s' % job)
             if kubetest_timeout > container_timeout:
