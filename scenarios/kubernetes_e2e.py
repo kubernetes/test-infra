@@ -393,6 +393,7 @@ def main(args):
 
     cluster = cluster_name(args.cluster, os.getenv('BUILD_NUMBER', 0))
     runner_args.append('--cluster=%s' % cluster)
+    runner_args.append('--gcp-network=%s' % cluster)
     runner_args.extend(args.kubetest_args)
 
     if args.use_logexporter:
@@ -422,10 +423,7 @@ def main(args):
       'KUBE_AWS_INSTANCE_PREFIX=%s' % cluster,
       # GCE
       'INSTANCE_PREFIX=%s' % cluster,
-      'KUBE_GCE_NETWORK=%s' % cluster,
       'KUBE_GCE_INSTANCE_PREFIX=%s' % cluster,
-      # GKE
-      'KUBE_GKE_NETWORK=%s' % cluster,
     )
 
     if args and args.image_family and args.image_project:

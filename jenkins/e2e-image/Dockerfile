@@ -43,8 +43,7 @@ ENV INSTANCE_PREFIX=jenkins-e2e \
 # Variables specific to GCP
 ENV FAIL_ON_GCP_RESOURCE_LEAK=true \
     JOB_NAME=kubernetes-e2e-gce-conformance \
-    KUBE_GCE_INSTANCE_PREFIX=jenkins-e2e \
-    KUBE_GCE_NETWORK=jenkins-e2e
+    KUBE_GCE_INSTANCE_PREFIX=jenkins-e2e
 
 # Variable specific to the machine:
 # GOOGLE_APPLICATION_CREDENTIALS

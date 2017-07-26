@@ -2190,6 +2190,8 @@ class JobTest(unittest.TestCase):
                     ('JENKINS_USE_SERVER_VERSION=', '--extract=gke'),
                     ('JENKINS_USE_GCI_VERSION=', '--extract=gci/FAMILY'),
                     ('JENKINS_USE_GCI_HEAD_IMAGE_FAMILY=', '--extract=gci/FAMILY'),
+                    ('KUBE_GKE_NETWORK=', '--gcp-network=FOO'),
+                    ('KUBE_GCE_NETWORK=', '--gcp-network=FOO'),
                     ('KUBE_GCE_ZONE=', '--gcp-zone=FOO'),
                     ('KUBEKINS_TIMEOUT=', '--timeout=XXm'),
                     ('KUBEMARK_TEST_ARGS=', '--test_args=FOO'),
