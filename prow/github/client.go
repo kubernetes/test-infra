@@ -461,6 +461,69 @@ func (c *Client) CreateStatus(org, repo, ref string, s Status) error {
 	return err
 }
 
+func (c *Client) GetRepos(org string, isUser bool) ([]Repo, error) {
+	c.log("GetRepos", org, isUser)
+	var (
+		repos   []Repo
+		nextURL string
+	)
+	if c.fake {
+		return repos, nil
+	}
+	if isUser {
+		nextURL = fmt.Sprintf("%s/users/%s/repos", c.base, org)
+	} else {
+		nextURL = fmt.Sprintf("%s/orgs/%s/repos", c.base, org)
+	}
+	for nextURL != "" {
+		resp, err := c.requestRetry(http.MethodGet, nextURL, "", nil)
+		if err != nil {
+			return nil, err
+		}
+		defer resp.Body.Close()
+		if resp.StatusCode < 200 || resp.StatusCode > 299 {
+			return nil, fmt.Errorf("return code not 2XX: %s", resp.Status)
+		}
+
+		b, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return nil, err
+		}
+
+		var reps []Repo
+		if err := json.Unmarshal(b, &reps); err != nil {
+			return nil, err
+		}
+		repos = append(repos, reps...)
+		nextURL = parseLinks(resp.Header.Get("Link"))["next"]
+	}
+	return repos, nil
+}
+
+// Adds Label label/color to given org/repo
+func (c *Client) AddRepoLabel(org, repo, label, color string) error {
+	c.log("AddRepoLabel", org, repo, label, color)
+	_, err := c.request(&request{
+		method:      http.MethodPost,
+		path:        fmt.Sprintf("%s/repos/%s/%s/labels", c.base, org, repo),
+		requestBody: Label{Name: label, Color: color},
+		exitCodes:   []int{201},
+	}, nil)
+	return err
+}
+
+// Updates org/repo label to label/color
+func (c *Client) UpdateRepoLabel(org, repo, label, color string) error {
+	c.log("UpdateRepoLabel", org, repo, label, color)
+	_, err := c.request(&request{
+		method:      http.MethodPatch,
+		path:        fmt.Sprintf("%s/repos/%s/%s/labels/%s", c.base, org, repo, label),
+		requestBody: Label{Name: label, Color: color},
+		exitCodes:   []int{200},
+	}, nil)
+	return err
+}
+
 // GetCombinedStatus returns the latest statuses for a given ref.
 func (c *Client) GetCombinedStatus(org, repo, ref string) (*CombinedStatus, error) {
 	c.log("GetCombinedStatus", org, repo, ref)
@@ -475,11 +538,13 @@ func (c *Client) GetCombinedStatus(org, repo, ref string) (*CombinedStatus, erro
 
 // getLabels is a helper function that retrieves a paginated list of labels from a github URI path.
 func (c *Client) getLabels(path string) ([]Label, error) {
+	var labels []Label
 	if c.fake {
-		return nil, nil
+		labels = append(labels, Label{Name: "lgtm", Color: "green"})
+		labels = append(labels, Label{Name: "priority/P0", Color: "red"})
+		return labels, nil
 	}
 	nextURL := strings.Join([]string{c.base, path}, "")
-	var labels []Label
 	for nextURL != "" {
 		resp, err := c.requestRetry(http.MethodGet, nextURL, "", nil)
 		if err != nil {
