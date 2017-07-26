@@ -26,10 +26,10 @@ echo 'WARNING: e2e-runner.sh is deprecated! This will error on August 2nd' >&2
 echo 'Call kubetest directly' >&2
 echo 'More info: https://github.com/kubernetes/test-infra/issues/2829' >&2
 
-if [[ "$(date +%s)" -gt "$(date --date='August 1 2017' +%s)"]]; then
+if [[ "$(date +%s)" -gt "$(date --date='August 1 2017' +%s)" ]]; then
   echo 'e2e-runner.sh expired on August 1st, failing'
   exit 1
-elif [[ "$(date +%s)" -gt "$(date --date='July 25 2017' +%s)"]]; then
+elif [[ "$(date +%s)" -gt "$(date --date='July 25 2017' +%s)" ]]; then
   # Delay five minutes and spam the logs
   for i in {1..100}; do
     echo "e2e-runner.sh will expire in a week, please update job (notice ${i})" >&2

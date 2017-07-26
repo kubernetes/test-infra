@@ -757,13 +757,12 @@
       "--check-version-skew=false",
       "--test_args=--ginkgo.focus=Variable.Expansion --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8",
       "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
-      "--gcp-project=k8s-jkns-e2e-gce",
       "--provider=gce",
       "--gcp-zone=us-central1-f"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-testing"
     ]
   },
   "ci-kubernetes-e2e-gce-container-vm": {
@@ -7708,7 +7707,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-testing"
     ]
   },
   "ci-kubernetes-e2e-ubuntu-gke": {
@@ -9285,7 +9284,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-testing"
     ]
   },
   "pull-kubernetes-e2e-gce-etcd3": {
