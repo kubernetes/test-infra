@@ -30,6 +30,8 @@ import view_build
 import view_logs
 import view_pr
 
+# A happy comment for testing
+
 
 hostname = app_identity.get_default_version_hostname()
 if 'testbed' not in os.environ.get('SERVER_SOFTWARE', 'testbed'):
