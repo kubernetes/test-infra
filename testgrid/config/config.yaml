@@ -3539,6 +3539,16 @@ dashboards:
     test_group_name: ppc64le-conformance
     description: 'conformance test results for ppc64le'
 
+- name: canaries
+  dashboard_tab:
+  - name: gce-canary
+    test_group_name: ci-kubernetes-e2e-gce-canary
+  - name: gke-canary
+    test_group_name: ci-kubernetes-e2e-gke-canary
+  - name: kops-aws-canary
+    test_group_name: ci-kubernetes-e2e-kops-aws-canary
+  - name: prow-canary
+    test_group_name: ci-kubernetes-e2e-prow-canary
 
 #
 # Start dashboard groups
