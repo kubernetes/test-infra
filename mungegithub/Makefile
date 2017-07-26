@@ -52,7 +52,7 @@ deploy: push deployment
 # A new configuration is pushed by using the configmap specified using $(TARGET) and $(APP).
 push_config:
 	# pushes a new configmap.
-	kubectl --kubeconfig=$(KUBECONFIG) create configmap $(TARGET)-sq-config --from-file=config=$(APP)/deployment/$(TARGET)/configmap.yaml --dry-run -o yaml | kubectl replace configmap $(TARGET)-sq-config -f -
+	kubectl --kubeconfig=$(KUBECONFIG) create configmap $(TARGET)-sq-config --from-file=config=$(APP)/deployment/$(TARGET)/configmap.yaml --dry-run -o yaml | kubectl apply -f -
 
 # Creates a service resource spec for the specified target and app.
 service:
@@ -109,9 +109,11 @@ push_volume: volume
 ifneq ("", "$(and $(wildcard $(APP)/pv.yaml), $(wildcard $(APP)/pvc.yaml))")
 	# Creating persistent volume and persistent volume claim.
 	kubectl --kubeconfig=$(KUBECONFIG) create -f $(APP)/local.pv.yaml
+	# Sleeping for 1s to allow persistent volume to be created.
+	@sleep 1
 	kubectl --kubeconfig=$(KUBECONFIG) create -f $(APP)/local.pvc.yaml
-	# Sleeping for 2s to allow claim to bind to volume.
-	@sleep 2
+	# Sleeping for 4s to allow claim to bind to volume.
+	@sleep 4
 endif
 
 # Deploys after completeing first time setup such as creating the volume and volume claim, and creating the token secret, and service.
