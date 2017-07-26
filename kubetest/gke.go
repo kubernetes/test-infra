@@ -27,6 +27,7 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"regexp"
 	"sort"
 	"strconv"
@@ -208,6 +209,59 @@ func (g *gkeDeployer) IsUp() error {
 	return isUp(g)
 }
 
+// DumpClusterLogs for GKE generates a small script that wraps
+// log-dump.sh with the appropriate shell-fu to get the cluster
+// dumped.
+//
+// TODO(zmerlynn): This whole path is really gross, but this seemed
+// the least gross hack to get this done.
+func (g *gkeDeployer) DumpClusterLogs(localPath, gcsPath string) error {
+	// gkeLogDumpTemplate is a template of a shell script where
+	// - %[1]s is the project
+	// - %[2]s is a filter composed of the instance groups
+	// - %[3]s is the ssh key
+	// - %[4]s is the log-dump.sh command line
+	const gkeLogDumpTemplate = `
+function log_dump_custom_get_instances() {
+  if [[ $1 == "master" ]]; then
+    return 0
+  fi
+
+  gcloud compute instances list '--project=%[1]s' '--filter=%[2]s' '--format=get(networkInterfaces.accessConfigs[0][natIP])'
+}
+export -f log_dump_custom_get_instances
+export LOG_DUMP_SSH_USER="${USER}"
+export LOG_DUMP_SSH_KEY='%[3]s'
+%[4]s
+`
+	// Prevent an obvious injection.
+	if strings.Contains(localPath, "'") || strings.Contains(gcsPath, "'") {
+		return fmt.Errorf("%q or %q contain single quotes - nice try", localPath, gcsPath)
+	}
+
+	// Generate a slice of filters to be OR'd together below
+	if err := g.getInstanceGroups(); err != nil {
+		return err
+	}
+	var filters []string
+	for _, ig := range g.instanceGroups {
+		filters = append(filters, fmt.Sprintf("(metadata.created-by:*%s)", ig.path))
+	}
+
+	// Generate the log-dump.sh command-line
+	var dumpCmd string
+	if gcsPath == "" {
+		dumpCmd = fmt.Sprintf("./cluster/log-dump/log-dump.sh '%s'", localPath)
+	} else {
+		dumpCmd = fmt.Sprintf("./cluster/log-dump/log-dump.sh '%s' '%s'", localPath, gcsPath)
+	}
+	return finishRunning(exec.Command("bash", "-c", fmt.Sprintf(gkeLogDumpTemplate,
+		g.project,
+		strings.Join(filters, " OR "),
+		filepath.Join(home(".ssh"), "google_compute_engine"),
+		dumpCmd)))
+}
+
 func (g *gkeDeployer) TestSetup() error {
 	if g.setup {
 		// Ensure setup is a singleton.
@@ -345,12 +399,13 @@ func (g *gkeDeployer) Down() error {
 		// This is expected if the cluster doesn't exist.
 		return nil
 	}
+	g.instanceGroups = nil
 
 	errCluster := finishRunning(exec.Command(
 		"gcloud", "container", "clusters", "delete", "-q", g.cluster,
 		"--project="+g.project,
 		"--zone="+g.zone))
-	errFirewall := finishRunning(exec.Command("gcloud", "compute", "firewall-rules", "delete", firewall,
+	errFirewall := finishRunning(exec.Command("gcloud", "compute", "firewall-rules", "delete", "-q", firewall,
 		"--project="+g.project))
 	if errCluster != nil {
 		return fmt.Errorf("error deleting cluster: %v", errCluster)

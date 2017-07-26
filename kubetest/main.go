@@ -191,6 +191,7 @@ func writeXML(dump string, start time.Time) {
 type deployer interface {
 	Up() error
 	IsUp() error
+	DumpClusterLogs(localPath, gcsPath string) error
 	TestSetup() error
 	Down() error
 }

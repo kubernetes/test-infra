@@ -161,6 +161,10 @@ func (k kubernetesAnywhere) IsUp() error {
 	return isUp(k)
 }
 
+func (k kubernetesAnywhere) DumpClusterLogs(localPath, gcsPath string) error {
+	return defaultDumpClusterLogs(localPath, gcsPath)
+}
+
 func (k kubernetesAnywhere) TestSetup() error {
 	o, err := output(exec.Command("make", "--silent", "-C", k.path, "kubeconfig-path"))
 	if err != nil {
