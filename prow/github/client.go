@@ -704,7 +704,7 @@ func (c *Client) ClosePR(org, repo string, number int) error {
 	c.log("ClosePR", org, repo, number)
 	_, err := c.request(&request{
 		method:      http.MethodPatch,
-		path:        fmt.Sprintf("%s/repos/%s/%s/pull/%d", c.base, org, repo, number),
+		path:        fmt.Sprintf("%s/repos/%s/%s/pulls/%d", c.base, org, repo, number),
 		requestBody: map[string]string{"state": "closed"},
 		exitCodes:   []int{200},
 	}, nil)
@@ -716,7 +716,7 @@ func (c *Client) ReopenPR(org, repo string, number int) error {
 	c.log("ReopenPR", org, repo, number)
 	_, err := c.request(&request{
 		method:      http.MethodPatch,
-		path:        fmt.Sprintf("%s/repos/%s/%s/pull/%d", c.base, org, repo, number),
+		path:        fmt.Sprintf("%s/repos/%s/%s/pulls/%d", c.base, org, repo, number),
 		requestBody: map[string]string{"state": "open"},
 		exitCodes:   []int{200},
 	}, nil)
