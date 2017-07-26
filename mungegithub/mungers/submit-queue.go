@@ -806,7 +806,6 @@ func (sq *SubmitQueue) SetMergeStatus(obj *github.MungeObject, reason string) {
 // setContextFailedStatus calls SetMergeStatus after determining a particular github status
 // which is failed.
 func (sq *SubmitQueue) setContextFailedStatus(obj *github.MungeObject, contexts []string) {
-	sort.Strings(contexts)
 	for i, context := range contexts {
 		contextSlice := contexts[i : i+1]
 		success, ok := obj.IsStatusSuccess(contextSlice)
