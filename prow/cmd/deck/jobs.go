@@ -189,7 +189,7 @@ func (ja *JobAgent) update() error {
 			ft: j.Status.CompletionTime,
 		}
 		if !nj.ft.IsZero() {
-			nj.Finished = nj.ft.Format("15:04:05")
+			nj.Finished = nj.ft.Format(time.RFC3339Nano)
 			duration := nj.ft.Sub(nj.st)
 			duration -= duration % time.Second // strip fractional seconds
 			nj.Duration = duration.String()
