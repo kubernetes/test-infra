@@ -195,6 +195,10 @@ func (k kops) IsUp() error {
 	return isUp(k)
 }
 
+func (k kops) DumpClusterLogs(localPath, gcsPath string) error {
+	return defaultDumpClusterLogs(localPath, gcsPath)
+}
+
 func (k kops) TestSetup() error {
 	info, err := os.Stat(k.kubecfg)
 	if err != nil {

@@ -32,6 +32,10 @@ func (b bash) IsUp() error {
 	return finishRunning(exec.Command("./hack/e2e-internal/e2e-status.sh"))
 }
 
+func (b bash) DumpClusterLogs(localPath, gcsPath string) error {
+	return defaultDumpClusterLogs(localPath, gcsPath)
+}
+
 func (b bash) TestSetup() error {
 	return nil
 }

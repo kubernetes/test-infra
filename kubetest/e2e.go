@@ -113,7 +113,7 @@ func run(deploy deployer, o options) error {
 					// Thus DumpClusterLogs() typically fails.
 					// Therefore always return null for this scenarios.
 					// TODO(fejta): report a green E in testgrid if it errors.
-					DumpClusterLogs(dump, o.logexporterGCSPath)
+					deploy.DumpClusterLogs(dump, o.logexporterGCSPath)
 					return nil
 				})
 			}
@@ -194,7 +194,7 @@ func run(deploy deployer, o options) error {
 
 	if len(errs) > 0 && dump != "" {
 		errs = appendError(errs, xmlWrap("DumpClusterLogs", func() error {
-			return DumpClusterLogs(dump, o.logexporterGCSPath)
+			return deploy.DumpClusterLogs(dump, o.logexporterGCSPath)
 		}))
 		if o.federation {
 			errs = appendError(errs, xmlWrap("DumpFederationLogs", func() error {
@@ -429,7 +429,7 @@ func waitForNodes(d deployer, nodes int, timeout time.Duration) error {
 	return fmt.Errorf("waiting for nodes timed out")
 }
 
-func DumpClusterLogs(localArtifactsDir, logexporterGCSPath string) error {
+func defaultDumpClusterLogs(localArtifactsDir, logexporterGCSPath string) error {
 	var cmd *exec.Cmd
 	if logexporterGCSPath != "" {
 		log.Printf("Dumping logs from nodes to GCS directly at path: %v", logexporterGCSPath)
