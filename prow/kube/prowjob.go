@@ -61,9 +61,10 @@ type ProwJobSpec struct {
 	Job   string       `json:"job,omitempty"`
 	Refs  Refs         `json:"refs,omitempty"`
 
-	Report       bool   `json:"report,omitempty"`
-	Context      string `json:"context,omitempty"`
-	RerunCommand string `json:"rerun_command,omitempty"`
+	Report         bool   `json:"report,omitempty"`
+	Context        string `json:"context,omitempty"`
+	RerunCommand   string `json:"rerun_command,omitempty"`
+	MaxConcurrency int    `json:"max_concurrency,omitempty"`
 
 	PodSpec PodSpec `json:"pod_spec,omitempty"`
 

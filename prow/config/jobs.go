@@ -39,6 +39,8 @@ type Presubmit struct {
 	RerunCommand string `json:"rerun_command"`
 	// Whether or not to skip commenting and setting status on GitHub.
 	SkipReport bool `json:"skip_report"`
+	// Maximum number of this job running concurrently, 0 implies no limit.
+	MaxConcurrency int `json:"max_concurrency"`
 	// Kubernetes pod spec.
 	Spec *kube.PodSpec `json:"spec,omitempty"`
 	// Run these jobs after successfully running this one.
@@ -55,6 +57,8 @@ type Presubmit struct {
 type Postsubmit struct {
 	Name string        `json:"name"`
 	Spec *kube.PodSpec `json:"spec,omitempty"`
+	// Maximum number of this job running concurrently, 0 implies no limit.
+	MaxConcurrency int `json:"max_concurrency"`
 
 	Brancher
 
