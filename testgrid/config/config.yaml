@@ -748,19 +748,20 @@ test_groups:
   gcs_prefix: upstream-jenkins-logs/logs/ci-tectonic-e2e-aws-serial
 - name: ci-tectonic-e2e-etcd-serial
   gcs_prefix: upstream-jenkins-logs/logs/ci-tectonic-e2e-etcd-serial
-# Ubuntu cluster/node e2e tests on GCE (contact: @kubernetes/ubuntu-image on github)
+# Ubuntu node e2e tests (contact: @kubernetes/ubuntu-image on github)
 - name: ci-kubernetes-e2e-gce-ubuntu-node
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntu-node
 - name: ci-kubernetes-e2e-gce-ubuntu-node-serial
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntu-node-serial
-- name: ci-kubernetes-e2e-gce-ubuntu-1-6-node
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntu-1-6-node
-- name: ci-kubernetes-e2e-gce-ubuntu-1-6-node-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntu-1-6-node-serial
 - name: ci-kubernetes-e2e-gce-ubuntu-1-7-node
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntu-1-7-node
 - name: ci-kubernetes-e2e-gce-ubuntu-1-7-node-serial
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntu-1-7-node-serial
+- name: ci-kubernetes-e2e-gce-ubuntu-1-6-node
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntu-1-6-node
+- name: ci-kubernetes-e2e-gce-ubuntu-1-6-node-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntu-1-6-node-serial
+# Ubuntu cluster e2e tests on GCE (contact: @kubernetes/ubuntu-image on github)
 - name: ci-kubernetes-e2e-gce-ubuntudev-k8sdev-default
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntudev-k8sdev-default
 - name: ci-kubernetes-e2e-gce-ubuntudev-k8sdev-serial
@@ -798,42 +799,24 @@ test_groups:
 - name: ci-kubernetes-e2e-gce-ubuntustable1-k8sstable2-slow
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntustable1-k8sstable2-slow
 # Ubuntu cluster e2e tests on GKE (contact: @kubernetes/ubuntu-image on github)
-- name: ci-kubernetes-e2e-ubuntu-gke
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-ubuntu-gke
-- name: ci-kubernetes-e2e-ubuntu-gke-alpha-features
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-ubuntu-gke-alpha-features
-- name: ci-kubernetes-e2e-ubuntu-gke-autoscaling
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-ubuntu-gke-autoscaling
-- name: ci-kubernetes-e2e-ubuntu-gke-flaky
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-ubuntu-gke-flaky
-- name: ci-kubernetes-e2e-ubuntu-gke-ingress
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-ubuntu-gke-ingress
-- name: ci-kubernetes-e2e-ubuntu-gke-reboot
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-ubuntu-gke-reboot
-- name: ci-kubernetes-e2e-ubuntu-gke-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-ubuntu-gke-serial
-- name: ci-kubernetes-e2e-ubuntu-gke-slow
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-ubuntu-gke-slow
-- name: ci-kubernetes-e2e-ubuntu-gke-updown
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-ubuntu-gke-updown
-- name: ci-kubernetes-e2e-ubuntu-gke-1-6
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-ubuntu-gke-1-6
-- name: ci-kubernetes-e2e-ubuntu-gke-1-6-alpha-features
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-ubuntu-gke-1-6-alpha-features
-- name: ci-kubernetes-e2e-ubuntu-gke-1-6-autoscaling
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-ubuntu-gke-1-6-autoscaling
-- name: ci-kubernetes-e2e-ubuntu-gke-1-6-flaky
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-ubuntu-gke-1-6-flaky
-- name: ci-kubernetes-e2e-ubuntu-gke-1-6-ingress
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-ubuntu-gke-1-6-ingress
-- name: ci-kubernetes-e2e-ubuntu-gke-1-6-reboot
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-ubuntu-gke-1-6-reboot
-- name: ci-kubernetes-e2e-ubuntu-gke-1-6-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-ubuntu-gke-1-6-serial
-- name: ci-kubernetes-e2e-ubuntu-gke-1-6-slow
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-ubuntu-gke-1-6-slow
-- name: ci-kubernetes-e2e-ubuntu-gke-1-6-updown
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-ubuntu-gke-1-6-updown
+- name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-alphafeatures
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-alphafeatures
+- name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-autoscaling
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-autoscaling
+- name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-default
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-default
+- name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-flaky
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-flaky
+- name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-ingress
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-ingress
+- name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-reboot
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-reboot
+- name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-serial
+- name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-slow
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-slow
+- name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-updown
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-updown
 - name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-alphafeatures
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-alphafeatures
 - name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-autoscaling
@@ -852,6 +835,24 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-slow
 - name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-updown
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-updown
+- name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-alphafeatures
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-alphafeatures
+- name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-autoscaling
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-autoscaling
+- name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-default
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-default
+- name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-flaky
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-flaky
+- name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-ingress
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-ingress
+- name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-reboot
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-reboot
+- name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-serial
+- name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-slow
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-slow
+- name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-updown
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-updown
 # Canonical Distribution of Kubernetes (contact: @chuckbutler on github)
 - name: canonical-kubernetes-e2e-gce
   gcs_prefix: canonical-kubernetes-tests/logs/kubernetes-gce-e2e-node
@@ -1393,14 +1394,14 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-ubuntu-node
   - name: gce-ubuntu-node-serial
     test_group_name: ci-kubernetes-e2e-gce-ubuntu-node-serial
-  - name: gce-ubuntu-1.6-node
-    test_group_name: ci-kubernetes-e2e-gce-ubuntu-1-6-node
-  - name: gce-ubuntu-1.6-node-serial
-    test_group_name: ci-kubernetes-e2e-gce-ubuntu-1-6-node-serial
   - name: gce-ubuntu-1.7-node
     test_group_name: ci-kubernetes-e2e-gce-ubuntu-1-7-node
   - name: gce-ubuntu-1.7-node-serial
     test_group_name: ci-kubernetes-e2e-gce-ubuntu-1-7-node-serial
+  - name: gce-ubuntu-1.6-node
+    test_group_name: ci-kubernetes-e2e-gce-ubuntu-1-6-node
+  - name: gce-ubuntu-1.6-node-serial
+    test_group_name: ci-kubernetes-e2e-gce-ubuntu-1-6-node-serial
   - name: gce-ubuntudev-k8sdev-default
     test_group_name: ci-kubernetes-e2e-gce-ubuntudev-k8sdev-default
   - name: gce-ubuntudev-k8sdev-serial
@@ -1856,40 +1857,28 @@ dashboards:
   - name: gke-gpu-1-7
     test_group_name: ci-kubernetes-e2e-gke-gpu-1-7
     # Ubuntu cluster/node e2e tests on GKE (contact: @kubernetes/ubuntu-image on github)
-  - name: ubuntu-gke
-    test_group_name: ci-kubernetes-e2e-ubuntu-gke
-  - name: ubuntu-gke-alpha-features
-    test_group_name: ci-kubernetes-e2e-ubuntu-gke-alpha-features
-  - name: ubuntu-gke-flaky
-    test_group_name: ci-kubernetes-e2e-ubuntu-gke-flaky
-  - name: ubuntu-gke-ingress
-    test_group_name: ci-kubernetes-e2e-ubuntu-gke-ingress
-  - name: ubuntu-gke-reboot
-    test_group_name: ci-kubernetes-e2e-ubuntu-gke-reboot
-  - name: ubuntu-gke-serial
-    test_group_name: ci-kubernetes-e2e-ubuntu-gke-serial
-  - name: ubuntu-gke-slow
-    test_group_name: ci-kubernetes-e2e-ubuntu-gke-slow
-  - name: ubuntu-gke-updown
-    test_group_name: ci-kubernetes-e2e-ubuntu-gke-updown
-  - name: ubuntu-gke-1.6
-    test_group_name: ci-kubernetes-e2e-ubuntu-gke-1-6
-  - name: ubuntu-gke-1.6-alpha-features
-    test_group_name: ci-kubernetes-e2e-ubuntu-gke-1-6-alpha-features
-  - name: ubuntu-gke-1.6-flaky
-    test_group_name: ci-kubernetes-e2e-ubuntu-gke-1-6-flaky
-  - name: ubuntu-gke-1.6-ingress
-    test_group_name: ci-kubernetes-e2e-ubuntu-gke-1-6-ingress
-  - name: ubuntu-gke-1.6-reboot
-    test_group_name: ci-kubernetes-e2e-ubuntu-gke-1-6-reboot
-  - name: ubuntu-gke-1.6-serial
-    test_group_name: ci-kubernetes-e2e-ubuntu-gke-1-6-serial
-  - name: ubuntu-gke-1.6-slow
-    test_group_name: ci-kubernetes-e2e-ubuntu-gke-1-6-slow
-  - name: ubuntu-gke-1.6-updown
-    test_group_name: ci-kubernetes-e2e-ubuntu-gke-1-6-updown
+  - name: gke-ubuntustable1-k8sdev-alphafeatures
+    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-alphafeatures
+  - name: gke-ubuntustable1-k8sdev-autoscaling
+    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-autoscaling
+  - name: gke-ubuntustable1-k8sdev-default
+    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-default
+  - name: gke-ubuntustable1-k8sdev-flaky
+    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-flaky
+  - name: gke-ubuntustable1-k8sdev-ingress
+    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-ingress
+  - name: gke-ubuntustable1-k8sdev-reboot
+    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-reboot
+  - name: gke-ubuntustable1-k8sdev-serial
+    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-serial
+  - name: gke-ubuntustable1-k8sdev-slow
+    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-slow
+  - name: gke-ubuntustable1-k8sdev-updown
+    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-updown
   - name: gke-ubuntustable1-k8sstable1-alphafeatures
     test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-alphafeatures
+  - name: gke-ubuntustable1-k8sstable1-autoscaling
+    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-autoscaling
   - name: gke-ubuntustable1-k8sstable1-default
     test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-default
   - name: gke-ubuntustable1-k8sstable1-flaky
@@ -1904,6 +1893,24 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-slow
   - name: gke-ubuntustable1-k8sstable1-updown
     test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-updown
+  - name: gke-ubuntustable1-k8sstable2-alphafeatures
+    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-alphafeatures
+  - name: gke-ubuntustable1-k8sstable2-autoscaling
+    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-autoscaling
+  - name: gke-ubuntustable1-k8sstable2-default
+    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-default
+  - name: gke-ubuntustable1-k8sstable2-flaky
+    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-flaky
+  - name: gke-ubuntustable1-k8sstable2-ingress
+    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-ingress
+  - name: gke-ubuntustable1-k8sstable2-reboot
+    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-reboot
+  - name: gke-ubuntustable1-k8sstable2-serial
+    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-serial
+  - name: gke-ubuntustable1-k8sstable2-slow
+    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-slow
+  - name: gke-ubuntustable1-k8sstable2-updown
+    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-updown
 
 - name: google-gke-scale
   dashboard_tab:
@@ -3128,12 +3135,12 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-autoscaling
   - name: gci-gke-autoscaling
     test_group_name: ci-kubernetes-e2e-gci-gke-autoscaling
-  - name: ubuntu-gke-autoscaling
-    test_group_name: ci-kubernetes-e2e-ubuntu-gke-autoscaling
-  - name: ubuntu-gke-1.6-autoscaling
-    test_group_name: ci-kubernetes-e2e-ubuntu-gke-1-6-autoscaling
+  - name: gke-ubuntustable1-k8sdev-autoscaling
+    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-autoscaling
   - name: gke-ubuntustable1-k8sstable1-autoscaling
     test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-autoscaling
+  - name: gke-ubuntustable1-k8sstable2-autoscaling
+    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-autoscaling
 
 - name: sig-cli
   dashboard_tab:
@@ -3315,10 +3322,12 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gci-gke-ingress-release-1-7
   - name: gke-ingress
     test_group_name: ci-kubernetes-e2e-gke-ingress
-  - name: ubuntu-gke-ingress
-    test_group_name: ci-kubernetes-e2e-ubuntu-gke-ingress
-  - name: ubuntu-gke-1-6-ingress
-    test_group_name: ci-kubernetes-e2e-ubuntu-gke-1-6-ingress
+  - name: gke-ubuntustable1-k8sdev-ingress
+    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-ingress
+  - name: gke-ubuntustable1-k8sstable1-ingress
+    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-ingress
+  - name: gke-ubuntustable1-k8sstable2-ingress
+    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-ingress
   - name: gce
     test_group_name: ci-kubernetes-e2e-gce
     base_options: 'include-filter-by-regex=\[sig-network\]'
