@@ -18,6 +18,7 @@ package mungers
 
 import (
 	"fmt"
+	"sync"
 	"time"
 
 	"k8s.io/kubernetes/pkg/util/sets"
@@ -45,6 +46,9 @@ type StaleGreenCI struct {
 	getRetestContexts func() []string
 	features          *features.Features
 	opts              *options.Options
+
+	waitingForPending map[int]struct{}
+	sync.Mutex
 }
 
 func init() {
@@ -62,6 +66,7 @@ func (s *StaleGreenCI) RequiredFeatures() []string { return []string{} }
 // Initialize will initialize the munger
 func (s *StaleGreenCI) Initialize(config *github.Config, features *features.Features) error {
 	s.features = features
+	s.waitingForPending = map[int]struct{}{}
 	return nil
 }
 
@@ -78,6 +83,14 @@ func (s *StaleGreenCI) RegisterOptions(opts *options.Options) sets.String {
 func (s *StaleGreenCI) Munge(obj *github.MungeObject) {
 	if !obj.IsPR() {
 		return
+	}
+
+	// Avoid leaving multiple comments before the retest job is triggered.
+	s.Lock()
+	_, ok := s.waitingForPending[*obj.Issue.Number]
+	s.Unlock()
+	if ok {
+		return // Already commented with trigger command. Still waiting for pending state.
 	}
 
 	if !obj.HasLabel(lgtmLabel) {
@@ -112,13 +125,24 @@ func (s *StaleGreenCI) Munge(obj *github.MungeObject) {
 				glog.Errorf("Failed to write retrigger old test comment")
 				return
 			}
-			ok := obj.WaitForPending(requiredContexts, prMaxWaitTime)
-			if !ok {
-				glog.Errorf("Failed waiting for PR to start testing")
-			}
+			s.Lock()
+			s.waitingForPending[*obj.Issue.Number] = struct{}{}
+			s.Unlock()
+			go s.waitForPending(requiredContexts, obj, prMaxWaitTime)
 			return
 		}
 	}
+}
+
+// waitForPending is an asynchronous wrapper for obj.WaitForPending that marks the obj as handled
+// when the status changes to pending or the timeout expires.
+func (s *StaleGreenCI) waitForPending(requiredContexts []string, obj *github.MungeObject, maxWait time.Duration) {
+	if !obj.WaitForPending(requiredContexts, maxWait) {
+		glog.Errorf("Failed waiting for PR #%d to start testing", *obj.Issue.Number)
+	}
+	s.Lock()
+	defer s.Unlock()
+	delete(s.waitingForPending, *obj.Issue.Number)
 }
 
 func (s *StaleGreenCI) isStaleIssueComment(obj *github.MungeObject, comment *githubapi.IssueComment) bool {
