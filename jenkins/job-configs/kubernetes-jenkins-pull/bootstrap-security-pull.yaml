@@ -109,12 +109,12 @@
         repo-name: 'github.com/kubernetes-security/kubernetes'
         timeout: 90
     - kubernetes-verify:
-        max-total: 12
+        max-total: 16
         job-name: pull-kubernetes-verify
         repo-name: 'github.com/kubernetes-security/kubernetes'
         timeout: 60
     - kubernetes-unit:
-        max-total: 12
+        max-total: 16
         job-name: pull-kubernetes-unit
         repo-name: 'github.com/kubernetes-security/kubernetes'
         timeout: 60
