@@ -2179,6 +2179,7 @@ class JobTest(unittest.TestCase):
                     ('GINKGO_TEST_ARGS=', '--test_args=FOO'),
                     ('GINKGO_UPGRADE_TEST_ARGS=', '--upgrade_args=FOO'),
                     ('JENKINS_FEDERATION_PREFIX=', '--stage=gs://FOO'),
+                    ('JENKINS_GCI_PATCH_K8S=', 'Unused, see --extract docs'),
                     ('JENKINS_PUBLISHED_VERSION=', '--extract=V'),
                     ('JENKINS_PUBLISHED_SKEW_VERSION=', '--extract=V'),
                     ('JENKINS_USE_SKEW_KUBECTL=', 'SKEW_KUBECTL=y'),
