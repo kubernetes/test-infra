@@ -408,5 +408,14 @@ class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-method
             self.envs['KUBE_GCE_NODE_IMAGE'], 'cos-stable-59-9460-64-0')
         self.assertEqual(self.envs['KUBE_GCE_NODE_PROJECT'], 'cos-cloud')
 
+    def test_parse_args_order_agnostic(self):
+        args = kubernetes_e2e.parse_args([
+            '--mode=local',
+            '--some-kubetest-arg=foo',
+            '--cluster=test'])
+        self.assertEqual(args.kubetest_args, ['--some-kubetest-arg=foo'])
+        self.assertEqual(args.mode, 'local')
+        self.assertEqual(args.cluster, 'test')
+
 if __name__ == '__main__':
     unittest.main()
