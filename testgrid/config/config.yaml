@@ -284,6 +284,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-release-1-5
 - name: ci-kubernetes-e2e-gce-scalability
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-scalability
+- name: ci-kubernetes-e2e-gce-scalability-canary
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-scalability-canary
 - name: ci-kubernetes-e2e-gce-serial
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-serial
 - name: ci-kubernetes-e2e-gce-serial-release-1-4
@@ -408,6 +410,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-canary
 - name: ci-kubernetes-kubemark-100-gce
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-kubemark-100-gce
+- name: ci-kubernetes-kubemark-100-canary
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-kubemark-100-canary
 - name: ci-kubernetes-kubemark-5-gce
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-kubemark-5-gce
 - name: ci-kubernetes-kubemark-5-gce-1.5
@@ -3543,13 +3547,28 @@ dashboards:
   dashboard_tab:
   - name: gce-canary
     test_group_name: ci-kubernetes-e2e-gce-canary
+    code_search_url_template:
+      url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
   - name: gke-canary
     test_group_name: ci-kubernetes-e2e-gke-canary
+    code_search_url_template:
+      url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
   - name: kops-aws-canary
     test_group_name: ci-kubernetes-e2e-kops-aws-canary
+    code_search_url_template:
+      url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
   - name: prow-canary
     test_group_name: ci-kubernetes-e2e-prow-canary
-
+    code_search_url_template:
+      url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+  - name: kubemark-canary
+    test_group_name: ci-kubernetes-kubemark-100-canary
+    code_search_url_template:
+      url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+  - name: scalability-canary
+    test_group_name: ci-kubernetes-e2e-gce-scalability-canary
+    code_search_url_template:
+      url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
 #
 # Start dashboard groups
 #

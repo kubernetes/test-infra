@@ -244,6 +244,12 @@
         timeout: 260
         frequency: 'H H/6 * * *'
         trigger-job: 'ci-kubernetes-build'
+    - kubernetes-kubemark-100-canary:
+        job-name: ci-kubernetes-kubemark-100-canary
+        jenkins-timeout: 360
+        timeout: 260
+        frequency: '@hourly'
+        trigger-job: 'ci-kubernetes-build'
     - kubernetes-kubemark-high-density-100-gce:
         job-name: ci-kubernetes-kubemark-high-density-100-gce
         jenkins-timeout: 400
