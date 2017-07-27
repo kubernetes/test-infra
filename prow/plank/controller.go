@@ -22,6 +22,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/Sirupsen/logrus"
@@ -36,6 +37,10 @@ import (
 
 const (
 	testInfra = "https://github.com/kubernetes/test-infra/issues"
+
+	// maxSyncRoutines is the maximum number of goroutines
+	// that will be active at any one time for the sync
+	maxSyncRoutines = 20
 )
 
 type kubeClient interface {
@@ -77,7 +82,38 @@ type Controller struct {
 	node   *snowflake.Node
 	totURL string
 
+	pendingJobs map[string]int
+	lock        sync.RWMutex
+
 	reports []kube.ProwJob
+}
+
+// getNumPendingJobs retrieves the number of pending
+// ProwJobs for a given job identifier
+func (c *Controller) getNumPendingJobs(key string) int {
+	c.lock.RLock()
+	defer c.lock.RUnlock()
+	return c.pendingJobs[key]
+}
+
+// incrementNumPendingJobs increments the amount of
+// pending ProwJobs for the given job identifier
+func (c *Controller) incrementNumPendingJobs(job string) {
+	c.lock.Lock()
+	defer c.lock.Unlock()
+
+	c.pendingJobs[job] = c.pendingJobs[job] + 1
+}
+
+// setPending sets the currently pending set of jobs.
+// This is NOT thread safe and should only be used for
+// initializing the controller during testing.
+func (c *Controller) setPending(pendingJobs map[string]int) {
+	if pendingJobs == nil {
+		c.pendingJobs = make(map[string]int)
+	} else {
+		c.pendingJobs = pendingJobs
+	}
 }
 
 // NewController creates a new Controller from the provided clients.
@@ -87,13 +123,15 @@ func NewController(kc, pkc *kube.Client, jc *jenkins.Client, ghc *github.Client,
 		return nil, err
 	}
 	return &Controller{
-		kc:     kc,
-		pkc:    pkc,
-		jc:     jc,
-		ghc:    ghc,
-		ca:     ca,
-		node:   n,
-		totURL: totURL,
+		kc:          kc,
+		pkc:         pkc,
+		jc:          jc,
+		ghc:         ghc,
+		ca:          ca,
+		node:        n,
+		pendingJobs: make(map[string]int),
+		lock:        sync.RWMutex{},
+		totURL:      totURL,
 	}, nil
 }
 
@@ -112,24 +150,31 @@ func (c *Controller) Sync() error {
 	for _, pod := range pods {
 		pm[pod.Metadata.Name] = pod
 	}
-	pending := pendingJobs(pjs)
+	c.updatePendingJobs(pjs)
 	var syncErrs []error
 	if err := c.terminateDupes(pjs); err != nil {
 		syncErrs = append(syncErrs, err)
 	}
+
+	pjCh := make(chan kube.ProwJob, len(pjs))
 	for _, pj := range pjs {
-		if pj.Spec.Agent == kube.KubernetesAgent {
-			if err := c.syncKubernetesJob(pj, pm, pending); err != nil {
-				syncErrs = append(syncErrs, err)
-			}
-		} else if pj.Spec.Agent == kube.JenkinsAgent {
-			if err := c.syncJenkinsJob(pj, pending); err != nil {
-				syncErrs = append(syncErrs, err)
-			}
-		} else {
-			syncErrs = append(syncErrs, fmt.Errorf("job %s has unsupported agent %s", pj.Metadata.Name, pj.Spec.Agent))
-		}
+		pjCh <- pj
 	}
+	close(pjCh)
+
+	errCh := make(chan error, len(pjs))
+	wg := &sync.WaitGroup{}
+	wg.Add(maxSyncRoutines)
+	for i := 0; i < maxSyncRoutines; i++ {
+		go c.syncProwJob(wg, pjCh, errCh, pm)
+	}
+	wg.Wait()
+	close(errCh)
+
+	for err := range errCh {
+		syncErrs = append(syncErrs, err)
+	}
+
 	var reportErrs []error
 	for _, pj := range c.reports {
 		if err := c.report(pj); err != nil {
@@ -140,6 +185,23 @@ func (c *Controller) Sync() error {
 		return nil
 	}
 	return fmt.Errorf("errors syncing: %v, errors reporting: %v", syncErrs, reportErrs)
+}
+
+func (c *Controller) syncProwJob(wg *sync.WaitGroup, jobs <-chan kube.ProwJob, syncErrors chan<- error, pm map[string]kube.Pod) {
+	defer wg.Done()
+	for pj := range jobs {
+		if pj.Spec.Agent == kube.KubernetesAgent {
+			if err := c.syncKubernetesJob(pj, pm); err != nil {
+				syncErrors <- err
+			}
+		} else if pj.Spec.Agent == kube.JenkinsAgent {
+			if err := c.syncJenkinsJob(pj); err != nil {
+				syncErrors <- err
+			}
+		} else {
+			syncErrors <- fmt.Errorf("job %s has unsupported agent %s", pj.Metadata.Name, pj.Spec.Agent)
+		}
+	}
 }
 
 // terminateDupes aborts presubmits that have a newer version. It modifies pjs
@@ -173,7 +235,7 @@ func (c *Controller) terminateDupes(pjs []kube.ProwJob) error {
 	return nil
 }
 
-func (c *Controller) syncJenkinsJob(pj kube.ProwJob, pending map[string][]kube.ProwJob) error {
+func (c *Controller) syncJenkinsJob(pj kube.ProwJob) error {
 	if c.jc == nil {
 		return fmt.Errorf("jenkins client nil, not syncing job %s", pj.Metadata.Name)
 	}
@@ -183,14 +245,15 @@ func (c *Controller) syncJenkinsJob(pj kube.ProwJob, pending map[string][]kube.P
 		return nil
 	} else if pj.Status.State == kube.TriggeredState {
 		// Do not start more jobs than specified.
-		if pj.Spec.MaxConcurrency > 0 && len(pending[pj.Spec.Job]) >= pj.Spec.MaxConcurrency {
-			logrus.WithField("job", pj.Spec.Job).Infof("Not starting another instance of %s, already %d running.", pj.Spec.Job, len(pending[pj.Spec.Job]))
+		numPending := c.getNumPendingJobs(pj.Spec.Job)
+		if pj.Spec.MaxConcurrency > 0 && numPending >= pj.Spec.MaxConcurrency {
+			logrus.WithField("job", pj.Spec.Job).Infof("Not starting another instance of %s, already %d running.", pj.Spec.Job, numPending)
 			return nil
 		}
 
 		// Start the Jenkins job.
 		pj.Status.State = kube.PendingState
-		pending[pj.Spec.Job] = append(pending[pj.Spec.Job], pj)
+		c.incrementNumPendingJobs(pj.Spec.Job)
 		br := jenkins.BuildRequest{
 			JobName: pj.Spec.Job,
 			Refs:    pj.Spec.Refs.String(),
@@ -273,7 +336,7 @@ func (c *Controller) syncJenkinsJob(pj kube.ProwJob, pending map[string][]kube.P
 	return nil
 }
 
-func (c *Controller) syncKubernetesJob(pj kube.ProwJob, pm map[string]kube.Pod, pending map[string][]kube.ProwJob) error {
+func (c *Controller) syncKubernetesJob(pj kube.ProwJob, pm map[string]kube.Pod) error {
 	if pj.Complete() {
 		if pj.Status.PodName == "" {
 			// Completed ProwJob, already cleaned up the pod. Nothing to do.
@@ -287,14 +350,15 @@ func (c *Controller) syncKubernetesJob(pj kube.ProwJob, pm map[string]kube.Pod, 
 		pj.Status.PodName = ""
 	} else if pj.Status.PodName == "" {
 		// Do not start more jobs than specified.
-		if pj.Spec.MaxConcurrency > 0 && len(pending[pj.Spec.Job]) >= pj.Spec.MaxConcurrency {
-			logrus.WithField("job", pj.Spec.Job).Infof("Not starting another instance of %s, already %d running.", pj.Spec.Job, len(pending[pj.Spec.Job]))
+		numPending := c.getNumPendingJobs(pj.Spec.Job)
+		if pj.Spec.MaxConcurrency > 0 && numPending >= pj.Spec.MaxConcurrency {
+			logrus.WithField("job", pj.Spec.Job).Infof("Not starting another instance of %s, already %d running.", pj.Spec.Job, numPending)
 			return nil
 		}
 
 		// We haven't started the pod yet. Do so.
 		pj.Status.State = kube.PendingState
-		pending[pj.Spec.Job] = append(pending[pj.Spec.Job], pj)
+		c.incrementNumPendingJobs(pj.Spec.Job)
 		if id, pn, err := c.startPod(pj); err == nil {
 			pj.Status.PodName = pn
 			pj.Status.BuildID = id
@@ -458,12 +522,10 @@ func (c *Controller) getBuildID(name string) (string, error) {
 	return "", err
 }
 
-func pendingJobs(pjs []kube.ProwJob) map[string][]kube.ProwJob {
-	rjm := make(map[string][]kube.ProwJob)
+func (c *Controller) updatePendingJobs(pjs []kube.ProwJob) {
 	for _, pj := range pjs {
 		if pj.Status.State == kube.PendingState {
-			rjm[pj.Spec.Job] = append(rjm[pj.Spec.Job], pj)
+			c.incrementNumPendingJobs(pj.Spec.Job)
 		}
 	}
-	return rjm
 }

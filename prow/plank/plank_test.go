@@ -22,6 +22,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"sync"
 	"testing"
 	"text/template"
 	"time"
@@ -218,7 +219,7 @@ func TestSyncJenkinsJob(t *testing.T) {
 	var testcases = []struct {
 		name        string
 		pj          kube.ProwJob
-		pendingJobs map[string][]kube.ProwJob
+		pendingJobs map[string]int
 
 		enqueued bool
 		status   jenkins.Status
@@ -389,11 +390,9 @@ func TestSyncJenkinsJob(t *testing.T) {
 			jc: fjc,
 			ca: newFakeConfigAgent(),
 		}
-		pending := tc.pendingJobs
-		if pending == nil {
-			pending = make(map[string][]kube.ProwJob)
-		}
-		if err := c.syncJenkinsJob(tc.pj, pending); err != nil != tc.expectedError {
+		c.setPending(tc.pendingJobs)
+
+		if err := c.syncJenkinsJob(tc.pj); err != nil != tc.expectedError {
 			t.Errorf("for case %s got wrong error: %v", tc.name, err)
 			continue
 		}
@@ -424,7 +423,7 @@ func TestSyncKubernetesJob(t *testing.T) {
 		name string
 
 		pj          kube.ProwJob
-		pendingJobs map[string][]kube.ProwJob
+		pendingJobs map[string]int
 		pods        []kube.Pod
 
 		expectedState      kube.ProwJobState
@@ -641,19 +640,8 @@ func TestSyncKubernetesJob(t *testing.T) {
 					State: kube.TriggeredState,
 				},
 			},
-			pendingJobs: map[string][]kube.ProwJob{
-				"same": {
-					kube.ProwJob{
-						Spec: kube.ProwJobSpec{
-							Job:            "same",
-							MaxConcurrency: 1,
-						},
-						Status: kube.ProwJobStatus{
-							State:   kube.PendingState,
-							PodName: "same-42",
-						},
-					},
-				},
+			pendingJobs: map[string]int{
+				"same": 1,
 			},
 			pods: []kube.Pod{
 				{
@@ -688,11 +676,9 @@ func TestSyncKubernetesJob(t *testing.T) {
 			ca:     newFakeConfigAgent(),
 			totURL: totServ.URL,
 		}
-		pending := tc.pendingJobs
-		if pending == nil {
-			pending = make(map[string][]kube.ProwJob)
-		}
-		if err := c.syncKubernetesJob(tc.pj, pm, pending); err != nil {
+		c.setPending(tc.pendingJobs)
+
+		if err := c.syncKubernetesJob(tc.pj, pm); err != nil {
 			t.Errorf("for case %s got an error: %v", tc.name, err)
 			continue
 		}
@@ -749,10 +735,12 @@ func TestBatch(t *testing.T) {
 	}
 	jc := &fjc{}
 	c := Controller{
-		kc:  fc,
-		pkc: fc,
-		jc:  jc,
-		ca:  newFakeConfigAgent(),
+		kc:          fc,
+		pkc:         fc,
+		jc:          jc,
+		ca:          newFakeConfigAgent(),
+		pendingJobs: make(map[string]int),
+		lock:        sync.RWMutex{},
 	}
 
 	if err := c.Sync(); err != nil {
@@ -826,10 +814,12 @@ func TestPeriodic(t *testing.T) {
 		prowjobs: []kube.ProwJob{NewProwJob(PeriodicSpec(per))},
 	}
 	c := Controller{
-		kc:     fc,
-		pkc:    fc,
-		ca:     newFakeConfigAgent(),
-		totURL: totServ.URL,
+		kc:          fc,
+		pkc:         fc,
+		ca:          newFakeConfigAgent(),
+		totURL:      totServ.URL,
+		pendingJobs: make(map[string]int),
+		lock:        sync.RWMutex{},
 	}
 
 	if err := c.Sync(); err != nil {
