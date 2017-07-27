@@ -42,6 +42,7 @@ const (
 var (
 	gkeAdditionalZones = flag.String("gke-additional-zones", "", "(gke only) List of additional Google Compute Engine zones to use. Clusters are created symmetrically across zones by default, see --gke-shape for details.")
 	gkeShape           = flag.String("gke-shape", `{"default":{"Nodes":3,"MachineType":"n1-standard-2"}}`, `(gke only) A JSON description of node pools to create. The node pool 'default' is required and used for initial cluster creation. All node pools are symmetric across zones, so the cluster total node count is {total nodes in --gke-shape} * {1 + (length of --gke-additional-zones)}. Example: '{"default":{"Nodes":999,"MachineType:":"n1-standard-1"},"heapster":{"Nodes":1, "MachineType":"n1-standard-8"}}`)
+	gkeCreateArgs      = flag.String("gke-create-args", "", "(gke only) Additional arguments passed directly to 'gcloud container clusters create'")
 
 	// poolRe matches instance group URLs of the form `https://www.googleapis.com/compute/v1/projects/some-project/zones/a-zone/instanceGroupManagers/gke-some-cluster-some-pool-90fcb815-grp`. Match meaning:
 	// m[0]: path starting with zones/
@@ -64,6 +65,7 @@ type gkeDeployer struct {
 	shape           map[string]gkeNodePool
 	network         string
 	image           string
+	createArgs      []string
 
 	setup          bool
 	kubecfg        string
@@ -119,6 +121,8 @@ func newGKE(provider, project, zone, network, image, cluster string) (*gkeDeploy
 	if _, ok := g.shape[defaultPool]; !ok {
 		return nil, fmt.Errorf("--gke-shape must include a node pool named 'default', found %q", *gkeShape)
 	}
+
+	g.createArgs = strings.Fields(*gkeCreateArgs)
 
 	// Override kubecfg to a temporary file rather than trashing the user's.
 	f, err := ioutil.TempFile("", "gke-kubecfg")
@@ -177,7 +181,7 @@ func (g *gkeDeployer) Up() error {
 	}
 
 	def := g.shape[defaultPool]
-	args := []string{"container", "clusters", "create", g.cluster,
+	args := []string{"container", "clusters", "create", "-q", g.cluster,
 		"--project=" + g.project,
 		"--zone=" + g.zone,
 		"--machine-type=" + def.MachineType,
@@ -193,6 +197,7 @@ func (g *gkeDeployer) Up() error {
 	if v := os.Getenv("CLUSTER_API_VERSION"); v != "" {
 		args = append(args, "--cluster-version="+v)
 	}
+	args = append(args, g.createArgs...)
 	if err := finishRunning(exec.Command("gcloud", args...)); err != nil {
 		return fmt.Errorf("error creating cluster: %v", err)
 	}
