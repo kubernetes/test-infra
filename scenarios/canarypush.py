@@ -50,16 +50,11 @@ def main(target, buildfile):
     )
     check_with_log('docker', 'inspect', target)
 
-    email = os.environ.get('DOCKER_EMAIL')
     user = os.environ.get('DOCKER_USER')
     pwd = os.environ.get('DOCKER_PASSWORD')
-    if check_output('docker', 'version', '--format=\'{{.Client.Version}}\'').startswith('1.9'):
-        print >>sys.stderr, 'Docker 1.9, use --email'
-        email = '--email=not@val.id'
     print >>sys.stderr, 'Logging in as %r' % user
-    check_no_log('docker', 'login', email or '', '--username=%s' % user, '--password=%s' % pwd)
+    check_no_log('docker', 'login', '--username=%s' % user, '--password=%s' % pwd)
 
-    os.environ.pop('DOCKER_EMAIL', None)
     os.environ.pop('DOCKER_USER', None)
     os.environ.pop('DOCKER_PASSWORD', None)
 
