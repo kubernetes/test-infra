@@ -103,6 +103,7 @@ func TestUnapprovedFiles(t *testing.T) {
 
 	for _, test := range tests {
 		testApprovers := NewApprovers(Owners{filenames: test.filenames, repo: createFakeRepo(FakeRepoMap), seed: TEST_SEED})
+		testApprovers.RequireIssue = false
 		for approver := range test.currentlyApproved {
 			testApprovers.AddApprover(approver, "REFERENCE", false)
 		}
@@ -215,6 +216,7 @@ func TestGetFiles(t *testing.T) {
 
 	for _, test := range tests {
 		testApprovers := NewApprovers(Owners{filenames: test.filenames, repo: createFakeRepo(FakeRepoMap), seed: TEST_SEED})
+		testApprovers.RequireIssue = false
 		for approver := range test.currentlyApproved {
 			testApprovers.AddApprover(approver, "REFERENCE", false)
 		}
@@ -359,6 +361,7 @@ func TestGetCCs(t *testing.T) {
 
 	for _, test := range tests {
 		testApprovers := NewApprovers(Owners{filenames: test.filenames, repo: createFakeRepo(FakeRepoMap), seed: test.testSeed})
+		testApprovers.RequireIssue = false
 		for approver := range test.currentlyApproved {
 			testApprovers.AddApprover(approver, "REFERENCE", false)
 		}
@@ -597,12 +600,13 @@ func TestIsApprovedWithIssue(t *testing.T) {
 
 	for _, test := range tests {
 		testApprovers := NewApprovers(Owners{filenames: test.filenames, repo: createFakeRepo(FakeRepoMap), seed: 0})
+		testApprovers.RequireIssue = true
 		testApprovers.AssociatedIssue = test.associatedIssue
 		for approver, noissue := range test.currentlyApproved {
 			testApprovers.AddApprover(approver, "REFERENCE", noissue)
 		}
 		testApprovers.AddAuthorSelfApprover("Author", "REFERENCE")
-		calculated := testApprovers.IsApprovedWithIssue()
+		calculated := testApprovers.IsApproved()
 		if test.isApproved != calculated {
 			t.Errorf("Failed for test %v.  Expected Approval Status: %v. Found %v", test.testName, test.isApproved, calculated)
 		}
@@ -695,6 +699,7 @@ func TestGetMessage(t *testing.T) {
 			}),
 		},
 	)
+	ap.RequireIssue = true
 	ap.AddApprover("Bill", "REFERENCE", false)
 
 	want := `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
@@ -735,6 +740,7 @@ func TestGetMessageAllApproved(t *testing.T) {
 			}),
 		},
 	)
+	ap.RequireIssue = true
 	ap.AddApprover("Alice", "REFERENCE", false)
 	ap.AddLGTMer("Bill", "REFERENCE", false)
 
@@ -774,7 +780,7 @@ func TestGetMessageNoneApproved(t *testing.T) {
 		},
 	)
 	ap.AddAuthorSelfApprover("John", "REFERENCE")
-
+	ap.RequireIssue = true
 	want := `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
 This pull-request has been approved by: *<a href="REFERENCE" title="Author self-approved">John</a>*
@@ -813,6 +819,7 @@ func TestGetMessageApprovedIssueAssociated(t *testing.T) {
 			}),
 		},
 	)
+	ap.RequireIssue = true
 	ap.AssociatedIssue = 12345
 	ap.AddAuthorSelfApprover("John", "REFERENCE")
 	ap.AddApprover("Bill", "REFERENCE", false)
@@ -853,6 +860,7 @@ func TestGetMessageApprovedNoIssueByPassed(t *testing.T) {
 			}),
 		},
 	)
+	ap.RequireIssue = true
 	ap.AddAuthorSelfApprover("John", "REFERENCE")
 	ap.AddApprover("Bill", "REFERENCE", true)
 	ap.AddApprover("Alice", "REFERENCE", true)

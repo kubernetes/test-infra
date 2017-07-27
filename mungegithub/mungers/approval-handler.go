@@ -44,7 +44,8 @@ var AssociatedIssueRegex = regexp.MustCompile(`(?:kubernetes/[^/]+/issues/|#)(\d
 // ApprovalHandler will try to add "approved" label once
 // all files of change has been approved by approvers.
 type ApprovalHandler struct {
-	features *features.Features
+	features      *features.Features
+	issueRequired bool
 }
 
 func init() {
@@ -70,7 +71,11 @@ func (h *ApprovalHandler) Initialize(config *github.Config, features *features.F
 func (*ApprovalHandler) EachLoop() error { return nil }
 
 // RegisterOptions registers options for this munger; returns any that require a restart when changed.
-func (*ApprovalHandler) RegisterOptions(opts *options.Options) sets.String { return nil }
+func (h *ApprovalHandler) RegisterOptions(opts *options.Options) sets.String {
+	opts.RegisterBool(&h.issueRequired, "approval-requires-issue", false, "[approval-handler] flag indicating if all "+
+		"PRs must be associated with an issue in order to get approved label")
+	return nil
+}
 
 // Returns associated issue, or 0 if it can't find any.
 // This is really simple, and could be improved later.
@@ -140,6 +145,7 @@ func (h *ApprovalHandler) Munge(obj *github.MungeObject) {
 			approvers.NewRepoAlias(h.features.Repos, *h.features.Aliases),
 			int64(*obj.Issue.Number)))
 	approversHandler.AssociatedIssue = findAssociatedIssue(obj.Issue.Body)
+	approversHandler.RequireIssue = h.issueRequired
 	addApprovers(&approversHandler, approveComments)
 	// Author implicitly approves their own PR
 	if obj.Issue.User != nil && obj.Issue.User.Login != nil {
@@ -170,7 +176,7 @@ func (h *ApprovalHandler) Munge(obj *github.MungeObject) {
 		obj.WriteComment(*newMessage)
 	}
 
-	if !approversHandler.IsApprovedWithIssue() {
+	if !approversHandler.IsApproved() {
 		if obj.HasLabel(approvedLabel) && !humanAddedApproved(obj) {
 			obj.RemoveLabel(approvedLabel)
 		}
