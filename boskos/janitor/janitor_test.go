@@ -79,7 +79,7 @@ func (fb *fakeBoskos) ReleaseOne(name string, dest string) error {
 		}
 	}
 
-	return fmt.Errorf("No resource %v", name)
+	return fmt.Errorf("no resource %v", name)
 }
 
 // waitTimeout waits for the waitgroup for the specified max timeout.
@@ -101,9 +101,7 @@ func waitTimeout(wg *sync.WaitGroup, timeout time.Duration) bool {
 func TestNormal(t *testing.T) {
 	var totalClean int32 = 0
 
-	oldClean := clean
-	defer func() { clean = oldClean }()
-	clean = func(p string) error {
+	fakeClean := func(p string) error {
 		atomic.AddInt32(&totalClean, 1)
 		return nil
 	}
@@ -111,24 +109,24 @@ func TestNormal(t *testing.T) {
 	types := []string{"a", "b", "c", "d"}
 	fb := CreateFakeBoskos(1000, types)
 
-	buffer := setup(fb, poolSize, bufferSize)
+	buffer := setup(fb, poolSize, bufferSize, fakeClean)
 	totalAcquire := run(fb, buffer, []string{"t"})
 
 	if totalAcquire != len(fb.resources) {
-		t.Errorf("Expect to acquire all resources(%d) from fake boskos, got %d", len(fb.resources), totalAcquire)
+		t.Errorf("expect to acquire all resources(%d) from fake boskos, got %d", len(fb.resources), totalAcquire)
 	}
 
 	if waitTimeout(&fb.wg, time.Second) {
-		t.Fatal("Expect janitor to finish!")
+		t.Fatal("expect janitor to finish!")
 	}
 
 	if int(totalClean) != len(fb.resources) {
-		t.Errorf("Expect to clean all resources(%d) from fake boskos, got %d", len(fb.resources), totalClean)
+		t.Errorf("expect to clean all resources(%d) from fake boskos, got %d", len(fb.resources), totalClean)
 	}
 
 	for _, r := range fb.resources {
 		if r.State != "free" {
-			t.Errorf("Resource %v, expect state free, got state %v", r.Name, r.State)
+			t.Errorf("resource %v, expect state free, got state %v", r.Name, r.State)
 		}
 	}
 }
@@ -141,16 +139,16 @@ func FakeRun(fb *fakeBoskos, buffer chan string, res string) (int, error) {
 	for {
 		select {
 		case <-timeout:
-			return totalClean, nil
+			return totalClean, errors.New("should not timedout")
 		default:
 			if proj, err := fb.Acquire(res, "dirty", "cleaning"); err != nil {
-				return totalClean, fmt.Errorf("Acquire failed with %v", err)
+				return totalClean, fmt.Errorf("acquire failed with %v", err)
 			} else if proj == "" {
-				return totalClean, errors.New("Not expect to run out of resources!")
+				return totalClean, errors.New("not expect to run out of resources")
 			} else {
-				if totalClean > 20 {
+				if totalClean > 12 {
 					// 10 in janitor, 11th in janitor pool, 12th hanging and will exit the loop
-					return totalClean, errors.New("Should not acquire more than 12 projects!")
+					return totalClean, errors.New("should not acquire more than 12 projects")
 				}
 				boom := time.After(50 * time.Millisecond)
 				select {
@@ -166,20 +164,19 @@ func FakeRun(fb *fakeBoskos, buffer chan string, res string) (int, error) {
 
 func TestMalfunctionJanitor(t *testing.T) {
 
-	oldClean := clean
-	defer func() { clean = oldClean }()
-	clean = func(p string) error {
-		time.Sleep(time.Hour)
+	stuck := make(chan string, 1)
+	fakeClean := func(p string) error {
+		<-stuck
 		return nil
 	}
 
 	fb := CreateFakeBoskos(100, []string{"t"})
 
-	buffer := setup(fb, poolSize, bufferSize)
+	buffer := setup(fb, poolSize, bufferSize, fakeClean)
 
 	if totalClean, err := FakeRun(fb, buffer, "t"); err != nil {
-		t.Fatalf("Run failed unexpectedly : %v", err)
+		t.Fatalf("run failed unexpectedly : %v", err)
 	} else if totalClean != poolSize+1 {
-		t.Errorf("Expect to clean %d from fake boskos, got %d", poolSize+1, totalClean)
+		t.Errorf("expect to clean %d from fake boskos, got %d", poolSize+1, totalClean)
 	}
 }
