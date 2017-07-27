@@ -72,6 +72,15 @@ var (
 	combinedStatusLifetime = 5 * time.Second
 )
 
+func suggestOauthScopes(resp *github.Response, err error) error {
+	if resp != nil && resp.StatusCode == http.StatusForbidden {
+		if oauthScopes := resp.Header.Get("X-Accepted-OAuth-Scopes"); len(oauthScopes) > 0 {
+			err = fmt.Errorf("%v - are you using at least one of the following oauth scopes?: %s", err, oauthScopes)
+		}
+	}
+	return err
+}
+
 func stringPtr(val string) *string { return &val }
 func boolPtr(val bool) *bool       { return &val }
 
@@ -542,6 +551,7 @@ func (config *Config) getPR(num int) (*github.PullRequest, error) {
 	)
 	config.analytics.GetPR.Call(config, response)
 	if err != nil {
+		err = suggestOauthScopes(response, err)
 		glog.Errorf("Error getting PR# %d: %v", num, err)
 		return nil, err
 	}
@@ -557,6 +567,7 @@ func (config *Config) getIssue(num int) (*github.Issue, error) {
 	)
 	config.analytics.GetIssue.Call(config, resp)
 	if err != nil {
+		err = suggestOauthScopes(resp, err)
 		glog.Errorf("getIssue: %v", err)
 		return nil, err
 	}
@@ -588,7 +599,7 @@ func (config *Config) setBranchProtection(name string, contexts []string) error 
 		if config.DryRun {
 			return nil
 		}
-		_, _, err := config.client.Repositories.UpdateBranchProtection(
+		_, resp, err := config.client.Repositories.UpdateBranchProtection(
 			context.Background(),
 			config.Org,
 			config.Project,
@@ -604,6 +615,7 @@ func (config *Config) setBranchProtection(name string, contexts []string) error 
 			},
 		)
 		if err != nil {
+			err = suggestOauthScopes(resp, err)
 			glog.Errorf("Unable to set branch protections for %s: %v", name, err)
 			return err
 		}
@@ -613,13 +625,14 @@ func (config *Config) setBranchProtection(name string, contexts []string) error 
 		if config.DryRun {
 			return nil
 		}
-		_, err := config.client.Repositories.RemoveBranchProtection(
+		resp, err := config.client.Repositories.RemoveBranchProtection(
 			context.Background(),
 			config.Org,
 			config.Project,
 			name,
 		)
 		if err != nil {
+			err = suggestOauthScopes(resp, err)
 			glog.Errorf("Unable to remove branch protections from %s: %v", name, err)
 			return err
 		}
@@ -674,6 +687,7 @@ func (config *Config) SetBranchProtection(name string, contexts []string) error 
 	)
 	config.analytics.GetBranch.Call(config, resp)
 	if err != nil {
+		err = suggestOauthScopes(resp, err)
 		glog.Errorf("Failed to get the branch '%s': %v\n", name, err)
 		return err
 	}
@@ -687,6 +701,7 @@ func (config *Config) SetBranchProtection(name string, contexts []string) error 
 		)
 		config.analytics.GetBranchProtection.Call(config, resp)
 		if err != nil {
+			err = suggestOauthScopes(resp, err)
 			glog.Errorf("Got error getting branch protection for branch %s: %v", name, err)
 			return err
 		}
@@ -733,7 +748,8 @@ func (config *Config) ListMilestones(state string) ([]*github.Milestone, bool) {
 	)
 	config.analytics.ListMilestones.Call(config, resp)
 	if err != nil {
-		glog.Errorf("Error getting milestones of state %q: %v", state, err)
+		glog.Errorf("Error getting milestones of state %q: %v", state, suggestOauthScopes(resp, err))
+		return milestones, false
 	}
 	return milestones, true
 }
@@ -767,7 +783,7 @@ func (config *Config) NewIssue(title, body string, labels []string, owners []str
 		body = body[:maxCommentLen]
 	}
 
-	issue, _, err := config.client.Issues.Create(
+	issue, resp, err := config.client.Issues.Create(
 		context.Background(),
 		config.Org,
 		config.Project,
@@ -779,6 +795,7 @@ func (config *Config) NewIssue(title, body string, labels []string, owners []str
 		},
 	)
 	if err != nil {
+		err = suggestOauthScopes(resp, err)
 		glog.Errorf("createIssue: %v", err)
 		return nil, err
 	}
@@ -806,6 +823,7 @@ func (config *Config) GetBranchCommits(branch string, limit int) ([]*github.Repo
 		)
 		config.analytics.ListCommits.Call(config, response)
 		if err != nil {
+			err = suggestOauthScopes(response, err)
 			glog.Errorf("Error reading commits for branch %s: %v", branch, err)
 			return nil, err
 		}
@@ -888,6 +906,7 @@ func firstTime(a, b *time.Time) bool {
 	}
 	return !a.After(*b)
 }
+
 func lastTime(a, b *time.Time) bool {
 	if a == nil {
 		return false
@@ -1008,7 +1027,7 @@ func (obj *MungeObject) AddLabels(labels []string) error {
 		}
 		obj.Issue.Labels = append(obj.Issue.Labels, label)
 	}
-	_, _, err := config.client.Issues.AddLabelsToIssue(
+	_, resp, err := config.client.Issues.AddLabelsToIssue(
 		context.Background(),
 		obj.Org(),
 		obj.Project(),
@@ -1016,7 +1035,7 @@ func (obj *MungeObject) AddLabels(labels []string) error {
 		labels,
 	)
 	if err != nil {
-		glog.Errorf("Failed to set labels %v for %d: %v", labels, prNum, err)
+		glog.Errorf("Failed to set labels %v for PR %d: %v", labels, prNum, suggestOauthScopes(resp, err))
 		return err
 	}
 	return nil
@@ -1048,7 +1067,7 @@ func (obj *MungeObject) RemoveLabel(label string) error {
 	if config.DryRun {
 		return nil
 	}
-	_, err := config.client.Issues.RemoveLabelForIssue(
+	resp, err := config.client.Issues.RemoveLabelForIssue(
 		context.Background(),
 		obj.Org(),
 		obj.Project(),
@@ -1056,7 +1075,7 @@ func (obj *MungeObject) RemoveLabel(label string) error {
 		label,
 	)
 	if err != nil {
-		glog.Errorf("Failed to remove %v from issue %d: %v", label, prNum, err)
+		glog.Errorf("Failed to remove %v from issue %d: %v", label, prNum, suggestOauthScopes(resp, err))
 		return err
 	}
 	return nil
@@ -1108,7 +1127,7 @@ func (obj *MungeObject) GetSHAFromRef(ref string) (sha string, ok bool) {
 	)
 	obj.config.analytics.GetCommit.Call(obj.config, response)
 	if err != nil {
-		glog.Errorf("Failed to get commit for %v, %v, %v: %v", obj.Org(), obj.Project(), ref, err)
+		glog.Errorf("Failed to get commit for %v, %v, %v: %v", obj.Org(), obj.Project(), ref, suggestOauthScopes(response, err))
 		return "", false
 	}
 	if commit.SHA == nil {
@@ -1146,7 +1165,7 @@ func (obj *MungeObject) SetMilestone(title string) bool {
 		return true
 	}
 
-	_, _, err := obj.config.client.Issues.Edit(
+	_, resp, err := obj.config.client.Issues.Edit(
 		context.Background(),
 		obj.Org(),
 		obj.Project(),
@@ -1154,7 +1173,7 @@ func (obj *MungeObject) SetMilestone(title string) bool {
 		&github.IssueRequest{Milestone: milestone.Number},
 	)
 	if err != nil {
-		glog.Errorf("Failed to set milestone %d on issue %d: %v", *milestone.Number, *obj.Issue.Number, err)
+		glog.Errorf("Failed to set milestone %d on issue %d: %v", *milestone.Number, *obj.Issue.Number, suggestOauthScopes(resp, err))
 		return false
 	}
 	return true
@@ -1242,7 +1261,7 @@ func (config *Config) fetchAllCollaborators() ([]*github.User, error) {
 			listOpts,
 		)
 		if err != nil {
-			return nil, err
+			return nil, suggestOauthScopes(response, err)
 		}
 		config.analytics.ListCollaborators.Call(config, response)
 		result = append(result, users...)
@@ -1330,7 +1349,7 @@ func (obj *MungeObject) GetEvents() ([]*github.IssueEvent, bool) {
 				// Cached last page was actually truthful -- expected error.
 				break
 			}
-			glog.Errorf("Error getting events for issue %d: %v", *obj.Issue.Number, err)
+			glog.Errorf("Error getting events for issue %d: %v", *obj.Issue.Number, suggestOauthScopes(response, err))
 			return nil, false
 		}
 		if tryNextPageAnyway {
@@ -1415,7 +1434,7 @@ func (obj *MungeObject) getCombinedStatus() (status *github.CombinedStatus, ok b
 	)
 	config.analytics.GetCombinedStatus.Call(config, response)
 	if err != nil {
-		glog.Errorf("Failed to get combined status: %v", err)
+		glog.Errorf("Failed to get combined status: %v", suggestOauthScopes(response, err))
 		return nil, false
 	}
 	obj.combinedStatus = combinedStatus
@@ -1443,7 +1462,7 @@ func (obj *MungeObject) SetStatus(state, url, description, statusContext string)
 	if config.DryRun {
 		return true
 	}
-	_, _, err := config.client.Repositories.CreateStatus(
+	_, resp, err := config.client.Repositories.CreateStatus(
 		context.Background(),
 		obj.Org(),
 		obj.Project(),
@@ -1451,7 +1470,7 @@ func (obj *MungeObject) SetStatus(state, url, description, statusContext string)
 		status,
 	)
 	if err != nil {
-		glog.Errorf("Unable to set status. PR %d Ref: %q: %v", *obj.Issue.Number, ref, err)
+		glog.Errorf("Unable to set status. PR %d Ref: %q: %v", *obj.Issue.Number, ref, suggestOauthScopes(resp, err))
 		return false
 	}
 	return false
@@ -1615,7 +1634,7 @@ func (obj *MungeObject) GetCommits() ([]*github.RepositoryCommit, bool) {
 		)
 		config.analytics.ListCommits.Call(config, response)
 		if err != nil {
-			glog.Errorf("Error commits for PR %d: %v", *obj.Issue.Number, err)
+			glog.Errorf("Error commits for PR %d: %v", *obj.Issue.Number, suggestOauthScopes(response, err))
 			return nil, false
 		}
 		commits = append(commits, commitsPage...)
@@ -1639,7 +1658,7 @@ func (obj *MungeObject) GetCommits() ([]*github.RepositoryCommit, bool) {
 		)
 		config.analytics.GetCommit.Call(config, response)
 		if err != nil {
-			glog.Errorf("Can't load commit %s %s %s: %v", obj.Org(), obj.Project(), *c.SHA, err)
+			glog.Errorf("Can't load commit %s %s %s: %v", obj.Org(), obj.Project(), *c.SHA, suggestOauthScopes(response, err))
 			continue
 		}
 		filledCommits = append(filledCommits, commit)
@@ -1678,7 +1697,7 @@ func (obj *MungeObject) ListFiles() ([]*github.CommitFile, bool) {
 		)
 		config.analytics.ListFiles.Call(config, response)
 		if err != nil {
-			glog.Errorf("Unable to ListFiles: %v", err)
+			glog.Errorf("Unable to ListFiles: %v", suggestOauthScopes(response, err))
 			return nil, false
 		}
 		allFiles = append(allFiles, files...)
@@ -1732,7 +1751,7 @@ func (obj *MungeObject) RemoveAssignees(assignees ...string) error {
 	if config.DryRun {
 		return nil
 	}
-	_, _, err := config.client.Issues.RemoveAssignees(
+	_, resp, err := config.client.Issues.RemoveAssignees(
 		context.Background(),
 		obj.Org(),
 		obj.Project(),
@@ -1740,6 +1759,7 @@ func (obj *MungeObject) RemoveAssignees(assignees ...string) error {
 		assignees,
 	)
 	if err != nil {
+		err = suggestOauthScopes(resp, err)
 		glog.Errorf("Error unassigning %v from PR# %d: %v", assignees, prNum, err)
 		return err
 	}
@@ -1767,7 +1787,7 @@ func (obj *MungeObject) AddAssignee(owner string) error {
 	if config.DryRun {
 		return nil
 	}
-	_, _, err := config.client.Issues.AddAssignees(
+	_, resp, err := config.client.Issues.AddAssignees(
 		context.Background(),
 		obj.Org(),
 		obj.Project(),
@@ -1775,6 +1795,7 @@ func (obj *MungeObject) AddAssignee(owner string) error {
 		[]string{owner},
 	)
 	if err != nil {
+		err = suggestOauthScopes(resp, err)
 		glog.Errorf("Error assigning issue #%d to %v: %v", prNum, owner, err)
 		return err
 	}
@@ -1802,7 +1823,7 @@ func (obj *MungeObject) CloseIssuef(format string, args ...interface{}) error {
 	if config.DryRun {
 		return nil
 	}
-	_, _, err := config.client.Issues.Edit(
+	_, resp, err := config.client.Issues.Edit(
 		context.Background(),
 		obj.Org(),
 		obj.Project(),
@@ -1810,6 +1831,7 @@ func (obj *MungeObject) CloseIssuef(format string, args ...interface{}) error {
 		state,
 	)
 	if err != nil {
+		err = suggestOauthScopes(resp, err)
 		glog.Errorf("Error closing issue #%d: %v: %v", *obj.Issue.Number, msg, err)
 		return err
 	}
@@ -1830,7 +1852,7 @@ func (obj *MungeObject) ClosePR() bool {
 	}
 	state := "closed"
 	pr.State = &state
-	_, _, err := config.client.PullRequests.Edit(
+	_, resp, err := config.client.PullRequests.Edit(
 		context.Background(),
 		obj.Org(),
 		obj.Project(),
@@ -1838,7 +1860,7 @@ func (obj *MungeObject) ClosePR() bool {
 		pr,
 	)
 	if err != nil {
-		glog.Errorf("Failed to close pr %d: %v", *pr.Number, err)
+		glog.Errorf("Failed to close pr %d: %v", *pr.Number, suggestOauthScopes(resp, err))
 		return false
 	}
 	return true
@@ -1863,7 +1885,7 @@ func (obj *MungeObject) OpenPR(numTries int) bool {
 	pr.State = &state
 	// Try pretty hard to re-open, since it's pretty bad if we accidentally leave a PR closed
 	for tries := 0; tries < numTries; tries++ {
-		_, _, err := config.client.PullRequests.Edit(
+		_, resp, err := config.client.PullRequests.Edit(
 			context.Background(),
 			obj.Org(),
 			obj.Project(),
@@ -1873,7 +1895,7 @@ func (obj *MungeObject) OpenPR(numTries int) bool {
 		if err == nil {
 			return true
 		}
-		glog.Warningf("failed to re-open pr %d: %v", *pr.Number, err)
+		glog.Warningf("failed to re-open pr %d: %v", *pr.Number, suggestOauthScopes(resp, err))
 		time.Sleep(5 * time.Second)
 	}
 	if !ok {
@@ -1900,6 +1922,7 @@ func (obj *MungeObject) GetFileContents(file, sha string) (string, error) {
 	config.analytics.GetContents.Call(config, response)
 	if err != nil {
 		err = fmt.Errorf("unable to get %q at commit %q", file, sha)
+		err = suggestOauthScopes(response, err)
 		// I'm using .V(2) because .generated docs is still not in the repo...
 		glog.V(2).Infof("%v", err)
 		return "", err
@@ -1985,7 +2008,7 @@ func (obj *MungeObject) MergePR(who string) bool {
 		MergeMethod: config.mergeMethod,
 	}
 
-	_, _, err := config.client.PullRequests.Merge(
+	_, resp, err := config.client.PullRequests.Merge(
 		context.Background(),
 		obj.Org(),
 		obj.Project(),
@@ -2002,7 +2025,7 @@ func (obj *MungeObject) MergePR(who string) bool {
 	// then merge this PR, so try again.
 	if err != nil && strings.Contains(err.Error(), "branch was modified. Review and try the merge again.") {
 		if mergeable, _ := obj.IsMergeable(); mergeable {
-			_, _, err = config.client.PullRequests.Merge(
+			_, resp, err = config.client.PullRequests.Merge(
 				context.Background(),
 				obj.Org(),
 				obj.Project(),
@@ -2013,7 +2036,7 @@ func (obj *MungeObject) MergePR(who string) bool {
 		}
 	}
 	if err != nil {
-		glog.Errorf("Failed to merge PR: %d: %v", prNum, err)
+		glog.Errorf("Failed to merge PR: %d: %v", prNum, suggestOauthScopes(resp, err))
 		return false
 	}
 	return true
@@ -2061,7 +2084,7 @@ func (obj *MungeObject) ListReviewComments() ([]*github.PullRequestComment, bool
 	var lastResponse *github.Response
 	for {
 		listOpts.ListOptions.Page = page
-		glog.V(8).Infof("Fetching page %d of comments for issue %d", page, prNum)
+		glog.V(8).Infof("Fetching page %d of comments for PR %d", page, prNum)
 		comments, response, err := obj.config.client.PullRequests.ListComments(
 			context.Background(),
 			obj.Org(),
@@ -2075,6 +2098,7 @@ func (obj *MungeObject) ListReviewComments() ([]*github.PullRequestComment, bool
 				// Cached last page was actually truthful -- expected error.
 				break
 			}
+			glog.Errorf("Failed to fetch page of comments for PR %d: %v", prNum, suggestOauthScopes(response, err))
 			return nil, false
 		}
 		if tryNextPageAnyway {
@@ -2135,6 +2159,7 @@ func (obj *MungeObject) ListComments() ([]*github.IssueComment, bool) {
 				// Cached last page was actually truthful -- expected error.
 				break
 			}
+			glog.Errorf("Failed to fetch page of comments for issue %d: %v", issueNum, suggestOauthScopes(response, err))
 			return nil, false
 		}
 		if tryNextPageAnyway {
@@ -2177,7 +2202,7 @@ func (obj *MungeObject) WriteComment(msg string) error {
 		glog.Info("Comment in %d was larger than %d and was truncated", prNum, maxCommentLen)
 		msg = msg[:maxCommentLen]
 	}
-	_, _, err := config.client.Issues.CreateComment(
+	_, resp, err := config.client.Issues.CreateComment(
 		context.Background(),
 		obj.Org(),
 		obj.Project(),
@@ -2185,6 +2210,7 @@ func (obj *MungeObject) WriteComment(msg string) error {
 		&github.IssueComment{Body: &msg},
 	)
 	if err != nil {
+		err = suggestOauthScopes(resp, err)
 		glog.Errorf("%v", err)
 		return err
 	}
@@ -2228,13 +2254,14 @@ func (obj *MungeObject) DeleteComment(comment *github.IssueComment) error {
 	if config.DryRun {
 		return nil
 	}
-	_, err := config.client.Issues.DeleteComment(
+	resp, err := config.client.Issues.DeleteComment(
 		context.Background(),
 		obj.Org(),
 		obj.Project(),
 		*comment.ID,
 	)
 	if err != nil {
+		err = suggestOauthScopes(resp, err)
 		glog.Errorf("Error removing comment: %v", err)
 		return err
 	}
@@ -2268,7 +2295,7 @@ func (obj *MungeObject) EditComment(comment *github.IssueComment, body string) e
 		body = body[:maxCommentLen]
 	}
 	patch := github.IssueComment{Body: &body}
-	resp, _, err := config.client.Issues.EditComment(
+	ic, resp, err := config.client.Issues.EditComment(
 		context.Background(),
 		obj.Org(),
 		obj.Project(),
@@ -2276,10 +2303,11 @@ func (obj *MungeObject) EditComment(comment *github.IssueComment, body string) e
 		&patch,
 	)
 	if err != nil {
+		err = suggestOauthScopes(resp, err)
 		glog.Errorf("Error editing comment: %v", err)
 		return err
 	}
-	comment.Body = resp.Body
+	comment.Body = ic.Body
 	return nil
 }
 
@@ -2391,6 +2419,7 @@ func (obj *MungeObject) ListReviews() ([]*github.PullRequestReview, bool) {
 				// Cached last page was actually truthful -- expected error.
 				break
 			}
+			glog.Errorf("Failed to fetch page %d of reviews for pr %d: %v", page, prNum, suggestOauthScopes(response, err))
 			return nil, false
 		}
 		if tryNextPageAnyway {
@@ -2493,7 +2522,7 @@ func (config *Config) ForEachIssueDo(fn MungeFunction) error {
 		)
 		config.analytics.ListIssues.Call(config, response)
 		if err != nil {
-			return err
+			return suggestOauthScopes(response, err)
 		}
 		for i := range issues {
 			obj := &MungeObject{
@@ -2556,7 +2585,7 @@ func (config *Config) ListAllIssues(listOpts *github.IssueListByRepoOptions) ([]
 		)
 		config.analytics.ListIssues.Call(config, response)
 		if err != nil {
-			return nil, err
+			return nil, suggestOauthScopes(response, err)
 		}
 		for i := range issues {
 			issue := issues[i]
@@ -2603,7 +2632,7 @@ func (config *Config) GetLabels() ([]*github.Label, error) {
 		)
 		config.analytics.ListLabels.Call(config, response)
 		if err != nil {
-			return nil, err
+			return nil, suggestOauthScopes(response, err)
 		}
 		for i := range labels {
 			allLabels = append(allLabels, labels[i])
@@ -2623,14 +2652,14 @@ func (config *Config) AddLabel(label *github.Label) error {
 	if config.DryRun {
 		return nil
 	}
-	_, _, err := config.client.Issues.CreateLabel(
+	_, resp, err := config.client.Issues.CreateLabel(
 		context.Background(),
 		config.Org,
 		config.Project,
 		label,
 	)
 	if err != nil {
-		return err
+		return suggestOauthScopes(resp, err)
 	}
 	return nil
 }
