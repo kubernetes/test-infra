@@ -213,7 +213,7 @@ var (
 
 // marshaled in serveCIStatus
 type jobStatus struct {
-	Status  string `json:"status"`
+	State   string `json:"state"`
 	BuildID string `json:"build_id"`
 	URL     string `json:"url"`
 }
@@ -581,7 +581,7 @@ func (sq *SubmitQueue) RegisterOptions(opts *options.Options) sets.String {
 	opts.RegisterStringSlice(&sq.DoNotMergeMilestones, "do-not-merge-milestones", []string{}, "List of milestones which, when applied, will cause the PR to not be merged")
 	opts.RegisterInt(&sq.AdminPort, "admin-port", 9999, "If non-zero, will serve administrative actions on this port.")
 	opts.RegisterString(&sq.Metadata.historyURL, "history-url", "", "URL to access the submit-queue instance's health history.")
-	opts.RegisterString(&sq.Metadata.chartURL, "chart-uRL", "", "URL to access the submit-queue instance's health charts.")
+	opts.RegisterString(&sq.Metadata.chartURL, "chart-url", "", "URL to access the submit-queue instance's health charts.")
 	opts.RegisterString(&sq.ProwURL, "prow-url", "", "Prow deployment base URL to read batch results and direct users to.")
 	opts.RegisterBool(&sq.BatchEnabled, "batch-enabled", false, "Do batch merges (requires prow/splice coordination).")
 	opts.RegisterString(&sq.ContextURL, "context-url", "", "URL where the submit queue is serving - used in Github status contexts")
@@ -665,25 +665,37 @@ func (sq *SubmitQueue) updateHealth() {
 }
 
 func (sq *SubmitQueue) monitorProw() {
+	nonBlockingJobNames := make(map[string]bool)
+	for _, jobName := range sq.NonBlockingJobNames {
+		nonBlockingJobNames[jobName] = true
+	}
+	requireRetestJobNames := make(map[string]bool)
+	for _, jobName := range mungeopts.RequiredContexts.Retest {
+		requireRetestJobNames[jobName] = true
+	}
+	url := sq.ProwURL + "/data.js"
 	for {
-		repo := sq.githubConfig.Org + "/" + sq.githubConfig.Project
-		url := sq.ProwURL + "/data.js"
 		// get current job info from prow
-		allJobs, err := getJobs(sq.ProwURL)
+		allJobs, err := getJobs(url)
 		if err != nil {
-			glog.Errorf("Error reading batch jobs from Prow URL %v: %v", sq.ProwURL, err)
+			glog.Errorf("Error reading batch jobs from Prow URL %v: %v", url, err)
 			continue
 		}
 		// TODO: copy these from sq first instead
 		ciStatus := make(map[string]map[string]jobStatus)
 		ciLatest := make(map[string]map[string]time.Time)
+
 		for _, job := range allJobs {
 			if job.Finished == "" || job.BuildID == "" {
 				continue
 			}
-			// TODO: more explicit categorization
-			var category string
-			category = job.Type
+			// type/category
+			key := job.Type + "/"
+			if nonBlockingJobNames[job.Job] {
+				key += "nonblocking"
+			} else if requireRetestJobNames[job.Job] {
+				key += "requiredretest"
+			}
 
 			ft, err := time.Parse(time.RFC3339Nano, job.Finished)
 			if err != nil {
@@ -691,30 +703,33 @@ func (sq *SubmitQueue) monitorProw() {
 				continue
 			}
 
-			if _, ok := ciLatest[category]; !ok {
-				ciLatest[category] = make(map[string]time.Time)
-				ciStatus[category] = make(map[string]jobStatus)
+			if _, ok := ciLatest[key]; !ok {
+				ciLatest[key] = make(map[string]time.Time)
+				ciStatus[key] = make(map[string]jobStatus)
 			}
-			latest, ok := ciLatest[category][job.Job]
+			latest, ok := ciLatest[key][job.Job]
 
 			// TODO: flake cache?
-			status := "Stable"
-			if job.State != "success" {
-				status := "Not Stable"
-			}
-
 			if !ok || latest.After(ft) {
-				ciLatest[category][job.Job] = ft
-				ciStatus[category][job.Job] = jobStatus{
-					Status:  status,
+				ciLatest[key][job.Job] = ft
+				ciStatus[key][job.Job] = jobStatus{
+					State:   job.State,
 					BuildID: job.BuildID,
 					URL:     job.URL,
 				}
 			}
 		}
 
+		sq.setCIStatus(ciStatus)
+
 		time.Sleep(1 * time.Minute)
 	}
+}
+
+func (sq *SubmitQueue) setCIStatus(status map[string]map[string]jobStatus) {
+	defer sq.Unlock()
+	sq.Lock()
+	sq.ciStatus = status
 }
 
 func (sq *SubmitQueue) e2eStable(aboutToMerge bool) bool {
@@ -767,7 +782,6 @@ func (sq *SubmitQueue) updateGoogleE2ELoop() {
 		_ = sq.e2eStable(false)
 		time.Sleep(1 * time.Minute)
 	}
-
 }
 
 func objToStatusPullRequest(obj *github.MungeObject) *statusPullRequest {
@@ -950,6 +964,12 @@ func (sq *SubmitQueue) getHealth() []byte {
 	sq.Lock()
 	defer sq.Unlock()
 	return sq.marshal(sq.health)
+}
+
+func (sq *SubmitQueue) getCIStatus() []byte {
+	sq.Lock()
+	defer sq.Unlock()
+	return sq.marshal(sq.ciStatus)
 }
 
 func (sq *SubmitQueue) getMetaData() []byte {
