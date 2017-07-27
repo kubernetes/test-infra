@@ -17,7 +17,7 @@ VERSION = $(shell date +v%Y%m%d)-$(shell git describe --tags --always --dirty)
 image:
 	docker build -t "gcr.io/k8s-testimages/e2e-kubeadm:$(VERSION)" .
 
-push:
+push: image
 	gcloud docker -- push "gcr.io/k8s-testimages/e2e-kubeadm:$(VERSION)"
 
 .PHONY: image push
