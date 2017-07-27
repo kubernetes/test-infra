@@ -17,4 +17,6 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-find . -name "*.go" | grep -v "\/vendor\/" | xargs -n 1 go vet
+go get ./...
+go install ./...
+go vet $(go list ./... | grep -v vendor)
