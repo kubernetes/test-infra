@@ -744,6 +744,12 @@ func (c *Client) GetRef(org, repo, ref string) (string, error) {
 }
 
 // FindIssues uses the github search API to find issues which match a particular query.
+//
+// Input query the same way you would into the website.
+// Order returned results with sort (usually "updated").
+// Control whether oldest/newest is first with asc.
+//
+// See https://help.github.com/articles/searching-issues-and-pull-requests/ for details.
 func (c *Client) FindIssues(query, sort string, asc bool) ([]Issue, error) {
 	c.log("FindIssues", query)
 	path := fmt.Sprintf("%s/search/issues?q=%s", c.base, url.QueryEscape(query))

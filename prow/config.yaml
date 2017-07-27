@@ -14346,3 +14346,38 @@ periodics:
         - name: cache-ssd
           hostPath:
             path: /mnt/disks/ssd0
+
+- name: periodic-test-infra-retester
+  interval: 20m  # Retest at most 1 PR per 20m, which should not DOS the queue.
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/commenter:latest
+      args:
+      - |-
+        --query=is:pr
+        -label:do-not-merge
+        label:lgtm
+        label:approved
+        status:failure
+        -label:needs-rebase
+        -label:needs-ok-to-test
+        -label:"cncf-cla: no"
+        repo:kubernetes/kubernetes
+      - --token=/etc/token/bot-github-token
+      - |-
+        --comment=/retest
+        This bot automatically retries jobs that failed/flaked on approved PRs (send feedback to `@fejta`).
+
+        Review the [full test history](https://k8s-gubernator.appspot.com/pr/{{.Number}}) for this PR.
+
+      - --template
+      - --ceiling=1
+      - --confirm
+      volumeMounts:
+      - name: token
+        mountPath: /etc/token
+    volumes:
+    - name: token
+      secret:
+        secretName: fejta-bot-token
+
