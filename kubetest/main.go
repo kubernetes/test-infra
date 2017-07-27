@@ -107,7 +107,7 @@ func defineFlags() *options {
 	flag.StringVar(&o.gcpProject, "gcp-project", "", "For use with gcloud commands")
 	flag.StringVar(&o.gcpServiceAccount, "gcp-service-account", "", "Service account to activate before using gcloud")
 	flag.StringVar(&o.gcpZone, "gcp-zone", "", "For use with gcloud commands")
-	flag.StringVar(&o.gcpNetwork, "gcp-network", "e2e", "Cluster network. Must be set for --deployment=gke (TODO: other deployments).")
+	flag.StringVar(&o.gcpNetwork, "gcp-network", "", "Cluster network. Must be set for --deployment=gke (TODO: other deployments).")
 	flag.StringVar(&o.gcpNodeImage, "gcp-node-image", "", "Node image type (cos|container_vm on GKE, cos|debian on GCE)")
 	flag.StringVar(&o.cluster, "cluster", "", "Cluster name. Must be set for --deployment=gke (TODO: other deployments).")
 	flag.StringVar(&o.clusterIPRange, "cluster-ip-range", "", "Specify CLUSTER_IP_RANGE during --up and --test")

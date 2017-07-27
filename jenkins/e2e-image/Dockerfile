@@ -18,12 +18,14 @@
 FROM gcr.io/k8s-testimages/kubekins-test:1.7-v20170418-f54c7fbd
 MAINTAINER  Erick Fejta <fejta@google.com>
 
+# https://github.com/GoogleCloudPlatform/gsutil/issues/446 for python-openssl
 RUN apt-get update && apt-get install -y --no-install-recommends \
     pkg-config \
     zip \
     unzip \
     xz-utils \
     zlib1g-dev \
+    python-openssl \
     && apt-get clean
 
 ENV BAZEL_VERSION 0.5.0
@@ -43,8 +45,7 @@ ENV INSTANCE_PREFIX=jenkins-e2e \
 # Variables specific to GCP
 ENV FAIL_ON_GCP_RESOURCE_LEAK=true \
     JOB_NAME=kubernetes-e2e-gce-conformance \
-    KUBE_GCE_INSTANCE_PREFIX=jenkins-e2e \
-    KUBE_GCE_NETWORK=jenkins-e2e
+    KUBE_GCE_INSTANCE_PREFIX=jenkins-e2e
 
 # Variable specific to the machine:
 # GOOGLE_APPLICATION_CREDENTIALS
