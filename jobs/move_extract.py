@@ -33,8 +33,8 @@ def sort():
     with open(test_infra('jobs/config.json'), 'r+') as fp:
         configs = json.loads(fp.read())
     regexp = re.compile('|'.join([
-        r'^KUBEMARK_MASTER_SIZE=(.*)$',
-        r'^KUBEMARK_NUM_NODES=(.*)$',
+        r'^KUBE_GKE_NETWORK=(.*)$',
+        r'^KUBE_GCE_NETWORK=(.*)$',
     ]))
     problems = []
     for job, values in configs.items():
@@ -65,16 +65,18 @@ def sort():
             if not mat:
                 lines.append(line)
                 continue
-            master, nodes = mat.groups()
+            knet, cnet = mat.groups()
+            net = knet or cnet
             stop = False
             for key, val in {
-                    '--kubemark-master-size': master,
-                    '--kubemark-nodes': nodes,
+                    '--gcp-network': net,
             }.items():
                 if not val:
                     continue
-                if key in new_args:
-                    val = '%s %s' % (new_args[key], val)
+                if key in new_args and val != new_args[key]:
+                    problems.append('Duplicate %s in %s' % (key, job))
+                    stop = True
+                    break
                 new_args[key] = val
                 mod = True
             if stop:
@@ -95,7 +97,7 @@ def sort():
                 flag = ''
             if flag and flag not in ['--env-file', '--extract']:
                 if flag in flags:
-                    problems.append('Multiple %s in %s' % (flag, job))
+                    problems.append('Multiple %s in %s: %s' % (flag, job, args))
                     break
                 flags.add(flag)
         else:
