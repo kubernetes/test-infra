@@ -595,7 +595,6 @@ images:
     - KUBE_GCE_NODE_PROJECT=ubuntu-os-gke-cloud
     - KUBE_GCE_NODE_IMAGE=ubuntu-gke-1604-xenial-v20170420-1
     - KUBE_GKE_IMAGE_TYPE=ubuntu
-    - KUBE_GKE_ENABLE_KUBERNETES_ALPHA=true
 
 k8sVersions:
   dev:
