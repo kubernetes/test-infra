@@ -35,8 +35,8 @@ var (
 	_ = glog.Errorf
 )
 
-func docsProposalIssue() *github.Issue {
-	return github_test.Issue(botName, 1, []string{claYesLabel, "kind/design"}, true)
+func docsProposalIssue(testBotName string) *github.Issue {
+	return github_test.Issue(testBotName, 1, []string{claYesLabel, "kind/design"}, true)
 }
 
 // Commit returns a filled out github.Commit which happened at time.Unix(t, 0)
@@ -51,21 +51,22 @@ func commitFiles(path []string) []*github.CommitFile {
 	return files
 }
 
-func BotAddedDesign() []*github.IssueEvent {
+func BotAddedDesign(testBotName string) []*github.IssueEvent {
 	return github_test.Events([]github_test.LabelTime{
-		{User: botName, Label: "kind/design", Time: 9},
+		{User: testBotName, Label: "kind/design", Time: 9},
 		{User: "bob", Label: "kind/design", Time: 8},
 	})
 }
 
-func OtherAddedDesign() []*github.IssueEvent {
+func OtherAddedDesign(testBotName string) []*github.IssueEvent {
 	return github_test.Events([]github_test.LabelTime{
-		{User: botName, Label: "kind/design", Time: 8},
+		{User: testBotName, Label: "kind/design", Time: 8},
 		{User: "bob", Label: "kind/design", Time: 9},
 	})
 }
 
 func TestPathLabelMunge(t *testing.T) {
+	const testBotName = "dummy"
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
 	tests := []struct {
@@ -76,61 +77,61 @@ func TestPathLabelMunge(t *testing.T) {
 	}{
 		{
 			files:       commitFiles([]string{"docs/proposals"}),
-			events:      BotAddedDesign(),
+			events:      BotAddedDesign(testBotName),
 			mustHave:    []string{"kind/design"},
 			mustNotHave: []string{"kind/api-change", "kind/new-api"},
 		},
 		{
 			files:       commitFiles([]string{"docs/my/proposals"}),
-			events:      BotAddedDesign(),
+			events:      BotAddedDesign(testBotName),
 			mustHave:    []string{},
 			mustNotHave: []string{"kind/design", "kind/api-change", "kind/new-api"},
 		},
 		{
 			files:       commitFiles([]string{"pkg/api/types.go"}),
-			events:      BotAddedDesign(),
+			events:      BotAddedDesign(testBotName),
 			mustHave:    []string{"kind/api-change"},
 			mustNotHave: []string{"kind/design", "kind/new-api"},
 		},
 		{
 			files:       commitFiles([]string{"pkg/api/v1/types.go"}),
-			events:      BotAddedDesign(),
+			events:      BotAddedDesign(testBotName),
 			mustHave:    []string{"kind/api-change"},
 			mustNotHave: []string{"kind/design", "kind/new-api"},
 		},
 		{
 			files:       commitFiles([]string{"pkg/api/v1/duh/types.go"}),
-			events:      BotAddedDesign(),
+			events:      BotAddedDesign(testBotName),
 			mustHave:    []string{},
 			mustNotHave: []string{"kind/design", "kind/api-change", "kind/new-api"},
 		},
 		{
 			files:       commitFiles([]string{"pkg/apis/experimental/register.go"}),
-			events:      BotAddedDesign(),
+			events:      BotAddedDesign(testBotName),
 			mustHave:    []string{"kind/new-api"},
 			mustNotHave: []string{"kind/api-change", "kind/design"},
 		},
 		{
 			files:       commitFiles([]string{"pkg/apis/experimental/v1beta1/register.go"}),
-			events:      BotAddedDesign(),
+			events:      BotAddedDesign(testBotName),
 			mustHave:    []string{"kind/new-api"},
 			mustNotHave: []string{"kind/api-change", "kind/design"},
 		},
 		{
 			files:       commitFiles([]string{"pkg/apis/experiments/v1beta1/duh/register.go"}),
-			events:      BotAddedDesign(),
+			events:      BotAddedDesign(testBotName),
 			mustHave:    []string{},
 			mustNotHave: []string{"kind/design", "kind/api-change", "kind/new-api"},
 		},
 		{
 			files:       commitFiles([]string{"README"}),
-			events:      OtherAddedDesign(),
+			events:      OtherAddedDesign(testBotName),
 			mustHave:    []string{"kind/design"},
 			mustNotHave: []string{"kind/api-change", "kind/new-api"},
 		},
 	}
 	for testNum, test := range tests {
-		client, server, mux := github_test.InitServer(t, docsProposalIssue(), ValidPR(), test.events, nil, nil, nil, test.files)
+		client, server, mux := github_test.InitServer(t, docsProposalIssue(testBotName), ValidPR(), test.events, nil, nil, nil, test.files)
 		mux.HandleFunc("/repos/o/r/issues/1/labels/kind/design", func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
 			w.Write([]byte{})
@@ -151,6 +152,7 @@ func TestPathLabelMunge(t *testing.T) {
 			Project: "r",
 		}
 		config.SetClient(client)
+		config.BotName = testBotName
 
 		p := PathLabelMunger{pathLabelFile: "../path-label.txt"}
 		err := p.Initialize(config, nil)

@@ -194,7 +194,7 @@ func humanAddedApproved(obj *github.MungeObject) bool {
 	if lastAdded == nil || lastAdded.Actor == nil || lastAdded.Actor.Login == nil {
 		return false
 	}
-	return *lastAdded.Actor.Login != botName
+	return !obj.IsRobot(lastAdded.Actor)
 }
 
 func getApproveComments(comments []*c.Comment) c.FilteredComments {

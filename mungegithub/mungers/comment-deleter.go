@@ -110,10 +110,6 @@ func (CommentDeleter) Munge(obj *github.MungeObject) {
 	}
 }
 
-func mergeBotComment(comment *githubapi.IssueComment) bool {
-	return *comment.User.Login == botName
-}
-
 func jenkinsBotComment(comment *githubapi.IssueComment) bool {
 	return *comment.User.Login == jenkinsBotName
 }

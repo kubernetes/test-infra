@@ -99,7 +99,7 @@ func findLastHumanPullRequestUpdate(obj *github.MungeObject) (*time.Time, bool) 
 		if comment.User == nil || comment.User.Login == nil || comment.CreatedAt == nil || comment.Body == nil {
 			continue
 		}
-		if *comment.User.Login == botName || *comment.User.Login == jenkinsBotName {
+		if obj.IsRobot(comment.User) || *comment.User.Login == jenkinsBotName {
 			continue
 		}
 		if lastHuman.Before(*comment.UpdatedAt) {
@@ -123,7 +123,7 @@ func findLastHumanIssueUpdate(obj *github.MungeObject) (*time.Time, bool) {
 		if !validComment(comment) {
 			continue
 		}
-		if mergeBotComment(comment) || jenkinsBotComment(comment) {
+		if obj.IsRobot(comment.User) || jenkinsBotComment(comment) {
 			continue
 		}
 		if lastHuman.Before(*comment.UpdatedAt) {
@@ -203,7 +203,7 @@ func findLatestWarningComment(obj *github.MungeObject) (*githubapi.IssueComment,
 		if !validComment(comment) {
 			continue
 		}
-		if !mergeBotComment(comment) {
+		if !obj.IsRobot(comment.User) {
 			continue
 		}
 
@@ -340,7 +340,7 @@ func (CloseStale) Munge(obj *github.MungeObject) {
 }
 
 func (CloseStale) isStaleIssueComment(obj *github.MungeObject, comment *githubapi.IssueComment) bool {
-	if !mergeBotComment(comment) {
+	if !obj.IsRobot(comment.User) {
 		return false
 	}
 

@@ -36,6 +36,7 @@ var (
 )
 
 func TestCherrypickAuthApprove(t *testing.T) {
+	const testBotName = "dummy"
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
 	tests := []struct {
@@ -52,60 +53,60 @@ func TestCherrypickAuthApprove(t *testing.T) {
 	}{
 		{
 			name:                "Add cpApproved and milestone",
-			issue:               github_test.Issue(botName, 1, []string{}, true),
+			issue:               github_test.Issue(testBotName, 1, []string{}, true),
 			issueBody:           "Cherry pick of #2 on release-1.2.",
 			prBranch:            "release-1.2",
-			parentIssue:         github_test.Issue(botName, 2, []string{cpApprovedLabel}, true),
+			parentIssue:         github_test.Issue(testBotName, 2, []string{cpApprovedLabel}, true),
 			milestone:           &github.Milestone{Title: stringPtr("v1.2"), Number: intPtr(1)},
 			shouldHaveLabel:     cpApprovedLabel,
 			shouldHaveMilestone: "v1.2",
 		},
 		{
 			name:                "Add milestone",
-			issue:               github_test.Issue(botName, 1, []string{cpApprovedLabel}, true),
+			issue:               github_test.Issue(testBotName, 1, []string{cpApprovedLabel}, true),
 			issueBody:           "Cherry pick of #2 on release-1.2.",
 			prBranch:            "release-1.2",
-			parentIssue:         github_test.Issue(botName, 2, []string{cpApprovedLabel}, true),
+			parentIssue:         github_test.Issue(testBotName, 2, []string{cpApprovedLabel}, true),
 			milestone:           &github.Milestone{Title: stringPtr("v1.2"), Number: intPtr(1)},
 			shouldHaveLabel:     cpApprovedLabel,
 			shouldHaveMilestone: "v1.2",
 		},
 		{
 			name:               "Do not add because parent not have",
-			issue:              github_test.Issue(botName, 1, []string{}, true),
+			issue:              github_test.Issue(testBotName, 1, []string{}, true),
 			issueBody:          "Cherry pick of #2 on release-1.2.",
 			prBranch:           "release-1.2",
-			parentIssue:        github_test.Issue(botName, 2, []string{}, true),
+			parentIssue:        github_test.Issue(testBotName, 2, []string{}, true),
 			milestone:          &github.Milestone{Title: stringPtr("v1.2"), Number: intPtr(1)},
 			shouldNotHaveLabel: cpApprovedLabel,
 			shouldNotHaveMile:  "v1.2",
 		},
 		{
 			name:               "PR against wrong branch",
-			issue:              github_test.Issue(botName, 1, []string{}, true),
+			issue:              github_test.Issue(testBotName, 1, []string{}, true),
 			issueBody:          "Cherry pick of #2 on release-1.2.",
 			prBranch:           "release-1.1",
-			parentIssue:        github_test.Issue(botName, 2, []string{cpApprovedLabel}, true),
+			parentIssue:        github_test.Issue(testBotName, 2, []string{cpApprovedLabel}, true),
 			milestone:          &github.Milestone{Title: stringPtr("v1.2"), Number: intPtr(1)},
 			shouldNotHaveLabel: cpApprovedLabel,
 			shouldNotHaveMile:  "v1.2",
 		},
 		{
 			name:               "Parent milestone against other branch",
-			issue:              github_test.Issue(botName, 1, []string{}, true),
+			issue:              github_test.Issue(testBotName, 1, []string{}, true),
 			issueBody:          "Cherry pick of #2 on release-1.2.",
 			prBranch:           "release-1.2",
-			parentIssue:        github_test.Issue(botName, 2, []string{cpApprovedLabel}, true),
+			parentIssue:        github_test.Issue(testBotName, 2, []string{cpApprovedLabel}, true),
 			milestone:          &github.Milestone{Title: stringPtr("v1.1"), Number: intPtr(1)},
 			shouldNotHaveLabel: cpApprovedLabel,
 			shouldNotHaveMile:  "v1.1",
 		},
 		{
 			name:               "Parent has no milestone",
-			issue:              github_test.Issue(botName, 1, []string{}, true),
+			issue:              github_test.Issue(testBotName, 1, []string{}, true),
 			issueBody:          "Cherry pick of #2 on release-1.2.",
 			prBranch:           "release-1.2",
-			parentIssue:        github_test.Issue(botName, 2, []string{cpApprovedLabel}, true),
+			parentIssue:        github_test.Issue(testBotName, 2, []string{cpApprovedLabel}, true),
 			shouldNotHaveLabel: cpApprovedLabel,
 			shouldNotHaveMile:  "v1.2",
 		},
@@ -161,6 +162,7 @@ func TestCherrypickAuthApprove(t *testing.T) {
 			Project: "r",
 		}
 		config.SetClient(client)
+		config.BotName = testBotName
 
 		c := CherrypickAutoApprove{}
 		err := c.Initialize(config, nil)

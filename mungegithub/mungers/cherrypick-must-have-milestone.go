@@ -85,7 +85,7 @@ func (PickMustHaveMilestone) Munge(obj *github.MungeObject) {
 }
 
 func (PickMustHaveMilestone) isStaleIssueComment(obj *github.MungeObject, comment *githubapi.IssueComment) bool {
-	if !mergeBotComment(comment) {
+	if !obj.IsRobot(comment.User) {
 		return false
 	}
 	if *comment.Body != pickMustHaveMilestoneBody {

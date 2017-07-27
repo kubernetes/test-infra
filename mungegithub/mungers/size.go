@@ -276,7 +276,7 @@ func calculateSize(adds, dels int) string {
 }
 
 func (s *SizeMunger) isStaleIssueComment(obj *github.MungeObject, comment *githubapi.IssueComment) bool {
-	if !mergeBotComment(comment) {
+	if !obj.IsRobot(comment.User) {
 		return false
 	}
 	stale := sizeRE.MatchString(*comment.Body)

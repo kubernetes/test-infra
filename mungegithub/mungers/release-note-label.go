@@ -204,7 +204,7 @@ func releaseNoteAlreadyAdded(obj *github.MungeObject) bool {
 }
 
 func (r *ReleaseNoteLabel) isStaleIssueComment(obj *github.MungeObject, comment *githubapi.IssueComment) bool {
-	if !mergeBotComment(comment) {
+	if !obj.IsRobot(comment.User) {
 		return false
 	}
 	if *comment.Body != releaseNoteBody && *comment.Body != parentReleaseNoteFormat {

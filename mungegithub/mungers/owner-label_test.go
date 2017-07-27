@@ -43,6 +43,7 @@ func (t testOwnerLabeler) FindLabelsForPath(path string) sets.String {
 }
 
 func TestOwnerLabelMunge(t *testing.T) {
+	const testBotName = "dummy"
 	tests := []struct {
 		files       []*github.CommitFile
 		events      []*github.IssueEvent
@@ -51,13 +52,13 @@ func TestOwnerLabelMunge(t *testing.T) {
 	}{
 		{
 			files:       commitFiles([]string{"docs/proposals"}),
-			events:      BotAddedDesign(),
+			events:      BotAddedDesign(testBotName),
 			mustHave:    []string{"kind/design"},
 			mustNotHave: []string{},
 		},
 	}
 	for testNum, test := range tests {
-		client, server, mux := github_test.InitServer(t, docsProposalIssue(), ValidPR(), test.events, nil, nil, nil, test.files)
+		client, server, mux := github_test.InitServer(t, docsProposalIssue(testBotName), ValidPR(), test.events, nil, nil, nil, test.files)
 		mux.HandleFunc("/repos/o/r/issues/1/labels/kind/design", func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
 			w.Write([]byte{})
@@ -78,6 +79,7 @@ func TestOwnerLabelMunge(t *testing.T) {
 			Project: "r",
 		}
 		config.SetClient(client)
+		config.BotName = testBotName
 
 		o := OwnerLabelMunger{labeler: testOwnerLabeler{}}
 
