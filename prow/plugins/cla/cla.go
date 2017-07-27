@@ -18,7 +18,6 @@ package cla
 
 import (
 	"fmt"
-	"net/url"
 	"time"
 
 	"github.com/Sirupsen/logrus"
@@ -63,7 +62,7 @@ type gitHubClient interface {
 	AddLabel(owner, repo string, number int, label string) error
 	RemoveLabel(owner, repo string, number int, label string) error
 	GetPullRequest(owner, repo string, number int) (*github.PullRequest, error)
-	FindIssues(query string) ([]github.Issue, error)
+	FindIssues(query, sort string, asc bool) ([]github.Issue, error)
 }
 
 func handleStatusEvent(pc plugins.PluginClient, se github.StatusEvent) error {
@@ -97,7 +96,7 @@ func handle(gc gitHubClient, log *logrus.Entry, se github.StatusEvent) error {
 	var issues []github.Issue
 	var err error
 	for i := 0; i < maxRetries; i++ {
-		issues, err = gc.FindIssues(url.QueryEscape(fmt.Sprintf("%s repo:%s/%s type:pr state:open", se.SHA, org, repo)))
+		issues, err = gc.FindIssues(fmt.Sprintf("%s repo:%s/%s type:pr state:open", se.SHA, org, repo), "", false)
 		if err != nil {
 			return fmt.Errorf("error searching for issues matching commit: %v", err)
 		}
