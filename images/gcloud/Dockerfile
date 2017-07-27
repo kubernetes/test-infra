@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Includes go 1.7.4 and gcloud 138.0.0
-FROM golang:1.7.4
+# Includes go 1.8.3 and gcloud 138.0.0
+FROM golang:1.8.3
 MAINTAINER senlu@google.com
 
 RUN apt-get update && apt-get install -y \
