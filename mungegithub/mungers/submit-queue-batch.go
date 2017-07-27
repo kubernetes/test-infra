@@ -213,7 +213,7 @@ func (sq *SubmitQueue) handleGithubE2EBatchMerge() {
 	repo := sq.githubConfig.Org + "/" + sq.githubConfig.Project
 	for range time.Tick(1 * time.Minute) {
 		sq.opts.Lock()
-		url := sq.ProwUrl + "/data.js"
+		url := sq.ProwURL + "/data.js"
 		sq.opts.Unlock()
 		allJobs, err := getJobs(url)
 		if err != nil {

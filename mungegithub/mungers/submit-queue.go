@@ -161,16 +161,16 @@ type submitQueueInterruptedObject struct {
 type submitQueueMetadata struct {
 	ProjectName string
 
-	ChartUrl   string
-	HistoryUrl string
-	// chartUrl and historyUrl are option storage locations. They are distinct from ChartUrl and
-	// HistoryUrl since the the public variables are used asynchronously by a fileserver and updates
+	ChartURL   string
+	HistoryURL string
+	// chartURL and historyURL are option storage locations. They are distinct from ChartURL and
+	// HistoryURL since the the public variables are used asynchronously by a fileserver and updates
 	// to the options values should not cause a race condition.
-	chartUrl   string
-	historyUrl string
+	chartURL   string
+	historyURL string
 
-	RepoPullUrl string
-	ProwUrl     string
+	RepoPullURL string
+	ProwURL     string
 }
 
 type submitQueueBatchStatus struct {
@@ -268,7 +268,7 @@ type SubmitQueue struct {
 	features *features.Features
 
 	mergeLock    sync.Mutex // acquired when attempting to merge a specific PR
-	ProwUrl      string     // prow base page
+	ProwURL      string     // prow base page
 	BatchEnabled bool
 	ContextURL   string
 	batchStatus  submitQueueBatchStatus
@@ -429,20 +429,20 @@ func (sq *SubmitQueue) Initialize(config *github.Config, features *features.Feat
 }
 
 // internalInitialize will initialize the munger.
-// if overrideUrl is specified, will create testUtils
-func (sq *SubmitQueue) internalInitialize(config *github.Config, features *features.Features, overrideUrl string) error {
+// if overrideURL is specified, will create testUtils
+func (sq *SubmitQueue) internalInitialize(config *github.Config, features *features.Features, overrideURL string) error {
 	sq.Lock()
 	defer sq.Unlock()
 
-	sq.Metadata.ChartUrl = sq.Metadata.chartUrl
-	sq.Metadata.HistoryUrl = sq.Metadata.historyUrl
-	sq.Metadata.ProwUrl = sq.ProwUrl
-	sq.Metadata.RepoPullUrl = fmt.Sprintf("https://github.com/%s/%s/pulls/", config.Org, config.Project)
+	sq.Metadata.ChartURL = sq.Metadata.chartURL
+	sq.Metadata.HistoryURL = sq.Metadata.historyURL
+	sq.Metadata.ProwURL = sq.ProwURL
+	sq.Metadata.RepoPullURL = fmt.Sprintf("https://github.com/%s/%s/pulls/", config.Org, config.Project)
 	sq.Metadata.ProjectName = strings.Title(config.Project)
 	sq.githubConfig = config
 
-	if sq.BatchEnabled && sq.ProwUrl == "" {
-		return errors.New("batch merges require prow-url to be set!")
+	if sq.BatchEnabled && sq.ProwURL == "" {
+		return errors.New("batch merges require prow-url to be set")
 	}
 
 	// TODO: This is not how injection for tests should work.
@@ -450,8 +450,8 @@ func (sq *SubmitQueue) internalInitialize(config *github.Config, features *featu
 		sq.e2e = &fake_e2e.FakeE2ETester{}
 	} else {
 		var gcs *utils.Utils
-		if overrideUrl != "" {
-			gcs = utils.NewTestUtils("bucket", "logs", overrideUrl)
+		if overrideURL != "" {
+			gcs = utils.NewTestUtils("bucket", "logs", overrideURL)
 		} else {
 			gcs = utils.NewWithPresubmitDetection(
 				mungeopts.GCS.BucketName, mungeopts.GCS.LogDir,
@@ -566,9 +566,9 @@ func (sq *SubmitQueue) RegisterOptions(opts *options.Options) sets.String {
 	opts.RegisterBool(&sq.FakeE2E, "fake-e2e", false, "Whether to use a fake for testing E2E stability.")
 	opts.RegisterStringSlice(&sq.DoNotMergeMilestones, "do-not-merge-milestones", []string{}, "List of milestones which, when applied, will cause the PR to not be merged")
 	opts.RegisterInt(&sq.AdminPort, "admin-port", 9999, "If non-zero, will serve administrative actions on this port.")
-	opts.RegisterString(&sq.Metadata.historyUrl, "history-url", "", "URL to access the submit-queue instance's health history.")
-	opts.RegisterString(&sq.Metadata.chartUrl, "chart-url", "", "URL to access the submit-queue instance's health charts.")
-	opts.RegisterString(&sq.ProwUrl, "prow-url", "", "Prow deployment base URL to read batch results and direct users to.")
+	opts.RegisterString(&sq.Metadata.historyURL, "history-url", "", "URL to access the submit-queue instance's health history.")
+	opts.RegisterString(&sq.Metadata.chartURL, "chart-uRL", "", "URL to access the submit-queue instance's health charts.")
+	opts.RegisterString(&sq.ProwURL, "prow-url", "", "Prow deployment base URL to read batch results and direct users to.")
 	opts.RegisterBool(&sq.BatchEnabled, "batch-enabled", false, "Do batch merges (requires prow/splice coordination).")
 	opts.RegisterString(&sq.ContextURL, "context-url", "", "URL where the submit queue is serving - used in Github status contexts")
 	opts.RegisterBool(&sq.GateApproved, "gate-approved", false, "Gate on approved label")
@@ -576,8 +576,8 @@ func (sq *SubmitQueue) RegisterOptions(opts *options.Options) sets.String {
 
 	opts.RegisterUpdateCallback(func(changed sets.String) error {
 		if changed.HasAny("prow-url", "batch-enabled") {
-			if sq.BatchEnabled && sq.ProwUrl == "" {
-				return fmt.Errorf("batch merges require prow-url to be set!")
+			if sq.BatchEnabled && sq.ProwURL == "" {
+				return fmt.Errorf("batch merges require prow-url to be set")
 			}
 		}
 		return nil
@@ -637,7 +637,7 @@ func (sq *SubmitQueue) updateHealth() {
 	}
 	for _, record := range sq.healthHistory {
 		if record.Overall {
-			sq.health.NumStable += 1
+			sq.health.NumStable++
 		}
 		for job, stable := range record.Jobs {
 			if _, ok := sq.health.NumStablePerJob[job]; !ok {
