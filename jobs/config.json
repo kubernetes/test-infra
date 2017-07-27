@@ -4534,6 +4534,7 @@
       "--env-file=jobs/ci-kubernetes-e2e-gci-gke-ingress.env",
       "--extract=ci/latest",
       "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
+      "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
       "--provider=gke",
       "--test_args=--ginkgo.focus=\\[Feature:Ingress\\] --minStartupPods=8",
