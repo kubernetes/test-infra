@@ -26,18 +26,16 @@ import (
 	"k8s.io/test-infra/prow/kube"
 )
 
-const (
-	period        = time.Hour
-	maxProwJobAge = 2 * 24 * time.Hour
-	maxPodAge     = 12 * time.Hour
-)
-
 type kubeClient interface {
 	ListPods(labels map[string]string) ([]kube.Pod, error)
 	DeletePod(name string) error
 
 	ListProwJobs(labels map[string]string) ([]kube.ProwJob, error)
 	DeleteProwJob(name string) error
+}
+
+type configAgent interface {
+	Config() *config.Config
 }
 
 var configPath = flag.String("config-path", "/etc/config/config", "Path to config.yaml.")
@@ -59,20 +57,21 @@ func main() {
 	pkc := kc.Namespace(configAgent.Config().PodNamespace)
 
 	// Clean now and regularly from now on.
-	clean(kc, pkc)
-	t := time.Tick(period)
-	for range t {
-		clean(kc, pkc)
+	clean(kc, pkc, configAgent)
+	for {
+		time.Sleep(configAgent.Config().Sinker.ResyncPeriod)
+		clean(kc, pkc, configAgent)
 	}
 }
 
-func clean(kc, pkc kubeClient) {
+func clean(kc, pkc kubeClient, configAgent configAgent) {
 	// Clean up old prow jobs first.
 	prowJobs, err := kc.ListProwJobs(nil)
 	if err != nil {
 		logrus.WithError(err).Error("Error listing prow jobs.")
 		return
 	}
+	maxProwJobAge := configAgent.Config().Sinker.MaxProwJobAge
 	for _, prowJob := range prowJobs {
 		if prowJob.Complete() && time.Since(prowJob.Status.StartTime) > maxProwJobAge {
 			if err := kc.DeleteProwJob(prowJob.Metadata.Name); err == nil {
@@ -89,6 +88,7 @@ func clean(kc, pkc kubeClient) {
 		logrus.WithError(err).Error("Error listing pods.")
 		return
 	}
+	maxPodAge := configAgent.Config().Sinker.MaxPodAge
 	for _, pod := range pods {
 		if (pod.Status.Phase == kube.PodSucceeded || pod.Status.Phase == kube.PodFailed) &&
 			time.Since(pod.Status.StartTime) > maxPodAge {

@@ -37,6 +37,7 @@ type Config struct {
 	Periodics []Periodic `json:"periodics,omitempty"`
 
 	Plank    Plank     `json:"plank,omitempty"`
+	Sinker   Sinker    `json:"sinker,omitempty"`
 	Triggers []Trigger `json:"triggers,omitempty"`
 
 	// ProwJobNamespace is the namespace in the cluster that prow
@@ -65,6 +66,23 @@ type Plank struct {
 	// will be passed a kube.ProwJob and can provide an optional blurb below
 	// the test failures comment.
 	ReportTemplate *template.Template `json:"-"`
+}
+
+// Sinker is config for the sinker controller.
+type Sinker struct {
+	// ResyncPeriodString compiles into ResyncPeriod at load time.
+	ResyncPeriodString string `json:"resync_period,omitempty"`
+	// ResyncPeriod is how often the controller will perform a garbage
+	// collection.
+	ResyncPeriod time.Duration `json:"-"`
+	// MaxProwJobAgeString compiles into MaxProwJobAge at load time.
+	MaxProwJobAgeString string `json:"max_prowjob_age,omitempty"`
+	// MaxProwJobAge is how old a ProwJob can be before it is garbage-collected.
+	MaxProwJobAge time.Duration `json:"-"`
+	// MaxPodAgeString compiles into MaxPodAge at load time.
+	MaxPodAgeString string `json:"max_pod_age,omitempty"`
+	// MaxPodAge is how old a Pod can be before it is garbage-collected.
+	MaxPodAge time.Duration `json:"-"`
 }
 
 // Trigger is config for the trigger plugin.
@@ -144,6 +162,22 @@ func parseConfig(c *Config) error {
 		return fmt.Errorf("parsing template: %v", err)
 	}
 	c.Plank.ReportTemplate = reportTmpl
+
+	resyncPeriod, err := time.ParseDuration(c.Sinker.ResyncPeriodString)
+	if err != nil {
+		return fmt.Errorf("cannot parse duration for resync_period: %v", err)
+	}
+	c.Sinker.ResyncPeriod = resyncPeriod
+	maxProwJobAge, err := time.ParseDuration(c.Sinker.MaxProwJobAgeString)
+	if err != nil {
+		return fmt.Errorf("cannot parse duration for max_prowjob_age: %v", err)
+	}
+	c.Sinker.MaxProwJobAge = maxProwJobAge
+	maxPodAge, err := time.ParseDuration(c.Sinker.MaxPodAgeString)
+	if err != nil {
+		return fmt.Errorf("cannot parse duration for max_pod_age: %v", err)
+	}
+	c.Sinker.MaxPodAge = maxPodAge
 	return nil
 }
 
