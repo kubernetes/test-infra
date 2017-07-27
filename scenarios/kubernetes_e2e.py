@@ -393,6 +393,7 @@ def main(args):
 
     cluster = cluster_name(args.cluster, os.getenv('BUILD_NUMBER', 0))
     runner_args.append('--cluster=%s' % cluster)
+    runner_args.append('--gcp-network=%s' % cluster)
     runner_args.extend(args.kubetest_args)
 
     if args.use_logexporter:
@@ -422,10 +423,7 @@ def main(args):
       'KUBE_AWS_INSTANCE_PREFIX=%s' % cluster,
       # GCE
       'INSTANCE_PREFIX=%s' % cluster,
-      'KUBE_GCE_NETWORK=%s' % cluster,
       'KUBE_GCE_INSTANCE_PREFIX=%s' % cluster,
-      # GKE
-      'KUBE_GKE_NETWORK=%s' % cluster,
     )
 
     if args and args.image_family and args.image_project:
@@ -486,7 +484,7 @@ def create_parser():
     parser.add_argument(
         '--kubeadm', choices=['ci', 'periodic', 'pull'])
     parser.add_argument(
-        '--tag', default='v20170726-5dd9f4f0', help='Use a specific kubekins-e2e tag if set')
+        '--tag', default='v20170727-2e1dfe8a', help='Use a specific kubekins-e2e tag if set')
     parser.add_argument(
         '--test', default='true', help='If we need to run any actual test within kubetest')
     parser.add_argument(

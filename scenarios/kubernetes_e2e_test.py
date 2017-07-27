@@ -417,5 +417,13 @@ class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-method
         self.assertEqual(args.mode, 'local')
         self.assertEqual(args.cluster, 'test')
 
+    def test_gcp_network(self):
+        args = kubernetes_e2e.parse_args(['--mode=local', '--cluster=test'])
+        with Stub(kubernetes_e2e, 'check_env', self.fake_check_env):
+            kubernetes_e2e.main(args)
+        lastcall = self.callstack[-1]
+        self.assertIn('--gcp-network=test', lastcall)
+
+
 if __name__ == '__main__':
     unittest.main()
