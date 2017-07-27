@@ -211,6 +211,13 @@ var (
 	}
 )
 
+// marshaled in serveCIStatus
+type jobStatus struct {
+	Status  string `json:"status"`
+	BuildID string `json:"build_id"`
+	URL     string `json:"url"`
+}
+
 // SubmitQueue will merge PR which meet a set of requirements.
 //  PR must have LGTM after the last commit
 //  PR must have passed all github CI checks
@@ -272,6 +279,7 @@ type SubmitQueue struct {
 	BatchEnabled bool
 	ContextURL   string
 	batchStatus  submitQueueBatchStatus
+	ciStatus     map[string]map[string]jobStatus // type (eg batch) : job : status
 }
 
 func init() {
@@ -488,6 +496,9 @@ func (sq *SubmitQueue) internalInitialize(config *github.Config, features *featu
 		if sq.BatchEnabled {
 			http.Handle("/batch", gziphandler.GzipHandler(http.HandlerFunc(sq.serveBatch)))
 		}
+		if sq.ProwURL != "" {
+			http.Handle("/ci-status", gziphandler.GzipHandler(http.HandlerFunc(sq.serveCIStatus)))
+		}
 		config.ServeDebugStats("/stats")
 		go http.ListenAndServe(mungeopts.Server.Address, nil)
 	}
@@ -506,6 +517,9 @@ func (sq *SubmitQueue) internalInitialize(config *github.Config, features *featu
 	go sq.updateGoogleE2ELoop()
 	if sq.BatchEnabled {
 		go sq.handleGithubE2EBatchMerge()
+	}
+	if sq.ProwURL != "" {
+		go sq.monitorProw()
 	}
 
 	if sq.AdminPort != 0 {
@@ -647,6 +661,59 @@ func (sq *SubmitQueue) updateHealth() {
 				sq.health.NumStablePerJob[job]++
 			}
 		}
+	}
+}
+
+func (sq *SubmitQueue) monitorProw() {
+	for {
+		repo := sq.githubConfig.Org + "/" + sq.githubConfig.Project
+		url := sq.ProwURL + "/data.js"
+		// get current job info from prow
+		allJobs, err := getJobs(sq.ProwURL)
+		if err != nil {
+			glog.Errorf("Error reading batch jobs from Prow URL %v: %v", sq.ProwURL, err)
+			continue
+		}
+		// TODO: copy these from sq first instead
+		ciStatus := make(map[string]map[string]jobStatus)
+		ciLatest := make(map[string]map[string]time.Time)
+		for _, job := range allJobs {
+			if job.Finished == "" || job.BuildID == "" {
+				continue
+			}
+			// TODO: more explicit categorization
+			var category string
+			category = job.Type
+
+			ft, err := time.Parse(time.RFC3339Nano, job.Finished)
+			if err != nil {
+				glog.Errorf("Error parsing job finish time %s: %v", job.Finished, err)
+				continue
+			}
+
+			if _, ok := ciLatest[category]; !ok {
+				ciLatest[category] = make(map[string]time.Time)
+				ciStatus[category] = make(map[string]jobStatus)
+			}
+			latest, ok := ciLatest[category][job.Job]
+
+			// TODO: flake cache?
+			status := "Stable"
+			if job.State != "success" {
+				status := "Not Stable"
+			}
+
+			if !ok || latest.After(ft) {
+				ciLatest[category][job.Job] = ft
+				ciStatus[category][job.Job] = jobStatus{
+					Status:  status,
+					BuildID: job.BuildID,
+					URL:     job.URL,
+				}
+			}
+		}
+
+		time.Sleep(1 * time.Minute)
 	}
 }
 
@@ -1432,6 +1499,11 @@ func (sq *SubmitQueue) serveGithubE2EStatus(res http.ResponseWriter, req *http.R
 
 func (sq *SubmitQueue) serveGoogleInternalStatus(res http.ResponseWriter, req *http.Request) {
 	data := sq.getGoogleInternalStatus()
+	sq.serve(data, res, req)
+}
+
+func (sq *SubmitQueue) serveCIStatus(res http.ResponseWriter, req *http.Request) {
+	data := sq.getCIStatus()
 	sq.serve(data, res, req)
 }
 
