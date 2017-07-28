@@ -2278,6 +2278,8 @@ class JobTest(unittest.TestCase):
                             self.assertNotIn('--mode', args, job)
                     else:
                         self.assertIn('--mode=docker', args, job)
+                    if '--deployment=gke' in args:
+                        self.assertTrue(any('--gcp-node-image' in a for a in args), job)
                     self.assertNotIn('--charts-tests', args)  # Use --charts
                     if any('--check_version_skew' in a for a in args):
                         self.fail('Use --check-version-skew, not --check_version_skew in %s' % job)
