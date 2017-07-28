@@ -36,7 +36,6 @@ var (
 )
 
 const (
-	botName        = "k8s-merge-robot"
 	jenkinsBotName = "k8s-bot"
 )
 
@@ -148,20 +147,13 @@ func (p *PathLabelMunger) Munge(obj *github.MungeObject) {
 	SyncLabels(p.allLabels, needsLabels, obj)
 }
 
-type labelApplicator interface {
-	LabelSet() sets.String
-	AddLabels([]string) error
-	RemoveLabel(string) error
-	LabelCreator(string) (string, bool)
-}
-
 // SyncLabels properly syncs a set of labels. 'allLabels' must be a superset of
 // 'desiredLabels'; to disable removing labels, set them to be the same set.
 // Multiple mungers must somehow coordinate on which labels the bot ought to
 // apply, otherwise the bot will fight with itself.
 //
 // TODO: fix error handling.
-func SyncLabels(allLabels, desiredLabels sets.String, obj labelApplicator) error {
+func SyncLabels(allLabels, desiredLabels sets.String, obj *github.MungeObject) error {
 	hasLabels := obj.LabelSet().Intersection(allLabels)
 
 	missingLabels := desiredLabels.Difference(hasLabels)
@@ -172,7 +164,7 @@ func SyncLabels(allLabels, desiredLabels sets.String, obj labelApplicator) error
 	extraLabels := hasLabels.Difference(desiredLabels)
 	for _, label := range extraLabels.List() {
 		creator, ok := obj.LabelCreator(label)
-		if ok && creator == botName {
+		if ok && obj.IsRobot(creator) {
 			obj.RemoveLabel(label)
 		}
 	}

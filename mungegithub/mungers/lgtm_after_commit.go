@@ -94,7 +94,7 @@ func (LGTMAfterCommitMunger) Munge(obj *github.MungeObject) {
 }
 
 func (LGTMAfterCommitMunger) isStaleIssueComment(obj *github.MungeObject, comment *githubapi.IssueComment) bool {
-	if !mergeBotComment(comment) {
+	if !obj.IsRobot(comment.User) {
 		return false
 	}
 	if !lgtmRemovedRegex.MatchString(*comment.Body) {

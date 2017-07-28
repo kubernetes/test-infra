@@ -20,6 +20,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"math"
@@ -163,6 +164,9 @@ func (r *zeroCacheRoundTripper) RoundTrip(req *http.Request) (*http.Response, er
 type Config struct {
 	client   *github.Client
 	apiLimit *callLimitRoundTripper
+
+	// BotName is the login for the authenticated user
+	BotName string
 
 	Org         string
 	Project     string
@@ -337,6 +341,11 @@ func (obj *MungeObject) Org() string {
 	return obj.config.Org
 }
 
+// IsRobot determines if the user is the robot running the munger
+func (obj *MungeObject) IsRobot(user *github.User) bool {
+	return *user.Login == obj.config.BotName
+}
+
 // DebugStats is a structure that tells information about how we have interacted
 // with github
 type DebugStats struct {
@@ -480,6 +489,20 @@ func (config *Config) PreExecute() error {
 		config.client.BaseURL = url
 	}
 	config.ResetAPICount()
+
+	// passing an empty username returns information
+	// about the currently authenticated user
+	username := ""
+	user, _, err := config.client.Users.Get(context.Background(), username)
+	if err != nil {
+		return fmt.Errorf("failed to retrieve currently authenticatd user: %v", err)
+	} else if user == nil {
+		return errors.New("failed to retrieve currently authenticatd user: got nil result")
+	} else if user.Login == nil {
+		return errors.New("failed to retrieve currently authenticatd user: got nil result for user login")
+	}
+	config.BotName = *user.Login
+
 	return nil
 }
 
@@ -948,14 +971,14 @@ func (obj *MungeObject) LabelTime(label string) (*time.Time, bool) {
 	return event.CreatedAt, true
 }
 
-// LabelCreator returns the login name of the user who (last) created the given label
-func (obj *MungeObject) LabelCreator(label string) (string, bool) {
+// LabelCreator returns the user who (last) created the given label
+func (obj *MungeObject) LabelCreator(label string) (*github.User, bool) {
 	event := obj.labelEvent(label, lastTime)
 	if event == nil || event.Actor == nil || event.Actor.Login == nil {
 		glog.Errorf("Error in LabelCreator, received nil event value")
-		return "", false
+		return nil, false
 	}
-	return *event.Actor.Login, true
+	return event.Actor, true
 }
 
 // HasLabel returns if the label `name` is in the array of `labels`

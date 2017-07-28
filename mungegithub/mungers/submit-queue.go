@@ -1606,7 +1606,7 @@ func (sq *SubmitQueue) serveHealthSVG(res http.ResponseWriter, req *http.Request
 }
 
 func (sq *SubmitQueue) isStaleIssueComment(obj *github.MungeObject, comment *githubapi.IssueComment) bool {
-	if !mergeBotComment(comment) {
+	if !obj.IsRobot(comment.User) {
 		return false
 	}
 	if *comment.Body != newRetestBody && *comment.Body != oldRetestBody {

@@ -162,7 +162,7 @@ func (b *BlockPath) Munge(obj *github.MungeObject) {
 }
 
 func (b *BlockPath) isStaleIssueComment(obj *github.MungeObject, comment *githubapi.IssueComment) bool {
-	if !mergeBotComment(comment) {
+	if !obj.IsRobot(comment.User) {
 		return false
 	}
 	if *comment.Body != blockPathBody {

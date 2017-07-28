@@ -36,6 +36,7 @@ var (
 )
 
 func TestReleaseNoteLabel(t *testing.T) {
+	const testBotName = "dummy"
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
 	tests := []struct {
@@ -49,120 +50,120 @@ func TestReleaseNoteLabel(t *testing.T) {
 	}{
 		{
 			name:        "LGTM with release-note",
-			issue:       github_test.Issue(botName, 1, []string{lgtmLabel, releaseNote}, true),
+			issue:       github_test.Issue(testBotName, 1, []string{lgtmLabel, releaseNote}, true),
 			mustHave:    []string{lgtmLabel, releaseNote},
 			mustNotHave: []string{releaseNoteLabelNeeded},
 		},
 		{
 			name:        "LGTM with release-note-none",
-			issue:       github_test.Issue(botName, 1, []string{lgtmLabel, releaseNoteNone}, true),
+			issue:       github_test.Issue(testBotName, 1, []string{lgtmLabel, releaseNoteNone}, true),
 			mustHave:    []string{lgtmLabel, releaseNoteNone},
 			mustNotHave: []string{releaseNoteLabelNeeded},
 		},
 		{
 			name:        "LGTM with release-note-action-required",
-			issue:       github_test.Issue(botName, 1, []string{lgtmLabel, releaseNoteActionRequired}, true),
+			issue:       github_test.Issue(testBotName, 1, []string{lgtmLabel, releaseNoteActionRequired}, true),
 			mustHave:    []string{lgtmLabel, releaseNoteActionRequired},
 			mustNotHave: []string{releaseNoteLabelNeeded},
 		},
 		{
 			name:        "LGTM with release-note-experimental",
-			issue:       github_test.Issue(botName, 1, []string{lgtmLabel, releaseNoteExperimental}, true),
+			issue:       github_test.Issue(testBotName, 1, []string{lgtmLabel, releaseNoteExperimental}, true),
 			mustHave:    []string{lgtmLabel, releaseNoteExperimental},
 			mustNotHave: []string{releaseNoteLabelNeeded},
 		},
 		{
 			name:        "LGTM with release-note-label-needed",
-			issue:       github_test.Issue(botName, 1, []string{lgtmLabel, releaseNoteLabelNeeded}, true),
+			issue:       github_test.Issue(testBotName, 1, []string{lgtmLabel, releaseNoteLabelNeeded}, true),
 			mustHave:    []string{lgtmLabel, doNotMergeLabel, releaseNoteLabelNeeded},
 			mustNotHave: []string{},
 		},
 		{
 			name:        "LGTM only",
-			issue:       github_test.Issue(botName, 1, []string{lgtmLabel}, true),
+			issue:       github_test.Issue(testBotName, 1, []string{lgtmLabel}, true),
 			mustHave:    []string{lgtmLabel, doNotMergeLabel, releaseNoteLabelNeeded},
 			mustNotHave: []string{},
 		},
 		{
 			name:     "No labels",
-			issue:    github_test.Issue(botName, 1, []string{}, true),
+			issue:    github_test.Issue(testBotName, 1, []string{}, true),
 			mustHave: []string{releaseNoteLabelNeeded},
 		},
 		{
 			name:     "release-note",
-			issue:    github_test.Issue(botName, 1, []string{releaseNote}, true),
+			issue:    github_test.Issue(testBotName, 1, []string{releaseNote}, true),
 			mustHave: []string{releaseNote},
 		},
 		{
 			name:     "release-note-none",
-			issue:    github_test.Issue(botName, 1, []string{releaseNoteNone}, true),
+			issue:    github_test.Issue(testBotName, 1, []string{releaseNoteNone}, true),
 			mustHave: []string{releaseNoteNone},
 		},
 		{
 			name:     "release-note-action-required",
-			issue:    github_test.Issue(botName, 1, []string{releaseNoteActionRequired}, true),
+			issue:    github_test.Issue(testBotName, 1, []string{releaseNoteActionRequired}, true),
 			mustHave: []string{releaseNoteActionRequired},
 		},
 		{
 			name:     "release-note-experimental",
-			issue:    github_test.Issue(botName, 1, []string{releaseNoteExperimental}, true),
+			issue:    github_test.Issue(testBotName, 1, []string{releaseNoteExperimental}, true),
 			mustHave: []string{releaseNoteExperimental},
 		},
 		{
 			name:        "release-note and release-note-label-needed",
-			issue:       github_test.Issue(botName, 1, []string{releaseNote, releaseNoteLabelNeeded}, true),
+			issue:       github_test.Issue(testBotName, 1, []string{releaseNote, releaseNoteLabelNeeded}, true),
 			mustHave:    []string{releaseNote},
 			mustNotHave: []string{releaseNoteLabelNeeded},
 		},
 		{
 			name:        "release-note-none and release-note-label-needed",
-			issue:       github_test.Issue(botName, 1, []string{releaseNoteNone, releaseNoteLabelNeeded}, true),
+			issue:       github_test.Issue(testBotName, 1, []string{releaseNoteNone, releaseNoteLabelNeeded}, true),
 			mustHave:    []string{releaseNoteNone},
 			mustNotHave: []string{releaseNoteLabelNeeded},
 		},
 		{
 			name:        "release-note-action-required and release-note-label-needed",
-			issue:       github_test.Issue(botName, 1, []string{releaseNoteActionRequired, releaseNoteLabelNeeded}, true),
+			issue:       github_test.Issue(testBotName, 1, []string{releaseNoteActionRequired, releaseNoteLabelNeeded}, true),
 			mustHave:    []string{releaseNoteActionRequired},
 			mustNotHave: []string{releaseNoteLabelNeeded},
 		},
 		{
 			name:        "release-note-experimental and release-note-label-needed",
-			issue:       github_test.Issue(botName, 1, []string{releaseNoteExperimental, releaseNoteLabelNeeded}, true),
+			issue:       github_test.Issue(testBotName, 1, []string{releaseNoteExperimental, releaseNoteLabelNeeded}, true),
 			mustHave:    []string{releaseNoteExperimental},
 			mustNotHave: []string{releaseNoteLabelNeeded},
 		},
 		{
 			name:        "do not add needs label when parent PR has releaseNote label",
 			branch:      "release-1.2",
-			issue:       github_test.Issue(botName, 1, []string{}, true),
+			issue:       github_test.Issue(testBotName, 1, []string{}, true),
 			body:        "Cherry pick of #2 on release-1.2.",
-			secondIssue: github_test.Issue(botName, 2, []string{releaseNote}, true),
+			secondIssue: github_test.Issue(testBotName, 2, []string{releaseNote}, true),
 			mustNotHave: []string{releaseNoteLabelNeeded},
 		},
 		{
 			name:        "do not touch LGTM on non-master when parent PR has releaseNote label",
 			branch:      "release-1.2",
-			issue:       github_test.Issue(botName, 1, []string{lgtmLabel}, true),
+			issue:       github_test.Issue(testBotName, 1, []string{lgtmLabel}, true),
 			body:        "Cherry pick of #2 on release-1.2.",
-			secondIssue: github_test.Issue(botName, 2, []string{releaseNote}, true),
+			secondIssue: github_test.Issue(testBotName, 2, []string{releaseNote}, true),
 			mustHave:    []string{lgtmLabel},
 			mustNotHave: []string{releaseNoteLabelNeeded},
 		},
 		{
 			name:        "add needs label when parent PR does not have releaseNote label",
 			branch:      "release-1.2",
-			issue:       github_test.Issue(botName, 1, []string{}, true),
+			issue:       github_test.Issue(testBotName, 1, []string{}, true),
 			body:        "Cherry pick of #2 on release-1.2.",
-			secondIssue: github_test.Issue(botName, 2, []string{releaseNoteNone}, true),
+			secondIssue: github_test.Issue(testBotName, 2, []string{releaseNoteNone}, true),
 			mustHave:    []string{releaseNoteLabelNeeded},
 		},
 		{
 			name:        "add doNotMergeLabel on non-master when parent PR has releaseNoteNone label",
 			branch:      "release-1.2",
-			issue:       github_test.Issue(botName, 1, []string{lgtmLabel}, true),
+			issue:       github_test.Issue(testBotName, 1, []string{lgtmLabel}, true),
 			body:        "Cherry pick of #2 on release-1.2.",
-			secondIssue: github_test.Issue(botName, 2, []string{releaseNoteNone}, true),
+			secondIssue: github_test.Issue(testBotName, 2, []string{releaseNoteNone}, true),
 			mustHave:    []string{doNotMergeLabel, releaseNoteLabelNeeded},
 			mustNotHave: []string{},
 		},
@@ -204,6 +205,7 @@ func TestReleaseNoteLabel(t *testing.T) {
 			Project: "r",
 		}
 		config.SetClient(client)
+		config.BotName = testBotName
 
 		r := ReleaseNoteLabel{}
 		err := r.Initialize(config, nil)
