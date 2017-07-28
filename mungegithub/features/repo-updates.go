@@ -199,7 +199,7 @@ func (o *RepoInfo) updateRepoUsers() error {
 	glog.Infof("Loaded config from %s:%s", o.projectDir, sha)
 	glog.V(5).Infof("approvers: %v", o.approvers)
 	glog.V(5).Infof("reviewers: %v", o.reviewers)
-	return nil
+	return o.pruneRepoUsers()
 }
 
 // Initialize will initialize the munger
@@ -242,6 +242,21 @@ func (o *RepoInfo) cloneRepo() (string, error) {
 		glog.Errorf("Failed to clone github repo: %s", output)
 	}
 	return cloneUrl, err
+}
+
+func (o *RepoInfo) pruneRepoUsers() error {
+	whitelist, err := o.config.Collaborators()
+	if err != nil {
+		return err
+	}
+
+	for repo, users := range o.approvers {
+		o.approvers[repo] = whitelist.Intersection(users)
+	}
+	for repo, users := range o.reviewers {
+		o.reviewers[repo] = whitelist.Intersection(users)
+	}
+	return nil
 }
 
 // EachLoop is called at the start of every munge loop
