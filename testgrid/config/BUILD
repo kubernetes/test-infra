@@ -9,6 +9,18 @@ load(
     "go_test",
 )
 
+genrule(
+    name = "gen-config",
+    srcs = [
+        "config.yaml",
+    ],
+    outs = ["testgrid-config"],
+    cmd = "$(location //testgrid/config) --yaml=$< --output=$@",
+    tools = [
+        "//testgrid/config",
+    ],
+)
+
 go_binary(
     name = "config",
     library = ":go_default_library",
