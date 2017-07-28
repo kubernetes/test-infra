@@ -13,6 +13,7 @@ go_library(
     srcs = ["heart.go"],
     tags = ["automanaged"],
     deps = [
+        "//prow/config:go_default_library",
         "//prow/github:go_default_library",
         "//prow/plugins:go_default_library",
         "//vendor:github.com/Sirupsen/logrus",
@@ -38,6 +39,7 @@ go_test(
     library = ":go_default_library",
     tags = ["automanaged"],
     deps = [
+        "//prow/config:go_default_library",
         "//prow/github:go_default_library",
         "//prow/github/fakegithub:go_default_library",
         "//vendor:github.com/Sirupsen/logrus",

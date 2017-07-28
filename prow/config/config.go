@@ -39,6 +39,7 @@ type Config struct {
 	Plank    Plank     `json:"plank,omitempty"`
 	Sinker   Sinker    `json:"sinker,omitempty"`
 	Triggers []Trigger `json:"triggers,omitempty"`
+	Heart    Heart     `json:"heart,omitempty"`
 
 	// ProwJobNamespace is the namespace in the cluster that prow
 	// components will use for looking up ProwJobs. The namespace
@@ -92,6 +93,13 @@ type Trigger struct {
 	// TrustedOrg is the org whose members' PRs will be automatically built
 	// for PRs to the above repos.
 	TrustedOrg string `json:"trusted_org,omitempty"`
+}
+
+// Heart is config for the heart plugin
+type Heart struct {
+	// Adorees is a list of GitHub logins for members
+	// for whom we will add emojis to comments
+	Adorees []string `json:"adorees,omitempty"`
 }
 
 // SlackEvent is config for the slackevents plugin.
