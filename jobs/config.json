@@ -8214,6 +8214,7 @@
       "--env-file=jobs/ci-kubernetes-kubemark-100-gce.env",
       "--env-file=jobs/ci-kubernetes-kubemark-100-canary.env",
       "--extract=ci/latest",
+      "--gcp-project=k8s-jenkins-gci-kubemark",
       "--gcp-zone=us-central1-f",
       "--kubemark",
       "--kubemark-master-size=n1-standard-4",
