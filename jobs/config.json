@@ -4860,7 +4860,7 @@
       "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
       "--gcp-zone=us-central1-a",
       "--provider=gke",
-      "--timeout=300m"
+      "--timeout=500m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
