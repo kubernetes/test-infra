@@ -27,6 +27,7 @@ type prowJob struct {
 	Type     string `json:"type"`
 	Repo     string `json:"repo"`
 	Refs     string `json:"refs"`
+	Number   int    `json:"number"`
 	BuildID  string `json:"build_id"`
 	Job      string `json:"job"`
 	Finished string `json:"finished"`

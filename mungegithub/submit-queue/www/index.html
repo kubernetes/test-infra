@@ -162,6 +162,12 @@
                   <span style="color: {{$chip.color}}">{{$chip.state}}</span> <a ng-href="{{$chip.url}}">{{$chip.name}}</a>
                 </md-chip-template>
               </md-chips>
+              <h2 class="md-title" ng-show="cntl.ciStatus.serial.length > 0">Serial Builds</h2>
+              <md-chips ng-model="cntl.ciStatus.serial" readonly="true">
+                <md-chip-template title="{{$chip.msg}}">
+                  <span style="color: {{$chip.color}}">{{$chip.state}}</span> <a ng-href="{{$chip.url}}">{{$chip.name}}</a>
+                </md-chip-template>
+              </md-chips>
               <br>
               <md-toolbar class="md-whiteframe-z2">
                 <h2 class="md-toolbar-tools">End-to-End Results</h2>

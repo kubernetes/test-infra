@@ -250,10 +250,11 @@ type SubmitQueue struct {
 	mergeRate     float64 // per 24 hours
 	loopStarts    int32   // if > 1, then we must have made a complete pass.
 
-	githubE2ERunning  *github.MungeObject         // protect by sync.Mutex!
-	githubE2EQueue    map[int]*github.MungeObject // protected by sync.Mutex!
-	githubE2EPollTime time.Duration
-	lgtmTimeCache     *mungerutil.LabelTimeCache
+	githubE2ERunning   *github.MungeObject         // protect by sync.Mutex!
+	githubE2EQueue     map[int]*github.MungeObject // protected by sync.Mutex!
+	githubE2EPollTime  time.Duration
+	lgtmTimeCache      *mungerutil.LabelTimeCache
+	githubE2ELastPRNum int
 
 	lastE2EStable bool // was e2e stable last time they were checked, protect by sync.Mutex
 	e2e           e2e.E2ETester
@@ -441,6 +442,9 @@ func (sq *SubmitQueue) Initialize(config *github.Config, features *features.Feat
 func (sq *SubmitQueue) internalInitialize(config *github.Config, features *features.Features, overrideURL string) error {
 	sq.Lock()
 	defer sq.Unlock()
+
+	// initialize to invalid pr number
+	sq.githubE2ELastPRNum = -1
 
 	sq.Metadata.ChartURL = sq.Metadata.chartURL
 	sq.Metadata.HistoryURL = sq.Metadata.historyURL
@@ -664,6 +668,16 @@ func (sq *SubmitQueue) updateHealth() {
 	}
 }
 
+func (sq *SubmitQueue) getRunningPRNumber() int {
+	defer sq.Unlock()
+	sq.Lock()
+	if sq.githubE2ERunning != nil {
+		return *sq.githubE2ERunning.Issue.Number
+	}
+	// make sure to return an invalid pr number otherwise
+	return -1
+}
+
 func (sq *SubmitQueue) monitorProw() {
 	nonBlockingJobNames := make(map[string]bool)
 	for _, jobName := range sq.NonBlockingJobNames {
@@ -675,6 +689,8 @@ func (sq *SubmitQueue) monitorProw() {
 	}
 	url := sq.ProwURL + "/data.js"
 	for {
+		currentPR := sq.getRunningPRNumber()
+		lastPR := sq.githubE2ELastPRNum
 		// get current job info from prow
 		allJobs, err := getJobs(url)
 		if err != nil {
@@ -691,7 +707,10 @@ func (sq *SubmitQueue) monitorProw() {
 			}
 			// type/category
 			key := job.Type + "/"
-			if nonBlockingJobNames[job.Job] {
+			// the most recent submit-queue PR(s)
+			if job.Number == currentPR || job.Number == lastPR {
+				key += "serial"
+			} else if nonBlockingJobNames[job.Job] {
 				key += "nonblocking"
 			} else if requireRetestJobNames[job.Job] {
 				key += "requiredretest"
@@ -1310,6 +1329,9 @@ func (sq *SubmitQueue) handleGithubE2EAndMerge() {
 		if remove {
 			// remove it from the map after we finish testing
 			sq.Lock()
+			if sq.githubE2ERunning != nil {
+				sq.githubE2ELastPRNum = *sq.githubE2ERunning.Issue.Number
+			}
 			sq.githubE2ERunning = nil
 			sq.deleteQueueItem(obj)
 			sq.Unlock()
@@ -1338,6 +1360,9 @@ func (sq *SubmitQueue) selectPullRequest() *github.MungeObject {
 	}
 	keys := sq.orderedE2EQueue()
 	obj := sq.githubE2EQueue[keys[0]]
+	if sq.githubE2ERunning != nil {
+		sq.githubE2ELastPRNum = *sq.githubE2ERunning.Issue.Number
+	}
 	sq.githubE2ERunning = obj
 
 	return obj
