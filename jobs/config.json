@@ -794,7 +794,6 @@
       "--gcp-zone=us-central1-f",
       "--provider=gce",
       "--publish=gs://kubernetes-release-dev/ci/latest-canarygreen.txt",
-      "--tag=latest",
       "--test_args=--ginkgo.focus=Variable.Expansion --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8",
       "--timeout=40m"
     ],
@@ -2897,6 +2896,24 @@
     "scenario": "kubernetes_e2e",
     "sigOwners": [
       "sig-scale"
+    ]
+  },
+  "ci-kubernetes-e2e-gce-scalability-canary": {
+    "args": [
+      "--cluster=e2e-scale-canary",
+      "--env-file=jobs/platform/gce.env",
+      "--env-file=jobs/ci-kubernetes-e2e-gce-scalability.env",
+      "--env-file=jobs/ci-kubernetes-e2e-gce-scalability-canary.env",
+      "--extract=ci/latest",
+      "--gcp-project=google.com:k8s-jenkins-scalability",
+      "--gcp-zone=us-central1-f",
+      "--provider=gce",
+      "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --kube-api-content-type=application/vnd.kubernetes.protobuf --allowed-not-ready-nodes=1 --gather-resource-usage=true --gather-metrics-at-teardown=true --gather-logs-sizes=true --output-print-type=json --minStartupPods=8",
+      "--timeout=120m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-testing"
     ]
   },
   "ci-kubernetes-e2e-gce-scalability-release-1-6": {
@@ -8147,7 +8164,6 @@
       "--extract=ci/latest",
       "--gcp-zone=us-central1-f",
       "--provider=gce",
-      "--tag=latest",
       "--test_args=--ginkgo.focus=Variable.Expansion --minStartupPods=8",
       "--timeout=40m"
     ],
@@ -8187,6 +8203,30 @@
     "scenario": "kubernetes_build",
     "sigOwners": [
       "UNKNOWN"
+    ]
+  },
+  "ci-kubernetes-kubemark-100-canary": {
+    "args": [
+      "--cluster=kubemark-100-canary",
+      "--docker-in-docker",
+      "--env-file=jobs/platform/gce.env",
+      "--env-file=jobs/ci-kubernetes-kubemark-100-gce.env",
+      "--env-file=jobs/ci-kubernetes-kubemark-100-canary.env",
+      "--extract=ci/latest",
+      "--gcp-zone=us-central1-f",
+      "--kubemark",
+      "--kubemark-master-size=n1-standard-4",
+      "--kubemark-nodes=100",
+      "--mode=docker",
+      "--provider=gce",
+      "--tag=latest",
+      "--test=false",
+      "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --gather-resource-usage=true --gather-metrics-at-teardown=true --output-print-type=json",
+      "--timeout=240m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-testing"
     ]
   },
   "ci-kubernetes-kubemark-100-gce": {

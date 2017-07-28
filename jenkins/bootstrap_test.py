@@ -1885,7 +1885,7 @@ class JobTest(unittest.TestCase):
                 if '{rc}' in line:
                     bad_jobs.add(job)
             self.assertFalse(job.endswith('.sh'))
-            self.assertTrue(modern)
+            self.assertTrue(modern, job)
 
             realjob = self.get_real_bootstrap_job(job)
             self.assertTrue(realjob)
@@ -2011,6 +2011,8 @@ class JobTest(unittest.TestCase):
             'ci-kubernetes-e2e-gce-scalability-release-1-6.env': 'ci-kubernetes-e2e-gce-scalability-release-*',
             'ci-kubernetes-e2e-gci-gce-scalability-release-1-7.env': 'ci-kubernetes-e2e-gci-gce-scalability-release-*',
             'ci-kubernetes-e2e-gci-gce-scalability-release-1-6.env': 'ci-kubernetes-e2e-gci-gce-scalability-release-*',
+            'ci-kubernetes-e2e-gce-scalability.env': 'ci-kubernetes-e2e-gce-scalability-*',
+            'ci-kubernetes-e2e-gce-scalability-canary.env': 'ci-kubernetes-e2e-gce-scalability-*',
             # TODO(fejta): remove these (found while migrating jobs)
             'ci-kubernetes-kubemark-100-gce.env': 'ci-kubernetes-kubemark-*',
             'ci-kubernetes-kubemark-5-gce.env': 'ci-kubernetes-kubemark-*',
