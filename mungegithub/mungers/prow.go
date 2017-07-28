@@ -24,11 +24,16 @@ import (
 
 // xref k8s.io/test-infra/prow/cmd/deck/jobs.go
 type prowJob struct {
-	Type    string `json:"type"`
-	Repo    string `json:"repo"`
-	Refs    string `json:"refs"`
-	State   string `json:"state"`
-	Context string `json:"context"`
+	Type     string `json:"type"`
+	Repo     string `json:"repo"`
+	Refs     string `json:"refs"`
+	Number   int    `json:"number"`
+	BuildID  string `json:"build_id"`
+	Job      string `json:"job"`
+	Finished string `json:"finished"`
+	State    string `json:"state"`
+	Context  string `json:"context"`
+	URL      string `json:"url"`
 }
 
 type prowJobs []prowJob

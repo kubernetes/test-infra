@@ -161,16 +161,16 @@ type submitQueueInterruptedObject struct {
 type submitQueueMetadata struct {
 	ProjectName string
 
-	ChartUrl   string
-	HistoryUrl string
-	// chartUrl and historyUrl are option storage locations. They are distinct from ChartUrl and
-	// HistoryUrl since the the public variables are used asynchronously by a fileserver and updates
+	ChartURL   string
+	HistoryURL string
+	// chartURL and historyURL are option storage locations. They are distinct from ChartURL and
+	// HistoryURL since the the public variables are used asynchronously by a fileserver and updates
 	// to the options values should not cause a race condition.
-	chartUrl   string
-	historyUrl string
+	chartURL   string
+	historyURL string
 
-	RepoPullUrl string
-	ProwUrl     string
+	RepoPullURL string
+	ProwURL     string
 }
 
 type submitQueueBatchStatus struct {
@@ -211,6 +211,13 @@ var (
 	}
 )
 
+// marshaled in serveCIStatus
+type jobStatus struct {
+	State   string `json:"state"`
+	BuildID string `json:"build_id"`
+	URL     string `json:"url"`
+}
+
 // SubmitQueue will merge PR which meet a set of requirements.
 //  PR must have LGTM after the last commit
 //  PR must have passed all github CI checks
@@ -243,10 +250,11 @@ type SubmitQueue struct {
 	mergeRate     float64 // per 24 hours
 	loopStarts    int32   // if > 1, then we must have made a complete pass.
 
-	githubE2ERunning  *github.MungeObject         // protect by sync.Mutex!
-	githubE2EQueue    map[int]*github.MungeObject // protected by sync.Mutex!
-	githubE2EPollTime time.Duration
-	lgtmTimeCache     *mungerutil.LabelTimeCache
+	githubE2ERunning   *github.MungeObject         // protect by sync.Mutex!
+	githubE2EQueue     map[int]*github.MungeObject // protected by sync.Mutex!
+	githubE2EPollTime  time.Duration
+	lgtmTimeCache      *mungerutil.LabelTimeCache
+	githubE2ELastPRNum int
 
 	lastE2EStable bool // was e2e stable last time they were checked, protect by sync.Mutex
 	e2e           e2e.E2ETester
@@ -268,10 +276,11 @@ type SubmitQueue struct {
 	features *features.Features
 
 	mergeLock    sync.Mutex // acquired when attempting to merge a specific PR
-	ProwUrl      string     // prow base page
+	ProwURL      string     // prow base page
 	BatchEnabled bool
 	ContextURL   string
 	batchStatus  submitQueueBatchStatus
+	ciStatus     map[string]map[string]jobStatus // type (eg batch) : job : status
 }
 
 func init() {
@@ -429,20 +438,23 @@ func (sq *SubmitQueue) Initialize(config *github.Config, features *features.Feat
 }
 
 // internalInitialize will initialize the munger.
-// if overrideUrl is specified, will create testUtils
-func (sq *SubmitQueue) internalInitialize(config *github.Config, features *features.Features, overrideUrl string) error {
+// if overrideURL is specified, will create testUtils
+func (sq *SubmitQueue) internalInitialize(config *github.Config, features *features.Features, overrideURL string) error {
 	sq.Lock()
 	defer sq.Unlock()
 
-	sq.Metadata.ChartUrl = sq.Metadata.chartUrl
-	sq.Metadata.HistoryUrl = sq.Metadata.historyUrl
-	sq.Metadata.ProwUrl = sq.ProwUrl
-	sq.Metadata.RepoPullUrl = fmt.Sprintf("https://github.com/%s/%s/pulls/", config.Org, config.Project)
+	// initialize to invalid pr number
+	sq.githubE2ELastPRNum = -1
+
+	sq.Metadata.ChartURL = sq.Metadata.chartURL
+	sq.Metadata.HistoryURL = sq.Metadata.historyURL
+	sq.Metadata.ProwURL = sq.ProwURL
+	sq.Metadata.RepoPullURL = fmt.Sprintf("https://github.com/%s/%s/pulls/", config.Org, config.Project)
 	sq.Metadata.ProjectName = strings.Title(config.Project)
 	sq.githubConfig = config
 
-	if sq.BatchEnabled && sq.ProwUrl == "" {
-		return errors.New("batch merges require prow-url to be set!")
+	if sq.BatchEnabled && sq.ProwURL == "" {
+		return errors.New("batch merges require prow-url to be set")
 	}
 
 	// TODO: This is not how injection for tests should work.
@@ -450,8 +462,8 @@ func (sq *SubmitQueue) internalInitialize(config *github.Config, features *featu
 		sq.e2e = &fake_e2e.FakeE2ETester{}
 	} else {
 		var gcs *utils.Utils
-		if overrideUrl != "" {
-			gcs = utils.NewTestUtils("bucket", "logs", overrideUrl)
+		if overrideURL != "" {
+			gcs = utils.NewTestUtils("bucket", "logs", overrideURL)
 		} else {
 			gcs = utils.NewWithPresubmitDetection(
 				mungeopts.GCS.BucketName, mungeopts.GCS.LogDir,
@@ -477,7 +489,6 @@ func (sq *SubmitQueue) internalInitialize(config *github.Config, features *featu
 		http.Handle("/prs", gziphandler.GzipHandler(http.HandlerFunc(sq.servePRs)))
 		http.Handle("/history", gziphandler.GzipHandler(http.HandlerFunc(sq.serveHistory)))
 		http.Handle("/github-e2e-queue", gziphandler.GzipHandler(http.HandlerFunc(sq.serveGithubE2EStatus)))
-		http.Handle("/google-internal-ci", gziphandler.GzipHandler(http.HandlerFunc(sq.serveGoogleInternalStatus)))
 		http.Handle("/merge-info", gziphandler.GzipHandler(http.HandlerFunc(sq.serveMergeInfo)))
 		http.Handle("/priority-info", gziphandler.GzipHandler(http.HandlerFunc(sq.servePriorityInfo)))
 		http.Handle("/health", gziphandler.GzipHandler(http.HandlerFunc(sq.serveHealth)))
@@ -487,6 +498,9 @@ func (sq *SubmitQueue) internalInitialize(config *github.Config, features *featu
 		http.Handle("/metadata", gziphandler.GzipHandler(http.HandlerFunc(sq.serveMetadata)))
 		if sq.BatchEnabled {
 			http.Handle("/batch", gziphandler.GzipHandler(http.HandlerFunc(sq.serveBatch)))
+		}
+		if sq.ProwURL != "" {
+			http.Handle("/ci-status", gziphandler.GzipHandler(http.HandlerFunc(sq.serveCIStatus)))
 		}
 		config.ServeDebugStats("/stats")
 		go http.ListenAndServe(mungeopts.Server.Address, nil)
@@ -506,6 +520,9 @@ func (sq *SubmitQueue) internalInitialize(config *github.Config, features *featu
 	go sq.updateGoogleE2ELoop()
 	if sq.BatchEnabled {
 		go sq.handleGithubE2EBatchMerge()
+	}
+	if sq.ProwURL != "" {
+		go sq.monitorProw()
 	}
 
 	if sq.AdminPort != 0 {
@@ -566,9 +583,9 @@ func (sq *SubmitQueue) RegisterOptions(opts *options.Options) sets.String {
 	opts.RegisterBool(&sq.FakeE2E, "fake-e2e", false, "Whether to use a fake for testing E2E stability.")
 	opts.RegisterStringSlice(&sq.DoNotMergeMilestones, "do-not-merge-milestones", []string{}, "List of milestones which, when applied, will cause the PR to not be merged")
 	opts.RegisterInt(&sq.AdminPort, "admin-port", 9999, "If non-zero, will serve administrative actions on this port.")
-	opts.RegisterString(&sq.Metadata.historyUrl, "history-url", "", "URL to access the submit-queue instance's health history.")
-	opts.RegisterString(&sq.Metadata.chartUrl, "chart-url", "", "URL to access the submit-queue instance's health charts.")
-	opts.RegisterString(&sq.ProwUrl, "prow-url", "", "Prow deployment base URL to read batch results and direct users to.")
+	opts.RegisterString(&sq.Metadata.historyURL, "history-url", "", "URL to access the submit-queue instance's health history.")
+	opts.RegisterString(&sq.Metadata.chartURL, "chart-url", "", "URL to access the submit-queue instance's health charts.")
+	opts.RegisterString(&sq.ProwURL, "prow-url", "", "Prow deployment base URL to read batch results and direct users to.")
 	opts.RegisterBool(&sq.BatchEnabled, "batch-enabled", false, "Do batch merges (requires prow/splice coordination).")
 	opts.RegisterString(&sq.ContextURL, "context-url", "", "URL where the submit queue is serving - used in Github status contexts")
 	opts.RegisterBool(&sq.GateApproved, "gate-approved", false, "Gate on approved label")
@@ -576,8 +593,8 @@ func (sq *SubmitQueue) RegisterOptions(opts *options.Options) sets.String {
 
 	opts.RegisterUpdateCallback(func(changed sets.String) error {
 		if changed.HasAny("prow-url", "batch-enabled") {
-			if sq.BatchEnabled && sq.ProwUrl == "" {
-				return fmt.Errorf("batch merges require prow-url to be set!")
+			if sq.BatchEnabled && sq.ProwURL == "" {
+				return fmt.Errorf("batch merges require prow-url to be set")
 			}
 		}
 		return nil
@@ -637,7 +654,7 @@ func (sq *SubmitQueue) updateHealth() {
 	}
 	for _, record := range sq.healthHistory {
 		if record.Overall {
-			sq.health.NumStable += 1
+			sq.health.NumStable++
 		}
 		for job, stable := range record.Jobs {
 			if _, ok := sq.health.NumStablePerJob[job]; !ok {
@@ -647,6 +664,88 @@ func (sq *SubmitQueue) updateHealth() {
 				sq.health.NumStablePerJob[job]++
 			}
 		}
+	}
+}
+
+func (sq *SubmitQueue) getRunningPRNumber() int {
+	defer sq.Unlock()
+	sq.Lock()
+	if sq.githubE2ERunning != nil {
+		return *sq.githubE2ERunning.Issue.Number
+	}
+	// make sure to return an invalid pr number otherwise
+	return -1
+}
+
+func (sq *SubmitQueue) monitorProw() {
+	nonBlockingJobNames := make(map[string]bool)
+	requireRetestJobNames := make(map[string]bool)
+	sq.opts.Lock()
+	for _, jobName := range sq.NonBlockingJobNames {
+		nonBlockingJobNames[jobName] = true
+	}
+	for _, jobName := range mungeopts.RequiredContexts.Retest {
+		requireRetestJobNames[jobName] = true
+	}
+	sq.opts.Unlock()
+
+	url := sq.ProwURL + "/data.js"
+	for {
+		currentPR := sq.getRunningPRNumber()
+		lastPR := sq.githubE2ELastPRNum
+		// get current job info from prow
+		allJobs, err := getJobs(url)
+		if err != nil {
+			glog.Errorf("Error reading batch jobs from Prow URL %v: %v", url, err)
+			continue
+		}
+		// TODO: copy these from sq first instead
+		ciStatus := make(map[string]map[string]jobStatus)
+		ciLatest := make(map[string]map[string]time.Time)
+
+		for _, job := range allJobs {
+			if job.Finished == "" || job.BuildID == "" {
+				continue
+			}
+			// type/category
+			key := job.Type + "/"
+			// the most recent submit-queue PR(s)
+			if job.Number == currentPR || job.Number == lastPR {
+				key += "serial"
+			} else if nonBlockingJobNames[job.Job] {
+				key += "nonblocking"
+			} else if requireRetestJobNames[job.Job] {
+				key += "requiredretest"
+			}
+
+			ft, err := time.Parse(time.RFC3339Nano, job.Finished)
+			if err != nil {
+				glog.Errorf("Error parsing job finish time %s: %v", job.Finished, err)
+				continue
+			}
+
+			if _, ok := ciLatest[key]; !ok {
+				ciLatest[key] = make(map[string]time.Time)
+				ciStatus[key] = make(map[string]jobStatus)
+			}
+			latest, ok := ciLatest[key][job.Job]
+
+			// TODO: flake cache?
+			if !ok || latest.Before(ft) {
+				ciLatest[key][job.Job] = ft
+				ciStatus[key][job.Job] = jobStatus{
+					State:   job.State,
+					BuildID: job.BuildID,
+					URL:     job.URL,
+				}
+			}
+		}
+
+		sq.Lock()
+		sq.ciStatus = ciStatus
+		sq.Unlock()
+
+		time.Sleep(time.Minute)
 	}
 }
 
@@ -700,7 +799,6 @@ func (sq *SubmitQueue) updateGoogleE2ELoop() {
 		_ = sq.e2eStable(false)
 		time.Sleep(1 * time.Minute)
 	}
-
 }
 
 func objToStatusPullRequest(obj *github.MungeObject) *statusPullRequest {
@@ -871,24 +969,6 @@ func (sq *SubmitQueue) getGithubE2EStatus() []byte {
 		BatchStatus: &sq.batchStatus,
 	}
 	return sq.marshal(status)
-}
-
-func (sq *SubmitQueue) getGoogleInternalStatus() []byte {
-	sq.Lock()
-	defer sq.Unlock()
-	return sq.marshal(sq.e2e.GetBuildStatus())
-}
-
-func (sq *SubmitQueue) getHealth() []byte {
-	sq.Lock()
-	defer sq.Unlock()
-	return sq.marshal(sq.health)
-}
-
-func (sq *SubmitQueue) getMetaData() []byte {
-	sq.Lock()
-	defer sq.Unlock()
-	return sq.marshal(sq.Metadata)
 }
 
 const (
@@ -1223,6 +1303,9 @@ func (sq *SubmitQueue) handleGithubE2EAndMerge() {
 		if remove {
 			// remove it from the map after we finish testing
 			sq.Lock()
+			if sq.githubE2ERunning != nil {
+				sq.githubE2ELastPRNum = *sq.githubE2ERunning.Issue.Number
+			}
 			sq.githubE2ERunning = nil
 			sq.deleteQueueItem(obj)
 			sq.Unlock()
@@ -1251,6 +1334,9 @@ func (sq *SubmitQueue) selectPullRequest() *github.MungeObject {
 	}
 	keys := sq.orderedE2EQueue()
 	obj := sq.githubE2EQueue[keys[0]]
+	if sq.githubE2ERunning != nil {
+		sq.githubE2ELastPRNum = *sq.githubE2ERunning.Issue.Number
+	}
 	sq.githubE2ERunning = obj
 
 	return obj
@@ -1430,13 +1516,17 @@ func (sq *SubmitQueue) serveGithubE2EStatus(res http.ResponseWriter, req *http.R
 	sq.serve(data, res, req)
 }
 
-func (sq *SubmitQueue) serveGoogleInternalStatus(res http.ResponseWriter, req *http.Request) {
-	data := sq.getGoogleInternalStatus()
+func (sq *SubmitQueue) serveCIStatus(res http.ResponseWriter, req *http.Request) {
+	sq.Lock()
+	data := sq.marshal(sq.ciStatus)
+	sq.Unlock()
 	sq.serve(data, res, req)
 }
 
 func (sq *SubmitQueue) serveHealth(res http.ResponseWriter, req *http.Request) {
-	data := sq.getHealth()
+	sq.Lock()
+	data := sq.marshal(sq.health)
+	sq.Unlock()
 	sq.serve(data, res, req)
 }
 
@@ -1464,7 +1554,9 @@ func (sq *SubmitQueue) serveFlakes(res http.ResponseWriter, req *http.Request) {
 }
 
 func (sq *SubmitQueue) serveMetadata(res http.ResponseWriter, req *http.Request) {
-	data := sq.getMetaData()
+	sq.Lock()
+	data := sq.marshal(sq.Metadata)
+	sq.Unlock()
 	sq.serve(data, res, req)
 }
 

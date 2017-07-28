@@ -13,7 +13,7 @@ function SQCntl(dataService, $interval, $location) {
   self.prsCount = 0;
   self.health = {};
   self.metadata = {};
-  self.testResults = {};
+  self.ciStatus = {};
   self.lastMergeTime = Date();
   self.prQuerySearch = prQuerySearch;
   self.historyQuerySearch = historyQuerySearch;
@@ -38,23 +38,29 @@ function SQCntl(dataService, $interval, $location) {
   if (path.length > 0) {
       switch (path) {
       case "/prs":
-          self.selected=0;
-          break;
+        self.selected=0;
+        break;
       case "/queue":
-          self.selected=1;
-          break;
+        self.selected=1;
+        break;
       case "/history":
-          self.selected=2;
-          break;
+        self.selected=2;
+        break;
+      // NOTE: /e2e was moved to /ci
+      // TODO: display a toast noting this
       case "/e2e":
-          self.selected=3;
-          break;
+        self.selected=3;	
+        self.location.path("/ci");
+        break;
+      case "/ci":
+        self.selected=3;
+        break;
       case "/info":
-          self.selected=4;
-          break;
+        self.selected=4;
+        break;
       default:
-          console.log("unknown path: " + path);
-          break;
+        console.log("unknown path: " + path);
+        break;
       }
   }
 
@@ -187,117 +193,63 @@ function SQCntl(dataService, $interval, $location) {
         var percentStable = self.health.NumStable * 100.0 / self.health.TotalLoops;
         self.OverallHealth = Math.round(percentStable) + "%";
       }
-      updateBuildStability(self.testResults.blockingBuilds, self.testResults.nonBlockingBuilds, self.health);
     });
   }
 
   function refreshContinuousTests() {
-    dataService.getData('google-internal-ci').then(function successCallback(response) {
-      self.testResults = processTests(response.data);
-      updateBuildStability(self.testResults.blockingBuilds, self.testResults.nonBlockingBuilds, self.health);
+    dataService.getData('ci-status').then(function successCallback(response) {
+      self.ciStatus = processTests(response.data);
     });
   }
 
-  function processTests(builds) {
-    var blockingResult = [];
-    var nonBlockingResult = [];
-    var redBuilds = false;
-    var yellowBuilds = false;
-    angular.forEach(builds, function(job, key) {
-      var obj = {
-        'name': key,
-        'id': job.ID,
-      };
-      switch (job.Status) {
-        case 'Stable':
-          // green check mark
-          obj.state = '\u2713';
-          obj.color = 'green';
-          break;
-        case 'Not Stable':
-          // red X mark
-          obj.state = '\u2716';
-          obj.color = 'red';
-          redBuilds = true;
-          break;
-        case 'Ignorable flake':
-          // orange X mark
-          obj.state = '\u2716';
-          obj.color = '#FF8A65';
-          obj.msg = 'Flake!';
-          yellowBuilds = true;
-          break;
-        case 'Problem Resolved':
-          // orange X mark
-          obj.state = '\u2716';
-          obj.color = '#FF8A65';
-          obj.msg = 'Manual override';
-          yellowBuilds = true;
-          break;
-        case '[nonblocking] Stable':
-          // green check mark
-          obj.state = '\u2713';
-          obj.color = 'green';
-          obj.msg = '[nonblocking]';
-          break;
-        case '[nonblocking] Not Stable':
-          // orange X mark
-          obj.state = '\u2716';
-          obj.color = '#FF8A65';
-          obj.msg = '[nonblocking]';
-          break;
-        case '[nonblocking] Ignorable flake':
-          // orange X mark
-          obj.state = '\u2716';
-          obj.color = '#FF8A65';
-          obj.msg = '[nonblocking] Flake!';
-          break;
-        default:
-          obj.state = 'Error';
-          obj.color = 'red';
-          obj.msg = job.Status;
-          redBuilds = true;
+  function processTests(data) {
+    var results = {};
+    angular.forEach(data, function(jobs, key) {
+      // job results are keyed by job.Type/category,
+      // but in javascript we can't use $ in a variable name so..
+      key = key.replace('/', '$');
+      results[key] = [];
+      var parts = key.split('$');
+      var type = parts[0];
+      var category = parts[1];
+      if (category != "") {
+          if (!(category in results)) {
+            results[category] = [];
+          }
       }
-      obj.stability = '';
-      if (!obj.msg) {
-        blockingResult.push(obj);
-      } else {
-        if (obj.msg.includes('[nonblocking]')) {
-          obj.msg = obj.msg.replace('[nonblocking]', '');
-          nonBlockingResult.push(obj);
+      angular.forEach(jobs, function(job, jobName) {
+        var obj = {
+          'name': jobName,
+          'id': job.build_id,
+          'url': job.url,
+          'msg': '',
+        };
+        if (job.state == 'success') {
+          // green heavy check mark
+          obj.state = '\u2714';
+          obj.color = 'green';
         } else {
-          blockingResult.push(obj);
+          //red x mark
+          obj.state = '\u2716';
+          obj.color = 'red';
         }
-      }
+        results[key].push(obj);
+        if (category != "") {
+          results[category].push(obj);
+        }
+      });
     });
-    if (redBuilds) {
-      yellowBuilds = false;
-    }
-    return {
-      blockingBuilds: blockingResult,
-      nonBlockingBuilds: nonBlockingResult,
-      yellowBuilds: yellowBuilds,
-      redBuilds: redBuilds,
-    };
-  }
-
-  function updateBuildStabilityHelper(builds, health) {
-    if (builds === undefined || Object.keys(builds).length === 0 ||
-        health.TotalLoops === 0 || health.NumStablePerJob === undefined) {
-      return;
-    }
-    angular.forEach(builds, function(build) {
-      var key = build.name;
-      if (key in self.health.NumStablePerJob) {
-        var percentStable = health.NumStablePerJob[key] * 100.0 / health.TotalLoops;
-        build.stability = Math.round(percentStable) + "%"
-      }
+    angular.forEach(results, function(r, key) {
+      results[key].sort(function(a, b) {
+        if (a.name < b.name) {
+          return -1;
+        } else if (a.name > b.name) {
+          return 1;
+        }
+        return 0;
+      });
     });
-  }
-
-  function updateBuildStability(blockingBuilds, nonBlockingBuilds, health) {
-    updateBuildStabilityHelper(blockingBuilds, health);
-    updateBuildStabilityHelper(nonBlockingBuilds, health);
+    return results;
   }
 
   function searchTermsContain(terms, value) {
