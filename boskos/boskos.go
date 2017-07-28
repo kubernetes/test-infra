@@ -36,7 +36,7 @@ func main() {
 
 	r, err := ranch.NewRanch(*configPath, *storage)
 	if err != nil {
-		logrus.WithError(err).Fatal("Failed to create ranch! Config: %v, storage : %v", *configPath, *storage)
+		logrus.WithError(err).Fatalf("Failed to create ranch! Config: %v, storage : %v", *configPath, *storage)
 	}
 
 	http.Handle("/", handleDefault(r))
@@ -287,7 +287,7 @@ func handleMetric(r *ranch.Ranch) http.HandlerFunc {
 
 		metric, err := r.Metric(rtype)
 		if err != nil {
-			logrus.WithError(err).Error("Metric for %s failed", rtype)
+			logrus.WithError(err).Errorf("Metric for %s failed", rtype)
 			http.Error(res, err.Error(), ErrorToStatus(err))
 			return
 		}

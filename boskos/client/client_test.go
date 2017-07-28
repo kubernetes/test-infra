@@ -220,6 +220,6 @@ func TestReset(t *testing.T) {
 	} else if len(rmap) != 1 {
 		t.Errorf("Resource in returned map: %d, expect 1", len(c.resources))
 	} else if rmap["res"] != "user" {
-		t.Errorf("Owner of res: %d, expect user", rmap["res"])
+		t.Errorf("Owner of res: %s, expect user", rmap["res"])
 	}
 }

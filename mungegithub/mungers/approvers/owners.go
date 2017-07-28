@@ -571,7 +571,7 @@ You can cancel your approval by writing `+"`/approve cancel`"+` in a comment
 		return nil
 	}
 
-	notif := (&c.Notification{ApprovalNotificationName, *title, *message}).String()
+	notif := (&c.Notification{Name: ApprovalNotificationName, Arguments: *title, Context: *message}).String()
 	return &notif
 }
 

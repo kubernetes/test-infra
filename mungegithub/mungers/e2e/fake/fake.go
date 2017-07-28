@@ -39,10 +39,10 @@ func (e *FakeE2ETester) LoadNonBlockingStatus() {}
 func (e *FakeE2ETester) GetBuildStatus() map[string]e2e.BuildInfo {
 	out := map[string]e2e.BuildInfo{}
 	for _, name := range e.JobNames {
-		out[name] = e2e.BuildInfo{"Stable", "1"}
+		out[name] = e2e.BuildInfo{Status: "Stable", ID: "1"}
 	}
 	for _, name := range e.NotStableJobNames {
-		out[name] = e2e.BuildInfo{"Not Stable", "1"}
+		out[name] = e2e.BuildInfo{Status: "Not Stable", ID: "1"}
 	}
 	return out
 }

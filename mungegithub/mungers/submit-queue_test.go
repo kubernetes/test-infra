@@ -128,37 +128,37 @@ func NoRetestIssue() *github.Issue {
 
 func OldLGTMEvents() []*github.IssueEvent {
 	return github_test.Events([]github_test.LabelTime{
-		{"bob", approvedLabel, 20},
-		{"bob", lgtmLabel, 6},
-		{"bob", lgtmLabel, 7},
-		{"bob", lgtmLabel, 8},
+		{User: "bob", Label: approvedLabel, Time: 20},
+		{User: "bob", Label: lgtmLabel, Time: 6},
+		{User: "bob", Label: lgtmLabel, Time: 7},
+		{User: "bob", Label: lgtmLabel, Time: 8},
 	})
 }
 
 func NewLGTMEvents() []*github.IssueEvent {
 	return github_test.Events([]github_test.LabelTime{
-		{"bob", approvedLabel, 20},
-		{"bob", lgtmLabel, 10},
-		{"bob", lgtmLabel, 11},
-		{"bob", lgtmLabel, 12},
+		{User: "bob", Label: approvedLabel, Time: 20},
+		{User: "bob", Label: lgtmLabel, Time: 10},
+		{User: "bob", Label: lgtmLabel, Time: 11},
+		{User: "bob", Label: lgtmLabel, Time: 12},
 	})
 }
 
 func OverlappingLGTMEvents() []*github.IssueEvent {
 	return github_test.Events([]github_test.LabelTime{
-		{"bob", approvedLabel, 20},
-		{"bob", lgtmLabel, 8},
-		{"bob", lgtmLabel, 9},
-		{"bob", lgtmLabel, 10},
+		{User: "bob", Label: approvedLabel, Time: 20},
+		{User: "bob", Label: lgtmLabel, Time: 8},
+		{User: "bob", Label: lgtmLabel, Time: 9},
+		{User: "bob", Label: lgtmLabel, Time: 10},
 	})
 }
 
 func OldApprovedEvents() []*github.IssueEvent {
 	return github_test.Events([]github_test.LabelTime{
-		{"bob", approvedLabel, 6},
-		{"bob", lgtmLabel, 10},
-		{"bob", lgtmLabel, 11},
-		{"bob", lgtmLabel, 12},
+		{User: "bob", Label: approvedLabel, Time: 6},
+		{User: "bob", Label: lgtmLabel, Time: 10},
+		{User: "bob", Label: lgtmLabel, Time: 11},
+		{User: "bob", Label: lgtmLabel, Time: 12},
 	})
 }
 
@@ -248,11 +248,11 @@ func TestQueueOrder(t *testing.T) {
 	time5 := timeBase.Add(3 * time.Minute).Unix()
 	time6 := timeBase.Add(2 * time.Minute).Unix()
 	labelEvents := map[int][]github_test.LabelTime{
-		2: {{"me", lgtmLabel, time2}},
-		3: {{"me", lgtmLabel, time3}},
-		4: {{"me", lgtmLabel, time4}},
-		5: {{"me", lgtmLabel, time5}},
-		6: {{"me", lgtmLabel, time6}},
+		2: {{User: "me", Label: lgtmLabel, Time: time2}},
+		3: {{User: "me", Label: lgtmLabel, Time: time3}},
+		4: {{User: "me", Label: lgtmLabel, Time: time4}},
+		5: {{User: "me", Label: lgtmLabel, Time: time5}},
+		6: {{User: "me", Label: lgtmLabel, Time: time6}},
 	}
 
 	tests := []struct {
