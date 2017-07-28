@@ -52,20 +52,27 @@ func (f *fca) Config() *config.Config {
 }
 
 type fkc struct {
+	sync.Mutex
 	prowjobs []kube.ProwJob
 	pods     []kube.Pod
 }
 
 func (f *fkc) CreateProwJob(pj kube.ProwJob) (kube.ProwJob, error) {
+	f.Lock()
+	defer f.Unlock()
 	f.prowjobs = append(f.prowjobs, pj)
 	return pj, nil
 }
 
 func (f *fkc) ListProwJobs(map[string]string) ([]kube.ProwJob, error) {
+	f.Lock()
+	defer f.Unlock()
 	return f.prowjobs, nil
 }
 
 func (f *fkc) ReplaceProwJob(name string, job kube.ProwJob) (kube.ProwJob, error) {
+	f.Lock()
+	defer f.Unlock()
 	for i := range f.prowjobs {
 		if f.prowjobs[i].Metadata.Name == name {
 			f.prowjobs[i] = job
@@ -76,15 +83,21 @@ func (f *fkc) ReplaceProwJob(name string, job kube.ProwJob) (kube.ProwJob, error
 }
 
 func (f *fkc) CreatePod(pod kube.Pod) (kube.Pod, error) {
+	f.Lock()
+	defer f.Unlock()
 	f.pods = append(f.pods, pod)
 	return pod, nil
 }
 
 func (f *fkc) ListPods(map[string]string) ([]kube.Pod, error) {
+	f.Lock()
+	defer f.Unlock()
 	return f.pods, nil
 }
 
 func (f *fkc) DeletePod(name string) error {
+	f.Lock()
+	defer f.Unlock()
 	for i := range f.pods {
 		if f.pods[i].Metadata.Name == name {
 			f.pods = append(f.pods[:i], f.pods[i+1:]...)
