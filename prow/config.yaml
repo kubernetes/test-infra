@@ -1200,9 +1200,8 @@ postsubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-in-go:0.2
+      - image: gcr.io/k8s-testimages/bazelbuild:0.13
         args:
-        - "--branch=$(PULL_REFS)"
         - "--upload=gs://kubernetes-jenkins/logs"
         - "--json"
         env:
