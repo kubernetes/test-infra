@@ -133,7 +133,7 @@ func (c *Client) CreateStatus(owner, repo string, pr *github.PullRequest, status
 	return result, resp, err
 }
 
-// GetCombinedStatus retrieves the CominedStatus for the specified reference.
+// GetCombinedStatus retrieves the CombinedStatus for the specified reference.
 // This function limits rate, does retries if needed and handles pagination.
 func (c *Client) GetCombinedStatus(owner, repo, ref string) (*github.CombinedStatus, *github.Response, error) {
 	var status, result *github.CombinedStatus
