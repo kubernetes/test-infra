@@ -28,7 +28,7 @@ import (
 )
 
 func TestFindLatestCommentUpdate(t *testing.T) {
-	config := sqltest.SQLiteConfig{":memory:"}
+	config := sqltest.SQLiteConfig{File: ":memory:"}
 	tests := []struct {
 		comments       []sql.Comment
 		issueID        int
@@ -108,7 +108,7 @@ func TestFindLatestCommentUpdate(t *testing.T) {
 }
 
 func TestUpdateComments(t *testing.T) {
-	config := sqltest.SQLiteConfig{":memory:"}
+	config := sqltest.SQLiteConfig{File: ":memory:"}
 
 	tests := []struct {
 		before           []sql.Comment

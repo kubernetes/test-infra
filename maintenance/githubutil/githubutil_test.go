@@ -64,7 +64,7 @@ func newTestClient(f *fakeGithub) *Client {
 func (f *fakeGithub) CreateStatus(ctx context.Context, org, repo, ref string, status *github.RepoStatus) (*github.RepoStatus, *github.Response, error) {
 	f.hits++
 	if f.hits >= f.hitsBeforeResponse {
-		return status, &github.Response{Rate: github.Rate{Limit: 5000, Remaining: 1000, Reset: github.Timestamp{time.Now()}}}, nil
+		return status, &github.Response{Rate: github.Rate{Limit: 5000, Remaining: 1000, Reset: github.Timestamp{Time: time.Now()}}}, nil
 	}
 	return nil, nil, fmt.Errorf("some error that forces a retry")
 }
@@ -74,7 +74,7 @@ func (f *fakeGithub) GetCombinedStatus(ctx context.Context, org, repo, ref strin
 	context := fmt.Sprintf("context %d", f.hits-f.hitsBeforeResponse+1)
 	combStatus := &github.CombinedStatus{Statuses: []github.RepoStatus{{Context: &context}}}
 	if f.hits >= f.hitsBeforeResponse {
-		return combStatus, &github.Response{Rate: github.Rate{Limit: 5000, Remaining: 1000, Reset: github.Timestamp{time.Now()}}, LastPage: f.pages}, nil
+		return combStatus, &github.Response{Rate: github.Rate{Limit: 5000, Remaining: 1000, Reset: github.Timestamp{Time: time.Now()}}, LastPage: f.pages}, nil
 	}
 	return nil, nil, fmt.Errorf("some error that forces a retry")
 }
@@ -84,7 +84,7 @@ func (f *fakeGithub) List(ctx context.Context, org, repo string, opts *github.Pu
 	title := fmt.Sprintf("pr %d", f.hits-f.hitsBeforeResponse+1)
 	list := []*github.PullRequest{{Title: &title}}
 	if f.hits >= f.hitsBeforeResponse {
-		return list, &github.Response{Rate: github.Rate{Limit: 5000, Remaining: 1000, Reset: github.Timestamp{time.Now()}}, LastPage: f.pages}, nil
+		return list, &github.Response{Rate: github.Rate{Limit: 5000, Remaining: 1000, Reset: github.Timestamp{Time: time.Now()}}, LastPage: f.pages}, nil
 	}
 	return nil, nil, fmt.Errorf("some error that forces a retry")
 }

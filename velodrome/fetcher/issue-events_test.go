@@ -29,7 +29,7 @@ import (
 )
 
 func TestFindLatestUpdate(t *testing.T) {
-	config := sqltest.SQLiteConfig{":memory:"}
+	config := sqltest.SQLiteConfig{File: ":memory:"}
 	tests := []struct {
 		events         []sql.IssueEvent
 		expectedLatest int
@@ -102,7 +102,7 @@ func TestFindLatestUpdate(t *testing.T) {
 }
 
 func TestUpdateEvents(t *testing.T) {
-	config := sqltest.SQLiteConfig{":memory:"}
+	config := sqltest.SQLiteConfig{File: ":memory:"}
 
 	tests := []struct {
 		before     []sql.IssueEvent

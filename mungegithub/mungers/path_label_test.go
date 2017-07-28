@@ -53,15 +53,15 @@ func commitFiles(path []string) []*github.CommitFile {
 
 func BotAddedDesign() []*github.IssueEvent {
 	return github_test.Events([]github_test.LabelTime{
-		{botName, "kind/design", 9},
-		{"bob", "kind/design", 8},
+		{User: botName, Label: "kind/design", Time: 9},
+		{User: "bob", Label: "kind/design", Time: 8},
 	})
 }
 
 func OtherAddedDesign() []*github.IssueEvent {
 	return github_test.Events([]github_test.LabelTime{
-		{botName, "kind/design", 8},
-		{"bob", "kind/design", 9},
+		{User: botName, Label: "kind/design", Time: 8},
+		{User: "bob", Label: "kind/design", Time: 9},
 	})
 }
 

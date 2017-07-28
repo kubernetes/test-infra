@@ -28,7 +28,7 @@ import (
 // Fetch doesn't download too many items, and return the proper date. And only from proper repo
 
 func TestFetchIssues(t *testing.T) {
-	config := sqltest.SQLiteConfig{":memory:"}
+	config := sqltest.SQLiteConfig{File: ":memory:"}
 	db, err := config.CreateDatabase()
 	if err != nil {
 		t.Fatal("Failed to create database:", err)
@@ -109,7 +109,7 @@ func TestFetchEventsAndComments(t *testing.T) {
 
 	for _, test := range tests {
 		os.Remove("test.db")
-		config := sqltest.SQLiteConfig{"test.db"}
+		config := sqltest.SQLiteConfig{File: "test.db"}
 		db, err := config.CreateDatabase()
 		if err != nil {
 			t.Fatal("Failed to create database:", err)

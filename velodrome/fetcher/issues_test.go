@@ -28,7 +28,7 @@ import (
 )
 
 func TestFindLatestIssueUpdate(t *testing.T) {
-	config := sqltest.SQLiteConfig{":memory:"}
+	config := sqltest.SQLiteConfig{File: ":memory:"}
 	tests := []struct {
 		issues         []sql.Issue
 		expectedLatest time.Time
@@ -94,7 +94,7 @@ func TestFindLatestIssueUpdate(t *testing.T) {
 }
 
 func TestUpdateIssues(t *testing.T) {
-	config := sqltest.SQLiteConfig{":memory:"}
+	config := sqltest.SQLiteConfig{File: ":memory:"}
 
 	tests := []struct {
 		before     []sql.Issue

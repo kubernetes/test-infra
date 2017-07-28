@@ -174,7 +174,7 @@ func TestReleaseNoteLabel(t *testing.T) {
 		}
 		test.issue.Body = &test.body
 		client, server, mux := github_test.InitServer(t, test.issue, pr, nil, nil, nil, nil, nil)
-		path := fmt.Sprintf("/repos/o/r/issue/%s/labels", *test.issue.Number)
+		path := fmt.Sprintf("/repos/o/r/issue/%d/labels", *test.issue.Number)
 		mux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
 			out := []github.Label{{}}
