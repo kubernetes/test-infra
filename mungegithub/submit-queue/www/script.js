@@ -46,7 +46,7 @@ function SQCntl(dataService, $interval, $location) {
       case "/history":
         self.selected=2;
         break;
-      // NOTE: "/e2e" was moved to /tests
+      // NOTE: /e2e was moved to /ci
       // TODO: display a toast noting this
       case "/e2e":
         self.selected=3;	
