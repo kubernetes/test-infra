@@ -144,7 +144,6 @@
       "k8s-gce-slow-1-5",
       "k8s-gci-gce-ingress1-5",
       "k8s-gci-gce-reboot-1-5",
-      "k8s-jenkins-gci-kubemark",
       "k8s-jkns-e2e-bazel",
       "k8s-jkns-e2e-gce-alpha1-4",
       "k8s-jkns-e2e-gce-gci-federatio",
