@@ -125,14 +125,24 @@ func (ps Presubmit) RunsAgainstChanges(changes []string) bool {
 	return false
 }
 
+func matching(j Presubmit, body string, testAll bool) (out []Presubmit) {
+	if j.re.MatchString(body) || (testAll && j.AlwaysRun) {
+		out = append(out, j)
+	}
+
+	for _, child := range j.RunAfterSuccess {
+		out = append(out, matching(child, body, testAll)...)
+	}
+
+	return
+}
+
 func (c *Config) MatchingPresubmits(fullRepoName, body string, testAll *regexp.Regexp) []Presubmit {
 	var result []Presubmit
 	ott := testAll.MatchString(body)
 	if jobs, ok := c.Presubmits[fullRepoName]; ok {
 		for _, job := range jobs {
-			if job.re.MatchString(body) || (ott && job.AlwaysRun) {
-				result = append(result, job)
-			}
+			result = append(result, matching(job, body, ott)...)
 		}
 	}
 	return result

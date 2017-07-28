@@ -168,7 +168,17 @@ func TestCommentBodyMatches(t *testing.T) {
 		{
 			"org/repo2",
 			"/test all",
-			[]string{"cadveapster"},
+			[]string{"cadveapster", "after-cadveapster", "after-after-cadveapster"},
+		},
+		{
+			"org/repo2",
+			"/test really",
+			[]string{"after-cadveapster"},
+		},
+		{
+			"org/repo2",
+			"/test again really",
+			[]string{"after-after-cadveapster"},
 		},
 		{
 			"org/repo3",
@@ -205,6 +215,25 @@ func TestCommentBodyMatches(t *testing.T) {
 					Name:      "cadveapster",
 					re:        regexp.MustCompile(`/test all`),
 					AlwaysRun: true,
+					RunAfterSuccess: []Presubmit{
+						{
+							Name:      "after-cadveapster",
+							re:        regexp.MustCompile(`/test (really|all)`),
+							AlwaysRun: true,
+							RunAfterSuccess: []Presubmit{
+								{
+									Name:      "after-after-cadveapster",
+									re:        regexp.MustCompile(`/test (again really|all)`),
+									AlwaysRun: true,
+								},
+							},
+						},
+						{
+							Name:      "another-after-cadveapster",
+							re:        regexp.MustCompile(`@k8s-bot dont test this`),
+							AlwaysRun: true,
+						},
+					},
 				},
 			},
 		},
