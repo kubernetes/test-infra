@@ -171,7 +171,7 @@ function SQCntl(dataService, $interval, $location) {
   function refreshSQStats() {
     dataService.getData('sq-stats').then(function successCallback(response) {
       self.sqStats = response.data;
-      self.lastMergeTimeciStatus = new Date(response.data.LastMergeTime)
+      self.lastMergeTime = new Date(response.data.LastMergeTime)
     });
   }
 
