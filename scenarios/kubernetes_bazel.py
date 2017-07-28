@@ -32,6 +32,10 @@ def check(*cmd):
     print >>sys.stderr, 'Run:', cmd
     subprocess.check_call(cmd)
 
+def check_output(*cmd):
+    """Log and run the command, raising on errors, return output"""
+    print >>sys.stderr, 'Run:', cmd
+    return subprocess.check_output(cmd)
 
 def echo_result(res):
     """echo error message bazed on value of res"""
@@ -50,17 +54,94 @@ def get_version():
     with open('bazel-genfiles/version') as fp:
         return fp.read().strip()
 
+def get_changed(base, pull):
+    """Get affected packages between base sha and pull sha."""
+    diff = check_output(
+        'git', 'diff', '--name-only',
+        '--diff-filter=d', '%s...%s' % (base, pull))
+    return check_output(
+        'bazel', 'query',
+        '--noshow_progress',
+        'set(%s)' % diff).split('\n')
+
+def query(kind, selected_pkgs, changed_pkgs):
+    """
+    Run a bazel query against target kind, include targets from args.
+
+    Returns a list of kind objects from bazel query.
+    """
+
+    # Changes are calculated and no packages found, return empty list.
+    if changed_pkgs == []:
+        return []
+
+    selection = '//...'
+    if selected_pkgs:
+        selection = 'set(%s)' % ' '.join(selected_pkgs)
+
+    changes = '//...'
+    if changed_pkgs:
+        changes = 'set(%s)' % ' '.join(changed_pkgs)
+
+    return check_output(
+        'bazel', 'query',
+        '--keep_going',
+        '--noshow_progress',
+        'kind(%s, rdeps(%s, %s))' % (kind, selection, changes)
+    ).split('\n')
+
+def clean_file_in_dir(dirname, filename):
+    """Recursively remove all file with filename in dirname."""
+    for parent, _, filenames in os.walk(dirname):
+        for name in filenames:
+            if name == filename:
+                os.remove(os.path.join(parent, name))
+
 def main(args):
     """Trigger a bazel build/test run, and upload results."""
+    # pylint:disable=too-many-branches, too-many-statements, too-many-locals
+    if args.install:
+        for install in args.install:
+            if not os.path.isfile(install):
+                raise ValueError('Invalid install path: %s' % install)
+            check('pip', 'install', '-r', install)
+
     check('bazel', 'clean', '--expunge')
     res = 0
     try:
+        affected = None
+        if args.affected:
+            base = os.getenv('PULL_BASE_SHA', '')
+            pull = os.getenv('PULL_PULL_SHA', '')
+            if not base or not pull:
+                raise ValueError('PULL_BASE_SHA and PULL_PULL_SHA must be set!')
+            affected = get_changed(base, pull)
+
+        build_pkgs = None
+        test_pkgs = None
         if args.build:
-            check('bazel', 'build', *args.build.split(' '))
+            build_pkgs = args.build.split(' ')
+        if args.test:
+            test_pkgs = args.test.split(' ')
+
+        buildables = []
+        if build_pkgs or affected:
+            buildables = query('.*_binary', build_pkgs, affected)
+
+        # Call bazel build regardless, to establish bazel symlinks
+        check('bazel', 'build', *buildables)
+        # clean up previous test.xml
+        clean_file_in_dir('./bazel-testlogs', 'test.xml')
+
         if args.release:
             check('bazel', 'build', *args.release.split(' '))
-        if args.test:
-            check('bazel', 'test', *args.test.split(' '))
+
+        if test_pkgs or affected:
+            tests = query('test', test_pkgs, affected)
+            if tests:
+                if args.test_args:
+                    tests = args.test_args + tests
+                check('bazel', 'test', *tests)
     except subprocess.CalledProcessError as exp:
         res = exp.returncode
 
@@ -82,17 +163,27 @@ def main(args):
     check(test_infra('images/pull_kubernetes_bazel/coalesce.py'))
 
     echo_result(res)
-    exit(res)
+    if res != 0:
+        sys.exit(res)
+
 
 def create_parser():
     """Create argparser."""
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        '--build', help='Bazel build')
+        '--affected', action='store_true',
+        help='If build/test affected targets. Filtered by --build and --test flags.')
     parser.add_argument(
-        '--release', help='Bazel release')
+        '--build', help='Bazel build targets, split by one space')
+    # TODO(krzyzacy): Convert to bazel build rules
     parser.add_argument(
-        '--test', help='Bazel test')
+        '--install', action="append", help='Python dependency(s) that need to be installed')
+    parser.add_argument(
+        '--release', help='Run bazel build, and push release build to --gcs bucket')
+    parser.add_argument(
+        '--test', help='Bazel test targets, split by one space')
+    parser.add_argument(
+        '--test-args', action="append", help='Bazel test args')
     parser.add_argument(
         '--gcs',
         default='gs://kubernetes-release-dev/bazel',
