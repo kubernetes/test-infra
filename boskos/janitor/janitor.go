@@ -28,7 +28,6 @@ import (
 )
 
 var (
-	clean          = janitorClean
 	poolSize       = 10 // Maximum concurrent janitor goroutines
 	bufferSize     = 1  // Maximum holding resources
 	serviceAccount = flag.String("service-account", "", "Path to projects service account")
@@ -60,13 +59,15 @@ func main() {
 		logrus.WithError(err).Fatalf("fail to activate service account from %s :%s", *serviceAccount, string(b))
 	}
 
-	buffer := setup(boskos, poolSize, bufferSize)
+	buffer := setup(boskos, poolSize, bufferSize, janitorClean)
 
 	for {
 		run(boskos, buffer, rTypes)
 		time.Sleep(time.Minute)
 	}
 }
+
+type clean func(string) error
 
 // Clean by janitor script
 func janitorClean(proj string) error {
@@ -83,10 +84,10 @@ type boskosClient interface {
 	ReleaseOne(name string, dest string) error
 }
 
-func setup(c boskosClient, janitorCount int, bufferSize int) chan string {
+func setup(c boskosClient, janitorCount int, bufferSize int, cleanFunc clean) chan string {
 	buffer := make(chan string, 1)
 	for i := 0; i < janitorCount; i++ {
-		go janitor(c, buffer)
+		go janitor(c, buffer, cleanFunc)
 	}
 	return buffer
 }
@@ -101,7 +102,7 @@ func run(c boskosClient, buffer chan string, rtypes []string) int {
 	for {
 		for r := range res {
 			if proj, err := c.Acquire(r, "dirty", "cleaning"); err != nil {
-				logrus.WithError(err).Error("Boskos acquire failed!")
+				logrus.WithError(err).Error("boskos acquire failed!")
 				totalAcquire += res[r]
 				delete(res, r)
 			} else if proj == "" {
@@ -122,18 +123,18 @@ func run(c boskosClient, buffer chan string, rtypes []string) int {
 }
 
 // async janitor goroutine
-func janitor(c boskosClient, buffer chan string) {
+func janitor(c boskosClient, buffer chan string, fn clean) {
 	for {
 		proj := <-buffer
 
 		dest := "free"
-		if err := clean(proj); err != nil {
+		if err := fn(proj); err != nil {
 			logrus.WithError(err).Error("janitor.py failed!")
 			dest = "dirty"
 		}
 
 		if err := c.ReleaseOne(proj, dest); err != nil {
-			logrus.WithError(err).Error("Boskos release failed!")
+			logrus.WithError(err).Error("boskos release failed!")
 		}
 	}
 }
