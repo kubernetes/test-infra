@@ -28,6 +28,7 @@ import (
 	github_util "k8s.io/test-infra/mungegithub/github"
 	github_test "k8s.io/test-infra/mungegithub/github/testing"
 	"k8s.io/test-infra/mungegithub/mungeopts"
+	"k8s.io/test-infra/mungegithub/options"
 
 	"github.com/golang/glog"
 	"github.com/google/go-github/github"
@@ -150,6 +151,7 @@ func TestOldUnitTestMunge(t *testing.T) {
 			t.Fatalf("%v", err)
 		}
 
+		s.opts = options.New()
 		mungeopts.RequiredContexts.Retest = requiredContexts
 		s.Munge(obj)
 

@@ -17,6 +17,8 @@ limitations under the License.
 package mungeopts
 
 import (
+	"time"
+
 	"k8s.io/kubernetes/pkg/util/sets"
 	"k8s.io/test-infra/mungegithub/options"
 )
@@ -47,6 +49,11 @@ var (
 		Merge  []string
 		Retest []string
 	}
+
+	// Maximum time to wait for tests in a PR to start or finish.
+	// This should be >2x as long as it normally takes for a PR
+	// to complete, to avoid congestion collapse in the queue.
+	PRMaxWaitTime time.Duration
 )
 
 // RegisterOptions registers options that may be used by any munger, feature, or report. It returns
@@ -65,6 +72,8 @@ func RegisterOptions(opts *options.Options) sets.String {
 	// Status context options:
 	opts.RegisterStringSlice(&RequiredContexts.Retest, "required-retest-contexts", []string{}, "Comma separate list of statuses which will be retested and which must come back green after the `retest-body` comment is posted to a PR")
 	opts.RegisterStringSlice(&RequiredContexts.Merge, "required-contexts", []string{}, "Comma separate list of status contexts required for a PR to be considered ok to merge")
+
+	opts.RegisterDuration(&PRMaxWaitTime, "pr-max-wait-time", 2*time.Hour, "Maximum time to wait for tests in a PR to start or finish")
 
 	return sets.NewString("address", "www")
 }
