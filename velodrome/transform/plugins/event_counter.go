@@ -51,7 +51,7 @@ func (e *EventCounterPlugin) ReceiveIssueEvent(event sql.IssueEvent) []Point {
 		return nil
 	}
 	return []Point{
-		Point{
+		{
 			Values: map[string]interface{}{"event": 1},
 			Date:   event.EventCreatedAt,
 		},

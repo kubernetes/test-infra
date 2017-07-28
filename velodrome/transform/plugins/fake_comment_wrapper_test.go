@@ -37,12 +37,12 @@ func TestFakeCommentWrapper(t *testing.T) {
 		Event:          "commented",
 		EventCreatedAt: time.Unix(10, 0),
 		Actor:          stringPointer("SomeUser"),
-	}).Return([]Point{Point{}})
+	}).Return([]Point{{}})
 	plugin.EXPECT().ReceiveComment(sql.Comment{
 		IssueID:          "1",
 		CommentCreatedAt: time.Unix(10, 0),
 		User:             "SomeUser",
-	}).Return([]Point{Point{}})
+	}).Return([]Point{{}})
 
 	got := fakeComment.ReceiveComment(sql.Comment{
 		IssueID:          "1",

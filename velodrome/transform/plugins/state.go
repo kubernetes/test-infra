@@ -65,7 +65,7 @@ func (s *StatePlugin) ReceiveIssueEvent(event sql.IssueEvent) []Point {
 	}
 
 	return []Point{
-		Point{
+		{
 			Values: values,
 			Date:   event.EventCreatedAt,
 		},

@@ -93,7 +93,7 @@ func TestPush(t *testing.T) {
 
 	cnfg := &config.Config{
 		SlackEvents: []config.SlackEvent{
-			config.SlackEvent{
+			{
 				Repos:     []string{"kubernetes/kubernetes"},
 				Channels:  []string{"kubernetes-dev", "sig-contribex"},
 				WhiteList: []string{"k8s-merge-robot"},

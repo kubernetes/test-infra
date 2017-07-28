@@ -132,7 +132,7 @@ func handleIC(c client, ic github.IssueCommentEvent) error {
 			BaseRef: pr.Base.Ref,
 			BaseSHA: ref,
 			Pulls: []kube.Pull{
-				kube.Pull{
+				{
 					Number: number,
 					Author: pr.User.Login,
 					SHA:    pr.Head.SHA,

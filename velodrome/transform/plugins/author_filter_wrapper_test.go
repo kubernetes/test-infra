@@ -32,7 +32,7 @@ func TestAuthorFilterIssues(t *testing.T) {
 	authorFilter := NewAuthorFilterPluginWrapper(plugin)
 	authorFilter.ignoredAuthors = []string{"OneBot", "OtherBot"}
 
-	plugin.EXPECT().ReceiveIssue(sql.Issue{ID: "2", User: "Person"}).Return([]Point{Point{}})
+	plugin.EXPECT().ReceiveIssue(sql.Issue{ID: "2", User: "Person"}).Return([]Point{{}})
 
 	if p := authorFilter.ReceiveIssue(sql.Issue{ID: "1", User: "OneBot"}); len(p) != 0 {
 		t.Error("OneBot issues should be filtered")
@@ -55,8 +55,8 @@ func TestAuthorFilterIssueEvents(t *testing.T) {
 	authorFilter.ignoredAuthors = []string{"OneBot", "OtherBot"}
 
 	expectedActor := "Person"
-	plugin.EXPECT().ReceiveIssueEvent(sql.IssueEvent{Actor: &expectedActor}).Return([]Point{Point{}})
-	plugin.EXPECT().ReceiveIssueEvent(sql.IssueEvent{Actor: nil}).Return([]Point{Point{}})
+	plugin.EXPECT().ReceiveIssueEvent(sql.IssueEvent{Actor: &expectedActor}).Return([]Point{{}})
+	plugin.EXPECT().ReceiveIssueEvent(sql.IssueEvent{Actor: nil}).Return([]Point{{}})
 
 	actor := "OneBot"
 	if p := authorFilter.ReceiveIssueEvent(sql.IssueEvent{Actor: &actor}); len(p) != 0 {
@@ -84,7 +84,7 @@ func TestAuthorFilterComments(t *testing.T) {
 	authorFilter := NewAuthorFilterPluginWrapper(plugin)
 	authorFilter.ignoredAuthors = []string{"OneBot", "OtherBot"}
 
-	plugin.EXPECT().ReceiveComment(sql.Comment{User: "Person"}).Return([]Point{Point{}})
+	plugin.EXPECT().ReceiveComment(sql.Comment{User: "Person"}).Return([]Point{{}})
 
 	if p := authorFilter.ReceiveComment(sql.Comment{User: "OneBot"}); len(p) != 0 {
 		t.Error("OneBot issues should be filtered")

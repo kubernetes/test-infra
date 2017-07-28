@@ -24,8 +24,8 @@ import (
 func TestHasLabel(t *testing.T) {
 	issue := Issue{
 		Labels: []Label{
-			Label{Name: "priority/P0"},
-			Label{Name: "priority/P1"},
+			{Name: "priority/P0"},
+			{Name: "priority/P1"},
 		},
 	}
 	if len(issue.FindLabels(regexp.MustCompile(`kind/flake`))) != 0 {

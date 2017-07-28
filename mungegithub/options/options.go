@@ -479,7 +479,7 @@ func toString(optType optionType, val interface{}) string {
 func (o *Options) keysSortedAndWidth() ([]string, int) {
 	keys := make([]string, 0, len(o.options))
 	width := 0
-	for key, _ := range o.options {
+	for key := range o.options {
 		keys = append(keys, key)
 		if len(key) > width {
 			width = len(key)

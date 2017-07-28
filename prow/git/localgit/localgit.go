@@ -92,7 +92,7 @@ func (lg *LocalGit) MakeFakeRepo(org, repo string) error {
 	if err := runCmd(lg.Git, rdir, "config", "user.name", "test test"); err != nil {
 		return err
 	}
-	if err := lg.AddCommit(org, repo, map[string][]byte{"initial": []byte{}}); err != nil {
+	if err := lg.AddCommit(org, repo, map[string][]byte{"initial": {}}); err != nil {
 		return err
 	}
 

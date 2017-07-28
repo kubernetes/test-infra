@@ -500,7 +500,7 @@ func (c *Cluster) Labels() []string {
 	for i, test := range c.topTestsFailed(len(c.Tests)) {
 		topTests[i] = test.Name
 	}
-	for sig, _ := range c.filer.creator.TestsSIGs(topTests) {
+	for sig := range c.filer.creator.TestsSIGs(topTests) {
 		labels = append(labels, "sig/"+sig)
 	}
 
@@ -515,7 +515,7 @@ func (c *Cluster) Owners() []string {
 	}
 	ownersMap := c.filer.creator.TestsOwners(topTests)
 	owners := make([]string, 0, len(ownersMap))
-	for user, _ := range ownersMap {
+	for user := range ownersMap {
 		owners = append(owners, user)
 	}
 	return owners

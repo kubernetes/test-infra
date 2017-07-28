@@ -35,21 +35,21 @@ func TestMultiplexerWrapper(t *testing.T) {
 
 	multiplexer := NewMultiplexerPluginWrapper(plugin1, plugin2, plugin3)
 
-	plugin1.EXPECT().ReceiveIssue(sql.Issue{ID: "1"}).Return([]Point{Point{Values: map[string]interface{}{"Issue": 1}}})
-	plugin1.EXPECT().ReceiveComment(sql.Comment{ID: "2"}).Return([]Point{Point{Values: map[string]interface{}{"Comment": 1}}})
-	plugin1.EXPECT().ReceiveIssueEvent(sql.IssueEvent{ID: "3"}).Return([]Point{Point{Values: map[string]interface{}{"Event": 1}}})
-	plugin2.EXPECT().ReceiveIssue(sql.Issue{ID: "1"}).Return([]Point{Point{Values: map[string]interface{}{"Issue": 2}}})
-	plugin2.EXPECT().ReceiveComment(sql.Comment{ID: "2"}).Return([]Point{Point{Values: map[string]interface{}{"Comment": 2}}})
-	plugin2.EXPECT().ReceiveIssueEvent(sql.IssueEvent{ID: "3"}).Return([]Point{Point{Values: map[string]interface{}{"Event": 2}}})
-	plugin3.EXPECT().ReceiveIssue(sql.Issue{ID: "1"}).Return([]Point{Point{Values: map[string]interface{}{"Issue": 3}}})
-	plugin3.EXPECT().ReceiveComment(sql.Comment{ID: "2"}).Return([]Point{Point{Values: map[string]interface{}{"Comment": 3}}})
-	plugin3.EXPECT().ReceiveIssueEvent(sql.IssueEvent{ID: "3"}).Return([]Point{Point{Values: map[string]interface{}{"Event": 3}}})
+	plugin1.EXPECT().ReceiveIssue(sql.Issue{ID: "1"}).Return([]Point{{Values: map[string]interface{}{"Issue": 1}}})
+	plugin1.EXPECT().ReceiveComment(sql.Comment{ID: "2"}).Return([]Point{{Values: map[string]interface{}{"Comment": 1}}})
+	plugin1.EXPECT().ReceiveIssueEvent(sql.IssueEvent{ID: "3"}).Return([]Point{{Values: map[string]interface{}{"Event": 1}}})
+	plugin2.EXPECT().ReceiveIssue(sql.Issue{ID: "1"}).Return([]Point{{Values: map[string]interface{}{"Issue": 2}}})
+	plugin2.EXPECT().ReceiveComment(sql.Comment{ID: "2"}).Return([]Point{{Values: map[string]interface{}{"Comment": 2}}})
+	plugin2.EXPECT().ReceiveIssueEvent(sql.IssueEvent{ID: "3"}).Return([]Point{{Values: map[string]interface{}{"Event": 2}}})
+	plugin3.EXPECT().ReceiveIssue(sql.Issue{ID: "1"}).Return([]Point{{Values: map[string]interface{}{"Issue": 3}}})
+	plugin3.EXPECT().ReceiveComment(sql.Comment{ID: "2"}).Return([]Point{{Values: map[string]interface{}{"Comment": 3}}})
+	plugin3.EXPECT().ReceiveIssueEvent(sql.IssueEvent{ID: "3"}).Return([]Point{{Values: map[string]interface{}{"Event": 3}}})
 
 	got := multiplexer.ReceiveIssue(sql.Issue{ID: "1"})
 	want := []Point{
-		Point{Values: map[string]interface{}{"Issue": 1}},
-		Point{Values: map[string]interface{}{"Issue": 2}},
-		Point{Values: map[string]interface{}{"Issue": 3}},
+		{Values: map[string]interface{}{"Issue": 1}},
+		{Values: map[string]interface{}{"Issue": 2}},
+		{Values: map[string]interface{}{"Issue": 3}},
 	}
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf(`multiplexer.ReceiveIssue(sql.Issue{ID: "1"}) = %+v, want %+v`, got, want)
@@ -57,9 +57,9 @@ func TestMultiplexerWrapper(t *testing.T) {
 
 	got = multiplexer.ReceiveComment(sql.Comment{ID: "2"})
 	want = []Point{
-		Point{Values: map[string]interface{}{"Comment": 1}},
-		Point{Values: map[string]interface{}{"Comment": 2}},
-		Point{Values: map[string]interface{}{"Comment": 3}},
+		{Values: map[string]interface{}{"Comment": 1}},
+		{Values: map[string]interface{}{"Comment": 2}},
+		{Values: map[string]interface{}{"Comment": 3}},
 	}
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf(`multiplexer.ReceiveComment(sql.Comment{ID: "2"}) = %+v, want %+v`, got, want)
@@ -67,9 +67,9 @@ func TestMultiplexerWrapper(t *testing.T) {
 
 	got = multiplexer.ReceiveIssueEvent(sql.IssueEvent{ID: "3"})
 	want = []Point{
-		Point{Values: map[string]interface{}{"Event": 1}},
-		Point{Values: map[string]interface{}{"Event": 2}},
-		Point{Values: map[string]interface{}{"Event": 3}},
+		{Values: map[string]interface{}{"Event": 1}},
+		{Values: map[string]interface{}{"Event": 2}},
+		{Values: map[string]interface{}{"Event": 3}},
 	}
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf(`multiplexer.ReceiveIssueEvent(sql.IssueEvent{ID: "3"}) = %+v, want %+v`, got, want)

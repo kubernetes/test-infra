@@ -41,53 +41,53 @@ func TestFakeOpenWrapper(t *testing.T) {
 			ID:             "1",
 			User:           "User1",
 			IssueCreatedAt: time.Unix(0, 20),
-		}).Return([]Point{Point{}}),
+		}).Return([]Point{{}}),
 		plugin.EXPECT().ReceiveIssue(sql.Issue{
 			ID:             "2",
 			User:           "User2",
 			IssueCreatedAt: time.Unix(0, 30),
-		}).Return([]Point{Point{}}),
+		}).Return([]Point{{}}),
 		plugin.EXPECT().ReceiveIssue(sql.Issue{
 			ID:             "3",
 			User:           "User3",
 			IssueCreatedAt: time.Unix(0, 50),
-		}).Return([]Point{Point{}}),
+		}).Return([]Point{{}}),
 		plugin.EXPECT().ReceiveIssueEvent(sql.IssueEvent{
 			ID:             "1",
 			Actor:          stringPointer("Actor1"),
 			Event:          "event1",
 			EventCreatedAt: time.Unix(0, 10),
-		}).Return([]Point{Point{}}),
+		}).Return([]Point{{}}),
 		plugin.EXPECT().ReceiveIssueEvent(sql.IssueEvent{
 			IssueId:        "1",
 			Actor:          stringPointer("User1"),
 			Event:          "opened",
 			EventCreatedAt: time.Unix(0, 20),
-		}).Return([]Point{Point{}}),
+		}).Return([]Point{{}}),
 		plugin.EXPECT().ReceiveIssueEvent(sql.IssueEvent{
 			IssueId:        "2",
 			Actor:          stringPointer("User2"),
 			Event:          "opened",
 			EventCreatedAt: time.Unix(0, 30),
-		}).Return([]Point{Point{}}),
+		}).Return([]Point{{}}),
 		plugin.EXPECT().ReceiveIssueEvent(sql.IssueEvent{
 			ID:             "2",
 			Actor:          stringPointer("Actor2"),
 			Event:          "event2",
 			EventCreatedAt: time.Unix(0, 40),
-		}).Return([]Point{Point{}}),
+		}).Return([]Point{{}}),
 		plugin.EXPECT().ReceiveIssueEvent(sql.IssueEvent{
 			IssueId:        "3",
 			Actor:          stringPointer("User3"),
 			Event:          "opened",
 			EventCreatedAt: time.Unix(0, 50),
-		}).Return([]Point{Point{}}),
+		}).Return([]Point{{}}),
 		plugin.EXPECT().ReceiveIssueEvent(sql.IssueEvent{
 			ID:             "3",
 			Actor:          stringPointer("Actor3"),
 			Event:          "event3",
 			EventCreatedAt: time.Unix(0, 50),
-		}).Return([]Point{Point{}}),
+		}).Return([]Point{{}}),
 	)
 
 	got := fakeOpen.ReceiveIssue(sql.Issue{

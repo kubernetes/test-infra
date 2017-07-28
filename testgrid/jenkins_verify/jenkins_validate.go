@@ -95,7 +95,7 @@ func main() {
 
 	// Cross check
 	// -- Each jenkins job need to have a match testgrid group
-	for jenkinsjob, _ := range jenkinsjobs {
+	for jenkinsjob := range jenkinsjobs {
 		if _, ok := testgroups[jenkinsjob]; ok {
 			testgroups[jenkinsjob] = true
 			jenkinsjobs[jenkinsjob] = true

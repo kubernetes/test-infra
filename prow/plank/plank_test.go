@@ -299,7 +299,7 @@ func TestSyncJenkinsJob(t *testing.T) {
 					Type:   kube.PresubmitJob,
 					Report: true,
 					Refs: kube.Refs{
-						Pulls: []kube.Pull{kube.Pull{}},
+						Pulls: []kube.Pull{{}},
 					},
 				},
 
@@ -736,11 +736,11 @@ func TestBatch(t *testing.T) {
 			BaseRef: "master",
 			BaseSHA: "123",
 			Pulls: []kube.Pull{
-				kube.Pull{
+				{
 					Number: 1,
 					SHA:    "abc",
 				},
-				kube.Pull{
+				{
 					Number: 2,
 					SHA:    "qwe",
 				},
@@ -813,7 +813,7 @@ func TestPeriodic(t *testing.T) {
 			Containers: []kube.Container{{}},
 		},
 		RunAfterSuccess: []config.Periodic{
-			config.Periodic{
+			{
 				Name: "ci-periodic-job-2",
 				Spec: &kube.PodSpec{},
 			},

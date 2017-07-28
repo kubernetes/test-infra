@@ -170,7 +170,7 @@ func TestHandleIssueComment(t *testing.T) {
 				},
 			},
 			CombinedStatuses: map[string]*github.CombinedStatus{
-				"cafe": &github.CombinedStatus{
+				"cafe": {
 					Statuses: []github.Status{
 						{State: "pending", Context: "pull-job"},
 						{State: "failure", Context: "pull-jib"},

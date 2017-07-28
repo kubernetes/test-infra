@@ -42,15 +42,15 @@ func TestEventCounter(t *testing.T) {
 		{
 			pattern: "",
 			events: []sql.IssueEvent{
-				sql.IssueEvent{
+				{
 					Event:          "merged",
 					EventCreatedAt: time.Unix(10, 0),
 				},
-				sql.IssueEvent{
+				{
 					Event:          "opened",
 					EventCreatedAt: time.Unix(20, 0),
 				},
-				sql.IssueEvent{
+				{
 					Event:          "closed",
 					EventCreatedAt: time.Unix(30, 0),
 				},
@@ -60,15 +60,15 @@ func TestEventCounter(t *testing.T) {
 		{
 			pattern: "merged",
 			events: []sql.IssueEvent{
-				sql.IssueEvent{
+				{
 					Event:          "merged",
 					EventCreatedAt: time.Unix(10, 0),
 				},
-				sql.IssueEvent{
+				{
 					Event:          "opened",
 					EventCreatedAt: time.Unix(20, 0),
 				},
-				sql.IssueEvent{
+				{
 					Event:          "closed",
 					EventCreatedAt: time.Unix(30, 0),
 				},

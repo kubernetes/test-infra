@@ -457,7 +457,7 @@ func TestReportTemplate(t *testing.T) {
 					Org:  tc.org,
 					Repo: tc.repo,
 					Pulls: []kube.Pull{
-						kube.Pull{
+						{
 							Number: tc.number,
 						},
 					},

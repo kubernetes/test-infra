@@ -228,7 +228,7 @@ func TestAcquireRoundRobin(t *testing.T) {
 		}
 	}
 
-	for idx, _ := range c.Resources {
+	for idx := range c.Resources {
 		if c.Resources[idx].Name != expected[idx] {
 			t.Errorf("Resource %d, expected %v, got %v", idx, expected[idx], c.Resources[idx].Name)
 		}

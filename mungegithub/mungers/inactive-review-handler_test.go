@@ -49,7 +49,7 @@ func TestInactiveReviewHandler(t *testing.T) {
 		{
 			name: "IssueComment is not empty without non-author human, PullRequestComment is empty",
 			comments: []*githubapi.IssueComment{
-				&githubapi.IssueComment{
+				{
 					Body: stringPtr(positiveComment),
 					User: &githubapi.User{Login: githubapi.String(John)}},
 			},
@@ -59,10 +59,10 @@ func TestInactiveReviewHandler(t *testing.T) {
 		{
 			name: "IssueComment is not empty with non-author human, PullRequestComment is empty",
 			comments: []*githubapi.IssueComment{
-				&githubapi.IssueComment{
+				{
 					Body: stringPtr(positiveComment),
 					User: &githubapi.User{Login: githubapi.String(Lisa)}},
-				&githubapi.IssueComment{
+				{
 					Body: stringPtr(positiveComment),
 					User: &githubapi.User{Login: githubapi.String(John)}},
 			},
@@ -73,7 +73,7 @@ func TestInactiveReviewHandler(t *testing.T) {
 			name:     "IssueComment is empty, PullRequestComment is not empty without non-author human",
 			comments: []*githubapi.IssueComment{},
 			reviewComments: []*githubapi.PullRequestComment{
-				&githubapi.PullRequestComment{
+				{
 					Body: stringPtr(positiveComment),
 					User: &githubapi.User{Login: githubapi.String(John)}},
 			},
@@ -83,10 +83,10 @@ func TestInactiveReviewHandler(t *testing.T) {
 			name:     "IssueComment is empty, PullRequestComment is not empty with non-author human",
 			comments: []*githubapi.IssueComment{},
 			reviewComments: []*githubapi.PullRequestComment{
-				&githubapi.PullRequestComment{
+				{
 					Body: stringPtr(positiveComment),
 					User: &githubapi.User{Login: githubapi.String(Lisa)}},
-				&githubapi.PullRequestComment{
+				{
 					Body: stringPtr(positiveComment),
 					User: &githubapi.User{Login: githubapi.String(John)}},
 			},
@@ -95,12 +95,12 @@ func TestInactiveReviewHandler(t *testing.T) {
 		{
 			name: "IssueComment is not empty without non-author human, PullRequestComment is not empty without non-author human",
 			comments: []*githubapi.IssueComment{
-				&githubapi.IssueComment{
+				{
 					Body: stringPtr(positiveComment),
 					User: &githubapi.User{Login: githubapi.String(John)}},
 			},
 			reviewComments: []*githubapi.PullRequestComment{
-				&githubapi.PullRequestComment{
+				{
 					Body: stringPtr(positiveComment),
 					User: &githubapi.User{Login: githubapi.String(John)}},
 			},
@@ -109,15 +109,15 @@ func TestInactiveReviewHandler(t *testing.T) {
 		{
 			name: "IssueComment is not empty without non-author human, PullRequestComment is not empty with non-author human",
 			comments: []*githubapi.IssueComment{
-				&githubapi.IssueComment{
+				{
 					Body: stringPtr(positiveComment),
 					User: &githubapi.User{Login: githubapi.String(John)}},
 			},
 			reviewComments: []*githubapi.PullRequestComment{
-				&githubapi.PullRequestComment{
+				{
 					Body: stringPtr(positiveComment),
 					User: &githubapi.User{Login: githubapi.String(Lisa)}},
-				&githubapi.PullRequestComment{
+				{
 					Body: stringPtr(positiveComment),
 					User: &githubapi.User{Login: githubapi.String(John)}},
 			},
@@ -126,15 +126,15 @@ func TestInactiveReviewHandler(t *testing.T) {
 		{
 			name: "IssueComment is not empty with non-author human, PullRequestComment is not empty without non-author human",
 			comments: []*githubapi.IssueComment{
-				&githubapi.IssueComment{
+				{
 					Body: stringPtr(positiveComment),
 					User: &githubapi.User{Login: githubapi.String(Lisa)}},
-				&githubapi.IssueComment{
+				{
 					Body: stringPtr(positiveComment),
 					User: &githubapi.User{Login: githubapi.String(John)}},
 			},
 			reviewComments: []*githubapi.PullRequestComment{
-				&githubapi.PullRequestComment{
+				{
 					Body: stringPtr(positiveComment),
 					User: &githubapi.User{Login: githubapi.String(John)}},
 			},
@@ -143,18 +143,18 @@ func TestInactiveReviewHandler(t *testing.T) {
 		{
 			name: "IssueComment is not empty with non-author human, PullRequestComment is not empty with non-author human",
 			comments: []*githubapi.IssueComment{
-				&githubapi.IssueComment{
+				{
 					Body: stringPtr(positiveComment),
 					User: &githubapi.User{Login: githubapi.String(Lisa)}},
-				&githubapi.IssueComment{
+				{
 					Body: stringPtr(positiveComment),
 					User: &githubapi.User{Login: githubapi.String(John)}},
 			},
 			reviewComments: []*githubapi.PullRequestComment{
-				&githubapi.PullRequestComment{
+				{
 					Body: stringPtr(positiveComment),
 					User: &githubapi.User{Login: githubapi.String(Lisa)}},
-				&githubapi.PullRequestComment{
+				{
 					Body: stringPtr(positiveComment),
 					User: &githubapi.User{Login: githubapi.String(John)}},
 			},
@@ -163,24 +163,24 @@ func TestInactiveReviewHandler(t *testing.T) {
 		{
 			name: "IssueComment is not empty with multiple non-author humans, PullRequestComment is not empty with multiple non-author humans",
 			comments: []*githubapi.IssueComment{
-				&githubapi.IssueComment{
+				{
 					Body: stringPtr(positiveComment),
 					User: &githubapi.User{Login: githubapi.String(Lisa)}},
-				&githubapi.IssueComment{
+				{
 					Body: stringPtr(positiveComment),
 					User: &githubapi.User{Login: githubapi.String(Ken)}},
-				&githubapi.IssueComment{
+				{
 					Body: stringPtr(positiveComment),
 					User: &githubapi.User{Login: githubapi.String(John)}},
 			},
 			reviewComments: []*githubapi.PullRequestComment{
-				&githubapi.PullRequestComment{
+				{
 					Body: stringPtr(positiveComment),
 					User: &githubapi.User{Login: githubapi.String(Max)}},
-				&githubapi.PullRequestComment{
+				{
 					Body: stringPtr(positiveComment),
 					User: &githubapi.User{Login: githubapi.String(Lisa)}},
-				&githubapi.PullRequestComment{
+				{
 					Body: stringPtr(positiveComment),
 					User: &githubapi.User{Login: githubapi.String(John)}},
 			},
@@ -210,8 +210,8 @@ func TestInactiveReviewHandler(t *testing.T) {
 				PullRequestLinks: &githubapi.PullRequestLinks{},
 				User:             &githubapi.User{Login: githubapi.String(John)},
 				Number:           intPtr(1),
-				Assignees: []*githubapi.User{&githubapi.User{Login: githubapi.String(Ken)},
-					&githubapi.User{Login: githubapi.String(Lisa)}},
+				Assignees: []*githubapi.User{{Login: githubapi.String(Ken)},
+					{Login: githubapi.String(Lisa)}},
 			},
 			potentialOwners: make(map[string]int64),
 			weightSum:       0,
@@ -223,9 +223,9 @@ func TestInactiveReviewHandler(t *testing.T) {
 				PullRequestLinks: &githubapi.PullRequestLinks{},
 				User:             &githubapi.User{Login: githubapi.String(John)},
 				Number:           intPtr(1),
-				Assignees: []*githubapi.User{&githubapi.User{Login: githubapi.String(Ken)},
-					&githubapi.User{Login: githubapi.String(Lisa)},
-					&githubapi.User{Login: githubapi.String(Max)}},
+				Assignees: []*githubapi.User{{Login: githubapi.String(Ken)},
+					{Login: githubapi.String(Lisa)},
+					{Login: githubapi.String(Max)}},
 			},
 			potentialOwners: map[string]int64{"Ken": 27, "Lisa": 39, "Max": 34},
 			weightSum:       100,
@@ -285,8 +285,8 @@ func TestInactiveReviewHandler(t *testing.T) {
 				PullRequestLinks: &githubapi.PullRequestLinks{},
 				User:             &githubapi.User{Login: githubapi.String(John)},
 				Number:           intPtr(1),
-				Assignees: []*githubapi.User{&githubapi.User{Login: githubapi.String(Ken)},
-					&githubapi.User{Login: githubapi.String(Lisa)}},
+				Assignees: []*githubapi.User{{Login: githubapi.String(Ken)},
+					{Login: githubapi.String(Lisa)}},
 			},
 			potentialOwners: map[string]int64{"Ken": 27, "Lisa": 39, "Max": 34},
 			weightSum:       100,
@@ -298,8 +298,8 @@ func TestInactiveReviewHandler(t *testing.T) {
 				PullRequestLinks: &githubapi.PullRequestLinks{},
 				User:             &githubapi.User{Login: githubapi.String(Max)},
 				Number:           intPtr(1),
-				Assignees: []*githubapi.User{&githubapi.User{Login: githubapi.String(Ken)},
-					&githubapi.User{Login: githubapi.String(Lisa)}},
+				Assignees: []*githubapi.User{{Login: githubapi.String(Ken)},
+					{Login: githubapi.String(Lisa)}},
 			},
 			potentialOwners: map[string]int64{"Ken": 27, "Lisa": 39},
 			weightSum:       66,
@@ -311,9 +311,9 @@ func TestInactiveReviewHandler(t *testing.T) {
 				PullRequestLinks: &githubapi.PullRequestLinks{},
 				User:             &githubapi.User{Login: githubapi.String(John)},
 				Number:           intPtr(1),
-				Assignees: []*githubapi.User{&githubapi.User{Login: githubapi.String(Ken)},
-					&githubapi.User{Login: githubapi.String(Lisa)},
-					&githubapi.User{Login: githubapi.String(Max)}},
+				Assignees: []*githubapi.User{{Login: githubapi.String(Ken)},
+					{Login: githubapi.String(Lisa)},
+					{Login: githubapi.String(Max)}},
 			},
 			potentialOwners: map[string]int64{"Ken": 27, "Lisa": 39, "Max": 34},
 			weightSum:       100,

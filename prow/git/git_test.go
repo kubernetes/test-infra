@@ -69,7 +69,7 @@ func TestClone(t *testing.T) {
 	}()
 
 	// Make sure it fetches when we clone again.
-	if err := lg.AddCommit("foo", "bar", map[string][]byte{"second": []byte{}}); err != nil {
+	if err := lg.AddCommit("foo", "bar", map[string][]byte{"second": {}}); err != nil {
 		t.Fatalf("Adding second commit: %v", err)
 	}
 	r3, err := c.Clone("foo/bar")
@@ -122,7 +122,7 @@ func TestCheckoutPR(t *testing.T) {
 	if err := lg.CheckoutNewBranch("foo", "bar", "pull/123/head"); err != nil {
 		t.Fatalf("Checkout new branch: %v", err)
 	}
-	if err := lg.AddCommit("foo", "bar", map[string][]byte{"wow": []byte{}}); err != nil {
+	if err := lg.AddCommit("foo", "bar", map[string][]byte{"wow": {}}); err != nil {
 		t.Fatalf("Add commit: %v", err)
 	}
 
