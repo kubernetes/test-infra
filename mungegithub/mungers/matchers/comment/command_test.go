@@ -35,46 +35,46 @@ func TestParseCommand(t *testing.T) {
 			comment:          " /COMMAND Must be at the beginning of the line",
 		},
 		{
-			expectedCommands: []*Command{&Command{Name: "COMMAND"}},
+			expectedCommands: []*Command{{Name: "COMMAND"}},
 			comment:          "/COMMAND",
 		},
 		{
-			expectedCommands: []*Command{&Command{Name: "COMMAND"}},
+			expectedCommands: []*Command{{Name: "COMMAND"}},
 			comment:          "/COMMAND\r",
 		},
 		{
-			expectedCommands: []*Command{&Command{Name: "COMMAND", Arguments: "Args after tab"}},
+			expectedCommands: []*Command{{Name: "COMMAND", Arguments: "Args after tab"}},
 			comment:          "/COMMAND\tArgs after tab",
 		},
 		{
-			expectedCommands: []*Command{&Command{Name: "COMMAND", Arguments: "Removes trailing backslash R"}},
+			expectedCommands: []*Command{{Name: "COMMAND", Arguments: "Removes trailing backslash R"}},
 			comment:          "/COMMAND Removes trailing backslash R\r\n",
 		},
 		{
-			expectedCommands: []*Command{&Command{Name: "COMMAND", Arguments: "Valid command"}},
+			expectedCommands: []*Command{{Name: "COMMAND", Arguments: "Valid command"}},
 			comment:          "/COMMAND Valid command",
 		},
 		{
-			expectedCommands: []*Command{&Command{Name: "COMMAND", Arguments: "Multiple Lines"}},
+			expectedCommands: []*Command{{Name: "COMMAND", Arguments: "Multiple Lines"}},
 			comment:          "/COMMAND Multiple Lines\nAnd something else...",
 		},
 		{
 			expectedCommands: []*Command{
-				&Command{Name: "COMMAND", Arguments: "Args"},
-				&Command{Name: "OTHERCOMMAND", Arguments: "OtherArgs"},
+				{Name: "COMMAND", Arguments: "Args"},
+				{Name: "OTHERCOMMAND", Arguments: "OtherArgs"},
 			},
 			comment: "/COMMAND Args\n/OTHERCOMMAND OtherArgs",
 		},
 		{
-			expectedCommands: []*Command{&Command{Name: "COMMAND", Arguments: "Command name is upper-cased"}},
+			expectedCommands: []*Command{{Name: "COMMAND", Arguments: "Command name is upper-cased"}},
 			comment:          "/command Command name is upper-cased",
 		},
 		{
-			expectedCommands: []*Command{&Command{Name: "COMMAND", Arguments: "Arguments is trimmed"}},
+			expectedCommands: []*Command{{Name: "COMMAND", Arguments: "Arguments is trimmed"}},
 			comment:          "/COMMAND     Arguments is trimmed   ",
 		},
 		{
-			expectedCommands: []*Command{&Command{Name: "COMMAND"}},
+			expectedCommands: []*Command{{Name: "COMMAND"}},
 			comment:          "Command not at the beginning:\n/COMMAND\nAnd something else...",
 		},
 	}

@@ -43,32 +43,32 @@ func TestStatePlugin(t *testing.T) {
 			percentiles: []int{50, 100},
 			events: []sql.IssueEvent{
 				// No change
-				sql.IssueEvent{
+				{
 					IssueId:        "1",
 					Event:          "opened",
 					EventCreatedAt: time.Unix(10*60, 0),
 				},
 				// 1 is merged
-				sql.IssueEvent{
+				{
 					IssueId:        "1",
 					Event:          "merged",
 					EventCreatedAt: time.Unix(20*60, 0),
 				},
 				// 1 is merged again, no change
-				sql.IssueEvent{
+				{
 					IssueId:        "1",
 					Event:          "merged",
 					EventCreatedAt: time.Unix(30*60, 0),
 				},
 				// 2 is merged
-				sql.IssueEvent{
+				{
 					IssueId:        "2",
 					Event:          "merged",
 					EventCreatedAt: time.Unix(40*60, 0),
 				},
 			},
 			expected: []Point{
-				Point{
+				{
 					Date: time.Unix(20*60, 0),
 					Values: map[string]interface{}{
 						"count": 1,
@@ -77,7 +77,7 @@ func TestStatePlugin(t *testing.T) {
 						"100%":  0,
 					},
 				},
-				Point{
+				{
 					Date: time.Unix(40*60, 0),
 					Values: map[string]interface{}{
 						"count": 2,

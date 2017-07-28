@@ -150,7 +150,7 @@ func (s *awsResourceSet) Mark(r awsResource) bool {
 // resources have been marked.
 func (s *awsResourceSet) MarkComplete() int {
 	var gone []string
-	for arn, _ := range s.firstSeen {
+	for arn := range s.firstSeen {
 		if !s.marked[arn] {
 			gone = append(gone, arn)
 		}
@@ -174,7 +174,7 @@ func (instances) MarkAndSweep(sess *session.Session, acct string, region string,
 
 	inp := &ec2.DescribeInstancesInput{
 		Filters: []*ec2.Filter{
-			&ec2.Filter{
+			{
 				Name:   aws.String("instance-state-name"),
 				Values: []*string{aws.String("running"), aws.String("pending")},
 			},
@@ -326,7 +326,7 @@ func (subnets) MarkAndSweep(sess *session.Session, acct string, region string, s
 
 	resp, err := svc.DescribeSubnets(&ec2.DescribeSubnetsInput{
 		Filters: []*ec2.Filter{
-			&ec2.Filter{
+			{
 				Name:   aws.String("defaultForAz"),
 				Values: []*string{aws.String("false")},
 			},
@@ -549,7 +549,7 @@ func (vpcs) MarkAndSweep(sess *session.Session, acct string, region string, set 
 
 	resp, err := svc.DescribeVpcs(&ec2.DescribeVpcsInput{
 		Filters: []*ec2.Filter{
-			&ec2.Filter{
+			{
 				Name:   aws.String("isDefault"),
 				Values: []*string{aws.String("false")},
 			},
@@ -604,7 +604,7 @@ func (dhcpOptions) MarkAndSweep(sess *session.Session, acct string, region strin
 	{
 		resp, err := svc.DescribeVpcs(&ec2.DescribeVpcsInput{
 			Filters: []*ec2.Filter{
-				&ec2.Filter{
+				{
 					Name:   aws.String("isDefault"),
 					Values: []*string{aws.String("true")},
 				},

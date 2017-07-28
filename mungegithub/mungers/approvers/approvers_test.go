@@ -629,7 +629,7 @@ func TestGetFilesApprovers(t *testing.T) {
 			filenames:      []string{"a/a", "c"},
 			approvers:      []string{},
 			owners:         map[string]sets.String{"": sets.NewString("RootOwner")},
-			expectedStatus: map[string]sets.String{"": sets.String{}},
+			expectedStatus: map[string]sets.String{"": {}},
 		},
 		{
 			testName: "Approvers approves some",
@@ -643,7 +643,7 @@ func TestGetFilesApprovers(t *testing.T) {
 				"c": sets.NewString("CApprover"),
 			},
 			expectedStatus: map[string]sets.String{
-				"a": sets.String{},
+				"a": {},
 				"c": sets.NewString("CApprover"),
 			},
 		},

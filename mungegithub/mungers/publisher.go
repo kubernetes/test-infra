@@ -92,7 +92,7 @@ func (p *PublisherMunger) Initialize(config *github.Config, features *features.F
 				// rule for the client-go master branch
 				src:  coordinate{repo: config.Project, branch: "master", dir: "staging/src/k8s.io/client-go"},
 				dst:  coordinate{repo: "client-go", branch: "master", dir: "./"},
-				deps: []coordinate{coordinate{repo: "apimachinery", branch: "master"}},
+				deps: []coordinate{{repo: "apimachinery", branch: "master"}},
 			},
 			{
 				// rule for the client-go release-2.0 branch
@@ -103,13 +103,13 @@ func (p *PublisherMunger) Initialize(config *github.Config, features *features.F
 				// rule for the client-go release-3.0 branch
 				src:  coordinate{repo: config.Project, branch: "release-1.6", dir: "staging/src/k8s.io/client-go"},
 				dst:  coordinate{repo: "client-go", branch: "release-3.0", dir: "./"},
-				deps: []coordinate{coordinate{repo: "apimachinery", branch: "release-1.6"}},
+				deps: []coordinate{{repo: "apimachinery", branch: "release-1.6"}},
 			},
 			{
 				// rule for the client-go release-4.0 branch
 				src:  coordinate{repo: config.Project, branch: "release-1.7", dir: "staging/src/k8s.io/client-go"},
 				dst:  coordinate{repo: "client-go", branch: "release-4.0", dir: "./"},
-				deps: []coordinate{coordinate{repo: "apimachinery", branch: "release-1.7"}},
+				deps: []coordinate{{repo: "apimachinery", branch: "release-1.7"}},
 			},
 		},
 		publishScript: "/publish_scripts/publish_client_go.sh",
@@ -145,8 +145,8 @@ func (p *PublisherMunger) Initialize(config *github.Config, features *features.F
 				src: coordinate{repo: config.Project, branch: "master", dir: "staging/src/k8s.io/apiserver"},
 				dst: coordinate{repo: "apiserver", branch: "master", dir: "./"},
 				deps: []coordinate{
-					coordinate{repo: "apimachinery", branch: "master"},
-					coordinate{repo: "client-go", branch: "master"},
+					{repo: "apimachinery", branch: "master"},
+					{repo: "client-go", branch: "master"},
 				},
 			},
 			{
@@ -154,8 +154,8 @@ func (p *PublisherMunger) Initialize(config *github.Config, features *features.F
 				src: coordinate{repo: config.Project, branch: "release-1.6", dir: "staging/src/k8s.io/apiserver"},
 				dst: coordinate{repo: "apiserver", branch: "release-1.6", dir: "./"},
 				deps: []coordinate{
-					coordinate{repo: "apimachinery", branch: "release-1.6"},
-					coordinate{repo: "client-go", branch: "release-3.0"},
+					{repo: "apimachinery", branch: "release-1.6"},
+					{repo: "client-go", branch: "release-3.0"},
 				},
 			},
 		},
@@ -170,9 +170,9 @@ func (p *PublisherMunger) Initialize(config *github.Config, features *features.F
 				src: coordinate{repo: config.Project, branch: "master", dir: "staging/src/k8s.io/kube-aggregator"},
 				dst: coordinate{repo: "kube-aggregator", branch: "master", dir: "./"},
 				deps: []coordinate{
-					coordinate{repo: "apimachinery", branch: "master"},
-					coordinate{repo: "client-go", branch: "master"},
-					coordinate{repo: "apiserver", branch: "master"},
+					{repo: "apimachinery", branch: "master"},
+					{repo: "client-go", branch: "master"},
+					{repo: "apiserver", branch: "master"},
 				},
 			},
 			{
@@ -180,9 +180,9 @@ func (p *PublisherMunger) Initialize(config *github.Config, features *features.F
 				src: coordinate{repo: config.Project, branch: "release-1.6", dir: "staging/src/k8s.io/kube-aggregator"},
 				dst: coordinate{repo: "kube-aggregator", branch: "release-1.6", dir: "./"},
 				deps: []coordinate{
-					coordinate{repo: "apimachinery", branch: "release-1.6"},
-					coordinate{repo: "client-go", branch: "release-3.0"},
-					coordinate{repo: "apiserver", branch: "release-1.6"},
+					{repo: "apimachinery", branch: "release-1.6"},
+					{repo: "client-go", branch: "release-3.0"},
+					{repo: "apiserver", branch: "release-1.6"},
 				},
 			},
 		},
@@ -197,9 +197,9 @@ func (p *PublisherMunger) Initialize(config *github.Config, features *features.F
 				src: coordinate{repo: config.Project, branch: "master", dir: "staging/src/k8s.io/sample-apiserver"},
 				dst: coordinate{repo: "sample-apiserver", branch: "master", dir: "./"},
 				deps: []coordinate{
-					coordinate{repo: "apimachinery", branch: "master"},
-					coordinate{repo: "client-go", branch: "master"},
-					coordinate{repo: "apiserver", branch: "master"},
+					{repo: "apimachinery", branch: "master"},
+					{repo: "client-go", branch: "master"},
+					{repo: "apiserver", branch: "master"},
 				},
 			},
 			{
@@ -207,9 +207,9 @@ func (p *PublisherMunger) Initialize(config *github.Config, features *features.F
 				src: coordinate{repo: config.Project, branch: "release-1.6", dir: "staging/src/k8s.io/sample-apiserver"},
 				dst: coordinate{repo: "sample-apiserver", branch: "release-1.6", dir: "./"},
 				deps: []coordinate{
-					coordinate{repo: "apimachinery", branch: "release-1.6"},
-					coordinate{repo: "client-go", branch: "release-3.0"},
-					coordinate{repo: "apiserver", branch: "release-1.6"},
+					{repo: "apimachinery", branch: "release-1.6"},
+					{repo: "client-go", branch: "release-3.0"},
+					{repo: "apiserver", branch: "release-1.6"},
 				},
 			},
 		},
@@ -224,9 +224,9 @@ func (p *PublisherMunger) Initialize(config *github.Config, features *features.F
 				src: coordinate{repo: config.Project, branch: "master", dir: "staging/src/k8s.io/apiextensions-apiserver"},
 				dst: coordinate{repo: "apiextensions-apiserver", branch: "master", dir: "./"},
 				deps: []coordinate{
-					coordinate{repo: "apimachinery", branch: "master"},
-					coordinate{repo: "client-go", branch: "master"},
-					coordinate{repo: "apiserver", branch: "master"},
+					{repo: "apimachinery", branch: "master"},
+					{repo: "client-go", branch: "master"},
+					{repo: "apiserver", branch: "master"},
 				},
 			},
 		},
@@ -241,7 +241,7 @@ func (p *PublisherMunger) Initialize(config *github.Config, features *features.F
 				src: coordinate{repo: config.Project, branch: "master", dir: "staging/src/k8s.io/api"},
 				dst: coordinate{repo: "api", branch: "master", dir: "./"},
 				deps: []coordinate{
-					coordinate{repo: "apimachinery", branch: "master"},
+					{repo: "apimachinery", branch: "master"},
 				},
 			},
 		},

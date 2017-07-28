@@ -192,7 +192,7 @@ func (fj *FlakyJob) TestsSorted() []string {
 	}
 	fj.testsSorted = make([]string, len(fj.FlakyTests))
 	i := 0
-	for test, _ := range fj.FlakyTests {
+	for test := range fj.FlakyTests {
 		fj.testsSorted[i] = test
 		i++
 	}
@@ -257,7 +257,7 @@ func (fj *FlakyJob) Body(closedIssues []*githubapi.Issue) string {
 func (fj *FlakyJob) Labels() []string {
 	labels := []string{"kind/flake"}
 	// get sig labels
-	for sig, _ := range fj.reporter.creator.TestsSIGs(fj.TestsSorted()) {
+	for sig := range fj.reporter.creator.TestsSIGs(fj.TestsSorted()) {
 		labels = append(labels, "sig/"+sig)
 	}
 	return labels
@@ -266,7 +266,7 @@ func (fj *FlakyJob) Labels() []string {
 // Owners returns the list of usernames to assign to this issue on github.
 func (fj *FlakyJob) Owners() []string {
 	var owners []string
-	for owner, _ := range fj.reporter.creator.TestsOwners(fj.TestsSorted()) {
+	for owner := range fj.reporter.creator.TestsOwners(fj.TestsSorted()) {
 		owners = append(owners, owner)
 	}
 	return owners

@@ -341,23 +341,23 @@ Upgrade master upgrade should maintain a functioning cluster,xiang90,1,cluster-l
 	}{
 		{
 			tests:  []string{"testname1"},
-			owners: map[string][]string{"cjwagner": []string{"testname1"}},
-			sigs:   map[string][]string{"sigarea": []string{"testname1"}},
+			owners: map[string][]string{"cjwagner": {"testname1"}},
+			sigs:   map[string][]string{"sigarea": {"testname1"}},
 		},
 		{
 			tests:  []string{"testname1", "testname2"},
-			owners: map[string][]string{"cjwagner": []string{"testname1"}, "spxtr": []string{"testname2"}},
-			sigs:   map[string][]string{"sigarea": []string{"testname1", "testname2"}},
+			owners: map[string][]string{"cjwagner": {"testname1"}, "spxtr": {"testname2"}},
+			sigs:   map[string][]string{"sigarea": {"testname1", "testname2"}},
 		},
 		{
 			tests:  []string{"testname1", "testname2", "some test"},
-			owners: map[string][]string{"cjwagner": []string{"testname1", "some test"}, "spxtr": []string{"testname2"}},
-			sigs:   map[string][]string{"sigarea": []string{"testname1", "testname2"}, "sigarea2": []string{"some test"}},
+			owners: map[string][]string{"cjwagner": {"testname1", "some test"}, "spxtr": {"testname2"}},
+			sigs:   map[string][]string{"sigarea": {"testname1", "testname2"}, "sigarea2": {"some test"}},
 		},
 		{
 			tests:  []string{"testname1", "some test", "some test2", "some_test3"},
-			owners: map[string][]string{"cjwagner": []string{"testname1", "some test", "some test2"}},
-			sigs:   map[string][]string{"sigarea": []string{"testname1"}, "sigarea2": []string{"some test"}, "sigarea3": []string{"some test2"}},
+			owners: map[string][]string{"cjwagner": {"testname1", "some test", "some test2"}},
+			sigs:   map[string][]string{"sigarea": {"testname1"}, "sigarea2": {"some test"}, "sigarea3": {"some test2"}},
 		},
 	}
 	for _, test := range cases {

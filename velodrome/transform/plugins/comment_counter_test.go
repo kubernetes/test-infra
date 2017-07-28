@@ -42,15 +42,15 @@ func TestCommentCounter(t *testing.T) {
 		{
 			pattern: "",
 			comments: []sql.Comment{
-				sql.Comment{
+				{
 					Body:             "Something",
 					CommentCreatedAt: time.Unix(10, 0),
 				},
-				sql.Comment{
+				{
 					Body:             "Anything",
 					CommentCreatedAt: time.Unix(20, 0),
 				},
-				sql.Comment{
+				{
 					Body:             "It doesn't matter",
 					CommentCreatedAt: time.Unix(30, 0),
 				},
@@ -64,15 +64,15 @@ func TestCommentCounter(t *testing.T) {
 		{
 			pattern: `(?m)/lgtm\s*$`,
 			comments: []sql.Comment{
-				sql.Comment{
+				{
 					Body:             "/lgtm cancel",
 					CommentCreatedAt: time.Unix(10, 0),
 				},
-				sql.Comment{
+				{
 					Body:             "/lgtm",
 					CommentCreatedAt: time.Unix(20, 0),
 				},
-				sql.Comment{
+				{
 					Body:             "/lgtm    \nOr not.",
 					CommentCreatedAt: time.Unix(30, 0),
 				},

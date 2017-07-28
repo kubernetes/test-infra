@@ -53,7 +53,7 @@ func TestHook(t *testing.T) {
 		return nil
 	})
 	pa := &plugins.PluginAgent{}
-	if err := pa.Set(map[string][]string{"foo/bar": []string{"baz"}}); err != nil {
+	if err := pa.Set(map[string][]string{"foo/bar": {"baz"}}); err != nil {
 		t.Fatalf("Setting plugins: %v", err)
 	}
 	ca := &config.Agent{}

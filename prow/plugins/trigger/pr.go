@@ -197,7 +197,7 @@ func buildAll(c client, pr github.PullRequest) error {
 			BaseRef: pr.Base.Ref,
 			BaseSHA: ref,
 			Pulls: []kube.Pull{
-				kube.Pull{
+				{
 					Number: pr.Number,
 					Author: pr.User.Login,
 					SHA:    pr.Head.SHA,

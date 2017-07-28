@@ -33,24 +33,24 @@ func TestAuthorLoggerEnabled(t *testing.T) {
 	authorLogger.enabled = true
 
 	actor := "Person"
-	plugin.EXPECT().ReceiveIssue(sql.Issue{User: "Person"}).Return([]Point{Point{}})
-	plugin.EXPECT().ReceiveIssueEvent(sql.IssueEvent{Actor: &actor}).Return([]Point{Point{}})
-	plugin.EXPECT().ReceiveComment(sql.Comment{User: "Person"}).Return([]Point{Point{}})
+	plugin.EXPECT().ReceiveIssue(sql.Issue{User: "Person"}).Return([]Point{{}})
+	plugin.EXPECT().ReceiveIssueEvent(sql.IssueEvent{Actor: &actor}).Return([]Point{{}})
+	plugin.EXPECT().ReceiveComment(sql.Comment{User: "Person"}).Return([]Point{{}})
 
 	got := authorLogger.ReceiveIssue(sql.Issue{User: "Person"})
-	want := []Point{Point{Values: map[string]interface{}{"author": "Person"}}}
+	want := []Point{{Values: map[string]interface{}{"author": "Person"}}}
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("Failure to log author: got %+v, want %+v", got, want)
 	}
 
 	got = authorLogger.ReceiveIssueEvent(sql.IssueEvent{Actor: &actor})
-	want = []Point{Point{Values: map[string]interface{}{"author": "Person"}}}
+	want = []Point{{Values: map[string]interface{}{"author": "Person"}}}
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("Failure to log author: got %+v, want %+v", got, want)
 	}
 
 	got = authorLogger.ReceiveComment(sql.Comment{User: "Person"})
-	want = []Point{Point{Values: map[string]interface{}{"author": "Person"}}}
+	want = []Point{{Values: map[string]interface{}{"author": "Person"}}}
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("Failure to log author: got %+v, want %+v", got, want)
 	}
@@ -65,24 +65,24 @@ func TestAuthorLoggerDisabled(t *testing.T) {
 	authorLogger.enabled = false
 
 	actor := "Person"
-	plugin.EXPECT().ReceiveIssue(sql.Issue{User: "Person"}).Return([]Point{Point{}})
-	plugin.EXPECT().ReceiveIssueEvent(sql.IssueEvent{Actor: &actor}).Return([]Point{Point{}})
-	plugin.EXPECT().ReceiveComment(sql.Comment{User: "Person"}).Return([]Point{Point{}})
+	plugin.EXPECT().ReceiveIssue(sql.Issue{User: "Person"}).Return([]Point{{}})
+	plugin.EXPECT().ReceiveIssueEvent(sql.IssueEvent{Actor: &actor}).Return([]Point{{}})
+	plugin.EXPECT().ReceiveComment(sql.Comment{User: "Person"}).Return([]Point{{}})
 
 	got := authorLogger.ReceiveIssue(sql.Issue{User: "Person"})
-	want := []Point{Point{}}
+	want := []Point{{}}
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("Failure to pass-through: got %+v, want %+v", got, want)
 	}
 
 	got = authorLogger.ReceiveIssueEvent(sql.IssueEvent{Actor: &actor})
-	want = []Point{Point{}}
+	want = []Point{{}}
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("Failure to pass-through: got %+v, want %+v", got, want)
 	}
 
 	got = authorLogger.ReceiveComment(sql.Comment{User: "Person"})
-	want = []Point{Point{}}
+	want = []Point{{}}
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("Failure to pass-through: got %+v, want %+v", got, want)
 	}

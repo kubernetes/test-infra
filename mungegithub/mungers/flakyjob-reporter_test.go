@@ -121,12 +121,12 @@ func TestFJPrevCloseInWindow(t *testing.T) {
 	yesterday := time.Now().AddDate(0, 0, -1)
 	num := 1
 	// Only need to populate the ClosedAt and Number fields of the Issue.
-	prevIssues := []*githubapi.Issue{&githubapi.Issue{ClosedAt: &yesterday, Number: &num}}
+	prevIssues := []*githubapi.Issue{{ClosedAt: &yesterday, Number: &num}}
 	if fjs[0].Body(prevIssues) != "" {
 		t.Errorf("FlakyJob returned an issue body when there was a recently closed issue for the job.")
 	}
 
-	prevIssues = []*githubapi.Issue{&githubapi.Issue{ClosedAt: &lastWeek, Number: &num}}
+	prevIssues = []*githubapi.Issue{{ClosedAt: &lastWeek, Number: &num}}
 	if fjs[0].Body(prevIssues) == "" {
 		t.Errorf("FlakyJob returned an empty issue body when it should have returned a valid body.")
 	}
