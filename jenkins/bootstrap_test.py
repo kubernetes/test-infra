@@ -1043,7 +1043,7 @@ class FakeArgs(object):
     timeout = 0
     upload = UPLOAD
     json = False
-    no_magic_env = False
+    raw_env = False
     jobs_dir = ''
 
     def __init__(self, **kw):

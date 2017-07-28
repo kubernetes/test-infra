@@ -475,6 +475,7 @@ def finish(gsutil, paths, success, artifacts, build, version, repos, call):
 
 
 # Note the assumption that bootstrap is running from within the kubernetes/test-infra repo
+# TODO(nlandolfi): remove assumption
 def test_infra(*paths):
     """Return path relative to root of test-infra repo."""
     return os.path.join(ORIG_CWD, os.path.dirname(__file__), '..', *paths)
@@ -740,7 +741,7 @@ def job_script(job, use_json, jobs_dir):
     """Return path to script for job."""
     jobs_dir_resolver = lambda f: test_infra('jobs/%s' % f)
 
-    if not jobs_dir == '':
+    if jobs_dir:
         jobs_dir_resolver = lambda f: os.path.join(jobs_dir, f)
 
     if not use_json:
@@ -895,7 +896,7 @@ def bootstrap(args):
             version = find_version(call)
         else:
             version = ''
-        if not args.no_magic_env:
+        if not args.raw_env:
             setup_magic_environment(job)
         setup_credentials(call, args.service_account, upload)
         setup_creds = True
@@ -978,7 +979,7 @@ def parse_args(arguments=None):
     # is to have magic environment, so the default value for this flag
     # (false) needs to match this behavior.
     parser.add_argument(
-        '--no-magic-env',
+        '--raw-env',
         action='store_true',
         help='Disable Jenkins magic environment')
     # If specified, this is the (relative) path to jobs configuration directory
@@ -990,7 +991,6 @@ def parse_args(arguments=None):
         # find the path of the kubernetes/test-infra repo (assuming it has been
         # cloned). It then uses the root of the kubernetes/test-infra repo as the
         # implicit jobs-config-dir.
-        default="",
         help='Explicit location for where to look for job scripts relative to repo root.')
     args = parser.parse_args(arguments)
     if bool(args.repo) == bool(args.bare):
