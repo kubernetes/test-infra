@@ -22,6 +22,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -184,9 +185,27 @@ func uploadLogfilesToGCS(logDir string) error {
 			glog.Errorf("Attempt %v to upload to GCS failed: %v", uploadAttempt, err)
 			continue
 		}
-		return nil
+		return writeSuccessMarkerFile()
 	}
 	return fmt.Errorf("Multiple attempts of gsutil failed, the final one due to: %v", err)
+}
+
+// Write a marker file to GCS named after this node to indicate logexporter's success.
+// The directory to which we write this file can then be used as a registry to quickly
+// fetch the list of nodes on which logexporter succeeded.
+func writeSuccessMarkerFile() error {
+	markerFilePath := *gcsPath + "/logexported-nodes-registry/" + *nodeName + ".txt"
+	cmd := exec.Command("gsutil", "-q", "cp", "-a", "public-read", "-", markerFilePath)
+	stdin, err := cmd.StdinPipe()
+	if err != nil {
+		return fmt.Errorf("Failed to get stdin pipe to write marker file: %v", err)
+	}
+	io.WriteString(stdin, "")
+	stdin.Close()
+	if err = cmd.Run(); err != nil {
+		return fmt.Errorf("Failed to write marker file to GCS: %v", err)
+	}
+	return nil
 }
 
 func main() {

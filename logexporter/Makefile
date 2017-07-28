@@ -14,7 +14,7 @@
 
 PROJECT = google-containers
 IMG = gcr.io/$(PROJECT)/logexporter
-TAG = v0.1.0
+TAG = v0.1.1
 
 .PHONY: build push
 
