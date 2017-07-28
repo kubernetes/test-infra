@@ -15,7 +15,7 @@
 # This file creates a build environment for building and running kubernetes
 # unit and integration tests
 
-FROM gcr.io/k8s-testimages/kubekins-e2e:v20170727-2e1dfe8a
+FROM gcr.io/k8s-testimages/kubekins-e2e:v20170728-faff708c
 MAINTAINER  Sen Lu <senlu@google.com>
 
 ADD runner /
