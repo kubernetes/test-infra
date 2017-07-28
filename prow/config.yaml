@@ -1212,6 +1212,7 @@ postsubmits:
         args:
         - "--branch=$(PULL_REFS)"
         - "--upload=gs://kubernetes-jenkins/logs"
+        - "--json"
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: /etc/service-account/service-account.json

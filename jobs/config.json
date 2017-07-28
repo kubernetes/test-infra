@@ -9266,6 +9266,15 @@
       "sig-testing"
     ]
   },
+  "maintenance-ci-testgrid-config-upload": {
+    "args": [
+      "./testgrid/config-upload.sh"
+    ],
+    "scenario": "execute",
+    "sigOwners": [
+      "sig-testing"
+    ]
+  },
   "maintenance-daily": {
     "scenario": "maintenance",
     "sigOwners": [
