@@ -18,6 +18,10 @@ triggers:
   - google/cadvisor
   trusted_org: kubernetes
 
+heart:
+  adorees:
+  - k8s-merge-bot
+
 presubmits:
   # PR job triggering definitions.
   # Keys: Full repo name: "org/repo".

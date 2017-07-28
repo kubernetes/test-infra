@@ -23,13 +23,13 @@ import (
 
 	"github.com/Sirupsen/logrus"
 
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/plugins"
 )
 
 const (
 	pluginName     = "heart"
-	botName        = "k8s-merge-robot"
 	ownersFilename = "OWNERS"
 )
 
@@ -53,21 +53,45 @@ type githubClient interface {
 	GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error)
 }
 
+type client struct {
+	GitHubClient githubClient
+	Config       *config.Heart
+	Logger       *logrus.Entry
+}
+
+func heartConfig(c *config.Config) *config.Heart {
+	return &c.Heart
+}
+
+func getClient(pc plugins.PluginClient) client {
+	return client{
+		GitHubClient: pc.GitHubClient,
+		Config:       heartConfig(pc.Config),
+		Logger:       pc.Logger,
+	}
+}
+
 func handleIssueComment(pc plugins.PluginClient, ic github.IssueCommentEvent) error {
-	return handleIC(pc.GitHubClient, pc.Logger, ic)
+	return handleIC(getClient(pc), ic)
 }
 
 func handlePullRequest(pc plugins.PluginClient, pre github.PullRequestEvent) error {
-	return handlePR(pc.GitHubClient, pc.Logger, pre)
+	return handlePR(getClient(pc), pre)
 }
 
-func handleIC(gc githubClient, log *logrus.Entry, ic github.IssueCommentEvent) error {
+func handleIC(c client, ic github.IssueCommentEvent) error {
 	// Only consider new comments on PRs.
 	if !ic.Issue.IsPullRequest() || ic.Action != "created" {
 		return nil
 	}
-	// Only consider the merge bot.
-	if ic.Comment.User.Login != botName {
+	adoredLogin := false
+	for _, login := range c.Config.Adorees {
+		if ic.Comment.User.Login == login {
+			adoredLogin = true
+			break
+		}
+	}
+	if !adoredLogin {
 		return nil
 	}
 
@@ -75,15 +99,15 @@ func handleIC(gc githubClient, log *logrus.Entry, ic github.IssueCommentEvent) e
 		return nil
 	}
 
-	log.Info("This is a wonderful thing!")
-	return gc.CreateCommentReaction(
+	c.Logger.Info("This is a wonderful thing!")
+	return c.GitHubClient.CreateCommentReaction(
 		ic.Repo.Owner.Login,
 		ic.Repo.Name,
 		ic.Comment.ID,
 		reactions[rand.Intn(len(reactions))])
 }
 
-func handlePR(gc githubClient, log *logrus.Entry, pre github.PullRequestEvent) error {
+func handlePR(c client, pre github.PullRequestEvent) error {
 	// Only consider newly opened PRs
 	if pre.Action != "opened" {
 		return nil
@@ -92,7 +116,7 @@ func handlePR(gc githubClient, log *logrus.Entry, pre github.PullRequestEvent) e
 	org := pre.PullRequest.Base.Repo.Owner.Login
 	repo := pre.PullRequest.Base.Repo.Name
 
-	changes, err := gc.GetPullRequestChanges(org, repo, pre.PullRequest.Number)
+	changes, err := c.GitHubClient.GetPullRequestChanges(org, repo, pre.PullRequest.Number)
 	if err != nil {
 		return err
 	}
@@ -101,8 +125,8 @@ func handlePR(gc githubClient, log *logrus.Entry, pre github.PullRequestEvent) e
 	for _, change := range changes {
 		_, filename := filepath.Split(change.Filename)
 		if filename == ownersFilename && change.Additions > 0 {
-			log.Info("Adding new OWNERS makes me happy!")
-			return gc.CreateIssueReaction(
+			c.Logger.Info("Adding new OWNERS makes me happy!")
+			return c.GitHubClient.CreateIssueReaction(
 				pre.PullRequest.Base.Repo.Owner.Login,
 				pre.PullRequest.Base.Repo.Name,
 				pre.Number,

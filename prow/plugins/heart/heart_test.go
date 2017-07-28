@@ -21,6 +21,7 @@ import (
 
 	"github.com/Sirupsen/logrus"
 
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
 )
@@ -98,7 +99,7 @@ func TestHandlePR(t *testing.T) {
 			Number:      basicPR.Number,
 			PullRequest: basicPR,
 		}
-		fakeClient := &fakegithub.FakeClient{
+		fakeGitHubClient := &fakegithub.FakeClient{
 			PullRequests: map[int]*github.PullRequest{
 				basicPR.Number: &basicPR,
 			},
@@ -106,17 +107,25 @@ func TestHandlePR(t *testing.T) {
 				basicPR.Number: tc.changes,
 			},
 		}
-		log := logrus.WithField("plugin", pluginName)
+		fakeClient := client{
+			GitHubClient: fakeGitHubClient,
+			Config: &config.Heart{
+				Adorees: []string{
+					"kubernetes",
+				},
+			},
+			Logger: logrus.WithField("plugin", pluginName),
+		}
 
-		err := handlePR(fakeClient, log, event)
+		err := handlePR(fakeClient, event)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if len(fakeClient.IssueReactionsAdded) > 0 && !tc.expectedReactionAdded {
+		if len(fakeGitHubClient.IssueReactionsAdded) > 0 && !tc.expectedReactionAdded {
 			t.Fatalf("Expected no reactions to be added for %+v", tc)
 
-		} else if len(fakeClient.IssueReactionsAdded) == 0 && tc.expectedReactionAdded {
+		} else if len(fakeGitHubClient.IssueReactionsAdded) == 0 && tc.expectedReactionAdded {
 			t.Fatalf("Expected reaction to be added for %+v", tc)
 		}
 	}
