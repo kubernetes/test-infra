@@ -489,7 +489,6 @@ func (sq *SubmitQueue) internalInitialize(config *github.Config, features *featu
 		http.Handle("/prs", gziphandler.GzipHandler(http.HandlerFunc(sq.servePRs)))
 		http.Handle("/history", gziphandler.GzipHandler(http.HandlerFunc(sq.serveHistory)))
 		http.Handle("/github-e2e-queue", gziphandler.GzipHandler(http.HandlerFunc(sq.serveGithubE2EStatus)))
-		http.Handle("/google-internal-ci", gziphandler.GzipHandler(http.HandlerFunc(sq.serveGoogleInternalStatus)))
 		http.Handle("/merge-info", gziphandler.GzipHandler(http.HandlerFunc(sq.serveMergeInfo)))
 		http.Handle("/priority-info", gziphandler.GzipHandler(http.HandlerFunc(sq.servePriorityInfo)))
 		http.Handle("/health", gziphandler.GzipHandler(http.HandlerFunc(sq.serveHealth)))
@@ -971,12 +970,6 @@ func (sq *SubmitQueue) getGithubE2EStatus() []byte {
 		BatchStatus: &sq.batchStatus,
 	}
 	return sq.marshal(status)
-}
-
-func (sq *SubmitQueue) getGoogleInternalStatus() []byte {
-	sq.Lock()
-	defer sq.Unlock()
-	return sq.marshal(sq.e2e.GetBuildStatus())
 }
 
 func (sq *SubmitQueue) getHealth() []byte {
@@ -1539,11 +1532,6 @@ func (sq *SubmitQueue) servePRs(res http.ResponseWriter, req *http.Request) {
 
 func (sq *SubmitQueue) serveGithubE2EStatus(res http.ResponseWriter, req *http.Request) {
 	data := sq.getGithubE2EStatus()
-	sq.serve(data, res, req)
-}
-
-func (sq *SubmitQueue) serveGoogleInternalStatus(res http.ResponseWriter, req *http.Request) {
-	data := sq.getGoogleInternalStatus()
 	sq.serve(data, res, req)
 }
 
