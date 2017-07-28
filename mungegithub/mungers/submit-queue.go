@@ -679,13 +679,16 @@ func (sq *SubmitQueue) getRunningPRNumber() int {
 
 func (sq *SubmitQueue) monitorProw() {
 	nonBlockingJobNames := make(map[string]bool)
+	requireRetestJobNames := make(map[string]bool)
+	sq.opts.Lock()
 	for _, jobName := range sq.NonBlockingJobNames {
 		nonBlockingJobNames[jobName] = true
 	}
-	requireRetestJobNames := make(map[string]bool)
 	for _, jobName := range mungeopts.RequiredContexts.Retest {
 		requireRetestJobNames[jobName] = true
 	}
+	sq.opts.Unlock()
+
 	url := sq.ProwURL + "/data.js"
 	for {
 		currentPR := sq.getRunningPRNumber()
@@ -728,7 +731,7 @@ func (sq *SubmitQueue) monitorProw() {
 			latest, ok := ciLatest[key][job.Job]
 
 			// TODO: flake cache?
-			if !ok || latest.After(ft) {
+			if !ok || latest.Before(ft) {
 				ciLatest[key][job.Job] = ft
 				ciStatus[key][job.Job] = jobStatus{
 					State:   job.State,
@@ -738,16 +741,12 @@ func (sq *SubmitQueue) monitorProw() {
 			}
 		}
 
-		sq.setCIStatus(ciStatus)
+		sq.Lock()
+		sq.ciStatus = ciStatus
+		sq.Unlock()
 
-		time.Sleep(1 * time.Minute)
+		time.Sleep(time.Minute)
 	}
-}
-
-func (sq *SubmitQueue) setCIStatus(status map[string]map[string]jobStatus) {
-	defer sq.Unlock()
-	sq.Lock()
-	sq.ciStatus = status
 }
 
 func (sq *SubmitQueue) e2eStable(aboutToMerge bool) bool {
@@ -970,24 +969,6 @@ func (sq *SubmitQueue) getGithubE2EStatus() []byte {
 		BatchStatus: &sq.batchStatus,
 	}
 	return sq.marshal(status)
-}
-
-func (sq *SubmitQueue) getHealth() []byte {
-	sq.Lock()
-	defer sq.Unlock()
-	return sq.marshal(sq.health)
-}
-
-func (sq *SubmitQueue) getCIStatus() []byte {
-	sq.Lock()
-	defer sq.Unlock()
-	return sq.marshal(sq.ciStatus)
-}
-
-func (sq *SubmitQueue) getMetaData() []byte {
-	sq.Lock()
-	defer sq.Unlock()
-	return sq.marshal(sq.Metadata)
 }
 
 const (
@@ -1536,12 +1517,16 @@ func (sq *SubmitQueue) serveGithubE2EStatus(res http.ResponseWriter, req *http.R
 }
 
 func (sq *SubmitQueue) serveCIStatus(res http.ResponseWriter, req *http.Request) {
-	data := sq.getCIStatus()
+	sq.Lock()
+	data := sq.marshal(sq.ciStatus)
+	sq.Unlock()
 	sq.serve(data, res, req)
 }
 
 func (sq *SubmitQueue) serveHealth(res http.ResponseWriter, req *http.Request) {
-	data := sq.getHealth()
+	sq.Lock()
+	data := sq.marshal(sq.health)
+	sq.Unlock()
 	sq.serve(data, res, req)
 }
 
@@ -1569,7 +1554,9 @@ func (sq *SubmitQueue) serveFlakes(res http.ResponseWriter, req *http.Request) {
 }
 
 func (sq *SubmitQueue) serveMetadata(res http.ResponseWriter, req *http.Request) {
-	data := sq.getMetaData()
+	sq.Lock()
+	data := sq.marshal(sq.Metadata)
+	sq.Unlock()
 	sq.serve(data, res, req)
 }
 
