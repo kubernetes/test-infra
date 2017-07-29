@@ -12,6 +12,8 @@ triggers:
 heart:
   adorees:
   - k8s-merge-bot
+label:
+  sig_org: kubernetes
 plugins:
   google/cadvisor:
   - trigger

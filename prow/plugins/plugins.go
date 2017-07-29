@@ -119,6 +119,7 @@ type PluginAgent struct {
 	configuration Configuration
 }
 
+<<<<<<< HEAD
 // Configuration is the top-level serialization
 // target for plugin Configuration
 type Configuration struct {
@@ -127,6 +128,16 @@ type Configuration struct {
 	Triggers []Trigger           `json:"trigger,omitempty"`
 	Heart    Heart               `json:"heart,omitempty"`
 	Label    Label               `json:"label,omitempty"`
+=======
+// Config holds the plugin configuration
+// for a repository or an organization
+type Config struct {
+	EnabledPlugins []string `json:"-"`
+
+	Trigger *Trigger `json:"trigger,omitempty"`
+	Heart   *Heart   `json:"heart,omitempty"`
+	Label   *Label   `json:"label,omitempty"`
+>>>>>>> fb398b7... Configure organization for SIG labels
 }
 
 type Trigger struct {
@@ -149,6 +160,7 @@ type Label struct {
 	SigOrg string `json:"sig_org,omitempty"`
 }
 
+<<<<<<< HEAD
 // TriggerFor finds the Trigger for a repo, if one exists
 // a trigger can be listed for the repo itself or for the
 // owning organization
@@ -162,6 +174,12 @@ func (c *PluginAgent) TriggerFor(org, repo string) *Trigger {
 	}
 	return nil
 }
+=======
+// pluginConfig is used as a deserialization
+// target to validate the plugins requested
+// by users in the plugin configuration YAML
+type pluginConfig map[string]interface{}
+>>>>>>> fb398b7... Configure organization for SIG labels
 
 // Load attempts to load config from the path. It returns an error if either
 // the file can't be read or it contains an unknown plugin.
@@ -348,6 +366,54 @@ func (pa *PluginAgent) PushEventHandlers(owner, repo string) map[string]PushEven
 	return hs
 }
 
+<<<<<<< HEAD
+=======
+// Config returns the plugin configuration for the repo, which
+// will either be the owning organization's config, the repo
+// config or a merged version of the two
+func (pa *PluginAgent) PluginConfig(owner, repo string) Config {
+	pa.mut.Lock()
+	defer pa.mut.Unlock()
+
+	fullName := fmt.Sprintf("%s/%s", owner, repo)
+	orgConfig, orgOk := pa.pc[owner]
+	repoConfig, repoOk := pa.pc[fullName]
+
+	if repoOk && !orgOk {
+		return repoConfig
+	} else if !repoOk && orgOk {
+		return orgConfig
+	} else if orgOk && repoOk {
+		return mergeConfig(orgConfig, repoConfig)
+	}
+
+	panic(fmt.Sprintf("No configuration was found for %s!", fullName))
+}
+
+// mergeConfig merges organization and repository plugin config
+// to create the full configuration for a set of repository plugins.
+func mergeConfig(org, repo Config) Config {
+	mergedConfig := Config{
+		EnabledPlugins: append(org.EnabledPlugins, repo.EnabledPlugins...),
+		Trigger:        org.Trigger,
+		Heart:          org.Heart,
+		Label:          org.Label,
+	}
+
+	if mergedConfig.Trigger == nil && repo.Trigger != nil {
+		mergedConfig.Trigger = repo.Trigger
+	}
+	if mergedConfig.Heart == nil && repo.Heart != nil {
+		mergedConfig.Heart = repo.Heart
+	}
+	if mergedConfig.Label == nil && repo.Label != nil {
+		mergedConfig.Label = repo.Label
+	}
+
+	return mergedConfig
+}
+
+>>>>>>> fb398b7... Configure organization for SIG labels
 // getPlugins returns a list of plugins that are enabled on a given (org, repository).
 func (pa *PluginAgent) getPlugins(owner, repo string) []string {
 	var plugins []string
