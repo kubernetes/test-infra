@@ -62,37 +62,32 @@ func (c *CommandArguments) Match(comment *Comment) bool {
 	return false
 }
 
-// MungeBotAuthor creates a matcher to find mungebot comments
-func MungeBotAuthor() Matcher {
-	return AuthorLogin("k8s-merge-robot")
-}
-
 // JenkinsBotAuthor creates a matcher to find jenkins bot comments
 func JenkinsBotAuthor() Matcher {
 	return AuthorLogin("k8s-bot")
 }
 
 // BotAuthor creates a matcher to find any bot comments
-func BotAuthor() Matcher {
+func BotAuthor(mungeBotName string) Matcher {
 	return Or([]Matcher{
-		MungeBotAuthor(),
+		AuthorLogin(mungeBotName),
 		JenkinsBotAuthor(),
 	})
 }
 
 // HumanActor creates a matcher to find non-bot comments.
 // ValidAuthor is used because a comment that doesn't have "Author" is NOT made by a human
-func HumanActor() Matcher {
+func HumanActor(mungeBotName string) Matcher {
 	return And([]Matcher{
 		ValidAuthor{},
-		Not{BotAuthor()},
+		Not{BotAuthor(mungeBotName)},
 	})
 }
 
 // MungerNotificationName finds notification posted by the munger, based on name
-func MungerNotificationName(notif string) Matcher {
+func MungerNotificationName(notif, mungeBotName string) Matcher {
 	return And([]Matcher{
-		MungeBotAuthor(),
+		AuthorLogin(mungeBotName),
 		NotificationName(notif),
 	})
 }

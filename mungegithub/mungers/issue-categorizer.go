@@ -25,7 +25,6 @@ import (
 	"k8s.io/kubernetes/pkg/util/sets"
 	"k8s.io/test-infra/mungegithub/features"
 	"k8s.io/test-infra/mungegithub/github"
-	"k8s.io/test-infra/mungegithub/mungers/matchers/event"
 	"k8s.io/test-infra/mungegithub/options"
 
 	"github.com/golang/glog"
@@ -78,38 +77,6 @@ func (lm *LabelMunger) Munge(obj *github.MungeObject) {
 	if len(tLabels) == 0 && len(cLabels) == 0 {
 		obj.AddLabels(getRoutingLabels(lm.triagerUrl, obj.Issue.Title, obj.Issue.Body))
 	}
-	// else {
-	// 	newLabels := needsUpdate(obj)
-	// 	if len(newLabels) != 0 {
-	// 		updateModel(lm.triagerUrl, obj.Issue.Title, obj.Issue.Body, newLabels)
-	// 	}
-	// }
-}
-
-func updateModel(triagerUrl string, title, body *string, newLabels []string) {
-	glog.Infof("Updating the models on the server: %v", triagerUrl)
-	_, err := http.PostForm(triagerUrl,
-		url.Values{"titles": []string{*title},
-			"bodies": []string{*body},
-			"labels": newLabels})
-	if err != nil {
-		glog.Error(err)
-	}
-}
-
-func needsUpdate(obj *github.MungeObject) []string {
-	newLabels := []string{}
-
-	newTeamLabel := getHumanCorrectedLabel(obj, "team")
-	if newTeamLabel != nil {
-		newLabels = append(newLabels, *newTeamLabel)
-	}
-
-	newComponentLabel := getHumanCorrectedLabel(obj, "component")
-	if newComponentLabel != nil {
-		newLabels = append(newLabels, *newComponentLabel)
-	}
-	return newLabels
 }
 
 func getRoutingLabels(triagerUrl string, title, body *string) []string {
@@ -137,37 +104,4 @@ func getRoutingLabels(triagerUrl string, title, body *string) []string {
 		return []string{}
 	}
 	return strings.Split(string(response), ",")
-}
-
-func getHumanCorrectedLabel(obj *github.MungeObject, s string) *string {
-	myEvents, ok := obj.GetEvents()
-	if !ok {
-		return nil
-	}
-
-	botEvents := event.FilterEvents(myEvents, event.And([]event.Matcher{event.BotActor(), event.AddLabel{}, event.LabelPrefix(s)}))
-
-	if botEvents.Empty() {
-		return nil
-	}
-
-	humanEventsAfter := event.FilterEvents(
-		myEvents,
-		event.And([]event.Matcher{
-			event.HumanActor(),
-			event.AddLabel{},
-			event.LabelPrefix(s),
-			event.CreatedAfter(*botEvents.GetLast().CreatedAt),
-		}),
-	)
-
-	if humanEventsAfter.Empty() {
-		return nil
-	}
-	lastHumanLabel := humanEventsAfter.GetLast()
-
-	glog.Infof("Recopying human-added label: %s for PR %d", *lastHumanLabel.Label.Name, *obj.Issue.Number)
-	obj.RemoveLabel(*lastHumanLabel.Label.Name)
-	obj.AddLabel(*lastHumanLabel.Label.Name)
-	return lastHumanLabel.Label.Name
 }

@@ -38,6 +38,7 @@ const (
 )
 
 type InactiveReviewHandler struct {
+	botName  string
 	features *features.Features
 }
 
@@ -53,6 +54,7 @@ func (i *InactiveReviewHandler) RequiredFeatures() []string {
 }
 
 func (i *InactiveReviewHandler) Initialize(config *github.Config, features *features.Features) error {
+	i.botName = config.BotName
 	i.features = features
 	return nil
 }
@@ -67,7 +69,7 @@ func (i *InactiveReviewHandler) haveNonAuthorHuman(authorName *string, comments 
 	return !matchers.Items{}.
 		AddComments(comments...).
 		AddReviewComments(reviewComments...).
-		Filter(matchers.HumanActor()).
+		Filter(matchers.HumanActor(i.botName)).
 		Filter(matchers.Not(matchers.AuthorLogin(*authorName))).
 		IsEmpty()
 }
@@ -142,7 +144,7 @@ func (i *InactiveReviewHandler) Munge(obj *github.MungeObject) {
 		return
 	}
 
-	pinger := matchers.NewPinger(NOTIFNAME).SetTimePeriod(COMMENTTIMECAP).SetMaxCount(REMINDERNUMCAP)
+	pinger := matchers.NewPinger(NOTIFNAME, i.botName).SetTimePeriod(COMMENTTIMECAP).SetMaxCount(REMINDERNUMCAP)
 	notification := pinger.PingNotification(comments, "", issue.CreatedAt)
 
 	// return if the munger has created comments for "REMINDERNUMCAP" number of times, or
