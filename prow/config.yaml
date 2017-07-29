@@ -71,7 +71,7 @@ presubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20170728-71064cf4
+      - image: gcr.io/k8s-testimages/bazelbuild:v20170729-7ec13d8d  # https://github.com/kubernetes/kubernetes/issues/49824
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -342,7 +342,7 @@ presubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20170728-71064cf4
+      - image: gcr.io/k8s-testimages/bazelbuild:v20170729-7ec13d8d  # https://github.com/kubernetes/kubernetes/issues/49824
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
