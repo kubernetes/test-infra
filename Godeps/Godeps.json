@@ -53,7 +53,7 @@
 		},
 		{
 			"ImportPath": "github.com/ghodss/yaml",
-			"Rev": "73d445a93680fa1a78ae23a5839bad48f32ba1ee"
+			"Rev": "0ca9ea5df5451ffdf184b4428c902747c2c11cd7"
 		},
 		{
 			"ImportPath": "github.com/golang/lint",
