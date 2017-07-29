@@ -296,6 +296,223 @@ func TestBazelJobHasContainerPort(t *testing.T) {
 	}
 }
 
+// Load the config and extract all jobs, including any child jobs inside
+// RunAfterSuccess fields.
+func allJobs() ([]Presubmit, []Postsubmit, []Periodic, error) {
+	c, err := Load("../config.yaml")
+	if err != nil {
+		return nil, nil, nil, err
+	}
+
+	pres := []Presubmit{}
+	posts := []Postsubmit{}
+	peris := []Periodic{}
+
+	{ // Find all presubmit jobs, including child jobs.
+		q := []Presubmit{}
+
+		for _, p := range c.Presubmits {
+			for _, p2 := range p {
+				q = append(q, p2)
+			}
+		}
+
+		for len(q) > 0 {
+			pres = append(pres, q[0])
+			for _, p := range q[0].RunAfterSuccess {
+				q = append(q, p)
+			}
+			q = q[1:]
+		}
+	}
+
+	{ // Find all postsubmit jobs, including child jobs.
+		q := []Postsubmit{}
+
+		for _, p := range c.Postsubmits {
+			for _, p2 := range p {
+				q = append(q, p2)
+			}
+		}
+
+		for len(q) > 0 {
+			posts = append(posts, q[0])
+			for _, p := range q[0].RunAfterSuccess {
+				q = append(q, p)
+			}
+			q = q[1:]
+		}
+	}
+
+	{ // Find all periodic jobs, including child jobs.
+		q := []Periodic{}
+		for _, p := range c.Periodics {
+			q = append(q, p)
+		}
+
+		for len(q) > 0 {
+			peris = append(peris, q[0])
+			for _, p := range q[0].RunAfterSuccess {
+				q = append(q, p)
+			}
+			q = q[1:]
+		}
+	}
+
+	return pres, posts, peris, nil
+}
+
+// Validate any containers using a bazelbuild image, returning which bazelbuild tags are used.
+// In particular ensure that:
+//   * Presubmit, postsubmit jobs specify at least one --repo flag, the first of which uses PULL_REFS and REPO_NAME vars
+//   * Prow injected vars like REPO_NAME, PULL_REFS, etc are only used on non-periodic jobs
+//   * Deprecated --branch, --pull flags are not used
+//   * Required --service-account, --upload, --git-cache, --job, --clean flags are present
+func CheckBazelbuildSpec(t *testing.T, name string, spec *kube.PodSpec, periodic bool) map[string]int {
+	img := "gcr.io/k8s-testimages/bazelbuild"
+	tags := map[string]int{}
+	if spec == nil {
+		return tags
+	}
+	for _, c := range spec.Containers {
+		parts := strings.SplitN(c.Image, ":", 2)
+		var i, tag string // image:tag
+		i = parts[0]
+		if len(parts) == 1 {
+			tag = "latest"
+		} else {
+			tag = parts[1]
+		}
+		if i != img {
+			continue
+		}
+		tags[tag]++
+
+		found := map[string][]string{}
+		for _, a := range c.Args {
+			parts := strings.SplitN(a, "=", 2)
+			k := parts[0]
+			v := "true"
+			if len(parts) == 2 {
+				v = parts[1]
+			}
+			found[k] = append(found[k], v)
+
+			// Require --flag=FOO for easier processing
+			if k == "--repo" && len(parts) == 1 {
+				t.Errorf("%s: use --repo=FOO not --repo foo", name)
+			}
+		}
+
+		if _, ok := found["--pull"]; ok {
+			t.Errorf("%s: uses deprecated --pull arg, use --repo=org/repo=$(PULL_REFS) instead", name)
+		}
+		if _, ok := found["--branch"]; ok {
+			t.Errorf("%s: uses deprecated --branch arg, use --repo=org/repo=$(PULL_REFS) instead", name)
+		}
+
+		for _, f := range []string{
+			"--service-account",
+			"--upload",
+			"--git-cache",
+			"--job",
+			"--clean",
+		} {
+			if _, ok := found[f]; !ok {
+				t.Errorf("%s: missing %s flag", name, f)
+			}
+		}
+
+		if v, ok := found["--repo"]; !ok {
+			t.Errorf("%s: missing %s flag", name, "--repo")
+		} else {
+			firstRepo := true
+			hasRefs := false
+			hasName := false
+			for _, r := range v {
+				hasRefs = hasRefs || strings.Contains(r, "$(PULL_REFS)")
+				hasName = hasName || strings.Contains(r, "$(REPO_NAME)")
+				if !firstRepo {
+					t.Errorf("%s: has too many --repo. REMOVE THIS CHECK BEFORE MERGE", name)
+				}
+				for _, d := range []string{
+					"$(REPO_NAME)",
+					"$(REPO_OWNER)",
+					"$(PULL_BASE_REF)",
+					"$(PULL_BASE_SHA)",
+					"$(PULL_REFS)",
+					"$(PULL_NUMBER)",
+					"$(PULL_PULL_SHA)",
+				} {
+					has := strings.Contains(r, d)
+					if periodic && has {
+						t.Errorf("%s: %s are not available to periodic jobs, please use a static --repo=org/repo=branch", name, d)
+					} else if !firstRepo && has {
+						t.Errorf("%s: %s are only relevant to the first --repo flag, remove from --repo=%s", name, d, r)
+					}
+				}
+				firstRepo = false
+			}
+			if !periodic && !hasRefs {
+				t.Errorf("%s: non-periodic jobs need a --repo=org/branch=$(PULL_REFS) somewhere", name)
+			}
+			if !periodic && !hasName {
+				t.Errorf("%s: non-periodic jobs need a --repo=org/$(REPO_NAME) somewhere", name)
+			}
+		}
+	}
+	return tags
+}
+
+// Unit test jobs that use a bazelbuild image do so correctly.
+func TestBazelbuildArgs(t *testing.T) {
+	pres, posts, peris, err := allJobs()
+	if err != nil {
+		t.Fatalf("Could not load config: %v", err)
+	}
+
+	tags := map[string][]string{} // tag -> jobs map
+	for _, p := range pres {
+		for t := range CheckBazelbuildSpec(t, p.Name, p.Spec, false) {
+			tags[t] = append(tags[t], p.Name)
+		}
+	}
+	for _, p := range posts {
+		for t := range CheckBazelbuildSpec(t, p.Name, p.Spec, false) {
+			tags[t] = append(tags[t], p.Name)
+		}
+	}
+	for _, p := range peris {
+		for t := range CheckBazelbuildSpec(t, p.Name, p.Spec, true) {
+			tags[t] = append(tags[t], p.Name)
+		}
+	}
+	pinnedJobs := map[string]string{
+	//job: reason for pinning
+	}
+	maxTag := ""
+	maxN := 0
+	for t, js := range tags {
+		n := len(js)
+		if n > maxN {
+			maxTag = t
+			maxN = n
+		}
+	}
+	for tag, js := range tags {
+		current := tag == maxTag
+		for _, j := range js {
+			if v, pinned := pinnedJobs[j]; !pinned && !current {
+				t.Errorf("%s: please add to the pinnedJobs list or else update tag to %s", j, maxTag)
+			} else if current && pinned {
+				t.Errorf("%s: please remove from the pinnedJobs list", j)
+			} else if !current && v == "" {
+				t.Errorf("%s: pinning to a non-default version requires a non-empty reason for doing so", j)
+			}
+		}
+	}
+}
+
 func TestURLTemplate(t *testing.T) {
 	c, err := Load("../config.yaml")
 	if err != nil {
