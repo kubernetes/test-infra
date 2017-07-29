@@ -229,7 +229,7 @@ func TestHandleIssueComment(t *testing.T) {
 			},
 		}
 
-		if err := handleIC(c, event); err != nil {
+		if err := handleIC(c, "kubernetes", event); err != nil {
 			t.Fatalf("Didn't expect error: %s", err)
 		}
 		if len(kc.started) > 0 && !tc.ShouldBuild {

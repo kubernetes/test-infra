@@ -2,52 +2,65 @@
 # Keys: Full repo name: "org/repo".
 # Values: List of plugins to run against the repo.
 ---
-google/cadvisor:
-- trigger
+triggers:
+- repos:
+  - kubernetes
+  - kubernetes-incubator
+  - kubernetes-security
+  - google/cadvisor
+  trusted_org: kubernetes
 
-kubernetes/charts:
-- trigger
+heart:
+  adorees:
+  - k8s-merge-bot
 
-kubernetes/heapster:
-- trigger
+plugins:
+  google/cadvisor:
+  - trigger
 
-kubernetes/kops:
-- trigger
+  kubernetes/charts:
+  - trigger
 
-kubernetes/kubernetes:
-- trigger
-- release-note
+  kubernetes/heapster:
+  - trigger
 
-kubernetes/test-infra:
-- trigger
-- config-updater
+  kubernetes/kops:
+  - trigger
 
-kubernetes:
-- assign
-- cla
-- close
-- reopen
-- golint
-- heart
-- label
-- lgtm
-- size
-- yuks
+  kubernetes/kubernetes:
+  - trigger
+  - release-note
 
-kubernetes-incubator:
-- cla
-- assign
-- size
+  kubernetes/test-infra:
+  - trigger
+  - config-updater
 
-kubernetes-incubator/kube-aws:
-- lgtm
+  kubernetes:
+  - assign
+  - cla
+  - close
+  - reopen
+  - golint
+  - heart
+  - label
+  - lgtm
+  - size
+  - yuks
 
-kubernetes-security/kubernetes:
-- trigger
+  kubernetes-incubator:
+  - cla
+  - assign
+  - size
 
-spxtr/envoy:
-- assign
-- close
-- reopen
-- lgtm
-- trigger
+  kubernetes-incubator/kube-aws:
+  - lgtm
+
+  kubernetes-security/kubernetes:
+  - trigger
+
+  spxtr/envoy:
+  - assign
+  - close
+  - reopen
+  - lgtm
+  - trigger
