@@ -301,14 +301,12 @@ func TestOutput(t *testing.T) {
 		} else {
 			cmd = exec.Command("sleep", strconv.Itoa(tc.sleep))
 		}
-		runner := finishRunning
+		var err error
 		if tc.output {
-			runner = func(c *exec.Cmd) error {
-				_, err := output(c)
-				return err
-			}
+			_, err = output(cmd)
+		} else {
+			err = finishRunning(cmd)
 		}
-		err := runner(cmd)
 		if err == nil == tc.shouldError {
 			t.Errorf("Step %s shouldError=%v error: %v", tc.name, tc.shouldError, err)
 		}
@@ -320,6 +318,22 @@ func TestOutput(t *testing.T) {
 		if tc.causeTermination && !terminated {
 			t.Errorf("Step %s did not terminate, err: %v", tc.name, err)
 		}
+	}
+	terminated = false
+	interrupted = false
+	if !terminate.Stop() {
+		<-terminate.C
+	}
+}
+
+func TestOutputOutputs(t *testing.T) {
+	b, err := output(exec.Command("echo", "hello world"))
+	txt := string(b)
+	if err != nil {
+		t.Fatalf("failed to echo: %v", err)
+	}
+	if !strings.Contains(txt, "hello world") {
+		t.Errorf("output() did not echo hello world: %v", txt)
 	}
 }
 

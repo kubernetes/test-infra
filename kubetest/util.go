@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"log"
@@ -26,7 +27,6 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
-	"sync"
 	"syscall"
 	"time"
 )
@@ -120,10 +120,12 @@ func xmlWrap(name string, f func() error) error {
 func finishRunning(cmd *exec.Cmd) error {
 	stepName := strings.Join(cmd.Args, " ")
 	if terminated {
-		return fmt.Errorf("kubetest terminated before starting %s", stepName)
+		return fmt.Errorf("skipped %s (kubetest is terminated)", stepName)
 	}
-	if verbose {
+	if cmd.Stdout == nil && verbose {
 		cmd.Stdout = os.Stdout
+	}
+	if cmd.Stderr == nil && verbose {
 		cmd.Stderr = os.Stderr
 	}
 	log.Printf("Running: %v", stepName)
@@ -148,20 +150,27 @@ func finishRunning(cmd *exec.Cmd) error {
 			terminated = true
 			terminate.Reset(time.Duration(0)) // Kill subsequent processes immediately.
 			syscall.Kill(-cmd.Process.Pid, syscall.SIGKILL)
-			cmd.Process.Kill()
-			return fmt.Errorf("Terminate after 15m after %s timeout during %s", timeout, stepName)
+			if err := cmd.Process.Kill(); err != nil {
+				log.Printf("Failed to terminate %s (terminated 15m after interrupt): %v", stepName, err)
+			}
 		case <-interrupt.C:
 			interrupted = true
 			log.Printf("Interrupt after %s timeout during %s. Will terminate in another 15m", timeout, stepName)
 			terminate.Reset(15 * time.Minute)
 			if err := syscall.Kill(-cmd.Process.Pid, syscall.SIGINT); err != nil {
-				log.Printf("Failed to interrupt %v. Will terminate immediately: %v", stepName, err)
+				log.Printf("Failed to interrupt %s. Will terminate immediately: %v", stepName, err)
 				syscall.Kill(-cmd.Process.Pid, syscall.SIGTERM)
 				cmd.Process.Kill()
 			}
 		case err := <-finished:
 			if err != nil {
-				return fmt.Errorf("error during %s: %v", stepName, err)
+				var suffix string
+				if terminated {
+					suffix = " (terminated)"
+				} else if interrupted {
+					suffix = " (interrupted)"
+				}
+				return fmt.Errorf("error during %s%s: %v", stepName, suffix, err)
 			}
 			return err
 		}
@@ -188,75 +197,11 @@ func inputCommand(input, cmd string, args ...string) (*exec.Cmd, error) {
 
 // return cmd.Output(), potentially timing out in the process.
 func output(cmd *exec.Cmd) ([]byte, error) {
-	stepName := strings.Join(cmd.Args, " ")
-	if terminated {
-		return []byte{}, fmt.Errorf("kubetest terminated before starting %s", stepName)
-	}
-	if verbose {
-		cmd.Stderr = os.Stderr
-	}
-	log.Printf("Running: %v", stepName)
-	defer func(start time.Time) {
-		log.Printf("Step '%s' finished in %s", stepName, time.Since(start))
-	}(time.Now())
+	var stdout bytes.Buffer
+	cmd.Stdout = &stdout
+	err := finishRunning(cmd)
+	return stdout.Bytes(), err
 
-	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
-	type result struct {
-		bytes []byte
-		err   error
-	}
-	finished := make(chan result)
-	lock := sync.Mutex{}
-	started := false
-	go func() {
-		lock.Lock()
-		if !terminated {
-			started = true
-		}
-		lock.Unlock()
-		if !started {
-			return
-		}
-		b, err := cmd.Output()
-		finished <- result{b, err}
-	}()
-	for {
-		select {
-		case <-terminate.C:
-			terminate.Reset(time.Duration(0)) // Kill subsequent processes immediately.
-			lock.Lock()
-			if !started {
-				terminated = true
-			}
-			lock.Unlock()
-			if started {
-				terminated = true
-				for cmd.Process == nil {
-					time.Sleep(50 * time.Millisecond)
-				}
-				syscall.Kill(-cmd.Process.Pid, syscall.SIGKILL)
-				cmd.Process.Kill()
-			}
-			return nil, fmt.Errorf("Build timed out. Terminate testing after 15m after %s timeout during %s", timeout, stepName)
-		case <-interrupt.C:
-			interrupted = true
-			log.Printf("Build timed out after %s, sending interrupt. Will terminate in another 15m", timeout)
-			terminate.Reset(15 * time.Minute)
-			for cmd.Process == nil {
-				time.Sleep(50 * time.Millisecond)
-			}
-			if err := syscall.Kill(-cmd.Process.Pid, syscall.SIGINT); err != nil {
-				log.Printf("Failed to interrupt %v. Will terminate immediately: %v", stepName, err)
-				syscall.Kill(-cmd.Process.Pid, syscall.SIGTERM)
-				cmd.Process.Kill()
-			}
-		case fin := <-finished:
-			if fin.err != nil {
-				return fin.bytes, fmt.Errorf("error during %s: %v", stepName, fin.err)
-			}
-			return fin.bytes, fin.err
-		}
-	}
 }
 
 // gs://foo and bar becomes gs://foo/bar
