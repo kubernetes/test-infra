@@ -533,7 +533,7 @@ func TestLabel(t *testing.T) {
 			fakeSlackClient := &fakeslack.FakeClient{
 				SentMessages: make(map[string][]string),
 			}
-			if err := handle(fakeClient, logrus.WithField("plugin", pluginName), ae, fakeSlackClient); err != nil {
+			if err := handle(fakeClient, logrus.WithField("plugin", pluginName), "kubernetes", ae, fakeSlackClient); err != nil {
 				t.Errorf("For case %s, didn't expect error from label test: %v", tc.name, err)
 				return
 			}
@@ -665,7 +665,7 @@ func TestRepeat(t *testing.T) {
 			member, _ := fakeClient.IsMember(ae.org, ae.login)
 			toRepeat := []string{}
 			if !member {
-				toRepeat = ae.getRepeats(sigMatcher.FindAllStringSubmatch(tc.body, -1), m)
+				toRepeat = ae.getRepeats(sigMatcher("kubernetes").FindAllStringSubmatch(tc.body, -1), m)
 			}
 
 			sort.Strings(toRepeat)
@@ -748,7 +748,7 @@ func TestSlackMessages(t *testing.T) {
 				SentMessages: make(map[string][]string),
 			}
 
-			if err := handle(fakeClient, logrus.WithField("plugin", pluginName), ae, fakeSlackClient); err != nil {
+			if err := handle(fakeClient, logrus.WithField("plugin", pluginName), "kubernetes", ae, fakeSlackClient); err != nil {
 				t.Fatalf("For case %s, didn't expect error from label test: %v", tc.name, err)
 			}
 			if len(tc.expectedMessages) != len(fakeSlackClient.SentMessages) {
