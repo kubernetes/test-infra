@@ -36,10 +36,8 @@ type Config struct {
 	// Periodics are not associated with any repo.
 	Periodics []Periodic `json:"periodics,omitempty"`
 
-	Plank    Plank     `json:"plank,omitempty"`
-	Sinker   Sinker    `json:"sinker,omitempty"`
-	Triggers []Trigger `json:"triggers,omitempty"`
-	Heart    Heart     `json:"heart,omitempty"`
+	Plank  Plank  `json:"plank,omitempty"`
+	Sinker Sinker `json:"sinker,omitempty"`
 
 	// ProwJobNamespace is the namespace in the cluster that prow
 	// components will use for looking up ProwJobs. The namespace
@@ -84,22 +82,6 @@ type Sinker struct {
 	MaxPodAgeString string `json:"max_pod_age,omitempty"`
 	// MaxPodAge is how old a Pod can be before it is garbage-collected.
 	MaxPodAge time.Duration `json:"-"`
-}
-
-// Trigger is config for the trigger plugin.
-type Trigger struct {
-	// Repos is either of the form org/repos or just org.
-	Repos []string `json:"repos,omitempty"`
-	// TrustedOrg is the org whose members' PRs will be automatically built
-	// for PRs to the above repos.
-	TrustedOrg string `json:"trusted_org,omitempty"`
-}
-
-// Heart is config for the heart plugin
-type Heart struct {
-	// Adorees is a list of GitHub logins for members
-	// for whom we will add emojis to comments
-	Adorees []string `json:"adorees,omitempty"`
 }
 
 // SlackEvent is config for the slackevents plugin.

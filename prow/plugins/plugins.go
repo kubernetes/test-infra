@@ -100,15 +100,67 @@ type PluginClient struct {
 	GitClient    *git.Client
 	SlackClient  *slack.Client
 	Config       *config.Config
+	PluginConfig *Config
 	Logger       *logrus.Entry
+}
+
+// Config holds a read-only copy of the plugin Configuration
+// for a repository
+type Config struct {
+	Trigger Trigger
+	Heart   Heart
+	Label   Label
 }
 
 type PluginAgent struct {
 	PluginClient
 
-	mut sync.Mutex
+	mut           sync.Mutex
+	configuration Configuration
+}
+
+// Configuration is the top-level serialization
+// target for plugin Configuration
+type Configuration struct {
 	// Repo (eg "k/k") -> list of handler names.
-	ps map[string][]string
+	Plugins  map[string][]string `json:"plugins,omitempty"`
+	Triggers []Trigger           `json:"trigger,omitempty"`
+	Heart    Heart               `json:"heart,omitempty"`
+	Label    Label               `json:"label,omitempty"`
+}
+
+type Trigger struct {
+	// Repos is either of the form org/repos or just org.
+	Repos []string `json:"repos,omitempty"`
+	// TrustedOrg is the org whose members' PRs will be automatically built
+	// for PRs to the above repos.
+	TrustedOrg string `json:"trusted_org,omitempty"`
+}
+
+type Heart struct {
+	// Adorees is a list of GitHub logins for members
+	// for whom we will add emojis to comments
+	Adorees []string `json:"adorees,omitempty"`
+}
+
+type Label struct {
+	// SigOrg is the organization that owns the
+	// special interest groups tagged in this repo
+	SigOrg string `json:"sig_org,omitempty"`
+}
+
+// TriggerFor finds the Trigger for a repo, if one exists
+// a trigger can be listed for the repo itself or for the
+// owning organization
+func (c *PluginAgent) TriggerFor(org, repo string) *Trigger {
+	for _, tr := range c.configuration.Triggers {
+		for _, r := range tr.Repos {
+			if r == org || r == fmt.Sprintf("%s/%s", org, repo) {
+				return &tr
+			}
+		}
+	}
+	return nil
 }
 
 // Load attempts to load config from the path. It returns an error if either
@@ -118,43 +170,60 @@ func (pa *PluginAgent) Load(path string) error {
 	if err != nil {
 		return err
 	}
-	np := map[string][]string{}
+	np := Configuration{}
 	if err := yaml.Unmarshal(b, &np); err != nil {
+		return err
+	}
+
+	if err := validatePlugins(np.Plugins); err != nil {
 		return err
 	}
 	return pa.Set(np)
 }
 
+// validatePlugins will return error if
+// there are unknown or duplicated plugins.
+func validatePlugins(plugins map[string][]string) error {
+	for _, configuration := range plugins {
+		for _, plugin := range configuration {
+			if _, ok := allPlugins[plugin]; !ok {
+				return fmt.Errorf("unknown plugin: %s", plugin)
+			}
+		}
+	}
+	for repo, repoConfig := range plugins {
+		if strings.Contains(repo, "/") {
+			org := strings.Split(repo, "/")[0]
+			if dupes := findDuplicatedPluginConfig(repoConfig, plugins[org]); len(dupes) > 0 {
+				return fmt.Errorf("plugins %v are duplicated for %s and %s", dupes, repo, org)
+			}
+		}
+	}
+
+	return nil
+}
+
+func findDuplicatedPluginConfig(repoConfig, orgConfig []string) []string {
+	dupes := []string{}
+	for _, repoPlugin := range repoConfig {
+		for _, orgPlugin := range orgConfig {
+			if repoPlugin == orgPlugin {
+				dupes = append(dupes, repoPlugin)
+			}
+		}
+	}
+
+	return dupes
+}
+
 // Set attempts to set the plugins that are enabled on repos. The input is a
 // map from repositories to the list of plugins that are enabled on them.
 // Specifying simply an org name will also work, and will enable the plugin on
-// all repos in the org. It will return error if there are unknown or duplicated
-// plugins.
-func (pa *PluginAgent) Set(np map[string][]string) error {
-	// Check that there are no plugins that we don't know about.
-	for _, v := range np {
-		for _, p := range v {
-			if _, ok := allPlugins[p]; !ok {
-				return fmt.Errorf("unknown plugin: %s", p)
-			}
-		}
-	}
-	// Check that there are no duplicates.
-	for k, v := range np {
-		if strings.Contains(k, "/") {
-			org := strings.Split(k, "/")[0]
-			for _, p1 := range v {
-				for _, p2 := range np[org] {
-					if p1 == p2 {
-						return fmt.Errorf("plugin %s is duplicated for %s and %s", p1, k, org)
-					}
-				}
-			}
-		}
-	}
+// all repos in the org.
+func (pa *PluginAgent) Set(pc Configuration) error {
 	pa.mut.Lock()
 	defer pa.mut.Unlock()
-	pa.ps = np
+	pa.configuration = pc
 	return nil
 }
 
@@ -284,8 +353,8 @@ func (pa *PluginAgent) getPlugins(owner, repo string) []string {
 	var plugins []string
 
 	fullName := fmt.Sprintf("%s/%s", owner, repo)
-	plugins = append(plugins, pa.ps[owner]...)
-	plugins = append(plugins, pa.ps[fullName]...)
+	plugins = append(plugins, pa.configuration.Plugins[owner]...)
+	plugins = append(plugins, pa.configuration.Plugins[fullName]...)
 
 	return plugins
 }
