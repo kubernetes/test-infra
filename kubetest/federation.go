@@ -20,7 +20,7 @@ import (
 	"os/exec"
 )
 
-func FedUp() error {
+func fedUp() error {
 	return finishRunning(exec.Command("./federation/cluster/federation-up.sh"))
 }
 
@@ -29,6 +29,6 @@ func federationTest(testArgs []string) error {
 	return finishRunning(exec.Command("./hack/federated-ginkgo-e2e.sh", testArgs...))
 }
 
-func FedDown() error {
+func fedDown() error {
 	return finishRunning(exec.Command("./federation/cluster/federation-down.sh"))
 }

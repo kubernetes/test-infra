@@ -51,19 +51,18 @@ func run(deploy deployer, o options) error {
 
 	dump := o.dump
 	if dump != "" {
-		if !filepath.IsAbs(dump) {
-			// Directory may change
-			if wd, err := os.Getwd(); err != nil {
+		if !filepath.IsAbs(dump) { // Directory may change
+			wd, err := os.Getwd()
+			if err != nil {
 				return fmt.Errorf("failed to os.Getwd(): %v", err)
-			} else {
-				dump = filepath.Join(wd, dump)
 			}
+			dump = filepath.Join(wd, dump)
 		}
 	}
 
 	if o.up {
 		if o.federation {
-			if err := xmlWrap("Federation TearDown Previous", FedDown); err != nil {
+			if err := xmlWrap("Federation TearDown Previous", fedDown); err != nil {
 				return fmt.Errorf("error tearing down previous federation control plane: %v", err)
 			}
 		}
@@ -77,8 +76,8 @@ func run(deploy deployer, o options) error {
 
 	// Ensures that the cleanup/down action is performed exactly once.
 	var (
-		downDone           bool = false
-		federationDownDone bool = false
+		downDone           = false
+		federationDownDone = false
 	)
 
 	var (
@@ -89,8 +88,8 @@ func run(deploy deployer, o options) error {
 	)
 
 	if o.checkLeaks {
-		errs = appendError(errs, xmlWrap("ListResources Before", func() error {
-			beforeResources, err = ListResources()
+		errs = appendError(errs, xmlWrap("listResources Before", func() error {
+			beforeResources, err = listResources()
 			return err
 		}))
 	}
@@ -111,7 +110,7 @@ func run(deploy deployer, o options) error {
 			if o.federation {
 				defer xmlWrap("Deferred Federation TearDown", func() error {
 					if !federationDownDone {
-						return FedDown()
+						return fedDown()
 					}
 					return nil
 				})
@@ -132,9 +131,9 @@ func run(deploy deployer, o options) error {
 			return fmt.Errorf("starting e2e cluster: %s", err)
 		}
 		if o.federation {
-			if err := xmlWrap("Federation Up", FedUp); err != nil {
-				xmlWrap("DumpFederationLogs", func() error {
-					return DumpFederationLogs(dump)
+			if err := xmlWrap("Federation Up", fedUp); err != nil {
+				xmlWrap("dumpFederationLogs", func() error {
+					return dumpFederationLogs(dump)
 				})
 				return fmt.Errorf("error starting federation: %s", err)
 			}
@@ -149,8 +148,8 @@ func run(deploy deployer, o options) error {
 	}
 
 	if o.checkLeaks {
-		errs = appendError(errs, xmlWrap("ListResources Up", func() error {
-			upResources, err = ListResources()
+		errs = appendError(errs, xmlWrap("listResources Up", func() error {
+			upResources, err = listResources()
 			return err
 		}))
 	}
@@ -196,11 +195,11 @@ func run(deploy deployer, o options) error {
 	}
 
 	if o.charts {
-		errs = appendError(errs, xmlWrap("Helm Charts", ChartsTest))
+		errs = appendError(errs, xmlWrap("Helm Charts", chartsTest))
 	}
 
 	if o.perfTests {
-		errs = appendError(errs, xmlWrap("Perf Tests", PerfTest))
+		errs = appendError(errs, xmlWrap("Perf Tests", perfTest))
 	}
 
 	if len(errs) > 0 && dump != "" {
@@ -208,15 +207,15 @@ func run(deploy deployer, o options) error {
 			return deploy.DumpClusterLogs(dump, o.logexporterGCSPath)
 		}))
 		if o.federation {
-			errs = appendError(errs, xmlWrap("DumpFederationLogs", func() error {
-				return DumpFederationLogs(dump)
+			errs = appendError(errs, xmlWrap("dumpFederationLogs", func() error {
+				return dumpFederationLogs(dump)
 			}))
 		}
 	}
 
 	if o.checkLeaks {
-		errs = appendError(errs, xmlWrap("ListResources Down", func() error {
-			downResources, err = ListResources()
+		errs = appendError(errs, xmlWrap("listResources Down", func() error {
+			downResources, err = listResources()
 			return err
 		}))
 	}
@@ -225,7 +224,7 @@ func run(deploy deployer, o options) error {
 		if o.federation {
 			errs = appendError(errs, xmlWrap("Federation TearDown", func() error {
 				if !federationDownDone {
-					err := FedDown()
+					err := fedDown()
 					if err != nil {
 						return err
 					}
@@ -249,25 +248,25 @@ func run(deploy deployer, o options) error {
 	if o.checkLeaks {
 		log.Print("Sleeping for 30 seconds...") // Wait for eventually consistent listing
 		time.Sleep(30 * time.Second)
-		if err := xmlWrap("ListResources After", func() error {
-			afterResources, err = ListResources()
+		if err := xmlWrap("listResources After", func() error {
+			afterResources, err = listResources()
 			return err
 		}); err != nil {
 			errs = append(errs, err)
 		} else {
-			errs = appendError(errs, xmlWrap("DiffResources", func() error {
-				return DiffResources(beforeResources, upResources, downResources, afterResources, dump)
+			errs = appendError(errs, xmlWrap("diffResources", func() error {
+				return diffResources(beforeResources, upResources, downResources, afterResources, dump)
 			}))
 		}
 	}
 	if len(errs) == 0 && o.publish != "" {
 		errs = appendError(errs, xmlWrap("Publish version", func() error {
 			// Use plaintext version file packaged with kubernetes.tar.gz
-			if v, err := ioutil.ReadFile("version"); err != nil {
+			v, err := ioutil.ReadFile("version")
+			if err != nil {
 				return err
-			} else {
-				log.Printf("Set %s version to %s", o.publish, string(v))
 			}
+			log.Printf("Set %s version to %s", o.publish, string(v))
 			return finishRunning(exec.Command("gsutil", "cp", "version", o.publish))
 		}))
 	}
@@ -302,7 +301,7 @@ func listNodes(dump string) error {
 	return ioutil.WriteFile(filepath.Join(dump, "nodes.yaml"), b, 0644)
 }
 
-func DiffResources(before, clusterUp, clusterDown, after []byte, location string) error {
+func diffResources(before, clusterUp, clusterDown, after []byte, location string) error {
 	if location == "" {
 		var err error
 		location, err = ioutil.TempDir("", "e2e-check-resources")
@@ -361,7 +360,7 @@ func DiffResources(before, clusterUp, clusterDown, after []byte, location string
 	return nil
 }
 
-func ListResources() ([]byte, error) {
+func listResources() ([]byte, error) {
 	log.Printf("Listing resources...")
 	stdout, err := output(exec.Command("./cluster/gce/list-resources.sh"))
 	if err != nil {
@@ -376,7 +375,7 @@ func clusterSize(deploy deployer) (int, error) {
 	}
 	o, err := output(exec.Command("kubectl", "get", "nodes", "--no-headers"))
 	if err != nil {
-		log.Printf("kubectl get nodes failed: %s\n%s", WrapError(err).Error(), string(o))
+		log.Printf("kubectl get nodes failed: %s\n%s", wrapError(err).Error(), string(o))
 		return -1, err
 	}
 	stdout := strings.TrimSpace(string(o))
@@ -390,7 +389,7 @@ type commandError struct {
 	err error
 }
 
-func WrapError(err error) *commandError {
+func wrapError(err error) *commandError {
 	if err == nil {
 		return nil
 	}
@@ -452,7 +451,7 @@ func defaultDumpClusterLogs(localArtifactsDir, logexporterGCSPath string) error 
 	return finishRunning(cmd)
 }
 
-func DumpFederationLogs(location string) error {
+func dumpFederationLogs(location string) error {
 	logDumpPath := "./federation/cluster/log-dump.sh"
 	// federation/cluster/log-dump.sh only exists in the Kubernetes tree
 	// post-1.6. If it doesn't exist, do nothing and do not report an error.
@@ -464,7 +463,7 @@ func DumpFederationLogs(location string) error {
 	return nil
 }
 
-func PerfTest() error {
+func perfTest() error {
 	// Run perf tests
 	// TODO(fejta): GOPATH may be split by :
 	cmdline := fmt.Sprintf("%s/src/k8s.io/perf-tests/clusterloader/run-e2e.sh", os.Getenv("GOPATH"))
@@ -474,7 +473,7 @@ func PerfTest() error {
 	return nil
 }
 
-func ChartsTest() error {
+func chartsTest() error {
 	// Run helm tests.
 	if err := finishRunning(exec.Command("/src/k8s.io/charts/test/helm-test-e2e.sh")); err != nil {
 		return err
@@ -569,11 +568,11 @@ func kubemarkTest(testArgs []string, dump, nodes, masterSize, ipRange string) er
 // Runs tests in the kubernetes_skew directory, appending --repor-prefix flag to the run
 func skewTest(args []string, prefix string, checkSkew bool) error {
 	// TODO(fejta): run this inside this kubetest process, do not spawn a new one.
-	if popS, err := pushd("../kubernetes_skew"); err != nil {
+	popS, err := pushd("../kubernetes_skew")
+	if err != nil {
 		return err
-	} else {
-		defer popS()
 	}
+	defer popS()
 	args = appendField(args, "--report-prefix", prefix)
 	return finishRunning(exec.Command(
 		kubetestPath,

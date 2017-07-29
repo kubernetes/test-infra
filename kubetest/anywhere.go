@@ -81,7 +81,7 @@ type kubernetesAnywhere struct {
 
 var _ deployer = kubernetesAnywhere{}
 
-func NewKubernetesAnywhere(project string) (*kubernetesAnywhere, error) {
+func newKubernetesAnywhere(project string) (*kubernetesAnywhere, error) {
 	if *kubernetesAnywherePath == "" {
 		return nil, fmt.Errorf("--kubernetes-anywhere-path is required")
 	}

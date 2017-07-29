@@ -79,27 +79,27 @@ func TestNewKubernetesAnywhere(t *testing.T) {
 		*kubernetesAnywhereKubeadmVersion = tc.kubeadmVersion
 		*kubernetesAnywhereKubernetesVersion = tc.kubernetesVersion
 
-		_, err = NewKubernetesAnywhere("fake-project")
+		_, err = newKubernetesAnywhere("fake-project")
 		if err != nil {
-			t.Errorf("NewKubernetesAnywhere(%s) failed: %v", tc.name, err)
+			t.Errorf("newKubernetesAnywhere(%s) failed: %v", tc.name, err)
 			continue
 		}
 
 		config, err := ioutil.ReadFile(tmpdir + "/.config")
 		if err != nil {
-			t.Errorf("NewKubernetesAnywhere(%s) failed to create readable config file: %v", tc.name, err)
+			t.Errorf("newKubernetesAnywhere(%s) failed to create readable config file: %v", tc.name, err)
 			continue
 		}
 
 		configLines := strings.Split(string(config), "\n")
 
 		if !containsLine(configLines, ".phase1.cloud_provider=\"gce\"") {
-			t.Errorf("NewKubernetesAnywhere(%s) config got %q, wanted line: .cloud_provider=\"gce\"", tc.name, config)
+			t.Errorf("newKubernetesAnywhere(%s) config got %q, wanted line: .cloud_provider=\"gce\"", tc.name, config)
 		}
 
 		for _, line := range tc.expectConfigLines {
 			if !containsLine(configLines, line) {
-				t.Errorf("NewKubernetesAnywhere(%s) config got %q, wanted line: %v", tc.name, config, line)
+				t.Errorf("newKubernetesAnywhere(%s) config got %q, wanted line: %v", tc.name, config, line)
 			}
 		}
 	}

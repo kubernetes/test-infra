@@ -337,14 +337,14 @@ func TestHttpFileScheme(t *testing.T) {
 		t.Errorf("Error closing temporary file: %v", err)
 	}
 
-	fileUrl := fmt.Sprintf("file://%s", tmpfile.Name())
+	fileURL := fmt.Sprintf("file://%s", tmpfile.Name())
 	buf := new(bytes.Buffer)
-	if err := httpRead(fileUrl, buf); err != nil {
+	if err := httpRead(fileURL, buf); err != nil {
 		t.Errorf("Error reading temporary file through httpRead: %v", err)
 	}
 
 	if buf.String() != expected {
-		t.Errorf("httpRead(%s): expected %v, got %v", fileUrl, expected, buf)
+		t.Errorf("httpRead(%s): expected %v, got %v", fileURL, expected, buf)
 	}
 }
 
