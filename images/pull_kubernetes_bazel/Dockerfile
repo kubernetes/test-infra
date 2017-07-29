@@ -30,7 +30,7 @@ RUN apt-get update && apt-get install -y \
     python-pip && \
     apt-get clean
 
-ENV BAZEL_VERSION 0.5.2
+ENV BAZEL_VERSION 0.4.5
 RUN wget -q "https://github.com/bazelbuild/bazel/releases/download/${BAZEL_VERSION}/bazel_${BAZEL_VERSION}-linux-x86_64.deb" && \
     dpkg -i "bazel_${BAZEL_VERSION}-linux-x86_64.deb" && \
     rm "bazel_${BAZEL_VERSION}-linux-x86_64.deb"
