@@ -113,18 +113,18 @@ func (e extractStrategy) name() string {
 
 func (l extractStrategies) Extract(project, zone string) error {
 	// rm -rf kubernetes*
-	if files, err := ioutil.ReadDir("."); err != nil {
+	files, err := ioutil.ReadDir(".")
+	if err != nil {
 		return err
-	} else {
-		for _, file := range files {
-			name := file.Name()
-			if !strings.HasPrefix(name, "kubernetes") {
-				continue
-			}
-			log.Printf("rm %s", name)
-			if err = os.RemoveAll(name); err != nil {
-				return err
-			}
+	}
+	for _, file := range files {
+		name := file.Name()
+		if !strings.HasPrefix(name, "kubernetes") {
+			continue
+		}
+		log.Printf("rm %s", name)
+		if err = os.RemoveAll(name); err != nil {
+			return err
 		}
 	}
 
@@ -399,24 +399,24 @@ func (e extractStrategy) Extract(project, zone string) error {
 }
 
 func loadKubeconfig(save string) error {
-	cUrl, err := joinUrl(save, "kube-config")
+	cURL, err := joinURL(save, "kube-config")
 	if err != nil {
 		return fmt.Errorf("bad load url %s: %v", save, err)
 	}
 	if err := os.MkdirAll(home(".kube"), 0775); err != nil {
 		return err
 	}
-	return finishRunning(exec.Command("gsutil", "cp", cUrl, home(".kube", "config")))
+	return finishRunning(exec.Command("gsutil", "cp", cURL, home(".kube", "config")))
 }
 
 func loadState(save string) error {
 	log.Printf("Restore state from %s", save)
 
-	uUrl, err := joinUrl(save, "release-url.txt")
+	uURL, err := joinURL(save, "release-url.txt")
 	if err != nil {
 		return fmt.Errorf("bad load url %s: %v", save, err)
 	}
-	rUrl, err := joinUrl(save, "release.txt")
+	rURL, err := joinURL(save, "release.txt")
 	if err != nil {
 		return fmt.Errorf("bad load url %s: %v", save, err)
 	}
@@ -425,11 +425,11 @@ func loadState(save string) error {
 		return fmt.Errorf("failed loading kubeconfig: %v", err)
 	}
 
-	url, err := output(exec.Command("gsutil", "cat", uUrl))
+	url, err := output(exec.Command("gsutil", "cat", uURL))
 	if err != nil {
 		return err
 	}
-	release, err := output(exec.Command("gsutil", "cat", rUrl))
+	release, err := output(exec.Command("gsutil", "cat", rURL))
 	if err != nil {
 		return err
 	}
@@ -440,32 +440,32 @@ func saveState(save string) error {
 	url := os.Getenv("KUBERNETES_RELEASE_URL") // TODO(fejta): pass this in to saveState
 	version := os.Getenv("KUBERNETES_RELEASE")
 	log.Printf("Save U=%s R=%s to %s", url, version, save)
-	cUrl, err := joinUrl(save, "kube-config")
+	cURL, err := joinURL(save, "kube-config")
 	if err != nil {
 		return fmt.Errorf("bad save url %s: %v", save, err)
 	}
-	uUrl, err := joinUrl(save, "release-url.txt")
+	uURL, err := joinURL(save, "release-url.txt")
 	if err != nil {
 		return fmt.Errorf("bad save url %s: %v", save, err)
 	}
-	rUrl, err := joinUrl(save, "release.txt")
+	rURL, err := joinURL(save, "release.txt")
 	if err != nil {
 		return fmt.Errorf("bad save url %s: %v", save, err)
 	}
 
-	if err := finishRunning(exec.Command("gsutil", "cp", home(".kube", "config"), cUrl)); err != nil {
-		return fmt.Errorf("failed to save .kube/config to %s: %v", cUrl, err)
+	if err := finishRunning(exec.Command("gsutil", "cp", home(".kube", "config"), cURL)); err != nil {
+		return fmt.Errorf("failed to save .kube/config to %s: %v", cURL, err)
 	}
-	if cmd, err := inputCommand(url, "gsutil", "cp", "-", uUrl); err != nil {
-		return fmt.Errorf("failed to write url %s to %s: %v", url, uUrl, err)
+	if cmd, err := inputCommand(url, "gsutil", "cp", "-", uURL); err != nil {
+		return fmt.Errorf("failed to write url %s to %s: %v", url, uURL, err)
 	} else if err = finishRunning(cmd); err != nil {
-		return fmt.Errorf("failed to upload url %s to %s: %v", url, uUrl, err)
+		return fmt.Errorf("failed to upload url %s to %s: %v", url, uURL, err)
 	}
 
-	if cmd, err := inputCommand(version, "gsutil", "cp", "-", rUrl); err != nil {
-		return fmt.Errorf("failed to write release %s to %s: %v", version, rUrl, err)
+	if cmd, err := inputCommand(version, "gsutil", "cp", "-", rURL); err != nil {
+		return fmt.Errorf("failed to write release %s to %s: %v", version, rURL, err)
 	} else if err = finishRunning(cmd); err != nil {
-		return fmt.Errorf("failed to upload release %s to %s: %v", version, rUrl, err)
+		return fmt.Errorf("failed to upload release %s to %s: %v", version, rURL, err)
 	}
 	return nil
 }

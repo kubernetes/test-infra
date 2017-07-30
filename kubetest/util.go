@@ -260,7 +260,7 @@ func output(cmd *exec.Cmd) ([]byte, error) {
 }
 
 // gs://foo and bar becomes gs://foo/bar
-func joinUrl(urlPath, path string) (string, error) {
+func joinURL(urlPath, path string) (string, error) {
 	u, err := url.Parse(urlPath)
 	if err != nil {
 		return "", err

@@ -83,18 +83,18 @@ func migrateKopsEnv() error {
 	})
 }
 
-func NewKops() (*kops, error) {
+func newKops() (*kops, error) {
 	if err := migrateKopsEnv(); err != nil {
 		return nil, err
 	}
 	if *kopsPath == "" {
-		return nil, fmt.Errorf("--kops must be set to a valid binary path for kops deployment.")
+		return nil, fmt.Errorf("--kops must be set to a valid binary path for kops deployment")
 	}
 	if *kopsCluster == "" {
-		return nil, fmt.Errorf("--kops-cluster must be set to a valid cluster name for kops deployment.")
+		return nil, fmt.Errorf("--kops-cluster must be set to a valid cluster name for kops deployment")
 	}
 	if *kopsState == "" {
-		return nil, fmt.Errorf("--kops-state must be set to a valid S3 path for kops deployment.")
+		return nil, fmt.Errorf("--kops-state must be set to a valid S3 path for kops deployment")
 	}
 	if *kopsPriorityPath != "" {
 		if err := insertPath(*kopsPriorityPath); err != nil {

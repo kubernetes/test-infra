@@ -145,7 +145,7 @@ type testCase struct {
 	Skipped   string   `xml:"skipped,omitempty"`
 }
 
-type TestSuite struct {
+type testSuite struct {
 	XMLName  xml.Name `xml:"testsuite"`
 	Failures int      `xml:"failures,attr"`
 	Tests    int      `xml:"tests,attr"`
@@ -153,7 +153,7 @@ type TestSuite struct {
 	Cases    []testCase
 }
 
-var suite TestSuite
+var suite testSuite
 
 func validWorkingDirectory() error {
 	cwd, err := os.Getwd()
@@ -207,9 +207,9 @@ func getDeployer(o *options) (deployer, error) {
 	case "gke":
 		return newGKE(o.provider, o.gcpProject, o.gcpZone, o.gcpNetwork, o.gcpNodeImage, o.cluster)
 	case "kops":
-		return NewKops()
+		return newKops()
 	case "kubernetes-anywhere":
-		return NewKubernetesAnywhere(o.gcpProject)
+		return newKubernetesAnywhere(o.gcpProject)
 	case "none":
 		return noneDeploy{}, nil
 	default:
@@ -282,7 +282,7 @@ func complete(o *options) error {
 				log.Print("Captured ^C, gracefully attempting to cleanup resources..")
 				var fedErr, err error
 				if o.federation {
-					if fedErr = FedDown(); fedErr != nil {
+					if fedErr = fedDown(); fedErr != nil {
 						log.Printf("Tearing down federation failed: %v", fedErr)
 					}
 				}
@@ -367,22 +367,22 @@ func acquireKubernetes(o *options) error {
 func findVersion() string {
 	// The version may be in a version file
 	if _, err := os.Stat("version"); err == nil {
-		if b, err := ioutil.ReadFile("version"); err == nil {
+		b, err := ioutil.ReadFile("version")
+		if err == nil {
 			return strings.TrimSpace(string(b))
-		} else {
-			log.Printf("Failed to read version: %v", err)
 		}
+		log.Printf("Failed to read version: %v", err)
 	}
 
 	// We can also get it from the git repo.
 	if _, err := os.Stat("hack/lib/version.sh"); err == nil {
 		// TODO(fejta): do this in go. At least we removed the upload-to-gcs.sh dep.
 		gross := `. hack/lib/version.sh && KUBE_ROOT=. kube::version::get_version_vars && echo "${KUBE_GIT_VERSION-}"`
-		if b, err := output(exec.Command("bash", "-c", gross)); err == nil {
+		b, err := output(exec.Command("bash", "-c", gross))
+		if err == nil {
 			return strings.TrimSpace(string(b))
-		} else {
-			log.Printf("Failed to get_version_vars: %v", err)
 		}
+		log.Printf("Failed to get_version_vars: %v", err)
 	}
 
 	return "unknown" // Sad trombone
@@ -599,11 +599,11 @@ func prepareGcp(o *options) error {
 		}
 
 		// Controls which gcloud components to install.
-		if pop, err := pushEnv("CLOUDSDK_COMPONENT_MANAGER_SNAPSHOT_URL", "file://"+home("repo", "components-2.json")); err != nil {
+		pop, err := pushEnv("CLOUDSDK_COMPONENT_MANAGER_SNAPSHOT_URL", "file://"+home("repo", "components-2.json"))
+		if err != nil {
 			return err
-		} else {
-			defer pop()
 		}
+		defer pop()
 
 		if err := installGcloud(home("repo", "google-cloud-sdk.tar.gz"), home("cloudsdk")); err != nil {
 			return err
@@ -692,10 +692,10 @@ func prepareFederation(o *options) error {
 }
 
 func publish(pub string) error {
-	if v, err := ioutil.ReadFile("version"); err != nil {
+	v, err := ioutil.ReadFile("version")
+	if err != nil {
 		return err
-	} else {
-		log.Printf("Set %s version to %s", pub, string(v))
 	}
+	log.Printf("Set %s version to %s", pub, string(v))
 	return finishRunning(exec.Command("gsutil", "cp", "version", pub))
 }
