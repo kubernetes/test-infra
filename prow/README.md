@@ -163,7 +163,7 @@ Jenkins' URL, such as `http://pull-jenkins-master:8080`.
 6. Create a namespace for test pods named "test-pods".
 
  ```
- kubectl create -f cluster/test_pods_namespace.yaml
+ kubectl create -f cluster/test_pod_namespace.yaml
  ```
 
 7. *Optional*: Create service account and SSH keys for your pods to run as.
