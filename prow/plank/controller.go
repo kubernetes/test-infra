@@ -84,10 +84,6 @@ type Controller struct {
 
 	pendingJobs map[string]int
 	lock        sync.RWMutex
-
-	//TODO(spxtr): convert reports to a channel.
-	reportsLock sync.Mutex
-	reports     []kube.ProwJob
 }
 
 // getNumPendingJobs retrieves the number of pending
@@ -139,9 +135,6 @@ func NewController(kc, pkc *kube.Client, jc *jenkins.Client, ghc *github.Client,
 
 // Sync does one sync iteration.
 func (c *Controller) Sync() error {
-	c.reportsLock.Lock()
-	c.reports = []kube.ProwJob{}
-	c.reportsLock.Unlock()
 	pjs, err := c.kc.ListProwJobs(nil)
 	if err != nil {
 		return fmt.Errorf("error listing prow jobs: %v", err)
@@ -167,41 +160,42 @@ func (c *Controller) Sync() error {
 	close(pjCh)
 
 	errCh := make(chan error, len(pjs))
+	reportCh := make(chan kube.ProwJob, len(pjs))
 	wg := &sync.WaitGroup{}
 	wg.Add(maxSyncRoutines)
 	for i := 0; i < maxSyncRoutines; i++ {
-		go c.syncProwJob(wg, pjCh, errCh, pm)
+		go c.syncProwJob(wg, pjCh, errCh, reportCh, pm)
 	}
 	wg.Wait()
 	close(errCh)
+	close(reportCh)
 
 	for err := range errCh {
 		syncErrs = append(syncErrs, err)
 	}
 
 	var reportErrs []error
-	c.reportsLock.Lock()
-	for _, pj := range c.reports {
-		if err := c.report(pj); err != nil {
+	for report := range reportCh {
+		if err := c.report(report); err != nil {
 			reportErrs = append(reportErrs, err)
 		}
 	}
-	c.reportsLock.Unlock()
+
 	if len(syncErrs) == 0 && len(reportErrs) == 0 {
 		return nil
 	}
 	return fmt.Errorf("errors syncing: %v, errors reporting: %v", syncErrs, reportErrs)
 }
 
-func (c *Controller) syncProwJob(wg *sync.WaitGroup, jobs <-chan kube.ProwJob, syncErrors chan<- error, pm map[string]kube.Pod) {
+func (c *Controller) syncProwJob(wg *sync.WaitGroup, jobs <-chan kube.ProwJob, syncErrors chan<- error, reports chan<- kube.ProwJob, pm map[string]kube.Pod) {
 	defer wg.Done()
 	for pj := range jobs {
 		if pj.Spec.Agent == kube.KubernetesAgent {
-			if err := c.syncKubernetesJob(pj, pm); err != nil {
+			if err := c.syncKubernetesJob(pj, pm, reports); err != nil {
 				syncErrors <- err
 			}
 		} else if pj.Spec.Agent == kube.JenkinsAgent {
-			if err := c.syncJenkinsJob(pj); err != nil {
+			if err := c.syncJenkinsJob(pj, reports); err != nil {
 				syncErrors <- err
 			}
 		} else {
@@ -241,7 +235,7 @@ func (c *Controller) terminateDupes(pjs []kube.ProwJob) error {
 	return nil
 }
 
-func (c *Controller) syncJenkinsJob(pj kube.ProwJob) error {
+func (c *Controller) syncJenkinsJob(pj kube.ProwJob, reports chan<- kube.ProwJob) error {
 	if c.jc == nil {
 		return fmt.Errorf("jenkins client nil, not syncing job %s", pj.Metadata.Name)
 	}
@@ -282,7 +276,7 @@ func (c *Controller) syncJenkinsJob(pj kube.ProwJob) error {
 			pj.Status.JenkinsEnqueued = true
 			pj.Status.Description = "Jenkins job triggered."
 		}
-		c.appendReport(pj)
+		reports <- pj
 	} else if pj.Status.JenkinsEnqueued {
 		if eq, err := c.jc.Enqueued(pj.Status.JenkinsQueueURL); err != nil {
 			jerr = fmt.Errorf("error checking queue status: %v", err)
@@ -291,7 +285,7 @@ func (c *Controller) syncJenkinsJob(pj kube.ProwJob) error {
 			pj.Status.State = kube.ErrorState
 			pj.Status.URL = testInfra
 			pj.Status.Description = "Error checking queue status."
-			c.appendReport(pj)
+			reports <- pj
 		} else if eq {
 			// Still in queue.
 			return nil
@@ -304,7 +298,7 @@ func (c *Controller) syncJenkinsJob(pj kube.ProwJob) error {
 		pj.Status.State = kube.ErrorState
 		pj.Status.URL = testInfra
 		pj.Status.Description = "Error checking job status."
-		c.appendReport(pj)
+		reports <- pj
 	} else {
 		pj.Status.BuildID = strconv.Itoa(status.Number)
 		var b bytes.Buffer
@@ -333,7 +327,7 @@ func (c *Controller) syncJenkinsJob(pj kube.ProwJob) error {
 			pj.Status.State = kube.FailureState
 			pj.Status.Description = "Jenkins job failed."
 		}
-		c.appendReport(pj)
+		reports <- pj
 	}
 	_, rerr := c.kc.ReplaceProwJob(pj.Metadata.Name, pj)
 	if rerr != nil || jerr != nil {
@@ -342,7 +336,7 @@ func (c *Controller) syncJenkinsJob(pj kube.ProwJob) error {
 	return nil
 }
 
-func (c *Controller) syncKubernetesJob(pj kube.ProwJob, pm map[string]kube.Pod) error {
+func (c *Controller) syncKubernetesJob(pj kube.ProwJob, pm map[string]kube.Pod, reports chan<- kube.ProwJob) error {
 	if pj.Complete() {
 		if pj.Status.PodName == "" {
 			// Completed ProwJob, already cleaned up the pod. Nothing to do.
@@ -378,7 +372,7 @@ func (c *Controller) syncKubernetesJob(pj kube.ProwJob, pm map[string]kube.Pod) 
 			return fmt.Errorf("error starting pod: %v", err)
 		}
 		pj.Status.Description = "Job triggered."
-		c.appendReport(pj)
+		reports <- pj
 	} else if pod, ok := pm[pj.Status.PodName]; !ok {
 		// Pod is missing. This shouldn't happen normally, but if someone goes
 		// in and manually deletes the pod then we'll hit it. Start a new pod.
@@ -397,7 +391,7 @@ func (c *Controller) syncKubernetesJob(pj kube.ProwJob, pm map[string]kube.Pod) 
 		pj.Status.CompletionTime = time.Now()
 		pj.Status.State = kube.SuccessState
 		pj.Status.Description = "Job succeeded."
-		c.appendReport(pj)
+		reports <- pj
 		for _, nj := range pj.Spec.RunAfterSuccess {
 			if _, err := c.kc.CreateProwJob(NewProwJob(nj)); err != nil {
 				return fmt.Errorf("error starting next prowjob: %v", err)
@@ -413,7 +407,7 @@ func (c *Controller) syncKubernetesJob(pj kube.ProwJob, pm map[string]kube.Pod) 
 			pj.Status.CompletionTime = time.Now()
 			pj.Status.State = kube.FailureState
 			pj.Status.Description = "Job failed."
-			c.appendReport(pj)
+			reports <- pj
 		}
 	} else {
 		// Pod is running. Do nothing.
@@ -534,10 +528,4 @@ func (c *Controller) updatePendingJobs(pjs []kube.ProwJob) {
 			c.incrementNumPendingJobs(pj.Spec.Job)
 		}
 	}
-}
-
-func (c *Controller) appendReport(pj kube.ProwJob) {
-	c.reportsLock.Lock()
-	defer c.reportsLock.Unlock()
-	c.reports = append(c.reports, pj)
 }
