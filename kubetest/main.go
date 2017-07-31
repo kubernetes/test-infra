@@ -28,11 +28,15 @@ import (
 	"os/signal"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
 	"k8s.io/test-infra/boskos/client"
 )
+
+// Hardcoded in ginkgo-e2e.sh
+const defaultGinkgoParallel = 25
 
 var (
 	artifacts    = initPath("./_artifacts")
@@ -79,6 +83,7 @@ type options struct {
 	logexporterGCSPath  string
 	metadataSources     string
 	multipleFederations bool
+	ginkgoParallel      ginkgoParallelValue
 	perfTests           bool
 	provider            string
 	publish             string
@@ -103,6 +108,7 @@ func defineFlags() *options {
 	flag.StringVar(&o.dump, "dump", "", "If set, dump cluster logs to this location on test or cluster-up failure")
 	flag.Var(&o.extract, "extract", "Extract k8s binaries from the specified release location")
 	flag.BoolVar(&o.federation, "federation", false, "If true, start/tear down the federation control plane along with the clusters. To only start/tear down the federation control plane, specify --deploy=none")
+	flag.Var(&o.ginkgoParallel, "ginkgo-parallel", fmt.Sprintf("Run Ginkgo tests in parallel, default %d runners. Use --ginkgo-parallel=N to specify an exact count.", defaultGinkgoParallel))
 	flag.StringVar(&o.gcpCloudSdk, "gcp-cloud-sdk", "", "Install/upgrade google-cloud-sdk to the gs:// path if set")
 	flag.StringVar(&o.gcpProject, "gcp-project", "", "For use with gcloud commands")
 	flag.StringVar(&o.gcpServiceAccount, "gcp-service-account", "", "Service account to activate before using gcloud")
@@ -657,6 +663,9 @@ func prepare(o *options) error {
 	}); err != nil {
 		return err
 	}
+	if err := prepareGinkgoParallel(&o.ginkgoParallel); err != nil {
+		return err
+	}
 
 	switch o.provider {
 	case "gce", "gke", "kubemark":
@@ -695,6 +704,69 @@ func prepareFederation(o *options) error {
 		}
 		return os.Setenv("FEDERATION_NAMESPACE", federationSystemNamespace)
 	}
+	return nil
+}
+
+type ginkgoParallelValue struct {
+	v int // 0 == not set (defaults to 1)
+}
+
+func (v *ginkgoParallelValue) IsBoolFlag() bool {
+	return true
+}
+
+func (v *ginkgoParallelValue) String() string {
+	if v.v == 0 {
+		return "1"
+	}
+	return strconv.Itoa(v.v)
+}
+
+func (v *ginkgoParallelValue) Set(s string) error {
+	if s == "" {
+		v.v = 0
+		return nil
+	}
+	if s == "true" {
+		v.v = defaultGinkgoParallel
+		return nil
+	}
+	p, err := strconv.Atoi(s)
+	if err != nil {
+		return fmt.Errorf("--ginkgo-parallel must be an integer, found %q", s)
+	}
+	if p < 1 {
+		return fmt.Errorf("--ginkgo-parallel must be >= 1, found %d", p)
+	}
+	v.v = p
+	return nil
+}
+
+func (v *ginkgoParallelValue) Get() int {
+	if v.v == 0 {
+		return 1
+	}
+	return v.v
+}
+
+var _ flag.Value = &ginkgoParallelValue{}
+
+// Hand migrate this option. GINKGO_PARALLEL => GINKGO_PARALLEL_NODES=25
+func prepareGinkgoParallel(v *ginkgoParallelValue) error {
+	if p := os.Getenv("GINKGO_PARALLEL"); strings.ToLower(p) == "y" {
+		log.Printf("Please use kubetest --ginkgo-parallel (instead of deprecated GINKGO_PARALLEL=y)")
+		if err := v.Set("true"); err != nil {
+			return err
+		}
+		os.Unsetenv("GINKGO_PARALLEL")
+	}
+	if p := os.Getenv("GINKGO_PARALLEL_NODES"); p != "" {
+		log.Printf("Please use kubetest --ginkgo-parallel=%s (instead of deprecated GINKGO_PARALLEL_NODES=%s)", p, p)
+		if err := v.Set(p); err != nil {
+			return err
+		}
+	}
+	os.Setenv("GINKGO_PARALLEL_NODES", v.String())
 	return nil
 }
 
