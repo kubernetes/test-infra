@@ -16,16 +16,45 @@
 
 import datetime
 
-from webapp2_extras import securecookie
-
 import gcs_async_test
 from github import models
 import main_test
 import view_base
 import view_pr
 
+from nose import tools
+import parameterized
+from webapp2_extras import securecookie
+
+
 app = main_test.app
 write = gcs_async_test.write
+
+
+@parameterized.parameterized([
+    ('', 'kubernetes', 'kubernetes'),
+    ('/test-infra', 'kubernetes', 'test-infra'),
+    ('/kubernetes', 'kubernetes', 'kubernetes'),
+    ('/kubernetes/test-infra', 'kubernetes', 'test-infra'),
+    ('/kubernetes/kubernetes', 'kubernetes', 'kubernetes'),
+    ('/google/cadvisor', 'google', 'cadvisor'),
+])
+def test_org_repo(path, org, repo):
+    actual_org, actual_repo = view_pr.org_repo(path)
+    tools.assert_equal(actual_org, org)
+    tools.assert_equal(actual_repo, repo)
+
+@parameterized.parameterized([
+    ('kubernetes', 'kubernetes', 1234, 1234),
+    ('kubernetes', 'kubernetes', 'batch', 'batch'),
+    ('kubernetes', 'test-infra', 555, 'test-infra/555'),
+    ('kubernetes', 'test-infra', 'batch', 'test-infra/batch'),
+    ('google', 'cadvisor', '555', 'google_cadvisor/555'),
+    ('google', 'cadvisor', 'batch', 'google_cadvisor/batch'),
+])
+def test_pr_path(org, repo, pr, path):
+    actual_path = view_pr.pr_path(org, repo, pr)
+    tools.assert_equal(actual_path, '%s/%s' % (view_base.PR_PREFIX, path))
 
 
 class PRTest(main_test.TestBase):
@@ -56,7 +85,8 @@ class PRTest(main_test.TestBase):
 
     def test_pr_builds(self):
         self.init_pr_directory()
-        builds = view_pr.pr_builds('', '123')
+        org, repo = view_pr.org_repo('')
+        builds = view_pr.pr_builds(view_pr.pr_path(org, repo, '123'))
         self.assertEqual(builds, self.BUILDS)
 
     def test_pr_handler(self):

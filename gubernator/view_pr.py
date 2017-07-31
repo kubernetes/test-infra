@@ -30,17 +30,9 @@ PR_PREFIX = view_base.PR_PREFIX
 
 
 @view_base.memcache_memoize('pr-details://', expires=60 * 3)
-def pr_builds(path, pr):
-    """
-    Get information for all builds run by a PR.
-
-    Args:
-        pr: the PR number
-    Returns:
-        A dictionary of {job: [(build_number, started_json, finished.json)]}
-    """
-    jobs_dirs_fut = gcs_async.listdirs('%s/%s%s' % (PR_PREFIX, path, pr))
-    print '%s/%s%s' % (PR_PREFIX, path, pr)
+def pr_builds(path):
+    """Return {job: [(build_number, {started.json}, {finished.json})]} for the PR path."""
+    jobs_dirs_fut = gcs_async.listdirs(path)
 
     def base(path):
         return os.path.basename(os.path.dirname(path))
@@ -71,30 +63,68 @@ def pr_builds(path, pr):
     return jobs
 
 
+def pr_path(org, repo, pr):
+    """Builds the correct gs://prefix/maybe_kubernetes/maybe_repo_org/pr."""
+    # TODO(fejta): make this less specific to kubernetes.
+    if org == repo == 'kubernetes':
+        return '%s/%s' % (PR_PREFIX, pr)
+    if org == 'kubernetes':
+        return '%s/%s/%s' % (PR_PREFIX, repo, pr)
+    return '%s/%s_%s/%s' % (PR_PREFIX, org, repo, pr)
+
+
+def org_repo(path):
+    """Converts /maybe_org/maybe_repo into (org, repo)."""
+    # TODO(fejta): make this less specific to kubernetes.
+    # https://k8s-gubernator.appspot.com/pr/google_cadvisor/1707
+    # https://k8s-gubernator.appspot.com/pr/44245
+    # https://k8s-gubernator.appspot.com/pr/test-infra/3792
+    parts = path.split('/')[1:]
+    if len(parts) == 2:
+        org, repo = parts
+    elif len(parts) == 1:
+        org = 'kubernetes'
+        repo = parts[0]
+    else:
+        org = repo = 'kubernetes'
+    return org, repo
+
+
 class PRHandler(view_base.BaseHandler):
     """Show a list of test runs for a PR."""
     def get(self, path, pr):
-        if path:
-            repo = 'kubernetes/%s' % path.strip('/')
-        else:
-            path = ''
-            repo = 'kubernetes/kubernetes'
-        builds = pr_builds(path, pr)
+        # pylint: disable=too-many-locals
+        org, repo = org_repo(path)
+        path = pr_path(org, repo, pr)
+        builds = pr_builds(path)
+        # TODO(fejta): assume all builds are monotonically increasing.
         for bs in builds.itervalues():
             if any(len(b) > 8 for b, _, _ in bs):
-                # Long builds indicate non sequential build numbers, sort them.
-                # These builds shouldn't be created going forwards, so this
-                # should be dead code once all the old PRs are finished.
-                # -- rmmh 2017-01-13
                 bs.sort(key=lambda (b, s, f): -(s or {}).get('timestamp', 0))
         if pr == 'batch':  # truncate batch results to last day
             cutoff = time.time() - 60 * 60 * 24
-            builds = {j: [(b, s, f) for b, s, f in bs if not s or s['timestamp'] > cutoff]
-                      for j, bs in builds.iteritems()}
+            builds = {}
+            for job, job_builds in builds.iteritems():
+                builds[job] = [
+                    (b, s, f) for b, s, f in job_builds
+                    if not s or s.get('timestamp') > cutoff
+                ]
+
         max_builds, headings, rows = pull_request.builds_to_table(builds)
-        digest = ghm.GHIssueDigest.get(repo, pr)
-        self.render('pr.html', dict(pr=pr, prefix=PR_PREFIX, digest=digest,
-            max_builds=max_builds, header=headings, repo=repo, rows=rows, path=path))
+        digest = ghm.GHIssueDigest.get('/'.join([org, repo]), pr)
+        self.render(
+            'pr.html',
+            dict(
+                pr=pr,
+                digest=digest,
+                max_builds=max_builds,
+                header=headings,
+                org=org,
+                repo=repo,
+                rows=rows,
+                path=path,
+            )
+        )
 
 
 def get_acks(login, prs):

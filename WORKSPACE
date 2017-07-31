@@ -281,3 +281,27 @@ py_library(
     strip_prefix = "configparser-3.5.0/src",
     urls = ["https://pypi.python.org/packages/7c/69/c2ce7e91c89dc073eb1aa74c0621c3eefbffe8216b3f9af9d3885265c01c/configparser-3.5.0.tar.gz"],
 )
+
+new_http_archive(
+    name = "parameterized",
+    build_file_content = """
+py_library(
+    name = "parameterized",
+    srcs = glob(["**/*.py"]),
+    visibility = ["//visibility:public"],
+)
+""",
+    sha256 = "caf58e717097735de0d7e15386a46ffa5ce25bb6a13a43716a8854a8d34841e2",
+    strip_prefix = "parameterized-0.6.1/parameterized",
+    urls = ["https://pypi.python.org/packages/77/b6/8c481344c63b3eadeaa26f62b9d7ce4221a52bad390da5f059573d4c7ee4/parameterized-0.6.1.tar.gz"],
+)
+
+# TODO(fejta): get this to work
+git_repository(
+    name = "io_bazel_rules_appengine",
+    commit = "14d860985c2a764fdb6a6072d5450d8360c4ce5b",
+    remote = "https://github.com/bazelbuild/rules_appengine.git",
+    #tag = "0.0.5", # Latest at https://github.com/bazelbuild/rules_appengine/releases.
+)
+load("@io_bazel_rules_appengine//appengine:py_appengine.bzl", "py_appengine_repositories")
+py_appengine_repositories()

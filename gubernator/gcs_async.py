@@ -43,8 +43,7 @@ def get(url):
 
 
 def read(path):
-    """
-    Asynchronously reads a file from GCS.
+    """Asynchronously reads a file from GCS.
 
     NOTE: for large files (>10MB), this may return a truncated response due to
     urlfetch API limits. We don't want to read large files currently, so this
@@ -61,8 +60,7 @@ def read(path):
 
 @ndb.tasklet
 def listdirs(path):
-    """
-    Asynchronously list directories present on GCS.
+    """Asynchronously list directories present on GCS.
 
     NOTE: This returns at most 1000 results. The API supports pagination, but
     it's not implemented here.
