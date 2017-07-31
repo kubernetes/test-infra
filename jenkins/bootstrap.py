@@ -975,23 +975,15 @@ def parse_args(arguments=None):
         '--clean',
         action='store_true',
         help='Clean the git repo before running tests.')
-    # Use "_no_-magic-env" because the default (current functionality)
-    # is to have magic environment, so the default value for this flag
-    # (false) needs to match this behavior.
     parser.add_argument(
         '--raw-env',
         action='store_true',
-        help='Disable Jenkins magic environment')
-    # If specified, this is the (relative) path to jobs configuration directory
-    # the cloned repo.
+        help='Disable the environment specific to kubernetes project.')
     parser.add_argument(
         '--jobs-dir',
-        # The default behavior assumes that bootstrap.py is run from the jenkins/
-        # directory of the kubernetes/test-infra repo, and uses this assumption to
-        # find the path of the kubernetes/test-infra repo (assuming it has been
-        # cloned). It then uses the root of the kubernetes/test-infra repo as the
-        # implicit jobs-config-dir.
-        help='Look for job configuration inside this dir rather than relative to the script.')
+        # Default behavior assumes bootstrap.py is run from the jenkins/ dir of
+        # k8s/test-infra and that the jobs are in k8s/test-infra repo.
+        help='Look for job config in this dir rather than relative to this script.')
     args = parser.parse_args(arguments)
     if bool(args.repo) == bool(args.bare):
         raise argparse.ArgumentTypeError(
