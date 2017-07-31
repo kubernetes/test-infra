@@ -20,6 +20,11 @@ set -o pipefail
 # Cache location.
 export TEST_TMPDIR="/root/.cache/bazel"
 
+# The bazel cache is a bit confused, possibly due to version skew.
+# To remedy, clean the cache.
+# https://github.com/kubernetes/kubernetes/issues/49844
+bazel clean --expunge
+
 make bazel-build && rc=$? || rc=$?
 
 # Clear test.xml so that we don't pick up old results.
