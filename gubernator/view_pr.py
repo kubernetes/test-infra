@@ -66,9 +66,9 @@ def pr_builds(path):
 def pr_path(org, repo, pr):
     """Builds the correct gs://prefix/maybe_kubernetes/maybe_repo_org/pr."""
     # TODO(fejta): make this less specific to kubernetes.
-    if org == repo == 'kubernetes':
+    if org == 'openshift' and repo == 'origin':
         return '%s/%s' % (PR_PREFIX, pr)
-    if org == 'kubernetes':
+    if org == 'openshift':
         return '%s/%s/%s' % (PR_PREFIX, repo, pr)
     return '%s/%s_%s/%s' % (PR_PREFIX, org, repo, pr)
 
@@ -80,10 +80,11 @@ def org_repo(path):
     if len(parts) == 2:
         org, repo = parts
     elif len(parts) == 1:
-        org = 'kubernetes'
+        org = 'openshift'
         repo = parts[0]
     else:
-        org = repo = 'kubernetes'
+        org = 'openshift'
+        repo = 'origin'
     return org, repo
 
 
@@ -190,13 +191,13 @@ class PRDashboard(view_base.BaseHandler):
                      'OR "additional approver: {0}")'.format(user)),
                     ('Incoming', lambda p: user != p.payload['author'] and
                                            user in p.payload['assignees'],
-                     'is:open is:pr user:kubernetes assignee:%s' % user),
+                     'is:open is:pr user:openshift assignee:%s' % user),
                     ('Outgoing', lambda p: user == p.payload['author'],
-                     'is:open is:pr user:kubernetes author:%s' % user),
+                     'is:open is:pr user:openshift author:%s' % user),
                 ]
             else:
-                cats = [('Open Kubernetes PRs', lambda x: True,
-                    'is:open is:pr user:kubernetes')]
+                cats = [('Open OpenShift Origin PRs', lambda x: True,
+                    'is:open is:pr user:openshift')]
 
             self.render('pr_dashboard.html', dict(
                 prs=prs, cats=cats, user=user, login=login, acks=acks))

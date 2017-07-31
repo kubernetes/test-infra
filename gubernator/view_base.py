@@ -20,7 +20,6 @@ import re
 import cloudstorage as gcs
 import jinja2
 import webapp2
-import yaml
 
 from google.appengine.api import urlfetch
 from google.appengine.api import memcache
@@ -59,7 +58,7 @@ DEFAULT_JOBS = {
     },
 }
 
-PR_PREFIX = 'kubernetes-jenkins/pr-logs/pull'
+PR_PREFIX = 'origin-ci-test/pr-logs/pull'
 
 JINJA_ENVIRONMENT = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__) + '/templates'),

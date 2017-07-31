@@ -5,7 +5,7 @@ body {
     scroll-behavior: smooth;
 }
 #header {
-    background-color: #3f51b5;
+    background-color: #b51b1b;
     color: white;
     text-align: center;
     padding: 8px;
@@ -16,7 +16,7 @@ body {
     color: white;
 }
 #header img {
-    width: 100px;
+    width: 233px;
     height: 100px;
     float: left;
     padding-left: 20px;

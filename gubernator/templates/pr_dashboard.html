@@ -40,7 +40,7 @@ View
 		% for pr in sub_prs
 			% set pl = pr.payload
 			<tr id="{{title|slugify}} {{pr.repo}} {{pr.number}}" onclick="window.open('https://github.com/{{pr.repo}}/pull/{{pr.number}}', '_blank')">
-			<td>{{pr.repo|ltrim('kubernetes/')}}
+			<td>{{pr.repo|ltrim('openshift/')}}
 			<td>{{pr.number}}
 			<td>{{pl['author']}}
 			<td>{{pl|render_status(user)}}

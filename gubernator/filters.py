@@ -23,10 +23,10 @@ import urllib
 import jinja2
 
 
-GITHUB_VIEW_TEMPLATE = 'https://github.com/kubernetes/kubernetes/blob/%s/%s#L%s'
-GITHUB_COMMIT_TEMPLATE = 'https://github.com/kubernetes/kubernetes/commit/%s'
+GITHUB_VIEW_TEMPLATE = 'https://github.com/openshift/origin/blob/%s/%s#L%s'
+GITHUB_COMMIT_TEMPLATE = 'https://github.com/openshift/origin/commit/%s'
 LINKIFY_RE = re.compile(
-    r'(^\s*/\S*/)(kubernetes/(\S+):(\d+)(?: \+0x[0-9a-f]+)?)$',
+    r'(^\s*/\S*/)(openshift/(\S+):(\d+)(?: \+0x[0-9a-f]+)?)$',
     flags=re.MULTILINE)
 
 
@@ -215,7 +215,7 @@ def do_tg_url(testgrid_query, test_name=''):
 def do_gcs_browse_url(gcs_path):
     if not gcs_path.endswith('/'):
         gcs_path += '/'
-    return 'http://gcsweb.k8s.io/gcs' + gcs_path
+    return 'http://gcsweb-ci.svc.ci.openshift.org/gcs' + gcs_path
 
 
 static_hashes = {}

@@ -28,7 +28,7 @@
 	% if started
 		<tr><td>Started<td>{{started['timestamp']|timestamp}}
 		{% if finished %}<tr><td>Elapsed<td>{{(finished['timestamp']-started['timestamp'])|duration}}{% endif %}
-		<tr><td>Version<td><a href="https://github.com/kubernetes/kubernetes/commit/{{commit}}">{{started['version'] or finished['version']}}</a>
+		<tr><td>Version<td><a href="https://github.com/openshfit/origin/commit/{{commit}}">{{started['version'] or finished['version']}}</a>
 		% if 'jenkins-node' in started
 			<tr><td>Builder<td>{{started['jenkins-node']}}
 		% endif

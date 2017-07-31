@@ -1,5 +1,5 @@
-application: k8s-gubernator
-version: test  # production is 1
+application: openshift-gce-devel
+version: 1
 runtime: python27
 api_version: 1
 threadsafe: yes
