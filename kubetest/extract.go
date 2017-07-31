@@ -45,6 +45,7 @@ const (
 	version             // v1.5.0, v1.5.0-beta.2
 	gcs                 // gs://bucket/prefix/v1.6.0-alpha.0
 	load                // Load a --save cluster
+	bazel               // A pre/postsubmit bazel build version, prefixed with bazel/
 )
 
 type extractStrategy struct {
@@ -76,6 +77,7 @@ func (l *extractStrategies) Set(value string) error {
 		`^release/(stable.*)$`:      stable,
 		`^(v\d+\.\d+\.\d+[\w.-]*)$`: version,
 		`^(gs://.*)$`:               gcs,
+		`^(bazel/.*)$`:              bazel,
 	}
 
 	if len(*l) == 2 {
@@ -206,7 +208,7 @@ var (
 // Calls KUBERNETES_RELASE_URL=url KUBERNETES_RELEASE=version get-kube.sh.
 // This will download version from the specified url subdir and extract
 // the tarballs.
-func getKube(url, version string) error {
+var getKube = func(url, version string) error {
 	k, err := ensureKube()
 	if err != nil {
 		return err
@@ -394,6 +396,8 @@ func (e extractStrategy) Extract(project, zone string) error {
 		return getKube(path.Dir(e.option), path.Base(e.option))
 	case load:
 		return loadState(e.option)
+	case bazel:
+		return getKube("", e.option)
 	}
 	return fmt.Errorf("Unrecognized extraction: %v(%v)", e.mode, e.value)
 }

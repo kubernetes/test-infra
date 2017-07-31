@@ -83,3 +83,58 @@ func TestGetKube(t *testing.T) {
 		}
 	}
 }
+
+func TestExtractStrategies(t *testing.T) {
+	cases := []struct {
+		option        string
+		expectURL     string
+		expectVersion string
+	}{
+		{
+			"bazel/v1.8.0-alpha.2.899+2c624e590f5670",
+			"",
+			"bazel/v1.8.0-alpha.2.899+2c624e590f5670",
+		},
+		{
+			"bazel/49747/master:b341939d6d3666b119028400a4311cc66da9a542,49747:c4656c3d029e47d03b3d7d9915d79cab72a80852",
+			"",
+			"bazel/49747/master:b341939d6d3666b119028400a4311cc66da9a542,49747:c4656c3d029e47d03b3d7d9915d79cab72a80852",
+		},
+	}
+
+	var gotURL string
+	var gotVersion string
+
+	// getKube is tested independently, so mock it out here so we can test
+	// that different extraction strategies call getKube with the correct
+	// arguments.
+	oldGetKube := getKube
+	defer func() { getKube = oldGetKube }()
+	getKube = func(url, version string) error {
+		gotURL = url
+		gotVersion = version
+		// This is needed or else Extract() will think that getKube failed.
+		os.Mkdir("kubernetes", 0775)
+		return nil
+	}
+
+	for _, tc := range cases {
+		if d, err := ioutil.TempDir("", "extract"); err != nil {
+			t.Fatal(err)
+		} else if err := os.Chdir(d); err != nil {
+			t.Fatal(err)
+		}
+
+		var es extractStrategies
+		if err := es.Set(tc.option); err != nil {
+			t.Errorf("extractStrategy.Set(%q) returned err: %q", tc.option, err)
+		}
+		if err := es.Extract("", ""); err != nil {
+			t.Errorf("extractStrategy(%q).Extract() returned err: %q", tc.option, err)
+		}
+
+		if gotURL != tc.expectURL || gotVersion != tc.expectVersion {
+			t.Errorf("extractStrategy(%q).Extract() wanted getKube(%q, %q), got getKube(%q, %q)", tc.option, tc.expectURL, tc.expectVersion, gotURL, gotVersion)
+		}
+	}
+}
