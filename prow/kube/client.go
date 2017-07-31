@@ -33,7 +33,7 @@ import (
 )
 
 const (
-	inClusterBaseURL = "https://kubernetes"
+	inClusterBaseURL = "https://kubernetes.default"
 	maxRetries       = 8
 	retryDelay       = 2 * time.Second
 )
