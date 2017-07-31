@@ -1861,23 +1861,6 @@
       "UNKNOWN"
     ]
   },
-  "ci-kubernetes-e2e-gce-examples": {
-    "args": [
-      "--check-leaked-resources",
-      "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/ci-kubernetes-e2e-gce-examples.env",
-      "--extract=ci/latest",
-      "--gcp-project=k8s-jkns-e2e-examples",
-      "--gcp-zone=us-central1-f",
-      "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[Feature:Example\\] --minStartupPods=8",
-      "--timeout=90m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "UNKNOWN"
-    ]
-  },
   "ci-kubernetes-e2e-gce-federation": {
     "args": [
       "--check-leaked-resources",
@@ -3887,23 +3870,6 @@
       "--provider=gce",
       "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
       "--timeout=50m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "UNKNOWN"
-    ]
-  },
-  "ci-kubernetes-e2e-gci-gce-examples": {
-    "args": [
-      "--check-leaked-resources",
-      "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/ci-kubernetes-e2e-gci-gce-examples.env",
-      "--extract=ci/latest",
-      "--gcp-project=k8s-jkns-e2e-gci-examples",
-      "--gcp-zone=us-central1-f",
-      "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[Feature:Example\\] --minStartupPods=8",
-      "--timeout=90m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [

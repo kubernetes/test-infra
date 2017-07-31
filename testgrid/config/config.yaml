@@ -158,8 +158,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-etcd3-release-1-5
 - name: ci-kubernetes-e2e-gci-gce-etcd3
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-etcd3
-- name: ci-kubernetes-e2e-gce-examples
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-examples
 - name: ci-kubernetes-e2e-gce-federation
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-federation
 - name: ci-kubernetes-e2e-gce-federation-serial
@@ -202,8 +200,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-ci-slow-release-1-4
 - name: ci-kubernetes-e2e-gce-gci-ci-slow-release-1-5
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-ci-slow-release-1-5
-- name: ci-kubernetes-e2e-gci-gce-examples
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-examples
 - name: ci-kubernetes-e2e-gce-gci-qa-m59
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-m59
 - name: ci-kubernetes-e2e-gce-gci-qa-m60
@@ -1566,10 +1562,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-etcd3-release-1-5
   - name: gci-gce-etcd3
     test_group_name: ci-kubernetes-e2e-gci-gce-etcd3
-  - name: gce-examples
-    test_group_name: ci-kubernetes-e2e-gce-examples
-  - name: gci-gce-examples
-    test_group_name: ci-kubernetes-e2e-gci-gce-examples
   - name: gce-flaky
     test_group_name: ci-kubernetes-e2e-gce-flaky
   - name: gci-gce-flaky
@@ -1728,8 +1720,6 @@ dashboards:
   dashboard_tab:
   - name: gci-gce
     test_group_name: ci-kubernetes-e2e-gci-gce
-  - name: examples
-    test_group_name: ci-kubernetes-e2e-gci-gce-examples
   - name: release-1.4
     test_group_name: ci-kubernetes-e2e-gci-gce-release-1-4
   - name: release-1.5
