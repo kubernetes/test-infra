@@ -2292,10 +2292,13 @@ class JobTest(unittest.TestCase):
                             '--env-file=jobs/pull-kubernetes-e2e.env' in args
                             and '--check-leaked-resources' in args):
                         self.fail('PR job %s should not check for resource leaks' % job)
+                    is_gke_env = ('--env-file=jobs/platform/gke.env' in args or
+                                  '--env-file=jobs/platform/gke-staging.env' in args or
+                                  '--env-file=jobs/platform/gke-prod.env' in args)
                     # Consider deleting any job with --check-leaked-resources=false
                     if (
                             '--env-file=jobs/platform/gce.env' not in args
-                            and '--env-file=jobs/platform/gke.env' not in args
+                            and not is_gke_env
                             and '--check-leaked-resources' in args
                             and 'generated' not in config[job].get('tags', [])):
                         self.fail('Only GCP jobs can --check-leaked-resources, not %s' % job)
@@ -2315,7 +2318,9 @@ class JobTest(unittest.TestCase):
                     if len(extracts) != expected:
                         self.fail('Wrong number of --extract args (%d != %d) in %s' % (
                             len(extracts), expected, job))
-                    self.assertTrue(has_matching_env, 'jobs/%s.env does not exist' % job)
+                    no_matching_whitelisted = '--deployment=gke' in args
+                    self.assertTrue(has_matching_env or no_matching_whitelisted,
+                                    'jobs/%s.env does not exist' % job)
 
                     has_image_family = any(
                         [x for x in args if x.startswith('--image-family')])
