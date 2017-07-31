@@ -23,7 +23,7 @@ metadata:
 spec:
   containers:
   - name: logexporter-test
-    image: gcr.io/google-containers/logexporter:v0.1.0
+    image: gcr.io/google-containers/logexporter:v0.1.1
     env:
     - name: NODE_NAME
       valueFrom:
