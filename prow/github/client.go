@@ -132,7 +132,7 @@ func (c *Client) request(r *request, ret interface{}) (int, error) {
 	if !okCode {
 		return resp.StatusCode, fmt.Errorf("status code %d not one of %v, body: %s", resp.StatusCode, r.exitCodes, string(b))
 	}
-	if ret != nil {
+	if ret != nil && resp.StatusCode != 204 {
 		if err := json.Unmarshal(b, ret); err != nil {
 			return 0, err
 		}
@@ -505,15 +505,55 @@ func (c *Client) AddLabel(org, repo string, number int, label string) error {
 	return err
 }
 
+// Use LabelNotFound to indicate that a label is not attached to an issue.
+// For example, removing a label from an issue, when the issue does not have that label.
+type LabelNotFound struct {
+	Owner, Repo string
+	Number      int
+	Label       string
+}
+
+func (e *LabelNotFound) Error() string {
+	return fmt.Sprintf("label %q does not exist on %s/%s/%d", e.Label, e.Owner, e.Repo, e.Number)
+}
+
+type githubError struct {
+	Message string `json:"message,omitempty"`
+}
+
 func (c *Client) RemoveLabel(org, repo string, number int, label string) error {
 	c.log("RemoveLabel", org, repo, number, label)
-	_, err := c.request(&request{
+	ge := githubError{}
+	code, err := c.request(&request{
 		method: http.MethodDelete,
 		path:   fmt.Sprintf("%s/repos/%s/%s/issues/%d/labels/%s", c.base, org, repo, number, label),
 		// GitHub sometimes returns 200 for this call, which is a bug on their end.
-		exitCodes: []int{200, 204},
-	}, nil)
-	return err
+		// On 404, do not retry. We will inspect and handle this case appropriately.
+		exitCodes: []int{200, 204, 404},
+	}, &ge)
+
+	// If we saw an opaque error, pass it up.
+	if err != nil {
+		return err
+	}
+
+	// If our code was 200 or 204, no error info.
+	if code != 404 {
+		return nil
+	}
+
+	// If the error was because the label was not found, annotate that error with type information.
+	if ge.Message == "Label does not exist" {
+		return &LabelNotFound{
+			Owner:  org,
+			Repo:   repo,
+			Number: number,
+			Label:  label,
+		}
+	}
+
+	// Otherwise we got some other 404 error.
+	return fmt.Errorf("deleting label 404: %s", ge.Message)
 }
 
 type MissingUsers struct {

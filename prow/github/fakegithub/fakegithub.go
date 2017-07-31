@@ -141,12 +141,12 @@ func (f *FakeClient) GetIssueLabels(owner, repo string, number int) ([]github.La
 
 func (f *FakeClient) AddLabel(owner, repo string, number int, label string) error {
 	if f.ExistingLabels == nil {
-		f.LabelsAdded = append(f.LabelsAdded, fmt.Sprintf("%s/%s#%d:%s", owner, repo, number, label))
+		f.LabelsAdded = append(f.LabelsAdded, LabelID(owner, repo, number, label))
 		return nil
 	}
 	for _, l := range f.ExistingLabels {
 		if label == l {
-			f.LabelsAdded = append(f.LabelsAdded, fmt.Sprintf("%s/%s#%d:%s", owner, repo, number, label))
+			f.LabelsAdded = append(f.LabelsAdded, LabelID(owner, repo, number, label))
 			return nil
 		}
 	}
@@ -154,7 +154,7 @@ func (f *FakeClient) AddLabel(owner, repo string, number int, label string) erro
 }
 
 func (f *FakeClient) RemoveLabel(owner, repo string, number int, label string) error {
-	f.LabelsRemoved = append(f.LabelsRemoved, fmt.Sprintf("%s/%s#%d:%s", owner, repo, number, label))
+	f.LabelsRemoved = append(f.LabelsRemoved, LabelID(owner, repo, number, label))
 	return nil
 }
 
@@ -196,4 +196,8 @@ func (f *FakeClient) GetFile(org, repo, file, commit string) ([]byte, error) {
 	}
 
 	return nil, fmt.Errorf("could not find file %s with ref %s", file, commit)
+}
+
+func LabelID(org, repo string, number int, label string) string {
+	return fmt.Sprintf("%s/%s#%d:%s", org, repo, number, label)
 }
