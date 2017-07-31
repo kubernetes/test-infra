@@ -991,7 +991,7 @@ def parse_args(arguments=None):
         # find the path of the kubernetes/test-infra repo (assuming it has been
         # cloned). It then uses the root of the kubernetes/test-infra repo as the
         # implicit jobs-config-dir.
-        help='Explicit location for where to look for job scripts relative to repo root.')
+        help='Look for job configuration inside this dir rather than relative to the script.')
     args = parser.parse_args(arguments)
     if bool(args.repo) == bool(args.bare):
         raise argparse.ArgumentTypeError(
