@@ -242,6 +242,7 @@ type Approvers struct {
 	approvers       map[string]Approval
 	assignees       sets.String
 	AssociatedIssue int
+	RequireIssue    bool
 }
 
 // IntersectSetsCase runs the intersection between to sets.String in a
@@ -452,15 +453,21 @@ func (ap Approvers) GetCCs() []string {
 	return suggested.Union(keepAssignees).List()
 }
 
-// IsApproved returns a bool indicating whether or not the PR is approved
-func (ap Approvers) IsApproved() bool {
+// AreFilesApproved returns a bool indicating whether or not OWNERS files associated with
+// the PR are approved.  If this returns true, the PR may still not be fully approved depending
+// on the associated issue requirement
+func (ap Approvers) AreFilesApproved() bool {
 	return ap.UnapprovedFiles().Len() == 0
 }
 
-// IsApprovedWithIssue verifies that the PR is approved, and has an
-// associated issue or a valid "no-issue" approver.
-func (ap Approvers) IsApprovedWithIssue() bool {
-	return ap.IsApproved() && (ap.AssociatedIssue != 0 || len(ap.NoIssueApprovers()) != 0)
+// IsApproved returns a bool indicating whether the PR is fully approved:
+// - all OWNERS files associated with the PR have been approved AND
+// EITHER
+// 	- the munger config is such that an issue is not required to be associated with the PR
+// 	- that there is an associated issue with the PR
+// 	- an OWNER has indicated that the PR is trivial enough that an issue need not be associated with the PR
+func (ap Approvers) IsApproved() bool {
+	return ap.AreFilesApproved() && (!ap.RequireIssue || ap.AssociatedIssue != 0 || len(ap.NoIssueApprovers()) != 0)
 }
 
 // ListApprovals returns the list of approvals
@@ -539,13 +546,14 @@ func GenerateTemplateOrFail(templ, name string, data interface{}) *string {
 // 	- how an approver can cancel their approval
 func GetMessage(ap Approvers, org, project string) *string {
 	message := GenerateTemplateOrFail(`This pull-request has been approved by: {{range $index, $approval := .ap.ListApprovals}}{{if $index}}, {{end}}{{$approval}}{{end}}
-{{- if not .ap.IsApproved}}
+{{- if (not .ap.AreFilesApproved) }}
 We suggest the following additional approver{{if ne 1 (len .ap.GetCCs)}}s{{end}}: {{range $index, $cc := .ap.GetCCs}}{{if $index}}, {{end}}**{{$cc}}**{{end}}
 
 Assign the PR to them by writing `+"`/assign {{range $index, $cc := .ap.GetCCs}}{{if $index}} {{end}}@{{$cc}}{{end}}`"+` in a comment when ready.
 {{- end}}
 
-{{if .ap.AssociatedIssue -}}
+{{if not .ap.RequireIssue -}}
+{{else if .ap.AssociatedIssue -}}
 Associated issue: *{{.ap.AssociatedIssue}}*
 {{- else if len .ap.NoIssueApprovers -}}
 Associated issue requirement bypassed by: {{range $index, $approval := .ap.ListNoIssueApprovals}}{{if $index}}, {{end}}{{$approval}}{{end}}
@@ -555,7 +563,7 @@ Associated issue requirement bypassed by: {{range $index, $approval := .ap.ListN
 
 The full list of commands accepted by this bot can be found [here](https://github.com/kubernetes/test-infra/blob/master/commands.md).
 
-<details {{if not .ap.IsApproved}}open{{end}}>
+<details {{if (not .ap.AreFilesApproved) }}open{{end}}>
 Needs approval from an approver in each of these OWNERS Files:
 
 {{range .ap.GetFiles .org .project}}{{.}}{{end}}
@@ -565,7 +573,7 @@ You can cancel your approval by writing `+"`/approve cancel`"+` in a comment
 
 	*message += getGubernatorMetadata(ap.GetCCs())
 
-	title := GenerateTemplateOrFail("This PR is **{{if not .IsApprovedWithIssue}}NOT {{end}}APPROVED**", "title", ap)
+	title := GenerateTemplateOrFail("This PR is **{{if not .IsApproved}}NOT {{end}}APPROVED**", "title", ap)
 
 	if title == nil || message == nil {
 		return nil
