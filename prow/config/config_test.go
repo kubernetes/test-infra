@@ -488,9 +488,7 @@ func TestBazelbuildArgs(t *testing.T) {
 		}
 	}
 	pinnedJobs := map[string]string{
-		//job: reason for pinning
-		"pull-kubernetes-bazel":          "https://github.com/kubernetes/kubernetes/issues/49824",
-		"pull-security-kubernetes-bazel": "https://github.com/kubernetes/kubernetes/issues/49824",
+	//job: reason for pinning
 	}
 	maxTag := ""
 	maxN := 0
