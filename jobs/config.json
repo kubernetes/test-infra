@@ -2499,26 +2499,6 @@
       "sig-scale"
     ]
   },
-  "ci-kubernetes-e2e-gce-latest-upgrade-cluster": {
-    "args": [
-      "--check-leaked-resources",
-      "--check-version-skew=false",
-      "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/ci-kubernetes-e2e-gce-latest-upgrade-cluster.env",
-      "--extract=ci/latest",
-      "--extract=ci/latest-1.6",
-      "--gcp-project=kube-gce-upg-lat-cluster",
-      "--gcp-zone=us-central1-f",
-      "--provider=gce",
-      "--skew",
-      "--test_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=ci/latest --minStartupPods=8",
-      "--timeout=90m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "UNKNOWN"
-    ]
-  },
   "ci-kubernetes-e2e-gce-latest-upgrade-master": {
     "args": [
       "--check-leaked-resources",
@@ -7158,24 +7138,6 @@
       "--provider=gke",
       "--test_args=--ginkgo.focus=\\[Slow\\] --ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
       "--timeout=150m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "UNKNOWN"
-    ]
-  },
-  "ci-kubernetes-e2e-gke-stackdriver": {
-    "args": [
-      "--check-leaked-resources",
-      "--env-file=jobs/platform/gke.env",
-      "--env-file=jobs/ci-kubernetes-e2e-gke-stackdriver.env",
-      "--extract=ci/latest",
-      "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
-      "--gcp-project=k8s-jkns-e2e-gke-stackdriver",
-      "--gcp-zone=us-central1-f",
-      "--provider=gke",
-      "--test_args=--ginkgo.focus=\\[Feature:StackdriverMonitoring\\] --minStartupPods=8",
-      "--timeout=50m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
