@@ -86,7 +86,6 @@ presubmits:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--json"
         env:
         - name: TEST_TMPDIR
           value: /root/.cache/bazel
@@ -232,7 +231,6 @@ presubmits:
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--git-cache=/root/.cache/git"
         - "--timeout=75"
-        - "--json"
         - "--clean"
         env:
         - name: USER
@@ -297,7 +295,6 @@ presubmits:
         - --upload=gs://kubernetes-jenkins/pr-logs
         - --git-cache=/root/.cache/git
         - --clean
-        - --json
         - --timeout=110
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -380,7 +377,6 @@ presubmits:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--json"
         env:
         - name: TEST_TMPDIR
           value: /root/.cache/bazel
@@ -526,7 +522,6 @@ presubmits:
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--git-cache=/root/.cache/git"
         - "--timeout=75"
-        - "--json"
         - "--clean"
         env:
         - name: USER
@@ -591,7 +586,6 @@ presubmits:
         - --upload=gs://kubernetes-jenkins/pr-logs
         - --git-cache=/root/.cache/git
         - --clean
-        - --json
         - --timeout=110
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -672,7 +666,6 @@ presubmits:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--json"
         env:
         - name: TEST_TMPDIR
           value: /root/.cache/bazel
@@ -710,7 +703,6 @@ presubmits:
         args:
         - --upload=gs://kubernetes-jenkins/pr-logs
         - --service-account=/etc/service-account/service-account.json
-        - --json
         volumeMounts:
         - name: service
           mountPath: /etc/service-account
@@ -741,11 +733,9 @@ presubmits:
       - image: gcr.io/k8s-testimages/gcloud-in-go:0.2
         args:
         - "--pull=$(PULL_REFS)"
-        - "--json"
         - "--root=/go/src"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--clean"
-        - "--json"
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: /etc/service-account/service-account.json
@@ -779,7 +769,6 @@ presubmits:
       - image: gcr.io/k8s-testimages/gcloud-in-go:0.2
         args:
         - "--pull=$(PULL_REFS)"
-        - "--json"
         - "--root=/go/src"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--clean"
@@ -816,7 +805,6 @@ presubmits:
       - image: gcr.io/k8s-testimages/gcloud-in-go:0.2
         args:
         - "--pull=$(PULL_REFS)"
-        - "--json"
         - "--root=/go/src"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--clean"
@@ -853,7 +841,6 @@ postsubmits:
         - "--clean"
         - "--git-cache=/root/.cache/git"
         - "--job=$(JOB_NAME)"
-        - "--json"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/logs"
@@ -889,7 +876,6 @@ postsubmits:
           - "--clean"
           - "--git-cache=/root/.cache/git"
           - "--job=$(JOB_NAME)"
-          - "--json"
           - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
           - "--service-account=/etc/service-account/service-account.json"
           - "--upload=gs://kubernetes-jenkins/logs"
@@ -924,7 +910,6 @@ postsubmits:
             - "--branch=$(PULL_REFS)"
             - "--clean"
             - "--git-cache=/root/.cache/git"
-            - "--json"
             - "--timeout=320"
             - "--upload=gs://kubernetes-jenkins/logs"
             env:
@@ -971,7 +956,6 @@ postsubmits:
         - "--clean"
         - "--git-cache=/root/.cache/git"
         - "--job=$(JOB_NAME)"
-        - "--json"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/logs"
@@ -1007,7 +991,6 @@ postsubmits:
           - "--clean"
           - "--git-cache=/root/.cache/git"
           - "--job=$(JOB_NAME)"
-          - "--json"
           - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
           - "--service-account=/etc/service-account/service-account.json"
           - "--upload=gs://kubernetes-jenkins/logs"
@@ -1042,7 +1025,6 @@ postsubmits:
             - "--branch=$(PULL_REFS)"
             - "--clean"
             - "--git-cache=/root/.cache/git"
-            - "--json"
             - "--timeout=320"
             - "--upload=gs://kubernetes-jenkins/logs"
             env:
@@ -1089,7 +1071,6 @@ postsubmits:
         - "--clean"
         - "--git-cache=/root/.cache/git"
         - "--job=$(JOB_NAME)"
-        - "--json"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/logs"
@@ -1127,7 +1108,6 @@ postsubmits:
           - "--clean"
           - "--git-cache=/root/.cache/git"
           - "--job=$(JOB_NAME)"
-          - "--json"
           - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
           - "--service-account=/etc/service-account/service-account.json"
           - "--upload=gs://kubernetes-jenkins/logs"
@@ -1164,7 +1144,6 @@ postsubmits:
             - "--branch=$(PULL_REFS)"
             - "--clean"
             - "--git-cache=/root/.cache/git"
-            - "--json"
             - "--timeout=320"
             - "--upload=gs://kubernetes-jenkins/logs"
             env:
@@ -1208,7 +1187,6 @@ postsubmits:
             - "--branch=$(PULL_REFS)"
             - "--clean"
             - "--git-cache=/root/.cache/git"
-            - "--json"
             - "--timeout=320"
             - "--upload=gs://kubernetes-jenkins/logs"
             env:
@@ -1259,7 +1237,6 @@ postsubmits:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/logs"
-        - "--json"
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
@@ -1291,7 +1268,6 @@ postsubmits:
         - "--clean"
         - "--git-cache=/root/.cache/git"
         - "--job=$(JOB_NAME)"
-        - "--json"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/logs"
@@ -15067,7 +15043,6 @@ periodics:
       - "--repo=k8s.io/test-infra=master"
       - "--service-account=/etc/service-account/service-account.json"
       - "--upload=gs://kubernetes-jenkins/logs"
-      - "--json"
       env:
       - name: TEST_TMPDIR
         value: /root/.cache/bazel
@@ -15146,7 +15121,6 @@ periodics:
       - "--clean"
       - "--git-cache=/root/.cache/git"
       - "--job=$(JOB_NAME)"
-      - "--json"
       - "--repo=k8s.io/kubernetes=release-1.6"
       - "--service-account=/etc/service-account/service-account.json"
       - "--upload=gs://kubernetes-jenkins/logs"
@@ -15182,7 +15156,6 @@ periodics:
         - "--clean"
         - "--git-cache=/root/.cache/git"
         - "--job=$(JOB_NAME)"
-        - "--json"
         - "--repo=k8s.io/kubernetes=release-1.6"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/logs"
@@ -15217,7 +15190,6 @@ periodics:
           - "--repo=k8s.io/kubernetes=release-1.6"
           - "--clean"
           - "--git-cache=/root/.cache/git"
-          - "--json"
           - "--timeout=320"
           - "--upload=gs://kubernetes-jenkins/logs"
           env:
@@ -15265,7 +15237,6 @@ periodics:
       - "--clean"
       - "--git-cache=/root/.cache/git"
       - "--job=$(JOB_NAME)"
-      - "--json"
       - "--repo=k8s.io/kubernetes=release-1.7"
       - "--service-account=/etc/service-account/service-account.json"
       - "--upload=gs://kubernetes-jenkins/logs"
@@ -15303,7 +15274,6 @@ periodics:
         - "--clean"
         - "--git-cache=/root/.cache/git"
         - "--job=$(JOB_NAME)"
-        - "--json"
         - "--repo=k8s.io/kubernetes=release-1.7"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/logs"
@@ -15340,7 +15310,6 @@ periodics:
           - "--repo=k8s.io/kubernetes=release-1.7"
           - "--clean"
           - "--git-cache=/root/.cache/git"
-          - "--json"
           - "--timeout=320"
           - "--upload=gs://kubernetes-jenkins/logs"
           env:

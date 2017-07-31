@@ -26,8 +26,7 @@ The following should already be done:
 
 The bootstrapper now does the following:
   # Note start time
-  # read test-infra/jenkins/$JOB.json
-  # check out repoes defined in $JOB.json
+  # check out repoes defined in --repo
   # note job started
   # call runner defined in $JOB.json
   # upload artifacts (this will change later)
@@ -755,17 +754,13 @@ def job_args(args):
     return [os.path.expandvars(a) for a in args]
 
 
-def job_script(job, use_json):
+def job_script(job):
     """Return path to script for job."""
-    if not use_json:
-        return [test_infra('jobs/%s.sh' % job)]
     with open(test_infra('jobs/config.json')) as fp:
         config = json.loads(fp.read())
     job_config = config[job]
     cmd = test_infra('scenarios/%s.py' % job_config['scenario'])
     return [cmd] + job_args(job_config.get('args', []))
-
-
 
 
 def gubernator_uri(paths):
@@ -873,8 +868,6 @@ def bootstrap(args):
     job = args.job
     repos = parse_repos(args)
     upload = args.upload
-    use_json = args.json
-
 
     build_log_path = os.path.abspath('build-log.txt')
     build_log = setup_logging(build_log_path)
@@ -917,7 +910,7 @@ def bootstrap(args):
             start(gsutil, paths, started, node(), version, repos)
         success = False
         try:
-            call(job_script(job, use_json))
+            call(job_script(job))
             logging.info('PASS: %s', job)
             success = True
         except subprocess.CalledProcessError:
@@ -949,10 +942,6 @@ def bootstrap(args):
 def parse_args(arguments=None):
     """Parse arguments or sys.argv[1:]."""
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        '--json',
-        nargs='?', const=1, default=0,
-        type=int, help='--job is a json key, not a .sh')
     parser.add_argument('--root', default='.', help='Root dir to work with')
     parser.add_argument(
         '--timeout', type=float, default=0, help='Timeout in minutes if set')

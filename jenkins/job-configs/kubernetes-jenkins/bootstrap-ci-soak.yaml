@@ -6,7 +6,6 @@
         './test-infra/jenkins/bootstrap.py' \
             {soak-repos} \
             --job='{job-name}' \
-            --json \
             --root="${{GOPATH}}/src/k8s.io" \
             --service-account="${{GOOGLE_APPLICATION_CREDENTIALS}}" \
             --timeout='{timeout}' \
