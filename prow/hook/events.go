@@ -36,10 +36,7 @@ func (s *Server) handleReviewEvent(re github.ReviewEvent) {
 	org, repo := re.PullRequest.Base.Repo.Owner.Login, re.PullRequest.Base.Repo.Name
 	for p, h := range s.Plugins.ReviewEventHandlers(org, repo) {
 		go func(p string, h plugins.ReviewEventHandler) {
-			pc := s.Plugins.PluginClient
-			if trigger := s.Plugins.TriggerFor(org, repo); trigger != nil && trigger.TrustedOrg != "" {
-				pc.PluginConfig.Trigger = *trigger
-			}
+			pc := s.pluginClientFor(org, repo)
 			pc.Logger = l.WithField("plugin", p)
 			pc.Config = s.ConfigAgent.Config()
 			if err := h(pc, re); err != nil {
@@ -62,10 +59,7 @@ func (s *Server) handleReviewCommentEvent(rce github.ReviewCommentEvent) {
 	org, repo := rce.PullRequest.Base.Repo.Owner.Login, rce.PullRequest.Base.Repo.Name
 	for p, h := range s.Plugins.ReviewCommentEventHandlers(org, repo) {
 		go func(p string, h plugins.ReviewCommentEventHandler) {
-			pc := s.Plugins.PluginClient
-			if trigger := s.Plugins.TriggerFor(org, repo); trigger != nil && trigger.TrustedOrg != "" {
-				pc.PluginConfig.Trigger = *trigger
-			}
+			pc := s.pluginClientFor(org, repo)
 			pc.Logger = l.WithField("plugin", p)
 			pc.Config = s.ConfigAgent.Config()
 			if err := h(pc, rce); err != nil {
@@ -87,10 +81,7 @@ func (s *Server) handlePullRequestEvent(pr github.PullRequestEvent) {
 	org, repo := pr.PullRequest.Base.Repo.Owner.Login, pr.PullRequest.Base.Repo.Name
 	for p, h := range s.Plugins.PullRequestHandlers(org, repo) {
 		go func(p string, h plugins.PullRequestHandler) {
-			pc := s.Plugins.PluginClient
-			if trigger := s.Plugins.TriggerFor(org, repo); trigger != nil && trigger.TrustedOrg != "" {
-				pc.PluginConfig.Trigger = *trigger
-			}
+			pc := s.pluginClientFor(org, repo)
 			pc.Logger = l.WithField("plugin", p)
 			pc.Config = s.ConfigAgent.Config()
 			if err := h(pc, pr); err != nil {
@@ -111,10 +102,7 @@ func (s *Server) handlePushEvent(pe github.PushEvent) {
 	org, repo := pe.Repo.Owner.Name, pe.Repo.Name
 	for p, h := range s.Plugins.PushEventHandlers(org, repo) {
 		go func(p string, h plugins.PushEventHandler) {
-			pc := s.Plugins.PluginClient
-			if trigger := s.Plugins.TriggerFor(org, repo); trigger != nil && trigger.TrustedOrg != "" {
-				pc.PluginConfig.Trigger = *trigger
-			}
+			pc := s.pluginClientFor(org, repo)
 			pc.Logger = l.WithField("plugin", p)
 			pc.Config = s.ConfigAgent.Config()
 			if err := h(pc, pe); err != nil {
@@ -136,10 +124,7 @@ func (s *Server) handleIssueEvent(i github.IssueEvent) {
 	org, repo := i.Repo.Owner.Login, i.Repo.Name
 	for p, h := range s.Plugins.IssueHandlers(org, repo) {
 		go func(p string, h plugins.IssueHandler) {
-			pc := s.Plugins.PluginClient
-			if trigger := s.Plugins.TriggerFor(org, repo); trigger != nil && trigger.TrustedOrg != "" {
-				pc.PluginConfig.Trigger = *trigger
-			}
+			pc := s.pluginClientFor(org, repo)
 			pc.Logger = l.WithField("plugin", p)
 			pc.Config = s.ConfigAgent.Config()
 			if err := h(pc, i); err != nil {
@@ -161,10 +146,7 @@ func (s *Server) handleIssueCommentEvent(ic github.IssueCommentEvent) {
 	org, repo := ic.Repo.Owner.Login, ic.Repo.Name
 	for p, h := range s.Plugins.IssueCommentHandlers(org, repo) {
 		go func(p string, h plugins.IssueCommentHandler) {
-			pc := s.Plugins.PluginClient
-			if trigger := s.Plugins.TriggerFor(org, repo); trigger != nil && trigger.TrustedOrg != "" {
-				pc.PluginConfig.Trigger = *trigger
-			}
+			pc := s.pluginClientFor(org, repo)
 			pc.Logger = l.WithField("plugin", p)
 			pc.Config = s.ConfigAgent.Config()
 			if err := h(pc, ic); err != nil {
@@ -187,10 +169,7 @@ func (s *Server) handleStatusEvent(se github.StatusEvent) {
 	org, repo := se.Repo.Owner.Login, se.Repo.Name
 	for p, h := range s.Plugins.StatusEventHandlers(org, repo) {
 		go func(p string, h plugins.StatusEventHandler) {
-			pc := s.Plugins.PluginClient
-			if trigger := s.Plugins.TriggerFor(org, repo); trigger != nil && trigger.TrustedOrg != "" {
-				pc.PluginConfig.Trigger = *trigger
-			}
+			pc := s.pluginClientFor(org, repo)
 			pc.Logger = l.WithField("plugin", p)
 			pc.Config = s.ConfigAgent.Config()
 			if err := h(pc, se); err != nil {
@@ -198,4 +177,13 @@ func (s *Server) handleStatusEvent(se github.StatusEvent) {
 			}
 		}(p, h)
 	}
+}
+
+func (s *Server) pluginClientFor(org, repo string) plugins.PluginClient {
+	client := s.Plugins.PluginClient
+	if trigger := s.Plugins.TriggerFor(org, repo); trigger != nil && trigger.TrustedOrg != "" {
+		client.PluginConfig.Trigger = *trigger
+	}
+
+	return client
 }
