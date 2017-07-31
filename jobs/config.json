@@ -4600,23 +4600,6 @@
       "UNKNOWN"
     ]
   },
-  "ci-kubernetes-e2e-gci-gke-pre-release": {
-    "args": [
-      "--check-leaked-resources",
-      "--env-file=jobs/platform/gke.env",
-      "--env-file=jobs/ci-kubernetes-e2e-gci-gke-pre-release.env",
-      "--extract=release/latest",
-      "--gcp-cloud-sdk=gs://cloud-sdk-testing/rc",
-      "--gcp-project=k8s-jkns-e2e-gci-gke-prerel",
-      "--gcp-zone=us-central1-f",
-      "--provider=gke",
-      "--timeout=480m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "UNKNOWN"
-    ]
-  },
   "ci-kubernetes-e2e-gci-gke-prod": {
     "args": [
       "--check-leaked-resources",
@@ -6836,23 +6819,6 @@
     "scenario": "kubernetes_e2e",
     "sigOwners": [
       "sig-cli"
-    ]
-  },
-  "ci-kubernetes-e2e-gke-pre-release": {
-    "args": [
-      "--check-leaked-resources",
-      "--env-file=jobs/platform/gke.env",
-      "--env-file=jobs/ci-kubernetes-e2e-gke-pre-release.env",
-      "--extract=release/latest",
-      "--gcp-cloud-sdk=gs://cloud-sdk-testing/rc",
-      "--gcp-project=k8s-jkns-e2e-gke-prerel",
-      "--gcp-zone=us-central1-f",
-      "--provider=gke",
-      "--timeout=480m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "UNKNOWN"
     ]
   },
   "ci-kubernetes-e2e-gke-prod": {
