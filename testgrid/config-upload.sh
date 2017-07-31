@@ -18,5 +18,6 @@ set -o nounset
 set -o pipefail
 set -o xtrace
 
+bazel clean --expunge
 bazel build //testgrid/config:testgrid-config
 gsutil cp bazel-genfiles/testgrid/config/testgrid-config gs://k8s-testgrid/config
