@@ -499,6 +499,7 @@ func (sq *SubmitQueue) internalInitialize(config *github.Config, features *featu
 		if sq.BatchEnabled {
 			http.Handle("/batch", gziphandler.GzipHandler(http.HandlerFunc(sq.serveBatch)))
 		}
+		// this endpoint is useless without access to prow
 		if sq.ProwURL != "" {
 			http.Handle("/ci-status", gziphandler.GzipHandler(http.HandlerFunc(sq.serveCIStatus)))
 		}
@@ -668,8 +669,8 @@ func (sq *SubmitQueue) updateHealth() {
 }
 
 func (sq *SubmitQueue) getRunningPRNumber() int {
-	defer sq.Unlock()
 	sq.Lock()
+	defer sq.Unlock()
 	if sq.githubE2ERunning != nil {
 		return *sq.githubE2ERunning.Issue.Number
 	}
