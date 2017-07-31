@@ -30,6 +30,7 @@ py_binary(
     srcs = ["pylint_bin.py"],
     deps = [
         "@pylint//:pylint",
+        "@requests//:requests",  # TODO(fejta): figure out a better solution
         "@ruamel_yaml//ruamel/yaml:ruamel.yaml",
     ],
 )
