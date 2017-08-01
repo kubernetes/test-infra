@@ -107,7 +107,7 @@ func TestHandleIssueComment(t *testing.T) {
 		// Trusted member's not ok to test.
 		{
 			Author:      "t",
-			Body:        "not ok to test",
+			Body:        "not /ok-to-test",
 			State:       "open",
 			IsPR:        true,
 			ShouldBuild: false,
