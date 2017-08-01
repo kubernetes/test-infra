@@ -2318,7 +2318,7 @@ class JobTest(unittest.TestCase):
                     if len(extracts) != expected:
                         self.fail('Wrong number of --extract args (%d != %d) in %s' % (
                             len(extracts), expected, job))
-                    no_matching_whitelisted = '--deployment=gke' in args
+                    no_matching_whitelisted = '--provider=gke' in args
                     self.assertTrue(has_matching_env or no_matching_whitelisted,
                                     'jobs/%s.env does not exist' % job)
 
