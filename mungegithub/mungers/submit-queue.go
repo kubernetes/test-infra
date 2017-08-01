@@ -627,7 +627,6 @@ func (sq *SubmitQueue) updateHealth() {
 		sq.healthHistory = sq.healthHistory[1:]
 	}
 	// Make the current record
-	sq.e2e.LoadNonBlockingStatus()
 	emergencyStop := sq.emergencyMergeStop()
 	newEntry := healthRecord{
 		Time:    time.Now(),
@@ -759,7 +758,6 @@ func (sq *SubmitQueue) e2eStable(aboutToMerge bool) bool {
 		wentUnstable = true
 	} else if !last && stable {
 		wentStable = true
-
 	}
 	sq.lastE2EStable = stable
 	sq.Unlock()
