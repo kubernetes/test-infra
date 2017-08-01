@@ -479,20 +479,20 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-verify-release-1.5
 - name: ci-kubernetes-verify-release-1.4
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-verify-release-1.4
-- name: ci-kubernetes-e2e-gke-new-master-cvm-kubectl-skew
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-new-master-cvm-kubectl-skew
+- name: ci-kubernetes-e2e-gke-new-master-gci-kubectl-skew-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-new-master-gci-kubectl-skew-serial
 - name: ci-kubernetes-e2e-gke-new-master-gci-kubectl-skew
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-new-master-gci-kubectl-skew
-- name: ci-kubernetes-e2e-gke-master-new-cvm-kubectl-skew
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-master-new-cvm-kubectl-skew
+- name: ci-kubernetes-e2e-gke-master-new-gci-kubectl-skew-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-master-new-gci-kubectl-skew-serial
 - name: ci-kubernetes-e2e-gke-master-new-gci-kubectl-skew
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-master-new-gci-kubectl-skew
-- name: ci-kubernetes-e2e-gce-master-new-cvm-kubectl-skew
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-master-new-cvm-kubectl-skew
+- name: ci-kubernetes-e2e-gce-master-new-gci-kubectl-skew-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-master-new-gci-kubectl-skew-serial
 - name: ci-kubernetes-e2e-gce-master-new-gci-kubectl-skew
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-master-new-gci-kubectl-skew
-- name: ci-kubernetes-e2e-gce-new-master-cvm-kubectl-skew
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-new-master-cvm-kubectl-skew
+- name: ci-kubernetes-e2e-gce-new-master-gci-kubectl-skew-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-new-master-gci-kubectl-skew-serial
 - name: ci-kubernetes-e2e-gce-new-master-gci-kubectl-skew
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-new-master-gci-kubectl-skew
 - name: ci-kubernetes-node-kubelet-flaky
@@ -2035,21 +2035,21 @@ dashboards:
 
 - name: master-kubectl-skew
   dashboard_tab:
-  - name: gce-1.7-master-cvm
-    test_group_name: ci-kubernetes-e2e-gce-new-master-cvm-kubectl-skew
-  - name: gce-1.7-master-gci
+  - name: gce-1.7-dev-serial
+    test_group_name: ci-kubernetes-e2e-gce-new-master-gci-kubectl-skew-serial
+  - name: gce-1.7-dev
     test_group_name: ci-kubernetes-e2e-gce-new-master-gci-kubectl-skew
-  - name: gke-1.7-master-cvm
-    test_group_name: ci-kubernetes-e2e-gke-new-master-cvm-kubectl-skew
-  - name: gke-1.7-master-gci
+  - name: gke-1.7-dev-serial
+    test_group_name: ci-kubernetes-e2e-gke-new-master-gci-kubectl-skew-serial
+  - name: gke-1.7-dev
     test_group_name: ci-kubernetes-e2e-gke-new-master-gci-kubectl-skew
-  - name: gce-master-1.7-cvm
-    test_group_name: ci-kubernetes-e2e-gce-master-new-cvm-kubectl-skew
-  - name: gce-master-1.7-gci
+  - name: gce-dev-1.7-serial
+    test_group_name: ci-kubernetes-e2e-gce-master-new-gci-kubectl-skew-serial
+  - name: gce-dev-1.7
     test_group_name: ci-kubernetes-e2e-gce-master-new-gci-kubectl-skew
-  - name: gke-master-1.7-cvm
-    test_group_name: ci-kubernetes-e2e-gke-master-new-cvm-kubectl-skew
-  - name: gke-master-1.7-gci
+  - name: gke-dev-1.7-serial
+    test_group_name: ci-kubernetes-e2e-gke-master-new-gci-kubectl-skew-serial
+  - name: gke-dev-1.7
     test_group_name: ci-kubernetes-e2e-gke-master-new-gci-kubectl-skew
 
 - name: master-upgrade
@@ -3202,21 +3202,21 @@ dashboards:
     test_group_name: ci-kubernetes-test-go
     base_options: 'include-filter-by-regex=kubectl%7COverall'
     description: 'unit, integration and cmd tests for master branch'
-  - name: gce-last_release-master-cvm-kubectl-skew
-    test_group_name: ci-kubernetes-e2e-gce-new-master-cvm-kubectl-skew
-  - name: gce-last_release-master-gci-kubectl-skew
+  - name: gce-1.7-dev-serial
+    test_group_name: ci-kubernetes-e2e-gce-new-master-gci-kubectl-skew-serial
+  - name: gce-1.7-dev
     test_group_name: ci-kubernetes-e2e-gce-new-master-gci-kubectl-skew
-  - name: gke-last_release-master-cvm-kubectl-skew
-    test_group_name: ci-kubernetes-e2e-gke-new-master-cvm-kubectl-skew
-  - name: gke-last_release-master-gci-kubectl-skew
+  - name: gke-1.7-dev-serial
+    test_group_name: ci-kubernetes-e2e-gke-new-master-gci-kubectl-skew-serial
+  - name: gke-1.7-dev
     test_group_name: ci-kubernetes-e2e-gke-new-master-gci-kubectl-skew
-  - name: gce-master-last_release-cvm-kubectl-skew
-    test_group_name: ci-kubernetes-e2e-gce-master-new-cvm-kubectl-skew
-  - name: gce-master-last_release-gci-kubectl-skew
+  - name: gce-dev-1.7-serial
+    test_group_name: ci-kubernetes-e2e-gce-master-new-gci-kubectl-skew-serial
+  - name: gce-dev-1.7
     test_group_name: ci-kubernetes-e2e-gce-master-new-gci-kubectl-skew
-  - name: gke-master-last_release-cvm-kubectl-skew
-    test_group_name: ci-kubernetes-e2e-gke-master-new-cvm-kubectl-skew
-  - name: gke-master-last_release-gci-kubectl-skew
+  - name: gke-dev-1.7-serial
+    test_group_name: ci-kubernetes-e2e-gke-master-new-gci-kubectl-skew-serial
+  - name: gke-dev-1.7
     test_group_name: ci-kubernetes-e2e-gke-master-new-gci-kubectl-skew
 
 - name: sig-cluster-lifecycle
