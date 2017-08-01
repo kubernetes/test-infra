@@ -681,23 +681,25 @@ func (sq *SubmitQueue) getRunningPRNumber() int {
 func (sq *SubmitQueue) monitorProw() {
 	nonBlockingJobNames := make(map[string]bool)
 	requireRetestJobNames := make(map[string]bool)
-	sq.opts.Lock()
-	for _, jobName := range sq.NonBlockingJobNames {
-		nonBlockingJobNames[jobName] = true
-	}
-	for _, jobName := range mungeopts.RequiredContexts.Retest {
-		requireRetestJobNames[jobName] = true
-	}
-	sq.opts.Unlock()
 
-	url := sq.ProwURL + "/data.js"
 	for {
+		sq.opts.Lock()
+		for _, jobName := range sq.NonBlockingJobNames {
+			nonBlockingJobNames[jobName] = true
+		}
+		for _, jobName := range mungeopts.RequiredContexts.Retest {
+			requireRetestJobNames[jobName] = true
+		}
+		url := sq.ProwURL + "/data.js"
+		sq.opts.Unlock()
+
 		currentPR := sq.getRunningPRNumber()
 		lastPR := sq.githubE2ELastPRNum
 		// get current job info from prow
 		allJobs, err := getJobs(url)
 		if err != nil {
 			glog.Errorf("Error reading batch jobs from Prow URL %v: %v", url, err)
+			time.Sleep(time.Minute)
 			continue
 		}
 		// TODO: copy these from sq first instead
