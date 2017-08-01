@@ -4529,7 +4529,7 @@
     "args": [
       "--check-leaked-resources",
       "--cluster=",
-      "--deployment=gke",
+      "--deployment=bash",
       "--env-file=jobs/platform/gke.env",
       "--extract=ci/latest-1.5",
       "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
@@ -4548,7 +4548,7 @@
     "args": [
       "--check-leaked-resources",
       "--cluster=",
-      "--deployment=gke",
+      "--deployment=bash",
       "--env-file=jobs/platform/gke.env",
       "--extract=ci/latest-1.6",
       "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
@@ -4567,7 +4567,7 @@
     "args": [
       "--check-leaked-resources",
       "--cluster=",
-      "--deployment=gke",
+      "--deployment=bash",
       "--env-file=jobs/platform/gke.env",
       "--extract=ci/latest-1.7",
       "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
@@ -4688,7 +4688,7 @@
     "args": [
       "--check-leaked-resources",
       "--cluster=",
-      "--deployment=gke",
+      "--deployment=bash",
       "--env-file=jobs/platform/gke.env",
       "--extract=ci/latest-1.5",
       "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
@@ -4707,7 +4707,7 @@
     "args": [
       "--check-leaked-resources",
       "--cluster=",
-      "--deployment=gke",
+      "--deployment=bash",
       "--env-file=jobs/platform/gke.env",
       "--extract=ci/latest-1.6",
       "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
@@ -4726,7 +4726,7 @@
     "args": [
       "--check-leaked-resources",
       "--cluster=",
-      "--deployment=gke",
+      "--deployment=bash",
       "--env-file=jobs/platform/gke.env",
       "--extract=ci/latest-1.7",
       "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
@@ -4745,7 +4745,7 @@
     "args": [
       "--check-leaked-resources",
       "--cluster=",
-      "--deployment=gke",
+      "--deployment=bash",
       "--env-file=jobs/platform/gke.env",
       "--env-file=jobs/platform/ginkgo-parallel.env",
       "--extract=ci/latest-1.5",
@@ -4765,7 +4765,7 @@
     "args": [
       "--check-leaked-resources",
       "--cluster=",
-      "--deployment=gke",
+      "--deployment=bash",
       "--env-file=jobs/platform/gke.env",
       "--env-file=jobs/platform/ginkgo-parallel.env",
       "--extract=ci/latest-1.6",
@@ -4785,7 +4785,7 @@
     "args": [
       "--check-leaked-resources",
       "--cluster=",
-      "--deployment=gke",
+      "--deployment=bash",
       "--env-file=jobs/platform/gke.env",
       "--env-file=jobs/platform/ginkgo-parallel.env",
       "--extract=ci/latest-1.7",
@@ -4824,7 +4824,7 @@
     "args": [
       "--check-leaked-resources",
       "--cluster=",
-      "--deployment=gke",
+      "--deployment=bash",
       "--env-file=jobs/platform/gke.env",
       "--extract=ci/latest-1.5",
       "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
@@ -4842,7 +4842,7 @@
     "args": [
       "--check-leaked-resources",
       "--cluster=",
-      "--deployment=gke",
+      "--deployment=bash",
       "--env-file=jobs/platform/gke.env",
       "--extract=ci/latest-1.6",
       "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
@@ -4861,7 +4861,7 @@
     "args": [
       "--check-leaked-resources",
       "--cluster=",
-      "--deployment=gke",
+      "--deployment=bash",
       "--env-file=jobs/platform/gke.env",
       "--extract=ci/latest-1.7",
       "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
@@ -4900,7 +4900,7 @@
     "args": [
       "--check-leaked-resources",
       "--cluster=",
-      "--deployment=gke",
+      "--deployment=bash",
       "--env-file=jobs/platform/gke.env",
       "--env-file=jobs/platform/ginkgo-parallel.env",
       "--extract=ci/latest-1.5",
@@ -4920,7 +4920,7 @@
     "args": [
       "--check-leaked-resources",
       "--cluster=",
-      "--deployment=gke",
+      "--deployment=bash",
       "--env-file=jobs/platform/gke.env",
       "--env-file=jobs/platform/ginkgo-parallel.env",
       "--extract=ci/latest-1.6",
@@ -4940,7 +4940,7 @@
     "args": [
       "--check-leaked-resources",
       "--cluster=",
-      "--deployment=gke",
+      "--deployment=bash",
       "--env-file=jobs/platform/gke.env",
       "--env-file=jobs/platform/ginkgo-parallel.env",
       "--extract=ci/latest-1.7",
@@ -5431,7 +5431,7 @@
       "--check-leaked-resources",
       "--check-version-skew=false",
       "--cluster=",
-      "--deployment=gke",
+      "--deployment=bash",
       "--env-file=jobs/platform/gke.env",
       "--env-file=jobs/ci-kubernetes-e2e-gke-cvm-1-5-cvm-1-6-upgrade-cluster.env",
       "--extract=ci/latest-1.6",
