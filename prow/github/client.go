@@ -768,6 +768,14 @@ func (c *Client) FindIssues(query, sort string, asc bool) ([]Issue, error) {
 	return issSearchResult.Issues, err
 }
 
+type FileNotFound struct {
+	org, repo, path, commit string
+}
+
+func (e *FileNotFound) Error() string {
+	return fmt.Sprintf("%s/%s/%s @ %s not found", e.org, e.repo, e.path, e.commit)
+}
+
 // GetFile uses github repo contents API to retrieve the content of a file with commit sha.
 // If commit is empty, it will grab content from repo's default branch, usually master.
 // TODO(krzyzacy): Support retrieve a directory
@@ -780,17 +788,29 @@ func (c *Client) GetFile(org, repo, filepath, commit string) ([]byte, error) {
 	}
 
 	var res Content
-	_, err := c.request(&request{
+	code, err := c.request(&request{
 		method:    http.MethodGet,
 		path:      url,
-		exitCodes: []int{200},
+		exitCodes: []int{200, 404},
 	}, &res)
 
 	if err != nil {
 		return nil, err
-	} else if decoded, err := base64.StdEncoding.DecodeString(res.Content); err != nil {
-		return nil, fmt.Errorf("error decoding %s : %v", res.Content, err)
-	} else {
-		return decoded, nil
 	}
+
+	if code == 404 {
+		return nil, &FileNotFound{
+			org:    org,
+			repo:   repo,
+			path:   filepath,
+			commit: commit,
+		}
+	}
+
+	decoded, err := base64.StdEncoding.DecodeString(res.Content)
+	if err != nil {
+		return nil, fmt.Errorf("error decoding %s : %v", res.Content, err)
+	}
+
+	return decoded, nil
 }
