@@ -2539,26 +2539,6 @@
       "UNKNOWN"
     ]
   },
-  "ci-kubernetes-e2e-gce-master-new-cvm-kubectl-skew": {
-    "args": [
-      "--check-leaked-resources",
-      "--check-version-skew=false",
-      "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/ci-kubernetes-e2e-gce-master-new-cvm-kubectl-skew.env",
-      "--extract=ci/latest-1.7",
-      "--extract=ci/latest",
-      "--gcp-project=gce-cvm-upg-1-5-1-4-ctl-skew",
-      "--gcp-zone=us-central1-f",
-      "--provider=gce",
-      "--skew",
-      "--test_args=--ginkgo.focus=Kubectl --minStartupPods=8",
-      "--timeout=120m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-cli"
-    ]
-  },
   "ci-kubernetes-e2e-gce-master-new-gci-kubectl-skew": {
     "args": [
       "--check-leaked-resources",
@@ -2567,11 +2547,31 @@
       "--env-file=jobs/ci-kubernetes-e2e-gce-master-new-gci-kubectl-skew.env",
       "--extract=ci/latest-1.7",
       "--extract=ci/latest",
+      "--gcp-project=gce-cvm-upg-1-5-1-4-ctl-skew",
+      "--gcp-zone=us-central1-f",
+      "--provider=gce",
+      "--skew",
+      "--test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\\[Serial\\] --minStartupPods=8",
+      "--timeout=120m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-cli"
+    ]
+  },
+  "ci-kubernetes-e2e-gce-master-new-gci-kubectl-skew-serial": {
+    "args": [
+      "--check-leaked-resources",
+      "--check-version-skew=false",
+      "--env-file=jobs/platform/gce.env",
+      "--env-file=jobs/ci-kubernetes-e2e-gce-master-new-gci-kubectl-skew-serial.env",
+      "--extract=ci/latest-1.7",
+      "--extract=ci/latest",
       "--gcp-project=gce-gci-upg-1-5-1-4-ctl-skew",
       "--gcp-zone=us-central1-f",
       "--provider=gce",
       "--skew",
-      "--test_args=--ginkgo.focus=Kubectl --minStartupPods=8",
+      "--test_args=--ginkgo.focus=Kubectl.*\\[Serial\\] --minStartupPods=8",
       "--timeout=120m"
     ],
     "scenario": "kubernetes_e2e",
@@ -2597,25 +2597,6 @@
       "UNKNOWN"
     ]
   },
-  "ci-kubernetes-e2e-gce-new-master-cvm-kubectl-skew": {
-    "args": [
-      "--check-leaked-resources",
-      "--check-version-skew=false",
-      "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/ci-kubernetes-e2e-gce-new-master-cvm-kubectl-skew.env",
-      "--extract=ci/latest",
-      "--extract=ci/latest-1.7",
-      "--gcp-project=gce-cvm-upg-1-4-1-5-ctl-skew",
-      "--gcp-zone=us-central1-f",
-      "--provider=gce",
-      "--test_args=--ginkgo.focus=Kubectl --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8",
-      "--timeout=120m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-cli"
-    ]
-  },
   "ci-kubernetes-e2e-gce-new-master-gci-kubectl-skew": {
     "args": [
       "--check-leaked-resources",
@@ -2624,10 +2605,29 @@
       "--env-file=jobs/ci-kubernetes-e2e-gce-new-master-gci-kubectl-skew.env",
       "--extract=ci/latest",
       "--extract=ci/latest-1.7",
+      "--gcp-project=gce-cvm-upg-1-4-1-5-ctl-skew",
+      "--gcp-zone=us-central1-f",
+      "--provider=gce",
+      "--test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\\[Serial\\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8",
+      "--timeout=120m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-cli"
+    ]
+  },
+  "ci-kubernetes-e2e-gce-new-master-gci-kubectl-skew-serial": {
+    "args": [
+      "--check-leaked-resources",
+      "--check-version-skew=false",
+      "--env-file=jobs/platform/gce.env",
+      "--env-file=jobs/ci-kubernetes-e2e-gce-new-master-gci-kubectl-skew-serial.env",
+      "--extract=ci/latest",
+      "--extract=ci/latest-1.7",
       "--gcp-project=gce-gci-upg-1-4-1-5-ctl-skew",
       "--gcp-zone=us-central1-f",
       "--provider=gce",
-      "--test_args=--ginkgo.focus=Kubectl --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8",
+      "--test_args=--ginkgo.focus=Kubectl.*\\[Serial\\]  --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8",
       "--timeout=120m"
     ],
     "scenario": "kubernetes_e2e",
@@ -6758,27 +6758,6 @@
       "UNKNOWN"
     ]
   },
-  "ci-kubernetes-e2e-gke-master-new-cvm-kubectl-skew": {
-    "args": [
-      "--check-leaked-resources",
-      "--check-version-skew=false",
-      "--env-file=jobs/platform/gke.env",
-      "--env-file=jobs/ci-kubernetes-e2e-gke-master-new-cvm-kubectl-skew.env",
-      "--extract=ci/latest-1.7",
-      "--extract=ci/latest",
-      "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
-      "--gcp-project=kube-gke-upg-1-5-1-4-ctl-skew",
-      "--gcp-zone=us-central1-c",
-      "--provider=gke",
-      "--skew",
-      "--test_args=--ginkgo.focus=Kubectl --minStartupPods=8",
-      "--timeout=120m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-cli"
-    ]
-  },
   "ci-kubernetes-e2e-gke-master-new-gci-kubectl-skew": {
     "args": [
       "--check-leaked-resources",
@@ -6788,11 +6767,32 @@
       "--extract=ci/latest-1.7",
       "--extract=ci/latest",
       "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
+      "--gcp-project=kube-gke-upg-1-5-1-4-ctl-skew",
+      "--gcp-zone=us-central1-c",
+      "--provider=gke",
+      "--skew",
+      "--test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\\[Serial\\] --minStartupPods=8",
+      "--timeout=120m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-cli"
+    ]
+  },
+  "ci-kubernetes-e2e-gke-master-new-gci-kubectl-skew-serial": {
+    "args": [
+      "--check-leaked-resources",
+      "--check-version-skew=false",
+      "--env-file=jobs/platform/gke.env",
+      "--env-file=jobs/ci-kubernetes-e2e-gke-master-new-gci-kubectl-skew-serial.env",
+      "--extract=ci/latest-1.7",
+      "--extract=ci/latest",
+      "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
       "--gcp-project=gke-gci-upg-1-5-1-4-ctl-skew",
       "--gcp-zone=us-central1-c",
       "--provider=gke",
       "--skew",
-      "--test_args=--ginkgo.focus=Kubectl --minStartupPods=8",
+      "--test_args=--ginkgo.focus=Kubectl.*\\[Serial\\] --minStartupPods=8",
       "--timeout=120m"
     ],
     "scenario": "kubernetes_e2e",
@@ -6818,26 +6818,6 @@
       "UNKNOWN"
     ]
   },
-  "ci-kubernetes-e2e-gke-new-master-cvm-kubectl-skew": {
-    "args": [
-      "--check-leaked-resources",
-      "--check-version-skew=false",
-      "--env-file=jobs/platform/gke.env",
-      "--env-file=jobs/ci-kubernetes-e2e-gke-new-master-cvm-kubectl-skew.env",
-      "--extract=ci/latest",
-      "--extract=ci/latest-1.7",
-      "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
-      "--gcp-project=kube-gke-upg-1-4-1-5-ctl-skew",
-      "--gcp-zone=us-central1-c",
-      "--provider=gke",
-      "--test_args=--test_args=--ginkgo.focus=Kubectl --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8",
-      "--timeout=120m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-cli"
-    ]
-  },
   "ci-kubernetes-e2e-gke-new-master-gci-kubectl-skew": {
     "args": [
       "--check-leaked-resources",
@@ -6847,10 +6827,30 @@
       "--extract=ci/latest",
       "--extract=ci/latest-1.7",
       "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
+      "--gcp-project=kube-gke-upg-1-4-1-5-ctl-skew",
+      "--gcp-zone=us-central1-c",
+      "--provider=gke",
+      "--test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\\[Serial\\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8",
+      "--timeout=120m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-cli"
+    ]
+  },
+  "ci-kubernetes-e2e-gke-new-master-gci-kubectl-skew-serial": {
+    "args": [
+      "--check-leaked-resources",
+      "--check-version-skew=false",
+      "--env-file=jobs/platform/gke.env",
+      "--env-file=jobs/ci-kubernetes-e2e-gke-new-master-gci-kubectl-skew-serial.env",
+      "--extract=ci/latest",
+      "--extract=ci/latest-1.7",
+      "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
       "--gcp-project=gke-gci-upg-1-4-1-5-ctl-skew",
       "--gcp-zone=us-central1-c",
       "--provider=gke",
-      "--test_args=--ginkgo.focus=Kubectl --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8",
+      "--test_args=--ginkgo.focus=Kubectl.*\\[Serial\\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8",
       "--timeout=120m"
     ],
     "scenario": "kubernetes_e2e",

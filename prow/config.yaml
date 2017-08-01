@@ -5080,7 +5080,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 1h
-  name: ci-kubernetes-e2e-gce-master-new-cvm-kubectl-skew
+  name: ci-kubernetes-e2e-gce-master-new-gci-kubectl-skew
   spec:
     containers:
     - args:
@@ -5113,7 +5113,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 1h
-  name: ci-kubernetes-e2e-gce-master-new-gci-kubectl-skew
+  name: ci-kubernetes-e2e-gce-master-new-gci-kubectl-skew-serial
   spec:
     containers:
     - args:
@@ -5177,8 +5177,9 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - interval: 1h
-  name: ci-kubernetes-e2e-gce-new-master-cvm-kubectl-skew
+  name: ci-kubernetes-e2e-gce-new-master-gci-kubectl-skew
   spec:
     containers:
     - args:
@@ -5211,7 +5212,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 1h
-  name: ci-kubernetes-e2e-gce-new-master-gci-kubectl-skew
+  name: ci-kubernetes-e2e-gce-new-master-gci-kubectl-skew-serial
   spec:
     containers:
     - args:
@@ -11879,7 +11880,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 1h
-  name: ci-kubernetes-e2e-gke-master-new-cvm-kubectl-skew
+  name: ci-kubernetes-e2e-gke-master-new-gci-kubectl-skew
   spec:
     containers:
     - args:
@@ -11912,7 +11913,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 1h
-  name: ci-kubernetes-e2e-gke-master-new-gci-kubectl-skew
+  name: ci-kubernetes-e2e-gke-master-new-gci-kubectl-skew-serial
   spec:
     containers:
     - args:
@@ -11977,7 +11978,7 @@ periodics:
         defaultMode: 256
         secretName: ssh-key-secret
 - interval: 1h
-  name: ci-kubernetes-e2e-gke-new-master-cvm-kubectl-skew
+  name: ci-kubernetes-e2e-gke-new-master-gci-kubectl-skew
   spec:
     containers:
     - args:
@@ -12010,7 +12011,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 1h
-  name: ci-kubernetes-e2e-gke-new-master-gci-kubectl-skew
+  name: ci-kubernetes-e2e-gke-new-master-gci-kubectl-skew-serial
   spec:
     containers:
     - args:
