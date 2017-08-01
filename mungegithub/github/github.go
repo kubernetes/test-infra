@@ -2523,7 +2523,9 @@ func (config *Config) ForEachIssueDo(fn MungeFunction) error {
 	}
 
 	// It's a new day, let's restart from scratch.
-	if time.Now().Format("Jan 2 2006") != config.since.Format("Jan 2 2006") {
+	// Use PST timezone to determine when its a new day.
+	pst := time.FixedZone("PacificStandardTime", -8*60*60 /* seconds offset from UTC */)
+	if time.Now().In(pst).Format("Jan 2 2006") != config.since.In(pst).Format("Jan 2 2006") {
 		config.since = time.Time{}
 	}
 
