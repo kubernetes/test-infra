@@ -35,8 +35,6 @@ const (
 )
 
 var (
-	pinger = c.NewPinger(flakeNagNotifyName).
-		SetDescription("This flaky-test issue would love to have more attention.")
 	// Only include priorities that you care about. Others won't be pinged
 	timePeriods = map[string]time.Duration{
 		"priority/P0": 2 * 24 * time.Hour,
@@ -47,7 +45,9 @@ var (
 )
 
 // NagFlakeIssues pings assignees on flaky-test issues
-type NagFlakeIssues struct{}
+type NagFlakeIssues struct {
+	botName string
+}
 
 var _ Munger = &NagFlakeIssues{}
 
@@ -64,7 +64,8 @@ func (NagFlakeIssues) Name() string { return "nag-flake-issues" }
 func (NagFlakeIssues) RequiredFeatures() []string { return []string{} }
 
 // Initialize will initialize the munger
-func (NagFlakeIssues) Initialize(config *mgh.Config, features *features.Features) error {
+func (n *NagFlakeIssues) Initialize(config *mgh.Config, features *features.Features) error {
+	n.botName = config.BotName
 	return nil
 }
 
@@ -89,7 +90,7 @@ func findTimePeriod(labels []github.Label) time.Duration {
 }
 
 // Munge is the workhorse the will actually make updates to the PR
-func (NagFlakeIssues) Munge(obj *mgh.MungeObject) {
+func (n *NagFlakeIssues) Munge(obj *mgh.MungeObject) {
 	if obj.IsPR() || !obj.HasLabel("kind/flake") {
 		return
 	}
@@ -115,10 +116,12 @@ func (NagFlakeIssues) Munge(obj *mgh.MungeObject) {
 	}
 
 	// When does the pinger start
-	startDate := c.LastComment(comments, c.HumanActor(), obj.Issue.CreatedAt)
+	startDate := c.LastComment(comments, c.HumanActor(n.botName), obj.Issue.CreatedAt)
 
 	// Get a notification if it's time to ping.
-	notif := pinger.SetTimePeriod(period).PingNotification(
+	notif := c.NewPinger(flakeNagNotifyName, n.botName).
+		SetDescription("This flaky-test issue would love to have more attention.").
+		SetTimePeriod(period).PingNotification(
 		comments,
 		who,
 		startDate,
@@ -129,12 +132,12 @@ func (NagFlakeIssues) Munge(obj *mgh.MungeObject) {
 }
 
 // StaleIssueComments returns a slice of stale issue comments.
-func (NagFlakeIssues) StaleIssueComments(obj *mgh.MungeObject, issueComments []*github.IssueComment) []*github.IssueComment {
+func (n *NagFlakeIssues) StaleIssueComments(obj *mgh.MungeObject, issueComments []*github.IssueComment) []*github.IssueComment {
 	comments := c.FromIssueComments(issueComments)
 	// Remove all pings written before the last human actor comment
 	filtered := c.FilterComments(comments, c.And([]c.Matcher{
-		c.MungerNotificationName(flakeNagNotifyName),
-		c.CreatedBefore(*c.LastComment(comments, c.HumanActor(), &time.Time{})),
+		c.MungerNotificationName(flakeNagNotifyName, n.botName),
+		c.CreatedBefore(*c.LastComment(comments, c.HumanActor(n.botName), &time.Time{})),
 	}))
 	issueCommentsFiltered := []*github.IssueComment{}
 	for _, comment := range filtered {

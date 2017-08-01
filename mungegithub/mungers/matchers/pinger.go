@@ -17,13 +17,16 @@ limitations under the License.
 package matchers
 
 import (
-	"github.com/google/go-github/github"
 	"time"
+
+	"github.com/google/go-github/github"
 )
 
 // Pinger checks if it's time to send a ping.
 // You can build a pinger for a specific use-case and re-use it when you want.
 type Pinger struct {
+	botName string
+
 	keyword     string        // Short description for the ping
 	description string        // Long description for the ping
 	timePeriod  time.Duration // How often should we ping
@@ -31,8 +34,9 @@ type Pinger struct {
 }
 
 // NewPinger creates a new pinger. `keyword` is the name of the notification.
-func NewPinger(keyword string) *Pinger {
+func NewPinger(keyword, botName string) *Pinger {
 	return &Pinger{
+		botName: botName,
 		keyword: keyword,
 	}
 }
@@ -93,7 +97,7 @@ func (p *Pinger) IsMaxReached(comments []*github.IssueComment, startDate *time.T
 func (p *Pinger) getPings(comments []*github.IssueComment, startDate *time.Time) Items {
 	return Items{}.
 		AddComments(comments...).
-		Filter(MungerNotificationName(p.keyword)).
+		Filter(MungerNotificationName(p.keyword, p.botName)).
 		Filter(UpdatedAfter(*startDate))
 }
 

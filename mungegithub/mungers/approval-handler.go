@@ -44,6 +44,7 @@ var AssociatedIssueRegex = regexp.MustCompile(`(?:kubernetes/[^/]+/issues/|#)(\d
 // ApprovalHandler will try to add "approved" label once
 // all files of change has been approved by approvers.
 type ApprovalHandler struct {
+	botName       string
 	features      *features.Features
 	issueRequired bool
 }
@@ -63,6 +64,7 @@ func (*ApprovalHandler) RequiredFeatures() []string {
 
 // Initialize will initialize the munger
 func (h *ApprovalHandler) Initialize(config *github.Config, features *features.Features) error {
+	h.botName = config.BotName
 	h.features = features
 	return nil
 }
@@ -137,7 +139,7 @@ func (h *ApprovalHandler) Munge(obj *github.MungeObject) {
 	sort.SliceStable(comments, func(i, j int) bool {
 		return comments[i].CreatedAt.Before(*comments[j].CreatedAt)
 	})
-	approveComments := getApproveComments(comments)
+	approveComments := getApproveComments(comments, h.botName)
 
 	approversHandler := approvers.NewApprovers(
 		approvers.NewOwners(
@@ -163,7 +165,7 @@ func (h *ApprovalHandler) Munge(obj *github.MungeObject) {
 		}
 	}
 
-	notificationMatcher := c.MungerNotificationName(approvers.ApprovalNotificationName)
+	notificationMatcher := c.MungerNotificationName(approvers.ApprovalNotificationName, h.botName)
 
 	notifications := c.FilterComments(commentsFromIssueComments, notificationMatcher)
 	latestNotification := notifications.GetLast()
@@ -203,10 +205,10 @@ func humanAddedApproved(obj *github.MungeObject) bool {
 	return !obj.IsRobot(lastAdded.Actor)
 }
 
-func getApproveComments(comments []*c.Comment) c.FilteredComments {
+func getApproveComments(comments []*c.Comment, botName string) c.FilteredComments {
 	approverMatcher := c.CommandName(approveCommand)
 	lgtmMatcher := c.CommandName(lgtmLabel)
-	return c.FilterComments(comments, c.And{c.HumanActor(), c.Or{approverMatcher, lgtmMatcher}})
+	return c.FilterComments(comments, c.And{c.HumanActor(botName), c.Or{approverMatcher, lgtmMatcher}})
 }
 
 func (h *ApprovalHandler) updateNotification(org, project string, latestNotification, latestApprove *c.Comment, approversHandler approvers.Approvers) *string {

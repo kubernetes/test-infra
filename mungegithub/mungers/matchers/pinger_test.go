@@ -42,7 +42,7 @@ func TestMaxReachNotReachedNoStart(t *testing.T) {
 		makeComment("[NOTIF] Notification", "k8s-merge-robot", 10*time.Hour),
 	}
 
-	pinger := NewPinger("NOTIF").SetMaxCount(2)
+	pinger := NewPinger("NOTIF", "k8s-merge-robot").SetMaxCount(2)
 
 	if pinger.IsMaxReached(comments, nil) {
 		t.Error("Should not have reached the maximum")
@@ -57,7 +57,7 @@ func TestMaxReachNotReachedWithStart(t *testing.T) {
 		makeComment("[NOTIF] Notification", "k8s-merge-robot", 10*time.Hour),
 	}
 
-	pinger := NewPinger("NOTIF").SetMaxCount(2)
+	pinger := NewPinger("NOTIF", "k8s-merge-robot").SetMaxCount(2)
 
 	if pinger.IsMaxReached(comments, timeAgo(11*time.Hour)) {
 		t.Error("Should not have reached the maximum")
@@ -72,7 +72,7 @@ func TestMaxReachNoLimit(t *testing.T) {
 		makeComment("[NOTIF] Notification", "k8s-merge-robot", 10*time.Hour),
 	}
 
-	pinger := NewPinger("NOTIF")
+	pinger := NewPinger("NOTIF", "k8s-merge-robot")
 
 	if pinger.IsMaxReached(comments, nil) {
 		t.Error("Should not have reached the non-existing maximum")
@@ -84,7 +84,7 @@ func TestNotification(t *testing.T) {
 		makeComment("[SOMETHING] Something", "k8s-merge-robot", 10*time.Hour),
 	}
 
-	notif := NewPinger("NOTIF").SetDescription("Description").PingNotification(comments, "who", nil)
+	notif := NewPinger("NOTIF", "k8s-merge-robot").SetDescription("Description").PingNotification(comments, "who", nil)
 	if notif == nil {
 		t.Error("PingNotification should have created a notif")
 	}
@@ -103,7 +103,7 @@ func TestNotificationNilTimePeriod(t *testing.T) {
 		makeComment("[SOMETHING] Something", "k8s-merge-robot", 10*time.Hour),
 	}
 
-	notif := NewPinger("NOTIF").PingNotification(comments, "who", nil)
+	notif := NewPinger("NOTIF", "k8s-merge-robot").PingNotification(comments, "who", nil)
 	if notif == nil {
 		t.Error("PingNotification should have created a notif")
 	}
@@ -116,7 +116,7 @@ func TestNotificationTimePeriodNotReached(t *testing.T) {
 		makeComment("[NOTIF] Notification", "k8s-merge-robot", 1*time.Hour),
 	}
 
-	notif := NewPinger("NOTIF").SetTimePeriod(2*time.Hour).PingNotification(comments, "who", nil)
+	notif := NewPinger("NOTIF", "k8s-merge-robot").SetTimePeriod(2*time.Hour).PingNotification(comments, "who", nil)
 	if notif != nil {
 		t.Error("PingNotification shouldn't have created a notif")
 	}
@@ -129,7 +129,7 @@ func TestNotificationTimePeriodReached(t *testing.T) {
 		makeComment("[NOTIF] Notification", "k8s-merge-robot", 2*time.Hour),
 	}
 
-	notif := NewPinger("NOTIF").SetTimePeriod(time.Hour).PingNotification(comments, "who", nil)
+	notif := NewPinger("NOTIF", "k8s-merge-robot").SetTimePeriod(time.Hour).PingNotification(comments, "who", nil)
 	if notif == nil {
 		t.Error("PingNotification should have created a notif")
 	}
@@ -137,7 +137,7 @@ func TestNotificationTimePeriodReached(t *testing.T) {
 
 func TestNotificationStartDate(t *testing.T) {
 	comments := []*github.IssueComment{}
-	notif := NewPinger("NOTIF").SetTimePeriod(10*time.Hour).PingNotification(comments, "who", timeAgo(2*time.Hour))
+	notif := NewPinger("NOTIF", "k8s-merge-robot").SetTimePeriod(10*time.Hour).PingNotification(comments, "who", timeAgo(2*time.Hour))
 	if notif != nil {
 		t.Error("PingNotification shouldn't have created a notif")
 	}

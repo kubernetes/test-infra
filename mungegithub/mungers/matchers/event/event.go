@@ -105,25 +105,20 @@ func (c CreatedBefore) Match(event *github.IssueEvent) bool {
 	return event.CreatedAt.Before(time.Time(c))
 }
 
-// MungeBotActor returns a matcher that checks if the event was completed by MungeBot
-func MungeBotActor() Matcher {
-	return Actor("k8s-merge-robot")
-}
-
 // JenkinsBotActor returns a matcher that checks if the event was completed by JenkinsBot
 func JenkinsBotActor() Matcher {
 	return Actor("k8s-bot")
 }
 
 // BotActor returns a matcher that checks if the event was done by either of the Bots
-func BotActor() Matcher {
+func BotActor(mungeBotName string) Matcher {
 	return Or([]Matcher{
-		MungeBotActor(),
+		Actor(mungeBotName),
 		JenkinsBotActor(),
 	})
 }
 
 // HumanActor returns a matcher that checks if the event was done by a Human (Not a Bot)
-func HumanActor() Matcher {
-	return Not{BotActor()}
+func HumanActor(mungeBotName string) Matcher {
+	return Not{BotActor(mungeBotName)}
 }

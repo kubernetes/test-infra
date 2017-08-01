@@ -21,6 +21,8 @@ import (
 	"strings"
 	"time"
 
+	"fmt"
+
 	"github.com/google/go-github/github"
 )
 
@@ -178,10 +180,13 @@ func (a AuthorLogin) MatchEvent(event *github.IssueEvent) bool {
 }
 
 func (a AuthorLogin) MatchComment(comment *github.IssueComment) bool {
+	fmt.Printf("matching comment: %v\n", comment)
 	if !(ValidAuthor()).MatchComment(comment) {
+		fmt.Println("comment does not have a valid author")
 		return false
 	}
 
+	fmt.Printf("comparing %s from comment to %s from matcher\n", strings.ToLower(*comment.User.Login), strings.ToLower(string(a)))
 	return strings.ToLower(*comment.User.Login) == strings.ToLower(string(a))
 }
 

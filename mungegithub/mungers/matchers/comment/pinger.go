@@ -23,6 +23,8 @@ import (
 // Pinger checks if it's time to send a ping.
 // You can build a pinger for a specific use-case and re-use it when you want.
 type Pinger struct {
+	botName string
+
 	keyword     string        // Short description for the ping
 	description string        // Long description for the ping
 	timePeriod  time.Duration // How often should we ping
@@ -30,8 +32,9 @@ type Pinger struct {
 }
 
 // NewPinger creates a new pinger. `keyword` is the name of the notification.
-func NewPinger(keyword string) *Pinger {
+func NewPinger(keyword, botName string) *Pinger {
 	return &Pinger{
+		botName: botName,
 		keyword: keyword,
 	}
 }
@@ -67,7 +70,7 @@ func (p *Pinger) PingNotification(comments []*Comment, who string, startDate *ti
 		comments,
 		And([]Matcher{
 			CreatedAfter(*startDate),
-			MungerNotificationName(p.keyword),
+			MungerNotificationName(p.keyword, p.botName),
 		}),
 	)
 
@@ -96,7 +99,7 @@ func (p *Pinger) IsMaxReached(comments []*Comment, startDate *time.Time) bool {
 		comments,
 		And([]Matcher{
 			CreatedAfter(*startDate),
-			MungerNotificationName(p.keyword),
+			MungerNotificationName(p.keyword, p.botName),
 		}),
 	))
 }
