@@ -44,6 +44,7 @@ var greenMsgBody = fmt.Sprintf(greenMsgFormat, staleGreenCIHours)
 type StaleGreenCI struct {
 	getRetestContexts func() []string
 	features          *features.Features
+	opts              *options.Options
 }
 
 func init() {
@@ -68,11 +69,13 @@ func (s *StaleGreenCI) Initialize(config *github.Config, features *features.Feat
 func (s *StaleGreenCI) EachLoop() error { return nil }
 
 // RegisterOptions registers options for this munger; returns any that require a restart when changed.
-func (s *StaleGreenCI) RegisterOptions(opts *options.Options) sets.String { return nil }
+func (s *StaleGreenCI) RegisterOptions(opts *options.Options) sets.String {
+	s.opts = opts
+	return nil
+}
 
 // Munge is the workhorse the will actually make updates to the PR
 func (s *StaleGreenCI) Munge(obj *github.MungeObject) {
-	requiredContexts := mungeopts.RequiredContexts.Retest
 	if !obj.IsPR() {
 		return
 	}
@@ -89,6 +92,10 @@ func (s *StaleGreenCI) Munge(obj *github.MungeObject) {
 		return
 	}
 
+	s.opts.Lock()
+	requiredContexts := mungeopts.RequiredContexts.Retest
+	prMaxWaitTime := mungeopts.PRMaxWaitTime
+	s.opts.Unlock()
 	if success, ok := obj.IsStatusSuccess(requiredContexts); !success || !ok {
 		return
 	}
@@ -105,7 +112,7 @@ func (s *StaleGreenCI) Munge(obj *github.MungeObject) {
 				glog.Errorf("Failed to write retrigger old test comment")
 				return
 			}
-			ok := obj.WaitForPending(requiredContexts)
+			ok := obj.WaitForPending(requiredContexts, prMaxWaitTime)
 			if !ok {
 				glog.Errorf("Failed waiting for PR to start testing")
 			}

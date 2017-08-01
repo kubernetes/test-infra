@@ -49,10 +49,6 @@ const (
 	maxInt     = int(^uint(0) >> 1)
 	tokenLimit = 250 // How many github api tokens to not use
 
-	// This should be >2x as long as it normally takes for a PR
-	// to complete, to avoid congestion collapse in the queue.
-	prMaxWaitTime = 2 * time.Hour
-
 	headerRateRemaining = "X-RateLimit-Remaining"
 	headerRateReset     = "X-RateLimit-Reset"
 
@@ -1606,7 +1602,7 @@ func (obj *MungeObject) doWaitStatus(pending bool, requiredContexts []string, c 
 // because the request to test a PR again is asynchronous with the PR actually
 // moving into a pending state
 // returns true if it completed and false if it timed out
-func (obj *MungeObject) WaitForPending(requiredContexts []string) bool {
+func (obj *MungeObject) WaitForPending(requiredContexts []string, prMaxWaitTime time.Duration) bool {
 	timeoutChan := make(chan bool, 1)
 	done := make(chan bool, 1)
 	// Wait for the github e2e test to start
@@ -1624,7 +1620,7 @@ func (obj *MungeObject) WaitForPending(requiredContexts []string) bool {
 // WaitForNotPending will check if the github status is "pending" (CI still running)
 // if so it will sleep and try again until all required status hooks have complete
 // returns true if it completed and false if it timed out
-func (obj *MungeObject) WaitForNotPending(requiredContexts []string) bool {
+func (obj *MungeObject) WaitForNotPending(requiredContexts []string, prMaxWaitTime time.Duration) bool {
 	timeoutChan := make(chan bool, 1)
 	done := make(chan bool, 1)
 	// Wait for the github e2e test to finish

@@ -1463,7 +1463,10 @@ func (sq *SubmitQueue) retestPR(obj *github.MungeObject) bool {
 	// Wait for the retest to start
 	sq.SetMergeStatus(obj, ghE2EWaitingStart)
 	atomic.AddInt32(&sq.prsTested, 1)
-	done := obj.WaitForPending(retestContexts)
+	sq.opts.Lock()
+	prMaxWaitTime := mungeopts.PRMaxWaitTime
+	sq.opts.Unlock()
+	done := obj.WaitForPending(retestContexts, prMaxWaitTime)
 	if !done {
 		sq.SetMergeStatus(obj, fmt.Sprintf("Timed out waiting for PR %d to start testing", obj.Number()))
 		return true
@@ -1471,7 +1474,7 @@ func (sq *SubmitQueue) retestPR(obj *github.MungeObject) bool {
 
 	// Wait for the status to go back to something other than pending
 	sq.SetMergeStatus(obj, ghE2ERunning)
-	done = obj.WaitForNotPending(retestContexts)
+	done = obj.WaitForNotPending(retestContexts, prMaxWaitTime)
 	if !done {
 		sq.SetMergeStatus(obj, fmt.Sprintf("Timed out waiting for PR %d to finish testing", obj.Number()))
 		return true

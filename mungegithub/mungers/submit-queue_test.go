@@ -218,6 +218,7 @@ func getTestSQ(startThreads bool, config *github_util.Config, server *httptest.S
 	mungeopts.RequiredContexts.Retest = []string{requiredReTestContext1, requiredReTestContext2}
 	mungeopts.Server.Address = ""
 	mungeopts.Server.WWWRoot = "www"
+	mungeopts.PRMaxWaitTime = 2 * time.Hour
 
 	sq.githubE2EQueue = map[int]*github_util.MungeObject{}
 	sq.githubE2EPollTime = time.Millisecond
