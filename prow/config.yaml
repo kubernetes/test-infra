@@ -15729,6 +15729,28 @@ periodics:
       secret:
         secretName: triage-service-account
 
+- name: issue-creator
+  agent: kubernetes
+  interval: 24h
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/issue-creator:v20170810-b67f7e08
+      args:
+      - --org=kubernetes
+      - --project=kubernetes
+      - --token-file=/etc/token/bot-github-token
+      - --test-owners-csv=/test_owners.csv
+      - --triage-window=1
+      - --triage-count=10
+      - --flakyjob-count=3
+      volumeMounts:
+      - name: token
+        mountPath: /etc/token
+    volumes:
+    - name: token
+      secret:
+        secretName: fejta-bot-token
+
 - interval: 1h
   agent: kubernetes
   name: maintenance-ci-aws-janitor

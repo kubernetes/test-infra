@@ -1152,6 +1152,10 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-prow-canary
 - name: ci-kubernetes-e2e-node-canary
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-node-canary
+- name: issue-creator
+  gcs_prefix: kubernetes-jenkins/logs/issue-creator
+- name: metrics-bigquery
+  gcs_prefix: kubernetes-jenkins/logs/metrics-bigquery
 - name: periodic-kubernetes-e2e-kubeadm-gce-1-6
   gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-e2e-kubeadm-gce-1-6
 - name: periodic-kubernetes-e2e-kubeadm-gce-1-7
@@ -1166,8 +1170,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-bazel-build-1-7
 - name: periodic-test-infra-retester
   gcs_prefix: kubernetes-jenkins/logs/periodic-test-infra-retester
-- name: metrics-bigquery
-  gcs_prefix: kubernetes-jenkins/logs/metrics-bigquery
 # perf tests
 - name: ci-perf-tests-e2e-gce-clusterloader
   gcs_prefix: kubernetes-jenkins/logs/ci-perf-tests-e2e-gce-clusterloader
@@ -3059,6 +3061,11 @@ dashboards:
   - name: retester
     description: Automatically /retest for approved PRs that failed retesting
     test_group_name: periodic-test-infra-retester
+    code_search_url_template:
+      url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+  - name: issue-creator
+    description: Creates github issues based on data from various 'IssueSource's.
+    test_group_name: issue-creator
     code_search_url_template:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
 

@@ -32,6 +32,7 @@ filegroup(
         "//gcsweb/pkg/version:all-srcs",
         "//ghclient:all-srcs",
         "//images/pull_kubernetes_bazel:all-srcs",
+        "//issue-creator:all-srcs",
         "//jenkins:all-srcs",
         "//jobs:all-srcs",
         "//kettle:all-srcs",
