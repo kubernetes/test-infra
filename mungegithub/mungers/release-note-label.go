@@ -165,7 +165,7 @@ func (r *ReleaseNoteLabel) Munge(obj *github.MungeObject) {
 // correctly implemented in the PR template.  returns nil otherwise
 func determineReleaseNoteLabel(obj *github.MungeObject) string {
 	if obj.Issue.Body == nil {
-		return ""
+		return releaseNoteLabelNeeded
 	}
 	potentialMatch := getReleaseNote(*obj.Issue.Body)
 	return chooseLabel(potentialMatch)
