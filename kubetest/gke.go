@@ -41,7 +41,7 @@ const (
 
 var (
 	gkeAdditionalZones = flag.String("gke-additional-zones", "", "(gke only) List of additional Google Compute Engine zones to use. Clusters are created symmetrically across zones by default, see --gke-shape for details.")
-	gkeEnvironment     = flag.String("gke-environment", "test", "(gke only) Container API endpoint to use, one of 'test', 'staging', 'prod', or a custom https:// URL")
+	gkeEnvironment     = flag.String("gke-environment", "", "(gke only) Container API endpoint to use, one of 'test', 'staging', 'prod', or a custom https:// URL")
 	gkeShape           = flag.String("gke-shape", `{"default":{"Nodes":3,"MachineType":"n1-standard-2"}}`, `(gke only) A JSON description of node pools to create. The node pool 'default' is required and used for initial cluster creation. All node pools are symmetric across zones, so the cluster total node count is {total nodes in --gke-shape} * {1 + (length of --gke-additional-zones)}. Example: '{"default":{"Nodes":999,"MachineType:":"n1-standard-1"},"heapster":{"Nodes":1, "MachineType":"n1-standard-8"}}`)
 	gkeCreateArgs      = flag.String("gke-create-args", "", "(gke only) Additional arguments passed directly to 'gcloud container clusters create'")
 
@@ -126,6 +126,14 @@ func newGKE(provider, project, zone, network, image, cluster string) (*gkeDeploy
 	}
 
 	g.createArgs = strings.Fields(*gkeCreateArgs)
+
+	if err := migrateOptions([]migratedOption{{
+		env:    "CLOUDSDK_API_ENDPOINT_OVERRIDES_CONTAINER",
+		option: gkeEnvironment,
+		name:   "--gke-environment",
+	}}); err != nil {
+		return nil, err
+	}
 
 	var endpoint string
 	switch env := *gkeEnvironment; {
