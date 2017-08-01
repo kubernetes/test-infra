@@ -74,9 +74,7 @@ const (
 
 var (
 	// This MUST cause a RETEST of everything in the mungeopts.RequiredContexts.Retest
-	// TODO(juntee): remove oldRetestBody when the old command retires
 	newRetestBody = "/test all [submit-queue is verifying that this PR is safe to merge]"
-	oldRetestBody = fmt.Sprintf("@%s test this [submit-queue is verifying that this PR is safe to merge]", jenkinsBotName)
 
 	// this is the order in which labels will be compared for queue priority
 	labelPriorities = []string{criticalFixLabel, retestNotRequiredLabel, retestNotRequiredDocsOnlyLabel, multirebaseLabel, fixLabel, blocksOthersLabel}
@@ -1701,7 +1699,7 @@ func (sq *SubmitQueue) isStaleIssueComment(obj *github.MungeObject, comment *git
 	if !obj.IsRobot(comment.User) {
 		return false
 	}
-	if *comment.Body != newRetestBody && *comment.Body != oldRetestBody {
+	if *comment.Body != newRetestBody {
 		return false
 	}
 	stale := commentBeforeLastCI(obj, comment, mungeopts.RequiredContexts.Retest)

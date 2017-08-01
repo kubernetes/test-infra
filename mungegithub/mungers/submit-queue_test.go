@@ -935,7 +935,7 @@ func TestSubmitQueue(t *testing.T) {
 				c := new(github.IssueComment)
 				json.NewDecoder(r.Body).Decode(c)
 				msg := *c.Body
-				if strings.HasPrefix(msg, "/test all") || strings.HasPrefix(msg, "@"+jenkinsBotName+" test this") {
+				if strings.HasPrefix(msg, "/test all") {
 					go fakeRunGithubE2ESuccess(test.ciStatus, test.retest1Pass, test.retest2Pass)
 				}
 				w.WriteHeader(http.StatusOK)

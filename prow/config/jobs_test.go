@@ -29,8 +29,8 @@ import (
 var podRe = regexp.MustCompile(`^[a-z0-9]([-a-z0-9]*[a-z0-9])?$`)
 
 const (
-	newTestThis   = "/test all"
-	newRetestBody = "/test all [submit-queue is verifying that this PR is safe to merge]"
+	testThis   = "/test all"
+	retestBody = "/test all [submit-queue is verifying that this PR is safe to merge]"
 )
 
 type JSONJob struct {
@@ -79,18 +79,18 @@ func TestPresubmits(t *testing.T) {
 			}
 			// Check that the merge bot will run AlwaysRun jobs, otherwise it
 			// will attempt to rerun forever.
-			if job.AlwaysRun && !job.re.MatchString(newTestThis) {
-				t.Errorf("AlwaysRun job %s: \"%s\" does not match regex \"%v\".", job.Name, newTestThis, job.Trigger)
+			if job.AlwaysRun && !job.re.MatchString(testThis) {
+				t.Errorf("AlwaysRun job %s: \"%s\" does not match regex \"%v\".", job.Name, testThis, job.Trigger)
 			}
-			if job.AlwaysRun && !job.re.MatchString(newRetestBody) {
-				t.Errorf("AlwaysRun job %s: \"%s\" does not match regex \"%v\".", job.Name, newRetestBody, job.Trigger)
+			if job.AlwaysRun && !job.re.MatchString(retestBody) {
+				t.Errorf("AlwaysRun job %s: \"%s\" does not match regex \"%v\".", job.Name, retestBody, job.Trigger)
 			}
 			// Check that the merge bot will not run Non-AlwaysRun jobs
-			if !job.AlwaysRun && job.re.MatchString(newTestThis) {
-				t.Errorf("Non-AlwaysRun job %s: \"%s\" matches regex \"%v\".", job.Name, newTestThis, job.Trigger)
+			if !job.AlwaysRun && job.re.MatchString(testThis) {
+				t.Errorf("Non-AlwaysRun job %s: \"%s\" matches regex \"%v\".", job.Name, testThis, job.Trigger)
 			}
-			if !job.AlwaysRun && job.re.MatchString(newRetestBody) {
-				t.Errorf("Non-AlwaysRun job %s: \"%s\" matches regex \"%v\".", job.Name, newRetestBody, job.Trigger)
+			if !job.AlwaysRun && job.re.MatchString(retestBody) {
+				t.Errorf("Non-AlwaysRun job %s: \"%s\" matches regex \"%v\".", job.Name, retestBody, job.Trigger)
 			}
 			// Check that the rerun command actually runs the job.
 			if !job.re.MatchString(job.RerunCommand) {
@@ -147,32 +147,32 @@ func TestCommentBodyMatches(t *testing.T) {
 		},
 		{
 			"org/repo",
-			"ok to test",
+			"/ok-to-test",
 			[]string{"gce", "unit"},
 		},
 		{
 			"org/repo",
-			"@k8s-bot test this",
+			"/test all",
 			[]string{"gce", "unit", "gke"},
 		},
 		{
 			"org/repo",
-			"@k8s-bot unit test this",
+			"/test unit",
 			[]string{"unit"},
 		},
 		{
 			"org/repo",
-			"@k8s-bot federation test this",
+			"/test federation",
 			[]string{"federation"},
 		},
 		{
 			"org/repo2",
-			"@k8s-bot test this",
+			"/test all",
 			[]string{"cadveapster"},
 		},
 		{
 			"org/repo3",
-			"@k8s-bot test this",
+			"/test all",
 			[]string{},
 		},
 	}
@@ -181,36 +181,36 @@ func TestCommentBodyMatches(t *testing.T) {
 			"org/repo": {
 				{
 					Name:      "gce",
-					re:        regexp.MustCompile(`@k8s-bot (gce )?test this`),
+					re:        regexp.MustCompile(`/test (gce|all)`),
 					AlwaysRun: true,
 				},
 				{
 					Name:      "unit",
-					re:        regexp.MustCompile(`@k8s-bot (unit )?test this`),
+					re:        regexp.MustCompile(`/test (unit|all)`),
 					AlwaysRun: true,
 				},
 				{
 					Name:      "gke",
-					re:        regexp.MustCompile(`@k8s-bot (gke )?test this`),
+					re:        regexp.MustCompile(`/test (gke|all)`),
 					AlwaysRun: false,
 				},
 				{
 					Name:      "federation",
-					re:        regexp.MustCompile(`@k8s-bot federation test this`),
+					re:        regexp.MustCompile(`/test federation`),
 					AlwaysRun: false,
 				},
 			},
 			"org/repo2": {
 				{
 					Name:      "cadveapster",
-					re:        regexp.MustCompile(`@k8s-bot test this`),
+					re:        regexp.MustCompile(`/test all`),
 					AlwaysRun: true,
 				},
 			},
 		},
 	}
 	for _, tc := range testcases {
-		actualJobs := c.MatchingPresubmits(tc.repo, tc.body, regexp.MustCompile(`ok to test`))
+		actualJobs := c.MatchingPresubmits(tc.repo, tc.body, regexp.MustCompile(`/ok-to-test`))
 		match := true
 		if len(actualJobs) != len(tc.expectedJobs) {
 			match = false
