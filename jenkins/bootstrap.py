@@ -338,7 +338,7 @@ class GSUtil(object):
                 self.gsutil, '-m', '-q',
                 '-o', 'GSUtil:use_magicfile=True',
                 'cp', '-r', '-c', '-z', 'log,txt,xml',
-                '%s/*' % artifacts, path,
+                artifacts, path,
             ]
             self.call(cmd)
 
