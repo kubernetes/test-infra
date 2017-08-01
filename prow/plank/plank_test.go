@@ -405,10 +405,13 @@ func TestSyncJenkinsJob(t *testing.T) {
 		}
 		c.setPending(tc.pendingJobs)
 
-		if err := c.syncJenkinsJob(tc.pj); err != nil != tc.expectedError {
+		reports := make(chan kube.ProwJob, 100)
+		if err := c.syncJenkinsJob(tc.pj, reports); err != nil != tc.expectedError {
 			t.Errorf("for case %s got wrong error: %v", tc.name, err)
 			continue
 		}
+		close(reports)
+
 		actual := fkc.prowjobs[0]
 		if actual.Status.State != tc.expectedState {
 			t.Errorf("for case %s got state %v", tc.name, actual.Status.State)
@@ -416,11 +419,11 @@ func TestSyncJenkinsJob(t *testing.T) {
 		if actual.Complete() != tc.expectedComplete {
 			t.Errorf("for case %s got wrong completion", tc.name)
 		}
-		if (len(c.reports) > 0) != tc.expectedReport {
-			t.Errorf("for case %s got wrong report", tc.name)
+		if tc.expectedReport && len(reports) != 1 {
+			t.Errorf("for case %s wanted one report but got %d", tc.name, len(reports))
 		}
-		if len(c.reports) > 1 {
-			t.Errorf("for case %s, reported %d times", tc.name, len(c.reports))
+		if !tc.expectedReport && len(reports) != 0 {
+			t.Errorf("for case %s did not wany any reports but got %d", tc.name, len(reports))
 		}
 		if fjc.built != tc.expectedBuild {
 			t.Errorf("for case %s got wrong built", tc.name)
@@ -691,10 +694,13 @@ func TestSyncKubernetesJob(t *testing.T) {
 		}
 		c.setPending(tc.pendingJobs)
 
-		if err := c.syncKubernetesJob(tc.pj, pm); err != nil {
+		reports := make(chan kube.ProwJob, 100)
+		if err := c.syncKubernetesJob(tc.pj, pm, reports); err != nil {
 			t.Errorf("for case %s got an error: %v", tc.name, err)
 			continue
 		}
+		close(reports)
+
 		actual := fc.prowjobs[0]
 		if actual.Status.State != tc.expectedState {
 			t.Errorf("for case %s got state %v", tc.name, actual.Status.State)
@@ -713,11 +719,11 @@ func TestSyncKubernetesJob(t *testing.T) {
 		if len(fc.prowjobs) != tc.expectedCreatedPJs+1 {
 			t.Errorf("for case %s got %d created prowjobs", tc.name, len(fc.prowjobs)-1)
 		}
-		if (len(c.reports) > 0) != tc.expectedReport {
-			t.Errorf("for case %s got wrong report", tc.name)
+		if tc.expectedReport && len(reports) != 1 {
+			t.Errorf("for case %s wanted one report but got %d", tc.name, len(reports))
 		}
-		if len(c.reports) > 1 {
-			t.Errorf("for case %s, reported %d times", tc.name, len(c.reports))
+		if !tc.expectedReport && len(reports) != 0 {
+			t.Errorf("for case %s did not wany any reports but got %d", tc.name, len(reports))
 		}
 	}
 }
