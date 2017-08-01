@@ -1267,6 +1267,23 @@ func (obj *MungeObject) Priority() int {
 // MungeFunction is the type that must be implemented and passed to ForEachIssueDo
 type MungeFunction func(*MungeObject) error
 
+// Collaborators is a set of all logins who can be
+// listed as assignees, reviewers or approvers for
+// issues and pull requests in this repo
+func (config *Config) Collaborators() (sets.String, error) {
+	logins := sets.NewString()
+	users, err := config.fetchAllCollaborators()
+	if err != nil {
+		return logins, err
+	}
+	for _, user := range users {
+		if user.Login != nil && *user.Login != "" {
+			logins.Insert(*user.Login)
+		}
+	}
+	return logins, nil
+}
+
 func (config *Config) fetchAllCollaborators() ([]*github.User, error) {
 	page := 1
 	var result []*github.User
