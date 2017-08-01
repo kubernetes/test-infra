@@ -1,0 +1,40 @@
+# basic config options.
+http-cache-dir: /cache/httpcache
+organization: kubernetes
+project: kubernetes
+# Run blunderbuss before approval-handler, so that we can suggest approvers
+# based on assigned reviewer.
+pr-mungers: blunderbuss,approval-handler,lgtm-after-commit,cherrypick-auto-approve,label-unapproved-picks,needs-rebase,path-label,size,stale-green-ci,block-path,release-note-label,comment-deleter,issue-creator,triage-filer,flakyjob-reporter,close-stale,docs-need-no-retest,sig-mention-handler
+state: open
+token-file: /etc/secret-volume/token
+period: 60s
+repo-dir: /gitrepos
+github-key-file: /etc/hook-secret-volume/secret
+
+# status context options.
+# Please keep these lists in sorted order.
+# !!! This *MUST* be kept in sync with
+#     submit-queue/deployment/kubernetes/configmap.yaml !!!
+required-retest-contexts: "\
+  pull-kubernetes-bazel,\
+  pull-kubernetes-e2e-gce-etcd3,\
+  pull-kubernetes-e2e-kops-aws,\
+  pull-kubernetes-federation-e2e-gce,\
+  pull-kubernetes-kubemark-e2e-gce,\
+  pull-kubernetes-node-e2e,\
+  pull-kubernetes-unit,\
+  pull-kubernetes-verify"
+
+# munger specific options.
+path-label-config: path-label.txt
+block-path-config: block-path.yaml
+test-owners-csv: /gitrepos/kubernetes/test/test_owners.csv
+triage-window: 1
+triage-count: 10
+approval-requires-issue: true
+flakyjob-count: 3
+number-of-old-test-results: 5
+generated-files-config: .generated-files
+label-file: "/gitrepos/kubernetes/labels.yaml"
+alias-file: "/gitrepos/kubernetes/OWNERS_ALIASES"
+use-reviewers: true
