@@ -18,9 +18,11 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"testing"
 )
@@ -153,6 +155,90 @@ func TestMigrateGcpEnvAndOptions(t *testing.T) {
 		z := os.Getenv(tc.expectedArg)
 		if z != zone {
 			t.Errorf("%s: %s is '%s' not expected '%s'", tc.name, tc.expectedArg, z, zone)
+		}
+	}
+}
+
+func TestPrepareParallelism(t *testing.T) {
+	cases := []struct {
+		initial             []string
+		ginkgoParallel      string
+		ginkgoParallelNodes string
+		wantParallel        int
+	}{
+		{
+			wantParallel: 1,
+		},
+		{
+			initial:      []string{"10"},
+			wantParallel: 10,
+		},
+		{
+			initial:      []string{"true"},
+			wantParallel: defaultGinkgoParallel,
+		},
+		{
+			initial:      []string{"true", "20"},
+			wantParallel: 20,
+		},
+		{
+			ginkgoParallel: "y",
+			wantParallel:   defaultGinkgoParallel,
+		},
+		{
+			ginkgoParallel:      "y",
+			ginkgoParallelNodes: "50",
+			wantParallel:        50,
+		},
+		{
+			ginkgoParallelNodes: "50",
+			wantParallel:        50,
+		},
+		{
+			initial:             []string{"20"},
+			ginkgoParallelNodes: "50",
+			wantParallel:        50,
+		},
+	}
+
+	// Preserve original GINKGO_PARALLEL and GINKGO_PARALLEL_NODES
+	if pre, err := pushEnv("GINKGO_PARALLEL", "unset"); err != nil {
+		t.Fatalf("Could not set GINKGO_PARALLEL: %v", err)
+	} else {
+		defer pre()
+	}
+	if pre, err := pushEnv("GINKGO_PARALLEL_NODES", "unset"); err != nil {
+		t.Fatalf("Could not set GINKGO_PARALLEL_NODES: %v", err)
+	} else {
+		defer pre()
+	}
+
+	for _, tc := range cases {
+		desc := fmt.Sprintf("(%v, %q, %q)", tc.initial, tc.ginkgoParallel, tc.ginkgoParallelNodes)
+		if err := os.Setenv("GINKGO_PARALLEL", tc.ginkgoParallel); err != nil {
+			t.Fatalf("%s => could not unset GINKGO_PARALLEL", desc)
+		}
+		if err := os.Setenv("GINKGO_PARALLEL_NODES", tc.ginkgoParallelNodes); err != nil {
+			t.Fatalf("%s => could not unset GINKGO_PARALLEL_NODES", desc)
+		}
+		v := ginkgoParallelValue{}
+		for _, i := range tc.initial {
+			if err := v.Set(i); err != nil {
+				t.Fatalf("%s => could not .Set(%q): %v", desc, i, err)
+			}
+		}
+		if err := prepareGinkgoParallel(&v); err != nil {
+			t.Errorf("%s => error %v, did not want", desc, err)
+		}
+
+		if i := v.Get(); i != tc.wantParallel {
+			t.Errorf("%s => parallel %d (got) != %d (want)", desc, i, tc.wantParallel)
+		}
+		if gp := os.Getenv("GINKGO_PARALLEL"); gp != "" {
+			t.Errorf("%s => GINKGO_PARALLEL is set to %q, did not want", desc, gp)
+		}
+		if gpn := os.Getenv("GINKGO_PARALLEL_NODES"); gpn != strconv.Itoa(v.Get()) {
+			t.Errorf("%s => GINKGO_PARALLEL_NODES=%s (got) != %s (want)", desc, gpn, v.String())
 		}
 	}
 }
