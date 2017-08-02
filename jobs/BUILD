@@ -23,6 +23,15 @@ py_test(
     ],
     deps = [
         ":config_sort",
+        ":env_gc",
+    ],
+)
+
+py_binary(
+    name = "env_gc",
+    srcs = ["env_gc.py"],
+    data = [
+        ":jobs",
     ],
 )
 

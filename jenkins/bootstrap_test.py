@@ -1469,6 +1469,7 @@ class JobTest(unittest.TestCase):
         'validOwners.json', # Contains a list of current sigs; sigs are allowed to own jobs
         'config_sort.py', # Tool script to sort config.json
         'config_test.py', # Script for testing config.json and Prow config.
+        'env_gc.py', # Tool script to garbage collect unused .env files.
         'move_extract.py',
     ]
 

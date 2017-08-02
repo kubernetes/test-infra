@@ -20,7 +20,7 @@
 import unittest
 
 import config_sort
-
+import env_gc
 
 class JobTest(unittest.TestCase):
 
@@ -45,6 +45,12 @@ class JobTest(unittest.TestCase):
                 self.fail('boskos/resources.json is not sorted, please run '
                           '`bazel run //jobs:config_sort`')
 
+    def test_orphaned_env(self):
+        orphans = env_gc.find_orphans()
+        if orphans:
+            self.fail('the following .env files are not referenced ' +
+                      'in config.json, please run `bazel run //jobs:env_gc: ' +
+                      ' '.join(orphans))
 
 if __name__ == '__main__':
     unittest.main()
