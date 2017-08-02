@@ -31,12 +31,14 @@ bunch of tests will fail at once, then succeed on a rerun. This will cause the
 calculated chance of hitting a flake to be overestimated.
 """
 
+from __future__ import print_function
+
 import operator
 
 import requests
 
 def main():
-    """run flake detector."""
+    """Run flake detector."""
     res = requests.get('https://prow.k8s.io/data.js')
     data = res.json()
 
@@ -63,15 +65,15 @@ def main():
             if 'success' in results and 'failure' in results:
                 job_flakes[job] += 1
 
-    print 'Certain flakes from the last day:'
+    print('Certain flakes:')
     total_success_chance = 1.0
     for job, flakes in sorted(job_flakes.items(), key=operator.itemgetter(1), reverse=True):
         if job_commits[job] < 10:
             continue
         fail_chance = flakes / job_commits[job]
         total_success_chance *= (1.0 - fail_chance)
-        print '{}/{}\t({:.0f}%)\t{}'.format(flakes, job_commits[job], 100*fail_chance, job)
-    print 'Chance that a PR hits a flake: {:.0f}%'.format(100*(1-total_success_chance))
+        print('{}/{}\t({:.0f}%)\t{}'.format(flakes, job_commits[job], 100*fail_chance, job))
+    print('Chance that a PR hits a flake: {:.0f}%'.format(100*(1-total_success_chance)))
 
 if __name__ == '__main__':
     main()
