@@ -17,7 +17,10 @@ limitations under the License.
 package main
 
 import (
+	"bytes"
 	"fmt"
+	"io"
+	"io/ioutil"
 	"testing"
 
 	"k8s.io/test-infra/prow/kube"
@@ -34,6 +37,13 @@ type fpkc struct{}
 func (f fpkc) GetLog(pod string) ([]byte, error) {
 	if pod == "wowowow" {
 		return []byte("wow"), nil
+	}
+	return nil, fmt.Errorf("pod not found: %s", pod)
+}
+
+func (f fpkc) GetLogStream(pod string, options map[string]string) (io.ReadCloser, error) {
+	if pod == "wowowow" {
+		return ioutil.NopCloser(bytes.NewBuffer([]byte("wow"))), nil
 	}
 	return nil, fmt.Errorf("pod not found: %s", pod)
 }
