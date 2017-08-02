@@ -25,6 +25,8 @@ spec:
         - --token-file=/etc/secret-volume/k8s-merge-robot
         - --stderrthreshold=0
         - --host=sqlproxy
+        - --user=$(MYSQL_WRITER_USER)
+        - --password=$(MYSQL_WRITER_PASS)
         image: gcr.io/google-containers/github-fetcher:v20170327-143731
         resources:
           requests:
@@ -33,6 +35,17 @@ spec:
         - mountPath: /etc/secret-volume
           readOnly: true
           name: github-tokens-secret
+        env:
+        - name: MYSQL_WRITER_USER
+          valueFrom:
+            secretKeyRef:
+              name: sqlproxy
+              key: writer-user
+        - name: MYSQL_WRITER_PASS
+          valueFrom:
+            secretKeyRef:
+              name: sqlproxy
+              key: writer-pass
       volumes:
       - name: github-tokens-secret
         secret:
