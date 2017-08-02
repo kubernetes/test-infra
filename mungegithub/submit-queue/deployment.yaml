@@ -40,7 +40,7 @@ spec:
       volumes:
       - name: munge-config
         configMap:
-          name: @@-sq-config
+          name: @@-submit-queue-config
       - name: secret-volume
         secret:
           secretName: @@-github-token
