@@ -2035,22 +2035,31 @@ dashboards:
 
 - name: master-kubectl-skew
   dashboard_tab:
-  - name: gce-1.7-dev-serial
-    test_group_name: ci-kubernetes-e2e-gce-new-master-gci-kubectl-skew-serial
-  - name: gce-1.7-dev
+  - name: skew-cluster1.7-kubectl1.8-gce
     test_group_name: ci-kubernetes-e2e-gce-new-master-gci-kubectl-skew
-  - name: gke-1.7-dev-serial
-    test_group_name: ci-kubernetes-e2e-gke-new-master-gci-kubectl-skew-serial
-  - name: gke-1.7-dev
+    description: '1.7 e2e tests run against a 1.7 gce cluster using a 1.8 kubectl binary'
+  - name: skew-cluster1.7-kubectl1.8-gke
     test_group_name: ci-kubernetes-e2e-gke-new-master-gci-kubectl-skew
-  - name: gce-dev-1.7-serial
-    test_group_name: ci-kubernetes-e2e-gce-master-new-gci-kubectl-skew-serial
-  - name: gce-dev-1.7
+    description: '1.7 e2e tests run against a 1.7 gke cluster using a 1.8 kubectl binary'
+  - name: skew-cluster1.8-kubectl1.7-gce
     test_group_name: ci-kubernetes-e2e-gce-master-new-gci-kubectl-skew
-  - name: gke-dev-1.7-serial
-    test_group_name: ci-kubernetes-e2e-gke-master-new-gci-kubectl-skew-serial
-  - name: gke-dev-1.7
+    description: '1.7 e2e tests run against a 1.8 gce cluster using a 1.7 kubectl binary'
+  - name: skew-cluster1.8-kubectl1.7-gke
     test_group_name: ci-kubernetes-e2e-gke-master-new-gci-kubectl-skew
+    description: '1.7 e2e tests run against a 1.8 gke cluster using a 1.7 kubectl binary'
+  - name: skew-cluster1.7-kubectl1.8-gce-serial
+    test_group_name: ci-kubernetes-e2e-gce-new-master-gci-kubectl-skew-serial
+    description: '1.7 serial tests run against a 1.7 gke cluster using a 1.8 kubectl binary'
+  - name: skew-cluster1.7-kubectl1.8-gke-serial
+    test_group_name: ci-kubernetes-e2e-gke-new-master-gci-kubectl-skew-serial
+    description: '1.7 serial tests run against a 1.7 gce cluster using a 1.8 kubectl binary'
+  - name: skew-cluster1.8-kubectl1.7-gce-serial
+    test_group_name: ci-kubernetes-e2e-gce-master-new-gci-kubectl-skew-serial
+    description: '1.7 serial tests run against a 1.8 gce cluster using a 1.7 kubectl binary'
+  - name: skew-cluster1.8-kubectl1.7-gke-serial
+    test_group_name: ci-kubernetes-e2e-gke-master-new-gci-kubectl-skew-serial
+    description: '1.7 serial tests run against a 1.8 gke cluster using a 1.7 kubectl binary'
+
 
 - name: master-upgrade
   dashboard_tab:
@@ -3202,22 +3211,30 @@ dashboards:
     test_group_name: ci-kubernetes-test-go
     base_options: 'include-filter-by-regex=kubectl%7COverall'
     description: 'unit, integration and cmd tests for master branch'
-  - name: gce-1.7-dev-serial
-    test_group_name: ci-kubernetes-e2e-gce-new-master-gci-kubectl-skew-serial
-  - name: gce-1.7-dev
+  - name: skew-cluster1.7-kubectl1.8-gce
     test_group_name: ci-kubernetes-e2e-gce-new-master-gci-kubectl-skew
-  - name: gke-1.7-dev-serial
-    test_group_name: ci-kubernetes-e2e-gke-new-master-gci-kubectl-skew-serial
-  - name: gke-1.7-dev
+    description: '1.7 e2e tests run against a 1.7 gce cluster using a 1.8 kubectl binary'
+  - name: skew-cluster1.7-kubectl1.8-gke
     test_group_name: ci-kubernetes-e2e-gke-new-master-gci-kubectl-skew
-  - name: gce-dev-1.7-serial
-    test_group_name: ci-kubernetes-e2e-gce-master-new-gci-kubectl-skew-serial
-  - name: gce-dev-1.7
+    description: '1.7 e2e tests run against a 1.7 gke cluster using a 1.8 kubectl binary'
+  - name: skew-cluster1.8-kubectl1.7-gce
     test_group_name: ci-kubernetes-e2e-gce-master-new-gci-kubectl-skew
-  - name: gke-dev-1.7-serial
-    test_group_name: ci-kubernetes-e2e-gke-master-new-gci-kubectl-skew-serial
-  - name: gke-dev-1.7
+    description: '1.7 e2e tests run against a 1.8 gce cluster using a 1.7 kubectl binary'
+  - name: skew-cluster1.8-kubectl1.7-gke
     test_group_name: ci-kubernetes-e2e-gke-master-new-gci-kubectl-skew
+    description: '1.7 e2e tests run against a 1.8 gke cluster using a 1.7 kubectl binary'
+  - name: skew-cluster1.7-kubectl1.8-gce-serial
+    test_group_name: ci-kubernetes-e2e-gce-new-master-gci-kubectl-skew-serial
+    description: '1.7 serial tests run against a 1.7 gke cluster using a 1.8 kubectl binary'
+  - name: skew-cluster1.7-kubectl1.8-gke-serial
+    test_group_name: ci-kubernetes-e2e-gke-new-master-gci-kubectl-skew-serial
+    description: '1.7 serial tests run against a 1.7 gce cluster using a 1.8 kubectl binary'
+  - name: skew-cluster1.8-kubectl1.7-gce-serial
+    test_group_name: ci-kubernetes-e2e-gce-master-new-gci-kubectl-skew-serial
+    description: '1.7 serial tests run against a 1.8 gce cluster using a 1.7 kubectl binary'
+  - name: skew-cluster1.8-kubectl1.7-gke-serial
+    test_group_name: ci-kubernetes-e2e-gke-master-new-gci-kubectl-skew-serial
+    description: '1.7 serial tests run against a 1.8 gke cluster using a 1.7 kubectl binary'
 
 - name: sig-cluster-lifecycle
   dashboard_tab:
