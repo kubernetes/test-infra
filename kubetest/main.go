@@ -215,7 +215,7 @@ func getDeployer(o *options) (deployer, error) {
 	case "kops":
 		return newKops()
 	case "kubernetes-anywhere":
-		return newKubernetesAnywhere(o.gcpProject)
+		return newKubernetesAnywhere(o.gcpProject, o.gcpZone, o.gcpNetwork)
 	case "none":
 		return noneDeploy{}, nil
 	default:
