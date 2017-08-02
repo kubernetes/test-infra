@@ -14,6 +14,11 @@ heart:
   - k8s-merge-bot
 label:
   sig_org: kubernetes
+  prefixes:
+  - sig
+  - kind
+  - area
+  - priority
 plugins:
   google/cadvisor:
   - trigger

@@ -42,8 +42,6 @@ type assignEvent struct {
 }
 
 var (
-	labelRegex              = regexp.MustCompile(`(?m)^/(area|priority|kind|sig)\s*(.*)$`)
-	removeLabelRegex        = regexp.MustCompile(`(?m)^/remove-(area|priority|kind|sig)\s*(.*)$`)
 	chatBack                = "Reiterating the mentions to trigger a notification: \n%v"
 	nonExistentLabelOnIssue = "Those labels are not set on the issue: `%v`"
 	kindMap                 = map[string]string{
@@ -53,6 +51,14 @@ var (
 		"proposals":        "kind/design",
 	}
 )
+
+func labelRegex(prefixes []string) *regexp.Regexp {
+	return regexp.MustCompile(fmt.Sprintf(`(?m)^/(%s)\s*(.*)$`, strings.Join(prefixes, `|`)))
+}
+
+func removeLabelRegex(prefixes []string) *regexp.Regexp {
+	return regexp.MustCompile(fmt.Sprintf(`(?m)^/remove-(%s)\s*(.*)$`, strings.Join(prefixes, `|`)))
+}
 
 func sigMatcher(org string) *regexp.Regexp {
 	return regexp.MustCompile(fmt.Sprintf(`(?m)@%s/sig-([\w-]*)-(misc|test-failures|bugs|feature-requests|proposals|pr-reviews|api-reviews)`, org))
@@ -89,7 +95,7 @@ func handleIssueComment(pc plugins.PluginClient, ic github.IssueCommentEvent) er
 		issue:   ic.Issue,
 		comment: ic.Comment,
 	}
-	return handle(pc.GitHubClient, pc.Logger, pc.PluginConfig.Label.SigOrg, ae, pc.SlackClient)
+	return handle(pc.GitHubClient, pc.Logger, pc.PluginConfig.Label.SigOrg, pc.PluginConfig.Label.Prefixes, ae, pc.SlackClient)
 }
 
 func handleIssue(pc plugins.PluginClient, i github.IssueEvent) error {
@@ -103,7 +109,7 @@ func handleIssue(pc plugins.PluginClient, i github.IssueEvent) error {
 		number: i.Issue.Number,
 		issue:  i.Issue,
 	}
-	return handle(pc.GitHubClient, pc.Logger, pc.PluginConfig.Label.SigOrg, ae, pc.SlackClient)
+	return handle(pc.GitHubClient, pc.Logger, pc.PluginConfig.Label.SigOrg, pc.PluginConfig.Label.Prefixes, ae, pc.SlackClient)
 }
 
 func handlePullRequest(pc plugins.PluginClient, pr github.PullRequestEvent) error {
@@ -116,7 +122,7 @@ func handlePullRequest(pc plugins.PluginClient, pr github.PullRequestEvent) erro
 		url:    pr.PullRequest.HTMLURL,
 		number: pr.Number,
 	}
-	return handle(pc.GitHubClient, pc.Logger, pc.PluginConfig.Label.SigOrg, ae, pc.SlackClient)
+	return handle(pc.GitHubClient, pc.Logger, pc.PluginConfig.Label.SigOrg, pc.PluginConfig.Label.Prefixes, ae, pc.SlackClient)
 }
 
 // Get Lables from Regexp matches
@@ -142,14 +148,14 @@ func (ae assignEvent) getRepeats(sigMatches [][]string, existingLabels map[strin
 	return
 }
 
-func handle(gc githubClient, log *logrus.Entry, sigOrg string, ae assignEvent, sc slackClient) error {
+func handle(gc githubClient, log *logrus.Entry, sigOrg string, prefixes []string, ae assignEvent, sc slackClient) error {
 	// only parse newly created comments/issues/PRs and if non bot author
 	if ae.login == gc.BotName() || !(ae.action == "created" || ae.action == "opened") {
 		return nil
 	}
 
-	labelMatches := labelRegex.FindAllStringSubmatch(ae.body, -1)
-	removeLabelMatches := removeLabelRegex.FindAllStringSubmatch(ae.body, -1)
+	labelMatches := labelRegex(prefixes).FindAllStringSubmatch(ae.body, -1)
+	removeLabelMatches := removeLabelRegex(prefixes).FindAllStringSubmatch(ae.body, -1)
 	sigMatches := sigMatcher(sigOrg).FindAllStringSubmatch(ae.body, -1)
 	if len(labelMatches) == 0 && len(sigMatches) == 0 && len(removeLabelMatches) == 0 {
 		return nil

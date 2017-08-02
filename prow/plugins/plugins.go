@@ -146,7 +146,10 @@ type Heart struct {
 type Label struct {
 	// SigOrg is the organization that owns the
 	// special interest groups tagged in this repo
-	SigOrg string `json:"sig_org,omitempty"`
+	SigOrg string `json:"sig_org"`
+	// Prefixes are the label prefixes that the
+	// robot will allow users to apply
+	Prefixes []string `json:"prefixes"`
 }
 
 // TriggerFor finds the Trigger for a repo, if one exists
