@@ -36,9 +36,9 @@ spec:
       volumes:
       - name: munge-config
         configMap:
-          name: @@-cp-config
+          name: @@-cherrypick-config
       - name: cherrypick-secret-volume
         secret:
-          secretName: cherrypick-secret-volume
+          secretName: @@-github-token
       - name: repo
         emptyDir: {}
