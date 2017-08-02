@@ -515,15 +515,26 @@ func prepareGcp(o *options) error {
 	if err := migrateGcpEnvAndOptions(o); err != nil {
 		return err
 	}
-	if o.provider == "gke" && o.gcpNodeImage != "" {
+	if o.provider == "gke" {
+		if o.gcpNodeImage == "" {
+			return fmt.Errorf("--gcp-node-image must be set for GKE")
+		}
+
 		// TODO(kubernetes/test-infra#3307): Should disappear when
 		// "bash" deployment is gone.
 		if o.deployment == "bash" {
 			os.Setenv("KUBE_GKE_IMAGE_TYPE", o.gcpNodeImage)
 		}
+
 		// TODO(kubernetes/test-infra#3536): This is used by the
 		// ginkgo-e2e.sh wrapper.
-		os.Setenv("NODE_OS_DISTRIBUTION", o.gcpNodeImage)
+		nod := o.gcpNodeImage
+		if nod == "container_vm" {
+			// gcloud container clusters create understands
+			// "container_vm", e2es understand "debian".
+			nod = "debian"
+		}
+		os.Setenv("NODE_OS_DISTRIBUTION", nod)
 	}
 	if o.gcpProject == "" {
 		var resType string
