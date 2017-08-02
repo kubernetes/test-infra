@@ -15,17 +15,48 @@
 # limitations under the License.
 
 import datetime
+import unittest
 
-from webapp2_extras import securecookie
-
+# TODO(fejta): use non-relative imports
+# https://google.github.io/styleguide/pyguide.html?showone=Packages#Packages
 import gcs_async_test
 from github import models
 import main_test
 import view_base
 import view_pr
 
+from webapp2_extras import securecookie
+
+
 app = main_test.app
 write = gcs_async_test.write
+
+
+class PathTest(unittest.TestCase):
+    def test_org_repo(self):
+        def check(path, org, repo):
+            actual_org, actual_repo = view_pr.org_repo(path)
+            self.assertEquals(actual_org, org)
+            self.assertEquals(actual_repo, repo)
+
+        check('', 'kubernetes', 'kubernetes')
+        check('/test-infra', 'kubernetes', 'test-infra')
+        check('/kubernetes', 'kubernetes', 'kubernetes')
+        check('/kubernetes/test-infra', 'kubernetes', 'test-infra')
+        check('/kubernetes/kubernetes', 'kubernetes', 'kubernetes')
+        check('/google/cadvisor', 'google', 'cadvisor')
+
+    def test_pr_path(self):
+        def check(org, repo, pr, path):
+            actual_path = view_pr.pr_path(org, repo, pr)
+            self.assertEquals(actual_path, '%s/%s' % (view_base.PR_PREFIX, path))
+
+        check('kubernetes', 'kubernetes', 1234, 1234)
+        check('kubernetes', 'kubernetes', 'batch', 'batch')
+        check('kubernetes', 'test-infra', 555, 'test-infra/555')
+        check('kubernetes', 'test-infra', 'batch', 'test-infra/batch')
+        check('google', 'cadvisor', '555', 'google_cadvisor/555')
+        check('google', 'cadvisor', 'batch', 'google_cadvisor/batch')
 
 
 class PRTest(main_test.TestBase):
@@ -56,7 +87,8 @@ class PRTest(main_test.TestBase):
 
     def test_pr_builds(self):
         self.init_pr_directory()
-        builds = view_pr.pr_builds('', '123')
+        org, repo = view_pr.org_repo('')
+        builds = view_pr.pr_builds(view_pr.pr_path(org, repo, '123'))
         self.assertEqual(builds, self.BUILDS)
 
     def test_pr_handler(self):
@@ -190,3 +222,7 @@ class TestDashboard(main_test.TestBase):
         ack_params['latest'] = 123
         app.post_json('/pr', ack_params, headers=headers)
         expect_count(2)
+
+
+if __name__ == '__main__':
+    unittest.main()

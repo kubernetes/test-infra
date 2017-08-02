@@ -281,3 +281,13 @@ py_library(
     strip_prefix = "configparser-3.5.0/src",
     urls = ["https://pypi.python.org/packages/7c/69/c2ce7e91c89dc073eb1aa74c0621c3eefbffe8216b3f9af9d3885265c01c/configparser-3.5.0.tar.gz"],
 )
+
+# TODO(fejta): get this to work
+git_repository(
+    name = "io_bazel_rules_appengine",
+    commit = "14d860985c2a764fdb6a6072d5450d8360c4ce5b",
+    remote = "https://github.com/bazelbuild/rules_appengine.git",
+    #tag = "0.0.5", # Latest at https://github.com/bazelbuild/rules_appengine/releases.
+)
+load("@io_bazel_rules_appengine//appengine:py_appengine.bzl", "py_appengine_repositories")
+py_appengine_repositories()
