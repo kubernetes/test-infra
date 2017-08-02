@@ -569,32 +569,28 @@ images:
     args:
     - --image-family=cos-dev
     - --image-project=cos-cloud
-    envs:
-    - KUBE_NODE_OS_DISTRIBUTION=gci
+    - --gcp-node-image=gci
   cosbeta:
     args:
     - --image-family=cos-beta
     - --image-project=cos-cloud
-    envs:
-    - KUBE_NODE_OS_DISTRIBUTION=gci
+    - --gcp-node-image=gci
   cosstable1:
     args:
     - --image-family=cos-stable
     - --image-project=cos-cloud
-    envs:
-    - KUBE_NODE_OS_DISTRIBUTION=gci
+    - --gcp-node-image=gci
   ubuntudev:
     args:
     - --image-family=ubuntu-gke-1604-lts
     - --image-project=ubuntu-os-gke-cloud-devel
-    envs:
-    - KUBE_NODE_OS_DISTRIBUTION=ubuntu
+    - --gcp-node-image=ubuntu
   ubuntustable1:
+    args:
+    - --gcp-node-image=ubuntu
     envs:
-    - KUBE_NODE_OS_DISTRIBUTION=ubuntu
     - KUBE_GCE_NODE_PROJECT=ubuntu-os-gke-cloud
     - KUBE_GCE_NODE_IMAGE=ubuntu-gke-1604-xenial-v20170420-1
-    - KUBE_GKE_IMAGE_TYPE=ubuntu
 
 k8sVersions:
   dev:

@@ -20,10 +20,13 @@ Usage example:
 
   In $GOPATH/src/k8s.io/test-infra,
 
-  $ bazel run //experiment:generate_tests \
+  $ bazel run //experiment:generate_tests -- \
       --yaml-config-path=experiment/test_config.yaml \
       --json-config-path=jobs/config.json \
       --prow-config-path=prow/config.yaml
+
+  After generating the tests, you should run:
+  $ bazel run //jobs:config_sort
 """
 
 import argparse
@@ -53,7 +56,7 @@ PROW_CONFIG_TEMPLATE = """
           value: /etc/ssh-key-secret/ssh-private
         - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
           value: /etc/ssh-key-secret/ssh-public
-        image: gcr.io/k8s-testimages/kubekins-e2e-prow:v20170727-b3dc264e
+        image: gcr.io/k8s-testimages/kubekins-e2e-prow:v20170731-2e38747a
         volumeMounts:
         - mountPath: /etc/service-account
           name: service
