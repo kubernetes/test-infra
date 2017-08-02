@@ -185,8 +185,8 @@ def main(args):
             'us-west-2b',
             'us-east-1a',
             'us-east-1d',
-            #'us-east-2a',
-            #'us-east-2b',
+            'us-east-2a',
+            'us-east-2b',
         ])
     regions = ','.join([zone[:-1] for zone in zones.split(',')])
     cluster = cluster_name(args.cluster, os.getenv('BUILD_NUMBER', 0), args.cluster_domain)
