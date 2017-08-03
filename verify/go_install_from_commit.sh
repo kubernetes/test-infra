@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Copyright 2016 The Kubernetes Authors.
+# Copyright 2017 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,11 +17,11 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-TMP_GOPATH=$(mktemp -d)
+PKG=$1
+COMMIT=$2
+export GOPATH=$3
 
-$(dirname "${BASH_SOURCE}")/go_install_from_commit.sh \
-  github.com/kubernetes/repo-infra/kazel \
-  e9d1a126ef355ff5d38e20612c889b07728225a4 \
-  "${TMP_GOPATH}"
-
-"${TMP_GOPATH}/bin/kazel" -root="$(dirname ${BASH_SOURCE})/.."
+go get -d -u "${PKG}" 2>/dev/null
+cd "${GOPATH}/src/${PKG}"
+git checkout -q "${COMMIT}"
+go install "${PKG}"

@@ -17,8 +17,14 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-go get -u gopkg.in/mikedanese/gazel.v16/gazel
-if ! "${GOPATH}/bin/gazel" -validate -print-diff -root="$(dirname ${BASH_SOURCE})/.." ; then
+TMP_GOPATH=$(mktemp -d)
+
+$(dirname "${BASH_SOURCE}")/go_install_from_commit.sh \
+  github.com/kubernetes/repo-infra/kazel \
+  e9d1a126ef355ff5d38e20612c889b07728225a4 \
+  "${TMP_GOPATH}"
+
+if ! "${TMP_GOPATH}/bin/kazel" -validate -print-diff -root="$(dirname ${BASH_SOURCE})/.." ; then
   echo
   echo "Run ./verify/update-bazel.sh"
   exit 1

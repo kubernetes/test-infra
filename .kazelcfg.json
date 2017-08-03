@@ -3,5 +3,6 @@
 	"SkippedPaths": [
 		"jenkins/aws-janitor"
 	],
-	"AddSourcesRules": true
+	"AddSourcesRules": true,
+	"ManageGoRules": true
 }
