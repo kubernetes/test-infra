@@ -10,22 +10,22 @@ the different services interact.
 
 ## Viewing test results
 
-* The [Kubernetes TestGrid](https://k8s-testgrid.appspot.com/) shows historical test results.
+* The [Kubernetes TestGrid](https://k8s-testgrid.appspot.com/) shows historical test results
   - Configure your own testgrid dashboard at [testgrid/config/config.yaml](testgrid/config/config.yaml)
   - [Gubernator](https://k8s-gubernator.appspot.com/) formats the output of each run
 * [PR Dashboard](https://k8s-gubernator.appspot.com/pr) finds PRs that need your attention
-* [Prow](https://prow.k8s.io) schedules testing and updates issues.
-  - Prow responds to GitHub events, timers and manual commands.
+* [Prow](https://prow.k8s.io) schedules testing and updates issues
+  - Prow responds to GitHub events, timers and manual commands
   - The [prow dashboard](https://prow.k8s.io/) shows what it is currently testing
   - Configure prow to run new tests at [prow/config.yaml](prow/config.yaml)
 * [Triage Dashboard](https://go.k8s.io/triage) aggregates failures
   - Triage clusters together similar failures
   - Search for test failures across jobs
-  - Filter down to failures in a specific regex of tests and/or jobs.
+  - Filter down to failures in a specific regex of tests and/or jobs
 * [Test history](https://go.k8s.io/test-history) is a deprecated tool
   - Use the triage dashboard instead
-  - Summarizes the last 24 hours of testing.
-  - See [Kettle](kettle) and the corresponding [bigquery metrics](metrics) that largely supplement this information.
+  - Summarizes the last 24 hours of testing
+  - See [Kettle](kettle) and the corresponding [bigquery metrics](metrics) that largely supplement this information
 
 
 ## Automated testing
