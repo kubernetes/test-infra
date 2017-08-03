@@ -138,20 +138,8 @@ func parseConfig(c *Config) error {
 		}
 	}
 
-	// Ensure that postsubmits have a pod spec.
-	for _, js := range c.Postsubmits {
-		for j := range js {
-			if js[j].Spec == nil {
-				return fmt.Errorf("job %s has no spec", js[j].Name)
-			}
-		}
-	}
-
 	// Ensure that the periodic durations are valid and specs exist.
 	for j := range c.Periodics {
-		if c.Periodics[j].Spec == nil {
-			return fmt.Errorf("job %s has no spec", c.Periodics[j].Name)
-		}
 		d, err := time.ParseDuration(c.Periodics[j].Interval)
 		if err != nil {
 			return fmt.Errorf("cannot parse duration for %s: %v", c.Periodics[j].Name, err)
