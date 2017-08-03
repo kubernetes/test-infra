@@ -25,6 +25,7 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -35,15 +36,17 @@ import (
 )
 
 const (
-	defaultPool = "default"
-	e2eAllow    = "tcp:22,tcp:80,tcp:8080,tcp:30000-32767,udp:30000-32767"
+	defaultPool   = "default"
+	e2eAllow      = "tcp:22,tcp:80,tcp:8080,tcp:30000-32767,udp:30000-32767"
+	defaultCreate = "container clusters create --quiet"
 )
 
 var (
 	gkeAdditionalZones = flag.String("gke-additional-zones", "", "(gke only) List of additional Google Compute Engine zones to use. Clusters are created symmetrically across zones by default, see --gke-shape for details.")
 	gkeEnvironment     = flag.String("gke-environment", "", "(gke only) Container API endpoint to use, one of 'test', 'staging', 'prod', or a custom https:// URL")
 	gkeShape           = flag.String("gke-shape", `{"default":{"Nodes":3,"MachineType":"n1-standard-2"}}`, `(gke only) A JSON description of node pools to create. The node pool 'default' is required and used for initial cluster creation. All node pools are symmetric across zones, so the cluster total node count is {total nodes in --gke-shape} * {1 + (length of --gke-additional-zones)}. Example: '{"default":{"Nodes":999,"MachineType:":"n1-standard-1"},"heapster":{"Nodes":1, "MachineType":"n1-standard-8"}}`)
-	gkeCreateArgs      = flag.String("gke-create-args", "", "(gke only) Additional arguments passed directly to 'gcloud container clusters create'")
+	gkeCreateArgs      = flag.String("gke-create-args", "", "(gke only) (deprecated, use a modified --gke-create-command') Additional arguments passed directly to 'gcloud container clusters create'")
+	gkeCreateCommand   = flag.String("gke-create-command", defaultCreate, "(gke only) gcloud subcommand used to create a cluster. Modify if you need an alternate gcloud track (e.g. 'gcloud alpha') or if you need to pass arbitrary arguments to create.")
 
 	// poolRe matches instance group URLs of the form `https://www.googleapis.com/compute/v1/projects/some-project/zones/a-zone/instanceGroupManagers/gke-some-cluster-some-pool-90fcb815-grp`. Match meaning:
 	// m[0]: path starting with zones/
@@ -68,7 +71,7 @@ type gkeDeployer struct {
 	shape           map[string]gkeNodePool
 	network         string
 	image           string
-	createArgs      []string
+	createCommand   []string
 
 	setup          bool
 	kubecfg        string
@@ -125,7 +128,12 @@ func newGKE(provider, project, zone, network, image, cluster string) (*gkeDeploy
 		return nil, fmt.Errorf("--gke-shape must include a node pool named 'default', found %q", *gkeShape)
 	}
 
-	g.createArgs = strings.Fields(*gkeCreateArgs)
+	g.createCommand = strings.Fields(*gkeCreateCommand)
+	createArgs := strings.Fields(*gkeCreateArgs)
+	if len(createArgs) > 0 {
+		log.Printf("--gke-create-args is deprecated, please use '--gke-create-command=%s %s'", defaultCreate, *gkeCreateArgs)
+	}
+	g.createCommand = append(g.createCommand, createArgs...)
 
 	if err := migrateOptions([]migratedOption{{
 		env:    "CLOUDSDK_API_ENDPOINT_OVERRIDES_CONTAINER",
@@ -209,14 +217,16 @@ func (g *gkeDeployer) Up() error {
 	}
 
 	def := g.shape[defaultPool]
-	args := []string{"container", "clusters", "create", "-q", g.cluster,
-		"--project=" + g.project,
-		"--zone=" + g.zone,
-		"--machine-type=" + def.MachineType,
-		"--image-type=" + g.image,
-		"--num-nodes=" + strconv.Itoa(def.Nodes),
-		"--network=" + g.network,
-	}
+	args := make([]string, len(g.createCommand))
+	copy(args, g.createCommand)
+	args = append(args,
+		"--project="+g.project,
+		"--zone="+g.zone,
+		"--machine-type="+def.MachineType,
+		"--image-type="+g.image,
+		"--num-nodes="+strconv.Itoa(def.Nodes),
+		"--network="+g.network,
+	)
 	if g.additionalZones != "" {
 		args = append(args, "--additional-zones="+g.additionalZones)
 	}
@@ -225,7 +235,6 @@ func (g *gkeDeployer) Up() error {
 	if v := os.Getenv("CLUSTER_API_VERSION"); v != "" {
 		args = append(args, "--cluster-version="+v)
 	}
-	args = append(args, g.createArgs...)
 	if err := finishRunning(exec.Command("gcloud", args...)); err != nil {
 		return fmt.Errorf("error creating cluster: %v", err)
 	}
