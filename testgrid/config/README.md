@@ -202,7 +202,12 @@ Devs - `config.proto` changes require rebuilding to golang module:
 
 1. Install [`protoc`],
 2. Output the go library with `protoc --go_out=pb config.proto`
-3. Commit both `config.proto` and `config.pb.go`
+3. Search-replace all json:"foo,omitempty" with yaml:"foo,omitempty".
+```
+  # Be sure to add back the header
+  sed -i -e 's/json:/yaml:/g' pb/config.pb.go
+```
+4. Commit both `config.proto` and `config.pb.go`
 
 
 [`config.proto`]: https://github.com/kubernetes/test-infra/blob/master/testgrid/config/config.proto
