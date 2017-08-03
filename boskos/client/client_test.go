@@ -21,12 +21,16 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"reflect"
 	"testing"
 	"time"
+
+	"k8s.io/test-infra/boskos/common"
 )
 
 var FAKE_RES = "{\"name\": \"res\", \"type\": \"t\", \"state\": \"d\"}"
 var FAKE_MAP = "{\"res\":\"user\"}"
+var FAKE_METRIC = "{\"type\":\"t\",\"current\":{\"s\":1},\"owner\":{\"merlin\":1}}"
 
 func AreErrorsEqual(got error, expect error) bool {
 	if got == nil && expect == nil {
@@ -221,5 +225,29 @@ func TestReset(t *testing.T) {
 		t.Errorf("Resource in returned map: %d, expect 1", len(c.resources))
 	} else if rmap["res"] != "user" {
 		t.Errorf("Owner of res: %s, expect user", rmap["res"])
+	}
+}
+
+func TestMetric(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprint(w, FAKE_METRIC)
+	}))
+	defer ts.Close()
+	expectMetric := common.Metric{
+		Type: "t",
+		Current: map[string]int{
+			"s": 1,
+		},
+		Owners: map[string]int{
+			"merlin": 1,
+		},
+	}
+
+	c := NewClient("user", ts.URL)
+	metric, err := c.Metric("t")
+	if err != nil {
+		t.Errorf("Error in reset : %v", err)
+	} else if !reflect.DeepEqual(metric, expectMetric) {
+		t.Errorf("wrong metric, got %v, want %v", metric, expectMetric)
 	}
 }

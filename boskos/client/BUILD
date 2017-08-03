@@ -10,6 +10,7 @@ go_test(
     name = "go_default_test",
     srcs = ["client_test.go"],
     library = ":go_default_library",
+    deps = ["//boskos/common:go_default_library"],
 )
 
 go_library(
