@@ -12,13 +12,11 @@ go_test(
     name = "go_default_test",
     srcs = ["yaml2proto_test.go"],
     library = ":go_default_library",
-    tags = ["automanaged"],
 )
 
 go_library(
     name = "go_default_library",
     srcs = ["yaml2proto.go"],
-    tags = ["automanaged"],
     deps = [
         "//testgrid/config/pb:go_default_library",
         "//vendor/github.com/golang/protobuf/proto:go_default_library",

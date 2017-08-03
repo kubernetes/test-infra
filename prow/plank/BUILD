@@ -15,7 +15,6 @@ go_test(
         "report_test.go",
     ],
     library = ":go_default_library",
-    tags = ["automanaged"],
     deps = [
         "//prow/config:go_default_library",
         "//prow/github:go_default_library",
@@ -31,7 +30,6 @@ go_library(
         "plank.go",
         "report.go",
     ],
-    tags = ["automanaged"],
     deps = [
         "//prow/config:go_default_library",
         "//prow/github:go_default_library",

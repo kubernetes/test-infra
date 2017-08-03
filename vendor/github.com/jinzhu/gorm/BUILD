@@ -36,7 +36,6 @@ go_library(
         "search.go",
         "utils.go",
     ],
-    tags = ["automanaged"],
     deps = ["//vendor/github.com/jinzhu/inflection:go_default_library"],
 )
 

@@ -10,7 +10,6 @@ load(
 go_library(
     name = "go_default_library",
     srcs = ["localgit.go"],
-    tags = ["automanaged"],
     deps = [
         "//prow/git:go_default_library",
         "//vendor/github.com/Sirupsen/logrus:go_default_library",

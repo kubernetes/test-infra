@@ -15,7 +15,6 @@ go_test(
         "mysql_test.go",
     ],
     library = ":go_default_library",
-    tags = ["automanaged"],
 )
 
 go_library(
@@ -24,7 +23,6 @@ go_library(
         "model.go",
         "mysql.go",
     ],
-    tags = ["automanaged"],
     deps = [
         "//vendor/github.com/jinzhu/gorm:go_default_library",
         "//vendor/github.com/spf13/cobra:go_default_library",

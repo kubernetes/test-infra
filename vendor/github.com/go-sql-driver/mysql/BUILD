@@ -25,7 +25,6 @@ go_library(
         "transaction.go",
         "utils.go",
     ],
-    tags = ["automanaged"],
 )
 
 filegroup(

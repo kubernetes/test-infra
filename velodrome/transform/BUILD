@@ -12,7 +12,6 @@ load(
 go_binary(
     name = "transform",
     library = ":go_default_library",
-    tags = ["automanaged"],
 )
 
 go_test(
@@ -22,7 +21,6 @@ go_test(
         "influx_test.go",
     ],
     library = ":go_default_library",
-    tags = ["automanaged"],
     deps = [
         "//velodrome/sql:go_default_library",
         "//velodrome/sql/testing:go_default_library",
@@ -36,7 +34,6 @@ go_library(
         "influx.go",
         "transform.go",
     ],
-    tags = ["automanaged"],
     deps = [
         "//velodrome/sql:go_default_library",
         "//velodrome/transform/plugins:go_default_library",

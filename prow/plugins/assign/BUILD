@@ -12,7 +12,6 @@ go_test(
     name = "go_default_test",
     srcs = ["assign_test.go"],
     library = ":go_default_library",
-    tags = ["automanaged"],
     deps = [
         "//prow/github:go_default_library",
         "//vendor/github.com/Sirupsen/logrus:go_default_library",
@@ -22,7 +21,6 @@ go_test(
 go_library(
     name = "go_default_library",
     srcs = ["assign.go"],
-    tags = ["automanaged"],
     deps = [
         "//prow/github:go_default_library",
         "//prow/plugins:go_default_library",

@@ -10,7 +10,6 @@ load(
 go_library(
     name = "go_default_library",
     srcs = ["mungeopts.go"],
-    tags = ["automanaged"],
     deps = [
         "//mungegithub/options:go_default_library",
         "//vendor/k8s.io/kubernetes/pkg/util/sets:go_default_library",

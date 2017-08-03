@@ -13,7 +13,6 @@ go_library(
         "bucket.go",
         "utils.go",
     ],
-    tags = ["automanaged"],
     deps = ["//vendor/github.com/golang/glog:go_default_library"],
 )
 

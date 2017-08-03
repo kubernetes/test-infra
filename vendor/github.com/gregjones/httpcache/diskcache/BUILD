@@ -10,7 +10,6 @@ load(
 go_library(
     name = "go_default_library",
     srcs = ["diskcache.go"],
-    tags = ["automanaged"],
     deps = ["//vendor/github.com/peterbourgon/diskv:go_default_library"],
 )
 

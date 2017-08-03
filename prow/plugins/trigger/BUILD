@@ -15,7 +15,6 @@ go_test(
         "pr_test.go",
     ],
     library = ":go_default_library",
-    tags = ["automanaged"],
     deps = [
         "//prow/config:go_default_library",
         "//prow/github:go_default_library",
@@ -33,7 +32,6 @@ go_library(
         "push.go",
         "trigger.go",
     ],
-    tags = ["automanaged"],
     deps = [
         "//prow/config:go_default_library",
         "//prow/github:go_default_library",

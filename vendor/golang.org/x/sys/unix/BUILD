@@ -53,7 +53,6 @@ go_library(
         "//conditions:default": [],
     }),
     cgo = True,
-    tags = ["automanaged"],
 )
 
 filegroup(

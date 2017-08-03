@@ -10,7 +10,6 @@ load(
 go_library(
     name = "go_default_library",
     srcs = ["phony.go"],
-    tags = ["automanaged"],
     deps = ["//prow/github:go_default_library"],
 )
 

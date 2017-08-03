@@ -11,13 +11,11 @@ load(
 go_binary(
     name = "reaper",
     library = ":go_default_library",
-    tags = ["automanaged"],
 )
 
 go_library(
     name = "go_default_library",
     srcs = ["reaper.go"],
-    tags = ["automanaged"],
     deps = [
         "//boskos/client:go_default_library",
         "//boskos/common:go_default_library",

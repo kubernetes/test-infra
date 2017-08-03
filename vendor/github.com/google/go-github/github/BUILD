@@ -87,7 +87,6 @@ go_library(
         "users_keys.go",
         "without_appengine.go",
     ],
-    tags = ["automanaged"],
     deps = ["//vendor/github.com/google/go-querystring/query:go_default_library"],
 )
 

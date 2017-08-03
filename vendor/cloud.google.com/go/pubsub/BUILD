@@ -21,7 +21,6 @@ go_library(
         "subscription.go",
         "topic.go",
     ],
-    tags = ["automanaged"],
     deps = [
         "//vendor/golang.org/x/net/context:go_default_library",
         "//vendor/google.golang.org/api/googleapi:go_default_library",

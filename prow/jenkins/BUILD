@@ -10,7 +10,6 @@ load(
 go_library(
     name = "go_default_library",
     srcs = ["jenkins.go"],
-    tags = ["automanaged"],
     deps = ["//vendor/github.com/satori/go.uuid:go_default_library"],
 )
 

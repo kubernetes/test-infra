@@ -15,7 +15,6 @@ go_test(
         "prowjob_test.go",
     ],
     library = ":go_default_library",
-    tags = ["automanaged"],
 )
 
 go_library(
@@ -25,7 +24,6 @@ go_library(
         "prowjob.go",
         "types.go",
     ],
-    tags = ["automanaged"],
     deps = ["//vendor/github.com/ghodss/yaml:go_default_library"],
 )
 

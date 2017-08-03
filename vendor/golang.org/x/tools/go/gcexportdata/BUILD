@@ -13,7 +13,6 @@ go_library(
         "gcexportdata.go",
         "importer.go",
     ],
-    tags = ["automanaged"],
     deps = ["//vendor/golang.org/x/tools/go/gcimporter15:go_default_library"],
 )
 

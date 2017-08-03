@@ -12,7 +12,6 @@ load(
 go_binary(
     name = "deck",
     library = ":go_default_library",
-    tags = ["automanaged"],
 )
 
 go_test(
@@ -22,7 +21,6 @@ go_test(
         "main_test.go",
     ],
     library = ":go_default_library",
-    tags = ["automanaged"],
     deps = [
         "//prow/kube:go_default_library",
         "//vendor/github.com/ghodss/yaml:go_default_library",
@@ -35,7 +33,6 @@ go_library(
         "jobs.go",
         "main.go",
     ],
-    tags = ["automanaged"],
     deps = [
         "//prow/config:go_default_library",
         "//prow/jenkins:go_default_library",

@@ -15,7 +15,6 @@ go_test(
         "status_change_test.go",
     ],
     library = ":go_default_library",
-    tags = ["automanaged"],
     deps = [
         "//mungegithub/github/testing:go_default_library",
         "//vendor/github.com/google/go-github/github:go_default_library",
@@ -29,7 +28,6 @@ go_library(
         "status_change.go",
         "webhook.go",
     ],
-    tags = ["automanaged"],
     deps = [
         "//mungegithub/options:go_default_library",
         "//vendor/github.com/golang/glog:go_default_library",

@@ -12,7 +12,6 @@ go_test(
     name = "go_default_test",
     srcs = ["golint_test.go"],
     library = ":go_default_library",
-    tags = ["automanaged"],
     deps = [
         "//prow/git/localgit:go_default_library",
         "//prow/github:go_default_library",
@@ -23,7 +22,6 @@ go_test(
 go_library(
     name = "go_default_library",
     srcs = ["golint.go"],
-    tags = ["automanaged"],
     deps = [
         "//prow/git:go_default_library",
         "//prow/github:go_default_library",

@@ -14,7 +14,6 @@ go_library(
         "diskv.go",
         "index.go",
     ],
-    tags = ["automanaged"],
     deps = ["//vendor/github.com/google/btree:go_default_library"],
 )
 

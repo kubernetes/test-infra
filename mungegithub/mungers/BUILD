@@ -32,7 +32,6 @@ go_test(
         "//mungegithub:configs",
     ],
     library = ":go_default_library",
-    tags = ["automanaged"],
     deps = [
         "//mungegithub/admin:go_default_library",
         "//mungegithub/github:go_default_library",
@@ -93,7 +92,6 @@ go_library(
         "submit-queue-batch.go",
         "triage-filer.go",
     ],
-    tags = ["automanaged"],
     deps = [
         "//mungegithub/admin:go_default_library",
         "//mungegithub/features:go_default_library",

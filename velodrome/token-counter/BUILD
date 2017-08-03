@@ -11,7 +11,6 @@ load(
 go_binary(
     name = "token-counter",
     library = ":go_default_library",
-    tags = ["automanaged"],
 )
 
 go_library(
@@ -20,7 +19,6 @@ go_library(
         "influx.go",
         "token-counter.go",
     ],
-    tags = ["automanaged"],
     deps = [
         "//vendor/github.com/golang/glog:go_default_library",
         "//vendor/github.com/google/go-github/github:go_default_library",

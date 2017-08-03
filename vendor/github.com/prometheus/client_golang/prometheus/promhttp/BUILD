@@ -10,7 +10,6 @@ load(
 go_library(
     name = "go_default_library",
     srcs = ["http.go"],
-    tags = ["automanaged"],
     deps = [
         "//vendor/github.com/prometheus/client_golang/prometheus:go_default_library",
         "//vendor/github.com/prometheus/common/expfmt:go_default_library",

@@ -12,14 +12,12 @@ go_test(
     name = "go_default_test",
     srcs = ["sqlite_test.go"],
     library = ":go_default_library",
-    tags = ["automanaged"],
     deps = ["//velodrome/sql:go_default_library"],
 )
 
 go_library(
     name = "go_default_library",
     srcs = ["sqlite.go"],
-    tags = ["automanaged"],
     deps = [
         "//velodrome/sql:go_default_library",
         "//vendor/github.com/jinzhu/gorm:go_default_library",

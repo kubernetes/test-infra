@@ -20,7 +20,6 @@ go_test(
         "//mungegithub:configs",
     ],
     library = ":go_default_library",
-    tags = ["automanaged"],
     deps = ["//vendor/github.com/google/go-github/github:go_default_library"],
 )
 
@@ -36,7 +35,6 @@ go_library(
         "operators.go",
         "pinger.go",
     ],
-    tags = ["automanaged"],
     deps = [
         "//mungegithub/github:go_default_library",
         "//vendor/github.com/google/go-github/github:go_default_library",

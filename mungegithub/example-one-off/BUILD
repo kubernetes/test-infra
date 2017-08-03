@@ -11,13 +11,11 @@ load(
 go_binary(
     name = "example-one-off",
     library = ":go_default_library",
-    tags = ["automanaged"],
 )
 
 go_library(
     name = "go_default_library",
     srcs = ["main.go"],
-    tags = ["automanaged"],
     deps = [
         "//mungegithub/github:go_default_library",
         "//mungegithub/options:go_default_library",

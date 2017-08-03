@@ -20,7 +20,6 @@ go_library(
         "proc_stat.go",
         "stat.go",
     ],
-    tags = ["automanaged"],
 )
 
 filegroup(

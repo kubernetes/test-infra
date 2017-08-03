@@ -11,13 +11,11 @@ load(
 go_binary(
     name = "gcsweb",
     library = ":go_default_library",
-    tags = ["automanaged"],
 )
 
 go_library(
     name = "go_default_library",
     srcs = ["gcsweb.go"],
-    tags = ["automanaged"],
     deps = ["//gcsweb/pkg/version:go_default_library"],
 )
 

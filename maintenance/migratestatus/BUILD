@@ -11,13 +11,11 @@ load(
 go_binary(
     name = "migratestatus",
     library = ":go_default_library",
-    tags = ["automanaged"],
 )
 
 go_library(
     name = "go_default_library",
     srcs = ["migratestatus.go"],
-    tags = ["automanaged"],
     deps = [
         "//maintenance/migratestatus/migrator:go_default_library",
         "//vendor/github.com/golang/glog:go_default_library",

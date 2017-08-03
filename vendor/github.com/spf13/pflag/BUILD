@@ -33,7 +33,6 @@ go_library(
         "uint64.go",
         "uint8.go",
     ],
-    tags = ["automanaged"],
 )
 
 filegroup(

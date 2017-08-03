@@ -12,13 +12,11 @@ go_test(
     name = "go_default_test",
     srcs = ["client_test.go"],
     library = ":go_default_library",
-    tags = ["automanaged"],
 )
 
 go_library(
     name = "go_default_library",
     srcs = ["client.go"],
-    tags = ["automanaged"],
     deps = ["//boskos/common:go_default_library"],
 )
 

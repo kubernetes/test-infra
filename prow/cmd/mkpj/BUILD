@@ -13,13 +13,11 @@ go_binary(
     args = ["--config-path=$(location //prow:config.yaml)"],
     data = ["//prow:config.yaml"],
     library = ":go_default_library",
-    tags = ["automanaged"],
 )
 
 go_library(
     name = "go_default_library",
     srcs = ["main.go"],
-    tags = ["automanaged"],
     deps = [
         "//prow/config:go_default_library",
         "//prow/kube:go_default_library",

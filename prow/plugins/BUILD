@@ -15,7 +15,6 @@ go_test(
         "respond_test.go",
     ],
     library = ":go_default_library",
-    tags = ["automanaged"],
     deps = ["//prow/github:go_default_library"],
 )
 
@@ -25,7 +24,6 @@ go_library(
         "plugins.go",
         "respond.go",
     ],
-    tags = ["automanaged"],
     deps = [
         "//prow/config:go_default_library",
         "//prow/git:go_default_library",

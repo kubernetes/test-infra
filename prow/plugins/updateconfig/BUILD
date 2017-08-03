@@ -12,7 +12,6 @@ go_test(
     name = "go_default_test",
     srcs = ["updateconfig_test.go"],
     library = ":go_default_library",
-    tags = ["automanaged"],
     deps = [
         "//prow/github:go_default_library",
         "//prow/github/fakegithub:go_default_library",
@@ -24,7 +23,6 @@ go_test(
 go_library(
     name = "go_default_library",
     srcs = ["updateconfig.go"],
-    tags = ["automanaged"],
     deps = [
         "//prow/github:go_default_library",
         "//prow/kube:go_default_library",

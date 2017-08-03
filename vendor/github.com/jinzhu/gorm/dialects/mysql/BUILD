@@ -10,7 +10,6 @@ load(
 go_library(
     name = "go_default_library",
     srcs = ["mysql.go"],
-    tags = ["automanaged"],
     deps = ["//vendor/github.com/go-sql-driver/mysql:go_default_library"],
 )
 

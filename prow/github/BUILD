@@ -16,7 +16,6 @@ go_test(
         "links_test.go",
     ],
     library = ":go_default_library",
-    tags = ["automanaged"],
 )
 
 go_library(
@@ -27,7 +26,6 @@ go_library(
         "links.go",
         "types.go",
     ],
-    tags = ["automanaged"],
 )
 
 filegroup(

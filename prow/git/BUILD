@@ -11,7 +11,6 @@ load(
 go_library(
     name = "go_default_library",
     srcs = ["git.go"],
-    tags = ["automanaged"],
     deps = ["//vendor/github.com/Sirupsen/logrus:go_default_library"],
 )
 
@@ -34,6 +33,5 @@ filegroup(
 go_test(
     name = "go_default_xtest",
     srcs = ["git_test.go"],
-    tags = ["automanaged"],
     deps = ["//prow/git/localgit:go_default_library"],
 )

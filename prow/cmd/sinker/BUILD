@@ -12,14 +12,12 @@ load(
 go_binary(
     name = "sinker",
     library = ":go_default_library",
-    tags = ["automanaged"],
 )
 
 go_test(
     name = "go_default_test",
     srcs = ["main_test.go"],
     library = ":go_default_library",
-    tags = ["automanaged"],
     deps = [
         "//prow/config:go_default_library",
         "//prow/kube:go_default_library",
@@ -29,7 +27,6 @@ go_test(
 go_library(
     name = "go_default_library",
     srcs = ["main.go"],
-    tags = ["automanaged"],
     deps = [
         "//prow/config:go_default_library",
         "//prow/kube:go_default_library",

@@ -10,7 +10,6 @@ load(
 go_library(
     name = "go_default_library",
     srcs = ["reports.go"],
-    tags = ["automanaged"],
     deps = [
         "//mungegithub/github:go_default_library",
         "//mungegithub/options:go_default_library",

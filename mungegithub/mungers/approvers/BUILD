@@ -15,14 +15,12 @@ go_test(
         "owners_test.go",
     ],
     library = ":go_default_library",
-    tags = ["automanaged"],
     deps = ["//vendor/k8s.io/kubernetes/pkg/util/sets:go_default_library"],
 )
 
 go_library(
     name = "go_default_library",
     srcs = ["owners.go"],
-    tags = ["automanaged"],
     deps = [
         "//mungegithub/mungers/matchers/comment:go_default_library",
         "//vendor/github.com/golang/glog:go_default_library",

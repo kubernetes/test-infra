@@ -21,7 +21,6 @@ go_library(
         "net.go",
         "transaction.go",
     ],
-    tags = ["automanaged"],
     deps = [
         "//vendor/github.com/golang/protobuf/proto:go_default_library",
         "//vendor/golang.org/x/net/context:go_default_library",

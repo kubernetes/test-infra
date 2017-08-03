@@ -17,7 +17,6 @@ go_library(
         "isAlias18.go",
         "isAlias19.go",
     ],
-    tags = ["automanaged"],
 )
 
 filegroup(

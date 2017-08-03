@@ -12,7 +12,6 @@ go_test(
     name = "go_default_test",
     srcs = ["repo-updates_test.go"],
     library = ":go_default_library",
-    tags = ["automanaged"],
     deps = [
         "//vendor/github.com/golang/glog:go_default_library",
         "//vendor/github.com/google/go-github/github:go_default_library",
@@ -27,7 +26,6 @@ go_library(
         "features.go",
         "repo-updates.go",
     ],
-    tags = ["automanaged"],
     deps = [
         "//mungegithub/github:go_default_library",
         "//mungegithub/mungeopts:go_default_library",

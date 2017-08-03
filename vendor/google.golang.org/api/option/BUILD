@@ -10,7 +10,6 @@ load(
 go_library(
     name = "go_default_library",
     srcs = ["option.go"],
-    tags = ["automanaged"],
     deps = [
         "//vendor/golang.org/x/oauth2:go_default_library",
         "//vendor/google.golang.org/api/internal:go_default_library",

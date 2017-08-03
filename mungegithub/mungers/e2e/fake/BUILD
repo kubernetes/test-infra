@@ -10,7 +10,6 @@ load(
 go_library(
     name = "go_default_library",
     srcs = ["fake.go"],
-    tags = ["automanaged"],
     deps = [
         "//mungegithub/mungers/e2e:go_default_library",
         "//mungegithub/mungers/flakesync:go_default_library",

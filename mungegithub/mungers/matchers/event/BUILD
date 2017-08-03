@@ -15,7 +15,6 @@ go_test(
         "finder_test.go",
     ],
     library = ":go_default_library",
-    tags = ["automanaged"],
     deps = ["//vendor/github.com/google/go-github/github:go_default_library"],
 )
 
@@ -26,7 +25,6 @@ go_library(
         "finder.go",
         "operators.go",
     ],
-    tags = ["automanaged"],
     deps = ["//vendor/github.com/google/go-github/github:go_default_library"],
 )
 
