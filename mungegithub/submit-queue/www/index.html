@@ -162,8 +162,8 @@
                   <span style="color: {{$chip.color}}">{{$chip.state}}</span> <a ng-href="{{$chip.url}}">{{$chip.name}}</a>
                 </md-chip-template>
               </md-chips>
-              <h2 class="md-title" ng-show="cntl.ciStatus.presubmit$serial.length > 0">Serial Builds</h2>
-              <md-chips ng-model="cntl.ciStatus.presubmit$serial" readonly="true">
+              <h2 class="md-title" ng-show="cntl.ciStatus.presubmit$single.length > 0">Single Builds</h2>
+              <md-chips ng-model="cntl.ciStatus.presubmit$single" readonly="true">
                 <md-chip-template title="{{$chip.msg}}">
                   <span style="color: {{$chip.color}}">{{$chip.state}}</span> <a ng-href="{{$chip.url}}">{{$chip.name}}</a>
                 </md-chip-template>

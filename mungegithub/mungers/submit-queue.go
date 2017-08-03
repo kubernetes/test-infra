@@ -706,7 +706,7 @@ func (sq *SubmitQueue) monitorProw() {
 			key := job.Type + "/"
 			// the most recent submit-queue PR(s)
 			if job.Number == currentPR || job.Number == lastPR {
-				key += "serial"
+				key += "single"
 			} else if nonBlockingJobNames[job.Job] {
 				key += "nonblocking"
 			} else if requireRetestJobNames[job.Job] {

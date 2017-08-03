@@ -206,7 +206,7 @@ function SQCntl(dataService, $interval, $location) {
     var results = {};
     angular.forEach(data, function(jobs, key) {
       // job results are keyed by job.Type/category,
-      // but in javascript we can't use $ in a variable name so..
+      // but in javascript we can't use / in an identifier so use $ instead
       key = key.replace('/', '$');
       results[key] = [];
       var parts = key.split('$');
