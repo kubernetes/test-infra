@@ -79,7 +79,7 @@ func TestNewKubernetesAnywhere(t *testing.T) {
 		*kubernetesAnywhereKubeadmVersion = tc.kubeadmVersion
 		*kubernetesAnywhereKubernetesVersion = tc.kubernetesVersion
 
-		_, err = newKubernetesAnywhere("fake-project")
+		_, err = newKubernetesAnywhere("fake-project", "fake-zone", "fake-network")
 		if err != nil {
 			t.Errorf("newKubernetesAnywhere(%s) failed: %v", tc.name, err)
 			continue

@@ -52,8 +52,8 @@ const kubernetesAnywhereConfigTemplate = `
 .phase1.gce.instance_type="n1-standard-1"
 .phase1.gce.project="{{.Project}}"
 .phase1.gce.region="us-central1"
-.phase1.gce.zone="us-central1-c"
-.phase1.gce.network="default"
+.phase1.gce.zone="{{.Zone}}"
+.phase1.gce.network="{{.Network}}"
 
 .phase2.installer_container="docker.io/colemickens/k8s-ignition:latest"
 .phase2.docker_registry="gcr.io/google-containers"
@@ -77,11 +77,13 @@ type kubernetesAnywhere struct {
 	KubernetesVersion string
 	Project           string
 	Cluster           string
+	Zone              string
+	Network           string
 }
 
 var _ deployer = kubernetesAnywhere{}
 
-func newKubernetesAnywhere(project string) (*kubernetesAnywhere, error) {
+func newKubernetesAnywhere(project, zone, network string) (*kubernetesAnywhere, error) {
 	if *kubernetesAnywherePath == "" {
 		return nil, fmt.Errorf("--kubernetes-anywhere-path is required")
 	}
@@ -92,6 +94,14 @@ func newKubernetesAnywhere(project string) (*kubernetesAnywhere, error) {
 
 	if project == "" {
 		return nil, fmt.Errorf("--provider=kubernetes-anywhere requires --gcp-project")
+	}
+
+	if zone == "" {
+		zone = "us-central1-c"
+	}
+
+	if network == "" {
+		network = "default"
 	}
 
 	// Set KUBERNETES_CONFORMANCE_TEST so the auth info is picked up
@@ -107,6 +117,8 @@ func newKubernetesAnywhere(project string) (*kubernetesAnywhere, error) {
 		KubernetesVersion: *kubernetesAnywhereKubernetesVersion,
 		Project:           project,
 		Cluster:           *kubernetesAnywhereCluster,
+		Zone:              zone,
+		Network:           network,
 	}
 
 	if err := k.writeConfig(); err != nil {
