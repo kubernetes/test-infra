@@ -53,7 +53,7 @@ go_library(
         "//prow/plugins/updateconfig:go_default_library",
         "//prow/plugins/yuks:go_default_library",
         "//prow/slack:go_default_library",
-        "//vendor:github.com/Sirupsen/logrus",
+        "//vendor/github.com/Sirupsen/logrus:go_default_library",
     ],
 )
 

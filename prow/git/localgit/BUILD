@@ -13,7 +13,7 @@ go_library(
     tags = ["automanaged"],
     deps = [
         "//prow/git:go_default_library",
-        "//vendor:github.com/Sirupsen/logrus",
+        "//vendor/github.com/Sirupsen/logrus:go_default_library",
     ],
 )
 

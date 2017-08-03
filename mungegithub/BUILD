@@ -25,10 +25,10 @@ go_library(
         "//mungegithub/mungers:go_default_library",
         "//mungegithub/options:go_default_library",
         "//mungegithub/reports:go_default_library",
-        "//vendor:github.com/golang/glog",
-        "//vendor:github.com/spf13/cobra",
-        "//vendor:k8s.io/kubernetes/pkg/util/flag",
-        "//vendor:k8s.io/kubernetes/pkg/util/sets",
+        "//vendor/github.com/golang/glog:go_default_library",
+        "//vendor/github.com/spf13/cobra:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/util/flag:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/util/sets:go_default_library",
     ],
 )
 

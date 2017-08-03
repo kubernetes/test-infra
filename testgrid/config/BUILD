@@ -38,7 +38,7 @@ go_test(
     tags = ["automanaged"],
     deps = [
         "//testgrid/config/yaml2proto:go_default_library",
-        "//vendor:gopkg.in/yaml.v2",
+        "//vendor/gopkg.in/yaml.v2:go_default_library",
     ],
 )
 

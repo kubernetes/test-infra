@@ -18,7 +18,7 @@ go_test(
     tags = ["automanaged"],
     deps = [
         "//mungegithub/github/testing:go_default_library",
-        "//vendor:github.com/google/go-github/github",
+        "//vendor/github.com/google/go-github/github:go_default_library",
     ],
 )
 
@@ -32,13 +32,13 @@ go_library(
     tags = ["automanaged"],
     deps = [
         "//mungegithub/options:go_default_library",
-        "//vendor:github.com/golang/glog",
-        "//vendor:github.com/google/go-github/github",
-        "//vendor:github.com/gregjones/httpcache",
-        "//vendor:github.com/gregjones/httpcache/diskcache",
-        "//vendor:github.com/peterbourgon/diskv",
-        "//vendor:golang.org/x/oauth2",
-        "//vendor:k8s.io/kubernetes/pkg/util/sets",
+        "//vendor/github.com/golang/glog:go_default_library",
+        "//vendor/github.com/google/go-github/github:go_default_library",
+        "//vendor/github.com/gregjones/httpcache:go_default_library",
+        "//vendor/github.com/gregjones/httpcache/diskcache:go_default_library",
+        "//vendor/github.com/peterbourgon/diskv:go_default_library",
+        "//vendor/golang.org/x/oauth2:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/util/sets:go_default_library",
     ],
 )
 

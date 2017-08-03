@@ -13,7 +13,7 @@ go_library(
     tags = ["automanaged"],
     deps = [
         "//mungegithub/options:go_default_library",
-        "//vendor:k8s.io/kubernetes/pkg/util/sets",
+        "//vendor/k8s.io/kubernetes/pkg/util/sets:go_default_library",
     ],
 )
 

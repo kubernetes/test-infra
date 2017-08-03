@@ -21,7 +21,7 @@ go_test(
         "//prow/github:go_default_library",
         "//prow/github/fakegithub:go_default_library",
         "//prow/kube:go_default_library",
-        "//vendor:github.com/Sirupsen/logrus",
+        "//vendor/github.com/Sirupsen/logrus:go_default_library",
     ],
 )
 
@@ -40,7 +40,7 @@ go_library(
         "//prow/kube:go_default_library",
         "//prow/plank:go_default_library",
         "//prow/plugins:go_default_library",
-        "//vendor:github.com/Sirupsen/logrus",
+        "//vendor/github.com/Sirupsen/logrus:go_default_library",
     ],
 )
 

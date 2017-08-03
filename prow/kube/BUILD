@@ -26,7 +26,7 @@ go_library(
         "types.go",
     ],
     tags = ["automanaged"],
-    deps = ["//vendor:github.com/ghodss/yaml"],
+    deps = ["//vendor/github.com/ghodss/yaml:go_default_library"],
 )
 
 filegroup(

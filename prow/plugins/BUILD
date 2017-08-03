@@ -32,8 +32,8 @@ go_library(
         "//prow/github:go_default_library",
         "//prow/kube:go_default_library",
         "//prow/slack:go_default_library",
-        "//vendor:github.com/Sirupsen/logrus",
-        "//vendor:github.com/ghodss/yaml",
+        "//vendor/github.com/Sirupsen/logrus:go_default_library",
+        "//vendor/github.com/ghodss/yaml:go_default_library",
     ],
 )
 

@@ -24,7 +24,7 @@ go_test(
     tags = ["automanaged"],
     deps = [
         "//prow/kube:go_default_library",
-        "//vendor:github.com/ghodss/yaml",
+        "//vendor/github.com/ghodss/yaml:go_default_library",
     ],
 )
 
@@ -38,8 +38,8 @@ go_library(
     tags = ["automanaged"],
     deps = [
         "//prow/kube:go_default_library",
-        "//vendor:github.com/Sirupsen/logrus",
-        "//vendor:github.com/ghodss/yaml",
+        "//vendor/github.com/Sirupsen/logrus:go_default_library",
+        "//vendor/github.com/ghodss/yaml:go_default_library",
     ],
 )
 

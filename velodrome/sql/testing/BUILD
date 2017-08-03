@@ -22,8 +22,8 @@ go_library(
     tags = ["automanaged"],
     deps = [
         "//velodrome/sql:go_default_library",
-        "//vendor:github.com/jinzhu/gorm",
-        "//vendor:github.com/jinzhu/gorm/dialects/sqlite",
+        "//vendor/github.com/jinzhu/gorm:go_default_library",
+        "//vendor/github.com/jinzhu/gorm/dialects/sqlite:go_default_library",
     ],
 )
 

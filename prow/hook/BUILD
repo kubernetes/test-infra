@@ -35,7 +35,7 @@ go_library(
         "//prow/config:go_default_library",
         "//prow/github:go_default_library",
         "//prow/plugins:go_default_library",
-        "//vendor:github.com/Sirupsen/logrus",
+        "//vendor/github.com/Sirupsen/logrus:go_default_library",
     ],
 )
 

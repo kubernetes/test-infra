@@ -37,7 +37,7 @@ go_library(
     tags = ["automanaged"],
     deps = [
         "//mungegithub/github:go_default_library",
-        "//vendor:github.com/google/go-github/github",
+        "//vendor/github.com/google/go-github/github:go_default_library",
     ],
 )
 

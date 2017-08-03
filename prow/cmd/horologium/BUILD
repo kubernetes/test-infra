@@ -23,7 +23,7 @@ go_library(
         "//prow/config:go_default_library",
         "//prow/kube:go_default_library",
         "//prow/plank:go_default_library",
-        "//vendor:github.com/Sirupsen/logrus",
+        "//vendor/github.com/Sirupsen/logrus:go_default_library",
     ],
 )
 

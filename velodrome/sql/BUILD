@@ -26,8 +26,8 @@ go_library(
     ],
     tags = ["automanaged"],
     deps = [
-        "//vendor:github.com/jinzhu/gorm",
-        "//vendor:github.com/spf13/cobra",
+        "//vendor/github.com/jinzhu/gorm:go_default_library",
+        "//vendor/github.com/spf13/cobra:go_default_library",
     ],
 )
 

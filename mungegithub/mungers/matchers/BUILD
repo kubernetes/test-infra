@@ -21,7 +21,7 @@ go_test(
     ],
     library = ":go_default_library",
     tags = ["automanaged"],
-    deps = ["//vendor:github.com/google/go-github/github"],
+    deps = ["//vendor/github.com/google/go-github/github:go_default_library"],
 )
 
 go_library(
@@ -39,7 +39,7 @@ go_library(
     tags = ["automanaged"],
     deps = [
         "//mungegithub/github:go_default_library",
-        "//vendor:github.com/google/go-github/github",
+        "//vendor/github.com/google/go-github/github:go_default_library",
     ],
 )
 

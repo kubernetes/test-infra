@@ -40,11 +40,11 @@ go_library(
     deps = [
         "//velodrome/sql:go_default_library",
         "//velodrome/transform/plugins:go_default_library",
-        "//vendor:github.com/golang/glog",
-        "//vendor:github.com/influxdata/influxdb/client/v2",
-        "//vendor:github.com/jinzhu/gorm",
-        "//vendor:github.com/jinzhu/gorm/dialects/mysql",
-        "//vendor:github.com/spf13/cobra",
+        "//vendor/github.com/golang/glog:go_default_library",
+        "//vendor/github.com/influxdata/influxdb/client/v2:go_default_library",
+        "//vendor/github.com/jinzhu/gorm:go_default_library",
+        "//vendor/github.com/jinzhu/gorm/dialects/mysql:go_default_library",
+        "//vendor/github.com/spf13/cobra:go_default_library",
     ],
 )
 

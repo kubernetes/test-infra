@@ -20,8 +20,8 @@ go_library(
     tags = ["automanaged"],
     deps = [
         "//maintenance/migratestatus/migrator:go_default_library",
-        "//vendor:github.com/golang/glog",
-        "//vendor:github.com/google/go-github/github",
+        "//vendor/github.com/golang/glog:go_default_library",
+        "//vendor/github.com/google/go-github/github:go_default_library",
     ],
 )
 

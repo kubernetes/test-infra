@@ -29,7 +29,7 @@ go_test(
     deps = [
         "//velodrome/sql:go_default_library",
         "//velodrome/sql/testing:go_default_library",
-        "//vendor:github.com/google/go-github/github",
+        "//vendor/github.com/google/go-github/github:go_default_library",
     ],
 )
 
@@ -46,12 +46,12 @@ go_library(
     tags = ["automanaged"],
     deps = [
         "//velodrome/sql:go_default_library",
-        "//vendor:github.com/golang/glog",
-        "//vendor:github.com/google/go-github/github",
-        "//vendor:github.com/jinzhu/gorm",
-        "//vendor:github.com/jinzhu/gorm/dialects/mysql",
-        "//vendor:github.com/spf13/cobra",
-        "//vendor:golang.org/x/oauth2",
+        "//vendor/github.com/golang/glog:go_default_library",
+        "//vendor/github.com/google/go-github/github:go_default_library",
+        "//vendor/github.com/jinzhu/gorm:go_default_library",
+        "//vendor/github.com/jinzhu/gorm/dialects/mysql:go_default_library",
+        "//vendor/github.com/spf13/cobra:go_default_library",
+        "//vendor/golang.org/x/oauth2:go_default_library",
     ],
 )
 

@@ -22,7 +22,7 @@ go_library(
     deps = [
         "//boskos/client:go_default_library",
         "//boskos/common:go_default_library",
-        "//vendor:github.com/Sirupsen/logrus",
+        "//vendor/github.com/Sirupsen/logrus:go_default_library",
     ],
 )
 

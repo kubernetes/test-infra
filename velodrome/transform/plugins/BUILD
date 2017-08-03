@@ -30,7 +30,7 @@ go_library(
     tags = ["automanaged"],
     deps = [
         "//velodrome/sql:go_default_library",
-        "//vendor:github.com/spf13/cobra",
+        "//vendor/github.com/spf13/cobra:go_default_library",
     ],
 )
 
@@ -73,6 +73,6 @@ go_test(
     tags = ["automanaged"],
     deps = [
         "//velodrome/sql:go_default_library",
-        "//vendor:github.com/golang/mock/gomock",
+        "//vendor/github.com/golang/mock/gomock:go_default_library",
     ],
 )

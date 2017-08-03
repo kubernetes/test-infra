@@ -19,7 +19,7 @@ go_library(
     name = "go_default_library",
     srcs = ["owner.go"],
     tags = ["automanaged"],
-    deps = ["//vendor:github.com/golang/glog"],
+    deps = ["//vendor/github.com/golang/glog:go_default_library"],
 )
 
 filegroup(
