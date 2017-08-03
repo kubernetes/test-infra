@@ -4,5 +4,6 @@
 		"jenkins/aws-janitor"
 	],
 	"AddSourcesRules": true,
-	"ManageGoRules": true
+	"ManageGoRules": true,
+	"VendorMultipleBuildFiles": true
 }
