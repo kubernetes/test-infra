@@ -1,6 +1,6 @@
 git_repository(
     name = "io_bazel_rules_go",
-    commit = "cd8680a5050aa207ed0ba6b1d0b424f8e9a41772",
+    commit = "82483596ec203eb9c1849937636f4cbed83733eb",
     remote = "https://github.com/bazelbuild/rules_go.git",
 )
 
@@ -16,13 +16,14 @@ http_archive(
 )
 
 load("@io_bazel_rules_docker//docker:docker.bzl", "docker_repositories", "docker_pull")
+
 docker_repositories()
 
 docker_pull(
-    name="distroless-base",
-    registry="gcr.io",
-    repository="distroless/base",
-    digest="sha256:d19b95495f226aa64cd63a95863aca4da123bde22410a273e68e091113222e4f",  # latest
+    name = "distroless-base",
+    digest = "sha256:d19b95495f226aa64cd63a95863aca4da123bde22410a273e68e091113222e4f",  # latest
+    registry = "gcr.io",
+    repository = "distroless/base",
 )
 
 git_repository(
@@ -306,5 +307,7 @@ git_repository(
     remote = "https://github.com/bazelbuild/rules_appengine.git",
     #tag = "0.0.5", # Latest at https://github.com/bazelbuild/rules_appengine/releases.
 )
+
 load("@io_bazel_rules_appengine//appengine:py_appengine.bzl", "py_appengine_repositories")
+
 py_appengine_repositories()
