@@ -41,6 +41,8 @@ type Presubmit struct {
 	SkipReport bool `json:"skip_report"`
 	// Maximum number of this job running concurrently, 0 implies no limit.
 	MaxConcurrency int `json:"max_concurrency"`
+	// Agent that will take care of running this job.
+	Agent string `json:"agent"`
 	// Kubernetes pod spec.
 	Spec *kube.PodSpec `json:"spec,omitempty"`
 	// Run these jobs after successfully running this one.
@@ -55,23 +57,30 @@ type Presubmit struct {
 
 // Postsubmit runs on push events.
 type Postsubmit struct {
-	Name string        `json:"name"`
+	Name string `json:"name"`
+	// Agent that will take care of running this job.
+	Agent string `json:"agent"`
+	// Kubernetes pod spec.
 	Spec *kube.PodSpec `json:"spec,omitempty"`
 	// Maximum number of this job running concurrently, 0 implies no limit.
 	MaxConcurrency int `json:"max_concurrency"`
 
 	Brancher
-
+	// Run these jobs after successfully running this one.
 	RunAfterSuccess []Postsubmit `json:"run_after_success"`
 }
 
 // Periodic runs on a timer.
 type Periodic struct {
-	Name     string        `json:"name"`
-	Spec     *kube.PodSpec `json:"spec,omitempty"`
-	Interval string        `json:"interval"`
-	Tags     []string      `json:"tags,omitempty"`
-
+	Name string `json:"name"`
+	// Agent that will take care of running this job.
+	Agent string `json:"agent"`
+	// Kubernetes pod spec.
+	Spec *kube.PodSpec `json:"spec,omitempty"`
+	// Interval to wait between two runs of the job.
+	Interval string   `json:"interval"`
+	Tags     []string `json:"tags,omitempty"`
+	// Run these jobs after successfully running this one.
 	RunAfterSuccess []Periodic `json:"run_after_success"`
 
 	interval time.Duration

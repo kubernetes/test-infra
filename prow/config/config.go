@@ -25,6 +25,8 @@ import (
 	"time"
 
 	"github.com/ghodss/yaml"
+
+	"k8s.io/test-infra/prow/kube"
 )
 
 // Config is a read-only snapshot of the config.
@@ -132,16 +134,21 @@ func Load(path string) (*Config, error) {
 
 func parseConfig(c *Config) error {
 	// Ensure that presubmit regexes are valid.
-	for _, v := range c.Presubmits {
-		if err := setRegexes(v); err != nil {
+	for _, vs := range c.Presubmits {
+		if err := setRegexes(vs); err != nil {
 			return fmt.Errorf("could not set regex: %v", err)
+		}
+		for v := range vs {
+			if vs[v].Agent == string(kube.KubernetesAgent) && vs[v].Spec == nil {
+				return fmt.Errorf("job %s has no spec", vs[v].Name)
+			}
 		}
 	}
 
 	// Ensure that postsubmits have a pod spec.
 	for _, js := range c.Postsubmits {
 		for j := range js {
-			if js[j].Spec == nil {
+			if js[j].Agent == string(kube.KubernetesAgent) && js[j].Spec == nil {
 				return fmt.Errorf("job %s has no spec", js[j].Name)
 			}
 		}
@@ -149,7 +156,7 @@ func parseConfig(c *Config) error {
 
 	// Ensure that the periodic durations are valid and specs exist.
 	for j := range c.Periodics {
-		if c.Periodics[j].Spec == nil {
+		if c.Periodics[j].Agent == string(kube.KubernetesAgent) && c.Periodics[j].Spec == nil {
 			return fmt.Errorf("job %s has no spec", c.Periodics[j].Name)
 		}
 		d, err := time.ParseDuration(c.Periodics[j].Interval)
