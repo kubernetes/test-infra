@@ -119,7 +119,6 @@ def run_local_mode(script, properties, private_key, public_key):
     k8s = os.getcwd()
     if not os.path.basename(k8s) == 'kubernetes':
         raise ValueError(k8s)
-    os.environ['GCE_USER'] = 'jenkins'
     add_gce_ssh(private_key, public_key)
     check('%s/%s' % (test_infra(), script), '%s/%s' % (test_infra(), properties))
 
