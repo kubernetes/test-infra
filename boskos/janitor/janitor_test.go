@@ -146,7 +146,7 @@ func FakeRun(fb *fakeBoskos, buffer chan string, res string) (int, error) {
 			} else if proj == "" {
 				return totalClean, errors.New("not expect to run out of resources")
 			} else {
-				if totalClean > poolSize + bufferSize + 1 {
+				if totalClean > poolSize+bufferSize+1 {
 					// poolSize in janitor, bufferSize more in janitor pool, 1 more hanging and will exit the loop
 					return totalClean, errors.New("should not acquire more than 12 projects")
 				}
