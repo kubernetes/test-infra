@@ -1,0 +1,51 @@
+.small-popup {
+  min-width: 500px;
+}
+
+.right-button {
+  float:right;
+}
+
+
+.bar {
+  overflow: auto;
+  padding: 5px;
+  width: 100%;
+}
+
+body {
+  margin: 10px;
+}
+
+.dashboard-div {
+  border: 2px solid black;
+  padding-left: 5px;
+}
+
+.tab-ul {
+  padding: 0 5px 5px 20px;
+}
+
+.test-li {
+  margin: 0 0 5px 0;
+}
+
+.dashboard {
+  font-weight: bold;
+}
+
+.failing {
+  color: red;
+}
+
+.stale {
+  color: orange;
+}
+
+.collapsed {
+  display: none;
+}
+
+.line {
+  display: inline-block;
+}

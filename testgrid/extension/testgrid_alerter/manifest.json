@@ -1,0 +1,20 @@
+{
+  "manifest_version": 2,
+
+  "name": "TestGrid Alerter",
+  "description": "This extension shows TestGrid alerts.",
+  "version": "1.0",
+
+  "browser_action": {
+    "default_icon": "images/icon.png",
+    "default_popup": "static/popup.html"
+  },
+  "permissions": [
+    "https://ajax.googleapis.com/",
+    "https://k8s-testgrid.appspot.com/*",
+    "storage"
+  ],
+  "background": {
+    "scripts": ["js/updater.js"]
+  }
+}
