@@ -191,20 +191,27 @@ func TestCanonical(t *testing.T) {
 }
 
 var (
-	aliasYaml = `
+	lowerCaseAliases = []byte(`
 aliases:
   team/t1:
     - u1
     - u2
   team/t2:
     - u1
-    - u3`
+    - u3`)
+	mixedCaseAliases = []byte(`
+aliases:
+  TEAM/T1:
+    - U1
+    - U2`)
 )
 
-type aliasTest struct{}
+type aliasTest struct {
+	data []byte
+}
 
 func (a *aliasTest) read() ([]byte, error) {
-	return []byte(aliasYaml), nil
+	return a.data, nil
 }
 
 func TestCalculateAliasDelta(t *testing.T) {
@@ -212,37 +219,49 @@ func TestCalculateAliasDelta(t *testing.T) {
 
 	tests := []struct {
 		name      string
-		aliasFile string
+		aliasData []byte
 		approvers sets.String
 		expected  sets.String
 	}{
 		{
 			name:      "No expansions.",
+			aliasData: lowerCaseAliases,
 			approvers: sets.NewString("abc", "def"),
 			expected:  sets.NewString("abc", "def"),
 		},
 		{
 			name:      "One alias to be expanded",
+			aliasData: lowerCaseAliases,
 			approvers: sets.NewString("abc", "team/t1"),
 			expected:  sets.NewString("abc", "u1", "u2"),
 		},
 		{
 			name:      "Duplicates inside and outside alias.",
+			aliasData: lowerCaseAliases,
 			approvers: sets.NewString("u1", "team/t1"),
 			expected:  sets.NewString("u1", "u2"),
 		},
 		{
 			name:      "Duplicates in multiple aliases.",
+			aliasData: lowerCaseAliases,
 			approvers: sets.NewString("u1", "team/t1", "team/t2"),
 			expected:  sets.NewString("u1", "u2", "u3"),
+		},
+		{
+			name:      "Mixed casing in aliases.",
+			aliasData: mixedCaseAliases,
+			approvers: sets.NewString("team/t1"),
+			expected:  sets.NewString("u1", "u2"),
 		},
 	}
 
 	for _, test := range tests {
 		info := RepoInfo{
-			aliasFile:   "dummy.file",
-			aliasData:   &aliasData{},
-			aliasReader: &aliasTest{},
+			aliasFile: "dummy.file",
+			aliasData: &aliasData{},
+			aliasReader: &aliasTest{
+				data: test.aliasData,
+			},
 			approvers: map[string]sets.String{
 				"fake": test.approvers,
 			},

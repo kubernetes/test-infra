@@ -135,6 +135,7 @@ func (o *RepoInfo) walkFunc(path string, info os.FileInfo, err error) error {
 			glog.Errorf("Unable to find relative path between %q and %q: %v", o.projectDir, path, err)
 			return err
 		}
+		c.normalizeUsers()
 		o.approvers[path] = sets.NewString(c.Approvers...)
 		o.approvers[path].Insert(c.Assignees...)
 		o.reviewers[path] = sets.NewString(c.Reviewers...)
@@ -164,6 +165,7 @@ func (o *RepoInfo) walkFunc(path string, info os.FileInfo, err error) error {
 		return err
 	}
 	path = canonicalize(path)
+	c.normalizeUsers()
 	o.approvers[path] = sets.NewString(c.Approvers...)
 	o.approvers[path].Insert(c.Assignees...)
 	o.reviewers[path] = sets.NewString(c.Reviewers...)
@@ -172,6 +174,27 @@ func (o *RepoInfo) walkFunc(path string, info os.FileInfo, err error) error {
 		o.allPossibleLabels.Insert(c.Labels...)
 	}
 	return nil
+}
+
+// caseNormalizeAll normalizes normalizes all entries in
+// the assignment configuration so that we can do case-
+// insensitive operations on the entries
+func (c *assignmentConfig) normalizeUsers() {
+	c.Approvers = caseNormalizeAll(c.Approvers)
+	c.Assignees = caseNormalizeAll(c.Assignees)
+	c.Reviewers = caseNormalizeAll(c.Reviewers)
+}
+
+func caseNormalizeAll(users []string) []string {
+	normalizedUsers := users[:0]
+	for _, user := range users {
+		normalizedUsers = append(normalizedUsers, caseNormalize(user))
+	}
+	return normalizedUsers
+}
+
+func caseNormalize(user string) string {
+	return strings.ToLower(user)
 }
 
 // decodeAssignmentConfig will parse the yaml header if it exists and unmarshal it into an assignmentConfig.
@@ -212,8 +235,18 @@ func (o *RepoInfo) updateRepoAliases() error {
 		return fmt.Errorf("Failed to decode the alias file: %v", err)
 	}
 
-	o.aliasData = &data
+	o.aliasData = normalizeAliases(data)
 	return nil
+}
+
+// normalizeAliases normalizes all entries in the alias data
+// so that we can do case-insensitive resolution of aliases
+func normalizeAliases(rawData aliasData) *aliasData {
+	normalizedData := aliasData{AliasMap: map[string][]string{}}
+	for alias, users := range rawData.AliasMap {
+		normalizedData.AliasMap[caseNormalize(alias)] = caseNormalizeAll(users)
+	}
+	return &normalizedData
 }
 
 // expandAllAliases expands all of the aliases in the
