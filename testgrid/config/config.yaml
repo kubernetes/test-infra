@@ -3239,6 +3239,14 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gci-gke-serial
     base_options: 'include-filter-by-regex=Volume%7Cstorage'
     description: 'storage gci gke serial e2e tests for master branch'
+  - name: gce-alpha
+    test_group_name: ci-kubernetes-e2e-gce-alpha-features
+    base_options: 'include-filter-by-regex=Volume%7Cstorage'
+    description: 'storage gce alpha features e2e tests for master branch'
+  - name: gci-gce-alpha
+    test_group_name: ci-kubernetes-e2e-gci-gce-alpha-features
+    base_options: 'include-filter-by-regex=Volume%7Cstorage'
+    description: 'storage gci gce alpha features e2e tests for master branch'
 
 # Move sig-testing here
 
