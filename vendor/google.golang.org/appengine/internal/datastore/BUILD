@@ -26,3 +26,9 @@ filegroup(
     srcs = [":package-srcs"],
     tags = ["automanaged"],
 )
+
+filegroup(
+    name = "go_default_library_protos",
+    srcs = ["datastore_v3.proto"],
+    visibility = ["//visibility:public"],
+)

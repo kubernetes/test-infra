@@ -15,6 +15,7 @@ go_library(
         "exportdata.go",
         "gcimporter.go",
         "isAlias18.go",
+        "isAlias19.go",
     ],
     tags = ["automanaged"],
 )
