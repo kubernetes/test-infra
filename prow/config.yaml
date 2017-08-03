@@ -6204,6 +6204,8 @@ periodics:
         value: /go
       - name: GOOGLE_APPLICATION_CREDENTIALS
         value: /etc/service-account/service-account.json
+      - name: GCE_USER
+        value: prow
       - name: USER
         value: prow
       - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
