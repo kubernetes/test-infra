@@ -17,11 +17,24 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+TESTINFRA_ROOT=$(git rev-parse --show-toplevel)
 TMP_GOPATH=$(mktemp -d)
 
-$(dirname "${BASH_SOURCE}")/go_install_from_commit.sh \
+"${TESTINFRA_ROOT}/verify/go_install_from_commit.sh" \
   github.com/kubernetes/repo-infra/kazel \
   e9d1a126ef355ff5d38e20612c889b07728225a4 \
   "${TMP_GOPATH}"
 
-"${TMP_GOPATH}/bin/kazel" -root="$(dirname ${BASH_SOURCE})/.."
+# The gazelle commit should match the rules_go commit in the WORKSPACE file.
+"${TESTINFRA_ROOT}/verify/go_install_from_commit.sh" \
+  github.com/bazelbuild/rules_go/go/tools/gazelle/gazelle \
+  82483596ec203eb9c1849937636f4cbed83733eb \
+  "${TMP_GOPATH}"
+
+"${TMP_GOPATH}/bin/gazelle" fix \
+  -build_file_name=BUILD,BUILD.bazel \
+  -external=vendored \
+  -mode=fix \
+  -repo_root="${TESTINFRA_ROOT}"
+
+"${TMP_GOPATH}/bin/kazel" -root="${TESTINFRA_ROOT}"
