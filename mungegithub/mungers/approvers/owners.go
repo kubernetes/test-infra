@@ -28,7 +28,6 @@ import (
 
 	"github.com/golang/glog"
 	"k8s.io/kubernetes/pkg/util/sets"
-	"k8s.io/test-infra/mungegithub/features"
 	c "k8s.io/test-infra/mungegithub/mungers/matchers/comment"
 )
 
@@ -41,29 +40,6 @@ type RepoInterface interface {
 	Approvers(path string) sets.String
 	LeafApprovers(path string) sets.String
 	FindApproverOwnersForPath(path string) string
-}
-
-type RepoAlias struct {
-	repo  RepoInterface
-	alias features.Aliases
-}
-
-func NewRepoAlias(repo RepoInterface, alias features.Aliases) *RepoAlias {
-	return &RepoAlias{
-		repo:  repo,
-		alias: alias,
-	}
-}
-
-func (r *RepoAlias) Approvers(path string) sets.String {
-	return r.alias.Expand(r.repo.Approvers(path))
-}
-
-func (r *RepoAlias) LeafApprovers(path string) sets.String {
-	return r.alias.Expand(r.repo.LeafApprovers(path))
-}
-func (r *RepoAlias) FindApproverOwnersForPath(path string) string {
-	return r.repo.FindApproverOwnersForPath(path)
 }
 
 type Owners struct {

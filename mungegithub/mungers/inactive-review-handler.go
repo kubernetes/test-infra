@@ -50,7 +50,7 @@ func init() {
 func (i *InactiveReviewHandler) Name() string { return "inactive-review-handler" }
 
 func (i *InactiveReviewHandler) RequiredFeatures() []string {
-	return []string{features.RepoFeatureName, features.AliasesFeature}
+	return []string{features.RepoFeatureName}
 }
 
 func (i *InactiveReviewHandler) Initialize(config *github.Config, features *features.Features) error {

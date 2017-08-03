@@ -59,7 +59,7 @@ func (*ApprovalHandler) Name() string { return "approval-handler" }
 
 // RequiredFeatures is a slice of 'features' that must be provided
 func (*ApprovalHandler) RequiredFeatures() []string {
-	return []string{features.RepoFeatureName, features.AliasesFeature}
+	return []string{features.RepoFeatureName}
 }
 
 // Initialize will initialize the munger
@@ -144,7 +144,7 @@ func (h *ApprovalHandler) Munge(obj *github.MungeObject) {
 	approversHandler := approvers.NewApprovers(
 		approvers.NewOwners(
 			filenames,
-			approvers.NewRepoAlias(h.features.Repos, *h.features.Aliases),
+			h.features.Repos,
 			int64(*obj.Issue.Number)))
 	approversHandler.AssociatedIssue = findAssociatedIssue(obj.Issue.Body)
 	approversHandler.RequireIssue = h.issueRequired

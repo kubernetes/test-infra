@@ -19,12 +19,13 @@ package features
 import (
 	"fmt"
 	"path/filepath"
+	"reflect"
+	"runtime"
 	"testing"
-
-	"k8s.io/kubernetes/pkg/util/sets"
 
 	"github.com/golang/glog"
 	"github.com/google/go-github/github"
+	"k8s.io/kubernetes/pkg/util/sets"
 )
 
 var (
@@ -38,7 +39,6 @@ const (
 	nonExistentDir = "DELETED_DIR"
 )
 
-// Commit returns a filled out github.Commit which happened at time.Unix(t, 0)
 func getTestRepo() *RepoInfo {
 	testRepo := RepoInfo{enableMdYaml: false, useReviewers: false}
 	approvers := map[string]sets.String{}
@@ -186,6 +186,115 @@ func TestCanonical(t *testing.T) {
 	for _, test := range tests {
 		if test.expectedPath != canonicalize(test.inputPath) {
 			t.Errorf("Expected the canonical path for %v to be %v.  Found %v instead", test.inputPath, test.expectedPath, canonicalize(test.inputPath))
+		}
+	}
+}
+
+var (
+	aliasYaml = `
+aliases:
+  team/t1:
+    - u1
+    - u2
+  team/t2:
+    - u1
+    - u3`
+)
+
+type aliasTest struct{}
+
+func (a *aliasTest) read() ([]byte, error) {
+	return []byte(aliasYaml), nil
+}
+
+func TestCalculateAliasDelta(t *testing.T) {
+	runtime.GOMAXPROCS(runtime.NumCPU())
+
+	tests := []struct {
+		name      string
+		aliasFile string
+		approvers sets.String
+		expected  sets.String
+	}{
+		{
+			name:      "No expansions.",
+			approvers: sets.NewString("abc", "def"),
+			expected:  sets.NewString("abc", "def"),
+		},
+		{
+			name:      "One alias to be expanded",
+			approvers: sets.NewString("abc", "team/t1"),
+			expected:  sets.NewString("abc", "u1", "u2"),
+		},
+		{
+			name:      "Duplicates inside and outside alias.",
+			approvers: sets.NewString("u1", "team/t1"),
+			expected:  sets.NewString("u1", "u2"),
+		},
+		{
+			name:      "Duplicates in multiple aliases.",
+			approvers: sets.NewString("u1", "team/t1", "team/t2"),
+			expected:  sets.NewString("u1", "u2", "u3"),
+		},
+	}
+
+	for _, test := range tests {
+		info := RepoInfo{
+			aliasFile:   "dummy.file",
+			aliasData:   &aliasData{},
+			aliasReader: &aliasTest{},
+			approvers: map[string]sets.String{
+				"fake": test.approvers,
+			},
+		}
+
+		if err := info.updateRepoAliases(); err != nil {
+			t.Fatalf("%v", err)
+		}
+
+		info.expandAllAliases()
+		if expected, got := test.expected, info.approvers["fake"]; !reflect.DeepEqual(expected, got) {
+			t.Errorf("%s: expected: %#v, got: %#v", test.name, expected, got)
+		}
+	}
+}
+
+func TestResolveAlias(t *testing.T) {
+	tests := []struct {
+		name         string
+		knownAliases map[string][]string
+		user         string
+		expected     []string
+	}{
+		{
+			name:         "no known aliases",
+			knownAliases: map[string][]string{},
+			user:         "bob",
+			expected:     []string{},
+		},
+		{
+			name:         "no applicable aliases",
+			knownAliases: map[string][]string{"jim": {"james"}},
+			user:         "bob",
+			expected:     []string{},
+		},
+		{
+			name:         "applicable aliases",
+			knownAliases: map[string][]string{"bob": {"robert"}},
+			user:         "bob",
+			expected:     []string{"robert"},
+		},
+	}
+
+	for _, test := range tests {
+		info := RepoInfo{
+			aliasData: &aliasData{
+				AliasMap: test.knownAliases,
+			},
+		}
+
+		if expected, got := test.expected, info.resolveAlias(test.user); !reflect.DeepEqual(expected, got) {
+			t.Errorf("%s: expected: %#v, got: %#v", test.name, expected, got)
 		}
 	}
 }

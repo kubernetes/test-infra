@@ -29,9 +29,8 @@ import (
 // Features are all features the code know about. Care should be taken
 // not to try to use a feature which isn't 'active'
 type Features struct {
-	Aliases *Aliases
-	Repos   *RepoInfo
-	active  []feature
+	Repos  *RepoInfo
+	active []feature
 }
 
 type feature interface {
@@ -63,8 +62,6 @@ func (f *Features) Initialize(config *github.Config, requestedFeatures []string)
 		switch name {
 		case RepoFeatureName:
 			f.Repos = feat.(*RepoInfo)
-		case AliasesFeature:
-			f.Aliases = feat.(*Aliases)
 		}
 	}
 	return nil

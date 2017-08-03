@@ -50,11 +50,28 @@ type assignmentConfig struct {
 	Labels    []string `json:"labels" yaml:"labels"`
 }
 
+type aliasData struct {
+	// Contains the mapping between aliases and lists of members.
+	AliasMap map[string][]string `json:"aliases"`
+}
+
+type aliasReader interface {
+	read() ([]byte, error)
+}
+
+func (o *RepoInfo) read() ([]byte, error) {
+	return ioutil.ReadFile(o.aliasFile)
+}
+
 // RepoInfo provides information about users in OWNERS files in a git repo
 type RepoInfo struct {
 	baseDir      string
 	enableMdYaml bool
 	useReviewers bool
+
+	aliasFile   string
+	aliasData   *aliasData
+	aliasReader aliasReader
 
 	projectDir        string
 	approvers         map[string]sets.String
@@ -174,14 +191,67 @@ func decodeAssignmentConfig(path string, config *assignmentConfig) error {
 	return parseYaml.Unmarshal([]byte(meta), &config)
 }
 
-func (o *RepoInfo) updateRepoUsers() error {
-	out, err := o.GitCommand([]string{"pull"})
-	if err != nil {
-		glog.Errorf("Unable to run git pull:\n%s\n%v", string(out), err)
-		return err
+func (o *RepoInfo) updateRepoAliases() error {
+	if len(o.aliasFile) == 0 {
+		return nil
 	}
 
-	out, err = o.GitCommand([]string{"rev-parse", "HEAD"})
+	// read and check the alias-file.
+	fileContents, err := o.aliasReader.read()
+	if os.IsNotExist(err) {
+		glog.Infof("Missing alias-file (%s), using empty alias structure.", o.aliasFile)
+		o.aliasData = &aliasData{}
+		return nil
+	}
+	if err != nil {
+		return fmt.Errorf("Unable to read alias file: %v", err)
+	}
+
+	var data aliasData
+	if err := parseYaml.Unmarshal(fileContents, &data); err != nil {
+		return fmt.Errorf("Failed to decode the alias file: %v", err)
+	}
+
+	o.aliasData = &data
+	return nil
+}
+
+// expandAllAliases expands all of the aliases in the
+// lists of approvers and reviewers for paths we track
+func (o *RepoInfo) expandAllAliases() {
+	for filePath := range o.approvers {
+		o.resolveAliases(o.approvers[filePath])
+	}
+
+	for filePath := range o.reviewers {
+		o.resolveAliases(o.approvers[filePath])
+	}
+}
+
+// resolveAliases returns the members that need to
+// be added and removed from a set to yield a set with
+// all aliases expanded
+func (o *RepoInfo) resolveAliases(users sets.String) {
+	for _, owner := range users.List() {
+		if aliases := o.resolveAlias(owner); len(aliases) > 0 {
+			users.Delete(owner)
+			users.Insert(aliases...)
+		}
+	}
+}
+
+// resolveAlias resolves the identity or identities for
+// an alias. If we have no record of the alias, an empty
+// slice is returned
+func (o *RepoInfo) resolveAlias(owner string) []string {
+	if val, ok := o.aliasData.AliasMap[owner]; ok {
+		return val
+	}
+	return []string{}
+}
+
+func (o *RepoInfo) updateRepoUsers() error {
+	out, err := o.GitCommand([]string{"rev-parse", "HEAD"})
 	if err != nil {
 		glog.Errorf("Unable get sha of HEAD:\n%s\n%v", string(out), err)
 		return err
@@ -196,10 +266,14 @@ func (o *RepoInfo) updateRepoUsers() error {
 	if err != nil {
 		glog.Errorf("Got error %v", err)
 	}
+	o.expandAllAliases()
+	if err := o.pruneRepoUsers(); err != nil {
+		return err
+	}
 	glog.Infof("Loaded config from %s:%s", o.projectDir, sha)
 	glog.V(5).Infof("approvers: %v", o.approvers)
 	glog.V(5).Infof("reviewers: %v", o.reviewers)
-	return o.pruneRepoUsers()
+	return nil
 }
 
 // Initialize will initialize the munger
@@ -227,6 +301,12 @@ func (o *RepoInfo) Initialize(config *github.Config) error {
 
 	if cloneUrl, err := o.cloneRepo(); err != nil {
 		return fmt.Errorf("Unable to clone %v: %v", cloneUrl, err)
+	}
+
+	o.aliasData = &aliasData{}
+	o.aliasReader = o
+	if err := o.updateRepoAliases(); err != nil {
+		return err
 	}
 	return o.updateRepoUsers()
 }
@@ -261,9 +341,16 @@ func (o *RepoInfo) pruneRepoUsers() error {
 
 // EachLoop is called at the start of every munge loop
 func (o *RepoInfo) EachLoop() error {
-	_, err := o.GitCommand([]string{"remote", "update"})
-	if err != nil {
-		glog.Errorf("Unable to git remote update: %v", err)
+	if out, err := o.GitCommand([]string{"remote", "update"}); err != nil {
+		glog.Errorf("Unable to git remote update:\n%s\n%v", out, err)
+	}
+	if out, err := o.GitCommand([]string{"pull"}); err != nil {
+		glog.Errorf("Unable to run git pull:\n%s\n%v", string(out), err)
+		return err
+	}
+
+	if err := o.updateRepoAliases(); err != nil {
+		return err
 	}
 	return o.updateRepoUsers()
 }
@@ -273,6 +360,7 @@ func (o *RepoInfo) RegisterOptions(opts *options.Options) sets.String {
 	opts.RegisterString(&o.baseDir, "repo-dir", "", "Path to perform checkout of repository")
 	opts.RegisterBool(&o.enableMdYaml, "enable-md-yaml", false, "If true, look for assignees in md yaml headers.")
 	opts.RegisterBool(&o.useReviewers, "use-reviewers", false, "Use \"reviewers\" rather than \"approvers\" for review")
+	opts.RegisterString(&o.aliasFile, "alias-file", "", "File wherein team members and aliases exist.")
 	return sets.NewString("repo-dir")
 }
 
