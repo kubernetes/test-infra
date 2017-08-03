@@ -3267,6 +3267,17 @@
       "sig-node"
     ]
   },
+  "ci-kubernetes-e2e-gce-ubuntu-1-7-node-prow": {
+    "args": [
+      "--mode=local",
+      "--properties=jobs/e2e-node/ci-ubuntu.properties",
+      "--script=jobs/e2e-node/runner.sh"
+    ],
+    "scenario": "kubernetes_kubelet",
+    "sigOwners": [
+      "sig-node"
+    ]
+  },
   "ci-kubernetes-e2e-gce-ubuntu-1-7-node-serial": {
     "args": [
       "--branch=release-1.7",

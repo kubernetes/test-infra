@@ -745,6 +745,8 @@ test_groups:
 - name: ci-tectonic-e2e-etcd-serial
   gcs_prefix: upstream-jenkins-logs/logs/ci-tectonic-e2e-etcd-serial
 # Ubuntu node e2e tests (contact: @kubernetes/ubuntu-image on github)
+- name: ci-kubernetes-e2e-gce-ubuntu-1-7-node-prow
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntu-1-7-node-prow
 - name: ci-kubernetes-e2e-gce-ubuntu-node
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntu-node
 - name: ci-kubernetes-e2e-gce-ubuntu-node-serial
@@ -1398,6 +1400,8 @@ test_groups:
 dashboards:
 - name: canonical-kubernetes
   dashboard_tab:
+  - name: gce-ubuntu-1.7-node-prow
+    test_group_name: ci-kubernetes-e2e-gce-ubuntu-1-7-node-prow
   - name: gce-ubuntu-node
     test_group_name: ci-kubernetes-e2e-gce-ubuntu-node
   - name: gce-ubuntu-node-serial

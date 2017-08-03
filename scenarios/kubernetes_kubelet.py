@@ -22,6 +22,7 @@
 import argparse
 import os
 import re
+import shutil
 import subprocess
 import sys
 
@@ -38,6 +39,8 @@ VERSION_TAG = {
     'release-1.7': '1.7-latest',
 }
 
+ORIG_CWD = os.getcwd()  # Checkout changes cwd
+
 
 def check(*cmd):
     """Log and run the command, raising on errors."""
@@ -50,7 +53,7 @@ def var(path):
     return os.path.expandvars(path)
 
 
-def main(script, properties, branch, ssh, ssh_pub, robot):
+def run_docker_mode(script, properties, branch, ssh, ssh_pub, robot):
     """Test node branch by sending script specified properties and creds."""
     # If branch has 3-part version, only take first 2 parts.
     mat = re.match(r'master|release-\d+\.\d+', branch)
@@ -95,6 +98,53 @@ def main(script, properties, branch, ssh, ssh_pub, robot):
     )
 
 
+def test_infra(*paths):
+    """Return path relative to root of test-infra repo."""
+    return os.path.join(ORIG_CWD, os.path.dirname(__file__), '..', *paths)
+
+
+def add_gce_ssh(private_key, public_key):
+    """Copies priv, pub keys to /root/.ssh."""
+    ssh_dir = '/root/.ssh'
+    if not os.path.isdir(ssh_dir):
+        os.makedirs(ssh_dir)
+    gce_ssh = '%s/google_compute_engine' % ssh_dir
+    gce_pub = '%s/google_compute_engine.pub' % ssh_dir
+    shutil.copy(private_key, gce_ssh)
+    shutil.copy(public_key, gce_pub)
+
+
+def run_local_mode(script, properties, private_key, public_key):
+    """Checkout, build and trigger the node e2e tests locally."""
+    k8s = os.getcwd()
+    if not os.path.basename(k8s) == 'kubernetes':
+        raise ValueError(k8s)
+    os.environ['GCE_USER'] = 'jenkins'
+    add_gce_ssh(private_key, public_key)
+    check('%s/%s' % (test_infra(), script), '%s/%s' % (test_infra(), properties))
+
+
+def main(args):
+    if args.mode == 'docker':
+        run_docker_mode(
+            ARGS.script,
+            ARGS.properties,
+            ARGS.branch,
+            ARGS.gce_ssh,
+            ARGS.gce_pub,
+            ARGS.service_account,
+        )
+    elif args.mode == 'local':
+        run_local_mode(
+            ARGS.script,
+            ARGS.properties,
+            ARGS.gce_ssh,
+            ARGS.gce_pub,
+        )
+    else:
+        raise ValueError(args.mode)
+
+
 if __name__ == '__main__':
     PARSER = argparse.ArgumentParser(
         'Runs kubelet tests with the specified script, properties and creds')
@@ -120,12 +170,7 @@ if __name__ == '__main__':
         '--script',
         default='./test/e2e_node/jenkins/e2e-node-jenkins.sh',
         help='Script in kubernetes/kubernetes that runs checks')
+    PARSER.add_argument(
+        '--mode', default='docker', choices=['local', 'docker'])
     ARGS = PARSER.parse_args()
-    main(
-        ARGS.script,
-        ARGS.properties,
-        ARGS.branch,
-        ARGS.gce_ssh,
-        ARGS.gce_pub,
-        ARGS.service_account,
-    )
+    main(ARGS)
