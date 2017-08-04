@@ -338,6 +338,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-multizone
 - name: ci-kubernetes-e2e-gci-gke-multizone
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-multizone
+- name: ci-kubernetes-e2e-gke-regional
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-regional
 - name: ci-kubernetes-e2e-gke-scale-correctness
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-scale-correctness
 - name: ci-kubernetes-e2e-gke-prod
@@ -1771,6 +1773,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-multizone
   - name: gci-gke-multizone
     test_group_name: ci-kubernetes-e2e-gci-gke-multizone
+  - name: gke-regional
+    test_group_name: ci-kubernetes-e2e-gke-regional
   - name: gke-reboot
     test_group_name: ci-kubernetes-e2e-gke-reboot
   - name: gci-gke-reboot
