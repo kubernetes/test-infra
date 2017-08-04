@@ -339,3 +339,15 @@ func execError(err error) string {
 	}
 	return err.Error()
 }
+
+// ensureExecutable does a chmod +x to ensure that we can execute a file
+func ensureExecutable(p string) error {
+	s, err := os.Stat(p)
+	if err != nil {
+		return fmt.Errorf("error doing stat on %q: %v", p, err)
+	}
+	if err := os.Chmod(p, s.Mode()|0111); err != nil {
+		return fmt.Errorf("error doing chmod on %q: %v", p, err)
+	}
+	return nil
+}
