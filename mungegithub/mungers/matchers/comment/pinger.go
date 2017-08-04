@@ -28,7 +28,7 @@ type Pinger struct {
 	keyword     string        // Short description for the ping
 	description string        // Long description for the ping
 	timePeriod  time.Duration // How often should we ping
-	maxCount    int           // Will stop pinging after that many occurences
+	maxCount    int           // Will stop pinging after that many occurrences
 }
 
 // NewPinger creates a new pinger. `keyword` is the name of the notification.
