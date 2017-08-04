@@ -20,7 +20,7 @@ SINKER_VERSION     ?= 0.16
 DECK_VERSION       ?= 0.41
 SPLICE_VERSION     ?= 0.27
 TOT_VERSION        ?= 0.5
-HOROLOGIUM_VERSION ?= 0.7
+HOROLOGIUM_VERSION ?= 0.8
 PLANK_VERSION      ?= 0.36
 
 # These are the usual GKE variables.

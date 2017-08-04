@@ -45,9 +45,11 @@ func main() {
 	}
 
 	for now := range time.Tick(1 * time.Minute) {
+		start := time.Now()
 		if err := sync(kc, configAgent.Config(), now); err != nil {
 			logrus.WithError(err).Error("Error syncing periodic jobs.")
 		}
+		logrus.Infof("Sync time: %v", time.Since(start))
 	}
 }
 
