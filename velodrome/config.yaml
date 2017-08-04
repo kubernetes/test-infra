@@ -81,8 +81,11 @@ projects:
             - --no-issues
             - --ignore-authors=k8s-merge-robot,k8s-ci-robot
             - --comments=(?m)^@k8s-bot.*test this
-      kubernetes/test-infra: *kubernetes-transform
       kubernetes/contrib: *kubernetes-transform
+      kubernetes/heapster: *kubernetes-transform
+      kubernetes/ingress: *kubernetes-transform
+      kubernetes/kube-dns: *kubernetes-transform
+      kubernetes/test-infra: *kubernetes-transform
     nginx:
       public-ip: "104.197.200.129"
     grafana:
