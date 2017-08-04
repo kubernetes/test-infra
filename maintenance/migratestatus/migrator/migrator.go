@@ -29,7 +29,7 @@ var (
 	stateDNE = "DOES_NOT_EXIST"
 )
 
-// contextCondition is a struct that describes a condition about the state or existance of a context.
+// contextCondition is a struct that describes a condition about the state or existence of a context.
 type contextCondition struct {
 	// context is the status context that this condition applies to.
 	context string

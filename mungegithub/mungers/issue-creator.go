@@ -184,7 +184,7 @@ func (c *IssueCreator) loadCache() error {
 	// Try to get the list of valid labels for the repo.
 	if c.validLabels, err = c.config.GetLabels(); err != nil {
 		c.validLabels = nil
-		glog.Warningf("Failed to retreive the list of valid labels for repo '%s/%s'. Allowing all labels. errmsg: %v\n", c.config.getOrg(), c.config.getProject(), err)
+		glog.Warningf("Failed to retrieve the list of valid labels for repo '%s/%s'. Allowing all labels. errmsg: %v\n", c.config.getOrg(), c.config.getProject(), err)
 	}
 
 	// Populate the issue cache (allIssues).

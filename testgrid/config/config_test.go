@@ -47,7 +47,7 @@ func TestConfig(t *testing.T) {
 
 	// Validate config.yaml -
 
-	// testgroup - occurance map, validate testgroups
+	// testgroup - occurrence map, validate testgroups
 	testgroupMap := make(map[string]int32)
 
 	for testgroupidx, testgroup := range config.TestGroups {
@@ -177,8 +177,8 @@ func TestConfig(t *testing.T) {
 	}
 
 	// All Testgroup should be mapped to one or more tabs
-	for testgroupname, occurance := range testgroupMap {
-		if occurance == 1 {
+	for testgroupname, occurrence := range testgroupMap {
+		if occurrence == 1 {
 			t.Errorf("Testgroup %v - defined but not used in any dashboards", testgroupname)
 		}
 	}

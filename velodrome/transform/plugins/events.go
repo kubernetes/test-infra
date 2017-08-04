@@ -143,7 +143,7 @@ func (MergeEvent) Opposite() EventMatcher {
 
 // Incoming event should have the following form:
 // eventName:labelName. If eventName is not label, then the second part
-// can be ommitted.
+// can be omitted.
 func NewEventMatcher(eventDescription string) EventMatcher {
 	split := strings.SplitN(eventDescription, ":", 2)
 	switch split[0] {
