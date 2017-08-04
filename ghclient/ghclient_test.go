@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package githubutil
+package ghclient
 
 import (
 	"context"
@@ -71,7 +71,7 @@ func (f *fakeGithub) CreateStatus(ctx context.Context, org, repo, ref string, st
 
 func (f *fakeGithub) GetCombinedStatus(ctx context.Context, org, repo, ref string, opts *github.ListOptions) (*github.CombinedStatus, *github.Response, error) {
 	f.hits++
-	context := fmt.Sprintf("context %d", f.hits-f.hitsBeforeResponse+1)
+	context := fmt.Sprintf("context %d", opts.Page)
 	combStatus := &github.CombinedStatus{Statuses: []github.RepoStatus{{Context: &context}}}
 	if f.hits >= f.hitsBeforeResponse {
 		return combStatus, &github.Response{Rate: github.Rate{Limit: 5000, Remaining: 1000, Reset: github.Timestamp{Time: time.Now()}}, LastPage: f.pages}, nil
@@ -81,7 +81,7 @@ func (f *fakeGithub) GetCombinedStatus(ctx context.Context, org, repo, ref strin
 
 func (f *fakeGithub) List(ctx context.Context, org, repo string, opts *github.PullRequestListOptions) ([]*github.PullRequest, *github.Response, error) {
 	f.hits++
-	title := fmt.Sprintf("pr %d", f.hits-f.hitsBeforeResponse+1)
+	title := fmt.Sprintf("pr %d", opts.Page)
 	list := []*github.PullRequest{{Title: &title}}
 	if f.hits >= f.hitsBeforeResponse {
 		return list, &github.Response{Rate: github.Rate{Limit: 5000, Remaining: 1000, Reset: github.Timestamp{Time: time.Now()}}, LastPage: f.pages}, nil
@@ -112,7 +112,7 @@ func TestCreateStatus(t *testing.T) {
 		one := 1
 		ref := "fake-ref"
 		pr := &github.PullRequest{Number: &one, Head: &github.PullRequestBranch{SHA: &ref}}
-		status, _, err := client.CreateStatus("org", "repo", pr, sampleStatus)
+		status, err := client.CreateStatus("org", "repo", pr, sampleStatus)
 		if (err == nil) != test.shouldSucceed {
 			t.Errorf("CreateStatus test '%s' failed because the error value was unexpected: %v", test.name, err)
 		}
@@ -156,7 +156,7 @@ func TestGetCombinedStatus(t *testing.T) {
 
 	for _, test := range tests {
 		client := newTestClient(test)
-		combStatus, _, err := client.GetCombinedStatus("org", "repo", "ref")
+		combStatus, err := client.GetCombinedStatus("org", "repo", "ref")
 		if (err == nil) != test.shouldSucceed {
 			t.Errorf("GetCombinedStatus test '%s' failed because the error value was unexpected: %v", test.name, err)
 		}
@@ -168,7 +168,7 @@ func TestGetCombinedStatus(t *testing.T) {
 				t.Fatalf("GetCombinedStatus test '%s' failed because the combined status was nil.", test.name)
 			}
 			if len(combStatus.Statuses) != test.pages {
-				t.Errorf("GetCombinedStatus test '%s' failed because the number of pages returned was %d instead of %d.", test.name, len(combStatus.Statuses), test.pages)
+				t.Errorf("GetCombinedStatus test '%s' failed because the number of pages returned was %d instead of %d. stats: %v", test.name, len(combStatus.Statuses), test.pages, combStatus.Statuses)
 			}
 			for index, status := range combStatus.Statuses {
 				if status.Context == nil {

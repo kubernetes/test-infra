@@ -6,9 +6,18 @@ load(
     "go_test",
 )
 
+go_test(
+    name = "go_default_test",
+    srcs = ["ghclient_test.go"],
+    library = ":go_default_library",
+    tags = ["automanaged"],
+    deps = ["//vendor/github.com/google/go-github/github:go_default_library"],
+)
+
 go_library(
     name = "go_default_library",
-    srcs = ["githubutil.go"],
+    srcs = ["ghclient.go"],
+    tags = ["automanaged"],
     deps = [
         "//vendor/github.com/golang/glog:go_default_library",
         "//vendor/github.com/google/go-github/github:go_default_library",

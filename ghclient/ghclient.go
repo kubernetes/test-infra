@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package githubutil
+package ghclient
 
 import (
 	"context"
@@ -89,85 +89,100 @@ func (c *Client) limitRate(r *github.Rate) {
 	}
 }
 
+type retryAbort struct{ error }
+
+func (r *retryAbort) Error() string {
+	return fmt.Sprintf("aborting retry loop: %v", r.error)
+}
+
 // retry handles rate limiting and retry logic for a github API call.
-func (c *Client) retry(action string, call func() (*github.Response, error)) error {
+func (c *Client) retry(action string, call func() (*github.Response, error)) (*github.Response, error) {
 	var err error
+	var resp *github.Response
 
 	for retryCount := 0; retryCount <= c.retries; retryCount++ {
-		var resp *github.Response
 		if resp, err = call(); err == nil {
 			c.limitRate(&resp.Rate)
-			return nil
-		} else if rlErr, ok := err.(*github.RateLimitError); ok {
-			c.limitRate(&rlErr.Rate)
-		} else if tfaErr, ok := err.(*github.TwoFactorAuthError); ok {
-			return tfaErr
+			return resp, nil
+		}
+		switch err := err.(type) {
+		case *github.RateLimitError:
+			c.limitRate(&err.Rate)
+		case *github.TwoFactorAuthError:
+			return resp, err
+		case *retryAbort:
+			return resp, err
 		}
 
 		if retryCount == c.retries {
-			return err
+			return resp, err
 		} else {
 			glog.Errorf("error %s: %v. Will retry.\n", action, err)
 			c.sleepForAttempt(retryCount)
 		}
 	}
-	return err
+	return resp, err
 }
 
 // CreateStatus creates or updates a status context on the indicated reference.
 // This function limits rate and does retries if needed.
-func (c *Client) CreateStatus(owner, repo string, pr *github.PullRequest, status *github.RepoStatus) (*github.RepoStatus, *github.Response, error) {
+func (c *Client) CreateStatus(owner, repo string, pr *github.PullRequest, status *github.RepoStatus) (*github.RepoStatus, error) {
 	ref := *pr.Head.SHA
 	glog.Infof("CreateStatus(dry=%t) %d:%s: %s:%s", c.dryRun, *pr.Number, ref, *status.Context, *status.State)
 	if c.dryRun {
-		return nil, nil, nil
+		return nil, nil
 	}
 	var result *github.RepoStatus
-	var resp *github.Response
 	msg := fmt.Sprintf("creating status for ref '%s'", ref)
-	err := c.retry(msg, func() (*github.Response, error) {
+	_, err := c.retry(msg, func() (*github.Response, error) {
+		var resp *github.Response
 		var err error
 		result, resp, err = c.repoService.CreateStatus(context.Background(), owner, repo, ref, status)
 		return resp, err
 	})
-	return result, resp, err
+	return result, err
 }
 
 // GetCombinedStatus retrieves the CombinedStatus for the specified reference.
 // This function limits rate, does retries if needed and handles pagination.
-func (c *Client) GetCombinedStatus(owner, repo, ref string) (*github.CombinedStatus, *github.Response, error) {
-	var status, result *github.CombinedStatus
-	var resp *github.Response
+func (c *Client) GetCombinedStatus(owner, repo, ref string) (*github.CombinedStatus, error) {
+	var result *github.CombinedStatus
+	listOpts := &github.ListOptions{}
 
-	listOpts := &github.ListOptions{Page: 1, PerPage: 100}
-	lastPage := 1
-	action := fmt.Sprintf("getting combined status for ref '%s'", ref)
-
-	for ; listOpts.Page <= lastPage; listOpts.Page++ {
-		err := c.retry(action, func() (*github.Response, error) {
-			var err error
-			status, resp, err = c.repoService.GetCombinedStatus(
+	statuses, err := c.depaginate(
+		fmt.Sprintf("getting combined status for ref '%s'", ref),
+		listOpts,
+		func() ([]interface{}, *github.Response, error) {
+			combined, resp, err := c.repoService.GetCombinedStatus(
 				context.Background(),
 				owner,
 				repo,
 				ref,
 				listOpts,
 			)
-			return resp, err
-		})
-		if err != nil {
-			return result, resp, err
-		}
-		if resp.LastPage > 0 {
-			lastPage = resp.LastPage
-		}
-		if result == nil {
-			result = status
-		} else {
-			result.Statuses = append(result.Statuses, status.Statuses...)
+			if result == nil {
+				result = combined
+			}
+
+			var interfaceList []interface{}
+			if err == nil {
+				interfaceList = make([]interface{}, 0, len(combined.Statuses))
+				for _, status := range combined.Statuses {
+					interfaceList = append(interfaceList, status)
+				}
+			}
+			return interfaceList, resp, err
+		},
+	)
+
+	if result != nil {
+		result.Statuses = make([]github.RepoStatus, 0, len(statuses))
+		for _, status := range statuses {
+			result.Statuses = append(result.Statuses, status.(github.RepoStatus))
 		}
 	}
-	return result, resp, nil
+
+	return result, err
 }
 
 type PRMungeFunc func(*github.PullRequest) error
@@ -177,41 +192,65 @@ type PRMungeFunc func(*github.PullRequest) error
 // If the munge function returns a non-nil error, ForEachPR will return immediately with a non-nil
 // error unless continueOnError is true in which case an error will be logged and the remaining PRs will be munged.
 func (c *Client) ForEachPR(owner, repo string, opts *github.PullRequestListOptions, continueOnError bool, mungePR PRMungeFunc) error {
-	var list []*github.PullRequest
-	var resp *github.Response
+	var lastPage int
+	// Munge each page as we get it (or in other words, wait until we are ready to munge the next
+	// page of issues before geting it). We use depaginate to make the calls, but don't care about
+	// the slice it returns since we consume the pages as we go.
+	_, err := c.depaginate(
+		"processing PRs",
+		&opts.ListOptions,
+		func() ([]interface{}, *github.Response, error) {
+			list, resp, err := c.prService.List(context.Background(), owner, repo, opts)
+			if err == nil {
+				for _, pr := range list {
+					if pr == nil {
+						glog.Errorln("Received a nil PR from go-github while listing PRs. Skipping...")
+					}
+					if mungeErr := mungePR(pr); mungeErr != nil {
+						if pr.Number == nil {
+							mungeErr = fmt.Errorf("error munging pull request with nil Number field: %v", mungeErr)
+						} else {
+							mungeErr = fmt.Errorf("error munging pull request #%d: %v", *pr.Number, mungeErr)
+						}
+						if !continueOnError {
+							return nil, resp, &retryAbort{mungeErr}
+						}
+						glog.Errorf("%v\n", mungeErr)
+					}
+				}
+				if resp.LastPage > 0 {
+					lastPage = resp.LastPage
+				}
+				glog.Infof("ForEachPR processed page %d/%d\n", opts.ListOptions.Page, lastPage)
+			}
+			return nil, resp, err
+		},
+	)
+	return err
+}
 
-	opts.ListOptions.Page = 1
-	opts.ListOptions.PerPage = 100
+func (c *Client) depaginate(action string, opts *github.ListOptions, call func() ([]interface{}, *github.Response, error)) ([]interface{}, error) {
+	var allItems []interface{}
+	wrapper := func() (*github.Response, error) {
+		fmt.Println("wrapper")
+		items, resp, err := call()
+		if err == nil {
+			allItems = append(allItems, items...)
+		}
+		return resp, err
+	}
+
+	opts.Page = 1
+	opts.PerPage = 100
 	lastPage := 1
-
-	for ; opts.ListOptions.Page <= lastPage; opts.ListOptions.Page++ {
-		err := c.retry("processing PRs", func() (*github.Response, error) {
-			var err error
-			list, resp, err = c.prService.List(context.Background(), owner, repo, opts)
-			return resp, err
-		})
+	for ; opts.Page <= lastPage; opts.Page++ {
+		resp, err := c.retry(action, wrapper)
 		if err != nil {
-			return err
+			return allItems, fmt.Errorf("error while depaginating page %d/%d: %v", opts.Page, lastPage, err)
 		}
 		if resp.LastPage > 0 {
 			lastPage = resp.LastPage
 		}
-		for _, pr := range list {
-			if err := mungePR(pr); err != nil {
-				if pr == nil {
-					err = fmt.Errorf("received a nil PR from go-github while listing PRs. Munge error: %v", err)
-				} else if pr.Number == nil {
-					err = fmt.Errorf("error munging pull request with nil Number field: %v", err)
-				} else {
-					err = fmt.Errorf("error munging pull request #%d: %v", *pr.Number, err)
-				}
-				if !continueOnError {
-					return err
-				}
-				glog.Errorf("%v\n", err)
-			}
-		}
-		glog.Infof("ForEachPR processed page %d/%d\n", opts.ListOptions.Page, lastPage)
 	}
-	return nil
+	return allItems, nil
 }

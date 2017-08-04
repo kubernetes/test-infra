@@ -19,9 +19,10 @@ package migrator
 import (
 	"fmt"
 
+	"k8s.io/test-infra/ghclient"
+
 	"github.com/golang/glog"
 	"github.com/google/go-github/github"
-	"k8s.io/test-infra/maintenance/githubutil"
 )
 
 var (
@@ -200,7 +201,7 @@ type Migrator struct {
 	repo            string
 	continueOnError bool
 
-	client *githubutil.Client
+	client *ghclient.Client
 	Mode
 }
 
@@ -209,7 +210,7 @@ func New(mode Mode, token, org, repo string, dryRun, continueOnError bool) *Migr
 		org:             org,
 		repo:            repo,
 		continueOnError: continueOnError,
-		client:          githubutil.NewClient(token, dryRun),
+		client:          ghclient.NewClient(token, dryRun),
 		Mode:            mode,
 	}
 }
@@ -225,14 +226,14 @@ func (m *Migrator) ProcessPR(pr *github.PullRequest) error {
 		return fmt.Errorf("migrator cannot process a PullRequest with a nil 'Head.SHA' field.")
 	}
 
-	combined, _, err := m.client.GetCombinedStatus(m.org, m.repo, *pr.Head.SHA)
+	combined, err := m.client.GetCombinedStatus(m.org, m.repo, *pr.Head.SHA)
 	if err != nil {
 		return err
 	}
 	actions := m.ProcessStatuses(combined)
 
 	for _, action := range actions {
-		if _, _, err = m.client.CreateStatus(m.org, m.repo, pr, action); err != nil {
+		if _, err = m.client.CreateStatus(m.org, m.repo, pr, action); err != nil {
 			return err
 		}
 	}
