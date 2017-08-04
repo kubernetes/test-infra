@@ -233,7 +233,7 @@ func (m *Migrator) ProcessPR(pr *github.PullRequest) error {
 	actions := m.ProcessStatuses(combined)
 
 	for _, action := range actions {
-		if _, err = m.client.CreateStatus(m.org, m.repo, pr, action); err != nil {
+		if _, err = m.client.CreateStatus(m.org, m.repo, *pr.Head.SHA, action); err != nil {
 			return err
 		}
 	}
