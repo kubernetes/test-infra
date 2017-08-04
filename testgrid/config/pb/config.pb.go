@@ -83,11 +83,11 @@ func (TestGroup_TestsName) EnumDescriptor() ([]byte, []int) { return fileDescrip
 // Specifies the test name.
 type TestNameConfig struct {
 	// The name elements specifying the target test name for this tab.
-	NameElements []*TestNameConfig_NameElement `protobuf:"bytes,1,rep,name=name_elements,json=nameElements" yaml:"name_elements,omitempty"`
+	NameElements []*TestNameConfig_NameElement `protobuf:"bytes,1,rep,name=name_elements,json=nameElements" json:"name_elements,omitempty"`
 	// Specifies a printf-style format string for name elements. The format
 	// string should have as many conversions as there are name_elements.
 	// For example, two name_elements could be used with name_format="%s: %s".
-	NameFormat string `protobuf:"bytes,2,opt,name=name_format,json=nameFormat" yaml:"name_format,omitempty"`
+	NameFormat string `protobuf:"bytes,2,opt,name=name_format,json=nameFormat" json:"name_format,omitempty"`
 }
 
 func (m *TestNameConfig) Reset()                    { *m = TestNameConfig{} }
@@ -120,7 +120,7 @@ type TestNameConfig_NameElement struct {
 	//   - target_config: Tests name
 	//   - target_config: Context
 	//   name_format: '%s [%s]'
-	TargetConfig string `protobuf:"bytes,2,opt,name=target_config,json=targetConfig" yaml:"target_config,omitempty"`
+	TargetConfig string `protobuf:"bytes,2,opt,name=target_config,json=targetConfig" json:"target_config,omitempty"`
 }
 
 func (m *TestNameConfig_NameElement) Reset()                    { *m = TestNameConfig_NameElement{} }
@@ -131,9 +131,9 @@ func (*TestNameConfig_NameElement) Descriptor() ([]byte, []int) { return fileDes
 // A single notification.
 type Notification struct {
 	// Required: Text summary of the issue or notice.
-	Summary string `protobuf:"bytes,1,opt,name=summary" yaml:"summary,omitempty"`
+	Summary string `protobuf:"bytes,1,opt,name=summary" json:"summary,omitempty"`
 	// Optional: Link to further information, such as a bug, email, document, etc.
-	ContextLink string `protobuf:"bytes,2,opt,name=context_link,json=contextLink" yaml:"context_link,omitempty"`
+	ContextLink string `protobuf:"bytes,2,opt,name=context_link,json=contextLink" json:"context_link,omitempty"`
 }
 
 func (m *Notification) Reset()                    { *m = Notification{} }
@@ -144,27 +144,27 @@ func (*Notification) Descriptor() ([]byte, []int) { return fileDescriptor0, []in
 // Specifies a group of tests to gather.
 type TestGroup struct {
 	// Name of this TestGroup, for mapping dashboard tabs to tests.
-	Name string `protobuf:"bytes,1,opt,name=name" yaml:"name,omitempty"`
+	Name string `protobuf:"bytes,1,opt,name=name" json:"name,omitempty"`
 	// Path to the test result stored in gcs
-	GcsPrefix string `protobuf:"bytes,2,opt,name=gcs_prefix,json=gcsPrefix" yaml:"gcs_prefix,omitempty"`
+	GcsPrefix string `protobuf:"bytes,2,opt,name=gcs_prefix,json=gcsPrefix" json:"gcs_prefix,omitempty"`
 	// Number of days of test results to gather and serve.
-	DaysOfResults int32 `protobuf:"varint,3,opt,name=days_of_results,json=daysOfResults" yaml:"days_of_results,omitempty"`
+	DaysOfResults int32 `protobuf:"varint,3,opt,name=days_of_results,json=daysOfResults" json:"days_of_results,omitempty"`
 	// What to do with the 'Tests name' configuration value. It can replace the
 	// name of the test, be appended to the name of the test, or ignored. If it is
 	// ignored, then the name of the tests will be the build target.
-	TestsNamePolicy TestGroup_TestsName       `protobuf:"varint,6,opt,name=tests_name_policy,json=testsNamePolicy,enum=TestGroup_TestsName" yaml:"tests_name_policy,omitempty"`
-	ColumnHeader    []*TestGroup_ColumnHeader `protobuf:"bytes,9,rep,name=column_header,json=columnHeader" yaml:"column_header,omitempty"`
+	TestsNamePolicy TestGroup_TestsName       `protobuf:"varint,6,opt,name=tests_name_policy,json=testsNamePolicy,enum=TestGroup_TestsName" json:"tests_name_policy,omitempty"`
+	ColumnHeader    []*TestGroup_ColumnHeader `protobuf:"bytes,9,rep,name=column_header,json=columnHeader" json:"column_header,omitempty"`
 	// deprecated - do not touch
-	AlertStateResultsHours int32 `protobuf:"varint,11,opt,name=alert_state_results_hours,json=alertStateResultsHours" yaml:"alert_state_results_hours,omitempty"`
+	AlertStateResultsHours int32 `protobuf:"varint,11,opt,name=alert_state_results_hours,json=alertStateResultsHours" json:"alert_state_results_hours,omitempty"`
 	// deprecated - always set to true
-	UseKubernetesClient bool `protobuf:"varint,24,opt,name=use_kubernetes_client,json=useKubernetesClient" yaml:"use_kubernetes_client,omitempty"`
+	UseKubernetesClient bool `protobuf:"varint,24,opt,name=use_kubernetes_client,json=useKubernetesClient" json:"use_kubernetes_client,omitempty"`
 	// deprecated - always set to true
-	IsExternal bool `protobuf:"varint,25,opt,name=is_external,json=isExternal" yaml:"is_external,omitempty"`
+	IsExternal bool `protobuf:"varint,25,opt,name=is_external,json=isExternal" json:"is_external,omitempty"`
 	// Specifies the test name for a test.
-	TestNameConfig *TestNameConfig `protobuf:"bytes,26,opt,name=test_name_config,json=testNameConfig" yaml:"test_name_config,omitempty"`
+	TestNameConfig *TestNameConfig `protobuf:"bytes,26,opt,name=test_name_config,json=testNameConfig" json:"test_name_config,omitempty"`
 	// A list of notifications attached to this test group.
 	// This is displayed on any dashboard tab backed by this test group.
-	Notifications []*Notification `protobuf:"bytes,27,rep,name=notifications" yaml:"notifications,omitempty"`
+	Notifications []*Notification `protobuf:"bytes,27,rep,name=notifications" json:"notifications,omitempty"`
 }
 
 func (m *TestGroup) Reset()                    { *m = TestGroup{} }
@@ -196,7 +196,7 @@ func (m *TestGroup) GetNotifications() []*Notification {
 // Custom column headers for defining extra column-heading rows from values in
 // the test result.
 type TestGroup_ColumnHeader struct {
-	ConfigurationValue string `protobuf:"bytes,3,opt,name=configuration_value,json=configurationValue" yaml:"configuration_value,omitempty"`
+	ConfigurationValue string `protobuf:"bytes,3,opt,name=configuration_value,json=configurationValue" json:"configuration_value,omitempty"`
 }
 
 func (m *TestGroup_ColumnHeader) Reset()                    { *m = TestGroup_ColumnHeader{} }
@@ -207,12 +207,12 @@ func (*TestGroup_ColumnHeader) Descriptor() ([]byte, []int) { return fileDescrip
 // Specifies a dashboard.
 type Dashboard struct {
 	// A list of the tabs on the dashboard.
-	DashboardTab []*DashboardTab `protobuf:"bytes,1,rep,name=dashboard_tab,json=dashboardTab" yaml:"dashboard_tab,omitempty"`
+	DashboardTab []*DashboardTab `protobuf:"bytes,1,rep,name=dashboard_tab,json=dashboardTab" json:"dashboard_tab,omitempty"`
 	// A name for the Dashboard.
-	Name string `protobuf:"bytes,2,opt,name=name" yaml:"name,omitempty"`
+	Name string `protobuf:"bytes,2,opt,name=name" json:"name,omitempty"`
 	// A list of notifications attached to this dashboard.
 	// This is displayed on any dashboard tab in this dashboard.
-	Notifications []*Notification `protobuf:"bytes,3,rep,name=notifications" yaml:"notifications,omitempty"`
+	Notifications []*Notification `protobuf:"bytes,3,rep,name=notifications" json:"notifications,omitempty"`
 }
 
 func (m *Dashboard) Reset()                    { *m = Dashboard{} }
@@ -236,9 +236,9 @@ func (m *Dashboard) GetNotifications() []*Notification {
 
 type LinkTemplate struct {
 	// The URL template.
-	Url string `protobuf:"bytes,1,opt,name=url" yaml:"url,omitempty"`
+	Url string `protobuf:"bytes,1,opt,name=url" json:"url,omitempty"`
 	// The options templates.
-	Options []*LinkOptionsTemplate `protobuf:"bytes,2,rep,name=options" yaml:"options,omitempty"`
+	Options []*LinkOptionsTemplate `protobuf:"bytes,2,rep,name=options" json:"options,omitempty"`
 }
 
 func (m *LinkTemplate) Reset()                    { *m = LinkTemplate{} }
@@ -256,9 +256,9 @@ func (m *LinkTemplate) GetOptions() []*LinkOptionsTemplate {
 // A simple key/value pair for link options.
 type LinkOptionsTemplate struct {
 	// The key for the option. This is not expanded.
-	Key string `protobuf:"bytes,1,opt,name=key" yaml:"key,omitempty"`
+	Key string `protobuf:"bytes,1,opt,name=key" json:"key,omitempty"`
 	// The value for the option. This is expanded the same as the LinkTemplate.
-	Value string `protobuf:"bytes,2,opt,name=value" yaml:"value,omitempty"`
+	Value string `protobuf:"bytes,2,opt,name=value" json:"value,omitempty"`
 }
 
 func (m *LinkOptionsTemplate) Reset()                    { *m = LinkOptionsTemplate{} }
@@ -269,33 +269,33 @@ func (*LinkOptionsTemplate) Descriptor() ([]byte, []int) { return fileDescriptor
 // A single tab on a dashboard.
 type DashboardTab struct {
 	// The name of the dashboard tab to display in the client.
-	Name string `protobuf:"bytes,1,opt,name=name" yaml:"name,omitempty"`
+	Name string `protobuf:"bytes,1,opt,name=name" json:"name,omitempty"`
 	// The name of the TestGroup specifying the test results for this tab.
-	TestGroupName string `protobuf:"bytes,2,opt,name=test_group_name,json=testGroupName" yaml:"test_group_name,omitempty"`
+	TestGroupName string `protobuf:"bytes,2,opt,name=test_group_name,json=testGroupName" json:"test_group_name,omitempty"`
 	// Default bug component for manually filing bugs from the dashboard
-	BugComponent int32 `protobuf:"varint,3,opt,name=bug_component,json=bugComponent" yaml:"bug_component,omitempty"`
+	BugComponent int32 `protobuf:"varint,3,opt,name=bug_component,json=bugComponent" json:"bug_component,omitempty"`
 	// Default code search path for changelist search links
-	CodeSearchPath string `protobuf:"bytes,4,opt,name=code_search_path,json=codeSearchPath" yaml:"code_search_path,omitempty"`
+	CodeSearchPath string `protobuf:"bytes,4,opt,name=code_search_path,json=codeSearchPath" json:"code_search_path,omitempty"`
 	// Base options to always include, for example:
 	// width=20&include-filter-by-regex=level_tests
 	// This is taken from the #fragment part of the testgrid url.
 	// Best way to create these is to setup the options on testgrid and then
 	// copy the #fragment part.
-	BaseOptions string `protobuf:"bytes,6,opt,name=base_options,json=baseOptions" yaml:"base_options,omitempty"`
+	BaseOptions string `protobuf:"bytes,6,opt,name=base_options,json=baseOptions" json:"base_options,omitempty"`
 	// The URL template to visit after clicking on a cell.
-	OpenTestTemplate *LinkTemplate `protobuf:"bytes,7,opt,name=open_test_template,json=openTestTemplate" yaml:"open_test_template,omitempty"`
+	OpenTestTemplate *LinkTemplate `protobuf:"bytes,7,opt,name=open_test_template,json=openTestTemplate" json:"open_test_template,omitempty"`
 	// The URL template to visit when filing a bug.
-	FileBugTemplate *LinkTemplate `protobuf:"bytes,8,opt,name=file_bug_template,json=fileBugTemplate" yaml:"file_bug_template,omitempty"`
+	FileBugTemplate *LinkTemplate `protobuf:"bytes,8,opt,name=file_bug_template,json=fileBugTemplate" json:"file_bug_template,omitempty"`
 	// The URL template to visit when attaching a bug
-	AttachBugTemplate *LinkTemplate `protobuf:"bytes,9,opt,name=attach_bug_template,json=attachBugTemplate" yaml:"attach_bug_template,omitempty"`
+	AttachBugTemplate *LinkTemplate `protobuf:"bytes,9,opt,name=attach_bug_template,json=attachBugTemplate" json:"attach_bug_template,omitempty"`
 	// Text to show in the about menu as a link to another view of the results.
-	ResultsText string `protobuf:"bytes,10,opt,name=results_text,json=resultsText" yaml:"results_text,omitempty"`
+	ResultsText string `protobuf:"bytes,10,opt,name=results_text,json=resultsText" json:"results_text,omitempty"`
 	// The URL template to visit after clicking.
-	ResultsUrlTemplate *LinkTemplate `protobuf:"bytes,11,opt,name=results_url_template,json=resultsUrlTemplate" yaml:"results_url_template,omitempty"`
+	ResultsUrlTemplate *LinkTemplate `protobuf:"bytes,11,opt,name=results_url_template,json=resultsUrlTemplate" json:"results_url_template,omitempty"`
 	// The URL template to visit when searching for changelists.
-	CodeSearchUrlTemplate *LinkTemplate `protobuf:"bytes,12,opt,name=code_search_url_template,json=codeSearchUrlTemplate" yaml:"code_search_url_template,omitempty"`
+	CodeSearchUrlTemplate *LinkTemplate `protobuf:"bytes,12,opt,name=code_search_url_template,json=codeSearchUrlTemplate" json:"code_search_url_template,omitempty"`
 	// A description paragraph to be displayed.
-	Description string `protobuf:"bytes,13,opt,name=description" yaml:"description,omitempty"`
+	Description string `protobuf:"bytes,13,opt,name=description" json:"description,omitempty"`
 }
 
 func (m *DashboardTab) Reset()                    { *m = DashboardTab{} }
@@ -341,10 +341,10 @@ func (m *DashboardTab) GetCodeSearchUrlTemplate() *LinkTemplate {
 // Specifies a dashboard group.
 type DashboardGroup struct {
 	// The name for the dashboard group.
-	Name string `protobuf:"bytes,1,opt,name=name" yaml:"name,omitempty"`
+	Name string `protobuf:"bytes,1,opt,name=name" json:"name,omitempty"`
 	// A list of names specifying dashboards to show links to in a separate tabbed
 	// bar at the top of the page for each of the given dashboards.
-	DashboardNames []string `protobuf:"bytes,2,rep,name=dashboard_names,json=dashboardNames" yaml:"dashboard_names,omitempty"`
+	DashboardNames []string `protobuf:"bytes,2,rep,name=dashboard_names,json=dashboardNames" json:"dashboard_names,omitempty"`
 }
 
 func (m *DashboardGroup) Reset()                    { *m = DashboardGroup{} }
@@ -355,11 +355,11 @@ func (*DashboardGroup) Descriptor() ([]byte, []int) { return fileDescriptor0, []
 // A service configuration consisting of multiple test groups and dashboards.
 type Configuration struct {
 	// A list of groups of tests to gather.
-	TestGroups []*TestGroup `protobuf:"bytes,1,rep,name=test_groups,json=testGroups" yaml:"test_groups,omitempty"`
+	TestGroups []*TestGroup `protobuf:"bytes,1,rep,name=test_groups,json=testGroups" json:"test_groups,omitempty"`
 	// A list of all of the dashboards for a server.
-	Dashboards []*Dashboard `protobuf:"bytes,2,rep,name=dashboards" yaml:"dashboards,omitempty"`
+	Dashboards []*Dashboard `protobuf:"bytes,2,rep,name=dashboards" json:"dashboards,omitempty"`
 	// A list of all the dashboard groups for a server.
-	DashboardGroups []*DashboardGroup `protobuf:"bytes,3,rep,name=dashboard_groups,json=dashboardGroups" yaml:"dashboard_groups,omitempty"`
+	DashboardGroups []*DashboardGroup `protobuf:"bytes,3,rep,name=dashboard_groups,json=dashboardGroups" json:"dashboard_groups,omitempty"`
 }
 
 func (m *Configuration) Reset()                    { *m = Configuration{} }
@@ -390,9 +390,9 @@ func (m *Configuration) GetDashboardGroups() []*DashboardGroup {
 
 type DefaultConfiguration struct {
 	// A default testgroup with default initialization data
-	DefaultTestGroup *TestGroup `protobuf:"bytes,1,opt,name=default_test_group,json=defaultTestGroup" yaml:"default_test_group,omitempty"`
+	DefaultTestGroup *TestGroup `protobuf:"bytes,1,opt,name=default_test_group,json=defaultTestGroup" json:"default_test_group,omitempty"`
 	// A default dashboard with default initialization data
-	DefaultDashboardTab *DashboardTab `protobuf:"bytes,2,opt,name=default_dashboard_tab,json=defaultDashboardTab" yaml:"default_dashboard_tab,omitempty"`
+	DefaultDashboardTab *DashboardTab `protobuf:"bytes,2,opt,name=default_dashboard_tab,json=defaultDashboardTab" json:"default_dashboard_tab,omitempty"`
 }
 
 func (m *DefaultConfiguration) Reset()                    { *m = DefaultConfiguration{} }
