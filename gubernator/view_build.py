@@ -142,13 +142,22 @@ def build_details(build_dir):
 
 
 def parse_pr_path(prefix):
-    if not prefix.startswith(view_base.PR_PREFIX):
-        return None, None, None
-    pr = os.path.basename(prefix)
-    repo = os.path.basename(os.path.dirname(prefix))
-    if repo == 'pull':
-        return pr, '', 'kubernetes/kubernetes'
-    return pr, repo + '/', 'kubernetes/' + repo
+    for org, path in view_base.PR_PREFIX.items():
+        if not prefix.startswith(path):
+            continue
+        pr = os.path.basename(prefix)
+        repo = os.path.basename(os.path.dirname(prefix))
+        if '_' in repo and not repo.startswith(org):
+            continue
+        if org == 'kubernetes' and repo == 'pull':
+            return pr, '', 'kubernetes/kubernetes'
+        pr_path = repo.replace('_', '/')
+        if '_' not in repo:
+            repo = '%s/%s' % (org, repo)
+        else:
+            repo = pr_path
+        return pr, pr_path + '/', repo
+    return None, None, None
 
 
 class BuildHandler(view_base.BaseHandler):
