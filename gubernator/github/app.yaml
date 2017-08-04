@@ -1,4 +1,4 @@
-application: k8s-gubernator
+application: openshift-gce-devel 
 module: github
 version: 1
 runtime: python27
