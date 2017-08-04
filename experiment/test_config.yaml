@@ -20,15 +20,22 @@
 #     --json-config-path=jobs/config.json \
 #     --prow-config-path=prow/config.yaml && bazel run //jobs:config_sort
 
+# Supported tests:
+#
+#  * cluster e2e test
+#    The name starts with "ci-kubernetes-e2e-" and must satisfy the following
+#    format:
+#      ci-kubernetes-e2e-<cloudProvider>-<image>-<k8sVersion>-<testSuite>
+#
+#  * node e2e test
+#    The name starts with "ci-kubernetes-e2enode-" and must satisfy the
+#    following format:
+#      ci-kubernetes-e2enode-<nodeImage>-<nodeK8sVersion>-<nodeTestSuite>-<nodeSystemSpec>
 
 # The envs and args defined in "jobs" override the ones defined in each
 # dimension.
 jobs:
   # Cluster E2E Tests
-  #
-  # Cluster E2E test name starts with "ci-kubernetes-e2e-" and must satisfy the
-  # following format:
-  #   ci-kubernetes-e2e-<cloudProvider>-<image>-<k8sVersion>-<testSuite>
 
   # COS image validation.
   #
@@ -542,6 +549,17 @@ jobs:
     - --gcp-project=k8s-e2e-170223
     sigOwners: ['sig-network']
 
+  # Node E2E Tests
+
+  ci-kubernetes-e2enode-cosstable1-k8sstable1-default-defaultspec:
+    interval: 2h
+    envs:
+    - GCE_PROJECT=cos-image-validation
+    sigOwners: ['sig-node']
+
+
+# The following settings are used by cluster e2e tests.
+
 common:
   args:
   - --cluster=test-${job_name_hash}
@@ -665,3 +683,54 @@ testSuites:
     - GINKGO_PARALLEL=n
     - GINKGO_PARALLEL_NODES=1
     - NUM_NODES=3
+
+# The following settings are used by node e2e tests.
+
+nodeCommon:
+    envs:
+    - CLEANUP=true
+    - GCE_ZONE=us-central1-f
+    - KUBELET_ARGS=--cgroups-per-qos=true --cgroup-root=/
+
+nodeImages:
+  cosstable1:
+    envs:
+    - GCE_IMAGES=cos-stable-60-9592-76-0
+    - GCE_IMAGE_PROJECT=cos-cloud
+
+nodeK8sVersions:
+  dev:
+    args:
+    - --repo=k8s.io/kubernetes=master
+  beta:
+    args:
+    # Run against HEAD since there's currently no Kubernetes beta release.
+    - --repo=k8s.io/kubernetes=master
+  stable1:
+    args:
+    - --repo=k8s.io/kubernetes=release-1.7
+  stable2:
+    args:
+    - --repo=k8s.io/kubernetes=release-1.6
+  stable3:
+    args:
+    - --repo=k8s.io/kubernetes=release-1.5
+
+nodeTestSuites:
+  default:
+    envs:
+    - TIMEOUT=60m
+    - GINKGO_FLAGS=--skip=\[Flaky\]|\[Serial\]
+  serial:
+    - TIMEOUT=180m
+    - GINKGO_FLAGS=--focus=\[Serial\] --skip=\[Flaky\]|\[Benchmark\]
+    - PARALLELISM=1
+    - TEST_ARGS=--feature-gates=DynamicKubeletConfig=true
+
+nodeSystemSpecs:
+  default:
+    envs:
+    - SYSTEM_SPEC_NAME=
+  gke:
+    envs:
+    - SYSTEM_SPEC_NAME=gke

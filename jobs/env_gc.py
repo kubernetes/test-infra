@@ -36,7 +36,8 @@ def find_orphans():
         if config['scenario'] == 'execute' or 'args' not in config:
             continue
         for arg in config['args']:
-            if arg.startswith('--env-file='):
+            if (arg.startswith('--env-file=') or
+                    arg.startswith('--properties=')):
                 used[arg.split('=')[1]] = True
 
     basepath = test_infra()
