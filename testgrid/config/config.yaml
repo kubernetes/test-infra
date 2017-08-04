@@ -1071,6 +1071,8 @@ test_groups:
 - name: ci-kubernetes-soak-gci-gce-1-7-test
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gci-gce-1-7-test
 # cos image validation.
+- name: ci-kubernetes-e2enode-cosstable1-k8sstable1-default-defaultspec
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cosstable1-k8sstable1-default-defaultspec
 - name: ci-kubernetes-e2e-gce-cosdev-k8sdev-default
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cosdev-k8sdev-default
   column_header:
@@ -2969,6 +2971,8 @@ dashboards:
 
 - name: cos-image-validation
   dashboard_tab:
+  - name: e2enode-cosstable1-k8sstable1-default-defaultspec
+    test_group_name: ci-kubernetes-e2enode-cosstable1-k8sstable1-default-defaultspec
   - name: gce-cosdev-k8sdev-default
     test_group_name: ci-kubernetes-e2e-gce-cosdev-k8sdev-default
   - name: gce-cosdev-k8sdev-slow
