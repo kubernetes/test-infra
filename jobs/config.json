@@ -7055,6 +7055,24 @@
       "UNKNOWN"
     ]
   },
+  "ci-kubernetes-e2e-gke-regional": {
+    "args": [
+      "--check-leaked-resources",
+      "--deployment=bash",
+      "--env-file=jobs/platform/gke.env",
+      "--env-file=jobs/platform/ginkgo-parallel.env",
+      "--env-file=jobs/ci-kubernetes-e2e-gke-regional.env",
+      "--extract=ci/latest",
+      "--gcp-node-image=gci",
+      "--provider=gke",
+      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
+      "--timeout=150m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "UNKNOWN"
+    ]
+  },
   "ci-kubernetes-e2e-gke-release-1-5": {
     "args": [
       "--check-leaked-resources",
