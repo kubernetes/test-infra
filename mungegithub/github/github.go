@@ -1278,7 +1278,7 @@ func (config *Config) Collaborators() (sets.String, error) {
 	}
 	for _, user := range users {
 		if user.Login != nil && *user.Login != "" {
-			logins.Insert(*user.Login)
+			logins.Insert(strings.ToLower(*user.Login))
 		}
 	}
 	return logins, nil

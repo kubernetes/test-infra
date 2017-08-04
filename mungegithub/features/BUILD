@@ -10,14 +10,10 @@ load(
 
 go_test(
     name = "go_default_test",
-    srcs = [
-        "aliases_test.go",
-        "repo-updates_test.go",
-    ],
+    srcs = ["repo-updates_test.go"],
     library = ":go_default_library",
     tags = ["automanaged"],
     deps = [
-        "//mungegithub/github:go_default_library",
         "//vendor:github.com/golang/glog",
         "//vendor:github.com/google/go-github/github",
         "//vendor:k8s.io/kubernetes/pkg/util/sets",
@@ -27,7 +23,6 @@ go_test(
 go_library(
     name = "go_default_library",
     srcs = [
-        "aliases.go",
         "branch-protection.go",
         "features.go",
         "repo-updates.go",
@@ -36,7 +31,6 @@ go_library(
     deps = [
         "//mungegithub/github:go_default_library",
         "//mungegithub/mungeopts:go_default_library",
-        "//mungegithub/mungers/mungerutil:go_default_library",
         "//mungegithub/options:go_default_library",
         "//vendor:github.com/ghodss/yaml",
         "//vendor:github.com/golang/glog",

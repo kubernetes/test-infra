@@ -24,7 +24,6 @@ go_library(
     srcs = ["owners.go"],
     tags = ["automanaged"],
     deps = [
-        "//mungegithub/features:go_default_library",
         "//mungegithub/mungers/matchers/comment:go_default_library",
         "//vendor:github.com/golang/glog",
         "//vendor:k8s.io/kubernetes/pkg/util/sets",

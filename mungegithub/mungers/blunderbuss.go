@@ -57,7 +57,7 @@ func (b *BlunderbussMunger) Name() string { return "blunderbuss" }
 
 // RequiredFeatures is a slice of 'features' that must be provided
 func (b *BlunderbussMunger) RequiredFeatures() []string {
-	return []string{features.RepoFeatureName, features.AliasesFeature}
+	return []string{features.RepoFeatureName}
 }
 
 // Initialize will initialize the munger
@@ -93,7 +93,6 @@ func printChance(owners weightMap, total int64) {
 func getPotentialOwners(author string, feats *features.Features, files []*githubapi.CommitFile, leafOnly bool) (weightMap, int64) {
 	potentialOwners := weightMap{}
 	weightSum := int64(0)
-	aliases := feats.Aliases
 	var fileOwners sets.String
 	for _, file := range files {
 		if file == nil {
@@ -115,10 +114,6 @@ func getPotentialOwners(author string, feats *features.Features, files []*github
 
 		if fileOwners.Len() == 0 {
 			glog.Warningf("Couldn't find an owner for: %s", *file.Filename)
-		}
-
-		if aliases != nil {
-			fileOwners = aliases.Expand(fileOwners)
 		}
 
 		for _, owner := range fileOwners.List() {
