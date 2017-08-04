@@ -35,39 +35,6 @@ type Secret struct {
 	Data     map[string]string `json:"data,omitempty"`
 }
 
-type Job struct {
-	Metadata ObjectMeta `json:"metadata,omitempty"`
-	Spec     JobSpec    `json:"spec,omitempty"`
-	Status   JobStatus  `json:"status,omitempty"`
-}
-
-func (j *Job) Complete() bool {
-	if j.Status.Succeeded > 0 {
-		return true
-	} else if j.Status.Active > 0 {
-		return false
-	} else if j.Spec.Parallelism != nil && *j.Spec.Parallelism == 0 {
-		return true
-	}
-	return false
-}
-
-type JobSpec struct {
-	Completions           *int `json:"completions,omitempty"`
-	Parallelism           *int `json:"parallelism,omitempty"`
-	ActiveDeadlineSeconds int  `json:"activeDeadlineSeconds,omitempty"`
-
-	Template PodTemplateSpec `json:"template,omitempty"`
-}
-
-type JobStatus struct {
-	StartTime      time.Time `json:"startTime,omitempty"`
-	CompletionTime time.Time `json:"completionTime,omitempty"`
-	Active         int       `json:"active,omitempty"`
-	Succeeded      int       `json:"succeeded,omitempty"`
-	Failed         int       `json:"failed,omitempty"`
-}
-
 type PodTemplateSpec struct {
 	Metadata ObjectMeta `json:"metadata,omitempty"`
 	Spec     PodSpec    `json:"spec,omitempty"`
