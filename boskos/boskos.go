@@ -28,7 +28,7 @@ import (
 )
 
 var configPath = flag.String("config", "resources.json", "Path to init resource file")
-var storage = flag.String("storage", "", "Path to presistent volume to load the state")
+var storage = flag.String("storage", "", "Path to persistent volume to load the state")
 
 func main() {
 	flag.Parse()

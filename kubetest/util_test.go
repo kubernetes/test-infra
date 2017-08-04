@@ -49,7 +49,7 @@ func TestPushEnv(t *testing.T) {
 			pushed:  "hello",
 		},
 		{
-			name:    "inital-set-popped-set",
+			name:    "initial-set-popped-set",
 			initial: &filled,
 			pushed:  "hello",
 		},

@@ -83,7 +83,7 @@ func main() {
 	}
 
 	// Note that continueOnError is false by default so that errors can be addressed when they occur
-	// instead of blindly continueing to the next PR, possibly continuing to error.
+	// instead of blindly continuing to the next PR, possibly continuing to error.
 	dryRun := !modify
 	m := migrator.New(*mode, strings.TrimSpace(string(tokenData)), org, repo, dryRun, continueOnError)
 

@@ -327,7 +327,7 @@ func TestAssignAndReview(t *testing.T) {
 			body:      "/cc Invalid$User",
 		},
 		{
-			name:      "request mulitple",
+			name:      "request multiple",
 			action:    "created",
 			body:      "/cc @cjwagner @merlin",
 			commenter: "rando",
