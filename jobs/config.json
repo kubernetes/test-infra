@@ -7064,6 +7064,7 @@
       "--env-file=jobs/ci-kubernetes-e2e-gke-regional.env",
       "--extract=ci/latest",
       "--gcp-node-image=gci",
+      "--gcp-project=k8s-jkns-e2e-regional",
       "--provider=gke",
       "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
       "--timeout=150m"
