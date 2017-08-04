@@ -169,6 +169,7 @@ type Config struct {
 	Url         string
 	mergeMethod string
 
+	// Filters used when munging issues
 	State  string
 	Labels []string
 

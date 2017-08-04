@@ -2,20 +2,16 @@
 http-cache-dir: /cache/httpcache
 organization: kubernetes
 project: kubernetes
-# Make sure approval-handler and blunderbuss run before submit-queue.
-# Otherwise it's going to take an extra-cycle to detect the label change.
-# Run blunderbuss before approval-handler, so that we can suggest approvers
-# based on assigned reviewer.
-pr-mungers: blunderbuss,approval-handler,lgtm-after-commit,cherrypick-auto-approve,label-unapproved-picks,needs-rebase,path-label,size,stale-green-ci,block-path,release-note-label,comment-deleter,submit-queue,issue-creator,triage-filer,flakyjob-reporter,old-test-getter,close-stale,docs-need-no-retest,sig-mention-handler
+pr-mungers: submit-queue
 state: open
 token-file: /etc/secret-volume/token
 period: 20s
-repo-dir: /gitrepos
 github-key-file: /etc/hook-secret-volume/secret
 
 # status context options.
 # Please keep these lists in sorted order.
-required-contexts: ""
+# !!! This *MUST* be kept in sync with
+#     misc-mungers/deployment/kubernetes/configmap.yaml !!!
 required-retest-contexts: "\
   pull-kubernetes-bazel,\
   pull-kubernetes-e2e-gce-etcd3,\
@@ -25,10 +21,8 @@ required-retest-contexts: "\
   pull-kubernetes-node-e2e,\
   pull-kubernetes-unit,\
   pull-kubernetes-verify"
-protected-branches-extra-contexts: "cla/linuxfoundation"
 
 # submit-queue options. Keep job lists sorted!
-protected-branches: "master"
 nonblocking-jobs: "\
   ci-kubernetes-bazel-build,\
   ci-kubernetes-bazel-test,\
@@ -104,26 +98,14 @@ history-url: https://storage.googleapis.com/kubernetes-test-history/static/index
 prow-url: https://prow.k8s.io
 batch-enabled: true
 context-url: https://submit-queue.k8s.io
+gate-approved: true
+gate-cla: true
+
+protected-branches: "master"
+protected-branches-extra-contexts: "cla/linuxfoundation"
 
 # options used by the GCS feature.
 gcs-bucket: kubernetes-jenkins
 gcs-logs-dir: logs
 pull-logs-dir: pr-logs
 pull-key: pull
-
-# munger specific options.
-path-label-config: path-label.txt
-block-path-config: block-path.yaml
-test-owners-csv: /gitrepos/kubernetes/test/test_owners.csv
-triage-window: 1
-triage-count: 10
-approval-requires-issue: true
-flakyjob-count: 3
-number-of-old-test-results: 5
-generated-files-config: .generated-files
-label-file: "/gitrepos/kubernetes/labels.yaml"
-alias-file: "/gitrepos/kubernetes/OWNERS_ALIASES"
-
-gate-approved: true
-gate-cla: true
-use-reviewers: true
