@@ -828,7 +828,7 @@ func objToStatusPullRequest(obj *github.MungeObject) *statusPullRequest {
 
 	milestone, ok := obj.Annotations["milestone"]
 	if !ok {
-		milestone, ok = obj.ReleaseMilestone()
+		milestone, _ = obj.ReleaseMilestone()
 		obj.Annotations["milestone"] = milestone
 	}
 	if milestone != "" {
