@@ -209,6 +209,7 @@
   {
     "names": [
       "ci-k8s-e2e-gci-tip-gce",
+      "ci-kubernetes-e2e-gce-gci-serial-sig-cli",
       "ci-kubernetes-e2e-gke-gpu",
       "e2e-gce-gci-ci-1-4",
       "e2e-gce-gci-ci-1-5",
