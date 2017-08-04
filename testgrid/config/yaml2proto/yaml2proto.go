@@ -53,6 +53,10 @@ func ReconcileTestGroup(currentTestGroup *config.TestGroup, defaultTestGroup *co
 		currentTestGroup.ColumnHeader = defaultTestGroup.ColumnHeader
 	}
 
+	if currentTestGroup.NumColumnsRecent == 0 {
+		currentTestGroup.NumColumnsRecent = defaultTestGroup.NumColumnsRecent
+	}
+
 	// is_external and user_kubernetes_client should always be true
 	currentTestGroup.IsExternal = true
 	currentTestGroup.UseKubernetesClient = true
@@ -71,6 +75,10 @@ func ReconcileDashboardtab(currentTab *config.DashboardTab, defaultTab *config.D
 
 	if currentTab.CodeSearchPath == "" {
 		currentTab.CodeSearchPath = defaultTab.CodeSearchPath
+	}
+
+	if currentTab.NumColumnsRecent == 0 {
+		currentTab.NumColumnsRecent = defaultTab.NumColumnsRecent
 	}
 
 	if currentTab.OpenTestTemplate == nil {

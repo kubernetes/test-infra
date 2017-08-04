@@ -46,7 +46,7 @@ message Notification {
 
 // Specifies a group of tests to gather.
 message TestGroup {
-  reserved 4, 5, 7, 8, 10, 12 to 23, 28 to 31;
+  reserved 4, 5, 7, 8, 10, 12 to 14, 16 to 23, 28 to 31;
 
   // Name of this TestGroup, for mapping dashboard tabs to tests.
   string name = 1;
@@ -79,6 +79,9 @@ message TestGroup {
 
   // deprecated - do not touch
   int32 alert_state_results_hours = 11;
+
+  // The number of columns to consider "recent" for a variety of purposes.
+  int32 num_columns_recent = 15;
 
   // deprecated - always set to true
   bool use_kubernetes_client = 24;
@@ -123,8 +126,6 @@ message LinkOptionsTemplate {
 
 // A single tab on a dashboard.
 message DashboardTab {
-  reserved 5;
-
   // The name of the dashboard tab to display in the client.
   string name = 1;
 
@@ -136,7 +137,11 @@ message DashboardTab {
 
   // Default code search path for changelist search links
   string code_search_path = 4;
-
+  
+  // See TestGroup.num_columns_recent. This value overrides the default in the
+  // TestGroup config so that dashboards may be customized separately.
+  int32 num_columns_recent = 5;
+  
   // Base options to always include, for example:
   // width=20&include-filter-by-regex=level_tests
   // This is taken from the #fragment part of the testgrid url.

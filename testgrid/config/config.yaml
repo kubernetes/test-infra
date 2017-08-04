@@ -16,6 +16,7 @@ default_test_group:
   column_header:
   - configuration_value: Commit # Shows the commit number on column header
   - configuration_value: infra-commit
+  num_columns_recent: 10
   use_kubernetes_client: true # These two fields are depricated and should always be true
   is_external: true
   alert_stale_results_hours: 0 # Deprecated, set to 0.
@@ -37,6 +38,7 @@ default_dashboard_tab:
   results_url_template: # The URL template to visit after clicking
     url: https://k8s-gubernator.appspot.com/builds/<gcs_prefix>
   code_search_path: # empty
+  num_columns_recent: 10
   code_search_url_template: # The URL template to visit when searching for changelists
     url: https://github.com/kubernetes/kubernetes/compare/<start-custom-0>...<end-custom-0>
 
