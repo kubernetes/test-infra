@@ -8262,6 +8262,28 @@
       "sig-testing"
     ]
   },
+  "ci-kubernetes-e2e-kops-aws-kopeiovxlan": {
+    "args": [
+      "kubetest",
+      "--",
+      "--deployment=kops",
+      "--extract=ci/latest",
+      "--kops-kubernetes-version=ci/latest",
+      "--up",
+      "--test",
+      "--down",
+      "--kops-cluster=e2e-kops-aws-kopeiovxlan.test-aws.k8s.io",
+      "--kops-args=--networking=kopeio-vxlan",
+      "--kops-state=s3://k8s-kops-jenkins/",
+      "--test_args=--ginkgo.focus=ConfigMap --ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]",
+      "--v"
+    ],
+    "scenario": "execute",
+    "sigOwners": [
+      "sig-aws",
+      "sig-cluster-lifecycle"
+    ]
+  },
   "ci-kubernetes-e2e-kops-aws-release-1-7": {
     "args": [
       "--cluster=e2e-kops-aws-release-17.test-aws.k8s.io",
