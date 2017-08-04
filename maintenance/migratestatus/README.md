@@ -24,7 +24,4 @@ The migratestatus binary is run locally and can be built by running `go build` f
 	- `--move` The context to move (copy and retire).
 - `--dest` The destination context. This is the context that is copied **to** and/or the context that replaces the retired context. This flag may only be omitted if retire mode is specified and the old context is being retired without a replacement.
 
-The binary also accepts the following optional parameters:
-- `--dry-run` A bool indicating whether or not modifying actions should be disabled. Defaults to `true`.
-- `--continue-on-error` A bool indicating whether or not the migration should continue if context migration fails for an individual PR. Defaults to false.
-- `--alsologtostderr` A flag that sends logs to stderr in addition to temporary log files.
+Run the binary with the `-h` flag to see the rest of the available flags.
