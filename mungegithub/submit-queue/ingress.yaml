@@ -25,17 +25,11 @@ spec:
         - backend:
             serviceName: nginx-https-redirect 
             servicePort: 80
-  - host: docs.submit-queue.k8s.io
-    http:
-      paths:
-        - backend:
-            serviceName: docs-sq-status
-            servicePort: 80
   - host: kops.submit-queue.k8s.io
     http:
       paths:
         - backend:
-            serviceName: kops-sq-status
+            serviceName: nginx-https-redirect
             servicePort: 80
   - host: test-infra.submit-queue.k8s.io
     http:
