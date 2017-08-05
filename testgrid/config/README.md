@@ -74,6 +74,16 @@ dashboard_groups:
 ## Advanced configuration
 See [`config.proto`] for an extensive list of configuration options. Here are some commonly-used ones.
 
+### More/Fewer Results
+Specify `days_of_results` in a test group to increase or decrease the number of days of results shown.
+
+```
+test_groups:
+- name: kubernetes-build
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-build
+  days_of_results: 7
+```
+
 ### Tab descriptions
 Add a short description to a dashboard tab describing its purpose.
 
@@ -124,7 +134,6 @@ Narrow down where to search when searching for a regression between two builds/c
 ```
 
 ### Notifications
-
 Testgrid supports the ability to add notifications, which appears as a yellow
 butter bar / toast message at the top of the screen.
 
@@ -151,7 +160,6 @@ dashboards:
     context_link: https://github.com/kubernetes/kubernetes/issues/123
 ```
 
-
 or
 
 ```
@@ -164,7 +172,79 @@ test_groups:  # Attach to a specific test_group
     context_link: https://github.com/kubernetes/kubernetes/issues/123
 ```
 
+### What Counts as 'Recent'
+Configure `num_columns_recent` to change how many columns TestGrid should consider 'recent' for results.
+TestGrid uses this to calculate things like 'is this test stale?' (and hides the test).
 
+```
+test_groups:
+- name: kubernetes-build
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-build
+  num_columns_recent: 3
+```
+
+## Using the client
+
+Here are some quick tips and clarifications for using the TestGrid site!
+
+### Customizing Test Result Sizes
+
+Change the size of the test result rectangles.
+
+The three sizes are Standard, Compact, and Super Compact. You can also specify
+`width=X` in the URL (X > 3) to customize the width. For small widths, this may
+mean the date and/or changelist, or other custom headers, are no longer
+visible.
+
+### Filtering Tests
+
+You can repeatedly add filters to include/exclude test rows. Under **Options**:
+
+*   **Include/Exclude Filter by RegEx**: Specify a regular expression that
+    matches test names for rows you'd like to include/exclude.
+*   **Exclude non-failed Tests**: Omit rows with no failing results.
+
+### Grouping Tests
+
+Grouped tests are summarized in a single row that is collapsible/expandable by
+clicking on the test name (shown as a triangle on the left). Under **Options**:
+
+*   **Group by RegEx Mask**: Specify a regular expression to mask a portion of
+    the test name. Any test names that match after applying this mask will be
+    grouped together.
+*   **Group by Target**: Any tests that contain the same target will be
+    grouped together.
+*   **Group by Hierarchy Pattern**: Specify a regular expression that matches
+    one or more parts of the tests' names and the tests will be grouped
+    hierarchically. For example, if you have these tests in your dashboard:
+
+    ```text
+    /test/dir1/target1
+    /test/dir1/target2
+    /test/dir2/target3
+    ```
+
+    By specifing regular expression "\w+", the tests will be orgranized into:
+
+    ```text
+    ▼test
+      ▼dir1
+        target1
+      ▼dir2
+        target2
+        target3
+    ```
+
+## Sorting Tests
+
+Under **Options**
+
+*   **Sort by Failures**: Tests with more recent failures will appear before
+    other tests.
+*   **Sort by Flakiness**: Tests with a higher flakiness score will appear
+    before tests with a lower flakiness score. The flakiness score, which is not
+    reported, is based on the number of transitions from passing to failing (and
+    vice versa) with more weight given to more recent transitions.
 
 ## Unit testing
 
