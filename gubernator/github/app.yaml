@@ -1,12 +1,13 @@
-application: k8s-gubernator
-module: github
-version: 1
+service: github
 runtime: python27
 api_version: 1
 threadsafe: yes
 instance_class: F2
 
 handlers:
+- url: /_ah/warmup
+  script: main.app
+  login: admin
 - url: /digest
   script: admin.app
 - url: /admin.*
