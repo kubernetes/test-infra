@@ -2142,6 +2142,10 @@ class JobTest(unittest.TestCase):
         for job, job_path in self.jobs:
             if not job.endswith('.env'):
                 continue
+            # TODO(yguo0905): Remove this check once we change the envs to be
+            # flags for kubernetes_kubelet.py.
+            if '-e2enode-' in job:
+                continue
             with open(job_path) as fp:
                 lines = list(fp)
             for line in lines:
