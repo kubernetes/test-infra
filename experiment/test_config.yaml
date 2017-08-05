@@ -690,7 +690,7 @@ nodeCommon:
     envs:
     - CLEANUP=true
     - GCE_ZONE=us-central1-f
-    - KUBELET_ARGS=--cgroups-per-qos=true --cgroup-root=/
+    - KUBELET_ARGS="--cgroups-per-qos=true --cgroup-root=/"
 
 nodeImages:
   cosstable1:
@@ -720,10 +720,10 @@ nodeTestSuites:
   default:
     envs:
     - TIMEOUT=60m
-    - GINKGO_FLAGS=--skip=\[Flaky\]|\[Serial\]
+    - GINKGO_FLAGS="--skip=\[Flaky\]|\[Serial\]"
   serial:
     - TIMEOUT=180m
-    - GINKGO_FLAGS=--focus=\[Serial\] --skip=\[Flaky\]|\[Benchmark\]
+    - GINKGO_FLAGS="--focus=\[Serial\] --skip=\[Flaky\]|\[Benchmark\]"
     - PARALLELISM=1
     - TEST_ARGS=--feature-gates=DynamicKubeletConfig=true
 
