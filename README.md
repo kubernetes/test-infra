@@ -88,7 +88,7 @@ the kubetest jobs this typically means editing the `jobs/FOO.env` files it uses.
 Update when a job runs by changing its definition in [`prow/config.yaml`].
 The [test-infra oncall] must push prow changes (`make -C prow update-config`).
 
-Update where the job apears on testgrid by changing [`testgrid/config/config.yaml`].
+Update where the job appears on testgrid by changing [`testgrid/config/config.yaml`].
 
 ### Delete a job
 
