@@ -79,6 +79,9 @@ presubmits:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
+        env:
+        - name: TEST_TMPDIR
+          value: /root/.cache/bazel
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
@@ -350,6 +353,9 @@ presubmits:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
+        env:
+        - name: TEST_TMPDIR
+          value: /root/.cache/bazel
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
@@ -621,6 +627,9 @@ presubmits:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
+        env:
+        - name: TEST_TMPDIR
+          value: /root/.cache/bazel
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
@@ -797,6 +806,9 @@ postsubmits:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/logs"
+        env:
+        - name: TEST_TMPDIR
+          value: /root/.cache/bazel
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
@@ -829,6 +841,9 @@ postsubmits:
           - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
           - "--service-account=/etc/service-account/service-account.json"
           - "--upload=gs://kubernetes-jenkins/logs"
+          env:
+          - name: TEST_TMPDIR
+            value: /root/.cache/bazel
           securityContext:
             privileged: true
           volumeMounts:
@@ -906,6 +921,9 @@ postsubmits:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/logs"
+        env:
+        - name: TEST_TMPDIR
+          value: /root/.cache/bazel
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
@@ -938,6 +956,9 @@ postsubmits:
           - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
           - "--service-account=/etc/service-account/service-account.json"
           - "--upload=gs://kubernetes-jenkins/logs"
+          env:
+          - name: TEST_TMPDIR
+            value: /root/.cache/bazel
           securityContext:
             privileged: true
           volumeMounts:
@@ -1214,6 +1235,8 @@ postsubmits:
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: /etc/service-account/service-account.json
+        - name: TEST_TMPDIR
+          value: /root/.cache/bazel
         volumeMounts:
         - name: service
           mountPath: /etc/service-account
@@ -14054,6 +14077,9 @@ periodics:
       - "--repo=k8s.io/test-infra=master"
       - "--service-account=/etc/service-account/service-account.json"
       - "--upload=gs://kubernetes-jenkins/logs"
+      env:
+      - name: TEST_TMPDIR
+        value: /root/.cache/bazel
       # Bazel needs privileged mode in order to sandbox builds.
       securityContext:
         privileged: true
@@ -14130,6 +14156,9 @@ periodics:
       - "--repo=k8s.io/kubernetes=release-1.6"
       - "--service-account=/etc/service-account/service-account.json"
       - "--upload=gs://kubernetes-jenkins/logs"
+      env:
+      - name: TEST_TMPDIR
+        value: /root/.cache/bazel
       # Bazel needs privileged mode in order to sandbox builds.
       securityContext:
         privileged: true
@@ -14162,6 +14191,9 @@ periodics:
         - "--repo=k8s.io/kubernetes=release-1.6"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/logs"
+        env:
+        - name: TEST_TMPDIR
+          value: /root/.cache/bazel
         securityContext:
           privileged: true
         volumeMounts:
