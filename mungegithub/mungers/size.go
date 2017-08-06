@@ -253,24 +253,27 @@ const (
 	sizeXXL = "XXL"
 )
 
+type prSize struct {
+	UpperLines int
+	Size       string
+}
+
+// This is a totally arbitrary heuristic and is open for tweaking.
+// Note: the elements of prSizes must be listed in order of increasing UpperLines.
+var prSizes = []prSize{
+	{UpperLines: 10, Size: sizeXS},
+	{UpperLines: 30, Size: sizeS},
+	{UpperLines: 100, Size: sizeM},
+	{UpperLines: 500, Size: sizeL},
+	{UpperLines: 1000, Size: sizeXL},
+}
+
 func calculateSize(adds, dels int) string {
 	lines := adds + dels
-
-	// This is a totally arbitrary heuristic and is open for tweaking.
-	if lines < 10 {
-		return sizeXS
-	}
-	if lines < 30 {
-		return sizeS
-	}
-	if lines < 100 {
-		return sizeM
-	}
-	if lines < 500 {
-		return sizeL
-	}
-	if lines < 1000 {
-		return sizeXL
+	for _, prSize := range prSizes {
+		if lines < prSize.UpperLines {
+			return prSize.Size
+		}
 	}
 	return sizeXXL
 }
