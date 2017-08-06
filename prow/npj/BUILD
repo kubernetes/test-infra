@@ -1,27 +1,20 @@
 package(default_visibility = ["//visibility:public"])
 
+licenses(["notice"])
+
 load(
     "@io_bazel_rules_go//go:def.bzl",
-    "go_binary",
     "go_library",
-)
-
-go_binary(
-    name = "mkpj",
-    args = ["--config-path=$(location //prow:config.yaml)"],
-    data = ["//prow:config.yaml"],
-    library = ":go_default_library",
 )
 
 go_library(
     name = "go_default_library",
-    srcs = ["main.go"],
+    srcs = ["npj.go"],
+    tags = ["automanaged"],
     deps = [
         "//prow/config:go_default_library",
         "//prow/kube:go_default_library",
-        "//prow/npj:go_default_library",
-        "//vendor/github.com/Sirupsen/logrus:go_default_library",
-        "//vendor/github.com/ghodss/yaml:go_default_library",
+        "//vendor:github.com/satori/go.uuid",
     ],
 )
 

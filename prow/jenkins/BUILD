@@ -44,7 +44,7 @@ go_test(
     tags = ["automanaged"],
     deps = [
         "//prow/config:go_default_library",
-        "//prow/jenkins:go_default_library",
         "//prow/kube:go_default_library",
+        "//prow/npj:go_default_library",
     ],
 )

@@ -26,7 +26,6 @@ import (
 
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
-	"k8s.io/test-infra/prow/jenkins"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/plank"
 )
@@ -36,10 +35,6 @@ var (
 
 	configPath   = flag.String("config-path", "/etc/config/config", "Path to config.yaml.")
 	buildCluster = flag.String("build-cluster", "", "Path to file containing a YAML-marshalled kube.Cluster object. If empty, uses the local cluster.")
-
-	jenkinsURL       = flag.String("jenkins-url", "http://jenkins-proxy", "Jenkins URL")
-	jenkinsUserName  = flag.String("jenkins-user", "jenkins-trigger", "Jenkins username")
-	jenkinsTokenFile = flag.String("jenkins-token-file", "/etc/jenkins/jenkins", "Path to the file containing the Jenkins API token.")
 
 	githubBotName   = flag.String("github-bot-name", "", "Name of the GitHub bot.")
 	githubTokenFile = flag.String("github-token-file", "/etc/github/oauth", "Path to the file containing the GitHub OAuth token.")
@@ -69,18 +64,6 @@ func main() {
 		}
 	}
 
-	var jc *jenkins.Client
-
-	if *jenkinsTokenFile != "" {
-		jenkinsSecretRaw, err := ioutil.ReadFile(*jenkinsTokenFile)
-		if err != nil {
-			logrus.WithError(err).Fatalf("Could not read token file.")
-		}
-		jenkinsToken := string(bytes.TrimSpace(jenkinsSecretRaw))
-
-		jc = jenkins.NewClient(*jenkinsURL, *jenkinsUserName, jenkinsToken)
-	}
-
 	oauthSecretRaw, err := ioutil.ReadFile(*githubTokenFile)
 	if err != nil {
 		logrus.WithError(err).Fatalf("Could not read oauth secret file.")
@@ -94,7 +77,7 @@ func main() {
 		ghc = github.NewClient(*githubBotName, oauthSecret)
 	}
 
-	c, err := plank.NewController(kc, pkc, jc, ghc, configAgent, *totURL)
+	c, err := plank.NewController(kc, pkc, ghc, configAgent, *totURL)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error creating plank controller.")
 	}

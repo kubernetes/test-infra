@@ -22,7 +22,7 @@ import (
 
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
-	"k8s.io/test-infra/prow/plank"
+	"k8s.io/test-infra/prow/npj"
 	"k8s.io/test-infra/prow/plugins"
 )
 
@@ -139,7 +139,7 @@ func handleIC(c client, ic github.IssueCommentEvent) error {
 				},
 			},
 		}
-		if _, err := c.KubeClient.CreateProwJob(plank.NewProwJob(plank.PresubmitSpec(job, kr))); err != nil {
+		if _, err := c.KubeClient.CreateProwJob(npj.NewProwJob(npj.PresubmitSpec(job, kr))); err != nil {
 			errors = append(errors, err)
 		}
 	}

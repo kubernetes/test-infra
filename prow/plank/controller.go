@@ -31,8 +31,9 @@ import (
 
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
-	"k8s.io/test-infra/prow/jenkins"
 	"k8s.io/test-infra/prow/kube"
+	"k8s.io/test-infra/prow/npj"
+	reportlib "k8s.io/test-infra/prow/report"
 )
 
 const (
@@ -53,12 +54,6 @@ type kubeClient interface {
 	DeletePod(string) error
 }
 
-type jenkinsClient interface {
-	Build(jenkins.BuildRequest) (*jenkins.Build, error)
-	Enqueued(string) (bool, error)
-	Status(job, id string) (*jenkins.Status, error)
-}
-
 type githubClient interface {
 	BotName() string
 	CreateStatus(org, repo, ref string, s github.Status) error
@@ -76,7 +71,6 @@ type configAgent interface {
 type Controller struct {
 	kc     kubeClient
 	pkc    kubeClient
-	jc     jenkinsClient
 	ghc    githubClient
 	ca     configAgent
 	node   *snowflake.Node
@@ -115,7 +109,7 @@ func (c *Controller) setPending(pendingJobs map[string]int) {
 }
 
 // NewController creates a new Controller from the provided clients.
-func NewController(kc, pkc *kube.Client, jc *jenkins.Client, ghc *github.Client, ca *config.Agent, totURL string) (*Controller, error) {
+func NewController(kc, pkc *kube.Client, ghc *github.Client, ca *config.Agent, totURL string) (*Controller, error) {
 	n, err := snowflake.NewNode(1)
 	if err != nil {
 		return nil, err
@@ -123,7 +117,6 @@ func NewController(kc, pkc *kube.Client, jc *jenkins.Client, ghc *github.Client,
 	return &Controller{
 		kc:          kc,
 		pkc:         pkc,
-		jc:          jc,
 		ghc:         ghc,
 		ca:          ca,
 		node:        n,
@@ -163,6 +156,8 @@ func (c *Controller) Sync() error {
 	reportCh := make(chan kube.ProwJob, len(pjs))
 	wg := &sync.WaitGroup{}
 	wg.Add(maxSyncRoutines)
+	// TODO: Filter out prowjobs for different agents before
+	// starting up goroutines.
 	for i := 0; i < maxSyncRoutines; i++ {
 		go c.syncProwJob(wg, pjCh, errCh, reportCh, pm)
 	}
@@ -176,7 +171,7 @@ func (c *Controller) Sync() error {
 
 	var reportErrs []error
 	for report := range reportCh {
-		if err := c.report(report); err != nil {
+		if err := reportlib.Report(c.ghc, c.ca, report); err != nil {
 			reportErrs = append(reportErrs, err)
 		}
 	}
@@ -194,12 +189,6 @@ func (c *Controller) syncProwJob(wg *sync.WaitGroup, jobs <-chan kube.ProwJob, s
 			if err := c.syncKubernetesJob(pj, pm, reports); err != nil {
 				syncErrors <- err
 			}
-		} else if pj.Spec.Agent == kube.JenkinsAgent {
-			if err := c.syncJenkinsJob(pj, reports); err != nil {
-				syncErrors <- err
-			}
-		} else {
-			syncErrors <- fmt.Errorf("job %s has unsupported agent %s", pj.Metadata.Name, pj.Spec.Agent)
 		}
 	}
 }
@@ -231,107 +220,6 @@ func (c *Controller) terminateDupes(pjs []kube.ProwJob) error {
 			return err
 		}
 		pjs[i] = npj
-	}
-	return nil
-}
-
-func (c *Controller) syncJenkinsJob(pj kube.ProwJob, reports chan<- kube.ProwJob) error {
-	if c.jc == nil {
-		return fmt.Errorf("jenkins client nil, not syncing job %s", pj.Metadata.Name)
-	}
-
-	var jerr error
-	if pj.Complete() {
-		return nil
-	} else if pj.Status.State == kube.TriggeredState {
-		// Do not start more jobs than specified.
-		numPending := c.getNumPendingJobs(pj.Spec.Job)
-		if pj.Spec.MaxConcurrency > 0 && numPending >= pj.Spec.MaxConcurrency {
-			logrus.WithField("job", pj.Spec.Job).Infof("Not starting another instance of %s, already %d running.", pj.Spec.Job, numPending)
-			return nil
-		}
-
-		// Start the Jenkins job.
-		pj.Status.State = kube.PendingState
-		c.incrementNumPendingJobs(pj.Spec.Job)
-		br := jenkins.BuildRequest{
-			JobName: pj.Spec.Job,
-			Refs:    pj.Spec.Refs.String(),
-			BaseRef: pj.Spec.Refs.BaseRef,
-			BaseSHA: pj.Spec.Refs.BaseSHA,
-		}
-		if len(pj.Spec.Refs.Pulls) == 1 {
-			br.Number = pj.Spec.Refs.Pulls[0].Number
-			br.PullSHA = pj.Spec.Refs.Pulls[0].SHA
-		}
-		if build, err := c.jc.Build(br); err != nil {
-			jerr = fmt.Errorf("error starting Jenkins job for prowjob %s: %v", pj.Metadata.Name, err)
-			pj.Status.CompletionTime = time.Now()
-			pj.Status.State = kube.ErrorState
-			pj.Status.URL = testInfra
-			pj.Status.Description = "Error starting Jenkins job."
-		} else {
-			pj.Status.JenkinsQueueURL = build.QueueURL.String()
-			pj.Status.JenkinsBuildID = build.ID
-			pj.Status.JenkinsEnqueued = true
-			pj.Status.Description = "Jenkins job triggered."
-		}
-		reports <- pj
-	} else if pj.Status.JenkinsEnqueued {
-		if eq, err := c.jc.Enqueued(pj.Status.JenkinsQueueURL); err != nil {
-			jerr = fmt.Errorf("error checking queue status for prowjob %s: %v", pj.Metadata.Name, err)
-			pj.Status.JenkinsEnqueued = false
-			pj.Status.CompletionTime = time.Now()
-			pj.Status.State = kube.ErrorState
-			pj.Status.URL = testInfra
-			pj.Status.Description = "Error checking queue status."
-			reports <- pj
-		} else if eq {
-			// Still in queue.
-			return nil
-		} else {
-			pj.Status.JenkinsEnqueued = false
-		}
-	} else if status, err := c.jc.Status(pj.Spec.Job, pj.Status.JenkinsBuildID); err != nil {
-		jerr = fmt.Errorf("error checking build status for prowjob %s: %v", pj.Metadata.Name, err)
-		pj.Status.CompletionTime = time.Now()
-		pj.Status.State = kube.ErrorState
-		pj.Status.URL = testInfra
-		pj.Status.Description = "Error checking job status."
-		reports <- pj
-	} else {
-		pj.Status.BuildID = strconv.Itoa(status.Number)
-		var b bytes.Buffer
-		if err := c.ca.Config().Plank.JobURLTemplate.Execute(&b, &pj); err != nil {
-			return fmt.Errorf("error executing URL template: %v", err)
-		}
-		url := b.String()
-		if pj.Status.URL != url {
-			pj.Status.URL = url
-			pj.Status.PodName = fmt.Sprintf("%s-%d", pj.Spec.Job, status.Number)
-		} else if status.Building {
-			// Build still going.
-			return nil
-		}
-		if !status.Building && status.Success {
-			pj.Status.CompletionTime = time.Now()
-			pj.Status.State = kube.SuccessState
-			pj.Status.Description = "Jenkins job succeeded."
-			for _, nj := range pj.Spec.RunAfterSuccess {
-				if _, err := c.kc.CreateProwJob(NewProwJob(nj)); err != nil {
-					return fmt.Errorf("error starting next prowjob: %v", err)
-				}
-			}
-		} else if !status.Building {
-			pj.Status.CompletionTime = time.Now()
-			pj.Status.State = kube.FailureState
-			pj.Status.Description = "Jenkins job failed."
-		}
-		reports <- pj
-	}
-	_, rerr := c.kc.ReplaceProwJob(pj.Metadata.Name, pj)
-	if rerr != nil || jerr != nil {
-		return fmt.Errorf("jenkins error: %v, error replacing prow job: %v", jerr, rerr)
 	}
 	return nil
 }
@@ -393,7 +281,7 @@ func (c *Controller) syncKubernetesJob(pj kube.ProwJob, pm map[string]kube.Pod, 
 		pj.Status.Description = "Job succeeded."
 		reports <- pj
 		for _, nj := range pj.Spec.RunAfterSuccess {
-			if _, err := c.kc.CreateProwJob(NewProwJob(nj)); err != nil {
+			if _, err := c.kc.CreateProwJob(npj.NewProwJob(nj)); err != nil {
 				return fmt.Errorf("error starting next prowjob: %v", err)
 			}
 		}

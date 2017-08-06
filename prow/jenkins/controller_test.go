@@ -324,6 +324,7 @@ func TestSyncJenkinsJob(t *testing.T) {
 func TestBatch(t *testing.T) {
 	pre := config.Presubmit{
 		Name:    "pr-some-job",
+		Agent:   "jenkins",
 		Context: "Some Job Context",
 	}
 	fc := &fkc{
