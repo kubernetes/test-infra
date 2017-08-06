@@ -17,9 +17,7 @@ limitations under the License.
 package mungers
 
 import (
-	"fmt"
 	"path"
-	"regexp"
 	"strings"
 
 	"k8s.io/kubernetes/pkg/util/sets"
@@ -28,15 +26,10 @@ import (
 	"k8s.io/test-infra/mungegithub/options"
 
 	"github.com/golang/glog"
-	githubapi "github.com/google/go-github/github"
 )
 
 const (
 	labelSizePrefix = "size/"
-)
-
-var (
-	sizeRE = regexp.MustCompile("Labelling this PR as " + labelSizePrefix + "(XS|S|M|L|XL|XXL)")
 )
 
 // SizeMunger will update a label on a PR based on how many lines are changed.
@@ -53,7 +46,6 @@ type SizeMunger struct {
 func init() {
 	s := &SizeMunger{}
 	RegisterMungerOrDie(s)
-	RegisterStaleIssueComments(s)
 }
 
 // Name is the name usable in --pr-mungers
@@ -229,9 +221,6 @@ func (s *SizeMunger) Munge(obj *github.MungeObject) {
 	}
 	if needsUpdate {
 		obj.AddLabels([]string{newLabel})
-
-		body := fmt.Sprintf("Labelling this PR as %s", newLabel)
-		obj.WriteComment(body)
 	}
 }
 
@@ -273,20 +262,4 @@ func calculateSize(adds, dels int) string {
 		return sizeXL
 	}
 	return sizeXXL
-}
-
-func (s *SizeMunger) isStaleIssueComment(obj *github.MungeObject, comment *githubapi.IssueComment) bool {
-	if !obj.IsRobot(comment.User) {
-		return false
-	}
-	stale := sizeRE.MatchString(*comment.Body)
-	if stale {
-		glog.V(6).Infof("Found stale SizeMunger comment")
-	}
-	return stale
-}
-
-// StaleIssueComments returns a slice of stale issue comments.
-func (s *SizeMunger) StaleIssueComments(obj *github.MungeObject, comments []*githubapi.IssueComment) []*githubapi.IssueComment {
-	return forEachCommentTest(obj, comments, s.isStaleIssueComment)
 }
