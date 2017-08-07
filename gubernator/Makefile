@@ -26,12 +26,12 @@ versions:
 migrate: SHELL:=/bin/bash
 migrate: versions
 	@read -p "Promote $(SERVICE) [$(VERSION)]: " version && \
-	gcloud app versions migrate "$${version:-$(VERSION)}" --quiet && \
-	gcloud app versions migrate "$${version:-$(VERSION)}" --service=github --quiet
+	gcloud app versions migrate "$${version:-$(VERSION)}" --project="$(PROJECT)" --quiet && \
+	gcloud app versions migrate "$${version:-$(VERSION)}" --project="$(PROJECT)" --service=github --quiet
 
 
 delete: SHELL:=/bin/bash
 delete: versions
 	@read -p "Delete $(SERVICE) [$(VERSION)]: " version && \
-	gcloud app versions delete "$${version:-$(VERSION)}" && \
-	gcloud app versions delete "$${version:-$(VERSION)}" --service=github
+	gcloud app versions delete "$${version:-$(VERSION)}" --project="$(PROJECT)" && \
+	gcloud app versions delete "$${version:-$(VERSION)}" --project="$(PROJECT)" --service=github
