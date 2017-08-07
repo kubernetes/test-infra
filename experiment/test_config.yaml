@@ -571,16 +571,15 @@ cloudProviders:
     - --check-leaked-resources
     - --provider=gce
     - --gcp-zone=us-central1-f
-    envs:
-    - CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1
+    - --env=CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1
   gke:
     args:
     - --check-leaked-resources
     - --provider=gke
+    - --deployment=gke
     - --gcp-zone=us-central1-f
     - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-    envs:
-    - CLOUDSDK_API_ENDPOINT_OVERRIDES_CONTAINER=https://test-container.sandbox.googleapis.com/
+    - --gke-environment=test
 
 images:
   cosdev:
@@ -606,9 +605,8 @@ images:
   ubuntustable1:
     args:
     - --gcp-node-image=ubuntu
-    envs:
-    - KUBE_GCE_NODE_PROJECT=ubuntu-os-gke-cloud
-    - KUBE_GCE_NODE_IMAGE=ubuntu-gke-1604-xenial-v20170420-1
+    - --env=KUBE_GCE_NODE_PROJECT=ubuntu-os-gke-cloud
+    - --env=KUBE_GCE_NODE_IMAGE=ubuntu-gke-1604-xenial-v20170420-1
 
 k8sVersions:
   dev:
@@ -641,9 +639,7 @@ testSuites:
     args:
     - --timeout=50m
     - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
-    envs:
-    - GINKGO_PARALLEL=y
-    - GINKGO_PARALLEL_NODES=30
+    - --ginkgo-parallel=30
   flaky:
     args:
     - --timeout=300m
@@ -660,29 +656,22 @@ testSuites:
     args:
     - --timeout=500m
     - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
-    envs:
-    - GINKGO_PARALLEL=n
+    - --ginkgo-parallel=1
   slow:
     args:
     - --timeout=150m
     - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
-    envs:
-    - GINKGO_PARALLEL=y
-    - GINKGO_PARALLEL_NODES=30
+    - --ginkgo-parallel=30
   updown:
     args:
     - --timeout=30m
     - --test_args=--ginkgo.focus=\[k8s.io\]\sNetworking.*\[Conformance\] --minStartupPods=8
-    envs:
-    - GINKGO_PARALLEL=y
+    - --ginkgo-parallel
   nosnat:
     args:
     - --timeout=20m
     - --test_args=--ginkgo.focus=\\[Feature:NoSNAT\\] --minStartupPods=8
-    envs:
-    - GINKGO_PARALLEL=n
-    - GINKGO_PARALLEL_NODES=1
-    - NUM_NODES=3
+    - --ginkgo-parallel=1
 
 # The following settings are used by node e2e tests.
 

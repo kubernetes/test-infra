@@ -2263,14 +2263,10 @@ class JobTest(unittest.TestCase):
                 scenario = bootstrap.test_infra('scenarios/%s.py' % config[job]['scenario'])
                 self.assertTrue(os.path.isfile(scenario), job)
                 self.assertTrue(os.access(scenario, os.X_OK|os.R_OK), job)
-                has_matching_env = False
                 for arg in config[job].get('args', []):
                     match = re.match(r'--env-file=([^\"]+)\.env', arg)
                     if match:
-                        env = match.group(1)
-                        if env == 'jobs/%s' % job:
-                            has_matching_env = True
-                        path = bootstrap.test_infra('%s.env' % env)
+                        path = bootstrap.test_infra('%s.env' % match.group(1))
                         self.assertTrue(
                             os.path.isfile(path),
                             '%s does not exist for %s' % (path, job))
@@ -2330,9 +2326,6 @@ class JobTest(unittest.TestCase):
                     if len(extracts) != expected:
                         self.fail('Wrong number of --extract args (%d != %d) in %s' % (
                             len(extracts), expected, job))
-                    no_matching_whitelisted = '--provider=gke' in args
-                    self.assertTrue(has_matching_env or no_matching_whitelisted,
-                                    'jobs/%s.env does not exist' % job)
 
                     has_image_family = any(
                         [x for x in args if x.startswith('--image-family')])

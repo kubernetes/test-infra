@@ -424,6 +424,27 @@ class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-method
         lastcall = self.callstack[-1]
         self.assertIn('--gcp-network=test', lastcall)
 
+    def test_env_local(self):
+        env = 'FOO'
+        value = 'BLAT'
+        args = kubernetes_e2e.parse_args([
+            '--mode=local',
+            '--env={env}={value}'.format(env=env, value=value),
+        ])
+        with Stub(kubernetes_e2e, 'check_env', self.fake_check_env):
+            kubernetes_e2e.main(args)
+        self.assertIn(env, self.envs)
+        self.assertEqual(self.envs[env], value)
+
+    def test_env_docker(self):
+        env = 'FOO=bar blatz'
+        args = kubernetes_e2e.parse_args([
+            '--mode=docker',
+            '--env=' + env,
+        ])
+        kubernetes_e2e.main(args)
+        self.assertIn('-e '+env, self.callstack[-2])
+
     def test_aws(self):
         temp = tempfile.NamedTemporaryFile()
         args = kubernetes_e2e.parse_args([

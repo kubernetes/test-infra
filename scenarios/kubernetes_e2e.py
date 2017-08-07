@@ -131,6 +131,9 @@ class LocalMode(object):
                     continue
                 self.env_files.append(parse_env(line))
 
+    def add_env(self, env):
+        self.env_files.append(parse_env(env))
+
     def add_aws_cred(self, priv, pub, cred):
         """Sets aws keys and credentials."""
         self.add_environment('JENKINS_AWS_SSH_PRIVATE_KEY_FILE=%s' % priv)
@@ -225,8 +228,8 @@ class DockerMode(object):
 
         if sudo:
             self.cmd.extend(['-v', '/var/run/docker.sock:/var/run/docker.sock'])
-        self._add_env_var('HOME=/workspace')
-        self._add_env_var('WORKSPACE=/workspace')
+        self.add_env('HOME=/workspace')
+        self.add_env('WORKSPACE=/workspace')
 
     def add_environment(self, *envs):
         """Adds FOO=BAR to the -e list for docker.
@@ -247,21 +250,21 @@ class DockerMode(object):
             if key in docker_env_ignore:
                 print >>sys.stderr, 'Skipping environment variable %s' % env
             else:
-                self._add_env_var(env)
+                self.add_env(env)
 
     def add_os_environment(self, *envs):
         """Adds os envs as FOO=BAR to the -e list for docker."""
         self.add_environment(*envs)
 
-    def _add_env_var(self, env):
+    def add_file(self, env_file):
+        """Adds the file to the --env-file list."""
+        self.cmd.extend(['--env-file', env_file])
+
+    def add_env(self, env):
         """Adds a single environment variable to the -e list for docker.
 
         Does not check against any blacklists."""
         self.cmd.extend(['-e', env])
-
-    def add_file(self, env_file):
-        """Adds the file to the --env-file list."""
-        self.cmd.extend(['--env-file', env_file])
 
     def add_k8s(self, k8s, *repos):
         """Add the specified k8s.io repos into container."""
@@ -437,9 +440,10 @@ def main(args):
     else:
         raise ValueError(args.mode)
 
-    if args.env_file:
-        for env_file in args.env_file:
-            mode.add_file(test_infra(env_file))
+    for env_file in args.env_file:
+        mode.add_file(test_infra(env_file))
+    for env in args.env:
+        mode.add_env(env)
     if args.gce_ssh:
         mode.add_gce_ssh(args.gce_ssh, args.gce_pub)
 
@@ -526,7 +530,12 @@ def create_parser():
     parser.add_argument(
         '--mode', default='local', choices=['local', 'docker'])
     parser.add_argument(
-        '--env-file', action="append", help='Job specific environment file')
+        '--env-file', default=[], action="append",
+        help='Job specific environment file')
+    parser.add_argument(
+        '--env', default=[], action="append",
+        help='Job specific environment setting ' +
+        '(usage: "--env=VAR=SETTING" will set VAR to SETTING).')
     parser.add_argument(
         '--image-family',
         help='The image family from which to fetch the latest image')
