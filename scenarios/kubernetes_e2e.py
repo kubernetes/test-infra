@@ -291,9 +291,9 @@ class DockerMode(object):
 
     def add_aws_runner(self):
         """Run kops_aws_runner for kops-aws jobs."""
-        self.cmd.append([
+        self.cmd.append(
           '--entrypoint=/workspace/kops-e2e-runner.sh'
-        ])
+        )
 
     def add_gce_ssh(self, priv, pub):
         """Mounts priv and pub inside the container."""
