@@ -13,7 +13,7 @@ One may also look in the `example-one-off` directory for a small skeleton progra
 
 Executing `make help` inside the `mungegithub` directory should inform you about the functions provided by the Makefile. A common pattern when developing is to run something like:
 ```sh
-make mungegithub && ./mungegithub --dry-run --token-file=/path/to/token --once --www=submit-queue/www --pr-mungers=submit-queue --min-pr-number=25000 --max-pr-number=25500 --organization=kubernetes --project=kubernetes --repo-dir=/tmp --stderrthreshold=0
+make mungegithub && ./mungegithub --dry-run --token-file=/path/to/github/oauth/token --www=submit-queue/www --pr-mungers=submit-queue --min-pr-number=25000 --max-pr-number=25500 --organization=kubernetes --project=kubernetes --repo-dir=/tmp --stderrthreshold=0  --once=true
 ```
 
 A Github oauth token is required, even in readonly/test mode. For production, we use a token with write access to the repo in question. https://help.github.com/articles/creating-an-access-token-for-command-line-use/ discusses the procedure to get a personal oauth token. These tokens will need to be loaded into kubernetes `secret`s for use by the submit and/or cherry-pick queue. It is extremely easy to use up the 5,000 API calls per hour so the production token should not be re-used for tests.
