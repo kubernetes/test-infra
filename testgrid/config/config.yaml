@@ -238,6 +238,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-serial
 - name: ci-kubernetes-e2e-gce-gci-serial-sig-cli
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-serial-sig-cli
+- name: ci-kubernetes-e2e-gke-gci-serial-sig-cli
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-serial-sig-cli
 - name: ci-kubernetes-e2e-gci-gce-serial-release-1-4
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-serial-release-1-4
 - name: ci-kubernetes-e2e-gci-gce-serial-release-1-5
@@ -3226,8 +3228,7 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-gci-serial-sig-cli
     description: 'kubectl gce serial e2e tests for master branch'
   - name: gke-serial
-    test_group_name: ci-kubernetes-e2e-gci-gke-serial
-    base_options: 'include-filter-by-regex=Kubectl%7Ckubectl'
+    test_group_name: ci-kubernetes-e2e-gke-gci-serial-sig-cli
     description: 'kubectl gke serial e2e tests for master branch'
   - name: gce-etcd3
     test_group_name: ci-kubernetes-e2e-gci-gce-etcd3

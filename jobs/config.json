@@ -6601,6 +6601,24 @@
       "UNKNOWN"
     ]
   },
+  "ci-kubernetes-e2e-gke-gci-serial-sig-cli": {
+    "args": [
+      "--check-leaked-resources",
+      "--env-file=jobs/platform/gke.env",
+      "--env-file=jobs/ci-kubernetes-e2e-gke-gci-serial-sig-cli.env",
+      "--extract=ci/latest",
+      "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
+      "--gcp-node-image=gci",
+      "--gcp-zone=us-central1-f",
+      "--provider=gke",
+      "--test_args=--ginkgo.focus=\\[sig-cli\\].*\\[Serial\\]|\\[Disruptive\\] --ginkgo.skip=\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
+      "--timeout=300m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "UNKNOWN"
+    ]
+  },
   "ci-kubernetes-e2e-gke-gci-stable-cvm-master-upgrade-master": {
     "args": [
       "--check-leaked-resources",
