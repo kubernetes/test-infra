@@ -933,6 +933,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-bazel-build-1-6
 - name: periodic-kubernetes-bazel-build-1-7
   gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-bazel-build-1-7
+- name: periodic-test-infra-retester
+  gcs_prefix: kubernetes-jenkins/logs/periodic-test-infra-retester
 - name: metrics-bigquery
   gcs_prefix: kubernetes-jenkins/logs/metrics-bigquery
 # perf tests
@@ -2706,6 +2708,11 @@ dashboards:
   - name: ci-janitor
     description: Deletes old GCP resources from periodic jobs
     test_group_name: maintenance-ci-janitor
+    code_search_url_template:
+      url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+  - name: retester
+    description: Automatically /retest for approved PRs that failed retesting
+    test_group_name: periodic-test-infra-retester
     code_search_url_template:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
 

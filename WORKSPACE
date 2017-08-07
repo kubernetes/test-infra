@@ -8,6 +8,23 @@ load("@io_bazel_rules_go//go:def.bzl", "go_repositories")
 
 go_repositories()
 
+http_archive(
+    name = "io_bazel_rules_docker",
+    sha256 = "40d780165c0b9fbb3ddca858df7347381af0e87e430c74863e4ce9d6f6441023",
+    strip_prefix = "rules_docker-8359263f35227a3634ea023ff4ae163189eb4b26",
+    urls = ["https://github.com/bazelbuild/rules_docker/archive/8359263f35227a3634ea023ff4ae163189eb4b26.tar.gz"],
+)
+
+load("@io_bazel_rules_docker//docker:docker.bzl", "docker_repositories", "docker_pull")
+docker_repositories()
+
+docker_pull(
+    name="distroless-base",
+    registry="gcr.io",
+    repository="distroless/base",
+    digest="sha256:d19b95495f226aa64cd63a95863aca4da123bde22410a273e68e091113222e4f",  # latest
+)
+
 git_repository(
     name = "org_pubref_rules_node",
     commit = "bd14a465063da90f632bad46c1efbf802c339e68",

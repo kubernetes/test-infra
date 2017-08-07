@@ -157,7 +157,8 @@ func (f *FakeClient) RemoveLabel(owner, repo string, number int, label string) e
 	return nil
 }
 
-func (f *FakeClient) FindIssues(query string) ([]github.Issue, error) {
+// FindIssues returns f.Issues
+func (f *FakeClient) FindIssues(query, sort string, asc bool) ([]github.Issue, error) {
 	return f.Issues, nil
 }
 

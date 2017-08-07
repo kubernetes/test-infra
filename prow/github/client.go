@@ -24,6 +24,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 	"time"
@@ -743,13 +744,25 @@ func (c *Client) GetRef(org, repo, ref string) (string, error) {
 }
 
 // FindIssues uses the github search API to find issues which match a particular query.
-// TODO(foxish): we should accept map[string][]string and use net/url properly.
-func (c *Client) FindIssues(query string) ([]Issue, error) {
+//
+// Input query the same way you would into the website.
+// Order returned results with sort (usually "updated").
+// Control whether oldest/newest is first with asc.
+//
+// See https://help.github.com/articles/searching-issues-and-pull-requests/ for details.
+func (c *Client) FindIssues(query, sort string, asc bool) ([]Issue, error) {
 	c.log("FindIssues", query)
+	path := fmt.Sprintf("%s/search/issues?q=%s", c.base, url.QueryEscape(query))
+	if sort != "" {
+		path += "&sort=" + url.QueryEscape(sort)
+		if asc {
+			path += "&order=asc"
+		}
+	}
 	var issSearchResult IssuesSearchResult
 	_, err := c.request(&request{
 		method:    http.MethodGet,
-		path:      fmt.Sprintf("%s/search/issues?q=%s", c.base, query),
+		path:      path,
 		exitCodes: []int{200},
 	}, &issSearchResult)
 	return issSearchResult.Issues, err
