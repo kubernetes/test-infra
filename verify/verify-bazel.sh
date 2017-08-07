@@ -17,7 +17,7 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-go get -u gopkg.in/mikedanese/gazel.v16/gazel
+go get -u gopkg.in/mikedanese/gazel.v17/gazel
 if ! "${GOPATH}/bin/gazel" -validate -print-diff -root="$(dirname ${BASH_SOURCE})/.." ; then
   echo
   echo "Run ./verify/update-bazel.sh"
