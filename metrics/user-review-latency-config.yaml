@@ -1,0 +1,117 @@
+metrics: review-latency
+query: |
+  #standardSQL
+  select
+      repo,
+      date(timestamp_trunc(fff.reply, week)) week,
+      count(pr) prs,
+      round(sum(array_length(rounds))/count(pr),1) mean_pr_rounds,
+      round(approx_quantiles(fff.hours, 101)[offset(51)],1) p50_hours,
+      round(approx_quantiles(fff.hours, 101)[offset(81)],1) p80_hours,
+      round(approx_quantiles(fff.hours, 101)[offset(96)],1) p95_hours
+    from (
+      select
+        repo,
+        pr,
+        opened,
+        closed,
+        author,
+        array((
+          select as struct
+            min(v.request) request,
+            v.response.reply reply,
+            v.response.replier replier,
+            min(timestamp_diff(v.response.reply, v.request, minute)) / 60 hours,
+            min(timestamp_diff(if(v.response.reply is null, tomorrow, v.response.reply), v.request, minute)) / 60 expected
+          from (
+            select as struct
+              t.stamp request,
+              t.user requestor,
+              timestamp_add(current_timestamp(), interval 24 hour) tomorrow,
+              (select as struct
+                 u.stamp reply,
+                 u.user replier
+               from
+                 ddd.responses u
+               where u.stamp > t.stamp
+               order by u.stamp
+               limit 1
+              ) response
+            from ddd.actions t
+            where closed is null or t.stamp < closed
+            ) v
+          group by reply, replier, requestor
+          order by request
+        )) rounds
+      from (
+        select
+          repo,
+          pr,
+          opened,
+          closed,
+          author,
+          array(select as struct t.stamp, t.user from ccc.activity t where ccc.author = t.user order by t.stamp) actions,
+          array(select as struct t.stamp, t.user from ccc.activity t where ccc.author != t.user order by t.stamp) responses
+        from (
+          select
+            repo,
+            pr,
+            (select t.user from bbb.activity t where type = 'PullRequestEvent' and action = 'opened') author,
+            (select t.stamp from bbb.activity t where type = 'PullRequestEvent' and action = 'opened') opened,
+            (select max(t.stamp) from bbb.activity t where type = 'PullRequestEvent' and action = 'closed') closed,
+            activity
+          from (
+            select
+              repo,
+              pr,
+              array_agg((select as struct type, action, user, stamp, remote_branch, remote_repo)) activity
+            from (
+              SELECT
+                org.login org,
+                repo.name repo,
+                actor.login user,
+                if(type='PushEvent', regexp_extract(payload, r'"message":"Merge pull request #([\d]+) '), regexp_extract(payload, r'"number":(\d+)')) pr,
+                type,
+                regexp_extract(payload, r'"action":"([^"]+)"') action,
+                regexp_extract(payload, r'"head":{"label":"[^:]+:([^"]+)"') remote_branch,
+                regexp_extract(payload, r'"full_name":"([^"]+)"') remote_repo,
+                created_at stamp
+              FROM
+                `githubarchive.month.*` as aaa
+              where
+                _table_suffix in ('201705', '201704')
+                and org.login = 'kubernetes'
+                and actor.login not in (
+                  'k8s-merge-robot',
+                  'k8s-ci-robot',
+                  'k8s-reviewable',
+                  'k8s-cherrypick-bot',
+                  'minikube-bot',
+                  'codecov-io',
+                  'coveralls'
+                ) and (
+                  type in (
+                    'PushEvent',
+                    'IssueCommentEvent',
+                    'PullRequestEvent',
+                    'PullRequestReviewCommentEvent'
+                  ) or type not in (
+                    'IssuesEvent',
+                    'ForkEvent',
+                    'CommitCommentEvent',
+                    'MemberEvent',
+                    'WatchEvent',
+                    'CreateEvent',
+                    'DeleteEvent'
+                ))
+              order by stamp
+            ) as bbb
+            where pr is not null
+            group by repo, pr
+          ) bbb
+        ) ccc
+        where author is not null
+      ) ddd
+    ) eee, unnest(rounds) fff
+    group by repo, week
+    order by repo, week
