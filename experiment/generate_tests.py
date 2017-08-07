@@ -91,9 +91,9 @@ def substitute(job_name, lines):
 
 def get_envs(job_name, desc, field):
     """Returns a list of envs for the given field."""
+    if not field or not field.get('envs', []):
+        return []
     header = ['', '# The %s configurations.' % desc]
-    if not field:
-        return header
     return header + substitute(job_name, field.get('envs', []))
 
 
@@ -107,6 +107,11 @@ def get_args(job_name, field):
 def write_env_file(output_dir, job_name, envs):
     """Writes envs into a file in output_dir, and returns the file name."""
     output_file = os.path.join(output_dir, '%s.env' % job_name)
+    if not envs:
+        try:
+            os.unlink(output_file)
+        except OSError:
+            pass
     with open(output_file, 'w') as fp:
         fp.write('\n'.join(envs))
         fp.write('\n')
@@ -235,11 +240,12 @@ class E2ETest(object):
         self.k8s_versions = config['k8sVersions']
         self.test_suites = config['testSuites']
 
-    def __get_job_def(self, args):
+    def __get_job_def(self, args, envs):
         """Returns the job definition from the given args."""
+        args += (['--env-file=%s' % self.env_filename] if envs else [])
         return {
             'scenario': 'kubernetes_e2e',
-            'args': ['--env-file=%s' % self.env_filename] + args,
+            'args': args,
             'sigOwners': self.job.get('sigOwners') or ['UNNOWN'],
             # Indicates that this job definition is auto-generated.
             'tags': ['generated'],
@@ -289,7 +295,7 @@ class E2ETest(object):
         args.extend(get_args(self.job_name, k8s_version))
         args.extend(get_args(self.job_name, test_suite))
         # Generates job config.
-        job_config = self.__get_job_def(args)
+        job_config = self.__get_job_def(args, envs)
         # Generates Prow config.
         prow_config = self.__get_prow_config(test_suite)
 
@@ -313,7 +319,8 @@ def for_each_job(output_dir, job_name, job, yaml_config):
     envs, job_config, prow_config = generator.generate()
 
     # Applies job-level overrides.
-    envs.insert(0, '# ' + COMMENT)
+    if envs:
+        envs.insert(0, '# ' + COMMENT)
     apply_job_overrides(envs, get_envs(job_name, 'job', job))
     apply_job_overrides(job_config['args'], get_args(job_name, job))
 
