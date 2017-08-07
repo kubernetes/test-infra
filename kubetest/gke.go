@@ -235,6 +235,7 @@ func (g *gkeDeployer) Up() error {
 	if v := os.Getenv("CLUSTER_API_VERSION"); v != "" {
 		args = append(args, "--cluster-version="+v)
 	}
+	args = append(args, g.cluster)
 	if err := finishRunning(exec.Command("gcloud", args...)); err != nil {
 		return fmt.Errorf("error creating cluster: %v", err)
 	}
