@@ -330,17 +330,32 @@ class GSUtil(object):
         return self.call(cmd, output=True)
 
 
-    def upload_artifacts(self, path, artifacts):
+    def upload_artifacts(self, gsutil, path, artifacts):
         """Upload artifacts to the specified path."""
         # Upload artifacts
-        if os.path.isdir(artifacts):
-            cmd = [
-                self.gsutil, '-m', '-q',
-                '-o', 'GSUtil:use_magicfile=True',
-                'cp', '-r', '-c', '-z', 'log,txt,xml',
-                artifacts, path,
-            ]
-            self.call(cmd)
+        if not os.path.isdir(artifacts):
+            return
+        try:
+            # If remote path exists, it will create .../_artifacts subdir instead
+            gsutil.stat(path)
+            # Success means remote path exists
+            remote_base = os.path.basename(path)
+            local_base = os.path.basename(artifacts)
+            if remote_base != local_base:
+                # if basename are different, need to copy things over first.
+                localpath = artifacts.replace(local_base, remote_base)
+                os.rename(artifacts, localpath)
+                artifacts = localpath
+            path = path[:-len(remote_base + '/')]
+        except subprocess.CalledProcessError:
+            logging.warning('Remote dir %s not exist yet', path)
+        cmd = [
+            self.gsutil, '-m', '-q',
+            '-o', 'GSUtil:use_magicfile=True',
+            'cp', '-r', '-c', '-z', 'log,txt,xml',
+            artifacts, path,
+        ]
+        self.call(cmd)
 
 
 def append_result(gsutil, path, build, version, passed):
@@ -436,7 +451,7 @@ def finish(gsutil, paths, success, artifacts, build, version, repos, call):
 
     if os.path.isdir(artifacts) and any(f for _, _, f in os.walk(artifacts)):
         try:
-            gsutil.upload_artifacts(paths.artifacts, artifacts)
+            gsutil.upload_artifacts(gsutil, paths.artifacts, artifacts)
         except subprocess.CalledProcessError:
             logging.warning('Failed to upload artifacts')
 
