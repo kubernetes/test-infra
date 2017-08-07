@@ -10,9 +10,9 @@ go_repositories()
 
 http_archive(
     name = "io_bazel_rules_docker",
-    sha256 = "40d780165c0b9fbb3ddca858df7347381af0e87e430c74863e4ce9d6f6441023",
-    strip_prefix = "rules_docker-8359263f35227a3634ea023ff4ae163189eb4b26",
-    urls = ["https://github.com/bazelbuild/rules_docker/archive/8359263f35227a3634ea023ff4ae163189eb4b26.tar.gz"],
+    sha256 = "a6f30b7806ac49ef89d4b5d84a3fd37a460d12e8d3d83324ea7db6c247e125a1",
+    strip_prefix = "rules_docker-9eda1acbc4781894c452de0e49d528eb221f1a66",
+    urls = ["https://github.com/bazelbuild/rules_docker/archive/9eda1acbc4781894c452de0e49d528eb221f1a66.tar.gz"],
 )
 
 load("@io_bazel_rules_docker//docker:docker.bzl", "docker_repositories", "docker_pull")
