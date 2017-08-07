@@ -8051,6 +8051,7 @@
   },
   "ci-kubernetes-e2e-kops-aws-canary": {
     "args": [
+      "--aws",
       "--aws-cluster-domain=test-aws.k8s.io",
       "--cluster=e2e-kops-aws-canary",
       "--env-file=jobs/platform/kops_aws.env",
