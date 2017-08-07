@@ -7142,7 +7142,7 @@
       "--gcp-zone=us-east1-a",
       "--mode=docker",
       "--provider=gke",
-      "--test_args=--ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --allowed-not-ready-nodes=50 --node-schedulable-timeout=60m --minStartupPods=8",
+      "--test_args=--ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --allowed-not-ready-nodes=40 --node-schedulable-timeout=60m --minStartupPods=8",
       "--timeout=1000m"
     ],
     "scenario": "kubernetes_e2e",
