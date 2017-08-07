@@ -76,6 +76,7 @@ type options struct {
 	gcpNodeImage        string
 	gcpProject          string
 	gcpServiceAccount   string
+	gcpRegion           string
 	gcpZone             string
 	kubemark            bool
 	kubemarkMasterSize  string
@@ -113,6 +114,7 @@ func defineFlags() *options {
 	flag.StringVar(&o.gcpProject, "gcp-project", "", "For use with gcloud commands")
 	flag.StringVar(&o.gcpServiceAccount, "gcp-service-account", "", "Service account to activate before using gcloud")
 	flag.StringVar(&o.gcpZone, "gcp-zone", "", "For use with gcloud commands")
+	flag.StringVar(&o.gcpRegion, "gcp-region", "", "For use with gcloud commands")
 	flag.StringVar(&o.gcpNetwork, "gcp-network", "", "Cluster network. Must be set for --deployment=gke (TODO: other deployments).")
 	flag.StringVar(&o.gcpNodeImage, "gcp-node-image", "", "Node image type (cos|container_vm on GKE, cos|debian on GCE)")
 	flag.StringVar(&o.cluster, "cluster", "", "Cluster name. Must be set for --deployment=gke (TODO: other deployments).")
@@ -211,7 +213,7 @@ func getDeployer(o *options) (deployer, error) {
 	case "bash":
 		return bash{&o.clusterIPRange}, nil
 	case "gke":
-		return newGKE(o.provider, o.gcpProject, o.gcpZone, o.gcpNetwork, o.gcpNodeImage, o.cluster)
+		return newGKE(o.provider, o.gcpProject, o.gcpZone, o.gcpRegion, o.gcpNetwork, o.gcpNodeImage, o.cluster)
 	case "kops":
 		return newKops()
 	case "kubernetes-anywhere":
@@ -486,6 +488,11 @@ func migrateGcpEnvAndOptions(o *options) error {
 			env:    zone,
 			option: &o.gcpZone,
 			name:   "--gcp-zone",
+		},
+		{
+			env:    "REGION",
+			option: &o.gcpRegion,
+			name:   "--gcp-region",
 		},
 		{
 			env:    "GOOGLE_APPLICATION_CREDENTIALS",

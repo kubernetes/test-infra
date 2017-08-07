@@ -65,7 +65,7 @@ type gkeNodePool struct {
 
 type gkeDeployer struct {
 	project         string
-	zone            string
+	location        string
 	additionalZones string
 	cluster         string
 	shape           map[string]gkeNodePool
@@ -87,7 +87,7 @@ type ig struct {
 
 var _ deployer = &gkeDeployer{}
 
-func newGKE(provider, project, zone, network, image, cluster string) (*gkeDeployer, error) {
+func newGKE(provider, project, zone, region, network, image, cluster string) (*gkeDeployer, error) {
 	if provider != "gke" {
 		return nil, fmt.Errorf("--provider must be 'gke' for GKE deployment, found %q", provider)
 	}
@@ -103,10 +103,16 @@ func newGKE(provider, project, zone, network, image, cluster string) (*gkeDeploy
 	}
 	g.project = project
 
-	if zone == "" {
-		return nil, fmt.Errorf("--gcp-zone must be set for GKE deployment")
+	if zone == "" && region == "" {
+		return nil, fmt.Errorf("--gcp-zone or --gcp-region must be set for GKE deployment")
+	} else if zone != "" && region != "" {
+		return nil, fmt.Errorf("--gcp-zone and --gcp-region cannot both be set")
 	}
-	g.zone = zone
+	if zone != "" {
+		g.location = "--zone=" + zone
+	} else if region != "" {
+		g.location = "--region=" + region
+	}
 
 	if network == "" {
 		return nil, fmt.Errorf("--gcp-network must be set for GKE deployment")
@@ -221,7 +227,7 @@ func (g *gkeDeployer) Up() error {
 	copy(args, g.createCommand)
 	args = append(args,
 		"--project="+g.project,
-		"--zone="+g.zone,
+		g.location,
 		"--machine-type="+def.MachineType,
 		"--image-type="+g.image,
 		"--num-nodes="+strconv.Itoa(def.Nodes),
@@ -246,7 +252,7 @@ func (g *gkeDeployer) Up() error {
 		if err := finishRunning(exec.Command("gcloud", "container", "node-pools", "create", poolName,
 			"--cluster="+g.cluster,
 			"--project="+g.project,
-			"--zone="+g.zone,
+			g.location,
 			"--machine-type="+pool.MachineType,
 			"--num-nodes="+strconv.Itoa(pool.Nodes))); err != nil {
 			return fmt.Errorf("error creating node pool %q: %v", poolName, err)
@@ -347,7 +353,7 @@ func (g *gkeDeployer) getKubeConfig() error {
 	}
 	if err := finishRunning(exec.Command("gcloud", "container", "clusters", "get-credentials", g.cluster,
 		"--project="+g.project,
-		"--zone="+g.zone)); err != nil {
+		g.location)); err != nil {
 		return fmt.Errorf("error executing get-credentials: %v", err)
 	}
 	return nil
@@ -357,11 +363,12 @@ func (g *gkeDeployer) getKubeConfig() error {
 // would be nice to handle this elsewhere, and not with env
 // variables. c.f. kubernetes/test-infra#3330.
 func (g *gkeDeployer) setupEnv() error {
-	// Set NODE_INSTANCE_GROUP to the names of the instance groups in
-	// the cluster's primary zone. (e2e expects this).
+	// Set NODE_INSTANCE_GROUP to the names of instance groups that
+	// are in the same zone as the lexically first instance group.
 	var filt []string
+	zone := g.instanceGroups[0].zone
 	for _, ig := range g.instanceGroups {
-		if ig.zone == g.zone {
+		if ig.zone == zone {
 			filt = append(filt, ig.name)
 		}
 	}
@@ -413,7 +420,7 @@ func (g *gkeDeployer) getInstanceGroups() error {
 	igs, err := exec.Command("gcloud", "container", "clusters", "describe", g.cluster,
 		"--format=value(instanceGroupUrls)",
 		"--project="+g.project,
-		"--zone="+g.zone).Output()
+		g.location).Output()
 	if err != nil {
 		return fmt.Errorf("instance group URL fetch failed: %s", execError(err))
 	}
@@ -455,7 +462,7 @@ func (g *gkeDeployer) Down() error {
 	errCluster := finishRunning(exec.Command(
 		"gcloud", "container", "clusters", "delete", "-q", g.cluster,
 		"--project="+g.project,
-		"--zone="+g.zone))
+		g.location))
 	errFirewall := finishRunning(exec.Command("gcloud", "compute", "firewall-rules", "delete", "-q", firewall,
 		"--project="+g.project))
 	errNetwork := finishRunning(exec.Command("gcloud", "compute", "networks", "delete", "-q", g.network,
