@@ -33,6 +33,8 @@ spec:
             value: "false"
           - name: GF_USERS_ALLOW_ORG_CREATE
             value: "false"
+          - name: GF_INSTALL_PLUGINS
+            value: "mtanda-histogram-panel"
           - name: GF_ANALYTICS_GOOGLE_ANALYTICS_UA_ID
             valueFrom:
               configMapKeyRef:
