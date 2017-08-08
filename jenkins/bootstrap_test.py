@@ -2282,8 +2282,12 @@ class JobTest(unittest.TestCase):
                         if "--env=" in arg:
                             self._check_env(job, arg.split("=", 1)[1])
                     if '--provider=gke' in args:
-                        self.assertTrue(any('--deployment=gke' in a for a in args),
+                        self.assertTrue('--deployment=gke' in args,
                                         '%s must use --deployment=gke' % job)
+                        self.assertFalse(any('--gcp-master-image' in a for a in args),
+                                         '%s cannot use --gcp-master-image on GKE' % job)
+                        self.assertFalse(any('--gcp-nodes' in a for a in args),
+                                         '%s cannot use --gcp-nodes on GKE' % job)
                     if '--deployment=gke' in args:
                         self.assertTrue(any('--gcp-node-image' in a for a in args), job)
                     self.assertNotIn('--charts-tests', args)  # Use --charts
