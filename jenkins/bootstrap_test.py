@@ -2286,6 +2286,9 @@ class JobTest(unittest.TestCase):
                             self.assertNotIn('--mode', args, job)
                     else:
                         self.assertIn('--mode=docker', args, job)
+                    if '--provider=gke' in args:
+                        self.assertTrue(any('--deployment=gke' in a for a in args),
+                                        '%s must use --deployment=gke' % job)
                     if '--deployment=gke' in args:
                         self.assertTrue(any('--gcp-node-image' in a for a in args), job)
                     self.assertNotIn('--charts-tests', args)  # Use --charts
@@ -2300,13 +2303,10 @@ class JobTest(unittest.TestCase):
                             '--env-file=jobs/pull-kubernetes-e2e.env' in args
                             and '--check-leaked-resources' in args):
                         self.fail('PR job %s should not check for resource leaks' % job)
-                    is_gke_env = ('--env-file=jobs/platform/gke.env' in args or
-                                  '--env-file=jobs/platform/gke-staging.env' in args or
-                                  '--env-file=jobs/platform/gke-prod.env' in args)
                     # Consider deleting any job with --check-leaked-resources=false
                     if (
-                            '--env-file=jobs/platform/gce.env' not in args
-                            and not is_gke_env
+                            '--provider=gce' not in args
+                            and '--provider=gke' not in args
                             and '--check-leaked-resources' in args
                             and 'generated' not in config[job].get('tags', [])):
                         self.fail('Only GCP jobs can --check-leaked-resources, not %s' % job)
