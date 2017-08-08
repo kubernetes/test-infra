@@ -282,6 +282,7 @@ func main() {
 	cooldown := 0
 	// Loop endlessly, sleeping a minute between iterations
 	for range time.Tick(1 * time.Minute) {
+		start := time.Now()
 		// List batch jobs, only start a new one if none are active.
 		currentJobs, err := kc.ListProwJobs(nil)
 		if err != nil {
@@ -342,5 +343,6 @@ func main() {
 			}
 		}
 		cooldown = 5
+		log.Infof("Sync time: %v", time.Since(start))
 	}
 }
