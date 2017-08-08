@@ -43,6 +43,12 @@ The `--repo=R` (or `--bare`) flag controls what we check out from git.
 Anyone can reconfigure our CI system with a test-infra PR that updates the
 appropriate files. Detailed instructions follow:
 
+### E2E Testing
+
+Our e2e testing uses [kubetest](/kubetest) to build/deploy/test kubernetes
+clusters on various providers. Please see those documents for additional details
+about this tool as well as e2e testing generally.
+
 ### Create a new job
 
 Create a PR in this repo to add/update/remove a job or suite. Specifically
