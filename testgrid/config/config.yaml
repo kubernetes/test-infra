@@ -2348,10 +2348,14 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-audit
   - name: gci-gce-audit
     test_group_name: ci-kubernetes-e2e-gci-gce-audit
-  - name: gce-scalability
+  - name: gce-100
     test_group_name: ci-kubernetes-e2e-gce-scalability
-  - name: gci-gce-scalability
+  - name: gci-gce-100
     test_group_name: ci-kubernetes-e2e-gci-gce-scalability
+  - name: gce-scale-correctness
+    test_group_name: ci-kubernetes-e2e-gce-scale-correctness
+  - name: gce-scale-performance
+    test_group_name: ci-kubernetes-e2e-gce-scale-performance
   - name: gci-gce-ingress
     test_group_name: ci-kubernetes-e2e-gci-gce-ingress
   - name: gci-gke-ingress
