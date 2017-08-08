@@ -112,10 +112,10 @@ def write_env_file(output_dir, job_name, envs):
             os.unlink(output_file)
         except OSError:
             pass
+        return
     with open(output_file, 'w') as fp:
         fp.write('\n'.join(envs))
         fp.write('\n')
-    return output_file
 
 
 def write_job_defs_file(output_dir, job_defs):
@@ -150,25 +150,19 @@ def apply_job_overrides(envs_or_args, job_envs_or_args):
 
 class E2ENodeTest(object):
 
-    def __init__(self, output_dir, job_name, job, config):
-        self.env_filename = os.path.join(output_dir, '%s.env' % job_name),
+    def __init__(self, job_name, job, config):
         self.job_name = job_name
         self.job = job
         self.common = config['nodeCommon']
         self.images = config['nodeImages']
         self.k8s_versions = config['nodeK8sVersions']
         self.test_suites = config['nodeTestSuites']
-        self.system_specs = config['nodeSystemSpecs']
 
     def __get_job_def(self, args):
         """Returns the job definition from the given args."""
         return {
             'scenario': 'kubernetes_kubelet',
-            'args': [
-                '--mode=local',
-                '--properties=%s' % self.env_filename,
-                '--script=jobs/e2e-node/runner.sh',
-            ] + args,
+            'args': ['--mode=local'] + args,
             'sigOwners': self.job.get('sigOwners') or ['UNNOWN'],
             # Indicates that this job definition is auto-generated.
             'tags': ['generated'],
@@ -180,45 +174,40 @@ class E2ENodeTest(object):
         prow_config = yaml.round_trip_load(PROW_CONFIG_TEMPLATE)
         prow_config['name'] = self.job_name
         prow_config['interval'] = self.job['interval']
-        # Assumes that the value in TIMEOUT is of minutes.
+        # Assumes that the value in --timeout is of minutes.
         timeout = int(next(
-            x[8:-1] for x in test_suite['envs'] if x.startswith('TIMEOUT=')))
-        # Prow timeout = job timeout + 20min
+            x[15:-1] for x in test_suite['args'] if (
+                x.startswith('--test-timeout='))))
         container = prow_config['spec']['containers'][0]
         if not container['args']:
             container['args'] = []
+        # Prow timeout = job timeout + 20min
         container['args'].append('--timeout=%d' % (timeout + 20))
         container['args'].extend(k8s_version)
         container['args'].append('--root=/go/src')
-        container['env'].extend([
-            {'name':'GOPATH', 'value': '/go'},
-            {'name':'GCE_USER', 'value': 'prow'},
-        ])
+        container['env'].extend([{'name':'GOPATH', 'value': '/go'}])
         return prow_config
 
     def generate(self):
         '''Returns the job and the Prow configurations for this test.'''
         fields = self.job_name.split('-')
-        if len(fields) != 7:
-            raise ValueError('Expected 7 fields in job name', self.job_name)
+        if len(fields) != 6:
+            raise ValueError('Expected 6 fields in job name', self.job_name)
 
         image = self.images[fields[3]]
         k8s_version = self.k8s_versions[fields[4][3:]]
         test_suite = self.test_suites[fields[5]]
-        system_spec = self.system_specs[fields[6][:-4]]
 
-        # Generates envs.
+        # envs are disallowed in node e2e tests.
+        if 'envs' in self.common or 'envs' in image or 'envs' in test_suite:
+            raise ValueError(
+                'envs are disallowed in node e2e test', self.job_name)
         envs = []
-        envs.extend(get_envs(self.job_name, 'common', self.common))
-        envs.extend(get_envs(self.job_name, 'image', image))
-        envs.extend(get_envs(self.job_name, 'test suite', test_suite))
-        envs.extend(get_envs(self.job_name, 'system spec', system_spec))
         # Generates args.
         args = []
         args.extend(get_args(self.job_name, self.common))
         args.extend(get_args(self.job_name, image))
         args.extend(get_args(self.job_name, test_suite))
-        args.extend(get_args(self.job_name, system_spec))
         # Generates job config.
         job_config = self.__get_job_def(args)
         # Generates prow config.
@@ -261,11 +250,11 @@ class E2ETest(object):
         timeout = int(next(
             x[10:-1] for x in test_suite['args'] if (
                 x.startswith('--timeout='))))
-        # Prow timeout = job timeout + 20min
         container = prow_config['spec']['containers'][0]
         if not container['args']:
             container['args'] = []
         container['args'].append('--bare')
+        # Prow timeout = job timeout + 20min
         container['args'].append('--timeout=%d' % (timeout + 20))
         return prow_config
 
@@ -313,7 +302,7 @@ def for_each_job(output_dir, job_name, job, yaml_config):
     if job_type == 'e2e':
         generator = E2ETest(output_dir, job_name, job, yaml_config)
     elif job_type == 'e2enode':
-        generator = E2ENodeTest(output_dir, job_name, job, yaml_config)
+        generator = E2ENodeTest(job_name, job, yaml_config)
     else:
         raise ValueError('Unexpected job type ', job_type)
     envs, job_config, prow_config = generator.generate()

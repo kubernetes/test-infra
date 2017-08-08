@@ -97,7 +97,6 @@ def run_docker_mode(script, properties, branch, ssh, ssh_pub, robot):
         img,
     )
 
-
 def test_infra(*paths):
     """Return path relative to root of test-infra repo."""
     return os.path.join(ORIG_CWD, os.path.dirname(__file__), '..', *paths)
@@ -114,17 +113,40 @@ def add_gce_ssh(private_key, public_key):
     shutil.copy(public_key, gce_pub)
 
 
-def run_local_mode(script, properties, private_key, public_key):
+def parse_env(env):
+    """Returns (FOO, BAR=MORE) for FOO=BAR=MORE."""
+    return env.split('=', 1)
+
+
+def get_envs_from_file(env_file):
+    """Returns all FOO=BAR lines from env_file."""
+    envs = []
+    with open(env_file) as fp:
+        for line in fp:
+            line = line.rstrip()
+            if not line or line.startswith('#'):
+                continue
+            envs.append(parse_env(line))
+    return dict(envs)
+
+
+def run_local_mode(run_args, private_key, public_key):
     """Checkout, build and trigger the node e2e tests locally."""
     k8s = os.getcwd()
     if not os.path.basename(k8s) == 'kubernetes':
         raise ValueError(k8s)
     add_gce_ssh(private_key, public_key)
-    check('%s/%s' % (test_infra(), script), '%s/%s' % (test_infra(), properties))
+    check(
+        'go', 'run', 'test/e2e_node/runner/remote/run_remote.go',
+        '--logtostderr',
+        '--vmodule=*=4',
+        '--ssh-env=gce',
+        '--results-dir=/tmp/_artifacts',
+        *run_args)
 
 
-def main(args):
-    if args.mode == 'docker':
+def main():
+    if ARGS.mode == 'docker':
         run_docker_mode(
             ARGS.script,
             ARGS.properties,
@@ -133,15 +155,14 @@ def main(args):
             ARGS.gce_pub,
             ARGS.service_account,
         )
-    elif args.mode == 'local':
+    elif ARGS.mode == 'local':
         run_local_mode(
-            ARGS.script,
-            ARGS.properties,
+            RUN_ARGS,
             ARGS.gce_ssh,
             ARGS.gce_pub,
         )
     else:
-        raise ValueError(args.mode)
+        raise ValueError(ARGS.mode)
 
 
 if __name__ == '__main__':
@@ -171,5 +192,5 @@ if __name__ == '__main__':
         help='Script in kubernetes/kubernetes that runs checks')
     PARSER.add_argument(
         '--mode', default='docker', choices=['local', 'docker'])
-    ARGS = PARSER.parse_args()
-    main(ARGS)
+    ARGS, RUN_ARGS = PARSER.parse_known_args()
+    main()

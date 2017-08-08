@@ -753,8 +753,6 @@ test_groups:
 - name: ci-tectonic-e2e-etcd-serial
   gcs_prefix: upstream-jenkins-logs/logs/ci-tectonic-e2e-etcd-serial
 # Ubuntu node e2e tests (contact: @kubernetes/ubuntu-image on github)
-- name: ci-kubernetes-e2e-gce-ubuntu-1-7-node-prow
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntu-1-7-node-prow
 - name: ci-kubernetes-e2e-gce-ubuntu-node
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntu-node
 - name: ci-kubernetes-e2e-gce-ubuntu-node-serial
@@ -1075,8 +1073,8 @@ test_groups:
 - name: ci-kubernetes-soak-gci-gce-1-7-test
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gci-gce-1-7-test
 # cos image validation.
-- name: ci-kubernetes-e2enode-cosstable1-k8sstable1-default-defaultspec
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cosstable1-k8sstable1-default-defaultspec
+- name: ci-kubernetes-e2enode-cosstable1-k8sstable1-default
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cosstable1-k8sstable1-default
 - name: ci-kubernetes-e2e-gce-cosdev-k8sdev-default
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cosdev-k8sdev-default
   column_header:
@@ -1412,8 +1410,6 @@ test_groups:
 dashboards:
 - name: canonical-kubernetes
   dashboard_tab:
-  - name: gce-ubuntu-1.7-node-prow
-    test_group_name: ci-kubernetes-e2e-gce-ubuntu-1-7-node-prow
   - name: gce-ubuntu-node
     test_group_name: ci-kubernetes-e2e-gce-ubuntu-node
   - name: gce-ubuntu-node-serial
@@ -2984,8 +2980,8 @@ dashboards:
 
 - name: cos-image-validation
   dashboard_tab:
-  - name: e2enode-cosstable1-k8sstable1-default-defaultspec
-    test_group_name: ci-kubernetes-e2enode-cosstable1-k8sstable1-default-defaultspec
+  - name: e2enode-cosstable1-k8sstable1-default
+    test_group_name: ci-kubernetes-e2enode-cosstable1-k8sstable1-default
   - name: gce-cosdev-k8sdev-default
     test_group_name: ci-kubernetes-e2e-gce-cosdev-k8sdev-default
   - name: gce-cosdev-k8sdev-slow

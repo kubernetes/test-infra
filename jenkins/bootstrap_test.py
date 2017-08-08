@@ -1924,8 +1924,6 @@ class JobTest(unittest.TestCase):
     def test_only_jobs(self):
         """Ensure that everything in jobs/ is a valid job name and script."""
         for job, job_path in self.jobs:
-            if 'e2e-node' in job_path:
-                continue  # Ignore node e2e tests
             # Jobs should have simple names: letters, numbers, -, .
             self.assertTrue(re.match(r'[.0-9a-z-_]+.(sh|env)', job), job)
             # Jobs should point to a real, executable file
@@ -2112,8 +2110,6 @@ class JobTest(unittest.TestCase):
         for job, job_path in self.jobs:
             if job.startswith('pull-'):
                 continue  # No clean way to determine version
-            if 'e2e-node' in job_path:
-                continue  # Ignore node e2e tests
             with open(job_path) as fp:
                 script = fp.read()
             self.assertFalse(re.search(r'\Wsource ', script), job)
@@ -2128,8 +2124,6 @@ class JobTest(unittest.TestCase):
         for job, job_path in self.jobs:
             if not job.endswith('.sh'):
                 continue
-            if 'e2e-node' in job_path:
-                continue  # Ignore node e2e tests
             with open(job_path) as fp:
                 lines = list(fp)
             for option in options:
@@ -2141,10 +2135,6 @@ class JobTest(unittest.TestCase):
     def test_envs_no_export(self):
         for job, job_path in self.jobs:
             if not job.endswith('.env'):
-                continue
-            # TODO(yguo0905): Remove this check once we change the envs to be
-            # flags for kubernetes_kubelet.py.
-            if '-e2enode-' in job:
                 continue
             with open(job_path) as fp:
                 lines = list(fp)
