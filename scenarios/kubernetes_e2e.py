@@ -382,7 +382,7 @@ def set_up_aws(args, mode, cluster, runner_args):
                 '[profile jenkins-assumed-role]\nrole_arn = %s\nsource_profile = %s\n' % (
                     args.aws_role_arn, profile))
             mode.add_aws_profile(cfg.name, aws_config)
-    profile = 'jenkins-assumed-role'
+        profile = 'jenkins-assumed-role'
 
     zones = args.kops_zones or random.choice([
         'us-west-1a',
