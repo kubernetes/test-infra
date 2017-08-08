@@ -10187,7 +10187,7 @@
       "UNKNOWN"
     ]
   },
-  "pull-test-infra-bazel-scenario": {
+  "pull-test-infra-bazel": {
     "args": [
       "--affected",
       "--install=gubernator/test_requirements.txt",
