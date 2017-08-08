@@ -13924,9 +13924,9 @@ periodics:
       - name: JENKINS_AWS_CREDENTIALS_FILE
         value: /etc/aws-cred/aws-cred
       - name: JENKINS_AWS_SSH_PRIVATE_KEY_FILE
-        value: /etc/aws-ssh/ssh-private
+        value: /etc/aws-ssh/aws-ssh-private
       - name: JENKINS_AWS_SSH_PUBLIC_KEY_FILE
-        value: /etc/aws-ssh/ssh-public
+        value: /etc/aws-ssh/aws-ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e-prow:latest
       volumeMounts:
       - mountPath: /etc/service-account
