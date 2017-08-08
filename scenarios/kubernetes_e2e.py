@@ -407,7 +407,7 @@ def set_up_aws(args, mode, cluster, runner_args):
 
     runner_args.extend([
         '--kops-cluster=%s' % cluster,
-        '--kops-zones=%s ' % zones,
+        '--kops-zones=%s' % zones,
         '--kops-state=%s' % args.kops_state,
         '--kops-nodes=%s' % args.kops_nodes,
         '--kops-ssh-key=%s' % aws_ssh,
