@@ -34,8 +34,9 @@ pushd "${TREE}/jenkins/e2e-image"
 make push TAG="${TAG}"
 popd
 
+sed -i "s/DEFAULT_KUBEKINS_TAG = '.*'/DEFAULT_KUBEKINS_TAG = '${TAG}'/" "${TREE}/scenarios/kubernetes_e2e.py"
 sed -i "s/\/kubekins-e2e:.*$/\/kubekins-e2e:${TAG}/" "${TREE}/images/e2e-prow/Dockerfile"
-git commit -am "Bump e2e-prow base image to ${TAG}"
+git commit -am "Bump to gcr.io/k8s-testimages/kubekins-e2e:${TAG}"
 
 TAG="${DATE}-$(git describe --tags --always --dirty)"
 pushd "${TREE}/images/e2e-prow"
@@ -49,8 +50,9 @@ bazel run //experiment:generate_tests -- \
   --json-config-path=jobs/config.json \
   --prow-config-path=prow/config.yaml
 bazel run //jobs:config_sort
+popd
 
 # Scan for kubekins-e2e-prow:v.* as a rudimentary way to avoid
 # replacing :latest.
 sed -i "s/\/kubekins-e2e-prow:v.*$/\/kubekins-e2e-prow:${TAG}/" "${TREE}/prow/config.yaml"
-git commit -am "Bump e2e-prow to ${TAG} (using generate_tests and manual)"
+git commit -am "Bump to gcr.io/k8s-testimages/kubekins-e2e-prow:${TAG} (using generate_tests and manual)"
