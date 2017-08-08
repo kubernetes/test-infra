@@ -7,7 +7,6 @@ load(
     "docker_build",
     "docker_bundle",
 )
-
 load(
     "@io_bazel_rules_docker//docker/contrib:push-all.bzl",
     "docker_push",
@@ -26,9 +25,9 @@ docker_build(
 docker_bundle(
     name = "bundle",
     images = {
-     "{STABLE_DOCKER_REPO}/issue-creator:{DOCKER_TAG}": ":image",
-     "{STABLE_DOCKER_REPO}/issue-creator:latest": ":image",
-     "{STABLE_DOCKER_REPO}/issue-creator:latest-{BUILD_USER}": ":image",
+        "{STABLE_DOCKER_REPO}/issue-creator:{DOCKER_TAG}": ":image",
+        "{STABLE_DOCKER_REPO}/issue-creator:latest": ":image",
+        "{STABLE_DOCKER_REPO}/issue-creator:latest-{BUILD_USER}": ":image",
     },
     stamp = True,
 )
@@ -70,6 +69,7 @@ filegroup(
         ":package-srcs",
         "//issue-creator/creator:all-srcs",
         "//issue-creator/sources:all-srcs",
+        "//issue-creator/testowner:all-srcs",
     ],
     tags = ["automanaged"],
 )

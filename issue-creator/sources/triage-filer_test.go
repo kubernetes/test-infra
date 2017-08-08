@@ -25,7 +25,7 @@ import (
 
 	"github.com/google/go-github/github"
 	"k8s.io/test-infra/issue-creator/creator"
-	"k8s.io/test-infra/mungegithub/mungers/testowner"
+	"k8s.io/test-infra/issue-creator/testowner"
 )
 
 var (

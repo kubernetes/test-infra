@@ -18,8 +18,8 @@ go_test(
     tags = ["automanaged"],
     deps = [
         "//issue-creator/creator:go_default_library",
-        "//mungegithub/mungers/testowner:go_default_library",
-        "//vendor:github.com/google/go-github/github",
+        "//issue-creator/testowner:go_default_library",
+        "//vendor/github.com/google/go-github/github:go_default_library",
     ],
 )
 
@@ -33,8 +33,8 @@ go_library(
     deps = [
         "//issue-creator/creator:go_default_library",
         "//mungegithub/mungers/mungerutil:go_default_library",
-        "//vendor:github.com/golang/glog",
-        "//vendor:github.com/google/go-github/github",
+        "//vendor/github.com/golang/glog:go_default_library",
+        "//vendor/github.com/google/go-github/github:go_default_library",
     ],
 )
 

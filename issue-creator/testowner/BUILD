@@ -10,25 +10,16 @@ load(
 
 go_test(
     name = "go_default_test",
-    srcs = ["creator_test.go"],
+    srcs = ["owner_test.go"],
     library = ":go_default_library",
     tags = ["automanaged"],
-    deps = [
-        "//issue-creator/testowner:go_default_library",
-        "//vendor/github.com/google/go-github/github:go_default_library",
-    ],
 )
 
 go_library(
     name = "go_default_library",
-    srcs = ["creator.go"],
+    srcs = ["owner.go"],
     tags = ["automanaged"],
-    deps = [
-        "//ghclient:go_default_library",
-        "//issue-creator/testowner:go_default_library",
-        "//vendor/github.com/golang/glog:go_default_library",
-        "//vendor/github.com/google/go-github/github:go_default_library",
-    ],
+    deps = ["//vendor/github.com/golang/glog:go_default_library"],
 )
 
 filegroup(

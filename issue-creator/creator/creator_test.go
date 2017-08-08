@@ -24,8 +24,9 @@ import (
 	"strings"
 	"testing"
 
+	"k8s.io/test-infra/issue-creator/testowner"
+
 	"github.com/google/go-github/github"
-	"k8s.io/test-infra/mungegithub/mungers/testowner"
 )
 
 // fakeClient implements the RepoClient interface in order to be substituted for a
