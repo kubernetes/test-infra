@@ -104,7 +104,7 @@
         jenkins-timeout: 240
         timeout: 140
         frequency: '@hourly'
-        trigger-job: ''    
+        trigger-job: ''
     - kubernetes-e2e-kops-aws-updown: #zmerlynn
         job-name: ci-kubernetes-e2e-kops-aws-updown
         jenkins-timeout: 150
@@ -254,8 +254,8 @@
         job-name: ci-kubernetes-kubemark-high-density-100-gce
         jenkins-timeout: 400
         timeout: 300
-        frequency: 'H 20 * * 6'
-        trigger-job: 'ci-kubernetes-build'
+        frequency: 'H 20 * * 6'  # weekly
+        trigger-job: ''
     - kubernetes-kubemark-500-gce:
         job-name: ci-kubernetes-kubemark-500-gce
         jenkins-timeout: 240
