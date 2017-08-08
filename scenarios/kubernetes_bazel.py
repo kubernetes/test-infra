@@ -128,8 +128,12 @@ def main(args):
         if build_pkgs or affected:
             buildables = query('.*_binary', build_pkgs, affected)
 
-        # Call bazel build regardless, to establish bazel symlinks
-        check('bazel', 'build', *buildables)
+        if buildables:
+            check('bazel', 'build', *buildables)
+        else:
+            # Call bazel build regardless, to establish bazel symlinks
+            check('bazel', 'build')
+
         # clean up previous test.xml
         clean_file_in_dir('./bazel-testlogs', 'test.xml')
 
