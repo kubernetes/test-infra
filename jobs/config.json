@@ -8810,6 +8810,7 @@
       "--mode=docker",
       "--provider=gce",
       "--save=gs://kubernetes-jenkins/federation/ci-kubernetes-pull-gce-federation-deploy",
+      "--tag=v20170728-faff708c",
       "--test=false",
       "--timeout=90m"
     ],
@@ -9992,6 +9993,7 @@
       "--provider=gce",
       "--save=gs://kubernetes-jenkins/federation/ci-kubernetes-pull-gce-federation-deploy",
       "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-federation-e2e-gce",
+      "--tag=v20170728-faff708c",
       "--test_args=--ginkgo.focus=\\[Feature:Federation\\] --ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[NoCluster\\] --minStartupPods=8",
       "--timeout=90m"
     ],
