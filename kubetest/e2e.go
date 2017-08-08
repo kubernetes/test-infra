@@ -33,6 +33,8 @@ func argFields(args, dump, ipRange string) []string {
 	f := strings.Fields(args)
 	if dump != "" {
 		f = setFieldDefault(f, "--report-dir", dump)
+		// Disable logdump within ginkgo as it'll be done in kubetest anyway now.
+		f = setFieldDefault(f, "--disable-log-dump", "true")
 	}
 	if ipRange != "" {
 		f = setFieldDefault(f, "--cluster-ip-range", ipRange)
@@ -202,7 +204,7 @@ func run(deploy deployer, o options) error {
 		errs = appendError(errs, xmlWrap("Perf Tests", perfTest))
 	}
 
-	if len(errs) > 0 && dump != "" {
+	if dump != "" {
 		errs = appendError(errs, xmlWrap("DumpClusterLogs", func() error {
 			return deploy.DumpClusterLogs(dump, o.logexporterGCSPath)
 		}))
