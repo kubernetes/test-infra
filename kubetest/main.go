@@ -72,8 +72,10 @@ type options struct {
 	extract             extractStrategies
 	federation          bool
 	gcpCloudSdk         string
+	gcpMasterImage      string
 	gcpNetwork          string
 	gcpNodeImage        string
+	gcpNodes            string
 	gcpProject          string
 	gcpServiceAccount   string
 	gcpRegion           string
@@ -116,7 +118,9 @@ func defineFlags() *options {
 	flag.StringVar(&o.gcpZone, "gcp-zone", "", "For use with gcloud commands")
 	flag.StringVar(&o.gcpRegion, "gcp-region", "", "For use with gcloud commands")
 	flag.StringVar(&o.gcpNetwork, "gcp-network", "", "Cluster network. Must be set for --deployment=gke (TODO: other deployments).")
+	flag.StringVar(&o.gcpMasterImage, "gcp-master-image", "", "Master image type (cos|debian on GCE, n/a on GKE)")
 	flag.StringVar(&o.gcpNodeImage, "gcp-node-image", "", "Node image type (cos|container_vm on GKE, cos|debian on GCE)")
+	flag.StringVar(&o.gcpNodes, "gcp-nodes", "", "(--provider=gce only) Number of nodes to create.")
 	flag.StringVar(&o.cluster, "cluster", "", "Cluster name. Must be set for --deployment=gke (TODO: other deployments).")
 	flag.StringVar(&o.clusterIPRange, "cluster-ip-range", "", "Specify CLUSTER_IP_RANGE during --up and --test")
 	flag.BoolVar(&o.kubemark, "kubemark", false, "If true, run kubemark tests.")
@@ -510,6 +514,16 @@ func migrateGcpEnvAndOptions(o *options) error {
 			name:   "--gcp-node-image",
 		},
 		{
+			env:    "KUBE_MASTER_OS_DISTRIBUTION",
+			option: &o.gcpMasterImage,
+			name:   "--gcp-master-image",
+		},
+		{
+			env:    "NUM_NODES",
+			option: &o.gcpNodes,
+			name:   "--gcp-nodes",
+		},
+		{
 			env:      "CLOUDSDK_BUCKET",
 			option:   &o.gcpCloudSdk,
 			name:     "--gcp-cloud-sdk",
@@ -522,15 +536,37 @@ func prepareGcp(o *options) error {
 	if err := migrateGcpEnvAndOptions(o); err != nil {
 		return err
 	}
-	if o.provider == "gke" {
+	if o.provider == "gce" {
+		if distro := os.Getenv("KUBE_OS_DISTRIBUTION"); distro != "" {
+			log.Printf("Please use --gcp-master-image=%s --gcp-node-image=%s (instead of deprecated KUBE_OS_DISTRIBUTION)",
+				distro, distro)
+			// Note: KUBE_OS_DISTRIBUTION takes precedence over
+			// KUBE_{MASTER,NODE}_OS_DISTRIBUTION, so override here
+			// after the migration above.
+			o.gcpNodeImage = distro
+			o.gcpMasterImage = distro
+			if err := os.Setenv("KUBE_NODE_OS_DISTRIBUTION", distro); err != nil {
+				return fmt.Errorf("could not set KUBE_NODE_OS_DISTRIBUTION=%s: %v", distro, err)
+			}
+			if err := os.Setenv("KUBE_MASTER_OS_DISTRIBUTION", distro); err != nil {
+				return fmt.Errorf("could not set KUBE_MASTER_OS_DISTRIBUTION=%s: %v", distro, err)
+			}
+		}
+	} else if o.provider == "gke" {
+		if o.deployment == "" {
+			o.deployment = "gke"
+		}
+		if o.deployment != "gke" {
+			return fmt.Errorf("--provider=gke implies --deployment=gke")
+		}
 		if o.gcpNodeImage == "" {
 			return fmt.Errorf("--gcp-node-image must be set for GKE")
 		}
-
-		// TODO(kubernetes/test-infra#3307): Should disappear when
-		// "bash" deployment is gone.
-		if o.deployment == "bash" {
-			os.Setenv("KUBE_GKE_IMAGE_TYPE", o.gcpNodeImage)
+		if o.gcpMasterImage != "" {
+			return fmt.Errorf("--gcp-master-image cannot be set on GKE")
+		}
+		if o.gcpNodes != "" {
+			return fmt.Errorf("--gcp-nodes cannot be set on GKE, use --gke-shape instead")
 		}
 
 		// TODO(kubernetes/test-infra#3536): This is used by the
@@ -570,6 +606,10 @@ func prepareGcp(o *options) error {
 			}
 		}(boskos, p)
 		o.gcpProject = p
+	}
+
+	if err := os.Setenv("CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS", "1"); err != nil {
+		return fmt.Errorf("could not set CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1: %v", err)
 	}
 
 	if err := finishRunning(exec.Command("gcloud", "config", "set", "project", o.gcpProject)); err != nil {
