@@ -620,7 +620,7 @@
       "--gcp-project=k8s-jkns-e2e-gce-alpha",
       "--gcp-zone=us-central1-f",
       "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[Feature:(DynamicKubeletConfig|Audit|LocalPersistentVolumes)\\]|Initializers --minStartupPods=8",
+      "--test_args=--ginkgo.focus=\\[Feature:(DynamicKubeletConfig|Audit|LocalPersistentVolumes|FlexVolume)\\]|Initializers --minStartupPods=8",
       "--timeout=180m"
     ],
     "scenario": "kubernetes_e2e",
@@ -3811,7 +3811,7 @@
       "--gcp-project=k8s-jkns-e2e-gci-gce-alpha",
       "--gcp-zone=us-central1-f",
       "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[Feature:(Audit|LocalPersistentVolumes)\\] --minStartupPods=8",
+      "--test_args=--ginkgo.focus=\\[Feature:(Audit|LocalPersistentVolumes|FlexVolume)\\] --minStartupPods=8",
       "--timeout=180m"
     ],
     "scenario": "kubernetes_e2e",
