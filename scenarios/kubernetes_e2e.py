@@ -447,8 +447,6 @@ def main(args):
         mode.add_file(test_infra(env_file))
     for env in args.env:
         mode.add_env(env)
-    if args.gce_ssh:
-        mode.add_gce_ssh(args.gce_ssh, args.gce_pub)
 
     # TODO(fejta): remove after next image push
     mode.add_environment('KUBETEST_MANUAL_DUMP=y')
@@ -504,6 +502,8 @@ def main(args):
 
     if args.aws:
         set_up_aws(args, mode, cluster, runner_args)
+    elif args.gce_ssh:
+        mode.add_gce_ssh(args.gce_ssh, args.gce_pub)
 
     # TODO(fejta): delete this?
     mode.add_os_environment(*(
