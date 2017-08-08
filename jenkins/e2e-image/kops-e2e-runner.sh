@@ -42,7 +42,7 @@ export PRIORITY_PATH="/workspace/kubernetes/platforms/linux/amd64"
 
 e2e_args=( \
   --deployment=kops \
-  --kops=workspace/kops \
+  --kops=/workspace/kops \
 )
 
 # TODO(zmerlynn): This is duplicating some logic in e2e-runner.sh, but
