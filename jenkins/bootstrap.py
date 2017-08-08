@@ -299,6 +299,11 @@ class GSUtil(object):
         cmd = [self.gsutil, 'stat', path]
         return self.call(cmd, output=True, log_failures=False)
 
+    def ls(self, path):
+        """List a bucket or subdir."""
+        cmd = [self.gsutil, 'ls', path]
+        return self.call(cmd, output=True)
+
     def upload_json(self, path, jdict, generation=None):
         """Upload the dictionary object to path."""
         if generation is not None:  # generation==0 means object does not exist
@@ -337,7 +342,7 @@ class GSUtil(object):
             return
         try:
             # If remote path exists, it will create .../_artifacts subdir instead
-            gsutil.stat(path)
+            gsutil.ls(path)
             # Success means remote path exists
             remote_base = os.path.basename(path)
             local_base = os.path.basename(artifacts)
