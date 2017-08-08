@@ -2,7 +2,15 @@ package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])
 
-load("@io_bazel_rules_docker//docker:docker.bzl", "docker_build", "docker_push")
+load(
+    "@io_bazel_rules_docker//docker:docker.bzl",
+    "docker_build",
+    "docker_bundle",
+)
+load(
+    "@io_bazel_rules_docker//docker/contrib:push-all.bzl",
+    "docker_push",
+)
 
 docker_build(
     name = "image",
@@ -11,12 +19,19 @@ docker_build(
     files = [":commenter"],
 )
 
+docker_bundle(
+    name = "bundle",
+    images = {
+        "{STABLE_DOCKER_REPO}/commenter:{DOCKER_TAG}": ":image",
+        "{STABLE_DOCKER_REPO}/commenter:latest": ":image",
+        "{STABLE_DOCKER_REPO}/commenter:latest-{BUILD_USER}": ":image",
+    },
+    stamp = True,
+)
+
 docker_push(
     name = "push",
-    image = ":image",
-    registry = "gcr.io",
-    repository = "k8s-testimages/commenter",
-    tag = "latest",
+    bundle = ":bundle",
 )
 
 load(
