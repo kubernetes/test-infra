@@ -83,12 +83,12 @@ def query(kind, selected_pkgs, changed_pkgs):
     if changed_pkgs:
         changes = 'set(%s)' % ' '.join(changed_pkgs)
 
-    return check_output(
+    return filter(None, check_output(
         'bazel', 'query',
         '--keep_going',
         '--noshow_progress',
         'kind(%s, rdeps(%s, %s))' % (kind, selection, changes)
-    ).strip().split('\n')
+    ).split('\n'))
 
 
 def clean_file_in_dir(dirname, filename):
