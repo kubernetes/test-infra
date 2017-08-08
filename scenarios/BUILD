@@ -25,3 +25,11 @@ py_test(
         "kubernetes_e2e_test.py",
     ],
 )
+
+py_test(
+    name = "kubernetes_bazel_test",
+    srcs = [
+        "kubernetes_bazel.py",
+        "kubernetes_bazel_test.py",
+    ],
+)

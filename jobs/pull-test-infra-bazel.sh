@@ -24,7 +24,6 @@ set -o xtrace
 # TODO(fejta): bake dependencies into bazel rather than installing them via pip
 test_requirements=(
   gubernator/test_requirements.txt
-  jenkins/test_history/requirements.txt  # TODO(fejta): remove
   verify/test_requirements.txt
 )
 for path in ${test_requirements[@]}; do
