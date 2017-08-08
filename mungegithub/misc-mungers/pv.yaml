@@ -2,9 +2,9 @@ apiVersion: v1
 kind: PersistentVolume
 metadata:
   labels:
-    app: submit-queue
-    target-repo: kubernetes
-  name: kubernetes-misc-mungers-cache
+    app: misc-mungers
+    target-repo: @@
+  name: @@-misc-mungers-cache
 spec:
   capacity:
     storage: 10Gi
@@ -12,5 +12,5 @@ spec:
     - ReadWriteOnce
   persistentVolumeReclaimPolicy: Retain
   gcePersistentDisk:
-    pdName: kubernetes-misc-mungers-cache
+    pdName: @@-misc-mungers-cache
     fsType: ext4
