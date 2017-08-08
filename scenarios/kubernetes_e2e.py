@@ -33,6 +33,9 @@ import traceback
 
 ORIG_CWD = os.getcwd()  # Checkout changes cwd
 
+# Note: This variable is managed by experiment/bump_e2e_image.sh.
+DEFAULT_KUBEKINS_TAG = 'v20170808-5d58fc35'
+
 def test_infra(*paths):
     """Return path relative to root of test-infra repo."""
     return os.path.join(ORIG_CWD, os.path.dirname(__file__), '..', *paths)
@@ -568,7 +571,7 @@ def create_parser():
     parser.add_argument(
         '--kubeadm', choices=['ci', 'periodic', 'pull'])
     parser.add_argument(
-        '--tag', default='v20170808-5d58fc35', help='Use a specific kubekins-e2e tag if set')
+        '--tag', default=DEFAULT_KUBEKINS_TAG, help='Use a specific kubekins-e2e tag if set')
     parser.add_argument(
         '--test', default='true', help='If we need to run any actual test within kubetest')
     parser.add_argument(
