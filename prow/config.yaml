@@ -14157,6 +14157,7 @@ periodics:
       - "--repo=k8s.io/test-infra=master"
       - "--service-account=/etc/service-account/service-account.json"
       - "--upload=gs://kubernetes-jenkins/logs"
+      - "--json"
       env:
       - name: TEST_TMPDIR
         value: /root/.cache/bazel
