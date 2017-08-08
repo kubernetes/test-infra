@@ -244,7 +244,7 @@ function batchRevisionCell(build) {
 function pushRevisionCell(build) {
     var c = document.createElement("td");
     var bl = document.createElement("a");
-    bl.href = "https://github.com/" + build.repo + "/tree/" + build.base_sha;
+    bl.href = "https://github.com/" + build.repo + "/commit/" + build.base_sha;
     bl.text = build.base_ref + " (" + build.base_sha.slice(0, 7) + ")";
     c.appendChild(bl);
     return c;
