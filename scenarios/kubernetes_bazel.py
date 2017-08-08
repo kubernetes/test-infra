@@ -88,7 +88,8 @@ def query(kind, selected_pkgs, changed_pkgs):
         '--keep_going',
         '--noshow_progress',
         'kind(%s, rdeps(%s, %s))' % (kind, selection, changes)
-    ).split('\n')
+    ).strip().split('\n')
+
 
 def clean_file_in_dir(dirname, filename):
     """Recursively remove all file with filename in dirname."""
