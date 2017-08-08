@@ -22,6 +22,7 @@ go_test(
         "path_label_test.go",
         "release-note-label_test.go",
         "sig-mention-handler_test.go",
+        "size_test.go",
         "stale-green-ci_test.go",
         "submit-queue-batch_test.go",
         "submit-queue_test.go",
