@@ -8331,7 +8331,6 @@
       "--env-file=jobs/platform/kops_aws.env",
       "--env-file=jobs/ci-kubernetes-e2e-kops-aws-canary.env",
       "--extract=ci/latest",
-      "--mode=docker",
       "--tag=latest",
       "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]|\\[HPA\\]|Dashboard|Services.*functioning.*NodePort",
       "--timeout=120m"

@@ -13909,6 +13909,48 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+- interval: 1h
+  name: ci-kubernetes-e2e-kops-aws-canary
+  spec:
+    containers:
+    - args:
+      - --timeout=140
+      - --bare
+      env:
+      - name: GOOGLE_APPLICATION_CREDENTIALS
+        value: /etc/service-account/service-account.json
+      - name: USER
+        value: prow
+      - name: JENKINS_AWS_CREDENTIALS_FILE
+        value: /etc/aws-cred/aws-cred
+      - name: JENKINS_AWS_SSH_PRIVATE_KEY_FILE
+        value: /etc/aws-ssh/ssh-private
+      - name: JENKINS_AWS_SSH_PUBLIC_KEY_FILE
+        value: /etc/aws-ssh/ssh-public
+      image: gcr.io/k8s-testimages/kubekins-e2e-prow:latest
+      volumeMounts:
+      - mountPath: /etc/service-account
+        name: service
+        readOnly: true
+      - mountPath: /etc/aws-ssh-key-secret
+        name: aws-ssh
+        readOnly: true
+      - mountPath: /etc/aws-cred
+        name: aws-cred
+        readOnly: true
+    volumes:
+    - name: service
+      secret:
+        secretName: service-account
+    - name: aws-ssh
+      secret:
+        defaultMode: 256
+        secretName: aws-ssh-key-secret
+    - name: aws-cred
+      secret:
+        defaultMode: 256
+        secretName: aws-cred
+
 - interval: 30m
   name: ci-kubernetes-e2e-mlkube-gke
   spec:
