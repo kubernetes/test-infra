@@ -34,32 +34,12 @@ def check(*cmd):
 
 def get_gcs_path(args):
     # xref https://github.com/kubernetes/release/blob/master/push-build.sh
-    # RELEASE_BUCKET=${FLAGS_bucket:-"kubernetes-release-dev"}
-    bucket = args.release if args.release else "kubernetes-release-dev"
-    # GCS_DEST="devel"
-    # ((FLAGS_ci)) && GCS_DEST="ci"
-    # GCS_DEST=${FLAGS_release_type:-$GCS_DEST}
-    # GCS_DEST+="$FLAGS_gcs_suffix"
+    bucket = args.release or "kubernetes-release-dev"
     dest = "ci" 
     if args.suffix:
         dest += args.suffix
-    # KUBECTL_OUTPUT=$(cluster/kubectl.sh version --client 2>&1 || true)
-    # if [[ "$KUBECTL_OUTPUT" =~ GitVersion:\"(${VER_REGEX[release]}(\.${VER_REGEX[build]})?(-dirty)?)\", ]]; then
-    # LATEST=${BASH_REMATCH[1]}
-    #
-    # Alternative to the above from @ixdy:
-    # tar xf _output/release-tars/kubernetes.tar.gz kubernetes/version -O
     tf = tarfile.open("_output/release-tars/kubernetes.tar.gz")
     latest = tf.getmember("kubernetes/version").read().strip()
-    # xref https://github.com/kubernetes/release/blob/master/lib/releaselib.sh
-    # release::gcs::publish_version $GCS_DEST $LATEST $KUBE_ROOT/_output \
-    #                              $RELEASE_BUCKET $GCS_EXTRA_PUBLISH_FILE && break
-    # local build_type=$1
-    # local version=$2
-    # local build_output=$3
-    # local bucket=$4
-    # local extra_publish_file=$5
-    # local release_dir="gs://$bucket/$build_type/$version"
     return "gs://"+bucket+dest+latest
 
 def main(args):
