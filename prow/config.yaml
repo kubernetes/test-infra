@@ -14425,7 +14425,7 @@ periodics:
   interval: 20m  # Retest at most 1 PR per 20m, which should not DOS the queue.
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/commenter:latest
+    - image: gcr.io/k8s-testimages/commenter:v20170808-abf66782
       args:
       - |-
         --query=is:pr
