@@ -6669,7 +6669,7 @@
       "--gcp-zone=us-central1-f",
       "--gke-environment=test",
       "--provider=gke",
-      "--test_args=--ginkgo.focus=\\[sig-cli\\].*\\[Serial\\]|\\[Disruptive\\] --ginkgo.skip=\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
+      "--test_args=--ginkgo.focus=\\[sig-cli\\].*\\[Serial\\]|\\[sig-cli\\].*\\[Disruptive\\] --ginkgo.skip=\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
       "--timeout=300m"
     ],
     "scenario": "kubernetes_e2e",
