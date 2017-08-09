@@ -73,6 +73,7 @@ def main(args):
             try:
                 gcs_location = '%s/%s' % (args.gcs, version)
                 check('bazel', 'run', '//:push-build', '--', gcs_location)
+                # make sure artifacts dir exists
                 artifacts = '%s/_artifacts' % os.environ['WORKSPACE']
                 try:
                     os.mkdir(artifacts)

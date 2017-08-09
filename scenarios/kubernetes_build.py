@@ -82,6 +82,7 @@ def main(args):
     else:
         check('make', 'release')
     check('../release/push-build.sh', *push_build_args)
+    # make sure artifacts dir exists
     artifacts = '%s/_artifacts' % os.environ['WORKSPACE']
     try:
         os.mkdir(artifacts)
