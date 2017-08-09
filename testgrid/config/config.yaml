@@ -1073,8 +1073,26 @@ test_groups:
 - name: ci-kubernetes-soak-gci-gce-1-7-test
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gci-gce-1-7-test
 # cos image validation.
+- name: ci-kubernetes-e2enode-cosstable1-k8sdev-default
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cosstable1-k8sdev-default
+- name: ci-kubernetes-e2enode-cosstable1-k8sdev-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cosstable1-k8sdev-serial
+- name: ci-kubernetes-e2enode-cosstable1-k8sbeta-default
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cosstable1-k8sbeta-default
+- name: ci-kubernetes-e2enode-cosstable1-k8sbeta-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cosstable1-k8sbeta-serial
 - name: ci-kubernetes-e2enode-cosstable1-k8sstable1-default
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cosstable1-k8sstable1-default
+- name: ci-kubernetes-e2enode-cosstable1-k8sstable1-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cosstable1-k8sstable1-serial
+- name: ci-kubernetes-e2enode-cosstable1-k8sstable2-default
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cosstable1-k8sstable2-default
+- name: ci-kubernetes-e2enode-cosstable1-k8sstable2-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cosstable1-k8sstable2-serial
+- name: ci-kubernetes-e2enode-cosstable1-k8sstable3-default
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cosstable1-k8sstable3-default
+- name: ci-kubernetes-e2enode-cosstable1-k8sstable3-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cosstable1-k8sstable3-serial
 - name: ci-kubernetes-e2e-gce-cosdev-k8sdev-default
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cosdev-k8sdev-default
   column_header:
@@ -2980,85 +2998,103 @@ dashboards:
 
 - name: cos-image-validation
   dashboard_tab:
+  - name: e2enode-cosstable1-k8sdev-default
+    test_group_name: ci-kubernetes-e2enode-cosstable1-k8sdev-default
+  - name: e2enode-cosstable1-k8sdev-serial
+    test_group_name: ci-kubernetes-e2enode-cosstable1-k8sdev-serial
+  - name: e2enode-cosstable1-k8sbeta-default
+    test_group_name: ci-kubernetes-e2enode-cosstable1-k8sbeta-default
+  - name: e2enode-cosstable1-k8sbeta-serial
+    test_group_name: ci-kubernetes-e2enode-cosstable1-k8sbeta-serial
   - name: e2enode-cosstable1-k8sstable1-default
     test_group_name: ci-kubernetes-e2enode-cosstable1-k8sstable1-default
-  - name: gce-cosdev-k8sdev-default
+  - name: e2enode-cosstable1-k8sstable1-serial
+    test_group_name: ci-kubernetes-e2enode-cosstable1-k8sstable1-serial
+  - name: e2enode-cosstable1-k8sstable2-default
+    test_group_name: ci-kubernetes-e2enode-cosstable1-k8sstable2-default
+  - name: e2enode-cosstable1-k8sstable2-serial
+    test_group_name: ci-kubernetes-e2enode-cosstable1-k8sstable2-serial
+  - name: e2enode-cosstable1-k8sstable3-default
+    test_group_name: ci-kubernetes-e2enode-cosstable1-k8sstable3-default
+  - name: e2enode-cosstable1-k8sstable3-serial
+    test_group_name: ci-kubernetes-e2enode-cosstable1-k8sstable3-serial
+  - name: e2e-gce-cosdev-k8sdev-default
     test_group_name: ci-kubernetes-e2e-gce-cosdev-k8sdev-default
-  - name: gce-cosdev-k8sdev-slow
+  - name: e2e-gce-cosdev-k8sdev-slow
     test_group_name: ci-kubernetes-e2e-gce-cosdev-k8sdev-slow
-  - name: gce-cosdev-k8sdev-serial
+  - name: e2e-gce-cosdev-k8sdev-serial
     test_group_name: ci-kubernetes-e2e-gce-cosdev-k8sdev-serial
-  - name: gce-cosdev-k8sbeta-default
+  - name: e2e-gce-cosdev-k8sbeta-default
     test_group_name: ci-kubernetes-e2e-gce-cosdev-k8sbeta-default
-  - name: gce-cosdev-k8sbeta-slow
+  - name: e2e-gce-cosdev-k8sbeta-slow
     test_group_name: ci-kubernetes-e2e-gce-cosdev-k8sbeta-slow
-  - name: gce-cosdev-k8sbeta-serial
+  - name: e2e-gce-cosdev-k8sbeta-serial
     test_group_name: ci-kubernetes-e2e-gce-cosdev-k8sbeta-serial
-  - name: gce-cosdev-k8sstable1-default
+  - name: e2e-gce-cosdev-k8sstable1-default
     test_group_name: ci-kubernetes-e2e-gce-cosdev-k8sstable1-default
-  - name: gce-cosdev-k8sstable1-slow
+  - name: e2e-gce-cosdev-k8sstable1-slow
     test_group_name: ci-kubernetes-e2e-gce-cosdev-k8sstable1-slow
-  - name: gce-cosdev-k8sstable1-serial
+  - name: e2e-gce-cosdev-k8sstable1-serial
     test_group_name: ci-kubernetes-e2e-gce-cosdev-k8sstable1-serial
-  - name: gce-cosbeta-k8sdev-default
+  - name: e2e-gce-cosbeta-k8sdev-default
     test_group_name: ci-kubernetes-e2e-gce-cosbeta-k8sdev-default
-  - name: gce-cosbeta-k8sdev-serial
+  - name: e2e-gce-cosbeta-k8sdev-serial
     test_group_name: ci-kubernetes-e2e-gce-cosbeta-k8sdev-serial
-  - name: gce-cosbeta-k8sdev-slow
+  - name: e2e-gce-cosbeta-k8sdev-slow
     test_group_name: ci-kubernetes-e2e-gce-cosbeta-k8sdev-slow
-  - name: gce-cosbeta-k8sbeta-default
+  - name: e2e-gce-cosbeta-k8sbeta-default
     test_group_name: ci-kubernetes-e2e-gce-cosbeta-k8sbeta-default
-  - name: gce-cosbeta-k8sbeta-serial
+  - name: e2e-gce-cosbeta-k8sbeta-serial
     test_group_name: ci-kubernetes-e2e-gce-cosbeta-k8sbeta-serial
-  - name: gce-cosbeta-k8sbeta-slow
+  - name: e2e-gce-cosbeta-k8sbeta-slow
     test_group_name: ci-kubernetes-e2e-gce-cosbeta-k8sbeta-slow
-  - name: gce-cosbeta-k8sstable1-default
+  - name: e2e-gce-cosbeta-k8sstable1-default
     test_group_name: ci-kubernetes-e2e-gce-cosbeta-k8sstable1-default
-  - name: gce-cosbeta-k8sstable1-serial
+  - name: e2e-gce-cosbeta-k8sstable1-serial
     test_group_name: ci-kubernetes-e2e-gce-cosbeta-k8sstable1-serial
-  - name: gce-cosbeta-k8sstable1-slow
+  - name: e2e-gce-cosbeta-k8sstable1-slow
     test_group_name: ci-kubernetes-e2e-gce-cosbeta-k8sstable1-slow
-  - name: gce-cosbeta-k8sstable2-default
+  - name: e2e-gce-cosbeta-k8sstable2-default
     test_group_name: ci-kubernetes-e2e-gce-cosbeta-k8sstable2-default
-  - name: gce-cosbeta-k8sstable2-serial
+  - name: e2e-gce-cosbeta-k8sstable2-serial
     test_group_name: ci-kubernetes-e2e-gce-cosbeta-k8sstable2-serial
-  - name: gce-cosbeta-k8sstable2-slow
+  - name: e2e-gce-cosbeta-k8sstable2-slow
     test_group_name: ci-kubernetes-e2e-gce-cosbeta-k8sstable2-slow
-  - name: gce-cosbeta-k8sstable3-default
+  - name: e2e-gce-cosbeta-k8sstable3-default
     test_group_name: ci-kubernetes-e2e-gce-cosbeta-k8sstable3-default
-  - name: gce-cosbeta-k8sstable3-serial
+  - name: e2e-gce-cosbeta-k8sstable3-serial
     test_group_name: ci-kubernetes-e2e-gce-cosbeta-k8sstable3-serial
-  - name: gce-cosbeta-k8sstable3-slow
+  - name: e2e-gce-cosbeta-k8sstable3-slow
     test_group_name: ci-kubernetes-e2e-gce-cosbeta-k8sstable3-slow
-  - name: gce-cosstable1-k8sdev-default
+  - name: e2e-gce-cosstable1-k8sdev-default
     test_group_name: ci-kubernetes-e2e-gce-cosstable1-k8sdev-default
-  - name: gce-cosstable1-k8sdev-slow
+  - name: e2e-gce-cosstable1-k8sdev-slow
     test_group_name: ci-kubernetes-e2e-gce-cosstable1-k8sdev-slow
-  - name: gce-cosstable1-k8sdev-serial
+  - name: e2e-gce-cosstable1-k8sdev-serial
     test_group_name: ci-kubernetes-e2e-gce-cosstable1-k8sdev-serial
-  - name: gce-cosstable1-k8sbeta-default
+  - name: e2e-gce-cosstable1-k8sbeta-default
     test_group_name: ci-kubernetes-e2e-gce-cosstable1-k8sbeta-default
-  - name: gce-cosstable1-k8sbeta-slow
+  - name: e2e-gce-cosstable1-k8sbeta-slow
     test_group_name: ci-kubernetes-e2e-gce-cosstable1-k8sbeta-slow
-  - name: gce-cosstable1-k8sbeta-serial
+  - name: e2e-gce-cosstable1-k8sbeta-serial
     test_group_name: ci-kubernetes-e2e-gce-cosstable1-k8sbeta-serial
-  - name: gce-cosstable1-k8sstable1-default
+  - name: e2e-gce-cosstable1-k8sstable1-default
     test_group_name: ci-kubernetes-e2e-gce-cosstable1-k8sstable1-default
-  - name: gce-cosstable1-k8sstable1-slow
+  - name: e2e-gce-cosstable1-k8sstable1-slow
     test_group_name: ci-kubernetes-e2e-gce-cosstable1-k8sstable1-slow
-  - name: gce-cosstable1-k8sstable1-serial
+  - name: e2e-gce-cosstable1-k8sstable1-serial
     test_group_name: ci-kubernetes-e2e-gce-cosstable1-k8sstable1-serial
-  - name: gce-cosstable1-k8sstable2-default
+  - name: e2e-gce-cosstable1-k8sstable2-default
     test_group_name: ci-kubernetes-e2e-gce-cosstable1-k8sstable2-default
-  - name: gce-cosstable1-k8sstable2-slow
+  - name: e2e-gce-cosstable1-k8sstable2-slow
     test_group_name: ci-kubernetes-e2e-gce-cosstable1-k8sstable2-slow
-  - name: gce-cosstable1-k8sstable2-serial
+  - name: e2e-gce-cosstable1-k8sstable2-serial
     test_group_name: ci-kubernetes-e2e-gce-cosstable1-k8sstable2-serial
-  - name: gce-cosstable1-k8sstable3-default
+  - name: e2e-gce-cosstable1-k8sstable3-default
     test_group_name: ci-kubernetes-e2e-gce-cosstable1-k8sstable3-default
-  - name: gce-cosstable1-k8sstable3-slow
+  - name: e2e-gce-cosstable1-k8sstable3-slow
     test_group_name: ci-kubernetes-e2e-gce-cosstable1-k8sstable3-slow
-  - name: gce-cosstable1-k8sstable3-serial
+  - name: e2e-gce-cosstable1-k8sstable3-serial
     test_group_name: ci-kubernetes-e2e-gce-cosstable1-k8sstable3-serial
 
 - name: wg-resource-management

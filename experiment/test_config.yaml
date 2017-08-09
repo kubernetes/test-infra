@@ -551,8 +551,53 @@ jobs:
 
   # Node E2E Tests
 
+  ci-kubernetes-e2enode-cosstable1-k8sdev-default:
+    interval: 2h
+    args:
+    - --project=cos-image-validation
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2enode-cosstable1-k8sdev-serial:
+    interval: 2h
+    args:
+    - --project=cos-image-validation
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2enode-cosstable1-k8sbeta-default:
+    interval: 2h
+    args:
+    - --project=cos-image-validation
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2enode-cosstable1-k8sbeta-serial:
+    interval: 2h
+    args:
+    - --project=cos-image-validation
+    sigOwners: ['sig-node']
   ci-kubernetes-e2enode-cosstable1-k8sstable1-default:
     interval: 2h
+    args:
+    - --project=cos-image-validation
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2enode-cosstable1-k8sstable1-serial:
+    interval: 2h
+    args:
+    - --project=cos-image-validation
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2enode-cosstable1-k8sstable2-default:
+    interval: 6h
+    args:
+    - --project=cos-image-validation
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2enode-cosstable1-k8sstable2-serial:
+    interval: 6h
+    args:
+    - --project=cos-image-validation
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2enode-cosstable1-k8sstable3-default:
+    interval: 6h
+    args:
+    - --project=cos-image-validation
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2enode-cosstable1-k8sstable3-serial:
+    interval: 6h
     args:
     - --project=cos-image-validation
     sigOwners: ['sig-node']
