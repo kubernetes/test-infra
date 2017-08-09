@@ -615,8 +615,8 @@ cloudProviders:
     args:
     - --check-leaked-resources
     - --provider=gce
+    - --gcp-master-image=gci
     - --gcp-zone=us-central1-f
-    - --env=CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1
   gke:
     args:
     - --check-leaked-resources

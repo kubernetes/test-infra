@@ -2288,7 +2288,9 @@ class JobTest(unittest.TestCase):
                                          '%s cannot use --gcp-master-image on GKE' % job)
                         self.assertFalse(any('--gcp-nodes' in a for a in args),
                                          '%s cannot use --gcp-nodes on GKE' % job)
-                    if '--deployment=gke' in args:
+                        self.assertTrue(any('--gcp-node-image' in a for a in args), job)
+                    if '--provider=gce' in args:
+                        self.assertTrue(any('--gcp-master-image' in a for a in args), job)
                         self.assertTrue(any('--gcp-node-image' in a for a in args), job)
                     self.assertNotIn('--charts-tests', args)  # Use --charts
                     if any('--check_version_skew' in a for a in args):
