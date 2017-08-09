@@ -68,8 +68,6 @@ RUN tar xzf /workspace/google-cloud-sdk.tar.gz -C / && \
     gcloud components install alpha beta kubectl && \
     gcloud info | tee /workspace/gcloud-info.txt
 
-# TODO(krzyzacy): Remove once https://github.com/kubernetes/kubernetes/issues/49673 is resolved
-RUN gcloud components update --version=163.0.0
 ADD ["e2e-runner.sh", \
     "kops-e2e-runner.sh", \
     "kubetest", \
