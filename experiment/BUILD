@@ -27,6 +27,7 @@ filegroup(
     srcs = [
         ":package-srcs",
         "//experiment/commenter:all-srcs",
+        "//experiment/doppler:all-srcs",
     ],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],
