@@ -139,9 +139,26 @@ class LocalMode(object):
 
     def add_aws_cred(self, priv, pub, cred):
         """Sets aws keys and credentials."""
-        self.add_environment('JENKINS_AWS_SSH_PRIVATE_KEY_FILE=%s' % priv)
-        self.add_environment('JENKINS_AWS_SSH_PUBLIC_KEY_FILE=%s' % pub)
-        self.add_environment('JENKINS_AWS_CREDENTIALS_FILE=%s' % cred)
+        ssh_dir = '%s/.ssh' % self.workspace
+        if not os.path.isdir(ssh_dir):
+            os.makedirs(ssh_dir)
+
+        cred_dir = '%s/.aws' % self.workspace
+        if not os.path.isdir(cred_dir):
+            os.makedirs(cred_dir)
+
+        aws_ssh = '%s/kube_aws_rsa' % ssh_dir
+        aws_pub = '%s/kube_aws_rsa.pub' % ssh_dir
+        aws_cred = '%s/credentials' % cred_dir
+        shutil.copy(priv, aws_ssh)
+        shutil.copy(pub, aws_pub)
+        shutil.copy(cred, aws_cred)
+
+        self.add_environment(
+            'JENKINS_AWS_SSH_PRIVATE_KEY_FILE=%s' % priv,
+            'JENKINS_AWS_SSH_PUBLIC_KEY_FILE=%s' % pub,
+            'JENKINS_AWS_CREDENTIALS_FILE=%s' % cred,
+        )
 
     def add_gce_ssh(self, priv, pub):
         """Copies priv, pub keys to $WORKSPACE/.ssh."""
