@@ -71,10 +71,15 @@ def main(args):
             res = 1
         else:
             try:
-                check(
-                    'bazel', 'run', '//:push-build', '--',
-                    '%s/%s' % (args.gcs, version)
-                    )
+                gcs_location = '%s/%s' % (args.gcs, version)
+                check('bazel', 'run', '//:push-build', '--', gcs_location)
+                artifacts = '%s/_artifacts' % os.environ['WORKSPACE']
+                try:
+                    os.mkdir(artifacts)
+                except OSError:
+                    pass
+                with open(artifacts+'/build_location.txt', 'w') as fp:
+                    fp.write(gcs_location)
             except subprocess.CalledProcessError as exp:
                 res = exp.returncode
 
