@@ -10004,7 +10004,6 @@
       "--env-file=jobs/pull-kubernetes-e2e.env",
       "--env-file=jobs/pull-kubernetes-e2e-gce-bazel.env",
       "--extract=local",
-      "--gcp-project=k8s-jkns-pr-gce-bazel",
       "--gcp-zone=us-central1-f",
       "--provider=gce",
       "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-bazel",
