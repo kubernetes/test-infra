@@ -2132,6 +2132,81 @@ class JobTest(unittest.TestCase):
                     expected, lines,
                     '%s not found in %s' % (expected, job_path))
 
+    def _check_env(self, job, setting):
+        if not re.match(r'[0-9A-Z_]+=[^\n]*', setting):
+            self.fail('[%r]: Env %r: need to follow FOO=BAR pattern' % (job, setting))
+        if '#' in setting:
+            self.fail('[%r]: Env %r: No inline comments' % (job, setting))
+        if '"' in setting or '\'' in setting:
+            self.fail('[%r]: Env %r: No quote in env' % (job, setting))
+        if '$' in setting:
+            self.fail('[%r]: Env %r: Please resolve variables in env' % (job, setting))
+        if '{' in setting or '}' in setting:
+            self.fail('[%r]: Env %r: { and } are not allowed in env' % (job, setting))
+        # also test for https://github.com/kubernetes/test-infra/issues/2829
+        # TODO(fejta): sort this list
+        black = [
+            ('CHARTS_TEST=', '--charts-tests'),
+            # TODO(krzyzacy,fejta): This env is still being used in
+            # https://github.com/kubernetes/kubernetes/blob/master/cluster/gce/config-test.sh#L95
+            # ('CLUSTER_IP_RANGE=', '--test_args=--cluster-ip-range=FOO'),
+            ('CLOUDSDK_BUCKET=', '--gcp-cloud-sdk=gs://foo'),
+            ('CLUSTER_NAME=', '--cluster=FOO'),
+            ('E2E_CLEAN_START=', '--test_args=--clean-start=true'),
+            ('E2E_DOWN=', '--down=true|false'),
+            ('E2E_MIN_STARTUP_PODS=', '--test_args=--minStartupPods=FOO'),
+            ('E2E_NAME=', '--cluster=whatever'),
+            ('E2E_PUBLISH_PATH=', '--publish=gs://FOO'),
+            ('E2E_REPORT_DIR=', '--test_args=--report-dir=FOO'),
+            ('E2E_REPORT_PREFIX=', '--test_args=--report-prefix=FOO'),
+            ('E2E_TEST=', '--test=true|false'),
+            ('E2E_UPGRADE_TEST=', '--upgrade_args=FOO'),
+            ('E2E_UP=', '--up=true|false'),
+            ('E2E_OPT=', 'Send kubetest the flags directly'),
+            ('FAIL_ON_GCP_RESOURCE_LEAK=', '--check-leaked-resources=true|false'),
+            ('FEDERATION_DOWN=', '--down=true|false'),
+            ('FEDERATION_UP=', '--up=true|false'),
+            ('GINKGO_TEST_ARGS=', '--test_args=FOO'),
+            ('GINKGO_UPGRADE_TEST_ARGS=', '--upgrade_args=FOO'),
+            ('JENKINS_FEDERATION_PREFIX=', '--stage=gs://FOO'),
+            ('JENKINS_GCI_PATCH_K8S=', 'Unused, see --extract docs'),
+            ('JENKINS_PUBLISHED_VERSION=', '--extract=V'),
+            ('JENKINS_PUBLISHED_SKEW_VERSION=', '--extract=V'),
+            ('JENKINS_USE_SKEW_KUBECTL=', 'SKEW_KUBECTL=y'),
+            ('JENKINS_USE_SKEW_TESTS=', '--skew'),
+            ('JENKINS_SOAK_MODE', '--soak'),
+            ('JENKINS_SOAK_PREFIX', '--stage=gs://FOO'),
+            ('JENKINS_USE_EXISTING_BINARIES=', '--extract=local'),
+            ('JENKINS_USE_LOCAL_BINARIES=', '--extract=none'),
+            ('JENKINS_USE_SERVER_VERSION=', '--extract=gke'),
+            ('JENKINS_USE_GCI_VERSION=', '--extract=gci/FAMILY'),
+            ('JENKINS_USE_GCI_HEAD_IMAGE_FAMILY=', '--extract=gci/FAMILY'),
+            ('KUBE_GKE_NETWORK=', '--gcp-network=FOO'),
+            ('KUBE_GCE_NETWORK=', '--gcp-network=FOO'),
+            ('KUBE_GCE_ZONE=', '--gcp-zone=FOO'),
+            ('KUBEKINS_TIMEOUT=', '--timeout=XXm'),
+            ('KUBEMARK_TEST_ARGS=', '--test_args=FOO'),
+            ('KUBEMARK_TESTS=', '--test_args=--ginkgo.focus=FOO'),
+            ('KUBEMARK_MASTER_SIZE=', '--kubemark-master-size=FOO'),
+            ('KUBEMARK_NUM_NODES=', '--kubemark-nodes=FOO'),
+            ('KUBERNETES_PROVIDER=', '--provider=FOO'),
+            ('PERF_TESTS=', '--perf'),
+            ('PROJECT=', '--gcp-project=FOO'),
+            ('SKEW_KUBECTL=', '--test_args=--kubectl-path=FOO'),
+            ('USE_KUBEMARK=', '--kubemark'),
+            ('ZONE=', '--gcp-zone=FOO'),
+        ]
+        for env, fix in black:
+            if 'kops' in job and env in [
+                    'JENKINS_PUBLISHED_VERSION=',
+                    'GINKGO_TEST_ARGS=',
+                    'KUBERNETES_PROVIDER=',
+            ]:
+                continue  # TOOD(fejta): migrate kops jobs
+            if setting.startswith(env):
+                self.fail('[%s]: Env %s: Convert %s to use %s in jobs/config.json' % (
+                    job, setting, env, fix))
+
     def test_envs_no_export(self):
         for job, job_path in self.jobs:
             if not job.endswith('.env'):
@@ -2145,80 +2220,7 @@ class JobTest(unittest.TestCase):
                     continue
                 if line.startswith('#'):
                     continue
-                if not re.match(r'[0-9A-Z_]+=[^\n]*', line):
-                    self.fail('[%r]: Env %r: need to follow FOO=BAR pattern' % (job, line))
-                if '#' in line:
-                    self.fail('[%r]: Env %r: No inline comments' % (job, line))
-                if '"' in line or '\'' in line:
-                    self.fail('[%r]: Env %r: No quote in env' % (job, line))
-                if '$' in line:
-                    self.fail('[%r]: Env %r: Please resolve variables in env file' % (job, line))
-                if '{' in line or '}' in line:
-                    self.fail('[%r]: Env %r: { and } are not allowed in env files' % (job, line))
-
-                # also test for https://github.com/kubernetes/test-infra/issues/2829
-                # TODO(fejta): sort this list
-                black = [
-                    ('CHARTS_TEST=', '--charts-tests'),
-                    # TODO(krzyzacy,fejta): This env is still being used in
-                    # https://github.com/kubernetes/kubernetes/blob/master/cluster/gce/config-test.sh#L95
-                    # ('CLUSTER_IP_RANGE=', '--test_args=--cluster-ip-range=FOO'),
-                    ('CLOUDSDK_BUCKET=', '--gcp-cloud-sdk=gs://foo'),
-                    ('CLUSTER_NAME=', '--cluster=FOO'),
-                    ('E2E_CLEAN_START=', '--test_args=--clean-start=true'),
-                    ('E2E_DOWN=', '--down=true|false'),
-                    ('E2E_MIN_STARTUP_PODS=', '--test_args=--minStartupPods=FOO'),
-                    ('E2E_NAME=', '--cluster=whatever'),
-                    ('E2E_PUBLISH_PATH=', '--publish=gs://FOO'),
-                    ('E2E_REPORT_DIR=', '--test_args=--report-dir=FOO'),
-                    ('E2E_REPORT_PREFIX=', '--test_args=--report-prefix=FOO'),
-                    ('E2E_TEST=', '--test=true|false'),
-                    ('E2E_UPGRADE_TEST=', '--upgrade_args=FOO'),
-                    ('E2E_UP=', '--up=true|false'),
-                    ('E2E_OPT=', 'Send kubetest the flags directly'),
-                    ('FAIL_ON_GCP_RESOURCE_LEAK=', '--check-leaked-resources=true|false'),
-                    ('FEDERATION_DOWN=', '--down=true|false'),
-                    ('FEDERATION_UP=', '--up=true|false'),
-                    ('GINKGO_TEST_ARGS=', '--test_args=FOO'),
-                    ('GINKGO_UPGRADE_TEST_ARGS=', '--upgrade_args=FOO'),
-                    ('JENKINS_FEDERATION_PREFIX=', '--stage=gs://FOO'),
-                    ('JENKINS_GCI_PATCH_K8S=', 'Unused, see --extract docs'),
-                    ('JENKINS_PUBLISHED_VERSION=', '--extract=V'),
-                    ('JENKINS_PUBLISHED_SKEW_VERSION=', '--extract=V'),
-                    ('JENKINS_USE_SKEW_KUBECTL=', 'SKEW_KUBECTL=y'),
-                    ('JENKINS_USE_SKEW_TESTS=', '--skew'),
-                    ('JENKINS_SOAK_MODE', '--soak'),
-                    ('JENKINS_SOAK_PREFIX', '--stage=gs://FOO'),
-                    ('JENKINS_USE_EXISTING_BINARIES=', '--extract=local'),
-                    ('JENKINS_USE_LOCAL_BINARIES=', '--extract=none'),
-                    ('JENKINS_USE_SERVER_VERSION=', '--extract=gke'),
-                    ('JENKINS_USE_GCI_VERSION=', '--extract=gci/FAMILY'),
-                    ('JENKINS_USE_GCI_HEAD_IMAGE_FAMILY=', '--extract=gci/FAMILY'),
-                    ('KUBE_GKE_NETWORK=', '--gcp-network=FOO'),
-                    ('KUBE_GCE_NETWORK=', '--gcp-network=FOO'),
-                    ('KUBE_GCE_ZONE=', '--gcp-zone=FOO'),
-                    ('KUBEKINS_TIMEOUT=', '--timeout=XXm'),
-                    ('KUBEMARK_TEST_ARGS=', '--test_args=FOO'),
-                    ('KUBEMARK_TESTS=', '--test_args=--ginkgo.focus=FOO'),
-                    ('KUBEMARK_MASTER_SIZE=', '--kubemark-master-size=FOO'),
-                    ('KUBEMARK_NUM_NODES=', '--kubemark-nodes=FOO'),
-                    ('KUBERNETES_PROVIDER=', '--provider=FOO'),
-                    ('PERF_TESTS=', '--perf'),
-                    ('PROJECT=', '--gcp-project=FOO'),
-                    ('SKEW_KUBECTL=', '--test_args=--kubectl-path=FOO'),
-                    ('USE_KUBEMARK=', '--kubemark'),
-                    ('ZONE=', '--gcp-zone=FOO'),
-                ]
-                for env, fix in black:
-                    if 'kops' in job and env in [
-                            'JENKINS_PUBLISHED_VERSION=',
-                            'GINKGO_TEST_ARGS=',
-                            'KUBERNETES_PROVIDER=',
-                    ]:
-                        continue  # TOOD(fejta): migrate kops jobs
-                    if line.startswith(env):
-                        self.fail('[%s]: Env %s: Convert %s to use %s in jobs/config.json' % (
-                            job, line, env, fix))
+                self._check_env(job, line)
 
 
     def test_no_bad_vars_in_jobs(self):
@@ -2276,6 +2278,9 @@ class JobTest(unittest.TestCase):
                             self.assertNotIn('--mode', args, job)
                     else:
                         self.assertIn('--mode=docker', args, job)
+                    for arg in args:
+                        if "--env=" in arg:
+                            self._check_env(job, arg.split("=", 1)[1])
                     if '--provider=gke' in args:
                         self.assertTrue(any('--deployment=gke' in a for a in args),
                                         '%s must use --deployment=gke' % job)
