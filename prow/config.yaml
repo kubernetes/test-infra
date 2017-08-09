@@ -13895,7 +13895,7 @@ periodics:
       - mountPath: /etc/service-account
         name: service
         readOnly: true
-      - mountPath: /etc/aws-ssh-key-secret
+      - mountPath: /etc/aws-ssh
         name: aws-ssh
         readOnly: true
       - mountPath: /etc/aws-cred
