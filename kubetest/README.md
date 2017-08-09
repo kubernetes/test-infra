@@ -1,4 +1,4 @@
-Kubetest is the inteface for launching and running e2e tests.
+Kubetest is the interface for launching and running e2e tests.
 
 See the contributor documentation for information about [e2e testing].
 
