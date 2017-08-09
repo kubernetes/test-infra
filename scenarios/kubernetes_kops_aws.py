@@ -140,9 +140,10 @@ def main(args):
     # So if you overwrite FOO=c for a local run it will take precedence.
     #
 
-    if args.env_file:
-        for env in args.env_file:
-            cmd.extend(['--env-file', test_infra(env)])
+    for env in args.env_file:
+        cmd.extend(['--env-file', test_infra(env)])
+    for env in args.env:
+        cmd.extend(['-e', env])
 
     # Enforce to be always present
     aws_ssh = '/workspace/.ssh/kube_aws_rsa'
@@ -269,7 +270,9 @@ if __name__ == '__main__':
 
     PARSER = argparse.ArgumentParser()
     PARSER.add_argument(
-        '--env-file', action="append", help='Job specific environment file')
+        '--env-file', default=[], action="append", help='Job specific environment file')
+    PARSER.add_argument(
+        '--env', default=[], action="append", help='Job specific environment setting')
     PARSER.add_argument(
         '--aws-ssh',
         default=os.environ.get('JENKINS_AWS_SSH_PRIVATE_KEY_FILE'),
