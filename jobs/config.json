@@ -1929,7 +1929,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-federation"
     ]
   },
   "ci-kubernetes-e2e-gce-federation-release-1-6": {
@@ -1947,7 +1947,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-federation"
     ]
   },
   "ci-kubernetes-e2e-gce-federation-release-1-7": {
@@ -1965,7 +1965,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-federation"
     ]
   },
   "ci-kubernetes-e2e-gce-federation-serial": {
@@ -1983,7 +1983,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-federation"
     ]
   },
   "ci-kubernetes-e2e-gce-flaky": {
@@ -8486,7 +8486,7 @@
     ],
     "scenario": "kubernetes_build",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-federation"
     ]
   },
   "ci-kubernetes-federation-build-1.6": {
@@ -8497,7 +8497,7 @@
     ],
     "scenario": "kubernetes_build",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-federation"
     ]
   },
   "ci-kubernetes-federation-build-1.7": {
@@ -8508,7 +8508,7 @@
     ],
     "scenario": "kubernetes_build",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-federation"
     ]
   },
   "ci-kubernetes-kubemark-100-canary": {
@@ -8807,7 +8807,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-federation"
     ]
   },
   "ci-kubernetes-pull-gce-federation-deploy-canary": {
@@ -8826,7 +8826,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-federation"
     ]
   },
   "ci-kubernetes-soak-cos-docker-validation-deploy": {
@@ -9100,7 +9100,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-federation"
     ]
   },
   "ci-kubernetes-soak-gce-federation-test": {
@@ -9121,7 +9121,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-federation"
     ]
   },
   "ci-kubernetes-soak-gce-gci-deploy": {
@@ -9990,7 +9990,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-federation"
     ]
   },
   "pull-kubernetes-federation-e2e-gce-canary": {
@@ -10015,7 +10015,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-federation"
     ]
   },
   "pull-kubernetes-kubemark-e2e-gce": {
