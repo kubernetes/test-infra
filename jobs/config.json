@@ -1917,6 +1917,7 @@
   "ci-kubernetes-e2e-gce-federation": {
     "args": [
       "--check-leaked-resources",
+      "--cluster=prow-us-central1-f",
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/ci-kubernetes-e2e-gce-federation.env",
       "--extract=ci/latest",
