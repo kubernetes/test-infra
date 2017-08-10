@@ -6,20 +6,14 @@
             days-to-keep: 3
     node: master
     triggers:
-        - pollscm:
-            cron: '* * * * *'
-    scm:
-        - git:
-            url: https://github.com/kubernetes/test-infra
-            branches:
-                - master
-            browser: githubweb
-            browser-url: https://github.com/kubernetes/test-infra
-            skip-tag: true
+        - timed: '@hourly'
     builders:
         - shell: |
+            git clone https://github.com/kubernetes/test-infra -b master
+            cd test-infra
             ./jenkins/update-jobs.sh "jenkins/job-configs:jenkins/job-configs/kubernetes-jenkins"
-    publishers:
-      - email-ext:
-          recipients: spxtr@google.com
-
+    wrappers:
+      - workspace-cleanup:
+          dirmatch: true
+          exclude:
+          - 'test-infra/.git/'
