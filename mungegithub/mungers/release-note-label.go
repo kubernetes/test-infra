@@ -42,7 +42,7 @@ const (
 
 	releaseNoteFormat = `Adding ` + doNotMergeLabel + ` because the release note process has not been followed.
 One of the following labels is required %q, %q, %q or %q.
-Please see: https://github.com/kubernetes/kubernetes/blob/master/docs/devel/pull-requests.md#release-notes.`
+Please see: https://github.com/kubernetes/community/blob/master/contributors/devel/pull-requests.md#write-release-notes-if-needed.`
 	parentReleaseNoteFormat = `The 'parent' PR of a cherry-pick PR must have one of the %q or %q labels, or this PR must follow the standard/parent release note labeling requirement. (release-note-experimental must be explicit for cherry-picks)`
 
 	noReleaseNoteComment = "none"
