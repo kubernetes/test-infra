@@ -8,7 +8,7 @@ Command | Implemented By | Who can run it | Description
 `/unassign [@userA @userB @etc]` | prow [assign](./prow/plugins/assign) | anyone | Unassigns specified people (or yourself if no one is specified). Target must already be assigned.
 `/cc [@userA @userB @etc]` | prow [assign](./prow/plugins/assign) | anyone | Request review from specified people (or yourself if no one is specified). Target must be a kubernetes org member.
 `/uncc [@userA @userB @etc]` | prow [assign](./prow/plugins/assign) | anyone | Dismiss review request for specified people (or yourself if no one is specified). Target must already have had a review requested.
-`/help` | prow [help](./prow/plugins/help) | anyone | If issue is unassigned, adds help-wanted label. Label is removed when issue is assigned.
+`/help` | prow [help](./prow/plugins/help) | anyone | If issue is unassigned, adds `help-wanted` label. Label is removed when issue is assigned.
 `/area [label1 label2 ...]` | prow [label](./prow/plugins/label) | anyone | adds an area/<> label(s) if it exists
 `/remove-area [label1 label2 ...]` | prow [label](./prow/plugins/label) | anyone | removes an area/<> label(s) if it exists
 `/kind [label1 label2 ...]` | prow [label](./prow/plugins/label) | anyone | adds a kind/<> label(s) if it exists

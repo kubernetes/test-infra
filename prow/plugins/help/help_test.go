@@ -160,15 +160,15 @@ func TestHelp(t *testing.T) {
 			assignees:             []string{},
 		},
 		{
-			name:                  "Want help, no assignee",
+			name:                  "Want helpLabel, no assignee",
 			body:                  "/help",
-			expectedNewLabels:     formatLabels("help-wanted"),
+			expectedNewLabels:     formatLabels(helpLabel),
 			expectedRemovedLabels: []string{},
 			issueLabels:           []string{},
 			assignees:             []string{},
 		},
 		{
-			name:                  "Want help, already assigned",
+			name:                  "Want helpLabel, already assigned",
 			body:                  "/help",
 			expectedNewLabels:     []string{},
 			expectedRemovedLabels: []string{},
@@ -176,11 +176,11 @@ func TestHelp(t *testing.T) {
 			assignees:             []string{"Alice"},
 		},
 		{
-			name:                  "Has help label, is now assigned",
+			name:                  "Has helpLabel, is now assigned",
 			body:                  "irrelelvant",
 			expectedNewLabels:     []string{},
-			expectedRemovedLabels: formatLabels("help-wanted"),
-			issueLabels:           []string{"help-wanted"},
+			expectedRemovedLabels: formatLabels(helpLabel),
+			issueLabels:           []string{helpLabel},
 			assignees:             []string{"Alice"},
 		},
 	}

@@ -121,8 +121,6 @@ func handle(gc githubClient, log *logrus.Entry, ae assignEvent) error {
 	if hasHelp && isAssigned {
 		if err := gc.RemoveLabel(ae.org, ae.repo, ae.number, helpLabel); err != nil {
 			log.WithError(err).Errorf("Github failed to remove the following label: %s", helpLabel)
-		} else {
-			log.Infof("Removing %s label.", helpLabel)
 		}
 	}
 
@@ -131,8 +129,6 @@ func handle(gc githubClient, log *logrus.Entry, ae assignEvent) error {
 	if !hasHelp && !isAssigned && wantHelp {
 		if err := gc.AddLabel(ae.org, ae.repo, ae.number, helpLabel); err != nil {
 			log.WithError(err).Errorf("Github failed to add the following label: %s", helpLabel)
-		} else {
-			log.Infof("Adding %s label.", helpLabel)
 		}
 	}
 
@@ -141,8 +137,6 @@ func handle(gc githubClient, log *logrus.Entry, ae assignEvent) error {
 		msg := "The issue is already assigned."
 		if err := gc.CreateComment(ae.org, ae.repo, ae.number, plugins.FormatResponseRaw(ae.body, ae.url, ae.login, msg)); err != nil {
 			log.WithError(err).Errorf("Could not create comment \"%s\".", msg)
-		} else {
-			log.Infof("Commenting with \"%s\".", msg)
 		}
 	}
 
