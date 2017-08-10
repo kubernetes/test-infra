@@ -26,32 +26,20 @@ fi
 
 IMAGE="gcr.io/google_containers/kubekins-job-builder:5"
 
-# If we're on an old image then stop it and remove it.
-if docker inspect job-builder &> /dev/null; then
-  if [[ $(docker inspect --format='{{ .Config.Image }}' job-builder) != ${IMAGE} ]]; then
-    echo "Removing outdated job-builder container"
-    docker stop job-builder > /dev/null
-    docker rm job-builder > /dev/null
-  fi
+# jenkins_jobs.ini contains administrative credentials for Jenkins.
+# Store it in /jenkins-master-data.
+readonly config_path="/jenkins-master-data/jenkins_jobs.ini"
+if [[ -e "${config_path}" ]]; then
+  docker run -it \
+    --entrypoint jenkins-jobs \
+    --rm \
+    --net host \
+    --name job-builder \
+    -v "${WORKSPACE}/test-infra:/test-infra" \
+    -v "${config_path}:/etc/jenkins_jobs/jenkins_jobs.ini:ro" \
+    "${IMAGE}" \
+    update --delete-old "${config_dir}"
+else
+  echo "${config_path} not found" >&2
+  exit 1
 fi
-
-# If the container doesn't exist then start it.
-if ! docker inspect job-builder &> /dev/null; then
-  # jenkins_jobs.ini contains administrative credentials for Jenkins.
-  # Store it in /jenkins-master-data.
-  readonly config_path="/jenkins-master-data/jenkins_jobs.ini"
-  if [[ -e "${config_path}" ]]; then
-    docker run -idt \
-      --net host \
-      --name job-builder \
-      --restart always \
-      -v "${WORKSPACE}/test-infra:/test-infra" \
-      "${IMAGE}"
-    docker cp "${config_path}" job-builder:/etc/jenkins_jobs
-  else
-    echo "${config_path} not found" >&2
-    exit 1
-  fi
-fi
-
-docker exec job-builder jenkins-jobs update --delete-old "${config_dir}"
