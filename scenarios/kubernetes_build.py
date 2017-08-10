@@ -23,6 +23,7 @@ import argparse
 import os
 import subprocess
 import sys
+import tarfile
 
 
 def check(*cmd):
@@ -30,6 +31,16 @@ def check(*cmd):
     print >>sys.stderr, 'Run:', cmd
     subprocess.check_call(cmd)
 
+
+def get_gcs_path(args):
+    # xref https://github.com/kubernetes/release/blob/master/push-build.sh
+    bucket = args.release or "kubernetes-release-dev"
+    dest = "ci" 
+    if args.suffix:
+        dest += args.suffix
+    tf = tarfile.open("_output/release-tars/kubernetes.tar.gz")
+    latest = tf.getmember("kubernetes/version").read().strip()
+    return "gs://"+bucket+dest+latest
 
 def main(args):
     """Build and push kubernetes.
@@ -71,6 +82,14 @@ def main(args):
     else:
         check('make', 'release')
     check('../release/push-build.sh', *push_build_args)
+    # make sure artifacts dir exists
+    artifacts = '%s/_artifacts' % os.environ['WORKSPACE']
+    try:
+        os.mkdir(artifacts)
+    except OSError:
+        pass
+    with open(artifacts+'/build_location.txt', 'w') as fp:
+        fp.write(get_gcs_path(args))
 
 if __name__ == '__main__':
     PARSER = argparse.ArgumentParser(
