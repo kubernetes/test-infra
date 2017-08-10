@@ -67,8 +67,9 @@ presubmits:
     always_run: true
     rerun_command: "/test pull-kubernetes-bazel"
     trigger: "(?m)^/test( all| pull-kubernetes-bazel),?(\\s+|$)"
-    branches:
-    - master
+    skip_branches:
+    - release-1.4
+    - release-1.5
     spec:
       containers:
       - image: gcr.io/k8s-testimages/bazelbuild:v20170728-71064cf4
@@ -344,8 +345,9 @@ presubmits:
     always_run: true
     rerun_command: "/test pull-security-kubernetes-bazel"
     trigger: "(?m)^/test( all| pull-security-kubernetes-bazel),?(\\s+|$)"
-    branches:
-    - master
+    skip_branches:
+    - release-1.4
+    - release-1.5
     spec:
       containers:
       - image: gcr.io/k8s-testimages/bazelbuild:v20170728-71064cf4
