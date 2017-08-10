@@ -321,6 +321,8 @@ presubmits:
     context: pull-kubernetes-kubemark-e2e-gce
     rerun_command: "/test pull-kubernetes-kubemark-e2e-gce"
     trigger: "(?m)^/test( all| pull-kubernetes-kubemark-e2e-gce),?(\\s+|$)"
+    skip_branches:
+    - release-1.4
   - name: pull-kubernetes-kubemark-e2e-gce-gci
     context: pull-kubernetes-kubemark-e2e-gce-gci
     rerun_command: "/test pull-kubernetes-kubemark-e2e-gce-gci"
@@ -600,6 +602,8 @@ presubmits:
     context: pull-security-kubernetes-kubemark-e2e-gce
     rerun_command: "/test pull-security-kubernetes-kubemark-e2e-gce"
     trigger: "(?m)^/test( all| pull-security-kubernetes-kubemark-e2e-gce),?(\\s+|$)"
+    skip_branches:
+    - release-1.4
   - name: pull-security-kubernetes-kubemark-e2e-gce-gci
     context: pull-security-kubernetes-kubemark-e2e-gce-gci
     rerun_command: "/test pull-security-kubernetes-kubemark-e2e-gce-gci"
