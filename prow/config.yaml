@@ -70,6 +70,7 @@ presubmits:
     skip_branches:
     - release-1.4
     - release-1.5
+    - release-1.6  # doesn't have BUILD files under //vendor/k8s.io
     spec:
       containers:
       - image: gcr.io/k8s-testimages/bazelbuild:v20170728-71064cf4
@@ -348,6 +349,7 @@ presubmits:
     skip_branches:
     - release-1.4
     - release-1.5
+    - release-1.6  # doesn't have BUILD files under //vendor/k8s.io
     spec:
       containers:
       - image: gcr.io/k8s-testimages/bazelbuild:v20170728-71064cf4
