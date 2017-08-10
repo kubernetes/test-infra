@@ -199,6 +199,8 @@ presubmits:
     context: pull-kubernetes-e2e-kops-aws
     rerun_command: "/test pull-kubernetes-e2e-kops-aws"
     trigger: "(?m)^/test( all| pull-kubernetes-e2e-kops-aws),?(\\s+|$)"
+    skip_branches:
+    - release-1.4
   - name: pull-kubernetes-e2e-kubeadm-gce
     context: pull-kubernetes-e2e-kubeadm-gce
     always_run: false
@@ -474,6 +476,8 @@ presubmits:
     context: pull-security-kubernetes-e2e-kops-aws
     rerun_command: "/test pull-security-kubernetes-e2e-kops-aws"
     trigger: "(?m)^/test( all| pull-security-kubernetes-e2e-kops-aws),?(\\s+|$)"
+    skip_branches:
+    - release-1.4
   - name: pull-security-kubernetes-e2e-kubeadm-gce
     context: pull-security-kubernetes-e2e-kubeadm-gce
     always_run: false
