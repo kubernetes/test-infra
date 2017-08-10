@@ -3331,6 +3331,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-federation-serial
   - name: gce-1.6
     test_group_name: ci-kubernetes-e2e-gce-federation-release-1-6
+  - name: gce-1.7
+    test_group_name: ci-kubernetes-e2e-gce-federation-release-1-7
   - name: soak-gce-deploy
     test_group_name: ci-kubernetes-soak-gce-federation-deploy
   - name: soak-gce-test
