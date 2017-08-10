@@ -48,11 +48,13 @@ const (
 )
 
 type ProwJob struct {
-	APIVersion string        `json:"apiVersion,omitempty"`
-	Kind       string        `json:"kind,omitempty"`
-	Metadata   ObjectMeta    `json:"metadata,omitempty"`
-	Spec       ProwJobSpec   `json:"spec,omitempty"`
-	Status     ProwJobStatus `json:"status,omitempty"`
+	APIVersion   string        `json:"apiVersion,omitempty"`
+	Kind         string        `json:"kind,omitempty"`
+	Metadata     ObjectMeta    `json:"metadata,omitempty"`
+	Spec         ProwJobSpec   `json:"spec,omitempty"`
+	Status       ProwJobStatus `json:"status,omitempty"`
+	ParentStatus ProwJobStatus `json:"parent_status,omitempty"`
+	ParentJob    string        `json:"parent_job,omitempty"`
 }
 
 type ProwJobSpec struct {
