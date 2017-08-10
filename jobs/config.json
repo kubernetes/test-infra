@@ -10241,31 +10241,6 @@
       "UNKNOWN"
     ]
   },
-  "pull-kubernetes-kubemark-e2e-gce-gci": {
-    "args": [
-      "--build",
-      "--cluster=",
-      "--docker-in-docker",
-      "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/pull-kubernetes-kubemark-e2e-gce-gci.env",
-      "--extract=local",
-      "--gcp-project=k8s-jkns-pr-gci-kubemark",
-      "--gcp-zone=us-central1-f",
-      "--kubemark",
-      "--kubemark-master-size=n1-standard-1",
-      "--kubemark-nodes=5",
-      "--mode=docker",
-      "--provider=gce",
-      "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-kubemark-e2e-gce-gci",
-      "--test=false",
-      "--test_args=--ginkgo.focus=\\[Feature:Empty\\] --gather-resource-usage=true --garbage-collector-enabled=true",
-      "--timeout=55m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "UNKNOWN"
-    ]
-  },
   "pull-kubernetes-node-e2e": {
     "args": [
       "--branch=${PULL_BASE_REF}",
