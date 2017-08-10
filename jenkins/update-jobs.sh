@@ -45,7 +45,7 @@ if ! docker inspect job-builder &> /dev/null; then
       --net host \
       --name job-builder \
       --restart always \
-      -v "${WORKSPACE}:/test-infra" \
+      -v "${WORKSPACE}/test-infra:/test-infra" \
       "${IMAGE}"
     docker cp "${config_path}" job-builder:/etc/jenkins_jobs
   else
