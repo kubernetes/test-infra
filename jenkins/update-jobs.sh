@@ -30,7 +30,7 @@ IMAGE="gcr.io/google_containers/kubekins-job-builder:5"
 # Store it in /jenkins-master-data.
 readonly config_path="/jenkins-master-data/jenkins_jobs.ini"
 if [[ -e "${config_path}" ]]; then
-  docker run -it \
+  docker run \
     --entrypoint jenkins-jobs \
     --rm \
     --net host \
