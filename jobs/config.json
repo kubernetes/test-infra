@@ -1936,6 +1936,7 @@
   "ci-kubernetes-e2e-gce-federation-release-1-6": {
     "args": [
       "--check-leaked-resources",
+      "--cluster=prow-us-central1-f",
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/ci-kubernetes-e2e-gce-federation-release-1-6.env",
       "--extract=ci/latest",
@@ -1954,6 +1955,7 @@
   "ci-kubernetes-e2e-gce-federation-release-1-7": {
     "args": [
       "--check-leaked-resources",
+      "--cluster=prow-us-central1-f",
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/ci-kubernetes-e2e-gce-federation-release-1-7.env",
       "--extract=ci/latest-1.7",
@@ -1972,6 +1974,7 @@
   "ci-kubernetes-e2e-gce-federation-serial": {
     "args": [
       "--check-leaked-resources",
+      "--cluster=prow-us-central1-f",
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/ci-kubernetes-e2e-gce-federation-serial.env",
       "--extract=ci/latest",
