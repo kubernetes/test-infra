@@ -187,6 +187,15 @@ test_groups:
 
 Here are some quick tips and clarifications for using the TestGrid site!
 
+## Tab Statuses
+
+TestGrid assigns dashboard tabs a status based on recent test runs.
+
+ *  **PASSING**: No failures found in recent (`num_columns_recent`) test runs.
+ *  **FAILING**: One or more consistent failures in recent test runs.
+ *  **FLAKY**: The tab is neither PASSING nor FAILING. There is at least one
+    recent failed result that is not a consistent failure.
+
 ### Customizing Test Result Sizes
 
 Change the size of the test result rectangles.
