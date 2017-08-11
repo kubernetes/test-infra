@@ -141,7 +141,7 @@ def run_local_mode(run_args, private_key, public_key):
         '--logtostderr',
         '--vmodule=*=4',
         '--ssh-env=gce',
-        '--results-dir=/tmp/_artifacts',
+        '--results-dir=%s/_artifacts' % k8s,
         *run_args)
 
 
