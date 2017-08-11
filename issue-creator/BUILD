@@ -53,7 +53,10 @@ go_library(
     name = "go_default_library",
     srcs = ["main.go"],
     tags = ["automanaged"],
-    deps = ["//issue-creator/creator:go_default_library"],
+    deps = [
+        "//issue-creator/creator:go_default_library",
+        "//issue-creator/sources:go_default_library",
+    ],
 )
 
 filegroup(

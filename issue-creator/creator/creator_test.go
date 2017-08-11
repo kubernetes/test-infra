@@ -18,6 +18,7 @@ package creator
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"reflect"
 	"sort"
@@ -77,7 +78,7 @@ func (c *fakeClient) CreateIssue(org, repo string, title, body string, labels, o
 }
 
 func (c *fakeClient) GetCollaborators(org, repo string) ([]*github.User, error) {
-	return nil, nil
+	return nil, errors.New("some error (allow all assignees)")
 }
 
 // Verify checks that exactly 1 issue in c.issues matches the parameters and that no

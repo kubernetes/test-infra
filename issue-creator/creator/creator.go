@@ -107,7 +107,7 @@ type IssueCreator struct {
 	// client is the github client that is used to interact with github.
 	client RepoClient
 	// validLabels is the set of labels that are valid for the current repo (populated from github).
-	validLabels []*github.Label
+	validLabels []string
 	// Collaborators is the set of Users that are valid assignees for the current repo (populated from GH).
 	Collaborators []string
 	// authorName is the name of the current bot.
@@ -227,11 +227,18 @@ func (c *IssueCreator) loadCache() error {
 	c.authorName = *user.Login
 
 	// Try to get the list of valid labels for the repo.
-	if c.validLabels, err = c.client.GetRepoLabels(c.org, c.project); err != nil {
+	if validLabels, err := c.client.GetRepoLabels(c.org, c.project); err != nil {
 		c.validLabels = nil
 		glog.Errorf("Failed to retreive the list of valid labels for repo '%s/%s'. Allowing all labels. errmsg: %v\n", c.org, c.project, err)
+	} else {
+		c.validLabels = make([]string, 0, len(validLabels))
+		for _, label := range validLabels {
+			if label.Name != nil && *label.Name != "" {
+				c.validLabels = append(c.validLabels, *label.Name)
+			}
+		}
 	}
-
+	// Try to get the valid collaborators for the repo.
 	if collaborators, err := c.client.GetCollaborators(c.org, c.project); err != nil {
 		c.Collaborators = nil
 		glog.Errorf("Failed to retreive the list of valid collaborators for repo '%s/%s'. Allowing all assignees. errmsg: %v\n", c.org, c.project, err)
@@ -282,30 +289,24 @@ func (c *IssueCreator) RegisterFlags() {
 	}
 }
 
-// filterValidLabels extracts the labels that are valid for the current repo from a set of labels.
-// If a candidate label is not valid, an error is logged, but execution continues and the invalid
-// label is ignored.
-func (c *IssueCreator) filterValidLabels(candidates []string) []string {
-	if c.validLabels == nil {
-		// Failed to fetch list of valid labels for this repo so trust that labels are valid.
-		return candidates
-	}
-	var validCandidates []string
-	for _, l := range candidates {
+// setIntersect removes any elements from the first list that are not in the second, returning the
+// new set and the removed elements.
+func setIntersect(a, b []string) (filtered, removed []string) {
+	for _, elemA := range a {
 		found := false
-		for _, validLabel := range c.validLabels {
-			if l == *validLabel.Name {
+		for _, elemB := range b {
+			if elemA == elemB {
 				found = true
 				break
 			}
 		}
-		if !found {
-			glog.Errorf("The label '%s' is invalid for the repo '%s/%s'. Dropping label.", l, c.org, c.project)
+		if found {
+			filtered = append(filtered, elemA)
 		} else {
-			validCandidates = append(validCandidates, l)
+			removed = append(removed, elemA)
 		}
 	}
-	return validCandidates
+	return
 }
 
 // sync checks to see if an issue is already on github and tries to create a new issue for it if it is not.
@@ -340,11 +341,26 @@ func (c *IssueCreator) sync(issue Issue) bool {
 
 	title := issue.Title()
 	owners := issue.Owners()
+	if c.Collaborators != nil {
+		var removedOwners []string
+		owners, removedOwners = setIntersect(owners, c.Collaborators)
+		if len(removedOwners) > 0 {
+			glog.Errorf("Filtered the following invalid assignees from issue %q: %q.", title, removedOwners)
+		}
+	}
+
 	labels := issue.Labels()
 	if prio, ok := issue.Priority(); ok {
 		labels = append(labels, "priority/"+prio)
 	}
-	labels = c.filterValidLabels(labels)
+	if c.validLabels != nil {
+		var removedLabels []string
+		labels, removedLabels = setIntersect(labels, c.validLabels)
+		fmt.Printf("labels: %q, removed: %q", labels, removedLabels)
+		if len(removedLabels) > 0 {
+			glog.Errorf("Filtered the following invalid labels from issue %q: %q.", title, removedLabels)
+		}
+	}
 
 	glog.Infof("Create Issue:\nTitle:%s\nBody:\n%s\nLabels:%v\nAssigned to:%v\n", title, body, labels, owners)
 	if c.dryRun {

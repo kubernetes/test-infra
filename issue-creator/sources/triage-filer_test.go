@@ -281,16 +281,7 @@ func TestTFOwnersAndSIGs(t *testing.T) {
 	if !foundSIG {
 		t.Errorf("Failed to get the SIG for cluster: %s\n", clusters[0].Id)
 	}
-	foundUser := false
-	for _, user := range clusters[0].Owners() {
-		if user == "cjwagner" {
-			foundUser = true
-			break
-		}
-	}
-	if !foundUser {
-		t.Errorf("Failed to get the owner for cluster: %s\n", clusters[0].Id)
-	}
+
 	// Check that the body contains a table that correctly explains why users and sig areas were assigned.
 	body := clusters[0].Body(nil)
 	if !strings.Contains(body, "| cjwagner | testname1 |") {
@@ -301,6 +292,11 @@ func TestTFOwnersAndSIGs(t *testing.T) {
 	}
 	if !strings.Contains(body, "| sig/sigarea | testname1; testname2 |") {
 		t.Errorf("Body should contain a table row to explain that 'sigarea' was set as a SIG due to ownership of 'testname1' and 'testname2'.")
+	}
+
+	// Check that the body contains the assignments themselves:
+	if !strings.Contains(body, "/assign @cjwagner @spxtr") && !strings.Contains(body, "/assign @spxtr @cjwagner") {
+		t.Errorf("Failed to find the '/assign' command in the body of cluster: %s\n%q\n", clusters[0].Id, body)
 	}
 }
 

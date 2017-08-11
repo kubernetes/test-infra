@@ -235,11 +235,10 @@ func (fj *FlakyJob) Labels() []string {
 
 // Owners returns the list of usernames to assign to this issue on github.
 func (fj *FlakyJob) Owners() []string {
-	var owners []string
-	for owner, _ := range fj.reporter.creator.TestsOwners(fj.TestsSorted()) {
-		owners = append(owners, owner)
-	}
-	return owners
+	// Assign owners by including a /assign command in the body instead of using Owners to set
+	// assignees on the issue request. This lets prow do the assignee validation and will mention
+	// the user we want to assign even if they can't be assigned.
+	return nil
 }
 
 // Priority calculates and returns the priority of this issue
