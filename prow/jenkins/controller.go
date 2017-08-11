@@ -122,6 +122,14 @@ func (c *Controller) Sync() error {
 	if err != nil {
 		return fmt.Errorf("error listing prow jobs: %v", err)
 	}
+	var jenkinsJobs []kube.ProwJob
+	for _, pj := range pjs {
+		if pj.Spec.Agent == kube.JenkinsAgent {
+			jenkinsJobs = append(jenkinsJobs, pj)
+		}
+	}
+	pjs = jenkinsJobs
+
 	c.updatePendingJobs(pjs)
 	var syncErrs []error
 	if err := c.terminateDupes(pjs); err != nil {
@@ -138,8 +146,6 @@ func (c *Controller) Sync() error {
 	reportCh := make(chan kube.ProwJob, len(pjs))
 	wg := &sync.WaitGroup{}
 	wg.Add(maxSyncRoutines)
-	// TODO: Filter out prowjobs for different agents before
-	// starting up goroutines.
 	for i := 0; i < maxSyncRoutines; i++ {
 		go c.syncProwJob(wg, pjCh, errCh, reportCh)
 	}

@@ -140,6 +140,15 @@ func (c *Controller) Sync() error {
 	for _, pod := range pods {
 		pm[pod.Metadata.Name] = pod
 	}
+
+	var k8sJobs []kube.ProwJob
+	for _, pj := range pjs {
+		if pj.Spec.Agent == kube.KubernetesAgent {
+			k8sJobs = append(k8sJobs, pj)
+		}
+	}
+	pjs = k8sJobs
+
 	c.updatePendingJobs(pjs)
 	var syncErrs []error
 	if err := c.terminateDupes(pjs); err != nil {
@@ -156,8 +165,6 @@ func (c *Controller) Sync() error {
 	reportCh := make(chan kube.ProwJob, len(pjs))
 	wg := &sync.WaitGroup{}
 	wg.Add(maxSyncRoutines)
-	// TODO: Filter out prowjobs for different agents before
-	// starting up goroutines.
 	for i := 0; i < maxSyncRoutines; i++ {
 		go c.syncProwJob(wg, pjCh, errCh, reportCh, pm)
 	}
