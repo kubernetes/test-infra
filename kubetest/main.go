@@ -581,13 +581,13 @@ func prepareGcp(o *options) error {
 	}
 	if o.gcpProject == "" {
 		var resType string
-		if o.provider == "gce" {
-			resType = "gce-project"
-		} else if o.provider == "gke" {
+		if o.provider == "gke" {
 			resType = "gke-project"
 		} else {
-			return fmt.Errorf("--provider=%s, not supported by boskos", o.provider)
+			resType = "gce-project"
 		}
+
+		log.Printf("provider %v, will acquire resource %v from boskos", o.provider, resType)
 
 		p, err := boskos.Acquire(resType, "free", "busy")
 		if err != nil {
