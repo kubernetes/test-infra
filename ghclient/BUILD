@@ -8,7 +8,10 @@ load(
 
 go_test(
     name = "go_default_test",
-    srcs = ["ghclient_test.go"],
+    srcs = [
+        "core_test.go",
+        "wrappers_test.go",
+    ],
     library = ":go_default_library",
     tags = ["automanaged"],
     deps = ["//vendor/github.com/google/go-github/github:go_default_library"],
@@ -16,7 +19,10 @@ go_test(
 
 go_library(
     name = "go_default_library",
-    srcs = ["ghclient.go"],
+    srcs = [
+        "core.go",
+        "wrappers.go",
+    ],
     tags = ["automanaged"],
     deps = [
         "//vendor/github.com/golang/glog:go_default_library",
@@ -36,11 +42,4 @@ filegroup(
     name = "all-srcs",
     srcs = [":package-srcs"],
     tags = ["automanaged"],
-)
-
-go_test(
-    name = "go_default_test",
-    srcs = ["githubutil_test.go"],
-    library = ":go_default_library",
-    deps = ["//vendor/github.com/google/go-github/github:go_default_library"],
 )

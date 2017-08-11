@@ -14,20 +14,21 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+// This file contains the functions that mostly correspond with go-github functions, but add retry
+// logic, rate limiting, and pagination handling.
+
 package ghclient
 
 import (
 	"context"
 	"fmt"
-	"math"
-	"net/http"
-	"time"
 
 	"github.com/golang/glog"
 
 	"github.com/google/go-github/github"
-	"golang.org/x/oauth2"
 )
+
+// The following interfaces are used for dependency injection in testing. They match go-github.
 
 type issueService interface {
 	Create(ctx context.Context, owner string, repo string, issue *github.IssueRequest) (*github.Issue, *github.Response, error)
@@ -49,121 +50,7 @@ type usersService interface {
 	Get(ctx context.Context, login string) (*github.User, *github.Response, error)
 }
 
-// Client is an augmentation of the go-github client that adds retry logic, rate limiting, and pagination
-// handling to some of the client functions.
-type Client struct {
-	issueService issueService
-	prService    pullRequestService
-	repoService  repositoryService
-	userService  usersService
-
-	retries             int
-	retryInitialBackoff time.Duration
-
-	tokenReserve int
-	dryRun       bool
-}
-
-// NewClient makes a new githubutil client that does rate limiting and retries.
-func NewClient(token string, dryRun bool) *Client {
-	httpClient := &http.Client{
-		Transport: &oauth2.Transport{
-			Base:   http.DefaultTransport,
-			Source: oauth2.ReuseTokenSource(nil, oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token})),
-		},
-	}
-	client := github.NewClient(httpClient)
-	return &Client{
-		issueService:        client.Issues,
-		prService:           client.PullRequests,
-		repoService:         client.Repositories,
-		userService:         client.Users,
-		retries:             5,
-		retryInitialBackoff: time.Second,
-		tokenReserve:        50,
-		dryRun:              dryRun,
-	}
-}
-
-func (c *Client) sleepForAttempt(retryCount int) {
-	maxDelay := 20 * time.Second
-	delay := c.retryInitialBackoff * time.Duration(math.Exp2(float64(retryCount)))
-	if delay > maxDelay {
-		delay = maxDelay
-	}
-	time.Sleep(delay)
-}
-
-func (c *Client) limitRate(r *github.Rate) {
-	if r.Remaining <= c.tokenReserve {
-		sleepDuration := time.Until(r.Reset.Time) + (time.Second * 10)
-		if sleepDuration > 0 {
-			glog.Infof("--Rate Limiting-- Tokens reached minimum reserve %d. Sleeping until reset in %v.\n", c.tokenReserve, sleepDuration)
-			time.Sleep(sleepDuration)
-		}
-	}
-}
-
-type retryAbort struct{ error }
-
-func (r *retryAbort) Error() string {
-	return fmt.Sprintf("aborting retry loop: %v", r.error)
-}
-
-// retry handles rate limiting and retry logic for a github API call.
-func (c *Client) retry(action string, call func() (*github.Response, error)) (*github.Response, error) {
-	var err error
-	var resp *github.Response
-
-	for retryCount := 0; retryCount <= c.retries; retryCount++ {
-		if resp, err = call(); err == nil {
-			c.limitRate(&resp.Rate)
-			return resp, nil
-		}
-		switch err := err.(type) {
-		case *github.RateLimitError:
-			c.limitRate(&err.Rate)
-		case *github.TwoFactorAuthError:
-			return resp, err
-		case *retryAbort:
-			return resp, err
-		}
-
-		if retryCount == c.retries {
-			return resp, err
-		} else {
-			glog.Errorf("error %s: %v. Will retry.\n", action, err)
-			c.sleepForAttempt(retryCount)
-		}
-	}
-	return resp, err
-}
-
-func (c *Client) depaginate(action string, opts *github.ListOptions, call func() ([]interface{}, *github.Response, error)) ([]interface{}, error) {
-	var allItems []interface{}
-	wrapper := func() (*github.Response, error) {
-		items, resp, err := call()
-		if err == nil {
-			allItems = append(allItems, items...)
-		}
-		return resp, err
-	}
-
-	opts.Page = 1
-	opts.PerPage = 100
-	lastPage := 1
-	for ; opts.Page <= lastPage; opts.Page++ {
-		resp, err := c.retry(action, wrapper)
-		if err != nil {
-			return allItems, fmt.Errorf("error while depaginating page %d/%d: %v", opts.Page, lastPage, err)
-		}
-		if resp.LastPage > 0 {
-			lastPage = resp.LastPage
-		}
-	}
-	return allItems, nil
-}
-
+// CreateIssue tries to create and return a new github issue.
 func (c *Client) CreateIssue(org, repo, title, body string, labels, assignees []string) (*github.Issue, error) {
 	glog.Infof("CreateIssue(dry=%t) Title:%q, Labels:%q, Assignees:%q\n", c.dryRun, title, labels, assignees)
 	if c.dryRun {
@@ -195,7 +82,6 @@ func (c *Client) CreateIssue(org, repo, title, body string, labels, assignees []
 }
 
 // CreateStatus creates or updates a status context on the indicated reference.
-// This function limits rate and does retries if needed.
 func (c *Client) CreateStatus(owner, repo, ref string, status *github.RepoStatus) (*github.RepoStatus, error) {
 	glog.Infof("CreateStatus(dry=%t) ref:%s: %s:%s", c.dryRun, ref, *status.Context, *status.State)
 	if c.dryRun {
@@ -215,7 +101,6 @@ func (c *Client) CreateStatus(owner, repo, ref string, status *github.RepoStatus
 type PRMungeFunc func(*github.PullRequest) error
 
 // ForEachPR iterates over all PRs that fit the specified criteria, calling the munge function on every PR.
-// This function limits rate, does retries if needed, and handles pagination.
 // If the munge function returns a non-nil error, ForEachPR will return immediately with a non-nil
 // error unless continueOnError is true in which case an error will be logged and the remaining PRs will be munged.
 func (c *Client) ForEachPR(owner, repo string, opts *github.PullRequestListOptions, continueOnError bool, mungePR PRMungeFunc) error {
@@ -256,6 +141,7 @@ func (c *Client) ForEachPR(owner, repo string, opts *github.PullRequestListOptio
 	return err
 }
 
+// GetCollaborators returns all github users who are members or outside collaborators of the repo.
 func (c *Client) GetCollaborators(org, repo string) ([]*github.User, error) {
 	opts := &github.ListOptions{}
 	collaborators, err := c.depaginate(
@@ -283,7 +169,6 @@ func (c *Client) GetCollaborators(org, repo string) ([]*github.User, error) {
 }
 
 // GetCombinedStatus retrieves the CombinedStatus for the specified reference.
-// This function limits rate, does retries if needed and handles pagination.
 func (c *Client) GetCombinedStatus(owner, repo, ref string) (*github.CombinedStatus, error) {
 	var result *github.CombinedStatus
 	listOpts := &github.ListOptions{}
@@ -324,6 +209,7 @@ func (c *Client) GetCombinedStatus(owner, repo, ref string) (*github.CombinedSta
 	return result, err
 }
 
+// GetIssues gets all the issues in a repo that meet the list options.
 func (c *Client) GetIssues(org, repo string, opts *github.IssueListByRepoOptions) ([]*github.Issue, error) {
 	issues, err := c.depaginate(
 		fmt.Sprintf("getting issues from '%s/%s'", org, repo),
@@ -349,6 +235,7 @@ func (c *Client) GetIssues(org, repo string, opts *github.IssueListByRepoOptions
 	return result, err
 }
 
+// GetRepoLabels gets all the labels that valid in the specified repo.
 func (c *Client) GetRepoLabels(org, repo string) ([]*github.Label, error) {
 	opts := &github.ListOptions{}
 	labels, err := c.depaginate(
@@ -375,6 +262,8 @@ func (c *Client) GetRepoLabels(org, repo string) ([]*github.Label, error) {
 	return result, err
 }
 
+// GetUser gets the github user with the specified login or the currently authenticated user.
+// To get the currently authenticated user specify a login of "".
 func (c *Client) GetUser(login string) (*github.User, error) {
 	var result *github.User
 	_, err := c.retry(

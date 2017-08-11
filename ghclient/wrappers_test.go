@@ -25,83 +25,13 @@ import (
 	"github.com/google/go-github/github"
 )
 
-func setForTest(client *Client) {
-	client.retries = 5
-	client.retryInitialBackoff = time.Nanosecond
-	client.tokenReserve = 50
-}
-
-// fakeGithub is a fake go-github client that doubles as a test instance representation. This fake
-// client keeps track of the number of API calls made in order to test retry behavior and also allows
-// the number of pages of results to be configured.
-type fakeGithub struct {
-	// name is a string representation of this fakeGithub instance.
-	name string
-	// hits is a count of the number of API calls made to fakeGithub.
-	hits int
-	// hitsBeforeResponse is the number of hits that should be received before fakeGithub responds without error.
-	hitsBeforeResponse int
-	// shouldSucceed indicates if the githubutil client should get a valid response.
-	shouldSucceed bool
-	// pages is the number of pages to return for paginated data. (Should be 1 for non-paginated data)
-	pages int
-	// listOpts is the ListOptions that would be used in the call if the call were real.
-	listOpts github.ListOptions
-}
-
-// checkHits verifies that the githubutil client made the correct number of retries before returning.
-func (f *fakeGithub) checkHits() bool {
-	if f.shouldSucceed {
-		return f.hits-f.pages+1 == f.hitsBeforeResponse
-	}
-	return f.hitsBeforeResponse > f.hits
-}
-
-func (f *fakeGithub) call() ([]interface{}, *github.Response, error) {
-	f.hits++
-	if f.hits >= f.hitsBeforeResponse {
-		return []interface{}{f.listOpts.Page},
-			&github.Response{Rate: github.Rate{Limit: 5000, Remaining: 1000, Reset: github.Timestamp{time.Now()}}, LastPage: f.pages},
-			nil
-	}
-	return nil, nil, fmt.Errorf("some error that forces a retry")
-}
-
-func TestRetryAndPagination(t *testing.T) {
-	tests := []*fakeGithub{
-		{name: "no retries", hitsBeforeResponse: 1, shouldSucceed: true, pages: 1},
-		{name: "max retries", hitsBeforeResponse: 6, shouldSucceed: true, pages: 1},
-		{name: "1 too many retries needed", hitsBeforeResponse: 7, shouldSucceed: false, pages: 1},
-		{name: "3 too many retries needed", hitsBeforeResponse: 10, shouldSucceed: false, pages: 1},
-		{name: "2 pages", hitsBeforeResponse: 1, shouldSucceed: true, pages: 2},
-		{name: "10 pages", hitsBeforeResponse: 1, shouldSucceed: true, pages: 10},
-		{name: "2 pages 2 retries", hitsBeforeResponse: 3, shouldSucceed: true, pages: 2},
-		{name: "10 pages max retries", hitsBeforeResponse: 6, shouldSucceed: true, pages: 10},
-		{name: "10 pages one too many retries", hitsBeforeResponse: 7, shouldSucceed: false, pages: 10},
-	}
-	for _, test := range tests {
-		client := &Client{}
-		setForTest(client)
-		pages, err := client.depaginate("retry test", &test.listOpts, test.call)
-		if (err == nil) != test.shouldSucceed {
-			t.Errorf("Retry+Pagination test '%s' failed because the error value was unexpected: %v", test.name, err)
-		}
-		if !test.checkHits() {
-			t.Errorf("Retry+Pagination test '%s' failed with the wrong number of hits: %d", test.name, test.hits)
-		}
-		if test.shouldSucceed && len(pages) != test.pages {
-			t.Errorf("Retry+Pagination test '%s' failed because the number of pages returned was %d instead of %d. Pages returned: %#v", test.name, len(pages), test.pages, pages)
-		}
-	}
-}
-
 type fakeUserService struct {
 	authenticatedUser string
 	users             map[string]*github.User
 }
 
 func newFakeUserService(authenticated string, other []string) *fakeUserService {
-	users := map[string]*github.User{authenticated: &github.User{Login: &authenticated}}
+	users := map[string]*github.User{authenticated: {Login: &authenticated}}
 	for _, user := range other {
 		userCopy := user
 		users[user] = &github.User{Login: &userCopy}
@@ -110,7 +40,7 @@ func newFakeUserService(authenticated string, other []string) *fakeUserService {
 }
 
 func (f *fakeUserService) Get(ctx context.Context, login string) (*github.User, *github.Response, error) {
-	resp := &github.Response{Rate: github.Rate{Limit: 5000, Remaining: 1000, Reset: github.Timestamp{time.Now()}}}
+	resp := &github.Response{Rate: github.Rate{Limit: 5000, Remaining: 1000, Reset: github.Timestamp{Time: time.Now()}}}
 	if login == "" {
 		login = f.authenticatedUser
 	}
@@ -163,7 +93,7 @@ func newFakeRepoService(org, repo, ref string, statuses int, collaborators []str
 
 func (f *fakeRepoService) CreateStatus(ctx context.Context, org, repo, ref string, status *github.RepoStatus) (*github.RepoStatus, *github.Response, error) {
 	resp := &github.Response{
-		Rate:     github.Rate{Limit: 5000, Remaining: 1000, Reset: github.Timestamp{time.Now()}},
+		Rate:     github.Rate{Limit: 5000, Remaining: 1000, Reset: github.Timestamp{Time: time.Now()}},
 		LastPage: 1,
 	}
 	if org != f.org {
@@ -181,7 +111,7 @@ func (f *fakeRepoService) CreateStatus(ctx context.Context, org, repo, ref strin
 
 func (f *fakeRepoService) GetCombinedStatus(ctx context.Context, org, repo, ref string, opt *github.ListOptions) (*github.CombinedStatus, *github.Response, error) {
 	resp := &github.Response{
-		Rate:     github.Rate{Limit: 5000, Remaining: 1000, Reset: github.Timestamp{time.Now()}},
+		Rate:     github.Rate{Limit: 5000, Remaining: 1000, Reset: github.Timestamp{Time: time.Now()}},
 		LastPage: (f.statusCount + 1) / 2,
 	}
 	if org != f.org {
@@ -207,7 +137,7 @@ func (f *fakeRepoService) GetCombinedStatus(ctx context.Context, org, repo, ref 
 // ListCollaborators returns 2 collaborators per page of results (served in order).
 func (f *fakeRepoService) ListCollaborators(ctx context.Context, owner, repo string, opt *github.ListOptions) ([]*github.User, *github.Response, error) {
 	resp := &github.Response{
-		Rate:     github.Rate{Limit: 5000, Remaining: 1000, Reset: github.Timestamp{time.Now()}},
+		Rate:     github.Rate{Limit: 5000, Remaining: 1000, Reset: github.Timestamp{Time: time.Now()}},
 		LastPage: (len(f.collaborators) + 1) / 2,
 	}
 	if owner != f.org {
@@ -357,8 +287,8 @@ func newFakeIssueService(org, repo string, labels []string, issueCount int) *fak
 			Title:     &text,
 			Body:      &text,
 			Number:    &iCopy,
-			Labels:    []github.Label{github.Label{Name: &text}},
-			Assignees: []*github.User{&github.User{Login: &text}},
+			Labels:    []github.Label{{Name: &text}},
+			Assignees: []*github.User{{Login: &text}},
 		}
 		repoIssues[i] = issue
 	}
@@ -366,7 +296,7 @@ func newFakeIssueService(org, repo string, labels []string, issueCount int) *fak
 }
 
 func (f *fakeIssueService) Create(ctx context.Context, owner string, repo string, issue *github.IssueRequest) (*github.Issue, *github.Response, error) {
-	resp := &github.Response{Rate: github.Rate{Limit: 5000, Remaining: 1000, Reset: github.Timestamp{time.Now()}}}
+	resp := &github.Response{Rate: github.Rate{Limit: 5000, Remaining: 1000, Reset: github.Timestamp{Time: time.Now()}}}
 	if owner != f.org {
 		return nil, resp, fmt.Errorf("org '%s' not recognized, only '%s' is valid", owner, f.org)
 	}
@@ -394,7 +324,7 @@ func (f *fakeIssueService) Create(ctx context.Context, owner string, repo string
 // ListByRepo returns 2 issues per page of results (served in order by number).
 func (f *fakeIssueService) ListByRepo(ctx context.Context, org, repo string, opt *github.IssueListByRepoOptions) ([]*github.Issue, *github.Response, error) {
 	resp := &github.Response{
-		Rate:     github.Rate{Limit: 5000, Remaining: 1000, Reset: github.Timestamp{time.Now()}},
+		Rate:     github.Rate{Limit: 5000, Remaining: 1000, Reset: github.Timestamp{Time: time.Now()}},
 		LastPage: (len(f.repoIssues) + 1) / 2,
 	}
 	if org != f.org {
@@ -412,7 +342,7 @@ func (f *fakeIssueService) ListByRepo(ctx context.Context, org, repo string, opt
 // ListLabels returns 2 labels per page or results (served in order).
 func (f *fakeIssueService) ListLabels(ctx context.Context, owner, repo string, opt *github.ListOptions) ([]*github.Label, *github.Response, error) {
 	resp := &github.Response{
-		Rate:     github.Rate{Limit: 5000, Remaining: 1000, Reset: github.Timestamp{time.Now()}},
+		Rate:     github.Rate{Limit: 5000, Remaining: 1000, Reset: github.Timestamp{Time: time.Now()}},
 		LastPage: (len(f.repoLabels) + 1) / 2,
 	}
 	if owner != f.org {
@@ -573,7 +503,7 @@ type fakePullRequestService struct {
 //	List returns 2 PRs per page of results.
 func (f *fakePullRequestService) List(ctx context.Context, org, repo string, opts *github.PullRequestListOptions) ([]*github.PullRequest, *github.Response, error) {
 	resp := &github.Response{
-		Rate:     github.Rate{Limit: 5000, Remaining: 1000, Reset: github.Timestamp{time.Now()}},
+		Rate:     github.Rate{Limit: 5000, Remaining: 1000, Reset: github.Timestamp{Time: time.Now()}},
 		LastPage: (f.prCount + 1) / 2,
 	}
 	if org != f.org {
@@ -632,7 +562,7 @@ func TestForEachPR(t *testing.T) {
 	processed = 0
 	err = client.ForEachPR("k8s", "kuber", &github.PullRequestListOptions{}, true, process)
 	if err != nil {
-		t.Fatal("Unexpected error from ForEachPR with continue-on-error enabled: %v", err)
+		t.Fatalf("Unexpected error from ForEachPR with continue-on-error enabled: %v", err)
 	}
 	if processed != 16 {
 		t.Errorf("Expected 16 PRs to be processed, but %d were proccessed.", processed)
