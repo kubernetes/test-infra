@@ -1,7 +1,5 @@
 package(default_visibility = ["//visibility:public"])
 
-licenses(["notice"])
-
 load(
     "@io_bazel_rules_go//go:def.bzl",
     "go_library",
@@ -12,11 +10,10 @@ go_test(
     name = "go_default_test",
     srcs = ["repo-updates_test.go"],
     library = ":go_default_library",
-    tags = ["automanaged"],
     deps = [
-        "//vendor:github.com/golang/glog",
-        "//vendor:github.com/google/go-github/github",
-        "//vendor:k8s.io/kubernetes/pkg/util/sets",
+        "//vendor/github.com/golang/glog:go_default_library",
+        "//vendor/github.com/google/go-github/github:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/util/sets:go_default_library",
     ],
 )
 
@@ -27,15 +24,14 @@ go_library(
         "features.go",
         "repo-updates.go",
     ],
-    tags = ["automanaged"],
     deps = [
         "//mungegithub/github:go_default_library",
         "//mungegithub/mungeopts:go_default_library",
         "//mungegithub/options:go_default_library",
-        "//vendor:github.com/ghodss/yaml",
-        "//vendor:github.com/golang/glog",
-        "//vendor:k8s.io/kubernetes/pkg/util/sets",
-        "//vendor:k8s.io/kubernetes/pkg/util/yaml",
+        "//vendor/github.com/ghodss/yaml:go_default_library",
+        "//vendor/github.com/golang/glog:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/util/sets:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/util/yaml:go_default_library",
     ],
 )
 

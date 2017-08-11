@@ -1,7 +1,5 @@
 package(default_visibility = ["//visibility:public"])
 
-licenses(["notice"])
-
 load(
     "@io_bazel_rules_go//go:def.bzl",
     "go_binary",
@@ -12,7 +10,6 @@ load(
 go_binary(
     name = "kubetest",
     library = ":go_default_library",
-    tags = ["automanaged"],
 )
 
 go_library(
@@ -31,7 +28,6 @@ go_library(
         "stage.go",
         "util.go",
     ],
-    tags = ["automanaged"],
     deps = ["//boskos/client:go_default_library"],
 )
 
@@ -57,5 +53,4 @@ go_test(
         "util_test.go",
     ],
     library = ":go_default_library",
-    tags = ["automanaged"],
 )

@@ -1,7 +1,5 @@
 package(default_visibility = ["//visibility:public"])
 
-licenses(["notice"])
-
 load(
     "@io_bazel_rules_go//go:def.bzl",
     "go_library",
@@ -10,8 +8,7 @@ load(
 go_library(
     name = "go_default_library",
     srcs = ["jenkins.go"],
-    tags = ["automanaged"],
-    deps = ["//vendor:github.com/satori/go.uuid"],
+    deps = ["//vendor/github.com/satori/go.uuid:go_default_library"],
 )
 
 filegroup(

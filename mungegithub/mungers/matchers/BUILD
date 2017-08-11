@@ -1,7 +1,5 @@
 package(default_visibility = ["//visibility:public"])
 
-licenses(["notice"])
-
 load(
     "@io_bazel_rules_go//go:def.bzl",
     "go_library",
@@ -20,8 +18,7 @@ go_test(
         "//mungegithub:configs",
     ],
     library = ":go_default_library",
-    tags = ["automanaged"],
-    deps = ["//vendor:github.com/google/go-github/github"],
+    deps = ["//vendor/github.com/google/go-github/github:go_default_library"],
 )
 
 go_library(
@@ -36,10 +33,9 @@ go_library(
         "operators.go",
         "pinger.go",
     ],
-    tags = ["automanaged"],
     deps = [
         "//mungegithub/github:go_default_library",
-        "//vendor:github.com/google/go-github/github",
+        "//vendor/github.com/google/go-github/github:go_default_library",
     ],
 )
 

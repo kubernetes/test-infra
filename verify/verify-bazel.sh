@@ -17,8 +17,34 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-go get -u gopkg.in/mikedanese/gazel.v16/gazel
-if ! "${GOPATH}/bin/gazel" -validate -print-diff -root="$(dirname ${BASH_SOURCE})/.." ; then
+TESTINFRA_ROOT=$(git rev-parse --show-toplevel)
+TMP_GOPATH=$(mktemp -d)
+
+"${TESTINFRA_ROOT}/verify/go_install_from_commit.sh" \
+  github.com/kubernetes/repo-infra/kazel \
+  e9d1a126ef355ff5d38e20612c889b07728225a4 \
+  "${TMP_GOPATH}"
+
+# The gazelle commit should match the rules_go commit in the WORKSPACE file.
+"${TESTINFRA_ROOT}/verify/go_install_from_commit.sh" \
+  github.com/bazelbuild/rules_go/go/tools/gazelle/gazelle \
+  82483596ec203eb9c1849937636f4cbed83733eb \
+  "${TMP_GOPATH}"
+
+gazelle_diff=$("${TMP_GOPATH}/bin/gazelle" fix \
+  -build_file_name=BUILD,BUILD.bazel \
+  -external=vendored \
+  -mode=diff \
+  -repo_root="${TESTINFRA_ROOT}")
+
+kazel_diff=$("${TMP_GOPATH}/bin/kazel" \
+  -dry-run \
+  -print-diff \
+  -root="${TESTINFRA_ROOT}")
+
+if [[ -n "${gazelle_diff}" || -n "${kazel_diff}" ]]; then
+  echo "${gazelle_diff}"
+  echo "${kazel_diff}"
   echo
   echo "Run ./verify/update-bazel.sh"
   exit 1

@@ -1,7 +1,5 @@
 package(default_visibility = ["//visibility:public"])
 
-licenses(["notice"])
-
 load(
     "@io_bazel_rules_go//go:def.bzl",
     "go_library",
@@ -32,7 +30,6 @@ go_test(
         "//mungegithub:configs",
     ],
     library = ":go_default_library",
-    tags = ["automanaged"],
     deps = [
         "//mungegithub/admin:go_default_library",
         "//mungegithub/github:go_default_library",
@@ -43,11 +40,11 @@ go_test(
         "//mungegithub/mungers/mungerutil:go_default_library",
         "//mungegithub/mungers/testowner:go_default_library",
         "//mungegithub/options:go_default_library",
-        "//vendor:github.com/golang/glog",
-        "//vendor:github.com/google/go-github/github",
-        "//vendor:k8s.io/contrib/test-utils/utils",
-        "//vendor:k8s.io/kubernetes/pkg/util/clock",
-        "//vendor:k8s.io/kubernetes/pkg/util/sets",
+        "//vendor/github.com/golang/glog:go_default_library",
+        "//vendor/github.com/google/go-github/github:go_default_library",
+        "//vendor/k8s.io/contrib/test-utils/utils:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/util/clock:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/util/sets:go_default_library",
     ],
 )
 
@@ -93,7 +90,6 @@ go_library(
         "submit-queue-batch.go",
         "triage-filer.go",
     ],
-    tags = ["automanaged"],
     deps = [
         "//mungegithub/admin:go_default_library",
         "//mungegithub/features:go_default_library",
@@ -109,16 +105,16 @@ go_library(
         "//mungegithub/mungers/shield:go_default_library",
         "//mungegithub/mungers/testowner:go_default_library",
         "//mungegithub/options:go_default_library",
-        "//vendor:github.com/NYTimes/gziphandler",
-        "//vendor:github.com/golang/glog",
-        "//vendor:github.com/google/go-github/github",
-        "//vendor:github.com/prometheus/client_golang/prometheus",
-        "//vendor:github.com/prometheus/client_golang/prometheus/promhttp",
-        "//vendor:golang.org/x/oauth2",
-        "//vendor:k8s.io/contrib/test-utils/utils",
-        "//vendor:k8s.io/kubernetes/pkg/util/clock",
-        "//vendor:k8s.io/kubernetes/pkg/util/sets",
-        "//vendor:k8s.io/kubernetes/pkg/util/yaml",
+        "//vendor/github.com/NYTimes/gziphandler:go_default_library",
+        "//vendor/github.com/golang/glog:go_default_library",
+        "//vendor/github.com/google/go-github/github:go_default_library",
+        "//vendor/github.com/prometheus/client_golang/prometheus:go_default_library",
+        "//vendor/github.com/prometheus/client_golang/prometheus/promhttp:go_default_library",
+        "//vendor/golang.org/x/oauth2:go_default_library",
+        "//vendor/k8s.io/contrib/test-utils/utils:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/util/clock:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/util/sets:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/util/yaml:go_default_library",
     ],
 )
 

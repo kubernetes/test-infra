@@ -1,3 +1,6 @@
+# The aws-janitor is not properly vendored in this repo
+# gazelle:exclude aws-janitor
+
 py_test(
     name = "bootstrap_test",
     srcs = [

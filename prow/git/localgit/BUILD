@@ -1,7 +1,5 @@
 package(default_visibility = ["//visibility:public"])
 
-licenses(["notice"])
-
 load(
     "@io_bazel_rules_go//go:def.bzl",
     "go_library",
@@ -10,10 +8,9 @@ load(
 go_library(
     name = "go_default_library",
     srcs = ["localgit.go"],
-    tags = ["automanaged"],
     deps = [
         "//prow/git:go_default_library",
-        "//vendor:github.com/Sirupsen/logrus",
+        "//vendor/github.com/Sirupsen/logrus:go_default_library",
     ],
 )
 
