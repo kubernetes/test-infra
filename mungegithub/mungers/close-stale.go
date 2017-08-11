@@ -18,6 +18,7 @@ package mungers
 
 import (
 	"fmt"
+	"math"
 	"regexp"
 	"time"
 
@@ -222,13 +223,22 @@ func findLatestWarningComment(obj *github.MungeObject) (*githubapi.IssueComment,
 	return lastFoundComment, true
 }
 
-func durationToDays(duration time.Duration) string {
-	days := duration / day
+func dayPhrase(days int) string {
 	dayString := "days"
 	if days == 1 || days == -1 {
 		dayString = "day"
 	}
 	return fmt.Sprintf("%d %s", days, dayString)
+}
+
+func durationToMinDays(duration time.Duration) string {
+	days := int(math.Floor(duration.Hours() / 24))
+	return dayPhrase(days)
+}
+
+func durationToMaxDays(duration time.Duration) string {
+	days := int(math.Floor(duration.Hours() / 24))
+	return dayPhrase(days)
 }
 
 func closeObj(obj *github.MungeObject, inactiveFor time.Duration) {
@@ -253,7 +263,7 @@ func closeObj(obj *github.MungeObject, inactiveFor time.Duration) {
 		objType = "Issue"
 	}
 
-	obj.WriteComment(fmt.Sprintf(closingComment, objType, durationToDays(inactiveFor), objType, objType, mention))
+	obj.WriteComment(fmt.Sprintf(closingComment, objType, durationToMinDays(inactiveFor), objType, objType, mention))
 
 	if obj.IsPR() {
 		obj.ClosePR()
@@ -281,8 +291,8 @@ func postWarningComment(obj *github.MungeObject, inactiveFor time.Duration, clos
 	obj.WriteComment(fmt.Sprintf(
 		warningComment,
 		objType,
-		durationToDays(inactiveFor),
-		durationToDays(closeIn),
+		durationToMinDays(inactiveFor),
+		durationToMaxDays(closeIn),
 		closeDate,
 		mention,
 	))
