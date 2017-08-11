@@ -113,9 +113,9 @@ def main(args):
         affected = None
         if args.affected:
             base = os.getenv('PULL_BASE_SHA', '')
-            pull = os.getenv('PULL_PULL_SHA', '')
-            if not base or not pull:
-                raise ValueError('PULL_BASE_SHA and PULL_PULL_SHA must be set!')
+            pull = os.getenv('PULL_PULL_SHA', 'HEAD')
+            if not base:
+                raise ValueError('PULL_BASE_SHA must be set!')
             affected = get_changed(base, pull)
 
         build_pkgs = None
