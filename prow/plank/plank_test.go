@@ -732,6 +732,7 @@ func TestSyncKubernetesJob(t *testing.T) {
 func TestBatch(t *testing.T) {
 	pre := config.Presubmit{
 		Name:    "pr-some-job",
+		Agent:   "jenkins",
 		Context: "Some Job Context",
 	}
 	fc := &fkc{
@@ -815,14 +816,16 @@ func TestBatch(t *testing.T) {
 // TestPeriodic walks through the happy path of a periodic job.
 func TestPeriodic(t *testing.T) {
 	per := config.Periodic{
-		Name: "ci-periodic-job",
+		Name:  "ci-periodic-job",
+		Agent: "kubernetes",
 		Spec: &kube.PodSpec{
 			Containers: []kube.Container{{}},
 		},
 		RunAfterSuccess: []config.Periodic{
 			{
-				Name: "ci-periodic-job-2",
-				Spec: &kube.PodSpec{},
+				Name:  "ci-periodic-job-2",
+				Agent: "kubernetes",
+				Spec:  &kube.PodSpec{},
 			},
 		},
 	}

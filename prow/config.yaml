@@ -39,30 +39,35 @@ presubmits:
   #                  Otherwise, run a Jenkins job.
   google/cadvisor:
   - name: pull-cadvisor-e2e
+    agent: jenkins
     always_run: true
     context: pull-cadvisor-e2e
     rerun_command: "/test pull-cadvisor-e2e"
     trigger: "(?m)^/test( all| pull-cadvisor-e2e),?(\\s+|$)"
   kubernetes/charts:
   - name: pull-charts-e2e
+    agent: jenkins
     always_run: true
     context: pull-charts-e2e
     rerun_command: "/test pull-charts-e2e"
     trigger: "(?m)^/test( all| pull-charts-e2e),?(\\s+|$)"
   kubernetes/heapster:
   - name: pull-heapster-e2e
+    agent: jenkins
     always_run: true
     context: pull-heapster-e2e
     rerun_command: "/test pull-heapster-e2e"
     trigger: "(?m)^/test( all| pull-heapster-e2e),?(\\s+|$)"
   kubernetes/kops:
   - name: pull-kops-e2e-kubernetes-aws
+    agent: jenkins
     always_run: true
     context: pull-kops-e2e-kubernetes-aws
     rerun_command: "/test pull-kops-e2e-kubernetes-aws"
     trigger: "(?m)^/test( all| pull-kops-e2e-kubernetes-aws),?(\\s+|$)"
   kubernetes/kubernetes:
   - name: pull-kubernetes-bazel
+    agent: kubernetes
     context: pull-kubernetes-bazel
     always_run: true
     rerun_command: "/test pull-kubernetes-bazel"
@@ -106,15 +111,18 @@ presubmits:
           path: /mnt/disks/ssd0
 
   - name: pull-kubernetes-cross
+    agent: jenkins
     context: pull-kubernetes-cross
     rerun_command: "/test pull-kubernetes-cross"
     trigger: "(?m)^/test pull-kubernetes-cross,?(\\s+|$)"
     run_if_changed: '^(build/|hack/lib/)|(Makefile|_(windows|linux|osx|unsupported)(_test)?$\.go)$'
   - name: pull-kubernetes-e2e-gce
+    agent: jenkins
     context: pull-kubernetes-e2e-gce
     rerun_command: "/test pull-kubernetes-e2e-gce"
     trigger: "(?m)^/test pull-kubernetes-e2e-gce,?(\\s+|$)"
   - name: pull-kubernetes-e2e-gce-bazel
+    agent: kubernetes
     context: pull-kubernetes-e2e-gce-bazel
     rerun_command: "/test pull-kubernetes-e2e-gce-bazel"
     trigger: "(?m)^/test (all|pull-kubernetes-e2e-gce-bazel),?(\\s+|$)"
@@ -176,27 +184,33 @@ presubmits:
         name: cache-ssd
 
   - name: pull-kubernetes-e2e-gce-canary
+    agent: jenkins
     context: pull-kubernetes-e2e-gce-canary
     rerun_command: "/test pull-kubernetes-e2e-gce-canary"
     trigger: "(?m)^/test pull-kubernetes-e2e-gce-canary,?(\\s+|$)"
   - name: pull-kubernetes-e2e-gce-etcd3
+    agent: jenkins
     always_run: true
     context: pull-kubernetes-e2e-gce-etcd3
     rerun_command: "/test pull-kubernetes-e2e-gce-etcd3"
     trigger: "(?m)^/test( all| pull-kubernetes-e2e-gce-etcd3),?(\\s+|$)"
   - name: pull-kubernetes-e2e-gce-gci
+    agent: jenkins
     context: pull-kubernetes-e2e-gce-gci
     rerun_command: "/test pull-kubernetes-e2e-gce-gci"
     trigger: "(?m)^/test pull-kubernetes-e2e-gce-gci,?(\\s+|$)"
   - name: pull-kubernetes-e2e-gke
+    agent: jenkins
     context: pull-kubernetes-e2e-gke
     rerun_command: "/test pull-kubernetes-e2e-gke"
     trigger: "(?m)^/test pull-kubernetes-e2e-gke,?(\\s+|$)"
   - name: pull-kubernetes-e2e-gke-gci
+    agent: jenkins
     context: pull-kubernetes-e2e-gke-gci
     rerun_command: "/test pull-kubernetes-e2e-gke-gci"
     trigger: "(?m)^/test pull-kubernetes-e2e-gke-gci,?(\\s+|$)"
   - name: pull-kubernetes-e2e-kops-aws
+    agent: jenkins
     always_run: true
     context: pull-kubernetes-e2e-kops-aws
     rerun_command: "/test pull-kubernetes-e2e-kops-aws"
@@ -204,6 +218,7 @@ presubmits:
     skip_branches:
     - release-1.4
   - name: pull-kubernetes-e2e-kubeadm-gce
+    agent: kubernetes
     context: pull-kubernetes-e2e-kubeadm-gce
     always_run: false
     skip_report: true
@@ -253,6 +268,7 @@ presubmits:
           path: /mnt/disks/ssd0
 
   - name: pull-kubernetes-federation-e2e-gce
+    agent: jenkins
     skip_branches:
     - release-1.4
     - release-1.5
@@ -262,6 +278,7 @@ presubmits:
     rerun_command: "/test pull-kubernetes-federation-e2e-gce"
     trigger: "(?m)^/test( all| pull-kubernetes-federation-e2e-gce),?(\\s+|$)"
   - name: pull-kubernetes-federation-e2e-gce-canary
+    agent: kubernetes
     skip_branches:
     - release-1.4
     - release-1.5
@@ -317,6 +334,7 @@ presubmits:
         name: cache-ssd
 
   - name: pull-kubernetes-kubemark-e2e-gce
+    agent: jenkins
     always_run: true
     context: pull-kubernetes-kubemark-e2e-gce
     rerun_command: "/test pull-kubernetes-kubemark-e2e-gce"
@@ -324,22 +342,26 @@ presubmits:
     skip_branches:
     - release-1.4
   - name: pull-kubernetes-node-e2e
+    agent: jenkins
     always_run: true
     context: pull-kubernetes-node-e2e
     rerun_command: "/test pull-kubernetes-node-e2e"
     trigger: "(?m)^/test( all| pull-kubernetes-node-e2e),?(\\s+|$)"
   - name: pull-kubernetes-unit
+    agent: jenkins
     always_run: true
     context: pull-kubernetes-unit
     rerun_command: "/test pull-kubernetes-unit"
     trigger: "(?m)^/test( all| pull-kubernetes-unit),?(\\s+|$)"
   - name: pull-kubernetes-verify
+    agent: jenkins
     always_run: true
     context: pull-kubernetes-verify
     rerun_command: "/test pull-kubernetes-verify"
     trigger: "(?m)^/test( all| pull-kubernetes-verify),?(\\s+|$)"
   kubernetes-security/kubernetes:
   - name: pull-security-kubernetes-bazel
+    agent: kubernetes
     context: pull-security-kubernetes-bazel
     always_run: true
     rerun_command: "/test pull-security-kubernetes-bazel"
@@ -383,15 +405,18 @@ presubmits:
           path: /mnt/disks/ssd0
 
   - name: pull-security-kubernetes-cross
+    agent: jenkins
     context: pull-security-kubernetes-cross
     rerun_command: "/test pull-security-kubernetes-cross"
     trigger: "(?m)^/test pull-security-kubernetes-cross,?(\\s+|$)"
     run_if_changed: '^(build/|hack/lib/)|(Makefile|_(windows|linux|osx|unsupported)(_test)?$\.go)$'
   - name: pull-security-kubernetes-e2e-gce
+    agent: jenkins
     context: pull-security-kubernetes-e2e-gce
     rerun_command: "/test pull-security-kubernetes-e2e-gce"
     trigger: "(?m)^/test pull-security-kubernetes-e2e-gce,?(\\s+|$)"
   - name: pull-security-kubernetes-e2e-gce-bazel
+    agent: kubernetes
     context: pull-security-kubernetes-e2e-gce-bazel
     rerun_command: "/test pull-security-kubernetes-e2e-gce-bazel"
     trigger: "(?m)^/test (all|pull-security-kubernetes-e2e-gce-bazel),?(\\s+|$)"
@@ -453,27 +478,33 @@ presubmits:
         name: cache-ssd
 
   - name: pull-security-kubernetes-e2e-gce-canary
+    agent: jenkins
     context: pull-security-kubernetes-e2e-gce-canary
     rerun_command: "/test pull-security-kubernetes-e2e-gce-canary"
     trigger: "(?m)^/test pull-security-kubernetes-e2e-gce-canary,?(\\s+|$)"
   - name: pull-security-kubernetes-e2e-gce-etcd3
+    agent: jenkins
     always_run: true
     context: pull-security-kubernetes-e2e-gce-etcd3
     rerun_command: "/test pull-security-kubernetes-e2e-gce-etcd3"
     trigger: "(?m)^/test( all| pull-security-kubernetes-e2e-gce-etcd3),?(\\s+|$)"
   - name: pull-security-kubernetes-e2e-gce-gci
+    agent: jenkins
     context: pull-security-kubernetes-e2e-gce-gci
     rerun_command: "/test pull-security-kubernetes-e2e-gce-gci"
     trigger: "(?m)^/test pull-security-kubernetes-e2e-gce-gci,?(\\s+|$)"
   - name: pull-security-kubernetes-e2e-gke
+    agent: jenkins
     context: pull-security-kubernetes-e2e-gke
     rerun_command: "/test pull-security-kubernetes-e2e-gke"
     trigger: "(?m)^/test pull-security-kubernetes-e2e-gke,?(\\s+|$)"
   - name: pull-security-kubernetes-e2e-gke-gci
+    agent: jenkins
     context: pull-security-kubernetes-e2e-gke-gci
     rerun_command: "/test pull-security-kubernetes-e2e-gke-gci"
     trigger: "(?m)^/test pull-security-kubernetes-e2e-gke-gci,?(\\s+|$)"
   - name: pull-security-kubernetes-e2e-kops-aws
+    agent: jenkins
     always_run: true
     context: pull-security-kubernetes-e2e-kops-aws
     rerun_command: "/test pull-security-kubernetes-e2e-kops-aws"
@@ -481,6 +512,7 @@ presubmits:
     skip_branches:
     - release-1.4
   - name: pull-security-kubernetes-e2e-kubeadm-gce
+    agent: kubernetes
     context: pull-security-kubernetes-e2e-kubeadm-gce
     always_run: false
     skip_report: true
@@ -530,6 +562,7 @@ presubmits:
           path: /mnt/disks/ssd0
 
   - name: pull-security-kubernetes-federation-e2e-gce
+    agent: jenkins
     skip_branches:
     - release-1.4
     - release-1.5
@@ -539,6 +572,7 @@ presubmits:
     rerun_command: "/test pull-security-kubernetes-federation-e2e-gce"
     trigger: "(?m)^/test( all| pull-security-kubernetes-federation-e2e-gce),?(\\s+|$)"
   - name: pull-security-kubernetes-federation-e2e-gce-canary
+    agent: kubernetes
     skip_branches:
     - release-1.4
     - release-1.5
@@ -594,6 +628,7 @@ presubmits:
         name: cache-ssd
 
   - name: pull-security-kubernetes-kubemark-e2e-gce
+    agent: jenkins
     always_run: true
     context: pull-security-kubernetes-kubemark-e2e-gce
     rerun_command: "/test pull-security-kubernetes-kubemark-e2e-gce"
@@ -601,22 +636,26 @@ presubmits:
     skip_branches:
     - release-1.4
   - name: pull-security-kubernetes-node-e2e
+    agent: jenkins
     always_run: true
     context: pull-security-kubernetes-node-e2e
     rerun_command: "/test pull-security-kubernetes-node-e2e"
     trigger: "(?m)^/test( all| pull-security-kubernetes-node-e2e),?(\\s+|$)"
   - name: pull-security-kubernetes-unit
+    agent: jenkins
     always_run: true
     context: pull-security-kubernetes-unit
     rerun_command: "/test pull-security-kubernetes-unit"
     trigger: "(?m)^/test( all| pull-security-kubernetes-unit),?(\\s+|$)"
   - name: pull-security-kubernetes-verify
+    agent: jenkins
     always_run: true
     context: pull-security-kubernetes-verify
     rerun_command: "/test pull-security-kubernetes-verify"
     trigger: "(?m)^/test( all| pull-security-kubernetes-verify),?(\\s+|$)"
   kubernetes/test-infra:
   - name: pull-test-infra-bazel
+    agent: kubernetes
     context: pull-test-infra-bazel
     branches:
     - master
@@ -658,6 +697,7 @@ presubmits:
           path: /mnt/disks/ssd0
 
   - name: pull-test-infra-gubernator
+    agent: kubernetes
     context: pull-test-infra-gubernator
     branches:
     - master
@@ -689,6 +729,7 @@ presubmits:
           path: /mnt/disks/ssd0
 
   - name: pull-test-infra-verify-bazel
+    agent: kubernetes
     context: pull-test-infra-verify-bazel
     branches:
     - master
@@ -726,6 +767,7 @@ presubmits:
           path: /mnt/disks/ssd0
 
   - name: pull-test-infra-verify-gofmt
+    agent: kubernetes
     context: pull-test-infra-verify-gofmt
     branches:
     - master
@@ -762,6 +804,7 @@ presubmits:
           path: /mnt/disks/ssd0
 
   - name: pull-test-infra-verify-govet
+    agent: kubernetes
     context: pull-test-infra-verify-govet
     branches:
     - master
@@ -800,6 +843,7 @@ presubmits:
 postsubmits:
   kubernetes/kubernetes:
   - name: ci-kubernetes-bazel-build
+    agent: kubernetes
     branches:
     - master
     spec:
@@ -837,6 +881,7 @@ postsubmits:
           path: /mnt/disks/ssd0
     run_after_success:
     - name: ci-kubernetes-bazel-test
+      agent: kubernetes
       spec:
         containers:
         - image: gcr.io/k8s-testimages/bazelbuild:v20170728-71064cf4
@@ -871,6 +916,7 @@ postsubmits:
             path: /mnt/disks/ssd0
       run_after_success:
       - name: ci-kubernetes-e2e-kubeadm-gce
+        agent: kubernetes
         spec:
           containers:
           - image: gcr.io/k8s-testimages/e2e-kubeadm:v20170728-e1f1ad9b
@@ -915,6 +961,7 @@ postsubmits:
               path: /mnt/disks/ssd0
 
   - name: ci-kubernetes-bazel-build-1-6
+    agent: kubernetes
     branches:
     - release-1.6
     spec:
@@ -952,6 +999,7 @@ postsubmits:
           path: /mnt/disks/ssd0
     run_after_success:
     - name: ci-kubernetes-bazel-test-1-6
+      agent: kubernetes
       spec:
         containers:
         - image: gcr.io/k8s-testimages/bazelbuild:v20170728-71064cf4
@@ -986,6 +1034,7 @@ postsubmits:
             path: /mnt/disks/ssd0
       run_after_success:
       - name: ci-kubernetes-e2e-kubeadm-gce-1-6
+        agent: kubernetes
         spec:
           containers:
           - image: gcr.io/k8s-testimages/e2e-kubeadm:v20170728-e1f1ad9b
@@ -1030,6 +1079,7 @@ postsubmits:
               path: /mnt/disks/ssd0
 
   - name: ci-kubernetes-bazel-build-1-7
+    agent: kubernetes
     branches:
     - release-1.7
     spec:
@@ -1069,6 +1119,7 @@ postsubmits:
           path: /mnt/disks/ssd0
     run_after_success:
     - name: ci-kubernetes-bazel-test-1-7
+      agent: kubernetes
       spec:
         containers:
         - image: gcr.io/k8s-testimages/bazelbuild:v20170728-71064cf4
@@ -1105,6 +1156,7 @@ postsubmits:
             path: /mnt/disks/ssd0
       run_after_success:
       - name: ci-kubernetes-e2e-kubeadm-gce-1-7
+        agent: kubernetes
         spec:
           containers:
           - image: gcr.io/k8s-testimages/e2e-kubeadm:v20170728-e1f1ad9b
@@ -1148,6 +1200,7 @@ postsubmits:
             hostPath:
               path: /mnt/disks/ssd0
       - name: ci-kubernetes-e2e-kubeadm-gce-1-6-on-1-7
+        agent: kubernetes
         spec:
           containers:
           - image: gcr.io/k8s-testimages/e2e-kubeadm:v20170728-e1f1ad9b
@@ -1193,6 +1246,7 @@ postsubmits:
 
   kubernetes/test-infra:
   - name: ci-test-infra-bazel
+    agent: kubernetes
     branches:
     - master
     spec:
@@ -1227,6 +1281,7 @@ postsubmits:
           path: /mnt/disks/ssd0
 
   - name: maintenance-ci-testgrid-config-upload
+    agent: kubernetes
     branches:
     - master
     spec:
@@ -1257,6 +1312,7 @@ postsubmits:
 
 periodics:
 - interval: 1h
+  agent: kubernetes
   name: ci-kubernetes-e2e-cos-docker-validation
   spec:
     containers:
@@ -1290,6 +1346,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 1h
+  agent: kubernetes
   name: ci-kubernetes-e2e-cos-docker-validation-serial
   spec:
     containers:
@@ -1323,6 +1380,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 1h
+  agent: kubernetes
   name: ci-kubernetes-e2e-cos-docker-validation-slow
   spec:
     containers:
@@ -1356,6 +1414,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 30m
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce
   spec:
     containers:
@@ -1387,7 +1446,9 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-1-5-1-6-cvm-kubectl-skew
   spec:
     containers:
@@ -1421,6 +1482,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-1-5-1-6-gci-kubectl-skew
   spec:
     containers:
@@ -1454,6 +1516,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-1-5-1-6-upgrade-cluster
   spec:
     containers:
@@ -1487,6 +1550,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-1-5-1-6-upgrade-cluster-new
   spec:
     containers:
@@ -1520,6 +1584,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-1-5-1-6-upgrade-master
   spec:
     containers:
@@ -1553,6 +1618,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-1-6-1-5-cvm-kubectl-skew
   spec:
     containers:
@@ -1586,6 +1652,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-1-6-1-5-downgrade-cluster
   spec:
     containers:
@@ -1619,6 +1686,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-1-6-1-5-gci-kubectl-skew
   spec:
     containers:
@@ -1652,6 +1720,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 1h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-1-6-1-7-cvm-kubectl-skew
   spec:
     containers:
@@ -1685,6 +1754,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 1h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-1-6-1-7-cvm-kubectl-skew-serial
   spec:
     containers:
@@ -1718,6 +1788,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 1h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-1-6-1-7-gci-kubectl-skew
   spec:
     containers:
@@ -1751,6 +1822,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 1h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-1-6-1-7-gci-kubectl-skew-serial
   spec:
     containers:
@@ -1784,6 +1856,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-1-6-1-7-upgrade-cluster
   spec:
     containers:
@@ -1817,6 +1890,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-1-6-1-7-upgrade-cluster-new
   spec:
     containers:
@@ -1850,6 +1924,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-1-6-1-7-upgrade-master
   spec:
     containers:
@@ -1883,6 +1958,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 1h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-1-7-1-6-cvm-kubectl-skew
   spec:
     containers:
@@ -1916,6 +1992,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 1h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-1-7-1-6-cvm-kubectl-skew-serial
   spec:
     containers:
@@ -1949,6 +2026,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 1h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-1-7-1-6-gci-kubectl-skew
   spec:
     containers:
@@ -1982,6 +2060,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 1h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-1-7-1-6-gci-kubectl-skew-serial
   spec:
     containers:
@@ -2015,6 +2094,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 30m
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-alpha-features
   spec:
     containers:
@@ -2046,7 +2126,9 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - interval: 24h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-alpha-features-release-1-4
   spec:
     containers:
@@ -2080,6 +2162,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 6h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-alpha-features-release-1-5
   spec:
     containers:
@@ -2113,6 +2196,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-alpha-features-release-1-6
   spec:
     containers:
@@ -2146,6 +2230,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 1h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-alpha-features-release-1-7
   spec:
     containers:
@@ -2179,6 +2264,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 1h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-audit
   spec:
     containers:
@@ -2212,6 +2298,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 1h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-audit-release-1-7
   spec:
     containers:
@@ -2245,6 +2332,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 30m
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-autoscaling
   spec:
     containers:
@@ -2276,7 +2364,9 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - interval: 30m
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-autoscaling-migs
   spec:
     containers:
@@ -2308,7 +2398,9 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - interval: 30m
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-canary
   spec:
     containers:
@@ -2340,7 +2432,9 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - interval: 30m
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-container-vm
   spec:
     containers:
@@ -2372,9 +2466,11 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-cosbeta-k8sbeta-default
   spec:
     containers:
@@ -2406,9 +2502,11 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-cosbeta-k8sbeta-serial
   spec:
     containers:
@@ -2440,9 +2538,11 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-cosbeta-k8sbeta-slow
   spec:
     containers:
@@ -2474,9 +2574,11 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-cosbeta-k8sdev-default
   spec:
     containers:
@@ -2508,9 +2610,11 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 24h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-cosbeta-k8sdev-nosnat
   spec:
     containers:
@@ -2542,9 +2646,11 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-cosbeta-k8sdev-serial
   spec:
     containers:
@@ -2576,9 +2682,11 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-cosbeta-k8sdev-slow
   spec:
     containers:
@@ -2610,9 +2718,11 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-cosbeta-k8sstable1-default
   spec:
     containers:
@@ -2644,9 +2754,11 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-cosbeta-k8sstable1-serial
   spec:
     containers:
@@ -2678,9 +2790,11 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-cosbeta-k8sstable1-slow
   spec:
     containers:
@@ -2712,9 +2826,11 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-cosbeta-k8sstable2-default
   spec:
     containers:
@@ -2746,9 +2862,11 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-cosbeta-k8sstable2-serial
   spec:
     containers:
@@ -2780,9 +2898,11 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-cosbeta-k8sstable2-slow
   spec:
     containers:
@@ -2814,9 +2934,11 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-cosbeta-k8sstable3-default
   spec:
     containers:
@@ -2848,9 +2970,11 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-cosbeta-k8sstable3-serial
   spec:
     containers:
@@ -2882,9 +3006,11 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-cosbeta-k8sstable3-slow
   spec:
     containers:
@@ -2916,9 +3042,11 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-cosdev-k8sbeta-default
   spec:
     containers:
@@ -2950,9 +3078,11 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-cosdev-k8sbeta-serial
   spec:
     containers:
@@ -2984,9 +3114,11 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-cosdev-k8sbeta-slow
   spec:
     containers:
@@ -3018,9 +3150,11 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-cosdev-k8sdev-default
   spec:
     containers:
@@ -3052,9 +3186,11 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-cosdev-k8sdev-serial
   spec:
     containers:
@@ -3086,9 +3222,11 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-cosdev-k8sdev-slow
   spec:
     containers:
@@ -3120,9 +3258,11 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-cosdev-k8sstable1-default
   spec:
     containers:
@@ -3154,9 +3294,11 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-cosdev-k8sstable1-serial
   spec:
     containers:
@@ -3188,9 +3330,11 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-cosdev-k8sstable1-slow
   spec:
     containers:
@@ -3222,9 +3366,11 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-cosstable1-k8sbeta-default
   spec:
     containers:
@@ -3256,9 +3402,11 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-cosstable1-k8sbeta-serial
   spec:
     containers:
@@ -3290,9 +3438,11 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-cosstable1-k8sbeta-slow
   spec:
     containers:
@@ -3324,9 +3474,11 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-cosstable1-k8sdev-default
   spec:
     containers:
@@ -3358,9 +3510,11 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-cosstable1-k8sdev-serial
   spec:
     containers:
@@ -3392,9 +3546,11 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-cosstable1-k8sdev-slow
   spec:
     containers:
@@ -3426,9 +3582,11 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 6h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-cosstable1-k8sstable1-default
   spec:
     containers:
@@ -3460,9 +3618,11 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 6h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-cosstable1-k8sstable1-serial
   spec:
     containers:
@@ -3494,9 +3654,11 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 6h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-cosstable1-k8sstable1-slow
   spec:
     containers:
@@ -3528,9 +3690,11 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 6h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-cosstable1-k8sstable2-default
   spec:
     containers:
@@ -3562,9 +3726,11 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 6h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-cosstable1-k8sstable2-serial
   spec:
     containers:
@@ -3596,9 +3762,11 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 6h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-cosstable1-k8sstable2-slow
   spec:
     containers:
@@ -3630,9 +3798,11 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 6h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-cosstable1-k8sstable3-default
   spec:
     containers:
@@ -3664,9 +3834,11 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 6h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-cosstable1-k8sstable3-serial
   spec:
     containers:
@@ -3698,9 +3870,11 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 6h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-cosstable1-k8sstable3-slow
   spec:
     containers:
@@ -3732,7 +3906,9 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - interval: 30m
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-es-logging
   spec:
     containers:
@@ -3764,7 +3940,9 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-etcd2-release-1-6
   spec:
     containers:
@@ -3798,6 +3976,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 30m
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-etcd3
   spec:
     containers:
@@ -3829,7 +4008,9 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - interval: 30m
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-etcd3-pr-validate
   spec:
     containers:
@@ -3863,6 +4044,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 6h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-etcd3-release-1-5
   spec:
     containers:
@@ -3896,6 +4078,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 30m
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-federation
   spec:
     containers:
@@ -3927,7 +4110,9 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - interval: 30m
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-federation-release-1-6
   spec:
     containers:
@@ -3959,7 +4144,9 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - interval: 1h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-federation-release-1-7
   spec:
     containers:
@@ -3993,6 +4180,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 30m
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-federation-serial
   spec:
     containers:
@@ -4024,7 +4212,9 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-flaky
   spec:
     containers:
@@ -4056,7 +4246,9 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - interval: 30m
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-garbage
   spec:
     containers:
@@ -4090,6 +4282,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-gci-1-5-rollback-etcd
   spec:
     containers:
@@ -4123,6 +4316,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-gci-1-5-upgrade-etcd
   spec:
     containers:
@@ -4156,6 +4350,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 1h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-gci-ci-master
   spec:
     containers:
@@ -4189,6 +4384,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 24h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-gci-ci-release-1-4
   spec:
     containers:
@@ -4222,6 +4418,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 6h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-gci-ci-release-1-5
   spec:
     containers:
@@ -4255,6 +4452,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-gci-ci-serial-master
   spec:
     containers:
@@ -4288,6 +4486,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 24h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-gci-ci-serial-release-1-4
   spec:
     containers:
@@ -4321,6 +4520,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 6h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-gci-ci-serial-release-1-5
   spec:
     containers:
@@ -4354,6 +4554,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-gci-ci-slow-master
   spec:
     containers:
@@ -4387,6 +4588,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 12h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-gci-ci-slow-release-1-4
   spec:
     containers:
@@ -4420,6 +4622,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 6h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-gci-ci-slow-release-1-5
   spec:
     containers:
@@ -4453,6 +4656,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-gci-latest-rollback-etcd
   spec:
     containers:
@@ -4486,6 +4690,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-gci-latest-upgrade-etcd
   spec:
     containers:
@@ -4519,6 +4724,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-gci-qa-m59
   spec:
     containers:
@@ -4552,6 +4758,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 30m
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-gci-qa-m60
   spec:
     containers:
@@ -4585,6 +4792,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 30m
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-gci-qa-m61
   spec:
     containers:
@@ -4618,6 +4826,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 30m
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-gci-qa-master
   spec:
     containers:
@@ -4651,6 +4860,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-gci-qa-serial-m59
   spec:
     containers:
@@ -4684,6 +4894,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 1h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-gci-qa-serial-m60
   spec:
     containers:
@@ -4717,6 +4928,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 1h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-gci-qa-serial-m61
   spec:
     containers:
@@ -4750,6 +4962,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 1h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-gci-qa-serial-master
   spec:
     containers:
@@ -4783,6 +4996,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-gci-qa-slow-m59
   spec:
     containers:
@@ -4816,6 +5030,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-gci-qa-slow-m60
   spec:
     containers:
@@ -4849,6 +5064,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-gci-qa-slow-m61
   spec:
     containers:
@@ -4882,6 +5098,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-gci-qa-slow-master
   spec:
     containers:
@@ -4915,6 +5132,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-gci-serial-sig-cli
   spec:
     containers:
@@ -4949,6 +5167,7 @@ periodics:
 
 - name: ci-kubernetes-e2e-gce-gpu
   interval: 2h
+  agent: kubernetes
   spec:
     containers:
     - args:
@@ -4982,6 +5201,7 @@ periodics:
 
 - name: ci-kubernetes-e2e-gce-gpu-1-7
   interval: 2h
+  agent: kubernetes
   spec:
     containers:
     - args:
@@ -5014,6 +5234,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 30m
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-ha-master
   spec:
     containers:
@@ -5045,7 +5266,9 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - interval: 30m
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-ingress
   spec:
     containers:
@@ -5077,7 +5300,9 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-latest-upgrade-cluster
   spec:
     containers:
@@ -5111,6 +5336,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-latest-upgrade-master
   spec:
     containers:
@@ -5144,6 +5370,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 1h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-master-new-gci-kubectl-skew
   spec:
     containers:
@@ -5177,6 +5404,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 1h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-master-new-gci-kubectl-skew-serial
   spec:
     containers:
@@ -5210,6 +5438,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 30m
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-multizone
   spec:
     containers:
@@ -5243,6 +5472,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 1h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-new-master-gci-kubectl-skew
   spec:
     containers:
@@ -5276,6 +5506,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 1h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-new-master-gci-kubectl-skew-serial
   spec:
     containers:
@@ -5309,6 +5540,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-new-master-upgrade-cluster
   spec:
     containers:
@@ -5342,6 +5574,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-new-master-upgrade-cluster-new
   spec:
     containers:
@@ -5375,6 +5608,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-new-master-upgrade-master
   spec:
     containers:
@@ -5408,6 +5642,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 30m
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-proto
   spec:
     containers:
@@ -5439,7 +5674,9 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - interval: 30m
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-reboot
   spec:
     containers:
@@ -5471,7 +5708,9 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - interval: 24h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-reboot-release-1-4
   spec:
     containers:
@@ -5505,6 +5744,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 6h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-reboot-release-1-5
   spec:
     containers:
@@ -5538,6 +5778,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-reboot-release-1-6
   spec:
     containers:
@@ -5571,6 +5812,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 1h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-reboot-release-1-7
   spec:
     containers:
@@ -5604,6 +5846,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 24h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-release-1-4
   spec:
     containers:
@@ -5637,6 +5880,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 6h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-release-1-5
   spec:
     containers:
@@ -5670,6 +5914,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-release-1-6
   spec:
     containers:
@@ -5703,6 +5948,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 1h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-release-1-7
   spec:
     containers:
@@ -5736,6 +5982,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 30m
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-scalability
   spec:
     containers:
@@ -5767,7 +6014,9 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - interval: 30m
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-scalability-canary
   spec:
     containers:
@@ -5799,7 +6048,9 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - interval: 30m
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-sd-logging
   spec:
     containers:
@@ -5831,7 +6082,9 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - interval: 30m
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-serial
   spec:
     containers:
@@ -5863,7 +6116,9 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - interval: 24h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-serial-release-1-4
   spec:
     containers:
@@ -5897,6 +6152,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 6h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-serial-release-1-5
   spec:
     containers:
@@ -5930,6 +6186,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-serial-release-1-6
   spec:
     containers:
@@ -5963,6 +6220,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 1h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-serial-release-1-7
   spec:
     containers:
@@ -5996,6 +6254,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 30m
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-slow
   spec:
     containers:
@@ -6027,7 +6286,9 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - interval: 24h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-slow-release-1-4
   spec:
     containers:
@@ -6061,6 +6322,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 6h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-slow-release-1-5
   spec:
     containers:
@@ -6094,6 +6356,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-slow-release-1-6
   spec:
     containers:
@@ -6127,6 +6390,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 1h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-slow-release-1-7
   spec:
     containers:
@@ -6160,6 +6424,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 30m
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-stackdriver
   spec:
     containers:
@@ -6191,7 +6456,9 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - interval: 30m
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-statefulset
   spec:
     containers:
@@ -6223,7 +6490,9 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - interval: 30m
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-taint-evict
   spec:
     containers:
@@ -6255,9 +6524,11 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-ubuntudev-k8sbeta-default
   spec:
     containers:
@@ -6289,9 +6560,11 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-ubuntudev-k8sbeta-serial
   spec:
     containers:
@@ -6323,9 +6596,11 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-ubuntudev-k8sbeta-slow
   spec:
     containers:
@@ -6357,9 +6632,11 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-ubuntudev-k8sdev-default
   spec:
     containers:
@@ -6391,9 +6668,11 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-ubuntudev-k8sdev-serial
   spec:
     containers:
@@ -6425,9 +6704,11 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-ubuntudev-k8sdev-slow
   spec:
     containers:
@@ -6459,9 +6740,11 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-ubuntudev-k8sstable1-default
   spec:
     containers:
@@ -6493,9 +6776,11 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-ubuntudev-k8sstable1-serial
   spec:
     containers:
@@ -6527,9 +6812,11 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-ubuntudev-k8sstable1-slow
   spec:
     containers:
@@ -6561,9 +6848,11 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-ubuntustable1-k8sdev-default
   spec:
     containers:
@@ -6595,9 +6884,11 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-ubuntustable1-k8sdev-serial
   spec:
     containers:
@@ -6629,9 +6920,11 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-ubuntustable1-k8sdev-slow
   spec:
     containers:
@@ -6663,9 +6956,11 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-ubuntustable1-k8sstable1-default
   spec:
     containers:
@@ -6697,9 +6992,11 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-ubuntustable1-k8sstable1-serial
   spec:
     containers:
@@ -6731,9 +7028,11 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-ubuntustable1-k8sstable1-slow
   spec:
     containers:
@@ -6765,9 +7064,11 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 6h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-ubuntustable1-k8sstable2-default
   spec:
     containers:
@@ -6799,9 +7100,11 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 6h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-ubuntustable1-k8sstable2-serial
   spec:
     containers:
@@ -6833,9 +7136,11 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 6h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gce-ubuntustable1-k8sstable2-slow
   spec:
     containers:
@@ -6867,7 +7172,9 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - interval: 30m
+  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce
   spec:
     containers:
@@ -6899,7 +7206,9 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - interval: 30m
+  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-alpha-features
   spec:
     containers:
@@ -6931,7 +7240,9 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - interval: 24h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-alpha-features-release-1-4
   spec:
     containers:
@@ -6965,6 +7276,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 6h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-alpha-features-release-1-5
   spec:
     containers:
@@ -6998,6 +7310,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-alpha-features-release-1-6
   spec:
     containers:
@@ -7031,6 +7344,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 1h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-alpha-features-release-1-7
   spec:
     containers:
@@ -7064,6 +7378,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 1h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-audit
   spec:
     containers:
@@ -7097,6 +7412,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 1h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-audit-release-1-7
   spec:
     containers:
@@ -7130,6 +7446,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 30m
+  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-autoscaling
   spec:
     containers:
@@ -7161,7 +7478,9 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - interval: 30m
+  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-autoscaling-migs
   spec:
     containers:
@@ -7193,7 +7512,9 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - interval: 30m
+  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-docker
   spec:
     containers:
@@ -7225,7 +7546,9 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - interval: 30m
+  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-es-logging
   spec:
     containers:
@@ -7257,7 +7580,9 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - interval: 30m
+  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-etcd3
   spec:
     containers:
@@ -7289,7 +7614,9 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - interval: 30m
+  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-flaky
   spec:
     containers:
@@ -7321,7 +7648,9 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - interval: 30m
+  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-garbage
   spec:
     containers:
@@ -7353,7 +7682,9 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - interval: 30m
+  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-ingress
   spec:
     containers:
@@ -7385,7 +7716,9 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - interval: 24h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-ingress-release-1-4
   spec:
     containers:
@@ -7419,6 +7752,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 6h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-ingress-release-1-5
   spec:
     containers:
@@ -7452,6 +7786,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-ingress-release-1-6
   spec:
     containers:
@@ -7485,6 +7820,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 1h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-ingress-release-1-7
   spec:
     containers:
@@ -7518,6 +7854,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 30m
+  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-ip-alias
   spec:
     containers:
@@ -7549,7 +7886,9 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - interval: 30m
+  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-proto
   spec:
     containers:
@@ -7581,7 +7920,9 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - interval: 30m
+  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-reboot
   spec:
     containers:
@@ -7613,7 +7954,9 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - interval: 24h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-reboot-release-1-4
   spec:
     containers:
@@ -7647,6 +7990,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 6h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-reboot-release-1-5
   spec:
     containers:
@@ -7680,6 +8024,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-reboot-release-1-6
   spec:
     containers:
@@ -7713,6 +8058,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 1h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-reboot-release-1-7
   spec:
     containers:
@@ -7746,6 +8092,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 24h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-release-1-4
   spec:
     containers:
@@ -7779,6 +8126,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 6h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-release-1-5
   spec:
     containers:
@@ -7812,6 +8160,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-release-1-6
   spec:
     containers:
@@ -7845,6 +8194,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 1h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-release-1-7
   spec:
     containers:
@@ -7878,6 +8228,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 30m
+  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-scalability
   spec:
     containers:
@@ -7909,7 +8260,9 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - interval: 30m
+  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-sd-logging
   spec:
     containers:
@@ -7941,7 +8294,9 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - interval: 30m
+  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-serial
   spec:
     containers:
@@ -7973,7 +8328,9 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - interval: 24h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-serial-release-1-4
   spec:
     containers:
@@ -8007,6 +8364,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 6h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-serial-release-1-5
   spec:
     containers:
@@ -8040,6 +8398,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-serial-release-1-6
   spec:
     containers:
@@ -8073,6 +8432,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 1h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-serial-release-1-7
   spec:
     containers:
@@ -8106,6 +8466,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 30m
+  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-slow
   spec:
     containers:
@@ -8137,7 +8498,9 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - interval: 24h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-slow-release-1-4
   spec:
     containers:
@@ -8171,6 +8534,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 6h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-slow-release-1-5
   spec:
     containers:
@@ -8204,6 +8568,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-slow-release-1-6
   spec:
     containers:
@@ -8237,6 +8602,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 1h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-slow-release-1-7
   spec:
     containers:
@@ -8270,6 +8636,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 30m
+  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-statefulset
   spec:
     containers:
@@ -8301,7 +8668,9 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - interval: 30m
+  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gke
   spec:
     containers:
@@ -8333,7 +8702,9 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - interval: 30m
+  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gke-alpha-features
   spec:
     containers:
@@ -8365,7 +8736,9 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - interval: 30m
+  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gke-autoscaling
   spec:
     containers:
@@ -8397,7 +8770,9 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - interval: 30m
+  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gke-flaky
   spec:
     containers:
@@ -8429,7 +8804,9 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - interval: 30m
+  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gke-ingress
   spec:
     containers:
@@ -8461,7 +8838,9 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - interval: 6h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gke-ingress-release-1-5
   spec:
     containers:
@@ -8495,6 +8874,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gke-ingress-release-1-6
   spec:
     containers:
@@ -8528,6 +8908,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 1h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gke-ingress-release-1-7
   spec:
     containers:
@@ -8561,6 +8942,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 30m
+  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gke-multizone
   spec:
     containers:
@@ -8592,7 +8974,9 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - interval: 30m
+  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gke-prod
   spec:
     containers:
@@ -8624,7 +9008,9 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - interval: 30m
+  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gke-prod-parallel
   spec:
     containers:
@@ -8656,7 +9042,9 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - interval: 30m
+  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gke-prod-smoke
   spec:
     containers:
@@ -8690,6 +9078,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 30m
+  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gke-reboot
   spec:
     containers:
@@ -8721,7 +9110,9 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - interval: 6h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gke-reboot-release-1-5
   spec:
     containers:
@@ -8755,6 +9146,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gke-reboot-release-1-6
   spec:
     containers:
@@ -8788,6 +9180,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 1h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gke-reboot-release-1-7
   spec:
     containers:
@@ -8821,6 +9214,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 6h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gke-release-1-5
   spec:
     containers:
@@ -8854,6 +9248,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gke-release-1-6
   spec:
     containers:
@@ -8887,6 +9282,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 1h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gke-release-1-7
   spec:
     containers:
@@ -8920,6 +9316,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 30m
+  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gke-serial
   spec:
     containers:
@@ -8951,7 +9348,9 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - interval: 6h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gke-serial-release-1-5
   spec:
     containers:
@@ -8985,6 +9384,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gke-serial-release-1-6
   spec:
     containers:
@@ -9018,6 +9418,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 1h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gke-serial-release-1-7
   spec:
     containers:
@@ -9051,6 +9452,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 30m
+  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gke-slow
   spec:
     containers:
@@ -9082,7 +9484,9 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - interval: 6h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gke-slow-release-1-5
   spec:
     containers:
@@ -9116,6 +9520,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gke-slow-release-1-6
   spec:
     containers:
@@ -9149,6 +9554,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 1h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gke-slow-release-1-7
   spec:
     containers:
@@ -9182,6 +9588,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 30m
+  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gke-staging
   spec:
     containers:
@@ -9213,7 +9620,9 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - interval: 30m
+  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gke-staging-parallel
   spec:
     containers:
@@ -9245,7 +9654,9 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - interval: 30m
+  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gke-subnet
   spec:
     containers:
@@ -9277,7 +9688,9 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - interval: 30m
+  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gke-test
   spec:
     containers:
@@ -9309,7 +9722,9 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - interval: 30m
+  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gke-updown
   spec:
     containers:
@@ -9341,7 +9756,9 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - interval: 30m
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke
   spec:
     containers:
@@ -9373,7 +9790,9 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-1-5-1-6-cvm-kubectl-skew
   spec:
     containers:
@@ -9407,6 +9826,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-1-5-1-6-gci-kubectl-skew
   spec:
     containers:
@@ -9440,6 +9860,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-1-6-1-5-cvm-kubectl-skew
   spec:
     containers:
@@ -9473,6 +9894,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-1-6-1-5-gci-kubectl-skew
   spec:
     containers:
@@ -9506,6 +9928,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 1h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-1-6-1-7-cvm-kubectl-skew
   spec:
     containers:
@@ -9539,6 +9962,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 1h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-1-6-1-7-cvm-kubectl-skew-serial
   spec:
     containers:
@@ -9572,6 +9996,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 1h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-1-6-1-7-gci-kubectl-skew
   spec:
     containers:
@@ -9605,6 +10030,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 1h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-1-6-1-7-gci-kubectl-skew-serial
   spec:
     containers:
@@ -9638,6 +10064,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 1h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-1-7-1-6-cvm-kubectl-skew
   spec:
     containers:
@@ -9671,6 +10098,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 1h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-1-7-1-6-cvm-kubectl-skew-serial
   spec:
     containers:
@@ -9704,6 +10132,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 1h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-1-7-1-6-gci-kubectl-skew
   spec:
     containers:
@@ -9737,6 +10166,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 1h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-1-7-1-6-gci-kubectl-skew-serial
   spec:
     containers:
@@ -9770,6 +10200,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 30m
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-alpha-features
   spec:
     containers:
@@ -9801,7 +10232,9 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - interval: 6h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-alpha-features-release-1-5
   spec:
     containers:
@@ -9835,6 +10268,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-alpha-features-release-1-6
   spec:
     containers:
@@ -9868,6 +10302,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 1h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-alpha-features-release-1-7
   spec:
     containers:
@@ -9901,6 +10336,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 30m
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-autoscaling
   spec:
     containers:
@@ -9932,7 +10368,9 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - interval: 30m
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-canary
   spec:
     containers:
@@ -9964,7 +10402,9 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-cvm-1-5-cvm-1-6-upgrade-cluster
   spec:
     containers:
@@ -9998,6 +10438,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-cvm-1-5-cvm-1-6-upgrade-cluster-new
   spec:
     containers:
@@ -10031,6 +10472,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-cvm-1-5-cvm-1-6-upgrade-master
   spec:
     containers:
@@ -10064,6 +10506,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-cvm-1-5-cvm-1-7-upgrade-cluster
   spec:
     containers:
@@ -10097,6 +10540,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-cvm-1-5-cvm-1-7-upgrade-cluster-new
   spec:
     containers:
@@ -10130,6 +10574,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-cvm-1-5-cvm-1-7-upgrade-master
   spec:
     containers:
@@ -10163,6 +10608,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-cvm-1-5-gci-1-6-upgrade-cluster
   spec:
     containers:
@@ -10196,6 +10642,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-cvm-1-5-gci-1-6-upgrade-cluster-new
   spec:
     containers:
@@ -10229,6 +10676,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-cvm-1-5-gci-1-6-upgrade-master
   spec:
     containers:
@@ -10262,6 +10710,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-cvm-1-5-gci-1-7-upgrade-cluster
   spec:
     containers:
@@ -10295,6 +10744,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-cvm-1-5-gci-1-7-upgrade-cluster-new
   spec:
     containers:
@@ -10328,6 +10778,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-cvm-1-5-gci-1-7-upgrade-master
   spec:
     containers:
@@ -10361,6 +10812,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-cvm-1-6-cvm-1-7-upgrade-cluster
   spec:
     containers:
@@ -10394,6 +10846,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-cvm-1-6-cvm-1-7-upgrade-cluster-new
   spec:
     containers:
@@ -10427,6 +10880,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-cvm-1-6-cvm-1-7-upgrade-master
   spec:
     containers:
@@ -10460,6 +10914,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-cvm-1-6-gci-1-7-upgrade-cluster
   spec:
     containers:
@@ -10493,6 +10948,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-cvm-1-6-gci-1-7-upgrade-cluster-new
   spec:
     containers:
@@ -10526,6 +10982,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-cvm-1-6-gci-1-7-upgrade-master
   spec:
     containers:
@@ -10559,6 +11016,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-cvm-new-cvm-master-upgrade-cluster
   spec:
     containers:
@@ -10592,6 +11050,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-cvm-new-cvm-master-upgrade-cluster-new
   spec:
     containers:
@@ -10625,6 +11084,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-cvm-new-cvm-master-upgrade-master
   spec:
     containers:
@@ -10658,6 +11118,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-cvm-new-gci-master-upgrade-cluster
   spec:
     containers:
@@ -10691,6 +11152,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-cvm-new-gci-master-upgrade-cluster-new
   spec:
     containers:
@@ -10724,6 +11186,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-cvm-new-gci-master-upgrade-master
   spec:
     containers:
@@ -10757,6 +11220,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-cvm-stable-cvm-master-upgrade-master
   spec:
     containers:
@@ -10790,6 +11254,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-cvm-stable-gci-master-upgrade-master
   spec:
     containers:
@@ -10823,6 +11288,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 30m
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-flaky
   spec:
     containers:
@@ -10854,7 +11320,9 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-gci-1-5-cvm-1-6-upgrade-cluster
   spec:
     containers:
@@ -10888,6 +11356,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-gci-1-5-cvm-1-6-upgrade-cluster-new
   spec:
     containers:
@@ -10921,6 +11390,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-gci-1-5-cvm-1-6-upgrade-master
   spec:
     containers:
@@ -10954,6 +11424,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-gci-1-5-cvm-1-7-upgrade-cluster
   spec:
     containers:
@@ -10987,6 +11458,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-gci-1-5-cvm-1-7-upgrade-cluster-new
   spec:
     containers:
@@ -11020,6 +11492,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-gci-1-5-cvm-1-7-upgrade-master
   spec:
     containers:
@@ -11053,6 +11526,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-gci-1-5-gci-1-6-upgrade-cluster
   spec:
     containers:
@@ -11086,6 +11560,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-gci-1-5-gci-1-6-upgrade-cluster-new
   spec:
     containers:
@@ -11119,6 +11594,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-gci-1-5-gci-1-6-upgrade-master
   spec:
     containers:
@@ -11152,6 +11628,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-gci-1-5-gci-1-7-upgrade-cluster
   spec:
     containers:
@@ -11185,6 +11662,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-gci-1-5-gci-1-7-upgrade-cluster-new
   spec:
     containers:
@@ -11218,6 +11696,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-gci-1-5-gci-1-7-upgrade-master
   spec:
     containers:
@@ -11251,6 +11730,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-gci-1-6-cvm-1-7-upgrade-cluster
   spec:
     containers:
@@ -11284,6 +11764,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-gci-1-6-cvm-1-7-upgrade-cluster-new
   spec:
     containers:
@@ -11317,6 +11798,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-gci-1-6-cvm-1-7-upgrade-master
   spec:
     containers:
@@ -11350,6 +11832,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-gci-1-6-gci-1-5-downgrade-cluster
   spec:
     containers:
@@ -11383,6 +11866,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-gci-1-6-gci-1-7-upgrade-cluster
   spec:
     containers:
@@ -11416,6 +11900,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-gci-1-6-gci-1-7-upgrade-cluster-new
   spec:
     containers:
@@ -11449,6 +11934,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-gci-1-6-gci-1-7-upgrade-master
   spec:
     containers:
@@ -11482,6 +11968,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 1h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-gci-ci-master
   spec:
     containers:
@@ -11516,6 +12003,7 @@ periodics:
 
 # Release-1.7 jobs
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-gci-new-cvm-master-upgrade-cluster
   spec:
     containers:
@@ -11549,6 +12037,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-gci-new-cvm-master-upgrade-cluster-new
   spec:
     containers:
@@ -11582,6 +12071,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-gci-new-cvm-master-upgrade-master
   spec:
     containers:
@@ -11615,6 +12105,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster
   spec:
     containers:
@@ -11648,6 +12139,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster-new
   spec:
     containers:
@@ -11681,6 +12173,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-master
   spec:
     containers:
@@ -11714,6 +12207,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-gci-serial-sig-cli
   spec:
     containers:
@@ -11747,6 +12241,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-gci-stable-cvm-master-upgrade-master
   spec:
     containers:
@@ -11780,6 +12275,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-gci-stable-gci-master-upgrade-master
   spec:
     containers:
@@ -11814,6 +12310,7 @@ periodics:
 
 - name: ci-kubernetes-e2e-gke-gpu
   interval: 2h
+  agent: kubernetes
   spec:
     containers:
     - args:
@@ -11847,6 +12344,7 @@ periodics:
 
 - name: ci-kubernetes-e2e-gke-gpu-1-7
   interval: 2h
+  agent: kubernetes
   spec:
     containers:
     - args:
@@ -11879,6 +12377,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 30m
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-ingress
   spec:
     containers:
@@ -11910,7 +12409,9 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-latest-upgrade-cluster
   spec:
     containers:
@@ -11944,6 +12445,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-latest-upgrade-master
   spec:
     containers:
@@ -11977,6 +12479,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 1h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-master-new-gci-kubectl-skew
   spec:
     containers:
@@ -12010,6 +12513,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 1h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-master-new-gci-kubectl-skew-serial
   spec:
     containers:
@@ -12043,6 +12547,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 30m
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-multizone
   spec:
     containers:
@@ -12076,6 +12581,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 1h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-new-master-gci-kubectl-skew
   spec:
     containers:
@@ -12109,6 +12615,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 1h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-new-master-gci-kubectl-skew-serial
   spec:
     containers:
@@ -12142,6 +12649,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 30m
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-prod
   spec:
     containers:
@@ -12175,6 +12683,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 30m
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-prod-parallel
   spec:
     containers:
@@ -12208,6 +12717,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 30m
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-prod-smoke
   spec:
     containers:
@@ -12239,7 +12749,9 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - interval: 30m
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-reboot
   spec:
     containers:
@@ -12271,7 +12783,9 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - interval: 6h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-reboot-release-1-5
   spec:
     containers:
@@ -12305,6 +12819,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-reboot-release-1-6
   spec:
     containers:
@@ -12338,6 +12853,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 1h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-reboot-release-1-7
   spec:
     containers:
@@ -12371,6 +12887,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 1h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-regional
   spec:
     containers:
@@ -12404,6 +12921,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 6h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-release-1-5
   spec:
     containers:
@@ -12437,6 +12955,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-release-1-6
   spec:
     containers:
@@ -12470,6 +12989,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 1h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-release-1-7
   spec:
     containers:
@@ -12503,6 +13023,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 30m
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-serial
   spec:
     containers:
@@ -12534,7 +13055,9 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - interval: 6h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-serial-release-1-5
   spec:
     containers:
@@ -12568,6 +13091,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-serial-release-1-6
   spec:
     containers:
@@ -12601,6 +13125,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 1h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-serial-release-1-7
   spec:
     containers:
@@ -12634,6 +13159,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 30m
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-slow
   spec:
     containers:
@@ -12665,7 +13191,9 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - interval: 6h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-slow-release-1-5
   spec:
     containers:
@@ -12699,6 +13227,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-slow-release-1-6
   spec:
     containers:
@@ -12732,6 +13261,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 1h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-slow-release-1-7
   spec:
     containers:
@@ -12765,6 +13295,7 @@ periodics:
         secretName: ssh-key-secret
 
 - interval: 30m
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-stackdriver
   spec:
     containers:
@@ -12796,7 +13327,9 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - interval: 30m
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-staging
   spec:
     containers:
@@ -12828,7 +13361,9 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - interval: 30m
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-staging-parallel
   spec:
     containers:
@@ -12860,7 +13395,9 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - interval: 30m
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-subnet
   spec:
     containers:
@@ -12892,7 +13429,9 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - interval: 30m
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-test
   spec:
     containers:
@@ -12928,6 +13467,7 @@ periodics:
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-alphafeatures
   spec:
     containers:
@@ -12959,9 +13499,11 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-autoscaling
   spec:
     containers:
@@ -12993,9 +13535,11 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-default
   spec:
     containers:
@@ -13027,9 +13571,11 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-flaky
   spec:
     containers:
@@ -13061,9 +13607,11 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-ingress
   spec:
     containers:
@@ -13095,9 +13643,11 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-reboot
   spec:
     containers:
@@ -13129,9 +13679,11 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-serial
   spec:
     containers:
@@ -13163,9 +13715,11 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-slow
   spec:
     containers:
@@ -13197,9 +13751,11 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-updown
   spec:
     containers:
@@ -13231,9 +13787,11 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-alphafeatures
   spec:
     containers:
@@ -13265,9 +13823,11 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-autoscaling
   spec:
     containers:
@@ -13299,9 +13859,11 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-default
   spec:
     containers:
@@ -13337,6 +13899,7 @@ periodics:
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-flaky
   spec:
     containers:
@@ -13368,9 +13931,11 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-ingress
   spec:
     containers:
@@ -13402,9 +13967,11 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-reboot
   spec:
     containers:
@@ -13436,9 +14003,11 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-serial
   spec:
     containers:
@@ -13470,9 +14039,11 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-slow
   spec:
     containers:
@@ -13504,9 +14075,11 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-updown
   spec:
     containers:
@@ -13538,9 +14111,11 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-alphafeatures
   spec:
     containers:
@@ -13572,9 +14147,11 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-autoscaling
   spec:
     containers:
@@ -13606,9 +14183,11 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-default
   spec:
     containers:
@@ -13640,9 +14219,11 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-flaky
   spec:
     containers:
@@ -13674,9 +14255,11 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-ingress
   spec:
     containers:
@@ -13708,9 +14291,11 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-reboot
   spec:
     containers:
@@ -13742,9 +14327,11 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-serial
   spec:
     containers:
@@ -13776,9 +14363,11 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-slow
   spec:
     containers:
@@ -13810,9 +14399,11 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-updown
   spec:
     containers:
@@ -13844,7 +14435,9 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - interval: 30m
+  agent: kubernetes
   name: ci-kubernetes-e2e-gke-updown
   spec:
     containers:
@@ -13876,7 +14469,9 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - interval: 1h
+  agent: kubernetes
   name: ci-kubernetes-e2e-kops-aws-canary
   spec:
     containers:
@@ -13919,6 +14514,7 @@ periodics:
         secretName: aws-cred
 
 - interval: 30m
+  agent: kubernetes
   name: ci-kubernetes-e2e-mlkube-gke
   spec:
     containers:
@@ -13953,6 +14549,7 @@ periodics:
 
 - name: ci-kubernetes-e2e-prow-canary
   interval: 1h
+  agent: kubernetes
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e-prow:latest
@@ -13985,6 +14582,7 @@ periodics:
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2enode-cosstable1-k8sbeta-default
   spec:
     containers:
@@ -14022,6 +14620,7 @@ periodics:
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2enode-cosstable1-k8sbeta-serial
   spec:
     containers:
@@ -14059,6 +14658,7 @@ periodics:
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2enode-cosstable1-k8sdev-default
   spec:
     containers:
@@ -14096,6 +14696,7 @@ periodics:
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2enode-cosstable1-k8sdev-serial
   spec:
     containers:
@@ -14133,6 +14734,7 @@ periodics:
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2enode-cosstable1-k8sstable1-default
   spec:
     containers:
@@ -14170,6 +14772,7 @@ periodics:
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2enode-cosstable1-k8sstable1-serial
   spec:
     containers:
@@ -14207,6 +14810,7 @@ periodics:
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 6h
+  agent: kubernetes
   name: ci-kubernetes-e2enode-cosstable1-k8sstable2-default
   spec:
     containers:
@@ -14244,6 +14848,7 @@ periodics:
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 6h
+  agent: kubernetes
   name: ci-kubernetes-e2enode-cosstable1-k8sstable2-serial
   spec:
     containers:
@@ -14281,6 +14886,7 @@ periodics:
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 6h
+  agent: kubernetes
   name: ci-kubernetes-e2enode-cosstable1-k8sstable3-default
   spec:
     containers:
@@ -14318,6 +14924,7 @@ periodics:
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 6h
+  agent: kubernetes
   name: ci-kubernetes-e2enode-cosstable1-k8sstable3-serial
   spec:
     containers:
@@ -14352,8 +14959,10 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
 - name: ci-kubernetes-pull-gce-federation-deploy-canary
   interval: 24h
+  agent: kubernetes
   spec:
     containers:
     - args:
@@ -14387,6 +14996,7 @@ periodics:
 
 - name: ci-perf-tests-e2e-gce-clusterloader
   interval: 2h
+  agent: kubernetes
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e-prow:v20170808-562b55b5
@@ -14422,6 +15032,7 @@ periodics:
 
 - name: ci-perf-tests-kubemark-100-benchmark
   interval: 2h
+  agent: kubernetes
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e-prow:v20170808-562b55b5
@@ -14445,6 +15056,7 @@ periodics:
 
 - name: ci-test-infra-bazel
   interval: 1h
+  agent: kubernetes
   spec:
     containers:
     - image: gcr.io/k8s-testimages/bazelbuild:v20170728-71064cf4
@@ -14481,6 +15093,7 @@ periodics:
 
 - name: ci-test-infra-triage
   interval: 1h
+  agent: kubernetes
   spec:
     containers:
     - image: gcr.io/k8s-testimages/triage:latest
@@ -14499,6 +15112,7 @@ periodics:
 
 - name: metrics-bigquery
   interval: 24h
+  agent: kubernetes
   spec:
     containers:
     - image: gcr.io/k8s-testimages/bigquery:0.1
@@ -14524,6 +15138,7 @@ periodics:
 
 - name: periodic-kubernetes-bazel-build-1-6
   interval: 2h
+  agent: kubernetes
   spec:
     containers:
     - image: gcr.io/k8s-testimages/bazelbuild:v20170728-71064cf4
@@ -14559,6 +15174,7 @@ periodics:
         path: /mnt/disks/ssd0
   run_after_success:
   - name: periodic-kubernetes-bazel-test-1-6
+    agent: kubernetes
     spec:
       containers:
       - image: gcr.io/k8s-testimages/bazelbuild:v20170728-71064cf4
@@ -14593,6 +15209,7 @@ periodics:
           path: /mnt/disks/ssd0
     run_after_success:
     - name: periodic-kubernetes-e2e-kubeadm-gce-1-6
+      agent: kubernetes
       spec:
         containers:
         - image: gcr.io/k8s-testimages/e2e-kubeadm:v20170728-e1f1ad9b
@@ -14640,6 +15257,7 @@ periodics:
 
 - name: periodic-kubernetes-bazel-build-1-7
   interval: 2h
+  agent: kubernetes
   spec:
     containers:
     - image: gcr.io/k8s-testimages/bazelbuild:v20170728-71064cf4
@@ -14677,6 +15295,7 @@ periodics:
         path: /mnt/disks/ssd0
   run_after_success:
   - name: periodic-kubernetes-bazel-test-1-7
+    agent: kubernetes
     spec:
       containers:
       - image: gcr.io/k8s-testimages/bazelbuild:v20170728-71064cf4
@@ -14713,6 +15332,7 @@ periodics:
           path: /mnt/disks/ssd0
     run_after_success:
     - name: periodic-kubernetes-e2e-kubeadm-gce-1-7
+      agent: kubernetes
       spec:
         containers:
         - image: gcr.io/k8s-testimages/e2e-kubeadm:v20170728-e1f1ad9b
@@ -14760,6 +15380,7 @@ periodics:
 
 - name: periodic-test-infra-retester
   interval: 20m  # Retest at most 1 PR per 20m, which should not DOS the queue.
+  agent: kubernetes
   spec:
     containers:
     - image: gcr.io/k8s-testimages/commenter:v20170808-abf66782

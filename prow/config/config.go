@@ -25,6 +25,8 @@ import (
 	"time"
 
 	"github.com/ghodss/yaml"
+
+	"k8s.io/test-infra/prow/kube"
 )
 
 // Config is a read-only snapshot of the config.
@@ -132,25 +134,48 @@ func Load(path string) (*Config, error) {
 
 func parseConfig(c *Config) error {
 	// Ensure that presubmit regexes are valid.
-	for _, v := range c.Presubmits {
-		if err := setRegexes(v); err != nil {
+	for _, vs := range c.Presubmits {
+		if err := setRegexes(vs); err != nil {
 			return fmt.Errorf("could not set regex: %v", err)
+		}
+		for v := range vs {
+			name := vs[v].Name
+			agent := vs[v].Agent
+			if agent == string(kube.KubernetesAgent) && vs[v].Spec == nil {
+				return fmt.Errorf("job %s has no spec", name)
+			}
+			if agent != string(kube.KubernetesAgent) && agent != string(kube.JenkinsAgent) {
+				return fmt.Errorf("job %s has invalid agent (%s), it needs to be one of the following: %s %s",
+					name, agent, kube.KubernetesAgent, kube.JenkinsAgent)
+			}
 		}
 	}
 
 	// Ensure that postsubmits have a pod spec.
 	for _, js := range c.Postsubmits {
 		for j := range js {
-			if js[j].Spec == nil {
-				return fmt.Errorf("job %s has no spec", js[j].Name)
+			name := js[j].Name
+			agent := js[j].Agent
+			if agent == string(kube.KubernetesAgent) && js[j].Spec == nil {
+				return fmt.Errorf("job %s has no spec", name)
+			}
+			if agent != string(kube.KubernetesAgent) && agent != string(kube.JenkinsAgent) {
+				return fmt.Errorf("job %s has invalid agent (%s), it needs to be one of the following: %s %s",
+					name, agent, kube.KubernetesAgent, kube.JenkinsAgent)
 			}
 		}
 	}
 
 	// Ensure that the periodic durations are valid and specs exist.
 	for j := range c.Periodics {
-		if c.Periodics[j].Spec == nil {
-			return fmt.Errorf("job %s has no spec", c.Periodics[j].Name)
+		name := c.Periodics[j].Name
+		agent := c.Periodics[j].Agent
+		if agent == string(kube.KubernetesAgent) && c.Periodics[j].Spec == nil {
+			return fmt.Errorf("job %s has no spec", name)
+		}
+		if agent != string(kube.KubernetesAgent) && agent != string(kube.JenkinsAgent) {
+			return fmt.Errorf("job %s has invalid agent (%s), it needs to be one of the following: %s %s",
+				name, agent, kube.KubernetesAgent, kube.JenkinsAgent)
 		}
 		d, err := time.ParseDuration(c.Periodics[j].Interval)
 		if err != nil {

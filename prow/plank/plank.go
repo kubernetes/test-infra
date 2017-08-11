@@ -53,10 +53,8 @@ func PresubmitSpec(p config.Presubmit, refs kube.Refs) kube.ProwJobSpec {
 		RerunCommand:   p.RerunCommand,
 		MaxConcurrency: p.MaxConcurrency,
 	}
-	if p.Spec == nil {
-		pjs.Agent = kube.JenkinsAgent
-	} else {
-		pjs.Agent = kube.KubernetesAgent
+	pjs.Agent = kube.ProwJobAgent(p.Agent)
+	if pjs.Agent == kube.KubernetesAgent {
 		pjs.PodSpec = *p.Spec
 	}
 	for _, nextP := range p.RunAfterSuccess {
@@ -73,10 +71,8 @@ func PostsubmitSpec(p config.Postsubmit, refs kube.Refs) kube.ProwJobSpec {
 		Refs:           refs,
 		MaxConcurrency: p.MaxConcurrency,
 	}
-	if p.Spec == nil {
-		pjs.Agent = kube.JenkinsAgent
-	} else {
-		pjs.Agent = kube.KubernetesAgent
+	pjs.Agent = kube.ProwJobAgent(p.Agent)
+	if pjs.Agent == kube.KubernetesAgent {
 		pjs.PodSpec = *p.Spec
 	}
 	for _, nextP := range p.RunAfterSuccess {
@@ -91,10 +87,8 @@ func PeriodicSpec(p config.Periodic) kube.ProwJobSpec {
 		Type: kube.PeriodicJob,
 		Job:  p.Name,
 	}
-	if p.Spec == nil {
-		pjs.Agent = kube.JenkinsAgent
-	} else {
-		pjs.Agent = kube.KubernetesAgent
+	pjs.Agent = kube.ProwJobAgent(p.Agent)
+	if pjs.Agent == kube.KubernetesAgent {
 		pjs.PodSpec = *p.Spec
 	}
 	for _, nextP := range p.RunAfterSuccess {
@@ -111,10 +105,8 @@ func BatchSpec(p config.Presubmit, refs kube.Refs) kube.ProwJobSpec {
 		Refs:    refs,
 		Context: p.Context, // The Submit Queue's getCompleteBatches needs this.
 	}
-	if p.Spec == nil {
-		pjs.Agent = kube.JenkinsAgent
-	} else {
-		pjs.Agent = kube.KubernetesAgent
+	pjs.Agent = kube.ProwJobAgent(p.Agent)
+	if pjs.Agent == kube.KubernetesAgent {
 		pjs.PodSpec = *p.Spec
 	}
 	for _, nextP := range p.RunAfterSuccess {
