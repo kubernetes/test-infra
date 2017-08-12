@@ -28,8 +28,9 @@ import (
 const pluginName = "help"
 
 var (
-	helpLabel = "help-wanted"
-	helpRe    = regexp.MustCompile(`(?mi)^/help\s*$`)
+	helpLabel    = "help-wanted"
+	helpRe       = regexp.MustCompile(`(?mi)^/help\s*$`)
+	helpRemoveRe = regexp.MustCompile(`(?mi)^/remove-help\s*$`)
 )
 
 type assignEvent struct {
@@ -111,33 +112,53 @@ func handle(gc githubClient, log *logrus.Entry, ae assignEvent) error {
 		isAssigned = true
 	}
 
-	// Determine if we're being asked for help
-	wantHelp := false
-	if helpRe.MatchString(ae.body) {
-		wantHelp = true
-	}
-
 	// If PR has help label and also an assignee, remove label
 	if hasHelp && isAssigned {
 		if err := gc.RemoveLabel(ae.org, ae.repo, ae.number, helpLabel); err != nil {
 			log.WithError(err).Errorf("Github failed to remove the following label: %s", helpLabel)
 		}
+
+		return nil
+	}
+
+	// If PR has help label and we're asking it to be removed, remove label
+	if hasHelp && helpRemoveRe.MatchString(ae.body) {
+		if err := gc.RemoveLabel(ae.org, ae.repo, ae.number, helpLabel); err != nil {
+			log.WithError(err).Errorf("Github failed to remove the following label: %s", helpLabel)
+		}
+
+		return nil
 	}
 
 	// If PR does not have an assignee, does not have the label,
-	// and we get a help request, add the label
-	if !hasHelp && !isAssigned && wantHelp {
-		if err := gc.AddLabel(ae.org, ae.repo, ae.number, helpLabel); err != nil {
-			log.WithError(err).Errorf("Github failed to add the following label: %s", helpLabel)
-		}
-	}
+	// and we're asking it to be added, add the label
+	if !hasHelp && !isAssigned && helpRe.MatchString(ae.body) {
+		msg := `
+	This request has been marked as needing help from a contributor.
 
-	// If the issue is already assigned, comment that we can't do anything.
-	if isAssigned && wantHelp {
-		msg := "The issue is already assigned."
+	Please ensure the request meets the requirements listed [here](https://git.k8s.io/community/contributors/devel/help-wanted.md).
+
+	If this request no longer meets these requirements, the label can be removed
+	by commenting with the "/remove-help" command.
+	`
 		if err := gc.CreateComment(ae.org, ae.repo, ae.number, plugins.FormatResponseRaw(ae.body, ae.url, ae.login, msg)); err != nil {
 			log.WithError(err).Errorf("Could not create comment \"%s\".", msg)
 		}
+		if err := gc.AddLabel(ae.org, ae.repo, ae.number, helpLabel); err != nil {
+			log.WithError(err).Errorf("Github failed to add the following label: %s", helpLabel)
+		}
+
+		return nil
+	}
+
+	// If the issue is already assigned, comment that we can't do anything.
+	if isAssigned && helpRe.MatchString(ae.body) {
+		msg := "Cannot add `help-wanted` label as the issue is already assigned."
+		if err := gc.CreateComment(ae.org, ae.repo, ae.number, plugins.FormatResponseRaw(ae.body, ae.url, ae.login, msg)); err != nil {
+			log.WithError(err).Errorf("Could not create comment \"%s\".", msg)
+		}
+
+		return nil
 	}
 
 	return nil
