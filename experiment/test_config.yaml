@@ -649,9 +649,9 @@ images:
     - --gcp-node-image=ubuntu
   ubuntustable1:
     args:
+    - --image-family=ubuntu-gke-1604-lts
+    - --image-project=ubuntu-os-gke-cloud
     - --gcp-node-image=ubuntu
-    - --env=KUBE_GCE_NODE_PROJECT=ubuntu-os-gke-cloud
-    - --env=KUBE_GCE_NODE_IMAGE=ubuntu-gke-1604-xenial-v20170420-1
 
 k8sVersions:
   dev:
