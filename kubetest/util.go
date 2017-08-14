@@ -28,6 +28,7 @@ import (
 	"os/signal"
 	"path/filepath"
 	"strings"
+	"sync"
 	"syscall"
 	"time"
 )
@@ -184,6 +185,112 @@ func finishRunning(cmd *exec.Cmd) error {
 				return fmt.Errorf("error during %s%s: %v", stepName, suffix, err)
 			}
 			return err
+		}
+	}
+}
+
+type cmdExecResult struct {
+	stepName string
+	output   string
+	execTime time.Duration
+	err      error
+}
+
+// execute a given command and send output and error via channel
+func executeParallelCommand(cmd *exec.Cmd, wg *sync.WaitGroup, resChan chan cmdExecResult) {
+	stepName := strings.Join(cmd.Args, " ")
+	stdout := bytes.Buffer{}
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stdout
+
+	start := time.Now()
+	log.Printf("Running: %v in parallel", stepName)
+	defer wg.Done()
+
+	if terminated {
+		resChan <- cmdExecResult{stepName: stepName, output: stdout.String(), execTime: time.Since(start), err: fmt.Errorf("skipped %s (kubetest is terminated)", stepName)}
+		return
+	}
+
+	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
+	if err := cmd.Start(); err != nil {
+		resChan <- cmdExecResult{stepName: stepName, output: stdout.String(), execTime: time.Since(start), err: fmt.Errorf("error starting %v: %v", stepName, err)}
+		return
+	}
+
+	finished := make(chan error)
+	go func() {
+		finished <- cmd.Wait()
+	}()
+
+	for {
+		select {
+		case err := <-finished:
+			if err != nil {
+				var suffix string
+				if terminated {
+					suffix = " (terminated)"
+				} else if interrupted {
+					suffix = " (interrupted)"
+				}
+				err = fmt.Errorf("error during %s%s: %v", stepName, suffix, err)
+			}
+			resChan <- cmdExecResult{stepName: stepName, output: stdout.String(), execTime: time.Since(start), err: err}
+			return
+		}
+	}
+}
+
+// execute multiple commands in parallel
+func finishRunningParallel(cmds ...*exec.Cmd) error {
+	var wg sync.WaitGroup
+	resultChan := make(chan cmdExecResult, len(cmds))
+
+	for _, cmd := range cmds {
+		wg.Add(1)
+		go executeParallelCommand(cmd, &wg, resultChan)
+	}
+
+	go func() {
+		wg.Wait()
+		close(resultChan)
+	}()
+
+	cmdFailed := false
+	for {
+		select {
+		case <-terminate.C:
+			terminated = true
+			terminate.Reset(time.Duration(0)) // Kill subsequent processes immediately.
+			for _, cmd := range cmds {
+				syscall.Kill(-cmd.Process.Pid, syscall.SIGKILL)
+				if err := cmd.Process.Kill(); err != nil {
+					log.Printf("Failed to terminate %s (terminated 15m after interrupt): %v", strings.Join(cmd.Args, " "), err)
+				}
+			}
+		case <-interrupt.C:
+			interrupted = true
+			terminate.Reset(15 * time.Minute)
+			for _, cmd := range cmds {
+				log.Printf("Interrupt after %s timeout during %s. Will terminate in another 15m", timeout, strings.Join(cmd.Args, " "))
+				if err := syscall.Kill(-cmd.Process.Pid, syscall.SIGINT); err != nil {
+					log.Printf("Failed to interrupt %s. Will terminate immediately: %v", strings.Join(cmd.Args, " "), err)
+					syscall.Kill(-cmd.Process.Pid, syscall.SIGTERM)
+					cmd.Process.Kill()
+				}
+			}
+		case result, ok := <-resultChan:
+			if !ok {
+				if cmdFailed {
+					return fmt.Errorf("one or more commands failed")
+				}
+				return nil
+			}
+			log.Print(result.output)
+			if result.err != nil {
+				cmdFailed = true
+			}
+			log.Printf("Step '%s' finished in %s", result.stepName, result.execTime)
 		}
 	}
 }
