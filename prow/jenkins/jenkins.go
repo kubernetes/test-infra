@@ -56,7 +56,7 @@ type BuildRequest struct {
 	BaseRef string
 	BaseSHA string
 	PullSHA string
-	Name    string
+	UUID    string
 }
 
 type Build struct {
@@ -123,7 +123,7 @@ func (c *Client) Build(br BuildRequest) (*Build, error) {
 	q.Set("PULL_BASE_REF", br.BaseRef)
 	q.Set("PULL_BASE_SHA", br.BaseSHA)
 	q.Set("PULL_PULL_SHA", br.PullSHA)
-	q.Set("NAME", br.Name)
+	q.Set("UUID", br.UUID)
 	u.RawQuery = q.Encode()
 	resp, err := c.request(http.MethodPost, u.String())
 	if err != nil {
