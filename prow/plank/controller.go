@@ -265,7 +265,7 @@ func (c *Controller) syncJenkinsJob(pj kube.ProwJob, reports chan<- kube.ProwJob
 			br.PullSHA = pj.Spec.Refs.Pulls[0].SHA
 		}
 		if build, err := c.jc.Build(br); err != nil {
-			jerr = fmt.Errorf("error starting Jenkins job: %v", err)
+			jerr = fmt.Errorf("error starting Jenkins job for prowjob %s: %v", pj.Metadata.Name, err)
 			pj.Status.CompletionTime = time.Now()
 			pj.Status.State = kube.ErrorState
 			pj.Status.URL = testInfra
@@ -279,7 +279,7 @@ func (c *Controller) syncJenkinsJob(pj kube.ProwJob, reports chan<- kube.ProwJob
 		reports <- pj
 	} else if pj.Status.JenkinsEnqueued {
 		if eq, err := c.jc.Enqueued(pj.Status.JenkinsQueueURL); err != nil {
-			jerr = fmt.Errorf("error checking queue status: %v", err)
+			jerr = fmt.Errorf("error checking queue status for prowjob %s: %v", pj.Metadata.Name, err)
 			pj.Status.JenkinsEnqueued = false
 			pj.Status.CompletionTime = time.Now()
 			pj.Status.State = kube.ErrorState
@@ -293,7 +293,7 @@ func (c *Controller) syncJenkinsJob(pj kube.ProwJob, reports chan<- kube.ProwJob
 			pj.Status.JenkinsEnqueued = false
 		}
 	} else if status, err := c.jc.Status(pj.Spec.Job, pj.Status.JenkinsBuildID); err != nil {
-		jerr = fmt.Errorf("error checking build status: %v", err)
+		jerr = fmt.Errorf("error checking build status for prowjob %s: %v", pj.Metadata.Name, err)
 		pj.Status.CompletionTime = time.Now()
 		pj.Status.State = kube.ErrorState
 		pj.Status.URL = testInfra
