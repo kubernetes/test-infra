@@ -494,6 +494,8 @@ def finish(gsutil, paths, success, artifacts, build, version, repos, call):
                 logging.warning('Failed to update %s', path)
 
 
+# Note the assumption that bootstrap is running from within the kubernetes/test-infra repo
+# TODO(fejta): remove assumption
 def test_infra(*paths):
     """Return path relative to root of test-infra repo."""
     return os.path.join(ORIG_CWD, os.path.dirname(__file__), '..', *paths)
@@ -755,17 +757,24 @@ def job_args(args):
     return [os.path.expandvars(a) for a in args]
 
 
-def job_script(job, use_json):
+def job_script(job, use_json, jobs_dir, scenarios_dir):
     """Return path to script for job."""
+    jobs_dir_resolver = lambda f: test_infra('jobs/%s' % f)
+    scenarios_dir_resolver = lambda n: test_infra('scenarios/%s.py' % n)
+
+    if jobs_dir:
+        jobs_dir_resolver = lambda f: os.path.join(jobs_dir, f)
+
+    if scenarios_dir:
+        scenarios_dir_resolver = lambda n: os.path.join(scenarios_dir, '%s.py' % n)
+
     if not use_json:
-        return [test_infra('jobs/%s.sh' % job)]
-    with open(test_infra('jobs/config.json')) as fp:
+        return [jobs_dir_resolver('%s.sh' % job)]
+    with open(jobs_dir_resolver('config.json')) as fp:
         config = json.loads(fp.read())
     job_config = config[job]
-    cmd = test_infra('scenarios/%s.py' % job_config['scenario'])
+    cmd = scenarios_dir_resolver(job_config['scenario'])
     return [cmd] + job_args(job_config.get('args', []))
-
-
 
 
 def gubernator_uri(paths):
@@ -909,7 +918,8 @@ def bootstrap(args):
             version = find_version(call)
         else:
             version = ''
-        setup_magic_environment(job)
+        if not args.raw_env:
+            setup_magic_environment(job)
         setup_credentials(call, args.service_account, upload)
         setup_creds = True
         logging.info('Start %s at %s...', build, version)
@@ -917,7 +927,7 @@ def bootstrap(args):
             start(gsutil, paths, started, node(), version, repos)
         success = False
         try:
-            call(job_script(job, use_json))
+            call(job_script(job, use_json, args.jobs_dir, args.scenarios_dir))
             logging.info('PASS: %s', job)
             success = True
         except subprocess.CalledProcessError:
@@ -987,6 +997,20 @@ def parse_args(arguments=None):
         '--clean',
         action='store_true',
         help='Clean the git repo before running tests.')
+    parser.add_argument(
+        '--raw-env',
+        action='store_true',
+        help='Disable the environment specific to kubernetes project.')
+    parser.add_argument(
+        '--jobs-dir',
+        # Default behavior assumes bootstrap.py is run from the jenkins/ dir of
+        # k8s/test-infra and that the jobs are in jobs dir.
+        help='Look for job config in this dir rather than relative to this script.')
+    parser.add_argument(
+        '--scenarios-dir',
+        # Default behavior assumes bootstrap.py is run from the jenkins/ dir of
+        # k8s/test-infra and that the scenarios are in scenarios dir.
+        help='Look for scenarios in this dir rather than relative to this script.')
     args = parser.parse_args(arguments)
     if bool(args.repo) == bool(args.bare):
         raise argparse.ArgumentTypeError(

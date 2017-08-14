@@ -1043,6 +1043,9 @@ class FakeArgs(object):
     timeout = 0
     upload = UPLOAD
     json = False
+    raw_env = False
+    jobs_dir = ''
+    scenarios_dir = ''
 
     def __init__(self, **kw):
         self.branch = BRANCH
@@ -1506,7 +1509,7 @@ class JobTest(unittest.TestCase):
     def jobs(self):
         """[(job, job_path)] sequence"""
         for path, _, filenames in os.walk(
-                os.path.dirname(bootstrap.job_script(JOB, False)[0])):
+                os.path.dirname(bootstrap.job_script(JOB, False, '', '')[0])):
             for job in [f for f in filenames if f not in self.excludes]:
                 job_path = os.path.join(path, job)
                 yield job, job_path
@@ -1802,20 +1805,20 @@ class JobTest(unittest.TestCase):
                 modern = use_json(name)
             else:
                 modern = use_json
-            cmd = bootstrap.job_script(real_job.get('job-name'), modern)
+            cmd = bootstrap.job_script(real_job.get('job-name'), modern, '', '')
             path = cmd[0]
             args = cmd[1:]
             self.assertTrue(os.path.isfile(path), (name, path))
             if modern:
                 self.assertTrue(all(isinstance(a, basestring) for a in args), args)
                 # Ensure the .sh script isn't there
-                other = bootstrap.job_script(real_job.get('job-name'), False)
+                other = bootstrap.job_script(real_job.get('job-name'), False, '', '')
                 self.assertFalse(os.path.isfile(other[0]), name)
             else:
                 self.assertEquals(1, len(cmd))
                 # Ensure the job isn't in the json
                 with self.assertRaises(KeyError):
-                    bootstrap.job_script(real_job.get('job-name'), True)
+                    bootstrap.job_script(real_job.get('job-name'), True, '', '')
                     self.fail(name)
             for key, value in real_job.items():
                 if not isinstance(value, (basestring, int)):
