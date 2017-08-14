@@ -15090,7 +15090,7 @@ periodics:
   agent: kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bigquery:0.1
+    - image: gcr.io/k8s-testimages/bigquery:0.2
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
         value: /etc/service-account/service-account.json
