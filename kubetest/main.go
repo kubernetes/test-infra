@@ -726,7 +726,7 @@ func prepare(o *options) error {
 	}
 
 	switch o.provider {
-	case "gce", "gke", "kubemark":
+	case "gce", "gke", "kubemark", "kubernetes-anywhere":
 		if err := prepareGcp(o); err != nil {
 			return err
 		}
