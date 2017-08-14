@@ -133,7 +133,6 @@ class BuildHandler(view_base.BaseHandler):
     def get(self, prefix, job, build):
         # pylint: disable=too-many-locals
         job_dir = '/%s/%s/' % (prefix, job)
-        testgrid_query = testgrid.path_to_query(job_dir)
         build_dir = job_dir + build
         details = build_details(build_dir)
         if not details:
@@ -173,8 +172,7 @@ class BuildHandler(view_base.BaseHandler):
             commit=commit, started=started, finished=finished,
             failures=failures, build_log=build_log, build_log_src=build_log_src,
             issues=issues,
-            pr_path=pr_path, pr=pr, pr_digest=pr_digest,
-            testgrid_query=testgrid_query))
+            pr_path=pr_path, pr=pr, pr_digest=pr_digest))
 
 
 def get_build_numbers(job_dir, before, indirect):
@@ -264,12 +262,10 @@ class BuildListHandler(view_base.BaseHandler):
     """Show a list of Builds for a Job."""
     def get(self, prefix, job):
         job_dir = '/%s/%s/' % (prefix, job)
-        testgrid_query = testgrid.path_to_query(job_dir)
         before = self.request.get('before')
         builds = build_list(job_dir, before)
         self.render('build_list.html',
                     dict(job=job, job_dir=job_dir,
-                         testgrid_query=testgrid_query,
                          builds=builds, before=before))
 
 
