@@ -138,7 +138,7 @@ allow time for `--down` to clean up.
 The `--check-leaked-resources` option tells kubetest to look for any extra `GCP`
 resources after tearing down the cluster.
 
-The expectation is that any resources created by kubenetes will be cleaned up
+The expectation is that any resources created by kubernetes will be cleaned up
 during cluster teardown.
 
 This logic may be buggy so this options takes a snapshot of the resources at
@@ -166,7 +166,7 @@ tests.
 
 Tests can use `--skew` and `--upgrade_args` if they provided multiple
 `--extract` flags (or manually created a `kubernetes/kubernetes_skew` directory
-as a sibling to `kubernetes/kuberentes`. This will cause tests to run from the
+as a sibling to `kubernetes/kubernetes`. This will cause tests to run from the
 skew directory, potentially to upgrade/downgrade kubernetes to another version.
 
 [bootstrap.py]: /jenkins/bootstrap.py
