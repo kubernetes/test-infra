@@ -22,5 +22,4 @@ git clone https://github.com/kubernetes/test-infra
     --job=${JOB_NAME} \
     --service-account=${GOOGLE_APPLICATION_CREDENTIALS} \
     --upload='gs://kubernetes-jenkins/logs' \
-    --json=1 \
     "$@"

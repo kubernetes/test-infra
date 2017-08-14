@@ -9782,6 +9782,33 @@
       "sig-testing"
     ]
   },
+  "fake-branch": {
+    "args": [
+      "./fake/fake-branch.sh"
+    ],
+    "scenario": "execute",
+    "sigOwners": [
+      "sig-testing"
+    ]
+  },
+  "fake-failure": {
+    "args": [
+      "exit(1)"
+    ],
+    "scenario": "execute",
+    "sigOwners": [
+      "sig-testing"
+    ]
+  },
+  "fake-pr": {
+    "args": [
+      "./fake/fake-pr.sh"
+    ],
+    "scenario": "execute",
+    "sigOwners": [
+      "sig-testing"
+    ]
+  },
   "maintenance-ci-aws-janitor": {
     "args": [
       "--aws-image=gcr.io/k8s-test-infra-aws/aws-janitor",
@@ -10323,6 +10350,12 @@
     "args": [
       "./verify/verify-govet.sh"
     ],
+    "scenario": "execute",
+    "sigOwners": [
+      "sig-testing"
+    ]
+  },
+  "random_job": {
     "scenario": "execute",
     "sigOwners": [
       "sig-testing"

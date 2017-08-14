@@ -1232,6 +1232,8 @@ class IntegrationTest(unittest.TestCase):
         subprocess.check_call(['git', 'config', 'user.email', 'foo@bar.baz'])
         subprocess.check_call(['touch', self.MASTER])
         subprocess.check_call(['git', 'add', self.MASTER])
+        subprocess.check_call(['cp', '-r', bootstrap.test_infra('jenkins/fake'), fakerepo])
+        subprocess.check_call(['git', 'add', 'fake'])
         subprocess.check_call(['git', 'commit', '-m', 'Initial commit'])
         subprocess.check_call(['git', 'checkout', 'master'])
 
@@ -1354,6 +1356,7 @@ class IntegrationTest(unittest.TestCase):
         os.chdir('/tmp')
         pull = ','.join(refs)
         print '--pull', pull
+        subprocess.check_call(['ls'])
         test_bootstrap(
             job='fake-pr',
             repo=self.REPO,
@@ -1386,7 +1389,7 @@ class IntegrationTest(unittest.TestCase):
                         root=self.root_workspace)
 
     def test_job_missing(self):
-        with self.assertRaises(OSError):
+        with self.assertRaises(KeyError):
             test_bootstrap(
                 job='this-job-no-exists',
                 repo=self.REPO,
@@ -1426,22 +1429,6 @@ class IntegrationTest(unittest.TestCase):
 
 
 class ParseArgsTest(unittest.TestCase):
-    def test_json_missing(self):
-        args = bootstrap.parse_args(['--bare', '--job=j'])
-        self.assertFalse(args.json, args)
-
-    def test_json_onlyflag(self):
-        args = bootstrap.parse_args(['--json', '--bare', '--job=j'])
-        self.assertTrue(args.json, args)
-
-    def test_json_nonzero(self):
-        args = bootstrap.parse_args(['--json=1', '--bare', '--job=j'])
-        self.assertTrue(args.json, args)
-
-    def test_json_zero(self):
-        args = bootstrap.parse_args(['--json=0', '--bare', '--job=j'])
-        self.assertFalse(args.json, args)
-
     def test_barerepo_both(self):
         with self.assertRaises(argparse.ArgumentTypeError):
             bootstrap.parse_args(['--bare', '--repo=hello', '--job=j'])
@@ -1505,8 +1492,7 @@ class JobTest(unittest.TestCase):
     @property
     def jobs(self):
         """[(job, job_path)] sequence"""
-        for path, _, filenames in os.walk(
-                os.path.dirname(bootstrap.job_script(JOB, False)[0])):
+        for path, _, filenames in os.walk(bootstrap.test_infra('jobs')):
             for job in [f for f in filenames if f not in self.excludes]:
                 job_path = os.path.join(path, job)
                 yield job, job_path
@@ -1520,7 +1506,7 @@ class JobTest(unittest.TestCase):
             self.assertGreater(job['timeout'], 0)
             return job_name
 
-        self.check_bootstrap_yaml('job-configs/bootstrap-maintenance.yaml', check, use_json=True)
+        self.check_bootstrap_yaml('job-configs/bootstrap-maintenance.yaml', check)
 
     def test_bootstrap_maintenance_ci(self):
         def check(job, name):
@@ -1533,8 +1519,8 @@ class JobTest(unittest.TestCase):
             self.assertGreater(job['timeout'], 0)
             return job_name
 
-        self.check_bootstrap_yaml('job-configs/kubernetes-jenkins/bootstrap-maintenance-ci.yaml',
-                                  check, use_json=True)
+        self.check_bootstrap_yaml(
+            'job-configs/kubernetes-jenkins/bootstrap-maintenance-ci.yaml', check)
 
     def test_bootstrap_maintenance_pull(self):
         def check(job, name):
@@ -1548,8 +1534,7 @@ class JobTest(unittest.TestCase):
             return job_name
 
         self.check_bootstrap_yaml(
-            'job-configs/kubernetes-jenkins-pull/bootstrap-maintenance-pull.yaml',
-            check, use_json=True)
+            'job-configs/kubernetes-jenkins-pull/bootstrap-maintenance-pull.yaml', check)
 
     def test_bootstrap_pull_json_yaml(self):
         def check(job, name):
@@ -1563,8 +1548,7 @@ class JobTest(unittest.TestCase):
             return job_name
 
         self.check_bootstrap_yaml(
-            'job-configs/kubernetes-jenkins-pull/bootstrap-pull-json.yaml',
-            check, use_json=True)
+            'job-configs/kubernetes-jenkins-pull/bootstrap-pull-json.yaml', check)
 
     def test_bootstrap_security_pull(self):
         def check(job, name):
@@ -1578,8 +1562,7 @@ class JobTest(unittest.TestCase):
             return job_name
 
         self.check_bootstrap_yaml(
-            'job-configs/kubernetes-jenkins-pull/bootstrap-security-pull.yaml',
-            check, use_json=True)
+            'job-configs/kubernetes-jenkins-pull/bootstrap-security-pull.yaml', check)
 
     def test_bootstrap_security_match(self):
         json_jobs = self.load_bootstrap_yaml(
@@ -1609,7 +1592,7 @@ class JobTest(unittest.TestCase):
 
         self.check_bootstrap_yaml(
             'job-configs/kubernetes-jenkins/bootstrap-ci.yaml',
-            check, use_json=True)
+            check)
 
     def test_bootstrap_ci_commit_yaml(self):
         def check(job, name):
@@ -1626,7 +1609,7 @@ class JobTest(unittest.TestCase):
 
         self.check_bootstrap_yaml(
             'job-configs/kubernetes-jenkins/bootstrap-ci-commit.yaml',
-            check, use_json=True)
+            check)
 
     def test_bootstrap_ci_repo_yaml(self):
         def check(job, name):
@@ -1642,7 +1625,7 @@ class JobTest(unittest.TestCase):
 
         self.check_bootstrap_yaml(
             'job-configs/kubernetes-jenkins/bootstrap-ci-repo.yaml',
-            check, use_json=True)
+            check)
 
     def test_bootstrap_ci_soak_yaml(self):
         def check(job, name):
@@ -1661,7 +1644,7 @@ class JobTest(unittest.TestCase):
 
         self.check_bootstrap_yaml(
             'job-configs/kubernetes-jenkins/bootstrap-ci-soak.yaml',
-            check, use_json=True)
+            check)
 
     def test_bootstrap_ci_dockerpush(self):
         def check(job, name):
@@ -1676,7 +1659,7 @@ class JobTest(unittest.TestCase):
 
         self.check_bootstrap_yaml(
             'job-configs/kubernetes-jenkins/bootstrap-ci-dockerpush.yaml',
-            check, use_json=True)
+            check)
 
     def check_job_template(self, tmpl):
         builders = tmpl.get('builders')
@@ -1795,28 +1778,10 @@ class JobTest(unittest.TestCase):
                 self.realjobs[real_name] = real_job
         return real_jobs
 
-    def check_bootstrap_yaml(self, path, check, use_json=False):
+    def check_bootstrap_yaml(self, path, check):
         for name, real_job in self.load_bootstrap_yaml(path).iteritems():
             # Things to check on all bootstrap jobs
-            if callable(use_json):  # TODO(fejta): gross, but temporary?
-                modern = use_json(name)
-            else:
-                modern = use_json
-            cmd = bootstrap.job_script(real_job.get('job-name'), modern)
-            path = cmd[0]
-            args = cmd[1:]
-            self.assertTrue(os.path.isfile(path), (name, path))
-            if modern:
-                self.assertTrue(all(isinstance(a, basestring) for a in args), args)
-                # Ensure the .sh script isn't there
-                other = bootstrap.job_script(real_job.get('job-name'), False)
-                self.assertFalse(os.path.isfile(other[0]), name)
-            else:
-                self.assertEquals(1, len(cmd))
-                # Ensure the job isn't in the json
-                with self.assertRaises(KeyError):
-                    bootstrap.job_script(real_job.get('job-name'), True)
-                    self.fail(name)
+
             for key, value in real_job.items():
                 if not isinstance(value, (basestring, int)):
                     self.fail('Jobs may not contain child objects %s: %s' % (
@@ -1885,7 +1850,7 @@ class JobTest(unittest.TestCase):
                     bad_jobs.add(job)
                 if '{rc}' in line:
                     bad_jobs.add(job)
-            self.assertFalse(job.endswith('.sh'))
+            self.assertFalse(job.endswith('.sh'), job)
             self.assertTrue(modern, job)
 
             realjob = self.get_real_bootstrap_job(job)
