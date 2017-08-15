@@ -259,6 +259,7 @@ func (c *Controller) syncJenkinsJob(pj kube.ProwJob, reports chan<- kube.ProwJob
 			Refs:    pj.Spec.Refs.String(),
 			BaseRef: pj.Spec.Refs.BaseRef,
 			BaseSHA: pj.Spec.Refs.BaseSHA,
+			UUID:    pj.Metadata.Name,
 		}
 		if len(pj.Spec.Refs.Pulls) == 1 {
 			br.Number = pj.Spec.Refs.Pulls[0].Number
@@ -318,7 +319,9 @@ func (c *Controller) syncJenkinsJob(pj kube.ProwJob, reports chan<- kube.ProwJob
 			pj.Status.State = kube.SuccessState
 			pj.Status.Description = "Jenkins job succeeded."
 			for _, nj := range pj.Spec.RunAfterSuccess {
-				if _, err := c.kc.CreateProwJob(NewProwJob(nj)); err != nil {
+				npj := NewProwJob(nj)
+				npj.Status.ParentUUID = pj.Metadata.Name
+				if _, err := c.kc.CreateProwJob(npj); err != nil {
 					return fmt.Errorf("error starting next prowjob: %v", err)
 				}
 			}
@@ -393,7 +396,9 @@ func (c *Controller) syncKubernetesJob(pj kube.ProwJob, pm map[string]kube.Pod, 
 		pj.Status.Description = "Job succeeded."
 		reports <- pj
 		for _, nj := range pj.Spec.RunAfterSuccess {
-			if _, err := c.kc.CreateProwJob(NewProwJob(nj)); err != nil {
+			npj := NewProwJob(nj)
+			npj.Status.ParentUUID = pj.Metadata.Name
+			if _, err := c.kc.CreateProwJob(npj); err != nil {
 				return fmt.Errorf("error starting next prowjob: %v", err)
 			}
 		}
@@ -441,6 +446,14 @@ func (c *Controller) startPod(pj kube.ProwJob) (string, string, error) {
 			kube.EnvVar{
 				Name:  "BUILD_NUMBER",
 				Value: buildID,
+			},
+			kube.EnvVar{
+				Name:  "UUID",
+				Value: pj.Metadata.Name,
+			},
+			kube.EnvVar{
+				Name:  "PARENT_UUID",
+				Value: pj.Status.ParentUUID,
 			},
 		)
 		if pj.Spec.Type == kube.PeriodicJob {

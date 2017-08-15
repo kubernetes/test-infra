@@ -106,7 +106,7 @@ type Heart struct {
 
 // SlackEvent is config for the slackevents plugin.
 // If a PR is pushed to any of the repos listed in the config
-// then sent message to the all the  slack channels listed if pusher is NOT in the whitelist.
+// then sent message to the all the slack channels listed if pusher is NOT in the whitelist.
 type SlackEvent struct {
 	// Repos is either of the form org/repos or just org.
 	Repos []string `json:"repos,omitempty"`
