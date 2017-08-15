@@ -86,7 +86,7 @@ func init() {
 
 func main() {
 	logrus.SetFormatter(&logrus.JSONFormatter{})
-	boskos := client.NewClient("Reaper", "http://boskos")
+	boskos := client.NewClient("Metrics", "http://boskos")
 	logrus.Infof("Initialzied boskos client!")
 
 	http.Handle("/prometheus", promhttp.Handler())
@@ -109,35 +109,38 @@ func main() {
 }
 
 func update(boskos *client.Client) error {
-	if gce, err := boskos.Metric("gce-project"); err != nil {
+	gce, err := boskos.Metric("gce-project")
+	if err != nil {
 		return fmt.Errorf("fail to get metric for gce-project : %v", err)
-	} else {
-		promMetrics.GceStats["free"].Set(float64(gce.Current["free"]))
-		promMetrics.GceStats["busy"].Set(float64(gce.Current["busy"]))
-		promMetrics.GceStats["dirty"].Set(float64(gce.Current["dirty"]))
-		promMetrics.GceStats["cleaning"].Set(float64(gce.Current["cleaning"]))
 	}
 
-	if gke, err := boskos.Metric("gke-project"); err != nil {
+	promMetrics.GceStats["free"].Set(float64(gce.Current["free"]))
+	promMetrics.GceStats["busy"].Set(float64(gce.Current["busy"]))
+	promMetrics.GceStats["dirty"].Set(float64(gce.Current["dirty"]))
+	promMetrics.GceStats["cleaning"].Set(float64(gce.Current["cleaning"]))
+
+	gke, err := boskos.Metric("gke-project")
+	if err != nil {
 		return fmt.Errorf("fail to get metric for gke-project : %v", err)
-	} else {
-		promMetrics.GkeStats["free"].Set(float64(gke.Current["free"]))
-		promMetrics.GkeStats["busy"].Set(float64(gke.Current["busy"]))
-		promMetrics.GkeStats["dirty"].Set(float64(gke.Current["dirty"]))
-		promMetrics.GkeStats["cleaning"].Set(float64(gke.Current["cleaning"]))
 	}
+
+	promMetrics.GkeStats["free"].Set(float64(gke.Current["free"]))
+	promMetrics.GkeStats["busy"].Set(float64(gke.Current["busy"]))
+	promMetrics.GkeStats["dirty"].Set(float64(gke.Current["dirty"]))
+	promMetrics.GkeStats["cleaning"].Set(float64(gke.Current["cleaning"]))
 
 	return nil
 }
 
-//  handleMetric: Handler for /metric
+//  handleMetric: Handler for /
 //  Method: GET
 func handleMetric(boskos *client.Client) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
-		logrus.WithField("handler", "handleMetric").Infof("From %v", req.RemoteAddr)
+		log := logrus.WithField("handler", "handleMetric")
+		log.Infof("From %v", req.RemoteAddr)
 
 		if req.Method != "GET" {
-			logrus.Warning("[BadRequest]method %v, expect GET", req.Method)
+			log.Warning("[BadRequest]method %v, expect GET", req.Method)
 			http.Error(res, "only accepts GET request", http.StatusMethodNotAllowed)
 			return
 		}
@@ -145,27 +148,27 @@ func handleMetric(boskos *client.Client) http.HandlerFunc {
 		rtype := req.URL.Query().Get("type")
 		if rtype == "" {
 			msg := "type must be set in the request."
-			logrus.Warning(msg)
+			log.Warning(msg)
 			http.Error(res, msg, http.StatusBadRequest)
 			return
 		}
 
-		logrus.Infof("Request for metric %v", rtype)
+		log.Infof("Request for metric %v", rtype)
 
 		metric, err := boskos.Metric(rtype)
 		if err != nil {
-			logrus.WithError(err).Errorf("Fail to get metic for %v", rtype)
+			log.WithError(err).Errorf("Fail to get metic for %v", rtype)
 			http.Error(res, err.Error(), http.StatusNotFound)
 			return
 		}
 
 		metricJSON, err := json.Marshal(metric)
 		if err != nil {
-			logrus.WithError(err).Errorf("json.Marshal failed: %v", metricJSON)
+			log.WithError(err).Errorf("json.Marshal failed: %v", metricJSON)
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		logrus.Infof("Metric query for %v: %v", rtype, string(metricJSON))
+		log.Infof("Metric query for %v: %v", rtype, string(metricJSON))
 		fmt.Fprint(res, string(metricJSON))
 	}
 }

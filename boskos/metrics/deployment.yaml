@@ -25,26 +25,28 @@ spec:
     protocol: TCP
     port: 80
     targetPort: 8080
+  loadBalancerIP: 104.197.27.114
+  type: LoadBalancer
 ---
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: boskos-metric
+  name: boskos-metrics
   labels:
-    app: boskos-metric
+    app: boskos-metrics
   namespace: test-pods
 spec:
   replicas: 1
   template:
     metadata:
       labels:
-        app: boskos-metric
+        app: boskos-metrics
       namespace: test-pods
     spec:
       terminationGracePeriodSeconds: 30
       containers:
-      - name: boskos
-        image: gcr.io/k8s-testimages/metrics:v20170814-7813e771
+      - name: metrics
+        image: gcr.io/k8s-testimages/metrics:v20170815-83a7595f
         ports:
           - containerPort: 8080
             protocol: TCP
