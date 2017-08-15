@@ -45,13 +45,14 @@ jqfilter: |
       failing_days: (.broken_days|tonumber)
   }})] | add
 
-jqmeasurements: |
-  [(.[] | {
-    measurement: "failures",
-    tags: {
-      job: (.job)
-    },
-    fields: {
-      job: (.job),
-      failing_days: (.broken_days|tonumber)
-  }})]
+measurements:
+  jq: |
+    [(.[] | {
+      measurement: "failures",
+      tags: {
+        job: (.job)
+      },
+      fields: {
+        job: (.job),
+        failing_days: (.broken_days|tonumber)
+    }})]
