@@ -82,6 +82,17 @@ span.time {
     font-weight: lighter;
     font-family: monospace;
 }
+span.inset-expand {
+    float: left;
+    color: #777;
+    text-decoration: underline;
+}
+.hidden {
+    display: none;
+}
+span.expand:hover {
+    cursor: pointer;
+}
 a.anchor, pre.error>a {
     color: inherit;
 }

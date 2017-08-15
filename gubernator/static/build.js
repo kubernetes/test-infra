@@ -105,6 +105,15 @@ function expand_all(btn) {
 	btn.remove();
 }
 
+function expand_element(els) {
+	var parent = els[0].parentElement;
+	var hidden = parent.querySelectorAll(".hidden");
+	for (var i = 0; i < hidden.length; i++) {
+		hidden[i].classList.toggle("hidden");
+	}
+	els[0].classList.add("hidden");
+}
+
 /* given a string containing ansi formatting directives, return a new one
    with designated regions of text marked with the appropriate color directives,
    and with all unknown directives stripped */
@@ -149,13 +158,30 @@ function fix_escape_codes() {
 	}
 }
 
+/* Remove unicode sequences caused by colorized output in junit.xml */
+function remove_unicode_escape_codes() {
+	var errors = document.querySelectorAll('pre.error')
+	for (var i = 0; i < errors.length; i++) {
+		var orig = errors[i].innerHTML
+		var newer = orig.replace(/\ufffd\[\d+m/g, "")
+		if (orig !== newer) {
+			errors[i].innerHTML = newer;
+		}
+	}
+}
+
 function init() {
 	fix_timestamps();
 	fix_escape_codes();
+	remove_unicode_escape_codes();
 	document.body.onclick = function(evt) {
 		var target = evt.target;
-		if (target.nodeName === 'SPAN' && target.className === 'skip') {
+		if (target.nodeName === 'SPAN' && target.classList.contains('skip')) {
 			expand_skipped([target]);
+			evt.preventDefault();
+		}
+		if (target.nodeName === 'SPAN' && target.classList.contains('expand')) {
+			expand_element([target]);
 			evt.preventDefault();
 		}
 	}
