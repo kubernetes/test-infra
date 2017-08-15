@@ -44,9 +44,10 @@ var AssociatedIssueRegex = regexp.MustCompile(`(?:kubernetes/[^/]+/issues/|#)(\d
 // ApprovalHandler will try to add "approved" label once
 // all files of change has been approved by approvers.
 type ApprovalHandler struct {
-	botName       string
-	features      *features.Features
-	issueRequired bool
+	botName              string
+	features             *features.Features
+	issueRequired        bool
+	implicitSelfApproval bool
 }
 
 func init() {
@@ -76,6 +77,8 @@ func (*ApprovalHandler) EachLoop() error { return nil }
 func (h *ApprovalHandler) RegisterOptions(opts *options.Options) sets.String {
 	opts.RegisterBool(&h.issueRequired, "approval-requires-issue", false, "[approval-handler] flag indicating if all "+
 		"PRs must be associated with an issue in order to get approved label")
+	opts.RegisterBool(&h.implicitSelfApproval, "implicit-self-approval", false, "[approval-handler] flag indicating if "+
+		"a PR author implicitly approves their own PR")
 	return nil
 }
 
@@ -149,14 +152,16 @@ func (h *ApprovalHandler) Munge(obj *github.MungeObject) {
 	approversHandler.AssociatedIssue = findAssociatedIssue(obj.Issue.Body)
 	approversHandler.RequireIssue = h.issueRequired
 	addApprovers(&approversHandler, approveComments)
-	// Author implicitly approves their own PR
-	if obj.Issue.User != nil && obj.Issue.User.Login != nil {
-		url := ""
-		if obj.Issue.HTMLURL != nil {
-			// Append extra # so that it doesn't reload the page.
-			url = *obj.Issue.HTMLURL + "#"
+	// Author implicitly approves their own PR if config allows it
+	if h.implicitSelfApproval {
+		if obj.Issue.User != nil && obj.Issue.User.Login != nil {
+			url := ""
+			if obj.Issue.HTMLURL != nil {
+				// Append extra # so that it doesn't reload the page.
+				url = *obj.Issue.HTMLURL + "#"
+			}
+			approversHandler.AddAuthorSelfApprover(*obj.Issue.User.Login, url)
 		}
-		approversHandler.AddAuthorSelfApprover(*obj.Issue.User.Login, url)
 	}
 
 	for _, user := range obj.Issue.Assignees {

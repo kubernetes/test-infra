@@ -32,6 +32,7 @@ test-owners-csv: /gitrepos/kubernetes/test/test_owners.csv
 triage-window: 1
 triage-count: 10
 approval-requires-issue: true
+implicit-self-approval: true
 flakyjob-count: 3
 number-of-old-test-results: 5
 generated-files-config: .generated-files
