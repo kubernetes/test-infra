@@ -28,8 +28,11 @@ import testgrid
 import view_base
 
 
-def parse_junit(xml, filename):
-    """Generate failed tests as a series of (name, duration, text, filename, output) tuples."""
+def parse_junit(xml, filename, stats):
+    """
+    Generate failed tests as a series of (name, duration, text, filename, output) tuples and
+    calculate stats on test cases into stats.
+    """
     # pylint: disable=too-many-branches
     try:
         tree = ET.fromstring(xml)
@@ -42,6 +45,7 @@ def parse_junit(xml, filename):
             return
     if tree.tag == 'testsuite':
         for child in tree:
+            testcase_stats(stats, child)
             name = child.attrib['name']
             time = float(child.attrib['time'])
             out = []
@@ -55,6 +59,7 @@ def parse_junit(xml, filename):
         for testsuite in tree:
             suite_name = testsuite.attrib['name']
             for child in testsuite.findall('testcase'):
+                testcase_stats(stats, child)
                 name = '%s %s' % (suite_name, child.attrib['name'])
                 time = float(child.attrib['time'])
                 out = []
@@ -66,6 +71,17 @@ def parse_junit(xml, filename):
                     yield name, time, param.text, filename, '\n'.join(out)
     else:
         logging.error('unable to find failures, unexpected tag %s', tree.tag)
+
+
+def testcase_stats(stats, child):
+    """Given a testcase XML tag, update the stats map"""
+    stats['testcases'] += 1
+    if len(child.findall('failure')) > 0:
+        stats['failures'] += 1
+    elif len(child.findall('skipped')) > 0:
+        stats['skipped'] += 1
+    else:
+        stats['successes'] += 1
 
 
 @view_base.memcache_memoize('build-log-parsed://', expires=60*60*4)
@@ -119,14 +135,15 @@ def build_details(build_dir):
     for f in junit_paths:
         junit_futures[gcs_async.read(f)] = f
 
+    stats = {'testcases': 0, 'successes': 0, 'failures': 0, 'skipped': 0}
     for future in junit_futures:
         junit = future.get_result()
         if not junit:
             continue
-        failures.extend(parse_junit(junit, junit_futures[future]))
+        failures.extend(parse_junit(junit, junit_futures[future], stats))
     failures.sort()
 
-    return started, finished, failures
+    return started, finished, failures, stats
 
 
 def parse_pr_path(prefix):
@@ -154,7 +171,7 @@ class BuildHandler(view_base.BaseHandler):
                 dict(build_dir=build_dir, job_dir=job_dir, job=job, build=build))
             self.response.set_status(404)
             return
-        started, finished, failures = details
+        started, finished, failures, stats = details
 
         build_log = ''
         build_log_src = None
@@ -182,7 +199,8 @@ class BuildHandler(view_base.BaseHandler):
         self.render('build.html', dict(
             job_dir=job_dir, build_dir=build_dir, job=job, build=build,
             commit=commit, started=started, finished=finished,
-            failures=failures, build_log=build_log, build_log_src=build_log_src,
+            failures=failures, stats=stats,
+            build_log=build_log, build_log_src=build_log_src,
             issues=issues,
             pr_path=pr_path, pr=pr, pr_digest=pr_digest,
             testgrid_query=testgrid_query))
