@@ -538,6 +538,11 @@ class GSUtilTest(unittest.TestCase):
             for a in fake.calls[0][0]))
         self.assertIn('stdin', fake.calls[0][2])  # kwargs
 
+    def test_upload_text_metalink(self):
+        fake = FakeSubprocess()
+        gsutil = bootstrap.GSUtil(fake)
+        gsutil.upload_text('txt', 'path', additional_headers=['foo: bar'])
+        self.assertTrue(any('foo: bar' in a for a in fake.calls[0][0]))
 
 class FakeGSUtil(object):
     generation = 123

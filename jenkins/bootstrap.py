@@ -283,7 +283,11 @@ def start(gsutil, paths, stamp, node_name, version, repos):
     gsutil.upload_json(paths.started, data)
     # Upload a link to the build path in the directory
     if paths.pr_build_link:
-        gsutil.upload_text(paths.pr_build_link, paths.pr_path)
+        gsutil.upload_text(
+            paths.pr_build_link,
+            paths.pr_path,
+            additional_headers=['x-goog-meta-link: %s ' % paths.pr_path]
+        )
 
 
 class GSUtil(object):
@@ -320,11 +324,13 @@ class GSUtil(object):
         cmd = [self.gsutil, '-q', 'cp', '-Z', orig, dest]
         self.call(cmd)
 
-    def upload_text(self, path, txt, cached=True):
+    def upload_text(self, path, txt, additional_headers=None, cached=True):
         """Copy the text to path, optionally disabling caching."""
         headers = ['-h', 'Content-Type:text/plain']
         if not cached:
             headers += ['-h', 'Cache-Control:private, max-age=0, no-transform']
+        if additional_headers:
+            headers += additional_headers
         cmd = [self.gsutil, '-q'] + headers + ['cp', '-', path]
         self.call(cmd, stdin=txt)
 
