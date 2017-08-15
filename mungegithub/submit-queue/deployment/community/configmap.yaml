@@ -2,7 +2,11 @@
 http-cache-dir: /cache/httpcache
 organization: kubernetes
 project: community
-pr-mungers: size, submit-queue,needs-rebase, sig-mention-handler, 
+# Make sure approval-handler and blunderbuss run before submit-queue.
+# Otherwise it's going to take an extra-cycle to detect the label change.
+# Run blunderbuss before approval-handler, so that we can suggest approvers
+# based on assigned reviewer.
+pr-mungers: blunderbuss, size, submit-queue, needs-rebase, sig-mention-handler, lgtm-after-commit, comment-deleter
 state: open
 token-file: /etc/secret-volume/token
 period: 5m
@@ -19,9 +23,13 @@ protected-branches: "master"
 nonblocking-jenkins-jobs: ""
 do-not-merge-milestones: ""
 admin-port: 9999
-context-url: ""
+context-url: https://community.submit-queue.k8s.io
+gate-cla: true
+gate-approved: false
 
 # munger specific options.
 # label-file: "/gitrepos/community/labels.yaml"
 
-gate-cla: true
+use-reviewers: true
+
+generated-files-config: .generated_files
