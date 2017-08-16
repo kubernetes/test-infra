@@ -83,13 +83,13 @@ span.time {
 span.inset-expand {
     float: left;
     color: #777;
-    text-decoration: underline;
 }
 .hidden {
     display: none;
 }
 .expand {
     cursor: pointer;
+    text-decoration: underline;
 }
 a.anchor, pre.error>a {
     color: inherit;
@@ -163,6 +163,13 @@ h4.pr-section {
 .text-success { color: #55a532; }
 .text-pending { color: #cea61b; }
 .text-failure { color: #bd2c00; }
+
+.testlist {
+    margin-left: 2em;
+}
+.testlist p {
+    margin: 0;
+}
 
 /* ansi colors from https://en.wikipedia.org/wiki/ANSI_escape_code#Colors */
 .ansi-0 { color: #000000; }  /* Black */

@@ -28,25 +28,17 @@ import testgrid
 import view_base
 
 
-def parse_junit(xml, filename, stats):
-    """
-    Generate failed tests as a series of (name, duration, text, filename, output) tuples and
-    calculate stats on test cases into stats.
-    """
-    # pylint: disable=too-many-branches
-    try:
-        tree = ET.fromstring(xml)
-    except ET.ParseError, e:
-        logging.exception('parse_junit failed for %s', filename)
-        try:
-            tree = ET.fromstring(re.sub(r'[\x00\x80-\xFF]+', '?', xml))
-        except ET.ParseError, e:
-            yield 'Gubernator Internal Fatal XML Parse Error', 0.0, str(e), filename
-            return
-    if tree.tag == 'testsuite':
-        for child in tree:
-            testcase_stats(stats, child)
-            name = child.attrib['name']
+class JUnitParser(object):
+    def __init__(self):
+        self.skipped = []
+        self.passed = []
+        self.failed = []
+
+    def handle_test(self, child, filename, name_prefix=''):
+        name = name_prefix + child.attrib['name']
+        if child.find('skipped') is not None:
+            self.skipped.append(name)
+        elif child.find('failure') is not None:
             time = float(child.attrib['time'])
             out = []
             for param in child.findall('system-out'):
@@ -54,34 +46,43 @@ def parse_junit(xml, filename, stats):
             for param in child.findall('system-err'):
                 out.append(param.text)
             for param in child.findall('failure'):
-                yield name, time, param.text, filename, '\n'.join(out)
-    elif tree.tag == 'testsuites':
-        for testsuite in tree:
-            suite_name = testsuite.attrib['name']
-            for child in testsuite.findall('testcase'):
-                testcase_stats(stats, child)
-                name = '%s %s' % (suite_name, child.attrib['name'])
-                time = float(child.attrib['time'])
-                out = []
-                for param in child.findall('system-out'):
-                    out.append(param.text)
-                for param in child.findall('system-err'):
-                    out.append(param.text)
-                for param in child.findall('failure'):
-                    yield name, time, param.text, filename, '\n'.join(out)
-    else:
-        logging.error('unable to find failures, unexpected tag %s', tree.tag)
+                self.failed.append((name, time, param.text, filename, '\n'.join(out)))
+        else:
+            self.passed.append(name)
 
+    def parse_xml(self, xml, filename):
+        if not xml:
+            return  # can't extract results from nothing!
+        try:
+            tree = ET.fromstring(xml)
+        except ET.ParseError, e:
+            logging.exception('parse_junit failed for %s', filename)
+            try:
+                tree = ET.fromstring(re.sub(r'[\x00\x80-\xFF]+', '?', xml))
+            except ET.ParseError, e:
+                self.failed.append(
+                    ('Gubernator Internal Fatal XML Parse Error', 0.0, str(e), filename, ''))
+                return
+        if tree.tag == 'testsuite':
+            for child in tree:
+                self.handle_test(child, filename)
+        elif tree.tag == 'testsuites':
+            for testsuite in tree:
+                name_prefix = testsuite.attrib['name'] + ' '
+                for child in testsuite.findall('testcase'):
+                    self.handle_test(child, filename, name_prefix)
+        else:
+            logging.error('unable to find failures, unexpected tag %s', tree.tag)
 
-def testcase_stats(stats, child):
-    """Given a testcase XML tag, update the stats map"""
-    stats['testcases'] += 1
-    if len(child.findall('failure')) > 0:
-        stats['failures'] += 1
-    elif len(child.findall('skipped')) > 0:
-        stats['skipped'] += 1
-    else:
-        stats['successes'] += 1
+    def get_results(self):
+        self.failed.sort()
+        self.skipped.sort()
+        self.passed.sort()
+        return {
+            'failed': self.failed,
+            'skipped': self.skipped,
+            'passed': self.passed,
+        }
 
 
 @view_base.memcache_memoize('build-log-parsed://', expires=60*60*4)
@@ -112,8 +113,10 @@ def build_details(build_dir):
     Returns:
         started: value from started.json {'version': ..., 'timestamp': ...}
         finished: value from finished.json {'timestamp': ..., 'result': ...}
-        failures: list of (name, duration, text) tuples
-        build_log: a highlighted portion of errors in the build log. May be None.
+        results: {total: int,
+                  failed: [(name, duration, text)...],
+                  skipped: [name...],
+                  passed: [name...]}
     """
     started_fut = gcs_async.read(build_dir + '/started.json')
     finished = gcs_async.read(build_dir + '/finished.json').get_result()
@@ -127,23 +130,15 @@ def build_details(build_dir):
     started = json.loads(started)
     finished = json.loads(finished)
 
-    failures = []
     junit_paths = [f.filename for f in view_base.gcs_ls('%s/artifacts' % build_dir)
                    if re.match(r'junit_.*\.xml', os.path.basename(f.filename))]
 
-    junit_futures = {}
-    for f in junit_paths:
-        junit_futures[gcs_async.read(f)] = f
+    junit_futures = {f: gcs_async.read(f) for f in junit_paths}
 
-    stats = {'testcases': 0, 'successes': 0, 'failures': 0, 'skipped': 0}
-    for future in junit_futures:
-        junit = future.get_result()
-        if not junit:
-            continue
-        failures.extend(parse_junit(junit, junit_futures[future], stats))
-    failures.sort()
-
-    return started, finished, failures, stats
+    parser = JUnitParser()
+    for path, future in junit_futures.iteritems():
+        parser.parse_xml(future.get_result(), path)
+    return started, finished, parser.get_results()
 
 
 def parse_pr_path(prefix):
@@ -171,12 +166,12 @@ class BuildHandler(view_base.BaseHandler):
                 dict(build_dir=build_dir, job_dir=job_dir, job=job, build=build))
             self.response.set_status(404)
             return
-        started, finished, failures, stats = details
+        started, finished, results = details
 
         build_log = ''
         build_log_src = None
         if 'log' in self.request.params or (not finished) or \
-            (finished and finished.get('result') != 'SUCCESS' and len(failures) == 0):
+            (finished and finished.get('result') != 'SUCCESS' and len(results['failed']) <= 1):
             build_log = get_build_log(build_dir)
             if not build_log:
                 build_log, build_log_src = get_running_build_log(job, build)
@@ -199,7 +194,7 @@ class BuildHandler(view_base.BaseHandler):
         self.render('build.html', dict(
             job_dir=job_dir, build_dir=build_dir, job=job, build=build,
             commit=commit, started=started, finished=finished,
-            failures=failures, stats=stats,
+            res=results,
             build_log=build_log, build_log_src=build_log_src,
             issues=issues,
             pr_path=pr_path, pr=pr, pr_digest=pr_digest,
