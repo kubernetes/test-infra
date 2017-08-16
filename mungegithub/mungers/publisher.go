@@ -115,6 +115,18 @@ func (p *PublisherMunger) Initialize(config *github.Config, features *features.F
 		publishScript: "/publish_scripts/publish_client_go.sh",
 	}
 
+	codeGenerator := repoRules{
+		dstRepo: "code-generator",
+		srcToDst: []branchRule{
+			{
+				// rule for the code-generator master branch
+				src: coordinate{repo: config.Project, branch: "master", dir: "staging/src/k8s.io/code-generator"},
+				dst: coordinate{repo: "code-generator", branch: "master", dir: "./"},
+			},
+		},
+		publishScript: "/publish_scripts/publish_code_generator.sh",
+	}
+
 	apimachinery := repoRules{
 		dstRepo: "apimachinery",
 		srcToDst: []branchRule{
@@ -248,7 +260,7 @@ func (p *PublisherMunger) Initialize(config *github.Config, features *features.F
 		publishScript: "/publish_scripts/publish_api.sh",
 	}
 	// NOTE: Order of the repos is sensitive!!! A dependent repo needs to be published first, so that other repos can vendor its latest revision.
-	p.reposRules = []repoRules{apimachinery, api, clientGo, apiserver, kubeAggregator, sampleAPIServer, apiExtensionsAPIServer}
+	p.reposRules = []repoRules{codeGenerator, apimachinery, api, clientGo, apiserver, kubeAggregator, sampleAPIServer, apiExtensionsAPIServer}
 	glog.Infof("publisher munger rules: %#v\n", p.reposRules)
 	p.features = features
 	p.githubConfig = config
