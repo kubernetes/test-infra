@@ -46,6 +46,7 @@ spec:
   tls:
   - hosts:
     - kubernetes.submit-queue.k8s.io
+    - community.submit-queue.k8s.io
     - contrib.submit-queue.k8s.io
     - docs.submit-queue.k8s.io
     - kops.submit-queue.k8s.io
