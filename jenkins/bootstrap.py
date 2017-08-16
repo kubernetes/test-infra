@@ -286,7 +286,7 @@ def start(gsutil, paths, stamp, node_name, version, repos):
         gsutil.upload_text(
             paths.pr_build_link,
             paths.pr_path,
-            additional_headers=['x-goog-meta-link: %s ' % paths.pr_path]
+            additional_headers=['-h', 'x-goog-meta-link: %s' % paths.pr_path]
         )
 
 
