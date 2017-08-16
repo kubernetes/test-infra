@@ -1484,9 +1484,11 @@ func (obj *MungeObject) SetStatus(state, url, description, statusContext string)
 	config := obj.config
 	status := &github.RepoStatus{
 		State:       &state,
-		TargetURL:   &url,
 		Description: &description,
 		Context:     &statusContext,
+	}
+	if len(url) > 0 {
+		status.URL = &url
 	}
 	pr, ok := obj.GetPR()
 	if !ok {
