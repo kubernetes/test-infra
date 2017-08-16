@@ -9989,7 +9989,6 @@
   },
   "pull-kubernetes-bazel": {
     "args": [
-      "--affected",
       "--build=//cmd/... //pkg/... //federation/... //plugin/... //third_party/... //examples/... //test/... //vendor/k8s.io/...",
       "--release=//build/release-tars",
       "--test=//cmd/... //pkg/... //federation/... //plugin/... //third_party/... //hack/... //hack:verify-all //vendor/k8s.io/...",
@@ -10310,9 +10309,10 @@
   },
   "pull-test-infra-bazel": {
     "args": [
-      "--affected",
+      "--build=//...",
       "--install=gubernator/test_requirements.txt",
-      "--install=verify/test_requirements.txt"
+      "--test=//... //verify:verify-all",
+      "--test-args=--test_output=errors"
     ],
     "scenario": "kubernetes_bazel",
     "sigOwners": [
