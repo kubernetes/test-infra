@@ -69,8 +69,6 @@ span.keyword {
 span.skip {
     color: #999;
     text-decoration: underline;
-}
-span.skip:hover {
     cursor: pointer;
 }
 span.inset-filename {
@@ -90,7 +88,7 @@ span.inset-expand {
 .hidden {
     display: none;
 }
-span.expand:hover {
+.expand {
     cursor: pointer;
 }
 a.anchor, pre.error>a {
