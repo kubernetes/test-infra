@@ -104,7 +104,7 @@ projects:
             metrics_path: /prometheus
             static_configs:
               - targets:
-                  - http://104.197.27.114
+                  - 104.197.27.114
   istio:
     repositories:
       istio/api: &transform-istio
