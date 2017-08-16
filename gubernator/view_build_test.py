@@ -32,13 +32,17 @@ write = gcs_async_test.write
 
 class ParseJunitTest(unittest.TestCase):
     @staticmethod
-    def parse(xml):
-        return list(view_build.parse_junit(xml, "fp"))
+    def parse(xml, stats=None):
+        if stats is None:
+            stats = {'testcases':0, 'successes':0, 'failures':0, 'skipped':0}
+        return list(view_build.parse_junit(xml, "fp", stats))
 
     def test_normal(self):
-        failures = self.parse(main_test.JUNIT_SUITE)
+        stats = {'testcases':0, 'successes':0, 'failures':0, 'skipped':0}
+        failures = self.parse(main_test.JUNIT_SUITE, stats)
         stack = '/go/src/k8s.io/kubernetes/test.go:123\nError Goes Here'
         self.assertEqual(failures, [('Third', 96.49, stack, "fp", "")])
+        self.assertEqual(stats, {'testcases':3, 'successes':1, 'failures':1, 'skipped':1})
 
     def test_testsuites(self):
         failures = self.parse('''

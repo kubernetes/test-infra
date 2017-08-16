@@ -26,6 +26,15 @@
 		% set result = finished['result'] if finished else 'Not Finished'
 		<tr><td>Result<td><span class="build-{{result | slugify}}">{{result}}</span>
 	% if started
+		% if finished
+			<tr><td>Tests<td>
+			% if stats['failures'] > 0
+				<span class="text-failure">{{stats['failures']}} failed</span>
+			% else
+				{{stats['failures']}} failed
+			% endif
+			/ {{stats['successes']}} succeeded / {{stats['skipped']}} skipped / {{stats['testcases']}} total
+		% endif
 		<tr><td>Started<td>{{started['timestamp']|timestamp}}
 		{% if finished %}<tr><td>Elapsed<td>{{(finished['timestamp']-started['timestamp'])|duration}}{% endif %}
 		<tr><td>Version<td><a href="https://github.com/kubernetes/kubernetes/commit/{{commit}}">{{started['version'] or finished['version']}}</a>
