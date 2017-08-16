@@ -100,6 +100,11 @@ projects:
             static_configs:
               - targets:
                   - submit-queue.k8s.io
+          - job_name: kubernetes-boskos
+            metrics_path: /prometheus
+            static_configs:
+              - targets:
+                  - http://104.197.27.114
   istio:
     repositories:
       istio/api: &transform-istio

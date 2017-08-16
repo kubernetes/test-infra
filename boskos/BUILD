@@ -46,6 +46,7 @@ filegroup(
         "//boskos/client:all-srcs",
         "//boskos/common:all-srcs",
         "//boskos/janitor:all-srcs",
+        "//boskos/metrics:all-srcs",
         "//boskos/ranch:all-srcs",
         "//boskos/reaper:all-srcs",
     ],
