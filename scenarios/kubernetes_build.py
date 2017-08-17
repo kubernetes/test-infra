@@ -89,9 +89,10 @@ def main(args):
     latest = build_tar.getmember("kubernetes/version").read().strip()
     gcs_build = 'gs://'+bucket+dest+latest
     # and then write it to GCS
-    gcs_shared = args.gcs_shared + os.getenv('PULL_REFS', '') + '/build-location.txt'
-    upload_string(gcs_shared, gcs_build)
-
+    pull_refs = os.getenv('PULL_REFS', '')
+    gcs_shared = args.gcs_shared + pull_refs + '/build-location.txt'
+    if pull_refs:
+        upload_string(gcs_shared, gcs_build)
 
 if __name__ == '__main__':
     PARSER = argparse.ArgumentParser(

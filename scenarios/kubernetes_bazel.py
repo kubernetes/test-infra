@@ -170,7 +170,8 @@ def main(args):
                 # (gs://<shared-bucket>/$PULL_REFS/bazel-build-location.txt)
                 pull_refs = os.getenv('PULL_REFS', '')
                 gcs_shared = args.gcs_shared + pull_refs + '/bazel-build-location.txt'
-                upload_string(gcs_shared, gcs_build)
+                if pull_refs:
+                    upload_string(gcs_shared, gcs_build)
             except subprocess.CalledProcessError as exp:
                 res = exp.returncode
 
