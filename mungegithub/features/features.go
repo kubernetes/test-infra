@@ -30,6 +30,7 @@ import (
 // not to try to use a feature which isn't 'active'
 type Features struct {
 	Repos  *RepoInfo
+	Server *ServerFeature
 	active []feature
 }
 
@@ -62,6 +63,8 @@ func (f *Features) Initialize(config *github.Config, requestedFeatures []string)
 		switch name {
 		case RepoFeatureName:
 			f.Repos = feat.(*RepoInfo)
+		case ServerFeatureName:
+			f.Server = feat.(*ServerFeature)
 		}
 	}
 	return nil

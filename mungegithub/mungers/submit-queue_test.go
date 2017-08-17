@@ -31,7 +31,7 @@ import (
 	utilclock "k8s.io/kubernetes/pkg/util/clock"
 
 	"k8s.io/contrib/test-utils/utils"
-	"k8s.io/test-infra/mungegithub/admin"
+	"k8s.io/test-infra/mungegithub/features"
 	github_util "k8s.io/test-infra/mungegithub/github"
 	github_test "k8s.io/test-infra/mungegithub/github/testing"
 	"k8s.io/test-infra/mungegithub/mungeopts"
@@ -39,6 +39,7 @@ import (
 	fake_e2e "k8s.io/test-infra/mungegithub/mungers/e2e/fake"
 	"k8s.io/test-infra/mungegithub/mungers/mungerutil"
 	"k8s.io/test-infra/mungegithub/options"
+	"k8s.io/test-infra/mungegithub/sharedmux"
 
 	"github.com/google/go-github/github"
 )
@@ -205,9 +206,15 @@ func getJUnit(testsNo int, failuresNo int) []byte {
 
 func getTestSQ(startThreads bool, config *github_util.Config, server *httptest.Server) *SubmitQueue {
 	// TODO: Remove this line when we fix the plumbing regarding the fake/real e2e tester.
-	admin.Mux = admin.NewConcurrentMux()
+	sharedmux.Admin = sharedmux.NewConcurrentMux(http.NewServeMux())
 	sq := new(SubmitQueue)
 	sq.opts = options.New()
+
+	feats := &features.Features{
+		Server: &features.ServerFeature{
+			Enabled: false,
+		},
+	}
 
 	sq.GateApproved = true
 	sq.GateCLA = true
@@ -216,8 +223,6 @@ func getTestSQ(startThreads bool, config *github_util.Config, server *httptest.S
 
 	mungeopts.RequiredContexts.Merge = []string{notRequiredReTestContext1, notRequiredReTestContext2}
 	mungeopts.RequiredContexts.Retest = []string{requiredReTestContext1, requiredReTestContext2}
-	mungeopts.Server.Address = ""
-	mungeopts.Server.WWWRoot = "www"
 	mungeopts.PRMaxWaitTime = 2 * time.Hour
 
 	sq.githubE2EQueue = map[int]*github_util.MungeObject{}
@@ -235,7 +240,7 @@ func getTestSQ(startThreads bool, config *github_util.Config, server *httptest.S
 	sq.e2e = &fake_e2e.FakeE2ETester{JobNames: sq.NonBlockingJobNames}
 
 	if startThreads {
-		sq.internalInitialize(config, nil, server.URL)
+		sq.internalInitialize(config, feats, server.URL)
 		sq.EachLoop()
 	}
 	return sq

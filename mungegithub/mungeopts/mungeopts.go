@@ -24,12 +24,6 @@ import (
 )
 
 var (
-	// Server holds the values of options used by mungers that serve web services.
-	Server struct {
-		Address string
-		WWWRoot string
-	}
-
 	// GCS holds the values of GCS options.
 	GCS struct {
 		BucketName string
@@ -59,10 +53,6 @@ var (
 // RegisterOptions registers options that may be used by any munger, feature, or report. It returns
 // any options that require a restart when changed.
 func RegisterOptions(opts *options.Options) sets.String {
-	// Options for mungers that run web servers.
-	opts.RegisterString(&Server.Address, "address", ":8080", "The address to listen on for HTTP Status")
-	opts.RegisterString(&Server.WWWRoot, "www", "www", "Path to static web files to serve from the webserver")
-
 	// GCS options:
 	opts.RegisterString(&GCS.BucketName, "gcs-bucket", "", "Name of GCS bucket.")
 	opts.RegisterString(&GCS.LogDir, "gcs-logs-dir", "", "Directory containing test logs.")
@@ -75,5 +65,5 @@ func RegisterOptions(opts *options.Options) sets.String {
 
 	opts.RegisterDuration(&PRMaxWaitTime, "pr-max-wait-time", 2*time.Hour, "Maximum time to wait for tests in a PR to start or finish")
 
-	return sets.NewString("address", "www")
+	return nil
 }

@@ -161,15 +161,19 @@ func main() {
 			if err := mungers.RegisterMungers(config.prMungers); err != nil {
 				glog.Fatalf("unable to find requested mungers: %v", err)
 			}
-			requestedFeatures := mungers.RequestedFeatures()
-			if err := config.Features.Initialize(&config.Config, requestedFeatures); err != nil {
+			// Include the server feature if webhooks are enabled.
+			requestedFeatures := sets.NewString(mungers.RequestedFeatures()...)
+			if config.webhookKeyFile != "" {
+				requestedFeatures = requestedFeatures.Union(sets.NewString(features.ServerFeatureName))
+			}
+			if err := config.Features.Initialize(&config.Config, requestedFeatures.List()); err != nil {
 				return err
 			}
 			if err := mungers.InitializeMungers(&config.Config, &config.Features); err != nil {
 				glog.Fatalf("unable to initialize mungers: %v", err)
 			}
 			if config.webhookKeyFile != "" {
-				config.HookHandler = github_util.NewWebHookAndListen(config.webhookKeyFile, mungeopts.Server.Address)
+				config.HookHandler = github_util.NewWebHookAndListen(config.webhookKeyFile, config.Features.Server)
 			}
 			return doMungers(config)
 		},

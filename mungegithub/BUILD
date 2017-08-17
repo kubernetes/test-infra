@@ -39,7 +39,6 @@ filegroup(
     name = "all-srcs",
     srcs = [
         ":package-srcs",
-        "//mungegithub/admin:all-srcs",
         "//mungegithub/example-one-off:all-srcs",
         "//mungegithub/features:all-srcs",
         "//mungegithub/github:all-srcs",
@@ -47,6 +46,7 @@ filegroup(
         "//mungegithub/mungers:all-srcs",
         "//mungegithub/options:all-srcs",
         "//mungegithub/reports:all-srcs",
+        "//mungegithub/sharedmux:all-srcs",
     ],
     tags = ["automanaged"],
 )

@@ -14,8 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package admin exists so all administrative actions have a place to install themselves.
-package admin
+package sharedmux
 
 import (
 	"fmt"
@@ -25,9 +24,9 @@ import (
 )
 
 var (
-	// Mux is the schelling point for those who want to provide admin
+	// Admin is the schelling point for those who want to provide admin
 	// actions and those who want to install the admin portal in some port.
-	Mux = NewConcurrentMux()
+	Admin = NewAdminMux()
 )
 
 // ConcurrentMux is safe to call HandleFunc on even after it's started serving
@@ -39,19 +38,23 @@ type ConcurrentMux struct {
 }
 
 // NewConcurrentMux constructs a mux.
-func NewConcurrentMux() *ConcurrentMux {
-	c := &ConcurrentMux{
-		mux: http.NewServeMux(),
+func NewConcurrentMux(mux *http.ServeMux) *ConcurrentMux {
+	return &ConcurrentMux{
+		mux: mux,
 	}
-	c.HandleFunc("/", c.ListHTTP)
+}
+
+func NewAdminMux() *ConcurrentMux {
+	c := NewConcurrentMux(http.NewServeMux())
+	c.Handle("/", http.HandlerFunc(c.listHTTP))
 	return c
 }
 
 // HandleFunc installs the given handler.
-func (c *ConcurrentMux) HandleFunc(pattern string, handler func(http.ResponseWriter, *http.Request)) {
+func (c *ConcurrentMux) Handle(pattern string, handler http.Handler) {
 	c.lock.Lock()
 	defer c.lock.Unlock()
-	c.mux.HandleFunc(pattern, handler)
+	c.mux.Handle(pattern, handler)
 	c.pathList = append(c.pathList, pattern)
 }
 
@@ -62,8 +65,8 @@ func (c *ConcurrentMux) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	c.mux.ServeHTTP(w, r)
 }
 
-// ListHTTP lists handlers that have been added.
-func (c *ConcurrentMux) ListHTTP(w http.ResponseWriter, r *http.Request) {
+// listHTTP lists handlers that have been added.
+func (c *ConcurrentMux) listHTTP(w http.ResponseWriter, r *http.Request) {
 	c.lock.RLock()
 	defer c.lock.RUnlock()
 	fmt.Fprintf(w, "Possible paths:\n%v\n", strings.Join(c.pathList, "\n"))
