@@ -602,6 +602,67 @@ jobs:
     - --project=k8s-test-592642f0ef
     sigOwners: ['sig-node']
 
+  ci-kubernetes-e2enode-ubuntudev-k8sdev-gkespec:
+    interval: 2h
+    args:
+    - --project=ubuntu-image-validation
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2enode-ubuntudev-k8sdev-serial:
+    interval: 2h
+    args:
+    - --project=ubuntu-image-validation
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2enode-ubuntudev-k8sstable1-gkespec:
+    interval: 2h
+    args:
+    - --project=ubuntu-image-validation
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2enode-ubuntudev-k8sstable1-serial:
+    interval: 2h
+    args:
+    - --project=ubuntu-image-validation
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2enode-ubuntudev-k8sstable2-gkespec:
+    interval: 2h
+    args:
+    - --project=ubuntu-image-validation
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2enode-ubuntudev-k8sstable2-serial:
+    interval: 2h
+    args:
+    - --project=ubuntu-image-validation
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2enode-ubuntustable1-k8sdev-gkespec:
+    interval: 2h
+    args:
+    - --project=ubuntu-image-validation
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2enode-ubuntustable1-k8sdev-serial:
+    interval: 2h
+    args:
+    - --project=ubuntu-image-validation
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2enode-ubuntustable1-k8sstable1-gkespec:
+    interval: 2h
+    args:
+    - --project=ubuntu-image-validation
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2enode-ubuntustable1-k8sstable1-serial:
+    interval: 2h
+    args:
+    - --project=ubuntu-image-validation
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2enode-ubuntustable1-k8sstable2-gkespec:
+    interval: 2h
+    args:
+    - --project=ubuntu-image-validation
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2enode-ubuntustable1-k8sstable2-serial:
+    interval: 2h
+    args:
+    - --project=ubuntu-image-validation
+    sigOwners: ['sig-node']
+
 
 # The following settings are used by cluster e2e tests.
 
@@ -731,6 +792,14 @@ nodeImages:
     args:
     - --images=cos-stable-60-9592-76-0
     - --image-project=cos-cloud
+  ubuntudev:
+    args:
+    - --images=ubuntu-gke-1604-xenial-v20170816-1
+    - --image-project=ubuntu-os-gke-cloud-devel
+  ubuntustable1:
+    args:
+    - --images=ubuntu-gke-1604-xenial-v20170816-1
+    - --image-project=ubuntu-os-gke-cloud
 
 nodeK8sVersions:
   dev:

@@ -765,6 +765,30 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntu-1-6-node
 - name: ci-kubernetes-e2e-gce-ubuntu-1-6-node-serial
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntu-1-6-node-serial
+- name: ci-kubernetes-e2enode-ubuntudev-k8sdev-gkespec
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-ubuntudev-k8sdev-gkespec
+- name: ci-kubernetes-e2enode-ubuntudev-k8sdev-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-ubuntudev-k8sdev-serial
+- name: ci-kubernetes-e2enode-ubuntudev-k8sstable1-gkespec
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-ubuntudev-k8sstable1-gkespec
+- name: ci-kubernetes-e2enode-ubuntudev-k8sstable1-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-ubuntudev-k8sstable1-serial
+- name: ci-kubernetes-e2enode-ubuntudev-k8sstable2-gkespec
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-ubuntudev-k8sstable2-gkespec
+- name: ci-kubernetes-e2enode-ubuntudev-k8sstable2-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-ubuntudev-k8sstable2-serial
+- name: ci-kubernetes-e2enode-ubuntustable1-k8sdev-gkespec
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-ubuntustable1-k8sdev-gkespec
+- name: ci-kubernetes-e2enode-ubuntustable1-k8sdev-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-ubuntustable1-k8sdev-serial
+- name: ci-kubernetes-e2enode-ubuntustable1-k8sstable1-gkespec
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-ubuntustable1-k8sstable1-gkespec
+- name: ci-kubernetes-e2enode-ubuntustable1-k8sstable1-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-ubuntustable1-k8sstable1-serial
+- name: ci-kubernetes-e2enode-ubuntustable1-k8sstable2-gkespec
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-ubuntustable1-k8sstable2-gkespec
+- name: ci-kubernetes-e2enode-ubuntustable1-k8sstable2-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-ubuntustable1-k8sstable2-serial
 # Ubuntu cluster e2e tests on GCE (contact: @kubernetes/ubuntu-image on github)
 - name: ci-kubernetes-e2e-gce-ubuntudev-k8sdev-default
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntudev-k8sdev-default
@@ -1440,6 +1464,30 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-ubuntu-1-6-node
   - name: gce-ubuntu-1.6-node-serial
     test_group_name: ci-kubernetes-e2e-gce-ubuntu-1-6-node-serial
+  - name: e2enode-ubuntudev-k8sdev-default(gkespec)
+    test_group_name: ci-kubernetes-e2enode-ubuntudev-k8sdev-gkespec
+  - name: e2enode-ubuntudev-k8sdev-serial
+    test_group_name: ci-kubernetes-e2enode-ubuntudev-k8sdev-serial
+  - name: e2enode-ubuntudev-k8sstable1-default(gkespec)
+    test_group_name: ci-kubernetes-e2enode-ubuntudev-k8sstable1-gkespec
+  - name: e2enode-ubuntudev-k8sstable1-serial
+    test_group_name: ci-kubernetes-e2enode-ubuntudev-k8sstable1-serial
+  - name: e2enode-ubuntudev-k8sstable2-default(gkespec)
+    test_group_name: ci-kubernetes-e2enode-ubuntudev-k8sstable2-gkespec
+  - name: e2enode-ubuntudev-k8sstable2-serial
+    test_group_name: ci-kubernetes-e2enode-ubuntudev-k8sstable2-serial
+  - name: e2enode-ubuntustable1-k8sdev-default(gkespec)
+    test_group_name: ci-kubernetes-e2enode-ubuntustable1-k8sdev-gkespec
+  - name: e2enode-ubuntustable1-k8sdev-serial
+    test_group_name: ci-kubernetes-e2enode-ubuntustable1-k8sdev-serial
+  - name: e2enode-ubuntustable1-k8sstable1-default(gkespec)
+    test_group_name: ci-kubernetes-e2enode-ubuntustable1-k8sstable1-gkespec
+  - name: e2enode-ubuntustable1-k8sstable1-serial
+    test_group_name: ci-kubernetes-e2enode-ubuntustable1-k8sstable1-serial
+  - name: e2enode-ubuntustable1-k8sstable2-default(gkespec)
+    test_group_name: ci-kubernetes-e2enode-ubuntustable1-k8sstable2-gkespec
+  - name: e2enode-ubuntustable1-k8sstable2-serial
+    test_group_name: ci-kubernetes-e2enode-ubuntustable1-k8sstable2-serial
   - name: gce-ubuntudev-k8sdev-default
     test_group_name: ci-kubernetes-e2e-gce-ubuntudev-k8sdev-default
   - name: gce-ubuntudev-k8sdev-serial
