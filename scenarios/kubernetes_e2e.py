@@ -30,6 +30,7 @@ import subprocess
 import sys
 import tempfile
 import traceback
+import urllib2
 
 ORIG_CWD = os.getcwd()  # Checkout changes cwd
 
@@ -89,7 +90,7 @@ def kubeadm_version(mode):
         # Work-around for release-1.6 jobs, which still upload debs to an older
         # location (without os/arch prefixes).
         # TODO(pipejakob): remove this when we no longer support 1.6.x.
-        if version.startswith("v1.6."):
+        if version.startswith('v1.6.'):
             return 'gs://kubernetes-release-dev/bazel/%s/build/debs/' % version
 
     elif mode == 'pull':
@@ -476,7 +477,17 @@ def main(args):
         runner_args.append(
             '--gcp-service-account=%s' % mode.add_service_account(args.service_account))
 
-    if args.build is not None:
+    if args.use_shared_build is not None:
+        # find shared build location from GCS
+        link = args.gcs_shared + os.getenv('PULL_REFS', '') + '/'
+        if args.use_shared_build:
+            link += args.use_shared_build + '-'
+        link += 'build-location.txt'
+        url = link.replace('gs://', 'https://storage.googleapis.com/')
+        build_loc = urllib2.urlopen(url).read()
+        # tell kubetest to extract from this location
+        args.kubetest_args += '--extract='+build_loc
+    elif args.build is not None:
         if args.build == '':
             # Empty string means --build was passed without any arguments;
             # if --build wasn't passed, args.build would be None
@@ -581,6 +592,13 @@ def create_parser():
     parser.add_argument(
         '--build', nargs='?', default=None, const='',
         help='Build kubernetes binaries if set, optionally specifying strategy')
+    parser.add_argument(
+        '--use-shared-build', nargs='?', default=None, const='',
+        help='Use prebuilt kubernetes binaries if set, optionally specifying strategy')
+    parser.add_argument(
+        '--gcs-shared',
+        default="gs://kubernetes-jenkins/shared-results/",
+        help='Get shared build from this bucket')
     parser.add_argument(
         '--cluster', default='bootstrap-e2e', help='Name of the cluster')
     parser.add_argument(

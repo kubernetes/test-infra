@@ -37,6 +37,13 @@ def check_output(*cmd):
     print >>sys.stderr, 'Run:', cmd
     return subprocess.check_output(cmd)
 
+def upload_string(gcs_path, text):
+    """Uploads s to gcs_path"""
+    cmd = ['gsutil', '-q', '-h', 'Content-Type:text/plain', 'cp', '-', gcs_path]
+    print >>sys.stderr, 'Run:', cmd, 'stdin=%s'%text
+    proc = subprocess.Popen(cmd, stdin=subprocess.PIPE)
+    proc.communicate(input=text)
+
 def echo_result(res):
     """echo error message bazed on value of res"""
     echo_map = {
@@ -157,10 +164,13 @@ def main(args):
             res = 1
         else:
             try:
-                check(
-                    'bazel', 'run', '//:push-build', '--',
-                    '%s/%s' % (args.gcs, version)
-                    )
+                gcs_build = '%s/%s' % (args.gcs, version)
+                check('bazel', 'run', '//:push-build', '--', gcs_build)
+                # log push-build location to path child jobs can find
+                # (gs://<shared-bucket>/$PULL_REFS/bazel-build-location.txt)
+                pull_refs = os.getenv('PULL_REFS', '')
+                gcs_shared = args.gcs_shared + pull_refs + '/bazel-build-location.txt'
+                upload_string(gcs_shared, gcs_build)
             except subprocess.CalledProcessError as exp:
                 res = exp.returncode
 
@@ -185,6 +195,10 @@ def create_parser():
         '--install', action="append", help='Python dependency(s) that need to be installed')
     parser.add_argument(
         '--release', help='Run bazel build, and push release build to --gcs bucket')
+    parser.add_argument(
+        '--gcs-shared',
+        default="gs://kubernetes-jenkins/shared-results/",
+        help='If release is set push build location to this bucket')
     parser.add_argument(
         '--test', help='Bazel test targets, split by one space')
     parser.add_argument(
