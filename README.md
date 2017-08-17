@@ -21,7 +21,7 @@ the different services interact.
 * [Triage Dashboard](https://go.k8s.io/triage) aggregates failures
   - Triage clusters together similar failures
   - Search for test failures across jobs
-  - Filter down to failures in a specific regex of tests and/or jobs
+  - Filter down failures in a specific regex of tests and/or jobs
 * [Test history](https://go.k8s.io/test-history) is a deprecated tool
   - Use the triage dashboard instead
   - Summarizes the last 24 hours of testing
@@ -59,9 +59,9 @@ you'll need to do the following:
 * Add the job name to the `test_groups` list in [`testgrid/config/config.yaml`](https://github.com/kubernetes/test-infra/blob/master/testgrid/config/config.yaml)
   - Also the group to at least one `dashboard_tab`
 * Add the job to the appropriate section in [`prow/config.yaml`](https://github.com/kubernetes/test-infra/blob/master/prow/config.yaml)
-  - presubmit jobs run on unmerged code in PRs
-  - postsubmit jobs run after merging code
-  - periodic job run on a timed basis
+  - Presubmit jobs run on unmerged code in PRs
+  - Postsubmit jobs run after merging code
+  - Periodic job run on a timed basis
 * (Deprecated!) Some old jobs still run on jenkins
   - Please do not add new jobs to jenkins
   - Jenkins configuration is defined at `jenkins/job-configs`
