@@ -217,7 +217,7 @@ func getDeployer(o *options) (deployer, error) {
 	case "bash":
 		return bash{&o.clusterIPRange}, nil
 	case "gke":
-		return newGKE(o.provider, o.gcpProject, o.gcpZone, o.gcpRegion, o.gcpNetwork, o.gcpNodeImage, o.cluster)
+		return newGKE(o.provider, o.gcpProject, o.gcpZone, o.gcpRegion, o.gcpNetwork, o.gcpNodeImage, o.cluster, &o.testArgs)
 	case "kops":
 		return newKops()
 	case "kubernetes-anywhere":
