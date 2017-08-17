@@ -44,6 +44,7 @@ go_library(
         "//prow/plugins/lgtm:go_default_library",
         "//prow/plugins/releasenote:go_default_library",
         "//prow/plugins/reopen:go_default_library",
+        "//prow/plugins/size:go_default_library",
         "//prow/plugins/trigger:go_default_library",
         "//prow/plugins/updateconfig:go_default_library",
         "//prow/plugins/yuks:go_default_library",

@@ -20,6 +20,7 @@ kubernetes/kubernetes:
 
 kubernetes/test-infra:
 - trigger
+- size
 - config-updater
 
 kubernetes:
