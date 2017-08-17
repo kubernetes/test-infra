@@ -1,4 +1,4 @@
-# WIP boskos
+# boskos
 
 
 ## Background
@@ -134,6 +134,20 @@ On a successful request, `/metric` will return HTTP 200 and a JSON object contai
 1. Boskos updates its config every 10min. Newly added resources will be available after next update cycle.
 Newly deleted resource will be removed in a future update cycle if the resource is not owned by any user.
 
+## Other Components:
+
+[`Reaper`] will be look for inactive resource in free state but occupied (have not been updated for a long time) 
+actively, and reset the stale resources to dirty state for the [`Janitor`] component to pick up.
+
+[`Janitor`] looks for dirty resources from boskos, and will kick off sub-janitor process to clean up the 
+resource, finally return them back to boskos in a clean state.
+
+[`Metrics`] is a separate service, which can display json metric results, and has HTTP endpoint 
+opened for prometheus monitoring.
+
+For the boskos server handles k8s e2e jobs, the status is available from the [`Velodrome dashboard`]
+
+
 ## Local test:
 1. Start boskos with a fake resources.json, with `go run boskos.go -config=/path/to/resources.json`
 
@@ -160,3 +174,8 @@ Waiting for pod default/curl-XXXXX to be running, status is Pending, pod ready: 
 If you don't see a command prompt, try pressing enter.
 [ root@curl-XXXXX:/ ]$ curl 'http://boskos/acquire?type=project&state=free&dest=busy&owner=user'
 ````
+
+[`Reaper`]: ./reaper
+[`Janitor`]: ./janitor
+[`Metrics`]: ./metrics
+[`Velodrome dashboard`]: http://velodrome.k8s.io/dashboard/db/boskos-dashboard
