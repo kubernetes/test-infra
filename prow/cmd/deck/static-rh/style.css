@@ -1,0 +1,150 @@
+body {
+    font-family: "Roboto", "Arial", sans-serif;
+    line-height: 1.4;
+    background-color: #be1628;
+    color: #444;
+    padding: 0;
+    margin: 0;
+}
+
+header {
+    background-color: black;
+    color: white;
+    padding: 2px;
+    padding-left: 20px;
+    box-shadow: 0px 0px 10px #666;
+    display: flex;
+}
+
+h1 {
+    font-weight: normal;
+    font-size: 2em;
+    margin: 2px;
+}
+
+div {
+    background: #f5f5f5;
+    padding: 8px;
+    border-radius: 15px;
+    box-shadow: 0 0 4px #e0e0e0;
+    margin-top: 8px;
+}
+
+aside {
+    margin: 8px;
+}
+
+ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+
+li {
+    margin: 0 8px;
+    display: inline-block;
+}
+
+select {
+    height: 1.4em;
+    border: none;
+    border-bottom: 1px solid #e3e3e3;
+    background: transparent;
+}
+
+article {
+    overflow: hidden;
+    margin: 8px;
+}
+
+table {
+    background: #f5f5f5;
+    border-radius: 15px;
+    box-shadow: 0 0 4px #e0e0e0;
+    border-collapse: collapse;
+    width: 100%;
+}
+
+tbody tr {
+    border-top: 1px solid #f4f4f4;
+}
+
+tbody tr:hover {
+    background: #f4f4f4;
+}
+
+tr.changed {
+    border-top: 1px solid #a4a4a4;
+}
+
+td:first-child, th:first-child {
+    padding-left: 16px;
+}
+
+td:last-child, th:last-child {
+    padding-right: 16px;
+}
+
+td, th {
+    text-align: left;
+    padding: 8px;
+}
+
+th {
+    color: #333;
+}
+
+.titleLogo {
+    margin-top: 3px;
+    margin-right: 10px;
+    height:40px;
+}
+
+.triggered, .pending, .success, .failure, .error, .aborted {
+    font-weight: bold;
+}
+
+.triggered, .pending {
+    color: #ffa500;
+}
+
+.success {
+    color: #22dd22;
+}
+
+.failure {
+    color: #dd2222;
+}
+
+.error, .aborted {
+    color: #888888;
+}
+
+a:link {
+    text-decoration: none;
+    color: blue;
+}
+
+#rerun {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    padding-top: 100px;
+    margin: 0;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.4);
+}
+
+#rerun-content {
+    font-family: monospace;
+    background-color: #fefefe;
+    margin: auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    text-align: center;
+}

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Prow Status</title>
+        <link rel="stylesheet" type="text/css" href="style.css">
+        <link rel="shortcut icon" href="logo.png">
+        <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+        <script type="text/javascript" src="script.js"></script>
+        <script type="text/javascript" src="data.js?var=allBuilds"></script>
+    </head>
+    <body>
+        <header>
+            <a class="logo" ng-href="https://github.com/openshift/origin"><img src="logo.png" alt="openshfit logo" class="titleLogo"></a>
+            <h1>Prow Status</h1>
+        </header>
+        <aside>
+        <div>
+            <ul>
+                <li>Filter</li>
+                <li><select id="type" onchange="redraw();"><option>all job types</option></select></li>
+                <li><select id="repo" onchange="redraw();"><option>all repositories</option></select></li>
+                <li><select id="pull" onchange="redraw();"><option>all pull requests</option></select></li>
+                <li><select id="author" onchange="redraw();"><option>all authors</option></select></li>
+                <li><select id="job" onchange="redraw();"><option>all jobs</option></select></li>
+                <li><select id="state" onchange="redraw();"><option>all states</option></select></li>
+            </ul>
+        </div>
+        </aside>
+        <article>
+        <table id="builds">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                    <th>Repository</th>
+                    <th>Revision</th>
+                    <th>Job</th>
+                    <th>Started</th>
+                    <th>Duration</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+        </article>
+        <div id="rerun">
+            <div id="rerun-content"></div>
+        </div>
+    </body>
+</html>
