@@ -44,6 +44,7 @@ import (
 	_ "k8s.io/test-infra/prow/plugins/lgtm"
 	_ "k8s.io/test-infra/prow/plugins/releasenote"
 	_ "k8s.io/test-infra/prow/plugins/reopen"
+	_ "k8s.io/test-infra/prow/plugins/size"
 	_ "k8s.io/test-infra/prow/plugins/trigger"
 	_ "k8s.io/test-infra/prow/plugins/updateconfig"
 	_ "k8s.io/test-infra/prow/plugins/yuks"
