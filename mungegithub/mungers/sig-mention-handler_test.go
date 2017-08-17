@@ -29,11 +29,12 @@ import (
 )
 
 const (
-	helpWanted    = "help-wanted"
-	open          = "open"
-	sigApps       = "sig/apps"
-	username      = "Ali"
-	needsSigLabel = "needs-sig"
+	helpWanted        = "help-wanted"
+	open              = "open"
+	sigApps           = "sig/apps"
+	committeeSteering = "committee/steering"
+	username          = "Ali"
+	needsSigLabel     = "needs-sig"
 )
 
 func TestSigMentionHandler(t *testing.T) {
@@ -133,6 +134,33 @@ func TestSigMentionHandler(t *testing.T) {
 			},
 			expected: []githubapi.Label{{Name: githubapi.String(helpWanted)},
 				{Name: githubapi.String(sigApps)}},
+		},
+		{
+			name: "issue has committee/foo label, no needs-sig label",
+			issue: &githubapi.Issue{
+				State: githubapi.String(open),
+				Labels: []githubapi.Label{{Name: githubapi.String(helpWanted)},
+					{Name: githubapi.String(committeeSteering)}},
+				PullRequestLinks: nil,
+				Assignee:         &githubapi.User{Login: githubapi.String(username)},
+				Number:           intPtr(1),
+			},
+			expected: []githubapi.Label{{Name: githubapi.String(helpWanted)},
+				{Name: githubapi.String(committeeSteering)}},
+		},
+		{
+			name: "issue has both needs-sig label and committee/foo label",
+			issue: &githubapi.Issue{
+				State: githubapi.String(open),
+				Labels: []githubapi.Label{{Name: githubapi.String(helpWanted)},
+					{Name: githubapi.String(needsSigLabel)},
+					{Name: githubapi.String(committeeSteering)}},
+				PullRequestLinks: nil,
+				Assignee:         &githubapi.User{Login: githubapi.String(username)},
+				Number:           intPtr(1),
+			},
+			expected: []githubapi.Label{{Name: githubapi.String(helpWanted)},
+				{Name: githubapi.String(committeeSteering)}},
 		},
 	}
 
