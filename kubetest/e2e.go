@@ -442,13 +442,23 @@ func waitForNodes(d deployer, nodes int, timeout time.Duration) error {
 }
 
 func defaultDumpClusterLogs(localArtifactsDir, logexporterGCSPath string) error {
+	logDumpPath := "./cluster/log-dump/log-dump.sh"
+	// cluster/log-dump/log-dump.sh only exists in the Kubernetes tree
+	// post-1.3. If it doesn't exist, print a debug log but do not report an error.
+	if _, err := os.Stat(logDumpPath); err != nil {
+		log.Printf("Could not find %s. This is expected if running tests against a Kubernetes 1.3 or older tree.", logDumpPath)
+		if cwd, err := os.Getwd(); err == nil {
+			log.Printf("CWD: %v", cwd)
+		}
+		return nil
+	}
 	var cmd *exec.Cmd
 	if logexporterGCSPath != "" {
 		log.Printf("Dumping logs from nodes to GCS directly at path: %v", logexporterGCSPath)
-		cmd = exec.Command("./cluster/log-dump/log-dump.sh", localArtifactsDir, logexporterGCSPath)
+		cmd = exec.Command(logDumpPath, localArtifactsDir, logexporterGCSPath)
 	} else {
 		log.Printf("Dumping logs locally to: %v", localArtifactsDir)
-		cmd = exec.Command("./cluster/log-dump/log-dump.sh", localArtifactsDir)
+		cmd = exec.Command(logDumpPath, localArtifactsDir)
 	}
 	return finishRunning(cmd)
 }
