@@ -10079,6 +10079,15 @@
       "sig-testing"
     ]
   },
+  "maintenance-boskos-config-upload": {
+    "args": [
+      "cd boskos && make update-config"
+    ],
+    "scenario": "execute",
+    "sigOwners": [
+      "sig-testing"
+    ]
+  },
   "maintenance-ci-aws-janitor": {
     "args": [
       "--aws-image=gcr.io/k8s-test-infra-aws/aws-janitor",

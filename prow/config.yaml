@@ -1260,6 +1260,32 @@ postsubmits:
         hostPath:
           path: /mnt/disks/ssd0
 
+  - name: maintenance-boskos-config-upload
+    agent: kubernetes
+    branches:
+    - master
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/gcloud-in-go:0.2
+        args:
+        - "--clean"
+        - "--git-cache=/root/.cache/git"
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/logs"
+        env:
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /etc/service-account/service-account.json
+        volumeMounts:
+        - name: service
+          mountPath: /etc/service-account
+          readOnly: true
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
+
   - name: maintenance-ci-testgrid-config-upload
     agent: kubernetes
     branches:

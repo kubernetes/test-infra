@@ -557,6 +557,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kops-build
 - name: ci-kubernetes-e2e-gce-enormous-deploy
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-enormous-deploy
+- name: maintenance-boskos-config-upload
+  gcs_prefix: kubernetes-jenkins/logs/maintenance-boskos-config-upload
 - name: maintenance-ci-testgrid-config-upload
   gcs_prefix: kubernetes-jenkins/logs/maintenance-ci-testgrid-config-upload
 - name: maintenance-daily
@@ -2716,6 +2718,11 @@ dashboards:
   - name: bazel
     description: Runs bazel test //... on the test-infra repo.
     test_group_name: ci-test-infra-bazel
+    code_search_url_template:
+      url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+  - name: boskos-config-upload
+    description: Update boskos configmap on test-infra pushes
+    test_group_name: maintenance-boskos-config-upload
     code_search_url_template:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
   - name: testgrid-config-upload
