@@ -36,11 +36,18 @@ echo "safety check"
 echo "=================="
 # safety check
 for (( i=0; i<${repo_count}; i++ )); do
+    if [ ! -d $KUBE_ROOT/../"${repos[i]}" ]; then
+        git clone git@github.com:"${USER}/${repos[i]}".git $KUBE_ROOT/../"${repos[i]}"
+    fi
     cd $KUBE_ROOT/../"${repos[i]}"
+    if ! git config --get remote.upstream.url >/dev/null; then
+        git remote add upstream git@github.com:kubernetes/"${repos[i]}".git
+    fi
     if [[ $(git config --get remote.origin.url) != *"${USER}"* ]]; then
         echo "origin is not right, expect to contain ${USER}, got $(git config --get remote.origin.url)"
         exit 1
     fi
+    cd -
 done
 
 echo "=================="
