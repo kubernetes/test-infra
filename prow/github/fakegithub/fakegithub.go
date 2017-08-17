@@ -45,7 +45,8 @@ type FakeClient struct {
 	// org/repo#number:assignee
 	AssigneesAdded []string
 
-	// Fake remote git storage
+	// Fake remote git storage. File name are keys
+	// and values map SHA to content
 	RemoteFiles map[string]map[string]string
 }
 
