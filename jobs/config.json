@@ -9038,14 +9038,14 @@
       "sig-scale"
     ]
   },
-  "ci-kubernetes-kubemark-5-gce": {
+  "ci-kubernetes-kubemark-5-1.5": {
     "args": [
-      "--cluster=kubemark-5",
+      "--cluster=kubemark-5-1-5",
       "--docker-in-docker",
       "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/ci-kubernetes-kubemark-5-gce.env",
-      "--extract=ci/latest",
-      "--gcp-project=k8s-jenkins-kubemark",
+      "--env-file=jobs/ci-kubernetes-kubemark-5-1.5.env",
+      "--extract=ci/latest-1.5",
+      "--gcp-project=k8s-kubemark-1-5",
       "--gcp-zone=us-central1-f",
       "--kubemark",
       "--kubemark-master-size=n1-standard-1",
@@ -9061,14 +9061,14 @@
       "sig-scale"
     ]
   },
-  "ci-kubernetes-kubemark-5-gce-1.5": {
+  "ci-kubernetes-kubemark-5-gce": {
     "args": [
-      "--cluster=kubemark-5-1-5",
+      "--cluster=kubemark-5",
       "--docker-in-docker",
       "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/ci-kubernetes-kubemark-5-gce-1.5.env",
-      "--extract=ci/latest-1.5",
-      "--gcp-project=k8s-kubemark-1-5",
+      "--env-file=jobs/ci-kubernetes-kubemark-5-gce.env",
+      "--extract=ci/latest",
+      "--gcp-project=k8s-jenkins-kubemark",
       "--gcp-zone=us-central1-f",
       "--kubemark",
       "--kubemark-master-size=n1-standard-1",
