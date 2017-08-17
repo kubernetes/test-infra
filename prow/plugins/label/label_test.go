@@ -206,6 +206,8 @@ func TestLabel(t *testing.T) {
 		expectedRemovedLabels []string
 		repoLabels            []string
 		issueLabels           []string
+		sigOrg                string
+		prefixes              []string
 	}
 	testcases := []testCase{
 		{
@@ -215,6 +217,8 @@ func TestLabel(t *testing.T) {
 			expectedRemovedLabels: []string{},
 			repoLabels:            []string{},
 			issueLabels:           []string{},
+			sigOrg:                "",
+			prefixes:              []string{},
 			commenter:             orgMember,
 		},
 		{
@@ -224,6 +228,8 @@ func TestLabel(t *testing.T) {
 			expectedRemovedLabels: []string{},
 			repoLabels:            []string{},
 			issueLabels:           []string{"area/infra"},
+			sigOrg:                "",
+			prefixes:              []string{"area"},
 			commenter:             orgMember,
 		},
 		{
@@ -231,8 +237,10 @@ func TestLabel(t *testing.T) {
 			body:                  "/area infra",
 			repoLabels:            []string{"area/infra"},
 			issueLabels:           []string{},
+			sigOrg:                "",
 			expectedNewLabels:     formatLabels("area/infra"),
 			expectedRemovedLabels: []string{},
+			prefixes:              []string{"area"},
 			commenter:             orgMember,
 		},
 		{
@@ -240,8 +248,10 @@ func TestLabel(t *testing.T) {
 			body:                  "/area infra",
 			repoLabels:            []string{"area/infra"},
 			issueLabels:           []string{"area/infra"},
+			sigOrg:                "",
 			expectedNewLabels:     []string{},
 			expectedRemovedLabels: []string{},
+			prefixes:              []string{"area"},
 			commenter:             orgMember,
 		},
 		{
@@ -249,8 +259,10 @@ func TestLabel(t *testing.T) {
 			body:                  "/priority critical",
 			repoLabels:            []string{"area/infra", "priority/critical"},
 			issueLabels:           []string{},
+			sigOrg:                "",
 			expectedNewLabels:     formatLabels("priority/critical"),
 			expectedRemovedLabels: []string{},
+			prefixes:              []string{"priority"},
 			commenter:             orgMember,
 		},
 		{
@@ -258,8 +270,10 @@ func TestLabel(t *testing.T) {
 			body:                  "/kind bug",
 			repoLabels:            []string{"area/infra", "priority/critical", "kind/bug"},
 			issueLabels:           []string{},
+			sigOrg:                "",
 			expectedNewLabels:     formatLabels("kind/bug"),
 			expectedRemovedLabels: []string{},
+			prefixes:              []string{"kind"},
 			commenter:             orgMember,
 		},
 		{
@@ -267,8 +281,10 @@ func TestLabel(t *testing.T) {
 			body:                  "/kind BuG",
 			repoLabels:            []string{"area/infra", "priority/critical", "kind/bug"},
 			issueLabels:           []string{},
+			sigOrg:                "",
 			expectedNewLabels:     formatLabels("kind/bug"),
 			expectedRemovedLabels: []string{},
+			prefixes:              []string{"kind"},
 			commenter:             orgMember,
 		},
 		{
@@ -276,8 +292,10 @@ func TestLabel(t *testing.T) {
 			body:                  "/kind bug",
 			repoLabels:            []string{"area/infra", "priority/critical", "kind/BUG"},
 			issueLabels:           []string{},
+			sigOrg:                "",
 			expectedNewLabels:     formatLabels("kind/BUG"),
 			expectedRemovedLabels: []string{},
+			prefixes:              []string{"kind"},
 			commenter:             orgMember,
 		},
 		{
@@ -285,8 +303,10 @@ func TestLabel(t *testing.T) {
 			body:                  "/priority critical",
 			repoLabels:            []string{"area/infra"},
 			issueLabels:           []string{},
+			sigOrg:                "",
 			expectedNewLabels:     formatLabels(),
 			expectedRemovedLabels: []string{},
+			prefixes:              []string{"area"},
 			commenter:             orgMember,
 		},
 		{
@@ -294,8 +314,10 @@ func TestLabel(t *testing.T) {
 			body:                  "/area infra",
 			repoLabels:            []string{"area/infra", "priority/critical", "kind/bug"},
 			issueLabels:           []string{},
+			sigOrg:                "",
 			expectedNewLabels:     formatLabels("area/infra"),
 			expectedRemovedLabels: []string{},
+			prefixes:              []string{"area"},
 			commenter:             nonOrgMember,
 		},
 		{
@@ -303,8 +325,10 @@ func TestLabel(t *testing.T) {
 			body:                  "  /area infra",
 			repoLabels:            []string{"area/infra", "area/api", "priority/critical", "priority/urgent", "priority/important", "kind/bug"},
 			issueLabels:           []string{},
+			sigOrg:                "",
 			expectedNewLabels:     formatLabels(),
 			expectedRemovedLabels: []string{},
+			prefixes:              []string{"area"},
 			commenter:             orgMember,
 		},
 		{
@@ -312,8 +336,10 @@ func TestLabel(t *testing.T) {
 			body:                  "/area lgtm",
 			repoLabels:            []string{"area/infra", "area/api", "priority/critical"},
 			issueLabels:           []string{},
+			sigOrg:                "",
 			expectedNewLabels:     formatLabels(),
 			expectedRemovedLabels: []string{},
+			prefixes:              []string{"area"},
 			commenter:             orgMember,
 		},
 		{
@@ -321,8 +347,10 @@ func TestLabel(t *testing.T) {
 			body:                  "/area api infra",
 			repoLabels:            []string{"area/infra", "area/api", "priority/critical", "priority/urgent"},
 			issueLabels:           []string{},
+			sigOrg:                "",
 			expectedNewLabels:     formatLabels("area/api", "area/infra"),
 			expectedRemovedLabels: []string{},
+			prefixes:              []string{"area"},
 			commenter:             orgMember,
 		},
 		{
@@ -330,8 +358,10 @@ func TestLabel(t *testing.T) {
 			body:                  "/area api infra",
 			repoLabels:            []string{"area/infra", "area/api", "priority/critical", "priority/urgent"},
 			issueLabels:           []string{"area/api"},
+			sigOrg:                "",
 			expectedNewLabels:     formatLabels("area/infra"),
 			expectedRemovedLabels: []string{},
+			prefixes:              []string{"area"},
 			commenter:             orgMember,
 		},
 		{
@@ -339,8 +369,10 @@ func TestLabel(t *testing.T) {
 			body:                  "/priority critical important",
 			repoLabels:            []string{"priority/critical", "priority/important"},
 			issueLabels:           []string{},
+			sigOrg:                "",
 			expectedNewLabels:     formatLabels("priority/critical", "priority/important"),
 			expectedRemovedLabels: []string{},
+			prefixes:              []string{"priority"},
 			commenter:             orgMember,
 		},
 		{
@@ -348,8 +380,10 @@ func TestLabel(t *testing.T) {
 			body:                  "/area urgent",
 			repoLabels:            []string{"area/infra", "area/api", "priority/critical", "priority/urgent"},
 			issueLabels:           []string{},
+			sigOrg:                "",
 			expectedNewLabels:     formatLabels(),
 			expectedRemovedLabels: []string{},
+			prefixes:              []string{"area"},
 			commenter:             orgMember,
 		},
 		{
@@ -357,8 +391,10 @@ func TestLabel(t *testing.T) {
 			body:                  "/priority infra",
 			repoLabels:            []string{"area/infra", "area/api", "priority/critical", "priority/urgent"},
 			issueLabels:           []string{},
+			sigOrg:                "",
 			expectedNewLabels:     formatLabels(),
 			expectedRemovedLabels: []string{},
+			prefixes:              []string{"priority"},
 			commenter:             orgMember,
 		},
 		{
@@ -366,8 +402,10 @@ func TestLabel(t *testing.T) {
 			body:                  "/area lgtm infra",
 			repoLabels:            []string{"area/infra", "area/api"},
 			issueLabels:           []string{},
+			sigOrg:                "",
 			expectedNewLabels:     formatLabels("area/infra"),
 			expectedRemovedLabels: []string{},
+			prefixes:              []string{"area"},
 			commenter:             orgMember,
 		},
 		{
@@ -375,8 +413,10 @@ func TestLabel(t *testing.T) {
 			body:                  "/priority urgent\n/area infra",
 			repoLabels:            []string{"area/infra", "priority/urgent"},
 			issueLabels:           []string{},
+			sigOrg:                "",
 			expectedNewLabels:     formatLabels("priority/urgent", "area/infra"),
 			expectedRemovedLabels: []string{},
+			prefixes:              []string{"area", "priority"},
 			commenter:             orgMember,
 		},
 		{
@@ -384,8 +424,10 @@ func TestLabel(t *testing.T) {
 			body:                  "@kubernetes/sig-node-misc",
 			repoLabels:            []string{"area/infra", "priority/urgent", "sig/node"},
 			issueLabels:           []string{},
+			sigOrg:                "kubernetes",
 			expectedNewLabels:     formatLabels("sig/node"),
 			expectedRemovedLabels: []string{},
+			prefixes:              []string{},
 			commenter:             orgMember,
 		},
 		{
@@ -393,8 +435,10 @@ func TestLabel(t *testing.T) {
 			body:                  "@kubernetes/sig-node-misc @kubernetes/sig-api-machinery-bugs",
 			repoLabels:            []string{"area/infra", "priority/urgent", "sig/node", "sig/api-machinery"},
 			issueLabels:           []string{},
+			sigOrg:                "kubernetes",
 			expectedNewLabels:     formatLabels("sig/node", "sig/api-machinery"),
 			expectedRemovedLabels: []string{},
+			prefixes:              []string{},
 			commenter:             orgMember,
 		},
 		{
@@ -402,8 +446,10 @@ func TestLabel(t *testing.T) {
 			body:                  "@kubernetes/sig-node-misc\n@kubernetes/sig-api-machinery-bugs",
 			repoLabels:            []string{"area/infra", "priority/urgent", "sig/node", "sig/api-machinery"},
 			issueLabels:           []string{},
+			sigOrg:                "kubernetes",
 			expectedNewLabels:     formatLabels("sig/node", "sig/api-machinery"),
 			expectedRemovedLabels: []string{},
+			prefixes:              []string{},
 			commenter:             orgMember,
 		},
 		{
@@ -411,8 +457,10 @@ func TestLabel(t *testing.T) {
 			body:                  "Code Comment.  Design Review\n@kubernetes/sig-node-misc\ncc @kubernetes/sig-api-machinery-bugs",
 			repoLabels:            []string{"area/infra", "priority/urgent", "sig/node", "sig/api-machinery"},
 			issueLabels:           []string{},
+			sigOrg:                "kubernetes",
 			expectedNewLabels:     formatLabels("sig/node", "sig/api-machinery"),
 			expectedRemovedLabels: []string{},
+			prefixes:              []string{},
 			commenter:             orgMember,
 		},
 		{
@@ -420,8 +468,10 @@ func TestLabel(t *testing.T) {
 			body:                  "/area infra\n/priority urgent Design Review\n@kubernetes/sig-node-misc\ncc @kubernetes/sig-api-machinery-bugs",
 			repoLabels:            []string{"area/infra", "priority/urgent", "sig/node", "sig/api-machinery"},
 			issueLabels:           []string{},
+			sigOrg:                "kubernetes",
 			expectedNewLabels:     formatLabels("area/infra", "priority/urgent", "sig/node", "sig/api-machinery"),
 			expectedRemovedLabels: []string{},
+			prefixes:              []string{"area", "priority"},
 			commenter:             orgMember,
 		},
 		{
@@ -429,8 +479,10 @@ func TestLabel(t *testing.T) {
 			body:                  "/sig testing\ncc @kubernetes/sig-api-machinery-misc\n",
 			repoLabels:            []string{"area/infra", "sig/testing", "sig/api-machinery"},
 			issueLabels:           []string{},
+			sigOrg:                "kubernetes",
 			expectedNewLabels:     formatLabels("sig/testing", "sig/api-machinery"),
 			expectedRemovedLabels: []string{},
+			prefixes:              []string{"sig"},
 			commenter:             orgMember,
 		},
 		{
@@ -438,8 +490,10 @@ func TestLabel(t *testing.T) {
 			body:                  "/remove-area infra",
 			repoLabels:            []string{},
 			issueLabels:           []string{},
+			sigOrg:                "",
 			expectedNewLabels:     []string{},
 			expectedRemovedLabels: []string{},
+			prefixes:              []string{"area"},
 			commenter:             orgMember,
 		},
 		{
@@ -447,8 +501,10 @@ func TestLabel(t *testing.T) {
 			body:                  "/remove-area infra",
 			repoLabels:            []string{"area/infra"},
 			issueLabels:           []string{},
+			sigOrg:                "",
 			expectedNewLabels:     []string{},
 			expectedRemovedLabels: []string{},
+			prefixes:              []string{"area"},
 			commenter:             orgMember,
 		},
 		{
@@ -456,8 +512,10 @@ func TestLabel(t *testing.T) {
 			body:                  "/remove-area infra",
 			repoLabels:            []string{"area/infra"},
 			issueLabels:           []string{"area/infra"},
+			sigOrg:                "",
 			expectedNewLabels:     []string{},
 			expectedRemovedLabels: formatLabels("area/infra"),
+			prefixes:              []string{"area"},
 			commenter:             orgMember,
 		},
 		{
@@ -465,8 +523,10 @@ func TestLabel(t *testing.T) {
 			body:                  "/remove-kind api-server",
 			repoLabels:            []string{"area/infra", "priority/high", "kind/api-server"},
 			issueLabels:           []string{"area/infra", "priority/high", "kind/api-server"},
+			sigOrg:                "",
 			expectedNewLabels:     []string{},
 			expectedRemovedLabels: formatLabels("kind/api-server"),
+			prefixes:              []string{"kind"},
 			commenter:             orgMember,
 		},
 		{
@@ -474,8 +534,10 @@ func TestLabel(t *testing.T) {
 			body:                  "/remove-priority high",
 			repoLabels:            []string{"area/infra", "priority/high"},
 			issueLabels:           []string{"area/infra", "priority/high"},
+			sigOrg:                "",
 			expectedNewLabels:     []string{},
 			expectedRemovedLabels: formatLabels("priority/high"),
+			prefixes:              []string{"priority"},
 			commenter:             orgMember,
 		},
 		{
@@ -483,8 +545,10 @@ func TestLabel(t *testing.T) {
 			body:                  "/remove-sig testing",
 			repoLabels:            []string{"area/infra", "sig/testing"},
 			issueLabels:           []string{"area/infra", "sig/testing"},
+			sigOrg:                "",
 			expectedNewLabels:     []string{},
 			expectedRemovedLabels: formatLabels("sig/testing"),
+			prefixes:              []string{"sig"},
 			commenter:             orgMember,
 		},
 		{
@@ -492,8 +556,10 @@ func TestLabel(t *testing.T) {
 			body:                  "/remove-priority low high\n/remove-kind api-server\n/remove-area  infra",
 			repoLabels:            []string{"area/infra", "priority/high", "priority/low", "kind/api-server"},
 			issueLabels:           []string{"area/infra", "priority/high", "priority/low", "kind/api-server"},
+			sigOrg:                "",
 			expectedNewLabels:     []string{},
 			expectedRemovedLabels: formatLabels("priority/low", "priority/high", "kind/api-server", "area/infra"),
+			prefixes:              []string{"area", "kind", "priority"},
 			commenter:             orgMember,
 		},
 		{
@@ -501,8 +567,10 @@ func TestLabel(t *testing.T) {
 			body:                  "/remove-area infra\n/area test",
 			repoLabels:            []string{"area/infra", "area/test"},
 			issueLabels:           []string{"area/infra"},
+			sigOrg:                "",
 			expectedNewLabels:     formatLabels("area/test"),
 			expectedRemovedLabels: formatLabels("area/infra"),
+			prefixes:              []string{"area"},
 			commenter:             orgMember,
 		},
 		{
@@ -510,8 +578,10 @@ func TestLabel(t *testing.T) {
 			body:                  "/remove-area infra\n/area infra",
 			repoLabels:            []string{"area/infra"},
 			issueLabels:           []string{"area/infra"},
+			sigOrg:                "",
 			expectedNewLabels:     []string{},
 			expectedRemovedLabels: formatLabels("area/infra"),
+			prefixes:              []string{"area"},
 			commenter:             orgMember,
 		},
 		{
@@ -519,8 +589,10 @@ func TestLabel(t *testing.T) {
 			body:                  "/remove-area ruby\n/remove-kind srv\n/remove-priority l m\n/area go\n/kind cli\n/priority h",
 			repoLabels:            []string{"area/go", "area/ruby", "kind/cli", "kind/srv", "priority/h", "priority/m", "priority/l"},
 			issueLabels:           []string{"area/ruby", "kind/srv", "priority/l", "priority/m"},
+			sigOrg:                "",
 			expectedNewLabels:     formatLabels("area/go", "kind/cli", "priority/h"),
 			expectedRemovedLabels: formatLabels("area/ruby", "kind/srv", "priority/l", "priority/m"),
+			prefixes:              []string{"area", "kind", "priority"},
 			commenter:             orgMember,
 		},
 	}
@@ -539,7 +611,7 @@ func TestLabel(t *testing.T) {
 			fakeSlackClient := &fakeslack.FakeClient{
 				SentMessages: make(map[string][]string),
 			}
-			if err := handle(fakeClient, logrus.WithField("plugin", pluginName), ae, fakeSlackClient); err != nil {
+			if err := handle(fakeClient, logrus.WithField("plugin", pluginName), tc.sigOrg, tc.prefixes, ae, fakeSlackClient); err != nil {
 				t.Errorf("For case %s, didn't expect error from label test: %v", tc.name, err)
 				return
 			}
@@ -671,7 +743,7 @@ func TestRepeat(t *testing.T) {
 			member, _ := fakeClient.IsMember(ae.org, ae.login)
 			toRepeat := []string{}
 			if !member {
-				toRepeat = ae.getRepeats(sigMatcher.FindAllStringSubmatch(tc.body, -1), m)
+				toRepeat = ae.getRepeats(sigMatcher("kubernetes").FindAllStringSubmatch(tc.body, -1), m)
 			}
 
 			sort.Strings(toRepeat)
@@ -699,8 +771,10 @@ func TestSlackMessages(t *testing.T) {
 		body                   string
 		expectedMessages       map[string][]string
 		expectedRepeatedLabels []string
-		issueLabels            []string
 		repoLabels             []string
+		issueLabels            []string
+		sigOrg                 string
+		prefxes                []string
 		commenter              string
 	}
 	testcases := []testCase{
@@ -710,6 +784,8 @@ func TestSlackMessages(t *testing.T) {
 			expectedMessages: map[string][]string{"sig-node": {"This issue needs update."}},
 			repoLabels:       []string{"sig/node", "sig/api-machinery"},
 			issueLabels:      []string{},
+			sigOrg:           "kubernetes",
+			prefxes:          []string{},
 			commenter:        orgMember,
 		},
 		{
@@ -718,6 +794,8 @@ func TestSlackMessages(t *testing.T) {
 			expectedMessages: map[string][]string{"sig-testing": {"Message sent to multiple sigs."}, "sig-node": {"Message sent to multiple sigs."}},
 			repoLabels:       []string{"sig/node", "sig/api-machinery"},
 			issueLabels:      []string{},
+			sigOrg:           "kubernetes",
+			prefxes:          []string{},
 			commenter:        orgMember,
 		},
 		{
@@ -726,6 +804,8 @@ func TestSlackMessages(t *testing.T) {
 			expectedMessages: map[string][]string{},
 			repoLabels:       []string{"sig/node", "sig/api-machinery"},
 			issueLabels:      []string{},
+			sigOrg:           "kubernetes",
+			prefxes:          []string{},
 			commenter:        orgMember,
 		},
 		{
@@ -734,6 +814,8 @@ func TestSlackMessages(t *testing.T) {
 			expectedMessages: map[string][]string{"sig-api-machinery": {"Message sent to matching sigs."}},
 			repoLabels:       []string{"sig/node", "sig/api-machinery"},
 			issueLabels:      []string{},
+			sigOrg:           "kubernetes",
+			prefxes:          []string{},
 			commenter:        orgMember,
 		},
 	}
@@ -754,7 +836,7 @@ func TestSlackMessages(t *testing.T) {
 				SentMessages: make(map[string][]string),
 			}
 
-			if err := handle(fakeClient, logrus.WithField("plugin", pluginName), ae, fakeSlackClient); err != nil {
+			if err := handle(fakeClient, logrus.WithField("plugin", pluginName), tc.sigOrg, tc.prefxes, ae, fakeSlackClient); err != nil {
 				t.Fatalf("For case %s, didn't expect error from label test: %v", tc.name, err)
 			}
 			if len(tc.expectedMessages) != len(fakeSlackClient.SentMessages) {
