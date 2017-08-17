@@ -8364,7 +8364,7 @@
       "--kubeadm=ci",
       "--kubernetes-anywhere-kubernetes-version=latest",
       "--provider=kubernetes-anywhere",
-      "--test_args=--ginkgo.focus=\\[Conformance\\]|\\[Feature:BootstrapTokens\\] --minStartupPods=8",
+      "--test_args=--ginkgo.focus=\\[Conformance\\]|\\[Feature:BootstrapTokens\\]|\\[Feature:NodeAuthorizer\\] --minStartupPods=8",
       "--timeout=300m"
     ],
     "scenario": "kubernetes_e2e",
