@@ -24,7 +24,11 @@ md-toolbar:not(.md-menu-toolbar) {
 }
 
 .layout-column {
-  background-color:  #be1628;
+  background-color: #be1628;
+}
+
+.md-list-item-text.layout-column {
+  background-color: #f5f5f5;
 }
 
 .titleLogo {
