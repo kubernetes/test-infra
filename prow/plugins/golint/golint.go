@@ -56,7 +56,7 @@ func handleIC(pc plugins.PluginClient, ic github.IssueCommentEvent) error {
 }
 
 // modifiedGoFiles returns a map from filename to patch string for all go files
-// that are modified in the PR.
+// that are modified in the PR excluding vendor/.
 func modifiedGoFiles(ghc githubClient, org, repo string, number int) (map[string]string, error) {
 	changes, err := ghc.GetPullRequestChanges(org, repo, number)
 	if err != nil {
@@ -65,7 +65,7 @@ func modifiedGoFiles(ghc githubClient, org, repo string, number int) (map[string
 
 	modifiedFiles := make(map[string]string)
 	for _, change := range changes {
-		if filepath.Ext(change.Filename) == ".go" {
+		if !strings.HasPrefix(change.Filename, "vendor/") && filepath.Ext(change.Filename) == ".go" {
 			modifiedFiles[change.Filename] = change.Patch
 		}
 	}
