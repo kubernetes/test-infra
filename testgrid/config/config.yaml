@@ -517,8 +517,8 @@ test_groups:
     - target_config: Tests name
     - target_config: Context
     name_format: '%s [%s]'
-- name: ci-kubernetes-e2e-gce-enormous-teardown
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-enormous-teardown
+- name: ci-kubernetes-e2e-gce-large-manual-down
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-large-manual-down
 - name: ci-kubernetes-e2e-gke-large-deploy
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-large-deploy
 - name: ci-kubernetes-cross-build
@@ -555,8 +555,8 @@ test_groups:
     name_format: '%s [%s]'
 - name: ci-kops-build
   gcs_prefix: kubernetes-jenkins/logs/ci-kops-build
-- name: ci-kubernetes-e2e-gce-enormous-deploy
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-enormous-deploy
+- name: ci-kubernetes-e2e-gce-large-manual-up
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-large-manual-up
 - name: maintenance-boskos-config-upload
   gcs_prefix: kubernetes-jenkins/logs/maintenance-boskos-config-upload
 - name: maintenance-ci-testgrid-config-upload
@@ -1721,10 +1721,10 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-scalability-release-1-6
   - name: gce-1.7
     test_group_name: ci-kubernetes-e2e-gce-scalability-release-1-7
-  - name: gce-enormous-deploy
-    test_group_name: ci-kubernetes-e2e-gce-enormous-deploy
-  - name: gce-enormous-teardown
-    test_group_name: ci-kubernetes-e2e-gce-enormous-teardown
+  - name: gce-large-manual-up
+    test_group_name: ci-kubernetes-e2e-gce-large-manual-up
+  - name: gce-large-manual-down
+    test_group_name: ci-kubernetes-e2e-gce-large-manual-down
   - name: gce-large-correctness
     test_group_name: ci-kubernetes-e2e-gce-large-correctness
   - name: gce-large-performance

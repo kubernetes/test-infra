@@ -1797,42 +1797,6 @@
       "generated"
     ]
   },
-  "ci-kubernetes-e2e-gce-enormous-deploy": {
-    "args": [
-      "--cluster=gce-enormous-deploy",
-      "--down=false",
-      "--env-file=jobs/ci-kubernetes-e2e-gce-enormous-deploy.env",
-      "--extract=ci/latest-1.6",
-      "--gcp-project=kubernetes-scale",
-      "--gcp-zone=us-east1-a",
-      "--mode=docker",
-      "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[Feature:Empty\\] --cluster-ip-range=10.224.0.0/13",
-      "--timeout=300m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-scale"
-    ]
-  },
-  "ci-kubernetes-e2e-gce-enormous-teardown": {
-    "args": [
-      "--cluster=gce-enormous-deploy",
-      "--env-file=jobs/ci-kubernetes-e2e-gce-enormous-teardown.env",
-      "--extract=ci/latest",
-      "--gcp-project=kubernetes-scale",
-      "--gcp-zone=us-east1-a",
-      "--mode=docker",
-      "--provider=gce",
-      "--test=false",
-      "--timeout=180m",
-      "--up=false"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-scale"
-    ]
-  },
   "ci-kubernetes-e2e-gce-es-logging": {
     "args": [
       "--check-leaked-resources",
@@ -2540,6 +2504,43 @@
       "--test_args=--ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --allowed-not-ready-nodes=20 --node-schedulable-timeout=60m --cluster-ip-range=10.160.0.0/13 --minStartupPods=8 --gather-resource-usage=master --gather-metrics-at-teardown=master",
       "--timeout=600m",
       "--use-logexporter"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-scale"
+    ]
+  },
+  "ci-kubernetes-e2e-gce-large-manual-down": {
+    "args": [
+      "--cluster=$USER-large-manual",
+      "--env-file=jobs/ci-kubernetes-e2e-gce-large-manual-up.env",
+      "--env-file=jobs/ci-kubernetes-e2e-gce-large-manual-down.env",
+      "--extract=ci/latest",
+      "--gcp-project=kubernetes-scale",
+      "--gcp-zone=us-central1-b",
+      "--mode=docker",
+      "--provider=gce",
+      "--test=false",
+      "--timeout=180m",
+      "--up=false"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-scale"
+    ]
+  },
+  "ci-kubernetes-e2e-gce-large-manual-up": {
+    "args": [
+      "--cluster=$USER-large-manual",
+      "--down=false",
+      "--env-file=jobs/ci-kubernetes-e2e-gce-large-manual-up.env",
+      "--extract=ci/latest",
+      "--gcp-project=kubernetes-scale",
+      "--gcp-zone=us-central1-b",
+      "--mode=docker",
+      "--provider=gce",
+      "--test_args=--ginkgo.focus=\\[Feature:Empty\\] --allowed-not-ready-nodes=10 --node-schedulable-timeout=60m --cluster-ip-range=10.160.0.0/13",
+      "--timeout=300m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
