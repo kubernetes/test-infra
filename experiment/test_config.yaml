@@ -555,11 +555,13 @@ jobs:
     interval: 2h
     args:
     - --project=k8s-test-63a7f7788a
+    - --instance-metadata=user-data<test/e2e_node/jenkins/cos-init-live-restore.yaml,gci-update-strategy=update_disabled
     sigOwners: ['sig-node']
   ci-kubernetes-e2enode-cosstable1-k8sdev-serial:
     interval: 2h
     args:
     - --project=k8s-test-39a894cbd4
+    - --instance-metadata=user-data<test/e2e_node/jenkins/cos-init-live-restore.yaml,gci-update-strategy=update_disabled
     sigOwners: ['sig-node']
   ci-kubernetes-e2enode-cosstable1-k8sbeta-default:
     interval: 2h
