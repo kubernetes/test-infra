@@ -18,6 +18,7 @@ package github
 
 import (
 	"bytes"
+	"context"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -28,6 +29,9 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/shurcooL/githubql"
+	"golang.org/x/oauth2"
 )
 
 type Logger interface {
@@ -38,6 +42,7 @@ type Client struct {
 	// If Logger is non-nil, log all method calls with it.
 	Logger Logger
 
+	gqlc    *githubql.Client
 	client  *http.Client
 	botName string
 	token   string
@@ -56,6 +61,7 @@ const (
 // NewClient creates a new fully operational GitHub client.
 func NewClient(botName, token, base string) *Client {
 	return &Client{
+		gqlc:    githubql.NewClient(oauth2.NewClient(context.Background(), oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token}))),
 		client:  &http.Client{},
 		botName: botName,
 		token:   token,
@@ -812,4 +818,10 @@ func (c *Client) GetFile(org, repo, filepath, commit string) ([]byte, error) {
 	}
 
 	return decoded, nil
+}
+
+// Query runs a GraphQL query using shurcooL/githubql's client.
+func (c *Client) Query(ctx context.Context, q interface{}, vars map[string]interface{}) error {
+	c.log("Query", q, vars)
+	return c.gqlc.Query(ctx, q, vars)
 }

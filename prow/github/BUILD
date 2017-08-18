@@ -24,6 +24,10 @@ go_library(
         "links.go",
         "types.go",
     ],
+    deps = [
+        "//vendor/github.com/shurcooL/githubql:go_default_library",
+        "//vendor/golang.org/x/oauth2:go_default_library",
+    ],
 )
 
 filegroup(
