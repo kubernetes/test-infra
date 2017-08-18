@@ -492,9 +492,9 @@ func (sq *SubmitQueue) internalInitialize(config *github.Config, features *featu
 		}
 	}
 
-	sharedmux.Admin.Handle("/api/emergency/stop", http.HandlerFunc(sq.EmergencyStopHTTP))
-	sharedmux.Admin.Handle("/api/emergency/resume", http.HandlerFunc(sq.EmergencyStopHTTP))
-	sharedmux.Admin.Handle("/api/emergency/status", http.HandlerFunc(sq.EmergencyStopHTTP))
+	sharedmux.Admin.HandleFunc("/api/emergency/stop", sq.EmergencyStopHTTP)
+	sharedmux.Admin.HandleFunc("/api/emergency/resume", sq.EmergencyStopHTTP)
+	sharedmux.Admin.HandleFunc("/api/emergency/status", sq.EmergencyStopHTTP)
 
 	if sq.githubE2EPollTime == 0 {
 		sq.githubE2EPollTime = githubE2EPollTime

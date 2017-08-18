@@ -65,7 +65,7 @@ type RealE2ETester struct {
 // HTTPHandlerInstaller is anything that can hook up HTTP requests to handlers.
 // Used for installing admin functions.
 type HTTPHandlerInstaller interface {
-	Handle(pattern string, handler http.Handler)
+	HandleFunc(pattern string, handler func(http.ResponseWriter, *http.Request))
 }
 
 // Init does construction-- call once it after setting the public fields of 'e'.
@@ -75,9 +75,9 @@ func (e *RealE2ETester) Init(adminMux HTTPHandlerInstaller) *RealE2ETester {
 	e.flakeCache = cache.NewCache(e.getGCSResult)
 	e.resolutionTracker = NewResolutionTracker()
 	if adminMux != nil {
-		adminMux.Handle("/api/mark-resolved", http.HandlerFunc(e.resolutionTracker.SetHTTP))
-		adminMux.Handle("/api/is-resolved", http.HandlerFunc(e.resolutionTracker.GetHTTP))
-		adminMux.Handle("/api/list-resolutions", http.HandlerFunc(e.resolutionTracker.ListHTTP))
+		adminMux.HandleFunc("/api/mark-resolved", e.resolutionTracker.SetHTTP)
+		adminMux.HandleFunc("/api/is-resolved", e.resolutionTracker.GetHTTP)
+		adminMux.HandleFunc("/api/list-resolutions", e.resolutionTracker.ListHTTP)
 	}
 	return e
 }

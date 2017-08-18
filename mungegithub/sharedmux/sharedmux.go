@@ -50,12 +50,17 @@ func NewAdminMux() *ConcurrentMux {
 	return c
 }
 
-// HandleFunc installs the given handler.
+// Handle installs the given handler.
 func (c *ConcurrentMux) Handle(pattern string, handler http.Handler) {
 	c.lock.Lock()
 	defer c.lock.Unlock()
 	c.mux.Handle(pattern, handler)
 	c.pathList = append(c.pathList, pattern)
+}
+
+// HandleFunc installs the given handler function.
+func (c *ConcurrentMux) HandleFunc(pattern string, handler func(http.ResponseWriter, *http.Request)) {
+	c.Handle(pattern, http.HandlerFunc(handler))
 }
 
 // ServeHTTP serves according to the added handlers.

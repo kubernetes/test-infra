@@ -87,9 +87,9 @@ func (c *CherrypickQueue) Initialize(config *github.Config, features *features.F
 	c.unmerged = map[int]*github.MungeObject{}
 
 	if features.Server.Enabled {
-		features.Server.Handle("/queue", http.HandlerFunc(c.serveQueue))
-		features.Server.Handle("/raw", http.HandlerFunc(c.serveRaw))
-		features.Server.Handle("/queue-info", http.HandlerFunc(c.serveQueueInfo))
+		features.Server.HandleFunc("/queue", c.serveQueue)
+		features.Server.HandleFunc("/raw", c.serveRaw)
+		features.Server.HandleFunc("/queue-info", c.serveQueueInfo)
 	}
 	return nil
 }
