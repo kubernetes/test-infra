@@ -54,8 +54,8 @@ about this tool as well as e2e testing generally.
 Create a PR in this repo to add/update/remove a job or suite. Specifically
 you'll need to do the following:
 * Create an entry in [`jobs/config.json`] for the job
-  - If this is a kubetest job create the corresponding `jobs/FOO.env` file
-  - Ensure the `PROJECT=blah` in the `jobs/FOO.env` has the right [IAM grants](jenkins/check_projects.py)
+  - If this is a kubetest job create the corresponding `jobs/env/FOO.env` file
+  - Ensure the `PROJECT=blah` in the `jobs/env/FOO.env` has the right [IAM grants](jenkins/check_projects.py)
 * Add the job name to the `test_groups` list in [`testgrid/config/config.yaml`](https://github.com/kubernetes/test-infra/blob/master/testgrid/config/config.yaml)
   - Also the group to at least one `dashboard_tab`
 * Add the job to the appropriate section in [`prow/config.yaml`](https://github.com/kubernetes/test-infra/blob/master/prow/config.yaml)
