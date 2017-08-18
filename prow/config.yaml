@@ -198,6 +198,13 @@ presubmits:
     context: pull-kubernetes-e2e-gce-gci
     rerun_command: "/test pull-kubernetes-e2e-gce-gci"
     trigger: "(?m)^/test pull-kubernetes-e2e-gce-gci,?(\\s+|$)"
+  - name: pull-kubernetes-e2e-gce-gpu
+    agent: jenkins
+    always_run: true
+    skip_report: true
+    context: pull-kubernetes-e2e-gce-gpu
+    rerun_command: "/test pull-kubernetes-e2e-gce-gpu"
+    trigger: "(?m)^/test( all| pull-kubernetes-e2e-gce-gpu),?(\\s+|$)"
   - name: pull-kubernetes-e2e-gke
     agent: jenkins
     context: pull-kubernetes-e2e-gke
@@ -489,6 +496,13 @@ presubmits:
     context: pull-security-kubernetes-e2e-gce-gci
     rerun_command: "/test pull-security-kubernetes-e2e-gce-gci"
     trigger: "(?m)^/test pull-security-kubernetes-e2e-gce-gci,?(\\s+|$)"
+  - name: pull-security-kubernetes-e2e-gce-gpu
+    agent: jenkins
+    always_run: true
+    skip_report: true
+    context: pull-security-kubernetes-e2e-gce-gpu
+    rerun_command: "/test pull-security-kubernetes-e2e-gce-gpu"
+    trigger: "(?m)^/test( all| pull-security-kubernetes-e2e-gce-gpu),?(\\s+|$)"
   - name: pull-security-kubernetes-e2e-gke
     agent: jenkins
     context: pull-security-kubernetes-e2e-gke

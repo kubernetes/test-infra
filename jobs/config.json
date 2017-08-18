@@ -10394,6 +10394,27 @@
       "UNKNOWN"
     ]
   },
+  "pull-kubernetes-e2e-gce-gpu": {
+    "args": [
+      "--build",
+      "--cluster=",
+      "--env-file=jobs/platform/gce.env",
+      "--env-file=jobs/env/pull-kubernetes-e2e.env",
+      "--env-file=jobs/env/pull-kubernetes-e2e-gce-gpu.env",
+      "--extract=local",
+      "--gcp-project=k8s-jkns-pr-gce-gpus",
+      "--gcp-zone=us-west1-b",
+      "--mode=docker",
+      "--provider=gce",
+      "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-gpu",
+      "--test_args=--ginkgo.focus=\\[Feature:GPU\\] --minStartupPods=8",
+      "--timeout=60m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-scheduling"
+    ]
+  },
   "pull-kubernetes-e2e-gke": {
     "args": [
       "--build",

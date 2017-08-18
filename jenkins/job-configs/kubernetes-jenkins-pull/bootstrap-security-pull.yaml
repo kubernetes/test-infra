@@ -87,6 +87,11 @@
         job-name: pull-kubernetes-e2e-gce-etcd3
         repo-name: 'github.com/kubernetes-security/kubernetes'
         timeout: 85
+    - kubernetes-e2e-gce-gpu:
+        max-total: 12
+        job-name: pull-kubernetes-e2e-gce-gpu
+        repo-name: 'github.com/kubernetes-security/kubernetes'
+        timeout: 80
     - kubernetes-e2e-kops-aws:
         max-total: 12
         job-name: pull-kubernetes-e2e-kops-aws
