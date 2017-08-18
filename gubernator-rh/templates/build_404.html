@@ -1,0 +1,8 @@
+% extends 'base.html'
+{% block title %}Missing build {{build_dir}}{% endblock %}
+% block header
+<h1><a href="/builds{{job_dir}}">{{job}}</a> #{{build}}</h1>
+% endblock
+% block content
+<h3>Unable to load build details from <a href="{{build_dir | gcs_browse_url}}">gs:/{{build_dir}}</a></h3>
+% endblock
