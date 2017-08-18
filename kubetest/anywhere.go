@@ -47,6 +47,7 @@ var (
 const kubernetesAnywhereConfigTemplate = `
 .phase1.num_nodes=4
 .phase1.cluster_name="{{.Cluster}}"
+.phase1.ssh_user=""
 .phase1.cloud_provider="gce"
 
 .phase1.gce.os_image="ubuntu-1604-xenial-v20160420c"
@@ -61,6 +62,7 @@ const kubernetesAnywhereConfigTemplate = `
 .phase2.kubernetes_version="{{.KubernetesVersion}}"
 .phase2.provider="{{.Phase2Provider}}"
 .phase2.kubeadm.version="{{.KubeadmVersion}}"
+.phase2.kube_context_name="{{.KubeContext}}"
 
 .phase3.run_addons=y
 .phase3.weave_net={{if eq .Phase2Provider "kubeadm" -}} y {{- else -}} n {{- end}}
@@ -79,6 +81,7 @@ type kubernetesAnywhere struct {
 	Project           string
 	Cluster           string
 	Zone              string
+	KubeContext       string
 }
 
 var _ deployer = kubernetesAnywhere{}
