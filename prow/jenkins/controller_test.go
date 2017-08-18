@@ -143,6 +143,9 @@ func TestSyncJenkinsJob(t *testing.T) {
 		{
 			name: "start new job",
 			pj: kube.ProwJob{
+				Spec: kube.ProwJobSpec{
+					Type: kube.PostsubmitJob,
+				},
 				Status: kube.ProwJobStatus{
 					State: kube.TriggeredState,
 				},
@@ -157,6 +160,12 @@ func TestSyncJenkinsJob(t *testing.T) {
 			pj: kube.ProwJob{
 				Spec: kube.ProwJobSpec{
 					Type: kube.PresubmitJob,
+					Refs: kube.Refs{
+						Pulls: []kube.Pull{{
+							Number: 1,
+							SHA:    "fake-sha",
+						}},
+					},
 				},
 				Status: kube.ProwJobStatus{
 					State: kube.TriggeredState,
@@ -199,7 +208,10 @@ func TestSyncJenkinsJob(t *testing.T) {
 					Type:   kube.PresubmitJob,
 					Report: true,
 					Refs: kube.Refs{
-						Pulls: []kube.Pull{{}},
+						Pulls: []kube.Pull{{
+							Number: 1,
+							SHA:    "fake-sha",
+						}},
 					},
 				},
 
@@ -232,6 +244,12 @@ func TestSyncJenkinsJob(t *testing.T) {
 			pj: kube.ProwJob{
 				Spec: kube.ProwJobSpec{
 					Type: kube.PresubmitJob,
+					Refs: kube.Refs{
+						Pulls: []kube.Pull{{
+							Number: 1,
+							SHA:    "fake-sha",
+						}},
+					},
 				},
 				Status: kube.ProwJobStatus{
 					State: kube.PendingState,

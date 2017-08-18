@@ -21,7 +21,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"strconv"
 	"sync"
 	"time"
 
@@ -327,6 +326,10 @@ func (c *Controller) startPod(pj kube.ProwJob) (string, string, error) {
 	if err != nil {
 		return "", "", fmt.Errorf("error getting build ID: %v", err)
 	}
+	env := npj.EnvForSpec(pj.Spec)
+	env["BUILD_NUMBER"] = buildID
+	kubeEnv := kubeEnv(env)
+
 	spec := pj.Spec.PodSpec
 	spec.RestartPolicy = "Never"
 	podName := newPodName()
@@ -338,54 +341,7 @@ func (c *Controller) startPod(pj kube.ProwJob) (string, string, error) {
 	for i := range pj.Spec.PodSpec.Containers {
 		spec.Containers = append(spec.Containers, pj.Spec.PodSpec.Containers[i])
 		spec.Containers[i].Name = fmt.Sprintf("%s-%d", podName, i)
-		spec.Containers[i].Env = append(spec.Containers[i].Env,
-			kube.EnvVar{
-				Name:  "JOB_NAME",
-				Value: pj.Spec.Job,
-			},
-			kube.EnvVar{
-				Name:  "BUILD_NUMBER",
-				Value: buildID,
-			},
-		)
-		if pj.Spec.Type == kube.PeriodicJob {
-			continue
-		}
-		spec.Containers[i].Env = append(spec.Containers[i].Env,
-			kube.EnvVar{
-				Name:  "REPO_OWNER",
-				Value: pj.Spec.Refs.Org,
-			},
-			kube.EnvVar{
-				Name:  "REPO_NAME",
-				Value: pj.Spec.Refs.Repo,
-			},
-			kube.EnvVar{
-				Name:  "PULL_BASE_REF",
-				Value: pj.Spec.Refs.BaseRef,
-			},
-			kube.EnvVar{
-				Name:  "PULL_BASE_SHA",
-				Value: pj.Spec.Refs.BaseSHA,
-			},
-			kube.EnvVar{
-				Name:  "PULL_REFS",
-				Value: pj.Spec.Refs.String(),
-			},
-		)
-		if pj.Spec.Type == kube.PostsubmitJob || pj.Spec.Type == kube.BatchJob {
-			continue
-		}
-		spec.Containers[i].Env = append(spec.Containers[i].Env,
-			kube.EnvVar{
-				Name:  "PULL_NUMBER",
-				Value: strconv.Itoa(pj.Spec.Refs.Pulls[0].Number),
-			},
-			kube.EnvVar{
-				Name:  "PULL_PULL_SHA",
-				Value: pj.Spec.Refs.Pulls[0].SHA,
-			},
-		)
+		spec.Containers[i].Env = append(spec.Containers[i].Env, kubeEnv...)
 	}
 	p := kube.Pod{
 		Metadata: kube.ObjectMeta{
@@ -398,6 +354,20 @@ func (c *Controller) startPod(pj kube.ProwJob) (string, string, error) {
 		return "", "", fmt.Errorf("error creating pod: %v", err)
 	}
 	return buildID, actual.Metadata.Name, nil
+}
+
+// kubeEnv transforms a mapping of environment variables
+// into their serialized form for a PodSpec
+func kubeEnv(environment map[string]string) []kube.EnvVar {
+	var kubeEnvironment []kube.EnvVar
+	for key, value := range environment {
+		kubeEnvironment = append(kubeEnvironment, kube.EnvVar{
+			Name:  key,
+			Value: value,
+		})
+	}
+
+	return kubeEnvironment
 }
 
 func (c *Controller) getBuildID(name string) (string, error) {
