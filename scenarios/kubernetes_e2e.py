@@ -479,15 +479,24 @@ def main(args):
 
     if args.use_shared_build is not None:
         # find shared build location from GCS
-        link = args.gcs_shared + os.getenv('PULL_REFS', '') + '/'
+        link = args.gcs_shared.replace('gs://', 'https://storage.googleapis.com/')
+        link += os.getenv('PULL_REFS', '') + '/'
         if args.use_shared_build:
             link += args.use_shared_build + '-'
         link += 'build-location.txt'
-        url = link.replace('gs://', 'https://storage.googleapis.com/')
-        build_loc = urllib2.urlopen(url).read()
-        # tell kubetest to extract from this location
-        args.kubetest_args += '--extract='+build_loc
-    elif args.build is not None:
+        try:
+            build_loc = urllib2.urlopen(link).read()
+            # tell kubetest to extract from this location
+            args.kubetest_args += "--extract="+build_loc
+            args.build = None
+        except urllib2.URLError as err:
+            print >>sys.stderr, "Failed to get shared build location: %s"%err.reason
+            print >>sys.stderr, "Falling back to local build..."
+            # fall back on local build
+            args.kubetest_args += '--extract=local'
+            args.build = args.use_shared_build
+
+    if args.build is not None:
         if args.build == '':
             # Empty string means --build was passed without any arguments;
             # if --build wasn't passed, args.build would be None
