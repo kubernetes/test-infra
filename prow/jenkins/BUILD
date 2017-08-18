@@ -19,8 +19,8 @@ go_library(
         "//prow/kube:go_default_library",
         "//prow/npj:go_default_library",
         "//prow/report:go_default_library",
-        "//vendor:github.com/Sirupsen/logrus",
-        "//vendor:github.com/satori/go.uuid",
+        "//vendor/github.com/Sirupsen/logrus:go_default_library",
+        "//vendor/github.com/satori/go.uuid:go_default_library",
     ],
 )
 

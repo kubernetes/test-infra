@@ -14,7 +14,7 @@ go_library(
     deps = [
         "//prow/config:go_default_library",
         "//prow/kube:go_default_library",
-        "//vendor:github.com/satori/go.uuid",
+        "//vendor/github.com/satori/go.uuid:go_default_library",
     ],
 )
 

@@ -19,20 +19,16 @@ go_test(
 
 go_library(
     name = "go_default_library",
-    srcs = [
-        "controller.go",
-        "plank.go",
-        "report.go",
-    ],
+    srcs = ["controller.go"],
     deps = [
         "//prow/config:go_default_library",
         "//prow/github:go_default_library",
         "//prow/kube:go_default_library",
         "//prow/npj:go_default_library",
         "//prow/report:go_default_library",
-        "//vendor:github.com/Sirupsen/logrus",
-        "//vendor:github.com/bwmarrin/snowflake",
-        "//vendor:github.com/satori/go.uuid",
+        "//vendor/github.com/Sirupsen/logrus:go_default_library",
+        "//vendor/github.com/bwmarrin/snowflake:go_default_library",
+        "//vendor/github.com/satori/go.uuid:go_default_library",
     ],
 )
 
