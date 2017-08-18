@@ -136,8 +136,9 @@ Newly deleted resource will be removed in a future update cycle if the resource 
 
 ## Other Components:
 
-[`Reaper`] will be look for inactive resource in free state but occupied (have not been updated for a long time) 
-actively, and reset the stale resources to dirty state for the [`Janitor`] component to pick up.
+[`Reaper`] looks for resources that owned by someone, but have not been updated for a period of time, 
+and reset the stale resources to dirty state for the [`Janitor`] component to pick up. It will prevent 
+state leaks if a client process is killed unexpectedly.
 
 [`Janitor`] looks for dirty resources from boskos, and will kick off sub-janitor process to clean up the 
 resource, finally return them back to boskos in a clean state.
@@ -145,7 +146,7 @@ resource, finally return them back to boskos in a clean state.
 [`Metrics`] is a separate service, which can display json metric results, and has HTTP endpoint 
 opened for prometheus monitoring.
 
-For the boskos server handles k8s e2e jobs, the status is available from the [`Velodrome dashboard`]
+For the boskos server that handles k8s e2e jobs, the status is available from the [`Velodrome dashboard`]
 
 
 ## Local test:
