@@ -794,95 +794,293 @@ test_groups:
 # Ubuntu cluster e2e tests on GCE (contact: @kubernetes/ubuntu-image on github)
 - name: ci-kubernetes-e2e-gce-ubuntudev-k8sdev-default
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntudev-k8sdev-default
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gce-ubuntudev-k8sdev-serial
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntudev-k8sdev-serial
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gce-ubuntudev-k8sdev-slow
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntudev-k8sdev-slow
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gce-ubuntudev-k8sbeta-default
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntudev-k8sbeta-default
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gce-ubuntudev-k8sbeta-serial
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntudev-k8sbeta-serial
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gce-ubuntudev-k8sbeta-slow
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntudev-k8sbeta-slow
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gce-ubuntudev-k8sstable1-default
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntudev-k8sstable1-default
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gce-ubuntudev-k8sstable1-serial
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntudev-k8sstable1-serial
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gce-ubuntudev-k8sstable1-slow
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntudev-k8sstable1-slow
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gce-ubuntustable1-k8sdev-default
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntustable1-k8sdev-default
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gce-ubuntustable1-k8sdev-serial
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntustable1-k8sdev-serial
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gce-ubuntustable1-k8sdev-slow
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntustable1-k8sdev-slow
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gce-ubuntustable1-k8sstable1-default
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntustable1-k8sstable1-default
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gce-ubuntustable1-k8sstable1-serial
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntustable1-k8sstable1-serial
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gce-ubuntustable1-k8sstable1-slow
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntustable1-k8sstable1-slow
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gce-ubuntustable1-k8sstable2-default
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntustable1-k8sstable2-default
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gce-ubuntustable1-k8sstable2-serial
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntustable1-k8sstable2-serial
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gce-ubuntustable1-k8sstable2-slow
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntustable1-k8sstable2-slow
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 # Ubuntu cluster e2e tests on GKE (contact: @kubernetes/ubuntu-image on github)
 - name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-alphafeatures
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-alphafeatures
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-autoscaling
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-autoscaling
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-default
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-default
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-flaky
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-flaky
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-ingress
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-ingress
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-reboot
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-reboot
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-serial
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-serial
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-slow
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-slow
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-updown
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-updown
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-alphafeatures
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-alphafeatures
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-autoscaling
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-autoscaling
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-default
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-default
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-flaky
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-flaky
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-ingress
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-ingress
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-reboot
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-reboot
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-serial
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-serial
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-slow
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-slow
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-updown
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-updown
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-alphafeatures
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-alphafeatures
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-autoscaling
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-autoscaling
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-default
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-default
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-flaky
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-flaky
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-ingress
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-ingress
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-reboot
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-reboot
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-serial
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-serial
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-slow
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-slow
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-updown
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-updown
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 # Canonical Distribution of Kubernetes (contact: @chuckbutler on github)
 - name: canonical-kubernetes-e2e-gce
   gcs_prefix: canonical-kubernetes-tests/logs/kubernetes-gce-e2e-node
