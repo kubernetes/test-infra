@@ -2202,7 +2202,7 @@ class JobTest(unittest.TestCase):
             if bad_vars:
                 self.fail('Job %s contains bad bash variables: %s' % (job, ' '.join(bad_vars)))
 
-    def test_valid_job_envs(self):
+    def test_valid_job_config_json(self):
         """Validate jobs/config.json."""
         self.load_prow_yaml(self.prow_config)
         config = bootstrap.test_infra('jobs/config.json')
@@ -2225,7 +2225,17 @@ class JobTest(unittest.TestCase):
                 scenario = bootstrap.test_infra('scenarios/%s.py' % config[job]['scenario'])
                 self.assertTrue(os.path.isfile(scenario), job)
                 self.assertTrue(os.access(scenario, os.X_OK|os.R_OK), job)
-                for arg in config[job].get('args', []):
+                args = config[job].get('args', [])
+                use_shared_build_in_args = False
+                extract_in_args = False
+                build_in_args = False
+                for arg in args:
+                    if arg.startswith("--use-shared-build"):
+                        use_shared_build_in_args = True
+                    elif arg.startswith("--build"):
+                        build_in_args = True
+                    elif arg.startswith("--extract"):
+                        extract_in_args = True
                     match = re.match(r'--env-file=([^\"]+)\.env', arg)
                     if match:
                         path = bootstrap.test_infra('%s.env' % match.group(1))
@@ -2240,8 +2250,11 @@ class JobTest(unittest.TestCase):
                                 len(cluster), 20,
                                 'Job %r, --cluster should be 20 chars or fewer' % job
                                 )
+                # these args should not be combined:
+                # --use-shared-build and (--build or --extract)
+                self.assertFalse(use_shared_build_in_args and build_in_args)
+                self.assertFalse(use_shared_build_in_args and extract_in_args)
                 if config[job]['scenario'] == 'kubernetes_e2e':
-                    args = config[job]['args']
                     if job in self.prowjobs:
                         for arg in args:
                             # --mode=local is default now
