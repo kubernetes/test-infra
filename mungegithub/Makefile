@@ -22,9 +22,11 @@ hooksecret64=$(shell base64 $(HOOKSECRET))
 
 READONLY ?= true
 
+SED := $(shell if sed --help 2>&1 | grep -q GNU; then echo sed; else echo gsed; fi)
+
 # just build the binary
 mungegithub build:
-	GOBIN=$(PWD) CGO_ENABLED=0 GOOS=linux go install -installsuffix cgo -ldflags '-w'
+	CGO_ENABLED=0 GOOS=linux go build -installsuffix cgo -ldflags '-w'
 
 test: mungegithub
 	# in case of error ignore all lines of 'getsockopt: connection refused' these are background go threads that don't matter
@@ -58,7 +60,7 @@ push_config:
 service:
 ifneq ("", "$(wildcard $(APP)/service.yaml)")
 	# updating service.yaml by replacing @@ with $(TARGET).
-	sed -e 's!@@!$(TARGET)!g' $(APP)/service.yaml > $(APP)/local.service.yaml
+	$(SED) -e 's!@@!$(TARGET)!g' $(APP)/service.yaml > $(APP)/local.service.yaml
 endif
 
 # Pushes a service resource spec.
@@ -71,25 +73,25 @@ endif
 # updates the deployment.yaml with current build information and sets it to --dry-run
 deployment:
 	# update the deployment.yaml with the current date and git hash
-	sed -e 's|[[:digit:]]\{4\}-[[:digit:]]\{2\}-[[:digit:]]\{2\}-[[:xdigit:]]\+|$(TAG)|g' $(APP)/deployment.yaml > $(APP)/local.deployment.yaml
+	$(SED) -e 's|[[:digit:]]\{4\}-[[:digit:]]\{2\}-[[:digit:]]\{2\}-[[:xdigit:]]\+|$(TAG)|g' $(APP)/deployment.yaml > $(APP)/local.deployment.yaml
 	# update the deployment.yaml with the current repo (if not gcr.io
-	sed -i -e 's|gcr.io/k8s-testimages|$(REPO)|g' $(APP)/local.deployment.yaml
+	$(SED) -i -e 's|gcr.io/k8s-testimages|$(REPO)|g' $(APP)/local.deployment.yaml
 ifeq ($(READONLY),false)
 	# update the deployment.yaml with --dry-run=false
-	sed -i -e 's!^\([[:space:]]\+\)- --dry-run=true!\1- --dry-run=false!g' $(APP)/local.deployment.yaml
+	$(SED) -i -e 's!^\([[:space:]]\+\)- --dry-run=true!\1- --dry-run=false!g' $(APP)/local.deployment.yaml
 endif
 	# update the deployment.yaml with label "readonly: true"
-	sed -i -e 's!^\([[:space:]]\+\)app: $(APP)!\1app: $(APP)\n\1readonly: "$(READONLY)"!g' $(APP)/local.deployment.yaml
+	$(SED) -i -e 's!^\([[:space:]]\+\)app: $(APP)!\1app: $(APP)\n\1readonly: "$(READONLY)"!g' $(APP)/local.deployment.yaml
 	# String-replacement of @@ by $(TARGET) in the deployment file.
-	sed -i -e 's!@@!$(TARGET)!g' $(APP)/local.deployment.yaml
+	$(SED) -i -e 's!@@!$(TARGET)!g' $(APP)/local.deployment.yaml
 
 # simple transformation of a github oauth secret file to a kubernetes secret
 secret:
 	# Updating secret.yaml and outputing to $(APP)/local.secret.yaml.
-	sed -e 's|<TOKEN>|$(token64)|' $(APP)/secret.yaml > $(APP)/local.secret.yaml
-	sed -i -e 's|<HOOKSECRET>|$(hooksecret64)|' $(APP)/local.secret.yaml
+	$(SED) -e 's|<TOKEN>|$(token64)|' $(APP)/secret.yaml > $(APP)/local.secret.yaml
+	$(SED) -i -e 's|<HOOKSECRET>|$(hooksecret64)|' $(APP)/local.secret.yaml
 	# String-replacement of @@ by $(TARGET) in the secrets file.
-	sed -i -e 's!@@!$(TARGET)!g' $(APP)/local.secret.yaml
+	$(SED) -i -e 's!@@!$(TARGET)!g' $(APP)/local.secret.yaml
 
 # Generate and deploy the token secret.
 push_secret: secret
@@ -100,8 +102,8 @@ push_secret: secret
 volume:
 ifneq ("", "$(and $(wildcard $(APP)/pv.yaml), $(wildcard $(APP)/pvc.yaml))")
 	# Updating pv.yaml and pvc.yaml by replacing @@ with TARGET.
-	sed -e 's!@@!$(TARGET)!g' $(APP)/pv.yaml > $(APP)/local.pv.yaml
-	sed -e 's!@@!$(TARGET)!g' $(APP)/pvc.yaml > $(APP)/local.pvc.yaml
+	$(SED) -e 's!@@!$(TARGET)!g' $(APP)/pv.yaml > $(APP)/local.pv.yaml
+	$(SED) -e 's!@@!$(TARGET)!g' $(APP)/pvc.yaml > $(APP)/local.pvc.yaml
 endif
 
 # Create the persistent volume and persistent volume claim.
