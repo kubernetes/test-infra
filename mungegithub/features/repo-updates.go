@@ -257,7 +257,7 @@ func (o *RepoInfo) expandAllAliases() {
 	}
 
 	for filePath := range o.reviewers {
-		o.resolveAliases(o.approvers[filePath])
+		o.resolveAliases(o.reviewers[filePath])
 	}
 }
 
