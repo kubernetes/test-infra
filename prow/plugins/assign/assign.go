@@ -209,7 +209,7 @@ type handler struct {
 
 func newAssignHandler(e *event, gc githubClient, log *logrus.Entry) *handler {
 	addFailureResponse := func(mu github.MissingUsers) string {
-		return fmt.Sprintf("GitHub didn't allow me to assign the following users: %s.\n\nNote that only [%s members](https://github.com/orgs/%s/people) can be assigned", strings.Join(mu.Users, ", "), e.org, e.org)
+		return fmt.Sprintf("GitHub didn't allow me to assign the following users: %s.\n\nNote that only [%s members](https://github.com/orgs/%s/people) can be assigned.", strings.Join(mu.Users, ", "), e.org, e.org)
 	}
 
 	return &handler{
@@ -226,7 +226,7 @@ func newAssignHandler(e *event, gc githubClient, log *logrus.Entry) *handler {
 
 func newReviewHandler(e *event, gc githubClient, log *logrus.Entry) *handler {
 	addFailureResponse := func(mu github.MissingUsers) string {
-		return fmt.Sprintf("GitHub didn't allow me to request PR reviews from the following users: %s.\n\nNote that only [%s members](https://github.com/orgs/%s/people) can review this PR, and authors cannot review their own PRs", strings.Join(mu.Users, ", "), e.org, e.repo)
+		return fmt.Sprintf("GitHub didn't allow me to request PR reviews from the following users: %s.\n\nNote that only [%s members](https://github.com/orgs/%s/people) can review this PR, and authors cannot review their own PRs.", strings.Join(mu.Users, ", "), e.org, e.repo)
 	}
 
 	return &handler{

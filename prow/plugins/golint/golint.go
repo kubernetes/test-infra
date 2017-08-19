@@ -211,7 +211,7 @@ func handle(ghc githubClient, gc *git.Client, log *logrus.Entry, ic github.Issue
 	if totalProblems == 1 {
 		s = ""
 	}
-	response := fmt.Sprintf("%d warning%s", totalProblems, s)
+	response := fmt.Sprintf("%d warning%s.", totalProblems, s)
 
 	return ghc.CreateReview(org, repo, ic.Issue.Number, github.DraftReview{
 		Body:     plugins.FormatICResponse(ic.Comment, response),

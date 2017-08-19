@@ -170,7 +170,7 @@ func handle(gc githubClient, log *logrus.Entry, e *event) error {
 	}
 	isAuthor := e.commentAuthor == e.prAuthor
 	if isAuthor && wantLGTM {
-		resp := "you cannot LGTM your own PR"
+		resp := "you cannot LGTM your own PR."
 		log.Infof("Commenting with \"%s\".", resp)
 		return gc.CreateComment(e.org, e.repo, e.number, plugins.FormatResponseRaw(e.body, e.htmlurl, e.commentAuthor, resp))
 	} else if !isAuthor && !isAssignee {
@@ -184,7 +184,7 @@ func handle(gc githubClient, log *logrus.Entry, e *event) error {
 			} else {
 				log.WithError(err).Errorf("Failed AssignIssue(%s, %s, %d, %s)", e.org, e.repo, e.number, e.commentAuthor)
 			}
-			resp := "changing LGTM is restricted to assignees, and " + msg
+			resp := "changing LGTM is restricted to assignees, and " + msg + "."
 			log.Infof("Reply to assign via /lgtm request with comment: \"%s\"", resp)
 			return gc.CreateComment(e.org, e.repo, e.number, plugins.FormatResponseRaw(e.body, e.htmlurl, e.commentAuthor, resp))
 		}
