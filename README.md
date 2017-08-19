@@ -55,7 +55,8 @@ Create a PR in this repo to add/update/remove a job or suite. Specifically
 you'll need to do the following:
 * Create an entry in [`jobs/config.json`] for the job
   - If this is a kubetest job create the corresponding `jobs/env/FOO.env` file
-  - Ensure the `PROJECT=blah` in the `jobs/env/FOO.env` has the right [IAM grants](jenkins/check_projects.py)
+  - It will pick a free project from [boskos](/boskos) pool by default, or
+  - You can also set --gcp-project=foo in [`jobs/config.json`] for a dedicated project, make sure the project has the right [IAM grants](jenkins/check_projects.py)
 * Add the job name to the `test_groups` list in [`testgrid/config/config.yaml`](https://github.com/kubernetes/test-infra/blob/master/testgrid/config/config.yaml)
   - Also the group to at least one `dashboard_tab`
 * Add the job to the appropriate section in [`prow/config.yaml`](https://github.com/kubernetes/test-infra/blob/master/prow/config.yaml)
@@ -80,8 +81,7 @@ $GOPATH/src/k8s.io/test-infra/jenkins/bootstrap.py \
 
 Presubmit will tell you if you forget to do any of this correctly.
 
-Merge your PR and the job will be ready to go as soon as [test-infra oncall]
-pushes the prow changes (`make -C prow update-config`).
+Merge your PR and the bot will deploy your change automatically.
 
 ### Update an existing job
 
