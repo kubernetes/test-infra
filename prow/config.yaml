@@ -12919,7 +12919,7 @@ periodics:
     volumes:
     - name: service
       secret:
-        secretName: service-account
+        secretName: gke-alpha-service-account
     - name: ssh
       secret:
         defaultMode: 256
