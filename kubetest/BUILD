@@ -24,6 +24,7 @@ go_library(
         "gke.go",
         "kops.go",
         "main.go",
+        "node.go",
         "none.go",
         "stage.go",
         "util.go",

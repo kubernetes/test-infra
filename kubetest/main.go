@@ -80,24 +80,27 @@ type options struct {
 	gcpServiceAccount   string
 	gcpRegion           string
 	gcpZone             string
+	ginkgoParallel      ginkgoParallelValue
 	kubemark            bool
 	kubemarkMasterSize  string
 	kubemarkNodes       string // TODO(fejta): switch to int after migration
 	logexporterGCSPath  string
 	metadataSources     string
 	multipleFederations bool
-	ginkgoParallel      ginkgoParallelValue
+	nodeArgs            string
+	nodeTestArgs        string
+	nodeTests           bool
 	perfTests           bool
 	provider            string
 	publish             string
+	runtimeConfig       string
 	save                string
 	skew                bool
 	stage               stageStrategy
-	testArgs            string
 	test                bool
+	testArgs            string
 	up                  bool
 	upgradeArgs         string
-	runtimeConfig       string
 }
 
 func defineFlags() *options {
@@ -106,7 +109,9 @@ func defineFlags() *options {
 	flag.BoolVar(&o.charts, "charts", false, "If true, run charts tests")
 	flag.BoolVar(&o.checkSkew, "check-version-skew", true, "Verify client and server versions match")
 	flag.BoolVar(&o.checkLeaks, "check-leaked-resources", false, "Ensure project ends with the same resources")
-	flag.StringVar(&o.deployment, "deployment", "bash", "Choices: none/bash/gke/kops/kubernetes-anywhere")
+	flag.StringVar(&o.cluster, "cluster", "", "Cluster name. Must be set for --deployment=gke (TODO: other deployments).")
+	flag.StringVar(&o.clusterIPRange, "cluster-ip-range", "", "Specify CLUSTER_IP_RANGE during --up and --test")
+	flag.StringVar(&o.deployment, "deployment", "bash", "Choices: none/bash/gke/kops/kubernetes-anywhere/node")
 	flag.BoolVar(&o.down, "down", false, "If true, tear down the cluster before exiting.")
 	flag.StringVar(&o.dump, "dump", "", "If set, dump cluster logs to this location on test or cluster-up failure")
 	flag.Var(&o.extract, "extract", "Extract k8s binaries from the specified release location")
@@ -121,17 +126,19 @@ func defineFlags() *options {
 	flag.StringVar(&o.gcpMasterImage, "gcp-master-image", "", "Master image type (cos|debian on GCE, n/a on GKE)")
 	flag.StringVar(&o.gcpNodeImage, "gcp-node-image", "", "Node image type (cos|container_vm on GKE, cos|debian on GCE)")
 	flag.StringVar(&o.gcpNodes, "gcp-nodes", "", "(--provider=gce only) Number of nodes to create.")
-	flag.StringVar(&o.cluster, "cluster", "", "Cluster name. Must be set for --deployment=gke (TODO: other deployments).")
-	flag.StringVar(&o.clusterIPRange, "cluster-ip-range", "", "Specify CLUSTER_IP_RANGE during --up and --test")
 	flag.BoolVar(&o.kubemark, "kubemark", false, "If true, run kubemark tests.")
 	flag.StringVar(&o.kubemarkMasterSize, "kubemark-master-size", "", "Kubemark master size")
 	flag.StringVar(&o.kubemarkNodes, "kubemark-nodes", "", "Number of kubemark nodes to start")
 	flag.StringVar(&o.logexporterGCSPath, "logexporter-gcs-path", "", "Path to the GCS artifacts directory to dump logs from nodes. Logexporter gets enabled if this is non-empty")
+	flag.StringVar(&o.metadataSources, "metadata-sources", "images.json", "Comma-separated list of files inside ./artifacts to merge into metadata.json")
 	flag.BoolVar(&o.multipleFederations, "multiple-federations", false, "If true, enable running multiple federation control planes in parallel")
+	flag.StringVar(&o.nodeArgs, "node-args", "", "Args for node e2e tests.")
+	flag.StringVar(&o.nodeTestArgs, "node-test-args", "", "Test args specifically for node e2e tests.")
+	flag.BoolVar(&o.nodeTests, "node-tests", false, "If true, run node-e2e tests.")
 	flag.BoolVar(&o.perfTests, "perf-tests", false, "If true, run tests from perf-tests repo.")
 	flag.StringVar(&o.provider, "provider", "", "Kubernetes provider such as gce, gke, aws, etc")
 	flag.StringVar(&o.publish, "publish", "", "Publish version to the specified gs:// path on success")
-	flag.StringVar(&o.metadataSources, "metadata-sources", "images.json", "Comma-separated list of files inside ./artifacts to merge into metadata.json")
+	flag.StringVar(&o.runtimeConfig, "runtime-config", "batch/v2alpha1=true", "If set, API versions can be turned on or off while bringing up the API server.")
 	flag.StringVar(&o.stage.dockerRegistry, "registry", "", "Push images to the specified docker registry (e.g. gcr.io/a-test-project)")
 	flag.StringVar(&o.save, "save", "", "Save credentials to gs:// path on --up if set (or load from there if not --up)")
 	flag.BoolVar(&o.skew, "skew", false, "If true, run tests in another version at ../kubernetes/hack/e2e.go")
@@ -142,7 +149,6 @@ func defineFlags() *options {
 	flag.DurationVar(&timeout, "timeout", time.Duration(0), "Terminate testing after the timeout duration (s/m/h)")
 	flag.BoolVar(&o.up, "up", false, "If true, start the the e2e cluster. If cluster is already up, recreate it.")
 	flag.StringVar(&o.upgradeArgs, "upgrade_args", "", "If set, run upgrade tests before other tests")
-	flag.StringVar(&o.runtimeConfig, "runtime-config", "batch/v2alpha1=true", "If set, API versions can be turned on or off while bringing up the API server.")
 
 	flag.BoolVar(&verbose, "v", false, "If true, print all command output.")
 	return &o
@@ -222,6 +228,8 @@ func getDeployer(o *options) (deployer, error) {
 		return newKops()
 	case "kubernetes-anywhere":
 		return newKubernetesAnywhere(o.gcpProject, o.gcpZone)
+	case "node":
+		return nodeDeploy{}, nil
 	case "none":
 		return noneDeploy{}, nil
 	default:
@@ -726,7 +734,7 @@ func prepare(o *options) error {
 	}
 
 	switch o.provider {
-	case "gce", "gke", "kubemark", "kubernetes-anywhere":
+	case "gce", "gke", "kubemark", "kubernetes-anywhere", "node":
 		if err := prepareGcp(o); err != nil {
 			return err
 		}

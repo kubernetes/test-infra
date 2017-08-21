@@ -140,12 +140,15 @@ func run(deploy deployer, o options) error {
 				return fmt.Errorf("error starting federation: %s", err)
 			}
 		}
-		// Check that the api is reachable before proceeding with further steps.
-		errs = appendError(errs, xmlWrap("Check APIReachability", getKubectlVersion))
-		if dump != "" {
-			errs = appendError(errs, xmlWrap("list nodes", func() error {
-				return listNodes(dump)
-			}))
+
+		if !o.nodeTests {
+			// Check that the api is reachable before proceeding with further steps.
+			errs = appendError(errs, xmlWrap("Check APIReachability", getKubectlVersion))
+			if dump != "" {
+				errs = appendError(errs, xmlWrap("list nodes", func() error {
+					return listNodes(dump)
+				}))
+			}
 		}
 	}
 
@@ -166,6 +169,11 @@ func run(deploy deployer, o options) error {
 	if o.test {
 		if err := xmlWrap("test setup", deploy.TestSetup); err != nil {
 			errs = appendError(errs, err)
+		} else if o.nodeTests {
+			nodeArgs := strings.Fields(o.nodeArgs)
+			errs = appendError(errs, xmlWrap("Node Tests", func() error {
+				return nodeTest(testArgs, nodeArgs, o.nodeTestArgs, o.gcpProject, o.gcpZone)
+			}))
 		} else {
 			errs = appendError(errs, xmlWrap("kubectl version", getKubectlVersion))
 			if o.skew {
@@ -488,6 +496,37 @@ func perfTest() error {
 func chartsTest() error {
 	// Run helm tests.
 	if err := finishRunning(exec.Command("/src/k8s.io/charts/test/helm-test-e2e.sh")); err != nil {
+		return err
+	}
+	return nil
+}
+
+func nodeTest(testArgs, nodeArgs []string, nodeTestArgs, project, zone string) error {
+	// Run node e2e tests.
+	// TODO(krzyzacy): remove once nodeTest is stable
+	if wd, err := os.Getwd(); err == nil {
+		log.Printf("cwd : %s", wd)
+	}
+
+	// prep node args
+	runner := []string{
+		"run",
+		fmt.Sprintf("%s/src/k8s.io/kubernetes/test/e2e_node/runner/remote/run_remote.go", os.Getenv("GOPATH")),
+		"--cleanup",
+		"--logtostderr",
+		"--vmodule=*=4",
+		"--ssh-env=gce",
+		"--results-dir=/src/k8s.io/kubernetes/_artifacts",
+		fmt.Sprintf("--project=%s", project),
+		fmt.Sprintf("--zone=%s", zone),
+		fmt.Sprintf("--ssh-user=%s", os.Getenv("USER")),
+		fmt.Sprintf("--ginkgo-flags=%s", strings.Join(testArgs, " ")),
+		fmt.Sprintf("--test_args=%s", nodeTestArgs),
+	}
+
+	runner = append(runner, nodeArgs...)
+
+	if err := finishRunning(exec.Command("go", runner...)); err != nil {
 		return err
 	}
 	return nil
