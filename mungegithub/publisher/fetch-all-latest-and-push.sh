@@ -101,6 +101,6 @@ branch_count=${#branches[@]}
 for (( i=0; i<${branch_count}; i++ )); do
     cd "$KUBE_ROOT/../client-go"
     echo "repo=client-go"
-    git branch -f "${branches[i]}" upstream/"${branches[i]}" 
+    git branch -f "${branches[i]}" upstream/"${branches[i]}"
     git push -f origin "${branches[i]}"
 done

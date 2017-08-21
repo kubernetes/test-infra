@@ -33,7 +33,7 @@ CONTEXT="${2}"
 # Use "gcr.io/google_containers" for real deploy.
 REPO="${3}"
 
-MUNGERS_ROOT=$(dirname "${BASH_SOURCE}")/../..
+MUNGERS_ROOT=$(dirname "${BASH_SOURCE}")/..
 cd "${MUNGERS_ROOT}"
 
 echo "${TOKEN}" > token
@@ -48,6 +48,6 @@ make clean secret APP=publisher TARGET=kubernetes
 
 ${KUBECTL} apply -f ./publisher/volume.yaml
 ${KUBECTL} create -f ./publisher/local.secret.yaml
-${KUBECTL} create -f ./publisher/deployment/kubernetes/configmap.yaml
+${KUBECTL} create -f ./publisher/configmap.yaml
 
 make deploy READONLY=false APP=publisher TARGET=kubernetes REPO="${REPO}"

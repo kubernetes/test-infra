@@ -26,17 +26,17 @@ The robot is also responsible to update the `Godeps/Godeps.json` and the `vendor
 
 Currently we don't have tests for the robot. It relies on manual tests:
 
-* Fork the repos you are going the publish. Run [fetch-all-latest-and-push.sh](util/fetch-all-latest-and-push.sh) to update the branches of your repos.
+* Fork the repos you are going the publish. Run [fetch-all-latest-and-push.sh](fetch-all-latest-and-push.sh) to update the branches of your repos.
 
-* Change `config.organization` to your github username in `mungegithub/publisher/deployment/kubernetes/configmap.yaml`
+* Change `config.organization` to your github username in `mungegithub/publisher/configmap.yaml`
 
-* Deploy the publishing robot by running [deploy.sh](util/deploy.sh)
+* Deploy the publishing robot by running [deploy.sh](deploy.sh)
 
 Then you can deploy the robot for real,
 
-* Change `config.organization` to "kubernetes" in `mungegithub/publisher/deployment/kubernetes/configmap.yaml`
+* Change `config.organization` to "kubernetes" in `mungegithub/publisher/configmap.yaml`
 
-* Deploy the publishing robot by running [deploy.sh](util/deploy.sh)
+* Deploy the publishing robot by running [deploy.sh](deploy.sh)
 
 ## Known issues
 
