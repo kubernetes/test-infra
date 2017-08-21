@@ -35,7 +35,7 @@ approval-requires-issue: true
 implicit-self-approval: true
 flakyjob-count: 3
 number-of-old-test-results: 5
-generated-files-config: .generated-files
+generated-files-config: .generated_files
 label-file: "/gitrepos/kubernetes/labels.yaml"
 alias-file: "/gitrepos/kubernetes/OWNERS_ALIASES"
 use-reviewers: true
