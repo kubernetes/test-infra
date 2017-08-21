@@ -162,30 +162,20 @@ func newGKE(provider, project, zone, region, network, image, cluster string, tes
 	}
 
 	var endpoint string
-	var monitoring string
 	switch env := *gkeEnvironment; {
 	case env == "test":
 		endpoint = "https://test-container.sandbox.googleapis.com/"
-		monitoring = "https://test-monitoring.sandbox.googleapis.com/"
 	case env == "staging":
 		endpoint = "https://staging-container.sandbox.googleapis.com/"
-		monitoring = "https://staging-monitoring.sandbox.googleapis.com/"
 	case env == "prod":
 		endpoint = "https://container.googleapis.com/"
 	case urlRe.MatchString(env):
 		endpoint = env
-		// dev jobs point to test monitoring.
-		monitoring = "https://test-container.sandbox.googleapis.com/"
 	default:
 		return nil, fmt.Errorf("--gke-environment must be one of {test,staging,prod} or match %v, found %q", urlRe, env)
 	}
 	if err := os.Setenv("CLOUDSDK_API_ENDPOINT_OVERRIDES_CONTAINER", endpoint); err != nil {
 		return nil, err
-	}
-	if monitoring != "" {
-		if err := os.Setenv("STACKDRIVER_API_ENDPOINT_OVERRIDE", monitoring); err != nil {
-			return nil, err
-		}
 	}
 
 	// Override kubecfg to a temporary file rather than trashing the user's.
