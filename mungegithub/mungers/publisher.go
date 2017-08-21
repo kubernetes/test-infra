@@ -25,6 +25,7 @@ import (
 	"strings"
 
 	"github.com/golang/glog"
+
 	"k8s.io/kubernetes/pkg/util/sets"
 	"k8s.io/test-infra/mungegithub/features"
 	"k8s.io/test-infra/mungegithub/github"
@@ -434,9 +435,7 @@ func (p *PublisherMunger) Initialize(config *github.Config, features *features.F
 func (p *PublisherMunger) updateKubernetes() error {
 	cmd := exec.Command("git", "fetch", "origin")
 	cmd.Dir = filepath.Join(p.k8sIOPath, "kubernetes")
-	output, err := cmd.CombinedOutput()
-	p.plog.Infof("%s", output)
-	if err != nil {
+	if err := p.plog.Run(cmd); err != nil {
 		return err
 	}
 	// update kubernetes branches that are needed by other k8s.io repos.
@@ -449,18 +448,14 @@ func (p *PublisherMunger) updateKubernetes() error {
 			// we assume src.repo is always kubernetes
 			cmd := exec.Command("git", "branch", "-f", src.branch, fmt.Sprintf("origin/%s", src.branch))
 			cmd.Dir = filepath.Join(p.k8sIOPath, "kubernetes")
-			output, err := cmd.CombinedOutput()
-			p.plog.Infof("%s", output)
-			if err == nil {
+			if err := p.plog.Run(cmd); err == nil {
 				continue
 			}
 			// probably the error is because we cannot do `git branch -f` while
 			// current branch is src.branch, so try `git reset --hard` instead.
 			cmd = exec.Command("git", "reset", "--hard", fmt.Sprintf("origin/%s", src.branch))
 			cmd.Dir = filepath.Join(p.k8sIOPath, "kubernetes")
-			output, err = cmd.CombinedOutput()
-			p.plog.Infof("%s", output)
-			if err != nil {
+			if err := p.plog.Run(cmd); err != nil {
 				return err
 			}
 		}
@@ -478,8 +473,8 @@ func (p *PublisherMunger) ensureCloned(dst string, dstURL string) error {
 	if err != nil {
 		return err
 	}
-	err = exec.Command("git", "clone", dstURL, dst).Run()
-	return err
+	cmd := exec.Command("git", "clone", dstURL, dst)
+	return p.plog.Run(cmd)
 }
 
 // constructs all the repos, but does not push the changes to remotes.
@@ -512,9 +507,7 @@ func (p *PublisherMunger) construct() error {
 
 		for _, branchRule := range repoRules.srcToDst {
 			cmd := exec.Command(repoRules.publishScript, branchRule.src.branch, branchRule.dst.branch, formatDeps(branchRule.deps), kubernetesRemote)
-			output, err := cmd.CombinedOutput()
-			p.plog.Infof("%s", output)
-			if err != nil {
+			if err := p.plog.Run(cmd); err != nil {
 				return err
 			}
 			p.plog.Infof("Successfully constructed %s", branchRule.dst)
@@ -535,9 +528,7 @@ func (p *PublisherMunger) publish() error {
 		}
 		for _, branchRule := range repoRules.srcToDst {
 			cmd := exec.Command("/publish_scripts/push.sh", p.githubConfig.Token(), branchRule.dst.branch)
-			output, err := cmd.CombinedOutput()
-			p.plog.Infof("%s", output)
-			if err != nil {
+			if err := p.plog.Run(cmd); err != nil {
 				return err
 			}
 		}
