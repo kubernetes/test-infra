@@ -46,6 +46,7 @@ ${KUBECTL} delete configmap kubernetes-publisher-config || true
 
 make clean secret APP=publisher TARGET=kubernetes
 
+${KUBECTL} apply -f ./publisher/volume.yaml
 ${KUBECTL} create -f ./publisher/local.secret.yaml
 ${KUBECTL} create -f ./publisher/deployment/kubernetes/configmap.yaml
 
