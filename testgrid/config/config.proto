@@ -46,7 +46,7 @@ message Notification {
 
 // Specifies a group of tests to gather.
 message TestGroup {
-  reserved 4, 5, 7, 8, 10, 12 to 14, 16 to 23, 28 to 31;
+  reserved 4, 5, 7, 8, 10, 12 to 14, 16 to 23, 28 to 34;
 
   // Name of this TestGroup, for mapping dashboard tabs to tests.
   string name = 1;
@@ -102,11 +102,17 @@ message TestGroup {
 message Dashboard {
   // A list of the tabs on the dashboard.
   repeated DashboardTab dashboard_tab = 1;
+
   // A name for the Dashboard.
   string name = 2;
+
   // A list of notifications attached to this dashboard.
   // This is displayed on any dashboard tab in this dashboard.
   repeated Notification notifications = 3;
+
+  // Option to show 'Summary' tab instead of first results tab when you view
+  // this dashboard.
+  bool show_summary_first = 4;
 }
 
 message LinkTemplate {
@@ -120,12 +126,15 @@ message LinkTemplate {
 message LinkOptionsTemplate {
   // The key for the option. This is not expanded.
   string key = 1;
+
   // The value for the option. This is expanded the same as the LinkTemplate.
   string value = 2;
 }
 
 // A single tab on a dashboard.
 message DashboardTab {
+  reserved 14, 15;
+
   // The name of the dashboard tab to display in the client.
   string name = 1;
 
@@ -137,11 +146,11 @@ message DashboardTab {
 
   // Default code search path for changelist search links
   string code_search_path = 4;
-  
+
   // See TestGroup.num_columns_recent. This value overrides the default in the
   // TestGroup config so that dashboards may be customized separately.
   int32 num_columns_recent = 5;
-  
+
   // Base options to always include, for example:
   // width=20&include-filter-by-regex=level_tests
   // This is taken from the #fragment part of the testgrid url.
@@ -197,6 +206,9 @@ message DefaultConfiguration {
   // A default testgroup with default initialization data
   TestGroup default_test_group = 1;
 
-  // A default dashboard with default initialization data
+  // A default dashboard tab with default initialization data
   DashboardTab default_dashboard_tab = 2;
+
+  // A default dashboard with default initialization data
+  Dashboard default_dashboard = 3;
 }
