@@ -34,7 +34,7 @@ func FormatICResponse(ic github.IssueComment, s string) string {
 
 // FormatResponseRaw nicely formats a response for one does not have an issue comment
 func FormatResponseRaw(body, bodyURL, login, reply string) string {
-	format := `@%s: %s.
+	format := `@%s: %s
 
 <details>
 

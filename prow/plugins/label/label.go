@@ -45,8 +45,8 @@ var (
 	labelRegex              = regexp.MustCompile(`(?m)^/(area|priority|kind|sig)\s*(.*)$`)
 	removeLabelRegex        = regexp.MustCompile(`(?m)^/remove-(area|priority|kind|sig)\s*(.*)$`)
 	sigMatcher              = regexp.MustCompile(`(?m)@kubernetes/sig-([\w-]*)-(misc|test-failures|bugs|feature-requests|proposals|pr-reviews|api-reviews)`)
-	chatBack                = "Reiterating the mentions to trigger a notification: \n%v"
-	nonExistentLabelOnIssue = "Those labels are not set on the issue: `%v`"
+	chatBack                = "Reiterating the mentions to trigger a notification: \n%v."
+	nonExistentLabelOnIssue = "Those labels are not set on the issue: `%v`."
 	kindMap                 = map[string]string{
 		"bugs":             "kind/bug",
 		"feature-requests": "kind/feature",
@@ -246,7 +246,7 @@ func handle(gc githubClient, log *logrus.Entry, ae assignEvent, sc slackClient) 
 
 		// If sig matches then send a notification on slack.
 		for _, sig := range sigMatches {
-			msg := fmt.Sprintf("Message: ```%s```\nIssue: %d, %s\nUrl: %s", ae.body, ae.issue.Number, ae.issue.Title, ae.issue.HTMLURL)
+			msg := fmt.Sprintf("Message: ```%s```\nIssue: %d, %s\nUrl: %s.", ae.body, ae.issue.Number, ae.issue.Title, ae.issue.HTMLURL)
 			if err := sc.WriteMessage(plugins.FormatResponseRaw(ae.body, ae.url, ae.login, msg), "sig-"+sig[1]); err != nil {
 				log.WithError(err).Error("Failed to send message on slack channel: ", "sig-"+sig[1], " with message ", msg)
 			}

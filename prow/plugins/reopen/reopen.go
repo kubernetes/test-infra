@@ -61,7 +61,7 @@ func handle(gc githubClient, log *logrus.Entry, ic github.IssueCommentEvent) err
 
 	// Allow assignees and authors to re-open issues.
 	if !ic.Issue.IsAuthor(commentAuthor) && !ic.Issue.IsAssignee(commentAuthor) {
-		resp := "you can't re-open an issue/PR unless you authored it or you are assigned to it"
+		resp := "you can't re-open an issue/PR unless you authored it or you are assigned to it."
 		log.Infof("Commenting \"%s\".", resp)
 		return gc.CreateComment(org, repo, number, plugins.FormatICResponse(ic.Comment, resp))
 	}
