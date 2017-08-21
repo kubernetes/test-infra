@@ -221,37 +221,49 @@ func TestCalculateAliasDelta(t *testing.T) {
 		name      string
 		aliasData []byte
 		approvers sets.String
-		expected  sets.String
+		reviewers sets.String
+		expectedA sets.String
+		expectedR sets.String
 	}{
 		{
 			name:      "No expansions.",
 			aliasData: lowerCaseAliases,
 			approvers: sets.NewString("abc", "def"),
-			expected:  sets.NewString("abc", "def"),
+			expectedA: sets.NewString("abc", "def"),
+			reviewers: sets.NewString("abcr", "defr"),
+			expectedR: sets.NewString("abcr", "defr"),
 		},
 		{
 			name:      "One alias to be expanded",
 			aliasData: lowerCaseAliases,
 			approvers: sets.NewString("abc", "team/t1"),
-			expected:  sets.NewString("abc", "u1", "u2"),
+			expectedA: sets.NewString("abc", "u1", "u2"),
+			reviewers: sets.NewString("abcr", "team/t2"),
+			expectedR: sets.NewString("abcr", "u1", "u3"),
 		},
 		{
 			name:      "Duplicates inside and outside alias.",
 			aliasData: lowerCaseAliases,
 			approvers: sets.NewString("u1", "team/t1"),
-			expected:  sets.NewString("u1", "u2"),
+			expectedA: sets.NewString("u1", "u2"),
+			reviewers: sets.NewString("u3", "team/t2"),
+			expectedR: sets.NewString("u3", "u1"),
 		},
 		{
 			name:      "Duplicates in multiple aliases.",
 			aliasData: lowerCaseAliases,
 			approvers: sets.NewString("u1", "team/t1", "team/t2"),
-			expected:  sets.NewString("u1", "u2", "u3"),
+			expectedA: sets.NewString("u1", "u2", "u3"),
+			reviewers: sets.NewString("u1", "team/t1", "team/t2"),
+			expectedR: sets.NewString("u1", "u2", "u3"),
 		},
 		{
 			name:      "Mixed casing in aliases.",
 			aliasData: mixedCaseAliases,
 			approvers: sets.NewString("team/t1"),
-			expected:  sets.NewString("u1", "u2"),
+			expectedA: sets.NewString("u1", "u2"),
+			reviewers: sets.NewString("team/t1"),
+			expectedR: sets.NewString("u1", "u2"),
 		},
 	}
 
@@ -265,6 +277,9 @@ func TestCalculateAliasDelta(t *testing.T) {
 			approvers: map[string]sets.String{
 				"fake": test.approvers,
 			},
+			reviewers: map[string]sets.String{
+				"fake": test.reviewers,
+			},
 		}
 
 		if err := info.updateRepoAliases(); err != nil {
@@ -272,8 +287,11 @@ func TestCalculateAliasDelta(t *testing.T) {
 		}
 
 		info.expandAllAliases()
-		if expected, got := test.expected, info.approvers["fake"]; !reflect.DeepEqual(expected, got) {
-			t.Errorf("%s: expected: %#v, got: %#v", test.name, expected, got)
+		if expected, got := test.expectedA, info.approvers["fake"]; !reflect.DeepEqual(expected, got) {
+			t.Errorf("%s: expected approvers: %#v, got: %#v", test.name, expected, got)
+		}
+		if expected, got := test.expectedR, info.reviewers["fake"]; !reflect.DeepEqual(expected, got) {
+			t.Errorf("%s: expected reviewers: %#v, got: %#v", test.name, expected, got)
 		}
 	}
 }
