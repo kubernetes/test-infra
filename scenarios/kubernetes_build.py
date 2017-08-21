@@ -78,20 +78,20 @@ def main(args):
     else:
         check('make', 'release')
     check('../release/push-build.sh', *push_build_args)
-    # log push-build location to path child jobs can find
-    # (gs://<shared-bucket>/$PULL_REFS/bazel-build-location.txt)
-    # first get build location
-    bucket = args.release or 'kubernetes-release-dev'
-    dest = 'ci'
-    if args.suffix:
-        dest += args.suffix
-    build_tar = tarfile.open("_output/release-tars/kubernetes.tar.gz")
-    latest = build_tar.getmember("kubernetes/version").read().strip()
-    gcs_build = 'gs://'+bucket+dest+latest
-    # and then write it to GCS
     pull_refs = os.getenv('PULL_REFS', '')
-    gcs_shared = args.gcs_shared + pull_refs + '/build-location.txt'
     if pull_refs:
+        # log push-build location to path child jobs can find
+        # (gs://<shared-bucket>/$PULL_REFS/bazel-build-location.txt)
+        # first get build location the same way push-build.sh does
+        bucket = args.release or 'kubernetes-release-dev'
+        dest = 'ci'
+        if args.suffix:
+            dest += args.suffix
+        build_tar = tarfile.open("_output/release-tars/kubernetes.tar.gz")
+        latest = build_tar.getmember("kubernetes/version").read().strip()
+        gcs_build = os.path.join('gs://', bucket, dest, latest)
+        # and then write it to GCS
+        gcs_shared = args.gcs_shared + pull_refs + '/build-location.txt'
         upload_string(gcs_shared, gcs_build)
 
 if __name__ == '__main__':

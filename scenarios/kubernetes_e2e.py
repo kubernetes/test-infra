@@ -491,11 +491,11 @@ def main(args):
         try:
             build_loc = read_gcs_path(gcs_path)
             # tell kubetest to extract from this location
-            args.kubetest_args.append("--extract="+build_loc)
+            args.kubetest_args.append('--extract=' + build_loc)
             args.build = None
         except urllib2.URLError as err:
-            print >>sys.stderr, "Failed to get shared build location: %s"%err.reason
-            print >>sys.stderr, "Falling back to local build..."
+            print >>sys.stderr, 'Failed to get shared build location: %s'%err.reason
+            print >>sys.stderr, 'Falling back to local build...'
             # fall back on local build
             args.kubetest_args.append('--extract=local')
             args.build = args.use_shared_build
