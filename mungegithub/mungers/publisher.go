@@ -325,7 +325,7 @@ func (p *PublisherMunger) updateKubernetes() error {
 	cmd := exec.Command("git", "fetch", "origin")
 	cmd.Dir = filepath.Join(p.k8sIOPath, "kubernetes")
 	output, err := cmd.CombinedOutput()
-	p.plog.Infof("%s", output)
+	p.plog.Infof("%s\n%s", cmdStr(*cmd), output)
 	if err != nil {
 		return err
 	}
@@ -337,7 +337,7 @@ func (p *PublisherMunger) updateKubernetes() error {
 			cmd := exec.Command("git", "branch", "-f", src.branch, fmt.Sprintf("origin/%s", src.branch))
 			cmd.Dir = filepath.Join(p.k8sIOPath, "kubernetes")
 			output, err := cmd.CombinedOutput()
-			p.plog.Infof("%s", output)
+			p.plog.Infof("%s\n%s", cmdStr(*cmd), output)
 			if err == nil {
 				continue
 			}
@@ -346,7 +346,7 @@ func (p *PublisherMunger) updateKubernetes() error {
 			cmd = exec.Command("git", "reset", "--hard", fmt.Sprintf("origin/%s", src.branch))
 			cmd.Dir = filepath.Join(p.k8sIOPath, "kubernetes")
 			output, err = cmd.CombinedOutput()
-			p.plog.Infof("%s", output)
+			p.plog.Infof("%s\n%s", cmdStr(*cmd), output)
 			if err != nil {
 				return err
 			}
@@ -365,7 +365,10 @@ func (p *PublisherMunger) ensureCloned(dst string, dstURL string) error {
 	if err != nil {
 		return err
 	}
-	err = exec.Command("git", "clone", dstURL, dst).Run()
+	cmd := exec.Command("git", "clone", dstURL, dst)
+	output, err := cmd.CombinedOutput()
+	p.plog.Infof("%s\n%s", cmdStr(*cmd), output)
+
 	return err
 }
 
@@ -396,7 +399,7 @@ func (p *PublisherMunger) construct() error {
 		for _, branchRule := range repoRules.srcToDst {
 			cmd := exec.Command(repoRules.publishScript, branchRule.src.branch, branchRule.dst.branch, formatDeps(branchRule.deps), kubernetesRemote)
 			output, err := cmd.CombinedOutput()
-			p.plog.Infof("%s", output)
+			p.plog.Infof("%s\n%s", cmdStr(*cmd), output)
 			if err != nil {
 				return err
 			}
@@ -419,7 +422,7 @@ func (p *PublisherMunger) publish() error {
 		for _, branchRule := range repoRules.srcToDst {
 			cmd := exec.Command("/publish_scripts/push.sh", p.githubConfig.Token(), branchRule.dst.branch)
 			output, err := cmd.CombinedOutput()
-			p.plog.Infof("%s", output)
+			p.plog.Infof("%s\n%s", cmdStr(*cmd), output)
 			if err != nil {
 				return err
 			}
@@ -465,3 +468,17 @@ func (p *PublisherMunger) RegisterOptions(opts *options.Options) sets.String {
 
 // Munge is the workhorse the will actually make updates to the PR
 func (p *PublisherMunger) Munge(obj *github.MungeObject) {}
+
+type cmdStr exec.Cmd
+
+func (cs cmdStr) String() string {
+	args := make([]string, len(cs.Args))
+	for i, s := range cs.Args {
+		if strings.IndexRune(s, ' ') != -1 {
+			args[i] = fmt.Sprintf("%q", s)
+		} else {
+			args[i] = s
+		}
+	}
+	return strings.Join(args, " ")
+}
