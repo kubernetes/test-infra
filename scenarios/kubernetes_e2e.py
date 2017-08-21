@@ -433,6 +433,10 @@ def set_up_aws(args, mode, cluster, runner_args):
     # TODO(krzyzacy):Remove after retire kops-e2e-runner.sh
     mode.add_aws_runner()
 
+def read_gcs_path(gcs_path):
+    link = gcs_path.replace('gs://', 'https://storage.googleapis.com/')
+    return urllib2.urlopen(link).read()
+
 def main(args):
     """Set up env, start kubekins-e2e, handle termination. """
     # pylint: disable=too-many-branches,too-many-statements
@@ -479,21 +483,21 @@ def main(args):
 
     if args.use_shared_build is not None:
         # find shared build location from GCS
-        link = args.gcs_shared.replace('gs://', 'https://storage.googleapis.com/')
-        link += os.getenv('PULL_REFS', '') + '/'
+        gcs_path = args.gcs_shared
+        gcs_path += os.getenv('PULL_REFS', '') + '/'
         if args.use_shared_build:
-            link += args.use_shared_build + '-'
-        link += 'build-location.txt'
+            gcs_path += args.use_shared_build + '-'
+        gcs_path += 'build-location.txt'
         try:
-            build_loc = urllib2.urlopen(link).read()
+            build_loc = read_gcs_path(gcs_path)
             # tell kubetest to extract from this location
-            args.kubetest_args += "--extract="+build_loc
+            args.kubetest_args.append("--extract="+build_loc)
             args.build = None
         except urllib2.URLError as err:
             print >>sys.stderr, "Failed to get shared build location: %s"%err.reason
             print >>sys.stderr, "Falling back to local build..."
             # fall back on local build
-            args.kubetest_args += '--extract=local'
+            args.kubetest_args.append('--extract=local')
             args.build = args.use_shared_build
 
     if args.build is not None:

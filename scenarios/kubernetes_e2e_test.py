@@ -26,6 +26,7 @@ import shutil
 import string
 import tempfile
 import urllib
+import urllib2
 import unittest
 
 import kubernetes_e2e
@@ -80,6 +81,14 @@ def fake_pass(*_unused, **_unused2):
 def fake_bomb(*a, **kw):
     """Always raise."""
     raise AssertionError('Should not happen', a, kw)
+
+def raise_urllib2_error(*_unused, **_unused2):
+    """Always raise a urllib2.URLError"""
+    raise urllib2.URLError("test failure")
+
+def always_kubernetes(*_unused, **_unused2):
+    """Always return 'kubernetes'"""
+    return 'kubernetes'
 
 
 class Stub(object):
@@ -473,6 +482,27 @@ class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-method
         self.assertEqual(
             self.envs['JENKINS_AWS_CREDENTIALS_FILE'], temp.name)
 
+    def test_use_shared_build(self):
+        args = kubernetes_e2e.parse_args([
+            '--use-shared-build'
+        ])
+        with Stub(kubernetes_e2e, 'check_env', self.fake_check_env):
+            with Stub(kubernetes_e2e, 'read_gcs_path', always_kubernetes):
+                kubernetes_e2e.main(args)
+        lastcall = self.callstack[-1]
+        self.assertIn('--extract=kubernetes', lastcall)
+
+    def test_use_shared_build_fallback(self):
+        args = kubernetes_e2e.parse_args([
+            '--use-shared-build'
+        ])
+        with Stub(kubernetes_e2e, 'check_env', self.fake_check_env):
+            with Stub(kubernetes_e2e, 'read_gcs_path', raise_urllib2_error):
+                with Stub(os, 'getcwd', always_kubernetes):
+                    kubernetes_e2e.main(args)
+        lastcall = self.callstack[-1]
+        self.assertIn('--extract=local', lastcall)
+        self.assertIn('--build', lastcall)
 
 if __name__ == '__main__':
     unittest.main()
