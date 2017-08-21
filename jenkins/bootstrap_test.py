@@ -2296,9 +2296,16 @@ class JobTest(unittest.TestCase):
                         self.fail('--mode=local is default now, drop that for %s' % job)
 
                     extracts = [a for a in args if '--extract=' in a]
-                    if not extracts:
-                        self.fail('e2e job needs --extract flag: %s %s' % (job, args))
-                    if any(s in job for s in [
+                    shared_builds = [a for a in args if '--use-shared-build' in a]
+                    if shared_builds and extracts:
+                        self.fail(('e2e jobs cannot have --use-shared-build'
+                                   ' and --extract: %s %s') % (job, args))
+                    elif not extracts and not shared_builds:
+                        self.fail(('e2e job needs --extract or'
+                                   ' --use-shared-build: %s %s') % (job, args))
+                    if shared_builds:
+                        expected = 0
+                    elif any(s in job for s in [
                             'upgrade', 'skew', 'downgrade', 'rollback',
                             'ci-kubernetes-e2e-gce-canary',
                     ]):

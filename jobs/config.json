@@ -10300,6 +10300,15 @@
       "sig-testing"
     ]
   },
+  "pull-kubernetes-build": {
+    "args": [
+      "--fast"
+    ],
+    "scenario": "kubernetes_build",
+    "sigOwners": [
+      "sig-testing"
+    ]
+  },
   "pull-kubernetes-cross": {
     "args": [
       "--env=KUBE_RELEASE_RUN_TESTS=n",
@@ -10416,19 +10425,18 @@
   },
   "pull-kubernetes-e2e-gce-gpu": {
     "args": [
-      "--build",
       "--cluster=",
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/pull-kubernetes-e2e.env",
       "--env-file=jobs/env/pull-kubernetes-e2e-gce-gpu.env",
-      "--extract=local",
       "--gcp-project=k8s-jkns-pr-gce-gpus",
       "--gcp-zone=us-west1-b",
       "--mode=docker",
       "--provider=gce",
       "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-gpu",
       "--test_args=--ginkgo.focus=\\[Feature:GPU\\] --minStartupPods=8",
-      "--timeout=60m"
+      "--timeout=60m",
+      "--use-shared-build"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [

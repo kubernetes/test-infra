@@ -199,7 +199,7 @@ def create_parser():
     parser.add_argument(
         '--gcs-shared',
         default="gs://kubernetes-jenkins/shared-results/",
-        help='If release is set push build location to this bucket')
+        help='If $PULL_REFS is set push build location to this bucket')
     parser.add_argument(
         '--test', help='Bazel test targets, split by one space')
     parser.add_argument(

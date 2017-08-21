@@ -103,7 +103,7 @@ if __name__ == '__main__':
     PARSER.add_argument(
         '--gcs-shared',
         default="gs://kubernetes-jenkins/shared-results/",
-        help='If release is set push build location to this bucket')
+        help='If $PULL_REFS is set push build location to this bucket')
     PARSER.add_argument(
         '--suffix', help='Append suffix to the upload path if set')
     PARSER.add_argument(
