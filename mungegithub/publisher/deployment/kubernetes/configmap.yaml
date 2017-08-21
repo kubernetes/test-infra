@@ -1,8 +1,12 @@
-# basic config options.
-organization: kubernetes
-project: kubernetes
-pr-mungers: publisher
-token-file: /etc/secret-volume/token
-
-# munger specific options.
-period: 24h
+kind: ConfigMap
+metadata:
+  name: kubernetes-publisher-config
+data:
+  config: |
+    # basic config options.
+    organization: kubernetes
+    project: kubernetes
+    pr-mungers: publisher
+    token-file: /etc/secret-volume/token
+    # munger specific options.
+    period: 24h
