@@ -36,10 +36,15 @@ popd
 
 sed -i "s/DEFAULT_KUBEKINS_TAG = '.*'/DEFAULT_KUBEKINS_TAG = '${TAG}'/" "${TREE}/scenarios/kubernetes_e2e.py"
 sed -i "s/\/kubekins-e2e:.*$/\/kubekins-e2e:${TAG}/" "${TREE}/images/e2e-prow/Dockerfile"
+sed -i "s/\/kubekins-e2e:.*$/\/kubekins-e2e:${TAG}/" "${TREE}/images/kubeadm/Dockerfile"
 git commit -am "Bump to gcr.io/k8s-testimages/kubekins-e2e:${TAG}"
 
 TAG="${DATE}-$(git describe --tags --always --dirty)"
 pushd "${TREE}/images/e2e-prow"
+make push TAG="${TAG}"
+popd
+
+pushd "${TREE}/images/kubeadm"
 make push TAG="${TAG}"
 popd
 
@@ -52,7 +57,8 @@ bazel run //experiment:generate_tests -- \
 bazel run //jobs:config_sort
 popd
 
-# Scan for kubekins-e2e-prow:v.* as a rudimentary way to avoid
+# Scan for kubekins-e2e-prow|e2e-kubeadm:v.* as a rudimentary way to avoid
 # replacing :latest.
 sed -i "s/\/kubekins-e2e-prow:v.*$/\/kubekins-e2e-prow:${TAG}/" "${TREE}/prow/config.yaml"
-git commit -am "Bump to gcr.io/k8s-testimages/kubekins-e2e-prow:${TAG} (using generate_tests and manual)"
+sed -i "s/\/e2e-kubeadm:v.*$/\/e2e-kubeadm:${TAG}/" "${TREE}/prow/config.yaml"
+git commit -am "Bump to gcr.io/k8s-testimages/kubekins-e2e-prow:${TAG} and e2e-kubeadm:${TAG} (using generate_tests and manual)"
