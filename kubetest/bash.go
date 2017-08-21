@@ -17,7 +17,9 @@ limitations under the License.
 package main
 
 import (
+	"os"
 	"os/exec"
+	"strconv"
 )
 
 type bash struct {
@@ -27,8 +29,16 @@ type bash struct {
 var _ deployer = bash{}
 
 func (b bash) Up() error {
+	var clusterIPRange string
 	if b.clusterIPRange != nil && *b.clusterIPRange != "" {
-		pop, err := pushEnv("CLUSTER_IP_RANGE", *b.clusterIPRange)
+		clusterIPRange = *b.clusterIPRange
+	} else {
+		if numNodes, err := strconv.Atoi(os.Getenv("NUM_NODES")); err == nil {
+			clusterIPRange = getClusterIPRange(numNodes)
+		}
+	}
+	if clusterIPRange != "" {
+		pop, err := pushEnv("CLUSTER_IP_RANGE", clusterIPRange)
 		if err != nil {
 			return err
 		}
@@ -51,4 +61,20 @@ func (b bash) TestSetup() error {
 
 func (b bash) Down() error {
 	return finishRunning(exec.Command("./hack/e2e-internal/e2e-down.sh"))
+}
+
+// Calculates the cluster IP range based on the no. of nodes in the cluster.
+// Note: This mimics the function get-cluster-ip-range used by kube-up script.
+func getClusterIPRange(numNodes int) string {
+	suggestedRange := "10.100.0.0/14"
+	if numNodes > 1000 {
+		suggestedRange = "10.100.0.0/13"
+	}
+	if numNodes > 2000 {
+		suggestedRange = "10.100.0.0/12"
+	}
+	if numNodes > 4000 {
+		suggestedRange = "10.100.0.0/11"
+	}
+	return suggestedRange
 }
