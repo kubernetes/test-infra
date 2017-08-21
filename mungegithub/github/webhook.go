@@ -55,8 +55,13 @@ func (webhook WebHook) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// HTTPHandlerInstaller is anything that can hook up HTTP requests to handlers.
+type HTTPHandlerInstaller interface {
+	Handle(pattern string, handler http.Handler)
+}
+
 // NewWebHookAndListen creates a new WebHook and listen to it
-func NewWebHookAndListen(githubKeyFile string, address string) *WebHook {
+func NewWebHookAndListen(githubKeyFile string, server HTTPHandlerInstaller) *WebHook {
 	data, err := ioutil.ReadFile(githubKeyFile)
 	if err != nil {
 		glog.Fatalf("Error reading github webhook secret file '%s': %v", githubKeyFile, err)
@@ -68,16 +73,9 @@ func NewWebHookAndListen(githubKeyFile string, address string) *WebHook {
 		GithubKey: githubKey,
 	}
 
-	go webhook.Listen(address)
+	server.Handle("/webhook", webhook)
 
 	return &webhook
-}
-
-// Listen receives webhooks.
-func (webhook *WebHook) Listen(address string) {
-	http.Handle("/webhook", webhook)
-
-	http.ListenAndServe(address, nil)
 }
 
 // UpdatePullRequest will add the pull-request's last commit

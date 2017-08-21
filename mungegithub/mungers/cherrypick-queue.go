@@ -27,7 +27,6 @@ import (
 	"k8s.io/kubernetes/pkg/util/sets"
 	"k8s.io/test-infra/mungegithub/features"
 	"k8s.io/test-infra/mungegithub/github"
-	"k8s.io/test-infra/mungegithub/mungeopts"
 	"k8s.io/test-infra/mungegithub/options"
 
 	"github.com/golang/glog"
@@ -76,26 +75,22 @@ func init() {
 func (c *CherrypickQueue) Name() string { return "cherrypick-queue" }
 
 // RequiredFeatures is a slice of 'features' that must be provided
-func (c *CherrypickQueue) RequiredFeatures() []string { return []string{} }
+func (c *CherrypickQueue) RequiredFeatures() []string { return []string{features.ServerFeatureName} }
 
 // Initialize will initialize the munger
 func (c *CherrypickQueue) Initialize(config *github.Config, features *features.Features) error {
 	c.Lock()
 	defer c.Unlock()
 
-	if len(mungeopts.Server.Address) > 0 {
-		if len(mungeopts.Server.WWWRoot) > 0 {
-			http.Handle("/", http.FileServer(http.Dir(mungeopts.Server.WWWRoot)))
-		}
-		http.HandleFunc("/queue", c.serveQueue)
-		http.HandleFunc("/raw", c.serveRaw)
-		http.HandleFunc("/queue-info", c.serveQueueInfo)
-		config.ServeDebugStats("/stats")
-		go http.ListenAndServe(mungeopts.Server.Address, nil)
-	}
 	c.mergedAndApproved = map[int]*github.MungeObject{}
 	c.merged = map[int]*github.MungeObject{}
 	c.unmerged = map[int]*github.MungeObject{}
+
+	if features.Server.Enabled {
+		features.Server.HandleFunc("/queue", c.serveQueue)
+		features.Server.HandleFunc("/raw", c.serveRaw)
+		features.Server.HandleFunc("/queue-info", c.serveQueueInfo)
+	}
 	return nil
 }
 
@@ -204,8 +199,7 @@ func (s cpQueueSorter) Less(i, j int) bool {
 	return *a.Issue.Number < *b.Issue.Number
 }
 
-// c.Lock() better held!!!
-func (c *CherrypickQueue) orderedQueue(queue map[int]*github.MungeObject) []int {
+func orderedQueue(queue map[int]*github.MungeObject) []int {
 	objs := []*github.MungeObject{}
 	for _, obj := range queue {
 		objs = append(objs, obj)
@@ -232,8 +226,10 @@ func (c *CherrypickQueue) copyQueue(queue map[int]*github.MungeObject) map[int]*
 }
 
 func (c *CherrypickQueue) serveRaw(res http.ResponseWriter, req *http.Request) {
+	c.Lock()
 	queue := c.copyQueue(c.mergedAndApproved)
-	keyOrder := c.orderedQueue(queue)
+	c.Unlock()
+	keyOrder := orderedQueue(queue)
 	sortedQueue := []rawReadyInfo{}
 	for _, key := range keyOrder {
 		obj := queue[key]
@@ -263,7 +259,7 @@ func (c *CherrypickQueue) serveRaw(res http.ResponseWriter, req *http.Request) {
 
 func (c *CherrypickQueue) getQueueData(queue map[int]*github.MungeObject) []cherrypickStatus {
 	out := []cherrypickStatus{}
-	keyOrder := c.orderedQueue(queue)
+	keyOrder := orderedQueue(queue)
 	for _, key := range keyOrder {
 		obj := queue[key]
 		cps := cherrypickStatus{
