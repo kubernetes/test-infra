@@ -21,14 +21,14 @@ RUN apt-get update \
  && wget https://storage.googleapis.com/golang/go1.8.1.linux-amd64.tar.gz \
  && tar -C /usr/local -xzf go1.8.1.linux-amd64.tar.gz \
  && rm -rf /var/lib/apt/lists/*
-ENV PATH="/usr/local/go/bin:${PATH}"
 
 ENV GOPATH="/go-workspace"
-ENV PATH="${GOPATH}/bin:${PATH}"
+ENV PATH="${GOPATH}/bin:/usr/local/go/bin:${PATH}"
 
 WORKDIR "/"
 
 ADD mungers/publish_scripts/initialize_repos.sh /publish_scripts/initialize_repos.sh
 ADD mungegithub /mungegithub
 ADD mungers/publish_scripts/ /publish_scripts
+
 CMD ["/mungegithub", "--dry-run", "--token-file=/token"]
