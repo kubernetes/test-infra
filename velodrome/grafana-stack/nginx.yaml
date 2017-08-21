@@ -23,6 +23,8 @@ spec:
         ports:
         - name: nginx-port
           containerPort: 8080
+        - name: influxdb-port
+          containerPort: 8181
         volumeMounts:
         - mountPath: /etc/nginx
           name: nginx-config
@@ -46,6 +48,9 @@ spec:
   - name: nginx
     port: 80
     targetPort: nginx-port
+  - name: influxdb
+    port: 8181
+    targetPort: influxdb-port
   selector:
     app: nginx
     project: ${PROJECT}
@@ -88,6 +93,14 @@ data:
                 proxy_set_header X-Real-IP $remote_addr;
             }
             location /influxdb/ {
+                proxy_pass http://influxdb-${PROJECT}:8086/;
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+            }
+        }
+        server {
+            listen 8181;
+            location / {
                 proxy_pass http://influxdb-${PROJECT}:8086/;
                 proxy_set_header Host $host;
                 proxy_set_header X-Real-IP $remote_addr;
