@@ -23,7 +23,6 @@ import argparse
 import os
 import subprocess
 import sys
-import tarfile
 
 
 def check(*cmd):
@@ -31,12 +30,6 @@ def check(*cmd):
     print >>sys.stderr, 'Run:', cmd
     subprocess.check_call(cmd)
 
-def upload_string(gcs_path, text):
-    """Uploads text to gcs_path"""
-    cmd = ['gsutil', '-q', '-h', 'Content-Type:text/plain', 'cp', '-', gcs_path]
-    print >>sys.stderr, 'Run:', cmd, 'stdin=%s'%text
-    proc = subprocess.Popen(cmd, stdin=subprocess.PIPE)
-    proc.communicate(input=text)
 
 def main(args):
     """Build and push kubernetes.
@@ -78,21 +71,6 @@ def main(args):
     else:
         check('make', 'release')
     check('../release/push-build.sh', *push_build_args)
-    pull_refs = os.getenv('PULL_REFS', '')
-    if pull_refs:
-        # log push-build location to path child jobs can find
-        # (gs://<shared-bucket>/$PULL_REFS/bazel-build-location.txt)
-        # first get build location the same way push-build.sh does
-        bucket = args.release or 'kubernetes-release-dev'
-        dest = 'ci'
-        if args.suffix:
-            dest += args.suffix
-        build_tar = tarfile.open("_output/release-tars/kubernetes.tar.gz")
-        latest = build_tar.getmember("kubernetes/version").read().strip()
-        gcs_build = os.path.join('gs://', bucket, dest, latest)
-        # and then write it to GCS
-        gcs_shared = os.path.join(args.gcs_shared, pull_refs, 'build-location.txt')
-        upload_string(gcs_shared, gcs_build)
 
 if __name__ == '__main__':
     PARSER = argparse.ArgumentParser(
@@ -100,10 +78,6 @@ if __name__ == '__main__':
     PARSER.add_argument('--fast', action='store_true', help='Build quickly')
     PARSER.add_argument(
         '--release', help='Upload binaries to the specified gs:// path')
-    PARSER.add_argument(
-        '--gcs-shared',
-        default="gs://kubernetes-jenkins/shared-results/",
-        help='If $PULL_REFS is set push build location to this bucket')
     PARSER.add_argument(
         '--suffix', help='Append suffix to the upload path if set')
     PARSER.add_argument(
