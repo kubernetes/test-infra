@@ -8451,6 +8451,24 @@
       "sig-big-data"
     ]
   },
+  "ci-kubernetes-e2e-node-canary": {
+    "args": [
+      "--deployment=node",
+      "--extract=ci/latest",
+      "--gcp-project=sen-lu-test",
+      "--gcp-zone=us-central1-f",
+      "--node-args=--images=cos-stable-60-9592-76-0 --image-project=cos-cloud",
+      "--node-test-args=\"--cgroups-per-qos=true --cgroup-root=/\"",
+      "--node-tests=true",
+      "--provider=gce",
+      "--test_args=--nodes=8 --skip=\"\\[Flaky\\]|\\[Serial\\]\"",
+      "--timeout=60m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-testing"
+    ]
+  },
   "ci-kubernetes-e2e-prow-canary": {
     "args": [
       "--check-leaked-resources",
