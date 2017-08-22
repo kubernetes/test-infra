@@ -5313,6 +5313,27 @@
       "sig-cli"
     ]
   },
+  "ci-kubernetes-e2e-gke-1-6-1-7-stateful-upgrade": {
+    "args": [
+      "--check-leaked-resources",
+      "--check-version-skew=false",
+      "--deployment=gke",
+      "--extract=ci/latest-1.7",
+      "--extract=ci/latest-1.6",
+      "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
+      "--gcp-node-image=cos",
+      "--gcp-zone=us-central1-a",
+      "--gke-create-command=container clusters create --quiet --enable-legacy-authorization --machine-type=n1-standard-4",
+      "--gke-environment=test",
+      "--provider=gke",
+      "--timeout=60m",
+      "--upgrade_args=--ginkgo.focus=\\[Feature:StatefulUpgrade\\] --upgrade-target=ci/latest-1.7 --upgrade-image=container_vm"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-apps"
+    ]
+  },
   "ci-kubernetes-e2e-gke-1-7-1-6-cvm-kubectl-skew": {
     "args": [
       "--check-leaked-resources",
