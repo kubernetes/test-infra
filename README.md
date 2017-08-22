@@ -68,6 +68,7 @@ you'll need to do the following:
   - Jenkins configuration is defined at `jenkins/job-configs`
   - More deprecated details at [jenkins/README.md](jenkins/README.md)
 
+NOTE: `kubernetes/kubernetes` and `kubernetes-security/kubernetes` must have matching presubmits.
 
 Please test the job on your local workstation before creating a PR:
 ```
