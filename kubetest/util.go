@@ -25,6 +25,7 @@ import (
 	"net/url"
 	"os"
 	"os/exec"
+	"os/signal"
 	"path/filepath"
 	"strings"
 	"syscall"
@@ -140,12 +141,20 @@ func finishRunning(cmd *exec.Cmd) error {
 
 	finished := make(chan error)
 
+	sigChannel := make(chan os.Signal, 1)
+	signal.Notify(sigChannel, os.Interrupt)
+
 	go func() {
 		finished <- cmd.Wait()
 	}()
 
 	for {
 		select {
+		case <-sigChannel:
+			log.Printf("Killing %v(%v) after receiving signal", stepName, -cmd.Process.Pid)
+			if err := syscall.Kill(-cmd.Process.Pid, syscall.SIGKILL); err != nil {
+				log.Printf("Failed to kill %v: %v", stepName, err)
+			}
 		case <-terminate.C:
 			terminated = true
 			terminate.Reset(time.Duration(0)) // Kill subsequent processes immediately.
