@@ -26,15 +26,16 @@ import (
 
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/jenkins"
 	"k8s.io/test-infra/prow/kube"
-	"k8s.io/test-infra/prow/plank"
 )
 
 var (
-	totURL = flag.String("tot-url", "", "Tot URL")
+	configPath = flag.String("config-path", "/etc/config/config", "Path to config.yaml.")
 
-	configPath   = flag.String("config-path", "/etc/config/config", "Path to config.yaml.")
-	buildCluster = flag.String("build-cluster", "", "Path to file containing a YAML-marshalled kube.Cluster object. If empty, uses the local cluster.")
+	jenkinsURL       = flag.String("jenkins-url", "http://jenkins-proxy", "Jenkins URL")
+	jenkinsUserName  = flag.String("jenkins-user", "jenkins-trigger", "Jenkins username")
+	jenkinsTokenFile = flag.String("jenkins-token-file", "/etc/jenkins/jenkins", "Path to the file containing the Jenkins API token.")
 
 	githubBotName   = flag.String("github-bot-name", "", "Name of the GitHub bot.")
 	githubTokenFile = flag.String("github-token-file", "/etc/github/oauth", "Path to the file containing the GitHub OAuth token.")
@@ -54,19 +55,17 @@ func main() {
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting kube client.")
 	}
-	var pkc *kube.Client
-	if *buildCluster == "" {
-		pkc = kc.Namespace(configAgent.Config().PodNamespace)
-	} else {
-		pkc, err = kube.NewClientFromFile(*buildCluster, configAgent.Config().PodNamespace)
-		if err != nil {
-			logrus.WithError(err).Fatal("Error getting kube client to build cluster.")
-		}
+
+	jenkinsSecretRaw, err := ioutil.ReadFile(*jenkinsTokenFile)
+	if err != nil {
+		logrus.WithError(err).Fatalf("Could not read Jenkins token file.")
 	}
+	jenkinsToken := string(bytes.TrimSpace(jenkinsSecretRaw))
+	jc := jenkins.NewClient(*jenkinsURL, *jenkinsUserName, jenkinsToken)
 
 	oauthSecretRaw, err := ioutil.ReadFile(*githubTokenFile)
 	if err != nil {
-		logrus.WithError(err).Fatalf("Could not read oauth secret file.")
+		logrus.WithError(err).Fatalf("Could not read Github oauth secret file.")
 	}
 	oauthSecret := string(bytes.TrimSpace(oauthSecretRaw))
 
@@ -77,9 +76,9 @@ func main() {
 		ghc = github.NewClient(*githubBotName, oauthSecret)
 	}
 
-	c, err := plank.NewController(kc, pkc, ghc, configAgent, *totURL)
+	c, err := jenkins.NewController(kc, jc, ghc, configAgent)
 	if err != nil {
-		logrus.WithError(err).Fatal("Error creating plank controller.")
+		logrus.WithError(err).Fatal("Error creating jenkins controller.")
 	}
 	for range time.Tick(30 * time.Second) {
 		start := time.Now()

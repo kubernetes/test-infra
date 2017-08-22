@@ -31,7 +31,7 @@ import (
 
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/kube"
-	"k8s.io/test-infra/prow/plank"
+	"k8s.io/test-infra/prow/npj"
 )
 
 var (
@@ -338,7 +338,7 @@ func main() {
 		refs := splicer.makeBuildRefs(*orgName, *repoName, batchPRs)
 		presubmits := configAgent.Config().Presubmits[fmt.Sprintf("%s/%s", *orgName, *repoName)]
 		for _, job := range neededPresubmits(presubmits, currentJobs, refs) {
-			if _, err := kc.CreateProwJob(plank.NewProwJob(plank.BatchSpec(job, refs))); err != nil {
+			if _, err := kc.CreateProwJob(npj.NewProwJob(npj.BatchSpec(job, refs))); err != nil {
 				log.WithError(err).WithField("job", job.Name).Error("Error starting batch job.")
 			}
 		}

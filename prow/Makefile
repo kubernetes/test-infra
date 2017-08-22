@@ -21,7 +21,8 @@ DECK_VERSION       ?= 0.42
 SPLICE_VERSION     ?= 0.27
 TOT_VERSION        ?= 0.5
 HOROLOGIUM_VERSION ?= 0.8
-PLANK_VERSION      ?= 0.36
+PLANK_VERSION      ?= 0.37
+JENKINS_VERSION    ?= 0.37
 
 # These are the usual GKE variables.
 PROJECT       ?= k8s-prow
@@ -120,4 +121,12 @@ plank-image:
 plank-deployment: get-cluster-credentials
 	kubectl apply -f cluster/plank_deployment.yaml
 
-.PHONY: hook-image hook-deployment hook-service sinker-image sinker-deployment deck-image deck-deployment deck-service splice-image splice-deployment tot-image tot-service tot-deployment horologium-image horologium-deployment plank-image plank-deployment
+jenkins-image:
+	CGO_ENABLED=0 go build -o cmd/jenkins/jenkins k8s.io/test-infra/prow/cmd/jenkins
+	docker build -t "$(REGISTRY)/$(PROJECT)/jenkins:$(JENKINS_VERSION)" $(DOCKER_LABELS) cmd/jenkins
+	$(PUSH) "$(REGISTRY)/$(PROJECT)/jenkins:$(JENKINS_VERSION)"
+
+jenkins-deployment: get-cluster-credentials
+	kubectl apply -f cluster/jenkins_deployment.yaml
+
+.PHONY: hook-image hook-deployment hook-service sinker-image sinker-deployment deck-image deck-deployment deck-service splice-image splice-deployment tot-image tot-service tot-deployment horologium-image horologium-deployment plank-image plank-deployment jenkins-image jenkins-deployment

@@ -15,27 +15,23 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: plank
-  labels:
-    app: plank
+  name: jenkins-operator
 spec:
   replicas: 1 # Do not scale up.
   template:
     metadata:
       labels:
-        app: plank
+        app: jenkins-operator
     spec:
       containers:
-      - name: plank
-        image: gcr.io/k8s-prow/plank:0.37
+      - name: jenkins-operator
+        image: gcr.io/k8s-prow/jenkins-operator:0.37
         args:
-        - --tot-url=http://tot
-        - --build-cluster=/etc/cluster/cluster
         - --dry-run=false
         - --github-bot-name=k8s-ci-robot
         volumeMounts:
-        - mountPath: /etc/cluster
-          name: cluster
+        - mountPath: /etc/jenkins
+          name: jenkins
           readOnly: true
         - name: oauth
           mountPath: /etc/github
@@ -44,10 +40,10 @@ spec:
           mountPath: /etc/config
           readOnly: true
       volumes:
-      - name: cluster
+      - name: jenkins
         secret:
           defaultMode: 420
-          secretName: build-cluster
+          secretName: jenkins-token
       - name: oauth
         secret:
           secretName: oauth-token

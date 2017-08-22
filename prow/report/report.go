@@ -14,13 +14,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package plank
+// Package report contains helpers for writing comments and updating
+// statuses in Github.
+package report
 
 import (
 	"bytes"
 	"fmt"
 	"strings"
 
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/plugins"
@@ -28,7 +31,20 @@ import (
 
 const commentTag = "<!-- test report -->"
 
-func (c *Controller) report(pj kube.ProwJob) error {
+type githubClient interface {
+	BotName() string
+	CreateStatus(org, repo, ref string, s github.Status) error
+	ListIssueComments(org, repo string, number int) ([]github.IssueComment, error)
+	CreateComment(org, repo string, number int, comment string) error
+	DeleteComment(org, repo string, ID int) error
+	EditComment(org, repo string, ID int, comment string) error
+}
+
+type configAgent interface {
+	Config() *config.Config
+}
+
+func Report(ghc githubClient, configAgent configAgent, pj kube.ProwJob) error {
 	if !pj.Spec.Report {
 		return nil
 	}
@@ -36,7 +52,7 @@ func (c *Controller) report(pj kube.ProwJob) error {
 	if len(refs.Pulls) != 1 {
 		return fmt.Errorf("prowjob %s has %d pulls, not 1", pj.Metadata.Name, len(refs.Pulls))
 	}
-	if err := c.ghc.CreateStatus(refs.Org, refs.Repo, refs.Pulls[0].SHA, github.Status{
+	if err := ghc.CreateStatus(refs.Org, refs.Repo, refs.Pulls[0].SHA, github.Status{
 		State:       string(pj.Status.State),
 		Description: pj.Status.Description,
 		Context:     pj.Spec.Context,
@@ -47,27 +63,27 @@ func (c *Controller) report(pj kube.ProwJob) error {
 	if pj.Status.State != github.StatusSuccess && pj.Status.State != github.StatusFailure {
 		return nil
 	}
-	ics, err := c.ghc.ListIssueComments(refs.Org, refs.Repo, refs.Pulls[0].Number)
+	ics, err := ghc.ListIssueComments(refs.Org, refs.Repo, refs.Pulls[0].Number)
 	if err != nil {
 		return fmt.Errorf("error listing comments: %v", err)
 	}
-	deletes, entries, updateID := parseIssueComments(pj, c.ghc.BotName(), ics)
+	deletes, entries, updateID := parseIssueComments(pj, ghc.BotName(), ics)
 	for _, delete := range deletes {
-		if err := c.ghc.DeleteComment(refs.Org, refs.Repo, delete); err != nil {
+		if err := ghc.DeleteComment(refs.Org, refs.Repo, delete); err != nil {
 			return fmt.Errorf("error deleting comment: %v", err)
 		}
 	}
 	if len(entries) > 0 {
-		comment, err := c.createComment(pj, entries)
+		comment, err := createComment(configAgent, pj, entries)
 		if err != nil {
 			return fmt.Errorf("generating comment: %v", err)
 		}
 		if updateID == 0 {
-			if err := c.ghc.CreateComment(refs.Org, refs.Repo, refs.Pulls[0].Number, comment); err != nil {
+			if err := ghc.CreateComment(refs.Org, refs.Repo, refs.Pulls[0].Number, comment); err != nil {
 				return fmt.Errorf("error creating comment: %v", err)
 			}
 		} else {
-			if err := c.ghc.EditComment(refs.Org, refs.Repo, updateID, comment); err != nil {
+			if err := ghc.EditComment(refs.Org, refs.Repo, updateID, comment); err != nil {
 				return fmt.Errorf("error updating comment: %v", err)
 			}
 		}
@@ -161,13 +177,13 @@ func createEntry(pj kube.ProwJob) string {
 // createComment take a ProwJob and a list of entries generated with
 // createEntry and returns a nicely formatted comment. It may fail if template
 // execution fails.
-func (c *Controller) createComment(pj kube.ProwJob, entries []string) (string, error) {
+func createComment(configAgent configAgent, pj kube.ProwJob, entries []string) (string, error) {
 	plural := ""
 	if len(entries) > 1 {
 		plural = "s"
 	}
 	var b bytes.Buffer
-	if err := c.ca.Config().Plank.ReportTemplate.Execute(&b, &pj); err != nil {
+	if err := configAgent.Config().Plank.ReportTemplate.Execute(&b, &pj); err != nil {
 		return "", err
 	}
 	lines := []string{
