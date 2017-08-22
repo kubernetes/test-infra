@@ -20,6 +20,7 @@ import (
 	"bytes"
 	"flag"
 	"io/ioutil"
+	"net/url"
 	"time"
 
 	"github.com/Sirupsen/logrus"
@@ -37,6 +38,7 @@ var (
 	buildCluster = flag.String("build-cluster", "", "Path to file containing a YAML-marshalled kube.Cluster object. If empty, uses the local cluster.")
 
 	githubBotName   = flag.String("github-bot-name", "", "Name of the GitHub bot.")
+	githubEndpoint  = flag.String("github-endpoint", "https://api.github.com", "GitHub's API endpoint.")
 	githubTokenFile = flag.String("github-token-file", "/etc/github/oauth", "Path to the file containing the GitHub OAuth token.")
 	dryRun          = flag.Bool("dry-run", true, "Whether or not to make mutating API calls to GitHub.")
 )
@@ -68,13 +70,19 @@ func main() {
 	if err != nil {
 		logrus.WithError(err).Fatalf("Could not read oauth secret file.")
 	}
+
+	_, err = url.Parse(*githubEndpoint)
+	if err != nil {
+		logrus.WithError(err).Fatalf("Must specify a valid --github-endpoint URL.")
+	}
+
 	oauthSecret := string(bytes.TrimSpace(oauthSecretRaw))
 
 	var ghc *github.Client
 	if *dryRun {
-		ghc = github.NewDryRunClient(*githubBotName, oauthSecret)
+		ghc = github.NewDryRunClient(*githubBotName, oauthSecret, *githubEndpoint)
 	} else {
-		ghc = github.NewClient(*githubBotName, oauthSecret)
+		ghc = github.NewClient(*githubBotName, oauthSecret, *githubEndpoint)
 	}
 
 	c, err := plank.NewController(kc, pkc, ghc, configAgent, *totURL)

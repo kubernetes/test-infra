@@ -20,6 +20,7 @@ import (
 	"bytes"
 	"flag"
 	"io/ioutil"
+	"net/url"
 	"time"
 
 	"github.com/Sirupsen/logrus"
@@ -38,6 +39,7 @@ var (
 	jenkinsTokenFile = flag.String("jenkins-token-file", "/etc/jenkins/jenkins", "Path to the file containing the Jenkins API token.")
 
 	githubBotName   = flag.String("github-bot-name", "", "Name of the GitHub bot.")
+	githubEndpoint  = flag.String("github-endpoint", "https://api.github.com", "GitHub's API endpoint.")
 	githubTokenFile = flag.String("github-token-file", "/etc/github/oauth", "Path to the file containing the GitHub OAuth token.")
 	dryRun          = flag.Bool("dry-run", true, "Whether or not to make mutating API calls to GitHub.")
 )
@@ -69,11 +71,16 @@ func main() {
 	}
 	oauthSecret := string(bytes.TrimSpace(oauthSecretRaw))
 
+	_, err = url.Parse(*githubEndpoint)
+	if err != nil {
+		logrus.WithError(err).Fatal("Must specify a valid --github-endpoint URL.")
+	}
+
 	var ghc *github.Client
 	if *dryRun {
-		ghc = github.NewDryRunClient(*githubBotName, oauthSecret)
+		ghc = github.NewDryRunClient(*githubBotName, oauthSecret, *githubEndpoint)
 	} else {
-		ghc = github.NewClient(*githubBotName, oauthSecret)
+		ghc = github.NewClient(*githubBotName, oauthSecret, *githubEndpoint)
 	}
 
 	c, err := jenkins.NewController(kc, jc, ghc, configAgent)

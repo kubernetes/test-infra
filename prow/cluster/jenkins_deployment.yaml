@@ -25,7 +25,7 @@ spec:
     spec:
       containers:
       - name: jenkins-operator
-        image: gcr.io/k8s-prow/jenkins-operator:0.37
+        image: gcr.io/k8s-prow/jenkins-operator:0.38
         args:
         - --dry-run=false
         - --github-bot-name=k8s-ci-robot
