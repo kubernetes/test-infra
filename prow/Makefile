@@ -121,12 +121,12 @@ plank-image:
 plank-deployment: get-cluster-credentials
 	kubectl apply -f cluster/plank_deployment.yaml
 
-jenkins-image:
-	CGO_ENABLED=0 go build -o cmd/jenkins/jenkins k8s.io/test-infra/prow/cmd/jenkins
-	docker build -t "$(REGISTRY)/$(PROJECT)/jenkins:$(JENKINS_VERSION)" $(DOCKER_LABELS) cmd/jenkins
-	$(PUSH) "$(REGISTRY)/$(PROJECT)/jenkins:$(JENKINS_VERSION)"
+jenkins-operator-image:
+	CGO_ENABLED=0 go build -o cmd/jenkins-operator/jenkins-operator k8s.io/test-infra/prow/cmd/jenkins-operator
+	docker build -t "$(REGISTRY)/$(PROJECT)/jenkins-operator:$(JENKINS_VERSION)" $(DOCKER_LABELS) cmd/jenkins-operator
+	$(PUSH) "$(REGISTRY)/$(PROJECT)/jenkins-operator:$(JENKINS_VERSION)"
 
-jenkins-deployment: get-cluster-credentials
+jenkins-operator-deployment: get-cluster-credentials
 	kubectl apply -f cluster/jenkins_deployment.yaml
 
-.PHONY: hook-image hook-deployment hook-service sinker-image sinker-deployment deck-image deck-deployment deck-service splice-image splice-deployment tot-image tot-service tot-deployment horologium-image horologium-deployment plank-image plank-deployment jenkins-image jenkins-deployment
+.PHONY: hook-image hook-deployment hook-service sinker-image sinker-deployment deck-image deck-deployment deck-service splice-image splice-deployment tot-image tot-service tot-deployment horologium-image horologium-deployment plank-image plank-deployment jenkins-operator-image jenkins-operator-deployment
