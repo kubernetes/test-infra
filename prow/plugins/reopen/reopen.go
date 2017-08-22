@@ -45,7 +45,7 @@ func handleIssueComment(pc plugins.PluginClient, ic github.IssueCommentEvent) er
 
 func handle(gc githubClient, log *logrus.Entry, ic github.IssueCommentEvent) error {
 	// Only consider closed issues and new comments.
-	if ic.Issue.State != "closed" || ic.Action != "created" {
+	if ic.Issue.State != "closed" || ic.Action != github.IssueCommentActionCreated {
 		return nil
 	}
 

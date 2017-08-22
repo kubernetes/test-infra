@@ -67,7 +67,7 @@ func (g *ghc) ListPullRequestComments(org, repo string, number int) ([]github.Re
 }
 
 var ice = github.IssueCommentEvent{
-	Action: "created",
+	Action: github.IssueCommentActionCreated,
 	Issue: github.Issue{
 		State:       "open",
 		Number:      42,

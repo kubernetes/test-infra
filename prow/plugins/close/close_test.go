@@ -65,7 +65,7 @@ func TestCloseComment(t *testing.T) {
 	// "a" is the author, "r1", and "r2" are reviewers.
 	var testcases = []struct {
 		name          string
-		action        string
+		action        github.IssueCommentEventAction
 		state         string
 		body          string
 		commenter     string
@@ -75,7 +75,7 @@ func TestCloseComment(t *testing.T) {
 	}{
 		{
 			name:          "non-close comment",
-			action:        "created",
+			action:        github.IssueCommentActionCreated,
 			state:         "open",
 			body:          "uh oh",
 			commenter:     "o",
@@ -84,7 +84,7 @@ func TestCloseComment(t *testing.T) {
 		},
 		{
 			name:          "close by author",
-			action:        "created",
+			action:        github.IssueCommentActionCreated,
 			state:         "open",
 			body:          "/close",
 			commenter:     "a",
@@ -93,7 +93,7 @@ func TestCloseComment(t *testing.T) {
 		},
 		{
 			name:          "close by author, trailing space.",
-			action:        "created",
+			action:        github.IssueCommentActionCreated,
 			state:         "open",
 			body:          "/close \r",
 			commenter:     "a",
@@ -102,7 +102,7 @@ func TestCloseComment(t *testing.T) {
 		},
 		{
 			name:          "close by reviewer",
-			action:        "created",
+			action:        github.IssueCommentActionCreated,
 			state:         "open",
 			body:          "/close",
 			commenter:     "r1",
@@ -111,7 +111,7 @@ func TestCloseComment(t *testing.T) {
 		},
 		{
 			name:          "close edited by author",
-			action:        "edited",
+			action:        github.IssueCommentActionEdited,
 			state:         "open",
 			body:          "/close",
 			commenter:     "a",
@@ -120,7 +120,7 @@ func TestCloseComment(t *testing.T) {
 		},
 		{
 			name:          "close by author on closed issue",
-			action:        "created",
+			action:        github.IssueCommentActionCreated,
 			state:         "closed",
 			body:          "/close",
 			commenter:     "a",
@@ -129,7 +129,7 @@ func TestCloseComment(t *testing.T) {
 		},
 		{
 			name:          "close by other person, non-member cannot close",
-			action:        "created",
+			action:        github.IssueCommentActionCreated,
 			state:         "open",
 			body:          "/close",
 			commenter:     "non-member",
@@ -139,7 +139,7 @@ func TestCloseComment(t *testing.T) {
 		},
 		{
 			name:          "close by other person, failed to assign",
-			action:        "created",
+			action:        github.IssueCommentActionCreated,
 			state:         "open",
 			body:          "/close",
 			commenter:     "non-owner-assign-error",
@@ -149,7 +149,7 @@ func TestCloseComment(t *testing.T) {
 		},
 		{
 			name:          "close by other person, assign and close",
-			action:        "created",
+			action:        github.IssueCommentActionCreated,
 			state:         "open",
 			body:          "/close",
 			commenter:     "non-owner",

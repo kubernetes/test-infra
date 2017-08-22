@@ -87,7 +87,7 @@ func handleIssueComment(pc plugins.PluginClient, ic github.IssueCommentEvent) er
 
 func handle(gc githubClient, log *logrus.Entry, ic github.IssueCommentEvent, j joker) error {
 	// Only consider new comments.
-	if ic.Action != "created" {
+	if ic.Action != github.IssueCommentActionCreated {
 		return nil
 	}
 	// Make sure they are requesting a joke

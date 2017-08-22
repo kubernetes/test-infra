@@ -125,7 +125,7 @@ func problemsInFiles(r *git.Repo, files map[string]string) (map[string]map[int]l
 
 func handle(ghc githubClient, gc *git.Client, log *logrus.Entry, ic github.IssueCommentEvent) error {
 	// Only handle open PRs and new requests.
-	if ic.Issue.State != "open" || !ic.Issue.IsPullRequest() || ic.Action != "created" {
+	if ic.Issue.State != "open" || !ic.Issue.IsPullRequest() || ic.Action != github.IssueCommentActionCreated {
 		return nil
 	}
 	if !lintRe.MatchString(ic.Comment.Body) {

@@ -105,7 +105,7 @@ func TestHandlePR(t *testing.T) {
 				},
 			},
 			event: github.PullRequestEvent{
-				Action: "opened",
+				Action: github.PullRequestActionOpened,
 				Number: 101,
 				PullRequest: github.PullRequest{
 					Number: 101,
@@ -167,7 +167,7 @@ func TestHandlePR(t *testing.T) {
 				},
 			},
 			event: github.PullRequestEvent{
-				Action: "opened",
+				Action: github.PullRequestActionOpened,
 				Number: 101,
 				PullRequest: github.PullRequest{
 					Number: 101,
@@ -255,7 +255,7 @@ func TestHandlePR(t *testing.T) {
 				},
 			},
 			event: github.PullRequestEvent{
-				Action: "opened",
+				Action: github.PullRequestActionOpened,
 				Number: 101,
 				PullRequest: github.PullRequest{
 					Number: 101,
@@ -278,7 +278,7 @@ func TestHandlePR(t *testing.T) {
 			name:   "pr closed event",
 			client: &ghc{},
 			event: github.PullRequestEvent{
-				Action: "closed",
+				Action: github.PullRequestActionClosed,
 			},
 			finalLabels: []github.Label{},
 		},
@@ -354,7 +354,7 @@ func TestHandlePR(t *testing.T) {
 				},
 			},
 			event: github.PullRequestEvent{
-				Action: "opened",
+				Action: github.PullRequestActionOpened,
 				Number: 101,
 				PullRequest: github.PullRequest{
 					Number: 101,

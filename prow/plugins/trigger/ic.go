@@ -35,7 +35,7 @@ func handleIC(c client, ic github.IssueCommentEvent) error {
 	number := ic.Issue.Number
 	commentAuthor := ic.Comment.User.Login
 	// Only take action when a comment is first created.
-	if ic.Action != "created" {
+	if ic.Action != github.IssueCommentActionCreated {
 		return nil
 	}
 	// If it's not an open PR, skip it.

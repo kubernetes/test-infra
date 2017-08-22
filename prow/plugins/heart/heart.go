@@ -81,7 +81,7 @@ func handlePullRequest(pc plugins.PluginClient, pre github.PullRequestEvent) err
 
 func handleIC(c client, ic github.IssueCommentEvent) error {
 	// Only consider new comments on PRs.
-	if !ic.Issue.IsPullRequest() || ic.Action != "created" {
+	if !ic.Issue.IsPullRequest() || ic.Action != github.IssueCommentActionCreated {
 		return nil
 	}
 	adoredLogin := false
@@ -109,7 +109,7 @@ func handleIC(c client, ic github.IssueCommentEvent) error {
 
 func handlePR(c client, pre github.PullRequestEvent) error {
 	// Only consider newly opened PRs
-	if pre.Action != "opened" {
+	if pre.Action != github.PullRequestActionOpened {
 		return nil
 	}
 
