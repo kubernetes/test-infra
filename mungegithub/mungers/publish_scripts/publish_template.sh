@@ -60,10 +60,12 @@ SCRIPT_DIR=$(dirname "${BASH_SOURCE}")
 source "${SCRIPT_DIR}"/util.sh
 
 git fetch origin
+git rebase --abort || true
+git reset --hard
+git clean -f -f -f
 if [ "$(git rev-parse --abbrev-ref HEAD)" = "${DST_BRANCH}" ]; then
     git reset --hard origin/"${DST_BRANCH}"
 else
-    git branch -D "${DST_BRANCH}" || true
     git branch -f "${DST_BRANCH}" origin/"${DST_BRANCH}"
     git checkout "${DST_BRANCH}"
 fi
