@@ -38,7 +38,7 @@ def check_output(*cmd):
     return subprocess.check_output(cmd)
 
 def upload_string(gcs_path, text):
-    """Uploads s to gcs_path"""
+    """Uploads text to gcs_path"""
     cmd = ['gsutil', '-q', '-h', 'Content-Type:text/plain', 'cp', '-', gcs_path]
     print >>sys.stderr, 'Run:', cmd, 'stdin=%s'%text
     proc = subprocess.Popen(cmd, stdin=subprocess.PIPE)
@@ -169,7 +169,7 @@ def main(args):
                 # log push-build location to path child jobs can find
                 # (gs://<shared-bucket>/$PULL_REFS/bazel-build-location.txt)
                 pull_refs = os.getenv('PULL_REFS', '')
-                gcs_shared = args.gcs_shared + pull_refs + '/bazel-build-location.txt'
+                gcs_shared = os.path.join(args.gcs_shared, pull_refs, 'bazel-build-location.txt')
                 if pull_refs:
                     upload_string(gcs_shared, gcs_build)
             except subprocess.CalledProcessError as exp:

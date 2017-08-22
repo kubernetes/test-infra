@@ -499,10 +499,11 @@ class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-method
         with Stub(kubernetes_e2e, 'check_env', self.fake_check_env):
             with Stub(kubernetes_e2e, 'read_gcs_path', raise_urllib2_error):
                 with Stub(os, 'getcwd', always_kubernetes):
-                    kubernetes_e2e.main(args)
-        lastcall = self.callstack[-1]
-        self.assertIn('--extract=local', lastcall)
-        self.assertIn('--build', lastcall)
+                    try:
+                        kubernetes_e2e.main(args)
+                    except RuntimeError as err:
+                        if not err.message.startswith('Failed to get shared build location'):
+                            raise err
 
 if __name__ == '__main__':
     unittest.main()

@@ -483,24 +483,19 @@ def main(args):
 
     if args.use_shared_build is not None:
         # find shared build location from GCS
-        gcs_path = args.gcs_shared
-        gcs_path += os.getenv('PULL_REFS', '') + '/'
+        build_file = ''
         if args.use_shared_build:
-            gcs_path += args.use_shared_build + '-'
-        gcs_path += 'build-location.txt'
+            build_file += args.use_shared_build + '-'
+        build_file += 'build-location.txt'
+        gcs_path = os.path.join(args.gcs_shared, os.getenv('PULL_REFS', ''), build_file)
         try:
-            build_loc = read_gcs_path(gcs_path)
             # tell kubetest to extract from this location
-            args.kubetest_args.append('--extract=' + build_loc)
+            args.kubetest_args.append('--extract=' + read_gcs_path(gcs_path))
             args.build = None
         except urllib2.URLError as err:
-            print >>sys.stderr, 'Failed to get shared build location: %s'%err.reason
-            print >>sys.stderr, 'Falling back to local build...'
-            # fall back on local build
-            args.kubetest_args.append('--extract=local')
-            args.build = args.use_shared_build
+            raise RuntimeError('Failed to get shared build location: %s' % err.reason)
 
-    if args.build is not None:
+    elif args.build is not None:
         if args.build == '':
             # Empty string means --build was passed without any arguments;
             # if --build wasn't passed, args.build would be None

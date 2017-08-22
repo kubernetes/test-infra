@@ -32,7 +32,7 @@ def check(*cmd):
     subprocess.check_call(cmd)
 
 def upload_string(gcs_path, text):
-    """Uploads s to gcs_path"""
+    """Uploads text to gcs_path"""
     cmd = ['gsutil', '-q', '-h', 'Content-Type:text/plain', 'cp', '-', gcs_path]
     print >>sys.stderr, 'Run:', cmd, 'stdin=%s'%text
     proc = subprocess.Popen(cmd, stdin=subprocess.PIPE)
@@ -91,7 +91,7 @@ def main(args):
         latest = build_tar.getmember("kubernetes/version").read().strip()
         gcs_build = os.path.join('gs://', bucket, dest, latest)
         # and then write it to GCS
-        gcs_shared = args.gcs_shared + pull_refs + '/build-location.txt'
+        gcs_shared = os.path.join(args.gcs_shared, pull_refs, 'build-location.txt')
         upload_string(gcs_shared, gcs_build)
 
 if __name__ == '__main__':
