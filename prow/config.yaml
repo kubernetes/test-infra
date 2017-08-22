@@ -108,13 +108,6 @@ presubmits:
       - name: cache-ssd
         hostPath:
           path: /mnt/disks/ssd0
-
-  - name: pull-kubernetes-build
-    agent: jenkins
-    context: pull-kubernetes-build
-    always_run: true
-    rerun_command: "/test pull-kubernetes-build"
-    trigger: "(?m)^/test( all| pull-kubernetes-build),?(\\s+|$)"
     run_after_success:
     - name: pull-kubernetes-e2e-gce-gpu
       agent: jenkins
@@ -414,12 +407,6 @@ presubmits:
       - name: cache-ssd
         hostPath:
           path: /mnt/disks/ssd0
-  - name: pull-security-kubernetes-build
-    agent: jenkins
-    context: pull-security-kubernetes-build
-    always_run: true
-    rerun_command: "/test pull-security-kubernetes-build"
-    trigger: "(?m)^/test( all| pull-security-kubernetes-build),?(\\s+|$)"
     run_after_success:
     - name: pull-security-kubernetes-e2e-gce-gpu
       agent: jenkins
