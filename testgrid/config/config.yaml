@@ -2340,8 +2340,7 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-master-new-gci-kubectl-skew-serial
     description: '1.7 serial tests run against a 1.8 gke cluster using a 1.7 kubectl binary'
 
-
-- name: master-upgrade
+- name: master-upgrade-optional
   dashboard_tab:
   - name: gke-cvm-1.6-cvm-master-upgrade-master
     test_group_name: ci-kubernetes-e2e-gke-cvm-stable-cvm-master-upgrade-master
@@ -2355,15 +2354,6 @@ dashboards:
   - name: gke-gci-1.6-gci-master-upgrade-master
     test_group_name: ci-kubernetes-e2e-gke-gci-stable-gci-master-upgrade-master
     description: 'Upgrade master only, in gke, from gci 1.6 to gci master'
-  - name: gce-1.7-master-upgrade-master
-    test_group_name: ci-kubernetes-e2e-gce-new-master-upgrade-master
-    description: 'Upgrade master only, in gce(debian), from 1.7 to master'
-  - name: gce-1.7-master-upgrade-cluster
-    test_group_name: ci-kubernetes-e2e-gce-new-master-upgrade-cluster
-    description: 'Upgrade master and node, in gce(debian), from 1.7 to master'
-  - name: gce-1.7-master-upgrade-cluster-new
-    test_group_name: ci-kubernetes-e2e-gce-new-master-upgrade-cluster-new
-    description: 'Upgrade master and node, in gce(debian), from 1.7 to master, and run skewed e2e tests'
   - name: gke-cvm-1.7-cvm-master-upgrade-master
     test_group_name: ci-kubernetes-e2e-gke-cvm-new-cvm-master-upgrade-master
     description: 'Upgrade master only, in gke(container-vm), from 1.7 to master'
@@ -2391,6 +2381,18 @@ dashboards:
   - name: gke-gci-1.7-cvm-master-upgrade-cluster-new
     test_group_name: ci-kubernetes-e2e-gke-gci-new-cvm-master-upgrade-cluster-new
     description: 'Upgrade master and node, in gke, from gci 1.7 to container-vm master, and run skewed e2e tests'
+
+- name: master-upgrade
+  dashboard_tab:
+  - name: gce-1.7-master-upgrade-master
+    test_group_name: ci-kubernetes-e2e-gce-new-master-upgrade-master
+    description: 'Upgrade master only, in gce(debian), from 1.7 to master'
+  - name: gce-1.7-master-upgrade-cluster
+    test_group_name: ci-kubernetes-e2e-gce-new-master-upgrade-cluster
+    description: 'Upgrade master and node, in gce(debian), from 1.7 to master'
+  - name: gce-1.7-master-upgrade-cluster-new
+    test_group_name: ci-kubernetes-e2e-gce-new-master-upgrade-cluster-new
+    description: 'Upgrade master and node, in gce(debian), from 1.7 to master, and run skewed e2e tests'
   - name: gke-gci-1.7-gci-master-upgrade-master
     test_group_name: ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-master
     description: 'Upgrade master only, in gke(gci), from 1.7 to master'
@@ -3978,6 +3980,7 @@ dashboard_groups:
   - release-master-blocking
   - master-kubectl-skew
   - master-upgrade
+  - master-upgrade-optional
 
 - name: release-branch-health
   dashboard_names:
