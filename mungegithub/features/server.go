@@ -65,20 +65,18 @@ func (s *ServerFeature) Name() string {
 
 // Initialize will initialize the feature.
 func (s *ServerFeature) Initialize(config *github.Config) error {
+	s.ConcurrentMux = sharedmux.NewConcurrentMux(http.DefaultServeMux)
 	if len(s.Address) == 0 {
 		return nil
 	}
 	if len(s.WWWRoot) > 0 {
 		wwwStat, err := os.Stat(s.WWWRoot)
-		if os.IsNotExist(err) || !wwwStat.IsDir() {
-			return nil
+		if !os.IsNotExist(err) && wwwStat.IsDir() {
+			s.ConcurrentMux.Handle("/", gziphandler.GzipHandler(http.FileServer(http.Dir(s.WWWRoot))))
 		}
-		http.Handle("/", gziphandler.GzipHandler(http.FileServer(http.Dir(s.WWWRoot))))
 	}
 	// config indicates that ServerFeature should be enabled.
-
-	http.Handle("/prometheus", promhttp.Handler())
-	s.ConcurrentMux = sharedmux.NewConcurrentMux(http.DefaultServeMux)
+	s.ConcurrentMux.Handle("/prometheus", promhttp.Handler())
 	s.Enabled = true
 	go http.ListenAndServe(s.Address, s.ConcurrentMux)
 	return nil
