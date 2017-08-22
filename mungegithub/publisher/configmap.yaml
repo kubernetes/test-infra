@@ -2,6 +2,7 @@ kind: ConfigMap
 metadata:
   name: kubernetes-publisher-config
 data:
+  organization: kubernetes # use by the init container
   config: |
     # basic config options.
     organization: kubernetes

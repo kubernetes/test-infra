@@ -17,6 +17,12 @@ spec:
         - -x
         - /publish_scripts/initialize_repos.sh
         - 2>&1
+        env:
+        - name: ORG
+          valueFrom:
+            configMapKeyRef:
+              name: @@-publisher-config
+              key: organization
         image: gcr.io/k8s-testimages/publisher:2016-05-24-86f86cd
         imagePullPolicy: Always
         resources:

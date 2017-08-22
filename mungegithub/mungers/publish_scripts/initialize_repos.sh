@@ -21,7 +21,7 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-ORG="kubernetes"
+ORG="${ORG:-kubernetes}"
 
 mkdir -p "${GOPATH}"/src/k8s.io
 cd "${GOPATH}"/src/k8s.io
@@ -46,7 +46,11 @@ fi
 
 # Install all staging dirs
 for repo in $(cd kubernetes/staging/src/k8s.io; ls -1); do
-    if [ ! -d "${repo}" ]; then
+    if [ -d "${repo}" ]; then
+	pushd ${repo}
+	    git remote set-url origin "https://github.com/${ORG}/${repo}"
+	popd
+    else
 	git clone "https://github.com/${ORG}/${repo}"
     fi
 done
