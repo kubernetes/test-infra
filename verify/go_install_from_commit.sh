@@ -21,7 +21,7 @@ PKG=$1
 COMMIT=$2
 export GOPATH=$3
 
-go get -d -u "${PKG}" 2>/dev/null
+go get -d -u "${PKG}"
 cd "${GOPATH}/src/${PKG}"
 git checkout -q "${COMMIT}"
 go install "${PKG}"
