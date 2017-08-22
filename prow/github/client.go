@@ -47,7 +47,6 @@ type Client struct {
 }
 
 const (
-	githubBase    = "https://api.github.com"
 	maxRetries    = 8
 	max404Retries = 2
 	maxSleepTime  = 2 * time.Minute
@@ -55,12 +54,12 @@ const (
 )
 
 // NewClient creates a new fully operational GitHub client.
-func NewClient(botName, token string) *Client {
+func NewClient(botName, token, base string) *Client {
 	return &Client{
 		client:  &http.Client{},
 		botName: botName,
 		token:   token,
-		base:    githubBase,
+		base:    base,
 		dry:     false,
 	}
 }
@@ -68,12 +67,12 @@ func NewClient(botName, token string) *Client {
 // NewDryRunClient creates a new client that will not perform mutating actions
 // such as setting statuses or commenting, but it will still query GitHub and
 // use up API tokens.
-func NewDryRunClient(botName, token string) *Client {
+func NewDryRunClient(botName, token, base string) *Client {
 	return &Client{
 		client:  &http.Client{},
 		botName: botName,
 		token:   token,
-		base:    githubBase,
+		base:    base,
 		dry:     true,
 	}
 }

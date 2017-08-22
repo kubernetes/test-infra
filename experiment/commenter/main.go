@@ -28,6 +28,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"net/url"
 	"regexp"
 	"strconv"
 	"strings"
@@ -63,6 +64,7 @@ func flagOptions() options {
 	flag.StringVar(&o.comment, "comment", "", "Append the following comment to matching issues")
 	flag.BoolVar(&o.useTemplate, "template", false, TemplateHelp)
 	flag.IntVar(&o.ceiling, "ceiling", 3, "Maximum number of issues to modify, 0 for infinite")
+	flag.StringVar(&o.endpoint, "endpoint", "https://api.github.com", "GitHub's API endpoint")
 	flag.StringVar(&o.token, "token", "", "Path to github token")
 	flag.Parse()
 	return o
@@ -83,6 +85,7 @@ type options struct {
 	useTemplate   bool
 	query         string
 	sort          string
+	endpoint      string
 	token         string
 	updated       time.Duration
 	confirm       bool
@@ -141,13 +144,17 @@ func main() {
 	if err != nil {
 		log.Fatalf("cannot read --token: %v", err)
 	}
+	_, err = url.Parse(o.endpoint)
+	if err != nil {
+		log.Fatal("Must specify a valid --endpoint URL.")
+	}
 
 	var c client
 	tok := strings.TrimSpace(string(b))
 	if o.confirm {
-		c = github.NewClient(ClientUser, tok)
+		c = github.NewClient(ClientUser, tok, o.endpoint)
 	} else {
-		c = github.NewDryRunClient(ClientUser, tok)
+		c = github.NewDryRunClient(ClientUser, tok, o.endpoint)
 	}
 
 	query, err := makeQuery(o.query, o.includeClosed, o.updated)
