@@ -18,7 +18,7 @@
 # k8s.io/kubernetes/staging/src/${repo} to the ${dst_branch} of
 # k8s.io/${repo}.
 #
-# dependent_k8s.io_repos are expected to be separated by ",", 
+# dependent_k8s.io_repos are expected to be separated by ",",
 # e.g., "client-go,apimachinery". We will expand it to
 # "repo:commit,repo:commit..." in the future.
 #
@@ -35,6 +35,7 @@
 set -o errexit
 set -o nounset
 set -o pipefail
+set -o xtrace
 
 if [ ! $# -eq 6 ]; then
     echo "usage: $0 repo src_branch dst_branch dependent_k8s.io_repos kubernetes_remote is_library"
@@ -59,27 +60,26 @@ readonly SRC_BRANCH DST_BRANCH DEPS KUBERNETES_REMOTE IS_LIBRARY
 SCRIPT_DIR=$(dirname "${BASH_SOURCE}")
 source "${SCRIPT_DIR}"/util.sh
 
-git fetch origin
-if [ "$(git rev-parse --abbrev-ref HEAD)" = "${DST_BRANCH}" ]; then
-    git reset --hard origin/"${DST_BRANCH}"
+echo "Fetching from origin."
+git fetch origin --no-tags
+echo "Cleaning up checkout."
+git rebase --abort >/dev/null || true
+git reset -q --hard
+git clean -q -f -f -d
+git checkout -q $(git rev-parse HEAD) || true
+git branch -D "${DST_BRANCH}" >/dev/null || true
+git remote set-head origin -d >/dev/null # this let's filter-branch fail
+if git rev-parse origin/"${DST_BRANCH}" &>/dev/null; then
+    echo "Switching to origin/${DST_BRANCH}."
+    git branch -f "${DST_BRANCH}" origin/"${DST_BRANCH}" >/dev/null
+    git checkout -q "${DST_BRANCH}"
 else
-    git branch -D "${DST_BRANCH}" || true
-    git branch -f "${DST_BRANCH}" origin/"${DST_BRANCH}"
-    git checkout "${DST_BRANCH}"
+    # this is a new branch. Create an orphan branch without any commit.
+    echo "Branch origin/${DST_BRANCH} not found. Creating orphan ${DST_BRANCH} branch."
+    git checkout -q --orphan "${DST_BRANCH}"
+    git rm -q --ignore-unmatch -rf .
 fi
 
 # sync_repo cherry-picks the commits that change
 # k8s.io/kubernetes/staging/src/k8s.io/${REPO} to the ${DST_BRANCH}
-sync_repo "staging/src/k8s.io/${REPO}" "${SRC_BRANCH}" "${KUBERNETES_REMOTE}"
-
-# update_godeps_json updates the Godeps/Godeps.json to track the latest commits
-# of k8s.io/*. 
-IFS=',' read -a deps <<< "${DEPS}"
-dep_count=${#deps[@]}
-for (( i=0; i<${dep_count}; i++ )); do
-    update_godeps_json "${deps[i]}"
-done
-
-# restore the vendor/ folder. k8s.io/* and github.com/golang/glog will be
-# removed from the vendor folder
-restore_vendor "${DEPS}" "${IS_LIBRARY}"
+sync_repo "staging/src/k8s.io/${REPO}" "${SRC_BRANCH}" "${DST_BRANCH}" "${KUBERNETES_REMOTE}" "${DEPS}" "${IS_LIBRARY}"
