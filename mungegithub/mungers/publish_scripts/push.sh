@@ -37,4 +37,5 @@ source "${SCRIPT_DIR}"/util.sh
 set_github_token "${TOKEN}"
 trap cleanup_github_token EXIT SIGINT
 
-git push origin "${BRANCH}"
+git push origin "${BRANCH}" --follow-tags
+
