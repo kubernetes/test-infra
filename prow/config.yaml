@@ -12913,7 +12913,6 @@ periodics:
     - args:
       - --timeout=170
       - --bare
-      - --upload=gs://shyamjvs-test/logs
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
         value: /etc/service-account/service-account.json
