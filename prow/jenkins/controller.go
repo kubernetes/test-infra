@@ -232,11 +232,6 @@ func (c *Controller) syncJenkinsJob(pj kube.ProwJob, reports chan<- kube.ProwJob
 		pj.Status.State = kube.PendingState
 		c.incrementNumPendingJobs(pj.Spec.Job)
 		env := npj.EnvForSpec(pj.Spec)
-		// These two are provided for backwards-compatibility with scripts that
-		// used the ghprb plugin.
-		// TODO(spxtr): Remove these.
-		env["ghprbPullId"] = pj.Spec.Refs.String()
-		env["ghprbTargetBranch"] = pj.Spec.Refs.BaseRef
 
 		br := BuildRequest{
 			JobName:     pj.Spec.Job,
