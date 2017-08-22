@@ -98,32 +98,6 @@ func (ja *JobAgent) Jobs() []Job {
 
 var jobNameRE = regexp.MustCompile(`^([\w-]+)-(\d+)$`)
 
-// TODO(#3402): Remove this.
-func (ja *JobAgent) GetLog(name string) ([]byte, error) {
-	ja.mut.Lock()
-	job, ok := ja.jobsMap[name]
-	ja.mut.Unlock() // unlock now-- getting the log takes a while!
-	if !ok {
-		return nil, fmt.Errorf("no such job %s", name)
-	}
-	if job.Agent == kube.KubernetesAgent {
-		// running on Kubernetes
-		return ja.pkc.GetLog(name)
-	} else if ja.jc != nil && job.Agent == kube.JenkinsAgent {
-		// running on Jenkins
-		m := jobNameRE.FindStringSubmatch(name)
-		if m == nil {
-			return nil, fmt.Errorf("invalid job name %s", name)
-		}
-		number, err := strconv.Atoi(m[2])
-		if err != nil {
-			return nil, err
-		}
-		return ja.jc.GetLog(m[1], number)
-	}
-	return nil, fmt.Errorf("cannot get log for %s", name)
-}
-
 func (ja *JobAgent) GetJobLog(job, id string) ([]byte, error) {
 	var j kube.ProwJob
 	ja.mut.Lock()

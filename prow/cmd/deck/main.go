@@ -115,7 +115,6 @@ func handleData(ja *JobAgent) http.HandlerFunc {
 }
 
 type logClient interface {
-	GetLog(name string) ([]byte, error)
 	GetJobLog(job, id string) ([]byte, error)
 }
 
@@ -124,25 +123,9 @@ func handleLog(lc logClient) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Cache-Control", "no-cache")
 		w.Header().Set("Access-Control-Allow-Origin", "*")
-		pod := r.URL.Query().Get("pod")
 		job := r.URL.Query().Get("job")
 		id := r.URL.Query().Get("id")
-		if pod != "" {
-			// TODO(#3402): Remove this branch.
-			if !objReg.MatchString(pod) {
-				http.Error(w, "Invalid pod query", http.StatusBadRequest)
-				return
-			}
-			log, err := lc.GetLog(pod)
-			if err != nil {
-				http.Error(w, fmt.Sprintf("Log not found: %v", err), http.StatusNotFound)
-				logrus.WithError(err).Warning("Error returned.")
-				return
-			}
-			if _, err = w.Write(log); err != nil {
-				logrus.WithError(err).Warning("Error writing log.")
-			}
-		} else if job != "" && id != "" {
+		if job != "" && id != "" {
 			if !objReg.MatchString(job) {
 				http.Error(w, "Invalid job query", http.StatusBadRequest)
 				return
