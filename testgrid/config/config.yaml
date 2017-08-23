@@ -1641,10 +1641,59 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster-new
 - name: ci-kubernetes-e2e-mlkube-gke
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-mlkube-gke
-
 #ibm ppc64le test results
 - name: ppc64le-conformance
   gcs_prefix: ppc64le-kubernetes/logs/ci-conformance-kubernetes
+#presubmits
+- name: pull-kubernetes-bazel
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-bazel
+  days_of_results: 1
+- name: pull-kubernetes-cross
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-cross
+  days_of_results: 1
+- name: pull-kubernetes-e2e-gce-canary
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-gce-canary
+  days_of_results: 1
+- name: pull-kubernetes-e2e-gce-etcd3
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-gce-etcd3
+  days_of_results: 1
+- name: pull-kubernetes-e2e-gce-gci
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-gce-gci
+  days_of_results: 1
+- name: pull-kubernetes-e2e-gce-gpu
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-gce-gpu
+  days_of_results: 1
+- name: pull-kubernetes-e2e-gke
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-gke
+  days_of_results: 1
+- name: pull-kubernetes-e2e-gke-gci
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-gke-gci
+  days_of_results: 1
+- name: pull-kubernetes-e2e-kops-aws
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-kops-aws
+  days_of_results: 1
+- name: pull-kubernetes-e2e-kubeadm-gce
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-kubeadm-gce
+  days_of_results: 1
+- name: pull-kubernetes-federation-e2e-gce
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-federation-e2e-gce
+  days_of_results: 1
+- name: pull-kubernetes-federation-e2e-gce-canary
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-federation-e2e-gce-canary
+  days_of_results: 1
+- name: pull-kubernetes-kubemark-e2e-gce
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-kubemark-e2e-gce
+  days_of_results: 1
+- name: pull-kubernetes-node-e2e
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-node-e2e
+  days_of_results: 1
+- name: pull-kubernetes-unit
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-unit
+  days_of_results: 1
+- name: pull-kubernetes-verify
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-verify
+  days_of_results: 1
+
 # Add New Testgroups Here
 
 #
@@ -3940,6 +3989,41 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-scalability-canary
     code_search_url_template:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+
+- name: kubernetes-presubmits
+  dashboard_tab:
+  - name: pull-kubernetes-bazel
+    test_group_name: pull-kubernetes-bazel
+  - name: pull-kubernetes-cross
+    test_group_name: pull-kubernetes-cross
+  - name: pull-kubernetes-e2e-gce-canary
+    test_group_name: pull-kubernetes-e2e-gce-canary
+  - name: pull-kubernetes-e2e-gce-etcd3
+    test_group_name: pull-kubernetes-e2e-gce-etcd3
+  - name: pull-kubernetes-e2e-gce-gci
+    test_group_name: pull-kubernetes-e2e-gce-gci
+  - name: pull-kubernetes-e2e-gce-gpu
+    test_group_name: pull-kubernetes-e2e-gce-gpu
+  - name: pull-kubernetes-e2e-gke
+    test_group_name: pull-kubernetes-e2e-gke
+  - name: pull-kubernetes-e2e-gke-gci
+    test_group_name: pull-kubernetes-e2e-gke-gci
+  - name: pull-kubernetes-e2e-kops-aws
+    test_group_name: pull-kubernetes-e2e-kops-aws
+  - name: pull-kubernetes-e2e-kubeadm-gce
+    test_group_name: pull-kubernetes-e2e-kubeadm-gce
+  - name: pull-kubernetes-federation-e2e-gce
+    test_group_name: pull-kubernetes-federation-e2e-gce
+  - name: pull-kubernetes-federation-e2e-gce-canary
+    test_group_name: pull-kubernetes-federation-e2e-gce-canary
+  - name: pull-kubernetes-kubemark-e2e-gce
+    test_group_name: pull-kubernetes-kubemark-e2e-gce
+  - name: pull-kubernetes-node-e2e
+    test_group_name: pull-kubernetes-node-e2e
+  - name: pull-kubernetes-unit
+    test_group_name: pull-kubernetes-unit
+  - name: pull-kubernetes-verify
+    test_group_name: pull-kubernetes-verify
 #
 # Start dashboard groups
 #
