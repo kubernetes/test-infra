@@ -270,6 +270,14 @@ class BuildTest(main_test.TestBase):
         response2 = self.get_build_page()
         self.assertEqual(str(response), str(response2))
 
+    def test_build_directory_redir(self):
+        build_dir = '/kubernetes-jenkins/pr-logs/directory/somejob/1234'
+        target_dir = '/kubernetes-jenkins/pr-logs/pull/45/somejob/1234'
+        write(build_dir + '.txt', 'gs:/' + target_dir)
+        resp = app.get('/build' + build_dir)
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(resp.location, 'http://localhost/build' + target_dir)
+
     def do_view_build_list_test(self, job_dir='/buck/some-job/', indirect=False):
         sta_result = {'timestamp': 12345}
         fin_result = {'result': 'SUCCESS'}

@@ -160,6 +160,13 @@ class BuildHandler(view_base.BaseHandler):
     """Show information about a Build and its failing tests."""
     def get(self, prefix, job, build):
         # pylint: disable=too-many-locals
+        if prefix.endswith('/directory'):
+            # redirect directory requests
+            link = gcs_async.read('/%s/%s/%s.txt' % (prefix, job, build)).get_result()
+            if link and link.startswith('gs://'):
+                self.redirect('/build/' + link.replace('gs://', ''))
+                return
+
         job_dir = '/%s/%s/' % (prefix, job)
         testgrid_query = testgrid.path_to_query(job_dir)
         build_dir = job_dir + build
