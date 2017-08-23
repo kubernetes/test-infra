@@ -1654,6 +1654,12 @@ test_groups:
 - name: pull-kubernetes-cross
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-cross
   days_of_results: 1
+- name: pull-kubernetes-e2e-gce
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-gce
+  days_of_results: 1
+- name: pull-kubernetes-e2e-gce-bazel
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-gce-bazel
+  days_of_results: 1
 - name: pull-kubernetes-e2e-gce-canary
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-gce-canary
   days_of_results: 1
@@ -3997,36 +4003,58 @@ dashboards:
   dashboard_tab:
   - name: pull-kubernetes-bazel
     test_group_name: pull-kubernetes-bazel
+    base_options: 'width=10'
   - name: pull-kubernetes-cross
     test_group_name: pull-kubernetes-cross
+    base_options: 'width=10'
+  - name: pull-kubernetes-e2e-gce
+    test_group_name: pull-kubernetes-e2e-gce
+    base_options: 'width=10'
+  - name: pull-kubernetes-e2e-gce-bazel
+    test_group_name: pull-kubernetes-e2e-gce-bazel
+    base_options: 'width=10'
   - name: pull-kubernetes-e2e-gce-canary
     test_group_name: pull-kubernetes-e2e-gce-canary
+    base_options: 'width=10'
   - name: pull-kubernetes-e2e-gce-etcd3
     test_group_name: pull-kubernetes-e2e-gce-etcd3
+    base_options: 'width=10'
   - name: pull-kubernetes-e2e-gce-gci
     test_group_name: pull-kubernetes-e2e-gce-gci
+    base_options: 'width=10'
   - name: pull-kubernetes-e2e-gce-gpu
     test_group_name: pull-kubernetes-e2e-gce-gpu
+    base_options: 'width=10'
   - name: pull-kubernetes-e2e-gke
     test_group_name: pull-kubernetes-e2e-gke
+    base_options: 'width=10'
   - name: pull-kubernetes-e2e-gke-gci
     test_group_name: pull-kubernetes-e2e-gke-gci
+    base_options: 'width=10'
   - name: pull-kubernetes-e2e-kops-aws
     test_group_name: pull-kubernetes-e2e-kops-aws
+    base_options: 'width=10'
   - name: pull-kubernetes-e2e-kubeadm-gce
     test_group_name: pull-kubernetes-e2e-kubeadm-gce
+    base_options: 'width=10'
   - name: pull-kubernetes-federation-e2e-gce
     test_group_name: pull-kubernetes-federation-e2e-gce
+    base_options: 'width=10'
   - name: pull-kubernetes-federation-e2e-gce-canary
     test_group_name: pull-kubernetes-federation-e2e-gce-canary
+    base_options: 'width=10'
   - name: pull-kubernetes-kubemark-e2e-gce
     test_group_name: pull-kubernetes-kubemark-e2e-gce
+    base_options: 'width=10'
   - name: pull-kubernetes-node-e2e
     test_group_name: pull-kubernetes-node-e2e
+    base_options: 'width=10'
   - name: pull-kubernetes-unit
     test_group_name: pull-kubernetes-unit
+    base_options: 'width=10'
   - name: pull-kubernetes-verify
     test_group_name: pull-kubernetes-verify
+    base_options: 'width=10'
 #
 # Start dashboard groups
 #
