@@ -1467,8 +1467,6 @@ class JobTest(unittest.TestCase):
 
     yaml_suffix = {
         'job-configs/bootstrap-maintenance.yaml' : 'suffix',
-        'job-configs/kubernetes-jenkins/bootstrap-maintenance-ci.yaml' : 'suffix',
-        'job-configs/kubernetes-jenkins-pull/bootstrap-maintenance-pull.yaml' : 'suffix',
         'job-configs/kubernetes-jenkins-pull/bootstrap-pull-json.yaml' : 'jsonsuffix',
         'job-configs/kubernetes-jenkins-pull/bootstrap-security-pull.yaml' : 'suffix',
         'job-configs/kubernetes-jenkins/bootstrap-ci.yaml' : 'suffix',
@@ -1512,34 +1510,6 @@ class JobTest(unittest.TestCase):
             return job_name
 
         self.check_bootstrap_yaml('job-configs/bootstrap-maintenance.yaml', check)
-
-    def test_bootstrap_maintenance_ci(self):
-        def check(job, name):
-            job_name = 'maintenance-ci-%s' % name
-            self.assertIn('frequency', job)
-            self.assertIn('repo-name', job)
-            self.assertIn('.', job['repo-name'])  # Has domain
-            self.assertIn('timeout', job)
-            self.assertNotIn('json', job)
-            self.assertGreater(job['timeout'], 0)
-            return job_name
-
-        self.check_bootstrap_yaml(
-            'job-configs/kubernetes-jenkins/bootstrap-maintenance-ci.yaml', check)
-
-    def test_bootstrap_maintenance_pull(self):
-        def check(job, name):
-            job_name = 'maintenance-pull-%s' % name
-            self.assertIn('frequency', job)
-            self.assertIn('repo-name', job)
-            self.assertIn('.', job['repo-name'])  # Has domain
-            self.assertIn('timeout', job)
-            self.assertNotIn('json', job)
-            self.assertGreater(job['timeout'], 0)
-            return job_name
-
-        self.check_bootstrap_yaml(
-            'job-configs/kubernetes-jenkins-pull/bootstrap-maintenance-pull.yaml', check)
 
     def test_bootstrap_pull_json_yaml(self):
         def check(job, name):
