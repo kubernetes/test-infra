@@ -10,6 +10,10 @@ sinker:
 prowjob_namespace: default
 pod_namespace: test-pods
 
+tide:
+  queries:
+  - "type:pr state:open -status:failure -status:error repo:kubernetes/test-infra label:lgtm -label:do-not-merge"
+
 triggers:
 - repos:
   - kubernetes

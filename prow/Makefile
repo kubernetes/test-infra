@@ -23,6 +23,7 @@ TOT_VERSION        ?= 0.5
 HOROLOGIUM_VERSION ?= 0.8
 PLANK_VERSION      ?= 0.38
 JENKINS_VERSION    ?= 0.38
+TIDE_VERSION       ?= 0.0
 
 # These are the usual GKE variables.
 PROJECT       ?= k8s-prow
@@ -129,4 +130,12 @@ jenkins-operator-image:
 jenkins-operator-deployment: get-cluster-credentials
 	kubectl apply -f cluster/jenkins_deployment.yaml
 
-.PHONY: hook-image hook-deployment hook-service sinker-image sinker-deployment deck-image deck-deployment deck-service splice-image splice-deployment tot-image tot-service tot-deployment horologium-image horologium-deployment plank-image plank-deployment jenkins-operator-image jenkins-operator-deployment
+tide-image:
+	CGO_ENABLED=0 go build -o cmd/tide/tide k8s.io/test-infra/prow/cmd/tide
+	docker build -t "$(REGISTRY)/$(PROJECT)/tide:$(TIDE_VERSION)" $(DOCKER_LABELS) cmd/tide
+	$(PUSH) "$(REGISTRY)/$(PROJECT)/tide:$(TIDE_VERSION)"
+
+tide-deployment: get-cluster-credentials
+	kubectl apply -f cluster/tide_deployment.yaml
+
+.PHONY: hook-image hook-deployment hook-service sinker-image sinker-deployment deck-image deck-deployment deck-service splice-image splice-deployment tot-image tot-service tot-deployment horologium-image horologium-deployment plank-image plank-deployment jenkins-operator-image jenkins-operator-deployment tide-image tide-deployment

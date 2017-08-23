@@ -185,6 +185,26 @@
 			"Rev": "0aa62d5ddceb50dbcb909d790b5345affd3669b6"
 		},
 		{
+			"ImportPath": "github.com/shurcooL/githubql",
+			"Rev": "b3091cd0b2f573f6945eb6f15b0559c06330a1a8"
+		},
+		{
+			"ImportPath": "github.com/shurcooL/go/ctxhttp",
+			"Rev": "5924e6132c2f184e262d4bc779e5745fa297d093"
+		},
+		{
+			"ImportPath": "github.com/shurcooL/graphql",
+			"Rev": "52ce28a2c9fdfbdb3377232422c7915fa04b678a"
+		},
+		{
+			"ImportPath": "github.com/shurcooL/graphql/ident",
+			"Rev": "52ce28a2c9fdfbdb3377232422c7915fa04b678a"
+		},
+		{
+			"ImportPath": "github.com/shurcooL/graphql/internal/jsonutil",
+			"Rev": "52ce28a2c9fdfbdb3377232422c7915fa04b678a"
+		},
+		{
 			"ImportPath": "github.com/spf13/cobra",
 			"Rev": "4c05eb1145f16d0e6bb4a3e1b6d769f4713cb41f"
 		},

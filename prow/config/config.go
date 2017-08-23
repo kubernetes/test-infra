@@ -38,6 +38,7 @@ type Config struct {
 	// Periodics are not associated with any repo.
 	Periodics []Periodic `json:"periodics,omitempty"`
 
+	Tide     Tide      `json:"tide,omitempty"`
 	Plank    Plank     `json:"plank,omitempty"`
 	Sinker   Sinker    `json:"sinker,omitempty"`
 	Triggers []Trigger `json:"triggers,omitempty"`
@@ -52,6 +53,13 @@ type Config struct {
 	// The namespace needs to exist and will not be created by prow.
 	PodNamespace string       `json:"pod_namespace,omitempty"`
 	SlackEvents  []SlackEvent `json:"slackevents,omitempty"`
+}
+
+// Tide is config for the tide pool.
+type Tide struct {
+	// These must be valid GitHub search queries. They should not overlap,
+	// which is to say two queries should never return the same PR.
+	Queries []string `json:"queries,omitempty"`
 }
 
 // Plank is config for the plank controller.

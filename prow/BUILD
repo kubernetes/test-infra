@@ -25,6 +25,7 @@ filegroup(
         "//prow/cmd/plank:all-srcs",
         "//prow/cmd/sinker:all-srcs",
         "//prow/cmd/splice:all-srcs",
+        "//prow/cmd/tide:all-srcs",
         "//prow/cmd/tot:all-srcs",
         "//prow/config:all-srcs",
         "//prow/git:all-srcs",
@@ -38,6 +39,7 @@ filegroup(
         "//prow/plugins:all-srcs",
         "//prow/report:all-srcs",
         "//prow/slack:all-srcs",
+        "//prow/tide:all-srcs",
     ],
     tags = ["automanaged"],
 )
