@@ -601,3 +601,26 @@ Automatic merge from submit-queue (batch tested with PRs 1, 2, 1234, 57)
 		}
 	}
 }
+
+func TestClearMilestone(t *testing.T) {
+	issue := github_test.Issue("", 1, []string{}, false)
+	issue.Milestone = &github.Milestone{Title: stringPtr("v1.2"), Number: intPtr(1)}
+
+	client, server, _ := github_test.InitServer(t, issue, nil, nil, nil, nil, nil, nil)
+	config := &Config{
+		client:  client,
+		Org:     "o",
+		Project: "r",
+	}
+
+	obj, err := config.GetObject(*issue.Number)
+	if err != nil {
+		t.Fatalf("Unable to get issue")
+	}
+
+	if !obj.ClearMilestone() || obj.Issue.Milestone != nil {
+		t.Fatalf("Unable to clear milestone for issue")
+	}
+
+	server.Close()
+}

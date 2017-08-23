@@ -90,18 +90,26 @@ func Issue(user string, number int, labels []string, isPR bool) *github.Issue {
 	if isPR {
 		issue.PullRequestLinks = &github.PullRequestLinks{}
 	}
+	issue.Labels = StringsToLabels(labels)
+	return issue
+}
+
+// StringsToLabels converts a slice of label names to a slice of
+// github.Label instances in non-determinastic order.
+func StringsToLabels(labelNames []string) []github.Label {
 	// putting it in a map means ordering is non-deterministic
 	lmap := map[int]github.Label{}
-	for i, label := range labels {
+	for i, label := range labelNames {
 		l := github.Label{
 			Name: stringPtr(label),
 		}
 		lmap[i] = l
 	}
+	labels := []github.Label{}
 	for _, l := range lmap {
-		issue.Labels = append(issue.Labels, l)
+		labels = append(labels, l)
 	}
-	return issue
+	return labels
 }
 
 // MultiIssueEvents packages up events for when you have multiple issues in the
