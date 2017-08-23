@@ -3501,22 +3501,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gci-gke
     base_options: 'include-filter-by-regex=Kubectl%7Ckubectl'
     description: 'kubectl gke e2e tests for master branch'
-  - name: gce-flaky
-    test_group_name: ci-kubernetes-e2e-gci-gce-flaky
-    base_options: 'include-filter-by-regex=Kubectl%7Ckubectl'
-    description: 'kubectl gce flaky e2e tests for master branch'
-  - name: gke-flaky
-    test_group_name: ci-kubernetes-e2e-gci-gke-flaky
-    base_options: 'include-filter-by-regex=Kubectl%7Ckubectl'
-    description: 'kubectl gke flaky e2e tests for master branch'
-  - name: gce-slow
-    test_group_name: ci-kubernetes-e2e-gci-gce-slow
-    base_options: 'include-filter-by-regex=Kubectl%7Ckubectl'
-    description: 'kubectl gce slow e2e tests for master branch'
-  - name: gke-slow
-    test_group_name: ci-kubernetes-e2e-gci-gke-slow
-    base_options: 'include-filter-by-regex=Kubectl%7Ckubectl'
-    description: 'kubectl gke slow e2e tests for master branch'
   - name: gce-serial
     test_group_name: ci-kubernetes-e2e-gce-gci-serial-sig-cli
     description: 'kubectl gce serial e2e tests for master branch'
