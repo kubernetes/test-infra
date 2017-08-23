@@ -15642,6 +15642,75 @@ periodics:
       secret:
         secretName: triage-service-account
 
+- interval: 1h
+  agent: kubernetes
+  name: maintenance-ci-aws-janitor
+  spec:
+    containers:
+    - args:
+      - --timeout=30
+      - --repo=k8s.io/test-infra=master
+      - --service-account=/etc/service-account/service-account.json
+      - --upload=gs://kubernetes-jenkins/logs
+      env:
+      - name: GOOGLE_APPLICATION_CREDENTIALS
+        value: /etc/service-account/service-account.json
+      image: gcr.io/k8s-testimages/gcloud-in-go:0.2
+      volumeMounts:
+      - mountPath: /etc/service-account
+        name: service
+        readOnly: true
+    volumes:
+    - name: service
+      secret:
+        secretName: service-account
+
+- interval: 24h
+  agent: kubernetes
+  name: maintenance-ci-janitor
+  spec:
+    containers:
+    - args:
+      - --timeout=600
+      - --repo=k8s.io/test-infra=master
+      - --service-account=/etc/service-account/service-account.json
+      - --upload=gs://kubernetes-jenkins/logs
+      env:
+      - name: GOOGLE_APPLICATION_CREDENTIALS
+        value: /etc/service-account/service-account.json
+      image: gcr.io/k8s-testimages/gcloud-in-go:0.2
+      volumeMounts:
+      - mountPath: /etc/service-account
+        name: service
+        readOnly: true
+    volumes:
+    - name: service
+      secret:
+        secretName: service-account
+
+- interval: 1h
+  agent: kubernetes
+  name: maintenance-pull-janitor
+  spec:
+    containers:
+    - args:
+      - --timeout=30
+      - --repo=k8s.io/test-infra=master
+      - --service-account=/etc/service-account/service-account.json
+      - --upload=gs://kubernetes-jenkins/logs
+      env:
+      - name: GOOGLE_APPLICATION_CREDENTIALS
+        value: /etc/service-account/service-account.json
+      image: gcr.io/k8s-testimages/gcloud-in-go:0.2
+      volumeMounts:
+      - mountPath: /etc/service-account
+        name: service
+        readOnly: true
+    volumes:
+    - name: service
+      secret:
+        secretName: service-account
+
 - name: metrics-bigquery
   interval: 24h
   agent: kubernetes
