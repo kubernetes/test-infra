@@ -746,9 +746,9 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-in-go:0.2
+      - image: gcr.io/k8s-testimages/gcloud-in-go:0.3
         args:
-        - "--pull=$(PULL_REFS)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--clean"
@@ -782,9 +782,9 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-in-go:0.2
+      - image: gcr.io/k8s-testimages/gcloud-in-go:0.3
         args:
-        - "--pull=$(PULL_REFS)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--clean"
@@ -818,9 +818,9 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-in-go:0.2
+      - image: gcr.io/k8s-testimages/gcloud-in-go:0.3
         args:
-        - "--pull=$(PULL_REFS)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--clean"
@@ -1282,7 +1282,7 @@ postsubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-in-go:0.2
+      - image: gcr.io/k8s-testimages/gcloud-in-go:0.3
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -15648,14 +15648,14 @@ periodics:
   spec:
     containers:
     - args:
+      - --bare
       - --timeout=30
-      - --repo=k8s.io/test-infra=master
       - --service-account=/etc/service-account/service-account.json
       - --upload=gs://kubernetes-jenkins/logs
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
         value: /etc/service-account/service-account.json
-      image: gcr.io/k8s-testimages/gcloud-in-go:0.2
+      image: gcr.io/k8s-testimages/gcloud-in-go:0.3
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -15671,14 +15671,14 @@ periodics:
   spec:
     containers:
     - args:
+      - --bare
       - --timeout=600
-      - --repo=k8s.io/test-infra=master
       - --service-account=/etc/service-account/service-account.json
       - --upload=gs://kubernetes-jenkins/logs
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
         value: /etc/service-account/service-account.json
-      image: gcr.io/k8s-testimages/gcloud-in-go:0.2
+      image: gcr.io/k8s-testimages/gcloud-in-go:0.3
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -15694,14 +15694,14 @@ periodics:
   spec:
     containers:
     - args:
+      - --bare
       - --timeout=30
-      - --repo=k8s.io/test-infra=master
       - --service-account=/etc/service-account/service-account.json
       - --upload=gs://kubernetes-jenkins/logs
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
         value: /etc/service-account/service-account.json
-      image: gcr.io/k8s-testimages/gcloud-in-go:0.2
+      image: gcr.io/k8s-testimages/gcloud-in-go:0.3
       volumeMounts:
       - mountPath: /etc/service-account
         name: service

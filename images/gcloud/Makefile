@@ -12,12 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-VERSION = 0.2
+VERSION = 0.3
 
 image:
 	docker build -t "gcr.io/k8s-testimages/gcloud-in-go:$(VERSION)" .
 
-push:
+push: image
 	gcloud docker -- push "gcr.io/k8s-testimages/gcloud-in-go:$(VERSION)"
 
 .PHONY: image push
