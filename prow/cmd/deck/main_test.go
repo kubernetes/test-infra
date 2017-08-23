@@ -52,34 +52,9 @@ func TestHandleLog(t *testing.T) {
 		code int
 	}{
 		{
-			name: "no pod name",
+			name: "no job name",
 			path: "",
 			code: http.StatusBadRequest,
-		},
-		{
-			name: "pod name with unescaped slashes",
-			path: "?pod=qwer/abc",
-			code: http.StatusBadRequest,
-		},
-		{
-			name: "pod name with escaped slashes",
-			path: "?pod=" + url.QueryEscape("qwer/abc"),
-			code: http.StatusBadRequest,
-		},
-		{
-			name: "pod name with escaped #",
-			path: "?pod=" + url.QueryEscape("abc#"),
-			code: http.StatusBadRequest,
-		},
-		{
-			name: "pod that doesn't exist",
-			path: "?pod=doesnotexist",
-			code: http.StatusNotFound,
-		},
-		{
-			name: "pod that does exist",
-			path: "?pod=pn",
-			code: http.StatusOK,
 		},
 		{
 			name: "job but no id",
