@@ -38,7 +38,7 @@ func newFakeConfigAgent() *fca {
 	return &fca{
 		c: &config.Config{
 			Plank: config.Plank{
-				JobURLTemplate: template.Must(template.New("test").Parse("{{.Status.PodName}}/")),
+				JobURLTemplate: template.Must(template.New("test").Parse("{{.Status.PodName}}/{{.Status.State}}")),
 			},
 		},
 	}
@@ -193,6 +193,11 @@ func handleTot(w http.ResponseWriter, r *http.Request) {
 }
 
 func TestSyncKubernetesJob(t *testing.T) {
+	var oldNewName = newPodName
+	defer func() {
+		newPodName = oldNewName
+	}()
+	newPodName = func() string { return "NEWPOD" }
 	var testcases = []struct {
 		name string
 
@@ -206,6 +211,7 @@ func TestSyncKubernetesJob(t *testing.T) {
 		expectedComplete   bool
 		expectedCreatedPJs int
 		expectedReport     bool
+		expectedURL        string
 	}{
 		{
 			name: "completed prow job",
@@ -268,6 +274,7 @@ func TestSyncKubernetesJob(t *testing.T) {
 			expectedPodHasName: true,
 			expectedNumPods:    1,
 			expectedReport:     true,
+			expectedURL:        "NEWPOD/pending",
 		},
 		{
 			name: "reset when pod goes missing",
@@ -327,6 +334,7 @@ func TestSyncKubernetesJob(t *testing.T) {
 			expectedNumPods:    1,
 			expectedCreatedPJs: 1,
 			expectedReport:     true,
+			expectedURL:        "boop-42/success",
 		},
 		{
 			name: "failed pod",
@@ -354,6 +362,7 @@ func TestSyncKubernetesJob(t *testing.T) {
 			expectedPodHasName: true,
 			expectedNumPods:    1,
 			expectedReport:     true,
+			expectedURL:        "boop-42/failure",
 		},
 		{
 			name: "evicted pod",
@@ -430,6 +439,36 @@ func TestSyncKubernetesJob(t *testing.T) {
 			expectedState:   kube.TriggeredState,
 			expectedNumPods: 1,
 		},
+		{
+			name: "pod changes url status",
+			pj: kube.ProwJob{
+				Spec: kube.ProwJobSpec{
+					RunAfterSuccess: []kube.ProwJobSpec{{}},
+				},
+				Status: kube.ProwJobStatus{
+					State:   kube.PendingState,
+					PodName: "boop-42",
+					URL:     "boop-42/pending",
+				},
+			},
+			pods: []kube.Pod{
+				{
+					Metadata: kube.ObjectMeta{
+						Name: "boop-42",
+					},
+					Status: kube.PodStatus{
+						Phase: kube.PodSucceeded,
+					},
+				},
+			},
+			expectedComplete:   true,
+			expectedState:      kube.SuccessState,
+			expectedPodHasName: true,
+			expectedNumPods:    1,
+			expectedCreatedPJs: 1,
+			expectedReport:     true,
+			expectedURL:        "boop-42/success",
+		},
 	}
 	for _, tc := range testcases {
 		totServ := httptest.NewServer(http.HandlerFunc(handleTot))
@@ -482,6 +521,13 @@ func TestSyncKubernetesJob(t *testing.T) {
 		}
 		if !tc.expectedReport && len(reports) != 0 {
 			t.Errorf("for case %s did not wany any reports but got %d", tc.name, len(reports))
+		}
+		if tc.expectedReport {
+			r := <-reports
+
+			if got, want := r.Status.URL, tc.expectedURL; got != want {
+				t.Errorf("for case %s, report.Status.URL: got %q, want %q", tc.name, got, want)
+			}
 		}
 	}
 }

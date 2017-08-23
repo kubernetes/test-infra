@@ -286,6 +286,11 @@ func (c *Controller) syncKubernetesJob(pj kube.ProwJob, pm map[string]kube.Pod, 
 		pj.Status.CompletionTime = time.Now()
 		pj.Status.State = kube.SuccessState
 		pj.Status.Description = "Job succeeded."
+		var b bytes.Buffer
+		if err := c.ca.Config().Plank.JobURLTemplate.Execute(&b, &pj); err != nil {
+			return fmt.Errorf("error executing URL template: %v", err)
+		}
+		pj.Status.URL = b.String()
 		reports <- pj
 		for _, nj := range pj.Spec.RunAfterSuccess {
 			if _, err := c.kc.CreateProwJob(npj.NewProwJob(nj)); err != nil {
@@ -302,6 +307,11 @@ func (c *Controller) syncKubernetesJob(pj kube.ProwJob, pm map[string]kube.Pod, 
 			pj.Status.CompletionTime = time.Now()
 			pj.Status.State = kube.FailureState
 			pj.Status.Description = "Job failed."
+			var b bytes.Buffer
+			if err := c.ca.Config().Plank.JobURLTemplate.Execute(&b, &pj); err != nil {
+				return fmt.Errorf("error executing URL template: %v", err)
+			}
+			pj.Status.URL = b.String()
 			reports <- pj
 		}
 	} else {
@@ -319,7 +329,7 @@ func (c *Controller) startPod(pj kube.ProwJob) (string, string, error) {
 	}
 	spec := pj.Spec.PodSpec
 	spec.RestartPolicy = "Never"
-	podName := uuid.NewV1().String()
+	podName := newPodName()
 
 	// Set environment variables in each container in the pod spec. We don't
 	// want to update the spec in place, since that will update the ProwJob
@@ -423,4 +433,8 @@ func (c *Controller) updatePendingJobs(pjs []kube.ProwJob) {
 			c.incrementNumPendingJobs(pj.Spec.Job)
 		}
 	}
+}
+
+var newPodName = func() string {
+	return uuid.NewV1().String()
 }
