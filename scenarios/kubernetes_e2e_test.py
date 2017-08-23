@@ -486,16 +486,13 @@ class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-method
         args = kubernetes_e2e.parse_args([
             '--use-shared-build'
         ])
+        # normal path
         with Stub(kubernetes_e2e, 'check_env', self.fake_check_env):
             with Stub(kubernetes_e2e, 'read_gcs_path', always_kubernetes):
                 kubernetes_e2e.main(args)
         lastcall = self.callstack[-1]
         self.assertIn('--extract=kubernetes', lastcall)
-
-    def test_use_shared_build_fallback(self):
-        args = kubernetes_e2e.parse_args([
-            '--use-shared-build'
-        ])
+        # test failure to read shared path from GCS
         with Stub(kubernetes_e2e, 'check_env', self.fake_check_env):
             with Stub(kubernetes_e2e, 'read_gcs_path', raise_urllib2_error):
                 with Stub(os, 'getcwd', always_kubernetes):
