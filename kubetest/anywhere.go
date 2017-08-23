@@ -20,6 +20,7 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
+	"log"
 	"os"
 	"os/exec"
 	"strings"
@@ -168,7 +169,13 @@ func (k kubernetesAnywhere) IsUp() error {
 }
 
 func (k kubernetesAnywhere) DumpClusterLogs(localPath, gcsPath string) error {
-	return defaultDumpClusterLogs(localPath, gcsPath)
+	// TODO(pipejakob): the default implementation (log-dump.sh) doesn't work for
+	// kubernetes-anywhere yet, so just skip attempting to dump logs.
+	// https://github.com/kubernetes/kubeadm/issues/256
+	log.Print("DumpClusterLogs is a no-op for kubernetes-anywhere deployments. Not doing anything.")
+	log.Print("If you care about enabling this feature, follow this issue for progress:")
+	log.Print("    https://github.com/kubernetes/kubeadm/issues/256")
+	return nil
 }
 
 func (k kubernetesAnywhere) TestSetup() error {
