@@ -2,7 +2,7 @@
 {% block title %}{{job}} #{{build}} Results{% endblock %}
 % block head
 {{super()}}
-% if finished and finished['result'] == 'SUCCESS' and not failures
+% if finished and finished['result'] == 'SUCCESS' and not res['failed']
 <link rel="icon" type="image/png" href="{{'favicon-green.png'|static}}" />
 % endif
 % endblock
@@ -28,12 +28,12 @@
 	% if started
 		% if finished
 			<tr><td>Tests<td>
-			% if stats['failures'] > 0
-				<span class="text-failure">{{stats['failures']}} failed</span>
+			% if res['failed']
+				<span class="text-failure">{{res['failed']|length}} failed</span>
 			% else
-				{{stats['failures']}} failed
+				{{res['failed']|length}} failed
 			% endif
-			/ {{stats['successes']}} succeeded / {{stats['skipped']}} skipped / {{stats['testcases']}} total
+			/ {{res['passed']|length}} succeeded
 		% endif
 		<tr><td>Started<td>{{started['timestamp']|timestamp}}
 		{% if finished %}<tr><td>Elapsed<td>{{(finished['timestamp']-started['timestamp'])|duration}}{% endif %}
@@ -75,9 +75,9 @@
 		% endfor
 		<hr>
 	% endif
-	% if failures
+	% if res['failed']
 		<h2>Test Failures</h2>
-		% for name, time, text, filename, output in failures
+		% for name, time, text, filename, output in res['failed']
 			<hr>
 			<h3><a class="anchor" id="{{name|slugify}}" href="#{{name|slugify}}">{{name}}<span class="time"> {{time|duration}}</span></h3></a>
 			% if 'junit_runner' not in filename
@@ -108,6 +108,18 @@
 		<h2>{{"No Test Failures!" if finished else "Build Still Running!"}}</h2>
 	% endif
 	</div>
+	% for kind in ['passed', 'skipped']
+		% if res[kind]
+			<hr>
+			<div id="{{kind}}" class="testlist">
+			<span class="expand">Show {{res[kind]|length}} {{kind|title}} Tests</span>
+			<h2 class="hidden">{{kind|title}}</h2>
+			% for name in res[kind]
+				<p class="hidden">{{name}}
+			% endfor
+			</div>
+		% endif
+	% endfor
 	% if build_log
 	<div id="log">
 		<a name="log"></a>

@@ -32,20 +32,22 @@ write = gcs_async_test.write
 
 class ParseJunitTest(unittest.TestCase):
     @staticmethod
-    def parse(xml, stats=None):
-        if stats is None:
-            stats = {'testcases':0, 'successes':0, 'failures':0, 'skipped':0}
-        return list(view_build.parse_junit(xml, "fp", stats))
+    def parse(xml):
+        parser = view_build.JUnitParser()
+        parser.parse_xml(xml, 'fp')
+        return parser.get_results()
 
     def test_normal(self):
-        stats = {'testcases':0, 'successes':0, 'failures':0, 'skipped':0}
-        failures = self.parse(main_test.JUNIT_SUITE, stats)
+        results = self.parse(main_test.JUNIT_SUITE)
         stack = '/go/src/k8s.io/kubernetes/test.go:123\nError Goes Here'
-        self.assertEqual(failures, [('Third', 96.49, stack, "fp", "")])
-        self.assertEqual(stats, {'testcases':3, 'successes':1, 'failures':1, 'skipped':1})
+        self.assertEqual(results, {
+            'passed': ['Second'],
+            'skipped': ['First'],
+            'failed': [('Third', 96.49, stack, "fp", "")],
+        })
 
     def test_testsuites(self):
-        failures = self.parse('''
+        results = self.parse('''
             <testsuites>
                 <testsuite name="k8s.io/suite">
                     <properties>
@@ -59,16 +61,16 @@ class ParseJunitTest(unittest.TestCase):
                     </testcase>
                 </testsuite>
             </testsuites>''')
-        self.assertEqual(failures, [(
+        self.assertEqual(results['failed'], [(
             'k8s.io/suite TestBad', 0.1, 'something bad', "fp",
             "out: first line\nout: second line\nerr: first line",
             )])
 
     def test_bad_xml(self):
-        self.assertEqual(self.parse('''<body />'''), [])
+        self.assertEqual(self.parse('''<body />''')['failed'], [])
 
     def test_corrupt_xml(self):
-        self.assertEqual(self.parse('<a>\xff</a>'), [])
+        self.assertEqual(self.parse('<a>\xff</a>')['failed'], [])
         failures = self.parse('''
             <testsuites>
                 <testsuite name="a">
@@ -76,13 +78,13 @@ class ParseJunitTest(unittest.TestCase):
                         <failure>something bad \xff</failure>
                     </testcase>
                 </testsuite>
-            </testsuites>''')
+            </testsuites>''')['failed']
         self.assertEqual(failures, [('a Corrupt', 0.0, 'something bad ?', 'fp', '')])
 
     def test_not_xml(self):
-        failures = self.parse('\x01')
+        failures = self.parse('\x01')['failed']
         self.assertEqual(failures,
-            [(failures[0][0], 0.0, 'not well-formed (invalid token): line 1, column 0', 'fp')])
+            [(failures[0][0], 0.0, 'not well-formed (invalid token): line 1, column 0', 'fp', '')])
 
 class BuildTest(main_test.TestBase):
     # pylint: disable=too-many-public-methods
@@ -190,6 +192,14 @@ class BuildTest(main_test.TestBase):
         self.assertIn('No Test Failures', response)
         self.assertIn('ERROR</span>: test', response)
         self.assertNotIn('blah', response)
+
+    def test_build_show_passed_skipped(self):
+        response = self.get_build_page()
+        self.assertIn('First', response)
+        self.assertIn('Second', response)
+        self.assertIn('Third', response)
+        self.assertIn('Show 1 Skipped Tests', response)
+        self.assertIn('Show 1 Passed Tests', response)
 
     def test_build_optional_log(self):
         write(self.BUILD_DIR + 'build-log.txt', 'error or timeout or something')
