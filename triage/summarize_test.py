@@ -110,6 +110,28 @@ class ClusterTest(unittest.TestCase):
             self.cluster_global({'test a': {textNew: [t1]}}, [{'key': textOld}]),
             {textOld: {'test a': [t1]}})
 
+    def test_annotate_owners(self):
+        def expect(test, owner, owners=None):
+            now = 1.5e9
+            data = {
+                'builds': {
+                    'job_paths': {'somejob': '/logs/somejob'},
+                    'cols': {'started': [now]}
+                },
+                'clustered': [
+                    {'tests': [{'name': test, 'jobs': [{'name': 'somejob', 'builds': [123]}]}]}
+                ],
+            }
+            summarize.annotate_owners(
+                data, {'/logs/somejob/123': {'started': now}}, owners or {})
+
+            self.assertEqual(owner, data['clustered'][0]['owner'])
+
+        expect('[sig-node] Node reboots', 'node')
+        expect('unknown test name', 'testing')
+        expect('Suffixes too [sig-storage]', 'storage')
+        expect('Variable test with old-style prefixes', 'node', {'node': ['Variable']})
+
 
 ############ decode JSON without a bunch of unicode garbage
 ### http://stackoverflow.com/a/33571117
