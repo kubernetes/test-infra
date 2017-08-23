@@ -2,6 +2,7 @@ boskos/** @krzyzacy
 gubernator/** @rmmh
 kettle/** @rmmh
 logexporter/** @shyamjvs
+planter/** @bentheelder
 prow/** @spxtr
 prow/config.yaml @krzyzacy
 testgrid/** @krzyzacy @michelle192837
