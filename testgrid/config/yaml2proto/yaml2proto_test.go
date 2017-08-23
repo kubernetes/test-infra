@@ -26,6 +26,8 @@ func TestYaml2Proto_IsExternal_And_UseKuberClient_False(t *testing.T) {
   name: default
 default_dashboard_tab:
   name: default
+default_dashboard:
+  name: default
 test_groups:
 - name: testgroup_1
 dashboards:
@@ -52,6 +54,11 @@ dashboards:
 			t.Errorf("UseKubernetesClient should always be true!")
 		}
 	}
+	for _, dashboard := range config.Dashboards {
+		if !dashboard.ShowSummaryFirst {
+			t.Errorf("ShowSummaryFirst should always be true!")
+		}
+	}
 }
 
 func TestUpdateDefaults_Validity(t *testing.T) {
@@ -72,6 +79,15 @@ func TestUpdateDefaults_Validity(t *testing.T) {
 			yaml: `default_test_group:
   name: default
 default_dashboard_tab:
+  name: default`,
+			expectedMissing: "DefaultDashboard",
+		},
+		{
+			yaml: `default_test_group:
+  name: default
+default_dashboard_tab:
+  name: default
+default_dashboard:
   name: default`,
 			expectedMissing: "",
 		},
@@ -95,6 +111,8 @@ func TestUpdate_Validate(t *testing.T) {
 	defaultYaml := `default_test_group:
   name: default
 default_dashboard_tab:
+  name: default
+default_dashboard:
   name: default`
 
 	tests := []struct {

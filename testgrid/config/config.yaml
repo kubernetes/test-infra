@@ -42,6 +42,9 @@ default_dashboard_tab:
   code_search_url_template: # The URL template to visit when searching for changelists
     url: https://github.com/kubernetes/kubernetes/compare/<start-custom-0>...<end-custom-0>
 
+default_dashboard:
+  show_summary_first: true
+
 #
 # Start testgroups
 #
