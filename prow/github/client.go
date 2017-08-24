@@ -28,6 +28,7 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/shurcooL/githubql"
@@ -42,13 +43,16 @@ type Client struct {
 	// If Logger is non-nil, log all method calls with it.
 	Logger Logger
 
-	gqlc    *githubql.Client
-	client  *http.Client
+	gqlc   *githubql.Client
+	client *http.Client
+	token  string
+	base   string
+	dry    bool
+	fake   bool
+
+	// botName is protected by this mutex.
+	mut     sync.Mutex
 	botName string
-	token   string
-	base    string
-	dry     bool
-	fake    bool
 }
 
 const (
@@ -59,36 +63,33 @@ const (
 )
 
 // NewClient creates a new fully operational GitHub client.
-func NewClient(botName, token, base string) *Client {
+func NewClient(token, base string) *Client {
 	return &Client{
-		gqlc:    githubql.NewClient(oauth2.NewClient(context.Background(), oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token}))),
-		client:  &http.Client{},
-		botName: botName,
-		token:   token,
-		base:    base,
-		dry:     false,
+		gqlc:   githubql.NewClient(oauth2.NewClient(context.Background(), oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token}))),
+		client: &http.Client{},
+		token:  token,
+		base:   base,
+		dry:    false,
 	}
 }
 
 // NewDryRunClient creates a new client that will not perform mutating actions
 // such as setting statuses or commenting, but it will still query GitHub and
 // use up API tokens.
-func NewDryRunClient(botName, token, base string) *Client {
+func NewDryRunClient(token, base string) *Client {
 	return &Client{
-		client:  &http.Client{},
-		botName: botName,
-		token:   token,
-		base:    base,
-		dry:     true,
+		client: &http.Client{},
+		token:  token,
+		base:   base,
+		dry:    true,
 	}
 }
 
 // NewFakeClient creates a new client that will not perform any actions at all.
-func NewFakeClient(botName string) *Client {
+func NewFakeClient() *Client {
 	return &Client{
-		botName: botName,
-		fake:    true,
-		dry:     true,
+		fake: true,
+		dry:  true,
 	}
 }
 
@@ -181,7 +182,7 @@ func (c *Client) requestRetry(method, path, accept string, body interface{}) (*h
 						}
 					}
 				} else if oauthScopes := resp.Header.Get("X-Accepted-OAuth-Scopes"); len(oauthScopes) > 0 {
-					err = fmt.Errorf("is %s using at least one of the following oauth scopes?: %s", c.botName, oauthScopes)
+					err = fmt.Errorf("is the account using at least one of the following oauth scopes?: %s", oauthScopes)
 					break
 				}
 				resp.Body.Close()
@@ -229,8 +230,22 @@ func (c *Client) doRequest(method, path, accept string, body interface{}) (*http
 	return c.client.Do(req)
 }
 
-func (c *Client) BotName() string {
-	return c.botName
+func (c *Client) BotName() (string, error) {
+	c.mut.Lock()
+	defer c.mut.Unlock()
+	if c.botName == "" {
+		var u User
+		_, err := c.request(&request{
+			method:    http.MethodGet,
+			path:      fmt.Sprintf("%s/user", c.base),
+			exitCodes: []int{200},
+		}, &u)
+		if err != nil {
+			return "", fmt.Errorf("fetching bot name from GitHub: %v", err)
+		}
+		c.botName = u.Login
+	}
+	return c.botName, nil
 }
 
 // IsMember returns whether or not the user is a member of the org.

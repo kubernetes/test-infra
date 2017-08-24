@@ -31,8 +31,8 @@ import (
 
 const commentTag = "<!-- test report -->"
 
-type githubClient interface {
-	BotName() string
+type GithubClient interface {
+	BotName() (string, error)
 	CreateStatus(org, repo, ref string, s github.Status) error
 	ListIssueComments(org, repo string, number int) ([]github.IssueComment, error)
 	CreateComment(org, repo string, number int, comment string) error
@@ -44,7 +44,7 @@ type configAgent interface {
 	Config() *config.Config
 }
 
-func Report(ghc githubClient, configAgent configAgent, pj kube.ProwJob) error {
+func Report(ghc GithubClient, configAgent configAgent, pj kube.ProwJob) error {
 	if !pj.Spec.Report {
 		return nil
 	}
@@ -67,7 +67,11 @@ func Report(ghc githubClient, configAgent configAgent, pj kube.ProwJob) error {
 	if err != nil {
 		return fmt.Errorf("error listing comments: %v", err)
 	}
-	deletes, entries, updateID := parseIssueComments(pj, ghc.BotName(), ics)
+	botName, err := ghc.BotName()
+	if err != nil {
+		return fmt.Errorf("error getting bot name: %v", err)
+	}
+	deletes, entries, updateID := parseIssueComments(pj, botName, ics)
 	for _, delete := range deletes {
 		if err := ghc.DeleteComment(refs.Org, refs.Repo, delete); err != nil {
 			return fmt.Errorf("error deleting comment: %v", err)

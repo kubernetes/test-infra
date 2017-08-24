@@ -46,7 +46,11 @@ func handleIC(c client, ic github.IssueCommentEvent) error {
 		return nil
 	}
 	// Skip bot comments.
-	if commentAuthor == c.GitHubClient.BotName() {
+	botName, err := c.GitHubClient.BotName()
+	if err != nil {
+		return err
+	}
+	if commentAuthor == botName {
 		return nil
 	}
 	var trustedOrg string

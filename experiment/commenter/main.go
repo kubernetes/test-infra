@@ -39,7 +39,6 @@ import (
 )
 
 const (
-	ClientUser   = "commenter-client"
 	TemplateHelp = `--comment is a golang text/template if set.
 	Valid placeholders:
 		.Org - github org
@@ -152,9 +151,9 @@ func main() {
 	var c client
 	tok := strings.TrimSpace(string(b))
 	if o.confirm {
-		c = github.NewClient(ClientUser, tok, o.endpoint)
+		c = github.NewClient(tok, o.endpoint)
 	} else {
-		c = github.NewDryRunClient(ClientUser, tok, o.endpoint)
+		c = github.NewDryRunClient(tok, o.endpoint)
 	}
 
 	query, err := makeQuery(o.query, o.includeClosed, o.updated)

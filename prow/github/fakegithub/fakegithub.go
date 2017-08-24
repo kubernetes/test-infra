@@ -50,8 +50,8 @@ type FakeClient struct {
 	RemoteFiles map[string]map[string]string
 }
 
-func (f *FakeClient) BotName() string {
-	return "k8s-ci-robot"
+func (f *FakeClient) BotName() (string, error) {
+	return "k8s-ci-robot", nil
 }
 
 func (f *FakeClient) IsMember(org, user string) (bool, error) {
