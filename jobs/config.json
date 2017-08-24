@@ -2501,7 +2501,7 @@
       "--gcp-zone=us-east1-a",
       "--mode=docker",
       "--provider=gce",
-      "--test_args=--ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --allowed-not-ready-nodes=20 --node-schedulable-timeout=60m --cluster-ip-range=10.160.0.0/13 --minStartupPods=8 --gather-resource-usage=master --gather-metrics-at-teardown=master",
+      "--test_args=--ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --allowed-not-ready-nodes=20 --node-schedulable-timeout=60m --minStartupPods=8 --gather-resource-usage=master --gather-metrics-at-teardown=master",
       "--timeout=600m",
       "--use-logexporter"
     ],
@@ -2539,7 +2539,7 @@
       "--gcp-zone=us-central1-b",
       "--mode=docker",
       "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[Feature:Empty\\] --allowed-not-ready-nodes=10 --node-schedulable-timeout=60m --cluster-ip-range=10.160.0.0/13",
+      "--test_args=--ginkgo.focus=\\[Feature:Empty\\] --allowed-not-ready-nodes=10 --node-schedulable-timeout=60m",
       "--timeout=300m"
     ],
     "scenario": "kubernetes_e2e",
@@ -2556,7 +2556,7 @@
       "--gcp-zone=us-east1-a",
       "--mode=docker",
       "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --allowed-not-ready-nodes=20 --node-schedulable-timeout=60m --cluster-ip-range=10.160.0.0/13 --minStartupPods=8 --gather-resource-usage=master --gather-metrics-at-teardown=master",
+      "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --allowed-not-ready-nodes=20 --node-schedulable-timeout=60m --minStartupPods=8 --gather-resource-usage=master --gather-metrics-at-teardown=master",
       "--timeout=900m",
       "--use-logexporter"
     ],
@@ -2997,7 +2997,7 @@
       "--gcp-zone=us-east1-a",
       "--mode=docker",
       "--provider=gce",
-      "--test_args=--ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --allowed-not-ready-nodes=50 --node-schedulable-timeout=90m --cluster-ip-range=10.160.0.0/11 --minStartupPods=8 --gather-resource-usage=master --gather-metrics-at-teardown=master",
+      "--test_args=--ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --allowed-not-ready-nodes=50 --node-schedulable-timeout=90m --minStartupPods=8 --gather-resource-usage=master --gather-metrics-at-teardown=master",
       "--timeout=1000m",
       "--use-logexporter"
     ],
@@ -3015,7 +3015,7 @@
       "--gcp-zone=us-east1-a",
       "--mode=docker",
       "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --allowed-not-ready-nodes=50 --node-schedulable-timeout=90m --cluster-ip-range=10.160.0.0/11 --minStartupPods=8 --gather-resource-usage=master --gather-metrics-at-teardown=master",
+      "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --allowed-not-ready-nodes=50 --node-schedulable-timeout=90m --minStartupPods=8 --gather-resource-usage=master --gather-metrics-at-teardown=master",
       "--timeout=1300m",
       "--use-logexporter"
     ],
@@ -4086,7 +4086,7 @@
       "--gcp-project=k8s-jenkins-gce-gci-ip-aliases",
       "--gcp-zone=us-central1-f",
       "--provider=gce",
-      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --cluster-ip-range=10.100.0.0/14 --minStartupPods=8",
+      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
       "--timeout=50m"
     ],
     "scenario": "kubernetes_e2e",
