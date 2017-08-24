@@ -20,7 +20,6 @@ kubernetes/kubernetes:
 
 kubernetes/test-infra:
 - trigger
-- size
 - config-updater
 
 kubernetes:
@@ -32,11 +31,13 @@ kubernetes:
 - heart
 - label
 - lgtm
+- size
 - yuks
 
 kubernetes-incubator:
 - cla
 - assign
+- size
 
 kubernetes-incubator/kube-aws:
 - lgtm
