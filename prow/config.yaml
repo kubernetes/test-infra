@@ -16050,15 +16050,24 @@ periodics:
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
         value: /etc/service-account/service-account.json
-      image: gcr.io/k8s-testimages/gcloud-in-go:0.4
+      - name: JENKINS_AWS_CREDENTIALS_FILE
+        value: /etc/aws-cred/aws-cred
+      image: gcr.io/k8s-test-infra-aws/aws-janitor:0.3
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
+        readOnly: true
+      - mountPath: /etc/aws-cred
+        name: aws-cred
         readOnly: true
     volumes:
     - name: service
       secret:
         secretName: service-account
+    - name: aws-cred
+      secret:
+        defaultMode: 256
+        secretName: aws-cred
 
 - interval: 24h
   agent: kubernetes

@@ -10205,10 +10205,11 @@
   },
   "maintenance-ci-aws-janitor": {
     "args": [
-      "--aws-image=gcr.io/k8s-test-infra-aws/aws-janitor",
-      "--mode=aws"
+      "/aws-janitor",
+      "--tty=2h30m",
+      "--path=s3://janitor-jenkins/objs.json"
     ],
-    "scenario": "kubernetes_janitor",
+    "scenario": "execute",
     "sigOwners": [
       "sig-testing"
     ]
