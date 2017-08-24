@@ -122,6 +122,10 @@ func MissingReleaseNoteIssue() *github.Issue {
 	return github_test.Issue(someUserName, 1, []string{claYesLabel, lgtmLabel, approvedLabel, releaseNoteLabelNeeded}, true)
 }
 
+func WorkInProgressIssue() *github.Issue {
+	return github_test.Issue(someUserName, 1, []string{claYesLabel, lgtmLabel, approvedLabel, wipLabel}, true)
+}
+
 func DoNotMergeMilestoneIssue() *github.Issue {
 	issue := github_test.Issue(someUserName, 1, []string{claYesLabel, lgtmLabel}, true)
 	milestone := &github.Milestone{
@@ -856,6 +860,20 @@ func TestSubmitQueue(t *testing.T) {
 			retest1Pass:     true,
 			retest2Pass:     true,
 			reason:          noMergeMessage(blockedPathsLabel),
+			state:           "pending",
+		},
+		{
+			name:            "Fail because work-in-progress label is present",
+			pr:              ValidPR(),
+			issue:           WorkInProgressIssue(),
+			events:          NewLGTMEvents(),
+			commits:         Commits(), // Modified at time.Unix(7), 8, and 9
+			ciStatus:        SuccessStatus(),
+			lastBuildNumber: LastBuildNumber(),
+			gcsResult:       SuccessGCS(),
+			retest1Pass:     true,
+			retest2Pass:     true,
+			reason:          noMergeMessage(wipLabel),
 			state:           "pending",
 		},
 		// Should fail because the 'do-not-merge-milestone' is set.

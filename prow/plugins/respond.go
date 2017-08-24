@@ -27,6 +27,20 @@ const AboutThisBotWithoutCommands = "Instructions for interacting with me using 
 const AboutThisBotCommands = "I understand the commands that are listed [here](https://github.com/kubernetes/test-infra/blob/master/commands.md)."
 const AboutThisBot = AboutThisBotWithoutCommands + " " + AboutThisBotCommands
 
+// FormatResponse nicely formats a response to a generic reason.
+func FormatResponse(to, message, reason string) string {
+	format := `@%s: %s
+
+<details>
+
+%s
+
+%s
+</details>`
+
+	return fmt.Sprintf(format, to, message, reason, AboutThisBotWithoutCommands)
+}
+
 // FormatICResponse nicely formats a response to an issue comment.
 func FormatICResponse(ic github.IssueComment, s string) string {
 	return FormatResponseRaw(ic.Body, ic.HTMLURL, ic.User.Login, s)
@@ -34,21 +48,14 @@ func FormatICResponse(ic github.IssueComment, s string) string {
 
 // FormatResponseRaw nicely formats a response for one does not have an issue comment
 func FormatResponseRaw(body, bodyURL, login, reply string) string {
-	format := `@%s: %s
-
-<details>
-
-In response to [this](%s):
+	format := `In response to [this](%s):
 
 %s
-
-%s
-</details>
 `
 	// Quote the user's comment by prepending ">" to each line.
 	var quoted []string
 	for _, l := range strings.Split(body, "\n") {
 		quoted = append(quoted, ">"+l)
 	}
-	return fmt.Sprintf(format, login, reply, bodyURL, strings.Join(quoted, "\n"), AboutThisBotWithoutCommands)
+	return FormatResponse(login, reply, fmt.Sprintf(format, bodyURL, strings.Join(quoted, "\n")))
 }

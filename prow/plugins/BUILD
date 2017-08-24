@@ -57,6 +57,7 @@ filegroup(
         "//prow/plugins/slackevents:all-srcs",
         "//prow/plugins/trigger:all-srcs",
         "//prow/plugins/updateconfig:all-srcs",
+        "//prow/plugins/wip:all-srcs",
         "//prow/plugins/yuks:all-srcs",
     ],
     tags = ["automanaged"],

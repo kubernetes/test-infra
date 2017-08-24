@@ -113,7 +113,7 @@ func handlePR(gc githubClient, le *logrus.Entry, pe github.PullRequestEvent) err
 	}
 
 	if err := gc.AddLabel(owner, repo, num, newLabel); err != nil {
-		return fmt.Errorf("can add label to %s/%s PR #%d: %v", owner, repo, num, err)
+		return fmt.Errorf("error adding label to %s/%s PR #%d: %v", owner, repo, num, err)
 	}
 
 	return nil
