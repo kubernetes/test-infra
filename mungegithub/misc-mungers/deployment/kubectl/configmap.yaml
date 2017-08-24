@@ -1,0 +1,15 @@
+# basic config options.
+http-cache-dir: /cache/httpcache
+organization: kubernetes
+project: kubectl
+pr-mungers: milestone-maintainer
+state: open
+token-file: /etc/secret-volume/token
+period: 2m
+repo-dir: /gitrepos
+github-key-file: /etc/hook-secret-volume/secret
+
+# milestone-maintainer options
+active-milestone: v1.8
+milestone-grace-period: 2
+milestone-warning-interval: 1
