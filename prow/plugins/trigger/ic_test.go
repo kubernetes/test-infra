@@ -214,7 +214,7 @@ func TestHandleIssueComment(t *testing.T) {
 			}}
 		}
 		event := github.IssueCommentEvent{
-			Action: "created",
+			Action: github.IssueCommentActionCreated,
 			Repo: github.Repo{
 				Name:     "repo",
 				FullName: "org/repo",

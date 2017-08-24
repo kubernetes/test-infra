@@ -62,12 +62,31 @@ type User struct {
 	Email string `json:"email"`
 }
 
+// PullRequestEventAction enumerates the triggers for this
+// webhook payload type. See also:
+// https://developer.github.com/v3/activity/events/types/#pullrequestevent
+type PullRequestEventAction string
+
+const (
+	PullRequestActionAssigned             PullRequestEventAction = "assigned"
+	PullRequestActionUnassigned                                  = "unassigned"
+	PullRequestActionReviewRequested                             = "review_requested"
+	PullRequestActionReviewRequestRemoved                        = "review_request_removed"
+	PullRequestActionLabeled                                     = "labeled"
+	PullRequestActionUnlabeled                                   = "unlabeled"
+	PullRequestActionOpened                                      = "opened"
+	PullRequestActionEdited                                      = "edited"
+	PullRequestActionClosed                                      = "closed"
+	PullRequestActionReopened                                    = "reopened"
+	PullRequestActionSynchronize                                 = "synchronize"
+)
+
 // PullRequestEvent is what GitHub sends us when a PR is changed.
 type PullRequestEvent struct {
-	Action      string      `json:"action"`
-	Number      int         `json:"number"`
-	PullRequest PullRequest `json:"pull_request"`
-	Label       Label       `json:"label"`
+	Action      PullRequestEventAction `json:"action"`
+	Number      int                    `json:"number"`
+	PullRequest PullRequest            `json:"pull_request"`
+	Label       Label                  `json:"label"`
 }
 
 // PullRequest contains information about a PullRequest.
@@ -77,6 +96,7 @@ type PullRequest struct {
 	User               User              `json:"user"`
 	Base               PullRequestBranch `json:"base"`
 	Head               PullRequestBranch `json:"head"`
+	Title              string            `json:"title"`
 	Body               string            `json:"body"`
 	RequestedReviewers []User            `json:"requested_reviewers"`
 	Assignees          []User            `json:"assignees"`
@@ -120,17 +140,46 @@ type Repo struct {
 	HTMLURL  string `json:"html_url"`
 }
 
+// IssueEventAction enumerates the triggers for this
+// webhook payload type. See also:
+// https://developer.github.com/v3/activity/events/types/#issuesevent
+type IssueEventAction string
+
+const (
+	IssueActionAssigned     IssueEventAction = "assigned"
+	IssueActionUnassigned                    = "unassigned"
+	IssueActionLabeled                       = "labeled"
+	IssueActionUnlabeled                     = "unlabeled"
+	IssueActionOpened                        = "opened"
+	IssueActionEdited                        = "edited"
+	IssueActionMilestoned                    = "milestoned"
+	IssueActionDemilestoned                  = "demilestoned"
+	IssueActionClosed                        = "closed"
+	IssueActionReopened                      = "reopened"
+)
+
 type IssueEvent struct {
-	Action string `json:"action"`
-	Issue  Issue  `json:"issue"`
-	Repo   Repo   `json:"repository"`
+	Action IssueEventAction `json:"action"`
+	Issue  Issue            `json:"issue"`
+	Repo   Repo             `json:"repository"`
 }
 
+// IssueCommentEventAction enumerates the triggers for this
+// webhook payload type. See also:
+// https://developer.github.com/v3/activity/events/types/#issuecommentevent
+type IssueCommentEventAction string
+
+const (
+	IssueCommentActionCreated IssueCommentEventAction = "created"
+	IssueCommentActionEdited                          = "edited"
+	IssueCommentActionDeleted                         = "deleted"
+)
+
 type IssueCommentEvent struct {
-	Action  string       `json:"action"`
-	Issue   Issue        `json:"issue"`
-	Comment IssueComment `json:"comment"`
-	Repo    Repo         `json:"repository"`
+	Action  IssueCommentEventAction `json:"action"`
+	Issue   Issue                   `json:"issue"`
+	Comment IssueComment            `json:"comment"`
+	Repo    Repo                    `json:"repository"`
 }
 
 type Issue struct {
@@ -224,12 +273,23 @@ type Commit struct {
 	Modified []string `json:"modified"`
 }
 
+// ReviewEventAction enumerates the triggers for this
+// webhook payload type. See also:
+// https://developer.github.com/v3/activity/events/types/#pullrequestreviewevent
+type ReviewEventAction string
+
+const (
+	ReviewActionSubmitted ReviewEventAction = "submitted"
+	ReviewActionEdited                      = "edited"
+	ReviewActionDismissed                   = "dismissed"
+)
+
 // ReviewEvent is what GitHub sends us when a PR review is changed.
 type ReviewEvent struct {
-	Action      string      `json:"action"`
-	PullRequest PullRequest `json:"pull_request"`
-	Repo        Repo        `json:"repository"`
-	Review      Review      `json:"review"`
+	Action      ReviewEventAction `json:"action"`
+	PullRequest PullRequest       `json:"pull_request"`
+	Repo        Repo              `json:"repository"`
+	Review      Review            `json:"review"`
 }
 
 // Review describes a Pull Request review.
@@ -241,12 +301,23 @@ type Review struct {
 	HTMLURL string `json:"html_url"`
 }
 
+// ReviewCommentEventAction enumerates the triggers for this
+// webhook payload type. See also:
+// https://developer.github.com/v3/activity/events/types/#pullrequestreviewcommentevent
+type ReviewCommentEventAction string
+
+const (
+	ReviewCommentActionCreated ReviewCommentEventAction = "created"
+	ReviewCommentActionEdited                           = "edited"
+	ReviewCommentActionDeleted                          = "deleted"
+)
+
 // ReviewCommentEvent is what GitHub sends us when a PR review comment is changed.
 type ReviewCommentEvent struct {
-	Action      string        `json:"action"`
-	PullRequest PullRequest   `json:"pull_request"`
-	Repo        Repo          `json:"repository"`
-	Comment     ReviewComment `json:"comment"`
+	Action      ReviewCommentEventAction `json:"action"`
+	PullRequest PullRequest              `json:"pull_request"`
+	Repo        Repo                     `json:"repository"`
+	Comment     ReviewComment            `json:"comment"`
 }
 
 // ReviewComment describes a Pull Request review.

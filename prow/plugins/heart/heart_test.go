@@ -40,14 +40,14 @@ func TestHandlePR(t *testing.T) {
 	}
 
 	testcases := []struct {
-		prAction              string
+		prAction              github.PullRequestEventAction
 		changes               []github.PullRequestChange
 		expectedReactionAdded bool
 	}{
 		// PR opened against kubernetes/kubernetes that adds 1 line to
 		// an OWNERS file
 		{
-			prAction: "opened",
+			prAction: github.PullRequestActionOpened,
 			changes: []github.PullRequestChange{
 				{
 					Filename:  "foo/bar/OWNERS",
@@ -59,7 +59,7 @@ func TestHandlePR(t *testing.T) {
 		// PR opened against kubernetes/kubernetes that deletes 1 line
 		// from an OWNERS file
 		{
-			prAction: "opened",
+			prAction: github.PullRequestActionOpened,
 			changes: []github.PullRequestChange{
 				{
 					Filename:  "foo/bar/OWNERS",
@@ -71,7 +71,7 @@ func TestHandlePR(t *testing.T) {
 		// PR opened against kubernetes/kubernetes with no changes to
 		// OWNERS
 		{
-			prAction: "opened",
+			prAction: github.PullRequestActionOpened,
 			changes: []github.PullRequestChange{
 				{
 					Filename:  "foo/bar/foo.go",
@@ -82,7 +82,7 @@ func TestHandlePR(t *testing.T) {
 		},
 		// PR reopened against kubernetes/kubernetes
 		{
-			prAction: "reopened",
+			prAction: github.PullRequestActionReopened,
 			changes: []github.PullRequestChange{
 				{
 					Filename:  "foo/bar/OWNERS",

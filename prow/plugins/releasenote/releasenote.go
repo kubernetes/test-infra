@@ -64,7 +64,7 @@ func handleIssueComment(pc plugins.PluginClient, ic github.IssueCommentEvent) er
 
 func handle(gc githubClient, log *logrus.Entry, ic github.IssueCommentEvent) error {
 	// Only consider PRs and new comments.
-	if !ic.Issue.IsPullRequest() || ic.Action != "created" {
+	if !ic.Issue.IsPullRequest() || ic.Action != github.IssueCommentActionCreated {
 		return nil
 	}
 

@@ -48,7 +48,7 @@ func TestOpenComment(t *testing.T) {
 	// "a" is the author, "r1", and "r2" are reviewers.
 	var testcases = []struct {
 		name          string
-		action        string
+		action        github.IssueCommentEventAction
 		state         string
 		body          string
 		commenter     string
@@ -57,7 +57,7 @@ func TestOpenComment(t *testing.T) {
 	}{
 		{
 			name:          "non-open comment",
-			action:        "created",
+			action:        github.IssueCommentActionCreated,
 			state:         "open",
 			body:          "does not matter",
 			commenter:     "o",
@@ -66,7 +66,7 @@ func TestOpenComment(t *testing.T) {
 		},
 		{
 			name:          "re-open by author",
-			action:        "created",
+			action:        github.IssueCommentActionCreated,
 			state:         "closed",
 			body:          "/reopen",
 			commenter:     "a",
@@ -75,7 +75,7 @@ func TestOpenComment(t *testing.T) {
 		},
 		{
 			name:          "re-open by reviewer",
-			action:        "created",
+			action:        github.IssueCommentActionCreated,
 			state:         "closed",
 			body:          "/reopen",
 			commenter:     "r1",
@@ -84,7 +84,7 @@ func TestOpenComment(t *testing.T) {
 		},
 		{
 			name:          "re-open by reviewer, trailing space.",
-			action:        "created",
+			action:        github.IssueCommentActionCreated,
 			state:         "closed",
 			body:          "/reopen \r",
 			commenter:     "r1",
@@ -93,7 +93,7 @@ func TestOpenComment(t *testing.T) {
 		},
 		{
 			name:          "re-open edited by author",
-			action:        "edited",
+			action:        github.IssueCommentActionEdited,
 			state:         "closed",
 			body:          "/reopen",
 			commenter:     "a",
@@ -102,7 +102,7 @@ func TestOpenComment(t *testing.T) {
 		},
 		{
 			name:          "open by author on already open issue",
-			action:        "created",
+			action:        github.IssueCommentActionCreated,
 			state:         "open",
 			body:          "/reopen",
 			commenter:     "a",
@@ -111,7 +111,7 @@ func TestOpenComment(t *testing.T) {
 		},
 		{
 			name:          "re-open by other person",
-			action:        "created",
+			action:        github.IssueCommentActionCreated,
 			state:         "closed",
 			body:          "/reopen",
 			commenter:     "o",

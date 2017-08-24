@@ -63,7 +63,7 @@ func TestJokesMedium(t *testing.T) {
 	comment := "/joke"
 
 	ice := github.IssueCommentEvent{
-		Action: "created",
+		Action: github.IssueCommentActionCreated,
 		Comment: github.IssueComment{
 			Body: comment,
 		},
@@ -89,7 +89,7 @@ func TestJokesMedium(t *testing.T) {
 func TestJokes(t *testing.T) {
 	var testcases = []struct {
 		name          string
-		action        string
+		action        github.IssueCommentEventAction
 		body          string
 		state         string
 		joke          fakeJoke
@@ -100,7 +100,7 @@ func TestJokes(t *testing.T) {
 		{
 			name:          "ignore edited comment",
 			state:         "open",
-			action:        "edited",
+			action:        github.IssueCommentActionEdited,
 			body:          "/joke",
 			joke:          "this? that.",
 			shouldComment: false,
@@ -109,7 +109,7 @@ func TestJokes(t *testing.T) {
 		{
 			name:          "leave joke on pr",
 			state:         "open",
-			action:        "created",
+			action:        github.IssueCommentActionCreated,
 			body:          "/joke",
 			joke:          "this? that.",
 			pr:            &struct{}{},
@@ -119,7 +119,7 @@ func TestJokes(t *testing.T) {
 		{
 			name:          "leave joke on issue",
 			state:         "open",
-			action:        "created",
+			action:        github.IssueCommentActionCreated,
 			body:          "/joke",
 			joke:          "this? that.",
 			shouldComment: true,
@@ -128,7 +128,7 @@ func TestJokes(t *testing.T) {
 		{
 			name:          "leave joke on issue, trailing space",
 			state:         "open",
-			action:        "created",
+			action:        github.IssueCommentActionCreated,
 			body:          "/joke \r",
 			joke:          "this? that.",
 			shouldComment: true,
@@ -137,7 +137,7 @@ func TestJokes(t *testing.T) {
 		{
 			name:          "reject bad joke chars",
 			state:         "open",
-			action:        "created",
+			action:        github.IssueCommentActionCreated,
 			body:          "/joke",
 			joke:          "[hello](url)",
 			shouldComment: false,

@@ -35,7 +35,6 @@ var (
 )
 
 type event struct {
-	action        string
 	org           string
 	repo          string
 	number        int
@@ -80,12 +79,11 @@ func prLabelChecker(gc githubClient, log *logrus.Entry, org, repo string, num in
 
 func handleIssueComment(pc plugins.PluginClient, ic github.IssueCommentEvent) error {
 	// Only consider open PRs.
-	if !ic.Issue.IsPullRequest() || ic.Issue.State != "open" {
+	if !ic.Issue.IsPullRequest() || ic.Issue.State != "open" || ic.Action != github.IssueCommentActionCreated {
 		return nil
 	}
 
 	e := &event{
-		action:        ic.Action,
 		org:           ic.Repo.Owner.Login,
 		repo:          ic.Repo.Name,
 		number:        ic.Issue.Number,
@@ -100,8 +98,11 @@ func handleIssueComment(pc plugins.PluginClient, ic github.IssueCommentEvent) er
 }
 
 func handleReview(pc plugins.PluginClient, re github.ReviewEvent) error {
+	if re.Action != github.ReviewActionSubmitted {
+		return nil
+	}
+
 	e := &event{
-		action:        re.Action,
 		org:           re.Repo.Owner.Login,
 		repo:          re.Repo.Name,
 		number:        re.PullRequest.Number,
@@ -122,8 +123,11 @@ func handleReview(pc plugins.PluginClient, re github.ReviewEvent) error {
 }
 
 func handleReviewComment(pc plugins.PluginClient, rce github.ReviewCommentEvent) error {
+	if rce.Action != github.ReviewCommentActionCreated {
+		return nil
+	}
+
 	e := &event{
-		action:        rce.Action,
 		org:           rce.Repo.Owner.Login,
 		repo:          rce.Repo.Name,
 		number:        rce.PullRequest.Number,
@@ -144,10 +148,6 @@ func handleReviewComment(pc plugins.PluginClient, rce github.ReviewCommentEvent)
 }
 
 func handle(gc githubClient, log *logrus.Entry, e *event) error {
-	if e.action != "created" && e.action != "submitted" {
-		return nil
-	}
-
 	// If we create an "/lgtm" comment, add lgtm if necessary.
 	// If we create a "/lgtm cancel" comment, remove lgtm if necessary.
 	wantLGTM := false

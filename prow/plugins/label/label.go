@@ -30,7 +30,6 @@ import (
 const pluginName = "label"
 
 type assignEvent struct {
-	action  string
 	body    string
 	login   string
 	org     string
@@ -75,8 +74,11 @@ type slackClient interface {
 }
 
 func handleIssueComment(pc plugins.PluginClient, ic github.IssueCommentEvent) error {
+	if ic.Action != github.IssueCommentActionCreated {
+		return nil
+	}
+
 	ae := assignEvent{
-		action:  ic.Action,
 		body:    ic.Comment.Body,
 		login:   ic.Comment.User.Login,
 		org:     ic.Repo.Owner.Login,
@@ -90,8 +92,11 @@ func handleIssueComment(pc plugins.PluginClient, ic github.IssueCommentEvent) er
 }
 
 func handleIssue(pc plugins.PluginClient, i github.IssueEvent) error {
+	if i.Action != github.IssueActionOpened {
+		return nil
+	}
+
 	ae := assignEvent{
-		action: i.Action,
 		body:   i.Issue.Body,
 		login:  i.Issue.User.Login,
 		org:    i.Repo.Owner.Login,
@@ -104,8 +109,11 @@ func handleIssue(pc plugins.PluginClient, i github.IssueEvent) error {
 }
 
 func handlePullRequest(pc plugins.PluginClient, pr github.PullRequestEvent) error {
+	if pr.Action != github.PullRequestActionOpened {
+		return nil
+	}
+
 	ae := assignEvent{
-		action: pr.Action,
 		body:   pr.PullRequest.Body,
 		login:  pr.PullRequest.User.Login,
 		org:    pr.PullRequest.Base.Repo.Owner.Login,
@@ -140,8 +148,7 @@ func (ae assignEvent) getRepeats(sigMatches [][]string, existingLabels map[strin
 }
 
 func handle(gc githubClient, log *logrus.Entry, ae assignEvent, sc slackClient) error {
-	// only parse newly created comments/issues/PRs and if non bot author
-	if ae.login == gc.BotName() || !(ae.action == "created" || ae.action == "opened") {
+	if ae.login == gc.BotName() {
 		return nil
 	}
 

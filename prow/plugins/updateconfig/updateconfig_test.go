@@ -57,7 +57,7 @@ func TestUpdateConfig(t *testing.T) {
 
 	testcases := []struct {
 		name          string
-		prAction      string
+		prAction      github.PullRequestEventAction
 		merged        bool
 		mergeCommit   string
 		changes       []github.PullRequestChange
@@ -66,7 +66,7 @@ func TestUpdateConfig(t *testing.T) {
 	}{
 		{
 			name:     "Opened PR, no update",
-			prAction: "opened",
+			prAction: github.PullRequestActionOpened,
 			merged:   false,
 			changes: []github.PullRequestChange{
 				{
@@ -87,7 +87,7 @@ func TestUpdateConfig(t *testing.T) {
 		},
 		{
 			name:     "Closed PR, no prow changes, no update",
-			prAction: "closed",
+			prAction: github.PullRequestActionClosed,
 			merged:   false,
 			changes: []github.PullRequestChange{
 				{
@@ -98,7 +98,7 @@ func TestUpdateConfig(t *testing.T) {
 		},
 		{
 			name:     "For whatever reason no merge commit SHA",
-			prAction: "closed",
+			prAction: github.PullRequestActionClosed,
 			merged:   true,
 			changes: []github.PullRequestChange{
 				{
@@ -109,7 +109,7 @@ func TestUpdateConfig(t *testing.T) {
 		},
 		{
 			name:        "changed config.yaml, 1 update",
-			prAction:    "closed",
+			prAction:    github.PullRequestActionClosed,
 			merged:      true,
 			mergeCommit: "12345",
 			changes: []github.PullRequestChange{
@@ -122,7 +122,7 @@ func TestUpdateConfig(t *testing.T) {
 		},
 		{
 			name:        "changed plugins.yaml, 1 update",
-			prAction:    "closed",
+			prAction:    github.PullRequestActionClosed,
 			merged:      true,
 			mergeCommit: "12345",
 			changes: []github.PullRequestChange{
@@ -135,7 +135,7 @@ func TestUpdateConfig(t *testing.T) {
 		},
 		{
 			name:        "changed config.yaml and plugins.yaml, 2 update",
-			prAction:    "closed",
+			prAction:    github.PullRequestActionClosed,
 			merged:      true,
 			mergeCommit: "12345",
 			changes: []github.PullRequestChange{
