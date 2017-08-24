@@ -49,7 +49,7 @@
 				{%- else -%}
 					{{name}}
 				{%- endif -%}
-				{%- if sha %}:{{sha|github_commit_link}}{% endif %}<br>
+				{%- if sha %}:{{sha|github_commit_link(repo)}}{% endif %}<br>
 			{%- endfor %}
 		% endif
 		% if 'metadata' in started
@@ -88,9 +88,9 @@
 				<pre class="cmd" onclick="select(this)">{{name | testcmd}}</pre>
 			% endif
 			% if text
-				<pre class="error">{{text|linkify_stacktrace(commit)}}
+				<pre class="error">{{text|linkify_stacktrace(commit, repo)}}
 				% if output
-				<div class="hidden"><hr>{{output|linkify_stacktrace(commit)}}</div>
+				<div class="hidden"><hr>{{output|linkify_stacktrace(commit, repo)}}</div>
 				<span class="expand inset-expand">Click to see stdout/stderr</span><span class="inset-filename">from <a href="https://storage.googleapis.com{{filename}}">{{filename|basename}}</a></span></pre>
 				% else
 				<span class="inset-filename">from <a href="https://storage.googleapis.com{{filename}}">{{filename|basename}}</a></span></pre>
