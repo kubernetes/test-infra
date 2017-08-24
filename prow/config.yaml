@@ -14588,6 +14588,7 @@ periodics:
       args:
       - --bare
       - --timeout=80
+      - --root=/go/src/k8s.io
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
         value: /etc/service-account/service-account.json
