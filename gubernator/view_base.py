@@ -58,6 +58,11 @@ PR_PREFIX = collections.OrderedDict([
     ('istio', 'istio-prow/pull'),
 ])
 
+PROW_INSTANCES = {
+    'istio': 'prow.istio.io',
+    'DEFAULT': 'prow.k8s.io',
+}
+
 JINJA_ENVIRONMENT = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__) + '/templates'),
     extensions=['jinja2.ext.autoescape', 'jinja2.ext.loopcontrols'],

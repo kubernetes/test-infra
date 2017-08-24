@@ -92,9 +92,11 @@ def get_build_log(build_dir):
         return log_parser.digest(build_log)
 
 
-def get_running_build_log(job, build):
+def get_running_build_log(job, build, repo):
+    org = repo and repo.split('/')[0]
     try:
-        url = "https://prow.k8s.io/log?job=%s&id=%s" % (job, build)
+        prow_instance = view_base.PROW_INSTANCES.get(org, view_base.PROW_INSTANCES['DEFAULT'])
+        url = "https://%s/log?job=%s&id=%s" % (prow_instance, job, build)
         result = urlfetch.fetch(url)
         if result.status_code == 200:
             return log_parser.digest(result.content), url
@@ -184,13 +186,18 @@ class BuildHandler(view_base.BaseHandler):
             return
         started, finished, results = details
 
+        pr, pr_path, repo = parse_pr_path(prefix)
+        pr_digest = None
+        if pr:
+            pr_digest = models.GHIssueDigest.get(repo, pr)
+
         build_log = ''
         build_log_src = None
         if 'log' in self.request.params or (not finished) or \
             (finished and finished.get('result') != 'SUCCESS' and len(results['failed']) <= 1):
             build_log = get_build_log(build_dir)
             if not build_log:
-                build_log, build_log_src = get_running_build_log(job, build)
+                build_log, build_log_src = get_running_build_log(job, build, repo)
 
         # 'version' might be in either started or finished.
         # prefer finished.
@@ -201,11 +208,6 @@ class BuildHandler(view_base.BaseHandler):
         commit = version and version.split('+')[-1]
 
         issues = list(models.GHIssueDigest.find_xrefs(build_dir))
-
-        pr, pr_path, repo = parse_pr_path(prefix)
-        pr_digest = None
-        if pr:
-            pr_digest = models.GHIssueDigest.get(repo, pr)
 
         refs = []
         if started and 'pull' in started:
