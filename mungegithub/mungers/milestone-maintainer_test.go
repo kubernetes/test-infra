@@ -20,7 +20,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"reflect"
 	"testing"
 	"time"
 
@@ -318,7 +317,18 @@ func TestSigLabelNames(t *testing.T) {
 	labelNames := sigLabelNames(labels)
 	// Expect labels without sig/ prefix to be filtered out
 	expectedLabelNames := []string{"sig/foo", "sig/bar"}
-	if !reflect.DeepEqual(expectedLabelNames, labelNames) {
-		t.Fatalf("Expected %v, got %v", expectedLabelNames, labelNames)
+	if len(expectedLabelNames) != len(labelNames) {
+		t.Errorf("Wrong number of labels. Got %v, wanted %v.", labelNames, expectedLabelNames)
+	}
+	for _, ln1 := range expectedLabelNames {
+		var found bool
+		for _, ln2 := range labelNames {
+			if ln1 == ln2 {
+				found = true
+			}
+		}
+		if !found {
+			t.Errorf("Label %s not found in %v", ln1, labelNames)
+		}
 	}
 }
