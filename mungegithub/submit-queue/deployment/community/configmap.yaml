@@ -6,7 +6,7 @@ project: community
 # Otherwise it's going to take an extra-cycle to detect the label change.
 # Run blunderbuss before approval-handler, so that we can suggest approvers
 # based on assigned reviewer.
-pr-mungers: blunderbuss, size, submit-queue, needs-rebase, sig-mention-handler, lgtm-after-commit, comment-deleter
+pr-mungers: blunderbuss, submit-queue, needs-rebase, sig-mention-handler, lgtm-after-commit, comment-deleter
 state: open
 token-file: /etc/secret-volume/token
 period: 5m
