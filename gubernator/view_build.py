@@ -198,12 +198,21 @@ class BuildHandler(view_base.BaseHandler):
         if pr:
             pr_digest = models.GHIssueDigest.get(repo, pr)
 
+        refs = []
+        if started and 'pull' in started:
+            for ref in started['pull'].split(','):
+                x = ref.split(':', 1)
+                if len(x) == 2:
+                    refs.append((x[0], x[1]))
+                else:
+                    refs.append((x[1], ''))
+
         self.render('build.html', dict(
             job_dir=job_dir, build_dir=build_dir, job=job, build=build,
             commit=commit, started=started, finished=finished,
-            res=results,
+            res=results, refs=refs,
             build_log=build_log, build_log_src=build_log_src,
-            issues=issues,
+            issues=issues, repo=repo,
             pr_path=pr_path, pr=pr, pr_digest=pr_digest,
             testgrid_query=testgrid_query))
 
