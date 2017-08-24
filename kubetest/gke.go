@@ -299,7 +299,7 @@ function log_dump_custom_get_instances() {
     return 0
   fi
 
-  gcloud compute instances list '--project=%[1]s' '--filter=%[2]s' '--format=get(networkInterfaces.accessConfigs[0][natIP])'
+  gcloud compute instances list '--project=%[1]s' '--filter=%[2]s' '--format=get(name)'
 }
 export -f log_dump_custom_get_instances
 export LOG_DUMP_SSH_USER="${USER}"
