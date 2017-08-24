@@ -14,21 +14,21 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package size
+package genfiles
 
 import (
 	"bytes"
 	"testing"
 )
 
-func TestGenFilesGroupLoad(t *testing.T) {
+func TestGroupLoad(t *testing.T) {
 	cases := []struct {
 		name      string
 		src       string
 		repoPaths []string
 		err       error
 
-		want GenFilesGroup
+		want Group
 	}{
 		{
 			name: "k8s-config",
@@ -63,7 +63,7 @@ path-prefix pkg/generated/
 
 paths-from-repo docs/.generated_docs`,
 			repoPaths: []string{"docs/.generated_docs"},
-			want: GenFilesGroup{
+			want: Group{
 				FileNames: map[string]bool{
 					"BUILD":                          true,
 					"types.generated.go":             true,
@@ -88,7 +88,7 @@ paths-from-repo docs/.generated_docs`,
 
 what is this line anyway?`,
 			err:  &ParseError{line: "what is this line anyway?"},
-			want: GenFilesGroup{},
+			want: Group{},
 		},
 		{
 			name: "partially valid config",
@@ -108,7 +108,7 @@ badline
 invalid command`,
 			repoPaths: []string{"myrepo"},
 			err:       &ParseError{line: "badline"},
-			want: GenFilesGroup{
+			want: Group{
 				FileNames: map[string]bool{
 					"mypath": true,
 				},
@@ -121,7 +121,7 @@ invalid command`,
 
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			g := &GenFilesGroup{
+			g := &Group{
 				Paths:        make(map[string]bool),
 				FileNames:    make(map[string]bool),
 				PathPrefixes: make(map[string]bool),
@@ -206,14 +206,14 @@ invalid command`,
 	}
 }
 
-func TestGenFilesGroupLoadPaths(t *testing.T) {
+func TestGroupLoadPaths(t *testing.T) {
 	cases := []struct {
 		name string
 		src  string
 		err  error
 
-		// Assume that the GenFilesGroup started empty.
-		want GenFilesGroup
+		// Assume that the Group started empty.
+		want Group
 	}{
 		{
 			name: "k8s/docs",
@@ -224,7 +224,7 @@ docs/admin/federation-apiserver.md
 # ...`,
 			err: nil,
 
-			want: GenFilesGroup{
+			want: Group{
 				Paths: map[string]bool{
 					"docs/.generated_docs":                   true,
 					"docs/admin/cloud-controller-manager.md": true,
@@ -236,7 +236,7 @@ docs/admin/federation-apiserver.md
 
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			g := &GenFilesGroup{
+			g := &Group{
 				Paths:        make(map[string]bool),
 				FileNames:    make(map[string]bool),
 				PathPrefixes: make(map[string]bool),
@@ -262,8 +262,8 @@ docs/admin/federation-apiserver.md
 	}
 }
 
-func TestGenFilesGroupMatch(t *testing.T) {
-	group := &GenFilesGroup{
+func TestGroupMatch(t *testing.T) {
+	group := &Group{
 		Paths: map[string]bool{
 			"foo":     true,
 			"bar/":    true,

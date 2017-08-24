@@ -14,19 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package size
-
-import (
-	"bufio"
-	"bytes"
-	"fmt"
-	"io"
-	"path/filepath"
-	"strings"
-
-	"k8s.io/test-infra/prow/github"
-)
-
+// Package genfiles understands the .generated_files config file.
 // The ".generated_files" config lives in the repo's root.
 //
 // The config is a series of newline-delimited statements. Statements which
@@ -52,6 +40,19 @@ import (
 //  - "path-prefix": prefix match on the file path
 //  - "file-prefix": prefix match of the leaf filename (no path)
 //  - "paths-from-repo": load file paths from a file in repo
+package genfiles
+
+import (
+	"bufio"
+	"bytes"
+	"fmt"
+	"io"
+	"path/filepath"
+	"strings"
+
+	"k8s.io/test-infra/prow/github"
+)
+
 const genConfigFile = ".generated_files"
 
 // ghFileClient scopes to the only relevant functionality we require of a github client.
@@ -59,16 +60,16 @@ type ghFileClient interface {
 	GetFile(org, repo, filepath, commit string) ([]byte, error)
 }
 
-// GenFilesGroup is a logical collection of files. Check for a file's
+// Group is a logical collection of files. Check for a file's
 // inclusion in the group using the Match method.
-type GenFilesGroup struct {
+type Group struct {
 	Paths, FileNames, PathPrefixes, FilePrefixes map[string]bool
 }
 
-// NewGenFilesGroup reads the .generated_files file in the root of the repository
+// NewGroup reads the .generated_files file in the root of the repository
 // and any referenced path files (from "path-from-repo" commands).
-func NewGenFilesGroup(gc ghFileClient, owner, repo, sha string) (*GenFilesGroup, error) {
-	g := &GenFilesGroup{
+func NewGroup(gc ghFileClient, owner, repo, sha string) (*Group, error) {
+	g := &Group{
 		Paths:        make(map[string]bool),
 		FileNames:    make(map[string]bool),
 		PathPrefixes: make(map[string]bool),
@@ -105,7 +106,7 @@ func NewGenFilesGroup(gc ghFileClient, owner, repo, sha string) (*GenFilesGroup,
 // Use load to read a generated files config file, and populate g with the commands.
 // "paths-from-repo" commands are aggregated into repoPaths. It is the caller's
 // responsiblity to fetch these and load them via g.loadPaths.
-func (g *GenFilesGroup) load(r io.Reader) ([]string, error) {
+func (g *Group) load(r io.Reader) ([]string, error) {
 	var repoPaths []string
 	s := bufio.NewScanner(r)
 	for s.Scan() {
@@ -148,7 +149,7 @@ func (g *GenFilesGroup) load(r io.Reader) ([]string, error) {
 
 // Use loadPaths to load a file of new-line delimited paths, such as
 // resolving file data referenced in a "paths-from-repo" command.
-func (g *GenFilesGroup) loadPaths(r io.Reader) error {
+func (g *Group) loadPaths(r io.Reader) error {
 	s := bufio.NewScanner(r)
 
 	for s.Scan() {
@@ -170,7 +171,7 @@ func (g *GenFilesGroup) loadPaths(r io.Reader) error {
 
 // Match determines whether a file, given here by its full path
 // is included in the generated files group.
-func (g *GenFilesGroup) Match(path string) bool {
+func (g *Group) Match(path string) bool {
 	if g.Paths[path] {
 		return true
 	}
