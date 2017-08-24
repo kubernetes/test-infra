@@ -715,10 +715,15 @@ func chmodArtifacts() error {
 }
 
 func prepare(o *options) error {
+	k8sProviderEnvVar := o.provider
+	if o.provider == "kubernetes-anywhere" {
+		// To make gce-related setup scripts in k8s to get sourced.
+		k8sProviderEnvVar = "gce"
+	}
 	if err := migrateOptions([]migratedOption{
 		{
 			env:    "KUBERNETES_PROVIDER",
-			option: &o.provider,
+			option: &k8sProviderEnvVar,
 			name:   "--provider",
 		},
 		{
