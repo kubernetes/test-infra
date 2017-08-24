@@ -1,0 +1,108 @@
+% extends 'base.html'
+{% block title %}{{job}} #{{build}} Results{% endblock %}
+% block head
+{{super()}}
+% if finished and finished['result'] == 'SUCCESS' and not failures
+<link rel="icon" type="image/png" href="{{'favicon-green.png'|static}}" />
+% endif
+% endblock
+% block header
+<h1>{% if pr %}<a href="/pr/{{pr_path}}{{pr}}">{% if repo != "kubernetes/kubernetes" %}{{repo}} {% endif %}PR #{{pr}}</a> {% endif %}
+	% if testgrid_query
+		<a href="{{testgrid_query|tg_url}}">{{job}}</a>
+	% else
+		{{job}}
+	% endif
+	#{{build}}</h1>
+	<p><a href="/builds{{job_dir}}">Recent runs</a><br>
+% endblock
+% block content
+<div id="summary">
+	<table class="build-meta">
+	% if pr and pr_digest
+		% set pl = pr_digest.payload
+		<tr><td>PR<td><a href="/pr/{{pl['author']}}">{{pl['author']}}</a>: {{pl['title']}}
+	% endif
+		% set result = finished['result'] if finished else 'Not Finished'
+		<tr><td>Result<td><span class="build-{{result | slugify}}">{{result}}</span>
+	% if started
+		<tr><td>Started<td>{{started['timestamp']|timestamp}}
+		{% if finished %}<tr><td>Elapsed<td>{{(finished['timestamp']-started['timestamp'])|duration}}{% endif %}
+		<tr><td>Version<td><a href="https://github.com/openshfit/origin/commit/{{commit}}">{{started['version'] or finished['version']}}</a>
+		% if 'jenkins-node' in started
+			<tr><td>Builder<td>{{started['jenkins-node']}}
+		% endif
+		% if 'pull' in started
+			<tr><td>Refs<td>
+			{% for x in started['pull'].split(',') -%}
+				{% set x=x.split(':', 1) %}
+				{{x[0]}}{% if x|length == 2 %}{% set commit=x[1] %}:{{x[1]|github_commit_link}}{% endif %}<br>
+			{%- endfor %}
+		% endif
+		% if 'metadata' in started
+			% for k, v in started['metadata']|dictsort
+			<tr><td>{{k}}<td>{{v}}
+			% endfor
+		% endif
+		% if finished and 'metadata' in finished
+			% for k, v in finished['metadata']|dictsort
+			<tr><td>{{k}}<td>{{v}}
+			% endfor
+		% endif
+	% endif
+	</table>
+	<ul class="nav">
+		<li class="nav"><a href="{{build_dir | gcs_browse_url}}">artifacts</a></li>
+		<li class="nav"><a href="?log#log">build log</a></li>
+	</ul>
+	</div>
+	<div id="failures">
+	% if issues
+		<h4>References</h4>
+		% for issue in issues
+		<a href="https://github.com/{{issue.repo}}/issues/{{issue.number}}">
+		{% if issue.is_pr %}PR{% else %}Issue{% endif %} #{{issue.number}} {{issue.payload['title']}}</a>
+		<br>
+		% endfor
+		<hr>
+	% endif
+	% if failures
+		<h2>Test Failures</h2>
+		% for name, time, text, filename in failures
+			<hr>
+			<h3><a class="anchor" id="{{name|slugify}}" href="#{{name|slugify}}">{{name}}<span class="time"> {{time|duration}}</span></h3></a>
+			% if 'junit_runner' not in filename
+				<pre class="cmd" onclick="select(this)">{{name | testcmd}}</pre>
+			% endif
+			% if text
+				<pre class="error">{{text|linkify_stacktrace(commit)}}<span class="inset-filename">from <a href="https://storage.googleapis.com{{filename}}">{{filename|basename}}</a></span></pre>
+				% set pod_name = text|parse_pod_name
+				% if pod_name
+					<p>Find <tt>{{pod_name}}</tt> mentions in <a id="{{pod_name|slugify}}" href="/build{{build_dir}}/nodelog?pod={{pod_name}}&junit={{filename|basename}}&wrap=on">log files</a>
+				% else
+					<p>Filter through <a href="/build{{build_dir}}/nodelog?junit={{filename|basename}}&wrap=on">log files</a>
+				% endif
+				% if testgrid_query
+					| View <a href="{{testgrid_query|tg_url(name)}}">test history</a> on testgrid
+				% endif
+			% else
+				<span class="inset-filename">from <a href="https://storage.googleapis.com{{filename}}">{{filename|basename}}</a></span>
+			% endif
+		% endfor
+	% else
+		<h2>{{"No Test Failures!" if finished else "Build Still Running!"}}</h2>
+	% endif
+	</div>
+	% if build_log
+	<div id="log">
+		<a name="log"></a>
+		<hr>
+		<h2 id="log">Error lines from build-log.txt</h2>
+		<ul class="log">
+			<li class="log"><button onclick="javascript:expand_all(this.parentElement)">Expand Skipped Lines</button></li>
+			<li class="log"><a href="{{build_log_src or "https://storage.googleapis.com%s/build-log.txt" % build_dir}}">Raw build-log.txt</a></li>
+		</ul>
+		<pre data-src="{{build_log_src or "%s/build-log.txt" % build_dir}}">{{build_log | safe}}</pre>
+	</div>
+	% endif
+% endblock

@@ -1,0 +1,21 @@
+% extends 'base.html'
+{% block title %}Gubernator{% endblock %}
+% block header
+<h1 class="header">Gubernator</h1>
+% endblock
+% block content
+<a href="/pr"><h2 class="link">PR Dashboard</h2></a>
+<h1 class="section-header">OpenShift Origin Test Results</h1>
+<ul id="jobs-list">
+% for prefix, jobset in jobs|dictsort
+	<li class="jobs-list"><h2>{{prefix}}</h2>
+	<a href="/jobs/{{prefix}}">Jobs List</a><br>
+	Jobs:
+	<ul>
+	% for job in jobset|sort
+		<li><a href="/builds/{{prefix}}{{job}}">{{job}}</a><br></li>
+	% endfor
+	</ul>
+	</li>
+% endfor
+% endblock
