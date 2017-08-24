@@ -422,6 +422,8 @@ def render(builds, clustered):
             'builds': builds_to_columns(builds)}
 
 
+SIG_LABEL_RE = re.compile(r'\[sig-([^]]*)\]')
+
 def annotate_owners(data, builds, owners):
     """
     Assign ownership to a cluster based on the share of hits in the last day.
@@ -439,10 +441,14 @@ def annotate_owners(data, builds, owners):
     for cluster in data['clustered']:
         owner_counts = {}
         for test in cluster['tests']:
-            m = owner_re.match(normalize_name(test['name']))
-            if not m:
-                continue
-            owner = next(k for k, v in m.groupdict().iteritems() if v)
+            m = SIG_LABEL_RE.search(test['name'])
+            if m:
+                owner = m.group(1)
+            else:
+                m = owner_re.match(normalize_name(test['name']))
+                if not m or not m.groupdict():
+                    continue
+                owner = next(k for k, v in m.groupdict().iteritems() if v)
             owner = owner.replace('_', '-')
             counts = owner_counts.setdefault(owner, [0, 0])
             for job in test['jobs']:
