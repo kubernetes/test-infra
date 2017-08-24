@@ -277,20 +277,12 @@ func (c *Controller) syncJenkinsJob(pj kube.ProwJob, reports chan<- kube.ProwJob
 		pj.Status.Description = "Error checking job status."
 		reports <- pj
 	} else {
+
 		pj.Status.BuildID = strconv.Itoa(status.Number)
-		var b bytes.Buffer
-		if err := c.ca.Config().Plank.JobURLTemplate.Execute(&b, &pj); err != nil {
-			return fmt.Errorf("error executing URL template: %v", err)
-		}
-		url := b.String()
-		if pj.Status.URL != url {
-			pj.Status.URL = url
-			pj.Status.PodName = fmt.Sprintf("%s-%d", pj.Spec.Job, status.Number)
-		} else if status.Building {
-			// Build still going.
-			return nil
-		}
-		if !status.Building && status.Success {
+
+		switch {
+		case status.Building:
+		case status.Success:
 			pj.Status.CompletionTime = time.Now()
 			pj.Status.State = kube.SuccessState
 			pj.Status.Description = "Jenkins job succeeded."
@@ -299,11 +291,25 @@ func (c *Controller) syncJenkinsJob(pj kube.ProwJob, reports chan<- kube.ProwJob
 					return fmt.Errorf("error starting next prowjob: %v", err)
 				}
 			}
-		} else if !status.Building {
+		default:
 			pj.Status.CompletionTime = time.Now()
 			pj.Status.State = kube.FailureState
 			pj.Status.Description = "Jenkins job failed."
 		}
+
+		var b bytes.Buffer
+		if err := c.ca.Config().Plank.JobURLTemplate.Execute(&b, &pj); err != nil {
+			return fmt.Errorf("error executing URL template: %v", err)
+		}
+		url := b.String()
+		if url != pj.Status.URL {
+			pj.Status.URL = url
+			pj.Status.PodName = fmt.Sprintf("%s-%d", pj.Spec.Job, status.Number)
+		} else if status.Building {
+			// build still going, and the URL doesn't need to be updated
+			return nil
+		}
+
 		reports <- pj
 	}
 	_, rerr := c.kc.ReplaceProwJob(pj.Metadata.Name, pj)
