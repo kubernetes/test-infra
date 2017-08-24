@@ -55,7 +55,7 @@ const (
 	lgtmLabel                      = "lgtm"
 	retestNotRequiredLabel         = "retest-not-required"
 	retestNotRequiredDocsOnlyLabel = "retest-not-required-docs-only"
-	doNotMergeLabel                = "do-not-merge"
+	doNotMergePrefix               = "do-not-merge"
 	claYesLabel                    = "cla: yes"
 	claNoLabel                     = "cla: no"
 	cncfClaYesLabel                = "cncf-cla: yes"
@@ -950,6 +950,10 @@ func (sq *SubmitQueue) getGithubE2EStatus() []byte {
 	return sq.marshal(status)
 }
 
+func noMergeMessage(label string) string {
+	return "Will not auto merge because " + label + " is present"
+}
+
 const (
 	unknown                 = "unknown failure"
 	noCLA                   = "PR is missing CLA label; needs one of " + claYesLabel + ", " + cncfClaYesLabel + " or " + claHumanLabel
@@ -958,7 +962,6 @@ const (
 	lgtmEarly               = "The PR was changed after the " + lgtmLabel + " label was added."
 	unmergeable             = "PR is unable to be automatically merged. Needs rebase."
 	undeterminedMergability = "Unable to determine is PR is mergeable. Will try again later."
-	noMerge                 = "Will not auto merge because " + doNotMergeLabel + " is present"
 	ciFailure               = "Required Github CI test is not green"
 	ciFailureFmt            = ciFailure + ": %s"
 	e2eFailure              = "The e2e tests are failing. The entire submit queue is blocked."
@@ -1077,10 +1080,12 @@ func (sq *SubmitQueue) validForMergeExt(obj *github.MungeObject, checkStatus boo
 		}
 	}
 
-	// PR cannot have the label which prevents merging.
-	if obj.HasLabel(doNotMergeLabel) {
-		sq.SetMergeStatus(obj, noMerge)
-		return false
+	// PR cannot have any labels which prevent merging.
+	for _, label := range obj.LabelSet().List() {
+		if strings.HasPrefix(label, doNotMergePrefix) {
+			sq.SetMergeStatus(obj, noMergeMessage(label))
+			return false
+		}
 	}
 
 	return true
@@ -1582,7 +1587,7 @@ func (sq *SubmitQueue) serveMergeInfo(res http.ResponseWriter, req *http.Request
 	if gateApproved {
 		out.WriteString(fmt.Sprintf(`<li>The PR must have the %q label</li>`, approvedLabel))
 	}
-	out.WriteString(fmt.Sprintf("<li>The PR must not have the %q label</li>", doNotMergeLabel))
+	out.WriteString(fmt.Sprintf("<li>The PR must not have the any labels starting with %q</li>", doNotMergePrefix))
 	out.WriteString(`</ol><br>`)
 	out.WriteString("The PR can then be queued to re-test before merge. Once it reaches the top of the queue all of the above conditions must be true but so must the following:")
 	out.WriteString("<ol>")

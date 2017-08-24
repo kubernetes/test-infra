@@ -32,13 +32,14 @@ import (
 )
 
 const (
-	blockPathFormat = `Adding label:%s because PR changes docs prohibited to auto merge
+	blockedPathsLabel = doNotMergePrefix + "/blocked-paths"
+	blockPathFormat   = `Adding label:%s because PR changes docs prohibited to auto merge
 See http://kubernetes.io/editdocs/ for information about editing docs`
 )
 
 var (
 	_             = fmt.Print
-	blockPathBody = fmt.Sprintf(blockPathFormat, doNotMergeLabel)
+	blockPathBody = fmt.Sprintf(blockPathFormat, blockedPathsLabel)
 )
 
 type configBlockPath struct {
@@ -140,7 +141,7 @@ func (b *BlockPath) Munge(obj *github.MungeObject) {
 		return
 	}
 
-	if obj.HasLabel(doNotMergeLabel) {
+	if obj.HasLabel(blockedPathsLabel) {
 		return
 	}
 
@@ -155,7 +156,7 @@ func (b *BlockPath) Munge(obj *github.MungeObject) {
 				continue
 			}
 			obj.WriteComment(blockPathBody)
-			obj.AddLabels([]string{doNotMergeLabel})
+			obj.AddLabels([]string{blockedPathsLabel})
 			return
 		}
 	}
@@ -168,7 +169,7 @@ func (b *BlockPath) isStaleIssueComment(obj *github.MungeObject, comment *github
 	if *comment.Body != blockPathBody {
 		return false
 	}
-	stale := !obj.HasLabel(doNotMergeLabel)
+	stale := !obj.HasLabel(blockedPathsLabel)
 	if stale {
 		glog.V(6).Infof("Found stale BlockPath comment")
 	}
