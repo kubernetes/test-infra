@@ -227,8 +227,7 @@ func notificationState(obj *github.MungeObject, comment *c.Comment, botName stri
 	// removeAfter is guaranteed to be non-nil for non-blockers
 	if isBlocker || *removeAfter >= 0 {
 		var createdAt *time.Time
-		// createdAt should be nil for blockers to avoid repeatedly posting the same warning message
-		if !isBlocker && comment != nil {
+		if comment != nil {
 			createdAt = comment.CreatedAt
 		}
 		return milestoneLabelsIncompleteLabel, labelsIncompleteState(obj.Issue, notification, labelErrors, warningInterval, createdAt, removeAfter)
@@ -304,11 +303,6 @@ func labelsIncompleteState(issue *githubapi.Issue, notification *c.Notification,
 {{.detail}}
 `
 
-	isCurrent := (notification != nil && notification.Arguments == milestoneLabelsIncomplete && (commentCreatedAt == nil || time.Since(*commentCreatedAt) < warningInterval))
-	if isCurrent {
-		return nil
-	}
-
 	mention := mungerutil.GetIssueUsers(issue).AllUsers().Mention().Join()
 	var warning string
 	if removeAfter != nil {
@@ -324,10 +318,23 @@ func labelsIncompleteState(issue *githubapi.Issue, notification *c.Notification,
 		return nil
 	}
 
+	if warningIsCurrent(notification, *message, commentCreatedAt, warningInterval) {
+		return nil
+	}
+
 	return &milestoneNotification{
 		description: milestoneLabelsIncomplete,
 		message:     *message,
 	}
+}
+
+// warningIsCurrent indicates whether the given notification
+// represents is an up-to-date warning.  The notification is the
+// previous warning from the munger.  The message is the warning
+// generated from the current labels on the issue.
+func warningIsCurrent(notification *c.Notification, message string, commentCreatedAt *time.Time, warningInterval time.Duration) bool {
+	hasNotification := (notification != nil && notification.Arguments == milestoneLabelsIncomplete)
+	return hasNotification && notification.Context == message && commentCreatedAt != nil && time.Since(*commentCreatedAt) < warningInterval
 }
 
 // removalState returns the notification state for an issue that will
