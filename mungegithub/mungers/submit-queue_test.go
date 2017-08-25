@@ -106,8 +106,24 @@ func DoNotMergeIssue() *github.Issue {
 	return github_test.Issue(someUserName, 1, []string{claYesLabel, lgtmLabel, approvedLabel, doNotMergeLabel}, true)
 }
 
+func CherrypickUnapprovedIssue() *github.Issue {
+	return github_test.Issue(someUserName, 1, []string{claYesLabel, lgtmLabel, approvedLabel, cherrypickUnapprovedLabel}, true)
+}
+
+func BlockedPathsIssue() *github.Issue {
+	return github_test.Issue(someUserName, 1, []string{claYesLabel, lgtmLabel, approvedLabel, blockedPathsLabel}, true)
+}
+
+func DeprecatedMissingReleaseNoteIssue() *github.Issue {
+	return github_test.Issue(someUserName, 1, []string{claYesLabel, lgtmLabel, approvedLabel, deprecatedReleaseNoteLabelNeeded}, true)
+}
+
+func MissingReleaseNoteIssue() *github.Issue {
+	return github_test.Issue(someUserName, 1, []string{claYesLabel, lgtmLabel, approvedLabel, releaseNoteLabelNeeded}, true)
+}
+
 func DoNotMergeMilestoneIssue() *github.Issue {
-	issue := github_test.Issue(someUserName, 1, []string{claYesLabel, lgtmLabel, doNotMergeLabel}, true)
+	issue := github_test.Issue(someUserName, 1, []string{claYesLabel, lgtmLabel}, true)
 	milestone := &github.Milestone{
 		Title: stringPtr(doNotMergeMilestone),
 	}
@@ -773,7 +789,35 @@ func TestSubmitQueue(t *testing.T) {
 			state:           "pending",
 		},
 		{
-			name:            "Fail because doNotMerge label is present",
+			name:            "Fail because missing release note label is present",
+			pr:              ValidPR(),
+			issue:           MissingReleaseNoteIssue(),
+			events:          NewLGTMEvents(),
+			commits:         Commits(), // Modified at time.Unix(7), 8, and 9
+			ciStatus:        SuccessStatus(),
+			lastBuildNumber: LastBuildNumber(),
+			gcsResult:       SuccessGCS(),
+			retest1Pass:     true,
+			retest2Pass:     true,
+			reason:          noMergeMessage(releaseNoteLabelNeeded),
+			state:           "pending",
+		},
+		{
+			name:            "Fail because deprecated missing release note label is present",
+			pr:              ValidPR(),
+			issue:           DeprecatedMissingReleaseNoteIssue(),
+			events:          NewLGTMEvents(),
+			commits:         Commits(), // Modified at time.Unix(7), 8, and 9
+			ciStatus:        SuccessStatus(),
+			lastBuildNumber: LastBuildNumber(),
+			gcsResult:       SuccessGCS(),
+			retest1Pass:     true,
+			retest2Pass:     true,
+			reason:          noMergeMessage(deprecatedReleaseNoteLabelNeeded),
+			state:           "pending",
+		},
+		{
+			name:            "Fail because do not merge label is present",
 			pr:              ValidPR(),
 			issue:           DoNotMergeIssue(),
 			events:          NewLGTMEvents(),
@@ -783,7 +827,35 @@ func TestSubmitQueue(t *testing.T) {
 			gcsResult:       SuccessGCS(),
 			retest1Pass:     true,
 			retest2Pass:     true,
-			reason:          noMerge,
+			reason:          noMergeMessage(doNotMergeLabel),
+			state:           "pending",
+		},
+		{
+			name:            "Fail because cherrypick unapproved label is present",
+			pr:              ValidPR(),
+			issue:           CherrypickUnapprovedIssue(),
+			events:          NewLGTMEvents(),
+			commits:         Commits(), // Modified at time.Unix(7), 8, and 9
+			ciStatus:        SuccessStatus(),
+			lastBuildNumber: LastBuildNumber(),
+			gcsResult:       SuccessGCS(),
+			retest1Pass:     true,
+			retest2Pass:     true,
+			reason:          noMergeMessage(cherrypickUnapprovedLabel),
+			state:           "pending",
+		},
+		{
+			name:            "Fail because blocked paths label is present",
+			pr:              ValidPR(),
+			issue:           BlockedPathsIssue(),
+			events:          NewLGTMEvents(),
+			commits:         Commits(), // Modified at time.Unix(7), 8, and 9
+			ciStatus:        SuccessStatus(),
+			lastBuildNumber: LastBuildNumber(),
+			gcsResult:       SuccessGCS(),
+			retest1Pass:     true,
+			retest2Pass:     true,
+			reason:          noMergeMessage(blockedPathsLabel),
 			state:           "pending",
 		},
 		// Should fail because the 'do-not-merge-milestone' is set.
