@@ -132,6 +132,7 @@ table.pr-dash tbody tr:hover {
     width: 10em;
 }
 table.build-meta {
+    padding-top: 20px;
     text-align: left;
     word-break: break-word;
     margin: 0 auto;  /* center */
@@ -143,7 +144,7 @@ table.build-meta td:nth-child(2) {
     max-width: 60vw;
 }
 table.build-meta td {
-    padding:2px 5px 2px 5px;
+    padding:4px 10px 4px 10px;
 }
 h3.pr-section {
     margin: 1em 0 0 1em;
