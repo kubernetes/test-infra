@@ -1304,6 +1304,10 @@ test_groups:
 - name: ci-kubernetes-soak-gci-gce-1-7-test
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gci-gce-1-7-test
 # cos image validation.
+- name: ci-kubernetes-e2enode-cosbeta-k8sdev-default
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cosbeta-k8sdev-default
+- name: ci-kubernetes-e2enode-cosbeta-k8sdev-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cosbeta-k8sdev-serial
 - name: ci-kubernetes-e2enode-cosstable1-k8sdev-default
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cosstable1-k8sdev-default
 - name: ci-kubernetes-e2enode-cosstable1-k8sdev-serial
@@ -3320,6 +3324,10 @@ dashboards:
 
 - name: cos-image-validation
   dashboard_tab:
+  - name: e2enode-cosbeta-k8sdev-default
+    test_group_name: ci-kubernetes-e2enode-cosbeta-k8sdev-default
+  - name: e2enode-cosbeta-k8sdev-serial
+    test_group_name: ci-kubernetes-e2enode-cosbeta-k8sdev-serial
   - name: e2enode-cosstable1-k8sdev-default
     test_group_name: ci-kubernetes-e2enode-cosstable1-k8sdev-default
   - name: e2enode-cosstable1-k8sdev-serial

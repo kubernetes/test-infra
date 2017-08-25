@@ -551,6 +551,16 @@ jobs:
 
   # Node E2E Tests
 
+  ci-kubernetes-e2enode-cosbeta-k8sdev-default:
+    interval: 2h
+    args:
+    - --project=cos-image-validation
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2enode-cosbeta-k8sdev-serial:
+    interval: 2h
+    args:
+    - --project=cos-image-validation
+    sigOwners: ['sig-node']
   ci-kubernetes-e2enode-cosstable1-k8sdev-default:
     interval: 2h
     args:
@@ -790,9 +800,13 @@ nodeCommon:
     - --zone=us-central1-f
 
 nodeImages:
+  cosbeta:
+    args:
+    - --images=cos-beta-61-9765-31-0
+    - --image-project=cos-cloud
   cosstable1:
     args:
-    - --images=cos-stable-60-9592-76-0
+    - --images=cos-stable-60-9592-84-0
     - --image-project=cos-cloud
   ubuntudev:
     args:
