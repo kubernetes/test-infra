@@ -44,7 +44,7 @@ const (
 	priorityCriticalUrgent = "priority/critical-urgent"
 
 	commentDetail = `<details>
-Additional instructions available [here](https://github.com/kubernetes/community/blob/master/contributors/devel/release/issues.md)
+Additional instructions available <a href="https://github.com/kubernetes/community/blob/master/contributors/devel/release/issues.md">here</a>
 </details>`
 )
 
