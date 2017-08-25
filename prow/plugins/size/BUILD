@@ -10,10 +10,7 @@ load(
 
 go_test(
     name = "go_default_test",
-    srcs = [
-        "gen_files_group_test.go",
-        "pr_test.go",
-    ],
+    srcs = ["pr_test.go"],
     library = ":go_default_library",
     tags = ["automanaged"],
     deps = [
@@ -24,12 +21,10 @@ go_test(
 
 go_library(
     name = "go_default_library",
-    srcs = [
-        "gen_files_group.go",
-        "size.go",
-    ],
+    srcs = ["size.go"],
     tags = ["automanaged"],
     deps = [
+        "//prow/genfiles:go_default_library",
         "//prow/github:go_default_library",
         "//prow/plugins:go_default_library",
         "//vendor/github.com/Sirupsen/logrus:go_default_library",

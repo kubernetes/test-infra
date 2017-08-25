@@ -21,6 +21,7 @@ go_library(
     name = "go_default_library",
     srcs = ["golint.go"],
     deps = [
+        "//prow/genfiles:go_default_library",
         "//prow/git:go_default_library",
         "//prow/github:go_default_library",
         "//prow/plugins:go_default_library",

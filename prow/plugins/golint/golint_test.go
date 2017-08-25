@@ -45,9 +45,17 @@ func Qux() error {
 	return nil
 }
 `),
+	"zz_generated.wowza.go": []byte(`package bar
+
+func Qux() error {
+	return nil
+}
+`),
 }
 
 type ghc struct {
+	genfile     []byte
+	pr          github.PullRequest
 	changes     []github.PullRequestChange
 	oldComments []github.ReviewComment
 	comment     github.DraftReview
@@ -64,6 +72,14 @@ func (g *ghc) CreateReview(org, repo string, number int, r github.DraftReview) e
 
 func (g *ghc) ListPullRequestComments(org, repo string, number int) ([]github.ReviewComment, error) {
 	return g.oldComments, nil
+}
+
+func (g *ghc) GetFile(org, repo, filepath, commit string) ([]byte, error) {
+	return g.genfile, nil
+}
+
+func (g *ghc) GetPullRequest(org, repo string, number int) (*github.PullRequest, error) {
+	return &g.pr, nil
 }
 
 var ice = github.IssueCommentEvent{
@@ -110,10 +126,15 @@ func TestLint(t *testing.T) {
 	}
 
 	gh := &ghc{
+		genfile: []byte("file-prefix zz_generated"),
 		changes: []github.PullRequestChange{
 			{
 				Filename: "qux.go",
 				Patch:    "@@ -0,0 +1,5 @@\n+package bar\n+\n+func Qux() error {\n+   return nil\n+}",
+			},
+			{
+				Filename: "zz_generated.wowza.go",
+				Patch:    "@@ -0,0 +1,5 @@\n+package bar\n+\n+func Qux2() error {\n+   return nil\n+}",
 			},
 		},
 	}

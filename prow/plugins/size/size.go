@@ -25,6 +25,7 @@ import (
 
 	"github.com/Sirupsen/logrus"
 
+	"k8s.io/test-infra/prow/genfiles"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/plugins"
 )
@@ -61,10 +62,10 @@ func handlePR(gc githubClient, le *logrus.Entry, pe github.PullRequestEvent) err
 		sha   = pe.PullRequest.Base.SHA
 	)
 
-	g, err := NewGenFilesGroup(gc, owner, repo, sha)
+	g, err := genfiles.NewGroup(gc, owner, repo, sha)
 	if err != nil {
 		switch err.(type) {
-		case *ParseError:
+		case *genfiles.ParseError:
 			// Continue on parse errors, but warn that something is wrong.
 			le.Warnf("error while parsing .generated_files: %v", err)
 		default:

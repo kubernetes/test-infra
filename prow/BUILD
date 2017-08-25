@@ -28,6 +28,7 @@ filegroup(
         "//prow/cmd/tide:all-srcs",
         "//prow/cmd/tot:all-srcs",
         "//prow/config:all-srcs",
+        "//prow/genfiles:all-srcs",
         "//prow/git:all-srcs",
         "//prow/github:all-srcs",
         "//prow/hook:all-srcs",
