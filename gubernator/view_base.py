@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import collections
 import functools
 import logging
 import os
@@ -50,7 +51,17 @@ DEFAULT_JOBS = {
     },
 }
 
-PR_PREFIX = 'kubernetes-jenkins/pr-logs/pull'
+# Maps github organizations/owners to GCS paths for presubmit results
+PR_PREFIX = collections.OrderedDict([
+    ('kubernetes', 'kubernetes-jenkins/pr-logs/pull'),
+    ('google', 'kubernetes-jenkins/pr-logs/pull'),  # for cadvisor
+    ('istio', 'istio-prow/pull'),
+])
+
+PROW_INSTANCES = {
+    'istio': 'prow.istio.io',
+    'DEFAULT': 'prow.k8s.io',
+}
 
 JINJA_ENVIRONMENT = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__) + '/templates'),

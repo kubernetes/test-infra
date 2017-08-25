@@ -240,23 +240,27 @@ class BuildTest(main_test.TestBase):
         self.assertIn('No Test Failures', response)
 
     def test_parse_pr_path(self):
-        for prefix, expected in [
-            ('kubernetes-jenkins/logs/e2e', (None, None, None)),
-            ('kubernetes-jenkins/pr-logs/pull/123', ('123', '', 'kubernetes/kubernetes')),
-            ('kubernetes-jenkins/pr-logs/pull/charts/123', ('123', 'charts/', 'kubernetes/charts')),
-        ]:
+        def check(prefix, expected):
             self.assertEqual(view_build.parse_pr_path(prefix), expected)
+
+        check('kubernetes-jenkins/logs/e2e', (None, None, None))
+        check('kubernetes-jenkins/pr-logs/pull/123', ('123', '', 'kubernetes/kubernetes'))
+        check('kubernetes-jenkins/pr-logs/pull/charts/123', ('123', 'charts/', 'kubernetes/charts'))
+        check('istio-prow/pull/istio_istio/517', ('517', 'istio/istio/', 'istio/istio'))
+        check(
+            'kubernetes-jenkins/pr-logs/pull/google_cadvisor/296',
+            ('296', 'google/cadvisor/', 'google/cadvisor'))
 
     def test_build_pr_link(self):
         ''' The build page for a PR build links to the PR results.'''
-        build_dir = '/%s/123/e2e/567/' % view_pr.PR_PREFIX
+        build_dir = '/%s/123/e2e/567/' % view_pr.PR_PREFIX['kubernetes']
         init_build(build_dir)
         response = app.get('/build' + build_dir)
         self.assertIn('PR #123', response)
         self.assertIn('href="/pr/123"', response)
 
     def test_build_pr_link_other(self):
-        build_dir = '/%s/charts/123/e2e/567/' % view_pr.PR_PREFIX
+        build_dir = '/%s/charts/123/e2e/567/' % view_pr.PR_PREFIX['kubernetes']
         init_build(build_dir)
         response = app.get('/build' + build_dir)
         self.assertIn('PR #123', response)

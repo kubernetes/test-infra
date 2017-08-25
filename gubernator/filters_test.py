@@ -21,6 +21,11 @@ import urllib
 import filters
 
 
+def linkify(inp, commit):
+    return str(filters.do_linkify_stacktrace(
+        inp, commit, 'kubernetes/kubernetes'))
+
+
 class HelperTest(unittest.TestCase):
     def test_timestamp(self):
         self.assertEqual(
@@ -39,22 +44,22 @@ class HelperTest(unittest.TestCase):
 
     def test_linkify_safe(self):
         self.assertEqual('&lt;a&gt;',
-                         str(filters.do_linkify_stacktrace('<a>', '3')))
+                         linkify('<a>', '3'))
 
     def test_linkify(self):
-        linked = str(filters.do_linkify_stacktrace(
-            "/go/src/k8s.io/kubernetes/test/example.go:123", 'VERSION'))
+        linked = linkify(
+            "/go/src/k8s.io/kubernetes/test/example.go:123", 'VERSION')
         self.assertIn('<a href="https://github.com/kubernetes/kubernetes/blob/'
                       'VERSION/test/example.go#L123">', linked)
 
     def test_linkify_trailing(self):
-        linked = str(filters.do_linkify_stacktrace(
-            "    /go/src/k8s.io/kubernetes/test/example.go:123 +0x1ad", 'VERSION'))
+        linked = linkify(
+            "    /go/src/k8s.io/kubernetes/test/example.go:123 +0x1ad", 'VERSION')
         self.assertIn('github.com', linked)
 
     def test_linkify_unicode(self):
         # Check that Unicode characters pass through cleanly.
-        linked = filters.do_linkify_stacktrace(u'\u883c', 'VERSION')
+        linked = filters.do_linkify_stacktrace(u'\u883c', 'VERSION', '')
         self.assertEqual(linked, u'\u883c')
 
     def test_slugify(self):

@@ -7,7 +7,7 @@
 % endif
 % endblock
 % block header
-<h1>{% if pr %}<a href="/pr/{{pr_path}}{{pr}}">{% if repo != "kubernetes/kubernetes" %}{{repo}} {% endif %}PR #{{pr}}</a> {% endif %}
+<h1>{% if pr and pr != "batch"  %}<a href="/pr/{{pr_path}}{{pr}}">{% if repo != "kubernetes/kubernetes"%}{{repo}} {% endif %}PR #{{pr}}</a> {% endif %}
 	% if testgrid_query
 		<a href="{{testgrid_query|tg_url}}">{{job}}</a>
 	% else
@@ -37,15 +37,19 @@
 		% endif
 		<tr><td>Started<td>{{started['timestamp']|timestamp}}
 		{% if finished %}<tr><td>Elapsed<td>{{(finished['timestamp']-started['timestamp'])|duration}}{% endif %}
-		<tr><td>Version<td><a href="https://github.com/kubernetes/kubernetes/commit/{{commit}}">{{started['version'] or finished['version']}}</a>
+		<tr><td>Version<td><a href="https://github.com/{{repo}}/commit/{{commit}}">{{started['version'] or finished['version']}}</a>
 		% if 'jenkins-node' in started
 			<tr><td>Builder<td>{{started['jenkins-node']}}
 		% endif
-		% if 'pull' in started
+		% if refs
 			<tr><td>Refs<td>
-			{% for x in started['pull'].split(',') -%}
-				{% set x=x.split(':', 1) %}
-				{{x[0]}}{% if x|length == 2 %}{% set commit=x[1] %}:{{x[1]|github_commit_link}}{% endif %}<br>
+			% for name, sha in refs
+				{%- if name.isdigit() -%}
+					<a href="https://github.com/{{repo}}/pull/{{name}}">{{name}}</a>
+				{%- else -%}
+					{{name}}
+				{%- endif -%}
+				{%- if sha %}:{{sha|github_commit_link(repo)}}{% endif %}<br>
 			{%- endfor %}
 		% endif
 		% if 'metadata' in started
@@ -84,9 +88,9 @@
 				<pre class="cmd" onclick="select(this)">{{name | testcmd}}</pre>
 			% endif
 			% if text
-				<pre class="error">{{text|linkify_stacktrace(commit)}}
+				<pre class="error">{{text|linkify_stacktrace(commit, repo)}}
 				% if output
-				<div class="hidden"><hr>{{output|linkify_stacktrace(commit)}}</div>
+				<div class="hidden"><hr>{{output|linkify_stacktrace(commit, repo)}}</div>
 				<span class="expand inset-expand">Click to see stdout/stderr</span><span class="inset-filename">from <a href="https://storage.googleapis.com{{filename}}">{{filename|basename}}</a></span></pre>
 				% else
 				<span class="inset-filename">from <a href="https://storage.googleapis.com{{filename}}">{{filename|basename}}</a></span></pre>

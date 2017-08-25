@@ -92,9 +92,11 @@ def get_build_log(build_dir):
         return log_parser.digest(build_log)
 
 
-def get_running_build_log(job, build):
+def get_running_build_log(job, build, repo):
+    org = repo and repo.split('/')[0]
     try:
-        url = "https://prow.k8s.io/log?job=%s&id=%s" % (job, build)
+        prow_instance = view_base.PROW_INSTANCES.get(org, view_base.PROW_INSTANCES['DEFAULT'])
+        url = "https://%s/log?job=%s&id=%s" % (prow_instance, job, build)
         result = urlfetch.fetch(url)
         if result.status_code == 200:
             return log_parser.digest(result.content), url
@@ -142,13 +144,22 @@ def build_details(build_dir):
 
 
 def parse_pr_path(prefix):
-    if not prefix.startswith(view_base.PR_PREFIX):
-        return None, None, None
-    pr = os.path.basename(prefix)
-    repo = os.path.basename(os.path.dirname(prefix))
-    if repo == 'pull':
-        return pr, '', 'kubernetes/kubernetes'
-    return pr, repo + '/', 'kubernetes/' + repo
+    for org, path in view_base.PR_PREFIX.items():
+        if not prefix.startswith(path):
+            continue
+        pr = os.path.basename(prefix)
+        repo = os.path.basename(os.path.dirname(prefix))
+        if '_' in repo and not repo.startswith(org):
+            continue
+        if org == 'kubernetes' and repo == 'pull':
+            return pr, '', 'kubernetes/kubernetes'
+        pr_path = repo.replace('_', '/')
+        if '_' not in repo:
+            repo = '%s/%s' % (org, repo)
+        else:
+            repo = pr_path
+        return pr, pr_path + '/', repo
+    return None, None, None
 
 
 class BuildHandler(view_base.BaseHandler):
@@ -175,13 +186,18 @@ class BuildHandler(view_base.BaseHandler):
             return
         started, finished, results = details
 
+        pr, pr_path, repo = parse_pr_path(prefix)
+        pr_digest = None
+        if pr:
+            pr_digest = models.GHIssueDigest.get(repo, pr)
+
         build_log = ''
         build_log_src = None
         if 'log' in self.request.params or (not finished) or \
             (finished and finished.get('result') != 'SUCCESS' and len(results['failed']) <= 1):
             build_log = get_build_log(build_dir)
             if not build_log:
-                build_log, build_log_src = get_running_build_log(job, build)
+                build_log, build_log_src = get_running_build_log(job, build, repo)
 
         # 'version' might be in either started or finished.
         # prefer finished.
@@ -193,17 +209,21 @@ class BuildHandler(view_base.BaseHandler):
 
         issues = list(models.GHIssueDigest.find_xrefs(build_dir))
 
-        pr, pr_path, repo = parse_pr_path(prefix)
-        pr_digest = None
-        if pr:
-            pr_digest = models.GHIssueDigest.get(repo, pr)
+        refs = []
+        if started and 'pull' in started:
+            for ref in started['pull'].split(','):
+                x = ref.split(':', 1)
+                if len(x) == 2:
+                    refs.append((x[0], x[1]))
+                else:
+                    refs.append((x[1], ''))
 
         self.render('build.html', dict(
             job_dir=job_dir, build_dir=build_dir, job=job, build=build,
             commit=commit, started=started, finished=finished,
-            res=results,
+            res=results, refs=refs,
             build_log=build_log, build_log_src=build_log_src,
-            issues=issues,
+            issues=issues, repo=repo,
             pr_path=pr_path, pr=pr, pr_digest=pr_digest,
             testgrid_query=testgrid_query))
 
