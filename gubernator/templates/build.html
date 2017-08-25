@@ -39,16 +39,6 @@
 				{{x[0]}}{% if x|length == 2 %}{% set commit=x[1] %}:{{x[1]|github_commit_link}}{% endif %}<br>
 			{%- endfor %}
 		% endif
-		% if 'metadata' in started
-			% for k, v in started['metadata']|dictsort
-			<tr><td>{{k}}<td>{{v}}
-			% endfor
-		% endif
-		% if finished and 'metadata' in finished
-			% for k, v in finished['metadata']|dictsort
-			<tr><td>{{k}}<td>{{v}}
-			% endfor
-		% endif
 	% endif
 	</table>
 	<ul class="nav">
@@ -71,9 +61,6 @@
 		% for name, time, text, filename in failures
 			<hr>
 			<h3><a class="anchor" id="{{name|slugify}}" href="#{{name|slugify}}">{{name}}<span class="time"> {{time|duration}}</span></h3></a>
-			% if 'junit_runner' not in filename
-				<pre class="cmd" onclick="select(this)">{{name | testcmd}}</pre>
-			% endif
 			% if text
 				<pre class="error">{{text|linkify_stacktrace(commit)}}<span class="inset-filename">from <a href="https://storage.googleapis.com{{filename}}">{{filename|basename}}</a></span></pre>
 				% set pod_name = text|parse_pod_name
@@ -90,7 +77,15 @@
 			% endif
 		% endfor
 	% else
-		<h2>{{"No Test Failures!" if finished else "Build Still Running!"}}</h2>
+		% if finished
+			% if finished['result'] != 'SUCCESS'
+				<h2>{{"Job Failed!"}}</h2>
+			% else
+				<h2>{{"No Test Failures!"}}</h2>
+			% endif
+		% else
+			<h2>{{"Build Still Running!"}}</h2>
+		% endif
 	% endif
 	</div>
 	% if build_log
