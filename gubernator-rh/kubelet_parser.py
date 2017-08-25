@@ -48,7 +48,7 @@ def parse(lines, highlight_words, filters, objref_dict):
 
     for n, line in enumerate(lines):
         if words_re.search(line):
-            matched_lines.append(n)
+            matched_lines.append((n,True))
 
     return matched_lines, highlight_words
 

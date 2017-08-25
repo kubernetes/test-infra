@@ -39,20 +39,24 @@ def parse_junit(xml, filename):
         except ET.ParseError, e:
             yield 'Gubernator Internal Fatal XML Parse Error', 0.0, str(e), filename
             return
-    if tree.tag == 'testsuite':
-        for child in tree:
-            name = child.attrib['name']
-            time = float(child.attrib['time'])
-            for param in child.findall('failure'):
-                yield name, time, param.text, filename
+    for result in yield_results(tree, filename):
+        yield result
+
+
+def yield_results(tree, filename):
+    if tree.tag == 'testcase':
+        name = tree.attrib['name']
+        time = float(tree.attrib['time'])
+        for param in tree.findall('failure'):
+            yield name, time, param.text, filename
+    elif tree.tag == 'testsuite':
+        for item in tree:
+            for result in yield_results(item, filename):
+                yield result
     elif tree.tag == 'testsuites':
-        for testsuite in tree:
-            suite_name = testsuite.attrib['name']
-            for child in testsuite.findall('testcase'):
-                name = '%s %s' % (suite_name, child.attrib['name'])
-                time = float(child.attrib['time'])
-                for param in child.findall('failure'):
-                    yield name, time, param.text, filename
+        for item in tree:
+            for result in yield_results(item, filename):
+                yield result
     else:
         logging.error('unable to find failures, unexpected tag %s', tree.tag)
 
