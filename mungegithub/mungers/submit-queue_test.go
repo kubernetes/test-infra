@@ -114,6 +114,10 @@ func BlockedPathsIssue() *github.Issue {
 	return github_test.Issue(someUserName, 1, []string{claYesLabel, lgtmLabel, approvedLabel, blockedPathsLabel}, true)
 }
 
+func DeprecatedMissingReleaseNoteIssue() *github.Issue {
+	return github_test.Issue(someUserName, 1, []string{claYesLabel, lgtmLabel, approvedLabel, deprecatedReleaseNoteLabelNeeded}, true)
+}
+
 func MissingReleaseNoteIssue() *github.Issue {
 	return github_test.Issue(someUserName, 1, []string{claYesLabel, lgtmLabel, approvedLabel, releaseNoteLabelNeeded}, true)
 }
@@ -796,6 +800,20 @@ func TestSubmitQueue(t *testing.T) {
 			retest1Pass:     true,
 			retest2Pass:     true,
 			reason:          noMergeMessage(releaseNoteLabelNeeded),
+			state:           "pending",
+		},
+		{
+			name:            "Fail because deprecated missing release note label is present",
+			pr:              ValidPR(),
+			issue:           DeprecatedMissingReleaseNoteIssue(),
+			events:          NewLGTMEvents(),
+			commits:         Commits(), // Modified at time.Unix(7), 8, and 9
+			ciStatus:        SuccessStatus(),
+			lastBuildNumber: LastBuildNumber(),
+			gcsResult:       SuccessGCS(),
+			retest1Pass:     true,
+			retest2Pass:     true,
+			reason:          noMergeMessage(deprecatedReleaseNoteLabelNeeded),
 			state:           "pending",
 		},
 		{

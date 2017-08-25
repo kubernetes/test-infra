@@ -1081,7 +1081,7 @@ func (sq *SubmitQueue) validForMergeExt(obj *github.MungeObject, checkStatus boo
 	}
 
 	// PR cannot have any labels which prevent merging.
-	for _, label := range []string{cherrypickUnapprovedLabel, blockedPathsLabel, releaseNoteLabelNeeded, doNotMergeLabel} {
+	for _, label := range []string{cherrypickUnapprovedLabel, blockedPathsLabel, deprecatedReleaseNoteLabelNeeded, releaseNoteLabelNeeded, doNotMergeLabel} {
 		if obj.HasLabel(label) {
 			sq.SetMergeStatus(obj, noMergeMessage(label))
 			return false

@@ -34,6 +34,11 @@ import (
 const (
 	releaseNoteLabeler = "release-note-label"
 
+	// deprecatedReleaseNoteLabelNeeded is the previous version of the
+	// releaseNotLabelNeeded label, which we continue to honor for the
+	// time being
+	deprecatedReleaseNoteLabelNeeded = "release-note-label-needed"
+
 	releaseNoteLabelNeeded    = "do-not-merge/release-note-label-needed"
 	releaseNote               = "release-note"
 	releaseNoteNone           = "release-note-none"
