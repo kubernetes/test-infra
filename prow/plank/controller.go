@@ -55,7 +55,7 @@ type kubeClient interface {
 }
 
 type githubClient interface {
-	BotName() string
+	BotName() (string, error)
 	CreateStatus(org, repo, ref string, s github.Status) error
 	ListIssueComments(org, repo string, number int) ([]github.IssueComment, error)
 	CreateComment(org, repo string, number int, comment string) error

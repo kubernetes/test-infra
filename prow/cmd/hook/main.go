@@ -60,7 +60,7 @@ var (
 	local  = flag.Bool("local", false, "Run locally for testing purposes only. Does not require secret files.")
 	dryRun = flag.Bool("dry-run", true, "Dry run for testing. Uses API tokens but does not mutate.")
 
-	githubBotName   = flag.String("github-bot-name", "", "Name of the GitHub bot.")
+	_               = flag.String("github-bot-name", "", "Deprecated.")
 	githubEndpoint  = flag.String("github-endpoint", "https://api.github.com", "GitHub's API endpoint.")
 	githubTokenFile = flag.String("github-token-file", "/etc/github/oauth", "Path to the file containing the GitHub OAuth secret.")
 
@@ -87,10 +87,7 @@ func main() {
 		logrus.Print("HMAC Secret: abcde12345")
 		webhookSecret = []byte("abcde12345")
 
-		if *githubBotName == "" {
-			*githubBotName = "fake-robot"
-		}
-		githubClient = github.NewFakeClient(*githubBotName)
+		githubClient = github.NewFakeClient()
 		kubeClient = kube.NewFakeClient()
 	} else {
 		logrus.SetFormatter(&logrus.JSONFormatter{})
@@ -121,19 +118,15 @@ func main() {
 			teamToken = string(bytes.TrimSpace(teamTokenRaw))
 		}
 
-		if *githubBotName == "" {
-			logrus.Fatal("Must specify --github-bot-name.")
-		}
-
 		_, err = url.Parse(*githubEndpoint)
 		if err != nil {
 			logrus.WithError(err).Fatal("Must specify a valid --github-endpoint URL.")
 		}
 
 		if *dryRun {
-			githubClient = github.NewDryRunClient(*githubBotName, oauthSecret, *githubEndpoint)
+			githubClient = github.NewDryRunClient(oauthSecret, *githubEndpoint)
 		} else {
-			githubClient = github.NewClient(*githubBotName, oauthSecret, *githubEndpoint)
+			githubClient = github.NewClient(oauthSecret, *githubEndpoint)
 		}
 
 		kubeClient, err = kube.NewClientInCluster(configAgent.Config().ProwJobNamespace)

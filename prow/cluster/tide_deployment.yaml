@@ -27,9 +27,7 @@ spec:
     spec:
       containers:
       - name: tide
-        image: gcr.io/k8s-prow/tide:0.0
-        args:
-        - --github-bot-name=k8s-ci-robot
+        image: gcr.io/k8s-prow/tide:0.1
         volumeMounts:
         - name: oauth
           mountPath: /etc/github

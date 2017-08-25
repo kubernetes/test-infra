@@ -34,7 +34,7 @@ import (
 var (
 	configPath = flag.String("config-path", "/etc/config/config", "Path to config.yaml.")
 
-	githubBotName   = flag.String("github-bot-name", "", "Name of the GitHub bot.")
+	_               = flag.String("github-bot-name", "", "Deprecated.")
 	githubEndpoint  = flag.String("github-endpoint", "https://api.github.com", "GitHub's API endpoint.")
 	githubTokenFile = flag.String("github-token-file", "/etc/github/oauth", "Path to the file containing the GitHub OAuth token.")
 )
@@ -59,7 +59,7 @@ func main() {
 		logrus.WithError(err).Fatalf("Must specify a valid --github-endpoint URL.")
 	}
 
-	ghc := github.NewClient(*githubBotName, oauthSecret, *githubEndpoint)
+	ghc := github.NewClient(oauthSecret, *githubEndpoint)
 	ghc.Logger = logrus.WithField("client", "github")
 
 	kc, err := kube.NewClientInCluster(configAgent.Config().ProwJobNamespace)

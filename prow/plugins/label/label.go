@@ -66,7 +66,7 @@ type githubClient interface {
 	AddLabel(owner, repo string, number int, label string) error
 	RemoveLabel(owner, repo string, number int, label string) error
 	GetRepoLabels(owner, repo string) ([]github.Label, error)
-	BotName() string
+	BotName() (string, error)
 }
 
 type slackClient interface {
@@ -148,7 +148,12 @@ func (ae assignEvent) getRepeats(sigMatches [][]string, existingLabels map[strin
 }
 
 func handle(gc githubClient, log *logrus.Entry, ae assignEvent, sc slackClient) error {
-	if ae.login == gc.BotName() {
+	// only parse newly created comments/issues/PRs and if non bot author
+	botName, err := gc.BotName()
+	if err != nil {
+		return err
+	}
+	if ae.login == botName {
 		return nil
 	}
 

@@ -25,10 +25,9 @@ spec:
     spec:
       containers:
       - name: jenkins-operator
-        image: gcr.io/k8s-prow/jenkins-operator:0.38
+        image: gcr.io/k8s-prow/jenkins-operator:0.39
         args:
         - --dry-run=false
-        - --github-bot-name=k8s-ci-robot
         volumeMounts:
         - mountPath: /etc/jenkins
           name: jenkins
