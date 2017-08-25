@@ -34,7 +34,7 @@ import (
 const (
 	releaseNoteLabeler = "release-note-label"
 
-	releaseNoteLabelNeeded    = doNotMergePrefix + "/release-note-label-needed"
+	releaseNoteLabelNeeded    = "do-not-merge/release-note-label-needed"
 	releaseNote               = "release-note"
 	releaseNoteNone           = "release-note-none"
 	releaseNoteActionRequired = "release-note-action-required"

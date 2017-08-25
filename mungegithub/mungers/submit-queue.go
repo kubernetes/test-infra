@@ -55,7 +55,7 @@ const (
 	lgtmLabel                      = "lgtm"
 	retestNotRequiredLabel         = "retest-not-required"
 	retestNotRequiredDocsOnlyLabel = "retest-not-required-docs-only"
-	doNotMergePrefix               = "do-not-merge"
+	doNotMergeLabel                = "do-not-merge"
 	claYesLabel                    = "cla: yes"
 	claNoLabel                     = "cla: no"
 	cncfClaYesLabel                = "cncf-cla: yes"
@@ -1081,8 +1081,8 @@ func (sq *SubmitQueue) validForMergeExt(obj *github.MungeObject, checkStatus boo
 	}
 
 	// PR cannot have any labels which prevent merging.
-	for _, label := range obj.LabelSet().List() {
-		if strings.HasPrefix(label, doNotMergePrefix) {
+	for _, label := range []string{cherrypickUnapprovedLabel, blockedPathsLabel, releaseNoteLabelNeeded, doNotMergeLabel} {
+		if obj.HasLabel(label) {
 			sq.SetMergeStatus(obj, noMergeMessage(label))
 			return false
 		}
@@ -1587,7 +1587,7 @@ func (sq *SubmitQueue) serveMergeInfo(res http.ResponseWriter, req *http.Request
 	if gateApproved {
 		out.WriteString(fmt.Sprintf(`<li>The PR must have the %q label</li>`, approvedLabel))
 	}
-	out.WriteString(fmt.Sprintf("<li>The PR must not have the any labels starting with %q</li>", doNotMergePrefix))
+	out.WriteString(`<li>The PR must not have the any labels starting with "do-not-merge"</li>`)
 	out.WriteString(`</ol><br>`)
 	out.WriteString("The PR can then be queued to re-test before merge. Once it reaches the top of the queue all of the above conditions must be true but so must the following:")
 	out.WriteString("<ol>")

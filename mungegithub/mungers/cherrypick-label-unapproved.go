@@ -29,7 +29,7 @@ import (
 )
 
 const (
-	cherrypickUnapprovedLabel = doNotMergePrefix + "/cherry-pick-not-approved"
+	cherrypickUnapprovedLabel = "do-not-merge/cherry-pick-not-approved"
 	labelUnapprovedPicksName  = "label-unapproved-picks"
 	labelUnapprovedFormat     = "This PR is not for the master branch but does not have the `%s` label. Adding the `%s` label."
 )

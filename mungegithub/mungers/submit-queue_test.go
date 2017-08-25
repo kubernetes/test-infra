@@ -102,6 +102,10 @@ func OnlyApprovedIssue() *github.Issue {
 	return github_test.Issue(someUserName, 1, []string{claYesLabel, approvedLabel}, true)
 }
 
+func DoNotMergeIssue() *github.Issue {
+	return github_test.Issue(someUserName, 1, []string{claYesLabel, lgtmLabel, approvedLabel, doNotMergeLabel}, true)
+}
+
 func CherrypickUnapprovedIssue() *github.Issue {
 	return github_test.Issue(someUserName, 1, []string{claYesLabel, lgtmLabel, approvedLabel, cherrypickUnapprovedLabel}, true)
 }
@@ -792,6 +796,20 @@ func TestSubmitQueue(t *testing.T) {
 			retest1Pass:     true,
 			retest2Pass:     true,
 			reason:          noMergeMessage(releaseNoteLabelNeeded),
+			state:           "pending",
+		},
+		{
+			name:            "Fail because do not merge label is present",
+			pr:              ValidPR(),
+			issue:           DoNotMergeIssue(),
+			events:          NewLGTMEvents(),
+			commits:         Commits(), // Modified at time.Unix(7), 8, and 9
+			ciStatus:        SuccessStatus(),
+			lastBuildNumber: LastBuildNumber(),
+			gcsResult:       SuccessGCS(),
+			retest1Pass:     true,
+			retest2Pass:     true,
+			reason:          noMergeMessage(doNotMergeLabel),
 			state:           "pending",
 		},
 		{

@@ -32,7 +32,7 @@ import (
 )
 
 const (
-	blockedPathsLabel = doNotMergePrefix + "/blocked-paths"
+	blockedPathsLabel = "do-not-merge/blocked-paths"
 	blockPathFormat   = `Adding label:%s because PR changes docs prohibited to auto merge
 See http://kubernetes.io/editdocs/ for information about editing docs`
 )
