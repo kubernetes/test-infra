@@ -130,7 +130,6 @@ presubmits:
     rerun_command: "/test pull-kubernetes-e2e-gce-bazel"
     trigger: "(?m)^/test (all|pull-kubernetes-e2e-gce-bazel),?(\\s+|$)"
     always_run: true
-    skip_report: true
     skip_branches:
     - release-1.4
     - release-1.5
@@ -432,7 +431,6 @@ presubmits:
     rerun_command: "/test pull-security-kubernetes-e2e-gce-bazel"
     trigger: "(?m)^/test (all|pull-security-kubernetes-e2e-gce-bazel),?(\\s+|$)"
     always_run: true
-    skip_report: true
     skip_branches:
     - release-1.4
     - release-1.5
