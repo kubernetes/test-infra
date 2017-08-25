@@ -111,7 +111,7 @@ func BlockedPathsIssue() *github.Issue {
 }
 
 func MissingReleaseNoteIssue() *github.Issue {
-	return github_test.Issue(someUserName, 1, []string{claYesLabel, lgtmLabel, approvedLabel, releaseNoteMissingLabel}, true)
+	return github_test.Issue(someUserName, 1, []string{claYesLabel, lgtmLabel, approvedLabel, releaseNoteLabelNeeded}, true)
 }
 
 func DoNotMergeMilestoneIssue() *github.Issue {
@@ -791,7 +791,7 @@ func TestSubmitQueue(t *testing.T) {
 			gcsResult:       SuccessGCS(),
 			retest1Pass:     true,
 			retest2Pass:     true,
-			reason:          noMergeMessage(releaseNoteMissingLabel),
+			reason:          noMergeMessage(releaseNoteLabelNeeded),
 			state:           "pending",
 		},
 		{

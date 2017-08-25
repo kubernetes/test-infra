@@ -75,13 +75,13 @@ func TestReleaseNoteLabel(t *testing.T) {
 		{
 			name:        "LGTM with release-note-label-needed",
 			issue:       github_test.Issue(testBotName, 1, []string{lgtmLabel, releaseNoteLabelNeeded}, true),
-			mustHave:    []string{lgtmLabel, releaseNoteMissingLabel, releaseNoteLabelNeeded},
+			mustHave:    []string{lgtmLabel, releaseNoteLabelNeeded},
 			mustNotHave: []string{},
 		},
 		{
 			name:        "LGTM only",
 			issue:       github_test.Issue(testBotName, 1, []string{lgtmLabel}, true),
-			mustHave:    []string{lgtmLabel, releaseNoteMissingLabel, releaseNoteLabelNeeded},
+			mustHave:    []string{lgtmLabel, releaseNoteLabelNeeded},
 			mustNotHave: []string{},
 		},
 		{
@@ -164,7 +164,7 @@ func TestReleaseNoteLabel(t *testing.T) {
 			issue:       github_test.Issue(testBotName, 1, []string{lgtmLabel}, true),
 			body:        "Cherry pick of #2 on release-1.2.",
 			secondIssue: github_test.Issue(testBotName, 2, []string{releaseNoteNone}, true),
-			mustHave:    []string{releaseNoteMissingLabel, releaseNoteLabelNeeded},
+			mustHave:    []string{releaseNoteLabelNeeded},
 			mustNotHave: []string{},
 		},
 	}
