@@ -1,11 +1,12 @@
 body {
-    font-family: sans-serif;
+    font-family: "Roboto", "Arial", sans-serif;
     padding: 0;
     margin: 0;
     scroll-behavior: smooth;
+    background: #ff4f62;
 }
 #header {
-    background-color: #b51b1b;
+    background-color: black;
     color: white;
     text-align: center;
     padding: 8px;
@@ -14,6 +15,9 @@ body {
 }
 #header a {
     color: white;
+}
+.link {
+    text-align: center;
 }
 #header img {
     width: 233px;
@@ -32,6 +36,23 @@ body {
 }
 #help {
     margin: 30px;
+}
+#jobs-list {
+    list-style-type: none;
+}
+.jobs-list {
+    background-color: #f4f4f4;
+    margin-bottom: 20px;
+    padding: 15px;
+    border-bottom-left-radius: 15px;
+    border-top-left-radius: 15px;
+    border-width: 3px 0px 3px 3px;
+    border-color: grey;
+    border-style: solid;
+}
+.section-header {
+    color: black;
+    padding-left: 40px;
 }
 h3 {
     margin: 0.67em 0 0 0;
@@ -115,15 +136,14 @@ label:hover {
 }
 table.pr-dash {
     border-spacing: 0;
+    background: #EEE;
+    border: 2px solid black;
 }
 table.pr-dash tbody tr {
     cursor: pointer;
 }
-table.pr-dash tbody tr:nth-child(odd) {
-    background: #EEE;
-}
 table.pr-dash tbody tr:hover {
-    background: #e3e9ff;
+    background: #E3E9A0;
 }
 #prdash-nav {
     margin: 10px 0 0 40px;
@@ -184,6 +204,7 @@ li.nav {
 }
 div#log {
     padding: 0 0 0 10px;
+    background-color: #f4f4f4;
 }
 ul.log {
     list-style-type:none;
