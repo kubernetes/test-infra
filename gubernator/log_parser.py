@@ -20,7 +20,7 @@ import jinja2
 import kubelet_parser
 import regex
 
-CONTEXT_DEFAULT = 6
+CONTEXT_DEFAULT = 0
 MAX_BUFFER = 5000000  # GAE has RAM limits.
 
 
