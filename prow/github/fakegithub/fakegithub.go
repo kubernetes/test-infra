@@ -38,6 +38,11 @@ type FakeClient struct {
 	LabelsAdded   []string
 	LabelsRemoved []string
 
+	// org/repo#number:body
+	IssueCommentsAdded []string
+	// org/repo#issuecommentid
+	IssueCommentsDeleted []string
+
 	// org/repo#issuecommentid:reaction
 	IssueReactionsAdded   []string
 	CommentReactionsAdded []string
@@ -68,6 +73,7 @@ func (f *FakeClient) ListIssueComments(owner, repo string, number int) ([]github
 }
 
 func (f *FakeClient) CreateComment(owner, repo string, number int, comment string) error {
+	f.IssueCommentsAdded = append(f.IssueCommentsAdded, fmt.Sprintf("%s/%s#%d:%s", owner, repo, number, comment))
 	f.IssueComments[number] = append(f.IssueComments[number], github.IssueComment{
 		ID:   f.IssueCommentID,
 		Body: comment,
@@ -87,6 +93,7 @@ func (f *FakeClient) CreateIssueReaction(org, repo string, ID int, reaction stri
 }
 
 func (f *FakeClient) DeleteComment(owner, repo string, ID int) error {
+	f.IssueCommentsDeleted = append(f.IssueCommentsDeleted, fmt.Sprintf("%s/%s#%d", owner, repo, ID))
 	for num, ics := range f.IssueComments {
 		for i, ic := range ics {
 			if ic.ID == ID {
