@@ -57,6 +57,7 @@ const (
 	retestNotRequiredDocsOnlyLabel = "retest-not-required-docs-only"
 	doNotMergeLabel                = "do-not-merge"
 	wipLabel                       = "do-not-merge/work-in-progress"
+	holdLabel                      = "do-not-merge/hold"
 	claYesLabel                    = "cla: yes"
 	claNoLabel                     = "cla: no"
 	cncfClaYesLabel                = "cncf-cla: yes"
@@ -1082,7 +1083,15 @@ func (sq *SubmitQueue) validForMergeExt(obj *github.MungeObject, checkStatus boo
 	}
 
 	// PR cannot have any labels which prevent merging.
-	for _, label := range []string{cherrypickUnapprovedLabel, blockedPathsLabel, deprecatedReleaseNoteLabelNeeded, releaseNoteLabelNeeded, doNotMergeLabel, wipLabel} {
+	for _, label := range []string{
+		cherrypickUnapprovedLabel,
+		blockedPathsLabel,
+		deprecatedReleaseNoteLabelNeeded,
+		releaseNoteLabelNeeded,
+		doNotMergeLabel,
+		wipLabel,
+		holdLabel,
+	} {
 		if obj.HasLabel(label) {
 			sq.SetMergeStatus(obj, noMergeMessage(label))
 			return false

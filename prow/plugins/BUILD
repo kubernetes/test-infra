@@ -49,6 +49,7 @@ filegroup(
         "//prow/plugins/close:all-srcs",
         "//prow/plugins/golint:all-srcs",
         "//prow/plugins/heart:all-srcs",
+        "//prow/plugins/hold:all-srcs",
         "//prow/plugins/label:all-srcs",
         "//prow/plugins/lgtm:all-srcs",
         "//prow/plugins/releasenote:all-srcs",
