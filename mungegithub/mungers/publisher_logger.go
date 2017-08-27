@@ -75,6 +75,7 @@ func (p *plog) Run(c *exec.Cmd) error {
 
 	err := c.Start()
 	if err != nil {
+		p.Errorf("failed to start %q: %v", c.Path, err)
 		return err
 	}
 	err = c.Wait()
