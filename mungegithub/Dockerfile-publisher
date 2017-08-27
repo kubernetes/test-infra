@@ -31,6 +31,7 @@ WORKDIR "/"
 
 ADD mungers/publish_scripts/initialize_repos.sh /publish_scripts/initialize_repos.sh
 ADD mungegithub /mungegithub
+ADD collapsed-kube-commit-mapper /collapsed-kube-commit-mapper
 ADD mungers/publish_scripts/ /publish_scripts
 
 CMD ["/mungegithub", "--dry-run", "--token-file=/token"]
