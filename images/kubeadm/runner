@@ -22,10 +22,11 @@ if [ ! -e test-infra ]; then
 fi
 
 if [ ! -e kubernetes-anywhere ]; then
-  # This is a short-term fix to get kubeadm e2es stable before the correct fix
-  # is in place. https://github.com/kubernetes/kubeadm/issues/219
-  # TODO(pipejakob): point this back to kubernetes/kubernetes-anywhere
-  git clone https://github.com/pipejakob/kubernetes-anywhere
+  git clone https://github.com/kubernetes/kubernetes-anywhere
+
+  # Explicitly version this dependency so that upstream commits can't
+  # immediately break e2e jobs, and we have control over upgrading/downgrading.
+  git -C kubernetes-anywhere checkout 55ba266ed6d93d7a3a8681fc38808fa96d6d0b97
 fi
 
 # This is required until https://github.com/kubernetes/kubernetes-anywhere/issues/332
