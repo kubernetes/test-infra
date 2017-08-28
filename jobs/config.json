@@ -10331,10 +10331,18 @@
       "sig-aws"
     ]
   },
-  "pull-kubernetes-bazel": {
+  "pull-kubernetes-bazel-build": {
     "args": [
       "--build=//cmd/... //pkg/... //federation/... //plugin/... //third_party/... //examples/... //test/... //vendor/k8s.io/...",
-      "--release=//build/release-tars",
+      "--release=//build/release-tars"
+    ],
+    "scenario": "kubernetes_bazel",
+    "sigOwners": [
+      "sig-testing"
+    ]
+  },
+  "pull-kubernetes-bazel-test": {
+    "args": [
       "--test=//cmd/... //pkg/... //federation/... //plugin/... //third_party/... //hack/... //hack:verify-all //vendor/k8s.io/...",
       "--test-args=--test_tag_filters=-integration",
       "--test-args=--flaky_test_attempts=3"
