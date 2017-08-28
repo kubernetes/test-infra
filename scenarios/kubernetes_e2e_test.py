@@ -501,13 +501,13 @@ class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-method
         args = kubernetes_e2e.parse_args([
             '--use-shared-build'
         ])
-        def expect_bazel_gcs(path):
+        def expect_normal_gcs(path):
             bazel_default = os.path.join(
                 'gs://kubernetes-jenkins/shared-results', 'build-location.txt')
             self.assertEqual(path, bazel_default)
             return always_kubernetes()
         with Stub(kubernetes_e2e, 'check_env', self.fake_check_env):
-            with Stub(kubernetes_e2e, 'read_gcs_path', expect_bazel_gcs):
+            with Stub(kubernetes_e2e, 'read_gcs_path', expect_normal_gcs):
                 kubernetes_e2e.main(args)
         lastcall = self.callstack[-1]
         self.assertIn('--extract=kubernetes', lastcall)
