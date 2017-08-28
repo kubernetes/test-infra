@@ -2311,7 +2311,8 @@ class JobTest(unittest.TestCase):
                         else:
                             stage = 'gs://kubernetes-release-pull/ci/%s' % job
                             suffix = False
-                        self.assertIn('--stage=%s' % stage, args)
+                        if not shared_builds:
+                            self.assertIn('--stage=%s' % stage, args)
                         self.assertEquals(
                             suffix,
                             any('--stage-suffix=' in a for a in args),

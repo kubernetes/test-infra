@@ -435,7 +435,9 @@ def set_up_aws(args, mode, cluster, runner_args):
 
 def read_gcs_path(gcs_path):
     link = gcs_path.replace('gs://', 'https://storage.googleapis.com/')
-    return urllib2.urlopen(link).read()
+    loc = urllib2.urlopen(link).read()
+    print >>sys.stderr, "Read GCS Path: %s" % loc
+    return loc
 
 def main(args):
     """Set up env, start kubekins-e2e, handle termination. """
