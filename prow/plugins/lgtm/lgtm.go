@@ -50,6 +50,9 @@ func init() {
 	plugins.RegisterIssueCommentHandler(pluginName, handleIssueComment)
 	plugins.RegisterReviewEventHandler(pluginName, handleReview)
 	plugins.RegisterReviewCommentEventHandler(pluginName, handleReviewComment)
+	plugins.RegisterPullRequestHandler(pluginName, func(pc plugins.PluginClient, pe github.PullRequestEvent) error {
+		return handlePullRequest(pc.GitHubClient, pe)
+	})
 }
 
 type githubClient interface {
@@ -202,5 +205,36 @@ func handle(gc githubClient, log *logrus.Entry, e *event) error {
 		log.Info("Adding LGTM label.")
 		return gc.AddLabel(e.org, e.repo, e.number, lgtmLabel)
 	}
+	return nil
+}
+
+type ghLabelClient interface {
+	RemoveLabel(owner, repo string, number int, label string) error
+}
+
+func handlePullRequest(gc ghLabelClient, pe github.PullRequestEvent) error {
+	if pe.PullRequest.Merged {
+		return nil
+	}
+
+	if pe.Action != "synchronize" {
+		return nil
+	}
+
+	// Don't bother checking if it has the label...it's a race, and we'll have
+	// to handle failure due to not being labeled anyway.
+	if err := gc.RemoveLabel(
+		pe.PullRequest.Base.Repo.Owner.Login,
+		pe.PullRequest.Base.Repo.Name,
+		pe.PullRequest.Number,
+		lgtmLabel,
+	); err != nil {
+		if _, ok := err.(*github.LabelNotFound); !ok {
+			return fmt.Errorf("RemoveLabel error: %v", err)
+		}
+
+		// If the error is indeed *github.LabelNotFound, consider it a success.
+	}
+
 	return nil
 }
