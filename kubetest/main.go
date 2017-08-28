@@ -221,7 +221,7 @@ type deployer interface {
 func getDeployer(o *options) (deployer, error) {
 	switch o.deployment {
 	case "bash":
-		return bash{&o.clusterIPRange}, nil
+		return newBash(&o.clusterIPRange), nil
 	case "gke":
 		return newGKE(o.provider, o.gcpProject, o.gcpZone, o.gcpRegion, o.gcpNetwork, o.gcpNodeImage, o.cluster, &o.testArgs)
 	case "kops":
