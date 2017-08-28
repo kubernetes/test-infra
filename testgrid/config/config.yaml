@@ -1688,6 +1688,9 @@ test_groups:
 - name: pull-kubernetes-e2e-gce-gpu
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-gce-gpu
   days_of_results: 1
+- name: pull-kubernetes-e2e-gke-gpu
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-gke-gpu
+  days_of_results: 1
 - name: pull-kubernetes-e2e-gke
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-gke
   days_of_results: 1
@@ -4052,6 +4055,9 @@ dashboards:
     base_options: 'width=10'
   - name: pull-kubernetes-e2e-gce-gpu
     test_group_name: pull-kubernetes-e2e-gce-gpu
+    base_options: 'width=10'
+  - name: pull-kubernetes-e2e-gke-gpu
+    test_group_name: pull-kubernetes-e2e-gke-gpu
     base_options: 'width=10'
   - name: pull-kubernetes-e2e-gke
     test_group_name: pull-kubernetes-e2e-gke
