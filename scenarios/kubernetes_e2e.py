@@ -488,6 +488,7 @@ def main(args):
             build_file += args.use_shared_build + '-'
         build_file += 'build-location.txt'
         gcs_path = os.path.join(args.gcs_shared, os.getenv('PULL_REFS', ''), build_file)
+        print >>sys.stderr, "Getting shared build location from: "+gcs_path
         try:
             # tell kubetest to extract from this location
             args.kubetest_args.append('--extract=' + read_gcs_path(gcs_path))

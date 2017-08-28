@@ -2230,11 +2230,11 @@ class JobTest(unittest.TestCase):
                 extract_in_args = False
                 build_in_args = False
                 for arg in args:
-                    if arg.startswith("--use-shared-build"):
+                    if arg.startswith('--use-shared-build'):
                         use_shared_build_in_args = True
-                    elif arg.startswith("--build"):
+                    elif arg.startswith('--build'):
                         build_in_args = True
-                    elif arg.startswith("--extract"):
+                    elif arg.startswith('--extract'):
                         extract_in_args = True
                     match = re.match(r'--env-file=([^\"]+)\.env', arg)
                     if match:
