@@ -1126,7 +1126,7 @@ class BootstrapTest(unittest.TestCase):
 
         with Stub(bootstrap, 'ci_paths', Bomb):
             with Stub(bootstrap, 'pr_paths', FakePath()) as path:
-                test_bootstrap(branch=None, pull=PULL)
+                test_bootstrap(branch=None, pull=PULL, root='.')
             self.assertEquals(PULL, path.arg[1][REPO][1], (PULL, path.arg))
 
     def test_ci_paths(self):
