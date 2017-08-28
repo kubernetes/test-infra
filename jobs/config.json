@@ -8454,7 +8454,6 @@
   "ci-kubernetes-e2e-node-canary": {
     "args": [
       "--deployment=node",
-      "--extract=ci/latest",
       "--gcp-project=sen-lu-test",
       "--gcp-zone=us-central1-f",
       "--node-args=--images=cos-stable-60-9592-76-0 --image-project=cos-cloud",

@@ -2265,13 +2265,14 @@ class JobTest(unittest.TestCase):
 
                     extracts = [a for a in args if '--extract=' in a]
                     shared_builds = [a for a in args if '--use-shared-build' in a]
+                    node_e2e = [a for a in args if '--deployment=node' in a]
                     if shared_builds and extracts:
                         self.fail(('e2e jobs cannot have --use-shared-build'
                                    ' and --extract: %s %s') % (job, args))
-                    elif not extracts and not shared_builds:
+                    elif not extracts and not shared_builds and not node_e2e:
                         self.fail(('e2e job needs --extract or'
                                    ' --use-shared-build: %s %s') % (job, args))
-                    if shared_builds:
+                    if shared_builds or node_e2e:
                         expected = 0
                     elif any(s in job for s in [
                             'upgrade', 'skew', 'downgrade', 'rollback',
