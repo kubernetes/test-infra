@@ -34,9 +34,10 @@ import (
 var (
 	configPath = flag.String("config-path", "/etc/config/config", "Path to config.yaml.")
 
-	jenkinsURL       = flag.String("jenkins-url", "http://jenkins-proxy", "Jenkins URL")
-	jenkinsUserName  = flag.String("jenkins-user", "jenkins-trigger", "Jenkins username")
-	jenkinsTokenFile = flag.String("jenkins-token-file", "/etc/jenkins/jenkins", "Path to the file containing the Jenkins API token.")
+	jenkinsURL             = flag.String("jenkins-url", "http://jenkins-proxy", "Jenkins URL")
+	jenkinsUserName        = flag.String("jenkins-user", "jenkins-trigger", "Jenkins username")
+	jenkinsTokenFile       = flag.String("jenkins-token-file", "", "Path to the file containing the Jenkins API token.")
+	jenkinsBearerTokenFile = flag.String("jenkins-bearer-token-file", "", "Path to the file containing the Jenkins API bearer token.")
 
 	_               = flag.String("github-bot-name", "", "Deprecated.")
 	githubEndpoint  = flag.String("github-endpoint", "https://api.github.com", "GitHub's API endpoint.")
@@ -58,12 +59,28 @@ func main() {
 		logrus.WithError(err).Fatal("Error getting kube client.")
 	}
 
-	jenkinsSecretRaw, err := ioutil.ReadFile(*jenkinsTokenFile)
-	if err != nil {
-		logrus.WithError(err).Fatalf("Could not read Jenkins token file.")
+	var ac *jenkins.AuthConfig
+	if *jenkinsTokenFile != "" {
+		token, err := loadToken(*jenkinsTokenFile)
+		if err != nil {
+			logrus.WithError(err).Fatalf("Could not read token file.")
+		}
+		ac.Basic = &jenkins.BasicAuthConfig{
+			User:  *jenkinsUserName,
+			Token: token,
+		}
+	} else if *jenkinsBearerTokenFile != "" {
+		token, err := loadToken(*jenkinsBearerTokenFile)
+		if err != nil {
+			logrus.WithError(err).Fatalf("Could not read bearer token file.")
+		}
+		ac.BearerToken = &jenkins.BearerTokenAuthConfig{
+			Token: token,
+		}
+	} else {
+		logrus.Fatal("An auth token for basic or bearer token auth must be supplied.")
 	}
-	jenkinsToken := string(bytes.TrimSpace(jenkinsSecretRaw))
-	jc := jenkins.NewClient(*jenkinsURL, *jenkinsUserName, jenkinsToken)
+	jc := jenkins.NewClient(*jenkinsURL, ac)
 
 	oauthSecretRaw, err := ioutil.ReadFile(*githubTokenFile)
 	if err != nil {
@@ -94,4 +111,12 @@ func main() {
 		}
 		logrus.Infof("Sync time: %v", time.Since(start))
 	}
+}
+
+func loadToken(file string) (string, error) {
+	raw, err := ioutil.ReadFile(file)
+	if err != nil {
+		return "", err
+	}
+	return string(bytes.TrimSpace(raw)), nil
 }
