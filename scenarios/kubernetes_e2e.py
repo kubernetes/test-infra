@@ -30,6 +30,7 @@ import subprocess
 import sys
 import tempfile
 import traceback
+import urllib2
 
 ORIG_CWD = os.getcwd()  # Checkout changes cwd
 
@@ -89,7 +90,7 @@ def kubeadm_version(mode):
         # Work-around for release-1.6 jobs, which still upload debs to an older
         # location (without os/arch prefixes).
         # TODO(pipejakob): remove this when we no longer support 1.6.x.
-        if version.startswith("v1.6."):
+        if version.startswith('v1.6.'):
             return 'gs://kubernetes-release-dev/bazel/%s/build/debs/' % version
 
     elif mode == 'pull':
@@ -432,6 +433,10 @@ def set_up_aws(args, mode, cluster, runner_args):
     # TODO(krzyzacy):Remove after retire kops-e2e-runner.sh
     mode.add_aws_runner()
 
+def read_gcs_path(gcs_path):
+    link = gcs_path.replace('gs://', 'https://storage.googleapis.com/')
+    return urllib2.urlopen(link).read()
+
 def main(args):
     """Set up env, start kubekins-e2e, handle termination. """
     # pylint: disable=too-many-branches,too-many-statements
@@ -476,7 +481,22 @@ def main(args):
         runner_args.append(
             '--gcp-service-account=%s' % mode.add_service_account(args.service_account))
 
-    if args.build is not None:
+    if args.use_shared_build is not None:
+        # find shared build location from GCS
+        build_file = ''
+        if args.use_shared_build:
+            build_file += args.use_shared_build + '-'
+        build_file += 'build-location.txt'
+        gcs_path = os.path.join(args.gcs_shared, os.getenv('PULL_REFS', ''), build_file)
+        print >>sys.stderr, 'Getting shared build location from: '+gcs_path
+        try:
+            # tell kubetest to extract from this location
+            args.kubetest_args.append('--extract=' + read_gcs_path(gcs_path))
+            args.build = None
+        except urllib2.URLError as err:
+            raise RuntimeError('Failed to get shared build location: %s' % err.reason)
+
+    elif args.build is not None:
         if args.build == '':
             # Empty string means --build was passed without any arguments;
             # if --build wasn't passed, args.build would be None
@@ -581,6 +601,13 @@ def create_parser():
     parser.add_argument(
         '--build', nargs='?', default=None, const='',
         help='Build kubernetes binaries if set, optionally specifying strategy')
+    parser.add_argument(
+        '--use-shared-build', nargs='?', default=None, const='',
+        help='Use prebuilt kubernetes binaries if set, optionally specifying strategy')
+    parser.add_argument(
+        '--gcs-shared',
+        default='gs://kubernetes-jenkins/shared-results/',
+        help='Get shared build from this bucket')
     parser.add_argument(
         '--cluster', default='bootstrap-e2e', help='Name of the cluster')
     parser.add_argument(

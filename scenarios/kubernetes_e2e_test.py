@@ -26,6 +26,7 @@ import shutil
 import string
 import tempfile
 import urllib
+import urllib2
 import unittest
 
 import kubernetes_e2e
@@ -80,6 +81,14 @@ def fake_pass(*_unused, **_unused2):
 def fake_bomb(*a, **kw):
     """Always raise."""
     raise AssertionError('Should not happen', a, kw)
+
+def raise_urllib2_error(*_unused, **_unused2):
+    """Always raise a urllib2.URLError"""
+    raise urllib2.URLError("test failure")
+
+def always_kubernetes(*_unused, **_unused2):
+    """Always return 'kubernetes'"""
+    return 'kubernetes'
 
 
 class Stub(object):
@@ -473,6 +482,44 @@ class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-method
         self.assertEqual(
             self.envs['JENKINS_AWS_CREDENTIALS_FILE'], temp.name)
 
+    def test_use_shared_build(self):
+        # normal path
+        args = kubernetes_e2e.parse_args([
+            '--use-shared-build=bazel'
+        ])
+        def expect_bazel_gcs(path):
+            bazel_default = os.path.join(
+                'gs://kubernetes-jenkins/shared-results', 'bazel-build-location.txt')
+            self.assertEqual(path, bazel_default)
+            return always_kubernetes()
+        with Stub(kubernetes_e2e, 'check_env', self.fake_check_env):
+            with Stub(kubernetes_e2e, 'read_gcs_path', expect_bazel_gcs):
+                kubernetes_e2e.main(args)
+        lastcall = self.callstack[-1]
+        self.assertIn('--extract=kubernetes', lastcall)
+        # normal path, not bazel
+        args = kubernetes_e2e.parse_args([
+            '--use-shared-build'
+        ])
+        def expect_normal_gcs(path):
+            bazel_default = os.path.join(
+                'gs://kubernetes-jenkins/shared-results', 'build-location.txt')
+            self.assertEqual(path, bazel_default)
+            return always_kubernetes()
+        with Stub(kubernetes_e2e, 'check_env', self.fake_check_env):
+            with Stub(kubernetes_e2e, 'read_gcs_path', expect_normal_gcs):
+                kubernetes_e2e.main(args)
+        lastcall = self.callstack[-1]
+        self.assertIn('--extract=kubernetes', lastcall)
+        # test failure to read shared path from GCS
+        with Stub(kubernetes_e2e, 'check_env', self.fake_check_env):
+            with Stub(kubernetes_e2e, 'read_gcs_path', raise_urllib2_error):
+                with Stub(os, 'getcwd', always_kubernetes):
+                    try:
+                        kubernetes_e2e.main(args)
+                    except RuntimeError as err:
+                        if not err.message.startswith('Failed to get shared build location'):
+                            raise err
 
 if __name__ == '__main__':
     unittest.main()
