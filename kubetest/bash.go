@@ -22,23 +22,25 @@ import (
 	"strconv"
 )
 
-type bash struct {
+type bashDeployer struct {
 	clusterIPRange *string
 }
 
-var _ deployer = bash{}
+var _ deployer = &bashDeployer{}
 
-func (b bash) Up() error {
-	var clusterIPRange string
-	if b.clusterIPRange != nil && *b.clusterIPRange != "" {
-		clusterIPRange = *b.clusterIPRange
-	} else {
+func newBash(clusterIPRange *string) *bashDeployer {
+	b := &bashDeployer{clusterIPRange}
+	return b
+}
+
+func (b *bashDeployer) Up() error {
+	if b.clusterIPRange == nil || *b.clusterIPRange == "" {
 		if numNodes, err := strconv.Atoi(os.Getenv("NUM_NODES")); err == nil {
-			clusterIPRange = getClusterIPRange(numNodes)
+			*b.clusterIPRange = getClusterIPRange(numNodes)
 		}
 	}
-	if clusterIPRange != "" {
-		pop, err := pushEnv("CLUSTER_IP_RANGE", clusterIPRange)
+	if *b.clusterIPRange != "" {
+		pop, err := pushEnv("CLUSTER_IP_RANGE", *b.clusterIPRange)
 		if err != nil {
 			return err
 		}
@@ -47,34 +49,34 @@ func (b bash) Up() error {
 	return finishRunning(exec.Command("./hack/e2e-internal/e2e-up.sh"))
 }
 
-func (b bash) IsUp() error {
+func (b *bashDeployer) IsUp() error {
 	return finishRunning(exec.Command("./hack/e2e-internal/e2e-status.sh"))
 }
 
-func (b bash) DumpClusterLogs(localPath, gcsPath string) error {
+func (b *bashDeployer) DumpClusterLogs(localPath, gcsPath string) error {
 	return defaultDumpClusterLogs(localPath, gcsPath)
 }
 
-func (b bash) TestSetup() error {
+func (b *bashDeployer) TestSetup() error {
 	return nil
 }
 
-func (b bash) Down() error {
+func (b *bashDeployer) Down() error {
 	return finishRunning(exec.Command("./hack/e2e-internal/e2e-down.sh"))
 }
 
 // Calculates the cluster IP range based on the no. of nodes in the cluster.
 // Note: This mimics the function get-cluster-ip-range used by kube-up script.
 func getClusterIPRange(numNodes int) string {
-	suggestedRange := "10.100.0.0/14"
+	suggestedRange := "10.160.0.0/14"
 	if numNodes > 1000 {
-		suggestedRange = "10.100.0.0/13"
+		suggestedRange = "10.160.0.0/13"
 	}
 	if numNodes > 2000 {
-		suggestedRange = "10.100.0.0/12"
+		suggestedRange = "10.160.0.0/12"
 	}
 	if numNodes > 4000 {
-		suggestedRange = "10.100.0.0/11"
+		suggestedRange = "10.160.0.0/11"
 	}
 	return suggestedRange
 }
