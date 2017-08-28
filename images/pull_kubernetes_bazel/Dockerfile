@@ -30,12 +30,12 @@ RUN apt-get update && apt-get install -y \
     python-pip && \
     apt-get clean
 
-ENV BAZEL_VERSION 0.5.2
+ENV BAZEL_VERSION 0.5.4
 RUN wget -q "https://github.com/bazelbuild/bazel/releases/download/${BAZEL_VERSION}/bazel_${BAZEL_VERSION}-linux-x86_64.deb" && \
     dpkg -i "bazel_${BAZEL_VERSION}-linux-x86_64.deb" && \
     rm "bazel_${BAZEL_VERSION}-linux-x86_64.deb"
 
-ENV GCLOUD_VERSION 156.0.0
+ENV GCLOUD_VERSION 163.0.0
 RUN wget -q https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-$GCLOUD_VERSION-linux-x86_64.tar.gz && \
     tar xf google-cloud-sdk-$GCLOUD_VERSION-linux-x86_64.tar.gz && \
     rm google-cloud-sdk-$GCLOUD_VERSION-linux-x86_64.tar.gz && \
