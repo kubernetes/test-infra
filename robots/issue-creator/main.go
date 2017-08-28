@@ -19,9 +19,9 @@ package main
 import (
 	"flag"
 
-	"k8s.io/test-infra/issue-creator/creator"
+	"k8s.io/test-infra/robots/issue-creator/creator"
 
-	_ "k8s.io/test-infra/issue-creator/sources"
+	_ "k8s.io/test-infra/robots/issue-creator/sources"
 )
 
 func main() {

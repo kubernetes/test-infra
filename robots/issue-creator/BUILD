@@ -1,7 +1,3 @@
-package(default_visibility = ["//visibility:public"])
-
-licenses(["notice"])
-
 load(
     "@io_bazel_rules_docker//docker:docker.bzl",
     "docker_build",
@@ -37,26 +33,22 @@ docker_push(
     bundle = ":bundle",
 )
 
-load(
-    "@io_bazel_rules_go//go:def.bzl",
-    "go_binary",
-    "go_library",
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["main.go"],
+    visibility = ["//visibility:private"],
+    deps = [
+        "//robots/issue-creator/creator:go_default_library",
+        "//robots/issue-creator/sources:go_default_library",
+    ],
 )
 
 go_binary(
     name = "issue-creator",
     library = ":go_default_library",
-    tags = ["automanaged"],
-)
-
-go_library(
-    name = "go_default_library",
-    srcs = ["main.go"],
-    tags = ["automanaged"],
-    deps = [
-        "//issue-creator/creator:go_default_library",
-        "//issue-creator/sources:go_default_library",
-    ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -70,11 +62,12 @@ filegroup(
     name = "all-srcs",
     srcs = [
         ":package-srcs",
-        "//issue-creator/creator:all-srcs",
-        "//issue-creator/sources:all-srcs",
-        "//issue-creator/testowner:all-srcs",
+        "//robots/issue-creator/creator:all-srcs",
+        "//robots/issue-creator/sources:all-srcs",
+        "//robots/issue-creator/testowner:all-srcs",
     ],
     tags = ["automanaged"],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(

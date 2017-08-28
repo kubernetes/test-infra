@@ -27,8 +27,8 @@ import (
 	"github.com/golang/glog"
 
 	githubapi "github.com/google/go-github/github"
-	"k8s.io/test-infra/issue-creator/creator"
 	"k8s.io/test-infra/mungegithub/mungers/mungerutil"
+	"k8s.io/test-infra/robots/issue-creator/creator"
 )
 
 // FlakyJob is a struct that represents a single job and the flake data associated with it.

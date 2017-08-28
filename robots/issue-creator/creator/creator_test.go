@@ -25,7 +25,7 @@ import (
 	"strings"
 	"testing"
 
-	"k8s.io/test-infra/issue-creator/testowner"
+	"k8s.io/test-infra/robots/issue-creator/testowner"
 
 	"github.com/google/go-github/github"
 )

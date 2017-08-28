@@ -20,7 +20,7 @@ import (
 	"testing"
 	"time"
 
-	"k8s.io/test-infra/issue-creator/creator"
+	"k8s.io/test-infra/robots/issue-creator/creator"
 
 	githubapi "github.com/google/go-github/github"
 )
