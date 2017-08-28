@@ -18,6 +18,7 @@ limitations under the License.
 package npj
 
 import (
+	"strconv"
 	"time"
 
 	uuid "github.com/satori/go.uuid"
@@ -114,4 +115,28 @@ func BatchSpec(p config.Presubmit, refs kube.Refs) kube.ProwJobSpec {
 		pjs.RunAfterSuccess = append(pjs.RunAfterSuccess, BatchSpec(nextP, refs))
 	}
 	return pjs
+}
+
+// EnvForSpec returns a mapping of environment variables
+// to their values that should be available for a job spec
+func EnvForSpec(spec kube.ProwJobSpec) map[string]string {
+	env := map[string]string{
+		"JOB_NAME": spec.Job,
+	}
+
+	if spec.Type == kube.PeriodicJob {
+		return env
+	}
+	env["REPO_OWNER"] = spec.Refs.Org
+	env["REPO_NAME"] = spec.Refs.Repo
+	env["PULL_BASE_REF"] = spec.Refs.BaseRef
+	env["PULL_BASE_SHA"] = spec.Refs.BaseSHA
+	env["PULL_REFS"] = spec.Refs.String()
+
+	if spec.Type == kube.PostsubmitJob || spec.Type == kube.BatchJob {
+		return env
+	}
+	env["PULL_NUMBER"] = strconv.Itoa(spec.Refs.Pulls[0].Number)
+	env["PULL_PULL_SHA"] = spec.Refs.Pulls[0].SHA
+	return env
 }

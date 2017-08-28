@@ -264,7 +264,8 @@ func TestSyncKubernetesJob(t *testing.T) {
 			name: "start new pod",
 			pj: kube.ProwJob{
 				Spec: kube.ProwJobSpec{
-					Job: "boop",
+					Job:  "boop",
+					Type: kube.PeriodicJob,
 				},
 				Status: kube.ProwJobStatus{
 					State: kube.TriggeredState,

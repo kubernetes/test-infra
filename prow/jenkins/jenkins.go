@@ -22,7 +22,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
-	"strconv"
 	"time"
 
 	"github.com/satori/go.uuid"
@@ -50,12 +49,9 @@ type Client struct {
 }
 
 type BuildRequest struct {
-	JobName string
-	Refs    string
-	Number  int
-	BaseRef string
-	BaseSHA string
-	PullSHA string
+	JobName     string
+	Refs        string
+	Environment map[string]string
 }
 
 type Build struct {
@@ -109,19 +105,12 @@ func (c *Client) Build(br BuildRequest) (*Build, error) {
 	if err != nil {
 		return nil, err
 	}
-	q := u.Query()
-	q.Set("buildId", buildID)
-	// These two are provided for backwards-compatibility with scripts that
-	// used the ghprb plugin.
-	// TODO(spxtr): Remove these.
-	q.Set("ghprbPullId", br.Refs)
-	q.Set("ghprbTargetBranch", br.BaseRef)
+	br.Environment["buildId"] = buildID
 
-	q.Set("PULL_REFS", br.Refs)
-	q.Set("PULL_NUMBER", strconv.Itoa(br.Number))
-	q.Set("PULL_BASE_REF", br.BaseRef)
-	q.Set("PULL_BASE_SHA", br.BaseSHA)
-	q.Set("PULL_PULL_SHA", br.PullSHA)
+	q := u.Query()
+	for key, value := range br.Environment {
+		q.Set(key, value)
+	}
 	u.RawQuery = q.Encode()
 	resp, err := c.request(http.MethodPost, u.String())
 	if err != nil {

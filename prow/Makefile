@@ -21,8 +21,8 @@ DECK_VERSION       ?= 0.43
 SPLICE_VERSION     ?= 0.27
 TOT_VERSION        ?= 0.5
 HOROLOGIUM_VERSION ?= 0.8
-PLANK_VERSION      ?= 0.40
-JENKINS_VERSION    ?= 0.39
+PLANK_VERSION      ?= 0.41
+JENKINS_VERSION    ?= 0.40
 TIDE_VERSION       ?= 0.1
 
 # These are the usual GKE variables.

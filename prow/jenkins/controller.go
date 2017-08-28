@@ -231,15 +231,12 @@ func (c *Controller) syncJenkinsJob(pj kube.ProwJob, reports chan<- kube.ProwJob
 		// Start the Jenkins job.
 		pj.Status.State = kube.PendingState
 		c.incrementNumPendingJobs(pj.Spec.Job)
+		env := npj.EnvForSpec(pj.Spec)
+
 		br := BuildRequest{
-			JobName: pj.Spec.Job,
-			Refs:    pj.Spec.Refs.String(),
-			BaseRef: pj.Spec.Refs.BaseRef,
-			BaseSHA: pj.Spec.Refs.BaseSHA,
-		}
-		if len(pj.Spec.Refs.Pulls) == 1 {
-			br.Number = pj.Spec.Refs.Pulls[0].Number
-			br.PullSHA = pj.Spec.Refs.Pulls[0].SHA
+			JobName:     pj.Spec.Job,
+			Refs:        pj.Spec.Refs.String(),
+			Environment: env,
 		}
 		if build, err := c.jc.Build(br); err != nil {
 			jerr = fmt.Errorf("error starting Jenkins job for prowjob %s: %v", pj.Metadata.Name, err)
