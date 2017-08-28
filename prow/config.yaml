@@ -14620,7 +14620,7 @@ periodics:
     - image: gcr.io/k8s-testimages/kubekins-e2e-prow:latest
       args:
       - --bare
-      - --timeout=60
+      - --timeout=85
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
         value: /etc/service-account/service-account.json
