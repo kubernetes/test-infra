@@ -29,16 +29,13 @@ type bash struct {
 var _ deployer = bash{}
 
 func (b bash) Up() error {
-	var clusterIPRange string
-	if b.clusterIPRange != nil && *b.clusterIPRange != "" {
-		clusterIPRange = *b.clusterIPRange
-	} else {
+	if b.clusterIPRange == nil || *b.clusterIPRange == "" {
 		if numNodes, err := strconv.Atoi(os.Getenv("NUM_NODES")); err == nil {
-			clusterIPRange = getClusterIPRange(numNodes)
+			*b.clusterIPRange = getClusterIPRange(numNodes)
 		}
 	}
-	if clusterIPRange != "" {
-		pop, err := pushEnv("CLUSTER_IP_RANGE", clusterIPRange)
+	if *b.clusterIPRange != "" {
+		pop, err := pushEnv("CLUSTER_IP_RANGE", *b.clusterIPRange)
 		if err != nil {
 			return err
 		}
@@ -66,15 +63,15 @@ func (b bash) Down() error {
 // Calculates the cluster IP range based on the no. of nodes in the cluster.
 // Note: This mimics the function get-cluster-ip-range used by kube-up script.
 func getClusterIPRange(numNodes int) string {
-	suggestedRange := "10.100.0.0/14"
+	suggestedRange := "10.160.0.0/14"
 	if numNodes > 1000 {
-		suggestedRange = "10.100.0.0/13"
+		suggestedRange = "10.160.0.0/13"
 	}
 	if numNodes > 2000 {
-		suggestedRange = "10.100.0.0/12"
+		suggestedRange = "10.160.0.0/12"
 	}
 	if numNodes > 4000 {
-		suggestedRange = "10.100.0.0/11"
+		suggestedRange = "10.160.0.0/11"
 	}
 	return suggestedRange
 }
