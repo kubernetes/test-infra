@@ -57,6 +57,8 @@ type repoRules struct {
 	srcToDst []branchRule
 	// if empty (e.g., for client-go), publisher will use its default publish script
 	publishScript string
+	// not updated when true
+	skipped bool
 }
 
 // PublisherMunger publishes content from one repository to another one.
@@ -86,6 +88,7 @@ func (p *PublisherMunger) Initialize(config *github.Config, features *features.F
 	p.k8sIOPath = filepath.Join(gopath, "src", "k8s.io")
 
 	clientGo := repoRules{
+		skipped: false,
 		dstRepo: "client-go",
 		srcToDst: []branchRule{
 			{
@@ -128,6 +131,7 @@ func (p *PublisherMunger) Initialize(config *github.Config, features *features.F
 	}
 
 	apimachinery := repoRules{
+		skipped: false,
 		dstRepo: "apimachinery",
 		srcToDst: []branchRule{
 			{
@@ -155,6 +159,7 @@ func (p *PublisherMunger) Initialize(config *github.Config, features *features.F
 	}
 
 	apiserver := repoRules{
+		skipped: false,
 		dstRepo: "apiserver",
 		srcToDst: []branchRule{
 			{
@@ -200,6 +205,7 @@ func (p *PublisherMunger) Initialize(config *github.Config, features *features.F
 	}
 
 	kubeAggregator := repoRules{
+		skipped: false,
 		dstRepo: "kube-aggregator",
 		srcToDst: []branchRule{
 			{
@@ -249,6 +255,7 @@ func (p *PublisherMunger) Initialize(config *github.Config, features *features.F
 	}
 
 	sampleAPIServer := repoRules{
+		skipped: false,
 		dstRepo: "sample-apiserver",
 		srcToDst: []branchRule{
 			{
@@ -354,6 +361,7 @@ func (p *PublisherMunger) Initialize(config *github.Config, features *features.F
 	}
 
 	api := repoRules{
+		skipped: false,
 		dstRepo: "api",
 		srcToDst: []branchRule{
 			{
@@ -450,6 +458,9 @@ func (p *PublisherMunger) updateKubernetes() error {
 	}
 	// update kubernetes branches that are needed by other k8s.io repos.
 	for _, repoRules := range p.reposRules {
+		if repoRules.skipped {
+			continue
+		}
 		for _, branchRule := range repoRules.srcToDst {
 			src := branchRule.src
 			// we assume src.repo is always kubernetes
@@ -492,6 +503,10 @@ func (p *PublisherMunger) ensureCloned(dst string, dstURL string) error {
 func (p *PublisherMunger) construct() error {
 	kubernetesRemote := filepath.Join(p.k8sIOPath, "kubernetes", ".git")
 	for _, repoRules := range p.reposRules {
+		if repoRules.skipped {
+			continue
+		}
+
 		// clone the destination repo
 		dstDir := filepath.Join(p.k8sIOPath, repoRules.dstRepo, "")
 		dstURL := fmt.Sprintf("https://github.com/%s/%s.git", p.githubConfig.Org, repoRules.dstRepo)
