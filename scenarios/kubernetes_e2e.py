@@ -488,7 +488,7 @@ def main(args):
             build_file += args.use_shared_build + '-'
         build_file += 'build-location.txt'
         gcs_path = os.path.join(args.gcs_shared, os.getenv('PULL_REFS', ''), build_file)
-        print >>sys.stderr, "Getting shared build location from: "+gcs_path
+        print >>sys.stderr, 'Getting shared build location from: '+gcs_path
         try:
             # tell kubetest to extract from this location
             args.kubetest_args.append('--extract=' + read_gcs_path(gcs_path))
@@ -606,7 +606,7 @@ def create_parser():
         help='Use prebuilt kubernetes binaries if set, optionally specifying strategy')
     parser.add_argument(
         '--gcs-shared',
-        default="gs://kubernetes-jenkins/shared-results/",
+        default='gs://kubernetes-jenkins/shared-results/',
         help='Get shared build from this bucket')
     parser.add_argument(
         '--cluster', default='bootstrap-e2e', help='Name of the cluster')
