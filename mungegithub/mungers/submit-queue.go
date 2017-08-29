@@ -977,6 +977,8 @@ const (
 	ghE2EFailed             = "Second github e2e run failed."
 	unmergeableMilestone    = "Milestone is for a future release and cannot be merged"
 	headCommitChanged       = "This PR has changed since we ran the tests"
+	ghReviewStateUnclear    = "Cannot get gh reviews status"
+	ghReview                = "This pr has no gh approve or has changes request"
 )
 
 // validForMergeExt is the base logic about what PR can be automatically merged.
@@ -1058,6 +1060,14 @@ func (sq *SubmitQueue) validForMergeExt(obj *github.MungeObject, checkStatus boo
 				return false
 			}
 		}
+	}
+
+	if approvedReview, changesRequestedReview, ok := obj.CollectGHReviewStatus(); !ok {
+		sq.SetMergeStatus(obj, ghReviewStateUnclear)
+		return false
+	} else if len(approvedReview) == 0 || len(changesRequestedReview) > 0 {
+		sq.SetMergeStatus(obj, ghReview)
+		return false
 	}
 
 	if !obj.HasLabel(lgtmLabel) {

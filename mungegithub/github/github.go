@@ -53,6 +53,9 @@ const (
 	headerRateReset     = "X-RateLimit-Reset"
 
 	maxCommentLen = 65535
+
+	ghApproved         = "APPROVED"
+	ghChangesRequested = "CHANGES_REQUESTED"
 )
 
 var (
@@ -2520,6 +2523,32 @@ func (obj *MungeObject) ListReviews() ([]*github.PullRequestReview, bool) {
 	}
 	obj.prReviews = allReviews
 	return allReviews, true
+}
+
+func (obj *MungeObject) CollectGHReviewStatus() ([]*github.PullRequestReview, []*github.PullRequestReview, bool) {
+	reviews, ok := obj.ListReviews()
+	if !ok {
+		glog.Warning("Cannot get all reviews")
+		return nil, nil, false
+	}
+	var approvedReviews, changesRequestReviews []*github.PullRequestReview
+	latestReviews := make(map[string]*github.PullRequestReview)
+	for _, review := range reviews {
+		reviewer := review.User.GetLogin()
+		if r, exist := latestReviews[reviewer]; !exist || r.GetSubmittedAt().Before(review.GetSubmittedAt()) {
+			latestReviews[reviewer] = review
+		}
+
+	}
+
+	for _, review := range latestReviews {
+		if review.GetState() == ghApproved {
+			approvedReviews = append(approvedReviews, review)
+		} else if review.GetState() == ghChangesRequested {
+			changesRequestReviews = append(changesRequestReviews, review)
+		}
+	}
+	return approvedReviews, changesRequestReviews, true
 }
 
 func (config *Config) runMungeFunction(obj *MungeObject, fn MungeFunction) error {
