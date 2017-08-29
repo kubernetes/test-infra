@@ -28,7 +28,7 @@
 	% if started
 		<tr><td>Started<td>{{started['timestamp']|timestamp}}
 		{% if finished %}<tr><td>Elapsed<td>{{(finished['timestamp']-started['timestamp'])|duration}}{% endif %}
-		<tr><td>Version<td><a href="https://github.com/openshfit/origin/commit/{{commit}}">{{started['version'] or finished['version']}}</a>
+		<tr><td>Version<td><a href="https://github.com/kubernetes/kubernetes/commit/{{commit}}">{{started['version'] or finished['version']}}</a>
 		% if 'jenkins-node' in started
 			<tr><td>Builder<td>{{started['jenkins-node']}}
 		% endif
@@ -38,6 +38,16 @@
 				{% set x=x.split(':', 1) %}
 				{{x[0]}}{% if x|length == 2 %}{% set commit=x[1] %}:{{x[1]|github_commit_link}}{% endif %}<br>
 			{%- endfor %}
+		% endif
+		% if 'metadata' in started
+			% for k, v in started['metadata']|dictsort
+			<tr><td>{{k}}<td>{{v}}
+			% endfor
+		% endif
+		% if finished and 'metadata' in finished
+			% for k, v in finished['metadata']|dictsort
+			<tr><td>{{k}}<td>{{v}}
+			% endfor
 		% endif
 	% endif
 	</table>
@@ -61,6 +71,9 @@
 		% for name, time, text, filename in failures
 			<hr>
 			<h3><a class="anchor" id="{{name|slugify}}" href="#{{name|slugify}}">{{name}}<span class="time"> {{time|duration}}</span></h3></a>
+			% if 'junit_runner' not in filename
+				<pre class="cmd" onclick="select(this)">{{name | testcmd}}</pre>
+			% endif
 			% if text
 				<pre class="error">{{text|linkify_stacktrace(commit)}}<span class="inset-filename">from <a href="https://storage.googleapis.com{{filename}}">{{filename|basename}}</a></span></pre>
 				% set pod_name = text|parse_pod_name
@@ -77,15 +90,7 @@
 			% endif
 		% endfor
 	% else
-		% if finished
-			% if finished['result'] != 'SUCCESS'
-				<h2>{{"Job Failed!"}}</h2>
-			% else
-				<h2>{{"No Test Failures!"}}</h2>
-			% endif
-		% else
-			<h2>{{"Build Still Running!"}}</h2>
-		% endif
+		<h2>{{"No Test Failures!" if finished else "Build Still Running!"}}</h2>
 	% endif
 	</div>
 	% if build_log

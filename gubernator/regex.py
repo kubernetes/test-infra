@@ -25,15 +25,10 @@ def wordRE(word):
 # HACK: match ANSI colored lines by allowing preceding "m",
 # as in"\x1b[0;31mFAILED\x1b[0m"
 
-default_words = ["FINISHED STAGE: FAILURE", "\[ERROR\]", "\[FATAL\]"]
+default_words = ["build timed out", "error", "fail", "failed", "fatal", "undefined"]
 
 error_re = re.compile(
-    r'%s' % '|'.join(default_words))
-
-words = ["STARTING STAGE", "\[WARNING\]"]
-
-callout_re = re.compile(
-    r'%s' % '|'.join(words))
+    r'(?:\b|(?<=m))(%s)\b' % '|'.join(default_words), re.IGNORECASE)
 
 # Match the dictionary string in the given line
 def objref(line):

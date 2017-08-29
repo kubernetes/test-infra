@@ -5,7 +5,7 @@ body {
     scroll-behavior: smooth;
 }
 #header {
-    background-color: #b51b1b;
+    background-color: #3f51b5;
     color: white;
     text-align: center;
     padding: 8px;
@@ -16,7 +16,7 @@ body {
     color: white;
 }
 #header img {
-    width: 233px;
+    width: 100px;
     height: 100px;
     float: left;
     padding-left: 20px;
@@ -132,7 +132,6 @@ table.pr-dash tbody tr:hover {
     width: 10em;
 }
 table.build-meta {
-    padding-top: 20px;
     text-align: left;
     word-break: break-word;
     margin: 0 auto;  /* center */
@@ -144,7 +143,7 @@ table.build-meta td:nth-child(2) {
     max-width: 60vw;
 }
 table.build-meta td {
-    padding:4px 10px 4px 10px;
+    padding:2px 5px 2px 5px;
 }
 h3.pr-section {
     margin: 1em 0 0 1em;

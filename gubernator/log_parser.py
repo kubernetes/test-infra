@@ -20,14 +20,9 @@ import jinja2
 import kubelet_parser
 import regex
 
-CONTEXT_DEFAULT = 0
+CONTEXT_DEFAULT = 6
 MAX_BUFFER = 5000000  # GAE has RAM limits.
 
-def span(line, highlight_words):
-    # Join all the words that need to be bolded into one regex
-    words_re = regex.combine_wordsRE(highlight_words)
-    line = words_re.sub(r'<span class="keyword">\1</span>', line)
-    return '<span>%s</span>' % line
 
 def highlight(line, highlight_words):
     # Join all the words that need to be bolded into one regex
@@ -41,7 +36,7 @@ def log_html(lines, matched_lines, highlight_words, skip_fmt):
     Constructs the html for the filtered log
     Given:
         lines: list of all lines in the log
-        matched_lines: list of (lines, highlight) tuples that have a filtered string in them
+        matched_lines: list of lines that have a filtered string in them
         highlight_words: list of words to be bolded
         skip_fmt: function producing string to replace the skipped lines
     Returns:
@@ -50,7 +45,7 @@ def log_html(lines, matched_lines, highlight_words, skip_fmt):
     """
     output = []
 
-    matched_lines.append((len(lines),False))  # sentinel value
+    matched_lines.append(len(lines))  # sentinel value
 
     # Escape hatch: if we're going to generate a LOT of output, try to trim it down.
     context_lines = CONTEXT_DEFAULT
@@ -58,7 +53,7 @@ def log_html(lines, matched_lines, highlight_words, skip_fmt):
         context_lines = 0
 
     last_match = None
-    for match, do_highlight in matched_lines:
+    for match in matched_lines:
         if last_match is not None:
             previous_end = min(match, last_match + context_lines + 1)
             output.extend(lines[last_match + 1: previous_end])
@@ -75,10 +70,7 @@ def log_html(lines, matched_lines, highlight_words, skip_fmt):
         if match == len(lines):
             break
         output.extend(lines[max(previous_end, match - context_lines): match])
-        if do_highlight:
-            output.append(highlight(lines[match], highlight_words))
-        else:
-            output.append(span(lines[match], highlight_words))
+        output.append(highlight(lines[match], highlight_words))
         last_match = match
 
     return output
@@ -115,15 +107,13 @@ def digest(data, objref_dict=None, filters=None, error_re=regex.error_re,
     if filters is None:
         filters = {'Namespace': '', 'UID': '', 'pod': '', 'ContainerID':''}
 
-    highlight_words = regex.default_words + regex.words
+    highlight_words = regex.default_words
 
     if filters["pod"]:
         highlight_words = [filters["pod"]]
 
     if not (filters["UID"] or filters["Namespace"] or filters["ContainerID"]):
-        matched_lines = [(n,True) for n, line in enumerate(lines) if error_re.search(line)]
-        matched_lines.extend([(n,False) for n, line in enumerate(lines) if regex.callout_re.search(line)])
-        matched_lines.sort(key=lambda i: i[0])
+        matched_lines = [n for n, line in enumerate(lines) if error_re.search(line)]
     else:
         matched_lines, highlight_words = kubelet_parser.parse(lines,
             highlight_words, filters, objref_dict)

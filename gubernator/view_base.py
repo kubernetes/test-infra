@@ -20,6 +20,7 @@ import re
 import cloudstorage as gcs
 import jinja2
 import webapp2
+import yaml
 
 from google.appengine.api import urlfetch
 from google.appengine.api import memcache
@@ -28,37 +29,28 @@ from webapp2_extras import sessions
 import filters as jinja_filters
 
 
+PROW_JOBS = yaml.load(open('prow_jobs.yaml'))
+
 DEFAULT_JOBS = {
-    'origin-ci-test/logs/': {
-        'test_branch_origin_check',
-        'test_branch_origin_cmd',
-        'test_branch_origin_cross',
-        'test_branch_origin_end_to_end',
-        'test_branch_origin_extended_builds',
-        'test_branch_origin_extended_conformance_gce',
-        'test_branch_origin_extended_conformance_install_update',
-        'test_branch_origin_extended_conformance_install',
-        'test_branch_origin_extended_gssapi',
-        'test_branch_origin_extended_image_ecosystem',
-        'test_branch_origin_extended_ldap_groups',
-        'test_branch_origin_extended_networking',
-        'test_branch_origin_extended_templates',
-        'test_branch_origin_integration',
-        'test_branch_origin_verify',
+    'kubernetes-jenkins/logs/': {
+        'ci-kubernetes-e2e-gce-etcd3',
+        'ci-kubernetes-e2e-gci-gce',
+        'ci-kubernetes-e2e-gci-gce-slow',
+        'ci-kubernetes-e2e-gci-gke',
+        'ci-kubernetes-e2e-gci-gke-slow',
+        'ci-kubernetes-kubemark-500-gce',
+        'ci-kubernetes-node-kubelet',
+        'ci-kubernetes-test-go',
+        'ci-kubernetes-verify-master',
+        'kubernetes-build',
+        'kubernetes-e2e-kops-aws',
     },
-    'origin-ci-test/pr-logs/directory/': {
-        'test_pull_request_origin_verify',
-        'test_pull_request_origin_cmd',
-        'test_pull_request_origin_unit',
-        'test_pull_request_origin_integration',
-        'test_pull_request_origin_end_to_end',
-        'test_pull_request_origin_extended_conformance_gce',
-        'test_pull_request_origin_extended_conformance_install_update',
-        'test_pull_request_origin_extended_networking_minimal',
+    'kubernetes-jenkins/pr-logs/directory/': {
+        j['name'] for j in PROW_JOBS['presubmits']['kubernetes/kubernetes'] if j.get('always_run')
     },
 }
 
-PR_PREFIX = 'origin-ci-test/pr-logs/pull'
+PR_PREFIX = 'kubernetes-jenkins/pr-logs/pull'
 
 JINJA_ENVIRONMENT = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__) + '/templates'),
