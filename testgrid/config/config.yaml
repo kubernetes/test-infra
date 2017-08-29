@@ -1654,8 +1654,11 @@ test_groups:
 - name: ppc64le-conformance
   gcs_prefix: ppc64le-kubernetes/logs/ci-conformance-kubernetes
 #presubmits
-- name: pull-kubernetes-bazel
-  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-bazel
+- name: pull-kubernetes-bazel-build
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-bazel-build
+  days_of_results: 1
+- name: pull-kubernetes-bazel-test
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-bazel-test
   days_of_results: 1
 - name: pull-kubernetes-cross
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-cross
@@ -4016,8 +4019,11 @@ dashboards:
 
 - name: kubernetes-presubmits
   dashboard_tab:
-  - name: pull-kubernetes-bazel
-    test_group_name: pull-kubernetes-bazel
+  - name: pull-kubernetes-bazel-build
+    test_group_name: pull-kubernetes-bazel-build
+    base_options: 'width=10'
+  - name: pull-kubernetes-bazel-test
+    test_group_name: pull-kubernetes-bazel-test
     base_options: 'width=10'
   - name: pull-kubernetes-cross
     test_group_name: pull-kubernetes-cross
