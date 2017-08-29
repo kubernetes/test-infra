@@ -508,6 +508,11 @@ func nodeTest(testArgs, nodeArgs []string, nodeTestArgs, project, zone string) e
 		log.Printf("cwd : %s", wd)
 	}
 
+	sshKeyPath := os.Getenv("JENKINS_GCE_SSH_PRIVATE_KEY_FILE")
+	if _, err := os.Stat(sshKeyPath); err != nil {
+		return fmt.Errorf("Cannot find ssh key from: %v, err : %v", sshKeyPath, err)
+	}
+
 	// prep node args
 	runner := []string{
 		"run",
@@ -520,6 +525,7 @@ func nodeTest(testArgs, nodeArgs []string, nodeTestArgs, project, zone string) e
 		fmt.Sprintf("--project=%s", project),
 		fmt.Sprintf("--zone=%s", zone),
 		fmt.Sprintf("--ssh-user=%s", os.Getenv("USER")),
+		fmt.Sprintf("--ssh-key=%s", sshKeyPath),
 		fmt.Sprintf("--ginkgo-flags=%s", strings.Join(testArgs, " ")),
 		fmt.Sprintf("--test_args=%s", nodeTestArgs),
 	}
