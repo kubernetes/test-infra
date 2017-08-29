@@ -28,6 +28,7 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/golang/lint"
 
+	"k8s.io/test-infra/prow/genfiles"
 	"k8s.io/test-infra/prow/git"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/plugins"
@@ -46,6 +47,8 @@ func init() {
 }
 
 type githubClient interface {
+	GetFile(org, repo, filepath, commit string) ([]byte, error)
+	GetPullRequest(org, repo string, number int) (*github.PullRequest, error)
 	GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error)
 	CreateReview(org, repo string, number int, r github.DraftReview) error
 	ListPullRequestComments(org, repo string, number int) ([]github.ReviewComment, error)
@@ -56,18 +59,28 @@ func handleIC(pc plugins.PluginClient, ic github.IssueCommentEvent) error {
 }
 
 // modifiedGoFiles returns a map from filename to patch string for all go files
-// that are modified in the PR.
-func modifiedGoFiles(ghc githubClient, org, repo string, number int) (map[string]string, error) {
+// that are modified in the PR excluding vendor/ and generated files.
+func modifiedGoFiles(ghc githubClient, org, repo string, number int, sha string) (map[string]string, error) {
 	changes, err := ghc.GetPullRequestChanges(org, repo, number)
+	if err != nil {
+		return nil, err
+	}
+
+	gfg, err := genfiles.NewGroup(ghc, org, repo, sha)
 	if err != nil {
 		return nil, err
 	}
 
 	modifiedFiles := make(map[string]string)
 	for _, change := range changes {
-		if filepath.Ext(change.Filename) == ".go" {
-			modifiedFiles[change.Filename] = change.Patch
+		if strings.HasPrefix(change.Filename, "vendor/") {
+			continue
+		} else if filepath.Ext(change.Filename) != ".go" {
+			continue
+		} else if gfg.Match(change.Filename) {
+			continue
 		}
+		modifiedFiles[change.Filename] = change.Patch
 	}
 	return modifiedFiles, nil
 }
@@ -125,7 +138,7 @@ func problemsInFiles(r *git.Repo, files map[string]string) (map[string]map[int]l
 
 func handle(ghc githubClient, gc *git.Client, log *logrus.Entry, ic github.IssueCommentEvent) error {
 	// Only handle open PRs and new requests.
-	if ic.Issue.State != "open" || !ic.Issue.IsPullRequest() || ic.Action != "created" {
+	if ic.Issue.State != "open" || !ic.Issue.IsPullRequest() || ic.Action != github.IssueCommentActionCreated {
 		return nil
 	}
 	if !lintRe.MatchString(ic.Comment.Body) {
@@ -135,8 +148,13 @@ func handle(ghc githubClient, gc *git.Client, log *logrus.Entry, ic github.Issue
 	org := ic.Repo.Owner.Login
 	repo := ic.Repo.Name
 
+	pr, err := ghc.GetPullRequest(org, repo, ic.Issue.Number)
+	if err != nil {
+		return err
+	}
+
 	// List modified files.
-	modifiedFiles, err := modifiedGoFiles(ghc, org, repo, ic.Issue.Number)
+	modifiedFiles, err := modifiedGoFiles(ghc, org, repo, pr.Number, pr.Head.SHA)
 	if err != nil {
 		return err
 	}
@@ -211,7 +229,7 @@ func handle(ghc githubClient, gc *git.Client, log *logrus.Entry, ic github.Issue
 	if totalProblems == 1 {
 		s = ""
 	}
-	response := fmt.Sprintf("%d warning%s", totalProblems, s)
+	response := fmt.Sprintf("%d warning%s.", totalProblems, s)
 
 	return ghc.CreateReview(org, repo, ic.Issue.Number, github.DraftReview{
 		Body:     plugins.FormatICResponse(ic.Comment, response),

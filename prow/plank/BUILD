@@ -1,7 +1,5 @@
 package(default_visibility = ["//visibility:public"])
 
-licenses(["notice"])
-
 load(
     "@io_bazel_rules_go//go:def.bzl",
     "go_library",
@@ -10,37 +8,27 @@ load(
 
 go_test(
     name = "go_default_test",
-    srcs = [
-        "plank_test.go",
-        "report_test.go",
-    ],
+    srcs = ["plank_test.go"],
     library = ":go_default_library",
-    tags = ["automanaged"],
     deps = [
         "//prow/config:go_default_library",
-        "//prow/github:go_default_library",
-        "//prow/jenkins:go_default_library",
         "//prow/kube:go_default_library",
+        "//prow/npj:go_default_library",
     ],
 )
 
 go_library(
     name = "go_default_library",
-    srcs = [
-        "controller.go",
-        "plank.go",
-        "report.go",
-    ],
-    tags = ["automanaged"],
+    srcs = ["controller.go"],
     deps = [
         "//prow/config:go_default_library",
         "//prow/github:go_default_library",
-        "//prow/jenkins:go_default_library",
         "//prow/kube:go_default_library",
-        "//prow/plugins:go_default_library",
-        "//vendor:github.com/Sirupsen/logrus",
-        "//vendor:github.com/bwmarrin/snowflake",
-        "//vendor:github.com/satori/go.uuid",
+        "//prow/npj:go_default_library",
+        "//prow/report:go_default_library",
+        "//vendor/github.com/Sirupsen/logrus:go_default_library",
+        "//vendor/github.com/bwmarrin/snowflake:go_default_library",
+        "//vendor/github.com/satori/go.uuid:go_default_library",
     ],
 )
 

@@ -20,13 +20,13 @@ import (
 	"bytes"
 	"flag"
 	"io/ioutil"
+	"net/url"
 	"time"
 
 	"github.com/Sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
-	"k8s.io/test-infra/prow/jenkins"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/plank"
 )
@@ -37,11 +37,8 @@ var (
 	configPath   = flag.String("config-path", "/etc/config/config", "Path to config.yaml.")
 	buildCluster = flag.String("build-cluster", "", "Path to file containing a YAML-marshalled kube.Cluster object. If empty, uses the local cluster.")
 
-	jenkinsURL       = flag.String("jenkins-url", "http://jenkins-proxy", "Jenkins URL")
-	jenkinsUserName  = flag.String("jenkins-user", "jenkins-trigger", "Jenkins username")
-	jenkinsTokenFile = flag.String("jenkins-token-file", "/etc/jenkins/jenkins", "Path to the file containing the Jenkins API token.")
-
-	githubBotName   = flag.String("github-bot-name", "", "Name of the GitHub bot.")
+	_               = flag.String("github-bot-name", "", "Deprecated.")
+	githubEndpoint  = flag.String("github-endpoint", "https://api.github.com", "GitHub's API endpoint.")
 	githubTokenFile = flag.String("github-token-file", "/etc/github/oauth", "Path to the file containing the GitHub OAuth token.")
 	dryRun          = flag.Bool("dry-run", true, "Whether or not to make mutating API calls to GitHub.")
 )
@@ -69,32 +66,26 @@ func main() {
 		}
 	}
 
-	var jc *jenkins.Client
-
-	if *jenkinsTokenFile != "" {
-		jenkinsSecretRaw, err := ioutil.ReadFile(*jenkinsTokenFile)
-		if err != nil {
-			logrus.WithError(err).Fatalf("Could not read token file.")
-		}
-		jenkinsToken := string(bytes.TrimSpace(jenkinsSecretRaw))
-
-		jc = jenkins.NewClient(*jenkinsURL, *jenkinsUserName, jenkinsToken)
-	}
-
 	oauthSecretRaw, err := ioutil.ReadFile(*githubTokenFile)
 	if err != nil {
 		logrus.WithError(err).Fatalf("Could not read oauth secret file.")
 	}
+
+	_, err = url.Parse(*githubEndpoint)
+	if err != nil {
+		logrus.WithError(err).Fatalf("Must specify a valid --github-endpoint URL.")
+	}
+
 	oauthSecret := string(bytes.TrimSpace(oauthSecretRaw))
 
 	var ghc *github.Client
 	if *dryRun {
-		ghc = github.NewDryRunClient(*githubBotName, oauthSecret)
+		ghc = github.NewDryRunClient(oauthSecret, *githubEndpoint)
 	} else {
-		ghc = github.NewClient(*githubBotName, oauthSecret)
+		ghc = github.NewClient(oauthSecret, *githubEndpoint)
 	}
 
-	c, err := plank.NewController(kc, pkc, jc, ghc, configAgent, *totURL)
+	c, err := plank.NewController(kc, pkc, ghc, configAgent, *totURL)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error creating plank controller.")
 	}

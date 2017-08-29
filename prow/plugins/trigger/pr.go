@@ -21,7 +21,7 @@ import (
 
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
-	"k8s.io/test-infra/prow/plank"
+	"k8s.io/test-infra/prow/npj"
 	"k8s.io/test-infra/prow/plugins"
 )
 
@@ -41,7 +41,7 @@ func handlePR(c client, pr github.PullRequestEvent) error {
 		trustedOrg = tr.TrustedOrg
 	}
 	switch pr.Action {
-	case "opened":
+	case github.PullRequestActionOpened:
 		// When a PR is opened, if the author is in the org then build it.
 		// Otherwise, ask for "ok to test". There's no need to look for previous
 		// "ok to test" comments since the PR was just opened!
@@ -57,7 +57,7 @@ func handlePR(c client, pr github.PullRequestEvent) error {
 				return fmt.Errorf("could not welcome non-org member %q: %v", author, err)
 			}
 		}
-	case "reopened", "synchronize":
+	case github.PullRequestActionReopened, github.PullRequestActionSynchronize:
 		// When a PR is updated, check that the user is in the org or that an org
 		// member has said "ok to test" before building. There's no need to ask
 		// for "ok to test" because we do that once when the PR is created.
@@ -68,7 +68,7 @@ func handlePR(c client, pr github.PullRequestEvent) error {
 			c.Logger.Info("Starting all jobs for updated PR.")
 			return buildAll(c, pr.PullRequest)
 		}
-	case "labeled":
+	case github.PullRequestActionLabeled:
 		// When a PR is LGTMd, if it is untrusted then build it once.
 		if pr.Label.Name == lgtmLabel {
 			trusted, err := trustedPullRequest(c.GitHubClient, pr.PullRequest, trustedOrg)
@@ -131,7 +131,11 @@ func trustedPullRequest(ghc githubClient, pr github.PullRequest, trustedOrg stri
 			continue
 		}
 		// Skip bot comments.
-		if commentAuthor == ghc.BotName() {
+		botName, err := ghc.BotName()
+		if err != nil {
+			return false, err
+		}
+		if commentAuthor == botName {
 			continue
 		}
 		// Look for "ok to test"
@@ -204,7 +208,7 @@ func buildAll(c client, pr github.PullRequest) error {
 				},
 			},
 		}
-		if _, err := c.KubeClient.CreateProwJob(plank.NewProwJob(plank.PresubmitSpec(job, kr))); err != nil {
+		if _, err := c.KubeClient.CreateProwJob(npj.NewProwJob(npj.PresubmitSpec(job, kr))); err != nil {
 			return err
 		}
 	}

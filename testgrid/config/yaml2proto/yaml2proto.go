@@ -106,6 +106,12 @@ func ReconcileDashboardtab(currentTab *config.DashboardTab, defaultTab *config.D
 	}
 }
 
+// Set up unfilled field in a Dashboard using the default Dashboard
+func ReconcileDashboard(currentDashboard *config.Dashboard, defaultDashboard *config.Dashboard) {
+	// Always show the summary.
+	currentDashboard.ShowSummaryFirst = true
+}
+
 // updateDefaults reads any default configuration from yamlData and updates the
 // defaultConfig in c.
 //
@@ -133,6 +139,9 @@ func (c *Config) updateDefaults(yamlData []byte) error {
 	}
 	if c.defaultConfig.DefaultDashboardTab == nil {
 		return MissingFieldError{"DefaultDashboardTab"}
+	}
+	if c.defaultConfig.DefaultDashboard == nil {
+		return MissingFieldError{"DefaultDashboard"}
 	}
 
 	return nil
@@ -162,6 +171,7 @@ func (c *Config) Update(yamlData []byte) error {
 
 	for _, dashboard := range curConfig.Dashboards {
 		// validate dashboard tabs
+		ReconcileDashboard(dashboard, c.defaultConfig.DefaultDashboard)
 		for _, dashboardtab := range dashboard.DashboardTab {
 			ReconcileDashboardtab(dashboardtab, c.defaultConfig.DefaultDashboardTab)
 		}

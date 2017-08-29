@@ -1,7 +1,5 @@
 package(default_visibility = ["//visibility:public"])
 
-licenses(["notice"])
-
 load(
     "@io_bazel_rules_go//go:def.bzl",
     "go_binary",
@@ -11,7 +9,6 @@ load(
 go_binary(
     name = "token-counter",
     library = ":go_default_library",
-    tags = ["automanaged"],
 )
 
 go_library(
@@ -20,13 +17,12 @@ go_library(
         "influx.go",
         "token-counter.go",
     ],
-    tags = ["automanaged"],
     deps = [
-        "//vendor:github.com/golang/glog",
-        "//vendor:github.com/google/go-github/github",
-        "//vendor:github.com/influxdata/influxdb/client/v2",
-        "//vendor:github.com/spf13/cobra",
-        "//vendor:golang.org/x/oauth2",
+        "//vendor/github.com/golang/glog:go_default_library",
+        "//vendor/github.com/google/go-github/github:go_default_library",
+        "//vendor/github.com/influxdata/influxdb/client/v2:go_default_library",
+        "//vendor/github.com/spf13/cobra:go_default_library",
+        "//vendor/golang.org/x/oauth2:go_default_library",
     ],
 )
 

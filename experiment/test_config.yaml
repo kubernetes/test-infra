@@ -30,7 +30,7 @@
 #  * node e2e test
 #    The name starts with "ci-kubernetes-e2enode-" and must satisfy the
 #    following format:
-#      ci-kubernetes-e2enode-<nodeImage>-<nodeK8sVersion>-<nodeTestSuite>-<nodeSystemSpec>
+#      ci-kubernetes-e2enode-<nodeImage>-<nodeK8sVersion>-<nodeTestSuite>
 
 # The envs and args defined in "jobs" override the ones defined in each
 # dimension.
@@ -551,10 +551,128 @@ jobs:
 
   # Node E2E Tests
 
-  ci-kubernetes-e2enode-cosstable1-k8sstable1-default-defaultspec:
+  ci-kubernetes-e2enode-cosbeta-k8sdev-default:
     interval: 2h
-    envs:
-    - GCE_PROJECT=cos-image-validation
+    args:
+    - --project=cos-image-validation
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2enode-cosbeta-k8sdev-serial:
+    interval: 2h
+    args:
+    - --project=cos-image-validation
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2enode-cosstable1-k8sdev-default:
+    interval: 2h
+    args:
+    - --project=k8s-test-63a7f7788a
+    - --instance-metadata=user-data<test/e2e_node/jenkins/cos-init-live-restore.yaml,gci-update-strategy=update_disabled
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2enode-cosstable1-k8sdev-serial:
+    interval: 2h
+    args:
+    - --project=k8s-test-39a894cbd4
+    - --instance-metadata=user-data<test/e2e_node/jenkins/cos-init-live-restore.yaml,gci-update-strategy=update_disabled
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2enode-cosstable1-k8sbeta-default:
+    interval: 2h
+    args:
+    - --project=k8s-test-f1ca4a9c02
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2enode-cosstable1-k8sbeta-serial:
+    interval: 2h
+    args:
+    - --project=k8s-test-1d6ad79530
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2enode-cosstable1-k8sstable1-default:
+    interval: 2h
+    args:
+    - --project=k8s-test-7714104ae1
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2enode-cosstable1-k8sstable1-serial:
+    interval: 2h
+    args:
+    - --project=k8s-test-27d359e3d6
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2enode-cosstable1-k8sstable2-default:
+    interval: 6h
+    args:
+    - --project=k8s-test-9f6500beee
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2enode-cosstable1-k8sstable2-serial:
+    interval: 6h
+    args:
+    - --project=k8s-test-5f678591cd
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2enode-cosstable1-k8sstable3-default:
+    interval: 6h
+    args:
+    - --project=k8s-test-1cee98f86d
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2enode-cosstable1-k8sstable3-serial:
+    interval: 6h
+    args:
+    - --project=k8s-test-592642f0ef
+    sigOwners: ['sig-node']
+
+  ci-kubernetes-e2enode-ubuntudev-k8sdev-gkespec:
+    interval: 2h
+    args:
+    - --project=ubuntu-image-validation
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2enode-ubuntudev-k8sdev-serial:
+    interval: 2h
+    args:
+    - --project=ubuntu-image-validation
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2enode-ubuntudev-k8sstable1-gkespec:
+    interval: 2h
+    args:
+    - --project=ubuntu-image-validation
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2enode-ubuntudev-k8sstable1-serial:
+    interval: 2h
+    args:
+    - --project=ubuntu-image-validation
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2enode-ubuntudev-k8sstable2-gkespec:
+    interval: 2h
+    args:
+    - --project=ubuntu-image-validation
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2enode-ubuntudev-k8sstable2-serial:
+    interval: 2h
+    args:
+    - --project=ubuntu-image-validation
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2enode-ubuntustable1-k8sdev-gkespec:
+    interval: 2h
+    args:
+    - --project=ubuntu-image-validation
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2enode-ubuntustable1-k8sdev-serial:
+    interval: 2h
+    args:
+    - --project=ubuntu-image-validation
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2enode-ubuntustable1-k8sstable1-gkespec:
+    interval: 2h
+    args:
+    - --project=ubuntu-image-validation
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2enode-ubuntustable1-k8sstable1-serial:
+    interval: 2h
+    args:
+    - --project=ubuntu-image-validation
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2enode-ubuntustable1-k8sstable2-gkespec:
+    interval: 2h
+    args:
+    - --project=ubuntu-image-validation
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2enode-ubuntustable1-k8sstable2-serial:
+    interval: 2h
+    args:
+    - --project=ubuntu-image-validation
     sigOwners: ['sig-node']
 
 
@@ -571,16 +689,15 @@ cloudProviders:
     - --check-leaked-resources
     - --provider=gce
     - --gcp-zone=us-central1-f
-    envs:
-    - CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1
+    - --env=CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1
   gke:
     args:
     - --check-leaked-resources
     - --provider=gke
+    - --deployment=gke
     - --gcp-zone=us-central1-f
     - --gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging
-    envs:
-    - CLOUDSDK_API_ENDPOINT_OVERRIDES_CONTAINER=https://test-container.sandbox.googleapis.com/
+    - --gke-environment=test
 
 images:
   cosdev:
@@ -605,10 +722,9 @@ images:
     - --gcp-node-image=ubuntu
   ubuntustable1:
     args:
+    - --image-family=ubuntu-gke-1604-lts
+    - --image-project=ubuntu-os-gke-cloud
     - --gcp-node-image=ubuntu
-    envs:
-    - KUBE_GCE_NODE_PROJECT=ubuntu-os-gke-cloud
-    - KUBE_GCE_NODE_IMAGE=ubuntu-gke-1604-xenial-v20170420-1
 
 k8sVersions:
   dev:
@@ -641,9 +757,7 @@ testSuites:
     args:
     - --timeout=50m
     - --test_args=--ginkgo.skip=\[Slow\]|\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
-    envs:
-    - GINKGO_PARALLEL=y
-    - GINKGO_PARALLEL_NODES=30
+    - --ginkgo-parallel=30
   flaky:
     args:
     - --timeout=300m
@@ -660,43 +774,48 @@ testSuites:
     args:
     - --timeout=500m
     - --test_args=--ginkgo.focus=\[Serial\]|\[Disruptive\] --ginkgo.skip=\[Flaky\]|\[Feature:.+\] --minStartupPods=8
-    envs:
-    - GINKGO_PARALLEL=n
+    - --ginkgo-parallel=1
   slow:
     args:
     - --timeout=150m
     - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
-    envs:
-    - GINKGO_PARALLEL=y
-    - GINKGO_PARALLEL_NODES=30
+    - --ginkgo-parallel=30
   updown:
     args:
     - --timeout=30m
     - --test_args=--ginkgo.focus=\[k8s.io\]\sNetworking.*\[Conformance\] --minStartupPods=8
-    envs:
-    - GINKGO_PARALLEL=y
+    - --ginkgo-parallel
   nosnat:
     args:
     - --timeout=20m
     - --test_args=--ginkgo.focus=\\[Feature:NoSNAT\\] --minStartupPods=8
-    envs:
-    - GINKGO_PARALLEL=n
-    - GINKGO_PARALLEL_NODES=1
-    - NUM_NODES=3
+    - --ginkgo-parallel=1
 
 # The following settings are used by node e2e tests.
 
 nodeCommon:
-    envs:
-    - CLEANUP=true
-    - GCE_ZONE=us-central1-f
-    - KUBELET_ARGS=--cgroups-per-qos=true --cgroup-root=/
+    args:
+    - --cleanup=true
+    - --ssh-user=prow
+    - --zone=us-central1-f
 
 nodeImages:
+  cosbeta:
+    args:
+    - --images=cos-beta-61-9765-31-0
+    - --image-project=cos-cloud
   cosstable1:
-    envs:
-    - GCE_IMAGES=cos-stable-60-9592-76-0
-    - GCE_IMAGE_PROJECT=cos-cloud
+    args:
+    - --images=cos-stable-60-9592-84-0
+    - --image-project=cos-cloud
+  ubuntudev:
+    args:
+    - --images=ubuntu-gke-1604-xenial-v20170816-1
+    - --image-project=ubuntu-os-gke-cloud-devel
+  ubuntustable1:
+    args:
+    - --images=ubuntu-gke-1604-xenial-v20170816-1
+    - --image-project=ubuntu-os-gke-cloud
 
 nodeK8sVersions:
   dev:
@@ -718,19 +837,18 @@ nodeK8sVersions:
 
 nodeTestSuites:
   default:
-    envs:
-    - TIMEOUT=60m
-    - GINKGO_FLAGS=--skip=\[Flaky\]|\[Serial\]
+    args:
+    - --test-timeout=60m
+    - --ginkgo-flags=--nodes=8 --skip="\[Flaky\]|\[Serial\]"
+    - --test_args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
+  gkespec:
+    args:
+    - --system-spec-name=gke
+    - --test-timeout=60m
+    - --ginkgo-flags=--nodes=8 --skip="\[Flaky\]|\[Serial\]"
+    - --test_args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
   serial:
-    - TIMEOUT=180m
-    - GINKGO_FLAGS=--focus=\[Serial\] --skip=\[Flaky\]|\[Benchmark\]
-    - PARALLELISM=1
-    - TEST_ARGS=--feature-gates=DynamicKubeletConfig=true
-
-nodeSystemSpecs:
-  default:
-    envs:
-    - SYSTEM_SPEC_NAME=
-  gke:
-    envs:
-    - SYSTEM_SPEC_NAME=gke
+    args:
+    - --test-timeout=180m
+    - --ginkgo-flags=--nodes=1 --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]"
+    - --test_args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/" --feature-gates=DynamicKubeletConfig=true

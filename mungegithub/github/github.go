@@ -251,6 +251,7 @@ type analytics struct {
 	EditComment            analytic
 	Merge                  analytic
 	GetUser                analytic
+	ClearMilestone         analytic
 	SetMilestone           analytic
 	ListMilestones         analytic
 	GetBranch              analytic
@@ -292,6 +293,7 @@ func (a analytics) print() {
 	fmt.Fprintf(w, "DeleteComment\t%d\t\n", a.DeleteComment.Count)
 	fmt.Fprintf(w, "Merge\t%d\t\n", a.Merge.Count)
 	fmt.Fprintf(w, "GetUser\t%d\t\n", a.GetUser.Count)
+	fmt.Fprintf(w, "ClearMilestone\t%d\t\n", a.ClearMilestone.Count)
 	fmt.Fprintf(w, "SetMilestone\t%d\t\n", a.SetMilestone.Count)
 	fmt.Fprintf(w, "ListMilestones\t%d\t\n", a.ListMilestones.Count)
 	fmt.Fprintf(w, "GetBranch\t%d\t\n", a.GetBranch.Count)
@@ -1156,6 +1158,38 @@ func (obj *MungeObject) GetSHAFromRef(ref string) (sha string, ok bool) {
 	return *commit.SHA, true
 }
 
+// ClearMilestone will remove a milestone if present
+func (obj *MungeObject) ClearMilestone() bool {
+	if obj.Issue.Milestone == nil {
+		return true
+	}
+	obj.config.analytics.ClearMilestone.Call(obj.config, nil)
+	obj.Issue.Milestone = nil
+	if obj.config.DryRun {
+		return true
+	}
+
+	// Send the request manually to work around go-github's use of
+	// omitempty (precluding the use of null) in the json field
+	// definition for milestone.
+	//
+	// Reference: https://github.com/google/go-github/issues/236
+	u := fmt.Sprintf("repos/%v/%v/issues/%d", obj.Org(), obj.Project(), *obj.Issue.Number)
+	req, err := obj.config.client.NewRequest("PATCH", u, &struct {
+		Milestone interface{} `json:"milestone"`
+	}{})
+	if err != nil {
+		glog.Errorf("Failed to clear milestone on issue %d: %v", *obj.Issue.Number, err)
+		return false
+	}
+	_, err = obj.config.client.Do(context.Background(), req, nil)
+	if err != nil {
+		glog.Errorf("Failed to clear milestone on issue %d: %v", *obj.Issue.Number, err)
+		return false
+	}
+	return true
+}
+
 // SetMilestone will set the milestone to the value specified
 func (obj *MungeObject) SetMilestone(title string) bool {
 	milestones, ok := obj.config.ListMilestones("all")
@@ -1484,9 +1518,11 @@ func (obj *MungeObject) SetStatus(state, url, description, statusContext string)
 	config := obj.config
 	status := &github.RepoStatus{
 		State:       &state,
-		TargetURL:   &url,
 		Description: &description,
 		Context:     &statusContext,
+	}
+	if len(url) > 0 {
+		status.URL = &url
 	}
 	pr, ok := obj.GetPR()
 	if !ok {

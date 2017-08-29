@@ -20,6 +20,7 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
+	"log"
 	"os"
 	"os/exec"
 	"strings"
@@ -53,7 +54,7 @@ const kubernetesAnywhereConfigTemplate = `
 .phase1.gce.project="{{.Project}}"
 .phase1.gce.region="us-central1"
 .phase1.gce.zone="{{.Zone}}"
-.phase1.gce.network="{{.Network}}"
+.phase1.gce.network="default"
 
 .phase2.installer_container="docker.io/colemickens/k8s-ignition:latest"
 .phase2.docker_registry="gcr.io/google-containers"
@@ -78,12 +79,11 @@ type kubernetesAnywhere struct {
 	Project           string
 	Cluster           string
 	Zone              string
-	Network           string
 }
 
 var _ deployer = kubernetesAnywhere{}
 
-func newKubernetesAnywhere(project, zone, network string) (*kubernetesAnywhere, error) {
+func newKubernetesAnywhere(project, zone string) (*kubernetesAnywhere, error) {
 	if *kubernetesAnywherePath == "" {
 		return nil, fmt.Errorf("--kubernetes-anywhere-path is required")
 	}
@@ -100,10 +100,6 @@ func newKubernetesAnywhere(project, zone, network string) (*kubernetesAnywhere, 
 		zone = "us-central1-c"
 	}
 
-	if network == "" {
-		network = "default"
-	}
-
 	// Set KUBERNETES_CONFORMANCE_TEST so the auth info is picked up
 	// from kubectl instead of bash inference.
 	if err := os.Setenv("KUBERNETES_CONFORMANCE_TEST", "yes"); err != nil {
@@ -118,7 +114,6 @@ func newKubernetesAnywhere(project, zone, network string) (*kubernetesAnywhere, 
 		Project:           project,
 		Cluster:           *kubernetesAnywhereCluster,
 		Zone:              zone,
-		Network:           network,
 	}
 
 	if err := k.writeConfig(); err != nil {
@@ -174,7 +169,13 @@ func (k kubernetesAnywhere) IsUp() error {
 }
 
 func (k kubernetesAnywhere) DumpClusterLogs(localPath, gcsPath string) error {
-	return defaultDumpClusterLogs(localPath, gcsPath)
+	// TODO(pipejakob): the default implementation (log-dump.sh) doesn't work for
+	// kubernetes-anywhere yet, so just skip attempting to dump logs.
+	// https://github.com/kubernetes/kubeadm/issues/256
+	log.Print("DumpClusterLogs is a no-op for kubernetes-anywhere deployments. Not doing anything.")
+	log.Print("If you care about enabling this feature, follow this issue for progress:")
+	log.Print("    https://github.com/kubernetes/kubeadm/issues/256")
+	return nil
 }
 
 func (k kubernetesAnywhere) TestSetup() error {

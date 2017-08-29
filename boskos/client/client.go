@@ -150,6 +150,12 @@ func (c *Client) Reset(rtype string, state string, expire time.Duration, dest st
 	return c.reset(rtype, state, expire, dest)
 }
 
+// Metric will query current metric for target resource type.
+// Return a common.Metric object on success.
+func (c *Client) Metric(rtype string) (common.Metric, error) {
+	return c.metric(rtype)
+}
+
 // HasResource tells if current client holds any resources
 func (c *Client) HasResource() bool {
 	return len(c.resources) > 0
@@ -244,4 +250,29 @@ func (c *Client) reset(rtype string, state string, expire time.Duration, dest st
 	}
 
 	return rmap, fmt.Errorf("Status %s, StatusCode %v", resp.Status, resp.StatusCode)
+}
+
+func (c *Client) metric(rtype string) (common.Metric, error) {
+	var metric common.Metric
+	resp, err := http.Get(fmt.Sprintf("%v/metric?type=%v", c.url, rtype))
+	if err != nil {
+		return metric, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return metric, fmt.Errorf("Status %s, StatusCode %v", resp.Status, resp.StatusCode)
+	}
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return metric, err
+	}
+
+	err = json.Unmarshal(body, &metric)
+	if err != nil {
+		return metric, err
+	}
+
+	return metric, nil
 }

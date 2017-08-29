@@ -33,15 +33,21 @@ write = gcs_async_test.write
 class ParseJunitTest(unittest.TestCase):
     @staticmethod
     def parse(xml):
-        return list(view_build.parse_junit(xml, "fp"))
+        parser = view_build.JUnitParser()
+        parser.parse_xml(xml, 'fp')
+        return parser.get_results()
 
     def test_normal(self):
-        failures = self.parse(main_test.JUNIT_SUITE)
+        results = self.parse(main_test.JUNIT_SUITE)
         stack = '/go/src/k8s.io/kubernetes/test.go:123\nError Goes Here'
-        self.assertEqual(failures, [('Third', 96.49, stack, "fp")])
+        self.assertEqual(results, {
+            'passed': ['Second'],
+            'skipped': ['First'],
+            'failed': [('Third', 96.49, stack, "fp", "")],
+        })
 
     def test_testsuites(self):
-        failures = self.parse('''
+        results = self.parse('''
             <testsuites>
                 <testsuite name="k8s.io/suite">
                     <properties>
@@ -49,17 +55,22 @@ class ParseJunitTest(unittest.TestCase):
                     </properties>
                     <testcase name="TestBad" time="0.1">
                         <failure>something bad</failure>
+                        <system-out>out: first line</system-out>
+                        <system-err>err: first line</system-err>
+                        <system-out>out: second line</system-out>
                     </testcase>
                 </testsuite>
             </testsuites>''')
-        self.assertEqual(failures,
-                         [('k8s.io/suite TestBad', 0.1, 'something bad', "fp")])
+        self.assertEqual(results['failed'], [(
+            'k8s.io/suite TestBad', 0.1, 'something bad', "fp",
+            "out: first line\nout: second line\nerr: first line",
+            )])
 
     def test_bad_xml(self):
-        self.assertEqual(self.parse('''<body />'''), [])
+        self.assertEqual(self.parse('''<body />''')['failed'], [])
 
     def test_corrupt_xml(self):
-        self.assertEqual(self.parse('<a>\xff</a>'), [])
+        self.assertEqual(self.parse('<a>\xff</a>')['failed'], [])
         failures = self.parse('''
             <testsuites>
                 <testsuite name="a">
@@ -67,13 +78,13 @@ class ParseJunitTest(unittest.TestCase):
                         <failure>something bad \xff</failure>
                     </testcase>
                 </testsuite>
-            </testsuites>''')
-        self.assertEqual(failures, [('a Corrupt', 0.0, 'something bad ?', 'fp')])
+            </testsuites>''')['failed']
+        self.assertEqual(failures, [('a Corrupt', 0.0, 'something bad ?', 'fp', '')])
 
     def test_not_xml(self):
-        failures = self.parse('\x01')
+        failures = self.parse('\x01')['failed']
         self.assertEqual(failures,
-            [(failures[0][0], 0.0, 'not well-formed (invalid token): line 1, column 0', 'fp')])
+            [(failures[0][0], 0.0, 'not well-formed (invalid token): line 1, column 0', 'fp', '')])
 
 class BuildTest(main_test.TestBase):
     # pylint: disable=too-many-public-methods
@@ -182,6 +193,14 @@ class BuildTest(main_test.TestBase):
         self.assertIn('ERROR</span>: test', response)
         self.assertNotIn('blah', response)
 
+    def test_build_show_passed_skipped(self):
+        response = self.get_build_page()
+        self.assertIn('First', response)
+        self.assertIn('Second', response)
+        self.assertIn('Third', response)
+        self.assertIn('Show 1 Skipped Tests', response)
+        self.assertIn('Show 1 Passed Tests', response)
+
     def test_build_optional_log(self):
         write(self.BUILD_DIR + 'build-log.txt', 'error or timeout or something')
         response = self.get_build_page()
@@ -221,23 +240,27 @@ class BuildTest(main_test.TestBase):
         self.assertIn('No Test Failures', response)
 
     def test_parse_pr_path(self):
-        for prefix, expected in [
-            ('kubernetes-jenkins/logs/e2e', (None, None, None)),
-            ('kubernetes-jenkins/pr-logs/pull/123', ('123', '', 'kubernetes/kubernetes')),
-            ('kubernetes-jenkins/pr-logs/pull/charts/123', ('123', 'charts/', 'kubernetes/charts')),
-        ]:
+        def check(prefix, expected):
             self.assertEqual(view_build.parse_pr_path(prefix), expected)
+
+        check('kubernetes-jenkins/logs/e2e', (None, None, None))
+        check('kubernetes-jenkins/pr-logs/pull/123', ('123', '', 'kubernetes/kubernetes'))
+        check('kubernetes-jenkins/pr-logs/pull/charts/123', ('123', 'charts/', 'kubernetes/charts'))
+        check('istio-prow/pull/istio_istio/517', ('517', 'istio/istio/', 'istio/istio'))
+        check(
+            'kubernetes-jenkins/pr-logs/pull/google_cadvisor/296',
+            ('296', 'google/cadvisor/', 'google/cadvisor'))
 
     def test_build_pr_link(self):
         ''' The build page for a PR build links to the PR results.'''
-        build_dir = '/%s/123/e2e/567/' % view_pr.PR_PREFIX
+        build_dir = '/%s/123/e2e/567/' % view_pr.PR_PREFIX['kubernetes']
         init_build(build_dir)
         response = app.get('/build' + build_dir)
         self.assertIn('PR #123', response)
         self.assertIn('href="/pr/123"', response)
 
     def test_build_pr_link_other(self):
-        build_dir = '/%s/charts/123/e2e/567/' % view_pr.PR_PREFIX
+        build_dir = '/%s/charts/123/e2e/567/' % view_pr.PR_PREFIX['kubernetes']
         init_build(build_dir)
         response = app.get('/build' + build_dir)
         self.assertIn('PR #123', response)
@@ -260,6 +283,14 @@ class BuildTest(main_test.TestBase):
         gcs.delete(self.BUILD_DIR + 'finished.json')
         response2 = self.get_build_page()
         self.assertEqual(str(response), str(response2))
+
+    def test_build_directory_redir(self):
+        build_dir = '/kubernetes-jenkins/pr-logs/directory/somejob/1234'
+        target_dir = '/kubernetes-jenkins/pr-logs/pull/45/somejob/1234'
+        write(build_dir + '.txt', 'gs:/' + target_dir)
+        resp = app.get('/build' + build_dir)
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(resp.location, 'http://localhost/build' + target_dir)
 
     def do_view_build_list_test(self, job_dir='/buck/some-job/', indirect=False):
         sta_result = {'timestamp': 12345}

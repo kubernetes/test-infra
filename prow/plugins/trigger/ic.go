@@ -22,7 +22,7 @@ import (
 
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
-	"k8s.io/test-infra/prow/plank"
+	"k8s.io/test-infra/prow/npj"
 	"k8s.io/test-infra/prow/plugins"
 )
 
@@ -35,7 +35,7 @@ func handleIC(c client, ic github.IssueCommentEvent) error {
 	number := ic.Issue.Number
 	commentAuthor := ic.Comment.User.Login
 	// Only take action when a comment is first created.
-	if ic.Action != "created" {
+	if ic.Action != github.IssueCommentActionCreated {
 		return nil
 	}
 	// If it's not an open PR, skip it.
@@ -46,7 +46,11 @@ func handleIC(c client, ic github.IssueCommentEvent) error {
 		return nil
 	}
 	// Skip bot comments.
-	if commentAuthor == c.GitHubClient.BotName() {
+	botName, err := c.GitHubClient.BotName()
+	if err != nil {
+		return err
+	}
+	if commentAuthor == botName {
 		return nil
 	}
 	var trustedOrg string
@@ -102,7 +106,7 @@ func handleIC(c client, ic github.IssueCommentEvent) error {
 			return err
 		}
 		if !trusted {
-			resp := fmt.Sprintf("you can't request testing unless you are a [%s](https://github.com/orgs/%s/people) member", trustedOrg, trustedOrg)
+			resp := fmt.Sprintf("you can't request testing unless you are a [%s](https://github.com/orgs/%s/people) member.", trustedOrg, trustedOrg)
 			c.Logger.Infof("Commenting \"%s\".", resp)
 			return c.GitHubClient.CreateComment(org, repo, number, plugins.FormatICResponse(ic.Comment, resp))
 		}
@@ -139,7 +143,7 @@ func handleIC(c client, ic github.IssueCommentEvent) error {
 				},
 			},
 		}
-		if _, err := c.KubeClient.CreateProwJob(plank.NewProwJob(plank.PresubmitSpec(job, kr))); err != nil {
+		if _, err := c.KubeClient.CreateProwJob(npj.NewProwJob(npj.PresubmitSpec(job, kr))); err != nil {
 			errors = append(errors, err)
 		}
 	}

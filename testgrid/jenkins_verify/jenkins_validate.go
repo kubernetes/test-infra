@@ -77,11 +77,15 @@ func main() {
 
 	// Also check prow postsubmit and periodic jobs
 	for _, job := range prowConfig.AllPostsubmits() {
-		jenkinsjobs[job] = false
+		if job.Agent != "jenkins" {
+			jenkinsjobs[job.Name] = false
+		}
 	}
 
 	for _, job := range prowConfig.AllPeriodics() {
-		jenkinsjobs[job] = false
+		if job.Agent != "jenkins" {
+			jenkinsjobs[job.Name] = false
+		}
 	}
 
 	// For now anything outsite k8s-jenkins/logs are considered to be fine

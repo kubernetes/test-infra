@@ -18,8 +18,17 @@ import webapp2
 
 import handlers
 
+class Warmup(webapp2.RequestHandler):
+    """Warms up gubernator."""
+    def get(self):
+        """Receives the warmup request."""
+        # TODO(fejta): warmup something useful
+        self.response.headers['Content-Type'] = 'text/plain'
+        self.response.write('Warmup successful')
+
 
 app = webapp2.WSGIApplication([
+    ('/_ah/warmup', Warmup),
     (r'/webhook', handlers.GithubHandler),
     (r'/events', handlers.Events),
     (r'/status', handlers.Status),

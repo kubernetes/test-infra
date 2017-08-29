@@ -38,15 +38,6 @@ ENV E2E_UP=true \
     E2E_TEST=true \
     E2E_DOWN=true
 
-# Customize these as appropriate
-ENV INSTANCE_PREFIX=jenkins-e2e \
-    KUBERNETES_PROVIDER=gce
-
-# Variables specific to GCP
-ENV FAIL_ON_GCP_RESOURCE_LEAK=true \
-    JOB_NAME=kubernetes-e2e-gce-conformance \
-    KUBE_GCE_INSTANCE_PREFIX=jenkins-e2e
-
 # Variable specific to the machine:
 # GOOGLE_APPLICATION_CREDENTIALS
 # JENKINS_GCE_SSH_PRIVATE_KEY_FILE

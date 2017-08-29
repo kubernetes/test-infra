@@ -167,7 +167,7 @@ func TestConfigSecurityJobsMatch(t *testing.T) {
 	kp := c.Presubmits["kubernetes/kubernetes"]
 	sp := c.Presubmits["kubernetes-security/kubernetes"]
 	if len(kp) != len(sp) {
-		t.Fatalf("length of kubernetes/kubernetes presumits %d does not equal length of kubernetes-security/kubernetes presubmits %d", len(kp), len(sp))
+		t.Fatalf("length of kubernetes/kubernetes presubmits %d does not equal length of kubernetes-security/kubernetes presubmits %d", len(kp), len(sp))
 	}
 	for i, j := range kp {
 		if err := Replace(&j, &sp[i]); err != nil {

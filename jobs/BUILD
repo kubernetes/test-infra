@@ -38,9 +38,9 @@ py_binary(
 filegroup(
     name = "jobs",
     srcs = glob([
-        "*.sh",
-        "*.env",
-        "*.json",
+        "**/*.sh",
+        "**/*.env",
+        "**/*.json",
     ]),
 )
 

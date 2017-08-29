@@ -90,7 +90,7 @@ func handlePlugin(gc githubClient, kc kubeClient, org, repo, commit string) erro
 
 func handle(gc githubClient, kc kubeClient, log *logrus.Entry, pre github.PullRequestEvent) error {
 	// Only consider newly merged PRs
-	if pre.Action != "closed" {
+	if pre.Action != github.PullRequestActionClosed {
 		return nil
 	}
 

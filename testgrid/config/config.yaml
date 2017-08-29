@@ -13,6 +13,7 @@
 default_test_group:
   days_of_results: 14 # Number of days of test results to gather and serve.
   tests_name_policy: 2 # replace the name of the test
+  ignore_pending: false # Show in-progress tests.
   column_header:
   - configuration_value: Commit # Shows the commit number on column header
   - configuration_value: infra-commit
@@ -41,6 +42,9 @@ default_dashboard_tab:
   num_columns_recent: 10
   code_search_url_template: # The URL template to visit when searching for changelists
     url: https://github.com/kubernetes/kubernetes/compare/<start-custom-0>...<end-custom-0>
+
+default_dashboard:
+  show_summary_first: true
 
 #
 # Start testgroups
@@ -140,12 +144,16 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-es-logging
 - name: ci-kubernetes-e2e-gce-large-correctness
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-large-correctness
+  days_of_results: 60
 - name: ci-kubernetes-e2e-gce-large-performance
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-large-performance
+  days_of_results: 60
 - name: ci-kubernetes-e2e-gce-scale-correctness
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-scale-correctness
+  days_of_results: 60
 - name: ci-kubernetes-e2e-gce-scale-performance
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-scale-performance
+  days_of_results: 60
 - name: ci-kubernetes-e2e-gci-gce-es-logging
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-es-logging
 - name: ci-kubernetes-e2e-gce-sd-logging
@@ -238,6 +246,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-serial
 - name: ci-kubernetes-e2e-gce-gci-serial-sig-cli
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-serial-sig-cli
+- name: ci-kubernetes-e2e-gke-gci-serial-sig-cli
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-serial-sig-cli
 - name: ci-kubernetes-e2e-gci-gce-serial-release-1-4
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-serial-release-1-4
 - name: ci-kubernetes-e2e-gci-gce-serial-release-1-5
@@ -334,8 +344,10 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-ingress-release-1-5
 - name: ci-kubernetes-e2e-gke-large-correctness
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-large-correctness
+  days_of_results: 60
 - name: ci-kubernetes-e2e-gke-large-performance
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-large-performance
+  days_of_results: 60
 - name: ci-kubernetes-e2e-gke-multizone
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-multizone
 - name: ci-kubernetes-e2e-gci-gke-multizone
@@ -344,6 +356,7 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-regional
 - name: ci-kubernetes-e2e-gke-scale-correctness
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-scale-correctness
+  days_of_results: 60
 - name: ci-kubernetes-e2e-gke-prod
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-prod
 - name: ci-kubernetes-e2e-gci-gke-prod
@@ -515,8 +528,8 @@ test_groups:
     - target_config: Tests name
     - target_config: Context
     name_format: '%s [%s]'
-- name: ci-kubernetes-e2e-gce-enormous-teardown
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-enormous-teardown
+- name: ci-kubernetes-e2e-gce-large-manual-down
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-large-manual-down
 - name: ci-kubernetes-e2e-gke-large-deploy
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-large-deploy
 - name: ci-kubernetes-cross-build
@@ -553,8 +566,10 @@ test_groups:
     name_format: '%s [%s]'
 - name: ci-kops-build
   gcs_prefix: kubernetes-jenkins/logs/ci-kops-build
-- name: ci-kubernetes-e2e-gce-enormous-deploy
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-enormous-deploy
+- name: ci-kubernetes-e2e-gce-large-manual-up
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-large-manual-up
+- name: maintenance-boskos-config-upload
+  gcs_prefix: kubernetes-jenkins/logs/maintenance-boskos-config-upload
 - name: maintenance-ci-testgrid-config-upload
   gcs_prefix: kubernetes-jenkins/logs/maintenance-ci-testgrid-config-upload
 - name: maintenance-daily
@@ -569,6 +584,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/maintenance-ci-aws-janitor
 - name: maintenance-ci-janitor
   gcs_prefix: kubernetes-jenkins/logs/maintenance-ci-janitor
+- name: maintenance-pull-janitor
+  gcs_prefix: kubernetes-jenkins/logs/maintenance-pull-janitor
 - name: ci-kubernetes-build-debian-unstable
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-build-debian-unstable
 - name: ci-kubernetes-e2e-gke-large-teardown
@@ -751,8 +768,6 @@ test_groups:
 - name: ci-tectonic-e2e-etcd-serial
   gcs_prefix: upstream-jenkins-logs/logs/ci-tectonic-e2e-etcd-serial
 # Ubuntu node e2e tests (contact: @kubernetes/ubuntu-image on github)
-- name: ci-kubernetes-e2e-gce-ubuntu-1-7-node-prow
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntu-1-7-node-prow
 - name: ci-kubernetes-e2e-gce-ubuntu-node
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntu-node
 - name: ci-kubernetes-e2e-gce-ubuntu-node-serial
@@ -765,98 +780,320 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntu-1-6-node
 - name: ci-kubernetes-e2e-gce-ubuntu-1-6-node-serial
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntu-1-6-node-serial
+- name: ci-kubernetes-e2enode-ubuntudev-k8sdev-gkespec
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-ubuntudev-k8sdev-gkespec
+- name: ci-kubernetes-e2enode-ubuntudev-k8sdev-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-ubuntudev-k8sdev-serial
+- name: ci-kubernetes-e2enode-ubuntudev-k8sstable1-gkespec
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-ubuntudev-k8sstable1-gkespec
+- name: ci-kubernetes-e2enode-ubuntudev-k8sstable1-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-ubuntudev-k8sstable1-serial
+- name: ci-kubernetes-e2enode-ubuntudev-k8sstable2-gkespec
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-ubuntudev-k8sstable2-gkespec
+- name: ci-kubernetes-e2enode-ubuntudev-k8sstable2-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-ubuntudev-k8sstable2-serial
+- name: ci-kubernetes-e2enode-ubuntustable1-k8sdev-gkespec
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-ubuntustable1-k8sdev-gkespec
+- name: ci-kubernetes-e2enode-ubuntustable1-k8sdev-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-ubuntustable1-k8sdev-serial
+- name: ci-kubernetes-e2enode-ubuntustable1-k8sstable1-gkespec
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-ubuntustable1-k8sstable1-gkespec
+- name: ci-kubernetes-e2enode-ubuntustable1-k8sstable1-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-ubuntustable1-k8sstable1-serial
+- name: ci-kubernetes-e2enode-ubuntustable1-k8sstable2-gkespec
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-ubuntustable1-k8sstable2-gkespec
+- name: ci-kubernetes-e2enode-ubuntustable1-k8sstable2-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-ubuntustable1-k8sstable2-serial
 # Ubuntu cluster e2e tests on GCE (contact: @kubernetes/ubuntu-image on github)
 - name: ci-kubernetes-e2e-gce-ubuntudev-k8sdev-default
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntudev-k8sdev-default
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gce-ubuntudev-k8sdev-serial
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntudev-k8sdev-serial
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gce-ubuntudev-k8sdev-slow
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntudev-k8sdev-slow
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gce-ubuntudev-k8sbeta-default
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntudev-k8sbeta-default
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gce-ubuntudev-k8sbeta-serial
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntudev-k8sbeta-serial
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gce-ubuntudev-k8sbeta-slow
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntudev-k8sbeta-slow
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gce-ubuntudev-k8sstable1-default
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntudev-k8sstable1-default
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gce-ubuntudev-k8sstable1-serial
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntudev-k8sstable1-serial
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gce-ubuntudev-k8sstable1-slow
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntudev-k8sstable1-slow
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gce-ubuntustable1-k8sdev-default
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntustable1-k8sdev-default
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gce-ubuntustable1-k8sdev-serial
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntustable1-k8sdev-serial
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gce-ubuntustable1-k8sdev-slow
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntustable1-k8sdev-slow
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gce-ubuntustable1-k8sstable1-default
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntustable1-k8sstable1-default
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gce-ubuntustable1-k8sstable1-serial
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntustable1-k8sstable1-serial
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gce-ubuntustable1-k8sstable1-slow
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntustable1-k8sstable1-slow
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gce-ubuntustable1-k8sstable2-default
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntustable1-k8sstable2-default
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gce-ubuntustable1-k8sstable2-serial
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntustable1-k8sstable2-serial
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gce-ubuntustable1-k8sstable2-slow
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntustable1-k8sstable2-slow
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 # Ubuntu cluster e2e tests on GKE (contact: @kubernetes/ubuntu-image on github)
 - name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-alphafeatures
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-alphafeatures
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-autoscaling
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-autoscaling
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-default
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-default
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-flaky
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-flaky
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-ingress
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-ingress
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-reboot
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-reboot
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-serial
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-serial
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-slow
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-slow
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-updown
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-updown
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-alphafeatures
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-alphafeatures
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-autoscaling
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-autoscaling
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-default
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-default
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-flaky
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-flaky
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-ingress
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-ingress
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-reboot
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-reboot
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-serial
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-serial
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-slow
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-slow
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-updown
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-updown
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-alphafeatures
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-alphafeatures
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-autoscaling
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-autoscaling
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-default
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-default
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-flaky
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-flaky
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-ingress
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-ingress
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-reboot
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-reboot
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-serial
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-serial
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-slow
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-slow
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-updown
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-updown
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 # Canonical Distribution of Kubernetes (contact: @chuckbutler on github)
 - name: canonical-kubernetes-e2e-gce
   gcs_prefix: canonical-kubernetes-tests/logs/kubernetes-gce-e2e-node
@@ -921,6 +1158,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-test-infra-triage
 - name: ci-kubernetes-e2e-prow-canary
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-prow-canary
+- name: ci-kubernetes-e2e-node-canary
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-node-canary
 - name: periodic-kubernetes-e2e-kubeadm-gce-1-6
   gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-e2e-kubeadm-gce-1-6
 - name: periodic-kubernetes-e2e-kubeadm-gce-1-7
@@ -933,6 +1172,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-bazel-build-1-6
 - name: periodic-kubernetes-bazel-build-1-7
   gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-bazel-build-1-7
+- name: periodic-test-infra-retester
+  gcs_prefix: kubernetes-jenkins/logs/periodic-test-infra-retester
 - name: metrics-bigquery
   gcs_prefix: kubernetes-jenkins/logs/metrics-bigquery
 # perf tests
@@ -1071,8 +1312,30 @@ test_groups:
 - name: ci-kubernetes-soak-gci-gce-1-7-test
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gci-gce-1-7-test
 # cos image validation.
-- name: ci-kubernetes-e2enode-cosstable1-k8sstable1-default-defaultspec
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cosstable1-k8sstable1-default-defaultspec
+- name: ci-kubernetes-e2enode-cosbeta-k8sdev-default
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cosbeta-k8sdev-default
+- name: ci-kubernetes-e2enode-cosbeta-k8sdev-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cosbeta-k8sdev-serial
+- name: ci-kubernetes-e2enode-cosstable1-k8sdev-default
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cosstable1-k8sdev-default
+- name: ci-kubernetes-e2enode-cosstable1-k8sdev-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cosstable1-k8sdev-serial
+- name: ci-kubernetes-e2enode-cosstable1-k8sbeta-default
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cosstable1-k8sbeta-default
+- name: ci-kubernetes-e2enode-cosstable1-k8sbeta-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cosstable1-k8sbeta-serial
+- name: ci-kubernetes-e2enode-cosstable1-k8sstable1-default
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cosstable1-k8sstable1-default
+- name: ci-kubernetes-e2enode-cosstable1-k8sstable1-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cosstable1-k8sstable1-serial
+- name: ci-kubernetes-e2enode-cosstable1-k8sstable2-default
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cosstable1-k8sstable2-default
+- name: ci-kubernetes-e2enode-cosstable1-k8sstable2-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cosstable1-k8sstable2-serial
+- name: ci-kubernetes-e2enode-cosstable1-k8sstable3-default
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cosstable1-k8sstable3-default
+- name: ci-kubernetes-e2enode-cosstable1-k8sstable3-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cosstable1-k8sstable3-serial
 - name: ci-kubernetes-e2e-gce-cosdev-k8sdev-default
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cosdev-k8sdev-default
   column_header:
@@ -1395,10 +1658,68 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster-new
 - name: ci-kubernetes-e2e-mlkube-gke
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-mlkube-gke
-
 #ibm ppc64le test results
 - name: ppc64le-conformance
   gcs_prefix: ppc64le-kubernetes/logs/ci-conformance-kubernetes
+#presubmits
+- name: pull-kubernetes-bazel-build
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-bazel-build
+  days_of_results: 1
+- name: pull-kubernetes-bazel-test
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-bazel-test
+  days_of_results: 1
+- name: pull-kubernetes-cross
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-cross
+  days_of_results: 1
+- name: pull-kubernetes-e2e-gce
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-gce
+  days_of_results: 1
+- name: pull-kubernetes-e2e-gce-bazel
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-gce-bazel
+  days_of_results: 1
+- name: pull-kubernetes-e2e-gce-canary
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-gce-canary
+  days_of_results: 1
+- name: pull-kubernetes-e2e-gce-etcd3
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-gce-etcd3
+  days_of_results: 1
+- name: pull-kubernetes-e2e-gce-gci
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-gce-gci
+  days_of_results: 1
+- name: pull-kubernetes-e2e-gce-gpu
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-gce-gpu
+  days_of_results: 1
+- name: pull-kubernetes-e2e-gke
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-gke
+  days_of_results: 1
+- name: pull-kubernetes-e2e-gke-gci
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-gke-gci
+  days_of_results: 1
+- name: pull-kubernetes-e2e-kops-aws
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-kops-aws
+  days_of_results: 1
+- name: pull-kubernetes-e2e-kubeadm-gce
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-kubeadm-gce
+  days_of_results: 1
+- name: pull-kubernetes-federation-e2e-gce
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-federation-e2e-gce
+  days_of_results: 1
+- name: pull-kubernetes-federation-e2e-gce-canary
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-federation-e2e-gce-canary
+  days_of_results: 1
+- name: pull-kubernetes-kubemark-e2e-gce
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-kubemark-e2e-gce
+  days_of_results: 1
+- name: pull-kubernetes-node-e2e
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-node-e2e
+  days_of_results: 1
+- name: pull-kubernetes-unit
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-unit
+  days_of_results: 1
+- name: pull-kubernetes-verify
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-verify
+  days_of_results: 1
+
 # Add New Testgroups Here
 
 #
@@ -1408,8 +1729,6 @@ test_groups:
 dashboards:
 - name: canonical-kubernetes
   dashboard_tab:
-  - name: gce-ubuntu-1.7-node-prow
-    test_group_name: ci-kubernetes-e2e-gce-ubuntu-1-7-node-prow
   - name: gce-ubuntu-node
     test_group_name: ci-kubernetes-e2e-gce-ubuntu-node
   - name: gce-ubuntu-node-serial
@@ -1422,6 +1741,30 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-ubuntu-1-6-node
   - name: gce-ubuntu-1.6-node-serial
     test_group_name: ci-kubernetes-e2e-gce-ubuntu-1-6-node-serial
+  - name: e2enode-ubuntudev-k8sdev-default(gkespec)
+    test_group_name: ci-kubernetes-e2enode-ubuntudev-k8sdev-gkespec
+  - name: e2enode-ubuntudev-k8sdev-serial
+    test_group_name: ci-kubernetes-e2enode-ubuntudev-k8sdev-serial
+  - name: e2enode-ubuntudev-k8sstable1-default(gkespec)
+    test_group_name: ci-kubernetes-e2enode-ubuntudev-k8sstable1-gkespec
+  - name: e2enode-ubuntudev-k8sstable1-serial
+    test_group_name: ci-kubernetes-e2enode-ubuntudev-k8sstable1-serial
+  - name: e2enode-ubuntudev-k8sstable2-default(gkespec)
+    test_group_name: ci-kubernetes-e2enode-ubuntudev-k8sstable2-gkespec
+  - name: e2enode-ubuntudev-k8sstable2-serial
+    test_group_name: ci-kubernetes-e2enode-ubuntudev-k8sstable2-serial
+  - name: e2enode-ubuntustable1-k8sdev-default(gkespec)
+    test_group_name: ci-kubernetes-e2enode-ubuntustable1-k8sdev-gkespec
+  - name: e2enode-ubuntustable1-k8sdev-serial
+    test_group_name: ci-kubernetes-e2enode-ubuntustable1-k8sdev-serial
+  - name: e2enode-ubuntustable1-k8sstable1-default(gkespec)
+    test_group_name: ci-kubernetes-e2enode-ubuntustable1-k8sstable1-gkespec
+  - name: e2enode-ubuntustable1-k8sstable1-serial
+    test_group_name: ci-kubernetes-e2enode-ubuntustable1-k8sstable1-serial
+  - name: e2enode-ubuntustable1-k8sstable2-default(gkespec)
+    test_group_name: ci-kubernetes-e2enode-ubuntustable1-k8sstable2-gkespec
+  - name: e2enode-ubuntustable1-k8sstable2-serial
+    test_group_name: ci-kubernetes-e2enode-ubuntustable1-k8sstable2-serial
   - name: gce-ubuntudev-k8sdev-default
     test_group_name: ci-kubernetes-e2e-gce-ubuntudev-k8sdev-default
   - name: gce-ubuntudev-k8sdev-serial
@@ -1653,10 +1996,10 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-scalability-release-1-6
   - name: gce-1.7
     test_group_name: ci-kubernetes-e2e-gce-scalability-release-1-7
-  - name: gce-enormous-deploy
-    test_group_name: ci-kubernetes-e2e-gce-enormous-deploy
-  - name: gce-enormous-teardown
-    test_group_name: ci-kubernetes-e2e-gce-enormous-teardown
+  - name: gce-large-manual-up
+    test_group_name: ci-kubernetes-e2e-gce-large-manual-up
+  - name: gce-large-manual-down
+    test_group_name: ci-kubernetes-e2e-gce-large-manual-down
   - name: gce-large-correctness
     test_group_name: ci-kubernetes-e2e-gce-large-correctness
   - name: gce-large-performance
@@ -2074,8 +2417,7 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-master-new-gci-kubectl-skew-serial
     description: '1.7 serial tests run against a 1.8 gke cluster using a 1.7 kubectl binary'
 
-
-- name: master-upgrade
+- name: master-upgrade-optional
   dashboard_tab:
   - name: gke-cvm-1.6-cvm-master-upgrade-master
     test_group_name: ci-kubernetes-e2e-gke-cvm-stable-cvm-master-upgrade-master
@@ -2089,15 +2431,6 @@ dashboards:
   - name: gke-gci-1.6-gci-master-upgrade-master
     test_group_name: ci-kubernetes-e2e-gke-gci-stable-gci-master-upgrade-master
     description: 'Upgrade master only, in gke, from gci 1.6 to gci master'
-  - name: gce-1.7-master-upgrade-master
-    test_group_name: ci-kubernetes-e2e-gce-new-master-upgrade-master
-    description: 'Upgrade master only, in gce(debian), from 1.7 to master'
-  - name: gce-1.7-master-upgrade-cluster
-    test_group_name: ci-kubernetes-e2e-gce-new-master-upgrade-cluster
-    description: 'Upgrade master and node, in gce(debian), from 1.7 to master'
-  - name: gce-1.7-master-upgrade-cluster-new
-    test_group_name: ci-kubernetes-e2e-gce-new-master-upgrade-cluster-new
-    description: 'Upgrade master and node, in gce(debian), from 1.7 to master, and run skewed e2e tests'
   - name: gke-cvm-1.7-cvm-master-upgrade-master
     test_group_name: ci-kubernetes-e2e-gke-cvm-new-cvm-master-upgrade-master
     description: 'Upgrade master only, in gke(container-vm), from 1.7 to master'
@@ -2125,6 +2458,18 @@ dashboards:
   - name: gke-gci-1.7-cvm-master-upgrade-cluster-new
     test_group_name: ci-kubernetes-e2e-gke-gci-new-cvm-master-upgrade-cluster-new
     description: 'Upgrade master and node, in gke, from gci 1.7 to container-vm master, and run skewed e2e tests'
+
+- name: master-upgrade
+  dashboard_tab:
+  - name: gce-1.7-master-upgrade-master
+    test_group_name: ci-kubernetes-e2e-gce-new-master-upgrade-master
+    description: 'Upgrade master only, in gce(debian), from 1.7 to master'
+  - name: gce-1.7-master-upgrade-cluster
+    test_group_name: ci-kubernetes-e2e-gce-new-master-upgrade-cluster
+    description: 'Upgrade master and node, in gce(debian), from 1.7 to master'
+  - name: gce-1.7-master-upgrade-cluster-new
+    test_group_name: ci-kubernetes-e2e-gce-new-master-upgrade-cluster-new
+    description: 'Upgrade master and node, in gce(debian), from 1.7 to master, and run skewed e2e tests'
   - name: gke-gci-1.7-gci-master-upgrade-master
     test_group_name: ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-master
     description: 'Upgrade master only, in gke(gci), from 1.7 to master'
@@ -2344,10 +2689,14 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-audit
   - name: gci-gce-audit
     test_group_name: ci-kubernetes-e2e-gci-gce-audit
-  - name: gce-scalability
+  - name: gce-100
     test_group_name: ci-kubernetes-e2e-gce-scalability
-  - name: gci-gce-scalability
+  - name: gci-gce-100
     test_group_name: ci-kubernetes-e2e-gci-gce-scalability
+  - name: gce-scale-correctness
+    test_group_name: ci-kubernetes-e2e-gce-scale-correctness
+  - name: gce-scale-performance
+    test_group_name: ci-kubernetes-e2e-gce-scale-performance
   - name: gci-gce-ingress
     test_group_name: ci-kubernetes-e2e-gci-gce-ingress
   - name: gci-gke-ingress
@@ -2648,6 +2997,11 @@ dashboards:
     test_group_name: ci-test-infra-bazel
     code_search_url_template:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+  - name: boskos-config-upload
+    description: Update boskos configmap on test-infra pushes
+    test_group_name: maintenance-boskos-config-upload
+    code_search_url_template:
+      url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
   - name: testgrid-config-upload
     description: Compiles and uploads testgrid config on test-infra pushes
     test_group_name: maintenance-ci-testgrid-config-upload
@@ -2706,6 +3060,16 @@ dashboards:
   - name: ci-janitor
     description: Deletes old GCP resources from periodic jobs
     test_group_name: maintenance-ci-janitor
+    code_search_url_template:
+      url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+  - name: pull-janitor
+    description: Deletes old GCP resources from presubmit jobs
+    test_group_name: maintenance-pull-janitor
+    code_search_url_template:
+      url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+  - name: retester
+    description: Automatically /retest for approved PRs that failed retesting
+    test_group_name: periodic-test-infra-retester
     code_search_url_template:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
 
@@ -2971,85 +3335,107 @@ dashboards:
 
 - name: cos-image-validation
   dashboard_tab:
-  - name: e2enode-cosstable1-k8sstable1-default-defaultspec
-    test_group_name: ci-kubernetes-e2enode-cosstable1-k8sstable1-default-defaultspec
-  - name: gce-cosdev-k8sdev-default
+  - name: e2enode-cosbeta-k8sdev-default
+    test_group_name: ci-kubernetes-e2enode-cosbeta-k8sdev-default
+  - name: e2enode-cosbeta-k8sdev-serial
+    test_group_name: ci-kubernetes-e2enode-cosbeta-k8sdev-serial
+  - name: e2enode-cosstable1-k8sdev-default
+    test_group_name: ci-kubernetes-e2enode-cosstable1-k8sdev-default
+  - name: e2enode-cosstable1-k8sdev-serial
+    test_group_name: ci-kubernetes-e2enode-cosstable1-k8sdev-serial
+  - name: e2enode-cosstable1-k8sbeta-default
+    test_group_name: ci-kubernetes-e2enode-cosstable1-k8sbeta-default
+  - name: e2enode-cosstable1-k8sbeta-serial
+    test_group_name: ci-kubernetes-e2enode-cosstable1-k8sbeta-serial
+  - name: e2enode-cosstable1-k8sstable1-default
+    test_group_name: ci-kubernetes-e2enode-cosstable1-k8sstable1-default
+  - name: e2enode-cosstable1-k8sstable1-serial
+    test_group_name: ci-kubernetes-e2enode-cosstable1-k8sstable1-serial
+  - name: e2enode-cosstable1-k8sstable2-default
+    test_group_name: ci-kubernetes-e2enode-cosstable1-k8sstable2-default
+  - name: e2enode-cosstable1-k8sstable2-serial
+    test_group_name: ci-kubernetes-e2enode-cosstable1-k8sstable2-serial
+  - name: e2enode-cosstable1-k8sstable3-default
+    test_group_name: ci-kubernetes-e2enode-cosstable1-k8sstable3-default
+  - name: e2enode-cosstable1-k8sstable3-serial
+    test_group_name: ci-kubernetes-e2enode-cosstable1-k8sstable3-serial
+  - name: e2e-gce-cosdev-k8sdev-default
     test_group_name: ci-kubernetes-e2e-gce-cosdev-k8sdev-default
-  - name: gce-cosdev-k8sdev-slow
+  - name: e2e-gce-cosdev-k8sdev-slow
     test_group_name: ci-kubernetes-e2e-gce-cosdev-k8sdev-slow
-  - name: gce-cosdev-k8sdev-serial
+  - name: e2e-gce-cosdev-k8sdev-serial
     test_group_name: ci-kubernetes-e2e-gce-cosdev-k8sdev-serial
-  - name: gce-cosdev-k8sbeta-default
+  - name: e2e-gce-cosdev-k8sbeta-default
     test_group_name: ci-kubernetes-e2e-gce-cosdev-k8sbeta-default
-  - name: gce-cosdev-k8sbeta-slow
+  - name: e2e-gce-cosdev-k8sbeta-slow
     test_group_name: ci-kubernetes-e2e-gce-cosdev-k8sbeta-slow
-  - name: gce-cosdev-k8sbeta-serial
+  - name: e2e-gce-cosdev-k8sbeta-serial
     test_group_name: ci-kubernetes-e2e-gce-cosdev-k8sbeta-serial
-  - name: gce-cosdev-k8sstable1-default
+  - name: e2e-gce-cosdev-k8sstable1-default
     test_group_name: ci-kubernetes-e2e-gce-cosdev-k8sstable1-default
-  - name: gce-cosdev-k8sstable1-slow
+  - name: e2e-gce-cosdev-k8sstable1-slow
     test_group_name: ci-kubernetes-e2e-gce-cosdev-k8sstable1-slow
-  - name: gce-cosdev-k8sstable1-serial
+  - name: e2e-gce-cosdev-k8sstable1-serial
     test_group_name: ci-kubernetes-e2e-gce-cosdev-k8sstable1-serial
-  - name: gce-cosbeta-k8sdev-default
+  - name: e2e-gce-cosbeta-k8sdev-default
     test_group_name: ci-kubernetes-e2e-gce-cosbeta-k8sdev-default
-  - name: gce-cosbeta-k8sdev-serial
+  - name: e2e-gce-cosbeta-k8sdev-serial
     test_group_name: ci-kubernetes-e2e-gce-cosbeta-k8sdev-serial
-  - name: gce-cosbeta-k8sdev-slow
+  - name: e2e-gce-cosbeta-k8sdev-slow
     test_group_name: ci-kubernetes-e2e-gce-cosbeta-k8sdev-slow
-  - name: gce-cosbeta-k8sbeta-default
+  - name: e2e-gce-cosbeta-k8sbeta-default
     test_group_name: ci-kubernetes-e2e-gce-cosbeta-k8sbeta-default
-  - name: gce-cosbeta-k8sbeta-serial
+  - name: e2e-gce-cosbeta-k8sbeta-serial
     test_group_name: ci-kubernetes-e2e-gce-cosbeta-k8sbeta-serial
-  - name: gce-cosbeta-k8sbeta-slow
+  - name: e2e-gce-cosbeta-k8sbeta-slow
     test_group_name: ci-kubernetes-e2e-gce-cosbeta-k8sbeta-slow
-  - name: gce-cosbeta-k8sstable1-default
+  - name: e2e-gce-cosbeta-k8sstable1-default
     test_group_name: ci-kubernetes-e2e-gce-cosbeta-k8sstable1-default
-  - name: gce-cosbeta-k8sstable1-serial
+  - name: e2e-gce-cosbeta-k8sstable1-serial
     test_group_name: ci-kubernetes-e2e-gce-cosbeta-k8sstable1-serial
-  - name: gce-cosbeta-k8sstable1-slow
+  - name: e2e-gce-cosbeta-k8sstable1-slow
     test_group_name: ci-kubernetes-e2e-gce-cosbeta-k8sstable1-slow
-  - name: gce-cosbeta-k8sstable2-default
+  - name: e2e-gce-cosbeta-k8sstable2-default
     test_group_name: ci-kubernetes-e2e-gce-cosbeta-k8sstable2-default
-  - name: gce-cosbeta-k8sstable2-serial
+  - name: e2e-gce-cosbeta-k8sstable2-serial
     test_group_name: ci-kubernetes-e2e-gce-cosbeta-k8sstable2-serial
-  - name: gce-cosbeta-k8sstable2-slow
+  - name: e2e-gce-cosbeta-k8sstable2-slow
     test_group_name: ci-kubernetes-e2e-gce-cosbeta-k8sstable2-slow
-  - name: gce-cosbeta-k8sstable3-default
+  - name: e2e-gce-cosbeta-k8sstable3-default
     test_group_name: ci-kubernetes-e2e-gce-cosbeta-k8sstable3-default
-  - name: gce-cosbeta-k8sstable3-serial
+  - name: e2e-gce-cosbeta-k8sstable3-serial
     test_group_name: ci-kubernetes-e2e-gce-cosbeta-k8sstable3-serial
-  - name: gce-cosbeta-k8sstable3-slow
+  - name: e2e-gce-cosbeta-k8sstable3-slow
     test_group_name: ci-kubernetes-e2e-gce-cosbeta-k8sstable3-slow
-  - name: gce-cosstable1-k8sdev-default
+  - name: e2e-gce-cosstable1-k8sdev-default
     test_group_name: ci-kubernetes-e2e-gce-cosstable1-k8sdev-default
-  - name: gce-cosstable1-k8sdev-slow
+  - name: e2e-gce-cosstable1-k8sdev-slow
     test_group_name: ci-kubernetes-e2e-gce-cosstable1-k8sdev-slow
-  - name: gce-cosstable1-k8sdev-serial
+  - name: e2e-gce-cosstable1-k8sdev-serial
     test_group_name: ci-kubernetes-e2e-gce-cosstable1-k8sdev-serial
-  - name: gce-cosstable1-k8sbeta-default
+  - name: e2e-gce-cosstable1-k8sbeta-default
     test_group_name: ci-kubernetes-e2e-gce-cosstable1-k8sbeta-default
-  - name: gce-cosstable1-k8sbeta-slow
+  - name: e2e-gce-cosstable1-k8sbeta-slow
     test_group_name: ci-kubernetes-e2e-gce-cosstable1-k8sbeta-slow
-  - name: gce-cosstable1-k8sbeta-serial
+  - name: e2e-gce-cosstable1-k8sbeta-serial
     test_group_name: ci-kubernetes-e2e-gce-cosstable1-k8sbeta-serial
-  - name: gce-cosstable1-k8sstable1-default
+  - name: e2e-gce-cosstable1-k8sstable1-default
     test_group_name: ci-kubernetes-e2e-gce-cosstable1-k8sstable1-default
-  - name: gce-cosstable1-k8sstable1-slow
+  - name: e2e-gce-cosstable1-k8sstable1-slow
     test_group_name: ci-kubernetes-e2e-gce-cosstable1-k8sstable1-slow
-  - name: gce-cosstable1-k8sstable1-serial
+  - name: e2e-gce-cosstable1-k8sstable1-serial
     test_group_name: ci-kubernetes-e2e-gce-cosstable1-k8sstable1-serial
-  - name: gce-cosstable1-k8sstable2-default
+  - name: e2e-gce-cosstable1-k8sstable2-default
     test_group_name: ci-kubernetes-e2e-gce-cosstable1-k8sstable2-default
-  - name: gce-cosstable1-k8sstable2-slow
+  - name: e2e-gce-cosstable1-k8sstable2-slow
     test_group_name: ci-kubernetes-e2e-gce-cosstable1-k8sstable2-slow
-  - name: gce-cosstable1-k8sstable2-serial
+  - name: e2e-gce-cosstable1-k8sstable2-serial
     test_group_name: ci-kubernetes-e2e-gce-cosstable1-k8sstable2-serial
-  - name: gce-cosstable1-k8sstable3-default
+  - name: e2e-gce-cosstable1-k8sstable3-default
     test_group_name: ci-kubernetes-e2e-gce-cosstable1-k8sstable3-default
-  - name: gce-cosstable1-k8sstable3-slow
+  - name: e2e-gce-cosstable1-k8sstable3-slow
     test_group_name: ci-kubernetes-e2e-gce-cosstable1-k8sstable3-slow
-  - name: gce-cosstable1-k8sstable3-serial
+  - name: e2e-gce-cosstable1-k8sstable3-serial
     test_group_name: ci-kubernetes-e2e-gce-cosstable1-k8sstable3-serial
 
 - name: wg-resource-management
@@ -3199,28 +3585,11 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gci-gke
     base_options: 'include-filter-by-regex=Kubectl%7Ckubectl'
     description: 'kubectl gke e2e tests for master branch'
-  - name: gce-flaky
-    test_group_name: ci-kubernetes-e2e-gci-gce-flaky
-    base_options: 'include-filter-by-regex=Kubectl%7Ckubectl'
-    description: 'kubectl gce flaky e2e tests for master branch'
-  - name: gke-flaky
-    test_group_name: ci-kubernetes-e2e-gci-gke-flaky
-    base_options: 'include-filter-by-regex=Kubectl%7Ckubectl'
-    description: 'kubectl gke flaky e2e tests for master branch'
-  - name: gce-slow
-    test_group_name: ci-kubernetes-e2e-gci-gce-slow
-    base_options: 'include-filter-by-regex=Kubectl%7Ckubectl'
-    description: 'kubectl gce slow e2e tests for master branch'
-  - name: gke-slow
-    test_group_name: ci-kubernetes-e2e-gci-gke-slow
-    base_options: 'include-filter-by-regex=Kubectl%7Ckubectl'
-    description: 'kubectl gke slow e2e tests for master branch'
   - name: gce-serial
     test_group_name: ci-kubernetes-e2e-gce-gci-serial-sig-cli
     description: 'kubectl gce serial e2e tests for master branch'
   - name: gke-serial
-    test_group_name: ci-kubernetes-e2e-gci-gke-serial
-    base_options: 'include-filter-by-regex=Kubectl%7Ckubectl'
+    test_group_name: ci-kubernetes-e2e-gke-gci-serial-sig-cli
     description: 'kubectl gke serial e2e tests for master branch'
   - name: gce-etcd3
     test_group_name: ci-kubernetes-e2e-gci-gce-etcd3
@@ -3287,6 +3656,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-federation-serial
   - name: gce-1.6
     test_group_name: ci-kubernetes-e2e-gce-federation-release-1-6
+  - name: gce-1.7
+    test_group_name: ci-kubernetes-e2e-gce-federation-release-1-7
   - name: soak-gce-deploy
     test_group_name: ci-kubernetes-soak-gce-federation-deploy
   - name: soak-gce-test
@@ -3641,6 +4012,10 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-prow-canary
     code_search_url_template:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+  - name: node-canary
+    test_group_name: ci-kubernetes-e2e-node-canary
+    code_search_url_template:
+      url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
   - name: kubemark-canary
     test_group_name: ci-kubernetes-kubemark-100-canary
     code_search_url_template:
@@ -3649,6 +4024,66 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-scalability-canary
     code_search_url_template:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+
+- name: kubernetes-presubmits
+  dashboard_tab:
+  - name: pull-kubernetes-bazel-build
+    test_group_name: pull-kubernetes-bazel-build
+    base_options: 'width=10'
+  - name: pull-kubernetes-bazel-test
+    test_group_name: pull-kubernetes-bazel-test
+    base_options: 'width=10'
+  - name: pull-kubernetes-cross
+    test_group_name: pull-kubernetes-cross
+    base_options: 'width=10'
+  - name: pull-kubernetes-e2e-gce
+    test_group_name: pull-kubernetes-e2e-gce
+    base_options: 'width=10'
+  - name: pull-kubernetes-e2e-gce-bazel
+    test_group_name: pull-kubernetes-e2e-gce-bazel
+    base_options: 'width=10'
+  - name: pull-kubernetes-e2e-gce-canary
+    test_group_name: pull-kubernetes-e2e-gce-canary
+    base_options: 'width=10'
+  - name: pull-kubernetes-e2e-gce-etcd3
+    test_group_name: pull-kubernetes-e2e-gce-etcd3
+    base_options: 'width=10'
+  - name: pull-kubernetes-e2e-gce-gci
+    test_group_name: pull-kubernetes-e2e-gce-gci
+    base_options: 'width=10'
+  - name: pull-kubernetes-e2e-gce-gpu
+    test_group_name: pull-kubernetes-e2e-gce-gpu
+    base_options: 'width=10'
+  - name: pull-kubernetes-e2e-gke
+    test_group_name: pull-kubernetes-e2e-gke
+    base_options: 'width=10'
+  - name: pull-kubernetes-e2e-gke-gci
+    test_group_name: pull-kubernetes-e2e-gke-gci
+    base_options: 'width=10'
+  - name: pull-kubernetes-e2e-kops-aws
+    test_group_name: pull-kubernetes-e2e-kops-aws
+    base_options: 'width=10'
+  - name: pull-kubernetes-e2e-kubeadm-gce
+    test_group_name: pull-kubernetes-e2e-kubeadm-gce
+    base_options: 'width=10'
+  - name: pull-kubernetes-federation-e2e-gce
+    test_group_name: pull-kubernetes-federation-e2e-gce
+    base_options: 'width=10'
+  - name: pull-kubernetes-federation-e2e-gce-canary
+    test_group_name: pull-kubernetes-federation-e2e-gce-canary
+    base_options: 'width=10'
+  - name: pull-kubernetes-kubemark-e2e-gce
+    test_group_name: pull-kubernetes-kubemark-e2e-gce
+    base_options: 'width=10'
+  - name: pull-kubernetes-node-e2e
+    test_group_name: pull-kubernetes-node-e2e
+    base_options: 'width=10'
+  - name: pull-kubernetes-unit
+    test_group_name: pull-kubernetes-unit
+    base_options: 'width=10'
+  - name: pull-kubernetes-verify
+    test_group_name: pull-kubernetes-verify
+    base_options: 'width=10'
 #
 # Start dashboard groups
 #
@@ -3679,6 +4114,7 @@ dashboard_groups:
   - release-master-blocking
   - master-kubectl-skew
   - master-upgrade
+  - master-upgrade-optional
 
 - name: release-branch-health
   dashboard_names:

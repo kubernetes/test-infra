@@ -1,7 +1,5 @@
 package(default_visibility = ["//visibility:public"])
 
-licenses(["notice"])
-
 load(
     "@io_bazel_rules_go//go:def.bzl",
     "go_binary",
@@ -24,7 +22,6 @@ genrule(
 go_binary(
     name = "config",
     library = ":go_default_library",
-    tags = ["automanaged"],
 )
 
 go_test(
@@ -35,17 +32,15 @@ go_test(
         "//mungegithub:submit-queue/deployment/kubernetes/configmap.yaml",
     ],
     library = ":go_default_library",
-    tags = ["automanaged"],
     deps = [
         "//testgrid/config/yaml2proto:go_default_library",
-        "//vendor:gopkg.in/yaml.v2",
+        "//vendor/gopkg.in/yaml.v2:go_default_library",
     ],
 )
 
 go_library(
     name = "go_default_library",
     srcs = ["main.go"],
-    tags = ["automanaged"],
     deps = ["//testgrid/config/yaml2proto:go_default_library"],
 )
 

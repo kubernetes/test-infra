@@ -48,7 +48,7 @@ func handleIssueComment(pc plugins.PluginClient, ic github.IssueCommentEvent) er
 
 func handle(gc githubClient, log *logrus.Entry, ic github.IssueCommentEvent) error {
 	// Only consider open issues and new comments.
-	if ic.Issue.State != "open" || ic.Action != "created" {
+	if ic.Issue.State != "open" || ic.Action != github.IssueCommentActionCreated {
 		return nil
 	}
 
@@ -74,7 +74,7 @@ func handle(gc githubClient, log *logrus.Entry, ic github.IssueCommentEvent) err
 			} else {
 				log.WithError(err).Errorf("Failed AssignIssue(%s, %s, %d, %s)", org, repo, number, commentAuthor)
 			}
-			resp := fmt.Sprintf("you can't close an issue unless you authored it or you are assigned to it, %s", msg)
+			resp := fmt.Sprintf("you can't close an issue unless you authored it or you are assigned to it, %s.", msg)
 			log.Infof("Commenting \"%s\".", resp)
 			return gc.CreateComment(org, repo, number, plugins.FormatICResponse(ic.Comment, resp))
 		}

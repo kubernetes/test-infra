@@ -1,7 +1,5 @@
 package(default_visibility = ["//visibility:public"])
 
-licenses(["notice"])
-
 load(
     "@io_bazel_rules_go//go:def.bzl",
     "go_binary",
@@ -12,7 +10,6 @@ load(
 go_binary(
     name = "transform",
     library = ":go_default_library",
-    tags = ["automanaged"],
 )
 
 go_test(
@@ -22,7 +19,6 @@ go_test(
         "influx_test.go",
     ],
     library = ":go_default_library",
-    tags = ["automanaged"],
     deps = [
         "//velodrome/sql:go_default_library",
         "//velodrome/sql/testing:go_default_library",
@@ -36,15 +32,14 @@ go_library(
         "influx.go",
         "transform.go",
     ],
-    tags = ["automanaged"],
     deps = [
         "//velodrome/sql:go_default_library",
         "//velodrome/transform/plugins:go_default_library",
-        "//vendor:github.com/golang/glog",
-        "//vendor:github.com/influxdata/influxdb/client/v2",
-        "//vendor:github.com/jinzhu/gorm",
-        "//vendor:github.com/jinzhu/gorm/dialects/mysql",
-        "//vendor:github.com/spf13/cobra",
+        "//vendor/github.com/golang/glog:go_default_library",
+        "//vendor/github.com/influxdata/influxdb/client/v2:go_default_library",
+        "//vendor/github.com/jinzhu/gorm:go_default_library",
+        "//vendor/github.com/jinzhu/gorm/dialects/mysql:go_default_library",
+        "//vendor/github.com/spf13/cobra:go_default_library",
     ],
 )
 

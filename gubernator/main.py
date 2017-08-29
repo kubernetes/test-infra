@@ -76,8 +76,16 @@ config = {
     'github_client': get_github_client(),
 }
 
+class Warmup(webapp2.RequestHandler):
+    """Warms up gubernator."""
+    def get(self):
+        """Receives the warmup request."""
+        # TODO(fejta): warmup something useful
+        self.response.headers['Content-Type'] = 'text/plain'
+        self.response.write('Warmup successful')
 
 app = webapp2.WSGIApplication([
+    ('/_ah/warmup', Warmup),
     (r'/', view_base.IndexHandler),
     (r'/jobs/(.*)$', view_build.JobListHandler),
     (r'/builds/(.*)/([^/]+)/?', view_build.BuildListHandler),

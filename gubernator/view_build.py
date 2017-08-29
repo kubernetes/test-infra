@@ -28,33 +28,61 @@ import testgrid
 import view_base
 
 
-def parse_junit(xml, filename):
-    """Generate failed tests as a series of (name, duration, text, filename) tuples."""
-    try:
-        tree = ET.fromstring(xml)
-    except ET.ParseError, e:
-        logging.exception('parse_junit failed for %s', filename)
-        try:
-            tree = ET.fromstring(re.sub(r'[\x00\x80-\xFF]+', '?', xml))
-        except ET.ParseError, e:
-            yield 'Gubernator Internal Fatal XML Parse Error', 0.0, str(e), filename
-            return
-    if tree.tag == 'testsuite':
-        for child in tree:
-            name = child.attrib['name']
+class JUnitParser(object):
+    def __init__(self):
+        self.skipped = []
+        self.passed = []
+        self.failed = []
+
+    def handle_test(self, child, filename, name_prefix=''):
+        name = name_prefix + child.attrib['name']
+        if child.find('skipped') is not None:
+            self.skipped.append(name)
+        elif child.find('failure') is not None:
             time = float(child.attrib['time'])
+            out = []
+            for param in child.findall('system-out'):
+                out.append(param.text)
+            for param in child.findall('system-err'):
+                out.append(param.text)
             for param in child.findall('failure'):
-                yield name, time, param.text, filename
-    elif tree.tag == 'testsuites':
-        for testsuite in tree:
-            suite_name = testsuite.attrib['name']
-            for child in testsuite.findall('testcase'):
-                name = '%s %s' % (suite_name, child.attrib['name'])
-                time = float(child.attrib['time'])
-                for param in child.findall('failure'):
-                    yield name, time, param.text, filename
-    else:
-        logging.error('unable to find failures, unexpected tag %s', tree.tag)
+                self.failed.append((name, time, param.text, filename, '\n'.join(out)))
+        else:
+            self.passed.append(name)
+
+    def parse_xml(self, xml, filename):
+        if not xml:
+            return  # can't extract results from nothing!
+        try:
+            tree = ET.fromstring(xml)
+        except ET.ParseError, e:
+            logging.exception('parse_junit failed for %s', filename)
+            try:
+                tree = ET.fromstring(re.sub(r'[\x00\x80-\xFF]+', '?', xml))
+            except ET.ParseError, e:
+                self.failed.append(
+                    ('Gubernator Internal Fatal XML Parse Error', 0.0, str(e), filename, ''))
+                return
+        if tree.tag == 'testsuite':
+            for child in tree:
+                self.handle_test(child, filename)
+        elif tree.tag == 'testsuites':
+            for testsuite in tree:
+                name_prefix = testsuite.attrib['name'] + ' '
+                for child in testsuite.findall('testcase'):
+                    self.handle_test(child, filename, name_prefix)
+        else:
+            logging.error('unable to find failures, unexpected tag %s', tree.tag)
+
+    def get_results(self):
+        self.failed.sort()
+        self.skipped.sort()
+        self.passed.sort()
+        return {
+            'failed': self.failed,
+            'skipped': self.skipped,
+            'passed': self.passed,
+        }
 
 
 @view_base.memcache_memoize('build-log-parsed://', expires=60*60*4)
@@ -64,9 +92,11 @@ def get_build_log(build_dir):
         return log_parser.digest(build_log)
 
 
-def get_running_build_log(job, build):
+def get_running_build_log(job, build, repo):
+    org = repo and repo.split('/')[0]
     try:
-        url = "https://prow.k8s.io/log?job=%s&id=%s" % (job, build)
+        prow_instance = view_base.PROW_INSTANCES.get(org, view_base.PROW_INSTANCES['DEFAULT'])
+        url = "https://%s/log?job=%s&id=%s" % (prow_instance, job, build)
         result = urlfetch.fetch(url)
         if result.status_code == 200:
             return log_parser.digest(result.content), url
@@ -85,8 +115,10 @@ def build_details(build_dir):
     Returns:
         started: value from started.json {'version': ..., 'timestamp': ...}
         finished: value from finished.json {'timestamp': ..., 'result': ...}
-        failures: list of (name, duration, text) tuples
-        build_log: a highlighted portion of errors in the build log. May be None.
+        results: {total: int,
+                  failed: [(name, duration, text)...],
+                  skipped: [name...],
+                  passed: [name...]}
     """
     started_fut = gcs_async.read(build_dir + '/started.json')
     finished = gcs_async.read(build_dir + '/finished.json').get_result()
@@ -100,38 +132,47 @@ def build_details(build_dir):
     started = json.loads(started)
     finished = json.loads(finished)
 
-    failures = []
     junit_paths = [f.filename for f in view_base.gcs_ls('%s/artifacts' % build_dir)
                    if re.match(r'junit_.*\.xml', os.path.basename(f.filename))]
 
-    junit_futures = {}
-    for f in junit_paths:
-        junit_futures[gcs_async.read(f)] = f
+    junit_futures = {f: gcs_async.read(f) for f in junit_paths}
 
-    for future in junit_futures:
-        junit = future.get_result()
-        if not junit:
-            continue
-        failures.extend(parse_junit(junit, junit_futures[future]))
-    failures.sort()
-
-    return started, finished, failures
+    parser = JUnitParser()
+    for path, future in junit_futures.iteritems():
+        parser.parse_xml(future.get_result(), path)
+    return started, finished, parser.get_results()
 
 
 def parse_pr_path(prefix):
-    if not prefix.startswith(view_base.PR_PREFIX):
-        return None, None, None
-    pr = os.path.basename(prefix)
-    repo = os.path.basename(os.path.dirname(prefix))
-    if repo == 'pull':
-        return pr, '', 'kubernetes/kubernetes'
-    return pr, repo + '/', 'kubernetes/' + repo
+    for org, path in view_base.PR_PREFIX.items():
+        if not prefix.startswith(path):
+            continue
+        pr = os.path.basename(prefix)
+        repo = os.path.basename(os.path.dirname(prefix))
+        if '_' in repo and not repo.startswith(org):
+            continue
+        if org == 'kubernetes' and repo == 'pull':
+            return pr, '', 'kubernetes/kubernetes'
+        pr_path = repo.replace('_', '/')
+        if '_' not in repo:
+            repo = '%s/%s' % (org, repo)
+        else:
+            repo = pr_path
+        return pr, pr_path + '/', repo
+    return None, None, None
 
 
 class BuildHandler(view_base.BaseHandler):
     """Show information about a Build and its failing tests."""
     def get(self, prefix, job, build):
         # pylint: disable=too-many-locals
+        if prefix.endswith('/directory'):
+            # redirect directory requests
+            link = gcs_async.read('/%s/%s/%s.txt' % (prefix, job, build)).get_result()
+            if link and link.startswith('gs://'):
+                self.redirect('/build/' + link.replace('gs://', ''))
+                return
+
         job_dir = '/%s/%s/' % (prefix, job)
         testgrid_query = testgrid.path_to_query(job_dir)
         build_dir = job_dir + build
@@ -143,15 +184,20 @@ class BuildHandler(view_base.BaseHandler):
                 dict(build_dir=build_dir, job_dir=job_dir, job=job, build=build))
             self.response.set_status(404)
             return
-        started, finished, failures = details
+        started, finished, results = details
+
+        pr, pr_path, repo = parse_pr_path(prefix)
+        pr_digest = None
+        if pr:
+            pr_digest = models.GHIssueDigest.get(repo, pr)
 
         build_log = ''
         build_log_src = None
         if 'log' in self.request.params or (not finished) or \
-            (finished and finished.get('result') != 'SUCCESS' and len(failures) == 0):
+            (finished and finished.get('result') != 'SUCCESS' and len(results['failed']) <= 1):
             build_log = get_build_log(build_dir)
             if not build_log:
-                build_log, build_log_src = get_running_build_log(job, build)
+                build_log, build_log_src = get_running_build_log(job, build, repo)
 
         # 'version' might be in either started or finished.
         # prefer finished.
@@ -163,16 +209,21 @@ class BuildHandler(view_base.BaseHandler):
 
         issues = list(models.GHIssueDigest.find_xrefs(build_dir))
 
-        pr, pr_path, repo = parse_pr_path(prefix)
-        pr_digest = None
-        if pr:
-            pr_digest = models.GHIssueDigest.get(repo, pr)
+        refs = []
+        if started and 'pull' in started:
+            for ref in started['pull'].split(','):
+                x = ref.split(':', 1)
+                if len(x) == 2:
+                    refs.append((x[0], x[1]))
+                else:
+                    refs.append((x[1], ''))
 
         self.render('build.html', dict(
             job_dir=job_dir, build_dir=build_dir, job=job, build=build,
             commit=commit, started=started, finished=finished,
-            failures=failures, build_log=build_log, build_log_src=build_log_src,
-            issues=issues,
+            res=results, refs=refs,
+            build_log=build_log, build_log_src=build_log_src,
+            issues=issues, repo=repo,
             pr_path=pr_path, pr=pr, pr_digest=pr_digest,
             testgrid_query=testgrid_query))
 

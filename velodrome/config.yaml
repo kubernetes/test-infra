@@ -84,7 +84,7 @@ projects:
       kubernetes/contrib: *kubernetes-transform
       kubernetes/heapster: *kubernetes-transform
       kubernetes/ingress: *kubernetes-transform
-      kubernetes/kube-dns: *kubernetes-transform
+      kubernetes/dns: *kubernetes-transform
       kubernetes/test-infra: *kubernetes-transform
     nginx:
       public-ip: "104.197.200.129"
@@ -100,6 +100,11 @@ projects:
             static_configs:
               - targets:
                   - submit-queue.k8s.io
+          - job_name: kubernetes-boskos
+            metrics_path: /prometheus
+            static_configs:
+              - targets:
+                  - 104.197.27.114
   istio:
     repositories:
       istio/api: &transform-istio

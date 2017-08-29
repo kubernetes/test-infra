@@ -30,7 +30,7 @@ const orgMember = "m"
 func TestReleaseNoteComment(t *testing.T) {
 	var testcases = []struct {
 		name          string
-		action        string
+		action        github.IssueCommentEventAction
 		body          string
 		isMember      bool
 		isAuthor      bool
@@ -42,13 +42,13 @@ func TestReleaseNoteComment(t *testing.T) {
 	}{
 		{
 			name:          "unrelated comment",
-			action:        "created",
+			action:        github.IssueCommentActionCreated,
 			body:          "oh dear",
 			currentLabels: []string{releaseNoteLabelNeeded, "other"},
 		},
 		{
 			name:          "author release-note-none",
-			action:        "created",
+			action:        github.IssueCommentActionCreated,
 			isAuthor:      true,
 			body:          "/release-note-none",
 			currentLabels: []string{releaseNoteLabelNeeded, "other"},
@@ -58,7 +58,7 @@ func TestReleaseNoteComment(t *testing.T) {
 		},
 		{
 			name:          "author release-note-none, trailing space.",
-			action:        "created",
+			action:        github.IssueCommentActionCreated,
 			isAuthor:      true,
 			body:          "/release-note-none ",
 			currentLabels: []string{releaseNoteLabelNeeded, "other"},
@@ -68,7 +68,7 @@ func TestReleaseNoteComment(t *testing.T) {
 		},
 		{
 			name:          "member release-note",
-			action:        "created",
+			action:        github.IssueCommentActionCreated,
 			isMember:      true,
 			body:          "/release-note",
 			currentLabels: []string{releaseNoteLabelNeeded, "other"},
@@ -78,7 +78,7 @@ func TestReleaseNoteComment(t *testing.T) {
 		},
 		{
 			name:          "member release-note, trailing space.",
-			action:        "created",
+			action:        github.IssueCommentActionCreated,
 			isMember:      true,
 			body:          "/release-note \r",
 			currentLabels: []string{releaseNoteLabelNeeded, "other"},
@@ -88,21 +88,21 @@ func TestReleaseNoteComment(t *testing.T) {
 		},
 		{
 			name:          "someone else release-note",
-			action:        "created",
+			action:        github.IssueCommentActionCreated,
 			body:          "/release-note",
 			currentLabels: []string{releaseNoteLabelNeeded, "other"},
 			shouldComment: true,
 		},
 		{
 			name:          "already has release-note",
-			action:        "created",
+			action:        github.IssueCommentActionCreated,
 			body:          "/release-note",
 			isMember:      true,
 			currentLabels: []string{releaseNote, "other"},
 		},
 		{
 			name:          "delete multiple labels",
-			action:        "created",
+			action:        github.IssueCommentActionCreated,
 			isMember:      true,
 			body:          "/release-note",
 			currentLabels: []string{releaseNote, releaseNoteLabelNeeded, releaseNoteNone, "other"},
@@ -111,7 +111,7 @@ func TestReleaseNoteComment(t *testing.T) {
 		},
 		{
 			name:     "no label present",
-			action:   "created",
+			action:   github.IssueCommentActionCreated,
 			isMember: true,
 			body:     "/release-note-none",
 

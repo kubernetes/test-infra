@@ -1,6 +1,6 @@
 # Kubernetes Test Infrastructure
 
-[![Build Status](https://travis-ci.org/kubernetes/test-infra.svg?branch=master)](https://travis-ci.org/kubernetes/test-infra)  [![Go Report Card](https://goreportcard.com/badge/github.com/kubernetes/test-infra)](https://goreportcard.com/report/github.com/kubernetes/test-infra)
+[![Build Status](https://travis-ci.org/kubernetes/test-infra.svg?branch=master)](https://travis-ci.org/kubernetes/test-infra)  [![Go Report Card](https://goreportcard.com/badge/github.com/kubernetes/test-infra)](https://goreportcard.com/report/github.com/kubernetes/test-infra)  [![GoDoc](https://godoc.org/github.com/kubernetes/test-infra?status.svg)](https://godoc.org/github.com/kubernetes/test-infra)
 
 The test-infra repository contains a collection of tools for testing Kubernetes
 and displaying Kubernetes tests results. See also [CONTRIBUTING.md](CONTRIBUTING.md).
@@ -21,7 +21,7 @@ the different services interact.
 * [Triage Dashboard](https://go.k8s.io/triage) aggregates failures
   - Triage clusters together similar failures
   - Search for test failures across jobs
-  - Filter down to failures in a specific regex of tests and/or jobs
+  - Filter down failures in a specific regex of tests and/or jobs
 * [Test history](https://go.k8s.io/test-history) is a deprecated tool
   - Use the triage dashboard instead
   - Summarizes the last 24 hours of testing
@@ -43,24 +43,32 @@ The `--repo=R` (or `--bare`) flag controls what we check out from git.
 Anyone can reconfigure our CI system with a test-infra PR that updates the
 appropriate files. Detailed instructions follow:
 
+### E2E Testing
+
+Our e2e testing uses [kubetest](/kubetest) to build/deploy/test kubernetes
+clusters on various providers. Please see those documents for additional details
+about this tool as well as e2e testing generally.
+
 ### Create a new job
 
 Create a PR in this repo to add/update/remove a job or suite. Specifically
 you'll need to do the following:
 * Create an entry in [`jobs/config.json`] for the job
-  - If this is a kubetest job create the corresponding `jobs/FOO.env` file
-  - Ensure the `PROJECT=blah` in the `jobs/FOO.env` has the right [IAM grants](jenkins/check_projects.py)
+  - If this is a kubetest job create the corresponding `jobs/env/FOO.env` file
+  - It will pick a free project from [boskos](/boskos) pool by default, or
+  - You can also set --gcp-project=foo in [`jobs/config.json`] for a dedicated project, make sure the project has the right [IAM grants](jenkins/check_projects.py)
 * Add the job name to the `test_groups` list in [`testgrid/config/config.yaml`](https://github.com/kubernetes/test-infra/blob/master/testgrid/config/config.yaml)
   - Also the group to at least one `dashboard_tab`
 * Add the job to the appropriate section in [`prow/config.yaml`](https://github.com/kubernetes/test-infra/blob/master/prow/config.yaml)
-  - presubmit jobs run on unmerged code in PRs
-  - postsubmit jobs run after merging code
-  - periodic job run on a timed basis
+  - Presubmit jobs run on unmerged code in PRs
+  - Postsubmit jobs run after merging code
+  - Periodic job run on a timed basis
 * (Deprecated!) Some old jobs still run on jenkins
   - Please do not add new jobs to jenkins
   - Jenkins configuration is defined at `jenkins/job-configs`
   - More deprecated details at [jenkins/README.md](jenkins/README.md)
 
+NOTE: `kubernetes/kubernetes` and `kubernetes-security/kubernetes` must have matching presubmits.
 
 Please test the job on your local workstation before creating a PR:
 ```
@@ -74,8 +82,7 @@ $GOPATH/src/k8s.io/test-infra/jenkins/bootstrap.py \
 
 Presubmit will tell you if you forget to do any of this correctly.
 
-Merge your PR and the job will be ready to go as soon as [test-infra oncall]
-pushes the prow changes (`make -C prow update-config`).
+Merge your PR and the bot will deploy your change automatically.
 
 ### Update an existing job
 
@@ -88,7 +95,7 @@ the kubetest jobs this typically means editing the `jobs/FOO.env` files it uses.
 Update when a job runs by changing its definition in [`prow/config.yaml`].
 The [test-infra oncall] must push prow changes (`make -C prow update-config`).
 
-Update where the job apears on testgrid by changing [`testgrid/config/config.yaml`].
+Update where the job appears on testgrid by changing [`testgrid/config/config.yaml`].
 
 ### Delete a job
 

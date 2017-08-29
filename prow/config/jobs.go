@@ -41,6 +41,8 @@ type Presubmit struct {
 	SkipReport bool `json:"skip_report"`
 	// Maximum number of this job running concurrently, 0 implies no limit.
 	MaxConcurrency int `json:"max_concurrency"`
+	// Agent that will take care of running this job.
+	Agent string `json:"agent"`
 	// Kubernetes pod spec.
 	Spec *kube.PodSpec `json:"spec,omitempty"`
 	// Run these jobs after successfully running this one.
@@ -55,23 +57,30 @@ type Presubmit struct {
 
 // Postsubmit runs on push events.
 type Postsubmit struct {
-	Name string        `json:"name"`
+	Name string `json:"name"`
+	// Agent that will take care of running this job.
+	Agent string `json:"agent"`
+	// Kubernetes pod spec.
 	Spec *kube.PodSpec `json:"spec,omitempty"`
 	// Maximum number of this job running concurrently, 0 implies no limit.
 	MaxConcurrency int `json:"max_concurrency"`
 
 	Brancher
-
+	// Run these jobs after successfully running this one.
 	RunAfterSuccess []Postsubmit `json:"run_after_success"`
 }
 
 // Periodic runs on a timer.
 type Periodic struct {
-	Name     string        `json:"name"`
-	Spec     *kube.PodSpec `json:"spec,omitempty"`
-	Interval string        `json:"interval"`
-	Tags     []string      `json:"tags,omitempty"`
-
+	Name string `json:"name"`
+	// Agent that will take care of running this job.
+	Agent string `json:"agent"`
+	// Kubernetes pod spec.
+	Spec *kube.PodSpec `json:"spec,omitempty"`
+	// Interval to wait between two runs of the job.
+	Interval string   `json:"interval"`
+	Tags     []string `json:"tags,omitempty"`
+	// Run these jobs after successfully running this one.
 	RunAfterSuccess []Periodic `json:"run_after_success"`
 
 	interval time.Duration
@@ -179,13 +188,13 @@ func (c *Config) SetPresubmits(jobs map[string][]Presubmit) error {
 	return nil
 }
 
-func (c *Config) AllPresubmits() []string {
-	res := []string{}
-	var listPres func(ps []Presubmit) []string
-	listPres = func(ps []Presubmit) []string {
-		res := []string{}
+func (c *Config) AllPresubmits() []Presubmit {
+	var res []Presubmit
+	var listPres func(ps []Presubmit) []Presubmit
+	listPres = func(ps []Presubmit) []Presubmit {
+		var res []Presubmit
 		for _, p := range ps {
-			res = append(res, p.Name)
+			res = append(res, p)
 			res = append(res, listPres(p.RunAfterSuccess)...)
 		}
 		return res
@@ -198,13 +207,13 @@ func (c *Config) AllPresubmits() []string {
 	return res
 }
 
-func (c *Config) AllPostsubmits() []string {
-	res := []string{}
-	var listPost func(ps []Postsubmit) []string
-	listPost = func(ps []Postsubmit) []string {
-		res := []string{}
+func (c *Config) AllPostsubmits() []Postsubmit {
+	var res []Postsubmit
+	var listPost func(ps []Postsubmit) []Postsubmit
+	listPost = func(ps []Postsubmit) []Postsubmit {
+		var res []Postsubmit
 		for _, p := range ps {
-			res = append(res, p.Name)
+			res = append(res, p)
 			res = append(res, listPost(p.RunAfterSuccess)...)
 		}
 		return res
@@ -217,12 +226,12 @@ func (c *Config) AllPostsubmits() []string {
 	return res
 }
 
-func (c *Config) AllPeriodics() []string {
-	var listPeriodic func(ps []Periodic) []string
-	listPeriodic = func(ps []Periodic) []string {
-		res := []string{}
+func (c *Config) AllPeriodics() []Periodic {
+	var listPeriodic func(ps []Periodic) []Periodic
+	listPeriodic = func(ps []Periodic) []Periodic {
+		var res []Periodic
 		for _, p := range ps {
-			res = append(res, p.Name)
+			res = append(res, p)
 			res = append(res, listPeriodic(p.RunAfterSuccess)...)
 		}
 		return res

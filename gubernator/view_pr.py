@@ -67,10 +67,10 @@ def pr_path(org, repo, pr):
     """Builds the correct gs://prefix/maybe_kubernetes/maybe_repo_org/pr."""
     # TODO(fejta): make this less specific to kubernetes.
     if org == repo == 'kubernetes':
-        return '%s/%s' % (PR_PREFIX, pr)
+        return '%s/%s' % (PR_PREFIX['kubernetes'], pr)
     if org == 'kubernetes':
-        return '%s/%s/%s' % (PR_PREFIX, repo, pr)
-    return '%s/%s_%s/%s' % (PR_PREFIX, org, repo, pr)
+        return '%s/%s/%s' % (PR_PREFIX['kubernetes'], repo, pr)
+    return '%s/%s_%s/%s' % (PR_PREFIX[org], org, repo, pr)
 
 
 def org_repo(path):

@@ -1,7 +1,5 @@
 package(default_visibility = ["//visibility:public"])
 
-licenses(["notice"])
-
 py_test(
     name = "verify_boilerplate",
     srcs = ["verify_boilerplate.py"],

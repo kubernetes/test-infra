@@ -30,7 +30,6 @@ import (
 const pluginName = "label"
 
 type assignEvent struct {
-	action  string
 	body    string
 	login   string
 	org     string
@@ -45,8 +44,8 @@ var (
 	labelRegex              = regexp.MustCompile(`(?m)^/(area|priority|kind|sig)\s*(.*)$`)
 	removeLabelRegex        = regexp.MustCompile(`(?m)^/remove-(area|priority|kind|sig)\s*(.*)$`)
 	sigMatcher              = regexp.MustCompile(`(?m)@kubernetes/sig-([\w-]*)-(misc|test-failures|bugs|feature-requests|proposals|pr-reviews|api-reviews)`)
-	chatBack                = "Reiterating the mentions to trigger a notification: \n%v"
-	nonExistentLabelOnIssue = "Those labels are not set on the issue: `%v`"
+	chatBack                = "Reiterating the mentions to trigger a notification: \n%v."
+	nonExistentLabelOnIssue = "Those labels are not set on the issue: `%v`."
 	kindMap                 = map[string]string{
 		"bugs":             "kind/bug",
 		"feature-requests": "kind/feature",
@@ -67,7 +66,7 @@ type githubClient interface {
 	AddLabel(owner, repo string, number int, label string) error
 	RemoveLabel(owner, repo string, number int, label string) error
 	GetRepoLabels(owner, repo string) ([]github.Label, error)
-	BotName() string
+	BotName() (string, error)
 }
 
 type slackClient interface {
@@ -75,8 +74,11 @@ type slackClient interface {
 }
 
 func handleIssueComment(pc plugins.PluginClient, ic github.IssueCommentEvent) error {
+	if ic.Action != github.IssueCommentActionCreated {
+		return nil
+	}
+
 	ae := assignEvent{
-		action:  ic.Action,
 		body:    ic.Comment.Body,
 		login:   ic.Comment.User.Login,
 		org:     ic.Repo.Owner.Login,
@@ -90,8 +92,11 @@ func handleIssueComment(pc plugins.PluginClient, ic github.IssueCommentEvent) er
 }
 
 func handleIssue(pc plugins.PluginClient, i github.IssueEvent) error {
+	if i.Action != github.IssueActionOpened {
+		return nil
+	}
+
 	ae := assignEvent{
-		action: i.Action,
 		body:   i.Issue.Body,
 		login:  i.Issue.User.Login,
 		org:    i.Repo.Owner.Login,
@@ -104,8 +109,11 @@ func handleIssue(pc plugins.PluginClient, i github.IssueEvent) error {
 }
 
 func handlePullRequest(pc plugins.PluginClient, pr github.PullRequestEvent) error {
+	if pr.Action != github.PullRequestActionOpened {
+		return nil
+	}
+
 	ae := assignEvent{
-		action: pr.Action,
 		body:   pr.PullRequest.Body,
 		login:  pr.PullRequest.User.Login,
 		org:    pr.PullRequest.Base.Repo.Owner.Login,
@@ -141,7 +149,11 @@ func (ae assignEvent) getRepeats(sigMatches [][]string, existingLabels map[strin
 
 func handle(gc githubClient, log *logrus.Entry, ae assignEvent, sc slackClient) error {
 	// only parse newly created comments/issues/PRs and if non bot author
-	if ae.login == gc.BotName() || !(ae.action == "created" || ae.action == "opened") {
+	botName, err := gc.BotName()
+	if err != nil {
+		return err
+	}
+	if ae.login == botName {
 		return nil
 	}
 
@@ -246,7 +258,7 @@ func handle(gc githubClient, log *logrus.Entry, ae assignEvent, sc slackClient) 
 
 		// If sig matches then send a notification on slack.
 		for _, sig := range sigMatches {
-			msg := fmt.Sprintf("Message: ```%s```\nIssue: %d, %s\nUrl: %s", ae.body, ae.issue.Number, ae.issue.Title, ae.issue.HTMLURL)
+			msg := fmt.Sprintf("Message: ```%s```\nIssue: %d, %s\nUrl: %s.", ae.body, ae.issue.Number, ae.issue.Title, ae.issue.HTMLURL)
 			if err := sc.WriteMessage(plugins.FormatResponseRaw(ae.body, ae.url, ae.login, msg), "sig-"+sig[1]); err != nil {
 				log.WithError(err).Error("Failed to send message on slack channel: ", "sig-"+sig[1], " with message ", msg)
 			}

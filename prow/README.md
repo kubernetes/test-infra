@@ -8,7 +8,8 @@ not make any attempt to preserve backwards compatability.
 
 * `cmd/hook` is the most important piece. It is a stateless server that listens
   for GitHub webhooks and dispatches them to the appropriate handlers.
-* `cmd/plank` is the controller that manages Jenkins jobs and k8s pods.
+* `cmd/plank` is the controller that manages jobs running in k8s pods.
+* `cmd/jenkins-operator` is the controller that manages jobs running in Jenkins.
 * `cmd/sinker` cleans up old jobs and pods.
 * `cmd/splice` regularly schedules batch jobs.
 * `cmd/deck` presents [a nice view](https://prow.k8s.io/) of recent jobs.

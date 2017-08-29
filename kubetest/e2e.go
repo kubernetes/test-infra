@@ -33,6 +33,8 @@ func argFields(args, dump, ipRange string) []string {
 	f := strings.Fields(args)
 	if dump != "" {
 		f = setFieldDefault(f, "--report-dir", dump)
+		// Disable logdump within ginkgo as it'll be done in kubetest anyway now.
+		f = setFieldDefault(f, "--disable-log-dump", "true")
 	}
 	if ipRange != "" {
 		f = setFieldDefault(f, "--cluster-ip-range", ipRange)
@@ -138,12 +140,15 @@ func run(deploy deployer, o options) error {
 				return fmt.Errorf("error starting federation: %s", err)
 			}
 		}
-		// Check that the api is reachable before proceeding with further steps.
-		errs = appendError(errs, xmlWrap("Check APIReachability", getKubectlVersion))
-		if dump != "" {
-			errs = appendError(errs, xmlWrap("list nodes", func() error {
-				return listNodes(dump)
-			}))
+
+		if !o.nodeTests {
+			// Check that the api is reachable before proceeding with further steps.
+			errs = appendError(errs, xmlWrap("Check APIReachability", getKubectlVersion))
+			if dump != "" {
+				errs = appendError(errs, xmlWrap("list nodes", func() error {
+					return listNodes(dump)
+				}))
+			}
 		}
 	}
 
@@ -164,6 +169,11 @@ func run(deploy deployer, o options) error {
 	if o.test {
 		if err := xmlWrap("test setup", deploy.TestSetup); err != nil {
 			errs = appendError(errs, err)
+		} else if o.nodeTests {
+			nodeArgs := strings.Fields(o.nodeArgs)
+			errs = appendError(errs, xmlWrap("Node Tests", func() error {
+				return nodeTest(testArgs, nodeArgs, o.nodeTestArgs, o.gcpProject, o.gcpZone)
+			}))
 		} else {
 			errs = appendError(errs, xmlWrap("kubectl version", getKubectlVersion))
 			if o.skew {
@@ -202,7 +212,7 @@ func run(deploy deployer, o options) error {
 		errs = appendError(errs, xmlWrap("Perf Tests", perfTest))
 	}
 
-	if len(errs) > 0 && dump != "" {
+	if dump != "" {
 		errs = appendError(errs, xmlWrap("DumpClusterLogs", func() error {
 			return deploy.DumpClusterLogs(dump, o.logexporterGCSPath)
 		}))
@@ -440,13 +450,23 @@ func waitForNodes(d deployer, nodes int, timeout time.Duration) error {
 }
 
 func defaultDumpClusterLogs(localArtifactsDir, logexporterGCSPath string) error {
+	logDumpPath := "./cluster/log-dump/log-dump.sh"
+	// cluster/log-dump/log-dump.sh only exists in the Kubernetes tree
+	// post-1.3. If it doesn't exist, print a debug log but do not report an error.
+	if _, err := os.Stat(logDumpPath); err != nil {
+		log.Printf("Could not find %s. This is expected if running tests against a Kubernetes 1.3 or older tree.", logDumpPath)
+		if cwd, err := os.Getwd(); err == nil {
+			log.Printf("CWD: %v", cwd)
+		}
+		return nil
+	}
 	var cmd *exec.Cmd
 	if logexporterGCSPath != "" {
 		log.Printf("Dumping logs from nodes to GCS directly at path: %v", logexporterGCSPath)
-		cmd = exec.Command("./cluster/log-dump/log-dump.sh", localArtifactsDir, logexporterGCSPath)
+		cmd = exec.Command(logDumpPath, localArtifactsDir, logexporterGCSPath)
 	} else {
 		log.Printf("Dumping logs locally to: %v", localArtifactsDir)
-		cmd = exec.Command("./cluster/log-dump/log-dump.sh", localArtifactsDir)
+		cmd = exec.Command(logDumpPath, localArtifactsDir)
 	}
 	return finishRunning(cmd)
 }
@@ -476,6 +496,37 @@ func perfTest() error {
 func chartsTest() error {
 	// Run helm tests.
 	if err := finishRunning(exec.Command("/src/k8s.io/charts/test/helm-test-e2e.sh")); err != nil {
+		return err
+	}
+	return nil
+}
+
+func nodeTest(testArgs, nodeArgs []string, nodeTestArgs, project, zone string) error {
+	// Run node e2e tests.
+	// TODO(krzyzacy): remove once nodeTest is stable
+	if wd, err := os.Getwd(); err == nil {
+		log.Printf("cwd : %s", wd)
+	}
+
+	// prep node args
+	runner := []string{
+		"run",
+		fmt.Sprintf("%s/src/k8s.io/kubernetes/test/e2e_node/runner/remote/run_remote.go", os.Getenv("GOPATH")),
+		"--cleanup",
+		"--logtostderr",
+		"--vmodule=*=4",
+		"--ssh-env=gce",
+		"--results-dir=/src/k8s.io/kubernetes/_artifacts",
+		fmt.Sprintf("--project=%s", project),
+		fmt.Sprintf("--zone=%s", zone),
+		fmt.Sprintf("--ssh-user=%s", os.Getenv("USER")),
+		fmt.Sprintf("--ginkgo-flags=%s", strings.Join(testArgs, " ")),
+		fmt.Sprintf("--test_args=%s", nodeTestArgs),
+	}
+
+	runner = append(runner, nodeArgs...)
+
+	if err := finishRunning(exec.Command("go", runner...)); err != nil {
 		return err
 	}
 	return nil

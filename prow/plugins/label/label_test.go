@@ -73,11 +73,9 @@ func getFakeRepoIssueComment(commentBody, commenter string, repoLabels, issueLab
 			PullRequest: &struct{}{},
 			Labels:      startingLabels,
 		},
-		Action: "created",
 	}
 
 	ae := assignEvent{
-		action:  ice.Action,
 		body:    ice.Comment.Body,
 		login:   ice.Comment.User.Login,
 		org:     ice.Repo.Owner.Login,
@@ -116,11 +114,9 @@ func getFakeRepoIssue(commentBody, creator string, repoLabels, issueLabels []str
 			Body:        commentBody,
 			Labels:      startingLabels,
 		},
-		Action: "opened",
 	}
 
 	ae := assignEvent{
-		action: ie.Action,
 		body:   ie.Issue.Body,
 		login:  ie.Issue.User.Login,
 		org:    ie.Repo.Owner.Login,
@@ -169,11 +165,9 @@ func getFakeRepoPullRequest(commentBody, commenter string, repoLabels, issueLabe
 			},
 		},
 		Number: prNumber,
-		Action: "opened",
 	}
 
 	ae := assignEvent{
-		action: pre.Action,
 		body:   pre.PullRequest.Body,
 		login:  pre.PullRequest.User.Login,
 		org:    pre.PullRequest.Base.Repo.Owner.Login,

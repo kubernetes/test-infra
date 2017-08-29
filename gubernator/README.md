@@ -6,14 +6,10 @@ https://k8s-gubernator.appspot.com/
 
 For development:
 
-- Install the Google App Engine Python SDK
-- Set the GAE_ROOT environment variable to your GAE SDK directory (e.g.
-  `export GAE_ROOT=~/google-cloud-sdk/platform/google_appengine`)
-- Run locally using dev_appserver.py and visit http://localhost:8080
-- Install libraries needed for testing: `pip install webtest nosegae`
-- Test using `./test.sh`. Arguments are passed to the test runner, so `./test.sh log_parser_test.py`
-  only runs the tests for the log parser. See `./test.sh -h` for more options.
-- Lint using `./lint.sh`.
+- Install the Google Cloud SDK: https://cloud.google.com/sdk/
+- Run locally using `dev_appserver.py` and visit http://localhost:8080
+- Test and lint using `./test-gubernator.sh`
+- Deploy with `make deploy` followed by `make migrate`
 
 For deployment:
 
@@ -33,6 +29,3 @@ For deployment:
         }
     }
 ```
-
-- Run `./test.sh && appcfg.py update .`. If the `github/` service was modified,
-  deploy that too.

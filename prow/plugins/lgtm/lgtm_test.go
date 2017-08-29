@@ -30,7 +30,6 @@ func TestLGTMComment(t *testing.T) {
 	// "a" is the author, "a", "r1", and "r2" are reviewers.
 	var testcases = []struct {
 		name          string
-		action        string
 		body          string
 		commenter     string
 		hasLGTM       bool
@@ -40,7 +39,6 @@ func TestLGTMComment(t *testing.T) {
 	}{
 		{
 			name:         "non-lgtm comment",
-			action:       "created",
 			body:         "uh oh",
 			commenter:    "o",
 			hasLGTM:      false,
@@ -48,7 +46,6 @@ func TestLGTMComment(t *testing.T) {
 		},
 		{
 			name:         "lgtm comment by reviewer, no lgtm on pr",
-			action:       "created",
 			body:         "/lgtm",
 			commenter:    "r1",
 			hasLGTM:      false,
@@ -56,7 +53,6 @@ func TestLGTMComment(t *testing.T) {
 		},
 		{
 			name:         "LGTM comment by reviewer, no lgtm on pr",
-			action:       "created",
 			body:         "/LGTM",
 			commenter:    "r1",
 			hasLGTM:      false,
@@ -64,7 +60,6 @@ func TestLGTMComment(t *testing.T) {
 		},
 		{
 			name:         "lgtm comment by reviewer, lgtm on pr",
-			action:       "created",
 			body:         "/lgtm",
 			commenter:    "r1",
 			hasLGTM:      true,
@@ -72,7 +67,6 @@ func TestLGTMComment(t *testing.T) {
 		},
 		{
 			name:          "lgtm comment by author",
-			action:        "created",
 			body:          "/lgtm",
 			commenter:     "a",
 			hasLGTM:       false,
@@ -81,7 +75,6 @@ func TestLGTMComment(t *testing.T) {
 		},
 		{
 			name:         "lgtm cancel by author",
-			action:       "created",
 			body:         "/lgtm cancel",
 			commenter:    "a",
 			hasLGTM:      true,
@@ -89,7 +82,6 @@ func TestLGTMComment(t *testing.T) {
 		},
 		{
 			name:          "lgtm comment by non-reviewer",
-			action:        "created",
 			body:          "/lgtm",
 			commenter:     "o",
 			hasLGTM:       false,
@@ -99,7 +91,6 @@ func TestLGTMComment(t *testing.T) {
 		},
 		{
 			name:          "lgtm comment by non-reviewer, with trailing space",
-			action:        "created",
 			body:          "/lgtm ",
 			commenter:     "o",
 			hasLGTM:       false,
@@ -109,7 +100,6 @@ func TestLGTMComment(t *testing.T) {
 		},
 		{
 			name:          "lgtm comment by non-reviewer, with no-issue",
-			action:        "created",
 			body:          "/lgtm no-issue",
 			commenter:     "o",
 			hasLGTM:       false,
@@ -119,7 +109,6 @@ func TestLGTMComment(t *testing.T) {
 		},
 		{
 			name:          "lgtm comment by non-reviewer, with no-issue and trailing space",
-			action:        "created",
 			body:          "/lgtm no-issue \r",
 			commenter:     "o",
 			hasLGTM:       false,
@@ -129,7 +118,6 @@ func TestLGTMComment(t *testing.T) {
 		},
 		{
 			name:          "lgtm comment by rando",
-			action:        "created",
 			body:          "/lgtm",
 			commenter:     "not-in-the-org",
 			hasLGTM:       false,
@@ -139,7 +127,6 @@ func TestLGTMComment(t *testing.T) {
 		},
 		{
 			name:          "lgtm cancel by non-reviewer",
-			action:        "created",
 			body:          "/lgtm cancel",
 			commenter:     "o",
 			hasLGTM:       true,
@@ -149,7 +136,6 @@ func TestLGTMComment(t *testing.T) {
 		},
 		{
 			name:          "lgtm cancel by rando",
-			action:        "created",
 			body:          "/lgtm cancel",
 			commenter:     "not-in-the-org",
 			hasLGTM:       true,
@@ -159,7 +145,6 @@ func TestLGTMComment(t *testing.T) {
 		},
 		{
 			name:         "lgtm cancel comment by reviewer",
-			action:       "created",
 			body:         "/lgtm cancel",
 			commenter:    "r1",
 			hasLGTM:      true,
@@ -167,7 +152,6 @@ func TestLGTMComment(t *testing.T) {
 		},
 		{
 			name:         "lgtm cancel comment by reviewer, with trailing space",
-			action:       "created",
 			body:         "/lgtm cancel \r",
 			commenter:    "r1",
 			hasLGTM:      true,
@@ -175,7 +159,6 @@ func TestLGTMComment(t *testing.T) {
 		},
 		{
 			name:         "lgtm cancel comment by reviewer, no lgtm",
-			action:       "created",
 			body:         "/lgtm cancel",
 			commenter:    "r1",
 			hasLGTM:      false,
@@ -187,7 +170,6 @@ func TestLGTMComment(t *testing.T) {
 			IssueComments: make(map[int][]github.IssueComment),
 		}
 		e := &event{
-			action:        tc.action,
 			body:          tc.body,
 			commentAuthor: tc.commenter,
 			prAuthor:      "a",

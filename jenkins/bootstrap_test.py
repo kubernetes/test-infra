@@ -538,6 +538,11 @@ class GSUtilTest(unittest.TestCase):
             for a in fake.calls[0][0]))
         self.assertIn('stdin', fake.calls[0][2])  # kwargs
 
+    def test_upload_text_metalink(self):
+        fake = FakeSubprocess()
+        gsutil = bootstrap.GSUtil(fake)
+        gsutil.upload_text('txt', 'path', additional_headers=['foo: bar'])
+        self.assertTrue(any('foo: bar' in a for a in fake.calls[0][0]))
 
 class FakeGSUtil(object):
     generation = 123
@@ -1121,7 +1126,7 @@ class BootstrapTest(unittest.TestCase):
 
         with Stub(bootstrap, 'ci_paths', Bomb):
             with Stub(bootstrap, 'pr_paths', FakePath()) as path:
-                test_bootstrap(branch=None, pull=PULL)
+                test_bootstrap(branch=None, pull=PULL, root='.')
             self.assertEquals(PULL, path.arg[1][REPO][1], (PULL, path.arg))
 
     def test_ci_paths(self):
@@ -1232,6 +1237,8 @@ class IntegrationTest(unittest.TestCase):
         subprocess.check_call(['git', 'config', 'user.email', 'foo@bar.baz'])
         subprocess.check_call(['touch', self.MASTER])
         subprocess.check_call(['git', 'add', self.MASTER])
+        subprocess.check_call(['cp', '-r', bootstrap.test_infra('jenkins/fake'), fakerepo])
+        subprocess.check_call(['git', 'add', 'fake'])
         subprocess.check_call(['git', 'commit', '-m', 'Initial commit'])
         subprocess.check_call(['git', 'checkout', 'master'])
 
@@ -1354,6 +1361,7 @@ class IntegrationTest(unittest.TestCase):
         os.chdir('/tmp')
         pull = ','.join(refs)
         print '--pull', pull
+        subprocess.check_call(['ls'])
         test_bootstrap(
             job='fake-pr',
             repo=self.REPO,
@@ -1386,7 +1394,7 @@ class IntegrationTest(unittest.TestCase):
                         root=self.root_workspace)
 
     def test_job_missing(self):
-        with self.assertRaises(OSError):
+        with self.assertRaises(KeyError):
             test_bootstrap(
                 job='this-job-no-exists',
                 repo=self.REPO,
@@ -1426,22 +1434,6 @@ class IntegrationTest(unittest.TestCase):
 
 
 class ParseArgsTest(unittest.TestCase):
-    def test_json_missing(self):
-        args = bootstrap.parse_args(['--bare', '--job=j'])
-        self.assertFalse(args.json, args)
-
-    def test_json_onlyflag(self):
-        args = bootstrap.parse_args(['--json', '--bare', '--job=j'])
-        self.assertTrue(args.json, args)
-
-    def test_json_nonzero(self):
-        args = bootstrap.parse_args(['--json=1', '--bare', '--job=j'])
-        self.assertTrue(args.json, args)
-
-    def test_json_zero(self):
-        args = bootstrap.parse_args(['--json=0', '--bare', '--job=j'])
-        self.assertFalse(args.json, args)
-
     def test_barerepo_both(self):
         with self.assertRaises(argparse.ArgumentTypeError):
             bootstrap.parse_args(['--bare', '--repo=hello', '--job=j'])
@@ -1475,8 +1467,6 @@ class JobTest(unittest.TestCase):
 
     yaml_suffix = {
         'job-configs/bootstrap-maintenance.yaml' : 'suffix',
-        'job-configs/kubernetes-jenkins/bootstrap-maintenance-ci.yaml' : 'suffix',
-        'job-configs/kubernetes-jenkins-pull/bootstrap-maintenance-pull.yaml' : 'suffix',
         'job-configs/kubernetes-jenkins-pull/bootstrap-pull-json.yaml' : 'jsonsuffix',
         'job-configs/kubernetes-jenkins-pull/bootstrap-security-pull.yaml' : 'suffix',
         'job-configs/kubernetes-jenkins/bootstrap-ci.yaml' : 'suffix',
@@ -1505,8 +1495,7 @@ class JobTest(unittest.TestCase):
     @property
     def jobs(self):
         """[(job, job_path)] sequence"""
-        for path, _, filenames in os.walk(
-                os.path.dirname(bootstrap.job_script(JOB, False)[0])):
+        for path, _, filenames in os.walk(bootstrap.test_infra('jobs')):
             for job in [f for f in filenames if f not in self.excludes]:
                 job_path = os.path.join(path, job)
                 yield job, job_path
@@ -1520,36 +1509,7 @@ class JobTest(unittest.TestCase):
             self.assertGreater(job['timeout'], 0)
             return job_name
 
-        self.check_bootstrap_yaml('job-configs/bootstrap-maintenance.yaml', check, use_json=True)
-
-    def test_bootstrap_maintenance_ci(self):
-        def check(job, name):
-            job_name = 'maintenance-ci-%s' % name
-            self.assertIn('frequency', job)
-            self.assertIn('repo-name', job)
-            self.assertIn('.', job['repo-name'])  # Has domain
-            self.assertIn('timeout', job)
-            self.assertNotIn('json', job)
-            self.assertGreater(job['timeout'], 0)
-            return job_name
-
-        self.check_bootstrap_yaml('job-configs/kubernetes-jenkins/bootstrap-maintenance-ci.yaml',
-                                  check, use_json=True)
-
-    def test_bootstrap_maintenance_pull(self):
-        def check(job, name):
-            job_name = 'maintenance-pull-%s' % name
-            self.assertIn('frequency', job)
-            self.assertIn('repo-name', job)
-            self.assertIn('.', job['repo-name'])  # Has domain
-            self.assertIn('timeout', job)
-            self.assertNotIn('json', job)
-            self.assertGreater(job['timeout'], 0)
-            return job_name
-
-        self.check_bootstrap_yaml(
-            'job-configs/kubernetes-jenkins-pull/bootstrap-maintenance-pull.yaml',
-            check, use_json=True)
+        self.check_bootstrap_yaml('job-configs/bootstrap-maintenance.yaml', check)
 
     def test_bootstrap_pull_json_yaml(self):
         def check(job, name):
@@ -1563,8 +1523,7 @@ class JobTest(unittest.TestCase):
             return job_name
 
         self.check_bootstrap_yaml(
-            'job-configs/kubernetes-jenkins-pull/bootstrap-pull-json.yaml',
-            check, use_json=True)
+            'job-configs/kubernetes-jenkins-pull/bootstrap-pull-json.yaml', check)
 
     def test_bootstrap_security_pull(self):
         def check(job, name):
@@ -1578,8 +1537,7 @@ class JobTest(unittest.TestCase):
             return job_name
 
         self.check_bootstrap_yaml(
-            'job-configs/kubernetes-jenkins-pull/bootstrap-security-pull.yaml',
-            check, use_json=True)
+            'job-configs/kubernetes-jenkins-pull/bootstrap-security-pull.yaml', check)
 
     def test_bootstrap_security_match(self):
         json_jobs = self.load_bootstrap_yaml(
@@ -1609,7 +1567,7 @@ class JobTest(unittest.TestCase):
 
         self.check_bootstrap_yaml(
             'job-configs/kubernetes-jenkins/bootstrap-ci.yaml',
-            check, use_json=True)
+            check)
 
     def test_bootstrap_ci_commit_yaml(self):
         def check(job, name):
@@ -1626,7 +1584,7 @@ class JobTest(unittest.TestCase):
 
         self.check_bootstrap_yaml(
             'job-configs/kubernetes-jenkins/bootstrap-ci-commit.yaml',
-            check, use_json=True)
+            check)
 
     def test_bootstrap_ci_repo_yaml(self):
         def check(job, name):
@@ -1642,7 +1600,7 @@ class JobTest(unittest.TestCase):
 
         self.check_bootstrap_yaml(
             'job-configs/kubernetes-jenkins/bootstrap-ci-repo.yaml',
-            check, use_json=True)
+            check)
 
     def test_bootstrap_ci_soak_yaml(self):
         def check(job, name):
@@ -1661,7 +1619,7 @@ class JobTest(unittest.TestCase):
 
         self.check_bootstrap_yaml(
             'job-configs/kubernetes-jenkins/bootstrap-ci-soak.yaml',
-            check, use_json=True)
+            check)
 
     def test_bootstrap_ci_dockerpush(self):
         def check(job, name):
@@ -1676,7 +1634,7 @@ class JobTest(unittest.TestCase):
 
         self.check_bootstrap_yaml(
             'job-configs/kubernetes-jenkins/bootstrap-ci-dockerpush.yaml',
-            check, use_json=True)
+            check)
 
     def check_job_template(self, tmpl):
         builders = tmpl.get('builders')
@@ -1795,28 +1753,10 @@ class JobTest(unittest.TestCase):
                 self.realjobs[real_name] = real_job
         return real_jobs
 
-    def check_bootstrap_yaml(self, path, check, use_json=False):
+    def check_bootstrap_yaml(self, path, check):
         for name, real_job in self.load_bootstrap_yaml(path).iteritems():
             # Things to check on all bootstrap jobs
-            if callable(use_json):  # TODO(fejta): gross, but temporary?
-                modern = use_json(name)
-            else:
-                modern = use_json
-            cmd = bootstrap.job_script(real_job.get('job-name'), modern)
-            path = cmd[0]
-            args = cmd[1:]
-            self.assertTrue(os.path.isfile(path), (name, path))
-            if modern:
-                self.assertTrue(all(isinstance(a, basestring) for a in args), args)
-                # Ensure the .sh script isn't there
-                other = bootstrap.job_script(real_job.get('job-name'), False)
-                self.assertFalse(os.path.isfile(other[0]), name)
-            else:
-                self.assertEquals(1, len(cmd))
-                # Ensure the job isn't in the json
-                with self.assertRaises(KeyError):
-                    bootstrap.job_script(real_job.get('job-name'), True)
-                    self.fail(name)
+
             for key, value in real_job.items():
                 if not isinstance(value, (basestring, int)):
                     self.fail('Jobs may not contain child objects %s: %s' % (
@@ -1885,7 +1825,7 @@ class JobTest(unittest.TestCase):
                     bad_jobs.add(job)
                 if '{rc}' in line:
                     bad_jobs.add(job)
-            self.assertFalse(job.endswith('.sh'))
+            self.assertFalse(job.endswith('.sh'), job)
             self.assertTrue(modern, job)
 
             realjob = self.get_real_bootstrap_job(job)
@@ -1924,8 +1864,6 @@ class JobTest(unittest.TestCase):
     def test_only_jobs(self):
         """Ensure that everything in jobs/ is a valid job name and script."""
         for job, job_path in self.jobs:
-            if 'e2e-node' in job_path:
-                continue  # Ignore node e2e tests
             # Jobs should have simple names: letters, numbers, -, .
             self.assertTrue(re.match(r'[.0-9a-z-_]+.(sh|env)', job), job)
             # Jobs should point to a real, executable file
@@ -2021,8 +1959,8 @@ class JobTest(unittest.TestCase):
             'ci-kubernetes-kubemark-5-gce.env': 'ci-kubernetes-kubemark-*',
             'ci-kubernetes-kubemark-high-density-100-gce.env': 'ci-kubernetes-kubemark-*',
             'ci-kubernetes-kubemark-gce-scale.env': 'ci-kubernetes-scale-*',
-            'ci-kubernetes-e2e-gce-enormous-deploy.env': 'ci-kubernetes-scale-*',
-            'ci-kubernetes-e2e-gce-enormous-teardown.env': 'ci-kubernetes-scale-*',
+            'ci-kubernetes-e2e-gce-large-manual-up.env': 'ci-kubernetes-scale-*',
+            'ci-kubernetes-e2e-gce-large-manual-down.env': 'ci-kubernetes-scale-*',
             'ci-kubernetes-e2e-gce-large-correctness.env': 'ci-kubernetes-scale-*',
             'ci-kubernetes-e2e-gce-large-performance.env': 'ci-kubernetes-scale-*',
             'ci-kubernetes-e2e-gce-scale-correctness.env': 'ci-kubernetes-scale-*',
@@ -2112,8 +2050,6 @@ class JobTest(unittest.TestCase):
         for job, job_path in self.jobs:
             if job.startswith('pull-'):
                 continue  # No clean way to determine version
-            if 'e2e-node' in job_path:
-                continue  # Ignore node e2e tests
             with open(job_path) as fp:
                 script = fp.read()
             self.assertFalse(re.search(r'\Wsource ', script), job)
@@ -2128,8 +2064,6 @@ class JobTest(unittest.TestCase):
         for job, job_path in self.jobs:
             if not job.endswith('.sh'):
                 continue
-            if 'e2e-node' in job_path:
-                continue  # Ignore node e2e tests
             with open(job_path) as fp:
                 lines = list(fp)
             for option in options:
@@ -2137,6 +2071,79 @@ class JobTest(unittest.TestCase):
                 self.assertIn(
                     expected, lines,
                     '%s not found in %s' % (expected, job_path))
+
+    def _check_env(self, job, setting):
+        if not re.match(r'[0-9A-Z_]+=[^\n]*', setting):
+            self.fail('[%r]: Env %r: need to follow FOO=BAR pattern' % (job, setting))
+        if '#' in setting:
+            self.fail('[%r]: Env %r: No inline comments' % (job, setting))
+        if '"' in setting or '\'' in setting:
+            self.fail('[%r]: Env %r: No quote in env' % (job, setting))
+        if '$' in setting:
+            self.fail('[%r]: Env %r: Please resolve variables in env' % (job, setting))
+        if '{' in setting or '}' in setting:
+            self.fail('[%r]: Env %r: { and } are not allowed in env' % (job, setting))
+        # also test for https://github.com/kubernetes/test-infra/issues/2829
+        # TODO(fejta): sort this list
+        black = [
+            ('CHARTS_TEST=', '--charts-tests'),
+            ('CLUSTER_IP_RANGE=', '--test_args=--cluster-ip-range=FOO'),
+            ('CLOUDSDK_BUCKET=', '--gcp-cloud-sdk=gs://foo'),
+            ('CLUSTER_NAME=', '--cluster=FOO'),
+            ('E2E_CLEAN_START=', '--test_args=--clean-start=true'),
+            ('E2E_DOWN=', '--down=true|false'),
+            ('E2E_MIN_STARTUP_PODS=', '--test_args=--minStartupPods=FOO'),
+            ('E2E_NAME=', '--cluster=whatever'),
+            ('E2E_PUBLISH_PATH=', '--publish=gs://FOO'),
+            ('E2E_REPORT_DIR=', '--test_args=--report-dir=FOO'),
+            ('E2E_REPORT_PREFIX=', '--test_args=--report-prefix=FOO'),
+            ('E2E_TEST=', '--test=true|false'),
+            ('E2E_UPGRADE_TEST=', '--upgrade_args=FOO'),
+            ('E2E_UP=', '--up=true|false'),
+            ('E2E_OPT=', 'Send kubetest the flags directly'),
+            ('FAIL_ON_GCP_RESOURCE_LEAK=', '--check-leaked-resources=true|false'),
+            ('FEDERATION_DOWN=', '--down=true|false'),
+            ('FEDERATION_UP=', '--up=true|false'),
+            ('GINKGO_TEST_ARGS=', '--test_args=FOO'),
+            ('GINKGO_UPGRADE_TEST_ARGS=', '--upgrade_args=FOO'),
+            ('JENKINS_FEDERATION_PREFIX=', '--stage=gs://FOO'),
+            ('JENKINS_GCI_PATCH_K8S=', 'Unused, see --extract docs'),
+            ('JENKINS_PUBLISHED_VERSION=', '--extract=V'),
+            ('JENKINS_PUBLISHED_SKEW_VERSION=', '--extract=V'),
+            ('JENKINS_USE_SKEW_KUBECTL=', 'SKEW_KUBECTL=y'),
+            ('JENKINS_USE_SKEW_TESTS=', '--skew'),
+            ('JENKINS_SOAK_MODE', '--soak'),
+            ('JENKINS_SOAK_PREFIX', '--stage=gs://FOO'),
+            ('JENKINS_USE_EXISTING_BINARIES=', '--extract=local'),
+            ('JENKINS_USE_LOCAL_BINARIES=', '--extract=none'),
+            ('JENKINS_USE_SERVER_VERSION=', '--extract=gke'),
+            ('JENKINS_USE_GCI_VERSION=', '--extract=gci/FAMILY'),
+            ('JENKINS_USE_GCI_HEAD_IMAGE_FAMILY=', '--extract=gci/FAMILY'),
+            ('KUBE_GKE_NETWORK=', '--gcp-network=FOO'),
+            ('KUBE_GCE_NETWORK=', '--gcp-network=FOO'),
+            ('KUBE_GCE_ZONE=', '--gcp-zone=FOO'),
+            ('KUBEKINS_TIMEOUT=', '--timeout=XXm'),
+            ('KUBEMARK_TEST_ARGS=', '--test_args=FOO'),
+            ('KUBEMARK_TESTS=', '--test_args=--ginkgo.focus=FOO'),
+            ('KUBEMARK_MASTER_SIZE=', '--kubemark-master-size=FOO'),
+            ('KUBEMARK_NUM_NODES=', '--kubemark-nodes=FOO'),
+            ('KUBERNETES_PROVIDER=', '--provider=FOO'),
+            ('PERF_TESTS=', '--perf'),
+            ('PROJECT=', '--gcp-project=FOO'),
+            ('SKEW_KUBECTL=', '--test_args=--kubectl-path=FOO'),
+            ('USE_KUBEMARK=', '--kubemark'),
+            ('ZONE=', '--gcp-zone=FOO'),
+        ]
+        for env, fix in black:
+            if 'kops' in job and env in [
+                    'JENKINS_PUBLISHED_VERSION=',
+                    'GINKGO_TEST_ARGS=',
+                    'KUBERNETES_PROVIDER=',
+            ]:
+                continue  # TOOD(fejta): migrate kops jobs
+            if setting.startswith(env):
+                self.fail('[%s]: Env %s: Convert %s to use %s in jobs/config.json' % (
+                    job, setting, env, fix))
 
     def test_envs_no_export(self):
         for job, job_path in self.jobs:
@@ -2151,79 +2158,7 @@ class JobTest(unittest.TestCase):
                     continue
                 if line.startswith('#'):
                     continue
-                if not re.match(r'[0-9A-Z_]+=[^\n]*', line):
-                    self.fail('[%r]: Env %r: need to follow FOO=BAR pattern' % (job, line))
-                if '#' in line:
-                    self.fail('[%r]: Env %r: No inline comments' % (job, line))
-                if '"' in line or '\'' in line:
-                    self.fail('[%r]: Env %r: No quote in env' % (job, line))
-                if '$' in line:
-                    self.fail('[%r]: Env %r: Please resolve variables in env file' % (job, line))
-                if '{' in line or '}' in line:
-                    self.fail('[%r]: Env %r: { and } are not allowed in env files' % (job, line))
-
-                # also test for https://github.com/kubernetes/test-infra/issues/2829
-                # TODO(fejta): sort this list
-                black = [
-                    ('CHARTS_TEST=', '--charts-tests'),
-                    # TODO(krzyzacy,fejta): This env is still being used in
-                    # https://github.com/kubernetes/kubernetes/blob/master/cluster/gce/config-test.sh#L95
-                    # ('CLUSTER_IP_RANGE=', '--test_args=--cluster-ip-range=FOO'),
-                    ('CLOUDSDK_BUCKET=', '--gcp-cloud-sdk=gs://foo'),
-                    ('CLUSTER_NAME=', '--cluster=FOO'),
-                    ('E2E_CLEAN_START=', '--test_args=--clean-start=true'),
-                    ('E2E_DOWN=', '--down=true|false'),
-                    ('E2E_MIN_STARTUP_PODS=', '--test_args=--minStartupPods=FOO'),
-                    ('E2E_NAME=', '--cluster=whatever'),
-                    ('E2E_PUBLISH_PATH=', '--publish=gs://FOO'),
-                    ('E2E_REPORT_DIR=', '--test_args=--report-dir=FOO'),
-                    ('E2E_REPORT_PREFIX=', '--test_args=--report-prefix=FOO'),
-                    ('E2E_TEST=', '--test=true|false'),
-                    ('E2E_UPGRADE_TEST=', '--upgrade_args=FOO'),
-                    ('E2E_UP=', '--up=true|false'),
-                    ('E2E_OPT=', 'Send kubetest the flags directly'),
-                    ('FAIL_ON_GCP_RESOURCE_LEAK=', '--check-leaked-resources=true|false'),
-                    ('FEDERATION_DOWN=', '--down=true|false'),
-                    ('FEDERATION_UP=', '--up=true|false'),
-                    ('GINKGO_TEST_ARGS=', '--test_args=FOO'),
-                    ('GINKGO_UPGRADE_TEST_ARGS=', '--upgrade_args=FOO'),
-                    ('JENKINS_FEDERATION_PREFIX=', '--stage=gs://FOO'),
-                    ('JENKINS_PUBLISHED_VERSION=', '--extract=V'),
-                    ('JENKINS_PUBLISHED_SKEW_VERSION=', '--extract=V'),
-                    ('JENKINS_USE_SKEW_KUBECTL=', 'SKEW_KUBECTL=y'),
-                    ('JENKINS_USE_SKEW_TESTS=', '--skew'),
-                    ('JENKINS_SOAK_MODE', '--soak'),
-                    ('JENKINS_SOAK_PREFIX', '--stage=gs://FOO'),
-                    ('JENKINS_USE_EXISTING_BINARIES=', '--extract=local'),
-                    ('JENKINS_USE_LOCAL_BINARIES=', '--extract=none'),
-                    ('JENKINS_USE_SERVER_VERSION=', '--extract=gke'),
-                    ('JENKINS_USE_GCI_VERSION=', '--extract=gci/FAMILY'),
-                    ('JENKINS_USE_GCI_HEAD_IMAGE_FAMILY=', '--extract=gci/FAMILY'),
-                    ('KUBE_GKE_NETWORK=', '--gcp-network=FOO'),
-                    ('KUBE_GCE_NETWORK=', '--gcp-network=FOO'),
-                    ('KUBE_GCE_ZONE=', '--gcp-zone=FOO'),
-                    ('KUBEKINS_TIMEOUT=', '--timeout=XXm'),
-                    ('KUBEMARK_TEST_ARGS=', '--test_args=FOO'),
-                    ('KUBEMARK_TESTS=', '--test_args=--ginkgo.focus=FOO'),
-                    ('KUBEMARK_MASTER_SIZE=', '--kubemark-master-size=FOO'),
-                    ('KUBEMARK_NUM_NODES=', '--kubemark-nodes=FOO'),
-                    ('KUBERNETES_PROVIDER=', '--provider=FOO'),
-                    ('PERF_TESTS=', '--perf'),
-                    ('PROJECT=', '--gcp-project=FOO'),
-                    ('SKEW_KUBECTL=', '--test_args=--kubectl-path=FOO'),
-                    ('USE_KUBEMARK=', '--kubemark'),
-                    ('ZONE=', '--gcp-zone=FOO'),
-                ]
-                for env, fix in black:
-                    if 'kops' in job and env in [
-                            'JENKINS_PUBLISHED_VERSION=',
-                            'GINKGO_TEST_ARGS=',
-                            'KUBERNETES_PROVIDER=',
-                    ]:
-                        continue  # TOOD(fejta): migrate kops jobs
-                    if line.startswith(env):
-                        self.fail('[%s]: Env %s: Convert %s to use %s in jobs/config.json' % (
-                            job, line, env, fix))
+                self._check_env(job, line)
 
 
     def test_no_bad_vars_in_jobs(self):
@@ -2235,7 +2170,7 @@ class JobTest(unittest.TestCase):
             if bad_vars:
                 self.fail('Job %s contains bad bash variables: %s' % (job, ' '.join(bad_vars)))
 
-    def test_valid_job_envs(self):
+    def test_valid_job_config_json(self):
         """Validate jobs/config.json."""
         self.load_prow_yaml(self.prow_config)
         config = bootstrap.test_infra('jobs/config.json')
@@ -2258,14 +2193,20 @@ class JobTest(unittest.TestCase):
                 scenario = bootstrap.test_infra('scenarios/%s.py' % config[job]['scenario'])
                 self.assertTrue(os.path.isfile(scenario), job)
                 self.assertTrue(os.access(scenario, os.X_OK|os.R_OK), job)
-                has_matching_env = False
-                for arg in config[job].get('args', []):
+                args = config[job].get('args', [])
+                use_shared_build_in_args = False
+                extract_in_args = False
+                build_in_args = False
+                for arg in args:
+                    if arg.startswith('--use-shared-build'):
+                        use_shared_build_in_args = True
+                    elif arg.startswith('--build'):
+                        build_in_args = True
+                    elif arg.startswith('--extract'):
+                        extract_in_args = True
                     match = re.match(r'--env-file=([^\"]+)\.env', arg)
                     if match:
-                        env = match.group(1)
-                        if env == 'jobs/%s' % job:
-                            has_matching_env = True
-                        path = bootstrap.test_infra('%s.env' % env)
+                        path = bootstrap.test_infra('%s.env' % match.group(1))
                         self.assertTrue(
                             os.path.isfile(path),
                             '%s does not exist for %s' % (path, job))
@@ -2277,14 +2218,27 @@ class JobTest(unittest.TestCase):
                                 len(cluster), 20,
                                 'Job %r, --cluster should be 20 chars or fewer' % job
                                 )
+                # these args should not be combined:
+                # --use-shared-build and (--build or --extract)
+                self.assertFalse(use_shared_build_in_args and build_in_args)
+                self.assertFalse(use_shared_build_in_args and extract_in_args)
                 if config[job]['scenario'] == 'kubernetes_e2e':
-                    args = config[job]['args']
                     if job in self.prowjobs:
                         for arg in args:
                             # --mode=local is default now
                             self.assertNotIn('--mode', args, job)
                     else:
                         self.assertIn('--mode=docker', args, job)
+                    for arg in args:
+                        if "--env=" in arg:
+                            self._check_env(job, arg.split("=", 1)[1])
+                    if '--provider=gke' in args:
+                        self.assertTrue('--deployment=gke' in args,
+                                        '%s must use --deployment=gke' % job)
+                        self.assertFalse(any('--gcp-master-image' in a for a in args),
+                                         '%s cannot use --gcp-master-image on GKE' % job)
+                        self.assertFalse(any('--gcp-nodes' in a for a in args),
+                                         '%s cannot use --gcp-nodes on GKE' % job)
                     if '--deployment=gke' in args:
                         self.assertTrue(any('--gcp-node-image' in a for a in args), job)
                     self.assertNotIn('--charts-tests', args)  # Use --charts
@@ -2299,13 +2253,10 @@ class JobTest(unittest.TestCase):
                             '--env-file=jobs/pull-kubernetes-e2e.env' in args
                             and '--check-leaked-resources' in args):
                         self.fail('PR job %s should not check for resource leaks' % job)
-                    is_gke_env = ('--env-file=jobs/platform/gke.env' in args or
-                                  '--env-file=jobs/platform/gke-staging.env' in args or
-                                  '--env-file=jobs/platform/gke-prod.env' in args)
                     # Consider deleting any job with --check-leaked-resources=false
                     if (
-                            '--env-file=jobs/platform/gce.env' not in args
-                            and not is_gke_env
+                            '--provider=gce' not in args
+                            and '--provider=gke' not in args
                             and '--check-leaked-resources' in args
                             and 'generated' not in config[job].get('tags', [])):
                         self.fail('Only GCP jobs can --check-leaked-resources, not %s' % job)
@@ -2313,9 +2264,17 @@ class JobTest(unittest.TestCase):
                         self.fail('--mode=local is default now, drop that for %s' % job)
 
                     extracts = [a for a in args if '--extract=' in a]
-                    if not extracts:
-                        self.fail('e2e job needs --extract flag: %s %s' % (job, args))
-                    if any(s in job for s in [
+                    shared_builds = [a for a in args if '--use-shared-build' in a]
+                    node_e2e = [a for a in args if '--deployment=node' in a]
+                    if shared_builds and extracts:
+                        self.fail(('e2e jobs cannot have --use-shared-build'
+                                   ' and --extract: %s %s') % (job, args))
+                    elif not extracts and not shared_builds and not node_e2e:
+                        self.fail(('e2e job needs --extract or'
+                                   ' --use-shared-build: %s %s') % (job, args))
+                    if shared_builds or node_e2e:
+                        expected = 0
+                    elif any(s in job for s in [
                             'upgrade', 'skew', 'downgrade', 'rollback',
                             'ci-kubernetes-e2e-gce-canary',
                     ]):
@@ -2325,9 +2284,6 @@ class JobTest(unittest.TestCase):
                     if len(extracts) != expected:
                         self.fail('Wrong number of --extract args (%d != %d) in %s' % (
                             len(extracts), expected, job))
-                    no_matching_whitelisted = '--provider=gke' in args
-                    self.assertTrue(has_matching_env or no_matching_whitelisted,
-                                    'jobs/%s.env does not exist' % job)
 
                     has_image_family = any(
                         [x for x in args if x.startswith('--image-family')])
@@ -2356,7 +2312,8 @@ class JobTest(unittest.TestCase):
                         else:
                             stage = 'gs://kubernetes-release-pull/ci/%s' % job
                             suffix = False
-                        self.assertIn('--stage=%s' % stage, args)
+                        if not shared_builds:
+                            self.assertIn('--stage=%s' % stage, args)
                         self.assertEquals(
                             suffix,
                             any('--stage-suffix=' in a for a in args),

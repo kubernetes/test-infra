@@ -57,10 +57,11 @@ func main() {
 	pkc := kc.Namespace(configAgent.Config().PodNamespace)
 
 	// Clean now and regularly from now on.
-	clean(kc, pkc, configAgent)
 	for {
-		time.Sleep(configAgent.Config().Sinker.ResyncPeriod)
+		start := time.Now()
 		clean(kc, pkc, configAgent)
+		logrus.Infof("Sync time: %v", time.Since(start))
+		time.Sleep(configAgent.Config().Sinker.ResyncPeriod)
 	}
 }
 

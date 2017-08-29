@@ -26,8 +26,7 @@ The following should already be done:
 
 The bootstrapper now does the following:
   # Note start time
-  # read test-infra/jenkins/$JOB.json
-  # check out repoes defined in $JOB.json
+  # check out repoes defined in --repo
   # note job started
   # call runner defined in $JOB.json
   # upload artifacts (this will change later)
@@ -284,7 +283,11 @@ def start(gsutil, paths, stamp, node_name, version, repos):
     gsutil.upload_json(paths.started, data)
     # Upload a link to the build path in the directory
     if paths.pr_build_link:
-        gsutil.upload_text(paths.pr_build_link, paths.pr_path)
+        gsutil.upload_text(
+            paths.pr_build_link,
+            paths.pr_path,
+            additional_headers=['-h', 'x-goog-meta-link: %s' % paths.pr_path]
+        )
 
 
 class GSUtil(object):
@@ -298,6 +301,11 @@ class GSUtil(object):
         """Return metadata about the object, such as generation."""
         cmd = [self.gsutil, 'stat', path]
         return self.call(cmd, output=True, log_failures=False)
+
+    def ls(self, path):
+        """List a bucket or subdir."""
+        cmd = [self.gsutil, 'ls', path]
+        return self.call(cmd, output=True)
 
     def upload_json(self, path, jdict, generation=None):
         """Upload the dictionary object to path."""
@@ -316,11 +324,13 @@ class GSUtil(object):
         cmd = [self.gsutil, '-q', 'cp', '-Z', orig, dest]
         self.call(cmd)
 
-    def upload_text(self, path, txt, cached=True):
+    def upload_text(self, path, txt, additional_headers=None, cached=True):
         """Copy the text to path, optionally disabling caching."""
         headers = ['-h', 'Content-Type:text/plain']
         if not cached:
             headers += ['-h', 'Cache-Control:private, max-age=0, no-transform']
+        if additional_headers:
+            headers += additional_headers
         cmd = [self.gsutil, '-q'] + headers + ['cp', '-', path]
         self.call(cmd, stdin=txt)
 
@@ -330,17 +340,32 @@ class GSUtil(object):
         return self.call(cmd, output=True)
 
 
-    def upload_artifacts(self, path, artifacts):
+    def upload_artifacts(self, gsutil, path, artifacts):
         """Upload artifacts to the specified path."""
         # Upload artifacts
-        if os.path.isdir(artifacts):
-            cmd = [
-                self.gsutil, '-m', '-q',
-                '-o', 'GSUtil:use_magicfile=True',
-                'cp', '-r', '-c', '-z', 'log,txt,xml',
-                artifacts, path,
-            ]
-            self.call(cmd)
+        if not os.path.isdir(artifacts):
+            return
+        try:
+            # If remote path exists, it will create .../_artifacts subdir instead
+            gsutil.ls(path)
+            # Success means remote path exists
+            remote_base = os.path.basename(path)
+            local_base = os.path.basename(artifacts)
+            if remote_base != local_base:
+                # if basename are different, need to copy things over first.
+                localpath = artifacts.replace(local_base, remote_base)
+                os.rename(artifacts, localpath)
+                artifacts = localpath
+            path = path[:-len(remote_base + '/')]
+        except subprocess.CalledProcessError:
+            logging.warning('Remote dir %s not exist yet', path)
+        cmd = [
+            self.gsutil, '-m', '-q',
+            '-o', 'GSUtil:use_magicfile=True',
+            'cp', '-r', '-c', '-z', 'log,txt,xml',
+            artifacts, path,
+        ]
+        self.call(cmd)
 
 
 def append_result(gsutil, path, build, version, passed):
@@ -436,7 +461,7 @@ def finish(gsutil, paths, success, artifacts, build, version, repos, call):
 
     if os.path.isdir(artifacts) and any(f for _, _, f in os.walk(artifacts)):
         try:
-            gsutil.upload_artifacts(paths.artifacts, artifacts)
+            gsutil.upload_artifacts(gsutil, paths.artifacts, artifacts)
         except subprocess.CalledProcessError:
             logging.warning('Failed to upload artifacts')
 
@@ -735,17 +760,13 @@ def job_args(args):
     return [os.path.expandvars(a) for a in args]
 
 
-def job_script(job, use_json):
+def job_script(job):
     """Return path to script for job."""
-    if not use_json:
-        return [test_infra('jobs/%s.sh' % job)]
     with open(test_infra('jobs/config.json')) as fp:
         config = json.loads(fp.read())
     job_config = config[job]
     cmd = test_infra('scenarios/%s.py' % job_config['scenario'])
     return [cmd] + job_args(job_config.get('args', []))
-
-
 
 
 def gubernator_uri(paths):
@@ -789,6 +810,9 @@ def setup_root(call, root, repos, ssh, git_cache, clean):
         os.makedirs(root)
     root_dir = os.path.realpath(root)
     logging.info('Root: %s', root_dir)
+    os.chdir(root_dir)
+    logging.info('cd to %s', root_dir)
+
     with choose_ssh_key(ssh):
         for repo, (branch, pull) in repos.items():
             os.chdir(root_dir)
@@ -853,8 +877,6 @@ def bootstrap(args):
     job = args.job
     repos = parse_repos(args)
     upload = args.upload
-    use_json = args.json
-
 
     build_log_path = os.path.abspath('build-log.txt')
     build_log = setup_logging(build_log_path)
@@ -897,7 +919,7 @@ def bootstrap(args):
             start(gsutil, paths, started, node(), version, repos)
         success = False
         try:
-            call(job_script(job, use_json))
+            call(job_script(job))
             logging.info('PASS: %s', job)
             success = True
         except subprocess.CalledProcessError:
@@ -929,10 +951,6 @@ def bootstrap(args):
 def parse_args(arguments=None):
     """Parse arguments or sys.argv[1:]."""
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        '--json',
-        nargs='?', const=1, default=0,
-        type=int, help='--job is a json key, not a .sh')
     parser.add_argument('--root', default='.', help='Root dir to work with')
     parser.add_argument(
         '--timeout', type=float, default=0, help='Timeout in minutes if set')

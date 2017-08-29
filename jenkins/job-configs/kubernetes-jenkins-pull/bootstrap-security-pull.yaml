@@ -55,7 +55,6 @@
         git clone https://github.com/kubernetes/test-infra -b master
         './test-infra/jenkins/bootstrap.py' \
             --job='{job-name}' \
-            --json \
             --pull="${{PULL_REFS}}" \
             --repo='{repo-name}' \
             --root="${{GOPATH}}/src" \
@@ -88,6 +87,11 @@
         job-name: pull-kubernetes-e2e-gce-etcd3
         repo-name: 'github.com/kubernetes-security/kubernetes'
         timeout: 85
+    - kubernetes-e2e-gce-gpu:
+        max-total: 12
+        job-name: pull-kubernetes-e2e-gce-gpu
+        repo-name: 'github.com/kubernetes-security/kubernetes'
+        timeout: 80
     - kubernetes-e2e-kops-aws:
         max-total: 12
         job-name: pull-kubernetes-e2e-kops-aws
@@ -98,11 +102,6 @@
         job-name: pull-kubernetes-kubemark-e2e-gce
         repo-name: 'github.com/kubernetes-security/kubernetes'
         timeout: 65
-    - kubernetes-kubemark-e2e-gce-gci:
-        max-total: 12
-        job-name: pull-kubernetes-kubemark-e2e-gce-gci
-        repo-name: 'github.com/kubernetes-security/kubernetes'
-        timeout: 75
     - kubernetes-node-e2e:
         max-total: 12
         job-name: pull-kubernetes-node-e2e
@@ -112,7 +111,7 @@
         max-total: 16
         job-name: pull-kubernetes-verify
         repo-name: 'github.com/kubernetes-security/kubernetes'
-        timeout: 60
+        timeout: 75
     - kubernetes-unit:
         max-total: 16
         job-name: pull-kubernetes-unit

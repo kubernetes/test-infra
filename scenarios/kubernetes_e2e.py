@@ -30,8 +30,12 @@ import subprocess
 import sys
 import tempfile
 import traceback
+import urllib2
 
 ORIG_CWD = os.getcwd()  # Checkout changes cwd
+
+# Note: This variable is managed by experiment/bump_e2e_image.sh.
+DEFAULT_KUBEKINS_TAG = 'v20170828-2b398899'
 
 def test_infra(*paths):
     """Return path relative to root of test-infra repo."""
@@ -86,7 +90,7 @@ def kubeadm_version(mode):
         # Work-around for release-1.6 jobs, which still upload debs to an older
         # location (without os/arch prefixes).
         # TODO(pipejakob): remove this when we no longer support 1.6.x.
-        if version.startswith("v1.6."):
+        if version.startswith('v1.6.'):
             return 'gs://kubernetes-release-dev/bazel/%s/build/debs/' % version
 
     elif mode == 'pull':
@@ -131,11 +135,31 @@ class LocalMode(object):
                     continue
                 self.env_files.append(parse_env(line))
 
+    def add_env(self, env):
+        self.env_files.append(parse_env(env))
+
     def add_aws_cred(self, priv, pub, cred):
         """Sets aws keys and credentials."""
-        self.add_environment('JENKINS_AWS_SSH_PRIVATE_KEY_FILE=%s' % priv)
-        self.add_environment('JENKINS_AWS_SSH_PUBLIC_KEY_FILE=%s' % pub)
-        self.add_environment('JENKINS_AWS_CREDENTIALS_FILE=%s' % cred)
+        ssh_dir = '%s/.ssh' % self.workspace
+        if not os.path.isdir(ssh_dir):
+            os.makedirs(ssh_dir)
+
+        cred_dir = '%s/.aws' % self.workspace
+        if not os.path.isdir(cred_dir):
+            os.makedirs(cred_dir)
+
+        aws_ssh = '%s/kube_aws_rsa' % ssh_dir
+        aws_pub = '%s/kube_aws_rsa.pub' % ssh_dir
+        aws_cred = '%s/credentials' % cred_dir
+        shutil.copy(priv, aws_ssh)
+        shutil.copy(pub, aws_pub)
+        shutil.copy(cred, aws_cred)
+
+        self.add_environment(
+            'JENKINS_AWS_SSH_PRIVATE_KEY_FILE=%s' % priv,
+            'JENKINS_AWS_SSH_PUBLIC_KEY_FILE=%s' % pub,
+            'JENKINS_AWS_CREDENTIALS_FILE=%s' % cred,
+        )
 
     def add_gce_ssh(self, priv, pub):
         """Copies priv, pub keys to $WORKSPACE/.ssh."""
@@ -225,8 +249,8 @@ class DockerMode(object):
 
         if sudo:
             self.cmd.extend(['-v', '/var/run/docker.sock:/var/run/docker.sock'])
-        self._add_env_var('HOME=/workspace')
-        self._add_env_var('WORKSPACE=/workspace')
+        self.add_env('HOME=/workspace')
+        self.add_env('WORKSPACE=/workspace')
 
     def add_environment(self, *envs):
         """Adds FOO=BAR to the -e list for docker.
@@ -247,21 +271,21 @@ class DockerMode(object):
             if key in docker_env_ignore:
                 print >>sys.stderr, 'Skipping environment variable %s' % env
             else:
-                self._add_env_var(env)
+                self.add_env(env)
 
     def add_os_environment(self, *envs):
         """Adds os envs as FOO=BAR to the -e list for docker."""
         self.add_environment(*envs)
 
-    def _add_env_var(self, env):
+    def add_file(self, env_file):
+        """Adds the file to the --env-file list."""
+        self.cmd.extend(['--env-file', env_file])
+
+    def add_env(self, env):
         """Adds a single environment variable to the -e list for docker.
 
         Does not check against any blacklists."""
         self.cmd.extend(['-e', env])
-
-    def add_file(self, env_file):
-        """Adds the file to the --env-file list."""
-        self.cmd.extend(['--env-file', env_file])
 
     def add_k8s(self, k8s, *repos):
         """Add the specified k8s.io repos into container."""
@@ -291,9 +315,9 @@ class DockerMode(object):
 
     def add_aws_runner(self):
         """Run kops_aws_runner for kops-aws jobs."""
-        self.cmd.append([
+        self.cmd.append(
           '--entrypoint=/workspace/kops-e2e-runner.sh'
-        ])
+        )
 
     def add_gce_ssh(self, priv, pub):
         """Mounts priv and pub inside the container."""
@@ -376,7 +400,7 @@ def set_up_aws(args, mode, cluster, runner_args):
                 '[profile jenkins-assumed-role]\nrole_arn = %s\nsource_profile = %s\n' % (
                     args.aws_role_arn, profile))
             mode.add_aws_profile(cfg.name, aws_config)
-    profile = 'jenkins-assumed-role'
+        profile = 'jenkins-assumed-role'
 
     zones = args.kops_zones or random.choice([
         'us-west-1a',
@@ -401,13 +425,19 @@ def set_up_aws(args, mode, cluster, runner_args):
 
     runner_args.extend([
         '--kops-cluster=%s' % cluster,
-        '--kops-zones=%s ' % zones,
+        '--kops-zones=%s' % zones,
         '--kops-state=%s' % args.kops_state,
         '--kops-nodes=%s' % args.kops_nodes,
         '--kops-ssh-key=%s' % aws_ssh,
     ])
     # TODO(krzyzacy):Remove after retire kops-e2e-runner.sh
     mode.add_aws_runner()
+
+def read_gcs_path(gcs_path):
+    link = gcs_path.replace('gs://', 'https://storage.googleapis.com/')
+    loc = urllib2.urlopen(link).read()
+    print >>sys.stderr, "Read GCS Path: %s" % loc
+    return loc
 
 def main(args):
     """Set up env, start kubekins-e2e, handle termination. """
@@ -437,11 +467,10 @@ def main(args):
     else:
         raise ValueError(args.mode)
 
-    if args.env_file:
-        for env_file in args.env_file:
-            mode.add_file(test_infra(env_file))
-    if args.gce_ssh:
-        mode.add_gce_ssh(args.gce_ssh, args.gce_pub)
+    for env_file in args.env_file:
+        mode.add_file(test_infra(env_file))
+    for env in args.env:
+        mode.add_env(env)
 
     # TODO(fejta): remove after next image push
     mode.add_environment('KUBETEST_MANUAL_DUMP=y')
@@ -454,7 +483,22 @@ def main(args):
         runner_args.append(
             '--gcp-service-account=%s' % mode.add_service_account(args.service_account))
 
-    if args.build is not None:
+    if args.use_shared_build is not None:
+        # find shared build location from GCS
+        build_file = ''
+        if args.use_shared_build:
+            build_file += args.use_shared_build + '-'
+        build_file += 'build-location.txt'
+        gcs_path = os.path.join(args.gcs_shared, os.getenv('PULL_REFS', ''), build_file)
+        print >>sys.stderr, 'Getting shared build location from: '+gcs_path
+        try:
+            # tell kubetest to extract from this location
+            args.kubetest_args.append('--extract=' + read_gcs_path(gcs_path))
+            args.build = None
+        except urllib2.URLError as err:
+            raise RuntimeError('Failed to get shared build location: %s' % err.reason)
+
+    elif args.build is not None:
         if args.build == '':
             # Empty string means --build was passed without any arguments;
             # if --build wasn't passed, args.build would be None
@@ -497,6 +541,8 @@ def main(args):
 
     if args.aws:
         set_up_aws(args, mode, cluster, runner_args)
+    elif args.gce_ssh:
+        mode.add_gce_ssh(args.gce_ssh, args.gce_pub)
 
     # TODO(fejta): delete this?
     mode.add_os_environment(*(
@@ -526,7 +572,12 @@ def create_parser():
     parser.add_argument(
         '--mode', default='local', choices=['local', 'docker'])
     parser.add_argument(
-        '--env-file', action="append", help='Job specific environment file')
+        '--env-file', default=[], action="append",
+        help='Job specific environment file')
+    parser.add_argument(
+        '--env', default=[], action="append",
+        help='Job specific environment setting ' +
+        '(usage: "--env=VAR=SETTING" will set VAR to SETTING).')
     parser.add_argument(
         '--image-family',
         help='The image family from which to fetch the latest image')
@@ -553,13 +604,20 @@ def create_parser():
         '--build', nargs='?', default=None, const='',
         help='Build kubernetes binaries if set, optionally specifying strategy')
     parser.add_argument(
+        '--use-shared-build', nargs='?', default=None, const='',
+        help='Use prebuilt kubernetes binaries if set, optionally specifying strategy')
+    parser.add_argument(
+        '--gcs-shared',
+        default='gs://kubernetes-jenkins/shared-results/',
+        help='Get shared build from this bucket')
+    parser.add_argument(
         '--cluster', default='bootstrap-e2e', help='Name of the cluster')
     parser.add_argument(
         '--docker-in-docker', action='store_true', help='Enable run docker within docker')
     parser.add_argument(
         '--kubeadm', choices=['ci', 'periodic', 'pull'])
     parser.add_argument(
-        '--tag', default='v20170728-faff708c', help='Use a specific kubekins-e2e tag if set')
+        '--tag', default=DEFAULT_KUBEKINS_TAG, help='Use a specific kubekins-e2e tag if set')
     parser.add_argument(
         '--test', default='true', help='If we need to run any actual test within kubetest')
     parser.add_argument(

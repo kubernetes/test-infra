@@ -139,7 +139,6 @@ func TestParseLogins(t *testing.T) {
 func TestAssignAndReview(t *testing.T) {
 	var testcases = []struct {
 		name        string
-		action      string
 		body        string
 		commenter   string
 		assigned    []string
@@ -150,54 +149,41 @@ func TestAssignAndReview(t *testing.T) {
 	}{
 		{
 			name:      "unrelated comment",
-			action:    "created",
 			body:      "uh oh",
 			commenter: "o",
 		},
 		{
-			name:      "not created",
-			action:    "something",
-			body:      "/assign",
-			commenter: "o",
-		},
-		{
 			name:      "assign on open",
-			action:    "opened",
 			body:      "/assign",
 			commenter: "rando",
 			assigned:  []string{"rando"},
 		},
 		{
 			name:      "assign me",
-			action:    "created",
 			body:      "/assign",
 			commenter: "rando",
 			assigned:  []string{"rando"},
 		},
 		{
 			name:       "unassign myself",
-			action:     "created",
 			body:       "/unassign",
 			commenter:  "rando",
 			unassigned: []string{"rando"},
 		},
 		{
 			name:      "tab completion",
-			action:    "created",
 			body:      "/assign @fejta ",
 			commenter: "rando",
 			assigned:  []string{"fejta"},
 		},
 		{
 			name:      "no @ works too",
-			action:    "created",
 			body:      "/assign fejta",
 			commenter: "rando",
 			assigned:  []string{"fejta"},
 		},
 		{
 			name:       "multi commands",
-			action:     "created",
 			body:       "/assign @fejta\n/unassign @spxtr",
 			commenter:  "rando",
 			assigned:   []string{"fejta"},
@@ -205,61 +191,52 @@ func TestAssignAndReview(t *testing.T) {
 		},
 		{
 			name:      "interesting names",
-			action:    "created",
 			body:      "/assign @hello-world @allow_underscore",
 			commenter: "rando",
 			assigned:  []string{"hello-world", "allow_underscore"},
 		},
 		{
 			name:      "bad login",
-			action:    "created",
 			commenter: "rando",
 			body:      "/assign @Invalid$User",
 		},
 		{
 			name:      "bad login, no @",
-			action:    "created",
 			commenter: "rando",
 			body:      "/assign Invalid$User",
 		},
 		{
 			name:      "assign friends",
-			action:    "created",
 			body:      "/assign @bert @ernie",
 			commenter: "rando",
 			assigned:  []string{"bert", "ernie"},
 		},
 		{
 			name:       "unassign buddies",
-			action:     "created",
 			body:       "/unassign @ashitaka @eboshi",
 			commenter:  "san",
 			unassigned: []string{"ashitaka", "eboshi"},
 		},
 		{
 			name:       "unassign buddies, trailing space.",
-			action:     "created",
 			body:       "/unassign @ashitaka @eboshi \r",
 			commenter:  "san",
 			unassigned: []string{"ashitaka", "eboshi"},
 		},
 		{
 			name:      "evil commenter",
-			action:    "created",
 			body:      "/assign @merlin",
 			commenter: "evil",
 			assigned:  []string{"merlin"},
 		},
 		{
 			name:      "evil commenter self assign",
-			action:    "created",
 			body:      "/assign",
 			commenter: "evil",
 			commented: true,
 		},
 		{
 			name:      "evil assignee",
-			action:    "created",
 			body:      "/assign @evil @merlin",
 			commenter: "innocent",
 			assigned:  []string{"merlin"},
@@ -267,41 +244,30 @@ func TestAssignAndReview(t *testing.T) {
 		},
 		{
 			name:       "evil unassignee",
-			action:     "created",
 			body:       "/unassign @evil @merlin",
 			commenter:  "innocent",
 			unassigned: []string{"evil", "merlin"},
 		},
 		{
-			name:      "not created",
-			action:    "something",
-			body:      "/cc @merlin",
-			commenter: "o",
-		},
-		{
 			name:      "review on open",
-			action:    "opened",
 			body:      "/cc @merlin",
 			commenter: "rando",
 			requested: []string{"merlin"},
 		},
 		{
 			name:      "tab completion",
-			action:    "created",
 			body:      "/cc @cjwagner ",
 			commenter: "rando",
 			requested: []string{"cjwagner"},
 		},
 		{
 			name:      "no @ works too",
-			action:    "created",
 			body:      "/cc cjwagner ",
 			commenter: "rando",
 			requested: []string{"cjwagner"},
 		},
 		{
 			name:        "multi commands",
-			action:      "created",
 			body:        "/cc @cjwagner\n/uncc @spxtr",
 			commenter:   "rando",
 			requested:   []string{"cjwagner"},
@@ -309,47 +275,40 @@ func TestAssignAndReview(t *testing.T) {
 		},
 		{
 			name:      "interesting names",
-			action:    "created",
 			body:      "/cc @hello-world @allow_underscore",
 			commenter: "rando",
 			requested: []string{"hello-world", "allow_underscore"},
 		},
 		{
 			name:      "bad login",
-			action:    "created",
 			commenter: "rando",
 			body:      "/cc @Invalid$User",
 		},
 		{
 			name:      "bad login",
-			action:    "created",
 			commenter: "rando",
 			body:      "/cc Invalid$User",
 		},
 		{
 			name:      "request multiple",
-			action:    "created",
 			body:      "/cc @cjwagner @merlin",
 			commenter: "rando",
 			requested: []string{"cjwagner", "merlin"},
 		},
 		{
 			name:        "unrequest buddies",
-			action:      "created",
 			body:        "/uncc @ashitaka @eboshi",
 			commenter:   "san",
 			unrequested: []string{"ashitaka", "eboshi"},
 		},
 		{
 			name:      "evil commenter",
-			action:    "created",
 			body:      "/cc @merlin",
 			commenter: "evil",
 			requested: []string{"merlin"},
 		},
 		{
 			name:      "evil reviewer requested",
-			action:    "created",
 			body:      "/cc @evil @merlin",
 			commenter: "innocent",
 			requested: []string{"merlin"},
@@ -357,14 +316,12 @@ func TestAssignAndReview(t *testing.T) {
 		},
 		{
 			name:        "evil reviewer unrequested",
-			action:      "created",
 			body:        "/uncc @evil @merlin",
 			commenter:   "innocent",
 			unrequested: []string{"evil", "merlin"},
 		},
 		{
 			name:        "multi command types",
-			action:      "created",
 			body:        "/assign @fejta\n/unassign @spxtr @cjwagner\n/uncc @merlin \n/cc @cjwagner",
 			commenter:   "rando",
 			assigned:    []string{"fejta"},
@@ -374,21 +331,18 @@ func TestAssignAndReview(t *testing.T) {
 		},
 		{
 			name:      "request review self",
-			action:    "opened",
 			body:      "/cc",
 			commenter: "cjwagner",
 			requested: []string{"cjwagner"},
 		},
 		{
 			name:        "unrequest review self",
-			action:      "opened",
 			body:        "/uncc",
 			commenter:   "cjwagner",
 			unrequested: []string{"cjwagner"},
 		},
 		{
 			name:        "request review self, with unrequest friend, with trailing space.",
-			action:      "opened",
 			body:        "/cc \n/uncc @spxtr ",
 			commenter:   "cjwagner",
 			requested:   []string{"cjwagner"},
@@ -398,7 +352,6 @@ func TestAssignAndReview(t *testing.T) {
 	for _, tc := range testcases {
 		fc := newFakeClient([]string{"hello-world", "allow_underscore", "cjwagner", "merlin"})
 		e := &event{
-			action: tc.action,
 			body:   tc.body,
 			login:  tc.commenter,
 			org:    "org",

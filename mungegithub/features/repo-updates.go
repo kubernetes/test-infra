@@ -176,7 +176,7 @@ func (o *RepoInfo) walkFunc(path string, info os.FileInfo, err error) error {
 	return nil
 }
 
-// caseNormalizeAll normalizes normalizes all entries in
+// caseNormalizeAll normalizes all entries in
 // the assignment configuration so that we can do case-
 // insensitive operations on the entries
 func (c *assignmentConfig) normalizeUsers() {
@@ -257,7 +257,7 @@ func (o *RepoInfo) expandAllAliases() {
 	}
 
 	for filePath := range o.reviewers {
-		o.resolveAliases(o.approvers[filePath])
+		o.resolveAliases(o.reviewers[filePath])
 	}
 }
 

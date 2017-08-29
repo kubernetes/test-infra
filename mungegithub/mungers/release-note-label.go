@@ -34,15 +34,20 @@ import (
 const (
 	releaseNoteLabeler = "release-note-label"
 
-	releaseNoteLabelNeeded    = "release-note-label-needed"
+	// deprecatedReleaseNoteLabelNeeded is the previous version of the
+	// releaseNotLabelNeeded label, which we continue to honor for the
+	// time being
+	deprecatedReleaseNoteLabelNeeded = "release-note-label-needed"
+
+	releaseNoteLabelNeeded    = "do-not-merge/release-note-label-needed"
 	releaseNote               = "release-note"
 	releaseNoteNone           = "release-note-none"
 	releaseNoteActionRequired = "release-note-action-required"
 	releaseNoteExperimental   = "release-note-experimental"
 
-	releaseNoteFormat = `Adding ` + doNotMergeLabel + ` because the release note process has not been followed.
+	releaseNoteFormat = `Adding ` + releaseNoteLabelNeeded + ` because the release note process has not been followed.
 One of the following labels is required %q, %q, %q or %q.
-Please see: https://github.com/kubernetes/kubernetes/blob/master/docs/devel/pull-requests.md#release-notes.`
+Please see: https://github.com/kubernetes/community/blob/master/contributors/devel/pull-requests.md#write-release-notes-if-needed.`
 	parentReleaseNoteFormat = `The 'parent' PR of a cherry-pick PR must have one of the %q or %q labels, or this PR must follow the standard/parent release note labeling requirement. (release-note-experimental must be explicit for cherry-picks)`
 
 	noReleaseNoteComment = "none"
@@ -55,7 +60,7 @@ var (
 	noteMatcherRE         = regexp.MustCompile(`(?s)(?:Release note\*\*:\s*(?:<!--[^<>]*-->\s*)?` + "```(?:release-note)?|```release-note)(.+?)```")
 )
 
-// ReleaseNoteLabel will add the doNotMergeLabel to a PR which has not
+// ReleaseNoteLabel will add the releaseNoteMissingLabel to a PR which has not
 // set one of the appropriete 'release-note-*' labels but has LGTM
 type ReleaseNoteLabel struct {
 	config *github.Config
@@ -136,36 +141,23 @@ func (r *ReleaseNoteLabel) Munge(obj *github.MungeObject) {
 	}
 
 	labelToAdd := determineReleaseNoteLabel(obj)
-	if labelToAdd != releaseNoteLabelNeeded {
+	if labelToAdd == releaseNoteLabelNeeded {
+		obj.WriteComment(releaseNoteBody)
+	} else {
 		//going to apply some other release-note-label
 		if obj.HasLabel(releaseNoteLabelNeeded) {
 			obj.RemoveLabel(releaseNoteLabelNeeded)
 		}
-		obj.AddLabel(labelToAdd)
-		return
 	}
-
-	if !obj.HasLabel(releaseNoteLabelNeeded) {
-		obj.AddLabel(releaseNoteLabelNeeded)
-	}
-
-	if !obj.HasLabel(lgtmLabel) {
-		return
-	}
-
-	if obj.HasLabel(doNotMergeLabel) {
-		return
-	}
-
-	obj.WriteComment(releaseNoteBody)
-	obj.AddLabel(doNotMergeLabel)
+	obj.AddLabel(labelToAdd)
+	return
 }
 
 // determineReleaseNoteLabel returns the label to be added if
 // correctly implemented in the PR template.  returns nil otherwise
 func determineReleaseNoteLabel(obj *github.MungeObject) string {
 	if obj.Issue.Body == nil {
-		return ""
+		return releaseNoteLabelNeeded
 	}
 	potentialMatch := getReleaseNote(*obj.Issue.Body)
 	return chooseLabel(potentialMatch)

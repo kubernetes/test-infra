@@ -33,8 +33,7 @@ def sort():
     with open(test_infra('jobs/config.json'), 'r+') as fp:
         configs = json.loads(fp.read())
     regexp = re.compile('|'.join([
-        r'^KUBEMARK_MASTER_SIZE=(.*)$',
-        r'^KUBEMARK_NUM_NODES=(.*)$',
+        r'^JENKINS_GCI_PATCH_K8S=(.*)$',
     ]))
     problems = []
     for job, values in configs.items():
@@ -64,6 +63,9 @@ def sort():
             mat = regexp.search(line)
             if not mat:
                 lines.append(line)
+                continue
+            if mat:  # These do nothing
+                mod = True
                 continue
             master, nodes = mat.groups()
             stop = False

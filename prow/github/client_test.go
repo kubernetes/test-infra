@@ -25,6 +25,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"strconv"
+	"strings"
 	"testing"
 	"time"
 )
@@ -79,6 +80,32 @@ func TestRetry404(t *testing.T) {
 		t.Errorf("Error from request: %v", err)
 	} else if resp.StatusCode != 200 {
 		t.Errorf("Expected status code 200, got %d", resp.StatusCode)
+	}
+}
+
+func TestBotName(t *testing.T) {
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			t.Errorf("Bad method: %s", r.Method)
+		}
+		if r.URL.Path != "/user" {
+			t.Errorf("Bad request path: %s", r.URL.Path)
+		}
+		fmt.Fprint(w, "{\"login\": \"wowza\"}")
+	}))
+	c := getClient(ts.URL)
+	botName, err := c.BotName()
+	if err != nil {
+		t.Errorf("Didn't expect error: %v", err)
+	} else if botName != "wowza" {
+		t.Errorf("Wrong bot name. Got %s, expected wowza.", botName)
+	}
+	ts.Close()
+	botName, err = c.BotName()
+	if err != nil {
+		t.Errorf("Didn't expect error: %v", err)
+	} else if botName != "wowza" {
+		t.Errorf("Wrong bot name. Got %s, expected wowza.", botName)
 	}
 }
 
@@ -712,6 +739,25 @@ func TestReopenPR(t *testing.T) {
 }
 
 func TestFindIssues(t *testing.T) {
+	cases := []struct {
+		name  string
+		sort  bool
+		order bool
+	}{
+		{
+			name: "simple query",
+		},
+		{
+			name: "sort no order",
+			sort: true,
+		},
+		{
+			name:  "sort and order",
+			sort:  true,
+			order: true,
+		},
+	}
+
 	issueNum := 5
 	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodGet {
@@ -723,7 +769,10 @@ func TestFindIssues(t *testing.T) {
 		issueList := IssuesSearchResult{
 			Total: 1,
 			Issues: []Issue{
-				{Number: issueNum},
+				{
+					Number: issueNum,
+					Title:  r.URL.RawQuery,
+				},
 			},
 		}
 		b, err := json.Marshal(&issueList)
@@ -735,16 +784,28 @@ func TestFindIssues(t *testing.T) {
 	defer ts.Close()
 	c := getClient(ts.URL)
 
-	var result []Issue
-	var err error
-	if result, err = c.FindIssues("commit_hash"); err != nil {
-		t.Errorf("Didn't expect error: %v", err)
-	}
-	if len(result) != 1 {
-		t.Errorf("Unexpected number of results: %v", len(result))
-	}
-	if result[0].Number != issueNum {
-		t.Errorf("Expected issue number %+v, got %+v", issueNum, result[0].Number)
+	for _, tc := range cases {
+		var result []Issue
+		var err error
+		sort := ""
+		if tc.sort {
+			sort = "sort-strategy"
+		}
+		if result, err = c.FindIssues("commit_hash", sort, tc.order); err != nil {
+			t.Errorf("%s: didn't expect error: %v", tc.name, err)
+		}
+		if len(result) != 1 {
+			t.Errorf("%s: unexpected number of results: %v", tc.name, len(result))
+		}
+		if result[0].Number != issueNum {
+			t.Errorf("%s: expected issue number %+v, got %+v", tc.name, issueNum, result[0].Number)
+		}
+		if tc.sort && !strings.Contains(result[0].Title, "sort="+sort) {
+			t.Errorf("%s: missing sort=%s from query: %s", tc.name, sort, result[0].Title)
+		}
+		if tc.order && !strings.Contains(result[0].Title, "order=asc") {
+			t.Errorf("%s: missing order=asc from query: %s", tc.name, result[0].Title)
+		}
 	}
 }
 

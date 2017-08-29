@@ -1,7 +1,5 @@
 package(default_visibility = ["//visibility:public"])
 
-licenses(["notice"])
-
 load(
     "@io_bazel_rules_go//go:def.bzl",
     "go_binary",
@@ -15,7 +13,6 @@ go_binary(
         "//prow:configs",
     ],
     library = ":go_default_library",
-    tags = ["automanaged"],
 )
 
 go_test(
@@ -25,14 +22,12 @@ go_test(
         "//prow:configs",
     ],
     library = ":go_default_library",
-    tags = ["automanaged"],
     deps = ["//prow/plugins:go_default_library"],
 )
 
 go_library(
     name = "go_default_library",
     srcs = ["main.go"],
-    tags = ["automanaged"],
     deps = [
         "//prow/config:go_default_library",
         "//prow/git:go_default_library",
@@ -49,11 +44,13 @@ go_library(
         "//prow/plugins/lgtm:go_default_library",
         "//prow/plugins/releasenote:go_default_library",
         "//prow/plugins/reopen:go_default_library",
+        "//prow/plugins/size:go_default_library",
         "//prow/plugins/trigger:go_default_library",
         "//prow/plugins/updateconfig:go_default_library",
+        "//prow/plugins/wip:go_default_library",
         "//prow/plugins/yuks:go_default_library",
         "//prow/slack:go_default_library",
-        "//vendor:github.com/Sirupsen/logrus",
+        "//vendor/github.com/Sirupsen/logrus:go_default_library",
     ],
 )
 

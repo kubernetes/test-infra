@@ -39,7 +39,7 @@ Note that items in the OWNERS files can be GitHub usernames, or aliases defined 
 
 ### lgtm Label
 
-LGTM is abbreviation for "look good to me". The **lgtm** label is normally given when the code has been thoroughly reviewed.  Getting it means the PR is one step away from getting merged.  Reviewers of the PR give the label to a PR by typing /lgtm in a comment, or retract it by typing /lgtm cancel. Authors of the PR cannot give the label, but they can cancel it. The bot retracts the label automatically if someone updates the PR with a new commit. There is also a bulk LGTM tool that scans multiple short PRs at once, and then gives the label to them in bulk.
+LGTM is abbreviation for "look good to me". The **lgtm** label is normally given when the code has been thoroughly reviewed.  Getting it means the PR is one step away from getting merged.  Reviewers of the PR give the label to a PR by typing /lgtm in a comment, or retract it by typing /lgtm cancel. Authors of the PR cannot give the label, but they can cancel it. The bot retracts the label automatically if someone updates the PR with a new commit.
 
 ### Blunderbuss Selection Mechanism
 
@@ -211,8 +211,6 @@ Blunderbuss: [mungegithub/mungers/blunderbuss.go](https://github.com/kubernetes/
 
 LGTM:
 [prow/plugins/lgtm/lgtm.go](https://github.com/kubernetes/test-infra/blob/master/prow/plugins/lgtm/lgtm.go)
-
-[mungegithub/mungers/bulk-lgtm.go](https://github.com/kubernetes/test-infra/blob/master/mungegithub/mungers/bulk-lgtm.go)
 
 Approve:
 [mungegithub/mungers/approval-handler.go](https://github.com/kubernetes/test-infra/blob/master/mungegithub/mungers/approval-handler.go)

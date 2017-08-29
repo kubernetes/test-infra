@@ -124,6 +124,9 @@ def check_ci_jobs():
 
     # Hard code node-ci project here
     clean_project('k8s-jkns-ci-node-e2e')
+    # gke internal project
+    clean_project('gke-e2e-createdelete')
+
 
 def clean_aws(image, cred):
     """Handle aws jobs"""

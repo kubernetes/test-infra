@@ -34,7 +34,6 @@ import (
 	"k8s.io/kubernetes/pkg/util/sets"
 
 	"k8s.io/contrib/test-utils/utils"
-	"k8s.io/test-infra/mungegithub/admin"
 	"k8s.io/test-infra/mungegithub/features"
 	"k8s.io/test-infra/mungegithub/github"
 	"k8s.io/test-infra/mungegithub/mungeopts"
@@ -43,12 +42,12 @@ import (
 	"k8s.io/test-infra/mungegithub/mungers/mungerutil"
 	"k8s.io/test-infra/mungegithub/mungers/shield"
 	"k8s.io/test-infra/mungegithub/options"
+	"k8s.io/test-infra/mungegithub/sharedmux"
 
 	"github.com/NYTimes/gziphandler"
 	"github.com/golang/glog"
 	githubapi "github.com/google/go-github/github"
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 const (
@@ -57,6 +56,7 @@ const (
 	retestNotRequiredLabel         = "retest-not-required"
 	retestNotRequiredDocsOnlyLabel = "retest-not-required-docs-only"
 	doNotMergeLabel                = "do-not-merge"
+	wipLabel                       = "do-not-merge/work-in-progress"
 	claYesLabel                    = "cla: yes"
 	claNoLabel                     = "cla: no"
 	cncfClaYesLabel                = "cncf-cla: yes"
@@ -177,7 +177,6 @@ type submitQueueBatchStatus struct {
 }
 
 type prometheusMetrics struct {
-	Loops      prometheus.Counter
 	Blocked    prometheus.Gauge
 	OpenPRs    prometheus.Gauge
 	QueuedPRs  prometheus.Gauge
@@ -185,11 +184,7 @@ type prometheusMetrics struct {
 }
 
 var (
-	promMetrics = prometheusMetrics{
-		Loops: prometheus.NewCounter(prometheus.CounterOpts{
-			Name: "submitqueue_loops",
-			Help: "Number of loops performed by the queue",
-		}),
+	sqPromMetrics = prometheusMetrics{
 		Blocked: prometheus.NewGauge(prometheus.GaugeOpts{
 			Name: "submitqueue_blocked",
 			Help: "The submit-queue is currently blocked",
@@ -283,11 +278,10 @@ type SubmitQueue struct {
 
 func init() {
 	clock := utilclock.RealClock{}
-	prometheus.MustRegister(promMetrics.Loops)
-	prometheus.MustRegister(promMetrics.Blocked)
-	prometheus.MustRegister(promMetrics.OpenPRs)
-	prometheus.MustRegister(promMetrics.QueuedPRs)
-	prometheus.MustRegister(promMetrics.MergeCount)
+	prometheus.MustRegister(sqPromMetrics.Blocked)
+	prometheus.MustRegister(sqPromMetrics.OpenPRs)
+	prometheus.MustRegister(sqPromMetrics.QueuedPRs)
+	prometheus.MustRegister(sqPromMetrics.MergeCount)
 	sq := &SubmitQueue{
 		clock:          clock,
 		startTime:      clock.Now(),
@@ -305,7 +299,7 @@ func (sq *SubmitQueue) Name() string { return "submit-queue" }
 
 // RequiredFeatures is a slice of 'features' that must be provided
 func (sq *SubmitQueue) RequiredFeatures() []string {
-	return []string{features.BranchProtectionFeature}
+	return []string{features.BranchProtectionFeature, features.ServerFeatureName}
 }
 
 func (sq *SubmitQueue) emergencyMergeStop() bool {
@@ -399,7 +393,7 @@ func (sq *SubmitQueue) updateMergeRate() {
 	sq.mergeRate = calcMergeRate(sq.mergeRate, sq.lastMergeTime, now)
 
 	// Update stats
-	promMetrics.MergeCount.Inc()
+	sqPromMetrics.MergeCount.Inc()
 	atomic.AddInt32(&sq.totalMerges, 1)
 	sq.lastMergeTime = now
 }
@@ -474,40 +468,34 @@ func (sq *SubmitQueue) internalInitialize(config *github.Config, features *featu
 			NonBlockingJobNames:  &sq.NonBlockingJobNames,
 			BuildStatus:          map[string]e2e.BuildInfo{},
 			GoogleGCSBucketUtils: gcs,
-		}).Init(admin.Mux)
+		}).Init(sharedmux.Admin)
 	}
 
 	sq.lgtmTimeCache = mungerutil.NewLabelTimeCache(lgtmLabel)
 
-	if len(mungeopts.Server.Address) > 0 {
-		if len(mungeopts.Server.WWWRoot) > 0 {
-			http.Handle("/", gziphandler.GzipHandler(http.FileServer(http.Dir(mungeopts.Server.WWWRoot))))
-		}
-		http.Handle("/prometheus", promhttp.Handler())
-		http.Handle("/prs", gziphandler.GzipHandler(http.HandlerFunc(sq.servePRs)))
-		http.Handle("/history", gziphandler.GzipHandler(http.HandlerFunc(sq.serveHistory)))
-		http.Handle("/github-e2e-queue", gziphandler.GzipHandler(http.HandlerFunc(sq.serveGithubE2EStatus)))
-		http.Handle("/merge-info", gziphandler.GzipHandler(http.HandlerFunc(sq.serveMergeInfo)))
-		http.Handle("/priority-info", gziphandler.GzipHandler(http.HandlerFunc(sq.servePriorityInfo)))
-		http.Handle("/health", gziphandler.GzipHandler(http.HandlerFunc(sq.serveHealth)))
-		http.Handle("/health.svg", gziphandler.GzipHandler(http.HandlerFunc(sq.serveHealthSVG)))
-		http.Handle("/sq-stats", gziphandler.GzipHandler(http.HandlerFunc(sq.serveSQStats)))
-		http.Handle("/flakes", gziphandler.GzipHandler(http.HandlerFunc(sq.serveFlakes)))
-		http.Handle("/metadata", gziphandler.GzipHandler(http.HandlerFunc(sq.serveMetadata)))
+	if features.Server.Enabled {
+		features.Server.Handle("/prs", gziphandler.GzipHandler(http.HandlerFunc(sq.servePRs)))
+		features.Server.Handle("/history", gziphandler.GzipHandler(http.HandlerFunc(sq.serveHistory)))
+		features.Server.Handle("/github-e2e-queue", gziphandler.GzipHandler(http.HandlerFunc(sq.serveGithubE2EStatus)))
+		features.Server.Handle("/merge-info", gziphandler.GzipHandler(http.HandlerFunc(sq.serveMergeInfo)))
+		features.Server.Handle("/priority-info", gziphandler.GzipHandler(http.HandlerFunc(sq.servePriorityInfo)))
+		features.Server.Handle("/health", gziphandler.GzipHandler(http.HandlerFunc(sq.serveHealth)))
+		features.Server.Handle("/health.svg", gziphandler.GzipHandler(http.HandlerFunc(sq.serveHealthSVG)))
+		features.Server.Handle("/sq-stats", gziphandler.GzipHandler(http.HandlerFunc(sq.serveSQStats)))
+		features.Server.Handle("/flakes", gziphandler.GzipHandler(http.HandlerFunc(sq.serveFlakes)))
+		features.Server.Handle("/metadata", gziphandler.GzipHandler(http.HandlerFunc(sq.serveMetadata)))
 		if sq.BatchEnabled {
-			http.Handle("/batch", gziphandler.GzipHandler(http.HandlerFunc(sq.serveBatch)))
+			features.Server.Handle("/batch", gziphandler.GzipHandler(http.HandlerFunc(sq.serveBatch)))
 		}
 		// this endpoint is useless without access to prow
 		if sq.ProwURL != "" {
-			http.Handle("/ci-status", gziphandler.GzipHandler(http.HandlerFunc(sq.serveCIStatus)))
+			features.Server.Handle("/ci-status", gziphandler.GzipHandler(http.HandlerFunc(sq.serveCIStatus)))
 		}
-		config.ServeDebugStats("/stats")
-		go http.ListenAndServe(mungeopts.Server.Address, nil)
 	}
 
-	admin.Mux.HandleFunc("/api/emergency/stop", sq.EmergencyStopHTTP)
-	admin.Mux.HandleFunc("/api/emergency/resume", sq.EmergencyStopHTTP)
-	admin.Mux.HandleFunc("/api/emergency/status", sq.EmergencyStopHTTP)
+	sharedmux.Admin.HandleFunc("/api/emergency/stop", sq.EmergencyStopHTTP)
+	sharedmux.Admin.HandleFunc("/api/emergency/resume", sq.EmergencyStopHTTP)
+	sharedmux.Admin.HandleFunc("/api/emergency/status", sq.EmergencyStopHTTP)
 
 	if sq.githubE2EPollTime == 0 {
 		sq.githubE2EPollTime = githubE2EPollTime
@@ -525,7 +513,7 @@ func (sq *SubmitQueue) internalInitialize(config *github.Config, features *featu
 	}
 
 	if sq.AdminPort != 0 {
-		go http.ListenAndServe(fmt.Sprintf("0.0.0.0:%v", sq.AdminPort), admin.Mux)
+		go http.ListenAndServe(fmt.Sprintf("0.0.0.0:%v", sq.AdminPort), sharedmux.Admin)
 	}
 	return nil
 }
@@ -556,8 +544,8 @@ func (sq *SubmitQueue) EachLoop() error {
 	}
 
 	sq.updateHealth()
-	promMetrics.OpenPRs.Set(float64(len(sq.prStatus)))
-	promMetrics.QueuedPRs.Set(float64(len(sq.githubE2EQueue)))
+	sqPromMetrics.OpenPRs.Set(float64(len(sq.prStatus)))
+	sqPromMetrics.QueuedPRs.Set(float64(len(sq.githubE2EQueue)))
 
 	objs := []*github.MungeObject{}
 	for _, obj := range sq.githubE2EQueue {
@@ -571,7 +559,6 @@ func (sq *SubmitQueue) EachLoop() error {
 		_ = sq.validForMerge(obj)
 	}
 	atomic.AddInt32(&sq.loopStarts, 1)
-	promMetrics.Loops.Inc()
 	return nil
 }
 
@@ -646,9 +633,9 @@ func (sq *SubmitQueue) updateHealth() {
 	sq.health.NumStablePerJob = map[string]int{}
 	sq.health.MergePossibleNow = !emergencyStop
 	if sq.health.MergePossibleNow {
-		promMetrics.Blocked.Set(0)
+		sqPromMetrics.Blocked.Set(0)
 	} else {
-		promMetrics.Blocked.Set(1)
+		sqPromMetrics.Blocked.Set(1)
 	}
 	for _, record := range sq.healthHistory {
 		if record.Overall {
@@ -964,6 +951,10 @@ func (sq *SubmitQueue) getGithubE2EStatus() []byte {
 	return sq.marshal(status)
 }
 
+func noMergeMessage(label string) string {
+	return "Will not auto merge because " + label + " is present"
+}
+
 const (
 	unknown                 = "unknown failure"
 	noCLA                   = "PR is missing CLA label; needs one of " + claYesLabel + ", " + cncfClaYesLabel + " or " + claHumanLabel
@@ -972,7 +963,6 @@ const (
 	lgtmEarly               = "The PR was changed after the " + lgtmLabel + " label was added."
 	unmergeable             = "PR is unable to be automatically merged. Needs rebase."
 	undeterminedMergability = "Unable to determine is PR is mergeable. Will try again later."
-	noMerge                 = "Will not auto merge because " + doNotMergeLabel + " is present"
 	ciFailure               = "Required Github CI test is not green"
 	ciFailureFmt            = ciFailure + ": %s"
 	e2eFailure              = "The e2e tests are failing. The entire submit queue is blocked."
@@ -1091,10 +1081,12 @@ func (sq *SubmitQueue) validForMergeExt(obj *github.MungeObject, checkStatus boo
 		}
 	}
 
-	// PR cannot have the label which prevents merging.
-	if obj.HasLabel(doNotMergeLabel) {
-		sq.SetMergeStatus(obj, noMerge)
-		return false
+	// PR cannot have any labels which prevent merging.
+	for _, label := range []string{cherrypickUnapprovedLabel, blockedPathsLabel, deprecatedReleaseNoteLabelNeeded, releaseNoteLabelNeeded, doNotMergeLabel, wipLabel} {
+		if obj.HasLabel(label) {
+			sq.SetMergeStatus(obj, noMergeMessage(label))
+			return false
+		}
 	}
 
 	return true
@@ -1596,7 +1588,7 @@ func (sq *SubmitQueue) serveMergeInfo(res http.ResponseWriter, req *http.Request
 	if gateApproved {
 		out.WriteString(fmt.Sprintf(`<li>The PR must have the %q label</li>`, approvedLabel))
 	}
-	out.WriteString(fmt.Sprintf("<li>The PR must not have the %q label</li>", doNotMergeLabel))
+	out.WriteString(`<li>The PR must not have the any labels starting with "do-not-merge"</li>`)
 	out.WriteString(`</ol><br>`)
 	out.WriteString("The PR can then be queued to re-test before merge. Once it reaches the top of the queue all of the above conditions must be true but so must the following:")
 	out.WriteString("<ol>")

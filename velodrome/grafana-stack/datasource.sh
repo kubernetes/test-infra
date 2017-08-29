@@ -32,7 +32,7 @@ env - server_hostname="${server_hostname}" envsubst <<EOF |
   "name": "github",
   "type": "influxdb",
   "access": "proxy",
-  "url": "http://${server_hostname}/influxdb/",
+  "url": "http://${server_hostname}:8181/",
   "user": "grafana",
   "password": "password",
   "database": "github",

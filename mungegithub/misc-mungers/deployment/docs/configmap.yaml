@@ -1,0 +1,16 @@
+# basic config options.
+http-cache-dir: /cache/httpcache
+organization: kubernetes
+project: kubernetes.github.io
+pr-mungers: blunderbuss
+state: open
+token-file: /etc/secret-volume/token
+period: 2m
+repo-dir: /gitrepos
+github-key-file: /etc/hook-secret-volume/secret
+enable-md-yaml: true
+use-reviewers: true
+blunderbuss-number-assignees: 1
+
+# munger specific options.
+label-file: "/gitrepos/kubernetes.github.io/labels.yaml"

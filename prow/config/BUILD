@@ -1,7 +1,5 @@
 package(default_visibility = ["//visibility:public"])
 
-licenses(["notice"])
-
 load(
     "@io_bazel_rules_go//go:def.bzl",
     "go_library",
@@ -21,10 +19,9 @@ go_test(
         "//scenarios",
     ],
     library = ":go_default_library",
-    tags = ["automanaged"],
     deps = [
         "//prow/kube:go_default_library",
-        "//vendor:github.com/ghodss/yaml",
+        "//vendor/github.com/ghodss/yaml:go_default_library",
     ],
 )
 
@@ -35,11 +32,10 @@ go_library(
         "config.go",
         "jobs.go",
     ],
-    tags = ["automanaged"],
     deps = [
         "//prow/kube:go_default_library",
-        "//vendor:github.com/Sirupsen/logrus",
-        "//vendor:github.com/ghodss/yaml",
+        "//vendor/github.com/Sirupsen/logrus:go_default_library",
+        "//vendor/github.com/ghodss/yaml:go_default_library",
     ],
 )
 

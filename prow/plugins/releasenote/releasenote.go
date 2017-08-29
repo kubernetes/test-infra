@@ -64,7 +64,7 @@ func handleIssueComment(pc plugins.PluginClient, ic github.IssueCommentEvent) er
 
 func handle(gc githubClient, log *logrus.Entry, ic github.IssueCommentEvent) error {
 	// Only consider PRs and new comments.
-	if !ic.Issue.IsPullRequest() || ic.Action != "created" {
+	if !ic.Issue.IsPullRequest() || ic.Action != github.IssueCommentActionCreated {
 		return nil
 	}
 
@@ -91,7 +91,7 @@ func handle(gc githubClient, log *logrus.Entry, ic github.IssueCommentEvent) err
 	isAuthor := ic.Issue.IsAuthor(ic.Comment.User.Login)
 
 	if !isMember && !isAuthor {
-		resp := "you can only set release notes if you are the author or an org member"
+		resp := "you can only set release notes if you are the author or an org member."
 		log.Infof("Commenting with \"%s\".", resp)
 		return gc.CreateComment(org, repo, number, plugins.FormatICResponse(ic.Comment, resp))
 	}

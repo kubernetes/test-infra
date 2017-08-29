@@ -18,15 +18,21 @@ package github
 
 import (
 	"bytes"
+	"context"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
+
+	"github.com/shurcooL/githubql"
+	"golang.org/x/oauth2"
 )
 
 type Logger interface {
@@ -37,16 +43,19 @@ type Client struct {
 	// If Logger is non-nil, log all method calls with it.
 	Logger Logger
 
-	client  *http.Client
+	gqlc   *githubql.Client
+	client *http.Client
+	token  string
+	base   string
+	dry    bool
+	fake   bool
+
+	// botName is protected by this mutex.
+	mut     sync.Mutex
 	botName string
-	token   string
-	base    string
-	dry     bool
-	fake    bool
 }
 
 const (
-	githubBase    = "https://api.github.com"
 	maxRetries    = 8
 	max404Retries = 2
 	maxSleepTime  = 2 * time.Minute
@@ -54,35 +63,33 @@ const (
 )
 
 // NewClient creates a new fully operational GitHub client.
-func NewClient(botName, token string) *Client {
+func NewClient(token, base string) *Client {
 	return &Client{
-		client:  &http.Client{},
-		botName: botName,
-		token:   token,
-		base:    githubBase,
-		dry:     false,
+		gqlc:   githubql.NewClient(oauth2.NewClient(context.Background(), oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token}))),
+		client: &http.Client{},
+		token:  token,
+		base:   base,
+		dry:    false,
 	}
 }
 
 // NewDryRunClient creates a new client that will not perform mutating actions
 // such as setting statuses or commenting, but it will still query GitHub and
 // use up API tokens.
-func NewDryRunClient(botName, token string) *Client {
+func NewDryRunClient(token, base string) *Client {
 	return &Client{
-		client:  &http.Client{},
-		botName: botName,
-		token:   token,
-		base:    githubBase,
-		dry:     true,
+		client: &http.Client{},
+		token:  token,
+		base:   base,
+		dry:    true,
 	}
 }
 
 // NewFakeClient creates a new client that will not perform any actions at all.
-func NewFakeClient(botName string) *Client {
+func NewFakeClient() *Client {
 	return &Client{
-		botName: botName,
-		fake:    true,
-		dry:     true,
+		fake: true,
+		dry:  true,
 	}
 }
 
@@ -175,7 +182,7 @@ func (c *Client) requestRetry(method, path, accept string, body interface{}) (*h
 						}
 					}
 				} else if oauthScopes := resp.Header.Get("X-Accepted-OAuth-Scopes"); len(oauthScopes) > 0 {
-					err = fmt.Errorf("is %s using at least one of the following oauth scopes?: %s", c.botName, oauthScopes)
+					err = fmt.Errorf("is the account using at least one of the following oauth scopes?: %s", oauthScopes)
 					break
 				}
 				resp.Body.Close()
@@ -223,8 +230,22 @@ func (c *Client) doRequest(method, path, accept string, body interface{}) (*http
 	return c.client.Do(req)
 }
 
-func (c *Client) BotName() string {
-	return c.botName
+func (c *Client) BotName() (string, error) {
+	c.mut.Lock()
+	defer c.mut.Unlock()
+	if c.botName == "" {
+		var u User
+		_, err := c.request(&request{
+			method:    http.MethodGet,
+			path:      fmt.Sprintf("%s/user", c.base),
+			exitCodes: []int{200},
+		}, &u)
+		if err != nil {
+			return "", fmt.Errorf("fetching bot name from GitHub: %v", err)
+		}
+		c.botName = u.Login
+	}
+	return c.botName, nil
 }
 
 // IsMember returns whether or not the user is a member of the org.
@@ -743,16 +764,36 @@ func (c *Client) GetRef(org, repo, ref string) (string, error) {
 }
 
 // FindIssues uses the github search API to find issues which match a particular query.
-// TODO(foxish): we should accept map[string][]string and use net/url properly.
-func (c *Client) FindIssues(query string) ([]Issue, error) {
+//
+// Input query the same way you would into the website.
+// Order returned results with sort (usually "updated").
+// Control whether oldest/newest is first with asc.
+//
+// See https://help.github.com/articles/searching-issues-and-pull-requests/ for details.
+func (c *Client) FindIssues(query, sort string, asc bool) ([]Issue, error) {
 	c.log("FindIssues", query)
+	path := fmt.Sprintf("%s/search/issues?q=%s", c.base, url.QueryEscape(query))
+	if sort != "" {
+		path += "&sort=" + url.QueryEscape(sort)
+		if asc {
+			path += "&order=asc"
+		}
+	}
 	var issSearchResult IssuesSearchResult
 	_, err := c.request(&request{
 		method:    http.MethodGet,
-		path:      fmt.Sprintf("%s/search/issues?q=%s", c.base, query),
+		path:      path,
 		exitCodes: []int{200},
 	}, &issSearchResult)
 	return issSearchResult.Issues, err
+}
+
+type FileNotFound struct {
+	org, repo, path, commit string
+}
+
+func (e *FileNotFound) Error() string {
+	return fmt.Sprintf("%s/%s/%s @ %s not found", e.org, e.repo, e.path, e.commit)
 }
 
 // GetFile uses github repo contents API to retrieve the content of a file with commit sha.
@@ -767,17 +808,35 @@ func (c *Client) GetFile(org, repo, filepath, commit string) ([]byte, error) {
 	}
 
 	var res Content
-	_, err := c.request(&request{
+	code, err := c.request(&request{
 		method:    http.MethodGet,
 		path:      url,
-		exitCodes: []int{200},
+		exitCodes: []int{200, 404},
 	}, &res)
 
 	if err != nil {
 		return nil, err
-	} else if decoded, err := base64.StdEncoding.DecodeString(res.Content); err != nil {
-		return nil, fmt.Errorf("error decoding %s : %v", res.Content, err)
-	} else {
-		return decoded, nil
 	}
+
+	if code == 404 {
+		return nil, &FileNotFound{
+			org:    org,
+			repo:   repo,
+			path:   filepath,
+			commit: commit,
+		}
+	}
+
+	decoded, err := base64.StdEncoding.DecodeString(res.Content)
+	if err != nil {
+		return nil, fmt.Errorf("error decoding %s : %v", res.Content, err)
+	}
+
+	return decoded, nil
+}
+
+// Query runs a GraphQL query using shurcooL/githubql's client.
+func (c *Client) Query(ctx context.Context, q interface{}, vars map[string]interface{}) error {
+	c.log("Query", q, vars)
+	return c.gqlc.Query(ctx, q, vars)
 }

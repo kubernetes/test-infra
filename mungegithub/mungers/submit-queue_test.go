@@ -31,7 +31,7 @@ import (
 	utilclock "k8s.io/kubernetes/pkg/util/clock"
 
 	"k8s.io/contrib/test-utils/utils"
-	"k8s.io/test-infra/mungegithub/admin"
+	"k8s.io/test-infra/mungegithub/features"
 	github_util "k8s.io/test-infra/mungegithub/github"
 	github_test "k8s.io/test-infra/mungegithub/github/testing"
 	"k8s.io/test-infra/mungegithub/mungeopts"
@@ -39,6 +39,7 @@ import (
 	fake_e2e "k8s.io/test-infra/mungegithub/mungers/e2e/fake"
 	"k8s.io/test-infra/mungegithub/mungers/mungerutil"
 	"k8s.io/test-infra/mungegithub/options"
+	"k8s.io/test-infra/mungegithub/sharedmux"
 
 	"github.com/google/go-github/github"
 )
@@ -105,8 +106,28 @@ func DoNotMergeIssue() *github.Issue {
 	return github_test.Issue(someUserName, 1, []string{claYesLabel, lgtmLabel, approvedLabel, doNotMergeLabel}, true)
 }
 
+func CherrypickUnapprovedIssue() *github.Issue {
+	return github_test.Issue(someUserName, 1, []string{claYesLabel, lgtmLabel, approvedLabel, cherrypickUnapprovedLabel}, true)
+}
+
+func BlockedPathsIssue() *github.Issue {
+	return github_test.Issue(someUserName, 1, []string{claYesLabel, lgtmLabel, approvedLabel, blockedPathsLabel}, true)
+}
+
+func DeprecatedMissingReleaseNoteIssue() *github.Issue {
+	return github_test.Issue(someUserName, 1, []string{claYesLabel, lgtmLabel, approvedLabel, deprecatedReleaseNoteLabelNeeded}, true)
+}
+
+func MissingReleaseNoteIssue() *github.Issue {
+	return github_test.Issue(someUserName, 1, []string{claYesLabel, lgtmLabel, approvedLabel, releaseNoteLabelNeeded}, true)
+}
+
+func WorkInProgressIssue() *github.Issue {
+	return github_test.Issue(someUserName, 1, []string{claYesLabel, lgtmLabel, approvedLabel, wipLabel}, true)
+}
+
 func DoNotMergeMilestoneIssue() *github.Issue {
-	issue := github_test.Issue(someUserName, 1, []string{claYesLabel, lgtmLabel, doNotMergeLabel}, true)
+	issue := github_test.Issue(someUserName, 1, []string{claYesLabel, lgtmLabel}, true)
 	milestone := &github.Milestone{
 		Title: stringPtr(doNotMergeMilestone),
 	}
@@ -205,9 +226,15 @@ func getJUnit(testsNo int, failuresNo int) []byte {
 
 func getTestSQ(startThreads bool, config *github_util.Config, server *httptest.Server) *SubmitQueue {
 	// TODO: Remove this line when we fix the plumbing regarding the fake/real e2e tester.
-	admin.Mux = admin.NewConcurrentMux()
+	sharedmux.Admin = sharedmux.NewConcurrentMux(http.NewServeMux())
 	sq := new(SubmitQueue)
 	sq.opts = options.New()
+
+	feats := &features.Features{
+		Server: &features.ServerFeature{
+			Enabled: false,
+		},
+	}
 
 	sq.GateApproved = true
 	sq.GateCLA = true
@@ -216,8 +243,6 @@ func getTestSQ(startThreads bool, config *github_util.Config, server *httptest.S
 
 	mungeopts.RequiredContexts.Merge = []string{notRequiredReTestContext1, notRequiredReTestContext2}
 	mungeopts.RequiredContexts.Retest = []string{requiredReTestContext1, requiredReTestContext2}
-	mungeopts.Server.Address = ""
-	mungeopts.Server.WWWRoot = "www"
 	mungeopts.PRMaxWaitTime = 2 * time.Hour
 
 	sq.githubE2EQueue = map[int]*github_util.MungeObject{}
@@ -235,7 +260,7 @@ func getTestSQ(startThreads bool, config *github_util.Config, server *httptest.S
 	sq.e2e = &fake_e2e.FakeE2ETester{JobNames: sq.NonBlockingJobNames}
 
 	if startThreads {
-		sq.internalInitialize(config, nil, server.URL)
+		sq.internalInitialize(config, feats, server.URL)
 		sq.EachLoop()
 	}
 	return sq
@@ -768,7 +793,35 @@ func TestSubmitQueue(t *testing.T) {
 			state:           "pending",
 		},
 		{
-			name:            "Fail because doNotMerge label is present",
+			name:            "Fail because missing release note label is present",
+			pr:              ValidPR(),
+			issue:           MissingReleaseNoteIssue(),
+			events:          NewLGTMEvents(),
+			commits:         Commits(), // Modified at time.Unix(7), 8, and 9
+			ciStatus:        SuccessStatus(),
+			lastBuildNumber: LastBuildNumber(),
+			gcsResult:       SuccessGCS(),
+			retest1Pass:     true,
+			retest2Pass:     true,
+			reason:          noMergeMessage(releaseNoteLabelNeeded),
+			state:           "pending",
+		},
+		{
+			name:            "Fail because deprecated missing release note label is present",
+			pr:              ValidPR(),
+			issue:           DeprecatedMissingReleaseNoteIssue(),
+			events:          NewLGTMEvents(),
+			commits:         Commits(), // Modified at time.Unix(7), 8, and 9
+			ciStatus:        SuccessStatus(),
+			lastBuildNumber: LastBuildNumber(),
+			gcsResult:       SuccessGCS(),
+			retest1Pass:     true,
+			retest2Pass:     true,
+			reason:          noMergeMessage(deprecatedReleaseNoteLabelNeeded),
+			state:           "pending",
+		},
+		{
+			name:            "Fail because do not merge label is present",
 			pr:              ValidPR(),
 			issue:           DoNotMergeIssue(),
 			events:          NewLGTMEvents(),
@@ -778,7 +831,49 @@ func TestSubmitQueue(t *testing.T) {
 			gcsResult:       SuccessGCS(),
 			retest1Pass:     true,
 			retest2Pass:     true,
-			reason:          noMerge,
+			reason:          noMergeMessage(doNotMergeLabel),
+			state:           "pending",
+		},
+		{
+			name:            "Fail because cherrypick unapproved label is present",
+			pr:              ValidPR(),
+			issue:           CherrypickUnapprovedIssue(),
+			events:          NewLGTMEvents(),
+			commits:         Commits(), // Modified at time.Unix(7), 8, and 9
+			ciStatus:        SuccessStatus(),
+			lastBuildNumber: LastBuildNumber(),
+			gcsResult:       SuccessGCS(),
+			retest1Pass:     true,
+			retest2Pass:     true,
+			reason:          noMergeMessage(cherrypickUnapprovedLabel),
+			state:           "pending",
+		},
+		{
+			name:            "Fail because blocked paths label is present",
+			pr:              ValidPR(),
+			issue:           BlockedPathsIssue(),
+			events:          NewLGTMEvents(),
+			commits:         Commits(), // Modified at time.Unix(7), 8, and 9
+			ciStatus:        SuccessStatus(),
+			lastBuildNumber: LastBuildNumber(),
+			gcsResult:       SuccessGCS(),
+			retest1Pass:     true,
+			retest2Pass:     true,
+			reason:          noMergeMessage(blockedPathsLabel),
+			state:           "pending",
+		},
+		{
+			name:            "Fail because work-in-progress label is present",
+			pr:              ValidPR(),
+			issue:           WorkInProgressIssue(),
+			events:          NewLGTMEvents(),
+			commits:         Commits(), // Modified at time.Unix(7), 8, and 9
+			ciStatus:        SuccessStatus(),
+			lastBuildNumber: LastBuildNumber(),
+			gcsResult:       SuccessGCS(),
+			retest1Pass:     true,
+			retest2Pass:     true,
+			reason:          noMergeMessage(wipLabel),
 			state:           "pending",
 		},
 		// Should fail because the 'do-not-merge-milestone' is set.

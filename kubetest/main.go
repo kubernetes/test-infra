@@ -72,29 +72,35 @@ type options struct {
 	extract             extractStrategies
 	federation          bool
 	gcpCloudSdk         string
+	gcpMasterImage      string
 	gcpNetwork          string
 	gcpNodeImage        string
+	gcpNodes            string
 	gcpProject          string
 	gcpServiceAccount   string
+	gcpRegion           string
 	gcpZone             string
+	ginkgoParallel      ginkgoParallelValue
 	kubemark            bool
 	kubemarkMasterSize  string
 	kubemarkNodes       string // TODO(fejta): switch to int after migration
 	logexporterGCSPath  string
 	metadataSources     string
 	multipleFederations bool
-	ginkgoParallel      ginkgoParallelValue
+	nodeArgs            string
+	nodeTestArgs        string
+	nodeTests           bool
 	perfTests           bool
 	provider            string
 	publish             string
+	runtimeConfig       string
 	save                string
 	skew                bool
 	stage               stageStrategy
-	testArgs            string
 	test                bool
+	testArgs            string
 	up                  bool
 	upgradeArgs         string
-	runtimeConfig       string
 }
 
 func defineFlags() *options {
@@ -103,7 +109,9 @@ func defineFlags() *options {
 	flag.BoolVar(&o.charts, "charts", false, "If true, run charts tests")
 	flag.BoolVar(&o.checkSkew, "check-version-skew", true, "Verify client and server versions match")
 	flag.BoolVar(&o.checkLeaks, "check-leaked-resources", false, "Ensure project ends with the same resources")
-	flag.StringVar(&o.deployment, "deployment", "bash", "Choices: none/bash/gke/kops/kubernetes-anywhere")
+	flag.StringVar(&o.cluster, "cluster", "", "Cluster name. Must be set for --deployment=gke (TODO: other deployments).")
+	flag.StringVar(&o.clusterIPRange, "cluster-ip-range", "", "Specifies CLUSTER_IP_RANGE value during --up and --test (only relevant for --deployment=bash). Auto-calculated if empty.")
+	flag.StringVar(&o.deployment, "deployment", "bash", "Choices: none/bash/gke/kops/kubernetes-anywhere/node")
 	flag.BoolVar(&o.down, "down", false, "If true, tear down the cluster before exiting.")
 	flag.StringVar(&o.dump, "dump", "", "If set, dump cluster logs to this location on test or cluster-up failure")
 	flag.Var(&o.extract, "extract", "Extract k8s binaries from the specified release location")
@@ -113,19 +121,24 @@ func defineFlags() *options {
 	flag.StringVar(&o.gcpProject, "gcp-project", "", "For use with gcloud commands")
 	flag.StringVar(&o.gcpServiceAccount, "gcp-service-account", "", "Service account to activate before using gcloud")
 	flag.StringVar(&o.gcpZone, "gcp-zone", "", "For use with gcloud commands")
+	flag.StringVar(&o.gcpRegion, "gcp-region", "", "For use with gcloud commands")
 	flag.StringVar(&o.gcpNetwork, "gcp-network", "", "Cluster network. Must be set for --deployment=gke (TODO: other deployments).")
+	flag.StringVar(&o.gcpMasterImage, "gcp-master-image", "", "Master image type (cos|debian on GCE, n/a on GKE)")
 	flag.StringVar(&o.gcpNodeImage, "gcp-node-image", "", "Node image type (cos|container_vm on GKE, cos|debian on GCE)")
-	flag.StringVar(&o.cluster, "cluster", "", "Cluster name. Must be set for --deployment=gke (TODO: other deployments).")
-	flag.StringVar(&o.clusterIPRange, "cluster-ip-range", "", "Specify CLUSTER_IP_RANGE during --up and --test")
+	flag.StringVar(&o.gcpNodes, "gcp-nodes", "", "(--provider=gce only) Number of nodes to create.")
 	flag.BoolVar(&o.kubemark, "kubemark", false, "If true, run kubemark tests.")
 	flag.StringVar(&o.kubemarkMasterSize, "kubemark-master-size", "", "Kubemark master size")
 	flag.StringVar(&o.kubemarkNodes, "kubemark-nodes", "", "Number of kubemark nodes to start")
 	flag.StringVar(&o.logexporterGCSPath, "logexporter-gcs-path", "", "Path to the GCS artifacts directory to dump logs from nodes. Logexporter gets enabled if this is non-empty")
+	flag.StringVar(&o.metadataSources, "metadata-sources", "images.json", "Comma-separated list of files inside ./artifacts to merge into metadata.json")
 	flag.BoolVar(&o.multipleFederations, "multiple-federations", false, "If true, enable running multiple federation control planes in parallel")
+	flag.StringVar(&o.nodeArgs, "node-args", "", "Args for node e2e tests.")
+	flag.StringVar(&o.nodeTestArgs, "node-test-args", "", "Test args specifically for node e2e tests.")
+	flag.BoolVar(&o.nodeTests, "node-tests", false, "If true, run node-e2e tests.")
 	flag.BoolVar(&o.perfTests, "perf-tests", false, "If true, run tests from perf-tests repo.")
 	flag.StringVar(&o.provider, "provider", "", "Kubernetes provider such as gce, gke, aws, etc")
 	flag.StringVar(&o.publish, "publish", "", "Publish version to the specified gs:// path on success")
-	flag.StringVar(&o.metadataSources, "metadata-sources", "images.json", "Comma-separated list of files inside ./artifacts to merge into metadata.json")
+	flag.StringVar(&o.runtimeConfig, "runtime-config", "batch/v2alpha1=true", "If set, API versions can be turned on or off while bringing up the API server.")
 	flag.StringVar(&o.stage.dockerRegistry, "registry", "", "Push images to the specified docker registry (e.g. gcr.io/a-test-project)")
 	flag.StringVar(&o.save, "save", "", "Save credentials to gs:// path on --up if set (or load from there if not --up)")
 	flag.BoolVar(&o.skew, "skew", false, "If true, run tests in another version at ../kubernetes/hack/e2e.go")
@@ -136,7 +149,6 @@ func defineFlags() *options {
 	flag.DurationVar(&timeout, "timeout", time.Duration(0), "Terminate testing after the timeout duration (s/m/h)")
 	flag.BoolVar(&o.up, "up", false, "If true, start the the e2e cluster. If cluster is already up, recreate it.")
 	flag.StringVar(&o.upgradeArgs, "upgrade_args", "", "If set, run upgrade tests before other tests")
-	flag.StringVar(&o.runtimeConfig, "runtime-config", "batch/v2alpha1=true", "If set, API versions can be turned on or off while bringing up the API server.")
 
 	flag.BoolVar(&verbose, "v", false, "If true, print all command output.")
 	return &o
@@ -209,13 +221,15 @@ type deployer interface {
 func getDeployer(o *options) (deployer, error) {
 	switch o.deployment {
 	case "bash":
-		return bash{&o.clusterIPRange}, nil
+		return newBash(&o.clusterIPRange), nil
 	case "gke":
-		return newGKE(o.provider, o.gcpProject, o.gcpZone, o.gcpNetwork, o.gcpNodeImage, o.cluster)
+		return newGKE(o.provider, o.gcpProject, o.gcpZone, o.gcpRegion, o.gcpNetwork, o.gcpNodeImage, o.cluster, &o.testArgs)
 	case "kops":
 		return newKops()
 	case "kubernetes-anywhere":
-		return newKubernetesAnywhere(o.gcpProject, o.gcpZone, o.gcpNetwork)
+		return newKubernetesAnywhere(o.gcpProject, o.gcpZone)
+	case "node":
+		return nodeDeploy{}, nil
 	case "none":
 		return noneDeploy{}, nil
 	default:
@@ -488,6 +502,11 @@ func migrateGcpEnvAndOptions(o *options) error {
 			name:   "--gcp-zone",
 		},
 		{
+			env:    "REGION",
+			option: &o.gcpRegion,
+			name:   "--gcp-region",
+		},
+		{
 			env:    "GOOGLE_APPLICATION_CREDENTIALS",
 			option: &o.gcpServiceAccount,
 			name:   "--gcp-service-account",
@@ -503,6 +522,16 @@ func migrateGcpEnvAndOptions(o *options) error {
 			name:   "--gcp-node-image",
 		},
 		{
+			env:    "KUBE_MASTER_OS_DISTRIBUTION",
+			option: &o.gcpMasterImage,
+			name:   "--gcp-master-image",
+		},
+		{
+			env:    "NUM_NODES",
+			option: &o.gcpNodes,
+			name:   "--gcp-nodes",
+		},
+		{
 			env:      "CLOUDSDK_BUCKET",
 			option:   &o.gcpCloudSdk,
 			name:     "--gcp-cloud-sdk",
@@ -515,15 +544,37 @@ func prepareGcp(o *options) error {
 	if err := migrateGcpEnvAndOptions(o); err != nil {
 		return err
 	}
-	if o.provider == "gke" {
+	if o.provider == "gce" {
+		if distro := os.Getenv("KUBE_OS_DISTRIBUTION"); distro != "" {
+			log.Printf("Please use --gcp-master-image=%s --gcp-node-image=%s (instead of deprecated KUBE_OS_DISTRIBUTION)",
+				distro, distro)
+			// Note: KUBE_OS_DISTRIBUTION takes precedence over
+			// KUBE_{MASTER,NODE}_OS_DISTRIBUTION, so override here
+			// after the migration above.
+			o.gcpNodeImage = distro
+			o.gcpMasterImage = distro
+			if err := os.Setenv("KUBE_NODE_OS_DISTRIBUTION", distro); err != nil {
+				return fmt.Errorf("could not set KUBE_NODE_OS_DISTRIBUTION=%s: %v", distro, err)
+			}
+			if err := os.Setenv("KUBE_MASTER_OS_DISTRIBUTION", distro); err != nil {
+				return fmt.Errorf("could not set KUBE_MASTER_OS_DISTRIBUTION=%s: %v", distro, err)
+			}
+		}
+	} else if o.provider == "gke" {
+		if o.deployment == "" {
+			o.deployment = "gke"
+		}
+		if o.deployment != "gke" {
+			return fmt.Errorf("--provider=gke implies --deployment=gke")
+		}
 		if o.gcpNodeImage == "" {
 			return fmt.Errorf("--gcp-node-image must be set for GKE")
 		}
-
-		// TODO(kubernetes/test-infra#3307): Should disappear when
-		// "bash" deployment is gone.
-		if o.deployment == "bash" {
-			os.Setenv("KUBE_GKE_IMAGE_TYPE", o.gcpNodeImage)
+		if o.gcpMasterImage != "" {
+			return fmt.Errorf("--gcp-master-image cannot be set on GKE")
+		}
+		if o.gcpNodes != "" {
+			return fmt.Errorf("--gcp-nodes cannot be set on GKE, use --gke-shape instead")
 		}
 
 		// TODO(kubernetes/test-infra#3536): This is used by the
@@ -538,13 +589,13 @@ func prepareGcp(o *options) error {
 	}
 	if o.gcpProject == "" {
 		var resType string
-		if o.provider == "gce" {
-			resType = "gce-project"
-		} else if o.provider == "gke" {
+		if o.provider == "gke" {
 			resType = "gke-project"
 		} else {
-			return fmt.Errorf("--provider=%s, not supported by boskos", o.provider)
+			resType = "gce-project"
 		}
+
+		log.Printf("provider %v, will acquire resource %v from boskos", o.provider, resType)
 
 		p, err := boskos.Acquire(resType, "free", "busy")
 		if err != nil {
@@ -563,6 +614,10 @@ func prepareGcp(o *options) error {
 			}
 		}(boskos, p)
 		o.gcpProject = p
+	}
+
+	if err := os.Setenv("CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS", "1"); err != nil {
+		return fmt.Errorf("could not set CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS=1: %v", err)
 	}
 
 	if err := finishRunning(exec.Command("gcloud", "config", "set", "project", o.gcpProject)); err != nil {
@@ -679,7 +734,7 @@ func prepare(o *options) error {
 	}
 
 	switch o.provider {
-	case "gce", "gke", "kubemark":
+	case "gce", "gke", "kubemark", "kubernetes-anywhere", "node":
 		if err := prepareGcp(o); err != nil {
 			return err
 		}

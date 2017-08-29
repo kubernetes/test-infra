@@ -31,6 +31,9 @@ reaper:
 janitor:
 	go build -o janitor/janitor k8s.io/test-infra/boskos/janitor/
 
+metrics:
+	go build -o metrics/metrics k8s.io/test-infra/boskos/metrics/
+
 server-image:
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o boskos k8s.io/test-infra/boskos/
 	docker build -t "gcr.io/k8s-testimages/boskos:$(TAG)" .
@@ -49,6 +52,12 @@ janitor-image:
 	gcloud docker -- push "gcr.io/k8s-testimages/janitor:$(TAG)"
 	rm janitor/janitor
 
+metrics-image:
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o metrics/metrics k8s.io/test-infra/boskos/metrics/
+	docker build -t "gcr.io/k8s-testimages/metrics:$(TAG)" metrics
+	gcloud docker -- push "gcr.io/k8s-testimages/metrics:$(TAG)"
+	rm metrics/metrics
+
 server-deployment:
 	kubectl apply -f deployment.yaml
 
@@ -57,6 +66,9 @@ reaper-deployment:
 
 janitor-deployment:
 	kubectl apply -f janitor/deployment.yaml
+
+metrics-deployment:
+	kubectl apply -f metrics/deployment.yaml
 
 service:
 	kubectl apply -f service.yaml
@@ -67,4 +79,4 @@ update-config: get-cluster-credentials
 get-cluster-credentials:
 	gcloud container clusters get-credentials "$(CLUSTER)" --project="$(PROJECT)" --zone="$(ZONE)"
 
-.PHONY: boskos client reaper janitor server-image reaper-image janitor-image server-deployment reaper-deployment janitor-deployment service update-config get-cluster-credentials
+.PHONY: boskos client reaper janitor metrics server-image reaper-image janitor-image metrics-image server-deployment reaper-deployment janitor-deployment metrics-deployment service update-config get-cluster-credentials

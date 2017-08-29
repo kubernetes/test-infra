@@ -30,6 +30,7 @@ from webapp2_extras import securecookie
 
 app = main_test.app
 write = gcs_async_test.write
+PR_PREFIX = view_base.PR_PREFIX['kubernetes']
 
 
 class PathTest(unittest.TestCase):
@@ -49,7 +50,7 @@ class PathTest(unittest.TestCase):
     def test_pr_path(self):
         def check(org, repo, pr, path):
             actual_path = view_pr.pr_path(org, repo, pr)
-            self.assertEquals(actual_path, '%s/%s' % (view_base.PR_PREFIX, path))
+            self.assertEquals(actual_path, '%s/%s' % (PR_PREFIX, path))
 
         check('kubernetes', 'kubernetes', 1234, 1234)
         check('kubernetes', 'kubernetes', 'batch', 'batch')
@@ -79,7 +80,7 @@ class PRTest(main_test.TestBase):
 
         for job, builds in self.BUILDS.iteritems():
             for build, started, finished in builds:
-                path = '/%s/123/%s/%s/' % (view_pr.PR_PREFIX, job, build)
+                path = '/%s/123/%s/%s/' % (PR_PREFIX, job, build)
                 if started:
                     write(path + 'started.json', started)
                 if finished:
@@ -189,7 +190,7 @@ class TestDashboard(main_test.TestBase):
     def test_build_links_user(self):
         "Build pages show PR information"
         make_pr(12345, ['human'], {'title': 'huge pr!'})
-        build_dir = '/%s/12345/e2e/5/' % view_base.PR_PREFIX
+        build_dir = '/%s/12345/e2e/5/' % PR_PREFIX
         write(build_dir + 'started.json', '{}')
         resp = app.get('/build' + build_dir)
         self.assertIn('href="/pr/human"', resp)
