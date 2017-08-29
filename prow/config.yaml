@@ -836,7 +836,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-in-go:0.3
+      - image: gcr.io/k8s-testimages/gcloud-in-go:0.4
         args:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
@@ -872,7 +872,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-in-go:0.3
+      - image: gcr.io/k8s-testimages/gcloud-in-go:0.4
         args:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
@@ -908,7 +908,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-in-go:0.3
+      - image: gcr.io/k8s-testimages/gcloud-in-go:0.4
         args:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
@@ -1372,7 +1372,7 @@ postsubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-in-go:0.3
+      - image: gcr.io/k8s-testimages/gcloud-in-go:0.4
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -15828,7 +15828,7 @@ periodics:
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
         value: /etc/service-account/service-account.json
-      image: gcr.io/k8s-testimages/gcloud-in-go:0.3
+      image: gcr.io/k8s-testimages/gcloud-in-go:0.4
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -15851,7 +15851,7 @@ periodics:
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
         value: /etc/service-account/service-account.json
-      image: gcr.io/k8s-testimages/gcloud-in-go:0.3
+      image: gcr.io/k8s-testimages/gcloud-in-go:0.4
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -15874,7 +15874,7 @@ periodics:
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
         value: /etc/service-account/service-account.json
-      image: gcr.io/k8s-testimages/gcloud-in-go:0.3
+      image: gcr.io/k8s-testimages/gcloud-in-go:0.4
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -16180,4 +16180,3 @@ periodics:
     - name: token
       secret:
         secretName: fejta-bot-token
-
