@@ -242,6 +242,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-scalability
 - name: ci-kubernetes-e2e-gci-gce-ip-alias
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-ip-alias
+- name: ci-kubernetes-e2e-gce-alpha-api
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-alpha-api
 - name: ci-kubernetes-e2e-gci-gce-serial
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-serial
 - name: ci-kubernetes-e2e-gce-gci-serial-sig-cli
@@ -1965,6 +1967,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gci-gce-scalability-release-1-6
   - name: gci-gce-ip-alias
     test_group_name: ci-kubernetes-e2e-gci-gce-ip-alias
+  - name: gce-alpha-api
+    test_group_name: ci-kubernetes-e2e-gce-alpha-api
   - name: gce-serial
     test_group_name: ci-kubernetes-e2e-gce-serial
   - name: gci-gce-serial
@@ -3750,6 +3754,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gci-gce-ingress-release-1-7
   - name: gci-gce-ip-alias
     test_group_name: ci-kubernetes-e2e-gci-gce-ip-alias
+  - name: gce-alpha-api
+    test_group_name: ci-kubernetes-e2e-gce-alpha-api
   - name: gci-gke-ingress
     test_group_name: ci-kubernetes-e2e-gci-gke-ingress
   - name: gci-gke-ingress-release-1-5
