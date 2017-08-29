@@ -343,3 +343,20 @@ class BuildTest(main_test.TestBase):
         """Test that the job list shows our job."""
         response = app.get('/jobs/kubernetes-jenkins/logs')
         self.assertIn('somejob/">somejob</a>', response)
+
+    def test_recent_runs_across_prs(self):
+        """Test that "Recent Runs Across PRs" links are correct."""
+        def expect(path, directory):
+            response = app.get('/builds/' + path)
+            self.assertIn('href="/builds/%s"' % directory, response)
+        # pull request job in main repo
+        expect(
+            'k-j/pr-logs/pull/514/pull-kubernetes-unit/',
+            'k-j/pr-logs/directory/pull-kubernetes-unit')
+        # pull request jobs in different repos
+        expect(
+            'k-j/pr-logs/pull/test-infra/4213/pull-test-infra-bazel',
+            'k-j/pr-logs/directory/pull-test-infra-bazel')
+        expect(
+            'i-p/pull/istio_istio/517/istio-presubmit/',
+            'i-p/directory/istio-presubmit')
