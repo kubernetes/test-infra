@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import collections
 import functools
 import logging
 import os
@@ -21,47 +20,12 @@ import re
 import cloudstorage as gcs
 import jinja2
 import webapp2
-import yaml
 
 from google.appengine.api import urlfetch
 from google.appengine.api import memcache
 from webapp2_extras import sessions
 
 import filters as jinja_filters
-
-
-PROW_JOBS = yaml.load(open('prow_jobs.yaml'))
-
-DEFAULT_JOBS = {
-    'kubernetes-jenkins/logs/': {
-        'ci-kubernetes-e2e-gce-etcd3',
-        'ci-kubernetes-e2e-gci-gce',
-        'ci-kubernetes-e2e-gci-gce-slow',
-        'ci-kubernetes-e2e-gci-gke',
-        'ci-kubernetes-e2e-gci-gke-slow',
-        'ci-kubernetes-kubemark-500-gce',
-        'ci-kubernetes-node-kubelet',
-        'ci-kubernetes-test-go',
-        'ci-kubernetes-verify-master',
-        'kubernetes-build',
-        'kubernetes-e2e-kops-aws',
-    },
-    'kubernetes-jenkins/pr-logs/directory/': {
-        j['name'] for j in PROW_JOBS['presubmits']['kubernetes/kubernetes'] if j.get('always_run')
-    },
-}
-
-# Maps github organizations/owners to GCS paths for presubmit results
-PR_PREFIX = collections.OrderedDict([
-    ('kubernetes', 'kubernetes-jenkins/pr-logs/pull'),
-    ('google', 'kubernetes-jenkins/pr-logs/pull'),  # for cadvisor
-    ('istio', 'istio-prow/pull'),
-])
-
-PROW_INSTANCES = {
-    'istio': 'prow.istio.io',
-    'DEFAULT': 'prow.k8s.io',
-}
 
 JINJA_ENVIRONMENT = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__) + '/templates'),
@@ -108,7 +72,7 @@ class BaseHandler(webapp2.RequestHandler):
 class IndexHandler(BaseHandler):
     """Render the index."""
     def get(self):
-        self.render("index.html", {'jobs': DEFAULT_JOBS})
+        self.render("index.html", {'jobs': self.app.config['jobs']})
 
 
 def memcache_memoize(prefix, expires=60 * 60, neg_expires=60):

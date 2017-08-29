@@ -1,0 +1,35 @@
+---
+default_org: kubernetes
+default_repo: kubernetes
+external_services:
+  istio:
+    gcs_pull_prefix: istio-prow/pull
+    prow_url: prow.istio.io
+  kubernetes:
+    gcs_pull_prefix: kubernetes-jenkins/pr-logs/pull
+    prow_url: prow.k8s.io
+jobs:
+  kubernetes-jenkins/logs/:
+  - ci-kubernetes-e2e-gce-etcd3
+  - ci-kubernetes-e2e-gci-gce
+  - ci-kubernetes-e2e-gci-gce-slow
+  - ci-kubernetes-e2e-gci-gke
+  - ci-kubernetes-e2e-gci-gke-slow
+  - ci-kubernetes-kubemark-500-gce
+  - ci-kubernetes-node-kubelet
+  - ci-kubernetes-test-go
+  - ci-kubernetes-verify-master
+  - kubernetes-build
+  - kubernetes-e2e-kops-aws
+  kubernetes-jenkins/pr-logs/directory/:
+  - pull-kubernetes-bazel-build
+  - pull-kubernetes-bazel-test
+  - pull-kubernetes-e2e-gce-bazel
+  - pull-kubernetes-e2e-gce-etcd3
+  - pull-kubernetes-e2e-gce-gpu
+  - pull-kubernetes-e2e-kops-aws
+  - pull-kubernetes-federation-e2e-gce
+  - pull-kubernetes-kubemark-e2e-gce
+  - pull-kubernetes-node-e2e
+  - pull-kubernetes-unit
+  - pull-kubernetes-verify
