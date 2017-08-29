@@ -230,7 +230,7 @@ class BuildHandler(view_base.BaseHandler):
 
 def get_build_numbers(job_dir, before, indirect):
     try:
-        if 'pr-logs' in job_dir and not indirect:
+        if '/pull/' in job_dir and not indirect:
             raise ValueError('bad code path for PR build list')
         # If we have latest-build.txt, we can skip an expensive GCS ls call!
         if before:
@@ -318,8 +318,9 @@ class BuildListHandler(view_base.BaseHandler):
         testgrid_query = testgrid.path_to_query(job_dir)
         before = self.request.get('before')
         builds = build_list(job_dir, before)
+        dir_link = re.sub(r'/pull/.*', '/directory/%s' % job, prefix)
         self.render('build_list.html',
-                    dict(job=job, job_dir=job_dir,
+                    dict(job=job, job_dir=job_dir, dir_link=dir_link,
                          testgrid_query=testgrid_query,
                          builds=builds, before=before))
 
