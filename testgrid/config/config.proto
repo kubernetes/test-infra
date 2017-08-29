@@ -46,7 +46,7 @@ message Notification {
 
 // Specifies a group of tests to gather.
 message TestGroup {
-  reserved 4, 5, 7, 8, 10, 12 to 14, 16 to 23, 28 to 34;
+  reserved 5, 7, 8, 10, 12 to 14, 16 to 23, 28 to 34;
 
   // Name of this TestGroup, for mapping dashboard tabs to tests.
   string name = 1;
@@ -56,6 +56,9 @@ message TestGroup {
 
   // Number of days of test results to gather and serve.
   int32 days_of_results = 3;
+
+  // Whether to ignore pending (currently running) test results.
+  bool ignore_pending = 4;
 
   enum TestsName {
     TESTS_NAME_MIN = 0;

@@ -183,6 +183,17 @@ test_groups:
   num_columns_recent: 3
 ```
 
+### Ignore Pending Results
+`ignore_pending` is false by default, which means that in-progress results will
+be shown if we have data for them. If you want to have these not show up, add:
+
+```
+test_groups:
+- name: kubernetes-build
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-build
+  ignore_pending: true
+```
+
 ## Using the client
 
 Here are some quick tips and clarifications for using the TestGrid site!
