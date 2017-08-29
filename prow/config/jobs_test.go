@@ -409,7 +409,7 @@ func TestListPresubmit(t *testing.T) {
 	for _, j1 := range expected {
 		found := false
 		for _, j2 := range actual {
-			if j1 == j2 {
+			if j1 == j2.Name {
 				found = true
 				break
 			}
@@ -451,7 +451,7 @@ func TestListPostsubmit(t *testing.T) {
 	for _, j1 := range expected {
 		found := false
 		for _, j2 := range actual {
-			if j1 == j2 {
+			if j1 == j2.Name {
 				found = true
 				break
 			}
@@ -490,7 +490,7 @@ func TestListPeriodic(t *testing.T) {
 	for _, j1 := range expected {
 		found := false
 		for _, j2 := range actual {
-			if j1 == j2 {
+			if j1 == j2.Name {
 				found = true
 				break
 			}
@@ -551,18 +551,18 @@ func TestValidPodNames(t *testing.T) {
 		t.Fatalf("Could not load config: %v", err)
 	}
 	for _, j := range c.AllPresubmits() {
-		if !podRe.MatchString(j) {
-			t.Errorf("Job \"%s\" must match regex \"%s\".", j, podRe.String())
+		if !podRe.MatchString(j.Name) {
+			t.Errorf("Job \"%s\" must match regex \"%s\".", j.Name, podRe.String())
 		}
 	}
 	for _, j := range c.AllPostsubmits() {
-		if !podRe.MatchString(j) {
-			t.Errorf("Job \"%s\" must match regex \"%s\".", j, podRe.String())
+		if !podRe.MatchString(j.Name) {
+			t.Errorf("Job \"%s\" must match regex \"%s\".", j.Name, podRe.String())
 		}
 	}
 	for _, j := range c.AllPeriodics() {
-		if !podRe.MatchString(j) {
-			t.Errorf("Job \"%s\" must match regex \"%s\".", j, podRe.String())
+		if !podRe.MatchString(j.Name) {
+			t.Errorf("Job \"%s\" must match regex \"%s\".", j.Name, podRe.String())
 		}
 	}
 }
@@ -575,25 +575,25 @@ func TestNoDuplicateJobs(t *testing.T) {
 
 	allJobs := make(map[string]bool)
 	for _, j := range c.AllPresubmits() {
-		if allJobs[j] {
-			t.Errorf("Found duplicate job in presubmit: %s.", j)
+		if allJobs[j.Name] {
+			t.Errorf("Found duplicate job in presubmit: %s.", j.Name)
 		}
-		allJobs[j] = true
+		allJobs[j.Name] = true
 	}
 
 	allJobs = make(map[string]bool)
 	for _, j := range c.AllPostsubmits() {
-		if allJobs[j] {
-			t.Errorf("Found duplicate job in postsubmit: %s.", j)
+		if allJobs[j.Name] {
+			t.Errorf("Found duplicate job in postsubmit: %s.", j.Name)
 		}
-		allJobs[j] = true
+		allJobs[j.Name] = true
 	}
 
 	allJobs = make(map[string]bool)
 	for _, j := range c.AllPeriodics() {
-		if allJobs[j] {
-			t.Errorf("Found duplicate job in periodic %s.", j)
+		if allJobs[j.Name] {
+			t.Errorf("Found duplicate job in periodic %s.", j.Name)
 		}
-		allJobs[j] = true
+		allJobs[j.Name] = true
 	}
 }
