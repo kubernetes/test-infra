@@ -68,15 +68,15 @@ func (b *bashDeployer) Down() error {
 // Calculates the cluster IP range based on the no. of nodes in the cluster.
 // Note: This mimics the function get-cluster-ip-range used by kube-up script.
 func getClusterIPRange(numNodes int) string {
-	suggestedRange := "10.160.0.0/14"
+	suggestedRange := "10.64.0.0/14"
 	if numNodes > 1000 {
-		suggestedRange = "10.160.0.0/13"
+		suggestedRange = "10.64.0.0/13"
 	}
 	if numNodes > 2000 {
-		suggestedRange = "10.160.0.0/12"
+		suggestedRange = "10.64.0.0/12"
 	}
 	if numNodes > 4000 {
-		suggestedRange = "10.160.0.0/11"
+		suggestedRange = "10.64.0.0/11"
 	}
 	return suggestedRange
 }
