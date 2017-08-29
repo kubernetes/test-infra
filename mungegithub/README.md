@@ -1,6 +1,6 @@
 ## Overview
 
-Mungegithub provides a number of tools intended to automate github processes. While mainly for the kubernetes community, some thought is put into making it generic. Mungegithub is built as a single binary, but is run in 3 different ways for 3 different purposes.
+Mungegithub provides a number of tools intended to automate github processes. While mainly for the kubernetes community, some thought is put into making it generic. Mungegithub is built as a single binary, but is run in 2 different ways for 2 different purposes.
 
 1. submit-queue: This looks at open PRs and attempts to help automate the process getting PRs from open to merged.
 1. cherrypick: This looks at open and closed PRs with the `cherry-pick-candidate` label and attempts to help the branch managers deal with the cherry-pick process.
