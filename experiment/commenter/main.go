@@ -19,7 +19,8 @@ limitations under the License.
 // The --token determines who interacts with github.
 // By default commenter runs in dry mode, add --confirm to make it leave comments.
 // The --updated, --include-closed, --ceiling options provide minor safeguards
-// around leaving excessive comments.
+// around leaving excessive comments. Providing --cleanup uses more API tokens but
+// will remove any identical comments that are already present.
 package main
 
 import (
@@ -63,6 +64,7 @@ func flagOptions() options {
 	flag.StringVar(&o.comment, "comment", "", "Append the following comment to matching issues")
 	flag.BoolVar(&o.useTemplate, "template", false, TemplateHelp)
 	flag.IntVar(&o.ceiling, "ceiling", 3, "Maximum number of issues to modify, 0 for infinite")
+	flag.BoolVar(&o.cleanup, "cleanup", false, "Remove older identical comments if set")
 	flag.StringVar(&o.endpoint, "endpoint", "https://api.github.com", "GitHub's API endpoint")
 	flag.StringVar(&o.token, "token", "", "Path to github token")
 	flag.Parse()
@@ -82,6 +84,7 @@ type options struct {
 	comment       string
 	includeClosed bool
 	useTemplate   bool
+	cleanup       bool
 	query         string
 	sort          string
 	endpoint      string
@@ -122,7 +125,10 @@ func makeQuery(query string, includeClosed bool, minUpdated time.Duration) (stri
 }
 
 type client interface {
+	BotName() (string, error)
+	ListIssueComments(org, repo string, number int) ([]github.IssueComment, error)
 	CreateComment(owner, repo string, number int, comment string) error
+	DeleteComment(org, repo string, ID int) error
 	FindIssues(query, sort string, asc bool) ([]github.Issue, error)
 }
 
@@ -167,7 +173,7 @@ func main() {
 		asc = true
 	}
 	commenter := makeCommenter(o.comment, o.useTemplate)
-	if err := run(c, query, sort, asc, commenter, o.ceiling); err != nil {
+	if err := run(c, query, sort, asc, commenter, o.ceiling, o.cleanup); err != nil {
 		log.Fatalf("Failed run: %v", err)
 	}
 }
@@ -186,7 +192,7 @@ func makeCommenter(comment string, useTemplate bool) func(meta) (string, error) 
 	}
 }
 
-func run(c client, query, sort string, asc bool, commenter func(meta) (string, error), ceiling int) error {
+func run(c client, query, sort string, asc bool, commenter func(meta) (string, error), ceiling int, cleanup bool) error {
 	log.Printf("Searching: %s", query)
 	issues, err := c.FindIssues(query, sort, asc)
 	if err != nil {
@@ -213,6 +219,12 @@ func run(c client, query, sort string, asc bool, commenter func(meta) (string, e
 			problems = append(problems, msg)
 			continue
 		}
+
+		if cleanup {
+			removalProblems := removeMatchingComments(c, org, repo, number, comment)
+			problems = append(problems, removalProblems...)
+		}
+
 		if err := c.CreateComment(org, repo, number, comment); err != nil {
 			msg := fmt.Sprintf("Failed to apply comment to %s/%s#%d: %v", org, repo, number, err)
 			log.Print(msg)
@@ -220,9 +232,44 @@ func run(c client, query, sort string, asc bool, commenter func(meta) (string, e
 			continue
 		}
 		log.Printf("Commented on %s", i.HTMLURL)
+
 	}
 	if len(problems) > 0 {
 		return fmt.Errorf("encoutered %d failures: %v", len(problems), problems)
 	}
 	return nil
+}
+
+// removeMatchingComments removes all comments from the issue identified by
+// org, repo and number that match the comment body and are authored by the
+// token we are using. These actions are best-effort.
+func removeMatchingComments(c client, org, repo string, number int, body string) []string {
+	var problems []string
+	comments, err := c.ListIssueComments(org, repo, number)
+	if err != nil {
+		msg := fmt.Sprintf("Failed to list comments for %s/%s#%d: %v", org, repo, number, err)
+		log.Print(msg)
+		problems = append(problems, msg)
+		return problems
+	}
+
+	botName, err := c.BotName()
+	if err != nil {
+		msg := fmt.Sprintf("Failed to get bot name: %v", err)
+		log.Print(msg)
+		problems = append(problems, msg)
+		return problems
+	}
+
+	for _, comment := range comments {
+		if comment.User.Login == botName && comment.Body == body {
+			if err := c.DeleteComment(org, repo, comment.ID); err != nil {
+				msg := fmt.Sprintf("Failed to remove comment %d for %s/%s#%d: %v", comment.ID, org, repo, number, err)
+				log.Print(msg)
+				problems = append(problems, msg)
+				continue
+			}
+		}
+	}
+	return problems
 }

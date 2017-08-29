@@ -19,11 +19,12 @@ package main
 import (
 	"errors"
 	"fmt"
-	"k8s.io/test-infra/prow/github"
 	"strconv"
 	"strings"
 	"testing"
 	"time"
+
+	"k8s.io/test-infra/prow/github"
 )
 
 func TestParseHTMLURL(t *testing.T) {
@@ -168,7 +169,22 @@ type fakeClient struct {
 	issues   []github.Issue
 }
 
-// Fakes Creating a client, using the same signature as github.Client
+// Fakes grabbing the authenticated login, using the same signature as github.Client
+func (c *fakeClient) BotName() (string, error) {
+	return "bot", nil
+}
+
+// Fakes listing issue comments, using the same signature as github.Client
+func (c *fakeClient) ListIssueComments(org, repo string, number int) ([]github.IssueComment, error) {
+	return []github.IssueComment{}, nil
+}
+
+// Fakes deleting a comment, using the same signature as github.Client
+func (c *fakeClient) DeleteComment(org, repo string, ID int) error {
+	return nil
+}
+
+// Fakes Creating a comment, using the same signature as github.Client
 func (c *fakeClient) CreateComment(owner, repo string, number int, comment string) error {
 	if strings.Contains(comment, "error") || repo == "error" {
 		return errors.New(comment)
@@ -270,7 +286,8 @@ func TestRun(t *testing.T) {
 	for _, tc := range cases {
 		ignoreSorting := ""
 		ignoreOrder := false
-		err := run(&tc.client, tc.query, ignoreSorting, ignoreOrder, makeCommenter(tc.comment, tc.template), tc.ceiling)
+		cleanup := false
+		err := run(&tc.client, tc.query, ignoreSorting, ignoreOrder, makeCommenter(tc.comment, tc.template), tc.ceiling, cleanup)
 		if tc.err && err == nil {
 			t.Errorf("%s: failed to received an error", tc.name)
 			continue
