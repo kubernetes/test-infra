@@ -154,9 +154,9 @@ func TestNotificationState(t *testing.T) {
 		comment *c.Comment
 		// Events to add to the test issue
 		events []*githubapi.IssueEvent
-		// munger label expected to have been decided by notificationState
+		// Munger label expected to have been decided by notificationState
 		expectedLabel string
-		// description expected to have been decided by notificationState
+		// Description expected to have been decided by notificationState
 		expectedDescription string
 	}{
 		"Label and comment with summary for complete labels": {
@@ -173,15 +173,6 @@ func TestNotificationState(t *testing.T) {
 			expectedLabel:       milestoneLabelsIncompleteLabel,
 			expectedDescription: milestoneLabelsIncomplete,
 		},
-		"Do nothing for up-to-date warning": {
-			comment:       milestoneTestComment(milestoneLabelsIncomplete, createdNow),
-			expectedLabel: milestoneLabelsIncompleteLabel,
-		},
-		"Warn again after warning interval has elapsed": {
-			comment:             milestoneTestComment(milestoneLabelsIncomplete, createdYesterday),
-			expectedLabel:       milestoneLabelsIncompleteLabel,
-			expectedDescription: milestoneLabelsIncomplete,
-		},
 		"Non-blocker is removed from milestone after grace period": {
 			labels:              []string{milestoneLabelsIncompleteLabel},
 			comment:             milestoneTestComment(milestoneLabelsIncomplete, createdYesterday),
@@ -190,10 +181,10 @@ func TestNotificationState(t *testing.T) {
 			expectedDescription: milestoneRemoved,
 		},
 		"Blocker is not removed from milestone after grace period": {
-			labels:        []string{milestoneLabelsIncompleteLabel, priorityCriticalUrgent},
-			comment:       milestoneTestComment(milestoneLabelsIncomplete, createdYesterday),
-			events:        milestoneLabelEvents(milestoneLabelsIncompleteLabel, createdLongAgo),
-			expectedLabel: milestoneLabelsIncompleteLabel,
+			labels:              []string{milestoneLabelsIncompleteLabel, priorityCriticalUrgent},
+			events:              milestoneLabelEvents(milestoneLabelsIncompleteLabel, createdLongAgo),
+			expectedLabel:       milestoneLabelsIncompleteLabel,
+			expectedDescription: milestoneLabelsIncomplete,
 		},
 	}
 	for testName, test := range tests {
@@ -228,6 +219,55 @@ func TestNotificationState(t *testing.T) {
 				if test.expectedDescription != notifyState.description {
 					t.Fatalf("%s: Expected description %s, got %s", testName, test.expectedDescription, notifyState.description)
 				}
+			}
+		})
+	}
+}
+
+func milestoneTestNotification(arg, context string) *c.Notification {
+	return &c.Notification{
+		Name:      milestoneNotifierName,
+		Arguments: arg,
+		Context:   context,
+	}
+}
+
+func TestWarningIsCurrent(t *testing.T) {
+	createdNow := time.Now()
+	warningInterval := day
+	createdYesterday := createdNow.Add(-(warningInterval + time.Hour))
+
+	tests := map[string]struct {
+		notification      *c.Notification
+		message           string
+		createdAt         *time.Time
+		expectedIsCurrent bool
+	}{
+		"Not current if no notification exists": {},
+		"Not current if the notification is not a warning": {
+			notification: milestoneTestNotification(milestoneLabelsComplete, ""),
+		},
+		"Not current if the message is different": {
+			notification: milestoneTestNotification(milestoneLabelsIncomplete, "foo"),
+			message:      "bar",
+		},
+		"Not current if the warning interval has elapsed": {
+			notification: milestoneTestNotification(milestoneLabelsIncomplete, "foo"),
+			message:      "foo",
+			createdAt:    &createdYesterday,
+		},
+		"Warning is current": {
+			notification:      milestoneTestNotification(milestoneLabelsIncomplete, "foo"),
+			message:           "foo",
+			createdAt:         &createdNow,
+			expectedIsCurrent: true,
+		},
+	}
+	for testName, test := range tests {
+		t.Run(testName, func(t *testing.T) {
+			isCurrent := warningIsCurrent(test.notification, test.message, test.createdAt, warningInterval)
+			if test.expectedIsCurrent != isCurrent {
+				t.Fatalf("%s: expected warningIsCurrent to be %t, but got %t", testName, test.expectedIsCurrent, isCurrent)
 			}
 		})
 	}
