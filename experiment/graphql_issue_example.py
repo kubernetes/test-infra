@@ -19,6 +19,7 @@ from __future__ import print_function
 
 import sys
 import json
+import argparse
 
 import requests
 
@@ -46,6 +47,41 @@ def do_github_graphql_request(query, token, variables=None):
     return requests.post(url, headers=headers, data=data)
 
 
+ISSUES_QUERY = """
+query($owner:String!, $name:String!, $after:String) {
+    repository(owner:$owner, name:$name) {
+        issues(first:100, after:$after) {
+            nodes{
+            number
+            title
+            state
+            createdAt
+            labels(first:100){
+                nodes{
+                name
+                }
+            }
+            assignees(first:100){
+                nodes{
+                login
+                }
+            }
+            }
+            pageInfo{
+            hasNextPage
+            endCursor
+            }
+        }
+    }
+    rateLimit {
+        limit
+        cost
+        remaining
+        resetAt
+    }
+}
+"""
+
 def get_issues(owner, name, token, after=None):
     """returns the result of do_github_graphql_request for a repo issues query.
 
@@ -64,42 +100,10 @@ def get_issues(owner, name, token, after=None):
     Returns:
     A requests.Response object
     """
-    query = ("query($owner:String!, $name:String!, $after:String) {\n"
-            "  repository(owner:$owner, name:$name) {\n"
-            "    issues(first:100, after:$after) {\n"
-            "      nodes{\n"
-            "        number\n"
-            "        title\n"
-            "        state\n"
-            "        createdAt\n"
-            "        labels(first:100){\n"
-            "          nodes{\n"
-            "            name\n"
-            "          }\n"
-            "        }\n"
-            "        assignees(first:100){\n"
-            "          nodes{\n"
-            "            login\n"
-            "          }\n"
-            "        }\n"
-            "      }\n"
-            "      pageInfo{\n"
-            "        hasNextPage\n"
-            "        endCursor\n"
-            "      }\n"
-            "    }\n"
-            "  }\n"
-            "  rateLimit {\n"
-            "    limit\n"
-            "    cost\n"
-            "    remaining\n"
-            "    resetAt\n"
-            "  }\n"
-            "}\n")
     variables = {"owner": owner, "name": name}
     if after is not None:
         variables["after"] = after
-    return do_github_graphql_request(query, token, variables)
+    return do_github_graphql_request(ISSUES_QUERY, token, variables)
 
 
 def get_all_issues(owner, name, token, issue_func, show_progress=False):
@@ -139,14 +143,16 @@ def get_all_issues(owner, name, token, issue_func, show_progress=False):
 
 
 def main():
-    token = sys.argv[-1]
-    org = "kubernetes"
-    repo = "test-infra"
-    print("getting issues for: %s/%s" % (org, repo))
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--org', default='kubernetes')
+    parser.add_argument('--repo', default='test-infra')
+    parser.add_argument('token', help='GitHub auth token.')
+    options = parser.parse_args()
+    print("getting issues for: %s/%s" % (options.org, options.repo))
     # TODO: replace this with with something more useful?
     def issue_func(issue):
         print(issue)
-    get_all_issues(org, repo, token, issue_func)
+    get_all_issues(options.org, options.repo, options.token, issue_func)
     print("done")
 
 
