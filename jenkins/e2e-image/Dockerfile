@@ -28,7 +28,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     python-openssl \
     && apt-get clean
 
-ENV BAZEL_VERSION 0.5.2
+ENV BAZEL_VERSION 0.5.4
 RUN INSTALLER="bazel-${BAZEL_VERSION}-installer-linux-x86_64.sh"; \
     wget -q "https://github.com/bazelbuild/bazel/releases/download/${BAZEL_VERSION}/${INSTALLER}" && \
     chmod +x "${INSTALLER}" && "./${INSTALLER}" && rm "${INSTALLER}"
