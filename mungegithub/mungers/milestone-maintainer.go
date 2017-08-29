@@ -78,9 +78,9 @@ type MilestoneMaintainer struct {
 	botName  string
 	features *features.Features
 
-	activeMilestone      string
-	gracePeriodHours     int
-	warningIntervalHours int
+	activeMilestone string
+	gracePeriod     time.Duration
+	warningInterval time.Duration
 }
 
 func init() {
@@ -98,10 +98,10 @@ func (m *MilestoneMaintainer) Initialize(config *github.Config, features *featur
 	if len(m.activeMilestone) == 0 {
 		return errors.New("active-milestone must be supplied")
 	}
-	if m.gracePeriodHours <= 0 {
+	if m.gracePeriod <= 0 {
 		return errors.New("milestone-grace-period must be greater than zero")
 	}
-	if m.warningIntervalHours <= 0 {
+	if m.warningInterval <= 0 {
 		return errors.New("milestone-warning-interval must be greater than zero")
 	}
 	m.botName = config.BotName
@@ -117,8 +117,8 @@ func (m *MilestoneMaintainer) EachLoop() error { return nil }
 // RegisterOptions registers options for this munger; returns any that require a restart when changed.
 func (m *MilestoneMaintainer) RegisterOptions(opts *options.Options) sets.String {
 	opts.RegisterString(&m.activeMilestone, "active-milestone", "", "The active milestone that this munger will maintain issues for.")
-	opts.RegisterInt(&m.gracePeriodHours, "milestone-grace-period", 72, "The grace period (in hours) to wait before removing an incomplete issue from the active milestone.")
-	opts.RegisterInt(&m.warningIntervalHours, "milestone-warning-interval", 24, "The interval (in hours) to wait between warning about an incomplete issue in the active milestone.")
+	opts.RegisterDuration(&m.gracePeriod, "milestone-grace-period", 72*time.Hour, "The grace period to wait before removing an incomplete issue from the active milestone.")
+	opts.RegisterDuration(&m.warningInterval, "milestone-warning-interval", 24*time.Hour, "The interval to wait between warning about an incomplete issue in the active milestone.")
 	opts.RegisterUpdateCallback(func(changed sets.String) error {
 		if changed.Has("active-milestone") {
 			if len(m.activeMilestone) == 0 {
@@ -126,12 +126,12 @@ func (m *MilestoneMaintainer) RegisterOptions(opts *options.Options) sets.String
 			}
 		}
 		if changed.Has("milestone-grace-period") {
-			if m.gracePeriodHours <= 0 {
+			if m.gracePeriod <= 0 {
 				return errors.New("milestone-grace-period must be greater than zero")
 			}
 		}
 		if changed.Has("milestone-warning-interval") {
-			if m.warningIntervalHours <= 0 {
+			if m.warningInterval <= 0 {
 				return errors.New("milestone-warning-interval must be greater than zero")
 			}
 		}
@@ -151,9 +151,7 @@ func (m *MilestoneMaintainer) Munge(obj *github.MungeObject) {
 		return
 	}
 
-	gracePeriod := time.Hour * time.Duration(m.gracePeriodHours)
-	warningInterval := time.Hour * time.Duration(m.warningIntervalHours)
-	labelName, notifyState := notificationState(obj, comment, m.botName, gracePeriod, warningInterval)
+	labelName, notifyState := notificationState(obj, comment, m.botName, m.gracePeriod, m.warningInterval)
 	// Always attempt to ensure the milestone label
 	if len(labelName) > 0 && !ensureLabel(obj, labelName) {
 		return
