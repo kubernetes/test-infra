@@ -35,7 +35,7 @@ import urllib2
 ORIG_CWD = os.getcwd()  # Checkout changes cwd
 
 # Note: This variable is managed by experiment/bump_e2e_image.sh.
-DEFAULT_KUBEKINS_TAG = 'v20170828-2b398899'
+DEFAULT_KUBEKINS_TAG = 'v20170829-9b422e21'
 
 def test_infra(*paths):
     """Return path relative to root of test-infra repo."""
