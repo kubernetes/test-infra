@@ -14667,7 +14667,7 @@ periodics:
     - image: gcr.io/k8s-testimages/kubekins-e2e-prow:latest
       args:
       - --repo=k8s.io/kubernetes=master
-      - --timeout=80
+      - --timeout=110
       - --root=/go/src
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
