@@ -42,9 +42,9 @@ func TestMilestoneMaintainer(t *testing.T) {
 	activeMilestone := "v1.8"
 	milestone := &githubapi.Milestone{Title: &activeMilestone, Number: intPtr(1)}
 	m := MilestoneMaintainer{
-		activeMilestone:      activeMilestone,
-		gracePeriodHours:     72,
-		warningIntervalHours: 24,
+		activeMilestone: activeMilestone,
+		gracePeriod:     72 * time.Hour,
+		warningInterval: 24 * time.Hour,
 	}
 
 	issue := github_test.Issue("user", 1, []string{}, false)

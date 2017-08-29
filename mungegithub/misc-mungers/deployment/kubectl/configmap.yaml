@@ -11,5 +11,5 @@ github-key-file: /etc/hook-secret-volume/secret
 
 # milestone-maintainer options
 active-milestone: v1.8
-milestone-grace-period: 2
-milestone-warning-interval: 1
+milestone-grace-period: 15m
+milestone-warning-interval: 5m
