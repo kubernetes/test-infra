@@ -393,8 +393,10 @@ func (e extractStrategy) Extract(project, zone string) error {
 		}
 		return getKube(url, release)
 	case gcs:
-		url := strings.Replace(path.Dir(e.option), "gs:/", "https://storage.googleapis.com/", 1)
-		return getKube(url, path.Base(e.option))
+		// strip gs://foo -> /foo
+		withoutGS := e.option[3:]
+		url := "https://storage.googleapis.com" + path.Dir(withoutGS)
+		return getKube(url, path.Base(withoutGS))
 	case load:
 		return loadState(e.option)
 	case bazel:
