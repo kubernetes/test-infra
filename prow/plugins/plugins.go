@@ -113,7 +113,7 @@ type PluginAgent struct {
 	PluginClient
 
 	mut           sync.Mutex
-	configuration Configuration
+	configuration *Configuration
 }
 
 // Configuration is the top-level serialization
@@ -121,7 +121,7 @@ type PluginAgent struct {
 type Configuration struct {
 	// Repo (eg "k/k") -> list of handler names.
 	Plugins     map[string][]string `json:"plugins,omitempty"`
-	Triggers    []Trigger           `json:"trigger,omitempty"`
+	Triggers    []Trigger           `json:"triggers,omitempty"`
 	Heart       Heart               `json:"heart,omitempty"`
 	Label       Label               `json:"label,omitempty"`
 	SlackEvents []SlackEvent        `json:"slackevents,omitempty"`
@@ -180,8 +180,8 @@ func (pa *PluginAgent) Load(path string) error {
 	if err != nil {
 		return err
 	}
-	np := Configuration{}
-	if err := yaml.Unmarshal(b, &np); err != nil {
+	np := &Configuration{}
+	if err := yaml.Unmarshal(b, np); err != nil {
 		return err
 	}
 
@@ -190,6 +190,12 @@ func (pa *PluginAgent) Load(path string) error {
 	}
 	pa.Set(np)
 	return nil
+}
+
+func (pa *PluginAgent) Config() *Configuration {
+	pa.mut.Lock()
+	defer pa.mut.Unlock()
+	return pa.configuration
 }
 
 // validatePlugins will return error if
@@ -235,7 +241,7 @@ func findDuplicatedPluginConfig(repoConfig, orgConfig []string) []string {
 // as a map from repositories to the list of plugins that are enabled on them.
 // Specifying simply an org name will also work, and will enable the plugin on
 // all repos in the org.
-func (pa *PluginAgent) Set(pc Configuration) {
+func (pa *PluginAgent) Set(pc *Configuration) {
 	pa.mut.Lock()
 	defer pa.mut.Unlock()
 	pa.configuration = pc

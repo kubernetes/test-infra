@@ -53,7 +53,7 @@ func TestHook(t *testing.T) {
 		return nil
 	})
 	pa := &plugins.PluginAgent{}
-	pa.Set(plugins.Configuration{Plugins: map[string][]string{"foo/bar": {"baz"}}})
+	pa.Set(&plugins.Configuration{Plugins: map[string][]string{"foo/bar": {"baz"}}})
 	ca := &config.Agent{}
 	s := httptest.NewServer(&Server{
 		Plugins:     pa,
