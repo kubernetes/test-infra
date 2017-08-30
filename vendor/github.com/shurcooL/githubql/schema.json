@@ -58,6 +58,53 @@
 							"deprecationReason": null
 						},
 						{
+							"name": "license",
+							"description": "Look up an open source license by its key",
+							"args": [
+								{
+									"name": "key",
+									"description": "The license's downcased SPDX ID",
+									"type": {
+										"kind": "NON_NULL",
+										"name": null,
+										"ofType": {
+											"kind": "SCALAR",
+											"name": "String",
+											"ofType": null
+										}
+									},
+									"defaultValue": null
+								}
+							],
+							"type": {
+								"kind": "OBJECT",
+								"name": "License",
+								"ofType": null
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "licenses",
+							"description": "Return a list of known open source licenses",
+							"args": [],
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "LIST",
+									"name": null,
+									"ofType": {
+										"kind": "OBJECT",
+										"name": "License",
+										"ofType": null
+									}
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
 							"name": "node",
 							"description": "Fetches an object given its ID.",
 							"args": [
@@ -157,7 +204,18 @@
 						{
 							"name": "rateLimit",
 							"description": "The client's rate limit information.",
-							"args": [],
+							"args": [
+								{
+									"name": "dryRun",
+									"description": "If true, calculate the cost for the query without evaluating it",
+									"type": {
+										"kind": "SCALAR",
+										"name": "Boolean",
+										"ofType": null
+									},
+									"defaultValue": "false"
+								}
+							],
 							"type": {
 								"kind": "OBJECT",
 								"name": "RateLimit",
@@ -188,7 +246,7 @@
 							"args": [
 								{
 									"name": "owner",
-									"description": "The login field of a user or organizationn",
+									"description": "The login field of a user or organization",
 									"type": {
 										"kind": "NON_NULL",
 										"name": null,
@@ -522,6 +580,11 @@
 						{
 							"kind": "OBJECT",
 							"name": "ConvertedNoteToIssueEvent",
+							"ofType": null
+						},
+						{
+							"kind": "OBJECT",
+							"name": "CrossReferencedEvent",
 							"ofType": null
 						},
 						{
@@ -890,6 +953,11 @@
 						},
 						{
 							"kind": "OBJECT",
+							"name": "CrossReferencedEvent",
+							"ofType": null
+						},
+						{
+							"kind": "OBJECT",
 							"name": "Issue",
 							"ofType": null
 						},
@@ -1009,6 +1077,63 @@
 								"ofType": {
 									"kind": "SCALAR",
 									"name": "HTML",
+									"ofType": null
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "commitComments",
+							"description": "A list of commit comments made by this user.",
+							"args": [
+								{
+									"name": "first",
+									"description": "Returns the first _n_ elements from the list.",
+									"type": {
+										"kind": "SCALAR",
+										"name": "Int",
+										"ofType": null
+									},
+									"defaultValue": null
+								},
+								{
+									"name": "after",
+									"description": "Returns the elements in the list that come after the specified global ID.",
+									"type": {
+										"kind": "SCALAR",
+										"name": "String",
+										"ofType": null
+									},
+									"defaultValue": null
+								},
+								{
+									"name": "last",
+									"description": "Returns the last _n_ elements from the list.",
+									"type": {
+										"kind": "SCALAR",
+										"name": "Int",
+										"ofType": null
+									},
+									"defaultValue": null
+								},
+								{
+									"name": "before",
+									"description": "Returns the elements in the list that come before the specified global ID.",
+									"type": {
+										"kind": "SCALAR",
+										"name": "String",
+										"ofType": null
+									},
+									"defaultValue": null
+								}
+							],
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "OBJECT",
+									"name": "CommitCommentConnection",
 									"ofType": null
 								}
 							},
@@ -1330,6 +1455,63 @@
 							"deprecationReason": null
 						},
 						{
+							"name": "gistComments",
+							"description": "A list of gist comments made by this user.",
+							"args": [
+								{
+									"name": "first",
+									"description": "Returns the first _n_ elements from the list.",
+									"type": {
+										"kind": "SCALAR",
+										"name": "Int",
+										"ofType": null
+									},
+									"defaultValue": null
+								},
+								{
+									"name": "after",
+									"description": "Returns the elements in the list that come after the specified global ID.",
+									"type": {
+										"kind": "SCALAR",
+										"name": "String",
+										"ofType": null
+									},
+									"defaultValue": null
+								},
+								{
+									"name": "last",
+									"description": "Returns the last _n_ elements from the list.",
+									"type": {
+										"kind": "SCALAR",
+										"name": "Int",
+										"ofType": null
+									},
+									"defaultValue": null
+								},
+								{
+									"name": "before",
+									"description": "Returns the elements in the list that come before the specified global ID.",
+									"type": {
+										"kind": "SCALAR",
+										"name": "String",
+										"ofType": null
+									},
+									"defaultValue": null
+								}
+							],
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "OBJECT",
+									"name": "IssueCommentConnection",
+									"ofType": null
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
 							"name": "gists",
 							"description": "A list of the Gists the user has created.",
 							"args": [
@@ -1379,6 +1561,16 @@
 									"type": {
 										"kind": "ENUM",
 										"name": "GistPrivacy",
+										"ofType": null
+									},
+									"defaultValue": null
+								},
+								{
+									"name": "orderBy",
+									"description": "Ordering options for gists returned from the connection",
+									"type": {
+										"kind": "INPUT_OBJECT",
+										"name": "GistOrder",
 										"ofType": null
 									},
 									"defaultValue": null
@@ -1534,6 +1726,63 @@
 								"ofType": {
 									"kind": "SCALAR",
 									"name": "Boolean",
+									"ofType": null
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "issueComments",
+							"description": "A list of issue comments made by this user.",
+							"args": [
+								{
+									"name": "first",
+									"description": "Returns the first _n_ elements from the list.",
+									"type": {
+										"kind": "SCALAR",
+										"name": "Int",
+										"ofType": null
+									},
+									"defaultValue": null
+								},
+								{
+									"name": "after",
+									"description": "Returns the elements in the list that come after the specified global ID.",
+									"type": {
+										"kind": "SCALAR",
+										"name": "String",
+										"ofType": null
+									},
+									"defaultValue": null
+								},
+								{
+									"name": "last",
+									"description": "Returns the last _n_ elements from the list.",
+									"type": {
+										"kind": "SCALAR",
+										"name": "Int",
+										"ofType": null
+									},
+									"defaultValue": null
+								},
+								{
+									"name": "before",
+									"description": "Returns the elements in the list that come before the specified global ID.",
+									"type": {
+										"kind": "SCALAR",
+										"name": "String",
+										"ofType": null
+									},
+									"defaultValue": null
+								}
+							],
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "OBJECT",
+									"name": "IssueCommentConnection",
 									"ofType": null
 								}
 							},
@@ -2705,6 +2954,24 @@
 										"ofType": null
 									},
 									"defaultValue": null
+								},
+								{
+									"name": "environments",
+									"description": "Environments to list deployments for",
+									"type": {
+										"kind": "LIST",
+										"name": null,
+										"ofType": {
+											"kind": "NON_NULL",
+											"name": null,
+											"ofType": {
+												"kind": "SCALAR",
+												"name": "String",
+												"ofType": null
+											}
+										}
+									},
+									"defaultValue": null
 								}
 							],
 							"type": {
@@ -3291,6 +3558,18 @@
 							"type": {
 								"kind": "SCALAR",
 								"name": "String",
+								"ofType": null
+							},
+							"isDeprecated": true,
+							"deprecationReason": "Use Repository.licenseInfo instead."
+						},
+						{
+							"name": "licenseInfo",
+							"description": "The license associated with the repository",
+							"args": [],
+							"type": {
+								"kind": "OBJECT",
+								"name": "License",
 								"ofType": null
 							},
 							"isDeprecated": false,
@@ -4163,6 +4442,33 @@
 								"ofType": {
 									"kind": "SCALAR",
 									"name": "URI",
+									"ofType": null
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "shortDescriptionHTML",
+							"description": "A description of the repository, rendered to HTML without any links in it.",
+							"args": [
+								{
+									"name": "limit",
+									"description": "How many characters to return.",
+									"type": {
+										"kind": "SCALAR",
+										"name": "Int",
+										"ofType": null
+									},
+									"defaultValue": "200"
+								}
+							],
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "SCALAR",
+									"name": "HTML",
 									"ofType": null
 								}
 							},
@@ -7187,6 +7493,12 @@
 							"deprecationReason": null
 						},
 						{
+							"name": "FIRST_TIMER",
+							"description": "Author has not previously committed to GitHub.",
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
 							"name": "NONE",
 							"description": "Author has no association with the repository.",
 							"isDeprecated": false,
@@ -8713,6 +9025,18 @@
 							"type": {
 								"kind": "SCALAR",
 								"name": "DateTime",
+								"ofType": null
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "milestone",
+							"description": "Identifies the milestone associated with the pull request.",
+							"args": [],
+							"type": {
+								"kind": "OBJECT",
+								"name": "Milestone",
 								"ofType": null
 							},
 							"isDeprecated": false,
@@ -10290,6 +10614,22 @@
 					"name": "Subscribable",
 					"description": "Entities that can be subscribed to for web and email notifications.",
 					"fields": [
+						{
+							"name": "id",
+							"description": null,
+							"args": [],
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "SCALAR",
+									"name": "ID",
+									"ofType": null
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
 						{
 							"name": "viewerCanSubscribe",
 							"description": "Check if the viewer is able to change their subscription status for the repository.",
@@ -11987,16 +12327,12 @@
 						},
 						{
 							"name": "commit",
-							"description": "Identifies the commit associated with the comment.",
+							"description": "Identifies the commit associated with the comment, if the commit exists.",
 							"args": [],
 							"type": {
-								"kind": "NON_NULL",
-								"name": null,
-								"ofType": {
-									"kind": "OBJECT",
-									"name": "Commit",
-									"ofType": null
-								}
+								"kind": "OBJECT",
+								"name": "Commit",
+								"ofType": null
 							},
 							"isDeprecated": false,
 							"deprecationReason": null
@@ -12235,6 +12571,22 @@
 							"deprecationReason": null
 						},
 						{
+							"name": "resourcePath",
+							"description": "The HTTP path permalink for this commit comment.",
+							"args": [],
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "SCALAR",
+									"name": "URI",
+									"ofType": null
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
 							"name": "updatedAt",
 							"description": "Identifies the date and time when the object was last updated.",
 							"args": [],
@@ -12249,6 +12601,22 @@
 							},
 							"isDeprecated": true,
 							"deprecationReason": "General type updated timestamps will eventually be replaced by other field specific timestamps."
+						},
+						{
+							"name": "url",
+							"description": "The HTTP URL permalink for this commit comment.",
+							"args": [],
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "SCALAR",
+									"name": "URI",
+									"ofType": null
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
 						},
 						{
 							"name": "viewerCanDelete",
@@ -13916,6 +14284,199 @@
 					"possibleTypes": null
 				},
 				{
+					"kind": "OBJECT",
+					"name": "Milestone",
+					"description": "Represents a Milestone object on a given repository.",
+					"fields": [
+						{
+							"name": "creator",
+							"description": "Identifies the actor who created the milestone.",
+							"args": [],
+							"type": {
+								"kind": "INTERFACE",
+								"name": "Actor",
+								"ofType": null
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "description",
+							"description": "Identifies the description of the milestone.",
+							"args": [],
+							"type": {
+								"kind": "SCALAR",
+								"name": "String",
+								"ofType": null
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "dueOn",
+							"description": "Identifies the due date of the milestone.",
+							"args": [],
+							"type": {
+								"kind": "SCALAR",
+								"name": "DateTime",
+								"ofType": null
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "id",
+							"description": null,
+							"args": [],
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "SCALAR",
+									"name": "ID",
+									"ofType": null
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "number",
+							"description": "Identifies the number of the milestone.",
+							"args": [],
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "SCALAR",
+									"name": "Int",
+									"ofType": null
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "repository",
+							"description": "The repository associated with this milestone.",
+							"args": [],
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "OBJECT",
+									"name": "Repository",
+									"ofType": null
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "resourcePath",
+							"description": "The HTTP path for this milestone",
+							"args": [],
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "SCALAR",
+									"name": "URI",
+									"ofType": null
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "state",
+							"description": "Identifies the state of the milestone.",
+							"args": [],
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "ENUM",
+									"name": "MilestoneState",
+									"ofType": null
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "title",
+							"description": "Identifies the title of the milestone.",
+							"args": [],
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "SCALAR",
+									"name": "String",
+									"ofType": null
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "url",
+							"description": "The HTTP URL for this milestone",
+							"args": [],
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "SCALAR",
+									"name": "URI",
+									"ofType": null
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						}
+					],
+					"inputFields": null,
+					"interfaces": [
+						{
+							"kind": "INTERFACE",
+							"name": "Node",
+							"ofType": null
+						},
+						{
+							"kind": "INTERFACE",
+							"name": "UniformResourceLocatable",
+							"ofType": null
+						}
+					],
+					"enumValues": null,
+					"possibleTypes": null
+				},
+				{
+					"kind": "ENUM",
+					"name": "MilestoneState",
+					"description": "The possible states of a milestone.",
+					"fields": null,
+					"inputFields": null,
+					"interfaces": null,
+					"enumValues": [
+						{
+							"name": "OPEN",
+							"description": "A milestone that is still open.",
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "CLOSED",
+							"description": "A milestone that has been closed.",
+							"isDeprecated": false,
+							"deprecationReason": null
+						}
+					],
+					"possibleTypes": null
+				},
+				{
 					"kind": "ENUM",
 					"name": "MergeableState",
 					"description": "Whether or not a PullRequest can be merged.",
@@ -14246,6 +14807,18 @@
 							"type": {
 								"kind": "SCALAR",
 								"name": "DateTime",
+								"ofType": null
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "pullRequest",
+							"description": "Returns the pull request associated with the comment, if this comment was made on a\npull request.\n",
+							"args": [],
+							"type": {
+								"kind": "OBJECT",
+								"name": "PullRequest",
 								"ofType": null
 							},
 							"isDeprecated": false,
@@ -15483,13 +16056,9 @@
 							"description": "Identifies the original commit associated with the comment.",
 							"args": [],
 							"type": {
-								"kind": "NON_NULL",
-								"name": null,
-								"ofType": {
-									"kind": "OBJECT",
-									"name": "Commit",
-									"ofType": null
-								}
+								"kind": "OBJECT",
+								"name": "Commit",
+								"ofType": null
 							},
 							"isDeprecated": false,
 							"deprecationReason": null
@@ -15671,6 +16240,18 @@
 									"name": "ReactionConnection",
 									"ofType": null
 								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "replyTo",
+							"description": "The comment this is a reply to.",
+							"args": [],
+							"type": {
+								"kind": "OBJECT",
+								"name": "PullRequestReviewComment",
+								"ofType": null
 							},
 							"isDeprecated": false,
 							"deprecationReason": null
@@ -16475,6 +17056,22 @@
 							"deprecationReason": null
 						},
 						{
+							"name": "createdAt",
+							"description": "Identifies the date and time when the object was created.",
+							"args": [],
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "SCALAR",
+									"name": "DateTime",
+									"ofType": null
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
 							"name": "description",
 							"description": "The description of the team.",
 							"args": [],
@@ -16970,6 +17567,22 @@
 							},
 							"isDeprecated": false,
 							"deprecationReason": null
+						},
+						{
+							"name": "updatedAt",
+							"description": "Identifies the date and time when the object was last updated.",
+							"args": [],
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "SCALAR",
+									"name": "DateTime",
+									"ofType": null
+								}
+							},
+							"isDeprecated": true,
+							"deprecationReason": "General type updated timestamps will eventually be replaced by other field specific timestamps."
 						},
 						{
 							"name": "url",
@@ -17952,6 +18565,30 @@
 							"deprecationReason": "Exposed database IDs will eventually be removed in favor of global Relay IDs."
 						},
 						{
+							"name": "description",
+							"description": "The organization's public profile description.",
+							"args": [],
+							"type": {
+								"kind": "SCALAR",
+								"name": "String",
+								"ofType": null
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "email",
+							"description": "The organization's public email.",
+							"args": [],
+							"type": {
+								"kind": "SCALAR",
+								"name": "String",
+								"ofType": null
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
 							"name": "id",
 							"description": null,
 							"args": [],
@@ -17979,6 +18616,18 @@
 									"name": "Boolean",
 									"ofType": null
 								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "location",
+							"description": "The organization's public profile location.",
+							"args": [],
+							"type": {
+								"kind": "SCALAR",
+								"name": "String",
+								"ofType": null
 							},
 							"isDeprecated": false,
 							"deprecationReason": null
@@ -18061,13 +18710,9 @@
 							"description": "The organization's public profile name.",
 							"args": [],
 							"type": {
-								"kind": "NON_NULL",
-								"name": null,
-								"ofType": {
-									"kind": "SCALAR",
-									"name": "String",
-									"ofType": null
-								}
+								"kind": "SCALAR",
+								"name": "String",
+								"ofType": null
 							},
 							"isDeprecated": false,
 							"deprecationReason": null
@@ -18826,6 +19471,18 @@
 							},
 							"isDeprecated": false,
 							"deprecationReason": null
+						},
+						{
+							"name": "websiteUrl",
+							"description": "The organization's public profile URL.",
+							"args": [],
+							"type": {
+								"kind": "SCALAR",
+								"name": "URI",
+								"ofType": null
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
 						}
 					],
 					"inputFields": null,
@@ -18860,12 +19517,256 @@
 					"possibleTypes": null
 				},
 				{
+					"kind": "OBJECT",
+					"name": "OrganizationConnection",
+					"description": "The connection type for Organization.",
+					"fields": [
+						{
+							"name": "edges",
+							"description": "A list of edges.",
+							"args": [],
+							"type": {
+								"kind": "LIST",
+								"name": null,
+								"ofType": {
+									"kind": "OBJECT",
+									"name": "OrganizationEdge",
+									"ofType": null
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "nodes",
+							"description": "A list of nodes.",
+							"args": [],
+							"type": {
+								"kind": "LIST",
+								"name": null,
+								"ofType": {
+									"kind": "OBJECT",
+									"name": "Organization",
+									"ofType": null
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "pageInfo",
+							"description": "Information to aid in pagination.",
+							"args": [],
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "OBJECT",
+									"name": "PageInfo",
+									"ofType": null
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "totalCount",
+							"description": "Identifies the total count of items in the connection.",
+							"args": [],
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "SCALAR",
+									"name": "Int",
+									"ofType": null
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						}
+					],
+					"inputFields": null,
+					"interfaces": [],
+					"enumValues": null,
+					"possibleTypes": null
+				},
+				{
+					"kind": "OBJECT",
+					"name": "OrganizationEdge",
+					"description": "An edge in a connection.",
+					"fields": [
+						{
+							"name": "cursor",
+							"description": "A cursor for use in pagination.",
+							"args": [],
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "SCALAR",
+									"name": "String",
+									"ofType": null
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "node",
+							"description": "The item at the end of the edge.",
+							"args": [],
+							"type": {
+								"kind": "OBJECT",
+								"name": "Organization",
+								"ofType": null
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						}
+					],
+					"inputFields": null,
+					"interfaces": [],
+					"enumValues": null,
+					"possibleTypes": null
+				},
+				{
 					"kind": "SCALAR",
 					"name": "Float",
 					"description": "Represents signed double-precision fractional values as specified by [IEEE 754](http://en.wikipedia.org/wiki/IEEE_floating_point).",
 					"fields": null,
 					"inputFields": null,
 					"interfaces": null,
+					"enumValues": null,
+					"possibleTypes": null
+				},
+				{
+					"kind": "OBJECT",
+					"name": "Bot",
+					"description": "A special type of user which takes actions on behalf of GitHub Apps.",
+					"fields": [
+						{
+							"name": "avatarUrl",
+							"description": "A URL pointing to the GitHub App's public avatar.",
+							"args": [
+								{
+									"name": "size",
+									"description": "The size of the resulting square image.",
+									"type": {
+										"kind": "SCALAR",
+										"name": "Int",
+										"ofType": null
+									},
+									"defaultValue": null
+								}
+							],
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "SCALAR",
+									"name": "URI",
+									"ofType": null
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "databaseId",
+							"description": "Identifies the primary key from the database.",
+							"args": [],
+							"type": {
+								"kind": "SCALAR",
+								"name": "Int",
+								"ofType": null
+							},
+							"isDeprecated": true,
+							"deprecationReason": "Exposed database IDs will eventually be removed in favor of global Relay IDs."
+						},
+						{
+							"name": "id",
+							"description": null,
+							"args": [],
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "SCALAR",
+									"name": "ID",
+									"ofType": null
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "login",
+							"description": "The username of the actor.",
+							"args": [],
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "SCALAR",
+									"name": "String",
+									"ofType": null
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "resourcePath",
+							"description": "The HTTP path for this bot",
+							"args": [],
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "SCALAR",
+									"name": "URI",
+									"ofType": null
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "url",
+							"description": "The HTTP URL for this bot",
+							"args": [],
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "SCALAR",
+									"name": "URI",
+									"ofType": null
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						}
+					],
+					"inputFields": null,
+					"interfaces": [
+						{
+							"kind": "INTERFACE",
+							"name": "Node",
+							"ofType": null
+						},
+						{
+							"kind": "INTERFACE",
+							"name": "Actor",
+							"ofType": null
+						},
+						{
+							"kind": "INTERFACE",
+							"name": "UniformResourceLocatable",
+							"ofType": null
+						}
+					],
 					"enumValues": null,
 					"possibleTypes": null
 				},
@@ -19016,136 +19917,6 @@
 					],
 					"inputFields": null,
 					"interfaces": [],
-					"enumValues": null,
-					"possibleTypes": null
-				},
-				{
-					"kind": "OBJECT",
-					"name": "Bot",
-					"description": "A special type of user which takes actions on behalf of GitHub Apps.",
-					"fields": [
-						{
-							"name": "avatarUrl",
-							"description": "A URL pointing to the GitHub App's public avatar.",
-							"args": [
-								{
-									"name": "size",
-									"description": "The size of the resulting square image.",
-									"type": {
-										"kind": "SCALAR",
-										"name": "Int",
-										"ofType": null
-									},
-									"defaultValue": null
-								}
-							],
-							"type": {
-								"kind": "NON_NULL",
-								"name": null,
-								"ofType": {
-									"kind": "SCALAR",
-									"name": "URI",
-									"ofType": null
-								}
-							},
-							"isDeprecated": false,
-							"deprecationReason": null
-						},
-						{
-							"name": "databaseId",
-							"description": "Identifies the primary key from the database.",
-							"args": [],
-							"type": {
-								"kind": "SCALAR",
-								"name": "Int",
-								"ofType": null
-							},
-							"isDeprecated": true,
-							"deprecationReason": "Exposed database IDs will eventually be removed in favor of global Relay IDs."
-						},
-						{
-							"name": "id",
-							"description": null,
-							"args": [],
-							"type": {
-								"kind": "NON_NULL",
-								"name": null,
-								"ofType": {
-									"kind": "SCALAR",
-									"name": "ID",
-									"ofType": null
-								}
-							},
-							"isDeprecated": false,
-							"deprecationReason": null
-						},
-						{
-							"name": "login",
-							"description": "The username of the actor.",
-							"args": [],
-							"type": {
-								"kind": "NON_NULL",
-								"name": null,
-								"ofType": {
-									"kind": "SCALAR",
-									"name": "String",
-									"ofType": null
-								}
-							},
-							"isDeprecated": false,
-							"deprecationReason": null
-						},
-						{
-							"name": "resourcePath",
-							"description": "The HTTP path for this bot",
-							"args": [],
-							"type": {
-								"kind": "NON_NULL",
-								"name": null,
-								"ofType": {
-									"kind": "SCALAR",
-									"name": "URI",
-									"ofType": null
-								}
-							},
-							"isDeprecated": false,
-							"deprecationReason": null
-						},
-						{
-							"name": "url",
-							"description": "The HTTP URL for this bot",
-							"args": [],
-							"type": {
-								"kind": "NON_NULL",
-								"name": null,
-								"ofType": {
-									"kind": "SCALAR",
-									"name": "URI",
-									"ofType": null
-								}
-							},
-							"isDeprecated": false,
-							"deprecationReason": null
-						}
-					],
-					"inputFields": null,
-					"interfaces": [
-						{
-							"kind": "INTERFACE",
-							"name": "Node",
-							"ofType": null
-						},
-						{
-							"kind": "INTERFACE",
-							"name": "Actor",
-							"ofType": null
-						},
-						{
-							"kind": "INTERFACE",
-							"name": "UniformResourceLocatable",
-							"ofType": null
-						}
-					],
 					"enumValues": null,
 					"possibleTypes": null
 				},
@@ -19814,6 +20585,1189 @@
 				},
 				{
 					"kind": "OBJECT",
+					"name": "GistConnection",
+					"description": "The connection type for Gist.",
+					"fields": [
+						{
+							"name": "edges",
+							"description": "A list of edges.",
+							"args": [],
+							"type": {
+								"kind": "LIST",
+								"name": null,
+								"ofType": {
+									"kind": "OBJECT",
+									"name": "GistEdge",
+									"ofType": null
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "nodes",
+							"description": "A list of nodes.",
+							"args": [],
+							"type": {
+								"kind": "LIST",
+								"name": null,
+								"ofType": {
+									"kind": "OBJECT",
+									"name": "Gist",
+									"ofType": null
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "pageInfo",
+							"description": "Information to aid in pagination.",
+							"args": [],
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "OBJECT",
+									"name": "PageInfo",
+									"ofType": null
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "totalCount",
+							"description": "Identifies the total count of items in the connection.",
+							"args": [],
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "SCALAR",
+									"name": "Int",
+									"ofType": null
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						}
+					],
+					"inputFields": null,
+					"interfaces": [],
+					"enumValues": null,
+					"possibleTypes": null
+				},
+				{
+					"kind": "OBJECT",
+					"name": "GistEdge",
+					"description": "An edge in a connection.",
+					"fields": [
+						{
+							"name": "cursor",
+							"description": "A cursor for use in pagination.",
+							"args": [],
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "SCALAR",
+									"name": "String",
+									"ofType": null
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "node",
+							"description": "The item at the end of the edge.",
+							"args": [],
+							"type": {
+								"kind": "OBJECT",
+								"name": "Gist",
+								"ofType": null
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						}
+					],
+					"inputFields": null,
+					"interfaces": [],
+					"enumValues": null,
+					"possibleTypes": null
+				},
+				{
+					"kind": "OBJECT",
+					"name": "Gist",
+					"description": "A Gist.",
+					"fields": [
+						{
+							"name": "comments",
+							"description": "A list of comments associated with the gist",
+							"args": [
+								{
+									"name": "first",
+									"description": "Returns the first _n_ elements from the list.",
+									"type": {
+										"kind": "SCALAR",
+										"name": "Int",
+										"ofType": null
+									},
+									"defaultValue": null
+								},
+								{
+									"name": "after",
+									"description": "Returns the elements in the list that come after the specified global ID.",
+									"type": {
+										"kind": "SCALAR",
+										"name": "String",
+										"ofType": null
+									},
+									"defaultValue": null
+								},
+								{
+									"name": "last",
+									"description": "Returns the last _n_ elements from the list.",
+									"type": {
+										"kind": "SCALAR",
+										"name": "Int",
+										"ofType": null
+									},
+									"defaultValue": null
+								},
+								{
+									"name": "before",
+									"description": "Returns the elements in the list that come before the specified global ID.",
+									"type": {
+										"kind": "SCALAR",
+										"name": "String",
+										"ofType": null
+									},
+									"defaultValue": null
+								}
+							],
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "OBJECT",
+									"name": "GistCommentConnection",
+									"ofType": null
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "createdAt",
+							"description": "Identifies the date and time when the object was created.",
+							"args": [],
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "SCALAR",
+									"name": "DateTime",
+									"ofType": null
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "description",
+							"description": "The gist description.",
+							"args": [],
+							"type": {
+								"kind": "SCALAR",
+								"name": "String",
+								"ofType": null
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "id",
+							"description": null,
+							"args": [],
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "SCALAR",
+									"name": "ID",
+									"ofType": null
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "isPublic",
+							"description": "Whether the gist is public or not.",
+							"args": [],
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "SCALAR",
+									"name": "Boolean",
+									"ofType": null
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "name",
+							"description": "The gist name.",
+							"args": [],
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "SCALAR",
+									"name": "String",
+									"ofType": null
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "owner",
+							"description": "The gist owner.",
+							"args": [],
+							"type": {
+								"kind": "INTERFACE",
+								"name": "RepositoryOwner",
+								"ofType": null
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "pushedAt",
+							"description": "Identifies when the gist was last pushed to.",
+							"args": [],
+							"type": {
+								"kind": "SCALAR",
+								"name": "DateTime",
+								"ofType": null
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "stargazers",
+							"description": "A list of users who have starred this starrable.",
+							"args": [
+								{
+									"name": "first",
+									"description": "Returns the first _n_ elements from the list.",
+									"type": {
+										"kind": "SCALAR",
+										"name": "Int",
+										"ofType": null
+									},
+									"defaultValue": null
+								},
+								{
+									"name": "after",
+									"description": "Returns the elements in the list that come after the specified global ID.",
+									"type": {
+										"kind": "SCALAR",
+										"name": "String",
+										"ofType": null
+									},
+									"defaultValue": null
+								},
+								{
+									"name": "last",
+									"description": "Returns the last _n_ elements from the list.",
+									"type": {
+										"kind": "SCALAR",
+										"name": "Int",
+										"ofType": null
+									},
+									"defaultValue": null
+								},
+								{
+									"name": "before",
+									"description": "Returns the elements in the list that come before the specified global ID.",
+									"type": {
+										"kind": "SCALAR",
+										"name": "String",
+										"ofType": null
+									},
+									"defaultValue": null
+								},
+								{
+									"name": "orderBy",
+									"description": "Order for connection",
+									"type": {
+										"kind": "INPUT_OBJECT",
+										"name": "StarOrder",
+										"ofType": null
+									},
+									"defaultValue": null
+								}
+							],
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "OBJECT",
+									"name": "StargazerConnection",
+									"ofType": null
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "updatedAt",
+							"description": "Identifies the date and time when the object was last updated.",
+							"args": [],
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "SCALAR",
+									"name": "DateTime",
+									"ofType": null
+								}
+							},
+							"isDeprecated": true,
+							"deprecationReason": "General type updated timestamps will eventually be replaced by other field specific timestamps."
+						},
+						{
+							"name": "viewerHasStarred",
+							"description": "Returns a boolean indicating whether the viewing user has starred this starrable.",
+							"args": [],
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "SCALAR",
+									"name": "Boolean",
+									"ofType": null
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						}
+					],
+					"inputFields": null,
+					"interfaces": [
+						{
+							"kind": "INTERFACE",
+							"name": "Node",
+							"ofType": null
+						},
+						{
+							"kind": "INTERFACE",
+							"name": "Starrable",
+							"ofType": null
+						}
+					],
+					"enumValues": null,
+					"possibleTypes": null
+				},
+				{
+					"kind": "INTERFACE",
+					"name": "Starrable",
+					"description": "Things that can be starred.",
+					"fields": [
+						{
+							"name": "id",
+							"description": null,
+							"args": [],
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "SCALAR",
+									"name": "ID",
+									"ofType": null
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "stargazers",
+							"description": "A list of users who have starred this starrable.",
+							"args": [
+								{
+									"name": "first",
+									"description": "Returns the first _n_ elements from the list.",
+									"type": {
+										"kind": "SCALAR",
+										"name": "Int",
+										"ofType": null
+									},
+									"defaultValue": null
+								},
+								{
+									"name": "after",
+									"description": "Returns the elements in the list that come after the specified global ID.",
+									"type": {
+										"kind": "SCALAR",
+										"name": "String",
+										"ofType": null
+									},
+									"defaultValue": null
+								},
+								{
+									"name": "last",
+									"description": "Returns the last _n_ elements from the list.",
+									"type": {
+										"kind": "SCALAR",
+										"name": "Int",
+										"ofType": null
+									},
+									"defaultValue": null
+								},
+								{
+									"name": "before",
+									"description": "Returns the elements in the list that come before the specified global ID.",
+									"type": {
+										"kind": "SCALAR",
+										"name": "String",
+										"ofType": null
+									},
+									"defaultValue": null
+								},
+								{
+									"name": "orderBy",
+									"description": "Order for connection",
+									"type": {
+										"kind": "INPUT_OBJECT",
+										"name": "StarOrder",
+										"ofType": null
+									},
+									"defaultValue": null
+								}
+							],
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "OBJECT",
+									"name": "StargazerConnection",
+									"ofType": null
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "viewerHasStarred",
+							"description": "Returns a boolean indicating whether the viewing user has starred this starrable.",
+							"args": [],
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "SCALAR",
+									"name": "Boolean",
+									"ofType": null
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						}
+					],
+					"inputFields": null,
+					"interfaces": null,
+					"enumValues": null,
+					"possibleTypes": [
+						{
+							"kind": "OBJECT",
+							"name": "Gist",
+							"ofType": null
+						},
+						{
+							"kind": "OBJECT",
+							"name": "Repository",
+							"ofType": null
+						}
+					]
+				},
+				{
+					"kind": "OBJECT",
+					"name": "StargazerConnection",
+					"description": "The connection type for User.",
+					"fields": [
+						{
+							"name": "edges",
+							"description": "A list of edges.",
+							"args": [],
+							"type": {
+								"kind": "LIST",
+								"name": null,
+								"ofType": {
+									"kind": "OBJECT",
+									"name": "StargazerEdge",
+									"ofType": null
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "nodes",
+							"description": "A list of nodes.",
+							"args": [],
+							"type": {
+								"kind": "LIST",
+								"name": null,
+								"ofType": {
+									"kind": "OBJECT",
+									"name": "User",
+									"ofType": null
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "pageInfo",
+							"description": "Information to aid in pagination.",
+							"args": [],
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "OBJECT",
+									"name": "PageInfo",
+									"ofType": null
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "totalCount",
+							"description": "Identifies the total count of items in the connection.",
+							"args": [],
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "SCALAR",
+									"name": "Int",
+									"ofType": null
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						}
+					],
+					"inputFields": null,
+					"interfaces": [],
+					"enumValues": null,
+					"possibleTypes": null
+				},
+				{
+					"kind": "OBJECT",
+					"name": "StargazerEdge",
+					"description": "Represents a user that's starred a repository.",
+					"fields": [
+						{
+							"name": "cursor",
+							"description": null,
+							"args": [],
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "SCALAR",
+									"name": "String",
+									"ofType": null
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "node",
+							"description": null,
+							"args": [],
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "OBJECT",
+									"name": "User",
+									"ofType": null
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "starredAt",
+							"description": "Identifies when the item was starred.",
+							"args": [],
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "SCALAR",
+									"name": "DateTime",
+									"ofType": null
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						}
+					],
+					"inputFields": null,
+					"interfaces": [],
+					"enumValues": null,
+					"possibleTypes": null
+				},
+				{
+					"kind": "INPUT_OBJECT",
+					"name": "StarOrder",
+					"description": "Ways in which star connections can be ordered.",
+					"fields": null,
+					"inputFields": [
+						{
+							"name": "field",
+							"description": "The field in which to order nodes by.",
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "ENUM",
+									"name": "StarOrderField",
+									"ofType": null
+								}
+							},
+							"defaultValue": null
+						},
+						{
+							"name": "direction",
+							"description": "The direction in which to order nodes.",
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "ENUM",
+									"name": "OrderDirection",
+									"ofType": null
+								}
+							},
+							"defaultValue": null
+						}
+					],
+					"interfaces": null,
+					"enumValues": null,
+					"possibleTypes": null
+				},
+				{
+					"kind": "ENUM",
+					"name": "StarOrderField",
+					"description": "Properties by which star connections can be ordered.",
+					"fields": null,
+					"inputFields": null,
+					"interfaces": null,
+					"enumValues": [
+						{
+							"name": "STARRED_AT",
+							"description": "Allows ordering a list of stars by when they were created.",
+							"isDeprecated": false,
+							"deprecationReason": null
+						}
+					],
+					"possibleTypes": null
+				},
+				{
+					"kind": "OBJECT",
+					"name": "GistCommentConnection",
+					"description": "The connection type for GistComment.",
+					"fields": [
+						{
+							"name": "edges",
+							"description": "A list of edges.",
+							"args": [],
+							"type": {
+								"kind": "LIST",
+								"name": null,
+								"ofType": {
+									"kind": "OBJECT",
+									"name": "GistCommentEdge",
+									"ofType": null
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "nodes",
+							"description": "A list of nodes.",
+							"args": [],
+							"type": {
+								"kind": "LIST",
+								"name": null,
+								"ofType": {
+									"kind": "OBJECT",
+									"name": "GistComment",
+									"ofType": null
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "pageInfo",
+							"description": "Information to aid in pagination.",
+							"args": [],
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "OBJECT",
+									"name": "PageInfo",
+									"ofType": null
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "totalCount",
+							"description": "Identifies the total count of items in the connection.",
+							"args": [],
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "SCALAR",
+									"name": "Int",
+									"ofType": null
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						}
+					],
+					"inputFields": null,
+					"interfaces": [],
+					"enumValues": null,
+					"possibleTypes": null
+				},
+				{
+					"kind": "OBJECT",
+					"name": "GistCommentEdge",
+					"description": "An edge in a connection.",
+					"fields": [
+						{
+							"name": "cursor",
+							"description": "A cursor for use in pagination.",
+							"args": [],
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "SCALAR",
+									"name": "String",
+									"ofType": null
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "node",
+							"description": "The item at the end of the edge.",
+							"args": [],
+							"type": {
+								"kind": "OBJECT",
+								"name": "GistComment",
+								"ofType": null
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						}
+					],
+					"inputFields": null,
+					"interfaces": [],
+					"enumValues": null,
+					"possibleTypes": null
+				},
+				{
+					"kind": "OBJECT",
+					"name": "GistComment",
+					"description": "Represents a comment on an Gist.",
+					"fields": [
+						{
+							"name": "author",
+							"description": "The actor who authored the comment.",
+							"args": [],
+							"type": {
+								"kind": "INTERFACE",
+								"name": "Actor",
+								"ofType": null
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "authorAssociation",
+							"description": "Author's association with the gist.",
+							"args": [],
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "ENUM",
+									"name": "CommentAuthorAssociation",
+									"ofType": null
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "body",
+							"description": "Identifies the comment body.",
+							"args": [],
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "SCALAR",
+									"name": "String",
+									"ofType": null
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "bodyHTML",
+							"description": "The comment body rendered to HTML.",
+							"args": [],
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "SCALAR",
+									"name": "HTML",
+									"ofType": null
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "createdAt",
+							"description": "Identifies the date and time when the object was created.",
+							"args": [],
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "SCALAR",
+									"name": "DateTime",
+									"ofType": null
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "createdViaEmail",
+							"description": "Check if this comment was created via an email reply.",
+							"args": [],
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "SCALAR",
+									"name": "Boolean",
+									"ofType": null
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "editor",
+							"description": "The actor who edited the comment.",
+							"args": [],
+							"type": {
+								"kind": "INTERFACE",
+								"name": "Actor",
+								"ofType": null
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "id",
+							"description": null,
+							"args": [],
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "SCALAR",
+									"name": "ID",
+									"ofType": null
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "lastEditedAt",
+							"description": "The moment the editor made the last edit",
+							"args": [],
+							"type": {
+								"kind": "SCALAR",
+								"name": "DateTime",
+								"ofType": null
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "publishedAt",
+							"description": "Identifies when the comment was published at.",
+							"args": [],
+							"type": {
+								"kind": "SCALAR",
+								"name": "DateTime",
+								"ofType": null
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "updatedAt",
+							"description": "Identifies the date and time when the object was last updated.",
+							"args": [],
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "SCALAR",
+									"name": "DateTime",
+									"ofType": null
+								}
+							},
+							"isDeprecated": true,
+							"deprecationReason": "General type updated timestamps will eventually be replaced by other field specific timestamps."
+						},
+						{
+							"name": "viewerCanDelete",
+							"description": "Check if the current viewer can delete this object.",
+							"args": [],
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "SCALAR",
+									"name": "Boolean",
+									"ofType": null
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "viewerCanUpdate",
+							"description": "Check if the current viewer can update this object.",
+							"args": [],
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "SCALAR",
+									"name": "Boolean",
+									"ofType": null
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "viewerCannotUpdateReasons",
+							"description": "Reasons why the current viewer can not update this comment.",
+							"args": [],
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "LIST",
+									"name": null,
+									"ofType": {
+										"kind": "NON_NULL",
+										"name": null,
+										"ofType": {
+											"kind": "ENUM",
+											"name": "CommentCannotUpdateReason",
+											"ofType": null
+										}
+									}
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "viewerDidAuthor",
+							"description": "Did the viewer author this comment.",
+							"args": [],
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "SCALAR",
+									"name": "Boolean",
+									"ofType": null
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						}
+					],
+					"inputFields": null,
+					"interfaces": [
+						{
+							"kind": "INTERFACE",
+							"name": "Node",
+							"ofType": null
+						},
+						{
+							"kind": "INTERFACE",
+							"name": "Comment",
+							"ofType": null
+						},
+						{
+							"kind": "INTERFACE",
+							"name": "Deletable",
+							"ofType": null
+						},
+						{
+							"kind": "INTERFACE",
+							"name": "Updatable",
+							"ofType": null
+						},
+						{
+							"kind": "INTERFACE",
+							"name": "UpdatableComment",
+							"ofType": null
+						}
+					],
+					"enumValues": null,
+					"possibleTypes": null
+				},
+				{
+					"kind": "ENUM",
+					"name": "GistPrivacy",
+					"description": "The privacy of a Gist",
+					"fields": null,
+					"inputFields": null,
+					"interfaces": null,
+					"enumValues": [
+						{
+							"name": "PUBLIC",
+							"description": "Public",
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "SECRET",
+							"description": "Secret",
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "ALL",
+							"description": "Gists that are public and secret",
+							"isDeprecated": false,
+							"deprecationReason": null
+						}
+					],
+					"possibleTypes": null
+				},
+				{
+					"kind": "INPUT_OBJECT",
+					"name": "GistOrder",
+					"description": "Ordering options for gist connections",
+					"fields": null,
+					"inputFields": [
+						{
+							"name": "field",
+							"description": "The field to order repositories by.",
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "ENUM",
+									"name": "GistOrderField",
+									"ofType": null
+								}
+							},
+							"defaultValue": null
+						},
+						{
+							"name": "direction",
+							"description": "The ordering direction.",
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "ENUM",
+									"name": "OrderDirection",
+									"ofType": null
+								}
+							},
+							"defaultValue": null
+						}
+					],
+					"interfaces": null,
+					"enumValues": null,
+					"possibleTypes": null
+				},
+				{
+					"kind": "ENUM",
+					"name": "GistOrderField",
+					"description": "Properties by which gist connections can be ordered.",
+					"fields": null,
+					"inputFields": null,
+					"interfaces": null,
+					"enumValues": [
+						{
+							"name": "CREATED_AT",
+							"description": "Order gists by creation time",
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "UPDATED_AT",
+							"description": "Order gists by update time",
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "PUSHED_AT",
+							"description": "Order gists by push time",
+							"isDeprecated": false,
+							"deprecationReason": null
+						}
+					],
+					"possibleTypes": null
+				},
+				{
+					"kind": "OBJECT",
 					"name": "PullRequestTimelineConnection",
 					"description": "The connection type for PullRequestTimelineItem.",
 					"fields": [
@@ -19993,6 +21947,11 @@
 						{
 							"kind": "OBJECT",
 							"name": "ReferencedEvent",
+							"ofType": null
+						},
+						{
+							"kind": "OBJECT",
+							"name": "CrossReferencedEvent",
 							"ofType": null
 						},
 						{
@@ -20986,6 +22945,184 @@
 							"ofType": null
 						}
 					]
+				},
+				{
+					"kind": "OBJECT",
+					"name": "CrossReferencedEvent",
+					"description": "Represents a mention made by one issue or pull request to another.",
+					"fields": [
+						{
+							"name": "actor",
+							"description": "Identifies the actor who performed the event.",
+							"args": [],
+							"type": {
+								"kind": "INTERFACE",
+								"name": "Actor",
+								"ofType": null
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "createdAt",
+							"description": "Identifies the date and time when the object was created.",
+							"args": [],
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "SCALAR",
+									"name": "DateTime",
+									"ofType": null
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "id",
+							"description": null,
+							"args": [],
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "SCALAR",
+									"name": "ID",
+									"ofType": null
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "isCrossRepository",
+							"description": "Reference originated in a different repository.",
+							"args": [],
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "SCALAR",
+									"name": "Boolean",
+									"ofType": null
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "referencedAt",
+							"description": "Identifies when the reference was made.",
+							"args": [],
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "SCALAR",
+									"name": "DateTime",
+									"ofType": null
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "resourcePath",
+							"description": "The HTTP path for this pull request.",
+							"args": [],
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "SCALAR",
+									"name": "URI",
+									"ofType": null
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "source",
+							"description": "Issue or pull request that made the reference.",
+							"args": [],
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "UNION",
+									"name": "ReferencedSubject",
+									"ofType": null
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "target",
+							"description": "Issue or pull request to which the reference was made.",
+							"args": [],
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "UNION",
+									"name": "ReferencedSubject",
+									"ofType": null
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "url",
+							"description": "The HTTP URL for this pull request.",
+							"args": [],
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "SCALAR",
+									"name": "URI",
+									"ofType": null
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "willCloseTarget",
+							"description": "Checks if the target will be closed when the source is merged.",
+							"args": [],
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "SCALAR",
+									"name": "Boolean",
+									"ofType": null
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						}
+					],
+					"inputFields": null,
+					"interfaces": [
+						{
+							"kind": "INTERFACE",
+							"name": "Node",
+							"ofType": null
+						},
+						{
+							"kind": "INTERFACE",
+							"name": "UniformResourceLocatable",
+							"ofType": null
+						}
+					],
+					"enumValues": null,
+					"possibleTypes": null
 				},
 				{
 					"kind": "OBJECT",
@@ -22005,6 +24142,18 @@
 							"deprecationReason": null
 						},
 						{
+							"name": "databaseId",
+							"description": "Identifies the primary key from the database.",
+							"args": [],
+							"type": {
+								"kind": "SCALAR",
+								"name": "Int",
+								"ofType": null
+							},
+							"isDeprecated": true,
+							"deprecationReason": "Exposed database IDs will eventually be removed in favor of global Relay IDs."
+						},
+						{
 							"name": "environment",
 							"description": "The environment to which this deployment was made.",
 							"args": [],
@@ -22039,6 +24188,18 @@
 							"type": {
 								"kind": "OBJECT",
 								"name": "DeploymentStatus",
+								"ofType": null
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "payload",
+							"description": "Extra information that a deployment system might need.",
+							"args": [],
+							"type": {
+								"kind": "SCALAR",
+								"name": "String",
 								"ofType": null
 							},
 							"isDeprecated": false,
@@ -23327,199 +25488,6 @@
 				},
 				{
 					"kind": "OBJECT",
-					"name": "Milestone",
-					"description": "Represents a Milestone object on a given repository.",
-					"fields": [
-						{
-							"name": "creator",
-							"description": "Identifies the actor who created the milestone.",
-							"args": [],
-							"type": {
-								"kind": "INTERFACE",
-								"name": "Actor",
-								"ofType": null
-							},
-							"isDeprecated": false,
-							"deprecationReason": null
-						},
-						{
-							"name": "description",
-							"description": "Identifies the description of the milestone.",
-							"args": [],
-							"type": {
-								"kind": "SCALAR",
-								"name": "String",
-								"ofType": null
-							},
-							"isDeprecated": false,
-							"deprecationReason": null
-						},
-						{
-							"name": "dueOn",
-							"description": "Identifies the due date of the milestone.",
-							"args": [],
-							"type": {
-								"kind": "SCALAR",
-								"name": "DateTime",
-								"ofType": null
-							},
-							"isDeprecated": false,
-							"deprecationReason": null
-						},
-						{
-							"name": "id",
-							"description": null,
-							"args": [],
-							"type": {
-								"kind": "NON_NULL",
-								"name": null,
-								"ofType": {
-									"kind": "SCALAR",
-									"name": "ID",
-									"ofType": null
-								}
-							},
-							"isDeprecated": false,
-							"deprecationReason": null
-						},
-						{
-							"name": "number",
-							"description": "Identifies the number of the milestone.",
-							"args": [],
-							"type": {
-								"kind": "NON_NULL",
-								"name": null,
-								"ofType": {
-									"kind": "SCALAR",
-									"name": "Int",
-									"ofType": null
-								}
-							},
-							"isDeprecated": false,
-							"deprecationReason": null
-						},
-						{
-							"name": "repository",
-							"description": "The repository associated with this milestone.",
-							"args": [],
-							"type": {
-								"kind": "NON_NULL",
-								"name": null,
-								"ofType": {
-									"kind": "OBJECT",
-									"name": "Repository",
-									"ofType": null
-								}
-							},
-							"isDeprecated": false,
-							"deprecationReason": null
-						},
-						{
-							"name": "resourcePath",
-							"description": "The HTTP path for this milestone",
-							"args": [],
-							"type": {
-								"kind": "NON_NULL",
-								"name": null,
-								"ofType": {
-									"kind": "SCALAR",
-									"name": "URI",
-									"ofType": null
-								}
-							},
-							"isDeprecated": false,
-							"deprecationReason": null
-						},
-						{
-							"name": "state",
-							"description": "Identifies the state of the milestone.",
-							"args": [],
-							"type": {
-								"kind": "NON_NULL",
-								"name": null,
-								"ofType": {
-									"kind": "ENUM",
-									"name": "MilestoneState",
-									"ofType": null
-								}
-							},
-							"isDeprecated": false,
-							"deprecationReason": null
-						},
-						{
-							"name": "title",
-							"description": "Identifies the title of the milestone.",
-							"args": [],
-							"type": {
-								"kind": "NON_NULL",
-								"name": null,
-								"ofType": {
-									"kind": "SCALAR",
-									"name": "String",
-									"ofType": null
-								}
-							},
-							"isDeprecated": false,
-							"deprecationReason": null
-						},
-						{
-							"name": "url",
-							"description": "The HTTP URL for this milestone",
-							"args": [],
-							"type": {
-								"kind": "NON_NULL",
-								"name": null,
-								"ofType": {
-									"kind": "SCALAR",
-									"name": "URI",
-									"ofType": null
-								}
-							},
-							"isDeprecated": false,
-							"deprecationReason": null
-						}
-					],
-					"inputFields": null,
-					"interfaces": [
-						{
-							"kind": "INTERFACE",
-							"name": "Node",
-							"ofType": null
-						},
-						{
-							"kind": "INTERFACE",
-							"name": "UniformResourceLocatable",
-							"ofType": null
-						}
-					],
-					"enumValues": null,
-					"possibleTypes": null
-				},
-				{
-					"kind": "ENUM",
-					"name": "MilestoneState",
-					"description": "The possible states of a milestone.",
-					"fields": null,
-					"inputFields": null,
-					"interfaces": null,
-					"enumValues": [
-						{
-							"name": "OPEN",
-							"description": "A milestone that is still open.",
-							"isDeprecated": false,
-							"deprecationReason": null
-						},
-						{
-							"name": "CLOSED",
-							"description": "A milestone that has been closed.",
-							"isDeprecated": false,
-							"deprecationReason": null
-						}
-					],
-					"possibleTypes": null
-				},
-				{
-					"kind": "OBJECT",
 					"name": "IssueTimelineConnection",
 					"description": "The connection type for IssueTimelineItem.",
 					"fields": [
@@ -23653,6 +25621,11 @@
 						},
 						{
 							"kind": "OBJECT",
+							"name": "CrossReferencedEvent",
+							"ofType": null
+						},
+						{
+							"kind": "OBJECT",
 							"name": "ClosedEvent",
 							"ofType": null
 						},
@@ -23722,338 +25695,6 @@
 							"ofType": null
 						}
 					]
-				},
-				{
-					"kind": "UNION",
-					"name": "IssueOrPullRequest",
-					"description": "Used for return value of Repository.issueOrPullRequest.",
-					"fields": null,
-					"inputFields": null,
-					"interfaces": null,
-					"enumValues": null,
-					"possibleTypes": [
-						{
-							"kind": "OBJECT",
-							"name": "Issue",
-							"ofType": null
-						},
-						{
-							"kind": "OBJECT",
-							"name": "PullRequest",
-							"ofType": null
-						}
-					]
-				},
-				{
-					"kind": "INTERFACE",
-					"name": "Starrable",
-					"description": "Things that can be starred.",
-					"fields": [
-						{
-							"name": "id",
-							"description": null,
-							"args": [],
-							"type": {
-								"kind": "NON_NULL",
-								"name": null,
-								"ofType": {
-									"kind": "SCALAR",
-									"name": "ID",
-									"ofType": null
-								}
-							},
-							"isDeprecated": false,
-							"deprecationReason": null
-						},
-						{
-							"name": "stargazers",
-							"description": "A list of users who have starred this starrable.",
-							"args": [
-								{
-									"name": "first",
-									"description": "Returns the first _n_ elements from the list.",
-									"type": {
-										"kind": "SCALAR",
-										"name": "Int",
-										"ofType": null
-									},
-									"defaultValue": null
-								},
-								{
-									"name": "after",
-									"description": "Returns the elements in the list that come after the specified global ID.",
-									"type": {
-										"kind": "SCALAR",
-										"name": "String",
-										"ofType": null
-									},
-									"defaultValue": null
-								},
-								{
-									"name": "last",
-									"description": "Returns the last _n_ elements from the list.",
-									"type": {
-										"kind": "SCALAR",
-										"name": "Int",
-										"ofType": null
-									},
-									"defaultValue": null
-								},
-								{
-									"name": "before",
-									"description": "Returns the elements in the list that come before the specified global ID.",
-									"type": {
-										"kind": "SCALAR",
-										"name": "String",
-										"ofType": null
-									},
-									"defaultValue": null
-								},
-								{
-									"name": "orderBy",
-									"description": "Order for connection",
-									"type": {
-										"kind": "INPUT_OBJECT",
-										"name": "StarOrder",
-										"ofType": null
-									},
-									"defaultValue": null
-								}
-							],
-							"type": {
-								"kind": "NON_NULL",
-								"name": null,
-								"ofType": {
-									"kind": "OBJECT",
-									"name": "StargazerConnection",
-									"ofType": null
-								}
-							},
-							"isDeprecated": false,
-							"deprecationReason": null
-						},
-						{
-							"name": "viewerHasStarred",
-							"description": "Returns a boolean indicating whether the viewing user has starred this starrable.",
-							"args": [],
-							"type": {
-								"kind": "NON_NULL",
-								"name": null,
-								"ofType": {
-									"kind": "SCALAR",
-									"name": "Boolean",
-									"ofType": null
-								}
-							},
-							"isDeprecated": false,
-							"deprecationReason": null
-						}
-					],
-					"inputFields": null,
-					"interfaces": null,
-					"enumValues": null,
-					"possibleTypes": [
-						{
-							"kind": "OBJECT",
-							"name": "Gist",
-							"ofType": null
-						},
-						{
-							"kind": "OBJECT",
-							"name": "Repository",
-							"ofType": null
-						}
-					]
-				},
-				{
-					"kind": "OBJECT",
-					"name": "StargazerConnection",
-					"description": "The connection type for User.",
-					"fields": [
-						{
-							"name": "edges",
-							"description": "A list of edges.",
-							"args": [],
-							"type": {
-								"kind": "LIST",
-								"name": null,
-								"ofType": {
-									"kind": "OBJECT",
-									"name": "StargazerEdge",
-									"ofType": null
-								}
-							},
-							"isDeprecated": false,
-							"deprecationReason": null
-						},
-						{
-							"name": "nodes",
-							"description": "A list of nodes.",
-							"args": [],
-							"type": {
-								"kind": "LIST",
-								"name": null,
-								"ofType": {
-									"kind": "OBJECT",
-									"name": "User",
-									"ofType": null
-								}
-							},
-							"isDeprecated": false,
-							"deprecationReason": null
-						},
-						{
-							"name": "pageInfo",
-							"description": "Information to aid in pagination.",
-							"args": [],
-							"type": {
-								"kind": "NON_NULL",
-								"name": null,
-								"ofType": {
-									"kind": "OBJECT",
-									"name": "PageInfo",
-									"ofType": null
-								}
-							},
-							"isDeprecated": false,
-							"deprecationReason": null
-						},
-						{
-							"name": "totalCount",
-							"description": "Identifies the total count of items in the connection.",
-							"args": [],
-							"type": {
-								"kind": "NON_NULL",
-								"name": null,
-								"ofType": {
-									"kind": "SCALAR",
-									"name": "Int",
-									"ofType": null
-								}
-							},
-							"isDeprecated": false,
-							"deprecationReason": null
-						}
-					],
-					"inputFields": null,
-					"interfaces": [],
-					"enumValues": null,
-					"possibleTypes": null
-				},
-				{
-					"kind": "OBJECT",
-					"name": "StargazerEdge",
-					"description": "Represents a user that's starred a repository.",
-					"fields": [
-						{
-							"name": "cursor",
-							"description": null,
-							"args": [],
-							"type": {
-								"kind": "NON_NULL",
-								"name": null,
-								"ofType": {
-									"kind": "SCALAR",
-									"name": "String",
-									"ofType": null
-								}
-							},
-							"isDeprecated": false,
-							"deprecationReason": null
-						},
-						{
-							"name": "node",
-							"description": null,
-							"args": [],
-							"type": {
-								"kind": "NON_NULL",
-								"name": null,
-								"ofType": {
-									"kind": "OBJECT",
-									"name": "User",
-									"ofType": null
-								}
-							},
-							"isDeprecated": false,
-							"deprecationReason": null
-						},
-						{
-							"name": "starredAt",
-							"description": "Identifies when the item was starred.",
-							"args": [],
-							"type": {
-								"kind": "NON_NULL",
-								"name": null,
-								"ofType": {
-									"kind": "SCALAR",
-									"name": "DateTime",
-									"ofType": null
-								}
-							},
-							"isDeprecated": false,
-							"deprecationReason": null
-						}
-					],
-					"inputFields": null,
-					"interfaces": [],
-					"enumValues": null,
-					"possibleTypes": null
-				},
-				{
-					"kind": "INPUT_OBJECT",
-					"name": "StarOrder",
-					"description": "Ways in which star connections can be ordered.",
-					"fields": null,
-					"inputFields": [
-						{
-							"name": "field",
-							"description": "The field in which to order nodes by.",
-							"type": {
-								"kind": "NON_NULL",
-								"name": null,
-								"ofType": {
-									"kind": "ENUM",
-									"name": "StarOrderField",
-									"ofType": null
-								}
-							},
-							"defaultValue": null
-						},
-						{
-							"name": "direction",
-							"description": "The direction in which to order nodes.",
-							"type": {
-								"kind": "NON_NULL",
-								"name": null,
-								"ofType": {
-									"kind": "ENUM",
-									"name": "OrderDirection",
-									"ofType": null
-								}
-							},
-							"defaultValue": null
-						}
-					],
-					"interfaces": null,
-					"enumValues": null,
-					"possibleTypes": null
-				},
-				{
-					"kind": "ENUM",
-					"name": "StarOrderField",
-					"description": "Properties by which star connections can be ordered.",
-					"fields": null,
-					"inputFields": null,
-					"interfaces": null,
-					"enumValues": [
-						{
-							"name": "STARRED_AT",
-							"description": "Allows ordering a list of stars by when they were created.",
-							"isDeprecated": false,
-							"deprecationReason": null
-						}
-					],
-					"possibleTypes": null
 				},
 				{
 					"kind": "INTERFACE",
@@ -24221,6 +25862,18 @@
 								"name": "String",
 								"ofType": null
 							},
+							"isDeprecated": true,
+							"deprecationReason": "Use Repository.licenseInfo instead."
+						},
+						{
+							"name": "licenseInfo",
+							"description": "The license associated with the repository",
+							"args": [],
+							"type": {
+								"kind": "OBJECT",
+								"name": "License",
+								"ofType": null
+							},
 							"isDeprecated": false,
 							"deprecationReason": null
 						},
@@ -24325,6 +25978,33 @@
 							"deprecationReason": null
 						},
 						{
+							"name": "shortDescriptionHTML",
+							"description": "A description of the repository, rendered to HTML without any links in it.",
+							"args": [
+								{
+									"name": "limit",
+									"description": "How many characters to return.",
+									"type": {
+										"kind": "SCALAR",
+										"name": "Int",
+										"ofType": null
+									},
+									"defaultValue": "200"
+								}
+							],
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "SCALAR",
+									"name": "HTML",
+									"ofType": null
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
 							"name": "updatedAt",
 							"description": "Identifies the date and time when the object was last updated.",
 							"args": [],
@@ -24406,6 +26086,292 @@
 							"deprecationReason": null
 						}
 					],
+					"possibleTypes": null
+				},
+				{
+					"kind": "OBJECT",
+					"name": "License",
+					"description": "A respository's open source license",
+					"fields": [
+						{
+							"name": "body",
+							"description": "The full text of the license",
+							"args": [],
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "SCALAR",
+									"name": "String",
+									"ofType": null
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "conditions",
+							"description": "The conditions set by the license",
+							"args": [],
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "LIST",
+									"name": null,
+									"ofType": {
+										"kind": "OBJECT",
+										"name": "LicenseRule",
+										"ofType": null
+									}
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "description",
+							"description": "A human-readable description of the license",
+							"args": [],
+							"type": {
+								"kind": "SCALAR",
+								"name": "String",
+								"ofType": null
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "featured",
+							"description": "Whether the license should be featured",
+							"args": [],
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "SCALAR",
+									"name": "Boolean",
+									"ofType": null
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "hidden",
+							"description": "Whether the license should be displayed in license pickers",
+							"args": [],
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "SCALAR",
+									"name": "Boolean",
+									"ofType": null
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "id",
+							"description": null,
+							"args": [],
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "SCALAR",
+									"name": "ID",
+									"ofType": null
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "implementation",
+							"description": "Instructions on how to implement the license",
+							"args": [],
+							"type": {
+								"kind": "SCALAR",
+								"name": "String",
+								"ofType": null
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "key",
+							"description": "The lowercased SPDX ID of the license",
+							"args": [],
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "SCALAR",
+									"name": "String",
+									"ofType": null
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "limitations",
+							"description": "The limitations set by the license",
+							"args": [],
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "LIST",
+									"name": null,
+									"ofType": {
+										"kind": "OBJECT",
+										"name": "LicenseRule",
+										"ofType": null
+									}
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "name",
+							"description": "The license full name specified by <https://spdx.org/licenses>",
+							"args": [],
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "SCALAR",
+									"name": "String",
+									"ofType": null
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "nickname",
+							"description": "Customary short name if applicable (e.g, GPLv3)",
+							"args": [],
+							"type": {
+								"kind": "SCALAR",
+								"name": "String",
+								"ofType": null
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "permissions",
+							"description": "The permissions set by the license",
+							"args": [],
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "LIST",
+									"name": null,
+									"ofType": {
+										"kind": "OBJECT",
+										"name": "LicenseRule",
+										"ofType": null
+									}
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "spdxId",
+							"description": "Short identifier specified by <https://spdx.org/licenses>",
+							"args": [],
+							"type": {
+								"kind": "SCALAR",
+								"name": "String",
+								"ofType": null
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "url",
+							"description": "URL to the license on <https://choosealicense.com>",
+							"args": [],
+							"type": {
+								"kind": "SCALAR",
+								"name": "URI",
+								"ofType": null
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						}
+					],
+					"inputFields": null,
+					"interfaces": [],
+					"enumValues": null,
+					"possibleTypes": null
+				},
+				{
+					"kind": "OBJECT",
+					"name": "LicenseRule",
+					"description": "Describes a License's conditions, permissions, and limitations",
+					"fields": [
+						{
+							"name": "description",
+							"description": "A description of the rule",
+							"args": [],
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "SCALAR",
+									"name": "String",
+									"ofType": null
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "key",
+							"description": "The machine-readable rule key",
+							"args": [],
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "SCALAR",
+									"name": "String",
+									"ofType": null
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "label",
+							"description": "The human-readable rule label",
+							"args": [],
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "SCALAR",
+									"name": "String",
+									"ofType": null
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						}
+					],
+					"inputFields": null,
+					"interfaces": [],
+					"enumValues": null,
 					"possibleTypes": null
 				},
 				{
@@ -24703,6 +26669,27 @@
 					],
 					"enumValues": null,
 					"possibleTypes": null
+				},
+				{
+					"kind": "UNION",
+					"name": "IssueOrPullRequest",
+					"description": "Used for return value of Repository.issueOrPullRequest.",
+					"fields": null,
+					"inputFields": null,
+					"interfaces": null,
+					"enumValues": null,
+					"possibleTypes": [
+						{
+							"kind": "OBJECT",
+							"name": "Issue",
+							"ofType": null
+						},
+						{
+							"kind": "OBJECT",
+							"name": "PullRequest",
+							"ofType": null
+						}
+					]
 				},
 				{
 					"kind": "OBJECT",
@@ -26000,6 +27987,34 @@
 					"description": "A release contains the content for a release.",
 					"fields": [
 						{
+							"name": "author",
+							"description": "The author of the release",
+							"args": [],
+							"type": {
+								"kind": "OBJECT",
+								"name": "User",
+								"ofType": null
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "createdAt",
+							"description": "Identifies the date and time when the object was created.",
+							"args": [],
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "SCALAR",
+									"name": "DateTime",
+									"ofType": null
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
 							"name": "description",
 							"description": "Identifies the description of the release.",
 							"args": [],
@@ -26021,6 +28036,38 @@
 								"ofType": {
 									"kind": "SCALAR",
 									"name": "ID",
+									"ofType": null
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "isDraft",
+							"description": "Whether or not the release is a draft",
+							"args": [],
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "SCALAR",
+									"name": "Boolean",
+									"ofType": null
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "isPrerelease",
+							"description": "Whether or not the release is a prerelease",
+							"args": [],
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "SCALAR",
+									"name": "Boolean",
 									"ofType": null
 								}
 							},
@@ -26145,6 +28192,22 @@
 							},
 							"isDeprecated": false,
 							"deprecationReason": null
+						},
+						{
+							"name": "updatedAt",
+							"description": "Identifies the date and time when the object was last updated.",
+							"args": [],
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "SCALAR",
+									"name": "DateTime",
+									"ofType": null
+								}
+							},
+							"isDeprecated": true,
+							"deprecationReason": "General type updated timestamps will eventually be replaced by other field specific timestamps."
 						},
 						{
 							"name": "url",
@@ -26299,6 +28362,54 @@
 					"description": "A release asset contains the content for a release asset.",
 					"fields": [
 						{
+							"name": "contentType",
+							"description": "The asset's content-type",
+							"args": [],
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "SCALAR",
+									"name": "String",
+									"ofType": null
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "createdAt",
+							"description": "Identifies the date and time when the object was created.",
+							"args": [],
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "SCALAR",
+									"name": "DateTime",
+									"ofType": null
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "downloadCount",
+							"description": "The number of times this asset was downloaded",
+							"args": [],
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "SCALAR",
+									"name": "Int",
+									"ofType": null
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
 							"name": "id",
 							"description": null,
 							"args": [],
@@ -26332,12 +28443,60 @@
 						},
 						{
 							"name": "release",
-							"description": "release that the asset is associated with",
+							"description": "Release that the asset is associated with",
 							"args": [],
 							"type": {
 								"kind": "OBJECT",
 								"name": "Release",
 								"ofType": null
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "size",
+							"description": "The size (in bytes) of the asset",
+							"args": [],
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "SCALAR",
+									"name": "Int",
+									"ofType": null
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "updatedAt",
+							"description": "Identifies the date and time when the object was last updated.",
+							"args": [],
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "SCALAR",
+									"name": "DateTime",
+									"ofType": null
+								}
+							},
+							"isDeprecated": true,
+							"deprecationReason": "General type updated timestamps will eventually be replaced by other field specific timestamps."
+						},
+						{
+							"name": "uploadedBy",
+							"description": "The user that performed the upload",
+							"args": [],
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "OBJECT",
+									"name": "User",
+									"ofType": null
+								}
 							},
 							"isDeprecated": false,
 							"deprecationReason": null
@@ -26636,912 +28795,6 @@
 				},
 				{
 					"kind": "OBJECT",
-					"name": "Gist",
-					"description": "A Gist.",
-					"fields": [
-						{
-							"name": "comments",
-							"description": "A list of comments associated with the gist",
-							"args": [
-								{
-									"name": "first",
-									"description": "Returns the first _n_ elements from the list.",
-									"type": {
-										"kind": "SCALAR",
-										"name": "Int",
-										"ofType": null
-									},
-									"defaultValue": null
-								},
-								{
-									"name": "after",
-									"description": "Returns the elements in the list that come after the specified global ID.",
-									"type": {
-										"kind": "SCALAR",
-										"name": "String",
-										"ofType": null
-									},
-									"defaultValue": null
-								},
-								{
-									"name": "last",
-									"description": "Returns the last _n_ elements from the list.",
-									"type": {
-										"kind": "SCALAR",
-										"name": "Int",
-										"ofType": null
-									},
-									"defaultValue": null
-								},
-								{
-									"name": "before",
-									"description": "Returns the elements in the list that come before the specified global ID.",
-									"type": {
-										"kind": "SCALAR",
-										"name": "String",
-										"ofType": null
-									},
-									"defaultValue": null
-								}
-							],
-							"type": {
-								"kind": "NON_NULL",
-								"name": null,
-								"ofType": {
-									"kind": "OBJECT",
-									"name": "GistCommentConnection",
-									"ofType": null
-								}
-							},
-							"isDeprecated": false,
-							"deprecationReason": null
-						},
-						{
-							"name": "createdAt",
-							"description": "Identifies the date and time when the object was created.",
-							"args": [],
-							"type": {
-								"kind": "NON_NULL",
-								"name": null,
-								"ofType": {
-									"kind": "SCALAR",
-									"name": "DateTime",
-									"ofType": null
-								}
-							},
-							"isDeprecated": false,
-							"deprecationReason": null
-						},
-						{
-							"name": "description",
-							"description": "The gist description.",
-							"args": [],
-							"type": {
-								"kind": "SCALAR",
-								"name": "String",
-								"ofType": null
-							},
-							"isDeprecated": false,
-							"deprecationReason": null
-						},
-						{
-							"name": "id",
-							"description": null,
-							"args": [],
-							"type": {
-								"kind": "NON_NULL",
-								"name": null,
-								"ofType": {
-									"kind": "SCALAR",
-									"name": "ID",
-									"ofType": null
-								}
-							},
-							"isDeprecated": false,
-							"deprecationReason": null
-						},
-						{
-							"name": "isPublic",
-							"description": "Whether the gist is public or not.",
-							"args": [],
-							"type": {
-								"kind": "NON_NULL",
-								"name": null,
-								"ofType": {
-									"kind": "SCALAR",
-									"name": "Boolean",
-									"ofType": null
-								}
-							},
-							"isDeprecated": false,
-							"deprecationReason": null
-						},
-						{
-							"name": "name",
-							"description": "The gist name.",
-							"args": [],
-							"type": {
-								"kind": "NON_NULL",
-								"name": null,
-								"ofType": {
-									"kind": "SCALAR",
-									"name": "String",
-									"ofType": null
-								}
-							},
-							"isDeprecated": false,
-							"deprecationReason": null
-						},
-						{
-							"name": "owner",
-							"description": "The gist owner.",
-							"args": [],
-							"type": {
-								"kind": "INTERFACE",
-								"name": "RepositoryOwner",
-								"ofType": null
-							},
-							"isDeprecated": false,
-							"deprecationReason": null
-						},
-						{
-							"name": "stargazers",
-							"description": "A list of users who have starred this starrable.",
-							"args": [
-								{
-									"name": "first",
-									"description": "Returns the first _n_ elements from the list.",
-									"type": {
-										"kind": "SCALAR",
-										"name": "Int",
-										"ofType": null
-									},
-									"defaultValue": null
-								},
-								{
-									"name": "after",
-									"description": "Returns the elements in the list that come after the specified global ID.",
-									"type": {
-										"kind": "SCALAR",
-										"name": "String",
-										"ofType": null
-									},
-									"defaultValue": null
-								},
-								{
-									"name": "last",
-									"description": "Returns the last _n_ elements from the list.",
-									"type": {
-										"kind": "SCALAR",
-										"name": "Int",
-										"ofType": null
-									},
-									"defaultValue": null
-								},
-								{
-									"name": "before",
-									"description": "Returns the elements in the list that come before the specified global ID.",
-									"type": {
-										"kind": "SCALAR",
-										"name": "String",
-										"ofType": null
-									},
-									"defaultValue": null
-								},
-								{
-									"name": "orderBy",
-									"description": "Order for connection",
-									"type": {
-										"kind": "INPUT_OBJECT",
-										"name": "StarOrder",
-										"ofType": null
-									},
-									"defaultValue": null
-								}
-							],
-							"type": {
-								"kind": "NON_NULL",
-								"name": null,
-								"ofType": {
-									"kind": "OBJECT",
-									"name": "StargazerConnection",
-									"ofType": null
-								}
-							},
-							"isDeprecated": false,
-							"deprecationReason": null
-						},
-						{
-							"name": "updatedAt",
-							"description": "Identifies the date and time when the object was last updated.",
-							"args": [],
-							"type": {
-								"kind": "NON_NULL",
-								"name": null,
-								"ofType": {
-									"kind": "SCALAR",
-									"name": "DateTime",
-									"ofType": null
-								}
-							},
-							"isDeprecated": true,
-							"deprecationReason": "General type updated timestamps will eventually be replaced by other field specific timestamps."
-						},
-						{
-							"name": "viewerHasStarred",
-							"description": "Returns a boolean indicating whether the viewing user has starred this starrable.",
-							"args": [],
-							"type": {
-								"kind": "NON_NULL",
-								"name": null,
-								"ofType": {
-									"kind": "SCALAR",
-									"name": "Boolean",
-									"ofType": null
-								}
-							},
-							"isDeprecated": false,
-							"deprecationReason": null
-						}
-					],
-					"inputFields": null,
-					"interfaces": [
-						{
-							"kind": "INTERFACE",
-							"name": "Node",
-							"ofType": null
-						},
-						{
-							"kind": "INTERFACE",
-							"name": "Starrable",
-							"ofType": null
-						}
-					],
-					"enumValues": null,
-					"possibleTypes": null
-				},
-				{
-					"kind": "OBJECT",
-					"name": "GistCommentConnection",
-					"description": "The connection type for GistComment.",
-					"fields": [
-						{
-							"name": "edges",
-							"description": "A list of edges.",
-							"args": [],
-							"type": {
-								"kind": "LIST",
-								"name": null,
-								"ofType": {
-									"kind": "OBJECT",
-									"name": "GistCommentEdge",
-									"ofType": null
-								}
-							},
-							"isDeprecated": false,
-							"deprecationReason": null
-						},
-						{
-							"name": "nodes",
-							"description": "A list of nodes.",
-							"args": [],
-							"type": {
-								"kind": "LIST",
-								"name": null,
-								"ofType": {
-									"kind": "OBJECT",
-									"name": "GistComment",
-									"ofType": null
-								}
-							},
-							"isDeprecated": false,
-							"deprecationReason": null
-						},
-						{
-							"name": "pageInfo",
-							"description": "Information to aid in pagination.",
-							"args": [],
-							"type": {
-								"kind": "NON_NULL",
-								"name": null,
-								"ofType": {
-									"kind": "OBJECT",
-									"name": "PageInfo",
-									"ofType": null
-								}
-							},
-							"isDeprecated": false,
-							"deprecationReason": null
-						},
-						{
-							"name": "totalCount",
-							"description": "Identifies the total count of items in the connection.",
-							"args": [],
-							"type": {
-								"kind": "NON_NULL",
-								"name": null,
-								"ofType": {
-									"kind": "SCALAR",
-									"name": "Int",
-									"ofType": null
-								}
-							},
-							"isDeprecated": false,
-							"deprecationReason": null
-						}
-					],
-					"inputFields": null,
-					"interfaces": [],
-					"enumValues": null,
-					"possibleTypes": null
-				},
-				{
-					"kind": "OBJECT",
-					"name": "GistCommentEdge",
-					"description": "An edge in a connection.",
-					"fields": [
-						{
-							"name": "cursor",
-							"description": "A cursor for use in pagination.",
-							"args": [],
-							"type": {
-								"kind": "NON_NULL",
-								"name": null,
-								"ofType": {
-									"kind": "SCALAR",
-									"name": "String",
-									"ofType": null
-								}
-							},
-							"isDeprecated": false,
-							"deprecationReason": null
-						},
-						{
-							"name": "node",
-							"description": "The item at the end of the edge.",
-							"args": [],
-							"type": {
-								"kind": "OBJECT",
-								"name": "GistComment",
-								"ofType": null
-							},
-							"isDeprecated": false,
-							"deprecationReason": null
-						}
-					],
-					"inputFields": null,
-					"interfaces": [],
-					"enumValues": null,
-					"possibleTypes": null
-				},
-				{
-					"kind": "OBJECT",
-					"name": "GistComment",
-					"description": "Represents a comment on an Gist.",
-					"fields": [
-						{
-							"name": "author",
-							"description": "The actor who authored the comment.",
-							"args": [],
-							"type": {
-								"kind": "INTERFACE",
-								"name": "Actor",
-								"ofType": null
-							},
-							"isDeprecated": false,
-							"deprecationReason": null
-						},
-						{
-							"name": "authorAssociation",
-							"description": "Author's association with the gist.",
-							"args": [],
-							"type": {
-								"kind": "NON_NULL",
-								"name": null,
-								"ofType": {
-									"kind": "ENUM",
-									"name": "CommentAuthorAssociation",
-									"ofType": null
-								}
-							},
-							"isDeprecated": false,
-							"deprecationReason": null
-						},
-						{
-							"name": "body",
-							"description": "Identifies the comment body.",
-							"args": [],
-							"type": {
-								"kind": "NON_NULL",
-								"name": null,
-								"ofType": {
-									"kind": "SCALAR",
-									"name": "String",
-									"ofType": null
-								}
-							},
-							"isDeprecated": false,
-							"deprecationReason": null
-						},
-						{
-							"name": "bodyHTML",
-							"description": "The comment body rendered to HTML.",
-							"args": [],
-							"type": {
-								"kind": "NON_NULL",
-								"name": null,
-								"ofType": {
-									"kind": "SCALAR",
-									"name": "HTML",
-									"ofType": null
-								}
-							},
-							"isDeprecated": false,
-							"deprecationReason": null
-						},
-						{
-							"name": "createdAt",
-							"description": "Identifies the date and time when the object was created.",
-							"args": [],
-							"type": {
-								"kind": "NON_NULL",
-								"name": null,
-								"ofType": {
-									"kind": "SCALAR",
-									"name": "DateTime",
-									"ofType": null
-								}
-							},
-							"isDeprecated": false,
-							"deprecationReason": null
-						},
-						{
-							"name": "createdViaEmail",
-							"description": "Check if this comment was created via an email reply.",
-							"args": [],
-							"type": {
-								"kind": "NON_NULL",
-								"name": null,
-								"ofType": {
-									"kind": "SCALAR",
-									"name": "Boolean",
-									"ofType": null
-								}
-							},
-							"isDeprecated": false,
-							"deprecationReason": null
-						},
-						{
-							"name": "editor",
-							"description": "The actor who edited the comment.",
-							"args": [],
-							"type": {
-								"kind": "INTERFACE",
-								"name": "Actor",
-								"ofType": null
-							},
-							"isDeprecated": false,
-							"deprecationReason": null
-						},
-						{
-							"name": "id",
-							"description": null,
-							"args": [],
-							"type": {
-								"kind": "NON_NULL",
-								"name": null,
-								"ofType": {
-									"kind": "SCALAR",
-									"name": "ID",
-									"ofType": null
-								}
-							},
-							"isDeprecated": false,
-							"deprecationReason": null
-						},
-						{
-							"name": "lastEditedAt",
-							"description": "The moment the editor made the last edit",
-							"args": [],
-							"type": {
-								"kind": "SCALAR",
-								"name": "DateTime",
-								"ofType": null
-							},
-							"isDeprecated": false,
-							"deprecationReason": null
-						},
-						{
-							"name": "publishedAt",
-							"description": "Identifies when the comment was published at.",
-							"args": [],
-							"type": {
-								"kind": "SCALAR",
-								"name": "DateTime",
-								"ofType": null
-							},
-							"isDeprecated": false,
-							"deprecationReason": null
-						},
-						{
-							"name": "updatedAt",
-							"description": "Identifies the date and time when the object was last updated.",
-							"args": [],
-							"type": {
-								"kind": "NON_NULL",
-								"name": null,
-								"ofType": {
-									"kind": "SCALAR",
-									"name": "DateTime",
-									"ofType": null
-								}
-							},
-							"isDeprecated": true,
-							"deprecationReason": "General type updated timestamps will eventually be replaced by other field specific timestamps."
-						},
-						{
-							"name": "viewerCanDelete",
-							"description": "Check if the current viewer can delete this object.",
-							"args": [],
-							"type": {
-								"kind": "NON_NULL",
-								"name": null,
-								"ofType": {
-									"kind": "SCALAR",
-									"name": "Boolean",
-									"ofType": null
-								}
-							},
-							"isDeprecated": false,
-							"deprecationReason": null
-						},
-						{
-							"name": "viewerCanUpdate",
-							"description": "Check if the current viewer can update this object.",
-							"args": [],
-							"type": {
-								"kind": "NON_NULL",
-								"name": null,
-								"ofType": {
-									"kind": "SCALAR",
-									"name": "Boolean",
-									"ofType": null
-								}
-							},
-							"isDeprecated": false,
-							"deprecationReason": null
-						},
-						{
-							"name": "viewerCannotUpdateReasons",
-							"description": "Reasons why the current viewer can not update this comment.",
-							"args": [],
-							"type": {
-								"kind": "NON_NULL",
-								"name": null,
-								"ofType": {
-									"kind": "LIST",
-									"name": null,
-									"ofType": {
-										"kind": "NON_NULL",
-										"name": null,
-										"ofType": {
-											"kind": "ENUM",
-											"name": "CommentCannotUpdateReason",
-											"ofType": null
-										}
-									}
-								}
-							},
-							"isDeprecated": false,
-							"deprecationReason": null
-						},
-						{
-							"name": "viewerDidAuthor",
-							"description": "Did the viewer author this comment.",
-							"args": [],
-							"type": {
-								"kind": "NON_NULL",
-								"name": null,
-								"ofType": {
-									"kind": "SCALAR",
-									"name": "Boolean",
-									"ofType": null
-								}
-							},
-							"isDeprecated": false,
-							"deprecationReason": null
-						}
-					],
-					"inputFields": null,
-					"interfaces": [
-						{
-							"kind": "INTERFACE",
-							"name": "Node",
-							"ofType": null
-						},
-						{
-							"kind": "INTERFACE",
-							"name": "Comment",
-							"ofType": null
-						},
-						{
-							"kind": "INTERFACE",
-							"name": "Deletable",
-							"ofType": null
-						},
-						{
-							"kind": "INTERFACE",
-							"name": "Updatable",
-							"ofType": null
-						},
-						{
-							"kind": "INTERFACE",
-							"name": "UpdatableComment",
-							"ofType": null
-						}
-					],
-					"enumValues": null,
-					"possibleTypes": null
-				},
-				{
-					"kind": "OBJECT",
-					"name": "GistConnection",
-					"description": "The connection type for Gist.",
-					"fields": [
-						{
-							"name": "edges",
-							"description": "A list of edges.",
-							"args": [],
-							"type": {
-								"kind": "LIST",
-								"name": null,
-								"ofType": {
-									"kind": "OBJECT",
-									"name": "GistEdge",
-									"ofType": null
-								}
-							},
-							"isDeprecated": false,
-							"deprecationReason": null
-						},
-						{
-							"name": "nodes",
-							"description": "A list of nodes.",
-							"args": [],
-							"type": {
-								"kind": "LIST",
-								"name": null,
-								"ofType": {
-									"kind": "OBJECT",
-									"name": "Gist",
-									"ofType": null
-								}
-							},
-							"isDeprecated": false,
-							"deprecationReason": null
-						},
-						{
-							"name": "pageInfo",
-							"description": "Information to aid in pagination.",
-							"args": [],
-							"type": {
-								"kind": "NON_NULL",
-								"name": null,
-								"ofType": {
-									"kind": "OBJECT",
-									"name": "PageInfo",
-									"ofType": null
-								}
-							},
-							"isDeprecated": false,
-							"deprecationReason": null
-						},
-						{
-							"name": "totalCount",
-							"description": "Identifies the total count of items in the connection.",
-							"args": [],
-							"type": {
-								"kind": "NON_NULL",
-								"name": null,
-								"ofType": {
-									"kind": "SCALAR",
-									"name": "Int",
-									"ofType": null
-								}
-							},
-							"isDeprecated": false,
-							"deprecationReason": null
-						}
-					],
-					"inputFields": null,
-					"interfaces": [],
-					"enumValues": null,
-					"possibleTypes": null
-				},
-				{
-					"kind": "OBJECT",
-					"name": "GistEdge",
-					"description": "An edge in a connection.",
-					"fields": [
-						{
-							"name": "cursor",
-							"description": "A cursor for use in pagination.",
-							"args": [],
-							"type": {
-								"kind": "NON_NULL",
-								"name": null,
-								"ofType": {
-									"kind": "SCALAR",
-									"name": "String",
-									"ofType": null
-								}
-							},
-							"isDeprecated": false,
-							"deprecationReason": null
-						},
-						{
-							"name": "node",
-							"description": "The item at the end of the edge.",
-							"args": [],
-							"type": {
-								"kind": "OBJECT",
-								"name": "Gist",
-								"ofType": null
-							},
-							"isDeprecated": false,
-							"deprecationReason": null
-						}
-					],
-					"inputFields": null,
-					"interfaces": [],
-					"enumValues": null,
-					"possibleTypes": null
-				},
-				{
-					"kind": "ENUM",
-					"name": "GistPrivacy",
-					"description": "The privacy of a Gist",
-					"fields": null,
-					"inputFields": null,
-					"interfaces": null,
-					"enumValues": [
-						{
-							"name": "PUBLIC",
-							"description": "Public",
-							"isDeprecated": false,
-							"deprecationReason": null
-						},
-						{
-							"name": "SECRET",
-							"description": "Secret",
-							"isDeprecated": false,
-							"deprecationReason": null
-						},
-						{
-							"name": "ALL",
-							"description": "Gists that are public and secret",
-							"isDeprecated": false,
-							"deprecationReason": null
-						}
-					],
-					"possibleTypes": null
-				},
-				{
-					"kind": "OBJECT",
-					"name": "OrganizationConnection",
-					"description": "The connection type for Organization.",
-					"fields": [
-						{
-							"name": "edges",
-							"description": "A list of edges.",
-							"args": [],
-							"type": {
-								"kind": "LIST",
-								"name": null,
-								"ofType": {
-									"kind": "OBJECT",
-									"name": "OrganizationEdge",
-									"ofType": null
-								}
-							},
-							"isDeprecated": false,
-							"deprecationReason": null
-						},
-						{
-							"name": "nodes",
-							"description": "A list of nodes.",
-							"args": [],
-							"type": {
-								"kind": "LIST",
-								"name": null,
-								"ofType": {
-									"kind": "OBJECT",
-									"name": "Organization",
-									"ofType": null
-								}
-							},
-							"isDeprecated": false,
-							"deprecationReason": null
-						},
-						{
-							"name": "pageInfo",
-							"description": "Information to aid in pagination.",
-							"args": [],
-							"type": {
-								"kind": "NON_NULL",
-								"name": null,
-								"ofType": {
-									"kind": "OBJECT",
-									"name": "PageInfo",
-									"ofType": null
-								}
-							},
-							"isDeprecated": false,
-							"deprecationReason": null
-						},
-						{
-							"name": "totalCount",
-							"description": "Identifies the total count of items in the connection.",
-							"args": [],
-							"type": {
-								"kind": "NON_NULL",
-								"name": null,
-								"ofType": {
-									"kind": "SCALAR",
-									"name": "Int",
-									"ofType": null
-								}
-							},
-							"isDeprecated": false,
-							"deprecationReason": null
-						}
-					],
-					"inputFields": null,
-					"interfaces": [],
-					"enumValues": null,
-					"possibleTypes": null
-				},
-				{
-					"kind": "OBJECT",
-					"name": "OrganizationEdge",
-					"description": "An edge in a connection.",
-					"fields": [
-						{
-							"name": "cursor",
-							"description": "A cursor for use in pagination.",
-							"args": [],
-							"type": {
-								"kind": "NON_NULL",
-								"name": null,
-								"ofType": {
-									"kind": "SCALAR",
-									"name": "String",
-									"ofType": null
-								}
-							},
-							"isDeprecated": false,
-							"deprecationReason": null
-						},
-						{
-							"name": "node",
-							"description": "The item at the end of the edge.",
-							"args": [],
-							"type": {
-								"kind": "OBJECT",
-								"name": "Organization",
-								"ofType": null
-							},
-							"isDeprecated": false,
-							"deprecationReason": null
-						}
-					],
-					"inputFields": null,
-					"interfaces": [],
-					"enumValues": null,
-					"possibleTypes": null
-				},
-				{
-					"kind": "OBJECT",
 					"name": "StarredRepositoryConnection",
 					"description": "The connection type for Repository.",
 					"fields": [
@@ -27698,6 +28951,22 @@
 						{
 							"name": "limit",
 							"description": "The maximum number of points the client is permitted to consume in a 60 minute window.",
+							"args": [],
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "SCALAR",
+									"name": "Int",
+									"ofType": null
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "nodeCount",
+							"description": "The maximum number of nodes this query may return",
 							"args": [],
 							"type": {
 								"kind": "NON_NULL",
@@ -32951,6 +34220,18 @@
 								"name": "String",
 								"ofType": null
 							},
+							"isDeprecated": true,
+							"deprecationReason": "Use Repository.licenseInfo instead."
+						},
+						{
+							"name": "licenseInfo",
+							"description": "The license associated with the repository",
+							"args": [],
+							"type": {
+								"kind": "OBJECT",
+								"name": "License",
+								"ofType": null
+							},
 							"isDeprecated": false,
 							"deprecationReason": null
 						},
@@ -33048,6 +34329,33 @@
 								"ofType": {
 									"kind": "SCALAR",
 									"name": "URI",
+									"ofType": null
+								}
+							},
+							"isDeprecated": false,
+							"deprecationReason": null
+						},
+						{
+							"name": "shortDescriptionHTML",
+							"description": "A description of the repository, rendered to HTML without any links in it.",
+							"args": [
+								{
+									"name": "limit",
+									"description": "How many characters to return.",
+									"type": {
+										"kind": "SCALAR",
+										"name": "Int",
+										"ofType": null
+									},
+									"defaultValue": "200"
+								}
+							],
+							"type": {
+								"kind": "NON_NULL",
+								"name": null,
+								"ofType": {
+									"kind": "SCALAR",
+									"name": "HTML",
 									"ofType": null
 								}
 							},

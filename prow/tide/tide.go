@@ -103,16 +103,24 @@ func toSimpleState(s kube.ProwJobState) simpleState {
 	return noneState
 }
 
-func pickSmallestNumber(prs []pullRequest) pullRequest {
+func pickSmallestPassingNumber(prs []pullRequest) (bool, pullRequest) {
 	smallestNumber := -1
 	var smallestPR pullRequest
 	for _, pr := range prs {
-		if smallestNumber < 0 || int(pr.Number) < smallestNumber {
-			smallestNumber = int(pr.Number)
-			smallestPR = pr
+		if smallestNumber != -1 && int(pr.Number) >= smallestNumber {
+			continue
 		}
+		if len(pr.Commits.Nodes) < 1 {
+			continue
+		}
+		// TODO(spxtr): Check the actual statuses for individual jobs.
+		if string(pr.Commits.Nodes[0].Commit.Status.State) != "SUCCESS" {
+			continue
+		}
+		smallestNumber = int(pr.Number)
+		smallestPR = pr
 	}
-	return smallestPR
+	return smallestNumber > -1, smallestPR
 }
 
 // accumulate returns the supplied PRs sorted into three buckets based on their
@@ -155,10 +163,7 @@ func accumulate(presubmits []string, prs []pullRequest, pjs []kube.ProwJob) (suc
 	return
 }
 
-// TODO(spxtr): Batch merges. These complicate the logic further. One
-// particularly nasty complication is that we want to merge PRs even if the
-// serial test for a PR failed but the batch succeeded. This means that the PR
-// will need to be in the tide pool despite a failing status.
+// TODO(spxtr): Batch merges.
 func (c *Controller) syncSubpool(ctx context.Context, sp subpool) error {
 	c.log.Infof("%s/%s %s: %d PRs, %d PJs.", sp.org, sp.repo, sp.branch, len(sp.prs), len(sp.pjs))
 	var presubmits []string
@@ -170,11 +175,20 @@ func (c *Controller) syncSubpool(ctx context.Context, sp subpool) error {
 	}
 	successes, pendings, nones := accumulate(presubmits, sp.prs, sp.pjs)
 	if len(successes) > 0 {
-		c.log.Infof("Merge PR #%d.", int(pickSmallestNumber(successes).Number))
-	} else if len(pendings) > 0 {
+		if ok, pr := pickSmallestPassingNumber(successes); ok {
+			c.log.Infof("Merge PR #%d.", int(pr.Number))
+			return nil
+		}
+	}
+	if len(pendings) > 0 {
 		c.log.Info("Do nothing. Waiting for pending PRs.")
-	} else if len(nones) > 0 {
-		c.log.Infof("Trigger tests for PR #%d.", int(pickSmallestNumber(nones).Number))
+		return nil
+	}
+	if len(nones) > 0 {
+		if ok, pr := pickSmallestPassingNumber(nones); ok {
+			c.log.Infof("Trigger tests for PR #%d.", int(pr.Number))
+			return nil
+		}
 	}
 	return nil
 }
@@ -274,6 +288,15 @@ type pullRequest struct {
 			OID githubql.String `graphql:"oid"`
 		}
 	}
+	Commits struct {
+		Nodes []struct {
+			Commit struct {
+				Status struct {
+					State githubql.String
+				}
+			}
+		}
+	} `graphql:"commits(last: 1)"`
 }
 
 type searchQuery struct {

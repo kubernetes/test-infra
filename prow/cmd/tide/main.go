@@ -32,7 +32,10 @@ import (
 )
 
 var (
+	runOnce = flag.Bool("run-once", false, "If true, run only once then quit.")
+
 	configPath = flag.String("config-path", "/etc/config/config", "Path to config.yaml.")
+	cluster    = flag.String("cluster", "", "Path to kube.Cluster YAML file. If empty, uses the local cluster.")
 
 	_               = flag.String("github-bot-name", "", "Deprecated.")
 	githubEndpoint  = flag.String("github-endpoint", "https://api.github.com", "GitHub's API endpoint.")
@@ -62,20 +65,36 @@ func main() {
 	ghc := github.NewClient(oauthSecret, *githubEndpoint)
 	ghc.Logger = logrus.WithField("client", "github")
 
-	kc, err := kube.NewClientInCluster(configAgent.Config().ProwJobNamespace)
-	if err != nil {
-		logrus.WithError(err).Fatal("Error getting kube client.")
+	var kc *kube.Client
+	if *cluster == "" {
+		kc, err = kube.NewClientInCluster(configAgent.Config().ProwJobNamespace)
+		if err != nil {
+			logrus.WithError(err).Fatal("Error getting kube client.")
+		}
+	} else {
+		kc, err = kube.NewClientFromFile(*cluster, configAgent.Config().ProwJobNamespace)
+		if err != nil {
+			logrus.WithError(err).Fatal("Error getting kube client.")
+		}
 	}
 
 	c := tide.NewController(logrus.WithField("controller", "tide"), ghc, kc, configAgent)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error creating tide controller.")
 	}
-	for range time.Tick(time.Minute) {
-		start := time.Now()
-		if err := c.Sync(); err != nil {
-			logrus.WithError(err).Error("Error syncing.")
-		}
-		logrus.Infof("Sync time: %v", time.Since(start))
+	sync(c)
+	if *runOnce {
+		return
 	}
+	for range time.Tick(time.Minute) {
+		sync(c)
+	}
+}
+
+func sync(c *tide.Controller) {
+	start := time.Now()
+	if err := c.Sync(); err != nil {
+		logrus.WithError(err).Error("Error syncing.")
+	}
+	logrus.Infof("Sync time: %v", time.Since(start))
 }
