@@ -19,7 +19,6 @@ package slackevents
 import (
 	"fmt"
 
-	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/plugins"
 )
@@ -34,7 +33,7 @@ type slackClient interface {
 
 type client struct {
 	SlackClient slackClient
-	Config      *config.Config
+	SlackEvents []plugins.SlackEvent
 }
 
 func init() {
@@ -43,7 +42,7 @@ func init() {
 
 func handlePush(pc plugins.PluginClient, pe github.PushEvent) error {
 	c := client{
-		Config:      pc.Config,
+		SlackEvents: pc.PluginConfig.SlackEvents,
 		SlackClient: pc.SlackClient,
 	}
 	return notifyOnSlackIfManualMerge(c, pe)
@@ -65,8 +64,8 @@ func notifyOnSlackIfManualMerge(pc client, pe github.PushEvent) error {
 	return nil
 }
 
-func getSlackEvent(pc client, org, repo string) *config.SlackEvent {
-	for _, se := range pc.Config.SlackEvents {
+func getSlackEvent(pc client, org, repo string) *plugins.SlackEvent {
+	for _, se := range pc.SlackEvents {
 		if stringInArray(repo, se.Repos) || stringInArray(fmt.Sprintf("%s/%s", org, repo), se.Repos) {
 			return &se
 		}
