@@ -1,0 +1,79 @@
+/*
+Copyright 2016 The Kubernetes Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+package shrug
+
+import (
+	"testing"
+
+	"github.com/Sirupsen/logrus"
+
+	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/github/fakegithub"
+)
+
+func TestShrugComment(t *testing.T) {
+	var testcases = []struct {
+		name        string
+		body        string
+		hasShrug    bool
+		shouldShrug bool
+	}{
+		{
+			name:        "non-shrug comment",
+			body:        "uh oh",
+			hasShrug:    false,
+			shouldShrug: false,
+		},
+		{
+			name:        "shrug",
+			body:        "/shrug",
+			hasShrug:    false,
+			shouldShrug: true,
+		},
+		{
+			name:        "shrug over shrug",
+			body:        "/shrug",
+			hasShrug:    true,
+			shouldShrug: false,
+		},
+	}
+	for _, tc := range testcases {
+		fc := &fakegithub.FakeClient{
+			IssueComments: make(map[int][]github.IssueComment),
+		}
+		e := &event{
+			body: tc.body,
+		}
+		if tc.hasShrug {
+			e.hasLabel = func(label string) (bool, error) { return label == shrugLabel, nil }
+		} else {
+			e.hasLabel = func(label string) (bool, error) { return false, nil }
+		}
+		if err := handle(fc, logrus.WithField("plugin", pluginName), e); err != nil {
+			t.Errorf("For case %s, didn't expect error: %v", tc.name, err)
+			continue
+		}
+
+		if tc.shouldShrug {
+			if len(fc.LabelsAdded) != 1 {
+				t.Errorf("For case %s, should have added shrug.", tc.name)
+			}
+		} else if len(fc.LabelsAdded) > 0 {
+			t.Errorf("For case %s, should not have added/removed shrug.", tc.name)
+		}
+	}
+}
