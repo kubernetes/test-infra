@@ -10,6 +10,7 @@ const (
 	CommentAuthorAssociationCollaborator         CommentAuthorAssociation = "COLLABORATOR"           // Author has been invited to collaborate on the repository.
 	CommentAuthorAssociationContributor          CommentAuthorAssociation = "CONTRIBUTOR"            // Author has previously committed to the repository.
 	CommentAuthorAssociationFirstTimeContributor CommentAuthorAssociation = "FIRST_TIME_CONTRIBUTOR" // Author has not previously committed to the repository.
+	CommentAuthorAssociationFirstTimer           CommentAuthorAssociation = "FIRST_TIMER"            // Author has not previously committed to GitHub.
 	CommentAuthorAssociationNone                 CommentAuthorAssociation = "NONE"                   // Author has no association with the repository.
 )
 
@@ -59,6 +60,16 @@ const (
 	DeploymentStatusStateFailure  DeploymentStatusState = "FAILURE"  // The deployment has failed.
 	DeploymentStatusStateInactive DeploymentStatusState = "INACTIVE" // The deployment is inactive.
 	DeploymentStatusStateError    DeploymentStatusState = "ERROR"    // The deployment experienced an error.
+)
+
+// GistOrderField represents properties by which gist connections can be ordered.
+type GistOrderField string
+
+// Properties by which gist connections can be ordered.
+const (
+	GistOrderFieldCreatedAt GistOrderField = "CREATED_AT" // Order gists by creation time.
+	GistOrderFieldUpdatedAt GistOrderField = "UPDATED_AT" // Order gists by update time.
+	GistOrderFieldPushedAt  GistOrderField = "PUSHED_AT"  // Order gists by push time.
 )
 
 // GistPrivacy represents the privacy of a Gist.

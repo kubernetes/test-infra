@@ -102,7 +102,7 @@ func (d *decoder) decode() error {
 				d.vs[i] = append(d.vs[i], f)
 			}
 			if !someFieldExist {
-				return fmt.Errorf("struct field for %s doesn't exist in any of %v places", key, len(d.vs))
+				return fmt.Errorf("struct field for %s doesn't exist in any of %v places to unmarshal", key, len(d.vs))
 			}
 
 			// We've just consumed the current token, which was the key.
@@ -116,16 +116,22 @@ func (d *decoder) decode() error {
 
 		// Are we inside an array and seeing next value (rather than end of array)?
 		case d.state() == '[' && tok != json.Delim(']'):
+			someSliceExist := false
 			for i := range d.vs {
 				v := d.vs[i][len(d.vs[i])-1]
 				if v.Kind() == reflect.Ptr {
 					v = v.Elem()
 				}
-				if v.Kind() != reflect.Slice {
-					return fmt.Errorf("can't decode into non-slice %v", v.Kind())
+				var f reflect.Value
+				if v.Kind() == reflect.Slice {
+					v.Set(reflect.Append(v, reflect.Zero(v.Type().Elem()))) // v = append(v, T).
+					f = v.Index(v.Len() - 1)
+					someSliceExist = true
 				}
-				v.Set(reflect.Append(v, reflect.Zero(v.Type().Elem()))) // v = append(v, T).
-				d.vs[i] = append(d.vs[i], v.Index(v.Len()-1))
+				d.vs[i] = append(d.vs[i], f)
+			}
+			if !someSliceExist {
+				return fmt.Errorf("slice doesn't exist in any of %v places to unmarshal", len(d.vs))
 			}
 		}
 
