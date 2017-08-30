@@ -204,7 +204,7 @@ func (r *ReleaseNoteLabel) isStaleIssueComment(obj *github.MungeObject, comment 
 	if !obj.IsRobot(comment.User) {
 		return false
 	}
-	if *comment.Body != releaseNoteBody && *comment.Body != parentReleaseNoteFormat && *comment.Body != deprecatedReleaseNoteBody {
+	if *comment.Body != releaseNoteBody && *comment.Body != parentReleaseNoteBody && *comment.Body != deprecatedReleaseNoteBody {
 		return false
 	}
 	if !r.prMustFollowRelNoteProcess(obj) {
