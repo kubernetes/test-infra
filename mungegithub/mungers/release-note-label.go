@@ -142,14 +142,18 @@ func (r *ReleaseNoteLabel) Munge(obj *github.MungeObject) {
 
 	labelToAdd := determineReleaseNoteLabel(obj)
 	if labelToAdd == releaseNoteLabelNeeded {
-		obj.WriteComment(releaseNoteBody)
+		if !obj.HasLabel(releaseNoteLabelNeeded) {
+			obj.WriteComment(releaseNoteBody)
+		}
 	} else {
 		//going to apply some other release-note-label
 		if obj.HasLabel(releaseNoteLabelNeeded) {
 			obj.RemoveLabel(releaseNoteLabelNeeded)
 		}
 	}
-	obj.AddLabel(labelToAdd)
+	if !obj.HasLabel(labelToAdd) {
+		obj.AddLabel(labelToAdd)
+	}
 	return
 }
 
