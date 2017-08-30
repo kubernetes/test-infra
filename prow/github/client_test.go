@@ -477,6 +477,51 @@ func TestUnassignIssue(t *testing.T) {
 	}
 }
 
+func TestReadPaginatedResults(t *testing.T) {
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			t.Errorf("Bad method: %s", r.Method)
+		}
+		if r.URL.Path == "/label/foo" {
+			objects := []Label{{Name: "foo"}}
+			b, err := json.Marshal(objects)
+			if err != nil {
+				t.Fatalf("Didn't expect error: %v", err)
+			}
+			w.Header().Set("Link", fmt.Sprintf(`<blorp>; rel="first", <https://%s/label/bar>; rel="next"`, r.Host))
+			fmt.Fprint(w, string(b))
+		} else if r.URL.Path == "/label/bar" {
+			objects := []Label{{Name: "bar"}}
+			b, err := json.Marshal(objects)
+			if err != nil {
+				t.Fatalf("Didn't expect error: %v", err)
+			}
+			fmt.Fprint(w, string(b))
+		} else {
+			t.Errorf("Bad request path: %s", r.URL.Path)
+		}
+	}))
+	defer ts.Close()
+	c := getClient(ts.URL)
+	path := "/label/foo"
+	var labels []Label
+	err := c.readPaginatedResults(path,
+		func() interface{} {
+			return &[]Label{}
+		},
+		func(obj interface{}) {
+			labels = append(labels, *(obj.(*[]Label))...)
+		},
+	)
+	if err != nil {
+		t.Errorf("Didn't expect error: %v", err)
+	} else if len(labels) != 2 {
+		t.Errorf("Expected two labels, found %d: %v", len(labels), labels)
+	} else if labels[0].Name != "foo" || labels[1].Name != "bar" {
+		t.Errorf("Wrong label names: %v", labels)
+	}
+}
+
 func TestListPullRequestComments(t *testing.T) {
 	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodGet {
