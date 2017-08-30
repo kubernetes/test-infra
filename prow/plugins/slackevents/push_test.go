@@ -21,8 +21,8 @@ import (
 	"strings"
 	"testing"
 
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
-	"k8s.io/test-infra/prow/plugins"
 	"k8s.io/test-infra/prow/slack"
 	"k8s.io/test-infra/prow/slack/fakeslack"
 )
@@ -91,14 +91,18 @@ func TestPush(t *testing.T) {
 		},
 	}
 
-	pc := client{
-		SlackEvents: []plugins.SlackEvent{
+	cnfg := &config.Config{
+		SlackEvents: []config.SlackEvent{
 			{
 				Repos:     []string{"kubernetes/kubernetes"},
 				Channels:  []string{"kubernetes-dev", "sig-contribex"},
 				WhiteList: []string{"k8s-merge-robot"},
 			},
 		},
+	}
+
+	pc := client{
+		Config:      cnfg,
 		SlackClient: slack.NewFakeClient(),
 	}
 

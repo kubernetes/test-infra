@@ -10,6 +10,7 @@ go_library(
     name = "go_default_library",
     srcs = ["heart.go"],
     deps = [
+        "//prow/config:go_default_library",
         "//prow/github:go_default_library",
         "//prow/plugins:go_default_library",
         "//vendor/github.com/Sirupsen/logrus:go_default_library",
@@ -34,6 +35,7 @@ go_test(
     srcs = ["heart_test.go"],
     library = ":go_default_library",
     deps = [
+        "//prow/config:go_default_library",
         "//prow/github:go_default_library",
         "//prow/github/fakegithub:go_default_library",
         "//vendor/github.com/Sirupsen/logrus:go_default_library",

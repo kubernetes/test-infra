@@ -29,7 +29,7 @@ import (
 var okToTest = regexp.MustCompile(`(?m)^/ok-to-test\s*$`)
 var retest = regexp.MustCompile(`(?m)^/retest\s*$`)
 
-func handleIC(c client, trustedOrg string, ic github.IssueCommentEvent) error {
+func handleIC(c client, ic github.IssueCommentEvent) error {
 	org := ic.Repo.Owner.Login
 	repo := ic.Repo.Name
 	number := ic.Issue.Number
@@ -52,6 +52,13 @@ func handleIC(c client, trustedOrg string, ic github.IssueCommentEvent) error {
 	}
 	if commentAuthor == botName {
 		return nil
+	}
+	var trustedOrg string
+	if tr := triggerConfig(c.Config, org, repo); tr != nil && tr.TrustedOrg == "" {
+		c.Logger.Info("Ignoring PR Event, no TrustedOrg set in config.")
+		return nil
+	} else if tr != nil {
+		trustedOrg = tr.TrustedOrg
 	}
 
 	if okToTest.MatchString(ic.Comment.Body) && ic.Issue.HasLabel(needsOkToTest) {
