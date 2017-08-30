@@ -50,8 +50,10 @@ type githubClient interface {
 }
 
 func handlePR(gc githubClient, le *logrus.Entry, pe github.PullRequestEvent) error {
-	// These are the only two actions indicating the code diffs may have changed.
-	if pe.Action != github.PullRequestActionOpened && pe.Action != github.PullRequestActionSynchronize {
+	// These are the only three actions indicating the code diffs may have changed.
+	if pe.Action != github.PullRequestActionOpened &&
+		pe.Action != github.PullRequestActionReopened &&
+		pe.Action != github.PullRequestActionSynchronize {
 		return nil
 	}
 
