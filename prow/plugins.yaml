@@ -21,6 +21,7 @@ kubernetes/kubernetes:
 kubernetes/test-infra:
 - trigger
 - config-updater
+- shrug
 
 kubernetes:
 - assign
