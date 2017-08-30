@@ -29,8 +29,17 @@ const (
 	needsOkToTest = "needs-ok-to-test"
 )
 
-func handlePR(c client, trustedOrg string, pr github.PullRequestEvent) error {
+func handlePR(c client, pr github.PullRequestEvent) error {
+	org := pr.PullRequest.Base.Repo.Owner.Login
+	repo := pr.PullRequest.Base.Repo.Name
 	author := pr.PullRequest.User.Login
+	var trustedOrg string
+	if tr := triggerConfig(c.Config, org, repo); tr != nil && tr.TrustedOrg == "" {
+		c.Logger.Info("Ignoring PR Event, no TrustedOrg set in config.")
+		return nil
+	} else if tr != nil {
+		trustedOrg = tr.TrustedOrg
+	}
 	switch pr.Action {
 	case github.PullRequestActionOpened:
 		// When a PR is opened, if the author is in the org then build it.
