@@ -172,7 +172,7 @@ func run(deploy deployer, o options) error {
 		} else if o.nodeTests {
 			nodeArgs := strings.Fields(o.nodeArgs)
 			errs = appendError(errs, xmlWrap("Node Tests", func() error {
-				return nodeTest(testArgs, nodeArgs, o.nodeTestArgs, o.gcpProject, o.gcpZone)
+				return nodeTest(nodeArgs, o.testArgs, o.nodeTestArgs, o.gcpProject, o.gcpZone)
 			}))
 		} else {
 			errs = appendError(errs, xmlWrap("kubectl version", getKubectlVersion))
@@ -501,7 +501,7 @@ func chartsTest() error {
 	return nil
 }
 
-func nodeTest(testArgs, nodeArgs []string, nodeTestArgs, project, zone string) error {
+func nodeTest(nodeArgs []string, testArgs, nodeTestArgs, project, zone string) error {
 	// Run node e2e tests.
 	// TODO(krzyzacy): remove once nodeTest is stable
 	if wd, err := os.Getwd(); err == nil {
@@ -526,7 +526,7 @@ func nodeTest(testArgs, nodeArgs []string, nodeTestArgs, project, zone string) e
 		fmt.Sprintf("--zone=%s", zone),
 		fmt.Sprintf("--ssh-user=%s", os.Getenv("USER")),
 		fmt.Sprintf("--ssh-key=%s", sshKeyPath),
-		fmt.Sprintf("--ginkgo-flags=%s", strings.Join(testArgs, " ")),
+		fmt.Sprintf("--ginkgo-flags=%s", testArgs),
 		fmt.Sprintf("--test_args=%s", nodeTestArgs),
 	}
 
