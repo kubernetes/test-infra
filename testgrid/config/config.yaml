@@ -1658,6 +1658,11 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster-new
 - name: ci-kubernetes-e2e-mlkube-gke
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-mlkube-gke
+# kube-proxy daemonset migration jobs
+- name: ci-kubernetes-e2e-gci-gce-latest-downgrade-kube-proxy-ds
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-latest-downgrade-kube-proxy-ds
+- name: ci-kubernetes-e2e-gci-gce-latest-upgrade-kube-proxy-ds
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-latest-upgrade-kube-proxy-ds
 #ibm ppc64le test results
 - name: ppc64le-conformance
   gcs_prefix: ppc64le-kubernetes/logs/ci-conformance-kubernetes
@@ -3817,6 +3822,12 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gci-gke-serial
     base_options: 'include-filter-by-regex=\[sig-network\]'
     description: 'network gci-gke serial e2e tests for master branch'
+  - name: gci-gce-latest-upgrade-kube-proxy-ds
+    test_group_name: ci-kubernetes-e2e-gci-gce-latest-upgrade-kube-proxy-ds
+    description: 'upgrade cluster and migrate kube-proxy from static pods to a daemonset'
+  - name: gci-gce-latest-downgrade-kube-proxy-ds
+    test_group_name: ci-kubernetes-e2e-gci-gce-latest-downgrade-kube-proxy-ds
+    description: 'downgrade cluster and migrate kube-proxy from a daemonset to static pods'
 
 - name: sig-node
   dashboard_tab:
