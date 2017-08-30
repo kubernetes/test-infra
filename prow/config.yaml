@@ -12,7 +12,7 @@ pod_namespace: test-pods
 
 tide:
   queries:
-  - "type:pr state:open -status:failure -status:error repo:kubernetes/test-infra label:lgtm -label:do-not-merge"
+  - "type:pr state:open repo:kubernetes/test-infra label:lgtm -label:do-not-merge"
 
 triggers:
 - repos:
