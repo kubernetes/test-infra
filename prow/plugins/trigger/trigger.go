@@ -17,8 +17,6 @@ limitations under the License.
 package trigger
 
 import (
-	"fmt"
-
 	"github.com/Sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/config"
@@ -63,17 +61,6 @@ type client struct {
 	Logger       *logrus.Entry
 }
 
-func triggerConfig(c *config.Config, org, repo string) *config.Trigger {
-	for _, tr := range c.Triggers {
-		for _, r := range tr.Repos {
-			if r == org || r == fmt.Sprintf("%s/%s", org, repo) {
-				return &tr
-			}
-		}
-	}
-	return nil
-}
-
 func getClient(pc plugins.PluginClient) client {
 	return client{
 		GitHubClient: pc.GitHubClient,
@@ -84,11 +71,23 @@ func getClient(pc plugins.PluginClient) client {
 }
 
 func handlePullRequest(pc plugins.PluginClient, pr github.PullRequestEvent) error {
-	return handlePR(getClient(pc), pr)
+	org, repo := pr.PullRequest.Base.Repo.Owner.Login, pr.PullRequest.Base.Repo.Name
+	config := pc.PluginConfig.TriggerFor(org, repo)
+	if config == nil || config.TrustedOrg == "" {
+		pc.Logger.Infof("Ignoring pull request event, triggers not configured for %s/%s.", org, repo)
+		return nil
+	}
+	return handlePR(getClient(pc), config.TrustedOrg, pr)
 }
 
 func handleIssueComment(pc plugins.PluginClient, ic github.IssueCommentEvent) error {
-	return handleIC(getClient(pc), ic)
+	org, repo := ic.Repo.Owner.Login, ic.Repo.Name
+	config := pc.PluginConfig.TriggerFor(org, repo)
+	if config == nil || config.TrustedOrg == "" {
+		pc.Logger.Infof("Ignoring issue comment event, triggers not configured for %s/%s.", org, repo)
+		return nil
+	}
+	return handleIC(getClient(pc), config.TrustedOrg, ic)
 }
 
 func handlePush(pc plugins.PluginClient, pe github.PushEvent) error {

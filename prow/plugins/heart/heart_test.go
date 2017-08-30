@@ -21,7 +21,6 @@ import (
 
 	"github.com/Sirupsen/logrus"
 
-	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
 )
@@ -109,12 +108,7 @@ func TestHandlePR(t *testing.T) {
 		}
 		fakeClient := client{
 			GitHubClient: fakeGitHubClient,
-			Config: &config.Heart{
-				Adorees: []string{
-					"kubernetes",
-				},
-			},
-			Logger: logrus.WithField("plugin", pluginName),
+			Logger:       logrus.WithField("plugin", pluginName),
 		}
 
 		err := handlePR(fakeClient, event)
