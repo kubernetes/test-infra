@@ -34,6 +34,17 @@ class JUnitParser(object):
         self.passed = []
         self.failed = []
 
+    def handle_suite(self, tree, filename):
+        for subelement in tree:
+            if subelement.tag == 'testsuite':
+                self.handle_suite(subelement, filename)
+            elif subelement.tag == 'testcase':
+                if 'name' in tree.attrib:
+                    name_prefix = tree.attrib['name'] + ' '
+                else:
+                    name_prefix = ''
+                self.handle_test(subelement, filename, name_prefix)
+
     def handle_test(self, child, filename, name_prefix=''):
         name = name_prefix + child.attrib['name']
         if child.find('skipped') is not None:
@@ -64,13 +75,10 @@ class JUnitParser(object):
                     ('Gubernator Internal Fatal XML Parse Error', 0.0, str(e), filename, ''))
                 return
         if tree.tag == 'testsuite':
-            for child in tree:
-                self.handle_test(child, filename)
+            self.handle_suite(tree, filename)
         elif tree.tag == 'testsuites':
             for testsuite in tree:
-                name_prefix = testsuite.attrib['name'] + ' '
-                for child in testsuite.findall('testcase'):
-                    self.handle_test(child, filename, name_prefix)
+                self.handle_suite(testsuite, filename)
         else:
             logging.error('unable to find failures, unexpected tag %s', tree.tag)
 
