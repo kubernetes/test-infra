@@ -113,6 +113,7 @@ func pickSmallestPassingNumber(prs []pullRequest) (bool, pullRequest) {
 		if len(pr.Commits.Nodes) < 1 {
 			continue
 		}
+		// TODO(spxtr): Check the actual statuses for individual jobs.
 		if string(pr.Commits.Nodes[0].Commit.Status.State) != "SUCCESS" {
 			continue
 		}
