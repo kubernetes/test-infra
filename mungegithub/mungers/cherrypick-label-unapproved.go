@@ -29,13 +29,12 @@ import (
 )
 
 const (
-	cherrypickUnapprovedLabel = "do-not-merge/cherry-pick-not-approved"
-	labelUnapprovedPicksName  = "label-unapproved-picks"
-	labelUnapprovedFormat     = "This PR is not for the master branch but does not have the `%s` label. Adding the `%s` label."
+	labelUnapprovedPicksName = "label-unapproved-picks"
+	labelUnapprovedFormat    = "This PR is not for the master branch but does not have the `%s` label. Adding the `%s` label."
 )
 
 var (
-	labelUnapprovedBody = fmt.Sprintf(labelUnapprovedFormat, cpApprovedLabel, cherrypickUnapprovedLabel)
+	labelUnapprovedBody = fmt.Sprintf(labelUnapprovedFormat, cpApprovedLabel, doNotMergeLabel)
 )
 
 // LabelUnapprovedPicks will add `do-not-merge` to PRs against a release branch which
@@ -80,11 +79,11 @@ func (LabelUnapprovedPicks) Munge(obj *github.MungeObject) {
 		return
 	}
 
-	if obj.HasLabel(cherrypickUnapprovedLabel) {
+	if obj.HasLabel(doNotMergeLabel) {
 		return
 	}
 
-	obj.AddLabel(cherrypickUnapprovedLabel)
+	obj.AddLabel(doNotMergeLabel)
 
 	obj.WriteComment(labelUnapprovedBody)
 }
