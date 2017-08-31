@@ -27,28 +27,46 @@ import (
 
 func TestShrugComment(t *testing.T) {
 	var testcases = []struct {
-		name        string
-		body        string
-		hasShrug    bool
-		shouldShrug bool
+		name          string
+		body          string
+		hasShrug      bool
+		shouldShrug   bool
+		shouldUnshrug bool
 	}{
 		{
-			name:        "non-shrug comment",
-			body:        "uh oh",
-			hasShrug:    false,
-			shouldShrug: false,
+			name:          "non-shrug comment",
+			body:          "uh oh",
+			hasShrug:      false,
+			shouldShrug:   false,
+			shouldUnshrug: false,
 		},
 		{
-			name:        "shrug",
-			body:        "/shrug",
-			hasShrug:    false,
-			shouldShrug: true,
+			name:          "shrug",
+			body:          "/shrug",
+			hasShrug:      false,
+			shouldShrug:   true,
+			shouldUnshrug: false,
 		},
 		{
-			name:        "shrug over shrug",
-			body:        "/shrug",
-			hasShrug:    true,
-			shouldShrug: false,
+			name:          "shrug over shrug",
+			body:          "/shrug",
+			hasShrug:      true,
+			shouldShrug:   false,
+			shouldUnshrug: false,
+		},
+		{
+			name:          "unshrug nothing",
+			body:          "/unshrug",
+			hasShrug:      false,
+			shouldShrug:   false,
+			shouldUnshrug: false,
+		},
+		{
+			name:          "unshrug the shrug",
+			body:          "/unshrug",
+			hasShrug:      true,
+			shouldShrug:   false,
+			shouldUnshrug: true,
 		},
 	}
 	for _, tc := range testcases {
@@ -70,9 +88,19 @@ func TestShrugComment(t *testing.T) {
 
 		if tc.shouldShrug {
 			if len(fc.LabelsAdded) != 1 {
-				t.Errorf("For case %s, should have added shrug.", tc.name)
+				t.Errorf("For case %s, should add shrug.", tc.name)
 			}
-		} else if len(fc.LabelsAdded) > 0 {
+			if len(fc.LabelsRemoved) != 0 {
+				t.Errorf("For case %s, should not remove label.", tc.name)
+			}
+		} else if tc.shouldUnshrug {
+			if len(fc.LabelsAdded) != 0 {
+				t.Errorf("For case %s, should not add shrug.", tc.name)
+			}
+			if len(fc.LabelsRemoved) != 1 {
+				t.Errorf("For case %s, should remove shrug.", tc.name)
+			}
+		} else if len(fc.LabelsAdded) > 0 || len(fc.LabelsRemoved) > 0 {
 			t.Errorf("For case %s, should not have added/removed shrug.", tc.name)
 		}
 	}
