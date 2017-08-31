@@ -1413,6 +1413,41 @@ postsubmits:
 periodics:
 - interval: 1h
   agent: kubernetes
+  name: ci-kubernetes-charts-gce
+  spec:
+    containers:
+    - args:
+      - --timeout=200
+      - --repo=k8s.io/charts
+      - --root=/go/src
+      env:
+      - name: GOOGLE_APPLICATION_CREDENTIALS
+        value: /etc/service-account/service-account.json
+      - name: USER
+        value: prow
+      - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-private
+      - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-public
+      image: gcr.io/k8s-testimages/kubekins-e2e-prow:latest
+      volumeMounts:
+      - mountPath: /etc/service-account
+        name: service
+        readOnly: true
+      - mountPath: /etc/ssh-key-secret
+        name: ssh
+        readOnly: true
+    volumes:
+    - name: service
+      secret:
+        secretName: service-account
+    - name: ssh
+      secret:
+        defaultMode: 256
+        secretName: ssh-key-secret
+
+- interval: 1h
+  agent: kubernetes
   name: ci-kubernetes-e2e-cos-docker-validation
   spec:
     containers:
