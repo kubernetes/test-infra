@@ -1,0 +1,8 @@
+# Standard labels set (common for all kubernetes repos)
+---
+labels:
+  - color: green
+    name: lgtm
+  - color: red
+    name: priority/P0
+...

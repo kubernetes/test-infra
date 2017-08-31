@@ -35,6 +35,7 @@ filegroup(
         "//jobs:all-srcs",
         "//kettle:all-srcs",
         "//kubetest:all-srcs",
+        "//label_sync:all-srcs",
         "//logexporter/cmd:all-srcs",
         "//maintenance/githubutil:all-srcs",
         "//maintenance/migratestatus:all-srcs",
