@@ -18,6 +18,8 @@ Command | Implemented By | Who can run it | Description
 `/remove-sig [label1 label2 ...]` | prow [label](./prow/plugins/label) | anyone | removes a sig/<> label(s) if it exists
 `/lgtm` | prow [lgtm](./prow/plugins/lgtm) | assignees | adds the `lgtm` label
 `/lgtm cancel` | prow [lgtm](./prow/plugins/lgtm) | authors and assignees | removes the `lgtm` label
+`/hold` | prow [hold](./prow/plugins/hold) | anyone | adds the `hold` label
+`/hold cancel` | prow [hold](./prow/plugins/hold) | anyone | removes the `hold` label
 `/approve` | mungegithub [approvers](./mungegithub/mungers/approvers) | owners | approve all the files for which you are an approver
 `/approve no-issue` | mungegithub [approvers](./mungegithub/mungers/approvers) | owners | approve when a PR doesn't have an associated issue
 `/approve cancel` | mungegithub [approvers](./mungegithub/mungers/approvers) | owners | removes your approval on this pull-request
