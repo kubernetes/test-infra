@@ -163,6 +163,10 @@ func run(deploy deployer, o options) error {
 		errs = appendError(errs, xmlWrap("UpgradeTest", func() error {
 			return skewTest(argFields(o.upgradeArgs, dump, o.clusterIPRange), "upgrade", o.checkSkew)
 		}))
+	} else if o.downgradeArgs != "" {
+		errs = appendError(errs, xmlWrap("DowngradeTest", func() error {
+			return test(argFields(o.downgradeArgs, dump, o.clusterIPRange))
+		}))
 	}
 
 	testArgs := argFields(o.testArgs, dump, o.clusterIPRange)

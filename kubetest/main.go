@@ -101,6 +101,7 @@ type options struct {
 	testArgs            string
 	up                  bool
 	upgradeArgs         string
+	downgradeArgs       string
 }
 
 func defineFlags() *options {
@@ -148,7 +149,8 @@ func defineFlags() *options {
 	flag.StringVar(&o.testArgs, "test_args", "", "Space-separated list of arguments to pass to Ginkgo test runner.")
 	flag.DurationVar(&timeout, "timeout", time.Duration(0), "Terminate testing after the timeout duration (s/m/h)")
 	flag.BoolVar(&o.up, "up", false, "If true, start the the e2e cluster. If cluster is already up, recreate it.")
-	flag.StringVar(&o.upgradeArgs, "upgrade_args", "", "If set, run upgrade tests before other tests")
+	flag.StringVar(&o.upgradeArgs, "upgrade_args", "", "If set, run upgrade tests before other tests. This is multually exclusive with --downgrade_args.")
+	flag.StringVar(&o.downgradeArgs, "downgrade_args", "", "If set, run downgrade tests before other tests. This is multually exclusive with --upgrade_args.")
 
 	flag.BoolVar(&verbose, "v", false, "If true, print all command output.")
 	return &o
