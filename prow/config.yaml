@@ -116,6 +116,7 @@ presubmits:
     - name: pull-kubernetes-e2e-gce-canary
       agent: kubernetes
       always_run: true
+      skip_report: true
       context: pull-kubernetes-e2e-gce-canary
       rerun_command: "/test pull-kubernetes-e2e-gce-canary"
       trigger: "(?m)^/test( all| pull-kubernetes-e2e-gce-canary),?(\\s+|$)"
@@ -495,6 +496,7 @@ presubmits:
     - name: pull-security-kubernetes-e2e-gce-canary
       agent: kubernetes
       always_run: true
+      skip_report: true
       context: pull-security-kubernetes-e2e-gce-canary
       rerun_command: "/test pull-security-kubernetes-e2e-gce-canary"
       trigger: "(?m)^/test( all| pull-security-kubernetes-e2e-gce-canary),?(\\s+|$)"
