@@ -31,6 +31,7 @@ const pluginName = "shrug"
 var (
 	shrugLabel = "¯\\_(ツ)_/¯"
 	shrugRe    = regexp.MustCompile(`(?mi)^/shrug\s*$`)
+	unshrugRe  = regexp.MustCompile(`(?mi)^/unshrug\s*$`)
 )
 
 type event struct {
@@ -51,6 +52,8 @@ func init() {
 
 type githubClient interface {
 	AddLabel(owner, repo string, number int, label string) error
+	CreateComment(owner, repo string, number int, comment string) error
+	RemoveLabel(owner, repo string, number int, label string) error
 }
 
 func handleIssueComment(pc plugins.PluginClient, ic github.IssueCommentEvent) error {
@@ -59,17 +62,24 @@ func handleIssueComment(pc plugins.PluginClient, ic github.IssueCommentEvent) er
 	}
 
 	e := &event{
-		org:      ic.Repo.Owner.Login,
-		repo:     ic.Repo.Name,
-		number:   ic.Issue.Number,
-		body:     ic.Comment.Body,
-		hasLabel: func(label string) (bool, error) { return ic.Issue.HasLabel(label), nil },
+		org:           ic.Repo.Owner.Login,
+		repo:          ic.Repo.Name,
+		number:        ic.Issue.Number,
+		body:          ic.Comment.Body,
+		hasLabel:      func(label string) (bool, error) { return ic.Issue.HasLabel(label), nil },
+		htmlurl:       ic.Comment.HTMLURL,
+		commentAuthor: ic.Comment.User.Login,
 	}
 	return handle(pc.GitHubClient, pc.Logger, e)
 }
 
 func handle(gc githubClient, log *logrus.Entry, e *event) error {
-	if !shrugRe.MatchString(e.body) {
+	wantShrug := false
+	if shrugRe.MatchString(e.body) {
+		wantShrug = true
+	} else if unshrugRe.MatchString(e.body) {
+		wantShrug = false
+	} else {
 		return nil
 	}
 
@@ -78,8 +88,16 @@ func handle(gc githubClient, log *logrus.Entry, e *event) error {
 	if err != nil {
 		return fmt.Errorf("failed to get the labels on %s/%s#%d: %v", e.org, e.repo, e.number, err)
 	}
-	if !hasShrug {
-		log.Info("Adding shrug label.")
+	if hasShrug && !wantShrug {
+		log.Info("Removing Shrug label.")
+		resp := "¯\\\\\\_(ツ)\\_/¯"
+		log.Infof("Commenting with \"%s\".", resp)
+		if err := gc.CreateComment(e.org, e.repo, e.number, plugins.FormatResponseRaw(e.body, e.htmlurl, e.commentAuthor, resp)); err != nil {
+			return fmt.Errorf("failed to comment on %s/%s#%d: %v", e.org, e.repo, e.number, err)
+		}
+		return gc.RemoveLabel(e.org, e.repo, e.number, shrugLabel)
+	} else if !hasShrug && wantShrug {
+		log.Info("Adding Shrug label.")
 		return gc.AddLabel(e.org, e.repo, e.number, shrugLabel)
 	}
 	return nil
