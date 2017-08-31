@@ -112,13 +112,6 @@ presubmits:
       - name: cache-ssd
         hostPath:
           path: /mnt/disks/ssd0
-    run_after_success:
-    - name: pull-kubernetes-e2e-gce-canary
-      agent: kubernetes
-      always_run: true
-      context: pull-kubernetes-e2e-gce-canary
-      rerun_command: "/test pull-kubernetes-e2e-gce-canary"
-      trigger: "(?m)^/test( all| pull-kubernetes-e2e-gce-canary),?(\\s+|$)"
   - name: pull-kubernetes-bazel-test
     agent: kubernetes
     context: pull-kubernetes-bazel-test
@@ -456,13 +449,6 @@ presubmits:
       - name: cache-ssd
         hostPath:
           path: /mnt/disks/ssd0
-    run_after_success:
-    - name: pull-security-kubernetes-e2e-gce-canary
-      agent: kubernetes
-      always_run: true
-      context: pull-security-kubernetes-e2e-gce-canary
-      rerun_command: "/test pull-security-kubernetes-e2e-gce-canary"
-      trigger: "(?m)^/test( all| pull-security-kubernetes-e2e-gce-canary),?(\\s+|$)"
   - name: pull-security-kubernetes-bazel-test
     agent: kubernetes
     context: pull-security-kubernetes-bazel-test
