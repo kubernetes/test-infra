@@ -1684,6 +1684,9 @@ test_groups:
 - name: pull-kubernetes-e2e-gce-bazel
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-gce-bazel
   days_of_results: 1
+- name: pull-kubernetes-e2e-gce-canary		
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-gce-canary		
+  days_of_results: 1
 - name: pull-kubernetes-e2e-gce-etcd3
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-gce-etcd3
   days_of_results: 1
@@ -4058,6 +4061,9 @@ dashboards:
     base_options: 'width=10'
   - name: pull-kubernetes-e2e-gce-bazel
     test_group_name: pull-kubernetes-e2e-gce-bazel
+    base_options: 'width=10'
+  - name: pull-kubernetes-e2e-gce-canary		
+    test_group_name: pull-kubernetes-e2e-gce-canary		
     base_options: 'width=10'
   - name: pull-kubernetes-e2e-gce-etcd3
     test_group_name: pull-kubernetes-e2e-gce-etcd3

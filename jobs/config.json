@@ -10467,7 +10467,6 @@
       "--env-file=jobs/env/pull-kubernetes-e2e-gce-canary.env",
       "--gcp-project=k8s-jkns-pr-gce",
       "--gcp-zone=us-central1-f",
-      "--mode=docker",
       "--provider=gce",
       "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
       "--timeout=55m",
