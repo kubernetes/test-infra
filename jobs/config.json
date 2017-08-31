@@ -4098,6 +4098,7 @@
     "args": [
       "--check-leaked-resources",
       "--check-version-skew=false",
+      "--downgrade_args=--ginkgo.focus=\\[Feature:KubeProxyDaemonSetDowngrade\\] --upgrade-target=ci/latest-1.7",
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-gci-gce-latest-downgrade-kube-proxy-ds.env",
       "--extract=ci/latest-1.7",
@@ -4105,8 +4106,7 @@
       "--gcp-zone=us-central1-f",
       "--provider=gce",
       "--test_args=--ginkgo.focus=Networking --ginkgo.skip=Networking-Performance --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8",
-      "--timeout=90m",
-      "--upgrade_args=--ginkgo.focus=\\[Feature:KubeProxyDaemonSetDowngrade\\] --upgrade-target=ci/latest-1.7"
+      "--timeout=90m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
