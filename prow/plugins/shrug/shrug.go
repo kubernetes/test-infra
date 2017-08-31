@@ -90,7 +90,7 @@ func handle(gc githubClient, log *logrus.Entry, e *event) error {
 	}
 	if hasShrug && !wantShrug {
 		log.Info("Removing Shrug label.")
-		resp := "oh really. ¯\\_(ツ)_/¯"
+		resp := "¯\\\\\\_(ツ)\\_/¯"
 		log.Infof("Commenting with \"%s\".", resp)
 		if err := gc.CreateComment(e.org, e.repo, e.number, plugins.FormatResponseRaw(e.body, e.htmlurl, e.commentAuthor, resp)); err != nil {
 			return fmt.Errorf("failed to comment on %s/%s#%d: %v", e.org, e.repo, e.number, err)
