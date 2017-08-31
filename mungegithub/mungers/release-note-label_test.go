@@ -67,12 +67,6 @@ func TestReleaseNoteLabel(t *testing.T) {
 			mustNotHave: []string{releaseNoteLabelNeeded},
 		},
 		{
-			name:        "LGTM with release-note-experimental",
-			issue:       github_test.Issue(testBotName, 1, []string{lgtmLabel, releaseNoteExperimental}, true),
-			mustHave:    []string{lgtmLabel, releaseNoteExperimental},
-			mustNotHave: []string{releaseNoteLabelNeeded},
-		},
-		{
 			name:        "LGTM with release-note-label-needed",
 			issue:       github_test.Issue(testBotName, 1, []string{lgtmLabel, releaseNoteLabelNeeded}, true),
 			mustHave:    []string{lgtmLabel, releaseNoteLabelNeeded},
@@ -105,11 +99,6 @@ func TestReleaseNoteLabel(t *testing.T) {
 			mustHave: []string{releaseNoteActionRequired},
 		},
 		{
-			name:     "release-note-experimental",
-			issue:    github_test.Issue(testBotName, 1, []string{releaseNoteExperimental}, true),
-			mustHave: []string{releaseNoteExperimental},
-		},
-		{
 			name:        "release-note and release-note-label-needed",
 			issue:       github_test.Issue(testBotName, 1, []string{releaseNote, releaseNoteLabelNeeded}, true),
 			mustHave:    []string{releaseNote},
@@ -125,12 +114,6 @@ func TestReleaseNoteLabel(t *testing.T) {
 			name:        "release-note-action-required and release-note-label-needed",
 			issue:       github_test.Issue(testBotName, 1, []string{releaseNoteActionRequired, releaseNoteLabelNeeded}, true),
 			mustHave:    []string{releaseNoteActionRequired},
-			mustNotHave: []string{releaseNoteLabelNeeded},
-		},
-		{
-			name:        "release-note-experimental and release-note-label-needed",
-			issue:       github_test.Issue(testBotName, 1, []string{releaseNoteExperimental, releaseNoteLabelNeeded}, true),
-			mustHave:    []string{releaseNoteExperimental},
 			mustNotHave: []string{releaseNoteLabelNeeded},
 		},
 		{
