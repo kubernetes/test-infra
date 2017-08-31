@@ -495,7 +495,8 @@ func perfTest() error {
 
 func chartsTest() error {
 	// Run helm tests.
-	if err := finishRunning(exec.Command("%s/src/k8s.io/charts/test/helm-test-e2e.sh", os.Getenv("GOPATH"))); err != nil {
+	cmdline := fmt.Sprintf("%s/src/k8s.io/charts/test/helm-test-e2e.sh", os.Getenv("GOPATH"))
+	if err := finishRunning(exec.Command(cmdline)); err != nil {
 		return err
 	}
 	return nil
