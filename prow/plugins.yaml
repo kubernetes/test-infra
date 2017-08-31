@@ -21,7 +21,6 @@ kubernetes/kubernetes:
 kubernetes/test-infra:
 - trigger
 - config-updater
-- shrug
 
 kubernetes:
 - assign
@@ -34,6 +33,7 @@ kubernetes:
 - lgtm
 - size
 - yuks
+- shrug
 
 kubernetes-incubator:
 - cla
