@@ -210,7 +210,7 @@ func TestSyncKubernetesJob(t *testing.T) {
 		expectedNumPods    int
 		expectedComplete   bool
 		expectedCreatedPJs int
-		expectedReport     bool
+		expectedReports    int
 		expectedURL        string
 	}{
 		{
@@ -274,7 +274,7 @@ func TestSyncKubernetesJob(t *testing.T) {
 			expectedState:      kube.PendingState,
 			expectedPodHasName: true,
 			expectedNumPods:    1,
-			expectedReport:     true,
+			expectedReports:    1,
 			expectedURL:        "NEWPOD/pending",
 		},
 		{
@@ -334,7 +334,7 @@ func TestSyncKubernetesJob(t *testing.T) {
 			expectedPodHasName: true,
 			expectedNumPods:    1,
 			expectedCreatedPJs: 1,
-			expectedReport:     true,
+			expectedReports:    1,
 			expectedURL:        "boop-42/success",
 		},
 		{
@@ -362,7 +362,7 @@ func TestSyncKubernetesJob(t *testing.T) {
 			expectedState:      kube.FailureState,
 			expectedPodHasName: true,
 			expectedNumPods:    1,
-			expectedReport:     true,
+			expectedReports:    1,
 			expectedURL:        "boop-42/failure",
 		},
 		{
@@ -467,7 +467,7 @@ func TestSyncKubernetesJob(t *testing.T) {
 			expectedPodHasName: true,
 			expectedNumPods:    1,
 			expectedCreatedPJs: 1,
-			expectedReport:     true,
+			expectedReports:    2,
 			expectedURL:        "boop-42/success",
 		},
 	}
@@ -517,13 +517,10 @@ func TestSyncKubernetesJob(t *testing.T) {
 		if len(fc.prowjobs) != tc.expectedCreatedPJs+1 {
 			t.Errorf("for case %s got %d created prowjobs", tc.name, len(fc.prowjobs)-1)
 		}
-		if tc.expectedReport && len(reports) != 1 {
-			t.Errorf("for case %s wanted one report but got %d", tc.name, len(reports))
+		if tc.expectedReports == len(reports) {
+			t.Errorf("for case %s wanted %d report but got %d", tc.name, tc.expectedReports, len(reports))
 		}
-		if !tc.expectedReport && len(reports) != 0 {
-			t.Errorf("for case %s did not wany any reports but got %d", tc.name, len(reports))
-		}
-		if tc.expectedReport {
+		if tc.expectedReports > 0 {
 			r := <-reports
 
 			if got, want := r.Status.URL, tc.expectedURL; got != want {

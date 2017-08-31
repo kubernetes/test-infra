@@ -230,6 +230,23 @@ func (c *Controller) terminateDupes(pjs []kube.ProwJob) error {
 	return nil
 }
 
+// updateProwJobChildrenStatus should be called on status different from Success.
+// Once a parent ProwJob is pending, all children should be marked as Pending
+// Same goes for failed status.
+func updateProwJobChildrenStatus(pj kube.ProwJob, s kube.ProwJobState, d string, reports chan<- kube.ProwJob) {
+	if s == kube.SuccessState {
+		// Success should never be propagated to children.
+		return
+	}
+	for _, nj := range pj.Spec.RunAfterSuccess {
+		cpj := npj.NewProwJob(nj)
+		cpj.Status.State = s
+		cpj.Status.Description = d
+		reports <- cpj
+		updateProwJobChildrenStatus(cpj, s, d, reports)
+	}
+}
+
 func (c *Controller) syncKubernetesJob(pj kube.ProwJob, pm map[string]kube.Pod, reports chan<- kube.ProwJob) error {
 	if pj.Complete() {
 		if pj.Status.PodName == "" {
@@ -267,6 +284,7 @@ func (c *Controller) syncKubernetesJob(pj kube.ProwJob, pm map[string]kube.Pod, 
 		}
 		pj.Status.Description = "Job triggered."
 		reports <- pj
+		updateProwJobChildrenStatus(pj, kube.PendingState, "Parent Job Triggered", reports)
 	} else if pod, ok := pm[pj.Status.PodName]; !ok {
 		// Pod is missing. This shouldn't happen normally, but if someone goes
 		// in and manually deletes the pod then we'll hit it. Start a new pod.
@@ -312,6 +330,7 @@ func (c *Controller) syncKubernetesJob(pj kube.ProwJob, pm map[string]kube.Pod, 
 			}
 			pj.Status.URL = b.String()
 			reports <- pj
+			updateProwJobChildrenStatus(pj, kube.PendingState, "Parent Job Failed.", reports)
 		}
 	} else {
 		// Pod is running. Do nothing.
