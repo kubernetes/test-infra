@@ -146,45 +146,49 @@ func parseConfig(c *Config) error {
 		if err := setRegexes(vs); err != nil {
 			return fmt.Errorf("could not set regex: %v", err)
 		}
-		for v := range vs {
-			name := vs[v].Name
-			agent := vs[v].Agent
-			if agent == string(kube.KubernetesAgent) && vs[v].Spec == nil {
-				return fmt.Errorf("job %s has no spec", name)
-			}
-			if agent != string(kube.KubernetesAgent) && agent != string(kube.JenkinsAgent) {
-				return fmt.Errorf("job %s has invalid agent (%s), it needs to be one of the following: %s %s",
-					name, agent, kube.KubernetesAgent, kube.JenkinsAgent)
-			}
-		}
 	}
 
-	// Ensure that postsubmits have a pod spec.
-	for _, js := range c.Postsubmits {
-		for j := range js {
-			name := js[j].Name
-			agent := js[j].Agent
-			if agent == string(kube.KubernetesAgent) && js[j].Spec == nil {
-				return fmt.Errorf("job %s has no spec", name)
-			}
-			if agent != string(kube.KubernetesAgent) && agent != string(kube.JenkinsAgent) {
-				return fmt.Errorf("job %s has invalid agent (%s), it needs to be one of the following: %s %s",
-					name, agent, kube.KubernetesAgent, kube.JenkinsAgent)
-			}
-		}
-	}
-
-	// Ensure that the periodic durations are valid and specs exist.
-	for j := range c.Periodics {
-		name := c.Periodics[j].Name
-		agent := c.Periodics[j].Agent
-		if agent == string(kube.KubernetesAgent) && c.Periodics[j].Spec == nil {
+	// Ensure that presubmits have a pod spec.
+	for _, v := range c.AllPresubmits(nil) {
+		name := v.Name
+		agent := v.Agent
+		if agent == string(kube.KubernetesAgent) && v.Spec == nil {
 			return fmt.Errorf("job %s has no spec", name)
 		}
 		if agent != string(kube.KubernetesAgent) && agent != string(kube.JenkinsAgent) {
 			return fmt.Errorf("job %s has invalid agent (%s), it needs to be one of the following: %s %s",
 				name, agent, kube.KubernetesAgent, kube.JenkinsAgent)
 		}
+	}
+
+	// Ensure that postsubmits have a pod spec.
+	for _, j := range c.AllPostsubmits(nil) {
+		name := j.Name
+		agent := j.Agent
+		if agent == string(kube.KubernetesAgent) && j.Spec == nil {
+			return fmt.Errorf("job %s has no spec", name)
+		}
+		if agent != string(kube.KubernetesAgent) && agent != string(kube.JenkinsAgent) {
+			return fmt.Errorf("job %s has invalid agent (%s), it needs to be one of the following: %s %s",
+				name, agent, kube.KubernetesAgent, kube.JenkinsAgent)
+		}
+	}
+
+	// Ensure that the periodic durations are valid and specs exist.
+	for _, p := range c.AllPeriodics() {
+		name := p.Name
+		agent := p.Agent
+		if agent == string(kube.KubernetesAgent) && p.Spec == nil {
+			return fmt.Errorf("job %s has no spec", name)
+		}
+		if agent != string(kube.KubernetesAgent) && agent != string(kube.JenkinsAgent) {
+			return fmt.Errorf("job %s has invalid agent (%s), it needs to be one of the following: %s %s",
+				name, agent, kube.KubernetesAgent, kube.JenkinsAgent)
+		}
+	}
+	// Set the interval on the periodic jobs. It doesn't make sense to do this
+	// for child jobs.
+	for j := range c.Periodics {
 		d, err := time.ParseDuration(c.Periodics[j].Interval)
 		if err != nil {
 			return fmt.Errorf("cannot parse duration for %s: %v", c.Periodics[j].Name, err)
