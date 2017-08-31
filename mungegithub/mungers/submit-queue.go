@@ -176,10 +176,11 @@ type submitQueueBatchStatus struct {
 }
 
 type prometheusMetrics struct {
-	Blocked    prometheus.Gauge
-	OpenPRs    prometheus.Gauge
-	QueuedPRs  prometheus.Gauge
-	MergeCount prometheus.Counter
+	Blocked       prometheus.Gauge
+	OpenPRs       prometheus.Gauge
+	QueuedPRs     prometheus.Gauge
+	MergeCount    prometheus.Counter
+	LastMergeTime prometheus.Gauge
 }
 
 var (
@@ -199,6 +200,10 @@ var (
 		MergeCount: prometheus.NewCounter(prometheus.CounterOpts{
 			Name: "submitqueue_merge_total",
 			Help: "Number of merges done",
+		}),
+		LastMergeTime: prometheus.NewGauge(prometheus.GaugeOpts{
+			Name: "submitqueue_time_of_last_merge",
+			Help: "Time of last merge",
 		}),
 	}
 )
@@ -281,6 +286,7 @@ func init() {
 	prometheus.MustRegister(sqPromMetrics.OpenPRs)
 	prometheus.MustRegister(sqPromMetrics.QueuedPRs)
 	prometheus.MustRegister(sqPromMetrics.MergeCount)
+	prometheus.MustRegister(sqPromMetrics.LastMergeTime)
 	sq := &SubmitQueue{
 		clock:          clock,
 		startTime:      clock.Now(),
@@ -395,6 +401,7 @@ func (sq *SubmitQueue) updateMergeRate() {
 	sqPromMetrics.MergeCount.Inc()
 	atomic.AddInt32(&sq.totalMerges, 1)
 	sq.lastMergeTime = now
+	sqPromMetrics.LastMergeTime.Set(float64(sq.lastMergeTime.Unix()))
 }
 
 // This calculated the smoothed merge rate BUT it looks at the time since
