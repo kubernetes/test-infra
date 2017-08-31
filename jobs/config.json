@@ -4104,9 +4104,8 @@
       "--extract=ci/latest",
       "--gcp-zone=us-central1-f",
       "--provider=gce",
-      "--test_args=--ginkgo.focus=Networking --ginkgo.skip=Networking-Performance --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8",
-      "--timeout=90m",
-      "--upgrade_args=--ginkgo.focus=\\[Feature:KubeProxyDaemonSetDowngrade\\] --upgrade-target=ci/latest-1.7"
+      "--test_args=--ginkgo.focus=\\[Feature:KubeProxyDaemonSetDowngrade\\] --upgrade-target=ci/latest-1.7 --minStartupPods=8",
+      "--timeout=90m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
