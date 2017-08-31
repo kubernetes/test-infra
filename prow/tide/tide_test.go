@@ -46,43 +46,145 @@ func testPullsMatchList(t *testing.T, test string, actual []pullRequest, expecte
 	}
 }
 
+type prowjob struct {
+	prNumber int
+	job      string
+	state    kube.ProwJobState
+}
+
 func TestAccumulate(t *testing.T) {
-	presubmits := []string{"job1", "job2"}
-	testPulls := []int{1, 2, 3, 4, 5, 6, 7}
-	testPJs := []struct {
-		prNumber int
-		job      string
-		state    kube.ProwJobState
+	tests := []struct {
+		presubmits   []string
+		pullRequests []int
+		prowJobs     []prowjob
+
+		successes []int
+		pendings  []int
+		none      []int
 	}{
-		{2, "job1", kube.PendingState},
-		{3, "job1", kube.PendingState},
-		{3, "job2", kube.TriggeredState},
-		{4, "job1", kube.FailureState},
-		{4, "job2", kube.PendingState},
-		{5, "job1", kube.PendingState},
-		{5, "job2", kube.FailureState},
-		{5, "job2", kube.PendingState},
-		{6, "job1", kube.SuccessState},
-		{6, "job2", kube.PendingState},
-		{7, "job1", kube.SuccessState},
-		{7, "job2", kube.SuccessState},
-		{7, "job1", kube.FailureState},
+		{
+			presubmits:   []string{"job1", "job2"},
+			pullRequests: []int{1, 2, 3, 4, 5, 6, 7},
+			prowJobs: []prowjob{
+				{2, "job1", kube.PendingState},
+				{3, "job1", kube.PendingState},
+				{3, "job2", kube.TriggeredState},
+				{4, "job1", kube.FailureState},
+				{4, "job2", kube.PendingState},
+				{5, "job1", kube.PendingState},
+				{5, "job2", kube.FailureState},
+				{5, "job2", kube.PendingState},
+				{6, "job1", kube.SuccessState},
+				{6, "job2", kube.PendingState},
+				{7, "job1", kube.SuccessState},
+				{7, "job2", kube.SuccessState},
+				{7, "job1", kube.FailureState},
+			},
+
+			successes: []int{7},
+			pendings:  []int{3, 5, 6},
+			none:      []int{1, 2, 4},
+		},
+		{
+			presubmits:   []string{"job1", "job2", "job3", "job4"},
+			pullRequests: []int{7},
+			prowJobs: []prowjob{
+				{7, "job1", kube.SuccessState},
+				{7, "job2", kube.FailureState},
+				{7, "job3", kube.FailureState},
+				{7, "job4", kube.FailureState},
+				{7, "job3", kube.FailureState},
+				{7, "job4", kube.FailureState},
+				{7, "job2", kube.SuccessState},
+				{7, "job3", kube.SuccessState},
+				{7, "job4", kube.FailureState},
+			},
+
+			successes: []int{},
+			pendings:  []int{},
+			none:      []int{7},
+		},
+		{
+			presubmits:   []string{"job1", "job2", "job3", "job4"},
+			pullRequests: []int{7},
+			prowJobs: []prowjob{
+				{7, "job1", kube.FailureState},
+				{7, "job2", kube.FailureState},
+				{7, "job3", kube.FailureState},
+				{7, "job4", kube.FailureState},
+				{7, "job3", kube.FailureState},
+				{7, "job4", kube.FailureState},
+				{7, "job2", kube.FailureState},
+				{7, "job3", kube.FailureState},
+				{7, "job4", kube.FailureState},
+			},
+
+			successes: []int{},
+			pendings:  []int{},
+			none:      []int{7},
+		},
+		{
+			presubmits:   []string{"job1", "job2", "job3", "job4"},
+			pullRequests: []int{7},
+			prowJobs: []prowjob{
+				{7, "job1", kube.SuccessState},
+				{7, "job2", kube.FailureState},
+				{7, "job3", kube.FailureState},
+				{7, "job4", kube.FailureState},
+				{7, "job3", kube.FailureState},
+				{7, "job4", kube.FailureState},
+				{7, "job2", kube.SuccessState},
+				{7, "job3", kube.SuccessState},
+				{7, "job4", kube.SuccessState},
+				{7, "job1", kube.FailureState},
+			},
+
+			successes: []int{7},
+			pendings:  []int{},
+			none:      []int{},
+		},
+		{
+			presubmits:   []string{"job1", "job2", "job3", "job4"},
+			pullRequests: []int{7},
+			prowJobs: []prowjob{
+				{7, "job1", kube.SuccessState},
+				{7, "job2", kube.FailureState},
+				{7, "job3", kube.FailureState},
+				{7, "job4", kube.FailureState},
+				{7, "job3", kube.FailureState},
+				{7, "job4", kube.FailureState},
+				{7, "job2", kube.SuccessState},
+				{7, "job3", kube.SuccessState},
+				{7, "job4", kube.PendingState},
+				{7, "job1", kube.FailureState},
+			},
+
+			successes: []int{},
+			pendings:  []int{7},
+			none:      []int{},
+		},
 	}
-	var pulls []pullRequest
-	for _, p := range testPulls {
-		pulls = append(pulls, pullRequest{Number: githubql.Int(p)})
+
+	for i, test := range tests {
+		var pulls []pullRequest
+		for _, p := range test.pullRequests {
+			pulls = append(pulls, pullRequest{Number: githubql.Int(p)})
+		}
+		var pjs []kube.ProwJob
+		for _, pj := range test.prowJobs {
+			pjs = append(pjs, kube.ProwJob{
+				Spec:   kube.ProwJobSpec{Job: pj.job, Refs: kube.Refs{Pulls: []kube.Pull{{Number: pj.prNumber}}}},
+				Status: kube.ProwJobStatus{State: pj.state},
+			})
+		}
+
+		successes, pendings, nones := accumulate(test.presubmits, pulls, pjs)
+
+		t.Logf("test run %d", i)
+		testPullsMatchList(t, "successes", successes, test.successes)
+		testPullsMatchList(t, "pendings", pendings, test.pendings)
+		testPullsMatchList(t, "nones", nones, test.none)
 	}
-	var pjs []kube.ProwJob
-	for _, pj := range testPJs {
-		pjs = append(pjs, kube.ProwJob{
-			Spec:   kube.ProwJobSpec{Job: pj.job, Refs: kube.Refs{Pulls: []kube.Pull{{Number: pj.prNumber}}}},
-			Status: kube.ProwJobStatus{State: pj.state},
-		})
-	}
-	successes, pendings, nones := accumulate(presubmits, pulls, pjs)
-	testPullsMatchList(t, "successes", successes, []int{7})
-	testPullsMatchList(t, "pendings", pendings, []int{3, 5, 6})
-	testPullsMatchList(t, "nones", nones, []int{1, 2, 4})
 }
 
 type fgc struct {
