@@ -124,6 +124,9 @@ func (r *ReleaseNoteLabel) ensureNoRelNoteNeededLabel(obj *github.MungeObject) {
 	if obj.HasLabel(releaseNoteLabelNeeded) {
 		obj.RemoveLabel(releaseNoteLabelNeeded)
 	}
+	if obj.HasLabel(deprecatedReleaseNoteLabelNeeded) {
+		obj.RemoveLabel(deprecatedReleaseNoteLabelNeeded)
+	}
 }
 
 // Munge is the workhorse the will actually make updates to the PR
@@ -149,9 +152,7 @@ func (r *ReleaseNoteLabel) Munge(obj *github.MungeObject) {
 		}
 	} else {
 		//going to apply some other release-note-label
-		if obj.HasLabel(releaseNoteLabelNeeded) {
-			obj.RemoveLabel(releaseNoteLabelNeeded)
-		}
+		r.ensureNoRelNoteNeededLabel(obj)
 	}
 	if !obj.HasLabel(labelToAdd) {
 		obj.AddLabel(labelToAdd)
