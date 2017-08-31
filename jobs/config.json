@@ -154,8 +154,6 @@
       "--env-file=jobs/env/ci-kubernetes-charts-gce.env",
       "--extract=ci/latest",
       "--gcp-zone=us-central1-f",
-      "--mode=docker",
-      "--mount-paths=$GOPATH/src/k8s.io/charts:/src/k8s.io/charts",
       "--provider=gce",
       "--test=false",
       "--timeout=180m"
