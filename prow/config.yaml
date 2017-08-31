@@ -122,7 +122,7 @@ presubmits:
       spec:
         containers:
         - args:
-          - --timeout=75
+          - "--timeout=75"
           - "--clean"
           - "--git-cache=/root/.cache/git"
           - "--job=$(JOB_NAME)"
@@ -501,7 +501,7 @@ presubmits:
       spec:
         containers:
         - args:
-          - --timeout=75
+          - "--timeout=75"
           - "--clean"
           - "--git-cache=/root/.cache/git"
           - "--job=$(JOB_NAME)"
