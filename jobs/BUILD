@@ -18,6 +18,7 @@ py_test(
     ],
     data = [
         "//boskos:resources.json",
+        "//jenkins:configs",
         "//jobs",
         "//prow:config.yaml",
     ],
