@@ -4,7 +4,7 @@ Prow is the system that handles GitHub events and commands for Kubernetes. It
 currently comprises several related pieces that live in a Kubernetes cluster.
 See the [GoDoc](https://godoc.org/k8s.io/test-infra/prow) for library docs.
 Please note that these libraries are intended for use by prow only, and we do
-not make any attempt to preserve backwards compatability.
+not make any attempt to preserve backwards compatibility.
 
 * `cmd/hook` is the most important piece. It is a stateless server that listens
   for GitHub webhooks and dispatches them to the appropriate handlers.
@@ -19,6 +19,18 @@ not make any attempt to preserve backwards compatability.
 * `cmd/mkpj` creates `ProwJobs`.
 
 See also: [Life of a Prow Job](https://github.com/kubernetes/test-infra/blob/master/prow/architecture.md).
+
+## Announcements
+
+Breaking changes to external APIs (labels, GitHub interactions, configuration
+or deployment) will be documented in this section. Prow is in a pre-release
+state and no claims of backwards compatibility are made for any external API.
+
+ - *August 29, 2017* Configuration specific to plugins is now held in in the
+   `plugins` `ConfigMap` and serialized in this repo in the `plugins.yaml` file.
+   Cluster administrators upgrading to the newest version of Prow should move
+   plugin configuration from the main `ConfigMap`. For more context, please see
+   [this pull request.](https://github.com/kubernetes/test-infra/pull/4213)
 
 ## How to test prow
 
