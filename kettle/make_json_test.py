@@ -90,6 +90,7 @@ class MakeJsonTest(unittest.TestCase):
             self.db.insert_build_junits(
                 hash(path),
                 {'%s/artifacts/junit_%d.xml' % (path, n): junit for n, junit in enumerate(junits)})
+            self.db.commit()
 
         def expect(args, needles, negneedles):
             buf = StringIO.StringIO()
