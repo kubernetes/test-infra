@@ -31,6 +31,7 @@ import sys
 import tempfile
 import traceback
 import urllib2
+import time
 
 ORIG_CWD = os.getcwd()  # Checkout changes cwd
 
@@ -491,12 +492,19 @@ def main(args):
         build_file += 'build-location.txt'
         gcs_path = os.path.join(args.gcs_shared, os.getenv('PULL_REFS', ''), build_file)
         print >>sys.stderr, 'Getting shared build location from: '+gcs_path
-        try:
-            # tell kubetest to extract from this location
-            args.kubetest_args.append('--extract=' + read_gcs_path(gcs_path))
-            args.build = None
-        except urllib2.URLError as err:
-            raise RuntimeError('Failed to get shared build location: %s' % err.reason)
+        retries = 0
+        while True:
+            try:
+                # tell kubetest to extract from this location
+                args.kubetest_args.append('--extract=' + read_gcs_path(gcs_path))
+                args.build = None
+                break
+            except urllib2.URLError as err:
+                if retries > 10:
+                    raise RuntimeError('Failed to get shared build location: %s' % err.reason)
+                else:
+                    retries += 1
+                    time.sleep(5)
 
     elif args.build is not None:
         if args.build == '':
