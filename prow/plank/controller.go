@@ -346,6 +346,9 @@ func (c *Controller) startPod(pj kube.ProwJob) (string, string, error) {
 	p := kube.Pod{
 		Metadata: kube.ObjectMeta{
 			Name: podName,
+			Labels: map[string]string{
+				kube.CreatedByProw: "true",
+			},
 		},
 		Spec: spec,
 	}
