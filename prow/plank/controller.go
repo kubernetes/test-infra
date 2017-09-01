@@ -326,51 +326,14 @@ func (c *Controller) startPod(pj kube.ProwJob) (string, string, error) {
 	if err != nil {
 		return "", "", fmt.Errorf("error getting build ID: %v", err)
 	}
-	env := npj.EnvForSpec(pj.Spec)
-	env["BUILD_NUMBER"] = buildID
-	kubeEnv := kubeEnv(env)
 
-	spec := pj.Spec.PodSpec
-	spec.RestartPolicy = "Never"
-	podName := newPodName()
+	pod := npj.ProwJobToPod(pj, newPodName(), buildID)
 
-	// Set environment variables in each container in the pod spec. We don't
-	// want to update the spec in place, since that will update the ProwJob
-	// spec. Instead, create a copy.
-	spec.Containers = []kube.Container{}
-	for i := range pj.Spec.PodSpec.Containers {
-		spec.Containers = append(spec.Containers, pj.Spec.PodSpec.Containers[i])
-		spec.Containers[i].Name = fmt.Sprintf("%s-%d", podName, i)
-		spec.Containers[i].Env = append(spec.Containers[i].Env, kubeEnv...)
-	}
-	p := kube.Pod{
-		Metadata: kube.ObjectMeta{
-			Name: podName,
-			Labels: map[string]string{
-				kube.CreatedByProw: "true",
-			},
-		},
-		Spec: spec,
-	}
-	actual, err := c.pkc.CreatePod(p)
+	actual, err := c.pkc.CreatePod(*pod)
 	if err != nil {
 		return "", "", fmt.Errorf("error creating pod: %v", err)
 	}
 	return buildID, actual.Metadata.Name, nil
-}
-
-// kubeEnv transforms a mapping of environment variables
-// into their serialized form for a PodSpec
-func kubeEnv(environment map[string]string) []kube.EnvVar {
-	var kubeEnvironment []kube.EnvVar
-	for key, value := range environment {
-		kubeEnvironment = append(kubeEnvironment, kube.EnvVar{
-			Name:  key,
-			Value: value,
-		})
-	}
-
-	return kubeEnvironment
 }
 
 func (c *Controller) getBuildID(name string) (string, error) {
