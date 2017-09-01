@@ -82,8 +82,12 @@ def normalize(s):
 
     s = flakeReasonOrdinalRE.sub(repl, s)
 
-    if len(s) > 400000:  # ridiculously long test output
-        s = s[:200000] + '\n...[truncated]...\n' + s[-200000:]
+    if len(s) > 10000:
+        # for long strings, remove repeated lines!
+        s = re.sub(r'(?m)^(.*\n)\1+', r'\1', s)
+
+    if len(s) > 200000:  # ridiculously long test output
+        s = s[:100000] + '\n...[truncated]...\n' + s[-100000:]
 
     return s
 
@@ -239,8 +243,10 @@ def cluster_local(failed_tests):
     """Cluster together the failures for each test. """
     clustered = {}
     for test_name, tests in sorted(failed_tests.iteritems(), key=lambda x: len(x[1]), reverse=True):
-        print len(tests), test_name
+        print len(tests), test_name,
+        sys.stdout.flush()
         clustered[test_name] = cluster_test(tests)
+        print len(clustered[test_name])
     return clustered
 
 
@@ -264,7 +270,6 @@ def cluster_global(clustered, previous_clustered):
         for cluster in previous_clustered:
             key = cluster['key']
             if key != normalize(key):
-                print 'WTF'
                 print key
                 print normalize(key)
                 n += 1
@@ -502,12 +507,13 @@ def parse_args(args):
 
 def main(args):
     builds, failed_tests = load_failures(args.builds, args.tests)
-    clustered_local = cluster_local(failed_tests)
 
     previous_clustered = None
     if args.previous:
         print 'loading previous'
         previous_clustered = json.load(args.previous)['clustered']
+
+    clustered_local = cluster_local(failed_tests)
     clustered = cluster_global(clustered_local, previous_clustered)
 
     print '%d clusters' % len(clustered)
@@ -534,7 +540,6 @@ def main(args):
                 json.dump(render_slice(data, builds, prefix='', owner=owner),
                           open(args.output_slices.replace('PREFIX', 'sig-' + owner), 'w'),
                           sort_keys=True)
-
 
 
 if __name__ == '__main__':

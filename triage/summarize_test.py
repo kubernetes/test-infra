@@ -36,7 +36,7 @@ class StringsTest(unittest.TestCase):
                 ('Mon, 12 January 2017 11:34:35 blah blah', 'TIMEblah blah'),
                 ('123.45.68.12:345 abcd1234eeee', 'UNIQ1 UNIQ2'),
                 ('foobarbaz ' * 500000,
-                 'foobarbaz ' * 20000 + '\n...[truncated]...\n' + 'foobarbaz ' * 20000),
+                 'foobarbaz ' * 10000 + '\n...[truncated]...\n' + 'foobarbaz ' * 10000),
         ]:
             self.assertEqual(summarize.normalize(src), dst)
 
