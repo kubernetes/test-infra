@@ -880,6 +880,7 @@ class JobTest(unittest.TestCase):
         for env, fix in black:
             if 'kops' in job and env in [
                     'JENKINS_PUBLISHED_VERSION=',
+                    'JENKINS_USE_LOCAL_BINARIES=',
                     'GINKGO_TEST_ARGS=',
                     'KUBERNETES_PROVIDER=',
             ]:
