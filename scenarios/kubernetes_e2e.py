@@ -435,17 +435,19 @@ def set_up_aws(args, mode, cluster, runner_args):
     mode.add_aws_runner()
 
 def read_gcs_path(gcs_path):
+    """reads a gcs path (gs://...) by GETing storage.googleapis.com"""
     link = gcs_path.replace('gs://', 'https://storage.googleapis.com/')
     loc = urllib2.urlopen(link).read()
     print >>sys.stderr, "Read GCS Path: %s" % loc
     return loc
 
-def get_gcs_path(args):
+def get_shared_gcs_path(gcs_shared, use_shared_build):
+    """return the shared path for this set of jobs using args and $PULL_REFS."""
     build_file = ''
-    if args.use_shared_build:
-        build_file += args.use_shared_build + '-'
+    if use_shared_build:
+        build_file += use_shared_build + '-'
     build_file += 'build-location.txt'
-    return os.path.join(args.gcs_shared, os.getenv('PULL_REFS', ''), build_file)
+    return os.path.join(gcs_shared, os.getenv('PULL_REFS', ''), build_file)
 
 def main(args):
     """Set up env, start kubekins-e2e, handle termination. """
@@ -493,21 +495,24 @@ def main(args):
 
     if args.use_shared_build is not None:
         # find shared build location from GCS
-        gcs_path = get_gcs_path(args)
+        gcs_path = get_shared_gcs_path(args.gcs_shared, args.use_shared_build)
         print >>sys.stderr, 'Getting shared build location from: '+gcs_path
-        retries = 0
+        # retry loop for reading the location
+        attempts_remaining = 12
         while True:
+            attempts_remaining -= 1
             try:
                 # tell kubetest to extract from this location
                 args.kubetest_args.append('--extract=' + read_gcs_path(gcs_path))
                 args.build = None
                 break
             except urllib2.URLError as err:
-                if retries > 10:
-                    raise RuntimeError('Failed to get shared build location: %s' % err.reason)
-                else:
-                    retries += 1
+                print >>sys.stderr, 'Failed to get shared build location: %s' % err
+                if attempts_remaining > 0:
+                    print >>sys.stderr, 'Waiting 5 seconds and retrying...'
                     time.sleep(5)
+                else:
+                    raise RuntimeError('Failed to get shared build location too many times!')
 
     elif args.build is not None:
         if args.build == '':
