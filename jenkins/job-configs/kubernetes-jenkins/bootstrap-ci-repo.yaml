@@ -115,37 +115,6 @@
         repo-name: k8s.io/kubernetes
         timeout: 100
 
-
-    - kubernetes-node-kubelet:  # dawnchen
-        branch: master
-        frequency: 'H/30 * * * *'
-        job-name: ci-kubernetes-node-kubelet
-        repo-name: k8s.io/kubernetes
-        timeout: 90
-    - kubernetes-node-kubelet-serial:  # lantaol
-        branch: master
-        frequency: 'H H/2 * * *'
-        job-name: ci-kubernetes-node-kubelet-serial
-        repo-name: k8s.io/kubernetes
-        timeout: 240
-    - kubernetes-node-kubelet-benchmark:  # zhoufang
-        branch: master
-        frequency: 'H H/2 * * *'
-        job-name: ci-kubernetes-node-kubelet-benchmark
-        repo-name: k8s.io/kubernetes
-        timeout: 90
-    - kubernetes-node-kubelet-flaky:  # lantaol
-        branch: master
-        frequency: 'H H/2 * * *'
-        job-name: ci-kubernetes-node-kubelet-flaky
-        repo-name: k8s.io/kubernetes
-        timeout: 90
-    - kubernetes-node-kubelet-conformance:  # lantaol
-        branch: master
-        frequency: 'H/30 * * * *'
-        job-name: ci-kubernetes-node-kubelet-conformance
-        repo-name: k8s.io/kubernetes
-        timeout: 90
     - kubernetes-node-kubelet-1.5:  # dawnchen
         branch: release-1.5
         frequency: 'H H/6 * * *' # 4 times a day for older jobs.
