@@ -29,6 +29,7 @@ kubernetes:
 - reopen
 - golint
 - heart
+- hold
 - label
 - lgtm
 - size
