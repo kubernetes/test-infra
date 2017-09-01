@@ -199,8 +199,8 @@ func run(deploy deployer, o options) error {
 	}
 
 	if o.kubemark {
-		errs = appendError(errs, xmlWrap("Kubemark", func() error {
-			return kubemarkTest(testArgs, dump, o.kubemarkNodes, o.kubemarkMasterSize, o.clusterIPRange)
+		errs = appendError(errs, xmlWrap("Kubemark Overall", func() error {
+			return kubemarkTest(testArgs, dump, o.kubemarkNodes)
 		}))
 	}
 
@@ -539,27 +539,11 @@ func nodeTest(nodeArgs []string, testArgs, nodeTestArgs, project, zone string) e
 	return nil
 }
 
-func kubemarkTest(testArgs []string, dump, nodes, masterSize, ipRange string) error {
-	if err := migrateOptions([]migratedOption{
-		{
-			env:      "KUBEMARK_NUM_NODES",
-			option:   &nodes,
-			name:     "--kubemark-nodes",
-			skipPush: true,
-		},
-		{
-			env:      "KUBEMARK_MASTER_SIZE",
-			option:   &masterSize,
-			name:     "--kubemark-master-size",
-			skipPush: true,
-		},
+func kubemarkTest(testArgs []string, dump, numNodes string) error {
+	// Stop previously running kubemark cluster (if any).
+	if err := xmlWrap("Kubemark TearDown Previous", func() error {
+		return finishRunning(exec.Command("./test/kubemark/stop-kubemark.sh"))
 	}); err != nil {
-		return err
-	}
-
-	// Stop previous run
-	err := finishRunning(exec.Command("./test/kubemark/stop-kubemark.sh"))
-	if err != nil {
 		return err
 	}
 	// If we tried to bring the Kubemark cluster up, make a courtesy
@@ -568,58 +552,47 @@ func kubemarkTest(testArgs []string, dump, nodes, masterSize, ipRange string) er
 	// TODO: We should try calling stop-kubemark exactly once. Though to
 	// stop the leaking resources for now, we want to be on the safe side
 	// and call it explicitly in defer if the other one is not called.
-	defer xmlWrap("Deferred Stop kubemark", func() error {
+	defer xmlWrap("Kubemark TearDown (Deferred)", func() error {
 		return finishRunning(exec.Command("./test/kubemark/stop-kubemark.sh"))
 	})
 
-	// Start new run
-	popN, err := pushEnv("NUM_NODES", nodes)
-	if err != nil {
-		return err
-	}
-	defer popN()
-	popM, err := pushEnv("MASTER_SIZE", masterSize)
-	if err != nil {
-		return err
-	}
-	defer popM()
-	popC, err := pushEnv("CLUSTER_IP_RANGE", ipRange)
-	if err != nil {
-		return err
-	}
-	defer popC()
-
-	err = xmlWrap("Start kubemark", func() error {
+	// Start kubemark cluster.
+	if err := xmlWrap("Kubemark Up", func() error {
 		return finishRunning(exec.Command("./test/kubemark/start-kubemark.sh"))
-	})
-	if err != nil {
+	}); err != nil {
 		if dump != "" {
-			log.Printf("Start kubemark step failed, trying to dump logs from kubemark master...")
-			if logErr := finishRunning(exec.Command("./test/kubemark/master-log-dump.sh", dump)); logErr != nil {
-				// This can happen in case of non-SSH'able kubemark master.
-				log.Printf("Failed to dump logs from kubemark master: %v", logErr)
-			}
+			xmlWrap("Kubemark MasterLogDump (--up failed)", func() error {
+				return finishRunning(exec.Command("./test/kubemark/master-log-dump.sh", dump))
+			})
 		}
 		return err
 	}
 
-	if err := os.Unsetenv("CLUSTER_IP_RANGE"); err != nil { // Handled by --cluster-ip-range
+	// Run tests on the kubemark cluster.
+	if err := xmlWrap("Kubemark Test", func() error {
+		testArgs = setFieldDefault(testArgs, "--ginkgo.focus", "starting\\s30\\pods")
+		return finishRunning(exec.Command("./test/kubemark/run-e2e-tests.sh", testArgs...))
+	}); err != nil {
+		if dump != "" {
+			xmlWrap("Kubemark MasterLogDump (--test failed)", func() error {
+				return finishRunning(exec.Command("./test/kubemark/master-log-dump.sh", dump))
+			})
+		}
 		return err
 	}
-	// Run kubemark tests
-	testArgs = setFieldDefault(testArgs, "--ginkgo.focus", "starting\\s30\\pods")
 
-	err = finishRunning(exec.Command("./test/kubemark/run-e2e-tests.sh", testArgs...))
-	if err != nil {
-		return err
-	}
-
-	err = xmlWrap("Stop kubemark", func() error {
-		return finishRunning(exec.Command("./test/kubemark/stop-kubemark.sh"))
+	// Dump logs from kubemark master.
+	xmlWrap("Kubemark MasterLogDump", func() error {
+		return finishRunning(exec.Command("./test/kubemark/master-log-dump.sh", dump))
 	})
-	if err != nil {
+
+	// Stop the kubemark cluster.
+	if err := xmlWrap("Kubemark TearDown", func() error {
+		return finishRunning(exec.Command("./test/kubemark/stop-kubemark.sh"))
+	}); err != nil {
 		return err
 	}
+
 	return nil
 }
 
