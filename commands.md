@@ -26,6 +26,7 @@ Command | Implemented By | Who can run it | Description
 `/close` | prow [close](./prow/plugins/close) | authors and assignees | closes the issue/PR
 `/reopen` | prow [reopen](./prow/plugins/reopen) | authors and assignees | reopens a closed issue/PR
 `/release-note` | prow [releasenote](./prow/plugins/releasenote) | authors and kubernetes org members | adds the `release-note` label
+`/release-note-action-required` | prow [releasenote](./prow/plugins/releasenote) | authors and kubernetes org members | adds the `release-note-action-required` label
 `/release-note-none` | prow [releasenote](./prow/plugins/releasenote) | authors and kubernetes org members | adds the `release-note-none` label
 `@kubernetes/sig-<some-github-team>` | prow [label](./prow/plugins/label) | kubernetes org members | adds the corresponding `sig` label
 `/retest` | prow [trigger](./prow/plugins/trigger) | anyone on trusted PRs | reruns failed tests

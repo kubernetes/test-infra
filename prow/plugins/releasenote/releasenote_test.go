@@ -111,13 +111,56 @@ func TestReleaseNoteComment(t *testing.T) {
 			currentLabels: []string{releaseNote, "other"},
 		},
 		{
-			name:          "delete multiple labels",
+			name:          "author release-note-action-required",
+			action:        github.IssueCommentActionCreated,
+			isAuthor:      true,
+			body:          "/release-note-action-required",
+			currentLabels: []string{releaseNoteLabelNeeded, "other"},
+
+			deletedLabels: []string{releaseNoteLabelNeeded},
+			addedLabel:    releaseNoteActionRequired,
+		},
+		{
+			name:          "member /release-note-action-required, trailing space.",
+			action:        github.IssueCommentActionCreated,
+			isMember:      true,
+			body:          "/release-note-action-required ",
+			currentLabels: []string{releaseNoteLabelNeeded, "other"},
+
+			deletedLabels: []string{releaseNoteLabelNeeded},
+			addedLabel:    releaseNoteActionRequired,
+		},
+		{
+			name:          "someone else release-note-action-required",
+			action:        github.IssueCommentActionCreated,
+			body:          "/release-note-action-required",
+			currentLabels: []string{releaseNoteLabelNeeded, "other"},
+			shouldComment: true,
+		},
+		{
+			name:          "already has release-note-action-required",
+			action:        github.IssueCommentActionCreated,
+			body:          "/release-note-action-required",
+			isMember:      true,
+			currentLabels: []string{releaseNoteActionRequired, "other"},
+		},
+		{
+			name:          "release-note, delete multiple labels",
 			action:        github.IssueCommentActionCreated,
 			isMember:      true,
 			body:          "/release-note",
-			currentLabels: []string{releaseNote, releaseNoteLabelNeeded, releaseNoteNone, "other"},
+			currentLabels: []string{releaseNote, releaseNoteLabelNeeded, releaseNoteActionRequired, releaseNoteNone, "other"},
 
-			deletedLabels: []string{releaseNoteLabelNeeded, releaseNoteNone},
+			deletedLabels: []string{releaseNoteLabelNeeded, releaseNoteActionRequired, releaseNoteNone},
+		},
+		{
+			name:          "release-note-action-required, delete multiple labels",
+			action:        github.IssueCommentActionCreated,
+			isMember:      true,
+			body:          "/release-note-action-required",
+			currentLabels: []string{releaseNote, releaseNoteLabelNeeded, releaseNoteActionRequired, releaseNoteNone, "other"},
+
+			deletedLabels: []string{releaseNote, releaseNoteLabelNeeded, releaseNoteNone},
 		},
 		{
 			name:     "no label present",
