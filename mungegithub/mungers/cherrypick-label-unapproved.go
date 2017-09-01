@@ -29,13 +29,15 @@ import (
 )
 
 const (
-	cherrypickUnapprovedLabel = "do-not-merge/cherry-pick-not-approved"
-	labelUnapprovedPicksName  = "label-unapproved-picks"
-	labelUnapprovedFormat     = "This PR is not for the master branch but does not have the `%s` label. Adding the `%s` label."
+	cherrypickUnapprovedLabel           = "do-not-merge/cherry-pick-not-approved"
+	deprecatedCherrypickUnapprovedLabel = "cherry-pick-not-approved"
+	labelUnapprovedPicksName            = "label-unapproved-picks"
+	labelUnapprovedFormat               = "This PR is not for the master branch but does not have the `%s` label. Adding the `%s` label."
 )
 
 var (
-	labelUnapprovedBody = fmt.Sprintf(labelUnapprovedFormat, cpApprovedLabel, cherrypickUnapprovedLabel)
+	labelUnapprovedBody           = fmt.Sprintf(labelUnapprovedFormat, cpApprovedLabel, cherrypickUnapprovedLabel)
+	deprecatedLabelUnapprovedBody = fmt.Sprintf(labelUnapprovedFormat, cpApprovedLabel, deprecatedCherrypickUnapprovedLabel)
 )
 
 // LabelUnapprovedPicks will add `do-not-merge` to PRs against a release branch which
@@ -93,7 +95,7 @@ func (LabelUnapprovedPicks) isStaleIssueComment(obj *github.MungeObject, comment
 	if !obj.IsRobot(comment.User) {
 		return false
 	}
-	if *comment.Body != labelUnapprovedBody {
+	if *comment.Body != labelUnapprovedBody && *comment.Body != deprecatedLabelUnapprovedBody {
 		return false
 	}
 	stale := obj.HasLabel(cpApprovedLabel)

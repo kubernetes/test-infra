@@ -29,16 +29,18 @@ import (
 const pluginName = "release-note"
 
 const (
-	releaseNoteActionRequired = "release-note-action-required"
-	releaseNoteNone           = "release-note-none"
-	releaseNoteLabelNeeded    = "release-note-label-needed"
-	releaseNote               = "release-note"
+	releaseNoteActionRequired        = "release-note-action-required"
+	releaseNoteNone                  = "release-note-none"
+	deprecatedReleaseNoteLabelNeeded = "release-note-label-needed"
+	releaseNoteLabelNeeded           = "do-not-merge/release-note-label-needed"
+	releaseNote                      = "release-note"
 )
 
 var (
 	allRNLabels = []string{
 		releaseNoteNone,
 		releaseNoteActionRequired,
+		deprecatedReleaseNoteLabelNeeded,
 		releaseNoteLabelNeeded,
 		releaseNote,
 	}

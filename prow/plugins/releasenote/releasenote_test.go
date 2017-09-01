@@ -57,6 +57,16 @@ func TestReleaseNoteComment(t *testing.T) {
 			addedLabel:    releaseNoteNone,
 		},
 		{
+			name:          "author release-note-none, has deprecated label",
+			action:        github.IssueCommentActionCreated,
+			isAuthor:      true,
+			body:          "/release-note-none",
+			currentLabels: []string{releaseNoteLabelNeeded, deprecatedReleaseNoteLabelNeeded, "other"},
+
+			deletedLabels: []string{releaseNoteLabelNeeded, deprecatedReleaseNoteLabelNeeded},
+			addedLabel:    releaseNoteNone,
+		},
+		{
 			name:          "author release-note-none, trailing space.",
 			action:        github.IssueCommentActionCreated,
 			isAuthor:      true,
