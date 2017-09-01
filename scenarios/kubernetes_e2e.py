@@ -440,6 +440,13 @@ def read_gcs_path(gcs_path):
     print >>sys.stderr, "Read GCS Path: %s" % loc
     return loc
 
+def get_gcs_path(args):
+    build_file = ''
+    if args.use_shared_build:
+        build_file += args.use_shared_build + '-'
+    build_file += 'build-location.txt'
+    return os.path.join(args.gcs_shared, os.getenv('PULL_REFS', ''), build_file)
+
 def main(args):
     """Set up env, start kubekins-e2e, handle termination. """
     # pylint: disable=too-many-branches,too-many-statements
@@ -486,11 +493,7 @@ def main(args):
 
     if args.use_shared_build is not None:
         # find shared build location from GCS
-        build_file = ''
-        if args.use_shared_build:
-            build_file += args.use_shared_build + '-'
-        build_file += 'build-location.txt'
-        gcs_path = os.path.join(args.gcs_shared, os.getenv('PULL_REFS', ''), build_file)
+        gcs_path = get_gcs_path(args)
         print >>sys.stderr, 'Getting shared build location from: '+gcs_path
         retries = 0
         while True:
