@@ -26,6 +26,7 @@ import (
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
+	"k8s.io/test-infra/prow/npj"
 	"k8s.io/test-infra/prow/plugins"
 )
 
@@ -44,6 +45,33 @@ type configAgent interface {
 	Config() *config.Config
 }
 
+// reportStatus should be called on status different from Success.
+// Once a parent ProwJob is pending, all children should be marked as Pending
+// Same goes for failed status.
+func reportStatus(ghc GithubClient, pj kube.ProwJob, cd string) error {
+	refs := pj.Spec.Refs
+	if err := ghc.CreateStatus(refs.Org, refs.Repo, refs.Pulls[0].SHA, github.Status{
+		State:       string(pj.Status.State),
+		Description: pj.Status.Description,
+		Context:     pj.Spec.Context,
+		TargetURL:   pj.Status.URL,
+	}); err != nil {
+		return err
+	}
+	// Updating Children
+	if pj.Status.State != kube.SuccessState {
+		for _, nj := range pj.Spec.RunAfterSuccess {
+			cpj := npj.NewProwJob(nj)
+			cpj.Status.State = pj.Status.State
+			cpj.Status.Description = cd
+			if err := reportStatus(ghc, cpj, cd); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
 func Report(ghc GithubClient, configAgent configAgent, pj kube.ProwJob) error {
 	if !pj.Spec.Report {
 		return nil
@@ -52,12 +80,7 @@ func Report(ghc GithubClient, configAgent configAgent, pj kube.ProwJob) error {
 	if len(refs.Pulls) != 1 {
 		return fmt.Errorf("prowjob %s has %d pulls, not 1", pj.Metadata.Name, len(refs.Pulls))
 	}
-	if err := ghc.CreateStatus(refs.Org, refs.Repo, refs.Pulls[0].SHA, github.Status{
-		State:       string(pj.Status.State),
-		Description: pj.Status.Description,
-		Context:     pj.Spec.Context,
-		TargetURL:   pj.Status.URL,
-	}); err != nil {
+	if err := reportStatus(ghc, pj, "Parent Job Status Changed: "+pj.Status.Description); err != nil {
 		return fmt.Errorf("error setting status: %v", err)
 	}
 	if pj.Status.State != github.StatusSuccess && pj.Status.State != github.StatusFailure {
