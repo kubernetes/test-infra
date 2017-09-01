@@ -120,6 +120,10 @@ presubmits:
       context: pull-kubernetes-e2e-gce-canary
       rerun_command: "/test pull-kubernetes-e2e-gce-canary"
       trigger: "(?m)^/test( all| pull-kubernetes-e2e-gce-canary),?(\\s+|$)"
+      skip_branches:
+      - release-1.4
+      - release-1.5
+      - release-1.6  # doesn't have BUILD files under //vendor/k8s.io
       spec:
         containers:
         - args:
@@ -500,6 +504,10 @@ presubmits:
       context: pull-security-kubernetes-e2e-gce-canary
       rerun_command: "/test pull-security-kubernetes-e2e-gce-canary"
       trigger: "(?m)^/test( all| pull-security-kubernetes-e2e-gce-canary),?(\\s+|$)"
+      skip_branches:
+      - release-1.4
+      - release-1.5
+      - release-1.6  # doesn't have BUILD files under //vendor/k8s.io
       spec:
         containers:
         - args:
