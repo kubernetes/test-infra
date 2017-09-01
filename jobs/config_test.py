@@ -40,8 +40,9 @@ class JobTest(unittest.TestCase):
         'config_test.py', # Script for testing config.json and Prow config.
         'env_gc.py', # Tool script to garbage collect unused .env files.
         'move_extract.py',
-        'config_sort.pyc',
     ]
+    # also exclude .pyc
+    excludes.extend(e + 'c' for e in excludes if e.endswith('.py'))
 
     yaml_suffix = {
         'jenkins/job-configs/bootstrap-maintenance.yaml' : 'suffix',
