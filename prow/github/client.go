@@ -540,8 +540,6 @@ func (c *Client) GetCombinedStatus(org, repo, ref string) (*CombinedStatus, erro
 func (c *Client) getLabels(path string) ([]Label, error) {
 	var labels []Label
 	if c.fake {
-		labels = append(labels, Label{Name: "lgtm", Color: "green"})
-		labels = append(labels, Label{Name: "priority/P0", Color: "red"})
 		return labels, nil
 	}
 	nextURL := strings.Join([]string{c.base, path}, "")
