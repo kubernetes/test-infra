@@ -5,7 +5,7 @@ organization: kubernetes
 project: kubernetes
 # Run blunderbuss before approval-handler, so that we can suggest approvers
 # based on assigned reviewer.
-pr-mungers: blunderbuss,approval-handler,lgtm-after-commit,cherrypick-auto-approve,label-unapproved-picks,needs-rebase,path-label,stale-green-ci,block-path,release-note-label,comment-deleter,issue-creator,triage-filer,flakyjob-reporter,close-stale,docs-need-no-retest,sig-mention-handler
+pr-mungers: blunderbuss,approval-handler,lgtm-after-commit,cherrypick-auto-approve,label-unapproved-picks,needs-rebase,path-label,stale-green-ci,block-path,release-note-label,comment-deleter,issue-creator,triage-filer,flakyjob-reporter,close-stale,docs-need-no-retest,sig-mention-handler,milestone-maintainer
 state: open
 token-file: /etc/secret-volume/token
 period: 60s
@@ -40,3 +40,6 @@ generated-files-config: .generated_files
 label-file: "/gitrepos/kubernetes/labels.yaml"
 alias-file: "/gitrepos/kubernetes/OWNERS_ALIASES"
 use-reviewers: true
+# milestone-maintainer
+active-milestone: v1.8
+milestone-grace-period: 168h
