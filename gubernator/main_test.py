@@ -35,7 +35,6 @@ write = gcs_async_test.write
 
 app = webtest.TestApp(main.app)
 
-
 JUNIT_SUITE = '''<testsuite tests="8" failures="0" time="1000.24">
     <testcase name="First" classname="Example e2e suite" time="0">
         <skipped/>

@@ -23,12 +23,10 @@ import main_test
 import gcs_async_test
 import github.models
 import testgrid_test
-import view_pr
 
 app = main_test.app
 init_build = main_test.init_build
 write = gcs_async_test.write
-
 
 class ParseJunitTest(unittest.TestCase):
     @staticmethod
@@ -263,26 +261,30 @@ class BuildTest(main_test.TestBase):
 
     def test_parse_pr_path(self):
         def check(prefix, expected):
-            self.assertEqual(view_build.parse_pr_path(prefix), expected)
+            self.assertEqual(
+                view_build.parse_pr_path(gcs_path=prefix,
+                    default_org='kubernetes',
+                    default_repo='kubernetes',
+                ),
+                expected
+            )
 
-        check('kubernetes-jenkins/logs/e2e', (None, None, None))
         check('kubernetes-jenkins/pr-logs/pull/123', ('123', '', 'kubernetes/kubernetes'))
         check('kubernetes-jenkins/pr-logs/pull/charts/123', ('123', 'charts/', 'kubernetes/charts'))
-        check('istio-prow/pull/istio_istio/517', ('517', 'istio/istio/', 'istio/istio'))
         check(
             'kubernetes-jenkins/pr-logs/pull/google_cadvisor/296',
             ('296', 'google/cadvisor/', 'google/cadvisor'))
 
     def test_build_pr_link(self):
         ''' The build page for a PR build links to the PR results.'''
-        build_dir = '/%s/123/e2e/567/' % view_pr.PR_PREFIX['kubernetes']
+        build_dir = '/kubernetes-jenkins/pr-logs/pull/123/e2e/567/'
         init_build(build_dir)
         response = app.get('/build' + build_dir)
         self.assertIn('PR #123', response)
         self.assertIn('href="/pr/123"', response)
 
     def test_build_pr_link_other(self):
-        build_dir = '/%s/charts/123/e2e/567/' % view_pr.PR_PREFIX['kubernetes']
+        build_dir = '/kubernetes-jenkins/pr-logs/pull/charts/123/e2e/567/'
         init_build(build_dir)
         response = app.get('/build' + build_dir)
         self.assertIn('PR #123', response)

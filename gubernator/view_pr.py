@@ -18,15 +18,11 @@ import logging
 import os
 import time
 
-import webapp2
-
 import filters
 import gcs_async
 import github.models as ghm
 import pull_request
 import view_base
-
-PR_PREFIX = view_base.PR_PREFIX
 
 
 @view_base.memcache_memoize('pr-details://', expires=60 * 3)
@@ -63,27 +59,26 @@ def pr_builds(path):
     return jobs
 
 
-def pr_path(org, repo, pr):
+def pr_path(org, repo, pr, default_org, default_repo, pull_prefix):
     """Builds the correct gs://prefix/maybe_kubernetes/maybe_repo_org/pr."""
-    # TODO(fejta): make this less specific to kubernetes.
-    if org == repo == 'kubernetes':
-        return '%s/%s' % (PR_PREFIX['kubernetes'], pr)
-    if org == 'kubernetes':
-        return '%s/%s/%s' % (PR_PREFIX['kubernetes'], repo, pr)
-    return '%s/%s_%s/%s' % (PR_PREFIX[org], org, repo, pr)
+    if org == default_org and repo == default_repo:
+        return '%s/%s' % (pull_prefix, pr)
+    if org == default_org:
+        return '%s/%s/%s' % (pull_prefix, repo, pr)
+    return '%s/%s_%s/%s' % (pull_prefix, org, repo, pr)
 
 
-def org_repo(path):
+def org_repo(path, default_org, default_repo):
     """Converts /maybe_org/maybe_repo into (org, repo)."""
-    # TODO(fejta): make this less specific to kubernetes.
     parts = path.split('/')[1:]
     if len(parts) == 2:
         org, repo = parts
     elif len(parts) == 1:
-        org = 'kubernetes'
+        org = default_org
         repo = parts[0]
     else:
-        org = repo = 'kubernetes'
+        org = default_org
+        repo = default_repo
     return org, repo
 
 
@@ -91,8 +86,15 @@ class PRHandler(view_base.BaseHandler):
     """Show a list of test runs for a PR."""
     def get(self, path, pr):
         # pylint: disable=too-many-locals
-        org, repo = org_repo(path)
-        path = pr_path(org, repo, pr)
+        org, repo = org_repo(path=path,
+            default_org=self.app.config['default_org'],
+            default_repo=self.app.config['default_repo'],
+        )
+        path = pr_path(org=org, repo=repo, pr=pr,
+            pull_prefix=self.app.config['external_services'][org]['gcs_pull_prefix'],
+            default_org=self.app.config['default_org'],
+            default_repo=self.app.config['default_repo'],
+        )
         builds = pr_builds(path)
         # TODO(fejta): assume all builds are monotonically increasing.
         for bs in builds.itervalues():
@@ -222,6 +224,12 @@ class PRDashboard(view_base.BaseHandler):
             self.abort(400)
 
 
-class PRBuildLogHandler(webapp2.RequestHandler):
+class PRBuildLogHandler(view_base.BaseHandler):
     def get(self, path):
-        self.redirect('https://storage.googleapis.com/%s/%s' % (PR_PREFIX, path))
+        org, _ = org_repo(path=path,
+            default_org=self.app.config['default_org'],
+            default_repo=self.app.config['default_repo'],
+        )
+        self.redirect('https://storage.googleapis.com/%s/%s' % (
+            self.app.config['external_services'][org]['gcs_pull_prefix'], path
+        ))
