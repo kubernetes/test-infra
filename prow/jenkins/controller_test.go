@@ -52,7 +52,6 @@ func (f *fca) Config() *config.Config {
 type fkc struct {
 	sync.Mutex
 	prowjobs []kube.ProwJob
-	pods     []kube.Pod
 }
 
 func (f *fkc) CreateProwJob(pj kube.ProwJob) (kube.ProwJob, error) {
@@ -114,7 +113,82 @@ func (f *fjc) Status(job, id string) (*Status, error) {
 	return &f.status, nil
 }
 
-func TestSyncJenkinsJob(t *testing.T) {
+func TestPartitionProwJobs(t *testing.T) {
+	tests := []struct {
+		pjs []kube.ProwJob
+
+		pending    map[string]struct{}
+		nonPending map[string]struct{}
+	}{
+		{
+			pjs: []kube.ProwJob{
+				{
+					Metadata: kube.ObjectMeta{
+						Name: "foo",
+					},
+					Status: kube.ProwJobStatus{
+						State: kube.TriggeredState,
+					},
+				},
+				{
+					Metadata: kube.ObjectMeta{
+						Name: "bar",
+					},
+					Status: kube.ProwJobStatus{
+						State: kube.PendingState,
+					},
+				},
+				{
+					Metadata: kube.ObjectMeta{
+						Name: "baz",
+					},
+					Status: kube.ProwJobStatus{
+						State: kube.SuccessState,
+					},
+				},
+				{
+					Metadata: kube.ObjectMeta{
+						Name: "error",
+					},
+					Status: kube.ProwJobStatus{
+						State: kube.ErrorState,
+					},
+				},
+				{
+					Metadata: kube.ObjectMeta{
+						Name: "bak",
+					},
+					Status: kube.ProwJobStatus{
+						State: kube.PendingState,
+					},
+				},
+			},
+			pending: map[string]struct{}{
+				"bar": {}, "bak": {},
+			},
+			nonPending: map[string]struct{}{
+				"foo": {}, "baz": {}, "error": {},
+			},
+		},
+	}
+
+	for i, test := range tests {
+		t.Logf("test run #%d", i)
+		pendingCh, nonPendingCh := partitionProwJobs(test.pjs)
+		for job := range pendingCh {
+			if _, ok := test.pending[job.Metadata.Name]; !ok {
+				t.Errorf("didn't find pending job %#v", job)
+			}
+		}
+		for job := range nonPendingCh {
+			if _, ok := test.nonPending[job.Metadata.Name]; !ok {
+				t.Errorf("didn't find non-pending job %#v", job)
+			}
+		}
+	}
+}
+
+func TestSyncNonPendingJobs(t *testing.T) {
 	var testcases = []struct {
 		name        string
 		pj          kube.ProwJob
@@ -177,6 +251,71 @@ func TestSyncJenkinsJob(t *testing.T) {
 			expectedComplete: true,
 			expectedError:    true,
 		},
+	}
+	for _, tc := range testcases {
+		fjc := &fjc{
+			enqueued: tc.enqueued,
+			status:   tc.status,
+			err:      tc.err,
+		}
+		fkc := &fkc{
+			prowjobs: []kube.ProwJob{tc.pj},
+		}
+
+		c := Controller{
+			kc:          fkc,
+			jc:          fjc,
+			ca:          newFakeConfigAgent(),
+			lock:        sync.RWMutex{},
+			pendingJobs: make(map[string]int),
+		}
+
+		reports := make(chan kube.ProwJob, 100)
+		if err := c.syncNonPendingJob(tc.pj, reports); err != nil != tc.expectedError {
+			t.Errorf("for case %s got wrong error: %v", tc.name, err)
+			continue
+		}
+		close(reports)
+
+		actual := fkc.prowjobs[0]
+		if actual.Status.State != tc.expectedState {
+			t.Errorf("for case %s got state %v", tc.name, actual.Status.State)
+		}
+		if actual.Complete() != tc.expectedComplete {
+			t.Errorf("for case %s got wrong completion", tc.name)
+		}
+		if tc.expectedReport && len(reports) != 1 {
+			t.Errorf("for case %s wanted one report but got %d", tc.name, len(reports))
+		}
+		if !tc.expectedReport && len(reports) != 0 {
+			t.Errorf("for case %s did not wany any reports but got %d", tc.name, len(reports))
+		}
+		if fjc.built != tc.expectedBuild {
+			t.Errorf("for case %s got wrong built", tc.name)
+		}
+		if actual.Status.JenkinsEnqueued != tc.expectedEnqueued {
+			t.Errorf("for case %s got wrong enqueued", tc.name)
+		}
+	}
+}
+
+func TestSyncPendingJobs(t *testing.T) {
+	var testcases = []struct {
+		name        string
+		pj          kube.ProwJob
+		pendingJobs map[string]int
+
+		enqueued bool
+		status   Status
+		err      error
+
+		expectedState    kube.ProwJobState
+		expectedBuild    bool
+		expectedComplete bool
+		expectedReport   bool
+		expectedEnqueued bool
+		expectedError    bool
+	}{
 		{
 			name: "enqueued",
 			pj: kube.ProwJob{
@@ -214,7 +353,6 @@ func TestSyncJenkinsJob(t *testing.T) {
 						}},
 					},
 				},
-
 				Status: kube.ProwJobStatus{
 					State:           kube.PendingState,
 					JenkinsEnqueued: true,
@@ -303,14 +441,15 @@ func TestSyncJenkinsJob(t *testing.T) {
 		}
 
 		c := Controller{
-			kc: fkc,
-			jc: fjc,
-			ca: newFakeConfigAgent(),
+			kc:          fkc,
+			jc:          fjc,
+			ca:          newFakeConfigAgent(),
+			lock:        sync.RWMutex{},
+			pendingJobs: make(map[string]int),
 		}
-		c.setPending(tc.pendingJobs)
 
 		reports := make(chan kube.ProwJob, 100)
-		if err := c.syncJenkinsJob(tc.pj, reports); err != nil != tc.expectedError {
+		if err := c.syncPendingJob(tc.pj, reports); err != nil != tc.expectedError {
 			t.Errorf("for case %s got wrong error: %v", tc.name, err)
 			continue
 		}
