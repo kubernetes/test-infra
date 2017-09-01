@@ -31,13 +31,12 @@ type Notification struct {
 }
 
 var (
-	// Matches a notification: [NOTIFNAME] Arguments
-	notificationRegex = regexp.MustCompile(`^\[([^\]\s]+)\] *?([^\n]*)`)
+	// Matches a notification: [NOTIFNAME] Arguments\n\nContext
+	notificationRegex = regexp.MustCompile(`^\[([^\]\s]+)\] *?([^\n]*)(?:\n\n)?(.*)`)
 )
 
 // ParseNotification attempts to read a notification from a comment
 // Returns nil if the comment doesn't contain a notification
-// Also note that Context is not parsed from the notification
 func ParseNotification(comment *Comment) *Notification {
 	if comment == nil || comment.Body == nil {
 		return nil
@@ -51,6 +50,7 @@ func ParseNotification(comment *Comment) *Notification {
 	return &Notification{
 		Name:      strings.ToUpper(match[1]),
 		Arguments: strings.TrimSpace(match[2]),
+		Context:   strings.TrimSpace(match[3]),
 	}
 }
 
