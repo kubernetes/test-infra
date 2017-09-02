@@ -1014,17 +1014,16 @@ func (sq *SubmitQueue) validForMergeExt(obj *github.MungeObject, checkStatus boo
 	retestContexts := mungeopts.RequiredContexts.Retest
 	sq.opts.Unlock()
 
-	if milestone := obj.Issue.Milestone; true {
-		title := ""
-		// Net set means the empty milestone, ""
-		if milestone != nil && milestone.Title != nil {
-			title = *milestone.Title
-		}
-		for _, blocked := range doNotMergeMilestones {
-			if title == blocked {
-				sq.SetMergeStatus(obj, unmergeableMilestone)
-				return false
-			}
+	milestone := obj.Issue.Milestone
+	title := ""
+	// Net set means the empty milestone, ""
+	if milestone != nil && milestone.Title != nil {
+		title = *milestone.Title
+	}
+	for _, blocked := range doNotMergeMilestones {
+		if title == blocked || (title == "" && blocked == "NO-MILESTONE") {
+			sq.SetMergeStatus(obj, unmergeableMilestone)
+			return false
 		}
 	}
 
