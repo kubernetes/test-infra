@@ -20,7 +20,6 @@ go_library(
     name = "go_default_library",
     srcs = ["owners.go"],
     deps = [
-        "//mungegithub/mungers/matchers/comment:go_default_library",
         "//vendor/github.com/golang/glog:go_default_library",
         "//vendor/k8s.io/kubernetes/pkg/util/sets:go_default_library",
     ],

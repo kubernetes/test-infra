@@ -28,7 +28,6 @@ import (
 
 	"github.com/golang/glog"
 	"k8s.io/kubernetes/pkg/util/sets"
-	c "k8s.io/test-infra/mungegithub/mungers/matchers/comment"
 )
 
 const (
@@ -555,8 +554,23 @@ You can cancel your approval by writing `+"`/approve cancel`"+` in a comment
 		return nil
 	}
 
-	notif := (&c.Notification{Name: ApprovalNotificationName, Arguments: *title, Context: *message}).String()
-	return &notif
+	return notification(ApprovalNotificationName, *title, *message)
+}
+
+func notification(name, arguments, context string) *string {
+	str := "[" + strings.ToUpper(name) + "]"
+
+	args := strings.TrimSpace(arguments)
+	if args != "" {
+		str += " " + args
+	}
+
+	ctx := strings.TrimSpace(context)
+	if ctx != "" {
+		str += "\n\n" + ctx
+	}
+
+	return &str
 }
 
 // getGubernatorMetadata returns a JSON string with machine-readable information about approvers.
