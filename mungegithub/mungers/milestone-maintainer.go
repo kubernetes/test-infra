@@ -332,7 +332,7 @@ func labelsIncompleteState(issue *githubapi.Issue, notification *c.Notification,
 // generated from the current labels on the issue.
 func warningIsCurrent(notification *c.Notification, message string, commentCreatedAt *time.Time, warningInterval time.Duration) bool {
 	hasNotification := (notification != nil && notification.Arguments == milestoneLabelsIncomplete)
-	return hasNotification && notification.Context == message && commentCreatedAt != nil && time.Since(*commentCreatedAt) < warningInterval
+	return hasNotification && notification.Context == strings.TrimSpace(message) && commentCreatedAt != nil && time.Since(*commentCreatedAt) < warningInterval
 }
 
 // removalState returns the notification state for an issue that will
