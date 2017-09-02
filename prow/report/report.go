@@ -30,7 +30,10 @@ import (
 	"k8s.io/test-infra/prow/plugins"
 )
 
-const commentTag = "<!-- test report -->"
+const (
+	commentTag = "<!-- test report -->"
+	parentJobChanged = "Parent Job Status Changed: "
+)
 
 type GithubClient interface {
 	BotName() (string, error)
@@ -64,6 +67,7 @@ func reportStatus(ghc GithubClient, pj kube.ProwJob, cd string) error {
 			cpj := npj.NewProwJob(nj)
 			cpj.Status.State = pj.Status.State
 			cpj.Status.Description = cd
+			cpj.Spec.Refs = refs
 			if err := reportStatus(ghc, cpj, cd); err != nil {
 				return err
 			}
@@ -80,7 +84,7 @@ func Report(ghc GithubClient, configAgent configAgent, pj kube.ProwJob) error {
 	if len(refs.Pulls) != 1 {
 		return fmt.Errorf("prowjob %s has %d pulls, not 1", pj.Metadata.Name, len(refs.Pulls))
 	}
-	if err := reportStatus(ghc, pj, "Parent Job Status Changed: "+pj.Status.Description); err != nil {
+	if err := reportStatus(ghc, pj, parentJobChanged + pj.Status.Description); err != nil {
 		return fmt.Errorf("error setting status: %v", err)
 	}
 	if pj.Status.State != github.StatusSuccess && pj.Status.State != github.StatusFailure {
