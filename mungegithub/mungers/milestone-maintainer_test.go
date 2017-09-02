@@ -237,7 +237,7 @@ func TestWarningIsCurrent(t *testing.T) {
 	warningInterval := day
 	createdYesterday := createdNow.Add(-(warningInterval + time.Hour))
 
-	realSample := "@erictune @jcbsmpsn @liggitt\n\n**Action required**: This issue requires label changes.  If the required changes are not made within 6 days, the issue will be moved out of the v1.8 milestone.\n\nkind: Must specify at most one of ['kind/bug', 'kind/feature', 'kind/cleanup'].\npriority: Must specify at most one of ['priority/critical-urgent', 'priority/important-soon', 'priority/important-longterm'].\n\n<details>\nAdditional instructions available <a href=\"https://github.com/kubernetes/community/blob/master/contributors/devel/release/issues.md\">here</a>\n</details>"
+	realSample := "@erictune @jcbsmpsn @liggitt\n\n**Action required**: This issue requires label changes. If the required changes are not made within 6 days, the issue will be moved out of the v1.8 milestone.\n\n_**kind**_: Must specify at most one of [`kind/bug`, `kind/feature`, `kind/cleanup`].\n_**priority**_: Must specify at most one of [`priority/critical-urgent`, `priority/important-soon`, `priority/important-longterm`].\n_**sig owner**_: Must specify at least one label prefixed with `sig/`.\n\n<details>\nAdditional instructions available <a href=\"https://github.com/kubernetes/community/blob/master/contributors/devel/release/issues.md\">here</a>\n</details>"
 
 	tests := map[string]struct {
 		label             string

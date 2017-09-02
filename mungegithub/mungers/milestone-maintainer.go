@@ -38,8 +38,8 @@ const (
 	milestoneNotifierName = "MilestoneNotifier"
 
 	milestoneRemoved          = "Milestone Removed"
-	milestoneLabelsIncomplete = "Milestone Labels Incomplete"
-	milestoneLabelsComplete   = "Milestone Labels Complete"
+	milestoneLabelsIncomplete = "Milestone Labels **Incomplete**"
+	milestoneLabelsComplete   = "Milestone Labels **Complete**"
 
 	priorityCriticalUrgent = "priority/critical-urgent"
 
@@ -305,7 +305,7 @@ func labelsIncompleteState(issue *githubapi.Issue, notification *c.Notification,
 	mention := mungerutil.GetIssueUsers(issue).AllUsers().Mention().Join()
 	var warning string
 	if removeAfter != nil {
-		warning = fmt.Sprintf("  If the required changes are not made within %s, the issue will be moved out of the %s milestone.", durationToMaxDays(*removeAfter), *issue.Milestone.Title)
+		warning = fmt.Sprintf(" If the required changes are not made within %s, the issue will be moved out of the %s milestone.", durationToMaxDays(*removeAfter), *issue.Milestone.Title)
 	}
 	message := approvers.GenerateTemplateOrFail(template, "message", map[string]interface{}{
 		"mention":     mention,
@@ -452,17 +452,17 @@ func checkLabels(labels []githubapi.Label) (kindLabel, priorityLabel string, sig
 
 	kindLabel, err = uniqueLabelName(labels, kindMap)
 	if err != nil || len(kindLabel) == 0 {
-		labelErrors = append(labelErrors, "kind: Must specify at most one of ['kind/bug', 'kind/feature', 'kind/cleanup'].")
+		labelErrors = append(labelErrors, "_**kind**_: Must specify at most one of [`kind/bug`, `kind/feature`, `kind/cleanup`].")
 	}
 
 	priorityLabel, err = uniqueLabelName(labels, priorityMap)
 	if err != nil || len(priorityLabel) == 0 {
-		labelErrors = append(labelErrors, "priority: Must specify at most one of ['priority/critical-urgent', 'priority/important-soon', 'priority/important-longterm'].")
+		labelErrors = append(labelErrors, "_**priority**_: Must specify at most one of [`priority/critical-urgent`, `priority/important-soon`, `priority/important-longterm`].")
 	}
 
 	sigLabels = sigLabelNames(labels)
 	if len(sigLabels) == 0 {
-		labelErrors = append(labelErrors, "sig owner: Must specify at least one label prefixed with 'sig/'.")
+		labelErrors = append(labelErrors, "_**sig owner**_: Must specify at least one label prefixed with `sig/`.")
 	}
 
 	return
