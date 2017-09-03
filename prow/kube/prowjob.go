@@ -47,6 +47,14 @@ const (
 	JenkinsAgent                 = "jenkins"
 )
 
+// CreatedByProw is added on pods created by prow. We cannot
+// really use owner references because pods may reside on a
+// different namespace from the namespace parent prowjobs
+// live and that would cause the k8s garbage collector to
+// identify those prow pods as orphans and delete them
+// instantly.
+const CreatedByProw = "created-by-prow"
+
 type ProwJob struct {
 	APIVersion string        `json:"apiVersion,omitempty"`
 	Kind       string        `json:"kind,omitempty"`
