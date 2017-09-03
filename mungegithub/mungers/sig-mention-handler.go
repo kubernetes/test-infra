@@ -27,6 +27,8 @@ import (
 	"k8s.io/test-infra/mungegithub/options"
 )
 
+var labelPrefixes = []string{"sig/", "committee/", "wg/"}
+
 type SigMentionHandler struct{}
 
 func init() {
@@ -57,11 +59,13 @@ func (*SigMentionHandler) HasSigLabel(obj *github.MungeObject) bool {
 	labels := obj.Issue.Labels
 
 	for i := range labels {
-		if labels[i].Name != nil && strings.HasPrefix(*labels[i].Name, "sig/") {
-			return true
+		if labels[i].Name == nil {
+			continue
 		}
-		if labels[i].Name != nil && strings.HasPrefix(*labels[i].Name, "committee/") {
-			return true
+		for j := range labelPrefixes {
+			if strings.HasPrefix(*labels[i].Name, labelPrefixes[j]) {
+				return true
+			}
 		}
 	}
 
