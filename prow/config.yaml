@@ -195,7 +195,7 @@ presubmits:
     context: pull-kubernetes-cross
     rerun_command: "/test pull-kubernetes-cross"
     trigger: "(?m)^/test pull-kubernetes-cross,?(\\s+|$)"
-    run_if_changed: '^(build/|hack/lib/)|(Makefile|_(windows|linux|osx|unsupported)(_test)?$\.go)$'
+    run_if_changed: '^(build/|hack/lib/)|(Makefile)|(.*_(windows|linux|osx|unsupported)(_test)?\.go)$'
   - name: pull-kubernetes-e2e-gce
     agent: jenkins
     context: pull-kubernetes-e2e-gce
@@ -580,7 +580,7 @@ presubmits:
     context: pull-security-kubernetes-cross
     rerun_command: "/test pull-security-kubernetes-cross"
     trigger: "(?m)^/test pull-security-kubernetes-cross,?(\\s+|$)"
-    run_if_changed: '^(build/|hack/lib/)|(Makefile|_(windows|linux|osx|unsupported)(_test)?$\.go)$'
+    run_if_changed: '^(build/|hack/lib/)|(Makefile)|(.*_(windows|linux|osx|unsupported)(_test)?\.go)$'
   - name: pull-security-kubernetes-e2e-gce
     agent: jenkins
     context: pull-security-kubernetes-e2e-gce
