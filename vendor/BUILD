@@ -45,6 +45,7 @@ filegroup(
         "//vendor/github.com/prometheus/common/expfmt:all-srcs",
         "//vendor/github.com/prometheus/common/model:all-srcs",
         "//vendor/github.com/prometheus/procfs:all-srcs",
+        "//vendor/github.com/renstrom/dedent:all-srcs",
         "//vendor/github.com/satori/go.uuid:all-srcs",
         "//vendor/github.com/sergi/go-diff/diffmatchpatch:all-srcs",
         "//vendor/github.com/shurcooL/githubql:all-srcs",

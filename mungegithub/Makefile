@@ -41,6 +41,7 @@ mungegithub:
 	$(CD) CGO_ENABLED=0 GOOS=linux go build -installsuffix cgo -ldflags '-w'
 ifeq ($(APP),publisher)
 	$(CD) CGO_ENABLED=0 GOOS=linux go build -installsuffix cgo -ldflags '-w' ./publisher/cmd/collapsed-kube-commit-mapper
+	$(CD) CGO_ENABLED=0 GOOS=linux go build -installsuffix cgo -ldflags '-w' ./publisher/cmd/sync-tags
 endif
 
 test: mungegithub
@@ -137,7 +138,7 @@ endif
 first_time_deploy: push_volume push_secret push_service push_config deploy
 
 clean:
-	$(CD) rm -f mungegithub collapsed-kupe-commit-mapper $(APP)/local.deployment.yaml $(APP)/local.secret.yaml
+	$(CD) rm -f mungegithub collapsed-kupe-commit-mapper sync-tags $(APP)/local.deployment.yaml $(APP)/local.secret.yaml
 
 # pull down current public queue state, and run UI based off that data
 ui-stub:

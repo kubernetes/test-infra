@@ -46,6 +46,7 @@ filegroup(
         "//mungegithub/mungers:all-srcs",
         "//mungegithub/options:all-srcs",
         "//mungegithub/publisher/cmd/collapsed-kube-commit-mapper:all-srcs",
+        "//mungegithub/publisher/cmd/sync-tags:all-srcs",
         "//mungegithub/publisher/pkg/cache:all-srcs",
         "//mungegithub/publisher/pkg/git:all-srcs",
         "//mungegithub/reports:all-srcs",
