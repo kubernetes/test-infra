@@ -23,6 +23,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"regexp"
 	"strings"
 	"text/template"
 	"time"
@@ -55,7 +56,7 @@ const kubernetesAnywhereConfigTemplate = `
 .phase1.gce.os_image="ubuntu-1604-xenial-v20160420c"
 .phase1.gce.instance_type="n1-standard-1"
 .phase1.gce.project="{{.Project}}"
-.phase1.gce.region="us-central1"
+.phase1.gce.region="{{.Region}}"
 .phase1.gce.zone="{{.Zone}}"
 .phase1.gce.network="default"
 
@@ -84,6 +85,7 @@ type kubernetesAnywhere struct {
 	Project           string
 	Cluster           string
 	Zone              string
+	Region            string
 	KubeContext       string
 }
 
@@ -121,6 +123,7 @@ func newKubernetesAnywhere(project, zone string) (*kubernetesAnywhere, error) {
 		Project:           project,
 		Cluster:           *kubernetesAnywhereCluster,
 		Zone:              zone,
+		Region:            regexp.MustCompile(`-[^-]+$`).ReplaceAllString(zone, ""),
 	}
 
 	if err := k.writeConfig(); err != nil {
