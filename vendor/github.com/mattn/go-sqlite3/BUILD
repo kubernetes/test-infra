@@ -38,10 +38,10 @@ go_library(
         "-std=gnu99",
         "-DSQLITE_ENABLE_RTREE -DSQLITE_THREADSAFE",
         "-DSQLITE_ENABLE_FTS3 -DSQLITE_ENABLE_FTS3_PARENTHESIS -DSQLITE_ENABLE_FTS4_UNICODE61",
-        "-I.",
+        "-Ivendor/github.com/mattn/go-sqlite3",
     ] + select({
         "@io_bazel_rules_go//go/platform:windows_amd64": [
-            "-I. -fno-stack-check -fno-stack-protector -mno-stack-arg-probe",
+            "-Ivendor/github.com/mattn/go-sqlite3 -fno-stack-check -fno-stack-protector -mno-stack-arg-probe",
         ],
         "//conditions:default": [],
     }),

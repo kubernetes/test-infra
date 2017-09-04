@@ -242,6 +242,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-scalability
 - name: ci-kubernetes-e2e-gci-gce-ip-alias
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-ip-alias
+- name: ci-kubernetes-e2e-gce-alpha-api
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-alpha-api
 - name: ci-kubernetes-e2e-gci-gce-serial
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-serial
 - name: ci-kubernetes-e2e-gce-gci-serial-sig-cli
@@ -1658,6 +1660,11 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster-new
 - name: ci-kubernetes-e2e-mlkube-gke
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-mlkube-gke
+# kube-proxy daemonset migration jobs
+- name: ci-kubernetes-e2e-gci-gce-latest-downgrade-kube-proxy-ds
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-latest-downgrade-kube-proxy-ds
+- name: ci-kubernetes-e2e-gci-gce-latest-upgrade-kube-proxy-ds
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-latest-upgrade-kube-proxy-ds
 #ibm ppc64le test results
 - name: ppc64le-conformance
   gcs_prefix: ppc64le-kubernetes/logs/ci-conformance-kubernetes
@@ -1688,6 +1695,9 @@ test_groups:
   days_of_results: 1
 - name: pull-kubernetes-e2e-gce-gpu
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-gce-gpu
+  days_of_results: 1
+- name: pull-kubernetes-e2e-gke-gpu
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-gke-gpu
   days_of_results: 1
 - name: pull-kubernetes-e2e-gke
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-gke
@@ -1965,6 +1975,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gci-gce-scalability-release-1-6
   - name: gci-gce-ip-alias
     test_group_name: ci-kubernetes-e2e-gci-gce-ip-alias
+  - name: gce-alpha-api
+    test_group_name: ci-kubernetes-e2e-gce-alpha-api
   - name: gce-serial
     test_group_name: ci-kubernetes-e2e-gce-serial
   - name: gci-gce-serial
@@ -3750,6 +3762,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gci-gce-ingress-release-1-7
   - name: gci-gce-ip-alias
     test_group_name: ci-kubernetes-e2e-gci-gce-ip-alias
+  - name: gce-alpha-api
+    test_group_name: ci-kubernetes-e2e-gce-alpha-api
   - name: gci-gke-ingress
     test_group_name: ci-kubernetes-e2e-gci-gke-ingress
   - name: gci-gke-ingress-release-1-5
@@ -3814,6 +3828,12 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gci-gke-serial
     base_options: 'include-filter-by-regex=\[sig-network\]'
     description: 'network gci-gke serial e2e tests for master branch'
+  - name: gci-gce-latest-upgrade-kube-proxy-ds
+    test_group_name: ci-kubernetes-e2e-gci-gce-latest-upgrade-kube-proxy-ds
+    description: 'upgrade cluster and migrate kube-proxy from static pods to a daemonset'
+  - name: gci-gce-latest-downgrade-kube-proxy-ds
+    test_group_name: ci-kubernetes-e2e-gci-gce-latest-downgrade-kube-proxy-ds
+    description: 'downgrade cluster and migrate kube-proxy from a daemonset to static pods'
 
 - name: sig-node
   dashboard_tab:
@@ -4053,6 +4073,9 @@ dashboards:
     base_options: 'width=10'
   - name: pull-kubernetes-e2e-gce-gpu
     test_group_name: pull-kubernetes-e2e-gce-gpu
+    base_options: 'width=10'
+  - name: pull-kubernetes-e2e-gke-gpu
+    test_group_name: pull-kubernetes-e2e-gke-gpu
     base_options: 'width=10'
   - name: pull-kubernetes-e2e-gke
     test_group_name: pull-kubernetes-e2e-gke

@@ -43,25 +43,27 @@ const (
 	releaseNote               = "release-note"
 	releaseNoteNone           = "release-note-none"
 	releaseNoteActionRequired = "release-note-action-required"
-	releaseNoteExperimental   = "release-note-experimental"
 
-	releaseNoteFormat = `Adding ` + releaseNoteLabelNeeded + ` because the release note process has not been followed.
-One of the following labels is required %q, %q, %q or %q.
+	releaseNoteFormat = `Adding %s because the release note process has not been followed.
+%s`
+	releaseNoteSuffixFormat = `One of the following labels is required %q, %q, or %q.
 Please see: https://github.com/kubernetes/community/blob/master/contributors/devel/pull-requests.md#write-release-notes-if-needed.`
-	parentReleaseNoteFormat = `The 'parent' PR of a cherry-pick PR must have one of the %q or %q labels, or this PR must follow the standard/parent release note labeling requirement. (release-note-experimental must be explicit for cherry-picks)`
+	parentReleaseNoteFormat = `The 'parent' PR of a cherry-pick PR must have one of the %q or %q labels, or this PR must follow the standard/parent release note labeling requirement.`
 
 	noReleaseNoteComment = "none"
 	actionRequiredNote   = "action required"
 )
 
 var (
-	releaseNoteBody       = fmt.Sprintf(releaseNoteFormat, releaseNote, releaseNoteActionRequired, releaseNoteExperimental, releaseNoteNone)
-	parentReleaseNoteBody = fmt.Sprintf(parentReleaseNoteFormat, releaseNote, releaseNoteActionRequired)
-	noteMatcherRE         = regexp.MustCompile(`(?s)(?:Release note\*\*:\s*(?:<!--[^<>]*-->\s*)?` + "```(?:release-note)?|```release-note)(.+?)```")
+	releaseNoteSuffix         = fmt.Sprintf(releaseNoteSuffixFormat, releaseNote, releaseNoteActionRequired, releaseNoteNone)
+	releaseNoteBody           = fmt.Sprintf(releaseNoteFormat, releaseNoteLabelNeeded, releaseNoteSuffix)
+	deprecatedReleaseNoteBody = fmt.Sprintf(releaseNoteFormat, deprecatedReleaseNoteLabelNeeded, releaseNoteSuffix)
+	parentReleaseNoteBody     = fmt.Sprintf(parentReleaseNoteFormat, releaseNote, releaseNoteActionRequired)
+	noteMatcherRE             = regexp.MustCompile(`(?s)(?:Release note\*\*:\s*(?:<!--[^<>]*-->\s*)?` + "```(?:release-note)?|```release-note)(.+?)```")
 )
 
 // ReleaseNoteLabel will add the releaseNoteMissingLabel to a PR which has not
-// set one of the appropriete 'release-note-*' labels but has LGTM
+// set one of the appropriate 'release-note-*' labels but has LGTM
 type ReleaseNoteLabel struct {
 	config *github.Config
 }
@@ -122,6 +124,9 @@ func (r *ReleaseNoteLabel) ensureNoRelNoteNeededLabel(obj *github.MungeObject) {
 	if obj.HasLabel(releaseNoteLabelNeeded) {
 		obj.RemoveLabel(releaseNoteLabelNeeded)
 	}
+	if obj.HasLabel(deprecatedReleaseNoteLabelNeeded) {
+		obj.RemoveLabel(deprecatedReleaseNoteLabelNeeded)
+	}
 }
 
 // Munge is the workhorse the will actually make updates to the PR
@@ -142,14 +147,16 @@ func (r *ReleaseNoteLabel) Munge(obj *github.MungeObject) {
 
 	labelToAdd := determineReleaseNoteLabel(obj)
 	if labelToAdd == releaseNoteLabelNeeded {
-		obj.WriteComment(releaseNoteBody)
+		if !obj.HasLabel(releaseNoteLabelNeeded) {
+			obj.WriteComment(releaseNoteBody)
+		}
 	} else {
 		//going to apply some other release-note-label
-		if obj.HasLabel(releaseNoteLabelNeeded) {
-			obj.RemoveLabel(releaseNoteLabelNeeded)
-		}
+		r.ensureNoRelNoteNeededLabel(obj)
 	}
-	obj.AddLabel(labelToAdd)
+	if !obj.HasLabel(labelToAdd) {
+		obj.AddLabel(labelToAdd)
+	}
 	return
 }
 
@@ -191,7 +198,6 @@ func chooseLabel(composedReleaseNote string) string {
 func releaseNoteAlreadyAdded(obj *github.MungeObject) bool {
 	return obj.HasLabel(releaseNote) ||
 		obj.HasLabel(releaseNoteActionRequired) ||
-		obj.HasLabel(releaseNoteExperimental) ||
 		obj.HasLabel(releaseNoteNone)
 }
 
@@ -199,7 +205,7 @@ func (r *ReleaseNoteLabel) isStaleIssueComment(obj *github.MungeObject, comment 
 	if !obj.IsRobot(comment.User) {
 		return false
 	}
-	if *comment.Body != releaseNoteBody && *comment.Body != parentReleaseNoteFormat {
+	if *comment.Body != releaseNoteBody && *comment.Body != parentReleaseNoteBody && *comment.Body != deprecatedReleaseNoteBody {
 		return false
 	}
 	if !r.prMustFollowRelNoteProcess(obj) {

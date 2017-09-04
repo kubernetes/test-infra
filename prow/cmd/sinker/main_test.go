@@ -121,6 +121,9 @@ func TestClean(t *testing.T) {
 		{
 			Metadata: kube.ObjectMeta{
 				Name: "old, failed",
+				Labels: map[string]string{
+					kube.CreatedByProw: "true",
+				},
 			},
 			Status: kube.PodStatus{
 				Phase:     kube.PodFailed,
@@ -130,6 +133,9 @@ func TestClean(t *testing.T) {
 		{
 			Metadata: kube.ObjectMeta{
 				Name: "old, succeeded",
+				Labels: map[string]string{
+					kube.CreatedByProw: "true",
+				},
 			},
 			Status: kube.PodStatus{
 				Phase:     kube.PodSucceeded,
@@ -139,6 +145,9 @@ func TestClean(t *testing.T) {
 		{
 			Metadata: kube.ObjectMeta{
 				Name: "new, failed",
+				Labels: map[string]string{
+					kube.CreatedByProw: "true",
+				},
 			},
 			Status: kube.PodStatus{
 				Phase:     kube.PodFailed,
@@ -148,9 +157,33 @@ func TestClean(t *testing.T) {
 		{
 			Metadata: kube.ObjectMeta{
 				Name: "old, running",
+				Labels: map[string]string{
+					kube.CreatedByProw: "true",
+				},
 			},
 			Status: kube.PodStatus{
 				Phase:     kube.PodRunning,
+				StartTime: time.Now().Add(-maxPodAge).Add(-time.Second),
+			},
+		},
+		{
+			Metadata: kube.ObjectMeta{
+				Name: "unrelated, failed",
+				Labels: map[string]string{
+					kube.CreatedByProw: "not really",
+				},
+			},
+			Status: kube.PodStatus{
+				Phase:     kube.PodFailed,
+				StartTime: time.Now().Add(-maxPodAge).Add(-time.Second),
+			},
+		},
+		{
+			Metadata: kube.ObjectMeta{
+				Name: "unrelated, complete",
+			},
+			Status: kube.PodStatus{
+				Phase:     kube.PodSucceeded,
 				StartTime: time.Now().Add(-maxPodAge).Add(-time.Second),
 			},
 		},

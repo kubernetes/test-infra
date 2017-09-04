@@ -25,6 +25,14 @@ filegroup(
 )
 
 filegroup(
+    name = "configs",
+    srcs = glob([
+        "**/*.yaml",
+    ]),
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
     name = "all-srcs",
     srcs = [
         ":package-srcs",

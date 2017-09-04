@@ -48,6 +48,9 @@ var (
 	// This should be >2x as long as it normally takes for a PR
 	// to complete, to avoid congestion collapse in the queue.
 	PRMaxWaitTime time.Duration
+
+	// App is the mungegithub app (like 'submit-queue', 'cherrypick', or 'misc-mungers')
+	App string
 )
 
 // RegisterOptions registers options that may be used by any munger, feature, or report. It returns
@@ -65,5 +68,7 @@ func RegisterOptions(opts *options.Options) sets.String {
 
 	opts.RegisterDuration(&PRMaxWaitTime, "pr-max-wait-time", 2*time.Hour, "Maximum time to wait for tests in a PR to start or finish")
 
-	return nil
+	opts.RegisterString(&App, "app", "submit-queue", "The mungegithub app that this instance represents.")
+
+	return sets.NewString("app")
 }

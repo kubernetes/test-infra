@@ -29,5 +29,5 @@ docker run --rm=true \
 docker run --rm=true \
   -w "/go/src/k8s.io/test-infra" \
   -v "${GOPATH}/src/k8s.io/test-infra:/go/src/k8s.io/test-infra" \
-  'golang:1.7.1' \
+  'golang:1.9' \
   go run testgrid/jenkins_verify/jenkins_validate.go testgrid/output prow testgrid/config/config.yaml

@@ -39,7 +39,7 @@ func main() {
 	prowPath := args[1]
 	configPath := args[2]
 
-	jenkinsjobs := make(map[string]bool)
+	jobs := make(map[string]bool)
 	files, err := filepath.Glob(jobPath + "/*")
 	if err != nil {
 		fmt.Println("Failed to collect outputs.")
@@ -48,7 +48,7 @@ func main() {
 
 	for _, file := range files {
 		file = strings.TrimPrefix(file, jobPath+"/")
-		jenkinsjobs[file] = false
+		jobs[file] = false
 	}
 
 	data, err := ioutil.ReadFile(configPath)
@@ -75,43 +75,52 @@ func main() {
 		os.Exit(1)
 	}
 
-	// Also check prow postsubmit and periodic jobs
-	for _, job := range prowConfig.AllPostsubmits() {
+	// Also check k/k presubmit, prow postsubmit and periodic jobs
+	for _, job := range prowConfig.AllPresubmits([]string{"kubernetes/kubernetes"}) {
+		jobs[job.Name] = false
+	}
+
+	for _, job := range prowConfig.AllPostsubmits([]string{}) {
 		if job.Agent != "jenkins" {
-			jenkinsjobs[job.Name] = false
+			jobs[job.Name] = false
 		}
 	}
 
 	for _, job := range prowConfig.AllPeriodics() {
 		if job.Agent != "jenkins" {
-			jenkinsjobs[job.Name] = false
+			jobs[job.Name] = false
 		}
 	}
 
-	// For now anything outsite k8s-jenkins/logs are considered to be fine
+	// For now anything outsite k8s-jenkins/(pr-)logs are considered to be fine
 	testgroups := make(map[string]bool)
 	for _, testgroup := range config.TestGroups {
 		if strings.Contains(testgroup.GcsPrefix, "kubernetes-jenkins/logs/") {
 			job := strings.TrimPrefix(testgroup.GcsPrefix, "kubernetes-jenkins/logs/")
 			testgroups[job] = false
 		}
+
+		if strings.Contains(testgroup.GcsPrefix, "kubernetes-jenkins/pr-logs/directory/") {
+			job := strings.TrimPrefix(testgroup.GcsPrefix, "kubernetes-jenkins/pr-logs/directory/")
+			testgroups[job] = false
+		}
 	}
 
 	// Cross check
-	// -- Each jenkins job need to have a match testgrid group
-	for jenkinsjob := range jenkinsjobs {
-		if _, ok := testgroups[jenkinsjob]; ok {
-			testgroups[jenkinsjob] = true
-			jenkinsjobs[jenkinsjob] = true
+	// -- Each job need to have a match testgrid group
+	for job := range jobs {
+		if _, ok := testgroups[job]; ok {
+			testgroups[job] = true
+			jobs[job] = true
 		}
 	}
 
 	// Conclusion
 	badjobs := []string{}
-	for jenkinsjob, valid := range jenkinsjobs {
+	for job, valid := range jobs {
 		if !valid {
-			badjobs = append(badjobs, jenkinsjob)
-			fmt.Printf("Job %v does not have a matching testgrid testgroup\n", jenkinsjob)
+			badjobs = append(badjobs, job)
+			fmt.Printf("Job %v does not have a matching testgrid testgroup\n", job)
 		}
 	}
 
@@ -124,11 +133,11 @@ func main() {
 	}
 
 	if len(badconfigs) > 0 {
-		fmt.Printf("Total bad config - %v\n", len(badconfigs))
+		fmt.Printf("Total bad config(s) - %v\n", len(badconfigs))
 	}
 
 	if len(badjobs) > 0 {
-		fmt.Printf("Total bad jenkins job - %v\n", len(badjobs))
+		fmt.Printf("Total bad job(s) - %v\n", len(badjobs))
 	}
 
 	if len(badconfigs) > 0 || len(badjobs) > 0 {

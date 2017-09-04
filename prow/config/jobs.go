@@ -188,7 +188,9 @@ func (c *Config) SetPresubmits(jobs map[string][]Presubmit) error {
 	return nil
 }
 
-func (c *Config) AllPresubmits() []Presubmit {
+// AllPresubmits returns all prow presubmit jobs in repos.
+// if repos is empty, return all presubmits.
+func (c *Config) AllPresubmits(repos []string) []Presubmit {
 	var res []Presubmit
 	var listPres func(ps []Presubmit) []Presubmit
 	listPres = func(ps []Presubmit) []Presubmit {
@@ -200,14 +202,26 @@ func (c *Config) AllPresubmits() []Presubmit {
 		return res
 	}
 
-	for _, v := range c.Presubmits {
-		res = append(res, listPres(v)...)
+	for repo, v := range c.Presubmits {
+		if len(repos) == 0 {
+			res = append(res, listPres(v)...)
+		} else {
+			for _, r := range repos {
+				if r == repo {
+					res = append(res, listPres(v)...)
+					break
+				}
+			}
+		}
+
 	}
 
 	return res
 }
 
-func (c *Config) AllPostsubmits() []Postsubmit {
+// AllPostsubmits returns all prow postsubmit jobs in repos.
+// if repos is empty, return all postsubmits.
+func (c *Config) AllPostsubmits(repos []string) []Postsubmit {
 	var res []Postsubmit
 	var listPost func(ps []Postsubmit) []Postsubmit
 	listPost = func(ps []Postsubmit) []Postsubmit {
@@ -219,13 +233,23 @@ func (c *Config) AllPostsubmits() []Postsubmit {
 		return res
 	}
 
-	for _, v := range c.Postsubmits {
-		res = append(res, listPost(v)...)
+	for repo, v := range c.Postsubmits {
+		if len(repos) == 0 {
+			res = append(res, listPost(v)...)
+		} else {
+			for _, r := range repos {
+				if r == repo {
+					res = append(res, listPost(v)...)
+					break
+				}
+			}
+		}
 	}
 
 	return res
 }
 
+// AllPostsubmits returns all prow periodic jobs.
 func (c *Config) AllPeriodics() []Periodic {
 	var listPeriodic func(ps []Periodic) []Periodic
 	listPeriodic = func(ps []Periodic) []Periodic {

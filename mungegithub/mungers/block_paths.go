@@ -38,8 +38,9 @@ See http://kubernetes.io/editdocs/ for information about editing docs`
 )
 
 var (
-	_             = fmt.Print
-	blockPathBody = fmt.Sprintf(blockPathFormat, blockedPathsLabel)
+	_                       = fmt.Print
+	blockPathBody           = fmt.Sprintf(blockPathFormat, blockedPathsLabel)
+	deprecatedBlockPathBody = fmt.Sprintf(blockPathFormat, doNotMergeLabel)
 )
 
 type configBlockPath struct {
@@ -166,7 +167,7 @@ func (b *BlockPath) isStaleIssueComment(obj *github.MungeObject, comment *github
 	if !obj.IsRobot(comment.User) {
 		return false
 	}
-	if *comment.Body != blockPathBody {
+	if *comment.Body != blockPathBody && *comment.Body != deprecatedBlockPathBody {
 		return false
 	}
 	stale := !obj.HasLabel(blockedPathsLabel)

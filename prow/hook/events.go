@@ -38,6 +38,7 @@ func (s *Server) handleReviewEvent(re github.ReviewEvent) {
 			pc := s.Plugins.PluginClient
 			pc.Logger = l.WithField("plugin", p)
 			pc.Config = s.ConfigAgent.Config()
+			pc.PluginConfig = s.Plugins.Config()
 			if err := h(pc, re); err != nil {
 				pc.Logger.WithError(err).Error("Error handling ReviewEvent.")
 			}
@@ -60,6 +61,7 @@ func (s *Server) handleReviewCommentEvent(rce github.ReviewCommentEvent) {
 			pc := s.Plugins.PluginClient
 			pc.Logger = l.WithField("plugin", p)
 			pc.Config = s.ConfigAgent.Config()
+			pc.PluginConfig = s.Plugins.Config()
 			if err := h(pc, rce); err != nil {
 				pc.Logger.WithError(err).Error("Error handling ReviewCommentEvent.")
 			}
@@ -81,6 +83,7 @@ func (s *Server) handlePullRequestEvent(pr github.PullRequestEvent) {
 			pc := s.Plugins.PluginClient
 			pc.Logger = l.WithField("plugin", p)
 			pc.Config = s.ConfigAgent.Config()
+			pc.PluginConfig = s.Plugins.Config()
 			if err := h(pc, pr); err != nil {
 				pc.Logger.WithError(err).Error("Error handling PullRequestEvent.")
 			}
@@ -101,6 +104,7 @@ func (s *Server) handlePushEvent(pe github.PushEvent) {
 			pc := s.Plugins.PluginClient
 			pc.Logger = l.WithField("plugin", p)
 			pc.Config = s.ConfigAgent.Config()
+			pc.PluginConfig = s.Plugins.Config()
 			if err := h(pc, pe); err != nil {
 				pc.Logger.WithError(err).Error("Error handling PushEvent.")
 			}
@@ -122,6 +126,7 @@ func (s *Server) handleIssueEvent(i github.IssueEvent) {
 			pc := s.Plugins.PluginClient
 			pc.Logger = l.WithField("plugin", p)
 			pc.Config = s.ConfigAgent.Config()
+			pc.PluginConfig = s.Plugins.Config()
 			if err := h(pc, i); err != nil {
 				pc.Logger.WithError(err).Error("Error handleing IssueEvent.")
 			}
@@ -143,6 +148,7 @@ func (s *Server) handleIssueCommentEvent(ic github.IssueCommentEvent) {
 			pc := s.Plugins.PluginClient
 			pc.Logger = l.WithField("plugin", p)
 			pc.Config = s.ConfigAgent.Config()
+			pc.PluginConfig = s.Plugins.Config()
 			if err := h(pc, ic); err != nil {
 				pc.Logger.WithError(err).Error("Error handling IssueCommentEvent.")
 			}
@@ -165,6 +171,7 @@ func (s *Server) handleStatusEvent(se github.StatusEvent) {
 			pc := s.Plugins.PluginClient
 			pc.Logger = l.WithField("plugin", p)
 			pc.Config = s.ConfigAgent.Config()
+			pc.PluginConfig = s.Plugins.Config()
 			if err := h(pc, se); err != nil {
 				pc.Logger.WithError(err).Error("Error handling StatusEvent.")
 			}

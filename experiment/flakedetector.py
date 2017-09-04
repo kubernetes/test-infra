@@ -19,16 +19,13 @@
 
 A flake is counted if a job passes and fails for the same pull commit. This
 isn't a perfect signal, since something might have happened on master that
-makes it flake, but I think it's good enough.
+makes it flake, but I think it's good enough. There will also be false
+negatives when flakes don't show up because the PR author changed the PR.
+Still, this is a good signal.
 
-There will also be false negatives: flakes that don't show up here because the
-PR author changed the PR. Still, this is a good signal.
+Only serial jobs are considered for the flake calculation, batch jobs are
+ignored.
 
-The chance of hitting a flake is calculated assuming they are uncorrelated,
-which should be a pretty good assumption unless we have a short outage. For
-instance, if all tests start to fail for just a few minutes, then a whole
-bunch of tests will fail at once, then succeed on a rerun. This will cause the
-calculated chance of hitting a flake to be overestimated.
 """
 
 from __future__ import print_function
@@ -37,43 +34,59 @@ import operator
 
 import requests
 
-def main():
+def main(): # pylint: disable=too-many-branches
     """Run flake detector."""
     res = requests.get('https://prow.k8s.io/data.js')
-    data = res.json()
+    job_results = res.json()
 
-    jobs = {}
-    for job in data:
-        if job['type'] != 'presubmit':
+    jobs = {} # job -> {sha -> [results...]}
+    commits = {} # sha -> {job -> [results...]}
+    for res in job_results:
+        if res['type'] != 'presubmit':
             continue
-        if job['repo'] != 'kubernetes/kubernetes':
+        if res['repo'] != 'kubernetes/kubernetes':
             continue
-        if job['state'] != 'success' and job['state'] != 'failure':
+        if res['state'] != 'success' and res['state'] != 'failure':
             continue
-        if job['job'] not in jobs:
-            jobs[job['job']] = {}
-        if job['pull_sha'] not in jobs[job['job']]:
-            jobs[job['job']][job['pull_sha']] = []
-        jobs[job['job']][job['pull_sha']].append(job['state'])
+        # populate jobs
+        if res['job'] not in jobs:
+            jobs[res['job']] = {}
+        if res['pull_sha'] not in jobs[res['job']]:
+            jobs[res['job']][res['pull_sha']] = []
+        jobs[res['job']][res['pull_sha']].append(res['state'])
+        # populate commits
+        if res['pull_sha'] not in commits:
+            commits[res['pull_sha']] = {}
+        if res['job'] not in commits[res['pull_sha']]:
+            commits[res['pull_sha']][res['job']] = []
+        commits[res['pull_sha']][res['job']].append(res['state'])
 
     job_commits = {}
     job_flakes = {}
-    for job, commits in jobs.items():
-        job_commits[job] = len(commits)
+    for job, shas in jobs.items():
+        job_commits[job] = len(shas)
         job_flakes[job] = 0
-        for results in commits.values():
+        for results in shas.values():
             if 'success' in results and 'failure' in results:
                 job_flakes[job] += 1
 
     print('Certain flakes:')
-    total_success_chance = 1.0
     for job, flakes in sorted(job_flakes.items(), key=operator.itemgetter(1), reverse=True):
         if job_commits[job] < 10:
             continue
         fail_chance = flakes / job_commits[job]
-        total_success_chance *= (1.0 - fail_chance)
         print('{}/{}\t({:.0f}%)\t{}'.format(flakes, job_commits[job], 100*fail_chance, job))
-    print('Chance that a PR hits a flake: {:.0f}%'.format(100*(1-total_success_chance)))
+
+    # for each commit, flaked iff exists job that flaked
+    flaked = 0
+    for _, job_results in commits.items():
+        for job, results in job_results.items():
+            if 'success' in results and 'failure' in results:
+                flaked += 1
+                break
+    print('Commits that flaked (passed and failed some job): %d/%d  %.2f%%' %
+          (flaked, len(commits), (flaked*100.0)/len(commits)))
+
 
 if __name__ == '__main__':
     main()

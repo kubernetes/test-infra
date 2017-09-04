@@ -158,7 +158,9 @@ func finishRunning(cmd *exec.Cmd) error {
 		case <-terminate.C:
 			terminated = true
 			terminate.Reset(time.Duration(0)) // Kill subsequent processes immediately.
-			syscall.Kill(-cmd.Process.Pid, syscall.SIGKILL)
+			if err := syscall.Kill(-cmd.Process.Pid, syscall.SIGKILL); err != nil {
+				log.Printf("Failed to kill %v: %v", stepName, err)
+			}
 			if err := cmd.Process.Kill(); err != nil {
 				log.Printf("Failed to terminate %s (terminated 15m after interrupt): %v", stepName, err)
 			}

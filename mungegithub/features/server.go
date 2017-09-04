@@ -26,6 +26,7 @@ import (
 
 	"k8s.io/kubernetes/pkg/util/sets"
 	"k8s.io/test-infra/mungegithub/github"
+	"k8s.io/test-infra/mungegithub/mungeopts"
 	"k8s.io/test-infra/mungegithub/options"
 	"k8s.io/test-infra/mungegithub/sharedmux"
 )
@@ -50,11 +51,6 @@ type ServerFeature struct {
 
 func init() {
 	s := &ServerFeature{}
-	s.prometheus.loops = prometheus.NewCounter(prometheus.CounterOpts{
-		Name: "submitqueue_loops",
-		Help: "Number of loops performed by the queue",
-	})
-	prometheus.MustRegister(s.prometheus.loops)
 	RegisterFeature(s)
 }
 
@@ -76,8 +72,16 @@ func (s *ServerFeature) Initialize(config *github.Config) error {
 		}
 	}
 	// config indicates that ServerFeature should be enabled.
-	s.ConcurrentMux.Handle("/prometheus", promhttp.Handler())
 	s.Enabled = true
+
+	s.prometheus.loops = prometheus.NewCounter(prometheus.CounterOpts{
+		Name:        "mungegithub_loops",
+		Help:        "Number of loops performed by the queue",
+		ConstLabels: map[string]string{"org": config.Org, "repo": config.Project, "app": mungeopts.App},
+	})
+	prometheus.MustRegister(s.prometheus.loops)
+	s.ConcurrentMux.Handle("/prometheus", promhttp.Handler())
+
 	go http.ListenAndServe(s.Address, s.ConcurrentMux)
 	return nil
 }

@@ -62,12 +62,16 @@ func TestParseNotification(t *testing.T) {
 			notif:   &Notification{Name: "NOTIF", Arguments: "Arguments is trimmed"},
 			comment: "[notif]     Arguments is trimmed   ",
 		},
+		{
+			notif:   &Notification{Name: "NOTIF", Arguments: "Context is read", Context: "What a lovely context"},
+			comment: "[notif]     Context is read \n\n  What a lovely context    ",
+		},
 	}
 
 	for _, test := range tests {
 		actualNotif := ParseNotification(&Comment{Body: &test.comment})
 		if !reflect.DeepEqual(actualNotif, test.notif) {
-			t.Error(actualNotif, "doesn't match expected notif:", test.notif)
+			t.Errorf("%#v doesn't match expected notif: %#v", actualNotif, test.notif)
 		}
 	}
 }

@@ -18,6 +18,7 @@ import json
 import logging
 import os
 
+import yaml
 import webapp2
 from webapp2_extras import security
 
@@ -64,6 +65,10 @@ def get_github_client():
         return None
 
 
+def get_app_config():
+    with open('config.yaml') as config_file:
+        return yaml.load(config_file)
+
 config = {
     'webapp2_extras.sessions': {
         'secret_key': get_session_secret(),
@@ -75,6 +80,8 @@ config = {
     },
     'github_client': get_github_client(),
 }
+
+config.update(get_app_config())
 
 class Warmup(webapp2.RequestHandler):
     """Warms up gubernator."""

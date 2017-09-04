@@ -1522,7 +1522,7 @@ func (obj *MungeObject) SetStatus(state, url, description, statusContext string)
 		Context:     &statusContext,
 	}
 	if len(url) > 0 {
-		status.URL = &url
+		status.TargetURL = &url
 	}
 	pr, ok := obj.GetPR()
 	if !ok {

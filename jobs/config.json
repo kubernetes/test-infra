@@ -154,8 +154,6 @@
       "--env-file=jobs/env/ci-kubernetes-charts-gce.env",
       "--extract=ci/latest",
       "--gcp-zone=us-central1-f",
-      "--mode=docker",
-      "--mount-paths=$GOPATH/src/k8s.io/charts:/src/k8s.io/charts",
       "--provider=gce",
       "--test=false",
       "--timeout=180m"
@@ -611,6 +609,23 @@
     "scenario": "kubernetes_e2e",
     "sigOwners": [
       "sig-cli"
+    ]
+  },
+  "ci-kubernetes-e2e-gce-alpha-api": {
+    "args": [
+      "--check-leaked-resources",
+      "--env-file=jobs/platform/gce.env",
+      "--env-file=jobs/env/ci-kubernetes-e2e-gce-alpha-api.env",
+      "--extract=ci/latest",
+      "--gcp-project=k8s-e2e-gce-alpha-api-access",
+      "--gcp-zone=us-central1-f",
+      "--provider=gce",
+      "--test_args=--ginkgo.focus=\\[Feature:GCEAlphaFeature\\] --minStartupPods=8",
+      "--timeout=60m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-network"
     ]
   },
   "ci-kubernetes-e2e-gce-alpha-features": {
@@ -4092,6 +4107,45 @@
     "scenario": "kubernetes_e2e",
     "sigOwners": [
       "sig-network"
+    ]
+  },
+  "ci-kubernetes-e2e-gci-gce-latest-downgrade-kube-proxy-ds": {
+    "args": [
+      "--check-leaked-resources",
+      "--check-version-skew=false",
+      "--env-file=jobs/platform/gce.env",
+      "--env-file=jobs/env/ci-kubernetes-e2e-gci-gce-latest-downgrade-kube-proxy-ds.env",
+      "--extract=ci/latest-1.7",
+      "--extract=ci/latest",
+      "--gcp-zone=us-central1-f",
+      "--provider=gce",
+      "--test_args=--ginkgo.focus=\\[Feature:KubeProxyDaemonSetDowngrade\\] --upgrade-target=ci/latest-1.7 --minStartupPods=8",
+      "--timeout=90m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-network",
+      "sig-cluster-lifecycle"
+    ]
+  },
+  "ci-kubernetes-e2e-gci-gce-latest-upgrade-kube-proxy-ds": {
+    "args": [
+      "--check-leaked-resources",
+      "--check-version-skew=false",
+      "--env-file=jobs/platform/gce.env",
+      "--env-file=jobs/env/ci-kubernetes-e2e-gci-gce-latest-upgrade-kube-proxy-ds.env",
+      "--extract=ci/latest",
+      "--extract=ci/latest-1.7",
+      "--gcp-zone=us-central1-f",
+      "--provider=gce",
+      "--test_args=--ginkgo.focus=Networking --ginkgo.skip=Networking-Performance --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8",
+      "--timeout=90m",
+      "--upgrade_args=--ginkgo.focus=\\[Feature:KubeProxyDaemonSetUpgrade\\] --upgrade-target=ci/latest"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-network",
+      "sig-cluster-lifecycle"
     ]
   },
   "ci-kubernetes-e2e-gci-gce-proto": {
@@ -8235,14 +8289,18 @@
   },
   "ci-kubernetes-e2e-kops-aws": {
     "args": [
+      "--aws",
       "--cluster=e2e-kops-aws.test-aws.k8s.io",
       "--env-file=jobs/platform/kops_aws.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-kops-aws.env",
+      "--extract=ci/latest",
+      "--mode=docker",
+      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]|\\[HPA\\]|Dashboard|Services.*functioning.*NodePort",
       "--timeout=120m"
     ],
-    "scenario": "kubernetes_kops_aws",
+    "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-aws"
     ]
   },
   "ci-kubernetes-e2e-kops-aws-canary": {
@@ -8454,14 +8512,13 @@
   "ci-kubernetes-e2e-node-canary": {
     "args": [
       "--deployment=node",
-      "--gcp-project=sen-lu-test",
       "--gcp-zone=us-central1-f",
       "--node-args=--images=cos-stable-60-9592-76-0 --image-project=cos-cloud",
-      "--node-test-args=\"--cgroups-per-qos=true --cgroup-root=/\"",
+      "--node-test-args=--kubelet-flags=\"--cgroups-per-qos=true --cgroup-root=/\"",
       "--node-tests=true",
       "--provider=gce",
       "--test_args=--nodes=8 --skip=\"\\[Flaky\\]|\\[Serial\\]\"",
-      "--timeout=60m"
+      "--timeout=90m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -10404,19 +10461,16 @@
   },
   "pull-kubernetes-e2e-gce-canary": {
     "args": [
-      "--build",
       "--cluster=",
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/pull-kubernetes-e2e.env",
       "--env-file=jobs/env/pull-kubernetes-e2e-gce-canary.env",
-      "--extract=local",
       "--gcp-project=k8s-jkns-pr-gce",
       "--gcp-zone=us-central1-f",
-      "--mode=docker",
       "--provider=gce",
-      "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-canary",
       "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
-      "--timeout=55m"
+      "--timeout=55m",
+      "--use-shared-build=bazel"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -10566,7 +10620,6 @@
       "--check-leaked-resources=false",
       "--cluster=",
       "--env-file=jobs/platform/kops_aws.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-kops-aws.env",
       "--env-file=jobs/env/pull-kubernetes-e2e-kops-aws.env",
       "--extract=local",
       "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-kops-aws",

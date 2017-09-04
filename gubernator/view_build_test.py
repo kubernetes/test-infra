@@ -23,12 +23,10 @@ import main_test
 import gcs_async_test
 import github.models
 import testgrid_test
-import view_pr
 
 app = main_test.app
 init_build = main_test.init_build
 write = gcs_async_test.write
-
 
 class ParseJunitTest(unittest.TestCase):
     @staticmethod
@@ -63,6 +61,28 @@ class ParseJunitTest(unittest.TestCase):
             </testsuites>''')
         self.assertEqual(results['failed'], [(
             'k8s.io/suite TestBad', 0.1, 'something bad', "fp",
+            "out: first line\nout: second line\nerr: first line",
+            )])
+
+    def test_nested_testsuites(self):
+        results = self.parse('''
+            <testsuites>
+                <testsuite name="k8s.io/suite">
+                    <testsuite name="k8s.io/suite/sub">
+                        <properties>
+                            <property name="go.version" value="go1.6"/>
+                        </properties>
+                        <testcase name="TestBad" time="0.1">
+                            <failure>something bad</failure>
+                            <system-out>out: first line</system-out>
+                            <system-err>err: first line</system-err>
+                            <system-out>out: second line</system-out>
+                        </testcase>
+                    </testsuite>
+                </testsuite>
+            </testsuites>''')
+        self.assertEqual(results['failed'], [(
+            'k8s.io/suite/sub TestBad', 0.1, 'something bad', "fp",
             "out: first line\nout: second line\nerr: first line",
             )])
 
@@ -241,26 +261,30 @@ class BuildTest(main_test.TestBase):
 
     def test_parse_pr_path(self):
         def check(prefix, expected):
-            self.assertEqual(view_build.parse_pr_path(prefix), expected)
+            self.assertEqual(
+                view_build.parse_pr_path(gcs_path=prefix,
+                    default_org='kubernetes',
+                    default_repo='kubernetes',
+                ),
+                expected
+            )
 
-        check('kubernetes-jenkins/logs/e2e', (None, None, None))
         check('kubernetes-jenkins/pr-logs/pull/123', ('123', '', 'kubernetes/kubernetes'))
         check('kubernetes-jenkins/pr-logs/pull/charts/123', ('123', 'charts/', 'kubernetes/charts'))
-        check('istio-prow/pull/istio_istio/517', ('517', 'istio/istio/', 'istio/istio'))
         check(
             'kubernetes-jenkins/pr-logs/pull/google_cadvisor/296',
             ('296', 'google/cadvisor/', 'google/cadvisor'))
 
     def test_build_pr_link(self):
         ''' The build page for a PR build links to the PR results.'''
-        build_dir = '/%s/123/e2e/567/' % view_pr.PR_PREFIX['kubernetes']
+        build_dir = '/kubernetes-jenkins/pr-logs/pull/123/e2e/567/'
         init_build(build_dir)
         response = app.get('/build' + build_dir)
         self.assertIn('PR #123', response)
         self.assertIn('href="/pr/123"', response)
 
     def test_build_pr_link_other(self):
-        build_dir = '/%s/charts/123/e2e/567/' % view_pr.PR_PREFIX['kubernetes']
+        build_dir = '/kubernetes-jenkins/pr-logs/pull/charts/123/e2e/567/'
         init_build(build_dir)
         response = app.get('/build' + build_dir)
         self.assertIn('PR #123', response)
@@ -343,3 +367,20 @@ class BuildTest(main_test.TestBase):
         """Test that the job list shows our job."""
         response = app.get('/jobs/kubernetes-jenkins/logs')
         self.assertIn('somejob/">somejob</a>', response)
+
+    def test_recent_runs_across_prs(self):
+        """Test that "Recent Runs Across PRs" links are correct."""
+        def expect(path, directory):
+            response = app.get('/builds/' + path)
+            self.assertIn('href="/builds/%s"' % directory, response)
+        # pull request job in main repo
+        expect(
+            'k-j/pr-logs/pull/514/pull-kubernetes-unit/',
+            'k-j/pr-logs/directory/pull-kubernetes-unit')
+        # pull request jobs in different repos
+        expect(
+            'k-j/pr-logs/pull/test-infra/4213/pull-test-infra-bazel',
+            'k-j/pr-logs/directory/pull-test-infra-bazel')
+        expect(
+            'i-p/pull/istio_istio/517/istio-presubmit/',
+            'i-p/directory/istio-presubmit')

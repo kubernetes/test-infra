@@ -127,8 +127,8 @@ func defineFlags() *options {
 	flag.StringVar(&o.gcpNodeImage, "gcp-node-image", "", "Node image type (cos|container_vm on GKE, cos|debian on GCE)")
 	flag.StringVar(&o.gcpNodes, "gcp-nodes", "", "(--provider=gce only) Number of nodes to create.")
 	flag.BoolVar(&o.kubemark, "kubemark", false, "If true, run kubemark tests.")
-	flag.StringVar(&o.kubemarkMasterSize, "kubemark-master-size", "", "Kubemark master size")
-	flag.StringVar(&o.kubemarkNodes, "kubemark-nodes", "", "Number of kubemark nodes to start")
+	flag.StringVar(&o.kubemarkMasterSize, "kubemark-master-size", "", "Kubemark master size (only relevant if --kubemark=true). Auto-calculated based on '--kubemark-nodes' if left empty.")
+	flag.StringVar(&o.kubemarkNodes, "kubemark-nodes", "5", "Number of kubemark nodes to start (only relevant if --kubemark=true).")
 	flag.StringVar(&o.logexporterGCSPath, "logexporter-gcs-path", "", "Path to the GCS artifacts directory to dump logs from nodes. Logexporter gets enabled if this is non-empty")
 	flag.StringVar(&o.metadataSources, "metadata-sources", "images.json", "Comma-separated list of files inside ./artifacts to merge into metadata.json")
 	flag.BoolVar(&o.multipleFederations, "multiple-federations", false, "If true, enable running multiple federation control planes in parallel")
@@ -734,12 +734,24 @@ func prepare(o *options) error {
 	}
 
 	switch o.provider {
-	case "gce", "gke", "kubemark", "kubernetes-anywhere", "node":
+	case "gce", "gke", "kubernetes-anywhere", "node":
 		if err := prepareGcp(o); err != nil {
 			return err
 		}
 	case "aws":
 		if err := prepareAws(); err != nil {
+			return err
+		}
+	}
+
+	if o.kubemark {
+		if err := migrateOptions([]migratedOption{
+			{
+				env:    "KUBEMARK_NUM_NODES",
+				option: &o.kubemarkNodes,
+				name:   "--kubemark-nodes",
+			},
+		}); err != nil {
 			return err
 		}
 	}

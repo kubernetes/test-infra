@@ -57,6 +57,7 @@ const (
 	retestNotRequiredDocsOnlyLabel = "retest-not-required-docs-only"
 	doNotMergeLabel                = "do-not-merge"
 	wipLabel                       = "do-not-merge/work-in-progress"
+	holdLabel                      = "do-not-merge/hold"
 	claYesLabel                    = "cla: yes"
 	claNoLabel                     = "cla: no"
 	cncfClaYesLabel                = "cncf-cla: yes"
@@ -1013,17 +1014,16 @@ func (sq *SubmitQueue) validForMergeExt(obj *github.MungeObject, checkStatus boo
 	retestContexts := mungeopts.RequiredContexts.Retest
 	sq.opts.Unlock()
 
-	if milestone := obj.Issue.Milestone; true {
-		title := ""
-		// Net set means the empty milestone, ""
-		if milestone != nil && milestone.Title != nil {
-			title = *milestone.Title
-		}
-		for _, blocked := range doNotMergeMilestones {
-			if title == blocked {
-				sq.SetMergeStatus(obj, unmergeableMilestone)
-				return false
-			}
+	milestone := obj.Issue.Milestone
+	title := ""
+	// Net set means the empty milestone, ""
+	if milestone != nil && milestone.Title != nil {
+		title = *milestone.Title
+	}
+	for _, blocked := range doNotMergeMilestones {
+		if title == blocked || (title == "" && blocked == "NO-MILESTONE") {
+			sq.SetMergeStatus(obj, unmergeableMilestone)
+			return false
 		}
 	}
 
@@ -1082,7 +1082,15 @@ func (sq *SubmitQueue) validForMergeExt(obj *github.MungeObject, checkStatus boo
 	}
 
 	// PR cannot have any labels which prevent merging.
-	for _, label := range []string{cherrypickUnapprovedLabel, blockedPathsLabel, deprecatedReleaseNoteLabelNeeded, releaseNoteLabelNeeded, doNotMergeLabel, wipLabel} {
+	for _, label := range []string{
+		cherrypickUnapprovedLabel,
+		blockedPathsLabel,
+		deprecatedReleaseNoteLabelNeeded,
+		releaseNoteLabelNeeded,
+		doNotMergeLabel,
+		wipLabel,
+		holdLabel,
+	} {
 		if obj.HasLabel(label) {
 			sq.SetMergeStatus(obj, noMergeMessage(label))
 			return false

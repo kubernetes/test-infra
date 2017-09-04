@@ -23,7 +23,6 @@ import (
 
 	"github.com/Sirupsen/logrus"
 
-	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/plugins"
 )
@@ -55,37 +54,31 @@ type githubClient interface {
 
 type client struct {
 	GitHubClient githubClient
-	Config       *config.Heart
 	Logger       *logrus.Entry
-}
-
-func heartConfig(c *config.Config) *config.Heart {
-	return &c.Heart
 }
 
 func getClient(pc plugins.PluginClient) client {
 	return client{
 		GitHubClient: pc.GitHubClient,
-		Config:       heartConfig(pc.Config),
 		Logger:       pc.Logger,
 	}
 }
 
 func handleIssueComment(pc plugins.PluginClient, ic github.IssueCommentEvent) error {
-	return handleIC(getClient(pc), ic)
+	return handleIC(getClient(pc), pc.PluginConfig.Heart.Adorees, ic)
 }
 
 func handlePullRequest(pc plugins.PluginClient, pre github.PullRequestEvent) error {
 	return handlePR(getClient(pc), pre)
 }
 
-func handleIC(c client, ic github.IssueCommentEvent) error {
+func handleIC(c client, adorees []string, ic github.IssueCommentEvent) error {
 	// Only consider new comments on PRs.
 	if !ic.Issue.IsPullRequest() || ic.Action != github.IssueCommentActionCreated {
 		return nil
 	}
 	adoredLogin := false
-	for _, login := range c.Config.Adorees {
+	for _, login := range adorees {
 		if ic.Comment.User.Login == login {
 			adoredLogin = true
 			break
