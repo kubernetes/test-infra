@@ -42,10 +42,12 @@ var (
 		"(kubernetes-anywhere only) Cluster name. Must be set for kubernetes-anywhere.")
 	kubernetesAnywhereUpTimeout = flag.Duration("kubernetes-anywhere-up-timeout", 20*time.Minute,
 		"(kubernetes-anywhere only) Time limit between starting a cluster and making a successful call to the Kubernetes API.")
+	kubernetesAnywhereNumNodes = flag.Int("kubernetes-anywhere-num-nodes", 4,
+		"(kubernetes-anywhere only) Number of nodes to be deployed in the cluster.")
 )
 
 const kubernetesAnywhereConfigTemplate = `
-.phase1.num_nodes=4
+.phase1.num_nodes={{.NumNodes}}
 .phase1.cluster_name="{{.Cluster}}"
 .phase1.ssh_user=""
 .phase1.cloud_provider="gce"
@@ -78,6 +80,7 @@ type kubernetesAnywhere struct {
 	Phase2Provider    string
 	KubeadmVersion    string
 	KubernetesVersion string
+	NumNodes          int
 	Project           string
 	Cluster           string
 	Zone              string
@@ -114,6 +117,7 @@ func newKubernetesAnywhere(project, zone string) (*kubernetesAnywhere, error) {
 		Phase2Provider:    *kubernetesAnywherePhase2Provider,
 		KubeadmVersion:    *kubernetesAnywhereKubeadmVersion,
 		KubernetesVersion: *kubernetesAnywhereKubernetesVersion,
+		NumNodes:          *kubernetesAnywhereNumNodes,
 		Project:           project,
 		Cluster:           *kubernetesAnywhereCluster,
 		Zone:              zone,
@@ -163,7 +167,7 @@ func (k kubernetesAnywhere) Up() error {
 		return err
 	}
 
-	nodes := 4 // For now, this is hardcoded in the config
+	nodes := k.NumNodes
 	return waitForNodes(k, nodes+1, *kubernetesAnywhereUpTimeout)
 }
 
