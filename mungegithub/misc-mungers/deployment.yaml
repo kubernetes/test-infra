@@ -18,6 +18,9 @@ spec:
         - --alsologtostderr
         - --config-path=/etc/munge-config/config
         image: gcr.io/k8s-testimages/misc-mungers:2016-03-14-7fb1dae
+        ports:
+        - name: status
+          containerPort: 8080
         resources:
           requests:
             cpu: 100m

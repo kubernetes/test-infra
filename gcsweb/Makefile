@@ -25,7 +25,7 @@ REGISTRY ?= gcr.io/google_containers
 ARCH ?= amd64
 
 # The version string.
-VERSION := v1.0.4
+VERSION := v1.0.5
 
 ###
 ### These variables should not need tweaking.
@@ -54,7 +54,7 @@ endif
 
 IMAGE := $(REGISTRY)/$(BIN)-$(ARCH)
 
-BUILD_IMAGE ?= golang:1.7-alpine
+BUILD_IMAGE ?= golang:1.9-alpine
 
 # If you want to build all binaries, see the 'all-build' rule.
 # If you want to build all containers, see the 'all-container' rule.

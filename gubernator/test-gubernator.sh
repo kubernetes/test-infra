@@ -23,3 +23,4 @@ pip install -r test_requirements.txt
 ./test.sh --nologcapture
 ./lint.sh
 mocha static/build_test.js
+./verify_config.sh

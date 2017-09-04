@@ -4,7 +4,7 @@ Prow is the system that handles GitHub events and commands for Kubernetes. It
 currently comprises several related pieces that live in a Kubernetes cluster.
 See the [GoDoc](https://godoc.org/k8s.io/test-infra/prow) for library docs.
 Please note that these libraries are intended for use by prow only, and we do
-not make any attempt to preserve backwards compatability.
+not make any attempt to preserve backwards compatibility.
 
 * `cmd/hook` is the most important piece. It is a stateless server that listens
   for GitHub webhooks and dispatches them to the appropriate handlers.
@@ -19,6 +19,27 @@ not make any attempt to preserve backwards compatability.
 * `cmd/mkpj` creates `ProwJobs`.
 
 See also: [Life of a Prow Job](https://github.com/kubernetes/test-infra/blob/master/prow/architecture.md).
+
+## Announcements
+
+Breaking changes to external APIs (labels, GitHub interactions, configuration
+or deployment) will be documented in this section. Prow is in a pre-release
+state and no claims of backwards compatibility are made for any external API.
+
+ - *September 3, 2017* sinker:0.17 now deletes pods labeled by plank:0.42 in
+   order to avoid cleaning up unrelated pods that happen to be found in the
+   same namespace prow runs pods. If you run other pods in the same namespace,
+   you will have to manually delete or label the prow-owned pods, otherwise you
+   can bulk-label all of them with the following command and let sinker collect
+   them normally:
+   ```
+   kubectl label pods --all -n pod_namespace created-by-prow=true
+   ```
+ - *August 29, 2017* Configuration specific to plugins is now held in in the
+   `plugins` `ConfigMap` and serialized in this repo in the `plugins.yaml` file.
+   Cluster administrators upgrading to the newest version of Prow should move
+   plugin configuration from the main `ConfigMap`. For more context, please see
+   [this pull request.](https://github.com/kubernetes/test-infra/pull/4213)
 
 ## How to test prow
 

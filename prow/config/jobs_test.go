@@ -392,30 +392,58 @@ func TestListPresubmit(t *testing.T) {
 				},
 				{Name: "b"},
 			},
+			"r2": {
+				{
+					Name: "c",
+					RunAfterSuccess: []Presubmit{
+						{Name: "ca"},
+						{Name: "cb"},
+					},
+				},
+				{Name: "d"},
+			},
 		},
 		Postsubmits: map[string][]Postsubmit{
-			"r1": {{Name: "c"}},
+			"r1": {{Name: "e"}},
 		},
 		Periodics: []Periodic{
-			{Name: "d"},
+			{Name: "f"},
 		},
 	}
 
-	expected := []string{"a", "aa", "ab", "b"}
-	actual := c.AllPresubmits()
-	if len(actual) != len(expected) {
-		t.Fatalf("Wrong number of jobs. Got %v, expected %v", actual, expected)
+	var testcases = []struct {
+		name     string
+		expected []string
+		repos    []string
+	}{
+		{
+			"all presubmits",
+			[]string{"a", "aa", "ab", "b", "c", "ca", "cb", "d"},
+			[]string{},
+		},
+		{
+			"r2 presubmits",
+			[]string{"c", "ca", "cb", "d"},
+			[]string{"r2"},
+		},
 	}
-	for _, j1 := range expected {
-		found := false
-		for _, j2 := range actual {
-			if j1 == j2.Name {
-				found = true
-				break
-			}
+
+	for _, tc := range testcases {
+		actual := c.AllPresubmits(tc.repos)
+		if len(actual) != len(tc.expected) {
+			t.Fatalf("test %s - Wrong number of jobs. Got %v, expected %v", tc.name, actual, tc.expected)
 		}
-		if !found {
-			t.Errorf("Did not find job %s in output", j1)
+		for _, j1 := range tc.expected {
+			found := false
+			for _, j2 := range actual {
+				if j1 == j2.Name {
+					found = true
+					break
+				}
+			}
+			if !found {
+				t.Errorf("test %s - Did not find job %s in output", tc.name, j1)
+			}
 		}
 	}
 }
@@ -443,21 +471,39 @@ func TestListPostsubmit(t *testing.T) {
 		},
 	}
 
-	expected := []string{"c", "ca", "cb", "d", "e"}
-	actual := c.AllPostsubmits()
-	if len(actual) != len(expected) {
-		t.Fatalf("Wrong number of jobs. Got %v, expected %v", actual, expected)
+	var testcases = []struct {
+		name     string
+		expected []string
+		repos    []string
+	}{
+		{
+			"all postsubmits",
+			[]string{"c", "ca", "cb", "d", "e"},
+			[]string{},
+		},
+		{
+			"r2 presubmits",
+			[]string{"e"},
+			[]string{"r2"},
+		},
 	}
-	for _, j1 := range expected {
-		found := false
-		for _, j2 := range actual {
-			if j1 == j2.Name {
-				found = true
-				break
-			}
+
+	for _, tc := range testcases {
+		actual := c.AllPostsubmits(tc.repos)
+		if len(actual) != len(tc.expected) {
+			t.Fatalf("%s - Wrong number of jobs. Got %v, expected %v", tc.name, actual, tc.expected)
 		}
-		if !found {
-			t.Errorf("Did not find job %s in output", j1)
+		for _, j1 := range tc.expected {
+			found := false
+			for _, j2 := range actual {
+				if j1 == j2.Name {
+					found = true
+					break
+				}
+			}
+			if !found {
+				t.Errorf("Did not find job %s in output", j1)
+			}
 		}
 	}
 }
@@ -550,12 +596,12 @@ func TestValidPodNames(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Could not load config: %v", err)
 	}
-	for _, j := range c.AllPresubmits() {
+	for _, j := range c.AllPresubmits([]string{}) {
 		if !podRe.MatchString(j.Name) {
 			t.Errorf("Job \"%s\" must match regex \"%s\".", j.Name, podRe.String())
 		}
 	}
-	for _, j := range c.AllPostsubmits() {
+	for _, j := range c.AllPostsubmits([]string{}) {
 		if !podRe.MatchString(j.Name) {
 			t.Errorf("Job \"%s\" must match regex \"%s\".", j.Name, podRe.String())
 		}
@@ -574,7 +620,7 @@ func TestNoDuplicateJobs(t *testing.T) {
 	}
 
 	allJobs := make(map[string]bool)
-	for _, j := range c.AllPresubmits() {
+	for _, j := range c.AllPresubmits([]string{}) {
 		if allJobs[j.Name] {
 			t.Errorf("Found duplicate job in presubmit: %s.", j.Name)
 		}
@@ -582,7 +628,7 @@ func TestNoDuplicateJobs(t *testing.T) {
 	}
 
 	allJobs = make(map[string]bool)
-	for _, j := range c.AllPostsubmits() {
+	for _, j := range c.AllPostsubmits([]string{}) {
 		if allJobs[j.Name] {
 			t.Errorf("Found duplicate job in postsubmit: %s.", j.Name)
 		}

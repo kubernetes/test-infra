@@ -126,3 +126,115 @@ func TestEnvironmentForSpec(t *testing.T) {
 		}
 	}
 }
+
+func TestProwJobToPod(t *testing.T) {
+	tests := []struct {
+		podName string
+		buildID string
+		pjSpec  kube.ProwJobSpec
+
+		expected *kube.Pod
+	}{
+		{
+			podName: "pod",
+			buildID: "blabla",
+			pjSpec: kube.ProwJobSpec{
+				Type: kube.PresubmitJob,
+				Job:  "job-name",
+				Refs: kube.Refs{
+					Org:     "org-name",
+					Repo:    "repo-name",
+					BaseRef: "base-ref",
+					BaseSHA: "base-sha",
+					Pulls: []kube.Pull{{
+						Number: 1,
+						Author: "author-name",
+						SHA:    "pull-sha",
+					}},
+				},
+				PodSpec: kube.PodSpec{
+					Containers: []kube.Container{
+						{
+							Image: "tester",
+							Env: []kube.EnvVar{
+								{Name: "MY_ENV", Value: "rocks"},
+							},
+						},
+					},
+				},
+			},
+
+			expected: &kube.Pod{
+				Metadata: kube.ObjectMeta{
+					Name: "pod",
+					Labels: map[string]string{
+						kube.CreatedByProw: "true",
+					},
+				},
+				Spec: kube.PodSpec{
+					RestartPolicy: "Never",
+					Containers: []kube.Container{
+						{
+							Name:  "pod-0",
+							Image: "tester",
+							Env: []kube.EnvVar{
+								{Name: "MY_ENV", Value: "rocks"},
+								{Name: "BUILD_NUMBER", Value: "blabla"},
+								{Name: "JOB_NAME", Value: "job-name"},
+								{Name: "PULL_BASE_REF", Value: "base-ref"},
+								{Name: "REPO_OWNER", Value: "org-name"},
+								{Name: "REPO_NAME", Value: "repo-name"},
+								{Name: "PULL_BASE_SHA", Value: "base-sha"},
+								{Name: "PULL_REFS", Value: "base-ref:base-sha,1:pull-sha"},
+								{Name: "PULL_NUMBER", Value: "1"},
+								{Name: "PULL_PULL_SHA", Value: "pull-sha"},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	for i, test := range tests {
+		t.Logf("test run #%d", i)
+		pj := kube.ProwJob{Spec: test.pjSpec}
+		got := ProwJobToPod(pj, test.podName, test.buildID)
+		// TODO: For now I am just comparing fields manually, eventually we
+		// should port the semantic.DeepEqual helper from the api-machinery
+		// repo, which is basically a fork of the reflect package.
+		// if !semantic.DeepEqual(got, test.expected) {
+		//	 t.Errorf("got pod:\n%#v\n\nexpected pod:\n%#v\n", got, test.expected)
+		// }
+		if _, ok := got.Metadata.Labels[kube.CreatedByProw]; !ok {
+			t.Error("expected a created-by-prow label")
+		}
+
+		expectedContainer := test.expected.Spec.Containers[i]
+		gotContainer := got.Spec.Containers[i]
+
+		dumpGotEnv := false
+		for _, expectedEnv := range expectedContainer.Env {
+			found := false
+			for _, gotEnv := range gotContainer.Env {
+				if expectedEnv.Name == gotEnv.Name && expectedEnv.Value == gotEnv.Value {
+					found = true
+					break
+				}
+			}
+			if !found {
+				dumpGotEnv = true
+				t.Errorf("could not find expected env %s=%s", expectedEnv.Name, expectedEnv.Value)
+			}
+		}
+		if dumpGotEnv {
+			t.Errorf("expected env:\n%#v\ngot:\n%#v\n", expectedContainer.Env, gotContainer.Env)
+		}
+		if expectedContainer.Image != gotContainer.Image {
+			t.Errorf("expected image: %s, got: %s", expectedContainer.Image, gotContainer.Image)
+		}
+		if test.expected.Spec.RestartPolicy != got.Spec.RestartPolicy {
+			t.Errorf("expected restart policy: %s, got: %s", test.expected.Spec.RestartPolicy, got.Spec.RestartPolicy)
+		}
+	}
+}

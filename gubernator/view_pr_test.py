@@ -22,7 +22,6 @@ import unittest
 import gcs_async_test
 from github import models
 import main_test
-import view_base
 import view_pr
 
 from webapp2_extras import securecookie
@@ -30,13 +29,11 @@ from webapp2_extras import securecookie
 
 app = main_test.app
 write = gcs_async_test.write
-PR_PREFIX = view_base.PR_PREFIX['kubernetes']
-
 
 class PathTest(unittest.TestCase):
     def test_org_repo(self):
         def check(path, org, repo):
-            actual_org, actual_repo = view_pr.org_repo(path)
+            actual_org, actual_repo = view_pr.org_repo(path, 'kubernetes', 'kubernetes')
             self.assertEquals(actual_org, org)
             self.assertEquals(actual_repo, repo)
 
@@ -49,8 +46,8 @@ class PathTest(unittest.TestCase):
 
     def test_pr_path(self):
         def check(org, repo, pr, path):
-            actual_path = view_pr.pr_path(org, repo, pr)
-            self.assertEquals(actual_path, '%s/%s' % (PR_PREFIX, path))
+            actual_path = view_pr.pr_path(org, repo, pr, 'kubernetes', 'kubernetes', 'pull_prefix')
+            self.assertEquals(actual_path, '%s/%s' % ('pull_prefix', path))
 
         check('kubernetes', 'kubernetes', 1234, 1234)
         check('kubernetes', 'kubernetes', 'batch', 'batch')
@@ -80,7 +77,7 @@ class PRTest(main_test.TestBase):
 
         for job, builds in self.BUILDS.iteritems():
             for build, started, finished in builds:
-                path = '/%s/123/%s/%s/' % (PR_PREFIX, job, build)
+                path = '/kubernetes-jenkins/pr-logs/pull/123/%s/%s/' % (job, build)
                 if started:
                     write(path + 'started.json', started)
                 if finished:
@@ -88,8 +85,15 @@ class PRTest(main_test.TestBase):
 
     def test_pr_builds(self):
         self.init_pr_directory()
-        org, repo = view_pr.org_repo('')
-        builds = view_pr.pr_builds(view_pr.pr_path(org, repo, '123'))
+        org, repo = view_pr.org_repo('',
+            app.app.config['default_org'],
+            app.app.config['default_repo'],
+        )
+        builds = view_pr.pr_builds(view_pr.pr_path(org, repo, '123',
+            app.app.config['default_repo'],
+            app.app.config['default_repo'],
+            app.app.config['external_services'][org]['gcs_pull_prefix'],
+        ))
         self.assertEqual(builds, self.BUILDS)
 
     def test_pr_handler(self):
@@ -190,7 +194,7 @@ class TestDashboard(main_test.TestBase):
     def test_build_links_user(self):
         "Build pages show PR information"
         make_pr(12345, ['human'], {'title': 'huge pr!'})
-        build_dir = '/%s/12345/e2e/5/' % PR_PREFIX
+        build_dir = '/kubernetes-jenkins/pr-logs/pull/12345/e2e/5/'
         write(build_dir + 'started.json', '{}')
         resp = app.get('/build' + build_dir)
         self.assertIn('href="/pr/human"', resp)

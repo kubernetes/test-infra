@@ -29,22 +29,25 @@ import (
 const pluginName = "release-note"
 
 const (
-	releaseNoteActionRequired = "release-note-action-required"
-	releaseNoteNone           = "release-note-none"
-	releaseNoteLabelNeeded    = "release-note-label-needed"
-	releaseNote               = "release-note"
+	releaseNoteActionRequired        = "release-note-action-required"
+	releaseNoteNone                  = "release-note-none"
+	deprecatedReleaseNoteLabelNeeded = "release-note-label-needed"
+	releaseNoteLabelNeeded           = "do-not-merge/release-note-label-needed"
+	releaseNote                      = "release-note"
 )
 
 var (
 	allRNLabels = []string{
 		releaseNoteNone,
 		releaseNoteActionRequired,
+		deprecatedReleaseNoteLabelNeeded,
 		releaseNoteLabelNeeded,
 		releaseNote,
 	}
 
-	releaseNoteRe     = regexp.MustCompile(`(?mi)^/release-note\s*$`)
-	releaseNoteNoneRe = regexp.MustCompile(`(?mi)^/release-note-none\s*$`)
+	releaseNoteRe               = regexp.MustCompile(`(?mi)^/release-note\s*$`)
+	releaseNoteNoneRe           = regexp.MustCompile(`(?mi)^/release-note-none\s*$`)
+	releaseNoteActionRequiredRe = regexp.MustCompile(`(?mi)^/release-note-action-required\s*$`)
 )
 
 func init() {
@@ -74,11 +77,14 @@ func handle(gc githubClient, log *logrus.Entry, ic github.IssueCommentEvent) err
 
 	// Which label does the comment want us to add?
 	var nl string
-	if releaseNoteRe.MatchString(ic.Comment.Body) {
+	switch {
+	case releaseNoteRe.MatchString(ic.Comment.Body):
 		nl = releaseNote
-	} else if releaseNoteNoneRe.MatchString(ic.Comment.Body) {
+	case releaseNoteNoneRe.MatchString(ic.Comment.Body):
 		nl = releaseNoteNone
-	} else {
+	case releaseNoteActionRequiredRe.MatchString(ic.Comment.Body):
+		nl = releaseNoteActionRequired
+	default:
 		return nil
 	}
 

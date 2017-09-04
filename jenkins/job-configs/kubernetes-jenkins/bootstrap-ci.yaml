@@ -129,7 +129,7 @@
         job-name: ci-kubernetes-e2e-gce-scale-correctness
         jenkins-timeout: 1120
         timeout: 1020
-        frequency: '1 0 * * 2' # Run at 00:01 on tuesday
+        frequency: '1 0 * * 2,4' # Run at 00:01 on even weekdays
         trigger-job: ''
     - kubernetes-e2e-gce-scale-performance:
         job-name: ci-kubernetes-e2e-gce-scale-performance
@@ -215,7 +215,7 @@
         job-name: ci-kubernetes-e2e-gke-scale-correctness
         jenkins-timeout: 1120
         timeout: 1020
-        frequency: '1 0 * * 4' # Run at 00:01 on thursday
+        frequency: '' #'1 0 * * 4' # Run at 00:01 on thursday
         trigger-job: ''
 
     # START KUBEMARK
