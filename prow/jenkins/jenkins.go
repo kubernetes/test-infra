@@ -23,8 +23,6 @@ import (
 	"net/http"
 	"net/url"
 	"time"
-
-	"github.com/satori/go.uuid"
 )
 
 const (
@@ -64,6 +62,7 @@ type BearerTokenAuthConfig struct {
 }
 
 type BuildRequest struct {
+	ProwJobName string
 	JobName     string
 	Refs        string
 	Environment map[string]string
@@ -71,7 +70,6 @@ type BuildRequest struct {
 
 type Build struct {
 	JobName  string
-	ID       string
 	QueueURL *url.URL
 }
 
@@ -119,12 +117,11 @@ func (c *Client) doRequest(method, path string) (*http.Response, error) {
 // Build triggers the job on Jenkins with an ID parameter that will let us
 // track it.
 func (c *Client) Build(br BuildRequest) (*Build, error) {
-	buildID := uuid.NewV1().String()
 	u, err := url.Parse(fmt.Sprintf("%s/job/%s/buildWithParameters", c.baseURL, br.JobName))
 	if err != nil {
 		return nil, err
 	}
-	br.Environment["buildId"] = buildID
+	br.Environment["buildId"] = br.ProwJobName
 
 	q := u.Query()
 	for key, value := range br.Environment {
@@ -145,7 +142,6 @@ func (c *Client) Build(br BuildRequest) (*Build, error) {
 	}
 	return &Build{
 		JobName:  br.JobName,
-		ID:       buildID,
 		QueueURL: loc,
 	}, nil
 }

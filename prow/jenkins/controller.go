@@ -248,7 +248,7 @@ func (c *Controller) syncPendingJob(pj kube.ProwJob, reports chan<- kube.ProwJob
 		} else {
 			pj.Status.JenkinsEnqueued = false
 		}
-	} else if status, err := c.jc.Status(pj.Spec.Job, pj.Status.JenkinsBuildID); err != nil {
+	} else if status, err := c.jc.Status(pj.Spec.Job, pj.Metadata.Name); err != nil {
 		jerr = fmt.Errorf("error checking build status for prowjob %s: %v", pj.Metadata.Name, err)
 		pj.Status.CompletionTime = time.Now()
 		pj.Status.State = kube.ErrorState
@@ -313,6 +313,7 @@ func (c *Controller) syncNonPendingJob(pj kube.ProwJob, reports chan<- kube.Prow
 		env := npj.EnvForSpec(pj.Spec)
 
 		br := BuildRequest{
+			ProwJobName: pj.Metadata.Name,
 			JobName:     pj.Spec.Job,
 			Refs:        pj.Spec.Refs.String(),
 			Environment: env,
@@ -325,7 +326,6 @@ func (c *Controller) syncNonPendingJob(pj kube.ProwJob, reports chan<- kube.Prow
 			pj.Status.Description = "Error starting Jenkins job."
 		} else {
 			pj.Status.JenkinsQueueURL = build.QueueURL.String()
-			pj.Status.JenkinsBuildID = build.ID
 			pj.Status.JenkinsEnqueued = true
 			pj.Status.Description = "Jenkins job triggered."
 		}

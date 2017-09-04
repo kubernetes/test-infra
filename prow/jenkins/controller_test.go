@@ -94,7 +94,6 @@ func (f *fjc) Build(br BuildRequest) (*Build, error) {
 	url, _ := url.Parse("localhost")
 	return &Build{
 		JobName:  br.JobName,
-		ID:       "4",
 		QueueURL: url,
 	}, nil
 }
