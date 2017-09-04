@@ -25,6 +25,7 @@ go_library(
         "federation.go",
         "gke.go",
         "kops.go",
+        "kubernetes.go",
         "main.go",
         "node.go",
         "none.go",

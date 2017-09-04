@@ -446,22 +446,6 @@ func isUp(d deployer) error {
 	return nil
 }
 
-func waitForNodes(d deployer, nodes int, timeout time.Duration) error {
-	for stop := time.Now().Add(timeout); time.Now().Before(stop); time.Sleep(30 * time.Second) {
-		n, err := clusterSize(d)
-		if err != nil {
-			log.Printf("Can't get cluster size, sleeping: %v", err)
-			continue
-		}
-		if n < nodes {
-			log.Printf("%d (current nodes) < %d (requested instances), sleeping", n, nodes)
-			continue
-		}
-		return nil
-	}
-	return fmt.Errorf("waiting for nodes timed out")
-}
-
 func defaultDumpClusterLogs(localArtifactsDir, logexporterGCSPath string) error {
 	logDumpPath := "./cluster/log-dump/log-dump.sh"
 	// cluster/log-dump/log-dump.sh only exists in the Kubernetes tree

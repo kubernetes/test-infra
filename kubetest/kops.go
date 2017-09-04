@@ -294,7 +294,7 @@ func (k kops) Up() error {
 	// TODO(zmerlynn): More cluster validation. This should perhaps be
 	// added to kops and not here, but this is a fine place to loop
 	// for now.
-	return waitForNodes(k, k.nodes+1, *kopsUpTimeout)
+	return waitForReadyNodes(k.nodes+1, *kopsUpTimeout)
 }
 
 func (k kops) IsUp() error {
