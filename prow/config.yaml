@@ -424,6 +424,12 @@ presubmits:
     trigger: "(?m)^/test( all| pull-kubernetes-kubemark-e2e-gce),?(\\s+|$)"
     skip_branches:
     - release-1.4
+  - name: pull-kubernetes-kubemark-e2e-gce-big
+    agent: jenkins
+    always_run: false
+    context: pull-kubernetes-kubemark-e2e-gce-big
+    rerun_command: "/test pull-kubernetes-kubemark-e2e-gce-big"
+    trigger: "(?m)^/test pull-kubernetes-kubemark-e2e-gce-big,?(\\s+|$)"
   - name: pull-kubernetes-node-e2e
     agent: jenkins
     always_run: true
@@ -808,6 +814,12 @@ presubmits:
     trigger: "(?m)^/test( all| pull-security-kubernetes-kubemark-e2e-gce),?(\\s+|$)"
     skip_branches:
     - release-1.4
+  - name: pull-security-kubernetes-kubemark-e2e-gce-big
+    agent: jenkins
+    always_run: false
+    context: pull-security-kubernetes-kubemark-e2e-gce-big
+    rerun_command: "/test pull-security-kubernetes-kubemark-e2e-gce-big"
+    trigger: "(?m)^/test pull-security-kubernetes-kubemark-e2e-gce-big,?(\\s+|$)"
   - name: pull-security-kubernetes-node-e2e
     agent: jenkins
     always_run: true
