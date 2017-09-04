@@ -230,6 +230,9 @@ func getDeployer(o *options) (deployer, error) {
 	case "kops":
 		return newKops()
 	case "kubernetes-anywhere":
+		if o.multiClusters.Enabled() {
+			return newKubernetesAnywhereMultiCluster(o.gcpProject, o.gcpZone, o.multiClusters)
+		}
 		return newKubernetesAnywhere(o.gcpProject, o.gcpZone)
 	case "node":
 		return nodeDeploy{}, nil
