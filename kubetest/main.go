@@ -19,6 +19,7 @@ package main
 import (
 	"encoding/json"
 	"encoding/xml"
+	"errors"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -239,11 +240,22 @@ func getDeployer(o *options) (deployer, error) {
 	}
 }
 
+func validateFlags(o *options) error {
+	if o.multiClusters.Enabled() && o.deployment != "kubernetes-anywhere" {
+		return errors.New("--multi-clusters flag cannot be passed with deployments other than 'kubernetes-anywhere'")
+	}
+	return nil
+}
+
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	o := defineFlags()
 	flag.Parse()
 	err := complete(o)
+
+	if err := validateFlags(o); err != nil {
+		log.Fatalf("Flags validation failed. err: %v", err)
+	}
 
 	if boskos.HasResource() {
 		if berr := boskos.ReleaseAll("dirty"); berr != nil {
