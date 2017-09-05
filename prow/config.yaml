@@ -14893,7 +14893,7 @@ periodics:
       - name: USER
         value: prow
       - name: JENKINS_AWS_CREDENTIALS_FILE
-        value: /etc/aws-cred/aws-cred
+        value: /etc/aws-cred/credentials
       - name: JENKINS_AWS_SSH_PRIVATE_KEY_FILE
         value: /etc/aws-ssh/aws-ssh-private
       - name: JENKINS_AWS_SSH_PUBLIC_KEY_FILE
@@ -16125,14 +16125,12 @@ periodics:
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
         value: /etc/service-account/service-account.json
-      - name: JENKINS_AWS_CREDENTIALS_FILE
-        value: /etc/aws-cred/aws-cred
       image: gcr.io/k8s-test-infra-aws/aws-janitor:0.3
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
         readOnly: true
-      - mountPath: /etc/aws-cred
+      - mountPath: /workspace/.aws
         name: aws-cred
         readOnly: true
     volumes:
