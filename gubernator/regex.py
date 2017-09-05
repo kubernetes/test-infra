@@ -25,7 +25,15 @@ def wordRE(word):
 # HACK: match ANSI colored lines by allowing preceding "m",
 # as in"\x1b[0;31mFAILED\x1b[0m"
 
-default_words = ["build timed out", "error", "fail", "failed", "fatal", "undefined"]
+default_words = [
+    "build timed out",
+    "error",
+    "fail",
+    "failed",
+    "fatal",
+    "undefined",
+    "panic:",
+]
 
 error_re = re.compile(
     r'(?:\b|(?<=m))(%s)\b' % '|'.join(default_words), re.IGNORECASE)
