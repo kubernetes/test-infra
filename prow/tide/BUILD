@@ -8,8 +8,8 @@ go_library(
         "//prow/config:go_default_library",
         "//prow/github:go_default_library",
         "//prow/kube:go_default_library",
-        "//vendor/github.com/Sirupsen/logrus:go_default_library",
         "//vendor/github.com/shurcooL/githubql:go_default_library",
+        "//vendor/github.com/sirupsen/logrus:go_default_library",
     ],
 )
 
@@ -33,7 +33,7 @@ go_test(
     library = ":go_default_library",
     deps = [
         "//prow/kube:go_default_library",
-        "//vendor/github.com/Sirupsen/logrus:go_default_library",
         "//vendor/github.com/shurcooL/githubql:go_default_library",
+        "//vendor/github.com/sirupsen/logrus:go_default_library",
     ],
 )

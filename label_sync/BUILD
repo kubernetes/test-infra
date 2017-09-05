@@ -32,8 +32,8 @@ go_library(
     tags = ["automanaged"],
     deps = [
         "//prow/github:go_default_library",
-        "//vendor/github.com/Sirupsen/logrus:go_default_library",
         "//vendor/github.com/ghodss/yaml:go_default_library",
+        "//vendor/github.com/sirupsen/logrus:go_default_library",
     ],
 )
 

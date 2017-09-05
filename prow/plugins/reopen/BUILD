@@ -12,7 +12,7 @@ go_test(
     library = ":go_default_library",
     deps = [
         "//prow/github:go_default_library",
-        "//vendor/github.com/Sirupsen/logrus:go_default_library",
+        "//vendor/github.com/sirupsen/logrus:go_default_library",
     ],
 )
 
@@ -22,7 +22,7 @@ go_library(
     deps = [
         "//prow/github:go_default_library",
         "//prow/plugins:go_default_library",
-        "//vendor/github.com/Sirupsen/logrus:go_default_library",
+        "//vendor/github.com/sirupsen/logrus:go_default_library",
     ],
 )
 
