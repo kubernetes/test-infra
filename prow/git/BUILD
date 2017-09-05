@@ -9,7 +9,7 @@ load(
 go_library(
     name = "go_default_library",
     srcs = ["git.go"],
-    deps = ["//vendor/github.com/Sirupsen/logrus:go_default_library"],
+    deps = ["//vendor/github.com/sirupsen/logrus:go_default_library"],
 )
 
 filegroup(
