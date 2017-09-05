@@ -31,7 +31,7 @@ import (
 )
 
 const (
-	commentTag = "<!-- test report -->"
+	commentTag       = "<!-- test report -->"
 	parentJobChanged = "Parent Job Status Changed: "
 )
 
@@ -84,7 +84,7 @@ func Report(ghc GithubClient, configAgent configAgent, pj kube.ProwJob) error {
 	if len(refs.Pulls) != 1 {
 		return fmt.Errorf("prowjob %s has %d pulls, not 1", pj.Metadata.Name, len(refs.Pulls))
 	}
-	if err := reportStatus(ghc, pj, parentJobChanged + pj.Status.Description); err != nil {
+	if err := reportStatus(ghc, pj, parentJobChanged+pj.Status.Description); err != nil {
 		return fmt.Errorf("error setting status: %v", err)
 	}
 	if pj.Status.State != github.StatusSuccess && pj.Status.State != github.StatusFailure {

@@ -296,7 +296,7 @@ func TestReportStatus(t *testing.T) {
 	for _, tc := range []tc{
 		createTc("successful job", kube.SuccessState),
 		createTc("pending jobs", kube.PendingState),
-	}{
+	} {
 		ghc := &fakeGhClient{}
 		if err := reportStatus(ghc, tc.pj, parentJobChanged); err != nil {
 			t.Error(err)
