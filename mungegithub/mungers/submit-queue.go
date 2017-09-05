@@ -58,8 +58,6 @@ const (
 	doNotMergeLabel                = "do-not-merge"
 	wipLabel                       = "do-not-merge/work-in-progress"
 	holdLabel                      = "do-not-merge/hold"
-	claYesLabel                    = "cla: yes"
-	claNoLabel                     = "cla: no"
 	cncfClaYesLabel                = "cncf-cla: yes"
 	cncfClaNoLabel                 = "cncf-cla: no"
 	claHumanLabel                  = "cla: human-approved"
@@ -958,7 +956,7 @@ func noMergeMessage(label string) string {
 
 const (
 	unknown                 = "unknown failure"
-	noCLA                   = "PR is missing CLA label; needs one of " + claYesLabel + ", " + cncfClaYesLabel + " or " + claHumanLabel
+	noCLA                   = "PR is missing CLA label; needs one of " + cncfClaYesLabel + " or " + claHumanLabel
 	noLGTM                  = "PR does not have " + lgtmLabel + " label."
 	noApproved              = "PR does not have " + approvedLabel + " label."
 	lgtmEarly               = "The PR was changed after the " + lgtmLabel + " label was added."
@@ -1029,7 +1027,7 @@ func (sq *SubmitQueue) validForMergeExt(obj *github.MungeObject, checkStatus boo
 
 	// Must pass CLA checks
 	if gateCLA {
-		if !obj.HasLabel(claYesLabel) && !obj.HasLabel(claHumanLabel) && !obj.HasLabel(cncfClaYesLabel) {
+		if !obj.HasLabel(claHumanLabel) && !obj.HasLabel(cncfClaYesLabel) {
 			sq.SetMergeStatus(obj, noCLA)
 			return false
 		}
@@ -1576,7 +1574,7 @@ func (sq *SubmitQueue) serveMergeInfo(res http.ResponseWriter, req *http.Request
 	out.WriteString("PRs must meet the following set of conditions to be considered for automatic merging by the submit queue.")
 	out.WriteString("<ol>")
 	if gateCLA {
-		out.WriteString(fmt.Sprintf("<li>The PR must have the label %q, %q or %q </li>", claYesLabel, cncfClaYesLabel, claHumanLabel))
+		out.WriteString(fmt.Sprintf("<li>The PR must have the label %q or %q </li>", cncfClaYesLabel, claHumanLabel))
 	}
 	out.WriteString("<li>The PR must be mergeable. aka cannot need a rebase</li>")
 	if len(mergeContexts) > 0 || len(retestContexts) > 0 {
