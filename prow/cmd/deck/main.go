@@ -17,13 +17,18 @@ limitations under the License.
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"encoding/json"
 	"flag"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
+	"net/http/httputil"
+	"net/url"
 	"regexp"
+	"strconv"
 
 	"github.com/NYTimes/gziphandler"
 	"github.com/ghodss/yaml"
@@ -141,6 +146,41 @@ func handleData(ja *JobAgent) http.HandlerFunc {
 
 type logClient interface {
 	GetJobLog(job, id string) ([]byte, error)
+	// Add ability to stream logs with options enabled. This call is used to follow logs
+	// using kubernetes client API. All other options on the Kubernetes log api can
+	// also be enabled.
+	GetJobLogStream(job, id string, options map[string]string) (io.ReadCloser, error)
+}
+
+func httpChunking(log io.ReadCloser, w http.ResponseWriter) {
+	flusher, ok := w.(http.Flusher)
+	if !ok {
+		logrus.Warning("Error getting flusher.")
+	}
+	cw := httputil.NewChunkedWriter(w)
+	reader := bufio.NewReader(log)
+	for {
+		line, err := reader.ReadBytes('\n')
+		if err != nil {
+			if err == io.EOF {
+				break
+			}
+		}
+		cw.Write(line)
+		if flusher != nil {
+			flusher.Flush()
+		}
+	}
+}
+
+func getOptions(values url.Values) map[string]string {
+	options := make(map[string]string)
+	for k, v := range values {
+		if k != "pod" && k != "job" && k != "id" {
+			options[k] = v[0]
+		}
+	}
+	return options
 }
 
 // TODO(spxtr): Cache, rate limit.
@@ -150,6 +190,14 @@ func handleLog(lc logClient) http.HandlerFunc {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		job := r.URL.Query().Get("job")
 		id := r.URL.Query().Get("id")
+		stream := r.URL.Query().Get("follow")
+		var logStreamRequested bool
+		if ok, _ := strconv.ParseBool(stream); ok {
+			// get http chunked responses to the client
+			w.Header().Set("Connection", "Keep-Alive")
+			w.Header().Set("Transfer-Encoding", "chunked")
+			logStreamRequested = true
+		}
 		if job != "" && id != "" {
 			if !objReg.MatchString(job) {
 				http.Error(w, "Invalid job query", http.StatusBadRequest)
@@ -159,14 +207,26 @@ func handleLog(lc logClient) http.HandlerFunc {
 				http.Error(w, "Invalid ID query", http.StatusBadRequest)
 				return
 			}
-			log, err := lc.GetJobLog(job, id)
-			if err != nil {
-				http.Error(w, fmt.Sprintf("Log not found: %v", err), http.StatusNotFound)
-				logrus.WithError(err).Warning("Error returned.")
-				return
-			}
-			if _, err = w.Write(log); err != nil {
-				logrus.WithError(err).Warning("Error writing log.")
+			if !logStreamRequested {
+				log, err := lc.GetJobLog(job, id)
+				if err != nil {
+					http.Error(w, fmt.Sprintf("Log not found: %v", err), http.StatusNotFound)
+					logrus.WithError(err).Warning("Error returned.")
+					return
+				}
+				if _, err = w.Write(log); err != nil {
+					logrus.WithError(err).Warning("Error writing log.")
+				}
+			} else {
+				//run http chunking
+				options := getOptions(r.URL.Query())
+				log, err := lc.GetJobLogStream(job, id, options)
+				if err != nil {
+					http.Error(w, fmt.Sprintf("Log stream caused: %v", err), http.StatusNotFound)
+					logrus.WithError(err).Warning("Error returned.")
+					return
+				}
+				go httpChunking(log, w)
 			}
 		} else {
 			http.Error(w, "Missing job and ID query", http.StatusBadRequest)

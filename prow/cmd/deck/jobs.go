@@ -18,6 +18,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"regexp"
 	"sort"
 	"strconv"
@@ -66,6 +67,7 @@ type listPJClient interface {
 
 type podLogClient interface {
 	GetLog(pod string) ([]byte, error)
+	GetLogStream(pod string, options map[string]string) (io.ReadCloser, error)
 }
 
 type JobAgent struct {
@@ -117,6 +119,24 @@ func (ja *JobAgent) GetJobLog(job, id string) ([]byte, error) {
 		return nil, err
 	}
 	return ja.jc.GetLog(job, num)
+}
+
+func (ja *JobAgent) GetJobLogStream(job, id string, options map[string]string) (io.ReadCloser, error) {
+	var j kube.ProwJob
+	ja.mut.Lock()
+	idMap, ok := ja.jobsIDMap[job]
+	if ok {
+		j, ok = idMap[id]
+	}
+	ja.mut.Unlock()
+	if !ok {
+		return nil, fmt.Errorf("no such job %s %s", job, id)
+	}
+	if j.Spec.Agent == kube.KubernetesAgent {
+		return ja.pkc.GetLogStream(j.Status.PodName, options)
+	} else {
+		return nil, fmt.Errorf("Streaming is available for kubernetes clients only, job %s %s is not a job running under kubernetes.", job, id)
+	}
 }
 
 func (ja *JobAgent) tryUpdate() {
