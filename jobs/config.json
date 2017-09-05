@@ -10228,7 +10228,7 @@
     "args": [
       "/aws-janitor",
       "--",
-      "--tty=2h30m",
+      "--ttl=2h30m",
       "--path=s3://janitor-jenkins/objs.json"
     ],
     "scenario": "execute",
