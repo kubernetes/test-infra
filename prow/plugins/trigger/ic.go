@@ -54,11 +54,6 @@ func handleIC(c client, trustedOrg string, ic github.IssueCommentEvent) error {
 		return nil
 	}
 
-	if okToTest.MatchString(ic.Comment.Body) && ic.Issue.HasLabel(needsOkToTest) {
-		if err := c.GitHubClient.RemoveLabel(ic.Repo.Owner.Login, ic.Repo.Name, ic.Issue.Number, needsOkToTest); err != nil {
-			c.Logger.WithError(err).Errorf("Failed at removing %s label", needsOkToTest)
-		}
-	}
 	// Which jobs does the comment want us to run?
 	shouldRetestFailed := retest.MatchString(ic.Comment.Body)
 	requestedJobs := c.Config.MatchingPresubmits(ic.Repo.FullName, ic.Comment.Body, okToTest)
@@ -69,6 +64,28 @@ func handleIC(c client, trustedOrg string, ic github.IssueCommentEvent) error {
 	pr, err := c.GitHubClient.GetPullRequest(org, repo, number)
 	if err != nil {
 		return err
+	}
+
+	// Skip untrusted users.
+	orgMember, err := c.GitHubClient.IsMember(trustedOrg, commentAuthor)
+	if err != nil {
+		return err
+	} else if !orgMember {
+		trusted, err := trustedPullRequest(c.GitHubClient, *pr, trustedOrg)
+		if err != nil {
+			return err
+		}
+		if !trusted {
+			resp := fmt.Sprintf("you can't request testing unless you are a [%s](https://github.com/orgs/%s/people) member.", trustedOrg, trustedOrg)
+			c.Logger.Infof("Commenting \"%s\".", resp)
+			return c.GitHubClient.CreateComment(org, repo, number, plugins.FormatICResponse(ic.Comment, resp))
+		}
+	}
+
+	if okToTest.MatchString(ic.Comment.Body) && ic.Issue.HasLabel(needsOkToTest) {
+		if err := c.GitHubClient.RemoveLabel(ic.Repo.Owner.Login, ic.Repo.Name, ic.Issue.Number, needsOkToTest); err != nil {
+			c.Logger.WithError(err).Errorf("Failed at removing %s label", needsOkToTest)
+		}
 	}
 
 	if shouldRetestFailed {
@@ -87,22 +104,6 @@ func handleIC(c client, trustedOrg string, ic github.IssueCommentEvent) error {
 			}
 		}
 		requestedJobs = append(requestedJobs, c.Config.RetestPresubmits(ic.Repo.FullName, skipContexts, runContexts)...)
-	}
-
-	// Skip untrusted users.
-	orgMember, err := c.GitHubClient.IsMember(trustedOrg, commentAuthor)
-	if err != nil {
-		return err
-	} else if !orgMember {
-		trusted, err := trustedPullRequest(c.GitHubClient, *pr, trustedOrg)
-		if err != nil {
-			return err
-		}
-		if !trusted {
-			resp := fmt.Sprintf("you can't request testing unless you are a [%s](https://github.com/orgs/%s/people) member.", trustedOrg, trustedOrg)
-			c.Logger.Infof("Commenting \"%s\".", resp)
-			return c.GitHubClient.CreateComment(org, repo, number, plugins.FormatICResponse(ic.Comment, resp))
-		}
 	}
 
 	ref, err := c.GitHubClient.GetRef(org, repo, "heads/"+pr.Base.Ref)
