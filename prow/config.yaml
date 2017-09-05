@@ -1413,6 +1413,81 @@ postsubmits:
             hostPath:
               path: /mnt/disks/ssd0
 
+  - name: ci-kubernetes-bazel-build-1-8
+    agent: kubernetes
+    branches:
+    - release-1.8
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/bazelbuild:v20170829-93ec4e74
+        args:
+        - "--clean"
+        - "--git-cache=/root/.cache/git"
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/logs"
+        # Bazel needs privileged mode in order to sandbox builds.
+        securityContext:
+          privileged: true
+        env:
+        # Make Bazel use shared cache for its root
+        # https://docs.bazel.build/versions/master/output_directories.html#documentation-of-the-current-bazel-output-directory-layout
+        - name: TEST_TMPDIR
+          value: /root/.cache/bazel
+        volumeMounts:
+        - name: service
+          mountPath: /etc/service-account
+          readOnly: true
+        - name: cache-ssd
+          mountPath: /root/.cache
+        ports:
+        - containerPort: 9999
+          hostPort: 9999
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
+      - name: cache-ssd
+        hostPath:
+          path: /mnt/disks/ssd0
+    run_after_success:
+    - name: ci-kubernetes-bazel-test-1-8
+      agent: kubernetes
+      spec:
+        containers:
+        - image: gcr.io/k8s-testimages/bazelbuild:v20170829-93ec4e74
+          args:
+          - "--clean"
+          - "--git-cache=/root/.cache/git"
+          - "--job=$(JOB_NAME)"
+          - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+          - "--service-account=/etc/service-account/service-account.json"
+          - "--upload=gs://kubernetes-jenkins/logs"
+          securityContext:
+            privileged: true
+          env:
+          # Make Bazel use shared cache for its root
+          # https://docs.bazel.build/versions/master/output_directories.html#documentation-of-the-current-bazel-output-directory-layout
+          - name: TEST_TMPDIR
+            value: /root/.cache/bazel
+          volumeMounts:
+          - name: service
+            mountPath: /etc/service-account
+            readOnly: true
+          - name: cache-ssd
+            mountPath: /root/.cache
+          ports:
+          - containerPort: 9999
+            hostPort: 9999
+        volumes:
+        - name: service
+          secret:
+            secretName: service-account
+        - name: cache-ssd
+          hostPath:
+            path: /mnt/disks/ssd0
+
   kubernetes/test-infra:
   - name: ci-test-infra-bazel
     agent: kubernetes
@@ -16376,6 +16451,80 @@ periodics:
         - name: cache-ssd
           hostPath:
             path: /mnt/disks/ssd0
+
+- name: periodic-kubernetes-bazel-build-1-8
+  interval: 2h
+  agent: kubernetes
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/bazelbuild:v20170829-93ec4e74
+      args:
+      - "--clean"
+      - "--git-cache=/root/.cache/git"
+      - "--job=$(JOB_NAME)"
+      - "--repo=k8s.io/kubernetes=release-1.8"
+      - "--service-account=/etc/service-account/service-account.json"
+      - "--upload=gs://kubernetes-jenkins/logs"
+      # Bazel needs privileged mode in order to sandbox builds.
+      securityContext:
+        privileged: true
+      env:
+      # Make Bazel use shared cache for its root
+      # https://docs.bazel.build/versions/master/output_directories.html#documentation-of-the-current-bazel-output-directory-layout
+      - name: TEST_TMPDIR
+        value: /root/.cache/bazel
+      volumeMounts:
+      - name: service
+        mountPath: /etc/service-account
+        readOnly: true
+      - name: cache-ssd
+        mountPath: /root/.cache
+      ports:
+      - containerPort: 9999
+        hostPort: 9999
+    volumes:
+    - name: service
+      secret:
+        secretName: service-account
+    - name: cache-ssd
+      hostPath:
+        path: /mnt/disks/ssd0
+  run_after_success:
+  - name: periodic-kubernetes-bazel-test-1-8
+    agent: kubernetes
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/bazelbuild:v20170829-93ec4e74
+        args:
+        - "--clean"
+        - "--git-cache=/root/.cache/git"
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/kubernetes=release-1.8"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/logs"
+        securityContext:
+          privileged: true
+        env:
+        # Make Bazel use shared cache for its root
+        # https://docs.bazel.build/versions/master/output_directories.html#documentation-of-the-current-bazel-output-directory-layout
+        - name: TEST_TMPDIR
+          value: /root/.cache/bazel
+        volumeMounts:
+        - name: service
+          mountPath: /etc/service-account
+          readOnly: true
+        - name: cache-ssd
+          mountPath: /root/.cache
+        ports:
+        - containerPort: 9999
+          hostPort: 9999
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
+      - name: cache-ssd
+        hostPath:
+          path: /mnt/disks/ssd0
 
 - name: periodic-test-infra-retester
   interval: 20m  # Retest at most 1 PR per 20m, which should not DOS the queue.
