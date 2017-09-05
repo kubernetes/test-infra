@@ -35,9 +35,15 @@ state and no claims of backwards compatibility are made for any external API.
    ```
    kubectl label pods --all -n pod_namespace created-by-prow=true
    ```
+ - *September 1, 2017* `deck` version 0.44 and `jenkins-operator` version 0.41
+   controllers no longer provide a default value for the `--jenkins-token-file` flag.
+   Cluster administrators should provide `--jenkins-token-file=/etc/jenkins/jenkins`
+   explicitly when upgrading to a new version of these components if they were
+   previously relying on the default. For more context, please see
+   [this pull request.](https://github.com/kubernetes/test-infra/pull/4210)
  - *August 29, 2017* Configuration specific to plugins is now held in in the
    `plugins` `ConfigMap` and serialized in this repo in the `plugins.yaml` file.
-   Cluster administrators upgrading to the newest version of Prow should move
+   Cluster administrators upgrading to `hook` version 0.148 or newer should move
    plugin configuration from the main `ConfigMap`. For more context, please see
    [this pull request.](https://github.com/kubernetes/test-infra/pull/4213)
 

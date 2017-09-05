@@ -28,7 +28,6 @@ import (
 	"log"
 	"os"
 	"os/exec"
-	"path/filepath"
 	"regexp"
 	"sort"
 	"strconv"
@@ -66,6 +65,8 @@ type gkeNodePool struct {
 
 type gkeDeployer struct {
 	project         string
+	zone            string
+	region          string
 	location        string
 	additionalZones string
 	cluster         string
@@ -111,8 +112,10 @@ func newGKE(provider, project, zone, region, network, image, cluster string, tes
 		return nil, fmt.Errorf("--gcp-zone and --gcp-region cannot both be set")
 	}
 	if zone != "" {
+		g.zone = zone
 		g.location = "--zone=" + zone
 	} else if region != "" {
+		g.region = region
 		g.location = "--region=" + region
 	}
 
@@ -287,11 +290,13 @@ func (g *gkeDeployer) IsUp() error {
 //
 // TODO(zmerlynn): This whole path is really gross, but this seemed
 // the least gross hack to get this done.
+//
+// TODO(shyamjvs): Make this work with multizonal and regional clusters.
 func (g *gkeDeployer) DumpClusterLogs(localPath, gcsPath string) error {
 	// gkeLogDumpTemplate is a template of a shell script where
 	// - %[1]s is the project
-	// - %[2]s is a filter composed of the instance groups
-	// - %[3]s is the ssh key
+	// - %[2]s is the zone
+	// - %[3]s is a filter composed of the instance groups
 	// - %[4]s is the log-dump.sh command line
 	const gkeLogDumpTemplate = `
 function log_dump_custom_get_instances() {
@@ -299,11 +304,13 @@ function log_dump_custom_get_instances() {
     return 0
   fi
 
-  gcloud compute instances list '--project=%[1]s' '--filter=%[2]s' '--format=get(name)'
+  gcloud compute instances list '--project=%[1]s' '--filter=%[3]s' '--format=get(name)'
 }
 export -f log_dump_custom_get_instances
-export LOG_DUMP_SSH_USER="${USER}"
-export LOG_DUMP_SSH_KEY='%[3]s'
+# Set below vars that log-dump.sh expects in order to use scp with gcloud.
+export PROJECT=%[1]s
+export ZONE='%[2]s'
+export KUBERNETES_PROVIDER=gke
 %[4]s
 `
 	// Prevent an obvious injection.
@@ -329,8 +336,8 @@ export LOG_DUMP_SSH_KEY='%[3]s'
 	}
 	return finishRunning(exec.Command("bash", "-c", fmt.Sprintf(gkeLogDumpTemplate,
 		g.project,
+		g.zone,
 		strings.Join(filters, " OR "),
-		filepath.Join(home(".ssh"), "google_compute_engine"),
 		dumpCmd)))
 }
 

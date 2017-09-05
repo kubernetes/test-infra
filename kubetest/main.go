@@ -751,6 +751,11 @@ func prepare(o *options) error {
 				option: &o.kubemarkNodes,
 				name:   "--kubemark-nodes",
 			},
+			{
+				env:    "KUBEMARK_MASTER_SIZE",
+				option: &o.kubemarkMasterSize,
+				name:   "--kubemark-master-size",
+			},
 		}); err != nil {
 			return err
 		}
