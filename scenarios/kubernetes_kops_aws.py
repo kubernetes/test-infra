@@ -212,7 +212,12 @@ def main(args):
         cmd.extend(['-v', '/var/run/docker.sock:/var/run/docker.sock'])
 
     if args.stage is not None:
-        version = check_output('git', 'describe', '--always').strip()
+        for line in check_output('hack/print-workspace-status.sh').split('\n'):
+            if 'gitVersion' in line:
+                _, version = line.strip().split(' ')
+                break
+        else:
+            raise ValueError('kubernetes version not found in workspace status')
         extra_args.append('--stage=%s' % args.stage)
         extra_args.append('--kops-kubernetes-version=%s/%s' % (
             args.stage.replace('gs://', 'https://storage.googleapis.com/'),
