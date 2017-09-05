@@ -1106,6 +1106,15 @@ test_groups:
   gcs_prefix: kopeio-kubernetes-e2e/logs/kubernetes-e2e-upup-aws-ha
 - name: kopeio-kubernetes-e2e-upup-aws
   gcs_prefix: kopeio-kubernetes-e2e/logs/kubernetes-e2e-upup-aws
+# @luxas' multiarch e2e results
+- name: periodic-multi-platform-kubeadm-gce-amd64
+  gcs_prefix: kubernetes-multiarch-e2e-results/logs/kubeadm-luxas-gce-amd64
+- name: periodic-multi-platform-kubeadm-scaleway-arm
+  gcs_prefix: kubernetes-multiarch-e2e-results/logs/kubeadm-luxas-scaleway-arm
+- name: periodic-multi-platform-kubeadm-scaleway-arm64
+  gcs_prefix: kubernetes-multiarch-e2e-results/logs/kubeadm-luxas-scaleway-arm64
+- name: periodic-multi-platform-kubeadm-packet-arm64
+  gcs_prefix: kubernetes-multiarch-e2e-results/logs/kubeadm-luxas-packet-arm64
 # docker
 - name: ci-kubernetes-e2e-gci-gce-docker
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-docker
@@ -1825,6 +1834,17 @@ dashboards:
     test_group_name: kopeio-kubernetes-e2e-upup-aws-ha
   - name: kopeio-upup-aws
     test_group_name: kopeio-kubernetes-e2e-upup-aws
+
+- name: multi-platform
+  dashboard_tab:
+  - name: periodic-kubeadm-gce-amd64
+    test_group_name: periodic-multi-platform-kubeadm-gce-amd64
+  - name: periodic-kubeadm-scaleway-arm
+    test_group_name: periodic-multi-platform-kubeadm-scaleway-arm
+  - name: periodic-kubeadm-scaleway-arm64
+    test_group_name: periodic-multi-platform-kubeadm-scaleway-arm64
+  - name: periodic-kubeadm-packet-arm64
+    test_group_name: periodic-multi-platform-kubeadm-packet-arm64
 
 - name: rkt
   dashboard_tab:
