@@ -57,7 +57,7 @@ type githubClient interface {
 }
 
 func handleIssueComment(pc plugins.PluginClient, ic github.IssueCommentEvent) error {
-	if !ic.Issue.IsPullRequest() || ic.Action != github.IssueCommentActionCreated {
+	if ic.Action != github.IssueCommentActionCreated {
 		return nil
 	}
 
