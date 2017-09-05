@@ -23,8 +23,6 @@ import (
 	"net/http"
 	"net/url"
 	"time"
-
-	"github.com/satori/go.uuid"
 )
 
 const (
@@ -64,15 +62,16 @@ type BearerTokenAuthConfig struct {
 }
 
 type BuildRequest struct {
-	JobName     string
-	Refs        string
+	// ProwJobName is the buildId parameter set in every Jenkins job so
+	// that the jenkins-operator can track the build in between requesting
+	// it and Jenkins scheduling it in an instance, ie. when it is in the
+	// build queue.
+	ProwJobName string
+	// JobName is the name of the job inside Jenkins for which to request
+	// a build.
+	JobName string
+	// Environment is additional parameters set in the build.
 	Environment map[string]string
-}
-
-type Build struct {
-	JobName  string
-	ID       string
-	QueueURL *url.URL
 }
 
 func NewClient(url string, authConfig *AuthConfig) *Client {
@@ -118,13 +117,12 @@ func (c *Client) doRequest(method, path string) (*http.Response, error) {
 
 // Build triggers the job on Jenkins with an ID parameter that will let us
 // track it.
-func (c *Client) Build(br BuildRequest) (*Build, error) {
-	buildID := uuid.NewV1().String()
+func (c *Client) Build(br BuildRequest) (*url.URL, error) {
 	u, err := url.Parse(fmt.Sprintf("%s/job/%s/buildWithParameters", c.baseURL, br.JobName))
 	if err != nil {
 		return nil, err
 	}
-	br.Environment["buildId"] = buildID
+	br.Environment["buildId"] = br.ProwJobName
 
 	q := u.Query()
 	for key, value := range br.Environment {
@@ -139,15 +137,7 @@ func (c *Client) Build(br BuildRequest) (*Build, error) {
 	if resp.StatusCode != 201 {
 		return nil, fmt.Errorf("response not 201: %s", resp.Status)
 	}
-	loc, err := resp.Location()
-	if err != nil {
-		return nil, err
-	}
-	return &Build{
-		JobName:  br.JobName,
-		ID:       buildID,
-		QueueURL: loc,
-	}, nil
+	return resp.Location()
 }
 
 // Enqueued returns whether or not the given build is in Jenkins' build queue.

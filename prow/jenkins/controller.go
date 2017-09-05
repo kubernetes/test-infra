@@ -19,6 +19,7 @@ package jenkins
 import (
 	"bytes"
 	"fmt"
+	"net/url"
 	"strconv"
 	"sync"
 	"time"
@@ -47,7 +48,7 @@ type kubeClient interface {
 }
 
 type jenkinsClient interface {
-	Build(BuildRequest) (*Build, error)
+	Build(BuildRequest) (*url.URL, error)
 	Enqueued(string) (bool, error)
 	Status(job, id string) (*Status, error)
 }
@@ -248,7 +249,7 @@ func (c *Controller) syncPendingJob(pj kube.ProwJob, reports chan<- kube.ProwJob
 		} else {
 			pj.Status.JenkinsEnqueued = false
 		}
-	} else if status, err := c.jc.Status(pj.Spec.Job, pj.Status.JenkinsBuildID); err != nil {
+	} else if status, err := c.jc.Status(pj.Spec.Job, pj.Metadata.Name); err != nil {
 		jerr = fmt.Errorf("error checking build status for prowjob %s: %v", pj.Metadata.Name, err)
 		pj.Status.CompletionTime = time.Now()
 		pj.Status.State = kube.ErrorState
@@ -313,19 +314,18 @@ func (c *Controller) syncNonPendingJob(pj kube.ProwJob, reports chan<- kube.Prow
 		env := npj.EnvForSpec(pj.Spec)
 
 		br := BuildRequest{
+			ProwJobName: pj.Metadata.Name,
 			JobName:     pj.Spec.Job,
-			Refs:        pj.Spec.Refs.String(),
 			Environment: env,
 		}
-		if build, err := c.jc.Build(br); err != nil {
+		if queueURL, err := c.jc.Build(br); err != nil {
 			jerr = fmt.Errorf("error starting Jenkins job for prowjob %s: %v", pj.Metadata.Name, err)
 			pj.Status.CompletionTime = time.Now()
 			pj.Status.State = kube.ErrorState
 			pj.Status.URL = testInfra
 			pj.Status.Description = "Error starting Jenkins job."
 		} else {
-			pj.Status.JenkinsQueueURL = build.QueueURL.String()
-			pj.Status.JenkinsBuildID = build.ID
+			pj.Status.JenkinsQueueURL = queueURL.String()
 			pj.Status.JenkinsEnqueued = true
 			pj.Status.Description = "Jenkins job triggered."
 		}
