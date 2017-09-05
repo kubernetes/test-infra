@@ -79,7 +79,7 @@ func TestHandleIssueComment(t *testing.T) {
 			IsPR:        true,
 			ShouldBuild: false,
 		},
-		// Non-trusted member after "ok to test".
+		// Non-trusted member after "/ok-to-test".
 		{
 			Author:      "u",
 			Body:        "/test all",
