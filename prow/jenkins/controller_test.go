@@ -86,16 +86,13 @@ type fjc struct {
 	err      error
 }
 
-func (f *fjc) Build(br BuildRequest) (*Build, error) {
+func (f *fjc) Build(br BuildRequest) (*url.URL, error) {
 	if f.err != nil {
 		return nil, f.err
 	}
 	f.built = true
 	url, _ := url.Parse("localhost")
-	return &Build{
-		JobName:  br.JobName,
-		QueueURL: url,
-	}, nil
+	return url, nil
 }
 
 func (f *fjc) Enqueued(string) (bool, error) {
