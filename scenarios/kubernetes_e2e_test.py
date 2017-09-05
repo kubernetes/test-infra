@@ -28,6 +28,7 @@ import tempfile
 import urllib
 import urllib2
 import unittest
+import time
 
 import kubernetes_e2e
 
@@ -494,7 +495,8 @@ class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-method
             return always_kubernetes()
         with Stub(kubernetes_e2e, 'check_env', self.fake_check_env):
             with Stub(kubernetes_e2e, 'read_gcs_path', expect_bazel_gcs):
-                kubernetes_e2e.main(args)
+                with Stub(time, 'sleep', fake_pass):
+                    kubernetes_e2e.main(args)
         lastcall = self.callstack[-1]
         self.assertIn('--extract=kubernetes', lastcall)
         # normal path, not bazel
@@ -515,11 +517,12 @@ class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-method
         with Stub(kubernetes_e2e, 'check_env', self.fake_check_env):
             with Stub(kubernetes_e2e, 'read_gcs_path', raise_urllib2_error):
                 with Stub(os, 'getcwd', always_kubernetes):
-                    try:
-                        kubernetes_e2e.main(args)
-                    except RuntimeError as err:
-                        if not err.message.startswith('Failed to get shared build location'):
-                            raise err
+                    with Stub(time, 'sleep', fake_pass):
+                        try:
+                            kubernetes_e2e.main(args)
+                        except RuntimeError as err:
+                            if not err.message.startswith('Failed to get shared build location'):
+                                raise err
 
 if __name__ == '__main__':
     unittest.main()
