@@ -39,9 +39,10 @@ var (
 	configPath   = flag.String("config-path", "/etc/config/config", "Path to config.yaml.")
 	buildCluster = flag.String("build-cluster", "", "Path to file containing a YAML-marshalled kube.Cluster object. If empty, uses the local cluster.")
 
-	jenkinsURL       = flag.String("jenkins-url", "", "Jenkins URL")
-	jenkinsUserName  = flag.String("jenkins-user", "jenkins-trigger", "Jenkins username")
-	jenkinsTokenFile = flag.String("jenkins-token-file", "/etc/jenkins/jenkins", "Path to the file containing the Jenkins API token.")
+	jenkinsURL             = flag.String("jenkins-url", "", "Jenkins URL")
+	jenkinsUserName        = flag.String("jenkins-user", "jenkins-trigger", "Jenkins username")
+	jenkinsTokenFile       = flag.String("jenkins-token-file", "", "Path to the file containing the Jenkins API token.")
+	jenkinsBearerTokenFile = flag.String("jenkins-bearer-token-file", "", "Path to the file containing the Jenkins API bearer token.")
 )
 
 // Matches letters, numbers, hyphens, and underscores.
@@ -70,14 +71,30 @@ func main() {
 		}
 	}
 
+	var ac *jenkins.AuthConfig
 	var jc *jenkins.Client
 	if *jenkinsURL != "" {
-		jenkinsSecretRaw, err := ioutil.ReadFile(*jenkinsTokenFile)
-		if err != nil {
-			logrus.WithError(err).Fatalf("Could not read token file.")
+		if *jenkinsTokenFile != "" {
+			if token, err := loadToken(*jenkinsTokenFile); err != nil {
+				logrus.WithError(err).Fatalf("Could not read token file.")
+			} else {
+				ac.Basic = &jenkins.BasicAuthConfig{
+					User:  *jenkinsUserName,
+					Token: token,
+				}
+			}
+		} else if *jenkinsBearerTokenFile != "" {
+			if token, err := loadToken(*jenkinsBearerTokenFile); err != nil {
+				logrus.WithError(err).Fatalf("Could not read token file.")
+			} else {
+				ac.BearerToken = &jenkins.BearerTokenAuthConfig{
+					Token: token,
+				}
+			}
+		} else {
+			logrus.Fatal("An auth token for basic or bearer token auth must be supplied.")
 		}
-		jenkinsToken := string(bytes.TrimSpace(jenkinsSecretRaw))
-		jc = jenkins.NewClient(*jenkinsURL, *jenkinsUserName, jenkinsToken)
+		jc = jenkins.NewClient(*jenkinsURL, ac)
 	}
 
 	ja := &JobAgent{
@@ -93,6 +110,14 @@ func main() {
 	http.Handle("/rerun", gziphandler.GzipHandler(handleRerun(kc)))
 
 	logrus.WithError(http.ListenAndServe(":8080", nil)).Fatal("ListenAndServe returned.")
+}
+
+func loadToken(file string) (string, error) {
+	raw, err := ioutil.ReadFile(file)
+	if err != nil {
+		return "", err
+	}
+	return string(bytes.TrimSpace(raw)), nil
 }
 
 func handleData(ja *JobAgent) http.HandlerFunc {
