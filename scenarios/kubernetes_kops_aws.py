@@ -211,6 +211,13 @@ def main(args):
         add_k8s(cmd, os.path.dirname(workspace), 'kubernetes', 'release')
         cmd.extend(['-v', '/var/run/docker.sock:/var/run/docker.sock'])
 
+    if args.stage is not None:
+        version = check_output('git', 'describe', '--always').strip()
+        extra_args.append('--stage=%s' % args.stage)
+        extra_args.append('--kops-kubernetes-version=%s/%s' % (
+            args.stage.replace('gs://', 'https://storage.googleapis.com/'),
+            version))
+
     if args.image:
         extra_args.append(' --kops-image=%s' % args.image)
 
@@ -318,6 +325,8 @@ if __name__ == '__main__':
     PARSER.add_argument(
         '--state', default='s3://k8s-kops-jenkins/',
         help='Name of the aws state storage')
+    PARSER.add_argument(
+        '--stage', default=None, help='Stage release to GCS path provided')
     PARSER.add_argument(
         '--tag', default='v20170314-bb0669b0-pyopenssl',
         help='Use a specific kubekins-e2e tag if set')
