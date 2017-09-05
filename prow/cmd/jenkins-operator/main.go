@@ -59,7 +59,7 @@ func main() {
 		logrus.WithError(err).Fatal("Error getting kube client.")
 	}
 
-	var ac *jenkins.AuthConfig
+	ac := &jenkins.AuthConfig{}
 	if *jenkinsTokenFile != "" {
 		token, err := loadToken(*jenkinsTokenFile)
 		if err != nil {
