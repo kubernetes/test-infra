@@ -475,7 +475,9 @@ class JobTest(unittest.TestCase):
                         extract_in_args = True
                     match = re.match(r'--env-file=([^\"]+)\.env', arg)
                     if match:
-                        path = config_sort.test_infra('%s.env' % match.group(1))
+                        env_path = match.group(1)
+                        self.assertTrue(env_path.startswith('jobs/'), env_path)
+                        path = config_sort.test_infra('%s.env' % env_path)
                         self.assertTrue(
                             os.path.isfile(path),
                             '%s does not exist for %s' % (path, job))
@@ -608,15 +610,12 @@ class JobTest(unittest.TestCase):
         """Ensure that everything in jobs/ is a valid job name and script."""
         for job, job_path in self.jobs:
             # Jobs should have simple names: letters, numbers, -, .
-            self.assertTrue(re.match(r'[.0-9a-z-_]+.(sh|env)', job), job)
+            self.assertTrue(re.match(r'[.0-9a-z-_]+.env', job), job)
             # Jobs should point to a real, executable file
             # Note: it is easy to forget to chmod +x
             self.assertTrue(os.path.isfile(job_path), job_path)
             self.assertFalse(os.path.islink(job_path), job_path)
-            if job.endswith('.sh'):
-                self.assertTrue(os.access(job_path, os.X_OK|os.R_OK), job_path)
-            else:
-                self.assertTrue(os.access(job_path, os.R_OK), job_path)
+            self.assertTrue(os.access(job_path, os.R_OK), job_path)
 
     def test_all_project_are_unique(self):
         # pylint: disable=line-too-long
@@ -714,7 +713,6 @@ class JobTest(unittest.TestCase):
             'ci-kubernetes-e2e-gke-large-deploy.env': 'ci-kubernetes-scale-*',
             'ci-kubernetes-e2e-gke-large-teardown.env': 'ci-kubernetes-scale-*',
             'ci-kubernetes-e2e-gke-scale-correctness.env': 'ci-kubernetes-scale-*',
-            'ci-kubernetes-federation-build.sh': 'ci-kubernetes-federation-*',
             'ci-kubernetes-e2e-gce-federation.env': 'ci-kubernetes-federation-*',
             'pull-kubernetes-federation-e2e-gce.env': 'pull-kubernetes-federation-e2e-gce-*',
             'ci-kubernetes-pull-gce-federation-deploy.env': 'pull-kubernetes-federation-e2e-gce-*',

@@ -2113,7 +2113,6 @@
     "args": [
       "--check-leaked-resources",
       "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gce-gci-ci-serial-master.env",
       "--extract=gci/gci-canary/latest",
       "--gcp-zone=us-central1-f",
       "--provider=gce",
@@ -2129,7 +2128,6 @@
     "args": [
       "--check-leaked-resources",
       "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gce-gci-ci-serial-release-1-4.env",
       "--extract=gci/gci-56/latest-1.4",
       "--gcp-zone=us-central1-f",
       "--provider=gce",
@@ -2145,7 +2143,6 @@
     "args": [
       "--check-leaked-resources",
       "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gce-gci-ci-serial-release-1-5.env",
       "--extract=gci/gci-56/latest-1.5",
       "--gcp-zone=us-central1-f",
       "--provider=gce",
@@ -2315,7 +2312,6 @@
     "args": [
       "--check-leaked-resources",
       "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gce-gci-qa-serial-m59.env",
       "--extract=gci/gci-59",
       "--gcp-project=e2e-gce-gci-qa-serial-m59",
       "--gcp-zone=us-central1-f",
@@ -2332,7 +2328,6 @@
     "args": [
       "--check-leaked-resources",
       "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gce-gci-qa-serial-m60.env",
       "--extract=gci/gci-60",
       "--gcp-project=e2e-gce-gci-qa-serial-m60",
       "--gcp-zone=us-central1-f",
@@ -2349,7 +2344,6 @@
     "args": [
       "--check-leaked-resources",
       "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gce-gci-qa-serial-m61.env",
       "--extract=gci/gci-61",
       "--gcp-project=e2e-gce-gci-qa-serial-m61",
       "--gcp-zone=us-central1-f",
@@ -2366,7 +2360,6 @@
     "args": [
       "--check-leaked-resources",
       "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gce-gci-qa-serial-master.env",
       "--extract=gci/gci-canary",
       "--gcp-project=e2e-gce-gci-qa-serial-master",
       "--gcp-zone=us-central1-f",
@@ -2484,7 +2477,6 @@
       "--check-leaked-resources",
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-gce-gpu.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gce-gpu-1-7.env",
       "--extract=ci/latest-1.7",
       "--gcp-project=k8s-jkns-e2e-gce-gpus-1-7",
       "--gcp-zone=us-west1-b",
@@ -2550,7 +2542,6 @@
     "args": [
       "--cluster=$USER-large-manual",
       "--env-file=jobs/env/ci-kubernetes-e2e-gce-large-manual-up.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gce-large-manual-down.env",
       "--extract=ci/latest",
       "--gcp-project=k8s-scale-testing",
       "--gcp-zone=us-east1-a",
@@ -2974,7 +2965,6 @@
       "--cluster=e2e-scale-canary",
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-gce-scalability.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gce-scalability-canary.env",
       "--extract=ci/latest",
       "--gcp-project=google.com:k8s-jenkins-scalability",
       "--gcp-zone=us-central1-f",
@@ -9194,7 +9184,6 @@
       "--docker-in-docker",
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/ci-kubernetes-kubemark-100-gce.env",
-      "--env-file=jobs/env/ci-kubernetes-kubemark-100-canary.env",
       "--extract=ci/latest",
       "--gcp-project=k8s-jenkins-gci-kubemark",
       "--gcp-zone=us-central1-f",
@@ -10559,7 +10548,6 @@
       "--cluster=",
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/pull-kubernetes-e2e.env",
-      "--env-file=jobs/env/pull-kubernetes-e2e-gce-bazel.env",
       "--extract=local",
       "--gcp-zone=us-central1-f",
       "--provider=gce",
@@ -10846,7 +10834,6 @@
       "--docker-in-docker",
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/ci-kubernetes-kubemark-500-gce.env",
-      "--env-file=jobs/env/pull-kubernetes-kubemark-e2e-gce-big.env",
       "--extract=local",
       "--gcp-project=k8s-scale-testing",
       "--gcp-zone=us-east1-a",
