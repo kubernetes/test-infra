@@ -15,8 +15,8 @@ Command | Implemented By | Who can run it | Description
 `/uncc [@userA @userB @etc]` | prow [assign](./prow/plugins/assign) | anyone | Dismiss review request for specified people (or yourself if no one is specified). Target must already have had a review requested.
 `/close` | prow [close](./prow/plugins/close) | authors and assignees | closes the issue/PR
 `/reopen` | prow [reopen](./prow/plugins/reopen) | authors and assignees | reopens a closed issue/PR
-`/hold` | prow [hold](./prow/plugins/hold) | anyone | adds the `hold` label
-`/hold cancel` | prow [hold](./prow/plugins/hold) | anyone | removes the `hold` label
+`/hold` | prow [hold](./prow/plugins/hold) | anyone | adds the `do-not-merge/hold` label
+`/hold cancel` | prow [hold](./prow/plugins/hold) | anyone | removes the `do-not-merge/hold` label
 `/joke` | prow [yuks](./prow/plugins/yuks) | anyone | tells a bad joke, sometimes
 `/kind [label1 label2 ...]` | prow [label](./prow/plugins/label) | anyone | adds a kind/<> label(s) if it exists
 `/remove-kind [label1 label2 ...]` | prow [label](./prow/plugins/label) | anyone | removes a kind/<> label(s) if it exists
