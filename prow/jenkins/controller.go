@@ -29,7 +29,7 @@ import (
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
-	"k8s.io/test-infra/prow/npj"
+	"k8s.io/test-infra/prow/pjutil"
 	reportlib "k8s.io/test-infra/prow/report"
 )
 
@@ -182,11 +182,11 @@ func (c *Controller) terminateDupes(pjs []kube.ProwJob) error {
 		}
 		toCancel.Status.CompletionTime = time.Now()
 		toCancel.Status.State = kube.AbortedState
-		npj, err := c.kc.ReplaceProwJob(toCancel.Metadata.Name, toCancel)
+		pjutil, err := c.kc.ReplaceProwJob(toCancel.Metadata.Name, toCancel)
 		if err != nil {
 			return err
 		}
-		pjs[i] = npj
+		pjs[i] = pjutil
 	}
 	return nil
 }
@@ -276,7 +276,7 @@ func (c *Controller) syncPendingJob(pj kube.ProwJob, reports chan<- kube.ProwJob
 			pj.Status.State = kube.SuccessState
 			pj.Status.Description = "Jenkins job succeeded."
 			for _, nj := range pj.Spec.RunAfterSuccess {
-				if _, err := c.kc.CreateProwJob(npj.NewProwJob(nj)); err != nil {
+				if _, err := c.kc.CreateProwJob(pjutil.NewProwJob(nj)); err != nil {
 					return fmt.Errorf("error starting next prowjob: %v", err)
 				}
 			}

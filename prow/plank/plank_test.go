@@ -27,7 +27,7 @@ import (
 
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/kube"
-	"k8s.io/test-infra/prow/npj"
+	"k8s.io/test-infra/prow/pjutil"
 )
 
 type fca struct {
@@ -528,7 +528,7 @@ func TestPeriodic(t *testing.T) {
 	totServ := httptest.NewServer(http.HandlerFunc(handleTot))
 	defer totServ.Close()
 	fc := &fkc{
-		prowjobs: []kube.ProwJob{npj.NewProwJob(npj.PeriodicSpec(per))},
+		prowjobs: []kube.ProwJob{pjutil.NewProwJob(pjutil.PeriodicSpec(per))},
 	}
 	c := Controller{
 		kc:          fc,

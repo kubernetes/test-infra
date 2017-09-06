@@ -19,7 +19,7 @@ package trigger
 import (
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
-	"k8s.io/test-infra/prow/npj"
+	"k8s.io/test-infra/prow/pjutil"
 )
 
 func handlePE(c client, pe github.PushEvent) error {
@@ -33,7 +33,7 @@ func handlePE(c client, pe github.PushEvent) error {
 			BaseRef: pe.Branch(),
 			BaseSHA: pe.After,
 		}
-		if _, err := c.KubeClient.CreateProwJob(npj.NewProwJob(npj.PostsubmitSpec(j, kr))); err != nil {
+		if _, err := c.KubeClient.CreateProwJob(pjutil.NewProwJob(pjutil.PostsubmitSpec(j, kr))); err != nil {
 			return err
 		}
 	}

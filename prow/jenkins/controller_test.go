@@ -27,7 +27,7 @@ import (
 
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/kube"
-	"k8s.io/test-infra/prow/npj"
+	"k8s.io/test-infra/prow/pjutil"
 )
 
 type fca struct {
@@ -481,7 +481,7 @@ func TestBatch(t *testing.T) {
 		Context: "Some Job Context",
 	}
 	fc := &fkc{
-		prowjobs: []kube.ProwJob{npj.NewProwJob(npj.BatchSpec(pre, kube.Refs{
+		prowjobs: []kube.ProwJob{pjutil.NewProwJob(pjutil.BatchSpec(pre, kube.Refs{
 			Org:     "o",
 			Repo:    "r",
 			BaseRef: "master",

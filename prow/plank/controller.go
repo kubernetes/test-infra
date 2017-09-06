@@ -30,7 +30,7 @@ import (
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
-	"k8s.io/test-infra/prow/npj"
+	"k8s.io/test-infra/prow/pjutil"
 	reportlib "k8s.io/test-infra/prow/report"
 )
 
@@ -221,11 +221,11 @@ func (c *Controller) terminateDupes(pjs []kube.ProwJob) error {
 		}
 		toCancel.Status.CompletionTime = time.Now()
 		toCancel.Status.State = kube.AbortedState
-		npj, err := c.kc.ReplaceProwJob(toCancel.Metadata.Name, toCancel)
+		pjutil, err := c.kc.ReplaceProwJob(toCancel.Metadata.Name, toCancel)
 		if err != nil {
 			return err
 		}
-		pjs[i] = npj
+		pjs[i] = pjutil
 	}
 	return nil
 }
@@ -287,7 +287,7 @@ func (c *Controller) syncKubernetesJob(pj kube.ProwJob, pm map[string]kube.Pod, 
 		pj.Status.URL = b.String()
 		reports <- pj
 		for _, nj := range pj.Spec.RunAfterSuccess {
-			if _, err := c.kc.CreateProwJob(npj.NewProwJob(nj)); err != nil {
+			if _, err := c.kc.CreateProwJob(pjutil.NewProwJob(nj)); err != nil {
 				return fmt.Errorf("error starting next prowjob: %v", err)
 			}
 		}
@@ -322,7 +322,7 @@ func (c *Controller) startPod(pj kube.ProwJob) (string, string, error) {
 		return "", "", fmt.Errorf("error getting build ID: %v", err)
 	}
 
-	pod := npj.ProwJobToPod(pj, buildID)
+	pod := pjutil.ProwJobToPod(pj, buildID)
 
 	actual, err := c.pkc.CreatePod(*pod)
 	if err != nil {
