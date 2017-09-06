@@ -29,7 +29,7 @@ import sys
 BRANCH_VERSION = {
     'release-1.2': 'release-1.4',
     'release-1.3': 'release-1.4',
-    'master': 'release-1.7',
+    'master': 'release-1.8',
 }
 
 VERSION_TAG = {
@@ -37,6 +37,7 @@ VERSION_TAG = {
     'release-1.5': '1.5-latest',
     'release-1.6': '1.6-latest',
     'release-1.7': '1.7-latest',
+    'release-1.8': '1.8-latest',
 }
 
 ORIG_CWD = os.getcwd()  # Checkout changes cwd
