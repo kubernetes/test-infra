@@ -19,6 +19,7 @@ package mungers
 import (
 	"errors"
 	"fmt"
+	"sort"
 	"strings"
 	"time"
 
@@ -110,7 +111,7 @@ func (m *MilestoneMaintainer) Initialize(config *github.Config, features *featur
 	return nil
 }
 
-// EachLoop is called at the start of every munge loop.  This function
+// EachLoop is called at the start of every munge loop. This function
 // is a no-op for the munger because to munge an issue it only needs
 // the state local to the issue.
 func (m *MilestoneMaintainer) EachLoop() error { return nil }
@@ -183,7 +184,7 @@ func (m *MilestoneMaintainer) Munge(obj *github.MungeObject) {
 }
 
 // ignoreObject indicates whether the munger should ignore the given
-// object.  Only issues in the active milestone should be munged.
+// object. Only issues in the active milestone should be munged.
 func ignoreObject(obj *github.MungeObject, activeMilestone string) bool {
 	// Only target issues
 	if obj.IsPR() {
@@ -201,7 +202,7 @@ func ignoreObject(obj *github.MungeObject, activeMilestone string) bool {
 }
 
 // notificationState returns the state required to ensure the munger's
-// notification is kept current.  If a nil return value is returned,
+// notification is kept current. If a nil return value is returned,
 // no action should be taken.
 func notificationState(obj *github.MungeObject, comment *c.Comment, botName string, gracePeriod, warningInterval time.Duration) (string, *milestoneNotification) {
 	notification := c.ParseNotification(comment)
@@ -328,8 +329,8 @@ func labelsIncompleteState(issue *githubapi.Issue, notification *c.Notification,
 }
 
 // warningIsCurrent indicates whether the given notification
-// represents is an up-to-date warning.  The notification is the
-// previous warning from the munger.  The message is the warning
+// represents is an up-to-date warning. The notification is the
+// previous warning from the munger. The message is the warning
 // generated from the current labels on the issue.
 func warningIsCurrent(notification *c.Notification, message string, commentCreatedAt *time.Time, warningInterval time.Duration) bool {
 	hasNotification := (notification != nil && notification.Arguments == milestoneLabelsIncomplete)
@@ -371,8 +372,8 @@ Removing it from the milestone.
 }
 
 // ensureLabel ensures that the desired label becomes the only
-// milestone label set on the given issue.  Returns true if the label
-// is set on the issue, false otherwise.  Any error encountered is
+// milestone label set on the given issue. Returns true if the label
+// is set on the issue, false otherwise. Any error encountered is
 // expected to be logged in the called function rather than being
 // handled by the caller.
 func ensureLabel(obj *github.MungeObject, desiredLabel string) bool {
@@ -393,7 +394,7 @@ func ensureLabel(obj *github.MungeObject, desiredLabel string) bool {
 }
 
 // gracePeriodRemaining returns the difference between the start of
-// the grace period and the grace period interval.  Returns nil the
+// the grace period and the grace period interval. Returns nil the
 // grace period start cannot be determined.
 func gracePeriodRemaining(obj *github.MungeObject, botName string, gracePeriod time.Duration, defaultStart time.Time) *time.Duration {
 	tempStart := gracePeriodStart(obj, botName, defaultStart)
@@ -408,8 +409,8 @@ func gracePeriodRemaining(obj *github.MungeObject, botName string, gracePeriod t
 
 // gracePeriodStart determines when the grace period for the given
 // object should start as is indicated by when the
-// milestone-labels-incomplete label was last applied.  If the label
-// is not set, the default will be returned.  nil will be returned if
+// milestone-labels-incomplete label was last applied. If the label
+// is not set, the default will be returned. nil will be returned if
 // an error occurs while accessing the object's label events.
 func gracePeriodStart(obj *github.MungeObject, botName string, defaultStart time.Time) *time.Time {
 	labelName := milestoneLabelsIncompleteLabel
@@ -421,7 +422,7 @@ func gracePeriodStart(obj *github.MungeObject, botName string, defaultStart time
 }
 
 // labelLastCreatedAt returns the time at which the given label was
-// last applied to the given github object.  Returns nil if an error
+// last applied to the given github object. Returns nil if an error
 // occurs during event retrieval or if the label has never been set.
 func labelLastCreatedAt(obj *github.MungeObject, botName, labelName string) *time.Time {
 	events, ok := obj.GetEvents()
@@ -452,12 +453,14 @@ func checkLabels(labels []githubapi.Label) (kindLabel, priorityLabel string, sig
 
 	kindLabel, err = uniqueLabelName(labels, kindMap)
 	if err != nil || len(kindLabel) == 0 {
-		labelErrors = append(labelErrors, "_**kind**_: Must specify at most one of [`kind/bug`, `kind/feature`, `kind/cleanup`].")
+		kindLabels := formatLabelString(kindMap)
+		labelErrors = append(labelErrors, fmt.Sprintf("_**kind**_: Must specify exactly one of [%s].", kindLabels))
 	}
 
 	priorityLabel, err = uniqueLabelName(labels, priorityMap)
 	if err != nil || len(priorityLabel) == 0 {
-		labelErrors = append(labelErrors, "_**priority**_: Must specify at most one of [`priority/critical-urgent`, `priority/important-soon`, `priority/important-longterm`].")
+		priorityLabels := formatLabelString(priorityMap)
+		labelErrors = append(labelErrors, fmt.Sprintf("_**priority**_: Must specify exactly one of [%s].", priorityLabels))
 	}
 
 	sigLabels = sigLabelNames(labels)
@@ -469,7 +472,7 @@ func checkLabels(labels []githubapi.Label) (kindLabel, priorityLabel string, sig
 }
 
 // uniqueLabelName determines which label of a set indicated by a map
-// - if any - is present in the given slice of labels.  Returns an
+// - if any - is present in the given slice of labels. Returns an
 // error if the slice contains more than one label from the set.
 func uniqueLabelName(labels []githubapi.Label, labelMap map[string]string) (string, error) {
 	var labelName string
@@ -495,4 +498,15 @@ func sigLabelNames(labels []githubapi.Label) []string {
 		}
 	}
 	return labelNames
+}
+
+// formatLabelString converts a map to a string in the format "`key-foo`, `key-bar`".
+func formatLabelString(labelMap map[string]string) string {
+	labelList := []string{}
+	for k := range labelMap {
+		labelList = append(labelList, fmt.Sprintf("`%s`", k))
+	}
+	sort.Strings(labelList)
+
+	return strings.Join(labelList, ", ")
 }
