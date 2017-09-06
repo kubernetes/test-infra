@@ -1,0 +1,251 @@
+# This file contains Kubernetes YAML files for the most important prow
+# components. Don't edit resources in this file. Instead, pull them out into
+# their own files.
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: plugins
+data:
+  plugins:
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config
+data:
+  config: |
+    prowjob_namespace: default
+    pod_namespace: default
+    sinker:
+      resync_period: 1h
+      max_prowjob_age: 24h
+      max_pod_age: 12h
+    periodics:
+    - interval: 10m
+      agent: kubernetes
+      name: echo-test
+      spec:
+        containers:
+        - image: alpine
+          command: ["/bin/date"]
+---
+apiVersion: extensions/v1beta1
+kind: ThirdPartyResource
+metadata:
+  name: prow-job.prow.k8s.io
+versions:
+- name: v1
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: hook
+  labels:
+    app: hook
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  template:
+    metadata:
+      labels:
+        app: hook
+    spec:
+      terminationGracePeriodSeconds: 180
+      containers:
+      - name: hook
+        image: gcr.io/k8s-prow/hook:0.154
+        imagePullPolicy: Always
+        args:
+        - --dry-run=false
+        ports:
+          - name: http
+            containerPort: 8888
+        volumeMounts:
+        - name: hmac
+          mountPath: /etc/webhook
+          readOnly: true
+        - name: oauth
+          mountPath: /etc/github
+          readOnly: true
+        - name: config
+          mountPath: /etc/config
+          readOnly: true
+        - name: plugins
+          mountPath: /etc/plugins
+          readOnly: true
+      volumes:
+      - name: hmac
+        secret:
+          secretName: hmac-token
+      - name: oauth
+        secret:
+          secretName: oauth-token
+      - name: config
+        configMap:
+          name: config
+      - name: plugins
+        configMap:
+          name: plugins
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hook
+spec:
+  selector:
+    app: hook
+  ports:
+  - port: 8888
+  type: NodePort
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: plank
+  labels:
+    app: plank
+spec:
+  replicas: 1 # Do not scale up.
+  template:
+    metadata:
+      labels:
+        app: plank
+    spec:
+      containers:
+      - name: plank
+        image: gcr.io/k8s-prow/plank:0.41
+        args:
+        - --dry-run=false
+        volumeMounts:
+        - name: oauth
+          mountPath: /etc/github
+          readOnly: true
+        - name: config
+          mountPath: /etc/config
+          readOnly: true
+      volumes:
+      - name: oauth
+        secret:
+          secretName: oauth-token
+      - name: config
+        configMap:
+          name: config
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: sinker
+  labels:
+    app: sinker
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: sinker
+    spec:
+      containers:
+      - name: sinker
+        image: gcr.io/k8s-prow/sinker:0.16
+        volumeMounts:
+        - name: config
+          mountPath: /etc/config
+          readOnly: true
+      volumes:
+      - name: config
+        configMap:
+          name: config
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: deck
+  labels:
+    app: deck
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  template:
+    metadata:
+      labels:
+        app: deck
+    spec:
+      terminationGracePeriodSeconds: 30
+      containers:
+      - name: deck
+        image: gcr.io/k8s-prow/deck:0.43
+        ports:
+          - name: http
+            containerPort: 8080
+        volumeMounts:
+        - name: config
+          mountPath: /etc/config
+          readOnly: true
+      volumes:
+      - name: config
+        configMap:
+          name: config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: deck
+spec:
+  selector:
+    app: deck
+  ports:
+  - port: 80
+    targetPort: 8080
+  type: NodePort
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: horologium
+  labels:
+    app: horologium
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: horologium
+    spec:
+      terminationGracePeriodSeconds: 30
+      containers:
+      - name: horologium
+        image: gcr.io/k8s-prow/horologium:0.8
+        volumeMounts:
+        - name: config
+          mountPath: /etc/config
+          readOnly: true
+      volumes:
+      - name: config
+        configMap:
+          name: config
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: ing
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /*
+        backend:
+          serviceName: deck
+          servicePort: 80
+      - path: /hook
+        backend:
+          serviceName: hook
+          servicePort: 8888

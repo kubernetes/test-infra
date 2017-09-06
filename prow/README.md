@@ -18,7 +18,7 @@ not make any attempt to preserve backwards compatibility.
 * `cmd/horologium` starts periodic jobs when necessary.
 * `cmd/mkpj` creates `ProwJobs`.
 
-See also: [Life of a Prow Job](https://github.com/kubernetes/test-infra/blob/master/prow/architecture.md).
+See also: [Life of a Prow Job](./architecture.md) 
 
 ## Announcements
 
@@ -46,6 +46,10 @@ state and no claims of backwards compatibility are made for any external API.
    Cluster administrators upgrading to `hook` version 0.148 or newer should move
    plugin configuration from the main `ConfigMap`. For more context, please see
    [this pull request.](https://github.com/kubernetes/test-infra/pull/4213)
+
+## Getting started
+
+[See the doc here.](./getting_started.md)
 
 ## How to test prow
 
@@ -143,89 +147,3 @@ Variable | Periodic | Postsubmit | Batch | Presubmit | Description | Example
 messages defined in [config.yaml](config.yaml). Here is a
 [command list](https://github.com/kubernetes/test-infra/blob/master/commands.md)
 for them. 
-
-## How to turn up a new cluster
-
-Prow should run anywhere that Kubernetes runs. Here are the steps required to
-set up a prow cluster on GKE.
-
-1. Create the cluster. I'm assuming that `PROJECT`, `CLUSTER`, and `ZONE` are
-set. You can also choose to run the builds in a separate cluster.
-
- ```
- gcloud -q container --project "${PROJECT}" clusters create "${CLUSTER}" --zone "${ZONE}" --machine-type n1-standard-4 --num-nodes 4 --scopes "https://www.googleapis.com/auth/compute","https://www.googleapis.com/auth/devstorage.full_control","https://www.googleapis.com/auth/logging.write","https://www.googleapis.com/auth/servicecontrol","https://www.googleapis.com/auth/service.management" --network "default" --enable-cloud-logging --enable-cloud-monitoring
- gcloud -q container node-pools create build-pool --project "${PROJECT}" --cluster "${CLUSTER}" --zone "${ZONE}" --machine-type n1-standard-8 --num-nodes 4 --local-ssd-count=1
- ```
-
-2. Create the secrets that allow prow to talk to GitHub. The `hmac-token` is
-the token that you set on GitHub webhooks, and the `oauth-token` is an OAuth2
-token that has read and write access to the bot account.
-
- ```
- kubectl create secret generic hmac-token --from-file=hmac=/path/to/hook/secret
- kubectl create secret generic oauth-token --from-file=oauth=/path/to/oauth/secret
- ```
-
-3. Create the secrets that allow prow to talk to Jenkins. The `jenkins-token`
-is the API token that matches your Jenkins account. The `jenkins-address` is
-Jenkins' URL, such as `http://pull-jenkins-master:8080`.
-
- ```
- kubectl create secret generic jenkins-token --from-file=jenkins=/path/to/jenkins/secret
- kubectl create configmap jenkins-address --from-file=jenkins-address=/path/to/address
- ```
-
-4. Create the prow configs.
-
- ```
- kubectl create configmap config --from-file=config=config.yaml
- kubectl create configmap plugins --from-file=plugins=plugins.yaml
- ```
-
-5. Create the ProwJob ThirdPartyResource.
-
- ```
- kubectl create -f cluster/prow_job.yaml
- ```
-
-6. Create a namespace for test pods named "test-pods". Its name must match the
-value of `pod_namespace` in [config.yaml](config.yaml). 
-
- ```
- kubectl create namespace test-pods
- ```
-
-7. *Optional*: Create service account and SSH keys for your pods to run as.
-This shouldn't be necessary for most use cases. They'll need to be in the same
-namespace as the pods.
-
- ```
- kubectl create secret generic service-account --namespace=test-pods --from-file=service-account.json=/path/to/service-account/secret
- kubectl create secret generic ssh-key-secret --namespace=test-pods --from-file=ssh-private=/path/to/priv/secret --from-file=ssh-public=/path/to/pub/secret
- ```
-
-8. Run the prow components that you desire. I recommend `hook`, `plank`,
-`sinker`, and `deck` to start out with. You'll need some way for ingress
-traffic to reach your hook and deck deployments.
-
- ```
- make hook-image
- make plank-image
- make sinker-image
- make deck-image
-
- make hook-deployment
- make hook-service
- make plank-deployment
- make sinker-deployment
- make deck-deployment
- make deck-service
-
- kubectl apply -f cluster/ingress.yaml
- ```
-
-9. Add the webhook to GitHub.
-
-Hook processes the following events: issues, issue_comment, pull_request, push, status so github web hooks should be configured to send these event types. We suggest configuring your webhooks to send everything so that future event types are covered.
-
-The content-type for all webhooks type must be application/json.  This is selectable via a dropdown in the webhook configuration page.
