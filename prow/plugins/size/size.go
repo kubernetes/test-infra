@@ -23,7 +23,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/Sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/genfiles"
 	"k8s.io/test-infra/prow/github"

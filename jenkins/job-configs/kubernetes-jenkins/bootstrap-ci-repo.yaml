@@ -59,6 +59,12 @@
         job-name: ci-kubernetes-verify-master
         repo-name: k8s.io/kubernetes
         timeout: 80
+    - kubernetes-verify-release-1.8:
+        branch: release-1.8
+        frequency: 'H/5 * * * *'
+        job-name: ci-kubernetes-verify-release-1.8
+        repo-name: k8s.io/kubernetes
+        timeout: 80
     - kubernetes-verify-release-1.7:
         branch: release-1.7
         frequency: 'H/5 * * * *'
@@ -67,7 +73,7 @@
         timeout: 80
     - kubernetes-verify-release-1.6:
         branch: release-1.6
-        frequency: 'H/5 * * * *'
+        frequency: 'H H/3 * * *'
         job-name: ci-kubernetes-verify-release-1.6
         repo-name: k8s.io/kubernetes
         timeout: 80
@@ -77,17 +83,18 @@
         job-name: ci-kubernetes-verify-release-1.5
         repo-name: k8s.io/kubernetes
         timeout: 80
-    - kubernetes-verify-release-1.4:
-        branch: release-1.4
-        frequency: 'H H/3 * * *'
-        job-name: ci-kubernetes-verify-release-1.4
-        repo-name: k8s.io/kubernetes
-        timeout: 80
+
 
     - kubernetes-test-go:
         branch: master
         frequency: 'H/5 * * * *'
         job-name: ci-kubernetes-test-go
+        repo-name: k8s.io/kubernetes
+        timeout: 100
+    - kubernetes-test-go-release-1.8:
+        branch: release-1.8
+        frequency: 'H/5 * * * *'
+        job-name: ci-kubernetes-test-go-release-1.8
         repo-name: k8s.io/kubernetes
         timeout: 100
     - kubernetes-test-go-release-1.7:
@@ -98,7 +105,7 @@
         timeout: 100
     - kubernetes-test-go-release-1.6:
         branch: release-1.6
-        frequency: 'H/5 * * * *'
+        frequency: 'H H/3 * * *'
         job-name: ci-kubernetes-test-go-release-1.6
         repo-name: k8s.io/kubernetes
         timeout: 100
@@ -108,12 +115,7 @@
         job-name: ci-kubernetes-test-go-release-1.5
         repo-name: k8s.io/kubernetes
         timeout: 100
-    - kubernetes-test-go-release-1.4:
-        branch: release-1.4
-        frequency: 'H H/3 * * *'
-        job-name: ci-kubernetes-test-go-release-1.4
-        repo-name: k8s.io/kubernetes
-        timeout: 100
+
 
     - kubernetes-node-kubelet:  # dawnchen
         branch: master

@@ -20,7 +20,7 @@ import (
 	"flag"
 	"time"
 
-	"github.com/Sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"k8s.io/test-infra/boskos/client"
 	"k8s.io/test-infra/boskos/common"
 )

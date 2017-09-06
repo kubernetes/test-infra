@@ -15,14 +15,14 @@
 all: build test
 
 
-HOOK_VERSION             ?= 0.155
-SINKER_VERSION           ?= 0.16
-DECK_VERSION             ?= 0.43
+HOOK_VERSION             ?= 0.157
+SINKER_VERSION           ?= 0.17
+DECK_VERSION             ?= 0.44
 SPLICE_VERSION           ?= 0.27
 TOT_VERSION              ?= 0.5
 HOROLOGIUM_VERSION       ?= 0.8
 PLANK_VERSION            ?= 0.42
-JENKINS-OPERATOR_VERSION ?= 0.41
+JENKINS-OPERATOR_VERSION ?= 0.42
 TIDE_VERSION             ?= 0.2
 
 # These are the usual GKE variables.

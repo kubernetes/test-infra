@@ -20,7 +20,7 @@ import (
 	"flag"
 	"time"
 
-	"github.com/Sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/kube"
@@ -84,7 +84,8 @@ func clean(kc, pkc kubeClient, configAgent configAgent) {
 	}
 
 	// Now clean up old pods.
-	pods, err := pkc.ListPods(nil)
+	labels := map[string]string{kube.CreatedByProw: "true"}
+	pods, err := pkc.ListPods(labels)
 	if err != nil {
 		logrus.WithError(err).Error("Error listing pods.")
 		return

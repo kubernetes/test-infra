@@ -34,8 +34,8 @@ func handlePR(c client, trustedOrg string, pr github.PullRequestEvent) error {
 	switch pr.Action {
 	case github.PullRequestActionOpened:
 		// When a PR is opened, if the author is in the org then build it.
-		// Otherwise, ask for "ok to test". There's no need to look for previous
-		// "ok to test" comments since the PR was just opened!
+		// Otherwise, ask for "/ok-to-test". There's no need to look for previous
+		// "/ok-to-test" comments since the PR was just opened!
 		member, err := c.GitHubClient.IsMember(trustedOrg, author)
 		if err != nil {
 			return fmt.Errorf("could not check membership: %s", err)
@@ -50,8 +50,8 @@ func handlePR(c client, trustedOrg string, pr github.PullRequestEvent) error {
 		}
 	case github.PullRequestActionReopened, github.PullRequestActionSynchronize:
 		// When a PR is updated, check that the user is in the org or that an org
-		// member has said "ok to test" before building. There's no need to ask
-		// for "ok to test" because we do that once when the PR is created.
+		// member has said "/ok-to-test" before building. There's no need to ask
+		// for "/ok-to-test" because we do that once when the PR is created.
 		trusted, err := trustedPullRequest(c.GitHubClient, pr.PullRequest, trustedOrg)
 		if err != nil {
 			return fmt.Errorf("could not validate PR: %s", err)
@@ -99,7 +99,7 @@ I understand the commands that are listed [here](https://github.com/kubernetes/t
 }
 
 // trustedPullRequest returns whether or not the given PR should be tested.
-// It first checks if the author is in the org, then looks for "ok to test
+// It first checks if the author is in the org, then looks for "/ok-to-test"
 // comments by org members.
 func trustedPullRequest(ghc githubClient, pr github.PullRequest, trustedOrg string) (bool, error) {
 	author := pr.User.Login
@@ -110,7 +110,7 @@ func trustedPullRequest(ghc githubClient, pr github.PullRequest, trustedOrg stri
 	} else if orgMember {
 		return true, nil
 	}
-	// Next look for "ok to test" comments on the PR.
+	// Next look for "/ok-to-test" comments on the PR.
 	comments, err := ghc.ListIssueComments(pr.Base.Repo.Owner.Login, pr.Base.Repo.Name, pr.Number)
 	if err != nil {
 		return false, err
@@ -129,7 +129,7 @@ func trustedPullRequest(ghc githubClient, pr github.PullRequest, trustedOrg stri
 		if commentAuthor == botName {
 			continue
 		}
-		// Look for "ok to test"
+		// Look for "/ok-to-test"
 		if !okToTest.MatchString(comment.Body) {
 			continue
 		}

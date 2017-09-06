@@ -23,8 +23,6 @@ import (
 	"net/http"
 	"net/url"
 	"time"
-
-	"github.com/satori/go.uuid"
 )
 
 const (
@@ -42,30 +40,45 @@ type Status struct {
 }
 
 type Client struct {
-	client  *http.Client
-	baseURL string
-	user    string
-	token   string
+	client     *http.Client
+	baseURL    string
+	authConfig *AuthConfig
+}
+
+// AuthConfig configures how we auth with Jenkins.
+// Only one of the fields will be non-nil.
+type AuthConfig struct {
+	Basic       *BasicAuthConfig
+	BearerToken *BearerTokenAuthConfig
+}
+
+type BasicAuthConfig struct {
+	User  string
+	Token string
+}
+
+type BearerTokenAuthConfig struct {
+	Token string
 }
 
 type BuildRequest struct {
-	JobName     string
-	Refs        string
+	// ProwJobName is the buildId parameter set in every Jenkins job so
+	// that the jenkins-operator can track the build in between requesting
+	// it and Jenkins scheduling it in an instance, ie. when it is in the
+	// build queue.
+	ProwJobName string
+	// JobName is the name of the job inside Jenkins for which to request
+	// a build.
+	JobName string
+	// Environment is additional parameters set in the build.
 	Environment map[string]string
 }
 
-type Build struct {
-	JobName  string
-	ID       string
-	QueueURL *url.URL
-}
-
-func NewClient(url, user, token string) *Client {
+func NewClient(url string, authConfig *AuthConfig) *Client {
 	return &Client{
-		baseURL: url,
-		user:    user,
-		token:   token,
-		client:  &http.Client{},
+		baseURL:    url,
+		authConfig: authConfig,
+		client:     &http.Client{},
 	}
 }
 
@@ -93,19 +106,23 @@ func (c *Client) doRequest(method, path string) (*http.Response, error) {
 	if err != nil {
 		return nil, err
 	}
-	req.SetBasicAuth(c.user, c.token)
+	if c.authConfig.Basic != nil {
+		req.SetBasicAuth(c.authConfig.Basic.User, c.authConfig.Basic.Token)
+	}
+	if c.authConfig.BearerToken != nil {
+		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.authConfig.BearerToken.Token))
+	}
 	return c.client.Do(req)
 }
 
 // Build triggers the job on Jenkins with an ID parameter that will let us
 // track it.
-func (c *Client) Build(br BuildRequest) (*Build, error) {
-	buildID := uuid.NewV1().String()
+func (c *Client) Build(br BuildRequest) (*url.URL, error) {
 	u, err := url.Parse(fmt.Sprintf("%s/job/%s/buildWithParameters", c.baseURL, br.JobName))
 	if err != nil {
 		return nil, err
 	}
-	br.Environment["buildId"] = buildID
+	br.Environment["buildId"] = br.ProwJobName
 
 	q := u.Query()
 	for key, value := range br.Environment {
@@ -120,15 +137,7 @@ func (c *Client) Build(br BuildRequest) (*Build, error) {
 	if resp.StatusCode != 201 {
 		return nil, fmt.Errorf("response not 201: %s", resp.Status)
 	}
-	loc, err := resp.Location()
-	if err != nil {
-		return nil, err
-	}
-	return &Build{
-		JobName:  br.JobName,
-		ID:       buildID,
-		QueueURL: loc,
-	}, nil
+	return resp.Location()
 }
 
 // Enqueued returns whether or not the given build is in Jenkins' build queue.

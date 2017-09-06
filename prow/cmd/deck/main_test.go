@@ -17,12 +17,17 @@ limitations under the License.
 package main
 
 import (
+	"bufio"
+	"bytes"
 	"errors"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"strconv"
 	"testing"
+	"time"
 
 	"github.com/ghodss/yaml"
 
@@ -31,16 +36,16 @@ import (
 
 type flc int
 
-func (f flc) GetLog(name string) ([]byte, error) {
-	if name == "pn" {
+func (f flc) GetJobLog(job, id string) ([]byte, error) {
+	if job == "job" && id == "123" {
 		return []byte("hello"), nil
 	}
 	return nil, errors.New("muahaha")
 }
 
-func (f flc) GetJobLog(job, id string) ([]byte, error) {
+func (f flc) GetJobLogStream(job, id string, options map[string]string) (io.ReadCloser, error) {
 	if job == "job" && id == "123" {
-		return []byte("hello"), nil
+		return ioutil.NopCloser(bytes.NewBuffer([]byte("hello\r\n"))), nil
 	}
 	return nil, errors.New("muahaha")
 }
@@ -72,6 +77,11 @@ func TestHandleLog(t *testing.T) {
 			code: http.StatusOK,
 		},
 		{
+			name: "id and job, found",
+			path: "?job=job&id=123&follow=true",
+			code: http.StatusOK,
+		},
+		{
 			name: "id and job, not found",
 			path: "?job=ohno&id=123",
 			code: http.StatusNotFound,
@@ -87,18 +97,42 @@ func TestHandleLog(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Error parsing URL: %v", err)
 		}
+		var follow = false
+		if ok, _ := strconv.ParseBool(u.Query().Get("follow")); ok {
+			follow = true
+		}
 		req.URL = u
 		rr := httptest.NewRecorder()
 		handler.ServeHTTP(rr, req)
 		if rr.Code != tc.code {
 			t.Errorf("Wrong error code. Got %v, want %v", rr.Code, tc.code)
 		} else if rr.Code == http.StatusOK {
-			resp := rr.Result()
-			defer resp.Body.Close()
-			if body, err := ioutil.ReadAll(resp.Body); err != nil {
-				t.Errorf("Error reading response body: %v", err)
-			} else if string(body) != "hello" {
-				t.Errorf("Unexpected body: got %s.", string(body))
+			if follow {
+				//wait a little to get the chunks
+				time.Sleep(2 * time.Millisecond)
+				reader := bufio.NewReader(rr.Body)
+				var buf bytes.Buffer
+				for {
+					line, err := reader.ReadBytes('\n')
+					if err == io.EOF {
+						break
+					}
+					if err != nil {
+						t.Fatalf("Expecting reply with content but got error: %v", err)
+					}
+					buf.Write(line)
+				}
+				if !bytes.Contains(buf.Bytes(), []byte("hello")) {
+					t.Errorf("Unexpected body: got %s.", buf.String())
+				}
+			} else {
+				resp := rr.Result()
+				defer resp.Body.Close()
+				if body, err := ioutil.ReadAll(resp.Body); err != nil {
+					t.Errorf("Error reading response body: %v", err)
+				} else if string(body) != "hello" {
+					t.Errorf("Unexpected body: got %s.", string(body))
+				}
 			}
 		}
 	}

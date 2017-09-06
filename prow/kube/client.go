@@ -94,11 +94,7 @@ func (c *Client) request(r *request, ret interface{}) error {
 	return nil
 }
 
-// Retry on transport failures. Does not retry on 500s.
-func (c *Client) requestRetry(r *request) ([]byte, error) {
-	if c.fake {
-		return []byte("{}"), nil
-	}
+func (c *Client) retry(r *request) (*http.Response, error) {
 	var resp *http.Response
 	var err error
 	backoff := retryDelay
@@ -114,6 +110,32 @@ func (c *Client) requestRetry(r *request) ([]byte, error) {
 		time.Sleep(backoff)
 		backoff *= 2
 	}
+	return resp, err
+}
+
+// Retry on transport failures. Does not retry on 500s.
+func (c *Client) requestRetryStream(r *request) (io.ReadCloser, error) {
+	if c.fake {
+		return nil, nil
+	}
+	resp, err := c.retry(r)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode == 409 {
+		return nil, ConflictError(fmt.Errorf("body cannot be streamed"))
+	} else if resp.StatusCode < 200 || resp.StatusCode > 299 {
+		return nil, fmt.Errorf("response has status \"%s\"", resp.Status)
+	}
+	return resp.Body, nil
+}
+
+// Retry on transport failures. Does not retry on 500s.
+func (c *Client) requestRetry(r *request) ([]byte, error) {
+	if c.fake {
+		return []byte("{}"), nil
+	}
+	resp, err := c.retry(r)
 	if err != nil {
 		return nil, err
 	}
@@ -377,6 +399,15 @@ func (c *Client) GetLog(pod string) ([]byte, error) {
 	return c.requestRetry(&request{
 		method: http.MethodGet,
 		path:   fmt.Sprintf("/api/v1/namespaces/%s/pods/%s/log", c.namespace, pod),
+	})
+}
+
+func (c *Client) GetLogStream(pod string, options map[string]string) (io.ReadCloser, error) {
+	c.log("GetLogStream", pod)
+	return c.requestRetryStream(&request{
+		method: http.MethodGet,
+		path:   fmt.Sprintf("/api/v1/namespaces/%s/pods/%s/log", c.namespace, pod),
+		query:  options,
 	})
 }
 

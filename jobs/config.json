@@ -60,6 +60,16 @@
       "sig-testing"
     ]
   },
+  "ci-kubernetes-bazel-build-1-8": {
+    "args": [
+      "--build=//cmd/... //pkg/... //federation/... //plugin/... //third_party/... //examples/... //test/... //vendor/k8s.io/...",
+      "--release=//build/release-tars"
+    ],
+    "scenario": "kubernetes_bazel",
+    "sigOwners": [
+      "sig-testing"
+    ]
+  },
   "ci-kubernetes-bazel-test": {
     "args": [
       "--test=//cmd/... //pkg/... //federation/... //plugin/... //third_party/... //hack/... //hack:verify-all //vendor/k8s.io/...",
@@ -92,6 +102,17 @@
       "sig-testing"
     ]
   },
+  "ci-kubernetes-bazel-test-1-8": {
+    "args": [
+      "--test=//cmd/... //pkg/... //federation/... //plugin/... //third_party/... //hack/... //hack:verify-all //vendor/k8s.io/...",
+      "--test-args=--test_tag_filters=-integration",
+      "--test-args=--flaky_test_attempts=3"
+    ],
+    "scenario": "kubernetes_bazel",
+    "sigOwners": [
+      "sig-testing"
+    ]
+  },
   "ci-kubernetes-build": {
     "args": [
       "--fast"
@@ -101,7 +122,7 @@
       "sig-release"
     ]
   },
-  "ci-kubernetes-build-1.4": {
+  "ci-kubernetes-build-1.5": {
     "args": [
       "--extra-publish-file=k8s-stable4"
     ],
@@ -110,7 +131,7 @@
       "sig-release"
     ]
   },
-  "ci-kubernetes-build-1.5": {
+  "ci-kubernetes-build-1.6": {
     "args": [
       "--extra-publish-file=k8s-stable3"
     ],
@@ -119,7 +140,7 @@
       "sig-release"
     ]
   },
-  "ci-kubernetes-build-1.6": {
+  "ci-kubernetes-build-1.7": {
     "args": [
       "--extra-publish-file=k8s-stable2"
     ],
@@ -128,7 +149,7 @@
       "sig-release"
     ]
   },
-  "ci-kubernetes-build-1.7": {
+  "ci-kubernetes-build-1.8": {
     "args": [
       "--extra-publish-file=k8s-stable1"
     ],
@@ -636,7 +657,7 @@
       "--extract=ci/latest",
       "--gcp-zone=us-central1-f",
       "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[Feature:(DynamicKubeletConfig|Audit|LocalPersistentVolumes|FlexVolume)\\]|Initializers|Networking --ginkgo.skip=Networking-Performance --minStartupPods=8",
+      "--test_args=--ginkgo.focus=\\[Feature:(DynamicKubeletConfig|Audit|LocalPersistentVolumes|FlexVolume|PodPreset)\\]|Initializers|Networking --ginkgo.skip=Networking-Performance --minStartupPods=8",
       "--timeout=180m"
     ],
     "scenario": "kubernetes_e2e",
@@ -9122,7 +9143,6 @@
       "--gcp-project=k8s-jenkins-gci-kubemark",
       "--gcp-zone=us-central1-f",
       "--kubemark",
-      "--kubemark-master-size=n1-standard-4",
       "--kubemark-nodes=100",
       "--mode=docker",
       "--provider=gce",
@@ -9146,7 +9166,6 @@
       "--gcp-project=k8s-jenkins-kubemark",
       "--gcp-zone=us-central1-f",
       "--kubemark",
-      "--kubemark-master-size=n1-standard-4",
       "--kubemark-nodes=100",
       "--mode=docker",
       "--provider=gce",
@@ -9169,7 +9188,6 @@
       "--gcp-project=k8s-jenkins-kubemark",
       "--gcp-zone=us-central1-f",
       "--kubemark",
-      "--kubemark-master-size=n1-standard-1",
       "--kubemark-nodes=5",
       "--mode=docker",
       "--provider=gce",
@@ -9192,7 +9210,6 @@
       "--gcp-project=k8s-kubemark-1-5",
       "--gcp-zone=us-central1-f",
       "--kubemark",
-      "--kubemark-master-size=n1-standard-1",
       "--kubemark-nodes=5",
       "--mode=docker",
       "--provider=gce",
@@ -9215,7 +9232,6 @@
       "--gcp-project=k8s-jenkins-blocking-kubemark",
       "--gcp-zone=us-central1-f",
       "--kubemark",
-      "--kubemark-master-size=n1-standard-16",
       "--kubemark-nodes=500",
       "--mode=docker",
       "--provider=gce",
@@ -9238,7 +9254,6 @@
       "--gcp-project=k8s-scale-testing",
       "--gcp-zone=us-east1-a",
       "--kubemark",
-      "--kubemark-master-size=n1-standard-64",
       "--kubemark-nodes=5000",
       "--mode=docker",
       "--provider=gce",
@@ -10039,16 +10054,6 @@
       "UNKNOWN"
     ]
   },
-  "ci-kubernetes-test-go-release-1.4": {
-    "args": [
-      "--branch=release-1.4",
-      "--force"
-    ],
-    "scenario": "kubernetes_verify",
-    "sigOwners": [
-      "UNKNOWN"
-    ]
-  },
   "ci-kubernetes-test-go-release-1.5": {
     "args": [
       "--branch=release-1.5",
@@ -10079,20 +10084,19 @@
       "UNKNOWN"
     ]
   },
-  "ci-kubernetes-verify-master": {
+  "ci-kubernetes-test-go-release-1.8": {
     "args": [
-      "--branch=master",
-      "--force",
-      "--script=./hack/jenkins/verify-dockerized.sh"
+      "--branch=release-1.8",
+      "--force"
     ],
     "scenario": "kubernetes_verify",
     "sigOwners": [
       "UNKNOWN"
     ]
   },
-  "ci-kubernetes-verify-release-1.4": {
+  "ci-kubernetes-verify-master": {
     "args": [
-      "--branch=release-1.4",
+      "--branch=master",
       "--force",
       "--script=./hack/jenkins/verify-dockerized.sh"
     ],
@@ -10126,6 +10130,17 @@
   "ci-kubernetes-verify-release-1.7": {
     "args": [
       "--branch=release-1.7",
+      "--force",
+      "--script=./hack/jenkins/verify-dockerized.sh"
+    ],
+    "scenario": "kubernetes_verify",
+    "sigOwners": [
+      "UNKNOWN"
+    ]
+  },
+  "ci-kubernetes-verify-release-1.8": {
+    "args": [
+      "--branch=release-1.8",
       "--force",
       "--script=./hack/jenkins/verify-dockerized.sh"
     ],
@@ -10211,10 +10226,12 @@
   },
   "maintenance-ci-aws-janitor": {
     "args": [
-      "--aws-image=gcr.io/k8s-test-infra-aws/aws-janitor",
-      "--mode=aws"
+      "/aws-janitor",
+      "--",
+      "--ttl=2h30m",
+      "--path=s3://janitor-jenkins/objs.json"
     ],
-    "scenario": "kubernetes_janitor",
+    "scenario": "execute",
     "sigOwners": [
       "sig-testing"
     ]
@@ -10287,6 +10304,16 @@
       "sig-testing"
     ]
   },
+  "periodic-kubernetes-bazel-build-1-8": {
+    "args": [
+      "--build=//cmd/... //pkg/... //federation/... //plugin/... //third_party/... //examples/... //test/... //vendor/k8s.io/...",
+      "--release=//build/release-tars"
+    ],
+    "scenario": "kubernetes_bazel",
+    "sigOwners": [
+      "sig-testing"
+    ]
+  },
   "periodic-kubernetes-bazel-test-1-6": {
     "args": [
       "--test=//cmd/... //pkg/... //federation/... //plugin/... //third_party/... //hack/... //hack:verify-all",
@@ -10298,6 +10325,17 @@
     ]
   },
   "periodic-kubernetes-bazel-test-1-7": {
+    "args": [
+      "--test=//cmd/... //pkg/... //federation/... //plugin/... //third_party/... //hack/... //hack:verify-all //vendor/k8s.io/...",
+      "--test-args=--test_tag_filters=-integration",
+      "--test-args=--flaky_test_attempts=3"
+    ],
+    "scenario": "kubernetes_bazel",
+    "sigOwners": [
+      "sig-testing"
+    ]
+  },
+  "periodic-kubernetes-bazel-test-1-8": {
     "args": [
       "--test=//cmd/... //pkg/... //federation/... //plugin/... //third_party/... //hack/... //hack:verify-all //vendor/k8s.io/...",
       "--test-args=--test_tag_filters=-integration",
@@ -10713,18 +10751,42 @@
       "--gcp-project=k8s-jkns-pr-kubemark",
       "--gcp-zone=us-central1-f",
       "--kubemark",
-      "--kubemark-master-size=n1-standard-1",
       "--kubemark-nodes=5",
       "--mode=docker",
       "--provider=gce",
       "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-kubemark-e2e-gce",
       "--test=false",
-      "--test_args=--ginkgo.focus=\\[Feature:Empty\\] --gather-resource-usage=true --garbage-collector-enabled=true",
+      "--test_args=--ginkgo.focus=\\[Feature:Empty\\] --gather-resource-usage=true",
       "--timeout=45m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-scale"
+    ]
+  },
+  "pull-kubernetes-kubemark-e2e-gce-big": {
+    "args": [
+      "--build",
+      "--cluster=",
+      "--docker-in-docker",
+      "--env-file=jobs/platform/gce.env",
+      "--env-file=jobs/env/ci-kubernetes-kubemark-500-gce.env",
+      "--env-file=jobs/env/pull-kubernetes-kubemark-e2e-gce-big.env",
+      "--extract=local",
+      "--gcp-project=k8s-scale-testing",
+      "--gcp-zone=us-east1-a",
+      "--kubemark",
+      "--kubemark-nodes=500",
+      "--mode=docker",
+      "--provider=gce",
+      "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-kubemark-e2e-gce-big",
+      "--test=false",
+      "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --gather-resource-usage=true --gather-metrics-at-teardown=true --output-print-type=json",
+      "--timeout=140m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-scale"
     ]
   },
   "pull-kubernetes-node-e2e": {

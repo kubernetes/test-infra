@@ -131,24 +131,9 @@ def check_ci_jobs():
     clean_project('gke-e2e-createdelete')
 
 
-def clean_aws(image, cred):
-    """Handle aws jobs"""
-    check('gcloud', 'docker', '--', 'pull', image)
-    check(
-        'docker', 'run', '-v', '%s:/root/.aws/credentials:ro' % cred,
-        image,
-        '--path', 's3://janitor-jenkins/objs.json',
-        '--ttl', '2h30m'
-        )
-
-
-def main(mode, aws_image, aws_cred):
+def main(mode):
     """Run janitor for each project."""
-    if mode == 'aws':
-        if not aws_image:
-            raise ValueError('--aws-image must be set for aws janitor')
-        clean_aws(aws_image, aws_cred)
-    elif mode == 'pr':
+    if mode == 'pr':
         check_pr_jobs()
     else:
         check_ci_jobs()
@@ -166,14 +151,7 @@ if __name__ == '__main__':
     FAILED = []
     PARSER = argparse.ArgumentParser()
     PARSER.add_argument(
-        '--mode', default='ci', choices=['ci', 'pr', 'aws'],
+        '--mode', default='ci', choices=['ci', 'pr'],
         help='Which type of projects to clear')
-    PARSER.add_argument(
-        '--aws-image',
-        help='AWS janitor image path')
-    PARSER.add_argument(
-        '--aws-cred',
-        default=os.environ.get('JENKINS_AWS_CREDENTIALS_FILE'),
-        help='AWS credential for aws janitor')
     ARGS = PARSER.parse_args()
-    main(ARGS.mode, ARGS.aws_image, ARGS.aws_cred)
+    main(ARGS.mode)

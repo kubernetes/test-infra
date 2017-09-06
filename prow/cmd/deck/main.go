@@ -17,17 +17,22 @@ limitations under the License.
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"encoding/json"
 	"flag"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
+	"net/http/httputil"
+	"net/url"
 	"regexp"
+	"strconv"
 
 	"github.com/NYTimes/gziphandler"
-	"github.com/Sirupsen/logrus"
 	"github.com/ghodss/yaml"
+	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/jenkins"
@@ -39,9 +44,10 @@ var (
 	configPath   = flag.String("config-path", "/etc/config/config", "Path to config.yaml.")
 	buildCluster = flag.String("build-cluster", "", "Path to file containing a YAML-marshalled kube.Cluster object. If empty, uses the local cluster.")
 
-	jenkinsURL       = flag.String("jenkins-url", "", "Jenkins URL")
-	jenkinsUserName  = flag.String("jenkins-user", "jenkins-trigger", "Jenkins username")
-	jenkinsTokenFile = flag.String("jenkins-token-file", "/etc/jenkins/jenkins", "Path to the file containing the Jenkins API token.")
+	jenkinsURL             = flag.String("jenkins-url", "", "Jenkins URL")
+	jenkinsUserName        = flag.String("jenkins-user", "jenkins-trigger", "Jenkins username")
+	jenkinsTokenFile       = flag.String("jenkins-token-file", "", "Path to the file containing the Jenkins API token.")
+	jenkinsBearerTokenFile = flag.String("jenkins-bearer-token-file", "", "Path to the file containing the Jenkins API bearer token.")
 )
 
 // Matches letters, numbers, hyphens, and underscores.
@@ -70,14 +76,30 @@ func main() {
 		}
 	}
 
+	var ac *jenkins.AuthConfig
 	var jc *jenkins.Client
 	if *jenkinsURL != "" {
-		jenkinsSecretRaw, err := ioutil.ReadFile(*jenkinsTokenFile)
-		if err != nil {
-			logrus.WithError(err).Fatalf("Could not read token file.")
+		if *jenkinsTokenFile != "" {
+			if token, err := loadToken(*jenkinsTokenFile); err != nil {
+				logrus.WithError(err).Fatalf("Could not read token file.")
+			} else {
+				ac.Basic = &jenkins.BasicAuthConfig{
+					User:  *jenkinsUserName,
+					Token: token,
+				}
+			}
+		} else if *jenkinsBearerTokenFile != "" {
+			if token, err := loadToken(*jenkinsBearerTokenFile); err != nil {
+				logrus.WithError(err).Fatalf("Could not read token file.")
+			} else {
+				ac.BearerToken = &jenkins.BearerTokenAuthConfig{
+					Token: token,
+				}
+			}
+		} else {
+			logrus.Fatal("An auth token for basic or bearer token auth must be supplied.")
 		}
-		jenkinsToken := string(bytes.TrimSpace(jenkinsSecretRaw))
-		jc = jenkins.NewClient(*jenkinsURL, *jenkinsUserName, jenkinsToken)
+		jc = jenkins.NewClient(*jenkinsURL, ac)
 	}
 
 	ja := &JobAgent{
@@ -93,6 +115,14 @@ func main() {
 	http.Handle("/rerun", gziphandler.GzipHandler(handleRerun(kc)))
 
 	logrus.WithError(http.ListenAndServe(":8080", nil)).Fatal("ListenAndServe returned.")
+}
+
+func loadToken(file string) (string, error) {
+	raw, err := ioutil.ReadFile(file)
+	if err != nil {
+		return "", err
+	}
+	return string(bytes.TrimSpace(raw)), nil
 }
 
 func handleData(ja *JobAgent) http.HandlerFunc {
@@ -116,6 +146,41 @@ func handleData(ja *JobAgent) http.HandlerFunc {
 
 type logClient interface {
 	GetJobLog(job, id string) ([]byte, error)
+	// Add ability to stream logs with options enabled. This call is used to follow logs
+	// using kubernetes client API. All other options on the Kubernetes log api can
+	// also be enabled.
+	GetJobLogStream(job, id string, options map[string]string) (io.ReadCloser, error)
+}
+
+func httpChunking(log io.ReadCloser, w http.ResponseWriter) {
+	flusher, ok := w.(http.Flusher)
+	if !ok {
+		logrus.Warning("Error getting flusher.")
+	}
+	cw := httputil.NewChunkedWriter(w)
+	reader := bufio.NewReader(log)
+	for {
+		line, err := reader.ReadBytes('\n')
+		if err != nil {
+			if err == io.EOF {
+				break
+			}
+		}
+		cw.Write(line)
+		if flusher != nil {
+			flusher.Flush()
+		}
+	}
+}
+
+func getOptions(values url.Values) map[string]string {
+	options := make(map[string]string)
+	for k, v := range values {
+		if k != "pod" && k != "job" && k != "id" {
+			options[k] = v[0]
+		}
+	}
+	return options
 }
 
 // TODO(spxtr): Cache, rate limit.
@@ -125,6 +190,14 @@ func handleLog(lc logClient) http.HandlerFunc {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		job := r.URL.Query().Get("job")
 		id := r.URL.Query().Get("id")
+		stream := r.URL.Query().Get("follow")
+		var logStreamRequested bool
+		if ok, _ := strconv.ParseBool(stream); ok {
+			// get http chunked responses to the client
+			w.Header().Set("Connection", "Keep-Alive")
+			w.Header().Set("Transfer-Encoding", "chunked")
+			logStreamRequested = true
+		}
 		if job != "" && id != "" {
 			if !objReg.MatchString(job) {
 				http.Error(w, "Invalid job query", http.StatusBadRequest)
@@ -134,14 +207,26 @@ func handleLog(lc logClient) http.HandlerFunc {
 				http.Error(w, "Invalid ID query", http.StatusBadRequest)
 				return
 			}
-			log, err := lc.GetJobLog(job, id)
-			if err != nil {
-				http.Error(w, fmt.Sprintf("Log not found: %v", err), http.StatusNotFound)
-				logrus.WithError(err).Warning("Error returned.")
-				return
-			}
-			if _, err = w.Write(log); err != nil {
-				logrus.WithError(err).Warning("Error writing log.")
+			if !logStreamRequested {
+				log, err := lc.GetJobLog(job, id)
+				if err != nil {
+					http.Error(w, fmt.Sprintf("Log not found: %v", err), http.StatusNotFound)
+					logrus.WithError(err).Warning("Error returned.")
+					return
+				}
+				if _, err = w.Write(log); err != nil {
+					logrus.WithError(err).Warning("Error writing log.")
+				}
+			} else {
+				//run http chunking
+				options := getOptions(r.URL.Query())
+				log, err := lc.GetJobLogStream(job, id, options)
+				if err != nil {
+					http.Error(w, fmt.Sprintf("Log stream caused: %v", err), http.StatusNotFound)
+					logrus.WithError(err).Warning("Error returned.")
+					return
+				}
+				go httpChunking(log, w)
 			}
 		} else {
 			http.Error(w, "Missing job and ID query", http.StatusBadRequest)

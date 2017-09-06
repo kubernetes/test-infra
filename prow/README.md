@@ -26,9 +26,24 @@ Breaking changes to external APIs (labels, GitHub interactions, configuration
 or deployment) will be documented in this section. Prow is in a pre-release
 state and no claims of backwards compatibility are made for any external API.
 
+ - *September 3, 2017* sinker:0.17 now deletes pods labeled by plank:0.42 in
+   order to avoid cleaning up unrelated pods that happen to be found in the
+   same namespace prow runs pods. If you run other pods in the same namespace,
+   you will have to manually delete or label the prow-owned pods, otherwise you
+   can bulk-label all of them with the following command and let sinker collect
+   them normally:
+   ```
+   kubectl label pods --all -n pod_namespace created-by-prow=true
+   ```
+ - *September 1, 2017* `deck` version 0.44 and `jenkins-operator` version 0.41
+   controllers no longer provide a default value for the `--jenkins-token-file` flag.
+   Cluster administrators should provide `--jenkins-token-file=/etc/jenkins/jenkins`
+   explicitly when upgrading to a new version of these components if they were
+   previously relying on the default. For more context, please see
+   [this pull request.](https://github.com/kubernetes/test-infra/pull/4210)
  - *August 29, 2017* Configuration specific to plugins is now held in in the
    `plugins` `ConfigMap` and serialized in this repo in the `plugins.yaml` file.
-   Cluster administrators upgrading to the newest version of Prow should move
+   Cluster administrators upgrading to `hook` version 0.148 or newer should move
    plugin configuration from the main `ConfigMap`. For more context, please see
    [this pull request.](https://github.com/kubernetes/test-infra/pull/4213)
 

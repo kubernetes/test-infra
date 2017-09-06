@@ -18,6 +18,7 @@ limitations under the License.
 package npj
 
 import (
+	"fmt"
 	"strconv"
 	"time"
 
@@ -115,6 +116,48 @@ func BatchSpec(p config.Presubmit, refs kube.Refs) kube.ProwJobSpec {
 		pjs.RunAfterSuccess = append(pjs.RunAfterSuccess, BatchSpec(nextP, refs))
 	}
 	return pjs
+}
+
+// ProwJobToPod converts a ProwJob to a Pod that will run the tests.
+func ProwJobToPod(pj kube.ProwJob, podName, buildID string) *kube.Pod {
+	env := EnvForSpec(pj.Spec)
+	env["BUILD_NUMBER"] = buildID
+
+	spec := pj.Spec.PodSpec
+	spec.RestartPolicy = "Never"
+
+	// Set environment variables in each container in the pod spec. We don't
+	// want to update the spec in place, since that will update the ProwJob
+	// spec. Instead, create a copy.
+	spec.Containers = []kube.Container{}
+	for i := range pj.Spec.PodSpec.Containers {
+		spec.Containers = append(spec.Containers, pj.Spec.PodSpec.Containers[i])
+		spec.Containers[i].Name = fmt.Sprintf("%s-%d", podName, i)
+		spec.Containers[i].Env = append(spec.Containers[i].Env, kubeEnv(env)...)
+	}
+	return &kube.Pod{
+		Metadata: kube.ObjectMeta{
+			Name: podName,
+			Labels: map[string]string{
+				kube.CreatedByProw: "true",
+			},
+		},
+		Spec: spec,
+	}
+}
+
+// kubeEnv transforms a mapping of environment variables
+// into their serialized form for a PodSpec
+func kubeEnv(environment map[string]string) []kube.EnvVar {
+	var kubeEnvironment []kube.EnvVar
+	for key, value := range environment {
+		kubeEnvironment = append(kubeEnvironment, kube.EnvVar{
+			Name:  key,
+			Value: value,
+		})
+	}
+
+	return kubeEnvironment
 }
 
 // EnvForSpec returns a mapping of environment variables

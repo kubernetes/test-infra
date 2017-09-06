@@ -20,9 +20,9 @@ go_library(
     tags = ["automanaged"],
     deps = [
         "//boskos/client:go_default_library",
-        "//vendor/github.com/Sirupsen/logrus:go_default_library",
         "//vendor/github.com/prometheus/client_golang/prometheus:go_default_library",
         "//vendor/github.com/prometheus/client_golang/prometheus/promhttp:go_default_library",
+        "//vendor/github.com/sirupsen/logrus:go_default_library",
     ],
 )
 

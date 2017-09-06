@@ -28,7 +28,7 @@ go_library(
     srcs = ["boskos.go"],
     deps = [
         "//boskos/ranch:go_default_library",
-        "//vendor/github.com/Sirupsen/logrus:go_default_library",
+        "//vendor/github.com/sirupsen/logrus:go_default_library",
     ],
 )
 
