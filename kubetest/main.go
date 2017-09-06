@@ -695,7 +695,11 @@ func prepareGcp(o *options) error {
 	return nil
 }
 
-func prepareAws() error {
+func prepareAws(o *options) error {
+	// gcloud creds may have changed
+	if err := activateServiceAccount(o.gcpServiceAccount); err != nil {
+		return err
+	}
 	return finishRunning(exec.Command("pip", "install", "awscli"))
 }
 
@@ -739,7 +743,7 @@ func prepare(o *options) error {
 			return err
 		}
 	case "aws":
-		if err := prepareAws(); err != nil {
+		if err := prepareAws(o); err != nil {
 			return err
 		}
 	}
