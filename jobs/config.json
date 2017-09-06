@@ -8316,6 +8316,7 @@
       "--env-file=jobs/env/ci-kubernetes-e2e-kops-aws.env",
       "--extract=ci/latest",
       "--mode=docker",
+      "--provider=aws",
       "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]|\\[HPA\\]|Dashboard|Services.*functioning.*NodePort",
       "--timeout=120m"
     ],
@@ -8332,6 +8333,7 @@
       "--env-file=jobs/platform/kops_aws.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-kops-aws-canary.env",
       "--extract=ci/latest",
+      "--provider=aws",
       "--tag=latest",
       "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]|\\[HPA\\]|Dashboard|Services.*functioning.*NodePort",
       "--timeout=120m"
@@ -8347,6 +8349,7 @@
       "--env-file=jobs/platform/kops_aws.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-kops-aws.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-kops-aws-release-1-7.env",
+      "--provider=aws",
       "--timeout=120m"
     ],
     "scenario": "kubernetes_kops_aws",
@@ -8360,6 +8363,7 @@
       "--env-file=jobs/platform/kops_aws.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-kops-aws.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-kops-aws-release-1.5.env",
+      "--provider=aws",
       "--timeout=120m"
     ],
     "scenario": "kubernetes_kops_aws",
@@ -8373,6 +8377,7 @@
       "--env-file=jobs/platform/kops_aws.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-kops-aws.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-kops-aws-release-1.6.env",
+      "--provider=aws",
       "--timeout=120m"
     ],
     "scenario": "kubernetes_kops_aws",
@@ -8386,6 +8391,7 @@
       "--env-file=jobs/platform/kops_aws.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-kops-aws.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-kops-aws-serial.env",
+      "--provider=aws",
       "--timeout=300m"
     ],
     "scenario": "kubernetes_kops_aws",
@@ -8399,6 +8405,7 @@
       "--env-file=jobs/platform/kops_aws.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-kops-aws.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-kops-aws-slow.env",
+      "--provider=aws",
       "--timeout=150m"
     ],
     "scenario": "kubernetes_kops_aws",
@@ -8412,6 +8419,7 @@
       "--cluster=e2e.kops-aws-updown.test-aws.k8s.io",
       "--env-file=jobs/platform/kops_aws.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-kops-aws-updown.env",
+      "--provider=aws",
       "--state=s3://kops-aws-updown-store",
       "--timeout=30m",
       "--zones=us-west-1b"
@@ -8426,7 +8434,8 @@
       "--cluster=e2e-kops-aws-weave.test-aws.k8s.io",
       "--env-file=jobs/platform/kops_aws.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-kops-aws.env",
-      "--kops-args=\"--networking=weave\""
+      "--kops-args=\"--networking=weave\"",
+      "--provider=aws"
     ],
     "scenario": "kubernetes_kops_aws",
     "sigOwners": [
@@ -10493,6 +10502,7 @@
       "--env-file=jobs/env/ci-kubernetes-e2e-kops-aws.env",
       "--env-file=jobs/env/pull-kops-e2e-kubernetes-aws.env",
       "--extract=release/stable",
+      "--provider=aws",
       "--timeout=55m"
     ],
     "scenario": "kubernetes_kops_aws",
@@ -10735,6 +10745,7 @@
       "--env-file=jobs/platform/kops_aws.env",
       "--env-file=jobs/env/pull-kubernetes-e2e-kops-aws.env",
       "--extract=local",
+      "--provider=aws",
       "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-kops-aws",
       "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]|\\[HPA\\]|Dashboard|Services.*functioning.*NodePort",
       "--timeout=55m"
