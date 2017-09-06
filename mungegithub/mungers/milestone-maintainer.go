@@ -45,6 +45,7 @@ const (
 
 	commentDetail = `<details>
 Additional instructions available <a href="https://github.com/kubernetes/community/blob/master/contributors/devel/release/issues.md">here</a>
+The commands available for adding these labels are documented <a href="https://github.com/kubernetes/test-infra/blob/master/commands.md">here</a>
 </details>`
 )
 
