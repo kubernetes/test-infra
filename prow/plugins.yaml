@@ -14,6 +14,14 @@ heart:
   adorees:
   - k8s-merge-robot
 
+slackevents:
+- repos:
+  - kubernetes/test-infra
+  channels:
+  - sig-testing
+  whitelist:
+  - cjwagner
+
 plugins:
   google/cadvisor:
   - trigger
@@ -34,6 +42,7 @@ plugins:
   kubernetes/test-infra:
   - trigger
   - config-updater
+  - slackevents
 
   kubernetes:
   - assign

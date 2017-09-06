@@ -44,6 +44,7 @@ go_library(
         "//prow/plugins/reopen:go_default_library",
         "//prow/plugins/shrug:go_default_library",
         "//prow/plugins/size:go_default_library",
+        "//prow/plugins/slackevents:go_default_library",
         "//prow/plugins/trigger:go_default_library",
         "//prow/plugins/updateconfig:go_default_library",
         "//prow/plugins/wip:go_default_library",
