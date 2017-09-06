@@ -905,6 +905,21 @@ class JobTest(unittest.TestCase):
                     continue
                 self._check_env(job, line)
 
+    def test_envs_non_empty(self):
+        bad = []
+        for job, job_path in self.jobs:
+            if not job.endswith('.env'):
+                continue
+            with open(job_path) as fp:
+                lines = list(fp)
+            for line in lines:
+                line = line.strip()
+                if line and not line.startswith('#'):
+                    break
+            else:
+                bad.append(job)
+        if bad:
+            self.fail('%s is empty, please remove the file(s)' % bad)
 
     def test_no_bad_vars_in_jobs(self):
         """Searches for jobs that contain ${{VAR}}"""
