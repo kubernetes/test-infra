@@ -45,10 +45,12 @@ type Config struct {
 	// ProwJobNamespace is the namespace in the cluster that prow
 	// components will use for looking up ProwJobs. The namespace
 	// needs to exist and will not be created by prow.
+	// Defaults to "default".
 	ProwJobNamespace string `json:"prowjob_namespace,omitempty"`
 	// PodNamespace is the namespace in the cluster that prow
 	// components will use for looking up Pods owned by ProwJobs.
 	// The namespace needs to exist and will not be created by prow.
+	// Defaults to "default".
 	PodNamespace string `json:"pod_namespace,omitempty"`
 }
 
@@ -81,15 +83,17 @@ type Sinker struct {
 	// ResyncPeriodString compiles into ResyncPeriod at load time.
 	ResyncPeriodString string `json:"resync_period,omitempty"`
 	// ResyncPeriod is how often the controller will perform a garbage
-	// collection.
+	// collection. Defaults to one hour.
 	ResyncPeriod time.Duration `json:"-"`
 	// MaxProwJobAgeString compiles into MaxProwJobAge at load time.
 	MaxProwJobAgeString string `json:"max_prowjob_age,omitempty"`
 	// MaxProwJobAge is how old a ProwJob can be before it is garbage-collected.
+	// Defaults to one week.
 	MaxProwJobAge time.Duration `json:"-"`
 	// MaxPodAgeString compiles into MaxPodAge at load time.
 	MaxPodAgeString string `json:"max_pod_age,omitempty"`
 	// MaxPodAge is how old a Pod can be before it is garbage-collected.
+	// Defaults to one day.
 	MaxPodAge time.Duration `json:"-"`
 }
 
@@ -177,21 +181,42 @@ func parseConfig(c *Config) error {
 	}
 	c.Plank.ReportTemplate = reportTmpl
 
-	resyncPeriod, err := time.ParseDuration(c.Sinker.ResyncPeriodString)
-	if err != nil {
-		return fmt.Errorf("cannot parse duration for resync_period: %v", err)
+	if c.Sinker.ResyncPeriodString == "" {
+		c.Sinker.ResyncPeriod = time.Hour
+	} else {
+		resyncPeriod, err := time.ParseDuration(c.Sinker.ResyncPeriodString)
+		if err != nil {
+			return fmt.Errorf("cannot parse duration for resync_period: %v", err)
+		}
+		c.Sinker.ResyncPeriod = resyncPeriod
 	}
-	c.Sinker.ResyncPeriod = resyncPeriod
-	maxProwJobAge, err := time.ParseDuration(c.Sinker.MaxProwJobAgeString)
-	if err != nil {
-		return fmt.Errorf("cannot parse duration for max_prowjob_age: %v", err)
+
+	if c.Sinker.MaxProwJobAgeString == "" {
+		c.Sinker.MaxProwJobAge = 7 * 24 * time.Hour
+	} else {
+		maxProwJobAge, err := time.ParseDuration(c.Sinker.MaxProwJobAgeString)
+		if err != nil {
+			return fmt.Errorf("cannot parse duration for max_prowjob_age: %v", err)
+		}
+		c.Sinker.MaxProwJobAge = maxProwJobAge
 	}
-	c.Sinker.MaxProwJobAge = maxProwJobAge
-	maxPodAge, err := time.ParseDuration(c.Sinker.MaxPodAgeString)
-	if err != nil {
-		return fmt.Errorf("cannot parse duration for max_pod_age: %v", err)
+
+	if c.Sinker.MaxPodAgeString == "" {
+		c.Sinker.MaxPodAge = 24 * time.Hour
+	} else {
+		maxPodAge, err := time.ParseDuration(c.Sinker.MaxPodAgeString)
+		if err != nil {
+			return fmt.Errorf("cannot parse duration for max_pod_age: %v", err)
+		}
+		c.Sinker.MaxPodAge = maxPodAge
 	}
-	c.Sinker.MaxPodAge = maxPodAge
+
+	if c.ProwJobNamespace == "" {
+		c.ProwJobNamespace = "default"
+	}
+	if c.PodNamespace == "" {
+		c.PodNamespace = "default"
+	}
 	return nil
 }
 

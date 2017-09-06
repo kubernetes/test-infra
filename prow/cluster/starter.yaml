@@ -15,12 +15,6 @@ metadata:
   name: config
 data:
   config: |
-    prowjob_namespace: default
-    pod_namespace: default
-    sinker:
-      resync_period: 1h
-      max_prowjob_age: 24h
-      max_pod_age: 12h
     periodics:
     - interval: 10m
       agent: kubernetes
@@ -151,7 +145,7 @@ spec:
     spec:
       containers:
       - name: sinker
-        image: gcr.io/k8s-prow/sinker:0.16
+        image: gcr.io/k8s-prow/sinker:0.18
         volumeMounts:
         - name: config
           mountPath: /etc/config
