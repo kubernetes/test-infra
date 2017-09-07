@@ -227,6 +227,9 @@ func setRegexes(js []Presubmit) error {
 		} else {
 			return fmt.Errorf("could not compile trigger regex for %s: %v", j.Name, err)
 		}
+		if !js[i].re.MatchString(j.RerunCommand) {
+			return fmt.Errorf("for job %s, rerun command \"%s\" does not match trigger \"%s\"", j.Name, j.RerunCommand, j.Trigger)
+		}
 		if err := setRegexes(j.RunAfterSuccess); err != nil {
 			return err
 		}

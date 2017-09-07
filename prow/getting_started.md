@@ -124,7 +124,71 @@ label. When you make a change to the plugin config and push it with `make
 update-plugins`, you do not need to redeploy any of your cluster components.
 They will pick up the change within a few minutes.
 
-## TODO Add more jobs by modifying config.yaml
+## Add more jobs by modifying `config.yaml`
+
+Create a file called `config.yaml`, and add the following to it:
+
+```yaml
+periodics:
+- interval: 10m
+  agent: kubernetes
+  name: echo-test
+  spec:
+    containers:
+    - image: alpine
+      command: ["/bin/date"]
+postsubmits:
+  YOUR_ORG/YOUR_REPO:
+  - name: test-postsubmit
+    agent: kubernetes
+    spec:
+      containers:
+      - image: alpine
+        command: ["/bin/printenv"]
+presubmits:
+  YOUR_ORG/YOUR_REPO:
+  - name: test-presubmit
+    trigger: "(?m)^/test this"
+    rerun_command: "/test this"
+    context: test-presubmit
+    always_run: true
+    skip_report: true
+    agent: kubernetes
+    spec:
+      containers:
+      - image: alpine
+        command: ["/bin/printenv"]
+```
+
+Run the following to test the file, replacing the path as necessary:
+
+```
+bazel run //prow/cmd/config -- --config-path=path/to/config.yaml
+```
+
+Now run the following to update the configmap.
+
+```
+kubectl create configmap config --from-file=config=path/to/config.yaml --dry-run -o yaml | kubectl replace configmap config -f -
+```
+
+We use a make rule:
+
+```Make
+update-config: get-cluster-credentials
+    kubectl create configmap config --from-file=config=config.yaml --dry-run -o yaml | kubectl replace configmap config -f -
+```
+
+Now when you open a PR it will automatically run the presubmit that you added
+to this file. You can see it on your prow dashboard. Once you are happy that it
+is stable, switch `skip_report` to `false`. Then, it will post a status on the
+PR. When you make a change to the config and push it with `make update-config`,
+you do not need to redeploy any of your cluster components. They will pick up
+the change within a few minutes.
+
+When you push a new change, the postsubmit job will run.
+
+For more information on the job environment, see [How to add new jobs][3].
 
 ## TODO Run test pods in a different namespace or a different cluster
 
@@ -132,3 +196,4 @@ They will pick up the change within a few minutes.
 
 [1]: https://www.random.org/strings/?num=1&len=16&digits=on&upperalpha=on&loweralpha=on&unique=on&format=html&rnd=new
 [2]: https://github.com/settings/tokens
+[3]: ./README.md##how-to-add-new-jobs

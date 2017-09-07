@@ -131,7 +131,7 @@ type Trigger struct {
 	// Repos is either of the form org/repos or just org.
 	Repos []string `json:"repos,omitempty"`
 	// TrustedOrg is the org whose members' PRs will be automatically built
-	// for PRs to the above repos.
+	// for PRs to the above repos. The default is the PR's org.
 	TrustedOrg string `json:"trusted_org,omitempty"`
 }
 

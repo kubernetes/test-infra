@@ -15,20 +15,6 @@ tide:
   - "type:pr state:open repo:kubernetes/test-infra label:lgtm -label:do-not-merge"
 
 presubmits:
-  # PR job triggering definitions.
-  # Keys: Full repo name: "org/repo".
-  # Values: List of jobs to run when events occur in the repo.
-  #   name:          Job name.
-  #   trigger:       Regexp commenters can say to trigger the job.
-  #   always_run:    Whether to run for every PR. Default is false. If this is
-  #                  set then your trigger needs to match "(?m)^/test all,?(\\s+|$)".
-  #   context:       GitHub status context.
-  #   rerun_command: How should users trigger just this job, as a string, not a
-  #                  regex. For example, if the trigger regex is "(e2e )?test",
-  #                  then a rerun command might be "e2e test".
-  #   skip_report:   If true, then do not set status or comment on GitHub.
-  #   spec:          If this exists then run a kubernetes pod with this spec.
-  #                  Otherwise, run a Jenkins job.
   google/cadvisor:
   - name: pull-cadvisor-e2e
     agent: jenkins
