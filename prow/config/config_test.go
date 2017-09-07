@@ -156,7 +156,6 @@ func TestRequiredRetestContextsMatch(t *testing.T) {
 			t.Errorf("Required context: %s does not always run: %s", r, running)
 		}
 	}
-
 }
 
 func TestConfigSecurityJobsMatch(t *testing.T) {
@@ -627,7 +626,6 @@ func TestURLTemplate(t *testing.T) {
 			t.Errorf("tc: %s, Expect URL: %s, got %s", tc.name, tc.expect, res)
 		}
 	}
-
 }
 
 func TestReportTemplate(t *testing.T) {
@@ -689,5 +687,62 @@ func TestReportTemplate(t *testing.T) {
 			t.Errorf("Expected template to contain %s, but it didn't: %s", expectedPath, b.String())
 		}
 	}
+}
 
+func TestPullKubernetesCross(t *testing.T) {
+	crossBuildJob := "pull-kubernetes-cross"
+	c, err := Load("../config.yaml")
+	if err != nil {
+		t.Fatalf("Could not load config: %v", err)
+	}
+	tests := []struct {
+		changedFile string
+		expected    bool
+	}{
+		{
+			changedFile: "pkg/kubelet/cadvisor/cadvisor_unsupported.go",
+			expected:    true,
+		},
+		{
+			changedFile: "pkg/kubelet/cadvisor/util.go",
+			expected:    false,
+		},
+		{
+			changedFile: "Makefile",
+			expected:    true,
+		},
+		{
+			changedFile: "hack/lib/etcd.sh",
+			expected:    true,
+		},
+		{
+			changedFile: "build/debs/kubelet.service",
+			expected:    true,
+		},
+		{
+			changedFile: "federation/README.md",
+			expected:    false,
+		},
+	}
+	kkPresumits := c.Presubmits["kubernetes/kubernetes"]
+	var cross *Presubmit
+	for i := range kkPresumits {
+		ps := kkPresumits[i]
+		if ps.Name == crossBuildJob {
+			cross = &ps
+			break
+		}
+	}
+	if cross == nil {
+		t.Fatalf("expected %q in the presubmit section of the prow config", crossBuildJob)
+	}
+
+	for i, test := range tests {
+		t.Logf("test run #%d", i)
+		got := cross.RunsAgainstChanges([]string{test.changedFile})
+		if got != test.expected {
+			t.Errorf("expected changes (%s) to run cross job: %t, got: %t",
+				test.changedFile, test.expected, got)
+		}
+	}
 }
