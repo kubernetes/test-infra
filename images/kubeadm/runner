@@ -36,7 +36,6 @@ if [ ! -e kubernetes-anywhere/phase1/gce/account.json ]; then
 fi
 
 ./test-infra/jenkins/bootstrap.py \
-    --repo="k8s.io/${REPO_NAME}" \
     --job="${JOB_NAME}" \
     --service-account="${GOOGLE_APPLICATION_CREDENTIALS}" \
     "$@"

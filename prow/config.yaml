@@ -299,7 +299,7 @@ presubmits:
       containers:
       - image: gcr.io/k8s-testimages/e2e-kubeadm:v20170907-8d0dd967
         args:
-        - "--pull=$(PULL_REFS)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--git-cache=/root/.cache/git"
         - "--timeout=75"
@@ -361,9 +361,8 @@ presubmits:
     spec:
       containers:
       - args:
-        - --pull=$(PULL_REFS)
         - --root=/go/src
-        - --repo=k8s.io/kubernetes
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - --upload=gs://kubernetes-jenkins/pr-logs
         - --git-cache=/root/.cache/git
         - --clean
@@ -689,7 +688,7 @@ presubmits:
       containers:
       - image: gcr.io/k8s-testimages/e2e-kubeadm:v20170907-8d0dd967
         args:
-        - "--pull=$(PULL_REFS)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--git-cache=/root/.cache/git"
         - "--timeout=75"
@@ -751,9 +750,8 @@ presubmits:
     spec:
       containers:
       - args:
-        - --pull=$(PULL_REFS)
         - --root=/go/src
-        - --repo=k8s.io/kubernetes
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - --upload=gs://kubernetes-jenkins/pr-logs
         - --git-cache=/root/.cache/git
         - --clean
@@ -1084,7 +1082,7 @@ postsubmits:
           containers:
           - image: gcr.io/k8s-testimages/e2e-kubeadm:v20170907-8d0dd967
             args:
-            - "--branch=$(PULL_REFS)"
+            - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
             - "--clean"
             - "--git-cache=/root/.cache/git"
             - "--timeout=320"
@@ -1127,7 +1125,7 @@ postsubmits:
           containers:
           - image: gcr.io/k8s-testimages/e2e-kubeadm:v20170907-8d0dd967
             args:
-            - "--branch=$(PULL_REFS)"
+            - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
             - "--clean"
             - "--git-cache=/root/.cache/git"
             - "--timeout=320"
@@ -1242,7 +1240,7 @@ postsubmits:
           containers:
           - image: gcr.io/k8s-testimages/e2e-kubeadm:v20170907-8d0dd967
             args:
-            - "--branch=$(PULL_REFS)"
+            - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
             - "--clean"
             - "--git-cache=/root/.cache/git"
             - "--timeout=320"
@@ -1361,7 +1359,7 @@ postsubmits:
           containers:
           - image: gcr.io/k8s-testimages/e2e-kubeadm:v20170907-8d0dd967
             args:
-            - "--branch=$(PULL_REFS)"
+            - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
             - "--clean"
             - "--git-cache=/root/.cache/git"
             - "--timeout=320"
@@ -1404,7 +1402,7 @@ postsubmits:
           containers:
           - image: gcr.io/k8s-testimages/e2e-kubeadm:v20170907-8d0dd967
             args:
-            - "--branch=$(PULL_REFS)"
+            - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
             - "--clean"
             - "--git-cache=/root/.cache/git"
             - "--timeout=320"
@@ -1522,7 +1520,7 @@ postsubmits:
         containers:
         - image: gcr.io/k8s-testimages/e2e-kubeadm:v20170907-8d0dd967
           args:
-          - "--branch=$(PULL_REFS)"
+          - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
           - "--clean"
           - "--git-cache=/root/.cache/git"
           - "--timeout=320"
@@ -1565,7 +1563,7 @@ postsubmits:
         containers:
         - image: gcr.io/k8s-testimages/e2e-kubeadm:v20170907-8d0dd967
           args:
-          - "--branch=$(PULL_REFS)"
+          - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
           - "--clean"
           - "--git-cache=/root/.cache/git"
           - "--timeout=320"
