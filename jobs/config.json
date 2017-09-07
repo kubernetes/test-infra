@@ -8551,7 +8551,7 @@
       "--cluster=",
       "--deployment=kubernetes-anywhere",
       "--env-file=jobs/platform/gce.env",
-      "--extract=ci/stable",
+      "--extract=release/stable",
       "--gcp-zone=us-central1-f",
       "--kubeadm=ci",
       "--kubernetes-anywhere-kubernetes-version=stable",
