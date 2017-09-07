@@ -14,11 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package mungers
+package sources
 
 import (
 	"testing"
 	"time"
+
+	"k8s.io/test-infra/robots/issue-creator/creator"
 
 	githubapi "github.com/google/go-github/github"
 )
@@ -76,7 +78,7 @@ var (
 )
 
 func TestFJParseFlakyJobs(t *testing.T) {
-	reporter := &FlakyJobReporter{creator: &IssueCreator{}}
+	reporter := &FlakyJobReporter{creator: &creator.IssueCreator{}}
 	jobs, err := reporter.parseFlakyJobs(sampleFlakyJobJson)
 	if err != nil {
 		t.Fatalf("Error parsing flaky jobs: %v\n", err)
@@ -111,7 +113,7 @@ func TestFJParseFlakyJobs(t *testing.T) {
 // TestFJPrevCloseInWindow checks that FlakyJob issues will abort issue creation by returning an
 // empty body if there is a closed issue for the same flaky job that was closed in the past week.
 func TestFJPrevCloseInWindow(t *testing.T) {
-	reporter := &FlakyJobReporter{creator: &IssueCreator{}}
+	reporter := &FlakyJobReporter{creator: &creator.IssueCreator{}}
 	fjs, err := reporter.parseFlakyJobs(sampleFlakyJobJson)
 	if err != nil {
 		t.Fatalf("Error parsing flaky jobs: %v\n", err)

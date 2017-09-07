@@ -14,49 +14,49 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package mungers
+package creator
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"reflect"
 	"sort"
 	"strings"
 	"testing"
 
-	githubapi "github.com/google/go-github/github"
-	"k8s.io/test-infra/mungegithub/github"
-	"k8s.io/test-infra/mungegithub/mungers/testowner"
+	"k8s.io/test-infra/robots/issue-creator/testowner"
+
+	"github.com/google/go-github/github"
 )
 
 // fakeClient implements the RepoClient interface in order to be substituted for a
-// github.Config github client when creating an IssueCreator.
+// ghclient.Client github client when creating an IssueCreator.
 type fakeClient struct {
 	userName   string
 	repoLabels []string
-	issues     []*githubapi.Issue
-	dryrun     bool
+	issues     []*github.Issue
 	org        string
 	project    string
 	t          *testing.T
 }
 
-func (c *fakeClient) GetUser(login string) (*githubapi.User, error) {
+func (c *fakeClient) GetUser(login string) (*github.User, error) {
 	if login == "" {
-		return &githubapi.User{Login: &c.userName}, nil
+		return &github.User{Login: &c.userName}, nil
 	}
 	return nil, fmt.Errorf("Fake Client is only able to retrieve the current authenticated user in its current state.")
 }
 
-func (c *fakeClient) GetLabels() ([]*githubapi.Label, error) {
+func (c *fakeClient) GetRepoLabels(org, repo string) ([]*github.Label, error) {
 	return makeLabelSlice(c.repoLabels), nil
 }
 
-func (c *fakeClient) ListAllIssues(options *githubapi.IssueListByRepoOptions) ([]*githubapi.Issue, error) {
+func (c *fakeClient) GetIssues(org, repo string, options *github.IssueListByRepoOptions) ([]*github.Issue, error) {
 	return c.issues, nil
 }
 
-func (c *fakeClient) NewIssue(title, body string, labels, owners []string) (*github.MungeObject, error) {
+func (c *fakeClient) CreateIssue(org, repo string, title, body string, labels, owners []string) (*github.Issue, error) {
 	// Check if labels are valid.
 	for _, label := range labels {
 		found := false
@@ -74,20 +74,11 @@ func (c *fakeClient) NewIssue(title, body string, labels, owners []string) (*git
 	issue := makeTestIssue(title, body, "open", labels, owners, len(c.issues))
 
 	c.issues = append(c.issues, issue)
-	obj := &github.MungeObject{Issue: issue}
-	return obj, nil
+	return issue, nil
 }
 
-func (c *fakeClient) isDryRun() bool {
-	return c.dryrun
-}
-
-func (c *fakeClient) getOrg() string {
-	return c.org
-}
-
-func (c *fakeClient) getProject() string {
-	return c.project
+func (c *fakeClient) GetCollaborators(org, repo string) ([]*github.User, error) {
+	return nil, errors.New("some error (allow all assignees)")
 }
 
 // Verify checks that exactly 1 issue in c.issues matches the parameters and that no
@@ -129,7 +120,7 @@ func (i *fakeIssue) Title() string {
 	return i.title
 }
 
-func (i *fakeIssue) Body(closed []*githubapi.Issue) string {
+func (i *fakeIssue) Body(closed []*github.Issue) string {
 	// the functionality to check that there are no recently closed issues on github for a cluster is
 	// part of the TriageFiler code and is tested in triage-filer_test.go
 	// we ignore the param here
@@ -169,16 +160,15 @@ func TestIssueCreator(t *testing.T) {
 	c := &fakeClient{
 		t:          t,
 		userName:   "BOT_USERNAME",
-		dryrun:     false,
 		org:        "MY_ORG",
 		project:    "MY_PROJ",
 		repoLabels: []string{"kind/flake", "kind/flakeypastry", "priority/P0"},
-		issues: []*githubapi.Issue{
+		issues: []*github.Issue{
 			makeTestIssue(i1.title, i1.body, "open", i1.labels, i1.owners, 0),
 		},
 	}
 	creator := &IssueCreator{
-		config: c,
+		client: c,
 	}
 	if err := creator.loadCache(); err != nil {
 		t.Fatalf("IssueCreator failed to load data from github while initing: %v", err)
@@ -193,14 +183,14 @@ func TestIssueCreator(t *testing.T) {
 		owners:   []string{"user0"},
 		priority: "",
 	}
-	creator.Sync(i0)
+	creator.sync(i0)
 	if !c.Verify(i0.title, i0.body, i0.owners, i0.labels) {
 		t.Errorf("Failed to do a simple sync of i0\n")
 	}
 
 	// Test that issues can't be double synced.
 	origLen := len(c.issues)
-	creator.Sync(i1)
+	creator.sync(i1)
 	if len(c.issues) > origLen {
 		t.Errorf("Second sync of i1 created a duplicate issue!\n")
 	}
@@ -218,9 +208,9 @@ func TestIssueCreator(t *testing.T) {
 		priority: "",
 	}
 	origLen = len(c.issues)
-	creator.Sync(i2)
+	creator.sync(i2)
 	if len(c.issues) > origLen {
-		t.Errorf("Sync of i2 with empty body should not have created issue!\n")
+		t.Errorf("sync of i2 with empty body should not have created issue!\n")
 	}
 
 	// Test that invalid labels are not synced.
@@ -232,13 +222,13 @@ func TestIssueCreator(t *testing.T) {
 		owners:   []string{"user3"},
 		priority: "",
 	}
-	creator.Sync(i3)
+	creator.sync(i3)
 	if !c.Verify(i3.title, i3.body, i3.owners, []string{"kind/flake"}) {
-		t.Errorf("Sync of i3 was invalid. The label 'label/wannabe' should not be added to the new issue.\n")
+		t.Errorf("sync of i3 was invalid. The label 'label/wannabe' should not be added to the new issue.\n")
 	}
 
 	// Test that DryRun prevents issue creation.
-	c.dryrun = true
+	creator.dryRun = true
 	i4 := &fakeIssue{
 		title:    "title4",
 		body:     "<ID4>thebody",
@@ -248,12 +238,12 @@ func TestIssueCreator(t *testing.T) {
 		priority: "",
 	}
 	origLen = len(c.issues)
-	creator.Sync(i4)
+	creator.sync(i4)
 	if len(c.issues) > origLen {
-		t.Errorf("Sync of i4 with DryRun on should not have created issue!\n")
+		t.Errorf("sync of i4 with DryRun on should not have created issue!\n")
 	}
 
-	c.dryrun = false
+	creator.dryRun = false
 
 	// Test that priority labels are created properly if an issue knows its priority.
 	i5 := &fakeIssue{
@@ -264,14 +254,14 @@ func TestIssueCreator(t *testing.T) {
 		owners:   []string{"user5", "user1"}, // Test multiple users and labels here too.
 		priority: "P0",
 	}
-	creator.Sync(i5)
+	creator.sync(i5)
 	if !c.Verify(i5.title, i5.body, i5.owners, []string{"kind/flake", "kind/flakeypastry", "priority/P0"}) {
-		t.Errorf("Sync of i5 was invalid. The labels in the created issue were incorrect.\n")
+		t.Errorf("sync of i5 was invalid. The labels in the created issue were incorrect.\n")
 	}
 }
 
-func makeTestIssue(title, body, state string, labels, owners []string, number int) *githubapi.Issue {
-	return &githubapi.Issue{
+func makeTestIssue(title, body, state string, labels, owners []string, number int) *github.Issue {
+	return &github.Issue{
 		Title:     &title,
 		Body:      &body,
 		State:     &state,
@@ -281,26 +271,26 @@ func makeTestIssue(title, body, state string, labels, owners []string, number in
 	}
 }
 
-func makeLabelSlice(strs []string) []*githubapi.Label {
-	result := make([]*githubapi.Label, len(strs))
+func makeLabelSlice(strs []string) []*github.Label {
+	result := make([]*github.Label, len(strs))
 	for i := 0; i < len(strs); i++ {
-		result[i] = &githubapi.Label{Name: &strs[i]}
+		result[i] = &github.Label{Name: &strs[i]}
 	}
 	return result
 }
 
-func makeLabelSliceNoPtr(strs []string) []githubapi.Label {
-	result := make([]githubapi.Label, len(strs))
+func makeLabelSliceNoPtr(strs []string) []github.Label {
+	result := make([]github.Label, len(strs))
 	for i := 0; i < len(strs); i++ {
-		result[i] = githubapi.Label{Name: &strs[i]}
+		result[i] = github.Label{Name: &strs[i]}
 	}
 	return result
 }
 
-func makeUserSlice(strs []string) []*githubapi.User {
-	result := make([]*githubapi.User, len(strs))
+func makeUserSlice(strs []string) []*github.User {
+	result := make([]*github.User, len(strs))
 	for i := 0; i < len(strs); i++ {
-		result[i] = &githubapi.User{Login: &strs[i]}
+		result[i] = &github.User{Login: &strs[i]}
 	}
 	return result
 }
@@ -312,7 +302,7 @@ func stringSlicesEqual(strs1, strs2 []string) bool {
 }
 
 func TestOwnersSIGs(t *testing.T) {
-	sampleOwnerCSV = []byte(
+	sampleOwnerCSV := []byte(
 		`name,owner,auto-assigned,sig
 some test, cjwagner,0,sigarea2
 some test2, cjwagner, 1, sigarea3
@@ -330,9 +320,10 @@ Upgrade master upgrade should maintain a functioning cluster,xiang90,1,cluster-l
 		t.Fatalf("Failed to init an OwnerList: %v\n", err)
 	}
 	c := &IssueCreator{
-		owners:       ownerlist,
-		maxAssignees: 3,
-		maxSIGCount:  3,
+		Collaborators: []string{"cjwagner", "spxtr"},
+		Owners:        ownerlist,
+		MaxAssignees:  3,
+		MaxSIGCount:   3,
 	}
 
 	cases := []struct {

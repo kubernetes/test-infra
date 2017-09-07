@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package mungers
+package sources
 
 import (
 	"bytes"
@@ -24,7 +24,8 @@ import (
 	"time"
 
 	"github.com/google/go-github/github"
-	"k8s.io/test-infra/mungegithub/mungers/testowner"
+	"k8s.io/test-infra/robots/issue-creator/creator"
+	"k8s.io/test-infra/robots/issue-creator/testowner"
 )
 
 var (
@@ -153,7 +154,7 @@ Volume Disk Format verify disk format type - eagerzeroedthick is honored for dyn
 // it can be used for testing.
 func NewTestTriageFiler() *TriageFiler {
 	return &TriageFiler{
-		creator:          &IssueCreator{},
+		creator:          &creator.IssueCreator{},
 		topClustersCount: 3,
 		windowDays:       5,
 	}
@@ -257,9 +258,10 @@ func TestTFOwnersAndSIGs(t *testing.T) {
 	// ExplainTestAssignments. These functions in turn rely on OwnerList.
 	f := NewTestTriageFiler()
 	var err error
-	f.creator.owners, err = testowner.NewOwnerListFromCsv(bytes.NewReader(sampleOwnerCSV))
-	f.creator.maxSIGCount = 3
-	f.creator.maxAssignees = 3
+	f.creator.Collaborators = []string{"cjwagner", "spxtr"}
+	f.creator.Owners, err = testowner.NewOwnerListFromCsv(bytes.NewReader(sampleOwnerCSV))
+	f.creator.MaxSIGCount = 3
+	f.creator.MaxAssignees = 3
 	if err != nil {
 		t.Fatalf("Failed to create a new OwnersList.  errmsg: %v", err)
 	}
@@ -279,16 +281,7 @@ func TestTFOwnersAndSIGs(t *testing.T) {
 	if !foundSIG {
 		t.Errorf("Failed to get the SIG for cluster: %s\n", clusters[0].Id)
 	}
-	foundUser := false
-	for _, user := range clusters[0].Owners() {
-		if user == "cjwagner" {
-			foundUser = true
-			break
-		}
-	}
-	if !foundUser {
-		t.Errorf("Failed to get the owner for cluster: %s\n", clusters[0].Id)
-	}
+
 	// Check that the body contains a table that correctly explains why users and sig areas were assigned.
 	body := clusters[0].Body(nil)
 	if !strings.Contains(body, "| cjwagner | testname1 |") {
@@ -299,6 +292,11 @@ func TestTFOwnersAndSIGs(t *testing.T) {
 	}
 	if !strings.Contains(body, "| sig/sigarea | testname1; testname2 |") {
 		t.Errorf("Body should contain a table row to explain that 'sigarea' was set as a SIG due to ownership of 'testname1' and 'testname2'.")
+	}
+
+	// Check that the body contains the assignments themselves:
+	if !strings.Contains(body, "/assign @cjwagner @spxtr") && !strings.Contains(body, "/assign @spxtr @cjwagner") {
+		t.Errorf("Failed to find the '/assign' command in the body of cluster: %s\n%q\n", clusters[0].Id, body)
 	}
 }
 

@@ -14,11 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package mungers
+package sources
 
 import (
 	"bytes"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"reflect"
 	"sort"
@@ -27,13 +28,8 @@ import (
 	"time"
 
 	githubapi "github.com/google/go-github/github"
-	"k8s.io/kubernetes/pkg/util/sets"
-	"k8s.io/test-infra/mungegithub/features"
-	"k8s.io/test-infra/mungegithub/github"
 	"k8s.io/test-infra/mungegithub/mungers/mungerutil"
-	"k8s.io/test-infra/mungegithub/options"
-
-	"github.com/golang/glog"
+	"k8s.io/test-infra/robots/issue-creator/creator"
 )
 
 const (
@@ -44,7 +40,6 @@ const (
 	topTestsCount  = 3
 	triageURL      = "https://go.k8s.io/triage"
 	clusterDataURL = "https://storage.googleapis.com/k8s-gubernator/triage/failure_data.json"
-	triageSyncFreq = time.Duration(24) * time.Hour
 )
 
 // TriageFiler files issues for clustered test failures.
@@ -55,83 +50,39 @@ type TriageFiler struct {
 	nextSync    time.Time
 	latestStart int64
 
+	creator *creator.IssueCreator
 	data    *triageData
-	config  *github.Config
-	creator *IssueCreator
 }
 
 func init() {
-	RegisterMungerOrDie(&TriageFiler{})
-}
-
-// Name returns the string identifier of this munger, usable in --pr-mungers flag.
-func (f *TriageFiler) Name() string { return "triage-filer" }
-
-// RequiredFeatures is a slice of 'features' that must be provided for this munger to run.
-// The TriageFiler has no required features.
-func (f *TriageFiler) RequiredFeatures() []string { return []string{} }
-
-// Initialize will initialize the TriageFiler.
-// During initialization, the TriageFiler looks up the IssueCreator and sets the nextSync time.
-func (f *TriageFiler) Initialize(config *github.Config, features *features.Features) error {
-	f.config = config
-	f.nextSync = time.Now().Add(time.Duration(-1) * time.Minute) // Start off due for sync.
-
-	for _, munger := range GetActiveMungers() {
-		if munger.Name() == IssueCreatorName {
-			f.creator = munger.(*IssueCreator)
-		}
-	}
-	if f.creator == nil {
-		return fmt.Errorf("TriageFiler couldn't find the IssueCreator among active mungers.")
-	}
-
-	return nil
-}
-
-// EachLoop is called at the start of every munge loop.
-// The TriageFiler does work only if it hasn't done so in the past triageSyncFreq minutes.
-func (f *TriageFiler) EachLoop() error {
-	if time.Now().Before(f.nextSync) {
-		return nil
-	}
-
-	if err := f.FileIssues(); err != nil {
-		return err
-	}
-
-	f.nextSync = time.Now().Add(triageSyncFreq)
-	glog.Infof("TriageFiler will run again at %v", f.nextSync)
-	return nil
+	creator.RegisterSourceOrDie("triage-filer", &TriageFiler{})
 }
 
 // FileIssues is the main work function of the TriageFiler.  It fetches and parses cluster data,
 // then syncs the top issues to github with the IssueCreator.
-func (f *TriageFiler) FileIssues() error {
+func (f *TriageFiler) Issues(c *creator.IssueCreator) ([]creator.Issue, error) {
+	f.creator = c
 	rawjson, err := mungerutil.ReadHTTP(clusterDataURL)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	clusters, err := f.loadClusters(rawjson)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	topclusters := topClusters(clusters, f.topClustersCount)
+	issues := make([]creator.Issue, 0, len(topclusters))
 	for _, clust := range topclusters {
-		f.creator.Sync(clust)
+		issues = append(issues, clust)
 	}
-	return nil
+	return issues, nil
 }
 
 // RegisterOptions registers options for this munger; returns any that require a restart when changed.
-func (f *TriageFiler) RegisterOptions(opts *options.Options) sets.String {
-	opts.RegisterInt(&f.topClustersCount, "triage-count", 3, "The number of clusters to sync issues for on github.")
-	opts.RegisterInt(&f.windowDays, "triage-window", 1, "The size of the sliding time window (in days) that is used to determine which failures to consider.")
-	return nil
+func (f *TriageFiler) RegisterFlags() {
+	flag.IntVar(&f.topClustersCount, "triage-count", 3, "The number of clusters to sync issues for on github.")
+	flag.IntVar(&f.windowDays, "triage-window", 1, "The size of the sliding time window (in days) that is used to determine which failures to consider.")
 }
-
-// Munge is unused by the TriageFiler.
-func (f *TriageFiler) Munge(obj *github.MungeObject) {}
 
 // triageData is a struct that represents the format of the JSON triage data and is used for parsing.
 type triageData struct {
@@ -473,11 +424,22 @@ func (c *Cluster) Body(closedIssues []*githubapi.Issue) string {
 		}
 		fmt.Fprint(&buf, "\n")
 	}
-	// Explanations of assignees and sigs
-	testNames := make([]string, len(c.Tests))
-	for i, test := range c.topTestsFailed(len(c.Tests)) {
-		testNames[i] = test.Name
+
+	// Create /assign command.
+	testNames := make([]string, 0, len(c.Tests))
+	for _, test := range c.topTestsFailed(len(c.Tests)) {
+		testNames = append(testNames, test.Name)
 	}
+	ownersMap := c.filer.creator.TestsOwners(testNames)
+	if len(ownersMap) > 0 {
+		fmt.Fprint(&buf, "\n/assign")
+		for user := range ownersMap {
+			fmt.Fprintf(&buf, " @%s", user)
+		}
+		fmt.Fprint(&buf, "\n")
+	}
+
+	// Explanations of assignees and sigs
 	fmt.Fprint(&buf, c.filer.creator.ExplainTestAssignments(testNames))
 
 	fmt.Fprintf(&buf, "\n[Current Status](%s#%s)", triageURL, c.Id)
@@ -509,16 +471,10 @@ func (c *Cluster) Labels() []string {
 
 // Owners returns the list of usernames to assign to this issue on github.
 func (c *Cluster) Owners() []string {
-	topTests := make([]string, len(c.Tests))
-	for i, test := range c.topTestsFailed(len(c.Tests)) {
-		topTests[i] = test.Name
-	}
-	ownersMap := c.filer.creator.TestsOwners(topTests)
-	owners := make([]string, 0, len(ownersMap))
-	for user := range ownersMap {
-		owners = append(owners, user)
-	}
-	return owners
+	// Assign owners by including a /assign command in the body instead of using Owners to set
+	// assignees on the issue request. This lets prow do the assignee validation and will mention
+	// the user we want to assign even if they can't be assigned.
+	return nil
 }
 
 // Priority calculates and returns the priority of this issue.
