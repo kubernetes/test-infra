@@ -52,6 +52,13 @@ type Config struct {
 	// The namespace needs to exist and will not be created by prow.
 	// Defaults to "default".
 	PodNamespace string `json:"pod_namespace,omitempty"`
+
+	// PushGateway is a prometheus push gateway.
+	PushGateway PushGateway `json:"push_gateway,omitempty"`
+}
+
+type PushGateway struct {
+	Endpoint string `json:"endpoint,omitempty"`
 }
 
 // Tide is config for the tide pool.
