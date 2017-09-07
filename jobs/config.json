@@ -2292,6 +2292,23 @@
       "UNKNOWN"
     ]
   },
+  "ci-kubernetes-e2e-gce-gci-qa-m62": {
+    "args": [
+      "--check-leaked-resources",
+      "--env-file=jobs/platform/gce.env",
+      "--extract=gci/gci-62",
+      "--gcp-project=e2e-gce-gci-qa-m62",
+      "--gcp-zone=us-central1-f",
+      "--ginkgo-parallel=25",
+      "--provider=gce",
+      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
+      "--timeout=50m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "UNKNOWN"
+    ]
+  },
   "ci-kubernetes-e2e-gce-gci-qa-master": {
     "args": [
       "--check-leaked-resources",
@@ -2347,6 +2364,22 @@
       "--env-file=jobs/platform/gce.env",
       "--extract=gci/gci-61",
       "--gcp-project=e2e-gce-gci-qa-serial-m61",
+      "--gcp-zone=us-central1-f",
+      "--provider=gce",
+      "--test_args=--ginkgo.focus=\\[Serial\\]|\\[Disruptive\\] --ginkgo.skip=\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
+      "--timeout=300m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "UNKNOWN"
+    ]
+  },
+  "ci-kubernetes-e2e-gce-gci-qa-serial-m62": {
+    "args": [
+      "--check-leaked-resources",
+      "--env-file=jobs/platform/gce.env",
+      "--extract=gci/gci-62",
+      "--gcp-project=e2e-gce-gci-qa-serial-m62",
       "--gcp-zone=us-central1-f",
       "--provider=gce",
       "--test_args=--ginkgo.focus=\\[Serial\\]|\\[Disruptive\\] --ginkgo.skip=\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
@@ -2414,6 +2447,23 @@
       "--extract=gci/gci-61",
       "--gcp-project=e2e-gce-gci-qa-slow-m61",
       "--gcp-zone=us-central1-f",
+      "--provider=gce",
+      "--test_args=--ginkgo.focus=\\[Slow\\] --ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
+      "--timeout=150m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "UNKNOWN"
+    ]
+  },
+  "ci-kubernetes-e2e-gce-gci-qa-slow-m62": {
+    "args": [
+      "--check-leaked-resources",
+      "--env-file=jobs/platform/gce.env",
+      "--extract=gci/gci-62",
+      "--gcp-project=e2e-gce-gci-qa-slow-m62",
+      "--gcp-zone=us-central1-f",
+      "--ginkgo-parallel=25",
       "--provider=gce",
       "--test_args=--ginkgo.focus=\\[Slow\\] --ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
       "--timeout=150m"
