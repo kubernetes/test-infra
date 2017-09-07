@@ -16,6 +16,7 @@ filegroup(
     name = "all-srcs",
     srcs = [
         ":package-srcs",
+        "//prow/cmd/config:all-srcs",
         "//prow/cmd/deck:all-srcs",
         "//prow/cmd/hook:all-srcs",
         "//prow/cmd/horologium:all-srcs",
