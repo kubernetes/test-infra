@@ -16246,7 +16246,7 @@ periodics:
   interval: 24h
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/issue-creator:v20170810-b67f7e08
+    - image: gcr.io/k8s-testimages/issue-creator:v20170907-5240cca5
       args:
       - --dry-run=false
       - --alsologtostderr
