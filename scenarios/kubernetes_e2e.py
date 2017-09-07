@@ -378,10 +378,10 @@ def build_kops(workspace, mode):
     job = os.getenv('JOB_NAME', 'pull-kops-e2e-kubernetes-aws')
     gcs = 'gs://kops-ci/pulls/%s' % job
     gapi = 'https://storage.googleapis.com/kops-ci/pulls/%s' % job
-    mode.add_environment([
+    mode.add_environment(
         'KOPS_BASE_URL=%s/%s' % (gapi, version),
         'GCS_LOCATION=%s' % gcs
-        ])
+        )
     check('make', 'gcs-publish-ci', 'VERSION=%s' % version, 'GCS_LOCATION=%s' % gcs)
 
 
