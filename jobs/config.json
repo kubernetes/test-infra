@@ -8431,12 +8431,12 @@
       "--env-file=jobs/platform/kops_aws.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-kops-aws-updown.env",
       "--extract=ci/latest",
+      "--kops-state=s3://kops-aws-updown-store",
+      "--kops-zones=us-west-1b",
       "--mode=docker",
       "--provider=aws",
-      "--state=s3://kops-aws-updown-store",
       "--test_args=--ginkgo.focus=\\[k8s.io\\]\\sNetworking.*\\[Conformance\\]",
-      "--timeout=30m",
-      "--zones=us-west-1b"
+      "--timeout=30m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -8450,7 +8450,6 @@
       "--env-file=jobs/platform/kops_aws.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-kops-aws.env",
       "--extract=ci/latest",
-      "--kops-args=\"--networking=weave\"",
       "--kops-args=\"--networking=weave\"",
       "--mode=docker",
       "--provider=aws",
