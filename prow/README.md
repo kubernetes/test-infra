@@ -99,7 +99,7 @@ changes. For instance, if you bumped the hook version, run
 
 Add a new package under `plugins` with a method satisfying one of the handler
 types in `plugins`. In that package's `init` function, call
-`plugins.Register*Handler(name, handler)`. Then, in `cmd/hook/main.go`, add an
+`plugins.Register*Handler(name, handler)`. Then, in `hook/plugins.go`, add an
 empty import so that your plugin is included. If you forget this step then a
 unit test will fail when you try to add it to `plugins.yaml`. Don't add a brand
 new plugin to the main `kubernetes/kubernetes` repo right away, start with

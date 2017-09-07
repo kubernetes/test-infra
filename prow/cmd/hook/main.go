@@ -35,23 +35,6 @@ import (
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/plugins"
 	"k8s.io/test-infra/prow/slack"
-
-	_ "k8s.io/test-infra/prow/plugins/assign"
-	_ "k8s.io/test-infra/prow/plugins/cla"
-	_ "k8s.io/test-infra/prow/plugins/close"
-	_ "k8s.io/test-infra/prow/plugins/golint"
-	_ "k8s.io/test-infra/prow/plugins/heart"
-	_ "k8s.io/test-infra/prow/plugins/hold"
-	_ "k8s.io/test-infra/prow/plugins/label"
-	_ "k8s.io/test-infra/prow/plugins/lgtm"
-	_ "k8s.io/test-infra/prow/plugins/releasenote"
-	_ "k8s.io/test-infra/prow/plugins/reopen"
-	_ "k8s.io/test-infra/prow/plugins/shrug"
-	_ "k8s.io/test-infra/prow/plugins/size"
-	_ "k8s.io/test-infra/prow/plugins/trigger"
-	_ "k8s.io/test-infra/prow/plugins/updateconfig"
-	_ "k8s.io/test-infra/prow/plugins/wip"
-	_ "k8s.io/test-infra/prow/plugins/yuks"
 )
 
 var (
