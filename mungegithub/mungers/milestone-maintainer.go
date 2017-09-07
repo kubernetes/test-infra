@@ -63,9 +63,9 @@ var (
 		"priority/important-longterm": "Escalate to the issue owners; move out of the milestone after 1 attempt.",
 	}
 
-	milestoneRemovedLabel          = strings.ToLower(strings.Replace(milestoneRemoved, " ", "-", -1))
-	milestoneLabelsIncompleteLabel = strings.ToLower(strings.Replace(milestoneLabelsIncomplete, " ", "-", -1))
-	milestoneLabelsCompleteLabel   = strings.ToLower(strings.Replace(milestoneLabelsComplete, " ", "-", -1))
+	milestoneRemovedLabel          = "milestone-removed"
+	milestoneLabelsIncompleteLabel = "milestone-labels-incomplete"
+	milestoneLabelsCompleteLabel   = "milestone-labels-complete"
 	milestoneLabels                = []string{milestoneRemovedLabel, milestoneLabelsCompleteLabel, milestoneLabelsIncompleteLabel}
 )
 
