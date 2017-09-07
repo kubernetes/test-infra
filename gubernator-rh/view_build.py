@@ -51,7 +51,7 @@ def yield_results(tree, suitename, filename):
             yield name, time, param.text, filename
     elif tree.tag == 'testsuite':
         for item in tree:
-            for result in yield_results(item, tree.attrib['name'], filename):
+            for result in yield_results(item, tree.attrib.get('name', ''), filename):
                 yield result
     elif tree.tag == 'testsuites':
         for item in tree:
