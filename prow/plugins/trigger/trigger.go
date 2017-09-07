@@ -73,21 +73,25 @@ func getClient(pc plugins.PluginClient) client {
 func handlePullRequest(pc plugins.PluginClient, pr github.PullRequestEvent) error {
 	org, repo := pr.PullRequest.Base.Repo.Owner.Login, pr.PullRequest.Base.Repo.Name
 	config := pc.PluginConfig.TriggerFor(org, repo)
+	var trustedOrg string
 	if config == nil || config.TrustedOrg == "" {
-		pc.Logger.Infof("Ignoring pull request event, triggers not configured for %s/%s.", org, repo)
-		return nil
+		trustedOrg = org
+	} else {
+		trustedOrg = config.TrustedOrg
 	}
-	return handlePR(getClient(pc), config.TrustedOrg, pr)
+	return handlePR(getClient(pc), trustedOrg, pr)
 }
 
 func handleIssueComment(pc plugins.PluginClient, ic github.IssueCommentEvent) error {
 	org, repo := ic.Repo.Owner.Login, ic.Repo.Name
 	config := pc.PluginConfig.TriggerFor(org, repo)
+	var trustedOrg string
 	if config == nil || config.TrustedOrg == "" {
-		pc.Logger.Infof("Ignoring issue comment event, triggers not configured for %s/%s.", org, repo)
-		return nil
+		trustedOrg = org
+	} else {
+		trustedOrg = config.TrustedOrg
 	}
-	return handleIC(getClient(pc), config.TrustedOrg, ic)
+	return handleIC(getClient(pc), trustedOrg, ic)
 }
 
 func handlePush(pc plugins.PluginClient, pe github.PushEvent) error {

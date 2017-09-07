@@ -125,6 +125,72 @@ config will be automatically updated once the PR is merged, else you will need
 to run `make update-config`. This does not require redeploying any binaries, 
 and will take effect within a minute.
 
+Periodic config looks like so:
+
+```yaml
+periodics:
+- name: foo-job         # Names need not be unique.
+  interval: 1h          # Anything that can be parsed by time.ParseDuration.
+  agent: kubernetes     # See discussion.
+  spec: {}              # Valid Kubernetes PodSpec.
+  run_after_success: [] # List of periodics.
+```
+
+The `agent` should be "kubernetes", but if you are running a controller for a
+different job agent then you can fill that in here. The spec should be a valid
+Kubernetes PodSpec iff `agent` is "kubernetes".
+
+Postsubmit config looks like so:
+
+```yaml
+postsubmits:
+  org/repo:
+  - name: bar-job         # As for periodics.
+    agent: kubernetes     # As for periodics.
+    spec: {}              # As for periodics.
+    max_concurrency: 10   # Run no more than this number concurrently.
+    branches:             # Only run against these branches.
+    - master
+    skip_branches:        # Do not run against these branches.
+    - release
+    run_after_success: [] # List of postsubmits.
+```
+
+Postsubmits are run when a push event happens on a repo, hence they are
+configured per-repo. If no `branches` are specified, then they will run against
+every branch.
+
+Presubmit config looks like so:
+
+```yaml
+presubmits:
+  org/repo:
+  - name: qux-job            # As for periodics.
+    always_run: true         # Run for every PR, or only when requested.
+    run_if_changed: "qux/.*" # Regexp, only run on certain changed files.
+    skip_report: true        # Whether to skip setting a status on GitHub.
+    context: qux-job         # Status context. Usually the job name.
+    max_concurrency: 10      # As for postsubmits.
+    agent: kubernetes        # As for periodics.
+    spec: {}                 # As for periodics.
+    run_after_success: []    # As for periodics.
+    branches: []             # As for postsubmits.
+    skip_branches: []        # As for postsubmits.
+    trigger: "(?m)qux test this( please)?" # Regexp, see discussion.
+    rerun_command: "qux test this please"  # String, see discussion.
+```
+
+If you only want to run tests when specific files are touched, you can use
+`run_if_changed`. A useful pattern when adding new jobs is to start with
+`always_run` set to false and `skip_report` set to true. Test it out a few
+times by manually triggering, then switch `always_run` to true. Watch for a
+couple days, then switch `skip_report` to false.
+
+The `trigger` is a regexp that matches the `rerun_command`. Users will be told
+to input the `rerun_command` when they want to rerun the job. Actually, anything
+that matches `trigger` will suffice. This is useful if you want to make one
+command that reruns all jobs.
+
 Prow will inject the following environment variables into every container in
 your pod:
 
