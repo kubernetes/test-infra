@@ -210,7 +210,8 @@
 		},
 		{
 			"ImportPath": "github.com/spf13/pflag",
-			"Rev": "08b1a584251b5b62f458943640fc8ebd4d50aaa5"
+			"Comment": "v1.0.0-3-g7aff26d",
+			"Rev": "7aff26db30c1be810f9de5038ec5ef96ac41fd7c"
 		},
 		{
 			"ImportPath": "golang.org/x/net/context",
