@@ -16248,6 +16248,8 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/issue-creator:v20170810-b67f7e08
       args:
+      - --dry-run=false
+      - --alsologtostderr
       - --org=kubernetes
       - --project=kubernetes
       - --token-file=/etc/token/bot-github-token
