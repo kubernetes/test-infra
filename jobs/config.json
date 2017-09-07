@@ -151,7 +151,8 @@
   },
   "ci-kubernetes-build-1.8": {
     "args": [
-      "--extra-publish-file=k8s-stable1"
+      "--extra-publish-file=k8s-stable1",
+      "--registry=gcr.io/kubernetes-ci-images"
     ],
     "scenario": "kubernetes_build",
     "sigOwners": [
