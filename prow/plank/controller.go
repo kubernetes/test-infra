@@ -235,11 +235,6 @@ func (c *Controller) syncKubernetesJob(pj kube.ProwJob, pm map[string]kube.Pod, 
 		if pj.Status.PodName == "" {
 			// Completed ProwJob, already cleaned up the pod. Nothing to do.
 			return nil
-		} else if _, ok := pm[pj.Status.PodName]; ok {
-			// Delete the old pod.
-			if err := c.pkc.DeletePod(pj.Status.PodName); err != nil {
-				return fmt.Errorf("error deleting pod %s: %v", pj.Status.PodName, err)
-			}
 		}
 		pj.Status.PodName = ""
 	} else if pj.Status.PodName == "" {
