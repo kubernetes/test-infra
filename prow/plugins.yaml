@@ -12,7 +12,7 @@ triggers:
 
 heart:
   adorees:
-  - k8s-merge-bot
+  - k8s-merge-robot
 
 plugins:
   google/cadvisor:
