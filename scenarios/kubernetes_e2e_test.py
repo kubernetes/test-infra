@@ -220,7 +220,6 @@ class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-method
 
     def test_migrated_kubetest_args(self):
         migrated = [
-            '--stage=a-stage',
             '--stage-suffix=panda',
             '--random-flag', 'random-value',
             '--multiple-federations',

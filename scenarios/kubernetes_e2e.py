@@ -451,7 +451,7 @@ def get_shared_gcs_path(gcs_shared, use_shared_build):
 
 def main(args):
     """Set up env, start kubekins-e2e, handle termination. """
-    # pylint: disable=too-many-branches,too-many-statements
+    # pylint: disable=too-many-branches,too-many-statements,too-many-locals
 
     # Rules for env var priority here in docker:
     # -e FOO=a -e FOO=b -> FOO=b
@@ -528,6 +528,19 @@ def main(args):
 
     if args.kops_build:
         build_kops(workspace, mode)
+
+    if args.stage is not None:
+        runner_args.append('--stage=%s' % args.stage)
+        if args.aws:
+            for line in check_output('hack/print-workspace-status.sh').split('\n'):
+                if 'gitVersion' in line:
+                    _, version = line.strip().split(' ')
+                    break
+            else:
+                raise ValueError('kubernetes version not found in workspace status')
+            runner_args.append('--kops-kubernetes-version=%s/%s' % (
+                args.stage.replace('gs://', 'https://storage.googleapis.com/'),
+                version))
 
     # TODO(fejta): move these out of this file
     if args.up == 'true':
@@ -632,6 +645,8 @@ def create_parser():
         '--docker-in-docker', action='store_true', help='Enable run docker within docker')
     parser.add_argument(
         '--kubeadm', choices=['ci', 'periodic', 'pull'])
+    parser.add_argument(
+        '--stage', default=None, help='Stage release to GCS path provided')
     parser.add_argument(
         '--tag', default=DEFAULT_KUBEKINS_TAG, help='Use a specific kubekins-e2e tag if set')
     parser.add_argument(
