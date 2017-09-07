@@ -147,27 +147,21 @@
         job-name: ci-kubernetes-node-kubelet-conformance
         repo-name: k8s.io/kubernetes
         timeout: 90
-    - kubernetes-node-kubelet-1.4:  # dawnchen
-        branch: release-1.4
-        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
-        job-name: ci-kubernetes-node-kubelet-1.4
-        repo-name: k8s.io/kubernetes
-        timeout: 90
     - kubernetes-node-kubelet-1.5:  # dawnchen
         branch: release-1.5
-        frequency: 'H/5 * * * *'
+        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
         job-name: ci-kubernetes-node-kubelet-1.5
         repo-name: k8s.io/kubernetes
         timeout: 90
     - kubernetes-node-kubelet-1.6:
         branch: release-1.6
-        frequency: 'H/5 * * * *'
+        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
         job-name: ci-kubernetes-node-kubelet-1.6
         repo-name: k8s.io/kubernetes
         timeout: 90
     - kubernetes-node-kubelet-non-cri-1.6:
         branch: release-1.6
-        frequency: 'H/5 * * * *'
+        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
         job-name: ci-kubernetes-node-kubelet-non-cri-1.6
         repo-name: k8s.io/kubernetes
         timeout: 90
@@ -175,6 +169,12 @@
         branch: release-1.7
         frequency: 'H/5 * * * *'
         job-name: ci-kubernetes-node-kubelet-1.7
+        repo-name: k8s.io/kubernetes
+        timeout: 90
+    - kubernetes-node-kubelet-stable1:
+        branch: release-1.8
+        frequency: 'H/5 * * * *'
+        job-name: ci-kubernetes-node-kubelet-stable1
         repo-name: k8s.io/kubernetes
         timeout: 90
 

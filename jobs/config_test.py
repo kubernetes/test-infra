@@ -690,10 +690,8 @@ class JobTest(unittest.TestCase):
             'ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-slow.env': 'ci-kubernetes-e2e-gke-ubuntu*',
             'ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-updown.env': 'ci-kubernetes-e2e-gke-ubuntu*',
             # The 1.5 and 1.6 scalability jobs intentionally share projects.
-            'ci-kubernetes-e2e-gce-scalability-release-1-7.env': 'ci-kubernetes-e2e-gce-scalability-release-*',
-            'ci-kubernetes-e2e-gce-scalability-release-1-6.env': 'ci-kubernetes-e2e-gce-scalability-release-*',
             'ci-kubernetes-e2e-gci-gce-scalability-release-1-7.env': 'ci-kubernetes-e2e-gci-gce-scalability-release-*',
-            'ci-kubernetes-e2e-gci-gce-scalability-release-1-6.env': 'ci-kubernetes-e2e-gci-gce-scalability-release-*',
+            'ci-kubernetes-e2e-gci-gce-scalability-stable1.env': 'ci-kubernetes-e2e-gci-gce-scalability-release-*',
             'ci-kubernetes-e2e-gce-scalability.env': 'ci-kubernetes-e2e-gce-scalability-*',
             'ci-kubernetes-e2e-gce-scalability-canary.env': 'ci-kubernetes-e2e-gce-scalability-*',
             # TODO(fejta): remove these (found while migrating jobs)
@@ -726,7 +724,6 @@ class JobTest(unittest.TestCase):
         for soak_prefix in [
                 'ci-kubernetes-soak-gce-1.5',
                 'ci-kubernetes-soak-gce-1-7',
-                'ci-kubernetes-soak-gce-1.4',
                 'ci-kubernetes-soak-gce-1.6',
                 'ci-kubernetes-soak-gce-2',
                 'ci-kubernetes-soak-gce',
@@ -734,7 +731,7 @@ class JobTest(unittest.TestCase):
                 'ci-kubernetes-soak-gce-gci',
                 'ci-kubernetes-soak-gke-gci',
                 'ci-kubernetes-soak-gce-federation',
-                'ci-kubernetes-soak-gci-gce-1.4',
+                'ci-kubernetes-soak-gci-gce-stable1',
                 'ci-kubernetes-soak-gci-gce-1.6',
                 'ci-kubernetes-soak-gci-gce-1-7',
                 'ci-kubernetes-soak-cos-docker-validation',
