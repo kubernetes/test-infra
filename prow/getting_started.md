@@ -179,6 +179,9 @@ update-config: get-cluster-credentials
     kubectl create configmap config --from-file=config=config.yaml --dry-run -o yaml | kubectl replace configmap config -f -
 ```
 
+Presubmits and postsubmits are triggered by the `trigger` plugin. Be sure to
+enable that plugin by adding it to the list you created in the last section.
+
 Now when you open a PR it will automatically run the presubmit that you added
 to this file. You can see it on your prow dashboard. Once you are happy that it
 is stable, switch `skip_report` to `false`. Then, it will post a status on the
@@ -190,10 +193,72 @@ When you push a new change, the postsubmit job will run.
 
 For more information on the job environment, see [How to add new jobs][3].
 
-## TODO Run test pods in a different namespace or a different cluster
+## Run test pods in a different namespace or a different cluster
 
-## TODO Configure SSL
+You may choose to keep prowjobs or run tests in a different namespace. First
+create the namespace by `kubectl create -f`ing this:
+
+```yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: prow
+```
+
+Now, in `config.yaml`, set `prowjob_namespace` or `pod_namespace` to the
+name from the YAML file. You can then use RBAC roles to limit what test pods
+can do.
+
+You may choose to run test pods in a separate cluster entirely. Create a secret
+containing the following:
+
+```yaml
+endpoint: https://<master-ip>
+clientCertificate: <base64-encoded cert>
+clientKey: <base64-encoded key>
+clusterCaCertificate: <base64-encoded cert>
+```
+
+You can learn these by running `gcloud container clusters describe` on your
+cluster. Then, mount this secret into the prow components that need it and set
+the `--build-cluster` flag to the location you mount it at. For instance, you
+will need to merge the following into the plank deployment:
+
+```yaml
+spec:
+  containers:
+  - name: plank
+    args:
+    - --build-cluster=/etc/cluster/cluster
+    volumeMounts:
+    - mountPath: /etc/cluster
+      name: cluster
+      readOnly: true
+  volumes:
+  - name: cluster
+    secret:
+      defaultMode: 420
+      secretName: build-cluster
+```
+
+## Configure SSL
+
+I suggest using [kube-lego][4] for automatic LetsEncrypt integration. If you
+already have a cert then follow the [official docs][5] to set up HTTPS
+termination. Promote your ingress IP to static IP. On GKE, run:
+
+```
+gcloud compute addresses create [ADDRESS_NAME] --addresses [IP_ADDRESS] --region [REGION]
+```
+
+Point the DNS record for your domain to point at that ingress IP. The convention
+for naming is `prow.org.io`, but of course that's not a requirement.
+
+Then, install kube-lego as described in its readme. You don't need to run it in
+a separate namespace.
 
 [1]: https://www.random.org/strings/?num=1&len=16&digits=on&upperalpha=on&loweralpha=on&unique=on&format=html&rnd=new
 [2]: https://github.com/settings/tokens
 [3]: ./README.md##how-to-add-new-jobs
+[4]: https://github.com/jetstack/kube-lego
+[5]: https://kubernetes.io/docs/concepts/services-networking/ingress/#tls
