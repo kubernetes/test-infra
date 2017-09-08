@@ -958,3 +958,45 @@ func TestGetLabels(t *testing.T) {
 		t.Errorf("Wrong label names: %v", labels)
 	}
 }
+
+func simpleTestServer(t *testing.T, path string, v interface{}) *httptest.Server {
+	return httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == path {
+			b, err := json.Marshal(v)
+			if err != nil {
+				t.Fatalf("Didn't expect error: %v", err)
+			}
+			fmt.Fprint(w, string(b))
+		} else {
+			t.Fatalf("Bad request path: %s", r.URL.Path)
+		}
+	}))
+}
+
+func TestListTeams(t *testing.T) {
+	ts := simpleTestServer(t, "/orgs/foo/teams", []Team{{ID: 1}})
+	defer ts.Close()
+	c := getClient(ts.URL)
+	teams, err := c.ListTeams("foo")
+	if err != nil {
+		t.Errorf("Didn't expect error: %v", err)
+	} else if len(teams) != 1 {
+		t.Errorf("Expected one team, found %d: %v", len(teams), teams)
+	} else if teams[0].ID != 1 {
+		t.Errorf("Wrong team names: %v", teams)
+	}
+}
+
+func TestListTeamMembers(t *testing.T) {
+	ts := simpleTestServer(t, "/teams/1/members", []TeamMember{{Login: "foo"}})
+	defer ts.Close()
+	c := getClient(ts.URL)
+	teamMembers, err := c.ListTeamMembers(1)
+	if err != nil {
+		t.Errorf("Didn't expect error: %v", err)
+	} else if len(teamMembers) != 1 {
+		t.Errorf("Expected one team member, found %d: %v", len(teamMembers), teamMembers)
+	} else if teamMembers[0].Login != "foo" {
+		t.Errorf("Wrong team names: %v", teamMembers)
+	}
+}

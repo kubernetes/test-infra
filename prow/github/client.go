@@ -893,3 +893,47 @@ func (c *Client) Query(ctx context.Context, q interface{}, vars map[string]inter
 	c.log("Query", q, vars)
 	return c.gqlc.Query(ctx, q, vars)
 }
+
+// ListTeams gets a list of teams for the given org
+func (c *Client) ListTeams(org string) ([]Team, error) {
+	c.log("ListTeams", org)
+	if c.fake {
+		return nil, nil
+	}
+	path := fmt.Sprintf("/orgs/%s/teams", org)
+	var teams []Team
+	err := c.readPaginatedResults(path,
+		func() interface{} {
+			return &[]Team{}
+		},
+		func(obj interface{}) {
+			teams = append(teams, *(obj.(*[]Team))...)
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+	return teams, nil
+}
+
+// ListTeamMembers gets a list of team members for the given team id
+func (c *Client) ListTeamMembers(id int) ([]TeamMember, error) {
+	c.log("ListTeamMembers", id)
+	if c.fake {
+		return nil, nil
+	}
+	path := fmt.Sprintf("/teams/%d/members", id)
+	var teamMembers []TeamMember
+	err := c.readPaginatedResults(path,
+		func() interface{} {
+			return &[]TeamMember{}
+		},
+		func(obj interface{}) {
+			teamMembers = append(teamMembers, *(obj.(*[]TeamMember))...)
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+	return teamMembers, nil
+}
