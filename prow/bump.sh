@@ -39,4 +39,4 @@ echo "old version: $version"
 echo "new version: $new_version"
 
 $SED -i "s/$makefile_version_re.*/\1$new_version/I" Makefile
-$SED -i "s/\(${1}:\)[0-9.]+/\1$new_version/I" cluster/*.yaml
+$SED -i "s/\(${1}:\)[0-9.]\+/\1$new_version/I" cluster/*.yaml
