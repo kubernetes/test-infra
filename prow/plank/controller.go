@@ -130,7 +130,8 @@ func (c *Controller) Sync() error {
 	if err != nil {
 		return fmt.Errorf("error listing prow jobs: %v", err)
 	}
-	pods, err := c.pkc.ListPods(nil)
+	labels := map[string]string{kube.CreatedByProw: "true"}
+	pods, err := c.pkc.ListPods(labels)
 	if err != nil {
 		return fmt.Errorf("error listing pods: %v", err)
 	}
