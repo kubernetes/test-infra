@@ -4,9 +4,8 @@
         # TODO(fejta): consider a stable tag instead of master
         git clone https://github.com/kubernetes/test-infra -b master
         './test-infra/jenkins/bootstrap.py' \
-            --branch='{branch}' \
             --job='{job-name}' \
-            --repo='{repo-name}' \
+            --repo='{repo-name}={branch}' \
             --root="${{GOPATH}}/src" \
             --service-account="${{GOOGLE_APPLICATION_CREDENTIALS}}" \
             --timeout='{timeout}' \
