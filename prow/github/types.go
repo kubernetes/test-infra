@@ -367,3 +367,14 @@ type Content struct {
 	Content string `json:"content"`
 	SHA     string `json:"sha"`
 }
+
+// Team is a github organizational team
+type Team struct {
+	ID   int    `json:"id"`
+	Name string `json:"name"`
+}
+
+// TeamMember is a member of an organizational team
+type TeamMember struct {
+	Login string `json:"login"`
+}
