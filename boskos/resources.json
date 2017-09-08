@@ -385,6 +385,7 @@
       "k8s-jkns-gke-reboot-1-4",
       "k8s-jkns-gke-slow-1-4",
       "k8s-jkns-pr-gci-bld-e2e-gce-fd",
+      "k8s-jkns-pr-kubeadm",
       "k8s-jnks-gci-autoscaling",
       "k8s-jnks-gci-autoscaling-migs",
       "k8s-kubeadm-1-6-on-1-7",
