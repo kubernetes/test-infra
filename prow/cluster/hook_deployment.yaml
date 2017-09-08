@@ -33,14 +33,17 @@ spec:
       terminationGracePeriodSeconds: 180
       containers:
       - name: hook
-        image: gcr.io/k8s-prow/hook:0.157
+        image: gcr.io/k8s-prow/hook:0.158
         imagePullPolicy: Always
         args:
         - --dry-run=false
+        - --slack-token-file=/etc/slack/token
         ports:
           - name: http
             containerPort: 8888
         volumeMounts:
+        - name: slack
+          mountPath: /etc/slack
         - name: hmac
           mountPath: /etc/webhook
           readOnly: true
@@ -54,6 +57,9 @@ spec:
           mountPath: /etc/plugins
           readOnly: true
       volumes:
+      - name: slack
+        secret:
+          secretName: slack-token
       - name: hmac
         secret:
           secretName: hmac-token

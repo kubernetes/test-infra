@@ -51,7 +51,7 @@ var (
 	githubTokenFile = flag.String("github-token-file", "/etc/github/oauth", "Path to the file containing the GitHub OAuth secret.")
 
 	webhookSecretFile = flag.String("hmac-secret-file", "/etc/webhook/hmac", "Path to the file containing the GitHub HMAC secret.")
-	slackTokenFile    = flag.String("slack-token-file", "", "Path to the file containing the Slack Kubernetes Team Token.")
+	slackTokenFile    = flag.String("slack-token-file", "", "Path to the file containing the Slack token to use.")
 )
 
 func main() {
