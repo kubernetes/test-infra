@@ -134,6 +134,10 @@ func HoldLabelIssue() *github.Issue {
 	return github_test.Issue(someUserName, 1, []string{cncfClaYesLabel, lgtmLabel, approvedLabel, holdLabel}, true)
 }
 
+func AdditionalLabelIssue(label string) *github.Issue {
+	return github_test.Issue(someUserName, 1, []string{cncfClaYesLabel, lgtmLabel, approvedLabel, label}, true)
+}
+
 func DoNotMergeMilestoneIssue() *github.Issue {
 	issue := github_test.Issue(someUserName, 1, []string{cncfClaYesLabel, lgtmLabel}, true)
 	milestone := &github.Milestone{
@@ -520,6 +524,7 @@ func TestSubmitQueue(t *testing.T) {
 		issue            *github.Issue
 		commits          []*github.RepositoryCommit
 		events           []*github.IssueEvent
+		additionalLabels []string
 		ciStatus         *github.CombinedStatus
 		lastBuildNumber  int
 		gcsResult        utils.FinishedFile
@@ -845,6 +850,37 @@ func TestSubmitQueue(t *testing.T) {
 			state:           "pending",
 		},
 		{
+			name:             "Fail because kind/blocker label is required but missing",
+			pr:               ValidPR(),
+			issue:            LGTMApprovedIssue(),
+			additionalLabels: []string{"kind/blocker"},
+			events:           NewLGTMEvents(),
+			commits:          Commits(), // Modified at time.Unix(7), 8, and 9
+			ciStatus:         SuccessStatus(),
+			lastBuildNumber:  LastBuildNumber(),
+			gcsResult:        SuccessGCS(),
+			retest1Pass:      true,
+			retest2Pass:      true,
+			reason:           noAdditionalLabelMessage("kind/blocker"),
+			state:            "pending",
+		},
+		{
+			name:             "Merge kind/blocker PR",
+			pr:               ValidPR(),
+			issue:            AdditionalLabelIssue("kind/blocker"),
+			additionalLabels: []string{"kind/blocker"},
+			events:           NewLGTMEvents(),
+			commits:          Commits(), // Modified at time.Unix(7), 8, and 9
+			ciStatus:         SuccessStatus(),
+			lastBuildNumber:  LastBuildNumber(),
+			gcsResult:        SuccessGCS(),
+			retest1Pass:      true,
+			retest2Pass:      true,
+			reason:           merged,
+			state:            "success",
+			isMerged:         true,
+		},
+		{
 			name:            "Fail because deprecated missing release note label is present",
 			pr:              ValidPR(),
 			issue:           DeprecatedMissingReleaseNoteIssue(),
@@ -1128,6 +1164,7 @@ func TestSubmitQueue(t *testing.T) {
 
 		sq := getTestSQ(true, config, server)
 		sq.setEmergencyMergeStop(test.emergencyMergeStop)
+		sq.AdditionalRequiredLabels = test.additionalLabels
 
 		obj := github_util.NewTestObject(config, test.issue, test.pr, test.commits, test.events)
 		if test.imBaseSHA != "" && test.imHeadSHA != "" {

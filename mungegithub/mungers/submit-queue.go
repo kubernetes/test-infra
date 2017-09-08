@@ -222,6 +222,10 @@ type SubmitQueue struct {
 	GateApproved bool
 	GateCLA      bool
 
+	// AdditionalRequiredLabels is a set of additional labels required for merging
+	// on top of the existing required ("lgtm", "approved", "cncf-cla: yes").
+	AdditionalRequiredLabels []string
+
 	// If FakeE2E is true, don't try to connect to JenkinsHost, all jobs are passing.
 	FakeE2E bool
 
@@ -565,6 +569,7 @@ func (sq *SubmitQueue) EachLoop() error {
 func (sq *SubmitQueue) RegisterOptions(opts *options.Options) sets.String {
 	sq.opts = opts
 	opts.RegisterStringSlice(&sq.NonBlockingJobNames, "nonblocking-jobs", []string{}, "Comma separated list of jobs that don't block merges, but will have status reported and issues filed.")
+	opts.RegisterStringSlice(&sq.AdditionalRequiredLabels, "additional-required-labels", []string{}, "Comma separated list of labels required for merging PRs on top of the existing required.")
 	opts.RegisterBool(&sq.FakeE2E, "fake-e2e", false, "Whether to use a fake for testing E2E stability.")
 	opts.RegisterStringSlice(&sq.DoNotMergeMilestones, "do-not-merge-milestones", []string{}, "List of milestones which, when applied, will cause the PR to not be merged")
 	opts.RegisterInt(&sq.AdminPort, "admin-port", 9999, "If non-zero, will serve administrative actions on this port.")
@@ -601,6 +606,8 @@ func (sq *SubmitQueue) RegisterOptions(opts *options.Options) sets.String {
 		// For the following: need to remunge all PRs if changed from true to false.
 		"gate-cla",
 		"gate-approved",
+		// Need to remunge all PRs if anything changes in the following set of labels.
+		"additional-required-labels",
 	)
 }
 
@@ -954,6 +961,10 @@ func noMergeMessage(label string) string {
 	return "Will not auto merge because " + label + " is present"
 }
 
+func noAdditionalLabelMessage(label string) string {
+	return "Will not auto merge because " + label + " is missing"
+}
+
 const (
 	unknown                 = "unknown failure"
 	noCLA                   = "PR is missing CLA label; needs one of " + cncfClaYesLabel + " or " + claHumanLabel
@@ -1010,6 +1021,7 @@ func (sq *SubmitQueue) validForMergeExt(obj *github.MungeObject, checkStatus boo
 	doNotMergeMilestones := sq.DoNotMergeMilestones
 	mergeContexts := mungeopts.RequiredContexts.Merge
 	retestContexts := mungeopts.RequiredContexts.Retest
+	additionalLabels := sq.AdditionalRequiredLabels
 	sq.opts.Unlock()
 
 	milestone := obj.Issue.Milestone
@@ -1091,6 +1103,13 @@ func (sq *SubmitQueue) validForMergeExt(obj *github.MungeObject, checkStatus boo
 	} {
 		if obj.HasLabel(label) {
 			sq.SetMergeStatus(obj, noMergeMessage(label))
+			return false
+		}
+	}
+
+	for _, label := range additionalLabels {
+		if !obj.HasLabel(label) {
+			sq.SetMergeStatus(obj, noAdditionalLabelMessage(label))
 			return false
 		}
 	}
