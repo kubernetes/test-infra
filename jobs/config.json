@@ -10562,7 +10562,7 @@
       "--env-file=jobs/platform/kops_aws.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-kops-aws.env",
       "--env-file=jobs/env/pull-kops-e2e-kubernetes-aws.env",
-      "--extract=release/stable",
+      "--extract=ci/latest",
       "--kops-build",
       "--mode=docker",
       "--provider=aws",
