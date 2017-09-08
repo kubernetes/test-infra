@@ -47,6 +47,7 @@ plugins:
   - lgtm
   - size
   - yuks
+  - wip
   - shrug
 
   kubernetes-incubator:
