@@ -16,11 +16,11 @@ heart:
 
 slackevents:
 - repos:
-  - kubernetes/test-infra
+  - kubernetes/kubernetes
   channels:
-  - sig-testing
+  - kubernetes-dev
   whitelist:
-  - cjwagner
+  - k8s-merge-robot
 
 plugins:
   google/cadvisor:
@@ -38,11 +38,11 @@ plugins:
   kubernetes/kubernetes:
   - trigger
   - release-note
+  - slackevents
 
   kubernetes/test-infra:
   - trigger
   - config-updater
-  - slackevents
 
   kubernetes:
   - assign
