@@ -25,7 +25,6 @@ import (
 	"time"
 
 	"github.com/bwmarrin/snowflake"
-	uuid "github.com/satori/go.uuid"
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/config"
@@ -322,7 +321,7 @@ func (c *Controller) startPod(pj kube.ProwJob) (string, string, error) {
 		return "", "", fmt.Errorf("error getting build ID: %v", err)
 	}
 
-	pod := npj.ProwJobToPod(pj, newPodName(), buildID)
+	pod := npj.ProwJobToPod(pj, buildID)
 
 	actual, err := c.pkc.CreatePod(*pod)
 	if err != nil {
@@ -364,8 +363,4 @@ func (c *Controller) updatePendingJobs(pjs []kube.ProwJob) {
 			c.incrementNumPendingJobs(pj.Spec.Job)
 		}
 	}
-}
-
-var newPodName = func() string {
-	return uuid.NewV1().String()
 }
