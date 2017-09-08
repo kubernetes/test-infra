@@ -193,11 +193,6 @@ func handleTot(w http.ResponseWriter, r *http.Request) {
 }
 
 func TestSyncKubernetesJob(t *testing.T) {
-	var oldNewName = newPodName
-	defer func() {
-		newPodName = oldNewName
-	}()
-	newPodName = func() string { return "NEWPOD" }
 	var testcases = []struct {
 		name string
 
@@ -240,6 +235,9 @@ func TestSyncKubernetesJob(t *testing.T) {
 		{
 			name: "start new pod",
 			pj: kube.ProwJob{
+				Metadata: kube.ObjectMeta{
+					Name: "blabla",
+				},
 				Spec: kube.ProwJobSpec{
 					Job:  "boop",
 					Type: kube.PeriodicJob,
@@ -252,7 +250,7 @@ func TestSyncKubernetesJob(t *testing.T) {
 			expectedPodHasName: true,
 			expectedNumPods:    1,
 			expectedReport:     true,
-			expectedURL:        "NEWPOD/pending",
+			expectedURL:        "blabla/pending",
 		},
 		{
 			name: "reset when pod goes missing",

@@ -27,7 +27,6 @@ go_library(
         "//prow/npj:go_default_library",
         "//prow/report:go_default_library",
         "//vendor/github.com/bwmarrin/snowflake:go_default_library",
-        "//vendor/github.com/satori/go.uuid:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
     ],
 )

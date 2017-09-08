@@ -119,7 +119,7 @@ func BatchSpec(p config.Presubmit, refs kube.Refs) kube.ProwJobSpec {
 }
 
 // ProwJobToPod converts a ProwJob to a Pod that will run the tests.
-func ProwJobToPod(pj kube.ProwJob, podName, buildID string) *kube.Pod {
+func ProwJobToPod(pj kube.ProwJob, buildID string) *kube.Pod {
 	env := EnvForSpec(pj.Spec)
 	env["BUILD_NUMBER"] = buildID
 
@@ -132,12 +132,12 @@ func ProwJobToPod(pj kube.ProwJob, podName, buildID string) *kube.Pod {
 	spec.Containers = []kube.Container{}
 	for i := range pj.Spec.PodSpec.Containers {
 		spec.Containers = append(spec.Containers, pj.Spec.PodSpec.Containers[i])
-		spec.Containers[i].Name = fmt.Sprintf("%s-%d", podName, i)
+		spec.Containers[i].Name = fmt.Sprintf("%s-%d", pj.Metadata.Name, i)
 		spec.Containers[i].Env = append(spec.Containers[i].Env, kubeEnv(env)...)
 	}
 	return &kube.Pod{
 		Metadata: kube.ObjectMeta{
-			Name: podName,
+			Name: pj.Metadata.Name,
 			Labels: map[string]string{
 				kube.CreatedByProw: "true",
 			},
