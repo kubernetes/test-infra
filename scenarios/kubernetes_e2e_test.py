@@ -348,14 +348,17 @@ class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-method
         args = kubernetes_e2e.parse_args(['--mode=local', '--kubeadm=pull'])
         self.assertEqual(args.mode, 'local')
         self.assertEqual(args.kubeadm, 'pull')
-        fake_env = {'PULL_NUMBER': 1234, 'PULL_REFS': 'master:abcd'}
+        fake_env = {
+            'SHARED_BUILD_GCS_PATH':
+            'gs://kubernetes-release-dev/bazel/v1.8.0-beta.1.132+599539dc0b9997'
+        }
         with Stub(kubernetes_e2e, 'check_env', self.fake_check_env):
             with Stub(os, 'environ', fake_env):
                 kubernetes_e2e.main(args)
 
         self.assertNotIn('E2E_OPT', self.envs)
-        version = 'gs://kubernetes-release-dev/bazel/1234/master:abcd/bin/linux/amd64/'
-        self.assertIn('--kubernetes-anywhere-kubeadm-version=%s' % version, self.callstack[-1])
+        ver = 'gs://kubernetes-release-dev/bazel/v1.8.0-beta.1.132+599539dc0b9997/bin/linux/amd64/'
+        self.assertIn('--kubernetes-anywhere-kubeadm-version=%s' % ver, self.callstack[-1])
 
     def test_kubeadm_invalid(self):
         """Make sure kubeadm invalid mode exits unsuccessfully."""
