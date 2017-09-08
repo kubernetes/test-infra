@@ -76,7 +76,7 @@ func main() {
 		}
 	}
 
-	var ac *jenkins.AuthConfig
+	ac := &jenkins.AuthConfig{}
 	var jc *jenkins.Client
 	if *jenkinsURL != "" {
 		if *jenkinsTokenFile != "" {
