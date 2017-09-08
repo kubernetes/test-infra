@@ -351,6 +351,7 @@
       "k8s-jkns-gce-slow-1-4",
       "k8s-jkns-gce-slow-1-6",
       "k8s-jkns-gce-soak-1-2",
+      "k8s-jkns-gce-soak-1-4",
       "k8s-jkns-gce-taintevict",
       "k8s-jkns-gce-ubuntu-1-6",
       "k8s-jkns-gce-ubuntu-1-6-serial",
