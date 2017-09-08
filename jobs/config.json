@@ -10825,14 +10825,14 @@
       "--cluster=",
       "--deployment=kubernetes-anywhere",
       "--env-file=jobs/platform/gce.env",
-      "--extract=local",
-      "--gcp-project=k8s-jkns-pr-kubeadm",
       "--gcp-zone=us-central1-f",
+      "--ginkgo-parallel=30",
       "--kubeadm=pull",
-      "--kubernetes-anywhere-kubernetes-version=latest",
+      "--kubernetes-anywhere-kubernetes-version=ci/latest",
       "--provider=kubernetes-anywhere",
       "--test_args=--ginkgo.focus=\\[Conformance\\] --ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\] --minStartupPods=8",
-      "--timeout=55m"
+      "--timeout=55m",
+      "--use-shared-build=bazel"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [

@@ -94,15 +94,17 @@ def kubeadm_version(mode):
         if version.startswith('v1.6.'):
             return 'gs://kubernetes-release-dev/bazel/%s/build/debs/' % version
 
+        # The path given here should match jobs/ci-kubernetes-bazel-build.sh
+        return 'gs://kubernetes-release-dev/bazel/%s/bin/linux/amd64/' % version
+
     elif mode == 'pull':
-        version = '%s/%s' % (os.environ['PULL_NUMBER'], os.getenv('PULL_REFS'))
+        # The format of shared_build_gcs_path looks like:
+        # gs://kubernetes-release-dev/bazel/<git-describe-output>
+        # Add bin/linux/amd64 yet to that path so it points to the dir with the debs
+        return '%s/bin/linux/amd64/' % os.environ['SHARED_BUILD_GCS_PATH']
 
     else:
         raise ValueError("Unknown kubeadm mode given: %s" % mode)
-
-    # The path given here should match jobs/ci-kubernetes-bazel-build.sh
-    return 'gs://kubernetes-release-dev/bazel/%s/bin/linux/amd64/' % version
-
 
 class LocalMode(object):
     """Runs e2e tests by calling kubetest."""
@@ -503,7 +505,10 @@ def main(args):
             attempts_remaining -= 1
             try:
                 # tell kubetest to extract from this location
-                args.kubetest_args.append('--extract=' + read_gcs_path(gcs_path))
+                shared_build_gcs_path = read_gcs_path(gcs_path)
+                args.kubetest_args.append('--extract=' + shared_build_gcs_path)
+                mode.add_environment('SHARED_BUILD_GCS_PATH=' + shared_build_gcs_path)
+                os.environ['SHARED_BUILD_GCS_PATH'] = shared_build_gcs_path
                 args.build = None
                 break
             except urllib2.URLError as err:
