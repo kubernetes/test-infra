@@ -123,6 +123,74 @@ func pickSmallestPassingNumber(prs []pullRequest) (bool, pullRequest) {
 	return smallestNumber > -1, smallestPR
 }
 
+// accumulateBatch returns a list of PRs that can be merged after passing batch
+// testing, if any exist. It also returns whether or not a batch is currently
+// running.
+func accumulateBatch(presubmits []string, prs []pullRequest, pjs []kube.ProwJob) ([]pullRequest, bool) {
+	prNums := make(map[int]pullRequest)
+	for _, pr := range prs {
+		prNums[int(pr.Number)] = pr
+	}
+	type accState struct {
+		prs       []pullRequest
+		jobStates map[string]simpleState
+		// Are the pull requests in the ref still acceptable? That is, do they
+		// still point to the heads of the PRs?
+		validPulls bool
+	}
+	states := make(map[string]*accState)
+	for _, pj := range pjs {
+		if pj.Spec.Type != kube.BatchJob {
+			continue
+		}
+		// If any batch job is pending, return now.
+		if toSimpleState(pj.Status.State) == pendingState {
+			return nil, true
+		}
+		// Otherwise, accumulate results.
+		ref := pj.Spec.Refs.String()
+		if _, ok := states[ref]; !ok {
+			states[ref] = &accState{
+				jobStates:  make(map[string]simpleState),
+				validPulls: true,
+			}
+			for _, pull := range pj.Spec.Refs.Pulls {
+				if pr, ok := prNums[pull.Number]; ok && string(pr.HeadRef.Target.OID) == pull.SHA {
+					states[ref].prs = append(states[ref].prs, pr)
+				} else {
+					states[ref].validPulls = false
+					break
+				}
+			}
+		}
+		if !states[ref].validPulls {
+			// The batch contains a PR ref that has changed. Skip it.
+			continue
+		}
+		job := pj.Spec.Job
+		if s, ok := states[ref].jobStates[job]; !ok || s == noneState {
+			states[ref].jobStates[job] = toSimpleState(pj.Status.State)
+		}
+	}
+	for _, state := range states {
+		if !state.validPulls {
+			continue
+		}
+		passesAll := true
+		for _, p := range presubmits {
+			if s, ok := state.jobStates[p]; !ok || s != successState {
+				passesAll = false
+				continue
+			}
+		}
+		if !passesAll {
+			continue
+		}
+		return state.prs, false
+	}
+	return nil, false
+}
+
 // accumulate returns the supplied PRs sorted into three buckets based on their
 // accumulated state across the presubmits.
 func accumulate(presubmits []string, prs []pullRequest, pjs []kube.ProwJob) (successes, pendings, nones []pullRequest) {
@@ -130,6 +198,9 @@ func accumulate(presubmits []string, prs []pullRequest, pjs []kube.ProwJob) (suc
 		// Accumulate the best result for each job.
 		psStates := make(map[string]simpleState)
 		for _, pj := range pjs {
+			if pj.Spec.Type != kube.PresubmitJob {
+				continue
+			}
 			if pj.Spec.Refs.Pulls[0].Number != int(pr.Number) {
 				continue
 			}
@@ -163,7 +234,6 @@ func accumulate(presubmits []string, prs []pullRequest, pjs []kube.ProwJob) (suc
 	return
 }
 
-// TODO(spxtr): Batch merges.
 func (c *Controller) syncSubpool(ctx context.Context, sp subpool) error {
 	c.log.Infof("%s/%s %s: %d PRs, %d PJs.", sp.org, sp.repo, sp.branch, len(sp.prs), len(sp.pjs))
 	var presubmits []string
@@ -172,6 +242,19 @@ func (c *Controller) syncSubpool(ctx context.Context, sp subpool) error {
 			continue
 		}
 		presubmits = append(presubmits, ps.Name)
+	}
+	batchMerge, batchPending := accumulateBatch(presubmits, sp.prs, sp.pjs)
+	// Do not take any actions while waiting for a batch to complete. We don't
+	// want to invalidate the old batch result.
+	if batchPending {
+		c.log.Info("Waiting for batch to complete.")
+		return nil
+	}
+	if len(batchMerge) > 0 {
+		for _, pr := range batchMerge {
+			c.log.Infof("Merge PR #%d (batch).", int(pr.Number))
+		}
+		return nil
 	}
 	successes, pendings, nones := accumulate(presubmits, sp.prs, sp.pjs)
 	if len(successes) > 0 {
@@ -187,8 +270,11 @@ func (c *Controller) syncSubpool(ctx context.Context, sp subpool) error {
 	if len(nones) > 0 {
 		if ok, pr := pickSmallestPassingNumber(nones); ok {
 			c.log.Infof("Trigger tests for PR #%d.", int(pr.Number))
-			return nil
 		}
+	}
+	if len(sp.prs) > 1 {
+		// TODO(spxtr): Copy splice logic to figure out which PRs to test.
+		c.log.Info("Trigger batch.")
 	}
 	return nil
 }

@@ -46,13 +46,133 @@ func testPullsMatchList(t *testing.T, test string, actual []pullRequest, expecte
 	}
 }
 
-type prowjob struct {
-	prNumber int
-	job      string
-	state    kube.ProwJobState
+func TestAccumulateBatch(t *testing.T) {
+	type pull struct {
+		number int
+		sha    string
+	}
+	type prowjob struct {
+		prs   []pull
+		job   string
+		state kube.ProwJobState
+	}
+	tests := []struct {
+		name       string
+		presubmits []string
+		pulls      []pull
+		prowJobs   []prowjob
+
+		merges  []int
+		pending bool
+	}{
+		{
+			name: "no batches running",
+		},
+		{
+			name:       "batch pending",
+			presubmits: []string{"foo", "bar", "baz"},
+			pulls:      []pull{{1, "a"}, {2, "b"}},
+			prowJobs:   []prowjob{{job: "foo", state: kube.PendingState, prs: []pull{{1, "a"}}}},
+			pending:    true,
+		},
+		{
+			name:       "batch pending, successful previous run",
+			presubmits: []string{"foo", "bar", "baz"},
+			pulls:      []pull{{1, "a"}, {2, "b"}},
+			prowJobs: []prowjob{
+				{job: "foo", state: kube.PendingState, prs: []pull{{1, "a"}}},
+				{job: "foo", state: kube.SuccessState, prs: []pull{{2, "b"}}},
+				{job: "bar", state: kube.SuccessState, prs: []pull{{2, "b"}}},
+				{job: "baz", state: kube.SuccessState, prs: []pull{{2, "b"}}},
+			},
+			pending: true,
+		},
+		{
+			name:       "successful run",
+			presubmits: []string{"foo", "bar", "baz"},
+			pulls:      []pull{{1, "a"}, {2, "b"}},
+			prowJobs: []prowjob{
+				{job: "foo", state: kube.SuccessState, prs: []pull{{2, "b"}}},
+				{job: "bar", state: kube.SuccessState, prs: []pull{{2, "b"}}},
+				{job: "baz", state: kube.SuccessState, prs: []pull{{2, "b"}}},
+			},
+			merges: []int{2},
+		},
+		{
+			name:       "successful run, multiple PRs",
+			presubmits: []string{"foo", "bar", "baz"},
+			pulls:      []pull{{1, "a"}, {2, "b"}},
+			prowJobs: []prowjob{
+				{job: "foo", state: kube.SuccessState, prs: []pull{{1, "a"}, {2, "b"}}},
+				{job: "bar", state: kube.SuccessState, prs: []pull{{1, "a"}, {2, "b"}}},
+				{job: "baz", state: kube.SuccessState, prs: []pull{{1, "a"}, {2, "b"}}},
+			},
+			merges: []int{1, 2},
+		},
+		{
+			name:       "successful run, failures in past",
+			presubmits: []string{"foo", "bar", "baz"},
+			pulls:      []pull{{1, "a"}, {2, "b"}},
+			prowJobs: []prowjob{
+				{job: "foo", state: kube.SuccessState, prs: []pull{{1, "a"}, {2, "b"}}},
+				{job: "bar", state: kube.SuccessState, prs: []pull{{1, "a"}, {2, "b"}}},
+				{job: "baz", state: kube.SuccessState, prs: []pull{{1, "a"}, {2, "b"}}},
+				{job: "foo", state: kube.FailureState, prs: []pull{{1, "a"}, {2, "b"}}},
+				{job: "baz", state: kube.FailureState, prs: []pull{{1, "a"}, {2, "b"}}},
+				{job: "foo", state: kube.FailureState, prs: []pull{{1, "c"}, {2, "b"}}},
+			},
+			merges: []int{1, 2},
+		},
+		{
+			name:       "failures",
+			presubmits: []string{"foo", "bar", "baz"},
+			pulls:      []pull{{1, "a"}, {2, "b"}},
+			prowJobs: []prowjob{
+				{job: "foo", state: kube.FailureState, prs: []pull{{1, "a"}, {2, "b"}}},
+				{job: "bar", state: kube.SuccessState, prs: []pull{{1, "a"}, {2, "b"}}},
+				{job: "baz", state: kube.FailureState, prs: []pull{{1, "a"}, {2, "b"}}},
+				{job: "foo", state: kube.FailureState, prs: []pull{{1, "c"}, {2, "b"}}},
+			},
+		},
+	}
+	for _, test := range tests {
+		var pulls []pullRequest
+		for _, p := range test.pulls {
+			pr := pullRequest{Number: githubql.Int(p.number)}
+			pr.HeadRef.Target.OID = githubql.String(p.sha)
+			pulls = append(pulls, pr)
+		}
+		var pjs []kube.ProwJob
+		for _, pj := range test.prowJobs {
+			npj := kube.ProwJob{
+				Spec: kube.ProwJobSpec{
+					Job:  pj.job,
+					Type: kube.BatchJob,
+				},
+				Status: kube.ProwJobStatus{State: pj.state},
+			}
+			for _, pr := range pj.prs {
+				npj.Spec.Refs.Pulls = append(npj.Spec.Refs.Pulls, kube.Pull{
+					Number: pr.number,
+					SHA:    pr.sha,
+				})
+			}
+			pjs = append(pjs, npj)
+		}
+		merges, pending := accumulateBatch(test.presubmits, pulls, pjs)
+		if pending != test.pending {
+			t.Errorf("For case \"%s\", got wrong pending.", test.name)
+		}
+		testPullsMatchList(t, test.name, merges, test.merges)
+	}
 }
 
 func TestAccumulate(t *testing.T) {
+	type prowjob struct {
+		prNumber int
+		job      string
+		state    kube.ProwJobState
+	}
 	tests := []struct {
 		presubmits   []string
 		pullRequests []int
@@ -173,7 +293,11 @@ func TestAccumulate(t *testing.T) {
 		var pjs []kube.ProwJob
 		for _, pj := range test.prowJobs {
 			pjs = append(pjs, kube.ProwJob{
-				Spec:   kube.ProwJobSpec{Job: pj.job, Refs: kube.Refs{Pulls: []kube.Pull{{Number: pj.prNumber}}}},
+				Spec: kube.ProwJobSpec{
+					Job:  pj.job,
+					Type: kube.PresubmitJob,
+					Refs: kube.Refs{Pulls: []kube.Pull{{Number: pj.prNumber}}},
+				},
 				Status: kube.ProwJobStatus{State: pj.state},
 			})
 		}
