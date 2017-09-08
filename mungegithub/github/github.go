@@ -858,6 +858,15 @@ func (config *Config) GetBranchCommits(branch string, limit int) ([]*github.Repo
 	return commits, nil
 }
 
+// GetTokenUsage returns the api token usage of the current github user.
+func (config *Config) GetTokenUsage() (int, error) {
+	limits, _, err := config.client.RateLimits(context.Background())
+	if err != nil {
+		return -1, err
+	}
+	return limits.Core.Limit - limits.Core.Remaining, nil
+}
+
 // Branch returns the branch the PR is for. Return "" if this is not a PR or
 // it does not have the required information.
 func (obj *MungeObject) Branch() (string, bool) {
