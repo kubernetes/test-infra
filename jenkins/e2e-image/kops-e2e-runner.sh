@@ -91,7 +91,6 @@ export -f log_dump_custom_get_instances # Export to cluster/log-dump/log-dump.sh
 kubetest "${e2e_args[@]}" "${@}"
 
 if [[ -n "${KOPS_PUBLISH_GREEN_PATH:-}" ]]; then
-  export CLOUDSDK_CONFIG="/workspace/.config/gcloud"
 
   if ! which gsutil; then
     export PATH=/google-cloud-sdk/bin:${PATH}
