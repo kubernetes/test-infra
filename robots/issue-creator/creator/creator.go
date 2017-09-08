@@ -356,13 +356,12 @@ func (c *IssueCreator) sync(issue Issue) bool {
 	if c.validLabels != nil {
 		var removedLabels []string
 		labels, removedLabels = setIntersect(labels, c.validLabels)
-		fmt.Printf("labels: %q, removed: %q", labels, removedLabels)
 		if len(removedLabels) > 0 {
 			glog.Errorf("Filtered the following invalid labels from issue %q: %q.", title, removedLabels)
 		}
 	}
 
-	glog.Infof("Create Issue:\nTitle:%s\nBody:\n%s\nLabels:%v\nAssigned to:%v\n", title, body, labels, owners)
+	glog.Infof("Create Issue: %q Assigned to: %q\n", title, owners)
 	if c.dryRun {
 		return true
 	}
