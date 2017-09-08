@@ -441,6 +441,14 @@ class JobTest(unittest.TestCase):
 
     def test_valid_job_config_json(self):
         """Validate jobs/config.json."""
+        # bootstrap integration test scripts
+        ignore = [
+            'fake-failure',
+            'fake-branch',
+            'fake-pr',
+            'random_job',
+        ]
+
         self.load_prow_yaml(self.prow_config)
         config = config_sort.test_infra('jobs/config.json')
         owners = config_sort.test_infra('jobs/validOwners.json')
@@ -448,6 +456,10 @@ class JobTest(unittest.TestCase):
             config = json.loads(fp.read())
             valid_owners = json.loads(ownfp.read())
             for job in config:
+                if job not in ignore:
+                    self.assertTrue(job in self.prowjobs or job in self.realjobs,
+                                    '%s must have a matching jenkins/prow entry' % job)
+
                 # onwership assertions
                 self.assertIn('sigOwners', config[job], job)
                 self.assertIsInstance(config[job]['sigOwners'], list, job)
