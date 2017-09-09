@@ -37,8 +37,8 @@ go_library(
         "//prow/kube:go_default_library",
         "//prow/npj:go_default_library",
         "//vendor/github.com/NYTimes/gziphandler:go_default_library",
-        "//vendor/github.com/Sirupsen/logrus:go_default_library",
         "//vendor/github.com/ghodss/yaml:go_default_library",
+        "//vendor/github.com/sirupsen/logrus:go_default_library",
     ],
 )
 

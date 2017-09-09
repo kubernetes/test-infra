@@ -25,7 +25,7 @@ import (
 	"fmt"
 	"regexp"
 
-	"github.com/Sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/plugins"
@@ -63,7 +63,9 @@ type githubClient interface {
 
 func handlePullRequest(pc plugins.PluginClient, pe github.PullRequestEvent) error {
 	// These are the only actions indicating the PR title may have changed.
-	if pe.Action != github.PullRequestActionOpened && pe.Action != github.PullRequestActionEdited {
+	if pe.Action != github.PullRequestActionOpened &&
+		pe.Action != github.PullRequestActionReopened &&
+		pe.Action != github.PullRequestActionEdited {
 		return nil
 	}
 

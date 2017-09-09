@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"regexp"
 
-	"github.com/Sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/plugins"
@@ -57,7 +57,7 @@ type githubClient interface {
 }
 
 func handleIssueComment(pc plugins.PluginClient, ic github.IssueCommentEvent) error {
-	if !ic.Issue.IsPullRequest() || ic.Action != github.IssueCommentActionCreated {
+	if ic.Action != github.IssueCommentActionCreated {
 		return nil
 	}
 

@@ -441,6 +441,14 @@ class JobTest(unittest.TestCase):
 
     def test_valid_job_config_json(self):
         """Validate jobs/config.json."""
+        # bootstrap integration test scripts
+        ignore = [
+            'fake-failure',
+            'fake-branch',
+            'fake-pr',
+            'random_job',
+        ]
+
         self.load_prow_yaml(self.prow_config)
         config = config_sort.test_infra('jobs/config.json')
         owners = config_sort.test_infra('jobs/validOwners.json')
@@ -448,6 +456,10 @@ class JobTest(unittest.TestCase):
             config = json.loads(fp.read())
             valid_owners = json.loads(ownfp.read())
             for job in config:
+                if job not in ignore:
+                    self.assertTrue(job in self.prowjobs or job in self.realjobs,
+                                    '%s must have a matching jenkins/prow entry' % job)
+
                 # onwership assertions
                 self.assertIn('sigOwners', config[job], job)
                 self.assertIsInstance(config[job]['sigOwners'], list, job)
@@ -475,7 +487,9 @@ class JobTest(unittest.TestCase):
                         extract_in_args = True
                     match = re.match(r'--env-file=([^\"]+)\.env', arg)
                     if match:
-                        path = config_sort.test_infra('%s.env' % match.group(1))
+                        env_path = match.group(1)
+                        self.assertTrue(env_path.startswith('jobs/'), env_path)
+                        path = config_sort.test_infra('%s.env' % env_path)
                         self.assertTrue(
                             os.path.isfile(path),
                             '%s does not exist for %s' % (path, job))
@@ -608,15 +622,12 @@ class JobTest(unittest.TestCase):
         """Ensure that everything in jobs/ is a valid job name and script."""
         for job, job_path in self.jobs:
             # Jobs should have simple names: letters, numbers, -, .
-            self.assertTrue(re.match(r'[.0-9a-z-_]+.(sh|env)', job), job)
+            self.assertTrue(re.match(r'[.0-9a-z-_]+.env', job), job)
             # Jobs should point to a real, executable file
             # Note: it is easy to forget to chmod +x
             self.assertTrue(os.path.isfile(job_path), job_path)
             self.assertFalse(os.path.islink(job_path), job_path)
-            if job.endswith('.sh'):
-                self.assertTrue(os.access(job_path, os.X_OK|os.R_OK), job_path)
-            else:
-                self.assertTrue(os.access(job_path, os.R_OK), job_path)
+            self.assertTrue(os.access(job_path, os.R_OK), job_path)
 
     def test_all_project_are_unique(self):
         # pylint: disable=line-too-long
@@ -691,10 +702,8 @@ class JobTest(unittest.TestCase):
             'ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-slow.env': 'ci-kubernetes-e2e-gke-ubuntu*',
             'ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-updown.env': 'ci-kubernetes-e2e-gke-ubuntu*',
             # The 1.5 and 1.6 scalability jobs intentionally share projects.
-            'ci-kubernetes-e2e-gce-scalability-release-1-7.env': 'ci-kubernetes-e2e-gce-scalability-release-*',
-            'ci-kubernetes-e2e-gce-scalability-release-1-6.env': 'ci-kubernetes-e2e-gce-scalability-release-*',
             'ci-kubernetes-e2e-gci-gce-scalability-release-1-7.env': 'ci-kubernetes-e2e-gci-gce-scalability-release-*',
-            'ci-kubernetes-e2e-gci-gce-scalability-release-1-6.env': 'ci-kubernetes-e2e-gci-gce-scalability-release-*',
+            'ci-kubernetes-e2e-gci-gce-scalability-stable1.env': 'ci-kubernetes-e2e-gci-gce-scalability-release-*',
             'ci-kubernetes-e2e-gce-scalability.env': 'ci-kubernetes-e2e-gce-scalability-*',
             'ci-kubernetes-e2e-gce-scalability-canary.env': 'ci-kubernetes-e2e-gce-scalability-*',
             # TODO(fejta): remove these (found while migrating jobs)
@@ -714,7 +723,6 @@ class JobTest(unittest.TestCase):
             'ci-kubernetes-e2e-gke-large-deploy.env': 'ci-kubernetes-scale-*',
             'ci-kubernetes-e2e-gke-large-teardown.env': 'ci-kubernetes-scale-*',
             'ci-kubernetes-e2e-gke-scale-correctness.env': 'ci-kubernetes-scale-*',
-            'ci-kubernetes-federation-build.sh': 'ci-kubernetes-federation-*',
             'ci-kubernetes-e2e-gce-federation.env': 'ci-kubernetes-federation-*',
             'pull-kubernetes-federation-e2e-gce.env': 'pull-kubernetes-federation-e2e-gce-*',
             'ci-kubernetes-pull-gce-federation-deploy.env': 'pull-kubernetes-federation-e2e-gce-*',
@@ -728,7 +736,6 @@ class JobTest(unittest.TestCase):
         for soak_prefix in [
                 'ci-kubernetes-soak-gce-1.5',
                 'ci-kubernetes-soak-gce-1-7',
-                'ci-kubernetes-soak-gce-1.4',
                 'ci-kubernetes-soak-gce-1.6',
                 'ci-kubernetes-soak-gce-2',
                 'ci-kubernetes-soak-gce',
@@ -736,7 +743,7 @@ class JobTest(unittest.TestCase):
                 'ci-kubernetes-soak-gce-gci',
                 'ci-kubernetes-soak-gke-gci',
                 'ci-kubernetes-soak-gce-federation',
-                'ci-kubernetes-soak-gci-gce-1.4',
+                'ci-kubernetes-soak-gci-gce-stable1',
                 'ci-kubernetes-soak-gci-gce-1.6',
                 'ci-kubernetes-soak-gci-gce-1-7',
                 'ci-kubernetes-soak-cos-docker-validation',
@@ -905,6 +912,21 @@ class JobTest(unittest.TestCase):
                     continue
                 self._check_env(job, line)
 
+    def test_envs_non_empty(self):
+        bad = []
+        for job, job_path in self.jobs:
+            if not job.endswith('.env'):
+                continue
+            with open(job_path) as fp:
+                lines = list(fp)
+            for line in lines:
+                line = line.strip()
+                if line and not line.startswith('#'):
+                    break
+            else:
+                bad.append(job)
+        if bad:
+            self.fail('%s is empty, please remove the file(s)' % bad)
 
     def test_no_bad_vars_in_jobs(self):
         """Searches for jobs that contain ${{VAR}}"""

@@ -51,7 +51,7 @@ type Presubmit struct {
 	Brancher
 
 	// We'll set these when we load it.
-	re        *regexp.Regexp // from RerunCommand
+	re        *regexp.Regexp // from Trigger.
 	reChanges *regexp.Regexp // from RunIfChanged
 }
 

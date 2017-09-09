@@ -17,6 +17,7 @@ limitations under the License.
 package report
 
 import (
+	"fmt"
 	"strings"
 	"testing"
 
@@ -216,6 +217,104 @@ func TestParseIssueComment(t *testing.T) {
 		}
 		if tc.expectedUpdate != update {
 			t.Errorf("It %s: expected update %d, got %d", tc.name, tc.expectedUpdate, update)
+		}
+	}
+}
+
+type fakeGhClient struct {
+	status []github.Status
+}
+
+func (gh fakeGhClient) BotName() (string, error) {
+	return "BotName", nil
+}
+func (gh *fakeGhClient) CreateStatus(org, repo, ref string, s github.Status) error {
+	gh.status = append(gh.status, s)
+	return nil
+
+}
+func (gh fakeGhClient) ListIssueComments(org, repo string, number int) ([]github.IssueComment, error) {
+	return nil, nil
+}
+func (gh fakeGhClient) CreateComment(org, repo string, number int, comment string) error {
+	return nil
+}
+func (gh fakeGhClient) DeleteComment(org, repo string, ID int) error {
+	return nil
+}
+func (gh fakeGhClient) EditComment(org, repo string, ID int, comment string) error {
+	return nil
+}
+
+func createChildren(pjs *kube.ProwJobSpec, d int) int {
+	count := 0
+	for i := 0; i < d; i++ {
+		npjs := &kube.ProwJobSpec{
+			Context: fmt.Sprintf("%s/child_%d", pjs.Context, i),
+		}
+		count += createChildren(npjs, d-1)
+		pjs.RunAfterSuccess = append(pjs.RunAfterSuccess, *npjs)
+	}
+	return count + d
+}
+
+func TestReportStatus(t *testing.T) {
+	type tc struct {
+		name        string
+		pj          kube.ProwJob
+		statusCount int
+	}
+	children := 3
+	createTc := func(n string, state kube.ProwJobState) tc {
+		pj := kube.ProwJob{
+			Status: kube.ProwJobStatus{
+				State:       state,
+				Description: "message",
+				URL:         "http://mytest.com",
+			},
+			Spec: kube.ProwJobSpec{
+				Context: "parent",
+				Refs: kube.Refs{
+					Org:  "k8s",
+					Repo: "test-infra",
+					Pulls: []kube.Pull{{
+						Author: "me",
+						Number: 1,
+						SHA:    "abcdef",
+					}},
+				},
+			},
+		}
+
+		statusCount := 1 + createChildren(&pj.Spec, children)
+		return tc{
+			name:        n,
+			pj:          pj,
+			statusCount: statusCount,
+		}
+	}
+	for _, tc := range []tc{
+		createTc("successful job", kube.SuccessState),
+		createTc("pending jobs", kube.PendingState),
+	} {
+		ghc := &fakeGhClient{}
+		if err := reportStatus(ghc, tc.pj, parentJobChanged); err != nil {
+			t.Error(err)
+		}
+		if tc.pj.Status.State == kube.SuccessState {
+			if len(ghc.status) != 1 {
+				t.Errorf("There should only be one status sent, found %d", len(ghc.status))
+			}
+
+		} else {
+			if len(ghc.status) != tc.statusCount {
+				t.Errorf("There should be %d status, found %d", tc.statusCount, len(ghc.status))
+			}
+			for i := 1; i < tc.statusCount; i++ {
+				if !strings.HasPrefix(ghc.status[i].Description, parentJobChanged) {
+					t.Errorf("Description should start with prefix %s", parentJobChanged)
+				}
+			}
 		}
 	}
 }

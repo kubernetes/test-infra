@@ -19,7 +19,7 @@ package assign
 import (
 	"testing"
 
-	"github.com/Sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/github"
 )

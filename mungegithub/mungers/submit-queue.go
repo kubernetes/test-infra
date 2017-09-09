@@ -58,8 +58,6 @@ const (
 	doNotMergeLabel                = "do-not-merge"
 	wipLabel                       = "do-not-merge/work-in-progress"
 	holdLabel                      = "do-not-merge/hold"
-	claYesLabel                    = "cla: yes"
-	claNoLabel                     = "cla: no"
 	cncfClaYesLabel                = "cncf-cla: yes"
 	cncfClaNoLabel                 = "cncf-cla: no"
 	claHumanLabel                  = "cla: human-approved"
@@ -223,6 +221,10 @@ type SubmitQueue struct {
 
 	GateApproved bool
 	GateCLA      bool
+
+	// AdditionalRequiredLabels is a set of additional labels required for merging
+	// on top of the existing required ("lgtm", "approved", "cncf-cla: yes").
+	AdditionalRequiredLabels []string
 
 	// If FakeE2E is true, don't try to connect to JenkinsHost, all jobs are passing.
 	FakeE2E bool
@@ -567,6 +569,7 @@ func (sq *SubmitQueue) EachLoop() error {
 func (sq *SubmitQueue) RegisterOptions(opts *options.Options) sets.String {
 	sq.opts = opts
 	opts.RegisterStringSlice(&sq.NonBlockingJobNames, "nonblocking-jobs", []string{}, "Comma separated list of jobs that don't block merges, but will have status reported and issues filed.")
+	opts.RegisterStringSlice(&sq.AdditionalRequiredLabels, "additional-required-labels", []string{}, "Comma separated list of labels required for merging PRs on top of the existing required.")
 	opts.RegisterBool(&sq.FakeE2E, "fake-e2e", false, "Whether to use a fake for testing E2E stability.")
 	opts.RegisterStringSlice(&sq.DoNotMergeMilestones, "do-not-merge-milestones", []string{}, "List of milestones which, when applied, will cause the PR to not be merged")
 	opts.RegisterInt(&sq.AdminPort, "admin-port", 9999, "If non-zero, will serve administrative actions on this port.")
@@ -603,6 +606,8 @@ func (sq *SubmitQueue) RegisterOptions(opts *options.Options) sets.String {
 		// For the following: need to remunge all PRs if changed from true to false.
 		"gate-cla",
 		"gate-approved",
+		// Need to remunge all PRs if anything changes in the following set of labels.
+		"additional-required-labels",
 	)
 }
 
@@ -956,9 +961,13 @@ func noMergeMessage(label string) string {
 	return "Will not auto merge because " + label + " is present"
 }
 
+func noAdditionalLabelMessage(label string) string {
+	return "Will not auto merge because " + label + " is missing"
+}
+
 const (
 	unknown                 = "unknown failure"
-	noCLA                   = "PR is missing CLA label; needs one of " + claYesLabel + ", " + cncfClaYesLabel + " or " + claHumanLabel
+	noCLA                   = "PR is missing CLA label; needs one of " + cncfClaYesLabel + " or " + claHumanLabel
 	noLGTM                  = "PR does not have " + lgtmLabel + " label."
 	noApproved              = "PR does not have " + approvedLabel + " label."
 	lgtmEarly               = "The PR was changed after the " + lgtmLabel + " label was added."
@@ -1012,6 +1021,7 @@ func (sq *SubmitQueue) validForMergeExt(obj *github.MungeObject, checkStatus boo
 	doNotMergeMilestones := sq.DoNotMergeMilestones
 	mergeContexts := mungeopts.RequiredContexts.Merge
 	retestContexts := mungeopts.RequiredContexts.Retest
+	additionalLabels := sq.AdditionalRequiredLabels
 	sq.opts.Unlock()
 
 	milestone := obj.Issue.Milestone
@@ -1029,7 +1039,7 @@ func (sq *SubmitQueue) validForMergeExt(obj *github.MungeObject, checkStatus boo
 
 	// Must pass CLA checks
 	if gateCLA {
-		if !obj.HasLabel(claYesLabel) && !obj.HasLabel(claHumanLabel) && !obj.HasLabel(cncfClaYesLabel) {
+		if !obj.HasLabel(claHumanLabel) && !obj.HasLabel(cncfClaYesLabel) {
 			sq.SetMergeStatus(obj, noCLA)
 			return false
 		}
@@ -1093,6 +1103,13 @@ func (sq *SubmitQueue) validForMergeExt(obj *github.MungeObject, checkStatus boo
 	} {
 		if obj.HasLabel(label) {
 			sq.SetMergeStatus(obj, noMergeMessage(label))
+			return false
+		}
+	}
+
+	for _, label := range additionalLabels {
+		if !obj.HasLabel(label) {
+			sq.SetMergeStatus(obj, noAdditionalLabelMessage(label))
 			return false
 		}
 	}
@@ -1576,7 +1593,7 @@ func (sq *SubmitQueue) serveMergeInfo(res http.ResponseWriter, req *http.Request
 	out.WriteString("PRs must meet the following set of conditions to be considered for automatic merging by the submit queue.")
 	out.WriteString("<ol>")
 	if gateCLA {
-		out.WriteString(fmt.Sprintf("<li>The PR must have the label %q, %q or %q </li>", claYesLabel, cncfClaYesLabel, claHumanLabel))
+		out.WriteString(fmt.Sprintf("<li>The PR must have the label %q or %q </li>", cncfClaYesLabel, claHumanLabel))
 	}
 	out.WriteString("<li>The PR must be mergeable. aka cannot need a rebase</li>")
 	if len(mergeContexts) > 0 || len(retestContexts) > 0 {

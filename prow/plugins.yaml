@@ -12,7 +12,15 @@ triggers:
 
 heart:
   adorees:
-  - k8s-merge-bot
+  - k8s-merge-robot
+
+slackevents:
+- repos:
+  - kubernetes/kubernetes
+  channels:
+  - kubernetes-dev
+  whitelist:
+  - k8s-merge-robot
 
 plugins:
   google/cadvisor:
@@ -30,6 +38,7 @@ plugins:
   kubernetes/kubernetes:
   - trigger
   - release-note
+  - slackevents
 
   kubernetes/test-infra:
   - trigger
@@ -47,6 +56,7 @@ plugins:
   - lgtm
   - size
   - yuks
+  - wip
   - shrug
 
   kubernetes-incubator:

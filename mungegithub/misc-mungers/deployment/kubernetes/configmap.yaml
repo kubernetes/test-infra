@@ -5,7 +5,7 @@ organization: kubernetes
 project: kubernetes
 # Run blunderbuss before approval-handler, so that we can suggest approvers
 # based on assigned reviewer.
-pr-mungers: blunderbuss,approval-handler,lgtm-after-commit,cherrypick-auto-approve,label-unapproved-picks,needs-rebase,path-label,stale-green-ci,block-path,release-note-label,comment-deleter,issue-creator,triage-filer,flakyjob-reporter,close-stale,docs-need-no-retest,sig-mention-handler,milestone-maintainer
+pr-mungers: blunderbuss,approval-handler,lgtm-after-commit,cherrypick-auto-approve,label-unapproved-picks,needs-rebase,path-label,stale-green-ci,block-path,release-note-label,comment-deleter,close-stale,docs-need-no-retest,sig-mention-handler,milestone-maintainer
 state: open
 token-file: /etc/secret-volume/token
 period: 60s
@@ -29,12 +29,8 @@ required-retest-contexts: "\
 # munger specific options.
 path-label-config: path-label.txt
 block-path-config: block-path.yaml
-test-owners-csv: /gitrepos/kubernetes/test/test_owners.csv
-triage-window: 1
-triage-count: 10
 approval-requires-issue: true
 implicit-self-approval: true
-flakyjob-count: 3
 number-of-old-test-results: 5
 generated-files-config: .generated_files
 label-file: "/gitrepos/kubernetes/labels.yaml"

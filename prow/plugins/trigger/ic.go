@@ -54,11 +54,6 @@ func handleIC(c client, trustedOrg string, ic github.IssueCommentEvent) error {
 		return nil
 	}
 
-	if okToTest.MatchString(ic.Comment.Body) && ic.Issue.HasLabel(needsOkToTest) {
-		if err := c.GitHubClient.RemoveLabel(ic.Repo.Owner.Login, ic.Repo.Name, ic.Issue.Number, needsOkToTest); err != nil {
-			c.Logger.WithError(err).Errorf("Failed at removing %s label", needsOkToTest)
-		}
-	}
 	// Which jobs does the comment want us to run?
 	shouldRetestFailed := retest.MatchString(ic.Comment.Body)
 	requestedJobs := c.Config.MatchingPresubmits(ic.Repo.FullName, ic.Comment.Body, okToTest)
@@ -102,6 +97,12 @@ func handleIC(c client, trustedOrg string, ic github.IssueCommentEvent) error {
 			resp := fmt.Sprintf("you can't request testing unless you are a [%s](https://github.com/orgs/%s/people) member.", trustedOrg, trustedOrg)
 			c.Logger.Infof("Commenting \"%s\".", resp)
 			return c.GitHubClient.CreateComment(org, repo, number, plugins.FormatICResponse(ic.Comment, resp))
+		}
+	}
+
+	if okToTest.MatchString(ic.Comment.Body) && ic.Issue.HasLabel(needsOkToTest) {
+		if err := c.GitHubClient.RemoveLabel(ic.Repo.Owner.Login, ic.Repo.Name, ic.Issue.Number, needsOkToTest); err != nil {
+			c.Logger.WithError(err).Errorf("Failed at removing %s label", needsOkToTest)
 		}
 	}
 

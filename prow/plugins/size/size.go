@@ -23,7 +23,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/Sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/genfiles"
 	"k8s.io/test-infra/prow/github"
@@ -50,7 +50,7 @@ type githubClient interface {
 }
 
 func handlePR(gc githubClient, le *logrus.Entry, pe github.PullRequestEvent) error {
-	// These are the only three actions indicating the code diffs may have changed.
+	// These are the only actions indicating the code diffs may have changed.
 	if pe.Action != github.PullRequestActionOpened &&
 		pe.Action != github.PullRequestActionReopened &&
 		pe.Action != github.PullRequestActionSynchronize {

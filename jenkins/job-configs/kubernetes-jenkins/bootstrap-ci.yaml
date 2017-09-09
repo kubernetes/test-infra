@@ -56,12 +56,6 @@
     name: bootstrap-ci
     suffix:
     # START AWS
-    - kubernetes-e2e-aws-release-1.5:
-        job-name: ci-kubernetes-e2e-aws-release-1.5
-        jenkins-timeout: 240
-        timeout: 140
-        frequency: '@daily'
-        trigger-job: 'ci-kubernetes-build-1.5'
     - kubernetes-e2e-kops-aws: #zmerlynn
         job-name: ci-kubernetes-e2e-kops-aws
         jenkins-timeout: 240
@@ -90,10 +84,16 @@
         job-name: ci-kubernetes-e2e-kops-aws-release-1.6
         jenkins-timeout: 240
         timeout: 140
-        frequency: '@hourly'
+        frequency: '@daily'
         trigger-job: ''
     - kubernetes-e2e-kops-aws-release-1-7: #justinsb
         job-name: ci-kubernetes-e2e-kops-aws-release-1-7
+        jenkins-timeout: 240
+        timeout: 140
+        frequency: '@hourly'
+        trigger-job: ''
+    - kubernetes-e2e-kops-aws-stable1: #justinsb
+        job-name: ci-kubernetes-e2e-kops-aws-stable1
         jenkins-timeout: 240
         timeout: 140
         frequency: '@hourly'
@@ -157,16 +157,6 @@
         timeout: 140
         frequency: '@daily'
         trigger-job: 'ci-kubernetes-build-1.7'
-        use-blocker: true
-        blocker: 'ci-kubernetes-e2e-gce-scalability-release-1-6'
-    - kubernetes-e2e-gce-scalability-release-1-6:
-        job-name: ci-kubernetes-e2e-gce-scalability-release-1-6
-        jenkins-timeout: 240
-        timeout: 140
-        frequency: '@daily'
-        trigger-job: 'ci-kubernetes-build-1.6'
-        use-blocker: true
-        blocker: 'ci-kubernetes-e2e-gce-scalability-release-1-7'
 
     # gci-gce scalability jobs
     - kubernetes-e2e-gci-gce-scalability-release-1-7:
@@ -176,13 +166,13 @@
         frequency: '@daily'
         trigger-job: 'ci-kubernetes-build-1.7'
         use-blocker: true
-        blocker: 'ci-kubernetes-e2e-gci-gce-scalability-release-1-6'
-    - kubernetes-e2e-gci-gce-scalability-release-1-6:
-        job-name: ci-kubernetes-e2e-gci-gce-scalability-release-1-6
+        blocker: 'ci-kubernetes-e2e-gci-gce-scalability-stable1'
+    - kubernetes-e2e-gci-gce-scalability-stable1:
+        job-name: ci-kubernetes-e2e-gci-gce-scalability-stable1
         jenkins-timeout: 240
         timeout: 140
         frequency: '@daily'
-        trigger-job: 'ci-kubernetes-build-1.6'
+        trigger-job: 'ci-kubernetes-build-1.8'
         use-blocker: true
         blocker: 'ci-kubernetes-e2e-gci-gce-scalability-release-1-7'
 

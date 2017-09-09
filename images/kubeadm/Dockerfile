@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM gcr.io/k8s-testimages/kubekins-e2e:v20170901-85a12b8a
+FROM gcr.io/k8s-testimages/kubekins-e2e:v20170906-6472fee0
 MAINTAINER beacham@google.com
 
 RUN apt-get update && apt-get install -y \
@@ -24,7 +24,7 @@ RUN apt-get update && apt-get install -y \
     wget && \
     apt-get clean
 
-ENV TERRAFORM_VERSION=0.7.2 \
+ENV TERRAFORM_VERSION=0.9.4 \
     KUBERNETES_PROVIDER=kubernetes-anywhere \
     KUBECTL_VERSION=1.6.4 \
     PATH=/usr/local/bin:${PATH}

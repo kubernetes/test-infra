@@ -21,6 +21,7 @@ import (
 	"os"
 
 	"github.com/NYTimes/gziphandler"
+	"github.com/golang/glog"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
@@ -45,8 +46,11 @@ type ServerFeature struct {
 	WWWRoot string
 
 	prometheus struct {
-		loops prometheus.Counter
+		loops      prometheus.Counter
+		tokenUsage prometheus.Gauge
 	}
+
+	getTokenUsage func() (int, error)
 }
 
 func init() {
@@ -76,10 +80,17 @@ func (s *ServerFeature) Initialize(config *github.Config) error {
 
 	s.prometheus.loops = prometheus.NewCounter(prometheus.CounterOpts{
 		Name:        "mungegithub_loops",
-		Help:        "Number of loops performed by the queue",
+		Help:        "Number of loops performed by the munger",
+		ConstLabels: map[string]string{"org": config.Org, "repo": config.Project, "app": mungeopts.App},
+	})
+	s.prometheus.tokenUsage = prometheus.NewGauge(prometheus.GaugeOpts{
+		Name:        "github_token_usage",
+		Help:        "Number of github tokens used by the munger",
 		ConstLabels: map[string]string{"org": config.Org, "repo": config.Project, "app": mungeopts.App},
 	})
 	prometheus.MustRegister(s.prometheus.loops)
+	prometheus.MustRegister(s.prometheus.tokenUsage)
+	s.getTokenUsage = config.GetTokenUsage
 	s.ConcurrentMux.Handle("/prometheus", promhttp.Handler())
 
 	go http.ListenAndServe(s.Address, s.ConcurrentMux)
@@ -89,6 +100,12 @@ func (s *ServerFeature) Initialize(config *github.Config) error {
 // EachLoop is called at the start of every munge loop
 func (s *ServerFeature) EachLoop() error {
 	s.prometheus.loops.Inc()
+	tokenUsage, err := s.getTokenUsage()
+	if err != nil {
+		glog.Warningf("Cannot get token usage: %v", err)
+	} else {
+		s.prometheus.tokenUsage.Set(float64(tokenUsage))
+	}
 	return nil
 }
 

@@ -4,9 +4,8 @@
         # TODO(fejta): consider a stable tag instead of master
         git clone https://github.com/kubernetes/test-infra -b master
         './test-infra/jenkins/bootstrap.py' \
-            --branch='{branch}' \
             --job='{job-name}' \
-            --repo='{repo-name}' \
+            --repo='{repo-name}={branch}' \
             --root="${{GOPATH}}/src" \
             --service-account="${{GOOGLE_APPLICATION_CREDENTIALS}}" \
             --timeout='{timeout}' \
@@ -59,6 +58,12 @@
         job-name: ci-kubernetes-verify-master
         repo-name: k8s.io/kubernetes
         timeout: 80
+    - kubernetes-verify-release-1.8:
+        branch: release-1.8
+        frequency: 'H/5 * * * *'
+        job-name: ci-kubernetes-verify-release-1.8
+        repo-name: k8s.io/kubernetes
+        timeout: 80
     - kubernetes-verify-release-1.7:
         branch: release-1.7
         frequency: 'H/5 * * * *'
@@ -67,7 +72,7 @@
         timeout: 80
     - kubernetes-verify-release-1.6:
         branch: release-1.6
-        frequency: 'H/5 * * * *'
+        frequency: 'H H/3 * * *'
         job-name: ci-kubernetes-verify-release-1.6
         repo-name: k8s.io/kubernetes
         timeout: 80
@@ -77,17 +82,18 @@
         job-name: ci-kubernetes-verify-release-1.5
         repo-name: k8s.io/kubernetes
         timeout: 80
-    - kubernetes-verify-release-1.4:
-        branch: release-1.4
-        frequency: 'H H/3 * * *'
-        job-name: ci-kubernetes-verify-release-1.4
-        repo-name: k8s.io/kubernetes
-        timeout: 80
+
 
     - kubernetes-test-go:
         branch: master
         frequency: 'H/5 * * * *'
         job-name: ci-kubernetes-test-go
+        repo-name: k8s.io/kubernetes
+        timeout: 100
+    - kubernetes-test-go-release-1.8:
+        branch: release-1.8
+        frequency: 'H/5 * * * *'
+        job-name: ci-kubernetes-test-go-release-1.8
         repo-name: k8s.io/kubernetes
         timeout: 100
     - kubernetes-test-go-release-1.7:
@@ -98,7 +104,7 @@
         timeout: 100
     - kubernetes-test-go-release-1.6:
         branch: release-1.6
-        frequency: 'H/5 * * * *'
+        frequency: 'H H/3 * * *'
         job-name: ci-kubernetes-test-go-release-1.6
         repo-name: k8s.io/kubernetes
         timeout: 100
@@ -108,12 +114,7 @@
         job-name: ci-kubernetes-test-go-release-1.5
         repo-name: k8s.io/kubernetes
         timeout: 100
-    - kubernetes-test-go-release-1.4:
-        branch: release-1.4
-        frequency: 'H H/3 * * *'
-        job-name: ci-kubernetes-test-go-release-1.4
-        repo-name: k8s.io/kubernetes
-        timeout: 100
+
 
     - kubernetes-node-kubelet:  # dawnchen
         branch: master
@@ -145,27 +146,21 @@
         job-name: ci-kubernetes-node-kubelet-conformance
         repo-name: k8s.io/kubernetes
         timeout: 90
-    - kubernetes-node-kubelet-1.4:  # dawnchen
-        branch: release-1.4
-        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
-        job-name: ci-kubernetes-node-kubelet-1.4
-        repo-name: k8s.io/kubernetes
-        timeout: 90
     - kubernetes-node-kubelet-1.5:  # dawnchen
         branch: release-1.5
-        frequency: 'H/5 * * * *'
+        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
         job-name: ci-kubernetes-node-kubelet-1.5
         repo-name: k8s.io/kubernetes
         timeout: 90
     - kubernetes-node-kubelet-1.6:
         branch: release-1.6
-        frequency: 'H/5 * * * *'
+        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
         job-name: ci-kubernetes-node-kubelet-1.6
         repo-name: k8s.io/kubernetes
         timeout: 90
     - kubernetes-node-kubelet-non-cri-1.6:
         branch: release-1.6
-        frequency: 'H/5 * * * *'
+        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
         job-name: ci-kubernetes-node-kubelet-non-cri-1.6
         repo-name: k8s.io/kubernetes
         timeout: 90
@@ -173,6 +168,12 @@
         branch: release-1.7
         frequency: 'H/5 * * * *'
         job-name: ci-kubernetes-node-kubelet-1.7
+        repo-name: k8s.io/kubernetes
+        timeout: 90
+    - kubernetes-node-kubelet-stable1:
+        branch: release-1.8
+        frequency: 'H/5 * * * *'
+        job-name: ci-kubernetes-node-kubelet-stable1
         repo-name: k8s.io/kubernetes
         timeout: 90
 

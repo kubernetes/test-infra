@@ -50,7 +50,7 @@ func handlePush(pc plugins.PluginClient, pe github.PushEvent) error {
 
 func notifyOnSlackIfManualMerge(pc client, pe github.PushEvent) error {
 	//Fetch slackevent configuration for the repo we received the merge event.
-	if se := getSlackEvent(pc, pe.Repo.Owner.Name, pe.Repo.Name); se != nil {
+	if se := getSlackEvent(pc, pe.Repo.Owner.Login, pe.Repo.Name); se != nil {
 		//If the slackevent whitelist has the merge user then no need to send a message.
 		if !stringInArray(pe.Pusher.Name, se.WhiteList) && !stringInArray(pe.Sender.Login, se.WhiteList) {
 			message := fmt.Sprintf("Warning: %s manually merged %s", pe.Pusher.Name, pe.Compare)
@@ -66,7 +66,7 @@ func notifyOnSlackIfManualMerge(pc client, pe github.PushEvent) error {
 
 func getSlackEvent(pc client, org, repo string) *plugins.SlackEvent {
 	for _, se := range pc.SlackEvents {
-		if stringInArray(repo, se.Repos) || stringInArray(fmt.Sprintf("%s/%s", org, repo), se.Repos) {
+		if stringInArray(org, se.Repos) || stringInArray(fmt.Sprintf("%s/%s", org, repo), se.Repos) {
 			return &se
 		}
 	}

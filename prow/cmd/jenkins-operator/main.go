@@ -23,7 +23,7 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/Sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
@@ -100,10 +100,8 @@ func main() {
 		ghc = github.NewClient(oauthSecret, *githubEndpoint)
 	}
 
-	c, err := jenkins.NewController(kc, jc, ghc, configAgent)
-	if err != nil {
-		logrus.WithError(err).Fatal("Error creating jenkins controller.")
-	}
+	c := jenkins.NewController(kc, jc, ghc, configAgent)
+
 	for range time.Tick(30 * time.Second) {
 		start := time.Now()
 		if err := c.Sync(); err != nil {

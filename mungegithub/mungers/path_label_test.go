@@ -36,7 +36,7 @@ var (
 )
 
 func docsProposalIssue(testBotName string) *github.Issue {
-	return github_test.Issue(testBotName, 1, []string{claYesLabel, "kind/design"}, true)
+	return github_test.Issue(testBotName, 1, []string{cncfClaYesLabel, "kind/design"}, true)
 }
 
 // Commit returns a filled out github.Commit which happened at time.Unix(t, 0)

@@ -28,6 +28,7 @@ import tempfile
 import urllib
 import urllib2
 import unittest
+import time
 
 import kubernetes_e2e
 
@@ -219,7 +220,6 @@ class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-method
 
     def test_migrated_kubetest_args(self):
         migrated = [
-            '--stage=a-stage',
             '--stage-suffix=panda',
             '--random-flag', 'random-value',
             '--multiple-federations',
@@ -348,14 +348,17 @@ class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-method
         args = kubernetes_e2e.parse_args(['--mode=local', '--kubeadm=pull'])
         self.assertEqual(args.mode, 'local')
         self.assertEqual(args.kubeadm, 'pull')
-        fake_env = {'PULL_NUMBER': 1234, 'PULL_REFS': 'master:abcd'}
+        fake_env = {
+            'SHARED_BUILD_GCS_PATH':
+            'gs://kubernetes-release-dev/bazel/v1.8.0-beta.1.132+599539dc0b9997'
+        }
         with Stub(kubernetes_e2e, 'check_env', self.fake_check_env):
             with Stub(os, 'environ', fake_env):
                 kubernetes_e2e.main(args)
 
         self.assertNotIn('E2E_OPT', self.envs)
-        version = 'gs://kubernetes-release-dev/bazel/1234/master:abcd/bin/linux/amd64/'
-        self.assertIn('--kubernetes-anywhere-kubeadm-version=%s' % version, self.callstack[-1])
+        ver = 'gs://kubernetes-release-dev/bazel/v1.8.0-beta.1.132+599539dc0b9997/bin/linux/amd64/'
+        self.assertIn('--kubernetes-anywhere-kubeadm-version=%s' % ver, self.callstack[-1])
 
     def test_kubeadm_invalid(self):
         """Make sure kubeadm invalid mode exits unsuccessfully."""
@@ -494,7 +497,8 @@ class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-method
             return always_kubernetes()
         with Stub(kubernetes_e2e, 'check_env', self.fake_check_env):
             with Stub(kubernetes_e2e, 'read_gcs_path', expect_bazel_gcs):
-                kubernetes_e2e.main(args)
+                with Stub(time, 'sleep', fake_pass):
+                    kubernetes_e2e.main(args)
         lastcall = self.callstack[-1]
         self.assertIn('--extract=kubernetes', lastcall)
         # normal path, not bazel
@@ -515,11 +519,12 @@ class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-method
         with Stub(kubernetes_e2e, 'check_env', self.fake_check_env):
             with Stub(kubernetes_e2e, 'read_gcs_path', raise_urllib2_error):
                 with Stub(os, 'getcwd', always_kubernetes):
-                    try:
-                        kubernetes_e2e.main(args)
-                    except RuntimeError as err:
-                        if not err.message.startswith('Failed to get shared build location'):
-                            raise err
+                    with Stub(time, 'sleep', fake_pass):
+                        try:
+                            kubernetes_e2e.main(args)
+                        except RuntimeError as err:
+                            if not err.message.startswith('Failed to get shared build location'):
+                                raise err
 
 if __name__ == '__main__':
     unittest.main()
