@@ -87,51 +87,59 @@ func BareIssue() *github.Issue {
 }
 
 func LGTMIssue() *github.Issue {
-	return github_test.Issue(someUserName, 1, []string{claYesLabel, lgtmLabel}, true)
+	return github_test.Issue(someUserName, 1, []string{cncfClaYesLabel, lgtmLabel}, true)
 }
 
 func LGTMApprovedIssue() *github.Issue {
-	return github_test.Issue(someUserName, 1, []string{claYesLabel, lgtmLabel, approvedLabel}, true)
+	return github_test.Issue(someUserName, 1, []string{cncfClaYesLabel, lgtmLabel, approvedLabel}, true)
+}
+
+func LGTMApprovedCLAHumanApprovedIssue() *github.Issue {
+	return github_test.Issue(someUserName, 1, []string{claHumanLabel, lgtmLabel, approvedLabel}, true)
 }
 
 func CriticalFixLGTMApprovedIssue() *github.Issue {
-	return github_test.Issue(someUserName, 1, []string{criticalFixLabel, claYesLabel, lgtmLabel, approvedLabel}, true)
+	return github_test.Issue(someUserName, 1, []string{criticalFixLabel, cncfClaYesLabel, lgtmLabel, approvedLabel}, true)
 }
 
 func OnlyApprovedIssue() *github.Issue {
-	return github_test.Issue(someUserName, 1, []string{claYesLabel, approvedLabel}, true)
+	return github_test.Issue(someUserName, 1, []string{cncfClaYesLabel, approvedLabel}, true)
 }
 
 func DoNotMergeIssue() *github.Issue {
-	return github_test.Issue(someUserName, 1, []string{claYesLabel, lgtmLabel, approvedLabel, doNotMergeLabel}, true)
+	return github_test.Issue(someUserName, 1, []string{cncfClaYesLabel, lgtmLabel, approvedLabel, doNotMergeLabel}, true)
 }
 
 func CherrypickUnapprovedIssue() *github.Issue {
-	return github_test.Issue(someUserName, 1, []string{claYesLabel, lgtmLabel, approvedLabel, cherrypickUnapprovedLabel}, true)
+	return github_test.Issue(someUserName, 1, []string{cncfClaYesLabel, lgtmLabel, approvedLabel, cherrypickUnapprovedLabel}, true)
 }
 
 func BlockedPathsIssue() *github.Issue {
-	return github_test.Issue(someUserName, 1, []string{claYesLabel, lgtmLabel, approvedLabel, blockedPathsLabel}, true)
+	return github_test.Issue(someUserName, 1, []string{cncfClaYesLabel, lgtmLabel, approvedLabel, blockedPathsLabel}, true)
 }
 
 func DeprecatedMissingReleaseNoteIssue() *github.Issue {
-	return github_test.Issue(someUserName, 1, []string{claYesLabel, lgtmLabel, approvedLabel, deprecatedReleaseNoteLabelNeeded}, true)
+	return github_test.Issue(someUserName, 1, []string{cncfClaYesLabel, lgtmLabel, approvedLabel, deprecatedReleaseNoteLabelNeeded}, true)
 }
 
 func MissingReleaseNoteIssue() *github.Issue {
-	return github_test.Issue(someUserName, 1, []string{claYesLabel, lgtmLabel, approvedLabel, releaseNoteLabelNeeded}, true)
+	return github_test.Issue(someUserName, 1, []string{cncfClaYesLabel, lgtmLabel, approvedLabel, releaseNoteLabelNeeded}, true)
 }
 
 func WorkInProgressIssue() *github.Issue {
-	return github_test.Issue(someUserName, 1, []string{claYesLabel, lgtmLabel, approvedLabel, wipLabel}, true)
+	return github_test.Issue(someUserName, 1, []string{cncfClaYesLabel, lgtmLabel, approvedLabel, wipLabel}, true)
 }
 
 func HoldLabelIssue() *github.Issue {
-	return github_test.Issue(someUserName, 1, []string{claYesLabel, lgtmLabel, approvedLabel, holdLabel}, true)
+	return github_test.Issue(someUserName, 1, []string{cncfClaYesLabel, lgtmLabel, approvedLabel, holdLabel}, true)
+}
+
+func AdditionalLabelIssue(label string) *github.Issue {
+	return github_test.Issue(someUserName, 1, []string{cncfClaYesLabel, lgtmLabel, approvedLabel, label}, true)
 }
 
 func DoNotMergeMilestoneIssue() *github.Issue {
-	issue := github_test.Issue(someUserName, 1, []string{claYesLabel, lgtmLabel}, true)
+	issue := github_test.Issue(someUserName, 1, []string{cncfClaYesLabel, lgtmLabel}, true)
 	milestone := &github.Milestone{
 		Title: stringPtr(doNotMergeMilestone),
 	}
@@ -144,11 +152,11 @@ func NoCLAIssue() *github.Issue {
 }
 
 func NoLGTMIssue() *github.Issue {
-	return github_test.Issue(someUserName, 1, []string{claYesLabel}, true)
+	return github_test.Issue(someUserName, 1, []string{cncfClaYesLabel}, true)
 }
 
 func NoRetestIssue() *github.Issue {
-	return github_test.Issue(someUserName, 1, []string{claYesLabel, lgtmLabel, approvedLabel, retestNotRequiredLabel}, true)
+	return github_test.Issue(someUserName, 1, []string{cncfClaYesLabel, lgtmLabel, approvedLabel, retestNotRequiredLabel}, true)
 }
 
 func OldLGTMEvents() []*github.IssueEvent {
@@ -516,6 +524,7 @@ func TestSubmitQueue(t *testing.T) {
 		issue            *github.Issue
 		commits          []*github.RepositoryCommit
 		events           []*github.IssueEvent
+		additionalLabels []string
 		ciStatus         *github.CombinedStatus
 		lastBuildNumber  int
 		gcsResult        utils.FinishedFile
@@ -533,11 +542,27 @@ func TestSubmitQueue(t *testing.T) {
 		masterCommit   *github.RepositoryCommit
 		retestsAvoided int // desired output
 	}{
-		// Should pass because the entire thing was run and good
+		// Should pass because the entire thing was run and good (with cncf-cla: yes)
 		{
 			name:            "Test1",
 			pr:              ValidPR(),
 			issue:           LGTMApprovedIssue(),
+			events:          NewLGTMEvents(),
+			commits:         Commits(), // Modified at time.Unix(7), 8, and 9
+			ciStatus:        SuccessStatus(),
+			lastBuildNumber: LastBuildNumber(),
+			gcsResult:       SuccessGCS(),
+			retest1Pass:     true,
+			retest2Pass:     true,
+			reason:          merged,
+			state:           "success",
+			isMerged:        true,
+		},
+		// Should pass because the entire thing was run and good (with cla: human-approved)
+		{
+			name:            "Test1",
+			pr:              ValidPR(),
+			issue:           LGTMApprovedCLAHumanApprovedIssue(),
 			events:          NewLGTMEvents(),
 			commits:         Commits(), // Modified at time.Unix(7), 8, and 9
 			ciStatus:        SuccessStatus(),
@@ -656,7 +681,7 @@ func TestSubmitQueue(t *testing.T) {
 			lastBuildNumber: LastBuildNumber(),
 			gcsResult:       SuccessGCS(),
 		},
-		// Fail because the claYesLabel label was not applied
+		// Fail because the cncfClaYesLabel or claHumanLabel label was not applied
 		{
 			name:   "Test7",
 			pr:     ValidPR(),
@@ -823,6 +848,37 @@ func TestSubmitQueue(t *testing.T) {
 			retest2Pass:     true,
 			reason:          noMergeMessage(holdLabel),
 			state:           "pending",
+		},
+		{
+			name:             "Fail because kind/blocker label is required but missing",
+			pr:               ValidPR(),
+			issue:            LGTMApprovedIssue(),
+			additionalLabels: []string{"kind/blocker"},
+			events:           NewLGTMEvents(),
+			commits:          Commits(), // Modified at time.Unix(7), 8, and 9
+			ciStatus:         SuccessStatus(),
+			lastBuildNumber:  LastBuildNumber(),
+			gcsResult:        SuccessGCS(),
+			retest1Pass:      true,
+			retest2Pass:      true,
+			reason:           noAdditionalLabelMessage("kind/blocker"),
+			state:            "pending",
+		},
+		{
+			name:             "Merge kind/blocker PR",
+			pr:               ValidPR(),
+			issue:            AdditionalLabelIssue("kind/blocker"),
+			additionalLabels: []string{"kind/blocker"},
+			events:           NewLGTMEvents(),
+			commits:          Commits(), // Modified at time.Unix(7), 8, and 9
+			ciStatus:         SuccessStatus(),
+			lastBuildNumber:  LastBuildNumber(),
+			gcsResult:        SuccessGCS(),
+			retest1Pass:      true,
+			retest2Pass:      true,
+			reason:           merged,
+			state:            "success",
+			isMerged:         true,
 		},
 		{
 			name:            "Fail because deprecated missing release note label is present",
@@ -1108,6 +1164,7 @@ func TestSubmitQueue(t *testing.T) {
 
 		sq := getTestSQ(true, config, server)
 		sq.setEmergencyMergeStop(test.emergencyMergeStop)
+		sq.AdditionalRequiredLabels = test.additionalLabels
 
 		obj := github_util.NewTestObject(config, test.issue, test.pr, test.commits, test.events)
 		if test.imBaseSHA != "" && test.imHeadSHA != "" {

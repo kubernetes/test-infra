@@ -60,6 +60,16 @@
       "sig-testing"
     ]
   },
+  "ci-kubernetes-bazel-build-1-8": {
+    "args": [
+      "--build=//cmd/... //pkg/... //federation/... //plugin/... //third_party/... //examples/... //test/... //vendor/k8s.io/...",
+      "--release=//build/release-tars"
+    ],
+    "scenario": "kubernetes_bazel",
+    "sigOwners": [
+      "sig-testing"
+    ]
+  },
   "ci-kubernetes-bazel-test": {
     "args": [
       "--test=//cmd/... //pkg/... //federation/... //plugin/... //third_party/... //hack/... //hack:verify-all //vendor/k8s.io/...",
@@ -92,6 +102,17 @@
       "sig-testing"
     ]
   },
+  "ci-kubernetes-bazel-test-1-8": {
+    "args": [
+      "--test=//cmd/... //pkg/... //federation/... //plugin/... //third_party/... //hack/... //hack:verify-all //vendor/k8s.io/...",
+      "--test-args=--test_tag_filters=-integration",
+      "--test-args=--flaky_test_attempts=3"
+    ],
+    "scenario": "kubernetes_bazel",
+    "sigOwners": [
+      "sig-testing"
+    ]
+  },
   "ci-kubernetes-build": {
     "args": [
       "--fast"
@@ -101,7 +122,7 @@
       "sig-release"
     ]
   },
-  "ci-kubernetes-build-1.4": {
+  "ci-kubernetes-build-1.5": {
     "args": [
       "--extra-publish-file=k8s-stable4"
     ],
@@ -110,7 +131,7 @@
       "sig-release"
     ]
   },
-  "ci-kubernetes-build-1.5": {
+  "ci-kubernetes-build-1.6": {
     "args": [
       "--extra-publish-file=k8s-stable3"
     ],
@@ -119,7 +140,7 @@
       "sig-release"
     ]
   },
-  "ci-kubernetes-build-1.6": {
+  "ci-kubernetes-build-1.7": {
     "args": [
       "--extra-publish-file=k8s-stable2"
     ],
@@ -128,9 +149,10 @@
       "sig-release"
     ]
   },
-  "ci-kubernetes-build-1.7": {
+  "ci-kubernetes-build-1.8": {
     "args": [
-      "--extra-publish-file=k8s-stable1"
+      "--extra-publish-file=k8s-stable1",
+      "--registry=gcr.io/kubernetes-ci-images"
     ],
     "scenario": "kubernetes_build",
     "sigOwners": [
@@ -170,22 +192,6 @@
       "--suffix=-cross"
     ],
     "scenario": "kubernetes_build",
-    "sigOwners": [
-      "UNKNOWN"
-    ]
-  },
-  "ci-kubernetes-e2e-aws-release-1.5": {
-    "args": [
-      "--aws",
-      "--cluster=e2e-aws-1-5",
-      "--env-file=jobs/env/ci-kubernetes-e2e-aws-release-1.5.env",
-      "--extract=ci/latest-1.5",
-      "--mode=docker",
-      "--provider=aws",
-      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]|\\[HPA\\]|NodeProblemDetector --minStartupPods=8",
-      "--timeout=120m"
-    ],
-    "scenario": "kubernetes_e2e",
     "sigOwners": [
       "UNKNOWN"
     ]
@@ -636,23 +642,7 @@
       "--extract=ci/latest",
       "--gcp-zone=us-central1-f",
       "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[Feature:(DynamicKubeletConfig|Audit|LocalPersistentVolumes|FlexVolume)\\]|Initializers|Networking --ginkgo.skip=Networking-Performance --minStartupPods=8",
-      "--timeout=180m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "UNKNOWN"
-    ]
-  },
-  "ci-kubernetes-e2e-gce-alpha-features-release-1-4": {
-    "args": [
-      "--check-leaked-resources",
-      "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gce-alpha-features-release-1-4.env",
-      "--extract=ci/latest-1.4",
-      "--gcp-zone=us-central1-f",
-      "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[Feature:(ExternalTrafficLocalOnly|PetSet|DynamicKubeletConfig)\\] --minStartupPods=8",
+      "--test_args=--ginkgo.focus=\\[Feature:(DynamicKubeletConfig|Audit|LocalPersistentVolumes|FlexVolume|PodPreemption|PodPreset)\\]|Initializers|Networking --ginkgo.skip=Networking-Performance --minStartupPods=8",
       "--timeout=180m"
     ],
     "scenario": "kubernetes_e2e",
@@ -2056,22 +2046,6 @@
       "UNKNOWN"
     ]
   },
-  "ci-kubernetes-e2e-gce-gci-ci-release-1-4": {
-    "args": [
-      "--check-leaked-resources",
-      "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gce-gci-ci-release-1-4.env",
-      "--extract=gci/gci-56/latest-1.4",
-      "--gcp-zone=us-central1-f",
-      "--provider=gce",
-      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
-      "--timeout=50m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "UNKNOWN"
-    ]
-  },
   "ci-kubernetes-e2e-gce-gci-ci-release-1-5": {
     "args": [
       "--check-leaked-resources",
@@ -2092,24 +2066,7 @@
     "args": [
       "--check-leaked-resources",
       "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gce-gci-ci-serial-master.env",
       "--extract=gci/gci-canary/latest",
-      "--gcp-zone=us-central1-f",
-      "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[Serial\\]|\\[Disruptive\\] --ginkgo.skip=\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
-      "--timeout=300m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "UNKNOWN"
-    ]
-  },
-  "ci-kubernetes-e2e-gce-gci-ci-serial-release-1-4": {
-    "args": [
-      "--check-leaked-resources",
-      "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gce-gci-ci-serial-release-1-4.env",
-      "--extract=gci/gci-56/latest-1.4",
       "--gcp-zone=us-central1-f",
       "--provider=gce",
       "--test_args=--ginkgo.focus=\\[Serial\\]|\\[Disruptive\\] --ginkgo.skip=\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
@@ -2124,7 +2081,6 @@
     "args": [
       "--check-leaked-resources",
       "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gce-gci-ci-serial-release-1-5.env",
       "--extract=gci/gci-56/latest-1.5",
       "--gcp-zone=us-central1-f",
       "--provider=gce",
@@ -2142,22 +2098,6 @@
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-gce-gci-ci-slow-master.env",
       "--extract=gci/gci-canary/latest",
-      "--gcp-zone=us-central1-f",
-      "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[Slow\\] --ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
-      "--timeout=150m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "UNKNOWN"
-    ]
-  },
-  "ci-kubernetes-e2e-gce-gci-ci-slow-release-1-4": {
-    "args": [
-      "--check-leaked-resources",
-      "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gce-gci-ci-slow-release-1-4.env",
-      "--extract=gci/gci-56/latest-1.4",
       "--gcp-zone=us-central1-f",
       "--provider=gce",
       "--test_args=--ginkgo.focus=\\[Slow\\] --ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
@@ -2273,6 +2213,23 @@
       "UNKNOWN"
     ]
   },
+  "ci-kubernetes-e2e-gce-gci-qa-m62": {
+    "args": [
+      "--check-leaked-resources",
+      "--env-file=jobs/platform/gce.env",
+      "--extract=gci/gci-62",
+      "--gcp-project=e2e-gce-gci-qa-m62",
+      "--gcp-zone=us-central1-f",
+      "--ginkgo-parallel=25",
+      "--provider=gce",
+      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
+      "--timeout=50m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "UNKNOWN"
+    ]
+  },
   "ci-kubernetes-e2e-gce-gci-qa-master": {
     "args": [
       "--check-leaked-resources",
@@ -2294,7 +2251,6 @@
     "args": [
       "--check-leaked-resources",
       "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gce-gci-qa-serial-m59.env",
       "--extract=gci/gci-59",
       "--gcp-project=e2e-gce-gci-qa-serial-m59",
       "--gcp-zone=us-central1-f",
@@ -2311,7 +2267,6 @@
     "args": [
       "--check-leaked-resources",
       "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gce-gci-qa-serial-m60.env",
       "--extract=gci/gci-60",
       "--gcp-project=e2e-gce-gci-qa-serial-m60",
       "--gcp-zone=us-central1-f",
@@ -2328,9 +2283,24 @@
     "args": [
       "--check-leaked-resources",
       "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gce-gci-qa-serial-m61.env",
       "--extract=gci/gci-61",
       "--gcp-project=e2e-gce-gci-qa-serial-m61",
+      "--gcp-zone=us-central1-f",
+      "--provider=gce",
+      "--test_args=--ginkgo.focus=\\[Serial\\]|\\[Disruptive\\] --ginkgo.skip=\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
+      "--timeout=300m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "UNKNOWN"
+    ]
+  },
+  "ci-kubernetes-e2e-gce-gci-qa-serial-m62": {
+    "args": [
+      "--check-leaked-resources",
+      "--env-file=jobs/platform/gce.env",
+      "--extract=gci/gci-62",
+      "--gcp-project=e2e-gce-gci-qa-serial-m62",
       "--gcp-zone=us-central1-f",
       "--provider=gce",
       "--test_args=--ginkgo.focus=\\[Serial\\]|\\[Disruptive\\] --ginkgo.skip=\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
@@ -2345,7 +2315,6 @@
     "args": [
       "--check-leaked-resources",
       "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gce-gci-qa-serial-master.env",
       "--extract=gci/gci-canary",
       "--gcp-project=e2e-gce-gci-qa-serial-master",
       "--gcp-zone=us-central1-f",
@@ -2399,6 +2368,23 @@
       "--extract=gci/gci-61",
       "--gcp-project=e2e-gce-gci-qa-slow-m61",
       "--gcp-zone=us-central1-f",
+      "--provider=gce",
+      "--test_args=--ginkgo.focus=\\[Slow\\] --ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
+      "--timeout=150m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "UNKNOWN"
+    ]
+  },
+  "ci-kubernetes-e2e-gce-gci-qa-slow-m62": {
+    "args": [
+      "--check-leaked-resources",
+      "--env-file=jobs/platform/gce.env",
+      "--extract=gci/gci-62",
+      "--gcp-project=e2e-gce-gci-qa-slow-m62",
+      "--gcp-zone=us-central1-f",
+      "--ginkgo-parallel=25",
       "--provider=gce",
       "--test_args=--ginkgo.focus=\\[Slow\\] --ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
       "--timeout=150m"
@@ -2463,7 +2449,6 @@
       "--check-leaked-resources",
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-gce-gpu.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gce-gpu-1-7.env",
       "--extract=ci/latest-1.7",
       "--gcp-project=k8s-jkns-e2e-gce-gpus-1-7",
       "--gcp-zone=us-west1-b",
@@ -2529,7 +2514,6 @@
     "args": [
       "--cluster=$USER-large-manual",
       "--env-file=jobs/env/ci-kubernetes-e2e-gce-large-manual-up.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gce-large-manual-down.env",
       "--extract=ci/latest",
       "--gcp-project=k8s-scale-testing",
       "--gcp-zone=us-east1-a",
@@ -2799,23 +2783,6 @@
       "UNKNOWN"
     ]
   },
-  "ci-kubernetes-e2e-gce-reboot-release-1-4": {
-    "args": [
-      "--check-leaked-resources",
-      "--cluster=err-e2e",
-      "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gce-reboot-release-1-4.env",
-      "--extract=ci/latest-1.4",
-      "--gcp-zone=us-central1-f",
-      "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[Feature:Reboot\\] --minStartupPods=8",
-      "--timeout=180m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "UNKNOWN"
-    ]
-  },
   "ci-kubernetes-e2e-gce-reboot-release-1-5": {
     "args": [
       "--check-leaked-resources",
@@ -2860,22 +2827,6 @@
       "--provider=gce",
       "--test_args=--ginkgo.focus=\\[Feature:Reboot\\] --minStartupPods=8",
       "--timeout=180m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "UNKNOWN"
-    ]
-  },
-  "ci-kubernetes-e2e-gce-release-1-4": {
-    "args": [
-      "--check-leaked-resources",
-      "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gce-release-1-4.env",
-      "--extract=ci/latest-1.4",
-      "--gcp-zone=us-central1-f",
-      "--provider=gce",
-      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
-      "--timeout=50m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -2953,7 +2904,6 @@
       "--cluster=e2e-scale-canary",
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-gce-scalability.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gce-scalability-canary.env",
       "--extract=ci/latest",
       "--gcp-project=google.com:k8s-jenkins-scalability",
       "--gcp-zone=us-central1-f",
@@ -2965,24 +2915,6 @@
     "scenario": "kubernetes_e2e",
     "sigOwners": [
       "sig-testing"
-    ]
-  },
-  "ci-kubernetes-e2e-gce-scalability-release-1-6": {
-    "args": [
-      "--cluster=e2e-scalability-1-6",
-      "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gce-scalability-release-1-6.env",
-      "--extract=ci/latest-1.6",
-      "--gcp-project=k8s-e2e-gce-scalability-1-1",
-      "--gcp-zone=us-east1-b",
-      "--mode=docker",
-      "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --kube-api-content-type=application/vnd.kubernetes.protobuf --allowed-not-ready-nodes=1 --gather-resource-usage=true --gather-metrics-at-teardown=true --gather-logs-sizes=true --output-print-type=json --minStartupPods=8",
-      "--timeout=120m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "UNKNOWN"
     ]
   },
   "ci-kubernetes-e2e-gce-scalability-release-1-7": {
@@ -3071,22 +3003,6 @@
       "UNKNOWN"
     ]
   },
-  "ci-kubernetes-e2e-gce-serial-release-1-4": {
-    "args": [
-      "--check-leaked-resources",
-      "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gce-serial-release-1-4.env",
-      "--extract=ci/latest-1.4",
-      "--gcp-zone=us-central1-f",
-      "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[Serial\\]|\\[Disruptive\\] --ginkgo.skip=\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
-      "--timeout=300m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "UNKNOWN"
-    ]
-  },
   "ci-kubernetes-e2e-gce-serial-release-1-5": {
     "args": [
       "--check-leaked-resources",
@@ -3142,22 +3058,6 @@
       "--env-file=jobs/env/ci-kubernetes-e2e-gce-slow.env",
       "--extract=ci/latest",
       "--gcp-zone=europe-west1-c",
-      "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[Slow\\] --ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
-      "--timeout=150m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "UNKNOWN"
-    ]
-  },
-  "ci-kubernetes-e2e-gce-slow-release-1-4": {
-    "args": [
-      "--check-leaked-resources",
-      "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gce-slow-release-1-4.env",
-      "--extract=ci/latest-1.4",
-      "--gcp-zone=us-central1-f",
       "--provider=gce",
       "--test_args=--ginkgo.focus=\\[Slow\\] --ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
       "--timeout=150m"
@@ -3802,22 +3702,6 @@
       "UNKNOWN"
     ]
   },
-  "ci-kubernetes-e2e-gci-gce-alpha-features-release-1-4": {
-    "args": [
-      "--check-leaked-resources",
-      "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gci-gce-alpha-features-release-1-4.env",
-      "--extract=ci/latest-1.4",
-      "--gcp-zone=us-central1-f",
-      "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[Feature:(ExternalTrafficLocalOnly|DynamicKubeletConfig)\\] --minStartupPods=8",
-      "--timeout=180m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "UNKNOWN"
-    ]
-  },
   "ci-kubernetes-e2e-gci-gce-alpha-features-release-1-5": {
     "args": [
       "--check-leaked-resources",
@@ -3856,6 +3740,22 @@
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-gci-gce-alpha-features-release-1-7.env",
       "--extract=ci/latest-1.7",
+      "--gcp-zone=us-central1-f",
+      "--provider=gce",
+      "--test_args=--ginkgo.focus=\\[Feature:(ExternalTrafficLocalOnly|DynamicKubeletConfig)\\] --minStartupPods=8",
+      "--timeout=180m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "UNKNOWN"
+    ]
+  },
+  "ci-kubernetes-e2e-gci-gce-alpha-features-stable1": {
+    "args": [
+      "--check-leaked-resources",
+      "--env-file=jobs/platform/gce.env",
+      "--env-file=jobs/env/ci-kubernetes-e2e-gci-gce-alpha-features-stable1.env",
+      "--extract=ci/k8s-stable1",
       "--gcp-zone=us-central1-f",
       "--provider=gce",
       "--test_args=--ginkgo.focus=\\[Feature:(ExternalTrafficLocalOnly|DynamicKubeletConfig)\\] --minStartupPods=8",
@@ -4028,22 +3928,6 @@
       "sig-network"
     ]
   },
-  "ci-kubernetes-e2e-gci-gce-ingress-release-1-4": {
-    "args": [
-      "--check-leaked-resources",
-      "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gci-gce-ingress-release-1-4.env",
-      "--extract=ci/latest-1.4",
-      "--gcp-zone=us-central1-f",
-      "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[Feature:Ingress\\] --minStartupPods=8",
-      "--timeout=90m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-network"
-    ]
-  },
   "ci-kubernetes-e2e-gci-gce-ingress-release-1-5": {
     "args": [
       "--check-leaked-resources",
@@ -4092,6 +3976,22 @@
       "sig-network"
     ]
   },
+  "ci-kubernetes-e2e-gci-gce-ingress-stable1": {
+    "args": [
+      "--check-leaked-resources",
+      "--env-file=jobs/platform/gce.env",
+      "--extract=ci/k8s-stable1",
+      "--gcp-node-image=gci",
+      "--gcp-zone=us-central1-f",
+      "--provider=gce",
+      "--test_args=--ginkgo.focus=\\[Feature:Ingress\\] --minStartupPods=8",
+      "--timeout=90m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-network"
+    ]
+  },
   "ci-kubernetes-e2e-gci-gce-ip-alias": {
     "args": [
       "--check-leaked-resources",
@@ -4119,7 +4019,7 @@
       "--extract=ci/latest",
       "--gcp-zone=us-central1-f",
       "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[Feature:KubeProxyDaemonSetDowngrade\\] --upgrade-target=ci/latest-1.7 --minStartupPods=8",
+      "--test_args=--ginkgo.focus=\\[Feature:KubeProxyDaemonSetDowngrade\\] --upgrade-target=ci/latest-1.7 --upgrade-image=gci --minStartupPods=8",
       "--timeout=90m"
     ],
     "scenario": "kubernetes_e2e",
@@ -4140,7 +4040,7 @@
       "--provider=gce",
       "--test_args=--ginkgo.focus=Networking --ginkgo.skip=Networking-Performance --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8",
       "--timeout=90m",
-      "--upgrade_args=--ginkgo.focus=\\[Feature:KubeProxyDaemonSetUpgrade\\] --upgrade-target=ci/latest"
+      "--upgrade_args=--ginkgo.focus=\\[Feature:KubeProxyDaemonSetUpgrade\\] --upgrade-target=ci/latest --upgrade-image=gci"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4171,22 +4071,6 @@
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-gci-gce-reboot.env",
       "--extract=ci/latest",
-      "--gcp-zone=us-central1-f",
-      "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[Feature:Reboot\\] --minStartupPods=8",
-      "--timeout=180m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "UNKNOWN"
-    ]
-  },
-  "ci-kubernetes-e2e-gci-gce-reboot-release-1-4": {
-    "args": [
-      "--check-leaked-resources",
-      "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gci-gce-reboot-release-1-4.env",
-      "--extract=ci/latest-1.4",
       "--gcp-zone=us-central1-f",
       "--provider=gce",
       "--test_args=--ginkgo.focus=\\[Feature:Reboot\\] --minStartupPods=8",
@@ -4245,16 +4129,16 @@
       "UNKNOWN"
     ]
   },
-  "ci-kubernetes-e2e-gci-gce-release-1-4": {
+  "ci-kubernetes-e2e-gci-gce-reboot-stable1": {
     "args": [
       "--check-leaked-resources",
       "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gci-gce-release-1-4.env",
-      "--extract=ci/latest-1.4",
+      "--extract=ci/k8s-stable1",
+      "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
       "--provider=gce",
-      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
-      "--timeout=50m"
+      "--test_args=--ginkgo.focus=\\[Feature:Reboot\\] --minStartupPods=8",
+      "--timeout=180m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4327,12 +4211,12 @@
       "sig-scale"
     ]
   },
-  "ci-kubernetes-e2e-gci-gce-scalability-release-1-6": {
+  "ci-kubernetes-e2e-gci-gce-scalability-release-1-7": {
     "args": [
-      "--cluster=e2e-scalability-1-6",
+      "--cluster=e2e-scalability-1-7",
       "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gci-gce-scalability-release-1-6.env",
-      "--extract=ci/latest-1.6",
+      "--env-file=jobs/env/ci-kubernetes-e2e-gci-gce-scalability-release-1-7.env",
+      "--extract=ci/latest-1.7",
       "--gcp-project=k8s-e2e-gci-gce-scale-1-4",
       "--gcp-zone=us-east1-b",
       "--mode=docker",
@@ -4345,12 +4229,12 @@
       "UNKNOWN"
     ]
   },
-  "ci-kubernetes-e2e-gci-gce-scalability-release-1-7": {
+  "ci-kubernetes-e2e-gci-gce-scalability-stable1": {
     "args": [
-      "--cluster=e2e-scalability-1-7",
+      "--cluster=e2e-scalability-1-6",
       "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gci-gce-scalability-release-1-7.env",
-      "--extract=ci/latest-1.7",
+      "--env-file=jobs/env/ci-kubernetes-e2e-gci-gce-scalability-stable1.env",
+      "--extract=ci/k8s-stable1",
       "--gcp-project=k8s-e2e-gci-gce-scale-1-4",
       "--gcp-zone=us-east1-b",
       "--mode=docker",
@@ -4389,22 +4273,6 @@
       "--provider=gce",
       "--test_args=--ginkgo.focus=\\[Serial\\]|\\[Disruptive\\] --ginkgo.skip=\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
       "--timeout=500m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "UNKNOWN"
-    ]
-  },
-  "ci-kubernetes-e2e-gci-gce-serial-release-1-4": {
-    "args": [
-      "--check-leaked-resources",
-      "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gci-gce-serial-release-1-4.env",
-      "--extract=ci/latest-1.4",
-      "--gcp-zone=us-central1-f",
-      "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[Serial\\]|\\[Disruptive\\] --ginkgo.skip=\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
-      "--timeout=300m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4459,6 +4327,22 @@
       "UNKNOWN"
     ]
   },
+  "ci-kubernetes-e2e-gci-gce-serial-stable1": {
+    "args": [
+      "--check-leaked-resources",
+      "--env-file=jobs/platform/gce.env",
+      "--extract=ci/k8s-stable1",
+      "--gcp-node-image=gci",
+      "--gcp-zone=us-central1-f",
+      "--provider=gce",
+      "--test_args=--ginkgo.focus=\\[Serial\\]|\\[Disruptive\\] --ginkgo.skip=\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
+      "--timeout=300m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "UNKNOWN"
+    ]
+  },
   "ci-kubernetes-e2e-gci-gce-slow": {
     "args": [
       "--check-leaked-resources",
@@ -4466,22 +4350,6 @@
       "--env-file=jobs/env/ci-kubernetes-e2e-gci-gce-slow.env",
       "--extract=ci/latest",
       "--gcp-zone=europe-west1-c",
-      "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[Slow\\] --ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
-      "--timeout=150m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "UNKNOWN"
-    ]
-  },
-  "ci-kubernetes-e2e-gci-gce-slow-release-1-4": {
-    "args": [
-      "--check-leaked-resources",
-      "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gci-gce-slow-release-1-4.env",
-      "--extract=ci/latest-1.4",
-      "--gcp-zone=us-central1-f",
       "--provider=gce",
       "--test_args=--ginkgo.focus=\\[Slow\\] --ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
       "--timeout=150m"
@@ -4533,6 +4401,40 @@
       "--provider=gce",
       "--test_args=--ginkgo.focus=\\[Slow\\] --ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
       "--timeout=150m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "UNKNOWN"
+    ]
+  },
+  "ci-kubernetes-e2e-gci-gce-slow-stable1": {
+    "args": [
+      "--check-leaked-resources",
+      "--env-file=jobs/platform/gce.env",
+      "--extract=ci/k8s-stable1",
+      "--gcp-node-image=gci",
+      "--gcp-zone=us-central1-f",
+      "--ginkgo-parallel=25",
+      "--provider=gce",
+      "--test_args=--ginkgo.focus=\\[Slow\\] --ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
+      "--timeout=150m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "UNKNOWN"
+    ]
+  },
+  "ci-kubernetes-e2e-gci-gce-stable1": {
+    "args": [
+      "--check-leaked-resources",
+      "--env-file=jobs/platform/gce.env",
+      "--extract=ci/k8s-stable1",
+      "--gcp-node-image=gci",
+      "--gcp-zone=us-central1-f",
+      "--ginkgo-parallel=25",
+      "--provider=gce",
+      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
+      "--timeout=50m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4707,6 +4609,24 @@
       "sig-network"
     ]
   },
+  "ci-kubernetes-e2e-gci-gke-ingress-stable1": {
+    "args": [
+      "--cluster=",
+      "--deployment=gke",
+      "--extract=ci/k8s-stable1",
+      "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
+      "--gcp-node-image=gci",
+      "--gcp-zone=us-central1-f",
+      "--gke-environment=test",
+      "--provider=gke",
+      "--test_args=--ginkgo.focus=\\[Feature:Ingress\\] --minStartupPods=8",
+      "--timeout=300m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-network"
+    ]
+  },
   "ci-kubernetes-e2e-gci-gke-multizone": {
     "args": [
       "--check-leaked-resources",
@@ -4866,6 +4786,25 @@
       "UNKNOWN"
     ]
   },
+  "ci-kubernetes-e2e-gci-gke-reboot-stable1": {
+    "args": [
+      "--check-leaked-resources",
+      "--cluster=",
+      "--deployment=gke",
+      "--extract=ci/k8s-stable1",
+      "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
+      "--gcp-node-image=gci",
+      "--gcp-zone=us-central1-f",
+      "--gke-environment=test",
+      "--provider=gke",
+      "--test_args=--ginkgo.focus=\\[Feature:Reboot\\] --minStartupPods=8",
+      "--timeout=180m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "UNKNOWN"
+    ]
+  },
   "ci-kubernetes-e2e-gci-gke-release-1-5": {
     "args": [
       "--check-leaked-resources",
@@ -4938,7 +4877,7 @@
       "--gke-environment=test",
       "--provider=gke",
       "--test_args=--ginkgo.focus=\\[Serial\\]|\\[Disruptive\\] --ginkgo.skip=\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
-      "--timeout=300m"
+      "--timeout=500m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4991,6 +4930,25 @@
       "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-a",
+      "--gke-environment=test",
+      "--provider=gke",
+      "--test_args=--ginkgo.focus=\\[Serial\\]|\\[Disruptive\\] --ginkgo.skip=\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
+      "--timeout=500m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "UNKNOWN"
+    ]
+  },
+  "ci-kubernetes-e2e-gci-gke-serial-stable1": {
+    "args": [
+      "--check-leaked-resources",
+      "--cluster=",
+      "--deployment=gke",
+      "--extract=ci/k8s-stable1",
+      "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
+      "--gcp-node-image=gci",
+      "--gcp-zone=us-central1-f",
       "--gke-environment=test",
       "--provider=gke",
       "--test_args=--ginkgo.focus=\\[Serial\\]|\\[Disruptive\\] --ginkgo.skip=\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
@@ -5075,6 +5033,46 @@
       "--provider=gke",
       "--test_args=--ginkgo.focus=\\[Slow\\] --ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
       "--timeout=150m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "UNKNOWN"
+    ]
+  },
+  "ci-kubernetes-e2e-gci-gke-slow-stable1": {
+    "args": [
+      "--check-leaked-resources",
+      "--cluster=",
+      "--deployment=gke",
+      "--extract=ci/k8s-stable1",
+      "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
+      "--gcp-node-image=gci",
+      "--gcp-zone=us-central1-f",
+      "--ginkgo-parallel",
+      "--gke-environment=test",
+      "--provider=gke",
+      "--test_args=--ginkgo.focus=\\[Slow\\] --ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
+      "--timeout=150m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "UNKNOWN"
+    ]
+  },
+  "ci-kubernetes-e2e-gci-gke-stable1": {
+    "args": [
+      "--check-leaked-resources",
+      "--cluster=",
+      "--deployment=gke",
+      "--extract=ci/k8s-stable1",
+      "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
+      "--gcp-node-image=gci",
+      "--gcp-zone=us-central1-f",
+      "--ginkgo-parallel",
+      "--gke-environment=test",
+      "--provider=gke",
+      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
+      "--timeout=50m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -7320,7 +7318,7 @@
       "--gke-environment=test",
       "--provider=gke",
       "--test_args=--ginkgo.focus=\\[Serial\\]|\\[Disruptive\\] --ginkgo.skip=\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
-      "--timeout=300m"
+      "--timeout=400m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -8295,6 +8293,7 @@
       "--env-file=jobs/env/ci-kubernetes-e2e-kops-aws.env",
       "--extract=ci/latest",
       "--mode=docker",
+      "--provider=aws",
       "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]|\\[HPA\\]|Dashboard|Services.*functioning.*NodePort",
       "--timeout=120m"
     ],
@@ -8311,6 +8310,7 @@
       "--env-file=jobs/platform/kops_aws.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-kops-aws-canary.env",
       "--extract=ci/latest",
+      "--provider=aws",
       "--tag=latest",
       "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]|\\[HPA\\]|Dashboard|Services.*functioning.*NodePort",
       "--timeout=120m"
@@ -8322,94 +8322,147 @@
   },
   "ci-kubernetes-e2e-kops-aws-release-1-7": {
     "args": [
+      "--aws",
       "--cluster=e2e-kops-aws-release-17.test-aws.k8s.io",
       "--env-file=jobs/platform/kops_aws.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-kops-aws.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-kops-aws-release-1-7.env",
+      "--extract=ci/latest-1.7",
+      "--mode=docker",
+      "--provider=aws",
+      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]|\\[HPA\\]|Dashboard|Services.*functioning.*NodePort",
       "--timeout=120m"
     ],
-    "scenario": "kubernetes_kops_aws",
+    "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-aws"
     ]
   },
   "ci-kubernetes-e2e-kops-aws-release-1.5": {
     "args": [
+      "--aws",
       "--cluster=e2e-kops-aws-release-15.test-aws.k8s.io",
       "--env-file=jobs/platform/kops_aws.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-kops-aws.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-kops-aws-release-1.5.env",
+      "--extract=ci/latest-1.5",
+      "--mode=docker",
+      "--provider=aws",
+      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]|\\[HPA\\]|Dashboard|Services.*functioning.*NodePort",
       "--timeout=120m"
     ],
-    "scenario": "kubernetes_kops_aws",
+    "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-aws"
     ]
   },
   "ci-kubernetes-e2e-kops-aws-release-1.6": {
     "args": [
+      "--aws",
       "--cluster=e2e-kops-aws-release-16.test-aws.k8s.io",
       "--env-file=jobs/platform/kops_aws.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-kops-aws.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-kops-aws-release-1.6.env",
+      "--extract=ci/latest-1.6",
+      "--mode=docker",
+      "--provider=aws",
+      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]|\\[HPA\\]|Dashboard|Services.*functioning.*NodePort",
       "--timeout=120m"
     ],
-    "scenario": "kubernetes_kops_aws",
+    "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-aws"
     ]
   },
   "ci-kubernetes-e2e-kops-aws-serial": {
     "args": [
+      "--aws",
       "--cluster=e2e-kops-aws-serial.test-aws.k8s.io",
       "--env-file=jobs/platform/kops_aws.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-kops-aws.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-kops-aws-serial.env",
+      "--extract=ci/latest",
+      "--mode=docker",
+      "--provider=aws",
+      "--test_args=--ginkgo.focus=\\[Serial\\]|\\[Disruptive\\] --ginkgo.skip=\\[Flaky\\]|\\[Feature:.+\\]|\\[HPA\\]|Dashboard|Services.*functioning.*NodePort",
       "--timeout=300m"
     ],
-    "scenario": "kubernetes_kops_aws",
+    "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-aws"
     ]
   },
   "ci-kubernetes-e2e-kops-aws-slow": {
     "args": [
+      "--aws",
       "--cluster=e2e-kops-aws-slow.test-aws.k8s.io",
       "--env-file=jobs/platform/kops_aws.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-kops-aws.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-kops-aws-slow.env",
+      "--extract=ci/latest",
+      "--mode=docker",
+      "--provider=aws",
+      "--test_args=--ginkgo.focus=\\[Slow\\] --ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]|\\[HPA\\]|Dashboard|Services.*functioning.*NodePort",
       "--timeout=150m"
     ],
-    "scenario": "kubernetes_kops_aws",
+    "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-aws"
+    ]
+  },
+  "ci-kubernetes-e2e-kops-aws-stable1": {
+    "args": [
+      "--aws",
+      "--cluster=e2e-kops-aws-stable1.test-aws.k8s.io",
+      "--env-file=jobs/platform/kops_aws.env",
+      "--env-file=jobs/env/ci-kubernetes-e2e-kops-aws.env",
+      "--env-file=jobs/env/ci-kubernetes-e2e-kops-aws-stable1.env",
+      "--extract=ci/k8s-stable1",
+      "--mode=docker",
+      "--provider=aws",
+      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]|\\[HPA\\]|Dashboard|Services.*functioning.*NodePort",
+      "--timeout=120m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-aws"
     ]
   },
   "ci-kubernetes-e2e-kops-aws-updown": {
     "args": [
+      "--aws",
       "--aws-role-arn=arn:aws:iam::660757973107:role/job-kops-aws-updown",
       "--cluster=e2e.kops-aws-updown.test-aws.k8s.io",
       "--env-file=jobs/platform/kops_aws.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-kops-aws-updown.env",
-      "--state=s3://kops-aws-updown-store",
-      "--timeout=30m",
-      "--zones=us-west-1b"
+      "--extract=ci/latest",
+      "--kops-state=s3://kops-aws-updown-store",
+      "--kops-zones=us-west-1b",
+      "--mode=docker",
+      "--provider=aws",
+      "--test_args=--ginkgo.focus=\\[k8s.io\\]\\sNetworking.*\\[Conformance\\]",
+      "--timeout=30m"
     ],
-    "scenario": "kubernetes_kops_aws",
+    "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-aws"
     ]
   },
   "ci-kubernetes-e2e-kops-aws-weave": {
     "args": [
+      "--aws",
       "--cluster=e2e-kops-aws-weave.test-aws.k8s.io",
       "--env-file=jobs/platform/kops_aws.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-kops-aws.env",
-      "--kops-args=\"--networking=weave\""
+      "--extract=ci/latest",
+      "--kops-args=\"--networking=weave\"",
+      "--mode=docker",
+      "--provider=aws",
+      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]|\\[HPA\\]|Dashboard|Services.*functioning.*NodePort"
     ],
-    "scenario": "kubernetes_kops_aws",
+    "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-aws"
     ]
   },
   "ci-kubernetes-e2e-kubeadm-gce": {
@@ -8417,7 +8470,6 @@
       "--cluster=",
       "--deployment=kubernetes-anywhere",
       "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-kubeadm-gce.env",
       "--extract=ci/latest",
       "--gcp-zone=us-central1-f",
       "--kubeadm=ci",
@@ -8436,7 +8488,6 @@
       "--cluster=",
       "--deployment=kubernetes-anywhere",
       "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-kubeadm-gce-1-6.env",
       "--extract=ci/latest-1.6",
       "--gcp-zone=us-central1-f",
       "--kubeadm=ci",
@@ -8455,7 +8506,6 @@
       "--cluster=",
       "--deployment=kubernetes-anywhere",
       "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-kubeadm-gce-1-6-on-1-7.env",
       "--extract=ci/latest-1.6",
       "--gcp-zone=us-central1-f",
       "--kubeadm=ci",
@@ -8474,13 +8524,66 @@
       "--cluster=",
       "--deployment=kubernetes-anywhere",
       "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-kubeadm-gce-1-7.env",
       "--extract=ci/latest-1.7",
       "--gcp-zone=us-central1-f",
       "--kubeadm=ci",
       "--kubernetes-anywhere-kubernetes-version=latest-1.7",
       "--provider=kubernetes-anywhere",
       "--test_args=--ginkgo.focus=\\[Conformance\\] --minStartupPods=8",
+      "--timeout=300m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-cluster-lifecycle"
+    ]
+  },
+  "ci-kubernetes-e2e-kubeadm-gce-1-7-on-1-8": {
+    "args": [
+      "--cluster=",
+      "--deployment=kubernetes-anywhere",
+      "--env-file=jobs/platform/gce.env",
+      "--extract=ci/latest-1.7",
+      "--gcp-zone=us-central1-f",
+      "--kubeadm=ci",
+      "--kubernetes-anywhere-kubernetes-version=latest-1.7",
+      "--provider=kubernetes-anywhere",
+      "--test_args=--ginkgo.focus=\\[Conformance\\] --minStartupPods=8",
+      "--timeout=300m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-cluster-lifecycle"
+    ]
+  },
+  "ci-kubernetes-e2e-kubeadm-gce-1-8": {
+    "args": [
+      "--cluster=",
+      "--deployment=kubernetes-anywhere",
+      "--env-file=jobs/platform/gce.env",
+      "--extract=ci/latest-1.8",
+      "--gcp-zone=us-central1-f",
+      "--kubeadm=ci",
+      "--kubernetes-anywhere-kubernetes-version=latest-1.8",
+      "--provider=kubernetes-anywhere",
+      "--test_args=--ginkgo.focus=\\[Conformance\\]|\\[Feature:BootstrapTokens\\]|\\[Feature:NodeAuthorizer\\] --minStartupPods=8",
+      "--timeout=300m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-cluster-lifecycle"
+    ]
+  },
+  "ci-kubernetes-e2e-kubeadm-gce-stable-on-master": {
+    "args": [
+      "--cluster=",
+      "--deployment=kubernetes-anywhere",
+      "--env-file=jobs/platform/gce.env",
+      "--extract=release/stable",
+      "--gcp-zone=us-central1-f",
+      "--kubeadm=ci",
+      "--kubernetes-anywhere-kubernetes-version=stable",
+      "--provider=kubernetes-anywhere",
+      "--test_args=--ginkgo.focus=\\[Conformance\\]|\\[Feature:BootstrapTokens\\]|\\[Feature:NodeAuthorizer\\] --minStartupPods=8",
       "--timeout=300m"
     ],
     "scenario": "kubernetes_e2e",
@@ -9117,7 +9220,6 @@
       "--docker-in-docker",
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/ci-kubernetes-kubemark-100-gce.env",
-      "--env-file=jobs/env/ci-kubernetes-kubemark-100-canary.env",
       "--extract=ci/latest",
       "--gcp-project=k8s-jenkins-gci-kubemark",
       "--gcp-zone=us-central1-f",
@@ -9301,15 +9403,6 @@
       "UNKNOWN"
     ]
   },
-  "ci-kubernetes-node-kubelet-1.4": {
-    "args": [
-      "--branch=release-1.4"
-    ],
-    "scenario": "kubernetes_kubelet",
-    "sigOwners": [
-      "UNKNOWN"
-    ]
-  },
   "ci-kubernetes-node-kubelet-1.5": {
     "args": [
       "--branch=release-1.5"
@@ -9378,6 +9471,15 @@
   "ci-kubernetes-node-kubelet-serial": {
     "args": [
       "--properties=test/e2e_node/jenkins/jenkins-serial.properties"
+    ],
+    "scenario": "kubernetes_kubelet",
+    "sigOwners": [
+      "UNKNOWN"
+    ]
+  },
+  "ci-kubernetes-node-kubelet-stable1": {
+    "args": [
+      "--branch=release-1.8"
     ],
     "scenario": "kubernetes_kubelet",
     "sigOwners": [
@@ -9492,45 +9594,6 @@
       "--mode=docker",
       "--provider=gce",
       "--save=gs://kubernetes-jenkins/soak/ci-kubernetes-soak-gce-1-7-deploy",
-      "--test_args=--ginkgo.skip=\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --clean-start=true --minStartupPods=8",
-      "--timeout=600m",
-      "--up=false"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "UNKNOWN"
-    ]
-  },
-  "ci-kubernetes-soak-gce-1.4-deploy": {
-    "args": [
-      "--down=false",
-      "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-soak-gce-1.4-deploy.env",
-      "--extract=ci/latest-1.4",
-      "--gcp-project=k8s-jkns-gce-soak-1-4",
-      "--gcp-zone=us-central1-f",
-      "--mode=docker",
-      "--provider=gce",
-      "--save=gs://kubernetes-jenkins/soak/ci-kubernetes-soak-gce-1.4-deploy",
-      "--test=false",
-      "--timeout=90m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "UNKNOWN"
-    ]
-  },
-  "ci-kubernetes-soak-gce-1.4-test": {
-    "args": [
-      "--down=false",
-      "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-soak-gce-1.4-test.env",
-      "--extract=ci/latest-1.4",
-      "--gcp-project=k8s-jkns-gce-soak-1-4",
-      "--gcp-zone=us-central1-f",
-      "--mode=docker",
-      "--provider=gce",
-      "--save=gs://kubernetes-jenkins/soak/ci-kubernetes-soak-gce-1.4-deploy",
       "--test_args=--ginkgo.skip=\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --clean-start=true --minStartupPods=8",
       "--timeout=600m",
       "--up=false"
@@ -9818,45 +9881,6 @@
       "UNKNOWN"
     ]
   },
-  "ci-kubernetes-soak-gci-gce-1.4-deploy": {
-    "args": [
-      "--down=false",
-      "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-soak-gci-gce-1.4-deploy.env",
-      "--extract=ci/latest-1.4",
-      "--gcp-project=k8s-jkns-gci-gce-soak-1-4",
-      "--gcp-zone=us-central1-f",
-      "--mode=docker",
-      "--provider=gce",
-      "--save=gs://kubernetes-jenkins/soak/ci-kubernetes-soak-gci-gce-1.4-deploy",
-      "--test=false",
-      "--timeout=90m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "UNKNOWN"
-    ]
-  },
-  "ci-kubernetes-soak-gci-gce-1.4-test": {
-    "args": [
-      "--down=false",
-      "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-soak-gci-gce-1.4-test.env",
-      "--extract=ci/latest-1.4",
-      "--gcp-project=k8s-jkns-gci-gce-soak-1-4",
-      "--gcp-zone=us-central1-f",
-      "--mode=docker",
-      "--provider=gce",
-      "--save=gs://kubernetes-jenkins/soak/ci-kubernetes-soak-gci-gce-1.4-deploy",
-      "--test_args=--ginkgo.skip=\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --clean-start=true --minStartupPods=8",
-      "--timeout=600m",
-      "--up=false"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "UNKNOWN"
-    ]
-  },
   "ci-kubernetes-soak-gci-gce-1.5-deploy": {
     "args": [
       "--down=false",
@@ -9926,6 +9950,45 @@
       "--mode=docker",
       "--provider=gce",
       "--save=gs://kubernetes-jenkins/soak/ci-kubernetes-soak-gci-gce-1.6-deploy",
+      "--test_args=--ginkgo.skip=\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --clean-start=true --minStartupPods=8",
+      "--timeout=600m",
+      "--up=false"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "UNKNOWN"
+    ]
+  },
+  "ci-kubernetes-soak-gci-gce-stable1-deploy": {
+    "args": [
+      "--down=false",
+      "--env-file=jobs/platform/gce.env",
+      "--env-file=jobs/env/ci-kubernetes-soak-gci-gce-stable1-deploy.env",
+      "--extract=ci/k8s-stable1",
+      "--gcp-project=k8s-jkns-gci-gce-soak-1-4",
+      "--gcp-zone=us-central1-f",
+      "--mode=docker",
+      "--provider=gce",
+      "--save=gs://kubernetes-jenkins/soak/ci-kubernetes-soak-gci-gce-stable1-deploy",
+      "--test=false",
+      "--timeout=90m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "UNKNOWN"
+    ]
+  },
+  "ci-kubernetes-soak-gci-gce-stable1-test": {
+    "args": [
+      "--down=false",
+      "--env-file=jobs/platform/gce.env",
+      "--env-file=jobs/env/ci-kubernetes-soak-gci-gce-stable1-test.env",
+      "--extract=ci/k8s-stable1",
+      "--gcp-project=k8s-jkns-gci-gce-soak-1-4",
+      "--gcp-zone=us-central1-f",
+      "--mode=docker",
+      "--provider=gce",
+      "--save=gs://kubernetes-jenkins/soak/ci-kubernetes-soak-gci-gce-stable1-deploy",
       "--test_args=--ginkgo.skip=\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --clean-start=true --minStartupPods=8",
       "--timeout=600m",
       "--up=false"
@@ -10033,16 +10096,6 @@
       "UNKNOWN"
     ]
   },
-  "ci-kubernetes-test-go-release-1.4": {
-    "args": [
-      "--branch=release-1.4",
-      "--force"
-    ],
-    "scenario": "kubernetes_verify",
-    "sigOwners": [
-      "UNKNOWN"
-    ]
-  },
   "ci-kubernetes-test-go-release-1.5": {
     "args": [
       "--branch=release-1.5",
@@ -10073,20 +10126,19 @@
       "UNKNOWN"
     ]
   },
-  "ci-kubernetes-verify-master": {
+  "ci-kubernetes-test-go-release-1.8": {
     "args": [
-      "--branch=master",
-      "--force",
-      "--script=./hack/jenkins/verify-dockerized.sh"
+      "--branch=release-1.8",
+      "--force"
     ],
     "scenario": "kubernetes_verify",
     "sigOwners": [
       "UNKNOWN"
     ]
   },
-  "ci-kubernetes-verify-release-1.4": {
+  "ci-kubernetes-verify-master": {
     "args": [
-      "--branch=release-1.4",
+      "--branch=master",
       "--force",
       "--script=./hack/jenkins/verify-dockerized.sh"
     ],
@@ -10120,6 +10172,17 @@
   "ci-kubernetes-verify-release-1.7": {
     "args": [
       "--branch=release-1.7",
+      "--force",
+      "--script=./hack/jenkins/verify-dockerized.sh"
+    ],
+    "scenario": "kubernetes_verify",
+    "sigOwners": [
+      "UNKNOWN"
+    ]
+  },
+  "ci-kubernetes-verify-release-1.8": {
+    "args": [
+      "--branch=release-1.8",
       "--force",
       "--script=./hack/jenkins/verify-dockerized.sh"
     ],
@@ -10205,10 +10268,12 @@
   },
   "maintenance-ci-aws-janitor": {
     "args": [
-      "--aws-image=gcr.io/k8s-test-infra-aws/aws-janitor",
-      "--mode=aws"
+      "/aws-janitor",
+      "--",
+      "--ttl=2h30m",
+      "--path=s3://janitor-jenkins/objs.json"
     ],
-    "scenario": "kubernetes_janitor",
+    "scenario": "execute",
     "sigOwners": [
       "sig-testing"
     ]
@@ -10281,6 +10346,16 @@
       "sig-testing"
     ]
   },
+  "periodic-kubernetes-bazel-build-1-8": {
+    "args": [
+      "--build=//cmd/... //pkg/... //federation/... //plugin/... //third_party/... //examples/... //test/... //vendor/k8s.io/...",
+      "--release=//build/release-tars"
+    ],
+    "scenario": "kubernetes_bazel",
+    "sigOwners": [
+      "sig-testing"
+    ]
+  },
   "periodic-kubernetes-bazel-test-1-6": {
     "args": [
       "--test=//cmd/... //pkg/... //federation/... //plugin/... //third_party/... //hack/... //hack:verify-all",
@@ -10302,12 +10377,22 @@
       "sig-testing"
     ]
   },
+  "periodic-kubernetes-bazel-test-1-8": {
+    "args": [
+      "--test=//cmd/... //pkg/... //federation/... //plugin/... //third_party/... //hack/... //hack:verify-all //vendor/k8s.io/...",
+      "--test-args=--test_tag_filters=-integration",
+      "--test-args=--flaky_test_attempts=3"
+    ],
+    "scenario": "kubernetes_bazel",
+    "sigOwners": [
+      "sig-testing"
+    ]
+  },
   "periodic-kubernetes-e2e-kubeadm-gce-1-6": {
     "args": [
       "--cluster=",
       "--deployment=kubernetes-anywhere",
       "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/periodic-kubernetes-e2e-kubeadm-gce-1-6.env",
       "--extract=ci/latest-1.6",
       "--gcp-zone=us-central1-f",
       "--kubeadm=periodic",
@@ -10326,13 +10411,30 @@
       "--cluster=",
       "--deployment=kubernetes-anywhere",
       "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/periodic-kubernetes-e2e-kubeadm-gce-1-7.env",
       "--extract=ci/latest-1.7",
       "--gcp-zone=us-central1-f",
       "--kubeadm=periodic",
       "--kubernetes-anywhere-kubernetes-version=latest-1.7",
       "--provider=kubernetes-anywhere",
       "--test_args=--ginkgo.focus=\\[Conformance\\] --minStartupPods=8",
+      "--timeout=300m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-cluster-lifecycle"
+    ]
+  },
+  "periodic-kubernetes-e2e-kubeadm-gce-1-8": {
+    "args": [
+      "--cluster=",
+      "--deployment=kubernetes-anywhere",
+      "--env-file=jobs/platform/gce.env",
+      "--extract=ci/latest-1.8",
+      "--gcp-zone=us-central1-f",
+      "--kubeadm=periodic",
+      "--kubernetes-anywhere-kubernetes-version=latest-1.8",
+      "--provider=kubernetes-anywhere",
+      "--test_args=--ginkgo.focus=\\[Conformance\\]|\\[Feature:BootstrapTokens\\]|\\[Feature:NodeAuthorizer\\] --minStartupPods=8",
       "--timeout=300m"
     ],
     "scenario": "kubernetes_e2e",
@@ -10367,16 +10469,21 @@
   },
   "pull-kops-e2e-kubernetes-aws": {
     "args": [
-      "--build-kops",
+      "--aws",
+      "--aws-cluster-domain=test-aws.k8s.io",
       "--check-leaked-resources=false",
       "--cluster=",
       "--env-file=jobs/platform/kops_aws.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-kops-aws.env",
       "--env-file=jobs/env/pull-kops-e2e-kubernetes-aws.env",
-      "--extract=release/stable",
+      "--extract=ci/latest",
+      "--kops-build",
+      "--mode=docker",
+      "--provider=aws",
+      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]|\\[HPA\\]|Dashboard|Services.*functioning.*NodePort",
       "--timeout=55m"
     ],
-    "scenario": "kubernetes_kops_aws",
+    "scenario": "kubernetes_e2e",
     "sigOwners": [
       "sig-aws"
     ]
@@ -10440,7 +10547,6 @@
       "--cluster=",
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/pull-kubernetes-e2e.env",
-      "--env-file=jobs/env/pull-kubernetes-e2e-gce-bazel.env",
       "--extract=local",
       "--gcp-zone=us-central1-f",
       "--provider=gce",
@@ -10610,17 +10716,21 @@
   },
   "pull-kubernetes-e2e-kops-aws": {
     "args": [
+      "--aws",
+      "--aws-cluster-domain=test-aws.k8s.io",
       "--build",
       "--check-leaked-resources=false",
       "--cluster=",
       "--env-file=jobs/platform/kops_aws.env",
       "--env-file=jobs/env/pull-kubernetes-e2e-kops-aws.env",
       "--extract=local",
+      "--mode=docker",
+      "--provider=aws",
       "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-kops-aws",
       "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]|\\[HPA\\]|Dashboard|Services.*functioning.*NodePort",
       "--timeout=55m"
     ],
-    "scenario": "kubernetes_kops_aws",
+    "scenario": "kubernetes_e2e",
     "sigOwners": [
       "sig-aws"
     ]
@@ -10630,15 +10740,14 @@
       "--cluster=",
       "--deployment=kubernetes-anywhere",
       "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/pull-kubernetes-e2e-kubeadm-gce.env",
-      "--extract=local",
-      "--gcp-project=k8s-jkns-pr-kubeadm",
       "--gcp-zone=us-central1-f",
+      "--ginkgo-parallel=30",
       "--kubeadm=pull",
-      "--kubernetes-anywhere-kubernetes-version=latest",
+      "--kubernetes-anywhere-kubernetes-version=ci/latest",
       "--provider=kubernetes-anywhere",
       "--test_args=--ginkgo.focus=\\[Conformance\\] --ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\] --minStartupPods=8",
-      "--timeout=55m"
+      "--timeout=55m",
+      "--use-shared-build=bazel"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -10727,7 +10836,6 @@
       "--docker-in-docker",
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/ci-kubernetes-kubemark-500-gce.env",
-      "--env-file=jobs/env/pull-kubernetes-kubemark-e2e-gce-big.env",
       "--extract=local",
       "--gcp-project=k8s-scale-testing",
       "--gcp-zone=us-east1-a",

@@ -36,7 +36,7 @@ import time
 ORIG_CWD = os.getcwd()  # Checkout changes cwd
 
 # Note: This variable is managed by experiment/bump_e2e_image.sh.
-DEFAULT_KUBEKINS_TAG = 'v20170901-85a12b8a'
+DEFAULT_KUBEKINS_TAG = 'v20170908-7bc189e6'
 
 def test_infra(*paths):
     """Return path relative to root of test-infra repo."""
@@ -94,15 +94,17 @@ def kubeadm_version(mode):
         if version.startswith('v1.6.'):
             return 'gs://kubernetes-release-dev/bazel/%s/build/debs/' % version
 
+        # The path given here should match jobs/ci-kubernetes-bazel-build.sh
+        return 'gs://kubernetes-release-dev/bazel/%s/bin/linux/amd64/' % version
+
     elif mode == 'pull':
-        version = '%s/%s' % (os.environ['PULL_NUMBER'], os.getenv('PULL_REFS'))
+        # The format of shared_build_gcs_path looks like:
+        # gs://kubernetes-release-dev/bazel/<git-describe-output>
+        # Add bin/linux/amd64 yet to that path so it points to the dir with the debs
+        return '%s/bin/linux/amd64/' % os.environ['SHARED_BUILD_GCS_PATH']
 
     else:
         raise ValueError("Unknown kubeadm mode given: %s" % mode)
-
-    # The path given here should match jobs/ci-kubernetes-bazel-build.sh
-    return 'gs://kubernetes-release-dev/bazel/%s/bin/linux/amd64/' % version
-
 
 class LocalMode(object):
     """Runs e2e tests by calling kubetest."""
@@ -378,10 +380,10 @@ def build_kops(workspace, mode):
     job = os.getenv('JOB_NAME', 'pull-kops-e2e-kubernetes-aws')
     gcs = 'gs://kops-ci/pulls/%s' % job
     gapi = 'https://storage.googleapis.com/kops-ci/pulls/%s' % job
-    mode.add_environment([
+    mode.add_environment(
         'KOPS_BASE_URL=%s/%s' % (gapi, version),
         'GCS_LOCATION=%s' % gcs
-        ])
+        )
     check('make', 'gcs-publish-ci', 'VERSION=%s' % version, 'GCS_LOCATION=%s' % gcs)
 
 
@@ -451,7 +453,7 @@ def get_shared_gcs_path(gcs_shared, use_shared_build):
 
 def main(args):
     """Set up env, start kubekins-e2e, handle termination. """
-    # pylint: disable=too-many-branches,too-many-statements
+    # pylint: disable=too-many-branches,too-many-statements,too-many-locals
 
     # Rules for env var priority here in docker:
     # -e FOO=a -e FOO=b -> FOO=b
@@ -503,7 +505,10 @@ def main(args):
             attempts_remaining -= 1
             try:
                 # tell kubetest to extract from this location
-                args.kubetest_args.append('--extract=' + read_gcs_path(gcs_path))
+                shared_build_gcs_path = read_gcs_path(gcs_path)
+                args.kubetest_args.append('--extract=' + shared_build_gcs_path)
+                mode.add_environment('SHARED_BUILD_GCS_PATH=' + shared_build_gcs_path)
+                os.environ['SHARED_BUILD_GCS_PATH'] = shared_build_gcs_path
                 args.build = None
                 break
             except urllib2.URLError as err:
@@ -528,6 +533,19 @@ def main(args):
 
     if args.kops_build:
         build_kops(workspace, mode)
+
+    if args.stage is not None:
+        runner_args.append('--stage=%s' % args.stage)
+        if args.aws:
+            for line in check_output('hack/print-workspace-status.sh').split('\n'):
+                if 'gitVersion' in line:
+                    _, version = line.strip().split(' ')
+                    break
+            else:
+                raise ValueError('kubernetes version not found in workspace status')
+            runner_args.append('--kops-kubernetes-version=%s/%s' % (
+                args.stage.replace('gs://', 'https://storage.googleapis.com/'),
+                version))
 
     # TODO(fejta): move these out of this file
     if args.up == 'true':
@@ -632,6 +650,8 @@ def create_parser():
         '--docker-in-docker', action='store_true', help='Enable run docker within docker')
     parser.add_argument(
         '--kubeadm', choices=['ci', 'periodic', 'pull'])
+    parser.add_argument(
+        '--stage', default=None, help='Stage release to GCS path provided')
     parser.add_argument(
         '--tag', default=DEFAULT_KUBEKINS_TAG, help='Use a specific kubekins-e2e tag if set')
     parser.add_argument(

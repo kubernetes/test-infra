@@ -336,6 +336,41 @@ func (c *Client) CreateIssueReaction(org, repo string, ID int, reaction string) 
 	return err
 }
 
+// readPaginatedResults iterates over all objects in the paginated
+// result indicated by the given url.  The newObj function should
+// return a new slice of the expected type, and the accumulate
+// function should accept that populated slice for each page of
+// results.  An error is returned if encountered in making calls to
+// github or marshalling objects.
+func (c *Client) readPaginatedResults(path string, newObj func() interface{}, accumulate func(interface{})) error {
+	url := fmt.Sprintf("%s%s?per_page=100", c.base, path)
+	for url != "" {
+		resp, err := c.requestRetry(http.MethodGet, url, "", nil)
+		if err != nil {
+			return err
+		}
+		defer resp.Body.Close()
+		if resp.StatusCode < 200 || resp.StatusCode > 299 {
+			return fmt.Errorf("return code not 2XX: %s", resp.Status)
+		}
+
+		b, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return err
+		}
+
+		obj := newObj()
+		if err := json.Unmarshal(b, obj); err != nil {
+			return err
+		}
+
+		accumulate(obj)
+
+		url = parseLinks(resp.Header.Get("Link"))["next"]
+	}
+	return nil
+}
+
 // ListIssueComments returns all comments on an issue. This may use more than
 // one API token.
 func (c *Client) ListIssueComments(org, repo string, number int) ([]IssueComment, error) {
@@ -343,29 +378,18 @@ func (c *Client) ListIssueComments(org, repo string, number int) ([]IssueComment
 	if c.fake {
 		return nil, nil
 	}
-	nextURL := fmt.Sprintf("%s/repos/%s/%s/issues/%d/comments?per_page=100", c.base, org, repo, number)
+	path := fmt.Sprintf("/repos/%s/%s/issues/%d/comments", org, repo, number)
 	var comments []IssueComment
-	for nextURL != "" {
-		resp, err := c.requestRetry(http.MethodGet, nextURL, "", nil)
-		if err != nil {
-			return nil, err
-		}
-		defer resp.Body.Close()
-		if resp.StatusCode < 200 || resp.StatusCode > 299 {
-			return nil, fmt.Errorf("return code not 2XX: %s", resp.Status)
-		}
-
-		b, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return nil, err
-		}
-
-		var ics []IssueComment
-		if err := json.Unmarshal(b, &ics); err != nil {
-			return nil, err
-		}
-		comments = append(comments, ics...)
-		nextURL = parseLinks(resp.Header.Get("Link"))["next"]
+	err := c.readPaginatedResults(path,
+		func() interface{} {
+			return &[]IssueComment{}
+		},
+		func(obj interface{}) {
+			comments = append(comments, *(obj.(*[]IssueComment))...)
+		},
+	)
+	if err != nil {
+		return nil, err
 	}
 	return comments, nil
 }
@@ -388,29 +412,18 @@ func (c *Client) GetPullRequestChanges(org, repo string, number int) ([]PullRequ
 	if c.fake {
 		return []PullRequestChange{}, nil
 	}
-	nextURL := fmt.Sprintf("%s/repos/%s/%s/pulls/%d/files?per_page=100", c.base, org, repo, number)
+	path := fmt.Sprintf("/repos/%s/%s/pulls/%d/files", org, repo, number)
 	var changes []PullRequestChange
-	for nextURL != "" {
-		resp, err := c.requestRetry(http.MethodGet, nextURL, "", nil)
-		if err != nil {
-			return nil, err
-		}
-		defer resp.Body.Close()
-		if resp.StatusCode < 200 || resp.StatusCode > 299 {
-			return nil, fmt.Errorf("return code not 2XX: %s", resp.Status)
-		}
-
-		b, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return nil, err
-		}
-
-		var newChanges []PullRequestChange
-		if err := json.Unmarshal(b, &newChanges); err != nil {
-			return nil, err
-		}
-		changes = append(changes, newChanges...)
-		nextURL = parseLinks(resp.Header.Get("Link"))["next"]
+	err := c.readPaginatedResults(path,
+		func() interface{} {
+			return &[]PullRequestChange{}
+		},
+		func(obj interface{}) {
+			changes = append(changes, *(obj.(*[]PullRequestChange))...)
+		},
+	)
+	if err != nil {
+		return nil, err
 	}
 	return changes, nil
 }
@@ -422,29 +435,18 @@ func (c *Client) ListPullRequestComments(org, repo string, number int) ([]Review
 	if c.fake {
 		return nil, nil
 	}
-	nextURL := fmt.Sprintf("%s/repos/%s/%s/pulls/%d/comments?per_page=100", c.base, org, repo, number)
+	path := fmt.Sprintf("/repos/%s/%s/pulls/%d/comments", org, repo, number)
 	var comments []ReviewComment
-	for nextURL != "" {
-		resp, err := c.requestRetry(http.MethodGet, nextURL, "", nil)
-		if err != nil {
-			return nil, err
-		}
-		defer resp.Body.Close()
-		if resp.StatusCode < 200 || resp.StatusCode > 299 {
-			return nil, fmt.Errorf("return code not 2XX: %s", resp.Status)
-		}
-
-		b, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return nil, err
-		}
-
-		var cs []ReviewComment
-		if err := json.Unmarshal(b, &cs); err != nil {
-			return nil, err
-		}
-		comments = append(comments, cs...)
-		nextURL = parseLinks(resp.Header.Get("Link"))["next"]
+	err := c.readPaginatedResults(path,
+		func() interface{} {
+			return &[]ReviewComment{}
+		},
+		func(obj interface{}) {
+			comments = append(comments, *(obj.(*[]ReviewComment))...)
+		},
+	)
+	if err != nil {
+		return nil, err
 	}
 	return comments, nil
 }
@@ -542,28 +544,16 @@ func (c *Client) getLabels(path string) ([]Label, error) {
 	if c.fake {
 		return labels, nil
 	}
-	nextURL := strings.Join([]string{c.base, path}, "")
-	for nextURL != "" {
-		resp, err := c.requestRetry(http.MethodGet, nextURL, "", nil)
-		if err != nil {
-			return nil, err
-		}
-		defer resp.Body.Close()
-		if resp.StatusCode < 200 || resp.StatusCode > 299 {
-			return nil, fmt.Errorf("return code not 2XX: %s", resp.Status)
-		}
-
-		b, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return nil, err
-		}
-
-		var labs []Label
-		if err := json.Unmarshal(b, &labs); err != nil {
-			return nil, err
-		}
-		labels = append(labels, labs...)
-		nextURL = parseLinks(resp.Header.Get("Link"))["next"]
+	err := c.readPaginatedResults(path,
+		func() interface{} {
+			return &[]Label{}
+		},
+		func(obj interface{}) {
+			labels = append(labels, *(obj.(*[]Label))...)
+		},
+	)
+	if err != nil {
+		return nil, err
 	}
 	return labels, nil
 }
@@ -902,4 +892,48 @@ func (c *Client) GetFile(org, repo, filepath, commit string) ([]byte, error) {
 func (c *Client) Query(ctx context.Context, q interface{}, vars map[string]interface{}) error {
 	c.log("Query", q, vars)
 	return c.gqlc.Query(ctx, q, vars)
+}
+
+// ListTeams gets a list of teams for the given org
+func (c *Client) ListTeams(org string) ([]Team, error) {
+	c.log("ListTeams", org)
+	if c.fake {
+		return nil, nil
+	}
+	path := fmt.Sprintf("/orgs/%s/teams", org)
+	var teams []Team
+	err := c.readPaginatedResults(path,
+		func() interface{} {
+			return &[]Team{}
+		},
+		func(obj interface{}) {
+			teams = append(teams, *(obj.(*[]Team))...)
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+	return teams, nil
+}
+
+// ListTeamMembers gets a list of team members for the given team id
+func (c *Client) ListTeamMembers(id int) ([]TeamMember, error) {
+	c.log("ListTeamMembers", id)
+	if c.fake {
+		return nil, nil
+	}
+	path := fmt.Sprintf("/teams/%d/members", id)
+	var teamMembers []TeamMember
+	err := c.readPaginatedResults(path,
+		func() interface{} {
+			return &[]TeamMember{}
+		},
+		func(obj interface{}) {
+			teamMembers = append(teamMembers, *(obj.(*[]TeamMember))...)
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+	return teamMembers, nil
 }

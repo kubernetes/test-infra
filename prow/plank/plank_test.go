@@ -193,11 +193,6 @@ func handleTot(w http.ResponseWriter, r *http.Request) {
 }
 
 func TestSyncKubernetesJob(t *testing.T) {
-	var oldNewName = newPodName
-	defer func() {
-		newPodName = oldNewName
-	}()
-	newPodName = func() string { return "NEWPOD" }
 	var testcases = []struct {
 		name string
 
@@ -225,29 +220,6 @@ func TestSyncKubernetesJob(t *testing.T) {
 			expectedComplete: true,
 		},
 		{
-			name: "completed prow job, clean up pod",
-			pj: kube.ProwJob{
-				Status: kube.ProwJobStatus{
-					CompletionTime: time.Now(),
-					State:          kube.FailureState,
-					PodName:        "boop-41",
-				},
-			},
-			pods: []kube.Pod{
-				{
-					Metadata: kube.ObjectMeta{
-						Name: "boop-41",
-					},
-					Status: kube.PodStatus{
-						Phase: kube.PodFailed,
-					},
-				},
-			},
-			expectedState:    kube.FailureState,
-			expectedNumPods:  0,
-			expectedComplete: true,
-		},
-		{
 			name: "completed prow job, missing pod",
 			pj: kube.ProwJob{
 				Status: kube.ProwJobStatus{
@@ -263,6 +235,9 @@ func TestSyncKubernetesJob(t *testing.T) {
 		{
 			name: "start new pod",
 			pj: kube.ProwJob{
+				Metadata: kube.ObjectMeta{
+					Name: "blabla",
+				},
 				Spec: kube.ProwJobSpec{
 					Job:  "boop",
 					Type: kube.PeriodicJob,
@@ -275,7 +250,7 @@ func TestSyncKubernetesJob(t *testing.T) {
 			expectedPodHasName: true,
 			expectedNumPods:    1,
 			expectedReport:     true,
-			expectedURL:        "NEWPOD/pending",
+			expectedURL:        "blabla/pending",
 		},
 		{
 			name: "reset when pod goes missing",
@@ -600,8 +575,5 @@ func TestPeriodic(t *testing.T) {
 	}
 	if err := c.Sync(); err != nil {
 		t.Fatalf("Error on fourth sync: %v", err)
-	}
-	if len(fc.pods) != 1 {
-		t.Fatalf("Wrong number of pods: %d", len(fc.pods))
 	}
 }

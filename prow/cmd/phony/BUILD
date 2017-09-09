@@ -16,7 +16,7 @@ go_library(
     srcs = ["main.go"],
     deps = [
         "//prow/phony:go_default_library",
-        "//vendor/github.com/Sirupsen/logrus:go_default_library",
+        "//vendor/github.com/sirupsen/logrus:go_default_library",
     ],
 )
 

@@ -17,7 +17,7 @@ go_library(
     name = "go_default_library",
     srcs = ["migrator.go"],
     deps = [
-        "//maintenance/githubutil:go_default_library",
+        "//ghclient:go_default_library",
         "//vendor/github.com/golang/glog:go_default_library",
         "//vendor/github.com/google/go-github/github:go_default_library",
     ],

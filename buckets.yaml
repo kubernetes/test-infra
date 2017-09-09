@@ -25,3 +25,6 @@ gs://canonical-kubernetes-tests/logs-gke/:
   contact: "vorlonofportland"
   prefix: "ubuntu:"
   sequential: false
+gs://kubernetes-multiarch-e2e-results/logs/:
+  contact: "luxas"
+  prefix: "luxas:"

@@ -23,8 +23,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Sirupsen/logrus"
 	"github.com/ghodss/yaml"
+	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/git"
@@ -131,7 +131,7 @@ type Trigger struct {
 	// Repos is either of the form org/repos or just org.
 	Repos []string `json:"repos,omitempty"`
 	// TrustedOrg is the org whose members' PRs will be automatically built
-	// for PRs to the above repos.
+	// for PRs to the above repos. The default is the PR's org.
 	TrustedOrg string `json:"trusted_org,omitempty"`
 }
 

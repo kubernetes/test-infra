@@ -21,8 +21,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/Sirupsen/logrus"
 	"github.com/shurcooL/githubql"
+	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/kube"
 )

@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM alpine:3.4
+FROM gcr.io/k8s-testimages/gcloud-in-go:0.4
 MAINTAINER zml@google.com
 
-RUN apk add --no-cache ca-certificates && update-ca-certificates
+RUN apt-get install ca-certificates && update-ca-certificates
 
 COPY aws-janitor /aws-janitor
-ENTRYPOINT ["/aws-janitor"]
+ENTRYPOINT ["/bin/bash", "/runner"]

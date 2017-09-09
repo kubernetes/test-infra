@@ -91,7 +91,6 @@ export -f log_dump_custom_get_instances # Export to cluster/log-dump/log-dump.sh
 kubetest "${e2e_args[@]}" "${@}"
 
 if [[ -n "${KOPS_PUBLISH_GREEN_PATH:-}" ]]; then
-  export CLOUDSDK_CONFIG="/workspace/.config/gcloud"
 
   if ! which gsutil; then
     export PATH=/google-cloud-sdk/bin:${PATH}
@@ -100,6 +99,11 @@ if [[ -n "${KOPS_PUBLISH_GREEN_PATH:-}" ]]; then
       exit 1
     fi
   fi
+
+  # TODO(krzyzacy) - debugging
+  gcloud config list
+  gcloud auth list
+
   echo "Publish version to ${KOPS_PUBLISH_GREEN_PATH}: ${KOPS_BASE_URL}"
   echo "${KOPS_BASE_URL}" | gsutil -h "Cache-Control:private, max-age=0, no-transform" cp - "${KOPS_PUBLISH_GREEN_PATH}"
 fi

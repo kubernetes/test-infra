@@ -26,7 +26,7 @@ import (
 	"strconv"
 	"syscall"
 
-	"github.com/Sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/git"
@@ -35,23 +35,6 @@ import (
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/plugins"
 	"k8s.io/test-infra/prow/slack"
-
-	_ "k8s.io/test-infra/prow/plugins/assign"
-	_ "k8s.io/test-infra/prow/plugins/cla"
-	_ "k8s.io/test-infra/prow/plugins/close"
-	_ "k8s.io/test-infra/prow/plugins/golint"
-	_ "k8s.io/test-infra/prow/plugins/heart"
-	_ "k8s.io/test-infra/prow/plugins/hold"
-	_ "k8s.io/test-infra/prow/plugins/label"
-	_ "k8s.io/test-infra/prow/plugins/lgtm"
-	_ "k8s.io/test-infra/prow/plugins/releasenote"
-	_ "k8s.io/test-infra/prow/plugins/reopen"
-	_ "k8s.io/test-infra/prow/plugins/shrug"
-	_ "k8s.io/test-infra/prow/plugins/size"
-	_ "k8s.io/test-infra/prow/plugins/trigger"
-	_ "k8s.io/test-infra/prow/plugins/updateconfig"
-	_ "k8s.io/test-infra/prow/plugins/wip"
-	_ "k8s.io/test-infra/prow/plugins/yuks"
 )
 
 var (
@@ -68,7 +51,7 @@ var (
 	githubTokenFile = flag.String("github-token-file", "/etc/github/oauth", "Path to the file containing the GitHub OAuth secret.")
 
 	webhookSecretFile = flag.String("hmac-secret-file", "/etc/webhook/hmac", "Path to the file containing the GitHub HMAC secret.")
-	slackTokenFile    = flag.String("slack-token-file", "", "Path to the file containing the Slack Kubernetes Team Token.")
+	slackTokenFile    = flag.String("slack-token-file", "", "Path to the file containing the Slack token to use.")
 )
 
 func main() {

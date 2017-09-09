@@ -198,8 +198,8 @@ func TestProwJobToPod(t *testing.T) {
 
 	for i, test := range tests {
 		t.Logf("test run #%d", i)
-		pj := kube.ProwJob{Spec: test.pjSpec}
-		got := ProwJobToPod(pj, test.podName, test.buildID)
+		pj := kube.ProwJob{Metadata: kube.ObjectMeta{Name: test.podName}, Spec: test.pjSpec}
+		got := ProwJobToPod(pj, test.buildID)
 		// TODO: For now I am just comparing fields manually, eventually we
 		// should port the semantic.DeepEqual helper from the api-machinery
 		// repo, which is basically a fork of the reflect package.

@@ -160,9 +160,13 @@ func run(deploy deployer, o options) error {
 	}
 
 	if o.upgradeArgs != "" {
-		errs = appendError(errs, xmlWrap("UpgradeTest", func() error {
-			return skewTest(argFields(o.upgradeArgs, dump, o.clusterIPRange), "upgrade", o.checkSkew)
-		}))
+		if err := xmlWrap("test setup", deploy.TestSetup); err != nil {
+			errs = appendError(errs, err)
+		} else {
+			errs = appendError(errs, xmlWrap("UpgradeTest", func() error {
+				return skewTest(argFields(o.upgradeArgs, dump, o.clusterIPRange), "upgrade", o.checkSkew)
+			}))
+		}
 	}
 
 	testArgs := argFields(o.testArgs, dump, o.clusterIPRange)
@@ -522,7 +526,7 @@ func nodeTest(nodeArgs []string, testArgs, nodeTestArgs, project, zone string) e
 		"--logtostderr",
 		"--vmodule=*=4",
 		"--ssh-env=gce",
-		"--results-dir=/src/k8s.io/kubernetes/_artifacts",
+		fmt.Sprintf("--results-dir=%s/src/k8s.io/kubernetes/_artifacts", os.Getenv("GOPATH")),
 		fmt.Sprintf("--project=%s", project),
 		fmt.Sprintf("--zone=%s", zone),
 		fmt.Sprintf("--ssh-user=%s", os.Getenv("USER")),

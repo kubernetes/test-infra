@@ -89,8 +89,6 @@ type ProwJobStatus struct {
 	BuildID         string       `json:"build_id,omitempty"`
 	JenkinsQueueURL string       `json:"jenkins_queue_url,omitempty"`
 	JenkinsEnqueued bool         `json:"jenkins_enqueued,omitempty"`
-	// TODO(spxtr): Drop this in favor of just BuildID.
-	JenkinsBuildID string `json:"jenkins_build_id,omitempty"`
 }
 
 func (j *ProwJob) Complete() bool {

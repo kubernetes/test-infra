@@ -24,9 +24,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Sirupsen/logrus"
 	"github.com/bwmarrin/snowflake"
-	uuid "github.com/satori/go.uuid"
+	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
@@ -131,7 +130,8 @@ func (c *Controller) Sync() error {
 	if err != nil {
 		return fmt.Errorf("error listing prow jobs: %v", err)
 	}
-	pods, err := c.pkc.ListPods(nil)
+	labels := map[string]string{kube.CreatedByProw: "true"}
+	pods, err := c.pkc.ListPods(labels)
 	if err != nil {
 		return fmt.Errorf("error listing pods: %v", err)
 	}
@@ -235,11 +235,6 @@ func (c *Controller) syncKubernetesJob(pj kube.ProwJob, pm map[string]kube.Pod, 
 		if pj.Status.PodName == "" {
 			// Completed ProwJob, already cleaned up the pod. Nothing to do.
 			return nil
-		} else if _, ok := pm[pj.Status.PodName]; ok {
-			// Delete the old pod.
-			if err := c.pkc.DeletePod(pj.Status.PodName); err != nil {
-				return fmt.Errorf("error deleting pod %s: %v", pj.Status.PodName, err)
-			}
 		}
 		pj.Status.PodName = ""
 	} else if pj.Status.PodName == "" {
@@ -327,7 +322,7 @@ func (c *Controller) startPod(pj kube.ProwJob) (string, string, error) {
 		return "", "", fmt.Errorf("error getting build ID: %v", err)
 	}
 
-	pod := npj.ProwJobToPod(pj, newPodName(), buildID)
+	pod := npj.ProwJobToPod(pj, buildID)
 
 	actual, err := c.pkc.CreatePod(*pod)
 	if err != nil {
@@ -369,8 +364,4 @@ func (c *Controller) updatePendingJobs(pjs []kube.ProwJob) {
 			c.incrementNumPendingJobs(pj.Spec.Job)
 		}
 	}
-}
-
-var newPodName = func() string {
-	return uuid.NewV1().String()
 }

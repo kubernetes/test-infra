@@ -29,6 +29,7 @@ import json
 import os
 import re
 import sys
+import time
 import zlib
 
 import berghelroach
@@ -223,6 +224,7 @@ def cluster_test(tests):
         {failure_text: [failure_in_cluster_1, failure_in_cluster_2, ...]}
     """
     clusters = {}
+    start = time.time()
 
     for test in tests:
         ftext = test['failure_text']
@@ -235,6 +237,9 @@ def cluster_test(tests):
                 clusters[other].append(test)
             else:
                 clusters[fnorm] = [test]
+        if time.time() > start + 60:
+            print 'bailing early, taking too long!'
+            break
     return clusters
 
 

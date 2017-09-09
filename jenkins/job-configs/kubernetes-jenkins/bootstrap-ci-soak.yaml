@@ -152,21 +152,22 @@
     - kubernetes-soak-gce-1.5-test:
         blocker: ci-kubernetes-soak-gce-1.5-deploy
         job-name: ci-kubernetes-soak-gce-1.5-test
-        frequency: 'H/30 * * * *'
+        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
         scan: ALL
         timeout: 620
         soak-repos: '--bare'
-    - kubernetes-soak-gce-1.4-deploy:
-        blocker: ci-kubernetes-soak-gce-1.4-test
-        job-name: ci-kubernetes-soak-gce-1.4-deploy
+
+    - kubernetes-soak-gci-gce-stable1-deploy:
+        blocker: ci-kubernetes-soak-gci-gce-stable1-test
+        job-name: ci-kubernetes-soak-gci-gce-stable1-deploy
         frequency: 'H 0 * * 2'
         scan: DISABLED
         timeout: 110
         soak-repos: '--bare'
-    - kubernetes-soak-gce-1.4-test:
-        blocker: ci-kubernetes-soak-gce-1.4-deploy
-        job-name: ci-kubernetes-soak-gce-1.4-test
-        frequency: 'H H/6 * * *' # 4 times a day for older jobs.
+    - kubernetes-soak-gci-gce-stable1-test:
+        blocker: ci-kubernetes-soak-gci-gce-stable1-deploy
+        job-name: ci-kubernetes-soak-gci-gce-stable1-test
+        frequency: 'H/30 * * * *'
         scan: ALL
         timeout: 620
         soak-repos: '--bare'
@@ -208,20 +209,6 @@
     - kubernetes-soak-gci-gce-1.5-test:
         blocker: ci-kubernetes-soak-gci-gce-1.5-deploy
         job-name: ci-kubernetes-soak-gci-gce-1.5-test
-        frequency: 'H/30 * * * *'
-        scan: ALL
-        timeout: 620
-        soak-repos: '--bare'
-    - kubernetes-soak-gci-gce-1.4-deploy:
-        blocker: ci-kubernetes-soak-gci-gce-1.4-test
-        job-name: ci-kubernetes-soak-gci-gce-1.4-deploy
-        frequency: 'H 0 * * 2'
-        scan: DISABLED
-        timeout: 110
-        soak-repos: '--bare'
-    - kubernetes-soak-gci-gce-1.4-test:
-        blocker: ci-kubernetes-soak-gci-gce-1.4-deploy
-        job-name: ci-kubernetes-soak-gci-gce-1.4-test
         frequency: 'H H/6 * * *' # 4 times a day for older jobs.
         scan: ALL
         timeout: 620

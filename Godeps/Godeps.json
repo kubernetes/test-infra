@@ -35,7 +35,7 @@
 			"Rev": "63027b26b87e2ae2ce3810393d4b81021cfd3a35"
 		},
 		{
-			"ImportPath": "github.com/Sirupsen/logrus",
+			"ImportPath": "github.com/sirupsen/logrus",
 			"Comment": "v0.10.0-28-ga283a10",
 			"Rev": "a283a10442df8dc09befd873fab202bf8a253d6a"
 		},
@@ -210,7 +210,8 @@
 		},
 		{
 			"ImportPath": "github.com/spf13/pflag",
-			"Rev": "08b1a584251b5b62f458943640fc8ebd4d50aaa5"
+			"Comment": "v1.0.0-3-g7aff26d",
+			"Rev": "7aff26db30c1be810f9de5038ec5ef96ac41fd7c"
 		},
 		{
 			"ImportPath": "golang.org/x/net/context",

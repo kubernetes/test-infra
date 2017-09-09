@@ -49,6 +49,8 @@ func flattenJobs(jobs []Presubmit) []Presubmit {
 	return ret
 }
 
+// TODO(spxtr): Some of this is generic prowjob stuff and some of this is k8s-
+// specific. Figure out which is which and split this up.
 func TestPresubmits(t *testing.T) {
 	c, err := Load("../config.yaml")
 	if err != nil {
@@ -91,10 +93,6 @@ func TestPresubmits(t *testing.T) {
 			}
 			if !job.AlwaysRun && job.re.MatchString(retestBody) {
 				t.Errorf("Non-AlwaysRun job %s: \"%s\" matches regex \"%v\".", job.Name, retestBody, job.Trigger)
-			}
-			// Check that the rerun command actually runs the job.
-			if !job.re.MatchString(job.RerunCommand) {
-				t.Errorf("For job %s: RerunCommand \"%s\" does not match regex \"%v\".", job.Name, job.RerunCommand, job.Trigger)
 			}
 			// Next check that the rerun command doesn't run any other jobs.
 			for j, job2 := range jobs {
