@@ -954,13 +954,6 @@ def parse_args(arguments=None):
     parser.add_argument('--root', default='.', help='Root dir to work with')
     parser.add_argument(
         '--timeout', type=float, default=0, help='Timeout in minutes if set')
-    # TODO(bentheelder): remove --pull and --branch
-    parser.add_argument(
-        '--pull',
-        help='Deprecated, use --repo=k8s.io/foo=master:abcd,12:ef12,45:ff65')
-    parser.add_argument(
-        '--branch',
-        help='Deprecated, use --repo=k8s.io/foo=master')
     parser.add_argument(
         '--repo',
         action='append',
