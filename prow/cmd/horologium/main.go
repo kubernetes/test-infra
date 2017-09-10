@@ -63,16 +63,8 @@ func sync(kc kubeClient, cfg *config.Config, now time.Time) error {
 	if err != nil {
 		return fmt.Errorf("error listing prow jobs: %v", err)
 	}
-	latestJobs := map[string]kube.ProwJob{}
-	for _, j := range jobs {
-		if j.Spec.Type != kube.PeriodicJob {
-			continue
-		}
-		name := j.Spec.Job
-		if j.Status.StartTime.After(latestJobs[name].Status.StartTime) {
-			latestJobs[name] = j
-		}
-	}
+	latestJobs := pjutil.GetLatestPeriodics(jobs)
+
 	for _, p := range cfg.Periodics {
 		j, ok := latestJobs[p.Name]
 		if !ok || (j.Complete() && now.Sub(j.Status.StartTime) > p.GetInterval()) {

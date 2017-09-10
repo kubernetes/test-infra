@@ -18,6 +18,7 @@ package main
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 	"time"
 
@@ -107,6 +108,9 @@ func newFakeConfigAgent() *fca {
 				MaxProwJobAge: maxProwJobAge,
 				MaxPodAge:     maxPodAge,
 			},
+			Periodics: []config.Periodic{
+				{Name: "retester"},
+			},
 		},
 	}
 
@@ -120,7 +124,7 @@ func TestClean(t *testing.T) {
 	pods := []kube.Pod{
 		{
 			Metadata: kube.ObjectMeta{
-				Name: "old, failed",
+				Name: "old-failed",
 				Labels: map[string]string{
 					kube.CreatedByProw: "true",
 				},
@@ -132,7 +136,7 @@ func TestClean(t *testing.T) {
 		},
 		{
 			Metadata: kube.ObjectMeta{
-				Name: "old, succeeded",
+				Name: "old-succeeded",
 				Labels: map[string]string{
 					kube.CreatedByProw: "true",
 				},
@@ -144,7 +148,7 @@ func TestClean(t *testing.T) {
 		},
 		{
 			Metadata: kube.ObjectMeta{
-				Name: "new, failed",
+				Name: "new-failed",
 				Labels: map[string]string{
 					kube.CreatedByProw: "true",
 				},
@@ -156,7 +160,7 @@ func TestClean(t *testing.T) {
 		},
 		{
 			Metadata: kube.ObjectMeta{
-				Name: "old, running",
+				Name: "old-running",
 				Labels: map[string]string{
 					kube.CreatedByProw: "true",
 				},
@@ -168,7 +172,7 @@ func TestClean(t *testing.T) {
 		},
 		{
 			Metadata: kube.ObjectMeta{
-				Name: "unrelated, failed",
+				Name: "unrelated-failed",
 				Labels: map[string]string{
 					kube.CreatedByProw: "not really",
 				},
@@ -180,7 +184,7 @@ func TestClean(t *testing.T) {
 		},
 		{
 			Metadata: kube.ObjectMeta{
-				Name: "unrelated, complete",
+				Name: "unrelated-complete",
 			},
 			Status: kube.PodStatus{
 				Phase:     kube.PodSucceeded,
@@ -189,13 +193,13 @@ func TestClean(t *testing.T) {
 		},
 	}
 	deletedPods := []string{
-		"old, failed",
-		"old, succeeded",
+		"old-failed",
+		"old-succeeded",
 	}
 	prowJobs := []kube.ProwJob{
 		{
 			Metadata: kube.ObjectMeta{
-				Name: "old, complete",
+				Name: "old-complete",
 			},
 			Status: kube.ProwJobStatus{
 				StartTime:      time.Now().Add(-maxProwJobAge).Add(-time.Second),
@@ -204,7 +208,7 @@ func TestClean(t *testing.T) {
 		},
 		{
 			Metadata: kube.ObjectMeta{
-				Name: "old, incomplete",
+				Name: "old-incomplete",
 			},
 			Status: kube.ProwJobStatus{
 				StartTime: time.Now().Add(-maxProwJobAge).Add(-time.Second),
@@ -218,9 +222,50 @@ func TestClean(t *testing.T) {
 				StartTime: time.Now().Add(-time.Second),
 			},
 		},
+		{
+			Metadata: kube.ObjectMeta{
+				Name: "newer-periodic",
+			},
+			Spec: kube.ProwJobSpec{
+				Type: kube.PeriodicJob,
+				Job:  "retester",
+			},
+			Status: kube.ProwJobStatus{
+				StartTime:      time.Now().Add(-maxProwJobAge).Add(-time.Second),
+				CompletionTime: time.Now().Add(-time.Second),
+			},
+		},
+		{
+			Metadata: kube.ObjectMeta{
+				Name: "older-periodic",
+			},
+			Spec: kube.ProwJobSpec{
+				Type: kube.PeriodicJob,
+				Job:  "retester",
+			},
+			Status: kube.ProwJobStatus{
+				StartTime:      time.Now().Add(-maxProwJobAge).Add(-time.Minute),
+				CompletionTime: time.Now().Add(-time.Minute),
+			},
+		},
+		{
+			Metadata: kube.ObjectMeta{
+				Name: "oldest-periodic",
+			},
+			Spec: kube.ProwJobSpec{
+				Type: kube.PeriodicJob,
+				Job:  "retester",
+			},
+			Status: kube.ProwJobStatus{
+				StartTime:      time.Now().Add(-maxProwJobAge).Add(-time.Hour),
+				CompletionTime: time.Now().Add(-time.Hour),
+			},
+		},
 	}
 	deletedProwJobs := []string{
-		"old, complete",
+		"old-complete",
+		"older-periodic",
+		"oldest-periodic",
 	}
 	kc := &fakeClient{
 		Pods:     pods,
@@ -228,7 +273,12 @@ func TestClean(t *testing.T) {
 	}
 	clean(kc, kc, newFakeConfigAgent())
 	if len(deletedPods) != len(kc.DeletedPods) {
-		t.Errorf("Deleted wrong number of pods: got %v expected %v", kc.DeletedPods, deletedPods)
+		var got []string
+		for _, pj := range kc.DeletedPods {
+			got = append(got, pj.Metadata.Name)
+		}
+		t.Errorf("Deleted wrong number of pods: got %d (%v), expected %d (%v)",
+			len(got), strings.Join(got, ", "), len(deletedPods), strings.Join(deletedPods, ", "))
 	}
 	for _, n := range deletedPods {
 		found := false
@@ -242,7 +292,12 @@ func TestClean(t *testing.T) {
 		}
 	}
 	if len(deletedProwJobs) != len(kc.DeletedProwJobs) {
-		t.Errorf("Deleted wrong number of prowjobs: got %v expected %v", kc.DeletedProwJobs, deletedProwJobs)
+		var got []string
+		for _, pj := range kc.DeletedProwJobs {
+			got = append(got, pj.Metadata.Name)
+		}
+		t.Errorf("Deleted wrong number of prowjobs: got %d (%s), expected %d (%s)",
+			len(got), strings.Join(got, ", "), len(deletedProwJobs), strings.Join(deletedProwJobs, ", "))
 	}
 	for _, n := range deletedProwJobs {
 		found := false
