@@ -36,8 +36,11 @@ go_library(
     }),
     copts = [
         "-std=gnu99",
-        "-DSQLITE_ENABLE_RTREE -DSQLITE_THREADSAFE",
-        "-DSQLITE_ENABLE_FTS3 -DSQLITE_ENABLE_FTS3_PARENTHESIS -DSQLITE_ENABLE_FTS4_UNICODE61",
+        "-DSQLITE_ENABLE_RTREE",
+        "-DSQLITE_THREADSAFE",
+        "-DSQLITE_ENABLE_FTS3",
+        "-DSQLITE_ENABLE_FTS3_PARENTHESIS",
+        "-DSQLITE_ENABLE_FTS4_UNICODE61",
         "-Ivendor/github.com/mattn/go-sqlite3",
     ] + select({
         "@io_bazel_rules_go//go/platform:windows_amd64": [
