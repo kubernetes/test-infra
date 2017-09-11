@@ -106,6 +106,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce
 - name: ci-kubernetes-e2e-gce-canary
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-canary
+- name: ci-kubernetes-e2e-gce-device-plugin-gpu
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-device-plugin-gpu
 - name: ci-kubernetes-e2e-gce-gpu
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gpu
 - name: ci-kubernetes-e2e-gce-gpu-1-7
@@ -290,6 +292,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-slow-release-1-5
 - name: ci-kubernetes-e2e-gke
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke
+- name: ci-kubernetes-e2e-gke-device-plugin-gpu
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-device-plugin-gpu
 - name: ci-kubernetes-e2e-gke-gpu
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gpu
 - name: ci-kubernetes-e2e-gke-gpu-1-7
@@ -2027,6 +2031,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-ha-master
   - name: gce-taint-evict
     test_group_name: ci-kubernetes-e2e-gce-taint-evict
+  - name: gce-device-plugin-gpu
+    test_group_name: ci-kubernetes-e2e-gce-device-plugin-gpu
   - name: gce-gpu
     test_group_name: ci-kubernetes-e2e-gce-gpu
 
@@ -2176,6 +2182,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-updown
   - name: gci-gke-updown
     test_group_name: ci-kubernetes-e2e-gci-gke-updown
+  - name: gke-device-plugin-gpu
+    test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu
   - name: gke-gpu
     test_group_name: ci-kubernetes-e2e-gke-gpu
   - name: gke-canary
@@ -3503,10 +3511,14 @@ dashboards:
 
 - name: wg-resource-management
   dashboard_tab:
+  - name: gce-device-plugin-gpu
+    test_group_name: ci-kubernetes-e2e-gce-device-plugin-gpu
   - name: gce-gpu
     test_group_name: ci-kubernetes-e2e-gce-gpu
   - name: gce-gpu-1-7
     test_group_name: ci-kubernetes-e2e-gce-gpu-1-7
+  - name: gke-device-plugin-gpu
+    test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu
   - name: gke-gpu
     test_group_name: ci-kubernetes-e2e-gke-gpu
   - name: gke-gpu-1-7
