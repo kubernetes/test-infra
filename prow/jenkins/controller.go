@@ -48,7 +48,7 @@ type kubeClient interface {
 }
 
 type jenkinsClient interface {
-	Build(BuildRequest) (*url.URL, error)
+	Build(*kube.ProwJob) (*url.URL, error)
 	Enqueued(string) (bool, error)
 	Status(job, id string) (*Status, error)
 }
@@ -310,21 +310,14 @@ func (c *Controller) syncNonPendingJob(pj kube.ProwJob, reports chan<- kube.Prow
 		}
 
 		// Start the Jenkins job.
-		pj.Status.State = kube.PendingState
-		env := npj.EnvForSpec(pj.Spec)
-
-		br := BuildRequest{
-			ProwJobName: pj.Metadata.Name,
-			JobName:     pj.Spec.Job,
-			Environment: env,
-		}
-		if queueURL, err := c.jc.Build(br); err != nil {
+		if queueURL, err := c.jc.Build(&pj); err != nil {
 			jerr = fmt.Errorf("error starting Jenkins job for prowjob %s: %v", pj.Metadata.Name, err)
 			pj.Status.CompletionTime = time.Now()
 			pj.Status.State = kube.ErrorState
 			pj.Status.URL = testInfra
 			pj.Status.Description = "Error starting Jenkins job."
 		} else {
+			pj.Status.State = kube.PendingState
 			pj.Status.JenkinsQueueURL = queueURL.String()
 			pj.Status.JenkinsEnqueued = true
 			pj.Status.Description = "Jenkins job triggered."

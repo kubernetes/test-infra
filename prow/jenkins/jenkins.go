@@ -23,6 +23,9 @@ import (
 	"net/http"
 	"net/url"
 	"time"
+
+	"k8s.io/test-infra/prow/kube"
+	"k8s.io/test-infra/prow/npj"
 )
 
 const (
@@ -59,19 +62,6 @@ type BasicAuthConfig struct {
 
 type BearerTokenAuthConfig struct {
 	Token string
-}
-
-type BuildRequest struct {
-	// ProwJobName is the buildId parameter set in every Jenkins job so
-	// that the jenkins-operator can track the build in between requesting
-	// it and Jenkins scheduling it in an instance, ie. when it is in the
-	// build queue.
-	ProwJobName string
-	// JobName is the name of the job inside Jenkins for which to request
-	// a build.
-	JobName string
-	// Environment is additional parameters set in the build.
-	Environment map[string]string
 }
 
 func NewClient(url string, authConfig *AuthConfig) *Client {
@@ -117,15 +107,16 @@ func (c *Client) doRequest(method, path string) (*http.Response, error) {
 
 // Build triggers the job on Jenkins with an ID parameter that will let us
 // track it.
-func (c *Client) Build(br BuildRequest) (*url.URL, error) {
-	u, err := url.Parse(fmt.Sprintf("%s/job/%s/buildWithParameters", c.baseURL, br.JobName))
+func (c *Client) Build(pj *kube.ProwJob) (*url.URL, error) {
+	u, err := url.Parse(fmt.Sprintf("%s/job/%s/buildWithParameters", c.baseURL, pj.Spec.Job))
 	if err != nil {
 		return nil, err
 	}
-	br.Environment["buildId"] = br.ProwJobName
+	env := npj.EnvForSpec(pj.Spec)
+	env["buildId"] = pj.Metadata.Name
 
 	q := u.Query()
-	for key, value := range br.Environment {
+	for key, value := range env {
 		q.Set(key, value)
 	}
 	u.RawQuery = q.Encode()
