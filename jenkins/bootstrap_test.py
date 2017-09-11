@@ -394,45 +394,8 @@ class CheckoutTest(unittest.TestCase):
 class ParseReposTest(unittest.TestCase):
     def test_bare(self):
         """--bare works."""
-        self.assertFalse(
-            bootstrap.parse_repos(FakeArgs(repo=[], branch=[], pull=[], bare=True)))
-
-    def test_deprecated_branch(self):
-        """--repo=foo --branch=bbb works"""
-        self.assertEquals(
-            {'foo': ('bbb', '')},
-            bootstrap.parse_repos(FakeArgs(repo=['foo'], branch='bbb', pull='')))
-
-    def test_deprecated_branch_commit(self):
-        """--repo=foo --branch=bbb:1234 works"""
-        self.assertEquals(
-            {'foo': ('bbb:1234', '')},
-            bootstrap.parse_repos(FakeArgs(repo=['foo'], branch='bbb:1234', pull='')))
-
-    def test_depre_branch_repo_commit(self):
-        """--repo=foo=master:aaa --branch=bar is not allowed"""
-        with self.assertRaises(ValueError):
-            bootstrap.parse_repos(FakeArgs(
-                repo=['foo=master:aaa'], branch='master'))
-        with self.assertRaises(ValueError):
-            bootstrap.parse_repos(FakeArgs(
-                repo=['foo=master'], branch='bar'))
-
-    def test_deprecated_pull(self):
-        """--repo=foo --pull=123 works."""
-        self.assertEquals(
-            {'foo': ('', '123:abc,333:ddd')},
-            bootstrap.parse_repos(FakeArgs(repo=['foo'], branch='', pull='123:abc,333:ddd')))
-
-
-    def test_depre_pull_repo_commit(self):
-        """--repo=foo=master:aaa --pull=123:abc is not allowed"""
-        with self.assertRaises(ValueError):
-            bootstrap.parse_repos(FakeArgs(
-                repo=['foo=master:aaa'], branch='', pull='123:abc'))
-        with self.assertRaises(ValueError):
-            bootstrap.parse_repos(FakeArgs(
-                repo=['foo=master'], branch='', pull='123:abc'))
+        args = bootstrap.parse_args(["--job=foo", "--bare"])
+        self.assertFalse(bootstrap.parse_repos(args))
 
     def test_plain(self):
         """"--repo=foo equals foo=master."""
