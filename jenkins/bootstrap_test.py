@@ -397,6 +397,12 @@ class ParseReposTest(unittest.TestCase):
         args = bootstrap.parse_args(["--job=foo", "--bare"])
         self.assertFalse(bootstrap.parse_repos(args))
 
+    def test_pull_branch_none(self):
+        """args.pull and args.branch should be None"""
+        args = bootstrap.parse_args(["--job=foo", "--bare"])
+        self.assertIsNone(args.pull)
+        self.assertIsNone(args.branch)
+
     def test_plain(self):
         """"--repo=foo equals foo=master."""
         self.assertEquals(
