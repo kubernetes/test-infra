@@ -72,7 +72,7 @@ def parse_env(env):
     """Returns (FOO, BAR=MORE) for FOO=BAR=MORE."""
     return env.split('=', 1)
 
-def kubeadm_version(mode):
+def kubeadm_version(mode, shared_build_gcs_path):
     """Return string to use for kubeadm version, given the job's mode (ci/pull/periodic)."""
     version = ''
     if mode in ['ci', 'periodic']:
@@ -101,7 +101,7 @@ def kubeadm_version(mode):
         # The format of shared_build_gcs_path looks like:
         # gs://kubernetes-release-dev/bazel/<git-describe-output>
         # Add bin/linux/amd64 yet to that path so it points to the dir with the debs
-        return '%s/bin/linux/amd64/' % os.environ['SHARED_BUILD_GCS_PATH']
+        return '%s/bin/linux/amd64/' % shared_build_gcs_path
 
     else:
         raise ValueError("Unknown kubeadm mode given: %s" % mode)
@@ -495,6 +495,7 @@ def main(args):
         runner_args.append(
             '--gcp-service-account=%s' % mode.add_service_account(args.service_account))
 
+    shared_build_gcs_path = ""
     if args.use_shared_build is not None:
         # find shared build location from GCS
         gcs_path = get_shared_gcs_path(args.gcs_shared, args.use_shared_build)
@@ -507,8 +508,6 @@ def main(args):
                 # tell kubetest to extract from this location
                 shared_build_gcs_path = read_gcs_path(gcs_path)
                 args.kubetest_args.append('--extract=' + shared_build_gcs_path)
-                mode.add_environment('SHARED_BUILD_GCS_PATH=' + shared_build_gcs_path)
-                os.environ['SHARED_BUILD_GCS_PATH'] = shared_build_gcs_path
                 args.build = None
                 break
             except urllib2.URLError as err:
@@ -565,7 +564,7 @@ def main(args):
         runner_args.append('--logexporter-gcs-path=%s' % os.environ.get('GCS_ARTIFACTS_DIR', ''))
 
     if args.kubeadm:
-        version = kubeadm_version(args.kubeadm)
+        version = kubeadm_version(args.kubeadm, shared_build_gcs_path)
         runner_args.extend([
             '--kubernetes-anywhere-path=/workspace/kubernetes-anywhere',
             '--kubernetes-anywhere-phase2-provider=kubeadm',
