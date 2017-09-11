@@ -1092,6 +1092,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-latest-rollback-etcd
 - name: ci-kubernetes-e2e-gce-gci-1-5-rollback-etcd
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-1-5-rollback-etcd
+- name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-6-1-7
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-upgrade-1-6-1-7
 # charts tests
 - name: ci-kubernetes-charts-gce
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-charts-gce
@@ -3300,6 +3302,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-7
   - name: ci-gce-kubeadm-1.6-on-1.7
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-6-on-1-7
+  - name: ci-gce-kubeadm-upgrade-1.6-1.7
+    test_group_name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-6-1-7
   - name: ci-bazel-build-1.7
     test_group_name: ci-kubernetes-bazel-build-1-7
   - name: ci-bazel-test-1.7
@@ -3340,6 +3344,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-7
   - name: gce-kubeadm-1.6-on-1.7
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-6-on-1-7
+  - name: gce-kubeadm-upgrade-1.6-1.7
+    test_group_name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-6-1-7
   - name: kubelet-1.7
     test_group_name: ci-kubernetes-node-kubelet-1.7
   - name: aws-release-1-7
@@ -3699,6 +3705,8 @@ dashboards:
     test_group_name: periodic-kubernetes-e2e-kubeadm-gce-1-6
   - name: kubeadm-gce-1.6-on-1.7
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-6-on-1-7
+  - name: kubeadm-gce-upgrade-1.6-1.7
+    test_group_name: ci-kubernetes-e2e-kubeadm-gce-upgrade-1-6-1-7
   - name: kubeadm-gce-1.7
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-7
   - name: periodic-kubeadm-gce-1.7
@@ -4215,6 +4223,6 @@ dashboard_groups:
 
 - name: sig-scalability-all  # TODO(fejta): rename this to sig-scalability
   dashboard_names:
-  - sig-scalability  # TODO(fejta): rename this google-kubemark 
+  - sig-scalability  # TODO(fejta): rename this google-kubemark
   - google-gce-scale
   - google-gke-scale
