@@ -108,7 +108,7 @@ class BigQueryer(object):
                 print >>sys.stderr, "No influxdb points to upload.\n"
                 return
         points = [ints_to_floats(point) for point in points]
-        self.influx.write_points(points, time_precision='s')
+        self.influx.write_points(points, time_precision='s', batch_size=100)
 
     def run_metric(self, config):
         """Runs query and filters results, uploading data to GCS."""
