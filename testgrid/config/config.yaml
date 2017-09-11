@@ -627,14 +627,6 @@ test_groups:
 - name: ci-kubernetes-soak-gci-gce-1.6-test
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gci-gce-1.6-test
 # 1.6 skew
-- name: ci-kubernetes-e2e-gce-1-5-1-6-cvm-kubectl-skew
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-1-5-1-6-cvm-kubectl-skew
-- name: ci-kubernetes-e2e-gce-1-5-1-6-gci-kubectl-skew
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-1-5-1-6-gci-kubectl-skew
-- name: ci-kubernetes-e2e-gce-1-6-1-5-cvm-kubectl-skew
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-1-6-1-5-cvm-kubectl-skew
-- name: ci-kubernetes-e2e-gce-1-6-1-5-gci-kubectl-skew
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-1-6-1-5-gci-kubectl-skew
 - name: ci-kubernetes-e2e-gce-1-6-1-7-cvm-kubectl-skew
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-1-6-1-7-cvm-kubectl-skew
 - name: ci-kubernetes-e2e-gce-1-6-1-7-cvm-kubectl-skew-serial
@@ -651,14 +643,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-1-7-1-6-gci-kubectl-skew
 - name: ci-kubernetes-e2e-gce-1-7-1-6-gci-kubectl-skew-serial
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-1-7-1-6-gci-kubectl-skew-serial
-- name: ci-kubernetes-e2e-gke-1-5-1-6-cvm-kubectl-skew
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-1-5-1-6-cvm-kubectl-skew
-- name: ci-kubernetes-e2e-gke-1-5-1-6-gci-kubectl-skew
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-1-5-1-6-gci-kubectl-skew
-- name: ci-kubernetes-e2e-gke-1-6-1-5-cvm-kubectl-skew
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-1-6-1-5-cvm-kubectl-skew
-- name: ci-kubernetes-e2e-gke-1-6-1-5-gci-kubectl-skew
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-1-6-1-5-gci-kubectl-skew
 - name: ci-kubernetes-e2e-gke-1-6-1-7-cvm-kubectl-skew
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-1-6-1-7-cvm-kubectl-skew
 - name: ci-kubernetes-e2e-gke-1-6-1-7-cvm-kubectl-skew-serial
@@ -675,42 +659,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-1-7-1-6-gci-kubectl-skew
 - name: ci-kubernetes-e2e-gke-1-7-1-6-gci-kubectl-skew-serial
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-1-7-1-6-gci-kubectl-skew-serial
-# 1.6 upgrade
-- name: ci-kubernetes-e2e-gce-1-5-1-6-upgrade-cluster
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-1-5-1-6-upgrade-cluster
-- name: ci-kubernetes-e2e-gce-1-5-1-6-upgrade-cluster-new
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-1-5-1-6-upgrade-cluster-new
-- name: ci-kubernetes-e2e-gce-1-5-1-6-upgrade-master
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-1-5-1-6-upgrade-master
-- name: ci-kubernetes-e2e-gke-cvm-1-5-cvm-1-6-upgrade-cluster
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cvm-1-5-cvm-1-6-upgrade-cluster
-- name: ci-kubernetes-e2e-gke-cvm-1-5-cvm-1-6-upgrade-cluster-new
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cvm-1-5-cvm-1-6-upgrade-cluster-new
-- name: ci-kubernetes-e2e-gke-cvm-1-5-cvm-1-6-upgrade-master
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cvm-1-5-cvm-1-6-upgrade-master
-- name: ci-kubernetes-e2e-gke-cvm-1-5-gci-1-6-upgrade-cluster
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cvm-1-5-gci-1-6-upgrade-cluster
-- name: ci-kubernetes-e2e-gke-cvm-1-5-gci-1-6-upgrade-cluster-new
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cvm-1-5-gci-1-6-upgrade-cluster-new
-- name: ci-kubernetes-e2e-gke-cvm-1-5-gci-1-6-upgrade-master
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cvm-1-5-gci-1-6-upgrade-master
-- name: ci-kubernetes-e2e-gke-gci-1-5-cvm-1-6-upgrade-cluster
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-1-5-cvm-1-6-upgrade-cluster
-- name: ci-kubernetes-e2e-gke-gci-1-5-cvm-1-6-upgrade-cluster-new
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-1-5-cvm-1-6-upgrade-cluster-new
-- name: ci-kubernetes-e2e-gke-gci-1-5-cvm-1-6-upgrade-master
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-1-5-cvm-1-6-upgrade-master
-- name: ci-kubernetes-e2e-gke-gci-1-5-gci-1-6-upgrade-cluster
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-1-5-gci-1-6-upgrade-cluster
-- name: ci-kubernetes-e2e-gke-gci-1-5-gci-1-6-upgrade-cluster-new
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-1-5-gci-1-6-upgrade-cluster-new
-- name: ci-kubernetes-e2e-gke-gci-1-5-gci-1-6-upgrade-master
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-1-5-gci-1-6-upgrade-master
-# 1.6 downgrade
-- name: ci-kubernetes-e2e-gce-1-6-1-5-downgrade-cluster
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-1-6-1-5-downgrade-cluster
-- name: ci-kubernetes-e2e-gke-gci-1-6-gci-1-5-downgrade-cluster
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-1-6-gci-1-5-downgrade-cluster
 # Manual, federated groups
 # bazel, run on prow
 - name: ci-kubernetes-bazel-build
@@ -1211,30 +1159,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-1-6-cvm-1-7-upgrade-master
 - name: ci-kubernetes-e2e-gke-gci-1-6-cvm-1-7-upgrade-cluster-new
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-1-6-cvm-1-7-upgrade-cluster-new
-- name: ci-kubernetes-e2e-gke-cvm-1-5-cvm-1-7-upgrade-cluster
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cvm-1-5-cvm-1-7-upgrade-cluster
-- name: ci-kubernetes-e2e-gke-cvm-1-5-cvm-1-7-upgrade-cluster-new
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cvm-1-5-cvm-1-7-upgrade-cluster-new
-- name: ci-kubernetes-e2e-gke-cvm-1-5-cvm-1-7-upgrade-master
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cvm-1-5-cvm-1-7-upgrade-master
-- name: ci-kubernetes-e2e-gke-cvm-1-5-gci-1-7-upgrade-cluster
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cvm-1-5-gci-1-7-upgrade-cluster
-- name: ci-kubernetes-e2e-gke-cvm-1-5-gci-1-7-upgrade-cluster-new
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cvm-1-5-gci-1-7-upgrade-cluster-new
-- name: ci-kubernetes-e2e-gke-cvm-1-5-gci-1-7-upgrade-master
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cvm-1-5-gci-1-7-upgrade-master
-- name: ci-kubernetes-e2e-gke-gci-1-5-cvm-1-7-upgrade-cluster
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-1-5-cvm-1-7-upgrade-cluster
-- name: ci-kubernetes-e2e-gke-gci-1-5-cvm-1-7-upgrade-cluster-new
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-1-5-cvm-1-7-upgrade-cluster-new
-- name: ci-kubernetes-e2e-gke-gci-1-5-cvm-1-7-upgrade-master
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-1-5-cvm-1-7-upgrade-master
-- name: ci-kubernetes-e2e-gke-gci-1-5-gci-1-7-upgrade-cluster
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-1-5-gci-1-7-upgrade-cluster
-- name: ci-kubernetes-e2e-gke-gci-1-5-gci-1-7-upgrade-cluster-new
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-1-5-gci-1-7-upgrade-cluster-new
-- name: ci-kubernetes-e2e-gke-gci-1-5-gci-1-7-upgrade-master
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-1-5-gci-1-7-upgrade-master
 # release-1.7 suites
 - name: ci-kubernetes-e2e-gce-release-1-7
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-release-1-7
@@ -1774,6 +1698,44 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gci-gce-stable1-test
 - name: ci-kubernetes-e2e-gce-federation-release-1-8
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-federation-release-1-8
+- name: ci-kubernetes-e2e-gke-gci-stable2-gci-stable1-upgrade-master
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-stable2-gci-stable1-upgrade-master
+- name: ci-kubernetes-e2e-gke-cvm-1-7-gci-1-8-upgrade-cluster-new
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cvm-1-7-gci-1-8-upgrade-cluster-new
+- name: ci-kubernetes-e2e-gke-cvm-1-7-gci-1-8-upgrade-cluster
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cvm-1-7-gci-1-8-upgrade-cluster
+- name: ci-kubernetes-e2e-gke-gci-stable3-gci-stable1-upgrade-master
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-stable3-gci-stable1-upgrade-master
+- name: ci-kubernetes-e2e-gce-stable2-stable1-gci-kubectl-skew
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-stable2-stable1-gci-kubectl-skew
+- name: ci-kubernetes-e2e-gke-gci-stable3-gci-stable1-upgrade-cluster-new
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-stable3-gci-stable1-upgrade-cluster-new
+- name: ci-kubernetes-e2e-gke-cvm-1-6-gci-1-8-upgrade-cluster
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cvm-1-6-gci-1-8-upgrade-cluster
+- name: ci-kubernetes-e2e-gke-stable1-stable2-gci-kubectl-skew
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-stable1-stable2-gci-kubectl-skew
+- name: ci-kubernetes-e2e-gke-gci-stable2-gci-stable1-upgrade-cluster
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-stable2-gci-stable1-upgrade-cluster
+- name: ci-kubernetes-e2e-gke-stable2-stable1-gci-kubectl-skew
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-stable2-stable1-gci-kubectl-skew
+- name: ci-kubernetes-e2e-gce-stable2-stable1-upgrade-cluster-new
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-stable2-stable1-upgrade-cluster-new
+- name: ci-kubernetes-e2e-gke-cvm-1-6-gci-1-8-upgrade-master
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cvm-1-6-gci-1-8-upgrade-master
+- name: ci-kubernetes-e2e-gce-stable2-stable1-upgrade-master
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-stable2-stable1-upgrade-master
+- name: ci-kubernetes-e2e-gke-gci-stable2-gci-stable1-upgrade-cluster-new
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-stable2-gci-stable1-upgrade-cluster-new
+- name: ci-kubernetes-e2e-gke-cvm-1-7-gci-1-8-upgrade-master
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cvm-1-7-gci-1-8-upgrade-master
+- name: ci-kubernetes-e2e-gke-gci-stable3-gci-stable1-upgrade-cluster
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-stable3-gci-stable1-upgrade-cluster
+- name: ci-kubernetes-e2e-gce-stable1-stable2-gci-kubectl-skew
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-stable1-stable2-gci-kubectl-skew
+- name: ci-kubernetes-e2e-gce-stable2-stable1-upgrade-cluster
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-stable2-stable1-upgrade-cluster
+- name: ci-kubernetes-e2e-gke-cvm-1-6-gci-1-8-upgrade-cluster-new
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cvm-1-6-gci-1-8-upgrade-cluster-new
 
 # Add New Testgroups Here
 
@@ -2752,14 +2714,6 @@ dashboards:
 
 - name: release-1.6-upgrade-skew
   dashboard_tab:
-  - name: gce-1.5-1.6-cvm-kubectl-skew
-    test_group_name: ci-kubernetes-e2e-gce-1-5-1-6-cvm-kubectl-skew
-  - name: gce-1.5-1.6-gci-kubectl-skew
-    test_group_name: ci-kubernetes-e2e-gce-1-5-1-6-gci-kubectl-skew
-  - name: gce-1.6-1.5-cvm-kubectl-skew
-    test_group_name: ci-kubernetes-e2e-gce-1-6-1-5-cvm-kubectl-skew
-  - name: gce-1.6-1.5-gci-kubectl-skew
-    test_group_name: ci-kubernetes-e2e-gce-1-6-1-5-gci-kubectl-skew
   - name: gce-1.6-1-7-cvm-kubectl-skew
     test_group_name: ci-kubernetes-e2e-gce-1-6-1-7-cvm-kubectl-skew
   - name: gce-1.6-1-7-cvm-kubectl-skew-serial
@@ -2776,14 +2730,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-1-7-1-6-gci-kubectl-skew
   - name: gce-1-7-1.6-gci-kubectl-skew-serial
     test_group_name: ci-kubernetes-e2e-gce-1-7-1-6-gci-kubectl-skew-serial
-  - name: gke-1.5-1.6-cvm-kubectl-skew
-    test_group_name: ci-kubernetes-e2e-gke-1-5-1-6-cvm-kubectl-skew
-  - name: gke-1.5-1.6-gci-kubectl-skew
-    test_group_name: ci-kubernetes-e2e-gke-1-5-1-6-gci-kubectl-skew
-  - name: gke-1.6-1.5-cvm-kubectl-skew
-    test_group_name: ci-kubernetes-e2e-gke-1-6-1-5-cvm-kubectl-skew
-  - name: gke-1.6-1.5-gci-kubectl-skew
-    test_group_name: ci-kubernetes-e2e-gke-1-6-1-5-gci-kubectl-skew
   - name: gke-1.6-1-7-cvm-kubectl-skew
     test_group_name: ci-kubernetes-e2e-gke-1-6-1-7-cvm-kubectl-skew
   - name: gke-1.6-1-7-cvm-kubectl-skew-serial
@@ -2800,40 +2746,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-1-7-1-6-gci-kubectl-skew
   - name: gke-1-7-1.6-gci-kubectl-skew-serial
     test_group_name: ci-kubernetes-e2e-gke-1-7-1-6-gci-kubectl-skew-serial
-  - name: gce-1.5-1.6-upgrade-cluster
-    test_group_name: ci-kubernetes-e2e-gce-1-5-1-6-upgrade-cluster
-  - name: gce-1.5-1.6-upgrade-cluster-new
-    test_group_name: ci-kubernetes-e2e-gce-1-5-1-6-upgrade-cluster-new
-  - name: gce-1.5-1.6-upgrade-master
-    test_group_name: ci-kubernetes-e2e-gce-1-5-1-6-upgrade-master
-  - name: gke-container_vm-1.5-container_vm-1.6-upgrade-cluster
-    test_group_name: ci-kubernetes-e2e-gke-cvm-1-5-cvm-1-6-upgrade-cluster
-  - name: gke-container_vm-1.5-container_vm-1.6-upgrade-cluster-new
-    test_group_name: ci-kubernetes-e2e-gke-cvm-1-5-cvm-1-6-upgrade-cluster-new
-  - name: gke-container_vm-1.5-container_vm-1.6-upgrade-master
-    test_group_name: ci-kubernetes-e2e-gke-cvm-1-5-cvm-1-6-upgrade-master
-  - name: gke-container_vm-1.5-gci-1.6-upgrade-cluster
-    test_group_name: ci-kubernetes-e2e-gke-cvm-1-5-gci-1-6-upgrade-cluster
-  - name: gke-container_vm-1.5-gci-1.6-upgrade-cluster-new
-    test_group_name: ci-kubernetes-e2e-gke-cvm-1-5-gci-1-6-upgrade-cluster-new
-  - name: gke-container_vm-1.5-gci-1.6-upgrade-master
-    test_group_name: ci-kubernetes-e2e-gke-cvm-1-5-gci-1-6-upgrade-master
-  - name: gke-gci-1.5-container_vm-1.6-upgrade-cluster
-    test_group_name: ci-kubernetes-e2e-gke-gci-1-5-cvm-1-6-upgrade-cluster
-  - name: gke-gci-1.5-container_vm-1.6-upgrade-cluster-new
-    test_group_name: ci-kubernetes-e2e-gke-gci-1-5-cvm-1-6-upgrade-cluster-new
-  - name: gke-gci-1.5-container_vm-1.6-upgrade-master
-    test_group_name: ci-kubernetes-e2e-gke-gci-1-5-cvm-1-6-upgrade-master
-  - name: gke-gci-1.5-gci-1.6-upgrade-cluster
-    test_group_name: ci-kubernetes-e2e-gke-gci-1-5-gci-1-6-upgrade-cluster
-  - name: gke-gci-1.5-gci-1.6-upgrade-cluster-new
-    test_group_name: ci-kubernetes-e2e-gke-gci-1-5-gci-1-6-upgrade-cluster-new
-  - name: gke-gci-1.5-gci-1.6-upgrade-master
-    test_group_name: ci-kubernetes-e2e-gke-gci-1-5-gci-1-6-upgrade-master
-  - name: gce-1.6-1.5-downgrade-cluster
-    test_group_name: ci-kubernetes-e2e-gce-1-6-1-5-downgrade-cluster
-  - name: gke-gci-1.6-gci-1.5-downgrade-cluster
-    test_group_name: ci-kubernetes-e2e-gke-gci-1-6-gci-1-5-downgrade-cluster
 
 - name: release-1.5-all
   dashboard_tab:
@@ -2995,6 +2907,44 @@ dashboards:
     test_group_name: ci-kubernetes-federation-build-1.8
   - name: federation-test-1.8
     test_group_name: ci-kubernetes-e2e-gce-federation-release-1-8
+  - name: gke-gci-1.6-gci-1.8-upgrade-master
+    test_group_name: ci-kubernetes-e2e-gke-gci-stable3-gci-stable1-upgrade-master
+  - name: gke-gci-1.6-gci-1.8-upgrade-cluster
+    test_group_name: ci-kubernetes-e2e-gke-gci-stable3-gci-stable1-upgrade-cluster
+  - name: gke-gci-1.6-gci-1.8-upgrade-cluster-new
+    test_group_name: ci-kubernetes-e2e-gke-gci-stable3-gci-stable1-upgrade-cluster-new
+  - name: gke-gci-1.7-gci-1.8-upgrade-master
+    test_group_name: ci-kubernetes-e2e-gke-gci-stable2-gci-stable1-upgrade-master
+  - name: gke-gci-1.7-gci-1.8-upgrade-cluster
+    test_group_name: ci-kubernetes-e2e-gke-gci-stable2-gci-stable1-upgrade-cluster
+  - name: gke-gci-1.7-gci-1.8-upgrade-cluster-new
+    test_group_name: ci-kubernetes-e2e-gke-gci-stable2-gci-stable1-upgrade-cluster-new
+  - name: gke-cvm-1-6-gci-1-8-upgrade-master
+    test_group_name: ci-kubernetes-e2e-gke-cvm-1-6-gci-1-8-upgrade-master
+  - name: gke-cvm-1-6-gci-1-8-upgrade-cluster
+    test_group_name: ci-kubernetes-e2e-gke-cvm-1-6-gci-1-8-upgrade-cluster
+  - name: gke-cvm-1-6-gci-1-8-upgrade-cluster-new
+    test_group_name: ci-kubernetes-e2e-gke-cvm-1-6-gci-1-8-upgrade-cluster-new
+  - name: gke-cvm-1-7-gci-1-8-upgrade-master
+    test_group_name: ci-kubernetes-e2e-gke-cvm-1-7-gci-1-8-upgrade-master
+  - name: gke-cvm-1.7-gci-1.8-upgrade-cluster
+    test_group_name: ci-kubernetes-e2e-gke-cvm-1-7-gci-1-8-upgrade-cluster
+  - name: gke-cvm-1.7-gci-1.8-upgrade-cluster-new
+    test_group_name: ci-kubernetes-e2e-gke-cvm-1-7-gci-1-8-upgrade-cluster-new
+  - name: gce-1.7-1.8-gci-kubectl-skew
+    test_group_name: ci-kubernetes-e2e-gce-stable2-stable1-gci-kubectl-skew
+  - name: gce-1.8-1.7-gci-kubectl-skew
+    test_group_name: ci-kubernetes-e2e-gce-stable1-stable2-gci-kubectl-skew
+  - name: gke-1.8-1.7-gci-kubectl-skew
+    test_group_name: ci-kubernetes-e2e-gke-stable1-stable2-gci-kubectl-skew
+  - name: gke-1.7-1.8-gci-kubectl-skew
+    test_group_name: ci-kubernetes-e2e-gke-stable2-stable1-gci-kubectl-skew
+  - name: gce-1.7-1.8-upgrade-master
+    test_group_name: ci-kubernetes-e2e-gce-stable2-stable1-upgrade-master
+  - name: gce-1.7-1.8-upgrade-cluster
+    test_group_name: ci-kubernetes-e2e-gce-stable2-stable1-upgrade-cluster
+  - name: gce-1.7-1.8-upgrade-cluster-new
+    test_group_name: ci-kubernetes-e2e-gce-stable2-stable1-upgrade-cluster-new
 
 - name: release-1.8-blocking
   dashboard_tab:
@@ -3040,6 +2990,47 @@ dashboards:
     test_group_name: ci-kubernetes-federation-build-1.8
   - name: federation-test-1.8
     test_group_name: ci-kubernetes-e2e-gce-federation-release-1-8
+
+- name: release-1.8-upgrade-skew
+  dashboard_tab:
+    - name: gke-gci-1.6-gci-1.8-upgrade-master
+      test_group_name: ci-kubernetes-e2e-gke-gci-stable3-gci-stable1-upgrade-master
+    - name: gke-gci-1.6-gci-1.8-upgrade-cluster
+      test_group_name: ci-kubernetes-e2e-gke-gci-stable3-gci-stable1-upgrade-cluster
+    - name: gke-gci-1.6-gci-1.8-upgrade-cluster-new
+      test_group_name: ci-kubernetes-e2e-gke-gci-stable3-gci-stable1-upgrade-cluster-new
+    - name: gke-gci-1.7-gci-1.8-upgrade-master
+      test_group_name: ci-kubernetes-e2e-gke-gci-stable2-gci-stable1-upgrade-master
+    - name: gke-gci-1.7-gci-1.8-upgrade-cluster
+      test_group_name: ci-kubernetes-e2e-gke-gci-stable2-gci-stable1-upgrade-cluster
+    - name: gke-gci-1.7-gci-1.8-upgrade-cluster-new
+      test_group_name: ci-kubernetes-e2e-gke-gci-stable2-gci-stable1-upgrade-cluster-new
+    - name: gke-cvm-1-6-gci-1-8-upgrade-master
+      test_group_name: ci-kubernetes-e2e-gke-cvm-1-6-gci-1-8-upgrade-master
+    - name: gke-cvm-1-6-gci-1-8-upgrade-cluster
+      test_group_name: ci-kubernetes-e2e-gke-cvm-1-6-gci-1-8-upgrade-cluster
+    - name: gke-cvm-1-6-gci-1-8-upgrade-cluster-new
+      test_group_name: ci-kubernetes-e2e-gke-cvm-1-6-gci-1-8-upgrade-cluster-new
+    - name: gke-cvm-1-7-gci-1-8-upgrade-master
+      test_group_name: ci-kubernetes-e2e-gke-cvm-1-7-gci-1-8-upgrade-master
+    - name: gke-cvm-1.7-gci-1.8-upgrade-cluster
+      test_group_name: ci-kubernetes-e2e-gke-cvm-1-7-gci-1-8-upgrade-cluster
+    - name: gke-cvm-1.7-gci-1.8-upgrade-cluster-new
+      test_group_name: ci-kubernetes-e2e-gke-cvm-1-7-gci-1-8-upgrade-cluster-new
+    - name: gce-1.7-1.8-gci-kubectl-skew
+      test_group_name: ci-kubernetes-e2e-gce-stable2-stable1-gci-kubectl-skew
+    - name: gce-1.8-1.7-gci-kubectl-skew
+      test_group_name: ci-kubernetes-e2e-gce-stable1-stable2-gci-kubectl-skew
+    - name: gke-1.8-1.7-gci-kubectl-skew
+      test_group_name: ci-kubernetes-e2e-gke-stable1-stable2-gci-kubectl-skew
+    - name: gke-1.7-1.8-gci-kubectl-skew
+      test_group_name: ci-kubernetes-e2e-gke-stable2-stable1-gci-kubectl-skew
+    - name: gce-1.7-1.8-upgrade-master
+      test_group_name: ci-kubernetes-e2e-gce-stable2-stable1-upgrade-master
+    - name: gce-1.7-1.8-upgrade-cluster
+      test_group_name: ci-kubernetes-e2e-gce-stable2-stable1-upgrade-cluster
+    - name: gce-1.7-1.8-upgrade-cluster-new
+      test_group_name: ci-kubernetes-e2e-gce-stable2-stable1-upgrade-cluster-new
 
 - name: misc
   dashboard_tab:
@@ -3209,33 +3200,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-gci-1-6-cvm-1-7-upgrade-master
   - name: gke-gci-cvm-upgrade-cluster-new
     test_group_name: ci-kubernetes-e2e-gke-gci-1-6-cvm-1-7-upgrade-cluster-new
-
-- name: 1.5-1.7-upgrade
-  dashboard_tab:
-  - name: gke-cvm-1-5-cvm-1-7-upgrade-cluster
-    test_group_name: ci-kubernetes-e2e-gke-cvm-1-5-cvm-1-7-upgrade-cluster
-  - name: gke-cvm-1-5-cvm-1-7-upgrade-cluster-new
-    test_group_name: ci-kubernetes-e2e-gke-cvm-1-5-cvm-1-7-upgrade-cluster-new
-  - name: gke-cvm-1-5-cvm-1-7-upgrade-master
-    test_group_name: ci-kubernetes-e2e-gke-cvm-1-5-cvm-1-7-upgrade-master
-  - name: gke-cvm-1-5-gci-1-7-upgrade-cluster
-    test_group_name: ci-kubernetes-e2e-gke-cvm-1-5-gci-1-7-upgrade-cluster
-  - name: gke-cvm-1-5-gci-1-7-upgrade-cluster-new
-    test_group_name: ci-kubernetes-e2e-gke-cvm-1-5-gci-1-7-upgrade-cluster-new
-  - name: gke-cvm-1-5-gci-1-7-upgrade-master
-    test_group_name: ci-kubernetes-e2e-gke-cvm-1-5-gci-1-7-upgrade-master
-  - name: gke-gci-1-5-cvm-1-7-upgrade-cluster
-    test_group_name: ci-kubernetes-e2e-gke-gci-1-5-cvm-1-7-upgrade-cluster
-  - name: gke-gci-1-5-cvm-1-7-upgrade-cluster-new
-    test_group_name: ci-kubernetes-e2e-gke-gci-1-5-cvm-1-7-upgrade-cluster-new
-  - name: gke-gci-1-5-cvm-1-7-upgrade-master
-    test_group_name: ci-kubernetes-e2e-gke-gci-1-5-cvm-1-7-upgrade-master
-  - name: gke-gci-1-5-gci-1-7-upgrade-cluster
-    test_group_name: ci-kubernetes-e2e-gke-gci-1-5-gci-1-7-upgrade-cluster
-  - name: gke-gci-1-5-gci-1-7-upgrade-cluster-new
-    test_group_name: ci-kubernetes-e2e-gke-gci-1-5-gci-1-7-upgrade-cluster-new
-  - name: gke-gci-1-5-gci-1-7-upgrade-master
-    test_group_name: ci-kubernetes-e2e-gke-gci-1-5-gci-1-7-upgrade-master
 
 - name: release-1.7-all
   dashboard_tab:
@@ -4204,7 +4168,7 @@ dashboard_groups:
   dashboard_names:
   - sig-cluster-lifecycle
   - latest-upgrades
-  - 1.5-1.7-upgrade
+  - release-1.8-upgrade-skew
   - 1.6-1.7-upgrade
   - release-1.6-upgrade-skew
 
