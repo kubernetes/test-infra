@@ -137,9 +137,9 @@ presubmits:
     - name: pull-kubernetes-e2e-kubeadm-gce
       agent: kubernetes
       context: pull-kubernetes-e2e-kubeadm-gce
-      always_run: false
       max_concurrency: 8
       skip_report: true
+      run_if_changed: '^(cmd/kubeadm|build/debs).*$'
       rerun_command: "/test pull-kubernetes-e2e-kubeadm-gce"
       trigger: "(?m)^/test pull-kubernetes-e2e-kubeadm-gce,?(\\s+|$)"
       spec:
@@ -531,9 +531,9 @@ presubmits:
     - name: pull-security-kubernetes-e2e-kubeadm-gce
       agent: kubernetes
       context: pull-security-kubernetes-e2e-kubeadm-gce
-      always_run: false
       max_concurrency: 8
       skip_report: true
+      run_if_changed: '^(cmd/kubeadm|build/debs).*$'
       rerun_command: "/test pull-security-kubernetes-e2e-kubeadm-gce"
       trigger: "(?m)^/test pull-security-kubernetes-e2e-kubeadm-gce,?(\\s+|$)"
       spec:
