@@ -10387,6 +10387,7 @@
   "metrics-bigquery": {
     "args": [
       "test-infra/metrics/bigquery.py",
+      "--",
       "--backfill-days=90"
     ],
     "scenario": "execute",
