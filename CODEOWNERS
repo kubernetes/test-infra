@@ -2,6 +2,7 @@ boskos/** @krzyzacy
 gubernator/** @rmmh
 kettle/** @rmmh
 logexporter/** @shyamjvs
+mungegithub/** @cjwagner
 planter/** @bentheelder
 prow/** @spxtr
 prow/config.yaml @krzyzacy
