@@ -842,6 +842,10 @@ def parse_repos(args):
     if not repos and not args.bare:
         raise ValueError('--bare or --repo required')
     ret = Repos()
+    # note that args.branch and args.pull are still handled so that
+    # some tests with fake args can flex the various repo related logic easily
+    # but these args are not parsed by parse_args and should not be otherwise
+    # handled, use --repo flags instead!
     if len(repos) != 1:
         if args.pull:
             raise ValueError('Multi --repo does not support --pull, use --repo=R=branch,p1,p2')
