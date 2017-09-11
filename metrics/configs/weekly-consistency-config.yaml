@@ -1,4 +1,5 @@
 metric: weekly-consistency
+description: Calculate PR consistency for the past week.
 query: |
   select /* Calculate the probability a commit flaked */
     wk,
@@ -35,13 +36,14 @@ query: |
           and version != "unknown"
           and (metadata.key = 'repos' or left(job, 3) == "ci-")
           and job in ( /* only consider merge-blocking jobs */
-            'pr:pull-kubernetes-bazel',
-            'pr:pull-kubernetes-unit',
-            'pr:pull-kubernetes-verify',
+            'pr:pull-kubernetes-bazel-build',
+            'pr:pull-kubernetes-bazel-test',
             'pr:pull-kubernetes-e2e-gce-etcd3',
-            'pr:pull-kubernetes-e2e-kops-aws',
+            'pr:pull-kubernetes-federation-e2e-gce',
             'pr:pull-kubernetes-kubemark-e2e-gce',
             'pr:pull-kubernetes-node-e2e',
+            'pr:pull-kubernetes-unit',
+            'pr:pull-kubernetes-verify',
           )
         having kind=='pull'
       )

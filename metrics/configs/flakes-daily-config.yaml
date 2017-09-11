@@ -1,4 +1,5 @@
 metric: flakes-daily
+description: Calculates flakiness for each job for each day.
 query: |
   #standardSQL
   select

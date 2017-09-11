@@ -1,4 +1,5 @@
 metric: failures
+description: This query finds jobs that have been failing continuously for a long time.
 query: |
   #standardSQL
   select /* Find jobs that have not passed in a long time */

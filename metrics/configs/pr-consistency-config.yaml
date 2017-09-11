@@ -1,4 +1,5 @@
 metric: pr-consistency
+description: Calculate PR flakiness for each day.
 query: |
   select /* Calculate the prob a commit flaked on at least one PR job at some point. + prob that a `/test all` command flakes. */
     timestamp_to_sec(day) day,

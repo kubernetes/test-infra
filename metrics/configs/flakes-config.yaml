@@ -1,4 +1,5 @@
 metric: flakes
+description: Calculates flakiness for each job for the past week and the flakiest tests for each job.
 query: |
   #standardSQL
   select

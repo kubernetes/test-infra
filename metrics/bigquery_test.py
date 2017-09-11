@@ -49,6 +49,7 @@ class TestBigquery(unittest.TestCase):
                 self.assertIn('metric', config)
                 self.assertIn('query', config)
                 self.assertIn('jqfilter', config)
+                self.assertIn('description', config)
                 metric = config['metric'].strip()
                 bigquery.validate_metric_name(metric)
                 config_metrics.add(metric)
