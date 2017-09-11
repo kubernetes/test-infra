@@ -48,9 +48,15 @@ jqmeasurements: |
 * flakes - find the flakiest jobs this week (and the flakiest tests in each job).
     - [Config](configs/flakes-config.yaml)
     - [flakes-latest.json](http://storage.googleapis.com/k8s-metrics/flakes-latest.json)
+* flakes-daily - find flakes from the previous day. Similar to `flakes`, but creates more granular results for display in Velodrome.
+    - [Config](configs/flakes-daily-config.yaml)
+    - [flakes-daily-latest.json](http://storage.googleapis.com/k8s-metrics/flakes-daily-latest.json)
 * job-flakes - compute consistency of all jobs
     - [Config](configs/job-flakes-config.yaml)
     - [job-flakes-latest.json](http://storage.googleapis.com/k8s-metrics/job-flakes-latest.json)
+* pr-consistency - calculate PR flakiness for the previous day.
+    - [Config](configs/pr-consistency-config.yaml)
+    - [pr-consistency-latest.json](http://storage.googleapis.com/k8s-metrics/pr-consistency-latest.json)
 * weekly-consistency - compute overall weekly consistency for PRs
     - [Config](configs/weekly-consistency-config.yaml)
     - [weekly-consistency-latest.json](http://storage.googleapis.com/k8s-metrics/weekly-consistency-latest.json)
