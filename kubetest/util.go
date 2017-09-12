@@ -197,7 +197,7 @@ type cmdExecResult struct {
 }
 
 // execute a given command and send output and error via channel
-func executeParallelCommand(cmd *exec.Cmd, wg *sync.WaitGroup, resChan chan cmdExecResult) {
+func executeParallelCommand(cmd *exec.Cmd, resChan chan cmdExecResult) {
 	stepName := strings.Join(cmd.Args, " ")
 	stdout := bytes.Buffer{}
 	cmd.Stdout = &stdout
@@ -205,7 +205,6 @@ func executeParallelCommand(cmd *exec.Cmd, wg *sync.WaitGroup, resChan chan cmdE
 
 	start := time.Now()
 	log.Printf("Running: %v in parallel", stepName)
-	defer wg.Done()
 
 	if terminated {
 		resChan <- cmdExecResult{stepName: stepName, output: stdout.String(), execTime: time.Since(start), err: fmt.Errorf("skipped %s (kubetest is terminated)", stepName)}
@@ -248,7 +247,10 @@ func finishRunningParallel(cmds ...*exec.Cmd) error {
 
 	for _, cmd := range cmds {
 		wg.Add(1)
-		go executeParallelCommand(cmd, &wg, resultChan)
+		go func(cmd *exec.Cmd) {
+			defer wg.Done()
+			executeParallelCommand(cmd, resultChan)
+		}(cmd)
 	}
 
 	go func() {
