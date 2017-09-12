@@ -65,6 +65,9 @@ type configAgent interface {
 	Config() *config.Config
 }
 
+// TODO: Dry this out
+type syncFn func(pj kube.ProwJob, pm map[string]kube.Pod, reports chan<- kube.ProwJob) error
+
 // Controller manages ProwJobs.
 type Controller struct {
 	kc     kubeClient
@@ -74,8 +77,10 @@ type Controller struct {
 	node   *snowflake.Node
 	totURL string
 
+	lock sync.RWMutex
+	// pendingJobs is a short-lived cache that helps in limiting
+	// the maximum concurrency of jobs.
 	pendingJobs map[string]int
-	lock        sync.RWMutex
 }
 
 // getNumPendingJobs retrieves the number of pending
@@ -91,19 +96,7 @@ func (c *Controller) getNumPendingJobs(key string) int {
 func (c *Controller) incrementNumPendingJobs(job string) {
 	c.lock.Lock()
 	defer c.lock.Unlock()
-
-	c.pendingJobs[job] = c.pendingJobs[job] + 1
-}
-
-// setPending sets the currently pending set of jobs.
-// This is NOT thread safe and should only be used for
-// initializing the controller during testing.
-func (c *Controller) setPending(pendingJobs map[string]int) {
-	if pendingJobs == nil {
-		c.pendingJobs = make(map[string]int)
-	} else {
-		c.pendingJobs = pendingJobs
-	}
+	c.pendingJobs[job]++
 }
 
 // NewController creates a new Controller from the provided clients.
@@ -148,26 +141,23 @@ func (c *Controller) Sync() error {
 	}
 	pjs = k8sJobs
 
-	c.updatePendingJobs(pjs)
 	var syncErrs []error
 	if err := c.terminateDupes(pjs); err != nil {
 		syncErrs = append(syncErrs, err)
 	}
 
-	pjCh := make(chan kube.ProwJob, len(pjs))
-	for _, pj := range pjs {
-		pjCh <- pj
-	}
-	close(pjCh)
-
+	pendingCh, nonPendingCh := pjutil.PartitionPending(pjs)
 	errCh := make(chan error, len(pjs))
 	reportCh := make(chan kube.ProwJob, len(pjs))
-	wg := &sync.WaitGroup{}
-	wg.Add(maxSyncRoutines)
-	for i := 0; i < maxSyncRoutines; i++ {
-		go c.syncProwJob(wg, pjCh, errCh, reportCh, pm)
-	}
-	wg.Wait()
+
+	// Reinstantiate on every resync of the controller instead of trying
+	// to keep this in sync with the state of the world.
+	c.pendingJobs = make(map[string]int)
+	// Sync pending jobs first so we can determine what is the maximum
+	// number of new jobs we can trigger when syncing the non-pendings.
+	syncProwJobs(c.syncPendingJob, pendingCh, reportCh, errCh, pm)
+	syncProwJobs(c.syncNonPendingJob, nonPendingCh, reportCh, errCh, pm)
+
 	close(errCh)
 	close(reportCh)
 
@@ -188,19 +178,9 @@ func (c *Controller) Sync() error {
 	return fmt.Errorf("errors syncing: %v, errors reporting: %v", syncErrs, reportErrs)
 }
 
-func (c *Controller) syncProwJob(wg *sync.WaitGroup, jobs <-chan kube.ProwJob, syncErrors chan<- error, reports chan<- kube.ProwJob, pm map[string]kube.Pod) {
-	defer wg.Done()
-	for pj := range jobs {
-		if pj.Spec.Agent == kube.KubernetesAgent {
-			if err := c.syncKubernetesJob(pj, pm, reports); err != nil {
-				syncErrors <- err
-			}
-		}
-	}
-}
-
 // terminateDupes aborts presubmits that have a newer version. It modifies pjs
 // in-place when it aborts.
+// TODO: Dry this out - need to ensure we can abstract children cancellation first.
 func (c *Controller) terminateDupes(pjs []kube.ProwJob) error {
 	// "job org/repo#number" -> newest job
 	dupes := make(map[string]kube.ProwJob)
@@ -221,101 +201,142 @@ func (c *Controller) terminateDupes(pjs []kube.ProwJob) error {
 		}
 		toCancel.Status.CompletionTime = time.Now()
 		toCancel.Status.State = kube.AbortedState
-		pjutil, err := c.kc.ReplaceProwJob(toCancel.Metadata.Name, toCancel)
+		npj, err := c.kc.ReplaceProwJob(toCancel.Metadata.Name, toCancel)
 		if err != nil {
 			return err
 		}
-		pjs[i] = pjutil
+		pjs[i] = npj
 	}
 	return nil
 }
 
-func (c *Controller) syncKubernetesJob(pj kube.ProwJob, pm map[string]kube.Pod, reports chan<- kube.ProwJob) error {
-	if pj.Complete() {
-		if pj.Status.PodName == "" {
-			// Completed ProwJob, already cleaned up the pod. Nothing to do.
+// TODO: Dry this out
+func syncProwJobs(syncFn syncFn, jobs <-chan kube.ProwJob, reports chan<- kube.ProwJob, syncErrors chan<- error, pm map[string]kube.Pod) {
+	wg := &sync.WaitGroup{}
+	wg.Add(maxSyncRoutines)
+	for i := 0; i < maxSyncRoutines; i++ {
+		go func(jobs <-chan kube.ProwJob) {
+			defer wg.Done()
+			for pj := range jobs {
+				if err := syncFn(pj, pm, reports); err != nil {
+					syncErrors <- err
+				}
+			}
+		}(jobs)
+	}
+	wg.Wait()
+}
+
+func (c *Controller) syncPendingJob(pj kube.ProwJob, pm map[string]kube.Pod, reports chan<- kube.ProwJob) error {
+	pod, podExists := pm[pj.Metadata.Name]
+	if !podExists {
+		c.incrementNumPendingJobs(pj.Spec.Job)
+		// Pod is missing. This can happen in case we deleted the previous pod because
+		// it was stuck in Unknown/Evicted state due to a node problem or the pod was
+		// deleted manually. Start a new pod.
+		id, pn, err := c.startPod(pj)
+		if err != nil {
+			return fmt.Errorf("error starting pod: %v", err)
+		}
+		pj.Status.BuildID = id
+		pj.Status.PodName = pn
+	} else {
+		switch pod.Status.Phase {
+		case kube.PodUnknown:
+			c.incrementNumPendingJobs(pj.Spec.Job)
+			// Pod is in Unknown state. This can happen if there is a problem with
+			// the node. Delete the old pod, we'll start a new one next loop.
+			return c.pkc.DeletePod(pj.Metadata.Name)
+
+		case kube.PodSucceeded:
+			// Pod succeeded. Update ProwJob, talk to GitHub, and start next jobs.
+			pj.Status.CompletionTime = time.Now()
+			pj.Status.State = kube.SuccessState
+			pj.Status.Description = "Job succeeded."
+			for _, nj := range pj.Spec.RunAfterSuccess {
+				if _, err := c.kc.CreateProwJob(pjutil.NewProwJob(nj)); err != nil {
+					return fmt.Errorf("error starting next prowjob: %v", err)
+				}
+			}
+
+		case kube.PodFailed:
+			if pod.Status.Reason == kube.Evicted {
+				// Pod was evicted. We will restart it in the next sync if kubelet
+				// has cleaned up the previous one.
+				c.incrementNumPendingJobs(pj.Spec.Job)
+				return nil
+			}
+			// Pod failed. Update ProwJob, talk to GitHub.
+			pj.Status.CompletionTime = time.Now()
+			pj.Status.State = kube.FailureState
+			pj.Status.Description = "Job failed."
+
+		default:
+			// Pod is running. Do nothing.
+			c.incrementNumPendingJobs(pj.Spec.Job)
 			return nil
 		}
-		pj.Status.PodName = ""
-	} else if pj.Status.PodName == "" {
+	}
+
+	var b bytes.Buffer
+	if err := c.ca.Config().Plank.JobURLTemplate.Execute(&b, &pj); err != nil {
+		return fmt.Errorf("error executing URL template: %v", err)
+	}
+	pj.Status.URL = b.String()
+	reports <- pj
+
+	_, err := c.kc.ReplaceProwJob(pj.Metadata.Name, pj)
+	return err
+}
+
+func (c *Controller) syncNonPendingJob(pj kube.ProwJob, pm map[string]kube.Pod, reports chan<- kube.ProwJob) error {
+	if pj.Complete() {
+		return nil
+	}
+
+	// The rest are new prowjobs.
+
+	var id, pn string
+	pod, podExists := pm[pj.Metadata.Name]
+	// We may end up in a state where the pod exists but the prowjob is not
+	// updated to pending if we successfully create a new pod in a previous
+	// sync but the prowjob update fails. Simply ignore creating a new pod
+	// and rerun the prowjob update.
+	if !podExists {
 		// Do not start more jobs than specified.
 		numPending := c.getNumPendingJobs(pj.Spec.Job)
 		if pj.Spec.MaxConcurrency > 0 && numPending >= pj.Spec.MaxConcurrency {
 			logrus.WithField("job", pj.Spec.Job).Infof("Not starting another instance of %s, already %d running.", pj.Spec.Job, numPending)
 			return nil
 		}
-
 		// We haven't started the pod yet. Do so.
-		pj.Status.State = kube.PendingState
-		c.incrementNumPendingJobs(pj.Spec.Job)
-		if id, pn, err := c.startPod(pj); err == nil {
-			pj.Status.PodName = pn
-			pj.Status.BuildID = id
-			var b bytes.Buffer
-			if err := c.ca.Config().Plank.JobURLTemplate.Execute(&b, &pj); err != nil {
-				return fmt.Errorf("error executing URL template: %v", err)
-			}
-			url := b.String()
-			pj.Status.URL = url
-		} else {
+		var err error
+		id, pn, err = c.startPod(pj)
+		if err != nil {
 			return fmt.Errorf("error starting pod: %v", err)
 		}
-		pj.Status.Description = "Job triggered."
-		reports <- pj
-	} else if pod, ok := pm[pj.Status.PodName]; !ok {
-		// Pod is missing. This shouldn't happen normally, but if someone goes
-		// in and manually deletes the pod then we'll hit it. Start a new pod.
-		pj.Status.PodName = ""
-		pj.Status.State = kube.PendingState
-	} else if pod.Status.Phase == kube.PodUnknown {
-		// Pod is in Unknown state. This can happen if there is a problem with
-		// the node. Delete the old pod, we'll start a new one next loop.
-		if err := c.pkc.DeletePod(pj.Status.PodName); err != nil {
-			return fmt.Errorf("error deleting pod %s: %v", pj.Status.PodName, err)
-		}
-		pj.Status.PodName = ""
-		pj.Status.State = kube.PendingState
-	} else if pod.Status.Phase == kube.PodSucceeded {
-		// Pod succeeded. Update ProwJob, talk to GitHub, and start next jobs.
-		pj.Status.CompletionTime = time.Now()
-		pj.Status.State = kube.SuccessState
-		pj.Status.Description = "Job succeeded."
-		var b bytes.Buffer
-		if err := c.ca.Config().Plank.JobURLTemplate.Execute(&b, &pj); err != nil {
-			return fmt.Errorf("error executing URL template: %v", err)
-		}
-		pj.Status.URL = b.String()
-		reports <- pj
-		for _, nj := range pj.Spec.RunAfterSuccess {
-			if _, err := c.kc.CreateProwJob(pjutil.NewProwJob(nj)); err != nil {
-				return fmt.Errorf("error starting next prowjob: %v", err)
-			}
-		}
-	} else if pod.Status.Phase == kube.PodFailed {
-		if pod.Status.Reason == kube.Evicted {
-			// Pod was evicted. Restart it.
-			pj.Status.PodName = ""
-			pj.Status.State = kube.PendingState
-		} else {
-			// Pod failed. Update ProwJob, talk to GitHub.
-			pj.Status.CompletionTime = time.Now()
-			pj.Status.State = kube.FailureState
-			pj.Status.Description = "Job failed."
-			var b bytes.Buffer
-			if err := c.ca.Config().Plank.JobURLTemplate.Execute(&b, &pj); err != nil {
-				return fmt.Errorf("error executing URL template: %v", err)
-			}
-			pj.Status.URL = b.String()
-			reports <- pj
-		}
 	} else {
-		// Pod is running. Do nothing.
-		return nil
+		id = getPodBuildID(&pod)
+		pn = pod.Metadata.Name
 	}
+
+	var b bytes.Buffer
+	if err := c.ca.Config().Plank.JobURLTemplate.Execute(&b, &pj); err != nil {
+		return fmt.Errorf("error executing URL template: %v", err)
+	}
+	pj.Status.URL = b.String()
+	pj.Status.State = kube.PendingState
+	pj.Status.BuildID = id
+	pj.Status.PodName = pn
+	pj.Status.Description = "Job triggered."
+	reports <- pj
+
 	_, err := c.kc.ReplaceProwJob(pj.Metadata.Name, pj)
 	return err
 }
 
+// TODO: No need to return the pod name since we already have the
+// prowjob in the call site.
 func (c *Controller) startPod(pj kube.ProwJob) (string, string, error) {
 	buildID, err := c.getBuildID(pj.Spec.Job)
 	if err != nil {
@@ -358,10 +379,12 @@ func (c *Controller) getBuildID(name string) (string, error) {
 	return "", err
 }
 
-func (c *Controller) updatePendingJobs(pjs []kube.ProwJob) {
-	for _, pj := range pjs {
-		if pj.Status.State == kube.PendingState {
-			c.incrementNumPendingJobs(pj.Spec.Job)
+func getPodBuildID(pod *kube.Pod) string {
+	for _, env := range pod.Spec.Containers[0].Env {
+		if env.Name == "BUILD_NUMBER" {
+			return env.Value
 		}
 	}
+	logrus.Warningf("BUILD_NUMBER was not found in pod %q: streaming logs from deck will not work", pod.Metadata.Name)
+	return ""
 }
