@@ -49,6 +49,10 @@ func ReconcileTestGroup(currentTestGroup *config.TestGroup, defaultTestGroup *co
 		currentTestGroup.TestsNamePolicy = defaultTestGroup.TestsNamePolicy
 	}
 
+	if currentTestGroup.IgnorePending == false {
+		currentTestGroup.IgnorePending = defaultTestGroup.IgnorePending
+	}
+
 	if currentTestGroup.ColumnHeader == nil {
 		currentTestGroup.ColumnHeader = defaultTestGroup.ColumnHeader
 	}
