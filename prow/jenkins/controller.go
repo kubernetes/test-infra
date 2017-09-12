@@ -128,7 +128,7 @@ func (c *Controller) Sync() error {
 		syncErrs = append(syncErrs, err)
 	}
 
-	pendingCh, nonPendingCh := partitionProwJobs(pjs)
+	pendingCh, nonPendingCh := pjutil.PartitionPending(pjs)
 	errCh := make(chan error, len(pjs))
 	reportCh := make(chan kube.ProwJob, len(pjs))
 
@@ -189,30 +189,6 @@ func (c *Controller) terminateDupes(pjs []kube.ProwJob) error {
 		pjs[i] = pjutil
 	}
 	return nil
-}
-
-func partitionProwJobs(pjs []kube.ProwJob) (pending, nonPending chan kube.ProwJob) {
-	// Determine pending job size in order to size the channels correctly.
-	pendingCount := 0
-	for _, pj := range pjs {
-		if pj.Status.State == kube.PendingState {
-			pendingCount++
-		}
-	}
-	pending = make(chan kube.ProwJob, pendingCount)
-	nonPending = make(chan kube.ProwJob, len(pjs)-pendingCount)
-
-	// Partition the jobs into the two separate channels.
-	for _, pj := range pjs {
-		if pj.Status.State == kube.PendingState {
-			pending <- pj
-		} else {
-			nonPending <- pj
-		}
-	}
-	close(pending)
-	close(nonPending)
-	return pending, nonPending
 }
 
 func syncProwJobs(syncFn syncFn, jobs <-chan kube.ProwJob, reports chan<- kube.ProwJob, syncErrors chan<- error) {
