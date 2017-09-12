@@ -42,10 +42,8 @@ const defaultGinkgoParallel = 25
 var (
 	artifacts    = initPath("./_artifacts")
 	interrupt    = time.NewTimer(time.Duration(0)) // interrupt testing at this time.
-	interrupted  = false
 	kubetestPath = initPath(os.Args[0])
 	terminate    = time.NewTimer(time.Duration(0)) // terminate testing at this time.
-	terminated   = false
 	verbose      = false
 	timeout      = time.Duration(0)
 	boskos       = client.NewClient(os.Getenv("JOB_NAME"), "http://boskos")

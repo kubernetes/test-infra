@@ -33,6 +33,27 @@ import (
 	"time"
 )
 
+var (
+	termLock    = new(sync.RWMutex)
+	terminated  = false
+	intLock     = new(sync.RWMutex)
+	interrupted = false
+)
+
+func isTerminated() bool {
+	termLock.RLock()
+	t := terminated
+	termLock.RUnlock()
+	return t
+}
+
+func isInterrupted() bool {
+	intLock.RLock()
+	i := interrupted
+	intLock.RUnlock()
+	return i
+}
+
 var httpTransport *http.Transport
 
 func init() {
@@ -92,7 +113,7 @@ func httpRead(url string, writer io.Writer) error {
 
 // return f(), adding junit xml testcase result for name
 func xmlWrap(name string, f func() error) error {
-	alreadyInterrupted := interrupted
+	alreadyInterrupted := isInterrupted()
 	start := time.Now()
 	err := f()
 	duration := time.Since(start)
@@ -101,7 +122,7 @@ func xmlWrap(name string, f func() error) error {
 		ClassName: "e2e.go",
 		Time:      duration.Seconds(),
 	}
-	if err == nil && !alreadyInterrupted && interrupted {
+	if err == nil && !alreadyInterrupted && isInterrupted() {
 		err = fmt.Errorf("kubetest interrupted during step %s", name)
 	}
 	if err != nil {
@@ -121,7 +142,7 @@ func xmlWrap(name string, f func() error) error {
 // return cmd.Wait() and/or timing out.
 func finishRunning(cmd *exec.Cmd) error {
 	stepName := strings.Join(cmd.Args, " ")
-	if terminated {
+	if isTerminated() {
 		return fmt.Errorf("skipped %s (kubetest is terminated)", stepName)
 	}
 	if cmd.Stdout == nil && verbose {
@@ -157,7 +178,9 @@ func finishRunning(cmd *exec.Cmd) error {
 				log.Printf("Failed to kill %v: %v", stepName, err)
 			}
 		case <-terminate.C:
+			termLock.Lock()
 			terminated = true
+			termLock.Unlock()
 			terminate.Reset(time.Duration(0)) // Kill subsequent processes immediately.
 			if err := syscall.Kill(-cmd.Process.Pid, syscall.SIGKILL); err != nil {
 				log.Printf("Failed to kill %v: %v", stepName, err)
@@ -166,7 +189,9 @@ func finishRunning(cmd *exec.Cmd) error {
 				log.Printf("Failed to terminate %s (terminated 15m after interrupt): %v", stepName, err)
 			}
 		case <-interrupt.C:
+			intLock.Lock()
 			interrupted = true
+			intLock.Unlock()
 			log.Printf("Interrupt after %s timeout during %s. Will terminate in another 15m", timeout, stepName)
 			terminate.Reset(15 * time.Minute)
 			if err := syscall.Kill(-cmd.Process.Pid, syscall.SIGINT); err != nil {
@@ -177,9 +202,9 @@ func finishRunning(cmd *exec.Cmd) error {
 		case err := <-finished:
 			if err != nil {
 				var suffix string
-				if terminated {
+				if isTerminated() {
 					suffix = " (terminated)"
-				} else if interrupted {
+				} else if isInterrupted() {
 					suffix = " (interrupted)"
 				}
 				return fmt.Errorf("error during %s%s: %v", stepName, suffix, err)
@@ -197,7 +222,7 @@ type cmdExecResult struct {
 }
 
 // execute a given command and send output and error via channel
-func executeParallelCommand(cmd *exec.Cmd, wg *sync.WaitGroup, resChan chan cmdExecResult) {
+func executeParallelCommand(cmd *exec.Cmd, resChan chan cmdExecResult, termChan, intChan chan struct{}) {
 	stepName := strings.Join(cmd.Args, " ")
 	stdout := bytes.Buffer{}
 	cmd.Stdout = &stdout
@@ -205,9 +230,8 @@ func executeParallelCommand(cmd *exec.Cmd, wg *sync.WaitGroup, resChan chan cmdE
 
 	start := time.Now()
 	log.Printf("Running: %v in parallel", stepName)
-	defer wg.Done()
 
-	if terminated {
+	if isTerminated() {
 		resChan <- cmdExecResult{stepName: stepName, output: stdout.String(), execTime: time.Since(start), err: fmt.Errorf("skipped %s (kubetest is terminated)", stepName)}
 		return
 	}
@@ -228,15 +252,29 @@ func executeParallelCommand(cmd *exec.Cmd, wg *sync.WaitGroup, resChan chan cmdE
 		case err := <-finished:
 			if err != nil {
 				var suffix string
-				if terminated {
+				if isTerminated() {
 					suffix = " (terminated)"
-				} else if interrupted {
+				} else if isInterrupted() {
 					suffix = " (interrupted)"
 				}
 				err = fmt.Errorf("error during %s%s: %v", stepName, suffix, err)
 			}
 			resChan <- cmdExecResult{stepName: stepName, output: stdout.String(), execTime: time.Since(start), err: err}
 			return
+
+		case <-termChan:
+			syscall.Kill(-cmd.Process.Pid, syscall.SIGKILL)
+			if err := cmd.Process.Kill(); err != nil {
+				log.Printf("Failed to terminate %s (terminated 15m after interrupt): %v", strings.Join(cmd.Args, " "), err)
+			}
+
+		case <-intChan:
+			log.Printf("Interrupt after %s timeout during %s. Will terminate in another 15m", timeout, strings.Join(cmd.Args, " "))
+			if err := syscall.Kill(-cmd.Process.Pid, syscall.SIGINT); err != nil {
+				log.Printf("Failed to interrupt %s. Will terminate immediately: %v", strings.Join(cmd.Args, " "), err)
+				syscall.Kill(-cmd.Process.Pid, syscall.SIGTERM)
+				cmd.Process.Kill()
+			}
 		}
 	}
 }
@@ -245,10 +283,15 @@ func executeParallelCommand(cmd *exec.Cmd, wg *sync.WaitGroup, resChan chan cmdE
 func finishRunningParallel(cmds ...*exec.Cmd) error {
 	var wg sync.WaitGroup
 	resultChan := make(chan cmdExecResult, len(cmds))
+	termChan := make(chan struct{}, len(cmds))
+	intChan := make(chan struct{}, len(cmds))
 
 	for _, cmd := range cmds {
 		wg.Add(1)
-		go executeParallelCommand(cmd, &wg, resultChan)
+		go func(cmd *exec.Cmd) {
+			defer wg.Done()
+			executeParallelCommand(cmd, resultChan, termChan, intChan)
+		}(cmd)
 	}
 
 	go func() {
@@ -260,25 +303,23 @@ func finishRunningParallel(cmds ...*exec.Cmd) error {
 	for {
 		select {
 		case <-terminate.C:
+			termLock.Lock()
 			terminated = true
-			terminate.Reset(time.Duration(0)) // Kill subsequent processes immediately.
-			for _, cmd := range cmds {
-				syscall.Kill(-cmd.Process.Pid, syscall.SIGKILL)
-				if err := cmd.Process.Kill(); err != nil {
-					log.Printf("Failed to terminate %s (terminated 15m after interrupt): %v", strings.Join(cmd.Args, " "), err)
-				}
+			termLock.Unlock()
+			terminate.Reset(time.Duration(0))
+			select {
+			case <-termChan:
+			default:
+				close(termChan)
 			}
+
 		case <-interrupt.C:
+			intLock.Lock()
 			interrupted = true
+			intLock.Unlock()
 			terminate.Reset(15 * time.Minute)
-			for _, cmd := range cmds {
-				log.Printf("Interrupt after %s timeout during %s. Will terminate in another 15m", timeout, strings.Join(cmd.Args, " "))
-				if err := syscall.Kill(-cmd.Process.Pid, syscall.SIGINT); err != nil {
-					log.Printf("Failed to interrupt %s. Will terminate immediately: %v", strings.Join(cmd.Args, " "), err)
-					syscall.Kill(-cmd.Process.Pid, syscall.SIGTERM)
-					cmd.Process.Kill()
-				}
-			}
+			close(intChan)
+
 		case result, ok := <-resultChan:
 			if !ok {
 				if cmdFailed {
