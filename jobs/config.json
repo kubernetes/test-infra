@@ -10289,7 +10289,7 @@
     "args": [
       "--build=//...",
       "--install=gubernator/test_requirements.txt",
-      "--test=//... //verify:verify-all",
+      "--test=//... //verify:verify-all"
     ],
     "scenario": "kubernetes_bazel",
     "sigOwners": [

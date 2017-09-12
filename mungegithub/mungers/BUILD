@@ -26,6 +26,7 @@ go_test(
     data = [
         "//mungegithub:configs",
     ],
+    features = ["-race"],
     library = ":go_default_library",
     deps = [
         "//mungegithub/features:go_default_library",

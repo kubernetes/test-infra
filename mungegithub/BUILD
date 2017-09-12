@@ -8,14 +8,12 @@ load(
 
 go_binary(
     name = "mungegithub",
-    features = ["-race"],
     library = ":go_default_library",
 )
 
 go_library(
     name = "go_default_library",
     srcs = ["mungegithub.go"],
-    features = ["-race"],
     deps = [
         "//mungegithub/features:go_default_library",
         "//mungegithub/github:go_default_library",
