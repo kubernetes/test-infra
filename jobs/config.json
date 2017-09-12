@@ -4522,7 +4522,7 @@
       "--gke-create-command=container clusters create --quiet --enable-kubernetes-alpha",
       "--gke-environment=test",
       "--provider=gke",
-      "--test_args=--ginkgo.focus=\\[Feature:DynamicKubeletConfig\\] --minStartupPods=8",
+      "--test_args=--ginkgo.focus=\\[Feature:DynamicKubeletConfig\\]|Networking --ginkgo.skip=Networking-Performance --minStartupPods=8",
       "--timeout=180m"
     ],
     "scenario": "kubernetes_e2e",
@@ -5496,7 +5496,7 @@
       "--gke-create-command=container clusters create --quiet --enable-kubernetes-alpha",
       "--gke-environment=test",
       "--provider=gke",
-      "--test_args=--ginkgo.focus=\\[Feature:DynamicKubeletConfig\\] --minStartupPods=8",
+      "--test_args=--ginkgo.focus=\\[Feature:DynamicKubeletConfig\\]|Networking --ginkgo.skip=Networking-Performance --minStartupPods=8",
       "--timeout=180m"
     ],
     "scenario": "kubernetes_e2e",
