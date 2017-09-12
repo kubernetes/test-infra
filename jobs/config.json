@@ -5448,7 +5448,6 @@
       "--cluster=",
       "--deployment=gke",
       "--extract=ci/latest",
-      "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-b",
       "--ginkgo-parallel",
