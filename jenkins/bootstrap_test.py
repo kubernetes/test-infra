@@ -440,21 +440,25 @@ class ParseReposTest(unittest.TestCase):
 
     def test_pull_release_branch(self):
         """--repo=foo=release-3.14,&a-fancy%_branch+:abcd,222 works"""
-        args = bootstrap.parse_args(['--job=foo', '--repo=foo=release-3.14,&a-fancy%_branch+:abcd,222'])
+        args = bootstrap.parse_args(['--job=foo',
+                                     '--repo=foo=release-3.14,&a-fancy%_branch+:abcd,222'])
         self.assertEquals(
             {'foo': ('', 'release-3.14,&a-fancy%_branch+:abcd,222')},
             bootstrap.parse_repos(args))
 
     def test_pull_branch_commit(self):
         """--repo=foo=master,111,222 works"""
-        args = bootstrap.parse_args(['--job=foo', '--repo=foo=master:aaa,111:bbb,222:ccc'])
+        args = bootstrap.parse_args(['--job=foo',
+                                     '--repo=foo=master:aaa,111:bbb,222:ccc'])
         self.assertEquals(
             {'foo': ('', 'master:aaa,111:bbb,222:ccc')},
             bootstrap.parse_repos(args))
 
     def test_multi_repo(self):
         """--repo=foo=master,111,222 bar works"""
-        args = bootstrap.parse_args(['--job=foo', '--repo=foo=master:aaa,111:bbb,222:ccc', '--repo=bar'])
+        args = bootstrap.parse_args(['--job=foo',
+                                     '--repo=foo=master:aaa,111:bbb,222:ccc',
+                                     '--repo=bar'])
         self.assertEquals(
             {
                 'foo': ('', 'master:aaa,111:bbb,222:ccc'),
