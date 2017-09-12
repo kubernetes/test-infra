@@ -103,6 +103,12 @@ def kubeadm_version(mode, shared_build_gcs_path):
         # Add bin/linux/amd64 yet to that path so it points to the dir with the debs
         return '%s/bin/linux/amd64/' % shared_build_gcs_path
 
+    elif mode == 'stable':
+        # This job need not run against the kubernetes repo and uses the stable version
+        # of kubeadm packages. This mode may be desired when kubeadm itself is not the
+        # SUT (System Under Test).
+        return 'stable'
+
     else:
         raise ValueError("Unknown kubeadm mode given: %s" % mode)
 
@@ -648,7 +654,7 @@ def create_parser():
     parser.add_argument(
         '--docker-in-docker', action='store_true', help='Enable run docker within docker')
     parser.add_argument(
-        '--kubeadm', choices=['ci', 'periodic', 'pull'])
+        '--kubeadm', choices=['ci', 'periodic', 'pull', 'stable'])
     parser.add_argument(
         '--stage', default=None, help='Stage release to GCS path provided')
     parser.add_argument(
