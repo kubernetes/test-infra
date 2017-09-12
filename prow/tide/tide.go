@@ -26,6 +26,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/git"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
 )
@@ -41,15 +42,17 @@ type Controller struct {
 	ca  *config.Agent
 	ghc githubClient
 	kc  *kube.Client
+	gc  *git.Client
 }
 
 // NewController makes a Controller out of the given clients.
-func NewController(l *logrus.Entry, ghc *github.Client, kc *kube.Client, ca *config.Agent) *Controller {
+func NewController(l *logrus.Entry, ghc *github.Client, kc *kube.Client, ca *config.Agent, gc *git.Client) *Controller {
 	return &Controller{
 		log: l,
 		ghc: ghc,
 		kc:  kc,
 		ca:  ca,
+		gc:  gc,
 	}
 }
 
@@ -234,6 +237,45 @@ func accumulate(presubmits []string, prs []pullRequest, pjs []kube.ProwJob) (suc
 	return
 }
 
+func prNumbers(prs []pullRequest) []int {
+	var nums []int
+	for _, pr := range prs {
+		nums = append(nums, int(pr.Number))
+	}
+	return nums
+}
+
+func (c *Controller) pickBatch(sp subpool) ([]pullRequest, error) {
+	r, err := c.gc.Clone(sp.org + "/" + sp.repo)
+	if err != nil {
+		return nil, err
+	}
+	defer r.Clean()
+	if err := r.Config("user.name", "prow"); err != nil {
+		return nil, err
+	}
+	if err := r.Config("user.email", "prow@localhost"); err != nil {
+		return nil, err
+	}
+	if err := r.Checkout(sp.sha); err != nil {
+		return nil, err
+	}
+	// TODO(spxtr): Limit batch size.
+	var res []pullRequest
+	for _, pr := range sp.prs {
+		// TODO(spxtr): Check the actual statuses for individual jobs.
+		if string(pr.Commits.Nodes[0].Commit.Status.State) != "SUCCESS" {
+			continue
+		}
+		if ok, err := r.Merge(string(pr.HeadRef.Target.OID)); err != nil {
+			return nil, err
+		} else if ok {
+			res = append(res, pr)
+		}
+	}
+	return res, nil
+}
+
 func (c *Controller) syncSubpool(ctx context.Context, sp subpool) error {
 	c.log.Infof("%s/%s %s: %d PRs, %d PJs.", sp.org, sp.repo, sp.branch, len(sp.prs), len(sp.pjs))
 	var presubmits []string
@@ -251,12 +293,13 @@ func (c *Controller) syncSubpool(ctx context.Context, sp subpool) error {
 		return nil
 	}
 	if len(batchMerge) > 0 {
-		for _, pr := range batchMerge {
-			c.log.Infof("Merge PR #%d (batch).", int(pr.Number))
-		}
+		c.log.Infof("Merge PRs %v.", prNumbers(batchMerge))
 		return nil
 	}
 	successes, pendings, nones := accumulate(presubmits, sp.prs, sp.pjs)
+	c.log.Infof("Passing PRs: %v", prNumbers(successes))
+	c.log.Infof("Pending PRs: %v", prNumbers(pendings))
+	c.log.Infof("Missing PRs: %v", prNumbers(nones))
 	if len(successes) > 0 {
 		if ok, pr := pickSmallestPassingNumber(successes); ok {
 			c.log.Infof("Merge PR #%d.", int(pr.Number))
@@ -273,8 +316,13 @@ func (c *Controller) syncSubpool(ctx context.Context, sp subpool) error {
 		}
 	}
 	if len(sp.prs) > 1 {
-		// TODO(spxtr): Copy splice logic to figure out which PRs to test.
-		c.log.Info("Trigger batch.")
+		batch, err := c.pickBatch(sp)
+		if err != nil {
+			return err
+		}
+		if len(batch) > 1 {
+			c.log.Infof("Trigger batch for %v", prNumbers(batch))
+		}
 	}
 	return nil
 }

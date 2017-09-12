@@ -26,6 +26,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/git"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/tide"
@@ -78,10 +79,15 @@ func main() {
 		}
 	}
 
-	c := tide.NewController(logrus.WithField("controller", "tide"), ghc, kc, configAgent)
+	gc, err := git.NewClient()
 	if err != nil {
-		logrus.WithError(err).Fatal("Error creating tide controller.")
+		logrus.WithError(err).Fatal("Error getting git client.")
 	}
+	defer gc.Clean()
+	gc.Logger = logrus.WithField("client", "git")
+
+	c := tide.NewController(logrus.WithField("controller", "tide"), ghc, kc, configAgent, gc)
+
 	sync(c)
 	if *runOnce {
 		return

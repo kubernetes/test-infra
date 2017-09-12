@@ -24,6 +24,7 @@ import (
 	"github.com/shurcooL/githubql"
 	"github.com/sirupsen/logrus"
 
+	"k8s.io/test-infra/prow/git/localgit"
 	"k8s.io/test-infra/prow/kube"
 )
 
@@ -468,6 +469,101 @@ func TestDividePool(t *testing.T) {
 			if pj.Spec.Refs.Org != sp.org || pj.Spec.Refs.Repo != sp.repo || pj.Spec.Refs.BaseRef != sp.branch || pj.Spec.Refs.BaseSHA != sp.sha {
 				t.Errorf("PJ in wrong subpool. Got PJ %+v in subpool %s.", pj, name)
 			}
+		}
+	}
+}
+
+func TestPickBatch(t *testing.T) {
+	lg, gc, err := localgit.New()
+	if err != nil {
+		t.Fatalf("Error making local git: %v", err)
+	}
+	defer gc.Clean()
+	defer lg.Clean()
+	if err := lg.MakeFakeRepo("o", "r"); err != nil {
+		t.Fatalf("Error making fake repo: %v", err)
+	}
+	if err := lg.AddCommit("o", "r", map[string][]byte{"foo": []byte("foo")}); err != nil {
+		t.Fatalf("Adding initial commit: %v", err)
+	}
+	testprs := []struct {
+		files   map[string][]byte
+		success bool
+
+		included bool
+	}{
+		{
+			files:    map[string][]byte{"bar": []byte("ok")},
+			success:  true,
+			included: true,
+		},
+		{
+			files:    map[string][]byte{"foo": []byte("ok")},
+			success:  true,
+			included: true,
+		},
+		{
+			files:    map[string][]byte{"bar": []byte("conflicts with 0")},
+			success:  true,
+			included: false,
+		},
+		{
+			files:    map[string][]byte{"qux": []byte("ok")},
+			success:  false,
+			included: false,
+		},
+		{
+			files:    map[string][]byte{"bazel": []byte("ok")},
+			success:  true,
+			included: true,
+		},
+	}
+	sp := subpool{
+		org:    "o",
+		repo:   "r",
+		branch: "master",
+		sha:    "master",
+	}
+	for i, testpr := range testprs {
+		if err := lg.CheckoutNewBranch("o", "r", fmt.Sprintf("pr-%d", i)); err != nil {
+			t.Fatalf("Error checking out new branch: %v", err)
+		}
+		if err := lg.AddCommit("o", "r", testpr.files); err != nil {
+			t.Fatalf("Error adding commit: %v", err)
+		}
+		if err := lg.Checkout("o", "r", "master"); err != nil {
+			t.Fatalf("Error checking out master: %v", err)
+		}
+		var pr pullRequest
+		pr.Number = githubql.Int(i)
+		pr.Commits.Nodes = []struct {
+			Commit struct {
+				Status struct{ State githubql.String }
+			}
+		}{{}}
+		if testpr.success {
+			pr.Commits.Nodes[0].Commit.Status.State = githubql.String("SUCCESS")
+		}
+		pr.HeadRef.Target.OID = githubql.String(fmt.Sprintf("origin/pr-%d", i))
+		sp.prs = append(sp.prs, pr)
+	}
+	c := &Controller{
+		gc: gc,
+	}
+	prs, err := c.pickBatch(sp)
+	if err != nil {
+		t.Fatalf("Error from pickBatch: %v", err)
+	}
+	for i, testpr := range testprs {
+		var found bool
+		for _, pr := range prs {
+			if int(pr.Number) == i {
+				found = true
+				break
+			}
+		}
+		if found != testpr.included {
+			t.Errorf("PR %d should not be picked.", i)
 		}
 	}
 }
