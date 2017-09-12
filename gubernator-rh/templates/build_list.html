@@ -6,16 +6,13 @@
 % block content
 <div id="content">
 % if testgrid_query
-<a href="{{testgrid_query | tg_url}}"><h2 class="link">Testgrid History for Job</h2></a>
+<a href="{{testgrid_query | tg_url}}"><h3>Testgrid History for Job</h3></a>
 % endif
-<a href="{{job_dir | gcs_browse_url}}"><h2 class="link">GCS Storage Browser</h2></a>
-% if 'pr-logs' in job_dir and 'directory' not in job_dir
-<a href="/builds{{job_dir|dirname|dirname|dirname|dirname}}/directory/{{job}}"><h2 class="link">Recent Runs Across PRs</h2></a>
+<a href="{{job_dir | gcs_browse_url}}">GCS Storage Browser</a><br>
+% if '/pull/' in job_dir and 'directory' not in job_dir
+<a href="/builds/{{dir_link}}">Recent Runs Across PRs</a><br>
 % endif
-<br>
-<h1 class="section-header">Builds</h1>
-<ul id="jobs-list">
-<div class="jobs-list">
+<h3>Builds</h3>
 % for build, loc, started, finished in builds
 <a href="/build{{loc}}/">{{build}}
 % if finished
@@ -34,9 +31,7 @@
 % endif
 </a><br>
 % endfor
-</div>
-</ul>
-% if 'directory' in job_dir or 'pr-logs' not in job_dir
+% if 'directory' in job_dir or '/pull/' not in job_dir
 <br>
 % if before
 <a href="?" rel="nofollow">View latest builds...</a><br>

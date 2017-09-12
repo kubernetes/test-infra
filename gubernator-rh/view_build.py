@@ -28,37 +28,69 @@ import testgrid
 import view_base
 
 
-def parse_junit(xml, filename):
-    """Generate failed tests as a series of (name, duration, text, filename) tuples."""
-    try:
-        tree = ET.fromstring(xml)
-    except ET.ParseError, e:
-        logging.exception('parse_junit failed for %s', filename)
+class JUnitParser(object):
+    def __init__(self):
+        self.skipped = []
+        self.passed = []
+        self.failed = []
+
+    def handle_suite(self, tree, filename):
+        for subelement in tree:
+            if subelement.tag == 'testsuite':
+                self.handle_suite(subelement, filename)
+            elif subelement.tag == 'testcase':
+                if 'name' in tree.attrib:
+                    name_prefix = tree.attrib['name'] + ' '
+                else:
+                    name_prefix = ''
+                self.handle_test(subelement, filename, name_prefix)
+
+    def handle_test(self, child, filename, name_prefix=''):
+        name = name_prefix + child.attrib['name']
+        if child.find('skipped') is not None:
+            self.skipped.append(name)
+        elif child.find('failure') is not None:
+            time = float(child.attrib['time'])
+            out = []
+            for param in child.findall('system-out'):
+                out.append(param.text)
+            for param in child.findall('system-err'):
+                out.append(param.text)
+            for param in child.findall('failure'):
+                self.failed.append((name, time, param.text, filename, '\n'.join(out)))
+        else:
+            self.passed.append(name)
+
+    def parse_xml(self, xml, filename):
+        if not xml:
+            return  # can't extract results from nothing!
         try:
-            tree = ET.fromstring(re.sub(r'[\x00\x80-\xFF]+', '?', xml))
+            tree = ET.fromstring(xml)
         except ET.ParseError, e:
-            yield 'Gubernator Internal Fatal XML Parse Error', 0.0, str(e), filename
-            return
-    for result in yield_results(tree, "", filename):
-        yield result
+            logging.exception('parse_junit failed for %s', filename)
+            try:
+                tree = ET.fromstring(re.sub(r'[\x00\x80-\xFF]+', '?', xml))
+            except ET.ParseError, e:
+                self.failed.append(
+                    ('Gubernator Internal Fatal XML Parse Error', 0.0, str(e), filename, ''))
+                return
+        if tree.tag == 'testsuite':
+            self.handle_suite(tree, filename)
+        elif tree.tag == 'testsuites':
+            for testsuite in tree:
+                self.handle_suite(testsuite, filename)
+        else:
+            logging.error('unable to find failures, unexpected tag %s', tree.tag)
 
-
-def yield_results(tree, suitename, filename):
-    if tree.tag == 'testcase':
-        name = "%s: %s" % (suitename, tree.attrib['name'])
-        time = float(tree.attrib['time'])
-        for param in tree.findall('failure'):
-            yield name, time, param.text, filename
-    elif tree.tag == 'testsuite':
-        for item in tree:
-            for result in yield_results(item, tree.attrib.get('name', ''), filename):
-                yield result
-    elif tree.tag == 'testsuites':
-        for item in tree:
-            for result in yield_results(item, "", filename):
-                yield result
-    else:
-        logging.error('unable to find failures, unexpected tag %s', tree.tag)
+    def get_results(self):
+        self.failed.sort()
+        self.skipped.sort()
+        self.passed.sort()
+        return {
+            'failed': self.failed,
+            'skipped': self.skipped,
+            'passed': self.passed,
+        }
 
 
 @view_base.memcache_memoize('build-log-parsed://', expires=60*60*4)
@@ -68,9 +100,9 @@ def get_build_log(build_dir):
         return log_parser.digest(build_log)
 
 
-def get_running_build_log(job, build):
+def get_running_build_log(job, build, prow_url):
     try:
-        url = "https://prow.k8s.io/log?job=%s&id=%s" % (job, build)
+        url = "https://%s/log?job=%s&id=%s" % (prow_url, job, build)
         result = urlfetch.fetch(url)
         if result.status_code == 200:
             return log_parser.digest(result.content), url
@@ -89,8 +121,10 @@ def build_details(build_dir):
     Returns:
         started: value from started.json {'version': ..., 'timestamp': ...}
         finished: value from finished.json {'timestamp': ..., 'result': ...}
-        failures: list of (name, duration, text) tuples
-        build_log: a highlighted portion of errors in the build log. May be None.
+        results: {total: int,
+                  failed: [(name, duration, text)...],
+                  skipped: [name...],
+                  passed: [name...]}
     """
     started_fut = gcs_async.read(build_dir + '/started.json')
     finished = gcs_async.read(build_dir + '/finished.json').get_result()
@@ -104,39 +138,63 @@ def build_details(build_dir):
     started = json.loads(started)
     finished = json.loads(finished)
 
-    failures = []
     junit_paths = [f.filename for f in view_base.gcs_ls('%s/artifacts' % build_dir)
                    if re.match(r'junit_.*\.xml', os.path.basename(f.filename))]
 
-    junit_futures = {}
-    for f in junit_paths:
-        junit_futures[gcs_async.read(f)] = f
+    junit_futures = {f: gcs_async.read(f) for f in junit_paths}
 
-    for future in junit_futures:
-        junit = future.get_result()
-        if not junit:
-            continue
-        failures.extend(parse_junit(junit, junit_futures[future]))
-    failures.sort()
-
-    return started, finished, failures
+    parser = JUnitParser()
+    for path, future in junit_futures.iteritems():
+        parser.parse_xml(future.get_result(), path)
+    return started, finished, parser.get_results()
 
 
-def parse_pr_path(prefix):
-    if not prefix.startswith(view_base.PR_PREFIX):
-        return None, None, None
-    pr = os.path.basename(prefix)
-    repo = os.path.basename(os.path.dirname(prefix))
-    if repo == 'pull':
-        return pr, '', 'kubernetes/kubernetes'
-    return pr, repo + '/', 'kubernetes/' + repo
+def parse_pr_path(gcs_path, default_org, default_repo):
+    """
+    Parse GCS bucket directory into metadata. We
+    allow for two short-form names and one long one:
+
+     gs://<pull_prefix>/<pull_number>
+      -- this fills in the default repo and org
+
+     gs://<pull_prefix>/repo/<pull_number>
+      -- this fills in the default org
+
+     gs://<pull_prefix>/org_repo/<pull_number>
+
+    :param gcs_path: GCS bucket directory for a build
+    :return: tuple of:
+     - PR number
+     - Gubernator PR link
+     - PR repo
+    """
+    pull_number = os.path.basename(gcs_path)
+    parsed_repo = os.path.basename(os.path.dirname(gcs_path))
+    if parsed_repo == 'pull':
+        pr_path = ''
+        repo = '%s/%s' % (default_org, default_repo)
+    elif '_' not in parsed_repo:
+        pr_path = parsed_repo + '/'
+        repo = '%s/%s' % (default_org, parsed_repo)
+    else:
+        pr_path = parsed_repo.replace('_', '/') + '/'
+        repo = parsed_repo.replace('_', '/')
+    return pull_number, pr_path, repo
 
 
 class BuildHandler(view_base.BaseHandler):
     """Show information about a Build and its failing tests."""
     def get(self, prefix, job, build):
         # pylint: disable=too-many-locals
+        if prefix.endswith('/directory'):
+            # redirect directory requests
+            link = gcs_async.read('/%s/%s/%s.txt' % (prefix, job, build)).get_result()
+            if link and link.startswith('gs://'):
+                self.redirect('/build/' + link.replace('gs://', ''))
+                return
+
         job_dir = '/%s/%s/' % (prefix, job)
+        testgrid_query = testgrid.path_to_query(job_dir)
         build_dir = job_dir + build
         details = build_details(build_dir)
         if not details:
@@ -146,15 +204,23 @@ class BuildHandler(view_base.BaseHandler):
                 dict(build_dir=build_dir, job_dir=job_dir, job=job, build=build))
             self.response.set_status(404)
             return
-        started, finished, failures = details
+        started, finished, results = details
 
+        want_build_log = False
         build_log = ''
         build_log_src = None
         if 'log' in self.request.params or (not finished) or \
-            (finished and finished.get('result') != 'SUCCESS' and len(failures) == 0):
+            (finished and finished.get('result') != 'SUCCESS' and len(results['failed']) <= 1):
+            want_build_log = True
             build_log = get_build_log(build_dir)
-            if not build_log:
-                build_log, build_log_src = get_running_build_log(job, build)
+
+        pr, pr_path, pr_digest, repo = None, None, None, None
+        external_config = get_pr_config(prefix, self.app.config)
+        if external_config is not None:
+            pr, pr_path, pr_digest, repo = get_pr_info(prefix, self.app.config)
+            if want_build_log and not build_log:
+                build_log, build_log_src = get_running_build_log(job, build,
+                                                                 external_config["prow_url"])
 
         # 'version' might be in either started or finished.
         # prefer finished.
@@ -166,22 +232,47 @@ class BuildHandler(view_base.BaseHandler):
 
         issues = list(models.GHIssueDigest.find_xrefs(build_dir))
 
-        pr, pr_path, repo = parse_pr_path(prefix)
-        pr_digest = None
-        if pr:
-            pr_digest = models.GHIssueDigest.get(repo, pr)
+        refs = []
+        if started and 'pull' in started:
+            for ref in started['pull'].split(','):
+                x = ref.split(':', 1)
+                if len(x) == 2:
+                    refs.append((x[0], x[1]))
+                else:
+                    refs.append((x[1], ''))
 
         self.render('build.html', dict(
             job_dir=job_dir, build_dir=build_dir, job=job, build=build,
             commit=commit, started=started, finished=finished,
-            failures=failures, build_log=build_log, build_log_src=build_log_src,
-            issues=issues,
-            pr_path=pr_path, pr=pr, pr_digest=pr_digest))
+            res=results, refs=refs,
+            build_log=build_log, build_log_src=build_log_src,
+            issues=issues, repo=repo,
+            pr_path=pr_path, pr=pr, pr_digest=pr_digest,
+            testgrid_query=testgrid_query))
 
+
+def get_pr_config(prefix, config):
+    for item in config["external_services"].values():
+        if prefix.startswith(item["gcs_pull_prefix"]):
+            return item
+
+def get_pr_info(prefix, config):
+    if config is not None:
+        pr, pr_path, repo = parse_pr_path(
+            gcs_path=prefix,
+            default_org=config['default_org'],
+            default_repo=config['default_repo'],
+        )
+        pr_digest = models.GHIssueDigest.get(repo, pr)
+        return pr, pr_path, pr_digest, repo
+
+def get_running_pr_log(job, build, config):
+    if config is not None:
+        return get_running_build_log(job, build, config["prow_url"])
 
 def get_build_numbers(job_dir, before, indirect):
     try:
-        if 'pr-logs' in job_dir and not indirect:
+        if '/pull/' in job_dir and not indirect:
             raise ValueError('bad code path for PR build list')
         # If we have latest-build.txt, we can skip an expensive GCS ls call!
         if before:
@@ -266,10 +357,13 @@ class BuildListHandler(view_base.BaseHandler):
     """Show a list of Builds for a Job."""
     def get(self, prefix, job):
         job_dir = '/%s/%s/' % (prefix, job)
+        testgrid_query = testgrid.path_to_query(job_dir)
         before = self.request.get('before')
         builds = build_list(job_dir, before)
+        dir_link = re.sub(r'/pull/.*', '/directory/%s' % job, prefix)
         self.render('build_list.html',
-                    dict(job=job, job_dir=job_dir,
+                    dict(job=job, job_dir=job_dir, dir_link=dir_link,
+                         testgrid_query=testgrid_query,
                          builds=builds, before=before))
 
 

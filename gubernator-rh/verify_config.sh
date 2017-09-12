@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright 2016 The Kubernetes Authors.
+# Copyright 2017 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,14 +13,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set -o errexit
-set -o nounset
-set -o pipefail
-set -o xtrace
+# This script verifies the Gubernator configuration
+# file is in sync with Prow.
 
-cd "$(dirname "$0")"
-pip install -r test_requirements.txt
-./test.sh --nologcapture
-./lint.sh
-mocha static/build_test.js
-./verify_config.sh
+cd "$( dirname "${BASH_SOURCE[0]}" )"
+config="$( mktemp )"
+trap "rm ${config}" EXIT
+
+cp ./config.yaml "${config}"
+./update_config.py ./../prow/config.yaml "${config}"
+
+if ! output="$( diff ./config.yaml "${config}" )"; then
+    echo "Gubernator configuration file is out of sync!"
+    echo "${output}"
+    echo "Run gubernator/update-config.sh"
+    exit 1
+fi
