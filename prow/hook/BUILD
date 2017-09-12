@@ -25,6 +25,7 @@ go_library(
     name = "go_default_library",
     srcs = [
         "events.go",
+        "metrics.go",
         "plugins.go",
         "server.go",
     ],
@@ -49,6 +50,7 @@ go_library(
         "//prow/plugins/updateconfig:go_default_library",
         "//prow/plugins/wip:go_default_library",
         "//prow/plugins/yuks:go_default_library",
+        "//vendor/github.com/prometheus/client_golang/prometheus:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
     ],
 )

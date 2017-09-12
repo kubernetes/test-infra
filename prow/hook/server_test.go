@@ -24,8 +24,13 @@ import (
 )
 
 func TestServeHTTPErrors(t *testing.T) {
+	metrics, err := NewMetrics()
+	if err != nil {
+		t.Fatal(err)
+	}
 	s := &Server{
 		HMACSecret: []byte("abc"),
+		Metrics:    metrics,
 	}
 	// This is the SHA1 signature for payload "{}" and signature "abc"
 	// echo -n '{}' | openssl dgst -sha1 -hmac abc

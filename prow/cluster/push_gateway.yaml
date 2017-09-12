@@ -1,0 +1,94 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: pushgateway
+  labels:
+    app: pushgateway
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: pushgateway
+    spec:
+      containers:
+      - name: pushgateway
+        image: prom/pushgateway:v0.4.0
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pushgateway
+  labels:
+    app: pushgateway
+spec:
+  ports:
+  - name: pushgateway
+    port: 80
+    targetPort: 9091
+  selector:
+    app: pushgateway
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: pushgateway-proxy-config
+data:
+  nginx.conf: |-
+    user www-data;
+    worker_processes 4;
+    pid /run/nginx.pid;
+    error_log /dev/stdout;
+    events {
+      worker_connections 20;
+    }
+    http {
+      access_log /dev/stdout;
+      server {
+        listen 0.0.0.0:80;
+        location / {
+          limit_except GET {
+            return 403
+          }
+          proxy_pass http://pushgateway;
+        }
+      }
+    }
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: pushgateway-proxy
+  labels:
+    app: pushgateway-proxy
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: pushgateway-proxy
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:latest
+        volumeMounts:
+        - name: config-volume
+          mountPath: /etc/nginx/
+      volumes:
+      - name: config-volume
+        configMap:
+          name: pushgateway-proxy-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pushgateway-external
+  labels:
+    app: pushgateway-external
+spec:
+  ports:
+  - name: pushgateway-external
+    port: 80
+    targetPort: 80
+  selector:
+    app: pushgateway-proxy
