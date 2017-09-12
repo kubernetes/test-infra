@@ -145,6 +145,8 @@ type Label struct {
 	// SigOrg is the organization that owns the
 	// special interest groups tagged in this repo
 	SigOrg string `json:"sig_org,omitempty"`
+	// ID of the github team for the milestone maintainers (used for setting status labels)
+	MilestoneMaintainersID int `json:"milestone_maintainers_id,omitempty"`
 }
 
 // SlackEvent is config for the slackevents plugin.

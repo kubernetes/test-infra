@@ -43,10 +43,17 @@ type assignEvent struct {
 var (
 	labelRegex              = regexp.MustCompile(`(?m)^/(area|priority|kind|sig)\s*(.*)$`)
 	removeLabelRegex        = regexp.MustCompile(`(?m)^/remove-(area|priority|kind|sig)\s*(.*)$`)
+	statusRegex             = regexp.MustCompile(`(?m)^/status\s+(.+)$`)
 	sigMatcher              = regexp.MustCompile(`(?m)@kubernetes/sig-([\w-]*)-(misc|test-failures|bugs|feature-requests|proposals|pr-reviews|api-reviews)`)
-	chatBack                = "Reiterating the mentions to trigger a notification: \n%v."
-	nonExistentLabelOnIssue = "Those labels are not set on the issue: `%v`."
-	kindMap                 = map[string]string{
+	chatBack                = "Reiterating the mentions to trigger a notification: \n%v"
+	nonExistentLabelOnIssue = "Those labels are not set on the issue: `%v`"
+	mustBeSigLead           = "You must be a member of the @kubernetes/kubernetes-milestone-maintainers github team to add status labels"
+	statusMap               = map[string]string{
+		"approved-for-milestone": "status/approved-for-milestone",
+		"in-progress":            "status/in-progress",
+		"in-review":              "status/in-review",
+	}
+	kindMap = map[string]string{
 		"bugs":             "kind/bug",
 		"feature-requests": "kind/feature",
 		"api-reviews":      "kind/api-change",
@@ -67,6 +74,7 @@ type githubClient interface {
 	RemoveLabel(owner, repo string, number int, label string) error
 	GetRepoLabels(owner, repo string) ([]github.Label, error)
 	BotName() (string, error)
+	ListTeamMembers(id int) ([]github.TeamMember, error)
 }
 
 func handleIssueComment(pc plugins.PluginClient, ic github.IssueCommentEvent) error {
@@ -84,7 +92,7 @@ func handleIssueComment(pc plugins.PluginClient, ic github.IssueCommentEvent) er
 		issue:   ic.Issue,
 		comment: ic.Comment,
 	}
-	return handle(pc.GitHubClient, pc.Logger, ae)
+	return handle(pc.GitHubClient, pc.Logger, ae, pc.PluginConfig.Label.MilestoneMaintainersID)
 }
 
 func handleIssue(pc plugins.PluginClient, i github.IssueEvent) error {
@@ -101,7 +109,7 @@ func handleIssue(pc plugins.PluginClient, i github.IssueEvent) error {
 		number: i.Issue.Number,
 		issue:  i.Issue,
 	}
-	return handle(pc.GitHubClient, pc.Logger, ae)
+	return handle(pc.GitHubClient, pc.Logger, ae, pc.PluginConfig.Label.MilestoneMaintainersID)
 }
 
 func handlePullRequest(pc plugins.PluginClient, pr github.PullRequestEvent) error {
@@ -117,10 +125,10 @@ func handlePullRequest(pc plugins.PluginClient, pr github.PullRequestEvent) erro
 		url:    pr.PullRequest.HTMLURL,
 		number: pr.Number,
 	}
-	return handle(pc.GitHubClient, pc.Logger, ae)
+	return handle(pc.GitHubClient, pc.Logger, ae, pc.PluginConfig.Label.MilestoneMaintainersID)
 }
 
-// Get Lables from Regexp matches
+// Get Labels from Regexp matches
 func getLabelsFromREMatches(matches [][]string) (labels []string) {
 	for _, match := range matches {
 		for _, label := range strings.Split(match[0], " ")[1:] {
@@ -143,7 +151,8 @@ func (ae assignEvent) getRepeats(sigMatches [][]string, existingLabels map[strin
 	return
 }
 
-func handle(gc githubClient, log *logrus.Entry, ae assignEvent) error {
+// TODO: refactor this function.  It's grown too complex
+func handle(gc githubClient, log *logrus.Entry, ae assignEvent, maintainersID int) error {
 	// only parse newly created comments/issues/PRs and if non bot author
 	botName, err := gc.BotName()
 	if err != nil {
@@ -156,7 +165,8 @@ func handle(gc githubClient, log *logrus.Entry, ae assignEvent) error {
 	labelMatches := labelRegex.FindAllStringSubmatch(ae.body, -1)
 	removeLabelMatches := removeLabelRegex.FindAllStringSubmatch(ae.body, -1)
 	sigMatches := sigMatcher.FindAllStringSubmatch(ae.body, -1)
-	if len(labelMatches) == 0 && len(sigMatches) == 0 && len(removeLabelMatches) == 0 {
+	statusMatches := statusRegex.FindAllStringSubmatch(ae.body, -1)
+	if len(labelMatches) == 0 && len(sigMatches) == 0 && len(removeLabelMatches) == 0 && len(statusMatches) == 0 {
 		return nil
 	}
 
@@ -210,6 +220,35 @@ func handle(gc githubClient, log *logrus.Entry, ae assignEvent) error {
 
 		if err := gc.RemoveLabel(ae.org, ae.repo, ae.number, labelToRemove); err != nil {
 			log.WithError(err).Errorf("Github failed to remove the following label: %s", labelToRemove)
+		}
+	}
+
+	maintainersMap := map[string]bool{}
+	milestoneMaintainers, err := gc.ListTeamMembers(maintainersID)
+	if err != nil {
+		log.WithError(err).Errorf("Failed to list the teammembers for the milestone maintainers team")
+	} else {
+		for _, person := range milestoneMaintainers {
+			maintainersMap[person.Login] = true
+		}
+	}
+
+	for _, statusMatch := range statusMatches {
+		status := strings.TrimSpace(statusMatch[1])
+		sLabel, validStatus := statusMap[status]
+		if validStatus {
+			_, ok := maintainersMap[ae.login]
+			if ok {
+				if err := gc.AddLabel(ae.org, ae.repo, ae.number, sLabel); err != nil {
+					log.WithError(err).Errorf("Github failed to add the following label: %s", sLabel)
+				}
+			} else {
+				// not in the milestone maintainers team
+				if err := gc.CreateComment(ae.org, ae.repo, ae.number, mustBeSigLead); err != nil {
+					log.WithError(err).Errorf("Could not create comment \"%s\".", mustBeSigLead)
+				}
+			}
+
 		}
 	}
 

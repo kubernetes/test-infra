@@ -22,6 +22,10 @@ slackevents:
   whitelist:
   - k8s-merge-robot
 
+label:
+  # github id for the milestone maintainers team
+  milestone_maintainers_id: 2460384
+
 plugins:
   google/cadvisor:
   - trigger
