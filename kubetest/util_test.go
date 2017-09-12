@@ -401,15 +401,15 @@ func TestFinishRunningParallel(t *testing.T) {
 
 		err := finishRunningParallel(tc.cmds...)
 		if err == nil == tc.shouldError {
-			t.Errorf("TC %s shouldError=%v error: %v", tc.name, tc.shouldError, err)
+			t.Errorf("TC %q shouldError=%v error: %v", tc.name, tc.shouldError, err)
 		}
 		if tc.causeInterruption && !interrupted {
-			t.Errorf("TC %s did not interrupt, err: %v", tc.name, err)
+			t.Errorf("TC %q did not interrupt, err: %v", tc.name, err)
 		} else if tc.causeInterruption && !terminate.Reset(0) {
-			t.Errorf("TC %s did not reset the terminate timer: %v", tc.name, err)
+			t.Errorf("TC %q did not reset the terminate timer: %v", tc.name, err)
 		}
 		if tc.causeTermination && !terminated {
-			t.Errorf("TC %s did not terminate, err: %v", tc.name, err)
+			t.Errorf("TC %q did not terminate, err: %v", tc.name, err)
 		}
 	}
 	terminated = false
