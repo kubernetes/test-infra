@@ -71,6 +71,10 @@ plugins:
   kubernetes-incubator/kube-aws:
   - lgtm
 
+  kubernetes-incubator/external-storage:
+  - label
+  - lgtm
+
   kubernetes-security/kubernetes:
   - trigger
 
