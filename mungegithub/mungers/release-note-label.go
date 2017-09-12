@@ -64,9 +64,7 @@ var (
 
 // ReleaseNoteLabel will add the releaseNoteMissingLabel to a PR which has not
 // set one of the appropriate 'release-note-*' labels but has LGTM
-type ReleaseNoteLabel struct {
-	config *github.Config
-}
+type ReleaseNoteLabel struct{}
 
 func init() {
 	r := &ReleaseNoteLabel{}
@@ -82,7 +80,6 @@ func (r *ReleaseNoteLabel) RequiredFeatures() []string { return []string{} }
 
 // Initialize will initialize the munger
 func (r *ReleaseNoteLabel) Initialize(config *github.Config, features *features.Features) error {
-	r.config = config
 	return nil
 }
 
@@ -92,14 +89,14 @@ func (r *ReleaseNoteLabel) EachLoop() error { return nil }
 // RegisterOptions registers options for this munger; returns any that require a restart when changed.
 func (r *ReleaseNoteLabel) RegisterOptions(opts *options.Options) sets.String { return nil }
 
-func (r *ReleaseNoteLabel) prMustFollowRelNoteProcess(obj *github.MungeObject) bool {
+func (r *ReleaseNoteLabel) prMustFollowRelNoteProcess(obj *github.MungeObject, comment bool) bool {
 	boolean, ok := obj.IsForBranch("master")
 
 	if !ok || boolean {
 		return true
 	}
 
-	parents := getCherrypickParentPRs(obj, r.config)
+	parents := getCherrypickParentPRs(obj, obj.Config())
 	// if it has no parents it needs to follow the release note process
 	if len(parents) == 0 {
 		return true
@@ -109,7 +106,7 @@ func (r *ReleaseNoteLabel) prMustFollowRelNoteProcess(obj *github.MungeObject) b
 		// If the parent didn't set a release note, the CP must
 		if !parent.HasLabel(releaseNote) &&
 			!parent.HasLabel(releaseNoteActionRequired) {
-			if !obj.HasLabel(releaseNoteLabelNeeded) {
+			if comment && !obj.HasLabel(releaseNoteLabelNeeded) {
 				obj.WriteComment(parentReleaseNoteBody)
 			}
 			return true
@@ -140,7 +137,7 @@ func (r *ReleaseNoteLabel) Munge(obj *github.MungeObject) {
 		return
 	}
 
-	if !r.prMustFollowRelNoteProcess(obj) {
+	if !r.prMustFollowRelNoteProcess(obj, true) {
 		r.ensureNoRelNoteNeededLabel(obj)
 		return
 	}
@@ -208,7 +205,7 @@ func (r *ReleaseNoteLabel) isStaleIssueComment(obj *github.MungeObject, comment 
 	if *comment.Body != releaseNoteBody && *comment.Body != parentReleaseNoteBody && *comment.Body != deprecatedReleaseNoteBody {
 		return false
 	}
-	if !r.prMustFollowRelNoteProcess(obj) {
+	if !r.prMustFollowRelNoteProcess(obj, false) {
 		glog.V(6).Infof("Found stale ReleaseNoteLabel comment")
 		return true
 	}

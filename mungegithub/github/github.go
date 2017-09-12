@@ -340,6 +340,11 @@ func (obj *MungeObject) Org() string {
 	return obj.config.Org
 }
 
+// Config is a getter for obj.config.
+func (obj *MungeObject) Config() *Config {
+	return obj.config
+}
+
 // IsRobot determines if the user is the robot running the munger
 func (obj *MungeObject) IsRobot(user *github.User) bool {
 	return *user.Login == obj.config.BotName
