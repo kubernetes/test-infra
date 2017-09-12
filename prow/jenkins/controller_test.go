@@ -86,7 +86,7 @@ type fjc struct {
 	err      error
 }
 
-func (f *fjc) Build(br BuildRequest) (*url.URL, error) {
+func (f *fjc) Build(pj *kube.ProwJob) (*url.URL, error) {
 	if f.err != nil {
 		return nil, f.err
 	}

@@ -161,7 +161,7 @@ func (s *Server) handleStatusEvent(se github.StatusEvent) {
 		"org":     se.Repo.Owner.Login,
 		"repo":    se.Repo.Name,
 		"context": se.Context,
-		"sha":     se.Context,
+		"sha":     se.SHA,
 		"state":   se.State,
 		"id":      se.ID,
 	})

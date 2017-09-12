@@ -139,6 +139,14 @@
         commit-frequency: 'H/5 * * * *'
         timeout: 50
 
+    - kubernetes-federation-build-1.8:
+        branch: release-1.8
+        giturl: 'https://github.com/kubernetes/kubernetes'
+        job-name: ci-kubernetes-federation-build-1.8
+        repo-name: k8s.io/kubernetes
+        commit-frequency: 'H/5 * * * *'
+        timeout: 50
+
     - kubernetes-build-debian-unstable:
         branch: master
         commit-frequency: 'H/5 * * * *'

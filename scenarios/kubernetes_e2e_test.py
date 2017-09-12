@@ -91,7 +91,6 @@ def always_kubernetes(*_unused, **_unused2):
     """Always return 'kubernetes'"""
     return 'kubernetes'
 
-
 class Stub(object):
     """Replace thing.param with replacement until exiting with."""
     def __init__(self, thing, param, replacement):
@@ -345,20 +344,29 @@ class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-method
 
     def test_kubeadm_pull(self):
         """Make sure kubeadm pull mode is fine overall."""
-        args = kubernetes_e2e.parse_args(['--mode=local', '--kubeadm=pull'])
+        args = kubernetes_e2e.parse_args([
+            '--mode=local',
+            '--kubeadm=pull',
+            '--use-shared-build=bazel'
+        ])
         self.assertEqual(args.mode, 'local')
         self.assertEqual(args.kubeadm, 'pull')
-        fake_env = {
-            'SHARED_BUILD_GCS_PATH':
-            'gs://kubernetes-release-dev/bazel/v1.8.0-beta.1.132+599539dc0b9997'
-        }
+        self.assertEqual(args.use_shared_build, 'bazel')
+
+        gcs_bucket = "gs://kubernetes-release-dev/bazel/v1.8.0-beta.1.132+599539dc0b9997"
+
+        def fake_gcs_path(path):
+            bazel_default = os.path.join(
+                'gs://kubernetes-jenkins/shared-results', 'bazel-build-location.txt')
+            self.assertEqual(path, bazel_default)
+            return gcs_bucket
         with Stub(kubernetes_e2e, 'check_env', self.fake_check_env):
-            with Stub(os, 'environ', fake_env):
+            with Stub(kubernetes_e2e, 'read_gcs_path', fake_gcs_path):
                 kubernetes_e2e.main(args)
 
         self.assertNotIn('E2E_OPT', self.envs)
-        ver = 'gs://kubernetes-release-dev/bazel/v1.8.0-beta.1.132+599539dc0b9997/bin/linux/amd64/'
-        self.assertIn('--kubernetes-anywhere-kubeadm-version=%s' % ver, self.callstack[-1])
+        version = '%s/bin/linux/amd64/' % gcs_bucket
+        self.assertIn('--kubernetes-anywhere-kubeadm-version=%s' % version, self.callstack[-1])
 
     def test_kubeadm_invalid(self):
         """Make sure kubeadm invalid mode exits unsuccessfully."""

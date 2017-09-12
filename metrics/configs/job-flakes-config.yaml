@@ -1,4 +1,5 @@
 metric: job-flakes
+description: Computes flakiness for all jobs.
 query: |
   select /* Calculate probability a job flaked this week */
     job,

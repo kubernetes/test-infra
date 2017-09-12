@@ -1,3 +1,7 @@
+# Deprecation warning
+
+*Mungegithub is a deprecated system. Please do not build any new infrastructure that needs to run on it. Any new GitHub interactions should be implemented as prow plugins, and any new cron jobs should be implemented as Kubernetes CronJobs.*
+
 ## Overview
 
 Mungegithub provides a number of tools intended to automate github processes. While mainly for the kubernetes community, some thought is put into making it generic. Mungegithub is built as a single binary, but is run in 2 different ways for 2 different purposes.

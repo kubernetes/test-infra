@@ -12,12 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-VERSION = 0.2
+VERSION = $(shell date +v%Y%m%d)-$(shell git describe --tags --always --dirty)
 
 image:
 	docker build -t "gcr.io/k8s-testimages/bigquery:$(VERSION)" .
 
-push:
+push: image
 	gcloud docker -- push "gcr.io/k8s-testimages/bigquery:$(VERSION)"
 
 .PHONY: image push

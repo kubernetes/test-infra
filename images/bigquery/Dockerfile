@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Includes gcloud (for bq and gsutil) and jq.
+# Includes gcloud (for bq and gsutil), python influxdb client (requires pip), python yaml parser, and jq.
 
 FROM ubuntu:16.04
 MAINTAINER colew@google.com
@@ -22,10 +22,13 @@ RUN apt-get update && apt-get install -y \
     jq \
     wget \
     python \
-    python-yaml && \
+    python-yaml \
+    python-pip && \
     apt-get clean
 
-ENV GCLOUD_VERSION 149.0.0
+RUN pip install influxdb
+
+ENV GCLOUD_VERSION 156.0.0
 RUN wget https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-$GCLOUD_VERSION-linux-x86_64.tar.gz && \
     tar xf google-cloud-sdk-$GCLOUD_VERSION-linux-x86_64.tar.gz && \
     rm google-cloud-sdk-$GCLOUD_VERSION-linux-x86_64.tar.gz && \

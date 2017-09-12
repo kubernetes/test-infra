@@ -90,7 +90,7 @@ type ig struct {
 
 var _ deployer = &gkeDeployer{}
 
-func newGKE(provider, project, zone, region, network, image, cluster string, testArgs *string) (*gkeDeployer, error) {
+func newGKE(provider, project, zone, region, network, image, cluster string, testArgs *string, upgradeArgs *string) (*gkeDeployer, error) {
 	if provider != "gke" {
 		return nil, fmt.Errorf("--provider must be 'gke' for GKE deployment, found %q", provider)
 	}
@@ -222,7 +222,14 @@ func newGKE(provider, project, zone, region, network, image, cluster string, tes
 	}
 
 	// set --num-nodes flag for ginkgo, since NUM_NODES is not set for gke deployer.
-	*testArgs = strings.Join(setFieldDefault(strings.Fields(*testArgs), "--num-nodes", strconv.Itoa(g.shape[defaultPool].Nodes)), " ")
+	numNodes := strconv.Itoa(g.shape[defaultPool].Nodes)
+	if *testArgs != "" {
+		*testArgs = strings.Join(setFieldDefault(strings.Fields(*testArgs), "--num-nodes", numNodes), " ")
+	}
+
+	if *upgradeArgs != "" {
+		*upgradeArgs = strings.Join(setFieldDefault(strings.Fields(*upgradeArgs), "--num-nodes", numNodes), " ")
+	}
 
 	return g, nil
 }

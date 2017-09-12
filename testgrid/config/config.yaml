@@ -106,6 +106,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce
 - name: ci-kubernetes-e2e-gce-canary
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-canary
+- name: ci-kubernetes-e2e-gce-device-plugin-gpu
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-device-plugin-gpu
 - name: ci-kubernetes-e2e-gce-gpu
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gpu
 - name: ci-kubernetes-e2e-gce-gpu-1-7
@@ -180,6 +182,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-federation-build-1.6
 - name: ci-kubernetes-federation-build-1.7
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-federation-build-1.7
+- name: ci-kubernetes-federation-build-1.8
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-federation-build-1.8
 - name: ci-kubernetes-e2e-gce-flaky
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-flaky
 - name: ci-kubernetes-e2e-gci-gce-flaky
@@ -288,6 +292,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-slow-release-1-5
 - name: ci-kubernetes-e2e-gke
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke
+- name: ci-kubernetes-e2e-gke-device-plugin-gpu
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-device-plugin-gpu
 - name: ci-kubernetes-e2e-gke-gpu
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gpu
 - name: ci-kubernetes-e2e-gke-gpu-1-7
@@ -1766,6 +1772,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gci-gce-stable1-deploy
 - name: ci-kubernetes-soak-gci-gce-stable1-test
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gci-gce-stable1-test
+- name: ci-kubernetes-e2e-gce-federation-release-1-8
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-federation-release-1-8
 
 # Add New Testgroups Here
 
@@ -2023,6 +2031,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-ha-master
   - name: gce-taint-evict
     test_group_name: ci-kubernetes-e2e-gce-taint-evict
+  - name: gce-device-plugin-gpu
+    test_group_name: ci-kubernetes-e2e-gce-device-plugin-gpu
   - name: gce-gpu
     test_group_name: ci-kubernetes-e2e-gce-gpu
 
@@ -2172,6 +2182,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-updown
   - name: gci-gke-updown
     test_group_name: ci-kubernetes-e2e-gci-gke-updown
+  - name: gke-device-plugin-gpu
+    test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu
   - name: gke-gpu
     test_group_name: ci-kubernetes-e2e-gke-gpu
   - name: gke-canary
@@ -2979,6 +2991,10 @@ dashboards:
     test_group_name: ci-kubernetes-soak-gci-gce-stable1-test
   - name: kops-aws-1.8
     test_group_name: ci-kubernetes-e2e-kops-aws-stable1
+  - name: federation-build-1.8
+    test_group_name: ci-kubernetes-federation-build-1.8
+  - name: federation-test-1.8
+    test_group_name: ci-kubernetes-e2e-gce-federation-release-1-8
 
 - name: release-1.8-blocking
   dashboard_tab:
@@ -3020,6 +3036,10 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gci-gke-reboot-stable1
   - name: kops-aws-1.8
     test_group_name: ci-kubernetes-e2e-kops-aws-stable1
+  - name: federation-build-1.8
+    test_group_name: ci-kubernetes-federation-build-1.8
+  - name: federation-test-1.8
+    test_group_name: ci-kubernetes-e2e-gce-federation-release-1-8
 
 - name: misc
   dashboard_tab:
@@ -3491,10 +3511,14 @@ dashboards:
 
 - name: wg-resource-management
   dashboard_tab:
+  - name: gce-device-plugin-gpu
+    test_group_name: ci-kubernetes-e2e-gce-device-plugin-gpu
   - name: gce-gpu
     test_group_name: ci-kubernetes-e2e-gce-gpu
   - name: gce-gpu-1-7
     test_group_name: ci-kubernetes-e2e-gce-gpu-1-7
+  - name: gke-device-plugin-gpu
+    test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu
   - name: gke-gpu
     test_group_name: ci-kubernetes-e2e-gke-gpu
   - name: gke-gpu-1-7
@@ -3717,6 +3741,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-federation-release-1-6
   - name: gce-1.7
     test_group_name: ci-kubernetes-e2e-gce-federation-release-1-7
+  - name: gce-1.8
+    test_group_name: ci-kubernetes-e2e-gce-federation-release-1-8
   - name: soak-gce-deploy
     test_group_name: ci-kubernetes-soak-gce-federation-deploy
   - name: soak-gce-test
@@ -3731,6 +3757,8 @@ dashboards:
     test_group_name: ci-kubernetes-federation-build-1.6
   - name: build-1.7
     test_group_name: ci-kubernetes-federation-build-1.7
+  - name: build-1.8
+    test_group_name: ci-kubernetes-federation-build-1.8
 
 - name: sig-instrumentation
   dashboard_tab:

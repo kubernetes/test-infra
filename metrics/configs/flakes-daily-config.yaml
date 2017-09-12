@@ -1,0 +1,110 @@
+metric: flakes-daily
+description: Calculates flakiness for each job for each day.
+query: |
+  #standardSQL
+  select
+    job,
+    consistent_builds,
+    builds,
+    round(consistent_builds/builds, 3) build_consistency,
+    consistent_commits,
+    commits,
+    round(consistent_commits/commits, 3) commit_consistency,
+    flakes,
+    UNIX_SECONDS(TIMESTAMP(day)) day
+  from (
+    select /* for each (job, day) */
+      job, /* name of job */
+      sum(if(flaked=1,passed,runs)) consistent_builds,
+      count(distinct commit)-sum(flaked) consistent_commits,
+      sum(runs) builds,
+      count(distinct commit) commits,
+      sum(flaked) flakes, /* number of times it flaked */
+      day
+    from (
+      select
+        job,
+        commit,
+        if(passed = runs or passed = 0, 0, 1) flaked, /* consistent: always pass or always fail */
+        passed,
+        safe_cast(runs as int64) runs,
+        day
+      from (
+        select /* for each (job, day, commit) */
+          job,
+          commit,
+          sum(if(result='SUCCESS',1,0)) passed,
+          count(result) runs, /* count the number of times we ran a job on this commit for this PR */
+          day
+        from (
+          SELECT
+            job,
+            if(substr(job, 0, 3) = 'pr:',
+              regexp_extract(
+                (
+                  select i.value
+                  from t.metadata i
+                  where i.key = 'repos'
+                ),
+                r'[^,]+,\d+:([a-f0-9]+)"'
+              ),
+              version
+            ) commit,  /* repo commit for PR or version for CI */
+            result,  /* SUCCESS if the build passed */
+            date_trunc(date(started), DAY) day
+          FROM `k8s-gubernator.build.all` as t
+          where
+            /* Select results that have occured on or after the day of <LAST_DATA_TIME> (those results were
+               for the day before), but don't include results from today, only return results for complete days. */
+            datetime(started) >= datetime_trunc(parse_datetime("%s", cast(<LAST_DATA_TIME> as string)), DAY)
+            and datetime(started) < datetime_trunc(current_datetime(), DAY) /* Drop results from partial day */
+            and (
+              (substr(job, 0, 3) = 'ci-' and version != 'unknown') or
+              exists(
+                select as struct
+                  i
+                from t.metadata i
+                where i.key = 'repos' and
+                array_length(split(replace(i.value,', ', ''), ',')) = 2 /*serial pr jobs only (# of PR refs +1 == 2)*/
+              )
+            )
+        )
+        group by job, day, commit
+      )
+    )
+    group by job, day /* summarize job across all commits/builds and group results by day for backfilling influxdb */
+  )
+  order by day desc, flakes desc, build_consistency, commit_consistency, job /* flakiest jobs first */
+
+jqfilter: |
+  ([(.[] | .day|tonumber)] | max) as $newestday |
+  [(.[] | select((.job | contains("pr:")) and ((.day|tonumber)==$newestday)) | {(.job): {
+    flakes: (.flakes|tonumber),
+    commit_consistency: (.commit_consistency|tonumber),
+    commits: (.commits|tonumber),
+    consistent_commits: (.consistent_commits|tonumber),
+    build_consistency: (.build_consistency|tonumber),
+    build: (.builds|tonumber),
+    consistent_builds: (.consistent_builds|tonumber)
+  }})] | add
+
+measurements:
+  backfill: flakes_daily
+  jq: |
+    [(.[] | {
+      measurement: "flakes_daily",
+      time: (.day|tonumber),
+      tags: {
+        job: (.job),
+        day: (.day|tonumber)
+      },
+      fields: {
+        flakes: (.flakes|tonumber),
+        commit_consistency: (.commit_consistency|tonumber),
+        commits: (.commits|tonumber),
+        consistent_commits: (.consistent_commits|tonumber),
+        build_consistency: (.build_consistency|tonumber),
+        builds: (.builds|tonumber),
+        consistent_builds: (.consistent_builds|tonumber)
+      }
+    })]

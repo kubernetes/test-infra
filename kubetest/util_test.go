@@ -326,6 +326,99 @@ func TestOutput(t *testing.T) {
 	}
 }
 
+func TestFinishRunningParallel(t *testing.T) {
+	cases := []struct {
+		name              string
+		terminated        bool
+		interrupted       bool
+		causeTermination  bool
+		causeInterruption bool
+		cmds              []*exec.Cmd
+		shouldError       bool
+		shouldInterrupt   bool
+		shouldTerminate   bool
+	}{
+		{
+			name: "finishRunningParallel with single command can pass",
+			cmds: []*exec.Cmd{exec.Command("true")},
+		},
+		{
+			name: "finishRunningParallel with multiple commands can pass",
+			cmds: []*exec.Cmd{exec.Command("true"), exec.Command("true")},
+		},
+		{
+			name:        "finishRunningParallel with single command can fail",
+			cmds:        []*exec.Cmd{exec.Command("false")},
+			shouldError: true,
+		},
+		{
+			name:        "finishRunningParallel with multiple commands can fail",
+			cmds:        []*exec.Cmd{exec.Command("true"), exec.Command("false")},
+			shouldError: true,
+		},
+		{
+			name:        "finishRunningParallel should error when terminated",
+			cmds:        []*exec.Cmd{exec.Command("true"), exec.Command("true")},
+			terminated:  true,
+			shouldError: true,
+		},
+		{
+			name:              "finishRunningParallel should interrupt when interrupted",
+			cmds:              []*exec.Cmd{exec.Command("true"), exec.Command("sleep", "60"), exec.Command("sleep", "30")},
+			causeInterruption: true,
+			shouldError:       true,
+		},
+		{
+			name:             "finishRunningParallel should terminate when terminated",
+			cmds:             []*exec.Cmd{exec.Command("true"), exec.Command("sleep", "60"), exec.Command("sleep", "30")},
+			causeTermination: true,
+			shouldError:      true,
+		},
+	}
+
+	clearTimers := func() {
+		if !terminate.Stop() {
+			<-terminate.C
+		}
+		if !interrupt.Stop() {
+			<-interrupt.C
+		}
+	}
+
+	for _, tc := range cases {
+		log.Println(tc.name)
+		terminated = tc.terminated
+		interrupted = tc.interrupted
+		interrupt = time.NewTimer(time.Duration(0))
+		terminate = time.NewTimer(time.Duration(0))
+		clearTimers()
+		if tc.causeInterruption {
+			interrupt.Reset(1 * time.Second)
+		}
+		if tc.causeTermination {
+			terminate.Reset(1 * time.Second)
+		}
+
+		err := finishRunningParallel(tc.cmds...)
+		if err == nil == tc.shouldError {
+			t.Errorf("TC %q shouldError=%v error: %v", tc.name, tc.shouldError, err)
+		}
+		if tc.causeInterruption && !interrupted {
+			t.Errorf("TC %q did not interrupt, err: %v", tc.name, err)
+		} else if tc.causeInterruption && !terminate.Reset(0) {
+			t.Errorf("TC %q did not reset the terminate timer: %v", tc.name, err)
+		}
+		if tc.causeTermination && !terminated {
+			t.Errorf("TC %q did not terminate, err: %v", tc.name, err)
+		}
+	}
+	terminated = false
+	interrupted = false
+	if !terminate.Stop() {
+		<-terminate.C
+	}
+}
+
 func TestOutputOutputs(t *testing.T) {
 	b, err := output(exec.Command("echo", "hello world"))
 	txt := string(b)

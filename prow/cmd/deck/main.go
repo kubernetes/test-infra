@@ -25,7 +25,6 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
-	"net/http/httputil"
 	"net/url"
 	"regexp"
 	"strconv"
@@ -157,16 +156,16 @@ func httpChunking(log io.ReadCloser, w http.ResponseWriter) {
 	if !ok {
 		logrus.Warning("Error getting flusher.")
 	}
-	cw := httputil.NewChunkedWriter(w)
 	reader := bufio.NewReader(log)
 	for {
 		line, err := reader.ReadBytes('\n')
 		if err != nil {
-			if err == io.EOF {
-				break
-			}
+			// TODO(rmmh): The log stops streaming after 30s.
+			// This seems to be an apiserver limitation-- investigate?
+			// logrus.WithError(err).Error("chunk failed to read!")
+			break
 		}
-		cw.Write(line)
+		w.Write(line)
 		if flusher != nil {
 			flusher.Flush()
 		}
@@ -226,7 +225,7 @@ func handleLog(lc logClient) http.HandlerFunc {
 					logrus.WithError(err).Warning("Error returned.")
 					return
 				}
-				go httpChunking(log, w)
+				httpChunking(log, w)
 			}
 		} else {
 			http.Error(w, "Missing job and ID query", http.StatusBadRequest)

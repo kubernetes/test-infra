@@ -41,12 +41,11 @@ var (
 )
 
 type event struct {
-	org         string
-	repo        string
-	number      int
-	hasLabel    bool
-	needsLabel  bool
-	commentBody string
+	org        string
+	repo       string
+	number     int
+	hasLabel   bool
+	needsLabel bool
 }
 
 func init() {
@@ -73,7 +72,6 @@ func handlePullRequest(pc plugins.PluginClient, pe github.PullRequestEvent) erro
 		org    = pe.PullRequest.Base.Repo.Owner.Login
 		repo   = pe.PullRequest.Base.Repo.Name
 		number = pe.PullRequest.Number
-		author = pe.PullRequest.User.Login
 		title  = pe.PullRequest.Title
 	)
 
@@ -90,18 +88,12 @@ func handlePullRequest(pc plugins.PluginClient, pe github.PullRequestEvent) erro
 
 	needsLabel := titleRegex.MatchString(title)
 
-	commentBody := plugins.FormatResponse(
-		author,
-		fmt.Sprintf(`Your pull request title starts with %q, so the %s label will be added.`, titleRegex.FindString(title), label),
-		`This label will ensure that your pull request will not be merged. Remove the prefix from your pull request title to trigger the removal of the label and allow for your pull request to be merged.`,
-	)
 	e := &event{
-		org:         org,
-		repo:        repo,
-		number:      number,
-		hasLabel:    hasLabel,
-		needsLabel:  needsLabel,
-		commentBody: commentBody,
+		org:        org,
+		repo:       repo,
+		number:     number,
+		hasLabel:   hasLabel,
+		needsLabel: needsLabel,
 	}
 	return handle(pc.GitHubClient, pc.Logger, e)
 }
@@ -114,10 +106,6 @@ func handle(gc githubClient, le *logrus.Entry, e *event) error {
 	if e.needsLabel && !e.hasLabel {
 		if err := gc.AddLabel(e.org, e.repo, e.number, label); err != nil {
 			le.Warnf("error while adding label %q: %v", label, err)
-			return err
-		}
-		if err := gc.CreateComment(e.org, e.repo, e.number, e.commentBody); err != nil {
-			le.Warnf("error while adding comment %q: %v", e.commentBody, err)
 			return err
 		}
 	} else if !e.needsLabel && e.hasLabel {

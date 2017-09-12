@@ -19,6 +19,7 @@ package main
 import (
 	"encoding/json"
 	"encoding/xml"
+	"errors"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -41,10 +42,8 @@ const defaultGinkgoParallel = 25
 var (
 	artifacts    = initPath("./_artifacts")
 	interrupt    = time.NewTimer(time.Duration(0)) // interrupt testing at this time.
-	interrupted  = false
 	kubetestPath = initPath(os.Args[0])
 	terminate    = time.NewTimer(time.Duration(0)) // terminate testing at this time.
-	terminated   = false
 	verbose      = false
 	timeout      = time.Duration(0)
 	boskos       = client.NewClient(os.Getenv("JOB_NAME"), "http://boskos")
@@ -86,6 +85,7 @@ type options struct {
 	kubemarkNodes       string // TODO(fejta): switch to int after migration
 	logexporterGCSPath  string
 	metadataSources     string
+	multiClusters       multiClusterDeployment
 	multipleFederations bool
 	nodeArgs            string
 	nodeTestArgs        string
@@ -131,6 +131,7 @@ func defineFlags() *options {
 	flag.StringVar(&o.kubemarkNodes, "kubemark-nodes", "5", "Number of kubemark nodes to start (only relevant if --kubemark=true).")
 	flag.StringVar(&o.logexporterGCSPath, "logexporter-gcs-path", "", "Path to the GCS artifacts directory to dump logs from nodes. Logexporter gets enabled if this is non-empty")
 	flag.StringVar(&o.metadataSources, "metadata-sources", "images.json", "Comma-separated list of files inside ./artifacts to merge into metadata.json")
+	flag.Var(&o.multiClusters, "multi-clusters", "If set, bring up/down multiple clusters specified. Format is [Zone1:]Cluster1[,[ZoneN:]ClusterN]]*. Zone is optional and default zone is used if zone is not specified")
 	flag.BoolVar(&o.multipleFederations, "multiple-federations", false, "If true, enable running multiple federation control planes in parallel")
 	flag.StringVar(&o.nodeArgs, "node-args", "", "Args for node e2e tests.")
 	flag.StringVar(&o.nodeTestArgs, "node-test-args", "", "Test args specifically for node e2e tests.")
@@ -223,10 +224,13 @@ func getDeployer(o *options) (deployer, error) {
 	case "bash":
 		return newBash(&o.clusterIPRange), nil
 	case "gke":
-		return newGKE(o.provider, o.gcpProject, o.gcpZone, o.gcpRegion, o.gcpNetwork, o.gcpNodeImage, o.cluster, &o.testArgs)
+		return newGKE(o.provider, o.gcpProject, o.gcpZone, o.gcpRegion, o.gcpNetwork, o.gcpNodeImage, o.cluster, &o.testArgs, &o.upgradeArgs)
 	case "kops":
 		return newKops()
 	case "kubernetes-anywhere":
+		if o.multiClusters.Enabled() {
+			return newKubernetesAnywhereMultiCluster(o.gcpProject, o.gcpZone, o.multiClusters)
+		}
 		return newKubernetesAnywhere(o.gcpProject, o.gcpZone)
 	case "node":
 		return nodeDeploy{}, nil
@@ -237,11 +241,22 @@ func getDeployer(o *options) (deployer, error) {
 	}
 }
 
+func validateFlags(o *options) error {
+	if o.multiClusters.Enabled() && o.deployment != "kubernetes-anywhere" {
+		return errors.New("--multi-clusters flag cannot be passed with deployments other than 'kubernetes-anywhere'")
+	}
+	return nil
+}
+
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	o := defineFlags()
 	flag.Parse()
 	err := complete(o)
+
+	if err := validateFlags(o); err != nil {
+		log.Fatalf("Flags validation failed. err: %v", err)
+	}
 
 	if boskos.HasResource() {
 		if berr := boskos.ReleaseAll("dirty"); berr != nil {
