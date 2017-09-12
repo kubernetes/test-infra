@@ -15,7 +15,7 @@ query: |
         count(i.failures) flakes
       from tt.tests i
       group by name
-      having name not in ('Test', 'DiffResources')  /* uninteresting tests */
+      having name not in ('Test', 'DiffResources', 'DumpClusterLogs', 'DumpFederationLogs')  /* uninteresting tests */
       order by flakes desc
       limit 3 /* top three flakiest tests in this job */
     ) flakiest
