@@ -562,6 +562,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/maintenance-ci-janitor
 - name: maintenance-pull-janitor
   gcs_prefix: kubernetes-jenkins/logs/maintenance-pull-janitor
+- name: maintenance-maintenance-fedtidy
+  gcs_prefix: kubernetes-jenkins/logs/maintenance-maintenance-fedtidy
 - name: ci-kubernetes-build-debian-unstable
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-build-debian-unstable
 - name: ci-kubernetes-e2e-gke-large-teardown
@@ -3715,6 +3717,9 @@ dashboards:
     test_group_name: ci-kubernetes-pull-gce-federation-deploy
   - name: pull-gce-deploy-canary
     test_group_name: ci-kubernetes-pull-gce-federation-deploy-canary
+  - name: fedtidy
+    description: Deletes old GCP resources from federation projects
+    test_group_name: maintenance-fedtidy
   - name: build
     test_group_name: ci-kubernetes-federation-build
   - name: build-1.6
