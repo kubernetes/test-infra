@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fedtidy-config
+  namespace: test-pods
+data:
+  config.json: |
+    [
+      {
+        "project": "k8s-jkns-e2e-gce-f8n-1-7",
+        "dnsZone": "release1-7-test-f8n-k8s-io"
+      },
+      {
+        "project": "k8s-jkns-e2e-gce-f8n-1-8",
+        "dnsZone": "release1-8-test-f8n-k8s-io"
+      },
+      {
+        "project": "k8s-jkns-pr-bldr-e2e-gce-fdrtn",
+        "dnsZone": "pr-bldr-test-f8n-k8s-io"
+      }
+    ]
