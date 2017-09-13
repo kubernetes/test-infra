@@ -23,7 +23,9 @@ slackevents:
   - k8s-merge-robot
 
 label:
-  # github id for the milestone maintainers team
+  # You can curl the following endpoint in order to determine the github ID of your team
+  # responsible for maintaining the milestones:
+  # curl -H "Authorization: token <token>" https://api.github.com/orgs/<org-name>/teams
   milestone_maintainers_id: 2460384
 
 plugins:
