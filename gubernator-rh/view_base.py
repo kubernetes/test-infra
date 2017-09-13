@@ -27,39 +27,6 @@ from webapp2_extras import sessions
 
 import filters as jinja_filters
 
-
-DEFAULT_JOBS = {
-    'origin-ci-test/logs/': {
-        'test_branch_origin_check',
-        'test_branch_origin_cmd',
-        'test_branch_origin_cross',
-        'test_branch_origin_end_to_end',
-        'test_branch_origin_extended_builds',
-        'test_branch_origin_extended_conformance_gce',
-        'test_branch_origin_extended_conformance_install_update',
-        'test_branch_origin_extended_conformance_install',
-        'test_branch_origin_extended_gssapi',
-        'test_branch_origin_extended_image_ecosystem',
-        'test_branch_origin_extended_ldap_groups',
-        'test_branch_origin_extended_networking',
-        'test_branch_origin_extended_templates',
-        'test_branch_origin_integration',
-        'test_branch_origin_verify',
-    },
-    'origin-ci-test/pr-logs/directory/': {
-        'test_pull_request_origin_verify',
-        'test_pull_request_origin_cmd',
-        'test_pull_request_origin_unit',
-        'test_pull_request_origin_integration',
-        'test_pull_request_origin_end_to_end',
-        'test_pull_request_origin_extended_conformance_gce',
-        'test_pull_request_origin_extended_conformance_install_update',
-        'test_pull_request_origin_extended_networking_minimal',
-    },
-}
-
-PR_PREFIX = 'origin-ci-test/pr-logs/pull'
-
 JINJA_ENVIRONMENT = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__) + '/templates'),
     extensions=['jinja2.ext.autoescape', 'jinja2.ext.loopcontrols'],
@@ -105,7 +72,7 @@ class BaseHandler(webapp2.RequestHandler):
 class IndexHandler(BaseHandler):
     """Render the index."""
     def get(self):
-        self.render("index.html", {'jobs': DEFAULT_JOBS})
+        self.render("index.html", {'jobs': self.app.config['jobs']})
 
 
 def memcache_memoize(prefix, expires=60 * 60, neg_expires=60):

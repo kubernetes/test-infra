@@ -137,9 +137,9 @@ presubmits:
     - name: pull-kubernetes-e2e-kubeadm-gce
       agent: kubernetes
       context: pull-kubernetes-e2e-kubeadm-gce
-      always_run: false
       max_concurrency: 8
       skip_report: true
+      run_if_changed: '^(cmd/kubeadm|build/debs).*$'
       rerun_command: "/test pull-kubernetes-e2e-kubeadm-gce"
       trigger: "(?m)^/test pull-kubernetes-e2e-kubeadm-gce,?(\\s+|$)"
       spec:
@@ -531,9 +531,9 @@ presubmits:
     - name: pull-security-kubernetes-e2e-kubeadm-gce
       agent: kubernetes
       context: pull-security-kubernetes-e2e-kubeadm-gce
-      always_run: false
       max_concurrency: 8
       skip_report: true
+      run_if_changed: '^(cmd/kubeadm|build/debs).*$'
       rerun_command: "/test pull-security-kubernetes-e2e-kubeadm-gce"
       trigger: "(?m)^/test pull-security-kubernetes-e2e-kubeadm-gce,?(\\s+|$)"
       spec:
@@ -4334,6 +4334,40 @@ periodics:
         defaultMode: 256
         secretName: ssh-key-secret
 
+- name: ci-kubernetes-e2e-gce-device-plugin-gpu
+  interval: 2h
+  agent: kubernetes
+  spec:
+    containers:
+    - args:
+      - --timeout=300
+      - --bare
+      env:
+      - name: GOOGLE_APPLICATION_CREDENTIALS
+        value: /etc/service-account/service-account.json
+      - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-private
+      - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-public
+      - name: USER
+        value: prow
+      image: gcr.io/k8s-testimages/kubekins-e2e-prow:v20170906-66644df5
+      volumeMounts:
+      - mountPath: /etc/service-account
+        name: service
+        readOnly: true
+      - mountPath: /etc/ssh-key-secret
+        name: ssh
+        readOnly: true
+    volumes:
+    - name: service
+      secret:
+        secretName: service-account
+    - name: ssh
+      secret:
+        defaultMode: 256
+        secretName: ssh-key-secret
+
 - interval: 30m
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-es-logging
@@ -4538,7 +4572,7 @@ periodics:
         defaultMode: 256
         secretName: ssh-key-secret
 
-- interval: 30m
+- interval: 6h
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-federation-release-1-6
   spec:
@@ -4575,6 +4609,40 @@ periodics:
 - interval: 1h
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-federation-release-1-7
+  spec:
+    containers:
+    - args:
+      - --timeout=920
+      - --bare
+      env:
+      - name: GOOGLE_APPLICATION_CREDENTIALS
+        value: /etc/service-account/service-account.json
+      - name: USER
+        value: prow
+      - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-private
+      - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-public
+      image: gcr.io/k8s-testimages/kubekins-e2e-prow:v20170906-66644df5
+      volumeMounts:
+      - mountPath: /etc/service-account
+        name: service
+        readOnly: true
+      - mountPath: /etc/ssh-key-secret
+        name: ssh
+        readOnly: true
+    volumes:
+    - name: service
+      secret:
+        secretName: service-account
+    - name: ssh
+      secret:
+        defaultMode: 256
+        secretName: ssh-key-secret
+
+- interval: 1h
+  agent: kubernetes
+  name: ci-kubernetes-e2e-gce-federation-release-1-8
   spec:
     containers:
     - args:
@@ -11816,6 +11884,40 @@ periodics:
         defaultMode: 256
         secretName: ssh-key-secret
 
+- name: ci-kubernetes-e2e-gke-device-plugin-gpu
+  interval: 24h
+  agent: kubernetes
+  spec:
+    containers:
+    - args:
+      - --timeout=300
+      - --bare
+      env:
+      - name: GOOGLE_APPLICATION_CREDENTIALS
+        value: /etc/service-account/service-account.json
+      - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-private
+      - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-public
+      - name: USER
+        value: prow
+      image: gcr.io/k8s-testimages/kubekins-e2e-prow:v20170906-66644df5
+      volumeMounts:
+      - mountPath: /etc/service-account
+        name: service
+        readOnly: true
+      - mountPath: /etc/ssh-key-secret
+        name: ssh
+        readOnly: true
+    volumes:
+    - name: service
+      secret:
+        secretName: service-account
+    - name: ssh
+      secret:
+        defaultMode: 256
+        secretName: ssh-key-secret
+
 - interval: 30m
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-flaky
@@ -16338,7 +16440,7 @@ periodics:
   agent: kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bigquery:0.2
+    - image: gcr.io/k8s-testimages/bigquery:v20170911-5aa1975d
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
         value: /etc/service-account/service-account.json

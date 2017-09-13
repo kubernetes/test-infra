@@ -42,12 +42,14 @@ class TestBigquery(unittest.TestCase):
                 self.fail('Only .yaml files allowed: %s' % path)
 
             with open(path) as config_file:
-                config = yaml.safe_load(config_file)
-                if not config:
+                try:
+                    config = yaml.safe_load(config_file)
+                except yaml.YAMLError:
                     self.fail(path)
                 self.assertIn('metric', config)
                 self.assertIn('query', config)
                 self.assertIn('jqfilter', config)
+                self.assertIn('description', config)
                 metric = config['metric'].strip()
                 bigquery.validate_metric_name(metric)
                 config_metrics.add(metric)

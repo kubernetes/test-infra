@@ -17,7 +17,7 @@
     <tr><th>Job</th><th colspan="{{max_builds}}">Build</th></tr>
     <tr class="pr-version"><td></td>
     {%- for version, width, started in header -%}
-      <th{% if width != 1 %} colspan="{{width}}"{% endif %}>{{version|github_commit_link}}<br>{{started|shorttimestamp}}</th>
+      <th{% if width != 1 %} colspan="{{width}}"{% endif %}>{{version|github_commit_link("%s/%s" % (org, repo))}}<br>{{started|shorttimestamp}}</th>
     {% endfor %}
   </thead>
   % for job, results in rows

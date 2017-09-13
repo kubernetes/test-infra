@@ -25,14 +25,10 @@ py_test(
         "@jq//file",
     ],
     deps = [
+        "@dateutil//:dateutil",
+        "@influxdb//:influxdb",
+        "@pytz//:pytz",
+        "@requests//:requests",
         "@yaml//:yaml",
-    ],
-)
-
-py_test(
-    name = "influxdb_test",
-    srcs = [
-        "influxdb.py",
-        "influxdb_test.py",
     ],
 )

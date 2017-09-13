@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright 2016 The Kubernetes Authors.
+# Copyright 2017 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,14 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set -o errexit
-set -o nounset
-set -o pipefail
-set -o xtrace
+# This script updates the Gubernator configuration
+# file to keep it in sync with Prow.
 
-cd "$(dirname "$0")"
-pip install -r test_requirements.txt
-./test.sh --nologcapture
-./lint.sh
-mocha static/build_test.js
-./verify_config.sh
+cd "$( dirname "${BASH_SOURCE[0]}" )"
+./update_config.py ./../prow/config.yaml ./config.yaml

@@ -23,8 +23,8 @@ import urllib
 import jinja2
 
 
-GITHUB_VIEW_TEMPLATE = 'https://github.com/openshift/origin/blob/%s/%s#L%s'
-GITHUB_COMMIT_TEMPLATE = 'https://github.com/openshift/origin/commit/%s'
+GITHUB_VIEW_TEMPLATE = 'https://github.com/%s/blob/%s/%s#L%s'
+GITHUB_COMMIT_TEMPLATE = 'https://github.com/%s/commit/%s'
 LINKIFY_RE = re.compile(
     r'(^\s*/\S*/)(openshift/(\S+):(\d+)(?: \+0x[0-9a-f]+)?)$',
     flags=re.MULTILINE)
@@ -67,7 +67,7 @@ def do_slugify(inp):
     return re.sub(r'\s+', '-', inp).lower()
 
 
-def do_linkify_stacktrace(inp, commit):
+def do_linkify_stacktrace(inp, commit, repo):
     """Add links to a source code viewer for every mentioned source line."""
     inp = unicode(jinja2.escape(inp))
     if not commit:
@@ -76,13 +76,13 @@ def do_linkify_stacktrace(inp, commit):
         prefix, full, path, line = m.groups()
         return '%s<a href="%s">%s</a>' % (
             prefix,
-            GITHUB_VIEW_TEMPLATE % (commit, path, line),
+            GITHUB_VIEW_TEMPLATE % (repo, commit, path, line),
             full)
     return jinja2.Markup(LINKIFY_RE.sub(rep, inp))
 
 
-def do_github_commit_link(commit):
-    commit_url = jinja2.escape(GITHUB_COMMIT_TEMPLATE % commit)
+def do_github_commit_link(commit, repo):
+    commit_url = jinja2.escape(GITHUB_COMMIT_TEMPLATE % (repo, commit))
     return jinja2.Markup('<a href="%s">%s</a>' % (commit_url, commit[:8]))
 
 

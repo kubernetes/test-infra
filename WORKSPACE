@@ -60,6 +60,14 @@ npm_repository(
     },
 )
 
+# http_archives can be updated to newer version by doing the following:
+#   1) replace the source url with the new source url.
+#       -to find the newest version of a python module, search https://pypi.python.org/ for the package.  Use the target url of the download link found at the bottom of the page.
+#   2) replace the sha256 value with the sha256 sum of the updated package.
+#       -pypi uses md5 sums not sha256 so run `md5sum xxxx.tar.gz` on the downloaded package and validate that it matches the md5sum on pypi
+#       -once the package has been validated, determine the corresponding sha256 by running `sha256sum xxxx.tar.gz`.
+#   3) ensure that the strip_prefix still prefixes the package directory contents to the level of the src code.
+
 new_http_archive(
     name = "requests",
     build_file_content = """
@@ -298,6 +306,51 @@ py_library(
     sha256 = "5308b47021bc2340965c371f0f058cc6971a04502638d4244225c49d80db273a",
     strip_prefix = "configparser-3.5.0/src",
     urls = ["https://pypi.python.org/packages/7c/69/c2ce7e91c89dc073eb1aa74c0621c3eefbffe8216b3f9af9d3885265c01c/configparser-3.5.0.tar.gz"],
+)
+
+# find the most recent version of influxdb at https://pypi.python.org/pypi/influxdb/
+new_http_archive(
+    name = "influxdb",
+    build_file_content = """
+py_library(
+    name = "influxdb",
+    srcs = glob(["**/*.py"]),
+    visibility = ["//visibility:public"],
+)
+""",
+    sha256 = "e3790474fa6d3e39043471a2a79b3309e9a47c63c0803a8810241bc8ce056b18",
+    strip_prefix = "influxdb-4.1.1/influxdb",
+    urls = ["https://pypi.python.org/packages/e1/af/94faea244de2a73b7a0087637660db2d638edaae58f22d3f0d0d219ad8b7/influxdb-4.1.1.tar.gz"],
+)
+
+# find the most recent version at https://pypi.python.org/pypi/pytz
+new_http_archive(
+    name = "pytz",
+    build_file_content = """
+py_library(
+    name = "pytz",
+    srcs = glob(["**/*.py"]),
+    visibility = ["//visibility:public"],
+)
+""",
+    sha256 = "f5c056e8f62d45ba8215e5cb8f50dfccb198b4b9fbea8500674f3443e4689589",
+    strip_prefix = "pytz-2017.2/pytz",
+    urls = ["https://pypi.python.org/packages/a4/09/c47e57fc9c7062b4e83b075d418800d322caa87ec0ac21e6308bd3a2d519/pytz-2017.2.zip"],
+)
+
+# find the most recent version at https://pypi.python.org/pypi/python-dateutil
+new_http_archive(
+    name = "dateutil",
+    build_file_content = """
+py_library(
+    name = "dateutil",
+    srcs = glob(["**/*.py"]),
+    visibility = ["//visibility:public"],
+)
+""",
+    sha256 = "891c38b2a02f5bb1be3e4793866c8df49c7d19baabf9c1bad62547e0b4866aca",
+    strip_prefix = "python-dateutil-2.6.1/dateutil",
+    urls = ["https://pypi.python.org/packages/54/bb/f1db86504f7a49e1d9b9301531181b00a1c7325dc85a29160ee3eaa73a54/python-dateutil-2.6.1.tar.gz"],
 )
 
 # TODO(fejta): get this to work

@@ -33,7 +33,6 @@ func TestWipLabel(t *testing.T) {
 		needsLabel    bool
 		shouldLabel   bool
 		shouldUnlabel bool
-		shouldComment bool
 	}{
 		{
 			name:          "nothing to do, need nothing",
@@ -41,7 +40,6 @@ func TestWipLabel(t *testing.T) {
 			needsLabel:    false,
 			shouldLabel:   false,
 			shouldUnlabel: false,
-			shouldComment: false,
 		},
 		{
 			name:          "needs label and comment",
@@ -49,7 +47,6 @@ func TestWipLabel(t *testing.T) {
 			needsLabel:    true,
 			shouldLabel:   true,
 			shouldUnlabel: false,
-			shouldComment: true,
 		},
 		{
 			name:          "unnecessary label should be removed",
@@ -57,7 +54,6 @@ func TestWipLabel(t *testing.T) {
 			needsLabel:    false,
 			shouldLabel:   false,
 			shouldUnlabel: true,
-			shouldComment: false,
 		},
 		{
 			name:          "nothing to do, have everything",
@@ -65,7 +61,6 @@ func TestWipLabel(t *testing.T) {
 			needsLabel:    true,
 			shouldLabel:   false,
 			shouldUnlabel: false,
-			shouldComment: false,
 		},
 	}
 	for _, tc := range testcases {
@@ -73,14 +68,13 @@ func TestWipLabel(t *testing.T) {
 			PullRequests:  make(map[int]*github.PullRequest),
 			IssueComments: make(map[int][]github.IssueComment),
 		}
-		org, repo, number, body := "org", "repo", 5, "comment"
+		org, repo, number := "org", "repo", 5
 		e := &event{
-			org:         org,
-			repo:        repo,
-			number:      number,
-			hasLabel:    tc.hasLabel,
-			needsLabel:  tc.needsLabel,
-			commentBody: body,
+			org:        org,
+			repo:       repo,
+			number:     number,
+			hasLabel:   tc.hasLabel,
+			needsLabel: tc.needsLabel,
 		}
 
 		if err := handle(fc, logrus.WithField("plugin", pluginName), e); err != nil {
@@ -102,14 +96,6 @@ func TestWipLabel(t *testing.T) {
 			}
 		} else if len(fc.LabelsRemoved) > 0 {
 			t.Errorf("For case %s, expected to not remove %q label but removed: %v", tc.name, label, fc.LabelsRemoved)
-		}
-
-		if tc.shouldComment {
-			if len(fc.IssueCommentsAdded) != 1 || fc.IssueCommentsAdded[0] != fmt.Sprintf("%s/%s#%d:%s", org, repo, number, body) {
-				t.Errorf("For case %s: expected to add comment but instead added: %v", tc.name, fc.IssueCommentsAdded)
-			}
-		} else if len(fc.IssueCommentsAdded) > 0 {
-			t.Errorf("For case %s, expected to not add comment but added: %v", tc.name, fc.IssueCommentsAdded)
 		}
 	}
 }

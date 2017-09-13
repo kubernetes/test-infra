@@ -5,15 +5,11 @@
 % endblock
 % block content
 <div id="content">
-<h1 class="section-header">Jobs</h1>
-<ul id="jobs-list">
-<div class="jobs-list">
+<h3>Jobs</h3>
 % for fstat in fstats
 	% if fstat.is_dir
 		<a href="/builds{{fstat.filename}}">{{fstat.filename|dirname|basename}}</a><br>
 	% endif
 % endfor
-</div>
-</ul>
 </div>
 % endblock
