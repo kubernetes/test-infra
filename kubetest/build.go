@@ -43,7 +43,7 @@ func (b *buildStrategy) Set(value string) error {
 		value = buildDefault
 	}
 	switch value {
-	case "bazel", "quick", "release":
+	case "bazel", "quick", "release", "all":
 		*b = buildStrategy(value)
 		return nil
 	}
@@ -56,7 +56,7 @@ func (b *buildStrategy) Enabled() bool {
 }
 
 // Build kubernetes according to specified strategy.
-// This may be a bazel, quick or full release build depending on --build=B.
+// This may be all, bazel, quick or full release build depending on --build=B.
 func (b *buildStrategy) Build() error {
 	var target string
 	switch *b {
@@ -66,6 +66,8 @@ func (b *buildStrategy) Build() error {
 		target = "quick-release"
 	case "release":
 		target = "release"
+	case "all":
+		target = "all"
 	default:
 		return fmt.Errorf("Unknown build strategy: %v", b)
 	}
