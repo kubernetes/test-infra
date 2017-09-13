@@ -43,7 +43,7 @@ func (b *buildStrategy) Set(value string) error {
 		value = buildDefault
 	}
 	switch value {
-	case "bazel", "quick", "release", "host-go":
+	case "bazel", "host-go", "quick", "release":
 		*b = buildStrategy(value)
 		return nil
 	}
@@ -62,15 +62,15 @@ func (b *buildStrategy) Build() error {
 	switch *b {
 	case "bazel":
 		target = "bazel-release"
-	case "quick":
-		target = "quick-release"
-	case "release":
-		target = "release"
 	// you really should use "bazel" or "quick" in most cases, but in CI
 	// we are mimicking these in our job container without an extra level
 	// of sandboxing in some cases
 	case "host-go":
 		target = "all"
+	case "quick":
+		target = "quick-release"
+	case "release":
+		target = "release"
 	default:
 		return fmt.Errorf("Unknown build strategy: %v", b)
 	}
