@@ -90,53 +90,6 @@ presubmits:
         hostPath:
           path: /mnt/disks/ssd0
     run_after_success:
-    - name: pull-kubernetes-e2e-gce-canary
-      agent: kubernetes
-      always_run: true
-      max_concurrency: 8
-      skip_report: true
-      context: pull-kubernetes-e2e-gce-canary
-      rerun_command: "/test pull-kubernetes-e2e-gce-canary"
-      trigger: "(?m)^/test( all| pull-kubernetes-e2e-gce-canary),?(\\s+|$)"
-      skip_branches:
-      - release-1.4
-      - release-1.5
-      - release-1.6  # doesn't have BUILD files under //vendor/k8s.io
-      spec:
-        containers:
-        - args:
-          - "--timeout=75"
-          - "--clean"
-          - "--git-cache=/root/.cache/git"
-          - "--job=$(JOB_NAME)"
-          - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-          - "--service-account=/etc/service-account/service-account.json"
-          - "--upload=gs://kubernetes-jenkins/pr-logs"
-          env:
-          - name: GOOGLE_APPLICATION_CREDENTIALS
-            value: /etc/service-account/service-account.json
-          - name: USER
-            value: prow
-          - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
-            value: /etc/ssh-key-secret/ssh-private
-          - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
-            value: /etc/ssh-key-secret/ssh-public
-          image: gcr.io/k8s-testimages/kubekins-e2e-prow:v20170913-207d52da
-          volumeMounts:
-          - mountPath: /etc/service-account
-            name: service
-            readOnly: true
-          - mountPath: /etc/ssh-key-secret
-            name: ssh
-            readOnly: true
-        volumes:
-        - name: service
-          secret:
-            secretName: service-account
-        - name: ssh
-          secret:
-            defaultMode: 256
-            secretName: ssh-key-secret
     - name: pull-kubernetes-e2e-kubeadm-gce
       agent: kubernetes
       context: pull-kubernetes-e2e-kubeadm-gce
@@ -303,6 +256,52 @@ presubmits:
           path: /mnt/disks/ssd0
         name: cache-ssd
 
+  - name: pull-kubernetes-e2e-gce-canary
+    agent: kubernetes
+    always_run: false
+    max_concurrency: 8
+    skip_report: true
+    context: pull-kubernetes-e2e-gce-canary
+    rerun_command: "/test pull-kubernetes-e2e-gce-canary"
+    trigger: "(?m)^/test pull-kubernetes-e2e-gce-canary,?(\\s+|$)"
+    skip_branches:
+    - release-1.4
+    - release-1.5
+    spec:
+      containers:
+      - args:
+        - "--timeout=75"
+        - "--clean"
+        - "--git-cache=/root/.cache/git"
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        env:
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /etc/service-account/service-account.json
+        - name: USER
+          value: prow
+        - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+          value: /etc/ssh-key-secret/ssh-private
+        - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+          value: /etc/ssh-key-secret/ssh-public
+        image: gcr.io/k8s-testimages/kubekins-e2e-prow:v20170912-28a27e20
+        volumeMounts:
+        - mountPath: /etc/service-account
+          name: service
+          readOnly: true
+        - mountPath: /etc/ssh-key-secret
+          name: ssh
+          readOnly: true
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
+      - name: ssh
+        secret:
+          defaultMode: 256
+          secretName: ssh-key-secret
   - name: pull-kubernetes-e2e-gce-etcd3
     agent: jenkins
     always_run: true
@@ -484,53 +483,6 @@ presubmits:
         hostPath:
           path: /mnt/disks/ssd0
     run_after_success:
-    - name: pull-security-kubernetes-e2e-gce-canary
-      agent: kubernetes
-      always_run: true
-      max_concurrency: 8
-      skip_report: true
-      context: pull-security-kubernetes-e2e-gce-canary
-      rerun_command: "/test pull-security-kubernetes-e2e-gce-canary"
-      trigger: "(?m)^/test( all| pull-security-kubernetes-e2e-gce-canary),?(\\s+|$)"
-      skip_branches:
-      - release-1.4
-      - release-1.5
-      - release-1.6  # doesn't have BUILD files under //vendor/k8s.io
-      spec:
-        containers:
-        - args:
-          - "--timeout=75"
-          - "--clean"
-          - "--git-cache=/root/.cache/git"
-          - "--job=$(JOB_NAME)"
-          - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-          - "--service-account=/etc/service-account/service-account.json"
-          - "--upload=gs://kubernetes-jenkins/pr-logs"
-          env:
-          - name: GOOGLE_APPLICATION_CREDENTIALS
-            value: /etc/service-account/service-account.json
-          - name: USER
-            value: prow
-          - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
-            value: /etc/ssh-key-secret/ssh-private
-          - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
-            value: /etc/ssh-key-secret/ssh-public
-          image: gcr.io/k8s-testimages/kubekins-e2e-prow:v20170913-207d52da
-          volumeMounts:
-          - mountPath: /etc/service-account
-            name: service
-            readOnly: true
-          - mountPath: /etc/ssh-key-secret
-            name: ssh
-            readOnly: true
-        volumes:
-        - name: service
-          secret:
-            secretName: service-account
-        - name: ssh
-          secret:
-            defaultMode: 256
-            secretName: ssh-key-secret
     - name: pull-security-kubernetes-e2e-kubeadm-gce
       agent: kubernetes
       context: pull-security-kubernetes-e2e-kubeadm-gce
@@ -582,7 +534,6 @@ presubmits:
         - name: cache-ssd
           hostPath:
             path: /mnt/disks/ssd0
-
   - name: pull-security-kubernetes-bazel-test
     agent: kubernetes
     context: pull-security-kubernetes-bazel-test
@@ -696,6 +647,52 @@ presubmits:
       - hostPath:
           path: /mnt/disks/ssd0
         name: cache-ssd
+  - name: pull-security-kubernetes-e2e-gce-canary
+    agent: kubernetes
+    always_run: false
+    max_concurrency: 8
+    skip_report: true
+    context: pull-security-kubernetes-e2e-gce-canary
+    rerun_command: "/test pull-security-kubernetes-e2e-gce-canary"
+    trigger: "(?m)^/test pull-security-kubernetes-e2e-gce-canary,?(\\s+|$)"
+    skip_branches:
+    - release-1.4
+    - release-1.5
+    spec:
+      containers:
+      - args:
+        - "--timeout=75"
+        - "--clean"
+        - "--git-cache=/root/.cache/git"
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        env:
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /etc/service-account/service-account.json
+        - name: USER
+          value: prow
+        - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+          value: /etc/ssh-key-secret/ssh-private
+        - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+          value: /etc/ssh-key-secret/ssh-public
+        image: gcr.io/k8s-testimages/kubekins-e2e-prow:v20170912-28a27e20
+        volumeMounts:
+        - mountPath: /etc/service-account
+          name: service
+          readOnly: true
+        - mountPath: /etc/ssh-key-secret
+          name: ssh
+          readOnly: true
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
+      - name: ssh
+        secret:
+          defaultMode: 256
+          secretName: ssh-key-secret
   - name: pull-security-kubernetes-e2e-gce-etcd3
     agent: jenkins
     always_run: true
