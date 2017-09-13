@@ -14,7 +14,7 @@ tide:
   queries:
   - "type:pr state:open repo:kubernetes/test-infra label:lgtm -label:do-not-merge"
 
-pushgateway:
+push_gateway:
   endpoint: pushgateway
 
 presubmits:
