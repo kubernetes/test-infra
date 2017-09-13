@@ -29,7 +29,7 @@ import (
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
-	"k8s.io/test-infra/prow/npj"
+	"k8s.io/test-infra/prow/pjutil"
 	reportlib "k8s.io/test-infra/prow/report"
 )
 
@@ -128,7 +128,7 @@ func (c *Controller) Sync() error {
 		syncErrs = append(syncErrs, err)
 	}
 
-	pendingCh, nonPendingCh := partitionProwJobs(pjs)
+	pendingCh, nonPendingCh := pjutil.PartitionPending(pjs)
 	errCh := make(chan error, len(pjs))
 	reportCh := make(chan kube.ProwJob, len(pjs))
 
@@ -182,37 +182,13 @@ func (c *Controller) terminateDupes(pjs []kube.ProwJob) error {
 		}
 		toCancel.Status.CompletionTime = time.Now()
 		toCancel.Status.State = kube.AbortedState
-		npj, err := c.kc.ReplaceProwJob(toCancel.Metadata.Name, toCancel)
+		pjutil, err := c.kc.ReplaceProwJob(toCancel.Metadata.Name, toCancel)
 		if err != nil {
 			return err
 		}
-		pjs[i] = npj
+		pjs[i] = pjutil
 	}
 	return nil
-}
-
-func partitionProwJobs(pjs []kube.ProwJob) (pending, nonPending chan kube.ProwJob) {
-	// Determine pending job size in order to size the channels correctly.
-	pendingCount := 0
-	for _, pj := range pjs {
-		if pj.Status.State == kube.PendingState {
-			pendingCount++
-		}
-	}
-	pending = make(chan kube.ProwJob, pendingCount)
-	nonPending = make(chan kube.ProwJob, len(pjs)-pendingCount)
-
-	// Partition the jobs into the two separate channels.
-	for _, pj := range pjs {
-		if pj.Status.State == kube.PendingState {
-			pending <- pj
-		} else {
-			nonPending <- pj
-		}
-	}
-	close(pending)
-	close(nonPending)
-	return pending, nonPending
 }
 
 func syncProwJobs(syncFn syncFn, jobs <-chan kube.ProwJob, reports chan<- kube.ProwJob, syncErrors chan<- error) {
@@ -276,7 +252,7 @@ func (c *Controller) syncPendingJob(pj kube.ProwJob, reports chan<- kube.ProwJob
 			pj.Status.State = kube.SuccessState
 			pj.Status.Description = "Jenkins job succeeded."
 			for _, nj := range pj.Spec.RunAfterSuccess {
-				if _, err := c.kc.CreateProwJob(npj.NewProwJob(nj)); err != nil {
+				if _, err := c.kc.CreateProwJob(pjutil.NewProwJob(nj)); err != nil {
 					return fmt.Errorf("error starting next prowjob: %v", err)
 				}
 			}

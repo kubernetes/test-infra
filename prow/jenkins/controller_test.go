@@ -27,7 +27,7 @@ import (
 
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/kube"
-	"k8s.io/test-infra/prow/npj"
+	"k8s.io/test-infra/prow/pjutil"
 )
 
 type fca struct {
@@ -107,81 +107,6 @@ func (f *fjc) Status(job, id string) (*Status, error) {
 		return nil, f.err
 	}
 	return &f.status, nil
-}
-
-func TestPartitionProwJobs(t *testing.T) {
-	tests := []struct {
-		pjs []kube.ProwJob
-
-		pending    map[string]struct{}
-		nonPending map[string]struct{}
-	}{
-		{
-			pjs: []kube.ProwJob{
-				{
-					Metadata: kube.ObjectMeta{
-						Name: "foo",
-					},
-					Status: kube.ProwJobStatus{
-						State: kube.TriggeredState,
-					},
-				},
-				{
-					Metadata: kube.ObjectMeta{
-						Name: "bar",
-					},
-					Status: kube.ProwJobStatus{
-						State: kube.PendingState,
-					},
-				},
-				{
-					Metadata: kube.ObjectMeta{
-						Name: "baz",
-					},
-					Status: kube.ProwJobStatus{
-						State: kube.SuccessState,
-					},
-				},
-				{
-					Metadata: kube.ObjectMeta{
-						Name: "error",
-					},
-					Status: kube.ProwJobStatus{
-						State: kube.ErrorState,
-					},
-				},
-				{
-					Metadata: kube.ObjectMeta{
-						Name: "bak",
-					},
-					Status: kube.ProwJobStatus{
-						State: kube.PendingState,
-					},
-				},
-			},
-			pending: map[string]struct{}{
-				"bar": {}, "bak": {},
-			},
-			nonPending: map[string]struct{}{
-				"foo": {}, "baz": {}, "error": {},
-			},
-		},
-	}
-
-	for i, test := range tests {
-		t.Logf("test run #%d", i)
-		pendingCh, nonPendingCh := partitionProwJobs(test.pjs)
-		for job := range pendingCh {
-			if _, ok := test.pending[job.Metadata.Name]; !ok {
-				t.Errorf("didn't find pending job %#v", job)
-			}
-		}
-		for job := range nonPendingCh {
-			if _, ok := test.nonPending[job.Metadata.Name]; !ok {
-				t.Errorf("didn't find non-pending job %#v", job)
-			}
-		}
-	}
 }
 
 func TestSyncNonPendingJobs(t *testing.T) {
@@ -481,7 +406,7 @@ func TestBatch(t *testing.T) {
 		Context: "Some Job Context",
 	}
 	fc := &fkc{
-		prowjobs: []kube.ProwJob{npj.NewProwJob(npj.BatchSpec(pre, kube.Refs{
+		prowjobs: []kube.ProwJob{pjutil.NewProwJob(pjutil.BatchSpec(pre, kube.Refs{
 			Org:     "o",
 			Repo:    "r",
 			BaseRef: "master",

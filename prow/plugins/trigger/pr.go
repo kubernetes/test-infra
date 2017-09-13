@@ -21,7 +21,7 @@ import (
 
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
-	"k8s.io/test-infra/prow/npj"
+	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/plugins"
 )
 
@@ -199,7 +199,7 @@ func buildAll(c client, pr github.PullRequest) error {
 				},
 			},
 		}
-		if _, err := c.KubeClient.CreateProwJob(npj.NewProwJob(npj.PresubmitSpec(job, kr))); err != nil {
+		if _, err := c.KubeClient.CreateProwJob(pjutil.NewProwJob(pjutil.PresubmitSpec(job, kr))); err != nil {
 			return err
 		}
 	}

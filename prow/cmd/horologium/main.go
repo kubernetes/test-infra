@@ -25,7 +25,7 @@ import (
 
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/kube"
-	"k8s.io/test-infra/prow/npj"
+	"k8s.io/test-infra/prow/pjutil"
 )
 
 var configPath = flag.String("config-path", "/etc/config/config", "Path to config.yaml.")
@@ -76,7 +76,7 @@ func sync(kc kubeClient, cfg *config.Config, now time.Time) error {
 	for _, p := range cfg.Periodics {
 		j, ok := latestJobs[p.Name]
 		if !ok || (j.Complete() && now.Sub(j.Status.StartTime) > p.GetInterval()) {
-			if _, err := kc.CreateProwJob(npj.NewProwJob(npj.PeriodicSpec(p))); err != nil {
+			if _, err := kc.CreateProwJob(pjutil.NewProwJob(pjutil.PeriodicSpec(p))); err != nil {
 				return fmt.Errorf("error creating prow job: %v", err)
 			}
 		}

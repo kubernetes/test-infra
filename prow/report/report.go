@@ -26,7 +26,7 @@ import (
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
-	"k8s.io/test-infra/prow/npj"
+	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/plugins"
 )
 
@@ -64,7 +64,7 @@ func reportStatus(ghc GithubClient, pj kube.ProwJob, cd string) error {
 	// Updating Children
 	if pj.Status.State != kube.SuccessState {
 		for _, nj := range pj.Spec.RunAfterSuccess {
-			cpj := npj.NewProwJob(nj)
+			cpj := pjutil.NewProwJob(nj)
 			cpj.Status.State = pj.Status.State
 			cpj.Status.Description = cd
 			cpj.Spec.Refs = refs

@@ -10,7 +10,7 @@ load(
 
 go_library(
     name = "go_default_library",
-    srcs = ["npj.go"],
+    srcs = ["pjutil.go"],
     tags = ["automanaged"],
     deps = [
         "//prow/config:go_default_library",
@@ -34,7 +34,7 @@ filegroup(
 
 go_test(
     name = "go_default_test",
-    srcs = ["npj_test.go"],
+    srcs = ["pjutil_test.go"],
     library = ":go_default_library",
     tags = ["automanaged"],
     deps = ["//prow/kube:go_default_library"],

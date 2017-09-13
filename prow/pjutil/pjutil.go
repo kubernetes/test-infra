@@ -14,8 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package npj contains helpers for creating ProwJobs.
-package npj
+// Package pjutil contains helpers for working with ProwJobs.
+package pjutil
 
 import (
 	"fmt"
@@ -184,4 +184,33 @@ func EnvForSpec(spec kube.ProwJobSpec) map[string]string {
 	env["PULL_NUMBER"] = strconv.Itoa(spec.Refs.Pulls[0].Number)
 	env["PULL_PULL_SHA"] = spec.Refs.Pulls[0].SHA
 	return env
+}
+
+// PartitionPending separates the provided prowjobs into pending and non-pending
+// and returns them inside channels so that they can be consumed in parallel
+// by different goroutines. Controller loops need to handle pending jobs first
+// so they can conform to maximum concurrency requirements that different jobs
+// may have.
+func PartitionPending(pjs []kube.ProwJob) (pending, nonPending chan kube.ProwJob) {
+	// Determine pending job size in order to size the channels correctly.
+	pendingCount := 0
+	for _, pj := range pjs {
+		if pj.Status.State == kube.PendingState {
+			pendingCount++
+		}
+	}
+	pending = make(chan kube.ProwJob, pendingCount)
+	nonPending = make(chan kube.ProwJob, len(pjs)-pendingCount)
+
+	// Partition the jobs into the two separate channels.
+	for _, pj := range pjs {
+		if pj.Status.State == kube.PendingState {
+			pending <- pj
+		} else {
+			nonPending <- pj
+		}
+	}
+	close(pending)
+	close(nonPending)
+	return pending, nonPending
 }
