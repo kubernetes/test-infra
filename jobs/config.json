@@ -9940,7 +9940,10 @@
   },
   "maintenance-boskos-config-upload": {
     "args": [
-      "cd boskos && make update-config"
+      "make",
+      "-C",
+      "boskos",
+      "update-config"
     ],
     "scenario": "execute",
     "sigOwners": [
