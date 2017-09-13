@@ -5771,7 +5771,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=920
+      - --timeout=140
       - --bare
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -5805,7 +5805,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=920
+      - --timeout=140
       - --bare
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -5839,7 +5839,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=920
+      - --timeout=140
       - --bare
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -6587,7 +6587,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=920
+      - --timeout=140
       - --bare
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -6621,7 +6621,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=920
+      - --timeout=140
       - --bare
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -6655,7 +6655,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=920
+      - --timeout=140
       - --bare
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -11077,7 +11077,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=920
+      - --timeout=140
       - --bare
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -11111,7 +11111,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=920
+      - --timeout=140
       - --bare
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -11145,7 +11145,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=920
+      - --timeout=140
       - --bare
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -11179,7 +11179,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=920
+      - --timeout=140
       - --bare
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -11213,7 +11213,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=920
+      - --timeout=140
       - --bare
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -11247,7 +11247,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=920
+      - --timeout=140
       - --bare
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -11281,7 +11281,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=920
+      - --timeout=140
       - --bare
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -11315,7 +11315,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=920
+      - --timeout=140
       - --bare
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -11349,7 +11349,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=920
+      - --timeout=140
       - --bare
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -11383,7 +11383,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=920
+      - --timeout=140
       - --bare
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -11417,7 +11417,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=920
+      - --timeout=140
       - --bare
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -11758,7 +11758,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=920
+      - --timeout=140
       - --bare
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -11792,7 +11792,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=920
+      - --timeout=140
       - --bare
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -11826,7 +11826,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=920
+      - --timeout=140
       - --bare
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -11860,7 +11860,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=920
+      - --timeout=140
       - --bare
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -11894,7 +11894,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=920
+      - --timeout=140
       - --bare
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -11928,7 +11928,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=920
+      - --timeout=140
       - --bare
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -11996,7 +11996,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=920
+      - --timeout=140
       - --bare
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -12030,7 +12030,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=920
+      - --timeout=140
       - --bare
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -12064,7 +12064,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=920
+      - --timeout=140
       - --bare
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -12098,7 +12098,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=920
+      - --timeout=140
       - --bare
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -12132,7 +12132,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=920
+      - --timeout=140
       - --bare
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
