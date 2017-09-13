@@ -758,7 +758,7 @@ class JobTest(unittest.TestCase):
         boskos = []
         with open(config_sort.test_infra('boskos/resources.json')) as fp:
             for rtype in json.loads(fp.read()):
-                if rtype['type'] == 'gce-project' or rtype['type'] == 'gke-project':
+                if 'project' in rtype['type']:
                     for name in rtype['names']:
                         boskos.append(name)
 
