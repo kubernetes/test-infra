@@ -9941,6 +9941,7 @@
   "maintenance-boskos-config-upload": {
     "args": [
       "make",
+      "--",
       "-C",
       "boskos",
       "update-config"
