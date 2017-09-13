@@ -15826,6 +15826,32 @@ periodics:
       secret:
         secretName: service-account
 
+# This is like the test-infra janitor but tailored for federation
+# projects
+- interval: 24h
+  agent: kubernetes
+  name: maintenance-fedtidy
+  spec:
+    containers:
+    - env:
+      - name: GOOGLE_APPLICATION_CREDENTIALS
+        value: /etc/service-account/service-account.json
+      image: gcr.io/k8s-testimages/fedtidy:0.1
+      volumeMounts:
+      - mountPath: /etc/service-account
+        name: service
+        readOnly: true
+      - mountPath: /etc/fedtidy
+        name: config
+        readOnly: true
+    volumes:
+    - name: service
+      secret:
+        secretName: service-account
+    - name: config
+      configMap:
+        name: fedtidy-config
+
 - name: metrics-bigquery
   interval: 24h
   agent: kubernetes
