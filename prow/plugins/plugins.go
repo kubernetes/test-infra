@@ -146,6 +146,9 @@ type Label struct {
 	// special interest groups tagged in this repo
 	SigOrg string `json:"sig_org,omitempty"`
 	// ID of the github team for the milestone maintainers (used for setting status labels)
+	// You can curl the following endpoint in order to determine the github ID of your team
+	// responsible for maintaining the milestones:
+	// curl -H "Authorization: token <token>" https://api.github.com/orgs/<org-name>/teams
 	MilestoneMaintainersID int `json:"milestone_maintainers_id,omitempty"`
 }
 
