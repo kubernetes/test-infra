@@ -53,3 +53,7 @@ spec:
         backend:
           serviceName: hook
           servicePort: 8888
+      - path: /metrics
+        backend:
+          serviceName: pushgateway-external
+          servicePort: 80
