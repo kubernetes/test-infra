@@ -256,7 +256,6 @@ type analytics struct {
 	ListMilestones         analytic
 	GetBranch              analytic
 	UpdateBranchProtection analytic
-	RemoveBranchProtection analytic
 	GetBranchProtection    analytic
 	ListReviews            analytic
 }
@@ -298,7 +297,6 @@ func (a analytics) print() {
 	fmt.Fprintf(w, "ListMilestones\t%d\t\n", a.ListMilestones.Count)
 	fmt.Fprintf(w, "GetBranch\t%d\t\n", a.GetBranch.Count)
 	fmt.Fprintf(w, "UpdateBranchProtection\t%d\t\n", a.UpdateBranchProtection.Count)
-	fmt.Fprintf(w, "RemoveBranchProtection\t%d\t\n", a.RemoveBranchProtection.Count)
 	fmt.Fprintf(w, "GetBranchProctection\t%d\t\n", a.GetBranchProtection.Count)
 	fmt.Fprintf(w, "ListReviews\t%d\t\n", a.ListReviews.Count)
 	w.Flush()
@@ -619,50 +617,23 @@ func (config *Config) deleteCache(resp *github.Response) {
 }
 
 // protects a branch and sets the required contexts
-func (config *Config) setBranchProtection(name string, contexts []string) error {
-	if len(contexts) > 0 {
-		glog.Infof("Setting protections for branch: %s", name)
-		config.analytics.UpdateBranchProtection.Call(config, nil)
-		if config.DryRun {
-			return nil
-		}
-		_, resp, err := config.client.Repositories.UpdateBranchProtection(
-			context.Background(),
-			config.Org,
-			config.Project,
-			name,
-			&github.ProtectionRequest{
-				RequiredStatusChecks: &github.RequiredStatusChecks{
-					Strict:   false,
-					Contexts: contexts,
-				},
-				RequiredPullRequestReviews: nil,
-				Restrictions:               nil,
-				EnforceAdmins:              false,
-			},
-		)
-		if err != nil {
-			err = suggestOauthScopes(resp, err)
-			glog.Errorf("Unable to set branch protections for %s: %v", name, err)
-			return err
-		}
-	} else {
-		glog.Infof("Removing protections from branch: %s", name)
-		config.analytics.RemoveBranchProtection.Call(config, nil)
-		if config.DryRun {
-			return nil
-		}
-		resp, err := config.client.Repositories.RemoveBranchProtection(
-			context.Background(),
-			config.Org,
-			config.Project,
-			name,
-		)
-		if err != nil {
-			err = suggestOauthScopes(resp, err)
-			glog.Errorf("Unable to remove branch protections from %s: %v", name, err)
-			return err
-		}
+func (config *Config) setBranchProtection(name string, request *github.ProtectionRequest) error {
+	glog.Infof("Setting protections for branch: %s", name)
+	config.analytics.UpdateBranchProtection.Call(config, nil)
+	if config.DryRun {
+		return nil
+	}
+	_, resp, err := config.client.Repositories.UpdateBranchProtection(
+		context.Background(),
+		config.Org,
+		config.Project,
+		name,
+		request,
+	)
+	if err != nil {
+		err = suggestOauthScopes(resp, err)
+		glog.Errorf("Unable to set branch protections for %s: %v", name, err)
+		return err
 	}
 	return nil
 }
@@ -738,7 +709,42 @@ func (config *Config) SetBranchProtection(name string, contexts []string) error 
 		return nil
 	}
 
-	return config.setBranchProtection(name, contexts)
+	request := &github.ProtectionRequest{
+		RequiredStatusChecks: &github.RequiredStatusChecks{
+			Strict:   false,
+			Contexts: contexts,
+		},
+		RequiredPullRequestReviews: prot.RequiredPullRequestReviews,
+		Restrictions:               unchangedRestrictionRequest(prot.Restrictions),
+		EnforceAdmins:              false,
+	}
+	return config.setBranchProtection(name, request)
+}
+
+// unchangedRestrictionRequest generates a request that will
+// not make any changes to the teams and users that can merge
+// into a branch
+func unchangedRestrictionRequest(restrictions *github.BranchRestrictions) *github.BranchRestrictionsRequest {
+	if restrictions == nil {
+		return nil
+	}
+
+	request := &github.BranchRestrictionsRequest{
+		Users: []string{},
+		Teams: []string{},
+	}
+
+	if restrictions.Users != nil {
+		for _, user := range restrictions.Users {
+			request.Users = append(request.Users, *user.Login)
+		}
+	}
+	if restrictions.Teams != nil {
+		for _, team := range restrictions.Teams {
+			request.Teams = append(request.Teams, *team.Name)
+		}
+	}
+	return request
 }
 
 // Refresh will refresh the Issue (and PR if this is a PR)
