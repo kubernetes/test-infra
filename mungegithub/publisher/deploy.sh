@@ -25,29 +25,29 @@ fi
 
 # Path to github token the robot uses to push changes to repositories.
 # Used by the munger's Makefile
-export TOKEN="${1}"
+TOKEN="${1}"
 # The kubectl context determines where the robot is deployed to.
 CONTEXT="${2}"
 # The repo to push the docker image of the robot.
 # Used by the munger's Makefile
 # Use "gcr.io/google_containers" for real deploy.
-export REPO="${3}"
+REPO="${3}"
 
-MUNGERS_ROOT=$(dirname "${BASH_SOURCE}")/../..
+MUNGERS_ROOT=$(dirname "${BASH_SOURCE}")/..
 cd "${MUNGERS_ROOT}"
 
 echo "${TOKEN}" > token
 
-kubectl config use-context "${CONTEXT}"
+KUBECTL="kubectl --context ${CONTEXT}"
 
-kubectl delete deployment kubernetes-publisher || true
-kubectl delete secret kubernetes-github-token || true
-kubectl delete configmap kubernetes-publisher-config || true
-export APP=publisher
-export TARGET=kubernetes
-make clean
-make secret
-kubectl create -f ./publisher/local.secret.yaml
-kubectl create -f ./publisher/deployment/kubernetes/configmap.yaml
-export READONLY=false
-make deploy
+${KUBECTL} delete deployment kubernetes-publisher || true
+${KUBECTL} delete secret kubernetes-github-token || true
+${KUBECTL} delete configmap kubernetes-publisher-config || true
+
+make clean secret APP=publisher TARGET=kubernetes
+
+${KUBECTL} apply -f ./publisher/volume.yaml
+${KUBECTL} create -f ./publisher/local.secret.yaml
+${KUBECTL} create -f ./publisher/configmap.yaml
+
+make deploy READONLY=false APP=publisher TARGET=kubernetes REPO="${REPO}"

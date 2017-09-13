@@ -21,18 +21,36 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-ORG="kubernetes"
+ORG="${ORG:-kubernetes}"
 
 mkdir -p "${GOPATH}"/src/k8s.io
 cd "${GOPATH}"/src/k8s.io
 
-# to restore the dependencies
-git clone "https://github.com/kubernetes/kubernetes"
-pushd kubernetes
-    ./hack/godep-restore.sh
+# Install godep
+if [ ! -d $GOPATH/src/github.com/tools/godep ]; then
+    go get github.com/tools/godep
+fi
+pushd /go-workspace/src/github.com/tools/godep
+    git fetch
+    git checkout tags/v79
+    go install ./... 
 popd
 
-for repo in "apimachinery" "client-go" "apiserver" "kube-aggregator" "sample-apiserver" "apiextensions-apiserver" "api"
-do
-    git clone "https://github.com/${ORG}/${repo}"
+# Install kube including dependencies
+if [ ! -d kubernetes ]; then
+    git clone "https://github.com/kubernetes/kubernetes"
+    pushd kubernetes
+        ./hack/godep-restore.sh
+    popd
+fi
+
+# Install all staging dirs
+for repo in $(cd kubernetes/staging/src/k8s.io; ls -1); do
+    if [ -d "${repo}" ]; then
+	pushd ${repo}
+	    git remote set-url origin "https://github.com/${ORG}/${repo}"
+	popd
+    else
+	git clone "https://github.com/${ORG}/${repo}"
+    fi
 done

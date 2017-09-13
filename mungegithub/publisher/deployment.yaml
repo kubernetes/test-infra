@@ -10,6 +10,31 @@ spec:
         app: publisher
         target-repo: @@
     spec:
+      initContainers:
+      - name: initialize-repos
+        command:
+        - /bin/bash
+        - -x
+        - /publish_scripts/initialize_repos.sh
+        - 2>&1
+        env:
+        - name: ORG
+          valueFrom:
+            configMapKeyRef:
+              name: @@-publisher-config
+              key: organization
+        image: gcr.io/k8s-testimages/publisher:2016-05-24-86f86cd
+        imagePullPolicy: Always
+        resources:
+          requests:
+            cpu: 200m
+          limits:
+            cpu: 1000m
+        volumeMounts:
+        - mountPath: /netrc
+          name: netrc
+        - mountPath: /go-workspace
+          name: publisher-gopath
       containers:
       - name: publisher
         command:
@@ -34,6 +59,8 @@ spec:
           name: netrc
         - mountPath: /gitrepos
           name: repo
+        - mountPath: /go-workspace
+          name: publisher-gopath
       volumes:
       - name: munge-config
         configMap:
@@ -46,3 +73,6 @@ spec:
       - name: netrc
         emptyDir:
           medium: Memory
+      - name: publisher-gopath
+        persistentVolumeClaim:
+          claimName: publisher-gopath

@@ -158,6 +158,15 @@ func (p *PublisherMunger) Initialize(config *github.Config, features *features.F
 					{repo: "client-go", branch: "release-3.0"},
 				},
 			},
+			{
+				// rule for the apiserver 1.7 branch
+				src: coordinate{repo: config.Project, branch: "release-1.7", dir: "staging/src/k8s.io/apiserver"},
+				dst: coordinate{repo: "apiserver", branch: "release-1.7", dir: "./"},
+				deps: []coordinate{
+					{repo: "apimachinery", branch: "release-1.7"},
+					{repo: "client-go", branch: "release-4.0"},
+				},
+			},
 		},
 		publishScript: "/publish_scripts/publish_apiserver.sh",
 	}
@@ -183,6 +192,16 @@ func (p *PublisherMunger) Initialize(config *github.Config, features *features.F
 					{repo: "apimachinery", branch: "release-1.6"},
 					{repo: "client-go", branch: "release-3.0"},
 					{repo: "apiserver", branch: "release-1.6"},
+				},
+			},
+			{
+				// rule for the kube-aggregator 1.7 branch
+				src: coordinate{repo: config.Project, branch: "release-1.7", dir: "staging/src/k8s.io/kube-aggregator"},
+				dst: coordinate{repo: "kube-aggregator", branch: "release-1.7", dir: "./"},
+				deps: []coordinate{
+					{repo: "apimachinery", branch: "release-1.7"},
+					{repo: "client-go", branch: "release-4.0"},
+					{repo: "apiserver", branch: "release-1.7"},
 				},
 			},
 		},
@@ -212,6 +231,16 @@ func (p *PublisherMunger) Initialize(config *github.Config, features *features.F
 					{repo: "apiserver", branch: "release-1.6"},
 				},
 			},
+			{
+				// rule for the sample-apiserver 1.7 branch
+				src: coordinate{repo: config.Project, branch: "release-1.7", dir: "staging/src/k8s.io/sample-apiserver"},
+				dst: coordinate{repo: "sample-apiserver", branch: "release-1.7", dir: "./"},
+				deps: []coordinate{
+					{repo: "apimachinery", branch: "release-1.7"},
+					{repo: "client-go", branch: "release-4.0"},
+					{repo: "apiserver", branch: "release-1.7"},
+				},
+			},
 		},
 		publishScript: "/publish_scripts/publish_sample_apiserver.sh",
 	}
@@ -227,6 +256,16 @@ func (p *PublisherMunger) Initialize(config *github.Config, features *features.F
 					{repo: "apimachinery", branch: "master"},
 					{repo: "client-go", branch: "master"},
 					{repo: "apiserver", branch: "master"},
+				},
+			},
+			{
+				// rule for the sample-apiserver 1.7 branch
+				src: coordinate{repo: config.Project, branch: "release-1.7", dir: "staging/src/k8s.io/apiextensions-apiserver"},
+				dst: coordinate{repo: "apiextensions-apiserver", branch: "release-1.7", dir: "./"},
+				deps: []coordinate{
+					{repo: "apimachinery", branch: "release-1.7"},
+					{repo: "client-go", branch: "release-4.0"},
+					{repo: "apiserver", branch: "release-1.7"},
 				},
 			},
 		},
@@ -247,8 +286,34 @@ func (p *PublisherMunger) Initialize(config *github.Config, features *features.F
 		},
 		publishScript: "/publish_scripts/publish_api.sh",
 	}
+
+	metrics := repoRules{
+		dstRepo: "metrics",
+		srcToDst: []branchRule{
+			{
+				// rule for the metrics master branch
+				src: coordinate{repo: config.Project, branch: "master", dir: "staging/src/k8s.io/metrics"},
+				dst: coordinate{repo: "metrics", branch: "master", dir: "./"},
+				deps: []coordinate{
+					{repo: "apimachinery", branch: "master"},
+					{repo: "client-go", branch: "master"},
+				},
+			},
+			{
+				// rule for the sample-apiserver 1.7 branch
+				src: coordinate{repo: config.Project, branch: "release-1.7", dir: "staging/src/k8s.io/metrics"},
+				dst: coordinate{repo: "metrics", branch: "release-1.7", dir: "./"},
+				deps: []coordinate{
+					{repo: "apimachinery", branch: "release-1.7"},
+					{repo: "client-go", branch: "release-4.0"},
+				},
+			},
+		},
+		publishScript: "/publish_scripts/publish_metrics.sh",
+	}
+
 	// NOTE: Order of the repos is sensitive!!! A dependent repo needs to be published first, so that other repos can vendor its latest revision.
-	p.reposRules = []repoRules{apimachinery, api, clientGo, apiserver, kubeAggregator, sampleAPIServer, apiExtensionsAPIServer}
+	p.reposRules = []repoRules{apimachinery, api, clientGo, apiserver, kubeAggregator, sampleAPIServer, apiExtensionsAPIServer, metrics}
 	glog.Infof("publisher munger rules: %#v\n", p.reposRules)
 	p.features = features
 	p.githubConfig = config
@@ -260,7 +325,7 @@ func (p *PublisherMunger) updateKubernetes() error {
 	cmd := exec.Command("git", "fetch", "origin")
 	cmd.Dir = filepath.Join(p.k8sIOPath, "kubernetes")
 	output, err := cmd.CombinedOutput()
-	p.plog.Infof("%s", output)
+	p.plog.Infof("%s\n%s", cmdStr(*cmd), output)
 	if err != nil {
 		return err
 	}
@@ -272,7 +337,7 @@ func (p *PublisherMunger) updateKubernetes() error {
 			cmd := exec.Command("git", "branch", "-f", src.branch, fmt.Sprintf("origin/%s", src.branch))
 			cmd.Dir = filepath.Join(p.k8sIOPath, "kubernetes")
 			output, err := cmd.CombinedOutput()
-			p.plog.Infof("%s", output)
+			p.plog.Infof("%s\n%s", cmdStr(*cmd), output)
 			if err == nil {
 				continue
 			}
@@ -281,7 +346,7 @@ func (p *PublisherMunger) updateKubernetes() error {
 			cmd = exec.Command("git", "reset", "--hard", fmt.Sprintf("origin/%s", src.branch))
 			cmd.Dir = filepath.Join(p.k8sIOPath, "kubernetes")
 			output, err = cmd.CombinedOutput()
-			p.plog.Infof("%s", output)
+			p.plog.Infof("%s\n%s", cmdStr(*cmd), output)
 			if err != nil {
 				return err
 			}
@@ -300,7 +365,10 @@ func (p *PublisherMunger) ensureCloned(dst string, dstURL string) error {
 	if err != nil {
 		return err
 	}
-	err = exec.Command("git", "clone", dstURL, dst).Run()
+	cmd := exec.Command("git", "clone", dstURL, dst)
+	output, err := cmd.CombinedOutput()
+	p.plog.Infof("%s\n%s", cmdStr(*cmd), output)
+
 	return err
 }
 
@@ -331,7 +399,7 @@ func (p *PublisherMunger) construct() error {
 		for _, branchRule := range repoRules.srcToDst {
 			cmd := exec.Command(repoRules.publishScript, branchRule.src.branch, branchRule.dst.branch, formatDeps(branchRule.deps), kubernetesRemote)
 			output, err := cmd.CombinedOutput()
-			p.plog.Infof("%s", output)
+			p.plog.Infof("%s\n%s", cmdStr(*cmd), output)
 			if err != nil {
 				return err
 			}
@@ -354,7 +422,7 @@ func (p *PublisherMunger) publish() error {
 		for _, branchRule := range repoRules.srcToDst {
 			cmd := exec.Command("/publish_scripts/push.sh", p.githubConfig.Token(), branchRule.dst.branch)
 			output, err := cmd.CombinedOutput()
-			p.plog.Infof("%s", output)
+			p.plog.Infof("%s\n%s", cmdStr(*cmd), output)
 			if err != nil {
 				return err
 			}
@@ -400,3 +468,17 @@ func (p *PublisherMunger) RegisterOptions(opts *options.Options) sets.String {
 
 // Munge is the workhorse the will actually make updates to the PR
 func (p *PublisherMunger) Munge(obj *github.MungeObject) {}
+
+type cmdStr exec.Cmd
+
+func (cs cmdStr) String() string {
+	args := make([]string, len(cs.Args))
+	for i, s := range cs.Args {
+		if strings.IndexRune(s, ' ') != -1 {
+			args[i] = fmt.Sprintf("%q", s)
+		} else {
+			args[i] = s
+		}
+	}
+	return strings.Join(args, " ")
+}
