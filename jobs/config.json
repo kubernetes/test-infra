@@ -10203,6 +10203,17 @@
       "UNKNOWN"
     ]
   },
+  "pull-kubernetes-dind-build": {
+    "args": [
+      "--env=KUBE_RELEASE_RUN_TESTS=n",
+      "make",
+      "quick-release"
+    ],
+    "scenario": "execute",
+    "sigOwners": [
+      "sig-testing"
+    ]
+  },
   "pull-kubernetes-e2e-gce": {
     "args": [
       "--build",
