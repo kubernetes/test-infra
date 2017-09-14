@@ -437,7 +437,11 @@ class JobTest(unittest.TestCase):
                     job, kubetest_timeout, container_timeout
                     ))
         if bad_jobs:
-            self.fail('\n'.join(str(s) for s in bad_jobs))
+            self.fail(
+                'jobs: %s, '
+                'prow timeout need to be at least 20min longer than timeout in config.json'
+                % ('\n'.join(str(s) for s in bad_jobs))
+                )
 
     def test_valid_job_config_json(self):
         """Validate jobs/config.json."""
