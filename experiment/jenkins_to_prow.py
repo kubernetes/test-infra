@@ -104,9 +104,10 @@ def main(job, jenkins_path, suffix, prow_path, config_path, delete):
                 args.append('--bare')
             else:
                 if 'repo-name' in real_job:
-                    args.append('--repo=%s' % real_job['repo-name'])
-                if 'branch' in real_job:
-                    args.append('--branch=%s' % real_job['branch'])
+                    repo_arg = '--repo=%s=%s' % real_job['repo_name']
+                    if 'branch' in real_job:
+                        repo_arg += '=' + real_job['branch']
+                    args.append(repo_arg)
             dump.append(output)
             job_names.append(real_job['job-name'])
 
