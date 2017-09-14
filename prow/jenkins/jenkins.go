@@ -25,7 +25,7 @@ import (
 	"time"
 
 	"k8s.io/test-infra/prow/kube"
-	"k8s.io/test-infra/prow/pjutil"
+	"k8s.io/test-infra/prow/npj"
 )
 
 const (
@@ -112,7 +112,7 @@ func (c *Client) Build(pj *kube.ProwJob) (*url.URL, error) {
 	if err != nil {
 		return nil, err
 	}
-	env := pjutil.EnvForSpec(pj.Spec)
+	env := npj.EnvForSpec(pj.Spec)
 	env["buildId"] = pj.Metadata.Name
 
 	q := u.Query()
