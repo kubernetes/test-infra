@@ -297,8 +297,8 @@ func handle(gc githubClient, log *logrus.Entry, ae assignEvent, sc slackClient, 
 
 		// If sig matches then send a notification on slack.
 		for _, sig := range sigMatches {
-			msg := fmt.Sprintf("Message: ```%s```\nIssue: %d, %s\nUrl: %s.", ae.body, ae.issue.Number, ae.issue.Title, ae.issue.HTMLURL)
-			if err := sc.WriteMessage(plugins.FormatResponseRaw(ae.body, ae.url, ae.login, msg), "sig-"+sig[1]); err != nil {
+			msg := fmt.Sprintf("This SIG was mentioned by <@%s> on Github. (%s)\n>>>%s", ae.login, ae.url, ae.body)
+			if err := sc.WriteMessage(msg, "sig-"+sig[1]); err != nil {
 				log.WithError(err).Error("Failed to send message on slack channel: ", "sig-"+sig[1], " with message ", msg)
 			}
 		}
