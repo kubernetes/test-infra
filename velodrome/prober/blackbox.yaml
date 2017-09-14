@@ -67,7 +67,10 @@ metadata:
   name: blackbox-prober
   labels:
     app: blackbox-prober
+  annotations:
+    cloud.google.com/load-balancer-type: "internal"
 spec:
+  type: LoadBalancer
   ports:
   - name: blackbox-prober
     port: 80
