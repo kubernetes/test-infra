@@ -597,7 +597,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-autoscaling"
     ]
   },
   "ci-kubernetes-e2e-gce-autoscaling-migs": {
@@ -614,7 +614,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-autoscaling"
     ]
   },
   "ci-kubernetes-e2e-gce-canary": {
@@ -3817,7 +3817,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-autoscaling"
     ]
   },
   "ci-kubernetes-e2e-gci-gce-autoscaling-migs": {
@@ -3834,7 +3834,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-autoscaling"
     ]
   },
   "ci-kubernetes-e2e-gci-gce-docker": {
@@ -4519,7 +4519,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-autoscaling"
     ]
   },
   "ci-kubernetes-e2e-gci-gke-flaky": {
@@ -5463,7 +5463,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-autoscaling"
     ]
   },
   "ci-kubernetes-e2e-gke-canary": {
