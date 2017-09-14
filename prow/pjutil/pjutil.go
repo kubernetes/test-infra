@@ -141,7 +141,9 @@ func ProwJobToPod(pj kube.ProwJob, buildID string) *kube.Pod {
 			Labels: map[string]string{
 				kube.CreatedByProw: "true",
 				"type":             string(pj.Spec.Type),
-				"job":              pj.Spec.Job,
+			},
+			Annotations: map[string]string{
+				"job": pj.Spec.Job,
 			},
 		},
 		Spec: spec,
