@@ -77,6 +77,10 @@ type githubClient interface {
 	ListTeamMembers(id int) ([]github.TeamMember, error)
 }
 
+type slackClient interface {
+	WriteMessage(msg string, channel string) error
+}
+
 func handleIssueComment(pc plugins.PluginClient, ic github.IssueCommentEvent) error {
 	if ic.Action != github.IssueCommentActionCreated {
 		return nil
@@ -92,7 +96,7 @@ func handleIssueComment(pc plugins.PluginClient, ic github.IssueCommentEvent) er
 		issue:   ic.Issue,
 		comment: ic.Comment,
 	}
-	return handle(pc.GitHubClient, pc.Logger, ae, pc.PluginConfig.Label.MilestoneMaintainersID)
+	return handle(pc.GitHubClient, pc.Logger, ae, pc.SlackClient, pc.PluginConfig.Label.MilestoneMaintainersID)
 }
 
 func handleIssue(pc plugins.PluginClient, i github.IssueEvent) error {
@@ -109,7 +113,7 @@ func handleIssue(pc plugins.PluginClient, i github.IssueEvent) error {
 		number: i.Issue.Number,
 		issue:  i.Issue,
 	}
-	return handle(pc.GitHubClient, pc.Logger, ae, pc.PluginConfig.Label.MilestoneMaintainersID)
+	return handle(pc.GitHubClient, pc.Logger, ae, pc.SlackClient, pc.PluginConfig.Label.MilestoneMaintainersID)
 }
 
 func handlePullRequest(pc plugins.PluginClient, pr github.PullRequestEvent) error {
@@ -125,7 +129,7 @@ func handlePullRequest(pc plugins.PluginClient, pr github.PullRequestEvent) erro
 		url:    pr.PullRequest.HTMLURL,
 		number: pr.Number,
 	}
-	return handle(pc.GitHubClient, pc.Logger, ae, pc.PluginConfig.Label.MilestoneMaintainersID)
+	return handle(pc.GitHubClient, pc.Logger, ae, pc.SlackClient, pc.PluginConfig.Label.MilestoneMaintainersID)
 }
 
 // Get Labels from Regexp matches
@@ -152,7 +156,7 @@ func (ae assignEvent) getRepeats(sigMatches [][]string, existingLabels map[strin
 }
 
 // TODO: refactor this function.  It's grown too complex
-func handle(gc githubClient, log *logrus.Entry, ae assignEvent, maintainersID int) error {
+func handle(gc githubClient, log *logrus.Entry, ae assignEvent, sc slackClient, maintainersID int) error {
 	// only parse newly created comments/issues/PRs and if non bot author
 	botName, err := gc.BotName()
 	if err != nil {
@@ -288,6 +292,14 @@ func handle(gc githubClient, log *logrus.Entry, ae assignEvent, maintainersID in
 			msg := fmt.Sprintf(chatBack, strings.Join(toRepeat, ", "))
 			if err := gc.CreateComment(ae.org, ae.repo, ae.number, plugins.FormatResponseRaw(ae.body, ae.url, ae.login, msg)); err != nil {
 				log.WithError(err).Errorf("Could not create comment \"%s\".", msg)
+			}
+		}
+
+		// If sig matches then send a notification on slack.
+		for _, sig := range sigMatches {
+			msg := fmt.Sprintf("Message: ```%s```\nIssue: %d, %s\nUrl: %s.", ae.body, ae.issue.Number, ae.issue.Title, ae.issue.HTMLURL)
+			if err := sc.WriteMessage(plugins.FormatResponseRaw(ae.body, ae.url, ae.login, msg), "sig-"+sig[1]); err != nil {
+				log.WithError(err).Error("Failed to send message on slack channel: ", "sig-"+sig[1], " with message ", msg)
 			}
 		}
 	}
