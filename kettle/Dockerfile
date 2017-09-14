@@ -10,7 +10,7 @@ RUN curl -o installer https://sdk.cloud.google.com && bash installer --disable-p
 RUN ln -s /data/build.db /kettle/
 
 # stupid hack to deal with debian python2 getsitepackages vs pypy's version
-RUN bash -c 'touch /usr/local/site-packages/google/{__init__.py,cloud/__init__.py,cloud/pubsub/__init__.py}'
+RUN bash -c 'touch /usr/local/site-packages/google/{__init__.py,cloud/__init__.py}'
 
 ADD *.py schema.json runner.sh /kettle/
 ADD buckets.yaml /
