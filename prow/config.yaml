@@ -5,7 +5,7 @@ plank:
 sinker:
   resync_period: 1h
   max_prowjob_age: 48h
-  max_pod_age: 12h
+  max_pod_age: 1h
 
 prowjob_namespace: default
 pod_namespace: test-pods
