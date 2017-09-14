@@ -76,6 +76,7 @@ type options struct {
 	gcpNodeImage        string
 	gcpNodes            string
 	gcpProject          string
+	gcpProjectType      string
 	gcpServiceAccount   string
 	gcpRegion           string
 	gcpZone             string
@@ -119,6 +120,7 @@ func defineFlags() *options {
 	flag.Var(&o.ginkgoParallel, "ginkgo-parallel", fmt.Sprintf("Run Ginkgo tests in parallel, default %d runners. Use --ginkgo-parallel=N to specify an exact count.", defaultGinkgoParallel))
 	flag.StringVar(&o.gcpCloudSdk, "gcp-cloud-sdk", "", "Install/upgrade google-cloud-sdk to the gs:// path if set")
 	flag.StringVar(&o.gcpProject, "gcp-project", "", "For use with gcloud commands")
+	flag.StringVar(&o.gcpProjectType, "gcp-project-type", "", "Explicitly indicate which project type to select from boskos")
 	flag.StringVar(&o.gcpServiceAccount, "gcp-service-account", "", "Service account to activate before using gcloud")
 	flag.StringVar(&o.gcpZone, "gcp-zone", "", "For use with gcloud commands")
 	flag.StringVar(&o.gcpRegion, "gcp-region", "", "For use with gcloud commands")
@@ -604,7 +606,9 @@ func prepareGcp(o *options) error {
 	}
 	if o.gcpProject == "" {
 		var resType string
-		if o.provider == "gke" {
+		if o.gcpProjectType != "" {
+			resType = o.gcpProjectType
+		} else if o.provider == "gke" {
 			resType = "gke-project"
 		} else {
 			resType = "gce-project"
@@ -618,7 +622,7 @@ func prepareGcp(o *options) error {
 		}
 
 		if p == "" {
-			return fmt.Errorf("boskos does not have a free %s at the moment", p)
+			return fmt.Errorf("boskos does not have a free %s at the moment", resType)
 		}
 
 		go func(c *client.Client, proj string) {
