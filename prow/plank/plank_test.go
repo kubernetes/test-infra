@@ -467,7 +467,7 @@ func TestSyncPendingJob(t *testing.T) {
 			expectedURL:      "boop-42/failure",
 		},
 		{
-			name: "evicted pod",
+			name: "delete evicted pod",
 			pj: kube.ProwJob{
 				Metadata: kube.ObjectMeta{
 					Name: "boop-42",
@@ -490,7 +490,7 @@ func TestSyncPendingJob(t *testing.T) {
 			},
 			expectedComplete: false,
 			expectedState:    kube.PendingState,
-			expectedNumPods:  1,
+			expectedNumPods:  0,
 		},
 		{
 			name: "running pod",
