@@ -884,6 +884,8 @@ presubmits:
       containers:
       - image: gcr.io/k8s-testimages/gubernator:0.3
         args:
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - --upload=gs://kubernetes-jenkins/pr-logs
         - --service-account=/etc/service-account/service-account.json
         volumeMounts:
