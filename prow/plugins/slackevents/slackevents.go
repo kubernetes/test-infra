@@ -51,16 +51,18 @@ func init() {
 
 func handleComment(pc plugins.PluginClient, e github.GenericCommentEvent) error {
 	c := client{
-		SlackConfig: pc.PluginConfig.Slack,
-		SlackClient: pc.SlackClient,
+		GithubClient: pc.GitHubClient,
+		SlackConfig:  pc.PluginConfig.Slack,
+		SlackClient:  pc.SlackClient,
 	}
 	return echoToSlack(c, e)
 }
 
 func handlePush(pc plugins.PluginClient, pe github.PushEvent) error {
 	c := client{
-		SlackConfig: pc.PluginConfig.Slack,
-		SlackClient: pc.SlackClient,
+		GithubClient: pc.GitHubClient,
+		SlackConfig:  pc.PluginConfig.Slack,
+		SlackClient:  pc.SlackClient,
 	}
 	return notifyOnSlackIfManualMerge(c, pe)
 }
