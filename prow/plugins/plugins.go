@@ -35,6 +35,7 @@ import (
 
 var (
 	allPlugins                 = map[string]struct{}{}
+	genericCommentHandlers     = map[string]GenericCommentHandler{}
 	issueHandlers              = map[string]IssueHandler{}
 	issueCommentHandlers       = map[string]IssueCommentHandler{}
 	pullRequestHandlers        = map[string]PullRequestHandler{}
@@ -91,6 +92,13 @@ type ReviewCommentEventHandler func(PluginClient, github.ReviewCommentEvent) err
 func RegisterReviewCommentEventHandler(name string, fn ReviewCommentEventHandler) {
 	allPlugins[name] = struct{}{}
 	reviewCommentEventHandlers[name] = fn
+}
+
+type GenericCommentHandler func(PluginClient, github.GenericCommentEvent) error
+
+func RegisterGenericCommentHandler(name string, fn GenericCommentHandler) {
+	allPlugins[name] = struct{}{}
+	genericCommentHandlers[name] = fn
 }
 
 // PluginClient may be used concurrently, so each entry must be thread-safe.
@@ -267,6 +275,20 @@ func (pa *PluginAgent) Start(path string) error {
 		}
 	}()
 	return nil
+}
+
+// GenericCommentHandlers returns a map of plugin names to handlers for the repo.
+func (pa *PluginAgent) GenericCommentHandlers(owner, repo string) map[string]GenericCommentHandler {
+	pa.mut.Lock()
+	defer pa.mut.Unlock()
+
+	hs := map[string]GenericCommentHandler{}
+	for _, p := range pa.getPlugins(owner, repo) {
+		if h, ok := genericCommentHandlers[p]; ok {
+			hs[p] = h
+		}
+	}
+	return hs
 }
 
 // IssueHandlers returns a map of plugin names to handlers for the repo.

@@ -86,6 +86,7 @@ type PullRequestEvent struct {
 	Action      PullRequestEventAction `json:"action"`
 	Number      int                    `json:"number"`
 	PullRequest PullRequest            `json:"pull_request"`
+	Repo        Repo                   `json:"repository"`
 	Label       Label                  `json:"label"`
 }
 
@@ -377,4 +378,23 @@ type Team struct {
 // TeamMember is a member of an organizational team
 type TeamMember struct {
 	Login string `json:"login"`
+}
+
+type GenericCommentEventAction string
+
+// Comments indicate values that are coerced to the specified value.
+const (
+	GenericCommentActionCreated GenericCommentEventAction = "created" // "opened", "submitted"
+	GenericCommentActionEdited                            = "edited"
+	GenericCommentActionDeleted                           = "deleted" // "dismissed"
+)
+
+type GenericCommentEvent struct {
+	IsPR    bool
+	Action  GenericCommentEventAction
+	Body    string
+	HTMLURL string
+	Number  int
+	Repo    Repo
+	User    User
 }
