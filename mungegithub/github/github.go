@@ -2066,7 +2066,7 @@ func (obj *MungeObject) MergePR(who string) bool {
 	if config.DryRun {
 		return true
 	}
-	mergeBody := fmt.Sprintf("Automatic merge from %s", who)
+	mergeBody := fmt.Sprintf("Automatic merge from %s.", who)
 	obj.WriteComment(mergeBody)
 
 	if obj.Issue.Title != nil {

@@ -282,6 +282,8 @@ type SubmitQueue struct {
 	ContextURL   string
 	batchStatus  submitQueueBatchStatus
 	ciStatus     map[string]map[string]jobStatus // type (eg batch) : job : status
+
+	MergeToMasterMessage string // extra message when PR is merged to master branch
 }
 
 func init() {
@@ -578,15 +580,16 @@ func (sq *SubmitQueue) RegisterOptions(opts *options.Options) sets.String {
 	opts.RegisterStringSlice(&sq.NonBlockingJobNames, "nonblocking-jobs", []string{}, "Comma separated list of jobs that don't block merges, but will have status reported and issues filed.")
 	opts.RegisterStringSlice(&sq.AdditionalRequiredLabels, "additional-required-labels", []string{}, "Comma separated list of labels required for merging PRs on top of the existing required.")
 	opts.RegisterBool(&sq.FakeE2E, "fake-e2e", false, "Whether to use a fake for testing E2E stability.")
-	opts.RegisterStringSlice(&sq.DoNotMergeMilestones, "do-not-merge-milestones", []string{}, "List of milestones which, when applied, will cause the PR to not be merged")
+	opts.RegisterStringSlice(&sq.DoNotMergeMilestones, "do-not-merge-milestones", []string{}, "List of milestones which, when applied, will cause the PR to not be merged.")
 	opts.RegisterInt(&sq.AdminPort, "admin-port", 9999, "If non-zero, will serve administrative actions on this port.")
 	opts.RegisterString(&sq.Metadata.historyURL, "history-url", "", "URL to access the submit-queue instance's health history.")
 	opts.RegisterString(&sq.Metadata.chartURL, "chart-url", "", "URL to access the submit-queue instance's health charts.")
 	opts.RegisterString(&sq.ProwURL, "prow-url", "", "Prow deployment base URL to read batch results and direct users to.")
 	opts.RegisterBool(&sq.BatchEnabled, "batch-enabled", false, "Do batch merges (requires prow/splice coordination).")
-	opts.RegisterString(&sq.ContextURL, "context-url", "", "URL where the submit queue is serving - used in Github status contexts")
-	opts.RegisterBool(&sq.GateApproved, "gate-approved", false, "Gate on approved label")
-	opts.RegisterBool(&sq.GateCLA, "gate-cla", false, "Gate on cla labels")
+	opts.RegisterString(&sq.ContextURL, "context-url", "", "URL where the submit queue is serving - used in Github status contexts.")
+	opts.RegisterBool(&sq.GateApproved, "gate-approved", false, "Gate on approved label.")
+	opts.RegisterBool(&sq.GateCLA, "gate-cla", false, "Gate on cla labels.")
+	opts.RegisterString(&sq.MergeToMasterMessage, "merge-to-master-message", "", "Extra message when PR is merged to master branch.")
 
 	opts.RegisterUpdateCallback(func(changed sets.String) error {
 		if changed.HasAny("prow-url", "batch-enabled") {
@@ -1331,6 +1334,12 @@ func (sq *SubmitQueue) handleGithubE2EAndMerge() {
 }
 
 func (sq *SubmitQueue) mergePullRequest(obj *github.MungeObject, msg, extra string) bool {
+	isMaster, _ := obj.IsForBranch("master")
+	if isMaster {
+		sq.opts.Lock()
+		extra = extra + ". " + sq.MergeToMasterMessage
+		sq.opts.Unlock()
+	}
 	ok := obj.MergePR("submit-queue" + extra)
 	if !ok {
 		return ok
