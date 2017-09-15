@@ -206,7 +206,7 @@ presubmits:
         - name: docker-graph-storage
           mountPath: /var/lib/docker
       - name: build
-        image: gcr.io/k8s-testimages/e2e-prow
+        image: gcr.io/k8s-testimages/kubekins-e2e-prow:latest
         env:
         - name: DOCKER_HOST
           value: tcp://localhost:2375
@@ -636,7 +636,7 @@ presubmits:
         - name: docker-graph-storage
           mountPath: /var/lib/docker
       - name: build
-        image: gcr.io/k8s-testimages/e2e-prow
+        image: gcr.io/k8s-testimages/kubekins-e2e-prow:latest
         env:
         - name: DOCKER_HOST
           value: tcp://localhost:2375
