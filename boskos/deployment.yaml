@@ -20,6 +20,9 @@ metadata:
   name: boskos-storage
   namespace: test-pods
 spec:
+  claimRef:
+    name: boskos-volume-boskos-0
+    namespace: test-pods
   capacity:
     storage: 1Gi
   accessModes:
@@ -29,30 +32,14 @@ spec:
     pdName: boskos-storage
     fsType: ext4
 ---
-# Start of PersistentVolumeClaim
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  labels:
-    app: boskos
-  name: boskos-storage
-  namespace: test-pods
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 1Gi
----
-# Start of Deployment
-apiVersion: extensions/v1beta1
-kind: Deployment
+# Start of StatefulSet
+apiVersion: apps/v1beta1
+kind: StatefulSet
 metadata:
   name: boskos
-  labels:
-    app: boskos
   namespace: test-pods
 spec:
+  serviceName: "boskos"
   replicas: 1  # one canonical source of resources
   template:
     metadata:
@@ -77,9 +64,15 @@ spec:
           mountPath: /etc/config
           readOnly: true
       volumes:
-        - name: boskos-volume
-          persistentVolumeClaim:
-            claimName: boskos-storage
         - name: boskos-config
           configMap:
             name: resources
+  volumeClaimTemplates:
+  - metadata:
+      name: boskos-volume
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: boskos
+      resources:
+        requests:
+          storage: 1Gi
