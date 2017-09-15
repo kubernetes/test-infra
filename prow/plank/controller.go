@@ -261,10 +261,9 @@ func (c *Controller) syncPendingJob(pj kube.ProwJob, pm map[string]kube.Pod, rep
 
 		case kube.PodFailed:
 			if pod.Status.Reason == kube.Evicted {
-				// Pod was evicted. We will restart it in the next sync if kubelet
-				// has cleaned up the previous one.
 				c.incrementNumPendingJobs(pj.Spec.Job)
-				return nil
+				// Pod was evicted. We will recreate it in the next resync.
+				return c.pkc.DeletePod(pj.Metadata.Name)
 			}
 			// Pod failed. Update ProwJob, talk to GitHub.
 			pj.Status.CompletionTime = time.Now()
