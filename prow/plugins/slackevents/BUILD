@@ -8,10 +8,11 @@ load(
 
 go_test(
     name = "go_default_test",
-    srcs = ["push_test.go"],
+    srcs = ["slackevents_test.go"],
     library = ":go_default_library",
     deps = [
         "//prow/github:go_default_library",
+        "//prow/github/fakegithub:go_default_library",
         "//prow/plugins:go_default_library",
         "//prow/slack:go_default_library",
         "//prow/slack/fakeslack:go_default_library",

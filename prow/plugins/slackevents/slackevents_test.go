@@ -22,6 +22,7 @@ import (
 	"testing"
 
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/github/fakegithub"
 	"k8s.io/test-infra/prow/plugins"
 	"k8s.io/test-infra/prow/slack"
 	"k8s.io/test-infra/prow/slack/fakeslack"
@@ -93,11 +94,13 @@ func TestPush(t *testing.T) {
 	}
 
 	pc := client{
-		SlackEvents: []plugins.SlackEvent{
-			{
-				Repos:     []string{"kubernetes/kubernetes"},
-				Channels:  []string{"kubernetes-dev", "sig-contribex"},
-				WhiteList: []string{"k8s-merge-robot"},
+		SlackConfig: plugins.Slack{
+			MergeWarnings: []plugins.MergeWarning{
+				{
+					Repos:     []string{"kubernetes/kubernetes"},
+					Channels:  []string{"kubernetes-dev", "sig-contribex"},
+					WhiteList: []string{"k8s-merge-robot"},
+				},
 			},
 		},
 		SlackClient: slack.NewFakeClient(),
@@ -137,4 +140,103 @@ func TestPush(t *testing.T) {
 		}
 	}
 
+}
+
+//Make sure we are sending message to proper sig mentions
+func TestComment(t *testing.T) {
+	orgMember := "cjwagner"
+	bot := "k8s-ci-robot"
+	type testCase struct {
+		name             string
+		action           github.GenericCommentEventAction
+		body             string
+		expectedMessages map[string][]string
+		issueLabels      []string
+		repoLabels       []string
+		commenter        string
+	}
+	testcases := []testCase{
+		{
+			name:             "If sig mentioned then we send a message to the sig with the body of the comment",
+			action:           github.GenericCommentActionCreated,
+			body:             "@kubernetes/sig-node-misc This issue needs update.",
+			expectedMessages: map[string][]string{"sig-node": {"This issue needs update."}},
+			commenter:        orgMember,
+		},
+		{
+			name:             "Don't sent message if comment isn't new.",
+			action:           github.GenericCommentActionEdited,
+			body:             "@kubernetes/sig-node-misc This issue needs update.",
+			expectedMessages: map[string][]string{},
+			commenter:        orgMember,
+		},
+		{
+			name:             "Don't sent message if commenter is the bot.",
+			action:           github.GenericCommentActionEdited,
+			body:             "@kubernetes/sig-node-misc This issue needs update.",
+			expectedMessages: map[string][]string{},
+			commenter:        bot,
+		},
+		{
+			name:             "If multiple sigs mentioned, we send a message to each sig with the body of the comment",
+			action:           github.GenericCommentActionCreated,
+			body:             "@kubernetes/sig-node-misc, @kubernetes/sig-api-machinery-misc Message sent to multiple sigs.",
+			expectedMessages: map[string][]string{"sig-api-machinery": {"Message sent to multiple sigs."}, "sig-node": {"Message sent to multiple sigs."}},
+			commenter:        orgMember,
+		},
+		{
+			name:             "If multiple sigs mentioned, but only one channel is whitelisted, only send to one channel.",
+			action:           github.GenericCommentActionCreated,
+			body:             "@kubernetes/sig-node-misc, @kubernetes/sig-testing-misc Message sent to multiple sigs.",
+			expectedMessages: map[string][]string{"sig-node": {"Message sent to multiple sigs."}},
+			issueLabels:      []string{},
+			commenter:        orgMember,
+		},
+		{
+			name:             "Message should not be sent if the pattern for the channel does not match",
+			action:           github.GenericCommentActionCreated,
+			body:             "@kubernetes/node-misc No message sent",
+			expectedMessages: map[string][]string{},
+			commenter:        orgMember,
+		},
+		{
+			name:             "Message sent only if the pattern for the channel match",
+			action:           github.GenericCommentActionCreated,
+			body:             "@kubernetes/node-misc @kubernetes/sig-api-machinery-bugs Message sent to matching sigs.",
+			expectedMessages: map[string][]string{"sig-api-machinery": {"Message sent to matching sigs."}},
+			commenter:        orgMember,
+		},
+	}
+
+	for _, tc := range testcases {
+		fakeSlackClient := &fakeslack.FakeClient{
+			SentMessages: make(map[string][]string),
+		}
+		client := client{
+			GithubClient: &fakegithub.FakeClient{},
+			SlackClient:  fakeSlackClient,
+			SlackConfig:  plugins.Slack{MentionChannels: []string{"sig-node", "sig-api-machinery"}},
+		}
+		e := github.GenericCommentEvent{
+			Action: tc.action,
+			Body:   tc.body,
+			User:   github.User{Login: tc.commenter},
+		}
+
+		if err := echoToSlack(client, e); err != nil {
+			t.Fatalf("For case %s, didn't expect error from label test: %v", tc.name, err)
+		}
+		if len(tc.expectedMessages) != len(fakeSlackClient.SentMessages) {
+			t.Fatalf("The number of messages sent do not tally. Expecting %d messages but received %d messages.",
+				len(tc.expectedMessages), len(fakeSlackClient.SentMessages))
+		}
+		for k, v := range tc.expectedMessages {
+			if _, ok := fakeSlackClient.SentMessages[k]; !ok {
+				t.Fatalf("Messages is not sent to channel %s", k)
+			}
+			if len(v) != len(fakeSlackClient.SentMessages[k]) {
+				t.Fatalf("All messages are not delivered to the channel %s", k)
+			}
+		}
+	}
 }
