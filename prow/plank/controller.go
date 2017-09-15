@@ -274,6 +274,11 @@ func (c *Controller) syncPendingJob(pj kube.ProwJob, pm map[string]kube.Pod, rep
 			// Pod is running. Do nothing.
 			c.incrementNumPendingJobs(pj.Spec.Job)
 			return nil
+		} else if _, ok := pm[pj.Status.PodName]; ok {
+			// Delete the old pod.
+			if err := c.pkc.DeletePod(pj.Status.PodName); err != nil {
+				return fmt.Errorf("error deleting pod %s: %v", pj.Status.PodName, err)
+			}
 		}
 	}
 
