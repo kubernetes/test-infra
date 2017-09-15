@@ -30,7 +30,7 @@ import (
 )
 
 var (
-	match  = regexp.MustCompile(`^/joke\s*$`)
+	match  = regexp.MustCompile(`(?mi)^/joke\s*$`)
 	simple = regexp.MustCompile(`^[\w?'!., ]+$`)
 )
 
