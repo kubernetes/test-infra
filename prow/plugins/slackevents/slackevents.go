@@ -18,6 +18,7 @@ package slackevents
 
 import (
 	"fmt"
+	"regexp"
 
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/plugins"
@@ -27,22 +28,38 @@ const (
 	pluginName = "slackevents"
 )
 
+var sigMatcher = regexp.MustCompile(`(?m)@kubernetes/sig-([\w-]*)-(misc|test-failures|bugs|feature-requests|proposals|pr-reviews|api-reviews)`)
+
 type slackClient interface {
 	WriteMessage(text string, channel string) error
 }
 
+type githubClient interface {
+	BotName() (string, error)
+}
+
 type client struct {
-	SlackClient slackClient
-	SlackEvents []plugins.SlackEvent
+	GithubClient githubClient
+	SlackClient  slackClient
+	SlackConfig  plugins.Slack
 }
 
 func init() {
 	plugins.RegisterPushEventHandler(pluginName, handlePush)
+	plugins.RegisterGenericCommentHandler(pluginName, handleComment)
+}
+
+func handleComment(pc plugins.PluginClient, e github.GenericCommentEvent) error {
+	c := client{
+		SlackConfig: pc.PluginConfig.Slack,
+		SlackClient: pc.SlackClient,
+	}
+	return echoToSlack(c, e)
 }
 
 func handlePush(pc plugins.PluginClient, pe github.PushEvent) error {
 	c := client{
-		SlackEvents: pc.PluginConfig.SlackEvents,
+		SlackConfig: pc.PluginConfig.Slack,
 		SlackClient: pc.SlackClient,
 	}
 	return notifyOnSlackIfManualMerge(c, pe)
@@ -50,7 +67,7 @@ func handlePush(pc plugins.PluginClient, pe github.PushEvent) error {
 
 func notifyOnSlackIfManualMerge(pc client, pe github.PushEvent) error {
 	//Fetch slackevent configuration for the repo we received the merge event.
-	if se := getSlackEvent(pc, pe.Repo.Owner.Login, pe.Repo.Name); se != nil {
+	if se := getSlackEvent(pc.SlackConfig.MergeWarnings, pe.Repo.Owner.Login, pe.Repo.Name); se != nil {
 		//If the slackevent whitelist has the merge user then no need to send a message.
 		if !stringInArray(pe.Pusher.Name, se.WhiteList) && !stringInArray(pe.Sender.Login, se.WhiteList) {
 			message := fmt.Sprintf("Warning: <@%s> manually merged %s", pe.Sender.Login, pe.Compare)
@@ -64,8 +81,8 @@ func notifyOnSlackIfManualMerge(pc client, pe github.PushEvent) error {
 	return nil
 }
 
-func getSlackEvent(pc client, org, repo string) *plugins.SlackEvent {
-	for _, se := range pc.SlackEvents {
+func getSlackEvent(slackEvents []plugins.MergeWarning, org, repo string) *plugins.MergeWarning {
+	for _, se := range slackEvents {
 		if stringInArray(org, se.Repos) || stringInArray(fmt.Sprintf("%s/%s", org, repo), se.Repos) {
 			return &se
 		}
@@ -80,4 +97,41 @@ func stringInArray(str string, list []string) bool {
 		}
 	}
 	return false
+}
+
+func echoToSlack(pc client, e github.GenericCommentEvent) error {
+	// Ignore bot comments and comments that aren't new.
+	botName, err := pc.GithubClient.BotName()
+	if err != nil {
+		return err
+	}
+	if e.User.Login == botName {
+		return nil
+	}
+	if e.Action != github.GenericCommentActionCreated {
+		return nil
+	}
+
+	sigMatches := sigMatcher.FindAllStringSubmatch(e.Body, -1)
+
+	for _, match := range sigMatches {
+		sig := "sig-" + match[1]
+		// Check if this sig is a slack channel that should be messaged.
+		found := false
+		for _, channel := range pc.SlackConfig.MentionChannels {
+			if channel == sig {
+				found = true
+				break
+			}
+		}
+		if !found {
+			continue
+		}
+
+		msg := fmt.Sprintf("%s was mentioned by <@%s> on Github. (%s)\n>>>%s", sig, e.User.Login, e.HTMLURL, e.Body)
+		if err := pc.SlackClient.WriteMessage(msg, sig); err != nil {
+			return fmt.Errorf("Failed to send message on slack channel: %q with message %q. Err: %v", sig, msg, err)
+		}
+	}
+	return nil
 }

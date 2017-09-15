@@ -14,13 +14,16 @@ heart:
   adorees:
   - k8s-merge-robot
 
-slackevents:
-- repos:
-  - kubernetes/kubernetes
-  channels:
-  - kubernetes-dev
-  whitelist:
-  - k8s-merge-robot
+slack:
+  mentionchannels:
+  - sig-testing
+  mergewarnings:
+  - repos:
+    - kubernetes/kubernetes
+    channels:
+    - kubernetes-dev
+    whitelist:
+    - k8s-merge-robot
 
 label:
   # You can curl the following endpoint in order to determine the github ID of your team

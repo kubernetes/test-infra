@@ -286,21 +286,10 @@ func handle(gc githubClient, log *logrus.Entry, ae assignEvent, sc slackClient, 
 		}
 		toRepeat = ae.getRepeats(sigMatches, existingLabels)
 	}
-
-	if len(toRepeat) > 0 {
-		if !isMember {
-			msg := fmt.Sprintf(chatBack, strings.Join(toRepeat, ", "))
-			if err := gc.CreateComment(ae.org, ae.repo, ae.number, plugins.FormatResponseRaw(ae.body, ae.url, ae.login, msg)); err != nil {
-				log.WithError(err).Errorf("Could not create comment \"%s\".", msg)
-			}
-		}
-
-		// If sig matches then send a notification on slack.
-		for _, sig := range sigMatches {
-			msg := fmt.Sprintf("Message: ```%s```\nIssue: %d, %s\nUrl: %s.", ae.body, ae.issue.Number, ae.issue.Title, ae.issue.HTMLURL)
-			if err := sc.WriteMessage(plugins.FormatResponseRaw(ae.body, ae.url, ae.login, msg), "sig-"+sig[1]); err != nil {
-				log.WithError(err).Error("Failed to send message on slack channel: ", "sig-"+sig[1], " with message ", msg)
-			}
+	if len(toRepeat) > 0 && !isMember {
+		msg := fmt.Sprintf(chatBack, strings.Join(toRepeat, ", "))
+		if err := gc.CreateComment(ae.org, ae.repo, ae.number, plugins.FormatResponseRaw(ae.body, ae.url, ae.login, msg)); err != nil {
+			log.WithError(err).Errorf("Could not create comment \"%s\".", msg)
 		}
 	}
 

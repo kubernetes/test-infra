@@ -25,8 +25,8 @@ import (
 
 func (s *Server) handleReviewEvent(re github.ReviewEvent) {
 	l := logrus.WithFields(logrus.Fields{
-		"org":      re.PullRequest.Base.Repo.Owner.Login,
-		"repo":     re.PullRequest.Base.Repo.Name,
+		"org":      re.Repo.Owner.Login,
+		"repo":     re.Repo.Name,
 		"pr":       re.PullRequest.Number,
 		"review":   re.Review.ID,
 		"reviewer": re.Review.User.Login,
@@ -44,12 +44,28 @@ func (s *Server) handleReviewEvent(re github.ReviewEvent) {
 			}
 		}(p, h)
 	}
+	action := genericCommentAction(string(re.Action))
+	if action == "" {
+		return
+	}
+	s.handleGenericComment(
+		&github.GenericCommentEvent{
+			IsPR:    true,
+			Action:  action,
+			Body:    re.Review.Body,
+			HTMLURL: re.Review.HTMLURL,
+			Number:  re.PullRequest.Number,
+			Repo:    re.Repo,
+			User:    re.Review.User,
+		},
+		l,
+	)
 }
 
 func (s *Server) handleReviewCommentEvent(rce github.ReviewCommentEvent) {
 	l := logrus.WithFields(logrus.Fields{
-		"org":       rce.PullRequest.Base.Repo.Owner.Login,
-		"repo":      rce.PullRequest.Base.Repo.Name,
+		"org":       rce.Repo.Owner.Login,
+		"repo":      rce.Repo.Name,
 		"pr":        rce.PullRequest.Number,
 		"review":    rce.Comment.ReviewID,
 		"commenter": rce.Comment.User.Login,
@@ -67,12 +83,28 @@ func (s *Server) handleReviewCommentEvent(rce github.ReviewCommentEvent) {
 			}
 		}(p, h)
 	}
+	action := genericCommentAction(string(rce.Action))
+	if action == "" {
+		return
+	}
+	s.handleGenericComment(
+		&github.GenericCommentEvent{
+			IsPR:    true,
+			Action:  action,
+			Body:    rce.Comment.Body,
+			HTMLURL: rce.Comment.HTMLURL,
+			Number:  rce.PullRequest.Number,
+			Repo:    rce.Repo,
+			User:    rce.Comment.User,
+		},
+		l,
+	)
 }
 
 func (s *Server) handlePullRequestEvent(pr github.PullRequestEvent) {
 	l := logrus.WithFields(logrus.Fields{
-		"org":    pr.PullRequest.Base.Repo.Owner.Login,
-		"repo":   pr.PullRequest.Base.Repo.Name,
+		"org":    pr.Repo.Owner.Login,
+		"repo":   pr.Repo.Name,
 		"pr":     pr.Number,
 		"author": pr.PullRequest.User.Login,
 		"url":    pr.PullRequest.HTMLURL,
@@ -89,6 +121,22 @@ func (s *Server) handlePullRequestEvent(pr github.PullRequestEvent) {
 			}
 		}(p, h)
 	}
+	action := genericCommentAction(string(pr.Action))
+	if action == "" {
+		return
+	}
+	s.handleGenericComment(
+		&github.GenericCommentEvent{
+			IsPR:    true,
+			Action:  action,
+			Body:    pr.PullRequest.Body,
+			HTMLURL: pr.PullRequest.HTMLURL,
+			Number:  pr.PullRequest.Number,
+			Repo:    pr.Repo,
+			User:    pr.PullRequest.User,
+		},
+		l,
+	)
 }
 
 func (s *Server) handlePushEvent(pe github.PushEvent) {
@@ -132,6 +180,22 @@ func (s *Server) handleIssueEvent(i github.IssueEvent) {
 			}
 		}(p, h)
 	}
+	action := genericCommentAction(string(i.Action))
+	if action == "" {
+		return
+	}
+	s.handleGenericComment(
+		&github.GenericCommentEvent{
+			IsPR:    i.Issue.IsPullRequest(),
+			Action:  action,
+			Body:    i.Issue.Body,
+			HTMLURL: i.Issue.HTMLURL,
+			Number:  i.Issue.Number,
+			Repo:    i.Repo,
+			User:    i.Issue.User,
+		},
+		l,
+	)
 }
 
 func (s *Server) handleIssueCommentEvent(ic github.IssueCommentEvent) {
@@ -154,6 +218,22 @@ func (s *Server) handleIssueCommentEvent(ic github.IssueCommentEvent) {
 			}
 		}(p, h)
 	}
+	action := genericCommentAction(string(ic.Action))
+	if action == "" {
+		return
+	}
+	s.handleGenericComment(
+		&github.GenericCommentEvent{
+			IsPR:    ic.Issue.IsPullRequest(),
+			Action:  action,
+			Body:    ic.Comment.Body,
+			HTMLURL: ic.Comment.HTMLURL,
+			Number:  ic.Issue.Number,
+			Repo:    ic.Repo,
+			User:    ic.Comment.User,
+		},
+		l,
+	)
 }
 
 func (s *Server) handleStatusEvent(se github.StatusEvent) {
@@ -174,6 +254,35 @@ func (s *Server) handleStatusEvent(se github.StatusEvent) {
 			pc.PluginConfig = s.Plugins.Config()
 			if err := h(pc, se); err != nil {
 				pc.Logger.WithError(err).Error("Error handling StatusEvent.")
+			}
+		}(p, h)
+	}
+}
+
+// genericCommentAction normalizes the action string to a GenericCommentEventAction or returns ""
+// if the action is unrelated to the comment text. (For example a PR 'label' action.)
+func genericCommentAction(action string) github.GenericCommentEventAction {
+	switch action {
+	case "created", "opened", "submitted":
+		return github.GenericCommentActionCreated
+	case "edited":
+		return github.GenericCommentActionEdited
+	case "deleted", "dismissed":
+		return github.GenericCommentActionDeleted
+	}
+	// The action is not related to the text body.
+	return ""
+}
+
+func (s *Server) handleGenericComment(ce *github.GenericCommentEvent, log *logrus.Entry) {
+	for p, h := range s.Plugins.GenericCommentHandlers(ce.Repo.Owner.Login, ce.Repo.Name) {
+		go func(p string, h plugins.GenericCommentHandler) {
+			pc := s.Plugins.PluginClient
+			pc.Logger = log.WithField("plugin", p)
+			pc.Config = s.ConfigAgent.Config()
+			pc.PluginConfig = s.Plugins.Config()
+			if err := h(pc, *ce); err != nil {
+				pc.Logger.WithError(err).Error("Error handling GenericCommentEvent.")
 			}
 		}(p, h)
 	}

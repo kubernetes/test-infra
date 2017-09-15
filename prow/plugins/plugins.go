@@ -35,6 +35,7 @@ import (
 
 var (
 	allPlugins                 = map[string]struct{}{}
+	genericCommentHandlers     = map[string]GenericCommentHandler{}
 	issueHandlers              = map[string]IssueHandler{}
 	issueCommentHandlers       = map[string]IssueCommentHandler{}
 	pullRequestHandlers        = map[string]PullRequestHandler{}
@@ -93,6 +94,13 @@ func RegisterReviewCommentEventHandler(name string, fn ReviewCommentEventHandler
 	reviewCommentEventHandlers[name] = fn
 }
 
+type GenericCommentHandler func(PluginClient, github.GenericCommentEvent) error
+
+func RegisterGenericCommentHandler(name string, fn GenericCommentHandler) {
+	allPlugins[name] = struct{}{}
+	genericCommentHandlers[name] = fn
+}
+
 // PluginClient may be used concurrently, so each entry must be thread-safe.
 type PluginClient struct {
 	GitHubClient *github.Client
@@ -120,11 +128,11 @@ type PluginAgent struct {
 // target for plugin Configuration
 type Configuration struct {
 	// Repo (eg "k/k") -> list of handler names.
-	Plugins     map[string][]string `json:"plugins,omitempty"`
-	Triggers    []Trigger           `json:"triggers,omitempty"`
-	Heart       Heart               `json:"heart,omitempty"`
-	Label       Label               `json:"label,omitempty"`
-	SlackEvents []SlackEvent        `json:"slackevents,omitempty"`
+	Plugins  map[string][]string `json:"plugins,omitempty"`
+	Triggers []Trigger           `json:"triggers,omitempty"`
+	Heart    Heart               `json:"heart,omitempty"`
+	Label    Label               `json:"label,omitempty"`
+	Slack    Slack               `json:"slack,omitempty"`
 }
 
 type Trigger struct {
@@ -152,10 +160,15 @@ type Label struct {
 	MilestoneMaintainersID int `json:"milestone_maintainers_id,omitempty"`
 }
 
-// SlackEvent is config for the slackevents plugin.
+type Slack struct {
+	MentionChannels []string       `json:"mentionchannels,omitempty"`
+	MergeWarnings   []MergeWarning `json:"mergewarnings,omitempty"`
+}
+
+// MergeWarning is a config for the slackevents plugin's manual merge warings.
 // If a PR is pushed to any of the repos listed in the config
-// then sent message to the all the  slack channels listed if pusher is NOT in the whitelist.
-type SlackEvent struct {
+// then send messages to the all the  slack channels listed if pusher is NOT in the whitelist.
+type MergeWarning struct {
 	// Repos is either of the form org/repos or just org.
 	Repos []string `json:"repos,omitempty"`
 	// List of channels on which a event is published.
@@ -267,6 +280,20 @@ func (pa *PluginAgent) Start(path string) error {
 		}
 	}()
 	return nil
+}
+
+// GenericCommentHandlers returns a map of plugin names to handlers for the repo.
+func (pa *PluginAgent) GenericCommentHandlers(owner, repo string) map[string]GenericCommentHandler {
+	pa.mut.Lock()
+	defer pa.mut.Unlock()
+
+	hs := map[string]GenericCommentHandler{}
+	for _, p := range pa.getPlugins(owner, repo) {
+		if h, ok := genericCommentHandlers[p]; ok {
+			hs[p] = h
+		}
+	}
+	return hs
 }
 
 // IssueHandlers returns a map of plugin names to handlers for the repo.
