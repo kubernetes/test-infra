@@ -25,11 +25,11 @@ slack:
     whitelist:
     - k8s-merge-robot
 
-label:
+milestonestatus:
   # You can curl the following endpoint in order to determine the github ID of your team
   # responsible for maintaining the milestones:
   # curl -H "Authorization: token <token>" https://api.github.com/orgs/<org-name>/teams
-  milestone_maintainers_id: 2460384
+  maintainers_id: 2460384
 
 config_updater:
   config_file: prow/config.yaml
@@ -66,6 +66,8 @@ plugins:
   - hold
   - label
   - lgtm
+  - milestonestatus
+  - sigmention
   - size
   - yuks
   - wip
