@@ -123,7 +123,7 @@ func Load(path string) (*Config, error) {
 func parseConfig(c *Config) error {
 	// Ensure that presubmit regexes are valid.
 	for _, vs := range c.Presubmits {
-		if err := setRegexes(vs); err != nil {
+		if err := SetRegexes(vs); err != nil {
 			return fmt.Errorf("could not set regex: %v", err)
 		}
 	}
@@ -227,7 +227,9 @@ func parseConfig(c *Config) error {
 	return nil
 }
 
-func setRegexes(js []Presubmit) error {
+// SetRegexes compiles and validates all the regural expressions for
+// the provided presubmits.
+func SetRegexes(js []Presubmit) error {
 	for i, j := range js {
 		if re, err := regexp.Compile(j.Trigger); err == nil {
 			js[i].re = re
@@ -237,7 +239,7 @@ func setRegexes(js []Presubmit) error {
 		if !js[i].re.MatchString(j.RerunCommand) {
 			return fmt.Errorf("for job %s, rerun command \"%s\" does not match trigger \"%s\"", j.Name, j.RerunCommand, j.Trigger)
 		}
-		if err := setRegexes(j.RunAfterSuccess); err != nil {
+		if err := SetRegexes(j.RunAfterSuccess); err != nil {
 			return err
 		}
 		if j.RunIfChanged != "" {
