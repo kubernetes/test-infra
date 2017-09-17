@@ -13,7 +13,7 @@
 # limitations under the License.
 
 FROM gcr.io/k8s-testimages/kubekins-e2e:v20170913-ed4994ba
-MAINTAINER beacham@google.com
+LABEL maintainer="beacham@google.com"
 
 RUN apt-get update && apt-get install -y \
     build-essential \

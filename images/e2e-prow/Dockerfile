@@ -16,7 +16,7 @@
 # unit and integration tests
 
 FROM gcr.io/k8s-testimages/kubekins-e2e:v20170913-ed4994ba
-MAINTAINER  Sen Lu <senlu@google.com>
+LABEL maintainer="Sen Lu <senlu@google.com>"
 
 ADD runner /
 ENTRYPOINT ["/bin/bash", "/runner"]

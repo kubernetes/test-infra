@@ -16,7 +16,7 @@
 # unit and integration tests
 
 FROM gcr.io/k8s-testimages/kubekins-test:1.7-v20170713-c28e0556
-MAINTAINER  Erick Fejta <fejta@google.com>
+LABEL maintainer="Erick Fejta <fejta@google.com>"
 
 # https://github.com/GoogleCloudPlatform/gsutil/issues/446 for python-openssl
 RUN apt-get update && apt-get install -y --no-install-recommends \

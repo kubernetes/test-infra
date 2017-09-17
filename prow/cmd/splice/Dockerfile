@@ -13,7 +13,7 @@
 # limitations under the License.
 
 FROM alpine:3.6
-MAINTAINER rmmh@google.com
+LABEL maintainer="rmmh@google.com"
 
 RUN apk update && apk add --no-cache \
     ca-certificates \

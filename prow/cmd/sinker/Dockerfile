@@ -13,7 +13,7 @@
 # limitations under the License.
 
 FROM alpine:3.6
-MAINTAINER spxtr@google.com
+LABEL maintainer="spxtr@google.com"
 
 RUN apk add --no-cache ca-certificates && update-ca-certificates
 

@@ -14,7 +14,7 @@
 
 # Includes git, gcloud, and bazel.
 FROM ubuntu:16.04
-MAINTAINER spxtr@google.com
+LABEL maintainer="spxtr@google.com"
 
 RUN apt-get update && apt-get install -y \
     build-essential \
