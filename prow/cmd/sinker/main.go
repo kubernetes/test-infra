@@ -24,6 +24,7 @@ import (
 
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/kube"
+	"k8s.io/test-infra/prow/pjutil"
 )
 
 type kubeClient interface {
@@ -74,6 +75,38 @@ func clean(kc, pkc kubeClient, configAgent configAgent) {
 	}
 	maxProwJobAge := configAgent.Config().Sinker.MaxProwJobAge
 	for _, prowJob := range prowJobs {
+		// Handle periodics separately.
+		if prowJob.Spec.Type == kube.PeriodicJob {
+			continue
+		}
+		if prowJob.Complete() && time.Since(prowJob.Status.StartTime) > maxProwJobAge {
+			if err := kc.DeleteProwJob(prowJob.Metadata.Name); err == nil {
+				logrus.WithField("prowjob", prowJob.Metadata.Name).Info("Deleted prowjob.")
+			} else {
+				logrus.WithField("prowjob", prowJob.Metadata.Name).WithError(err).Error("Error deleting prowjob.")
+			}
+		}
+	}
+
+	// Keep track of what periodic jobs are in the config so we will
+	// not clean up their last prowjob.
+	isActivePeriodic := make(map[string]bool)
+	for _, p := range configAgent.Config().Periodics {
+		isActivePeriodic[p.Name] = true
+	}
+	// Get the jobs that we need to retain so horologium can continue working
+	// as intended.
+	latestPeriodics := pjutil.GetLatestPeriodics(prowJobs)
+	for _, prowJob := range prowJobs {
+		if prowJob.Spec.Type != kube.PeriodicJob {
+			continue
+		}
+
+		latestPJ := latestPeriodics[prowJob.Spec.Job]
+		if isActivePeriodic[prowJob.Spec.Job] && prowJob.Metadata.Name == latestPJ.Metadata.Name {
+			// Ignore deleting this one.
+			continue
+		}
 		if prowJob.Complete() && time.Since(prowJob.Status.StartTime) > maxProwJobAge {
 			if err := kc.DeleteProwJob(prowJob.Metadata.Name); err == nil {
 				logrus.WithField("prowjob", prowJob.Metadata.Name).Info("Deleted prowjob.")
