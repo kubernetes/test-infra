@@ -15,7 +15,7 @@
 FROM alpine:3.6
 MAINTAINER spxtr@google.com
 
-RUN apk add --no-cache ca-certificates && update-ca-certificates
+RUN apk add --no-cache git ca-certificates && update-ca-certificates
 
 COPY tide /tide
 ENTRYPOINT ["/tide"]
