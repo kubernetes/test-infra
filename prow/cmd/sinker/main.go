@@ -39,7 +39,11 @@ type configAgent interface {
 	Config() *config.Config
 }
 
-var configPath = flag.String("config-path", "/etc/config/config", "Path to config.yaml.")
+var (
+	runOnce    = flag.Bool("run-once", false, "If true, run only once then quit.")
+	configPath = flag.String("config-path", "/etc/config/config", "Path to config.yaml.")
+	cluster    = flag.String("build-cluster", "", "Path to kube.Cluster YAML file. If empty, uses the local cluster.")
+)
 
 func main() {
 	flag.Parse()
@@ -55,7 +59,16 @@ func main() {
 		logrus.WithError(err).Error("Error getting client.")
 		return
 	}
-	pkc := kc.Namespace(configAgent.Config().PodNamespace)
+
+	var pkc *kube.Client
+	if *cluster == "" {
+		pkc = kc.Namespace(configAgent.Config().PodNamespace)
+	} else {
+		pkc, err = kube.NewClientFromFile(*cluster, configAgent.Config().ProwJobNamespace)
+		if err != nil {
+			logrus.WithError(err).Fatal("Error getting kube client.")
+		}
+	}
 
 	// Clean now and regularly from now on.
 	for {
@@ -63,6 +76,9 @@ func main() {
 		clean(kc, pkc, configAgent)
 		logrus.Infof("Sync time: %v", time.Since(start))
 		time.Sleep(configAgent.Config().Sinker.ResyncPeriod)
+		if *runOnce {
+			break
+		}
 	}
 }
 
