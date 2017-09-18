@@ -513,7 +513,7 @@ class JobTest(unittest.TestCase):
                     if job in self.prowjobs:
                         for arg in args:
                             # --mode=local is default now
-                            self.assertNotIn('--mode', args, job)
+                            self.assertNotIn('--mode', arg, job)
                     else:
                         self.assertIn('--mode=docker', args, job)
                     for arg in args:
