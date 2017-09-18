@@ -2491,6 +2491,26 @@
       "UNKNOWN"
     ]
   },
+  "ci-kubernetes-e2e-gce-master-new-downgrade-cluster": {
+    "args": [
+      "--check-leaked-resources",
+      "--check-version-skew=false",
+      "--env-file=jobs/platform/gce.env",
+      "--env-file=jobs/env/ci-kubernetes-e2e-gce-new-master-upgrade-cluster.env",
+      "--extract=ci/latest-1.7",
+      "--extract=ci/latest",
+      "--gcp-zone=us-central1-f",
+      "--provider=gce",
+      "--skew",
+      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8",
+      "--timeout=120m",
+      "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterDowngrade\\] --upgrade-target=ci/latest-1.7"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "UNKNOWN"
+    ]
+  },
   "ci-kubernetes-e2e-gce-master-new-gci-kubectl-skew": {
     "args": [
       "--check-leaked-resources",
@@ -6105,6 +6125,28 @@
       "--provider=gke",
       "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
       "--timeout=50m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "UNKNOWN"
+    ]
+  },
+  "ci-kubernetes-e2e-gke-gci-master-gci-new-downgrade-cluster": {
+    "args": [
+      "--check-leaked-resources",
+      "--check-version-skew=false",
+      "--deployment=gke",
+      "--extract=ci/latest-1.7",
+      "--extract=ci/latest",
+      "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
+      "--gcp-node-image=gci",
+      "--gcp-zone=us-central1-a",
+      "--gke-environment=test",
+      "--provider=gke",
+      "--skew",
+      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8",
+      "--timeout=120m",
+      "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterDowngrade\\] --upgrade-target=ci/latest-1.7 --upgrade-image=gci"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
