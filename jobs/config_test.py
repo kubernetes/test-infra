@@ -636,6 +636,10 @@ class JobTest(unittest.TestCase):
     def test_all_project_are_unique(self):
         # pylint: disable=line-too-long
         allowed_list = {
+            # intentionally shared across prow / jenkins variants
+            'pull-kubernetes-e2e-gce-etcd3': 'pull-kubernetes-e2e-gce-etcd3*',
+            'pull-kubernetes-e2e-gce-etcd3-bazel': 'pull-kubernetes-e2e-gce-etcd3*',
+
             # The cos image validation jobs intentionally share projects.
             'ci-kubernetes-e2e-gce-cosdev-k8sdev-default': 'ci-kubernetes-e2e-gce-cos*',
             'ci-kubernetes-e2e-gce-cosdev-k8sdev-serial': 'ci-kubernetes-e2e-gce-cos*',
