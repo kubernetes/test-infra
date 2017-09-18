@@ -1555,6 +1555,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-new-master-upgrade-cluster-parallel
 - name: ci-kubernetes-e2e-gce-new-master-upgrade-cluster
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-new-master-upgrade-cluster
+- name: ci-kubernetes-e2e-gce-master-new-downgrade-cluster
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-master-new-downgrade-cluster
 - name: ci-kubernetes-e2e-gce-new-master-upgrade-cluster-new
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-new-master-upgrade-cluster-new
 - name: ci-kubernetes-e2e-gke-cvm-new-cvm-master-upgrade-master
@@ -1581,6 +1583,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster-parallel
 - name: ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster
+- name: ci-kubernetes-e2e-gke-gci-master-gci-new-downgrade-cluster
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-master-gci-new-downgrade-cluster
 - name: ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster-new
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster-new
 - name: ci-kubernetes-e2e-mlkube-gke
@@ -2477,6 +2481,9 @@ dashboards:
   - name: gce-1.7-master-upgrade-cluster
     test_group_name: ci-kubernetes-e2e-gce-new-master-upgrade-cluster
     description: 'Upgrade master and node, in gce(debian), from 1.7 to master'
+  - name: gce-master-1.7-downgrade-cluster
+    test_group_name: ci-kubernetes-e2e-gce-master-new-downgrade-cluster
+    description: 'Downgrade master and node, in gce(debian), from master to 1.7'
   - name: gce-1.7-master-upgrade-cluster-new
     test_group_name: ci-kubernetes-e2e-gce-new-master-upgrade-cluster-new
     description: 'Upgrade master and node, in gce(debian), from 1.7 to master, and run skewed e2e tests'
@@ -2489,6 +2496,9 @@ dashboards:
   - name: gke-gci-1.7-gci-master-upgrade-cluster
     test_group_name: ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster
     description: 'Upgrade master and node, in gke(gci), from 1.7 to master'
+  - name: gke-gci-master-gci-1.7-downgrade-cluster
+    test_group_name: ci-kubernetes-e2e-gke-gci-master-gci-new-downgrade-cluster
+    description: 'Downgrade master and node, in gke(gci), from master to 1.7'
   - name: gke-gci-1.7-gci-master-upgrade-cluster-new
     test_group_name: ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster-new
     description: 'Upgrade master and node, in gke(gci), from 1.7 to master, and run skewed e2e tests'
