@@ -173,6 +173,32 @@ func (r *Repo) gitCommand(arg ...string) *exec.Cmd {
 	return cmd
 }
 
+// Checkout runs git checkout.
+func (r *Repo) Checkout(commitlike string) error {
+	r.logger.Infof("Checkout %s.", commitlike)
+	co := r.gitCommand("checkout", commitlike)
+	if b, err := co.CombinedOutput(); err != nil {
+		return fmt.Errorf("error checking out %s: %v. output: %s", commitlike, err, string(b))
+	}
+	return nil
+}
+
+// Merge attempts to merge commitlike into the current branch. It returns true
+// if the merge completes. It returns an error if the abort fails.
+func (r *Repo) Merge(commitlike string) (bool, error) {
+	r.logger.Infof("Merging %s.", commitlike)
+	co := r.gitCommand("merge", "--no-ff", "--no-stat", "-m merge", commitlike)
+	if b, err := co.CombinedOutput(); err == nil {
+		return true, nil
+	} else {
+		r.logger.WithError(err).Warningf("Merge failed with output: %s", string(b))
+	}
+	if b, err := r.gitCommand("merge", "--abort").CombinedOutput(); err != nil {
+		return false, fmt.Errorf("error aborting merge for commitlike %s: %v. output: %s", commitlike, err, string(b))
+	}
+	return false, nil
+}
+
 // CheckoutPullRequest does exactly that.
 func (r *Repo) CheckoutPullRequest(number int) error {
 	r.logger.Infof("Fetching and checking out %s#%d.", r.repo, number)
@@ -182,6 +208,15 @@ func (r *Repo) CheckoutPullRequest(number int) error {
 	co := r.gitCommand("checkout", fmt.Sprintf("pull%d", number))
 	if b, err := co.CombinedOutput(); err != nil {
 		return fmt.Errorf("git checkout failed for PR %d: %v. output: %s", number, err, string(b))
+	}
+	return nil
+}
+
+// Config runs git config.
+func (r *Repo) Config(key, value string) error {
+	r.logger.Infof("Running git config %s %s", key, value)
+	if b, err := r.gitCommand("config", key, value).CombinedOutput(); err != nil {
+		return fmt.Errorf("git config %s %s failed: %v. output: %s", key, value, err, string(b))
 	}
 	return nil
 }
