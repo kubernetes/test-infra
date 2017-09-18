@@ -10344,6 +10344,27 @@
       "UNKNOWN"
     ]
   },
+  "pull-kubernetes-e2e-gce-etcd3-bazel": {
+    "args": [
+      "--build=bazel",
+      "--cluster=",
+      "--env-file=jobs/platform/gce.env",
+      "--env-file=jobs/env/pull-kubernetes-e2e.env",
+      "--env-file=jobs/env/pull-kubernetes-e2e-gce-etcd3-bazel.env",
+      "--extract=local",
+      "--gcp-project=k8s-jkns-pr-gce-etcd3",
+      "--gcp-zone=us-central1-f",
+      "--mode=docker",
+      "--provider=gce",
+      "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-etcd3-bazel",
+      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
+      "--timeout=65m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "UNKNOWN"
+    ]
+  },
   "pull-kubernetes-e2e-gce-gci": {
     "args": [
       "--build",
