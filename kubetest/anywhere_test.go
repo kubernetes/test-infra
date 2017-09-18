@@ -280,7 +280,7 @@ func TestNewKubernetesAnywhereMultiCluster(t *testing.T) {
 				if specified {
 					zone = specificZone
 				}
-				kubeContext := zone + "-" + cluster
+				kubeContext := "federation-e2e-gce-" + zone
 				expectConfigLines := []string{
 					".phase1.cloud_provider=\"gce\"",
 					".phase2.provider=\"kubeadm\"",

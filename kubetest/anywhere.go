@@ -308,8 +308,9 @@ const defaultConfigFile = ".config"
 
 type kubernetesAnywhereMultiCluster struct {
 	*kubernetesAnywhere
-	multiClusters multiClusterDeployment
-	configFile    map[string]string
+	multiClusters  multiClusterDeployment
+	configFile     map[string]string
+	kubeContextMap map[string]string
 }
 
 // newKubernetesAnywhereMultiCluster returns the deployer based on kubernetes-anywhere
@@ -322,7 +323,7 @@ func newKubernetesAnywhereMultiCluster(project, zone string, multiClusters multi
 	if err != nil {
 		return nil, err
 	}
-	mk := &kubernetesAnywhereMultiCluster{k, multiClusters, make(map[string]string)}
+	mk := &kubernetesAnywhereMultiCluster{k, multiClusters, make(map[string]string), make(map[string]string)}
 
 	for _, cluster := range mk.multiClusters.clusters {
 		specificZone, specified := mk.multiClusters.zones[cluster]
@@ -330,7 +331,10 @@ func newKubernetesAnywhereMultiCluster(project, zone string, multiClusters multi
 			mk.Zone = specificZone
 		}
 		mk.Cluster = cluster
-		mk.KubeContext = mk.Zone + "-" + mk.Cluster
+		// TODO: revisit the naming of kubecontexts. Currently the federation CI jobs require that the
+		// cluster contexts be prefixed with `federation-` and with particular pattern.
+		mk.KubeContext = "federation-e2e-gce-" + mk.Zone
+		mk.kubeContextMap[cluster] = mk.KubeContext
 		mk.configFile[cluster] = defaultConfigFile + "-" + mk.Cluster
 		if err := mk.writeConfig(kubernetesAnywhereMultiClusterConfigTemplate); err != nil {
 			return nil, err
@@ -407,8 +411,7 @@ func (k *kubernetesAnywhereMultiCluster) IsUp() error {
 	}
 
 	for _, cluster := range k.multiClusters.clusters {
-		zone := k.multiClusters.zones[cluster]
-		kubeContext := zone + "-" + cluster
+		kubeContext := k.kubeContextMap[cluster]
 		o, err := output(exec.Command("kubectl", "--context="+kubeContext, "get", "nodes", "--no-headers"))
 		if err != nil {
 			log.Printf("kubectl get nodes failed for cluster %s: %s\n%s", cluster, wrapError(err).Error(), string(o))
