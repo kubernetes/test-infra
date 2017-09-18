@@ -367,6 +367,7 @@ func (k *kubernetesAnywhereMultiCluster) Up() error {
 
 // TestSetup sets up test environment by merging kubeconfig of multiple deployments.
 func (k *kubernetesAnywhereMultiCluster) TestSetup() error {
+	mergedKubeconfigPath := k.path + "/kubeconfig.json"
 	var kubecfg string
 	for _, cluster := range k.multiClusters.clusters {
 		o, err := output(exec.Command("make", "--silent", "-C", k.path, "CONFIG_FILE="+k.configFile[cluster], "kubeconfig-path"))
@@ -378,11 +379,25 @@ func (k *kubernetesAnywhereMultiCluster) TestSetup() error {
 		}
 		kubecfg += strings.TrimSuffix(string(o), "\n")
 	}
+	if len(kubecfg) != 0 {
+		kubecfg += ":" + mergedKubeconfigPath
+	}
 
 	if err := os.Setenv("KUBECONFIG", kubecfg); err != nil {
 		return err
 	}
-	return nil
+
+	o, err := output(exec.Command("kubectl", "config", "view", "--flatten=true", "--raw=true"))
+	if err != nil {
+		return fmt.Errorf("could not get kubeconfig-path: %v", err)
+	}
+
+	err = ioutil.WriteFile(mergedKubeconfigPath, o, 0644)
+	if err != nil {
+		return err
+	}
+
+	return os.Setenv("KUBECONFIG", mergedKubeconfigPath)
 }
 
 // IsUp checks if all the clusters in the deployer are up.
