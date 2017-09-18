@@ -7,7 +7,7 @@ project: contrib
 pr-mungers: approval-handler,blunderbuss,lgtm-after-commit,submit-queue,needs-rebase
 state: open
 token-file: /etc/secret-volume/token
-period: 10s
+period: 2m
 repo-dir: /gitrepos
 github-key-file: /etc/hook-secret-volume/secret
 
