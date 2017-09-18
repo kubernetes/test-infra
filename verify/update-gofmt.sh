@@ -1,4 +1,5 @@
-#!/usr/bin/env bash
+#!/bin/bash
+
 # Copyright 2017 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,10 +18,4 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-diff=$(find . -name "*.go" | grep -v "\/vendor\/" | xargs gofmt -s -d 2>&1)
-if [[ -n "${diff}" ]]; then
-  echo "${diff}"
-  echo
-  echo "Please run verify/update-gofmt.sh"
-  exit 1
-fi
+find . -name "*.go" | grep -v "\/vendor\/" | xargs gofmt -s -w
