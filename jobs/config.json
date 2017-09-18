@@ -10438,7 +10438,6 @@
       "--extract=local",
       "--gcp-project=k8s-jkns-pr-gce-gpus",
       "--gcp-zone=us-west1-b",
-      "--mode=docker",
       "--provider=gce",
       "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-gpu-prow",
       "--test_args=--ginkgo.focus=\\[Feature:GPU\\] --minStartupPods=8",
