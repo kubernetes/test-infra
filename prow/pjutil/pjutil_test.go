@@ -170,7 +170,9 @@ func TestProwJobToPod(t *testing.T) {
 					Labels: map[string]string{
 						kube.CreatedByProw: "true",
 						"type":             "presubmit",
-						"job":              "job-name",
+					},
+					Annotations: map[string]string{
+						"job": "job-name",
 					},
 				},
 				Spec: kube.PodSpec{
@@ -208,7 +210,7 @@ func TestProwJobToPod(t *testing.T) {
 		// if !semantic.DeepEqual(got, test.expected) {
 		//	 t.Errorf("got pod:\n%#v\n\nexpected pod:\n%#v\n", got, test.expected)
 		// }
-		var foundCreatedByLabel, foundTypeLabel, foundJobLabel bool
+		var foundCreatedByLabel, foundTypeLabel, foundJobAnnotation bool
 		for key, value := range got.Metadata.Labels {
 			if key == kube.CreatedByProw && value == "true" {
 				foundCreatedByLabel = true
@@ -216,8 +218,10 @@ func TestProwJobToPod(t *testing.T) {
 			if key == "type" && value == string(pj.Spec.Type) {
 				foundTypeLabel = true
 			}
+		}
+		for key, value := range got.Metadata.Annotations {
 			if key == "job" && value == pj.Spec.Job {
-				foundJobLabel = true
+				foundJobAnnotation = true
 			}
 		}
 		if !foundCreatedByLabel {
@@ -226,8 +230,8 @@ func TestProwJobToPod(t *testing.T) {
 		if !foundTypeLabel {
 			t.Errorf("expected a type=%s label in %v", pj.Spec.Type, got.Metadata.Labels)
 		}
-		if !foundJobLabel {
-			t.Errorf("expected a job=%s label in %v", pj.Spec.Job, got.Metadata.Labels)
+		if !foundJobAnnotation {
+			t.Errorf("expected a job=%s annotation in %v", pj.Spec.Job, got.Metadata.Annotations)
 		}
 
 		expectedContainer := test.expected.Spec.Containers[i]
