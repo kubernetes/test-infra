@@ -73,11 +73,14 @@ func modifiedGoFiles(ghc githubClient, org, repo string, number int, sha string)
 
 	modifiedFiles := make(map[string]string)
 	for _, change := range changes {
-		if strings.HasPrefix(change.Filename, "vendor/") {
+		switch {
+		case strings.HasPrefix(change.Filename, "vendor/"):
 			continue
-		} else if filepath.Ext(change.Filename) != ".go" {
+		case filepath.Ext(change.Filename) != ".go":
 			continue
-		} else if gfg.Match(change.Filename) {
+		case gfg.Match(change.Filename):
+			continue
+		case change.Status == github.PullRequestFileRemoved || change.Status == github.PullRequestFileRenamed:
 			continue
 		}
 		modifiedFiles[change.Filename] = change.Patch
