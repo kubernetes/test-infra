@@ -223,9 +223,8 @@ func newGKE(provider, project, zone, region, network, image, cluster string, tes
 
 	// set --num-nodes flag for ginkgo, since NUM_NODES is not set for gke deployer.
 	numNodes := strconv.Itoa(g.shape[defaultPool].Nodes)
-	if *testArgs != "" {
-		*testArgs = strings.Join(setFieldDefault(strings.Fields(*testArgs), "--num-nodes", numNodes), " ")
-	}
+	// testArgs can be empty, and we need to support this case
+	*testArgs = strings.Join(setFieldDefault(strings.Fields(*testArgs), "--num-nodes", numNodes), " ")
 
 	if *upgradeArgs != "" {
 		*upgradeArgs = strings.Join(setFieldDefault(strings.Fields(*upgradeArgs), "--num-nodes", numNodes), " ")
