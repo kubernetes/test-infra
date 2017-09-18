@@ -112,7 +112,7 @@ spec:
     spec:
       containers:
       - name: plank
-        image: gcr.io/k8s-prow/plank:0.44
+        image: gcr.io/k8s-prow/plank:0.46
         args:
         - --dry-run=false
         volumeMounts:
