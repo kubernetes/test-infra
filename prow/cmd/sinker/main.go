@@ -64,21 +64,24 @@ func main() {
 	if *cluster == "" {
 		pkc = kc.Namespace(configAgent.Config().PodNamespace)
 	} else {
-		pkc, err = kube.NewClientFromFile(*cluster, configAgent.Config().ProwJobNamespace)
+		pkc, err = kube.NewClientFromFile(*cluster, configAgent.Config().PodNamespace)
 		if err != nil {
 			logrus.WithError(err).Fatal("Error getting kube client.")
 		}
 	}
+
+	kc.Logger = logrus.WithField("client", "kube")
+	pkc.Logger = logrus.WithField("client", "kube")
 
 	// Clean now and regularly from now on.
 	for {
 		start := time.Now()
 		clean(kc, pkc, configAgent)
 		logrus.Infof("Sync time: %v", time.Since(start))
-		time.Sleep(configAgent.Config().Sinker.ResyncPeriod)
 		if *runOnce {
 			break
 		}
+		time.Sleep(configAgent.Config().Sinker.ResyncPeriod)
 	}
 }
 
