@@ -367,12 +367,15 @@ presubmits:
     trigger: "(?m)^/test pull-kubernetes-e2e-gce-gpu-prow,?(\\s+|$)"
     spec:
       containers:
-      - args:
+      - image: gcr.io/k8s-testimages/kubekins-e2e-prow:v20170918-3aa6c113
+        args:
+        - --root=/go/src
         - "--timeout=90"
         - "--clean"
         - "--git-cache=/root/.cache/git"
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--repo=k8s.io/release"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         env:
@@ -384,7 +387,9 @@ presubmits:
           value: /etc/ssh-key-secret/ssh-private
         - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
           value: /etc/ssh-key-secret/ssh-public
-        image: gcr.io/k8s-testimages/kubekins-e2e-prow:latest
+        # Bazel needs privileged mode in order to sandbox builds.
+        securityContext:
+          privileged: true
         volumeMounts:
         - mountPath: /etc/service-account
           name: service
@@ -839,12 +844,15 @@ presubmits:
     trigger: "(?m)^/test pull-security-kubernetes-e2e-gce-gpu-prow,?(\\s+|$)"
     spec:
       containers:
-      - args:
+      - image: gcr.io/k8s-testimages/kubekins-e2e-prow:v20170918-3aa6c113
+        args:
+        - --root=/go/src
         - "--timeout=90"
         - "--clean"
         - "--git-cache=/root/.cache/git"
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--repo=k8s.io/release"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         env:
@@ -856,7 +864,9 @@ presubmits:
           value: /etc/ssh-key-secret/ssh-private
         - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
           value: /etc/ssh-key-secret/ssh-public
-        image: gcr.io/k8s-testimages/kubekins-e2e-prow:latest
+        # Bazel needs privileged mode in order to sandbox builds.
+        securityContext:
+          privileged: true
         volumeMounts:
         - mountPath: /etc/service-account
           name: service
