@@ -122,11 +122,21 @@ type Label struct {
 	Color string `json:"color"`
 }
 
+// PullRequestFileStatus enumerates the statuses for this webhook payload type.
+type PullRequestFileStatus string
+
+const (
+	PullRequestFileModified PullRequestFileStatus = "modified"
+	PullRequestFileAdded                          = "added"
+	PullRequestFileRemoved                        = "removed"
+	PullRequestFileRenamed                        = "renamed"
+)
+
 // PullRequestChange contains information about what a PR changed.
 type PullRequestChange struct {
 	SHA       string `json:"sha"`
 	Filename  string `json:"filename"`
-	Status    string `json:"added"`
+	Status    string `json:"status"`
 	Additions int    `json:"additions"`
 	Deletions int    `json:"deletions"`
 	Changes   int    `json:"changes"`
