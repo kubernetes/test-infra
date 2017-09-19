@@ -367,7 +367,7 @@ presubmits:
     trigger: "(?m)^/test pull-kubernetes-e2e-gce-gpu-prow,?(\\s+|$)"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e-prow:v20170918-3aa6c113
+      - image: gcr.io/k8s-testimages/kubekins-e2e-prow:v20170918-d0ba8897
         args:
         - --root=/go/src
         - "--timeout=90"
