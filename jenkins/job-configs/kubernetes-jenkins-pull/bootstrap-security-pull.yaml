@@ -70,7 +70,7 @@
         max-total: 12
         job-name: pull-kubernetes-cross
         repo-name: 'github.com/kubernetes-security/kubernetes'
-        timeout: 80
+        timeout: 90
     - kubernetes-e2e-gce:
         max-total: 12
         job-name: pull-kubernetes-e2e-gce
