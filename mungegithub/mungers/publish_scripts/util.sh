@@ -791,14 +791,3 @@ checkout-deps-to-kube-commit() {
         popd >/dev/null
     done
 }
-
-# set up github token in ~/.netrc
-set_github_token() {
-    mv ~/.netrc ~/.netrc.bak || true
-    echo "machine github.com login ${1}" > ~/.netrc
-}
-
-cleanup_github_token() {
-    rm -rf ~/.netrc
-    mv ~/.netrc.bak ~/.netrc || true
-}
