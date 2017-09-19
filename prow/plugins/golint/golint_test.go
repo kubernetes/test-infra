@@ -18,6 +18,7 @@ package golint
 
 import (
 	"fmt"
+	"reflect"
 	"strings"
 	"testing"
 
@@ -237,6 +238,175 @@ func TestAddedLines(t *testing.T) {
 			if als[l] != pl {
 				t.Errorf("For patch %s\nExpected added line %d to be %d, but got %d", tc.patch, l, pl, als[l])
 			}
+		}
+	}
+}
+
+func TestModifiedGoFiles(t *testing.T) {
+	lg, c, err := localgit.New()
+	if err != nil {
+		t.Fatalf("Making localgit: %v", err)
+	}
+	defer func() {
+		if err := lg.Clean(); err != nil {
+			t.Errorf("Cleaning up localgit: %v", err)
+		}
+		if err := c.Clean(); err != nil {
+			t.Errorf("Cleaning up client: %v", err)
+		}
+	}()
+	if err := lg.MakeFakeRepo("foo", "bar"); err != nil {
+		t.Fatalf("Making fake repo: %v", err)
+	}
+	if err := lg.AddCommit("foo", "bar", initialFiles); err != nil {
+		t.Fatalf("Adding initial commit: %v", err)
+	}
+	if err := lg.CheckoutNewBranch("foo", "bar", "pull/42/head"); err != nil {
+		t.Fatalf("Checking out pull branch: %v", err)
+	}
+	if err := lg.AddCommit("foo", "bar", pullFiles); err != nil {
+		t.Fatalf("Adding PR commit: %v", err)
+	}
+
+	var testcases = []struct {
+		name                  string
+		gh                    *ghc
+		expectedModifiedFiles map[string]string
+	}{
+		{
+			name: "modified files include vendor file",
+			gh: &ghc{
+				changes: []github.PullRequestChange{
+					{
+						Filename: "qux.go",
+						Patch:    "@@ -0,0 +1,5 @@\n+package bar\n+\n+func Qux() error {\n+   return nil\n+}",
+					},
+					{
+						Filename: "vendor/foo/bar.go",
+						Patch:    "@@ -0,0 +1,5 @@\n+package bar\n+\n+func Qux2() error {\n+   return nil\n+}",
+					},
+				},
+			},
+			expectedModifiedFiles: map[string]string{
+				"qux.go": "@@ -0,0 +1,5 @@\n+package bar\n+\n+func Qux() error {\n+   return nil\n+}",
+			},
+		},
+		{
+			name: "modified files include non go file",
+			gh: &ghc{
+				changes: []github.PullRequestChange{
+					{
+						Filename: "qux.go",
+						Patch:    "@@ -0,0 +1,5 @@\n+package bar\n+\n+func Qux() error {\n+   return nil\n+}",
+					},
+					{
+						Filename: "foo.md",
+						Patch:    "@@ -1,3 +1,4 @@\n+TODO",
+					},
+				},
+			},
+			expectedModifiedFiles: map[string]string{
+				"qux.go": "@@ -0,0 +1,5 @@\n+package bar\n+\n+func Qux() error {\n+   return nil\n+}",
+			},
+		},
+		{
+			name: "modified files include generated file",
+			gh: &ghc{
+				genfile: []byte("file-prefix zz_generated"),
+				changes: []github.PullRequestChange{
+					{
+						Filename: "qux.go",
+						Patch:    "@@ -0,0 +1,5 @@\n+package bar\n+\n+func Qux() error {\n+   return nil\n+}",
+					},
+					{
+						Filename: "zz_generated.wowza.go",
+						Patch:    "@@ -0,0 +1,5 @@\n+package bar\n+\n+func Qux2() error {\n+   return nil\n+}",
+					},
+				},
+			},
+			expectedModifiedFiles: map[string]string{
+				"qux.go": "@@ -0,0 +1,5 @@\n+package bar\n+\n+func Qux() error {\n+   return nil\n+}",
+			},
+		},
+		{
+			name: "modified files include removed file",
+			gh: &ghc{
+				changes: []github.PullRequestChange{
+					{
+						Filename: "qux.go",
+						Patch:    "@@ -0,0 +1,5 @@\n+package bar\n+\n+func Qux() error {\n+   return nil\n+}",
+					},
+					{
+						Filename: "bar.go",
+						Status:   github.PullRequestFileRemoved,
+						Patch:    "@@ -1,5 +0,0 @@\n-package bar\n-\n-func Qux() error {\n-   return nil\n-}",
+					},
+				},
+			},
+			expectedModifiedFiles: map[string]string{
+				"qux.go": "@@ -0,0 +1,5 @@\n+package bar\n+\n+func Qux() error {\n+   return nil\n+}",
+			},
+		},
+		{
+			name: "modified files include renamed file",
+			gh: &ghc{
+				changes: []github.PullRequestChange{
+					{
+						Filename: "qux.go",
+						Patch:    "@@ -0,0 +1,5 @@\n+package bar\n+\n+func Qux() error {\n+   return nil\n+}",
+					},
+					{
+						Filename: "bar.go",
+						Status:   github.PullRequestFileRenamed,
+					},
+				},
+			},
+			expectedModifiedFiles: map[string]string{
+				"qux.go": "@@ -0,0 +1,5 @@\n+package bar\n+\n+func Qux() error {\n+   return nil\n+}",
+			},
+		},
+		{
+			name: "added and modified files",
+			gh: &ghc{
+				changes: []github.PullRequestChange{
+					{
+						Filename: "qux.go",
+						Status:   github.PullRequestFileAdded,
+						Patch:    "@@ -0,0 +1,5 @@\n+package bar\n+\n+func Qux() error {\n+   return nil\n+}",
+					},
+					{
+						Filename: "bar.go",
+						Patch:    "@@ -0,0 +1,5 @@\n+package baz\n+\n+func Bar() error {\n+   return nil\n+}",
+					},
+				},
+			},
+			expectedModifiedFiles: map[string]string{
+				"qux.go": "@@ -0,0 +1,5 @@\n+package bar\n+\n+func Qux() error {\n+   return nil\n+}",
+				"bar.go": "@@ -0,0 +1,5 @@\n+package baz\n+\n+func Bar() error {\n+   return nil\n+}",
+			},
+		},
+		{
+			name: "removed and renamed files",
+			gh: &ghc{
+				changes: []github.PullRequestChange{
+					{
+						Filename: "qux.go",
+						Status:   github.PullRequestFileRemoved,
+						Patch:    "@@ -1,5 +0,0 @@\n-package bar\n-\n-func Qux() error {\n-   return nil\n-}",
+					},
+					{
+						Filename: "bar.go",
+						Status:   github.PullRequestFileRenamed,
+					},
+				},
+			},
+			expectedModifiedFiles: map[string]string{},
+		},
+	}
+	for _, tc := range testcases {
+		actualModifiedFiles, _ := modifiedGoFiles(tc.gh, "foo", "bar", 9527, "0ebb33b")
+		if !reflect.DeepEqual(tc.expectedModifiedFiles, actualModifiedFiles) {
+			t.Errorf("Expected: %#v, Got %#v in case %s.", tc.expectedModifiedFiles, actualModifiedFiles, tc.name)
 		}
 	}
 }
