@@ -359,8 +359,10 @@ presubmits:
     trigger: "(?m)^/test( all| pull-kubernetes-e2e-gce-gpu),?(\\s+|$)"
   - name: pull-kubernetes-e2e-gce-gpu-prow
     agent: kubernetes
-    branches:
-    - master
+    skip_branches:
+    - release-1.4
+    - release-1.5
+    - release-1.6
     always_run: false
     context: pull-kubernetes-e2e-gce-gpu-prow
     rerun_command: "/test pull-kubernetes-e2e-gce-gpu-prow"
@@ -387,6 +389,8 @@ presubmits:
           value: /etc/ssh-key-secret/ssh-private
         - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
           value: /etc/ssh-key-secret/ssh-public
+        - name: TEST_TMPDIR
+          value: /root/.cache/bazel
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
@@ -397,6 +401,11 @@ presubmits:
         - mountPath: /etc/ssh-key-secret
           name: ssh
           readOnly: true
+        - name: cache-ssd
+          mountPath: /root/.cache
+        ports:
+        - containerPort: 9999
+          hostPort: 9999
       volumes:
       - name: service
         secret:
@@ -405,6 +414,9 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-key-secret
+      - name: cache-ssd
+        hostPath:
+          path: /mnt/disks/ssd0
   - name: pull-kubernetes-e2e-gke
     agent: jenkins
     context: pull-kubernetes-e2e-gke
@@ -836,8 +848,10 @@ presubmits:
     trigger: "(?m)^/test( all| pull-security-kubernetes-e2e-gce-gpu),?(\\s+|$)"
   - name: pull-security-kubernetes-e2e-gce-gpu-prow
     agent: kubernetes
-    branches:
-    - master
+    skip_branches:
+    - release-1.4
+    - release-1.5
+    - release-1.6
     always_run: false
     context: pull-security-kubernetes-e2e-gce-gpu-prow
     rerun_command: "/test pull-security-kubernetes-e2e-gce-gpu-prow"
@@ -864,6 +878,8 @@ presubmits:
           value: /etc/ssh-key-secret/ssh-private
         - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
           value: /etc/ssh-key-secret/ssh-public
+        - name: TEST_TMPDIR
+          value: /root/.cache/bazel
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
@@ -874,6 +890,11 @@ presubmits:
         - mountPath: /etc/ssh-key-secret
           name: ssh
           readOnly: true
+        - name: cache-ssd
+          mountPath: /root/.cache
+        ports:
+        - containerPort: 9999
+          hostPort: 9999
       volumes:
       - name: service
         secret:
@@ -882,6 +903,9 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-key-secret
+      - name: cache-ssd
+        hostPath:
+          path: /mnt/disks/ssd0
   - name: pull-security-kubernetes-e2e-gke
     agent: jenkins
     context: pull-security-kubernetes-e2e-gke
