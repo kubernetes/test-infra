@@ -291,7 +291,11 @@ class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-method
 
     def test_kubeadm_kubelet(self):
         """Make sure kubeadm tests with a different kubelet specified behave as expected."""
-        args = kubernetes_e2e.parse_args(['--mode=local', '--kubeadm=stable', '--kubelet=ci/latest'])
+        args = kubernetes_e2e.parse_args([
+            '--mode=local',
+            '--kubeadm=stable',
+            '--kubelet=ci/latest'
+        ])
         self.assertEqual(args.mode, 'local')
         self.assertEqual(args.kubeadm, 'stable')
         self.assertEqual(args.kubelet, 'ci/latest')

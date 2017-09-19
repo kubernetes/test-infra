@@ -116,9 +116,9 @@ def kubelet_version(version):
     """Return gs string to use for kubelet version. Supports ci version aliases ci/latest etc."""
     if version == 'stable':
         return 'stable'
-    if version.startswith('ci/'):        
-	version = check_output('gsutil', 'cat', 'gs://kubernetes-release-dev/%s.txt' % version)
-    if not(version.startswith('v')):
+    if version.startswith('ci/'):
+        version = check_output('gsutil', 'cat', 'gs://kubernetes-release-dev/%s.txt' % version)
+    if not version.startswith('v'):
         raise ValueError("Unknown kubelet version given: %s" % version)
 
     # Work-around for release-1.6 jobs, which still upload debs to an older
