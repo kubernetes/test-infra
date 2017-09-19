@@ -53,14 +53,17 @@ type configAgent interface {
 // Same goes for failed status.
 func reportStatus(ghc GithubClient, pj kube.ProwJob, cd string) error {
 	refs := pj.Spec.Refs
-	if err := ghc.CreateStatus(refs.Org, refs.Repo, refs.Pulls[0].SHA, github.Status{
-		State:       string(pj.Status.State),
-		Description: pj.Status.Description,
-		Context:     pj.Spec.Context,
-		TargetURL:   pj.Status.URL,
-	}); err != nil {
-		return err
+	if pj.Spec.Report {
+		if err := ghc.CreateStatus(refs.Org, refs.Repo, refs.Pulls[0].SHA, github.Status{
+			State:       string(pj.Status.State),
+			Description: pj.Status.Description,
+			Context:     pj.Spec.Context,
+			TargetURL:   pj.Status.URL,
+		}); err != nil {
+			return err
+		}
 	}
+
 	// Updating Children
 	if pj.Status.State != kube.SuccessState {
 		for _, nj := range pj.Spec.RunAfterSuccess {
