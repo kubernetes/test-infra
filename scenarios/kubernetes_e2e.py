@@ -121,14 +121,8 @@ def kubelet_version(version):
     if not version.startswith('v'):
         raise ValueError("Unknown kubelet version given: %s" % version)
 
-    # Work-around for release-1.6 jobs, which still upload debs to an older
-    # location (without os/arch prefixes).
-    # TODO(pipejakob): remove this when we no longer support 1.6.x.
-    if version.startswith('v1.6.'):
-        return 'gs://kubernetes-release-dev/bazel/%s/build/debs/' % version
-
     # The path given here should match jobs/ci-kubernetes-bazel-build.sh
-    return 'gs://kubernetes-release-dev/bazel/%s/bin/linux/amd64/' % version
+    return 'gs://kubernetes-release-dev/ci/%s/bin/linux/amd64/' % version
 
 class LocalMode(object):
     """Runs e2e tests by calling kubetest."""

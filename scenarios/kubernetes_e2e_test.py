@@ -305,7 +305,7 @@ class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-method
 
         self.assertNotIn('E2E_OPT', self.envs)
         self.assertIn('--kubernetes-anywhere-kubeadm-version=stable', self.callstack[-1])
-        version = 'gs://kubernetes-release-dev/bazel/%s/bin/linux/amd64/' % FAKE_VERSION
+        version = 'gs://kubernetes-release-dev/ci/%s/bin/linux/amd64/' % FAKE_VERSION
         self.assertIn('--kubernetes-anywhere-kubelet-version=%s' % version, self.callstack[-1])
 
     def test_local_env(self):
