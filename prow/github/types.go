@@ -105,6 +105,7 @@ type PullRequest struct {
 	Body               string            `json:"body"`
 	RequestedReviewers []User            `json:"requested_reviewers"`
 	Assignees          []User            `json:"assignees"`
+	State              string            `json:"state"`
 	Merged             bool              `json:"merged"`
 	// ref https://developer.github.com/v3/pulls/#get-a-single-pull-request
 	// If Merged is true, MergeSHA is the SHA of the merge commit, or squashed commit
@@ -404,11 +405,14 @@ const (
 )
 
 type GenericCommentEvent struct {
-	IsPR    bool
-	Action  GenericCommentEventAction
-	Body    string
-	HTMLURL string
-	Number  int
-	Repo    Repo
-	User    User
+	IsPR        bool
+	Action      GenericCommentEventAction
+	Body        string
+	HTMLURL     string
+	Number      int
+	Repo        Repo
+	User        User
+	IssueAuthor User
+	Assignees   []User
+	IssueState  string
 }
