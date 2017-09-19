@@ -40,6 +40,8 @@ var (
 		"(kubernetes-anywhere only) Version of kubeadm to use, if phase2-provider is kubeadm. May be \"stable\" or a gs:// link to a custom build.")
 	kubernetesAnywhereKubernetesVersion = flag.String("kubernetes-anywhere-kubernetes-version", "",
 		"(kubernetes-anywhere only) Version of Kubernetes to use (e.g. latest, stable, latest-1.6, 1.6.3, etc).")
+	kubernetesAnywhereKubeletVersion = flag.String("kubernetes-anywhere-kubelet-version", "stable",
+		"(kubernetes-anywhere only) Version of Kubelet to use, if phase2-provider is kubeadm. May be \"stable\" or a gs:// link to a custom build.")
 	kubernetesAnywhereCluster = flag.String("kubernetes-anywhere-cluster", "",
 		"(kubernetes-anywhere only) Cluster name. Must be set for kubernetes-anywhere.")
 	kubernetesAnywhereUpTimeout = flag.Duration("kubernetes-anywhere-up-timeout", 20*time.Minute,
@@ -65,6 +67,7 @@ const kubernetesAnywhereConfigTemplate = `
 .phase2.docker_registry="gcr.io/google-containers"
 .phase2.kubernetes_version="{{.KubernetesVersion}}"
 .phase2.provider="{{.Phase2Provider}}"
+.phase2.kubelet_version="{{.KubeletVersion}}"
 .phase2.kubeadm.version="{{.KubeadmVersion}}"
 .phase2.kube_context_name="{{.KubeContext}}"
 
@@ -81,6 +84,7 @@ type kubernetesAnywhere struct {
 	// These are exported only because their use in the config template requires it.
 	Phase2Provider    string
 	KubeadmVersion    string
+	KubeletVersion    string
 	KubernetesVersion string
 	NumNodes          int
 	Project           string
@@ -117,6 +121,7 @@ func newKubernetesAnywhere(project, zone string) (deployer, error) {
 		path:              *kubernetesAnywherePath,
 		Phase2Provider:    *kubernetesAnywherePhase2Provider,
 		KubeadmVersion:    *kubernetesAnywhereKubeadmVersion,
+		KubeletVersion:    *kubernetesAnywhereKubeletVersion,
 		KubernetesVersion: *kubernetesAnywhereKubernetesVersion,
 		NumNodes:          *kubernetesAnywhereNumNodes,
 		Project:           project,

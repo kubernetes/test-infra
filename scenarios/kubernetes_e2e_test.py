@@ -75,6 +75,8 @@ sourceType: RAW
 status: READY
 """
 
+FAKE_VERSION = "v1.7.7-beta.0"
+
 def fake_pass(*_unused, **_unused2):
     """Do nothing."""
     pass
@@ -162,6 +164,11 @@ class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-method
         """Log the command with a specific env."""
         self.envs.update(env)
         self.callstack.append(string.join(cmd))
+
+    def fake_output_work_version(self, *cmd):
+        """fake a version."""
+        self.callstack.append(string.join(cmd))
+        return FAKE_VERSION
 
     def fake_output_work_status(self, *cmd):
         """fake a workstatus blob."""
@@ -274,12 +281,28 @@ class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-method
         self.assertNotIn('E2E_OPT', self.envs)
         version = 'gs://kubernetes-release-dev/bazel/v1.7.0-alpha.0.1320+599539dc0b9997/bin/linux/amd64/'  # pylint: disable=line-too-long
         self.assertIn('--kubernetes-anywhere-kubeadm-version=%s' % version, self.callstack[-1])
+        self.assertIn('--kubernetes-anywhere-kubelet-version=%s' % version, self.callstack[-1])
         called = False
         for call in self.callstack:
             self.assertFalse(call.startswith('docker'))
             if call == 'hack/print-workspace-status.sh':
                 called = True
         self.assertTrue(called)
+
+    def test_kubeadm_kubelet(self):
+        """Make sure kubeadm tests with a different kubelet specified behave as expected."""
+        args = kubernetes_e2e.parse_args(['--mode=local', '--kubeadm=stable', '--kubelet=ci/latest'])
+        self.assertEqual(args.mode, 'local')
+        self.assertEqual(args.kubeadm, 'stable')
+        self.assertEqual(args.kubelet, 'ci/latest')
+        with Stub(kubernetes_e2e, 'check_env', self.fake_check_env):
+            with Stub(kubernetes_e2e, 'check_output', self.fake_output_work_version):
+                kubernetes_e2e.main(args)
+
+        self.assertNotIn('E2E_OPT', self.envs)
+        self.assertIn('--kubernetes-anywhere-kubeadm-version=stable', self.callstack[-1])
+        version = 'gs://kubernetes-release-dev/bazel/%s/bin/linux/amd64/' % FAKE_VERSION
+        self.assertIn('--kubernetes-anywhere-kubelet-version=%s' % version, self.callstack[-1])
 
     def test_local_env(self):
         """

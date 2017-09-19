@@ -112,6 +112,24 @@ def kubeadm_version(mode, shared_build_gcs_path):
     else:
         raise ValueError("Unknown kubeadm mode given: %s" % mode)
 
+def kubelet_version(version):
+    """Return gs string to use for kubelet version. Supports ci version aliases ci/latest etc."""
+    if version == 'stable':
+        return 'stable'
+    if version.startswith('ci/'):        
+	version = check_output('gsutil', 'cat', 'gs://kubernetes-release-dev/%s.txt' % version)
+    if not(version.startswith('v')):
+        raise ValueError("Unknown kubelet version given: %s" % version)
+
+    # Work-around for release-1.6 jobs, which still upload debs to an older
+    # location (without os/arch prefixes).
+    # TODO(pipejakob): remove this when we no longer support 1.6.x.
+    if version.startswith('v1.6.'):
+        return 'gs://kubernetes-release-dev/bazel/%s/build/debs/' % version
+
+    # The path given here should match jobs/ci-kubernetes-bazel-build.sh
+    return 'gs://kubernetes-release-dev/bazel/%s/bin/linux/amd64/' % version
+
 class LocalMode(object):
     """Runs e2e tests by calling kubetest."""
     def __init__(self, workspace, artifacts):
@@ -570,12 +588,16 @@ def main(args):
         runner_args.append('--logexporter-gcs-path=%s' % os.environ.get('GCS_ARTIFACTS_DIR', ''))
 
     if args.kubeadm:
-        version = kubeadm_version(args.kubeadm, shared_build_gcs_path)
+        kubeadm_ver = kubeadm_version(args.kubeadm, shared_build_gcs_path)
+        kubelet_ver = kubeadm_ver
+        if args.kubelet:
+            kubelet_ver = kubelet_version(args.kubelet)
         runner_args.extend([
             '--kubernetes-anywhere-path=/workspace/kubernetes-anywhere',
             '--kubernetes-anywhere-phase2-provider=kubeadm',
             '--kubernetes-anywhere-cluster=%s' % cluster,
-            '--kubernetes-anywhere-kubeadm-version=%s' % version,
+            '--kubernetes-anywhere-kubeadm-version=%s' % kubeadm_ver,
+            '--kubernetes-anywhere-kubelet-version=%s' % kubelet_ver,
         ])
 
     if args.aws:
@@ -655,6 +677,8 @@ def create_parser():
         '--docker-in-docker', action='store_true', help='Enable run docker within docker')
     parser.add_argument(
         '--kubeadm', choices=['ci', 'periodic', 'pull', 'stable'])
+    parser.add_argument(
+        '--kubelet', default=None, help='kubelet version to use if it differs from kubeadm')
     parser.add_argument(
         '--stage', default=None, help='Stage release to GCS path provided')
     parser.add_argument(
