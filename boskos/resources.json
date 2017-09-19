@@ -425,9 +425,26 @@
   },
   {
     "names": [
-      "e2e-gce-gci-qa-m59",
-      "e2e-gce-gci-qa-serial-m59",
-      "e2e-gce-gci-qa-slow-m59"
+      "k8s-gci-boskos-1",
+      "k8s-gci-boskos-10",
+      "k8s-gci-boskos-11",
+      "k8s-gci-boskos-12",
+      "k8s-gci-boskos-13",
+      "k8s-gci-boskos-14",
+      "k8s-gci-boskos-15",
+      "k8s-gci-boskos-16",
+      "k8s-gci-boskos-17",
+      "k8s-gci-boskos-18",
+      "k8s-gci-boskos-19",
+      "k8s-gci-boskos-2",
+      "k8s-gci-boskos-20",
+      "k8s-gci-boskos-3",
+      "k8s-gci-boskos-4",
+      "k8s-gci-boskos-5",
+      "k8s-gci-boskos-6",
+      "k8s-gci-boskos-7",
+      "k8s-gci-boskos-8",
+      "k8s-gci-boskos-9"
     ],
     "state": "dirty",
     "type": "gci-qa-project"
