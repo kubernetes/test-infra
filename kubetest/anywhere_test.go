@@ -82,7 +82,7 @@ func TestNewKubernetesAnywhere(t *testing.T) {
 		*kubernetesAnywherePhase2Provider = tc.phase2
 		*kubernetesAnywhereKubeadmVersion = tc.kubeadmVersion
 		*kubernetesAnywhereKubernetesVersion = tc.kubernetesVersion
-		*kubernetesAnywhereKubeletVersion= tc.kubeletVersion
+		*kubernetesAnywhereKubeletVersion = tc.kubeletVersion
 
 		_, err = newKubernetesAnywhere("fake-project", "fake-zone")
 		if err != nil {
