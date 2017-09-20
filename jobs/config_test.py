@@ -30,6 +30,20 @@ import yaml
 
 # pylint: disable=too-many-public-methods, too-many-branches, too-many-locals, too-many-statements
 
+def get_required_jobs():
+    required_jobs = set()
+    configs_dir = config_sort.test_infra('mungegithub', 'submit-queue', 'deployment')
+    for root, _, files in os.walk(configs_dir):
+        for file_name in files:
+            if file_name == 'configmap.yaml':
+                path = os.path.join(root, file_name)
+                with open(path) as fp:
+                    conf = yaml.safe_load(fp)
+                    for job in conf.get('required-retest-contexts', '').split(','):
+                        if job:
+                            required_jobs.add(job)
+    return required_jobs
+
 class JobTest(unittest.TestCase):
 
     excludes = [
@@ -59,6 +73,7 @@ class JobTest(unittest.TestCase):
 
     realjobs = {}
     prowjobs = []
+    presubmits = []
 
     @property
     def jobs(self):
@@ -294,10 +309,10 @@ class JobTest(unittest.TestCase):
         if 'postsubmits' not in doc:
             self.fail('No postsubmits in prow config!')
 
-        presubmits = doc.get('presubmits')
+        self.presubmits = doc.get('presubmits')
         postsubmits = doc.get('postsubmits')
 
-        for _repo, joblist in presubmits.items() + postsubmits.items():
+        for _repo, joblist in self.presubmits.items() + postsubmits.items():
             for job in joblist:
                 self.add_prow_job(job)
 
@@ -372,6 +387,25 @@ class JobTest(unittest.TestCase):
             self.load_prow_yaml(self.prow_config)
         self.assertIn(key, sorted(self.realjobs))  # sorted for clearer error message
         return self.realjobs.get(key)
+
+    def test_non_blocking_jenkins(self):
+        """All PR non-blocking jenkins jobs are always_run: false"""
+        # ref https://github.com/kubernetes/test-infra/issues/4637
+        if not self.presubmits:
+            self.load_prow_yaml(self.prow_config)
+        required_jobs = get_required_jobs()
+        # TODO(bentheelder): should we also include other repos?
+        # If we do, we need to check which ones have a deployment in get_required_jobs
+        # and ignore the ones without submit-queue deployments. This seems brittle
+        # and unnecessary for now though.
+        for job in self.presubmits.get('kubernetes/kubernetes', []):
+            if (job['agent'] == 'jenkins' and
+                    job['name'] not in required_jobs and
+                    job.get('always_run', False)):
+                self.fail(
+                    'Jenkins jobs should not be `always_run: true`'
+                    ' unless they are required! %s'
+                    % job['name'])
 
     def test_valid_timeout(self):
         """All jobs set a timeout less than 120m or set DOCKER_TIMEOUT."""
