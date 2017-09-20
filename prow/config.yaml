@@ -3117,14 +3117,22 @@ postsubmits:
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: /etc/service-account/service-account.json
+        - name: PROW_SERVICE_ACCOUNT
+          value: /etc/prow-build-service/prow-build-service.json
         volumeMounts:
         - name: service
           mountPath: /etc/service-account
+          readOnly: true
+        - name: prow-build-service
+          mountPath: /etc/prow-build-service
           readOnly: true
       volumes:
       - name: service
         secret:
           secretName: service-account
+      - name: prow-build-service
+        secret:
+          secretName: prow-build-service
 
   - name: maintenance-ci-testgrid-config-upload
     agent: kubernetes

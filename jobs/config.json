@@ -9665,11 +9665,7 @@
   },
   "maintenance-boskos-config-upload": {
     "args": [
-      "make",
-      "--",
-      "-C",
-      "boskos",
-      "update-config"
+      "./boskos/update_prow_config.sh"
     ],
     "scenario": "execute",
     "sigOwners": [
