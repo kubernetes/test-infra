@@ -670,11 +670,6 @@ class JobTest(unittest.TestCase):
     def test_all_project_are_unique(self):
         # pylint: disable=line-too-long
         allowed_list = {
-            # these jobs need to share the gpu project while we test the prow one
-            # the prow one is manually triggered anyhow
-            'pull-kubernetes-e2e-gce-gpu': 'pull-kubernetes-e2e-gce-gpu*',
-            'pull-kubernetes-e2e-gce-gpu-prow': 'pull-kubernetes-e2e-gce-gpu*',
-
             # The cos image validation jobs intentionally share projects.
             'ci-kubernetes-e2e-gce-cosdev-k8sdev-default': 'ci-kubernetes-e2e-gce-cos*',
             'ci-kubernetes-e2e-gce-cosdev-k8sdev-serial': 'ci-kubernetes-e2e-gce-cos*',

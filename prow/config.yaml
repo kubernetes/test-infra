@@ -352,21 +352,17 @@ presubmits:
     rerun_command: "/test pull-kubernetes-e2e-gce-gci"
     trigger: "(?m)^/test pull-kubernetes-e2e-gce-gci,?(\\s+|$)"
   - name: pull-kubernetes-e2e-gce-gpu
-    agent: jenkins
-    always_run: false
-    context: pull-kubernetes-e2e-gce-gpu
-    rerun_command: "/test pull-kubernetes-e2e-gce-gpu"
-    trigger: "(?m)^/test pull-kubernetes-e2e-gce-gpu,?(\\s+|$)"
-  - name: pull-kubernetes-e2e-gce-gpu-prow
     agent: kubernetes
     skip_branches:
     - release-1.4
     - release-1.5
     - release-1.6
-    always_run: false
-    context: pull-kubernetes-e2e-gce-gpu-prow
-    rerun_command: "/test pull-kubernetes-e2e-gce-gpu-prow"
-    trigger: "(?m)^/test pull-kubernetes-e2e-gce-gpu-prow,?(\\s+|$)"
+    always_run: true
+    skip_report: true
+    max_concurrency: 12
+    context: pull-kubernetes-e2e-gce-gpu
+    rerun_command: "/test pull-kubernetes-e2e-gce-gpu"
+    trigger: "(?m)^/test( all| pull-kubernetes-e2e-gce-gpu),?(\\s+|$)"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e-prow:v20170918-d0ba8897
@@ -841,21 +837,17 @@ presubmits:
     rerun_command: "/test pull-security-kubernetes-e2e-gce-gci"
     trigger: "(?m)^/test pull-security-kubernetes-e2e-gce-gci,?(\\s+|$)"
   - name: pull-security-kubernetes-e2e-gce-gpu
-    agent: jenkins
-    always_run: false
-    context: pull-security-kubernetes-e2e-gce-gpu
-    rerun_command: "/test pull-security-kubernetes-e2e-gce-gpu"
-    trigger: "(?m)^/test pull-security-kubernetes-e2e-gce-gpu,?(\\s+|$)"
-  - name: pull-security-kubernetes-e2e-gce-gpu-prow
     agent: kubernetes
     skip_branches:
     - release-1.4
     - release-1.5
     - release-1.6
-    always_run: false
-    context: pull-security-kubernetes-e2e-gce-gpu-prow
-    rerun_command: "/test pull-security-kubernetes-e2e-gce-gpu-prow"
-    trigger: "(?m)^/test pull-security-kubernetes-e2e-gce-gpu-prow,?(\\s+|$)"
+    always_run: true
+    skip_report: true
+    max_concurrency: 12
+    context: pull-security-kubernetes-e2e-gce-gpu
+    rerun_command: "/test pull-security-kubernetes-e2e-gce-gpu"
+    trigger: "(?m)^/test( all| pull-security-kubernetes-e2e-gce-gpu),?(\\s+|$)"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e-prow:v20170918-d0ba8897
