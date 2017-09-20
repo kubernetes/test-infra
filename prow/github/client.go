@@ -937,3 +937,48 @@ func (c *Client) ListTeamMembers(id int) ([]TeamMember, error) {
 	}
 	return teamMembers, nil
 }
+
+// MergeDetails contains desired properties of the merge.
+// See https://developer.github.com/v3/pulls/#merge-a-pull-request-merge-button
+type MergeDetails struct {
+	// CommitTitle defaults to the automatic message.
+	CommitTitle string `json:"commit_title,omitempty"`
+	// CommitMessage defaults to the automatic message.
+	CommitMessage string `json:"commit_message,omitempty"`
+	// The PR HEAD must match this to prevent races.
+	SHA string `json:"sha,omitempty"`
+	// Can be "merge", "squash", or "rebase". Defaults to merge.
+	MergeMethod string `json:"merge_method,omitempty"`
+}
+
+type ModifiedHeadError string
+
+func (e ModifiedHeadError) Error() string { return string(e) }
+
+type UnmergablePRError string
+
+func (e UnmergablePRError) Error() string { return string(e) }
+
+// Merge merges a PR.
+func (c *Client) Merge(org, repo string, pr int, details MergeDetails) error {
+	c.log("Merge", org, repo, pr, details)
+	var res struct {
+		Message string `json:"message"`
+	}
+	ec, err := c.request(&request{
+		method:      http.MethodPut,
+		path:        fmt.Sprintf("%s/repos/%s/%s/pulls/%d/merge", c.base, org, repo, pr),
+		requestBody: &details,
+		exitCodes:   []int{200, 405, 409},
+	}, &res)
+	if err != nil {
+		return err
+	}
+	if ec == 405 {
+		return UnmergablePRError(res.Message)
+	} else if ec == 409 {
+		return ModifiedHeadError(res.Message)
+	}
+
+	return nil
+}

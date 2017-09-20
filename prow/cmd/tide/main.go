@@ -33,6 +33,7 @@ import (
 )
 
 var (
+	dryRun  = flag.Bool("dry-run", true, "Whether to mutate any real-world state.")
 	runOnce = flag.Bool("run-once", false, "If true, run only once then quit.")
 
 	configPath = flag.String("config-path", "/etc/config/config", "Path to config.yaml.")
@@ -87,9 +88,10 @@ func main() {
 	ghc.Logger = logger.WithField("client", "github")
 	kc.Logger = logger.WithField("client", "kube")
 	gc.Logger = logger.WithField("client", "git")
-	cLogger := logger.WithField("controller", "tide")
 
-	c := tide.NewController(cLogger, ghc, kc, configAgent, gc)
+	c := tide.NewController(ghc, kc, configAgent, gc)
+	c.Logger = logger.WithField("controller", "tide")
+	c.DryRun = *dryRun
 
 	sync(c)
 	if *runOnce {
