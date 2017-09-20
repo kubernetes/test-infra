@@ -1553,6 +1553,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-new-master-upgrade-cluster
 - name: ci-kubernetes-e2e-gce-master-new-downgrade-cluster
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-master-new-downgrade-cluster
+- name: ci-kubernetes-e2e-gce-master-new-downgrade-cluster-parallel
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-master-new-downgrade-cluster-parallel
 - name: ci-kubernetes-e2e-gce-new-master-upgrade-cluster-new
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-new-master-upgrade-cluster-new
 - name: ci-kubernetes-e2e-gke-cvm-new-gci-master-upgrade-master
@@ -1569,6 +1571,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster
 - name: ci-kubernetes-e2e-gke-gci-master-gci-new-downgrade-cluster
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-master-gci-new-downgrade-cluster
+- name: ci-kubernetes-e2e-gke-gci-master-gci-new-downgrade-cluster-parallel
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-master-gci-new-downgrade-cluster-parallel
 - name: ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster-new
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster-new
 - name: ci-kubernetes-e2e-mlkube-gke
@@ -1731,6 +1735,14 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-stable2-stable1-upgrade-cluster
 - name: ci-kubernetes-e2e-gke-cvm-1-6-gci-1-8-upgrade-cluster-new
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cvm-1-6-gci-1-8-upgrade-cluster-new
+- name: ci-kubernetes-e2e-gce-stable1-stable2-downgrade-cluster
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-stable1-stable2-downgrade-cluster
+- name: ci-kubernetes-e2e-gce-stable1-stable2-downgrade-cluster-parallel
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-stable1-stable2-downgrade-cluster-parallel
+- name: ci-kubernetes-e2e-gke-gci-stable1-gci-stable2-downgrade-cluster
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-stable1-gci-stable2-downgrade-cluster
+- name: ci-kubernetes-e2e-gke-gci-stable1-gci-stable2-downgrade-cluster-parallel
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-stable1-gci-stable2-downgrade-cluster-parallel
 
 # Add New Testgroups Here
 
@@ -2444,6 +2456,9 @@ dashboards:
   - name: gce-master-1.7-downgrade-cluster
     test_group_name: ci-kubernetes-e2e-gce-master-new-downgrade-cluster
     description: 'Downgrade master and node, in gce(debian), from master to 1.7'
+  - name: gce-master-1.7-downgrade-cluster-parallel
+    test_group_name: ci-kubernetes-e2e-gce-master-new-downgrade-cluster-parallel
+    description: 'Downgrade master and node, in gce(debian), from master to 1.7, run parallel tests only'
   - name: gce-1.7-master-upgrade-cluster-new
     test_group_name: ci-kubernetes-e2e-gce-new-master-upgrade-cluster-new
     description: 'Upgrade master and node, in gce(debian), from 1.7 to master, and run skewed e2e tests'
@@ -2459,6 +2474,9 @@ dashboards:
   - name: gke-gci-master-gci-1.7-downgrade-cluster
     test_group_name: ci-kubernetes-e2e-gke-gci-master-gci-new-downgrade-cluster
     description: 'Downgrade master and node, in gke(gci), from master to 1.7'
+  - name: gke-gci-master-gci-1.7-downgrade-cluster-parallel
+    test_group_name: ci-kubernetes-e2e-gke-gci-master-gci-new-downgrade-cluster-parallel
+    description: 'Downgrade master and node, in gke(gci), from master to 1.7, run parallel tests only'
   - name: gke-gci-1.7-gci-master-upgrade-cluster-new
     test_group_name: ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster-new
     description: 'Upgrade master and node, in gke(gci), from 1.7 to master, and run skewed e2e tests'
@@ -3014,6 +3032,14 @@ dashboards:
       test_group_name: ci-kubernetes-e2e-gce-stable2-stable1-upgrade-cluster
     - name: gce-1.7-1.8-upgrade-cluster-new
       test_group_name: ci-kubernetes-e2e-gce-stable2-stable1-upgrade-cluster-new
+    - name: gce-1.8-1.7-downgrade-cluster
+      test_group_name: ci-kubernetes-e2e-gce-stable1-stable2-downgrade-cluster
+    - name: gce-1.8-1.7-downgrade-cluster-parallel
+      test_group_name: ci-kubernetes-e2e-gce-stable1-stable2-downgrade-cluster-parallel
+    - name: gke-1.8-1.7-downgrade-cluster
+      test_group_name: ci-kubernetes-e2e-gke-gci-stable1-gci-stable2-downgrade-cluster
+    - name: gke-1.8-1.7-downgrade-cluster-parallel
+      test_group_name: ci-kubernetes-e2e-gke-gci-stable1-gci-stable2-downgrade-cluster-parallel
 
 - name: misc
   dashboard_tab:
