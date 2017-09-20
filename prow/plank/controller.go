@@ -237,10 +237,18 @@ func (c *Controller) syncPendingJob(pj kube.ProwJob, pm map[string]kube.Pod, rep
 		// deleted manually. Start a new pod.
 		id, pn, err := c.startPod(pj)
 		if err != nil {
-			return fmt.Errorf("error starting pod: %v", err)
+			_, isUnprocessable := err.(kube.UnprocessableEntityError)
+			if !isUnprocessable {
+				return fmt.Errorf("error starting pod: %v", err)
+			}
+			pj.Status.State = kube.ErrorState
+			pj.Status.CompletionTime = time.Now()
+			pj.Status.Description = "Job cannot be processed."
+			logrus.WithField("job", pj.Spec.Job).WithError(err).Warning("Unprocessable pod.")
+		} else {
+			pj.Status.BuildID = id
+			pj.Status.PodName = pn
 		}
-		pj.Status.BuildID = id
-		pj.Status.PodName = pn
 	} else {
 		switch pod.Status.Phase {
 		case kube.PodUnknown:
@@ -317,22 +325,34 @@ func (c *Controller) syncNonPendingJob(pj kube.ProwJob, pm map[string]kube.Pod, 
 		var err error
 		id, pn, err = c.startPod(pj)
 		if err != nil {
-			return fmt.Errorf("error starting pod: %v", err)
+			_, isUnprocessable := err.(kube.UnprocessableEntityError)
+			if !isUnprocessable {
+				return fmt.Errorf("error starting pod: %v", err)
+			}
+			pj.Status.State = kube.ErrorState
+			pj.Status.CompletionTime = time.Now()
+			pj.Status.Description = "Job cannot be processed."
+			logrus.WithField("job", pj.Spec.Job).WithError(err).Warning("Unprocessable pod.")
+		} else {
+			pj.Status.BuildID = id
+			pj.Status.PodName = pn
 		}
 	} else {
 		id = getPodBuildID(&pod)
 		pn = pod.Metadata.Name
 	}
 
-	var b bytes.Buffer
-	if err := c.ca.Config().Plank.JobURLTemplate.Execute(&b, &pj); err != nil {
-		return fmt.Errorf("error executing URL template: %v", err)
+	if pj.Status.State == kube.TriggeredState {
+		var b bytes.Buffer
+		if err := c.ca.Config().Plank.JobURLTemplate.Execute(&b, &pj); err != nil {
+			return fmt.Errorf("error executing URL template: %v", err)
+		}
+		pj.Status.URL = b.String()
+		pj.Status.State = kube.PendingState
+		pj.Status.BuildID = id
+		pj.Status.PodName = pn
+		pj.Status.Description = "Job triggered."
 	}
-	pj.Status.URL = b.String()
-	pj.Status.State = kube.PendingState
-	pj.Status.BuildID = id
-	pj.Status.PodName = pn
-	pj.Status.Description = "Job triggered."
 	reports <- pj
 
 	_, err := c.kc.ReplaceProwJob(pj.Metadata.Name, pj)
@@ -351,7 +371,7 @@ func (c *Controller) startPod(pj kube.ProwJob) (string, string, error) {
 
 	actual, err := c.pkc.CreatePod(*pod)
 	if err != nil {
-		return "", "", fmt.Errorf("error creating pod: %v", err)
+		return "", "", err
 	}
 	return buildID, actual.Metadata.Name, nil
 }

@@ -17,6 +17,7 @@ limitations under the License.
 package plank
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -86,6 +87,7 @@ type fkc struct {
 	sync.Mutex
 	prowjobs []kube.ProwJob
 	pods     []kube.Pod
+	err      error
 }
 
 func (f *fkc) CreateProwJob(pj kube.ProwJob) (kube.ProwJob, error) {
@@ -116,6 +118,9 @@ func (f *fkc) ReplaceProwJob(name string, job kube.ProwJob) (kube.ProwJob, error
 func (f *fkc) CreatePod(pod kube.Pod) (kube.Pod, error) {
 	f.Lock()
 	defer f.Unlock()
+	if f.err != nil {
+		return kube.Pod{}, f.err
+	}
 	f.pods = append(f.pods, pod)
 	return pod, nil
 }
@@ -253,6 +258,7 @@ func TestSyncNonPendingJobs(t *testing.T) {
 		pj          kube.ProwJob
 		pendingJobs map[string]int
 		pods        []kube.Pod
+		err         error
 
 		expectedState      kube.ProwJobState
 		expectedPodHasName bool
@@ -333,6 +339,22 @@ func TestSyncNonPendingJobs(t *testing.T) {
 			expectedState:   kube.TriggeredState,
 			expectedNumPods: 1,
 		},
+		{
+			name: "unprocessable prow job",
+			pj: kube.ProwJob{
+				Spec: kube.ProwJobSpec{
+					Job:  "boop",
+					Type: kube.PeriodicJob,
+				},
+				Status: kube.ProwJobStatus{
+					State: kube.TriggeredState,
+				},
+			},
+			err:              kube.UnprocessableEntityError(errors.New("no way jose")),
+			expectedState:    kube.ErrorState,
+			expectedComplete: true,
+			expectedReport:   true,
+		},
 	}
 	for _, tc := range testcases {
 		totServ := httptest.NewServer(http.HandlerFunc(handleTot))
@@ -346,6 +368,7 @@ func TestSyncNonPendingJobs(t *testing.T) {
 		}
 		fpc := &fkc{
 			pods: tc.pods,
+			err:  tc.err,
 		}
 		c := Controller{
 			kc:          fc,
@@ -401,6 +424,7 @@ func TestSyncPendingJob(t *testing.T) {
 
 		pj   kube.ProwJob
 		pods []kube.Pod
+		err  error
 
 		expectedState      kube.ProwJobState
 		expectedNumPods    int
@@ -605,6 +629,26 @@ func TestSyncPendingJob(t *testing.T) {
 			expectedReport:     true,
 			expectedURL:        "boop-42/success",
 		},
+		{
+			name: "unprocessable prow job",
+			pj: kube.ProwJob{
+				Metadata: kube.ObjectMeta{
+					Name: "jose",
+				},
+				Spec: kube.ProwJobSpec{
+					Job:  "boop",
+					Type: kube.PostsubmitJob,
+				},
+				Status: kube.ProwJobStatus{
+					State: kube.PendingState,
+				},
+			},
+			err:              kube.UnprocessableEntityError(errors.New("no way jose")),
+			expectedState:    kube.ErrorState,
+			expectedComplete: true,
+			expectedReport:   true,
+			expectedURL:      "jose/error",
+		},
 	}
 	for _, tc := range testcases {
 		totServ := httptest.NewServer(http.HandlerFunc(handleTot))
@@ -618,6 +662,7 @@ func TestSyncPendingJob(t *testing.T) {
 		}
 		fpc := &fkc{
 			pods: tc.pods,
+			err:  tc.err,
 		}
 		c := Controller{
 			kc:          fc,
