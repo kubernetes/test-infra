@@ -18,9 +18,10 @@ default_test_group:
   - configuration_value: Commit # Shows the commit number on column header
   - configuration_value: infra-commit
   num_columns_recent: 10
-  use_kubernetes_client: true # These two fields are depricated and should always be true
+  use_kubernetes_client: true # These two fields are deprecated and should always be true
   is_external: true
-  alert_stale_results_hours: 0 # Deprecated, set to 0.
+  alert_stale_results_hours: 0 # Don't alert for staleness by default.
+  num_failures_to_alert: 3 # Consider a test failed if it has 3 or more consecutive failures.
 
 default_dashboard_tab:
   open_test_template: # The URL template to visit after clicking on a cell
@@ -1545,6 +1546,8 @@ test_groups:
 # master-1 to master
 - name: ci-kubernetes-e2e-gce-new-master-upgrade-master
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-new-master-upgrade-master
+  alert_stale_results_hours: 24
+  num_failures_to_alert: 1
 - name: ci-kubernetes-e2e-gce-new-master-upgrade-cluster-parallel
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-new-master-upgrade-cluster-parallel
 - name: ci-kubernetes-e2e-gce-new-master-upgrade-cluster
@@ -2445,6 +2448,8 @@ dashboards:
   - name: gce-1.7-master-upgrade-master
     test_group_name: ci-kubernetes-e2e-gce-new-master-upgrade-master
     description: 'Upgrade master only, in gce(debian), from 1.7 to master'
+    alert_options:
+      alert_mail_to_addresses: 'michelle.192837+alerts@gmail.com, lusensjtu+alerts@gmail.com'
   - name: gce-1.7-master-upgrade-cluster-parallel
     test_group_name: ci-kubernetes-e2e-gce-new-master-upgrade-cluster-parallel
     description: 'Upgrade master and node, in gce(debian), from 1.7 to master, run parallel tests only'
