@@ -67,14 +67,6 @@ def clean_project(project, hours=24, dryrun=False):
     except subprocess.CalledProcessError:
         FAILED.append(project)
 
-def clean_ssh_keys(project):
-    """clean ssh keys from gcp project."""
-    cmd = ['python', test_infra('jenkins/clean_metadata.py'), '--project=%s' % project]
-    try:
-        check(*cmd)
-    except subprocess.CalledProcessError:
-        FAILED.append(project)
-
 
 BLACKLIST = [
     '-soak', # We need to keep deployed resources for test uses
@@ -103,7 +95,6 @@ def check_pr_jobs():
     """Handle PR jobs"""
     for project, expire in PR_PROJECTS.iteritems():
         clean_project(project, hours=expire)
-        clean_ssh_keys(project)
 
 
 def check_ci_jobs():
