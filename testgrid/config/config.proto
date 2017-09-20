@@ -46,7 +46,7 @@ message Notification {
 
 // Specifies a group of tests to gather.
 message TestGroup {
-  reserved 5, 7, 8, 10, 12 to 14, 16 to 23, 28 to 34;
+  reserved 5, 7, 8, 10, 13, 14, 16 to 23, 28 to 34;
 
   // Name of this TestGroup, for mapping dashboard tabs to tests.
   string name = 1;
@@ -80,8 +80,14 @@ message TestGroup {
   }
   repeated ColumnHeader column_header = 9;
 
-  // deprecated - do not touch
-  int32 alert_state_results_hours = 11;
+  // Time in hours before an alert will be added to a test results table if the
+  // run date of the latest results are older than this time.  If zero, no
+  // alerts are raised.
+  int32 alert_stale_results_hours = 11;
+
+  // The number of consecutive test result failures to see before alerting of
+  // a consistent failure. If zero, no alerts are raised.
+  int32 num_failures_to_alert = 12;
 
   // The number of columns to consider "recent" for a variety of purposes.
   int32 num_columns_recent = 15;
@@ -136,7 +142,7 @@ message LinkOptionsTemplate {
 
 // A single tab on a dashboard.
 message DashboardTab {
-  reserved 14, 15;
+  reserved 14;
 
   // The name of the dashboard tab to display in the client.
   string name = 1;
@@ -181,6 +187,24 @@ message DashboardTab {
 
   // A description paragraph to be displayed.
   string description = 13;
+
+  // Configuration options for dashboard tab alerts.
+  DashboardTabAlertOptions alert_options = 15;
+}
+
+// Configuration options for dashboard tab alerts.
+message DashboardTabAlertOptions {
+  // Time in hours before an alert will be added to a test results table if the
+  // run date of the latest results are older than this time.  If zero, no
+  // alerts are raised.
+  int32 alert_stale_results_hours = 1;
+
+  // The number of consecutive test result failures to see before alerting of
+  // a consistent failure. If zero, no alerts are raised.
+  int32 num_failures_to_alert = 2;
+
+  // The comma-separated addresses to send mail.
+  string alert_mail_to_addresses = 3;
 }
 
 // Specifies a dashboard group.
