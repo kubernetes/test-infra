@@ -83,16 +83,13 @@ func (g *ghc) GetPullRequest(org, repo string, number int) (*github.PullRequest,
 	return &g.pr, nil
 }
 
-var ice = github.IssueCommentEvent{
-	Action: github.IssueCommentActionCreated,
-	Issue: github.Issue{
-		State:       "open",
-		Number:      42,
-		PullRequest: &struct{}{},
-	},
-	Comment: github.IssueComment{
-		Body: "/lint",
-	},
+var e = &github.GenericCommentEvent{
+	Action:     github.GenericCommentActionCreated,
+	IssueState: "open",
+	Body:       "/lint",
+	User:       github.User{Login: "cjwagner"},
+	Number:     42,
+	IsPR:       true,
 	Repo: github.Repo{
 		Owner:    github.User{Login: "foo"},
 		Name:     "bar",
@@ -139,7 +136,7 @@ func TestLint(t *testing.T) {
 			},
 		},
 	}
-	if err := handle(gh, c, logrus.NewEntry(logrus.New()), ice); err != nil {
+	if err := handle(gh, c, logrus.NewEntry(logrus.New()), e); err != nil {
 		t.Fatalf("Got error from handle: %v", err)
 	}
 	if len(gh.comment.Comments) != 2 {
@@ -153,7 +150,7 @@ func TestLint(t *testing.T) {
 			Body:     c.Body,
 		})
 	}
-	if err := handle(gh, c, logrus.NewEntry(logrus.New()), ice); err != nil {
+	if err := handle(gh, c, logrus.NewEntry(logrus.New()), e); err != nil {
 		t.Fatalf("Got error from handle on second try: %v", err)
 	}
 	if len(gh.comment.Comments) != 0 {
@@ -173,7 +170,7 @@ func TestLint(t *testing.T) {
 		t.Fatalf("Adding PR commit: %v", err)
 	}
 	gh.oldComments = nil
-	if err := handle(gh, c, logrus.NewEntry(logrus.New()), ice); err != nil {
+	if err := handle(gh, c, logrus.NewEntry(logrus.New()), e); err != nil {
 		t.Fatalf("Got error from handle on third try: %v", err)
 	}
 	if len(gh.comment.Comments) != maxComments {
