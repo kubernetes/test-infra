@@ -174,8 +174,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gce-federation-test
 - name: ci-kubernetes-pull-gce-federation-deploy
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-pull-gce-federation-deploy
-- name: ci-kubernetes-pull-gce-federation-deploy-canary
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-pull-gce-federation-deploy-canary
 - name: ci-kubernetes-federation-build
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-federation-build
 - name: ci-kubernetes-federation-build-1.6
@@ -3726,8 +3724,6 @@ dashboards:
     test_group_name: ci-kubernetes-soak-gce-federation-test
   - name: pull-gce-deploy
     test_group_name: ci-kubernetes-pull-gce-federation-deploy
-  - name: pull-gce-deploy-canary
-    test_group_name: ci-kubernetes-pull-gce-federation-deploy-canary
   - name: build
     test_group_name: ci-kubernetes-federation-build
   - name: build-1.6

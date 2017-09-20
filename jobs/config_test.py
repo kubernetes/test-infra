@@ -765,7 +765,6 @@ class JobTest(unittest.TestCase):
             'pull-kubernetes-federation-e2e-gce': 'pull-kubernetes-federation-e2e-gce-*',
             'ci-kubernetes-pull-gce-federation-deploy': 'pull-kubernetes-federation-e2e-gce-*',
             'pull-kubernetes-federation-e2e-gce-canary': 'pull-kubernetes-federation-e2e-gce-*',
-            'ci-kubernetes-pull-gce-federation-deploy-canary': 'pull-kubernetes-federation-e2e-gce-*',
             'pull-kubernetes-e2e-gce': 'pull-kubernetes-e2e-gce-*',
             'pull-kubernetes-e2e-gce-canary': 'pull-kubernetes-e2e-gce-*',
             'ci-kubernetes-e2e-gce': 'ci-kubernetes-e2e-gce-*',

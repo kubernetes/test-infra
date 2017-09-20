@@ -9251,25 +9251,6 @@
       "sig-federation"
     ]
   },
-  "ci-kubernetes-pull-gce-federation-deploy-canary": {
-    "args": [
-      "--check-leaked-resources",
-      "--down=false",
-      "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-pull-gce-federation-deploy.env",
-      "--env-file=jobs/env/ci-kubernetes-pull-gce-federation-deploy-canary.env",
-      "--extract=ci/latest",
-      "--gcp-project=k8s-jkns-pr-cnry-e2e-gce-fdrtn",
-      "--gcp-zone=us-central1-f",
-      "--provider=gce",
-      "--test=false",
-      "--timeout=90m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-federation"
-    ]
-  },
   "ci-kubernetes-soak-cos-docker-validation-deploy": {
     "args": [
       "--down=false",
@@ -10544,22 +10525,21 @@
   },
   "pull-kubernetes-federation-e2e-gce-canary": {
     "args": [
-      "--build",
+      "--build=bazel",
       "--cluster=",
       "--deployment=none",
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/pull-kubernetes-e2e.env",
       "--env-file=jobs/env/pull-kubernetes-federation-e2e-gce.env",
-      "--env-file=jobs/env/pull-kubernetes-federation-e2e-gce-canary.env",
       "--extract=local",
       "--federation",
-      "--gcp-project=k8s-jkns-pr-cnry-e2e-gce-fdrtn",
+      "--gcp-project=k8s-jkns-pr-bldr-e2e-gce-fdrtn",
       "--gcp-zone=us-central1-f",
       "--multiple-federations",
       "--provider=gce",
       "--save=gs://kubernetes-jenkins/federation/ci-kubernetes-pull-gce-federation-deploy-canary",
       "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-federation-e2e-gce-canary",
-      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
+      "--test_args=--ginkgo.focus=\\[Feature:Federation\\] --ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[NoCluster\\] --minStartupPods=8",
       "--timeout=90m"
     ],
     "scenario": "kubernetes_e2e",
