@@ -2946,6 +2946,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-stable2-stable1-upgrade-cluster
   - name: gce-1.7-1.8-upgrade-cluster-new
     test_group_name: ci-kubernetes-e2e-gce-stable2-stable1-upgrade-cluster-new
+  - name: kubelet-1.8
+    test_group_name: ci-kubernetes-node-kubelet-stable1
 
 - name: release-1.8-blocking
   dashboard_tab:
@@ -2991,6 +2993,8 @@ dashboards:
     test_group_name: ci-kubernetes-federation-build-1.8
   - name: federation-test-1.8
     test_group_name: ci-kubernetes-e2e-gce-federation-release-1-8
+  - name: kubelet-1.8
+    test_group_name: ci-kubernetes-node-kubelet-stable1
 
 - name: release-1.8-upgrade-skew
   dashboard_tab:
