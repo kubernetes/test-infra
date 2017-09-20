@@ -368,7 +368,6 @@ presubmits:
       - image: gcr.io/k8s-testimages/kubekins-e2e-prow:v20170918-d0ba8897
         args:
         - --root=/go/src
-        - "--timeout=90"
         - "--clean"
         - "--git-cache=/root/.cache/git"
         - "--job=$(JOB_NAME)"
@@ -376,6 +375,7 @@ presubmits:
         - "--repo=k8s.io/release"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--timeout=90"
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: /etc/service-account/service-account.json
@@ -454,18 +454,23 @@ presubmits:
     - release-1.5
     - release-1.6
     always_run: false
-    skip_report: true
+    skip_report: false
+    max_concurrency: 12
     context: pull-kubernetes-federation-e2e-gce-canary
     rerun_command: "/test pull-kubernetes-federation-e2e-gce-canary"
     trigger: "(?m)^/test pull-kubernetes-federation-e2e-gce-canary,?(\\s+|$)"
     spec:
       containers:
-      - args:
+      - image: gcr.io/k8s-testimages/kubekins-e2e-prow:v20170918-d0ba8897
+        args:
         - --root=/go/src
+        - "--clean"
+        - "--git-cache=/root/.cache/git"
+        - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - --upload=gs://kubernetes-jenkins/pr-logs
-        - --git-cache=/root/.cache/git
-        - --clean
+        - "--repo=k8s.io/release"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
         - --timeout=110
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -476,7 +481,11 @@ presubmits:
           value: /etc/ssh-key-secret/ssh-private
         - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
           value: /etc/ssh-key-secret/ssh-public
-        image: gcr.io/k8s-testimages/kubekins-e2e-prow:v20170918-d0ba8897
+        - name: TEST_TMPDIR
+          value: /root/.cache/bazel
+        # Bazel needs privileged mode in order to sandbox builds.
+        securityContext:
+          privileged: true
         volumeMounts:
         - mountPath: /etc/service-account
           name: service
@@ -853,7 +862,6 @@ presubmits:
       - image: gcr.io/k8s-testimages/kubekins-e2e-prow:v20170918-d0ba8897
         args:
         - --root=/go/src
-        - "--timeout=90"
         - "--clean"
         - "--git-cache=/root/.cache/git"
         - "--job=$(JOB_NAME)"
@@ -861,6 +869,7 @@ presubmits:
         - "--repo=k8s.io/release"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--timeout=90"
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: /etc/service-account/service-account.json
@@ -939,18 +948,23 @@ presubmits:
     - release-1.5
     - release-1.6
     always_run: false
-    skip_report: true
+    skip_report: false
+    max_concurrency: 12
     context: pull-security-kubernetes-federation-e2e-gce-canary
     rerun_command: "/test pull-security-kubernetes-federation-e2e-gce-canary"
     trigger: "(?m)^/test pull-security-kubernetes-federation-e2e-gce-canary,?(\\s+|$)"
     spec:
       containers:
-      - args:
+      - image: gcr.io/k8s-testimages/kubekins-e2e-prow:v20170918-d0ba8897
+        args:
         - --root=/go/src
+        - "--clean"
+        - "--git-cache=/root/.cache/git"
+        - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - --upload=gs://kubernetes-jenkins/pr-logs
-        - --git-cache=/root/.cache/git
-        - --clean
+        - "--repo=k8s.io/release"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
         - --timeout=110
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -961,7 +975,11 @@ presubmits:
           value: /etc/ssh-key-secret/ssh-private
         - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
           value: /etc/ssh-key-secret/ssh-public
-        image: gcr.io/k8s-testimages/kubekins-e2e-prow:v20170918-d0ba8897
+        - name: TEST_TMPDIR
+          value: /root/.cache/bazel
+        # Bazel needs privileged mode in order to sandbox builds.
+        securityContext:
+          privileged: true
         volumeMounts:
         - mountPath: /etc/service-account
           name: service
