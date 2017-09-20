@@ -190,45 +190,6 @@ presubmits:
     rerun_command: "/test pull-kubernetes-cross"
     trigger: "(?m)^/test pull-kubernetes-cross,?(\\s+|$)"
     run_if_changed: '^(build\/|hack\/lib\/)|(Makefile)|(.*_(windows|linux|osx|unsupported)(_test)?\.go)$'
-  - name: pull-kubernetes-dind-build
-    agent: kubernetes
-    context: pull-kubernetes-dind-build
-    always_run: false
-    rerun_command: "/test pull-kubernetes-dind-build"
-    trigger: "(?m)^/test pull-kubernetes-dind-build,?(\\s+|$)"
-    spec:
-      containers:
-      - name: dind
-        image: docker:dind
-        securityContext:
-          privileged: true
-        volumeMounts:
-        - name: docker-graph-storage
-          mountPath: /var/lib/docker
-      - name: build
-        image: gcr.io/k8s-testimages/kubekins-e2e-prow:latest
-        env:
-        - name: DOCKER_HOST
-          value: tcp://localhost:2375
-        args:
-        - --root=/go/src
-        - --repo=k8s.io/kubernetes=$(PULL_REFS)
-        - --repo=k8s.io/release
-        - --upload=gs://kubernetes-jenkins/pr-logs
-        - --git-cache=/root/.cache/git
-        - --clean
-        - --timeout=110
-        volumeMounts:
-        - name: service
-          mountPath: /etc/service-account
-          readOnly: true
-      volumes:
-      - name: service
-        secret:
-          secretName: service-account
-      - name: docker-graph-storage
-        emptyDir: {}
-
   - name: pull-kubernetes-e2e-gce
     agent: jenkins
     context: pull-kubernetes-e2e-gce
@@ -685,45 +646,6 @@ presubmits:
     rerun_command: "/test pull-security-kubernetes-cross"
     trigger: "(?m)^/test pull-security-kubernetes-cross,?(\\s+|$)"
     run_if_changed: '^(build\/|hack\/lib\/)|(Makefile)|(.*_(windows|linux|osx|unsupported)(_test)?\.go)$'
-  - name: pull-security-kubernetes-dind-build
-    agent: kubernetes
-    context: pull-security-kubernetes-dind-build
-    always_run: false
-    rerun_command: "/test pull-security-kubernetes-dind-build"
-    trigger: "(?m)^/test pull-security-kubernetes-dind-build,?(\\s+|$)"
-    spec:
-      containers:
-      - name: dind
-        image: docker:dind
-        securityContext:
-          privileged: true
-        volumeMounts:
-        - name: docker-graph-storage
-          mountPath: /var/lib/docker
-      - name: build
-        image: gcr.io/k8s-testimages/kubekins-e2e-prow:latest
-        env:
-        - name: DOCKER_HOST
-          value: tcp://localhost:2375
-        args:
-        - --root=/go/src
-        - --repo=k8s.io/kubernetes=$(PULL_REFS)
-        - --repo=k8s.io/release
-        - --upload=gs://kubernetes-jenkins/pr-logs
-        - --git-cache=/root/.cache/git
-        - --clean
-        - --timeout=110
-        volumeMounts:
-        - name: service
-          mountPath: /etc/service-account
-          readOnly: true
-      volumes:
-      - name: service
-        secret:
-          secretName: service-account
-      - name: docker-graph-storage
-        emptyDir: {}
-
   - name: pull-security-kubernetes-e2e-gce
     agent: jenkins
     context: pull-security-kubernetes-e2e-gce

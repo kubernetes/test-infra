@@ -60,6 +60,7 @@ type User struct {
 	Login string `json:"login"`
 	Name  string `json:"name"`
 	Email string `json:"email"`
+	ID    int    `json:"id"`
 }
 
 // PullRequestEventAction enumerates the triggers for this
