@@ -8171,7 +8171,6 @@
   },
   "ci-kubernetes-e2e-kubeadm-gce": {
     "args": [
-      "--tag=latest",
       "--cluster=",
       "--deployment=kubernetes-anywhere",
       "--env-file=jobs/platform/gce.env",
@@ -8181,6 +8180,7 @@
       "--kubernetes-anywhere-kubelet-ci-version=latest",
       "--kubernetes-anywhere-kubernetes-version=ci/latest",
       "--provider=kubernetes-anywhere",
+      "--tag=latest",
       "--test_args=--ginkgo.focus=\\[Conformance\\]|\\[Feature:BootstrapTokens\\]|\\[Feature:NodeAuthorizer\\] --minStartupPods=8",
       "--timeout=300m"
     ],
@@ -8191,7 +8191,6 @@
   },
   "ci-kubernetes-e2e-kubeadm-gce-1-6": {
     "args": [
-      "--tag=latest",
       "--cluster=",
       "--deployment=kubernetes-anywhere",
       "--env-file=jobs/platform/gce.env",
@@ -8201,6 +8200,7 @@
       "--kubernetes-anywhere-kubelet-ci-version=latest-1.6",
       "--kubernetes-anywhere-kubernetes-version=latest-1.6",
       "--provider=kubernetes-anywhere",
+      "--tag=latest",
       "--test_args=--ginkgo.focus=\\[Conformance\\] --minStartupPods=8",
       "--timeout=300m"
     ],
@@ -8211,7 +8211,6 @@
   },
   "ci-kubernetes-e2e-kubeadm-gce-1-6-on-1-7": {
     "args": [
-      "--tag=latest",
       "--cluster=",
       "--deployment=kubernetes-anywhere",
       "--env-file=jobs/platform/gce.env",
@@ -8221,6 +8220,7 @@
       "--kubernetes-anywhere-kubelet-ci-version=latest-1.6",
       "--kubernetes-anywhere-kubernetes-version=latest-1.6",
       "--provider=kubernetes-anywhere",
+      "--tag=latest",
       "--test_args=--ginkgo.focus=\\[Conformance\\] --minStartupPods=8",
       "--timeout=300m"
     ],
@@ -8231,7 +8231,6 @@
   },
   "ci-kubernetes-e2e-kubeadm-gce-1-7": {
     "args": [
-      "--tag=latest",
       "--cluster=",
       "--deployment=kubernetes-anywhere",
       "--env-file=jobs/platform/gce.env",
@@ -8241,6 +8240,7 @@
       "--kubernetes-anywhere-kubelet-ci-version=latest-1.7",
       "--kubernetes-anywhere-kubernetes-version=latest-1.7",
       "--provider=kubernetes-anywhere",
+      "--tag=latest",
       "--test_args=--ginkgo.focus=\\[Conformance\\] --minStartupPods=8",
       "--timeout=300m"
     ],
@@ -8251,7 +8251,6 @@
   },
   "ci-kubernetes-e2e-kubeadm-gce-1-7-on-1-8": {
     "args": [
-      "--tag=latest",
       "--cluster=",
       "--deployment=kubernetes-anywhere",
       "--env-file=jobs/platform/gce.env",
@@ -8261,6 +8260,7 @@
       "--kubernetes-anywhere-kubelet-ci-version=latest-1.7",
       "--kubernetes-anywhere-kubernetes-version=latest-1.7",
       "--provider=kubernetes-anywhere",
+      "--tag=latest",
       "--test_args=--ginkgo.focus=\\[Conformance\\] --minStartupPods=8",
       "--timeout=300m"
     ],
@@ -8271,7 +8271,6 @@
   },
   "ci-kubernetes-e2e-kubeadm-gce-1-8": {
     "args": [
-      "--tag=latest",
       "--cluster=",
       "--deployment=kubernetes-anywhere",
       "--env-file=jobs/platform/gce.env",
@@ -8281,6 +8280,7 @@
       "--kubernetes-anywhere-kubelet-ci-version=latest-1.8",
       "--kubernetes-anywhere-kubernetes-version=latest-1.8",
       "--provider=kubernetes-anywhere",
+      "--tag=latest",
       "--test_args=--ginkgo.focus=\\[Conformance\\]|\\[Feature:BootstrapTokens\\]|\\[Feature:NodeAuthorizer\\] --minStartupPods=8",
       "--timeout=300m"
     ],
@@ -8291,7 +8291,6 @@
   },
   "ci-kubernetes-e2e-kubeadm-gce-stable-on-master": {
     "args": [
-      "--tag=latest",
       "--cluster=",
       "--deployment=kubernetes-anywhere",
       "--env-file=jobs/platform/gce.env",
@@ -8301,6 +8300,7 @@
       "--kubernetes-anywhere-kubelet-version=stable",
       "--kubernetes-anywhere-kubernetes-version=stable",
       "--provider=kubernetes-anywhere",
+      "--tag=latest",
       "--test_args=--ginkgo.focus=\\[Conformance\\]|\\[Feature:BootstrapTokens\\]|\\[Feature:NodeAuthorizer\\] --minStartupPods=8",
       "--timeout=300m"
     ],
@@ -10043,7 +10043,6 @@
   },
   "periodic-ci-kubernetes-e2e-kubeadm-gce-upgrade-1-6-1-7": {
     "args": [
-      "--tag=latest",
       "--cluster=",
       "--deployment=kubernetes-anywhere",
       "--env-file=jobs/platform/gce.env",
@@ -10055,6 +10054,7 @@
       "--kubernetes-anywhere-kubernetes-version=latest-1.6",
       "--kubernetes-anywhere-upgrade-method=init",
       "--provider=kubernetes-anywhere",
+      "--tag=latest",
       "--test_args=--ginkgo.focus=\\[Conformance\\] --minStartupPods=8",
       "--timeout=300m",
       "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\]|\\[Conformance\\] --upgrade-target=ci/latest-1.7"
@@ -10066,7 +10066,6 @@
   },
   "periodic-ci-kubernetes-e2e-kubeadm-gce-upgrade-1-7-1-8": {
     "args": [
-      "--tag=latest",
       "--cluster=",
       "--deployment=kubernetes-anywhere",
       "--env-file=jobs/platform/gce.env",
@@ -10078,6 +10077,7 @@
       "--kubernetes-anywhere-kubernetes-version=latest-1.7",
       "--kubernetes-anywhere-upgrade-method=upgrade",
       "--provider=kubernetes-anywhere",
+      "--tag=latest",
       "--test_args=--ginkgo.focus=\\[Conformance\\] --minStartupPods=8",
       "--timeout=300m",
       "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\]|\\[Conformance\\]|\\[Feature:BootstrapTokens\\]|\\[Feature:NodeAuthorizer\\] --upgrade-target=ci/latest-1.8"
@@ -10151,7 +10151,6 @@
   },
   "periodic-kubernetes-e2e-kubeadm-gce-1-6": {
     "args": [
-      "--tag=latest",
       "--cluster=",
       "--deployment=kubernetes-anywhere",
       "--env-file=jobs/platform/gce.env",
@@ -10161,6 +10160,7 @@
       "--kubernetes-anywhere-kubelet-ci-version=latest-1.6",
       "--kubernetes-anywhere-kubernetes-version=latest-1.6",
       "--provider=kubernetes-anywhere",
+      "--tag=latest",
       "--test_args=--ginkgo.focus=\\[Conformance\\] --minStartupPods=8",
       "--timeout=300m"
     ],
@@ -10171,7 +10171,6 @@
   },
   "periodic-kubernetes-e2e-kubeadm-gce-1-7": {
     "args": [
-      "--tag=latest",
       "--cluster=",
       "--deployment=kubernetes-anywhere",
       "--env-file=jobs/platform/gce.env",
@@ -10181,6 +10180,7 @@
       "--kubernetes-anywhere-kubelet-ci-version=latest-1.7",
       "--kubernetes-anywhere-kubernetes-version=latest-1.7",
       "--provider=kubernetes-anywhere",
+      "--tag=latest",
       "--test_args=--ginkgo.focus=\\[Conformance\\] --minStartupPods=8",
       "--timeout=300m"
     ],
@@ -10191,7 +10191,6 @@
   },
   "periodic-kubernetes-e2e-kubeadm-gce-1-8": {
     "args": [
-      "--tag=latest",
       "--cluster=",
       "--deployment=kubernetes-anywhere",
       "--env-file=jobs/platform/gce.env",
@@ -10201,6 +10200,7 @@
       "--kubernetes-anywhere-kubelet-ci-version=latest-1.8",
       "--kubernetes-anywhere-kubernetes-version=latest-1.8",
       "--provider=kubernetes-anywhere",
+      "--tag=latest",
       "--test_args=--ginkgo.focus=\\[Conformance\\]|\\[Feature:BootstrapTokens\\]|\\[Feature:NodeAuthorizer\\] --minStartupPods=8",
       "--timeout=300m"
     ],
@@ -10504,7 +10504,6 @@
   },
   "pull-kubernetes-e2e-kubeadm-gce": {
     "args": [
-      "--tag=latest",
       "--cluster=",
       "--deployment=kubernetes-anywhere",
       "--env-file=jobs/platform/gce.env",
@@ -10514,6 +10513,7 @@
       "--kubernetes-anywhere-kubelet-ci-version=latest",
       "--kubernetes-anywhere-kubernetes-version=ci/latest",
       "--provider=kubernetes-anywhere",
+      "--tag=latest",
       "--test_args=--ginkgo.focus=\\[Conformance\\] --ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\] --minStartupPods=8",
       "--timeout=55m",
       "--use-shared-build=bazel"

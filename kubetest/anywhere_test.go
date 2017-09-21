@@ -59,7 +59,7 @@ func TestNewKubernetesAnywhere(t *testing.T) {
 			name:              "kubeadm with specific versions",
 			phase2:            "kubeadm",
 			kubeadmVersion:    "unstable",
-			kubeadmUpgrade:	   "init",
+			kubeadmUpgrade:    "init",
 			kubeletVersion:    "foo",
 			kubernetesVersion: "latest-1.6",
 			expectConfigLines: []string{
