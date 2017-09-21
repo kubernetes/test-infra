@@ -10450,7 +10450,7 @@
   },
   "pull-kubernetes-e2e-gke-gpu": {
     "args": [
-      "--build",
+      "--build=bazel",
       "--cluster=",
       "--deployment=gke",
       "--extract=local",
@@ -10460,7 +10460,6 @@
       "--gcp-zone=us-west1-b",
       "--gke-create-command=alpha container clusters create --quiet --enable-kubernetes-alpha --accelerator=type=nvidia-tesla-k80,count=2",
       "--gke-environment=test",
-      "--mode=docker",
       "--provider=gke",
       "--stage=gs://kubernetes-release-dev/ci",
       "--stage-suffix=pull-gke-gpu",
