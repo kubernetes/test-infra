@@ -8171,6 +8171,7 @@
   },
   "ci-kubernetes-e2e-kubeadm-gce": {
     "args": [
+      "--tag=latest",
       "--cluster=",
       "--deployment=kubernetes-anywhere",
       "--env-file=jobs/platform/gce.env",
@@ -8190,6 +8191,7 @@
   },
   "ci-kubernetes-e2e-kubeadm-gce-1-6": {
     "args": [
+      "--tag=latest",
       "--cluster=",
       "--deployment=kubernetes-anywhere",
       "--env-file=jobs/platform/gce.env",
@@ -8209,6 +8211,7 @@
   },
   "ci-kubernetes-e2e-kubeadm-gce-1-6-on-1-7": {
     "args": [
+      "--tag=latest",
       "--cluster=",
       "--deployment=kubernetes-anywhere",
       "--env-file=jobs/platform/gce.env",
@@ -8228,6 +8231,7 @@
   },
   "ci-kubernetes-e2e-kubeadm-gce-1-7": {
     "args": [
+      "--tag=latest",
       "--cluster=",
       "--deployment=kubernetes-anywhere",
       "--env-file=jobs/platform/gce.env",
@@ -8247,6 +8251,7 @@
   },
   "ci-kubernetes-e2e-kubeadm-gce-1-7-on-1-8": {
     "args": [
+      "--tag=latest",
       "--cluster=",
       "--deployment=kubernetes-anywhere",
       "--env-file=jobs/platform/gce.env",
@@ -8266,6 +8271,7 @@
   },
   "ci-kubernetes-e2e-kubeadm-gce-1-8": {
     "args": [
+      "--tag=latest",
       "--cluster=",
       "--deployment=kubernetes-anywhere",
       "--env-file=jobs/platform/gce.env",
@@ -8285,6 +8291,7 @@
   },
   "ci-kubernetes-e2e-kubeadm-gce-stable-on-master": {
     "args": [
+      "--tag=latest",
       "--cluster=",
       "--deployment=kubernetes-anywhere",
       "--env-file=jobs/platform/gce.env",
@@ -10036,6 +10043,7 @@
   },
   "periodic-ci-kubernetes-e2e-kubeadm-gce-upgrade-1-6-1-7": {
     "args": [
+      "--tag=latest",
       "--cluster=",
       "--deployment=kubernetes-anywhere",
       "--env-file=jobs/platform/gce.env",
@@ -10057,6 +10065,7 @@
   },
   "periodic-ci-kubernetes-e2e-kubeadm-gce-upgrade-1-7-1-8": {
     "args": [
+      "--tag=latest",
       "--cluster=",
       "--deployment=kubernetes-anywhere",
       "--env-file=jobs/platform/gce.env",
@@ -10140,6 +10149,7 @@
   },
   "periodic-kubernetes-e2e-kubeadm-gce-1-6": {
     "args": [
+      "--tag=latest",
       "--cluster=",
       "--deployment=kubernetes-anywhere",
       "--env-file=jobs/platform/gce.env",
@@ -10158,6 +10168,7 @@
   },
   "periodic-kubernetes-e2e-kubeadm-gce-1-7": {
     "args": [
+      "--tag=latest",
       "--cluster=",
       "--deployment=kubernetes-anywhere",
       "--env-file=jobs/platform/gce.env",
@@ -10176,6 +10187,7 @@
   },
   "periodic-kubernetes-e2e-kubeadm-gce-1-8": {
     "args": [
+      "--tag=latest",
       "--cluster=",
       "--deployment=kubernetes-anywhere",
       "--env-file=jobs/platform/gce.env",
@@ -10487,6 +10499,7 @@
   },
   "pull-kubernetes-e2e-kubeadm-gce": {
     "args": [
+      "--tag=latest",
       "--cluster=",
       "--deployment=kubernetes-anywhere",
       "--env-file=jobs/platform/gce.env",
