@@ -1337,7 +1337,9 @@ func (sq *SubmitQueue) mergePullRequest(obj *github.MungeObject, msg, extra stri
 	isMaster, _ := obj.IsForBranch("master")
 	if isMaster {
 		sq.opts.Lock()
-		extra = extra + ". " + sq.MergeToMasterMessage
+		if sq.MergeToMasterMessage != "" {
+			extra = extra + ". " + sq.MergeToMasterMessage
+		}
 		sq.opts.Unlock()
 	}
 	ok := obj.MergePR("submit-queue" + extra)
