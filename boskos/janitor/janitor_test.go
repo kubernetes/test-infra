@@ -170,7 +170,7 @@ func TestMalfunctionJanitor(t *testing.T) {
 		return nil
 	}
 
-	fb := CreateFakeBoskos(100, []string{"t"})
+	fb := CreateFakeBoskos(200, []string{"t"})
 
 	buffer := setup(fb, poolSize, bufferSize, fakeClean)
 

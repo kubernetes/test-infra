@@ -448,5 +448,15 @@
     ],
     "state": "dirty",
     "type": "gci-qa-project"
+  },
+  {
+    "names": [
+      "k8s-gke-gpu-boskos-02",
+      "k8s-gke-gpu-boskos-03",
+      "k8s-gke-gpu-boskos-04",
+      "k8s-gke-gpu-boskos-05"
+    ],
+    "state": "dirty",
+    "type": "gpu-project"
   }
 ]
