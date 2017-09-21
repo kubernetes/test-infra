@@ -50,6 +50,8 @@ var (
 		"(kubernetes-anywhere only) Time limit between starting a cluster and making a successful call to the Kubernetes API.")
 	kubernetesAnywhereNumNodes = flag.Int("kubernetes-anywhere-num-nodes", 4,
 		"(kubernetes-anywhere only) Number of nodes to be deployed in the cluster.")
+	kubernetesAnywhereUpgradeMethod = flag.String("kubernetes-anywhere-upgrade-method", "kubeadm-upgrade",
+		"(kubernetes-anywhere only) Indicates whether to do the control plane upgrade with kubeadm method \"kubeadm-init\" or \"kubeadm-upgrade\"")
 )
 
 const kubernetesAnywhereConfigTemplate = `
@@ -72,6 +74,7 @@ const kubernetesAnywhereConfigTemplate = `
 .phase2.kubelet_version="{{.KubeletVersion}}"
 .phase2.kubeadm.version="{{.KubeadmVersion}}"
 .phase2.kube_context_name="{{.KubeContext}}"
+.phase2.upgrade_method="{{.UpgradeMethod}}"
 
 .phase3.run_addons=y
 .phase3.weave_net={{if eq .Phase2Provider "kubeadm" -}} y {{- else -}} n {{- end}}
@@ -87,6 +90,7 @@ type kubernetesAnywhere struct {
 	Phase2Provider    string
 	KubeadmVersion    string
 	KubeletVersion    string
+	UpgradeMethod     string
 	KubernetesVersion string
 	NumNodes          int
 	Project           string
@@ -133,6 +137,7 @@ func newKubernetesAnywhere(project, zone string) (deployer, error) {
 		Phase2Provider:    *kubernetesAnywherePhase2Provider,
 		KubeadmVersion:    *kubernetesAnywhereKubeadmVersion,
 		KubeletVersion:    kubeletVersion,
+		UpgradeMethod:     *kubernetesAnywhereUpgradeMethod,
 		KubernetesVersion: *kubernetesAnywhereKubernetesVersion,
 		NumNodes:          *kubernetesAnywhereNumNodes,
 		Project:           project,
