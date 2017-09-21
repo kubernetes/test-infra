@@ -356,7 +356,7 @@ func TestConditionalPresubmits(t *testing.T) {
 			RunIfChanged: `(Makefile|\.sh|_(windows|linux|osx|unknown)(_test)?\.go)$`,
 		},
 	}
-	setRegexes(presubmits)
+	SetRegexes(presubmits)
 	ps := presubmits[0]
 	var testcases = []struct {
 		changes  []string

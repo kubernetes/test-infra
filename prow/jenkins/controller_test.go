@@ -26,26 +26,60 @@ import (
 	"time"
 
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pjutil"
 )
 
 type fca struct {
+	sync.Mutex
 	c *config.Config
 }
 
-func newFakeConfigAgent() *fca {
+func newFakeConfigAgent(t *testing.T) *fca {
+	presubmits := []config.Presubmit{
+		{
+			Name: "test-bazel-build",
+			RunAfterSuccess: []config.Presubmit{
+				{
+					Name:         "test-kubeadm-cloud",
+					RunIfChanged: "^(cmd/kubeadm|build/debs).*$",
+				},
+			},
+		},
+		{
+			Name: "test-e2e",
+			RunAfterSuccess: []config.Presubmit{
+				{
+					Name: "push-image",
+				},
+			},
+		},
+		{
+			Name: "test-bazel-test",
+		},
+	}
+	if err := config.SetRegexes(presubmits); err != nil {
+		t.Fatal(err)
+	}
+	presubmitMap := map[string][]config.Presubmit{
+		"kubernetes/kubernetes": presubmits,
+	}
+
 	return &fca{
 		c: &config.Config{
 			Plank: config.Plank{
 				JobURLTemplate: template.Must(template.New("test").Parse("{{.Status.PodName}}/")),
 			},
+			Presubmits: presubmitMap,
 		},
 	}
 
 }
 
 func (f *fca) Config() *config.Config {
+	f.Lock()
+	defer f.Unlock()
 	return f.c
 }
 
@@ -108,6 +142,27 @@ func (f *fjc) Status(job, id string) (*Status, error) {
 	}
 	return &f.status, nil
 }
+
+type fghc struct {
+	sync.Mutex
+	changes []github.PullRequestChange
+	err     error
+}
+
+func (f *fghc) GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error) {
+	f.Lock()
+	defer f.Unlock()
+	return f.changes, f.err
+}
+
+func (f *fghc) BotName() (string, error)                                  { return "bot", nil }
+func (f *fghc) CreateStatus(org, repo, ref string, s github.Status) error { return nil }
+func (f *fghc) ListIssueComments(org, repo string, number int) ([]github.IssueComment, error) {
+	return nil, nil
+}
+func (f *fghc) CreateComment(org, repo string, number int, comment string) error { return nil }
+func (f *fghc) DeleteComment(org, repo string, ID int) error                     { return nil }
+func (f *fghc) EditComment(org, repo string, ID int, comment string) error       { return nil }
 
 func TestSyncNonPendingJobs(t *testing.T) {
 	var testcases = []struct {
@@ -186,7 +241,7 @@ func TestSyncNonPendingJobs(t *testing.T) {
 		c := Controller{
 			kc:          fkc,
 			jc:          fjc,
-			ca:          newFakeConfigAgent(),
+			ca:          newFakeConfigAgent(t),
 			lock:        sync.RWMutex{},
 			pendingJobs: make(map[string]int),
 		}
@@ -364,7 +419,7 @@ func TestSyncPendingJobs(t *testing.T) {
 		c := Controller{
 			kc:          fkc,
 			jc:          fjc,
-			ca:          newFakeConfigAgent(),
+			ca:          newFakeConfigAgent(t),
 			lock:        sync.RWMutex{},
 			pendingJobs: make(map[string]int),
 		}
@@ -427,7 +482,7 @@ func TestBatch(t *testing.T) {
 	c := Controller{
 		kc:          fc,
 		jc:          jc,
-		ca:          newFakeConfigAgent(),
+		ca:          newFakeConfigAgent(t),
 		pendingJobs: make(map[string]int),
 		lock:        sync.RWMutex{},
 	}
@@ -479,5 +534,109 @@ func TestBatch(t *testing.T) {
 	// This is what the SQ reads.
 	if fc.prowjobs[0].Spec.Context != "Some Job Context" {
 		t.Fatalf("Wrong context: %v", fc.prowjobs[0].Spec.Context)
+	}
+}
+
+func TestRunAfterSuccessCanRun(t *testing.T) {
+	tests := []struct {
+		name string
+
+		parent *kube.ProwJob
+		child  *kube.ProwJob
+
+		changes []github.PullRequestChange
+		err     error
+
+		expected bool
+	}{
+		{
+			name: "child does not require specific changes",
+			parent: &kube.ProwJob{
+				Spec: kube.ProwJobSpec{
+					Job:  "test-e2e",
+					Type: kube.PresubmitJob,
+					Refs: kube.Refs{
+						Org:  "kubernetes",
+						Repo: "kubernetes",
+						Pulls: []kube.Pull{
+							{Number: 123},
+						},
+					},
+				},
+			},
+			child: &kube.ProwJob{
+				Spec: kube.ProwJobSpec{
+					Job: "push-image",
+				},
+			},
+			expected: true,
+		},
+		{
+			name: "child requires specific changes that are done",
+			parent: &kube.ProwJob{
+				Spec: kube.ProwJobSpec{
+					Job:  "test-bazel-build",
+					Type: kube.PresubmitJob,
+					Refs: kube.Refs{
+						Org:  "kubernetes",
+						Repo: "kubernetes",
+						Pulls: []kube.Pull{
+							{Number: 123},
+						},
+					},
+				},
+			},
+			child: &kube.ProwJob{
+				Spec: kube.ProwJobSpec{
+					Job: "test-kubeadm-cloud",
+				},
+			},
+			changes: []github.PullRequestChange{
+				{Filename: "cmd/kubeadm/kubeadm.go"},
+				{Filename: "vendor/BUILD"},
+				{Filename: ".gitatrributes"},
+			},
+			expected: true,
+		},
+		{
+			name: "child requires specific changes that are not done",
+			parent: &kube.ProwJob{
+				Spec: kube.ProwJobSpec{
+					Job:  "test-bazel-build",
+					Type: kube.PresubmitJob,
+					Refs: kube.Refs{
+						Org:  "kubernetes",
+						Repo: "kubernetes",
+						Pulls: []kube.Pull{
+							{Number: 123},
+						},
+					},
+				},
+			},
+			child: &kube.ProwJob{
+				Spec: kube.ProwJobSpec{
+					Job: "test-kubeadm-cloud",
+				},
+			},
+			changes: []github.PullRequestChange{
+				{Filename: "vendor/BUILD"},
+				{Filename: ".gitatrributes"},
+			},
+			expected: false,
+		},
+	}
+
+	for _, test := range tests {
+		t.Logf("scenario %q", test.name)
+
+		fakeGH := &fghc{
+			changes: test.changes,
+			err:     test.err,
+		}
+
+		got := RunAfterSuccessCanRun(test.parent, test.child, newFakeConfigAgent(t), fakeGH)
+		if got != test.expected {
+			t.Errorf("expected to run: %t, got: %t", test.expected, got)
+		}
 	}
 }

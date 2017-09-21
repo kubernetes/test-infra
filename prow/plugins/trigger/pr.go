@@ -168,7 +168,7 @@ func buildAll(c client, pr github.PullRequest) error {
 		} else if !job.AlwaysRun {
 			continue
 		}
-		if !job.RunsAgainstBranch(pr.Base.Ref) {
+		if !job.RunsAgainstBranch(pr.Base.Ref) && !job.SkipReport {
 			if err := c.GitHubClient.CreateStatus(org, repo, pr.Head.SHA, github.Status{
 				State:       github.StatusSuccess,
 				Context:     job.Context,

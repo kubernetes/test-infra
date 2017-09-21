@@ -12,6 +12,7 @@ go_test(
     library = ":go_default_library",
     deps = [
         "//prow/config:go_default_library",
+        "//prow/github:go_default_library",
         "//prow/kube:go_default_library",
         "//prow/pjutil:go_default_library",
     ],
