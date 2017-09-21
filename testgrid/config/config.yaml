@@ -115,8 +115,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gpu
 - name: ci-kubernetes-e2e-gce-gpu-1-7
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gpu-1-7
-- name: ci-kubernetes-e2e-gce-alpha-features
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-alpha-features
 - name: ci-kubernetes-e2e-gci-gce-alpha-features
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-alpha-features
 - name: ci-kubernetes-e2e-gce-alpha-features-release-1-5
@@ -1918,8 +1916,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce
   - name: gci-gce
     test_group_name: ci-kubernetes-e2e-gci-gce
-  - name: gce-alpha-features
-    test_group_name: ci-kubernetes-e2e-gce-alpha-features
   - name: gci-gce-alpha-features
     test_group_name: ci-kubernetes-e2e-gci-gce-alpha-features
   - name: gce-alpha-features-1.5
@@ -2686,8 +2682,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gci-gke-serial
   - name: gce-federation
     test_group_name: ci-kubernetes-e2e-gce-federation
-  - name: gce-alpha-features
-    test_group_name: ci-kubernetes-e2e-gce-alpha-features
   - name: gci-gce-alpha-features
     test_group_name: ci-kubernetes-e2e-gci-gce-alpha-features
   - name: gce-audit
@@ -4059,10 +4053,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gci-gke-serial
     base_options: 'include-filter-by-regex=Volume%7Cstorage'
     description: 'storage gci gke serial e2e tests for master branch'
-  - name: gce-alpha
-    test_group_name: ci-kubernetes-e2e-gce-alpha-features
-    base_options: 'include-filter-by-regex=Volume%7Cstorage'
-    description: 'storage gce alpha features e2e tests for master branch'
   - name: gci-gce-alpha
     test_group_name: ci-kubernetes-e2e-gci-gce-alpha-features
     base_options: 'include-filter-by-regex=Volume%7Cstorage'
