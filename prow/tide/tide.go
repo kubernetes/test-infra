@@ -71,7 +71,6 @@ func (c *Controller) Sync() error {
 	var pjs []kube.ProwJob
 	var err error
 	if len(pool) > 0 {
-		c.log.Info("Listing ProwJobs.")
 		pjs, err = c.kc.ListProwJobs(nil)
 		if err != nil {
 			return err

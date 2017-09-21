@@ -70,8 +70,9 @@ func main() {
 		}
 	}
 
-	kc.Logger = logrus.WithField("client", "kube")
-	pkc.Logger = logrus.WithField("client", "kube")
+	logger := logrus.StandardLogger()
+	kc.Logger = logger.WithField("client", "kube")
+	pkc.Logger = logger.WithField("client", "kube")
 
 	// Clean now and regularly from now on.
 	for {
