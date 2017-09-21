@@ -17,9 +17,11 @@ limitations under the License.
 package main
 
 import (
+	"bytes"
 	"flag"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
 	"os/exec"
 	"os/user"
@@ -31,7 +33,8 @@ import (
 
 var (
 	// kops specific flags.
-	kopsPath         = flag.String("kops", "", "(kops only) Path to the kops binary. Must be set for kops.")
+	kopsPath         = flag.String("kops", "", "(kops only) Path to the kops binary. kops will be downloaded from kops-base-url if not set.")
+	kopsBaseURL      = flag.String("kops-base-url", os.Getenv("KOPS_BASE_URL"), "(kops only) binary distribution of kops to run.")
 	kopsCluster      = flag.String("kops-cluster", "", "(kops only) Cluster name. Must be set for kops.")
 	kopsState        = flag.String("kops-state", "", "(kops only) s3:// path to kops state store. Must be set.")
 	kopsSSHKey       = flag.String("kops-ssh-key", "", "(kops only) Path to ssh key-pair for each node (defaults '~/.ssh/kube_aws_rsa' if unset.)")
@@ -84,11 +87,13 @@ func migrateKopsEnv() error {
 }
 
 func newKops() (*kops, error) {
-	if err := migrateKopsEnv(); err != nil {
+	tmpdir, err := ioutil.TempDir("", "kops")
+	if err != nil {
 		return nil, err
 	}
-	if *kopsPath == "" {
-		return nil, fmt.Errorf("--kops must be set to a valid binary path for kops deployment")
+
+	if err := migrateKopsEnv(); err != nil {
+		return nil, err
 	}
 	if *kopsCluster == "" {
 		return nil, fmt.Errorf("--kops-cluster must be set to a valid cluster name for kops deployment")
@@ -99,6 +104,17 @@ func newKops() (*kops, error) {
 	if *kopsPriorityPath != "" {
 		if err := insertPath(*kopsPriorityPath); err != nil {
 			return nil, err
+		}
+	}
+
+	{
+		usr, err := user.Current()
+		if err != nil {
+			return nil, err
+		}
+		fmt.Printf("HOME %q\n", usr.HomeDir)
+		for _, v := range os.Environ() {
+			fmt.Printf("%s\n", v)
 		}
 	}
 
@@ -114,18 +130,21 @@ func newKops() (*kops, error) {
 	if err := os.Setenv("KOPS_STATE_STORE", *kopsState); err != nil {
 		return nil, err
 	}
-	f, err := ioutil.TempFile("", "kops-kubecfg")
+
+	// Repoint KUBECONFIG to an isolated kubeconfig in our temp directory
+	kubecfg := filepath.Join(tmpdir, "kubeconfig")
+	f, err := os.Create(kubecfg)
 	if err != nil {
 		return nil, err
 	}
 	defer f.Close()
-	kubecfg := f.Name()
 	if err := f.Chmod(0600); err != nil {
 		return nil, err
 	}
 	if err := os.Setenv("KUBECONFIG", kubecfg); err != nil {
 		return nil, err
 	}
+
 	// Set KUBERNETES_CONFORMANCE_TEST so the auth info is picked up
 	// from kubectl instead of bash inference.
 	if err := os.Setenv("KUBERNETES_CONFORMANCE_TEST", "yes"); err != nil {
@@ -145,6 +164,72 @@ func newKops() (*kops, error) {
 	if err := os.Setenv("ZONE", zones[0]); err != nil {
 		return nil, err
 	}
+
+	// KOPS_BASE_URL sets where we run kops from.
+	if *kopsBaseURL == "" {
+		// Default to the latest CI build
+		kopsLatest := "latest-ci.txt" // kops-e2e-runner has ${KOPS_LATEST:-"latest-ci.txt"}
+		latestURL := "https://storage.googleapis.com/kops-ci/bin/" + kopsLatest
+
+		var b bytes.Buffer
+		if err := httpRead(latestURL, &b); err != nil {
+			return nil, err
+		}
+		latest := strings.TrimSpace(b.String())
+
+		log.Printf("Got latest kops version from %v: %v", latestURL, latest)
+		if latest == "" {
+			return nil, fmt.Errorf("latest URL %v was empty", latestURL)
+		}
+		*kopsBaseURL = latest
+	}
+	if err := os.Setenv("KOPS_BASE_URL", *kopsBaseURL); err != nil {
+		return nil, err
+	}
+
+	// Download kops from kopsBaseURL if kopsPath is not set
+	if *kopsPath == "" {
+		kopsBinURL := *kopsBaseURL + "/linux/amd64/kops"
+		log.Printf("Download kops binary from %s", kopsBinURL)
+		kopsBin := filepath.Join(tmpdir, "kops")
+		f, err := os.Create(kopsBin)
+		if err != nil {
+			return nil, fmt.Errorf("error creating file %q: %v", kopsBin, err)
+		}
+		defer f.Close()
+		if err := httpRead(kopsBinURL, f); err != nil {
+			return nil, err
+		}
+		if err := ensureExecutable(kopsBin); err != nil {
+			return nil, err
+		}
+		*kopsPath = kopsBin
+	}
+
+	// Replace certain "well known" kube versions
+	if *kopsKubeVersion != "" {
+		versionURL := ""
+		prefix := ""
+		if *kopsKubeVersion == "ci/latest" {
+			versionURL = "https://storage.googleapis.com/kubernetes-release-dev/ci/latest.txt"
+			prefix = "https://storage.googleapis.com/kubernetes-release-dev/ci/"
+		}
+
+		if versionURL != "" {
+			var b bytes.Buffer
+			if err := httpRead(versionURL, &b); err != nil {
+				return nil, err
+			}
+			version := strings.TrimSpace(b.String())
+			if version == "" {
+				return nil, fmt.Errorf("version URL %v was empty", versionURL)
+			}
+
+			*kopsKubeVersion = prefix + version
+			log.Printf("Using kubernetes version from %v: %v", versionURL, *kopsKubeVersion)
+		}
+	}
+
 	return &kops{
 		path:        *kopsPath,
 		kubeVersion: *kopsKubeVersion,
