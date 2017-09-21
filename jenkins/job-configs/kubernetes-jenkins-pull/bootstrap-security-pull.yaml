@@ -71,16 +71,6 @@
         job-name: pull-kubernetes-cross
         repo-name: 'github.com/kubernetes-security/kubernetes'
         timeout: 90
-    - kubernetes-e2e-gce:
-        max-total: 12
-        job-name: pull-kubernetes-e2e-gce
-        repo-name: 'github.com/kubernetes-security/kubernetes'
-        timeout: 75
-    - kubernetes-e2e-gce-gci:
-        max-total: 12
-        job-name: pull-kubernetes-e2e-gce-gci
-        repo-name: 'github.com/kubernetes-security/kubernetes'
-        timeout: 75
     - kubernetes-e2e-gce-etcd3:
         max-total: 12
         job-name: pull-kubernetes-e2e-gce-etcd3
