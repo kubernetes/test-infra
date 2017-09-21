@@ -97,10 +97,10 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-slow
 - name: ci-kubernetes-e2e-kops-aws-serial
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-serial
-- name: ci-kubernetes-e2e-kops-aws-release-1.5
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-release-1.5
-- name: ci-kubernetes-e2e-kops-aws-release-1.6
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-release-1.6
+- name: ci-kubernetes-e2e-kops-aws-release-1-5
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-release-1-5
+- name: ci-kubernetes-e2e-kops-aws-release-1-6
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-release-1-6
 - name: ci-kubernetes-e2e-kops-aws-updown
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-updown
 - name: ci-kubernetes-e2e-kops-aws-weave
@@ -1883,9 +1883,13 @@ dashboards:
   - name: kops-aws-serial
     test_group_name: ci-kubernetes-e2e-kops-aws-serial
   - name: kops-aws-1.5
-    test_group_name: ci-kubernetes-e2e-kops-aws-release-1.5
+    test_group_name: ci-kubernetes-e2e-kops-aws-release-1-5
   - name: kops-aws-1.6
-    test_group_name: ci-kubernetes-e2e-kops-aws-release-1.6
+    test_group_name: ci-kubernetes-e2e-kops-aws-release-1-6
+  - name: kops-aws-1.7
+    test_group_name: ci-kubernetes-e2e-kops-aws-release-1-7
+  - name: kops-aws-1.8
+    test_group_name: ci-kubernetes-e2e-kops-aws-stable1
   - name: kops-aws-updown
     test_group_name: ci-kubernetes-e2e-kops-aws-updown
   - name: kops-aws-weave
@@ -2596,7 +2600,7 @@ dashboards:
   - name: soak-gci-gce-1.6-test
     test_group_name: ci-kubernetes-soak-gci-gce-1.6-test
   - name: kops-aws-1.6
-    test_group_name: ci-kubernetes-e2e-kops-aws-release-1.6
+    test_group_name: ci-kubernetes-e2e-kops-aws-release-1-6
   - name: periodic-bazel-test-1.6
     test_group_name: periodic-kubernetes-bazel-test-1-6
   - name: periodic-bazel-build-1.6
