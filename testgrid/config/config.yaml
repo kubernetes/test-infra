@@ -1758,6 +1758,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-stable1-gci-stable2-downgrade-cluster
 - name: ci-kubernetes-e2e-gke-gci-stable1-gci-stable2-downgrade-cluster-parallel
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-stable1-gci-stable2-downgrade-cluster-parallel
+- name: ci-kubernetes-e2e-gce-min-node-permissions
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-min-node-permissions
 
 # Add New Testgroups Here
 
@@ -2021,6 +2023,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-device-plugin-gpu
   - name: gce-gpu
     test_group_name: ci-kubernetes-e2e-gce-gpu
+  - name: gce-min-node-permissions
+    test_group_name: ci-kubernetes-e2e-gce-min-node-permissions
 
 - name: google-gce-scale
   dashboard_tab:
