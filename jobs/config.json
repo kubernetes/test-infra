@@ -10270,33 +10270,13 @@
       "UNKNOWN"
     ]
   },
-  "pull-kubernetes-e2e-gce": {
-    "args": [
-      "--build",
-      "--cluster=",
-      "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/pull-kubernetes-e2e.env",
-      "--env-file=jobs/env/pull-kubernetes-e2e-gce.env",
-      "--extract=local",
-      "--gcp-project=k8s-jkns-pr-gce",
-      "--gcp-zone=us-central1-f",
-      "--mode=docker",
-      "--provider=gce",
-      "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce",
-      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
-      "--timeout=55m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "UNKNOWN"
-    ]
-  },
   "pull-kubernetes-e2e-gce-bazel": {
     "args": [
       "--build=bazel",
       "--cluster=",
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/pull-kubernetes-e2e.env",
+      "--env-file=jobs/env/pull-kubernetes-e2e-gce-etcd3.env",
       "--extract=local",
       "--gcp-zone=us-central1-f",
       "--provider=gce",
@@ -10307,26 +10287,6 @@
     "scenario": "kubernetes_e2e",
     "sigOwners": [
       "UNKNOWN"
-    ]
-  },
-  "pull-kubernetes-e2e-gce-canary": {
-    "args": [
-      "--build=host-go",
-      "--cluster=",
-      "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/pull-kubernetes-e2e.env",
-      "--env-file=jobs/env/pull-kubernetes-e2e-gce-canary.env",
-      "--extract=local",
-      "--gcp-project=k8s-jkns-pr-gce",
-      "--gcp-zone=us-central1-f",
-      "--provider=gce",
-      "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-canary",
-      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
-      "--timeout=55m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-testing"
     ]
   },
   "pull-kubernetes-e2e-gce-etcd3": {
@@ -10344,27 +10304,6 @@
       "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-etcd3",
       "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
       "--timeout=65m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "UNKNOWN"
-    ]
-  },
-  "pull-kubernetes-e2e-gce-gci": {
-    "args": [
-      "--build",
-      "--cluster=",
-      "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/pull-kubernetes-e2e.env",
-      "--env-file=jobs/env/pull-kubernetes-e2e-gce-gci.env",
-      "--extract=local",
-      "--gcp-project=k8s-jkns-pr-gci-gce",
-      "--gcp-zone=us-central1-f",
-      "--mode=docker",
-      "--provider=gce",
-      "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-gci",
-      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
-      "--timeout=55m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
