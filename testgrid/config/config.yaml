@@ -111,10 +111,14 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-canary
 - name: ci-kubernetes-e2e-gce-device-plugin-gpu
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-device-plugin-gpu
+- name: ci-kubernetes-e2e-gce-device-plugin-gpu-stable1
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-device-plugin-gpu-stable1
 - name: ci-kubernetes-e2e-gce-gpu
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gpu
 - name: ci-kubernetes-e2e-gce-gpu-1-7
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gpu-1-7
+- name: ci-kubernetes-e2e-gce-gpu-stable1
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gpu-stable1
 - name: ci-kubernetes-e2e-gci-gce-alpha-features
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-alpha-features
 - name: ci-kubernetes-e2e-gce-alpha-features-release-1-5
@@ -293,10 +297,14 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke
 - name: ci-kubernetes-e2e-gke-device-plugin-gpu
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-device-plugin-gpu
+- name: ci-kubernetes-e2e-gke-device-plugin-gpu-stable1
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-device-plugin-gpu-stable1
 - name: ci-kubernetes-e2e-gke-gpu
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gpu
 - name: ci-kubernetes-e2e-gke-gpu-1-7
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gpu-1-7
+- name: ci-kubernetes-e2e-gke-gpu-stable1
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gpu-stable1
 - name: ci-kubernetes-e2e-gke-alpha-features
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-alpha-features
 - name: ci-kubernetes-e2e-gci-gke-alpha-features
@@ -2947,6 +2955,14 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-stable2-stable1-upgrade-cluster-new
   - name: kubelet-1.8
     test_group_name: ci-kubernetes-node-kubelet-stable1
+  - name: gce-gpu-1-8
+    test_group_name: ci-kubernetes-e2e-gce-gpu-stable1
+  - name: gke-gpu-1-8
+    test_group_name: ci-kubernetes-e2e-gke-gpu-stable1
+  - name: gce-device-plugin-gpu-1-8
+    test_group_name: ci-kubernetes-e2e-gce-device-plugin-gpu-stable1
+  - name: gke-device-plugin-gpu-1-8
+    test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-stable1
 
 - name: release-1.8-blocking
   dashboard_tab:
@@ -2994,6 +3010,10 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-federation-release-1-8
   - name: kubelet-1.8
     test_group_name: ci-kubernetes-node-kubelet-stable1
+  - name: gce-gpu-1-8
+    test_group_name: ci-kubernetes-e2e-gce-gpu-stable1
+  - name: gke-gpu-1-8
+    test_group_name: ci-kubernetes-e2e-gke-gpu-stable1
 
 - name: release-1.8-upgrade-skew
   dashboard_tab:
@@ -3497,16 +3517,24 @@ dashboards:
   dashboard_tab:
   - name: gce-device-plugin-gpu
     test_group_name: ci-kubernetes-e2e-gce-device-plugin-gpu
+  - name: gce-device-plugin-gpu-stable1
+    test_group_name: ci-kubernetes-e2e-gce-device-plugin-gpu-stable1
   - name: gce-gpu
     test_group_name: ci-kubernetes-e2e-gce-gpu
   - name: gce-gpu-1-7
     test_group_name: ci-kubernetes-e2e-gce-gpu-1-7
+  - name: gce-gpu-1-8
+    test_group_name: ci-kubernetes-e2e-gce-gpu-stable1
   - name: gke-device-plugin-gpu
     test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu
+  - name: gke-device-plugin-gpu-1-8
+    test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-stable1
   - name: gke-gpu
     test_group_name: ci-kubernetes-e2e-gke-gpu
   - name: gke-gpu-1-7
     test_group_name: ci-kubernetes-e2e-gke-gpu-1-7
+  - name: gke-gpu-1-8
+    test_group_name: ci-kubernetes-e2e-gke-gpu-stable1
   - name: kubelet-serial-gce-e2e
     test_group_name: ci-kubernetes-node-kubelet-serial
     base_options: 'include-filter-by-regex=GPU'
