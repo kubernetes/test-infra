@@ -336,6 +336,23 @@ func (c *Client) CreateIssueReaction(org, repo string, ID int, reaction string) 
 	return err
 }
 
+// DeleteStaleComments iterates over comments on an issue/PR, deleting those which the 'isStale'
+// function identifies as stale.
+func (c *Client) DeleteStaleComments(org, repo string, number int, isStale func(IssueComment) bool) error {
+	comments, err := c.ListIssueComments(org, repo, number)
+	if err != nil {
+		return fmt.Errorf("failed to list comments while deleting stale comments. err: %v", err)
+	}
+	for _, comment := range comments {
+		if isStale(comment) {
+			if err := c.DeleteComment(org, repo, comment.ID); err != nil {
+				return fmt.Errorf("failed to delete stale comment with ID '%d'", comment.ID)
+			}
+		}
+	}
+	return nil
+}
+
 // readPaginatedResults iterates over all objects in the paginated
 // result indicated by the given url.  The newObj function should
 // return a new slice of the expected type, and the accumulate
