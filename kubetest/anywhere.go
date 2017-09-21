@@ -119,7 +119,7 @@ func newKubernetesAnywhere(project, zone string) (deployer, error) {
 		if err != nil {
 			return nil, err
 		}
-		kubeletVersion = fmt.Sprintf("gs://kubernetes-release-dev/ci/%v/bin/linux/amd64/", resolvedVersion)
+		kubeletVersion = fmt.Sprintf("gs://kubernetes-release-dev/bazel/%v/bin/linux/amd64/", resolvedVersion)
 	}
 
 	// Set KUBERNETES_CONFORMANCE_TEST so the auth info is picked up
