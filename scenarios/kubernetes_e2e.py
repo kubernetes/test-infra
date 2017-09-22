@@ -578,6 +578,13 @@ def main(args):
             '--kubernetes-anywhere-kubeadm-version=%s' % version,
         ])
 
+        if args.kubeadm == "pull":
+            # If this is a pull job; the kubelet version should equal
+            # the kubeadm version here: we should use debs from the PR build
+            runner_args.extend([
+                '--kubernetes-anywhere-kubelet-version=%s' % version,
+            ])
+
     if args.aws:
         set_up_aws(args, mode, cluster, runner_args)
     elif args.gce_ssh:
