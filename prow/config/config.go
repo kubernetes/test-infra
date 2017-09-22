@@ -25,6 +25,7 @@ import (
 	"time"
 
 	"github.com/ghodss/yaml"
+	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/kube"
 )
@@ -52,6 +53,16 @@ type Config struct {
 	// The namespace needs to exist and will not be created by prow.
 	// Defaults to "default".
 	PodNamespace string `json:"pod_namespace,omitempty"`
+
+	// LogLevel enables dynamically updating the log level of the
+	// standard logger that is used by all prow components.
+	//
+	// Valid values:
+	//
+	// "debug", "info", "warn", "warning", "error", "fatal", "panic"
+	//
+	// Defaults to "info".
+	LogLevel string `json:"log_level,omitempty"`
 
 	// PushGateway is a prometheus push gateway.
 	PushGateway PushGateway `json:"push_gateway,omitempty"`
@@ -224,6 +235,16 @@ func parseConfig(c *Config) error {
 	if c.PodNamespace == "" {
 		c.PodNamespace = "default"
 	}
+
+	if c.LogLevel == "" {
+		c.LogLevel = "info"
+	}
+	lvl, err := logrus.ParseLevel(c.LogLevel)
+	if err != nil {
+		return err
+	}
+	logrus.SetLevel(lvl)
+
 	return nil
 }
 

@@ -45,7 +45,6 @@ var (
 
 func main() {
 	flag.Parse()
-	logrus.SetLevel(logrus.DebugLevel)
 
 	configAgent := &config.Agent{}
 	if err := configAgent.Start(*configPath); err != nil {
@@ -64,7 +63,6 @@ func main() {
 	}
 
 	ghc := github.NewClient(oauthSecret, *githubEndpoint)
-	ghc.Logger = logrus.WithField("client", "github")
 
 	var kc *kube.Client
 	if *cluster == "" {
@@ -84,9 +82,14 @@ func main() {
 		logrus.WithError(err).Fatal("Error getting git client.")
 	}
 	defer gc.Clean()
-	gc.Logger = logrus.WithField("client", "git")
 
-	c := tide.NewController(logrus.WithField("controller", "tide"), ghc, kc, configAgent, gc)
+	logger := logrus.StandardLogger()
+	ghc.Logger = logger.WithField("client", "github")
+	kc.Logger = logger.WithField("client", "kube")
+	gc.Logger = logger.WithField("client", "git")
+	cLogger := logger.WithField("controller", "tide")
+
+	c := tide.NewController(cLogger, ghc, kc, configAgent, gc)
 
 	sync(c)
 	if *runOnce {

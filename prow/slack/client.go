@@ -19,14 +19,23 @@ package slack
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"strings"
 )
+
+type Logger interface {
+	Debugf(s string, v ...interface{})
+}
 
 // Client allows you to provide connection to Slack API Server
 // It contains a token that allows to authenticate connection to post and work with channels in the domain
 type Client struct {
+	// If Logger is non-nil, log all method calls with it.
+	Logger Logger
+
 	token string
 	fake  bool
 }
@@ -101,7 +110,19 @@ func NewFakeClient() *Client {
 	}
 }
 
+func (sl *Client) log(methodName string, args ...interface{}) {
+	if sl.Logger == nil {
+		return
+	}
+	var as []string
+	for _, arg := range args {
+		as = append(as, fmt.Sprintf("%v", arg))
+	}
+	sl.Logger.Debugf("%s(%s)", methodName, strings.Join(as, ", "))
+}
+
 func (sl *Client) VerifyAPI() (bool, error) {
+	sl.log("VerifyAPI")
 	if sl.fake {
 		return true, nil
 	}
@@ -119,6 +140,7 @@ func (sl *Client) VerifyAPI() (bool, error) {
 }
 
 func (sl *Client) VerifyAuth() (bool, error) {
+	sl.log("VerifyAuth")
 	if sl.fake {
 		return true, nil
 	}
@@ -157,6 +179,7 @@ func (sl *Client) postMessage(url string, uv *url.Values) ([]byte, error) {
 }
 
 func (sl *Client) GetChannels() ([]Channel, error) {
+	sl.log("GetChannels")
 	if sl.fake {
 		return []Channel{}, nil
 	}
@@ -170,7 +193,8 @@ func (sl *Client) GetChannels() ([]Channel, error) {
 	return chanList.Channels, nil
 }
 
-func (sl *Client) WriteMessage(text string, channel string) error {
+func (sl *Client) WriteMessage(text, channel string) error {
+	sl.log("WriteMessage", text, channel)
 	if sl.fake {
 		return nil
 	}

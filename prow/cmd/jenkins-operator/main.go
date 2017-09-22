@@ -100,6 +100,11 @@ func main() {
 		ghc = github.NewClient(oauthSecret, *githubEndpoint)
 	}
 
+	logger := logrus.StandardLogger()
+	kc.Logger = logger.WithField("client", "kube")
+	jc.Logger = logger.WithField("client", "jenkins")
+	ghc.Logger = logger.WithField("client", "github")
+
 	c := jenkins.NewController(kc, jc, ghc, configAgent)
 
 	for range time.Tick(30 * time.Second) {

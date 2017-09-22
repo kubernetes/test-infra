@@ -85,6 +85,11 @@ func main() {
 		ghc = github.NewClient(oauthSecret, *githubEndpoint)
 	}
 
+	logger := logrus.StandardLogger()
+	kc.Logger = logger.WithField("client", "kube")
+	pkc.Logger = logger.WithField("client", "kube")
+	ghc.Logger = logger.WithField("client", "github")
+
 	c, err := plank.NewController(kc, pkc, ghc, configAgent, *totURL)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error creating plank controller.")

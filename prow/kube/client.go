@@ -39,7 +39,7 @@ const (
 )
 
 type Logger interface {
-	Printf(s string, v ...interface{})
+	Debugf(s string, v ...interface{})
 }
 
 // Client interacts with the Kubernetes api-server.
@@ -69,7 +69,7 @@ func (c *Client) log(methodName string, args ...interface{}) {
 	for _, arg := range args {
 		as = append(as, fmt.Sprintf("%v", arg))
 	}
-	c.Logger.Printf("%s(%s)", methodName, strings.Join(as, ", "))
+	c.Logger.Debugf("%s(%s)", methodName, strings.Join(as, ", "))
 }
 
 type ConflictError error
