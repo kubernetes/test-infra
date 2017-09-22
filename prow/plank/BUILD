@@ -8,7 +8,7 @@ load(
 
 go_test(
     name = "go_default_test",
-    srcs = ["plank_test.go"],
+    srcs = ["controller_test.go"],
     library = ":go_default_library",
     deps = [
         "//prow/config:go_default_library",

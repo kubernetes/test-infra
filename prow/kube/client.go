@@ -74,6 +74,8 @@ func (c *Client) log(methodName string, args ...interface{}) {
 
 type ConflictError error
 
+type UnprocessableEntityError error
+
 type request struct {
 	method      string
 	path        string
@@ -147,6 +149,8 @@ func (c *Client) requestRetry(r *request) ([]byte, error) {
 	}
 	if resp.StatusCode == 409 {
 		return nil, ConflictError(fmt.Errorf("body: %s", string(rb)))
+	} else if resp.StatusCode == 422 {
+		return nil, UnprocessableEntityError(fmt.Errorf("%s", string(rb)))
 	} else if resp.StatusCode < 200 || resp.StatusCode > 299 {
 		return nil, fmt.Errorf("response has status \"%s\" and body \"%s\"", resp.Status, string(rb))
 	}
