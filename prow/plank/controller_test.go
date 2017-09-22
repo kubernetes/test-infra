@@ -269,6 +269,7 @@ func TestSyncNonPendingJobs(t *testing.T) {
 		expectedCreatedPJs int
 		expectedReport     bool
 		expectedURL        string
+		expectedBuildID    string
 	}{
 		{
 			name: "completed prow job",
@@ -312,7 +313,7 @@ func TestSyncNonPendingJobs(t *testing.T) {
 			expectedPodHasName: true,
 			expectedNumPods:    1,
 			expectedReport:     true,
-			expectedURL:        "blabla/triggered",
+			expectedURL:        "blabla/pending",
 		},
 		{
 			name: "pod with a max concurrency of 1",
@@ -356,6 +357,48 @@ func TestSyncNonPendingJobs(t *testing.T) {
 			expectedState:    kube.ErrorState,
 			expectedComplete: true,
 			expectedReport:   true,
+		},
+		{
+			name: "running pod, failed prowjob update",
+			pj: kube.ProwJob{
+				Metadata: kube.ObjectMeta{
+					Name: "foo",
+				},
+				Spec: kube.ProwJobSpec{
+					Job:  "boop",
+					Type: kube.PeriodicJob,
+				},
+				Status: kube.ProwJobStatus{
+					State: kube.TriggeredState,
+				},
+			},
+			pods: []kube.Pod{
+				{
+					Metadata: kube.ObjectMeta{
+						Name: "foo",
+					},
+					Spec: kube.PodSpec{
+						Containers: []kube.Container{
+							{
+								Env: []kube.EnvVar{
+									{
+										Name:  "BUILD_NUMBER",
+										Value: "0987654321",
+									},
+								},
+							},
+						},
+					},
+					Status: kube.PodStatus{
+						Phase: kube.PodRunning,
+					},
+				},
+			},
+			expectedState:   kube.PendingState,
+			expectedNumPods: 1,
+			expectedReport:  true,
+			expectedURL:     "foo/pending",
+			expectedBuildID: "0987654321",
 		},
 	}
 	for _, tc := range testcases {
@@ -415,6 +458,9 @@ func TestSyncNonPendingJobs(t *testing.T) {
 
 			if got, want := r.Status.URL, tc.expectedURL; got != want {
 				t.Errorf("for case %q, report.Status.URL: got %q, want %q", tc.name, got, want)
+			}
+			if got, want := r.Status.BuildID, tc.expectedBuildID; want != "" && got != want {
+				t.Errorf("for case %q, report.Status.BuildID: got %q, want %q", tc.name, got, want)
 			}
 		}
 	}
