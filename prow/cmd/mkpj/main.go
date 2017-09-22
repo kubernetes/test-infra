@@ -27,7 +27,7 @@ import (
 
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/kube"
-	"k8s.io/test-infra/prow/npj"
+	"k8s.io/test-infra/prow/pjutil"
 )
 
 var (
@@ -58,7 +58,7 @@ func main() {
 		}
 		for _, p := range ps {
 			if p.Name == *jobName {
-				pjs = npj.PresubmitSpec(p, kube.Refs{
+				pjs = pjutil.PresubmitSpec(p, kube.Refs{
 					Org:   org,
 					Repo:  repo,
 					Pulls: []kube.Pull{{}},
@@ -76,7 +76,7 @@ func main() {
 		}
 		for _, p := range ps {
 			if p.Name == *jobName {
-				pjs = npj.PostsubmitSpec(p, kube.Refs{
+				pjs = pjutil.PostsubmitSpec(p, kube.Refs{
 					Org:  org,
 					Repo: repo,
 				})
@@ -87,7 +87,7 @@ func main() {
 	}
 	for _, p := range conf.Periodics {
 		if p.Name == *jobName {
-			pjs = npj.PeriodicSpec(p)
+			pjs = pjutil.PeriodicSpec(p)
 			found = true
 		}
 	}
@@ -108,7 +108,7 @@ func main() {
 		fmt.Fprint(os.Stderr, "PR SHA (e.g. 72bcb5d80): ")
 		fmt.Scanln(&pjs.Refs.Pulls[0].SHA)
 	}
-	pj := npj.NewProwJob(pjs)
+	pj := pjutil.NewProwJob(pjs)
 	b, err := yaml.Marshal(&pj)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error marshalling YAML.")

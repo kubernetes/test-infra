@@ -6,6 +6,7 @@ go_library(
     visibility = ["//visibility:private"],
     deps = [
         "//prow/config:go_default_library",
+        "//prow/git:go_default_library",
         "//prow/github:go_default_library",
         "//prow/kube:go_default_library",
         "//prow/tide:go_default_library",

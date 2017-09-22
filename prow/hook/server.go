@@ -35,6 +35,7 @@ type Server struct {
 	Plugins     *plugins.PluginAgent
 	ConfigAgent *config.Agent
 	HMACSecret  []byte
+	Metrics     *Metrics
 }
 
 // ServeHTTP validates an incoming webhook and puts it into the event channel.
@@ -81,6 +82,12 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) demuxEvent(eventType string, payload []byte) error {
+	// We don't want to fail the webhook due to a metrics error.
+	if counter, err := s.Metrics.WebhookCounter.GetMetricWithLabelValues(eventType); err != nil {
+		logrus.WithError(err).Warn("Failed to get metric for eventType " + eventType)
+	} else {
+		counter.Inc()
+	}
 	switch eventType {
 	case "issues":
 		var i github.IssueEvent

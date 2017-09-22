@@ -8,12 +8,13 @@ load(
 
 go_test(
     name = "go_default_test",
-    srcs = ["plank_test.go"],
+    srcs = ["controller_test.go"],
     library = ":go_default_library",
     deps = [
         "//prow/config:go_default_library",
+        "//prow/github:go_default_library",
         "//prow/kube:go_default_library",
-        "//prow/npj:go_default_library",
+        "//prow/pjutil:go_default_library",
     ],
 )
 
@@ -24,7 +25,7 @@ go_library(
         "//prow/config:go_default_library",
         "//prow/github:go_default_library",
         "//prow/kube:go_default_library",
-        "//prow/npj:go_default_library",
+        "//prow/pjutil:go_default_library",
         "//prow/report:go_default_library",
         "//vendor/github.com/bwmarrin/snowflake:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",

@@ -416,6 +416,41 @@ func TestHandlePR(t *testing.T) {
 				{Name: "size/S"},
 			},
 		},
+		{
+			name: "pull request edited",
+			client: &ghc{
+				labels:     map[github.Label]bool{},
+				getFileErr: &github.FileNotFound{},
+				prChanges: []github.PullRequestChange{
+					{
+						SHA:       "abcd",
+						Filename:  "foobar",
+						Additions: 30,
+						Deletions: 40,
+						Changes:   70,
+					},
+				},
+			},
+			event: github.PullRequestEvent{
+				Action: github.PullRequestActionEdited,
+				Number: 101,
+				PullRequest: github.PullRequest{
+					Number: 101,
+					Base: github.PullRequestBranch{
+						SHA: "abcd",
+						Repo: github.Repo{
+							Owner: github.User{
+								Login: "kubernetes",
+							},
+							Name: "kubernetes",
+						},
+					},
+				},
+			},
+			finalLabels: []github.Label{
+				{Name: "size/M"},
+			},
+		},
 	}
 
 	for _, c := range cases {

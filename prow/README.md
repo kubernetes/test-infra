@@ -191,8 +191,13 @@ to input the `rerun_command` when they want to rerun the job. Actually, anything
 that matches `trigger` will suffice. This is useful if you want to make one
 command that reruns all jobs.
 
-Prow will inject the following environment variables into every container in
-your pod:
+
+### Job Evironment Variables
+
+Prow will expose the following environment variables to your job. If the job
+runs on Kubernetes, the variables will be injected into every container in
+your pod, If the job is run in Jenkins, Prow will supply them as parameters to
+the build.
 
 Variable | Periodic | Postsubmit | Batch | Presubmit | Description | Example
 --- |:---:|:---:|:---:|:---:| --- | ---
@@ -205,6 +210,9 @@ Variable | Periodic | Postsubmit | Batch | Presubmit | Description | Example
 `PULL_REFS` | | ✓ | ✓ | ✓ | All refs to test. | `master:123abc,5:qwe456`
 `PULL_NUMBER` | | | | ✓ | Pull request number. | `5`
 `PULL_PULL_SHA` | | | | ✓ | Pull request head SHA. | `qwe456`
+
+Note: to not overwrite the Jenkins `$BUILD_NUMBER` variable, the build identifier
+will be passed as `$buildId` to Jenkins jobs.
 
 ## Bots home
 

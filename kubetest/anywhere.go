@@ -40,12 +40,18 @@ var (
 		"(kubernetes-anywhere only) Version of kubeadm to use, if phase2-provider is kubeadm. May be \"stable\" or a gs:// link to a custom build.")
 	kubernetesAnywhereKubernetesVersion = flag.String("kubernetes-anywhere-kubernetes-version", "",
 		"(kubernetes-anywhere only) Version of Kubernetes to use (e.g. latest, stable, latest-1.6, 1.6.3, etc).")
+	kubernetesAnywhereKubeletVersion = flag.String("kubernetes-anywhere-kubelet-version", "stable",
+		"(kubernetes-anywhere only) Version of Kubelet to use, if phase2-provider is kubeadm. May be \"stable\" or a gs:// link to a custom build.")
+	kubernetesAnywhereKubeletCIVersion = flag.String("kubernetes-anywhere-kubelet-ci-version", "",
+		"(kubernetes-anywhere only) If specified, the ci version for the kubelt to use. Overrides kubernetes-anywhere-kubelet-version.")
 	kubernetesAnywhereCluster = flag.String("kubernetes-anywhere-cluster", "",
 		"(kubernetes-anywhere only) Cluster name. Must be set for kubernetes-anywhere.")
 	kubernetesAnywhereUpTimeout = flag.Duration("kubernetes-anywhere-up-timeout", 20*time.Minute,
 		"(kubernetes-anywhere only) Time limit between starting a cluster and making a successful call to the Kubernetes API.")
 	kubernetesAnywhereNumNodes = flag.Int("kubernetes-anywhere-num-nodes", 4,
 		"(kubernetes-anywhere only) Number of nodes to be deployed in the cluster.")
+	kubernetesAnywhereUpgradeMethod = flag.String("kubernetes-anywhere-upgrade-method", "kubeadm-upgrade",
+		"(kubernetes-anywhere only) Indicates whether to do the control plane upgrade with kubeadm method \"kubeadm-init\" or \"kubeadm-upgrade\"")
 )
 
 const kubernetesAnywhereConfigTemplate = `
@@ -65,8 +71,10 @@ const kubernetesAnywhereConfigTemplate = `
 .phase2.docker_registry="gcr.io/google-containers"
 .phase2.kubernetes_version="{{.KubernetesVersion}}"
 .phase2.provider="{{.Phase2Provider}}"
+.phase2.kubelet_version="{{.KubeletVersion}}"
 .phase2.kubeadm.version="{{.KubeadmVersion}}"
 .phase2.kube_context_name="{{.KubeContext}}"
+.phase2.upgrade_method="{{.UpgradeMethod}}"
 
 .phase3.run_addons=y
 .phase3.weave_net={{if eq .Phase2Provider "kubeadm" -}} y {{- else -}} n {{- end}}
@@ -81,6 +89,8 @@ type kubernetesAnywhere struct {
 	// These are exported only because their use in the config template requires it.
 	Phase2Provider    string
 	KubeadmVersion    string
+	KubeletVersion    string
+	UpgradeMethod     string
 	KubernetesVersion string
 	NumNodes          int
 	Project           string
@@ -107,6 +117,15 @@ func newKubernetesAnywhere(project, zone string) (deployer, error) {
 		zone = "us-central1-c"
 	}
 
+	kubeletVersion := *kubernetesAnywhereKubeletVersion
+	if *kubernetesAnywhereKubeletCIVersion != "" {
+		resolvedVersion, err := resolveCIVersion(*kubernetesAnywhereKubeletCIVersion)
+		if err != nil {
+			return nil, err
+		}
+		kubeletVersion = fmt.Sprintf("gs://kubernetes-release-dev/bazel/%v/bin/linux/amd64/", resolvedVersion)
+	}
+
 	// Set KUBERNETES_CONFORMANCE_TEST so the auth info is picked up
 	// from kubectl instead of bash inference.
 	if err := os.Setenv("KUBERNETES_CONFORMANCE_TEST", "yes"); err != nil {
@@ -117,6 +136,8 @@ func newKubernetesAnywhere(project, zone string) (deployer, error) {
 		path:              *kubernetesAnywherePath,
 		Phase2Provider:    *kubernetesAnywherePhase2Provider,
 		KubeadmVersion:    *kubernetesAnywhereKubeadmVersion,
+		KubeletVersion:    kubeletVersion,
+		UpgradeMethod:     *kubernetesAnywhereUpgradeMethod,
 		KubernetesVersion: *kubernetesAnywhereKubernetesVersion,
 		NumNodes:          *kubernetesAnywhereNumNodes,
 		Project:           project,
@@ -129,6 +150,25 @@ func newKubernetesAnywhere(project, zone string) (deployer, error) {
 		return nil, err
 	}
 	return k, nil
+}
+
+func resolveCIVersion(version string) (string, error) {
+	if strings.HasPrefix(version, "v") {
+		return version, nil
+	}
+	file := fmt.Sprintf("gs://kubernetes-release-dev/ci/%v.txt", version)
+	return readGSFile(file)
+}
+
+// Implemented as a function var for testing.
+var readGSFile = readGSFileImpl
+
+func readGSFileImpl(filepath string) (string, error) {
+	contents, err := output(exec.Command("gsutil", "cat", filepath))
+	if err != nil {
+		return "", err
+	}
+	return strings.TrimSpace(string(contents)), nil
 }
 
 func (k *kubernetesAnywhere) getConfig() ([]byte, error) {

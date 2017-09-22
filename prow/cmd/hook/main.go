@@ -25,7 +25,11 @@ import (
 	"os/signal"
 	"strconv"
 	"syscall"
+	"time"
 
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/prometheus/client_golang/prometheus/push"
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/config"
@@ -61,7 +65,6 @@ func main() {
 	if err := configAgent.Start(*configPath); err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
-	logger := logrus.StandardLogger()
 
 	var webhookSecret []byte
 	var githubClient *github.Client
@@ -135,9 +138,11 @@ func main() {
 		logrus.WithError(err).Fatal("Error getting git client.")
 	}
 
+	logger := logrus.StandardLogger()
 	githubClient.Logger = logger.WithField("client", "github")
 	kubeClient.Logger = logger.WithField("client", "kube")
 	gitClient.Logger = logger.WithField("client", "git")
+	slackClient.Logger = logger.WithField("client", "slack")
 
 	pluginAgent := &plugins.PluginAgent{
 		PluginClient: plugins.PluginClient{
@@ -152,14 +157,32 @@ func main() {
 		logrus.WithError(err).Fatal("Error starting plugins.")
 	}
 
+	metrics, err := hook.NewMetrics()
+	if err != nil {
+		logrus.WithError(err).Fatal("Failed to initialize metrics.")
+	}
+
+	if configAgent.Config().PushGateway.Endpoint != "" {
+		go func() {
+			for {
+				time.Sleep(time.Minute)
+				if err := push.FromGatherer("hook", push.HostnameGroupingKey(), configAgent.Config().PushGateway.Endpoint, prometheus.DefaultGatherer); err != nil {
+					logrus.WithError(err).Error("Failed to push metrics.")
+				}
+			}
+		}()
+	}
+
 	server := &hook.Server{
 		HMACSecret:  webhookSecret,
 		ConfigAgent: configAgent,
 		Plugins:     pluginAgent,
+		Metrics:     metrics,
 	}
 
 	// Return 200 on / for health checks.
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {})
+	http.Handle("/metrics", promhttp.Handler())
 	// For /hook, handle a webhook normally.
 	http.Handle("/hook", server)
 	logrus.Fatal(http.ListenAndServe(":"+strconv.Itoa(*port), nil))

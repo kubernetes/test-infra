@@ -17,6 +17,7 @@ limitations under the License.
 package plank
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -26,26 +27,59 @@ import (
 	"time"
 
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
-	"k8s.io/test-infra/prow/npj"
+	"k8s.io/test-infra/prow/pjutil"
 )
 
 type fca struct {
+	sync.Mutex
 	c *config.Config
 }
 
-func newFakeConfigAgent() *fca {
+func newFakeConfigAgent(t *testing.T) *fca {
+	presubmits := []config.Presubmit{
+		{
+			Name: "test-bazel-build",
+			RunAfterSuccess: []config.Presubmit{
+				{
+					Name:         "test-kubeadm-cloud",
+					RunIfChanged: "^(cmd/kubeadm|build/debs).*$",
+				},
+			},
+		},
+		{
+			Name: "test-e2e",
+			RunAfterSuccess: []config.Presubmit{
+				{
+					Name: "push-image",
+				},
+			},
+		},
+		{
+			Name: "test-bazel-test",
+		},
+	}
+	if err := config.SetRegexes(presubmits); err != nil {
+		t.Fatal(err)
+	}
+	presubmitMap := map[string][]config.Presubmit{
+		"kubernetes/kubernetes": presubmits,
+	}
+
 	return &fca{
 		c: &config.Config{
 			Plank: config.Plank{
-				JobURLTemplate: template.Must(template.New("test").Parse("{{.Status.PodName}}/{{.Status.State}}")),
+				JobURLTemplate: template.Must(template.New("test").Parse("{{.Metadata.Name}}/{{.Status.State}}")),
 			},
+			Presubmits: presubmitMap,
 		},
 	}
-
 }
 
 func (f *fca) Config() *config.Config {
+	f.Lock()
+	defer f.Unlock()
 	return f.c
 }
 
@@ -53,6 +87,7 @@ type fkc struct {
 	sync.Mutex
 	prowjobs []kube.ProwJob
 	pods     []kube.Pod
+	err      error
 }
 
 func (f *fkc) CreateProwJob(pj kube.ProwJob) (kube.ProwJob, error) {
@@ -83,6 +118,9 @@ func (f *fkc) ReplaceProwJob(name string, job kube.ProwJob) (kube.ProwJob, error
 func (f *fkc) CreatePod(pod kube.Pod) (kube.Pod, error) {
 	f.Lock()
 	defer f.Unlock()
+	if f.err != nil {
+		return kube.Pod{}, f.err
+	}
 	f.pods = append(f.pods, pod)
 	return pod, nil
 }
@@ -104,6 +142,27 @@ func (f *fkc) DeletePod(name string) error {
 	}
 	return fmt.Errorf("did not find pod %s", name)
 }
+
+type fghc struct {
+	sync.Mutex
+	changes []github.PullRequestChange
+	err     error
+}
+
+func (f *fghc) GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error) {
+	f.Lock()
+	defer f.Unlock()
+	return f.changes, f.err
+}
+
+func (f *fghc) BotName() (string, error)                                  { return "bot", nil }
+func (f *fghc) CreateStatus(org, repo, ref string, s github.Status) error { return nil }
+func (f *fghc) ListIssueComments(org, repo string, number int) ([]github.IssueComment, error) {
+	return nil, nil
+}
+func (f *fghc) CreateComment(org, repo string, number int, comment string) error { return nil }
+func (f *fghc) DeleteComment(org, repo string, ID int) error                     { return nil }
+func (f *fghc) EditComment(org, repo string, ID int, comment string) error       { return nil }
 
 func TestTerminateDupes(t *testing.T) {
 	now := time.Now()
@@ -192,13 +251,14 @@ func handleTot(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, "42")
 }
 
-func TestSyncKubernetesJob(t *testing.T) {
+func TestSyncNonPendingJobs(t *testing.T) {
 	var testcases = []struct {
 		name string
 
 		pj          kube.ProwJob
 		pendingJobs map[string]int
 		pods        []kube.Pod
+		err         error
 
 		expectedState      kube.ProwJobState
 		expectedPodHasName bool
@@ -250,143 +310,7 @@ func TestSyncKubernetesJob(t *testing.T) {
 			expectedPodHasName: true,
 			expectedNumPods:    1,
 			expectedReport:     true,
-			expectedURL:        "blabla/pending",
-		},
-		{
-			name: "reset when pod goes missing",
-			pj: kube.ProwJob{
-				Status: kube.ProwJobStatus{
-					State:   kube.PendingState,
-					PodName: "boop-41",
-				},
-			},
-			expectedState: kube.PendingState,
-		},
-		{
-			name: "delete pod in unknown state",
-			pj: kube.ProwJob{
-				Status: kube.ProwJobStatus{
-					State:   kube.PendingState,
-					PodName: "boop-41",
-				},
-			},
-			pods: []kube.Pod{
-				{
-					Metadata: kube.ObjectMeta{
-						Name: "boop-41",
-					},
-					Status: kube.PodStatus{
-						Phase: kube.PodUnknown,
-					},
-				},
-			},
-			expectedState:   kube.PendingState,
-			expectedNumPods: 0,
-		},
-		{
-			name: "succeeded pod",
-			pj: kube.ProwJob{
-				Spec: kube.ProwJobSpec{
-					RunAfterSuccess: []kube.ProwJobSpec{{}},
-				},
-				Status: kube.ProwJobStatus{
-					State:   kube.PendingState,
-					PodName: "boop-42",
-				},
-			},
-			pods: []kube.Pod{
-				{
-					Metadata: kube.ObjectMeta{
-						Name: "boop-42",
-					},
-					Status: kube.PodStatus{
-						Phase: kube.PodSucceeded,
-					},
-				},
-			},
-			expectedComplete:   true,
-			expectedState:      kube.SuccessState,
-			expectedPodHasName: true,
-			expectedNumPods:    1,
-			expectedCreatedPJs: 1,
-			expectedReport:     true,
-			expectedURL:        "boop-42/success",
-		},
-		{
-			name: "failed pod",
-			pj: kube.ProwJob{
-				Spec: kube.ProwJobSpec{
-					RunAfterSuccess: []kube.ProwJobSpec{{}},
-				},
-				Status: kube.ProwJobStatus{
-					State:   kube.PendingState,
-					PodName: "boop-42",
-				},
-			},
-			pods: []kube.Pod{
-				{
-					Metadata: kube.ObjectMeta{
-						Name: "boop-42",
-					},
-					Status: kube.PodStatus{
-						Phase: kube.PodFailed,
-					},
-				},
-			},
-			expectedComplete:   true,
-			expectedState:      kube.FailureState,
-			expectedPodHasName: true,
-			expectedNumPods:    1,
-			expectedReport:     true,
-			expectedURL:        "boop-42/failure",
-		},
-		{
-			name: "evicted pod",
-			pj: kube.ProwJob{
-				Status: kube.ProwJobStatus{
-					State:   kube.PendingState,
-					PodName: "boop-42",
-				},
-			},
-			pods: []kube.Pod{
-				{
-					Metadata: kube.ObjectMeta{
-						Name: "boop-42",
-					},
-					Status: kube.PodStatus{
-						Phase:  kube.PodFailed,
-						Reason: kube.Evicted,
-					},
-				},
-			},
-			expectedComplete: false,
-			expectedState:    kube.PendingState,
-			expectedNumPods:  1,
-		},
-		{
-			name: "running pod",
-			pj: kube.ProwJob{
-				Spec: kube.ProwJobSpec{
-					RunAfterSuccess: []kube.ProwJobSpec{{}},
-				},
-				Status: kube.ProwJobStatus{
-					State:   kube.PendingState,
-					PodName: "boop-42",
-				},
-			},
-			pods: []kube.Pod{
-				{
-					Metadata: kube.ObjectMeta{
-						Name: "boop-42",
-					},
-					Status: kube.PodStatus{
-						Phase: kube.PodRunning,
-					},
-				},
-			},
-			expectedState:      kube.PendingState,
-			expectedPodHasName: true,
-			expectedNumPods:    1,
+			expectedURL:        "blabla/triggered",
 		},
 		{
 			name: "pod with a max concurrency of 1",
@@ -416,8 +340,269 @@ func TestSyncKubernetesJob(t *testing.T) {
 			expectedNumPods: 1,
 		},
 		{
+			name: "unprocessable prow job",
+			pj: kube.ProwJob{
+				Spec: kube.ProwJobSpec{
+					Job:  "boop",
+					Type: kube.PeriodicJob,
+				},
+				Status: kube.ProwJobStatus{
+					State: kube.TriggeredState,
+				},
+			},
+			err:              kube.UnprocessableEntityError(errors.New("no way jose")),
+			expectedState:    kube.ErrorState,
+			expectedComplete: true,
+			expectedReport:   true,
+		},
+	}
+	for _, tc := range testcases {
+		totServ := httptest.NewServer(http.HandlerFunc(handleTot))
+		defer totServ.Close()
+		pm := make(map[string]kube.Pod)
+		for i := range tc.pods {
+			pm[tc.pods[i].Metadata.Name] = tc.pods[i]
+		}
+		fc := &fkc{
+			prowjobs: []kube.ProwJob{tc.pj},
+		}
+		fpc := &fkc{
+			pods: tc.pods,
+			err:  tc.err,
+		}
+		c := Controller{
+			kc:          fc,
+			pkc:         fpc,
+			ca:          newFakeConfigAgent(t),
+			totURL:      totServ.URL,
+			pendingJobs: make(map[string]int),
+		}
+		c.pendingJobs = tc.pendingJobs
+
+		reports := make(chan kube.ProwJob, 100)
+		if err := c.syncNonPendingJob(tc.pj, pm, reports); err != nil {
+			t.Errorf("for case %q got an error: %v", tc.name, err)
+			continue
+		}
+		close(reports)
+
+		actual := fc.prowjobs[0]
+		if actual.Status.State != tc.expectedState {
+			t.Errorf("for case %q got state %v", tc.name, actual.Status.State)
+		}
+		if (actual.Status.PodName == "") && tc.expectedPodHasName {
+			t.Errorf("for case %q got no pod name, expected one", tc.name)
+		}
+		if len(fpc.pods) != tc.expectedNumPods {
+			t.Errorf("for case %q got %d pods", tc.name, len(fpc.pods))
+		}
+		if actual.Complete() != tc.expectedComplete {
+			t.Errorf("for case %q got wrong completion", tc.name)
+		}
+		if len(fc.prowjobs) != tc.expectedCreatedPJs+1 {
+			t.Errorf("for case %q got %d created prowjobs", tc.name, len(fc.prowjobs)-1)
+		}
+		if tc.expectedReport && len(reports) != 1 {
+			t.Errorf("for case %q wanted one report but got %d", tc.name, len(reports))
+		}
+		if !tc.expectedReport && len(reports) != 0 {
+			t.Errorf("for case %q did not wany any reports but got %d", tc.name, len(reports))
+		}
+		if tc.expectedReport {
+			r := <-reports
+
+			if got, want := r.Status.URL, tc.expectedURL; got != want {
+				t.Errorf("for case %q, report.Status.URL: got %q, want %q", tc.name, got, want)
+			}
+		}
+	}
+}
+
+func TestSyncPendingJob(t *testing.T) {
+	var testcases = []struct {
+		name string
+
+		pj   kube.ProwJob
+		pods []kube.Pod
+		err  error
+
+		expectedState      kube.ProwJobState
+		expectedNumPods    int
+		expectedComplete   bool
+		expectedCreatedPJs int
+		expectedReport     bool
+		expectedURL        string
+	}{
+		{
+			name: "reset when pod goes missing",
+			pj: kube.ProwJob{
+				Metadata: kube.ObjectMeta{
+					Name: "boop-41",
+				},
+				Spec: kube.ProwJobSpec{
+					Type: kube.PostsubmitJob,
+				},
+				Status: kube.ProwJobStatus{
+					State:   kube.PendingState,
+					PodName: "boop-41",
+				},
+			},
+			expectedState:   kube.PendingState,
+			expectedReport:  true,
+			expectedNumPods: 1,
+			expectedURL:     "boop-41/pending",
+		},
+		{
+			name: "delete pod in unknown state",
+			pj: kube.ProwJob{
+				Metadata: kube.ObjectMeta{
+					Name: "boop-41",
+				},
+				Status: kube.ProwJobStatus{
+					State:   kube.PendingState,
+					PodName: "boop-41",
+				},
+			},
+			pods: []kube.Pod{
+				{
+					Metadata: kube.ObjectMeta{
+						Name: "boop-41",
+					},
+					Status: kube.PodStatus{
+						Phase: kube.PodUnknown,
+					},
+				},
+			},
+			expectedState:   kube.PendingState,
+			expectedNumPods: 0,
+		},
+		{
+			name: "succeeded pod",
+			pj: kube.ProwJob{
+				Metadata: kube.ObjectMeta{
+					Name: "boop-42",
+				},
+				Spec: kube.ProwJobSpec{
+					Type:            kube.BatchJob,
+					RunAfterSuccess: []kube.ProwJobSpec{{}},
+				},
+				Status: kube.ProwJobStatus{
+					State:   kube.PendingState,
+					PodName: "boop-42",
+				},
+			},
+			pods: []kube.Pod{
+				{
+					Metadata: kube.ObjectMeta{
+						Name: "boop-42",
+					},
+					Status: kube.PodStatus{
+						Phase: kube.PodSucceeded,
+					},
+				},
+			},
+			expectedComplete:   true,
+			expectedState:      kube.SuccessState,
+			expectedNumPods:    1,
+			expectedCreatedPJs: 1,
+			expectedReport:     true,
+			expectedURL:        "boop-42/success",
+		},
+		{
+			name: "failed pod",
+			pj: kube.ProwJob{
+				Metadata: kube.ObjectMeta{
+					Name: "boop-42",
+				},
+				Spec: kube.ProwJobSpec{
+					Type: kube.PresubmitJob,
+					Refs: kube.Refs{
+						Org: "kubernetes", Repo: "kubernetes",
+						BaseRef: "baseref", BaseSHA: "basesha",
+						Pulls: []kube.Pull{{Number: 100, Author: "me", SHA: "sha"}},
+					},
+					RunAfterSuccess: []kube.ProwJobSpec{{}},
+				},
+				Status: kube.ProwJobStatus{
+					State:   kube.PendingState,
+					PodName: "boop-42",
+				},
+			},
+			pods: []kube.Pod{
+				{
+					Metadata: kube.ObjectMeta{
+						Name: "boop-42",
+					},
+					Status: kube.PodStatus{
+						Phase: kube.PodFailed,
+					},
+				},
+			},
+			expectedComplete: true,
+			expectedState:    kube.FailureState,
+			expectedNumPods:  1,
+			expectedReport:   true,
+			expectedURL:      "boop-42/failure",
+		},
+		{
+			name: "delete evicted pod",
+			pj: kube.ProwJob{
+				Metadata: kube.ObjectMeta{
+					Name: "boop-42",
+				},
+				Status: kube.ProwJobStatus{
+					State:   kube.PendingState,
+					PodName: "boop-42",
+				},
+			},
+			pods: []kube.Pod{
+				{
+					Metadata: kube.ObjectMeta{
+						Name: "boop-42",
+					},
+					Status: kube.PodStatus{
+						Phase:  kube.PodFailed,
+						Reason: kube.Evicted,
+					},
+				},
+			},
+			expectedComplete: false,
+			expectedState:    kube.PendingState,
+			expectedNumPods:  0,
+		},
+		{
+			name: "running pod",
+			pj: kube.ProwJob{
+				Metadata: kube.ObjectMeta{
+					Name: "boop-42",
+				},
+				Spec: kube.ProwJobSpec{
+					RunAfterSuccess: []kube.ProwJobSpec{{}},
+				},
+				Status: kube.ProwJobStatus{
+					State:   kube.PendingState,
+					PodName: "boop-42",
+				},
+			},
+			pods: []kube.Pod{
+				{
+					Metadata: kube.ObjectMeta{
+						Name: "boop-42",
+					},
+					Status: kube.PodStatus{
+						Phase: kube.PodRunning,
+					},
+				},
+			},
+			expectedState:   kube.PendingState,
+			expectedNumPods: 1,
+		},
+		{
 			name: "pod changes url status",
 			pj: kube.ProwJob{
+				Metadata: kube.ObjectMeta{
+					Name: "boop-42",
+				},
 				Spec: kube.ProwJobSpec{
 					RunAfterSuccess: []kube.ProwJobSpec{{}},
 				},
@@ -439,11 +624,30 @@ func TestSyncKubernetesJob(t *testing.T) {
 			},
 			expectedComplete:   true,
 			expectedState:      kube.SuccessState,
-			expectedPodHasName: true,
 			expectedNumPods:    1,
 			expectedCreatedPJs: 1,
 			expectedReport:     true,
 			expectedURL:        "boop-42/success",
+		},
+		{
+			name: "unprocessable prow job",
+			pj: kube.ProwJob{
+				Metadata: kube.ObjectMeta{
+					Name: "jose",
+				},
+				Spec: kube.ProwJobSpec{
+					Job:  "boop",
+					Type: kube.PostsubmitJob,
+				},
+				Status: kube.ProwJobStatus{
+					State: kube.PendingState,
+				},
+			},
+			err:              kube.UnprocessableEntityError(errors.New("no way jose")),
+			expectedState:    kube.ErrorState,
+			expectedComplete: true,
+			expectedReport:   true,
+			expectedURL:      "jose/error",
 		},
 	}
 	for _, tc := range testcases {
@@ -458,51 +662,47 @@ func TestSyncKubernetesJob(t *testing.T) {
 		}
 		fpc := &fkc{
 			pods: tc.pods,
+			err:  tc.err,
 		}
 		c := Controller{
-			kc:     fc,
-			pkc:    fpc,
-			ca:     newFakeConfigAgent(),
-			totURL: totServ.URL,
+			kc:          fc,
+			pkc:         fpc,
+			ca:          newFakeConfigAgent(t),
+			totURL:      totServ.URL,
+			pendingJobs: make(map[string]int),
 		}
-		c.setPending(tc.pendingJobs)
 
 		reports := make(chan kube.ProwJob, 100)
-		if err := c.syncKubernetesJob(tc.pj, pm, reports); err != nil {
-			t.Errorf("for case %s got an error: %v", tc.name, err)
+		if err := c.syncPendingJob(tc.pj, pm, reports); err != nil {
+			t.Errorf("for case %q got an error: %v", tc.name, err)
 			continue
 		}
 		close(reports)
 
 		actual := fc.prowjobs[0]
 		if actual.Status.State != tc.expectedState {
-			t.Errorf("for case %s got state %v", tc.name, actual.Status.State)
-		}
-		if (actual.Status.PodName == "") && tc.expectedPodHasName {
-			t.Errorf("for case %s got no pod name, expected one", tc.name)
-		} else if (actual.Status.PodName != "") && !tc.expectedPodHasName {
-			t.Errorf("for case %s got pod name, expected none", tc.name)
+			t.Errorf("for case %q got state %v", tc.name, actual.Status.State)
 		}
 		if len(fpc.pods) != tc.expectedNumPods {
-			t.Errorf("for case %s got %d pods", tc.name, len(fc.pods))
+			t.Errorf("for case %q got %d pods, expected %d", tc.name, len(fpc.pods), tc.expectedNumPods)
 		}
 		if actual.Complete() != tc.expectedComplete {
-			t.Errorf("for case %s got wrong completion", tc.name)
+			t.Errorf("for case %q got wrong completion", tc.name)
 		}
 		if len(fc.prowjobs) != tc.expectedCreatedPJs+1 {
-			t.Errorf("for case %s got %d created prowjobs", tc.name, len(fc.prowjobs)-1)
+			t.Errorf("for case %q got %d created prowjobs", tc.name, len(fc.prowjobs)-1)
 		}
 		if tc.expectedReport && len(reports) != 1 {
-			t.Errorf("for case %s wanted one report but got %d", tc.name, len(reports))
+			t.Errorf("for case %q wanted one report but got %d", tc.name, len(reports))
 		}
 		if !tc.expectedReport && len(reports) != 0 {
-			t.Errorf("for case %s did not wany any reports but got %d", tc.name, len(reports))
+			t.Errorf("for case %q did not wany any reports but got %d", tc.name, len(reports))
 		}
 		if tc.expectedReport {
 			r := <-reports
 
 			if got, want := r.Status.URL, tc.expectedURL; got != want {
-				t.Errorf("for case %s, report.Status.URL: got %q, want %q", tc.name, got, want)
+				t.Errorf("for case %q, report.Status.URL: got %q, want %q", tc.name, got, want)
 			}
 		}
 	}
@@ -528,12 +728,12 @@ func TestPeriodic(t *testing.T) {
 	totServ := httptest.NewServer(http.HandlerFunc(handleTot))
 	defer totServ.Close()
 	fc := &fkc{
-		prowjobs: []kube.ProwJob{npj.NewProwJob(npj.PeriodicSpec(per))},
+		prowjobs: []kube.ProwJob{pjutil.NewProwJob(pjutil.PeriodicSpec(per))},
 	}
 	c := Controller{
 		kc:          fc,
 		pkc:         fc,
-		ca:          newFakeConfigAgent(),
+		ca:          newFakeConfigAgent(t),
 		totURL:      totServ.URL,
 		pendingJobs: make(map[string]int),
 		lock:        sync.RWMutex{},
@@ -575,5 +775,109 @@ func TestPeriodic(t *testing.T) {
 	}
 	if err := c.Sync(); err != nil {
 		t.Fatalf("Error on fourth sync: %v", err)
+	}
+}
+
+func TestRunAfterSuccessCanRun(t *testing.T) {
+	tests := []struct {
+		name string
+
+		parent *kube.ProwJob
+		child  *kube.ProwJob
+
+		changes []github.PullRequestChange
+		err     error
+
+		expected bool
+	}{
+		{
+			name: "child does not require specific changes",
+			parent: &kube.ProwJob{
+				Spec: kube.ProwJobSpec{
+					Job:  "test-e2e",
+					Type: kube.PresubmitJob,
+					Refs: kube.Refs{
+						Org:  "kubernetes",
+						Repo: "kubernetes",
+						Pulls: []kube.Pull{
+							{Number: 123},
+						},
+					},
+				},
+			},
+			child: &kube.ProwJob{
+				Spec: kube.ProwJobSpec{
+					Job: "push-image",
+				},
+			},
+			expected: true,
+		},
+		{
+			name: "child requires specific changes that are done",
+			parent: &kube.ProwJob{
+				Spec: kube.ProwJobSpec{
+					Job:  "test-bazel-build",
+					Type: kube.PresubmitJob,
+					Refs: kube.Refs{
+						Org:  "kubernetes",
+						Repo: "kubernetes",
+						Pulls: []kube.Pull{
+							{Number: 123},
+						},
+					},
+				},
+			},
+			child: &kube.ProwJob{
+				Spec: kube.ProwJobSpec{
+					Job: "test-kubeadm-cloud",
+				},
+			},
+			changes: []github.PullRequestChange{
+				{Filename: "cmd/kubeadm/kubeadm.go"},
+				{Filename: "vendor/BUILD"},
+				{Filename: ".gitatrributes"},
+			},
+			expected: true,
+		},
+		{
+			name: "child requires specific changes that are not done",
+			parent: &kube.ProwJob{
+				Spec: kube.ProwJobSpec{
+					Job:  "test-bazel-build",
+					Type: kube.PresubmitJob,
+					Refs: kube.Refs{
+						Org:  "kubernetes",
+						Repo: "kubernetes",
+						Pulls: []kube.Pull{
+							{Number: 123},
+						},
+					},
+				},
+			},
+			child: &kube.ProwJob{
+				Spec: kube.ProwJobSpec{
+					Job: "test-kubeadm-cloud",
+				},
+			},
+			changes: []github.PullRequestChange{
+				{Filename: "vendor/BUILD"},
+				{Filename: ".gitatrributes"},
+			},
+			expected: false,
+		},
+	}
+
+	for _, test := range tests {
+		t.Logf("scenario %q", test.name)
+
+		fakeGH := &fghc{
+			changes: test.changes,
+			err:     test.err,
+		}
+
+		got := RunAfterSuccessCanRun(test.parent, test.child, newFakeConfigAgent(t), fakeGH)
+		if got != test.expected {
+			t.Errorf("expected to run: %t, got: %t", test.expected, got)
+		}
 	}
 }

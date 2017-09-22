@@ -5,9 +5,8 @@
         # TODO(fejta): consider a stable tag instead of master
         git clone https://github.com/kubernetes/test-infra -b master
         './test-infra/jenkins/bootstrap.py' \
-            --branch='{branch}' \
             --job='{job-name}' \
-            --repo='{repo-name}' \
+            --repo='{repo-name}={branch}' \
             --root="${{GOPATH}}/src" \
             --service-account="${{GOOGLE_APPLICATION_CREDENTIALS}}" \
             --timeout='{timeout}' \
@@ -33,7 +32,7 @@
         - 'test-infra/.git/'
         external-deletion-command: 'sudo rm -rf %s'
     - timeout:
-        timeout: 30
+        timeout: '{maintenance-timeout}'
         fail: true
 
 - job-template:
@@ -81,6 +80,10 @@
             </hudson.plugins.parameterizedtrigger.TriggerBuilder>
     triggers:
     - timed: '{frequency}'
+    wrappers:
+    - timeout:
+        timeout: '{maintenance-all-timeout}'
+        fail: true
 
 - project:
     name: bootstrap-maintenance-jobs
@@ -93,10 +96,14 @@
         frequency: '@daily'
         job-name: maintenance-daily
         repo-name: 'k8s.io/test-infra'
+        maintenance-all-timeout: 1800
+        maintenance-timeout: 50
         timeout: 30
     - hourly:
         branch: master
         frequency: '@hourly'
         job-name: maintenance-hourly
         repo-name: 'k8s.io/test-infra'
+        maintenance-all-timeout: 200
+        maintenance-timeout: 50
         timeout: 30

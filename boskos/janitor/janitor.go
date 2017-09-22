@@ -28,8 +28,8 @@ import (
 )
 
 var (
-	poolSize       = 50 // Maximum concurrent janitor goroutines
-	bufferSize     = 1  // Maximum holding resources
+	poolSize       = 100 // Maximum concurrent janitor goroutines TODO(krzyzacy): should remove this limit
+	bufferSize     = 1   // Maximum holding resources
 	serviceAccount = flag.String("service-account", "", "Path to projects service account")
 )
 

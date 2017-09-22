@@ -36,7 +36,7 @@ import (
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/jenkins"
 	"k8s.io/test-infra/prow/kube"
-	"k8s.io/test-infra/prow/npj"
+	"k8s.io/test-infra/prow/pjutil"
 )
 
 var (
@@ -251,8 +251,8 @@ func handleRerun(kc pjClient) http.HandlerFunc {
 			logrus.WithError(err).Warning("Error returned.")
 			return
 		}
-		npj := npj.NewProwJob(pj.Spec)
-		b, err := yaml.Marshal(&npj)
+		pjutil := pjutil.NewProwJob(pj.Spec)
+		b, err := yaml.Marshal(&pjutil)
 		if err != nil {
 			http.Error(w, fmt.Sprintf("Error marshaling: %v", err), http.StatusInternalServerError)
 			logrus.WithError(err).Error("Error marshaling jobs.")

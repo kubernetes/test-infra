@@ -30,7 +30,7 @@ import (
 
 const (
 	cherrypickUnapprovedLabel           = "do-not-merge/cherry-pick-not-approved"
-	deprecatedCherrypickUnapprovedLabel = "cherry-pick-not-approved"
+	deprecatedCherrypickUnapprovedLabel = "do-not-merge"
 	labelUnapprovedPicksName            = "label-unapproved-picks"
 	labelUnapprovedFormat               = "This PR is not for the master branch but does not have the `%s` label. Adding the `%s` label."
 )
@@ -79,6 +79,9 @@ func (LabelUnapprovedPicks) Munge(obj *github.MungeObject) {
 	}
 
 	if obj.HasLabel(cpApprovedLabel) {
+		if obj.HasLabel(cherrypickUnapprovedLabel) {
+			obj.RemoveLabel(cherrypickUnapprovedLabel)
+		}
 		return
 	}
 

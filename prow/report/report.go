@@ -26,7 +26,7 @@ import (
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
-	"k8s.io/test-infra/prow/npj"
+	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/plugins"
 )
 
@@ -53,18 +53,21 @@ type configAgent interface {
 // Same goes for failed status.
 func reportStatus(ghc GithubClient, pj kube.ProwJob, cd string) error {
 	refs := pj.Spec.Refs
-	if err := ghc.CreateStatus(refs.Org, refs.Repo, refs.Pulls[0].SHA, github.Status{
-		State:       string(pj.Status.State),
-		Description: pj.Status.Description,
-		Context:     pj.Spec.Context,
-		TargetURL:   pj.Status.URL,
-	}); err != nil {
-		return err
+	if pj.Spec.Report {
+		if err := ghc.CreateStatus(refs.Org, refs.Repo, refs.Pulls[0].SHA, github.Status{
+			State:       string(pj.Status.State),
+			Description: pj.Status.Description,
+			Context:     pj.Spec.Context,
+			TargetURL:   pj.Status.URL,
+		}); err != nil {
+			return err
+		}
 	}
+
 	// Updating Children
 	if pj.Status.State != kube.SuccessState {
 		for _, nj := range pj.Spec.RunAfterSuccess {
-			cpj := npj.NewProwJob(nj)
+			cpj := pjutil.NewProwJob(nj)
 			cpj.Status.State = pj.Status.State
 			cpj.Status.Description = cd
 			cpj.Spec.Refs = refs

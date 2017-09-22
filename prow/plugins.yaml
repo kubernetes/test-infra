@@ -14,13 +14,22 @@ heart:
   adorees:
   - k8s-merge-robot
 
-slackevents:
-- repos:
-  - kubernetes/kubernetes
-  channels:
-  - kubernetes-dev
-  whitelist:
-  - k8s-merge-robot
+slack:
+  mentionchannels:
+  - sig-testing
+  mergewarnings:
+  - repos:
+    - kubernetes/kubernetes
+    channels:
+    - kubernetes-dev
+    whitelist:
+    - k8s-merge-robot
+
+label:
+  # You can curl the following endpoint in order to determine the github ID of your team
+  # responsible for maintaining the milestones:
+  # curl -H "Authorization: token <token>" https://api.github.com/orgs/<org-name>/teams
+  milestone_maintainers_id: 2460384
 
 plugins:
   google/cadvisor:
@@ -38,7 +47,6 @@ plugins:
   kubernetes/kubernetes:
   - trigger
   - release-note
-  - slackevents
 
   kubernetes/test-infra:
   - trigger
@@ -58,6 +66,7 @@ plugins:
   - yuks
   - wip
   - shrug
+  - slackevents
 
   kubernetes-incubator:
   - cla
@@ -65,6 +74,10 @@ plugins:
   - size
 
   kubernetes-incubator/kube-aws:
+  - lgtm
+
+  kubernetes-incubator/external-storage:
+  - label
   - lgtm
 
   kubernetes-security/kubernetes:

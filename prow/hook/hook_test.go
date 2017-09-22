@@ -55,10 +55,15 @@ func TestHook(t *testing.T) {
 	pa := &plugins.PluginAgent{}
 	pa.Set(&plugins.Configuration{Plugins: map[string][]string{"foo/bar": {"baz"}}})
 	ca := &config.Agent{}
+	metrics, err := NewMetrics()
+	if err != nil {
+		t.Fatal(err)
+	}
 	s := httptest.NewServer(&Server{
 		Plugins:     pa,
 		ConfigAgent: ca,
 		HMACSecret:  secret,
+		Metrics:     metrics,
 	})
 	defer s.Close()
 	if err := phony.SendHook(s.URL, "issues", payload, secret); err != nil {

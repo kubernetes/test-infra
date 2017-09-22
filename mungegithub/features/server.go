@@ -65,6 +65,7 @@ func (s *ServerFeature) Name() string {
 
 // Initialize will initialize the feature.
 func (s *ServerFeature) Initialize(config *github.Config) error {
+	config.ServeDebugStats("/stats")
 	s.ConcurrentMux = sharedmux.NewConcurrentMux(http.DefaultServeMux)
 	if len(s.Address) == 0 {
 		return nil

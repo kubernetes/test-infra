@@ -27,7 +27,7 @@ go_library(
         "//prow/config:go_default_library",
         "//prow/github:go_default_library",
         "//prow/kube:go_default_library",
-        "//prow/npj:go_default_library",
+        "//prow/pjutil:go_default_library",
         "//prow/plugins:go_default_library",
     ],
 )
