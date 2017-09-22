@@ -10460,7 +10460,6 @@
       "--cluster=",
       "--deployment=gke",
       "--extract=local",
-      "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
       "--gcp-node-image=gci",
       "--gcp-project=k8s-jkns-e2e-gke-gpus",
       "--gcp-zone=us-west1-b",
