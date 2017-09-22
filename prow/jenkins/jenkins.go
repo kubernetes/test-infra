@@ -58,8 +58,11 @@ type Logger interface {
 type JenkinsBuild struct {
 	Actions []struct {
 		Parameters []struct {
-			Name  string `json:"name"`
-			Value string `json:"value"`
+			Name string `json:"name"`
+			// This needs to be an interface so we won't clobber
+			// json unmarshaling when the Jenkins job has more
+			// parameter types than strings.
+			Value interface{} `json:"value"`
 		} `json:"parameters"`
 	} `json:"actions"`
 	Task struct {
@@ -91,7 +94,9 @@ func (jb *JenkinsBuild) BuildID() string {
 	for _, action := range jb.Actions {
 		for _, p := range action.Parameters {
 			if p.Name == buildID {
-				return p.Value
+				// This is not safe as far as Go is concerned. Consider
+				// stop using Jenkins if this ever breaks.
+				return p.Value.(string)
 			}
 		}
 	}
