@@ -797,7 +797,7 @@ SECONDS = 10
 
 
 def fake_environment(set_home=True, set_node=True, set_job=True,
-                     set_jenkins_home=True, **kwargs):
+                     set_jenkins_home=True, set_workspace=True, **kwargs):
     if set_home:
         kwargs.setdefault(bootstrap.HOME_ENV, '/fake/home-dir')
     if set_node:
@@ -806,6 +806,8 @@ def fake_environment(set_home=True, set_node=True, set_job=True,
         kwargs.setdefault(bootstrap.JOB_ENV, JOB)
     if set_jenkins_home:
         kwargs.setdefault(bootstrap.JENKINS_HOME_ENV, '/fake/home-dir')
+    if set_workspace:
+        kwargs.setdefault(bootstrap.WORKSPACE_ENV, '/fake/workspace')
     return kwargs
 
 
@@ -881,31 +883,52 @@ class SetupCredentialsTest(unittest.TestCase):
 
 
 class SetupMagicEnvironmentTest(unittest.TestCase):
-    def test_workspace(self):
-        """WORKSPACE exists, equals HOME and is set to cwd."""
-        env = fake_environment()
-        cwd = '/fake/random-location'
-        with Stub(os, 'environ', env):
-            with Stub(os, 'getcwd', lambda: cwd):
-                bootstrap.setup_magic_environment(JOB)
-
-        self.assertIn(bootstrap.WORKSPACE_ENV, env)
-        self.assertEquals(env[bootstrap.HOME_ENV], env[bootstrap.WORKSPACE_ENV])
-        self.assertEquals(cwd, env[bootstrap.WORKSPACE_ENV])
-
-    def test_workspace_not_jenkins(self):
-        """WORKSPACE exists is set to cwd; HOME is unchanged."""
-        env = fake_environment(set_jenkins_home=False)
+    def test_home_workspace_on_jenkins(self):
+        """WORKSPACE/HOME are set correctly for the Jenkins environment."""
+        env = fake_environment(set_jenkins_home=True, set_workspace=True)
         cwd = '/fake/random-location'
         old_home = env[bootstrap.HOME_ENV]
+        old_workspace = env[bootstrap.WORKSPACE_ENV]
         with Stub(os, 'environ', env):
             with Stub(os, 'getcwd', lambda: cwd):
                 bootstrap.setup_magic_environment(JOB)
 
         self.assertIn(bootstrap.WORKSPACE_ENV, env)
-        self.assertEquals(old_home, env[bootstrap.HOME_ENV])
         self.assertNotEquals(env[bootstrap.HOME_ENV],
                              env[bootstrap.WORKSPACE_ENV])
+        self.assertNotEquals(old_home, env[bootstrap.HOME_ENV])
+        self.assertEquals(cwd, env[bootstrap.HOME_ENV])
+        self.assertEquals(old_workspace, env[bootstrap.WORKSPACE_ENV])
+        self.assertNotEquals(cwd, env[bootstrap.WORKSPACE_ENV])
+
+    def test_home_workspace_in_k8s(self):
+        """WORKSPACE/HOME are set correctly for the kubernetes environment."""
+        env = fake_environment(set_jenkins_home=False, set_workspace=True)
+        cwd = '/fake/random-location'
+        old_home = env[bootstrap.HOME_ENV]
+        old_workspace = env[bootstrap.WORKSPACE_ENV]
+        with Stub(os, 'environ', env):
+            with Stub(os, 'getcwd', lambda: cwd):
+                bootstrap.setup_magic_environment(JOB)
+
+        self.assertIn(bootstrap.WORKSPACE_ENV, env)
+        self.assertNotEquals(env[bootstrap.HOME_ENV],
+                             env[bootstrap.WORKSPACE_ENV])
+        self.assertEquals(old_home, env[bootstrap.HOME_ENV])
+        self.assertNotEquals(cwd, env[bootstrap.HOME_ENV])
+        self.assertEquals(old_workspace, env[bootstrap.WORKSPACE_ENV])
+        self.assertNotEquals(cwd, env[bootstrap.WORKSPACE_ENV])
+
+    def test_workspace_always_set(self):
+        """WORKSPACE is set to cwd when unset in initial environment."""
+        env = fake_environment(set_workspace=False)
+        cwd = '/fake/random-location'
+        with Stub(os, 'environ', env):
+            with Stub(os, 'getcwd', lambda: cwd):
+                bootstrap.setup_magic_environment(JOB)
+
+        self.assertIn(bootstrap.WORKSPACE_ENV, env)
+        self.assertEquals(cwd, env[bootstrap.HOME_ENV])
         self.assertEquals(cwd, env[bootstrap.WORKSPACE_ENV])
 
     def test_job_env_mismatch(self):
