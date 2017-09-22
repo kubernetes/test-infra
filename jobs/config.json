@@ -8180,7 +8180,6 @@
       "--kubernetes-anywhere-kubelet-ci-version=latest",
       "--kubernetes-anywhere-kubernetes-version=ci/latest",
       "--provider=kubernetes-anywhere",
-      "--tag=latest",
       "--test_args=--ginkgo.focus=\\[Conformance\\]|\\[Feature:BootstrapTokens\\]|\\[Feature:NodeAuthorizer\\] --minStartupPods=8",
       "--timeout=300m"
     ],
@@ -8200,7 +8199,6 @@
       "--kubernetes-anywhere-kubelet-ci-version=latest-1.6",
       "--kubernetes-anywhere-kubernetes-version=latest-1.6",
       "--provider=kubernetes-anywhere",
-      "--tag=latest",
       "--test_args=--ginkgo.focus=\\[Conformance\\] --minStartupPods=8",
       "--timeout=300m"
     ],
@@ -8220,7 +8218,6 @@
       "--kubernetes-anywhere-kubelet-ci-version=latest-1.6",
       "--kubernetes-anywhere-kubernetes-version=latest-1.6",
       "--provider=kubernetes-anywhere",
-      "--tag=latest",
       "--test_args=--ginkgo.focus=\\[Conformance\\] --minStartupPods=8",
       "--timeout=300m"
     ],
@@ -8240,7 +8237,6 @@
       "--kubernetes-anywhere-kubelet-ci-version=latest-1.7",
       "--kubernetes-anywhere-kubernetes-version=latest-1.7",
       "--provider=kubernetes-anywhere",
-      "--tag=latest",
       "--test_args=--ginkgo.focus=\\[Conformance\\] --minStartupPods=8",
       "--timeout=300m"
     ],
@@ -8260,7 +8256,6 @@
       "--kubernetes-anywhere-kubelet-ci-version=latest-1.7",
       "--kubernetes-anywhere-kubernetes-version=latest-1.7",
       "--provider=kubernetes-anywhere",
-      "--tag=latest",
       "--test_args=--ginkgo.focus=\\[Conformance\\] --minStartupPods=8",
       "--timeout=300m"
     ],
@@ -8280,7 +8275,6 @@
       "--kubernetes-anywhere-kubelet-ci-version=latest-1.8",
       "--kubernetes-anywhere-kubernetes-version=latest-1.8",
       "--provider=kubernetes-anywhere",
-      "--tag=latest",
       "--test_args=--ginkgo.focus=\\[Conformance\\]|\\[Feature:BootstrapTokens\\]|\\[Feature:NodeAuthorizer\\] --minStartupPods=8",
       "--timeout=300m"
     ],
@@ -8300,7 +8294,6 @@
       "--kubernetes-anywhere-kubelet-version=stable",
       "--kubernetes-anywhere-kubernetes-version=stable",
       "--provider=kubernetes-anywhere",
-      "--tag=latest",
       "--test_args=--ginkgo.focus=\\[Conformance\\]|\\[Feature:BootstrapTokens\\]|\\[Feature:NodeAuthorizer\\] --minStartupPods=8",
       "--timeout=300m"
     ],
@@ -10054,7 +10047,6 @@
       "--kubernetes-anywhere-kubernetes-version=latest-1.6",
       "--kubernetes-anywhere-upgrade-method=init",
       "--provider=kubernetes-anywhere",
-      "--tag=latest",
       "--test_args=--ginkgo.focus=\\[Conformance\\] --minStartupPods=8",
       "--timeout=300m",
       "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\]|\\[Conformance\\] --upgrade-target=ci/latest-1.7"
@@ -10077,7 +10069,6 @@
       "--kubernetes-anywhere-kubernetes-version=latest-1.7",
       "--kubernetes-anywhere-upgrade-method=upgrade",
       "--provider=kubernetes-anywhere",
-      "--tag=latest",
       "--test_args=--ginkgo.focus=\\[Conformance\\] --minStartupPods=8",
       "--timeout=300m",
       "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\]|\\[Conformance\\]|\\[Feature:BootstrapTokens\\]|\\[Feature:NodeAuthorizer\\] --upgrade-target=ci/latest-1.8"
@@ -10160,7 +10151,6 @@
       "--kubernetes-anywhere-kubelet-ci-version=latest-1.6",
       "--kubernetes-anywhere-kubernetes-version=latest-1.6",
       "--provider=kubernetes-anywhere",
-      "--tag=latest",
       "--test_args=--ginkgo.focus=\\[Conformance\\] --minStartupPods=8",
       "--timeout=300m"
     ],
@@ -10180,7 +10170,6 @@
       "--kubernetes-anywhere-kubelet-ci-version=latest-1.7",
       "--kubernetes-anywhere-kubernetes-version=latest-1.7",
       "--provider=kubernetes-anywhere",
-      "--tag=latest",
       "--test_args=--ginkgo.focus=\\[Conformance\\] --minStartupPods=8",
       "--timeout=300m"
     ],
@@ -10200,7 +10189,6 @@
       "--kubernetes-anywhere-kubelet-ci-version=latest-1.8",
       "--kubernetes-anywhere-kubernetes-version=latest-1.8",
       "--provider=kubernetes-anywhere",
-      "--tag=latest",
       "--test_args=--ginkgo.focus=\\[Conformance\\]|\\[Feature:BootstrapTokens\\]|\\[Feature:NodeAuthorizer\\] --minStartupPods=8",
       "--timeout=300m"
     ],
@@ -10513,7 +10501,6 @@
       "--kubernetes-anywhere-kubelet-ci-version=latest",
       "--kubernetes-anywhere-kubernetes-version=ci/latest",
       "--provider=kubernetes-anywhere",
-      "--tag=latest",
       "--test_args=--ginkgo.focus=\\[Conformance\\] --ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\] --minStartupPods=8",
       "--timeout=55m",
       "--use-shared-build=bazel"
