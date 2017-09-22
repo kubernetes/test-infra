@@ -1,0 +1,54 @@
+options:
+  extend_at_least: 4
+  extend_upto: 6w
+  shift_switch_dates: Wed 12:00
+  timezone: America/Los_Angeles
+  victims:
+  - fejta
+  - ixdy
+  - rmmh
+  - krzyzacy
+  - cjwagner
+shifts:
+- Feb 01 12:00 2017 | ixdy         // no-oncall fejta(out)
+- Feb 08 12:00 2017 | rmmh         // no-oncall fejta(out)
+- Feb 15 12:00 2017 | spxtr        // no-oncall fejta(out) Holiday - Presidents Day
+- Feb 22 12:00 2017 | krzyzacy     // no-oncall fejta(out)
+- Mar 01 12:00 2017 | ixdy         // no-oncall fejta(out)
+- Mar 08 12:00 2017 | fejta        // Primary too far (8>[4,6]).
+- Mar 15 12:00 2017 | rmmh         // no-oncall spxtr(OOO)
+- Mar 22 12:00 2017 | krzyzacy     // no-oncall spxtr(OOO)
+- Mar 27 10:00 2017 | ixdy
+- Apr 03 10:00 2017 | krzyzacy
+- Apr 05 12:00 2017 | spxtr        // Primary too far (7>[4,6]).
+- Apr 12 12:00 2017 | krzyzacy
+- Apr 19 12:00 2017 | rmmh         // no-oncall ixdy(NO-ONCALL),krzyzacy(ooo)
+- Apr 26 12:00 2017 | fejta        // no-oncall ixdy(NO-ONCALL)
+- May 03 12:00 2017 | ixdy
+- May 10 12:00 2017 | fejta        // no-oncall ixdy(OOO),spxtr(OOO)
+- May 17 12:00 2017 | rmmh         // no-oncall ixdy(OOO),spxtr(OOO)
+- May 24 12:00 2017 | krzyzacy     // no-oncall spxtr(OOO) Holiday - Memorial Day
+- May 31 12:00 2017 | spxtr        // Primary too far (8>[4,6]).
+- Jun 07 12:00 2017 | fejta
+- Jun 14 12:00 2017 | ixdy
+- Jun 21 12:00 2017 | krzyzacy
+- Jun 28 12:00 2017 | rmmh         // Holiday - Independence Day Holiday - Independence Day Holiday
+- Jul 05 12:00 2017 | fejta        // no-oncall krzyzacy(OOO)
+- Jul 12 12:00 2017 | spxtr
+- Jul 19 12:00 2017 | ixdy
+- Jul 26 12:00 2017 | rmmh
+- Aug 02 12:00 2017 | krzyzacy
+- Aug 09 12:00 2017 | cjwagner     // no-oncall ixdy(OOO),spxtr(OOO)
+- Aug 16 12:00 2017 | fejta        // no-oncall ixdy(OOO)
+- Aug 23 12:00 2017 | rmmh         // no-oncall ixdy(OOO)
+- Aug 30 12:00 2017 | ixdy         // Holiday - Labor Day
+- Sep 06 12:00 2017 | spxtr        // no-oncall ixdy(NO-ONCALL)
+- Sep 13 12:00 2017 | krzyzacy     // no-oncall ixdy(NO-ONCALL)
+- Sep 20 12:00 2017 | cjwagner
+- Sep 25 12:00 2017 | fejta
+- Oct 02 12:00 2017 | rmmh
+- Oct 09 12:00 2017 | ixdy
+- Oct 16 12:00 2017 | krzyzacy
+- Oct 23 12:00 2017 | cjwagner
+- Oct 30 12:00 2017 | fejta
+- Nov 06 12:00 2017 | rmmh
