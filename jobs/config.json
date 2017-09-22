@@ -10498,6 +10498,27 @@
       "sig-aws"
     ]
   },
+  "pull-kubernetes-e2e-kops-aws-prow": {
+    "args": [
+      "--aws",
+      "--aws-cluster-domain=test-aws.k8s.io",
+      "--build=bazel",
+      "--check-leaked-resources=false",
+      "--cluster=",
+      "--env-file=jobs/platform/kops_aws.env",
+      "--env-file=jobs/env/pull-kubernetes-e2e-kops-aws-prow.env",
+      "--extract=local",
+      "--ginkgo-parallel",
+      "--provider=aws",
+      "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-kops-aws-prow",
+      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]|\\[HPA\\]|Dashboard|Services.*functioning.*NodePort",
+      "--timeout=55m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-aws"
+    ]
+  },
   "pull-kubernetes-e2e-kubeadm-gce": {
     "args": [
       "--cluster=",

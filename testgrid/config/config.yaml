@@ -1633,6 +1633,8 @@ test_groups:
 - name: pull-kubernetes-e2e-kops-aws
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-kops-aws
   days_of_results: 1
+- name: pull-kubernetes-e2e-kops-aws-prow
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-kops-aws-prow
 - name: pull-kubernetes-e2e-kubeadm-gce
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-kubeadm-gce
   days_of_results: 1
@@ -3517,7 +3519,7 @@ dashboards:
   dashboard_tab:
   - name: gce-device-plugin-gpu
     test_group_name: ci-kubernetes-e2e-gce-device-plugin-gpu
-  - name: gce-device-plugin-gpu-stable1
+  - name: gce-device-plugin-gpu-1-8
     test_group_name: ci-kubernetes-e2e-gce-device-plugin-gpu-stable1
   - name: gce-gpu
     test_group_name: ci-kubernetes-e2e-gce-gpu
@@ -4166,6 +4168,8 @@ dashboards:
   - name: pull-kubernetes-e2e-kops-aws
     test_group_name: pull-kubernetes-e2e-kops-aws
     base_options: 'width=10'
+  - name: pull-kubernetes-e2e-kops-aws-prow
+    test_group_name: pull-kubernetes-e2e-kops-aws-prow
   - name: pull-kubernetes-e2e-kubeadm-gce
     test_group_name: pull-kubernetes-e2e-kubeadm-gce
     base_options: 'width=10'
