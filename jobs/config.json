@@ -10108,50 +10108,6 @@
       "UNKNOWN"
     ]
   },
-  "periodic-ci-kubernetes-e2e-kubeadm-gce-upgrade-1-6-1-7": {
-    "args": [
-      "--cluster=",
-      "--deployment=kubernetes-anywhere",
-      "--env-file=jobs/platform/gce.env",
-      "--extract=ci/latest-1.6",
-      "--extract=ci/latest-1.7",
-      "--gcp-zone=us-central1-f",
-      "--kubeadm=periodic",
-      "--kubernetes-anywhere-kubelet-ci-version=latest-1.6",
-      "--kubernetes-anywhere-kubernetes-version=latest-1.6",
-      "--kubernetes-anywhere-upgrade-method=init",
-      "--provider=kubernetes-anywhere",
-      "--test_args=--ginkgo.focus=\\[Conformance\\] --minStartupPods=8",
-      "--timeout=300m",
-      "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\]|\\[Conformance\\] --upgrade-target=ci/latest-1.7"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-cluster-lifecycle"
-    ]
-  },
-  "periodic-ci-kubernetes-e2e-kubeadm-gce-upgrade-1-7-1-8": {
-    "args": [
-      "--cluster=",
-      "--deployment=kubernetes-anywhere",
-      "--env-file=jobs/platform/gce.env",
-      "--extract=ci/latest-1.7",
-      "--extract=ci/latest-1.8",
-      "--gcp-zone=us-central1-f",
-      "--kubeadm=periodic",
-      "--kubernetes-anywhere-kubelet-ci-version=latest-1.7",
-      "--kubernetes-anywhere-kubernetes-version=latest-1.7",
-      "--kubernetes-anywhere-upgrade-method=upgrade",
-      "--provider=kubernetes-anywhere",
-      "--test_args=--ginkgo.focus=\\[Conformance\\] --minStartupPods=8",
-      "--timeout=300m",
-      "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\]|\\[Conformance\\]|\\[Feature:BootstrapTokens\\]|\\[Feature:NodeAuthorizer\\] --upgrade-target=ci/latest-1.8"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-cluster-lifecycle"
-    ]
-  },
   "periodic-kubernetes-bazel-build-1-6": {
     "args": [
       "--build=//cmd/... //pkg/... //federation/... //plugin/... //third_party/... //examples/... //test/...",
@@ -10265,6 +10221,50 @@
       "--provider=kubernetes-anywhere",
       "--test_args=--ginkgo.focus=\\[Conformance\\]|\\[Feature:BootstrapTokens\\]|\\[Feature:NodeAuthorizer\\] --minStartupPods=8",
       "--timeout=300m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-cluster-lifecycle"
+    ]
+  },
+  "periodic-kubernetes-e2e-kubeadm-gce-upgrade-1-6-1-7": {
+    "args": [
+      "--cluster=",
+      "--deployment=kubernetes-anywhere",
+      "--env-file=jobs/platform/gce.env",
+      "--extract=ci/latest-1.6",
+      "--extract=ci/latest-1.7",
+      "--gcp-zone=us-central1-f",
+      "--kubeadm=periodic",
+      "--kubernetes-anywhere-kubelet-ci-version=latest-1.6",
+      "--kubernetes-anywhere-kubernetes-version=latest-1.6",
+      "--kubernetes-anywhere-upgrade-method=init",
+      "--provider=kubernetes-anywhere",
+      "--test_args=--ginkgo.focus=\\[Conformance\\] --minStartupPods=8",
+      "--timeout=300m",
+      "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\]|\\[Conformance\\] --upgrade-target=ci/latest-1.7"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-cluster-lifecycle"
+    ]
+  },
+  "periodic-kubernetes-e2e-kubeadm-gce-upgrade-1-7-1-8": {
+    "args": [
+      "--cluster=",
+      "--deployment=kubernetes-anywhere",
+      "--env-file=jobs/platform/gce.env",
+      "--extract=ci/latest-1.7",
+      "--extract=ci/latest-1.8",
+      "--gcp-zone=us-central1-f",
+      "--kubeadm=periodic",
+      "--kubernetes-anywhere-kubelet-ci-version=latest-1.7",
+      "--kubernetes-anywhere-kubernetes-version=latest-1.7",
+      "--kubernetes-anywhere-upgrade-method=upgrade",
+      "--provider=kubernetes-anywhere",
+      "--test_args=--ginkgo.focus=\\[Conformance\\] --minStartupPods=8",
+      "--timeout=300m",
+      "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\]|\\[Conformance\\]|\\[Feature:BootstrapTokens\\]|\\[Feature:NodeAuthorizer\\] --upgrade-target=ci/latest-1.8"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [

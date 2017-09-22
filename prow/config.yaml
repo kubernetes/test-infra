@@ -16801,13 +16801,13 @@ periodics:
         - name: cache-ssd
           hostPath:
             path: /mnt/disks/ssd0
-    - name: periodic-ci-kubernetes-e2e-kubeadm-gce-upgrade-1-6-1-7
+    - name: periodic-kubernetes-e2e-kubeadm-gce-upgrade-1-6-1-7
       agent: kubernetes
       spec:
         containers:
         - image: gcr.io/k8s-testimages/e2e-kubeadm:v20170921-fe3862d9
           args:
-          - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+          - "--repo=k8s.io/kubernetes=release-1.7"
           - "--clean"
           - "--git-cache=/root/.cache/git"
           - "--timeout=320"
@@ -16963,13 +16963,13 @@ periodics:
       - name: cache-ssd
         hostPath:
           path: /mnt/disks/ssd0
-  - name: periodic-ci-kubernetes-e2e-kubeadm-gce-upgrade-1-7-1-8
+  - name: periodic-kubernetes-e2e-kubeadm-gce-upgrade-1-7-1-8
     agent: kubernetes
     spec:
       containers:
       - image: gcr.io/k8s-testimages/e2e-kubeadm:v20170921-fe3862d9
         args:
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--repo=k8s.io/kubernetes=release-1.8"
         - "--clean"
         - "--git-cache=/root/.cache/git"
         - "--timeout=320"
