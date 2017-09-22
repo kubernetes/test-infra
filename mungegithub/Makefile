@@ -22,6 +22,13 @@ hooksecret64=$(shell base64 $(HOOKSECRET))
 
 READONLY ?= true
 
+CLUSTER ?= mungegithub
+PROJECT ?= k8s-mungegithub
+ZONE ?= us-central1-b
+
+get-cluster-credentials:
+	gcloud container clusters get-credentials "$(CLUSTER)" --project="$(PROJECT)" --zone="$(ZONE)"
+
 # just build the binary
 mungegithub build:
 	GOBIN=$(PWD) CGO_ENABLED=0 GOOS=linux go install -installsuffix cgo -ldflags '-w'
@@ -45,12 +52,12 @@ endif
 # Launch the container on a cluster (with --dry-run).
 # The cluster will likely need a service to get access to the web interface (see service.yaml)
 # The cluster will need a github oauth token (the secret target makes that easy to create)
-deploy: push deployment
+deploy: push deployment get-cluster-credentials
 	# Deploy the new deployment
 	kubectl --kubeconfig=$(KUBECONFIG) apply -f $(APP)/local.deployment.yaml --record
 
 # A new configuration is pushed by using the configmap specified using $(TARGET) and $(APP).
-push_config:
+push_config: get-cluster-credentials
 	# pushes a new configmap.
 	kubectl --kubeconfig=$(KUBECONFIG) create configmap $(TARGET)-$(APP)-config --from-file=config=$(APP)/deployment/$(TARGET)/configmap.yaml --dry-run -o yaml | kubectl apply -f -
 
@@ -62,7 +69,7 @@ ifneq ("", "$(wildcard $(APP)/service.yaml)")
 endif
 
 # Pushes a service resource spec.
-push_service: service
+push_service: service get-cluster-credentials
 ifneq ("", "$(wildcard $(APP)/service.yaml)")
 	# Applying service.yaml.
 	kubectl --kubeconfig=$(KUBECONFIG) apply -f $(APP)/local.service.yaml
@@ -92,7 +99,7 @@ secret:
 	sed -i -e 's!@@!$(TARGET)!g' $(APP)/local.secret.yaml
 
 # Generate and deploy the token secret.
-push_secret: secret
+push_secret: secret get-cluster-credentials
 	# Appling local.secret.yaml.
 	kubectl --kubeconfig=$(KUBECONFIG) apply -f $(APP)/local.secret.yaml
 
@@ -105,7 +112,7 @@ ifneq ("", "$(and $(wildcard $(APP)/pv.yaml), $(wildcard $(APP)/pvc.yaml))")
 endif
 
 # Create the persistent volume and persistent volume claim.
-push_volume: volume
+push_volume: volume get-cluster-credentials
 ifneq ("", "$(and $(wildcard $(APP)/pv.yaml), $(wildcard $(APP)/pvc.yaml))")
 	# Creating persistent volume and persistent volume claim.
 	kubectl --kubeconfig=$(KUBECONFIG) create -f $(APP)/local.pv.yaml

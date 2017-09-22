@@ -114,7 +114,19 @@ func TestHasWipPrefix(t *testing.T) {
 			expected: true,
 		},
 		{
+			title:    "WIP: dummy title",
+			expected: true,
+		},
+		{
 			title:    "[WIP] dummy title",
+			expected: true,
+		},
+		{
+			title:    "(WIP) dummy title",
+			expected: true,
+		},
+		{
+			title:    "<WIP> dummy title",
 			expected: true,
 		},
 		{
@@ -124,6 +136,18 @@ func TestHasWipPrefix(t *testing.T) {
 		{
 			title:    "[wip] dummy title",
 			expected: true,
+		},
+		{
+			title:    "(wip) dummy title",
+			expected: true,
+		},
+		{
+			title:    "<wip> dummy title",
+			expected: true,
+		},
+		{
+			title:    "Wipe out GCP project before reusing",
+			expected: false,
 		},
 	}
 

@@ -26,6 +26,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/git"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/tide"
@@ -44,7 +45,6 @@ var (
 
 func main() {
 	flag.Parse()
-	logrus.SetLevel(logrus.DebugLevel)
 
 	configAgent := &config.Agent{}
 	if err := configAgent.Start(*configPath); err != nil {
@@ -63,7 +63,6 @@ func main() {
 	}
 
 	ghc := github.NewClient(oauthSecret, *githubEndpoint)
-	ghc.Logger = logrus.WithField("client", "github")
 
 	var kc *kube.Client
 	if *cluster == "" {
@@ -78,10 +77,20 @@ func main() {
 		}
 	}
 
-	c := tide.NewController(logrus.WithField("controller", "tide"), ghc, kc, configAgent)
+	gc, err := git.NewClient()
 	if err != nil {
-		logrus.WithError(err).Fatal("Error creating tide controller.")
+		logrus.WithError(err).Fatal("Error getting git client.")
 	}
+	defer gc.Clean()
+
+	logger := logrus.StandardLogger()
+	ghc.Logger = logger.WithField("client", "github")
+	kc.Logger = logger.WithField("client", "kube")
+	gc.Logger = logger.WithField("client", "git")
+	cLogger := logger.WithField("controller", "tide")
+
+	c := tide.NewController(cLogger, ghc, kc, configAgent, gc)
+
 	sync(c)
 	if *runOnce {
 		return

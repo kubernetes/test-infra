@@ -36,6 +36,9 @@ go_library(
         "//prow/kube:go_default_library",
         "//prow/plugins:go_default_library",
         "//prow/slack:go_default_library",
+        "//vendor/github.com/prometheus/client_golang/prometheus:go_default_library",
+        "//vendor/github.com/prometheus/client_golang/prometheus/promhttp:go_default_library",
+        "//vendor/github.com/prometheus/client_golang/prometheus/push:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
     ],
 )

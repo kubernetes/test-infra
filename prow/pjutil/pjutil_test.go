@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package npj
+package pjutil
 
 import (
 	"reflect"
@@ -170,7 +170,9 @@ func TestProwJobToPod(t *testing.T) {
 					Labels: map[string]string{
 						kube.CreatedByProw: "true",
 						"type":             "presubmit",
-						"job":              "job-name",
+					},
+					Annotations: map[string]string{
+						"job": "job-name",
 					},
 				},
 				Spec: kube.PodSpec{
@@ -208,7 +210,7 @@ func TestProwJobToPod(t *testing.T) {
 		// if !semantic.DeepEqual(got, test.expected) {
 		//	 t.Errorf("got pod:\n%#v\n\nexpected pod:\n%#v\n", got, test.expected)
 		// }
-		var foundCreatedByLabel, foundTypeLabel, foundJobLabel bool
+		var foundCreatedByLabel, foundTypeLabel, foundJobAnnotation bool
 		for key, value := range got.Metadata.Labels {
 			if key == kube.CreatedByProw && value == "true" {
 				foundCreatedByLabel = true
@@ -216,8 +218,10 @@ func TestProwJobToPod(t *testing.T) {
 			if key == "type" && value == string(pj.Spec.Type) {
 				foundTypeLabel = true
 			}
+		}
+		for key, value := range got.Metadata.Annotations {
 			if key == "job" && value == pj.Spec.Job {
-				foundJobLabel = true
+				foundJobAnnotation = true
 			}
 		}
 		if !foundCreatedByLabel {
@@ -226,8 +230,8 @@ func TestProwJobToPod(t *testing.T) {
 		if !foundTypeLabel {
 			t.Errorf("expected a type=%s label in %v", pj.Spec.Type, got.Metadata.Labels)
 		}
-		if !foundJobLabel {
-			t.Errorf("expected a job=%s label in %v", pj.Spec.Job, got.Metadata.Labels)
+		if !foundJobAnnotation {
+			t.Errorf("expected a job=%s annotation in %v", pj.Spec.Job, got.Metadata.Annotations)
 		}
 
 		expectedContainer := test.expected.Spec.Containers[i]
@@ -255,6 +259,81 @@ func TestProwJobToPod(t *testing.T) {
 		}
 		if test.expected.Spec.RestartPolicy != got.Spec.RestartPolicy {
 			t.Errorf("expected restart policy: %s, got: %s", test.expected.Spec.RestartPolicy, got.Spec.RestartPolicy)
+		}
+	}
+}
+
+func TestPartitionPending(t *testing.T) {
+	tests := []struct {
+		pjs []kube.ProwJob
+
+		pending    map[string]struct{}
+		nonPending map[string]struct{}
+	}{
+		{
+			pjs: []kube.ProwJob{
+				{
+					Metadata: kube.ObjectMeta{
+						Name: "foo",
+					},
+					Status: kube.ProwJobStatus{
+						State: kube.TriggeredState,
+					},
+				},
+				{
+					Metadata: kube.ObjectMeta{
+						Name: "bar",
+					},
+					Status: kube.ProwJobStatus{
+						State: kube.PendingState,
+					},
+				},
+				{
+					Metadata: kube.ObjectMeta{
+						Name: "baz",
+					},
+					Status: kube.ProwJobStatus{
+						State: kube.SuccessState,
+					},
+				},
+				{
+					Metadata: kube.ObjectMeta{
+						Name: "error",
+					},
+					Status: kube.ProwJobStatus{
+						State: kube.ErrorState,
+					},
+				},
+				{
+					Metadata: kube.ObjectMeta{
+						Name: "bak",
+					},
+					Status: kube.ProwJobStatus{
+						State: kube.PendingState,
+					},
+				},
+			},
+			pending: map[string]struct{}{
+				"bar": {}, "bak": {},
+			},
+			nonPending: map[string]struct{}{
+				"foo": {}, "baz": {}, "error": {},
+			},
+		},
+	}
+
+	for i, test := range tests {
+		t.Logf("test run #%d", i)
+		pendingCh, nonPendingCh := PartitionPending(test.pjs)
+		for job := range pendingCh {
+			if _, ok := test.pending[job.Metadata.Name]; !ok {
+				t.Errorf("didn't find pending job %#v", job)
+			}
+		}
+		for job := range nonPendingCh {
+			if _, ok := test.nonPending[job.Metadata.Name]; !ok {
+				t.Errorf("didn't find non-pending job %#v", job)
+			}
 		}
 	}
 }

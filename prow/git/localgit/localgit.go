@@ -118,3 +118,9 @@ func (lg *LocalGit) CheckoutNewBranch(org, repo, branch string) error {
 	rdir := filepath.Join(lg.Dir, org, repo)
 	return runCmd(lg.Git, rdir, "checkout", "-b", branch)
 }
+
+// Checkout does git checkout.
+func (lg *LocalGit) Checkout(org, repo, commitlike string) error {
+	rdir := filepath.Join(lg.Dir, org, repo)
+	return runCmd(lg.Git, rdir, "checkout", commitlike)
+}

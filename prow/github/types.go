@@ -60,6 +60,7 @@ type User struct {
 	Login string `json:"login"`
 	Name  string `json:"name"`
 	Email string `json:"email"`
+	ID    int    `json:"id"`
 }
 
 // PullRequestEventAction enumerates the triggers for this
@@ -86,6 +87,7 @@ type PullRequestEvent struct {
 	Action      PullRequestEventAction `json:"action"`
 	Number      int                    `json:"number"`
 	PullRequest PullRequest            `json:"pull_request"`
+	Repo        Repo                   `json:"repository"`
 	Label       Label                  `json:"label"`
 }
 
@@ -121,11 +123,21 @@ type Label struct {
 	Color string `json:"color"`
 }
 
+// PullRequestFileStatus enumerates the statuses for this webhook payload type.
+type PullRequestFileStatus string
+
+const (
+	PullRequestFileModified PullRequestFileStatus = "modified"
+	PullRequestFileAdded                          = "added"
+	PullRequestFileRemoved                        = "removed"
+	PullRequestFileRenamed                        = "renamed"
+)
+
 // PullRequestChange contains information about what a PR changed.
 type PullRequestChange struct {
 	SHA       string `json:"sha"`
 	Filename  string `json:"filename"`
-	Status    string `json:"added"`
+	Status    string `json:"status"`
 	Additions int    `json:"additions"`
 	Deletions int    `json:"deletions"`
 	Changes   int    `json:"changes"`
@@ -377,4 +389,23 @@ type Team struct {
 // TeamMember is a member of an organizational team
 type TeamMember struct {
 	Login string `json:"login"`
+}
+
+type GenericCommentEventAction string
+
+// Comments indicate values that are coerced to the specified value.
+const (
+	GenericCommentActionCreated GenericCommentEventAction = "created" // "opened", "submitted"
+	GenericCommentActionEdited                            = "edited"
+	GenericCommentActionDeleted                           = "deleted" // "dismissed"
+)
+
+type GenericCommentEvent struct {
+	IsPR    bool
+	Action  GenericCommentEventAction
+	Body    string
+	HTMLURL string
+	Number  int
+	Repo    Repo
+	User    User
 }

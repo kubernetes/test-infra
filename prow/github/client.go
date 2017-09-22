@@ -36,7 +36,7 @@ import (
 )
 
 type Logger interface {
-	Printf(s string, v ...interface{})
+	Debugf(s string, v ...interface{})
 }
 
 type Client struct {
@@ -101,7 +101,7 @@ func (c *Client) log(methodName string, args ...interface{}) {
 	for _, arg := range args {
 		as = append(as, fmt.Sprintf("%v", arg))
 	}
-	c.Logger.Printf("%s(%s)", methodName, strings.Join(as, ", "))
+	c.Logger.Debugf("%s(%s)", methodName, strings.Join(as, ", "))
 }
 
 var timeSleep = time.Sleep

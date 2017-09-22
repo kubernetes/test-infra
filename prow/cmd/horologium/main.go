@@ -25,7 +25,7 @@ import (
 
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/kube"
-	"k8s.io/test-infra/prow/npj"
+	"k8s.io/test-infra/prow/pjutil"
 )
 
 var configPath = flag.String("config-path", "/etc/config/config", "Path to config.yaml.")
@@ -43,6 +43,9 @@ func main() {
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting kube client.")
 	}
+
+	logger := logrus.StandardLogger()
+	kc.Logger = logger.WithField("client", "kube")
 
 	for now := range time.Tick(1 * time.Minute) {
 		start := time.Now()
@@ -63,20 +66,12 @@ func sync(kc kubeClient, cfg *config.Config, now time.Time) error {
 	if err != nil {
 		return fmt.Errorf("error listing prow jobs: %v", err)
 	}
-	latestJobs := map[string]kube.ProwJob{}
-	for _, j := range jobs {
-		if j.Spec.Type != kube.PeriodicJob {
-			continue
-		}
-		name := j.Spec.Job
-		if j.Status.StartTime.After(latestJobs[name].Status.StartTime) {
-			latestJobs[name] = j
-		}
-	}
+	latestJobs := pjutil.GetLatestPeriodics(jobs)
+
 	for _, p := range cfg.Periodics {
 		j, ok := latestJobs[p.Name]
 		if !ok || (j.Complete() && now.Sub(j.Status.StartTime) > p.GetInterval()) {
-			if _, err := kc.CreateProwJob(npj.NewProwJob(npj.PeriodicSpec(p))); err != nil {
+			if _, err := kc.CreateProwJob(pjutil.NewProwJob(pjutil.PeriodicSpec(p))); err != nil {
 				return fmt.Errorf("error creating prow job: %v", err)
 			}
 		}

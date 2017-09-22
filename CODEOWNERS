@@ -1,5 +1,6 @@
 boskos/** @krzyzacy
 gubernator/** @rmmh
+jenkins/bootstrap* @bentheelder @krzyzacy
 kettle/** @rmmh
 logexporter/** @shyamjvs
 mungegithub/** @cjwagner

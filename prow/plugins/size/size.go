@@ -50,10 +50,7 @@ type githubClient interface {
 }
 
 func handlePR(gc githubClient, le *logrus.Entry, pe github.PullRequestEvent) error {
-	// These are the only actions indicating the code diffs may have changed.
-	if pe.Action != github.PullRequestActionOpened &&
-		pe.Action != github.PullRequestActionReopened &&
-		pe.Action != github.PullRequestActionSynchronize {
+	if !isPRChanged(pe) {
 		return nil
 	}
 
@@ -178,4 +175,20 @@ func bucket(lineCount int) size {
 	}
 
 	return sizeXXL
+}
+
+// These are the only actions indicating the code diffs may have changed.
+func isPRChanged(pe github.PullRequestEvent) bool {
+	switch pe.Action {
+	case github.PullRequestActionOpened:
+		return true
+	case github.PullRequestActionReopened:
+		return true
+	case github.PullRequestActionSynchronize:
+		return true
+	case github.PullRequestActionEdited:
+		return true
+	default:
+		return false
+	}
 }

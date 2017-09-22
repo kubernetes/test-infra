@@ -48,6 +48,7 @@ filegroup(
     srcs = [
         ":package-srcs",
         "//vendor/github.com/prometheus/client_golang/prometheus/promhttp:all-srcs",
+        "//vendor/github.com/prometheus/client_golang/prometheus/push:all-srcs",
     ],
     tags = ["automanaged"],
 )

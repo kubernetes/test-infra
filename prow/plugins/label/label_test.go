@@ -24,6 +24,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
+	"k8s.io/test-infra/prow/slack/fakeslack"
 )
 
 const (
@@ -227,6 +228,60 @@ func TestLabel(t *testing.T) {
 			expectedNewLabels:     formatLabels("area/infra"),
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
+		},
+		{
+			name:                  "Add Status Approved Label",
+			body:                  "/status approved-for-milestone ",
+			repoLabels:            []string{"status/approved-for-milestone"},
+			issueLabels:           []string{},
+			expectedNewLabels:     formatLabels("status/approved-for-milestone"),
+			expectedRemovedLabels: []string{},
+			commenter:             "sig-lead",
+		},
+		{
+			name:                  "Add Status In Progress Label",
+			body:                  "/status in-progress",
+			repoLabels:            []string{"status/in-progress"},
+			issueLabels:           []string{},
+			expectedNewLabels:     formatLabels("status/in-progress"),
+			expectedRemovedLabels: []string{},
+			commenter:             "sig-lead",
+		},
+		{
+			name:                  "Add Status In Review Label",
+			body:                  "/status in-review",
+			repoLabels:            []string{"status/in-review"},
+			issueLabels:           []string{},
+			expectedNewLabels:     formatLabels("status/in-review"),
+			expectedRemovedLabels: []string{},
+			commenter:             "sig-lead",
+		},
+		{
+			name:                  "Non sig lead can't add status/accepted-for-milestone",
+			body:                  "/status accepted-for-milestone",
+			repoLabels:            []string{"status/accepted-for-milestone"},
+			issueLabels:           []string{},
+			expectedNewLabels:     formatLabels(),
+			expectedRemovedLabels: []string{},
+			commenter:             "invalidLead",
+		},
+		{
+			name:                  "Non sig lead can't add status/in-review",
+			body:                  "/status in-review",
+			repoLabels:            []string{"status/in-review"},
+			issueLabels:           []string{},
+			expectedNewLabels:     formatLabels(),
+			expectedRemovedLabels: []string{},
+			commenter:             "invalidLead",
+		},
+		{
+			name:                  "Invalid Status Label Attempt",
+			body:                  "/status not-a-real-status",
+			repoLabels:            []string{"status/in-review"},
+			issueLabels:           []string{},
+			expectedNewLabels:     formatLabels(),
+			expectedRemovedLabels: []string{},
+			commenter:             "sig-lead",
 		},
 		{
 			name:                  "Add Single Area Label when already present on Issue",
@@ -529,7 +584,12 @@ func TestLabel(t *testing.T) {
 
 		for i := 0; i < len(fakeRepoFunctions); i++ {
 			fakeClient, ae := fakeRepoFunctions[i](tc.body, tc.commenter, tc.repoLabels, tc.issueLabels)
-			if err := handle(fakeClient, logrus.WithField("plugin", pluginName), ae); err != nil {
+			fakeMilestoneId := 123456
+			fakeSlackClient := &fakeslack.FakeClient{
+				SentMessages: make(map[string][]string),
+			}
+			err := handle(fakeClient, logrus.WithField("plugin", pluginName), ae, fakeSlackClient, fakeMilestoneId)
+			if err != nil {
 				t.Errorf("For case %s, didn't expect error from label test: %v", tc.name, err)
 				return
 			}

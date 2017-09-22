@@ -24,6 +24,7 @@ import (
 	"github.com/shurcooL/githubql"
 	"github.com/sirupsen/logrus"
 
+	"k8s.io/test-infra/prow/git/localgit"
 	"k8s.io/test-infra/prow/kube"
 )
 
@@ -46,13 +47,133 @@ func testPullsMatchList(t *testing.T, test string, actual []pullRequest, expecte
 	}
 }
 
-type prowjob struct {
-	prNumber int
-	job      string
-	state    kube.ProwJobState
+func TestAccumulateBatch(t *testing.T) {
+	type pull struct {
+		number int
+		sha    string
+	}
+	type prowjob struct {
+		prs   []pull
+		job   string
+		state kube.ProwJobState
+	}
+	tests := []struct {
+		name       string
+		presubmits []string
+		pulls      []pull
+		prowJobs   []prowjob
+
+		merges  []int
+		pending bool
+	}{
+		{
+			name: "no batches running",
+		},
+		{
+			name:       "batch pending",
+			presubmits: []string{"foo", "bar", "baz"},
+			pulls:      []pull{{1, "a"}, {2, "b"}},
+			prowJobs:   []prowjob{{job: "foo", state: kube.PendingState, prs: []pull{{1, "a"}}}},
+			pending:    true,
+		},
+		{
+			name:       "batch pending, successful previous run",
+			presubmits: []string{"foo", "bar", "baz"},
+			pulls:      []pull{{1, "a"}, {2, "b"}},
+			prowJobs: []prowjob{
+				{job: "foo", state: kube.PendingState, prs: []pull{{1, "a"}}},
+				{job: "foo", state: kube.SuccessState, prs: []pull{{2, "b"}}},
+				{job: "bar", state: kube.SuccessState, prs: []pull{{2, "b"}}},
+				{job: "baz", state: kube.SuccessState, prs: []pull{{2, "b"}}},
+			},
+			pending: true,
+		},
+		{
+			name:       "successful run",
+			presubmits: []string{"foo", "bar", "baz"},
+			pulls:      []pull{{1, "a"}, {2, "b"}},
+			prowJobs: []prowjob{
+				{job: "foo", state: kube.SuccessState, prs: []pull{{2, "b"}}},
+				{job: "bar", state: kube.SuccessState, prs: []pull{{2, "b"}}},
+				{job: "baz", state: kube.SuccessState, prs: []pull{{2, "b"}}},
+			},
+			merges: []int{2},
+		},
+		{
+			name:       "successful run, multiple PRs",
+			presubmits: []string{"foo", "bar", "baz"},
+			pulls:      []pull{{1, "a"}, {2, "b"}},
+			prowJobs: []prowjob{
+				{job: "foo", state: kube.SuccessState, prs: []pull{{1, "a"}, {2, "b"}}},
+				{job: "bar", state: kube.SuccessState, prs: []pull{{1, "a"}, {2, "b"}}},
+				{job: "baz", state: kube.SuccessState, prs: []pull{{1, "a"}, {2, "b"}}},
+			},
+			merges: []int{1, 2},
+		},
+		{
+			name:       "successful run, failures in past",
+			presubmits: []string{"foo", "bar", "baz"},
+			pulls:      []pull{{1, "a"}, {2, "b"}},
+			prowJobs: []prowjob{
+				{job: "foo", state: kube.SuccessState, prs: []pull{{1, "a"}, {2, "b"}}},
+				{job: "bar", state: kube.SuccessState, prs: []pull{{1, "a"}, {2, "b"}}},
+				{job: "baz", state: kube.SuccessState, prs: []pull{{1, "a"}, {2, "b"}}},
+				{job: "foo", state: kube.FailureState, prs: []pull{{1, "a"}, {2, "b"}}},
+				{job: "baz", state: kube.FailureState, prs: []pull{{1, "a"}, {2, "b"}}},
+				{job: "foo", state: kube.FailureState, prs: []pull{{1, "c"}, {2, "b"}}},
+			},
+			merges: []int{1, 2},
+		},
+		{
+			name:       "failures",
+			presubmits: []string{"foo", "bar", "baz"},
+			pulls:      []pull{{1, "a"}, {2, "b"}},
+			prowJobs: []prowjob{
+				{job: "foo", state: kube.FailureState, prs: []pull{{1, "a"}, {2, "b"}}},
+				{job: "bar", state: kube.SuccessState, prs: []pull{{1, "a"}, {2, "b"}}},
+				{job: "baz", state: kube.FailureState, prs: []pull{{1, "a"}, {2, "b"}}},
+				{job: "foo", state: kube.FailureState, prs: []pull{{1, "c"}, {2, "b"}}},
+			},
+		},
+	}
+	for _, test := range tests {
+		var pulls []pullRequest
+		for _, p := range test.pulls {
+			pr := pullRequest{Number: githubql.Int(p.number)}
+			pr.HeadRef.Target.OID = githubql.String(p.sha)
+			pulls = append(pulls, pr)
+		}
+		var pjs []kube.ProwJob
+		for _, pj := range test.prowJobs {
+			npj := kube.ProwJob{
+				Spec: kube.ProwJobSpec{
+					Job:  pj.job,
+					Type: kube.BatchJob,
+				},
+				Status: kube.ProwJobStatus{State: pj.state},
+			}
+			for _, pr := range pj.prs {
+				npj.Spec.Refs.Pulls = append(npj.Spec.Refs.Pulls, kube.Pull{
+					Number: pr.number,
+					SHA:    pr.sha,
+				})
+			}
+			pjs = append(pjs, npj)
+		}
+		merges, pending := accumulateBatch(test.presubmits, pulls, pjs)
+		if pending != test.pending {
+			t.Errorf("For case \"%s\", got wrong pending.", test.name)
+		}
+		testPullsMatchList(t, test.name, merges, test.merges)
+	}
 }
 
 func TestAccumulate(t *testing.T) {
+	type prowjob struct {
+		prNumber int
+		job      string
+		state    kube.ProwJobState
+	}
 	tests := []struct {
 		presubmits   []string
 		pullRequests []int
@@ -173,7 +294,11 @@ func TestAccumulate(t *testing.T) {
 		var pjs []kube.ProwJob
 		for _, pj := range test.prowJobs {
 			pjs = append(pjs, kube.ProwJob{
-				Spec:   kube.ProwJobSpec{Job: pj.job, Refs: kube.Refs{Pulls: []kube.Pull{{Number: pj.prNumber}}}},
+				Spec: kube.ProwJobSpec{
+					Job:  pj.job,
+					Type: kube.PresubmitJob,
+					Refs: kube.Refs{Pulls: []kube.Pull{{Number: pj.prNumber}}},
+				},
 				Status: kube.ProwJobStatus{State: pj.state},
 			})
 		}
@@ -344,6 +469,101 @@ func TestDividePool(t *testing.T) {
 			if pj.Spec.Refs.Org != sp.org || pj.Spec.Refs.Repo != sp.repo || pj.Spec.Refs.BaseRef != sp.branch || pj.Spec.Refs.BaseSHA != sp.sha {
 				t.Errorf("PJ in wrong subpool. Got PJ %+v in subpool %s.", pj, name)
 			}
+		}
+	}
+}
+
+func TestPickBatch(t *testing.T) {
+	lg, gc, err := localgit.New()
+	if err != nil {
+		t.Fatalf("Error making local git: %v", err)
+	}
+	defer gc.Clean()
+	defer lg.Clean()
+	if err := lg.MakeFakeRepo("o", "r"); err != nil {
+		t.Fatalf("Error making fake repo: %v", err)
+	}
+	if err := lg.AddCommit("o", "r", map[string][]byte{"foo": []byte("foo")}); err != nil {
+		t.Fatalf("Adding initial commit: %v", err)
+	}
+	testprs := []struct {
+		files   map[string][]byte
+		success bool
+
+		included bool
+	}{
+		{
+			files:    map[string][]byte{"bar": []byte("ok")},
+			success:  true,
+			included: true,
+		},
+		{
+			files:    map[string][]byte{"foo": []byte("ok")},
+			success:  true,
+			included: true,
+		},
+		{
+			files:    map[string][]byte{"bar": []byte("conflicts with 0")},
+			success:  true,
+			included: false,
+		},
+		{
+			files:    map[string][]byte{"qux": []byte("ok")},
+			success:  false,
+			included: false,
+		},
+		{
+			files:    map[string][]byte{"bazel": []byte("ok")},
+			success:  true,
+			included: true,
+		},
+	}
+	sp := subpool{
+		org:    "o",
+		repo:   "r",
+		branch: "master",
+		sha:    "master",
+	}
+	for i, testpr := range testprs {
+		if err := lg.CheckoutNewBranch("o", "r", fmt.Sprintf("pr-%d", i)); err != nil {
+			t.Fatalf("Error checking out new branch: %v", err)
+		}
+		if err := lg.AddCommit("o", "r", testpr.files); err != nil {
+			t.Fatalf("Error adding commit: %v", err)
+		}
+		if err := lg.Checkout("o", "r", "master"); err != nil {
+			t.Fatalf("Error checking out master: %v", err)
+		}
+		var pr pullRequest
+		pr.Number = githubql.Int(i)
+		pr.Commits.Nodes = []struct {
+			Commit struct {
+				Status struct{ State githubql.String }
+			}
+		}{{}}
+		if testpr.success {
+			pr.Commits.Nodes[0].Commit.Status.State = githubql.String("SUCCESS")
+		}
+		pr.HeadRef.Target.OID = githubql.String(fmt.Sprintf("origin/pr-%d", i))
+		sp.prs = append(sp.prs, pr)
+	}
+	c := &Controller{
+		gc: gc,
+	}
+	prs, err := c.pickBatch(sp)
+	if err != nil {
+		t.Fatalf("Error from pickBatch: %v", err)
+	}
+	for i, testpr := range testprs {
+		var found bool
+		for _, pr := range prs {
+			if int(pr.Number) == i {
+				found = true
+				break
+			}
+		}
+		if found != testpr.included {
+			t.Errorf("PR %d should not be picked.", i)
 		}
 	}
 }

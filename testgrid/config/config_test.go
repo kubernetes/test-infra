@@ -142,6 +142,27 @@ func TestConfig(t *testing.T) {
 			} else {
 				testgroupMap[dashboardtab.TestGroupName] += 1
 			}
+
+			if dashboardtab.AlertOptions != nil && (dashboardtab.AlertOptions.AlertStaleResultsHours != 0 || dashboardtab.AlertOptions.NumFailuresToAlert != 0) {
+				for _, testgroup := range config.TestGroups {
+					// Disallow alert options in tab but not group.
+					// Disallow different alert options in tab vs. group.
+					if testgroup.Name == dashboardtab.TestGroupName {
+						if testgroup.AlertStaleResultsHours == 0 {
+							t.Errorf("Cannot define alert_stale_results_hours in DashboardTab %v and not TestGroup %v.", dashboardtab.Name, dashboardtab.TestGroupName)
+						}
+						if testgroup.NumFailuresToAlert == 0 {
+							t.Errorf("Cannot define num_failures_to_alert in DashboardTab %v and not TestGroup %v.", dashboardtab.Name, dashboardtab.TestGroupName)
+						}
+						if testgroup.AlertStaleResultsHours != dashboardtab.AlertOptions.AlertStaleResultsHours {
+							t.Errorf("alert_stale_results_hours for DashboardTab %v must match TestGroup %v.", dashboardtab.Name, dashboardtab.TestGroupName)
+						}
+						if testgroup.NumFailuresToAlert != dashboardtab.AlertOptions.NumFailuresToAlert {
+							t.Errorf("num_failures_to_alert for DashboardTab %v must match TestGroup %v.", dashboardtab.Name, dashboardtab.TestGroupName)
+						}
+					}
+				}
+			}
 		}
 	}
 

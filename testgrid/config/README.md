@@ -95,6 +95,35 @@ Add a short description to a dashboard tab describing its purpose.
     description: 'kubectl gce e2e tests for master branch'
 ```
 
+### Email alerts
+In TestGroup, set `num_failures_to_alert` (alerts for consistent failures)
+and/or `alert_stale_results_hours` (alerts when tests haven't run recently.)
+
+In DashboardTab, set `alert_mail_to_addresses` (comma-separated list of email
+addresses to send mail to).
+
+These alerts will send whenever new failures are detected (or whenever the
+dashboard tab goes stale).
+
+```
+# Send alerts to foo@bar.com whenever a test fails 3 times in a row, or tests
+# haven't run in the last day.
+test_groups:
+- name: ci-kubernetes-e2e-gce
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce
+  alert_stale_results_hours: 24
+  num_failures_to_alert: 3
+  
+dashboards:
+- name: google-gce
+  dashboard_tab:
+  - name: gce
+    test_group_name: ci-kubernetes-e2e-gce
+    alert_options:
+      alert_mail_to_addresses: 'foo@bar.com'
+```
+
+
 ### Base options
 Default to a set of client modifiers when viewing this dashboard tab.
 

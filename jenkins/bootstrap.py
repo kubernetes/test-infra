@@ -954,13 +954,6 @@ def parse_args(arguments=None):
     parser.add_argument('--root', default='.', help='Root dir to work with')
     parser.add_argument(
         '--timeout', type=float, default=0, help='Timeout in minutes if set')
-    # TODO(bentheelder): remove --pull and --branch
-    parser.add_argument(
-        '--pull',
-        help='Deprecated, use --repo=k8s.io/foo=master:abcd,12:ef12,45:ff65')
-    parser.add_argument(
-        '--branch',
-        help='Deprecated, use --repo=k8s.io/foo=master')
     parser.add_argument(
         '--repo',
         action='append',
@@ -987,6 +980,10 @@ def parse_args(arguments=None):
         action='store_true',
         help='Clean the git repo before running tests.')
     args = parser.parse_args(arguments)
+    # --pull is deprecated, use --repo=k8s.io/foo=master:abcd,12:ef12,45:ff65
+    setattr(args, 'pull', None)
+    # --branch is deprecated, use --repo=k8s.io/foo=master
+    setattr(args, 'branch', None)
     if bool(args.repo) == bool(args.bare):
         raise argparse.ArgumentTypeError(
             'Expected --repo xor --bare:', args.repo, args.bare)

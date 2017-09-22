@@ -22,10 +22,11 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 
 	"k8s.io/test-infra/prow/kube"
-	"k8s.io/test-infra/prow/npj"
+	"k8s.io/test-infra/prow/pjutil"
 )
 
 const (
@@ -42,7 +43,14 @@ type Status struct {
 	Number   int
 }
 
+type Logger interface {
+	Debugf(s string, v ...interface{})
+}
+
 type Client struct {
+	// If Logger is non-nil, log all method calls with it.
+	Logger Logger
+
 	client     *http.Client
 	baseURL    string
 	authConfig *AuthConfig
@@ -70,6 +78,17 @@ func NewClient(url string, authConfig *AuthConfig) *Client {
 		authConfig: authConfig,
 		client:     &http.Client{},
 	}
+}
+
+func (c *Client) log(methodName string, args ...interface{}) {
+	if c.Logger == nil {
+		return
+	}
+	var as []string
+	for _, arg := range args {
+		as = append(as, fmt.Sprintf("%v", arg))
+	}
+	c.Logger.Debugf("%s(%s)", methodName, strings.Join(as, ", "))
 }
 
 // Retry on transport failures and 500s.
@@ -108,11 +127,12 @@ func (c *Client) doRequest(method, path string) (*http.Response, error) {
 // Build triggers the job on Jenkins with an ID parameter that will let us
 // track it.
 func (c *Client) Build(pj *kube.ProwJob) (*url.URL, error) {
+	c.log("Build", pj.Spec.Job, pj.Spec.Refs.String())
 	u, err := url.Parse(fmt.Sprintf("%s/job/%s/buildWithParameters", c.baseURL, pj.Spec.Job))
 	if err != nil {
 		return nil, err
 	}
-	env := npj.EnvForSpec(pj.Spec)
+	env := pjutil.EnvForSpec(pj.Spec)
 	env["buildId"] = pj.Metadata.Name
 
 	q := u.Query()
@@ -133,6 +153,7 @@ func (c *Client) Build(pj *kube.ProwJob) (*url.URL, error) {
 
 // Enqueued returns whether or not the given build is in Jenkins' build queue.
 func (c *Client) Enqueued(queueURL string) (bool, error) {
+	c.log("Enqueued", queueURL)
 	u := fmt.Sprintf("%sapi/json", queueURL)
 	resp, err := c.request(http.MethodGet, u)
 	if err != nil {
@@ -168,6 +189,7 @@ func (c *Client) Enqueued(queueURL string) (bool, error) {
 
 // Status returns the current status of the build.
 func (c *Client) Status(job, id string) (*Status, error) {
+	c.log("Status", job, id)
 	u := fmt.Sprintf("%s/job/%s/api/json?tree=builds[number,result,actions[parameters[name,value]]]", c.baseURL, job)
 	resp, err := c.request(http.MethodGet, u)
 	if err != nil {
@@ -217,6 +239,7 @@ func (c *Client) Status(job, id string) (*Status, error) {
 }
 
 func (c *Client) GetLog(job string, build int) ([]byte, error) {
+	c.log("GetLog", job, build)
 	u := fmt.Sprintf("%s/job/%s/%d/consoleText", c.baseURL, job, build)
 	resp, err := c.request(http.MethodGet, u)
 	if err != nil {

@@ -110,6 +110,11 @@ projects:
             static_configs:
               - targets:
                   - 146.148.39.225
+          - job_name: push-gateway
+            honor_labels: true
+            static_configs:
+              - targets:
+                - prow.k8s.io
   istio:
     repositories:
       istio/api: &transform-istio

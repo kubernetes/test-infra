@@ -29,7 +29,7 @@ import (
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
-	"k8s.io/test-infra/prow/npj"
+	"k8s.io/test-infra/prow/pjutil"
 	reportlib "k8s.io/test-infra/prow/report"
 )
 
@@ -60,6 +60,7 @@ type githubClient interface {
 	CreateComment(org, repo string, number int, comment string) error
 	DeleteComment(org, repo string, ID int) error
 	EditComment(org, repo string, ID int, comment string) error
+	GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error)
 }
 
 type configAgent interface {
@@ -128,7 +129,7 @@ func (c *Controller) Sync() error {
 		syncErrs = append(syncErrs, err)
 	}
 
-	pendingCh, nonPendingCh := partitionProwJobs(pjs)
+	pendingCh, nonPendingCh := pjutil.PartitionPending(pjs)
 	errCh := make(chan error, len(pjs))
 	reportCh := make(chan kube.ProwJob, len(pjs))
 
@@ -182,37 +183,13 @@ func (c *Controller) terminateDupes(pjs []kube.ProwJob) error {
 		}
 		toCancel.Status.CompletionTime = time.Now()
 		toCancel.Status.State = kube.AbortedState
-		npj, err := c.kc.ReplaceProwJob(toCancel.Metadata.Name, toCancel)
+		pjutil, err := c.kc.ReplaceProwJob(toCancel.Metadata.Name, toCancel)
 		if err != nil {
 			return err
 		}
-		pjs[i] = npj
+		pjs[i] = pjutil
 	}
 	return nil
-}
-
-func partitionProwJobs(pjs []kube.ProwJob) (pending, nonPending chan kube.ProwJob) {
-	// Determine pending job size in order to size the channels correctly.
-	pendingCount := 0
-	for _, pj := range pjs {
-		if pj.Status.State == kube.PendingState {
-			pendingCount++
-		}
-	}
-	pending = make(chan kube.ProwJob, pendingCount)
-	nonPending = make(chan kube.ProwJob, len(pjs)-pendingCount)
-
-	// Partition the jobs into the two separate channels.
-	for _, pj := range pjs {
-		if pj.Status.State == kube.PendingState {
-			pending <- pj
-		} else {
-			nonPending <- pj
-		}
-	}
-	close(pending)
-	close(nonPending)
-	return pending, nonPending
 }
 
 func syncProwJobs(syncFn syncFn, jobs <-chan kube.ProwJob, reports chan<- kube.ProwJob, syncErrors chan<- error) {
@@ -276,7 +253,11 @@ func (c *Controller) syncPendingJob(pj kube.ProwJob, reports chan<- kube.ProwJob
 			pj.Status.State = kube.SuccessState
 			pj.Status.Description = "Jenkins job succeeded."
 			for _, nj := range pj.Spec.RunAfterSuccess {
-				if _, err := c.kc.CreateProwJob(npj.NewProwJob(nj)); err != nil {
+				child := pjutil.NewProwJob(nj)
+				if !RunAfterSuccessCanRun(&pj, &child, c.ca, c.ghc) {
+					continue
+				}
+				if _, err := c.kc.CreateProwJob(pjutil.NewProwJob(nj)); err != nil {
 					return fmt.Errorf("error starting next prowjob: %v", err)
 				}
 			}
@@ -329,4 +310,41 @@ func (c *Controller) syncNonPendingJob(pj kube.ProwJob, reports chan<- kube.Prow
 		return fmt.Errorf("jenkins error: %v, error replacing prow job: %v", jerr, rerr)
 	}
 	return nil
+}
+
+// RunAfterSuccessCanRun returns whether a child job (specified as run_after_success in the
+// prow config) can run once its parent job succeeds. The only case we will not run a child job
+// is when it is a presubmit job and has a run_if_changed regural expression specified which does
+// not match the changed filenames in the pull request the job was meant to run for.
+// TODO: Collapse with plank, impossible to reuse as is due to the interfaces.
+func RunAfterSuccessCanRun(parent, child *kube.ProwJob, c configAgent, ghc githubClient) bool {
+	if parent.Spec.Type != kube.PresubmitJob {
+		return true
+	}
+
+	// TODO: Make sure that parent and child have always the same org/repo.
+	org := parent.Spec.Refs.Org
+	repo := parent.Spec.Refs.Repo
+	prNum := parent.Spec.Refs.Pulls[0].Number
+
+	ps := c.Config().GetPresubmit(org+"/"+repo, child.Spec.Job)
+	if ps == nil {
+		// The config has changed ever since we started the parent.
+		// Not sure what is more correct here. Run the child for now.
+		return true
+	}
+	if ps.RunIfChanged == "" {
+		return true
+	}
+	changesFull, err := ghc.GetPullRequestChanges(org, repo, prNum)
+	if err != nil {
+		logrus.Warningf("Cannot get PR changes for %d: %v", prNum, err)
+		return true
+	}
+	// We only care about the filenames here
+	var changes []string
+	for _, change := range changesFull {
+		changes = append(changes, change.Filename)
+	}
+	return ps.RunsAgainstChanges(changes)
 }

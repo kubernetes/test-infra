@@ -43,7 +43,7 @@ func (b *buildStrategy) Set(value string) error {
 		value = buildDefault
 	}
 	switch value {
-	case "bazel", "quick", "release":
+	case "bazel", "host-go", "quick", "release":
 		*b = buildStrategy(value)
 		return nil
 	}
@@ -56,12 +56,17 @@ func (b *buildStrategy) Enabled() bool {
 }
 
 // Build kubernetes according to specified strategy.
-// This may be a bazel, quick or full release build depending on --build=B.
+// This may be a bazel, host-go, quick or full release build depending on --build=B.
 func (b *buildStrategy) Build() error {
 	var target string
 	switch *b {
 	case "bazel":
 		target = "bazel-release"
+	// you really should use "bazel" or "quick" in most cases, but in CI
+	// we are mimicking these in our job container without an extra level
+	// of sandboxing in some cases
+	case "host-go":
+		target = "all"
 	case "quick":
 		target = "quick-release"
 	case "release":

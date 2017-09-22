@@ -249,13 +249,19 @@ func (gh fakeGhClient) EditComment(org, repo string, ID int, comment string) err
 func createChildren(pjs *kube.ProwJobSpec, d int) int {
 	count := 0
 	for i := 0; i < d; i++ {
+		report := false
+		if d%2 == 0 {
+			report = true
+			count++
+		}
 		npjs := &kube.ProwJobSpec{
+			Report:  report,
 			Context: fmt.Sprintf("%s/child_%d", pjs.Context, i),
 		}
 		count += createChildren(npjs, d-1)
 		pjs.RunAfterSuccess = append(pjs.RunAfterSuccess, *npjs)
 	}
-	return count + d
+	return count
 }
 
 func TestReportStatus(t *testing.T) {
@@ -265,7 +271,8 @@ func TestReportStatus(t *testing.T) {
 		statusCount int
 	}
 	children := 3
-	createTc := func(n string, state kube.ProwJobState) tc {
+	createTc := func(n string, state kube.ProwJobState, report bool) tc {
+
 		pj := kube.ProwJob{
 			Status: kube.ProwJobStatus{
 				State:       state,
@@ -274,6 +281,7 @@ func TestReportStatus(t *testing.T) {
 			},
 			Spec: kube.ProwJobSpec{
 				Context: "parent",
+				Report:  report,
 				Refs: kube.Refs{
 					Org:  "k8s",
 					Repo: "test-infra",
@@ -286,7 +294,11 @@ func TestReportStatus(t *testing.T) {
 			},
 		}
 
-		statusCount := 1 + createChildren(&pj.Spec, children)
+		statusCount := createChildren(&pj.Spec, children)
+		if report {
+			statusCount++
+		}
+
 		return tc{
 			name:        n,
 			pj:          pj,
@@ -294,18 +306,25 @@ func TestReportStatus(t *testing.T) {
 		}
 	}
 	for _, tc := range []tc{
-		createTc("successful job", kube.SuccessState),
-		createTc("pending jobs", kube.PendingState),
+		createTc("successful job", kube.SuccessState, true),
+		createTc("successful job", kube.SuccessState, false),
+		createTc("pending jobs", kube.PendingState, true),
+		createTc("pending jobs", kube.PendingState, false),
 	} {
 		ghc := &fakeGhClient{}
 		if err := reportStatus(ghc, tc.pj, parentJobChanged); err != nil {
 			t.Error(err)
 		}
 		if tc.pj.Status.State == kube.SuccessState {
-			if len(ghc.status) != 1 {
-				t.Errorf("There should only be one status sent, found %d", len(ghc.status))
+			if tc.pj.Spec.Report {
+				if len(ghc.status) != 1 {
+					t.Errorf("There should only be one status sent, found %d", len(ghc.status))
+				}
+			} else {
+				if len(ghc.status) != 0 {
+					t.Errorf("There should only no status sent, found %d", len(ghc.status))
+				}
 			}
-
 		} else {
 			if len(ghc.status) != tc.statusCount {
 				t.Errorf("There should be %d status, found %d", tc.statusCount, len(ghc.status))
