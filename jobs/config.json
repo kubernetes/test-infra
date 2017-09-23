@@ -152,6 +152,7 @@
   "ci-kubernetes-build-1.8": {
     "args": [
       "--extra-publish-file=k8s-stable1",
+      "--hyperkube",
       "--registry=gcr.io/kubernetes-ci-images"
     ],
     "scenario": "kubernetes_build",
