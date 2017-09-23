@@ -33,13 +33,15 @@ import (
 )
 
 const (
-	approveCommand  = "APPROVE"
-	lgtmCommand     = "LGTM"
-	cancelArgument  = "cancel"
-	noIssueArgument = "no-issue"
+	approveCommand = "APPROVE"
+	lgtmCommand    = "LGTM"
+	cancelArgument = "cancel"
 )
 
-var AssociatedIssueRegex = regexp.MustCompile(`(?:kubernetes/[^/]+/issues/|#)(\d+)`)
+var (
+	AssociatedIssueRegex = regexp.MustCompile(`(?:kubernetes/[^/]+/issues/|#)(\d+)`)
+	noIssueRe            = regexp.MustCompile(`no[ -]issue`)
+)
 
 // ApprovalHandler will try to add "approved" label once
 // all files of change has been approved by approvers.
@@ -253,13 +255,13 @@ func addApprovers(approversHandler *approvers.Approvers, approveComments c.Filte
 					approversHandler.AddApprover(
 						*comment.Author,
 						url,
-						cmd.Arguments == noIssueArgument,
+						noIssueRe.MatchString(cmd.Arguments),
 					)
 				} else {
 					approversHandler.AddLGTMer(
 						*comment.Author,
 						url,
-						cmd.Arguments == noIssueArgument,
+						noIssueRe.MatchString(cmd.Arguments),
 					)
 				}
 
