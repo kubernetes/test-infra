@@ -283,7 +283,9 @@ type SubmitQueue struct {
 	batchStatus  submitQueueBatchStatus
 	ciStatus     map[string]map[string]jobStatus // type (eg batch) : job : status
 
-	MergeToMasterMessage string // extra message when PR is merged to master branch
+	// MergeToMasterMessage is an extra message when PR is merged to master branch,
+	// it must not end in a period.
+	MergeToMasterMessage string
 }
 
 func init() {
