@@ -160,6 +160,8 @@ func newKops() (*kops, error) {
 }
 
 func (k kops) Up() error {
+	var featureFlags []string
+
 	createArgs := []string{
 		"create", "cluster",
 		"--name", k.cluster,
@@ -172,6 +174,10 @@ func (k kops) Up() error {
 	}
 	if k.adminAccess != "" {
 		createArgs = append(createArgs, "--admin-access", k.adminAccess)
+
+		// Enable nodeport access from the same IP (we expect it to be the test IPs)
+		featureFlags = append(featureFlags, "SpecOverrideFlag")
+		createArgs = append(createArgs, "--override", "cluster.spec.nodePortAccess="+k.adminAccess)
 	}
 	if k.image != "" {
 		createArgs = append(createArgs, "--image", k.image)
@@ -179,6 +185,11 @@ func (k kops) Up() error {
 	if k.args != "" {
 		createArgs = append(createArgs, strings.Split(k.args, " ")...)
 	}
+
+	if len(featureFlags) != 0 {
+		os.Setenv("KOPS_FEATURE_FLAGS", strings.Join(featureFlags, ","))
+	}
+
 	if err := finishRunning(exec.Command(k.path, createArgs...)); err != nil {
 		return fmt.Errorf("kops configuration failed: %v", err)
 	}
