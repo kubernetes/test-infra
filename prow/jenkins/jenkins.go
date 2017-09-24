@@ -230,10 +230,12 @@ func (c *Client) ListJenkinsBuilds(jobs map[string]struct{}) (map[string]Jenkins
 	jenkinsBuilds := make(map[string]JenkinsBuild)
 
 	// Get queued builds.
-	queueURL := fmt.Sprintf("%s/queue/api/json?tree=items[task[name],actions[parameters[name,value]]]", c.baseURL)
+	queuePath := "/queue/api/json?tree=items[task[name],actions[parameters[name,value]]]"
+	c.log("ListJenkinsBuilds", queuePath)
+	queueURL := fmt.Sprintf("%s%s", c.baseURL, queuePath)
 	data, err := c.get(queueURL)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("cannot list jenkins builds from the queue: %v", err)
 	}
 	page := struct {
 		QueuedBuilds []JenkinsBuild `json:"items"`
@@ -257,10 +259,12 @@ func (c *Client) ListJenkinsBuilds(jobs map[string]struct{}) (map[string]Jenkins
 
 	// Get all running builds for all provided jobs.
 	for job := range jobs {
-		u := fmt.Sprintf("%s/job/%s/api/json?tree=builds[number,result,actions[parameters[name,value]]]", c.baseURL, job)
+		path := fmt.Sprintf("/job/%s/api/json?tree=builds[number,result,actions[parameters[name,value]]]", job)
+		c.log("ListJenkinsBuilds", path)
+		u := fmt.Sprintf("%s%s", c.baseURL, path)
 		data, err := c.get(u)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("cannot list jenkins builds for job %q: %v", job, err)
 		}
 		page := struct {
 			Builds []JenkinsBuild `json:"builds"`
