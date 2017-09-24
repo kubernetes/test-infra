@@ -187,9 +187,14 @@ func (c *Controller) Sync() error {
 	return fmt.Errorf("errors syncing: %v, errors reporting: %v", syncErrs, reportErrs)
 }
 
+// getJenkinsJobs returns all the active Jenkins jobs for the provided
+// list of prowjobs.
 func getJenkinsJobs(pjs []kube.ProwJob) map[string]struct{} {
 	jenkinsJobs := make(map[string]struct{})
 	for _, pj := range pjs {
+		if pj.Complete() {
+			continue
+		}
 		jenkinsJobs[pj.Spec.Job] = struct{}{}
 	}
 	return jenkinsJobs

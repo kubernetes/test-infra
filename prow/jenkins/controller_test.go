@@ -824,3 +824,86 @@ func TestMaxConcurrencyWithNewlyTriggeredJobs(t *testing.T) {
 		}
 	}
 }
+
+func TestGetJenkinsJobs(t *testing.T) {
+	tests := []struct {
+		name     string
+		pjs      []kube.ProwJob
+		expected map[string]struct{}
+	}{
+		{
+			name: "both complete and running",
+			pjs: []kube.ProwJob{
+				{
+					Spec: kube.ProwJobSpec{
+						Job: "coolio",
+					},
+					Status: kube.ProwJobStatus{
+						CompletionTime: time.Now(),
+					},
+				},
+				{
+					Spec: kube.ProwJobSpec{
+						Job: "maradona",
+					},
+					Status: kube.ProwJobStatus{},
+				},
+			},
+			expected: map[string]struct{}{"maradona": {}},
+		},
+		{
+			name: "only complete",
+			pjs: []kube.ProwJob{
+				{
+					Spec: kube.ProwJobSpec{
+						Job: "coolio",
+					},
+					Status: kube.ProwJobStatus{
+						CompletionTime: time.Now(),
+					},
+				},
+				{
+					Spec: kube.ProwJobSpec{
+						Job: "maradona",
+					},
+					Status: kube.ProwJobStatus{
+						CompletionTime: time.Now(),
+					},
+				},
+			},
+			expected: map[string]struct{}{},
+		},
+		{
+			name: "only running",
+			pjs: []kube.ProwJob{
+				{
+					Spec: kube.ProwJobSpec{
+						Job: "coolio",
+					},
+					Status: kube.ProwJobStatus{},
+				},
+				{
+					Spec: kube.ProwJobSpec{
+						Job: "maradona",
+					},
+					Status: kube.ProwJobStatus{},
+				},
+			},
+			expected: map[string]struct{}{"maradona": {}, "coolio": {}},
+		},
+	}
+
+	for _, test := range tests {
+		t.Logf("scenario %q", test.name)
+		got := getJenkinsJobs(test.pjs)
+		if len(got) != len(test.expected) {
+			t.Errorf("unexpected job amount: %d (%v), expected: %d (%v)",
+				len(got), got, len(test.expected), test.expected)
+		}
+		for job := range test.expected {
+			if _, ok := got[job]; !ok {
+				t.Errorf("expected job %q was not found, got %v", job, got)
+			}
+		}
+	}
+}
