@@ -97,12 +97,25 @@ func NewController(kc *kube.Client, jc *Client, ghc *github.Client, ca *config.A
 // canExecuteConcurrently checks whether the provided ProwJob can
 // be executed concurrently.
 func (c *Controller) canExecuteConcurrently(pj *kube.ProwJob) bool {
+	c.lock.Lock()
+	defer c.lock.Unlock()
+
+	if max := c.ca.Config().JenkinsOperator.MaxConcurrency; max > 0 {
+		var running int
+		for _, num := range c.pendingJobs {
+			running += num
+		}
+		if running >= max {
+			logrus.Infof("Not starting another job, already %d running.", running)
+			return false
+		}
+	}
+
 	if pj.Spec.MaxConcurrency == 0 {
+		c.pendingJobs[pj.Spec.Job]++
 		return true
 	}
 
-	c.lock.Lock()
-	defer c.lock.Unlock()
 	numPending := c.pendingJobs[pj.Spec.Job]
 	if numPending >= pj.Spec.MaxConcurrency {
 		logrus.WithField("job", pj.Spec.Job).Infof("Not starting another instance of %s, already %d running.", pj.Spec.Job, numPending)
