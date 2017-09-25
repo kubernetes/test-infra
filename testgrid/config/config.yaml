@@ -2982,8 +2982,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-7-on-1-8
   - name: periodic-gce-kubeadm-1.8
     test_group_name: periodic-kubernetes-e2e-kubeadm-gce-1-8
-  - name: periodic-kubernetes-e2e-kubeadm-gce-upgrade-1-7-1-8
-    test_group_name: periodic-kubernetes-e2e-kubeadm-gce-upgrade-1-7-1-8
   - name: gci-gce-1.8
     test_group_name: ci-kubernetes-e2e-gci-gce-stable1
   - name: gci-gce-slow-1.8
@@ -3023,52 +3021,54 @@ dashboards:
 
 - name: release-1.8-upgrade-skew
   dashboard_tab:
-    - name: gke-gci-1.6-gci-1.8-upgrade-master
-      test_group_name: ci-kubernetes-e2e-gke-gci-stable3-gci-stable1-upgrade-master
-    - name: gke-gci-1.6-gci-1.8-upgrade-cluster
-      test_group_name: ci-kubernetes-e2e-gke-gci-stable3-gci-stable1-upgrade-cluster
-    - name: gke-gci-1.6-gci-1.8-upgrade-cluster-new
-      test_group_name: ci-kubernetes-e2e-gke-gci-stable3-gci-stable1-upgrade-cluster-new
-    - name: gke-gci-1.7-gci-1.8-upgrade-master
-      test_group_name: ci-kubernetes-e2e-gke-gci-stable2-gci-stable1-upgrade-master
-    - name: gke-gci-1.7-gci-1.8-upgrade-cluster
-      test_group_name: ci-kubernetes-e2e-gke-gci-stable2-gci-stable1-upgrade-cluster
-    - name: gke-gci-1.7-gci-1.8-upgrade-cluster-new
-      test_group_name: ci-kubernetes-e2e-gke-gci-stable2-gci-stable1-upgrade-cluster-new
-    - name: gke-cvm-1-6-gci-1-8-upgrade-master
-      test_group_name: ci-kubernetes-e2e-gke-cvm-1-6-gci-1-8-upgrade-master
-    - name: gke-cvm-1-6-gci-1-8-upgrade-cluster
-      test_group_name: ci-kubernetes-e2e-gke-cvm-1-6-gci-1-8-upgrade-cluster
-    - name: gke-cvm-1-6-gci-1-8-upgrade-cluster-new
-      test_group_name: ci-kubernetes-e2e-gke-cvm-1-6-gci-1-8-upgrade-cluster-new
-    - name: gke-cvm-1-7-gci-1-8-upgrade-master
-      test_group_name: ci-kubernetes-e2e-gke-cvm-1-7-gci-1-8-upgrade-master
-    - name: gke-cvm-1.7-gci-1.8-upgrade-cluster
-      test_group_name: ci-kubernetes-e2e-gke-cvm-1-7-gci-1-8-upgrade-cluster
-    - name: gke-cvm-1.7-gci-1.8-upgrade-cluster-new
-      test_group_name: ci-kubernetes-e2e-gke-cvm-1-7-gci-1-8-upgrade-cluster-new
-    - name: gce-1.7-1.8-gci-kubectl-skew
-      test_group_name: ci-kubernetes-e2e-gce-stable2-stable1-gci-kubectl-skew
-    - name: gce-1.8-1.7-gci-kubectl-skew
-      test_group_name: ci-kubernetes-e2e-gce-stable1-stable2-gci-kubectl-skew
-    - name: gke-1.8-1.7-gci-kubectl-skew
-      test_group_name: ci-kubernetes-e2e-gke-stable1-stable2-gci-kubectl-skew
-    - name: gke-1.7-1.8-gci-kubectl-skew
-      test_group_name: ci-kubernetes-e2e-gke-stable2-stable1-gci-kubectl-skew
-    - name: gce-1.7-1.8-upgrade-master
-      test_group_name: ci-kubernetes-e2e-gce-stable2-stable1-upgrade-master
-    - name: gce-1.7-1.8-upgrade-cluster
-      test_group_name: ci-kubernetes-e2e-gce-stable2-stable1-upgrade-cluster
-    - name: gce-1.7-1.8-upgrade-cluster-new
-      test_group_name: ci-kubernetes-e2e-gce-stable2-stable1-upgrade-cluster-new
-    - name: gce-1.8-1.7-downgrade-cluster
-      test_group_name: ci-kubernetes-e2e-gce-stable1-stable2-downgrade-cluster
-    - name: gce-1.8-1.7-downgrade-cluster-parallel
-      test_group_name: ci-kubernetes-e2e-gce-stable1-stable2-downgrade-cluster-parallel
-    - name: gke-1.8-1.7-downgrade-cluster
-      test_group_name: ci-kubernetes-e2e-gke-gci-stable1-gci-stable2-downgrade-cluster
-    - name: gke-1.8-1.7-downgrade-cluster-parallel
-      test_group_name: ci-kubernetes-e2e-gke-gci-stable1-gci-stable2-downgrade-cluster-parallel
+  - name: gke-gci-1.6-gci-1.8-upgrade-master
+    test_group_name: ci-kubernetes-e2e-gke-gci-stable3-gci-stable1-upgrade-master
+  - name: gke-gci-1.6-gci-1.8-upgrade-cluster
+    test_group_name: ci-kubernetes-e2e-gke-gci-stable3-gci-stable1-upgrade-cluster
+  - name: gke-gci-1.6-gci-1.8-upgrade-cluster-new
+    test_group_name: ci-kubernetes-e2e-gke-gci-stable3-gci-stable1-upgrade-cluster-new
+  - name: gke-gci-1.7-gci-1.8-upgrade-master
+    test_group_name: ci-kubernetes-e2e-gke-gci-stable2-gci-stable1-upgrade-master
+  - name: gke-gci-1.7-gci-1.8-upgrade-cluster
+    test_group_name: ci-kubernetes-e2e-gke-gci-stable2-gci-stable1-upgrade-cluster
+  - name: gke-gci-1.7-gci-1.8-upgrade-cluster-new
+    test_group_name: ci-kubernetes-e2e-gke-gci-stable2-gci-stable1-upgrade-cluster-new
+  - name: gke-cvm-1-6-gci-1-8-upgrade-master
+    test_group_name: ci-kubernetes-e2e-gke-cvm-1-6-gci-1-8-upgrade-master
+  - name: gke-cvm-1-6-gci-1-8-upgrade-cluster
+    test_group_name: ci-kubernetes-e2e-gke-cvm-1-6-gci-1-8-upgrade-cluster
+  - name: gke-cvm-1-6-gci-1-8-upgrade-cluster-new
+    test_group_name: ci-kubernetes-e2e-gke-cvm-1-6-gci-1-8-upgrade-cluster-new
+  - name: gke-cvm-1-7-gci-1-8-upgrade-master
+    test_group_name: ci-kubernetes-e2e-gke-cvm-1-7-gci-1-8-upgrade-master
+  - name: gke-cvm-1.7-gci-1.8-upgrade-cluster
+    test_group_name: ci-kubernetes-e2e-gke-cvm-1-7-gci-1-8-upgrade-cluster
+  - name: gke-cvm-1.7-gci-1.8-upgrade-cluster-new
+    test_group_name: ci-kubernetes-e2e-gke-cvm-1-7-gci-1-8-upgrade-cluster-new
+  - name: gce-1.7-1.8-gci-kubectl-skew
+    test_group_name: ci-kubernetes-e2e-gce-stable2-stable1-gci-kubectl-skew
+  - name: gce-1.8-1.7-gci-kubectl-skew
+    test_group_name: ci-kubernetes-e2e-gce-stable1-stable2-gci-kubectl-skew
+  - name: gke-1.8-1.7-gci-kubectl-skew
+    test_group_name: ci-kubernetes-e2e-gke-stable1-stable2-gci-kubectl-skew
+  - name: gke-1.7-1.8-gci-kubectl-skew
+    test_group_name: ci-kubernetes-e2e-gke-stable2-stable1-gci-kubectl-skew
+  - name: gce-1.7-1.8-upgrade-master
+    test_group_name: ci-kubernetes-e2e-gce-stable2-stable1-upgrade-master
+  - name: gce-1.7-1.8-upgrade-cluster
+    test_group_name: ci-kubernetes-e2e-gce-stable2-stable1-upgrade-cluster
+  - name: gce-1.7-1.8-upgrade-cluster-new
+    test_group_name: ci-kubernetes-e2e-gce-stable2-stable1-upgrade-cluster-new
+  - name: gce-1.8-1.7-downgrade-cluster
+    test_group_name: ci-kubernetes-e2e-gce-stable1-stable2-downgrade-cluster
+  - name: gce-1.8-1.7-downgrade-cluster-parallel
+    test_group_name: ci-kubernetes-e2e-gce-stable1-stable2-downgrade-cluster-parallel
+  - name: gke-1.8-1.7-downgrade-cluster
+    test_group_name: ci-kubernetes-e2e-gke-gci-stable1-gci-stable2-downgrade-cluster
+  - name: gke-1.8-1.7-downgrade-cluster-parallel
+    test_group_name: ci-kubernetes-e2e-gke-gci-stable1-gci-stable2-downgrade-cluster-parallel
+  - name: periodic-kubernetes-e2e-kubeadm-gce-upgrade-1-7-1-8
+    test_group_name: periodic-kubernetes-e2e-kubeadm-gce-upgrade-1-7-1-8
 
 - name: misc
   dashboard_tab:
