@@ -26,6 +26,8 @@ import (
 	"text/template"
 	"time"
 
+	"github.com/bwmarrin/snowflake"
+
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
@@ -878,6 +880,130 @@ func TestRunAfterSuccessCanRun(t *testing.T) {
 		got := RunAfterSuccessCanRun(test.parent, test.child, newFakeConfigAgent(t), fakeGH)
 		if got != test.expected {
 			t.Errorf("expected to run: %t, got: %t", test.expected, got)
+		}
+	}
+}
+
+func TestMaxConcurrencyWithNewlyTriggeredJobs(t *testing.T) {
+	tests := []struct {
+		name         string
+		pjs          []kube.ProwJob
+		pendingJobs  map[string]int
+		expectedPods int
+	}{
+		{
+			name: "avoid starting a triggered job",
+			pjs: []kube.ProwJob{
+				{
+					Spec: kube.ProwJobSpec{
+						Job:            "test-bazel-build",
+						Type:           kube.PostsubmitJob,
+						MaxConcurrency: 1,
+					},
+					Status: kube.ProwJobStatus{
+						State: kube.TriggeredState,
+					},
+				},
+				{
+					Spec: kube.ProwJobSpec{
+						Job:            "test-bazel-build",
+						Type:           kube.PostsubmitJob,
+						MaxConcurrency: 1,
+					},
+					Status: kube.ProwJobStatus{
+						State: kube.TriggeredState,
+					},
+				},
+			},
+			pendingJobs:  make(map[string]int),
+			expectedPods: 1,
+		},
+		{
+			name: "both triggered jobs can start",
+			pjs: []kube.ProwJob{
+				{
+					Spec: kube.ProwJobSpec{
+						Job:            "test-bazel-build",
+						Type:           kube.PostsubmitJob,
+						MaxConcurrency: 2,
+					},
+					Status: kube.ProwJobStatus{
+						State: kube.TriggeredState,
+					},
+				},
+				{
+					Spec: kube.ProwJobSpec{
+						Job:            "test-bazel-build",
+						Type:           kube.PostsubmitJob,
+						MaxConcurrency: 2,
+					},
+					Status: kube.ProwJobStatus{
+						State: kube.TriggeredState,
+					},
+				},
+			},
+			pendingJobs:  make(map[string]int),
+			expectedPods: 2,
+		},
+		{
+			name: "no triggered job can start",
+			pjs: []kube.ProwJob{
+				{
+					Spec: kube.ProwJobSpec{
+						Job:            "test-bazel-build",
+						Type:           kube.PostsubmitJob,
+						MaxConcurrency: 5,
+					},
+					Status: kube.ProwJobStatus{
+						State: kube.TriggeredState,
+					},
+				},
+				{
+					Spec: kube.ProwJobSpec{
+						Job:            "test-bazel-build",
+						Type:           kube.PostsubmitJob,
+						MaxConcurrency: 5,
+					},
+					Status: kube.ProwJobStatus{
+						State: kube.TriggeredState,
+					},
+				},
+			},
+			pendingJobs:  map[string]int{"test-bazel-build": 5},
+			expectedPods: 0,
+		},
+	}
+
+	for _, test := range tests {
+		jobs := make(chan kube.ProwJob, len(test.pjs))
+		for _, pj := range test.pjs {
+			jobs <- pj
+		}
+		close(jobs)
+
+		fc := &fkc{
+			prowjobs: test.pjs,
+		}
+		fpc := &fkc{}
+		n, err := snowflake.NewNode(1)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		c := Controller{
+			kc:          fc,
+			pkc:         fpc,
+			ca:          newFakeConfigAgent(t),
+			node:        n,
+			pendingJobs: test.pendingJobs,
+		}
+
+		reports := make(chan kube.ProwJob, len(test.pjs))
+		errors := make(chan error, len(test.pjs))
+		pm := make(map[string]kube.Pod)
+
+		syncProwJobs(c.syncNonPendingJob, jobs, reports, errors, pm)
+		if len(fpc.pods) != test.expectedPods {
+			t.Errorf("expected pods: %d, got: %d", test.expectedPods, len(fpc.pods))
 		}
 	}
 }

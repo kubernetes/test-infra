@@ -59,3 +59,10 @@ func (ca *Agent) Config() *Config {
 	defer ca.Unlock()
 	return ca.c
 }
+
+// Set sets the config. Useful for testing.
+func (ca *Agent) Set(c *Config) {
+	ca.Lock()
+	defer ca.Unlock()
+	ca.c = c
+}

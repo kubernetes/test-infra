@@ -9,6 +9,7 @@ go_library(
         "//prow/git:go_default_library",
         "//prow/github:go_default_library",
         "//prow/kube:go_default_library",
+        "//prow/pjutil:go_default_library",
         "//vendor/github.com/shurcooL/githubql:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
     ],
@@ -33,7 +34,9 @@ go_test(
     srcs = ["tide_test.go"],
     library = ":go_default_library",
     deps = [
+        "//prow/config:go_default_library",
         "//prow/git/localgit:go_default_library",
+        "//prow/github:go_default_library",
         "//prow/kube:go_default_library",
         "//vendor/github.com/shurcooL/githubql:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",

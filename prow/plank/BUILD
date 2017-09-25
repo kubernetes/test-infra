@@ -15,6 +15,7 @@ go_test(
         "//prow/github:go_default_library",
         "//prow/kube:go_default_library",
         "//prow/pjutil:go_default_library",
+        "//vendor/github.com/bwmarrin/snowflake:go_default_library",
     ],
 )
 

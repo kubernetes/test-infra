@@ -94,12 +94,22 @@ func NewController(kc *kube.Client, jc *Client, ghc *github.Client, ca *config.A
 	}
 }
 
-// getNumPendingJobs retrieves the number of pending
-// ProwJobs for a given job identifier
-func (c *Controller) getNumPendingJobs(key string) int {
-	c.lock.RLock()
-	defer c.lock.RUnlock()
-	return c.pendingJobs[key]
+// canExecuteConcurrently checks whether the provided ProwJob can
+// be executed concurrently.
+func (c *Controller) canExecuteConcurrently(pj *kube.ProwJob) bool {
+	if pj.Spec.MaxConcurrency == 0 {
+		return true
+	}
+
+	c.lock.Lock()
+	defer c.lock.Unlock()
+	numPending := c.pendingJobs[pj.Spec.Job]
+	if numPending >= pj.Spec.MaxConcurrency {
+		logrus.WithField("job", pj.Spec.Job).Infof("Not starting another instance of %s, already %d running.", pj.Spec.Job, numPending)
+		return false
+	}
+	c.pendingJobs[pj.Spec.Job]++
+	return true
 }
 
 // incrementNumPendingJobs increments the amount of
@@ -284,9 +294,7 @@ func (c *Controller) syncNonPendingJob(pj kube.ProwJob, reports chan<- kube.Prow
 		return nil
 	} else if pj.Status.State == kube.TriggeredState {
 		// Do not start more jobs than specified.
-		numPending := c.getNumPendingJobs(pj.Spec.Job)
-		if pj.Spec.MaxConcurrency > 0 && numPending >= pj.Spec.MaxConcurrency {
-			logrus.WithField("job", pj.Spec.Job).Infof("Not starting another instance of %s, already %d running.", pj.Spec.Job, numPending)
+		if !c.canExecuteConcurrently(&pj) {
 			return nil
 		}
 

@@ -34,11 +34,11 @@ if [[ -z "${KOPS_BASE_URL:-}" ]]; then
   fi
 fi
 
-curl -fsS --retry 3 -o "${WORKSPACE}/kops" "${KOPS_BASE_URL}/linux/amd64/kops"
-chmod +x "${WORKSPACE}/kops"
+curl -fsS --retry 3 -o "/workspace/kops" "${KOPS_BASE_URL}/linux/amd64/kops"
+chmod +x "/workspace/kops"
 
 # Get kubectl on the path (works after e2e-runner.sh:unpack_binaries)
-export PRIORITY_PATH="/workspace/kubernetes/platforms/linux/amd64"
+export PRIORITY_PATH="${WORKSPACE}/kubernetes/platforms/linux/amd64"
 
 e2e_args=( \
   --deployment=kops \

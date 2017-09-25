@@ -91,7 +91,7 @@ nonblocking-jobs: "\
   ci-kubernetes-soak-gke-test,\
   ci-kubernetes-test-go,\
   ci-kubernetes-verify-master"
-do-not-merge-milestones: "v1.9,v1.10,next-candidate,NO-MILESTONE"
+do-not-merge-milestones: ""
 admin-port: 9999
 chart-url: https://storage.googleapis.com/kubernetes-test-history/k8s-queue-health.svg
 history-url: https://storage.googleapis.com/kubernetes-test-history/static/index.html
@@ -100,7 +100,9 @@ batch-enabled: true
 context-url: https://submit-queue.k8s.io
 gate-approved: true
 gate-cla: true
-merge-to-master-message: "If you want to cherry-pick this change to another branch, please follow the instructions <a href=\"https://github.com/kubernetes/community/blob/master/contributors/devel/cherry-picks.md\">here</a>."
+
+# extra message when PR is merged to master branch, it must not end in a period.
+merge-to-master-message: "If you want to cherry-pick this change to another branch, please follow the instructions <a href=\"https://github.com/kubernetes/community/blob/master/contributors/devel/cherry-picks.md\">here</a>"
 
 protected-branches: "master"
 protected-branches-extra-contexts: "cla/linuxfoundation"

@@ -36,7 +36,7 @@ import time
 ORIG_CWD = os.getcwd()  # Checkout changes cwd
 
 # Note: This variable is managed by experiment/bump_e2e_image.sh.
-DEFAULT_KUBEKINS_TAG = 'v20170918-3aa6c113'
+DEFAULT_KUBEKINS_TAG = 'v20170922-a3fe8d1a'
 
 def test_infra(*paths):
     """Return path relative to root of test-infra repo."""
@@ -378,10 +378,10 @@ def cluster_name(cluster, build):
 
 
 # TODO(krzyzacy): Move this into kubetest
-def build_kops(workspace, mode):
+def build_kops(kops, mode):
     """Build kops, set kops related envs."""
-    if not os.path.basename(workspace) == 'kops':
-        raise ValueError(workspace)
+    if not os.path.basename(kops) == 'kops':
+        raise ValueError(kops)
     version = 'pull-' + check_output('git', 'describe', '--always').strip()
     job = os.getenv('JOB_NAME', 'pull-kops-e2e-kubernetes-aws')
     gcs = 'gs://kops-ci/pulls/%s' % job
@@ -537,7 +537,7 @@ def main(args):
         mode.add_k8s(os.path.dirname(k8s), 'kubernetes', 'release')
 
     if args.kops_build:
-        build_kops(workspace, mode)
+        build_kops(os.getcwd(), mode)
 
     if args.stage is not None:
         runner_args.append('--stage=%s' % args.stage)
@@ -577,6 +577,13 @@ def main(args):
             '--kubernetes-anywhere-cluster=%s' % cluster,
             '--kubernetes-anywhere-kubeadm-version=%s' % version,
         ])
+
+        if args.kubeadm == "pull":
+            # If this is a pull job; the kubelet version should equal
+            # the kubeadm version here: we should use debs from the PR build
+            runner_args.extend([
+                '--kubernetes-anywhere-kubelet-version=%s' % version,
+            ])
 
     if args.aws:
         set_up_aws(args, mode, cluster, runner_args)
