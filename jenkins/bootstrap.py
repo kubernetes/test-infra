@@ -344,6 +344,7 @@ class GSUtil(object):
         """Upload artifacts to the specified path."""
         # Upload artifacts
         if not os.path.isdir(artifacts):
+            logging.warning('Artifacts dir %s is missing.', artifacts)
             return
         try:
             # If remote path exists, it will create .../_artifacts subdir instead
@@ -464,6 +465,8 @@ def finish(gsutil, paths, success, artifacts, build, version, repos, call):
             gsutil.upload_artifacts(gsutil, paths.artifacts, artifacts)
         except subprocess.CalledProcessError:
             logging.warning('Failed to upload artifacts')
+    else:
+        logging.warning('Missing local artifacts : %s', artifacts)
 
     meta = metadata(repos, artifacts, call)
     if not version:
@@ -940,7 +943,11 @@ def bootstrap(args):
         logging.info('Upload result and artifacts...')
         logging.info('Gubernator results at %s', gubernator_uri(paths))
         try:
-            finish(gsutil, paths, success, '_artifacts', build, version, repos, call)
+            finish(
+                gsutil, paths, success,
+                os.path.join(os.getenv(WORKSPACE_ENV, os.getcwd()), '_artifacts'),
+                build, version, repos, call
+                )
         except subprocess.CalledProcessError:  # Still try to upload build log
             success = False
     logging.getLogger('').removeHandler(build_log)
