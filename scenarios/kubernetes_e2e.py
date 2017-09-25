@@ -128,7 +128,6 @@ class LocalMode(object):
         self.os_env = []
         self.env_files = []
         self.add_environment(
-            'HOME=%s' % workspace,
             'WORKSPACE=%s' % workspace,
             'PATH=%s' % os.getenv('PATH'),
         )
@@ -155,17 +154,17 @@ class LocalMode(object):
 
     def add_aws_cred(self, priv, pub, cred):
         """Sets aws keys and credentials."""
-        ssh_dir = '%s/.ssh' % self.workspace
+        ssh_dir = os.path.join(self.workspace, '.ssh')
         if not os.path.isdir(ssh_dir):
             os.makedirs(ssh_dir)
 
-        cred_dir = '%s/.aws' % self.workspace
+        cred_dir = os.path.join(self.workspace, '.aws')
         if not os.path.isdir(cred_dir):
             os.makedirs(cred_dir)
 
-        aws_ssh = '%s/kube_aws_rsa' % ssh_dir
-        aws_pub = '%s/kube_aws_rsa.pub' % ssh_dir
-        aws_cred = '%s/credentials' % cred_dir
+        aws_ssh = os.path.join(ssh_dir, 'kube_aws_rsa')
+        aws_pub = os.path.join(ssh_dir, 'kube_aws_rsa.pub')
+        aws_cred = os.path.join(cred_dir, 'credentials')
         shutil.copy(priv, aws_ssh)
         shutil.copy(pub, aws_pub)
         shutil.copy(cred, aws_cred)
@@ -177,19 +176,19 @@ class LocalMode(object):
         )
 
     def add_aws_role(self, profile, arn):
-        with open('%s/.aws/config' % self.workspace, 'w') as cfg:
+        with open(os.path.join(self.workspace, '.aws', 'config'), 'w') as cfg:
             cfg.write(aws_role_config(profile, arn))
         self.add_environment('AWS_SDK_LOAD_CONFIG=true')
         return 'jenkins-assumed-role'
 
     def add_gce_ssh(self, priv, pub):
         """Copies priv, pub keys to $WORKSPACE/.ssh."""
-        ssh_dir = '%s/.ssh' % self.workspace
+        ssh_dir = os.path.join(self.workspace, '.ssh')
         if not os.path.isdir(ssh_dir):
             os.makedirs(ssh_dir)
 
-        gce_ssh = '%s/google_compute_engine' % ssh_dir
-        gce_pub = '%s/google_compute_engine.pub' % ssh_dir
+        gce_ssh = os.path.join(ssh_dir, 'google_compute_engine')
+        gce_pub = os.path.join(ssh_dir, 'google_compute_engine.pub')
         shutil.copy(priv, gce_ssh)
         shutil.copy(pub, gce_pub)
         self.add_environment(
@@ -229,7 +228,7 @@ class LocalMode(object):
     def add_aws_runner(self):
         """Start with kops-e2e-runner.sh"""
         # TODO(Krzyzacy):retire kops-e2e-runner.sh
-        self.command = '/workspace/kops-e2e-runner.sh'
+        self.command = os.path.join(self.workspace, 'kops-e2e-runner.sh')
 
     def start(self, args):
         """Starts kubetest."""
@@ -402,14 +401,14 @@ def build_kops(kops, mode):
     check('make', 'gcs-publish-ci', 'VERSION=%s' % version, 'GCS_LOCATION=%s' % gcs)
 
 
-def set_up_aws(args, mode, cluster, runner_args):
+def set_up_aws(workspace, args, mode, cluster, runner_args):
     """Set up aws related envs."""
     for path in [args.aws_ssh, args.aws_pub, args.aws_cred]:
         if not os.path.isfile(os.path.expandvars(path)):
             raise IOError(path, os.path.expandvars(path))
     mode.add_aws_cred(args.aws_ssh, args.aws_pub, args.aws_cred)
 
-    aws_ssh = '/workspace/.ssh/kube_aws_rsa'
+    aws_ssh = os.path.join(workspace, '.ssh', 'kube_aws_rsa')
     profile = args.aws_profile
     if args.aws_role_arn:
         profile = mode.add_aws_role(profile, args.aws_role_arn)
@@ -475,7 +474,7 @@ def main(args):
 
     # Set up workspace/artifacts dir
     workspace = os.environ.get('WORKSPACE', os.getcwd())
-    artifacts = '%s/_artifacts' % workspace
+    artifacts = os.path.join(workspace, '_artifacts')
     if not os.path.isdir(artifacts):
         os.makedirs(artifacts)
 
@@ -575,7 +574,7 @@ def main(args):
     if args.kubeadm:
         version = kubeadm_version(args.kubeadm, shared_build_gcs_path)
         runner_args.extend([
-            '--kubernetes-anywhere-path=/workspace/kubernetes-anywhere',
+            '--kubernetes-anywhere-path=%s' % os.path.join(workspace, 'kubernetes-anywhere'),
             '--kubernetes-anywhere-phase2-provider=kubeadm',
             '--kubernetes-anywhere-cluster=%s' % cluster,
             '--kubernetes-anywhere-kubeadm-version=%s' % version,
@@ -589,7 +588,7 @@ def main(args):
             ])
 
     if args.aws:
-        set_up_aws(args, mode, cluster, runner_args)
+        set_up_aws(workspace, args, mode, cluster, runner_args)
     elif args.gce_ssh:
         mode.add_gce_ssh(args.gce_ssh, args.gce_pub)
 
