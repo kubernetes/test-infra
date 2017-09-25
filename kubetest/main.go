@@ -40,7 +40,7 @@ import (
 const defaultGinkgoParallel = 25
 
 var (
-	artifacts    = initPath("./_artifacts")
+	artifacts    = filepath.Join(os.Getenv("WORKSPACE"), "_artifacts")
 	interrupt    = time.NewTimer(time.Duration(0)) // interrupt testing at this time.
 	kubetestPath = initPath(os.Args[0])
 	terminate    = time.NewTimer(time.Duration(0)) // terminate testing at this time.
