@@ -72,6 +72,12 @@ def parse_env(env):
     """Returns (FOO, BAR=MORE) for FOO=BAR=MORE."""
     return env.split('=', 1)
 
+def aws_role_config(profile, arn):
+    return (('[profile jenkins-assumed-role]\n' +
+             'role_arn = %s\n' +
+             'source_profile = %s\n') %
+            (arn, profile))
+
 def kubeadm_version(mode, shared_build_gcs_path):
     """Return string to use for kubeadm version, given the job's mode (ci/pull/periodic)."""
     version = ''
@@ -170,6 +176,12 @@ class LocalMode(object):
             'JENKINS_AWS_CREDENTIALS_FILE=%s' % cred,
         )
 
+    def add_aws_role(self, profile, arn):
+        with open('%s/.aws/config' % self.workspace) as cfg:
+            cfg.write(aws_role_config(arn, profile))
+        self.add_environment('AWS_SDK_LOAD_CONFIG=true')
+        return 'jenkins-assumed-role'
+
     def add_gce_ssh(self, priv, pub):
         """Copies priv, pub keys to $WORKSPACE/.ssh."""
         ssh_dir = '%s/.ssh' % self.workspace
@@ -193,10 +205,6 @@ class LocalMode(object):
     def add_k8s(self, *a, **kw):
         """Add specified k8s.io repos (noop)."""
         pass
-
-    def add_aws_profile(self, _name, _config):
-        """Add aws profile envs."""
-        self.add_environment('AWS_SDK_LOAD_CONFIG=true')
 
     def use_latest_image(self, image_family, image_project):
         """Gets the latest image from the image_family in the image_project."""
@@ -302,14 +310,6 @@ class DockerMode(object):
             self.cmd.extend([
                 '-v', '%s/%s:/go/src/k8s.io/%s' % (k8s, repo, repo)])
 
-    def add_aws_profile(self, name, config):
-        """Add aws profile envs."""
-        self.add_environment('AWS_SDK_LOAD_CONFIG=true')
-        self.cmd.extend([
-          '-v', '%s:%s:ro' % (name, config),
-          '-e', 'AWS_SDK_LOAD_CONFIG=true',
-        ])
-
     def add_aws_cred(self, priv, pub, cred):
         """Mounts aws keys/creds inside the container."""
         aws_ssh = '/workspace/.ssh/kube_aws_rsa'
@@ -321,6 +321,15 @@ class DockerMode(object):
           '-v', '%s:%s:ro' % (pub, aws_pub),
           '-v', '%s:%s:ro' % (cred, aws_cred),
         ])
+
+    def add_aws_role(self, profile, arn):
+        with tempfile.NamedTemporaryFile(prefix='aws-config', delete=False) as cfg:
+            cfg.write(aws_role_config(profile, arn))
+            self.cmd.extend([
+                '-v', '%s:%s:ro' % ('/workspace/.aws/config', cfg.name),
+                '-e', 'AWS_SDK_LOAD_CONFIG=true',
+            ])
+        return 'jenkins-assumed-role'
 
     def add_aws_runner(self):
         """Run kops_aws_runner for kops-aws jobs."""
@@ -400,16 +409,10 @@ def set_up_aws(args, mode, cluster, runner_args):
             raise IOError(path, os.path.expandvars(path))
     mode.add_aws_cred(args.aws_ssh, args.aws_pub, args.aws_cred)
 
-    aws_config = '/workspace/.aws/config'
     aws_ssh = '/workspace/.ssh/kube_aws_rsa'
     profile = args.aws_profile
     if args.aws_role_arn:
-        with tempfile.NamedTemporaryFile(prefix='aws-config', delete=False) as cfg:
-            cfg.write(
-                '[profile jenkins-assumed-role]\nrole_arn = %s\nsource_profile = %s\n' % (
-                    args.aws_role_arn, profile))
-            mode.add_aws_profile(cfg.name, aws_config)
-        profile = 'jenkins-assumed-role'
+        profile = mode.add_aws_role(profile, args.aws_role_arn)
 
     zones = args.kops_zones or random.choice([
         'us-west-1a',
