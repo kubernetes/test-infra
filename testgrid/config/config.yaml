@@ -2721,6 +2721,8 @@ dashboards:
     test_group_name: ci-kubernetes-soak-gce-gci-deploy
   - name: soak-gce-gci-test
     test_group_name: ci-kubernetes-soak-gce-gci-test
+  - name: kubeadm-gce
+    test_group_name: ci-kubernetes-e2e-kubeadm-gce
 
 - name: release-1.6-upgrade-skew
   dashboard_tab:
