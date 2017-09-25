@@ -178,7 +178,7 @@ class LocalMode(object):
 
     def add_aws_role(self, profile, arn):
         with open('%s/.aws/config' % self.workspace, 'w') as cfg:
-            cfg.write(aws_role_config(arn, profile))
+            cfg.write(aws_role_config(profile, arn))
         self.add_environment('AWS_SDK_LOAD_CONFIG=true')
         return 'jenkins-assumed-role'
 
