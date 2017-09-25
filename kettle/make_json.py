@@ -232,6 +232,6 @@ def main(db, opts, outfile):
 
 
 if __name__ == '__main__':
-    DB = model.Database('build.db')
+    DB = model.Database()
     OPTIONS = parse_args(sys.argv[1:])
     sys.exit(main(DB, OPTIONS, sys.stdout))

@@ -301,7 +301,7 @@ def get_options(argv):
 if __name__ == '__main__':
     OPTIONS = get_options(sys.argv[1:])
 
-    main(model.Database('build.db'),
+    main(model.Database(),
          load_sub(OPTIONS.poll),
          load_tables(OPTIONS.dataset, OPTIONS.tables),
          stop=StopWhen(OPTIONS.stop_at))

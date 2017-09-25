@@ -336,7 +336,7 @@ def get_options(argv):
 
 if __name__ == '__main__':
     OPTIONS = get_options(sys.argv[1:])
-    main(model.Database('build.db'),
+    main(model.Database(),
          yaml.load(open(OPTIONS.buckets)),
          OPTIONS.threads,
          OPTIONS.junit)

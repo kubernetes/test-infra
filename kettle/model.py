@@ -13,11 +13,11 @@
 # limitations under the License.
 
 
-
 import json
-import zlib
+import os
 import sqlite3
 import time
+import zlib
 
 
 class Database(object):
@@ -27,7 +27,9 @@ class Database(object):
 
     DEFAULT_INCREMENTAL_TABLE = 'build_emitted'
 
-    def __init__(self, path):
+    def __init__(self, path=None):
+        if path is None:
+            path = os.getenv('KETTLE_DB') or 'build.db'
         self.db = sqlite3.connect(path)
         self.db.executescript('''
             create table if not exists build(gcs_path primary key, started_json, finished_json, finished_time);
