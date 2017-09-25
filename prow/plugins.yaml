@@ -31,6 +31,10 @@ label:
   # curl -H "Authorization: token <token>" https://api.github.com/orgs/<org-name>/teams
   milestone_maintainers_id: 2460384
 
+config_updater:
+  config_file: prow/config.yaml
+  plugin_file: prow/plugins.yaml
+
 plugins:
   google/cadvisor:
   - trigger

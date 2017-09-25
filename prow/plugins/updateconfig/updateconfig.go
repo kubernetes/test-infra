@@ -28,8 +28,6 @@ import (
 
 const (
 	pluginName = "config-updater"
-	configFile = "prow/config.yaml"
-	pluginFile = "prow/plugins.yaml"
 )
 
 func init() {
@@ -47,10 +45,12 @@ type kubeClient interface {
 }
 
 func handlePullRequest(pc plugins.PluginClient, pre github.PullRequestEvent) error {
-	return handle(pc.GitHubClient, pc.KubeClient, pc.Logger, pre)
+	configFile := pc.PluginConfig.ConfigUpdater.ConfigFile
+	pluginFile := pc.PluginConfig.ConfigUpdater.PluginFile
+	return handle(pc.GitHubClient, pc.KubeClient, pc.Logger, pre, configFile, pluginFile)
 }
 
-func handleConfig(gc githubClient, kc kubeClient, org, repo, commit string) error {
+func handleConfig(gc githubClient, kc kubeClient, org, repo, commit, configFile string) error {
 	content, err := gc.GetFile(org, repo, configFile, commit)
 	if err != nil {
 		return err
@@ -69,7 +69,7 @@ func handleConfig(gc githubClient, kc kubeClient, org, repo, commit string) erro
 	return err
 }
 
-func handlePlugin(gc githubClient, kc kubeClient, org, repo, commit string) error {
+func handlePlugin(gc githubClient, kc kubeClient, org, repo, commit, pluginFile string) error {
 	content, err := gc.GetFile(org, repo, pluginFile, commit)
 	if err != nil {
 		return err
@@ -88,7 +88,7 @@ func handlePlugin(gc githubClient, kc kubeClient, org, repo, commit string) erro
 	return err
 }
 
-func handle(gc githubClient, kc kubeClient, log *logrus.Entry, pre github.PullRequestEvent) error {
+func handle(gc githubClient, kc kubeClient, log *logrus.Entry, pre github.PullRequestEvent, configFile, pluginFile string) error {
 	// Only consider newly merged PRs
 	if pre.Action != github.PullRequestActionClosed {
 		return nil
@@ -111,14 +111,14 @@ func handle(gc githubClient, kc kubeClient, log *logrus.Entry, pre github.PullRe
 	var msg string
 	for _, change := range changes {
 		if change.Filename == configFile {
-			if err := handleConfig(gc, kc, org, repo, *pr.MergeSHA); err != nil {
+			if err := handleConfig(gc, kc, org, repo, *pr.MergeSHA, configFile); err != nil {
 				return err
 			}
 
 			msg += fmt.Sprintf("I updated Prow config for you!")
 
 		} else if change.Filename == pluginFile {
-			if err := handlePlugin(gc, kc, org, repo, *pr.MergeSHA); err != nil {
+			if err := handlePlugin(gc, kc, org, repo, *pr.MergeSHA, pluginFile); err != nil {
 				return err
 			}
 
