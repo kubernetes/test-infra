@@ -68,7 +68,7 @@ func newFakeConfigAgent(t *testing.T) *fca {
 
 	return &fca{
 		c: &config.Config{
-			Plank: config.Plank{
+			JenkinsOperator: config.JenkinsOperator{
 				JobURLTemplate: template.Must(template.New("test").Parse("{{.Status.PodName}}/")),
 			},
 			Presubmits: presubmitMap,

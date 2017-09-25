@@ -149,8 +149,9 @@ func (c *Controller) Sync() error {
 	}
 
 	var reportErrs []error
+	reportTemplate := c.ca.Config().JenkinsOperator.ReportTemplate
 	for report := range reportCh {
-		if err := reportlib.Report(c.ghc, c.ca, report); err != nil {
+		if err := reportlib.Report(c.ghc, reportTemplate, report); err != nil {
 			reportErrs = append(reportErrs, err)
 		}
 	}
@@ -236,7 +237,7 @@ func (c *Controller) syncPendingJob(pj kube.ProwJob, reports chan<- kube.ProwJob
 	} else {
 		pj.Status.BuildID = strconv.Itoa(status.Number)
 		var b bytes.Buffer
-		if err := c.ca.Config().Plank.JobURLTemplate.Execute(&b, &pj); err != nil {
+		if err := c.ca.Config().JenkinsOperator.JobURLTemplate.Execute(&b, &pj); err != nil {
 			return fmt.Errorf("error executing URL template: %v", err)
 		}
 		url := b.String()

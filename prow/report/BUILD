@@ -24,7 +24,6 @@ go_library(
     srcs = ["report.go"],
     tags = ["automanaged"],
     deps = [
-        "//prow/config:go_default_library",
         "//prow/github:go_default_library",
         "//prow/kube:go_default_library",
         "//prow/pjutil:go_default_library",
