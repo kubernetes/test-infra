@@ -10243,7 +10243,7 @@
       "--provider=kubernetes-anywhere",
       "--test_args=--ginkgo.focus=\\[Conformance\\] --minStartupPods=8",
       "--timeout=300m",
-      "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\]|\\[Conformance\\] --upgrade-target=ci/latest-1.7"
+      "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --upgrade-target=ci/latest-1.7"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -10263,9 +10263,9 @@
       "--kubernetes-anywhere-kubernetes-version=latest-1.7",
       "--kubernetes-anywhere-upgrade-method=upgrade",
       "--provider=kubernetes-anywhere",
-      "--test_args=--ginkgo.focus=\\[Conformance\\] --minStartupPods=8",
+      "--test_args=--ginkgo.focus=\\[Conformance\\]|\\[Feature:BootstrapTokens\\]|\\[Feature:NodeAuthorizer\\] --minStartupPods=8",
       "--timeout=300m",
-      "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\]|\\[Conformance\\]|\\[Feature:BootstrapTokens\\]|\\[Feature:NodeAuthorizer\\] --upgrade-target=ci/latest-1.8"
+      "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --upgrade-target=ci/latest-1.8"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
