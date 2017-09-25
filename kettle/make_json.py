@@ -175,6 +175,8 @@ def parse_args(args):
     parser = argparse.ArgumentParser()
     parser.add_argument('--days', type=float, default=0,
                         help='Grab data for builds within N days')
+    parser.add_argument('--assert-oldest', type=float,
+                        help='Exit nonzero if a build older than X days was emitted previously.')
     parser.add_argument('--reset-emitted', action='store_true',
                         help='Clear list of already-emitted builds.')
     parser.add_argument('paths', nargs='*',
@@ -198,6 +200,12 @@ def main(db, opts, outfile):
     if opts.days:
         min_started = time.time() - (opts.days or 1) * 24 * 60 * 60
     incremental_table = get_table(opts.days)
+
+    if opts.assert_oldest:
+        oldest = db.get_oldest_emitted(incremental_table)
+        if oldest < time.time() - opts.assert_oldest * 24 * 60 * 60:
+            return 1
+        return 0
 
     if opts.reset_emitted:
         db.reset_emitted(incremental_table)
@@ -226,4 +234,4 @@ def main(db, opts, outfile):
 if __name__ == '__main__':
     DB = model.Database('build.db')
     OPTIONS = parse_args(sys.argv[1:])
-    main(DB, OPTIONS, sys.stdout)
+    sys.exit(main(DB, OPTIONS, sys.stdout))

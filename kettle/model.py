@@ -155,6 +155,11 @@ class Database(object):
                 results.append(data)
         return results
 
+    def get_oldest_emitted(self, incremental_table):
+        return self.db.execute('select min(finished_time) from build '
+                               'where rowid in (select build_id from %s)'
+                               % incremental_table).fetchone()[0]
+
     def reset_emitted(self, incremental_table=DEFAULT_INCREMENTAL_TABLE):
         self.db.execute('drop table if exists %s' % incremental_table)
 
