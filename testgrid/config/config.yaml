@@ -1714,16 +1714,22 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-stable3-gci-stable1-upgrade-master
 - name: ci-kubernetes-e2e-gce-stable2-stable1-gci-kubectl-skew
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-stable2-stable1-gci-kubectl-skew
+- name: ci-kubernetes-e2e-gce-stable2-stable1-gci-kubectl-skew-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-stable2-stable1-gci-kubectl-skew-serial
 - name: ci-kubernetes-e2e-gke-gci-stable3-gci-stable1-upgrade-cluster-new
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-stable3-gci-stable1-upgrade-cluster-new
 - name: ci-kubernetes-e2e-gke-cvm-1-6-gci-1-8-upgrade-cluster
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cvm-1-6-gci-1-8-upgrade-cluster
 - name: ci-kubernetes-e2e-gke-stable1-stable2-gci-kubectl-skew
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-stable1-stable2-gci-kubectl-skew
+- name: ci-kubernetes-e2e-gke-stable1-stable2-gci-kubectl-skew-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-stable1-stable2-gci-kubectl-skew-serial
 - name: ci-kubernetes-e2e-gke-gci-stable2-gci-stable1-upgrade-cluster
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-stable2-gci-stable1-upgrade-cluster
 - name: ci-kubernetes-e2e-gke-stable2-stable1-gci-kubectl-skew
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-stable2-stable1-gci-kubectl-skew
+- name: ci-kubernetes-e2e-gke-stable2-stable1-gci-kubectl-skew-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-stable2-stable1-gci-kubectl-skew-serial
 - name: ci-kubernetes-e2e-gce-stable2-stable1-upgrade-cluster-new
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-stable2-stable1-upgrade-cluster-new
 - name: ci-kubernetes-e2e-gke-cvm-1-6-gci-1-8-upgrade-master
@@ -1738,6 +1744,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-stable3-gci-stable1-upgrade-cluster
 - name: ci-kubernetes-e2e-gce-stable1-stable2-gci-kubectl-skew
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-stable1-stable2-gci-kubectl-skew
+- name: ci-kubernetes-e2e-gce-stable1-stable2-gci-kubectl-skew-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-stable1-stable2-gci-kubectl-skew-serial
 - name: ci-kubernetes-e2e-gce-stable2-stable1-upgrade-cluster
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-stable2-stable1-upgrade-cluster
 - name: ci-kubernetes-e2e-gke-cvm-1-6-gci-1-8-upgrade-cluster-new
@@ -2953,6 +2961,14 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-stable1-stable2-gci-kubectl-skew
   - name: gke-1.7-1.8-gci-kubectl-skew
     test_group_name: ci-kubernetes-e2e-gke-stable2-stable1-gci-kubectl-skew
+  - name: gce-1.7-1.8-gci-kubectl-skew-serial
+    test_group_name: ci-kubernetes-e2e-gce-stable2-stable1-gci-kubectl-skew-serial
+  - name: gce-1.8-1.7-gci-kubectl-skew-serial
+    test_group_name: ci-kubernetes-e2e-gce-stable1-stable2-gci-kubectl-skew-serial
+  - name: gke-1.8-1.7-gci-kubectl-skew-serial
+    test_group_name: ci-kubernetes-e2e-gke-stable1-stable2-gci-kubectl-skew-serial
+  - name: gke-1.7-1.8-gci-kubectl-skew-serial
+    test_group_name: ci-kubernetes-e2e-gke-stable2-stable1-gci-kubectl-skew-serial
   - name: gce-1.7-1.8-upgrade-master
     test_group_name: ci-kubernetes-e2e-gce-stable2-stable1-upgrade-master
   - name: gce-1.7-1.8-upgrade-cluster
@@ -3055,6 +3071,14 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-stable1-stable2-gci-kubectl-skew
   - name: gke-1.7-1.8-gci-kubectl-skew
     test_group_name: ci-kubernetes-e2e-gke-stable2-stable1-gci-kubectl-skew
+  - name: gce-1.7-1.8-gci-kubectl-skew-serial
+    test_group_name: ci-kubernetes-e2e-gce-stable2-stable1-gci-kubectl-skew-serial
+  - name: gce-1.8-1.7-gci-kubectl-skew-serial
+    test_group_name: ci-kubernetes-e2e-gce-stable1-stable2-gci-kubectl-skew-serial
+  - name: gke-1.8-1.7-gci-kubectl-skew-serial
+    test_group_name: ci-kubernetes-e2e-gke-stable1-stable2-gci-kubectl-skew-serial
+  - name: gke-1.7-1.8-gci-kubectl-skew-serial
+    test_group_name: ci-kubernetes-e2e-gke-stable2-stable1-gci-kubectl-skew-serial
   - name: gce-1.7-1.8-upgrade-master
     test_group_name: ci-kubernetes-e2e-gce-stable2-stable1-upgrade-master
   - name: gce-1.7-1.8-upgrade-cluster
