@@ -378,10 +378,10 @@ def cluster_name(cluster, build):
 
 
 # TODO(krzyzacy): Move this into kubetest
-def build_kops(workspace, mode):
+def build_kops(kops, mode):
     """Build kops, set kops related envs."""
-    if not os.path.basename(workspace) == 'kops':
-        raise ValueError(workspace)
+    if not os.path.basename(kops) == 'kops':
+        raise ValueError(kops)
     version = 'pull-' + check_output('git', 'describe', '--always').strip()
     job = os.getenv('JOB_NAME', 'pull-kops-e2e-kubernetes-aws')
     gcs = 'gs://kops-ci/pulls/%s' % job
@@ -537,7 +537,7 @@ def main(args):
         mode.add_k8s(os.path.dirname(k8s), 'kubernetes', 'release')
 
     if args.kops_build:
-        build_kops(workspace, mode)
+        build_kops(os.getcwd(), mode)
 
     if args.stage is not None:
         runner_args.append('--stage=%s' % args.stage)
