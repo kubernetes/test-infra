@@ -133,6 +133,8 @@ type Configuration struct {
 	Heart    Heart               `json:"heart,omitempty"`
 	Label    Label               `json:"label,omitempty"`
 	Slack    Slack               `json:"slack,omitempty"`
+	// ConfigUpdater holds config for the config-updater plugin.
+	ConfigUpdater ConfigUpdater `json:"config_updater,omitempty"`
 }
 
 type Trigger struct {
@@ -165,6 +167,21 @@ type Slack struct {
 	MergeWarnings   []MergeWarning `json:"mergewarnings,omitempty"`
 }
 
+type ConfigUpdater struct {
+	// The location of the prow configuration file inside the repository
+	// where the config-updater plugin is enabled. This needs to be relative
+	// to the root of the repository, eg. "prow/config.yaml" will match
+	// github.com/kubernetes/test-infra/prow/config.yaml assuming the config-updater
+	// plugin is enabled for kubernetes/test-infra. Defaults to "prow/config.yaml".
+	ConfigFile string `json:"config_file,omitempty"`
+	// The location of the prow plugin configuration file inside the repository
+	// where the config-updater plugin is enabled. This needs to be relative
+	// to the root of the repository, eg. "prow/plugins.yaml" will match
+	// github.com/kubernetes/test-infra/prow/plugins.yaml assuming the config-updater
+	// plugin is enabled for kubernetes/test-infra. Defaults to "prow/plugins.yaml".
+	PluginFile string `json:"plugin_file,omitempty"`
+}
+
 // MergeWarning is a config for the slackevents plugin's manual merge warings.
 // If a PR is pushed to any of the repos listed in the config
 // then send messages to the all the  slack channels listed if pusher is NOT in the whitelist.
@@ -191,6 +208,15 @@ func (c *Configuration) TriggerFor(org, repo string) *Trigger {
 	return nil
 }
 
+func (c *Configuration) setDefaults() {
+	if c.ConfigUpdater.ConfigFile == "" {
+		c.ConfigUpdater.ConfigFile = "prow/config.yaml"
+	}
+	if c.ConfigUpdater.PluginFile == "" {
+		c.ConfigUpdater.PluginFile = "prow/plugins.yaml"
+	}
+}
+
 // Load attempts to load config from the path. It returns an error if either
 // the file can't be read or it contains an unknown plugin.
 func (pa *PluginAgent) Load(path string) error {
@@ -206,6 +232,7 @@ func (pa *PluginAgent) Load(path string) error {
 	if err := validatePlugins(np.Plugins); err != nil {
 		return err
 	}
+	np.setDefaults()
 	pa.Set(np)
 	return nil
 }
