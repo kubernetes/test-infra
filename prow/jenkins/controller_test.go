@@ -115,6 +115,7 @@ func (f *fkc) ReplaceProwJob(name string, job kube.ProwJob) (kube.ProwJob, error
 
 type fjc struct {
 	built    bool
+	pjs      []kube.ProwJob
 	enqueued bool
 	status   Status
 	err      error
@@ -125,6 +126,7 @@ func (f *fjc) Build(pj *kube.ProwJob) (*url.URL, error) {
 		return nil, f.err
 	}
 	f.built = true
+	f.pjs = append(f.pjs, *pj)
 	url, _ := url.Parse("localhost")
 	return url, nil
 }
@@ -637,6 +639,124 @@ func TestRunAfterSuccessCanRun(t *testing.T) {
 		got := RunAfterSuccessCanRun(test.parent, test.child, newFakeConfigAgent(t), fakeGH)
 		if got != test.expected {
 			t.Errorf("expected to run: %t, got: %t", test.expected, got)
+		}
+	}
+}
+
+func TestMaxConcurrencyWithNewlyTriggeredJobs(t *testing.T) {
+	tests := []struct {
+		name           string
+		pjs            []kube.ProwJob
+		pendingJobs    map[string]int
+		expectedBuilds int
+	}{
+		{
+			name: "avoid starting a triggered job",
+			pjs: []kube.ProwJob{
+				{
+					Spec: kube.ProwJobSpec{
+						Job:            "test-bazel-build",
+						Type:           kube.PostsubmitJob,
+						MaxConcurrency: 1,
+					},
+					Status: kube.ProwJobStatus{
+						State: kube.TriggeredState,
+					},
+				},
+				{
+					Spec: kube.ProwJobSpec{
+						Job:            "test-bazel-build",
+						Type:           kube.PostsubmitJob,
+						MaxConcurrency: 1,
+					},
+					Status: kube.ProwJobStatus{
+						State: kube.TriggeredState,
+					},
+				},
+			},
+			pendingJobs:    make(map[string]int),
+			expectedBuilds: 1,
+		},
+		{
+			name: "both triggered jobs can start",
+			pjs: []kube.ProwJob{
+				{
+					Spec: kube.ProwJobSpec{
+						Job:            "test-bazel-build",
+						Type:           kube.PostsubmitJob,
+						MaxConcurrency: 2,
+					},
+					Status: kube.ProwJobStatus{
+						State: kube.TriggeredState,
+					},
+				},
+				{
+					Spec: kube.ProwJobSpec{
+						Job:            "test-bazel-build",
+						Type:           kube.PostsubmitJob,
+						MaxConcurrency: 2,
+					},
+					Status: kube.ProwJobStatus{
+						State: kube.TriggeredState,
+					},
+				},
+			},
+			pendingJobs:    make(map[string]int),
+			expectedBuilds: 2,
+		},
+		{
+			name: "no triggered job can start",
+			pjs: []kube.ProwJob{
+				{
+					Spec: kube.ProwJobSpec{
+						Job:            "test-bazel-build",
+						Type:           kube.PostsubmitJob,
+						MaxConcurrency: 5,
+					},
+					Status: kube.ProwJobStatus{
+						State: kube.TriggeredState,
+					},
+				},
+				{
+					Spec: kube.ProwJobSpec{
+						Job:            "test-bazel-build",
+						Type:           kube.PostsubmitJob,
+						MaxConcurrency: 5,
+					},
+					Status: kube.ProwJobStatus{
+						State: kube.TriggeredState,
+					},
+				},
+			},
+			pendingJobs:    map[string]int{"test-bazel-build": 5},
+			expectedBuilds: 0,
+		},
+	}
+
+	for _, test := range tests {
+		jobs := make(chan kube.ProwJob, len(test.pjs))
+		for _, pj := range test.pjs {
+			jobs <- pj
+		}
+		close(jobs)
+
+		fc := &fkc{
+			prowjobs: test.pjs,
+		}
+		fjc := &fjc{}
+		c := Controller{
+			kc:          fc,
+			jc:          fjc,
+			ca:          newFakeConfigAgent(t),
+			pendingJobs: test.pendingJobs,
+		}
+
+		reports := make(chan kube.ProwJob, len(test.pjs))
+		errors := make(chan error, len(test.pjs))
+
+		syncProwJobs(c.syncNonPendingJob, jobs, reports, errors)
+		if len(fjc.pjs) != test.expectedBuilds {
+			t.Errorf("expected builds: %d, got: %d", test.expectedBuilds, len(fjc.pjs))
 		}
 	}
 }
