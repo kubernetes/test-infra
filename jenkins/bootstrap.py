@@ -735,7 +735,11 @@ def setup_magic_environment(job):
     cwd = os.getcwd()
     # TODO(fejta): jenkins sets WORKSPACE and pieces of our infra expect this
     #              value. Consider doing something else in the future.
-    os.environ[WORKSPACE_ENV] = cwd
+    # Furthermore, in the Jenkins and Prow environments, this is already set
+    # to something reasonable, but using cwd will likely cause all sorts of
+    # problems. Thus, only set this if we really need to.
+    if WORKSPACE_ENV not in os.environ:
+        os.environ[WORKSPACE_ENV] = cwd
     # By default, Jenkins sets HOME to JENKINS_HOME, which is shared by all
     # jobs. To avoid collisions, set it to the cwd instead, but only when
     # running on Jenkins.
