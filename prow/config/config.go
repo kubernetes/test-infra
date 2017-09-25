@@ -43,6 +43,9 @@ type Config struct {
 	Plank  Plank  `json:"plank,omitempty"`
 	Sinker Sinker `json:"sinker,omitempty"`
 
+	// TODO: Move this out of the main config.
+	JenkinsOperator JenkinsOperator `json:"jenkins_operator,omitempty"`
+
 	// ProwJobNamespace is the namespace in the cluster that prow
 	// components will use for looking up ProwJobs. The namespace
 	// needs to exist and will not be created by prow.
@@ -81,6 +84,23 @@ type Tide struct {
 
 // Plank is config for the plank controller.
 type Plank struct {
+	// JobURLTemplateString compiles into JobURLTemplate at load time.
+	JobURLTemplateString string `json:"job_url_template,omitempty"`
+	// JobURLTemplate is compiled at load time from JobURLTemplateString. It
+	// will be passed a kube.ProwJob and is used to set the URL for the
+	// "details" link on GitHub as well as the link from deck.
+	JobURLTemplate *template.Template `json:"-"`
+
+	// ReportTemplateString compiles into ReportTemplate at load time.
+	ReportTemplateString string `json:"report_template,omitempty"`
+	// ReportTemplate is compiled at load time from ReportTemplateString. It
+	// will be passed a kube.ProwJob and can provide an optional blurb below
+	// the test failures comment.
+	ReportTemplate *template.Template `json:"-"`
+}
+
+// JenkinsOperator is config for the jenkins-operator controller.
+type JenkinsOperator struct {
 	// JobURLTemplateString compiles into JobURLTemplate at load time.
 	JobURLTemplateString string `json:"job_url_template,omitempty"`
 	// JobURLTemplate is compiled at load time from JobURLTemplateString. It
@@ -198,6 +218,18 @@ func parseConfig(c *Config) error {
 		return fmt.Errorf("parsing template: %v", err)
 	}
 	c.Plank.ReportTemplate = reportTmpl
+
+	jenkinsURLTmpl, err := template.New("JobURL").Parse(c.JenkinsOperator.JobURLTemplateString)
+	if err != nil {
+		return fmt.Errorf("parsing template: %v", err)
+	}
+	c.JenkinsOperator.JobURLTemplate = jenkinsURLTmpl
+
+	jenkinsReportTmpl, err := template.New("Report").Parse(c.JenkinsOperator.ReportTemplateString)
+	if err != nil {
+		return fmt.Errorf("parsing template: %v", err)
+	}
+	c.JenkinsOperator.ReportTemplate = jenkinsReportTmpl
 
 	if c.Sinker.ResyncPeriodString == "" {
 		c.Sinker.ResyncPeriod = time.Hour
