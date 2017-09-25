@@ -283,7 +283,9 @@ type SubmitQueue struct {
 	batchStatus  submitQueueBatchStatus
 	ciStatus     map[string]map[string]jobStatus // type (eg batch) : job : status
 
-	MergeToMasterMessage string // extra message when PR is merged to master branch
+	// MergeToMasterMessage is an extra message when PR is merged to master branch,
+	// it must not end in a period.
+	MergeToMasterMessage string
 }
 
 func init() {
@@ -1337,7 +1339,9 @@ func (sq *SubmitQueue) mergePullRequest(obj *github.MungeObject, msg, extra stri
 	isMaster, _ := obj.IsForBranch("master")
 	if isMaster {
 		sq.opts.Lock()
-		extra = extra + ". " + sq.MergeToMasterMessage
+		if sq.MergeToMasterMessage != "" {
+			extra = extra + ". " + sq.MergeToMasterMessage
+		}
 		sq.opts.Unlock()
 	}
 	ok := obj.MergePR("submit-queue" + extra)

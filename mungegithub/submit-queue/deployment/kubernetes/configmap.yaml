@@ -100,7 +100,9 @@ batch-enabled: true
 context-url: https://submit-queue.k8s.io
 gate-approved: true
 gate-cla: true
-merge-to-master-message: "If you want to cherry-pick this change to another branch, please follow the instructions <a href=\"https://github.com/kubernetes/community/blob/master/contributors/devel/cherry-picks.md\">here</a>."
+
+# extra message when PR is merged to master branch, it must not end in a period.
+merge-to-master-message: "If you want to cherry-pick this change to another branch, please follow the instructions <a href=\"https://github.com/kubernetes/community/blob/master/contributors/devel/cherry-picks.md\">here</a>"
 
 protected-branches: "master"
 protected-branches-extra-contexts: "cla/linuxfoundation"
