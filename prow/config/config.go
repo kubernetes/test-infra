@@ -139,29 +139,41 @@ func parseConfig(c *Config) error {
 		}
 	}
 
-	// Ensure that presubmits have a pod spec.
+	// Validate presubmits.
 	for _, v := range c.AllPresubmits(nil) {
 		name := v.Name
 		agent := v.Agent
+		// Ensure that k8s presubmits have a pod spec.
 		if agent == string(kube.KubernetesAgent) && v.Spec == nil {
 			return fmt.Errorf("job %s has no spec", name)
 		}
+		// Ensure agent is a known value.
 		if agent != string(kube.KubernetesAgent) && agent != string(kube.JenkinsAgent) {
 			return fmt.Errorf("job %s has invalid agent (%s), it needs to be one of the following: %s %s",
 				name, agent, kube.KubernetesAgent, kube.JenkinsAgent)
+		}
+		// Ensure max_concurrency is non-negative.
+		if v.MaxConcurrency < 0 {
+			return fmt.Errorf("job %s jas invalid max_concurrency (%d), it needs to be a non-negative number", name, v.MaxConcurrency)
 		}
 	}
 
-	// Ensure that postsubmits have a pod spec.
+	// Validate postsubmits.
 	for _, j := range c.AllPostsubmits(nil) {
 		name := j.Name
 		agent := j.Agent
+		// Ensure that k8s postsubmits have a pod spec.
 		if agent == string(kube.KubernetesAgent) && j.Spec == nil {
 			return fmt.Errorf("job %s has no spec", name)
 		}
+		// Ensure agent is a known value.
 		if agent != string(kube.KubernetesAgent) && agent != string(kube.JenkinsAgent) {
 			return fmt.Errorf("job %s has invalid agent (%s), it needs to be one of the following: %s %s",
 				name, agent, kube.KubernetesAgent, kube.JenkinsAgent)
+		}
+		// Ensure max_concurrency is non-negative.
+		if j.MaxConcurrency < 0 {
+			return fmt.Errorf("job %s jas invalid max_concurrency (%d), it needs to be a non-negative number", name, j.MaxConcurrency)
 		}
 	}
 
