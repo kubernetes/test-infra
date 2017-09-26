@@ -2931,7 +2931,7 @@
       "--gcp-zone=us-east1-a",
       "--mode=docker",
       "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --allowed-not-ready-nodes=50 --node-schedulable-timeout=90m --minStartupPods=8 --gather-resource-usage=master --gather-metrics-at-teardown=master",
+      "--test_args=--ginkgo.focus=\\[sig\\-scalability\\]\\sDensity\\s\\[Feature\\:Performance\\]\\sshould\\sallow\\sstarting\\s30\\spods\\sper\\snode\\susing\\s\\{\\sReplicationController\\}\\swith\\s0\\ssecrets\\,\\s0\\sconfigmaps\\sand\\s0\\sdaemons$ --allowed-not-ready-nodes=50 --node-schedulable-timeout=90m --minStartupPods=8 --gather-resource-usage=master --gather-metrics-at-teardown=master",
       "--timeout=1300m",
       "--use-logexporter"
     ],
@@ -9048,7 +9048,7 @@
       "--mode=docker",
       "--provider=gce",
       "--test=false",
-      "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --gather-resource-usage=true --gather-metrics-at-teardown=true --output-print-type=json",
+      "--test_args=--ginkgo.focus=\\[sig\\-scalability\\]\\sDensity\\s\\[Feature\\:Performance\\]\\sshould\\sallow\\sstarting\\s30\\spods\\sper\\snode\\susing\\s\\{\\sReplicationController\\}\\swith\\s0\\ssecrets\\,\\s0\\sconfigmaps\\sand\\s0\\sdaemons$ --gather-resource-usage=true --gather-metrics-at-teardown=true --output-print-type=json",
       "--timeout=240m"
     ],
     "scenario": "kubernetes_e2e",
