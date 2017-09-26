@@ -17013,6 +17013,11 @@ periodics:
       - |-
         --query=is:pr
         -label:do-not-merge
+        -label:do-not-merge/blocked-paths
+        -label:do-not-merge/cherry-pick-not-approved
+        -label:do-not-merge/hold
+        -label:do-not-merge/release-note-label-needed
+        -label:do-not-merge/work-in-progress
         label:lgtm
         label:approved
         status:failure
