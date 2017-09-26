@@ -80,12 +80,13 @@ func createFakeRepo(la map[string]sets.String) FakeRepo {
 	// github doesn't use / at the root
 	a := map[string]sets.String{}
 	for dir, approvers := range la {
-		a[dir] = approvers
+		la[dir] = setToLower(approvers)
+		a[dir] = setToLower(approvers)
 		starting_path := dir
 		for {
 			dir = canonicalize(filepath.Dir(dir))
 			if parent_approvers, ok := la[dir]; ok {
-				a[starting_path] = a[starting_path].Union(parent_approvers)
+				a[starting_path] = a[starting_path].Union(setToLower(parent_approvers))
 			}
 			if dir == "" {
 				break
@@ -95,6 +96,15 @@ func createFakeRepo(la map[string]sets.String) FakeRepo {
 
 	return FakeRepo{ApproversMap: a, LeafApproversMap: la}
 }
+
+func setToLower(s sets.String) sets.String {
+	lowered := sets.NewString()
+	for _, elem := range s.List() {
+		lowered.Insert(strings.ToLower(elem))
+	}
+	return lowered
+}
+
 func TestCreateFakeRepo(t *testing.T) {
 	rootApprovers := sets.NewString("Alice", "Bob")
 	aApprovers := sets.NewString("Art", "Anne")
@@ -153,10 +163,12 @@ func TestCreateFakeRepo(t *testing.T) {
 		calculated_leaf_approvers := fake_repo.LeafApprovers(test.ownersFile)
 		calculated_approvers := fake_repo.Approvers(test.ownersFile)
 
+		test.expectedLeafApprovers = setToLower(test.expectedLeafApprovers)
 		if !calculated_leaf_approvers.Equal(test.expectedLeafApprovers) {
 			t.Errorf("Failed for test %v.  Expected Leaf Approvers: %v. Actual Leaf Approvers %v", test.testName, test.expectedLeafApprovers, calculated_leaf_approvers)
 		}
 
+		test.expectedApprovers = setToLower(test.expectedApprovers)
 		if !calculated_approvers.Equal(test.expectedApprovers) {
 			t.Errorf("Failed for test %v.  Expected Approvers: %v. Actual Approvers %v", test.testName, test.expectedApprovers, calculated_approvers)
 		}
@@ -188,25 +200,25 @@ func TestGetLeafApprovers(t *testing.T) {
 		{
 			testName:    "Single Root File PR",
 			filenames:   []string{"kubernetes.go"},
-			expectedMap: map[string]sets.String{"": rootApprovers},
+			expectedMap: map[string]sets.String{"": setToLower(rootApprovers)},
 		},
 		{
 			testName:    "Internal Node File PR",
 			filenames:   []string{"a/test.go"},
-			expectedMap: map[string]sets.String{"a": aApprovers},
+			expectedMap: map[string]sets.String{"a": setToLower(aApprovers)},
 		},
 		{
 			testName:  "Two Leaf File PR",
 			filenames: []string{"a/d/test.go", "b/test.go"},
 			expectedMap: map[string]sets.String{
-				"a/d": dApprovers,
-				"b":   bApprovers},
+				"a/d": setToLower(dApprovers),
+				"b":   setToLower(bApprovers)},
 		},
 		{
 			testName:  "Leaf and Parent 2 File PR",
 			filenames: []string{"a/test.go", "a/d/test.go"},
 			expectedMap: map[string]sets.String{
-				"a": aApprovers,
+				"a": setToLower(aApprovers),
 			},
 		},
 	}
@@ -305,37 +317,37 @@ func TestGetSuggestedApprovers(t *testing.T) {
 		{
 			testName:       "Single Root File PR",
 			filenames:      []string{"kubernetes.go"},
-			expectedOwners: []sets.String{rootApprovers},
+			expectedOwners: []sets.String{setToLower(rootApprovers)},
 		},
 		{
 			testName:       "Internal Node File PR",
 			filenames:      []string{"a/test.go"},
-			expectedOwners: []sets.String{aApprovers},
+			expectedOwners: []sets.String{setToLower(aApprovers)},
 		},
 		{
 			testName:       "Multiple Files Internal Node File PR",
 			filenames:      []string{"a/test.go", "a/test1.go"},
-			expectedOwners: []sets.String{aApprovers},
+			expectedOwners: []sets.String{setToLower(aApprovers)},
 		},
 		{
 			testName:       "Two Leaf File PR",
 			filenames:      []string{"a/test.go", "b/test.go"},
-			expectedOwners: []sets.String{aApprovers, bApprovers},
+			expectedOwners: []sets.String{setToLower(aApprovers), setToLower(bApprovers)},
 		},
 		{
 			testName:       "Leaf and Parent 2 File PR",
 			filenames:      []string{"a/test.go", "a/d/test.go"},
-			expectedOwners: []sets.String{aApprovers},
+			expectedOwners: []sets.String{setToLower(aApprovers)},
 		},
 		{
 			testName:       "Combo and B",
 			filenames:      []string{"a/combo/test.go", "b/test.go"},
-			expectedOwners: []sets.String{edcApprovers, bApprovers},
+			expectedOwners: []sets.String{setToLower(edcApprovers), setToLower(bApprovers)},
 		},
 		{
 			testName:       "Lowest Leaf",
 			filenames:      []string{"a/combo/test.go"},
-			expectedOwners: []sets.String{edcApprovers},
+			expectedOwners: []sets.String{setToLower(edcApprovers)},
 		},
 	}
 
@@ -381,42 +393,42 @@ func TestGetAllPotentialApprovers(t *testing.T) {
 		{
 			testName:          "Single Root File PR",
 			filenames:         []string{"kubernetes.go"},
-			expectedApprovers: rootApprovers.List(),
+			expectedApprovers: setToLower(rootApprovers).List(),
 		},
 		{
 			testName:          "Internal Node File PR",
 			filenames:         []string{"a/test.go"},
-			expectedApprovers: aApprovers.List(),
+			expectedApprovers: setToLower(aApprovers).List(),
 		},
 		{
 			testName:          "One Leaf One Internal Node File PR",
 			filenames:         []string{"a/test.go", "b/test.go"},
-			expectedApprovers: aApprovers.Union(bApprovers).List(),
+			expectedApprovers: setToLower(aApprovers.Union(bApprovers)).List(),
 		},
 		{
 			testName:          "Two Leaf Files PR",
 			filenames:         []string{"a/d/test.go", "c/test.go"},
-			expectedApprovers: dApprovers.Union(cApprovers).List(),
+			expectedApprovers: setToLower(dApprovers.Union(cApprovers)).List(),
 		},
 		{
 			testName:          "Leaf and Parent 2 File PR",
 			filenames:         []string{"a/test.go", "a/combo/test.go"},
-			expectedApprovers: aApprovers.List(),
+			expectedApprovers: setToLower(aApprovers).List(),
 		},
 		{
 			testName:          "Two Leafs",
 			filenames:         []string{"a/d/test.go", "b/test.go"},
-			expectedApprovers: dApprovers.Union(bApprovers).List(),
+			expectedApprovers: setToLower(dApprovers.Union(bApprovers)).List(),
 		},
 		{
 			testName:          "Lowest Leaf",
 			filenames:         []string{"a/combo/test.go"},
-			expectedApprovers: edcApprovers.List(),
+			expectedApprovers: setToLower(edcApprovers).List(),
 		},
 		{
 			testName:          "Root And Everything Else PR",
 			filenames:         []string{"a/combo/test.go", "b/test.go", "c/test.go", "d/test.go"},
-			expectedApprovers: rootApprovers.List(),
+			expectedApprovers: setToLower(rootApprovers).List(),
 		},
 	}
 
@@ -462,37 +474,37 @@ func TestFindMostCoveringApprover(t *testing.T) {
 			testName:             "Single Root File PR",
 			filenames:            []string{"kubernetes.go"},
 			unapproved:           sets.NewString(""),
-			expectedMostCovering: rootApprovers,
+			expectedMostCovering: setToLower(rootApprovers),
 		},
 		{
 			testName:             "Internal Node File PR",
 			filenames:            []string{"a/test.go"},
 			unapproved:           sets.NewString("a"),
-			expectedMostCovering: aApprovers,
+			expectedMostCovering: setToLower(aApprovers),
 		},
 		{
 			testName:             "Combo and Intersecting Leaf PR",
 			filenames:            []string{"a/combo/test.go", "a/d/test.go"},
 			unapproved:           sets.NewString("a/combo", "a/d"),
-			expectedMostCovering: edcApprovers.Intersection(dApprovers),
+			expectedMostCovering: setToLower(edcApprovers.Intersection(dApprovers)),
 		},
 		{
 			testName:             "Three Leaf PR Only B Approved",
 			filenames:            []string{"a/combo/test.go", "c/test.go", "b/test.go"},
 			unapproved:           sets.NewString("a/combo", "c/"),
-			expectedMostCovering: edcApprovers.Intersection(cApprovers),
+			expectedMostCovering: setToLower(edcApprovers.Intersection(cApprovers)),
 		},
 		{
 			testName:             "Three Leaf PR Only B Left Unapproved",
 			filenames:            []string{"a/combo/test.go", "a/d/test.go", "b/test.go"},
 			unapproved:           sets.NewString("b"),
-			expectedMostCovering: bApprovers,
+			expectedMostCovering: setToLower(bApprovers),
 		},
 		{
 			testName:             "Leaf and Parent 2 File PR",
 			filenames:            []string{"a/test.go", "a/d/test.go"},
 			unapproved:           sets.NewString("a", "a/d"),
-			expectedMostCovering: aApprovers.Union(dApprovers),
+			expectedMostCovering: setToLower(aApprovers.Union(dApprovers)),
 		},
 	}
 
@@ -533,21 +545,21 @@ func TestGetReverseMap(t *testing.T) {
 			testName:  "Single Root File PR",
 			filenames: []string{"kubernetes.go"},
 			expectedRevMap: map[string]sets.String{
-				"Alice": sets.NewString(""),
-				"Bob":   sets.NewString(""),
+				"alice": sets.NewString(""),
+				"bob":   sets.NewString(""),
 			},
 		},
 		{
 			testName:  "Two Leaf PRs",
 			filenames: []string{"a/combo/test.go", "a/d/test.go"},
 			expectedRevMap: map[string]sets.String{
-				"David":  sets.NewString("a/d", "a/combo"),
-				"Dan":    sets.NewString("a/d", "a/combo"),
-				"Debbie": sets.NewString("a/d", "a/combo"),
-				"Eve":    sets.NewString("a/combo"),
-				"Erin":   sets.NewString("a/combo"),
-				"Chris":  sets.NewString("a/combo"),
-				"Carol":  sets.NewString("a/combo"),
+				"david":  sets.NewString("a/d", "a/combo"),
+				"dan":    sets.NewString("a/d", "a/combo"),
+				"debbie": sets.NewString("a/d", "a/combo"),
+				"eve":    sets.NewString("a/combo"),
+				"erin":   sets.NewString("a/combo"),
+				"chris":  sets.NewString("a/combo"),
+				"carol":  sets.NewString("a/combo"),
 			},
 		},
 	}
@@ -602,25 +614,25 @@ func TestGetShuffledApprovers(t *testing.T) {
 			testName:      "Single Root File PR Approved",
 			filenames:     []string{"kubernetes.go"},
 			seed:          0,
-			expectedOrder: []string{"Bob", "Alice"},
+			expectedOrder: []string{"bob", "alice"},
 		},
 		{
 			testName:      "Combo And B PR",
 			filenames:     []string{"a/combo/test.go", "b/test.go"},
 			seed:          0,
-			expectedOrder: []string{"Erin", "Bill", "Carol", "Barbara", "Dan", "Debbie", "Ben", "David", "Eve", "Chris"},
+			expectedOrder: []string{"erin", "bill", "carol", "barbara", "dan", "debbie", "ben", "david", "eve", "chris"},
 		},
 		{
 			testName:      "Combo and D, Seed 0",
 			filenames:     []string{"a/combo/test.go", "a/d/test.go"},
 			seed:          0,
-			expectedOrder: []string{"Erin", "Dan", "Dan", "Carol", "David", "Debbie", "Chris", "Debbie", "Eve", "David"},
+			expectedOrder: []string{"erin", "dan", "dan", "carol", "david", "debbie", "chris", "debbie", "eve", "david"},
 		},
 		{
 			testName:      "Combo and D, Seed 2",
 			filenames:     []string{"a/combo/test.go", "a/d/test.go"},
 			seed:          2,
-			expectedOrder: []string{"Dan", "Carol", "Debbie", "Dan", "Erin", "Chris", "Eve", "David", "Debbie", "David"},
+			expectedOrder: []string{"dan", "carol", "debbie", "dan", "erin", "chris", "eve", "david", "debbie", "david"},
 		},
 	}
 
