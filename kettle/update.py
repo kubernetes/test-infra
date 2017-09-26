@@ -16,22 +16,13 @@
 
 
 import os
-import time
-
-
-def modified_today(fname):
-    now = time.time()
-    try:
-        return os.stat(fname).st_mtime > (now - now % (24 * 60 * 60))
-    except OSError:
-        return False
 
 
 def call(cmd):
     print '+', cmd
     status = os.system(cmd)
     if status:
-        raise Exception('invocation failed')
+        raise OSError('invocation failed')
 
 
 def main():
@@ -42,7 +33,9 @@ def main():
 
     mj_ext = ''
     bq_ext = ''
-    if not modified_today('build_day.json.gz'):
+    try:
+        call(mj_cmd + ' --days 1 --assert-oldest 1')
+    except OSError:
         # cycle daily/weekly tables
         bq_ext = ' --replace'
         mj_ext = ' --reset-emitted'
