@@ -526,7 +526,7 @@ func nodeTest(nodeArgs []string, testArgs, nodeTestArgs, project, zone string) e
 		"--logtostderr",
 		"--vmodule=*=4",
 		"--ssh-env=gce",
-		fmt.Sprintf("--results-dir=%s/src/k8s.io/kubernetes/_artifacts", os.Getenv("GOPATH")),
+		fmt.Sprintf("--results-dir=%s/_artifacts", os.Getenv("WORKSPACE")),
 		fmt.Sprintf("--project=%s", project),
 		fmt.Sprintf("--zone=%s", zone),
 		fmt.Sprintf("--ssh-user=%s", os.Getenv("USER")),
