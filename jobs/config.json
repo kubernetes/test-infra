@@ -7009,6 +7009,7 @@
     "args": [
       "--check-leaked-resources",
       "--deployment=gke",
+      "--env=CLOUDSDK_CONTAINER_USE_APPLICATION_DEFAULT_CREDENTIALS=false",
       "--extract=ci/latest-1.5",
       "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
       "--gcp-node-image=gci",
