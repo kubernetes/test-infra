@@ -610,7 +610,7 @@ func skewTest(args []string, prefix string, checkSkew bool) error {
 	defer popS()
 	args = appendField(args, "--report-prefix", prefix)
 	return finishRunning(exec.Command(
-		kubetestPath,
+		"kubetest",
 		"--test",
 		"--test_args="+strings.Join(args, " "),
 		fmt.Sprintf("--v=%t", verbose),
