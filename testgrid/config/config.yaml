@@ -2978,8 +2978,6 @@ dashboards:
     test_group_name: ci-kubernetes-verify-release-1.8
   - name: test-go-1.8
     test_group_name: ci-kubernetes-test-go-release-1.8
-  - name: gce-kubeadm-1.8
-    test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-8
   - name: gce-kubeadm-1.7-on-1.8
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-7-on-1-8
   - name: periodic-gce-kubeadm-1.8
