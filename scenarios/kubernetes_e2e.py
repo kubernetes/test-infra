@@ -269,6 +269,9 @@ class DockerMode(object):
             self.cmd.extend(['-v', '/var/run/docker.sock:/var/run/docker.sock'])
         self.add_env('HOME=%s' % self.workspace)
         self.add_env('WORKSPACE=%s' % self.workspace)
+        self.cmd.append(
+            '--entrypoint=/workspace/kubetest'
+        )
 
     def add_environment(self, *envs):
         """Adds FOO=BAR to the -e list for docker.
