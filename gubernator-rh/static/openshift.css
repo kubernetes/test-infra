@@ -1,0 +1,139 @@
+/* -------------------------------------------------
+    OpenShift Origin Gubernator branding customizations
+   ------------------------------------------------- */
+ a {
+   text-decoration-skip: ink;
+ }
+body {
+  background-color: #fafafa;
+  color: #222;
+  font-family: "Roboto", "Arial", sans-serif;
+  font-size: .85rem;
+  line-height: 1.4;
+  margin: 0 2vw 100px;
+}
+.build-success {
+ background-color: #b9f6b8;
+}
+#content a {
+  word-wrap: break-word;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  min-width: 0;
+}
+#failures {
+  padding: 0;
+}
+#header {
+  background-color: #0f2840;
+  color: #fff;
+}
+#header h1 {
+  font-weight: normal;
+}
+#header a {
+  color: #72b1f7;
+}
+#header img {
+  height: 80px;
+  margin-bottom: -20px;
+}
+@media(max-width: 1199px) {
+  #header img {
+    height: 60px;
+  }
+}
+@media(max-width: 769px) {
+  #header img {
+    height: 40px;
+    margin-bottom: 0;
+  }
+}
+
+h1 {
+  font-size: 1.5em;
+}
+h1.section-header {
+  font-size: 1.2em;
+}
+@media(min-width:768px) {
+  h1.section-header {
+    font-size: 1.75em;
+  }
+}
+h2.link,
+li.jobs-list h2+a {
+  color: blue;
+}
+h2.link {
+  font-size: 1.1rem;
+}
+@media(min-width:585px) {
+  h2.link {
+    background: #fafafa;
+    font-size: 1.25rem;
+    padding: 5px 0 5px 10px;
+    position: fixed;
+    right: 2vw;
+  }
+}
+span.highlight {
+  background-color: gold;
+}
+hr {
+  margin: 15px -2vw;
+}
+li.jobs-list h2 {
+  border-bottom: 2px solid #ddd;
+  font-size: 1.25rem;
+  font-weight: normal;
+}
+div#log {
+  padding: 0 0 50px 2vw;
+  background-color: #f4f4f4;
+  margin: 20px -2vw;
+  border-top: 4px solid darkgray;
+}
+div#log hr {
+  display: none;
+}
+pre.error {
+  border-radius: 5px;
+  margin: 20px;
+  padding: 20px;
+}
+pre.error hr {
+  margin: 10px -20px;
+}
+table.build-meta {
+  margin-top: 30px;
+}
+table.build-meta td:first-child {
+  white-space: nowrap;
+}
+table.build-meta td:nth-child(2) {
+  max-width: none;
+}
+table.build-meta tr:nth-child(odd) {
+  background: #eee;
+}
+table.pr td {
+  padding: 5px;
+  max-width: none;
+}
+.testlist {
+  margin-left: 1em;
+}
+ul {
+  padding-left: 20px;
+}
+ul li {
+  word-wrap: break-word;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  min-width: 0;
+}
+ul#jobs-list {
+  list-style: none;
+  padding: 0;
+}
