@@ -272,28 +272,28 @@ func TestGetCCs(t *testing.T) {
 			filenames:         []string{"kubernetes.go"},
 			currentlyApproved: sets.NewString(),
 			testSeed:          13,
-			expectedCCs:       []string{"Alice"},
+			expectedCCs:       []string{"alice"},
 		},
 		{
 			testName:          "Single Root File PR No One Seed = 10",
 			filenames:         []string{"kubernetes.go"},
 			testSeed:          10,
 			currentlyApproved: sets.NewString(),
-			expectedCCs:       []string{"Bob"},
+			expectedCCs:       []string{"bob"},
 		},
 		{
 			testName:          "Combo and Other; Neither Approved",
 			filenames:         []string{"a/combo/test.go", "a/d/test.go"},
 			testSeed:          0,
 			currentlyApproved: sets.NewString(),
-			expectedCCs:       []string{"Dan"},
+			expectedCCs:       []string{"dan"},
 		},
 		{
 			testName:          "Combo and Other; Combo Approved",
 			filenames:         []string{"a/combo/test.go", "a/d/test.go"},
 			testSeed:          0,
 			currentlyApproved: eApprovers,
-			expectedCCs:       []string{"Dan"},
+			expectedCCs:       []string{"dan"},
 		},
 		{
 			testName:          "Combo and Other; Both Approved",
@@ -308,7 +308,7 @@ func TestGetCCs(t *testing.T) {
 			testSeed:          0,
 			currentlyApproved: sets.NewString(),
 			// chris can approve c and combo, debbie can approve d
-			expectedCCs: []string{"Chris", "Debbie"},
+			expectedCCs: []string{"chris", "debbie"},
 		},
 		{
 			testName:          "A, B, C; Nothing Approved",
@@ -316,7 +316,7 @@ func TestGetCCs(t *testing.T) {
 			testSeed:          0,
 			currentlyApproved: sets.NewString(),
 			// Need an approver from each of the three owners files
-			expectedCCs: []string{"Anne", "Bill", "Carol"},
+			expectedCCs: []string{"anne", "bill", "carol"},
 		},
 		{
 			testName:  "A, B, C; Partially approved by non-suggested approvers",
@@ -325,7 +325,7 @@ func TestGetCCs(t *testing.T) {
 			// Approvers are valid approvers, but not the one we would suggest
 			currentlyApproved: sets.NewString("Art", "Ben"),
 			// We don't suggest approvers for a and b, only for unapproved c.
-			expectedCCs: []string{"Carol"},
+			expectedCCs: []string{"carol"},
 		},
 		{
 			testName:  "A, B, C; Nothing approved, but assignees can approve",
@@ -336,7 +336,7 @@ func TestGetCCs(t *testing.T) {
 			assignees:         []string{"Art", "Ben"},
 			// We suggest assigned people rather than "suggested" people
 			// Suggested would be "Anne", "Bill", "Carol" if no one was assigned.
-			expectedCCs: []string{"Art", "Ben", "Carol"},
+			expectedCCs: []string{"art", "ben", "carol"},
 		},
 		{
 			testName:          "A, B, C; Nothing approved, but SOME assignees can approve",
@@ -346,7 +346,7 @@ func TestGetCCs(t *testing.T) {
 			// Assignees are a mix of potential approvers and random people
 			assignees: []string{"Art", "Ben", "John", "Jack"},
 			// We suggest assigned people rather than "suggested" people
-			expectedCCs: []string{"Art", "Ben", "Carol"},
+			expectedCCs: []string{"art", "ben", "carol"},
 		},
 		{
 			testName:          "Assignee is top OWNER, No one has approved",
@@ -354,8 +354,8 @@ func TestGetCCs(t *testing.T) {
 			testSeed:          0,
 			currentlyApproved: sets.NewString(),
 			// Assignee is a root approver
-			assignees:   []string{"Alice"},
-			expectedCCs: []string{"Alice"},
+			assignees:   []string{"alice"},
+			expectedCCs: []string{"alice"},
 		},
 	}
 
@@ -705,9 +705,9 @@ func TestGetMessage(t *testing.T) {
 	want := `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
 This pull-request has been approved by: *<a href="REFERENCE" title="Approved">Bill</a>*
-We suggest the following additional approver: **Alice**
+We suggest the following additional approver: **alice**
 
-Assign the PR to them by writing ` + "`/assign @Alice`" + ` in a comment when ready.
+Assign the PR to them by writing ` + "`/assign @alice`" + ` in a comment when ready.
 
 *No associated issue*. Update pull-request body to add a reference to an issue, or get approval with ` + "`/approve no-issue`" + `
 
@@ -722,7 +722,7 @@ Needs approval from an approver in each of these OWNERS Files:
 You can indicate your approval by writing ` + "`/approve`" + ` in a comment
 You can cancel your approval by writing ` + "`/approve cancel`" + ` in a comment
 </details>
-<!-- META={"approvers":["Alice"]} -->`
+<!-- META={"approvers":["alice"]} -->`
 	if got := GetMessage(ap, "org", "project"); got == nil {
 		t.Error("GetMessage() failed")
 	} else if *got != want {
@@ -784,9 +784,9 @@ func TestGetMessageNoneApproved(t *testing.T) {
 	want := `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
 This pull-request has been approved by: *<a href="REFERENCE" title="Author self-approved">John</a>*
-We suggest the following additional approvers: **Alice**, **Bill**
+We suggest the following additional approvers: **alice**, **bill**
 
-Assign the PR to them by writing ` + "`/assign @Alice @Bill`" + ` in a comment when ready.
+Assign the PR to them by writing ` + "`/assign @alice @bill`" + ` in a comment when ready.
 
 *No associated issue*. Update pull-request body to add a reference to an issue, or get approval with ` + "`/approve no-issue`" + `
 
@@ -801,7 +801,7 @@ Needs approval from an approver in each of these OWNERS Files:
 You can indicate your approval by writing ` + "`/approve`" + ` in a comment
 You can cancel your approval by writing ` + "`/approve cancel`" + ` in a comment
 </details>
-<!-- META={"approvers":["Alice","Bill"]} -->`
+<!-- META={"approvers":["alice","bill"]} -->`
 	if got := GetMessage(ap, "org", "project"); got == nil {
 		t.Error("GetMessage() failed")
 	} else if *got != want {
