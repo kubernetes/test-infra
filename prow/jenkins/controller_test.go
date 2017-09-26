@@ -114,6 +114,7 @@ func (f *fkc) ReplaceProwJob(name string, job kube.ProwJob) (kube.ProwJob, error
 }
 
 type fjc struct {
+	sync.Mutex
 	built    bool
 	pjs      []kube.ProwJob
 	enqueued bool
@@ -122,6 +123,8 @@ type fjc struct {
 }
 
 func (f *fjc) Build(pj *kube.ProwJob) (*url.URL, error) {
+	f.Lock()
+	defer f.Unlock()
 	if f.err != nil {
 		return nil, f.err
 	}
@@ -132,6 +135,8 @@ func (f *fjc) Build(pj *kube.ProwJob) (*url.URL, error) {
 }
 
 func (f *fjc) Enqueued(string) (bool, error) {
+	f.Lock()
+	defer f.Unlock()
 	if f.err != nil {
 		return false, f.err
 	}
@@ -139,6 +144,8 @@ func (f *fjc) Enqueued(string) (bool, error) {
 }
 
 func (f *fjc) Status(job, id string) (*Status, error) {
+	f.Lock()
+	defer f.Unlock()
 	if f.err != nil {
 		return nil, f.err
 	}
@@ -157,14 +164,36 @@ func (f *fghc) GetPullRequestChanges(org, repo string, number int) ([]github.Pul
 	return f.changes, f.err
 }
 
-func (f *fghc) BotName() (string, error)                                  { return "bot", nil }
-func (f *fghc) CreateStatus(org, repo, ref string, s github.Status) error { return nil }
+func (f *fghc) BotName() (string, error) {
+	f.Lock()
+	defer f.Unlock()
+	return "bot", nil
+}
+func (f *fghc) CreateStatus(org, repo, ref string, s github.Status) error {
+	f.Lock()
+	defer f.Unlock()
+	return nil
+}
 func (f *fghc) ListIssueComments(org, repo string, number int) ([]github.IssueComment, error) {
+	f.Lock()
+	defer f.Unlock()
 	return nil, nil
 }
-func (f *fghc) CreateComment(org, repo string, number int, comment string) error { return nil }
-func (f *fghc) DeleteComment(org, repo string, ID int) error                     { return nil }
-func (f *fghc) EditComment(org, repo string, ID int, comment string) error       { return nil }
+func (f *fghc) CreateComment(org, repo string, number int, comment string) error {
+	f.Lock()
+	defer f.Unlock()
+	return nil
+}
+func (f *fghc) DeleteComment(org, repo string, ID int) error {
+	f.Lock()
+	defer f.Unlock()
+	return nil
+}
+func (f *fghc) EditComment(org, repo string, ID int, comment string) error {
+	f.Lock()
+	defer f.Unlock()
+	return nil
+}
 
 func TestSyncNonPendingJobs(t *testing.T) {
 	var testcases = []struct {
