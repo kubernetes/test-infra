@@ -252,9 +252,10 @@ class DockerMode(object):
 
         print 'Starting %s...' % container
 
+        self.workspace = '/workspace'
         self.container = container
         self.local_artifacts = artifacts
-        self.artifacts = '/workspace/_artifacts'
+        self.artifacts = os.path.join(self.workspace, '_artifacts')
         self.cmd = [
             'docker', 'run', '--rm',
             '--name=%s' % container,
@@ -266,8 +267,8 @@ class DockerMode(object):
 
         if sudo:
             self.cmd.extend(['-v', '/var/run/docker.sock:/var/run/docker.sock'])
-        self.add_env('HOME=/workspace')
-        self.add_env('WORKSPACE=/workspace')
+        self.add_env('HOME=%s' % self.workspace)
+        self.add_env('WORKSPACE=%s' % self.workspace)
 
     def add_environment(self, *envs):
         """Adds FOO=BAR to the -e list for docker.
@@ -312,9 +313,9 @@ class DockerMode(object):
 
     def add_aws_cred(self, priv, pub, cred):
         """Mounts aws keys/creds inside the container."""
-        aws_ssh = '/workspace/.ssh/kube_aws_rsa'
+        aws_ssh = os.path.join(self.workspace, '.ssh', 'kube_aws_rsa')
         aws_pub = '%s.pub' % aws_ssh
-        aws_cred = '/workspace/.aws/credentials'
+        aws_cred = os.path.join(self.workspace, '.aws', 'credentials')
 
         self.cmd.extend([
           '-v', '%s:%s:ro' % (priv, aws_ssh),
@@ -326,7 +327,7 @@ class DockerMode(object):
         with tempfile.NamedTemporaryFile(prefix='aws-config', delete=False) as cfg:
             cfg.write(aws_role_config(profile, arn))
             self.cmd.extend([
-                '-v', '%s:%s:ro' % ('/workspace/.aws/config', cfg.name),
+                '-v', '%s:%s:ro' % (os.path.join(self.workspace, '.aws', 'config'), cfg.name),
                 '-e', 'AWS_SDK_LOAD_CONFIG=true',
             ])
         return 'jenkins-assumed-role'
@@ -334,12 +335,12 @@ class DockerMode(object):
     def add_aws_runner(self):
         """Run kops_aws_runner for kops-aws jobs."""
         self.cmd.append(
-          '--entrypoint=/workspace/kops-e2e-runner.sh'
+          '--entrypoint=%s/kops-e2e-runner.sh' % self.workspace
         )
 
     def add_gce_ssh(self, priv, pub):
         """Mounts priv and pub inside the container."""
-        gce_ssh = '/workspace/.ssh/google_compute_engine'
+        gce_ssh = os.path.join(self.workspace, '.ssh', 'google_compute_engine')
         gce_pub = '%s.pub' % gce_ssh
         self.cmd.extend([
           '-v', '%s:%s:ro' % (priv, gce_ssh),
@@ -589,7 +590,7 @@ def main(args):
             ])
 
     if args.aws:
-        set_up_aws(workspace, args, mode, cluster, runner_args)
+        set_up_aws(mode.workspace, args, mode, cluster, runner_args)
     elif args.gce_ssh:
         mode.add_gce_ssh(args.gce_ssh, args.gce_pub)
 
