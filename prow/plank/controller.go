@@ -341,9 +341,6 @@ func (c *Controller) syncNonPendingJob(pj kube.ProwJob, pm map[string]kube.Pod, 
 			pj.Status.CompletionTime = time.Now()
 			pj.Status.Description = "Job cannot be processed."
 			logrus.WithField("job", pj.Spec.Job).WithError(err).Warning("Unprocessable pod.")
-		} else {
-			pj.Status.BuildID = id
-			pj.Status.PodName = pn
 		}
 	} else {
 		id = getPodBuildID(&pod)
@@ -351,15 +348,16 @@ func (c *Controller) syncNonPendingJob(pj kube.ProwJob, pm map[string]kube.Pod, 
 	}
 
 	if pj.Status.State == kube.TriggeredState {
+		// BuildID needs to be set before we execute the job url template.
+		pj.Status.BuildID = id
+		pj.Status.State = kube.PendingState
+		pj.Status.PodName = pn
+		pj.Status.Description = "Job triggered."
 		var b bytes.Buffer
 		if err := c.ca.Config().Plank.JobURLTemplate.Execute(&b, &pj); err != nil {
 			return fmt.Errorf("error executing URL template: %v", err)
 		}
 		pj.Status.URL = b.String()
-		pj.Status.State = kube.PendingState
-		pj.Status.BuildID = id
-		pj.Status.PodName = pn
-		pj.Status.Description = "Job triggered."
 	}
 	reports <- pj
 
