@@ -16697,6 +16697,8 @@ periodics:
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
         value: /etc/service-account/service-account.json
+      - name: AWS_SHARED_CREDENTIALS_FILE
+        value: /workspace/.aws/credentials
       image: gcr.io/k8s-test-infra-aws/aws-janitor:0.3
       volumeMounts:
       - mountPath: /etc/service-account
