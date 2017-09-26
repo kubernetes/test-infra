@@ -11857,7 +11857,7 @@ periodics:
         secretName: ssh-key-secret
 
 - name: ci-kubernetes-e2e-gke-device-plugin-gpu
-  interval: 24h
+  interval: 2h
   agent: kubernetes
   spec:
     containers:
@@ -11891,7 +11891,7 @@ periodics:
         secretName: ssh-key-secret
 
 - name: ci-kubernetes-e2e-gke-device-plugin-gpu-stable1
-  interval: 24h
+  interval: 2h
   agent: kubernetes
   spec:
     containers:
