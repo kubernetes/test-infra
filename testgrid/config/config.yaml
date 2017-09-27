@@ -2465,7 +2465,7 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-new-master-upgrade-master
     description: 'Upgrade master only, in gce(debian), from 1.7 to master'
     alert_options:
-      alert_mail_to_addresses: 'michelle.192837+alerts@gmail.com, lusensjtu+alerts@gmail.com, bentheelder+alerts@gmail.com'
+      alert_mail_to_addresses: 'michelle.192837+alerts@gmail.com, lusensjtu+alerts@gmail.com'
   - name: gce-1.7-master-upgrade-cluster-parallel
     test_group_name: ci-kubernetes-e2e-gce-new-master-upgrade-cluster-parallel
     description: 'Upgrade master and node, in gce(debian), from 1.7 to master, run parallel tests only'
@@ -4134,19 +4134,19 @@ dashboards:
     code_search_url_template:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
     alert_options:
-      alert_mail_to_addresses: 'michelle.192837+alerts@gmail.com, lusensjtu+alerts@gmail.com, bentheelder+alerts@gmail.com'
+      alert_mail_to_addresses: 'michelle.192837+alerts@gmail.com, lusensjtu+alerts@gmail.com'
   - name: kops-aws-canary
     test_group_name: ci-kubernetes-e2e-kops-aws-canary
     code_search_url_template:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
     alert_options:
-      alert_mail_to_addresses: 'michelle.192837+alerts@gmail.com, lusensjtu+alerts@gmail.com, bentheelder+alerts@gmail.com'
+      alert_mail_to_addresses: 'michelle.192837+alerts@gmail.com, lusensjtu+alerts@gmail.com'
   - name: prow-canary
     test_group_name: ci-kubernetes-e2e-prow-canary
     code_search_url_template:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
     alert_options:
-      alert_mail_to_addresses: 'michelle.192837+alerts@gmail.com, lusensjtu+alerts@gmail.com, bentheelder+alerts@gmail.com'
+      alert_mail_to_addresses: 'michelle.192837+alerts@gmail.com, lusensjtu+alerts@gmail.com'
   - name: node-canary
     test_group_name: ci-kubernetes-e2e-node-canary
     code_search_url_template:
