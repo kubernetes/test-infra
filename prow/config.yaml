@@ -15768,7 +15768,7 @@ periodics:
     containers:
     - args:
       - --timeout=80
-      - --repo=k8s.io/kubernetes=release-1.7
+      - --repo=k8s.io/kubernetes=release-1.8
       - --root=/go/src
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -15807,7 +15807,7 @@ periodics:
     containers:
     - args:
       - --timeout=200
-      - --repo=k8s.io/kubernetes=release-1.7
+      - --repo=k8s.io/kubernetes=release-1.8
       - --root=/go/src
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -15846,7 +15846,7 @@ periodics:
     containers:
     - args:
       - --timeout=80
-      - --repo=k8s.io/kubernetes=release-1.6
+      - --repo=k8s.io/kubernetes=release-1.7
       - --root=/go/src
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -15885,7 +15885,7 @@ periodics:
     containers:
     - args:
       - --timeout=200
-      - --repo=k8s.io/kubernetes=release-1.6
+      - --repo=k8s.io/kubernetes=release-1.7
       - --root=/go/src
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -15924,7 +15924,7 @@ periodics:
     containers:
     - args:
       - --timeout=80
-      - --repo=k8s.io/kubernetes=release-1.5
+      - --repo=k8s.io/kubernetes=release-1.6
       - --root=/go/src
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -15963,7 +15963,7 @@ periodics:
     containers:
     - args:
       - --timeout=200
-      - --repo=k8s.io/kubernetes=release-1.5
+      - --repo=k8s.io/kubernetes=release-1.6
       - --root=/go/src
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -16080,7 +16080,7 @@ periodics:
     containers:
     - args:
       - --timeout=80
-      - --repo=k8s.io/kubernetes=release-1.7
+      - --repo=k8s.io/kubernetes=release-1.8
       - --root=/go/src
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -16119,7 +16119,7 @@ periodics:
     containers:
     - args:
       - --timeout=200
-      - --repo=k8s.io/kubernetes=release-1.7
+      - --repo=k8s.io/kubernetes=release-1.8
       - --root=/go/src
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -16158,7 +16158,7 @@ periodics:
     containers:
     - args:
       - --timeout=80
-      - --repo=k8s.io/kubernetes=release-1.6
+      - --repo=k8s.io/kubernetes=release-1.7
       - --root=/go/src
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -16197,7 +16197,7 @@ periodics:
     containers:
     - args:
       - --timeout=200
-      - --repo=k8s.io/kubernetes=release-1.6
+      - --repo=k8s.io/kubernetes=release-1.7
       - --root=/go/src
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -16314,7 +16314,7 @@ periodics:
     containers:
     - args:
       - --timeout=80
-      - --repo=k8s.io/kubernetes=release-1.7
+      - --repo=k8s.io/kubernetes=release-1.8
       - --root=/go/src
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -16353,7 +16353,7 @@ periodics:
     containers:
     - args:
       - --timeout=200
-      - --repo=k8s.io/kubernetes=release-1.7
+      - --repo=k8s.io/kubernetes=release-1.8
       - --root=/go/src
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -16392,7 +16392,7 @@ periodics:
     containers:
     - args:
       - --timeout=80
-      - --repo=k8s.io/kubernetes=release-1.6
+      - --repo=k8s.io/kubernetes=release-1.7
       - --root=/go/src
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -16431,7 +16431,7 @@ periodics:
     containers:
     - args:
       - --timeout=200
-      - --repo=k8s.io/kubernetes=release-1.6
+      - --repo=k8s.io/kubernetes=release-1.7
       - --root=/go/src
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS

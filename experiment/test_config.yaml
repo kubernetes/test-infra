@@ -736,13 +736,13 @@ k8sVersions:
     - --extract=ci/latest
   stable1:
     args:
-    - --extract=ci/latest-1.7
+    - --extract=ci/latest-1.8
   stable2:
     args:
-    - --extract=ci/latest-1.6
+    - --extract=ci/latest-1.7
   stable3:
     args:
-    - --extract=ci/latest-1.5
+    - --extract=ci/latest-1.6
 
 testSuites:
   alphafeatures:
@@ -827,13 +827,13 @@ nodeK8sVersions:
     - --repo=k8s.io/kubernetes=master
   stable1:
     args:
-    - --repo=k8s.io/kubernetes=release-1.7
+    - --repo=k8s.io/kubernetes=release-1.8
   stable2:
     args:
-    - --repo=k8s.io/kubernetes=release-1.6
+    - --repo=k8s.io/kubernetes=release-1.7
   stable3:
     args:
-    - --repo=k8s.io/kubernetes=release-1.5
+    - --repo=k8s.io/kubernetes=release-1.6
 
 nodeTestSuites:
   default:
