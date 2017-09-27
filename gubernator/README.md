@@ -29,3 +29,71 @@ For deployment:
         }
     }
 ```
+
+# GCS Layout API
+
+In order to correctly interpret jobs results, in GCS, Gubernator expects that
+any one job directory is laid out in a specific manner, and that job directories
+are laid out in a specific manner relative to each other.
+
+## Job Artifact GCS Layout
+
+For a single build of a job, Gubernator expects the following layout in GCS:
+
+```
+.
+├── artifacts         # all artifacts must be placed under this directory
+│   └── junit_00.xml  # jUnit XML reports from the build
+├── build-log.txt     # std{out,err} from the build
+├── finished.json     # metadata uploaded once the build finishes
+└── started.json      # metadata uploaded once the build starts
+```
+
+The following fields in `started.json` are honored:
+
+```json
+{
+    "timestamp": "seconds after UNIX epoch that the build started",
+    "pull": "$PULL_REFS from the run",
+    "repos": {
+        "org/repo": "git version of the repo used in the test",
+    },
+}
+```
+
+The following fields in `finished.json` are honored:
+
+```json
+{
+    "timestamp": "seconds after UNIX epoch that the build finished",
+    "result": "human-readable string detailing the result of the build",
+    "passed": "boolean, whether the build succeeded",
+}
+```
+
+Any artifacts from the build should be placed under `./artifacts/`. Any jUnit
+XML reports should be named `junit_*.xml` and placed under `./artifacts` as well.
+
+## GCS Bucket Layout
+
+In your bucket, a number of directories are required to store the output of all
+the different types of jobs:
+
+```
+.
+├── logs                 # periodic and postsubmit jobs live here
+│   └── other_job_name   # contains all the builds of a job
+│       └── build_number # contains job artifacts, as above
+└── pr-logs
+    ├── directory                # symlinks for builds live here
+    │   └── job_name             # contains all symlinks for a job
+    │       └── build_number.txt # contains one line: location of artifacts for the build
+    └── pull
+        ├── batch                # batch jobs live here
+        │   └── job_name         # contains all the builds of a job
+        │       └── build_number # contains job artifacts, as above
+        └── org_repo                 # jobs testing PRs for org/repo live here
+            └── pull_number          # jobs running for a PR with pull_number live here
+                └── job_name         # all builds for the job for this pr live here
+                    └── build_number # contains job artifacts, as above
+```
