@@ -401,6 +401,7 @@ presubmits:
     trigger: "(?m)^/test( all| pull-kubernetes-e2e-kops-aws),?(\\s+|$)"
     skip_branches:
     - release-1.4
+    - release-1.5
   - name: pull-kubernetes-e2e-kops-aws-prow
     agent: kubernetes
     skip_branches:
@@ -931,6 +932,7 @@ presubmits:
     trigger: "(?m)^/test( all| pull-security-kubernetes-e2e-kops-aws),?(\\s+|$)"
     skip_branches:
     - release-1.4
+    - release-1.5
   - name: pull-security-kubernetes-e2e-kops-aws-prow
     agent: kubernetes
     skip_branches:
