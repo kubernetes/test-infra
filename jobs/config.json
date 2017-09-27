@@ -10783,6 +10783,27 @@
       "UNKNOWN"
     ]
   },
+  "pull-kubernetes-node-e2e-prow": {
+    "args": [
+      "--build=bazel",
+      "--cluster=",
+      "--deployment=node",
+      "--extract=local",
+      "--gcp-project=k8s-jkns-pr-node-e2e",
+      "--gcp-zone=us-central1-f",
+      "--node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml",
+      "--node-test-args=--kubelet-flags=\"--cgroups-per-qos=true --cgroup-root=/\"",
+      "--node-tests=true",
+      "--provider=gce",
+      "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-node-e2e-prow",
+      "--test_args=--nodes=8 --skip=\"\\[Flaky\\]|\\[Slow\\]|\\[Serial\\]\" --flakeAttempts=2",
+      "--timeout=65m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-node"
+    ]
+  },
   "pull-kubernetes-unit": {
     "args": [
       "--branch=${PULL_BASE_REF}"
