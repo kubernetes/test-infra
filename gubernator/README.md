@@ -30,7 +30,7 @@ For deployment:
     }
 ```
 
-# GCS Layout API
+# GCS Layout
 
 In order to correctly interpret jobs results, in GCS, Gubernator expects that
 any one job directory is laid out in a specific manner, and that job directories
@@ -38,6 +38,8 @@ are laid out in a specific manner relative to each other.
 
 ## Job Artifact GCS Layout
 
+Every run should upload `started.json`, `finished.json`, and `build-log.txt`, and
+can optionally upload jUnit XML and/or other files to the `artifacts/` directory.
 For a single build of a job, Gubernator expects the following layout in GCS:
 
 ```
@@ -66,8 +68,8 @@ The following fields in `finished.json` are honored:
 ```json
 {
     "timestamp": "seconds after UNIX epoch that the build finished",
-    "result": "human-readable string detailing the result of the build",
-    "passed": "boolean, whether the build succeeded",
+    "result": "SUCCESS or FAILURE, the result of the build",
+    "metadata": "dictionary of additional key-value pairs that will be displayed to the user",
 }
 ```
 
