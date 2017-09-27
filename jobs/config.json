@@ -5848,7 +5848,7 @@
       "--gke-create-command=container clusters create --quiet --enable-legacy-authorization",
       "--gke-environment=test",
       "--provider=gke",
-      "--test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8",
+      "--test_args=--ginkgo.skip=\\[Flaky\\]|\\[Feature:.+\\]|Initializers --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8",
       "--timeout=900m",
       "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=ci/latest-1.8 --upgrade-image=gci"
     ],
@@ -5871,6 +5871,7 @@
       "--gke-environment=test",
       "--provider=gke",
       "--skew",
+      "--test_args=--ginkgo.skip=\\[Flaky\\]|\\[Feature:.+\\]|Initializers --minStartupPods=8",
       "--timeout=900m",
       "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=ci/latest-1.8 --upgrade-image=gci"
     ],
@@ -5892,7 +5893,7 @@
       "--gke-create-command=container clusters create --quiet --enable-legacy-authorization",
       "--gke-environment=test",
       "--provider=gke",
-      "--test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8",
+      "--test_args=--ginkgo.skip=\\[Flaky\\]|\\[Feature:.+\\]|Initializers --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8",
       "--timeout=900m",
       "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --upgrade-target=ci/latest-1.8 --upgrade-image=gci"
     ],
@@ -5913,7 +5914,7 @@
       "--gcp-zone=us-central1-a",
       "--gke-environment=test",
       "--provider=gke",
-      "--test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8",
+      "--test_args=--ginkgo.skip=\\[Flaky\\]|\\[Feature:.+\\]|Initializers --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8",
       "--timeout=900m",
       "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=ci/latest --upgrade-image=gci"
     ],
@@ -5935,6 +5936,7 @@
       "--gke-environment=test",
       "--provider=gke",
       "--skew",
+      "--test_args=--ginkgo.skip=\\[Flaky\\]|\\[Feature:.+\\]|Initializers --minStartupPods=8",
       "--timeout=900m",
       "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=ci/latest--upgrade-image=gci"
     ],
@@ -5955,7 +5957,7 @@
       "--gcp-zone=us-central1-a",
       "--gke-environment=test",
       "--provider=gke",
-      "--test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8",
+      "--test_args=--ginkgo.skip=\\[Flaky\\]|\\[Feature:.+\\]|Initializers --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8",
       "--timeout=900m",
       "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --upgrade-target=ci/latest --upgrade-image=gci"
     ],
