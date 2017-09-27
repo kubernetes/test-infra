@@ -55,6 +55,21 @@
     - 'ci-{suffix}'
     name: bootstrap-ci
     suffix:
+    # START AWS
+    - kubernetes-e2e-kops-aws: #zmerlynn
+        job-name: ci-kubernetes-e2e-kops-aws
+        jenkins-timeout: 240
+        timeout: 140
+        frequency: 'H/5 * * * *' # At least every 30m
+        trigger-job: 'ci-kubernetes-build'
+    - kubernetes-e2e-kops-aws-stable1:
+        job-name: ci-kubernetes-e2e-kops-aws-stable1
+        jenkins-timeout: 240
+        timeout: 140
+        frequency: '@hourly'
+        trigger-job: ''
+    # END AWS
+
     # gce high-scale tests #shyamjvs
     - kubernetes-e2e-gce-large-correctness:
         job-name: ci-kubernetes-e2e-gce-large-correctness
