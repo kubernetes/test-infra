@@ -260,7 +260,7 @@ func TestSyncNonPendingJobs(t *testing.T) {
 		pj          kube.ProwJob
 		pendingJobs map[string]int
 		pods        []kube.Pod
-		err         error
+		podErr      error
 
 		expectedState      kube.ProwJobState
 		expectedPodHasName bool
@@ -270,6 +270,7 @@ func TestSyncNonPendingJobs(t *testing.T) {
 		expectedReport     bool
 		expectedURL        string
 		expectedBuildID    string
+		expectError        bool
 	}{
 		{
 			name: "completed prow job",
@@ -353,10 +354,40 @@ func TestSyncNonPendingJobs(t *testing.T) {
 					State: kube.TriggeredState,
 				},
 			},
-			err:              kube.UnprocessableEntityError(errors.New("no way jose")),
+			podErr:           kube.NewUnprocessableEntityError(errors.New("no way jose")),
 			expectedState:    kube.ErrorState,
 			expectedComplete: true,
 			expectedReport:   true,
+		},
+		{
+			name: "conflict error starting pod",
+			pj: kube.ProwJob{
+				Spec: kube.ProwJobSpec{
+					Job:  "boop",
+					Type: kube.PeriodicJob,
+				},
+				Status: kube.ProwJobStatus{
+					State: kube.TriggeredState,
+				},
+			},
+			podErr:        kube.NewConflictError(errors.New("no way jose")),
+			expectedState: kube.TriggeredState,
+			expectError:   true,
+		},
+		{
+			name: "unknown error starting pod",
+			pj: kube.ProwJob{
+				Spec: kube.ProwJobSpec{
+					Job:  "boop",
+					Type: kube.PeriodicJob,
+				},
+				Status: kube.ProwJobStatus{
+					State: kube.TriggeredState,
+				},
+			},
+			podErr:        errors.New("no way unknown jose"),
+			expectedState: kube.TriggeredState,
+			expectError:   true,
 		},
 		{
 			name: "running pod, failed prowjob update",
@@ -413,7 +444,7 @@ func TestSyncNonPendingJobs(t *testing.T) {
 		}
 		fpc := &fkc{
 			pods: tc.pods,
-			err:  tc.err,
+			err:  tc.podErr,
 		}
 		c := Controller{
 			kc:          fc,
@@ -425,8 +456,12 @@ func TestSyncNonPendingJobs(t *testing.T) {
 		c.pendingJobs = tc.pendingJobs
 
 		reports := make(chan kube.ProwJob, 100)
-		if err := c.syncNonPendingJob(tc.pj, pm, reports); err != nil {
-			t.Errorf("for case %q got an error: %v", tc.name, err)
+		if err := c.syncNonPendingJob(tc.pj, pm, reports); (err != nil) != tc.expectError {
+			if tc.expectError {
+				t.Errorf("for case %q expected an error, but got none", tc.name)
+			} else {
+				t.Errorf("for case %q got an unexpected error: %v", tc.name, err)
+			}
 			continue
 		}
 		close(reports)
@@ -691,7 +726,7 @@ func TestSyncPendingJob(t *testing.T) {
 					State: kube.PendingState,
 				},
 			},
-			err:              kube.UnprocessableEntityError(errors.New("no way jose")),
+			err:              kube.NewUnprocessableEntityError(errors.New("no way jose")),
 			expectedState:    kube.ErrorState,
 			expectedComplete: true,
 			expectedReport:   true,
