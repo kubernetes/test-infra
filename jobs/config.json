@@ -10643,6 +10643,7 @@
       "--env-file=jobs/platform/kops_aws.env",
       "--env-file=jobs/env/pull-kubernetes-e2e-kops-aws.env",
       "--extract=local",
+      "--ginkgo-parallel",
       "--mode=docker",
       "--provider=aws",
       "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-kops-aws",
