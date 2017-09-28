@@ -71,6 +71,7 @@ something bad'''
 
     def test_package_names(self):
         os.chdir(self.tmpdir)
+        os.putenv('WORKSPACE', self.tmpdir)
         os.symlink('.', 'bazel-testlogs')
 
         self.make_result(name='coal/sub_test')
