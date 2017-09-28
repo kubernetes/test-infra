@@ -40,23 +40,13 @@ import (
 const defaultGinkgoParallel = 25
 
 var (
-	artifacts    = initPath("./_artifacts")
-	interrupt    = time.NewTimer(time.Duration(0)) // interrupt testing at this time.
-	kubetestPath = initPath(os.Args[0])
-	terminate    = time.NewTimer(time.Duration(0)) // terminate testing at this time.
-	verbose      = false
-	timeout      = time.Duration(0)
-	boskos       = client.NewClient(os.Getenv("JOB_NAME"), "http://boskos")
+	artifacts = filepath.Join(os.Getenv("WORKSPACE"), "_artifacts")
+	interrupt = time.NewTimer(time.Duration(0)) // interrupt testing at this time.
+	terminate = time.NewTimer(time.Duration(0)) // terminate testing at this time.
+	verbose   = false
+	timeout   = time.Duration(0)
+	boskos    = client.NewClient(os.Getenv("JOB_NAME"), "http://boskos")
 )
-
-// Joins os.Getwd() and path
-func initPath(path string) string {
-	d, err := os.Getwd()
-	if err != nil {
-		log.Fatalf("failed initPath(): %v", err)
-	}
-	return filepath.Join(d, path)
-}
 
 type options struct {
 	build               buildStrategy

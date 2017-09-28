@@ -1601,6 +1601,7 @@ func (sq *SubmitQueue) serveMergeInfo(res http.ResponseWriter, req *http.Request
 	// Lock to get options since we are not running in the main goroutine.
 	sq.opts.Lock()
 	doNotMergeMilestones := sq.DoNotMergeMilestones
+	additionalLabels := sq.AdditionalRequiredLabels
 	gateApproved := sq.GateApproved
 	gateCLA := sq.GateCLA
 	mergeContexts := mungeopts.RequiredContexts.Merge
@@ -1632,6 +1633,9 @@ func (sq *SubmitQueue) serveMergeInfo(res http.ResponseWriter, req *http.Request
 	out.WriteString(fmt.Sprintf("<li>The PR must not have been updated since the %q label was applied</li>", lgtmLabel))
 	if gateApproved {
 		out.WriteString(fmt.Sprintf(`<li>The PR must have the %q label</li>`, approvedLabel))
+	}
+	if len(additionalLabels) > 0 {
+		out.WriteString(fmt.Sprintf(`<li>The PR must have the following labels: %q</li>`, additionalLabels))
 	}
 	out.WriteString(`<li>The PR must not have the any labels starting with "do-not-merge"</li>`)
 	out.WriteString(`</ol><br>`)

@@ -77,11 +77,13 @@ def main():
     root.set('time', '0')
     for package in sorted(test_packages('bazel-testlogs')):
         root.append(result(package))
+    artifacts_dir = os.path.join(os.environ.get('WORKSPACE', os.getcwd()),
+                                 '_artifacts')
     try:
-        os.mkdir('_artifacts')
+        os.mkdir(artifacts_dir)
     except OSError:
         pass
-    with open('_artifacts/junit_bazel.xml', 'w') as fp:
+    with open(os.path.join(artifacts_dir, 'junit_bazel.xml'), 'w') as fp:
         fp.write(ET.tostring(root, 'utf8'))
 
 

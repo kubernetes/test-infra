@@ -54,6 +54,10 @@ class JobTest(unittest.TestCase):
         'config_test.py', # Script for testing config.json and Prow config.
         'env_gc.py', # Tool script to garbage collect unused .env files.
         'move_extract.py',
+        # Node-e2e image configurations
+        'benchmark-config.yaml',
+        'image-config.yaml',
+        'image-config-serial.yaml',
     ]
     # also exclude .pyc
     excludes.extend(e + 'c' for e in excludes if e.endswith('.py'))
@@ -771,6 +775,11 @@ class JobTest(unittest.TestCase):
             'ci-kubernetes-e2e-gce-canary': 'ci-kubernetes-e2e-gce-*',
             'ci-kubernetes-e2e-gke-gpu': 'ci-kubernetes-e2e-gke-gpu-*',
             'pull-kubernetes-e2e-gke-gpu': 'ci-kubernetes-e2e-gke-gpu-*',
+            'ci-kubernetes-node-kubelet-serial': 'ci-kubernetes-node-kubelet-*',
+            'ci-kubernetes-node-kubelet-flaky': 'ci-kubernetes-node-kubelet-*',
+            'ci-kubernetes-node-kubelet-conformance': 'ci-kubernetes-node-kubelet-*',
+            'ci-kubernetes-node-kubelet-benchmark': 'ci-kubernetes-node-kubelet-*',
+            'ci-kubernetes-node-kubelet': 'ci-kubernetes-node-kubelet-*',
         }
         for soak_prefix in [
                 'ci-kubernetes-soak-gce-1.5',

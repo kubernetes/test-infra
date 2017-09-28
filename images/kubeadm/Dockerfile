@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM gcr.io/k8s-testimages/kubekins-e2e:v20170922-a3fe8d1a
+FROM gcr.io/k8s-testimages/kubekins-e2e:v20170927-54229024
 MAINTAINER beacham@google.com
 
 RUN apt-get update && apt-get install -y \

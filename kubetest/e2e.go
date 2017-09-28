@@ -526,13 +526,14 @@ func nodeTest(nodeArgs []string, testArgs, nodeTestArgs, project, zone string) e
 		"--logtostderr",
 		"--vmodule=*=4",
 		"--ssh-env=gce",
-		fmt.Sprintf("--results-dir=%s/src/k8s.io/kubernetes/_artifacts", os.Getenv("GOPATH")),
+		fmt.Sprintf("--results-dir=%s/_artifacts", os.Getenv("WORKSPACE")),
 		fmt.Sprintf("--project=%s", project),
 		fmt.Sprintf("--zone=%s", zone),
 		fmt.Sprintf("--ssh-user=%s", os.Getenv("USER")),
 		fmt.Sprintf("--ssh-key=%s", sshKeyPath),
 		fmt.Sprintf("--ginkgo-flags=%s", testArgs),
 		fmt.Sprintf("--test_args=%s", nodeTestArgs),
+		fmt.Sprintf("--test-timeout=%s", timeout.String()),
 	}
 
 	runner = append(runner, nodeArgs...)
@@ -610,7 +611,7 @@ func skewTest(args []string, prefix string, checkSkew bool) error {
 	defer popS()
 	args = appendField(args, "--report-prefix", prefix)
 	return finishRunning(exec.Command(
-		kubetestPath,
+		"kubetest",
 		"--test",
 		"--test_args="+strings.Join(args, " "),
 		fmt.Sprintf("--v=%t", verbose),

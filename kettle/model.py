@@ -13,11 +13,11 @@
 # limitations under the License.
 
 
-
 import json
-import zlib
+import os
 import sqlite3
 import time
+import zlib
 
 
 class Database(object):
@@ -27,7 +27,9 @@ class Database(object):
 
     DEFAULT_INCREMENTAL_TABLE = 'build_emitted'
 
-    def __init__(self, path):
+    def __init__(self, path=None):
+        if path is None:
+            path = os.getenv('KETTLE_DB') or 'build.db'
         self.db = sqlite3.connect(path)
         self.db.executescript('''
             create table if not exists build(gcs_path primary key, started_json, finished_json, finished_time);
@@ -154,6 +156,11 @@ class Database(object):
             if data:
                 results.append(data)
         return results
+
+    def get_oldest_emitted(self, incremental_table):
+        return self.db.execute('select min(finished_time) from build '
+                               'where rowid in (select build_id from %s)'
+                               % incremental_table).fetchone()[0]
 
     def reset_emitted(self, incremental_table=DEFAULT_INCREMENTAL_TABLE):
         self.db.execute('drop table if exists %s' % incremental_table)
