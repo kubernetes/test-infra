@@ -207,7 +207,8 @@
       "--gcp-zone=us-central1-f",
       "--provider=gce",
       "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
-      "--timeout=50m"
+      "--timeout=50m",
+      "--ginkgo-parallel=25"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -241,7 +242,8 @@
       "--gcp-zone=us-central1-f",
       "--provider=gce",
       "--test_args=--ginkgo.focus=\\[Slow\\] --ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
-      "--timeout=150m"
+      "--timeout=150m",
+      "--ginkgo-parallel=25"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -258,7 +260,8 @@
       "--provider=gce",
       "--publish=gs://kubernetes-release-dev/ci/latest-green.txt",
       "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
-      "--timeout=50m"
+      "--timeout=50m",
+      "--ginkgo-parallel=30"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -276,7 +279,8 @@
       "--gcp-zone=us-central1-f",
       "--provider=gce",
       "--test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\\[Serial\\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8",
-      "--timeout=120m"
+      "--timeout=120m",
+      "--ginkgo-parallel=25"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -312,7 +316,8 @@
       "--gcp-zone=us-central1-f",
       "--provider=gce",
       "--test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\\[Serial\\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8",
-      "--timeout=120m"
+      "--timeout=120m",
+      "--ginkgo-parallel=25"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -349,7 +354,8 @@
       "--provider=gce",
       "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8",
       "--timeout=120m",
-      "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=ci/latest-1.7"
+      "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=ci/latest-1.7",
+      "--ginkgo-parallel=25"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -369,7 +375,8 @@
       "--skew",
       "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
       "--timeout=120m",
-      "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=ci/latest-1.7"
+      "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=ci/latest-1.7",
+      "--ginkgo-parallel=25"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -388,7 +395,8 @@
       "--provider=gce",
       "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8",
       "--timeout=120m",
-      "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --upgrade-target=ci/latest-1.7"
+      "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --upgrade-target=ci/latest-1.7",
+      "--ginkgo-parallel=25"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -407,7 +415,8 @@
       "--provider=gce",
       "--skew",
       "--test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\\[Serial\\] --minStartupPods=8",
-      "--timeout=120m"
+      "--timeout=120m",
+      "--ginkgo-parallel=25"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -445,7 +454,8 @@
       "--provider=gce",
       "--skew",
       "--test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\\[Serial\\] --minStartupPods=8",
-      "--timeout=120m"
+      "--timeout=120m",
+      "--ginkgo-parallel=25"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -481,7 +491,8 @@
       "--gcp-zone=us-central1-f",
       "--provider=gce",
       "--test_args=--ginkgo.focus=\\[Feature:GCEAlphaFeature\\] --minStartupPods=8",
-      "--timeout=60m"
+      "--timeout=60m",
+      "--ginkgo-parallel=30"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -633,7 +644,8 @@
       "--gcp-zone=us-central1-f",
       "--provider=gce",
       "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
-      "--timeout=50m"
+      "--timeout=50m",
+      "--ginkgo-parallel=25"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -1699,7 +1711,8 @@
       "--gcp-zone=us-central1-f",
       "--provider=gce",
       "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
-      "--timeout=50m"
+      "--timeout=50m",
+      "--ginkgo-parallel=25"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -1715,7 +1728,8 @@
       "--gcp-zone=us-central1-f",
       "--provider=gce",
       "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
-      "--timeout=50m"
+      "--timeout=50m",
+      "--ginkgo-parallel=25"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -1732,7 +1746,8 @@
       "--gcp-zone=us-central1-f",
       "--provider=gce",
       "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=1",
-      "--timeout=50m"
+      "--timeout=50m",
+      "--ginkgo-parallel=30"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -1748,7 +1763,8 @@
       "--gcp-zone=us-central1-f",
       "--provider=gce",
       "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
-      "--timeout=50m"
+      "--timeout=50m",
+      "--ginkgo-parallel=25"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -1767,7 +1783,8 @@
       "--gcp-zone=us-central1-f",
       "--provider=gce",
       "--test_args=--ginkgo.focus=\\[Feature:Federation\\] --ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[NoCluster\\] --minStartupPods=8",
-      "--timeout=900m"
+      "--timeout=900m",
+      "--ginkgo-parallel=25"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -1786,7 +1803,8 @@
       "--gcp-zone=us-central1-f",
       "--provider=gce",
       "--test_args=--ginkgo.focus=\\[Feature:Federation\\] --ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[NoCluster\\] --minStartupPods=8",
-      "--timeout=900m"
+      "--timeout=900m",
+      "--ginkgo-parallel=25"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -1805,7 +1823,8 @@
       "--gcp-zone=us-central1-f",
       "--provider=gce",
       "--test_args=--ginkgo.focus=\\[Feature:Federation\\] --ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[NoCluster\\] --minStartupPods=8",
-      "--timeout=900m"
+      "--timeout=900m",
+      "--ginkgo-parallel=25"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -1824,7 +1843,8 @@
       "--gcp-zone=us-central1-f",
       "--provider=gce",
       "--test_args=--ginkgo.focus=\\[Feature:Federation\\] --ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[NoCluster\\] --minStartupPods=8",
-      "--timeout=900m"
+      "--timeout=900m",
+      "--ginkgo-parallel=25"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -1930,7 +1950,8 @@
       "--gcp-zone=us-central1-f",
       "--provider=gce",
       "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
-      "--timeout=50m"
+      "--timeout=50m",
+      "--ginkgo-parallel=25"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -1946,7 +1967,8 @@
       "--gcp-zone=us-central1-f",
       "--provider=gce",
       "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
-      "--timeout=50m"
+      "--timeout=50m",
+      "--ginkgo-parallel=25"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -1992,7 +2014,8 @@
       "--gcp-zone=us-central1-f",
       "--provider=gce",
       "--test_args=--ginkgo.focus=\\[Slow\\] --ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
-      "--timeout=150m"
+      "--timeout=150m",
+      "--ginkgo-parallel=25"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -2008,7 +2031,8 @@
       "--gcp-zone=us-central1-f",
       "--provider=gce",
       "--test_args=--ginkgo.focus=\\[Slow\\] --ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
-      "--timeout=150m"
+      "--timeout=150m",
+      "--ginkgo-parallel=25"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -2411,7 +2435,8 @@
       "--provider=gce",
       "--test_args=--ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --allowed-not-ready-nodes=20 --node-schedulable-timeout=60m --minStartupPods=8 --gather-resource-usage=master --gather-metrics-at-teardown=master",
       "--timeout=600m",
-      "--use-logexporter"
+      "--use-logexporter",
+      "--ginkgo-parallel=30"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -2563,7 +2588,8 @@
       "--provider=gce",
       "--skew",
       "--test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\\[Serial\\] --minStartupPods=8",
-      "--timeout=120m"
+      "--timeout=120m",
+      "--ginkgo-parallel=25"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -2617,7 +2643,8 @@
       "--gcp-zone=us-central1-a",
       "--provider=gce",
       "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
-      "--timeout=150m"
+      "--timeout=150m",
+      "--ginkgo-parallel=25"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -2635,7 +2662,8 @@
       "--gcp-zone=us-central1-f",
       "--provider=gce",
       "--test_args=--ginkgo.focus=Kubectl --ginkgo.skip=\\[Serial\\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8",
-      "--timeout=120m"
+      "--timeout=120m",
+      "--ginkgo-parallel=25"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -2746,7 +2774,8 @@
       "--gcp-zone=us-central1-f",
       "--provider=gce",
       "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --kube-api-content-type=application/vnd.kubernetes.protobuf --minStartupPods=8",
-      "--timeout=50m"
+      "--timeout=50m",
+      "--ginkgo-parallel=25"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -2828,7 +2857,8 @@
       "--gcp-zone=us-central1-f",
       "--provider=gce",
       "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
-      "--timeout=50m"
+      "--timeout=50m",
+      "--ginkgo-parallel=25"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -2844,7 +2874,8 @@
       "--gcp-zone=us-central1-f",
       "--provider=gce",
       "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
-      "--timeout=50m"
+      "--timeout=50m",
+      "--ginkgo-parallel=25"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -2860,7 +2891,8 @@
       "--gcp-zone=us-central1-f",
       "--provider=gce",
       "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
-      "--timeout=50m"
+      "--timeout=50m",
+      "--ginkgo-parallel=25"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -2932,7 +2964,8 @@
       "--provider=gce",
       "--test_args=--ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --allowed-not-ready-nodes=50 --node-schedulable-timeout=90m --minStartupPods=8 --gather-resource-usage=master --gather-metrics-at-teardown=master",
       "--timeout=1000m",
-      "--use-logexporter"
+      "--use-logexporter",
+      "--ginkgo-parallel=30"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -3046,7 +3079,8 @@
       "--gcp-zone=europe-west1-c",
       "--provider=gce",
       "--test_args=--ginkgo.focus=\\[Slow\\] --ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
-      "--timeout=150m"
+      "--timeout=150m",
+      "--ginkgo-parallel=25"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -3062,7 +3096,8 @@
       "--gcp-zone=us-central1-f",
       "--provider=gce",
       "--test_args=--ginkgo.focus=\\[Slow\\] --ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
-      "--timeout=150m"
+      "--timeout=150m",
+      "--ginkgo-parallel=25"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -3078,7 +3113,8 @@
       "--gcp-zone=us-central1-f",
       "--provider=gce",
       "--test_args=--ginkgo.focus=\\[Slow\\] --ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
-      "--timeout=150m"
+      "--timeout=150m",
+      "--ginkgo-parallel=25"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -3094,7 +3130,8 @@
       "--gcp-zone=us-central1-f",
       "--provider=gce",
       "--test_args=--ginkgo.focus=\\[Slow\\] --ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
-      "--timeout=150m"
+      "--timeout=150m",
+      "--ginkgo-parallel=25"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -3844,7 +3881,8 @@
       "--gcp-zone=us-central1-f",
       "--provider=gce",
       "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
-      "--timeout=50m"
+      "--timeout=50m",
+      "--ginkgo-parallel=30"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4006,7 +4044,8 @@
       "--gcp-zone=us-central1-f",
       "--provider=gce",
       "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
-      "--timeout=50m"
+      "--timeout=50m",
+      "--ginkgo-parallel=25"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4038,7 +4077,8 @@
       "--gcp-zone=us-central1-f",
       "--provider=gce",
       "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
-      "--timeout=50m"
+      "--timeout=50m",
+      "--ginkgo-parallel=25"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4167,7 +4207,8 @@
       "--gcp-zone=us-central1-f",
       "--provider=gce",
       "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
-      "--timeout=50m"
+      "--timeout=50m",
+      "--ginkgo-parallel=30"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4224,7 +4265,8 @@
       "--gcp-zone=us-central1-f",
       "--provider=gce",
       "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --kube-api-content-type=application/vnd.kubernetes.protobuf --minStartupPods=8",
-      "--timeout=50m"
+      "--timeout=50m",
+      "--ginkgo-parallel=25"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4321,7 +4363,8 @@
       "--gcp-zone=us-central1-f",
       "--provider=gce",
       "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
-      "--timeout=50m"
+      "--timeout=50m",
+      "--ginkgo-parallel=25"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4337,7 +4380,8 @@
       "--gcp-zone=us-central1-f",
       "--provider=gce",
       "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
-      "--timeout=50m"
+      "--timeout=50m",
+      "--ginkgo-parallel=25"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4353,7 +4397,8 @@
       "--gcp-zone=us-central1-f",
       "--provider=gce",
       "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
-      "--timeout=50m"
+      "--timeout=50m",
+      "--ginkgo-parallel=25"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4519,7 +4564,8 @@
       "--gcp-zone=europe-west1-c",
       "--provider=gce",
       "--test_args=--ginkgo.focus=\\[Slow\\] --ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
-      "--timeout=150m"
+      "--timeout=150m",
+      "--ginkgo-parallel=25"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4535,7 +4581,8 @@
       "--gcp-zone=us-central1-f",
       "--provider=gce",
       "--test_args=--ginkgo.focus=\\[Slow\\] --ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
-      "--timeout=150m"
+      "--timeout=150m",
+      "--ginkgo-parallel=25"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4551,7 +4598,8 @@
       "--gcp-zone=us-central1-f",
       "--provider=gce",
       "--test_args=--ginkgo.focus=\\[Slow\\] --ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
-      "--timeout=150m"
+      "--timeout=150m",
+      "--ginkgo-parallel=25"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -4567,7 +4615,8 @@
       "--gcp-zone=us-central1-f",
       "--provider=gce",
       "--test_args=--ginkgo.focus=\\[Slow\\] --ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
-      "--timeout=150m"
+      "--timeout=150m",
+      "--ginkgo-parallel=25"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -8532,7 +8581,8 @@
       "--gcp-zone=us-central1-f",
       "--provider=gce",
       "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
-      "--timeout=65m"
+      "--timeout=65m",
+      "--ginkgo-parallel=25"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -9702,7 +9752,8 @@
       "--save=gs://kubernetes-jenkins/soak/ci-kubernetes-soak-gce-federation-deploy",
       "--test_args=--ginkgo.focus=\\[Feature:Federation\\] --ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[NoCluster\\] --clean-start=true --minStartupPods=8",
       "--timeout=90m",
-      "--up=false"
+      "--up=false",
+      "--ginkgo-parallel=25"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
