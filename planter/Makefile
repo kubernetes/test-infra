@@ -12,11 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# note: sync this with planter.sh!
+# NOTE: sync this with planter.sh! (the current stable version that is)
 # this should be bazel version - planter sub version
+#
+# NOTE: override BAZEL_VERSION and IMAGE_VERSION to create test images, then
+# override TAG when running planter. 
+# EG:
+# $ make -C planter BAZEL_VERSION="foo" IMAGE_VERSION="bar"
+# $ TAG="foo-bar" ./planter/planter.sh bazel test //...
+#
 BAZEL_VERSION = 0.5.4
+IMAGE_VERSION = 1
 IMAGE_NAME = gcr.io/k8s-testimages/planter
-TAG = $(BAZEL_VERSION)-1
+TAG = $(BAZEL_VERSION)-$(IMAGE_VERSION)
 
 image:
 	docker build --build-arg BAZEL_VERSION=$(BAZEL_VERSION) -t "$(IMAGE_NAME):$(TAG)" . --pull

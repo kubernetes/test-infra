@@ -23,6 +23,14 @@ ARG BAZEL_VERSION
 WORKDIR "/workspace"
 RUN mkdir -p "/workspace"
 
+# NOTE: for now this should be in sync with
+# https://github.com/kubernetes/kubernetes/blob/master/build/build-image/cross/Dockerfile
+ENV KUBE_DYNAMIC_CROSSPLATFORMS \
+  armhf \
+  arm64 \
+  s390x \
+  ppc64el
+
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     ca-certificates \
@@ -37,6 +45,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     # TODO(bentheelder): we should probably have these as bazel dependencies,
     # remove these from the container if kettle is fixed.
     pip install pylint pyyaml
+
+# NOTE: this is also from <kubernetes>/build/build-image/cross/Dockerfile
+# Use dynamic cgo linking for architectures other than amd64 for the server platforms
+# To install crossbuild essential for other architectures add the following repository.
+RUN echo "deb http://archive.ubuntu.com/ubuntu xenial main universe" > /etc/apt/sources.list.d/cgocrosscompiling.list \
+  && apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 40976EAF437D05B5 3B4FE6ACC0B21F32 \
+  && apt-get update \
+  && apt-get install -y build-essential \
+  && for platform in ${KUBE_DYNAMIC_CROSSPLATFORMS}; do apt-get install -y crossbuild-essential-${platform}; done \
+  && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 SHELL ["/bin/bash", "-c"]
 
