@@ -337,11 +337,14 @@ func (c *Client) CreateIssueReaction(org, repo string, ID int, reaction string) 
 }
 
 // DeleteStaleComments iterates over comments on an issue/PR, deleting those which the 'isStale'
-// function identifies as stale.
-func (c *Client) DeleteStaleComments(org, repo string, number int, isStale func(IssueComment) bool) error {
-	comments, err := c.ListIssueComments(org, repo, number)
-	if err != nil {
-		return fmt.Errorf("failed to list comments while deleting stale comments. err: %v", err)
+// function identifies as stale. If 'comments' is nil, the comments will be fetched from github.
+func (c *Client) DeleteStaleComments(org, repo string, number int, comments []IssueComment, isStale func(IssueComment) bool) error {
+	var err error
+	if comments == nil {
+		comments, err = c.ListIssueComments(org, repo, number)
+		if err != nil {
+			return fmt.Errorf("failed to list comments while deleting stale comments. err: %v", err)
+		}
 	}
 	for _, comment := range comments {
 		if isStale(comment) {

@@ -105,8 +105,10 @@ func (f *FakeClient) DeleteComment(owner, repo string, ID int) error {
 	return fmt.Errorf("could not find issue comment %d", ID)
 }
 
-func (f *FakeClient) DeleteStaleComments(org, repo string, number int, isStale func(github.IssueComment) bool) error {
-	comments, _ := f.ListIssueComments(org, repo, number)
+func (f *FakeClient) DeleteStaleComments(org, repo string, number int, comments []github.IssueComment, isStale func(github.IssueComment) bool) error {
+	if comments == nil {
+		comments, _ = f.ListIssueComments(org, repo, number)
+	}
 	for _, comment := range comments {
 		if isStale(comment) {
 			if err := f.DeleteComment(org, repo, comment.ID); err != nil {
