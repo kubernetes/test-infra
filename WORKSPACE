@@ -27,12 +27,12 @@ docker_pull(
 )
 
 git_repository(
-    name = "org_pubref_rules_node",
-    commit = "bd14a465063da90f632bad46c1efbf802c339e68",
-    remote = "https://github.com/pubref/rules_node.git",
+    name = "org_dropbox_rules_node",
+    remote = "https://github.com/dropbox/rules_node.git",
+    commit = "4fe6494f3f8d1a272d47d32ecc66698f6c43ed09",
 )
 
-load("@org_pubref_rules_node//node:rules.bzl", "node_repositories", "npm_repository")
+load("@org_dropbox_rules_node//node:defs.bzl", "node_repositories")
 
 node_repositories()
 
@@ -51,13 +51,6 @@ py_library(
     sha256 = "350496f6fdd8c2bb17a0fa3fd2ec98431280cf12d72dae498b19ac0119c2bbad",
     strip_prefix = "ruamel.yaml-0.15.9",
     url = "https://pypi.python.org/packages/83/90/2eecde4bbd6a67805080091e83a29100c2f7d2afcaf926d75da5839f9283/ruamel.yaml-0.15.9.tar.gz",
-)
-
-npm_repository(
-    name = "npm_mocha",
-    deps = {
-        "mocha": "3.2.0",
-    },
 )
 
 # http_archives can be updated to newer version by doing the following:
