@@ -73,16 +73,13 @@ plugins:
   - slackevents
 
   kubernetes-incubator:
-  - cla
   - assign
-  - size
-
-  kubernetes-incubator/kube-aws:
-  - lgtm
-
-  kubernetes-incubator/external-storage:
+  - cla
+  - close
   - label
   - lgtm
+  - reopen
+  - size
 
   kubernetes-security/kubernetes:
   - trigger
