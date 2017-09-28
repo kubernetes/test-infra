@@ -2562,7 +2562,7 @@ periodics:
         defaultMode: 256
         secretName: ssh-key-secret
 
-- interval: 24h
+- interval: 5h
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-alpha-features-release-1-5
   spec:
@@ -4512,7 +4512,7 @@ periodics:
         defaultMode: 256
         secretName: ssh-key-secret
 
-- interval: 24h
+- interval: 5h
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-etcd3-release-1-5
   spec:
@@ -4886,7 +4886,7 @@ periodics:
         defaultMode: 256
         secretName: ssh-key-secret
 
-- interval: 24h
+- interval: 5h
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-gci-ci-release-1-5
   spec:
@@ -4954,7 +4954,7 @@ periodics:
         defaultMode: 256
         secretName: ssh-key-secret
 
-- interval: 24h
+- interval: 5h
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-gci-ci-serial-release-1-5
   spec:
@@ -5022,7 +5022,7 @@ periodics:
         defaultMode: 256
         secretName: ssh-key-secret
 
-- interval: 24h
+- interval: 5h
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-gci-ci-slow-release-1-5
   spec:
@@ -6348,7 +6348,7 @@ periodics:
         defaultMode: 256
         secretName: ssh-key-secret
 
-- interval: 24h
+- interval: 5h
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-reboot-release-1-5
   spec:
@@ -6450,7 +6450,7 @@ periodics:
         defaultMode: 256
         secretName: ssh-key-secret
 
-- interval: 24h
+- interval: 5h
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-release-1-5
   spec:
@@ -6688,7 +6688,7 @@ periodics:
         defaultMode: 256
         secretName: ssh-key-secret
 
-- interval: 24h
+- interval: 5h
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-serial-release-1-5
   spec:
@@ -6824,7 +6824,7 @@ periodics:
         defaultMode: 256
         secretName: ssh-key-secret
 
-- interval: 24h
+- interval: 5h
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-slow-release-1-5
   spec:
@@ -8050,7 +8050,7 @@ periodics:
         defaultMode: 256
         secretName: ssh-key-secret
 
-- interval: 24h
+- interval: 5h
   agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-alpha-features-release-1-5
   spec:
@@ -8526,7 +8526,7 @@ periodics:
         defaultMode: 256
         secretName: ssh-key-secret
 
-- interval: 24h
+- interval: 5h
   agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-ingress-release-1-5
   spec:
@@ -8832,7 +8832,7 @@ periodics:
         defaultMode: 256
         secretName: ssh-key-secret
 
-- interval: 24h
+- interval: 5h
   agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-reboot-release-1-5
   spec:
@@ -8968,7 +8968,7 @@ periodics:
         defaultMode: 256
         secretName: ssh-key-secret
 
-- interval: 24h
+- interval: 5h
   agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-release-1-5
   spec:
@@ -9172,7 +9172,7 @@ periodics:
         defaultMode: 256
         secretName: ssh-key-secret
 
-- interval: 24h
+- interval: 5h
   agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-serial-release-1-5
   spec:
@@ -9342,7 +9342,7 @@ periodics:
         defaultMode: 256
         secretName: ssh-key-secret
 
-- interval: 24h
+- interval: 5h
   agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-slow-release-1-5
   spec:
@@ -9716,7 +9716,7 @@ periodics:
         defaultMode: 256
         secretName: ssh-key-secret
 
-- interval: 24h
+- interval: 5h
   agent: kubernetes
   name: ci-kubernetes-e2e-gci-gke-ingress-release-1-5
   spec:
@@ -10022,7 +10022,7 @@ periodics:
         defaultMode: 256
         secretName: ssh-key-secret
 
-- interval: 24h
+- interval: 5h
   agent: kubernetes
   name: ci-kubernetes-e2e-gci-gke-reboot-release-1-5
   spec:
@@ -10158,7 +10158,7 @@ periodics:
         defaultMode: 256
         secretName: ssh-key-secret
 
-- interval: 24h
+- interval: 5h
   agent: kubernetes
   name: ci-kubernetes-e2e-gci-gke-release-1-5
   spec:
@@ -10294,7 +10294,7 @@ periodics:
         defaultMode: 256
         secretName: ssh-key-secret
 
-- interval: 24h
+- interval: 5h
   agent: kubernetes
   name: ci-kubernetes-e2e-gci-gke-serial-release-1-5
   spec:
@@ -10464,7 +10464,7 @@ periodics:
         defaultMode: 256
         secretName: ssh-key-secret
 
-- interval: 24h
+- interval: 5h
   agent: kubernetes
   name: ci-kubernetes-e2e-gci-gke-slow-release-1-5
   spec:
@@ -11144,7 +11144,7 @@ periodics:
         defaultMode: 256
         secretName: ssh-key-secret
 
-- interval: 24h
+- interval: 5h
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-alpha-features-release-1-5
   spec:
@@ -13253,7 +13253,7 @@ periodics:
         defaultMode: 256
         secretName: ssh-key-secret
 
-- interval: 24h
+- interval: 5h
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-reboot-release-1-5
   spec:
@@ -13389,7 +13389,7 @@ periodics:
         defaultMode: 256
         secretName: ssh-key-secret
 
-- interval: 24h
+- interval: 5h
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-release-1-5
   spec:
@@ -13525,7 +13525,7 @@ periodics:
         defaultMode: 256
         secretName: ssh-key-secret
 
-- interval: 24h
+- interval: 5h
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-serial-release-1-5
   spec:
@@ -13661,7 +13661,7 @@ periodics:
         defaultMode: 256
         secretName: ssh-key-secret
 
-- interval: 24h
+- interval: 5h
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-slow-release-1-5
   spec:
@@ -15119,7 +15119,7 @@ periodics:
         defaultMode: 256
         secretName: aws-cred
 
-- interval: 24h
+- interval: 5h
   agent: kubernetes
   name: ci-kubernetes-e2e-kops-aws-release-1-5
   spec:
