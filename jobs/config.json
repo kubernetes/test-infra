@@ -10601,7 +10601,7 @@
       "--extract=local",
       "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
       "--gcp-node-image=gci",
-      "--gcp-project=k8s-jkns-e2e-gke-gpus",
+      "--gcp-project=k8s-gke-gpu-pr",
       "--gcp-zone=us-west1-b",
       "--gke-create-command=alpha container clusters create --quiet --enable-kubernetes-alpha --accelerator=type=nvidia-tesla-k80,count=2",
       "--gke-environment=test",
