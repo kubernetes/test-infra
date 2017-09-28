@@ -10368,7 +10368,7 @@
       "--env-file=jobs/platform/gce.env",
       "--extract=ci/latest-1.8",
       "--extract=ci/latest-1.6",
-      "--skew"
+      "--skew",
       "--gcp-zone=us-central1-f",
       "--kubeadm=periodic",
       "--kubernetes-anywhere-kubelet-ci-version=latest-1.6",
@@ -10391,7 +10391,7 @@
       "--env-file=jobs/platform/gce.env",
       "--extract=ci/latest-1.8",
       "--extract=ci/latest-1.7",
-      "--skew"
+      "--skew",
       "--gcp-zone=us-central1-f",
       "--kubeadm=periodic",
       "--kubernetes-anywhere-kubelet-ci-version=latest-1.7",
