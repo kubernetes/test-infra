@@ -10366,8 +10366,9 @@
       "--cluster=",
       "--deployment=kubernetes-anywhere",
       "--env-file=jobs/platform/gce.env",
+      "--extract=ci/latest-1.8",
       "--extract=ci/latest-1.6",
-      "--extract=ci/latest-1.7",
+      "--skew"
       "--gcp-zone=us-central1-f",
       "--kubeadm=periodic",
       "--kubernetes-anywhere-kubelet-ci-version=latest-1.6",
@@ -10388,8 +10389,9 @@
       "--cluster=",
       "--deployment=kubernetes-anywhere",
       "--env-file=jobs/platform/gce.env",
-      "--extract=ci/latest-1.7",
       "--extract=ci/latest-1.8",
+      "--extract=ci/latest-1.7",
+      "--skew"
       "--gcp-zone=us-central1-f",
       "--kubeadm=periodic",
       "--kubernetes-anywhere-kubelet-ci-version=latest-1.7",
