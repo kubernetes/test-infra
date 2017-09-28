@@ -533,6 +533,7 @@ func nodeTest(nodeArgs []string, testArgs, nodeTestArgs, project, zone string) e
 		fmt.Sprintf("--ssh-key=%s", sshKeyPath),
 		fmt.Sprintf("--ginkgo-flags=%s", testArgs),
 		fmt.Sprintf("--test_args=%s", nodeTestArgs),
+		fmt.Sprintf("--test-timeout=%s", timeout.String()),
 	}
 
 	runner = append(runner, nodeArgs...)
