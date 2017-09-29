@@ -1285,7 +1285,7 @@ presubmits:
     - master
     rerun_command: "/test pull-test-infra-gubernator"
     trigger: "(?m)^/test pull-test-infra-gubernator,?(\\s+|$)"
-    run_if_changed: 'gubernator'
+    run_if_changed: 'gubernator|prow/config.yaml'
     spec:
       containers:
       - image: gcr.io/k8s-testimages/gubernator:0.4
