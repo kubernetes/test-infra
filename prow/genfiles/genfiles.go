@@ -105,7 +105,7 @@ func NewGroup(gc ghFileClient, owner, repo, sha string) (*Group, error) {
 
 // Use load to read a generated files config file, and populate g with the commands.
 // "paths-from-repo" commands are aggregated into repoPaths. It is the caller's
-// responsiblity to fetch these and load them via g.loadPaths.
+// responsibility to fetch these and load them via g.loadPaths.
 func (g *Group) load(r io.Reader) ([]string, error) {
 	var repoPaths []string
 	s := bufio.NewScanner(r)

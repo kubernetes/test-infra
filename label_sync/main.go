@@ -328,7 +328,7 @@ func (ud *UpdateData) DoUpdates(gc *github.Client) error {
 }
 
 // Main function
-// Typical run with production configuartion should require no parameters
+// Typical run with production configuration should require no parameters
 // It expects:
 // "labels" file in "/etc/config/labels.yaml"
 // github OAuth2 token in "/etc/github/oauth", this token must have write access to all org's repos
