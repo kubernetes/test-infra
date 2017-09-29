@@ -28,6 +28,8 @@ spec:
       containers:
       - name: tide
         image: gcr.io/k8s-prow/tide:0.6
+        args:
+        - --dry-run=false
         volumeMounts:
         - name: oauth
           mountPath: /etc/github
