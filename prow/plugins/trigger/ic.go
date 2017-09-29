@@ -58,6 +58,17 @@ func handleIC(c client, trustedOrg string, ic github.IssueCommentEvent) error {
 	shouldRetestFailed := retest.MatchString(ic.Comment.Body)
 	requestedJobs := c.Config.MatchingPresubmits(ic.Repo.FullName, ic.Comment.Body, okToTest)
 	if !shouldRetestFailed && len(requestedJobs) == 0 {
+		// Check for the presence of the needs-ok-to-test label and remove it
+		// if a trusted member has commented "/ok-to-test".
+		if okToTest.MatchString(ic.Comment.Body) && ic.Issue.HasLabel(needsOkToTest) {
+			orgMember, err := c.GitHubClient.IsMember(trustedOrg, commentAuthor)
+			if err != nil {
+				return err
+			}
+			if orgMember {
+				return c.GitHubClient.RemoveLabel(ic.Repo.Owner.Login, ic.Repo.Name, ic.Issue.Number, needsOkToTest)
+			}
+		}
 		return nil
 	}
 
