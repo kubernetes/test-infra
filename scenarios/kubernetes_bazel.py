@@ -176,7 +176,7 @@ def main(args):
                 res = exp.returncode
 
     # Coalesce test results into one file for upload.
-    check(test_infra('images/pull_kubernetes_bazel/coalesce.py'))
+    check(test_infra('images/bazelbuild/coalesce.py'))
 
     echo_result(res)
     if res != 0:
