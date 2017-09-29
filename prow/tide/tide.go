@@ -317,13 +317,14 @@ func (c *Controller) trigger(sp subpool, prs []pullRequest) error {
 			BaseSHA: sp.sha,
 		}
 		for _, pr := range prs {
-			refs.Pulls = []kube.Pull{
-				{
+			refs.Pulls = append(
+				refs.Pulls,
+				kube.Pull{
 					Number: int(pr.Number),
 					Author: string(pr.Author.Login),
 					SHA:    string(pr.HeadRef.Target.OID),
 				},
-			}
+			)
 		}
 		if len(prs) == 1 {
 			spec = pjutil.PresubmitSpec(ps, refs)
