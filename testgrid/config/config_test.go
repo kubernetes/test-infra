@@ -86,6 +86,13 @@ func TestConfig(t *testing.T) {
 				t.Errorf("Testgroup %v: TestNameConfig must have number NameElement equal to format count in NameFormat!", testgroup.Name)
 			}
 		}
+
+		// All PR testgroup has num_recent_column equals 20
+		if strings.HasPrefix(testgroup.GcsPrefix, "kubernetes-jenkins/pr-logs/directory/") {
+			if testgroup.NumColumnsRecent < 20 {
+				t.Errorf("Testgroup %v: num_recent_column must be greater than 20 for presubmit jobs!", testgroup.Name)
+			}
+		}
 	}
 
 	// dashboard name set

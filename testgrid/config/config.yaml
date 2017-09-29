@@ -1606,61 +1606,81 @@ test_groups:
 - name: pull-kubernetes-bazel-build
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-bazel-build
   days_of_results: 1
+  num_columns_recent: 20
 - name: pull-kubernetes-bazel-test
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-bazel-test
   days_of_results: 1
+  num_columns_recent: 20
 - name: pull-kubernetes-cross
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-cross
   days_of_results: 1
+  num_columns_recent: 20
 - name: pull-kubernetes-e2e-gce-bazel
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-gce-bazel
   days_of_results: 1
+  num_columns_recent: 20
 - name: pull-kubernetes-e2e-gce-etcd3
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-gce-etcd3
   days_of_results: 1
+  num_columns_recent: 20
 - name: pull-kubernetes-e2e-gce-gpu
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-gce-gpu
   days_of_results: 1
+  num_columns_recent: 20
 - name: pull-kubernetes-e2e-gke-gpu
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-gke-gpu
   days_of_results: 1
+  num_columns_recent: 20
 - name: pull-kubernetes-e2e-gke
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-gke
   days_of_results: 1
+  num_columns_recent: 20
 - name: pull-kubernetes-e2e-gke-gci
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-gke-gci
   days_of_results: 1
+  num_columns_recent: 20
 - name: pull-kubernetes-e2e-kops-aws
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-kops-aws
   days_of_results: 1
+  num_columns_recent: 20
 - name: pull-kubernetes-e2e-kops-aws-prow
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-kops-aws-prow
+  num_columns_recent: 20
 - name: pull-kubernetes-e2e-kubeadm-gce
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-kubeadm-gce
   days_of_results: 1
+  num_columns_recent: 20
 - name: pull-kubernetes-federation-e2e-gce
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-federation-e2e-gce
   days_of_results: 1
+  num_columns_recent: 20
 - name: pull-kubernetes-federation-e2e-gce-canary
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-federation-e2e-gce-canary
   days_of_results: 1
+  num_columns_recent: 20
 - name: pull-kubernetes-kubemark-e2e-gce
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-kubemark-e2e-gce
   days_of_results: 1
+  num_columns_recent: 20
 - name: pull-kubernetes-kubemark-e2e-gce-big
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-kubemark-e2e-gce-big
   days_of_results: 1
+  num_columns_recent: 20
 - name: pull-kubernetes-node-e2e
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-node-e2e
   days_of_results: 1
+  num_columns_recent: 20
 - name: pull-kubernetes-node-e2e-prow
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-node-e2e-prow
+  num_columns_recent: 20
 - name: pull-kubernetes-unit
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-unit
   days_of_results: 1
+  num_columns_recent: 20
 - name: pull-kubernetes-verify
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-verify
   days_of_results: 1
+  num_columns_recent: 20
 # release-1.8
 - name: ci-kubernetes-e2e-gci-gce-stable1
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-stable1
