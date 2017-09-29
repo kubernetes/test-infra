@@ -145,8 +145,8 @@ func (c *Client) Build(pj *kube.ProwJob) (*url.URL, error) {
 		return nil, err
 	}
 	defer resp.Body.Close()
-	if resp.StatusCode != 201 {
-		return nil, fmt.Errorf("response not 201: %s", resp.Status)
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return nil, fmt.Errorf("response not 2XX: %s", resp.Status)
 	}
 	return resp.Location()
 }
