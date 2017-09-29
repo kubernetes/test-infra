@@ -238,7 +238,6 @@ func SyncLabels(required *RequiredLabels, curr *RepoLabels) (updates UpdateData,
 		}
 		reqMapLower[lowerName] = lbl
 	}
-	reqMapLower = nil
 
 	// create map of [repo][label anme] --> label data
 	// Also create map with downcased names
