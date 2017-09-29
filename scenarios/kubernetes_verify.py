@@ -53,21 +53,13 @@ def check(*cmd):
     subprocess.check_call(cmd)
 
 def get_tag(branch):
-    """Gets the tag associated with a branch."""
-    if branch == 'master':
-        return VERSION_TAG[BRANCH_VERSION.get('master')]
-
     #If branch 3-part version, only take the first two parts
     release = re.match(r'release-(\d+\.\d+)', branch)
     if release:
         ver = release.group(1)
         return VERSION_TAG[BRANCH_VERSION.get(ver, ver)]
 
-    feature = re.match(r'feature-\d+', branch)
-    if feature:
-        return VERSION_TAG[BRANCH_VERSION.get('master')]
-
-    raise ValueError(branch)
+    return VERSION_TAG[BRANCH_VERSION.get('master')]
 
 def main(branch, script, force):
     """Test branch using script, optionally forcing verify checks."""
