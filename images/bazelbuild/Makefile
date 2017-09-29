@@ -15,17 +15,24 @@
 IMG = gcr.io/k8s-testimages/bazelbuild
 TAG = $(shell date +v%Y%m%d)-$(shell git describe --tags --always --dirty)
 
+BAZEL_VERSIONS=0.5.2 0.5.4 0.6.0
+
 all: build
 
+do_build = \
+	docker build --pull --build-arg BAZEL_VERSION=$(VERSION) -t $(IMG):$(TAG)-$(VERSION) .;\
+	docker tag $(IMG):$(TAG)-$(VERSION) $(IMG):latest-$(VERSION);\
+	echo Built $(IMG):$(TAG)-$(VERSION) and tagged with latest-$(VERSION);
+
+do_push = \
+	gcloud docker -- push $(IMG):$(TAG)-$(VERSION);\
+	gcloud docker -- push $(IMG):latest-$(VERSION);\
+	echo Pushed $(IMG) with $(TAG)-$(VERSION) and latest-$(VERSION) tags;
+
 build:
-	docker build -t $(IMG):$(TAG) .
-	docker tag $(IMG):$(TAG) $(IMG):latest
-	@echo Built $(IMG):$(TAG) and tagged with latest
+	@$(foreach VERSION,$(BAZEL_VERSIONS),$(do_build))
 
 push: build
-	gcloud docker -- push $(IMG):$(TAG)
-	gcloud docker -- push $(IMG):latest
-	@echo Pushed $(IMG) with :latest and :$(TAG) tags
+	@$(foreach VERSION,$(BAZEL_VERSIONS),$(do_push))
 
 .PHONY: all build push
-
