@@ -70,7 +70,6 @@ A small amount of information about some of the individual mungers inside each o
 * lgtm-after-commit - removes `lgtm` label if a PR is changed after the label was added
 * needs-rebase - adds and removes a `needs-rebase` label if a PR needs to be rebased before it can be applied.
 * path-label - adds labels, such as `kind/new-api` based on if ANY file which matches changed
-* release-note-label - Manages the addition/removal of `release-note-label-required` and all of the rest of the `release-note-*` labels.
 * size - Adds the xs/s/m/l/xl labels and comments to PRs
 * stale-green-ci - Reruns the CI tests every X hours (96?) for PRs which passed. So PRs which sit around for a long time will notice failures sooner.
 * stale-pending-ci - Reruns the CI tests if they have been 'in progress'/'pending' for 24 hours.
