@@ -9414,7 +9414,7 @@
       "--deployment=node",
       "--gcp-project=k8s-jkns-ci-node-e2e",
       "--gcp-zone=us-central1-f",
-      "--node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/benchmark-config.yaml",
+      "--node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/benchmark-config.yaml --test-suite=conformance",
       "--node-test-args=--feature-gates=DynamicKubeletConfig=true --kubelet-flags=\"--cgroups-per-qos=true --cgroup-root=/\"",
       "--node-tests=true",
       "--provider=gce",
@@ -10853,7 +10853,7 @@
     ],
     "scenario": "kubernetes_kubelet",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-node"
     ]
   },
   "pull-kubernetes-node-e2e-prow": {
