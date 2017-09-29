@@ -62,12 +62,12 @@ endif
 # Launch the container on a cluster (with --dry-run).
 # The cluster will likely need a service to get access to the web interface (see service.yaml)
 # The cluster will need a github oauth token (the secret target makes that easy to create)
-deploy: push deployment get-cluster-credentials
+deploy: push deployment
 	# Deploy the new deployment
 	$(CD) kubectl --kubeconfig=$(KUBECONFIG) apply -f $(APP)/local.deployment.yaml --record
 
 # A new configuration is pushed by using the configmap specified using $(TARGET) and $(APP).
-push_config: get-cluster-credentials
+push_config:
 	# pushes a new configmap.
 	$(CD) kubectl --kubeconfig=$(KUBECONFIG) create configmap $(TARGET)-$(APP)-config --from-file=config=$(APP)/deployment/$(TARGET)/configmap.yaml --dry-run -o yaml | kubectl apply -f -
 
@@ -79,7 +79,7 @@ ifneq ("", "$(wildcard $(APP)/service.yaml)")
 endif
 
 # Pushes a service resource spec.
-push_service: service get-cluster-credentials
+push_service: service
 ifneq ("", "$(wildcard $(APP)/service.yaml)")
 	# Applying service.yaml.
 	$(CD) kubectl --kubeconfig=$(KUBECONFIG) apply -f $(APP)/local.service.yaml
@@ -109,7 +109,7 @@ secret:
 	$(CD) $(SED) -i -e 's!@@!$(TARGET)!g' $(APP)/local.secret.yaml
 
 # Generate and deploy the token secret.
-push_secret: secret get-cluster-credentials
+push_secret: secret
 	# Appling local.secret.yaml.
 	$(CD) kubectl --kubeconfig=$(KUBECONFIG) apply -f $(APP)/local.secret.yaml
 
@@ -122,7 +122,7 @@ ifneq ("", "$(and $(wildcard $(APP)/pv.yaml), $(wildcard $(APP)/pvc.yaml))")
 endif
 
 # Create the persistent volume and persistent volume claim.
-push_volume: volume get-cluster-credentials
+push_volume: volume
 ifneq ("", "$(and $(wildcard $(APP)/pv.yaml), $(wildcard $(APP)/pvc.yaml))")
 	# Creating persistent volume and persistent volume claim.
 	$(CD) kubectl --kubeconfig=$(KUBECONFIG) create -f $(APP)/local.pv.yaml
