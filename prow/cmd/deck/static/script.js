@@ -67,15 +67,12 @@ function addOptions(s, p) {
     }
 }
 
-function equalSelected(sel, t) {
-    return sel.selectedIndex == 0 || sel.options[sel.selectedIndex].text == t;
+function selectionText(sel, t) {
+    return sel.selectedIndex == 0 ? "" : sel.options[sel.selectedIndex].text;
 }
 
-function encodedText(sel) {
-    if (sel.selectedIndex == 0) {
-        return "";
-    }
-    return encodeURIComponent(sel.options[sel.selectedIndex].text);
+function equalSelected(sel, t) {
+    return sel === "" || sel == t;
 }
 
 function groupKey(build) {
@@ -94,27 +91,21 @@ function redraw() {
     while (builds.firstChild)
         builds.removeChild(builds.firstChild);
 
-    var typeSel = document.getElementById("type")
-    var repoSel = document.getElementById("repo")
-    var pullSel = document.getElementById("pull")
-    var authorSel = document.getElementById("author")
-    var jobSel = document.getElementById("job")
-    var stateSel = document.getElementById("state")
+    var args = [];
+    function getSelection(name) {
+        var sel = selectionText(document.getElementById(name));
+        if (sel !== "") args.push(name + "=" + encodeURIComponent(sel));
+        return sel;
+    }
+
+    var typeSel = getSelection("type");
+    var repoSel = getSelection("repo");
+    var pullSel = getSelection("pull");
+    var authorSel = getSelection("author");
+    var jobSel = getSelection("job");
+    var stateSel = getSelection("state");
 
     if (window.history && window.history.replaceState !== undefined) {
-        var args = [];
-        var tt = encodedText(typeSel);
-        if (tt !== "") args.push("type=" + tt);
-        var rt = encodedText(repoSel);
-        if (rt !== "") args.push("repo=" + rt);
-        var pt = encodedText(pullSel);
-        if (pt !== "") args.push("pull=" + pt);
-        var at = encodedText(authorSel);
-        if (at !== "") args.push("author=" + at);
-        var jt = encodedText(jobSel);
-        if (jt !== "") args.push("job=" + jt);
-        var st = encodedText(stateSel);
-        if (st !== "") args.push("state=" + st);
         if (args.length > 0) {
             history.replaceState(null, "", "/?" + args.join('&'));
         } else {
@@ -126,13 +117,14 @@ function redraw() {
     for (var i = 0, emitted = 0; i < allBuilds.length && emitted < 500; i++) {
         var build = allBuilds[i];
         if (!equalSelected(typeSel, build.type)) continue;
-
-        if (build.type !== "periodic" && !equalSelected(repoSel, build.repo)) continue;
+        if (!equalSelected(repoSel, build.repo)) continue;
         if (!equalSelected(stateSel, build.state)) continue;
         if (!equalSelected(jobSel, build.job)) continue;
         if (build.type === "presubmit") {
             if (!equalSelected(pullSel, build.number)) continue;
             if (!equalSelected(authorSel, build.author)) continue;
+        } else if (pullSel || authorSel) {
+            continue;
         }
         emitted++;
 
