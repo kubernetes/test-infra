@@ -888,6 +888,8 @@ class JobTest(unittest.TestCase):
             ('FAIL_ON_GCP_RESOURCE_LEAK=', '--check-leaked-resources=true|false'),
             ('FEDERATION_DOWN=', '--down=true|false'),
             ('FEDERATION_UP=', '--up=true|false'),
+            ('GINKGO_PARALLEL=', '--ginkgo-parallel=# (1 for serial)'),
+            ('GINKGO_PARALLEL_NODES=', '--ginkgo-parallel=# (1 for serial)'),
             ('GINKGO_TEST_ARGS=', '--test_args=FOO'),
             ('GINKGO_UPGRADE_TEST_ARGS=', '--upgrade_args=FOO'),
             ('JENKINS_FEDERATION_PREFIX=', '--stage=gs://FOO'),
