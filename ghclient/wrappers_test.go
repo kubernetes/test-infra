@@ -219,7 +219,7 @@ func TestGetCombinedStatus(t *testing.T) {
 		}
 	}
 	if _, err = client.GetCombinedStatus("k8s", "kuber", "ref2"); err == nil {
-		t.Error("Expected error getting CombinedStatus for non-existant ref, but got none.")
+		t.Error("Expected error getting CombinedStatus for non-existent ref, but got none.")
 	}
 }
 
@@ -555,7 +555,7 @@ func TestForEachPR(t *testing.T) {
 		t.Fatal("Expected error from ForEachPR after processing 13th PR, but got none.")
 	}
 	if processed != 13 {
-		t.Errorf("Expected 13 PRs to be processed, but %d were proccessed.", processed)
+		t.Errorf("Expected 13 PRs to be processed, but %d were processed.", processed)
 	}
 
 	// Test continue on error.
@@ -565,6 +565,6 @@ func TestForEachPR(t *testing.T) {
 		t.Fatalf("Unexpected error from ForEachPR with continue-on-error enabled: %v", err)
 	}
 	if processed != 16 {
-		t.Errorf("Expected 16 PRs to be processed, but %d were proccessed.", processed)
+		t.Errorf("Expected 16 PRs to be processed, but %d were processed.", processed)
 	}
 }
