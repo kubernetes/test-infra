@@ -172,7 +172,7 @@ func (c *Client) request(method, path string) (*http.Response, error) {
 		resp, err = c.doRequest(method, path)
 		if err == nil && resp.StatusCode < 500 {
 			break
-		} else if err == nil {
+		} else if err == nil && retries+1 < maxRetries {
 			resp.Body.Close()
 		}
 
