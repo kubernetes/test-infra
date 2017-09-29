@@ -10328,13 +10328,13 @@ periodics:
         defaultMode: 256
         secretName: ssh-key-secret
 
-- interval: 5h
+- interval: 7h
   agent: kubernetes
   name: ci-kubernetes-e2e-gci-gke-serial-release-1-5
   spec:
     containers:
     - args:
-      - --timeout=320
+      - --timeout=720
       - --bare
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
