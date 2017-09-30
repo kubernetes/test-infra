@@ -41,16 +41,6 @@ const (
 	Aborted  = "ABORTED"
 )
 
-// Status is a build result from Jenkins. If it is still building then
-// Success is meaningless. If it is enqueued then both Success and
-// Number are meaningless.
-// TODO: Remove
-type Status struct {
-	Building bool
-	Success  bool
-	Number   int
-}
-
 type Logger interface {
 	Debugf(s string, v ...interface{})
 }
@@ -283,95 +273,6 @@ func (c *Client) ListJenkinsBuilds(jobs map[string]struct{}) (map[string]Jenkins
 	}
 
 	return jenkinsBuilds, nil
-}
-
-// Enqueued returns whether or not the given build is in Jenkins' build queue.
-// TODO: Remove
-func (c *Client) Enqueued(queueURL string) (bool, error) {
-	c.log("Enqueued", queueURL)
-	u := fmt.Sprintf("%sapi/json", queueURL)
-	resp, err := c.request(http.MethodGet, u)
-	if err != nil {
-		return false, err
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return false, fmt.Errorf("response not 2XX??: %s", resp.Status)
-	}
-	buf, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return false, err
-	}
-	item := struct {
-		Cancelled  bool   `json:"cancelled"`
-		Why        string `json:"why"`
-		Executable struct {
-			Number int `json:"number"`
-		} `json:"executable"`
-	}{}
-	err = json.Unmarshal(buf, &item)
-	if err != nil {
-		return false, err
-	}
-	if item.Cancelled {
-		return false, fmt.Errorf("job was cancelled: %s", item.Why)
-	}
-	if item.Executable.Number != 0 {
-		return false, nil
-	}
-	return true, nil
-}
-
-// Status returns the current status of the build.
-// TODO: Remove
-func (c *Client) Status(job, id string) (*Status, error) {
-	c.log("Status", job, id)
-	u := fmt.Sprintf("%s/job/%s/api/json?tree=builds[number,result,actions[parameters[name,value]]]", c.baseURL, job)
-	resp, err := c.request(http.MethodGet, u)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return nil, fmt.Errorf("response not 2XX: %s", resp.Status)
-	}
-	buf, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-	builds := struct {
-		Builds []struct {
-			Actions []struct {
-				Parameters []struct {
-					Name  string `json:"name"`
-					Value string `json:"value"`
-				} `json:"parameters"`
-			} `json:"actions"`
-			Number int     `json:"number"`
-			Result *string `json:"result"`
-		} `json:"builds"`
-	}{}
-	err = json.Unmarshal(buf, &builds)
-	if err != nil {
-		return nil, err
-	}
-	for _, build := range builds.Builds {
-		for _, action := range build.Actions {
-			for _, p := range action.Parameters {
-				if p.Name == "buildId" && p.Value == id {
-					if build.Result == nil {
-						return &Status{Building: true, Number: build.Number}, nil
-					}
-					return &Status{
-						Building: false,
-						Success:  *build.Result == "SUCCESS",
-						Number:   build.Number,
-					}, nil
-				}
-			}
-		}
-	}
-	return nil, fmt.Errorf("did not find build %s", id)
 }
 
 func (c *Client) GetLog(job string, build int) ([]byte, error) {
