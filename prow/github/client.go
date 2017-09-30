@@ -633,11 +633,11 @@ func (c *Client) AssignIssue(org, repo string, number int, logins []string) erro
 		return err
 	}
 	for _, assignee := range i.Assignees {
-		assigned[assignee.Login] = true
+		assigned[NormLogin(assignee.Login)] = true
 	}
 	missing := MissingUsers{action: "assign"}
 	for _, login := range logins {
-		if !assigned[login] {
+		if !assigned[NormLogin(login)] {
 			missing.Users = append(missing.Users, login)
 		}
 	}
@@ -670,11 +670,11 @@ func (c *Client) UnassignIssue(org, repo string, number int, logins []string) er
 		return err
 	}
 	for _, assignee := range i.Assignees {
-		assigned[assignee.Login] = true
+		assigned[NormLogin(assignee.Login)] = true
 	}
 	extra := ExtraUsers{action: "unassign"}
 	for _, login := range logins {
-		if assigned[login] {
+		if assigned[NormLogin(login)] {
 			extra.Users = append(extra.Users, login)
 		}
 	}
@@ -759,7 +759,7 @@ func (c *Client) UnrequestReview(org, repo string, number int, logins []string) 
 	for _, user := range pr.RequestedReviewers {
 		found := false
 		for _, toDelete := range logins {
-			if user.Login == toDelete {
+			if NormLogin(user.Login) == NormLogin(toDelete) {
 				found = true
 				break
 			}
