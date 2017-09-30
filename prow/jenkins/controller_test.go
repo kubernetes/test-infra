@@ -36,7 +36,7 @@ type fca struct {
 	c *config.Config
 }
 
-func newFakeConfigAgent(t *testing.T) *fca {
+func newFakeConfigAgent(t *testing.T, maxConcurrency int) *fca {
 	presubmits := []config.Presubmit{
 		{
 			Name: "test-bazel-build",
@@ -70,6 +70,7 @@ func newFakeConfigAgent(t *testing.T) *fca {
 		c: &config.Config{
 			JenkinsOperator: config.JenkinsOperator{
 				JobURLTemplate: template.Must(template.New("test").Parse("{{.Status.PodName}}/")),
+				MaxConcurrency: maxConcurrency,
 			},
 			Presubmits: presubmitMap,
 		},
@@ -197,9 +198,10 @@ func (f *fghc) EditComment(org, repo string, ID int, comment string) error {
 
 func TestSyncNonPendingJobs(t *testing.T) {
 	var testcases = []struct {
-		name        string
-		pj          kube.ProwJob
-		pendingJobs map[string]int
+		name           string
+		pj             kube.ProwJob
+		pendingJobs    map[string]int
+		maxConcurrency int
 
 		enqueued bool
 		status   Status
@@ -258,6 +260,40 @@ func TestSyncNonPendingJobs(t *testing.T) {
 			expectedComplete: true,
 			expectedError:    true,
 		},
+		{
+			name: "block running new job",
+			pj: kube.ProwJob{
+				Spec: kube.ProwJobSpec{
+					Type: kube.PostsubmitJob,
+				},
+				Status: kube.ProwJobStatus{
+					State: kube.TriggeredState,
+				},
+			},
+			pendingJobs:      map[string]int{"motherearth": 10, "allagash": 8, "krusovice": 2},
+			maxConcurrency:   20,
+			expectedBuild:    false,
+			expectedReport:   false,
+			expectedState:    kube.TriggeredState,
+			expectedEnqueued: false,
+		},
+		{
+			name: "allow running new job",
+			pj: kube.ProwJob{
+				Spec: kube.ProwJobSpec{
+					Type: kube.PostsubmitJob,
+				},
+				Status: kube.ProwJobStatus{
+					State: kube.TriggeredState,
+				},
+			},
+			pendingJobs:      map[string]int{"motherearth": 10, "allagash": 8, "krusovice": 2},
+			maxConcurrency:   21,
+			expectedBuild:    true,
+			expectedReport:   true,
+			expectedState:    kube.PendingState,
+			expectedEnqueued: true,
+		},
 	}
 	for _, tc := range testcases {
 		fjc := &fjc{
@@ -272,9 +308,12 @@ func TestSyncNonPendingJobs(t *testing.T) {
 		c := Controller{
 			kc:          fkc,
 			jc:          fjc,
-			ca:          newFakeConfigAgent(t),
+			ca:          newFakeConfigAgent(t, tc.maxConcurrency),
 			lock:        sync.RWMutex{},
 			pendingJobs: make(map[string]int),
+		}
+		if tc.pendingJobs != nil {
+			c.pendingJobs = tc.pendingJobs
 		}
 
 		reports := make(chan kube.ProwJob, 100)
@@ -450,7 +489,7 @@ func TestSyncPendingJobs(t *testing.T) {
 		c := Controller{
 			kc:          fkc,
 			jc:          fjc,
-			ca:          newFakeConfigAgent(t),
+			ca:          newFakeConfigAgent(t, 0),
 			lock:        sync.RWMutex{},
 			pendingJobs: make(map[string]int),
 		}
@@ -513,7 +552,7 @@ func TestBatch(t *testing.T) {
 	c := Controller{
 		kc:          fc,
 		jc:          jc,
-		ca:          newFakeConfigAgent(t),
+		ca:          newFakeConfigAgent(t, 0),
 		pendingJobs: make(map[string]int),
 		lock:        sync.RWMutex{},
 	}
@@ -665,7 +704,7 @@ func TestRunAfterSuccessCanRun(t *testing.T) {
 			err:     test.err,
 		}
 
-		got := RunAfterSuccessCanRun(test.parent, test.child, newFakeConfigAgent(t), fakeGH)
+		got := RunAfterSuccessCanRun(test.parent, test.child, newFakeConfigAgent(t, 0), fakeGH)
 		if got != test.expected {
 			t.Errorf("expected to run: %t, got: %t", test.expected, got)
 		}
@@ -776,7 +815,7 @@ func TestMaxConcurrencyWithNewlyTriggeredJobs(t *testing.T) {
 		c := Controller{
 			kc:          fc,
 			jc:          fjc,
-			ca:          newFakeConfigAgent(t),
+			ca:          newFakeConfigAgent(t, 0),
 			pendingJobs: test.pendingJobs,
 		}
 

@@ -97,6 +97,10 @@ type Plank struct {
 	// will be passed a kube.ProwJob and can provide an optional blurb below
 	// the test failures comment.
 	ReportTemplate *template.Template `json:"-"`
+
+	// MaxConcurrency is the maximum number of tests running concurrently that
+	// will be allowed by plank. 0 implies no limit.
+	MaxConcurrency int `json:"max_concurrency,omitempty"`
 }
 
 // JenkinsOperator is config for the jenkins-operator controller.
@@ -114,6 +118,10 @@ type JenkinsOperator struct {
 	// will be passed a kube.ProwJob and can provide an optional blurb below
 	// the test failures comment.
 	ReportTemplate *template.Template `json:"-"`
+
+	// MaxConcurrency is the maximum number of tests running concurrently that
+	// will be allowed by jenkins-operator. 0 implies no limit.
+	MaxConcurrency int `json:"max_concurrency,omitempty"`
 }
 
 // Sinker is config for the sinker controller.
@@ -230,6 +238,9 @@ func parseConfig(c *Config) error {
 		return fmt.Errorf("parsing template: %v", err)
 	}
 	c.Plank.ReportTemplate = reportTmpl
+	if c.Plank.MaxConcurrency < 0 {
+		return fmt.Errorf("plank has invalid max_concurrency (%d), it needs to be a non-negative number", c.Plank.MaxConcurrency)
+	}
 
 	jenkinsURLTmpl, err := template.New("JobURL").Parse(c.JenkinsOperator.JobURLTemplateString)
 	if err != nil {
@@ -242,6 +253,9 @@ func parseConfig(c *Config) error {
 		return fmt.Errorf("parsing template: %v", err)
 	}
 	c.JenkinsOperator.ReportTemplate = jenkinsReportTmpl
+	if c.JenkinsOperator.MaxConcurrency < 0 {
+		return fmt.Errorf("jenkins-operator has invalid max_concurrency (%d), it needs to be a non-negative number", c.JenkinsOperator.MaxConcurrency)
+	}
 
 	if c.Sinker.ResyncPeriodString == "" {
 		c.Sinker.ResyncPeriod = time.Hour

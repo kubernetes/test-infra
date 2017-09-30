@@ -39,7 +39,7 @@ type fca struct {
 	c *config.Config
 }
 
-func newFakeConfigAgent(t *testing.T) *fca {
+func newFakeConfigAgent(t *testing.T, maxConcurrency int) *fca {
 	presubmits := []config.Presubmit{
 		{
 			Name: "test-bazel-build",
@@ -73,6 +73,7 @@ func newFakeConfigAgent(t *testing.T) *fca {
 		c: &config.Config{
 			Plank: config.Plank{
 				JobURLTemplate: template.Must(template.New("test").Parse("{{.Metadata.Name}}/{{.Status.State}}")),
+				MaxConcurrency: maxConcurrency,
 			},
 			Presubmits: presubmitMap,
 		},
@@ -257,10 +258,11 @@ func TestSyncNonPendingJobs(t *testing.T) {
 	var testcases = []struct {
 		name string
 
-		pj          kube.ProwJob
-		pendingJobs map[string]int
-		pods        []kube.Pod
-		podErr      error
+		pj             kube.ProwJob
+		pendingJobs    map[string]int
+		maxConcurrency int
+		pods           []kube.Pod
+		podErr         error
 
 		expectedState      kube.ProwJobState
 		expectedPodHasName bool
@@ -342,6 +344,45 @@ func TestSyncNonPendingJobs(t *testing.T) {
 			},
 			expectedState:   kube.TriggeredState,
 			expectedNumPods: 1,
+		},
+		{
+			name: "do not exceed global maxconcurrency",
+			pj: kube.ProwJob{
+				Metadata: kube.ObjectMeta{
+					Name: "beer",
+				},
+				Spec: kube.ProwJobSpec{
+					Job:  "same",
+					Type: kube.PeriodicJob,
+				},
+				Status: kube.ProwJobStatus{
+					State: kube.TriggeredState,
+				},
+			},
+			maxConcurrency: 20,
+			pendingJobs:    map[string]int{"motherearth": 10, "allagash": 8, "krusovice": 2},
+			expectedState:  kube.TriggeredState,
+		},
+		{
+			name: "global maxconcurrency allows new jobs when possible",
+			pj: kube.ProwJob{
+				Metadata: kube.ObjectMeta{
+					Name: "beer",
+				},
+				Spec: kube.ProwJobSpec{
+					Job:  "same",
+					Type: kube.PeriodicJob,
+				},
+				Status: kube.ProwJobStatus{
+					State: kube.TriggeredState,
+				},
+			},
+			maxConcurrency:  21,
+			pendingJobs:     map[string]int{"motherearth": 10, "allagash": 8, "krusovice": 2},
+			expectedState:   kube.PendingState,
+			expectedNumPods: 1,
+			expectedReport:  true,
+			expectedURL:     "beer/pending",
 		},
 		{
 			name: "unprocessable prow job",
@@ -449,11 +490,13 @@ func TestSyncNonPendingJobs(t *testing.T) {
 		c := Controller{
 			kc:          fc,
 			pkc:         fpc,
-			ca:          newFakeConfigAgent(t),
+			ca:          newFakeConfigAgent(t, tc.maxConcurrency),
 			totURL:      totServ.URL,
 			pendingJobs: make(map[string]int),
 		}
-		c.pendingJobs = tc.pendingJobs
+		if tc.pendingJobs != nil {
+			c.pendingJobs = tc.pendingJobs
+		}
 
 		reports := make(chan kube.ProwJob, 100)
 		if err := c.syncNonPendingJob(tc.pj, pm, reports); (err != nil) != tc.expectError {
@@ -750,7 +793,7 @@ func TestSyncPendingJob(t *testing.T) {
 		c := Controller{
 			kc:          fc,
 			pkc:         fpc,
-			ca:          newFakeConfigAgent(t),
+			ca:          newFakeConfigAgent(t, 0),
 			totURL:      totServ.URL,
 			pendingJobs: make(map[string]int),
 		}
@@ -816,7 +859,7 @@ func TestPeriodic(t *testing.T) {
 	c := Controller{
 		kc:          fc,
 		pkc:         fc,
-		ca:          newFakeConfigAgent(t),
+		ca:          newFakeConfigAgent(t, 0),
 		totURL:      totServ.URL,
 		pendingJobs: make(map[string]int),
 		lock:        sync.RWMutex{},
@@ -958,7 +1001,7 @@ func TestRunAfterSuccessCanRun(t *testing.T) {
 			err:     test.err,
 		}
 
-		got := RunAfterSuccessCanRun(test.parent, test.child, newFakeConfigAgent(t), fakeGH)
+		got := RunAfterSuccessCanRun(test.parent, test.child, newFakeConfigAgent(t, 0), fakeGH)
 		if got != test.expected {
 			t.Errorf("expected to run: %t, got: %t", test.expected, got)
 		}
@@ -1073,7 +1116,7 @@ func TestMaxConcurrencyWithNewlyTriggeredJobs(t *testing.T) {
 		c := Controller{
 			kc:          fc,
 			pkc:         fpc,
-			ca:          newFakeConfigAgent(t),
+			ca:          newFakeConfigAgent(t, 0),
 			node:        n,
 			pendingJobs: test.pendingJobs,
 		}
