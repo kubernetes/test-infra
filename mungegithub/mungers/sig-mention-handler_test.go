@@ -29,12 +29,13 @@ import (
 )
 
 const (
-	helpWanted        = "help-wanted"
-	open              = "open"
-	sigApps           = "sig/apps"
-	committeeSteering = "committee/steering"
-	username          = "Ali"
-	needsSigLabel     = "needs-sig"
+	helpWanted          = "help-wanted"
+	open                = "open"
+	sigApps             = "sig/apps"
+	committeeSteering   = "committee/steering"
+	wgContainerIdentity = "wg/container-identity"
+	username            = "Ali"
+	needsSigLabel       = "needs-sig"
 )
 
 func TestSigMentionHandler(t *testing.T) {
@@ -161,6 +162,33 @@ func TestSigMentionHandler(t *testing.T) {
 			},
 			expected: []githubapi.Label{{Name: githubapi.String(helpWanted)},
 				{Name: githubapi.String(committeeSteering)}},
+		},
+		{
+			name: "issue has wg/foo label, no needs-sig label",
+			issue: &githubapi.Issue{
+				State: githubapi.String(open),
+				Labels: []githubapi.Label{{Name: githubapi.String(helpWanted)},
+					{Name: githubapi.String(wgContainerIdentity)}},
+				PullRequestLinks: nil,
+				Assignee:         &githubapi.User{Login: githubapi.String(username)},
+				Number:           intPtr(1),
+			},
+			expected: []githubapi.Label{{Name: githubapi.String(helpWanted)},
+				{Name: githubapi.String(wgContainerIdentity)}},
+		},
+		{
+			name: "issue has both needs-sig label and wg/foo label",
+			issue: &githubapi.Issue{
+				State: githubapi.String(open),
+				Labels: []githubapi.Label{{Name: githubapi.String(helpWanted)},
+					{Name: githubapi.String(needsSigLabel)},
+					{Name: githubapi.String(wgContainerIdentity)}},
+				PullRequestLinks: nil,
+				Assignee:         &githubapi.User{Login: githubapi.String(username)},
+				Number:           intPtr(1),
+			},
+			expected: []githubapi.Label{{Name: githubapi.String(helpWanted)},
+				{Name: githubapi.String(wgContainerIdentity)}},
 		},
 	}
 

@@ -55,49 +55,30 @@
     - 'ci-{suffix}'
     name: bootstrap-ci
     suffix:
-    # START AWS
-    - kubernetes-e2e-kops-aws: #zmerlynn
-        job-name: ci-kubernetes-e2e-kops-aws
-        jenkins-timeout: 240
-        timeout: 140
-        frequency: 'H/5 * * * *' # At least every 30m
-        trigger-job: 'ci-kubernetes-build'
-    - kubernetes-e2e-kops-aws-stable1:
-        job-name: ci-kubernetes-e2e-kops-aws-stable1
-        jenkins-timeout: 240
-        timeout: 140
-        frequency: '@hourly'
-        trigger-job: ''
-    # END AWS
-
     # gce high-scale tests #shyamjvs
     - kubernetes-e2e-gce-large-correctness:
         job-name: ci-kubernetes-e2e-gce-large-correctness
         jenkins-timeout: 720
         timeout: 620
-        frequency: '' #manual
-        #frequency: '1 3 * * 6' # Run at 03:01 to avoid start-up clash with gke-large-performance
+        frequency: '1 3 * * 6' # Run at 03:01 to avoid start-up clash with gke-large-performance
         trigger-job: ''
     - kubernetes-e2e-gce-large-performance:
         job-name: ci-kubernetes-e2e-gce-large-performance
         jenkins-timeout: 1020
         timeout: 920
-        frequency: '' #manual
-        #frequency: '1 0 * * 7' # Run at 00:01 to avoid start-up clash with gke-large-correctness
+        frequency: '1 0 * * 7' # Run at 00:01 to avoid start-up clash with gke-large-correctness
         trigger-job: ''
     - kubernetes-e2e-gce-scale-correctness:
         job-name: ci-kubernetes-e2e-gce-scale-correctness
         jenkins-timeout: 1120
         timeout: 1020
-        frequency: '' #manual
-        #frequency: '1 0 * * 2,4' # Run at 00:01 on even weekdays
+        frequency: '1 0 * * 2,4' # Run at 00:01 on even weekdays
         trigger-job: ''
     - kubernetes-e2e-gce-scale-performance:
         job-name: ci-kubernetes-e2e-gce-scale-performance
         jenkins-timeout: 1420
         timeout: 1320
-        frequency: '' #manual
-        #frequency: '1 0 * * 1,3,5' # Run at 00:01 on odd weekdays
+        frequency: '1 0 * * 1,3,5' # Run at 00:01 on odd weekdays
         trigger-job: ''
     - kubernetes-e2e-gce-large-manual-up:
         job-name: ci-kubernetes-e2e-gce-large-manual-up
@@ -143,15 +124,13 @@
         job-name: ci-kubernetes-e2e-gke-large-correctness
         jenkins-timeout: 720
         timeout: 620
-        frequency: '' #manual
-        #frequency: '1 3 * * 7' # Run at 03:01 to avoid start-up clash with gce-large-performance
+        frequency: '1 3 * * 7' # Run at 03:01 to avoid start-up clash with gce-large-performance
         trigger-job: ''
     - kubernetes-e2e-gke-large-performance:
         job-name: ci-kubernetes-e2e-gke-large-performance
         jenkins-timeout: 1020
         timeout: 920
-        frequency: '' #manual
-        #frequency: '1 0 * * 6' # Run at 00:01 to avoid start-up clash with gce-large-correctness
+        frequency: '1 0 * * 6' # Run at 00:01 to avoid start-up clash with gce-large-correctness
         trigger-job: ''
     - kubernetes-e2e-gke-large-deploy:
         job-name: ci-kubernetes-e2e-gke-large-deploy
