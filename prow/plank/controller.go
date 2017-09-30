@@ -177,8 +177,9 @@ func (c *Controller) Sync() error {
 	}
 
 	var reportErrs []error
+	reportTemplate := c.ca.Config().Plank.ReportTemplate
 	for report := range reportCh {
-		if err := reportlib.Report(c.ghc, c.ca, report); err != nil {
+		if err := reportlib.Report(c.ghc, reportTemplate, report); err != nil {
 			reportErrs = append(reportErrs, err)
 		}
 	}
