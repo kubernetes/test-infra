@@ -105,6 +105,20 @@ func (f *FakeClient) DeleteComment(owner, repo string, ID int) error {
 	return fmt.Errorf("could not find issue comment %d", ID)
 }
 
+func (f *FakeClient) DeleteStaleComments(org, repo string, number int, comments []github.IssueComment, isStale func(github.IssueComment) bool) error {
+	if comments == nil {
+		comments, _ = f.ListIssueComments(org, repo, number)
+	}
+	for _, comment := range comments {
+		if isStale(comment) {
+			if err := f.DeleteComment(org, repo, comment.ID); err != nil {
+				return fmt.Errorf("failed to delete stale comment with ID '%d'", comment.ID)
+			}
+		}
+	}
+	return nil
+}
+
 func (f *FakeClient) GetPullRequest(owner, repo string, number int) (*github.PullRequest, error) {
 	return f.PullRequests[number], nil
 }
@@ -135,7 +149,7 @@ func (f *FakeClient) GetRepoLabels(owner, repo string) ([]github.Label, error) {
 
 func (f *FakeClient) GetIssueLabels(owner, repo string, number int) ([]github.Label, error) {
 	// Only labels added to an issue are considered. Removals are ignored by this fake.
-	re := regexp.MustCompile(fmt.Sprintf(`%s/%s#%d:([\w-]*)`, owner, repo, number))
+	re := regexp.MustCompile(fmt.Sprintf(`^%s/%s#%d:(.*)$`, owner, repo, number))
 	la := []github.Label{}
 	for _, l := range f.LabelsAdded {
 		groups := re.FindStringSubmatch(l)

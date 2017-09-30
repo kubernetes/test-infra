@@ -38,6 +38,8 @@ func (c *fkc) CreateProwJob(pj kube.ProwJob) (kube.ProwJob, error) {
 
 func TestHandleIssueComment(t *testing.T) {
 	var testcases = []struct {
+		name string
+
 		Author        string
 		Body          string
 		State         string
@@ -45,42 +47,50 @@ func TestHandleIssueComment(t *testing.T) {
 		Branch        string
 		ShouldBuild   bool
 		HasOkToTest   bool
+		IsOkToTest    bool
 		StartsExactly string
+		Presubmits    map[string][]config.Presubmit
+		IssueLabels   []github.Label
 	}{
-		// Not a PR.
 		{
+			name: "Not a PR.",
+
 			Author:      "t",
 			Body:        "/ok-to-test",
 			State:       "open",
 			IsPR:        false,
 			ShouldBuild: false,
 		},
-		// Closed PR.
 		{
+			name: "Closed PR.",
+
 			Author:      "t",
 			Body:        "/ok-to-test",
 			State:       "closed",
 			IsPR:        true,
 			ShouldBuild: false,
 		},
-		// Comment by a bot.
 		{
+			name: "Comment by a bot.",
+
 			Author:      "k8s-bot",
 			Body:        "/ok-to-test",
 			State:       "open",
 			IsPR:        true,
 			ShouldBuild: false,
 		},
-		// Non-trusted member's ok to test.
 		{
+			name: "Non-trusted member's ok to test.",
+
 			Author:      "u",
 			Body:        "/ok-to-test",
 			State:       "open",
 			IsPR:        true,
 			ShouldBuild: false,
 		},
-		// Non-trusted member after "/ok-to-test".
 		{
+			name: `Non-trusted member after "/ok-to-test".`,
+
 			Author:      "u",
 			Body:        "/test all",
 			State:       "open",
@@ -88,40 +98,45 @@ func TestHandleIssueComment(t *testing.T) {
 			HasOkToTest: true,
 			ShouldBuild: true,
 		},
-		// Trusted member's ok to test
 		{
+			name: "Trusted member's ok to test",
+
 			Author:      "t",
 			Body:        "looks great, thanks!\n/ok-to-test",
 			State:       "open",
 			IsPR:        true,
 			ShouldBuild: true,
 		},
-		// Trusted member's ok to test, trailing space.
 		{
+			name: "Trusted member's ok to test, trailing space.",
+
 			Author:      "t",
 			Body:        "looks great, thanks!\n/ok-to-test \r",
 			State:       "open",
 			IsPR:        true,
 			ShouldBuild: true,
 		},
-		// Trusted member's not ok to test.
 		{
+			name: "Trusted member's not ok to test.",
+
 			Author:      "t",
 			Body:        "not /ok-to-test",
 			State:       "open",
 			IsPR:        true,
 			ShouldBuild: false,
 		},
-		// Trusted member's test this.
 		{
+			name: "Trusted member's test this.",
+
 			Author:      "t",
 			Body:        "/test all",
 			State:       "open",
 			IsPR:        true,
 			ShouldBuild: true,
 		},
-		// Wrong branch.
 		{
+			name: "Wrong branch.",
+
 			Author:      "t",
 			Body:        "/test",
 			State:       "open",
@@ -129,8 +144,9 @@ func TestHandleIssueComment(t *testing.T) {
 			Branch:      "other",
 			ShouldBuild: false,
 		},
-		// Retest with one running and one failed
 		{
+			name: "Retest with one running and one failed",
+
 			Author:        "t",
 			Body:          "/retest",
 			State:         "open",
@@ -138,8 +154,9 @@ func TestHandleIssueComment(t *testing.T) {
 			ShouldBuild:   true,
 			StartsExactly: "pull-jib",
 		},
-		// Retest with one running and one failed, trailing space.
 		{
+			name: "Retest with one running and one failed, trailing space.",
+
 			Author:        "t",
 			Body:          "/retest \r",
 			State:         "open",
@@ -147,8 +164,36 @@ func TestHandleIssueComment(t *testing.T) {
 			ShouldBuild:   true,
 			StartsExactly: "pull-jib",
 		},
+		{
+			name: "needs-ok-to-test label is removed when no presubmit runs by default",
+
+			Author:      "t",
+			Body:        "/ok-to-test",
+			State:       "open",
+			IsPR:        true,
+			IsOkToTest:  true,
+			ShouldBuild: false,
+			Presubmits: map[string][]config.Presubmit{
+				"org/repo": {
+					{
+						Name:      "job",
+						AlwaysRun: false,
+						Context:   "pull-job",
+						Trigger:   `/test all`,
+					},
+					{
+						Name:      "jib",
+						AlwaysRun: false,
+						Context:   "pull-jib",
+						Trigger:   `/test jib`,
+					},
+				},
+			},
+			IssueLabels: []github.Label{{Name: "needs-ok-to-test"}},
+		},
 	}
 	for _, tc := range testcases {
+		t.Logf("running scenarion %q", tc.name)
 		if tc.Branch == "" {
 			tc.Branch = "master"
 		}
@@ -185,23 +230,27 @@ func TestHandleIssueComment(t *testing.T) {
 			Config:       &config.Config{},
 			Logger:       logrus.WithField("plugin", pluginName),
 		}
-		c.Config.SetPresubmits(map[string][]config.Presubmit{
-			"org/repo": {
-				{
-					Name:      "job",
-					AlwaysRun: true,
-					Context:   "pull-job",
-					Trigger:   `/test all`,
-					Brancher:  config.Brancher{Branches: []string{"master"}},
+		presubmits := tc.Presubmits
+		if presubmits == nil {
+			presubmits = map[string][]config.Presubmit{
+				"org/repo": {
+					{
+						Name:      "job",
+						AlwaysRun: true,
+						Context:   "pull-job",
+						Trigger:   `/test all`,
+						Brancher:  config.Brancher{Branches: []string{"master"}},
+					},
+					{
+						Name:      "jib",
+						AlwaysRun: false,
+						Context:   "pull-jib",
+						Trigger:   `/test jib`,
+					},
 				},
-				{
-					Name:      "jib",
-					AlwaysRun: false,
-					Context:   "pull-jib",
-					Trigger:   `/test jib`,
-				},
-			},
-		})
+			}
+		}
+		c.Config.SetPresubmits(presubmits)
 
 		var pr *struct{}
 		if tc.IsPR {
@@ -228,6 +277,9 @@ func TestHandleIssueComment(t *testing.T) {
 				State:       tc.State,
 			},
 		}
+		if len(tc.IssueLabels) > 0 {
+			event.Issue.Labels = tc.IssueLabels
+		}
 
 		if err := handleIC(c, "kubernetes", event); err != nil {
 			t.Fatalf("Didn't expect error: %s", err)
@@ -239,6 +291,15 @@ func TestHandleIssueComment(t *testing.T) {
 		}
 		if tc.StartsExactly != "" && (len(kc.started) != 1 || kc.started[0] != tc.StartsExactly) {
 			t.Errorf("Didn't build expected context %v, instead built %v", tc.StartsExactly, kc.started)
+		}
+		if tc.IsOkToTest {
+			if len(g.LabelsRemoved) != 1 {
+				t.Errorf("expected a label to be removed")
+				continue
+			}
+			if g.LabelsRemoved[0] != "/repo#0:needs-ok-to-test" {
+				t.Errorf("expected %q to be removed, got %q", "/repo#0:needs-ok-to-test", g.LabelsRemoved[0])
+			}
 		}
 	}
 }

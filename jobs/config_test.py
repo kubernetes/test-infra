@@ -591,13 +591,15 @@ class JobTest(unittest.TestCase):
                     extracts = [a for a in args if '--extract=' in a]
                     shared_builds = [a for a in args if '--use-shared-build' in a]
                     node_e2e = [a for a in args if '--deployment=node' in a]
+                    pull = job.startswith('pull-')
                     if shared_builds and extracts:
                         self.fail(('e2e jobs cannot have --use-shared-build'
                                    ' and --extract: %s %s') % (job, args))
                     elif not extracts and not shared_builds and not node_e2e:
                         self.fail(('e2e job needs --extract or'
                                    ' --use-shared-build: %s %s') % (job, args))
-                    if shared_builds or node_e2e:
+
+                    if shared_builds or node_e2e and not pull:
                         expected = 0
                     elif any(s in job for s in [
                             'upgrade', 'skew', 'downgrade', 'rollback',
@@ -886,6 +888,8 @@ class JobTest(unittest.TestCase):
             ('FAIL_ON_GCP_RESOURCE_LEAK=', '--check-leaked-resources=true|false'),
             ('FEDERATION_DOWN=', '--down=true|false'),
             ('FEDERATION_UP=', '--up=true|false'),
+            ('GINKGO_PARALLEL=', '--ginkgo-parallel=# (1 for serial)'),
+            ('GINKGO_PARALLEL_NODES=', '--ginkgo-parallel=# (1 for serial)'),
             ('GINKGO_TEST_ARGS=', '--test_args=FOO'),
             ('GINKGO_UPGRADE_TEST_ARGS=', '--upgrade_args=FOO'),
             ('JENKINS_FEDERATION_PREFIX=', '--stage=gs://FOO'),

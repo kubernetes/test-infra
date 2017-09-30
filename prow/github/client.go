@@ -336,6 +336,26 @@ func (c *Client) CreateIssueReaction(org, repo string, ID int, reaction string) 
 	return err
 }
 
+// DeleteStaleComments iterates over comments on an issue/PR, deleting those which the 'isStale'
+// function identifies as stale. If 'comments' is nil, the comments will be fetched from github.
+func (c *Client) DeleteStaleComments(org, repo string, number int, comments []IssueComment, isStale func(IssueComment) bool) error {
+	var err error
+	if comments == nil {
+		comments, err = c.ListIssueComments(org, repo, number)
+		if err != nil {
+			return fmt.Errorf("failed to list comments while deleting stale comments. err: %v", err)
+		}
+	}
+	for _, comment := range comments {
+		if isStale(comment) {
+			if err := c.DeleteComment(org, repo, comment.ID); err != nil {
+				return fmt.Errorf("failed to delete stale comment with ID '%d'", comment.ID)
+			}
+		}
+	}
+	return nil
+}
+
 // readPaginatedResults iterates over all objects in the paginated
 // result indicated by the given url.  The newObj function should
 // return a new slice of the expected type, and the accumulate
@@ -613,11 +633,11 @@ func (c *Client) AssignIssue(org, repo string, number int, logins []string) erro
 		return err
 	}
 	for _, assignee := range i.Assignees {
-		assigned[assignee.Login] = true
+		assigned[NormLogin(assignee.Login)] = true
 	}
 	missing := MissingUsers{action: "assign"}
 	for _, login := range logins {
-		if !assigned[login] {
+		if !assigned[NormLogin(login)] {
 			missing.Users = append(missing.Users, login)
 		}
 	}
@@ -650,11 +670,11 @@ func (c *Client) UnassignIssue(org, repo string, number int, logins []string) er
 		return err
 	}
 	for _, assignee := range i.Assignees {
-		assigned[assignee.Login] = true
+		assigned[NormLogin(assignee.Login)] = true
 	}
 	extra := ExtraUsers{action: "unassign"}
 	for _, login := range logins {
-		if assigned[login] {
+		if assigned[NormLogin(login)] {
 			extra.Users = append(extra.Users, login)
 		}
 	}
@@ -739,7 +759,7 @@ func (c *Client) UnrequestReview(org, repo string, number int, logins []string) 
 	for _, user := range pr.RequestedReviewers {
 		found := false
 		for _, toDelete := range logins {
-			if user.Login == toDelete {
+			if NormLogin(user.Login) == NormLogin(toDelete) {
 				found = true
 				break
 			}

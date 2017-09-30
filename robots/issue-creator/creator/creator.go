@@ -229,7 +229,7 @@ func (c *IssueCreator) loadCache() error {
 	// Try to get the list of valid labels for the repo.
 	if validLabels, err := c.client.GetRepoLabels(c.org, c.project); err != nil {
 		c.validLabels = nil
-		glog.Errorf("Failed to retreive the list of valid labels for repo '%s/%s'. Allowing all labels. errmsg: %v\n", c.org, c.project, err)
+		glog.Errorf("Failed to retrieve the list of valid labels for repo '%s/%s'. Allowing all labels. errmsg: %v\n", c.org, c.project, err)
 	} else {
 		c.validLabels = make([]string, 0, len(validLabels))
 		for _, label := range validLabels {
@@ -241,7 +241,7 @@ func (c *IssueCreator) loadCache() error {
 	// Try to get the valid collaborators for the repo.
 	if collaborators, err := c.client.GetCollaborators(c.org, c.project); err != nil {
 		c.Collaborators = nil
-		glog.Errorf("Failed to retreive the list of valid collaborators for repo '%s/%s'. Allowing all assignees. errmsg: %v\n", c.org, c.project, err)
+		glog.Errorf("Failed to retrieve the list of valid collaborators for repo '%s/%s'. Allowing all assignees. errmsg: %v\n", c.org, c.project, err)
 	} else {
 		c.Collaborators = make([]string, 0, len(collaborators))
 		for _, user := range collaborators {

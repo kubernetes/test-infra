@@ -63,6 +63,9 @@ type User struct {
 	ID    int    `json:"id"`
 }
 
+// NormLogin normalizes GitHub login strings
+var NormLogin = strings.ToLower
+
 // PullRequestEventAction enumerates the triggers for this
 // webhook payload type. See also:
 // https://developer.github.com/v3/activity/events/types/#pullrequestevent
@@ -210,7 +213,7 @@ type Issue struct {
 
 func (i Issue) IsAssignee(login string) bool {
 	for _, assignee := range i.Assignees {
-		if login == assignee.Login {
+		if NormLogin(login) == NormLogin(assignee.Login) {
 			return true
 		}
 	}
@@ -218,7 +221,7 @@ func (i Issue) IsAssignee(login string) bool {
 }
 
 func (i Issue) IsAuthor(login string) bool {
-	return i.User.Login == login
+	return NormLogin(i.User.Login) == NormLogin(login)
 }
 
 func (i Issue) IsPullRequest() bool {

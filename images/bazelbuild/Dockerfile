@@ -16,26 +16,21 @@
 FROM ubuntu:16.04
 MAINTAINER spxtr@google.com
 
-RUN apt-get update && apt-get install -y \
+ARG BAZEL_VERSION
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
-    openjdk-8-jdk \
-    pkg-config \
-    zip \
-    unzip \
-    zlib1g-dev \
-    bash-completion \
+    ca-certificates \
     git \
-    wget \
     python \
-    python-pip && \
-    apt-get clean
+    python-pip \
+    unzip \
+    wget \
+    zip \
+    zlib1g-dev \
+    && apt-get clean
 
-ENV BAZEL_VERSION 0.5.4
-RUN wget -q "https://github.com/bazelbuild/bazel/releases/download/${BAZEL_VERSION}/bazel_${BAZEL_VERSION}-linux-x86_64.deb" && \
-    dpkg -i "bazel_${BAZEL_VERSION}-linux-x86_64.deb" && \
-    rm "bazel_${BAZEL_VERSION}-linux-x86_64.deb"
-
-ENV GCLOUD_VERSION 163.0.0
+ENV GCLOUD_VERSION 173.0.0
 RUN wget -q https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-$GCLOUD_VERSION-linux-x86_64.tar.gz && \
     tar xf google-cloud-sdk-$GCLOUD_VERSION-linux-x86_64.tar.gz && \
     rm google-cloud-sdk-$GCLOUD_VERSION-linux-x86_64.tar.gz && \
@@ -47,6 +42,11 @@ RUN wget -q https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-linux
     tar xf node-v${NODE_VERSION}-linux-x64.tar.xz --strip-components=1 -C /usr && \
     rm node-v${NODE_VERSION}-linux-x64.tar.xz && \
     npm install -g mocha
+
+RUN INSTALLER="bazel-${BAZEL_VERSION}-installer-linux-x86_64.sh"; \
+    DOWNLOAD_URL="https://github.com/bazelbuild/bazel/releases/download/${BAZEL_VERSION}/${INSTALLER}"; \
+    wget -q "${DOWNLOAD_URL}" && \
+    chmod +x "${INSTALLER}" && "./${INSTALLER}" && rm "${INSTALLER}"
 
 WORKDIR /workspace
 COPY runner coalesce.py /usr/local/bin/

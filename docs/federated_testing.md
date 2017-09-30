@@ -75,7 +75,8 @@ running the `e2e-runner.sh` script:
 Test results are stored in
 `gs://$JENKINS_GCS_LOGS_PATH/$JOB_NAME/$BUILD_NUMBER`. Every run should upload
 `started.json`, `finished.json`, and `build-log.txt`, and can optionally upload
-JUnit XML to the `artifacts/` directory.
+JUnit XML to the `artifacts/` directory. See the [Gubernator README](./../gubernator/README.md#job-artifact-gcs-layout)
+for more information.
 
 If the platform should be setup or torn down by `e2e-runner.sh`, then
 optionally set:

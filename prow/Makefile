@@ -15,15 +15,15 @@
 all: build test
 
 
-HOOK_VERSION             ?= 0.167
+HOOK_VERSION             ?= 0.169
 SINKER_VERSION           ?= 0.21
 DECK_VERSION             ?= 0.50
 SPLICE_VERSION           ?= 0.27
 TOT_VERSION              ?= 0.5
 HOROLOGIUM_VERSION       ?= 0.8
-PLANK_VERSION            ?= 0.48
-JENKINS-OPERATOR_VERSION ?= 0.44
-TIDE_VERSION             ?= 0.6
+PLANK_VERSION            ?= 0.49
+JENKINS-OPERATOR_VERSION ?= 0.45
+TIDE_VERSION             ?= 0.7
 
 # These are the usual GKE variables.
 PROJECT       ?= k8s-prow

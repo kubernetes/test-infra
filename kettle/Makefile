@@ -21,7 +21,7 @@ ZONE          ?= us-west1-b
 CLUSTER       ?= g8r
 
 get-cluster-credentials:
-	kubectl use-context gke_k8s-gubernator_us-west1-b_g8r || gcloud container clusters get-credentials "$(CLUSTER)" --project="$(PROJECT)" --zone="$(ZONE)"
+	kubectl config use-context gke_k8s-gubernator_us-west1-b_g8r || gcloud container clusters get-credentials "$(CLUSTER)" --project="$(PROJECT)" --zone="$(ZONE)"
 
 build:
 	cp ../buckets.yaml .

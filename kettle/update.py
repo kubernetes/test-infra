@@ -26,7 +26,7 @@ def call(cmd):
 
 
 def main():
-    call('time python make_db.py --buckets ../buckets.yaml --junit --threads 128')
+    call('time python make_db.py --buckets ../buckets.yaml --junit --threads 32')
 
     bq_cmd = 'bq load --source_format=NEWLINE_DELIMITED_JSON --max_bad_records=1000'
     mj_cmd = 'pypy make_json.py'
@@ -34,7 +34,7 @@ def main():
     mj_ext = ''
     bq_ext = ''
     try:
-        call(mj_cmd + ' --days 1 --assert-oldest 1')
+        call(mj_cmd + ' --days 1 --assert-oldest 1.9')
     except OSError:
         # cycle daily/weekly tables
         bq_ext = ' --replace'

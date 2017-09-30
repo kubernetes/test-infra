@@ -576,16 +576,16 @@ func TestPickBatch(t *testing.T) {
 }
 
 type fkc struct {
-	createdJobs int
+	createdJobs []kube.ProwJob
 }
 
 func (c *fkc) ListProwJobs(map[string]string) ([]kube.ProwJob, error) {
 	return nil, nil
 }
 
-func (c *fkc) CreateProwJob(kube.ProwJob) (kube.ProwJob, error) {
-	c.createdJobs++
-	return kube.ProwJob{}, nil
+func (c *fkc) CreateProwJob(pj kube.ProwJob) (kube.ProwJob, error) {
+	c.createdJobs = append(c.createdJobs, pj)
+	return pj, nil
 }
 
 func TestTakeAction(t *testing.T) {
@@ -599,8 +599,9 @@ func TestTakeAction(t *testing.T) {
 		nones        []int
 		batchMerges  []int
 
-		merged    int
-		triggered int
+		merged            int
+		triggered         int
+		triggered_batches int
 	}{
 		{
 			name: "no prs to test, should do nothing",
@@ -659,8 +660,9 @@ func TestTakeAction(t *testing.T) {
 			nones:        []int{0, 1, 2, 3},
 			batchMerges:  []int{},
 
-			merged:    0,
-			triggered: 2,
+			merged:            0,
+			triggered:         2,
+			triggered_batches: 1,
 		},
 		{
 			name: "one PR, should not trigger batch",
@@ -771,11 +773,24 @@ func TestTakeAction(t *testing.T) {
 			t.Errorf("Error in takeAction: %v", err)
 			continue
 		}
-		if tc.triggered != fkc.createdJobs {
-			t.Errorf("Wrong number of jobs triggered. Got %d, expected %d.", fkc.createdJobs, tc.triggered)
+		if tc.triggered != len(fkc.createdJobs) {
+			t.Errorf("Wrong number of jobs triggered. Got %d, expected %d.", len(fkc.createdJobs), tc.triggered)
 		}
 		if tc.merged != fgc.merged {
 			t.Errorf("Wrong number of merges. Got %d, expected %d.", fgc.merged, tc.merged)
+		}
+		// Ensure that the correct number of batch jobs were triggered
+		batches := 0
+		for _, job := range fkc.createdJobs {
+			if (len(job.Spec.Refs.Pulls) > 1) != (job.Spec.Type == kube.BatchJob) {
+				t.Error("Found a batch job that doesn't contain multiple pull refs!")
+			}
+			if len(job.Spec.Refs.Pulls) > 1 {
+				batches++
+			}
+		}
+		if tc.triggered_batches != batches {
+			t.Errorf("Wrong number of batches triggered. Got %d, expected %d.", batches, tc.triggered_batches)
 		}
 	}
 }

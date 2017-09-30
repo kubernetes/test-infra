@@ -33,7 +33,7 @@ def sort():
     with open(test_infra('jobs/config.json'), 'r+') as fp:
         configs = json.loads(fp.read())
     regexp = re.compile('|'.join([
-        r'^JENKINS_GCI_PATCH_K8S=(.*)$',
+        r'^GINKGO_PARALLEL_NODES=(.*)$',
     ]))
     problems = []
     for job, values in configs.items():
@@ -45,49 +45,39 @@ def sort():
         if any('None' in a for a in args):
             problems.append('Bad flag with None: %s' % job)
             continue
-        with open(test_infra('jobs/%s.env' % job)) as fp:
+
+        if not os.path.isfile(test_infra('jobs/env/%s.env' % job)):
+            continue
+        with open(test_infra('jobs/env/%s.env' % job)) as fp:
             env = fp.read()
         lines = []
-        new_args = {}
-        processed = []
-        for arg in args:
-            if re.search(r'^(--test_args)=', arg):
-                key, val = arg.split('=', 1)
-                new_args[key] = val
-            else:
-                processed.append(arg)
-        args = processed
-        okay = False
         mod = False
+        parallism = False
+        parallism_nodes = 1
         for line in env.split('\n'):
             mat = regexp.search(line)
-            if not mat:
-                lines.append(line)
-                continue
-            if mat:  # These do nothing
+            if mat:
+                parallism_nodes = mat.group(1)
+                if parallism_nodes > 1:
+                    parallism = True
                 mod = True
                 continue
-            master, nodes = mat.groups()
-            stop = False
-            for key, val in {
-                    '--kubemark-master-size': master,
-                    '--kubemark-nodes': nodes,
-            }.items():
-                if not val:
-                    continue
-                if key in new_args:
-                    val = '%s %s' % (new_args[key], val)
-                new_args[key] = val
+            if line.strip() == 'GINKGO_PARALLEL=y':
+                parallism = True
+                if parallism_nodes == 1:
+                    parallism_nodes = 25
                 mod = True
-            if stop:
-                break
-        else:
-            okay = True
-        if not okay or not mod:
+                continue
+            if line.strip() == 'GINKGO_PARALLEL=n':
+                parallism = False
+                continue
+            lines.append(line)
+        if not mod:
             continue
+
         args = list(args)
-        for key, val in new_args.items():
-            args.append('%s=%s' % (key, val))
+        if parallism:
+            args.append('--ginkgo-parallel=%s' % parallism_nodes)
         flags = set()
         okay = False
         for arg in args:
@@ -105,7 +95,7 @@ def sort():
         if not okay:
             continue
         values['args'] = args
-        with open(test_infra('jobs/%s.env' % job), 'w') as fp:
+        with open(test_infra('jobs/env/%s.env' % job), 'w') as fp:
             fp.write('\n'.join(lines))
     with open(test_infra('jobs/config.json'), 'w') as fp:
         fp.write(json.dumps(configs, sort_keys=True, indent=2, separators=(',', ': ')))
