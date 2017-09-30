@@ -1,12 +1,5 @@
 "use strict";
 
-var types = {};
-var repos = {};
-var jobs = {};
-var authors = {};
-var pulls = {};
-var states = {};
-
 function getParameterByName(name) {  // http://stackoverflow.com/a/5158301/3694
     var match = RegExp('[?&]' + name + '=([^&/]*)').exec(window.location.search);
     return match && decodeURIComponent(match[1].replace(/\+/g, ' '));
@@ -22,15 +15,31 @@ function updateQueryStringParameter(uri, key, value) {
     }
 }
 
-window.onload = function() {
+var lastRepoSel;
+function redrawOptions(repo) {
+    if (repo === lastRepoSel) {
+        return;
+    }
+    lastRepoSel = repo;
+
+    var types = {};
+    var repos = {};
+    var jobs = {};
+    var authors = {};
+    var pulls = {};
+    var states = {};
+
     for (var i = 0; i < allBuilds.length; i++) {
-        types[allBuilds[i].type] = true;
-        repos[allBuilds[i].repo] = true;
-        jobs[allBuilds[i].job] = true;
-        if (allBuilds[i].type === "presubmit") {
-            authors[allBuilds[i].author] = true;
-            pulls[allBuilds[i].number] = true;
-            states[allBuilds[i].state] = true;
+        var build = allBuilds[i];
+        types[build.type] = true;
+        repos[build.repo] = true;
+        if (!repo || repo == build.repo) {
+            jobs[build.job] = true;
+            if (build.type === "presubmit") {
+                authors[build.author] = true;
+                pulls[build.number] = true;
+                states[build.state] = true;
+            }
         }
     }
 
@@ -50,12 +59,16 @@ window.onload = function() {
     addOptions(ps, "pull");
     var ss = Array.from(Object.keys(states)).sort();
     addOptions(ss, "state");
+};
 
+window.onload = function() {
     redraw();
 };
 
 function addOptions(s, p) {
     var sel = document.getElementById(p);
+    while (sel.length > 1)
+        sel.removeChild(sel.lastChild);
     var param = getParameterByName(p);
     for (var i = 0; i < s.length; i++) {
         var o = document.createElement("option");
@@ -98,12 +111,14 @@ function redraw() {
         return sel;
     }
 
-    var typeSel = getSelection("type");
     var repoSel = getSelection("repo");
+    var typeSel = getSelection("type");
     var pullSel = getSelection("pull");
     var authorSel = getSelection("author");
     var jobSel = getSelection("job");
     var stateSel = getSelection("state");
+    // TODO(rmmh): reset pull/author/job/state selectors when repo changes
+    //             to a repo where they are invalid.
 
     if (window.history && window.history.replaceState !== undefined) {
         if (args.length > 0) {
@@ -112,6 +127,7 @@ function redraw() {
             history.replaceState(null, "", "/")
         }
     }
+    redrawOptions(repoSel);
 
     var lastKey = '';
     for (var i = 0, emitted = 0; i < allBuilds.length && emitted < 500; i++) {
