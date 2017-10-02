@@ -61,10 +61,11 @@ RUN tar xzf /workspace/google-cloud-sdk.tar.gz -C / && \
 
 ADD ["e2e-runner.sh", \
     "kops-e2e-runner.sh", \
+    "runner", \
     "kubetest", \
     "https://raw.githubusercontent.com/kubernetes/kubernetes/master/cluster/get-kube.sh", \
     "/workspace/"]
 RUN ["chmod", "+x", "/workspace/get-kube.sh"]
 
 WORKDIR "/workspace"
-ENTRYPOINT ["/workspace/kubetest"]
+ENTRYPOINT ["/workspace/runner"]
