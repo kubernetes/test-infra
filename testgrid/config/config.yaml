@@ -205,8 +205,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-ci-slow-master
 - name: ci-kubernetes-e2e-gce-gci-ci-slow-release-1-5
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-ci-slow-release-1-5
-- name: ci-kubernetes-e2e-gce-gci-qa-m59
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-m59
 - name: ci-kubernetes-e2e-gce-gci-qa-m60
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-m60
 - name: ci-kubernetes-e2e-gce-gci-qa-m61
@@ -215,8 +213,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-m62
 - name: ci-kubernetes-e2e-gce-gci-qa-master
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-master
-- name: ci-kubernetes-e2e-gce-gci-qa-serial-m59
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-serial-m59
 - name: ci-kubernetes-e2e-gce-gci-qa-serial-m60
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-serial-m60
 - name: ci-kubernetes-e2e-gce-gci-qa-serial-m61
@@ -225,8 +221,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-serial-m62
 - name: ci-kubernetes-e2e-gce-gci-qa-serial-master
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-serial-master
-- name: ci-kubernetes-e2e-gce-gci-qa-slow-m59
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-slow-m59
 - name: ci-kubernetes-e2e-gce-gci-qa-slow-m60
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-slow-m60
 - name: ci-kubernetes-e2e-gce-gci-qa-slow-m61
@@ -2091,8 +2085,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-gci-ci-slow-master
   - name: ci-slow-1.5
     test_group_name: ci-kubernetes-e2e-gce-gci-ci-slow-release-1-5
-  - name: qa-m59
-    test_group_name: ci-kubernetes-e2e-gce-gci-qa-m59
   - name: qa-m60
     test_group_name: ci-kubernetes-e2e-gce-gci-qa-m60
   - name: qa-m61
@@ -2101,8 +2093,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-gci-qa-m62
   - name: qa-master
     test_group_name: ci-kubernetes-e2e-gce-gci-qa-master
-  - name: qa-serial-m59
-    test_group_name: ci-kubernetes-e2e-gce-gci-qa-serial-m59
   - name: qa-serial-m60
     test_group_name: ci-kubernetes-e2e-gce-gci-qa-serial-m60
   - name: qa-serial-m61
@@ -2111,8 +2101,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-gci-qa-serial-m62
   - name: qa-serial-master
     test_group_name: ci-kubernetes-e2e-gce-gci-qa-serial-master
-  - name: qa-slow-m59
-    test_group_name: ci-kubernetes-e2e-gce-gci-qa-slow-m59
   - name: qa-slow-m60
     test_group_name: ci-kubernetes-e2e-gce-gci-qa-slow-m60
   - name: qa-slow-m61
