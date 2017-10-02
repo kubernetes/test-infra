@@ -12,6 +12,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/ghodss/yaml"
 )
 
 type AuthConfig struct {
@@ -25,21 +27,21 @@ type BasicAuthConfig struct {
 	// TokenFile is the location of the token file.
 	TokenFile string `json:"token_file"`
 	// token is the token loaded in memory from the location above.
-	Token string
+	Token string `json:"-"`
 }
 
 type BearerTokenAuthConfig struct {
 	// TokenFile is the location of the token file.
 	TokenFile string `json:"token_file"`
 	// token is the token loaded in memory from the location above.
-	Token string
+	Token string `json:"-"`
 }
 
 type JenkinsMaster struct {
 	// URLString loads into url in runtime.
 	URLString string `json:"url"`
 	// url of the Jenkins master to serve traffic to.
-	url *url.URL
+	url *url.URL `json:"-"`
 	// AuthConfig contains the authentication to be used for this master.
 	Auth *AuthConfig `json:"auth,omitempty"`
 }
@@ -55,15 +57,15 @@ var _ Proxy = &proxy{}
 
 // proxy is able to proxy requests to different Jenkins masters.
 type proxy struct {
-	sync.RWMutex
-	client *http.Client
+	sync.RWMutex `json:"-"`
+	client       *http.Client `json:"-"`
 	// ProxyAuth is used for authenticating with the proxy.
 	ProxyAuth *BasicAuthConfig `json:"proxy_auth,omitempty"`
 	// Masters includes all the information for contacting different
 	// Jenkins masters.
 	Masters []JenkinsMaster `json:"masters"`
 	// job cache
-	cache map[string][]string
+	cache map[string][]string `json:"-"`
 }
 
 func NewProxy(path string) (*proxy, error) {
@@ -91,10 +93,11 @@ func (p *proxy) Load(path string) error {
 	if err != nil {
 		return fmt.Errorf("error reading %s: %v", path, err)
 	}
-	np := &proxy{}
-	if err := json.Unmarshal(b, np); err != nil {
+	c := &Config{}
+	if err := yaml.Unmarshal(b, c); err != nil {
 		return fmt.Errorf("error unmarshaling %s: %v", path, err)
 	}
+	np := c.JenkinsProxy
 	if np.ProxyAuth != nil {
 		token, err := loadToken(np.ProxyAuth.TokenFile)
 		if err != nil {
