@@ -1251,7 +1251,7 @@ presubmits:
     trigger: "(?m)^/test( all| pull-test-infra-bazel),?(\\s+|$)"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20170925-2204c0cb
+      - image: gcr.io/k8s-testimages/bazelbuild:v20170929-ed26bd34-0.6.0
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
