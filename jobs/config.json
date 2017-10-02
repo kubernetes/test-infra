@@ -9232,14 +9232,14 @@
       "sig-scale"
     ]
   },
-  "ci-kubernetes-kubemark-5-gce-1.5": {
+  "ci-kubernetes-kubemark-5-gce-last-release": {
     "args": [
-      "--cluster=kubemark-5-1-5",
+      "--cluster=kubemark-5-old",
       "--docker-in-docker",
       "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-kubemark-5-gce-1.5.env",
-      "--extract=ci/latest-1.5",
-      "--gcp-project=k8s-kubemark-1-5",
+      "--env-file=jobs/env/ci-kubernetes-kubemark-5-gce.env",
+      "--extract=ci/latest-1.8",
+      "--gcp-project=k8s-jenkins-kubemark",
       "--gcp-zone=us-central1-f",
       "--kubemark",
       "--kubemark-nodes=5",
