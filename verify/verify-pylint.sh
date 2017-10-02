@@ -18,7 +18,6 @@ set -o nounset
 set -o pipefail
 
 export PYLINTHOME=$(mktemp -d)
-pylint="$(dirname $0)/pylint_bin"
 
 shopt -s extglob globstar
-${pylint} !(gubernator|external|bazel-*)/**/*.py
+pylint !(gubernator|external|bazel-*)/**/*.py
