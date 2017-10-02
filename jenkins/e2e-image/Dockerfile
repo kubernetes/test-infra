@@ -68,4 +68,4 @@ ADD ["e2e-runner.sh", \
 RUN ["chmod", "+x", "/workspace/get-kube.sh"]
 
 WORKDIR "/workspace"
-ENTRYPOINT ["/workspace/runner"]
+ENTRYPOINT ["/bin/bash", "/workspace/runner"]
