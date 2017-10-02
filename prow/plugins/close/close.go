@@ -31,7 +31,7 @@ const pluginName = "close"
 var closeRe = regexp.MustCompile(`(?mi)^/close\s*$`)
 
 func init() {
-	plugins.RegisterIssueCommentHandler(pluginName, handleIssueComment)
+	plugins.RegisterGenericCommentHandler(pluginName, handleGenericComment)
 }
 
 type githubClient interface {
@@ -42,28 +42,34 @@ type githubClient interface {
 	AssignIssue(owner, repo string, number int, assignees []string) error
 }
 
-func handleIssueComment(pc plugins.PluginClient, ic github.IssueCommentEvent) error {
-	return handle(pc.GitHubClient, pc.Logger, ic)
+func handleGenericComment(pc plugins.PluginClient, e github.GenericCommentEvent) error {
+	return handle(pc.GitHubClient, pc.Logger, &e)
 }
 
-func handle(gc githubClient, log *logrus.Entry, ic github.IssueCommentEvent) error {
+func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent) error {
 	// Only consider open issues and new comments.
-	if ic.Issue.State != "open" || ic.Action != github.IssueCommentActionCreated {
+	if e.IssueState != "open" || e.Action != github.GenericCommentActionCreated {
 		return nil
 	}
 
-	if !closeRe.MatchString(ic.Comment.Body) {
+	if !closeRe.MatchString(e.Body) {
 		return nil
 	}
 
-	org := ic.Repo.Owner.Login
-	repo := ic.Repo.Name
-	number := ic.Issue.Number
-
-	commentAuthor := ic.Comment.User.Login
+	org := e.Repo.Owner.Login
+	repo := e.Repo.Name
+	number := e.Number
+	commentAuthor := e.User.Login
 
 	// Allow assignees and authors to close issues.
-	if !ic.Issue.IsAuthor(commentAuthor) && !ic.Issue.IsAssignee(commentAuthor) {
+	isAssignee := false
+	for _, assignee := range e.Assignees {
+		if commentAuthor == assignee.Login {
+			isAssignee = true
+			break
+		}
+	}
+	if e.IssueAuthor.Login != commentAuthor && !isAssignee {
 		log.Infof("Assigning %s/%s#%d to %s", org, repo, number, commentAuthor)
 		if err := gc.AssignIssue(org, repo, number, []string{commentAuthor}); err != nil {
 			msg := "Assigning you to the issue failed."
@@ -76,11 +82,11 @@ func handle(gc githubClient, log *logrus.Entry, ic github.IssueCommentEvent) err
 			}
 			resp := fmt.Sprintf("you can't close an issue unless you authored it or you are assigned to it, %s.", msg)
 			log.Infof("Commenting \"%s\".", resp)
-			return gc.CreateComment(org, repo, number, plugins.FormatICResponse(ic.Comment, resp))
+			return gc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, commentAuthor, resp))
 		}
 	}
 
-	if ic.Issue.IsPullRequest() {
+	if e.IsPR {
 		log.Info("Closing PR.")
 		return gc.ClosePR(org, repo, number)
 	}

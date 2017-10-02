@@ -73,34 +73,39 @@ func TestShrugComment(t *testing.T) {
 		fc := &fakegithub.FakeClient{
 			IssueComments: make(map[int][]github.IssueComment),
 		}
-		e := &event{
-			body: tc.body,
+		e := &github.GenericCommentEvent{
+			Action: github.GenericCommentActionCreated,
+			Body:   tc.body,
+			Number: 5,
+			Repo:   github.Repo{Owner: github.User{Login: "org"}, Name: "repo"},
 		}
 		if tc.hasShrug {
-			e.hasLabel = func(label string) (bool, error) { return label == shrugLabel, nil }
-		} else {
-			e.hasLabel = func(label string) (bool, error) { return false, nil }
+			fc.LabelsAdded = []string{"org/repo#5:" + shrugLabel}
 		}
 		if err := handle(fc, logrus.WithField("plugin", pluginName), e); err != nil {
 			t.Errorf("For case %s, didn't expect error: %v", tc.name, err)
 			continue
 		}
 
+		hadShrug := 0
+		if tc.hasShrug {
+			hadShrug = 1
+		}
 		if tc.shouldShrug {
-			if len(fc.LabelsAdded) != 1 {
+			if len(fc.LabelsAdded)-hadShrug != 1 {
 				t.Errorf("For case %s, should add shrug.", tc.name)
 			}
 			if len(fc.LabelsRemoved) != 0 {
 				t.Errorf("For case %s, should not remove label.", tc.name)
 			}
 		} else if tc.shouldUnshrug {
-			if len(fc.LabelsAdded) != 0 {
+			if len(fc.LabelsAdded)-hadShrug != 0 {
 				t.Errorf("For case %s, should not add shrug.", tc.name)
 			}
 			if len(fc.LabelsRemoved) != 1 {
 				t.Errorf("For case %s, should remove shrug.", tc.name)
 			}
-		} else if len(fc.LabelsAdded) > 0 || len(fc.LabelsRemoved) > 0 {
+		} else if len(fc.LabelsAdded)-hadShrug > 0 || len(fc.LabelsRemoved) > 0 {
 			t.Errorf("For case %s, should not have added/removed shrug.", tc.name)
 		}
 	}

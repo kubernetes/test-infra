@@ -50,13 +50,16 @@ func (s *Server) handleReviewEvent(re github.ReviewEvent) {
 	}
 	s.handleGenericComment(
 		&github.GenericCommentEvent{
-			IsPR:    true,
-			Action:  action,
-			Body:    re.Review.Body,
-			HTMLURL: re.Review.HTMLURL,
-			Number:  re.PullRequest.Number,
-			Repo:    re.Repo,
-			User:    re.Review.User,
+			IsPR:        true,
+			Action:      action,
+			Body:        re.Review.Body,
+			HTMLURL:     re.Review.HTMLURL,
+			Number:      re.PullRequest.Number,
+			Repo:        re.Repo,
+			User:        re.Review.User,
+			IssueAuthor: re.PullRequest.User,
+			Assignees:   re.PullRequest.Assignees,
+			IssueState:  re.PullRequest.State,
 		},
 		l,
 	)
@@ -89,13 +92,16 @@ func (s *Server) handleReviewCommentEvent(rce github.ReviewCommentEvent) {
 	}
 	s.handleGenericComment(
 		&github.GenericCommentEvent{
-			IsPR:    true,
-			Action:  action,
-			Body:    rce.Comment.Body,
-			HTMLURL: rce.Comment.HTMLURL,
-			Number:  rce.PullRequest.Number,
-			Repo:    rce.Repo,
-			User:    rce.Comment.User,
+			IsPR:        true,
+			Action:      action,
+			Body:        rce.Comment.Body,
+			HTMLURL:     rce.Comment.HTMLURL,
+			Number:      rce.PullRequest.Number,
+			Repo:        rce.Repo,
+			User:        rce.Comment.User,
+			IssueAuthor: rce.PullRequest.User,
+			Assignees:   rce.PullRequest.Assignees,
+			IssueState:  rce.PullRequest.State,
 		},
 		l,
 	)
@@ -127,13 +133,16 @@ func (s *Server) handlePullRequestEvent(pr github.PullRequestEvent) {
 	}
 	s.handleGenericComment(
 		&github.GenericCommentEvent{
-			IsPR:    true,
-			Action:  action,
-			Body:    pr.PullRequest.Body,
-			HTMLURL: pr.PullRequest.HTMLURL,
-			Number:  pr.PullRequest.Number,
-			Repo:    pr.Repo,
-			User:    pr.PullRequest.User,
+			IsPR:        true,
+			Action:      action,
+			Body:        pr.PullRequest.Body,
+			HTMLURL:     pr.PullRequest.HTMLURL,
+			Number:      pr.PullRequest.Number,
+			Repo:        pr.Repo,
+			User:        pr.PullRequest.User,
+			IssueAuthor: pr.PullRequest.User,
+			Assignees:   pr.PullRequest.Assignees,
+			IssueState:  pr.PullRequest.State,
 		},
 		l,
 	)
@@ -186,13 +195,16 @@ func (s *Server) handleIssueEvent(i github.IssueEvent) {
 	}
 	s.handleGenericComment(
 		&github.GenericCommentEvent{
-			IsPR:    i.Issue.IsPullRequest(),
-			Action:  action,
-			Body:    i.Issue.Body,
-			HTMLURL: i.Issue.HTMLURL,
-			Number:  i.Issue.Number,
-			Repo:    i.Repo,
-			User:    i.Issue.User,
+			IsPR:        i.Issue.IsPullRequest(),
+			Action:      action,
+			Body:        i.Issue.Body,
+			HTMLURL:     i.Issue.HTMLURL,
+			Number:      i.Issue.Number,
+			Repo:        i.Repo,
+			User:        i.Issue.User,
+			IssueAuthor: i.Issue.User,
+			Assignees:   i.Issue.Assignees,
+			IssueState:  i.Issue.State,
 		},
 		l,
 	)
@@ -224,13 +236,16 @@ func (s *Server) handleIssueCommentEvent(ic github.IssueCommentEvent) {
 	}
 	s.handleGenericComment(
 		&github.GenericCommentEvent{
-			IsPR:    ic.Issue.IsPullRequest(),
-			Action:  action,
-			Body:    ic.Comment.Body,
-			HTMLURL: ic.Comment.HTMLURL,
-			Number:  ic.Issue.Number,
-			Repo:    ic.Repo,
-			User:    ic.Comment.User,
+			IsPR:        ic.Issue.IsPullRequest(),
+			Action:      action,
+			Body:        ic.Comment.Body,
+			HTMLURL:     ic.Comment.HTMLURL,
+			Number:      ic.Issue.Number,
+			Repo:        ic.Repo,
+			User:        ic.Comment.User,
+			IssueAuthor: ic.Issue.User,
+			Assignees:   ic.Issue.Assignees,
+			IssueState:  ic.Issue.State,
 		},
 		l,
 	)

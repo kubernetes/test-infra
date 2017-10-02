@@ -30,7 +30,7 @@ const pluginName = "reopen"
 var reopenRe = regexp.MustCompile(`(?mi)^/reopen\s*$`)
 
 func init() {
-	plugins.RegisterIssueCommentHandler(pluginName, handleIssueComment)
+	plugins.RegisterGenericCommentHandler(pluginName, handleGenericComment)
 }
 
 type githubClient interface {
@@ -39,34 +39,40 @@ type githubClient interface {
 	ReopenPR(owner, repo string, number int) error
 }
 
-func handleIssueComment(pc plugins.PluginClient, ic github.IssueCommentEvent) error {
-	return handle(pc.GitHubClient, pc.Logger, ic)
+func handleGenericComment(pc plugins.PluginClient, e github.GenericCommentEvent) error {
+	return handle(pc.GitHubClient, pc.Logger, &e)
 }
 
-func handle(gc githubClient, log *logrus.Entry, ic github.IssueCommentEvent) error {
+func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent) error {
 	// Only consider closed issues and new comments.
-	if ic.Issue.State != "closed" || ic.Action != github.IssueCommentActionCreated {
+	if e.IssueState != "closed" || e.Action != github.GenericCommentActionCreated {
 		return nil
 	}
 
-	if !reopenRe.MatchString(ic.Comment.Body) {
+	if !reopenRe.MatchString(e.Body) {
 		return nil
 	}
 
-	org := ic.Repo.Owner.Login
-	repo := ic.Repo.Name
-	number := ic.Issue.Number
-
-	commentAuthor := ic.Comment.User.Login
+	org := e.Repo.Owner.Login
+	repo := e.Repo.Name
+	number := e.Number
+	commentAuthor := e.User.Login
 
 	// Allow assignees and authors to re-open issues.
-	if !ic.Issue.IsAuthor(commentAuthor) && !ic.Issue.IsAssignee(commentAuthor) {
+	isAssignee := false
+	for _, assignee := range e.Assignees {
+		if commentAuthor == assignee.Login {
+			isAssignee = true
+			break
+		}
+	}
+	if e.IssueAuthor.Login != commentAuthor && !isAssignee {
 		resp := "you can't re-open an issue/PR unless you authored it or you are assigned to it."
 		log.Infof("Commenting \"%s\".", resp)
-		return gc.CreateComment(org, repo, number, plugins.FormatICResponse(ic.Comment, resp))
+		return gc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, resp))
 	}
 
-	if ic.Issue.IsPullRequest() {
+	if e.IsPR {
 		log.Info("Re-opening PR.")
 		return gc.ReopenPR(org, repo, number)
 	}
