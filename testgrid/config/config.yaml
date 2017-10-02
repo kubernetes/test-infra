@@ -418,8 +418,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-kubemark-100-canary
 - name: ci-kubernetes-kubemark-5-gce
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-kubemark-5-gce
-- name: ci-kubernetes-kubemark-5-gce-1.5
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-kubemark-5-gce-1.5
+- name: ci-kubernetes-kubemark-5-gce-last-release
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-kubemark-5-gce-last-release
 - name: ci-kubernetes-kubemark-500-gce
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-kubemark-500-gce
 - name: ci-kubernetes-kubemark-gce-scale
@@ -4015,8 +4015,8 @@ dashboards:
     test_group_name: ci-kubernetes-kubemark-high-density-100-gce
   - name: kubemark-small
     test_group_name: ci-kubernetes-kubemark-5-gce
-  - name: kubemark-small-1.5
-    test_group_name: ci-kubernetes-kubemark-5-gce-1.5
+  - name: kubemark-small-last-release
+    test_group_name: ci-kubernetes-kubemark-5-gce-last-release
   - name: kubemark-500
     test_group_name: ci-kubernetes-kubemark-500-gce
   - name: kubemark-5000
