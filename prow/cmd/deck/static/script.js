@@ -15,49 +15,49 @@ function updateQueryStringParameter(uri, key, value) {
     }
 }
 
-var lastRepoSel;
-function redrawOptions(repo) {
-    if (repo === lastRepoSel) {
-        return;
-    }
-    lastRepoSel = repo;
-
-    var types = {};
-    var repos = {};
-    var jobs = {};
-    var authors = {};
-    var pulls = {};
-    var states = {};
+function optionsForRepo(repo) {
+    var opts = {
+        types: {},
+        repos: {},
+        jobs: {},
+        authors: {},
+        pulls: {},
+        states: {},
+    };
 
     for (var i = 0; i < allBuilds.length; i++) {
         var build = allBuilds[i];
-        types[build.type] = true;
-        repos[build.repo] = true;
+        opts.types[build.type] = true;
+        opts.repos[build.repo] = true;
         if (!repo || repo == build.repo) {
-            jobs[build.job] = true;
+            opts.jobs[build.job] = true;
             if (build.type === "presubmit") {
-                authors[build.author] = true;
-                pulls[build.number] = true;
-                states[build.state] = true;
+                opts.authors[build.author] = true;
+                opts.pulls[build.number] = true;
+                opts.states[build.state] = true;
             }
         }
     }
 
-    var ts = Array.from(Object.keys(types)).sort();
+    return opts;
+}
+
+function redrawOptions(opts) {
+    var ts = Object.keys(opts.types).sort();
     addOptions(ts, "type");
-    var rs = Array.from(Object.keys(repos)).filter(function(r) { return r !== "/"; }).sort();
+    var rs = Object.keys(opts.repos).filter(function(r) { return r !== "/"; }).sort();
     addOptions(rs, "repo");
-    var js = Array.from(Object.keys(jobs)).sort();
+    var js = Object.keys(opts.jobs).sort();
     addOptions(js, "job");
-    var as = Array.from(Object.keys(authors)).sort(function (a, b) {
+    var as = Object.keys(opts.authors).sort(function (a, b) {
         return a.toLowerCase().localeCompare(b.toLowerCase());
     });
     addOptions(as, "author");
-    var ps = Array.from(Object.keys(pulls)).sort(function (a, b) {
+    var ps = Object.keys(opts.pulls).sort(function (a, b) {
         return parseInt(a) - parseInt(b);
     });
     addOptions(ps, "pull");
-    var ss = Array.from(Object.keys(states)).sort();
+    var ss = Object.keys(opts.states).sort();
     addOptions(ss, "state");
 };
 
@@ -107,18 +107,20 @@ function redraw() {
     var args = [];
     function getSelection(name) {
         var sel = selectionText(document.getElementById(name));
+        if (sel && opts && !opts[name + 's'][sel]) return "";
         if (sel !== "") args.push(name + "=" + encodeURIComponent(sel));
         return sel;
     }
 
+    var opts = null;
     var repoSel = getSelection("repo");
+    opts = optionsForRepo(repoSel);
+
     var typeSel = getSelection("type");
     var pullSel = getSelection("pull");
     var authorSel = getSelection("author");
     var jobSel = getSelection("job");
     var stateSel = getSelection("state");
-    // TODO(rmmh): reset pull/author/job/state selectors when repo changes
-    //             to a repo where they are invalid.
 
     if (window.history && window.history.replaceState !== undefined) {
         if (args.length > 0) {
@@ -127,7 +129,7 @@ function redraw() {
             history.replaceState(null, "", "/")
         }
     }
-    redrawOptions(repoSel);
+    redrawOptions(opts);
 
     var lastKey = '';
     for (var i = 0, emitted = 0; i < allBuilds.length && emitted < 500; i++) {
