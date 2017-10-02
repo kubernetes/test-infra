@@ -19,7 +19,6 @@ package jenkins
 import (
 	"bytes"
 	"fmt"
-	"net/url"
 	"strconv"
 	"sync"
 	"time"
@@ -48,9 +47,8 @@ type kubeClient interface {
 }
 
 type jenkinsClient interface {
-	Build(*kube.ProwJob) (*url.URL, error)
-	Enqueued(string) (bool, error)
-	Status(job, id string) (*Status, error)
+	Build(*kube.ProwJob) error
+	ListJenkinsBuilds(jobs map[string]struct{}) (map[string]JenkinsBuild, error)
 }
 
 type githubClient interface {
@@ -67,7 +65,7 @@ type configAgent interface {
 	Config() *config.Config
 }
 
-type syncFn func(pj kube.ProwJob, reports chan<- kube.ProwJob) error
+type syncFn func(kube.ProwJob, chan<- kube.ProwJob, map[string]JenkinsBuild) error
 
 // Controller manages ProwJobs.
 type Controller struct {
@@ -146,6 +144,10 @@ func (c *Controller) Sync() error {
 		}
 	}
 	pjs = jenkinsJobs
+	jbs, err := c.jc.ListJenkinsBuilds(getJenkinsJobs(pjs))
+	if err != nil {
+		return fmt.Errorf("error listing jenkins builds: %v", err)
+	}
 
 	var syncErrs []error
 	if err := c.terminateDupes(pjs); err != nil {
@@ -161,8 +163,8 @@ func (c *Controller) Sync() error {
 	c.pendingJobs = make(map[string]int)
 	// Sync pending jobs first so we can determine what is the maximum
 	// number of new jobs we can trigger when syncing the non-pendings.
-	syncProwJobs(c.syncPendingJob, pendingCh, reportCh, errCh)
-	syncProwJobs(c.syncNonPendingJob, nonPendingCh, reportCh, errCh)
+	syncProwJobs(c.syncPendingJob, pendingCh, reportCh, errCh, jbs)
+	syncProwJobs(c.syncNonPendingJob, nonPendingCh, reportCh, errCh, jbs)
 
 	close(errCh)
 	close(reportCh)
@@ -183,6 +185,19 @@ func (c *Controller) Sync() error {
 		return nil
 	}
 	return fmt.Errorf("errors syncing: %v, errors reporting: %v", syncErrs, reportErrs)
+}
+
+// getJenkinsJobs returns all the active Jenkins jobs for the provided
+// list of prowjobs.
+func getJenkinsJobs(pjs []kube.ProwJob) map[string]struct{} {
+	jenkinsJobs := make(map[string]struct{})
+	for _, pj := range pjs {
+		if pj.Complete() {
+			continue
+		}
+		jenkinsJobs[pj.Spec.Job] = struct{}{}
+	}
+	return jenkinsJobs
 }
 
 // terminateDupes aborts presubmits that have a newer version. It modifies pjs
@@ -216,14 +231,20 @@ func (c *Controller) terminateDupes(pjs []kube.ProwJob) error {
 	return nil
 }
 
-func syncProwJobs(syncFn syncFn, jobs <-chan kube.ProwJob, reports chan<- kube.ProwJob, syncErrors chan<- error) {
+func syncProwJobs(
+	syncFn syncFn,
+	jobs <-chan kube.ProwJob,
+	reports chan<- kube.ProwJob,
+	syncErrors chan<- error,
+	jbs map[string]JenkinsBuild,
+) {
 	wg := &sync.WaitGroup{}
 	wg.Add(maxSyncRoutines)
 	for i := 0; i < maxSyncRoutines; i++ {
 		go func(jobs <-chan kube.ProwJob) {
 			defer wg.Done()
 			for pj := range jobs {
-				if err := syncFn(pj, reports); err != nil {
+				if err := syncFn(pj, reports, jbs); err != nil {
 					syncErrors <- err
 				}
 			}
@@ -232,47 +253,42 @@ func syncProwJobs(syncFn syncFn, jobs <-chan kube.ProwJob, reports chan<- kube.P
 	wg.Wait()
 }
 
-func (c *Controller) syncPendingJob(pj kube.ProwJob, reports chan<- kube.ProwJob) error {
-	var jerr error
-	if pj.Status.JenkinsEnqueued {
-		if eq, err := c.jc.Enqueued(pj.Status.JenkinsQueueURL); err != nil {
-			jerr = fmt.Errorf("error checking queue status for prowjob %s: %v", pj.Metadata.Name, err)
-			pj.Status.JenkinsEnqueued = false
-			pj.Status.CompletionTime = time.Now()
-			pj.Status.State = kube.ErrorState
-			pj.Status.URL = testInfra
-			pj.Status.Description = "Error checking queue status."
-			reports <- pj
-		} else if eq {
-			// Still in queue.
-			c.incrementNumPendingJobs(pj.Spec.Job)
-			return nil
-		} else {
-			pj.Status.JenkinsEnqueued = false
-		}
-	} else if status, err := c.jc.Status(pj.Spec.Job, pj.Metadata.Name); err != nil {
-		jerr = fmt.Errorf("error checking build status for prowjob %s: %v", pj.Metadata.Name, err)
+func (c *Controller) syncPendingJob(pj kube.ProwJob, reports chan<- kube.ProwJob, jbs map[string]JenkinsBuild) error {
+	jb, jbExists := jbs[pj.Metadata.Name]
+	if !jbExists {
 		pj.Status.CompletionTime = time.Now()
 		pj.Status.State = kube.ErrorState
 		pj.Status.URL = testInfra
-		pj.Status.Description = "Error checking job status."
-		reports <- pj
+		pj.Status.Description = "Error finding Jenkins job."
 	} else {
-		pj.Status.BuildID = strconv.Itoa(status.Number)
-		var b bytes.Buffer
-		if err := c.ca.Config().JenkinsOperator.JobURLTemplate.Execute(&b, &pj); err != nil {
-			return fmt.Errorf("error executing URL template: %v", err)
-		}
-		url := b.String()
-		if pj.Status.URL != url {
-			pj.Status.URL = url
-			pj.Status.PodName = fmt.Sprintf("%s-%d", pj.Spec.Job, status.Number)
-		} else if status.Building {
-			// Build still going.
+		switch {
+		case jb.IsEnqueued():
+			// Still in queue.
 			c.incrementNumPendingJobs(pj.Spec.Job)
 			return nil
-		}
-		if !status.Building && status.Success {
+
+		case jb.IsRunning():
+			// Build still going.
+			c.incrementNumPendingJobs(pj.Spec.Job)
+			buildName := fmt.Sprintf("%s-%d", pj.Spec.Job, jb.Number)
+			buildNum := strconv.Itoa(jb.Number)
+
+			if pj.Status.BuildID == buildNum &&
+				pj.Status.PodName == buildName &&
+				pj.Status.Description == "Jenkins job running." {
+				return nil
+			}
+			pj.Status.BuildID = buildNum
+			pj.Status.PodName = buildName
+			pj.Status.Description = "Jenkins job running."
+			var b bytes.Buffer
+			if err := c.ca.Config().JenkinsOperator.JobURLTemplate.Execute(&b, &pj); err != nil {
+				return fmt.Errorf("error executing URL template: %v", err)
+			}
+			pj.Status.URL = b.String()
+
+		case jb.IsSuccess():
+			// Build is complete.
 			pj.Status.CompletionTime = time.Now()
 			pj.Status.State = kube.SuccessState
 			pj.Status.Description = "Jenkins job succeeded."
@@ -285,51 +301,56 @@ func (c *Controller) syncPendingJob(pj kube.ProwJob, reports chan<- kube.ProwJob
 					return fmt.Errorf("error starting next prowjob: %v", err)
 				}
 			}
-		} else if !status.Building {
+
+		case jb.IsFailure():
+			// Build either failed or aborted.
 			pj.Status.CompletionTime = time.Now()
 			pj.Status.State = kube.FailureState
 			pj.Status.Description = "Jenkins job failed."
 		}
-		reports <- pj
 	}
-	if pj.Status.State == kube.PendingState {
-		c.incrementNumPendingJobs(pj.Spec.Job)
-	}
-	_, rerr := c.kc.ReplaceProwJob(pj.Metadata.Name, pj)
-	if rerr != nil || jerr != nil {
-		return fmt.Errorf("jenkins error: %v, error replacing prow job: %v", jerr, rerr)
-	}
-	return nil
+	// Report to Github.
+	reports <- pj
+
+	_, err := c.kc.ReplaceProwJob(pj.Metadata.Name, pj)
+	return err
 }
 
-func (c *Controller) syncNonPendingJob(pj kube.ProwJob, reports chan<- kube.ProwJob) error {
-	var jerr error
+func (c *Controller) syncNonPendingJob(pj kube.ProwJob, reports chan<- kube.ProwJob, jbs map[string]JenkinsBuild) error {
 	if pj.Complete() {
 		return nil
-	} else if pj.Status.State == kube.TriggeredState {
+	}
+
+	// The rest are new prowjobs.
+
+	if _, jbExists := jbs[pj.Metadata.Name]; !jbExists {
 		// Do not start more jobs than specified.
 		if !c.canExecuteConcurrently(&pj) {
 			return nil
 		}
-
 		// Start the Jenkins job.
-		if queueURL, err := c.jc.Build(&pj); err != nil {
-			jerr = fmt.Errorf("error starting Jenkins job for prowjob %s: %v", pj.Metadata.Name, err)
+		if err := c.jc.Build(&pj); err != nil {
+			logrus.WithField("job", pj.Spec.Job).Warningf("error starting Jenkins build: %v", err)
 			pj.Status.CompletionTime = time.Now()
 			pj.Status.State = kube.ErrorState
 			pj.Status.URL = testInfra
 			pj.Status.Description = "Error starting Jenkins job."
 		} else {
 			pj.Status.State = kube.PendingState
-			pj.Status.JenkinsQueueURL = queueURL.String()
-			pj.Status.JenkinsEnqueued = true
-			pj.Status.Description = "Jenkins job triggered."
+			pj.Status.Description = "Jenkins job enqueued."
 		}
-		reports <- pj
+	} else {
+		// If a Jenkins build already exists for this job, advance the ProwJob to Pending and
+		// it should be handled by syncPendingJob in the next sync.
+		pj.Status.State = kube.PendingState
+		pj.Status.Description = "Jenkins job enqueued."
 	}
-	_, rerr := c.kc.ReplaceProwJob(pj.Metadata.Name, pj)
-	if rerr != nil || jerr != nil {
-		return fmt.Errorf("jenkins error: %v, error replacing prow job: %v", jerr, rerr)
+	// Report to Github.
+	reports <- pj
+
+	_, err := c.kc.ReplaceProwJob(pj.Metadata.Name, pj)
+	if err != nil {
+		return fmt.Errorf("error replacing prow job: %v", err)
 	}
 	return nil
 }
