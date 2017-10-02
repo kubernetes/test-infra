@@ -10,7 +10,6 @@ sh_test(
     name = "verify-pylint",
     srcs = ["verify-pylint.sh"],
     data = [
-        ":pylint_bin",
         "//:all-srcs",
     ],
 )
