@@ -25,7 +25,7 @@ import os
 import random
 import sys
 
-import requests
+import requests # pylint: disable=import-error
 
 def download_content():
     """Downloads contributor data from github."""

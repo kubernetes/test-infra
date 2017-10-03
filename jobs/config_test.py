@@ -26,7 +26,7 @@ import re
 
 import config_sort
 import env_gc
-import yaml
+import yaml # pylint: disable=import-error
 
 # pylint: disable=too-many-public-methods, too-many-branches, too-many-locals, too-many-statements
 

@@ -22,7 +22,7 @@ import sys
 import time
 import traceback
 
-import requests
+import requests # pylint: disable=import-error
 
 def get_submit_queue_json(path):
     for count in range(3):

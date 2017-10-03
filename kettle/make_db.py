@@ -29,8 +29,9 @@ from xml.etree import cElementTree as ET
 
 import multiprocessing
 import multiprocessing.pool
-import requests
-import yaml
+
+import requests # pylint: disable=import-error
+import yaml # pylint: disable=import-error
 
 import model
 

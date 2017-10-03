@@ -33,7 +33,7 @@ import argparse
 import hashlib
 import json
 import os
-import ruamel.yaml as yaml
+import ruamel.yaml as yaml # pylint: disable=import-error
 
 
 # TODO(yguo0905): Generate Prow and testgrid configurations.

@@ -27,9 +27,9 @@ import sys
 import time
 import traceback
 
-import influxdb
-import requests
-import yaml
+import influxdb # pylint: disable=import-error
+import requests # pylint: disable=import-error
+import yaml     # pylint: disable=import-error
 
 def check(*cmd, **keyargs):
     """Logs and runs the command, raising on errors."""

@@ -32,7 +32,7 @@ from __future__ import print_function
 
 import operator
 
-import requests
+import requests # pylint: disable=import-error
 
 def main(): # pylint: disable=too-many-branches
     """Run flake detector."""
