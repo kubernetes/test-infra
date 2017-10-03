@@ -412,7 +412,7 @@ presubmits:
     - release-1.7
     always_run: false
     skip_report: false
-    max_concurrency: 1
+    max_concurrency: 3
     context: pull-kubernetes-e2e-kops-aws-prow
     rerun_command: "/test pull-kubernetes-e2e-kops-aws-prow"
     trigger: "(?m)^/test pull-kubernetes-e2e-kops-aws-prow,?(\\s+|$)"
@@ -481,7 +481,7 @@ presubmits:
     - master
     always_run: false
     skip_report: false
-    max_concurrency: 1
+    max_concurrency: 3
     context: pull-kubernetes-e2e-kops-aws-prow
     rerun_command: "/test pull-kubernetes-e2e-kops-aws-prow"
     trigger: "(?m)^/test pull-kubernetes-e2e-kops-aws-prow,?(\\s+|$)"
@@ -1073,7 +1073,7 @@ presubmits:
     - release-1.7
     always_run: false
     skip_report: false
-    max_concurrency: 1
+    max_concurrency: 3
     context: pull-security-kubernetes-e2e-kops-aws-prow
     rerun_command: "/test pull-security-kubernetes-e2e-kops-aws-prow"
     trigger: "(?m)^/test pull-security-kubernetes-e2e-kops-aws-prow,?(\\s+|$)"
@@ -1142,7 +1142,7 @@ presubmits:
     - master
     always_run: false
     skip_report: false
-    max_concurrency: 1
+    max_concurrency: 3
     context: pull-security-kubernetes-e2e-kops-aws-prow
     rerun_command: "/test pull-security-kubernetes-e2e-kops-aws-prow"
     trigger: "(?m)^/test pull-security-kubernetes-e2e-kops-aws-prow,?(\\s+|$)"

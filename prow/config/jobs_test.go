@@ -122,6 +122,10 @@ func TestPresubmits(t *testing.T) {
 			// Next check that the rerun command doesn't run any other jobs.
 			for j, job2 := range jobs[i+1:] {
 				if job.Name == job2.Name {
+					// Make sure max_concurrency are the same
+					if job.MaxConcurrency != job2.MaxConcurrency {
+						t.Errorf("Jobs %s share same name but has different max_concurrency", job.Name)
+					}
 					// Make sure branches are not overlapping
 					if CheckOverlapBrancher(job.Brancher, job2.Brancher) {
 						t.Errorf("Two jobs have the same name: %s, and has conflicted branches", job.Name)
