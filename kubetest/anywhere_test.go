@@ -99,10 +99,51 @@ func TestNewKubernetesAnywhere(t *testing.T) {
 				".phase3.weave_net=y",
 			},
 		},
+		{
+			name:              "kubeadm with 1.6 ci kubelet version",
+			phase2:            "kubeadm",
+			kubeadmVersion:    "unstable",
+			kubeletCIVersion:  "latest-1.6",
+			kubernetesVersion: "latest-1.6",
+			expectConfigLines: []string{
+				".phase2.provider=\"kubeadm\"",
+				".phase2.kubeadm.version=\"unstable\"",
+				".phase2.kubernetes_version=\"latest-1.6\"",
+				".phase2.kubelet_version=\"gs://kubernetes-release-dev/bazel/v1.6.12-beta.0.2+a03873b40780a3/build/debs/\"",
+				".phase3.weave_net=y",
+			},
+		},
+		{
+			name:              "kubeadm with 1.7 ci kubelet version",
+			phase2:            "kubeadm",
+			kubeadmVersion:    "unstable",
+			kubeletCIVersion:  "latest-1.7",
+			kubernetesVersion: "latest-1.7",
+			expectConfigLines: []string{
+				".phase2.provider=\"kubeadm\"",
+				".phase2.kubeadm.version=\"unstable\"",
+				".phase2.kubernetes_version=\"latest-1.7\"",
+				".phase2.kubelet_version=\"gs://kubernetes-release-dev/bazel/v1.7.8-beta.0.22+9243a03f5fecc5/bin/linux/amd64/\"",
+				".phase3.weave_net=y",
+			},
+		},
 	}
 
-	// TODO(jessicaochen) figure out how to restore non-test readGSFile behavior without causing tests to hang
-	readGSFile = func(string) (string, error) { return "vbar", nil }
+	mockGSFiles := map[string]string{
+		"gs://kubernetes-release-dev/ci/latest-1.6.txt": "v1.6.12-beta.0.2+a03873b40780a3",
+		"gs://kubernetes-release-dev/ci/latest-1.7.txt": "v1.7.8-beta.0.22+9243a03f5fecc5",
+	}
+
+	originalReadGSFile := readGSFile
+	defer func() { readGSFile = originalReadGSFile }()
+
+	readGSFile = func(location string) (string, error) {
+		if val, ok := mockGSFiles[location]; ok {
+			return val, nil
+		}
+		return "vbar", nil
+	}
+
 	for _, tc := range cases {
 		tmpdir, err := ioutil.TempDir("", "kubernetes-anywhere-test")
 		if err != nil {
@@ -181,6 +222,12 @@ func TestNewKubernetesAnywhereMultiCluster(t *testing.T) {
 			mcFlag:      "c1,z2:c2,c3",
 			expectError: false,
 		},
+	}
+
+	originalReadGSFile := readGSFile
+	defer func() { readGSFile = originalReadGSFile }()
+	readGSFile = func(string) (string, error) {
+		return "vbar", nil
 	}
 
 	for testName, test := range tests {
