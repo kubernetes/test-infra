@@ -27,8 +27,8 @@ import subprocess
 import sys
 
 BRANCH_VERSION = {
-    'release-1.2': 'release-1.4',
-    'release-1.3': 'release-1.4',
+    '1.2': 'release-1.4',
+    '1.3': 'release-1.4',
     'master': 'release-1.8',
 }
 
