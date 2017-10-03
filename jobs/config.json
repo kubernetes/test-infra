@@ -2073,28 +2073,12 @@
       "UNKNOWN"
     ]
   },
-  "ci-kubernetes-e2e-gce-gci-qa-m59": {
-    "args": [
-      "--check-leaked-resources",
-      "--env-file=jobs/platform/gce.env",
-      "--extract=gci/gci-59",
-      "--gcp-project-type=gci-qa-project",
-      "--gcp-zone=us-central1-f",
-      "--ginkgo-parallel=25",
-      "--provider=gce",
-      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
-      "--timeout=50m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "UNKNOWN"
-    ]
-  },
   "ci-kubernetes-e2e-gce-gci-qa-m60": {
     "args": [
       "--check-leaked-resources",
       "--env-file=jobs/platform/gce.env",
       "--extract=gci/gci-60",
+      "--gcp-cloud-sdk=gs://cloud-sdk-release/google-cloud-sdk-163.0.0-linux-x86_64.tar.gz",
       "--gcp-project-type=gci-qa-project",
       "--gcp-zone=us-central1-f",
       "--ginkgo-parallel=25",
@@ -2158,27 +2142,12 @@
       "UNKNOWN"
     ]
   },
-  "ci-kubernetes-e2e-gce-gci-qa-serial-m59": {
-    "args": [
-      "--check-leaked-resources",
-      "--env-file=jobs/platform/gce.env",
-      "--extract=gci/gci-59",
-      "--gcp-project-type=gci-qa-project",
-      "--gcp-zone=us-central1-f",
-      "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[Serial\\]|\\[Disruptive\\] --ginkgo.skip=\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
-      "--timeout=300m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "UNKNOWN"
-    ]
-  },
   "ci-kubernetes-e2e-gce-gci-qa-serial-m60": {
     "args": [
       "--check-leaked-resources",
       "--env-file=jobs/platform/gce.env",
       "--extract=gci/gci-60",
+      "--gcp-cloud-sdk=gs://cloud-sdk-release/google-cloud-sdk-163.0.0-linux-x86_64.tar.gz",
       "--gcp-project-type=gci-qa-project",
       "--gcp-zone=us-central1-f",
       "--provider=gce",
@@ -2237,28 +2206,12 @@
       "UNKNOWN"
     ]
   },
-  "ci-kubernetes-e2e-gce-gci-qa-slow-m59": {
-    "args": [
-      "--check-leaked-resources",
-      "--env-file=jobs/platform/gce.env",
-      "--extract=gci/gci-59",
-      "--gcp-project-type=gci-qa-project",
-      "--gcp-zone=us-central1-f",
-      "--ginkgo-parallel=25",
-      "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[Slow\\] --ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
-      "--timeout=150m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "UNKNOWN"
-    ]
-  },
   "ci-kubernetes-e2e-gce-gci-qa-slow-m60": {
     "args": [
       "--check-leaked-resources",
       "--env-file=jobs/platform/gce.env",
       "--extract=gci/gci-60",
+      "--gcp-cloud-sdk=gs://cloud-sdk-release/google-cloud-sdk-163.0.0-linux-x86_64.tar.gz",
       "--gcp-project-type=gci-qa-project",
       "--gcp-zone=us-central1-f",
       "--ginkgo-parallel=25",
