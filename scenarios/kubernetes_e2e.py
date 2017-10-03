@@ -36,7 +36,7 @@ import time
 ORIG_CWD = os.getcwd()  # Checkout changes cwd
 
 # Note: This variable is managed by experiment/bump_e2e_image.sh.
-DEFAULT_KUBEKINS_TAG = 'v20170929-c61311c1'
+DEFAULT_KUBEKINS_TAG = 'v20171002-aae4252c'
 
 def test_infra(*paths):
     """Return path relative to root of test-infra repo."""
@@ -269,6 +269,9 @@ class DockerMode(object):
             self.cmd.extend(['-v', '/var/run/docker.sock:/var/run/docker.sock'])
         self.add_env('HOME=%s' % self.workspace)
         self.add_env('WORKSPACE=%s' % self.workspace)
+        self.cmd.append(
+            '--entrypoint=/workspace/kubetest'
+        )
 
     def add_environment(self, *envs):
         """Adds FOO=BAR to the -e list for docker.

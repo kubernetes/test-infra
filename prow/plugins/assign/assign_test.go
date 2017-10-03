@@ -351,12 +351,11 @@ func TestAssignAndReview(t *testing.T) {
 	}
 	for _, tc := range testcases {
 		fc := newFakeClient([]string{"hello-world", "allow_underscore", "cjwagner", "merlin"})
-		e := &event{
-			body:   tc.body,
-			login:  tc.commenter,
-			org:    "org",
-			repo:   "repo",
-			number: 5,
+		e := github.GenericCommentEvent{
+			Body:   tc.body,
+			User:   github.User{Login: tc.commenter},
+			Repo:   github.Repo{Name: "repo", Owner: github.User{Login: "org"}},
+			Number: 5,
 		}
 		if err := handle(newAssignHandler(e, fc, logrus.WithField("plugin", pluginName))); err != nil {
 			t.Errorf("For case %s, didn't expect error from handle: %v", tc.name, err)

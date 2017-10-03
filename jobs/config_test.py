@@ -753,6 +753,7 @@ class JobTest(unittest.TestCase):
             # TODO(fejta): remove these (found while migrating jobs)
             'ci-kubernetes-kubemark-100-gce': 'ci-kubernetes-kubemark-*',
             'ci-kubernetes-kubemark-5-gce': 'ci-kubernetes-kubemark-*',
+            'ci-kubernetes-kubemark-5-gce-last-release': 'ci-kubernetes-kubemark-*',
             'ci-kubernetes-kubemark-high-density-100-gce': 'ci-kubernetes-kubemark-*',
             'ci-kubernetes-kubemark-gce-scale': 'ci-kubernetes-scale-*',
             'pull-kubernetes-kubemark-e2e-gce-big': 'ci-kubernetes-scale-*',
