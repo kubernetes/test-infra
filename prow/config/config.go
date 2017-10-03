@@ -122,6 +122,10 @@ type JenkinsOperator struct {
 	// MaxConcurrency is the maximum number of tests running concurrently that
 	// will be allowed by jenkins-operator. 0 implies no limit.
 	MaxConcurrency int `json:"max_concurrency,omitempty"`
+
+	// AllowCancellations enables aborting presubmit jobs for commits that
+	// have been superseded by newer commits in Github pull requests.
+	AllowCancellations bool `json:"allow_cancellations"`
 }
 
 // Sinker is config for the sinker controller.

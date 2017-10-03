@@ -292,3 +292,24 @@ func (c *Client) GetLog(job string, build int) ([]byte, error) {
 	}
 	return buf, nil
 }
+
+// Abort aborts the provided Jenkins build for job. Only running
+// builds are aborted.
+func (c *Client) Abort(job string, build *JenkinsBuild) error {
+	if build.IsEnqueued() {
+		// Ignore enqueued builds.
+		return nil
+	}
+
+	c.log("Abort", job, build.Number)
+	u := fmt.Sprintf("%s/job/%s/%d/stop", c.baseURL, job, build.Number)
+	resp, err := c.request(http.MethodPost, u)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return fmt.Errorf("response not 2XX: %s: (%s)", resp.Status, u)
+	}
+	return nil
+}
