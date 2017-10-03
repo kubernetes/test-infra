@@ -270,22 +270,10 @@ func (c *Controller) syncPendingJob(pj kube.ProwJob, reports chan<- kube.ProwJob
 		case jb.IsRunning():
 			// Build still going.
 			c.incrementNumPendingJobs(pj.Spec.Job)
-			buildName := fmt.Sprintf("%s-%d", pj.Spec.Job, jb.Number)
-			buildNum := strconv.Itoa(jb.Number)
-
-			if pj.Status.BuildID == buildNum &&
-				pj.Status.PodName == buildName &&
-				pj.Status.Description == "Jenkins job running." {
+			if pj.Status.Description == "Jenkins job running." {
 				return nil
 			}
-			pj.Status.BuildID = buildNum
-			pj.Status.PodName = buildName
 			pj.Status.Description = "Jenkins job running."
-			var b bytes.Buffer
-			if err := c.ca.Config().JenkinsOperator.JobURLTemplate.Execute(&b, &pj); err != nil {
-				return fmt.Errorf("error executing URL template: %v", err)
-			}
-			pj.Status.URL = b.String()
 
 		case jb.IsSuccess():
 			// Build is complete.
@@ -308,6 +296,14 @@ func (c *Controller) syncPendingJob(pj kube.ProwJob, reports chan<- kube.ProwJob
 			pj.Status.State = kube.FailureState
 			pj.Status.Description = "Jenkins job failed."
 		}
+		// Construct the status URL that will be used in reports.
+		pj.Status.PodName = fmt.Sprintf("%s-%d", pj.Spec.Job, jb.Number)
+		pj.Status.BuildID = strconv.Itoa(jb.Number)
+		var b bytes.Buffer
+		if err := c.ca.Config().JenkinsOperator.JobURLTemplate.Execute(&b, &pj); err != nil {
+			return fmt.Errorf("error executing URL template: %v", err)
+		}
+		pj.Status.URL = b.String()
 	}
 	// Report to Github.
 	reports <- pj
