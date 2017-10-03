@@ -17,7 +17,7 @@ log_level: info
 
 tide:
   queries:
-  - "type:pr state:open repo:kubernetes/test-infra label:lgtm label:approved -label:do-not-merge/work-in-progress -label:do-not-merge/hold label:\"cncf-cla: yes\""
+  - "type:pr state:open repo:kubernetes/test-infra label:lgtm label:approved -label:needs-ok-to-test -label:do-not-merge/work-in-progress -label:do-not-merge/hold label:\"cncf-cla: yes\""
 
 push_gateway:
   endpoint: pushgateway
