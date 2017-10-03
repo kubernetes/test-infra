@@ -204,7 +204,7 @@ func getJenkinsJobs(pjs []kube.ProwJob) map[string]struct{} {
 // in-place when it aborts.
 func (c *Controller) terminateDupes(pjs []kube.ProwJob) error {
 	// "job org/repo#number" -> newest job
-	dupes := make(map[string]kube.ProwJob)
+	dupes := make(map[string]int)
 	for i, pj := range pjs {
 		if pj.Complete() || pj.Spec.Type != kube.PresubmitJob {
 			continue
@@ -212,21 +212,22 @@ func (c *Controller) terminateDupes(pjs []kube.ProwJob) error {
 		n := fmt.Sprintf("%s %s/%s#%d", pj.Spec.Job, pj.Spec.Refs.Org, pj.Spec.Refs.Repo, pj.Spec.Refs.Pulls[0].Number)
 		prev, ok := dupes[n]
 		if !ok {
-			dupes[n] = pj
+			dupes[n] = i
 			continue
 		}
-		toCancel := pj
-		if prev.Status.StartTime.Before(pj.Status.StartTime) {
-			toCancel = prev
-			dupes[n] = pj
+		cancelIndex := i
+		if pjs[prev].Status.StartTime.Before(pj.Status.StartTime) {
+			cancelIndex = prev
+			dupes[n] = i
 		}
+		toCancel := pjs[cancelIndex]
 		toCancel.Status.CompletionTime = time.Now()
 		toCancel.Status.State = kube.AbortedState
-		pjutil, err := c.kc.ReplaceProwJob(toCancel.Metadata.Name, toCancel)
+		npj, err := c.kc.ReplaceProwJob(toCancel.Metadata.Name, toCancel)
 		if err != nil {
 			return err
 		}
-		pjs[i] = pjutil
+		pjs[cancelIndex] = npj
 	}
 	return nil
 }
