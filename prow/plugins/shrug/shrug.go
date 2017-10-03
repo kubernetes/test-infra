@@ -47,58 +47,60 @@ type event struct {
 }
 
 func init() {
-	plugins.RegisterIssueCommentHandler(pluginName, handleIssueComment)
+	plugins.RegisterGenericCommentHandler(pluginName, handleGenericComment)
 }
 
 type githubClient interface {
 	AddLabel(owner, repo string, number int, label string) error
 	CreateComment(owner, repo string, number int, comment string) error
 	RemoveLabel(owner, repo string, number int, label string) error
+	GetIssueLabels(org, repo string, number int) ([]github.Label, error)
 }
 
-func handleIssueComment(pc plugins.PluginClient, ic github.IssueCommentEvent) error {
-	if ic.Action != github.IssueCommentActionCreated {
+func handleGenericComment(pc plugins.PluginClient, e github.GenericCommentEvent) error {
+	return handle(pc.GitHubClient, pc.Logger, &e)
+}
+
+func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent) error {
+	if e.Action != github.GenericCommentActionCreated {
 		return nil
 	}
 
-	e := &event{
-		org:           ic.Repo.Owner.Login,
-		repo:          ic.Repo.Name,
-		number:        ic.Issue.Number,
-		body:          ic.Comment.Body,
-		hasLabel:      func(label string) (bool, error) { return ic.Issue.HasLabel(label), nil },
-		htmlurl:       ic.Comment.HTMLURL,
-		commentAuthor: ic.Comment.User.Login,
-	}
-	return handle(pc.GitHubClient, pc.Logger, e)
-}
-
-func handle(gc githubClient, log *logrus.Entry, e *event) error {
 	wantShrug := false
-	if shrugRe.MatchString(e.body) {
+	if shrugRe.MatchString(e.Body) {
 		wantShrug = true
-	} else if unshrugRe.MatchString(e.body) {
+	} else if unshrugRe.MatchString(e.Body) {
 		wantShrug = false
 	} else {
 		return nil
 	}
 
+	org := e.Repo.Owner.Login
+	repo := e.Repo.Name
+
 	// Only add the label if it doesn't have it yet.
-	hasShrug, err := e.hasLabel(shrugLabel)
+	hasShrug := false
+	labels, err := gc.GetIssueLabels(org, repo, e.Number)
 	if err != nil {
-		return fmt.Errorf("failed to get the labels on %s/%s#%d: %v", e.org, e.repo, e.number, err)
+		log.WithError(err).Errorf("Failed to get the labels on %s/%s#%d.", org, repo, e.Number)
+	}
+	for _, candidate := range labels {
+		if candidate.Name == shrugLabel {
+			hasShrug = true
+			break
+		}
 	}
 	if hasShrug && !wantShrug {
 		log.Info("Removing Shrug label.")
 		resp := "¯\\\\\\_(ツ)\\_/¯"
 		log.Infof("Commenting with \"%s\".", resp)
-		if err := gc.CreateComment(e.org, e.repo, e.number, plugins.FormatResponseRaw(e.body, e.htmlurl, e.commentAuthor, resp)); err != nil {
-			return fmt.Errorf("failed to comment on %s/%s#%d: %v", e.org, e.repo, e.number, err)
+		if err := gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, resp)); err != nil {
+			return fmt.Errorf("failed to comment on %s/%s#%d: %v", org, repo, e.Number, err)
 		}
-		return gc.RemoveLabel(e.org, e.repo, e.number, shrugLabel)
+		return gc.RemoveLabel(org, repo, e.Number, shrugLabel)
 	} else if !hasShrug && wantShrug {
 		log.Info("Adding Shrug label.")
-		return gc.AddLabel(e.org, e.repo, e.number, shrugLabel)
+		return gc.AddLabel(org, repo, e.Number, shrugLabel)
 	}
 	return nil
 }

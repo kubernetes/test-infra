@@ -65,7 +65,7 @@ func TestCloseComment(t *testing.T) {
 	// "a" is the author, "r1", and "r2" are reviewers.
 	var testcases = []struct {
 		name          string
-		action        github.IssueCommentEventAction
+		action        github.GenericCommentEventAction
 		state         string
 		body          string
 		commenter     string
@@ -75,7 +75,7 @@ func TestCloseComment(t *testing.T) {
 	}{
 		{
 			name:          "non-close comment",
-			action:        github.IssueCommentActionCreated,
+			action:        github.GenericCommentActionCreated,
 			state:         "open",
 			body:          "uh oh",
 			commenter:     "o",
@@ -84,7 +84,7 @@ func TestCloseComment(t *testing.T) {
 		},
 		{
 			name:          "close by author",
-			action:        github.IssueCommentActionCreated,
+			action:        github.GenericCommentActionCreated,
 			state:         "open",
 			body:          "/close",
 			commenter:     "a",
@@ -93,7 +93,7 @@ func TestCloseComment(t *testing.T) {
 		},
 		{
 			name:          "close by author, trailing space.",
-			action:        github.IssueCommentActionCreated,
+			action:        github.GenericCommentActionCreated,
 			state:         "open",
 			body:          "/close \r",
 			commenter:     "a",
@@ -102,7 +102,7 @@ func TestCloseComment(t *testing.T) {
 		},
 		{
 			name:          "close by reviewer",
-			action:        github.IssueCommentActionCreated,
+			action:        github.GenericCommentActionCreated,
 			state:         "open",
 			body:          "/close",
 			commenter:     "r1",
@@ -111,7 +111,7 @@ func TestCloseComment(t *testing.T) {
 		},
 		{
 			name:          "close edited by author",
-			action:        github.IssueCommentActionEdited,
+			action:        github.GenericCommentActionEdited,
 			state:         "open",
 			body:          "/close",
 			commenter:     "a",
@@ -120,7 +120,7 @@ func TestCloseComment(t *testing.T) {
 		},
 		{
 			name:          "close by author on closed issue",
-			action:        github.IssueCommentActionCreated,
+			action:        github.GenericCommentActionCreated,
 			state:         "closed",
 			body:          "/close",
 			commenter:     "a",
@@ -129,7 +129,7 @@ func TestCloseComment(t *testing.T) {
 		},
 		{
 			name:          "close by other person, non-member cannot close",
-			action:        github.IssueCommentActionCreated,
+			action:        github.GenericCommentActionCreated,
 			state:         "open",
 			body:          "/close",
 			commenter:     "non-member",
@@ -139,7 +139,7 @@ func TestCloseComment(t *testing.T) {
 		},
 		{
 			name:          "close by other person, failed to assign",
-			action:        github.IssueCommentActionCreated,
+			action:        github.GenericCommentActionCreated,
 			state:         "open",
 			body:          "/close",
 			commenter:     "non-owner-assign-error",
@@ -149,7 +149,7 @@ func TestCloseComment(t *testing.T) {
 		},
 		{
 			name:          "close by other person, assign and close",
-			action:        github.IssueCommentActionCreated,
+			action:        github.GenericCommentActionCreated,
 			state:         "open",
 			body:          "/close",
 			commenter:     "non-owner",
@@ -160,20 +160,16 @@ func TestCloseComment(t *testing.T) {
 	}
 	for _, tc := range testcases {
 		fc := &fakeClient{}
-		ice := github.IssueCommentEvent{
-			Action: tc.action,
-			Comment: github.IssueComment{
-				Body: tc.body,
-				User: github.User{Login: tc.commenter},
-			},
-			Issue: github.Issue{
-				User:      github.User{Login: "a"},
-				Number:    5,
-				State:     tc.state,
-				Assignees: []github.User{{Login: "a"}, {Login: "r1"}, {Login: "r2"}},
-			},
+		e := &github.GenericCommentEvent{
+			Action:      tc.action,
+			IssueState:  tc.state,
+			Body:        tc.body,
+			User:        github.User{Login: tc.commenter},
+			Number:      5,
+			Assignees:   []github.User{{Login: "a"}, {Login: "r1"}, {Login: "r2"}},
+			IssueAuthor: github.User{Login: "a"},
 		}
-		if err := handle(fc, logrus.WithField("plugin", pluginName), ice); err != nil {
+		if err := handle(fc, logrus.WithField("plugin", pluginName), e); err != nil {
 			t.Errorf("For case %s, didn't expect error from handle: %v", tc.name, err)
 			continue
 		}

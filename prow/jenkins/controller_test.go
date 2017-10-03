@@ -19,7 +19,6 @@ package jenkins
 import (
 	"errors"
 	"fmt"
-	"net/url"
 	"sync"
 	"testing"
 	"text/template"
@@ -116,41 +115,30 @@ func (f *fkc) ReplaceProwJob(name string, job kube.ProwJob) (kube.ProwJob, error
 
 type fjc struct {
 	sync.Mutex
-	built    bool
-	pjs      []kube.ProwJob
-	enqueued bool
-	status   Status
-	err      error
+	built  bool
+	pjs    []kube.ProwJob
+	err    error
+	builds map[string]JenkinsBuild
 }
 
-func (f *fjc) Build(pj *kube.ProwJob) (*url.URL, error) {
+func (f *fjc) Build(pj *kube.ProwJob) error {
 	f.Lock()
 	defer f.Unlock()
 	if f.err != nil {
-		return nil, f.err
+		return f.err
 	}
 	f.built = true
 	f.pjs = append(f.pjs, *pj)
-	url, _ := url.Parse("localhost")
-	return url, nil
+	return nil
 }
 
-func (f *fjc) Enqueued(string) (bool, error) {
-	f.Lock()
-	defer f.Unlock()
-	if f.err != nil {
-		return false, f.err
-	}
-	return f.enqueued, nil
-}
-
-func (f *fjc) Status(job, id string) (*Status, error) {
+func (f *fjc) ListJenkinsBuilds(jobs map[string]struct{}) (map[string]JenkinsBuild, error) {
 	f.Lock()
 	defer f.Unlock()
 	if f.err != nil {
 		return nil, f.err
 	}
-	return &f.status, nil
+	return f.builds, nil
 }
 
 type fghc struct {
@@ -202,10 +190,8 @@ func TestSyncNonPendingJobs(t *testing.T) {
 		pj             kube.ProwJob
 		pendingJobs    map[string]int
 		maxConcurrency int
-
-		enqueued bool
-		status   Status
-		err      error
+		builds         map[string]JenkinsBuild
+		err            error
 
 		expectedState    kube.ProwJobState
 		expectedBuild    bool
@@ -296,10 +282,9 @@ func TestSyncNonPendingJobs(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
+		t.Logf("scenario %q", tc.name)
 		fjc := &fjc{
-			enqueued: tc.enqueued,
-			status:   tc.status,
-			err:      tc.err,
+			err: tc.err,
 		}
 		fkc := &fkc{
 			prowjobs: []kube.ProwJob{tc.pj},
@@ -317,30 +302,39 @@ func TestSyncNonPendingJobs(t *testing.T) {
 		}
 
 		reports := make(chan kube.ProwJob, 100)
-		if err := c.syncNonPendingJob(tc.pj, reports); err != nil != tc.expectedError {
-			t.Errorf("for case %s got wrong error: %v", tc.name, err)
+		if err := c.syncNonPendingJob(tc.pj, reports, tc.builds); err != nil {
+			t.Errorf("unexpected error: %v", err)
 			continue
 		}
 		close(reports)
 
 		actual := fkc.prowjobs[0]
+		if tc.expectedError && actual.Status.Description != "Error starting Jenkins job." {
+			t.Errorf("expected description %q, got %q", "Error starting Jenkins job.", actual.Status.Description)
+			continue
+		}
 		if actual.Status.State != tc.expectedState {
-			t.Errorf("for case %s got state %v", tc.name, actual.Status.State)
+			t.Errorf("expected state %q, got %q", tc.expectedState, actual.Status.State)
+			continue
 		}
 		if actual.Complete() != tc.expectedComplete {
-			t.Errorf("for case %s got wrong completion", tc.name)
+			t.Errorf("expected complete prowjob, got %v", actual)
+			continue
 		}
 		if tc.expectedReport && len(reports) != 1 {
-			t.Errorf("for case %s wanted one report but got %d", tc.name, len(reports))
+			t.Errorf("wanted one report but got %d", len(reports))
+			continue
 		}
 		if !tc.expectedReport && len(reports) != 0 {
-			t.Errorf("for case %s did not wany any reports but got %d", tc.name, len(reports))
+			t.Errorf("did not wany any reports but got %d", len(reports))
+			continue
 		}
 		if fjc.built != tc.expectedBuild {
-			t.Errorf("for case %s got wrong built", tc.name)
+			t.Errorf("expected build: %t, got: %t", tc.expectedBuild, fjc.built)
+			continue
 		}
-		if actual.Status.JenkinsEnqueued != tc.expectedEnqueued {
-			t.Errorf("for case %s got wrong enqueued", tc.name)
+		if tc.expectedEnqueued && actual.Status.Description != "Jenkins job enqueued." {
+			t.Errorf("expected enqueued prowjob, got %v", actual)
 		}
 	}
 }
@@ -350,10 +344,8 @@ func TestSyncPendingJobs(t *testing.T) {
 		name        string
 		pj          kube.ProwJob
 		pendingJobs map[string]int
-
-		enqueued bool
-		status   Status
-		err      error
+		builds      map[string]JenkinsBuild
+		err         error
 
 		expectedState    kube.ProwJobState
 		expectedBuild    bool
@@ -365,67 +357,60 @@ func TestSyncPendingJobs(t *testing.T) {
 		{
 			name: "enqueued",
 			pj: kube.ProwJob{
+				Metadata: kube.ObjectMeta{
+					Name: "foofoo",
+				},
 				Status: kube.ProwJobStatus{
-					State:           kube.PendingState,
-					JenkinsEnqueued: true,
+					State:       kube.PendingState,
+					Description: "Jenkins job enqueued.",
 				},
 			},
-			enqueued:         true,
+			builds: map[string]JenkinsBuild{
+				"foofoo": {enqueued: true},
+			},
 			expectedState:    kube.PendingState,
 			expectedEnqueued: true,
 		},
 		{
 			name: "finished queue",
 			pj: kube.ProwJob{
+				Metadata: kube.ObjectMeta{
+					Name: "boing",
+				},
 				Status: kube.ProwJobStatus{
-					State:           kube.PendingState,
-					JenkinsEnqueued: true,
+					State:       kube.PendingState,
+					Description: "Jenkins job enqueued.",
 				},
 			},
-			enqueued:         false,
+			builds: map[string]JenkinsBuild{
+				"boing": {enqueued: false},
+			},
 			expectedState:    kube.PendingState,
 			expectedEnqueued: false,
-		},
-		{
-			name: "enqueued, error",
-			pj: kube.ProwJob{
-				Spec: kube.ProwJobSpec{
-					Type:   kube.PresubmitJob,
-					Report: true,
-					Refs: kube.Refs{
-						Pulls: []kube.Pull{{
-							Number: 1,
-							SHA:    "fake-sha",
-						}},
-					},
-				},
-				Status: kube.ProwJobStatus{
-					State:           kube.PendingState,
-					JenkinsEnqueued: true,
-				},
-			},
-			err:              errors.New("oh no"),
-			expectedState:    kube.ErrorState,
-			expectedError:    true,
-			expectedComplete: true,
 			expectedReport:   true,
 		},
 		{
 			name: "building",
 			pj: kube.ProwJob{
+				Metadata: kube.ObjectMeta{
+					Name: "firstoutthetrenches",
+				},
 				Status: kube.ProwJobStatus{
 					State: kube.PendingState,
 				},
 			},
-			status: Status{
-				Building: true,
+			builds: map[string]JenkinsBuild{
+				"firstoutthetrenches": {enqueued: false},
 			},
 			expectedState:  kube.PendingState,
 			expectedReport: true,
 		},
 		{
-			name: "building, error",
+			name: "missing build",
 			pj: kube.ProwJob{
+				Metadata: kube.ObjectMeta{
+					Name: "blabla",
+				},
 				Spec: kube.ProwJobSpec{
 					Type: kube.PresubmitJob,
 					Refs: kube.Refs{
@@ -439,7 +424,10 @@ func TestSyncPendingJobs(t *testing.T) {
 					State: kube.PendingState,
 				},
 			},
-			err:              errors.New("oh no"),
+			// missing build
+			builds: map[string]JenkinsBuild{
+				"other": {enqueued: false},
+			},
 			expectedState:    kube.ErrorState,
 			expectedError:    true,
 			expectedComplete: true,
@@ -448,13 +436,15 @@ func TestSyncPendingJobs(t *testing.T) {
 		{
 			name: "finished, success",
 			pj: kube.ProwJob{
+				Metadata: kube.ObjectMeta{
+					Name: "winwin",
+				},
 				Status: kube.ProwJobStatus{
 					State: kube.PendingState,
 				},
 			},
-			status: Status{
-				Building: false,
-				Success:  true,
+			builds: map[string]JenkinsBuild{
+				"winwin": {Result: pState(Succeess)},
 			},
 			expectedState:    kube.SuccessState,
 			expectedComplete: true,
@@ -463,13 +453,15 @@ func TestSyncPendingJobs(t *testing.T) {
 		{
 			name: "finished, failed",
 			pj: kube.ProwJob{
+				Metadata: kube.ObjectMeta{
+					Name: "whatapity",
+				},
 				Status: kube.ProwJobStatus{
 					State: kube.PendingState,
 				},
 			},
-			status: Status{
-				Building: false,
-				Success:  false,
+			builds: map[string]JenkinsBuild{
+				"whatapity": {Result: pState(Failure)},
 			},
 			expectedState:    kube.FailureState,
 			expectedComplete: true,
@@ -477,10 +469,9 @@ func TestSyncPendingJobs(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
+		t.Logf("scenario %q", tc.name)
 		fjc := &fjc{
-			enqueued: tc.enqueued,
-			status:   tc.status,
-			err:      tc.err,
+			err: tc.err,
 		}
 		fkc := &fkc{
 			prowjobs: []kube.ProwJob{tc.pj},
@@ -495,32 +486,46 @@ func TestSyncPendingJobs(t *testing.T) {
 		}
 
 		reports := make(chan kube.ProwJob, 100)
-		if err := c.syncPendingJob(tc.pj, reports); err != nil != tc.expectedError {
-			t.Errorf("for case %s got wrong error: %v", tc.name, err)
+		if err := c.syncPendingJob(tc.pj, reports, tc.builds); err != nil {
+			t.Errorf("unexpected error: %v", err)
 			continue
 		}
 		close(reports)
 
 		actual := fkc.prowjobs[0]
+		if tc.expectedError && actual.Status.Description != "Error finding Jenkins job." {
+			t.Errorf("expected description %q, got %q", "Error finding Jenkins job.", actual.Status.Description)
+			continue
+		}
 		if actual.Status.State != tc.expectedState {
-			t.Errorf("for case %s got state %v", tc.name, actual.Status.State)
+			t.Errorf("expected state %q, got %q", tc.expectedState, actual.Status.State)
+			continue
 		}
 		if actual.Complete() != tc.expectedComplete {
-			t.Errorf("for case %s got wrong completion", tc.name)
+			t.Errorf("expected complete prowjob, got %v", actual)
+			continue
 		}
 		if tc.expectedReport && len(reports) != 1 {
-			t.Errorf("for case %s wanted one report but got %d", tc.name, len(reports))
+			t.Errorf("wanted one report but got %d", len(reports))
+			continue
 		}
 		if !tc.expectedReport && len(reports) != 0 {
-			t.Errorf("for case %s did not wany any reports but got %d", tc.name, len(reports))
+			t.Errorf("did not wany any reports but got %d", len(reports))
+			continue
 		}
 		if fjc.built != tc.expectedBuild {
-			t.Errorf("for case %s got wrong built", tc.name)
+			t.Errorf("expected build: %t, got: %t", tc.expectedBuild, fjc.built)
+			continue
 		}
-		if actual.Status.JenkinsEnqueued != tc.expectedEnqueued {
-			t.Errorf("for case %s got wrong enqueued", tc.name)
+		if tc.expectedEnqueued && actual.Status.Description != "Jenkins job enqueued." {
+			t.Errorf("expected enqueued prowjob, got %v", actual)
 		}
 	}
+}
+
+func pState(state string) *string {
+	s := state
+	return &s
 }
 
 // TestBatch walks through the happy path of a batch job on Jenkins.
@@ -530,25 +535,31 @@ func TestBatch(t *testing.T) {
 		Agent:   "jenkins",
 		Context: "Some Job Context",
 	}
-	fc := &fkc{
-		prowjobs: []kube.ProwJob{pjutil.NewProwJob(pjutil.BatchSpec(pre, kube.Refs{
-			Org:     "o",
-			Repo:    "r",
-			BaseRef: "master",
-			BaseSHA: "123",
-			Pulls: []kube.Pull{
-				{
-					Number: 1,
-					SHA:    "abc",
-				},
-				{
-					Number: 2,
-					SHA:    "qwe",
-				},
+	pj := pjutil.NewProwJob(pjutil.BatchSpec(pre, kube.Refs{
+		Org:     "o",
+		Repo:    "r",
+		BaseRef: "master",
+		BaseSHA: "123",
+		Pulls: []kube.Pull{
+			{
+				Number: 1,
+				SHA:    "abc",
 			},
-		}))},
+			{
+				Number: 2,
+				SHA:    "qwe",
+			},
+		},
+	}))
+	pj.Metadata.Name = "known_name"
+	fc := &fkc{
+		prowjobs: []kube.ProwJob{pj},
 	}
-	jc := &fjc{}
+	jc := &fjc{
+		builds: map[string]JenkinsBuild{
+			"known_name": { /* Running */ },
+		},
+	}
 	c := Controller{
 		kc:          fc,
 		jc:          jc,
@@ -563,44 +574,29 @@ func TestBatch(t *testing.T) {
 	if fc.prowjobs[0].Status.State != kube.PendingState {
 		t.Fatalf("Wrong state: %v", fc.prowjobs[0].Status.State)
 	}
-	if !fc.prowjobs[0].Status.JenkinsEnqueued {
-		t.Fatal("Wrong enqueued.")
+	if fc.prowjobs[0].Status.Description != "Jenkins job enqueued." {
+		t.Fatalf("Expected description %q, got %q.", "Jenkins job enqueued.", fc.prowjobs[0].Status.Description)
 	}
-	jc.enqueued = true
+	jc.builds["known_name"] = JenkinsBuild{Number: 42}
 	if err := c.Sync(); err != nil {
 		t.Fatalf("Error on second sync: %v", err)
 	}
-	if !fc.prowjobs[0].Status.JenkinsEnqueued {
-		t.Fatal("Wrong enqueued steady state.")
-	}
-	jc.enqueued = false
-	if err := c.Sync(); err != nil {
-		t.Fatalf("Error on third sync: %v", err)
-	}
-	if fc.prowjobs[0].Status.JenkinsEnqueued {
-		t.Fatal("Wrong enqueued after leaving queue.")
-	}
-	jc.status = Status{Building: true}
-	if err := c.Sync(); err != nil {
-		t.Fatalf("Error on fourth sync: %v", err)
-	}
-	if fc.prowjobs[0].Status.State != kube.PendingState {
-		t.Fatalf("Wrong state: %v", fc.prowjobs[0].Status.State)
-	}
-	jc.status = Status{
-		Building: false,
-		Number:   42,
-	}
-	if err := c.Sync(); err != nil {
-		t.Fatalf("Error on fifth sync: %v", err)
+	if fc.prowjobs[0].Status.Description != "Jenkins job running." {
+		t.Fatalf("Expected description %q, got %q.", "Jenkins job running.", fc.prowjobs[0].Status.Description)
 	}
 	if fc.prowjobs[0].Status.PodName != "pr-some-job-42" {
 		t.Fatalf("Wrong PodName: %s", fc.prowjobs[0].Status.PodName)
 	}
-	if fc.prowjobs[0].Status.State != kube.FailureState {
+	jc.builds["known_name"] = JenkinsBuild{Result: pState(Succeess)}
+	if err := c.Sync(); err != nil {
+		t.Fatalf("Error on third sync: %v", err)
+	}
+	if fc.prowjobs[0].Status.Description != "Jenkins job succeeded." {
+		t.Fatalf("Expected description %q, got %q.", "Jenkins job succeeded.", fc.prowjobs[0].Status.Description)
+	}
+	if fc.prowjobs[0].Status.State != kube.SuccessState {
 		t.Fatalf("Wrong state: %v", fc.prowjobs[0].Status.State)
 	}
-
 	// This is what the SQ reads.
 	if fc.prowjobs[0].Spec.Context != "Some Job Context" {
 		t.Fatalf("Wrong context: %v", fc.prowjobs[0].Spec.Context)
@@ -819,12 +815,95 @@ func TestMaxConcurrencyWithNewlyTriggeredJobs(t *testing.T) {
 			pendingJobs: test.pendingJobs,
 		}
 
-		reports := make(chan kube.ProwJob, len(test.pjs))
-		errors := make(chan error, len(test.pjs))
+		reports := make(chan<- kube.ProwJob, len(test.pjs))
+		errors := make(chan<- error, len(test.pjs))
 
-		syncProwJobs(c.syncNonPendingJob, jobs, reports, errors)
+		syncProwJobs(c.syncNonPendingJob, jobs, reports, errors, nil)
 		if len(fjc.pjs) != test.expectedBuilds {
 			t.Errorf("expected builds: %d, got: %d", test.expectedBuilds, len(fjc.pjs))
+		}
+	}
+}
+
+func TestGetJenkinsJobs(t *testing.T) {
+	tests := []struct {
+		name     string
+		pjs      []kube.ProwJob
+		expected map[string]struct{}
+	}{
+		{
+			name: "both complete and running",
+			pjs: []kube.ProwJob{
+				{
+					Spec: kube.ProwJobSpec{
+						Job: "coolio",
+					},
+					Status: kube.ProwJobStatus{
+						CompletionTime: time.Now(),
+					},
+				},
+				{
+					Spec: kube.ProwJobSpec{
+						Job: "maradona",
+					},
+					Status: kube.ProwJobStatus{},
+				},
+			},
+			expected: map[string]struct{}{"maradona": {}},
+		},
+		{
+			name: "only complete",
+			pjs: []kube.ProwJob{
+				{
+					Spec: kube.ProwJobSpec{
+						Job: "coolio",
+					},
+					Status: kube.ProwJobStatus{
+						CompletionTime: time.Now(),
+					},
+				},
+				{
+					Spec: kube.ProwJobSpec{
+						Job: "maradona",
+					},
+					Status: kube.ProwJobStatus{
+						CompletionTime: time.Now(),
+					},
+				},
+			},
+			expected: map[string]struct{}{},
+		},
+		{
+			name: "only running",
+			pjs: []kube.ProwJob{
+				{
+					Spec: kube.ProwJobSpec{
+						Job: "coolio",
+					},
+					Status: kube.ProwJobStatus{},
+				},
+				{
+					Spec: kube.ProwJobSpec{
+						Job: "maradona",
+					},
+					Status: kube.ProwJobStatus{},
+				},
+			},
+			expected: map[string]struct{}{"maradona": {}, "coolio": {}},
+		},
+	}
+
+	for _, test := range tests {
+		t.Logf("scenario %q", test.name)
+		got := getJenkinsJobs(test.pjs)
+		if len(got) != len(test.expected) {
+			t.Errorf("unexpected job amount: %d (%v), expected: %d (%v)",
+				len(got), got, len(test.expected), test.expected)
+		}
+		for job := range test.expected {
+			if _, ok := got[job]; !ok {
+				t.Errorf("expected job %q was not found, got %v", job, got)
+			}
 		}
 	}
 }

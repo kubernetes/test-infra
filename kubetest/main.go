@@ -686,14 +686,19 @@ func prepareGcp(o *options) error {
 			return err
 		}
 
-		// Controls which gcloud components to install.
-		pop, err := pushEnv("CLOUDSDK_COMPONENT_MANAGER_SNAPSHOT_URL", "file://"+home("repo", "components-2.json"))
-		if err != nil {
-			return err
+		install := "google-cloud-sdk.tar.gz"
+		if strings.HasSuffix(o.gcpCloudSdk, ".tar.gz") {
+			install = o.gcpCloudSdk
+		} else {
+			// Controls which gcloud components to install.
+			pop, err := pushEnv("CLOUDSDK_COMPONENT_MANAGER_SNAPSHOT_URL", "file://"+home("repo", "components-2.json"))
+			if err != nil {
+				return err
+			}
+			defer pop()
 		}
-		defer pop()
 
-		if err := installGcloud(home("repo", "google-cloud-sdk.tar.gz"), home("cloudsdk")); err != nil {
+		if err := installGcloud(home("repo", install), home("cloudsdk")); err != nil {
 			return err
 		}
 		// gcloud creds may have changed
