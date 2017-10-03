@@ -682,14 +682,15 @@ func prepareGcp(o *options) error {
 				}
 			}
 		}
-		if err := os.Rename(home(filepath.Base(o.gcpCloudSdk)), home("repo")); err != nil {
-			return err
-		}
 
-		install := "google-cloud-sdk.tar.gz"
+		install := home("repo", "google-cloud-sdk.tar.gz")
 		if strings.HasSuffix(o.gcpCloudSdk, ".tar.gz") {
-			install = o.gcpCloudSdk
+			install = home(filepath.Base(o.gcpCloudSdk))
 		} else {
+			if err := os.Rename(home(filepath.Base(o.gcpCloudSdk)), home("repo")); err != nil {
+				return err
+			}
+
 			// Controls which gcloud components to install.
 			pop, err := pushEnv("CLOUDSDK_COMPONENT_MANAGER_SNAPSHOT_URL", "file://"+home("repo", "components-2.json"))
 			if err != nil {
@@ -698,7 +699,7 @@ func prepareGcp(o *options) error {
 			defer pop()
 		}
 
-		if err := installGcloud(home("repo", install), home("cloudsdk")); err != nil {
+		if err := installGcloud(install, home("cloudsdk")); err != nil {
 			return err
 		}
 		// gcloud creds may have changed
