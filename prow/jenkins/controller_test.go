@@ -68,7 +68,7 @@ func newFakeConfigAgent(t *testing.T, maxConcurrency int) *fca {
 	return &fca{
 		c: &config.Config{
 			JenkinsOperator: config.JenkinsOperator{
-				JobURLTemplate: template.Must(template.New("test").Parse("{{.Status.PodName}}/")),
+				JobURLTemplate: template.Must(template.New("test").Parse("{{.Status.PodName}}/{{.Status.State}}")),
 				MaxConcurrency: maxConcurrency,
 			},
 			Presubmits: presubmitMap,
@@ -347,8 +347,10 @@ func TestSyncPendingJobs(t *testing.T) {
 		builds      map[string]JenkinsBuild
 		err         error
 
+		// TODO: Change to pass a ProwJobStatus
 		expectedState    kube.ProwJobState
 		expectedBuild    bool
+		expectedURL      string
 		expectedComplete bool
 		expectedReport   bool
 		expectedEnqueued bool
@@ -360,13 +362,16 @@ func TestSyncPendingJobs(t *testing.T) {
 				Metadata: kube.ObjectMeta{
 					Name: "foofoo",
 				},
+				Spec: kube.ProwJobSpec{
+					Job: "test-job",
+				},
 				Status: kube.ProwJobStatus{
 					State:       kube.PendingState,
 					Description: "Jenkins job enqueued.",
 				},
 			},
 			builds: map[string]JenkinsBuild{
-				"foofoo": {enqueued: true},
+				"foofoo": {enqueued: true, Number: 10},
 			},
 			expectedState:    kube.PendingState,
 			expectedEnqueued: true,
@@ -377,14 +382,18 @@ func TestSyncPendingJobs(t *testing.T) {
 				Metadata: kube.ObjectMeta{
 					Name: "boing",
 				},
+				Spec: kube.ProwJobSpec{
+					Job: "test-job",
+				},
 				Status: kube.ProwJobStatus{
 					State:       kube.PendingState,
 					Description: "Jenkins job enqueued.",
 				},
 			},
 			builds: map[string]JenkinsBuild{
-				"boing": {enqueued: false},
+				"boing": {enqueued: false, Number: 10},
 			},
+			expectedURL:      "test-job-10/pending",
 			expectedState:    kube.PendingState,
 			expectedEnqueued: false,
 			expectedReport:   true,
@@ -395,13 +404,17 @@ func TestSyncPendingJobs(t *testing.T) {
 				Metadata: kube.ObjectMeta{
 					Name: "firstoutthetrenches",
 				},
+				Spec: kube.ProwJobSpec{
+					Job: "test-job",
+				},
 				Status: kube.ProwJobStatus{
 					State: kube.PendingState,
 				},
 			},
 			builds: map[string]JenkinsBuild{
-				"firstoutthetrenches": {enqueued: false},
+				"firstoutthetrenches": {enqueued: false, Number: 10},
 			},
+			expectedURL:    "test-job-10/pending",
 			expectedState:  kube.PendingState,
 			expectedReport: true,
 		},
@@ -413,6 +426,7 @@ func TestSyncPendingJobs(t *testing.T) {
 				},
 				Spec: kube.ProwJobSpec{
 					Type: kube.PresubmitJob,
+					Job:  "test-job",
 					Refs: kube.Refs{
 						Pulls: []kube.Pull{{
 							Number: 1,
@@ -426,8 +440,9 @@ func TestSyncPendingJobs(t *testing.T) {
 			},
 			// missing build
 			builds: map[string]JenkinsBuild{
-				"other": {enqueued: false},
+				"other": {enqueued: false, Number: 10},
 			},
+			expectedURL:      "https://github.com/kubernetes/test-infra/issues",
 			expectedState:    kube.ErrorState,
 			expectedError:    true,
 			expectedComplete: true,
@@ -439,13 +454,17 @@ func TestSyncPendingJobs(t *testing.T) {
 				Metadata: kube.ObjectMeta{
 					Name: "winwin",
 				},
+				Spec: kube.ProwJobSpec{
+					Job: "test-job",
+				},
 				Status: kube.ProwJobStatus{
 					State: kube.PendingState,
 				},
 			},
 			builds: map[string]JenkinsBuild{
-				"winwin": {Result: pState(Succeess)},
+				"winwin": {Result: pState(Succeess), Number: 11},
 			},
+			expectedURL:      "test-job-11/success",
 			expectedState:    kube.SuccessState,
 			expectedComplete: true,
 			expectedReport:   true,
@@ -456,13 +475,17 @@ func TestSyncPendingJobs(t *testing.T) {
 				Metadata: kube.ObjectMeta{
 					Name: "whatapity",
 				},
+				Spec: kube.ProwJobSpec{
+					Job: "test-job",
+				},
 				Status: kube.ProwJobStatus{
 					State: kube.PendingState,
 				},
 			},
 			builds: map[string]JenkinsBuild{
-				"whatapity": {Result: pState(Failure)},
+				"whatapity": {Result: pState(Failure), Number: 12},
 			},
+			expectedURL:      "test-job-12/failure",
 			expectedState:    kube.FailureState,
 			expectedComplete: true,
 			expectedReport:   true,
@@ -519,6 +542,9 @@ func TestSyncPendingJobs(t *testing.T) {
 		}
 		if tc.expectedEnqueued && actual.Status.Description != "Jenkins job enqueued." {
 			t.Errorf("expected enqueued prowjob, got %v", actual)
+		}
+		if tc.expectedURL != actual.Status.URL {
+			t.Errorf("expected status URL: %s, got: %s", tc.expectedURL, actual.Status.URL)
 		}
 	}
 }
