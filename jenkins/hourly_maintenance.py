@@ -26,7 +26,7 @@ import subprocess
 import sys
 import traceback
 
-import requests
+import requests # pylint: disable=import-error
 
 def container_images():
     """find all running images."""

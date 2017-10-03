@@ -20,7 +20,7 @@ import json
 import sys
 
 
-import requests  # pip install requests
+import requests # pylint: disable=import-error
 
 
 SESSION = requests.Session()

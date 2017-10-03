@@ -26,15 +26,6 @@ test_suite(
 py_binary(
     name = "pylint_bin",
     srcs = ["pylint_bin.py"],
-    deps = [
-        "@dateutil//:dateutil",
-        "@influxdb//:influxdb",
-        "@pylint//:pylint",
-        "@pytz//:pytz",
-        "@requests//:requests",  # TODO(fejta): figure out a better solution
-        "@ruamel_yaml//ruamel/yaml:ruamel.yaml",
-        "@yaml//:yaml",
-    ],
 )
 
 filegroup(

@@ -21,7 +21,7 @@ import cStringIO
 import json
 import os
 
-import ruamel.yaml as yaml
+import ruamel.yaml as yaml # pylint: disable=import-error
 
 ORIG_CWD = os.getcwd()  # Checkout changes cwd
 

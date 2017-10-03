@@ -21,7 +21,7 @@ import sys
 import json
 import argparse
 
-import requests
+import requests # pylint: disable=import-error
 
 GITHUB_API_URL = "https://api.github.com"
 

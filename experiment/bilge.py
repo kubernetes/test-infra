@@ -22,7 +22,7 @@ even something as simple as pushing new code while builds are already queued.
 
 import sys
 
-import requests
+import requests # pylint: disable=import-error
 
 
 def prune(host):

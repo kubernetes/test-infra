@@ -531,7 +531,8 @@ class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-method
                         try:
                             kubernetes_e2e.main(args)
                         except RuntimeError as err:
-                            if not err.message.startswith('Failed to get shared build location'):
+                            if not str(err.message)\
+                                   .startswith('Failed to get shared build location'):
                                 raise err
 
 if __name__ == '__main__':
