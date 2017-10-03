@@ -13,17 +13,32 @@ filegroup(
     tags = ["automanaged"],
 )
 
+config_setting(
+    name = "k8",
+    values = {"host_cpu": "k8"},
+    visibility = ["//visibility:public"],
+)
+
+config_setting(
+    name = "darwin",
+    values = {"host_cpu": "darwin"},
+    visibility = ["//visibility:public"],
+)
+
 py_test(
     name = "bigquery_test",
     srcs = [
         "bigquery.py",
         "bigquery_test.py",
     ],
-    args = ["--jq=$(location @jq//file)"],
-    data = [
-        ":all-srcs",
-        "@jq//file",
-    ],
+    args = select({
+        ":k8": ["--jq=$(location @jq_linux//file)"],
+        ":darwin": ["--jq=$(location @jq_osx//file)"],
+    }),
+    data = glob(["configs/*"]) + ["README.md"] + select({
+        ":k8": ["@jq_linux//file"],
+        ":darwin": ["@jq_osx//file"],
+    }),
     deps = [
         "@dateutil//:dateutil",
         "@influxdb//:influxdb",
