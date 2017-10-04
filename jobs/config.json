@@ -175,7 +175,6 @@
       "--charts",
       "--check-leaked-resources",
       "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-charts-gce.env",
       "--extract=ci/latest",
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
@@ -276,7 +275,6 @@
       "--check-leaked-resources",
       "--check-version-skew=false",
       "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gce-1-6-1-7-cvm-kubectl-skew.env",
       "--extract=ci/latest-1.7",
       "--extract=ci/latest-1.6",
       "--gcp-node-image=debian",
@@ -296,7 +294,6 @@
       "--check-leaked-resources",
       "--check-version-skew=false",
       "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gce-1-6-1-7-cvm-kubectl-skew-serial.env",
       "--extract=ci/latest-1.7",
       "--extract=ci/latest-1.6",
       "--gcp-node-image=debian",
@@ -315,7 +312,6 @@
       "--check-leaked-resources",
       "--check-version-skew=false",
       "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gce-1-6-1-7-gci-kubectl-skew.env",
       "--extract=ci/latest-1.7",
       "--extract=ci/latest-1.6",
       "--gcp-node-image=gci",
@@ -335,7 +331,6 @@
       "--check-leaked-resources",
       "--check-version-skew=false",
       "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gce-1-6-1-7-gci-kubectl-skew-serial.env",
       "--extract=ci/latest-1.7",
       "--extract=ci/latest-1.6",
       "--gcp-node-image=gci",
@@ -418,7 +413,6 @@
       "--check-leaked-resources",
       "--check-version-skew=false",
       "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gce-1-7-1-6-cvm-kubectl-skew.env",
       "--extract=ci/latest-1.6",
       "--extract=ci/latest-1.7",
       "--gcp-node-image=debian",
@@ -439,7 +433,6 @@
       "--check-leaked-resources",
       "--check-version-skew=false",
       "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gce-1-7-1-6-cvm-kubectl-skew-serial.env",
       "--extract=ci/latest-1.6",
       "--extract=ci/latest-1.7",
       "--gcp-node-image=debian",
@@ -459,7 +452,6 @@
       "--check-leaked-resources",
       "--check-version-skew=false",
       "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gce-1-7-1-6-gci-kubectl-skew.env",
       "--extract=ci/latest-1.6",
       "--extract=ci/latest-1.7",
       "--gcp-node-image=gci",
@@ -480,7 +472,6 @@
       "--check-leaked-resources",
       "--check-version-skew=false",
       "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gce-1-7-1-6-gci-kubectl-skew-serial.env",
       "--extract=ci/latest-1.6",
       "--extract=ci/latest-1.7",
       "--gcp-node-image=gci",
@@ -641,7 +632,6 @@
       "--cluster=canary-e2e",
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gce-canary.env",
       "--extract=ci/latest-1.7",
       "--extract=ci/latest-1.6",
       "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
@@ -1749,7 +1739,6 @@
     "args": [
       "--check-leaked-resources",
       "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gce-etcd3.env",
       "--extract=ci/latest",
       "--gcp-node-image=debian",
       "--gcp-zone=us-central1-f",
@@ -1908,7 +1897,6 @@
     "args": [
       "--check-leaked-resources",
       "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gce-flaky.env",
       "--extract=ci/latest",
       "--gcp-node-image=debian",
       "--gcp-zone=us-central1-f",
@@ -1926,7 +1914,6 @@
       "--check-leaked-resources",
       "--cluster=gc-feature",
       "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gce-garbage.env",
       "--extract=ci/latest",
       "--gcp-node-image=debian",
       "--gcp-zone=us-central1-f",
@@ -2319,7 +2306,6 @@
     "args": [
       "--check-leaked-resources",
       "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gce-gci-serial-sig-cli.env",
       "--extract=ci/latest",
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
@@ -2404,7 +2390,6 @@
   "ci-kubernetes-e2e-gce-ingress": {
     "args": [
       "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gce-ingress.env",
       "--extract=ci/latest",
       "--gcp-node-image=debian",
       "--gcp-zone=us-central1-f",
@@ -2576,7 +2561,6 @@
       "--check-leaked-resources",
       "--check-version-skew=false",
       "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gce-master-new-gci-kubectl-skew.env",
       "--extract=ci/latest-1.7",
       "--extract=ci/latest",
       "--gcp-node-image=gci",
@@ -2597,7 +2581,6 @@
       "--check-leaked-resources",
       "--check-version-skew=false",
       "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gce-master-new-gci-kubectl-skew-serial.env",
       "--extract=ci/latest-1.7",
       "--extract=ci/latest",
       "--gcp-node-image=gci",
@@ -2655,7 +2638,6 @@
       "--check-leaked-resources",
       "--check-version-skew=false",
       "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gce-new-master-gci-kubectl-skew.env",
       "--extract=ci/latest",
       "--extract=ci/latest-1.7",
       "--gcp-node-image=gci",
@@ -2675,7 +2657,6 @@
       "--check-leaked-resources",
       "--check-version-skew=false",
       "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gce-new-master-gci-kubectl-skew-serial.env",
       "--extract=ci/latest",
       "--extract=ci/latest-1.7",
       "--gcp-node-image=gci",
@@ -2791,7 +2772,6 @@
     "args": [
       "--check-leaked-resources",
       "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gce-reboot.env",
       "--extract=ci/latest",
       "--gcp-node-image=debian",
       "--gcp-zone=us-central1-f",
@@ -2808,7 +2788,6 @@
     "args": [
       "--check-leaked-resources",
       "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gce-reboot-release-1-5.env",
       "--extract=ci/latest-1.5",
       "--gcp-node-image=debian",
       "--gcp-zone=us-central1-f",
@@ -2826,7 +2805,6 @@
       "--check-leaked-resources",
       "--cluster=err-e2e",
       "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gce-reboot-release-1-6.env",
       "--extract=ci/latest-1.6",
       "--gcp-node-image=debian",
       "--gcp-zone=us-central1-f",
@@ -2844,7 +2822,6 @@
       "--check-leaked-resources",
       "--cluster=err-e2e",
       "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gce-reboot-release-1-7.env",
       "--extract=ci/latest-1.7",
       "--gcp-node-image=debian",
       "--gcp-zone=us-central1-f",
@@ -2861,7 +2838,6 @@
     "args": [
       "--check-leaked-resources",
       "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gce-release-1-5.env",
       "--extract=ci/latest-1.5",
       "--gcp-node-image=debian",
       "--gcp-zone=us-central1-f",
@@ -2879,7 +2855,6 @@
     "args": [
       "--check-leaked-resources",
       "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gce-release-1-6.env",
       "--extract=ci/latest-1.6",
       "--gcp-node-image=debian",
       "--gcp-zone=us-central1-f",
@@ -2897,7 +2872,6 @@
     "args": [
       "--check-leaked-resources",
       "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gce-release-1-7.env",
       "--extract=ci/latest-1.7",
       "--gcp-node-image=debian",
       "--gcp-zone=us-central1-f",
@@ -3025,7 +2999,6 @@
     "args": [
       "--check-leaked-resources",
       "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gce-serial.env",
       "--extract=ci/latest",
       "--gcp-node-image=debian",
       "--gcp-zone=us-central1-f",
@@ -3042,7 +3015,6 @@
     "args": [
       "--check-leaked-resources",
       "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gce-serial-release-1-5.env",
       "--extract=ci/latest-1.5",
       "--gcp-node-image=debian",
       "--gcp-zone=us-central1-f",
@@ -3059,7 +3031,6 @@
     "args": [
       "--check-leaked-resources",
       "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gce-serial-release-1-6.env",
       "--extract=ci/latest-1.6",
       "--gcp-node-image=debian",
       "--gcp-zone=us-central1-f",
@@ -3076,7 +3047,6 @@
     "args": [
       "--check-leaked-resources",
       "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gce-serial-release-1-7.env",
       "--extract=ci/latest-1.7",
       "--gcp-node-image=debian",
       "--gcp-zone=us-central1-f",
@@ -3093,7 +3063,6 @@
     "args": [
       "--check-leaked-resources",
       "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gce-slow.env",
       "--extract=ci/latest",
       "--gcp-node-image=debian",
       "--gcp-zone=europe-west1-c",
@@ -3111,7 +3080,6 @@
     "args": [
       "--check-leaked-resources",
       "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gce-slow-release-1-5.env",
       "--extract=ci/latest-1.5",
       "--gcp-node-image=debian",
       "--gcp-zone=us-central1-f",
@@ -3129,7 +3097,6 @@
     "args": [
       "--check-leaked-resources",
       "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gce-slow-release-1-6.env",
       "--extract=ci/latest-1.6",
       "--gcp-node-image=debian",
       "--gcp-zone=us-central1-f",
@@ -3147,7 +3114,6 @@
     "args": [
       "--check-leaked-resources",
       "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gce-slow-release-1-7.env",
       "--extract=ci/latest-1.7",
       "--gcp-node-image=debian",
       "--gcp-zone=us-central1-f",
@@ -3360,7 +3326,6 @@
   "ci-kubernetes-e2e-gce-statefulset": {
     "args": [
       "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gce-statefulset.env",
       "--extract=ci/latest",
       "--gcp-node-image=debian",
       "--gcp-zone=us-central1-f",
@@ -4107,7 +4072,6 @@
     "args": [
       "--check-leaked-resources",
       "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gci-gce-etcd3.env",
       "--extract=ci/latest",
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
@@ -4125,7 +4089,6 @@
     "args": [
       "--check-leaked-resources",
       "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gci-gce-flaky.env",
       "--extract=ci/latest",
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
@@ -4143,7 +4106,6 @@
       "--check-leaked-resources",
       "--cluster=gc-feature",
       "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gci-gce-garbage.env",
       "--extract=ci/latest",
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
@@ -4159,7 +4121,6 @@
   "ci-kubernetes-e2e-gci-gce-ingress": {
     "args": [
       "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gci-gce-ingress.env",
       "--extract=ci/latest",
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
@@ -4176,7 +4137,6 @@
     "args": [
       "--check-leaked-resources",
       "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gci-gce-ingress-release-1-5.env",
       "--extract=ci/latest-1.5",
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
@@ -4193,7 +4153,6 @@
     "args": [
       "--check-leaked-resources",
       "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gci-gce-ingress-release-1-6.env",
       "--extract=ci/latest-1.6",
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
@@ -4210,7 +4169,6 @@
     "args": [
       "--check-leaked-resources",
       "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gci-gce-ingress-release-1-7.env",
       "--extract=ci/latest-1.7",
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
@@ -4323,7 +4281,6 @@
       "--check-leaked-resources",
       "--cluster=err-e2e",
       "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gci-gce-reboot.env",
       "--extract=ci/latest",
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
@@ -4340,7 +4297,6 @@
     "args": [
       "--check-leaked-resources",
       "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gci-gce-reboot-release-1-5.env",
       "--extract=ci/latest-1.5",
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
@@ -4357,7 +4313,6 @@
     "args": [
       "--check-leaked-resources",
       "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gci-gce-reboot-release-1-6.env",
       "--extract=ci/latest-1.6",
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
@@ -4374,7 +4329,6 @@
     "args": [
       "--check-leaked-resources",
       "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gci-gce-reboot-release-1-7.env",
       "--extract=ci/latest-1.7",
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
@@ -4713,7 +4667,6 @@
   "ci-kubernetes-e2e-gci-gce-statefulset": {
     "args": [
       "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gci-gce-statefulset.env",
       "--extract=ci/latest",
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
@@ -8630,7 +8583,6 @@
       "--check-leaked-resources",
       "--cluster=canary-e2e-prow",
       "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-prow-canary.env",
       "--extract=ci/latest",
       "--gcp-node-image=debian",
       "--gcp-zone=us-central1-f",
@@ -9607,7 +9559,6 @@
     "args": [
       "--down=false",
       "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-soak-gce-1-7-deploy.env",
       "--extract=ci/latest-1.7",
       "--gcp-node-image=debian",
       "--gcp-project=k8s-jkns-gce-soak-1-3",
@@ -9648,7 +9599,6 @@
     "args": [
       "--down=false",
       "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-soak-gce-1.5-deploy.env",
       "--extract=ci/latest-1.5",
       "--gcp-node-image=debian",
       "--gcp-project=k8s-gce-soak-1-5",
@@ -9688,7 +9638,6 @@
     "args": [
       "--down=false",
       "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-soak-gce-1.6-deploy.env",
       "--extract=ci/latest-1.6",
       "--gcp-node-image=debian",
       "--gcp-project=k8s-jkns-gce-soak-1-6",
@@ -9770,7 +9719,6 @@
     "args": [
       "--down=false",
       "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-soak-gce-deploy.env",
       "--extract=ci/latest",
       "--gcp-node-image=debian",
       "--gcp-project=k8s-jkns-gce-soak",
@@ -9898,7 +9846,6 @@
     "args": [
       "--down=false",
       "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-soak-gci-gce-1-7-deploy.env",
       "--extract=ci/latest-1.7",
       "--gcp-node-image=gci",
       "--gcp-project=k8s-jkns-gci-gce-soak-1-7",
@@ -9939,7 +9886,6 @@
     "args": [
       "--down=false",
       "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-soak-gci-gce-1.5-deploy.env",
       "--extract=ci/latest-1.5",
       "--gcp-node-image=gci",
       "--gcp-project=k8s-gci-gce-soak-1-5",
@@ -9980,7 +9926,6 @@
     "args": [
       "--down=false",
       "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-soak-gci-gce-1.6-deploy.env",
       "--extract=ci/latest-1.6",
       "--gcp-node-image=gci",
       "--gcp-project=k8s-jkns-gci-gce-soak-1-6",
@@ -10021,7 +9966,6 @@
     "args": [
       "--down=false",
       "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-soak-gci-gce-stable1-deploy.env",
       "--extract=ci/k8s-stable1",
       "--gcp-node-image=gci",
       "--gcp-project=k8s-jkns-gci-gce-soak-1-4",
@@ -10255,7 +10199,6 @@
     "args": [
       "--check-leaked-resources",
       "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-perf-tests-e2e-gce-clusterloader.env",
       "--extract=ci/latest",
       "--gcp-node-image=gci",
       "--gcp-project=k8s-jkns-clusterloader",
