@@ -373,17 +373,25 @@ func CheckBazelbuildSpec(t *testing.T, name string, spec *kube.PodSpec, periodic
 	if spec == nil {
 		return tags
 	}
+	// Tags look something like vDATE-SHA or vDATE-SHA-BAZELVERSION.
+	// We want to match only on the date + sha
+	tagRE := regexp.MustCompile(`^([^-]+-[^-]+)(-[^-]+)?$`)
 	for _, c := range spec.Containers {
 		parts := strings.SplitN(c.Image, ":", 2)
 		var i, tag string // image:tag
 		i = parts[0]
+		if i != img {
+			continue
+		}
 		if len(parts) == 1 {
 			tag = "latest"
 		} else {
-			tag = parts[1]
-		}
-		if i != img {
-			continue
+			submatches := tagRE.FindStringSubmatch(parts[1])
+			if submatches != nil {
+				tag = submatches[1]
+			} else {
+				t.Errorf("bazelbuild tag '%s' doesn't match expected format", parts[1])
+			}
 		}
 		tags[tag]++
 
@@ -488,11 +496,15 @@ func TestBazelbuildArgs(t *testing.T) {
 	}
 	pinnedJobs := map[string]string{
 		//job: reason for pinning
-		"ci-kubernetes-bazel-build-1-6":       "https://github.com/kubernetes/kubernetes/issues/51571",
-		"ci-kubernetes-bazel-test-1-6":        "https://github.com/kubernetes/kubernetes/issues/51571",
-		"periodic-kubernetes-bazel-build-1-6": "https://github.com/kubernetes/kubernetes/issues/51571",
-		"periodic-kubernetes-bazel-test-1-6":  "https://github.com/kubernetes/kubernetes/issues/51571",
-		"pull-test-infra-bazel":               "canary testing the latest bazel on test-infra",
+		"ci-kubernetes-bazel-build-1-6":        "https://github.com/kubernetes/kubernetes/issues/51571",
+		"ci-kubernetes-bazel-test-1-6":         "https://github.com/kubernetes/kubernetes/issues/51571",
+		"periodic-kubernetes-bazel-build-1-6":  "https://github.com/kubernetes/kubernetes/issues/51571",
+		"periodic-kubernetes-bazel-test-1-6":   "https://github.com/kubernetes/kubernetes/issues/51571",
+		"pull-test-infra-bazel":                "canary testing the latest bazel on test-infra",
+		"pull-kubernetes-bazel-build":          "need different versions of bazel for release branches",
+		"pull-kubernetes-bazel-test":           "need different versions of bazel for release branches",
+		"pull-security-kubernetes-bazel-build": "need different versions of bazel for release branches",
+		"pull-security-kubernetes-bazel-test":  "need different versions of bazel for release branches",
 	}
 	maxTag := ""
 	maxN := 0
