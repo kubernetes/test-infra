@@ -45,7 +45,7 @@ func TestNewKubernetesAnywhere(t *testing.T) {
 				".phase2.kubeadm.master_upgrade.method=\"\"",
 				".phase2.kubernetes_version=\"\"",
 				".phase2.kubelet_version=\"\"",
-				".phase3.weave_net=y",
+				".phase3.cni=\"weave\"",
 			},
 		},
 		{
@@ -54,7 +54,6 @@ func TestNewKubernetesAnywhere(t *testing.T) {
 			expectConfigLines: []string{
 				".phase2.provider=\"ignition\"",
 				".phase2.kubernetes_version=\"\"",
-				".phase3.weave_net=n",
 			},
 		},
 		{
@@ -64,14 +63,6 @@ func TestNewKubernetesAnywhere(t *testing.T) {
 			expectConfigLines: []string{
 				".phase2.provider=\"kubeadm\"",
 				".phase3.cni=\"flannel\"",
-			},
-		},
-		{
-			name:   "kubeadm uses weave by default",
-			phase2: "kubeadm",
-			expectConfigLines: []string{
-				".phase2.provider=\"kubeadm\"",
-				".phase3.cni=\"weave\"",
 			},
 		},
 		{
@@ -87,7 +78,7 @@ func TestNewKubernetesAnywhere(t *testing.T) {
 				".phase2.kubeadm.master_upgrade.method=\"init\"",
 				".phase2.kubernetes_version=\"latest-1.6\"",
 				".phase2.kubelet_version=\"foo\"",
-				".phase3.weave_net=y",
+				".phase3.cni=\"weave\"",
 			},
 		},
 		{
@@ -101,7 +92,7 @@ func TestNewKubernetesAnywhere(t *testing.T) {
 				".phase2.kubeadm.version=\"unstable\"",
 				".phase2.kubernetes_version=\"latest-1.6\"",
 				".phase2.kubelet_version=\"gs://kubernetes-release-dev/bazel/vfoo/bin/linux/amd64/\"",
-				".phase3.weave_net=y",
+				".phase3.cni=\"weave\"",
 			},
 		},
 		{
@@ -115,7 +106,7 @@ func TestNewKubernetesAnywhere(t *testing.T) {
 				".phase2.kubeadm.version=\"unstable\"",
 				".phase2.kubernetes_version=\"latest-1.6\"",
 				".phase2.kubelet_version=\"gs://kubernetes-release-dev/bazel/vbar/bin/linux/amd64/\"",
-				".phase3.weave_net=y",
+				".phase3.cni=\"weave\"",
 			},
 		},
 		{
@@ -129,7 +120,7 @@ func TestNewKubernetesAnywhere(t *testing.T) {
 				".phase2.kubeadm.version=\"unstable\"",
 				".phase2.kubernetes_version=\"latest-1.6\"",
 				".phase2.kubelet_version=\"gs://kubernetes-release-dev/bazel/v1.6.12-beta.0.2+a03873b40780a3/build/debs/\"",
-				".phase3.weave_net=y",
+				".phase3.cni=\"weave\"",
 			},
 		},
 		{
@@ -143,7 +134,7 @@ func TestNewKubernetesAnywhere(t *testing.T) {
 				".phase2.kubeadm.version=\"unstable\"",
 				".phase2.kubernetes_version=\"latest-1.7\"",
 				".phase2.kubelet_version=\"gs://kubernetes-release-dev/bazel/v1.7.8-beta.0.22+9243a03f5fecc5/bin/linux/amd64/\"",
-				".phase3.weave_net=y",
+				".phase3.cni=\"weave\"",
 			},
 		},
 	}
@@ -295,7 +286,7 @@ func TestNewKubernetesAnywhereMultiCluster(t *testing.T) {
 					".phase2.provider=\"kubeadm\"",
 					".phase2.kubeadm.version=\"stable\"",
 					".phase2.kubernetes_version=\"\"",
-					".phase3.weave_net=y",
+					".phase3.cni=\"weave\"",
 					".phase1.cluster_name=\"" + cluster + "\"",
 					".phase1.gce.zone=\"" + zone + "\"",
 					".phase2.kube_context_name=\"" + kubeContext + "\"",
