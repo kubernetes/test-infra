@@ -1,12 +1,13 @@
 git_repository(
     name = "io_bazel_rules_go",
-    commit = "43a3bda3eb97e7bcd86f564a1e0a4b008d6c407c",
+    commit = "ee1fef7ec1379fcf36c002fd3ac0d00d940b147e",
     remote = "https://github.com/bazelbuild/rules_go.git",
 )
 
-load("@io_bazel_rules_go//go:def.bzl", "go_repositories")
+load("@io_bazel_rules_go//go:def.bzl", "go_rules_dependencies", "go_register_toolchains")
 
-go_repositories()
+go_rules_dependencies()
+go_register_toolchains()
 
 http_archive(
     name = "io_bazel_rules_docker",
@@ -121,10 +122,17 @@ py_library(
 )
 
 http_file(
-    name = "jq",
+    name = "jq_linux",
     executable = 1,
     sha256 = "c6b3a7d7d3e7b70c6f51b706a3b90bd01833846c54d32ca32f0027f00226ff6d",
     urls = ["https://github.com/stedolan/jq/releases/download/jq-1.5/jq-linux64"],
+)
+
+http_file(
+    name = "jq_osx",
+    executable = 1,
+    sha256 = "386e92c982a56fe4851468d7a931dfca29560cee306a0e66c6a1bd4065d3dac5",
+    urls = ["https://github.com/stedolan/jq/releases/download/jq-1.5/jq-osx-amd64"],
 )
 
 new_http_archive(
