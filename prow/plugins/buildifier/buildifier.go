@@ -19,7 +19,7 @@ limitations under the License.
 package buildifier
 
 import (
-        "bytes"
+	"bytes"
 	"fmt"
 	"io/ioutil"
 	"path/filepath"
@@ -28,8 +28,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/sirupsen/logrus"
 	"github.com/bazelbuild/buildtools/build"
+	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/genfiles"
 	"k8s.io/test-infra/prow/git"
@@ -93,16 +93,16 @@ func modifiedBazelFiles(ghc githubClient, org, repo string, number int, sha stri
 }
 
 func uniqProblems(problems []string) []string {
-    sort.Strings(problems)
-    var uniq []string
-    last := ""
-    for _, s := range problems {
-            if s != last {
-                    last = s
-                    uniq = append(uniq, s)
-            }
-    }
-    return uniq
+	sort.Strings(problems)
+	var uniq []string
+	last := ""
+	for _, s := range problems {
+		if s != last {
+			last = s
+			uniq = append(uniq, s)
+		}
+	}
+	return uniq
 }
 
 // problemsInFiles runs buildifier on the files. It returns a map from the file to
@@ -114,22 +114,22 @@ func problemsInFiles(r *git.Repo, files map[string]string) (map[string][]string,
 		if err != nil {
 			return nil, err
 		}
-                // This is modeled after the logic from buildifier:
-                // https://github.com/bazelbuild/buildtools/blob/master/buildifier/buildifier.go#L261
+		// This is modeled after the logic from buildifier:
+		// https://github.com/bazelbuild/buildtools/blob/master/buildifier/buildifier.go#L261
 		content, err := build.Parse(f, src)
 		if err != nil {
-		        return nil, fmt.Errorf("parsing as Bazel file %v", err)
+			return nil, fmt.Errorf("parsing as Bazel file %v", err)
 		}
-                beforeRewrite := build.Format(content)
-                var info build.RewriteInfo
-                build.Rewrite(content, &info)
-                ndata := build.Format(content)
-                if !bytes.Equal(src, ndata) {
-                        if !bytes.Equal(src, beforeRewrite) {
-                                // TODO(mattmoor): This always seems to be empty?
-                                problems[f] = uniqProblems(info.Log)
-                        }
-                }
+		beforeRewrite := build.Format(content)
+		var info build.RewriteInfo
+		build.Rewrite(content, &info)
+		ndata := build.Format(content)
+		if !bytes.Equal(src, ndata) {
+			if !bytes.Equal(src, beforeRewrite) {
+				// TODO(mattmoor): This always seems to be empty?
+				problems[f] = uniqProblems(info.Log)
+			}
+		}
 	}
 	return problems, nil
 }
@@ -188,16 +188,16 @@ func handle(ghc githubClient, gc *git.Client, log *logrus.Entry, e *github.Gener
 	// Make the list of comments.
 	var comments []github.DraftReviewComment
 	for f := range problems {
-                comments = append(comments, github.DraftReviewComment{
-                    Path:     f,
-                    // TODO(mattmoor): Include the messages if they are ever non-empty.
-                    Body:     strings.Join([]string{
-                        "This Bazel file needs formatting, run:",
-                        "```shell",
-                        fmt.Sprintf("buildifier -mode=fix %q", f),
-                        "```"}, "\n"),
-                    Position: 1,
-                })
+		comments = append(comments, github.DraftReviewComment{
+			Path: f,
+			// TODO(mattmoor): Include the messages if they are ever non-empty.
+			Body: strings.Join([]string{
+				"This Bazel file needs formatting, run:",
+				"```shell",
+				fmt.Sprintf("buildifier -mode=fix %q", f),
+				"```"}, "\n"),
+			Position: 1,
+		})
 	}
 
 	// Trim down the number of comments if necessary.

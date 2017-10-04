@@ -27,7 +27,7 @@ import (
 )
 
 var initialFiles = map[string][]byte{
-	"BUILD": []byte(`package(default_visibility = ["//visibility:public"])`),
+	"BUILD":     []byte(`package(default_visibility = ["//visibility:public"])`),
 	"WORKSPACE": []byte(`workspace(name = "io_foo_bar")`),
 }
 
@@ -121,11 +121,11 @@ func TestBuildify(t *testing.T) {
 		changes: []github.PullRequestChange{
 			{
 				Filename: "BUILD",
-                        },
-                        {
+			},
+			{
 				Filename: "WORKSPACE",
-                        },
-                        {
+			},
+			{
 				Filename: "blah.bzl",
 			},
 		},
@@ -270,7 +270,7 @@ func TestModifiedBazelFiles(t *testing.T) {
 			},
 			expectedModifiedFiles: map[string]string{
 				"foo/BUILD.bazel": "",
-				"bar/blah.bzl": "",
+				"bar/blah.bzl":    "",
 			},
 		},
 	}
