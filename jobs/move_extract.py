@@ -33,7 +33,7 @@ def sort():
     with open(test_infra('jobs/config.json'), 'r+') as fp:
         configs = json.loads(fp.read())
     regexp = re.compile('|'.join([
-        r'^GINKGO_PARALLEL_NODES=(.*)$',
+        r'^KUBE_NODE_OS_DISTRIBUTION=(.*)$',
     ]))
     problems = []
     for job, values in configs.items():
@@ -52,32 +52,20 @@ def sort():
             env = fp.read()
         lines = []
         mod = False
-        parallism = False
-        parallism_nodes = 1
+        node_os_image = ''
         for line in env.split('\n'):
             mat = regexp.search(line)
             if mat:
-                parallism_nodes = mat.group(1)
-                if parallism_nodes > 1:
-                    parallism = True
+                node_os_image = mat.group(1)
                 mod = True
-                continue
-            if line.strip() == 'GINKGO_PARALLEL=y':
-                parallism = True
-                if parallism_nodes == 1:
-                    parallism_nodes = 25
-                mod = True
-                continue
-            if line.strip() == 'GINKGO_PARALLEL=n':
-                parallism = False
                 continue
             lines.append(line)
         if not mod:
             continue
 
         args = list(args)
-        if parallism:
-            args.append('--ginkgo-parallel=%s' % parallism_nodes)
+        if node_os_image:
+            args.append('--gcp-node-image=%s' % node_os_image)
         flags = set()
         okay = False
         for arg in args:
