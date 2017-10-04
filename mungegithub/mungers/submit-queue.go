@@ -228,6 +228,8 @@ type SubmitQueue struct {
 
 	GateApproved bool
 	GateCLA      bool
+ 	GateGHReviewApproved         bool
+ 	GateGHReviewChangesRequested bool
 
 	// AdditionalRequiredLabels is a set of additional labels required for merging
 	// on top of the existing required ("lgtm", "approved", "cncf-cla: yes").
@@ -594,6 +596,8 @@ func (sq *SubmitQueue) RegisterOptions(opts *options.Options) sets.String {
 	opts.RegisterBool(&sq.GateApproved, "gate-approved", false, "Gate on approved label.")
 	opts.RegisterBool(&sq.GateCLA, "gate-cla", false, "Gate on cla labels.")
 	opts.RegisterString(&sq.MergeToMasterMessage, "merge-to-master-message", "", "Extra message when PR is merged to master branch.")
+	opts.RegisterBool(&sq.GateGHReviewApproved, "gh-review-approved", false, "Gate github review, approve")
+	opts.RegisterBool(&sq.GateGHReviewChangesRequested, "gh-review-changes-requested", false, "Gate github review, changes request")
 
 	opts.RegisterUpdateCallback(func(changed sets.String) error {
 		if changed.HasAny("prow-url", "batch-enabled") {
@@ -1001,6 +1005,9 @@ const (
 	ghE2EFailed             = "Second github e2e run failed."
 	unmergeableMilestone    = "Milestone is for a future release and cannot be merged"
 	headCommitChanged       = "This PR has changed since we ran the tests"
+ 	ghReviewStateUnclear     = "Cannot get gh reviews status"
+ 	ghReviewApproved         = "This pr has no Github review \"approved\"."
+ 	ghReviewChangesRequested = "Reviewer(s) requested changes through github review process."
 )
 
 // validForMergeExt is the base logic about what PR can be automatically merged.
@@ -1081,6 +1088,19 @@ func (sq *SubmitQueue) validForMergeExt(obj *github.MungeObject, checkStatus boo
 				sq.setContextFailedStatus(obj, retestContexts)
 				return false
 			}
+		}
+	}
+
+	if sq.GateGHReviewApproved || sq.GateGHReviewChangesRequested {
+		if approvedReview, changesRequestedReview, ok := obj.CollectGHReviewStatus(); !ok {
+			sq.SetMergeStatus(obj, ghReviewStateUnclear)
+			return false
+		} else if len(approvedReview) == 0 && sq.GateGHReviewApproved {
+			sq.SetMergeStatus(obj, ghReviewApproved)
+			return false
+		} else if len(changesRequestedReview) > 0 && sq.GateGHReviewChangesRequested {
+			sq.SetMergeStatus(obj, ghReviewChangesRequested)
+			return false
 		}
 	}
 
