@@ -46,6 +46,7 @@ var (
 
 func main() {
 	flag.Parse()
+	logrus.SetFormatter(&logrus.JSONFormatter{})
 
 	configAgent := &config.Agent{}
 	if err := configAgent.Start(*configPath); err != nil {

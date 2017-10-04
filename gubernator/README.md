@@ -4,14 +4,30 @@ It runs on Google App Engine, and parses JSON and junit.xml results for display.
 
 https://k8s-gubernator.appspot.com/
 
-For development:
+# Adding a repository to the PR Dashboard
+
+To make Gubernator's [PR Dashboard](https://k8s-gubernator.appspot.com/pr) work
+on another repository, it needs to receive webhook events.
+
+Go to Settings -> Webhooks on the repository (or organization) you want to add.
+
+Add a new webhook with these options:
+
+Payload URL: https://github-dot-k8s-gubernator.appspot.com/webhook
+Secret: Ask test-infra oncall.
+Select: "Send me everything"
+
+Gubernator will use the events it receives to build information about PRs, so
+only updates after the webhook is added will be shown on the dashboard.
+
+# Development
 
 - Install the Google Cloud SDK: https://cloud.google.com/sdk/
 - Run locally using `dev_appserver.py` and visit http://localhost:8080
 - Test and lint using `./test-gubernator.sh`
 - Deploy with `make deploy` followed by `make migrate`
 
-For deployment:
+# Deployment
 
 - Get the "Gubernator Github Webhook Secret" (ask test-infra for help) and write
   it to `github/webhook_secret`.

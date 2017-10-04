@@ -229,6 +229,10 @@ func (pa *PluginAgent) Load(path string) error {
 		return err
 	}
 
+	if len(np.Plugins) == 0 {
+		logrus.Warn("no plugins specified-- check syntax?")
+	}
+
 	if err := validatePlugins(np.Plugins); err != nil {
 		return err
 	}

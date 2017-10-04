@@ -219,6 +219,20 @@ func TestTerminateDupes(t *testing.T) {
 			complete:        false,
 			shouldTerminate: true,
 		},
+		{
+			name:            "old j3",
+			job:             "j3",
+			startTime:       now.Add(-time.Hour),
+			complete:        false,
+			shouldTerminate: true,
+		},
+		{
+			name:            "newest j3",
+			job:             "j3",
+			startTime:       now.Add(-time.Minute),
+			complete:        false,
+			shouldTerminate: false,
+		},
 	}
 	fkc := &fkc{}
 	c := Controller{kc: fkc, pkc: fkc}

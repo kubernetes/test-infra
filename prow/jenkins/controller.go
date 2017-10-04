@@ -204,7 +204,7 @@ func getJenkinsJobs(pjs []kube.ProwJob) map[string]struct{} {
 // in-place when it aborts.
 func (c *Controller) terminateDupes(pjs []kube.ProwJob) error {
 	// "job org/repo#number" -> newest job
-	dupes := make(map[string]kube.ProwJob)
+	dupes := make(map[string]int)
 	for i, pj := range pjs {
 		if pj.Complete() || pj.Spec.Type != kube.PresubmitJob {
 			continue
@@ -212,21 +212,22 @@ func (c *Controller) terminateDupes(pjs []kube.ProwJob) error {
 		n := fmt.Sprintf("%s %s/%s#%d", pj.Spec.Job, pj.Spec.Refs.Org, pj.Spec.Refs.Repo, pj.Spec.Refs.Pulls[0].Number)
 		prev, ok := dupes[n]
 		if !ok {
-			dupes[n] = pj
+			dupes[n] = i
 			continue
 		}
-		toCancel := pj
-		if prev.Status.StartTime.Before(pj.Status.StartTime) {
-			toCancel = prev
-			dupes[n] = pj
+		cancelIndex := i
+		if pjs[prev].Status.StartTime.Before(pj.Status.StartTime) {
+			cancelIndex = prev
+			dupes[n] = i
 		}
+		toCancel := pjs[cancelIndex]
 		toCancel.Status.CompletionTime = time.Now()
 		toCancel.Status.State = kube.AbortedState
-		pjutil, err := c.kc.ReplaceProwJob(toCancel.Metadata.Name, toCancel)
+		npj, err := c.kc.ReplaceProwJob(toCancel.Metadata.Name, toCancel)
 		if err != nil {
 			return err
 		}
-		pjs[i] = pjutil
+		pjs[cancelIndex] = npj
 	}
 	return nil
 }
@@ -270,22 +271,10 @@ func (c *Controller) syncPendingJob(pj kube.ProwJob, reports chan<- kube.ProwJob
 		case jb.IsRunning():
 			// Build still going.
 			c.incrementNumPendingJobs(pj.Spec.Job)
-			buildName := fmt.Sprintf("%s-%d", pj.Spec.Job, jb.Number)
-			buildNum := strconv.Itoa(jb.Number)
-
-			if pj.Status.BuildID == buildNum &&
-				pj.Status.PodName == buildName &&
-				pj.Status.Description == "Jenkins job running." {
+			if pj.Status.Description == "Jenkins job running." {
 				return nil
 			}
-			pj.Status.BuildID = buildNum
-			pj.Status.PodName = buildName
 			pj.Status.Description = "Jenkins job running."
-			var b bytes.Buffer
-			if err := c.ca.Config().JenkinsOperator.JobURLTemplate.Execute(&b, &pj); err != nil {
-				return fmt.Errorf("error executing URL template: %v", err)
-			}
-			pj.Status.URL = b.String()
 
 		case jb.IsSuccess():
 			// Build is complete.
@@ -308,6 +297,14 @@ func (c *Controller) syncPendingJob(pj kube.ProwJob, reports chan<- kube.ProwJob
 			pj.Status.State = kube.FailureState
 			pj.Status.Description = "Jenkins job failed."
 		}
+		// Construct the status URL that will be used in reports.
+		pj.Status.PodName = fmt.Sprintf("%s-%d", pj.Spec.Job, jb.Number)
+		pj.Status.BuildID = strconv.Itoa(jb.Number)
+		var b bytes.Buffer
+		if err := c.ca.Config().JenkinsOperator.JobURLTemplate.Execute(&b, &pj); err != nil {
+			return fmt.Errorf("error executing URL template: %v", err)
+		}
+		pj.Status.URL = b.String()
 	}
 	// Report to Github.
 	reports <- pj
