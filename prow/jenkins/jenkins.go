@@ -297,8 +297,7 @@ func (c *Client) GetLog(job string, build int) ([]byte, error) {
 // builds are aborted.
 func (c *Client) Abort(job string, build *JenkinsBuild) error {
 	if build.IsEnqueued() {
-		// Ignore enqueued builds.
-		return nil
+		return fmt.Errorf("aborting enqueued builds is not supported (tried to abort a build for %s)", job)
 	}
 
 	c.log("Abort", job, build.Number)
