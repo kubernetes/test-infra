@@ -914,6 +914,8 @@ class JobTest(unittest.TestCase):
             ('KUBEMARK_TESTS=', '--test_args=--ginkgo.focus=FOO'),
             ('KUBEMARK_MASTER_SIZE=', '--kubemark-master-size=FOO'),
             ('KUBEMARK_NUM_NODES=', '--kubemark-nodes=FOO'),
+            ('KUBE_NODE_OS_DISTRIBUTION=', '--gcp-node-image=FOO'),
+            ('KUBE_MASTER_OS_DISTRIBUTION=', '--gcp-master-image=FOO'),
             ('KUBERNETES_PROVIDER=', '--provider=FOO'),
             ('PERF_TESTS=', '--perf'),
             ('PROJECT=', '--gcp-project=FOO'),
