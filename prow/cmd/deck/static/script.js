@@ -62,6 +62,8 @@ function redrawOptions(opts) {
 };
 
 window.onload = function() {
+    // set dropdown based on options from query string
+    redrawOptions(optionsForRepo(""));
     redraw();
 };
 
