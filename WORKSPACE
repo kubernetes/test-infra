@@ -37,9 +37,33 @@ docker_repositories()
 
 docker_pull(
     name = "distroless-base",
-    digest = "sha256:d19b95495f226aa64cd63a95863aca4da123bde22410a273e68e091113222e4f",  # latest
+    # latest circa 2017/11/29
+    digest = "sha256:bef8d030c7f36dfb73a8c76137616faeea73ac5a8495d535f27c911d0db77af3",
     registry = "gcr.io",
     repository = "distroless/base",
+)
+
+load(
+    "@io_bazel_rules_docker//go:image.bzl",
+    _go_repositories = "repositories",
+)
+
+_go_repositories()
+
+docker_pull(
+    name = "alpine-base",
+    # 0.1 as of 2017/11/29
+    digest = "sha256:317d39ece9dd09992fa81236964be3f3919b940f42e3143379dd66e4af930f3a",
+    registry = "gcr.io",
+    repository = "k8s-prow/alpine",
+)
+
+docker_pull(
+    name = "git-base",
+    # 0.1 as of 2017/11/29
+    digest = "sha256:92423bd3b24b0274198bb90c00e91b70d81c32e1d6bd26af30c00ca9f5faeb74",
+    registry = "gcr.io",
+    repository = "k8s-prow/git",
 )
 
 git_repository(
