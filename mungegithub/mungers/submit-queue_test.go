@@ -252,6 +252,7 @@ func getTestSQ(startThreads bool, config *github_util.Config, server *httptest.S
 	sq.GateCLA = true
 	sq.NonBlockingJobNames = someJobNames
 	sq.DoNotMergeMilestones = []string{doNotMergeMilestone}
+	sq.ClaYesLabels = []string{cncfClaYesLabel, claHumanLabel}
 
 	mungeopts.RequiredContexts.Merge = []string{notRequiredReTestContext1, notRequiredReTestContext2}
 	mungeopts.RequiredContexts.Retest = []string{requiredReTestContext1, requiredReTestContext2}
@@ -686,7 +687,7 @@ func TestSubmitQueue(t *testing.T) {
 			name:   "Test7",
 			pr:     ValidPR(),
 			issue:  NoCLAIssue(),
-			reason: noCLA,
+			reason: fmt.Sprintf("%s %q", noCLA, []string{cncfClaYesLabel, claHumanLabel}),
 			state:  "pending",
 			// To avoid false errors in logs
 			lastBuildNumber: LastBuildNumber(),
