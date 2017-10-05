@@ -49,6 +49,7 @@ type kubeClient interface {
 type jenkinsClient interface {
 	Build(*kube.ProwJob) error
 	ListJenkinsBuilds(jobs map[string]struct{}) (map[string]JenkinsBuild, error)
+	Abort(job string, build *JenkinsBuild) error
 }
 
 type githubClient interface {
@@ -150,7 +151,7 @@ func (c *Controller) Sync() error {
 	}
 
 	var syncErrs []error
-	if err := c.terminateDupes(pjs); err != nil {
+	if err := c.terminateDupes(pjs, jbs); err != nil {
 		syncErrs = append(syncErrs, err)
 	}
 
@@ -202,7 +203,7 @@ func getJenkinsJobs(pjs []kube.ProwJob) map[string]struct{} {
 
 // terminateDupes aborts presubmits that have a newer version. It modifies pjs
 // in-place when it aborts.
-func (c *Controller) terminateDupes(pjs []kube.ProwJob) error {
+func (c *Controller) terminateDupes(pjs []kube.ProwJob, jbs map[string]JenkinsBuild) error {
 	// "job org/repo#number" -> newest job
 	dupes := make(map[string]int)
 	for i, pj := range pjs {
@@ -221,6 +222,21 @@ func (c *Controller) terminateDupes(pjs []kube.ProwJob) error {
 			dupes[n] = i
 		}
 		toCancel := pjs[cancelIndex]
+		// Allow aborting presubmit jobs for commits that have been superseded by
+		// newer commits in Github pull requests.
+		if c.ca.Config().JenkinsOperator.AllowCancellations {
+			build, buildExists := jbs[toCancel.Metadata.Name]
+			// Avoid cancelling enqueued builds.
+			if buildExists && build.IsEnqueued() {
+				continue
+			}
+			// Otherwise, abort it.
+			if buildExists {
+				if err := c.jc.Abort(toCancel.Spec.Job, &build); err != nil {
+					logrus.Warningf("Cannot cancel Jenkins build for prowjob %q: %v", toCancel.Metadata.Name, err)
+				}
+			}
+		}
 		toCancel.Status.CompletionTime = time.Now()
 		toCancel.Status.State = kube.AbortedState
 		npj, err := c.kc.ReplaceProwJob(toCancel.Metadata.Name, toCancel)

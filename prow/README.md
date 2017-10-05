@@ -117,6 +117,11 @@ deployed then the config will be automatically updated once the PR is merged,
 else you will need to run `make update-plugins`. This does not require 
 redeploying the binaries, and will take effect within a minute.
 
+Note that Github events triggered by the account that is managing the plugins
+are ignored by some plugins. It is prudent to use a different bot account for
+performing merges or rerunning tests, whether the deployment that drives the
+second account is `tide` or the `submit-queue` munger.
+
 ## How to add new jobs
 
 To add a new job you'll need to add an entry into [config.yaml](config.yaml). 
