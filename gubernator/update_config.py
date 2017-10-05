@@ -23,18 +23,20 @@ def main(prow_config, gubernator_config):
     with open(prow_config) as prow_file:
         prow_data = yaml.load(prow_file)
 
-    default_presubmits = []
+    default_presubmits = set()
     for job in prow_data['presubmits']['kubernetes/kubernetes']:
         if job.get('always_run'):
-            default_presubmits.append(job['name'])
+            default_presubmits.add(job['name'])
 
     with open(gubernator_config) as gubernator_file:
         gubernator_data = yaml.load(gubernator_file)
 
-    gubernator_data['jobs']['kubernetes-jenkins/pr-logs/directory/'] = default_presubmits
+    gubernator_data['jobs']['kubernetes-jenkins/pr-logs/directory/'] = sorted(
+        default_presubmits)
 
     with open(gubernator_config, 'w+') as gubernator_file:
-        yaml.dump(gubernator_data, gubernator_file, default_flow_style=False, explicit_start=True)
+        yaml.dump(gubernator_data, gubernator_file, default_flow_style=False,
+                  explicit_start=True)
 
 if __name__ == '__main__':
     PARSER = argparse.ArgumentParser()

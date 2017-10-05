@@ -141,6 +141,12 @@ func (f *fjc) ListJenkinsBuilds(jobs map[string]struct{}) (map[string]JenkinsBui
 	return f.builds, nil
 }
 
+func (f *fjc) Abort(job string, build *JenkinsBuild) error {
+	f.Lock()
+	defer f.Unlock()
+	return nil
+}
+
 type fghc struct {
 	sync.Mutex
 	changes []github.PullRequestChange

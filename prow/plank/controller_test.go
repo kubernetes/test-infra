@@ -88,9 +88,10 @@ func (f *fca) Config() *config.Config {
 
 type fkc struct {
 	sync.Mutex
-	prowjobs []kube.ProwJob
-	pods     []kube.Pod
-	err      error
+	prowjobs    []kube.ProwJob
+	pods        []kube.Pod
+	deletedPods []kube.Pod
+	err         error
 }
 
 func (f *fkc) CreateProwJob(pj kube.ProwJob) (kube.ProwJob, error) {
@@ -139,6 +140,7 @@ func (f *fkc) DeletePod(name string) error {
 	defer f.Unlock()
 	for i := range f.pods {
 		if f.pods[i].Metadata.Name == name {
+			f.deletedPods = append(f.deletedPods, f.pods[i])
 			f.pods = append(f.pods[:i], f.pods[i+1:]...)
 			return nil
 		}
@@ -170,97 +172,200 @@ func (f *fghc) EditComment(org, repo string, ID int, comment string) error      
 func TestTerminateDupes(t *testing.T) {
 	now := time.Now()
 	var testcases = []struct {
-		name      string
-		job       string
-		startTime time.Time
-		complete  bool
+		name string
 
-		shouldTerminate bool
+		allowCancellations bool
+		pjs                []kube.ProwJob
+		pm                 map[string]kube.Pod
+
+		terminatedPJs  map[string]struct{}
+		terminatedPods map[string]struct{}
 	}{
 		{
-			name:            "newest",
-			job:             "j1",
-			startTime:       now.Add(-time.Minute),
-			complete:        false,
-			shouldTerminate: false,
+			name: "terminate all duplicates",
+
+			pjs: []kube.ProwJob{
+				{
+					Metadata: kube.ObjectMeta{Name: "newest"},
+					Spec: kube.ProwJobSpec{
+						Type: kube.PresubmitJob,
+						Job:  "j1",
+						Refs: kube.Refs{Pulls: []kube.Pull{{}}},
+					},
+					Status: kube.ProwJobStatus{
+						StartTime: now.Add(-time.Minute),
+					},
+				},
+				{
+					Metadata: kube.ObjectMeta{Name: "old"},
+					Spec: kube.ProwJobSpec{
+						Type: kube.PresubmitJob,
+						Job:  "j1",
+						Refs: kube.Refs{Pulls: []kube.Pull{{}}},
+					},
+					Status: kube.ProwJobStatus{
+						StartTime: now.Add(-time.Hour),
+					},
+				},
+				{
+					Metadata: kube.ObjectMeta{Name: "older"},
+					Spec: kube.ProwJobSpec{
+						Type: kube.PresubmitJob,
+						Job:  "j1",
+						Refs: kube.Refs{Pulls: []kube.Pull{{}}},
+					},
+					Status: kube.ProwJobStatus{
+						StartTime: now.Add(-2 * time.Hour),
+					},
+				},
+				{
+					Metadata: kube.ObjectMeta{Name: "complete"},
+					Spec: kube.ProwJobSpec{
+						Type: kube.PresubmitJob,
+						Job:  "j1",
+						Refs: kube.Refs{Pulls: []kube.Pull{{}}},
+					},
+					Status: kube.ProwJobStatus{
+						StartTime:      now.Add(-3 * time.Hour),
+						CompletionTime: now,
+					},
+				},
+				{
+					Metadata: kube.ObjectMeta{Name: "newest_j2"},
+					Spec: kube.ProwJobSpec{
+						Type: kube.PresubmitJob,
+						Job:  "j2",
+						Refs: kube.Refs{Pulls: []kube.Pull{{}}},
+					},
+					Status: kube.ProwJobStatus{
+						StartTime: now.Add(-time.Minute),
+					},
+				},
+				{
+					Metadata: kube.ObjectMeta{Name: "old_j2"},
+					Spec: kube.ProwJobSpec{
+						Type: kube.PresubmitJob,
+						Job:  "j2",
+						Refs: kube.Refs{Pulls: []kube.Pull{{}}},
+					},
+					Status: kube.ProwJobStatus{
+						StartTime: now.Add(-time.Hour),
+					},
+				},
+				{
+					Metadata: kube.ObjectMeta{Name: "old_j3"},
+					Spec: kube.ProwJobSpec{
+						Type: kube.PresubmitJob,
+						Job:  "j3",
+						Refs: kube.Refs{Pulls: []kube.Pull{{}}},
+					},
+					Status: kube.ProwJobStatus{
+						StartTime: now.Add(-time.Hour),
+					},
+				},
+				{
+					Metadata: kube.ObjectMeta{Name: "new_j3"},
+					Spec: kube.ProwJobSpec{
+						Type: kube.PresubmitJob,
+						Job:  "j3",
+						Refs: kube.Refs{Pulls: []kube.Pull{{}}},
+					},
+					Status: kube.ProwJobStatus{
+						StartTime: now.Add(-time.Minute),
+					},
+				},
+			},
+
+			terminatedPJs: map[string]struct{}{
+				"old": {}, "older": {}, "old_j2": {}, "old_j3": {},
+			},
 		},
 		{
-			name:            "old",
-			job:             "j1",
-			startTime:       now.Add(-time.Hour),
-			complete:        false,
-			shouldTerminate: true,
-		},
-		{
-			name:            "older",
-			job:             "j1",
-			startTime:       now.Add(-2 * time.Hour),
-			complete:        false,
-			shouldTerminate: true,
-		},
-		{
-			name:            "complete",
-			job:             "j1",
-			startTime:       now.Add(-3 * time.Hour),
-			complete:        true,
-			shouldTerminate: false,
-		},
-		{
-			name:            "newest j2",
-			job:             "j2",
-			startTime:       now.Add(-time.Minute),
-			complete:        false,
-			shouldTerminate: false,
-		},
-		{
-			name:            "old j2",
-			job:             "j2",
-			startTime:       now.Add(-time.Hour),
-			complete:        false,
-			shouldTerminate: true,
-		},
-		{
-			name:            "old j3",
-			job:             "j3",
-			startTime:       now.Add(-time.Hour),
-			complete:        false,
-			shouldTerminate: true,
-		},
-		{
-			name:            "newest j3",
-			job:             "j3",
-			startTime:       now.Add(-time.Minute),
-			complete:        false,
-			shouldTerminate: false,
+			name: "should also terminate pods",
+
+			allowCancellations: true,
+			pjs: []kube.ProwJob{
+				{
+					Metadata: kube.ObjectMeta{Name: "newest"},
+					Spec: kube.ProwJobSpec{
+						Type: kube.PresubmitJob,
+						Job:  "j1",
+						Refs: kube.Refs{Pulls: []kube.Pull{{}}},
+					},
+					Status: kube.ProwJobStatus{
+						StartTime: now.Add(-time.Minute),
+					},
+				},
+				{
+					Metadata: kube.ObjectMeta{Name: "old"},
+					Spec: kube.ProwJobSpec{
+						Type: kube.PresubmitJob,
+						Job:  "j1",
+						Refs: kube.Refs{Pulls: []kube.Pull{{}}},
+					},
+					Status: kube.ProwJobStatus{
+						StartTime: now.Add(-time.Hour),
+					},
+				},
+			},
+			pm: map[string]kube.Pod{
+				"newest": {Metadata: kube.ObjectMeta{Name: "newest"}},
+				"old":    {Metadata: kube.ObjectMeta{Name: "old"}},
+			},
+
+			terminatedPJs: map[string]struct{}{
+				"old": {},
+			},
+			terminatedPods: map[string]struct{}{
+				"old": {},
+			},
 		},
 	}
-	fkc := &fkc{}
-	c := Controller{kc: fkc, pkc: fkc}
+
 	for _, tc := range testcases {
-		var pj = kube.ProwJob{
-			Metadata: kube.ObjectMeta{Name: tc.name},
-			Spec: kube.ProwJobSpec{
-				Type: kube.PresubmitJob,
-				Job:  tc.job,
-				Refs: kube.Refs{Pulls: []kube.Pull{{}}},
+		var pods []kube.Pod
+		for _, pod := range tc.pm {
+			pods = append(pods, pod)
+		}
+		fkc := &fkc{pods: pods, prowjobs: tc.pjs}
+		fca := &fca{
+			c: &config.Config{
+				Plank: config.Plank{
+					AllowCancellations: tc.allowCancellations,
+				},
 			},
-			Status: kube.ProwJobStatus{
-				StartTime: tc.startTime,
-			},
 		}
-		if tc.complete {
-			pj.Status.CompletionTime = now
+		c := Controller{kc: fkc, pkc: fkc, ca: fca}
+
+		if err := c.terminateDupes(fkc.prowjobs, tc.pm); err != nil {
+			t.Fatalf("Error terminating dupes: %v", err)
 		}
-		fkc.prowjobs = append(fkc.prowjobs, pj)
-	}
-	if err := c.terminateDupes(fkc.prowjobs); err != nil {
-		t.Fatalf("Error terminating dupes: %v", err)
-	}
-	for i := range testcases {
-		terminated := fkc.prowjobs[i].Status.State == kube.AbortedState
-		if terminated != testcases[i].shouldTerminate {
-			t.Errorf("Wrong termination for %s", testcases[i].name)
+
+		for terminatedName := range tc.terminatedPJs {
+			terminated := false
+			for _, pj := range fkc.prowjobs {
+				if pj.Metadata.Name == terminatedName && !pj.Complete() {
+					t.Errorf("expected prowjob %q to be terminated!", terminatedName)
+				} else {
+					terminated = true
+				}
+			}
+			if !terminated {
+				t.Errorf("expected prowjob %q to be terminated, got %+v", terminatedName, fkc.prowjobs)
+			}
 		}
+		for terminatedName := range tc.terminatedPods {
+			terminated := false
+			for _, deleted := range fkc.deletedPods {
+				if deleted.Metadata.Name == terminatedName {
+					terminated = true
+				}
+			}
+			if !terminated {
+				t.Errorf("expected pod %q to be terminated, got terminated: %v", terminatedName, fkc.deletedPods)
+			}
+		}
+
 	}
 }
 

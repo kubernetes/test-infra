@@ -62,6 +62,8 @@ function redrawOptions(opts) {
 };
 
 window.onload = function() {
+    // set dropdown based on options from query string
+    redrawOptions(optionsForRepo(""));
     redraw();
 };
 
@@ -216,7 +218,7 @@ function createRerunCell(modal, rerun_command, prowjob) {
     a.title = "Show instructions for rerunning this job.";
     a.onclick = function() {
         modal.style.display = "block";
-        rerun_command.textContent = "kubectl create -f \"" + url + "\"";
+        rerun_command.innerHTML = "kubectl create -f \"<a href='" + url + "'>" + url + "</a>\"";
     };
     a.appendChild(document.createTextNode("\u27F3"));
     c.appendChild(a);

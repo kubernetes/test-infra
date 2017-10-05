@@ -166,7 +166,7 @@ func (c *Controller) Sync() error {
 	pjs = k8sJobs
 
 	var syncErrs []error
-	if err := c.terminateDupes(pjs); err != nil {
+	if err := c.terminateDupes(pjs, pm); err != nil {
 		syncErrs = append(syncErrs, err)
 	}
 
@@ -206,7 +206,7 @@ func (c *Controller) Sync() error {
 // terminateDupes aborts presubmits that have a newer version. It modifies pjs
 // in-place when it aborts.
 // TODO: Dry this out - need to ensure we can abstract children cancellation first.
-func (c *Controller) terminateDupes(pjs []kube.ProwJob) error {
+func (c *Controller) terminateDupes(pjs []kube.ProwJob, pm map[string]kube.Pod) error {
 	// "job org/repo#number" -> newest job
 	dupes := make(map[string]int)
 	for i, pj := range pjs {
@@ -225,6 +225,15 @@ func (c *Controller) terminateDupes(pjs []kube.ProwJob) error {
 			dupes[n] = i
 		}
 		toCancel := pjs[cancelIndex]
+		// Allow aborting presubmit jobs for commits that have been superseded by
+		// newer commits in Github pull requests.
+		if c.ca.Config().Plank.AllowCancellations {
+			if pod, exists := pm[toCancel.Metadata.Name]; exists {
+				if err := c.pkc.DeletePod(pod.Metadata.Name); err != nil {
+					logrus.Warningf("Cannot cancel pod for prowjob %q: %v", toCancel.Metadata.Name, err)
+				}
+			}
+		}
 		toCancel.Status.CompletionTime = time.Now()
 		toCancel.Status.State = kube.AbortedState
 		npj, err := c.kc.ReplaceProwJob(toCancel.Metadata.Name, toCancel)
