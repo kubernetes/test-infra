@@ -15,24 +15,45 @@
 # limitations under the License.
 
 # This script warms up the ${GOPATH}, so the first run of publisher will not take too long.
-# This script is expected to be run by the Dockerfile.
+# This script is expected to be run by the Dockerfile or an init container.
 
 set -o errexit
 set -o nounset
 set -o pipefail
 
-ORG="kubernetes"
+ORG="${ORG:-kubernetes}"
 
 mkdir -p "${GOPATH}"/src/k8s.io
 cd "${GOPATH}"/src/k8s.io
 
-# to restore the dependencies
-git clone "https://github.com/kubernetes/kubernetes"
-pushd kubernetes
-    ./hack/godep-restore.sh
+# Install go tools
+go get github.com/tools/godep
+pushd ${GOPATH}/src/github.com/tools/godep
+    git checkout tags/v79
+    go install ./...
 popd
 
-for repo in "apimachinery" "client-go" "apiserver" "kube-aggregator" "sample-apiserver" "apiextensions-apiserver" "api" "metrics"
-do
-    git clone "https://github.com/${ORG}/${repo}"
+go get github.com/golang/dep
+pushd ${GOPATH}/src/github.com/golang/dep
+    git checkout 7c44971bbb9f0ed87db40b601f2d9fe4dffb750d
+    go install ./cmd/dep
+popd
+
+# Install kube including dependencies
+if [ ! -d kubernetes ]; then
+    git clone "https://github.com/kubernetes/kubernetes"
+    pushd kubernetes
+        ./hack/godep-restore.sh
+    popd
+fi
+
+# Install all staging dirs
+for repo in $(cd kubernetes/staging/src/k8s.io; ls -1); do
+    if [ -d "${repo}" ]; then
+	pushd ${repo}
+	    git remote set-url origin "https://github.com/${ORG}/${repo}"
+	popd
+    else
+	git clone "https://github.com/${ORG}/${repo}"
+    fi
 done
