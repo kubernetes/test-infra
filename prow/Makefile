@@ -57,7 +57,15 @@ test:
 
 .PHONY: update-config update-plugins build test get-cluster-credentials
 
-hook-image:
+alpine-image:
+	docker build -t "$(REGISTRY)/$(PROJECT)/alpine" $(DOCKER_LABELS) cmd/images/alpine
+	$(PUSH) "$(REGISTRY)/$(PROJECT)/alpine"
+
+git-image: alpine-image
+	docker build -t "$(REGISTRY)/$(PROJECT)/git" $(DOCKER_LABELS) cmd/images/git
+	$(PUSH) "$(REGISTRY)/$(PROJECT)/git"
+
+hook-image: git-image
 	CGO_ENABLED=0 go build -o cmd/hook/hook k8s.io/test-infra/prow/cmd/hook
 	docker build -t "$(REGISTRY)/$(PROJECT)/hook:$(HOOK_VERSION)" $(DOCKER_LABELS) cmd/hook
 	$(PUSH) "$(REGISTRY)/$(PROJECT)/hook:$(HOOK_VERSION)"
@@ -68,7 +76,7 @@ hook-deployment: get-cluster-credentials
 hook-service: get-cluster-credentials
 	kubectl apply -f cluster/hook_service.yaml
 
-sinker-image:
+sinker-image: alpine-image
 	CGO_ENABLED=0 go build -o cmd/sinker/sinker k8s.io/test-infra/prow/cmd/sinker
 	docker build -t "$(REGISTRY)/$(PROJECT)/sinker:$(SINKER_VERSION)" $(DOCKER_LABELS) cmd/sinker
 	$(PUSH) "$(REGISTRY)/$(PROJECT)/sinker:$(SINKER_VERSION)"
@@ -76,7 +84,7 @@ sinker-image:
 sinker-deployment: get-cluster-credentials
 	kubectl apply -f cluster/sinker_deployment.yaml
 
-deck-image:
+deck-image: alpine-image
 	CGO_ENABLED=0 go build -o cmd/deck/deck k8s.io/test-infra/prow/cmd/deck
 	docker build -t "$(REGISTRY)/$(PROJECT)/deck:$(DECK_VERSION)" $(DOCKER_LABELS) cmd/deck
 	$(PUSH) "$(REGISTRY)/$(PROJECT)/deck:$(DECK_VERSION)"
@@ -87,7 +95,7 @@ deck-deployment: get-cluster-credentials
 deck-service: get-cluster-credentials
 	kubectl apply -f cluster/deck_service.yaml
 
-splice-image:
+splice-image: git-image
 	CGO_ENABLED=0 go build -o cmd/splice/splice k8s.io/test-infra/prow/cmd/splice
 	docker build -t "$(REGISTRY)/$(PROJECT)/splice:$(SPLICE_VERSION)" $(DOCKER_LABELS) cmd/splice
 	$(PUSH) "$(REGISTRY)/$(PROJECT)/splice:$(SPLICE_VERSION)"
@@ -95,7 +103,7 @@ splice-image:
 splice-deployment: get-cluster-credentials
 	kubectl apply -f cluster/splice_deployment.yaml
 
-tot-image:
+tot-image: alpine-image
 	CGO_ENABLED=0 go build -o cmd/tot/tot k8s.io/test-infra/prow/cmd/tot
 	docker build -t "$(REGISTRY)/$(PROJECT)/tot:$(TOT_VERSION)" $(DOCKER_LABELS) cmd/tot
 	$(PUSH) "$(REGISTRY)/$(PROJECT)/tot:$(TOT_VERSION)"
@@ -106,7 +114,7 @@ tot-deployment: get-cluster-credentials
 tot-service: get-cluster-credentials
 	kubectl apply -f cluster/tot_service.yaml
 
-horologium-image:
+horologium-image: alpine-image
 	CGO_ENABLED=0 go build -o cmd/horologium/horologium k8s.io/test-infra/prow/cmd/horologium
 	docker build -t "$(REGISTRY)/$(PROJECT)/horologium:$(HOROLOGIUM_VERSION)" $(DOCKER_LABELS) cmd/horologium
 	$(PUSH) "$(REGISTRY)/$(PROJECT)/horologium:$(HOROLOGIUM_VERSION)"
@@ -114,7 +122,7 @@ horologium-image:
 horologium-deployment: get-cluster-credentials
 	kubectl apply -f cluster/horologium_deployment.yaml
 
-plank-image:
+plank-image: alpine-image
 	CGO_ENABLED=0 go build -o cmd/plank/plank k8s.io/test-infra/prow/cmd/plank
 	docker build -t "$(REGISTRY)/$(PROJECT)/plank:$(PLANK_VERSION)" $(DOCKER_LABELS) cmd/plank
 	$(PUSH) "$(REGISTRY)/$(PROJECT)/plank:$(PLANK_VERSION)"
@@ -122,7 +130,7 @@ plank-image:
 plank-deployment: get-cluster-credentials
 	kubectl apply -f cluster/plank_deployment.yaml
 
-jenkins-operator-image:
+jenkins-operator-image: alpine-image
 	CGO_ENABLED=0 go build -o cmd/jenkins-operator/jenkins-operator k8s.io/test-infra/prow/cmd/jenkins-operator
 	docker build -t "$(REGISTRY)/$(PROJECT)/jenkins-operator:$(JENKINS_VERSION)" $(DOCKER_LABELS) cmd/jenkins-operator
 	$(PUSH) "$(REGISTRY)/$(PROJECT)/jenkins-operator:$(JENKINS_VERSION)"
@@ -130,7 +138,7 @@ jenkins-operator-image:
 jenkins-operator-deployment: get-cluster-credentials
 	kubectl apply -f cluster/jenkins_deployment.yaml
 
-tide-image:
+tide-image: git-image
 	CGO_ENABLED=0 go build -o cmd/tide/tide k8s.io/test-infra/prow/cmd/tide
 	docker build -t "$(REGISTRY)/$(PROJECT)/tide:$(TIDE_VERSION)" $(DOCKER_LABELS) cmd/tide
 	$(PUSH) "$(REGISTRY)/$(PROJECT)/tide:$(TIDE_VERSION)"
