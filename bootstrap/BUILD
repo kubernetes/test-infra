@@ -36,6 +36,7 @@ go_test(
     name = "go_default_test",
     srcs = [
         "args_test.go",
+        "paths_test.go",
         "repos_test.go",
     ],
     library = ":go_default_library",
