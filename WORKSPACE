@@ -346,6 +346,9 @@ new_http_archive(
 py_library(
     name = "dateutil",
     srcs = glob(["**/*.py"]),
+    deps = [
+        "@six_lib//:six",
+    ],
     visibility = ["//visibility:public"],
 )
 """,

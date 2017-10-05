@@ -18,13 +18,15 @@ import os
 import logging
 from logging.handlers import RotatingFileHandler
 
-import numpy as np # pylint: disable=import-error
-from flask import Flask, request # pylint: disable=import-error
-from sklearn.feature_extraction import FeatureHasher # pylint: disable=import-error
-from sklearn.externals import joblib # pylint: disable=import-error
-from sklearn.linear_model import SGDClassifier # pylint: disable=import-error
-from nltk.tokenize import RegexpTokenizer # pylint: disable=import-error
-from nltk.stem.porter import PorterStemmer # pylint: disable=import-error
+# pylint: disable=import-error
+import numpy as np
+from flask import Flask, request
+from sklearn.feature_extraction import FeatureHasher
+from sklearn.externals import joblib
+from sklearn.linear_model import SGDClassifier
+from nltk.tokenize import RegexpTokenizer
+from nltk.stem.porter import PorterStemmer
+# pylint: enable=import-error
 
 APP = Flask(__name__)
 # parameters

@@ -26,8 +26,8 @@ test_suite(
 py_binary(
     name = "pylint_bin",
     srcs = ["pylint_bin.py"],
+    # NOTE: this should only contain direct third party imports and pylint
     deps = [
-        "@dateutil//:dateutil",
         "@influxdb//:influxdb",
         "@pylint//:pylint",
         "@pytz//:pytz",
