@@ -9219,7 +9219,7 @@
       "--kubemark-nodes=100",
       "--mode=docker",
       "--provider=gce",
-      "--tag=latest",
+      "--tag=latest-master",
       "--test=false",
       "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --gather-resource-usage=true --gather-metrics-at-teardown=true --output-print-type=json",
       "--timeout=240m"
