@@ -83,3 +83,12 @@ fi
 # sync_repo cherry-picks the commits that change
 # k8s.io/kubernetes/staging/src/k8s.io/${REPO} to the ${DST_BRANCH}
 sync_repo "staging/src/k8s.io/${REPO}" "${SRC_BRANCH}" "${DST_BRANCH}" "${KUBERNETES_REMOTE}" "${DEPS}" "${IS_LIBRARY}"
+
+# add tags
+EXTRA_ARGS=()
+PUSH_SCRIPT=../push-tags-${REPO}-${DST_BRANCH}.sh
+echo "#!/bin/bash" > ${PUSH_SCRIPT}
+chmod +x ${PUSH_SCRIPT}
+/sync-tags --upstream-remote upstream-kube --upstream-branch "${SRC_BRANCH}" \
+           --push-script ${PUSH_SCRIPT} "${EXTRA_ARGS[@]-}" \
+           -alsologtostderr

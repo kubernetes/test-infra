@@ -487,7 +487,7 @@ func (p *PublisherMunger) construct() error {
 
 		// clone the destination repo
 		dstDir := filepath.Join(p.k8sIOPath, repoRules.dstRepo, "")
-		dstURL := fmt.Sprintf("https://github.com/%s/%s.git", p.githubConfig.Org, repoRules.dstRepo)
+		dstURL := fmt.Sprintf("https://github.com/%s/%s.git", "--no-tags", p.githubConfig.Org, repoRules.dstRepo)
 		if err := p.ensureCloned(dstDir, dstURL); err != nil {
 			p.plog.Errorf("%v", err)
 			return err
@@ -496,6 +496,13 @@ func (p *PublisherMunger) construct() error {
 		if err := os.Chdir(dstDir); err != nil {
 			return err
 		}
+
+		// delete tags
+		cmd := exec.Command("/bin/bash", "-c", "git tag | xargs git tag -d >/dev/null")
+		if err := p.plog.Run(cmd); err != nil {
+			return err
+		}
+
 		// construct branches
 		formatDeps := func(deps []coordinate) string {
 			var depStrings []string
