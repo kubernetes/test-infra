@@ -11107,7 +11107,7 @@ periodics:
 
 - interval: 30m
   agent: kubernetes
-  name: ci-kubernetes-e2e-gci-gke-staging
+  name: ci-kubernetes-e2e-gke-staging-default-serial
   spec:
     containers:
     - args:
@@ -11141,7 +11141,7 @@ periodics:
 
 - interval: 30m
   agent: kubernetes
-  name: ci-kubernetes-e2e-gci-gke-staging-parallel
+  name: ci-kubernetes-e2e-gke-staging-default-parallel
   spec:
     containers:
     - args:
@@ -14406,7 +14406,7 @@ periodics:
 
 - interval: 30m
   agent: kubernetes
-  name: ci-kubernetes-e2e-gke-staging
+  name: ci-kubernetes-e2e-gke-staging-latest-serial
   spec:
     containers:
     - args:
@@ -14440,7 +14440,7 @@ periodics:
 
 - interval: 30m
   agent: kubernetes
-  name: ci-kubernetes-e2e-gke-staging-parallel
+  name: ci-kubernetes-e2e-gke-staging-latest-parallel
   spec:
     containers:
     - args:
