@@ -4,7 +4,7 @@ load(
     "docker_bundle",
 )
 load(
-    "@io_bazel_rules_docker//docker/contrib:push-all.bzl",
+    "@io_bazel_rules_docker//contrib:push-all.bzl",
     "docker_push",
 )
 
