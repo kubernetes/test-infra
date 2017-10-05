@@ -29,13 +29,14 @@ import sys
 import time
 import traceback
 
-# pylint: disable=import-error
+# pylint: disable=import-error,wrong-import-position
 import matplotlib
 matplotlib.use('Agg')  # For savefig
-# pylint: disable=wrong-import-position
+
 import matplotlib.dates as mdates
 import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
+
 import numpy
 # pylint: enable=wrong-import-position,import-error
 
