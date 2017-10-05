@@ -17268,7 +17268,7 @@ periodics:
   agent: kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bazelbuild:v20170925-2204c0cb
+    - image: gcr.io/k8s-testimages/bazelbuild:v20171005-2f37588f-0.6.1
       args:
       - "--clean"
       - "--git-cache=/root/.cache/git"
