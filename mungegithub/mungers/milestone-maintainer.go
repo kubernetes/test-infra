@@ -78,8 +78,7 @@ const (
 	sigLabelPrefix     = "sig/"
 	sigMentionTemplate = "@kubernetes/sig-%s-bugs"
 
-	milestoneOptActiveMilestone      = "active-milestone"
-	milestoneOptMode                 = "milestone-mode"
+	milestoneOptModes                = "milestone-modes"
 	milestoneOptWarningInterval      = "milestone-warning-interval"
 	milestoneOptLabelGracePeriod     = "milestone-label-grace-period"
 	milestoneOptApprovalGracePeriod  = "milestone-approval-grace-period"
@@ -224,8 +223,8 @@ type MilestoneMaintainer struct {
 	features   *features.Features
 	validators map[string]milestoneArgValidator
 
-	activeMilestone      string
-	mode                 string
+	milestoneModes       string
+	milestoneModeMap     map[string]string
 	warningInterval      time.Duration
 	labelGracePeriod     time.Duration
 	approvalGracePeriod  time.Duration
@@ -241,16 +240,12 @@ func init() {
 func NewMilestoneMaintainer() *MilestoneMaintainer {
 	m := &MilestoneMaintainer{}
 	m.validators = map[string]milestoneArgValidator{
-		milestoneOptActiveMilestone: func(name string) error {
-			if len(m.activeMilestone) == 0 {
-				return fmt.Errorf("%s must be supplied", name)
+		milestoneOptModes: func(name string) error {
+			modeMap, err := parseMilestoneModes(m.milestoneModes)
+			if err != nil {
+				return fmt.Errorf("%s: %s", name, err)
 			}
-			return nil
-		},
-		milestoneOptMode: func(name string) error {
-			if !milestoneModes.Has(m.mode) {
-				return fmt.Errorf("%s must be one of %v", name, milestoneModes.List())
-			}
+			m.milestoneModeMap = modeMap
 			return nil
 		},
 		milestoneOptWarningInterval: func(name string) error {
@@ -269,8 +264,8 @@ func NewMilestoneMaintainer() *MilestoneMaintainer {
 			return durationGreaterThanZero(name, m.freezeUpdateInterval)
 		},
 		milestoneOptFreezeDate: func(name string) error {
-			if m.mode == milestoneModeSlush && len(m.freezeDate) == 0 {
-				return fmt.Errorf("%s must be supplied when milestone-mode is 'slush'", name)
+			if len(m.freezeDate) == 0 {
+				return fmt.Errorf("%s must be supplied", name)
 			}
 			return nil
 		},
@@ -282,6 +277,40 @@ func durationGreaterThanZero(name string, value time.Duration) error {
 		return fmt.Errorf("%s must be greater than zero", name)
 	}
 	return nil
+}
+
+// parseMilestoneModes transforms a string containing milestones and
+// their modes to a map:
+//
+//     "v1.8=dev,v1.9=slush" -> map[string][string]{"v1.8": "dev", "v1.9": "slush"}
+func parseMilestoneModes(target string) (map[string]string, error) {
+	const invalidFormatTemplate = "expected format for each milestone is [milestone]=[mode], got '%s'"
+
+	result := map[string]string{}
+	tokens := strings.Split(target, ",")
+	for _, token := range tokens {
+		parts := strings.Split(token, "=")
+		if len(parts) != 2 {
+			return nil, fmt.Errorf(invalidFormatTemplate, token)
+		}
+		milestone := strings.TrimSpace(parts[0])
+		mode := strings.TrimSpace(parts[1])
+		if len(milestone) == 0 || len(mode) == 0 {
+			return nil, fmt.Errorf(invalidFormatTemplate, token)
+		}
+		if !milestoneModes.Has(mode) {
+			return nil, fmt.Errorf("mode for milestone '%s' must be one of %v, but got '%s'", milestone, milestoneModes.List(), mode)
+		}
+		if _, exists := result[milestone]; exists {
+			return nil, fmt.Errorf("milestone %s is specified more than once", milestone)
+		}
+		result[milestone] = mode
+	}
+	if len(result) == 0 {
+		return nil, fmt.Errorf("at least one milestone must be configured")
+	}
+
+	return result, nil
 }
 
 // Name is the name usable in --pr-mungers
@@ -310,14 +339,20 @@ func (m *MilestoneMaintainer) EachLoop() error { return nil }
 
 // RegisterOptions registers options for this munger; returns any that require a restart when changed.
 func (m *MilestoneMaintainer) RegisterOptions(opts *options.Options) sets.String {
-	opts.RegisterString(&m.activeMilestone, milestoneOptActiveMilestone, "", "The active milestone that this munger will maintain issues for.")
-	opts.RegisterString(&m.mode, milestoneOptMode, milestoneModeDev, fmt.Sprintf("The release cycle process to enforce.  Valid values are %v.", milestoneModes.List()))
+	opts.RegisterString(&m.milestoneModes, milestoneOptModes, "", fmt.Sprintf("The comma-separated list of milestones and the mode to maintain them in (one of %v). Example: v1.8=%s,v1.9=%s", milestoneModes.List(), milestoneModeDev, milestoneModeSlush))
 	opts.RegisterDuration(&m.warningInterval, milestoneOptWarningInterval, 24*time.Hour, "The interval to wait between warning about an incomplete issue in the active milestone.")
 	opts.RegisterDuration(&m.labelGracePeriod, milestoneOptLabelGracePeriod, 72*time.Hour, "The grace period to wait before removing a non-blocking issue with incomplete labels from the active milestone.")
 	opts.RegisterDuration(&m.approvalGracePeriod, milestoneOptApprovalGracePeriod, 168*time.Hour, "The grace period to wait before removing a non-blocking issue without sig approval from the active milestone.")
 	opts.RegisterDuration(&m.slushUpdateInterval, milestoneOptSlushUpdateInterval, 72*time.Hour, "The expected interval, during code slush, between updates to a blocking issue in the active milestone.")
 	opts.RegisterDuration(&m.freezeUpdateInterval, milestoneOptFreezeUpdateInterval, 24*time.Hour, "The expected interval, during code freeze, between updates to a blocking issue in the active milestone.")
+	// Slush mode requires a freeze date to include in notifications
+	// indicating the date by which non-critical issues must be closed
+	// or upgraded in priority to avoid being moved out of the
+	// milestone.  Only a single freeze date can be set under the
+	// assumption that, where multiple milestones are targeted, only
+	// one at a time will be in slush mode.
 	opts.RegisterString(&m.freezeDate, milestoneOptFreezeDate, "", fmt.Sprintf("The date string indicating when code freeze will take effect."))
+
 	opts.RegisterUpdateCallback(func(changed sets.String) error {
 		for name, validator := range m.validators {
 			if changed.Has(name) {
@@ -331,19 +366,40 @@ func (m *MilestoneMaintainer) RegisterOptions(opts *options.Options) sets.String
 	return nil
 }
 
-func (m *MilestoneMaintainer) updateInterval() time.Duration {
-	if m.mode == milestoneModeSlush {
+func (m *MilestoneMaintainer) updateInterval(mode string) time.Duration {
+	if mode == milestoneModeSlush {
 		return m.slushUpdateInterval
 	}
-	if m.mode == milestoneModeFreeze {
+	if mode == milestoneModeFreeze {
 		return m.freezeUpdateInterval
 	}
 	return 0
 }
 
+// milestoneMode determines the release milestone and mode for the
+// provided github object.  If a milestone is set and one of those
+// targeted by the munger, the milestone and mode will be returned
+// along with a boolean indication of success.  Otherwise, if the
+// milestone is not set or not targeted, a boolean indication of
+// failure will be returned.
+func (m *MilestoneMaintainer) milestoneMode(obj *github.MungeObject) (milestone string, mode string, success bool) {
+	// Ignore issues that lack an assigned milestone
+	milestone, ok := obj.ReleaseMilestone()
+	if !ok || len(milestone) == 0 {
+		return "", "", false
+	}
+
+	// Ignore issues that aren't in a targeted milestone
+	mode, exists := m.milestoneModeMap[milestone]
+	if !exists {
+		return "", "", false
+	}
+	return milestone, mode, true
+}
+
 // Munge is the workhorse the will actually make updates to the issue
 func (m *MilestoneMaintainer) Munge(obj *github.MungeObject) {
-	if ignoreObject(obj, m.activeMilestone) {
+	if ignoreObject(obj) {
 		return
 	}
 
@@ -420,7 +476,12 @@ func (m *MilestoneMaintainer) issueChange(obj *github.MungeObject) *issueChange 
 // process. If a nil return value is returned, no action should be
 // taken.
 func (m *MilestoneMaintainer) issueChangeConfig(obj *github.MungeObject) *issueChangeConfig {
-	updateInterval := m.updateInterval()
+	milestone, mode, ok := m.milestoneMode(obj)
+	if !ok {
+		return nil
+	}
+
+	updateInterval := m.updateInterval(mode)
 
 	icc := &issueChangeConfig{
 		enabledSections: sets.String{},
@@ -431,8 +492,8 @@ func (m *MilestoneMaintainer) issueChangeConfig(obj *github.MungeObject) *issueC
 			"freezeDate":          m.freezeDate,
 			"inProgressLabel":     quoteLabel(statusInProgressLabel),
 			"labelGracePeriod":    durationToMaxDays(m.labelGracePeriod),
-			"milestone":           fmt.Sprintf("%s milestone", m.activeMilestone),
-			"mode":                m.mode,
+			"milestone":           fmt.Sprintf("%s milestone", milestone),
+			"mode":                mode,
 			"updateInterval":      durationToMaxDays(updateInterval),
 		},
 		sigLabels: []string{},
@@ -444,7 +505,7 @@ func (m *MilestoneMaintainer) issueChangeConfig(obj *github.MungeObject) *issueC
 		icc.summarizeLabels(kind, priority, sigs)
 		if !obj.HasLabel(statusApprovedLabel) {
 			if isBlocker {
-				icc.warnUnapproved(nil, m.activeMilestone)
+				icc.warnUnapproved(nil, milestone)
 			} else {
 				removeAfter, ok := gracePeriodRemaining(obj, m.botName, milestoneNeedsApprovalLabel, m.approvalGracePeriod, time.Now(), false)
 				if !ok {
@@ -452,7 +513,7 @@ func (m *MilestoneMaintainer) issueChangeConfig(obj *github.MungeObject) *issueC
 				}
 
 				if removeAfter == nil || *removeAfter >= 0 {
-					icc.warnUnapproved(removeAfter, m.activeMilestone)
+					icc.warnUnapproved(removeAfter, milestone)
 				} else {
 					icc.removeUnapproved()
 				}
@@ -460,12 +521,12 @@ func (m *MilestoneMaintainer) issueChangeConfig(obj *github.MungeObject) *issueC
 			return icc
 		}
 
-		if m.mode == milestoneModeDev {
+		if mode == milestoneModeDev {
 			// Status and updates are not required for dev mode
 			return icc
 		}
 
-		if m.mode == milestoneModeFreeze && !isBlocker {
+		if mode == milestoneModeFreeze && !isBlocker {
 			icc.removeNonBlocker()
 			return icc
 		}
@@ -495,7 +556,7 @@ func (m *MilestoneMaintainer) issueChangeConfig(obj *github.MungeObject) *issueC
 		}
 
 		if removeAfter == nil || *removeAfter >= 0 {
-			icc.warnIncompleteLabels(removeAfter, labelErrors, m.activeMilestone)
+			icc.warnIncompleteLabels(removeAfter, labelErrors, milestone)
 		} else {
 			icc.removeIncompleteLabels(labelErrors)
 		}
@@ -612,8 +673,8 @@ func (icc *issueChangeConfig) sigMentions() string {
 }
 
 // ignoreObject indicates whether the munger should ignore the given
-// object. Only issues in the active milestone should be munged.
-func ignoreObject(obj *github.MungeObject, activeMilestone string) bool {
+// object.
+func ignoreObject(obj *github.MungeObject) bool {
 	// Only target issues
 	if obj.IsPR() {
 		return true
@@ -624,14 +685,7 @@ func ignoreObject(obj *github.MungeObject, activeMilestone string) bool {
 		return true
 	}
 
-	// Only target issues with an assigned milestone
-	milestone, ok := obj.ReleaseMilestone()
-	if !ok || len(milestone) == 0 {
-		return true
-	}
-
-	// Only target issues in the active milestone
-	return milestone != activeMilestone
+	return false
 }
 
 // latestNotificationComment returns the most recent notification

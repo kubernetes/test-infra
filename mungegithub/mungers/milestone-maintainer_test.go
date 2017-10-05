@@ -44,7 +44,7 @@ func TestMilestoneMaintainer(t *testing.T) {
 	activeMilestone := "v1.8"
 	milestone := &githubapi.Milestone{Title: &activeMilestone, Number: intPtr(1)}
 	m := MilestoneMaintainer{
-		activeMilestone:     activeMilestone,
+		milestoneModeMap:    map[string]string{activeMilestone: milestoneModeDev},
 		approvalGracePeriod: 72 * time.Hour,
 		labelGracePeriod:    72 * time.Hour,
 		warningInterval:     24 * time.Hour,
@@ -163,9 +163,10 @@ _**sig owner**_: Must specify at least one label prefixed with ` + "`sig/`." + `
 </details>
 `
 
+	milestoneString := "v1.8"
+
 	munger := &MilestoneMaintainer{
 		botName:             milestoneTestBotName,
-		activeMilestone:     "v1.8",
 		labelGracePeriod:    3 * day,
 		approvalGracePeriod: 7 * day,
 		warningInterval:     day,
@@ -370,11 +371,11 @@ Risks: Complicated fix required
 	}
 	for testName, test := range tests {
 		t.Run(testName, func(t *testing.T) {
-			if len(test.mode) == 0 {
-				munger.mode = milestoneModeDev
-			} else {
-				munger.mode = test.mode
+			mode := milestoneModeDev
+			if len(test.mode) > 0 {
+				mode = test.mode
 			}
+			munger.milestoneModeMap = map[string]string{milestoneString: mode}
 
 			labels := test.labels
 			if test.isBlocker {
@@ -394,7 +395,7 @@ Risks: Complicated fix required
 			// Ensure issue was created before any comments or events
 			createdLongAgo := createdNow.Add(-28 * day)
 			issue.CreatedAt = &createdLongAgo
-			milestone := &githubapi.Milestone{Title: stringPtr(munger.activeMilestone), Number: intPtr(1)}
+			milestone := &githubapi.Milestone{Title: stringPtr(milestoneString), Number: intPtr(1)}
 			issue.Milestone = milestone
 
 			client, server, mux := github_test.InitServer(t, issue, nil, test.events, nil, nil, nil, nil)
@@ -548,6 +549,7 @@ func TestNotificationIsCurrent(t *testing.T) {
 func TestIgnoreObject(t *testing.T) {
 	tests := map[string]struct {
 		isPR            bool
+		isClosed        bool
 		milestone       string
 		activeMilestone string
 		expectedIgnore  bool
@@ -556,26 +558,22 @@ func TestIgnoreObject(t *testing.T) {
 			isPR:           true,
 			expectedIgnore: true,
 		},
-		"Ignore issue without a milestone": {
+		"Ignore closed issue": {
+			isClosed:       true,
 			expectedIgnore: true,
 		},
-		"Ignore issue not in active milestone": {
-			milestone:       "v1.7",
-			activeMilestone: "v1.8",
-			expectedIgnore:  true,
-		},
-		"Do not ignore issue in active milestone": {
-			milestone:       "v1.8",
-			activeMilestone: "v1.8",
-		},
+		"Do not ignore open issue": {},
 	}
 	for testName, test := range tests {
 		t.Run(testName, func(t *testing.T) {
 			issue := github_test.Issue("user", 1, nil, test.isPR)
 			issue.Milestone = &githubapi.Milestone{Title: stringPtr(test.milestone), Number: intPtr(1)}
+			if test.isClosed {
+				issue.State = stringPtr("closed")
+			}
 			obj := &github.MungeObject{Issue: issue}
 
-			ignore := ignoreObject(obj, test.activeMilestone)
+			ignore := ignoreObject(obj)
 
 			if ignore != test.expectedIgnore {
 				t.Fatalf("%s: Expected ignore to be %t, got %t", testName, test.expectedIgnore, ignore)
@@ -641,6 +639,63 @@ func TestSigLabelNames(t *testing.T) {
 		}
 		if !found {
 			t.Errorf("Label %s not found in %v", ln1, labelNames)
+		}
+	}
+}
+
+func TestParseMilestoneModes(t *testing.T) {
+	tests := map[string]struct {
+		input       string
+		output      map[string]string
+		errExpected bool
+	}{
+		"Empty string": {
+			errExpected: true,
+		},
+		"Too many = separators": {
+			input:       "v1.8==dev",
+			errExpected: true,
+		},
+		"Too many , separators": {
+			input:       "v1.8=dev,,v1.9=dev",
+			errExpected: true,
+		},
+		"Missing milestone": {
+			input:       "=dev",
+			errExpected: true,
+		},
+		"Missing mode": {
+			input:       "v1.8=",
+			errExpected: true,
+		},
+		"Invalid mode": {
+			input:       "v1.8=foo",
+			errExpected: true,
+		},
+		"Duplicated milestone": {
+			input:       "v1.8=dev,v1.8=slush",
+			errExpected: true,
+		},
+		"Single milestone": {
+			input:  "v1.8=dev",
+			output: map[string]string{"v1.8": "dev"},
+		},
+		"Multiple milestones": {
+			input:  "v1.8=dev,v1.9=slush",
+			output: map[string]string{"v1.8": "dev", "v1.9": "slush"},
+		},
+	}
+	for testName, test := range tests {
+		output, err := parseMilestoneModes(test.input)
+		if test.errExpected && err == nil {
+			t.Fatalf("%s: Expected an error to have occurred", testName)
+		}
+		if !test.errExpected && err != nil {
+			t.Fatalf("%s: Expected no error but got: %v", testName, err)
+		}
+
+		if !reflect.DeepEqual(test.output, output) {
+			t.Fatalf("%s: Expected output %v, got %v", testName, test.output, output)
 		}
 	}
 }
