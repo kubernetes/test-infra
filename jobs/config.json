@@ -5306,7 +5306,7 @@
       "UNKNOWN"
     ]
   },
-  "ci-kubernetes-e2e-gci-gke-staging": {
+  "ci-kubernetes-e2e-gke-staging-default-serial": {
     "args": [
       "--check-leaked-resources",
       "--check-version-skew=false",
@@ -5326,7 +5326,7 @@
       "UNKNOWN"
     ]
   },
-  "ci-kubernetes-e2e-gci-gke-staging-parallel": {
+  "ci-kubernetes-e2e-gke-staging-default-parallel": {
     "args": [
       "--check-leaked-resources",
       "--check-version-skew=false",
@@ -7423,7 +7423,7 @@
       "UNKNOWN"
     ]
   },
-  "ci-kubernetes-e2e-gke-staging": {
+  "ci-kubernetes-e2e-gke-staging-latest-serial": {
     "args": [
       "--check-leaked-resources",
       "--check-version-skew=false",
@@ -7442,7 +7442,7 @@
       "UNKNOWN"
     ]
   },
-  "ci-kubernetes-e2e-gke-staging-parallel": {
+  "ci-kubernetes-e2e-gke-staging-latest-parallel": {
     "args": [
       "--check-leaked-resources",
       "--check-version-skew=false",
