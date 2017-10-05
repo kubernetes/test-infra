@@ -46,4 +46,8 @@ ${KUBECTL} delete configmap kubernetes-publisher-config || true
 
 make secret volume deployment APP=publisher TARGET=kubernetes REPO="${REPO}"
 
+${KUBECTL} apply -f ./publisher/storage-class.yaml || true
+${KUBECTL} apply -f ./publisher/local.pvc.yaml || true
+${KUBECTL} apply -f ./publisher/local.pv.yaml || true
+
 make push_secret push_config deploy READONLY=false APP=publisher TARGET=kubernetes REPO="${REPO}"
