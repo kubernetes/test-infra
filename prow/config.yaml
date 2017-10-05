@@ -16053,7 +16053,7 @@ periodics:
   agent: kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:latest
+    - image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
       args:
       - --bare
       - --timeout=85
