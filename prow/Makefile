@@ -58,11 +58,11 @@ test:
 .PHONY: update-config update-plugins build test get-cluster-credentials
 
 alpine-image:
-	docker build -t "$(REGISTRY)/$(PROJECT)/alpine" $(DOCKER_LABELS) cmd/alpine
+	docker build -t "$(REGISTRY)/$(PROJECT)/alpine" $(DOCKER_LABELS) cmd/images/alpine
 	$(PUSH) "$(REGISTRY)/$(PROJECT)/alpine"
 
 git-image: alpine-image
-	docker build -t "$(REGISTRY)/$(PROJECT)/git" $(DOCKER_LABELS) cmd/git
+	docker build -t "$(REGISTRY)/$(PROJECT)/git" $(DOCKER_LABELS) cmd/images/git
 	$(PUSH) "$(REGISTRY)/$(PROJECT)/git"
 
 hook-image: git-image
