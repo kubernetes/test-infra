@@ -3356,7 +3356,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:latest
+      image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -7074,7 +7074,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:latest
+      image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -11768,7 +11768,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:latest
+      image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -15609,7 +15609,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: JENKINS_AWS_SSH_PUBLIC_KEY_FILE
         value: /etc/aws-ssh/aws-ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:latest
+      image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -16016,7 +16016,7 @@ periodics:
   agent: kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:latest
+    - image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --timeout=110
