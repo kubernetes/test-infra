@@ -12,10 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM alpine:3.6
+FROM gcr.io/k8s-prow/git
 MAINTAINER spxtr@google.com
-
-RUN apk add --no-cache git ca-certificates && update-ca-certificates
 
 COPY tide /tide
 ENTRYPOINT ["/tide"]
