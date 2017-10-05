@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    prometheus.io/path: /prometheus
+    prometheus.io/port: "8080"
+    prometheus.io/scrape: "true"
+  labels:
+    component: doppler
+  name: doppler
+spec:
+  ports:
+  - port: 8080
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    component: doppler
+  type: ClusterIP
+---
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: doppler
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        component: doppler
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/doppler:sometag
+        name: doppler
+        ports:
+        - containerPort: 8080
+          protocol: TCP
