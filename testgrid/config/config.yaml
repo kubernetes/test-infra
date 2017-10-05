@@ -1024,6 +1024,7 @@ test_groups:
 - name: ci-kubernetes-e2e-kubeadm-gce-1-7-on-1-8
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-1-7-on-1-8
 # upgrade CI tests
+- name: ci-kubernetes-e2e-gce-gci-latest-upgrade-etcd
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-latest-upgrade-etcd
 - name: ci-kubernetes-e2e-gce-gci-1-5-upgrade-etcd
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-1-5-upgrade-etcd
@@ -1900,8 +1901,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gci-gce-etcd3
   - name: gci-gce-flaky
     test_group_name: ci-kubernetes-e2e-gci-gce-flaky
-  - name: gce-ingress
-    test_group_name: ci-kubernetes-e2e-gce-ingress
   - name: gci-gce-ingress
     test_group_name: ci-kubernetes-e2e-gci-gce-ingress
   - name: gci-gce-ingress-1.5
@@ -2976,8 +2975,6 @@ dashboards:
     test_group_name: ci-kubernetes-build-debian-unstable
   - name: update-jenkins-jobs
     test_group_name: kubernetes-update-jenkins-jobs
-  - name: garbage-collector
-    test_group_name: ci-kubernetes-e2e-gce-garbage
   - name: gci-garbage-collector
     test_group_name: ci-kubernetes-e2e-gci-gce-garbage
 
@@ -3541,12 +3538,8 @@ dashboards:
 
 - name: sig-autoscaling
   dashboard_tab:
-  - name: gce-autoscaling
-    test_group_name: ci-kubernetes-e2e-gce-autoscaling
   - name: gci-gce-autoscaling
     test_group_name: ci-kubernetes-e2e-gci-gce-autoscaling
-  - name: gce-autoscaling-migs
-    test_group_name: ci-kubernetes-e2e-gce-autoscaling-migs
   - name: gci-gce-autoscaling-migs
     test_group_name: ci-kubernetes-e2e-gci-gce-autoscaling-migs
   - name: gci-gke-autoscaling
@@ -3673,51 +3666,51 @@ dashboards:
 - name: sig-instrumentation
   dashboard_tab:
   - name: gce
-    test_group_name: ci-kubernetes-e2e-gce
+    test_group_name: ci-kubernetes-e2e-gci-gce
     base_options: 'include-filter-by-regex=sig-instrumentation'
     description: 'instrumentation gce e2e tests for master branch'
   - name: gke
-    test_group_name: ci-kubernetes-e2e-gke
+    test_group_name: ci-kubernetes-e2e-gci-gke
     base_options: 'include-filter-by-regex=sig-instrumentation'
     description: 'instrumentation gke e2e tests for master branch'
   - name: gce-1.7
-    test_group_name: ci-kubernetes-e2e-gce-release-1-7
+    test_group_name: ci-kubernetes-e2e-gci-gce-release-1-7
     base_options: 'include-filter-by-regex=sig-instrumentation'
     description: 'instrumentation gce e2e tests for 1.7 branch'
   - name: gke-1.7
-    test_group_name: ci-kubernetes-e2e-gke-release-1-7
+    test_group_name: ci-kubernetes-e2e-gci-gke-release-1-7
     base_options: 'include-filter-by-regex=sig-instrumentation'
     description: 'instrumentation gke e2e tests for 1.7 branch'
   - name: gce-1.6
-    test_group_name: ci-kubernetes-e2e-gce-release-1-6
+    test_group_name: ci-kubernetes-e2e-gci-gce-release-1-6
     base_options: 'include-filter-by-regex=sig-instrumentation'
     description: 'instrumentation gce e2e tests for 1.6 branch'
   - name: gke-1.6
-    test_group_name: ci-kubernetes-e2e-gke-release-1-6
+    test_group_name: ci-kubernetes-e2e-gci-gke-release-1-6
     base_options: 'include-filter-by-regex=sig-instrumentation'
     description: 'instrumentation gke e2e tests for 1.6 branch'
   - name: gce-1.5
-    test_group_name: ci-kubernetes-e2e-gce-release-1-5
+    test_group_name: ci-kubernetes-e2e-gci-gce-release-1-5
     base_options: 'include-filter-by-regex=sig-instrumentation'
     description: 'instrumentation gce e2e tests for 1.5 branch'
   - name: gke-1.5
-    test_group_name: ci-kubernetes-e2e-gke-release-1-5
+    test_group_name: ci-kubernetes-e2e-gci-gke-release-1-5
     base_options: 'include-filter-by-regex=sig-instrumentation'
     description: 'instrumentation gke e2e tests for 1.5 branch'
   - name: gce-serial
-    test_group_name: ci-kubernetes-e2e-gce-serial
+    test_group_name: ci-kubernetes-e2e-gci-gce-serial
     base_options: 'include-filter-by-regex=sig-instrumentation'
     description: 'instrumentation gce serial e2e tests for master branch'
   - name: gke-serial
-    test_group_name: ci-kubernetes-e2e-gke-serial
+    test_group_name: ci-kubernetes-e2e-gci-gke-serial
     base_options: 'include-filter-by-regex=sig-instrumentation'
     description: 'sig-instrumentation gke serial e2e tests for master branch'
   - name: gce-es-logging
-    test_group_name: ci-kubernetes-e2e-gce-es-logging
+    test_group_name: ci-kubernetes-e2e-gci-gce-es-logging
     base_options: 'include-filter-by-regex=sig-instrumentation'
     description: 'sig-instrumentation gce elasticsearch logging e2e tests for master branch'
   - name: gce-sd-logging
-    test_group_name: ci-kubernetes-e2e-gce-sd-logging
+    test_group_name: ci-kubernetes-e2e-gci-gce-sd-logging
     base_options: 'include-filter-by-regex=sig-instrumentation'
     description: 'sig-instrumentation gce stackdriver logging e2e tests for master branch'
   - name: gce-sd-monitoring
@@ -4055,7 +4048,6 @@ dashboard_groups:
 - name: sig-cluster-lifecycle-all
   dashboard_names:
   - sig-cluster-lifecycle
-  - latest-upgrades
   - release-1.8-upgrade-skew
   - 1.6-1.7-upgrade
   - release-1.6-upgrade-skew

@@ -563,7 +563,7 @@
       "--check-version-skew=false",
       "--cluster=canary-e2e",
       "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gce.env",
+      "--env-file=jobs/env/ci-kubernetes-e2e-gci-gce.env",
       "--extract=ci/latest-1.7",
       "--extract=ci/latest-1.6",
       "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
@@ -2633,7 +2633,7 @@
     "args": [
       "--cluster=e2e-scale-canary",
       "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gce-scalability.env",
+      "--env-file=jobs/env/ci-kubernetes-e2e-gci-gce-scalability.env",
       "--extract=ci/latest",
       "--gcp-project=google.com:k8s-jenkins-scalability",
       "--gcp-zone=us-central1-f",
