@@ -56,4 +56,9 @@ for repo in $(cd kubernetes/staging/src/k8s.io; ls -1); do
     else
 	git clone "https://github.com/${ORG}/${repo}"
     fi
+
+    pushd ${repo}
+        git config user.name "${GIT_COMMITTER_NAME}"
+        git config user.email "${GIT_COMMITTER_EMAIL}"
+    popd
 done
