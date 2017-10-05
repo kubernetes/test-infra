@@ -490,7 +490,7 @@ func (p *PublisherMunger) ensureCloned(dst string, dstURL string) error {
 	if err != nil {
 		return err
 	}
-	cmd := exec.Command("git", "clone", dstURL, dst)
+	cmd := exec.Command("git", "clone", "--no-tags", dstURL, dst)
 	return p.plog.Run(cmd)
 }
 
@@ -513,6 +513,13 @@ func (p *PublisherMunger) construct() error {
 		if err := os.Chdir(dstDir); err != nil {
 			return err
 		}
+
+		// delete tags
+		cmd := exec.Command("/bin/bash", "-c", "git tag | xargs git tag -d >/dev/null")
+		if err := p.plog.Run(cmd); err != nil {
+			return err
+		}
+
 		// construct branches
 		formatDeps := func(deps []coordinate) string {
 			var depStrings []string
