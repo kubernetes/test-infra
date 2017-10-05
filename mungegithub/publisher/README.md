@@ -10,15 +10,15 @@ The robot is also responsible to update the `Godeps/Godeps.json` and the `vendor
 
 ### Publishing a new repo
 
-* Create a (repoRules) in [mungegithub/mungers/publisher.go](https://github.com/kubernetes/test-infra/blob/master/mungegithub/mungers/publisher.go#L94-L254)
+* Create a (repoRules) in [mungegithub/mungers/publisher.go](../mungers/publisher.go#L94-L254)
 
-* Add a `publish_<repository_name>.sh` in [mungegithub/mungers/publish_scripts](https://github.com/kubernetes/test-infra/tree/master/mungegithub/mungers/publish_scripts)
+* Add a `publish_<repository_name>.sh` in [mungegithub/mungers/publish_scripts](../mungers/publish_scripts)
 
 * [Test and deploy the changes](#testing-and-deploying-the-robot)
 
 ### Publishing a new branch
 
-* Update the (repoRules) in [mungegithub/mungers/publisher.go](https://github.com/kubernetes/test-infra/blob/master/mungegithub/mungers/publisher.go#L94-L254)
+* Update the (repoRules) in [mungers/publisher.go](../mungers/publisher.go#L94-L254)
 
 * [Test and deploy the changes](#testing-and-deploying-the-robot)
 
@@ -26,17 +26,22 @@ The robot is also responsible to update the `Godeps/Godeps.json` and the `vendor
 
 Currently we don't have tests for the robot. It relies on manual tests:
 
-* Fork the repos you are going the publish. Run [fetch-all-latest-and-push.sh](util/fetch-all-latest-and-push.sh) to update the branches of your repos.
+* Fork the repos you are going the publish, run [mungegithub/publisher/util/fetch-all-latest-and-push.sh](fetch-all-latest-and-push.sh) from the mungegithub root directory to update the branches of your repos.
 
-* Change `config.organization` to your github username in `mungegithub/publisher/deployment/kubernetes/configmap.yaml`
+* Change `config.organization` to your github username in `[mungegithub/publisher/kubernetes/configmap.yaml](kubernetes/configmap.yaml)`
 
-* Deploy the publishing robot by running [deploy.sh](util/deploy.sh)
+* Deploy the publishing robot by running [mungegithub/publisher/util/deploy.sh](util/deploy.sh) from the mungegithub root directory, e.g.
+
+```shell
+$ cd mungegithub
+$ publisher/util/deploy.sh <github-token> <kubectl-context> <docker-organization>
+```
 
 Then you can deploy the robot for real,
 
-* Change `config.organization` to "kubernetes" in `mungegithub/publisher/deployment/kubernetes/configmap.yaml`
+* Change `config.organization` to "kubernetes" in `mungegithub/publisher/kubernetes/configmap.yaml`
 
-* Deploy the publishing robot by running [deploy.sh](util/deploy.sh)
+* Deploy the publishing robot by running [mungegithub/publisher/util/deploy.sh](deploy.sh) as above. 
 
 ## Known issues
 
