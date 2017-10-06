@@ -34,3 +34,4 @@ Command | Implemented By | Who can run it | Description
 `/release-note-action-required` | prow [releasenote](./prow/plugins/releasenote) | authors and kubernetes org members | adds the `release-note-action-required` label
 `/release-note-none` | prow [releasenote](./prow/plugins/releasenote) | authors and kubernetes org members | adds the `release-note-none` label
 `/status [label1 label2 ...]` | prow [label](./prow/plugins/label) | anyone | adds a status/<> label(s) if it exists
+`/remove-status [label1 label2 ...]` | prow [label](./prow/plugins/label) | anyone | removes a status/<> label(s) if it exists
