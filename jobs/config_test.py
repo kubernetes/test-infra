@@ -628,7 +628,10 @@ class JobTest(unittest.TestCase):
                                   'both set or unset: %s' % job)
 
                     if job.startswith('pull-kubernetes-'):
-                        self.assertIn('--cluster=', args)
+                        if not 'pull-kubernetes-federation-e2e-gce' in job:
+                            # pull-kubernetes-federation-e2e-gce job uses a specific cluster names
+                            # instead of dynamic cluster names.
+                            self.assertIn('--cluster=', args)
                         if 'gke' in job:
                             stage = 'gs://kubernetes-release-dev/ci'
                             suffix = True
