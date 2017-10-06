@@ -8292,7 +8292,6 @@
       "--extract=ci/latest",
       "--ginkgo-parallel",
       "--provider=aws",
-      "--tag=latest",
       "--test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]|\\[HPA\\]|Dashboard|Services.*functioning.*NodePort",
       "--timeout=120m"
     ],
