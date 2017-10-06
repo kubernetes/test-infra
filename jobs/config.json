@@ -10815,7 +10815,7 @@
   "pull-kubernetes-federation-e2e-gce": {
     "args": [
       "--build",
-      "--cluster=",
+      "--cluster=jenkins-us-central1-f",
       "--deployment=none",
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/pull-kubernetes-e2e.env",
@@ -10841,7 +10841,7 @@
   "pull-kubernetes-federation-e2e-gce-canary": {
     "args": [
       "--build=bazel",
-      "--cluster=",
+      "--cluster=prow-us-central1-f",
       "--deployment=none",
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/pull-kubernetes-e2e.env",
