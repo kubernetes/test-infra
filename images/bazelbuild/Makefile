@@ -15,7 +15,7 @@
 IMG = gcr.io/k8s-testimages/bazelbuild
 TAG = $(shell date +v%Y%m%d)-$(shell git describe --tags --always --dirty)
 
-BAZEL_VERSIONS=0.5.2 0.5.4 0.6.0
+BAZEL_VERSIONS=0.5.2 0.5.4 0.6.1
 
 all: build
 
