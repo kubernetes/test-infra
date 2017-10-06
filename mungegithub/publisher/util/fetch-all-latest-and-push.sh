@@ -26,7 +26,7 @@ fi
 USER="${1}"
 KUBE_ROOT="${2}"
 
-REPOS="apimachinery,api,client-go,apiserver,kube-aggregator,sample-apiserver,apiextensions-apiserver"
+REPOS="code-generator,apimachinery,api,client-go,apiserver,kube-aggregator,sample-apiserver,apiextensions-apiserver"
 
 IFS=',' read -a repos <<< "${REPOS}"
 repo_count=${#repos[@]}
