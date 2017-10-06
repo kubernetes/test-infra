@@ -12,6 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM gcr.io/k8s-prow/alpine
+FROM gcr.io/k8s-prow/alpine:0.1
 
 RUN apk add --no-cache git

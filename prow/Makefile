@@ -15,6 +15,8 @@
 all: build test
 
 
+ALPINE_VERSION           ?= 0.1
+GIT_VERSION              ?= 0.1
 HOOK_VERSION             ?= 0.170
 SINKER_VERSION           ?= 0.21
 DECK_VERSION             ?= 0.52
@@ -58,12 +60,12 @@ test:
 .PHONY: update-config update-plugins build test get-cluster-credentials
 
 alpine-image:
-	docker build -t "$(REGISTRY)/$(PROJECT)/alpine" $(DOCKER_LABELS) cmd/images/alpine
-	$(PUSH) "$(REGISTRY)/$(PROJECT)/alpine"
+	docker build -t "$(REGISTRY)/$(PROJECT)/alpine:$(ALPINE_VERSION)" $(DOCKER_LABELS) cmd/images/alpine
+	$(PUSH) "$(REGISTRY)/$(PROJECT)/alpine:$(ALPINE_VERSION)"
 
 git-image: alpine-image
-	docker build -t "$(REGISTRY)/$(PROJECT)/git" $(DOCKER_LABELS) cmd/images/git
-	$(PUSH) "$(REGISTRY)/$(PROJECT)/git"
+	docker build -t "$(REGISTRY)/$(PROJECT)/git:$(GIT_VERSION)" $(DOCKER_LABELS) cmd/images/git
+	$(PUSH) "$(REGISTRY)/$(PROJECT)/git:$(GIT_VERSION)"
 
 hook-image: git-image
 	CGO_ENABLED=0 go build -o cmd/hook/hook k8s.io/test-infra/prow/cmd/hook

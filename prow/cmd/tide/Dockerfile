@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM gcr.io/k8s-prow/git
+FROM gcr.io/k8s-prow/git:0.1
 MAINTAINER spxtr@google.com
 
 COPY tide /tide
