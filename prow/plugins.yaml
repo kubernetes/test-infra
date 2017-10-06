@@ -51,6 +51,7 @@ plugins:
   kubernetes/kubernetes:
   - trigger
   - release-note
+  - docs-no-retest
 
   kubernetes/test-infra:
   - trigger
