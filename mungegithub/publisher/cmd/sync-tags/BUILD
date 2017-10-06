@@ -7,6 +7,7 @@ go_library(
     deps = [
         "//mungegithub/publisher/pkg/cache:go_default_library",
         "//mungegithub/publisher/pkg/git:go_default_library",
+        "//vendor/github.com/blang/semver:go_default_library",
         "//vendor/github.com/golang/glog:go_default_library",
         "//vendor/github.com/renstrom/dedent:go_default_library",
         "//vendor/gopkg.in/src-d/go-git.v4:go_default_library",

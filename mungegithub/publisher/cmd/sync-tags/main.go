@@ -21,9 +21,11 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"strconv"
 	"strings"
 	"time"
 
+	"github.com/blang/semver"
 	"github.com/golang/glog"
 	"github.com/renstrom/dedent"
 	gogit "gopkg.in/src-d/go-git.v4"
@@ -44,6 +46,7 @@ Tags from the upstream remote are fetched as "refs/tags/<upstream-remote>/<tag-n
 Usage: %s --upstream-remote <remote> --upstream-branch <upstream-branch>
           [--origin-branch <branch>]
           [--prefix <tag-prefix>]
+          [--semvers <semver-constraint>:<int-matrix>;<semver-constraint>:<int-matrix>,...]
           [--push-script <file-path>]
 `, os.Args[0])
 	flag.PrintDefaults()
@@ -56,6 +59,7 @@ func main() {
 	upstreamBranch := flag.String("upstream-branch", "", "the k8s.io/kubernetes branch (not qualified, just the name; defaults to equal <branch>)")
 	publishBranch := flag.String("branch", "", "a (not qualified) branch name")
 	prefix := flag.String("prefix", "kubernetes-", "a string to put in front of upstream tags")
+	semvers := flag.String("semvers", "", "a semicolon-separated list of semver-constraint-offset pairs. The first constraint that matches leads to annother another semver tag with the given matrix multiplied the kubernetes semver (as vector <major,minor,patch>.")
 	pushScriptPath := flag.String("push-script", "", "git-push command(s) are appended to this file to push the new tags to the origin remote")
 	flag.Usage = Usage
 	flag.Parse()
@@ -66,6 +70,11 @@ func main() {
 
 	if *upstreamBranch == "" {
 		glog.Fatalf("branch cannot be empty")
+	}
+
+	semverTranformations, err := parseSemvers(*semvers)
+	if err != nil {
+		glog.Fatalf("Failed to parse semver offsets %q: %v", *semvers, err)
 	}
 
 	// open repo at "."
@@ -200,6 +209,20 @@ func main() {
 			glog.Fatalf("Failed to create tag %q: %v", bName, err)
 		}
 		createdTags = append(createdTags, bName)
+
+		// derive semver tag
+		if semverTagName, err := deriveSemverTagName(name, semverTranformations); semverTagName != "" {
+			fmt.Printf("Tagging %v as %q.\n", bh, semverTagName)
+			err = createAnnotatedTag(bh, semverTagName, tag.Tagger.When, dedent.Dedent(fmt.Sprintf(`
+				Semver release %s
+
+				Based on https://github.com/kubernetes/kubernetes/releases/tag/%s
+		`, semverTagName, name)))
+			if err != nil {
+				glog.Fatalf("Failed to create semver tag %q: %v", semverTagName, err)
+			}
+			createdTags = append(createdTags, semverTagName)
+		}
 	}
 
 	// write push command for new tags
@@ -293,4 +316,63 @@ func fetchTags(r *gogit.Repository, remote string) error {
 		}
 		return err
 	*/
+}
+
+type SemverOffset struct {
+	RangeString string
+	Range       semver.Range
+	Matrix      []int64
+}
+
+func parseSemvers(s string) ([]SemverOffset, error) {
+	if s == "" {
+		return nil, nil
+	}
+
+	so := []SemverOffset{}
+	for _, p := range strings.Split(s, ";") {
+		comps := strings.SplitN(p, ":", 2)
+		if len(comps) != 2 {
+			return nil, fmt.Errorf("invalid <semver-constraint>:<int-matrix> pair %q", comps)
+		}
+
+		rng, err := semver.ParseRange(comps[0])
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse semver-constraint %q", comps[0])
+		}
+
+		smatrix := strings.Split(comps[1], ",")
+		if len(smatrix) > 9 {
+			return nil, fmt.Errorf("failed to parse matrix %q", comps[1])
+		}
+		matrix := make([]int64, 9)
+		for i, s := range smatrix {
+			matrix[i], err = strconv.ParseInt(s, 10, 64)
+			if err != nil {
+				return nil, fmt.Errorf("failed to parse integer %q", s)
+			}
+		}
+
+		so = append(so, SemverOffset{comps[0], rng, matrix})
+	}
+	return so, nil
+}
+
+func deriveSemverTagName(tag string, offsets []SemverOffset) (string, error) {
+	ver, err := semver.ParseTolerant(tag)
+	if err != nil {
+		return "", fmt.Errorf("failed to parse semver tag %q: %v", tag, err)
+	}
+	for _, ofs := range offsets {
+		glog.V(4).Infof("Checking %v against %v", ver.String(), ofs.RangeString)
+		if ofs.Range(ver) {
+			m := ofs.Matrix
+			newVer := ver
+			newVer.Major = uint64(int64(ver.Major)*m[0] + int64(ver.Minor)*m[1] + int64(ver.Patch)*m[2])
+			newVer.Minor = uint64(int64(ver.Major)*m[3] + int64(ver.Minor)*m[4] + int64(ver.Patch)*m[5])
+			newVer.Patch = uint64(int64(ver.Major)*m[6] + int64(ver.Minor)*m[7] + int64(ver.Patch)*m[8])
+			return "v" + newVer.String(), nil
+		}
+	}
+	return "", nil
 }

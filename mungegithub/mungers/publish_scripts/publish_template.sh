@@ -86,6 +86,9 @@ sync_repo "staging/src/k8s.io/${REPO}" "${SRC_BRANCH}" "${DST_BRANCH}" "${KUBERN
 
 # add tags
 EXTRA_ARGS=()
+if [ "${REPO}" = client-go ]; then
+    EXTRA_ARGS+=("--semvers" ">=1.8.0 <2.0.0:-3,1,0,0,0,0,0,0,1")
+fi
 PUSH_SCRIPT=../push-tags-${REPO}-${DST_BRANCH}.sh
 echo "#!/bin/bash" > ${PUSH_SCRIPT}
 chmod +x ${PUSH_SCRIPT}
