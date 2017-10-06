@@ -18,27 +18,24 @@ package label
 
 import (
 	"fmt"
+	"reflect"
 	"sort"
 	"testing"
 
 	"github.com/sirupsen/logrus"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
-	"k8s.io/test-infra/prow/slack/fakeslack"
 )
 
 const (
-	fakeRepoOrg  = "fakeOrg"
-	fakeRepoName = "fakeName"
 	orgMember    = "Alice"
 	nonOrgMember = "Bob"
-	prNumber     = 1
 )
 
 func formatLabels(labels ...string) []string {
 	r := []string{}
 	for _, l := range labels {
-		r = append(r, fmt.Sprintf("%s/%s#%d:%s", fakeRepoOrg, fakeRepoName, prNumber, l))
+		r = append(r, fmt.Sprintf("%s/%s#%d:%s", "org", "repo", 1, l))
 	}
 	if len(r) == 0 {
 		return nil
@@ -46,152 +43,7 @@ func formatLabels(labels ...string) []string {
 	return r
 }
 
-func getFakeRepoIssueComment(commentBody, commenter string, repoLabels, issueLabels []string) (*fakegithub.FakeClient, assignEvent) {
-	fakeCli := &fakegithub.FakeClient{
-		IssueComments:  make(map[int][]github.IssueComment),
-		ExistingLabels: repoLabels,
-		OrgMembers:     []string{orgMember},
-	}
-
-	startingLabels := []github.Label{}
-	for _, label := range issueLabels {
-		startingLabels = append(startingLabels, github.Label{Name: label})
-	}
-
-	ice := github.IssueCommentEvent{
-		Repo: github.Repo{
-			Owner: github.User{Login: fakeRepoOrg},
-			Name:  fakeRepoName,
-		},
-		Comment: github.IssueComment{
-			Body: commentBody,
-			User: github.User{Login: commenter},
-		},
-		Issue: github.Issue{
-			User:        github.User{Login: "a"},
-			Number:      prNumber,
-			PullRequest: &struct{}{},
-			Labels:      startingLabels,
-		},
-	}
-
-	ae := assignEvent{
-		body:    ice.Comment.Body,
-		login:   ice.Comment.User.Login,
-		org:     ice.Repo.Owner.Login,
-		repo:    ice.Repo.Name,
-		url:     ice.Comment.HTMLURL,
-		number:  ice.Issue.Number,
-		issue:   ice.Issue,
-		comment: ice.Comment,
-	}
-
-	return fakeCli, ae
-}
-
-func getFakeRepoIssue(commentBody, creator string, repoLabels, issueLabels []string) (*fakegithub.FakeClient, assignEvent) {
-	fakeCli := &fakegithub.FakeClient{
-		Issues:         make([]github.Issue, 1),
-		IssueComments:  make(map[int][]github.IssueComment),
-		ExistingLabels: repoLabels,
-		OrgMembers:     []string{orgMember},
-	}
-
-	startingLabels := []github.Label{}
-	for _, label := range issueLabels {
-		startingLabels = append(startingLabels, github.Label{Name: label})
-	}
-
-	ie := github.IssueEvent{
-		Repo: github.Repo{
-			Owner: github.User{Login: fakeRepoOrg},
-			Name:  fakeRepoName,
-		},
-		Issue: github.Issue{
-			User:        github.User{Login: creator},
-			Number:      prNumber,
-			PullRequest: &struct{}{},
-			Body:        commentBody,
-			Labels:      startingLabels,
-		},
-	}
-
-	ae := assignEvent{
-		body:   ie.Issue.Body,
-		login:  ie.Issue.User.Login,
-		org:    ie.Repo.Owner.Login,
-		repo:   ie.Repo.Name,
-		url:    ie.Issue.HTMLURL,
-		number: ie.Issue.Number,
-		issue:  ie.Issue,
-		comment: github.IssueComment{
-			Body: ie.Issue.Body,
-			User: ie.Issue.User,
-		},
-	}
-
-	return fakeCli, ae
-}
-
-func getFakeRepoPullRequest(commentBody, commenter string, repoLabels, issueLabels []string) (*fakegithub.FakeClient, assignEvent) {
-	fakeCli := &fakegithub.FakeClient{
-		PullRequests:   make(map[int]*github.PullRequest),
-		IssueComments:  make(map[int][]github.IssueComment),
-		ExistingLabels: repoLabels,
-		OrgMembers:     []string{orgMember},
-	}
-
-	startingLabels := []github.Label{}
-	for _, label := range issueLabels {
-		startingLabels = append(startingLabels, github.Label{Name: label})
-	}
-
-	pre := github.PullRequestEvent{
-		PullRequest: github.PullRequest{
-			User:   github.User{Login: commenter},
-			Number: prNumber,
-			Base: github.PullRequestBranch{
-				Repo: github.Repo{
-					Owner: github.User{Login: fakeRepoOrg},
-					Name:  fakeRepoName,
-				},
-			},
-			Body: commentBody,
-			Head: github.PullRequestBranch{
-				Repo: github.Repo{
-					Owner: github.User{Login: fakeRepoOrg},
-					Name:  fakeRepoName,
-				},
-			},
-		},
-		Number: prNumber,
-	}
-
-	ae := assignEvent{
-		body:   pre.PullRequest.Body,
-		login:  pre.PullRequest.User.Login,
-		org:    pre.PullRequest.Base.Repo.Owner.Login,
-		repo:   pre.PullRequest.Base.Repo.Name,
-		url:    pre.PullRequest.HTMLURL,
-		number: pre.Number,
-		issue: github.Issue{
-			User:   pre.PullRequest.User,
-			Number: pre.Number,
-			Body:   pre.PullRequest.Body,
-			Labels: startingLabels,
-		},
-		comment: github.IssueComment{
-			Body: pre.PullRequest.Body,
-			User: pre.PullRequest.User,
-		},
-	}
-
-	return fakeCli, ae
-}
-
 func TestLabel(t *testing.T) {
-	// "a" is the author, "a", "r1", and "r2" are reviewers.
-
 	type testCase struct {
 		name                  string
 		body                  string
@@ -216,7 +68,7 @@ func TestLabel(t *testing.T) {
 			body:                  "/area",
 			expectedNewLabels:     []string{},
 			expectedRemovedLabels: []string{},
-			repoLabels:            []string{},
+			repoLabels:            []string{"area/infra"},
 			issueLabels:           []string{"area/infra"},
 			commenter:             orgMember,
 		},
@@ -228,60 +80,6 @@ func TestLabel(t *testing.T) {
 			expectedNewLabels:     formatLabels("area/infra"),
 			expectedRemovedLabels: []string{},
 			commenter:             orgMember,
-		},
-		{
-			name:                  "Add Status Approved Label",
-			body:                  "/status approved-for-milestone ",
-			repoLabels:            []string{"status/approved-for-milestone"},
-			issueLabels:           []string{},
-			expectedNewLabels:     formatLabels("status/approved-for-milestone"),
-			expectedRemovedLabels: []string{},
-			commenter:             "sig-lead",
-		},
-		{
-			name:                  "Add Status In Progress Label",
-			body:                  "/status in-progress",
-			repoLabels:            []string{"status/in-progress"},
-			issueLabels:           []string{},
-			expectedNewLabels:     formatLabels("status/in-progress"),
-			expectedRemovedLabels: []string{},
-			commenter:             "sig-lead",
-		},
-		{
-			name:                  "Add Status In Review Label",
-			body:                  "/status in-review",
-			repoLabels:            []string{"status/in-review"},
-			issueLabels:           []string{},
-			expectedNewLabels:     formatLabels("status/in-review"),
-			expectedRemovedLabels: []string{},
-			commenter:             "sig-lead",
-		},
-		{
-			name:                  "Non sig lead can't add status/accepted-for-milestone",
-			body:                  "/status accepted-for-milestone",
-			repoLabels:            []string{"status/accepted-for-milestone"},
-			issueLabels:           []string{},
-			expectedNewLabels:     formatLabels(),
-			expectedRemovedLabels: []string{},
-			commenter:             "invalidLead",
-		},
-		{
-			name:                  "Non sig lead can't add status/in-review",
-			body:                  "/status in-review",
-			repoLabels:            []string{"status/in-review"},
-			issueLabels:           []string{},
-			expectedNewLabels:     formatLabels(),
-			expectedRemovedLabels: []string{},
-			commenter:             "invalidLead",
-		},
-		{
-			name:                  "Invalid Status Label Attempt",
-			body:                  "/status not-a-real-status",
-			repoLabels:            []string{"status/in-review"},
-			issueLabels:           []string{},
-			expectedNewLabels:     formatLabels(),
-			expectedRemovedLabels: []string{},
-			commenter:             "sig-lead",
 		},
 		{
 			name:                  "Add Single Area Label when already present on Issue",
@@ -428,60 +226,6 @@ func TestLabel(t *testing.T) {
 			commenter:             orgMember,
 		},
 		{
-			name:                  "Infer One Sig Label",
-			body:                  "@kubernetes/sig-node-misc",
-			repoLabels:            []string{"area/infra", "priority/urgent", "sig/node"},
-			issueLabels:           []string{},
-			expectedNewLabels:     formatLabels("sig/node"),
-			expectedRemovedLabels: []string{},
-			commenter:             orgMember,
-		},
-		{
-			name:                  "Infer Multiple Sig Labels One Line",
-			body:                  "@kubernetes/sig-node-misc @kubernetes/sig-api-machinery-bugs",
-			repoLabels:            []string{"area/infra", "priority/urgent", "sig/node", "sig/api-machinery"},
-			issueLabels:           []string{},
-			expectedNewLabels:     formatLabels("sig/node", "sig/api-machinery"),
-			expectedRemovedLabels: []string{},
-			commenter:             orgMember,
-		},
-		{
-			name:                  "Infer Multiple Sig Labels Different Lines",
-			body:                  "@kubernetes/sig-node-misc\n@kubernetes/sig-api-machinery-bugs",
-			repoLabels:            []string{"area/infra", "priority/urgent", "sig/node", "sig/api-machinery"},
-			issueLabels:           []string{},
-			expectedNewLabels:     formatLabels("sig/node", "sig/api-machinery"),
-			expectedRemovedLabels: []string{},
-			commenter:             orgMember,
-		},
-		{
-			name:                  "Infer Multiple Sig Labels Different Lines With Other Text",
-			body:                  "Code Comment.  Design Review\n@kubernetes/sig-node-misc\ncc @kubernetes/sig-api-machinery-bugs",
-			repoLabels:            []string{"area/infra", "priority/urgent", "sig/node", "sig/api-machinery"},
-			issueLabels:           []string{},
-			expectedNewLabels:     formatLabels("sig/node", "sig/api-machinery"),
-			expectedRemovedLabels: []string{},
-			commenter:             orgMember,
-		},
-		{
-			name:                  "Add Area, Priority Labels and CC a Sig",
-			body:                  "/area infra\n/priority urgent Design Review\n@kubernetes/sig-node-misc\ncc @kubernetes/sig-api-machinery-bugs",
-			repoLabels:            []string{"area/infra", "priority/urgent", "sig/node", "sig/api-machinery"},
-			issueLabels:           []string{},
-			expectedNewLabels:     formatLabels("area/infra", "priority/urgent", "sig/node", "sig/api-machinery"),
-			expectedRemovedLabels: []string{},
-			commenter:             orgMember,
-		},
-		{
-			name:                  "Add SIG Label and CC a Sig",
-			body:                  "/sig testing\ncc @kubernetes/sig-api-machinery-misc\n",
-			repoLabels:            []string{"area/infra", "sig/testing", "sig/api-machinery"},
-			issueLabels:           []string{},
-			expectedNewLabels:     formatLabels("sig/testing", "sig/api-machinery"),
-			expectedRemovedLabels: []string{},
-			commenter:             orgMember,
-		},
-		{
 			name:                  "Remove Area Label when no such Label on Repo",
 			body:                  "/remove-area infra",
 			repoLabels:            []string{},
@@ -573,170 +317,48 @@ func TestLabel(t *testing.T) {
 		},
 	}
 
-	fakeRepoFunctions := []func(string, string, []string, []string) (*fakegithub.FakeClient, assignEvent){
-		getFakeRepoIssueComment,
-		getFakeRepoIssue,
-		getFakeRepoPullRequest,
-	}
-
 	for _, tc := range testcases {
 		sort.Strings(tc.expectedNewLabels)
-
-		for i := 0; i < len(fakeRepoFunctions); i++ {
-			fakeClient, ae := fakeRepoFunctions[i](tc.body, tc.commenter, tc.repoLabels, tc.issueLabels)
-			fakeMilestoneId := 123456
-			fakeSlackClient := &fakeslack.FakeClient{
-				SentMessages: make(map[string][]string),
-			}
-			err := handle(fakeClient, logrus.WithField("plugin", pluginName), ae, fakeSlackClient, fakeMilestoneId)
-			if err != nil {
-				t.Errorf("For case %s, didn't expect error from label test: %v", tc.name, err)
-				return
-			}
-
-			if len(tc.expectedNewLabels) != len(fakeClient.LabelsAdded) {
-				t.Errorf("For test %v,\n\tExpected %+v \n\tFound %+v", tc.name, tc.expectedNewLabels, fakeClient.LabelsAdded)
-				return
-			}
-
-			sort.Strings(fakeClient.LabelsAdded)
-
-			for i := range tc.expectedNewLabels {
-				if tc.expectedNewLabels[i] != fakeClient.LabelsAdded[i] {
-					t.Errorf("For test %v,\n\tExpected %+v \n\tFound %+v", tc.name, tc.expectedNewLabels, fakeClient.LabelsAdded)
-					break
-				}
-			}
-
-			if len(tc.expectedRemovedLabels) != len(fakeClient.LabelsRemoved) {
-				t.Errorf("For test %v,\n\tExpected Removed %+v \n\tFound %+v", tc.name, tc.expectedRemovedLabels, fakeClient.LabelsRemoved)
-				return
-			}
-
-			for i := range tc.expectedRemovedLabels {
-				if tc.expectedRemovedLabels[i] != fakeClient.LabelsRemoved[i] {
-					t.Errorf("For test %v,\n\tExpected %+v \n\tFound %+v", tc.name, tc.expectedRemovedLabels, fakeClient.LabelsRemoved)
-					break
-				}
-			}
+		fakeClient := &fakegithub.FakeClient{
+			Issues:         make([]github.Issue, 1),
+			IssueComments:  make(map[int][]github.IssueComment),
+			ExistingLabels: tc.repoLabels,
+			OrgMembers:     []string{orgMember},
+			LabelsAdded:    []string{},
+			LabelsRemoved:  []string{},
 		}
-	}
-}
+		// Add initial labels
+		for _, label := range tc.issueLabels {
+			fakeClient.AddLabel("org", "repo", 1, label)
+		}
+		e := &github.GenericCommentEvent{
+			Action: github.GenericCommentActionCreated,
+			Body:   tc.body,
+			Number: 1,
+			Repo:   github.Repo{Owner: github.User{Login: "org"}, Name: "repo"},
+			User:   github.User{Login: tc.commenter},
+		}
+		err := handle(fakeClient, logrus.WithField("plugin", pluginName), e)
+		if err != nil {
+			t.Errorf("For case %s, didn't expect error from label test: %v", tc.name, err)
+			continue
+		}
 
-//Make sure we are repeating sig mentions for non org members (and only non org members)
-func TestRepeat(t *testing.T) {
+		// Check that all the correct labels (and only the correct labels) were added.
+		expectLabels := append(formatLabels(tc.issueLabels...), tc.expectedNewLabels...)
+		if expectLabels == nil {
+			expectLabels = []string{}
+		}
+		sort.Strings(expectLabels)
+		sort.Strings(fakeClient.LabelsAdded)
+		if !reflect.DeepEqual(expectLabels, fakeClient.LabelsAdded) {
+			t.Errorf("(%s): Expected the labels %q to be added, but %q were added.", tc.name, expectLabels, fakeClient.LabelsAdded)
+		}
 
-	type testCase struct {
-		name                   string
-		body                   string
-		commenter              string
-		expectedRepeatedLabels []string
-		issueLabels            []string
-		repoLabels             []string
-	}
-	testcases := []testCase{
-		{
-			name: "Dont repeat when org member adds one sig label",
-			body: "@kubernetes/sig-node-misc",
-			expectedRepeatedLabels: []string{},
-			repoLabels:             []string{"area/infra", "priority/urgent", "sig/node"},
-			issueLabels:            []string{},
-			commenter:              orgMember,
-		},
-		{
-			name: "Repeat when non org adds one sig label",
-			body: "@kubernetes/sig-node-misc",
-			expectedRepeatedLabels: []string{"@kubernetes/sig-node-misc"},
-			repoLabels:             []string{"area/infra", "priority/urgent", "sig/node", "sig/node"},
-			issueLabels:            []string{},
-			commenter:              nonOrgMember,
-		},
-		{
-			name: "Don't repeat non existent labels",
-			body: "@kubernetes/sig-node-misc @kubernetes/sig-api-machinery-bugs",
-			expectedRepeatedLabels: []string{},
-			repoLabels:             []string{},
-			issueLabels:            []string{},
-			commenter:              nonOrgMember,
-		},
-		{
-			name: "Dont repeat multiple if org member",
-			body: "@kubernetes/sig-node-misc @kubernetes/sig-api-machinery-bugs",
-			expectedRepeatedLabels: []string{},
-			repoLabels:             []string{"sig/node", "sig/api-machinery"},
-			issueLabels:            []string{},
-			commenter:              orgMember,
-		},
-		{
-			name: "Repeat multiple valid labels from non org member",
-			body: "@kubernetes/sig-node-misc @kubernetes/sig-api-machinery-bugs",
-			expectedRepeatedLabels: []string{"@kubernetes/sig-node-misc", "@kubernetes/sig-api-machinery-bugs"},
-			repoLabels:             []string{"sig/node", "sig/api-machinery"},
-			issueLabels:            []string{},
-			commenter:              nonOrgMember,
-		},
-		{
-			name: "Repeat multiple valid labels with a line break from non org member.",
-			body: "@kubernetes/sig-node-misc\n@kubernetes/sig-api-machinery-bugs",
-			expectedRepeatedLabels: []string{"@kubernetes/sig-node-misc", "@kubernetes/sig-api-machinery-bugs"},
-			repoLabels:             []string{"sig/node", "sig/api-machinery"},
-			issueLabels:            []string{},
-			commenter:              nonOrgMember,
-		},
-		{
-			name: "Repeat Multiple Sig Labels Different Lines With Other Text",
-			body: "Code Comment.  Design Review\n@kubernetes/sig-node-misc\ncc @kubernetes/sig-api-machinery-bugs",
-			expectedRepeatedLabels: []string{"@kubernetes/sig-node-misc", "@kubernetes/sig-api-machinery-bugs"},
-			repoLabels:             []string{"area/infra", "priority/urgent", "sig/node", "sig/api-machinery"},
-			issueLabels:            []string{},
-			commenter:              nonOrgMember,
-		},
-		{
-			name: "Repeat when multiple label adding commands",
-			body: "/area infra\n/priority urgent Design Review\n@kubernetes/sig-node-misc\ncc @kubernetes/sig-api-machinery-bugs",
-			expectedRepeatedLabels: []string{"@kubernetes/sig-node-misc", "@kubernetes/sig-api-machinery-bugs"},
-			repoLabels:             []string{"area/infra", "priority/urgent", "sig/node", "sig/api-machinery"},
-			issueLabels:            []string{},
-			commenter:              nonOrgMember,
-		},
-	}
-
-	//Test that this functionality works on comments, newly opened issues and newly opened PRs
-	fakeRepoFunctions := []func(string, string, []string, []string) (*fakegithub.FakeClient, assignEvent){
-		getFakeRepoIssueComment,
-		getFakeRepoIssue,
-		getFakeRepoPullRequest,
-	}
-
-	for _, tc := range testcases {
-		sort.Strings(tc.expectedRepeatedLabels)
-
-		for i := 0; i < len(fakeRepoFunctions); i++ {
-			fakeClient, ae := fakeRepoFunctions[i](tc.body, tc.commenter, tc.repoLabels, tc.issueLabels)
-			m := map[string]string{}
-			for _, l := range tc.repoLabels {
-				m[l] = ""
-			}
-
-			member, _ := fakeClient.IsMember(ae.org, ae.login)
-			toRepeat := []string{}
-			if !member {
-				toRepeat = ae.getRepeats(sigMatcher.FindAllStringSubmatch(tc.body, -1), m)
-			}
-
-			sort.Strings(toRepeat)
-			if len(tc.expectedRepeatedLabels) != len(toRepeat) {
-				t.Errorf("For test %v and case %v,\n\tExpected %+v \n\tFound %+v", tc.name, i, tc.expectedRepeatedLabels, toRepeat)
-				continue
-			}
-
-			for i := range tc.expectedRepeatedLabels {
-				if tc.expectedRepeatedLabels[i] != toRepeat[i] {
-					t.Errorf("For test %v,\n\tExpected %+v \n\tFound %+v", tc.name, tc.expectedRepeatedLabels, toRepeat)
-					break
-				}
-			}
-
+		sort.Strings(tc.expectedRemovedLabels)
+		sort.Strings(fakeClient.LabelsRemoved)
+		if !reflect.DeepEqual(tc.expectedRemovedLabels, fakeClient.LabelsRemoved) {
+			t.Errorf("(%s): Expected the labels %q to be removed, but %q were removed.", tc.name, tc.expectedRemovedLabels, fakeClient.LabelsRemoved)
 		}
 	}
 }

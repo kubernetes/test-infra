@@ -17,7 +17,7 @@ all: build test
 
 ALPINE_VERSION           ?= 0.1
 GIT_VERSION              ?= 0.1
-HOOK_VERSION             ?= 0.170
+HOOK_VERSION             ?= 0.171
 SINKER_VERSION           ?= 0.21
 DECK_VERSION             ?= 0.52
 SPLICE_VERSION           ?= 0.27

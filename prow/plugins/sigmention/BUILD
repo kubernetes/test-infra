@@ -1,28 +1,23 @@
-package(default_visibility = ["//visibility:public"])
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 
-load(
-    "@io_bazel_rules_go//go:def.bzl",
-    "go_library",
-    "go_test",
-)
-
-go_test(
-    name = "go_default_test",
-    srcs = ["label_test.go"],
-    library = ":go_default_library",
+go_library(
+    name = "go_default_library",
+    srcs = ["sigmention.go"],
+    visibility = ["//visibility:public"],
     deps = [
         "//prow/github:go_default_library",
-        "//prow/github/fakegithub:go_default_library",
+        "//prow/plugins:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
     ],
 )
 
-go_library(
-    name = "go_default_library",
-    srcs = ["label.go"],
+go_test(
+    name = "go_default_test",
+    srcs = ["sigmention_test.go"],
+    library = ":go_default_library",
     deps = [
         "//prow/github:go_default_library",
-        "//prow/plugins:go_default_library",
+        "//prow/github/fakegithub:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
     ],
 )
@@ -38,4 +33,5 @@ filegroup(
     name = "all-srcs",
     srcs = [":package-srcs"],
     tags = ["automanaged"],
+    visibility = ["//visibility:public"],
 )
