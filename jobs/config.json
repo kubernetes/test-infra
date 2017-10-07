@@ -8982,6 +8982,7 @@
   },
   "ci-kubernetes-pull-gce-federation-deploy": {
     "args": [
+      "--cluster=jenkins-us-central1-f",
       "--down=false",
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/ci-kubernetes-pull-gce-federation-deploy.env",
