@@ -196,17 +196,20 @@ func TestReleaseNoteComment(t *testing.T) {
 		} else if len(fc.LabelsAdded) == 1 && fc.LabelsAdded[0] != "/#5:"+tc.addedLabel {
 			t.Errorf("For case %s, added wrong label. Got %s, expected %s", tc.name, fc.LabelsAdded[0], tc.addedLabel)
 		}
-		for _, dl := range tc.deletedLabels {
-			deleted := false
-			for _, lr := range fc.LabelsRemoved {
-				if lr == "/#5:"+dl {
-					deleted = true
-					break
-				}
-			}
-			if !deleted {
-				t.Errorf("For case %s, expected %s label deleted, but it wasn't.", tc.name, dl)
-			}
+
+		var expectedDeleted []string
+		for _, expect := range tc.deletedLabels {
+			expectedDeleted = append(expectedDeleted, "/#5:"+expect)
+		}
+		sort.Strings(expectedDeleted)
+		sort.Strings(fc.LabelsRemoved)
+		if !reflect.DeepEqual(expectedDeleted, fc.LabelsRemoved) {
+			t.Errorf(
+				"For case %s, expected %q labels to be deleted, but %q were deleted.",
+				tc.name,
+				expectedDeleted,
+				fc.LabelsRemoved,
+			)
 		}
 	}
 }
@@ -239,7 +242,8 @@ func newFakeClient(body, branch string, initialLabels, comments []string, parent
 				releaseNoteNone,
 				releaseNoteActionRequired,
 			},
-			LabelsAdded: labels,
+			LabelsAdded:   labels,
+			LabelsRemoved: []string{},
 		},
 		&github.PullRequestEvent{
 			Action: github.PullRequestActionEdited,
@@ -456,13 +460,16 @@ func TestReleaseNotePR(t *testing.T) {
 		for parent, label := range test.parentPRs {
 			expectAdded = append(expectAdded, formatLabels(parent, label)...)
 		}
-		expectLabels := sliceDifference(expectAdded, formatLabels(1, test.labelsRemoved...))
-
-		actualLabels := sliceDifference(fc.LabelsAdded, fc.LabelsRemoved)
-		sort.Strings(expectLabels)
-		sort.Strings(actualLabels)
-		if !reflect.DeepEqual(expectLabels, actualLabels) {
-			t.Errorf("(%s): Expected issue to end with labels %q, but ended with %q.", test.name, expectLabels, actualLabels)
+		sort.Strings(expectAdded)
+		sort.Strings(fc.LabelsAdded)
+		if !reflect.DeepEqual(expectAdded, fc.LabelsAdded) {
+			t.Errorf("(%s): Expected labels to be added: %q, but got: %q.", test.name, expectAdded, fc.LabelsAdded)
+		}
+		expectRemoved := formatLabels(1, test.labelsRemoved...)
+		sort.Strings(expectRemoved)
+		sort.Strings(fc.LabelsRemoved)
+		if !reflect.DeepEqual(expectRemoved, fc.LabelsRemoved) {
+			t.Errorf("(%s): Expected labels to be removed: %q, but got %q.", test.name, expectRemoved, fc.LabelsRemoved)
 		}
 	}
 }
