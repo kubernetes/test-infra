@@ -1038,6 +1038,9 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-e2e-kubeadm-gce-upgrade-1-6-1-7
 - name: periodic-kubernetes-e2e-kubeadm-gce-upgrade-1-7-1-8
   gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-e2e-kubeadm-gce-upgrade-1-7-1-8
+# master cluster tests
+- name: ci-kubernetes-e2e-gce-1-6-1-7-master-skew
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-1-6-1-7-master-skew
 # charts tests
 - name: ci-kubernetes-charts-gce
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-charts-gce
@@ -2405,6 +2408,11 @@ dashboards:
   - name: gke-gci-1.7-gci-master-upgrade-cluster-new
     test_group_name: ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster-new
     description: 'Upgrade master and node, in gke(gci), from 1.7 to master, and run skewed e2e tests'
+
+- name: skew-clusters
+  dashboard_tab:
+  - name: 1-6-1-7-cluster
+    test_group_name: ci-kubernetes-e2e-gce-1-6-1-7-master-skew
 
 - name: etcd-upgrades
   dashboard_tab:

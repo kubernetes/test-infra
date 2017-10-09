@@ -327,6 +327,27 @@
       "sig-cli"
     ]
   },
+  "ci-kubernetes-e2e-gce-1-6-1-7-master-skew": {
+    "args": [
+      "--check-version-skew=false",
+      "--cluster=",
+      "--deployment=kubernetes-anywhere",
+      "--env-file=jobs/platform/gce.env",
+      "--extract=ci/latest-1.6",
+      "--extract=ci/latest-1.7",
+      "--gcp-zone=us-central1-f",
+      "--kubeadm=ci",
+      "--kubernetes-anywhere-kubelet-ci-version=latest-1.6",
+      "--kubernetes-anywhere-kubernetes-version=latest-1.7",
+      "--provider=kubernetes-anywhere",
+      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
+      "--timeout=300m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-cluster-lifecycle"
+    ]
+  },
   "ci-kubernetes-e2e-gce-1-6-1-7-upgrade-cluster": {
     "args": [
       "--check-leaked-resources",
