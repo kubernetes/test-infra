@@ -22,6 +22,19 @@ tide:
 push_gateway:
   endpoint: pushgateway
 
+# TODO: should this be a regex instead?
+all_release_branches: &all-release-branches
+- release-1.0
+- release-1.1
+- release-1.2
+- release-1.3
+- release-1.4
+- release-1.5
+- release-1.6
+- release-1.7
+- release-1.8
+
+
 presubmits:
   google/cadvisor:
   - name: pull-cadvisor-e2e
@@ -52,19 +65,18 @@ presubmits:
     rerun_command: "/test pull-kops-e2e-kubernetes-aws"
     trigger: "(?m)^/test( all| pull-kops-e2e-kubernetes-aws),?(\\s+|$)"
   kubernetes/kubernetes:
-  - name: pull-kubernetes-bazel-build
-    agent: kubernetes
-    context: pull-kubernetes-bazel-build
-    always_run: true
-    rerun_command: "/test pull-kubernetes-bazel-build"
-    trigger: "(?m)^/test( all| pull-kubernetes-bazel-build),?(\\s+|$)"
-    skip_branches:
-    - release-1.4
-    - release-1.5
-    - release-1.6  # doesn't have BUILD files under //vendor/k8s.io
+  - <<: &pull-kubernetes-bazel-build-job
+      name: pull-kubernetes-bazel-build
+      agent: kubernetes
+      context: pull-kubernetes-bazel-build
+      always_run: true
+      rerun_command: "/test pull-kubernetes-bazel-build"
+      trigger: "(?m)^/test( all| pull-kubernetes-bazel-build),?(\\s+|$)"
+    skip_branches: *all-release-branches
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20170929-ed26bd34-0.5.4
+      - &pull-kubernetes-bazel-build-container
+        image: gcr.io/k8s-testimages/bazelbuild:v20170929-ed26bd34-0.6.1
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -87,7 +99,7 @@ presubmits:
         ports:
         - containerPort: 9999
           hostPort: 9999
-      volumes:
+      volumes: &pull-kubernetes-bazel-build-volumes
       - name: service
         secret:
           secretName: service-account
@@ -95,21 +107,20 @@ presubmits:
         hostPath:
           path: /mnt/disks/ssd0
     run_after_success:
-    - name: pull-kubernetes-e2e-kubeadm-gce
-      agent: kubernetes
-      context: pull-kubernetes-e2e-kubeadm-gce
-      max_concurrency: 8
-      skip_report: false
-      run_if_changed: '^(cmd/kubeadm|build/debs).*$'
-      rerun_command: "/test pull-kubernetes-e2e-kubeadm-gce"
-      trigger: "(?m)^/test pull-kubernetes-e2e-kubeadm-gce,?(\\s+|$)"
-      skip_branches:
-      - release-1.4
-      - release-1.5
-      - release-1.6  # doesn't have BUILD files under //vendor/k8s.io
+    - <<: &pull-kubernetes-e2e-kubeadm-gce-job
+        name: pull-kubernetes-e2e-kubeadm-gce
+        agent: kubernetes
+        context: pull-kubernetes-e2e-kubeadm-gce
+        max_concurrency: 8
+        skip_report: false
+        run_if_changed: '^(cmd/kubeadm|build/debs).*$'
+        rerun_command: "/test pull-kubernetes-e2e-kubeadm-gce"
+        trigger: "(?m)^/test pull-kubernetes-e2e-kubeadm-gce,?(\\s+|$)"
+      skip_branches: *all-release-branches
       spec:
         containers:
-        - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171008-52d4c1d0
+        - &pull-kubernetes-e2e-kubeadm-gce-container
+          image: gcr.io/k8s-testimages/e2e-kubeadm:v20171008-52d4c1d0
           args:
           - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
           - "--upload=gs://kubernetes-jenkins/pr-logs"
@@ -139,7 +150,7 @@ presubmits:
           ports:
           - containerPort: 9999
             hostPort: 9999
-        volumes:
+        volumes: &pull-kubernetes-e2e-kubeadm-gce-volumes
         - name: service
           secret:
             secretName: service-account
@@ -150,113 +161,75 @@ presubmits:
         - name: cache-ssd
           hostPath:
             path: /mnt/disks/ssd0
-  - name: pull-kubernetes-bazel-build
-    agent: kubernetes
-    context: pull-kubernetes-bazel-build
-    always_run: true
-    rerun_command: "/test pull-kubernetes-bazel-build"
-    trigger: "(?m)^/test( all| pull-kubernetes-bazel-build),?(\\s+|$)"
+  - <<: *pull-kubernetes-bazel-build-job
     branches:
     - release-1.6
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20170929-ed26bd34-0.5.2
-        args:
-        - "--clean"
-        - "--git-cache=/root/.cache/git"
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        env:
-        - name: TEST_TMPDIR
-          value: /root/.cache/bazel
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
-        volumeMounts:
-        - name: service
-          mountPath: /etc/service-account
-          readOnly: true
-        - name: cache-ssd
-          mountPath: /root/.cache
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
-      volumes:
-      - name: service
-        secret:
-          secretName: service-account
-      - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0
+      - <<: *pull-kubernetes-bazel-build-container
+        image: gcr.io/k8s-testimages/bazelbuild:v20170929-ed26bd34-0.5.2
+      volumes: *pull-kubernetes-bazel-build-volumes
     run_after_success:
-    - name: pull-kubernetes-e2e-kubeadm-gce
-      agent: kubernetes
-      context: pull-kubernetes-e2e-kubeadm-gce
-      max_concurrency: 8
-      skip_report: false
-      run_if_changed: '^(cmd/kubeadm|build/debs).*$'
-      rerun_command: "/test pull-kubernetes-e2e-kubeadm-gce"
-      trigger: "(?m)^/test pull-kubernetes-e2e-kubeadm-gce,?(\\s+|$)"
+    - <<: *pull-kubernetes-e2e-kubeadm-gce-job
       branches:
       - release-1.6
       spec:
         containers:
-        - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171008-52d4c1d0
-          args:
-          - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-          - "--upload=gs://kubernetes-jenkins/pr-logs"
-          - "--git-cache=/root/.cache/git"
-          - "--timeout=75"
-          - "--clean"
-          env:
-          - name: USER
-            value: prow
-          - name: GOOGLE_APPLICATION_CREDENTIALS
-            value: /etc/service-account/service-account.json
-          - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
-            value: /etc/ssh-key-secret/ssh-private
-          - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
-            value: /etc/ssh-key-secret/ssh-public
-          - name: SKIP_RELEASE_VALIDATION # See: https://github.com/kubernetes/kubernetes/pull/50391
-            value: true
-          volumeMounts:
-          - name: service
-            mountPath: /etc/service-account
-            readOnly: true
-          - name: ssh
-            mountPath: /etc/ssh-key-secret
-            readOnly: true
-          - name: cache-ssd
-            mountPath: /root/.cache
-          ports:
-          - containerPort: 9999
-            hostPort: 9999
-        volumes:
-        - name: service
-          secret:
-            secretName: service-account
-        - name: ssh
-          secret:
-            secretName: ssh-key-secret
-            defaultMode: 0400
-        - name: cache-ssd
-          hostPath:
-            path: /mnt/disks/ssd0
-  - name: pull-kubernetes-bazel-test
-    agent: kubernetes
-    context: pull-kubernetes-bazel-test
-    always_run: true
-    rerun_command: "/test pull-kubernetes-bazel-test"
-    trigger: "(?m)^/test( all| pull-kubernetes-bazel-test),?(\\s+|$)"
+        - <<: *pull-kubernetes-e2e-kubeadm-gce-container
+          image: gcr.io/k8s-testimages/e2e-kubeadm:v20171008-52d4c1d0
+        volumes: *pull-kubernetes-e2e-kubeadm-gce-volumes
+  - <<: *pull-kubernetes-bazel-build-job
+    branches:
+    - release-1.7
+    spec:
+      containers:
+      - <<: *pull-kubernetes-bazel-build-container
+        image: gcr.io/k8s-testimages/bazelbuild:v20170929-ed26bd34-0.5.4
+      volumes: *pull-kubernetes-bazel-build-volumes
+    run_after_success:
+    - <<: *pull-kubernetes-e2e-kubeadm-gce-job
+      branches:
+      - release-1.7
+      spec:
+        containers:
+        - <<: *pull-kubernetes-e2e-kubeadm-gce-container
+          image: gcr.io/k8s-testimages/e2e-kubeadm:v20171006-99427ec8
+        volumes: *pull-kubernetes-e2e-kubeadm-gce-volumes
+  - <<: *pull-kubernetes-bazel-build-job
+    branches:
+    - release-1.8
+    spec:
+      containers:
+      - <<: *pull-kubernetes-bazel-build-container
+        image: gcr.io/k8s-testimages/bazelbuild:v20170929-ed26bd34-0.5.4
+      volumes: *pull-kubernetes-bazel-build-volumes
+    run_after_success:
+    - <<: *pull-kubernetes-e2e-kubeadm-gce-job
+      branches:
+      - release-1.8
+      spec:
+        containers:
+        - <<: *pull-kubernetes-e2e-kubeadm-gce-container
+          image: gcr.io/k8s-testimages/e2e-kubeadm:v20171006-99427ec8
+        volumes: *pull-kubernetes-e2e-kubeadm-gce-volumes
+
+  - <<: &pull-kubernetes-bazel-test-job
+      name: pull-kubernetes-bazel-test
+      agent: kubernetes
+      context: pull-kubernetes-bazel-test
+      always_run: true
+      rerun_command: "/test pull-kubernetes-bazel-test"
+      trigger: "(?m)^/test( all| pull-kubernetes-bazel-test),?(\\s+|$)"
     skip_branches:
     - release-1.4
     - release-1.5
     - release-1.6  # doesn't have BUILD files under //vendor/k8s.io
+    - release-1.7
+    - release-1.8
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20170929-ed26bd34-0.5.4
+      - &pull-kubernetes-bazel-test-container
+        image: gcr.io/k8s-testimages/bazelbuild:v20170929-ed26bd34-0.6.1
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -279,53 +252,38 @@ presubmits:
         ports:
         - containerPort: 9999
           hostPort: 9999
-      volumes:
+      volumes: &pull-kubernetes-bazel-test-volumes
       - name: service
         secret:
           secretName: service-account
       - name: cache-ssd
         hostPath:
           path: /mnt/disks/ssd0
-  - name: pull-kubernetes-bazel-test
-    agent: kubernetes
-    context: pull-kubernetes-bazel-test
-    always_run: true
-    rerun_command: "/test pull-kubernetes-bazel-test"
-    trigger: "(?m)^/test( all| pull-kubernetes-bazel-test),?(\\s+|$)"
+  - <<: *pull-kubernetes-bazel-test-job
     branches:
     - release-1.6
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20170929-ed26bd34-0.5.2
-        args:
-        - "--clean"
-        - "--git-cache=/root/.cache/git"
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        env:
-        - name: TEST_TMPDIR
-          value: /root/.cache/bazel
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
-        volumeMounts:
-        - name: service
-          mountPath: /etc/service-account
-          readOnly: true
-        - name: cache-ssd
-          mountPath: /root/.cache
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
-      volumes:
-      - name: service
-        secret:
-          secretName: service-account
-      - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0
+      - <<: *pull-kubernetes-bazel-test-container
+        image: gcr.io/k8s-testimages/bazelbuild:v20170929-ed26bd34-0.5.2
+      volumes: *pull-kubernetes-bazel-test-volumes
+  - <<: *pull-kubernetes-bazel-test-job
+    branches:
+    - release-1.7
+    spec:
+      containers:
+      - <<: *pull-kubernetes-bazel-test-container
+        image: gcr.io/k8s-testimages/bazelbuild:v20170929-ed26bd34-0.5.4
+      volumes: *pull-kubernetes-bazel-test-volumes
+  - <<: *pull-kubernetes-bazel-test-job
+    branches:
+    - release-1.8
+    spec:
+      containers:
+      - <<: *pull-kubernetes-bazel-test-container
+        image: gcr.io/k8s-testimages/bazelbuild:v20170929-ed26bd34-0.5.4
+      volumes: *pull-kubernetes-bazel-test-volumes
+
   - name: pull-kubernetes-cross
     agent: jenkins
     context: pull-kubernetes-cross
