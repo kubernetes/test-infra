@@ -26,6 +26,7 @@ import (
 	"github.com/ghodss/yaml"
 	"github.com/sirupsen/logrus"
 
+	"k8s.io/test-infra/prow/commentpruner"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/git"
 	"k8s.io/test-infra/prow/github"
@@ -107,6 +108,8 @@ type PluginClient struct {
 	KubeClient   *kube.Client
 	GitClient    *git.Client
 	SlackClient  *slack.Client
+
+	CommentPruner *commentpruner.EventClient
 
 	// Config provides information about the jobs
 	// that we know how to run for repos.

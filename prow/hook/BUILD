@@ -30,6 +30,7 @@ go_library(
         "server.go",
     ],
     deps = [
+        "//prow/commentpruner:go_default_library",
         "//prow/config:go_default_library",
         "//prow/github:go_default_library",
         "//prow/plugins:go_default_library",
