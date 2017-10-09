@@ -83,6 +83,8 @@ func ParseRepos(repoArgs []string) (Repos, error) {
 	return repos, nil
 }
 
+// TODO(bentheelder): unit test the methods below
+
 func refHasSHAs(ref string) bool {
 	return strings.Contains(ref, ":")
 }
