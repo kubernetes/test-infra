@@ -15,8 +15,6 @@ heart:
   - k8s-merge-robot
 
 slack:
-  mentionchannels:
-  - sig-testing
   mergewarnings:
   - repos:
     - kubernetes/kubernetes
