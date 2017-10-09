@@ -47,6 +47,7 @@ filegroup(
         "//prow/plugins/assign:all-srcs",
         "//prow/plugins/cla:all-srcs",
         "//prow/plugins/close:all-srcs",
+        "//prow/plugins/docs-no-retest:all-srcs",
         "//prow/plugins/golint:all-srcs",
         "//prow/plugins/heart:all-srcs",
         "//prow/plugins/hold:all-srcs",
