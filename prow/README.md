@@ -26,6 +26,16 @@ Breaking changes to external APIs (labels, GitHub interactions, configuration
 or deployment) will be documented in this section. Prow is in a pre-release
 state and no claims of backwards compatibility are made for any external API.
 
+ - *October 2, 2017* `hook` version 0.171. The label plugin was split into three
+   plugins (label, sigmention, milestonestatus). Breaking changes:
+   - The configuration key for the milestone maintainer team's ID has been
+   changed. Previously the team ID was stored in the plugins config at key
+   `label`>>`milestone_maintainers_id`. Now that the milestone status labels are
+   handled in the `milestonestatus` plugin instead of the `label` plugin, the
+   team ID is stored at key `milestonestatus`>>`maintainers_id`.
+   - The sigmention and milestonestatus plugins must be enabled on any repos
+   that require them since their functionality is no longer included in the 
+   label plugin.
  - *September 3, 2017* sinker:0.17 now deletes pods labeled by plank:0.42 in
    order to avoid cleaning up unrelated pods that happen to be found in the
    same namespace prow runs pods. If you run other pods in the same namespace,

@@ -11,9 +11,9 @@ go_register_toolchains()
 
 http_archive(
     name = "io_bazel_rules_docker",
-    sha256 = "a6f30b7806ac49ef89d4b5d84a3fd37a460d12e8d3d83324ea7db6c247e125a1",
-    strip_prefix = "rules_docker-9eda1acbc4781894c452de0e49d528eb221f1a66",
-    urls = ["https://github.com/bazelbuild/rules_docker/archive/9eda1acbc4781894c452de0e49d528eb221f1a66.tar.gz"],
+    sha256 = "076a8204c93071a130952c1ba4398d4085f60289bc9a12b530078d100608b1eb",
+    strip_prefix = "rules_docker-cdd259b3ba67fd4ef814c88070a2ebc7bec28dc5",
+    urls = ["https://github.com/bazelbuild/rules_docker/archive/cdd259b3ba67fd4ef814c88070a2ebc7bec28dc5.tar.gz"],
 )
 
 load("@io_bazel_rules_docker//docker:docker.bzl", "docker_repositories", "docker_pull")
@@ -346,6 +346,9 @@ new_http_archive(
 py_library(
     name = "dateutil",
     srcs = glob(["**/*.py"]),
+    deps = [
+        "@six_lib//:six",
+    ],
     visibility = ["//visibility:public"],
 )
 """,

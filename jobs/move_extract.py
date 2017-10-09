@@ -33,7 +33,7 @@ def sort():
     with open(test_infra('jobs/config.json'), 'r+') as fp:
         configs = json.loads(fp.read())
     regexp = re.compile('|'.join([
-        r'^KUBE_NODE_OS_DISTRIBUTION=(.*)$',
+        r'^KUBE_OS_DISTRIBUTION=(.*)$',
     ]))
     problems = []
     for job, values in configs.items():
@@ -52,11 +52,11 @@ def sort():
             env = fp.read()
         lines = []
         mod = False
-        node_os_image = ''
+        os_image = ''
         for line in env.split('\n'):
             mat = regexp.search(line)
             if mat:
-                node_os_image = mat.group(1)
+                os_image = mat.group(1)
                 mod = True
                 continue
             lines.append(line)
@@ -64,8 +64,9 @@ def sort():
             continue
 
         args = list(args)
-        if node_os_image:
-            args.append('--gcp-node-image=%s' % node_os_image)
+        if os_image:
+            args.append('--gcp-node-image=%s' % os_image)
+            args.append('--gcp-master-image=%s' % os_image)
         flags = set()
         okay = False
         for arg in args:

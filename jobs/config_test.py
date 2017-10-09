@@ -540,8 +540,8 @@ class JobTest(unittest.TestCase):
                         if match:
                             cluster = match.group(1)
                             self.assertLessEqual(
-                                len(cluster), 20,
-                                'Job %r, --cluster should be 20 chars or fewer' % job
+                                len(cluster), 23,
+                                'Job %r, --cluster should be 23 chars or fewer' % job
                                 )
                 # these args should not be combined:
                 # --use-shared-build and (--build or --extract)
@@ -628,7 +628,10 @@ class JobTest(unittest.TestCase):
                                   'both set or unset: %s' % job)
 
                     if job.startswith('pull-kubernetes-'):
-                        self.assertIn('--cluster=', args)
+                        if not 'pull-kubernetes-federation-e2e-gce' in job:
+                            # pull-kubernetes-federation-e2e-gce job uses a specific cluster names
+                            # instead of dynamic cluster names.
+                            self.assertIn('--cluster=', args)
                         if 'gke' in job:
                             stage = 'gs://kubernetes-release-dev/ci'
                             suffix = True
@@ -914,6 +917,7 @@ class JobTest(unittest.TestCase):
             ('KUBEMARK_TESTS=', '--test_args=--ginkgo.focus=FOO'),
             ('KUBEMARK_MASTER_SIZE=', '--kubemark-master-size=FOO'),
             ('KUBEMARK_NUM_NODES=', '--kubemark-nodes=FOO'),
+            ('KUBE_OS_DISTRIBUTION=', '--gcp-node-image=FOO and --gcp-master-image=FOO'),
             ('KUBE_NODE_OS_DISTRIBUTION=', '--gcp-node-image=FOO'),
             ('KUBE_MASTER_OS_DISTRIBUTION=', '--gcp-master-image=FOO'),
             ('KUBERNETES_PROVIDER=', '--provider=FOO'),
