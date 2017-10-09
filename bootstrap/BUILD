@@ -4,6 +4,7 @@ go_library(
     name = "go_default_library",
     srcs = [
         "args.go",
+        "env.go",
         "main.go",
         "paths.go",
         "repos.go",
@@ -36,6 +37,7 @@ go_test(
     name = "go_default_test",
     srcs = [
         "args_test.go",
+        "env_test.go",
         "paths_test.go",
         "repos_test.go",
     ],
