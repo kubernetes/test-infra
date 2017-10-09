@@ -31,12 +31,17 @@ TREE="$(dirname ${BASH_SOURCE[0]})/.."
 DATE="$(date +v%Y%m%d)"
 TAG="${DATE}-$(git describe --tags --always --dirty)"
 pushd "${TREE}/jenkins/e2e-image"
-make push TAG="${TAG}"
+make push
+K8S=1.8 make push
+K8S=1.7 make push
+K8S=1.6 make push
 popd
 
-sed -i "s/DEFAULT_KUBEKINS_TAG = '.*'/DEFAULT_KUBEKINS_TAG = '${TAG}'/" "${TREE}/scenarios/kubernetes_e2e.py"
-sed -i "s/\/kubekins-e2e:.*$/\/kubekins-e2e:${TAG}/" "${TREE}/images/kubeadm/Dockerfile"
-sed -i "s/\/kubekins-e2e:v.*$/\/kubekins-e2e:${TAG}/" "${TREE}/experiment/generate_tests.py"
+echo "TAG = ${TAG}"
+
+sed -i "s/DEFAULT_KUBEKINS_TAG = '.*'/DEFAULT_KUBEKINS_TAG = '${TAG}-master'/" "${TREE}/scenarios/kubernetes_e2e.py"
+sed -i "s/\/kubekins-e2e:.*$/\/kubekins-e2e:${TAG}-master/" "${TREE}/images/kubeadm/Dockerfile"
+sed -i "s/\/kubekins-e2e:v.*$/\/kubekins-e2e:${TAG}-master/" "${TREE}/experiment/generate_tests.py"
 
 pushd "${TREE}"
 bazel run //experiment:generate_tests -- \
@@ -48,8 +53,11 @@ popd
 
 # Scan for kubekins-e2e:v.* as a rudimentary way to avoid
 # replacing :latest.
-sed -i "s/\/kubekins-e2e:v.*$/\/kubekins-e2e:${TAG}/" "${TREE}/prow/config.yaml"
-git commit -am "Bump to gcr.io/k8s-testimages/kubekins-e2e:${TAG} (using generate_tests and manual)"
+sed -i "s/\/kubekins-e2e:v.*-master$/\/kubekins-e2e:${TAG}-master/" "${TREE}/prow/config.yaml"
+sed -i "s/\/kubekins-e2e:v.*-1.8$/\/kubekins-e2e:${TAG}-1.8/" "${TREE}/prow/config.yaml"
+sed -i "s/\/kubekins-e2e:v.*-1.7$/\/kubekins-e2e:${TAG}-1.7/" "${TREE}/prow/config.yaml"
+sed -i "s/\/kubekins-e2e:v.*-1.6$/\/kubekins-e2e:${TAG}-1.6/" "${TREE}/prow/config.yaml"
+git commit -am "Bump to gcr.io/k8s-testimages/kubekins-e2e:${TAG}-master|1.8|1.7|1.6 (using generate_tests and manual)"
 
 # Bump kubeadm image
 

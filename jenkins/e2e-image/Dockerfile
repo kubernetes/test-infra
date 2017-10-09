@@ -15,57 +15,32 @@
 # This file creates a build environment for building and running kubernetes
 # unit and integration tests
 
-FROM gcr.io/k8s-testimages/kubekins-test:1.7-v20170713-c28e0556
-MAINTAINER  Erick Fejta <fejta@google.com>
+FROM gcr.io/k8s-testimages/bootstrap:v20171005-a3dc7e92
+MAINTAINER  Sen Lu <senlu@google.com>
 
-# https://github.com/GoogleCloudPlatform/gsutil/issues/446 for python-openssl
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    pkg-config \
-    zip \
-    unzip \
-    xz-utils \
-    zlib1g-dev \
-    python-openssl \
-    && apt-get clean
+# install go
+ARG GO_VERSION
+ENV GO_TARBALL "go${GO_VERSION}.linux-amd64.tar.gz"
+RUN wget -q "https://storage.googleapis.com/golang/${GO_TARBALL}" && \
+    tar xzf "${GO_TARBALL}" -C /usr/local && \
+    rm "${GO_TARBALL}"
 
-ENV BAZEL_VERSION 0.5.4
+ENV PATH /usr/local/go/bin:$PATH
+ENV GOPATH /go
+
+# setup k8s repo symlink
+RUN mkdir -p /go/src/k8s.io/kubernetes \
+    && ln -s /go/src/k8s.io/kubernetes /workspace/kubernetes
+
+# install bazel
+ARG BAZEL_VERSION
 RUN INSTALLER="bazel-${BAZEL_VERSION}-installer-linux-x86_64.sh"; \
     wget -q "https://github.com/bazelbuild/bazel/releases/download/${BAZEL_VERSION}/${INSTALLER}" && \
     chmod +x "${INSTALLER}" && "./${INSTALLER}" && rm "${INSTALLER}"
 
-# Defaults of all e2e runs
-ENV E2E_UP=true \
-    E2E_TEST=true \
-    E2E_DOWN=true
-
-# Variable specific to the machine:
-# GOOGLE_APPLICATION_CREDENTIALS
-# JENKINS_GCE_SSH_PRIVATE_KEY_FILE
-# JENKINS_GCE_SSH_PUBLIC_KEY_FILE
-# JENKINS_AWS_SSH_PRIVATE_KEY_FILE
-# JENKINS_AWS_SSH_PUBLIC_KEY_FILE
-# JENKINS_AWS_CREDENTIALS_FILE
-
-ADD ["https://dl.google.com/dl/cloudsdk/channels/rapid/google-cloud-sdk.tar.gz", \
-     "/workspace/"]
-ENV PATH=/google-cloud-sdk/bin:/workspace:${PATH} \
-    CLOUDSDK_CORE_DISABLE_PROMPTS=1
-RUN tar xzf /workspace/google-cloud-sdk.tar.gz -C / && \
-    /google-cloud-sdk/install.sh \
-        --disable-installation-options \
-        --bash-completion=false \
-        --path-update=false \
-        --usage-reporting=false && \
-    gcloud components install alpha beta kubectl && \
-    gcloud info | tee /workspace/gcloud-info.txt
-
 ADD ["e2e-runner.sh", \
     "kops-e2e-runner.sh", \
-    "runner", \
     "kubetest", \
     "https://raw.githubusercontent.com/kubernetes/kubernetes/master/cluster/get-kube.sh", \
     "/workspace/"]
 RUN ["chmod", "+x", "/workspace/get-kube.sh"]
-
-WORKDIR "/workspace"
-ENTRYPOINT ["/workspace/runner"]

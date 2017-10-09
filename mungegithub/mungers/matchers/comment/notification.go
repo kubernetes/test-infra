@@ -47,10 +47,15 @@ func ParseNotification(comment *Comment) *Notification {
 		return nil
 	}
 
+	return NewNotification(match[1], match[2], match[3])
+}
+
+// NewNotification creates a new notification
+func NewNotification(name, arguments, context string) *Notification {
 	return &Notification{
-		Name:      strings.ToUpper(match[1]),
-		Arguments: strings.TrimSpace(match[2]),
-		Context:   strings.TrimSpace(match[3]),
+		Name:      strings.ToUpper(name),
+		Arguments: strings.TrimSpace(arguments),
+		Context:   strings.TrimSpace(context),
 	}
 }
 
@@ -74,4 +79,9 @@ func (n *Notification) String() string {
 // Post a new notification on Github
 func (n Notification) Post(obj *mgh.MungeObject) error {
 	return obj.WriteComment(n.String())
+}
+
+// Equal compares this notification to the given notification for equivalence
+func (n *Notification) Equal(o *Notification) bool {
+	return (o != nil && n.Name == o.Name && n.Arguments == o.Arguments && n.Context == o.Context)
 }

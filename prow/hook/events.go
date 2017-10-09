@@ -23,8 +23,8 @@ import (
 	"k8s.io/test-infra/prow/plugins"
 )
 
-func (s *Server) handleReviewEvent(re github.ReviewEvent) {
-	l := logrus.WithFields(logrus.Fields{
+func (s *Server) handleReviewEvent(l *logrus.Entry, re github.ReviewEvent) {
+	l = l.WithFields(logrus.Fields{
 		"org":      re.Repo.Owner.Login,
 		"repo":     re.Repo.Name,
 		"pr":       re.PullRequest.Number,
@@ -49,6 +49,7 @@ func (s *Server) handleReviewEvent(re github.ReviewEvent) {
 		return
 	}
 	s.handleGenericComment(
+		l,
 		&github.GenericCommentEvent{
 			IsPR:        true,
 			Action:      action,
@@ -61,12 +62,11 @@ func (s *Server) handleReviewEvent(re github.ReviewEvent) {
 			Assignees:   re.PullRequest.Assignees,
 			IssueState:  re.PullRequest.State,
 		},
-		l,
 	)
 }
 
-func (s *Server) handleReviewCommentEvent(rce github.ReviewCommentEvent) {
-	l := logrus.WithFields(logrus.Fields{
+func (s *Server) handleReviewCommentEvent(l *logrus.Entry, rce github.ReviewCommentEvent) {
+	l = l.WithFields(logrus.Fields{
 		"org":       rce.Repo.Owner.Login,
 		"repo":      rce.Repo.Name,
 		"pr":        rce.PullRequest.Number,
@@ -91,6 +91,7 @@ func (s *Server) handleReviewCommentEvent(rce github.ReviewCommentEvent) {
 		return
 	}
 	s.handleGenericComment(
+		l,
 		&github.GenericCommentEvent{
 			IsPR:        true,
 			Action:      action,
@@ -103,12 +104,11 @@ func (s *Server) handleReviewCommentEvent(rce github.ReviewCommentEvent) {
 			Assignees:   rce.PullRequest.Assignees,
 			IssueState:  rce.PullRequest.State,
 		},
-		l,
 	)
 }
 
-func (s *Server) handlePullRequestEvent(pr github.PullRequestEvent) {
-	l := logrus.WithFields(logrus.Fields{
+func (s *Server) handlePullRequestEvent(l *logrus.Entry, pr github.PullRequestEvent) {
+	l = l.WithFields(logrus.Fields{
 		"org":    pr.Repo.Owner.Login,
 		"repo":   pr.Repo.Name,
 		"pr":     pr.Number,
@@ -132,6 +132,7 @@ func (s *Server) handlePullRequestEvent(pr github.PullRequestEvent) {
 		return
 	}
 	s.handleGenericComment(
+		l,
 		&github.GenericCommentEvent{
 			IsPR:        true,
 			Action:      action,
@@ -144,12 +145,11 @@ func (s *Server) handlePullRequestEvent(pr github.PullRequestEvent) {
 			Assignees:   pr.PullRequest.Assignees,
 			IssueState:  pr.PullRequest.State,
 		},
-		l,
 	)
 }
 
-func (s *Server) handlePushEvent(pe github.PushEvent) {
-	l := logrus.WithFields(logrus.Fields{
+func (s *Server) handlePushEvent(l *logrus.Entry, pe github.PushEvent) {
+	l = l.WithFields(logrus.Fields{
 		"org":  pe.Repo.Owner.Name,
 		"repo": pe.Repo.Name,
 		"ref":  pe.Ref,
@@ -169,8 +169,8 @@ func (s *Server) handlePushEvent(pe github.PushEvent) {
 	}
 }
 
-func (s *Server) handleIssueEvent(i github.IssueEvent) {
-	l := logrus.WithFields(logrus.Fields{
+func (s *Server) handleIssueEvent(l *logrus.Entry, i github.IssueEvent) {
+	l = l.WithFields(logrus.Fields{
 		"org":    i.Repo.Owner.Login,
 		"repo":   i.Repo.Name,
 		"pr":     i.Issue.Number,
@@ -194,6 +194,7 @@ func (s *Server) handleIssueEvent(i github.IssueEvent) {
 		return
 	}
 	s.handleGenericComment(
+		l,
 		&github.GenericCommentEvent{
 			IsPR:        i.Issue.IsPullRequest(),
 			Action:      action,
@@ -206,12 +207,11 @@ func (s *Server) handleIssueEvent(i github.IssueEvent) {
 			Assignees:   i.Issue.Assignees,
 			IssueState:  i.Issue.State,
 		},
-		l,
 	)
 }
 
-func (s *Server) handleIssueCommentEvent(ic github.IssueCommentEvent) {
-	l := logrus.WithFields(logrus.Fields{
+func (s *Server) handleIssueCommentEvent(l *logrus.Entry, ic github.IssueCommentEvent) {
+	l = l.WithFields(logrus.Fields{
 		"org":    ic.Repo.Owner.Login,
 		"repo":   ic.Repo.Name,
 		"pr":     ic.Issue.Number,
@@ -235,6 +235,7 @@ func (s *Server) handleIssueCommentEvent(ic github.IssueCommentEvent) {
 		return
 	}
 	s.handleGenericComment(
+		l,
 		&github.GenericCommentEvent{
 			IsPR:        ic.Issue.IsPullRequest(),
 			Action:      action,
@@ -247,12 +248,11 @@ func (s *Server) handleIssueCommentEvent(ic github.IssueCommentEvent) {
 			Assignees:   ic.Issue.Assignees,
 			IssueState:  ic.Issue.State,
 		},
-		l,
 	)
 }
 
-func (s *Server) handleStatusEvent(se github.StatusEvent) {
-	l := logrus.WithFields(logrus.Fields{
+func (s *Server) handleStatusEvent(l *logrus.Entry, se github.StatusEvent) {
+	l = l.WithFields(logrus.Fields{
 		"org":     se.Repo.Owner.Login,
 		"repo":    se.Repo.Name,
 		"context": se.Context,
@@ -289,11 +289,11 @@ func genericCommentAction(action string) github.GenericCommentEventAction {
 	return ""
 }
 
-func (s *Server) handleGenericComment(ce *github.GenericCommentEvent, log *logrus.Entry) {
+func (s *Server) handleGenericComment(l *logrus.Entry, ce *github.GenericCommentEvent) {
 	for p, h := range s.Plugins.GenericCommentHandlers(ce.Repo.Owner.Login, ce.Repo.Name) {
 		go func(p string, h plugins.GenericCommentHandler) {
 			pc := s.Plugins.PluginClient
-			pc.Logger = log.WithField("plugin", p)
+			pc.Logger = l.WithField("plugin", p)
 			pc.Config = s.ConfigAgent.Config()
 			pc.PluginConfig = s.Plugins.Config()
 			if err := h(pc, *ce); err != nil {

@@ -128,11 +128,11 @@ type PluginAgent struct {
 // target for plugin Configuration
 type Configuration struct {
 	// Repo (eg "k/k") -> list of handler names.
-	Plugins  map[string][]string `json:"plugins,omitempty"`
-	Triggers []Trigger           `json:"triggers,omitempty"`
-	Heart    Heart               `json:"heart,omitempty"`
-	Label    Label               `json:"label,omitempty"`
-	Slack    Slack               `json:"slack,omitempty"`
+	Plugins         map[string][]string `json:"plugins,omitempty"`
+	Triggers        []Trigger           `json:"triggers,omitempty"`
+	Heart           Heart               `json:"heart,omitempty"`
+	MilestoneStatus MilestoneStatus     `json:"milestonestatus,omitempty"`
+	Slack           Slack               `json:"slack,omitempty"`
 	// ConfigUpdater holds config for the config-updater plugin.
 	ConfigUpdater ConfigUpdater `json:"config_updater,omitempty"`
 }
@@ -151,15 +151,13 @@ type Heart struct {
 	Adorees []string `json:"adorees,omitempty"`
 }
 
-type Label struct {
-	// SigOrg is the organization that owns the
-	// special interest groups tagged in this repo
-	SigOrg string `json:"sig_org,omitempty"`
+// MilestoneStatus contains the configuration options for the milestonestatus plugin.
+type MilestoneStatus struct {
 	// ID of the github team for the milestone maintainers (used for setting status labels)
 	// You can curl the following endpoint in order to determine the github ID of your team
 	// responsible for maintaining the milestones:
 	// curl -H "Authorization: token <token>" https://api.github.com/orgs/<org-name>/teams
-	MilestoneMaintainersID int `json:"milestone_maintainers_id,omitempty"`
+	MaintainersID int `json:"maintainers_id,omitempty"`
 }
 
 type Slack struct {
