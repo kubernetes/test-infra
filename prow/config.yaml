@@ -338,10 +338,9 @@ presubmits:
     rerun_command: "/test pull-kubernetes-e2e-gce-bazel"
     trigger: "(?m)^/test (all|pull-kubernetes-e2e-gce-bazel),?(\\s+|$)"
     always_run: true
-    skip_branches:
-    - release-1.4
-    - release-1.5
-    - release-1.6
+    # TODO(krzyzacy):We need to backfill to support feature branches
+    branches:
+    - master
     spec:
       containers:
       - args:
@@ -369,6 +368,180 @@ presubmits:
         - name: TEST_TMPDIR
           value: /root/.cache/bazel
         image: gcr.io/k8s-testimages/kubekins-e2e:v20171008-cd94f30a-master
+        volumeMounts:
+        - mountPath: /etc/service-account
+          name: service
+          readOnly: true
+        - mountPath: /etc/ssh-key-secret
+          name: ssh
+          readOnly: true
+        - mountPath: /root/.cache
+          name: cache-ssd
+        ports:
+        - containerPort: 9999
+          hostPort: 9999
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
+      - name: ssh
+        secret:
+          defaultMode: 256
+          secretName: ssh-key-secret
+      - hostPath:
+          path: /mnt/disks/ssd0
+        name: cache-ssd
+  - name: pull-kubernetes-e2e-gce-bazel
+    agent: kubernetes
+    context: pull-kubernetes-e2e-gce-bazel
+    rerun_command: "/test pull-kubernetes-e2e-gce-bazel"
+    trigger: "(?m)^/test (all|pull-kubernetes-e2e-gce-bazel),?(\\s+|$)"
+    always_run: true
+    branches:
+    - release-1.8
+    spec:
+      containers:
+      - args:
+        - --root=/go/src
+        - --repo=k8s.io/kubernetes=$(PULL_REFS)
+        - --repo=k8s.io/release
+        - --upload=gs://kubernetes-jenkins/pr-logs
+        - --git-cache=/root/.cache/git
+        - --clean
+        - --timeout=90
+        # Bazel needs privileged mode in order to sandbox builds.
+        securityContext:
+          privileged: true
+        env:
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /etc/service-account/service-account.json
+        - name: USER
+          value: prow
+        - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+          value: /etc/ssh-key-secret/ssh-private
+        - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+          value: /etc/ssh-key-secret/ssh-public
+        # Make Bazel use shared cache for its root
+        # https://docs.bazel.build/versions/master/output_directories.html#documentation-of-the-current-bazel-output-directory-layout
+        - name: TEST_TMPDIR
+          value: /root/.cache/bazel
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20171008-cd94f30a-1.8
+        volumeMounts:
+        - mountPath: /etc/service-account
+          name: service
+          readOnly: true
+        - mountPath: /etc/ssh-key-secret
+          name: ssh
+          readOnly: true
+        - mountPath: /root/.cache
+          name: cache-ssd
+        ports:
+        - containerPort: 9999
+          hostPort: 9999
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
+      - name: ssh
+        secret:
+          defaultMode: 256
+          secretName: ssh-key-secret
+      - hostPath:
+          path: /mnt/disks/ssd0
+        name: cache-ssd
+  - name: pull-kubernetes-e2e-gce-bazel
+    agent: kubernetes
+    context: pull-kubernetes-e2e-gce-bazel
+    rerun_command: "/test pull-kubernetes-e2e-gce-bazel"
+    trigger: "(?m)^/test (all|pull-kubernetes-e2e-gce-bazel),?(\\s+|$)"
+    always_run: true
+    branches:
+    - release-1.7
+    spec:
+      containers:
+      - args:
+        - --root=/go/src
+        - --repo=k8s.io/kubernetes=$(PULL_REFS)
+        - --repo=k8s.io/release
+        - --upload=gs://kubernetes-jenkins/pr-logs
+        - --git-cache=/root/.cache/git
+        - --clean
+        - --timeout=90
+        # Bazel needs privileged mode in order to sandbox builds.
+        securityContext:
+          privileged: true
+        env:
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /etc/service-account/service-account.json
+        - name: USER
+          value: prow
+        - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+          value: /etc/ssh-key-secret/ssh-private
+        - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+          value: /etc/ssh-key-secret/ssh-public
+        # Make Bazel use shared cache for its root
+        # https://docs.bazel.build/versions/master/output_directories.html#documentation-of-the-current-bazel-output-directory-layout
+        - name: TEST_TMPDIR
+          value: /root/.cache/bazel
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20171008-cd94f30a-1.7
+        volumeMounts:
+        - mountPath: /etc/service-account
+          name: service
+          readOnly: true
+        - mountPath: /etc/ssh-key-secret
+          name: ssh
+          readOnly: true
+        - mountPath: /root/.cache
+          name: cache-ssd
+        ports:
+        - containerPort: 9999
+          hostPort: 9999
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
+      - name: ssh
+        secret:
+          defaultMode: 256
+          secretName: ssh-key-secret
+      - hostPath:
+          path: /mnt/disks/ssd0
+        name: cache-ssd
+  - name: pull-kubernetes-e2e-gce-bazel
+    agent: kubernetes
+    context: pull-kubernetes-e2e-gce-bazel
+    rerun_command: "/test pull-kubernetes-e2e-gce-bazel"
+    trigger: "(?m)^/test (all|pull-kubernetes-e2e-gce-bazel),?(\\s+|$)"
+    always_run: true
+    branches:
+    - release-1.6
+    spec:
+      containers:
+      - args:
+        - --root=/go/src
+        - --repo=k8s.io/kubernetes=$(PULL_REFS)
+        - --repo=k8s.io/release
+        - --upload=gs://kubernetes-jenkins/pr-logs
+        - --git-cache=/root/.cache/git
+        - --clean
+        - --timeout=90
+        # Bazel needs privileged mode in order to sandbox builds.
+        securityContext:
+          privileged: true
+        env:
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /etc/service-account/service-account.json
+        - name: USER
+          value: prow
+        - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+          value: /etc/ssh-key-secret/ssh-private
+        - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+          value: /etc/ssh-key-secret/ssh-public
+        # Make Bazel use shared cache for its root
+        # https://docs.bazel.build/versions/master/output_directories.html#documentation-of-the-current-bazel-output-directory-layout
+        - name: TEST_TMPDIR
+          value: /root/.cache/bazel
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20171008-cd94f30a-1.6
         volumeMounts:
         - mountPath: /etc/service-account
           name: service
@@ -1132,10 +1305,8 @@ presubmits:
     rerun_command: "/test pull-security-kubernetes-e2e-gce-bazel"
     trigger: "(?m)^/test (all|pull-security-kubernetes-e2e-gce-bazel),?(\\s+|$)"
     always_run: true
-    skip_branches:
-    - release-1.4
-    - release-1.5
-    - release-1.6
+    branches:
+    - master
     spec:
       containers:
       - args:
@@ -1163,6 +1334,180 @@ presubmits:
         - name: TEST_TMPDIR
           value: /root/.cache/bazel
         image: gcr.io/k8s-testimages/kubekins-e2e:v20171008-cd94f30a-master
+        volumeMounts:
+        - mountPath: /etc/service-account
+          name: service
+          readOnly: true
+        - mountPath: /etc/ssh-key-secret
+          name: ssh
+          readOnly: true
+        - mountPath: /root/.cache
+          name: cache-ssd
+        ports:
+        - containerPort: 9999
+          hostPort: 9999
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
+      - name: ssh
+        secret:
+          defaultMode: 256
+          secretName: ssh-key-secret
+      - hostPath:
+          path: /mnt/disks/ssd0
+        name: cache-ssd
+  - name: pull-security-kubernetes-e2e-gce-bazel
+    agent: kubernetes
+    context: pull-security-kubernetes-e2e-gce-bazel
+    rerun_command: "/test pull-security-kubernetes-e2e-gce-bazel"
+    trigger: "(?m)^/test (all|pull-security-kubernetes-e2e-gce-bazel),?(\\s+|$)"
+    always_run: true
+    branches:
+    - release-1.8
+    spec:
+      containers:
+      - args:
+        - --root=/go/src
+        - --repo=k8s.io/kubernetes=$(PULL_REFS)
+        - --repo=k8s.io/release
+        - --upload=gs://kubernetes-jenkins/pr-logs
+        - --git-cache=/root/.cache/git
+        - --clean
+        - --timeout=90
+        # Bazel needs privileged mode in order to sandbox builds.
+        securityContext:
+          privileged: true
+        env:
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /etc/service-account/service-account.json
+        - name: USER
+          value: prow
+        - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+          value: /etc/ssh-key-secret/ssh-private
+        - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+          value: /etc/ssh-key-secret/ssh-public
+        # Make Bazel use shared cache for its root
+        # https://docs.bazel.build/versions/master/output_directories.html#documentation-of-the-current-bazel-output-directory-layout
+        - name: TEST_TMPDIR
+          value: /root/.cache/bazel
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20171008-cd94f30a-1.8
+        volumeMounts:
+        - mountPath: /etc/service-account
+          name: service
+          readOnly: true
+        - mountPath: /etc/ssh-key-secret
+          name: ssh
+          readOnly: true
+        - mountPath: /root/.cache
+          name: cache-ssd
+        ports:
+        - containerPort: 9999
+          hostPort: 9999
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
+      - name: ssh
+        secret:
+          defaultMode: 256
+          secretName: ssh-key-secret
+      - hostPath:
+          path: /mnt/disks/ssd0
+        name: cache-ssd
+  - name: pull-security-kubernetes-e2e-gce-bazel
+    agent: kubernetes
+    context: pull-security-kubernetes-e2e-gce-bazel
+    rerun_command: "/test pull-security-kubernetes-e2e-gce-bazel"
+    trigger: "(?m)^/test (all|pull-security-kubernetes-e2e-gce-bazel),?(\\s+|$)"
+    always_run: true
+    branches:
+    - release-1.7
+    spec:
+      containers:
+      - args:
+        - --root=/go/src
+        - --repo=k8s.io/kubernetes=$(PULL_REFS)
+        - --repo=k8s.io/release
+        - --upload=gs://kubernetes-jenkins/pr-logs
+        - --git-cache=/root/.cache/git
+        - --clean
+        - --timeout=90
+        # Bazel needs privileged mode in order to sandbox builds.
+        securityContext:
+          privileged: true
+        env:
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /etc/service-account/service-account.json
+        - name: USER
+          value: prow
+        - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+          value: /etc/ssh-key-secret/ssh-private
+        - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+          value: /etc/ssh-key-secret/ssh-public
+        # Make Bazel use shared cache for its root
+        # https://docs.bazel.build/versions/master/output_directories.html#documentation-of-the-current-bazel-output-directory-layout
+        - name: TEST_TMPDIR
+          value: /root/.cache/bazel
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20171008-cd94f30a-1.7
+        volumeMounts:
+        - mountPath: /etc/service-account
+          name: service
+          readOnly: true
+        - mountPath: /etc/ssh-key-secret
+          name: ssh
+          readOnly: true
+        - mountPath: /root/.cache
+          name: cache-ssd
+        ports:
+        - containerPort: 9999
+          hostPort: 9999
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
+      - name: ssh
+        secret:
+          defaultMode: 256
+          secretName: ssh-key-secret
+      - hostPath:
+          path: /mnt/disks/ssd0
+        name: cache-ssd
+  - name: pull-security-kubernetes-e2e-gce-bazel
+    agent: kubernetes
+    context: pull-security-kubernetes-e2e-gce-bazel
+    rerun_command: "/test pull-security-kubernetes-e2e-gce-bazel"
+    trigger: "(?m)^/test (all|pull-security-kubernetes-e2e-gce-bazel),?(\\s+|$)"
+    always_run: true
+    branches:
+    - release-1.6
+    spec:
+      containers:
+      - args:
+        - --root=/go/src
+        - --repo=k8s.io/kubernetes=$(PULL_REFS)
+        - --repo=k8s.io/release
+        - --upload=gs://kubernetes-jenkins/pr-logs
+        - --git-cache=/root/.cache/git
+        - --clean
+        - --timeout=90
+        # Bazel needs privileged mode in order to sandbox builds.
+        securityContext:
+          privileged: true
+        env:
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /etc/service-account/service-account.json
+        - name: USER
+          value: prow
+        - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+          value: /etc/ssh-key-secret/ssh-private
+        - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+          value: /etc/ssh-key-secret/ssh-public
+        # Make Bazel use shared cache for its root
+        # https://docs.bazel.build/versions/master/output_directories.html#documentation-of-the-current-bazel-output-directory-layout
+        - name: TEST_TMPDIR
+          value: /root/.cache/bazel
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20171008-cd94f30a-1.6
         volumeMounts:
         - mountPath: /etc/service-account
           name: service
