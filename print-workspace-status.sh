@@ -22,6 +22,8 @@ build_date="$(date -u '+%Y%m%d')"
 docker_tag="v${build_date}-${git_commit}"
 cat <<EOF
 STABLE_DOCKER_REPO ${DOCKER_REPO_OVERRIDE:-gcr.io/k8s-testimages}
+# TODO(mattmoor): What default should we give this?
+STABLE_K8S_CLUSTER ${K8S_CLUSTER_OVERRIDE:-}
 STABLE_BUILD_GIT_COMMIT ${git_commit}
 DOCKER_TAG ${docker_tag}
 EOF

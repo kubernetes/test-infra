@@ -1,0 +1,25 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: horologium
+  labels:
+    app: horologium
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: horologium
+    spec:
+      terminationGracePeriodSeconds: 30
+      containers:
+      - name: horologium
+        image: gcr.io/k8s-prow/horologium:0.8
+        volumeMounts:
+        - name: config
+          mountPath: /etc/config
+          readOnly: true
+      volumes:
+      - name: config
+        configMap:
+          name: config

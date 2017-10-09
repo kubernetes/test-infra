@@ -1,0 +1,16 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: ing
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /*
+        backend:
+          serviceName: deck
+          servicePort: 80
+      - path: /hook
+        backend:
+          serviceName: hook
+          servicePort: 8888

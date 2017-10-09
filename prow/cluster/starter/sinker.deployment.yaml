@@ -1,0 +1,24 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: sinker
+  labels:
+    app: sinker
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: sinker
+    spec:
+      containers:
+      - name: sinker
+        image: gcr.io/k8s-prow/sinker:0.21
+        volumeMounts:
+        - name: config
+          mountPath: /etc/config
+          readOnly: true
+      volumes:
+      - name: config
+        configMap:
+          name: config
