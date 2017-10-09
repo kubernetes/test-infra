@@ -591,7 +591,6 @@ class JobTest(unittest.TestCase):
                     extracts = [a for a in args if '--extract=' in a]
                     shared_builds = [a for a in args if '--use-shared-build' in a]
                     node_e2e = [a for a in args if '--deployment=node' in a]
-                    pull = job.startswith('pull-')
                     if shared_builds and extracts:
                         self.fail(('e2e jobs cannot have --use-shared-build'
                                    ' and --extract: %s %s') % (job, args))
@@ -599,7 +598,7 @@ class JobTest(unittest.TestCase):
                         self.fail(('e2e job needs --extract or'
                                    ' --use-shared-build: %s %s') % (job, args))
 
-                    if shared_builds or node_e2e and not pull:
+                    if shared_builds or node_e2e:
                         expected = 0
                     elif any(s in job for s in [
                             'upgrade', 'skew', 'downgrade', 'rollback',
@@ -627,7 +626,7 @@ class JobTest(unittest.TestCase):
                         self.fail('--image-family and --image-project must be'
                                   'both set or unset: %s' % job)
 
-                    if job.startswith('pull-kubernetes-'):
+                    if job.startswith('pull-kubernetes-') and not node_e2e:
                         if not 'pull-kubernetes-federation-e2e-gce' in job:
                             # pull-kubernetes-federation-e2e-gce job uses a specific cluster names
                             # instead of dynamic cluster names.
