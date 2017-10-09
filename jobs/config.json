@@ -8773,6 +8773,26 @@
       "sig-scale"
     ]
   },
+  "ci-kubernetes-kubemark-5-prow-canary": {
+    "args": [
+      "--cluster=kubemark-5-prow-canary",
+      "--env-file=jobs/platform/gce.env",
+      "--env-file=jobs/env/ci-kubernetes-kubemark-5-gce.env",
+      "--extract=ci/latest",
+      "--gcp-project=k8s-jenkins-gci-kubemark",
+      "--gcp-zone=us-central1-f",
+      "--kubemark",
+      "--kubemark-nodes=5",
+      "--provider=gce",
+      "--test=false",
+      "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --gather-resource-usage=true --gather-metrics-at-teardown=true --output-print-type=json",
+      "--timeout=60m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-testing"
+    ]
+  },
   "ci-kubernetes-kubemark-500-gce": {
     "args": [
       "--cluster=kubemark-500",
