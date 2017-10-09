@@ -6,7 +6,7 @@ kettle/** @rmmh
 logexporter/** @shyamjvs
 mungegithub/** @cjwagner
 planter/** @bentheelder
-prow/** @cjwagner
+prow/** @cjwagner @kargakis
 prow/config.yaml @krzyzacy
 testgrid/** @krzyzacy @michelle192837
 triage/** @rmmh
