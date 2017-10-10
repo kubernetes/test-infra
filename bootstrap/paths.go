@@ -14,8 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// TODO(bentheelder): unit test this
-
 package main
 
 import (
@@ -70,12 +68,19 @@ func PRPaths(base string, repos Repos, job, build string) (*Paths, error) {
 		prefix = strings.Replace(repo.Name, "/", "_", -1)
 	}
 	// Batch merges are those with more than one PR specified.
-	prNums := PullNumbers(repo.Pull)
+	prNums := repo.PullNumbers()
 	var pull string
-	if len(prNums) > 1 {
-		pull = filepath.Join(prefix, "batch")
-	} else {
+	switch len(prNums) {
+	// TODO(bentheelder): jenkins/bootstrap.py would do equivilant to:
+	// `pull = filepath.Join(prefix, repo.Pull)` in this case, though we
+	// don't appear to ever have used this and probably shouldn't.
+	// Revisit if we want to error here or do the previous screwy behavior
+	case 0:
+		return nil, fmt.Errorf("expected at least one PR number")
+	case 1:
 		pull = filepath.Join(prefix, prNums[0])
+	default:
+		pull = filepath.Join(prefix, "batch")
 	}
 	prPath := filepath.Join(base, "pull", pull, job, build)
 	return &Paths{
@@ -90,4 +95,13 @@ func PRPaths(base string, repos Repos, job, build string) (*Paths, error) {
 		ResultCache:   filepath.Join(base, "directory", job, "jobResultsCache.json"),
 		Started:       filepath.Join(prPath, "started.json"),
 	}, nil
+}
+
+// GubernatorBuildURL returns a Gubernator link for this build.
+func GubernatorBuildURL(paths *Paths) string {
+	logPath := filepath.Dir(paths.BuildLog)
+	if strings.HasPrefix(logPath, "gs:/") {
+		return strings.Replace(logPath, "gs:/", GubernatorBaseBuildURL, 1)
+	}
+	return logPath
 }

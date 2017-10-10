@@ -25,21 +25,21 @@ import (
 
 // Constant Keys for known environment variables and URLs
 const (
-	BuildEnv          string = "BUILD_NUMBER"
-	BootstrapEnv      string = "BOOTSTRAP_MIGRATION"
-	CloudSDKEnv       string = "CLOUDSDK_CONFIG"
-	GCEPrivKeyEnv     string = "JENKINS_GCE_SSH_PRIVATE_KEY_FILE"
-	GCEPubKeyEnv      string = "JENKINS_GCE_SSH_PUBLIC_KEY_FILE"
-	AWSPrivKeyEnv     string = "JENKINS_AWS_SSH_PRIVATE_KEY_FILE"
-	AWSPubKeyEnv      string = "JENKINS_AWS_SSH_PUBLIC_KEY_FILE"
-	Gubernator        string = "https://k8s-gubernator.appspot.com/build"
-	HomeEnv           string = "HOME"
-	JenkinsHomeEnv    string = "JENKINS_HOME"
-	JobEnv            string = "JOB_NAME"
-	NodeNameEnv       string = "NODE_NAME"
-	ServiceAccountEnv string = "GOOGLE_APPLICATION_CREDENTIALS"
-	WorkspaceEnv      string = "WORKSPACE"
-	GCSArtifactsEnv   string = "GCS_ARTIFACTS_DIR"
+	BuildNumberEnv         string = "BUILD_NUMBER"
+	BootstrapEnv           string = "BOOTSTRAP_MIGRATION"
+	CloudSDKEnv            string = "CLOUDSDK_CONFIG"
+	GCEPrivKeyEnv          string = "JENKINS_GCE_SSH_PRIVATE_KEY_FILE"
+	GCEPubKeyEnv           string = "JENKINS_GCE_SSH_PUBLIC_KEY_FILE"
+	AWSPrivKeyEnv          string = "JENKINS_AWS_SSH_PRIVATE_KEY_FILE"
+	AWSPubKeyEnv           string = "JENKINS_AWS_SSH_PUBLIC_KEY_FILE"
+	GubernatorBaseBuildURL string = "https://k8s-gubernator.appspot.com/build/"
+	HomeEnv                string = "HOME"
+	JenkinsHomeEnv         string = "JENKINS_HOME"
+	JobEnv                 string = "JOB_NAME"
+	NodeNameEnv            string = "NODE_NAME"
+	ServiceAccountEnv      string = "GOOGLE_APPLICATION_CREDENTIALS"
+	WorkspaceEnv           string = "WORKSPACE"
+	GCSArtifactsEnv        string = "GCS_ARTIFACTS_DIR"
 )
 
 // Bootstrap is the "real main" for bootstrap, after argument parsing

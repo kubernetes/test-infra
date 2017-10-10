@@ -186,9 +186,9 @@ func TestNodeName(t *testing.T) {
 	if err != nil {
 		t.Errorf("Got an unexpected err running NodeName: %v", err)
 	}
-	nodeNameEnvVal := os.Getenv(NodeNameEnv)
-	if nodeNameEnvVal != name {
-		t.Errorf("Expected os.Getenv(`%s`) to equal %#v not %#v", NodeNameEnv, name, nodeNameEnvVal)
+	valNodeNameEnv := os.Getenv(NodeNameEnv)
+	if valNodeNameEnv != name {
+		t.Errorf("Expected os.Getenv(`%s`) to equal %#v not %#v", NodeNameEnv, name, valNodeNameEnv)
 	}
 }
 
@@ -201,8 +201,8 @@ func TestBuildName(t *testing.T) {
 	if name == "" {
 		t.Errorf("Expected a non-empty build name")
 	}
-	buildEnvVal := os.Getenv(BuildEnv)
-	if buildEnvVal != name {
-		t.Errorf("Expected os.Getenv(`%s`) to equal %#v not %#v", BuildEnv, name, buildEnvVal)
+	valBuildNumberEnv := os.Getenv(BuildNumberEnv)
+	if valBuildNumberEnv != name {
+		t.Errorf("Expected os.Getenv(`%s`) to equal %#v not %#v", BuildNumberEnv, name, valBuildNumberEnv)
 	}
 }

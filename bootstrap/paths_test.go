@@ -23,7 +23,7 @@ import (
 )
 
 func TestCIPaths(t *testing.T) {
-	tests := []struct {
+	testCases := []struct {
 		Name     string
 		Base     string
 		Job      string
@@ -45,10 +45,10 @@ func TestCIPaths(t *testing.T) {
 			},
 		},
 	}
-	for _, test := range tests {
+	for _, test := range testCases {
 		res := CIPaths(test.Base, test.Job, test.Build)
 		if !reflect.DeepEqual(res, test.Expected) {
-			t.Errorf("Paths did not match expected for test: %s", test.Name)
+			t.Errorf("Paths did not match expected for test: %#v", test.Name)
 			t.Errorf("%#v", res)
 			t.Errorf("%#v", test.Expected)
 		}
@@ -58,7 +58,7 @@ func TestCIPaths(t *testing.T) {
 func TestPRPaths(t *testing.T) {
 	// create some Repos values for use in the test cases below
 	reposEmtpy := Repos{}
-	reposK8sIO, err := ParseRepos([]string{"k8s.io/kubernetes=master:42e2ca8c18c93ba25eb0e5bd02ecba2eaa05e871,52057:b4f639f57ae0a89cdf1b43d1810b617c76f4b1b3,1337:03a564a5309ea84065fb203f628b50c382b65a50"})
+	reposK8sIO, err := ParseRepos([]string{"k8s.io/kubernetes=master:42e2ca8c18c93ba25eb0e5bd02ecba2eaa05e871,52057:b4f639f57ae0a89cdf1b43d1810b617c76f4b1b3,2001:03a564a5309ea84065fb203f628b50c382b65a50"})
 	if err != nil {
 		t.Errorf("got unexpected error parsing test repos: %v", err)
 	}
@@ -66,20 +66,20 @@ func TestPRPaths(t *testing.T) {
 	if err != nil {
 		t.Errorf("got unexpected error parsing test repos: %v", err)
 	}
-	reposKubernetes, err := ParseRepos([]string{"kubernetes/test-infra"})
+	reposKubernetes, err := ParseRepos([]string{"kubernetes/test-infra=master:0efa7e1b,2001:8b376c6c"})
 	if err != nil {
 		t.Errorf("got unexpected error parsing test repos: %v", err)
 	}
-	reposGithub, err := ParseRepos([]string{"github.com/foo/bar"})
+	reposGithub, err := ParseRepos([]string{"github.com/foo/bar=master:0efa7e1b,2001:8b376c6c"})
 	if err != nil {
 		t.Errorf("got unexpected error parsing test repos: %v", err)
 	}
-	reposOther, err := ParseRepos([]string{"example.com/foo/bar"})
+	reposOther, err := ParseRepos([]string{"example.com/foo/bar=master:0efa7e1b,2001:8b376c6c"})
 	if err != nil {
 		t.Errorf("got unexpected error parsing test repos: %v", err)
 	}
 	// assert some known expected values and the expected failure for len(repos) == 0
-	tests := []struct {
+	testCases := []struct {
 		Name      string
 		Base      string
 		Repos     Repos
@@ -115,15 +115,15 @@ func TestPRPaths(t *testing.T) {
 			Repos: reposK8sIOTestInfra,
 			Build: "1337",
 			Expected: &Paths{
-				Artifacts:     filepath.Join("/base", "pull", "test-infra/52057", "some-job", "1337", "artifacts"),
-				BuildLog:      filepath.Join("/base", "pull", "test-infra/52057", "some-job", "1337", "build-log.txt"),
-				PRPath:        filepath.Join("/base", "pull", "test-infra/52057", "some-job", "1337"),
+				Artifacts:     filepath.Join("/base", "pull", "test-infra", "52057", "some-job", "1337", "artifacts"),
+				BuildLog:      filepath.Join("/base", "pull", "test-infra", "52057", "some-job", "1337", "build-log.txt"),
+				PRPath:        filepath.Join("/base", "pull", "test-infra", "52057", "some-job", "1337"),
 				PRBuildLink:   filepath.Join("/base", "directory", "some-job", "1337.txt"),
-				PRLatest:      filepath.Join("/base", "pull", "test-infra/52057", "some-job", "latest-build.txt"),
-				PRResultCache: filepath.Join("/base", "pull", "test-infra/52057", "some-job", "jobResultsCache.json"),
+				PRLatest:      filepath.Join("/base", "pull", "test-infra", "52057", "some-job", "latest-build.txt"),
+				PRResultCache: filepath.Join("/base", "pull", "test-infra", "52057", "some-job", "jobResultsCache.json"),
 				ResultCache:   filepath.Join("/base", "directory", "some-job", "jobResultsCache.json"),
-				Started:       filepath.Join("/base", "pull", "test-infra/52057", "some-job", "1337", "started.json"),
-				Finished:      filepath.Join("/base", "pull", "test-infra/52057", "some-job", "1337", "finished.json"),
+				Started:       filepath.Join("/base", "pull", "test-infra", "52057", "some-job", "1337", "started.json"),
+				Finished:      filepath.Join("/base", "pull", "test-infra", "52057", "some-job", "1337", "finished.json"),
 				Latest:        filepath.Join("/base", "directory", "some-job", "latest-build.txt"),
 			},
 			ExpectErr: false,
@@ -135,15 +135,15 @@ func TestPRPaths(t *testing.T) {
 			Repos: reposKubernetes,
 			Build: "1337",
 			Expected: &Paths{
-				Artifacts:     filepath.Join("/base", "pull", "test-infra", "some-job", "1337", "artifacts"),
-				BuildLog:      filepath.Join("/base", "pull", "test-infra", "some-job", "1337", "build-log.txt"),
-				PRPath:        filepath.Join("/base", "pull", "test-infra", "some-job", "1337"),
+				Artifacts:     filepath.Join("/base", "pull", "test-infra", "2001", "some-job", "1337", "artifacts"),
+				BuildLog:      filepath.Join("/base", "pull", "test-infra", "2001", "some-job", "1337", "build-log.txt"),
+				PRPath:        filepath.Join("/base", "pull", "test-infra", "2001", "some-job", "1337"),
 				PRBuildLink:   filepath.Join("/base", "directory", "some-job", "1337.txt"),
-				PRLatest:      filepath.Join("/base", "pull", "test-infra", "some-job", "latest-build.txt"),
-				PRResultCache: filepath.Join("/base", "pull", "test-infra", "some-job", "jobResultsCache.json"),
+				PRLatest:      filepath.Join("/base", "pull", "test-infra", "2001", "some-job", "latest-build.txt"),
+				PRResultCache: filepath.Join("/base", "pull", "test-infra", "2001", "some-job", "jobResultsCache.json"),
 				ResultCache:   filepath.Join("/base", "directory", "some-job", "jobResultsCache.json"),
-				Started:       filepath.Join("/base", "pull", "test-infra", "some-job", "1337", "started.json"),
-				Finished:      filepath.Join("/base", "pull", "test-infra", "some-job", "1337", "finished.json"),
+				Started:       filepath.Join("/base", "pull", "test-infra", "2001", "some-job", "1337", "started.json"),
+				Finished:      filepath.Join("/base", "pull", "test-infra", "2001", "some-job", "1337", "finished.json"),
 				Latest:        filepath.Join("/base", "directory", "some-job", "latest-build.txt"),
 			},
 			ExpectErr: false,
@@ -155,15 +155,15 @@ func TestPRPaths(t *testing.T) {
 			Repos: reposGithub,
 			Build: "1337",
 			Expected: &Paths{
-				Artifacts:     filepath.Join("/base", "pull", "foo_bar", "some-job", "1337", "artifacts"),
-				BuildLog:      filepath.Join("/base/pull/foo_bar/some-job/1337/build-log.txt"),
-				PRPath:        filepath.Join("/base/pull/foo_bar/some-job/1337"),
+				Artifacts:     filepath.Join("/base", "pull", "foo_bar", "2001", "some-job", "1337", "artifacts"),
+				BuildLog:      filepath.Join("/base", "pull", "foo_bar", "2001", "some-job", "1337", "build-log.txt"),
+				PRPath:        filepath.Join("/base", "pull", "foo_bar", "2001", "some-job", "1337"),
 				PRBuildLink:   filepath.Join("/base", "directory", "some-job", "1337.txt"),
-				PRLatest:      filepath.Join("/base", "pull", "foo_bar", "some-job", "latest-build.txt"),
-				PRResultCache: filepath.Join("/base", "pull", "foo_bar", "some-job", "jobResultsCache.json"),
+				PRLatest:      filepath.Join("/base", "pull", "foo_bar", "2001", "some-job", "latest-build.txt"),
+				PRResultCache: filepath.Join("/base", "pull", "foo_bar", "2001", "some-job", "jobResultsCache.json"),
 				ResultCache:   filepath.Join("/base", "directory", "some-job", "jobResultsCache.json"),
-				Started:       filepath.Join("/base", "pull", "foo_bar", "some-job", "1337", "started.json"),
-				Finished:      filepath.Join("/base", "pull", "foo_bar", "some-job", "1337", "finished.json"),
+				Started:       filepath.Join("/base", "pull", "foo_bar", "2001", "some-job", "1337", "started.json"),
+				Finished:      filepath.Join("/base", "pull", "foo_bar", "2001", "some-job", "1337", "finished.json"),
 				Latest:        filepath.Join("/base", "directory", "some-job", "latest-build.txt"),
 			},
 			ExpectErr: false,
@@ -175,15 +175,15 @@ func TestPRPaths(t *testing.T) {
 			Repos: reposOther,
 			Build: "1337",
 			Expected: &Paths{
-				Artifacts:     filepath.Join("/base", "pull", "example.com_foo_bar", "some-job", "1337", "artifacts"),
-				BuildLog:      filepath.Join("/base", "pull", "example.com_foo_bar", "some-job", "1337", "build-log.txt"),
-				PRPath:        filepath.Join("/base", "pull", "example.com_foo_bar", "some-job", "1337"),
+				Artifacts:     filepath.Join("/base", "pull", "example.com_foo_bar", "2001", "some-job", "1337", "artifacts"),
+				BuildLog:      filepath.Join("/base", "pull", "example.com_foo_bar", "2001", "some-job", "1337", "build-log.txt"),
+				PRPath:        filepath.Join("/base", "pull", "example.com_foo_bar", "2001", "some-job", "1337"),
 				PRBuildLink:   filepath.Join("/base", "directory", "some-job", "1337.txt"),
-				PRLatest:      filepath.Join("/base", "pull", "example.com_foo_bar", "some-job", "latest-build.txt"),
-				PRResultCache: filepath.Join("/base", "pull", "example.com_foo_bar", "some-job", "jobResultsCache.json"),
+				PRLatest:      filepath.Join("/base", "pull", "example.com_foo_bar", "2001", "some-job", "latest-build.txt"),
+				PRResultCache: filepath.Join("/base", "pull", "example.com_foo_bar", "2001", "some-job", "jobResultsCache.json"),
 				ResultCache:   filepath.Join("/base", "/directory/some-job", "jobResultsCache.json"),
-				Started:       filepath.Join("/base", "pull", "example.com_foo_bar", "some-job", "1337", "started.json"),
-				Finished:      filepath.Join("/base", "pull", "example.com_foo_bar", "some-job", "1337", "finished.json"),
+				Started:       filepath.Join("/base", "pull", "example.com_foo_bar", "2001", "some-job", "1337", "started.json"),
+				Finished:      filepath.Join("/base", "pull", "example.com_foo_bar", "2001", "some-job", "1337", "finished.json"),
 				Latest:        filepath.Join("/base", "/directory/some-job", "latest-build.txt"),
 			},
 			ExpectErr: false,
@@ -198,7 +198,7 @@ func TestPRPaths(t *testing.T) {
 			ExpectErr: true,
 		},
 	}
-	for _, test := range tests {
+	for _, test := range testCases {
 		res, err := PRPaths(test.Base, test.Repos, test.Job, test.Build)
 		if test.ExpectErr && err == nil {
 			t.Errorf("err == nil and error expected for test %#v", test.Name)
@@ -208,6 +208,33 @@ func TestPRPaths(t *testing.T) {
 			t.Errorf("Paths did not match expected for test: %#v", test.Name)
 			t.Errorf("%#v", res)
 			t.Errorf("%#v", test.Expected)
+		}
+	}
+}
+
+func TestGubernatorBuildURL(t *testing.T) {
+	// test with and without gs://
+	tests := []struct {
+		Name     string
+		Paths    *Paths
+		Expected string
+	}{
+		{
+			Name:     "with gs://",
+			Paths:    CIPaths("gs://foo", "bar", "baz"),
+			Expected: "https://k8s-gubernator.appspot.com/build/foo/bar/baz",
+		},
+		{
+			Name:     "without gs://",
+			Paths:    CIPaths("/foo", "bar", "baz"),
+			Expected: "/foo/bar/baz",
+		},
+	}
+	for _, test := range tests {
+		res := GubernatorBuildURL(test.Paths)
+		if res != test.Expected {
+			t.Errorf("result did not match expected for test case %#v", test.Name)
+			t.Errorf("%#v != %#v", res, test.Expected)
 		}
 	}
 }
