@@ -10333,7 +10333,7 @@
   },
   "pull-kubernetes-federation-e2e-gce-canary": {
     "args": [
-      "--build=bazel",
+      "--build",
       "--cluster=prow-us-central1-f",
       "--deployment=none",
       "--env-file=jobs/platform/gce.env",
