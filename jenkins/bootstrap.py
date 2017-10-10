@@ -769,13 +769,13 @@ def job_args(args):
     return [os.path.expandvars(a) for a in args]
 
 
-def job_script(job):
+def job_script(job, extra_job_args):
     """Return path to script for job."""
     with open(test_infra('jobs/config.json')) as fp:
         config = json.loads(fp.read())
     job_config = config[job]
     cmd = test_infra('scenarios/%s.py' % job_config['scenario'])
-    return [cmd] + job_args(job_config.get('args', []))
+    return [cmd] + job_args(extra_job_args + job_config.get('args', []))
 
 
 def gubernator_uri(paths):
@@ -928,7 +928,7 @@ def bootstrap(args):
             start(gsutil, paths, started, node(), version, repos)
         success = False
         try:
-            call(job_script(job))
+            call(job_script(job, args.extra_job_args))
             logging.info('PASS: %s', job)
             success = True
         except subprocess.CalledProcessError:
@@ -992,7 +992,13 @@ def parse_args(arguments=None):
         '--clean',
         action='store_true',
         help='Clean the git repo before running tests.')
+    # split out args after `--` as job arguments
+    extra_job_args = []
+    if '--' in arguments:
+        index = arguments.index('--')
+        arguments, extra_job_args = arguments[:index], arguments[index+1:]
     args = parser.parse_args(arguments)
+    setattr(args, 'extra_job_args', extra_job_args)
     # --pull is deprecated, use --repo=k8s.io/foo=master:abcd,12:ef12,45:ff65
     setattr(args, 'pull', None)
     # --branch is deprecated, use --repo=k8s.io/foo=master

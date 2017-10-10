@@ -1059,6 +1059,7 @@ class FakeArgs(object):
         self.branch = BRANCH
         self.pull = PULL
         self.repo = [REPO]
+        self.extra_job_args = []
         for key, val in kw.items():
             if not hasattr(self, key):
                 raise AttributeError(self, key)
@@ -1467,6 +1468,11 @@ class ParseArgsTest(unittest.TestCase):
         args = bootstrap.parse_args(['--repo=R', '--job=j'])
         self.assertFalse(args.bare, args)
         self.assertTrue(args.repo, args)
+
+
+    def test_extra_job_args(self):
+        args = bootstrap.parse_args(['--repo=R', '--job=j', '--', '--foo=bar', '--baz=quux'])
+        self.assertEquals(args.extra_job_args, ['--foo=bar', '--baz=quux'])
 
 
 if __name__ == '__main__':
