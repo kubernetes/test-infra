@@ -77,7 +77,7 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent) e
 	if err != nil {
 		return err
 	}
-	labels, err := gc.GetIssueLabels(org, repo, 1)
+	labels, err := gc.GetIssueLabels(org, repo, e.Number)
 	if err != nil {
 		return err
 	}
