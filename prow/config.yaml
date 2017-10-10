@@ -929,17 +929,85 @@ presubmits:
           path: /mnt/disks/ssd0
 
   - name: pull-kubernetes-unit
-    agent: jenkins
+    agent: kubernetes
     always_run: true
     context: pull-kubernetes-unit
     rerun_command: "/test pull-kubernetes-unit"
     trigger: "(?m)^/test( all| pull-kubernetes-unit),?(\\s+|$)"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kube-test
+        args:
+        - "--clean"
+        - "--root=/go/src"
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: service
+          mountPath: /etc/service-account
+          readOnly: true
+        - name: docker
+          mountPath: /var/run/docker.sock
+        - name: k8s
+          mountPath: /go/src/k8s.io/kubernetes
+        ports:
+        - containerPort: 9999
+          hostPort: 9999
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
+      - name: docker
+        hostPath:
+          path: /var/run/docker.sock
+      - name: k8s
+        hostPath:
+          path: /go/src/k8s.io/kubernetes
+
   - name: pull-kubernetes-verify
-    agent: jenkins
+    agent: kubernetes
     always_run: true
     context: pull-kubernetes-verify
     rerun_command: "/test pull-kubernetes-verify"
     trigger: "(?m)^/test( all| pull-kubernetes-verify),?(\\s+|$)"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kube-test
+        args:
+        - "--clean"
+        - "--root=/go/src"
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: service
+          mountPath: /etc/service-account
+          readOnly: true
+        - name: docker
+          mountPath: /var/run/docker.sock
+        - name: k8s
+          mountPath: /go/src/k8s.io/kubernetes
+        ports:
+        - containerPort: 9999
+          hostPort: 9999
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
+      - name: docker
+        hostPath:
+          path: /var/run/docker.sock
+      - name: k8s
+        hostPath:
+          path: /go/src/k8s.io/kubernetes
+
   kubernetes-security/kubernetes:
   - name: pull-security-kubernetes-bazel-build
     agent: kubernetes
