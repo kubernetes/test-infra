@@ -4426,6 +4426,7 @@
       "--extract=ci/latest",
       "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
       "--gcp-node-image=gci",
+      "--gcp-project=k8s-e2e-gci-gke-autoscaling",
       "--gcp-zone=us-central1-f",
       "--gke-environment=test",
       "--provider=gke",

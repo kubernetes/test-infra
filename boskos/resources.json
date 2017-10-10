@@ -87,7 +87,6 @@
       "gke-up-g1-4-glat-up-mas",
       "jenkins-gke-e2e-serial",
       "jenkins-gke-gci-e2e-serial",
-      "k8s-e2e-gci-gke-autoscaling",
       "k8s-e2e-gci-gke-prod-parallel",
       "k8s-e2e-gci-gke-prod-smoke",
       "k8s-e2e-gci-gke-staging-plel",
