@@ -1015,6 +1015,8 @@ test_groups:
 # kubeadm tests
 - name: ci-kubernetes-e2e-kubeadm-gce
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce
+- name: ci-kubernetes-e2e-kubeadm-gce-cni-flannel
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-cni-flannel
 - name: ci-kubernetes-e2e-kubeadm-gce-stable-on-master
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-stable-on-master
 - name: ci-kubernetes-e2e-kubeadm-gce-1-6
@@ -3647,6 +3649,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-stable-on-master
   - name: kubeadm-gce
     test_group_name: ci-kubernetes-e2e-kubeadm-gce
+  - name: kubeadm-gce-cni-flannel
+    test_group_name: ci-kubernetes-e2e-kubeadm-gce-cni-flannel
 
 - name: sig-federation
   dashboard_tab:
