@@ -963,6 +963,8 @@ def bootstrap(args):
 
 def parse_args(arguments=None):
     """Parse arguments or sys.argv[1:]."""
+    if arguments is None:
+        arguments = sys.argv[1:]
     parser = argparse.ArgumentParser()
     parser.add_argument('--root', default='.', help='Root dir to work with')
     parser.add_argument(
