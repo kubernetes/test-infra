@@ -136,7 +136,7 @@ func ProwJobToPod(pj kube.ProwJob, buildID string) *kube.Pod {
 		spec.Containers[i].Env = append(spec.Containers[i].Env, kubeEnv(env)...)
 	}
 	return &kube.Pod{
-		Metadata: kube.ObjectMeta{
+		ObjectMeta: kube.ObjectMeta{
 			Name: pj.Metadata.Name,
 			Labels: map[string]string{
 				kube.CreatedByProw: "true",

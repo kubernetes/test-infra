@@ -112,8 +112,8 @@ func TestGetPod(t *testing.T) {
 	if err != nil {
 		t.Errorf("Didn't expect error: %v", err)
 	}
-	if po.Metadata.Name != "abcd" {
-		t.Errorf("Wrong name: %s", po.Metadata.Name)
+	if po.ObjectMeta.Name != "abcd" {
+		t.Errorf("Wrong name: %s", po.ObjectMeta.Name)
 	}
 }
 
@@ -133,8 +133,8 @@ func TestCreatePod(t *testing.T) {
 	if err != nil {
 		t.Errorf("Didn't expect error: %v", err)
 	}
-	if po.Metadata.Name != "abcd" {
-		t.Errorf("Wrong name: %s", po.Metadata.Name)
+	if po.ObjectMeta.Name != "abcd" {
+		t.Errorf("Wrong name: %s", po.ObjectMeta.Name)
 	}
 }
 

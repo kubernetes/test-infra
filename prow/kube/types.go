@@ -18,151 +18,36 @@ package kube
 
 import (
 	"time"
+
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-type ObjectMeta struct {
-	Name        string            `json:"name,omitempty"`
-	Namespace   string            `json:"namespace,omitempty"`
-	Labels      map[string]string `json:"labels,omitempty"`
-	Annotations map[string]string `json:"annotations,omitempty"`
+type ObjectMeta = metav1.ObjectMeta
 
-	ResourceVersion string `json:"resourceVersion,omitempty"`
-	UID             string `json:"uid,omitempty"`
-}
-
-type Secret struct {
-	Metadata ObjectMeta        `json:"metadata,omitempty"`
-	Data     map[string]string `json:"data,omitempty"`
-}
-
-type PodTemplateSpec struct {
-	Metadata ObjectMeta `json:"metadata,omitempty"`
-	Spec     PodSpec    `json:"spec,omitempty"`
-}
-
-type Pod struct {
-	Metadata ObjectMeta `json:"metadata,omitempty"`
-	Spec     PodSpec    `json:"spec,omitempty"`
-	Status   PodStatus  `json:"status,omitempty"`
-}
-
-type PodSpec struct {
-	Volumes       []Volume          `json:"volumes,omitempty"`
-	Containers    []Container       `json:"containers,omitempty"`
-	RestartPolicy string            `json:"restartPolicy,omitempty"`
-	NodeSelector  map[string]string `json:"nodeSelector,omitempty"`
-}
-
-type PodPhase string
+type Pod = corev1.Pod
+type PodSpec = corev1.PodSpec
+type PodStatus = corev1.PodStatus
 
 const (
-	PodPending   PodPhase = "Pending"
-	PodRunning   PodPhase = "Running"
-	PodSucceeded PodPhase = "Succeeded"
-	PodFailed    PodPhase = "Failed"
-	PodUnknown   PodPhase = "Unknown"
+	PodPending   = corev1.PodPending
+	PodRunning   = corev1.PodRunning
+	PodSucceeded = corev1.PodSucceeded
+	PodFailed    = corev1.PodFailed
+	PodUnknown   = corev1.PodUnknown
 )
 
 const (
 	Evicted = "Evicted"
 )
 
-type PodStatus struct {
-	Phase     PodPhase  `json:"phase,omitempty"`
-	Message   string    `json:"message,omitempty"`
-	Reason    string    `json:"reason,omitempty"`
-	StartTime time.Time `json:"startTime,omitempty"`
-}
+type Container = corev1.Container
 
-type Volume struct {
-	Name        string             `json:"name,omitempty"`
-	Secret      *SecretSource      `json:"secret,omitempty"`
-	DownwardAPI *DownwardAPISource `json:"downwardAPI,omitempty"`
-	HostPath    *HostPathSource    `json:"hostPath,omitempty"`
-	ConfigMap   *ConfigMapSource   `json:"configMap,omitempty"`
-}
+type EnvVar = corev1.EnvVar
 
-type ConfigMapSource struct {
-	Name string `json:"name,omitempty"`
-}
+type ConfigMap = corev1.ConfigMap
 
-type HostPathSource struct {
-	Path string `json:"path,omitempty"`
-}
-
-type SecretSource struct {
-	Name        string `json:"secretName,omitempty"`
-	DefaultMode int32  `json:"defaultMode,omitempty"`
-}
-
-type DownwardAPISource struct {
-	Items []DownwardAPIFile `json:"items,omitempty"`
-}
-
-type DownwardAPIFile struct {
-	Path  string              `json:"path"`
-	Field ObjectFieldSelector `json:"fieldRef,omitempty"`
-}
-
-type ObjectFieldSelector struct {
-	FieldPath string `json:"fieldPath"`
-}
-
-type Container struct {
-	Name    string   `json:"name,omitempty"`
-	Image   string   `json:"image,omitempty"`
-	Command []string `json:"command,omitempty"`
-	Args    []string `json:"args,omitempty"`
-	WorkDir string   `json:"workingDir,omitempty"`
-	Env     []EnvVar `json:"env,omitempty"`
-	Ports   []Port   `json:"ports,omitempty"`
-
-	Resources       Resources        `json:"resources,omitempty"`
-	SecurityContext *SecurityContext `json:"securityContext,omitempty"`
-	VolumeMounts    []VolumeMount    `json:"volumeMounts,omitempty"`
-}
-
-type Port struct {
-	ContainerPort int `json:"containerPort,omitempty"`
-	HostPort      int `json:"hostPort,omitempty"`
-}
-
-type EnvVar struct {
-	Name      string        `json:"name,omitempty"`
-	Value     string        `json:"value,omitempty"`
-	ValueFrom *EnvVarSource `json:"valueFrom,omitempty"`
-}
-
-type EnvVarSource struct {
-	ConfigMap ConfigMapKeySelector `json:"configMapKeyRef,omitempty"`
-}
-
-type ConfigMapKeySelector struct {
-	Name string `json:"name,omitempty"`
-	Key  string `json:"key,omitempty"`
-}
-
-type Resources struct {
-	Requests *ResourceRequest `json:"requests,omitempty"`
-	Limits   *ResourceRequest `json:"limits,omitempty"`
-}
-
-type ResourceRequest struct {
-	CPU    string `json:"cpu,omitempty"`
-	Memory string `json:"memory,omitempty"`
-}
-
-type SecurityContext struct {
-	Privileged bool `json:"privileged,omitempty"`
-}
-
-type VolumeMount struct {
-	Name      string `json:"name,omitempty"`
-	ReadOnly  bool   `json:"readOnly,omitempty"`
-	MountPath string `json:"mountPath,omitempty"`
-}
-
-type ConfigMap struct {
-	Metadata ObjectMeta        `json:"metadata,omitempty"`
-	Data     map[string]string `json:"data,omitempty"`
+func MetaTime(t time.Time) *metav1.Time {
+	metaTime := metav1.NewTime(t)
+	return &metaTime
 }

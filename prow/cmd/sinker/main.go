@@ -146,12 +146,12 @@ func clean(kc, pkc kubeClient, configAgent configAgent) {
 	maxPodAge := configAgent.Config().Sinker.MaxPodAge
 	for _, pod := range pods {
 		if (pod.Status.Phase == kube.PodSucceeded || pod.Status.Phase == kube.PodFailed) &&
-			time.Since(pod.Status.StartTime) > maxPodAge {
+			time.Since(pod.Status.StartTime.Time) > maxPodAge {
 			// Delete old completed pods. Don't quit if we fail to delete one.
-			if err := pkc.DeletePod(pod.Metadata.Name); err == nil {
-				logrus.WithField("pod", pod.Metadata.Name).Info("Deleted old completed pod.")
+			if err := pkc.DeletePod(pod.ObjectMeta.Name); err == nil {
+				logrus.WithField("pod", pod.ObjectMeta.Name).Info("Deleted old completed pod.")
 			} else {
-				logrus.WithField("pod", pod.Metadata.Name).WithError(err).Error("Error deleting pod.")
+				logrus.WithField("pod", pod.ObjectMeta.Name).WithError(err).Error("Error deleting pod.")
 			}
 		}
 	}

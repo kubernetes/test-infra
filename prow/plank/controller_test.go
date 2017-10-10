@@ -139,7 +139,7 @@ func (f *fkc) DeletePod(name string) error {
 	f.Lock()
 	defer f.Unlock()
 	for i := range f.pods {
-		if f.pods[i].Metadata.Name == name {
+		if f.pods[i].ObjectMeta.Name == name {
 			f.deletedPods = append(f.deletedPods, f.pods[i])
 			f.pods = append(f.pods[:i], f.pods[i+1:]...)
 			return nil
@@ -309,8 +309,8 @@ func TestTerminateDupes(t *testing.T) {
 				},
 			},
 			pm: map[string]kube.Pod{
-				"newest": {Metadata: kube.ObjectMeta{Name: "newest"}},
-				"old":    {Metadata: kube.ObjectMeta{Name: "old"}},
+				"newest": {ObjectMeta: kube.ObjectMeta{Name: "newest"}},
+				"old":    {ObjectMeta: kube.ObjectMeta{Name: "old"}},
 			},
 
 			terminatedPJs: map[string]struct{}{
@@ -357,7 +357,7 @@ func TestTerminateDupes(t *testing.T) {
 		for terminatedName := range tc.terminatedPods {
 			terminated := false
 			for _, deleted := range fkc.deletedPods {
-				if deleted.Metadata.Name == terminatedName {
+				if deleted.ObjectMeta.Name == terminatedName {
 					terminated = true
 				}
 			}
@@ -453,7 +453,7 @@ func TestSyncNonPendingJobs(t *testing.T) {
 			},
 			pods: []kube.Pod{
 				{
-					Metadata: kube.ObjectMeta{
+					ObjectMeta: kube.ObjectMeta{
 						Name: "same-42",
 					},
 					Status: kube.PodStatus{
@@ -565,7 +565,7 @@ func TestSyncNonPendingJobs(t *testing.T) {
 			},
 			pods: []kube.Pod{
 				{
-					Metadata: kube.ObjectMeta{
+					ObjectMeta: kube.ObjectMeta{
 						Name: "foo",
 					},
 					Spec: kube.PodSpec{
@@ -597,7 +597,7 @@ func TestSyncNonPendingJobs(t *testing.T) {
 		defer totServ.Close()
 		pm := make(map[string]kube.Pod)
 		for i := range tc.pods {
-			pm[tc.pods[i].Metadata.Name] = tc.pods[i]
+			pm[tc.pods[i].ObjectMeta.Name] = tc.pods[i]
 		}
 		fc := &fkc{
 			prowjobs: []kube.ProwJob{tc.pj},
@@ -710,7 +710,7 @@ func TestSyncPendingJob(t *testing.T) {
 			},
 			pods: []kube.Pod{
 				{
-					Metadata: kube.ObjectMeta{
+					ObjectMeta: kube.ObjectMeta{
 						Name: "boop-41",
 					},
 					Status: kube.PodStatus{
@@ -738,7 +738,7 @@ func TestSyncPendingJob(t *testing.T) {
 			},
 			pods: []kube.Pod{
 				{
-					Metadata: kube.ObjectMeta{
+					ObjectMeta: kube.ObjectMeta{
 						Name: "boop-42",
 					},
 					Status: kube.PodStatus{
@@ -775,7 +775,7 @@ func TestSyncPendingJob(t *testing.T) {
 			},
 			pods: []kube.Pod{
 				{
-					Metadata: kube.ObjectMeta{
+					ObjectMeta: kube.ObjectMeta{
 						Name: "boop-42",
 					},
 					Status: kube.PodStatus{
@@ -802,7 +802,7 @@ func TestSyncPendingJob(t *testing.T) {
 			},
 			pods: []kube.Pod{
 				{
-					Metadata: kube.ObjectMeta{
+					ObjectMeta: kube.ObjectMeta{
 						Name: "boop-42",
 					},
 					Status: kube.PodStatus{
@@ -831,7 +831,7 @@ func TestSyncPendingJob(t *testing.T) {
 			},
 			pods: []kube.Pod{
 				{
-					Metadata: kube.ObjectMeta{
+					ObjectMeta: kube.ObjectMeta{
 						Name: "boop-42",
 					},
 					Status: kube.PodStatus{
@@ -859,7 +859,7 @@ func TestSyncPendingJob(t *testing.T) {
 			},
 			pods: []kube.Pod{
 				{
-					Metadata: kube.ObjectMeta{
+					ObjectMeta: kube.ObjectMeta{
 						Name: "boop-42",
 					},
 					Status: kube.PodStatus{
@@ -900,7 +900,7 @@ func TestSyncPendingJob(t *testing.T) {
 		defer totServ.Close()
 		pm := make(map[string]kube.Pod)
 		for i := range tc.pods {
-			pm[tc.pods[i].Metadata.Name] = tc.pods[i]
+			pm[tc.pods[i].ObjectMeta.Name] = tc.pods[i]
 		}
 		fc := &fkc{
 			prowjobs: []kube.ProwJob{tc.pj},
