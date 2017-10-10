@@ -1821,6 +1821,41 @@ presubmits:
       - name: cache-ssd
         hostPath:
           path: /mnt/disks/ssd0
+  jlewi/mlkube.io:
+    - name: mlkube-build
+      agent: kubernetes
+      context: mlkube-build
+      always_run: true
+      rerun_command: "/test mlkube-build"
+      trigger: "(?m)^/test( all| mlkube-build),?(\\s+|$)"
+      spec:
+        containers:
+        - image: gcr.io/mlkube-testing/builder:v20171010-352a232c-dirty
+          # TODO(jlewi): Add a service account to push to GCR?
+          # args:
+          env:
+            - name: GOOGLE_APPLICATION_CREDENTIALS
+              value: /etc/service-account/service-account.json
+          # TODO(jlewi): Do we need privileged mode in order to run Docker?
+          securityContext:
+            privileged: true
+          volumeMounts:
+          - name: service
+            mountPath: /etc/service-account
+            readOnly: true
+          - name: docker
+            mountPath: /var/run/docker.sock
+          ports:
+          # TODO(jlewi): Do we need this port?
+          - containerPort: 9999
+            hostPort: 9999
+        volumes:
+        - name: service
+          secret:
+            secretName: service-account
+        - name: docker
+          hostPath:
+            path: /var/run/docker.sock
 
 postsubmits:
   kubernetes/kubernetes:
