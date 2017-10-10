@@ -153,7 +153,103 @@ presubmits:
         - name: cache-ssd
           hostPath:
             path: /mnt/disks/ssd0
-
+  - name: pull-kubernetes-bazel-build
+    agent: kubernetes
+    context: pull-kubernetes-bazel-build
+    always_run: true
+    rerun_command: "/test pull-kubernetes-bazel-build"
+    trigger: "(?m)^/test( all| pull-kubernetes-bazel-build),?(\\s+|$)"
+    branches:
+    - release-1.6
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/bazelbuild:v20170929-ed26bd34-0.5.2
+        args:
+        - "--clean"
+        - "--git-cache=/root/.cache/git"
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--" # end bootstrap args, scenario args below
+        - "--build=//cmd/... //pkg/... //federation/... //plugin/... //third_party/... //examples/... //test/..."
+        - "--release=//build/release-tars"
+        env:
+        - name: TEST_TMPDIR
+          value: /root/.cache/bazel
+        # Bazel needs privileged mode in order to sandbox builds.
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: service
+          mountPath: /etc/service-account
+          readOnly: true
+        - name: cache-ssd
+          mountPath: /root/.cache
+        ports:
+        - containerPort: 9999
+          hostPort: 9999
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
+      - name: cache-ssd
+        hostPath:
+          path: /mnt/disks/ssd0
+    run_after_success:
+    - name: pull-kubernetes-e2e-kubeadm-gce
+      agent: kubernetes
+      context: pull-kubernetes-e2e-kubeadm-gce
+      max_concurrency: 8
+      skip_report: false
+      run_if_changed: '^(cmd/kubeadm|build/debs).*$'
+      rerun_command: "/test pull-kubernetes-e2e-kubeadm-gce"
+      trigger: "(?m)^/test pull-kubernetes-e2e-kubeadm-gce,?(\\s+|$)"
+      branches:
+      - release-1.6
+      spec:
+        containers:
+        - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171008-52d4c1d0
+          args:
+          - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+          - "--upload=gs://kubernetes-jenkins/pr-logs"
+          - "--git-cache=/root/.cache/git"
+          - "--timeout=75"
+          - "--clean"
+          env:
+          - name: USER
+            value: prow
+          - name: GOOGLE_APPLICATION_CREDENTIALS
+            value: /etc/service-account/service-account.json
+          - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+            value: /etc/ssh-key-secret/ssh-private
+          - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+            value: /etc/ssh-key-secret/ssh-public
+          - name: SKIP_RELEASE_VALIDATION # See: https://github.com/kubernetes/kubernetes/pull/50391
+            value: true
+          volumeMounts:
+          - name: service
+            mountPath: /etc/service-account
+            readOnly: true
+          - name: ssh
+            mountPath: /etc/ssh-key-secret
+            readOnly: true
+          - name: cache-ssd
+            mountPath: /root/.cache
+          ports:
+          - containerPort: 9999
+            hostPort: 9999
+        volumes:
+        - name: service
+          secret:
+            secretName: service-account
+        - name: ssh
+          secret:
+            secretName: ssh-key-secret
+            defaultMode: 0400
+        - name: cache-ssd
+          hostPath:
+            path: /mnt/disks/ssd0
   - name: pull-kubernetes-bazel-test
     agent: kubernetes
     context: pull-kubernetes-bazel-test
@@ -176,6 +272,50 @@ presubmits:
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--" # end bootstrap args, scenario args below
         - "--test=//cmd/... //pkg/... //federation/... //plugin/... //third_party/... //hack/... //hack:verify-all //vendor/k8s.io/..."
+        - "--test-args=--test_tag_filters=-integration"
+        - "--test-args=--flaky_test_attempts=3"
+        env:
+        - name: TEST_TMPDIR
+          value: /root/.cache/bazel
+        # Bazel needs privileged mode in order to sandbox builds.
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: service
+          mountPath: /etc/service-account
+          readOnly: true
+        - name: cache-ssd
+          mountPath: /root/.cache
+        ports:
+        - containerPort: 9999
+          hostPort: 9999
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
+      - name: cache-ssd
+        hostPath:
+          path: /mnt/disks/ssd0
+  - name: pull-kubernetes-bazel-test
+    agent: kubernetes
+    context: pull-kubernetes-bazel-test
+    always_run: true
+    rerun_command: "/test pull-kubernetes-bazel-test"
+    trigger: "(?m)^/test( all| pull-kubernetes-bazel-test),?(\\s+|$)"
+    branches:
+    - release-1.6
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/bazelbuild:v20170929-ed26bd34-0.5.2
+        args:
+        - "--clean"
+        - "--git-cache=/root/.cache/git"
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--" # end bootstrap args, scenario args below
+        - "--test=//cmd/... //pkg/... //federation/... //plugin/... //third_party/... //hack/... //hack:verify-all"
         - "--test-args=--test_tag_filters=-integration"
         - "--test-args=--flaky_test_attempts=3"
         env:
@@ -1042,6 +1182,103 @@ presubmits:
         - name: cache-ssd
           hostPath:
             path: /mnt/disks/ssd0
+  - name: pull-security-kubernetes-bazel-build
+    agent: kubernetes
+    context: pull-security-kubernetes-bazel-build
+    always_run: true
+    rerun_command: "/test pull-security-kubernetes-bazel-build"
+    trigger: "(?m)^/test( all| pull-security-kubernetes-bazel-build),?(\\s+|$)"
+    branches:
+    - release-1.6
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/bazelbuild:v20170929-ed26bd34-0.5.2
+        args:
+        - "--clean"
+        - "--git-cache=/root/.cache/git"
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--" # end bootstrap args, scenario args below
+        - "--build=//cmd/... //pkg/... //federation/... //plugin/... //third_party/... //examples/... //test/..."
+        - "--release=//build/release-tars"
+        env:
+        - name: TEST_TMPDIR
+          value: /root/.cache/bazel
+        # Bazel needs privileged mode in order to sandbox builds.
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: service
+          mountPath: /etc/service-account
+          readOnly: true
+        - name: cache-ssd
+          mountPath: /root/.cache
+        ports:
+        - containerPort: 9999
+          hostPort: 9999
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
+      - name: cache-ssd
+        hostPath:
+          path: /mnt/disks/ssd0
+    run_after_success:
+    - name: pull-security-kubernetes-e2e-kubeadm-gce
+      agent: kubernetes
+      context: pull-security-kubernetes-e2e-kubeadm-gce
+      max_concurrency: 8
+      skip_report: false
+      run_if_changed: '^(cmd/kubeadm|build/debs).*$'
+      rerun_command: "/test pull-security-kubernetes-e2e-kubeadm-gce"
+      trigger: "(?m)^/test pull-security-kubernetes-e2e-kubeadm-gce,?(\\s+|$)"
+      branches:
+      - release-1.6
+      spec:
+        containers:
+        - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171008-52d4c1d0
+          args:
+          - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+          - "--upload=gs://kubernetes-jenkins/pr-logs"
+          - "--git-cache=/root/.cache/git"
+          - "--timeout=75"
+          - "--clean"
+          env:
+          - name: USER
+            value: prow
+          - name: GOOGLE_APPLICATION_CREDENTIALS
+            value: /etc/service-account/service-account.json
+          - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+            value: /etc/ssh-key-secret/ssh-private
+          - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+            value: /etc/ssh-key-secret/ssh-public
+          - name: SKIP_RELEASE_VALIDATION # See: https://github.com/kubernetes/kubernetes/pull/50391
+            value: true
+          volumeMounts:
+          - name: service
+            mountPath: /etc/service-account
+            readOnly: true
+          - name: ssh
+            mountPath: /etc/ssh-key-secret
+            readOnly: true
+          - name: cache-ssd
+            mountPath: /root/.cache
+          ports:
+          - containerPort: 9999
+            hostPort: 9999
+        volumes:
+        - name: service
+          secret:
+            secretName: service-account
+        - name: ssh
+          secret:
+            secretName: ssh-key-secret
+            defaultMode: 0400
+        - name: cache-ssd
+          hostPath:
+            path: /mnt/disks/ssd0
   - name: pull-security-kubernetes-bazel-test
     agent: kubernetes
     context: pull-security-kubernetes-bazel-test
@@ -1064,6 +1301,50 @@ presubmits:
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--" # end bootstrap args, scenario args below
         - "--test=//cmd/... //pkg/... //federation/... //plugin/... //third_party/... //hack/... //hack:verify-all //vendor/k8s.io/..."
+        - "--test-args=--test_tag_filters=-integration"
+        - "--test-args=--flaky_test_attempts=3"
+        env:
+        - name: TEST_TMPDIR
+          value: /root/.cache/bazel
+        # Bazel needs privileged mode in order to sandbox builds.
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: service
+          mountPath: /etc/service-account
+          readOnly: true
+        - name: cache-ssd
+          mountPath: /root/.cache
+        ports:
+        - containerPort: 9999
+          hostPort: 9999
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
+      - name: cache-ssd
+        hostPath:
+          path: /mnt/disks/ssd0
+  - name: pull-security-kubernetes-bazel-test
+    agent: kubernetes
+    context: pull-security-kubernetes-bazel-test
+    always_run: true
+    rerun_command: "/test pull-security-kubernetes-bazel-test"
+    trigger: "(?m)^/test( all| pull-security-kubernetes-bazel-test),?(\\s+|$)"
+    branches:
+    - release-1.6
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/bazelbuild:v20170929-ed26bd34-0.5.2
+        args:
+        - "--clean"
+        - "--git-cache=/root/.cache/git"
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--" # end bootstrap args, scenario args below
+        - "--test=//cmd/... //pkg/... //federation/... //plugin/... //third_party/... //hack/... //hack:verify-all"
         - "--test-args=--test_tag_filters=-integration"
         - "--test-args=--flaky_test_attempts=3"
         env:
