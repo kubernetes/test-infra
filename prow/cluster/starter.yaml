@@ -15,6 +15,10 @@ metadata:
   name: config
 data:
   config: |
+    prowjob_namespace: default
+    pod_namespace: test-pods
+    log_level: info
+
     periodics:
     - interval: 10m
       agent: kubernetes
@@ -23,6 +27,10 @@ data:
         containers:
         - image: alpine
           command: ["/bin/date"]
+    sinker:
+      resync_period: 1h
+      max_prowjob_age: 48h
+      max_pod_age: 1h
 ---
 apiVersion: extensions/v1beta1
 kind: ThirdPartyResource
