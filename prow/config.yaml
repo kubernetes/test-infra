@@ -64,7 +64,7 @@ presubmits:
     - release-1.6  # doesn't have BUILD files under //vendor/k8s.io
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171005-2f37588f-0.5.4
+      - image: gcr.io/k8s-testimages/bazelbuild:v20171005-2f37588f-0.6.1
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -262,7 +262,7 @@ presubmits:
     - release-1.6  # doesn't have BUILD files under //vendor/k8s.io
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171005-2f37588f-0.5.4
+      - image: gcr.io/k8s-testimages/bazelbuild:v20171005-2f37588f-0.6.1
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -1093,7 +1093,7 @@ presubmits:
     - release-1.6  # doesn't have BUILD files under //vendor/k8s.io
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171005-2f37588f-0.5.4
+      - image: gcr.io/k8s-testimages/bazelbuild:v20171005-2f37588f-0.6.1
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -1291,7 +1291,7 @@ presubmits:
     - release-1.6  # doesn't have BUILD files under //vendor/k8s.io
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171005-2f37588f-0.5.4
+      - image: gcr.io/k8s-testimages/bazelbuild:v20171005-2f37588f-0.6.1
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -2299,7 +2299,7 @@ postsubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171005-2f37588f-0.5.4
+      - image: gcr.io/k8s-testimages/bazelbuild:v20171005-2f37588f-0.6.1
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -2334,7 +2334,7 @@ postsubmits:
       agent: kubernetes
       spec:
         containers:
-        - image: gcr.io/k8s-testimages/bazelbuild:v20171005-2f37588f-0.5.4
+        - image: gcr.io/k8s-testimages/bazelbuild:v20171005-2f37588f-0.6.1
           args:
           - "--clean"
           - "--git-cache=/root/.cache/git"
@@ -2614,7 +2614,7 @@ postsubmits:
     - release-1.7
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171005-2f37588f-0.5.4
+      - image: gcr.io/k8s-testimages/bazelbuild:v20171005-2f37588f-0.6.1
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -2651,7 +2651,7 @@ postsubmits:
       agent: kubernetes
       spec:
         containers:
-        - image: gcr.io/k8s-testimages/bazelbuild:v20171005-2f37588f-0.5.4
+        - image: gcr.io/k8s-testimages/bazelbuild:v20171005-2f37588f-0.6.1
           args:
           - "--clean"
           - "--git-cache=/root/.cache/git"
@@ -2818,7 +2818,7 @@ postsubmits:
     - release-1.8
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171005-2f37588f-0.5.4
+      - image: gcr.io/k8s-testimages/bazelbuild:v20171005-2f37588f-0.6.1
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -2855,7 +2855,7 @@ postsubmits:
       agent: kubernetes
       spec:
         containers:
-        - image: gcr.io/k8s-testimages/bazelbuild:v20171005-2f37588f-0.5.4
+        - image: gcr.io/k8s-testimages/bazelbuild:v20171005-2f37588f-0.6.1
           args:
           - "--clean"
           - "--git-cache=/root/.cache/git"
@@ -3043,7 +3043,7 @@ postsubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171005-2f37588f-0.5.4
+      - image: gcr.io/k8s-testimages/bazelbuild:v20171005-2f37588f-0.6.1
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -17160,7 +17160,7 @@ periodics:
   agent: kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bazelbuild:v20171005-2f37588f-0.5.4
+    - image: gcr.io/k8s-testimages/bazelbuild:v20171005-2f37588f-0.6.1
       args:
       - "--clean"
       - "--git-cache=/root/.cache/git"
@@ -17197,7 +17197,7 @@ periodics:
     agent: kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171005-2f37588f-0.5.4
+      - image: gcr.io/k8s-testimages/bazelbuild:v20171005-2f37588f-0.6.1
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -17322,7 +17322,7 @@ periodics:
   agent: kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bazelbuild:v20171005-2f37588f-0.5.4
+    - image: gcr.io/k8s-testimages/bazelbuild:v20171005-2f37588f-0.6.1
       args:
       - "--clean"
       - "--git-cache=/root/.cache/git"
@@ -17359,7 +17359,7 @@ periodics:
     agent: kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171005-2f37588f-0.5.4
+      - image: gcr.io/k8s-testimages/bazelbuild:v20171005-2f37588f-0.6.1
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
