@@ -96,7 +96,7 @@ func (c *Controller) canExecuteConcurrently(pj *kube.ProwJob) bool {
 			running += num
 		}
 		if running >= max {
-			logrus.Infof("Not starting another job, already %d running.", running)
+			logrus.WithField("name", pj.Metadata.Name).Debugf("Not starting another job, already %d running.", running)
 			return false
 		}
 	}
@@ -108,7 +108,7 @@ func (c *Controller) canExecuteConcurrently(pj *kube.ProwJob) bool {
 
 	numPending := c.pendingJobs[pj.Spec.Job]
 	if numPending >= pj.Spec.MaxConcurrency {
-		logrus.WithField("job", pj.Spec.Job).Infof("Not starting another instance of %s, already %d running.", pj.Spec.Job, numPending)
+		logrus.WithField("name", pj.Metadata.Name).Debugf("Not starting another instance of %s, already %d running.", pj.Spec.Job, numPending)
 		return false
 	}
 	c.pendingJobs[pj.Spec.Job]++
