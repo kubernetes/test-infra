@@ -23,6 +23,7 @@ import collections
 import json
 import os
 import re
+import sys
 
 import config_sort
 import env_gc
@@ -54,10 +55,6 @@ class JobTest(unittest.TestCase):
         'config_test.py', # Script for testing config.json and Prow config.
         'env_gc.py', # Tool script to garbage collect unused .env files.
         'move_extract.py',
-        # Node-e2e image configurations
-        'benchmark-config.yaml',
-        'image-config.yaml',
-        'image-config-serial.yaml',
     ]
     # also exclude .pyc
     excludes.extend(e + 'c' for e in excludes if e.endswith('.py'))
@@ -83,6 +80,10 @@ class JobTest(unittest.TestCase):
     def jobs(self):
         """[(job, job_path)] sequence"""
         for path, _, filenames in os.walk(config_sort.test_infra('jobs')):
+            print >>sys.stderr, path
+            if 'e2e_node' in path:
+                # Node e2e image configs, ignore them
+                continue
             for job in [f for f in filenames if f not in self.excludes]:
                 job_path = os.path.join(path, job)
                 yield job, job_path
