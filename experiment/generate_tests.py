@@ -56,7 +56,7 @@ PROW_CONFIG_TEMPLATE = """
           value: /etc/ssh-key-secret/ssh-private
         - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
           value: /etc/ssh-key-secret/ssh-public
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20171008-cd94f30a-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20171011-8265ed12-master
         volumeMounts:
         - mountPath: /etc/service-account
           name: service
