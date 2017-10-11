@@ -18,6 +18,7 @@ package jenkins
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -41,21 +42,41 @@ const (
 	Aborted  = "ABORTED"
 )
 
+// NotFoundError is returned by the Jenkins client when
+// a job does not exist in Jenkins.
+type NotFoundError struct {
+	e error
+}
+
+func (e NotFoundError) Error() string {
+	return e.e.Error()
+}
+
+// NewNotFoundError creates a new NotFoundError.
+func NewNotFoundError(e error) NotFoundError {
+	return NotFoundError{e: e}
+}
+
 type Logger interface {
 	Debugf(s string, v ...interface{})
+	Warnf(s string, v ...interface{})
+}
+
+type Action struct {
+	Parameters []Parameter `json:"parameters"`
+}
+
+type Parameter struct {
+	Name string `json:"name"`
+	// This needs to be an interface so we won't clobber
+	// json unmarshaling when the Jenkins job has more
+	// parameter types than strings.
+	Value interface{} `json:"value"`
 }
 
 type JenkinsBuild struct {
-	Actions []struct {
-		Parameters []struct {
-			Name string `json:"name"`
-			// This needs to be an interface so we won't clobber
-			// json unmarshaling when the Jenkins job has more
-			// parameter types than strings.
-			Value interface{} `json:"value"`
-		} `json:"parameters"`
-	} `json:"actions"`
-	Task struct {
+	Actions []Action `json:"actions"`
+	Task    struct {
 		// Used for tracking unscheduled builds for jobs.
 		Name string `json:"name"`
 	} `json:"task"`
@@ -143,6 +164,9 @@ func (c *Client) get(path string) ([]byte, error) {
 		return nil, err
 	}
 	defer resp.Body.Close()
+	if resp.StatusCode == 404 {
+		return nil, NewNotFoundError(errors.New(resp.Status))
+	}
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		return nil, fmt.Errorf("response not 2XX: %s", resp.Status)
 	}
@@ -177,11 +201,13 @@ func (c *Client) doRequest(method, path string) (*http.Response, error) {
 	if err != nil {
 		return nil, err
 	}
-	if c.authConfig.Basic != nil {
-		req.SetBasicAuth(c.authConfig.Basic.User, c.authConfig.Basic.Token)
-	}
-	if c.authConfig.BearerToken != nil {
-		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.authConfig.BearerToken.Token))
+	if c.authConfig != nil {
+		if c.authConfig.Basic != nil {
+			req.SetBasicAuth(c.authConfig.Basic.User, c.authConfig.Basic.Token)
+		}
+		if c.authConfig.BearerToken != nil {
+			req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.authConfig.BearerToken.Token))
+		}
 	}
 	return c.client.Do(req)
 }
@@ -225,13 +251,13 @@ func (c *Client) ListJenkinsBuilds(jobs map[string]struct{}) (map[string]Jenkins
 	queueURL := fmt.Sprintf("%s%s", c.baseURL, queuePath)
 	data, err := c.get(queueURL)
 	if err != nil {
-		return nil, fmt.Errorf("cannot list jenkins builds from the queue: %v", err)
+		return nil, fmt.Errorf("cannot list builds from the queue: %v", err)
 	}
 	page := struct {
 		QueuedBuilds []JenkinsBuild `json:"items"`
 	}{}
 	if err := json.Unmarshal(data, &page); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("cannot unmarshal builds from the queue: %v", err)
 	}
 	for _, jb := range page.QueuedBuilds {
 		buildID := jb.BuildID()
@@ -254,13 +280,18 @@ func (c *Client) ListJenkinsBuilds(jobs map[string]struct{}) (map[string]Jenkins
 		u := fmt.Sprintf("%s%s", c.baseURL, path)
 		data, err := c.get(u)
 		if err != nil {
-			return nil, fmt.Errorf("cannot list jenkins builds for job %q: %v", job, err)
+			// Ignore 404s so we will not block processing the rest of the jobs.
+			if _, isNotFound := err.(NotFoundError); isNotFound {
+				c.Logger.Warnf("cannot list builds for job %q: %v", job, err)
+				continue
+			}
+			return nil, fmt.Errorf("cannot list builds for job %q: %v", job, err)
 		}
 		page := struct {
 			Builds []JenkinsBuild `json:"builds"`
 		}{}
 		if err := json.Unmarshal(data, &page); err != nil {
-			return nil, err
+			return nil, fmt.Errorf("cannot unmarshal builds for job %q: %v", job, err)
 		}
 		for _, jb := range page.Builds {
 			buildID := jb.BuildID()
