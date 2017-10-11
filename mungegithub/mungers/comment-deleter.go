@@ -83,9 +83,9 @@ func validComment(comment *githubapi.IssueComment) bool {
 	return true
 }
 
-// Munge is the workhorse the will actually make updates to the PR
+// Munge is the workhorse the will actually make updates to the Issue.
 func (CommentDeleter) Munge(obj *github.MungeObject) {
-	if !obj.IsPR() {
+	if obj.Issue == nil || obj.Issue.State == nil || *obj.Issue.State == "closed" {
 		return
 	}
 
