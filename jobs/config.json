@@ -7942,10 +7942,10 @@
       "--extract=ci/latest-1.6",
       "--gcp-zone=us-central1-f",
       "--kubeadm=ci",
+      "--kubernetes-anywhere-dump-cluster-logs=true",
       "--kubernetes-anywhere-kubelet-ci-version=latest-1.6",
       "--kubernetes-anywhere-kubernetes-version=latest-1.6",
       "--provider=kubernetes-anywhere",
-      "--kubernetes-anywhere-dump-cluster-logs=true",
       "--test_args=--ginkgo.focus=\\[Conformance\\] --minStartupPods=8",
       "--timeout=300m"
     ],
