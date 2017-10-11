@@ -56,6 +56,8 @@ var (
 		"(kubernetes-anywhere only) Indicates whether to do the control plane upgrade with kubeadm method \"init\" or \"upgrade\"")
 	kubernetesAnywhereCNI = flag.String("kubernetes-anywhere-cni", "",
 		"(kubernetes-anywhere only) The name of the CNI plugin used for the cluster's SDN.")
+	kubernetesAnywhereDumpClusterLogs = flag.Bool("kubernetes-anywhere-dump-cluster-logs", false,
+		"(kubernetes-anywhere only) Whether to dump cluster logs.")
 )
 
 const kubernetesAnywhereConfigTemplate = `
@@ -237,13 +239,32 @@ func (k *kubernetesAnywhere) IsUp() error {
 }
 
 func (k *kubernetesAnywhere) DumpClusterLogs(localPath, gcsPath string) error {
-	// TODO(pipejakob): the default implementation (log-dump.sh) doesn't work for
-	// kubernetes-anywhere yet, so just skip attempting to dump logs.
-	// https://github.com/kubernetes/kubeadm/issues/256
-	log.Print("DumpClusterLogs is a no-op for kubernetes-anywhere deployments. Not doing anything.")
-	log.Print("If you care about enabling this feature, follow this issue for progress:")
-	log.Print("    https://github.com/kubernetes/kubeadm/issues/256")
-	return nil
+	if !*kubernetesAnywhereDumpClusterLogs {
+		log.Printf("Cluster log dumping disabled for Kubernetes Anywhere.")
+		return nil
+	}
+	logDumpPath := "./cluster/log-dump/log-dump.sh"
+	// cluster/log-dump/log-dump.sh only exists in the Kubernetes tree
+	// post-1.3. If it doesn't exist, print a debug log but do not report an error.
+	if _, err := os.Stat(logDumpPath); err != nil {
+		log.Printf("Could not find %s. This is expected if running tests against a Kubernetes 1.3 or older tree.", logDumpPath)
+		if cwd, err := os.Getwd(); err == nil {
+			log.Printf("CWD: %v", cwd)
+		}
+		return nil
+	}
+	var cmd *exec.Cmd
+	// Temporarily set the provider to be gce for the purposes of log dumping.
+	cmd.Env = os.Environ()
+	cmd.Env = append(cmd.Env, "KUBERNETES_PROVIDER=gce")
+	if gcsPath != "" {
+		log.Printf("Dumping logs from nodes to GCS directly at path: %v", gcsPath)
+		cmd = exec.Command(logDumpPath, localPath, gcsPath)
+	} else {
+		log.Printf("Dumping logs locally to: %v", localPath)
+		cmd = exec.Command(logDumpPath, localPath)
+	}
+	return finishRunning(cmd)
 }
 
 func (k *kubernetesAnywhere) TestSetup() error {
