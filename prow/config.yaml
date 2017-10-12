@@ -51,6 +51,98 @@ presubmits:
     context: pull-kops-e2e-kubernetes-aws
     rerun_command: "/test pull-kops-e2e-kubernetes-aws"
     trigger: "(?m)^/test( all| pull-kops-e2e-kubernetes-aws),?(\\s+|$)"
+  kubernetes-incubator/cri-containerd:
+  - name: pull-cri-containerd-build
+    agent: kubernetes
+    always_run: true
+    context: pull-cri-containerd-build
+    rerun_command: "/test pull-cri-containerd-build"
+    trigger: "(?m)^/test( all| pull-cri-containerd-build),?(\\s+|$)"
+    branches:
+    - master
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/gcloud-in-go:0.4
+        args:
+        - "--repo=github.com/$(REPO_NAME)=$(PULL_REFS)"
+        - "--root=/go/src"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--clean"
+        env:
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /etc/service-account/service-account.json
+        volumeMounts:
+        - name: service
+          mountPath: /etc/service-account
+          readOnly: true
+        - name: cache-ssd
+          mountPath: /root/.cache
+        ports:
+        - containerPort: 9999
+          hostPort: 9999
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
+      - name: cache-ssd
+        hostPath:
+          path: /mnt/disks/ssd0
+    run_after_success:
+    - name: pull-cri-containerd-node-e2e
+      agent: kubernetes
+      branches:
+      - master
+      always_run: true
+      skip_report: false
+      max_concurrency: 8
+      context: pull-cri-containerd-node-e2e
+      rerun_command: "/test pull-cri-containerd-node-e2e"
+      trigger: "(?m)^/test( all| pull-cri-containerd-node-e2e),?(\\s+|$)"
+      spec:
+        containers:
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20171008-cd94f30a-master
+          args:
+          - --root=/go/src
+          - "--clean"
+          - "--git-cache=/root/.cache/git"
+          - "--job=$(JOB_NAME)"
+          - "--repo=github.com/$(REPO_NAME)=$(PULL_REFS)"
+          - "--repo=k8s.io/kubernetes"
+          - "--service-account=/etc/service-account/service-account.json"
+          - "--upload=gs://kubernetes-jenkins/pr-logs"
+          - "--timeout=90"
+          env:
+          - name: GOOGLE_APPLICATION_CREDENTIALS
+            value: /etc/service-account/service-account.json
+          - name: USER
+            value: prow
+          - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+            value: /etc/ssh-key-secret/ssh-private
+          - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+            value: /etc/ssh-key-secret/ssh-public
+          volumeMounts:
+          - mountPath: /etc/service-account
+            name: service
+            readOnly: true
+          - mountPath: /etc/ssh-key-secret
+            name: ssh
+            readOnly: true
+          - name: cache-ssd
+            mountPath: /root/.cache
+          ports:
+          - containerPort: 9999
+            hostPort: 9999
+        volumes:
+        - name: service
+          secret:
+            secretName: service-account
+        - name: ssh
+          secret:
+            defaultMode: 256
+            secretName: ssh-key-secret
+        - name: cache-ssd
+          hostPath:
+            path: /mnt/disks/ssd0
   kubernetes/kubernetes:
   - name: pull-kubernetes-bazel-build
     agent: kubernetes

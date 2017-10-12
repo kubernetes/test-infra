@@ -10090,6 +10090,32 @@
       "UNKNOWN"
     ]
   },
+  "pull-cri-containerd-build": {
+    "args": [
+      "./test/e2e_node/build.sh"
+    ],
+    "scenario": "execute",
+    "sigOwners": [
+      "sig-node"
+    ]
+  },
+  "pull-cri-containerd-node-e2e": {
+    "args": [
+      "--deployment=node",
+      "--gcp-project=cri-c8d-pr-node-e2e",
+      "--gcp-zone=us-central1-f",
+      "--node-args=--image-config-file=test/e2e_node/image-config.yaml --node-envs=PULL_REFS",
+      "--node-test-args=--kubelet-flags=\"--cgroups-per-qos=true --cgroup-root=/ --container-runtime=remote --container-runtime-endpoint=/var/run/cri-containerd.sock\" --extra-log=\"{\\\"name\\\": \\\"containerd.log\\\", \\\"journalctl\\\": [\\\"-u\\\", \\\"containerd\\\"]}\" --extra-log=\"{\\\"name\\\": \\\"cri-containerd.log\\\", \\\"journalctl\\\": [\\\"-u\\\", \\\"cri-containerd\\\"]}\"",
+      "--node-tests=true",
+      "--provider=gce",
+      "--test_args=--nodes=8 --skip=\"\\[Flaky\\]|\\[Slow\\]|\\[Serial\\]|querying\\s\\/stats\\/summary\" --flakeAttempts=2",
+      "--timeout=65m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-node"
+    ]
+  },
   "pull-heapster-e2e": {
     "scenario": "kubernetes_heapster",
     "sigOwners": [
