@@ -8089,27 +8089,6 @@
       "sig-big-data"
     ]
   },
-  "mlkube-build-presubmit": {
-    "args": [
-      "--charts",
-      "--check-leaked-resources",
-      "--deployment=gke",
-      "--extract=gke",
-      "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
-      "--gcp-node-image=gci",
-      "--gcp-project=mlkube-testing",
-      "--gcp-zone=us-central1-b",
-      "--gke-environment=prod",
-      "--mount-paths=$GOPATH/src/github.com/foxish/mlkube.io:/src/k8s.io/charts",
-      "--provider=gke",
-      "--test=false",
-      "--timeout=50m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-big-data"
-    ]
-  },
   "ci-kubernetes-e2e-node-canary": {
     "args": [
       "--deployment=node",
@@ -9926,6 +9905,27 @@
     "scenario": "execute",
     "sigOwners": [
       "UNKNOWN"
+    ]
+  },
+  "mlkube-build-presubmit": {
+    "args": [
+      "--charts",
+      "--check-leaked-resources",
+      "--deployment=gke",
+      "--extract=gke",
+      "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
+      "--gcp-node-image=gci",
+      "--gcp-project=mlkube-testing",
+      "--gcp-zone=us-central1-b",
+      "--gke-environment=prod",
+      "--mount-paths=$GOPATH/src/github.com/foxish/mlkube.io:/src/k8s.io/charts",
+      "--provider=gke",
+      "--test=false",
+      "--timeout=50m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-big-data"
     ]
   },
   "periodic-kubernetes-bazel-build-1-6": {
