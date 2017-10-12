@@ -2507,6 +2507,7 @@ presubmits:
 
   jlewi/mlkube.io:
   - name: mlkube-build-presubmit
+    context: mlkube-build-presubmit
     agent: kubernetes
     always_run: true         # Run for every PR, or only when requested.
     rerun_command: "/test mlkube-build"
