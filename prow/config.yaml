@@ -2510,8 +2510,8 @@ presubmits:
     context: mlkube-build-presubmit
     agent: kubernetes
     always_run: true         # Run for every PR, or only when requested.
-    rerun_command: "/test mlkube-build"
-    trigger: "(?m)^/test( all| mlkube-build),?(\\s+|$)"
+    rerun_command: "/test mlkube-build-presubmit"
+    trigger: "(?m)^/test( all| mlkube-build-presubmit),?(\\s+|$)"
     branches:
     - master
     spec:
