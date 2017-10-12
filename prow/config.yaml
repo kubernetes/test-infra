@@ -16777,6 +16777,8 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       - name: USER
         value: prow
+      - name: KUBEMARK_BAZEL_BUILD
+        value: y
       volumeMounts:
       - name: service
         mountPath: /etc/service-account
