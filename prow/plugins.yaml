@@ -82,6 +82,9 @@ plugins:
   - reopen
   - size
 
+  kubernetes-incubator/cri-containerd:
+  - trigger
+
   kubernetes-security/kubernetes:
   - trigger
 
