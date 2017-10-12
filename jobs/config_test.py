@@ -789,6 +789,13 @@ class JobTest(unittest.TestCase):
             'ci-kubernetes-node-kubelet-conformance': 'ci-kubernetes-node-kubelet-*',
             'ci-kubernetes-node-kubelet-benchmark': 'ci-kubernetes-node-kubelet-*',
             'ci-kubernetes-node-kubelet': 'ci-kubernetes-node-kubelet-*',
+
+            # The mlkube projects intentionally share projects,
+            # We map each test name to the same value so that below when we check for number of tests
+            # using this project there will just be one entry.
+            'mlkube-build-presubmit': 'mlkube-*',
+            'mlkube-build-postsubmit': 'mlkube-*',
+            'ci-kubernetes-e2e-mlkube-gke': 'mlkube-*',
         }
         for soak_prefix in [
                 'ci-kubernetes-soak-gce-1.5',
