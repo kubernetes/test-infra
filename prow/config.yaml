@@ -1821,41 +1821,38 @@ presubmits:
       - name: cache-ssd
         hostPath:
           path: /mnt/disks/ssd0
+
   jlewi/mlkube.io:
-    - name: mlkube-build
-      agent: kubernetes
-      context: mlkube-build
-      always_run: true
-      rerun_command: "/test mlkube-build"
-      trigger: "(?m)^/test( all| mlkube-build),?(\\s+|$)"
-      spec:
-        containers:
-        - image: gcr.io/mlkube-testing/builder:v20171010-352a232c-dirty
-          # TODO(jlewi): Add a service account to push to GCR?
-          # args:
-          env:
-            - name: GOOGLE_APPLICATION_CREDENTIALS
-              value: /etc/service-account/service-account.json
-          # TODO(jlewi): Do we need privileged mode in order to run Docker?
-          securityContext:
-            privileged: true
-          volumeMounts:
-          - name: service
-            mountPath: /etc/service-account
-            readOnly: true
-          - name: docker
-            mountPath: /var/run/docker.sock
-          ports:
-          # TODO(jlewi): Do we need this port?
-          - containerPort: 9999
-            hostPort: 9999
-        volumes:
+  - name: mlkube-build-presubmit
+    agent: kubernetes
+    always_run: true         # Run for every PR, or only when requested.
+    rerun_command: "/test mlkube-build"
+    trigger: "(?m)^/test( all| mlkube-build),?(\\s+|$)"
+    branches:
+    - master
+    spec:
+      containers:
+      # TODO(jlewi): Replace latest with a specific tag once the images stabilize.
+      - image: gcr.io/mlkube-testing/builder:latest
+        env:
+          - name: GOOGLE_APPLICATION_CREDENTIALS
+            value: /etc/service-account/service-account.json
+        # We need privileged mode to run Docker.
+        securityContext:
+          privileged: true
+        volumeMounts:
         - name: service
-          secret:
-            secretName: service-account
+          mountPath: /etc/service-account
+          readOnly: true
         - name: docker
-          hostPath:
-            path: /var/run/docker.sock
+          mountPath: /var/run/docker.sock
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
+      - name: docker
+        hostPath:
+          path: /var/run/docker.sock
 
 postsubmits:
   kubernetes/kubernetes:
@@ -2545,6 +2542,34 @@ postsubmits:
         secret:
           secretName: service-account
 
+  jlewi/mlkube.io:
+  - name: mlkube-build-postsubmit
+    agent: kubernetes
+    branches:
+    - master
+    spec:
+      containers:
+      # TODO(jlewi): Replace latest with a specific tag once the images stabilize.
+      - image: gcr.io/mlkube-testing/builder:latest
+        env:
+          - name: GOOGLE_APPLICATION_CREDENTIALS
+            value: /etc/service-account/service-account.json
+        # We need privileged mode to run Docker.
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: service
+          mountPath: /etc/service-account
+          readOnly: true
+        - name: docker
+          mountPath: /var/run/docker.sock
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
+      - name: docker
+        hostPath:
+          path: /var/run/docker.sock
 
 periodics:
 - interval: 1h
@@ -14981,40 +15006,6 @@ periodics:
       secret:
         defaultMode: 256
         secretName: aws-cred
-
-- interval: 30m
-  agent: kubernetes
-  name: ci-kubernetes-e2e-mlkube-gke
-  spec:
-    containers:
-    - args:
-      - --timeout=70
-      - --repo=github.com/foxish/mlkube.io
-      env:
-      - name: GOOGLE_APPLICATION_CREDENTIALS
-        value: /etc/service-account/service-account.json
-      - name: USER
-        value: prow
-      - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
-        value: /etc/ssh-key-secret/ssh-private
-      - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
-        value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171006-bfbd469b-master
-      volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
-      - mountPath: /etc/ssh-key-secret
-        name: ssh
-        readOnly: true
-    volumes:
-    - name: service
-      secret:
-        secretName: service-account
-    - name: ssh
-      secret:
-        defaultMode: 256
-        secretName: ssh-key-secret
 
 - name: ci-kubernetes-e2e-node-canary
   interval: 1h
