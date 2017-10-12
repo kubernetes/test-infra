@@ -112,7 +112,7 @@ presubmits:
           - "--upload=gs://kubernetes-jenkins/pr-logs"
           - "--timeout=90"
           - "--"
-          - "--node-args=--image-config-file=test/e2e_node/image-config.yaml --image-config-dir=$GOPATH/src/github.com/kubernetes-incubator/cri-containerd --node-env=\"PULL_REFS=$(PULL_REFS)\""
+          - "--node-args=--image-config-file=test/e2e_node/image-config.yaml --image-config-dir=$GOPATH/src/github.com/kubernetes-incubator/cri-containerd --node-env=PULL_REFS=$(PULL_REFS)"
           env:
           - name: GOOGLE_APPLICATION_CREDENTIALS
             value: /etc/service-account/service-account.json
