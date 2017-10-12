@@ -32,7 +32,7 @@ const pluginName = "label"
 var (
 	labelRegex              = regexp.MustCompile(`(?m)^/(area|priority|kind|sig)\s*(.*)$`)
 	removeLabelRegex        = regexp.MustCompile(`(?m)^/remove-(area|priority|kind|sig)\s*(.*)$`)
-	nonExistentLabelOnIssue = "Those labels are not set on the issue: `%v`"
+	nonExistentLabelOnIssue = "Those labels are not set on issue #%d: `%v`"
 )
 
 func init() {
@@ -109,7 +109,7 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent) e
 		}
 
 		if err := gc.AddLabel(org, repo, e.Number, existingLabels[labelToAdd]); err != nil {
-			log.WithError(err).Errorf("Github failed to add the following label: %s", labelToAdd)
+			log.WithError(err).Errorf("Github failed to add label %s to issue #%d", labelToAdd, e.Number)
 		}
 	}
 
@@ -126,7 +126,7 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent) e
 		}
 
 		if err := gc.RemoveLabel(org, repo, e.Number, labelToRemove); err != nil {
-			log.WithError(err).Errorf("Github failed to remove the following label: %s", labelToRemove)
+			log.WithError(err).Errorf("Github failed to remove label %s to issue #%d", labelToRemove, e.Number)
 		}
 	}
 
@@ -137,7 +137,7 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent) e
 
 	// Tried to remove Labels that were not present on the Issue
 	if len(noSuchLabelsOnIssue) > 0 {
-		msg := fmt.Sprintf(nonExistentLabelOnIssue, strings.Join(noSuchLabelsOnIssue, ", "))
+		msg := fmt.Sprintf(nonExistentLabelOnIssue, e.Number, strings.Join(noSuchLabelsOnIssue, ", "))
 		return gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, msg))
 	}
 
