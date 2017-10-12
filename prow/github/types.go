@@ -146,6 +146,7 @@ type PullRequestChange struct {
 	Deletions int    `json:"deletions"`
 	Changes   int    `json:"changes"`
 	Patch     string `json:"patch"`
+	BlobURL   string `json:"blob_url"`
 }
 
 // Repo contains general repository information.
