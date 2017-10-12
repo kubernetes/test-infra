@@ -42,6 +42,7 @@ type Config struct {
 	Tide   Tide   `json:"tide,omitempty"`
 	Plank  Plank  `json:"plank,omitempty"`
 	Sinker Sinker `json:"sinker,omitempty"`
+	Deck   Deck   `json:"deck,omitempty"`
 
 	// TODO: Move this out of the main config.
 	JenkinsOperator JenkinsOperator `json:"jenkins_operator,omitempty"`
@@ -149,6 +150,25 @@ type Sinker struct {
 	// MaxPodAge is how old a Pod can be before it is garbage-collected.
 	// Defaults to one day.
 	MaxPodAge time.Duration `json:"-"`
+}
+
+// Deck holds config for deck.
+type Deck struct {
+	ExternalAgentLogs []ExternalAgentLog `json:"external_agent_logs,omitempty"`
+}
+
+// ExternalAgentLog ensures an external agent like Jenkins can expose
+// its logs in prow.
+type ExternalAgentLog struct {
+	// Agent is an external prow agent that supports exposing
+	// logs via deck.
+	Agent string `json:"agent,omitempty"`
+	// URLTemplateString compiles into URLTemplate at load time.
+	URLTemplateString string `json:"url_template,omitempty"`
+	// URLTemplate is compiled at load time from URLTemplateString. It
+	// will be passed a kube.ProwJob and the generated URL should provide
+	// logs for the ProwJob.
+	URLTemplate *template.Template `json:"-"`
 }
 
 // Load loads and parses the config at path.
@@ -263,6 +283,14 @@ func parseConfig(c *Config) error {
 	c.JenkinsOperator.ReportTemplate = jenkinsReportTmpl
 	if c.JenkinsOperator.MaxConcurrency < 0 {
 		return fmt.Errorf("jenkins-operator has invalid max_concurrency (%d), it needs to be a non-negative number", c.JenkinsOperator.MaxConcurrency)
+	}
+
+	for i, agentToTmpl := range c.Deck.ExternalAgentLogs {
+		urlTemplate, err := template.New(agentToTmpl.Agent).Parse(agentToTmpl.URLTemplateString)
+		if err != nil {
+			return fmt.Errorf("parsing template for agent %q: %v", agentToTmpl.Agent, err)
+		}
+		c.Deck.ExternalAgentLogs[i].URLTemplate = urlTemplate
 	}
 
 	if c.Sinker.ResyncPeriodString == "" {
