@@ -35,7 +35,6 @@ const (
 	committeeSteering   = "committee/steering"
 	wgContainerIdentity = "wg/container-identity"
 	username            = "Ali"
-	needsSigLabel       = "needs-sig"
 )
 
 func TestSigMentionHandler(t *testing.T) {

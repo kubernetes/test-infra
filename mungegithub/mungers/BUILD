@@ -63,7 +63,6 @@ go_library(
         "comment-deleter.go",
         "comment-deleter-jenkins.go",
         "doc.go",
-        "docs-no-retest.go",
         "inactive-review-handler.go",
         "issue-categorizer.go",
         "lgtm_after_commit.go",

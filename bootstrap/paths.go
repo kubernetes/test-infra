@@ -66,6 +66,8 @@ func PRPaths(base string, repos Repos, job, build string) (*Paths, error) {
 		prefix = repo.Name[len("kubernetes/"):]
 	} else if strings.HasPrefix(repo.Name, "github.com/") {
 		prefix = strings.Replace(repo.Name[len("github.com/"):], "/", "_", -1)
+	} else {
+		prefix = strings.Replace(repo.Name, "/", "_", -1)
 	}
 	// Batch merges are those with more than one PR specified.
 	prNums := PullNumbers(repo.Pull)

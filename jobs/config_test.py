@@ -23,6 +23,7 @@ import collections
 import json
 import os
 import re
+import sys
 
 import config_sort
 import env_gc
@@ -54,10 +55,6 @@ class JobTest(unittest.TestCase):
         'config_test.py', # Script for testing config.json and Prow config.
         'env_gc.py', # Tool script to garbage collect unused .env files.
         'move_extract.py',
-        # Node-e2e image configurations
-        'benchmark-config.yaml',
-        'image-config.yaml',
-        'image-config-serial.yaml',
     ]
     # also exclude .pyc
     excludes.extend(e + 'c' for e in excludes if e.endswith('.py'))
@@ -83,6 +80,10 @@ class JobTest(unittest.TestCase):
     def jobs(self):
         """[(job, job_path)] sequence"""
         for path, _, filenames in os.walk(config_sort.test_infra('jobs')):
+            print >>sys.stderr, path
+            if 'e2e_node' in path:
+                # Node e2e image configs, ignore them
+                continue
             for job in [f for f in filenames if f not in self.excludes]:
                 job_path = os.path.join(path, job)
                 yield job, job_path
@@ -591,7 +592,6 @@ class JobTest(unittest.TestCase):
                     extracts = [a for a in args if '--extract=' in a]
                     shared_builds = [a for a in args if '--use-shared-build' in a]
                     node_e2e = [a for a in args if '--deployment=node' in a]
-                    pull = job.startswith('pull-')
                     if shared_builds and extracts:
                         self.fail(('e2e jobs cannot have --use-shared-build'
                                    ' and --extract: %s %s') % (job, args))
@@ -599,7 +599,7 @@ class JobTest(unittest.TestCase):
                         self.fail(('e2e job needs --extract or'
                                    ' --use-shared-build: %s %s') % (job, args))
 
-                    if shared_builds or node_e2e and not pull:
+                    if shared_builds or node_e2e:
                         expected = 0
                     elif any(s in job for s in [
                             'upgrade', 'skew', 'downgrade', 'rollback',
@@ -627,7 +627,7 @@ class JobTest(unittest.TestCase):
                         self.fail('--image-family and --image-project must be'
                                   'both set or unset: %s' % job)
 
-                    if job.startswith('pull-kubernetes-'):
+                    if job.startswith('pull-kubernetes-') and not node_e2e:
                         if not 'pull-kubernetes-federation-e2e-gce' in job:
                             # pull-kubernetes-federation-e2e-gce job uses a specific cluster names
                             # instead of dynamic cluster names.
@@ -755,6 +755,8 @@ class JobTest(unittest.TestCase):
             'ci-kubernetes-e2e-gce-scalability-canary': 'ci-kubernetes-e2e-gce-scalability-*',
             # TODO(fejta): remove these (found while migrating jobs)
             'ci-kubernetes-kubemark-100-gce': 'ci-kubernetes-kubemark-*',
+            'ci-kubernetes-kubemark-5-prow-canary': 'ci-kubernetes-kubemark-*',
+            'ci-kubernetes-kubemark-100-canary': 'ci-kubernetes-kubemark-*',
             'ci-kubernetes-kubemark-5-gce': 'ci-kubernetes-kubemark-*',
             'ci-kubernetes-kubemark-5-gce-last-release': 'ci-kubernetes-kubemark-*',
             'ci-kubernetes-kubemark-high-density-100-gce': 'ci-kubernetes-kubemark-*',
@@ -775,6 +777,7 @@ class JobTest(unittest.TestCase):
             'pull-kubernetes-federation-e2e-gce': 'pull-kubernetes-federation-e2e-gce-*',
             'ci-kubernetes-pull-gce-federation-deploy': 'pull-kubernetes-federation-e2e-gce-*',
             'pull-kubernetes-federation-e2e-gce-canary': 'pull-kubernetes-federation-e2e-gce-*',
+            'ci-kubernetes-pull-gce-federation-deploy-canary': 'pull-kubernetes-federation-e2e-gce-*',
             'pull-kubernetes-e2e-gce': 'pull-kubernetes-e2e-gce-*',
             'pull-kubernetes-e2e-gce-canary': 'pull-kubernetes-e2e-gce-*',
             'ci-kubernetes-e2e-gce': 'ci-kubernetes-e2e-gce-*',

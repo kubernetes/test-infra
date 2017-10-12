@@ -18,16 +18,16 @@ TAG = $(shell date +v%Y%m%d)-$(shell git describe --tags --always --dirty)
 K8S ?= master
 
 GO ?= 1.8.3
-BAZEL ?= 0.5.4
+BAZEL ?= 0.6.1
 
 ifeq ($(K8S), 1.8)
 	GO = 1.8.3
-	BAZEL = 0.5.4
+	BAZEL = 0.6.1
 endif
 
 ifeq ($(K8S), 1.7)
 	GO = 1.8.3
-	BAZEL = 0.5.4
+	BAZEL = 0.6.1
 endif
 
 ifeq ($(K8S), 1.6)

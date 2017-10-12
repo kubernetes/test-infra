@@ -108,8 +108,8 @@ func TestParseArgs(t *testing.T) {
 			t.Errorf("Got error and did not expect one for test %s, %v", test.Name, err)
 		} else if !reflect.DeepEqual(res, test.Expected) {
 			t.Errorf("Args did not match expected for test: %s", test.Name)
-			t.Errorf("%+v", res)
-			t.Errorf("%+v", test.Expected)
+			t.Errorf("%#v", res)
+			t.Errorf("%#v", test.Expected)
 		}
 	}
 }

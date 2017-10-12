@@ -30,6 +30,8 @@ import (
 	"time"
 )
 
+const defaultKubeadmCNI = "weave"
+
 var (
 	// kubernetes-anywhere specific flags.
 	kubernetesAnywherePath = flag.String("kubernetes-anywhere-path", "",
@@ -52,6 +54,8 @@ var (
 		"(kubernetes-anywhere only) Number of nodes to be deployed in the cluster.")
 	kubernetesAnywhereUpgradeMethod = flag.String("kubernetes-anywhere-upgrade-method", "upgrade",
 		"(kubernetes-anywhere only) Indicates whether to do the control plane upgrade with kubeadm method \"init\" or \"upgrade\"")
+	kubernetesAnywhereCNI = flag.String("kubernetes-anywhere-cni", "",
+		"(kubernetes-anywhere only) The name of the CNI plugin used for the cluster's SDN.")
 )
 
 const kubernetesAnywhereConfigTemplate = `
@@ -77,11 +81,11 @@ const kubernetesAnywhereConfigTemplate = `
 .phase2.kubeadm.master_upgrade.method="{{.UpgradeMethod}}"
 
 .phase3.run_addons=y
-.phase3.weave_net={{if eq .Phase2Provider "kubeadm" -}} y {{- else -}} n {{- end}}
 .phase3.kube_proxy=n
 .phase3.dashboard=n
 .phase3.heapster=n
 .phase3.kube_dns=n
+.phase3.cni="{{.CNI}}"
 `
 
 type kubernetesAnywhere struct {
@@ -98,6 +102,7 @@ type kubernetesAnywhere struct {
 	Zone              string
 	Region            string
 	KubeContext       string
+	CNI               string
 }
 
 func newKubernetesAnywhere(project, zone string) (deployer, error) {
@@ -138,6 +143,11 @@ func newKubernetesAnywhere(project, zone string) (deployer, error) {
 		return nil, err
 	}
 
+	// preserve backwards compatability for e2e tests which never provided cni name
+	if *kubernetesAnywhereCNI == "" && *kubernetesAnywherePhase2Provider == "kubeadm" {
+		*kubernetesAnywhereCNI = defaultKubeadmCNI
+	}
+
 	k := &kubernetesAnywhere{
 		path:              *kubernetesAnywherePath,
 		Phase2Provider:    *kubernetesAnywherePhase2Provider,
@@ -150,6 +160,7 @@ func newKubernetesAnywhere(project, zone string) (deployer, error) {
 		Cluster:           *kubernetesAnywhereCluster,
 		Zone:              zone,
 		Region:            regexp.MustCompile(`-[^-]+$`).ReplaceAllString(zone, ""),
+		CNI:               *kubernetesAnywhereCNI,
 	}
 
 	if err := k.writeConfig(); err != nil {
