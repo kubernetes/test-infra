@@ -106,6 +106,10 @@ func main() {
 
 	c := jenkins.NewController(kc, jc, ghc, configAgent)
 
+	// Serve Jenkins logs from here and proxy deck to use this endpoint
+	// instead of baking agent-specific logic in deck.
+	go serveLogs(jc)
+
 	for range time.Tick(30 * time.Second) {
 		start := time.Now()
 		if err := c.Sync(); err != nil {

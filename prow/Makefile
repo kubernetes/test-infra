@@ -24,7 +24,7 @@ SPLICE_VERSION           ?= 0.27
 TOT_VERSION              ?= 0.5
 HOROLOGIUM_VERSION       ?= 0.9
 PLANK_VERSION            ?= 0.50
-JENKINS-OPERATOR_VERSION ?= 0.47
+JENKINS-OPERATOR_VERSION ?= 0.48
 TIDE_VERSION             ?= 0.7
 
 # These are the usual GKE variables.
