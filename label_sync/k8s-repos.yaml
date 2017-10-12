@@ -1,0 +1,402 @@
+org: kubernetes
+repos:
+- full_name: kubernetes/kubernetes
+  html_url: https://github.com/kubernetes/kubernetes
+  name: kubernetes
+  owner:
+    email: ""
+    id: 13629408
+    login: kubernetes
+    name: ""
+- full_name: kubernetes/heapster
+  html_url: https://github.com/kubernetes/heapster
+  name: heapster
+  owner:
+    email: ""
+    id: 13629408
+    login: kubernetes
+    name: ""
+- full_name: kubernetes/contrib
+  html_url: https://github.com/kubernetes/contrib
+  name: contrib
+  owner:
+    email: ""
+    id: 13629408
+    login: kubernetes
+    name: ""
+- full_name: kubernetes/helm
+  html_url: https://github.com/kubernetes/helm
+  name: helm
+  owner:
+    email: ""
+    id: 13629408
+    login: kubernetes
+    name: ""
+- full_name: kubernetes/dashboard
+  html_url: https://github.com/kubernetes/dashboard
+  name: dashboard
+  owner:
+    email: ""
+    id: 13629408
+    login: kubernetes
+    name: ""
+- full_name: kubernetes/kubernetes-anywhere
+  html_url: https://github.com/kubernetes/kubernetes-anywhere
+  name: kubernetes-anywhere
+  owner:
+    email: ""
+    id: 13629408
+    login: kubernetes
+    name: ""
+- full_name: kubernetes/charts
+  html_url: https://github.com/kubernetes/charts
+  name: charts
+  owner:
+    email: ""
+    id: 13629408
+    login: kubernetes
+    name: ""
+- full_name: kubernetes/kubernetes.github.io
+  html_url: https://github.com/kubernetes/kubernetes.github.io
+  name: kubernetes.github.io
+  owner:
+    email: ""
+    id: 13629408
+    login: kubernetes
+    name: ""
+- full_name: kubernetes/kubernetes-docs-cn
+  html_url: https://github.com/kubernetes/kubernetes-docs-cn
+  name: kubernetes-docs-cn
+  owner:
+    email: ""
+    id: 13629408
+    login: kubernetes
+    name: ""
+- full_name: kubernetes/release
+  html_url: https://github.com/kubernetes/release
+  name: release
+  owner:
+    email: ""
+    id: 13629408
+    login: kubernetes
+    name: ""
+- full_name: kubernetes/kube-deploy
+  html_url: https://github.com/kubernetes/kube-deploy
+  name: kube-deploy
+  owner:
+    email: ""
+    id: 13629408
+    login: kubernetes
+    name: ""
+- full_name: kubernetes/minikube
+  html_url: https://github.com/kubernetes/minikube
+  name: minikube
+  owner:
+    email: ""
+    id: 13629408
+    login: kubernetes
+    name: ""
+- full_name: kubernetes/test-infra
+  html_url: https://github.com/kubernetes/test-infra
+  name: test-infra
+  owner:
+    email: ""
+    id: 13629408
+    login: kubernetes
+    name: ""
+- full_name: kubernetes/features
+  html_url: https://github.com/kubernetes/features
+  name: features
+  owner:
+    email: ""
+    id: 13629408
+    login: kubernetes
+    name: ""
+- full_name: kubernetes/community
+  html_url: https://github.com/kubernetes/community
+  name: community
+  owner:
+    email: ""
+    id: 13629408
+    login: kubernetes
+    name: ""
+- full_name: kubernetes/kube-state-metrics
+  html_url: https://github.com/kubernetes/kube-state-metrics
+  name: kube-state-metrics
+  owner:
+    email: ""
+    id: 13629408
+    login: kubernetes
+    name: ""
+- full_name: kubernetes/node-problem-detector
+  html_url: https://github.com/kubernetes/node-problem-detector
+  name: node-problem-detector
+  owner:
+    email: ""
+    id: 13629408
+    login: kubernetes
+    name: ""
+- full_name: kubernetes/frakti
+  html_url: https://github.com/kubernetes/frakti
+  name: frakti
+  owner:
+    email: ""
+    id: 13629408
+    login: kubernetes
+    name: ""
+- full_name: kubernetes/kompose
+  html_url: https://github.com/kubernetes/kompose
+  name: kompose
+  owner:
+    email: ""
+    id: 13629408
+    login: kubernetes
+    name: ""
+- full_name: kubernetes/kops
+  html_url: https://github.com/kubernetes/kops
+  name: kops
+  owner:
+    email: ""
+    id: 13629408
+    login: kubernetes
+    name: ""
+- full_name: kubernetes/kubernetes-bootcamp
+  html_url: https://github.com/kubernetes/kubernetes-bootcamp
+  name: kubernetes-bootcamp
+  owner:
+    email: ""
+    id: 13629408
+    login: kubernetes
+    name: ""
+- full_name: kubernetes/kubernetes-template-project
+  html_url: https://github.com/kubernetes/kubernetes-template-project
+  name: kubernetes-template-project
+  owner:
+    email: ""
+    id: 13629408
+    login: kubernetes
+    name: ""
+- full_name: kubernetes/git-sync
+  html_url: https://github.com/kubernetes/git-sync
+  name: git-sync
+  owner:
+    email: ""
+    id: 13629408
+    login: kubernetes
+    name: ""
+- full_name: kubernetes/k8s.io
+  html_url: https://github.com/kubernetes/k8s.io
+  name: k8s.io
+  owner:
+    email: ""
+    id: 13629408
+    login: kubernetes
+    name: ""
+- full_name: kubernetes/client-go
+  html_url: https://github.com/kubernetes/client-go
+  name: client-go
+  owner:
+    email: ""
+    id: 13629408
+    login: kubernetes
+    name: ""
+- full_name: kubernetes/gengo
+  html_url: https://github.com/kubernetes/gengo
+  name: gengo
+  owner:
+    email: ""
+    id: 13629408
+    login: kubernetes
+    name: ""
+- full_name: kubernetes/perf-tests
+  html_url: https://github.com/kubernetes/perf-tests
+  name: perf-tests
+  owner:
+    email: ""
+    id: 13629408
+    login: kubernetes
+    name: ""
+- full_name: kubernetes/ingress-nginx
+  html_url: https://github.com/kubernetes/ingress-nginx
+  name: ingress-nginx
+  owner:
+    email: ""
+    id: 13629408
+    login: kubernetes
+    name: ""
+- full_name: kubernetes/kubeadm
+  html_url: https://github.com/kubernetes/kubeadm
+  name: kubeadm
+  owner:
+    email: ""
+    id: 13629408
+    login: kubernetes
+    name: ""
+- full_name: kubernetes/repo-infra
+  html_url: https://github.com/kubernetes/repo-infra
+  name: repo-infra
+  owner:
+    email: ""
+    id: 13629408
+    login: kubernetes
+    name: ""
+- full_name: kubernetes/dns
+  html_url: https://github.com/kubernetes/dns
+  name: dns
+  owner:
+    email: ""
+    id: 13629408
+    login: kubernetes
+    name: ""
+- full_name: kubernetes/apimachinery
+  html_url: https://github.com/kubernetes/apimachinery
+  name: apimachinery
+  owner:
+    email: ""
+    id: 13629408
+    login: kubernetes
+    name: ""
+- full_name: kubernetes/apiserver
+  html_url: https://github.com/kubernetes/apiserver
+  name: apiserver
+  owner:
+    email: ""
+    id: 13629408
+    login: kubernetes
+    name: ""
+- full_name: kubernetes/sample-apiserver
+  html_url: https://github.com/kubernetes/sample-apiserver
+  name: sample-apiserver
+  owner:
+    email: ""
+    id: 13629408
+    login: kubernetes
+    name: ""
+- full_name: kubernetes/kube-aggregator
+  html_url: https://github.com/kubernetes/kube-aggregator
+  name: kube-aggregator
+  owner:
+    email: ""
+    id: 13629408
+    login: kubernetes
+    name: ""
+- full_name: kubernetes/metrics
+  html_url: https://github.com/kubernetes/metrics
+  name: metrics
+  owner:
+    email: ""
+    id: 13629408
+    login: kubernetes
+    name: ""
+- full_name: kubernetes/kubectl
+  html_url: https://github.com/kubernetes/kubectl
+  name: kubectl
+  owner:
+    email: ""
+    id: 13629408
+    login: kubernetes
+    name: ""
+- full_name: kubernetes/autoscaler
+  html_url: https://github.com/kubernetes/autoscaler
+  name: autoscaler
+  owner:
+    email: ""
+    id: 13629408
+    login: kubernetes
+    name: ""
+- full_name: kubernetes/examples
+  html_url: https://github.com/kubernetes/examples
+  name: examples
+  owner:
+    email: ""
+    id: 13629408
+    login: kubernetes
+    name: ""
+- full_name: kubernetes/api
+  html_url: https://github.com/kubernetes/api
+  name: api
+  owner:
+    email: ""
+    id: 13629408
+    login: kubernetes
+    name: ""
+- full_name: kubernetes/apiextensions-apiserver
+  html_url: https://github.com/kubernetes/apiextensions-apiserver
+  name: apiextensions-apiserver
+  owner:
+    email: ""
+    id: 13629408
+    login: kubernetes
+    name: ""
+- full_name: kubernetes/utils
+  html_url: https://github.com/kubernetes/utils
+  name: utils
+  owner:
+    email: ""
+    id: 13629408
+    login: kubernetes
+    name: ""
+- full_name: kubernetes/kube-openapi
+  html_url: https://github.com/kubernetes/kube-openapi
+  name: kube-openapi
+  owner:
+    email: ""
+    id: 13629408
+    login: kubernetes
+    name: ""
+- full_name: kubernetes/sig-release
+  html_url: https://github.com/kubernetes/sig-release
+  name: sig-release
+  owner:
+    email: ""
+    id: 13629408
+    login: kubernetes
+    name: ""
+- full_name: kubernetes/code-generator
+  html_url: https://github.com/kubernetes/code-generator
+  name: code-generator
+  owner:
+    email: ""
+    id: 13629408
+    login: kubernetes
+    name: ""
+- full_name: kubernetes/steering
+  html_url: https://github.com/kubernetes/steering
+  name: steering
+  owner:
+    email: ""
+    id: 13629408
+    login: kubernetes
+    name: ""
+- full_name: kubernetes/cluster-registry
+  html_url: https://github.com/kubernetes/cluster-registry
+  name: cluster-registry
+  owner:
+    email: ""
+    id: 13629408
+    login: kubernetes
+    name: ""
+- full_name: kubernetes/federation
+  html_url: https://github.com/kubernetes/federation
+  name: federation
+  owner:
+    email: ""
+    id: 13629408
+    login: kubernetes
+    name: ""
+- full_name: kubernetes/common
+  html_url: https://github.com/kubernetes/common
+  name: common
+  owner:
+    email: ""
+    id: 13629408
+    login: kubernetes
+    name: ""
+- full_name: kubernetes/ingress-gce
+  html_url: https://github.com/kubernetes/ingress-gce
+  name: ingress-gce
+  owner:
+    email: ""
+    id: 13629408
+    login: kubernetes
+    name: ""
