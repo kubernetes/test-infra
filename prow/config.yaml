@@ -2586,136 +2586,6 @@ postsubmits:
         - name: cache-ssd
           hostPath:
             path: /mnt/disks/ssd0
-      run_after_success:
-      - name: ci-kubernetes-e2e-kubeadm-gce
-        agent: kubernetes
-        spec:
-          containers:
-          - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171011-bb9b2c17
-            args:
-            - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-            - "--clean"
-            - "--git-cache=/root/.cache/git"
-            - "--timeout=320"
-            - "--upload=gs://kubernetes-jenkins/logs"
-            env:
-            - name: USER
-              value: prow
-            - name: GOOGLE_APPLICATION_CREDENTIALS
-              value: /etc/service-account/service-account.json
-            - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
-              value: /etc/ssh-key-secret/ssh-private
-            - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
-              value: /etc/ssh-key-secret/ssh-public
-            volumeMounts:
-            - name: service
-              mountPath: /etc/service-account
-              readOnly: true
-            - name: ssh
-              mountPath: /etc/ssh-key-secret
-              readOnly: true
-            - name: cache-ssd
-              mountPath: /root/.cache
-            ports:
-            - containerPort: 9999
-              hostPort: 9999
-          volumes:
-          - name: service
-            secret:
-              secretName: service-account
-          - name: ssh
-            secret:
-              secretName: ssh-key-secret
-              defaultMode: 0400
-          - name: cache-ssd
-            hostPath:
-              path: /mnt/disks/ssd0
-      - name: ci-kubernetes-e2e-kubeadm-gce-stable-on-master
-        agent: kubernetes
-        spec:
-          containers:
-          - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171011-bb9b2c17
-            args:
-            - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-            - "--clean"
-            - "--git-cache=/root/.cache/git"
-            - "--timeout=320"
-            - "--upload=gs://kubernetes-jenkins/logs"
-            env:
-            - name: USER
-              value: prow
-            - name: GOOGLE_APPLICATION_CREDENTIALS
-              value: /etc/service-account/service-account.json
-            - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
-              value: /etc/ssh-key-secret/ssh-private
-            - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
-              value: /etc/ssh-key-secret/ssh-public
-            volumeMounts:
-            - name: service
-              mountPath: /etc/service-account
-              readOnly: true
-            - name: ssh
-              mountPath: /etc/ssh-key-secret
-              readOnly: true
-            - name: cache-ssd
-              mountPath: /root/.cache
-            ports:
-            - containerPort: 9999
-              hostPort: 9999
-          volumes:
-          - name: service
-            secret:
-              secretName: service-account
-          - name: ssh
-            secret:
-              secretName: ssh-key-secret
-              defaultMode: 0400
-          - name: cache-ssd
-            hostPath:
-              path: /mnt/disks/ssd0
-      - name: ci-kubernetes-e2e-kubeadm-gce-cni-flannel
-        agent: kubernetes
-        spec:
-          containers:
-          - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171011-bb9b2c17
-            args:
-            - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-            - "--clean"
-            - "--git-cache=/root/.cache/git"
-            - "--timeout=320"
-            - "--upload=gs://kubernetes-jenkins/logs"
-            env:
-            - name: USER
-              value: prow
-            - name: GOOGLE_APPLICATION_CREDENTIALS
-              value: /etc/service-account/service-account.json
-            - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
-              value: /etc/ssh-key-secret/ssh-private
-            - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
-              value: /etc/ssh-key-secret/ssh-public
-            volumeMounts:
-            - name: service
-              mountPath: /etc/service-account
-              readOnly: true
-            - name: ssh
-              mountPath: /etc/ssh-key-secret
-              readOnly: true
-            - name: cache-ssd
-              mountPath: /root/.cache
-            ports:
-            - containerPort: 9999
-              hostPort: 9999
-          volumes:
-          - name: service
-            secret:
-              secretName: service-account
-          - name: ssh
-            secret:
-              secretName: ssh-key-secret
-              defaultMode: 0400
-          - name: cache-ssd
-            hostPath:
-              path: /mnt/disks/ssd0
 
   - name: ci-kubernetes-bazel-build-1-6
     agent: kubernetes
@@ -3310,6 +3180,171 @@ postsubmits:
           secretName: service-account
 
 periodics:
+- name: ci-kubernetes-bazel-build
+  interval: 30m
+  agent: kubernetes
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/bazelbuild:v20171013-53473ec5-0.6.1
+      args:
+      - "--clean"
+      - "--git-cache=/root/.cache/git"
+      - "--job=$(JOB_NAME)"
+      - "--repo=k8s.io/kubernetes=master"
+      - "--service-account=/etc/service-account/service-account.json"
+      - "--upload=gs://kubernetes-jenkins/logs"
+      env:
+      - name: TEST_TMPDIR
+        value: /root/.cache/bazel
+      # Bazel needs privileged mode in order to sandbox builds.
+      securityContext:
+        privileged: true
+      volumeMounts:
+      - name: service
+        mountPath: /etc/service-account
+        readOnly: true
+      - name: cache-ssd
+        mountPath: /root/.cache
+      ports:
+      - containerPort: 9999
+        hostPort: 9999
+    volumes:
+    - name: service
+      secret:
+        secretName: service-account
+    - name: cache-ssd
+      hostPath:
+        path: /mnt/disks/ssd0
+  run_after_success:
+  - name: ci-kubernetes-e2e-kubeadm-gce
+    agent: kubernetes
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171011-bb9b2c17
+        args:
+        - "--repo=k8s.io/kubernetes=master"
+        - "--clean"
+        - "--git-cache=/root/.cache/git"
+        - "--timeout=320"
+        - "--upload=gs://kubernetes-jenkins/logs"
+        env:
+        - name: USER
+          value: prow
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /etc/service-account/service-account.json
+        - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+          value: /etc/ssh-key-secret/ssh-private
+        - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+          value: /etc/ssh-key-secret/ssh-public
+        volumeMounts:
+        - name: service
+          mountPath: /etc/service-account
+          readOnly: true
+        - name: ssh
+          mountPath: /etc/ssh-key-secret
+          readOnly: true
+        - name: cache-ssd
+          mountPath: /root/.cache
+        ports:
+        - containerPort: 9999
+          hostPort: 9999
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
+      - name: ssh
+        secret:
+          secretName: ssh-key-secret
+          defaultMode: 0400
+      - name: cache-ssd
+        hostPath:
+          path: /mnt/disks/ssd0
+  - name: ci-kubernetes-e2e-kubeadm-gce-stable-on-master
+    agent: kubernetes
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171011-bb9b2c17
+        args:
+        - "--repo=k8s.io/kubernetes=master"
+        - "--clean"
+        - "--git-cache=/root/.cache/git"
+        - "--timeout=320"
+        - "--upload=gs://kubernetes-jenkins/logs"
+        env:
+        - name: USER
+          value: prow
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /etc/service-account/service-account.json
+        - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+          value: /etc/ssh-key-secret/ssh-private
+        - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+          value: /etc/ssh-key-secret/ssh-public
+        volumeMounts:
+        - name: service
+          mountPath: /etc/service-account
+          readOnly: true
+        - name: ssh
+          mountPath: /etc/ssh-key-secret
+          readOnly: true
+        - name: cache-ssd
+          mountPath: /root/.cache
+        ports:
+        - containerPort: 9999
+          hostPort: 9999
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
+      - name: ssh
+        secret:
+          secretName: ssh-key-secret
+          defaultMode: 0400
+      - name: cache-ssd
+        hostPath:
+          path: /mnt/disks/ssd0
+  - name: ci-kubernetes-e2e-kubeadm-gce-cni-flannel
+    agent: kubernetes
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171011-bb9b2c17
+        args:
+        - "--repo=k8s.io/kubernetes=master"
+        - "--clean"
+        - "--git-cache=/root/.cache/git"
+        - "--timeout=320"
+        - "--upload=gs://kubernetes-jenkins/logs"
+        env:
+        - name: USER
+          value: prow
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /etc/service-account/service-account.json
+        - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+          value: /etc/ssh-key-secret/ssh-private
+        - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+          value: /etc/ssh-key-secret/ssh-public
+        volumeMounts:
+        - name: service
+          mountPath: /etc/service-account
+          readOnly: true
+        - name: ssh
+          mountPath: /etc/ssh-key-secret
+          readOnly: true
+        - name: cache-ssd
+          mountPath: /root/.cache
+        ports:
+        - containerPort: 9999
+          hostPort: 9999
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
+      - name: ssh
+        secret:
+          secretName: ssh-key-secret
+          defaultMode: 0400
+      - name: cache-ssd
+        hostPath:
+          path: /mnt/disks/ssd0
 - interval: 1h
   agent: kubernetes
   name: ci-kubernetes-charts-gce
@@ -17850,3 +17885,4 @@ periodics:
     - name: token
       secret:
         secretName: fejta-bot-token
+
