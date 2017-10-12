@@ -340,6 +340,12 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-latest-parallel
 - name: ci-kubernetes-e2e-gke-staging-default-parallel
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-default-parallel
+- name: ci-kubernetes-e2e-gke-staging-default-latest-upgrade-master
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-default-latest-upgrade-master
+- name: ci-kubernetes-e2e-gke-staging-default-latest-upgrade-cluster
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-default-latest-upgrade-cluster
+- name: ci-kubernetes-e2e-gke-staging-default-latest-upgrade-cluster-new
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-default-latest-upgrade-cluster-new
 - name: ci-kubernetes-e2e-gke-subnet
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-subnet
 - name: ci-kubernetes-e2e-gci-gke-subnet
@@ -2231,6 +2237,12 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-staging-latest-parallel
   - name: gke-staging-default-parallel
     test_group_name: ci-kubernetes-e2e-gke-staging-default-parallel
+  - name: gke-staging-default-latest-upgrade-master
+    test_group_name: ci-kubernetes-e2e-gke-staging-default-latest-upgrade-master
+  - name: gke-staging-default-latest-upgrade-cluster
+    test_group_name: ci-kubernetes-e2e-gke-staging-default-latest-upgrade-cluster
+  - name: gke-staging-default-latest-upgrade-cluster-new
+    test_group_name: ci-kubernetes-e2e-gke-staging-default-latest-upgrade-cluster-new
 
 - name: google-gke-prod
   dashboard_tab:
