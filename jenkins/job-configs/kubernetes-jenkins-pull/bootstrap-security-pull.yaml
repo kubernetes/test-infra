@@ -86,11 +86,6 @@
         job-name: pull-kubernetes-kubemark-e2e-gce
         repo-name: 'github.com/kubernetes-security/kubernetes'
         timeout: 65
-    - kubernetes-node-e2e:
-        max-total: 12
-        job-name: pull-kubernetes-node-e2e
-        repo-name: 'github.com/kubernetes-security/kubernetes'
-        timeout: 90
     - kubernetes-verify:
         max-total: 16
         job-name: pull-kubernetes-verify
