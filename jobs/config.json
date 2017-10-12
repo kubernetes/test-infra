@@ -10104,7 +10104,6 @@
       "--deployment=node",
       "--gcp-project=cri-c8d-pr-node-e2e",
       "--gcp-zone=us-central1-f",
-      "--node-args=--image-config-file=test/e2e_node/image-config.yaml --node-envs=PULL_REFS",
       "--node-test-args=--kubelet-flags=\"--cgroups-per-qos=true --cgroup-root=/ --container-runtime=remote --container-runtime-endpoint=/var/run/cri-containerd.sock\" --extra-log=\"{\\\"name\\\": \\\"containerd.log\\\", \\\"journalctl\\\": [\\\"-u\\\", \\\"containerd\\\"]}\" --extra-log=\"{\\\"name\\\": \\\"cri-containerd.log\\\", \\\"journalctl\\\": [\\\"-u\\\", \\\"cri-containerd\\\"]}\"",
       "--node-tests=true",
       "--provider=gce",
