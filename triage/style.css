@@ -68,7 +68,7 @@ button.toggle.active {
 .sig-big-data           { --color: #fb8072; }
 .sig-cli                { --color: #80b1d3; }
 .sig-cluster-lifecycle  { --color: #fdb462; }
-.sig-federation         { --color: #b3de69; }
+.sig-multicluster       { --color: #b3de69; }
 .sig-instrumentation    { --color: #fccde5; }
 .sig-network            { --color: #d9d9d9; }
 .sig-node               { --color: #8dd3c7; }

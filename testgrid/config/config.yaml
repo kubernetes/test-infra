@@ -3652,7 +3652,7 @@ dashboards:
   - name: kubeadm-gce-cni-flannel
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-cni-flannel
 
-- name: sig-federation
+- name: sig-multicluster
   dashboard_tab:
   - name: gce
     test_group_name: ci-kubernetes-e2e-gce-federation
