@@ -28,6 +28,7 @@ filegroup(
         "//prow/cmd/splice:all-srcs",
         "//prow/cmd/tide:all-srcs",
         "//prow/cmd/tot:all-srcs",
+        "//prow/commentpruner:all-srcs",
         "//prow/config:all-srcs",
         "//prow/genfiles:all-srcs",
         "//prow/git:all-srcs",

@@ -18,22 +18,31 @@ package mungers
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 
-	"github.com/golang/glog"
 	"k8s.io/kubernetes/pkg/util/sets"
 	"k8s.io/test-infra/mungegithub/features"
 	"k8s.io/test-infra/mungegithub/github"
 	"k8s.io/test-infra/mungegithub/options"
+
+	"github.com/golang/glog"
+	githubapi "github.com/google/go-github/github"
 )
 
-var labelPrefixes = []string{"sig/", "committee/", "wg/"}
+var (
+	labelPrefixes = []string{"sig/", "committee/", "wg/"}
+	sigMentionRE  = regexp.MustCompile(`@\S+\nThere are no sig labels on this issue.`)
+)
+
+const needsSigLabel = "needs-sig"
 
 type SigMentionHandler struct{}
 
 func init() {
 	h := &SigMentionHandler{}
 	RegisterMungerOrDie(h)
+	RegisterStaleIssueComments(h)
 }
 
 // Name is the name usable in --pr-mungers
@@ -76,7 +85,7 @@ func (*SigMentionHandler) HasNeedsSigLabel(obj *github.MungeObject) bool {
 	labels := obj.Issue.Labels
 
 	for i := range labels {
-		if labels[i].Name != nil && strings.Compare(*labels[i].Name, "needs-sig") == 0 {
+		if labels[i].Name != nil && strings.Compare(*labels[i].Name, needsSigLabel) == 0 {
 			return true
 		}
 	}
@@ -102,11 +111,11 @@ func (s *SigMentionHandler) Munge(obj *github.MungeObject) {
 	hasNeedsSigLabel := s.HasNeedsSigLabel(obj)
 
 	if hasSigLabel && hasNeedsSigLabel {
-		if err := obj.RemoveLabel("needs-sig"); err != nil {
+		if err := obj.RemoveLabel(needsSigLabel); err != nil {
 			glog.Errorf("failed to remove needs-sig label for issue #%v", *obj.Issue.Number)
 		}
 	} else if !hasSigLabel && !hasNeedsSigLabel {
-		if err := obj.AddLabel("needs-sig"); err != nil {
+		if err := obj.AddLabel(needsSigLabel); err != nil {
 			glog.Errorf("failed to add needs-sig label for issue #%v", *obj.Issue.Number)
 			return
 		}
@@ -127,4 +136,24 @@ The `+"`<group-suffix>`"+` in the method 1 has to be replaced with one of these:
 			glog.Errorf("failed to leave comment for %s that issue #%v needs sig label", *obj.Issue.User.Login, *obj.Issue.Number)
 		}
 	}
+}
+
+// isStaleIssueComment determines if a comment is stale based on if the issue has the needs-sig label
+func (*SigMentionHandler) isStaleIssueComment(obj *github.MungeObject, comment *githubapi.IssueComment) bool {
+	if !obj.IsRobot(comment.User) {
+		return false
+	}
+	if !sigMentionRE.MatchString(*comment.Body) {
+		return false
+	}
+	stale := !obj.HasLabel(needsSigLabel)
+	if stale {
+		glog.V(6).Infof("Found stale SigMentionHandler comment")
+	}
+	return stale
+}
+
+// StaleIssueComments returns a slice of stale issue comments.
+func (s *SigMentionHandler) StaleIssueComments(obj *github.MungeObject, comments []*githubapi.IssueComment) []*githubapi.IssueComment {
+	return forEachCommentTest(obj, comments, s.isStaleIssueComment)
 }

@@ -19,6 +19,7 @@ package hook
 import (
 	"github.com/sirupsen/logrus"
 
+	"k8s.io/test-infra/prow/commentpruner"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/plugins"
 )
@@ -39,6 +40,13 @@ func (s *Server) handleReviewEvent(l *logrus.Entry, re github.ReviewEvent) {
 			pc.Logger = l.WithField("plugin", p)
 			pc.Config = s.ConfigAgent.Config()
 			pc.PluginConfig = s.Plugins.Config()
+			pc.CommentPruner = commentpruner.NewEventClient(
+				pc.GitHubClient,
+				l.WithField("client", "commentpruner"),
+				re.Repo.Owner.Login,
+				re.Repo.Name,
+				re.PullRequest.Number,
+			)
 			if err := h(pc, re); err != nil {
 				pc.Logger.WithError(err).Error("Error handling ReviewEvent.")
 			}
@@ -81,6 +89,13 @@ func (s *Server) handleReviewCommentEvent(l *logrus.Entry, rce github.ReviewComm
 			pc.Logger = l.WithField("plugin", p)
 			pc.Config = s.ConfigAgent.Config()
 			pc.PluginConfig = s.Plugins.Config()
+			pc.CommentPruner = commentpruner.NewEventClient(
+				pc.GitHubClient,
+				l.WithField("client", "commentpruner"),
+				rce.Repo.Owner.Login,
+				rce.Repo.Name,
+				rce.PullRequest.Number,
+			)
 			if err := h(pc, rce); err != nil {
 				pc.Logger.WithError(err).Error("Error handling ReviewCommentEvent.")
 			}
@@ -122,6 +137,13 @@ func (s *Server) handlePullRequestEvent(l *logrus.Entry, pr github.PullRequestEv
 			pc.Logger = l.WithField("plugin", p)
 			pc.Config = s.ConfigAgent.Config()
 			pc.PluginConfig = s.Plugins.Config()
+			pc.CommentPruner = commentpruner.NewEventClient(
+				pc.GitHubClient,
+				l.WithField("client", "commentpruner"),
+				pr.Repo.Owner.Login,
+				pr.Repo.Name,
+				pr.PullRequest.Number,
+			)
 			if err := h(pc, pr); err != nil {
 				pc.Logger.WithError(err).Error("Error handling PullRequestEvent.")
 			}
@@ -184,6 +206,13 @@ func (s *Server) handleIssueEvent(l *logrus.Entry, i github.IssueEvent) {
 			pc.Logger = l.WithField("plugin", p)
 			pc.Config = s.ConfigAgent.Config()
 			pc.PluginConfig = s.Plugins.Config()
+			pc.CommentPruner = commentpruner.NewEventClient(
+				pc.GitHubClient,
+				l.WithField("client", "commentpruner"),
+				i.Repo.Owner.Login,
+				i.Repo.Name,
+				i.Issue.Number,
+			)
 			if err := h(pc, i); err != nil {
 				pc.Logger.WithError(err).Error("Error handleing IssueEvent.")
 			}
@@ -225,6 +254,13 @@ func (s *Server) handleIssueCommentEvent(l *logrus.Entry, ic github.IssueComment
 			pc.Logger = l.WithField("plugin", p)
 			pc.Config = s.ConfigAgent.Config()
 			pc.PluginConfig = s.Plugins.Config()
+			pc.CommentPruner = commentpruner.NewEventClient(
+				pc.GitHubClient,
+				l.WithField("client", "commentpruner"),
+				ic.Repo.Owner.Login,
+				ic.Repo.Name,
+				ic.Issue.Number,
+			)
 			if err := h(pc, ic); err != nil {
 				pc.Logger.WithError(err).Error("Error handling IssueCommentEvent.")
 			}
@@ -296,6 +332,13 @@ func (s *Server) handleGenericComment(l *logrus.Entry, ce *github.GenericComment
 			pc.Logger = l.WithField("plugin", p)
 			pc.Config = s.ConfigAgent.Config()
 			pc.PluginConfig = s.Plugins.Config()
+			pc.CommentPruner = commentpruner.NewEventClient(
+				pc.GitHubClient,
+				l.WithField("client", "commentpruner"),
+				ce.Repo.Owner.Login,
+				ce.Repo.Name,
+				ce.Number,
+			)
 			if err := h(pc, *ce); err != nil {
 				pc.Logger.WithError(err).Error("Error handling GenericCommentEvent.")
 			}

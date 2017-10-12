@@ -214,9 +214,6 @@ func handlePR(gc githubClient, log *logrus.Entry, pr *github.PullRequestEvent) e
 				log.WithError(err).Errorf("Failed to comment on %s/%s#%d with comment %q.", org, repo, pr.Number, comment)
 			}
 		}
-	} else {
-		//going to apply some other release-note-label
-		ensureNoRelNoteNeededLabel(gc, log, pr, prLabels)
 	}
 
 	// Add the label if needed
