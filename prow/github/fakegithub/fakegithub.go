@@ -26,6 +26,7 @@ import (
 type FakeClient struct {
 	Issues             []github.Issue
 	OrgMembers         []string
+	Collaborators      []string
 	IssueComments      map[int][]github.IssueComment
 	IssueCommentID     int
 	PullRequests       map[int]*github.PullRequest
@@ -222,4 +223,12 @@ func (f *FakeClient) GetFile(org, repo, file, commit string) ([]byte, error) {
 // ListTeamMembers return a fake team with a single "sig-lead" Github teammember
 func (f *FakeClient) ListTeamMembers(teamID int) ([]github.TeamMember, error) {
 	return []github.TeamMember{{Login: "sig-lead"}}, nil
+}
+
+func (f *FakeClient) ListCollaborators(org, repo string) ([]github.User, error) {
+	result := make([]github.User, 0, len(f.Collaborators))
+	for _, login := range f.Collaborators {
+		result = append(result, github.User{Login: login})
+	}
+	return result, nil
 }
