@@ -2518,8 +2518,8 @@ presubmits:
       # TODO(jlewi): Replace latest with a specific tag once the images stabilize.
       - image: gcr.io/mlkube-testing/builder:latest
         env:
-          - name: GOOGLE_APPLICATION_CREDENTIALS
-            value: /etc/service-account/service-account.json
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /etc/service-account/service-account.json
         # We need privileged mode to run Docker.
         securityContext:
           privileged: true
@@ -3321,8 +3321,8 @@ postsubmits:
       # TODO(jlewi): Replace latest with a specific tag once the images stabilize.
       - image: gcr.io/mlkube-testing/builder:latest
         env:
-          - name: GOOGLE_APPLICATION_CREDENTIALS
-            value: /etc/service-account/service-account.json
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /etc/service-account/service-account.json
         # We need privileged mode to run Docker.
         securityContext:
           privileged: true
