@@ -161,6 +161,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gce-federation-test
 - name: ci-kubernetes-pull-gce-federation-deploy
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-pull-gce-federation-deploy
+- name: ci-kubernetes-pull-gce-federation-deploy-canary
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-pull-gce-federation-deploy-canary
 - name: ci-kubernetes-federation-build
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-federation-build
 - name: ci-kubernetes-federation-build-1.6
@@ -360,6 +362,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-kubemark-100-gce
 - name: ci-kubernetes-kubemark-100-canary
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-kubemark-100-canary
+- name: ci-kubernetes-kubemark-5-prow-canary
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-kubemark-5-prow-canary
 - name: ci-kubernetes-kubemark-5-gce
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-kubemark-5-gce
 - name: ci-kubernetes-kubemark-5-gce-last-release
@@ -1011,6 +1015,8 @@ test_groups:
 # kubeadm tests
 - name: ci-kubernetes-e2e-kubeadm-gce
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce
+- name: ci-kubernetes-e2e-kubeadm-gce-cni-flannel
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-cni-flannel
 - name: ci-kubernetes-e2e-kubeadm-gce-stable-on-master
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-stable-on-master
 - name: ci-kubernetes-e2e-kubeadm-gce-1-6
@@ -1036,6 +1042,9 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-e2e-kubeadm-gce-upgrade-1-6-1-7
 - name: periodic-kubernetes-e2e-kubeadm-gce-upgrade-1-7-1-8
   gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-e2e-kubeadm-gce-upgrade-1-7-1-8
+# master cluster tests
+- name: ci-kubernetes-e2e-gce-1-6-1-7-master-skew
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-1-6-1-7-master-skew
 # charts tests
 - name: ci-kubernetes-charts-gce
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-charts-gce
@@ -2404,6 +2413,11 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster-new
     description: 'Upgrade master and node, in gke(gci), from 1.7 to master, and run skewed e2e tests'
 
+- name: skew-clusters
+  dashboard_tab:
+  - name: 1-6-1-7-cluster
+    test_group_name: ci-kubernetes-e2e-gce-1-6-1-7-master-skew
+
 - name: etcd-upgrades
   dashboard_tab:
   - name: gce-latest
@@ -3635,8 +3649,10 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-stable-on-master
   - name: kubeadm-gce
     test_group_name: ci-kubernetes-e2e-kubeadm-gce
+  - name: kubeadm-gce-cni-flannel
+    test_group_name: ci-kubernetes-e2e-kubeadm-gce-cni-flannel
 
-- name: sig-federation
+- name: sig-multicluster
   dashboard_tab:
   - name: gce
     test_group_name: ci-kubernetes-e2e-gce-federation
@@ -3654,6 +3670,8 @@ dashboards:
     test_group_name: ci-kubernetes-soak-gce-federation-test
   - name: pull-gce-deploy
     test_group_name: ci-kubernetes-pull-gce-federation-deploy
+  - name: pull-gce-deploy-canary
+    test_group_name: ci-kubernetes-pull-gce-federation-deploy-canary
   - name: build
     test_group_name: ci-kubernetes-federation-build
   - name: build-1.6
@@ -3964,6 +3982,10 @@ dashboards:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
   - name: kubemark-canary
     test_group_name: ci-kubernetes-kubemark-100-canary
+    code_search_url_template:
+      url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+  - name: kubemark-canary-prow
+    test_group_name: ci-kubernetes-kubemark-5-prow-canary
     code_search_url_template:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
   - name: scalability-canary

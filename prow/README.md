@@ -25,6 +25,9 @@ See also: [Life of a Prow Job](./architecture.md)
 Breaking changes to external APIs (labels, GitHub interactions, configuration
 or deployment) will be documented in this section. Prow is in a pre-release
 state and no claims of backwards compatibility are made for any external API.
+Note: versions specified in these announcements may not include bug fixes made
+in more recent versions so it is recommended that the most recent versions are
+used when updating deployments.
 
  - *October 2, 2017* `hook` version 0.171. The label plugin was split into three
    plugins (label, sigmention, milestonestatus). Breaking changes:

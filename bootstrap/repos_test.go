@@ -80,8 +80,8 @@ func TestParseRepos(t *testing.T) {
 			t.Errorf("Got error and did not expect one for test %s, %v", test.Name, err)
 		} else if !reflect.DeepEqual(res, test.Expected) {
 			t.Errorf("Repos did not match expected for test: %s", test.Name)
-			t.Errorf("%+v", res)
-			t.Errorf("%+v", test.Expected)
+			t.Errorf("%#v", res)
+			t.Errorf("%#v", test.Expected)
 			// assert that currently Repos.Main() == Repos[0]
 		} else if len(test.Expected) > 0 && res.Main() != &res[0] {
 			t.Errorf("Expected repos.Main() to be &res[0] for all tests (test: %s)", test.Name)

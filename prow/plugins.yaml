@@ -15,8 +15,6 @@ heart:
   - k8s-merge-robot
 
 slack:
-  mentionchannels:
-  - sig-testing
   mergewarnings:
   - repos:
     - kubernetes/kubernetes
@@ -51,6 +49,7 @@ plugins:
   kubernetes/kubernetes:
   - trigger
   - release-note
+  - docs-no-retest
 
   kubernetes/test-infra:
   - trigger
@@ -82,6 +81,9 @@ plugins:
   - lgtm
   - reopen
   - size
+
+  kubernetes-incubator/cri-containerd:
+  - trigger
 
   kubernetes-security/kubernetes:
   - trigger

@@ -25,22 +25,23 @@ ENV WORKSPACE=/workspace \
 # common util tools
 # https://github.com/GoogleCloudPlatform/gsutil/issues/446 for python-openssl
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    wget \
+    build-essential \
+    ca-certificates \
     curl \
     file \
-    rsync \
-    ca-certificates \
-    build-essential \
-    openssh-client \
     git \
+    jq \
+    openssh-client \
     pkg-config \
-    zip \
-    unzip \
-    xz-utils \
-    zlib1g-dev \
     python \
     python-openssl \
     python-pip \
+    rsync \
+    unzip \
+    wget \
+    xz-utils \
+    zip \
+    zlib1g-dev \
     && apt-get clean
 
 # Install gcloud
