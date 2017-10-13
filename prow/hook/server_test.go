@@ -43,8 +43,8 @@ func TestServeHTTPErrors(t *testing.T) {
 		Code   int
 	}{
 		{
-			// GET
-			Method: http.MethodGet,
+			// Delete
+			Method: http.MethodDelete,
 			Header: map[string]string{
 				"X-GitHub-Event":    "ping",
 				"X-GitHub-Delivery": "I am unique",
@@ -113,6 +113,18 @@ func TestServeHTTPErrors(t *testing.T) {
 		{
 			// Good
 			Method: http.MethodPost,
+			Header: map[string]string{
+				"X-GitHub-Event":    "ping",
+				"X-GitHub-Delivery": "I am unique",
+				"X-Hub-Signature":   hmac,
+				"content-type":      "application/json",
+			},
+			Body: body,
+			Code: http.StatusOK,
+		},
+		{
+			// Good
+			Method: http.MethodGet,
 			Header: map[string]string{
 				"X-GitHub-Event":    "ping",
 				"X-GitHub-Delivery": "I am unique",

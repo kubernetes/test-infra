@@ -42,6 +42,11 @@ type Server struct {
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
+	// Our health check uses GET, so just kick back a 200.
+	if r.Method == http.MethodGet {
+		return
+	}
+
 	// Header checks: It must be a POST with an event type and a signature.
 	if r.Method != http.MethodPost {
 		http.Error(w, "405 Method not allowed", http.StatusMethodNotAllowed)
