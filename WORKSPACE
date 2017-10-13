@@ -1,13 +1,21 @@
-git_repository(
+http_archive(
     name = "io_bazel_rules_go",
-    commit = "ee1fef7ec1379fcf36c002fd3ac0d00d940b147e",
-    remote = "https://github.com/bazelbuild/rules_go.git",
+    sha256 = "27a13726ff8621cfa4592fbef116b253043c2b093c8814265dc4489a0e67d229",
+    strip_prefix = "rules_go-82483596ec203eb9c1849937636f4cbed83733eb",
+    urls = ["https://github.com/bazelbuild/rules_go/archive/82483596ec203eb9c1849937636f4cbed83733eb.tar.gz"],
 )
 
 load("@io_bazel_rules_go//go:def.bzl", "go_rules_dependencies", "go_register_toolchains")
 
 go_rules_dependencies()
 go_register_toolchains()
+
+http_archive(
+    name = "io_kubernetes_build",
+    sha256 = "ca8fa1ee0928220d77fcaa6bcf40a26c57800c024e21b08c8dd9cc8fbf910236",
+    strip_prefix = "repo-infra-0aafaab9e158d3628804242c6a9c4dd3eb8bce1f",
+    urls = ["https://github.com/kubernetes/repo-infra/archive/0aafaab9e158d3628804242c6a9c4dd3eb8bce1f.tar.gz"],
+)
 
 http_archive(
     name = "io_bazel_rules_docker",
