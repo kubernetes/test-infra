@@ -76,7 +76,7 @@ func main() {
 	}
 
 	// Also check k/k presubmit, prow postsubmit and periodic jobs
-	for _, job := range prowConfig.AllPresubmits([]string{}) {
+	for _, job := range prowConfig.AllPresubmits([]string{"kubernetes/kubernetes"}) {
 		jobs[job.Name] = false
 	}
 
