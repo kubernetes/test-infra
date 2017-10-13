@@ -10104,8 +10104,7 @@
       "--deployment=node",
       "--gcp-project=cri-c8d-pr-node-e2e",
       "--gcp-zone=us-central1-f",
-      "--node-args=--image-config-file=test/e2e_node/image-config.yaml --node-envs=PULL_REFS",
-      "--node-test-args=--kubelet-flags=\"--cgroups-per-qos=true --cgroup-root=/ --container-runtime=remote --container-runtime-endpoint=/var/run/cri-containerd.sock\" --extra-log=\"{\\\"name\\\": \\\"containerd.log\\\", \\\"journalctl\\\": [\\\"-u\\\", \\\"containerd\\\"]}\" --extra-log=\"{\\\"name\\\": \\\"cri-containerd.log\\\", \\\"journalctl\\\": [\\\"-u\\\", \\\"cri-containerd\\\"]}\"",
+      "--node-test-args=--container-runtime=remote --container-runtime-endpoint=/var/run/cri-containerd.sock --kubelet-flags=\"--cgroups-per-qos=true --cgroup-root=/ --container-runtime=remote --container-runtime-endpoint=/var/run/cri-containerd.sock\" --extra-log=\"{\\\"name\\\": \\\"containerd.log\\\", \\\"journalctl\\\": [\\\"-u\\\", \\\"containerd\\\"]}\" --extra-log=\"{\\\"name\\\": \\\"cri-containerd.log\\\", \\\"journalctl\\\": [\\\"-u\\\", \\\"cri-containerd\\\"]}\"",
       "--node-tests=true",
       "--provider=gce",
       "--test_args=--nodes=8 --skip=\"\\[Flaky\\]|\\[Slow\\]|\\[Serial\\]|querying\\s\\/stats\\/summary\" --flakeAttempts=2",
@@ -10263,6 +10262,7 @@
       "--build=bazel",
       "--cluster=",
       "--deployment=gke",
+      "--env=CREATE_CUSTOM_NETWORK=true",
       "--extract=local",
       "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
       "--gcp-node-image=gci",
@@ -10445,16 +10445,6 @@
     ]
   },
   "pull-kubernetes-node-e2e": {
-    "args": [
-      "--branch=${PULL_BASE_REF}",
-      "--properties=test/e2e_node/jenkins/jenkins-pull.properties"
-    ],
-    "scenario": "kubernetes_kubelet",
-    "sigOwners": [
-      "sig-node"
-    ]
-  },
-  "pull-kubernetes-node-e2e-prow": {
     "args": [
       "--deployment=node",
       "--gcp-project=k8s-jkns-pr-node-e2e",

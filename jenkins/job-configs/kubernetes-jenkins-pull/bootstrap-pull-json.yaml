@@ -115,11 +115,6 @@
         job-name: pull-kubernetes-e2e-kops-aws
         repo-name: 'k8s.io/kubernetes'
         timeout: 75
-    - kubernetes-node-e2e:
-        max-total: 12
-        job-name: pull-kubernetes-node-e2e
-        repo-name: 'k8s.io/kubernetes'
-        timeout: 90
     - kubernetes-verify:
         max-total: 16
         job-name: pull-kubernetes-verify

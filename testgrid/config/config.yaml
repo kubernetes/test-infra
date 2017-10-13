@@ -1613,9 +1613,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-node-e2e
   days_of_results: 1
   num_columns_recent: 20
-- name: pull-kubernetes-node-e2e-prow
-  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-node-e2e-prow
-  num_columns_recent: 20
 - name: pull-kubernetes-unit
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-unit
   days_of_results: 1
@@ -4046,8 +4043,6 @@ dashboards:
   - name: pull-kubernetes-node-e2e
     test_group_name: pull-kubernetes-node-e2e
     base_options: 'width=10'
-  - name: pull-kubernetes-node-e2e-prow
-    test_group_name: pull-kubernetes-node-e2e-prow
   - name: pull-kubernetes-unit
     test_group_name: pull-kubernetes-unit
     base_options: 'width=10'

@@ -106,11 +106,13 @@ presubmits:
           - "--clean"
           - "--git-cache=/root/.cache/git"
           - "--job=$(JOB_NAME)"
-          - "--repo=github.com/kubernetes-incubator/$(REPO_NAME)=$(PULL_REFS)"
           - "--repo=k8s.io/kubernetes"
+          - "--repo=github.com/kubernetes-incubator/$(REPO_NAME)=$(PULL_REFS)"
           - "--service-account=/etc/service-account/service-account.json"
           - "--upload=gs://kubernetes-jenkins/pr-logs"
           - "--timeout=90"
+          - "--"
+          - "--node-args=--image-config-file=test/e2e_node/image-config.yaml --image-config-dir=$GOPATH/src/github.com/kubernetes-incubator/cri-containerd --node-env=PULL_REFS=$(PULL_REFS)"
           env:
           - name: GOOGLE_APPLICATION_CREDENTIALS
             value: /etc/service-account/service-account.json
@@ -1044,24 +1046,17 @@ presubmits:
     rerun_command: "/test pull-kubernetes-kubemark-e2e-gce-big"
     trigger: "(?m)^/test pull-kubernetes-kubemark-e2e-gce-big,?(\\s+|$)"
   - name: pull-kubernetes-node-e2e
-    agent: jenkins
-    always_run: true
-    context: pull-kubernetes-node-e2e
-    rerun_command: "/test pull-kubernetes-node-e2e"
-    trigger: "(?m)^/test( all| pull-kubernetes-node-e2e),?(\\s+|$)"
-  - name: pull-kubernetes-node-e2e-prow
     agent: kubernetes
     skip_branches:
     - release-1.4
     - release-1.5
     - release-1.6
     - release-1.7
-    always_run: false
-    skip_report: false
-    max_concurrency: 1
-    context: pull-kubernetes-node-e2e-prow
-    rerun_command: "/test pull-kubernetes-node-e2e-prow"
-    trigger: "(?m)^/test pull-kubernetes-node-e2e-prow,?(\\s+|$)"
+    always_run: true
+    max_concurrency: 12
+    context: pull-kubernetes-node-e2e
+    rerun_command: "/test pull-kubernetes-node-e2e"
+    trigger: "(?m)^/test( all| pull-kubernetes-node-e2e),?(\\s+|$)"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20171011-8265ed12-master
@@ -1108,16 +1103,15 @@ presubmits:
       - name: cache-ssd
         hostPath:
           path: /mnt/disks/ssd0
-  - name: pull-kubernetes-node-e2e-prow
+  - name: pull-kubernetes-node-e2e
     agent: kubernetes
     branches:
     - release-1.7
-    always_run: false
-    skip_report: false
-    max_concurrency: 1
-    context: pull-kubernetes-node-e2e-prow
-    rerun_command: "/test pull-kubernetes-node-e2e-prow"
-    trigger: "(?m)^/test pull-kubernetes-node-e2e-prow,?(\\s+|$)"
+    always_run: true
+    max_concurrency: 12
+    context: pull-kubernetes-node-e2e
+    rerun_command: "/test pull-kubernetes-node-e2e"
+    trigger: "(?m)^/test( all| pull-kubernetes-node-e2e),?(\\s+|$)"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20171008-cd94f30a-1.7
@@ -1164,16 +1158,15 @@ presubmits:
       - name: cache-ssd
         hostPath:
           path: /mnt/disks/ssd0
-  - name: pull-kubernetes-node-e2e-prow
+  - name: pull-kubernetes-node-e2e
     agent: kubernetes
     branches:
     - release-1.6
-    always_run: false
-    skip_report: false
-    max_concurrency: 1
-    context: pull-kubernetes-node-e2e-prow
-    rerun_command: "/test pull-kubernetes-node-e2e-prow"
-    trigger: "(?m)^/test pull-kubernetes-node-e2e-prow,?(\\s+|$)"
+    always_run: true
+    max_concurrency: 12
+    context: pull-kubernetes-node-e2e
+    rerun_command: "/test pull-kubernetes-node-e2e"
+    trigger: "(?m)^/test( all| pull-kubernetes-node-e2e),?(\\s+|$)"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20171011-8265ed12-1.6
@@ -2133,24 +2126,17 @@ presubmits:
     rerun_command: "/test pull-security-kubernetes-kubemark-e2e-gce-big"
     trigger: "(?m)^/test pull-security-kubernetes-kubemark-e2e-gce-big,?(\\s+|$)"
   - name: pull-security-kubernetes-node-e2e
-    agent: jenkins
-    always_run: true
-    context: pull-security-kubernetes-node-e2e
-    rerun_command: "/test pull-security-kubernetes-node-e2e"
-    trigger: "(?m)^/test( all| pull-security-kubernetes-node-e2e),?(\\s+|$)"
-  - name: pull-security-kubernetes-node-e2e-prow
     agent: kubernetes
     skip_branches:
     - release-1.4
     - release-1.5
     - release-1.6
     - release-1.7
-    always_run: false
-    skip_report: false
-    max_concurrency: 1
-    context: pull-security-kubernetes-node-e2e-prow
-    rerun_command: "/test pull-security-kubernetes-node-e2e-prow"
-    trigger: "(?m)^/test pull-security-kubernetes-node-e2e-prow,?(\\s+|$)"
+    always_run: true
+    max_concurrency: 12
+    context: pull-security-kubernetes-node-e2e
+    rerun_command: "/test pull-security-kubernetes-node-e2e"
+    trigger: "(?m)^/test( all| pull-security-kubernetes-node-e2e),?(\\s+|$)"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20171011-8265ed12-master
@@ -2197,16 +2183,15 @@ presubmits:
       - name: cache-ssd
         hostPath:
           path: /mnt/disks/ssd0
-  - name: pull-security-kubernetes-node-e2e-prow
+  - name: pull-security-kubernetes-node-e2e
     agent: kubernetes
     branches:
     - release-1.7
-    always_run: false
-    skip_report: false
-    max_concurrency: 1
-    context: pull-security-kubernetes-node-e2e-prow
-    rerun_command: "/test pull-security-kubernetes-node-e2e-prow"
-    trigger: "(?m)^/test pull-security-kubernetes-node-e2e-prow,?(\\s+|$)"
+    always_run: true
+    max_concurrency: 12
+    context: pull-security-kubernetes-node-e2e
+    rerun_command: "/test pull-security-kubernetes-node-e2e"
+    trigger: "(?m)^/test( all| pull-security-kubernetes-node-e2e),?(\\s+|$)"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20171008-cd94f30a-1.7
@@ -2253,16 +2238,15 @@ presubmits:
       - name: cache-ssd
         hostPath:
           path: /mnt/disks/ssd0
-  - name: pull-security-kubernetes-node-e2e-prow
+  - name: pull-security-kubernetes-node-e2e
     agent: kubernetes
     branches:
     - release-1.6
-    always_run: false
-    skip_report: false
-    max_concurrency: 1
-    context: pull-security-kubernetes-node-e2e-prow
-    rerun_command: "/test pull-security-kubernetes-node-e2e-prow"
-    trigger: "(?m)^/test pull-security-kubernetes-node-e2e-prow,?(\\s+|$)"
+    always_run: true
+    max_concurrency: 12
+    context: pull-security-kubernetes-node-e2e
+    rerun_command: "/test pull-security-kubernetes-node-e2e"
+    trigger: "(?m)^/test( all| pull-security-kubernetes-node-e2e),?(\\s+|$)"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20171011-8265ed12-1.6
@@ -16823,6 +16807,8 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       - name: USER
         value: prow
+      - name: KUBEMARK_BAZEL_BUILD
+        value: y
       volumeMounts:
       - name: service
         mountPath: /etc/service-account

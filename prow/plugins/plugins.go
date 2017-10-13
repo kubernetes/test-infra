@@ -138,6 +138,43 @@ type Configuration struct {
 	Slack           Slack               `json:"slack,omitempty"`
 	// ConfigUpdater holds config for the config-updater plugin.
 	ConfigUpdater ConfigUpdater `json:"config_updater,omitempty"`
+	Blockades     []Blockade    `json:"blockades,omitempty"`
+}
+
+/*
+  Blockade specifies a configuration for a single blockade.blockade. The configuration for the
+  blockade plugin is defined as a list of these structures. Here is an example of a complete
+  yaml config for the blockade plugin that is composed of 2 Blockade structs:
+
+	blockades:
+	- repos:
+	  - kubernetes-incubator
+	  - kubernetes/kubernetes
+	  - kubernetes/test-infra
+	  blockregexps:
+	  - 'docs/.*'
+	  - 'other-docs/.*'
+	  exceptionregexps:
+	  - '.*OWNERS'
+	  explanation: "Files in the 'docs' directory should not be modified except for OWNERS files"
+	- repos:
+	  - kubernetes/test-infra
+	  blockregexps:
+	  - 'mungegithub/.*'
+	  exceptionregexps:
+	  - 'mungegithub/DeprecationWarning.md'
+	  explanation: "Don't work on mungegithub! Work on Prow!"
+*/
+type Blockade struct {
+	// Repos are either of the form org/repos or just org.
+	Repos []string `json:"repos,omitempty"`
+	// BlockRegexps are regular expressions matching the file paths to block.
+	BlockRegexps []string `json:"blockregexps,omitempty"`
+	// ExceptionRegexps are regular expressions matching the file paths that are exceptions to the BlockRegexps.
+	ExceptionRegexps []string `json:"exceptionregexps,omitempty"`
+	// Explanation is a string that will be included in the comment left when blocking a PR. This should
+	// be an explanation of why the paths specified are blockaded.
+	Explanation string `json:"explanation,omitempty"`
 }
 
 type Trigger struct {
