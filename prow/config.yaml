@@ -2521,22 +2521,14 @@ presubmits:
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: /etc/service-account/service-account.json
-        # We need privileged mode to run Docker.
-        securityContext:
-          privileged: true
         volumeMounts:
         - name: service
           mountPath: /etc/service-account
           readOnly: true
-        - name: docker
-          mountPath: /var/run/docker.sock
       volumes:
       - name: service
         secret:
           secretName: service-account
-      - name: docker
-        hostPath:
-          path: /var/run/docker.sock
 
 postsubmits:
   kubernetes/kubernetes:
@@ -3324,15 +3316,10 @@ postsubmits:
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: /etc/service-account/service-account.json
-        # We need privileged mode to run Docker.
-        securityContext:
-          privileged: true
         volumeMounts:
         - name: service
           mountPath: /etc/service-account
           readOnly: true
-        - name: docker
-          mountPath: /var/run/docker.sock
       volumes:
       - name: service
         secret:
