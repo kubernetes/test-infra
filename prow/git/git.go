@@ -193,6 +193,16 @@ func (r *Repo) RevParse(commitlike string) (string, error) {
 	return string(b), nil
 }
 
+// CheckoutNewBranch creates a new branch and checks it out.
+func (r *Repo) CheckoutNewBranch(branch string) error {
+	r.logger.Infof("Create and checkout %s.", branch)
+	co := r.gitCommand("checkout", "-b", branch)
+	if b, err := co.CombinedOutput(); err != nil {
+		return fmt.Errorf("error checking out %s: %v. output: %s", branch, err, string(b))
+	}
+	return nil
+}
+
 // Merge attempts to merge commitlike into the current branch. It returns true
 // if the merge completes. It returns an error if the abort fails.
 func (r *Repo) Merge(commitlike string) (bool, error) {
@@ -207,6 +217,32 @@ func (r *Repo) Merge(commitlike string) (bool, error) {
 		return false, fmt.Errorf("error aborting merge for commitlike %s: %v. output: %s", commitlike, err, string(b))
 	}
 	return false, nil
+}
+
+// Apply tries to apply the patch in the given path into the current branch.
+// It returns an error if the patch cannot be applied.
+func (r *Repo) Apply(path string) error {
+	r.logger.Infof("Applying %s.", path)
+	co := r.gitCommand("am", path)
+	b, err := co.CombinedOutput()
+	if err == nil {
+		return nil
+	}
+	r.logger.WithError(err).Warningf("Patch apply failed with output: %s", string(b))
+	if b, abortErr := r.gitCommand("am", "--abort").CombinedOutput(); err != nil {
+		r.logger.WithError(abortErr).Warningf("Patch apply failed with output: %s", string(b))
+	}
+	return err
+}
+
+// Push pushes over https to the provided owner/repo#branch using a password
+// for basic auth.
+func (r *Repo) Push(owner, pass, repo, branch string) error {
+	r.logger.Infof("Pushing to '%s/%s %s'.", owner, repo, branch)
+	remote := fmt.Sprintf("https://%s:%s@github.com/%s/%s", owner, pass, owner, repo)
+	co := r.gitCommand("push", remote, branch)
+	_, err := co.CombinedOutput()
+	return err
 }
 
 // CheckoutPullRequest does exactly that.

@@ -167,6 +167,7 @@ type Repo struct {
 	Name     string `json:"name"`
 	FullName string `json:"full_name"`
 	HTMLURL  string `json:"html_url"`
+	Fork     bool   `json:"fork"`
 }
 
 // IssueEventAction enumerates the triggers for this
