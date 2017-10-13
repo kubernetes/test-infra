@@ -10446,16 +10446,6 @@
   },
   "pull-kubernetes-node-e2e": {
     "args": [
-      "--branch=${PULL_BASE_REF}",
-      "--properties=test/e2e_node/jenkins/jenkins-pull.properties"
-    ],
-    "scenario": "kubernetes_kubelet",
-    "sigOwners": [
-      "sig-node"
-    ]
-  },
-  "pull-kubernetes-node-e2e-prow": {
-    "args": [
       "--deployment=node",
       "--gcp-project=k8s-jkns-pr-node-e2e",
       "--gcp-zone=us-central1-f",
