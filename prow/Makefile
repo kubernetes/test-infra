@@ -17,14 +17,14 @@ all: build test
 
 ALPINE_VERSION           ?= 0.1
 GIT_VERSION              ?= 0.1
-HOOK_VERSION             ?= 0.173
+HOOK_VERSION             ?= 0.174
 SINKER_VERSION           ?= 0.21
 DECK_VERSION             ?= 0.52
 SPLICE_VERSION           ?= 0.27
 TOT_VERSION              ?= 0.5
 HOROLOGIUM_VERSION       ?= 0.8
-PLANK_VERSION            ?= 0.49
-JENKINS-OPERATOR_VERSION ?= 0.46
+PLANK_VERSION            ?= 0.50
+JENKINS-OPERATOR_VERSION ?= 0.47
 TIDE_VERSION             ?= 0.7
 
 # These are the usual GKE variables.

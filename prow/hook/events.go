@@ -214,7 +214,7 @@ func (s *Server) handleIssueEvent(l *logrus.Entry, i github.IssueEvent) {
 				i.Issue.Number,
 			)
 			if err := h(pc, i); err != nil {
-				pc.Logger.WithError(err).Error("Error handleing IssueEvent.")
+				pc.Logger.WithError(err).Error("Error handling IssueEvent.")
 			}
 		}(p, h)
 	}
