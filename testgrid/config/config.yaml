@@ -3551,9 +3551,6 @@ dashboards:
   - name: mlkube-build-presubmit
     description: Presubmit tests of TfJob CRD running on stable GKE.
     test_group_name: mlkube-build-presubmit
-  notifications:
-  - summary: Please configure this skeleton dashboard and remove this notification
-    context_link: https://github.com/kubernetes/test-infra/tree/master/testgrid/config
 
 - name: sig-autoscaling
   dashboard_tab:

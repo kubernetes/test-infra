@@ -15748,25 +15748,6 @@ periodics:
         defaultMode: 256
         secretName: aws-cred
 
-- interval: 8h
-  agent: kubernetes
-  name: mlkube-build-periodic
-  spec:
-    containers:
-    # TODO(jlewi): Replace latest with a specific tag once the images stabilize.
-    - image: gcr.io/mlkube-testing/builder:latest
-      env:
-      - name: GOOGLE_APPLICATION_CREDENTIALS
-        value: /etc/service-account/service-account.json
-      volumeMounts:
-      - name: service
-        mountPath: /etc/service-account
-        readOnly: true
-    volumes:
-    - name: service
-      secret:
-        secretName: service-account
-
 - name: ci-kubernetes-e2e-node-canary
   interval: 1h
   agent: kubernetes
@@ -17272,6 +17253,25 @@ periodics:
     - name: influxdb
       secret:
         secretName: velodrome-influxdb
+
+- interval: 8h
+  agent: kubernetes
+  name: mlkube-build-periodic
+  spec:
+    containers:
+    # TODO(jlewi): Replace latest with a specific tag once the images stabilize.
+    - image: gcr.io/mlkube-testing/builder:latest
+      env:
+      - name: GOOGLE_APPLICATION_CREDENTIALS
+        value: /etc/service-account/service-account.json
+      volumeMounts:
+      - name: service
+        mountPath: /etc/service-account
+        readOnly: true
+    volumes:
+    - name: service
+      secret:
+        secretName: service-account
 
 - name: periodic-kubernetes-bazel-build-1-6
   interval: 2h
