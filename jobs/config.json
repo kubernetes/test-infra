@@ -10262,6 +10262,7 @@
       "--build=bazel",
       "--cluster=",
       "--deployment=gke",
+      "--env=CREATE_CUSTOM_NETWORK=true",
       "--extract=local",
       "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
       "--gcp-node-image=gci",
