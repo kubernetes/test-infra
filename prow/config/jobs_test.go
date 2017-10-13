@@ -143,8 +143,6 @@ func TestPresubmits(t *testing.T) {
 			job.Name = strings.Replace(job.Name, "pull-security-kubernetes", "pull-kubernetes", 1)
 			if j, present := bootstrapConfig[job.Name]; present {
 				scenario = fmt.Sprintf("scenarios/%s.py", j.Scenario)
-			} else {
-				scenario = fmt.Sprintf("jobs/%s.sh", job.Name)
 			}
 
 			// Ensure that jobs have a shell script of the same name.
