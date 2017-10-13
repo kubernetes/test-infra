@@ -3308,9 +3308,6 @@ postsubmits:
       - name: service
         secret:
           secretName: service-account
-      - name: docker
-        hostPath:
-          path: /var/run/docker.sock
 
 periodics:
 - interval: 1h
