@@ -1,6 +1,6 @@
+setuptools
 webtest
 nosegae
 pylint==1.6.4
-setuptools
 coverage
 pyyaml
