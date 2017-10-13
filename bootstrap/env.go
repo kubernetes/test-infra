@@ -163,14 +163,14 @@ func NodeName() (string, error) {
 }
 
 // BuildName returns the name of the ID/name for the current build
-// and sets os.Setenv(BuildEnv, res) if not already set
+// and sets os.Setenv(BuildNumberEnv, res) if not already set
 func BuildName(started time.Time) (string, error) {
 	/*
 		TODO(fejta): right now jenkins sets the BUILD_NUMBER and does this
 					 in an environment variable. Consider migrating this to a
 					 bootstrap.py flag
 	*/
-	_, exists := os.LookupEnv(BuildEnv)
+	_, exists := os.LookupEnv(BuildNumberEnv)
 	if !exists {
 		// Automatically generate a build number if none is set
 		nodeName, err := NodeName()
@@ -179,10 +179,10 @@ func BuildName(started time.Time) (string, error) {
 		}
 		uniq := fmt.Sprintf("%x-%d", hash(nodeName), os.Getpid())
 		autogen := started.Format("20060102-150400-") + uniq
-		err = os.Setenv(BuildEnv, autogen)
+		err = os.Setenv(BuildNumberEnv, autogen)
 		if err != nil {
 			return "", err
 		}
 	}
-	return os.Getenv(BuildEnv), nil
+	return os.Getenv(BuildNumberEnv), nil
 }
