@@ -7942,6 +7942,7 @@
       "--extract=ci/latest-1.6",
       "--gcp-zone=us-central1-f",
       "--kubeadm=ci",
+      "--kubernetes-anywhere-dump-cluster-logs=true",
       "--kubernetes-anywhere-kubelet-ci-version=latest-1.6",
       "--kubernetes-anywhere-kubernetes-version=latest-1.6",
       "--provider=kubernetes-anywhere",
