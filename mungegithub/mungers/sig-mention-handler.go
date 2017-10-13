@@ -112,11 +112,11 @@ func (s *SigMentionHandler) Munge(obj *github.MungeObject) {
 
 	if hasSigLabel && hasNeedsSigLabel {
 		if err := obj.RemoveLabel(needsSigLabel); err != nil {
-			glog.Errorf("failed to remove needs-sig label for issue #%v", *obj.Issue.Number)
+			glog.Errorf("failed to remove needs-sig label for issue #%d", *obj.Issue.Number)
 		}
 	} else if !hasSigLabel && !hasNeedsSigLabel {
 		if err := obj.AddLabel(needsSigLabel); err != nil {
-			glog.Errorf("failed to add needs-sig label for issue #%v", *obj.Issue.Number)
+			glog.Errorf("failed to add needs-sig label for issue #%d", *obj.Issue.Number)
 			return
 		}
 
@@ -133,7 +133,7 @@ Note: Method 1 will trigger an email to the group. You can find the group list [
 The `+"`<group-suffix>`"+` in the method 1 has to be replaced with one of these: _**bugs, feature-requests, pr-reviews, test-failures, proposals**_`, *obj.Issue.User.Login)
 
 		if err := obj.WriteComment(msg); err != nil {
-			glog.Errorf("failed to leave comment for %s that issue #%v needs sig label", *obj.Issue.User.Login, *obj.Issue.Number)
+			glog.Errorf("failed to leave comment for %s that issue #%d needs sig label", *obj.Issue.User.Login, *obj.Issue.Number)
 		}
 	}
 }
