@@ -1535,8 +1535,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-master-gci-new-downgrade-cluster-parallel
 - name: ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster-new
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster-new
-- name: ci-kubernetes-e2e-mlkube-gke
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-mlkube-gke
+- name: mlkube-build-periodic
+  gcs_prefix: kubernetes-jenkins/logs/mlkube-build-periodic
 - name: mlkube-build-presubmit
   gcs_prefix: kubernetes-jenkins/logs/mlkube-build-presubmit
 - name: mlkube-build-postsubmit
@@ -3085,8 +3085,6 @@ dashboards:
   dashboard_tab:
   - name: charts-gce
     test_group_name: ci-kubernetes-charts-gce
-  - name: mlkube-gke
-    test_group_name: ci-kubernetes-e2e-mlkube-gke
 
 - name: perf-tests
   dashboard_tab:
@@ -3544,9 +3542,15 @@ dashboards:
 
 - name: sig-big-data
   dashboard_tab:
-  - name: mlkube-gke
-    description: what does this tab do exactly
-    test_group_name: ci-kubernetes-e2e-mlkube-gke
+  - name: mlkube-build-periodic
+    description: Periodic builds and testing of TfJob CRD at head running on stable GKE.
+    test_group_name: mlkube-build-periodic
+  - name: mlkube-build-postsubmit
+    description: Postsubmit tests of TfJob CRD running on stable GKE.
+    test_group_name: mlkube-build-postsubmit
+  - name: mlkube-build-presubmit
+    description: Presubmit tests of TfJob CRD running on stable GKE.
+    test_group_name: mlkube-build-presubmit
   notifications:
   - summary: Please configure this skeleton dashboard and remove this notification
     context_link: https://github.com/kubernetes/test-infra/tree/master/testgrid/config
