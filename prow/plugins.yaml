@@ -8,6 +8,7 @@ triggers:
   - kubernetes-incubator
   - kubernetes-security
   - google/cadvisor
+  - jlewi/mlkube.io
   trusted_org: kubernetes
 
 heart:
@@ -86,6 +87,9 @@ plugins:
   - trigger
 
   kubernetes-security/kubernetes:
+  - trigger
+
+  jlewi/mlkube.io:
   - trigger
 
   spxtr/envoy:
