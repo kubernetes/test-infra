@@ -1537,6 +1537,10 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster-new
 - name: ci-kubernetes-e2e-mlkube-gke
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-mlkube-gke
+- name: mlkube-build-presubmit
+  gcs_prefix: kubernetes-jenkins/logs/mlkube-build-presubmit
+- name: mlkube-build-postsubmit
+  gcs_prefix: kubernetes-jenkins/logs/mlkube-build-postsubmit
 # kube-proxy daemonset migration jobs
 - name: ci-kubernetes-e2e-gci-gce-latest-downgrade-kube-proxy-ds
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-latest-downgrade-kube-proxy-ds
