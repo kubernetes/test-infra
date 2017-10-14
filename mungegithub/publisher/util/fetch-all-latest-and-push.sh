@@ -18,89 +18,59 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-if [ ! $# -eq 2 ]; then
-    echo "usage: $0 github_user_name kube_root"
+if [ ! $# -eq 1 ]; then
+    echo "usage: $0 github_user_name"
     exit 1
 fi
 
 USER="${1}"
-KUBE_ROOT="${2}"
+repos=(
+    apimachinery
+    api
+    client-go
+    apiserver
+    kube-aggregator
+    sample-apiserver
+    apiextensions-apiserver
+    metrics
+    code-generator
+)
 
-REPOS="apimachinery,api,client-go,apiserver,kube-aggregator,sample-apiserver,apiextensions-apiserver,metrics,code-generator"
-
-IFS=',' read -a repos <<< "${REPOS}"
 repo_count=${#repos[@]}
 
-echo "=================="
-echo "safety check"
-echo "=================="
+TMPDIR=$(mktemp -d)
+function delete() {
+    echo "Deleting ${TMPDIR}..."
+    rm -rf "${TMPDIR}"
+}
+trap delete EXIT INT
+
 # safety check
+if [ "$USER" = "kubernetes" ]; then
+    echo "Cannot operate on kubernetes directly" 1>&2
+    exit 1
+fi
+
+echo "==================="
+echo " sync with upstream"
+echo "==================="
 for (( i=0; i<${repo_count}; i++ )); do
-    if [ ! -d $KUBE_ROOT/../"${repos[i]}" ]; then
-        git clone git@github.com:"${USER}/${repos[i]}".git $KUBE_ROOT/../"${repos[i]}"
+    git clone git@github.com:"${USER}/${repos[i]}".git ${TMPDIR}/"${repos[i]}"
+    pushd ${TMPDIR}/"${repos[i]}"
+    git remote add upstream git@github.com:kubernetes/"${repos[i]}".git
+
+    # delete all branches in origin
+    branches=$(git branch -r | grep "^ *origin" | sed 's,^ *origin/,,' | grep -v HEAD | grep -v '^master' || true)
+    if [ -n "${branches}" ]; then
+        git push --delete origin ${branches}
     fi
-    cd $KUBE_ROOT/../"${repos[i]}"
-    if ! git config --get remote.upstream.url >/dev/null; then
-        git remote add upstream git@github.com:kubernetes/"${repos[i]}".git
-    fi
-    if [[ $(git config --get remote.origin.url) != *"${USER}"* ]]; then
-        echo "origin is not right, expect to contain ${USER}, got $(git config --get remote.origin.url)"
-        exit 1
-    fi
-    cd -
-done
 
-echo "=================="
-echo " sync masters"
-echo "=================="
-for (( i=0; i<${repo_count}; i++ )); do
-    cd $KUBE_ROOT/../"${repos[i]}"
-    echo "repo=${repos[i]}"
-    git fetch upstream
-    git checkout master
-    git reset --hard upstream/master
-    git push -f origin master
-done
+    # push all upstream branches to origin
+    git fetch upstream --prune
+    branches=$(git branch -r | grep "^ *upstream" | sed 's,^ *upstream/,,' | grep -v HEAD || true)
+    for branch in ${branches}; do
+        git push --no-tags -f origin upstream/${branch}:refs/heads/${branch}
+    done
 
-echo "=================="
-echo "sync release-1.6"
-echo "=================="
-
-REPOS="apimachinery,apiserver,kube-aggregator,sample-apiserver"
-IFS=',' read -a repos <<< "${REPOS}"
-repo_count=${#repos[@]}
-for (( i=0; i<${repo_count}; i++ )); do
-    cd $KUBE_ROOT/../"${repos[i]}"
-    echo "repo=${repos[i]}"
-    git branch -f release-1.6 upstream/release-1.6
-    git push -f origin release-1.6
-done
-
-echo "=================="
-echo "sync release-1.7"
-echo "=================="
-
-REPOS="apimachinery"
-IFS=',' read -a repos <<< "${REPOS}"
-repo_count=${#repos[@]}
-for (( i=0; i<${repo_count}; i++ )); do
-    cd $KUBE_ROOT/../"${repos[i]}"
-    echo "repo=${repos[i]}"
-    git branch -f release-1.7 upstream/release-1.7
-    git push -f origin release-1.7
-done
-
-# client-go follows semver, so its versions are different from kubernetes.
-echo "=================="
-echo "sync client-go release-2.0,release-3.0 and release-4.0"
-echo "=================="
-
-BRANCHES="release-2.0,release-3.0,release-4.0"
-IFS=',' read -a branches <<< "${BRANCHES}"
-branch_count=${#branches[@]}
-for (( i=0; i<${branch_count}; i++ )); do
-    cd "$KUBE_ROOT/../client-go"
-    echo "repo=client-go"
-    git branch -f "${branches[i]}" upstream/"${branches[i]}"
-    git push -f origin "${branches[i]}"
+    popd
 done
