@@ -237,6 +237,9 @@ func requiredPresubmits(presubmits []config.Presubmit) []config.Presubmit {
 		if job.SkipReport { // Ignore silent jobs as these do not block
 			continue
 		}
+		if !job.RunsAgainstBranch("master") { // Ignore jobs that don't run on master
+			continue
+		}
 		out = append(out, job)
 	}
 	return out
