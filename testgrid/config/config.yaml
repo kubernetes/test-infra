@@ -340,6 +340,12 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-latest-parallel
 - name: ci-kubernetes-e2e-gke-staging-default-parallel
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-default-parallel
+- name: ci-kubernetes-e2e-gke-staging-default-latest-upgrade-master
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-default-latest-upgrade-master
+- name: ci-kubernetes-e2e-gke-staging-default-latest-upgrade-cluster
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-default-latest-upgrade-cluster
+- name: ci-kubernetes-e2e-gke-staging-default-latest-upgrade-cluster-new
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-default-latest-upgrade-cluster-new
 - name: ci-kubernetes-e2e-gke-subnet
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-subnet
 - name: ci-kubernetes-e2e-gci-gke-subnet
@@ -1535,8 +1541,12 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-master-gci-new-downgrade-cluster-parallel
 - name: ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster-new
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster-new
-- name: ci-kubernetes-e2e-mlkube-gke
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-mlkube-gke
+- name: mlkube-build-periodic
+  gcs_prefix: kubernetes-jenkins/logs/mlkube-build-periodic
+- name: mlkube-build-presubmit
+  gcs_prefix: kubernetes-jenkins/logs/mlkube-build-presubmit
+- name: mlkube-build-postsubmit
+  gcs_prefix: kubernetes-jenkins/logs/mlkube-build-postsubmit
 # kube-proxy daemonset migration jobs
 - name: ci-kubernetes-e2e-gci-gce-latest-downgrade-kube-proxy-ds
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-latest-downgrade-kube-proxy-ds
@@ -1608,9 +1618,6 @@ test_groups:
 - name: pull-kubernetes-node-e2e
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-node-e2e
   days_of_results: 1
-  num_columns_recent: 20
-- name: pull-kubernetes-node-e2e-prow
-  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-node-e2e-prow
   num_columns_recent: 20
 - name: pull-kubernetes-unit
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-unit
@@ -2231,6 +2238,12 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-staging-latest-parallel
   - name: gke-staging-default-parallel
     test_group_name: ci-kubernetes-e2e-gke-staging-default-parallel
+  - name: gke-staging-default-latest-upgrade-master
+    test_group_name: ci-kubernetes-e2e-gke-staging-default-latest-upgrade-master
+  - name: gke-staging-default-latest-upgrade-cluster
+    test_group_name: ci-kubernetes-e2e-gke-staging-default-latest-upgrade-cluster
+  - name: gke-staging-default-latest-upgrade-cluster-new
+    test_group_name: ci-kubernetes-e2e-gke-staging-default-latest-upgrade-cluster-new
 
 - name: google-gke-prod
   dashboard_tab:
@@ -3084,8 +3097,6 @@ dashboards:
   dashboard_tab:
   - name: charts-gce
     test_group_name: ci-kubernetes-charts-gce
-  - name: mlkube-gke
-    test_group_name: ci-kubernetes-e2e-mlkube-gke
 
 - name: perf-tests
   dashboard_tab:
@@ -3543,12 +3554,15 @@ dashboards:
 
 - name: sig-big-data
   dashboard_tab:
-  - name: mlkube-gke
-    description: what does this tab do exactly
-    test_group_name: ci-kubernetes-e2e-mlkube-gke
-  notifications:
-  - summary: Please configure this skeleton dashboard and remove this notification
-    context_link: https://github.com/kubernetes/test-infra/tree/master/testgrid/config
+  - name: mlkube-build-periodic
+    description: Periodic builds and testing of TfJob CRD at head running on stable GKE.
+    test_group_name: mlkube-build-periodic
+  - name: mlkube-build-postsubmit
+    description: Postsubmit tests of TfJob CRD running on stable GKE.
+    test_group_name: mlkube-build-postsubmit
+  - name: mlkube-build-presubmit
+    description: Presubmit tests of TfJob CRD running on stable GKE.
+    test_group_name: mlkube-build-presubmit
 
 - name: sig-autoscaling
   dashboard_tab:
@@ -4042,8 +4056,6 @@ dashboards:
   - name: pull-kubernetes-node-e2e
     test_group_name: pull-kubernetes-node-e2e
     base_options: 'width=10'
-  - name: pull-kubernetes-node-e2e-prow
-    test_group_name: pull-kubernetes-node-e2e-prow
   - name: pull-kubernetes-unit
     test_group_name: pull-kubernetes-unit
     base_options: 'width=10'

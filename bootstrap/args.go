@@ -35,6 +35,9 @@ type Args struct {
 	SSH            string
 	GitCache       string
 	Clean          bool
+	// Note: these are the args after `--` terminates the other args
+	// IE `bootstrap --job=foo -- --bar=baz` -> JobArgs == []string{"--bar=baz"}
+	JobArgs []string
 }
 
 // ParseArgs parses the command line to an Args instance
@@ -74,11 +77,21 @@ func ParseArgs(arguments []string) (*Args, error) {
 	flags.BoolVar(&args.Clean, "clean", false, "Clean the git repo before running tests.")
 	flags.Lookup("clean").NoOptDefVal = "true" // allows using --clean
 
-	// parse then check required args
+	// parse flags
+	// NOTE: this stops parsing at `--`, after which we grab arguments as
+	// JobArgs below.
 	err := flags.Parse(arguments)
 	if err != nil {
 		return nil, err
 	}
+	for i, arg := range arguments {
+		if arg == "--" {
+			args.JobArgs = arguments[i+1:]
+			break
+		}
+	}
+
+	// check that required args were set
 	for _, arg := range requiredFlags {
 		if flag := flags.Lookup(arg); !flag.Changed {
 			err = fmt.Errorf("flag '--%s' is required but was not set", flag.Name)

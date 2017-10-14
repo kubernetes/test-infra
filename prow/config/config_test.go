@@ -179,6 +179,53 @@ func TestConfigSecurityJobsMatch(t *testing.T) {
 	}
 }
 
+// CheckDockerSocketVolumes returns an error if any volume uses a hostpath
+// to the docker socket. we do not want to allow this
+func CheckDockerSocketVolumes(volumes []kube.Volume) error {
+	for _, volume := range volumes {
+		if volume.HostPath != nil && volume.HostPath.Path == "/var/run/docker.sock" {
+			return errors.New("job uses HostPath with docker socket")
+		}
+	}
+	return nil
+}
+
+// Make sure jobs are not using the docker socket as a host path
+func TestJobDoesNotHaveDockerSocket(t *testing.T) {
+	c, err := Load("../config.yaml")
+	if err != nil {
+		t.Fatalf("Could not load config: %v", err)
+	}
+
+	for _, pres := range c.Presubmits {
+		for _, presubmit := range pres {
+			if presubmit.Spec != nil {
+				if err := CheckDockerSocketVolumes(presubmit.Spec.Volumes); err != nil {
+					t.Errorf("Error in presubmit: %v", err)
+				}
+			}
+		}
+	}
+
+	for _, posts := range c.Postsubmits {
+		for _, postsubmit := range posts {
+			if postsubmit.Spec != nil {
+				if err := CheckDockerSocketVolumes(postsubmit.Spec.Volumes); err != nil {
+					t.Errorf("Error in postsubmit: %v", err)
+				}
+			}
+		}
+	}
+
+	for _, periodic := range c.Periodics {
+		if periodic.Spec != nil {
+			if err := CheckDockerSocketVolumes(periodic.Spec.Volumes); err != nil {
+				t.Errorf("Error in postsubmit: %v", err)
+			}
+		}
+	}
+}
+
 func CheckBazelPortContainer(c kube.Container, cache bool) error {
 	if !cache {
 		if len(c.Ports) != 0 {

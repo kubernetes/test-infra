@@ -22,7 +22,7 @@ import (
 )
 
 func TestParseRepos(t *testing.T) {
-	tests := []struct {
+	testCases := []struct {
 		Name      string
 		Repos     []string
 		Expected  Repos
@@ -64,7 +64,7 @@ func TestParseRepos(t *testing.T) {
 		{
 			Name: "expect-to-fail (invalid repo)",
 			Repos: []string{
-				"k8s.io/kubernetes=master:42e2ca8c18c93ba25eb0e5bd02ecba2eaa05e871,52057:b4f639f57ae0a89cdf1b43d1810b617c76f4b1b3",
+				"k8s.io/kubernetes=master:42e2ca8c18c93ba25eb0e5bd02ecba2eaa05e871,52057:b4f63https://github.com/googlecartographer/point_cloud_viewer9f57ae0a89cdf1b43d1810b617c76f4b1b3",
 				"k8s.io/release",
 				"foobar=,=",
 			},
@@ -72,19 +72,106 @@ func TestParseRepos(t *testing.T) {
 			ExpectErr: true,
 		},
 	}
-	for _, test := range tests {
+	for _, test := range testCases {
 		res, err := ParseRepos(test.Repos)
 		if test.ExpectErr && err == nil {
-			t.Errorf("err == nil and error expected for test %s", test.Name)
+			t.Errorf("err == nil and error expected for test %#v", test.Name)
 		} else if err != nil && !test.ExpectErr {
-			t.Errorf("Got error and did not expect one for test %s, %v", test.Name, err)
+			t.Errorf("Got error and did not expect one for test %#v: %v", test.Name, err)
 		} else if !reflect.DeepEqual(res, test.Expected) {
-			t.Errorf("Repos did not match expected for test: %s", test.Name)
+			t.Errorf("Repos did not match expected for test: %#v", test.Name)
 			t.Errorf("%#v", res)
 			t.Errorf("%#v", test.Expected)
 			// assert that currently Repos.Main() == Repos[0]
 		} else if len(test.Expected) > 0 && res.Main() != &res[0] {
-			t.Errorf("Expected repos.Main() to be &res[0] for all tests (test: %s)", test.Name)
+			t.Errorf("Expected repos.Main() to be &res[0] for all tests (test: %#v)", test.Name)
+		}
+	}
+}
+
+func TestRepoGitBasePath(t *testing.T) {
+	// TODO(bentheelder): use ParseRepos instead of "hand-written" Repo{}s?
+	// these are based on expected Repos from TestParseRepos
+	testCases := []struct {
+		Name     string
+		Repo     Repo
+		SSH      bool
+		Expected string
+	}{
+		{
+			Name: "k8s.io",
+			Repo: Repo{
+				Name:   "k8s.io/kubernetes",
+				Branch: "master",
+				Pull:   "",
+			},
+			SSH:      false,
+			Expected: "https://github.com/kubernetes/kubernetes",
+		},
+		{
+			Name: "k8s.io,ssh",
+			Repo: Repo{
+				Name:   "k8s.io/kubernetes",
+				Branch: "master",
+				Pull:   "",
+			},
+			SSH:      true,
+			Expected: "git@github.com:kubernetes/kubernetes",
+		},
+		{
+			Name: "kubernetes/test-infra",
+			Repo: Repo{
+				Name:   "github.com/kubernetes/test-infra",
+				Branch: "master",
+				Pull:   "",
+			},
+			SSH:      false,
+			Expected: "https://github.com/kubernetes/test-infra",
+		},
+		{
+			Name: "kubernetes/test-infra,ssh",
+			Repo: Repo{
+				Name:   "github.com/kubernetes/test-infra",
+				Branch: "master",
+				Pull:   "",
+			},
+			SSH:      true,
+			Expected: "git@github.com:kubernetes/test-infra",
+		},
+	}
+	for _, test := range testCases {
+		res := test.Repo.GitBasePath(test.SSH)
+		if res != test.Expected {
+			t.Errorf("result did not match expected for test case %#v", test.Name)
+			t.Errorf("%#v != %#v", res, test.Expected)
+		}
+	}
+}
+
+func TestRepoPullNumbers(t *testing.T) {
+	// TODO(bentheelder): use ParseRepos instead of "hand-written" Repo{}s?
+	// these are based on expected Repos from TestParseRepos
+	testCases := []struct {
+		Name     string
+		Repo     Repo
+		Expected []string
+	}{
+		{
+			Name: "",
+			Repo: Repo{
+				Name:   "k8s.io/kubernetes",
+				Branch: "",
+				Pull:   "master:42e2ca8c18c93ba25eb0e5bd02ecba2eaa05e871,52057:b4f639f57ae0a89cdf1b43d1810b617c76f4b1b3",
+			},
+			Expected: []string{"52057"},
+		},
+	}
+	for _, test := range testCases {
+		res := test.Repo.PullNumbers()
+		if !reflect.DeepEqual(res, test.Expected) {
+			t.Errorf("result did not match expected for test case %#v", test.Name)
+			t.Errorf("%#v", res)
+			t.Errorf("%#v", test.Expected)
 		}
 	}
 }

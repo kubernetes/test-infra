@@ -29,6 +29,47 @@ type Repo struct {
 	Pull   string
 }
 
+// utility method used below, checks a PULL_REFS for `:`
+func refHasSHAs(ref string) bool {
+	return strings.Contains(ref, ":")
+}
+
+// GitBasePath returns the base git path associated with the repo,
+// this does not include the branch or pull.
+// If ssh is true this assumes git@ is the appropriate user.
+// TODO(bentheelder): do we want to continue to assume git@ for ssh in the future?
+// This works fine for GitHub and matches jenkins/bootstrap.py's `repository(..)`
+func (r *Repo) GitBasePath(ssh bool) string {
+	// TODO(bentheelder): perhaps this should contain a map of known prefix
+	// replacements instead so that supporting other repos is easier?
+	path := r.Name
+	if strings.HasPrefix(path, "k8s.io/") {
+		path = "github.com/kubernetes/" + strings.TrimPrefix(path, "k8s.io/")
+	}
+	if ssh {
+		if !refHasSHAs(path) {
+			path = strings.Replace(path, "/", ":", 1)
+		}
+		return "git@" + path
+	}
+	return "https://" + path
+}
+
+// PullNumbers converts a Pull's list string into a slice of PR number strings
+// NOTE: this assumes that if there are pull requests specified that Repo.Pull
+// looks something like: `master:hash,prNum:hash,prNum:hash,...`
+func (r *Repo) PullNumbers() []string {
+	if refHasSHAs(r.Pull) {
+		res := []string{}
+		parts := strings.Split(r.Pull, ",")
+		for _, part := range parts {
+			res = append(res, strings.Split(part, ":")[0])
+		}
+		return res[1:]
+	}
+	return []string{}
+}
+
 // Repos is a slice of Repo where Repos[0] is the main repo
 type Repos []Repo
 
@@ -81,39 +122,4 @@ func ParseRepos(repoArgs []string) (Repos, error) {
 		})
 	}
 	return repos, nil
-}
-
-// TODO(bentheelder): unit test the methods below
-
-func refHasSHAs(ref string) bool {
-	return strings.Contains(ref, ":")
-}
-
-// PullNumbers converts a reference list string into a list of PR number strings
-func PullNumbers(pull string) []string {
-	if refHasSHAs(pull) {
-		res := []string{}
-		parts := strings.Split(pull, ",")
-		for _, part := range parts {
-			res = append(res, strings.Split(part, ":")[0])
-		}
-		return res[1:]
-	}
-	return []string{pull}
-}
-
-// Repository returns the url associated with the repo
-func Repository(repo string, ssh bool) string {
-	// TODO(bentheelder): perhaps this should contain a map of known prefix
-	// replacements instead so that supporting other repos is easier?
-	if strings.HasPrefix(repo, "k8s.io/") {
-		repo = "github.com/kubernetes" + strings.TrimPrefix(repo, "k8s.io/")
-	}
-	if ssh {
-		if !refHasSHAs(repo) {
-			repo = strings.Replace(repo, "/", ":", 1)
-		}
-		return "git@" + repo
-	}
-	return "https://" + repo
 }
