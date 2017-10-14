@@ -86,21 +86,6 @@ func TestOwnerGlob(t *testing.T) {
 	}
 }
 
-func TestOwnerListRandom(t *testing.T) {
-	list := NewOwnerList(map[string]*OwnerInfo{"testname": {
-		User: "a/b/c/d",
-	}})
-	counts := map[string]int{"a": 0, "b": 0, "c": 0, "d": 0}
-	for i := 0; i < 1000; i++ {
-		counts[list.TestOwner("testname")]++
-	}
-	for name, count := range counts {
-		if count <= 200 {
-			t.Errorf("Too few assigments to %s: only %d, expected > 200", name, count)
-		}
-	}
-}
-
 func TestOwnerListFromCsv(t *testing.T) {
 	r := bytes.NewReader([]byte(",,,header nonsense,\n" +
 		",owner,suggested owner,name,sig\n" +
