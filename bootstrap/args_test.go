@@ -22,7 +22,7 @@ import (
 )
 
 func TestParseArgs(t *testing.T) {
-	tests := []struct {
+	testCases := []struct {
 		Name      string
 		Arguments []string
 		Expected  *Args
@@ -34,6 +34,8 @@ func TestParseArgs(t *testing.T) {
 				"--repo=k8s.io/kubernetes=master:42e2ca8c18c93ba25eb0e5bd02ecba2eaa05e871,52057:b4f639f57ae0a89cdf1b43d1810b617c76f4b1b3",
 				"--repo=foobar",
 				"--job=fake",
+				"--",
+				"--some-job-arg=${SOME_ENV_KEY}",
 			},
 			Expected: &Args{
 				Root: ".",
@@ -41,6 +43,9 @@ func TestParseArgs(t *testing.T) {
 				Repo: []string{
 					"k8s.io/kubernetes=master:42e2ca8c18c93ba25eb0e5bd02ecba2eaa05e871,52057:b4f639f57ae0a89cdf1b43d1810b617c76f4b1b3",
 					"foobar",
+				},
+				JobArgs: []string{
+					"--some-job-arg=${SOME_ENV_KEY}",
 				},
 			},
 			ExpectErr: false,
@@ -57,6 +62,23 @@ func TestParseArgs(t *testing.T) {
 				Repo: []string{
 					"k8s.io/kubernetes=master:42e2ca8c18c93ba25eb0e5bd02ecba2eaa05e871",
 				},
+			},
+			ExpectErr: false,
+		},
+		{
+			Name: "job-args-terminator-no-job-args",
+			Arguments: []string{
+				"--repo=k8s.io/kubernetes=master:42e2ca8c18c93ba25eb0e5bd02ecba2eaa05e871",
+				"--job=fake",
+				"--",
+			},
+			Expected: &Args{
+				Root: ".",
+				Job:  "fake",
+				Repo: []string{
+					"k8s.io/kubernetes=master:42e2ca8c18c93ba25eb0e5bd02ecba2eaa05e871",
+				},
+				JobArgs: []string{},
 			},
 			ExpectErr: false,
 		},
@@ -100,14 +122,14 @@ func TestParseArgs(t *testing.T) {
 			ExpectErr: true,
 		},
 	}
-	for _, test := range tests {
+	for _, test := range testCases {
 		res, err := ParseArgs(test.Arguments)
 		if test.ExpectErr && err == nil {
-			t.Errorf("err == nil and error expected for test %s", test.Name)
+			t.Errorf("err == nil and error expected for test %#v", test.Name)
 		} else if err != nil && !test.ExpectErr {
-			t.Errorf("Got error and did not expect one for test %s, %v", test.Name, err)
+			t.Errorf("Got error and did not expect one for test %#v, %v", test.Name, err)
 		} else if !reflect.DeepEqual(res, test.Expected) {
-			t.Errorf("Args did not match expected for test: %s", test.Name)
+			t.Errorf("Args did not match expected for test: %#v", test.Name)
 			t.Errorf("%#v", res)
 			t.Errorf("%#v", test.Expected)
 		}

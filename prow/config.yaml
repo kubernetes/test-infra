@@ -11,6 +11,11 @@ sinker:
   max_prowjob_age: 48h
   max_pod_age: 1h
 
+deck:
+  external_agent_logs:
+  - agent: jenkins
+    url_template: 'http://jenkins-operator/job/{{.Spec.Job}}/{{.Status.BuildID}}/consoleText'
+
 prowjob_namespace: default
 pod_namespace: test-pods
 log_level: info
@@ -106,11 +111,13 @@ presubmits:
           - "--clean"
           - "--git-cache=/root/.cache/git"
           - "--job=$(JOB_NAME)"
-          - "--repo=github.com/kubernetes-incubator/$(REPO_NAME)=$(PULL_REFS)"
           - "--repo=k8s.io/kubernetes"
+          - "--repo=github.com/kubernetes-incubator/$(REPO_NAME)=$(PULL_REFS)"
           - "--service-account=/etc/service-account/service-account.json"
           - "--upload=gs://kubernetes-jenkins/pr-logs"
           - "--timeout=90"
+          - "--"
+          - "--node-args=--image-config-file=test/e2e_node/image-config.yaml --image-config-dir=$GOPATH/src/github.com/kubernetes-incubator/cri-containerd --node-env=PULL_REFS=$(PULL_REFS)"
           env:
           - name: GOOGLE_APPLICATION_CREDENTIALS
             value: /etc/service-account/service-account.json
@@ -156,7 +163,7 @@ presubmits:
     - release-1.6  # doesn't have BUILD files under //vendor/k8s.io
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171005-2f37588f-0.6.1
+      - image: gcr.io/k8s-testimages/bazelbuild:v20171013-53473ec5-0.6.1
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -204,7 +211,7 @@ presubmits:
       - release-1.6  # doesn't have BUILD files under //vendor/k8s.io
       spec:
         containers:
-        - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171011-12fd4621
+        - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171011-bb9b2c17
           args:
           - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
           - "--upload=gs://kubernetes-jenkins/pr-logs"
@@ -255,7 +262,7 @@ presubmits:
     - release-1.6
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171005-2f37588f-0.5.2
+      - image: gcr.io/k8s-testimages/bazelbuild:v20171013-53473ec5-0.5.2
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -301,7 +308,7 @@ presubmits:
       - release-1.6
       spec:
         containers:
-        - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171011-12fd4621
+        - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171011-bb9b2c17
           args:
           - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
           - "--upload=gs://kubernetes-jenkins/pr-logs"
@@ -354,7 +361,7 @@ presubmits:
     - release-1.6  # doesn't have BUILD files under //vendor/k8s.io
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171005-2f37588f-0.6.1
+      - image: gcr.io/k8s-testimages/bazelbuild:v20171013-53473ec5-0.6.1
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -398,7 +405,7 @@ presubmits:
     - release-1.6
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171005-2f37588f-0.5.2
+      - image: gcr.io/k8s-testimages/bazelbuild:v20171013-53473ec5-0.5.2
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -1044,24 +1051,17 @@ presubmits:
     rerun_command: "/test pull-kubernetes-kubemark-e2e-gce-big"
     trigger: "(?m)^/test pull-kubernetes-kubemark-e2e-gce-big,?(\\s+|$)"
   - name: pull-kubernetes-node-e2e
-    agent: jenkins
-    always_run: true
-    context: pull-kubernetes-node-e2e
-    rerun_command: "/test pull-kubernetes-node-e2e"
-    trigger: "(?m)^/test( all| pull-kubernetes-node-e2e),?(\\s+|$)"
-  - name: pull-kubernetes-node-e2e-prow
     agent: kubernetes
     skip_branches:
     - release-1.4
     - release-1.5
     - release-1.6
     - release-1.7
-    always_run: false
-    skip_report: false
-    max_concurrency: 1
-    context: pull-kubernetes-node-e2e-prow
-    rerun_command: "/test pull-kubernetes-node-e2e-prow"
-    trigger: "(?m)^/test pull-kubernetes-node-e2e-prow,?(\\s+|$)"
+    always_run: true
+    max_concurrency: 12
+    context: pull-kubernetes-node-e2e
+    rerun_command: "/test pull-kubernetes-node-e2e"
+    trigger: "(?m)^/test( all| pull-kubernetes-node-e2e),?(\\s+|$)"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20171011-8265ed12-master
@@ -1108,16 +1108,15 @@ presubmits:
       - name: cache-ssd
         hostPath:
           path: /mnt/disks/ssd0
-  - name: pull-kubernetes-node-e2e-prow
+  - name: pull-kubernetes-node-e2e
     agent: kubernetes
     branches:
     - release-1.7
-    always_run: false
-    skip_report: false
-    max_concurrency: 1
-    context: pull-kubernetes-node-e2e-prow
-    rerun_command: "/test pull-kubernetes-node-e2e-prow"
-    trigger: "(?m)^/test pull-kubernetes-node-e2e-prow,?(\\s+|$)"
+    always_run: true
+    max_concurrency: 12
+    context: pull-kubernetes-node-e2e
+    rerun_command: "/test pull-kubernetes-node-e2e"
+    trigger: "(?m)^/test( all| pull-kubernetes-node-e2e),?(\\s+|$)"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20171008-cd94f30a-1.7
@@ -1164,16 +1163,15 @@ presubmits:
       - name: cache-ssd
         hostPath:
           path: /mnt/disks/ssd0
-  - name: pull-kubernetes-node-e2e-prow
+  - name: pull-kubernetes-node-e2e
     agent: kubernetes
     branches:
     - release-1.6
-    always_run: false
-    skip_report: false
-    max_concurrency: 1
-    context: pull-kubernetes-node-e2e-prow
-    rerun_command: "/test pull-kubernetes-node-e2e-prow"
-    trigger: "(?m)^/test pull-kubernetes-node-e2e-prow,?(\\s+|$)"
+    always_run: true
+    max_concurrency: 12
+    context: pull-kubernetes-node-e2e
+    rerun_command: "/test pull-kubernetes-node-e2e"
+    trigger: "(?m)^/test( all| pull-kubernetes-node-e2e),?(\\s+|$)"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20171011-8265ed12-1.6
@@ -1246,7 +1244,7 @@ presubmits:
     - release-1.6  # doesn't have BUILD files under //vendor/k8s.io
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171005-2f37588f-0.6.1
+      - image: gcr.io/k8s-testimages/bazelbuild:v20171013-53473ec5-0.6.1
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -1294,7 +1292,7 @@ presubmits:
       - release-1.6  # doesn't have BUILD files under //vendor/k8s.io
       spec:
         containers:
-        - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171011-12fd4621
+        - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171011-bb9b2c17
           args:
           - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
           - "--upload=gs://kubernetes-jenkins/pr-logs"
@@ -1345,7 +1343,7 @@ presubmits:
     - release-1.6
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171005-2f37588f-0.5.2
+      - image: gcr.io/k8s-testimages/bazelbuild:v20171013-53473ec5-0.5.2
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -1391,7 +1389,7 @@ presubmits:
       - release-1.6
       spec:
         containers:
-        - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171011-12fd4621
+        - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171011-bb9b2c17
           args:
           - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
           - "--upload=gs://kubernetes-jenkins/pr-logs"
@@ -1444,7 +1442,7 @@ presubmits:
     - release-1.6  # doesn't have BUILD files under //vendor/k8s.io
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171005-2f37588f-0.6.1
+      - image: gcr.io/k8s-testimages/bazelbuild:v20171013-53473ec5-0.6.1
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -1488,7 +1486,7 @@ presubmits:
     - release-1.6
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171005-2f37588f-0.5.2
+      - image: gcr.io/k8s-testimages/bazelbuild:v20171013-53473ec5-0.5.2
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -2133,24 +2131,17 @@ presubmits:
     rerun_command: "/test pull-security-kubernetes-kubemark-e2e-gce-big"
     trigger: "(?m)^/test pull-security-kubernetes-kubemark-e2e-gce-big,?(\\s+|$)"
   - name: pull-security-kubernetes-node-e2e
-    agent: jenkins
-    always_run: true
-    context: pull-security-kubernetes-node-e2e
-    rerun_command: "/test pull-security-kubernetes-node-e2e"
-    trigger: "(?m)^/test( all| pull-security-kubernetes-node-e2e),?(\\s+|$)"
-  - name: pull-security-kubernetes-node-e2e-prow
     agent: kubernetes
     skip_branches:
     - release-1.4
     - release-1.5
     - release-1.6
     - release-1.7
-    always_run: false
-    skip_report: false
-    max_concurrency: 1
-    context: pull-security-kubernetes-node-e2e-prow
-    rerun_command: "/test pull-security-kubernetes-node-e2e-prow"
-    trigger: "(?m)^/test pull-security-kubernetes-node-e2e-prow,?(\\s+|$)"
+    always_run: true
+    max_concurrency: 12
+    context: pull-security-kubernetes-node-e2e
+    rerun_command: "/test pull-security-kubernetes-node-e2e"
+    trigger: "(?m)^/test( all| pull-security-kubernetes-node-e2e),?(\\s+|$)"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20171011-8265ed12-master
@@ -2197,16 +2188,15 @@ presubmits:
       - name: cache-ssd
         hostPath:
           path: /mnt/disks/ssd0
-  - name: pull-security-kubernetes-node-e2e-prow
+  - name: pull-security-kubernetes-node-e2e
     agent: kubernetes
     branches:
     - release-1.7
-    always_run: false
-    skip_report: false
-    max_concurrency: 1
-    context: pull-security-kubernetes-node-e2e-prow
-    rerun_command: "/test pull-security-kubernetes-node-e2e-prow"
-    trigger: "(?m)^/test pull-security-kubernetes-node-e2e-prow,?(\\s+|$)"
+    always_run: true
+    max_concurrency: 12
+    context: pull-security-kubernetes-node-e2e
+    rerun_command: "/test pull-security-kubernetes-node-e2e"
+    trigger: "(?m)^/test( all| pull-security-kubernetes-node-e2e),?(\\s+|$)"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20171008-cd94f30a-1.7
@@ -2253,16 +2243,15 @@ presubmits:
       - name: cache-ssd
         hostPath:
           path: /mnt/disks/ssd0
-  - name: pull-security-kubernetes-node-e2e-prow
+  - name: pull-security-kubernetes-node-e2e
     agent: kubernetes
     branches:
     - release-1.6
-    always_run: false
-    skip_report: false
-    max_concurrency: 1
-    context: pull-security-kubernetes-node-e2e-prow
-    rerun_command: "/test pull-security-kubernetes-node-e2e-prow"
-    trigger: "(?m)^/test pull-security-kubernetes-node-e2e-prow,?(\\s+|$)"
+    always_run: true
+    max_concurrency: 12
+    context: pull-security-kubernetes-node-e2e
+    rerun_command: "/test pull-security-kubernetes-node-e2e"
+    trigger: "(?m)^/test( all| pull-security-kubernetes-node-e2e),?(\\s+|$)"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20171011-8265ed12-1.6
@@ -2333,7 +2322,7 @@ presubmits:
     trigger: "(?m)^/test( all| pull-test-infra-bazel),?(\\s+|$)"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171005-2f37588f-0.6.1
+      - image: gcr.io/k8s-testimages/bazelbuild:v20171013-53473ec5-0.6.1
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -2505,6 +2494,31 @@ presubmits:
         hostPath:
           path: /mnt/disks/ssd0
 
+  jlewi/mlkube.io:
+  - name: mlkube-build-presubmit
+    context: mlkube-build-presubmit
+    agent: kubernetes
+    always_run: true         # Run for every PR, or only when requested.
+    rerun_command: "/test mlkube-build-presubmit"
+    trigger: "(?m)^/test( all| mlkube-build-presubmit),?(\\s+|$)"
+    branches:
+    - master
+    spec:
+      containers:
+      # TODO(jlewi): Replace latest with a specific tag once the images stabilize.
+      - image: gcr.io/mlkube-testing/builder:latest
+        env:
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /etc/service-account/service-account.json
+        volumeMounts:
+        - name: service
+          mountPath: /etc/service-account
+          readOnly: true
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
+
 postsubmits:
   kubernetes/kubernetes:
   - name: ci-kubernetes-bazel-build
@@ -2513,7 +2527,7 @@ postsubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171005-2f37588f-0.6.1
+      - image: gcr.io/k8s-testimages/bazelbuild:v20171013-53473ec5-0.6.1
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -2548,7 +2562,7 @@ postsubmits:
       agent: kubernetes
       spec:
         containers:
-        - image: gcr.io/k8s-testimages/bazelbuild:v20171005-2f37588f-0.6.1
+        - image: gcr.io/k8s-testimages/bazelbuild:v20171013-53473ec5-0.6.1
           args:
           - "--clean"
           - "--git-cache=/root/.cache/git"
@@ -2577,136 +2591,6 @@ postsubmits:
         - name: cache-ssd
           hostPath:
             path: /mnt/disks/ssd0
-      run_after_success:
-      - name: ci-kubernetes-e2e-kubeadm-gce
-        agent: kubernetes
-        spec:
-          containers:
-          - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171011-12fd4621
-            args:
-            - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-            - "--clean"
-            - "--git-cache=/root/.cache/git"
-            - "--timeout=320"
-            - "--upload=gs://kubernetes-jenkins/logs"
-            env:
-            - name: USER
-              value: prow
-            - name: GOOGLE_APPLICATION_CREDENTIALS
-              value: /etc/service-account/service-account.json
-            - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
-              value: /etc/ssh-key-secret/ssh-private
-            - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
-              value: /etc/ssh-key-secret/ssh-public
-            volumeMounts:
-            - name: service
-              mountPath: /etc/service-account
-              readOnly: true
-            - name: ssh
-              mountPath: /etc/ssh-key-secret
-              readOnly: true
-            - name: cache-ssd
-              mountPath: /root/.cache
-            ports:
-            - containerPort: 9999
-              hostPort: 9999
-          volumes:
-          - name: service
-            secret:
-              secretName: service-account
-          - name: ssh
-            secret:
-              secretName: ssh-key-secret
-              defaultMode: 0400
-          - name: cache-ssd
-            hostPath:
-              path: /mnt/disks/ssd0
-      - name: ci-kubernetes-e2e-kubeadm-gce-stable-on-master
-        agent: kubernetes
-        spec:
-          containers:
-          - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171011-12fd4621
-            args:
-            - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-            - "--clean"
-            - "--git-cache=/root/.cache/git"
-            - "--timeout=320"
-            - "--upload=gs://kubernetes-jenkins/logs"
-            env:
-            - name: USER
-              value: prow
-            - name: GOOGLE_APPLICATION_CREDENTIALS
-              value: /etc/service-account/service-account.json
-            - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
-              value: /etc/ssh-key-secret/ssh-private
-            - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
-              value: /etc/ssh-key-secret/ssh-public
-            volumeMounts:
-            - name: service
-              mountPath: /etc/service-account
-              readOnly: true
-            - name: ssh
-              mountPath: /etc/ssh-key-secret
-              readOnly: true
-            - name: cache-ssd
-              mountPath: /root/.cache
-            ports:
-            - containerPort: 9999
-              hostPort: 9999
-          volumes:
-          - name: service
-            secret:
-              secretName: service-account
-          - name: ssh
-            secret:
-              secretName: ssh-key-secret
-              defaultMode: 0400
-          - name: cache-ssd
-            hostPath:
-              path: /mnt/disks/ssd0
-      - name: ci-kubernetes-e2e-kubeadm-gce-cni-flannel
-        agent: kubernetes
-        spec:
-          containers:
-          - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171011-12fd4621
-            args:
-            - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-            - "--clean"
-            - "--git-cache=/root/.cache/git"
-            - "--timeout=320"
-            - "--upload=gs://kubernetes-jenkins/logs"
-            env:
-            - name: USER
-              value: prow
-            - name: GOOGLE_APPLICATION_CREDENTIALS
-              value: /etc/service-account/service-account.json
-            - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
-              value: /etc/ssh-key-secret/ssh-private
-            - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
-              value: /etc/ssh-key-secret/ssh-public
-            volumeMounts:
-            - name: service
-              mountPath: /etc/service-account
-              readOnly: true
-            - name: ssh
-              mountPath: /etc/ssh-key-secret
-              readOnly: true
-            - name: cache-ssd
-              mountPath: /root/.cache
-            ports:
-            - containerPort: 9999
-              hostPort: 9999
-          volumes:
-          - name: service
-            secret:
-              secretName: service-account
-          - name: ssh
-            secret:
-              secretName: ssh-key-secret
-              defaultMode: 0400
-          - name: cache-ssd
-            hostPath:
-              path: /mnt/disks/ssd0
 
   - name: ci-kubernetes-bazel-build-1-6
     agent: kubernetes
@@ -2714,7 +2598,7 @@ postsubmits:
     - release-1.6
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171005-2f37588f-0.5.2  # https://github.com/kubernetes/kubernetes/issues/51571
+      - image: gcr.io/k8s-testimages/bazelbuild:v20171013-53473ec5-0.5.2  # https://github.com/kubernetes/kubernetes/issues/51571
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -2749,7 +2633,7 @@ postsubmits:
       agent: kubernetes
       spec:
         containers:
-        - image: gcr.io/k8s-testimages/bazelbuild:v20171005-2f37588f-0.5.2  # https://github.com/kubernetes/kubernetes/issues/51571
+        - image: gcr.io/k8s-testimages/bazelbuild:v20171013-53473ec5-0.5.2  # https://github.com/kubernetes/kubernetes/issues/51571
           args:
           - "--clean"
           - "--git-cache=/root/.cache/git"
@@ -2782,7 +2666,7 @@ postsubmits:
       agent: kubernetes
       spec:
         containers:
-        - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171011-12fd4621
+        - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171011-bb9b2c17
           args:
           - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
           - "--clean"
@@ -2828,7 +2712,7 @@ postsubmits:
     - release-1.7
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171005-2f37588f-0.6.1
+      - image: gcr.io/k8s-testimages/bazelbuild:v20171013-53473ec5-0.6.1
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -2865,7 +2749,7 @@ postsubmits:
       agent: kubernetes
       spec:
         containers:
-        - image: gcr.io/k8s-testimages/bazelbuild:v20171005-2f37588f-0.6.1
+        - image: gcr.io/k8s-testimages/bazelbuild:v20171013-53473ec5-0.6.1
           args:
           - "--clean"
           - "--git-cache=/root/.cache/git"
@@ -2900,7 +2784,7 @@ postsubmits:
       agent: kubernetes
       spec:
         containers:
-        - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171011-12fd4621
+        - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171011-bb9b2c17
           args:
           - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
           - "--clean"
@@ -2943,7 +2827,7 @@ postsubmits:
       agent: kubernetes
       spec:
         containers:
-        - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171011-12fd4621
+        - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171011-bb9b2c17
           args:
           - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
           - "--clean"
@@ -2986,7 +2870,7 @@ postsubmits:
       agent: kubernetes
       spec:
         containers:
-        - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171011-12fd4621
+        - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171011-bb9b2c17
           args:
           - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
           - "--clean"
@@ -3032,7 +2916,7 @@ postsubmits:
     - release-1.8
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171005-2f37588f-0.6.1
+      - image: gcr.io/k8s-testimages/bazelbuild:v20171013-53473ec5-0.6.1
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -3069,7 +2953,7 @@ postsubmits:
       agent: kubernetes
       spec:
         containers:
-        - image: gcr.io/k8s-testimages/bazelbuild:v20171005-2f37588f-0.6.1
+        - image: gcr.io/k8s-testimages/bazelbuild:v20171013-53473ec5-0.6.1
           args:
           - "--clean"
           - "--git-cache=/root/.cache/git"
@@ -3104,7 +2988,7 @@ postsubmits:
       agent: kubernetes
       spec:
         containers:
-        - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171011-12fd4621
+        - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171011-bb9b2c17
           args:
           - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
           - "--clean"
@@ -3147,7 +3031,7 @@ postsubmits:
       agent: kubernetes
       spec:
         containers:
-        - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171011-12fd4621
+        - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171011-bb9b2c17
           args:
           - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
           - "--clean"
@@ -3194,7 +3078,7 @@ postsubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171005-2f37588f-0.6.1
+      - image: gcr.io/k8s-testimages/bazelbuild:v20171013-53473ec5-0.6.1
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -3257,7 +3141,7 @@ postsubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171005-2f37588f-0.6.1
+      - image: gcr.io/k8s-testimages/bazelbuild:v20171013-53473ec5-0.6.1
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -3279,8 +3163,193 @@ postsubmits:
         secret:
           secretName: service-account
 
+  jlewi/mlkube.io:
+  - name: mlkube-build-postsubmit
+    agent: kubernetes
+    branches:
+    - master
+    spec:
+      containers:
+      # TODO(jlewi): Replace latest with a specific tag once the images stabilize.
+      - image: gcr.io/mlkube-testing/builder:latest
+        env:
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /etc/service-account/service-account.json
+        volumeMounts:
+        - name: service
+          mountPath: /etc/service-account
+          readOnly: true
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
 
 periodics:
+- name: ci-kubernetes-bazel-build
+  interval: 30m
+  agent: kubernetes
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/bazelbuild:v20171013-53473ec5-0.6.1
+      args:
+      - "--clean"
+      - "--git-cache=/root/.cache/git"
+      - "--job=$(JOB_NAME)"
+      - "--repo=k8s.io/kubernetes=master"
+      - "--service-account=/etc/service-account/service-account.json"
+      - "--upload=gs://kubernetes-jenkins/logs"
+      env:
+      - name: TEST_TMPDIR
+        value: /root/.cache/bazel
+      # Bazel needs privileged mode in order to sandbox builds.
+      securityContext:
+        privileged: true
+      volumeMounts:
+      - name: service
+        mountPath: /etc/service-account
+        readOnly: true
+      - name: cache-ssd
+        mountPath: /root/.cache
+      ports:
+      - containerPort: 9999
+        hostPort: 9999
+    volumes:
+    - name: service
+      secret:
+        secretName: service-account
+    - name: cache-ssd
+      hostPath:
+        path: /mnt/disks/ssd0
+  run_after_success:
+  - name: ci-kubernetes-e2e-kubeadm-gce
+    agent: kubernetes
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171011-bb9b2c17
+        args:
+        - "--repo=k8s.io/kubernetes=master"
+        - "--clean"
+        - "--git-cache=/root/.cache/git"
+        - "--timeout=320"
+        - "--upload=gs://kubernetes-jenkins/logs"
+        env:
+        - name: USER
+          value: prow
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /etc/service-account/service-account.json
+        - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+          value: /etc/ssh-key-secret/ssh-private
+        - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+          value: /etc/ssh-key-secret/ssh-public
+        volumeMounts:
+        - name: service
+          mountPath: /etc/service-account
+          readOnly: true
+        - name: ssh
+          mountPath: /etc/ssh-key-secret
+          readOnly: true
+        - name: cache-ssd
+          mountPath: /root/.cache
+        ports:
+        - containerPort: 9999
+          hostPort: 9999
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
+      - name: ssh
+        secret:
+          secretName: ssh-key-secret
+          defaultMode: 0400
+      - name: cache-ssd
+        hostPath:
+          path: /mnt/disks/ssd0
+  - name: ci-kubernetes-e2e-kubeadm-gce-stable-on-master
+    agent: kubernetes
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171011-bb9b2c17
+        args:
+        - "--repo=k8s.io/kubernetes=master"
+        - "--clean"
+        - "--git-cache=/root/.cache/git"
+        - "--timeout=320"
+        - "--upload=gs://kubernetes-jenkins/logs"
+        env:
+        - name: USER
+          value: prow
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /etc/service-account/service-account.json
+        - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+          value: /etc/ssh-key-secret/ssh-private
+        - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+          value: /etc/ssh-key-secret/ssh-public
+        volumeMounts:
+        - name: service
+          mountPath: /etc/service-account
+          readOnly: true
+        - name: ssh
+          mountPath: /etc/ssh-key-secret
+          readOnly: true
+        - name: cache-ssd
+          mountPath: /root/.cache
+        ports:
+        - containerPort: 9999
+          hostPort: 9999
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
+      - name: ssh
+        secret:
+          secretName: ssh-key-secret
+          defaultMode: 0400
+      - name: cache-ssd
+        hostPath:
+          path: /mnt/disks/ssd0
+  - name: ci-kubernetes-e2e-kubeadm-gce-cni-flannel
+    agent: kubernetes
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171011-bb9b2c17
+        args:
+        - "--repo=k8s.io/kubernetes=master"
+        - "--clean"
+        - "--git-cache=/root/.cache/git"
+        - "--timeout=320"
+        - "--upload=gs://kubernetes-jenkins/logs"
+        env:
+        - name: USER
+          value: prow
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /etc/service-account/service-account.json
+        - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+          value: /etc/ssh-key-secret/ssh-private
+        - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+          value: /etc/ssh-key-secret/ssh-public
+        volumeMounts:
+        - name: service
+          mountPath: /etc/service-account
+          readOnly: true
+        - name: ssh
+          mountPath: /etc/ssh-key-secret
+          readOnly: true
+        - name: cache-ssd
+          mountPath: /root/.cache
+        ports:
+        - containerPort: 9999
+          hostPort: 9999
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
+      - name: ssh
+        secret:
+          secretName: ssh-key-secret
+          defaultMode: 0400
+      - name: cache-ssd
+        hostPath:
+          path: /mnt/disks/ssd0
 - interval: 1h
   agent: kubernetes
   name: ci-kubernetes-charts-gce
@@ -14075,6 +14144,108 @@ periodics:
         defaultMode: 256
         secretName: ssh-key-secret
 
+- interval: 2h
+  agent: kubernetes
+  name: ci-kubernetes-e2e-gke-staging-default-latest-upgrade-cluster
+  spec:
+    containers:
+    - args:
+      - --timeout=920
+      - --bare
+      env:
+      - name: GOOGLE_APPLICATION_CREDENTIALS
+        value: /etc/service-account/service-account.json
+      - name: USER
+        value: prow
+      - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-private
+      - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-public
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171011-8265ed12-master
+      volumeMounts:
+      - mountPath: /etc/service-account
+        name: service
+        readOnly: true
+      - mountPath: /etc/ssh-key-secret
+        name: ssh
+        readOnly: true
+    volumes:
+    - name: service
+      secret:
+        secretName: service-account
+    - name: ssh
+      secret:
+        defaultMode: 256
+        secretName: ssh-key-secret
+
+- interval: 2h
+  agent: kubernetes
+  name: ci-kubernetes-e2e-gke-staging-default-latest-upgrade-cluster-new
+  spec:
+    containers:
+    - args:
+      - --timeout=920
+      - --bare
+      env:
+      - name: GOOGLE_APPLICATION_CREDENTIALS
+        value: /etc/service-account/service-account.json
+      - name: USER
+        value: prow
+      - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-private
+      - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-public
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171011-8265ed12-master
+      volumeMounts:
+      - mountPath: /etc/service-account
+        name: service
+        readOnly: true
+      - mountPath: /etc/ssh-key-secret
+        name: ssh
+        readOnly: true
+    volumes:
+    - name: service
+      secret:
+        secretName: service-account
+    - name: ssh
+      secret:
+        defaultMode: 256
+        secretName: ssh-key-secret
+
+- interval: 2h
+  agent: kubernetes
+  name: ci-kubernetes-e2e-gke-staging-default-latest-upgrade-master
+  spec:
+    containers:
+    - args:
+      - --timeout=920
+      - --bare
+      env:
+      - name: GOOGLE_APPLICATION_CREDENTIALS
+        value: /etc/service-account/service-account.json
+      - name: USER
+        value: prow
+      - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-private
+      - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-public
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171011-8265ed12-master
+      volumeMounts:
+      - mountPath: /etc/service-account
+        name: service
+        readOnly: true
+      - mountPath: /etc/ssh-key-secret
+        name: ssh
+        readOnly: true
+    volumes:
+    - name: service
+      secret:
+        secretName: service-account
+    - name: ssh
+      secret:
+        defaultMode: 256
+        secretName: ssh-key-secret
+
 - interval: 30m
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-staging-default-parallel
@@ -15716,40 +15887,6 @@ periodics:
         defaultMode: 256
         secretName: aws-cred
 
-- interval: 30m
-  agent: kubernetes
-  name: ci-kubernetes-e2e-mlkube-gke
-  spec:
-    containers:
-    - args:
-      - --timeout=70
-      - --repo=github.com/foxish/mlkube.io
-      env:
-      - name: GOOGLE_APPLICATION_CREDENTIALS
-        value: /etc/service-account/service-account.json
-      - name: USER
-        value: prow
-      - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
-        value: /etc/ssh-key-secret/ssh-private
-      - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
-        value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171011-8265ed12-master
-      volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
-      - mountPath: /etc/ssh-key-secret
-        name: ssh
-        readOnly: true
-    volumes:
-    - name: service
-      secret:
-        secretName: service-account
-    - name: ssh
-      secret:
-        defaultMode: 256
-        secretName: ssh-key-secret
-
 - name: ci-kubernetes-e2e-node-canary
   interval: 1h
   agent: kubernetes
@@ -16775,6 +16912,8 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       - name: USER
         value: prow
+      - name: KUBEMARK_BAZEL_BUILD
+        value: "y"
       volumeMounts:
       - name: service
         mountPath: /etc/service-account
@@ -17076,7 +17215,7 @@ periodics:
   agent: kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bazelbuild:v20171005-2f37588f-0.6.1
+    - image: gcr.io/k8s-testimages/bazelbuild:v20171013-53473ec5-0.6.1
       args:
       - "--clean"
       - "--git-cache=/root/.cache/git"
@@ -17254,12 +17393,31 @@ periodics:
       secret:
         secretName: velodrome-influxdb
 
+- interval: 8h
+  agent: kubernetes
+  name: mlkube-build-periodic
+  spec:
+    containers:
+    # TODO(jlewi): Replace latest with a specific tag once the images stabilize.
+    - image: gcr.io/mlkube-testing/builder:latest
+      env:
+      - name: GOOGLE_APPLICATION_CREDENTIALS
+        value: /etc/service-account/service-account.json
+      volumeMounts:
+      - name: service
+        mountPath: /etc/service-account
+        readOnly: true
+    volumes:
+    - name: service
+      secret:
+        secretName: service-account
+
 - name: periodic-kubernetes-bazel-build-1-6
   interval: 2h
   agent: kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bazelbuild:v20171005-2f37588f-0.5.2  # https://github.com/kubernetes/kubernetes/issues/51571
+    - image: gcr.io/k8s-testimages/bazelbuild:v20171013-53473ec5-0.5.2  # https://github.com/kubernetes/kubernetes/issues/51571
       args:
       - "--clean"
       - "--git-cache=/root/.cache/git"
@@ -17294,7 +17452,7 @@ periodics:
     agent: kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171005-2f37588f-0.5.2  # https://github.com/kubernetes/kubernetes/issues/51571
+      - image: gcr.io/k8s-testimages/bazelbuild:v20171013-53473ec5-0.5.2  # https://github.com/kubernetes/kubernetes/issues/51571
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -17327,7 +17485,7 @@ periodics:
     agent: kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171011-12fd4621
+      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171011-bb9b2c17
         args:
         - "--repo=k8s.io/kubernetes=release-1.6"
         - "--clean"
@@ -17374,7 +17532,7 @@ periodics:
   agent: kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bazelbuild:v20171005-2f37588f-0.6.1
+    - image: gcr.io/k8s-testimages/bazelbuild:v20171013-53473ec5-0.6.1
       args:
       - "--clean"
       - "--git-cache=/root/.cache/git"
@@ -17411,7 +17569,7 @@ periodics:
     agent: kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171005-2f37588f-0.6.1
+      - image: gcr.io/k8s-testimages/bazelbuild:v20171013-53473ec5-0.6.1
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -17446,7 +17604,7 @@ periodics:
     agent: kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171011-12fd4621
+      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171011-bb9b2c17
         args:
         - "--repo=k8s.io/kubernetes=release-1.7"
         - "--clean"
@@ -17491,7 +17649,7 @@ periodics:
     agent: kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171011-12fd4621
+      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171011-bb9b2c17
         args:
         - "--repo=k8s.io/kubernetes=release-1.7"
         - "--clean"
@@ -17536,7 +17694,7 @@ periodics:
   agent: kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bazelbuild:v20171005-2f37588f-0.6.1
+    - image: gcr.io/k8s-testimages/bazelbuild:v20171013-53473ec5-0.6.1
       args:
       - "--clean"
       - "--git-cache=/root/.cache/git"
@@ -17573,7 +17731,7 @@ periodics:
     agent: kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171005-2f37588f-0.6.1
+      - image: gcr.io/k8s-testimages/bazelbuild:v20171013-53473ec5-0.6.1
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -17608,7 +17766,7 @@ periodics:
     agent: kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171011-12fd4621
+      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171011-bb9b2c17
         args:
         - "--repo=k8s.io/kubernetes=release-1.8"
         - "--clean"
@@ -17653,7 +17811,7 @@ periodics:
     agent: kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171011-12fd4621
+      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171011-bb9b2c17
         args:
         - "--repo=k8s.io/kubernetes=release-1.8"
         - "--clean"
@@ -17732,3 +17890,4 @@ periodics:
     - name: token
       secret:
         secretName: fejta-bot-token
+
