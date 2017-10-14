@@ -34,7 +34,6 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/prow/jenkins"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pjutil"
 )
@@ -42,11 +41,6 @@ import (
 var (
 	configPath   = flag.String("config-path", "/etc/config/config", "Path to config.yaml.")
 	buildCluster = flag.String("build-cluster", "", "Path to file containing a YAML-marshalled kube.Cluster object. If empty, uses the local cluster.")
-
-	jenkinsURL             = flag.String("jenkins-url", "", "Jenkins URL")
-	jenkinsUserName        = flag.String("jenkins-user", "jenkins-trigger", "Jenkins username")
-	jenkinsTokenFile       = flag.String("jenkins-token-file", "", "Path to the file containing the Jenkins API token.")
-	jenkinsBearerTokenFile = flag.String("jenkins-bearer-token-file", "", "Path to the file containing the Jenkins API bearer token.")
 )
 
 // Matches letters, numbers, hyphens, and underscores.
@@ -75,36 +69,10 @@ func main() {
 		}
 	}
 
-	ac := &jenkins.AuthConfig{}
-	var jc *jenkins.Client
-	if *jenkinsURL != "" {
-		if *jenkinsTokenFile != "" {
-			if token, err := loadToken(*jenkinsTokenFile); err != nil {
-				logrus.WithError(err).Fatalf("Could not read token file.")
-			} else {
-				ac.Basic = &jenkins.BasicAuthConfig{
-					User:  *jenkinsUserName,
-					Token: token,
-				}
-			}
-		} else if *jenkinsBearerTokenFile != "" {
-			if token, err := loadToken(*jenkinsBearerTokenFile); err != nil {
-				logrus.WithError(err).Fatalf("Could not read token file.")
-			} else {
-				ac.BearerToken = &jenkins.BearerTokenAuthConfig{
-					Token: token,
-				}
-			}
-		} else {
-			logrus.Fatal("An auth token for basic or bearer token auth must be supplied.")
-		}
-		jc = jenkins.NewClient(*jenkinsURL, ac)
-	}
-
 	ja := &JobAgent{
 		kc:  kc,
 		pkc: pkc,
-		jc:  jc,
+		c:   configAgent,
 	}
 	ja.Start()
 

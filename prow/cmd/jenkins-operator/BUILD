@@ -10,13 +10,17 @@ load(
 
 go_library(
     name = "go_default_library",
-    srcs = ["main.go"],
+    srcs = [
+        "logs.go",
+        "main.go",
+    ],
     tags = ["automanaged"],
     deps = [
         "//prow/config:go_default_library",
         "//prow/github:go_default_library",
         "//prow/jenkins:go_default_library",
         "//prow/kube:go_default_library",
+        "//vendor/github.com/NYTimes/gziphandler:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
     ],
 )

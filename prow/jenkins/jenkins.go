@@ -158,8 +158,10 @@ func (c *Client) log(methodName string, args ...interface{}) {
 	c.Logger.Debugf("%s(%s)", methodName, strings.Join(as, ", "))
 }
 
-func (c *Client) get(path string) ([]byte, error) {
-	resp, err := c.request(http.MethodGet, path)
+// Get fetches the data found in the provided path. It includes retries
+// on transport failures and 500s.
+func (c *Client) Get(path string) ([]byte, error) {
+	resp, err := c.request(http.MethodGet, fmt.Sprintf("%s%s", c.baseURL, path))
 	if err != nil {
 		return nil, err
 	}
@@ -248,8 +250,7 @@ func (c *Client) ListJenkinsBuilds(jobs map[string]struct{}) (map[string]Jenkins
 	// Get queued builds.
 	queuePath := "/queue/api/json?tree=items[task[name],actions[parameters[name,value]]]"
 	c.log("ListJenkinsBuilds", queuePath)
-	queueURL := fmt.Sprintf("%s%s", c.baseURL, queuePath)
-	data, err := c.get(queueURL)
+	data, err := c.Get(queuePath)
 	if err != nil {
 		return nil, fmt.Errorf("cannot list builds from the queue: %v", err)
 	}
@@ -277,8 +278,7 @@ func (c *Client) ListJenkinsBuilds(jobs map[string]struct{}) (map[string]Jenkins
 	for job := range jobs {
 		path := fmt.Sprintf("/job/%s/api/json?tree=builds[number,result,actions[parameters[name,value]]]", job)
 		c.log("ListJenkinsBuilds", path)
-		u := fmt.Sprintf("%s%s", c.baseURL, path)
-		data, err := c.get(u)
+		data, err := c.Get(path)
 		if err != nil {
 			// Ignore 404s so we will not block processing the rest of the jobs.
 			if _, isNotFound := err.(NotFoundError); isNotFound {
@@ -304,24 +304,6 @@ func (c *Client) ListJenkinsBuilds(jobs map[string]struct{}) (map[string]Jenkins
 	}
 
 	return jenkinsBuilds, nil
-}
-
-func (c *Client) GetLog(job string, build int) ([]byte, error) {
-	c.log("GetLog", job, build)
-	u := fmt.Sprintf("%s/job/%s/%d/consoleText", c.baseURL, job, build)
-	resp, err := c.request(http.MethodGet, u)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return nil, fmt.Errorf("response not 2XX: %s: (%s)", resp.Status, u)
-	}
-	buf, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-	return buf, nil
 }
 
 // Abort aborts the provided Jenkins build for job. Only running
