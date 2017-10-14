@@ -60,17 +60,23 @@ for (( i=0; i<${repo_count}; i++ )); do
     pushd ${TMPDIR}/"${repos[i]}"
     git remote add upstream git@github.com:kubernetes/"${repos[i]}".git
 
-    # delete all branches in origin
+    # delete all tags and branches in origin
+    rm -f .git/refs/tags/*
     branches=$(git branch -r | grep "^ *origin" | sed 's,^ *origin/,,' | grep -v HEAD | grep -v '^master' || true)
     if [ -n "${branches}" ]; then
         git push --delete origin ${branches}
     fi
+    tags=$(git tag | sed 's,^,refs/tags/,')
+    if [ -n "${tags}" ]; then
+        git push --delete origin ${tags}
+    fi
 
-    # push all upstream branches to origin
+    # push all upstream tags and branches to origin
+    git tag | xargs git tag -d
     git fetch upstream --prune
     branches=$(git branch -r | grep "^ *upstream" | sed 's,^ *upstream/,,' | grep -v HEAD || true)
     for branch in ${branches}; do
-        git push --no-tags -f origin upstream/${branch}:refs/heads/${branch}
+        git push --tags -f origin upstream/${branch}:refs/heads/${branch}
     done
 
     popd
