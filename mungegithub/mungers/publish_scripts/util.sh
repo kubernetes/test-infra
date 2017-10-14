@@ -296,6 +296,7 @@ sync_repo() {
             fi
             local date=$(commit-date ${k_pending_merge_commit}) # author and committer date is equal for PR merges
             local dst_new_merge=$(GIT_COMMITTER_DATE="${date}" GIT_AUTHOR_DATE="${date}" git commit-tree -p ${dst_merge_point_commit} -p ${dst_parent2} -m "$(commit-message ${k_pending_merge_commit}; echo; echo "Kubernetes-commit: ${k_pending_merge_commit}")" HEAD^{tree})
+            # no amend-godeps needed here: because the merge-commit was dropped, both parents had the same tree, i.e. Godeps.json did not change.
             git reset -q --hard ${dst_new_merge}
             fix-godeps "${deps}" "${is_library}" ${dst_needs_godeps_update}
             dst_needs_godeps_update=false
@@ -421,6 +422,24 @@ sync_repo() {
             echo "Cherry-picking k8s.io/kubernetes branch-merge  ${k_mainline_commit}: $(commit-subject ${f_mainline_commit})."
             local date=$(commit-date ${f_mainline_commit}) # author and committer date is equal for PR merges
             git reset -q $(GIT_COMMITTER_DATE="${date}" GIT_AUTHOR_DATE="${date}" git commit-tree -p ${dst_merge_point_commit} -p HEAD -m "$(commit-message ${f_mainline_commit})" HEAD^{tree})
+
+            # reset to mainline state which is guaranteed to be correct.
+            # On the feature branch we might have reset to an too early state:
+            #
+            # In k8s.io/kubernetes:              Linearized in published repo:
+            #
+            #   M───┐ f_mainline_commit, result B  M─┐ result B
+            #   M─┐ │ result A                     │ o change B
+            #   │ o │ change A                     │─┘
+            #   │ │ o change B                     M─┐ result A
+            #   │─┘ │ base A                       │ o change A
+            #   │───┘ base B                       │─┘
+            #
+            # Compare that with amending f_mainline_commit's Godeps.json into the HEAD,
+            # we get result B in the linearized version as well. In contrast with this,
+            # we would end up with "base B + change B" which misses the change A changes.
+            amend-godeps-at ${f_mainline_commit}
+
             fix-godeps "${deps}" "${is_library}" ${dst_needs_godeps_update}
             dst_needs_godeps_update=false
             dst_merge_point_commit=$(git rev-parse HEAD)
@@ -444,6 +463,14 @@ sync_repo() {
     else
         echo "No merge commit on ${dst_branch} branch, must be old. Skipping look-up table."
         echo > ../kube-commits-${repo}-${dst_branch}
+    fi
+}
+
+# amend-godeps-at checks out the Godeps.json at the given commit and amend it to the previous commit.
+function amend-godeps-at() {
+    if [ -f Godeps/Godeps.json ]; then
+        git checkout ${f_mainline_commit} Godeps/Godeps.json # reset to mainline state which is guaranteed to be correct
+        git commit --amend --no-edit -q
     fi
 }
 
