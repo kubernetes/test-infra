@@ -27,8 +27,8 @@ required-retest-contexts: "\
   pull-kubernetes-verify"
 
 # munger specific options.
-path-label-config: path-label.txt
-block-path-config: block-path.yaml
+path-label-config: "/etc/munge-config/path-label.txt"
+block-path-config: "/etc/munge-config/block-path.yaml"
 approval-requires-issue: true
 implicit-self-approval: true
 number-of-old-test-results: 5
