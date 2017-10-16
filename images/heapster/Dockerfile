@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Kubekins 1.6 + gcloud + heapster
-FROM gcr.io/k8s-testimages/kubekins-test:1.6-v20161220-8366258
+# Kubekins 1.7 + gcloud + heapster
+FROM gcr.io/k8s-testimages/kubekins-test:1.7-latest
 MAINTAINER senlu@google.com
 
 ENV GCLOUD_VERSION 144.0.0
