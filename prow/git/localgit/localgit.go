@@ -103,7 +103,11 @@ func (lg *LocalGit) MakeFakeRepo(org, repo string) error {
 func (lg *LocalGit) AddCommit(org, repo string, files map[string][]byte) error {
 	rdir := filepath.Join(lg.Dir, org, repo)
 	for f, b := range files {
-		if err := ioutil.WriteFile(filepath.Join(rdir, f), b, os.ModePerm); err != nil {
+		path := filepath.Join(rdir, f)
+		if err := os.MkdirAll(filepath.Dir(path), os.ModePerm); err != nil {
+			return err
+		}
+		if err := ioutil.WriteFile(path, b, os.ModePerm); err != nil {
 			return err
 		}
 		if err := runCmd(lg.Git, rdir, "add", f); err != nil {
