@@ -116,7 +116,7 @@ projects:
               - targets:
                 - prow.k8s.io
           - job_name: 'blackbox'
-            methods_path: /probe
+            metrics_path: /probe
             params:
               module: [http_2xx]
             static_configs:

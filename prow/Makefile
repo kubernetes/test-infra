@@ -140,6 +140,9 @@ jenkins-operator-image: alpine-image
 jenkins-operator-deployment: get-cluster-credentials
 	kubectl apply -f cluster/jenkins_deployment.yaml
 
+push-gateway-deploy: get-cluster-credentials
+	kubectl apply -f cluster/push_gateway.yaml
+
 tide-image: git-image
 	CGO_ENABLED=0 go build -o cmd/tide/tide k8s.io/test-infra/prow/cmd/tide
 	docker build -t "$(REGISTRY)/$(PROJECT)/tide:$(TIDE_VERSION)" $(DOCKER_LABELS) cmd/tide
