@@ -68,16 +68,16 @@ func (l *extractStrategies) String() string {
 // Converts --extract=release/stable, etc into an extractStrategy{}
 func (l *extractStrategies) Set(value string) error {
 	var strategies = map[string]extractMode{
-		`^(local)`:                  local,
-		`^gke-?(staging|test)?$`:    gke,
-		`^gci/([\w-]+)$`:            gci,
-		`^gci/([\w-]+)/(.+)$`:       gciCi,
-		`^ci/(.+)$`:                 ci,
-		`^release/(latest.*)$`:      rc,
-		`^release/(stable.*)$`:      stable,
-		`^(v\d+\.\d+\.\d+[\w.-]*)$`: version,
-		`^(gs://.*)$`:               gcs,
-		`^(bazel/.*)$`:              bazel,
+		`^(local)`:                    local,
+		`^gke-?(staging|test)?$`:      gke,
+		`^gci/([\w-]+)$`:              gci,
+		`^gci/([\w-]+)/(.+)$`:         gciCi,
+		`^ci/(.+)$`:                   ci,
+		`^release/(latest.*)$`:        rc,
+		`^release/(stable.*)$`:        stable,
+		`^(v\d+\.\d+\.\d+[\w.\-+]*)$`: version,
+		`^(gs://.*)$`:                 gcs,
+		`^(bazel/.*)$`:                bazel,
 	}
 
 	if len(*l) == 2 {
@@ -386,7 +386,10 @@ func (e extractStrategy) Extract(project, zone string) error {
 	case version:
 		var url string
 		release := e.option
-		if strings.Contains(release, "+") {
+		re := regexp.MustCompile(`(v\d+\.\d+\.\d+-gke.\d+)$`) // v1.8.0-gke.0
+		if re.FindStringSubmatch(release) != nil {
+			url = "https://storage.googleapis.com/kubernetes-release-gke/release"
+		} else if strings.Contains(release, "+") {
 			url = "https://storage.googleapis.com/kubernetes-release-dev/ci"
 		} else {
 			url = "https://storage.googleapis.com/kubernetes-release/release"
