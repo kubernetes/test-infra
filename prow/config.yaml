@@ -3185,6 +3185,7 @@ periodics:
       args:
       - "--repo=github.com/kubernetes-incubator/cri-containerd=master"
       - "--root=/go/src"
+      - "--upload=gs://kubernetes-jenkins/logs"
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
         value: /etc/service-account/service-account.json
