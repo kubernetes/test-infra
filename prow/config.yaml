@@ -3206,6 +3206,7 @@ periodics:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20171008-cd94f30a-master
       args:
       - --root=/go/src
+      - "--clean"
       - "--git-cache=/root/.cache/git"
       - "--job=$(JOB_NAME)"
       - "--repo=k8s.io/kubernetes"
