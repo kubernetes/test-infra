@@ -72,7 +72,6 @@ presubmits:
         - "--repo=github.com/kubernetes-incubator/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--clean"
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: /etc/service-account/service-account.json
@@ -80,18 +79,10 @@ presubmits:
         - name: service
           mountPath: /etc/service-account
           readOnly: true
-        - name: cache-ssd
-          mountPath: /root/.cache
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
       volumes:
       - name: service
         secret:
           secretName: service-account
-      - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0
     run_after_success:
     - name: pull-cri-containerd-node-e2e
       agent: kubernetes
@@ -3185,6 +3176,76 @@ postsubmits:
           secretName: service-account
 
 periodics:
+- name: ci-cri-containerd-build
+  interval: 30m
+  agent: kubernetes
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/gcloud-in-go:0.4
+      args:
+      - "--repo=github.com/kubernetes-incubator/cri-containerd=master"
+      - "--root=/go/src"
+      env:
+      - name: GOOGLE_APPLICATION_CREDENTIALS
+        value: /etc/service-account/service-account.json
+      volumeMounts:
+      - name: service
+        mountPath: /etc/service-account
+        readOnly: true
+    volumes:
+    - name: service
+      secret:
+        secretName: service-account
+
+- name: ci-cri-containerd-node-e2e
+  interval: 1h
+  agent: kubernetes
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20171008-cd94f30a-master
+      args:
+      - --root=/go/src
+      - "--git-cache=/root/.cache/git"
+      - "--job=$(JOB_NAME)"
+      - "--repo=k8s.io/kubernetes"
+      - "--repo=github.com/kubernetes-incubator/cri-containerd=master"
+      - "--service-account=/etc/service-account/service-account.json"
+      - "--timeout=90"
+      - "--"
+      - "--node-args=--image-config-file=test/e2e_node/image-config.yaml --image-config-dir=$GOPATH/src/github.com/kubernetes-incubator/cri-containerd"
+      env:
+      - name: GOOGLE_APPLICATION_CREDENTIALS
+        value: /etc/service-account/service-account.json
+      - name: USER
+        value: prow
+      - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-private
+      - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-public
+      volumeMounts:
+      - mountPath: /etc/service-account
+        name: service
+        readOnly: true
+      - mountPath: /etc/ssh-key-secret
+        name: ssh
+        readOnly: true
+      - name: cache-ssd
+        mountPath: /root/.cache
+      ports:
+      - containerPort: 9999
+        hostPort: 9999
+    volumes:
+    - name: service
+      secret:
+        secretName: service-account
+    - name: ssh
+      secret:
+        defaultMode: 256
+        secretName: ssh-key-secret
+    - name: cache-ssd
+      hostPath:
+        path: /mnt/disks/ssd0
+
 - name: ci-kubernetes-bazel-build
   interval: 30m
   agent: kubernetes
