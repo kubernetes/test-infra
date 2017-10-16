@@ -130,15 +130,37 @@ type PluginAgent struct {
 // Configuration is the top-level serialization
 // target for plugin Configuration
 type Configuration struct {
-	// Repo (eg "k/k") -> list of handler names.
-	Plugins         map[string][]string `json:"plugins,omitempty"`
-	Triggers        []Trigger           `json:"triggers,omitempty"`
-	Heart           Heart               `json:"heart,omitempty"`
-	MilestoneStatus MilestoneStatus     `json:"milestonestatus,omitempty"`
-	Slack           Slack               `json:"slack,omitempty"`
-	// ConfigUpdater holds config for the config-updater plugin.
-	ConfigUpdater ConfigUpdater `json:"config_updater,omitempty"`
-	Blockades     []Blockade    `json:"blockades,omitempty"`
+	// Plugins is a map of repositories (eg "k/k") to lists of
+	// plugin names.
+	// TODO: Link to the list of supported plugins.
+	// https://github.com/kubernetes/test-infra/issues/3476
+	Plugins map[string][]string `json:"plugins,omitempty"`
+
+	// ExternalPlugins is a map of repositories (eg "k/k") to lists of
+	// external plugins.
+	ExternalPlugins map[string][]ExternalPlugin `json:"external_plugins,omitempty"`
+
+	// Built-in plugins specific configuration.
+	Triggers        []Trigger       `json:"triggers,omitempty"`
+	Heart           Heart           `json:"heart,omitempty"`
+	MilestoneStatus MilestoneStatus `json:"milestonestatus,omitempty"`
+	Slack           Slack           `json:"slack,omitempty"`
+	ConfigUpdater   ConfigUpdater   `json:"config_updater,omitempty"`
+	Blockades       []Blockade      `json:"blockades,omitempty"`
+}
+
+// ExternalPlugin holds configuration for registering an external
+// plugin in prow.
+type ExternalPlugin struct {
+	// Name of the plugin.
+	Name string `json:"name"`
+	// Endpoint is the location of the external plugin. Defaults to
+	// the name of the plugin, ie. "http://{{name}}".
+	Endpoint string `json:"endpoint,omitempty"`
+	// Events are the events that need to be demuxed by the hook
+	// server to the external plugin. If no events are specified,
+	// everything is sent.
+	Events []string `json:"events,omitempty"`
 }
 
 /*
@@ -252,6 +274,14 @@ func (c *Configuration) setDefaults() {
 	}
 	if c.ConfigUpdater.PluginFile == "" {
 		c.ConfigUpdater.PluginFile = "prow/plugins.yaml"
+	}
+	for repo, plugins := range c.ExternalPlugins {
+		for i, p := range plugins {
+			if p.Endpoint != "" {
+				continue
+			}
+			c.ExternalPlugins[repo][i].Endpoint = fmt.Sprintf("http://%s", p.Name)
+		}
 	}
 }
 
