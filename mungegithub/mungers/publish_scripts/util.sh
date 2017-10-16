@@ -638,8 +638,7 @@ update_full_godeps() {
         return 0
     fi
 
-    # remove dependencies from Godeps/Godeps.json. Because we sometimes do not a full godep run, there might be
-    # dependency packages which are gone. To trigger full runs we have to bring back the pseudo xxxxxxx revisions.
+    # remove dependencies from Godeps/Godeps.json
     echo "Removing k8s.io/* dependencies from Godeps.json"
     local dep=""
     local branch=""
@@ -649,6 +648,9 @@ update_full_godeps() {
         jq '.Deps |= map(select(.ImportPath | (startswith("k8s.io/'${dep}'/") or . == "k8s.io/'${dep}'") | not))' Godeps/Godeps.json > Godeps/Godeps.json.clean
         mv Godeps/Godeps.json.clean Godeps/Godeps.json
     done
+    # due to a bug we have xxxx revisions for reflexive dependencies. Remove them.
+    jq '.Deps |= map(select(.Rev == "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" | not))' Godeps/Godeps.json > Godeps/Godeps.json.clean
+    mv Godeps/Godeps.json.clean Godeps/Godeps.json
 
     echo "Running godep restore."
     godep restore
