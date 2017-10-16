@@ -126,10 +126,7 @@ func TestServeHTTPErrors(t *testing.T) {
 			// Good
 			Method: http.MethodGet,
 			Header: map[string]string{
-				"X-GitHub-Event":    "ping",
-				"X-GitHub-Delivery": "I am unique",
-				"X-Hub-Signature":   hmac,
-				"content-type":      "application/json",
+				"content-type": "application/json",
 			},
 			Body: body,
 			Code: http.StatusOK,
