@@ -77,6 +77,15 @@ test_groups:
     - target_config: Tests name
     - target_config: Context
     name_format: '%s [%s]'
+- name: ci-cri-containerd-build
+  gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-build
+- name: ci-cri-containerd-node-e2e
+  gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-node-e2e
+  test_name_config:
+    name_elements:
+    - target_config: Tests name
+    - target_config: Context
+    name_format: '%s [%s]'
 - name: ci-kubernetes-build
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-build
 - name: ci-kubernetes-build-1.8
@@ -1832,6 +1841,13 @@ dashboards:
     test_group_name: periodic-multi-platform-kubeadm-scaleway-arm64
   - name: periodic-kubeadm-packet-arm64
     test_group_name: periodic-multi-platform-kubeadm-packet-arm64
+
+- name: containerd
+  dashboard_tab:
+  - name: build
+    test_group_name: ci-cri-containerd-build
+  - name: node-e2e
+    test_group_name: ci-cri-containerd-node-e2e
 
 - name: rkt
   dashboard_tab:
