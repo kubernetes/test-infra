@@ -3,6 +3,7 @@ boskos/** @krzyzacy
 gubernator/** @rmmh
 jenkins/bootstrap* @bentheelder @krzyzacy
 kettle/** @rmmh
+kubetest/** @krzyzacy
 logexporter/** @shyamjvs
 mungegithub/** @cjwagner
 planter/** @bentheelder
