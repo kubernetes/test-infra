@@ -456,27 +456,22 @@ test_groups:
     - target_config: Tests name
     - target_config: Context
     name_format: '%s [%s]'
-- name: ci-kubernetes-node-kubelet-1.6
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-1.6
+- name: ci-kubernetes-node-kubelet-stable2
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-stable2
   test_name_config:
     name_elements:
     - target_config: Tests name
     - target_config: Context
     name_format: '%s [%s]'
-- name: ci-kubernetes-node-kubelet-1.7
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-1.7
+- name: ci-kubernetes-node-kubelet-stable3
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-stable3
   test_name_config:
     name_elements:
     - target_config: Tests name
     - target_config: Context
     name_format: '%s [%s]'
-- name: ci-kubernetes-node-kubelet-non-cri-1.6
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-non-cri-1.6
-  test_name_config:
-    name_elements:
-    - target_config: Tests name
-    - target_config: Context
-    name_format: '%s [%s]'
+- name: ci-kubernetes-node-kubelet-non-cri-1-6
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-non-cri-1-6
 - name: ci-kops-build
   gcs_prefix: kubernetes-jenkins/logs/ci-kops-build
 - name: ci-kubernetes-e2e-gce-large-manual-up
@@ -2407,9 +2402,9 @@ dashboards:
   - name: verify-1.6
     test_group_name: ci-kubernetes-verify-release-1.6
   - name: kubelet-1.6
-    test_group_name: ci-kubernetes-node-kubelet-1.6
+    test_group_name: ci-kubernetes-node-kubelet-stable3
   - name: kubelet-non-cri-1.6
-    test_group_name: ci-kubernetes-node-kubelet-non-cri-1.6
+    test_group_name: ci-kubernetes-node-kubelet-non-cri-1-6
   - name: gce-alpha-features-1.6
     test_group_name: ci-kubernetes-e2e-gce-alpha-features-release-1-6
   - name: gce-etcd2-1.6
@@ -2506,7 +2501,7 @@ dashboards:
   - name: verify-1.6
     test_group_name: ci-kubernetes-verify-release-1.6
   - name: kubelet-1.6
-    test_group_name: ci-kubernetes-node-kubelet-1.6
+    test_group_name: ci-kubernetes-node-kubelet-stable3
   - name: gke-serial-1.6
     test_group_name: ci-kubernetes-e2e-gke-serial-release-1-6
   - name: gke-1.6
@@ -2954,7 +2949,7 @@ dashboards:
   - name: verify-1.7
     test_group_name: ci-kubernetes-verify-release-1.7
   - name: kubelet-1.7
-    test_group_name: ci-kubernetes-node-kubelet-1.7
+    test_group_name: ci-kubernetes-node-kubelet-stable2
   - name: federation-build-1.7
     test_group_name: ci-kubernetes-federation-build-1.7
   - name: gce-release-1-7
@@ -3070,7 +3065,7 @@ dashboards:
   - name: gce-kubeadm-upgrade-1.6-1.7
     test_group_name: periodic-kubernetes-e2e-kubeadm-gce-upgrade-1-6-1-7
   - name: kubelet-1.7
-    test_group_name: ci-kubernetes-node-kubelet-1.7
+    test_group_name: ci-kubernetes-node-kubelet-stable2
   - name: aws-release-1-7
     test_group_name: ci-kubernetes-e2e-kops-aws-release-1-7
   - name: gke-serial-release-1-7
@@ -3674,17 +3669,22 @@ dashboards:
     test_group_name: ci-kubernetes-node-kubelet-conformance
   - name: kubelet-1.8
     test_group_name: ci-kubernetes-node-kubelet-stable1
-  - name: kubelet-1.6
-    test_group_name: ci-kubernetes-node-kubelet-1.6
   - name: kubelet-1.7
-    test_group_name: ci-kubernetes-node-kubelet-1.7
+    test_group_name: ci-kubernetes-node-kubelet-stable2
+  - name: kubelet-1.6
+    test_group_name: ci-kubernetes-node-kubelet-stable3
+  - name: docker-kubelet
+    test_group_name: ci-kubernetes-node-docker
+  - name: docker-e2e
+    test_group_name: ci-kubernetes-e2e-gci-gce-docker
+  - name: docker-kubelet-benchmark
+    test_group_name: ci-kubernetes-node-docker-benchmark
 
 - name: sig-node-ppc64le
   dashboard_tab:
   - name: conformance
     test_group_name: ppc64le-conformance
     description: 'conformance test results for ppc64le'
-
 
 # Move sig-release here
 
