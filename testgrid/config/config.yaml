@@ -2540,6 +2540,10 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-kops-aws
   - name: gce-gpu
     test_group_name: ci-kubernetes-e2e-gce-gpu
+  - name: gce-device-plugin-gpu
+    test_group_name: ci-kubernetes-e2e-gce-device-plugin-gpu
+  - name: gke-device-plugin-gpu
+    test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu
   - name: gci-gce-slow
     test_group_name: ci-kubernetes-e2e-gci-gce-slow
   - name: gci-gke-slow
@@ -2833,6 +2837,10 @@ dashboards:
     test_group_name: ci-kubernetes-node-kubelet-stable1
   - name: gce-gpu-1-8
     test_group_name: ci-kubernetes-e2e-gce-gpu-stable1
+  - name: gce-device-plugin-gpu-1-8
+    test_group_name: ci-kubernetes-e2e-gce-device-plugin-gpu-stable1
+  - name: gke-device-plugin-gpu-1-8
+    test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-stable1
 
 - name: release-1.8-upgrade-skew
   dashboard_tab:
