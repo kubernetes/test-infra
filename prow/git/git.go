@@ -183,6 +183,16 @@ func (r *Repo) Checkout(commitlike string) error {
 	return nil
 }
 
+// RevParse runs git rev-parse.
+func (r *Repo) RevParse(commitlike string) (string, error) {
+	r.logger.Infof("RevParse %s.", commitlike)
+	b, err := r.gitCommand("rev-parse", commitlike).CombinedOutput()
+	if err != nil {
+		return "", fmt.Errorf("error rev-parsing %s: %v. output: %s", commitlike, err, string(b))
+	}
+	return string(b), nil
+}
+
 // Merge attempts to merge commitlike into the current branch. It returns true
 // if the merge completes. It returns an error if the abort fails.
 func (r *Repo) Merge(commitlike string) (bool, error) {
