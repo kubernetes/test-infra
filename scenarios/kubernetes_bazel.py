@@ -84,7 +84,15 @@ def query(kind, selected_pkgs, changed_pkgs):
 
     selection = '//...'
     if selected_pkgs:
-        selection = 'set(%s)' % ' '.join(selected_pkgs)
+        # targets without a '-' operator prefix are implicitly additive
+        # when specifying build targets
+        selection = selected_pkgs[0]
+        for pkg in selected_pkgs[1:]:
+            if pkg.startswith('-'):
+                selection += ' '+pkg
+            else:
+                selection += ' +'+pkg
+
 
     changes = '//...'
     if changed_pkgs:
