@@ -436,15 +436,20 @@ presubmits:
     rerun_command: "/test pull-kubernetes-cross"
     trigger: "(?m)^/test pull-kubernetes-cross,?(\\s+|$)"
     run_if_changed: '^(build\/|hack\/lib\/)|(Makefile)|(.*_(windows|linux|osx|unsupported)(_test)?\.go)$'
-  - name: pull-kubernetes-e2e-gce-bazel
+  - name: pull-kubernetes-e2e-gce
     agent: kubernetes
-    context: pull-kubernetes-e2e-gce-bazel
-    rerun_command: "/test pull-kubernetes-e2e-gce-bazel"
-    trigger: "(?m)^/test (all|pull-kubernetes-e2e-gce-bazel),?(\\s+|$)"
+    context: pull-kubernetes-e2e-gce
+    rerun_command: "/test pull-kubernetes-e2e-gce"
+    trigger: "(?m)^/test (all|pull-kubernetes-e2e-gce),?(\\s+|$)"
     always_run: true
-    # TODO(krzyzacy):We need to backfill to support feature branches
-    branches:
-    - master
+    # TODO(bentheelder): enforce this pattern (skip all releases) or implement
+    # something better like https://github.com/kubernetes/test-infra/pull/4918
+    skip_branches:
+    - release-1.4 # no bazel
+    - release-1.5 # no bazel
+    - release-1.6 # per-release image
+    - release-1.7 # per-release image
+    - release-1.8 # per-release image
     spec:
       containers:
       - args:
@@ -495,11 +500,11 @@ presubmits:
       - hostPath:
           path: /mnt/disks/ssd0
         name: cache-ssd
-  - name: pull-kubernetes-e2e-gce-bazel
+  - name: pull-kubernetes-e2e-gce
     agent: kubernetes
-    context: pull-kubernetes-e2e-gce-bazel
-    rerun_command: "/test pull-kubernetes-e2e-gce-bazel"
-    trigger: "(?m)^/test (all|pull-kubernetes-e2e-gce-bazel),?(\\s+|$)"
+    context: pull-kubernetes-e2e-gce
+    rerun_command: "/test pull-kubernetes-e2e-gce"
+    trigger: "(?m)^/test (all|pull-kubernetes-e2e-gce),?(\\s+|$)"
     always_run: true
     branches:
     - release-1.8
@@ -553,11 +558,11 @@ presubmits:
       - hostPath:
           path: /mnt/disks/ssd0
         name: cache-ssd
-  - name: pull-kubernetes-e2e-gce-bazel
+  - name: pull-kubernetes-e2e-gce
     agent: kubernetes
-    context: pull-kubernetes-e2e-gce-bazel
-    rerun_command: "/test pull-kubernetes-e2e-gce-bazel"
-    trigger: "(?m)^/test (all|pull-kubernetes-e2e-gce-bazel),?(\\s+|$)"
+    context: pull-kubernetes-e2e-gce
+    rerun_command: "/test pull-kubernetes-e2e-gce"
+    trigger: "(?m)^/test (all|pull-kubernetes-e2e-gce),?(\\s+|$)"
     always_run: true
     branches:
     - release-1.7
@@ -611,11 +616,11 @@ presubmits:
       - hostPath:
           path: /mnt/disks/ssd0
         name: cache-ssd
-  - name: pull-kubernetes-e2e-gce-bazel
+  - name: pull-kubernetes-e2e-gce
     agent: kubernetes
-    context: pull-kubernetes-e2e-gce-bazel
-    rerun_command: "/test pull-kubernetes-e2e-gce-bazel"
-    trigger: "(?m)^/test (all|pull-kubernetes-e2e-gce-bazel),?(\\s+|$)"
+    context: pull-kubernetes-e2e-gce
+    rerun_command: "/test pull-kubernetes-e2e-gce"
+    trigger: "(?m)^/test (all|pull-kubernetes-e2e-gce),?(\\s+|$)"
     always_run: true
     branches:
     - release-1.6
@@ -669,12 +674,6 @@ presubmits:
       - hostPath:
           path: /mnt/disks/ssd0
         name: cache-ssd
-  - name: pull-kubernetes-e2e-gce-etcd3
-    agent: jenkins
-    always_run: true
-    context: pull-kubernetes-e2e-gce-etcd3
-    rerun_command: "/test pull-kubernetes-e2e-gce-etcd3"
-    trigger: "(?m)^/test( all| pull-kubernetes-e2e-gce-etcd3),?(\\s+|$)"
   - name: pull-kubernetes-e2e-gce-gpu
     agent: kubernetes
     skip_branches:
@@ -1518,14 +1517,20 @@ presubmits:
     rerun_command: "/test pull-security-kubernetes-cross"
     trigger: "(?m)^/test pull-security-kubernetes-cross,?(\\s+|$)"
     run_if_changed: '^(build\/|hack\/lib\/)|(Makefile)|(.*_(windows|linux|osx|unsupported)(_test)?\.go)$'
-  - name: pull-security-kubernetes-e2e-gce-bazel
+  - name: pull-security-kubernetes-e2e-gce
     agent: kubernetes
-    context: pull-security-kubernetes-e2e-gce-bazel
-    rerun_command: "/test pull-security-kubernetes-e2e-gce-bazel"
-    trigger: "(?m)^/test (all|pull-security-kubernetes-e2e-gce-bazel),?(\\s+|$)"
+    context: pull-security-kubernetes-e2e-gce
+    rerun_command: "/test pull-security-kubernetes-e2e-gce"
+    trigger: "(?m)^/test (all|pull-security-kubernetes-e2e-gce),?(\\s+|$)"
     always_run: true
-    branches:
-    - master
+    # TODO(bentheelder): enforce this pattern (skip all releases) or implement
+    # something better like https://github.com/kubernetes/test-infra/pull/4918
+    skip_branches:
+    - release-1.4 # no bazel
+    - release-1.5 # no bazel
+    - release-1.6 # per-release image
+    - release-1.7 # per-release image
+    - release-1.8 # per-release image
     spec:
       containers:
       - args:
@@ -1576,11 +1581,11 @@ presubmits:
       - hostPath:
           path: /mnt/disks/ssd0
         name: cache-ssd
-  - name: pull-security-kubernetes-e2e-gce-bazel
+  - name: pull-security-kubernetes-e2e-gce
     agent: kubernetes
-    context: pull-security-kubernetes-e2e-gce-bazel
-    rerun_command: "/test pull-security-kubernetes-e2e-gce-bazel"
-    trigger: "(?m)^/test (all|pull-security-kubernetes-e2e-gce-bazel),?(\\s+|$)"
+    context: pull-security-kubernetes-e2e-gce
+    rerun_command: "/test pull-security-kubernetes-e2e-gce"
+    trigger: "(?m)^/test (all|pull-security-kubernetes-e2e-gce),?(\\s+|$)"
     always_run: true
     branches:
     - release-1.8
@@ -1634,11 +1639,11 @@ presubmits:
       - hostPath:
           path: /mnt/disks/ssd0
         name: cache-ssd
-  - name: pull-security-kubernetes-e2e-gce-bazel
+  - name: pull-security-kubernetes-e2e-gce
     agent: kubernetes
-    context: pull-security-kubernetes-e2e-gce-bazel
-    rerun_command: "/test pull-security-kubernetes-e2e-gce-bazel"
-    trigger: "(?m)^/test (all|pull-security-kubernetes-e2e-gce-bazel),?(\\s+|$)"
+    context: pull-security-kubernetes-e2e-gce
+    rerun_command: "/test pull-security-kubernetes-e2e-gce"
+    trigger: "(?m)^/test (all|pull-security-kubernetes-e2e-gce),?(\\s+|$)"
     always_run: true
     branches:
     - release-1.7
@@ -1692,11 +1697,11 @@ presubmits:
       - hostPath:
           path: /mnt/disks/ssd0
         name: cache-ssd
-  - name: pull-security-kubernetes-e2e-gce-bazel
+  - name: pull-security-kubernetes-e2e-gce
     agent: kubernetes
-    context: pull-security-kubernetes-e2e-gce-bazel
-    rerun_command: "/test pull-security-kubernetes-e2e-gce-bazel"
-    trigger: "(?m)^/test (all|pull-security-kubernetes-e2e-gce-bazel),?(\\s+|$)"
+    context: pull-security-kubernetes-e2e-gce
+    rerun_command: "/test pull-security-kubernetes-e2e-gce"
+    trigger: "(?m)^/test (all|pull-security-kubernetes-e2e-gce),?(\\s+|$)"
     always_run: true
     branches:
     - release-1.6
@@ -1750,12 +1755,6 @@ presubmits:
       - hostPath:
           path: /mnt/disks/ssd0
         name: cache-ssd
-  - name: pull-security-kubernetes-e2e-gce-etcd3
-    agent: jenkins
-    always_run: true
-    context: pull-security-kubernetes-e2e-gce-etcd3
-    rerun_command: "/test pull-security-kubernetes-e2e-gce-etcd3"
-    trigger: "(?m)^/test( all| pull-security-kubernetes-e2e-gce-etcd3),?(\\s+|$)"
   - name: pull-security-kubernetes-e2e-gce-gpu
     agent: kubernetes
     skip_branches:
