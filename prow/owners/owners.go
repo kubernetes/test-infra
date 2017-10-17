@@ -23,6 +23,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+	"sync"
 
 	"github.com/ghodss/yaml"
 	"github.com/sirupsen/logrus"
@@ -51,6 +52,13 @@ type ownersConfig struct {
 
 type githubClient interface {
 	ListCollaborators(org, repo string) ([]github.User, error)
+	GetRef(org, repo, ref string) (string, error)
+}
+
+type cacheEntry struct {
+	sha     string
+	aliases RepoAliases
+	owners  *RepoOwners
 }
 
 type Client struct {
@@ -60,14 +68,16 @@ type Client struct {
 
 	mdYAMLEnabled func(org, repo string) bool
 
-	//cache map[string](SHA, *RepoOwners /*may be empty except for RepoAliases*/)
+	lock  sync.Mutex
+	cache map[string]cacheEntry
 }
 
 func NewClient(ca *config.Agent, gc *git.Client, ghc *github.Client, log *logrus.Entry) *Client {
 	return &Client{
-		git: gc,
-		ghc: ghc,
-		log: log,
+		git:   gc,
+		ghc:   ghc,
+		log:   log,
+		cache: make(map[string]cacheEntry),
 
 		mdYAMLEnabled: mdYAMLEnabledFromConfig(ca),
 	}
@@ -88,52 +98,81 @@ type RepoOwners struct {
 	log *logrus.Entry
 }
 
-// LoadRepoAliases returns a RepoAliases struct for the specified repo.
+// LoadRepoAliases returns an up-to-date RepoAliases struct for the specified repo.
 // If the repo does not have an aliases file then an empty alias map is returned with no error.
+// Note: The returned RepoAliases should be treated as read only.
 func (c *Client) LoadRepoAliases(org, repo string) (RepoAliases, error) {
 	log := c.log.WithFields(logrus.Fields{"org": org, "repo": repo})
-	// TODO: check cache first (need matching org, repo, sha)
-
-	gitRepo, err := c.git.Clone(fmt.Sprintf("%s/%s", org, repo))
+	fullName := fmt.Sprintf("%s/%s", org, repo)
+	sha, err := c.ghc.GetRef(org, repo, "heads/master")
 	if err != nil {
-		return nil, fmt.Errorf("failed to clone %s/%s: %v", org, repo, err)
+		return nil, fmt.Errorf("failed to get current SHA for %s: %v", fullName, err)
 	}
-	defer gitRepo.Clean()
-	aliases := loadAliasesFrom(gitRepo.Dir, log)
-	// TODO: save to cache
 
-	return aliases, nil
+	c.lock.Lock()
+	defer c.lock.Unlock()
+	entry, ok := c.cache[fullName]
+	if !ok || entry.sha != sha {
+		// entry is non-existant or stale.
+		gitRepo, err := c.git.Clone(fullName)
+		if err != nil {
+			return nil, fmt.Errorf("failed to clone %s: %v", fullName, err)
+		}
+		defer gitRepo.Clean()
+
+		entry.aliases = loadAliasesFrom(gitRepo.Dir, log)
+		entry.sha = sha
+		c.cache[fullName] = entry
+	}
+
+	return entry.aliases, nil
 }
 
+// LoadRepoOwners returns an up-to-date RepoOwners struct for the specified repo.
+// Note: The returned *RepoOwners should be treated as read only.
 func (c *Client) LoadRepoOwners(org, repo string) (*RepoOwners, error) {
 	log := c.log.WithFields(logrus.Fields{"org": org, "repo": repo})
 
+	fullName := fmt.Sprintf("%s/%s", org, repo)
 	mdYaml := c.mdYAMLEnabled(org, repo)
-	// TODO: check cache first (need matching org, repo, sha, mdYaml)
-
-	gitRepo, err := c.git.Clone(fmt.Sprintf("%s/%s", org, repo))
+	sha, err := c.ghc.GetRef(org, repo, "heads/master")
 	if err != nil {
-		return nil, fmt.Errorf("failed to clone %s/%s: %v", org, repo, err)
+		return nil, fmt.Errorf("failed to get current SHA for %s: %v", fullName, err)
 	}
-	defer gitRepo.Clean()
 
-	// TODO: change this to use cache value if it existed when we checked.
-	aliases := loadAliasesFrom(gitRepo.Dir, log)
-	o, err := loadOwnersFrom(gitRepo.Dir, mdYaml, aliases, log)
-	if err != nil {
-		return nil, err
+	c.lock.Lock()
+	defer c.lock.Unlock()
+	entry, ok := c.cache[fullName]
+	if !ok || entry.sha != sha || entry.owners == nil || entry.owners.enableMDYAML != mdYaml {
+		gitRepo, err := c.git.Clone(fullName)
+		if err != nil {
+			return nil, fmt.Errorf("failed to clone %s: %v", fullName, err)
+		}
+		defer gitRepo.Clean()
+
+		if entry.aliases == nil || entry.sha != sha {
+			// aliases must be loaded
+			entry.aliases = loadAliasesFrom(gitRepo.Dir, log)
+		}
+		entry.owners, err = loadOwnersFrom(gitRepo.Dir, mdYaml, entry.aliases, log)
+		if err != nil {
+			return nil, fmt.Errorf("failed to load RepoOwners for %s: %v", fullName, err)
+		}
+		entry.sha = sha
+		c.cache[fullName] = entry
 	}
-	// TODO: save to cache before collaborator filtering.
 
+	var owners *RepoOwners
 	// Filter collaborators. We must filter the RepoOwners struct even if it came from the cache
 	// because the list of collaborators could have changed without the git SHA changing.
 	collaborators, err := c.ghc.ListCollaborators(org, repo)
 	if err != nil {
 		log.WithError(err).Errorf("Failed to list collaborators while loading RepoOwners. Skipping collaborator filtering.")
+		owners = entry.owners
 	} else {
-		o.filterCollaborators(collaborators)
+		owners = entry.owners.filterCollaborators(collaborators)
 	}
-	return o, nil
+	return owners, nil
 }
 
 func mdYAMLEnabledFromConfig(ca *config.Agent) func(org, repo string) bool {
@@ -315,19 +354,24 @@ func (o *RepoOwners) applyConfigToPath(path string, config *ownersConfig) {
 	}
 }
 
-func (o *RepoOwners) filterCollaborators(toKeep []github.User) {
+func (o *RepoOwners) filterCollaborators(toKeep []github.User) *RepoOwners {
 	collabs := sets.NewString()
 	for _, keeper := range toKeep {
 		collabs.Insert(github.NormLogin(keeper.Login))
 	}
 
-	filter := func(ownerMap map[string]sets.String) {
+	filter := func(ownerMap map[string]sets.String) map[string]sets.String {
+		filtered := make(map[string]sets.String)
 		for path, unfiltered := range ownerMap {
-			ownerMap[path] = unfiltered.Intersection(collabs)
+			filtered[path] = unfiltered.Intersection(collabs)
 		}
+		return filtered
 	}
-	filter(o.approvers)
-	filter(o.reviewers)
+
+	result := *o
+	result.approvers = filter(o.approvers)
+	result.reviewers = filter(o.reviewers)
+	return &result
 }
 
 // findOwnersForPath returns the OWNERS file path furthest down the tree for a specified file
