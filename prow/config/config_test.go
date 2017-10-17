@@ -110,7 +110,7 @@ type SubmitQueueConfig struct {
 func FindRequired(t *testing.T, presubmits []Presubmit) []string {
 	var required []string
 	for _, p := range presubmits {
-		if !p.AlwaysRun {
+		if !p.AlwaysRun && p.RunIfChanged == "" {
 			continue
 		}
 		for _, r := range FindRequired(t, p.RunAfterSuccess) {
