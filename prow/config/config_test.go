@@ -103,7 +103,8 @@ func TestRetestMatchJobsName(t *testing.T) {
 }
 
 type SubmitQueueConfig struct {
-	Data map[string]string `json:"data"`
+	// this is the only field we need for the tests below
+	RequiredRetestContexts string `json:"required-retest-contexts"`
 }
 
 func FindRequired(t *testing.T, presubmits []Presubmit) []string {
@@ -136,11 +137,7 @@ func TestRequiredRetestContextsMatch(t *testing.T) {
 	if err = yaml.Unmarshal(b, sqc); err != nil {
 		t.Fatalf("Could not parse submit queue configmap: %v", err)
 	}
-	re := regexp.MustCompile(`"([^"]+)"`)
-	var required []string
-	for _, g := range re.FindAllStringSubmatch(sqc.Data["test-options.required-retest-contexts"], -1) {
-		required = append(required, g[1])
-	}
+	required := strings.Split(sqc.RequiredRetestContexts, ",")
 
 	running := FindRequired(t, c.Presubmits["kubernetes/kubernetes"])
 
