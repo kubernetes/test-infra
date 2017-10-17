@@ -339,6 +339,7 @@ func (s *Server) handleGenericComment(l *logrus.Entry, ce *github.GenericComment
 				ce.Repo.Name,
 				ce.Number,
 			)
+			pc.Metrics = s.Metrics.PluginsCounter
 			if err := h(pc, *ce); err != nil {
 				pc.Logger.WithError(err).Error("Error handling GenericCommentEvent.")
 			}

@@ -357,11 +357,11 @@ func TestAssignAndReview(t *testing.T) {
 			Repo:   github.Repo{Name: "repo", Owner: github.User{Login: "org"}},
 			Number: 5,
 		}
-		if err := handle(newAssignHandler(e, fc, logrus.WithField("plugin", pluginName))); err != nil {
+		if err := handle(newAssignHandler(e, fc, logrus.WithField("plugin", pluginName), nil)); err != nil {
 			t.Errorf("For case %s, didn't expect error from handle: %v", tc.name, err)
 			continue
 		}
-		if err := handle(newReviewHandler(e, fc, logrus.WithField("plugin", pluginName))); err != nil {
+		if err := handle(newReviewHandler(e, fc, logrus.WithField("plugin", pluginName), nil)); err != nil {
 			t.Errorf("For case %s, didn't expect error from handle: %v", tc.name, err)
 			continue
 		}

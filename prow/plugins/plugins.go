@@ -24,6 +24,7 @@ import (
 	"time"
 
 	"github.com/ghodss/yaml"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/commentpruner"
@@ -95,7 +96,7 @@ func RegisterReviewCommentEventHandler(name string, fn ReviewCommentEventHandler
 	reviewCommentEventHandlers[name] = fn
 }
 
-type GenericCommentHandler func(PluginClient, github.GenericCommentEvent) error
+type GenericCommentHandler func(PluginClient, github.GenericCommentEvent, *prometheus.CounterVec) error
 
 func RegisterGenericCommentHandler(name string, fn GenericCommentHandler) {
 	allPlugins[name] = struct{}{}
@@ -118,6 +119,9 @@ type PluginClient struct {
 	PluginConfig *Configuration
 
 	Logger *logrus.Entry
+
+	// Plugin usage tracking counters
+	Metric *prometheus.CounterVec
 }
 
 type PluginAgent struct {
@@ -478,4 +482,15 @@ func (pa *PluginAgent) getPlugins(owner, repo string) []string {
 	plugins = append(plugins, pa.configuration.Plugins[fullName]...)
 
 	return plugins
+}
+
+// GetPluginCounter returns premethus counter for a given plugin
+func (pa *PluginAgent)GetPluginCounter(m *prometheus.CounterVec, pluginName string) prometheus.Counter {
+	if counter, err := m.GetMetricWithLabelValues(pluginName); err == nil {
+		return counter
+	} else {
+		logrus.WithError(err).Warn("Failed to get metric for plugin " + pluginName)
+	}
+
+	return nil
 }

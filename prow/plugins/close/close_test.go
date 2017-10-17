@@ -169,7 +169,7 @@ func TestCloseComment(t *testing.T) {
 			Assignees:   []github.User{{Login: "a"}, {Login: "r1"}, {Login: "r2"}},
 			IssueAuthor: github.User{Login: "a"},
 		}
-		if err := handle(fc, logrus.WithField("plugin", pluginName), e); err != nil {
+		if err := handle(fc, logrus.WithField("plugin", pluginName), e, nil); err != nil {
 			t.Errorf("For case %s, didn't expect error from handle: %v", tc.name, err)
 			continue
 		}

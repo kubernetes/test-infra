@@ -21,6 +21,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/github"
@@ -52,9 +53,12 @@ func handleGenericComment(pc plugins.PluginClient, e github.GenericCommentEvent)
 	if e.Action != github.GenericCommentActionCreated {
 		return nil
 	}
-	err := handle(newAssignHandler(e, pc.GitHubClient, pc.Logger))
+
+	counter := pc.GetPluginCounter(pluginName)
+
+	err := handle(newAssignHandler(e, pc.GitHubClient, pc.Logger, counter))
 	if e.IsPR {
-		err = combineErrors(err, handle(newReviewHandler(e, pc.GitHubClient, pc.Logger)))
+		err = combineErrors(err, handle(newReviewHandler(e, pc.GitHubClient, pc.Logger, counter)))
 	}
 	return err
 }
@@ -93,6 +97,11 @@ func handle(h *handler) error {
 	if matches == nil {
 		return nil
 	}
+
+	if h.counter != nil {
+		h.counter.Inc()
+	}
+
 	users := make(map[string]bool)
 	for _, re := range matches {
 		add := re[1] != "un" // un<cmd> == !add
@@ -159,9 +168,12 @@ type handler struct {
 	log *logrus.Entry
 	// userType is a string that represents the type of users affected by this handler. (e.g. 'assignees')
 	userType string
+
+	// Counter is a prometheus counter for tracking plugin usage
+	counter prometheus.Counter
 }
 
-func newAssignHandler(e github.GenericCommentEvent, gc githubClient, log *logrus.Entry) *handler {
+func newAssignHandler(e github.GenericCommentEvent, gc githubClient, log *logrus.Entry, c prometheus.Counter) *handler {
 	org := e.Repo.Owner.Login
 	addFailureResponse := func(mu github.MissingUsers) string {
 		return fmt.Sprintf("GitHub didn't allow me to assign the following users: %s.\n\nNote that only [%s members](https://github.com/orgs/%s/people) can be assigned.", strings.Join(mu.Users, ", "), org, org)
@@ -176,10 +188,11 @@ func newAssignHandler(e github.GenericCommentEvent, gc githubClient, log *logrus
 		gc:                 gc,
 		log:                log,
 		userType:           "assignee(s)",
+		counter:            c,
 	}
 }
 
-func newReviewHandler(e github.GenericCommentEvent, gc githubClient, log *logrus.Entry) *handler {
+func newReviewHandler(e github.GenericCommentEvent, gc githubClient, log *logrus.Entry, c prometheus.Counter) *handler {
 	org := e.Repo.Owner.Login
 	addFailureResponse := func(mu github.MissingUsers) string {
 		return fmt.Sprintf("GitHub didn't allow me to request PR reviews from the following users: %s.\n\nNote that only [%s members](https://github.com/orgs/%s/people) can review this PR, and authors cannot review their own PRs.", strings.Join(mu.Users, ", "), org, org)
@@ -194,5 +207,6 @@ func newReviewHandler(e github.GenericCommentEvent, gc githubClient, log *logrus
 		gc:                 gc,
 		log:                log,
 		userType:           "reviewer(s)",
+		counter:            c,
 	}
 }
