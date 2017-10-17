@@ -10023,6 +10023,30 @@
       "sig-scheduling"
     ]
   },
+  "pull-kubernetes-e2e-gke-device-plugin-gpu": {
+    "args": [
+      "--build=bazel",
+      "--cluster=",
+      "--deployment=gke",
+      "--extract=local",
+      "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
+      "--gcp-node-image=gci",
+      "--gcp-project=k8s-gke-gpu-pr",
+      "--gcp-zone=us-west1-b",
+      "--ginkgo-parallel=30",
+      "--gke-create-command=alpha container clusters create --quiet --enable-kubernetes-alpha --accelerator=type=nvidia-tesla-k80,count=2",
+      "--gke-environment=test",
+      "--provider=gke",
+      "--stage=gs://kubernetes-release-dev/ci",
+      "--stage-suffix=pull-gke-device-plugin-gpu",
+      "--test_args=--ginkgo.focus=\\[Feature:GPUDevicePlugin\\] --minStartupPods=8",
+      "--timeout=60m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-scheduling"
+    ]
+  },
   "pull-kubernetes-e2e-gke-gci": {
     "args": [
       "--build",
@@ -10046,30 +10070,6 @@
     "scenario": "kubernetes_e2e",
     "sigOwners": [
       "UNKNOWN"
-    ]
-  },
-  "pull-kubernetes-e2e-gke-gpu": {
-    "args": [
-      "--build=bazel",
-      "--cluster=",
-      "--deployment=gke",
-      "--extract=local",
-      "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
-      "--gcp-node-image=gci",
-      "--gcp-project=k8s-gke-gpu-pr",
-      "--gcp-zone=us-west1-b",
-      "--ginkgo-parallel=30",
-      "--gke-create-command=alpha container clusters create --quiet --enable-kubernetes-alpha --accelerator=type=nvidia-tesla-k80,count=2",
-      "--gke-environment=test",
-      "--provider=gke",
-      "--stage=gs://kubernetes-release-dev/ci",
-      "--stage-suffix=pull-gke-gpu",
-      "--test_args=--ginkgo.focus=\\[Feature:GPU\\] --minStartupPods=8",
-      "--timeout=60m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-scheduling"
     ]
   },
   "pull-kubernetes-e2e-kops-aws": {
