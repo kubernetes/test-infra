@@ -4005,9 +4005,6 @@ dashboard_groups:
   - google-gci
   - google-gci-dev
   - google-gce-compute-image-tools
-
-- name: gke-all
-  dashboard_names:
   - google-gke
   - google-gke-staging
   - google-gke-prod
