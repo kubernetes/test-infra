@@ -26,6 +26,6 @@ cp ./config.yaml "${config}"
 if ! output="$( diff ./config.yaml "${config}" )"; then
     echo "Gubernator configuration file is out of sync!"
     echo "${output}"
-    echo "Run gubernator/update-config.sh"
+    echo "Run \`gubernator/update_config.sh\`"
     exit 1
 fi
