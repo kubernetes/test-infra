@@ -738,23 +738,19 @@ presubmits:
         hostPath:
           path: /mnt/disks/ssd0
 
-  - name: pull-kubernetes-e2e-gke-gci
-    agent: jenkins
-    context: pull-kubernetes-e2e-gke-gci
-    rerun_command: "/test pull-kubernetes-e2e-gke-gci"
-    trigger: "(?m)^/test pull-kubernetes-e2e-gke-gci,?(\\s+|$)"
-  - name: pull-kubernetes-e2e-gke-gpu
+  - name: pull-kubernetes-e2e-gke-device-plugin-gpu
     agent: kubernetes
     skip_branches:
     - release-1.4
     - release-1.5
     - release-1.6
+    - release-1.7
     always_run: false
     skip_report: false
     max_concurrency: 1
-    context: pull-kubernetes-e2e-gke-gpu
-    rerun_command: "/test pull-kubernetes-e2e-gke-gpu"
-    trigger: "(?m)^/test pull-kubernetes-e2e-gke-gpu,?(\\s+|$)"
+    context: pull-kubernetes-e2e-gke-device-plugin-gpu
+    rerun_command: "/test pull-kubernetes-e2e-gke-device-plugin-gpu"
+    trigger: "(?m)^/test pull-kubernetes-e2e-gke-device-plugin-gpu,?(\\s+|$)"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20171011-8265ed12-master
@@ -806,6 +802,11 @@ presubmits:
         hostPath:
           path: /mnt/disks/ssd0
 
+  - name: pull-kubernetes-e2e-gke-gci
+    agent: jenkins
+    context: pull-kubernetes-e2e-gke-gci
+    rerun_command: "/test pull-kubernetes-e2e-gke-gci"
+    trigger: "(?m)^/test pull-kubernetes-e2e-gke-gci,?(\\s+|$)"
   - name: pull-kubernetes-e2e-kops-aws
     agent: jenkins
     always_run: true
@@ -1818,23 +1819,19 @@ presubmits:
         hostPath:
           path: /mnt/disks/ssd0
 
-  - name: pull-security-kubernetes-e2e-gke-gci
-    agent: jenkins
-    context: pull-security-kubernetes-e2e-gke-gci
-    rerun_command: "/test pull-security-kubernetes-e2e-gke-gci"
-    trigger: "(?m)^/test pull-security-kubernetes-e2e-gke-gci,?(\\s+|$)"
-  - name: pull-security-kubernetes-e2e-gke-gpu
+  - name: pull-security-kubernetes-e2e-gke-device-plugin-gpu
     agent: kubernetes
     skip_branches:
     - release-1.4
     - release-1.5
     - release-1.6
+    - release-1.7
     always_run: false
     skip_report: false
     max_concurrency: 1
-    context: pull-security-kubernetes-e2e-gke-gpu
-    rerun_command: "/test pull-security-kubernetes-e2e-gke-gpu"
-    trigger: "(?m)^/test pull-security-kubernetes-e2e-gke-gpu,?(\\s+|$)"
+    context: pull-security-kubernetes-e2e-gke-device-plugin-gpu
+    rerun_command: "/test pull-security-kubernetes-e2e-gke-device-plugin-gpu"
+    trigger: "(?m)^/test pull-security-kubernetes-e2e-gke-device-plugin-gpu,?(\\s+|$)"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20171011-8265ed12-master
@@ -1886,6 +1883,11 @@ presubmits:
         hostPath:
           path: /mnt/disks/ssd0
 
+  - name: pull-security-kubernetes-e2e-gke-gci
+    agent: jenkins
+    context: pull-security-kubernetes-e2e-gke-gci
+    rerun_command: "/test pull-security-kubernetes-e2e-gke-gci"
+    trigger: "(?m)^/test pull-security-kubernetes-e2e-gke-gci,?(\\s+|$)"
   - name: pull-security-kubernetes-e2e-kops-aws
     agent: jenkins
     always_run: true
@@ -12983,75 +12985,7 @@ periodics:
         defaultMode: 256
         secretName: ssh-key-secret
 
-- name: ci-kubernetes-e2e-gke-gpu
-  interval: 2h
-  agent: kubernetes
-  spec:
-    containers:
-    - args:
-      - --timeout=300
-      - --bare
-      env:
-      - name: GOOGLE_APPLICATION_CREDENTIALS
-        value: /etc/service-account/service-account.json
-      - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
-        value: /etc/ssh-key-secret/ssh-private
-      - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
-        value: /etc/ssh-key-secret/ssh-public
-      - name: USER
-        value: prow
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171011-8265ed12-master
-      volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
-      - mountPath: /etc/ssh-key-secret
-        name: ssh
-        readOnly: true
-    volumes:
-    - name: service
-      secret:
-        secretName: service-account
-    - name: ssh
-      secret:
-        defaultMode: 256
-        secretName: ssh-key-secret
-
 - name: ci-kubernetes-e2e-gke-gpu-1-7
-  interval: 2h
-  agent: kubernetes
-  spec:
-    containers:
-    - args:
-      - --timeout=300
-      - --bare
-      env:
-      - name: GOOGLE_APPLICATION_CREDENTIALS
-        value: /etc/service-account/service-account.json
-      - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
-        value: /etc/ssh-key-secret/ssh-private
-      - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
-        value: /etc/ssh-key-secret/ssh-public
-      - name: USER
-        value: prow
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171011-8265ed12-master
-      volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
-      - mountPath: /etc/ssh-key-secret
-        name: ssh
-        readOnly: true
-    volumes:
-    - name: service
-      secret:
-        secretName: service-account
-    - name: ssh
-      secret:
-        defaultMode: 256
-        secretName: ssh-key-secret
-
-- name: ci-kubernetes-e2e-gke-gpu-stable1
   interval: 2h
   agent: kubernetes
   spec:
