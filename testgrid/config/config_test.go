@@ -29,6 +29,21 @@ type SQConfig struct {
 	Data map[string]string `yaml:"data,omitempty"`
 }
 
+var (
+	companies = []string{
+		"canonical",
+		"google",
+		"kopeio",
+		"tectonic",
+	}
+	orgs = []string{
+		"presubmits",
+		"sig",
+		"wg",
+	}
+	prefixes = [][]string{orgs, companies}
+)
+
 func TestConfig(t *testing.T) {
 	yamlData, err := ioutil.ReadFile("config.yaml")
 	if err != nil {
@@ -102,6 +117,22 @@ func TestConfig(t *testing.T) {
 		// All dashboard must have a name
 		if dashboard.Name == "" {
 			t.Errorf("Dashboard %v: - Must have a name", dashboardidx)
+		}
+
+		found := false
+		for _, kind := range prefixes {
+			for _, prefix := range kind {
+				if strings.HasPrefix(dashboard.Name, prefix+"-") || dashboard.Name == prefix {
+					found = true
+					break
+				}
+			}
+			if found {
+				break
+			}
+		}
+		if !found {
+			t.Errorf("Dashboard %v: must prefix with one of: %v", dashboard.Name, prefixes)
 		}
 
 		// All dashboard must not have duplicated names
@@ -183,11 +214,31 @@ func TestConfig(t *testing.T) {
 			t.Errorf("DashboardGroup %v: - DashboardGroup must have a name", idx)
 		}
 
+		found := false
+		for _, kind := range prefixes {
+			for _, prefix := range kind {
+				if strings.HasPrefix(dashboardGroup.Name, prefix+"-") || prefix == dashboardGroup.Name {
+					found = true
+					break
+				}
+			}
+			if found {
+				break
+			}
+		}
+		if !found {
+			t.Errorf("Dashboard group %v: must prefix with one of: %v", dashboardGroup.Name, prefixes)
+		}
+
 		// All dashboardgroup must not have duplicated names
 		if _, ok := groups[dashboardGroup.Name]; ok {
 			t.Errorf("Duplicated dashboard: %v", dashboardGroup.Name)
 		} else {
 			groups[dashboardGroup.Name] = true
+		}
+
+		if _, ok := dashboardmap[dashboardGroup.Name]; ok {
+			t.Errorf("%v is both a dashboard and dashboard group name.", dashboardGroup.Name)
 		}
 
 		for _, dashboard := range dashboardGroup.DashboardNames {
@@ -200,6 +251,10 @@ func TestConfig(t *testing.T) {
 
 			if _, ok := dashboardmap[dashboard]; !ok {
 				t.Errorf("Dashboard %v needs to be defined before adding to a dashboard group!", dashboard)
+			}
+
+			if !strings.HasPrefix(dashboard, dashboardGroup.Name+"-") {
+				t.Errorf("Dashboard %v in group %v must have the group name as a prefix", dashboard, dashboardGroup.Name)
 			}
 		}
 	}
