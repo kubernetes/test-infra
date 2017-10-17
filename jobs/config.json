@@ -10011,7 +10011,7 @@
       "--provider=gce",
       "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-bazel",
       "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
-      "--timeout=55m"
+      "--timeout=65m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
