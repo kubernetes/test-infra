@@ -782,8 +782,6 @@ class JobTest(unittest.TestCase):
             'pull-kubernetes-e2e-gce-canary': 'pull-kubernetes-e2e-gce-*',
             'ci-kubernetes-e2e-gce': 'ci-kubernetes-e2e-gce-*',
             'ci-kubernetes-e2e-gce-canary': 'ci-kubernetes-e2e-gce-*',
-            'ci-kubernetes-e2e-gke-gpu': 'ci-kubernetes-e2e-gke-gpu-*',
-            'pull-kubernetes-e2e-gke-gpu': 'ci-kubernetes-e2e-gke-gpu-*',
             'ci-kubernetes-node-kubelet-serial': 'ci-kubernetes-node-kubelet-*',
             'ci-kubernetes-node-kubelet-flaky': 'ci-kubernetes-node-kubelet-*',
             'ci-kubernetes-node-kubelet-conformance': 'ci-kubernetes-node-kubelet-*',
