@@ -9,6 +9,7 @@ load(
 
 go_binary(
     name = "deck",
+    importpath = "k8s.io/test-infra/prow/cmd/deck",
     library = ":go_default_library",
 )
 
@@ -18,6 +19,7 @@ go_test(
         "jobs_test.go",
         "main_test.go",
     ],
+    importpath = "k8s.io/test-infra/prow/cmd/deck",
     library = ":go_default_library",
     deps = [
         "//prow/kube:go_default_library",
@@ -31,6 +33,7 @@ go_library(
         "jobs.go",
         "main.go",
     ],
+    importpath = "k8s.io/test-infra/prow/cmd/deck",
     deps = [
         "//prow/config:go_default_library",
         "//prow/kube:go_default_library",

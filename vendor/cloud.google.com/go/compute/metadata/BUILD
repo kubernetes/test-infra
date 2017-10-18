@@ -8,6 +8,7 @@ load(
 go_library(
     name = "go_default_library",
     srcs = ["metadata.go"],
+    importpath = "cloud.google.com/go/compute/metadata",
     deps = [
         "//vendor/cloud.google.com/go/internal:go_default_library",
         "//vendor/golang.org/x/net/context:go_default_library",

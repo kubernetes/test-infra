@@ -8,6 +8,7 @@ load(
 go_library(
     name = "go_default_library",
     srcs = ["fakeslack.go"],
+    importpath = "k8s.io/test-infra/prow/slack/fakeslack",
 )
 
 filegroup(

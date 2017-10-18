@@ -14,6 +14,7 @@ go_library(
         "jwt.go",
         "sdk.go",
     ],
+    importpath = "golang.org/x/oauth2/google",
     deps = [
         "//vendor/cloud.google.com/go/compute/metadata:go_default_library",
         "//vendor/golang.org/x/net/context:go_default_library",

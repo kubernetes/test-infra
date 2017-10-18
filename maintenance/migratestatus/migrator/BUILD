@@ -9,6 +9,7 @@ load(
 go_test(
     name = "go_default_test",
     srcs = ["migrator_test.go"],
+    importpath = "k8s.io/test-infra/maintenance/migratestatus/migrator",
     library = ":go_default_library",
     deps = ["//vendor/github.com/google/go-github/github:go_default_library"],
 )
@@ -16,6 +17,7 @@ go_test(
 go_library(
     name = "go_default_library",
     srcs = ["migrator.go"],
+    importpath = "k8s.io/test-infra/maintenance/migratestatus/migrator",
     deps = [
         "//ghclient:go_default_library",
         "//vendor/github.com/golang/glog:go_default_library",

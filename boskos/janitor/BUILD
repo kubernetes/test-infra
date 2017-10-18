@@ -9,12 +9,14 @@ load(
 
 go_binary(
     name = "janitor",
+    importpath = "k8s.io/test-infra/boskos/janitor",
     library = ":go_default_library",
 )
 
 go_library(
     name = "go_default_library",
     srcs = ["janitor.go"],
+    importpath = "k8s.io/test-infra/boskos/janitor",
     deps = [
         "//boskos/client:go_default_library",
         "//boskos/common:go_default_library",
@@ -38,6 +40,7 @@ filegroup(
 go_test(
     name = "go_default_test",
     srcs = ["janitor_test.go"],
+    importpath = "k8s.io/test-infra/boskos/janitor",
     library = ":go_default_library",
     deps = ["//boskos/common:go_default_library"],
 )

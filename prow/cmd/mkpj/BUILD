@@ -10,12 +10,14 @@ go_binary(
     name = "mkpj",
     args = ["--config-path=$(location //prow:config.yaml)"],
     data = ["//prow:config.yaml"],
+    importpath = "k8s.io/test-infra/prow/cmd/mkpj",
     library = ":go_default_library",
 )
 
 go_library(
     name = "go_default_library",
     srcs = ["main.go"],
+    importpath = "k8s.io/test-infra/prow/cmd/mkpj",
     deps = [
         "//prow/config:go_default_library",
         "//prow/kube:go_default_library",

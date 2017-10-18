@@ -15,6 +15,7 @@ go_library(
         "int64.go",
         "string.go",
     ],
+    importpath = "k8s.io/kubernetes/pkg/util/sets",
 )
 
 filegroup(

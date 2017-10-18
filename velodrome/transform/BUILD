@@ -9,6 +9,7 @@ load(
 
 go_binary(
     name = "transform",
+    importpath = "k8s.io/test-infra/velodrome/transform",
     library = ":go_default_library",
 )
 
@@ -18,6 +19,7 @@ go_test(
         "fetcher_test.go",
         "influx_test.go",
     ],
+    importpath = "k8s.io/test-infra/velodrome/transform",
     library = ":go_default_library",
     deps = [
         "//velodrome/sql:go_default_library",
@@ -32,6 +34,7 @@ go_library(
         "influx.go",
         "transform.go",
     ],
+    importpath = "k8s.io/test-infra/velodrome/transform",
     deps = [
         "//velodrome/sql:go_default_library",
         "//velodrome/transform/plugins:go_default_library",

@@ -11,6 +11,7 @@ load(
 go_test(
     name = "go_default_test",
     srcs = ["size_test.go"],
+    importpath = "k8s.io/test-infra/prow/plugins/size",
     library = ":go_default_library",
     tags = ["automanaged"],
     deps = [
@@ -22,6 +23,7 @@ go_test(
 go_library(
     name = "go_default_library",
     srcs = ["size.go"],
+    importpath = "k8s.io/test-infra/prow/plugins/size",
     tags = ["automanaged"],
     deps = [
         "//prow/genfiles:go_default_library",

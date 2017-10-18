@@ -8,6 +8,7 @@ load(
 go_library(
     name = "go_default_library",
     srcs = ["jwt.go"],
+    importpath = "golang.org/x/oauth2/jwt",
     deps = [
         "//vendor/golang.org/x/net/context:go_default_library",
         "//vendor/golang.org/x/oauth2:go_default_library",

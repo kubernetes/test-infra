@@ -41,12 +41,14 @@ load(
 
 go_binary(
     name = "commenter",
+    importpath = "k8s.io/test-infra/experiment/commenter",
     library = ":go_default_library",
 )
 
 go_library(
     name = "go_default_library",
     srcs = ["main.go"],
+    importpath = "k8s.io/test-infra/experiment/commenter",
     deps = ["//prow/github:go_default_library"],
 )
 
@@ -66,6 +68,7 @@ filegroup(
 go_test(
     name = "go_default_test",
     srcs = ["main_test.go"],
+    importpath = "k8s.io/test-infra/experiment/commenter",
     library = ":go_default_library",
     deps = ["//prow/github:go_default_library"],
 )

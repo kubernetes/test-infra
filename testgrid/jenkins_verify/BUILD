@@ -8,12 +8,14 @@ load(
 
 go_binary(
     name = "jenkins_verify",
+    importpath = "k8s.io/test-infra/testgrid/jenkins_verify",
     library = ":go_default_library",
 )
 
 go_library(
     name = "go_default_library",
     srcs = ["jenkins_validate.go"],
+    importpath = "k8s.io/test-infra/testgrid/jenkins_verify",
     deps = [
         "//prow/config:go_default_library",
         "//testgrid/config/yaml2proto:go_default_library",

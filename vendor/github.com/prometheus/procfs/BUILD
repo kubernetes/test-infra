@@ -18,6 +18,7 @@ go_library(
         "proc_stat.go",
         "stat.go",
     ],
+    importpath = "github.com/prometheus/procfs",
 )
 
 filegroup(

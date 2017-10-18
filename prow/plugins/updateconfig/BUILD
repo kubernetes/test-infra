@@ -9,6 +9,7 @@ load(
 go_test(
     name = "go_default_test",
     srcs = ["updateconfig_test.go"],
+    importpath = "k8s.io/test-infra/prow/plugins/updateconfig",
     library = ":go_default_library",
     deps = [
         "//prow/github:go_default_library",
@@ -21,6 +22,7 @@ go_test(
 go_library(
     name = "go_default_library",
     srcs = ["updateconfig.go"],
+    importpath = "k8s.io/test-infra/prow/plugins/updateconfig",
     deps = [
         "//prow/github:go_default_library",
         "//prow/kube:go_default_library",

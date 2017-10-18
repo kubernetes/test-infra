@@ -9,6 +9,7 @@ load(
 
 go_binary(
     name = "boskos",
+    importpath = "k8s.io/test-infra/boskos",
     library = ":go_default_library",
 )
 
@@ -16,6 +17,7 @@ go_test(
     name = "go_default_test",
     srcs = ["boskos_test.go"],
     data = ["resources.json"],
+    importpath = "k8s.io/test-infra/boskos",
     library = ":go_default_library",
     deps = [
         "//boskos/common:go_default_library",
@@ -26,6 +28,7 @@ go_test(
 go_library(
     name = "go_default_library",
     srcs = ["boskos.go"],
+    importpath = "k8s.io/test-infra/boskos",
     deps = [
         "//boskos/ranch:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",

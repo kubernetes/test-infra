@@ -8,12 +8,14 @@ load(
 
 go_binary(
     name = "migratestatus",
+    importpath = "k8s.io/test-infra/maintenance/migratestatus",
     library = ":go_default_library",
 )
 
 go_library(
     name = "go_default_library",
     srcs = ["migratestatus.go"],
+    importpath = "k8s.io/test-infra/maintenance/migratestatus",
     deps = [
         "//maintenance/migratestatus/migrator:go_default_library",
         "//vendor/github.com/golang/glog:go_default_library",

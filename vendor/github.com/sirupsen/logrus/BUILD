@@ -33,6 +33,7 @@ go_library(
         ],
         "//conditions:default": [],
     }),
+    importpath = "github.com/sirupsen/logrus",
 )
 
 filegroup(

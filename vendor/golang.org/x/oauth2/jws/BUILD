@@ -8,6 +8,7 @@ load(
 go_library(
     name = "go_default_library",
     srcs = ["jws.go"],
+    importpath = "golang.org/x/oauth2/jws",
 )
 
 filegroup(

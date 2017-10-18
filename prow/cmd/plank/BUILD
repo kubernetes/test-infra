@@ -8,12 +8,14 @@ load(
 
 go_binary(
     name = "plank",
+    importpath = "k8s.io/test-infra/prow/cmd/plank",
     library = ":go_default_library",
 )
 
 go_library(
     name = "go_default_library",
     srcs = ["main.go"],
+    importpath = "k8s.io/test-infra/prow/cmd/plank",
     deps = [
         "//prow/config:go_default_library",
         "//prow/github:go_default_library",

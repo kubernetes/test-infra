@@ -8,6 +8,7 @@ load(
 go_library(
     name = "go_default_library",
     srcs = ["iterator.go"],
+    importpath = "google.golang.org/api/iterator",
 )
 
 filegroup(

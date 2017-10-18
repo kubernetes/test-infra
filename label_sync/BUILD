@@ -11,6 +11,7 @@ load(
 
 go_binary(
     name = "label_sync",
+    importpath = "k8s.io/test-infra/label_sync",
     library = ":go_default_library",
     tags = ["automanaged"],
 )
@@ -21,6 +22,7 @@ go_test(
     data = [
         "//label_sync:test_examples",
     ],
+    importpath = "k8s.io/test-infra/label_sync",
     library = ":go_default_library",
     tags = ["automanaged"],
     deps = ["//prow/github:go_default_library"],
@@ -29,6 +31,7 @@ go_test(
 go_library(
     name = "go_default_library",
     srcs = ["main.go"],
+    importpath = "k8s.io/test-infra/label_sync",
     tags = ["automanaged"],
     deps = [
         "//prow/github:go_default_library",

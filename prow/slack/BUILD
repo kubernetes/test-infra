@@ -8,6 +8,7 @@ load(
 go_library(
     name = "go_default_library",
     srcs = ["client.go"],
+    importpath = "k8s.io/test-infra/prow/slack",
 )
 
 filegroup(

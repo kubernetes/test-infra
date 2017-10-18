@@ -12,6 +12,7 @@ go_test(
         "model_test.go",
         "mysql_test.go",
     ],
+    importpath = "k8s.io/test-infra/velodrome/sql",
     library = ":go_default_library",
 )
 
@@ -21,6 +22,7 @@ go_library(
         "model.go",
         "mysql.go",
     ],
+    importpath = "k8s.io/test-infra/velodrome/sql",
     deps = [
         "//vendor/github.com/jinzhu/gorm:go_default_library",
         "//vendor/github.com/spf13/cobra:go_default_library",

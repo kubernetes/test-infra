@@ -9,12 +9,14 @@ load(
 
 go_binary(
     name = "splice",
+    importpath = "k8s.io/test-infra/prow/cmd/splice",
     library = ":go_default_library",
 )
 
 go_test(
     name = "go_default_test",
     srcs = ["main_test.go"],
+    importpath = "k8s.io/test-infra/prow/cmd/splice",
     library = ":go_default_library",
     deps = [
         "//prow/config:go_default_library",
@@ -25,6 +27,7 @@ go_test(
 go_library(
     name = "go_default_library",
     srcs = ["main.go"],
+    importpath = "k8s.io/test-infra/prow/cmd/splice",
     deps = [
         "//prow/config:go_default_library",
         "//prow/kube:go_default_library",

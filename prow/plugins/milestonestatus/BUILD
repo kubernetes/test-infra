@@ -3,6 +3,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 go_library(
     name = "go_default_library",
     srcs = ["milestonestatus.go"],
+    importpath = "k8s.io/test-infra/prow/plugins/milestonestatus",
     visibility = ["//visibility:public"],
     deps = [
         "//prow/github:go_default_library",
@@ -28,6 +29,7 @@ filegroup(
 go_test(
     name = "go_default_test",
     srcs = ["milestonestatus_test.go"],
+    importpath = "k8s.io/test-infra/prow/plugins/milestonestatus",
     library = ":go_default_library",
     deps = [
         "//prow/github:go_default_library",

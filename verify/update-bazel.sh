@@ -22,18 +22,19 @@ TMP_GOPATH=$(mktemp -d)
 
 "${TESTINFRA_ROOT}/verify/go_install_from_commit.sh" \
   github.com/kubernetes/repo-infra/kazel \
-  e9d1a126ef355ff5d38e20612c889b07728225a4 \
+  e26fc85d14a1d3dc25569831acc06919673c545a \
   "${TMP_GOPATH}"
 
 # The gazelle commit should match the rules_go commit in the WORKSPACE file.
 "${TESTINFRA_ROOT}/verify/go_install_from_commit.sh" \
   github.com/bazelbuild/rules_go/go/tools/gazelle/gazelle \
-  43a3bda3eb97e7bcd86f564a1e0a4b008d6c407c \
+  c72631a220406c4fae276861ee286aaec82c5af2 \
   "${TMP_GOPATH}"
 
 "${TMP_GOPATH}/bin/gazelle" fix \
   -build_file_name=BUILD,BUILD.bazel \
   -external=vendored \
+  -proto=legacy \
   -mode=fix \
   -repo_root="${TESTINFRA_ROOT}"
 

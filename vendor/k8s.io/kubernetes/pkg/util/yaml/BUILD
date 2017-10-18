@@ -8,6 +8,7 @@ load(
 go_library(
     name = "go_default_library",
     srcs = ["decoder.go"],
+    importpath = "k8s.io/kubernetes/pkg/util/yaml",
     deps = [
         "//vendor/github.com/ghodss/yaml:go_default_library",
         "//vendor/github.com/golang/glog:go_default_library",

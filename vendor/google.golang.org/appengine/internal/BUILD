@@ -19,6 +19,7 @@ go_library(
         "net.go",
         "transaction.go",
     ],
+    importpath = "google.golang.org/appengine/internal",
     deps = [
         "//vendor/github.com/golang/protobuf/proto:go_default_library",
         "//vendor/golang.org/x/net/context:go_default_library",

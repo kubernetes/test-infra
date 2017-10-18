@@ -14,6 +14,7 @@ go_library(
         "logs.go",
         "main.go",
     ],
+    importpath = "k8s.io/test-infra/prow/cmd/jenkins-operator",
     tags = ["automanaged"],
     deps = [
         "//prow/config:go_default_library",
@@ -40,6 +41,7 @@ filegroup(
 
 go_binary(
     name = "jenkins-operator",
+    importpath = "k8s.io/test-infra/prow/cmd/jenkins-operator",
     library = ":go_default_library",
     tags = ["automanaged"],
 )

@@ -8,6 +8,7 @@ load(
 go_library(
     name = "go_default_library",
     srcs = ["metadata.go"],
+    importpath = "google.golang.org/grpc/metadata",
     deps = ["//vendor/golang.org/x/net/context:go_default_library"],
 )
 

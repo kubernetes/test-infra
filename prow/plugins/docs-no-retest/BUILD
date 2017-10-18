@@ -3,6 +3,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 go_library(
     name = "go_default_library",
     srcs = ["docs-no-retest.go"],
+    importpath = "k8s.io/test-infra/prow/plugins/docs-no-retest",
     visibility = ["//visibility:public"],
     deps = [
         "//prow/github:go_default_library",
@@ -13,6 +14,7 @@ go_library(
 go_test(
     name = "go_default_test",
     srcs = ["docs-no-retest_test.go"],
+    importpath = "k8s.io/test-infra/prow/plugins/docs-no-retest",
     library = ":go_default_library",
     deps = [
         "//prow/github:go_default_library",
