@@ -321,7 +321,8 @@ func (p *proxy) ListQueues(r *http.Request) (*http.Response, error) {
 		}
 		defer resp.Body.Close()
 		if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-			return nil, fmt.Errorf("response not 2XX??: %s", resp.Status)
+			log.Printf("Cannot list from %s: %s", destURL, resp.Status)
+			continue
 		}
 		data, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
