@@ -301,10 +301,15 @@ func (pa *PluginAgent) Load(path string) error {
 		logrus.Warn("no plugins specified-- check syntax?")
 	}
 
+	// Defaulting should run before validation.
+	np.setDefaults()
 	if err := validatePlugins(np.Plugins); err != nil {
 		return err
 	}
-	np.setDefaults()
+	if err := validateExternalPlugins(np.ExternalPlugins); err != nil {
+		return err
+	}
+
 	pa.Set(np)
 	return nil
 }
@@ -318,7 +323,7 @@ func (pa *PluginAgent) Config() *Configuration {
 // validatePlugins will return error if
 // there are unknown or duplicated plugins.
 func validatePlugins(plugins map[string][]string) error {
-	errors := []string{}
+	var errors []string
 	for _, configuration := range plugins {
 		for _, plugin := range configuration {
 			if _, ok := allPlugins[plugin]; !ok {
@@ -342,7 +347,7 @@ func validatePlugins(plugins map[string][]string) error {
 }
 
 func findDuplicatedPluginConfig(repoConfig, orgConfig []string) []string {
-	dupes := []string{}
+	var dupes []string
 	for _, repoPlugin := range repoConfig {
 		for _, orgPlugin := range orgConfig {
 			if repoPlugin == orgPlugin {
@@ -352,6 +357,36 @@ func findDuplicatedPluginConfig(repoConfig, orgConfig []string) []string {
 	}
 
 	return dupes
+}
+
+func validateExternalPlugins(pluginMap map[string][]ExternalPlugin) error {
+	var errors []string
+
+	for repo, plugins := range pluginMap {
+		if !strings.Contains(repo, "/") {
+			continue
+		}
+		org := strings.Split(repo, "/")[0]
+
+		var orgConfig []string
+		for _, p := range pluginMap[org] {
+			orgConfig = append(orgConfig, p.Name)
+		}
+
+		var repoConfig []string
+		for _, p := range plugins {
+			repoConfig = append(repoConfig, p.Name)
+		}
+
+		if dupes := findDuplicatedPluginConfig(repoConfig, orgConfig); len(dupes) > 0 {
+			errors = append(errors, fmt.Sprintf("external plugins %v are duplicated for %s and %s", dupes, repo, org))
+		}
+	}
+
+	if len(errors) > 0 {
+		return fmt.Errorf("invalid plugin configuration:\n\t%v", strings.Join(errors, "\n\t"))
+	}
+	return nil
 }
 
 // Set attempts to set the plugins that are enabled on repos. Plugins are listed
