@@ -9960,7 +9960,7 @@
   },
   "pull-kubernetes-e2e-gce": {
     "args": [
-      "--build=bazel",
+      "--build",
       "--cluster=",
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/pull-kubernetes-e2e.env",
@@ -9970,6 +9970,7 @@
       "--gcp-project=k8s-jkns-pr-gce-etcd3",
       "--gcp-zone=us-central1-f",
       "--ginkgo-parallel=30",
+      "--mode=docker",
       "--provider=gce",
       "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce",
       "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
