@@ -3160,7 +3160,7 @@ dashboards:
     test_group_name: periodic-multi-platform-kubeadm-packet-arm64
 
 
-- name: sig-multicluster-gce
+- name: sig-multicluster-federation-gce-old
   dashboard_tab:
   - name: gce-1.6
     test_group_name: ci-kubernetes-e2e-gce-federation-release-1-6
@@ -3176,6 +3176,9 @@ dashboards:
     test_group_name: ci-kubernetes-federation-build-1.7
   - name: build-1.8
     test_group_name: ci-kubernetes-federation-build-1.8
+
+- name: sig-multicluster-federation-gce
+  dashboard_tab:
 
 - name: sig-instrumentation
   dashboard_tab:
@@ -3825,6 +3828,11 @@ dashboard_groups:
   - sig-cluster-lifecycle-1.8-upgrade-skew
   - sig-cluster-lifecycle-1.6-upgrade-skew
   - sig-cluster-lifecycle-multi-platform
+
+- name: sig-multicluster
+  dashboard_names:
+  - sig-multicluster-federation-gce-old
+  - sig-multicluster-federation-gce
 
 - name: sig-node
   dashboard_names:
