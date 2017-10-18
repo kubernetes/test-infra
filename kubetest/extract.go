@@ -104,6 +104,10 @@ func (l *extractStrategies) Set(value string) error {
 
 }
 
+func (l *extractStrategies) Type() string {
+	return "exactStrategies"
+}
+
 // True when this kubetest invocation wants to download and extract a release.
 func (l *extractStrategies) Enabled() bool {
 	return len(*l) > 0

@@ -50,6 +50,10 @@ func (b *buildStrategy) Set(value string) error {
 	return fmt.Errorf("Bad build strategy: %v (use: bazel, quick, release)", value)
 }
 
+func (b *buildStrategy) Type() string {
+	return "buildStrategy"
+}
+
 // True when this kubetest invocation wants to build a release
 func (b *buildStrategy) Enabled() bool {
 	return *b != ""

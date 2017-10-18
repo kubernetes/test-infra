@@ -53,6 +53,10 @@ func (s *stageStrategy) Set(value string) error {
 	return nil
 }
 
+func (s *stageStrategy) Type() string {
+	return "stageStrategy"
+}
+
 // True when this kubetest invocation wants to stage the release
 func (s *stageStrategy) Enabled() bool {
 	return s.bucket != ""
