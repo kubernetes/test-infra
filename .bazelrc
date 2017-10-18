@@ -1,3 +1,7 @@
 build --workspace_status_command=./print-workspace-status.sh
 run --workspace_status_command=./print-workspace-status.sh
 test --features=race --test_output=errors
+
+# Build static binaries
+build --features=static
+run --features=static
