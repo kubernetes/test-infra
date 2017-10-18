@@ -8894,7 +8894,8 @@
       "--provider=gce",
       "--test=false",
       "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --gather-resource-usage=true --gather-metrics-at-teardown=true --output-print-type=json",
-      "--timeout=1080m"
+      "--timeout=1080m",
+      "--use-logexporter"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
