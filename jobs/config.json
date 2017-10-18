@@ -9882,6 +9882,15 @@
       "UNKNOWN"
     ]
   },
+  "pull-cluster-registry-bazel": {
+    "args": [
+      "./hack/bazel-test.sh"
+    ],
+    "scenario": "execute",
+    "sigOwners": [
+      "sig-multicluster"
+    ]
+  },
   "pull-cri-containerd-build": {
     "args": [
       "./test/e2e_node/build.sh"
