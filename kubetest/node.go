@@ -17,7 +17,9 @@ limitations under the License.
 package main
 
 import (
+	"errors"
 	"log"
+	"time"
 )
 
 type nodeDeploy struct{}
@@ -48,4 +50,8 @@ func (n nodeDeploy) TestSetup() error {
 func (n nodeDeploy) Down() error {
 	log.Print("Noop - Node Down()")
 	return nil
+}
+
+func (n nodeDeploy) GetClusterCreated(gcpProject string) (time.Time, error) {
+	return time.Time{}, errors.New("not implemented")
 }

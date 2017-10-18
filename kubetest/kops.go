@@ -18,6 +18,7 @@ package main
 
 import (
 	"bytes"
+	"errors"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -312,4 +313,8 @@ func (k kops) Down() error {
 		return nil
 	}
 	return finishRunning(exec.Command(k.path, "delete", "cluster", k.cluster, "--yes"))
+}
+
+func (k kops) GetClusterCreated(gcpProject string) (time.Time, error) {
+	return time.Time{}, errors.New("not implemented")
 }

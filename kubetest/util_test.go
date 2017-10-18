@@ -668,3 +668,56 @@ func TestExtractField(t *testing.T) {
 		}
 	}
 }
+
+func TestGetLatestClusterUpTime(t *testing.T) {
+	const magicTime = "2011-11-11T11:11:11.111-11:00"
+	myTime, err := time.Parse(time.RFC3339, magicTime)
+	if err != nil {
+		t.Fatalf("Fail parsing time: %v", err)
+	}
+
+	cases := []struct {
+		name         string
+		body         string
+		expectedTime time.Time
+		expectErr    bool
+	}{
+		{
+			name:      "bad json",
+			body:      "abc",
+			expectErr: true,
+		},
+		{
+			name:         "empty json",
+			body:         "[]",
+			expectedTime: time.Time{},
+		},
+		{
+			name:         "valid json",
+			body:         "[{\"name\": \"foo\", \"creationTimestamp\": \"2011-11-11T11:11:11.111-11:00\"}]",
+			expectedTime: myTime,
+		},
+		{
+			name:      "bad time format",
+			body:      "[{\"name\": \"foo\", \"creationTimestamp\": \"blah-blah\"}]",
+			expectErr: true,
+		},
+		{
+			name:         "multiple entries",
+			body:         "[{\"name\": \"foo\", \"creationTimestamp\": \"2011-11-11T11:11:11.111-11:00\"}, {\"name\": \"bar\", \"creationTimestamp\": \"2010-10-10T11:11:11.111-11:00\"}]",
+			expectedTime: myTime,
+		},
+	}
+	for _, tc := range cases {
+		time, err := getLatestClusterUpTime(tc.body)
+		if err != nil && !tc.expectErr {
+			t.Errorf("%s: got unexpected error %v", tc.name, err)
+		}
+		if err == nil && tc.expectErr {
+			t.Errorf("%s: expect error but did not get one", tc.name)
+		}
+		if !tc.expectErr && !time.Equal(tc.expectedTime) {
+			t.Errorf("%s: expect time %v, but got %v", tc.name, tc.expectedTime, time)
+		}
+	}
+}

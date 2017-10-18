@@ -18,6 +18,7 @@ package main
 
 import (
 	"bytes"
+	"errors"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -301,6 +302,10 @@ func (k *kubernetesAnywhere) Down() error {
 		return nil
 	}
 	return finishRunning(exec.Command("make", "-C", k.path, "FORCE_DESTROY=y", "destroy"))
+}
+
+func (k *kubernetesAnywhere) GetClusterCreated(gcpProject string) (time.Time, error) {
+	return time.Time{}, errors.New("not implemented")
 }
 
 const defaultConfigFile = ".config"
