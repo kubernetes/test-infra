@@ -154,7 +154,7 @@ func (c *Controller) Sync() error {
 	}
 	pm := map[string]kube.Pod{}
 	for _, pod := range pods {
-		pm[pod.Metadata.Name] = pod
+		pm[pod.ObjectMeta.Name] = pod
 	}
 
 	var k8sJobs []kube.ProwJob
@@ -229,7 +229,7 @@ func (c *Controller) terminateDupes(pjs []kube.ProwJob, pm map[string]kube.Pod) 
 		// newer commits in Github pull requests.
 		if c.ca.Config().Plank.AllowCancellations {
 			if pod, exists := pm[toCancel.Metadata.Name]; exists {
-				if err := c.pkc.DeletePod(pod.Metadata.Name); err != nil {
+				if err := c.pkc.DeletePod(pod.ObjectMeta.Name); err != nil {
 					logrus.Warningf("Cannot cancel pod for prowjob %q: %v", toCancel.Metadata.Name, err)
 				}
 			}
@@ -368,7 +368,7 @@ func (c *Controller) syncNonPendingJob(pj kube.ProwJob, pm map[string]kube.Pod, 
 		}
 	} else {
 		id = getPodBuildID(&pod)
-		pn = pod.Metadata.Name
+		pn = pod.ObjectMeta.Name
 	}
 
 	if pj.Status.State == kube.TriggeredState {
@@ -403,7 +403,7 @@ func (c *Controller) startPod(pj kube.ProwJob) (string, string, error) {
 	if err != nil {
 		return "", "", err
 	}
-	return buildID, actual.Metadata.Name, nil
+	return buildID, actual.ObjectMeta.Name, nil
 }
 
 func (c *Controller) getBuildID(name string) (string, error) {
@@ -439,7 +439,7 @@ func getPodBuildID(pod *kube.Pod) string {
 			return env.Value
 		}
 	}
-	logrus.Warningf("BUILD_NUMBER was not found in pod %q: streaming logs from deck will not work", pod.Metadata.Name)
+	logrus.Warningf("BUILD_NUMBER was not found in pod %q: streaming logs from deck will not work", pod.ObjectMeta.Name)
 	return ""
 }
 

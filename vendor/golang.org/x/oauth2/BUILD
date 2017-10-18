@@ -29,10 +29,7 @@ filegroup(
     name = "all-srcs",
     srcs = [
         ":package-srcs",
-        "//vendor/golang.org/x/oauth2/google:all-srcs",
         "//vendor/golang.org/x/oauth2/internal:all-srcs",
-        "//vendor/golang.org/x/oauth2/jws:all-srcs",
-        "//vendor/golang.org/x/oauth2/jwt:all-srcs",
     ],
     tags = ["automanaged"],
 )
