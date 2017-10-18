@@ -150,7 +150,7 @@ func defineFlags() *options {
 	flag.BoolVar(&o.up, "up", false, "If true, start the the e2e cluster. If cluster is already up, recreate it.")
 	flag.StringVar(&o.upgradeArgs, "upgrade_args", "", "If set, run upgrade tests before other tests")
 
-	flag.BoolVar(&verbose, "v", false, "If true, print all command output.")
+	flag.BoolVarP(&verbose, "v", "v", false, "If true, print all command output.")
 	return &o
 }
 
