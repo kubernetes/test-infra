@@ -44,6 +44,17 @@
       "sig-node"
     ]
   },
+  "ci-federation-build": {
+    "args": [
+      "--fast",
+      "--release=kubernetes-federation-release",
+      "--release-kind=federation"
+    ],
+    "scenario": "kubernetes_build",
+    "sigOwners": [
+      "sig-multicluster"
+    ]
+  },
   "ci-kops-build": {
     "args": [
       "make",
