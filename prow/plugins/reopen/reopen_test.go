@@ -48,7 +48,7 @@ func TestOpenComment(t *testing.T) {
 	// "a" is the author, "r1", and "r2" are reviewers.
 	var testcases = []struct {
 		name          string
-		action        github.IssueCommentEventAction
+		action        github.GenericCommentEventAction
 		state         string
 		body          string
 		commenter     string
@@ -57,7 +57,7 @@ func TestOpenComment(t *testing.T) {
 	}{
 		{
 			name:          "non-open comment",
-			action:        github.IssueCommentActionCreated,
+			action:        github.GenericCommentActionCreated,
 			state:         "open",
 			body:          "does not matter",
 			commenter:     "o",
@@ -66,7 +66,7 @@ func TestOpenComment(t *testing.T) {
 		},
 		{
 			name:          "re-open by author",
-			action:        github.IssueCommentActionCreated,
+			action:        github.GenericCommentActionCreated,
 			state:         "closed",
 			body:          "/reopen",
 			commenter:     "a",
@@ -75,7 +75,7 @@ func TestOpenComment(t *testing.T) {
 		},
 		{
 			name:          "re-open by reviewer",
-			action:        github.IssueCommentActionCreated,
+			action:        github.GenericCommentActionCreated,
 			state:         "closed",
 			body:          "/reopen",
 			commenter:     "r1",
@@ -84,7 +84,7 @@ func TestOpenComment(t *testing.T) {
 		},
 		{
 			name:          "re-open by reviewer, trailing space.",
-			action:        github.IssueCommentActionCreated,
+			action:        github.GenericCommentActionCreated,
 			state:         "closed",
 			body:          "/reopen \r",
 			commenter:     "r1",
@@ -93,7 +93,7 @@ func TestOpenComment(t *testing.T) {
 		},
 		{
 			name:          "re-open edited by author",
-			action:        github.IssueCommentActionEdited,
+			action:        github.GenericCommentActionEdited,
 			state:         "closed",
 			body:          "/reopen",
 			commenter:     "a",
@@ -102,7 +102,7 @@ func TestOpenComment(t *testing.T) {
 		},
 		{
 			name:          "open by author on already open issue",
-			action:        github.IssueCommentActionCreated,
+			action:        github.GenericCommentActionCreated,
 			state:         "open",
 			body:          "/reopen",
 			commenter:     "a",
@@ -111,7 +111,7 @@ func TestOpenComment(t *testing.T) {
 		},
 		{
 			name:          "re-open by other person",
-			action:        github.IssueCommentActionCreated,
+			action:        github.GenericCommentActionCreated,
 			state:         "closed",
 			body:          "/reopen",
 			commenter:     "o",
@@ -121,20 +121,16 @@ func TestOpenComment(t *testing.T) {
 	}
 	for _, tc := range testcases {
 		fc := &fakeClient{}
-		ice := github.IssueCommentEvent{
-			Action: tc.action,
-			Comment: github.IssueComment{
-				Body: tc.body,
-				User: github.User{Login: tc.commenter},
-			},
-			Issue: github.Issue{
-				User:      github.User{Login: "a"},
-				Number:    5,
-				State:     tc.state,
-				Assignees: []github.User{{Login: "a"}, {Login: "r1"}, {Login: "r2"}},
-			},
+		e := &github.GenericCommentEvent{
+			Action:      tc.action,
+			IssueState:  tc.state,
+			Body:        tc.body,
+			User:        github.User{Login: tc.commenter},
+			Number:      5,
+			Assignees:   []github.User{{Login: "a"}, {Login: "r1"}, {Login: "r2"}},
+			IssueAuthor: github.User{Login: "a"},
 		}
-		if err := handle(fc, logrus.WithField("plugin", pluginName), ice); err != nil {
+		if err := handle(fc, logrus.WithField("plugin", pluginName), e); err != nil {
 			t.Errorf("For case %s, didn't expect error from handle: %v", tc.name, err)
 			continue
 		}

@@ -39,7 +39,7 @@ const (
 )
 
 type Logger interface {
-	Printf(s string, v ...interface{})
+	Debugf(s string, v ...interface{})
 }
 
 // Client interacts with the Kubernetes api-server.
@@ -69,10 +69,32 @@ func (c *Client) log(methodName string, args ...interface{}) {
 	for _, arg := range args {
 		as = append(as, fmt.Sprintf("%v", arg))
 	}
-	c.Logger.Printf("%s(%s)", methodName, strings.Join(as, ", "))
+	c.Logger.Debugf("%s(%s)", methodName, strings.Join(as, ", "))
 }
 
-type ConflictError error
+type ConflictError struct {
+	e error
+}
+
+func (e ConflictError) Error() string {
+	return e.e.Error()
+}
+
+func NewConflictError(e error) ConflictError {
+	return ConflictError{e: e}
+}
+
+type UnprocessableEntityError struct {
+	e error
+}
+
+func (e UnprocessableEntityError) Error() string {
+	return e.e.Error()
+}
+
+func NewUnprocessableEntityError(e error) UnprocessableEntityError {
+	return UnprocessableEntityError{e: e}
+}
 
 type request struct {
 	method      string
@@ -123,7 +145,7 @@ func (c *Client) requestRetryStream(r *request) (io.ReadCloser, error) {
 		return nil, err
 	}
 	if resp.StatusCode == 409 {
-		return nil, ConflictError(fmt.Errorf("body cannot be streamed"))
+		return nil, NewConflictError(fmt.Errorf("body cannot be streamed"))
 	} else if resp.StatusCode < 200 || resp.StatusCode > 299 {
 		return nil, fmt.Errorf("response has status \"%s\"", resp.Status)
 	}
@@ -146,7 +168,9 @@ func (c *Client) requestRetry(r *request) ([]byte, error) {
 		return nil, err
 	}
 	if resp.StatusCode == 409 {
-		return nil, ConflictError(fmt.Errorf("body: %s", string(rb)))
+		return nil, NewConflictError(fmt.Errorf("body: %s", string(rb)))
+	} else if resp.StatusCode == 422 {
+		return nil, NewUnprocessableEntityError(fmt.Errorf("body: %s", string(rb)))
 	} else if resp.StatusCode < 200 || resp.StatusCode > 299 {
 		return nil, fmt.Errorf("response has status \"%s\" and body \"%s\"", resp.Status, string(rb))
 	}

@@ -344,6 +344,7 @@ class GSUtil(object):
         """Upload artifacts to the specified path."""
         # Upload artifacts
         if not os.path.isdir(artifacts):
+            logging.warning('Artifacts dir %s is missing.', artifacts)
             return
         try:
             # If remote path exists, it will create .../_artifacts subdir instead
@@ -464,6 +465,8 @@ def finish(gsutil, paths, success, artifacts, build, version, repos, call):
             gsutil.upload_artifacts(gsutil, paths.artifacts, artifacts)
         except subprocess.CalledProcessError:
             logging.warning('Failed to upload artifacts')
+    else:
+        logging.warning('Missing local artifacts : %s', artifacts)
 
     meta = metadata(repos, artifacts, call)
     if not version:
@@ -635,6 +638,7 @@ CLOUDSDK_ENV = 'CLOUDSDK_CONFIG'
 GCE_KEY_ENV = 'JENKINS_GCE_SSH_PRIVATE_KEY_FILE'
 GUBERNATOR = 'https://k8s-gubernator.appspot.com/build'
 HOME_ENV = 'HOME'
+JENKINS_HOME_ENV = 'JENKINS_HOME'
 JOB_ENV = 'JOB_NAME'
 NODE_ENV = 'NODE_NAME'
 SERVICE_ACCOUNT_ENV = 'GOOGLE_APPLICATION_CREDENTIALS'
@@ -734,11 +738,16 @@ def setup_magic_environment(job):
     cwd = os.getcwd()
     # TODO(fejta): jenkins sets WORKSPACE and pieces of our infra expect this
     #              value. Consider doing something else in the future.
-    os.environ[WORKSPACE_ENV] = cwd
-    # TODO(fejta): Previously dockerized-e2e-runner.sh also sets HOME to WORKSPACE,
-    #              probably to minimize leakage between jobs.
-    #              Consider accomplishing this another way.
-    os.environ[HOME_ENV] = cwd
+    # Furthermore, in the Jenkins and Prow environments, this is already set
+    # to something reasonable, but using cwd will likely cause all sorts of
+    # problems. Thus, only set this if we really need to.
+    if WORKSPACE_ENV not in os.environ:
+        os.environ[WORKSPACE_ENV] = cwd
+    # By default, Jenkins sets HOME to JENKINS_HOME, which is shared by all
+    # jobs. To avoid collisions, set it to the cwd instead, but only when
+    # running on Jenkins.
+    if os.environ.get(HOME_ENV, None) == os.environ.get(JENKINS_HOME_ENV, None):
+        os.environ[HOME_ENV] = cwd
     # TODO(fejta): jenkins sets JOB_ENV and pieces of our infra expect this
     #              value. Consider making everything below here agnostic to the
     #              job name.
@@ -760,13 +769,13 @@ def job_args(args):
     return [os.path.expandvars(a) for a in args]
 
 
-def job_script(job):
+def job_script(job, extra_job_args):
     """Return path to script for job."""
     with open(test_infra('jobs/config.json')) as fp:
         config = json.loads(fp.read())
     job_config = config[job]
     cmd = test_infra('scenarios/%s.py' % job_config['scenario'])
-    return [cmd] + job_args(job_config.get('args', []))
+    return [cmd] + job_args(extra_job_args + job_config.get('args', []))
 
 
 def gubernator_uri(paths):
@@ -919,7 +928,7 @@ def bootstrap(args):
             start(gsutil, paths, started, node(), version, repos)
         success = False
         try:
-            call(job_script(job))
+            call(job_script(job, args.extra_job_args))
             logging.info('PASS: %s', job)
             success = True
         except subprocess.CalledProcessError:
@@ -934,7 +943,11 @@ def bootstrap(args):
         logging.info('Upload result and artifacts...')
         logging.info('Gubernator results at %s', gubernator_uri(paths))
         try:
-            finish(gsutil, paths, success, '_artifacts', build, version, repos, call)
+            finish(
+                gsutil, paths, success,
+                os.path.join(os.getenv(WORKSPACE_ENV, os.getcwd()), '_artifacts'),
+                build, version, repos, call
+                )
         except subprocess.CalledProcessError:  # Still try to upload build log
             success = False
     logging.getLogger('').removeHandler(build_log)
@@ -950,6 +963,8 @@ def bootstrap(args):
 
 def parse_args(arguments=None):
     """Parse arguments or sys.argv[1:]."""
+    if arguments is None:
+        arguments = sys.argv[1:]
     parser = argparse.ArgumentParser()
     parser.add_argument('--root', default='.', help='Root dir to work with')
     parser.add_argument(
@@ -979,7 +994,13 @@ def parse_args(arguments=None):
         '--clean',
         action='store_true',
         help='Clean the git repo before running tests.')
+    # split out args after `--` as job arguments
+    extra_job_args = []
+    if '--' in arguments:
+        index = arguments.index('--')
+        arguments, extra_job_args = arguments[:index], arguments[index+1:]
     args = parser.parse_args(arguments)
+    setattr(args, 'extra_job_args', extra_job_args)
     # --pull is deprecated, use --repo=k8s.io/foo=master:abcd,12:ef12,45:ff65
     setattr(args, 'pull', None)
     # --branch is deprecated, use --repo=k8s.io/foo=master

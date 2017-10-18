@@ -105,6 +105,21 @@ func TestExtractStrategies(t *testing.T) {
 			"https://storage.googleapis.com/kubernetes-release-dev/bazel",
 			"v1.8.0-alpha.3.389+eab2f8f6c19fcb",
 		},
+		{
+			"v1.8.0-alpha.1",
+			"https://storage.googleapis.com/kubernetes-release/release",
+			"v1.8.0-alpha.1",
+		},
+		{
+			"v1.8.0-alpha.2.899+2c624e590f5670",
+			"https://storage.googleapis.com/kubernetes-release-dev/ci",
+			"v1.8.0-alpha.2.899+2c624e590f5670",
+		},
+		{
+			"v1.8.0-gke.0",
+			"https://storage.googleapis.com/kubernetes-release-gke/release",
+			"v1.8.0-gke.0",
+		},
 	}
 
 	var gotURL string

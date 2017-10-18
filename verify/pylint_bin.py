@@ -19,7 +19,6 @@ import sys
 
 import pylint
 
-
 if __name__ == '__main__':
     # Otherwise bazel's symlinks confuse pylint/astroid
     EXTRAS = set()
@@ -32,8 +31,10 @@ if __name__ == '__main__':
             if real != full:
                 EXTRAS.add(os.path.dirname(real))
                 break
-    for extra in EXTRAS:
-        sys.path.append(extra)
+    # also do one level up so foo.bar imports work :shrug:
+    EXTRAS = set(os.path.dirname(e) for e in EXTRAS).union(EXTRAS)
+    # append these to the path
+    sys.path.extend(EXTRAS)
 
     # Otherwise this is the entirety of bin/pylint
     pylint.run_pylint()

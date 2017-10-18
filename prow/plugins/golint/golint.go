@@ -43,7 +43,7 @@ const (
 var lintRe = regexp.MustCompile(`(?mi)^/lint\s*$`)
 
 func init() {
-	plugins.RegisterIssueCommentHandler(pluginName, handleIC)
+	plugins.RegisterGenericCommentHandler(pluginName, handleGenericComment)
 }
 
 type githubClient interface {
@@ -54,8 +54,8 @@ type githubClient interface {
 	ListPullRequestComments(org, repo string, number int) ([]github.ReviewComment, error)
 }
 
-func handleIC(pc plugins.PluginClient, ic github.IssueCommentEvent) error {
-	return handle(pc.GitHubClient, pc.GitClient, pc.Logger, ic)
+func handleGenericComment(pc plugins.PluginClient, e github.GenericCommentEvent) error {
+	return handle(pc.GitHubClient, pc.GitClient, pc.Logger, &e)
 }
 
 // modifiedGoFiles returns a map from filename to patch string for all go files
@@ -73,11 +73,14 @@ func modifiedGoFiles(ghc githubClient, org, repo string, number int, sha string)
 
 	modifiedFiles := make(map[string]string)
 	for _, change := range changes {
-		if strings.HasPrefix(change.Filename, "vendor/") {
+		switch {
+		case strings.HasPrefix(change.Filename, "vendor/"):
 			continue
-		} else if filepath.Ext(change.Filename) != ".go" {
+		case filepath.Ext(change.Filename) != ".go":
 			continue
-		} else if gfg.Match(change.Filename) {
+		case gfg.Match(change.Filename):
+			continue
+		case change.Status == github.PullRequestFileRemoved || change.Status == github.PullRequestFileRenamed:
 			continue
 		}
 		modifiedFiles[change.Filename] = change.Patch
@@ -136,19 +139,19 @@ func problemsInFiles(r *git.Repo, files map[string]string) (map[string]map[int]l
 	return problems, nil
 }
 
-func handle(ghc githubClient, gc *git.Client, log *logrus.Entry, ic github.IssueCommentEvent) error {
+func handle(ghc githubClient, gc *git.Client, log *logrus.Entry, e *github.GenericCommentEvent) error {
 	// Only handle open PRs and new requests.
-	if ic.Issue.State != "open" || !ic.Issue.IsPullRequest() || ic.Action != github.IssueCommentActionCreated {
+	if e.IssueState != "open" || !e.IsPR || e.Action != github.GenericCommentActionCreated {
 		return nil
 	}
-	if !lintRe.MatchString(ic.Comment.Body) {
+	if !lintRe.MatchString(e.Body) {
 		return nil
 	}
 
-	org := ic.Repo.Owner.Login
-	repo := ic.Repo.Name
+	org := e.Repo.Owner.Login
+	repo := e.Repo.Name
 
-	pr, err := ghc.GetPullRequest(org, repo, ic.Issue.Number)
+	pr, err := ghc.GetPullRequest(org, repo, e.Number)
 	if err != nil {
 		return err
 	}
@@ -165,7 +168,7 @@ func handle(ghc githubClient, gc *git.Client, log *logrus.Entry, ic github.Issue
 
 	// Clone the repo, checkout the PR.
 	startClone := time.Now()
-	r, err := gc.Clone(ic.Repo.FullName)
+	r, err := gc.Clone(e.Repo.FullName)
 	if err != nil {
 		return err
 	}
@@ -174,7 +177,7 @@ func handle(ghc githubClient, gc *git.Client, log *logrus.Entry, ic github.Issue
 			log.WithError(err).Error("Error cleaning up repo.")
 		}
 	}()
-	if err := r.CheckoutPullRequest(ic.Issue.Number); err != nil {
+	if err := r.CheckoutPullRequest(e.Number); err != nil {
 		return err
 	}
 	finishClone := time.Now()
@@ -187,7 +190,7 @@ func handle(ghc githubClient, gc *git.Client, log *logrus.Entry, ic github.Issue
 	}
 	log.WithField("duration", time.Since(finishClone)).Info("Linted.")
 
-	oldComments, err := ghc.ListPullRequestComments(org, repo, ic.Issue.Number)
+	oldComments, err := ghc.ListPullRequestComments(org, repo, e.Number)
 	if err != nil {
 		return err
 	}
@@ -231,8 +234,8 @@ func handle(ghc githubClient, gc *git.Client, log *logrus.Entry, ic github.Issue
 	}
 	response := fmt.Sprintf("%d warning%s.", totalProblems, s)
 
-	return ghc.CreateReview(org, repo, ic.Issue.Number, github.DraftReview{
-		Body:     plugins.FormatICResponse(ic.Comment, response),
+	return ghc.CreateReview(org, repo, e.Number, github.DraftReview{
+		Body:     plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, response),
 		Action:   github.Comment,
 		Comments: comments,
 	})

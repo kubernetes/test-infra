@@ -1,5 +1,9 @@
 all: container
 
+# Path Prefix: the path the the mungegithub directory.
+DIR := $(shell dirname $(abspath $(lastword $(MAKEFILE_LIST))))
+CD := cd $(DIR) &&
+
 DATE := $(shell date +%F)
 GIT := $(shell git rev-parse --short HEAD)
 
@@ -31,15 +35,15 @@ get-cluster-credentials:
 
 # just build the binary
 mungegithub build:
-	GOBIN=$(PWD) CGO_ENABLED=0 GOOS=linux go install -installsuffix cgo -ldflags '-w'
+	$(CD) GOBIN=$(DIR) CGO_ENABLED=0 GOOS=linux go install -installsuffix cgo -ldflags '-w'
 
 test: mungegithub
 	# in case of error ignore all lines of 'getsockopt: connection refused' these are background go threads that don't matter
-	CGO_ENABLED=0 GOOS=linux go test $(shell go list ./... | grep -v 'vendor/') | grep -v 'getsockopt: connection refused'
+	$(CD) CGO_ENABLED=0 GOOS=linux go test $(shell go list ./... | grep -v 'vendor/') | grep -v 'getsockopt: connection refused'
 
 # build the container with the binary
 container: mungegithub
-	docker build --pull -t $(CONTAINER) -f Dockerfile-$(APP) .
+	$(CD) docker build --pull -t $(CONTAINER) -f Dockerfile-$(APP) .
 
 # push the container
 push: container
@@ -54,71 +58,71 @@ endif
 # The cluster will need a github oauth token (the secret target makes that easy to create)
 deploy: push deployment get-cluster-credentials
 	# Deploy the new deployment
-	kubectl --kubeconfig=$(KUBECONFIG) apply -f $(APP)/local.deployment.yaml --record
+	$(CD) kubectl --kubeconfig=$(KUBECONFIG) apply -f $(APP)/local.deployment.yaml --record
 
 # A new configuration is pushed by using the configmap specified using $(TARGET) and $(APP).
 push_config: get-cluster-credentials
 	# pushes a new configmap.
-	kubectl --kubeconfig=$(KUBECONFIG) create configmap $(TARGET)-$(APP)-config --from-file=config=$(APP)/deployment/$(TARGET)/configmap.yaml --dry-run -o yaml | kubectl apply -f -
+	$(CD) kubectl --kubeconfig=$(KUBECONFIG) create configmap $(TARGET)-$(APP)-config --from-file=$(APP)/deployment/$(TARGET) --dry-run -o yaml | kubectl apply -f -
 
 # Creates a service resource spec for the specified target and app.
 service:
 ifneq ("", "$(wildcard $(APP)/service.yaml)")
 	# updating service.yaml by replacing @@ with $(TARGET).
-	sed -e 's!@@!$(TARGET)!g' $(APP)/service.yaml > $(APP)/local.service.yaml
+	$(CD) sed -e 's!@@!$(TARGET)!g' $(APP)/service.yaml > $(APP)/local.service.yaml
 endif
 
 # Pushes a service resource spec.
 push_service: service get-cluster-credentials
 ifneq ("", "$(wildcard $(APP)/service.yaml)")
 	# Applying service.yaml.
-	kubectl --kubeconfig=$(KUBECONFIG) apply -f $(APP)/local.service.yaml
+	$(CD) kubectl --kubeconfig=$(KUBECONFIG) apply -f $(APP)/local.service.yaml
 endif
 
 # updates the deployment.yaml with current build information and sets it to --dry-run
 deployment:
 	# update the deployment.yaml with the current date and git hash
-	sed -e 's|[[:digit:]]\{4\}-[[:digit:]]\{2\}-[[:digit:]]\{2\}-[[:xdigit:]]\+|$(TAG)|g' $(APP)/deployment.yaml > $(APP)/local.deployment.yaml
+	$(CD) sed -e 's|[[:digit:]]\{4\}-[[:digit:]]\{2\}-[[:digit:]]\{2\}-[[:xdigit:]]\+|$(TAG)|g' $(APP)/deployment.yaml > $(APP)/local.deployment.yaml
 	# update the deployment.yaml with the current repo (if not gcr.io
-	sed -i -e 's|gcr.io/k8s-testimages|$(REPO)|g' $(APP)/local.deployment.yaml
+	$(CD) sed -i -e 's|gcr.io/k8s-testimages|$(REPO)|g' $(APP)/local.deployment.yaml
 ifeq ($(READONLY),false)
 	# update the deployment.yaml with --dry-run=false
-	sed -i -e 's!^\([[:space:]]\+\)- --dry-run=true!\1- --dry-run=false!g' $(APP)/local.deployment.yaml
+	$(CD) sed -i -e 's!^\([[:space:]]\+\)- --dry-run=true!\1- --dry-run=false!g' $(APP)/local.deployment.yaml
 endif
 	# update the deployment.yaml with label "readonly: true"
-	sed -i -e 's!^\([[:space:]]\+\)app: $(APP)!\1app: $(APP)\n\1readonly: "$(READONLY)"!g' $(APP)/local.deployment.yaml
+	$(CD) sed -i -e 's!^\([[:space:]]\+\)app: $(APP)!\1app: $(APP)\n\1readonly: "$(READONLY)"!g' $(APP)/local.deployment.yaml
 	# String-replacement of @@ by $(TARGET) in the deployment file.
-	sed -i -e 's!@@!$(TARGET)!g' $(APP)/local.deployment.yaml
+	$(CD) sed -i -e 's!@@!$(TARGET)!g' $(APP)/local.deployment.yaml
 
 # simple transformation of a github oauth secret file to a kubernetes secret
 secret:
 	# Updating secret.yaml and outputing to $(APP)/local.secret.yaml.
-	sed -e 's|<TOKEN>|$(token64)|' $(APP)/secret.yaml > $(APP)/local.secret.yaml
-	sed -i -e 's|<HOOKSECRET>|$(hooksecret64)|' $(APP)/local.secret.yaml
+	$(CD) sed -e 's|<TOKEN>|$(token64)|' $(APP)/secret.yaml > $(APP)/local.secret.yaml
+	$(CD) sed -i -e 's|<HOOKSECRET>|$(hooksecret64)|' $(APP)/local.secret.yaml
 	# String-replacement of @@ by $(TARGET) in the secrets file.
-	sed -i -e 's!@@!$(TARGET)!g' $(APP)/local.secret.yaml
+	$(CD) sed -i -e 's!@@!$(TARGET)!g' $(APP)/local.secret.yaml
 
 # Generate and deploy the token secret.
 push_secret: secret get-cluster-credentials
 	# Appling local.secret.yaml.
-	kubectl --kubeconfig=$(KUBECONFIG) apply -f $(APP)/local.secret.yaml
+	$(CD) kubectl --kubeconfig=$(KUBECONFIG) apply -f $(APP)/local.secret.yaml
 
 # Generate resource spec files for the persistent volume and claim.
 volume:
 ifneq ("", "$(and $(wildcard $(APP)/pv.yaml), $(wildcard $(APP)/pvc.yaml))")
 	# Updating pv.yaml and pvc.yaml by replacing @@ with TARGET.
-	sed -e 's!@@!$(TARGET)!g' $(APP)/pv.yaml > $(APP)/local.pv.yaml
-	sed -e 's!@@!$(TARGET)!g' $(APP)/pvc.yaml > $(APP)/local.pvc.yaml
+	$(CD) sed -e 's!@@!$(TARGET)!g' $(APP)/pv.yaml > $(APP)/local.pv.yaml
+	$(CD) sed -e 's!@@!$(TARGET)!g' $(APP)/pvc.yaml > $(APP)/local.pvc.yaml
 endif
 
 # Create the persistent volume and persistent volume claim.
 push_volume: volume get-cluster-credentials
 ifneq ("", "$(and $(wildcard $(APP)/pv.yaml), $(wildcard $(APP)/pvc.yaml))")
 	# Creating persistent volume and persistent volume claim.
-	kubectl --kubeconfig=$(KUBECONFIG) create -f $(APP)/local.pv.yaml
+	$(CD) kubectl --kubeconfig=$(KUBECONFIG) create -f $(APP)/local.pv.yaml
 	# Sleeping for 1s to allow persistent volume to be created.
 	@sleep 1
-	kubectl --kubeconfig=$(KUBECONFIG) create -f $(APP)/local.pvc.yaml
+	$(CD) kubectl --kubeconfig=$(KUBECONFIG) create -f $(APP)/local.pvc.yaml
 	# Sleeping for 4s to allow claim to bind to volume.
 	@sleep 4
 endif
@@ -127,11 +131,11 @@ endif
 first_time_deploy: push_volume push_secret push_service push_config deploy
 
 clean:
-	rm -f mungegithub $(APP)/local.deployment.yaml $(APP)/local.secret.yaml
+	$(CD) rm -f mungegithub $(APP)/local.deployment.yaml $(APP)/local.secret.yaml
 
 # pull down current public queue state, and run UI based off that data
 ui-stub:
-	@/bin/bash -c "wget -q -r -nH -P ./submit-queue/www http://submit-queue.k8s.io/{prs,github-e2e-queue,history,sq-stats,stats,users,health,google-internal-ci,priority-info,merge-info}; \
+	@$(CD) /bin/bash -c "wget -q -r -nH -P ./submit-queue/www http://submit-queue.k8s.io/{prs,github-e2e-queue,history,sq-stats,stats,users,health,google-internal-ci,priority-info,merge-info}; \
 	pushd ./submit-queue/www; \
 	python -m SimpleHTTPServer;"
 

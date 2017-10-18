@@ -37,7 +37,7 @@ const (
 )
 
 var (
-	titleRegex = regexp.MustCompile(`(?i)^(\[WIP\]|WIP)`)
+	titleRegex = regexp.MustCompile(`(?i)^\W?WIP\W`)
 )
 
 type event struct {

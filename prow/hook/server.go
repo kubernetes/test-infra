@@ -42,6 +42,11 @@ type Server struct {
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
+	// Our health check uses GET, so just kick back a 200.
+	if r.Method == http.MethodGet {
+		return
+	}
+
 	// Header checks: It must be a POST with an event type and a signature.
 	if r.Method != http.MethodPost {
 		http.Error(w, "405 Method not allowed", http.StatusMethodNotAllowed)
@@ -50,6 +55,11 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	eventType := r.Header.Get("X-GitHub-Event")
 	if eventType == "" {
 		http.Error(w, "400 Bad Request: Missing X-GitHub-Event Header", http.StatusBadRequest)
+		return
+	}
+	eventGUID := r.Header.Get("X-GitHub-Delivery")
+	if eventGUID == "" {
+		http.Error(w, "400 Bad Request: Missing X-GitHub-Delivery Header", http.StatusBadRequest)
 		return
 	}
 	sig := r.Header.Get("X-Hub-Signature")
@@ -76,15 +86,21 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	fmt.Fprint(w, "Event received. Have a nice day.")
 
-	if err := s.demuxEvent(eventType, payload); err != nil {
+	if err := s.demuxEvent(eventType, eventGUID, payload); err != nil {
 		logrus.WithError(err).Error("Error parsing event.")
 	}
 }
 
-func (s *Server) demuxEvent(eventType string, payload []byte) error {
+func (s *Server) demuxEvent(eventType, eventGUID string, payload []byte) error {
+	l := logrus.WithFields(
+		logrus.Fields{
+			"event-type": eventType,
+			"event-GUID": eventGUID,
+		},
+	)
 	// We don't want to fail the webhook due to a metrics error.
 	if counter, err := s.Metrics.WebhookCounter.GetMetricWithLabelValues(eventType); err != nil {
-		logrus.WithError(err).Warn("Failed to get metric for eventType " + eventType)
+		l.WithError(err).Warn("Failed to get metric for eventType " + eventType)
 	} else {
 		counter.Inc()
 	}
@@ -94,43 +110,43 @@ func (s *Server) demuxEvent(eventType string, payload []byte) error {
 		if err := json.Unmarshal(payload, &i); err != nil {
 			return err
 		}
-		go s.handleIssueEvent(i)
+		go s.handleIssueEvent(l, i)
 	case "issue_comment":
 		var ic github.IssueCommentEvent
 		if err := json.Unmarshal(payload, &ic); err != nil {
 			return err
 		}
-		go s.handleIssueCommentEvent(ic)
+		go s.handleIssueCommentEvent(l, ic)
 	case "pull_request":
 		var pr github.PullRequestEvent
 		if err := json.Unmarshal(payload, &pr); err != nil {
 			return err
 		}
-		go s.handlePullRequestEvent(pr)
+		go s.handlePullRequestEvent(l, pr)
 	case "pull_request_review":
 		var re github.ReviewEvent
 		if err := json.Unmarshal(payload, &re); err != nil {
 			return err
 		}
-		go s.handleReviewEvent(re)
+		go s.handleReviewEvent(l, re)
 	case "pull_request_review_comment":
 		var rce github.ReviewCommentEvent
 		if err := json.Unmarshal(payload, &rce); err != nil {
 			return err
 		}
-		go s.handleReviewCommentEvent(rce)
+		go s.handleReviewCommentEvent(l, rce)
 	case "push":
 		var pe github.PushEvent
 		if err := json.Unmarshal(payload, &pe); err != nil {
 			return err
 		}
-		go s.handlePushEvent(pe)
+		go s.handlePushEvent(l, pe)
 	case "status":
 		var se github.StatusEvent
 		if err := json.Unmarshal(payload, &se); err != nil {
 			return err
 		}
-		go s.handleStatusEvent(se)
+		go s.handleStatusEvent(l, se)
 	}
 	return nil
 }

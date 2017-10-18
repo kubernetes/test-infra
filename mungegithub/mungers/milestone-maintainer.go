@@ -35,22 +35,165 @@ import (
 	githubapi "github.com/google/go-github/github"
 )
 
+type milestoneState int
+
+type milestoneOptName string
+
+// milestoneStateConfig defines the label and notification
+// configuration for a given milestone state.
+type milestoneStateConfig struct {
+	// The milestone label to apply to the label (all other milestone state labels will be removed)
+	label string
+	// The title of the notification message
+	title string
+	// Whether the notification should be repeated on the configured interval
+	warnOnInterval bool
+	// Whether sigs should be mentioned in the notification message
+	notifySIGs bool
+}
+
 const (
 	milestoneNotifierName = "MilestoneNotifier"
 
-	milestoneRemoved          = "Milestone Removed"
-	milestoneLabelsIncomplete = "Milestone Labels **Incomplete**"
-	milestoneLabelsComplete   = "Milestone Labels **Complete**"
+	milestoneModeDev    = "dev"
+	milestoneModeSlush  = "slush"
+	milestoneModeFreeze = "freeze"
 
-	priorityCriticalUrgent = "priority/critical-urgent"
+	milestoneCurrent        milestoneState = iota // No change is required.
+	milestoneNeedsLabeling                        // One or more priority/*, kind/* and sig/* labels are missing.
+	milestoneNeedsApproval                        // The status/needs-approval label is missing.
+	milestoneNeedsAttention                       // A status/* label is missing or an update is required.
+	milestoneNeedsRemoval                         // The issue needs to be removed from the milestone.
 
-	commentDetail = `<details>
-Additional instructions available <a href="https://github.com/kubernetes/community/blob/master/contributors/devel/release/issues.md">here</a>
-The commands available for adding these labels are documented <a href="https://github.com/kubernetes/test-infra/blob/master/commands.md">here</a>
-</details>`
+	milestoneLabelsIncompleteLabel = "milestone/incomplete-labels"
+	milestoneNeedsApprovalLabel    = "milestone/needs-approval"
+	milestoneNeedsAttentionLabel   = "milestone/needs-attention"
+	milestoneRemovedLabel          = "milestone/removed"
+
+	statusApprovedLabel   = "status/approved-for-milestone"
+	statusInProgressLabel = "status/in-progress"
+
+	blockerLabel = "priority/critical-urgent"
+
+	sigLabelPrefix     = "sig/"
+	sigMentionTemplate = "@kubernetes/sig-%s-misc"
+
+	milestoneOptModes                = "milestone-modes"
+	milestoneOptWarningInterval      = "milestone-warning-interval"
+	milestoneOptLabelGracePeriod     = "milestone-label-grace-period"
+	milestoneOptApprovalGracePeriod  = "milestone-approval-grace-period"
+	milestoneOptSlushUpdateInterval  = "milestone-slush-update-interval"
+	milestoneOptFreezeUpdateInterval = "milestone-freeze-update-interval"
+	milestoneOptFreezeDate           = "milestone-freeze-date"
+
+	milestoneDetail = `<details>
+<summary>Help</summary>
+<ul>
+ <li><a href="https://github.com/kubernetes/community/blob/master/contributors/devel/release/issues.md">Additional instructions</a></li>
+ <li><a href="https://github.com/kubernetes/test-infra/blob/master/commands.md">Commands for setting labels</a></li>
+</ul>
+</details>
+`
+
+	milestoneMessageTemplate = `
+{{- if .warnUnapproved}}
+**Action required**: This issue must have the {{.approvedLabel}} label applied by a SIG maintainer.{{.unapprovedRemovalWarning}}
+{{end -}}
+{{- if .removeUnapproved}}
+**Important**: This issue was missing the {{.approvedLabel}} label for more than {{.approvalGracePeriod}}.
+{{end -}}
+{{- if .warnMissingInProgress}}
+**Action required**: During code {{.mode}}, issues in the milestone should be in progress.
+If this issue is not being actively worked on, please remove it from the milestone.
+If it is being worked on, please add the {{.inProgressLabel}} label so it can be tracked with other in-flight issues.
+{{end -}}
+{{- if .warnUpdateRequired}}
+**Action Required**: This issue has not been updated since {{.lastUpdated}}. Please provide an update.
+{{end -}}
+{{- if .warnUpdateInterval}}
+**Note**: This issue is marked as {{.blockerLabel}}, and must be updated every {{.updateInterval}} during code {{.mode}}.
+
+Example update:
+
+` + "```" + `
+ACK.  In progress
+ETA: DD/MM/YYYY
+Risks: Complicated fix required
+` + "```" + `
+{{end -}}
+{{- if .warnNonBlockerRemoval}}
+**Note**: If this issue is not resolved or labeled as {{.blockerLabel}} by {{.freezeDate}} it will be moved out of the {{.milestone}}.
+{{end -}}
+{{- if .removeNonBlocker}}
+**Important**: Code freeze is in effect and only issues with {{.blockerLabel}} may remain in the {{.milestone}}.
+{{end -}}
+{{- if .warnIncompleteLabels}}
+**Action required**: This issue requires label changes.{{.incompleteLabelsRemovalWarning}}
+
+{{range $index, $labelError := .labelErrors -}}
+{{$labelError}}
+{{end -}}
+{{end -}}
+{{- if .removeIncompleteLabels}}
+**Important**: This issue was missing labels required for the {{.milestone}} for more than {{.labelGracePeriod}}:
+
+{{range $index, $labelError := .labelErrors -}}
+{{$labelError}}
+{{end}}
+{{end -}}
+{{- if .summarizeLabels -}}
+<details{{if .onlySummary}} open{{end}}>
+<summary>Issue Labels</summary>
+
+- {{range $index, $sigLabel := .sigLabels}}{{if $index}} {{end}}{{$sigLabel}}{{end}}: Issue will be escalated to these SIGs if needed.
+- {{.priorityLabel}}: {{.priorityDescription}}
+- {{.kindLabel}}: {{.kindDescription}}
+</details>
+{{- end -}}
+`
 )
 
 var (
+	milestoneModes = sets.NewString(milestoneModeDev, milestoneModeSlush, milestoneModeFreeze)
+
+	milestoneStateConfigs = map[milestoneState]milestoneStateConfig{
+		milestoneCurrent: {
+			title: "Milestone Issue **Current**",
+		},
+		milestoneNeedsLabeling: {
+			title:          "Milestone Labels **Incomplete**",
+			label:          milestoneLabelsIncompleteLabel,
+			warnOnInterval: true,
+		},
+		milestoneNeedsApproval: {
+			title:          "Milestone Issue **Needs Approval**",
+			label:          milestoneNeedsApprovalLabel,
+			warnOnInterval: true,
+			notifySIGs:     true,
+		},
+		milestoneNeedsAttention: {
+			title:          "Milestone Issue **Needs Attention**",
+			label:          milestoneNeedsAttentionLabel,
+			warnOnInterval: true,
+			notifySIGs:     true,
+		},
+		milestoneNeedsRemoval: {
+			title:      "Milestone **Removed**",
+			label:      milestoneRemovedLabel,
+			notifySIGs: true,
+		},
+	}
+
+	// milestoneStateLabels is the set of milestone labels applied by
+	// the munger.  statusApprovedLabel is not included because it is
+	// applied manually rather than by the munger.
+	milestoneStateLabels = []string{
+		milestoneLabelsIncompleteLabel,
+		milestoneNeedsApprovalLabel,
+		milestoneNeedsAttentionLabel,
+		milestoneRemovedLabel,
+	}
+
 	kindMap = map[string]string{
 		"kind/bug":     "Fixes a bug discovered during the current release.",
 		"kind/feature": "New functionality.",
@@ -58,35 +201,116 @@ var (
 	}
 
 	priorityMap = map[string]string{
-		priorityCriticalUrgent:        "Never automatically move out of a release milestone; continually escalate to contributor and SIG through all available channels.",
+		blockerLabel:                  "Never automatically move out of a release milestone; continually escalate to contributor and SIG through all available channels.",
 		"priority/important-soon":     "Escalate to the issue owners and SIG owner; move out of milestone after several unsuccessful escalation attempts.",
 		"priority/important-longterm": "Escalate to the issue owners; move out of the milestone after 1 attempt.",
 	}
-
-	milestoneRemovedLabel          = "milestone-removed"
-	milestoneLabelsIncompleteLabel = "milestone-labels-incomplete"
-	milestoneLabelsCompleteLabel   = "milestone-labels-complete"
-	milestoneLabels                = []string{milestoneRemovedLabel, milestoneLabelsCompleteLabel, milestoneLabelsIncompleteLabel}
 )
 
-// milestoneNotification configures the active notification for the munger
-type milestoneNotification struct {
-	description string
-	message     string
+// issueChange encapsulates changes to make to an issue.
+type issueChange struct {
+	notification        *c.Notification
+	label               string
+	commentInterval     *time.Duration
+	removeFromMilestone bool
 }
 
-// MilestoneMaintainer enforces the process for sheperding issues into the release.
-type MilestoneMaintainer struct {
-	botName  string
-	features *features.Features
+type milestoneArgValidator func(name string) error
 
-	activeMilestone string
-	gracePeriod     time.Duration
-	warningInterval time.Duration
+// MilestoneMaintainer enforces the process for shepherding issues into the release.
+type MilestoneMaintainer struct {
+	botName    string
+	features   *features.Features
+	validators map[string]milestoneArgValidator
+
+	milestoneModes       string
+	milestoneModeMap     map[string]string
+	warningInterval      time.Duration
+	labelGracePeriod     time.Duration
+	approvalGracePeriod  time.Duration
+	slushUpdateInterval  time.Duration
+	freezeUpdateInterval time.Duration
+	freezeDate           string
 }
 
 func init() {
-	RegisterMungerOrDie(&MilestoneMaintainer{})
+	RegisterMungerOrDie(NewMilestoneMaintainer())
+}
+
+func NewMilestoneMaintainer() *MilestoneMaintainer {
+	m := &MilestoneMaintainer{}
+	m.validators = map[string]milestoneArgValidator{
+		milestoneOptModes: func(name string) error {
+			modeMap, err := parseMilestoneModes(m.milestoneModes)
+			if err != nil {
+				return fmt.Errorf("%s: %s", name, err)
+			}
+			m.milestoneModeMap = modeMap
+			return nil
+		},
+		milestoneOptWarningInterval: func(name string) error {
+			return durationGreaterThanZero(name, m.warningInterval)
+		},
+		milestoneOptLabelGracePeriod: func(name string) error {
+			return durationGreaterThanZero(name, m.labelGracePeriod)
+		},
+		milestoneOptApprovalGracePeriod: func(name string) error {
+			return durationGreaterThanZero(name, m.approvalGracePeriod)
+		},
+		milestoneOptSlushUpdateInterval: func(name string) error {
+			return durationGreaterThanZero(name, m.slushUpdateInterval)
+		},
+		milestoneOptFreezeUpdateInterval: func(name string) error {
+			return durationGreaterThanZero(name, m.freezeUpdateInterval)
+		},
+		milestoneOptFreezeDate: func(name string) error {
+			if len(m.freezeDate) == 0 {
+				return fmt.Errorf("%s must be supplied", name)
+			}
+			return nil
+		},
+	}
+	return m
+}
+func durationGreaterThanZero(name string, value time.Duration) error {
+	if value <= 0 {
+		return fmt.Errorf("%s must be greater than zero", name)
+	}
+	return nil
+}
+
+// parseMilestoneModes transforms a string containing milestones and
+// their modes to a map:
+//
+//     "v1.8=dev,v1.9=slush" -> map[string][string]{"v1.8": "dev", "v1.9": "slush"}
+func parseMilestoneModes(target string) (map[string]string, error) {
+	const invalidFormatTemplate = "expected format for each milestone is [milestone]=[mode], got '%s'"
+
+	result := map[string]string{}
+	tokens := strings.Split(target, ",")
+	for _, token := range tokens {
+		parts := strings.Split(token, "=")
+		if len(parts) != 2 {
+			return nil, fmt.Errorf(invalidFormatTemplate, token)
+		}
+		milestone := strings.TrimSpace(parts[0])
+		mode := strings.TrimSpace(parts[1])
+		if len(milestone) == 0 || len(mode) == 0 {
+			return nil, fmt.Errorf(invalidFormatTemplate, token)
+		}
+		if !milestoneModes.Has(mode) {
+			return nil, fmt.Errorf("mode for milestone '%s' must be one of %v, but got '%s'", milestone, milestoneModes.List(), mode)
+		}
+		if _, exists := result[milestone]; exists {
+			return nil, fmt.Errorf("milestone %s is specified more than once", milestone)
+		}
+		result[milestone] = mode
+	}
+	if len(result) == 0 {
+		return nil, fmt.Errorf("at least one milestone must be configured")
+	}
+
+	return result, nil
 }
 
 // Name is the name usable in --pr-mungers
@@ -97,15 +321,12 @@ func (m *MilestoneMaintainer) RequiredFeatures() []string { return []string{} }
 
 // Initialize will initialize the munger
 func (m *MilestoneMaintainer) Initialize(config *github.Config, features *features.Features) error {
-	if len(m.activeMilestone) == 0 {
-		return errors.New("active-milestone must be supplied")
+	for name, validator := range m.validators {
+		if err := validator(name); err != nil {
+			return err
+		}
 	}
-	if m.gracePeriod <= 0 {
-		return errors.New("milestone-grace-period must be greater than zero")
-	}
-	if m.warningInterval <= 0 {
-		return errors.New("milestone-warning-interval must be greater than zero")
-	}
+
 	m.botName = config.BotName
 	m.features = features
 	return nil
@@ -118,23 +339,26 @@ func (m *MilestoneMaintainer) EachLoop() error { return nil }
 
 // RegisterOptions registers options for this munger; returns any that require a restart when changed.
 func (m *MilestoneMaintainer) RegisterOptions(opts *options.Options) sets.String {
-	opts.RegisterString(&m.activeMilestone, "active-milestone", "", "The active milestone that this munger will maintain issues for.")
-	opts.RegisterDuration(&m.gracePeriod, "milestone-grace-period", 72*time.Hour, "The grace period to wait before removing an incomplete issue from the active milestone.")
-	opts.RegisterDuration(&m.warningInterval, "milestone-warning-interval", 24*time.Hour, "The interval to wait between warning about an incomplete issue in the active milestone.")
+	opts.RegisterString(&m.milestoneModes, milestoneOptModes, "", fmt.Sprintf("The comma-separated list of milestones and the mode to maintain them in (one of %v). Example: v1.8=%s,v1.9=%s", milestoneModes.List(), milestoneModeDev, milestoneModeSlush))
+	opts.RegisterDuration(&m.warningInterval, milestoneOptWarningInterval, 24*time.Hour, "The interval to wait between warning about an incomplete issue in the active milestone.")
+	opts.RegisterDuration(&m.labelGracePeriod, milestoneOptLabelGracePeriod, 72*time.Hour, "The grace period to wait before removing a non-blocking issue with incomplete labels from the active milestone.")
+	opts.RegisterDuration(&m.approvalGracePeriod, milestoneOptApprovalGracePeriod, 168*time.Hour, "The grace period to wait before removing a non-blocking issue without sig approval from the active milestone.")
+	opts.RegisterDuration(&m.slushUpdateInterval, milestoneOptSlushUpdateInterval, 72*time.Hour, "The expected interval, during code slush, between updates to a blocking issue in the active milestone.")
+	opts.RegisterDuration(&m.freezeUpdateInterval, milestoneOptFreezeUpdateInterval, 24*time.Hour, "The expected interval, during code freeze, between updates to a blocking issue in the active milestone.")
+	// Slush mode requires a freeze date to include in notifications
+	// indicating the date by which non-critical issues must be closed
+	// or upgraded in priority to avoid being moved out of the
+	// milestone.  Only a single freeze date can be set under the
+	// assumption that, where multiple milestones are targeted, only
+	// one at a time will be in slush mode.
+	opts.RegisterString(&m.freezeDate, milestoneOptFreezeDate, "", fmt.Sprintf("The date string indicating when code freeze will take effect."))
+
 	opts.RegisterUpdateCallback(func(changed sets.String) error {
-		if changed.Has("active-milestone") {
-			if len(m.activeMilestone) == 0 {
-				return errors.New("active-milestone must be supplied")
-			}
-		}
-		if changed.Has("milestone-grace-period") {
-			if m.gracePeriod <= 0 {
-				return errors.New("milestone-grace-period must be greater than zero")
-			}
-		}
-		if changed.Has("milestone-warning-interval") {
-			if m.warningInterval <= 0 {
-				return errors.New("milestone-warning-interval must be greater than zero")
+		for name, validator := range m.validators {
+			if changed.Has(name) {
+				if err := validator(name); err != nil {
+					return err
+				}
 			}
 		}
 		return nil
@@ -142,9 +366,49 @@ func (m *MilestoneMaintainer) RegisterOptions(opts *options.Options) sets.String
 	return nil
 }
 
+func (m *MilestoneMaintainer) updateInterval(mode string) time.Duration {
+	if mode == milestoneModeSlush {
+		return m.slushUpdateInterval
+	}
+	if mode == milestoneModeFreeze {
+		return m.freezeUpdateInterval
+	}
+	return 0
+}
+
+// milestoneMode determines the release milestone and mode for the
+// provided github object.  If a milestone is set and one of those
+// targeted by the munger, the milestone and mode will be returned
+// along with a boolean indication of success.  Otherwise, if the
+// milestone is not set or not targeted, a boolean indication of
+// failure will be returned.
+func (m *MilestoneMaintainer) milestoneMode(obj *github.MungeObject) (milestone string, mode string, success bool) {
+	// Ignore issues that lack an assigned milestone
+	milestone, ok := obj.ReleaseMilestone()
+	if !ok || len(milestone) == 0 {
+		return "", "", false
+	}
+
+	// Ignore issues that aren't in a targeted milestone
+	mode, exists := m.milestoneModeMap[milestone]
+	if !exists {
+		return "", "", false
+	}
+	return milestone, mode, true
+}
+
 // Munge is the workhorse the will actually make updates to the issue
 func (m *MilestoneMaintainer) Munge(obj *github.MungeObject) {
-	if ignoreObject(obj, m.activeMilestone) {
+	if ignoreObject(obj) {
+		return
+	}
+
+	change := m.issueChange(obj)
+	if change == nil {
+		return
+	}
+
+	if !updateMilestoneStateLabel(obj, change.label) {
 		return
 	}
 
@@ -152,87 +416,276 @@ func (m *MilestoneMaintainer) Munge(obj *github.MungeObject) {
 	if !ok {
 		return
 	}
-
-	labelName, notifyState := notificationState(obj, comment, m.botName, m.gracePeriod, m.warningInterval)
-	// Always attempt to ensure the milestone label
-	if len(labelName) > 0 && !ensureLabel(obj, labelName) {
-		return
-	}
-	if notifyState == nil {
-		// No notification change is required
-		return
-	}
-
-	if comment != nil {
-		if err := obj.DeleteComment(comment.Source.(*githubapi.IssueComment)); err != nil {
+	if !notificationIsCurrent(change.notification, comment, change.commentInterval) {
+		if comment != nil {
+			if err := obj.DeleteComment(comment.Source.(*githubapi.IssueComment)); err != nil {
+				return
+			}
+		}
+		if err := change.notification.Post(obj); err != nil {
 			return
 		}
 	}
 
-	notification := c.Notification{
-		Name:      milestoneNotifierName,
-		Arguments: notifyState.description,
-		Context:   notifyState.message,
-	}
-	if err := notification.Post(obj); err != nil {
-		return
-	}
-
-	if labelName == milestoneRemovedLabel {
+	if change.removeFromMilestone {
 		obj.ClearMilestone()
 	}
 }
 
+// issueChange computes the changes required to modify the state of
+// the issue to reflect the milestone process. If a nil return value
+// is returned, no action should be taken.
+func (m *MilestoneMaintainer) issueChange(obj *github.MungeObject) *issueChange {
+	icc := m.issueChangeConfig(obj)
+	if icc == nil {
+		return nil
+	}
+
+	messageBody := icc.messageBody()
+	if messageBody == nil {
+		return nil
+	}
+
+	stateConfig := milestoneStateConfigs[icc.state]
+
+	mentions := mungerutil.GetIssueUsers(obj.Issue).AllUsers().Mention().Join()
+	if stateConfig.notifySIGs {
+		sigMentions := icc.sigMentions()
+		if len(sigMentions) > 0 {
+			mentions = fmt.Sprintf("%s %s", mentions, sigMentions)
+		}
+	}
+
+	message := fmt.Sprintf("%s\n\n%s\n%s", mentions, *messageBody, milestoneDetail)
+
+	var commentInterval *time.Duration
+	if stateConfig.warnOnInterval {
+		commentInterval = &m.warningInterval
+	}
+
+	return &issueChange{
+		notification:        c.NewNotification(milestoneNotifierName, stateConfig.title, message),
+		label:               stateConfig.label,
+		removeFromMilestone: icc.state == milestoneNeedsRemoval,
+		commentInterval:     commentInterval,
+	}
+}
+
+// issueChangeConfig computes the configuration required to determine
+// the changes to make to an issue so that it reflects the milestone
+// process. If a nil return value is returned, no action should be
+// taken.
+func (m *MilestoneMaintainer) issueChangeConfig(obj *github.MungeObject) *issueChangeConfig {
+	milestone, mode, ok := m.milestoneMode(obj)
+	if !ok {
+		return nil
+	}
+
+	updateInterval := m.updateInterval(mode)
+
+	icc := &issueChangeConfig{
+		enabledSections: sets.String{},
+		templateArguments: map[string]interface{}{
+			"approvalGracePeriod": durationToMaxDays(m.approvalGracePeriod),
+			"approvedLabel":       quoteLabel(statusApprovedLabel),
+			"blockerLabel":        quoteLabel(blockerLabel),
+			"freezeDate":          m.freezeDate,
+			"inProgressLabel":     quoteLabel(statusInProgressLabel),
+			"labelGracePeriod":    durationToMaxDays(m.labelGracePeriod),
+			"milestone":           fmt.Sprintf("%s milestone", milestone),
+			"mode":                mode,
+			"updateInterval":      durationToMaxDays(updateInterval),
+		},
+		sigLabels: []string{},
+	}
+
+	isBlocker := obj.HasLabel(blockerLabel)
+
+	if kind, priority, sigs, labelErrors := checkLabels(obj.Issue.Labels); len(labelErrors) == 0 {
+		icc.summarizeLabels(kind, priority, sigs)
+		if !obj.HasLabel(statusApprovedLabel) {
+			if isBlocker {
+				icc.warnUnapproved(nil, milestone)
+			} else {
+				removeAfter, ok := gracePeriodRemaining(obj, m.botName, milestoneNeedsApprovalLabel, m.approvalGracePeriod, time.Now(), false)
+				if !ok {
+					return nil
+				}
+
+				if removeAfter == nil || *removeAfter >= 0 {
+					icc.warnUnapproved(removeAfter, milestone)
+				} else {
+					icc.removeUnapproved()
+				}
+			}
+			return icc
+		}
+
+		if mode == milestoneModeDev {
+			// Status and updates are not required for dev mode
+			return icc
+		}
+
+		if mode == milestoneModeFreeze && !isBlocker {
+			icc.removeNonBlocker()
+			return icc
+		}
+
+		if !obj.HasLabel(statusInProgressLabel) {
+			icc.warnMissingInProgress()
+		}
+
+		if !isBlocker {
+			icc.enableSection("warnNonBlockerRemoval")
+		} else if updateInterval > 0 {
+			lastUpdateTime, ok := findLastModificationTime(obj)
+			if !ok {
+				return nil
+			}
+
+			durationSinceUpdate := time.Since(*lastUpdateTime)
+			if durationSinceUpdate > updateInterval {
+				icc.warnUpdateRequired(*lastUpdateTime)
+			}
+			icc.enableSection("warnUpdateInterval")
+		}
+	} else {
+		removeAfter, ok := gracePeriodRemaining(obj, m.botName, milestoneLabelsIncompleteLabel, m.labelGracePeriod, time.Now(), isBlocker)
+		if !ok {
+			return nil
+		}
+
+		if removeAfter == nil || *removeAfter >= 0 {
+			icc.warnIncompleteLabels(removeAfter, labelErrors, milestone)
+		} else {
+			icc.removeIncompleteLabels(labelErrors)
+		}
+	}
+	return icc
+}
+
+// issueChangeConfig is the config required to change an issue (via
+// comments and labeling) to reflect the reuqirements of the milestone
+// maintainer.
+type issueChangeConfig struct {
+	state             milestoneState
+	enabledSections   sets.String
+	sigLabels         []string
+	templateArguments map[string]interface{}
+}
+
+func (icc *issueChangeConfig) messageBody() *string {
+	for _, sectionName := range icc.enabledSections.List() {
+		// If an issue will be removed from the milestone, suppress non-removal sections
+		if icc.state != milestoneNeedsRemoval || strings.HasPrefix(sectionName, "remove") {
+			icc.templateArguments[sectionName] = true
+		}
+	}
+
+	icc.templateArguments["onlySummary"] = icc.state == milestoneCurrent
+
+	return approvers.GenerateTemplateOrFail(milestoneMessageTemplate, "message", icc.templateArguments)
+}
+
+func (icc *issueChangeConfig) enableSection(sectionName string) {
+	icc.enabledSections.Insert(sectionName)
+}
+
+func (icc *issueChangeConfig) summarizeLabels(kindLabel, priorityLabel string, sigLabels []string) {
+	icc.enableSection("summarizeLabels")
+	icc.state = milestoneCurrent
+	icc.sigLabels = sigLabels
+	quotedSigLabels := []string{}
+	for _, sigLabel := range sigLabels {
+		quotedSigLabels = append(quotedSigLabels, quoteLabel(sigLabel))
+	}
+	arguments := map[string]interface{}{
+		"kindLabel":           quoteLabel(kindLabel),
+		"kindDescription":     kindMap[kindLabel],
+		"priorityLabel":       quoteLabel(priorityLabel),
+		"priorityDescription": priorityMap[priorityLabel],
+		"sigLabels":           quotedSigLabels,
+	}
+	for k, v := range arguments {
+		icc.templateArguments[k] = v
+	}
+}
+
+func (icc *issueChangeConfig) warnUnapproved(removeAfter *time.Duration, milestone string) {
+	icc.enableSection("warnUnapproved")
+	icc.state = milestoneNeedsApproval
+	var warning string
+	if removeAfter != nil {
+		warning = fmt.Sprintf(" If the label is not applied within %s, the issue will be moved out of the %s milestone.",
+			durationToMaxDays(*removeAfter), milestone)
+	}
+	icc.templateArguments["unapprovedRemovalWarning"] = warning
+
+}
+
+func (icc *issueChangeConfig) removeUnapproved() {
+	icc.enableSection("removeUnapproved")
+	icc.state = milestoneNeedsRemoval
+}
+
+func (icc *issueChangeConfig) removeNonBlocker() {
+	icc.enableSection("removeNonBlocker")
+	icc.state = milestoneNeedsRemoval
+}
+
+func (icc *issueChangeConfig) warnMissingInProgress() {
+	icc.enableSection("warnMissingInProgress")
+	icc.state = milestoneNeedsAttention
+}
+
+func (icc *issueChangeConfig) warnUpdateRequired(lastUpdated time.Time) {
+	icc.enableSection("warnUpdateRequired")
+	icc.state = milestoneNeedsAttention
+	icc.templateArguments["lastUpdated"] = lastUpdated.Format("Jan 2")
+}
+
+func (icc *issueChangeConfig) warnIncompleteLabels(removeAfter *time.Duration, labelErrors []string, milestone string) {
+	icc.enableSection("warnIncompleteLabels")
+	icc.state = milestoneNeedsLabeling
+	var warning string
+	if removeAfter != nil {
+		warning = fmt.Sprintf(" If the required changes are not made within %s, the issue will be moved out of the %s milestone.",
+			durationToMaxDays(*removeAfter), milestone)
+	}
+	icc.templateArguments["incompleteLabelsRemovalWarning"] = warning
+	icc.templateArguments["labelErrors"] = labelErrors
+}
+
+func (icc *issueChangeConfig) removeIncompleteLabels(labelErrors []string) {
+	icc.enableSection("removeIncompleteLabels")
+	icc.state = milestoneNeedsRemoval
+	icc.templateArguments["labelErrors"] = labelErrors
+}
+
+func (icc *issueChangeConfig) sigMentions() string {
+	mentions := []string{}
+	for _, label := range icc.sigLabels {
+		sig := strings.TrimPrefix(label, sigLabelPrefix)
+		target := fmt.Sprintf(sigMentionTemplate, sig)
+		mentions = append(mentions, target)
+	}
+	return strings.Join(mentions, " ")
+}
+
 // ignoreObject indicates whether the munger should ignore the given
-// object. Only issues in the active milestone should be munged.
-func ignoreObject(obj *github.MungeObject, activeMilestone string) bool {
+// object.
+func ignoreObject(obj *github.MungeObject) bool {
 	// Only target issues
 	if obj.IsPR() {
 		return true
 	}
 
-	// Only target issues with an assigned milestone
-	milestone, ok := obj.ReleaseMilestone()
-	if !ok || len(milestone) == 0 {
+	// Ignore closed issues
+	if obj.Issue.State != nil && *obj.Issue.State == "closed" {
 		return true
 	}
 
-	// Only target issues in the active milestone
-	return milestone != activeMilestone
-}
-
-// notificationState returns the state required to ensure the munger's
-// notification is kept current. If a nil return value is returned,
-// no action should be taken.
-func notificationState(obj *github.MungeObject, comment *c.Comment, botName string, gracePeriod, warningInterval time.Duration) (string, *milestoneNotification) {
-	notification := c.ParseNotification(comment)
-
-	kindLabel, priorityLabel, sigLabels, labelErrors := checkLabels(obj.Issue.Labels)
-
-	labelsComplete := len(labelErrors) == 0
-	if labelsComplete {
-		return milestoneLabelsCompleteLabel, labelsCompleteState(obj.Issue, notification, kindLabel, priorityLabel, sigLabels)
-	}
-
-	isBlocker := (priorityLabel == priorityCriticalUrgent)
-	var removeAfter *time.Duration
-	// Blockers are never removed from the milestone so grace period computation can be skipped
-	if !isBlocker {
-		removeAfter = gracePeriodRemaining(obj, botName, gracePeriod, time.Now())
-		failedToComputeGracePeriod := removeAfter == nil
-		if failedToComputeGracePeriod {
-			return "", nil
-		}
-	}
-	// removeAfter is guaranteed to be non-nil for non-blockers
-	if isBlocker || *removeAfter >= 0 {
-		var createdAt *time.Time
-		if comment != nil {
-			createdAt = comment.CreatedAt
-		}
-		return milestoneLabelsIncompleteLabel, labelsIncompleteState(obj.Issue, notification, labelErrors, warningInterval, createdAt, removeAfter)
-	}
-	return milestoneRemovedLabel, removalState(obj.Issue, notification, labelErrors, *obj.Issue.Milestone.Title, gracePeriod)
+	return false
 }
 
 // latestNotificationComment returns the most recent notification
@@ -251,160 +704,30 @@ func latestNotificationComment(obj *github.MungeObject, botName string) (*c.Comm
 	return notifications.GetLast(), true
 }
 
-// labelsCompleteState returns the notification state for an issue
-// that has the required labels to remain in the active milestone.
-func labelsCompleteState(issue *githubapi.Issue, notification *c.Notification, kindLabel, priorityLabel string, sigLabels []string) *milestoneNotification {
-	const template = `{{.mention}}
-
-Issue label settings:
-
-- {{range $index, $sigLabel := .sigLabels}}{{if $index}} {{end}}{{$sigLabel}}{{end}}: Issue will be escalated to these SIGs if needed.
-- {{.priorityLabel}}: {{.priorityDescription}}
-- {{.kindLabel}}: {{.kindDescription}}
-
-{{.detail}}
-`
-
-	isCurrent := notification != nil && notification.Arguments == milestoneLabelsComplete
-	if isCurrent {
-		return nil
-	}
-
-	mention := mungerutil.GetIssueUsers(issue).AllUsers().Mention().Join()
-	message := approvers.GenerateTemplateOrFail(template, "message", map[string]interface{}{
-		"mention":             mention,
-		"sigLabels":           sigLabels,
-		"priorityLabel":       priorityLabel,
-		"priorityDescription": priorityMap[priorityLabel],
-		"kindLabel":           kindLabel,
-		"kindDescription":     kindMap[kindLabel],
-		"detail":              commentDetail,
-	})
-	if message == nil {
-		return nil
-	}
-
-	return &milestoneNotification{
-		description: milestoneLabelsComplete,
-		message:     *message,
-	}
-}
-
-// labelsIncompleteState returns the notification state for an issue
-// lacking the labels required for the active milestone.
-func labelsIncompleteState(issue *githubapi.Issue, notification *c.Notification, labelErrors []string, warningInterval time.Duration, commentCreatedAt *time.Time, removeAfter *time.Duration) *milestoneNotification {
-	const template = `{{.mention}}
-
-**Action required**: This issue requires label changes.{{.warning}}
-
-{{range $index, $labelError := .labelErrors -}}
-{{$labelError}}
-{{end}}
-{{.detail}}
-`
-
-	mention := mungerutil.GetIssueUsers(issue).AllUsers().Mention().Join()
-	var warning string
-	if removeAfter != nil {
-		warning = fmt.Sprintf(" If the required changes are not made within %s, the issue will be moved out of the %s milestone.", durationToMaxDays(*removeAfter), *issue.Milestone.Title)
-	}
-	message := approvers.GenerateTemplateOrFail(template, "message", map[string]interface{}{
-		"mention":     mention,
-		"warning":     warning,
-		"labelErrors": labelErrors,
-		"detail":      commentDetail,
-	})
-	if message == nil {
-		return nil
-	}
-
-	if warningIsCurrent(notification, *message, commentCreatedAt, warningInterval) {
-		return nil
-	}
-
-	return &milestoneNotification{
-		description: milestoneLabelsIncomplete,
-		message:     *message,
-	}
-}
-
-// warningIsCurrent indicates whether the given notification
-// represents is an up-to-date warning. The notification is the
-// previous warning from the munger. The message is the warning
-// generated from the current labels on the issue.
-func warningIsCurrent(notification *c.Notification, message string, commentCreatedAt *time.Time, warningInterval time.Duration) bool {
-	hasNotification := (notification != nil && notification.Arguments == milestoneLabelsIncomplete)
-	return hasNotification && notification.Context == strings.TrimSpace(message) && commentCreatedAt != nil && time.Since(*commentCreatedAt) < warningInterval
-}
-
-// removalState returns the notification state for an issue that will
-// be removed from the active milestone.
-func removalState(issue *githubapi.Issue, notification *c.Notification, labelErrors []string, milestone string, gracePeriod time.Duration) *milestoneNotification {
-	const template = `{{.mention}}
-
-**Important**:
-This issue was missing labels required for the {{.milestone}} milestone for more than {{.dayPhrase}}:
-
-{{range $index, $labelError := .labelErrors -}}
-{{$labelError}}
-{{end}}
-Removing it from the milestone.
-
-{{.detail}}
-`
-
-	mention := mungerutil.GetIssueUsers(issue).AllUsers().Mention().Join()
-	message := approvers.GenerateTemplateOrFail(template, "message", map[string]interface{}{
-		"mention":     mention,
-		"milestone":   milestone,
-		"dayPhrase":   durationToMaxDays(gracePeriod),
-		"labelErrors": labelErrors,
-		"detail":      commentDetail,
-	})
-	if message == nil {
-		return nil
-	}
-
-	return &milestoneNotification{
-		description: milestoneRemoved,
-		message:     *message,
-	}
-}
-
-// ensureLabel ensures that the desired label becomes the only
-// milestone label set on the given issue. Returns true if the label
-// is set on the issue, false otherwise. Any error encountered is
-// expected to be logged in the called function rather than being
-// handled by the caller.
-func ensureLabel(obj *github.MungeObject, desiredLabel string) bool {
-	for _, label := range milestoneLabels {
-		if label == desiredLabel {
-			if !obj.HasLabel(label) {
-				if err := obj.AddLabel(label); err != nil {
-					return false
-				}
-			}
-		} else if obj.HasLabel(label) {
-			if err := obj.RemoveLabel(label); err != nil {
-				return false
-			}
-		}
-	}
-	return true
+// notificationIsCurrent indicates whether the given notification
+// matches the most recent notification comment and the comment
+// interval - if provided - has not been exceeded.
+func notificationIsCurrent(notification *c.Notification, comment *c.Comment, commentInterval *time.Duration) bool {
+	oldNotification := c.ParseNotification(comment)
+	notificationsEqual := oldNotification != nil && oldNotification.Equal(notification)
+	return notificationsEqual && (commentInterval == nil || comment != nil && comment.CreatedAt != nil && time.Since(*comment.CreatedAt) < *commentInterval)
 }
 
 // gracePeriodRemaining returns the difference between the start of
 // the grace period and the grace period interval. Returns nil the
 // grace period start cannot be determined.
-func gracePeriodRemaining(obj *github.MungeObject, botName string, gracePeriod time.Duration, defaultStart time.Time) *time.Duration {
-	tempStart := gracePeriodStart(obj, botName, defaultStart)
+func gracePeriodRemaining(obj *github.MungeObject, botName, labelName string, gracePeriod time.Duration, defaultStart time.Time, isBlocker bool) (*time.Duration, bool) {
+	if isBlocker {
+		return nil, true
+	}
+	tempStart := gracePeriodStart(obj, botName, labelName, defaultStart)
 	if tempStart == nil {
-		return nil
+		return nil, false
 	}
 	start := *tempStart
 
 	remaining := -time.Since(start.Add(gracePeriod))
-	return &remaining
+	return &remaining, true
 }
 
 // gracePeriodStart determines when the grace period for the given
@@ -412,8 +735,7 @@ func gracePeriodRemaining(obj *github.MungeObject, botName string, gracePeriod t
 // milestone-labels-incomplete label was last applied. If the label
 // is not set, the default will be returned. nil will be returned if
 // an error occurs while accessing the object's label events.
-func gracePeriodStart(obj *github.MungeObject, botName string, defaultStart time.Time) *time.Time {
-	labelName := milestoneLabelsIncompleteLabel
+func gracePeriodStart(obj *github.MungeObject, botName, labelName string, defaultStart time.Time) *time.Time {
 	if !obj.HasLabel(labelName) {
 		return &defaultStart
 	}
@@ -454,18 +776,18 @@ func checkLabels(labels []githubapi.Label) (kindLabel, priorityLabel string, sig
 	kindLabel, err = uniqueLabelName(labels, kindMap)
 	if err != nil || len(kindLabel) == 0 {
 		kindLabels := formatLabelString(kindMap)
-		labelErrors = append(labelErrors, fmt.Sprintf("_**kind**_: Must specify exactly one of [%s].", kindLabels))
+		labelErrors = append(labelErrors, fmt.Sprintf("_**kind**_: Must specify exactly one of %s.", kindLabels))
 	}
 
 	priorityLabel, err = uniqueLabelName(labels, priorityMap)
 	if err != nil || len(priorityLabel) == 0 {
 		priorityLabels := formatLabelString(priorityMap)
-		labelErrors = append(labelErrors, fmt.Sprintf("_**priority**_: Must specify exactly one of [%s].", priorityLabels))
+		labelErrors = append(labelErrors, fmt.Sprintf("_**priority**_: Must specify exactly one of %s.", priorityLabels))
 	}
 
 	sigLabels = sigLabelNames(labels)
 	if len(sigLabels) == 0 {
-		labelErrors = append(labelErrors, "_**sig owner**_: Must specify at least one label prefixed with `sig/`.")
+		labelErrors = append(labelErrors, fmt.Sprintf("_**sig owner**_: Must specify at least one label prefixed with `%s`.", sigLabelPrefix))
 	}
 
 	return
@@ -493,7 +815,7 @@ func uniqueLabelName(labels []githubapi.Label, labelMap map[string]string) (stri
 func sigLabelNames(labels []githubapi.Label) []string {
 	labelNames := []string{}
 	for _, label := range labels {
-		if strings.HasPrefix(*label.Name, "sig/") {
+		if strings.HasPrefix(*label.Name, sigLabelPrefix) {
 			labelNames = append(labelNames, *label.Name)
 		}
 	}
@@ -504,9 +826,39 @@ func sigLabelNames(labels []githubapi.Label) []string {
 func formatLabelString(labelMap map[string]string) string {
 	labelList := []string{}
 	for k := range labelMap {
-		labelList = append(labelList, fmt.Sprintf("`%s`", k))
+		labelList = append(labelList, quoteLabel(k))
 	}
 	sort.Strings(labelList)
 
-	return strings.Join(labelList, ", ")
+	maxIndex := len(labelList) - 1
+	if maxIndex == 0 {
+		return labelList[0]
+	}
+	return strings.Join(labelList[0:maxIndex], ", ") + " or " + labelList[maxIndex]
+}
+
+// quoteLabel formats a label name as inline code in markdown (e.g. `labelName`)
+func quoteLabel(label string) string {
+	if len(label) > 0 {
+		return fmt.Sprintf("`%s`", label)
+	}
+	return label
+}
+
+// updateMilestoneStateLabel ensures that the given milestone state
+// label is the only state label set on the given issue.
+func updateMilestoneStateLabel(obj *github.MungeObject, labelName string) bool {
+	if len(labelName) > 0 && !obj.HasLabel(labelName) {
+		if err := obj.AddLabel(labelName); err != nil {
+			return false
+		}
+	}
+	for _, stateLabel := range milestoneStateLabels {
+		if stateLabel != labelName && obj.HasLabel(stateLabel) {
+			if err := obj.RemoveLabel(stateLabel); err != nil {
+				return false
+			}
+		}
+	}
+	return true
 }

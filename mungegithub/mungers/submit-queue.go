@@ -51,20 +51,22 @@ import (
 )
 
 const (
-	approvedLabel                  = "approved"
-	lgtmLabel                      = "lgtm"
-	retestNotRequiredLabel         = "retest-not-required"
-	retestNotRequiredDocsOnlyLabel = "retest-not-required-docs-only"
-	doNotMergeLabel                = "do-not-merge"
-	wipLabel                       = "do-not-merge/work-in-progress"
-	holdLabel                      = "do-not-merge/hold"
-	cncfClaYesLabel                = "cncf-cla: yes"
-	cncfClaNoLabel                 = "cncf-cla: no"
-	claHumanLabel                  = "cla: human-approved"
-	criticalFixLabel               = "queue/critical-fix"
-	blocksOthersLabel              = "queue/blocks-others"
-	fixLabel                       = "queue/fix"
-	multirebaseLabel               = "queue/multiple-rebases"
+	approvedLabel                    = "approved"
+	lgtmLabel                        = "lgtm"
+	retestNotRequiredLabel           = "retest-not-required"
+	retestNotRequiredDocsOnlyLabel   = "retest-not-required-docs-only"
+	doNotMergeLabel                  = "do-not-merge"
+	wipLabel                         = "do-not-merge/work-in-progress"
+	holdLabel                        = "do-not-merge/hold"
+	deprecatedReleaseNoteLabelNeeded = "release-note-label-needed"
+	releaseNoteLabelNeeded           = "do-not-merge/release-note-label-needed"
+	cncfClaYesLabel                  = "cncf-cla: yes"
+	cncfClaNoLabel                   = "cncf-cla: no"
+	claHumanLabel                    = "cla: human-approved"
+	criticalFixLabel                 = "queue/critical-fix"
+	blocksOthersLabel                = "queue/blocks-others"
+	fixLabel                         = "queue/fix"
+	multirebaseLabel                 = "queue/multiple-rebases"
 
 	sqContext = "Submit Queue"
 
@@ -224,8 +226,10 @@ type SubmitQueue struct {
 	opts                *options.Options
 	NonBlockingJobNames []string
 
-	GateApproved bool
-	GateCLA      bool
+	GateApproved                 bool
+	GateCLA                      bool
+	GateGHReviewApproved         bool
+	GateGHReviewChangesRequested bool
 
 	// AdditionalRequiredLabels is a set of additional labels required for merging
 	// on top of the existing required ("lgtm", "approved", "cncf-cla: yes").
@@ -233,6 +237,9 @@ type SubmitQueue struct {
 
 	// If FakeE2E is true, don't try to connect to JenkinsHost, all jobs are passing.
 	FakeE2E bool
+
+	// All valid cla labels
+	ClaYesLabels []string
 
 	DoNotMergeMilestones []string
 
@@ -283,7 +290,9 @@ type SubmitQueue struct {
 	batchStatus  submitQueueBatchStatus
 	ciStatus     map[string]map[string]jobStatus // type (eg batch) : job : status
 
-	MergeToMasterMessage string // extra message when PR is merged to master branch
+	// MergeToMasterMessage is an extra message when PR is merged to master branch,
+	// it must not end in a period.
+	MergeToMasterMessage string
 }
 
 func init() {
@@ -590,11 +599,19 @@ func (sq *SubmitQueue) RegisterOptions(opts *options.Options) sets.String {
 	opts.RegisterBool(&sq.GateApproved, "gate-approved", false, "Gate on approved label.")
 	opts.RegisterBool(&sq.GateCLA, "gate-cla", false, "Gate on cla labels.")
 	opts.RegisterString(&sq.MergeToMasterMessage, "merge-to-master-message", "", "Extra message when PR is merged to master branch.")
+	opts.RegisterBool(&sq.GateGHReviewApproved, "gh-review-approved", false, "Gate github review, approve")
+	opts.RegisterBool(&sq.GateGHReviewChangesRequested, "gh-review-changes-requested", false, "Gate github review, changes request")
+	opts.RegisterStringSlice(&sq.ClaYesLabels, "cla-yes-labels", []string{cncfClaYesLabel, claHumanLabel}, "Comma separated list of labels that would be counted as valid cla labels")
 
 	opts.RegisterUpdateCallback(func(changed sets.String) error {
 		if changed.HasAny("prow-url", "batch-enabled") {
 			if sq.BatchEnabled && sq.ProwURL == "" {
 				return fmt.Errorf("batch merges require prow-url to be set")
+			}
+		}
+		if changed.HasAny("gate-cla", "cla-yes-labels") {
+			if sq.GateCLA && len(sq.ClaYesLabels) == 0 {
+				return fmt.Errorf("gating cla require at least one cla yes label. Default are %s and %s", cncfClaYesLabel, claHumanLabel)
 			}
 		}
 		return nil
@@ -618,6 +635,7 @@ func (sq *SubmitQueue) RegisterOptions(opts *options.Options) sets.String {
 		"gate-approved",
 		// Need to remunge all PRs if anything changes in the following set of labels.
 		"additional-required-labels",
+		"cla-yes-labels",
 	)
 }
 
@@ -976,27 +994,30 @@ func noAdditionalLabelMessage(label string) string {
 }
 
 const (
-	unknown                 = "unknown failure"
-	noCLA                   = "PR is missing CLA label; needs one of " + cncfClaYesLabel + " or " + claHumanLabel
-	noLGTM                  = "PR does not have " + lgtmLabel + " label."
-	noApproved              = "PR does not have " + approvedLabel + " label."
-	lgtmEarly               = "The PR was changed after the " + lgtmLabel + " label was added."
-	unmergeable             = "PR is unable to be automatically merged. Needs rebase."
-	undeterminedMergability = "Unable to determine is PR is mergeable. Will try again later."
-	ciFailure               = "Required Github CI test is not green"
-	ciFailureFmt            = ciFailure + ": %s"
-	e2eFailure              = "The e2e tests are failing. The entire submit queue is blocked."
-	e2eRecover              = "The e2e tests started passing. The submit queue is unblocked."
-	merged                  = "MERGED!"
-	mergedSkippedRetest     = "MERGED! (skipped retest because of label)"
-	mergedBatch             = "MERGED! (batch)"
-	mergedByHand            = "MERGED! (by hand outside of submit queue)"
-	ghE2EQueued             = "Queued to run github e2e tests a second time."
-	ghE2EWaitingStart       = "Requested and waiting for github e2e test to start running a second time."
-	ghE2ERunning            = "Running github e2e tests a second time."
-	ghE2EFailed             = "Second github e2e run failed."
-	unmergeableMilestone    = "Milestone is for a future release and cannot be merged"
-	headCommitChanged       = "This PR has changed since we ran the tests"
+	unknown                  = "unknown failure"
+	noCLA                    = "PR is missing CLA label; needs one from the following list:"
+	noLGTM                   = "PR does not have " + lgtmLabel + " label."
+	noApproved               = "PR does not have " + approvedLabel + " label."
+	lgtmEarly                = "The PR was changed after the " + lgtmLabel + " label was added."
+	unmergeable              = "PR is unable to be automatically merged. Needs rebase."
+	undeterminedMergability  = "Unable to determine is PR is mergeable. Will try again later."
+	ciFailure                = "Required Github CI test is not green"
+	ciFailureFmt             = ciFailure + ": %s"
+	e2eFailure               = "The e2e tests are failing. The entire submit queue is blocked."
+	e2eRecover               = "The e2e tests started passing. The submit queue is unblocked."
+	merged                   = "MERGED!"
+	mergedSkippedRetest      = "MERGED! (skipped retest because of label)"
+	mergedBatch              = "MERGED! (batch)"
+	mergedByHand             = "MERGED! (by hand outside of submit queue)"
+	ghE2EQueued              = "Queued to run github e2e tests a second time."
+	ghE2EWaitingStart        = "Requested and waiting for github e2e test to start running a second time."
+	ghE2ERunning             = "Running github e2e tests a second time."
+	ghE2EFailed              = "Second github e2e run failed."
+	unmergeableMilestone     = "Milestone is for a future release and cannot be merged"
+	headCommitChanged        = "This PR has changed since we ran the tests"
+	ghReviewStateUnclear     = "Cannot get gh reviews status"
+	ghReviewApproved         = "This pr has no Github review \"approved\"."
+	ghReviewChangesRequested = "Reviewer(s) requested changes through github review process."
 )
 
 // validForMergeExt is the base logic about what PR can be automatically merged.
@@ -1032,6 +1053,7 @@ func (sq *SubmitQueue) validForMergeExt(obj *github.MungeObject, checkStatus boo
 	mergeContexts := mungeopts.RequiredContexts.Merge
 	retestContexts := mungeopts.RequiredContexts.Retest
 	additionalLabels := sq.AdditionalRequiredLabels
+	claYesLabels := sq.ClaYesLabels
 	sq.opts.Unlock()
 
 	milestone := obj.Issue.Milestone
@@ -1049,9 +1071,14 @@ func (sq *SubmitQueue) validForMergeExt(obj *github.MungeObject, checkStatus boo
 
 	// Must pass CLA checks
 	if gateCLA {
-		if !obj.HasLabel(claHumanLabel) && !obj.HasLabel(cncfClaYesLabel) {
-			sq.SetMergeStatus(obj, noCLA)
-			return false
+		for i, l := range claYesLabels {
+			if obj.HasLabel(l) {
+				break
+			}
+			if i == len(claYesLabels)-1 {
+				sq.SetMergeStatus(obj, fmt.Sprintf("%s %q", noCLA, claYesLabels))
+				return false
+			}
 		}
 	}
 
@@ -1077,6 +1104,19 @@ func (sq *SubmitQueue) validForMergeExt(obj *github.MungeObject, checkStatus boo
 				sq.setContextFailedStatus(obj, retestContexts)
 				return false
 			}
+		}
+	}
+
+	if sq.GateGHReviewApproved || sq.GateGHReviewChangesRequested {
+		if approvedReview, changesRequestedReview, ok := obj.CollectGHReviewStatus(); !ok {
+			sq.SetMergeStatus(obj, ghReviewStateUnclear)
+			return false
+		} else if len(approvedReview) == 0 && sq.GateGHReviewApproved {
+			sq.SetMergeStatus(obj, ghReviewApproved)
+			return false
+		} else if len(changesRequestedReview) > 0 && sq.GateGHReviewChangesRequested {
+			sq.SetMergeStatus(obj, ghReviewChangesRequested)
+			return false
 		}
 	}
 
@@ -1337,7 +1377,9 @@ func (sq *SubmitQueue) mergePullRequest(obj *github.MungeObject, msg, extra stri
 	isMaster, _ := obj.IsForBranch("master")
 	if isMaster {
 		sq.opts.Lock()
-		extra = extra + ". " + sq.MergeToMasterMessage
+		if sq.MergeToMasterMessage != "" {
+			extra = extra + ". " + sq.MergeToMasterMessage
+		}
 		sq.opts.Unlock()
 	}
 	ok := obj.MergePR("submit-queue" + extra)
@@ -1597,10 +1639,12 @@ func (sq *SubmitQueue) serveMergeInfo(res http.ResponseWriter, req *http.Request
 	// Lock to get options since we are not running in the main goroutine.
 	sq.opts.Lock()
 	doNotMergeMilestones := sq.DoNotMergeMilestones
+	additionalLabels := sq.AdditionalRequiredLabels
 	gateApproved := sq.GateApproved
 	gateCLA := sq.GateCLA
 	mergeContexts := mungeopts.RequiredContexts.Merge
 	retestContexts := mungeopts.RequiredContexts.Retest
+	claYesLabels := sq.ClaYesLabels
 	sq.opts.Unlock()
 
 	res.Header().Set("Content-type", "text/plain")
@@ -1609,7 +1653,7 @@ func (sq *SubmitQueue) serveMergeInfo(res http.ResponseWriter, req *http.Request
 	out.WriteString("PRs must meet the following set of conditions to be considered for automatic merging by the submit queue.")
 	out.WriteString("<ol>")
 	if gateCLA {
-		out.WriteString(fmt.Sprintf("<li>The PR must have the label %q or %q </li>", cncfClaYesLabel, claHumanLabel))
+		out.WriteString(fmt.Sprintf("<li>The PR must have one of the following labels: %q </li>", claYesLabels))
 	}
 	out.WriteString("<li>The PR must be mergeable. aka cannot need a rebase</li>")
 	if len(mergeContexts) > 0 || len(retestContexts) > 0 {
@@ -1628,6 +1672,9 @@ func (sq *SubmitQueue) serveMergeInfo(res http.ResponseWriter, req *http.Request
 	out.WriteString(fmt.Sprintf("<li>The PR must not have been updated since the %q label was applied</li>", lgtmLabel))
 	if gateApproved {
 		out.WriteString(fmt.Sprintf(`<li>The PR must have the %q label</li>`, approvedLabel))
+	}
+	if len(additionalLabels) > 0 {
+		out.WriteString(fmt.Sprintf(`<li>The PR must have the following labels: %q</li>`, additionalLabels))
 	}
 	out.WriteString(`<li>The PR must not have the any labels starting with "do-not-merge"</li>`)
 	out.WriteString(`</ol><br>`)

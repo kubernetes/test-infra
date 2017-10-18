@@ -16,7 +16,7 @@ spec:
         - /mungegithub
         - --dry-run=true
         - --alsologtostderr
-        - --config-path=/etc/munge-config/config
+        - --config-path=/etc/munge-config/configmap.yaml
         image: gcr.io/k8s-testimages/cherrypick:2016-03-14-7fb1dae
         ports:
         - name: status

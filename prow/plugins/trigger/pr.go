@@ -151,6 +151,7 @@ func buildAll(c client, pr github.PullRequest) error {
 	var changes []string // lazily initialized
 
 	for _, job := range c.Config.Presubmits[pr.Base.Repo.FullName] {
+		skip := false
 		if job.RunIfChanged != "" {
 			if changes == nil {
 				changesFull, err := c.GitHubClient.GetPullRequestChanges(org, repo, pr.Number)
@@ -162,13 +163,12 @@ func buildAll(c client, pr github.PullRequest) error {
 					changes = append(changes, change.Filename)
 				}
 			}
-			if !job.RunsAgainstChanges(changes) {
-				continue
-			}
+			skip = !job.RunsAgainstChanges(changes)
 		} else if !job.AlwaysRun {
 			continue
 		}
-		if !job.RunsAgainstBranch(pr.Base.Ref) {
+
+		if (skip || !job.RunsAgainstBranch(pr.Base.Ref)) && !job.SkipReport {
 			if err := c.GitHubClient.CreateStatus(org, repo, pr.Head.SHA, github.Status{
 				State:       github.StatusSuccess,
 				Context:     job.Context,
@@ -178,6 +178,7 @@ func buildAll(c client, pr github.PullRequest) error {
 			}
 			continue
 		}
+
 		// Only get master ref once.
 		if ref == "" {
 			r, err := c.GitHubClient.GetRef(org, repo, "heads/"+pr.Base.Ref)

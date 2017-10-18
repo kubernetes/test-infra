@@ -76,24 +76,22 @@ func TestHandle(t *testing.T) {
 			IssueComments: make(map[int][]github.IssueComment),
 		}
 
-		org, repo, number, htmlurl := "org", "repo", 1, "url"
-		e := &event{
-			org:    org,
-			repo:   repo,
-			number: number,
-			body:   tc.body,
-			hasLabel: func() (bool, error) {
-				return tc.hasLabel, nil
-			},
-			htmlurl: htmlurl,
+		e := &github.GenericCommentEvent{
+			Action: github.GenericCommentActionCreated,
+			Body:   tc.body,
+			Number: 1,
+			Repo:   github.Repo{Owner: github.User{Login: "org"}, Name: "repo"},
+		}
+		hasLabel := func(e *github.GenericCommentEvent) (bool, error) {
+			return tc.hasLabel, nil
 		}
 
-		if err := handle(fc, logrus.WithField("plugin", pluginName), e); err != nil {
+		if err := handle(fc, logrus.WithField("plugin", pluginName), e, hasLabel); err != nil {
 			t.Errorf("For case %s, didn't expect error from hold: %v", tc.name, err)
 			continue
 		}
 
-		fakeLabel := fmt.Sprintf("%s/%s#%d:%s", org, repo, number, label)
+		fakeLabel := fmt.Sprintf("org/repo#1:%s", label)
 		if tc.shouldLabel {
 			if len(fc.LabelsAdded) != 1 || fc.LabelsAdded[0] != fakeLabel {
 				t.Errorf("For case %s: expected to add %q label but instead added: %v", tc.name, label, fc.LabelsAdded)

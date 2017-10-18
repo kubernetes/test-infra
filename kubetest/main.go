@@ -20,7 +20,6 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"errors"
-	"flag"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -34,29 +33,21 @@ import (
 	"time"
 
 	"k8s.io/test-infra/boskos/client"
+
+	flag "github.com/spf13/pflag"
 )
 
 // Hardcoded in ginkgo-e2e.sh
 const defaultGinkgoParallel = 25
 
 var (
-	artifacts    = initPath("./_artifacts")
-	interrupt    = time.NewTimer(time.Duration(0)) // interrupt testing at this time.
-	kubetestPath = initPath(os.Args[0])
-	terminate    = time.NewTimer(time.Duration(0)) // terminate testing at this time.
-	verbose      = false
-	timeout      = time.Duration(0)
-	boskos       = client.NewClient(os.Getenv("JOB_NAME"), "http://boskos")
+	artifacts = filepath.Join(os.Getenv("WORKSPACE"), "_artifacts")
+	interrupt = time.NewTimer(time.Duration(0)) // interrupt testing at this time.
+	terminate = time.NewTimer(time.Duration(0)) // terminate testing at this time.
+	verbose   = false
+	timeout   = time.Duration(0)
+	boskos    = client.NewClient(os.Getenv("JOB_NAME"), "http://boskos")
 )
-
-// Joins os.Getwd() and path
-func initPath(path string) string {
-	d, err := os.Getwd()
-	if err != nil {
-		log.Fatalf("failed initPath(): %v", err)
-	}
-	return filepath.Join(d, path)
-}
 
 type options struct {
 	build               buildStrategy
@@ -100,6 +91,9 @@ type options struct {
 	stage               stageStrategy
 	test                bool
 	testArgs            string
+	testCmd             string
+	testCmdName         string
+	testCmdArgs         []string
 	up                  bool
 	upgradeArgs         string
 }
@@ -149,6 +143,9 @@ func defineFlags() *options {
 	flag.StringVar(&o.stage.versionSuffix, "stage-suffix", "", "Append suffix to staged version when set")
 	flag.BoolVar(&o.test, "test", false, "Run Ginkgo tests.")
 	flag.StringVar(&o.testArgs, "test_args", "", "Space-separated list of arguments to pass to Ginkgo test runner.")
+	flag.StringVar(&o.testCmd, "test-cmd", "", "command to run against the cluster instead of Ginkgo e2e tests")
+	flag.StringVar(&o.testCmdName, "test-cmd-name", "", "name to log the test command as in xml results")
+	flag.StringArrayVar(&o.testCmdArgs, "test-cmd-args", []string{}, "args for test-cmd")
 	flag.DurationVar(&timeout, "timeout", time.Duration(0), "Terminate testing after the timeout duration (s/m/h)")
 	flag.BoolVar(&o.up, "up", false, "If true, start the the e2e cluster. If cluster is already up, recreate it.")
 	flag.StringVar(&o.upgradeArgs, "upgrade_args", "", "If set, run upgrade tests before other tests")
@@ -228,7 +225,7 @@ func getDeployer(o *options) (deployer, error) {
 	case "gke":
 		return newGKE(o.provider, o.gcpProject, o.gcpZone, o.gcpRegion, o.gcpNetwork, o.gcpNodeImage, o.cluster, &o.testArgs, &o.upgradeArgs)
 	case "kops":
-		return newKops()
+		return newKops(o.provider, o.gcpProject)
 	case "kubernetes-anywhere":
 		if o.multiClusters.Enabled() {
 			return newKubernetesAnywhereMultiCluster(o.gcpProject, o.gcpZone, o.multiClusters)
@@ -692,18 +689,24 @@ func prepareGcp(o *options) error {
 				}
 			}
 		}
-		if err := os.Rename(home(filepath.Base(o.gcpCloudSdk)), home("repo")); err != nil {
-			return err
+
+		install := home("repo", "google-cloud-sdk.tar.gz")
+		if strings.HasSuffix(o.gcpCloudSdk, ".tar.gz") {
+			install = home(filepath.Base(o.gcpCloudSdk))
+		} else {
+			if err := os.Rename(home(filepath.Base(o.gcpCloudSdk)), home("repo")); err != nil {
+				return err
+			}
+
+			// Controls which gcloud components to install.
+			pop, err := pushEnv("CLOUDSDK_COMPONENT_MANAGER_SNAPSHOT_URL", "file://"+home("repo", "components-2.json"))
+			if err != nil {
+				return err
+			}
+			defer pop()
 		}
 
-		// Controls which gcloud components to install.
-		pop, err := pushEnv("CLOUDSDK_COMPONENT_MANAGER_SNAPSHOT_URL", "file://"+home("repo", "components-2.json"))
-		if err != nil {
-			return err
-		}
-		defer pop()
-
-		if err := installGcloud(home("repo", "google-cloud-sdk.tar.gz"), home("cloudsdk")); err != nil {
+		if err := installGcloud(install, home("cloudsdk")); err != nil {
 			return err
 		}
 		// gcloud creds may have changed
@@ -846,6 +849,10 @@ func (v *ginkgoParallelValue) Set(s string) error {
 	}
 	v.v = p
 	return nil
+}
+
+func (v *ginkgoParallelValue) Type() string {
+	return "ginkgoParallelValue"
 }
 
 func (v *ginkgoParallelValue) Get() int {

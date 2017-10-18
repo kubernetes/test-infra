@@ -26,6 +26,7 @@ import (
 	"github.com/ghodss/yaml"
 	"github.com/sirupsen/logrus"
 
+	"k8s.io/test-infra/prow/commentpruner"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/git"
 	"k8s.io/test-infra/prow/github"
@@ -108,6 +109,8 @@ type PluginClient struct {
 	GitClient    *git.Client
 	SlackClient  *slack.Client
 
+	CommentPruner *commentpruner.EventClient
+
 	// Config provides information about the jobs
 	// that we know how to run for repos.
 	Config *config.Config
@@ -128,11 +131,50 @@ type PluginAgent struct {
 // target for plugin Configuration
 type Configuration struct {
 	// Repo (eg "k/k") -> list of handler names.
-	Plugins  map[string][]string `json:"plugins,omitempty"`
-	Triggers []Trigger           `json:"triggers,omitempty"`
-	Heart    Heart               `json:"heart,omitempty"`
-	Label    Label               `json:"label,omitempty"`
-	Slack    Slack               `json:"slack,omitempty"`
+	Plugins         map[string][]string `json:"plugins,omitempty"`
+	Triggers        []Trigger           `json:"triggers,omitempty"`
+	Heart           Heart               `json:"heart,omitempty"`
+	MilestoneStatus MilestoneStatus     `json:"milestonestatus,omitempty"`
+	Slack           Slack               `json:"slack,omitempty"`
+	// ConfigUpdater holds config for the config-updater plugin.
+	ConfigUpdater ConfigUpdater `json:"config_updater,omitempty"`
+	Blockades     []Blockade    `json:"blockades,omitempty"`
+}
+
+/*
+  Blockade specifies a configuration for a single blockade.blockade. The configuration for the
+  blockade plugin is defined as a list of these structures. Here is an example of a complete
+  yaml config for the blockade plugin that is composed of 2 Blockade structs:
+
+	blockades:
+	- repos:
+	  - kubernetes-incubator
+	  - kubernetes/kubernetes
+	  - kubernetes/test-infra
+	  blockregexps:
+	  - 'docs/.*'
+	  - 'other-docs/.*'
+	  exceptionregexps:
+	  - '.*OWNERS'
+	  explanation: "Files in the 'docs' directory should not be modified except for OWNERS files"
+	- repos:
+	  - kubernetes/test-infra
+	  blockregexps:
+	  - 'mungegithub/.*'
+	  exceptionregexps:
+	  - 'mungegithub/DeprecationWarning.md'
+	  explanation: "Don't work on mungegithub! Work on Prow!"
+*/
+type Blockade struct {
+	// Repos are either of the form org/repos or just org.
+	Repos []string `json:"repos,omitempty"`
+	// BlockRegexps are regular expressions matching the file paths to block.
+	BlockRegexps []string `json:"blockregexps,omitempty"`
+	// ExceptionRegexps are regular expressions matching the file paths that are exceptions to the BlockRegexps.
+	ExceptionRegexps []string `json:"exceptionregexps,omitempty"`
+	// Explanation is a string that will be included in the comment left when blocking a PR. This should
+	// be an explanation of why the paths specified are blockaded.
+	Explanation string `json:"explanation,omitempty"`
 }
 
 type Trigger struct {
@@ -149,20 +191,33 @@ type Heart struct {
 	Adorees []string `json:"adorees,omitempty"`
 }
 
-type Label struct {
-	// SigOrg is the organization that owns the
-	// special interest groups tagged in this repo
-	SigOrg string `json:"sig_org,omitempty"`
+// MilestoneStatus contains the configuration options for the milestonestatus plugin.
+type MilestoneStatus struct {
 	// ID of the github team for the milestone maintainers (used for setting status labels)
 	// You can curl the following endpoint in order to determine the github ID of your team
 	// responsible for maintaining the milestones:
 	// curl -H "Authorization: token <token>" https://api.github.com/orgs/<org-name>/teams
-	MilestoneMaintainersID int `json:"milestone_maintainers_id,omitempty"`
+	MaintainersID int `json:"maintainers_id,omitempty"`
 }
 
 type Slack struct {
 	MentionChannels []string       `json:"mentionchannels,omitempty"`
 	MergeWarnings   []MergeWarning `json:"mergewarnings,omitempty"`
+}
+
+type ConfigUpdater struct {
+	// The location of the prow configuration file inside the repository
+	// where the config-updater plugin is enabled. This needs to be relative
+	// to the root of the repository, eg. "prow/config.yaml" will match
+	// github.com/kubernetes/test-infra/prow/config.yaml assuming the config-updater
+	// plugin is enabled for kubernetes/test-infra. Defaults to "prow/config.yaml".
+	ConfigFile string `json:"config_file,omitempty"`
+	// The location of the prow plugin configuration file inside the repository
+	// where the config-updater plugin is enabled. This needs to be relative
+	// to the root of the repository, eg. "prow/plugins.yaml" will match
+	// github.com/kubernetes/test-infra/prow/plugins.yaml assuming the config-updater
+	// plugin is enabled for kubernetes/test-infra. Defaults to "prow/plugins.yaml".
+	PluginFile string `json:"plugin_file,omitempty"`
 }
 
 // MergeWarning is a config for the slackevents plugin's manual merge warings.
@@ -191,6 +246,15 @@ func (c *Configuration) TriggerFor(org, repo string) *Trigger {
 	return nil
 }
 
+func (c *Configuration) setDefaults() {
+	if c.ConfigUpdater.ConfigFile == "" {
+		c.ConfigUpdater.ConfigFile = "prow/config.yaml"
+	}
+	if c.ConfigUpdater.PluginFile == "" {
+		c.ConfigUpdater.PluginFile = "prow/plugins.yaml"
+	}
+}
+
 // Load attempts to load config from the path. It returns an error if either
 // the file can't be read or it contains an unknown plugin.
 func (pa *PluginAgent) Load(path string) error {
@@ -203,9 +267,14 @@ func (pa *PluginAgent) Load(path string) error {
 		return err
 	}
 
+	if len(np.Plugins) == 0 {
+		logrus.Warn("no plugins specified-- check syntax?")
+	}
+
 	if err := validatePlugins(np.Plugins); err != nil {
 		return err
 	}
+	np.setDefaults()
 	pa.Set(np)
 	return nil
 }

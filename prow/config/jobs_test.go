@@ -49,6 +49,27 @@ func flattenJobs(jobs []Presubmit) []Presubmit {
 	return ret
 }
 
+// Returns if two brancher has overlapping branches
+func CheckOverlapBrancher(b1, b2 Brancher) bool {
+	if b1.RunsAgainstAllBranch() || b2.RunsAgainstAllBranch() {
+		return true
+	}
+
+	for _, run1 := range b1.Branches {
+		if b2.RunsAgainstBranch(run1) {
+			return true
+		}
+	}
+
+	for _, run2 := range b2.Branches {
+		if b1.RunsAgainstBranch(run2) {
+			return true
+		}
+	}
+
+	return false
+}
+
 // TODO(spxtr): Some of this is generic prowjob stuff and some of this is k8s-
 // specific. Figure out which is which and split this up.
 func TestPresubmits(t *testing.T) {
@@ -94,27 +115,34 @@ func TestPresubmits(t *testing.T) {
 			if !job.AlwaysRun && job.re.MatchString(retestBody) {
 				t.Errorf("Non-AlwaysRun job %s: \"%s\" matches regex \"%v\".", job.Name, retestBody, job.Trigger)
 			}
+
+			if len(job.Brancher.Branches) > 0 && len(job.Brancher.SkipBranches) > 0 {
+				t.Errorf("Job %s : Cannot have both branches and skip_branches set", job.Name)
+			}
 			// Next check that the rerun command doesn't run any other jobs.
-			for j, job2 := range jobs {
-				if i == j {
-					continue
-				}
-				if job.Name == job2.Name && i > j {
-					t.Errorf("Two jobs have the same name: %s", job.Name)
-				}
-				if job.Context == job2.Context && i > j {
-					t.Errorf("Jobs %s and %s have the same context: %s", job.Name, job2.Name, job.Context)
-				}
-				if job2.re.MatchString(job.RerunCommand) {
-					t.Errorf("RerunCommand \"%s\" from job %s matches \"%v\" from job %s but shouldn't.", job.RerunCommand, job.Name, job2.Trigger, job2.Name)
+			for j, job2 := range jobs[i+1:] {
+				if job.Name == job2.Name {
+					// Make sure max_concurrency are the same
+					if job.MaxConcurrency != job2.MaxConcurrency {
+						t.Errorf("Jobs %s share same name but has different max_concurrency", job.Name)
+					}
+					// Make sure branches are not overlapping
+					if CheckOverlapBrancher(job.Brancher, job2.Brancher) {
+						t.Errorf("Two jobs have the same name: %s, and has conflicted branches", job.Name)
+					}
+				} else {
+					if job.Context == job2.Context {
+						t.Errorf("Jobs %s and %s have the same context: %s", job.Name, job2.Name, job.Context)
+					}
+					if job2.re.MatchString(job.RerunCommand) {
+						t.Errorf("%d, %d, RerunCommand \"%s\" from job %s matches \"%v\" from job %s but shouldn't.", i, j, job.RerunCommand, job.Name, job2.Trigger, job2.Name)
+					}
 				}
 			}
 			var scenario string
 			job.Name = strings.Replace(job.Name, "pull-security-kubernetes", "pull-kubernetes", 1)
 			if j, present := bootstrapConfig[job.Name]; present {
 				scenario = fmt.Sprintf("scenarios/%s.py", j.Scenario)
-			} else {
-				scenario = fmt.Sprintf("jobs/%s.sh", job.Name)
 			}
 
 			// Ensure that jobs have a shell script of the same name.
@@ -356,7 +384,7 @@ func TestConditionalPresubmits(t *testing.T) {
 			RunIfChanged: `(Makefile|\.sh|_(windows|linux|osx|unknown)(_test)?\.go)$`,
 		},
 	}
-	setRegexes(presubmits)
+	SetRegexes(presubmits)
 	ps := presubmits[0]
 	var testcases = []struct {
 		changes  []string
@@ -617,15 +645,9 @@ func TestNoDuplicateJobs(t *testing.T) {
 		t.Fatalf("Could not load config: %v", err)
 	}
 
-	allJobs := make(map[string]bool)
-	for _, j := range c.AllPresubmits([]string{}) {
-		if allJobs[j.Name] {
-			t.Errorf("Found duplicate job in presubmit: %s.", j.Name)
-		}
-		allJobs[j.Name] = true
-	}
+	// Presubmit test is covered under TestPresubmits() above
 
-	allJobs = make(map[string]bool)
+	allJobs := make(map[string]bool)
 	for _, j := range c.AllPostsubmits([]string{}) {
 		if allJobs[j.Name] {
 			t.Errorf("Found duplicate job in postsubmit: %s.", j.Name)

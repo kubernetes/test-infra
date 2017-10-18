@@ -25,7 +25,22 @@ See also: [Life of a Prow Job](./architecture.md)
 Breaking changes to external APIs (labels, GitHub interactions, configuration
 or deployment) will be documented in this section. Prow is in a pre-release
 state and no claims of backwards compatibility are made for any external API.
+Note: versions specified in these announcements may not include bug fixes made
+in more recent versions so it is recommended that the most recent versions are
+used when updating deployments.
 
+ - *October 13, 2017* `hook:0.174`, `plank:0.50`, and `jenkins-operator:0.47`
+   drop the deprecated `github-bot-name` flag.
+ - *October 2, 2017* `hook` version 0.171. The label plugin was split into three
+   plugins (label, sigmention, milestonestatus). Breaking changes:
+   - The configuration key for the milestone maintainer team's ID has been
+   changed. Previously the team ID was stored in the plugins config at key
+   `label`>>`milestone_maintainers_id`. Now that the milestone status labels are
+   handled in the `milestonestatus` plugin instead of the `label` plugin, the
+   team ID is stored at key `milestonestatus`>>`maintainers_id`.
+   - The sigmention and milestonestatus plugins must be enabled on any repos
+   that require them since their functionality is no longer included in the 
+   label plugin.
  - *September 3, 2017* sinker:0.17 now deletes pods labeled by plank:0.42 in
    order to avoid cleaning up unrelated pods that happen to be found in the
    same namespace prow runs pods. If you run other pods in the same namespace,
@@ -117,6 +132,11 @@ deployed then the config will be automatically updated once the PR is merged,
 else you will need to run `make update-plugins`. This does not require 
 redeploying the binaries, and will take effect within a minute.
 
+Note that Github events triggered by the account that is managing the plugins
+are ignored by some plugins. It is prudent to use a different bot account for
+performing merges or rerunning tests, whether the deployment that drives the
+second account is `tide` or the `submit-queue` munger.
+
 ## How to add new jobs
 
 To add a new job you'll need to add an entry into [config.yaml](config.yaml). 
@@ -191,8 +211,13 @@ to input the `rerun_command` when they want to rerun the job. Actually, anything
 that matches `trigger` will suffice. This is useful if you want to make one
 command that reruns all jobs.
 
-Prow will inject the following environment variables into every container in
-your pod:
+
+### Job Evironment Variables
+
+Prow will expose the following environment variables to your job. If the job
+runs on Kubernetes, the variables will be injected into every container in
+your pod, If the job is run in Jenkins, Prow will supply them as parameters to
+the build.
 
 Variable | Periodic | Postsubmit | Batch | Presubmit | Description | Example
 --- |:---:|:---:|:---:|:---:| --- | ---
@@ -205,6 +230,9 @@ Variable | Periodic | Postsubmit | Batch | Presubmit | Description | Example
 `PULL_REFS` | | ✓ | ✓ | ✓ | All refs to test. | `master:123abc,5:qwe456`
 `PULL_NUMBER` | | | | ✓ | Pull request number. | `5`
 `PULL_PULL_SHA` | | | | ✓ | Pull request head SHA. | `qwe456`
+
+Note: to not overwrite the Jenkins `$BUILD_NUMBER` variable, the build identifier
+will be passed as `$buildId` to Jenkins jobs.
 
 ## Bots home
 

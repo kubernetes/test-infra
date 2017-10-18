@@ -24,6 +24,9 @@ import (
 	"github.com/shurcooL/githubql"
 	"github.com/sirupsen/logrus"
 
+	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/git/localgit"
+	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
 )
 
@@ -312,7 +315,8 @@ func TestAccumulate(t *testing.T) {
 }
 
 type fgc struct {
-	refs map[string]string
+	refs   map[string]string
+	merged int
 }
 
 func (f *fgc) GetRef(o, r, ref string) (string, error) {
@@ -320,6 +324,11 @@ func (f *fgc) GetRef(o, r, ref string) (string, error) {
 }
 
 func (f *fgc) Query(ctx context.Context, q interface{}, vars map[string]interface{}) error {
+	return nil
+}
+
+func (f *fgc) Merge(org, repo string, number int, details github.MergeDetails) error {
+	f.merged++
 	return nil
 }
 
@@ -414,7 +423,6 @@ func TestDividePool(t *testing.T) {
 		refs: map[string]string{"k/t-i heads/master": "123"},
 	}
 	c := &Controller{
-		log: logrus.NewEntry(logrus.StandardLogger()),
 		ghc: fc,
 	}
 	var pulls []pullRequest
@@ -468,6 +476,321 @@ func TestDividePool(t *testing.T) {
 			if pj.Spec.Refs.Org != sp.org || pj.Spec.Refs.Repo != sp.repo || pj.Spec.Refs.BaseRef != sp.branch || pj.Spec.Refs.BaseSHA != sp.sha {
 				t.Errorf("PJ in wrong subpool. Got PJ %+v in subpool %s.", pj, name)
 			}
+		}
+	}
+}
+
+func TestPickBatch(t *testing.T) {
+	lg, gc, err := localgit.New()
+	if err != nil {
+		t.Fatalf("Error making local git: %v", err)
+	}
+	defer gc.Clean()
+	defer lg.Clean()
+	if err := lg.MakeFakeRepo("o", "r"); err != nil {
+		t.Fatalf("Error making fake repo: %v", err)
+	}
+	if err := lg.AddCommit("o", "r", map[string][]byte{"foo": []byte("foo")}); err != nil {
+		t.Fatalf("Adding initial commit: %v", err)
+	}
+	testprs := []struct {
+		files   map[string][]byte
+		success bool
+
+		included bool
+	}{
+		{
+			files:    map[string][]byte{"bar": []byte("ok")},
+			success:  true,
+			included: true,
+		},
+		{
+			files:    map[string][]byte{"foo": []byte("ok")},
+			success:  true,
+			included: true,
+		},
+		{
+			files:    map[string][]byte{"bar": []byte("conflicts with 0")},
+			success:  true,
+			included: false,
+		},
+		{
+			files:    map[string][]byte{"qux": []byte("ok")},
+			success:  false,
+			included: false,
+		},
+		{
+			files:    map[string][]byte{"bazel": []byte("ok")},
+			success:  true,
+			included: true,
+		},
+	}
+	sp := subpool{
+		org:    "o",
+		repo:   "r",
+		branch: "master",
+		sha:    "master",
+	}
+	for i, testpr := range testprs {
+		if err := lg.CheckoutNewBranch("o", "r", fmt.Sprintf("pr-%d", i)); err != nil {
+			t.Fatalf("Error checking out new branch: %v", err)
+		}
+		if err := lg.AddCommit("o", "r", testpr.files); err != nil {
+			t.Fatalf("Error adding commit: %v", err)
+		}
+		if err := lg.Checkout("o", "r", "master"); err != nil {
+			t.Fatalf("Error checking out master: %v", err)
+		}
+		var pr pullRequest
+		pr.Number = githubql.Int(i)
+		pr.Commits.Nodes = []struct {
+			Commit struct {
+				Status struct{ State githubql.String }
+			}
+		}{{}}
+		if testpr.success {
+			pr.Commits.Nodes[0].Commit.Status.State = githubql.String("SUCCESS")
+		}
+		pr.HeadRef.Target.OID = githubql.String(fmt.Sprintf("origin/pr-%d", i))
+		sp.prs = append(sp.prs, pr)
+	}
+	c := &Controller{
+		gc: gc,
+	}
+	prs, err := c.pickBatch(sp)
+	if err != nil {
+		t.Fatalf("Error from pickBatch: %v", err)
+	}
+	for i, testpr := range testprs {
+		var found bool
+		for _, pr := range prs {
+			if int(pr.Number) == i {
+				found = true
+				break
+			}
+		}
+		if found != testpr.included {
+			t.Errorf("PR %d should not be picked.", i)
+		}
+	}
+}
+
+type fkc struct {
+	createdJobs []kube.ProwJob
+}
+
+func (c *fkc) ListProwJobs(map[string]string) ([]kube.ProwJob, error) {
+	return nil, nil
+}
+
+func (c *fkc) CreateProwJob(pj kube.ProwJob) (kube.ProwJob, error) {
+	c.createdJobs = append(c.createdJobs, pj)
+	return pj, nil
+}
+
+func TestTakeAction(t *testing.T) {
+	// PRs 0-9 exist. All are mergable, and all are passing tests.
+	testcases := []struct {
+		name string
+
+		batchPending bool
+		successes    []int
+		pendings     []int
+		nones        []int
+		batchMerges  []int
+
+		merged            int
+		triggered         int
+		triggered_batches int
+	}{
+		{
+			name: "no prs to test, should do nothing",
+
+			batchPending: true,
+			successes:    []int{},
+			pendings:     []int{},
+			nones:        []int{},
+			batchMerges:  []int{},
+
+			merged:    0,
+			triggered: 0,
+		},
+		{
+			name: "pending batch, pending serial, nothing to do",
+
+			batchPending: true,
+			successes:    []int{},
+			pendings:     []int{1},
+			nones:        []int{0, 2},
+			batchMerges:  []int{},
+
+			merged:    0,
+			triggered: 0,
+		},
+		{
+			name: "pending batch, successful serial, nothing to do",
+
+			batchPending: true,
+			successes:    []int{1},
+			pendings:     []int{},
+			nones:        []int{0, 2},
+			batchMerges:  []int{},
+
+			merged:    0,
+			triggered: 0,
+		},
+		{
+			name: "pending batch, should trigger serial",
+
+			batchPending: true,
+			successes:    []int{},
+			pendings:     []int{},
+			nones:        []int{0, 1, 2},
+			batchMerges:  []int{},
+
+			merged:    0,
+			triggered: 1,
+		},
+		{
+			name: "no pending batch, should trigger serial and batch",
+
+			batchPending: false,
+			successes:    []int{},
+			pendings:     []int{},
+			nones:        []int{0, 1, 2, 3},
+			batchMerges:  []int{},
+
+			merged:            0,
+			triggered:         2,
+			triggered_batches: 1,
+		},
+		{
+			name: "one PR, should not trigger batch",
+
+			batchPending: false,
+			successes:    []int{},
+			pendings:     []int{},
+			nones:        []int{0},
+			batchMerges:  []int{},
+
+			merged:    0,
+			triggered: 1,
+		},
+		{
+			name: "successful PR, should merge",
+
+			batchPending: false,
+			successes:    []int{0},
+			pendings:     []int{},
+			nones:        []int{1, 2, 3},
+			batchMerges:  []int{},
+
+			merged:    1,
+			triggered: 0,
+		},
+		{
+			name: "successful batch, should merge",
+
+			batchPending: false,
+			successes:    []int{0, 1},
+			pendings:     []int{2, 3},
+			nones:        []int{4, 5},
+			batchMerges:  []int{6, 7, 8},
+
+			merged:    3,
+			triggered: 0,
+		},
+	}
+
+	for _, tc := range testcases {
+		ca := &config.Agent{}
+		ca.Set(&config.Config{
+			Presubmits: map[string][]config.Presubmit{
+				"o/r": {
+					{
+						Name:      "foo",
+						AlwaysRun: true,
+					},
+				},
+			},
+		})
+		lg, gc, err := localgit.New()
+		if err != nil {
+			t.Fatalf("Error making local git: %v", err)
+		}
+		defer gc.Clean()
+		defer lg.Clean()
+		if err := lg.MakeFakeRepo("o", "r"); err != nil {
+			t.Fatalf("Error making fake repo: %v", err)
+		}
+		if err := lg.AddCommit("o", "r", map[string][]byte{"foo": []byte("foo")}); err != nil {
+			t.Fatalf("Adding initial commit: %v", err)
+		}
+
+		sp := subpool{
+			org:    "o",
+			repo:   "r",
+			branch: "master",
+			sha:    "master",
+		}
+		genPulls := func(nums []int) []pullRequest {
+			var prs []pullRequest
+			for _, i := range nums {
+				if err := lg.CheckoutNewBranch("o", "r", fmt.Sprintf("pr-%d", i)); err != nil {
+					t.Fatalf("Error checking out new branch: %v", err)
+				}
+				if err := lg.AddCommit("o", "r", map[string][]byte{fmt.Sprintf("%d", i): []byte("WOW")}); err != nil {
+					t.Fatalf("Error adding commit: %v", err)
+				}
+				if err := lg.Checkout("o", "r", "master"); err != nil {
+					t.Fatalf("Error checking out master: %v", err)
+				}
+				var pr pullRequest
+				pr.Number = githubql.Int(i)
+				pr.Commits.Nodes = []struct {
+					Commit struct {
+						Status struct{ State githubql.String }
+					}
+				}{{}}
+				pr.Commits.Nodes[0].Commit.Status.State = githubql.String("SUCCESS")
+				pr.HeadRef.Target.OID = githubql.String(fmt.Sprintf("origin/pr-%d", i))
+				sp.prs = append(sp.prs, pr)
+				prs = append(prs, pr)
+			}
+			return prs
+		}
+		var fkc fkc
+		var fgc fgc
+		c := &Controller{
+			Logger: logrus.StandardLogger().WithField("controller", "tide"),
+			gc:     gc,
+			ghc:    &fgc,
+			ca:     ca,
+			kc:     &fkc,
+		}
+		t.Logf("Test case: %s", tc.name)
+		if err := c.takeAction(sp, tc.batchPending, genPulls(tc.successes), genPulls(tc.pendings), genPulls(tc.nones), genPulls(tc.batchMerges)); err != nil {
+			t.Errorf("Error in takeAction: %v", err)
+			continue
+		}
+		if tc.triggered != len(fkc.createdJobs) {
+			t.Errorf("Wrong number of jobs triggered. Got %d, expected %d.", len(fkc.createdJobs), tc.triggered)
+		}
+		if tc.merged != fgc.merged {
+			t.Errorf("Wrong number of merges. Got %d, expected %d.", fgc.merged, tc.merged)
+		}
+		// Ensure that the correct number of batch jobs were triggered
+		batches := 0
+		for _, job := range fkc.createdJobs {
+			if (len(job.Spec.Refs.Pulls) > 1) != (job.Spec.Type == kube.BatchJob) {
+				t.Error("Found a batch job that doesn't contain multiple pull refs!")
+			}
+			if len(job.Spec.Refs.Pulls) > 1 {
+				batches++
+			}
+		}
+		if tc.triggered_batches != batches {
+			t.Errorf("Wrong number of batches triggered. Got %d, expected %d.", batches, tc.triggered_batches)
 		}
 	}
 }

@@ -50,7 +50,6 @@ var (
 	local  = flag.Bool("local", false, "Run locally for testing purposes only. Does not require secret files.")
 	dryRun = flag.Bool("dry-run", true, "Dry run for testing. Uses API tokens but does not mutate.")
 
-	_               = flag.String("github-bot-name", "", "Deprecated.")
 	githubEndpoint  = flag.String("github-endpoint", "https://api.github.com", "GitHub's API endpoint.")
 	githubTokenFile = flag.String("github-token-file", "/etc/github/oauth", "Path to the file containing the GitHub OAuth secret.")
 
@@ -65,7 +64,6 @@ func main() {
 	if err := configAgent.Start(*configPath); err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
-	logger := logrus.StandardLogger()
 
 	var webhookSecret []byte
 	var githubClient *github.Client
@@ -139,9 +137,11 @@ func main() {
 		logrus.WithError(err).Fatal("Error getting git client.")
 	}
 
+	logger := logrus.StandardLogger()
 	githubClient.Logger = logger.WithField("client", "github")
 	kubeClient.Logger = logger.WithField("client", "kube")
 	gitClient.Logger = logger.WithField("client", "git")
+	slackClient.Logger = logger.WithField("client", "slack")
 
 	pluginAgent := &plugins.PluginAgent{
 		PluginClient: plugins.PluginClient{

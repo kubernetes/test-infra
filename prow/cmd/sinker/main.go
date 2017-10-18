@@ -24,6 +24,7 @@ import (
 
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/kube"
+	"k8s.io/test-infra/prow/pjutil"
 )
 
 type kubeClient interface {
@@ -38,7 +39,11 @@ type configAgent interface {
 	Config() *config.Config
 }
 
-var configPath = flag.String("config-path", "/etc/config/config", "Path to config.yaml.")
+var (
+	runOnce    = flag.Bool("run-once", false, "If true, run only once then quit.")
+	configPath = flag.String("config-path", "/etc/config/config", "Path to config.yaml.")
+	cluster    = flag.String("build-cluster", "", "Path to kube.Cluster YAML file. If empty, uses the local cluster.")
+)
 
 func main() {
 	flag.Parse()
@@ -54,13 +59,29 @@ func main() {
 		logrus.WithError(err).Error("Error getting client.")
 		return
 	}
-	pkc := kc.Namespace(configAgent.Config().PodNamespace)
+
+	var pkc *kube.Client
+	if *cluster == "" {
+		pkc = kc.Namespace(configAgent.Config().PodNamespace)
+	} else {
+		pkc, err = kube.NewClientFromFile(*cluster, configAgent.Config().PodNamespace)
+		if err != nil {
+			logrus.WithError(err).Fatal("Error getting kube client.")
+		}
+	}
+
+	logger := logrus.StandardLogger()
+	kc.Logger = logger.WithField("client", "kube")
+	pkc.Logger = logger.WithField("client", "kube")
 
 	// Clean now and regularly from now on.
 	for {
 		start := time.Now()
 		clean(kc, pkc, configAgent)
 		logrus.Infof("Sync time: %v", time.Since(start))
+		if *runOnce {
+			break
+		}
 		time.Sleep(configAgent.Config().Sinker.ResyncPeriod)
 	}
 }
@@ -74,6 +95,38 @@ func clean(kc, pkc kubeClient, configAgent configAgent) {
 	}
 	maxProwJobAge := configAgent.Config().Sinker.MaxProwJobAge
 	for _, prowJob := range prowJobs {
+		// Handle periodics separately.
+		if prowJob.Spec.Type == kube.PeriodicJob {
+			continue
+		}
+		if prowJob.Complete() && time.Since(prowJob.Status.StartTime) > maxProwJobAge {
+			if err := kc.DeleteProwJob(prowJob.Metadata.Name); err == nil {
+				logrus.WithField("prowjob", prowJob.Metadata.Name).Info("Deleted prowjob.")
+			} else {
+				logrus.WithField("prowjob", prowJob.Metadata.Name).WithError(err).Error("Error deleting prowjob.")
+			}
+		}
+	}
+
+	// Keep track of what periodic jobs are in the config so we will
+	// not clean up their last prowjob.
+	isActivePeriodic := make(map[string]bool)
+	for _, p := range configAgent.Config().Periodics {
+		isActivePeriodic[p.Name] = true
+	}
+	// Get the jobs that we need to retain so horologium can continue working
+	// as intended.
+	latestPeriodics := pjutil.GetLatestPeriodics(prowJobs)
+	for _, prowJob := range prowJobs {
+		if prowJob.Spec.Type != kube.PeriodicJob {
+			continue
+		}
+
+		latestPJ := latestPeriodics[prowJob.Spec.Job]
+		if isActivePeriodic[prowJob.Spec.Job] && prowJob.Metadata.Name == latestPJ.Metadata.Name {
+			// Ignore deleting this one.
+			continue
+		}
 		if prowJob.Complete() && time.Since(prowJob.Status.StartTime) > maxProwJobAge {
 			if err := kc.DeleteProwJob(prowJob.Metadata.Name); err == nil {
 				logrus.WithField("prowjob", prowJob.Metadata.Name).Info("Deleted prowjob.")

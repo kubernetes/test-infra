@@ -30,6 +30,8 @@ import (
 	"time"
 )
 
+const defaultKubeadmCNI = "weave"
+
 var (
 	// kubernetes-anywhere specific flags.
 	kubernetesAnywherePath = flag.String("kubernetes-anywhere-path", "",
@@ -40,12 +42,22 @@ var (
 		"(kubernetes-anywhere only) Version of kubeadm to use, if phase2-provider is kubeadm. May be \"stable\" or a gs:// link to a custom build.")
 	kubernetesAnywhereKubernetesVersion = flag.String("kubernetes-anywhere-kubernetes-version", "",
 		"(kubernetes-anywhere only) Version of Kubernetes to use (e.g. latest, stable, latest-1.6, 1.6.3, etc).")
+	kubernetesAnywhereKubeletVersion = flag.String("kubernetes-anywhere-kubelet-version", "stable",
+		"(kubernetes-anywhere only) Version of Kubelet to use, if phase2-provider is kubeadm. May be \"stable\" or a gs:// link to a custom build.")
+	kubernetesAnywhereKubeletCIVersion = flag.String("kubernetes-anywhere-kubelet-ci-version", "",
+		"(kubernetes-anywhere only) If specified, the ci version for the kubelt to use. Overrides kubernetes-anywhere-kubelet-version.")
 	kubernetesAnywhereCluster = flag.String("kubernetes-anywhere-cluster", "",
 		"(kubernetes-anywhere only) Cluster name. Must be set for kubernetes-anywhere.")
 	kubernetesAnywhereUpTimeout = flag.Duration("kubernetes-anywhere-up-timeout", 20*time.Minute,
 		"(kubernetes-anywhere only) Time limit between starting a cluster and making a successful call to the Kubernetes API.")
 	kubernetesAnywhereNumNodes = flag.Int("kubernetes-anywhere-num-nodes", 4,
 		"(kubernetes-anywhere only) Number of nodes to be deployed in the cluster.")
+	kubernetesAnywhereUpgradeMethod = flag.String("kubernetes-anywhere-upgrade-method", "upgrade",
+		"(kubernetes-anywhere only) Indicates whether to do the control plane upgrade with kubeadm method \"init\" or \"upgrade\"")
+	kubernetesAnywhereCNI = flag.String("kubernetes-anywhere-cni", "",
+		"(kubernetes-anywhere only) The name of the CNI plugin used for the cluster's SDN.")
+	kubernetesAnywhereDumpClusterLogs = flag.Bool("kubernetes-anywhere-dump-cluster-logs", false,
+		"(kubernetes-anywhere only) Whether to dump cluster logs.")
 )
 
 const kubernetesAnywhereConfigTemplate = `
@@ -65,15 +77,17 @@ const kubernetesAnywhereConfigTemplate = `
 .phase2.docker_registry="gcr.io/google-containers"
 .phase2.kubernetes_version="{{.KubernetesVersion}}"
 .phase2.provider="{{.Phase2Provider}}"
+.phase2.kubelet_version="{{.KubeletVersion}}"
 .phase2.kubeadm.version="{{.KubeadmVersion}}"
 .phase2.kube_context_name="{{.KubeContext}}"
+.phase2.kubeadm.master_upgrade.method="{{.UpgradeMethod}}"
 
 .phase3.run_addons=y
-.phase3.weave_net={{if eq .Phase2Provider "kubeadm" -}} y {{- else -}} n {{- end}}
 .phase3.kube_proxy=n
 .phase3.dashboard=n
 .phase3.heapster=n
 .phase3.kube_dns=n
+.phase3.cni="{{.CNI}}"
 `
 
 type kubernetesAnywhere struct {
@@ -81,6 +95,8 @@ type kubernetesAnywhere struct {
 	// These are exported only because their use in the config template requires it.
 	Phase2Provider    string
 	KubeadmVersion    string
+	KubeletVersion    string
+	UpgradeMethod     string
 	KubernetesVersion string
 	NumNodes          int
 	Project           string
@@ -88,6 +104,7 @@ type kubernetesAnywhere struct {
 	Zone              string
 	Region            string
 	KubeContext       string
+	CNI               string
 }
 
 func newKubernetesAnywhere(project, zone string) (deployer, error) {
@@ -107,28 +124,81 @@ func newKubernetesAnywhere(project, zone string) (deployer, error) {
 		zone = "us-central1-c"
 	}
 
+	kubeletVersion := *kubernetesAnywhereKubeletVersion
+	if *kubernetesAnywhereKubeletCIVersion != "" {
+		resolvedVersion, err := resolveCIVersion(*kubernetesAnywhereKubeletCIVersion)
+		if err != nil {
+			return nil, err
+		}
+		kubeletVersion = bazelBuildPath(resolvedVersion)
+	}
+
 	// Set KUBERNETES_CONFORMANCE_TEST so the auth info is picked up
 	// from kubectl instead of bash inference.
 	if err := os.Setenv("KUBERNETES_CONFORMANCE_TEST", "yes"); err != nil {
 		return nil, err
 	}
 
+	// Set KUBERNETES_CONFORMANCE_PROVIDER since KUBERNETES_CONFORMANCE_TEST is set
+	// to ensure the right provider is passed onto the test.
+	if err := os.Setenv("KUBERNETES_CONFORMANCE_PROVIDER", "kubernetes-anywhere"); err != nil {
+		return nil, err
+	}
+
+	// preserve backwards compatability for e2e tests which never provided cni name
+	if *kubernetesAnywhereCNI == "" && *kubernetesAnywherePhase2Provider == "kubeadm" {
+		*kubernetesAnywhereCNI = defaultKubeadmCNI
+	}
+
 	k := &kubernetesAnywhere{
 		path:              *kubernetesAnywherePath,
 		Phase2Provider:    *kubernetesAnywherePhase2Provider,
 		KubeadmVersion:    *kubernetesAnywhereKubeadmVersion,
+		KubeletVersion:    kubeletVersion,
+		UpgradeMethod:     *kubernetesAnywhereUpgradeMethod,
 		KubernetesVersion: *kubernetesAnywhereKubernetesVersion,
 		NumNodes:          *kubernetesAnywhereNumNodes,
 		Project:           project,
 		Cluster:           *kubernetesAnywhereCluster,
 		Zone:              zone,
 		Region:            regexp.MustCompile(`-[^-]+$`).ReplaceAllString(zone, ""),
+		CNI:               *kubernetesAnywhereCNI,
 	}
 
 	if err := k.writeConfig(); err != nil {
 		return nil, err
 	}
 	return k, nil
+}
+
+func resolveCIVersion(version string) (string, error) {
+	if strings.HasPrefix(version, "v") {
+		return version, nil
+	}
+	file := fmt.Sprintf("gs://kubernetes-release-dev/ci/%v.txt", version)
+	return readGSFile(file)
+}
+
+func bazelBuildPath(version string) string {
+	// This replicates the logic from scenarios/kubernetes_e2e.py, to
+	// accommodate the fact that bazel artifacts are stored in a different
+	// location for 1.6 builds.
+	if strings.HasPrefix(version, "v1.6.") {
+		return fmt.Sprintf("gs://kubernetes-release-dev/bazel/%v/build/debs/", version)
+	} else {
+		return fmt.Sprintf("gs://kubernetes-release-dev/bazel/%v/bin/linux/amd64/", version)
+	}
+}
+
+// Implemented as a function var for testing.
+var readGSFile = readGSFileImpl
+
+func readGSFileImpl(filepath string) (string, error) {
+	contents, err := output(exec.Command("gsutil", "cat", filepath))
+	if err != nil {
+		return "", err
+	}
+	return strings.TrimSpace(string(contents)), nil
 }
 
 func (k *kubernetesAnywhere) getConfig() ([]byte, error) {
@@ -169,13 +239,32 @@ func (k *kubernetesAnywhere) IsUp() error {
 }
 
 func (k *kubernetesAnywhere) DumpClusterLogs(localPath, gcsPath string) error {
-	// TODO(pipejakob): the default implementation (log-dump.sh) doesn't work for
-	// kubernetes-anywhere yet, so just skip attempting to dump logs.
-	// https://github.com/kubernetes/kubeadm/issues/256
-	log.Print("DumpClusterLogs is a no-op for kubernetes-anywhere deployments. Not doing anything.")
-	log.Print("If you care about enabling this feature, follow this issue for progress:")
-	log.Print("    https://github.com/kubernetes/kubeadm/issues/256")
-	return nil
+	if !*kubernetesAnywhereDumpClusterLogs {
+		log.Printf("Cluster log dumping disabled for Kubernetes Anywhere.")
+		return nil
+	}
+	logDumpPath := "./cluster/log-dump/log-dump.sh"
+	// cluster/log-dump/log-dump.sh only exists in the Kubernetes tree
+	// post-1.3. If it doesn't exist, print a debug log but do not report an error.
+	if _, err := os.Stat(logDumpPath); err != nil {
+		log.Printf("Could not find %s. This is expected if running tests against a Kubernetes 1.3 or older tree.", logDumpPath)
+		if cwd, err := os.Getwd(); err == nil {
+			log.Printf("CWD: %v", cwd)
+		}
+		return nil
+	}
+	var cmd *exec.Cmd
+	// Temporarily set the provider to be gce for the purposes of log dumping.
+	cmd.Env = os.Environ()
+	cmd.Env = append(cmd.Env, "KUBERNETES_PROVIDER=gce")
+	if gcsPath != "" {
+		log.Printf("Dumping logs from nodes to GCS directly at path: %v", gcsPath)
+		cmd = exec.Command(logDumpPath, localPath, gcsPath)
+	} else {
+		log.Printf("Dumping logs locally to: %v", localPath)
+		cmd = exec.Command(logDumpPath, localPath)
+	}
+	return finishRunning(cmd)
 }
 
 func (k *kubernetesAnywhere) TestSetup() error {

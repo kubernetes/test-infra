@@ -43,12 +43,13 @@ func TestServeHTTPErrors(t *testing.T) {
 		Code   int
 	}{
 		{
-			// GET
-			Method: http.MethodGet,
+			// Delete
+			Method: http.MethodDelete,
 			Header: map[string]string{
-				"X-GitHub-Event":  "ping",
-				"X-Hub-Signature": hmac,
-				"content-type":    "application/json",
+				"X-GitHub-Event":    "ping",
+				"X-GitHub-Delivery": "I am unique",
+				"X-Hub-Signature":   hmac,
+				"content-type":      "application/json",
 			},
 			Body: body,
 			Code: http.StatusMethodNotAllowed,
@@ -57,6 +58,29 @@ func TestServeHTTPErrors(t *testing.T) {
 			// No event
 			Method: http.MethodPost,
 			Header: map[string]string{
+				"X-GitHub-Delivery": "I am unique",
+				"X-Hub-Signature":   hmac,
+				"content-type":      "application/json",
+			},
+			Body: body,
+			Code: http.StatusBadRequest,
+		},
+		{
+			// No content type
+			Method: http.MethodPost,
+			Header: map[string]string{
+				"X-GitHub-Event":    "ping",
+				"X-GitHub-Delivery": "I am unique",
+				"X-Hub-Signature":   hmac,
+			},
+			Body: body,
+			Code: http.StatusBadRequest,
+		},
+		{
+			// No event guid
+			Method: http.MethodPost,
+			Header: map[string]string{
+				"X-GitHub-Event":  "ping",
 				"X-Hub-Signature": hmac,
 				"content-type":    "application/json",
 			},
@@ -67,7 +91,9 @@ func TestServeHTTPErrors(t *testing.T) {
 			// No signature
 			Method: http.MethodPost,
 			Header: map[string]string{
-				"X-GitHub-Event": "ping",
+				"X-GitHub-Event":    "ping",
+				"X-GitHub-Delivery": "I am unique",
+				"content-type":      "application/json",
 			},
 			Body: body,
 			Code: http.StatusForbidden,
@@ -76,9 +102,10 @@ func TestServeHTTPErrors(t *testing.T) {
 			// Bad signature
 			Method: http.MethodPost,
 			Header: map[string]string{
-				"X-GitHub-Event":  "ping",
-				"X-Hub-Signature": "this doesn't work",
-				"content-type":    "application/json",
+				"X-GitHub-Event":    "ping",
+				"X-GitHub-Delivery": "I am unique",
+				"X-Hub-Signature":   "this doesn't work",
+				"content-type":      "application/json",
 			},
 			Body: body,
 			Code: http.StatusForbidden,
@@ -87,9 +114,19 @@ func TestServeHTTPErrors(t *testing.T) {
 			// Good
 			Method: http.MethodPost,
 			Header: map[string]string{
-				"X-GitHub-Event":  "ping",
-				"X-Hub-Signature": hmac,
-				"content-type":    "application/json",
+				"X-GitHub-Event":    "ping",
+				"X-GitHub-Delivery": "I am unique",
+				"X-Hub-Signature":   hmac,
+				"content-type":      "application/json",
+			},
+			Body: body,
+			Code: http.StatusOK,
+		},
+		{
+			// Good
+			Method: http.MethodGet,
+			Header: map[string]string{
+				"content-type": "application/json",
 			},
 			Body: body,
 			Code: http.StatusOK,

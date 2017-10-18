@@ -28,17 +28,24 @@ func TestNewKubernetesAnywhere(t *testing.T) {
 		name              string
 		phase2            string
 		kubeadmVersion    string
+		kubeadmUpgrade    string
+		kubeletCIVersion  string
+		kubeletVersion    string
 		kubernetesVersion string
+		cni               string
 		expectConfigLines []string
 	}{
 		{
 			name:   "kubeadm defaults",
 			phase2: "kubeadm",
+			cni:    "weave",
 			expectConfigLines: []string{
 				".phase2.provider=\"kubeadm\"",
 				".phase2.kubeadm.version=\"\"",
+				".phase2.kubeadm.master_upgrade.method=\"\"",
 				".phase2.kubernetes_version=\"\"",
-				".phase3.weave_net=y",
+				".phase2.kubelet_version=\"\"",
+				".phase3.cni=\"weave\"",
 			},
 		},
 		{
@@ -47,21 +54,104 @@ func TestNewKubernetesAnywhere(t *testing.T) {
 			expectConfigLines: []string{
 				".phase2.provider=\"ignition\"",
 				".phase2.kubernetes_version=\"\"",
-				".phase3.weave_net=n",
+			},
+		},
+		{
+			name:   "flannel on kubeadm",
+			phase2: "kubeadm",
+			cni:    "flannel",
+			expectConfigLines: []string{
+				".phase2.provider=\"kubeadm\"",
+				".phase3.cni=\"flannel\"",
 			},
 		},
 		{
 			name:              "kubeadm with specific versions",
 			phase2:            "kubeadm",
 			kubeadmVersion:    "unstable",
+			kubeadmUpgrade:    "init",
+			kubeletVersion:    "foo",
+			kubernetesVersion: "latest-1.6",
+			expectConfigLines: []string{
+				".phase2.provider=\"kubeadm\"",
+				".phase2.kubeadm.version=\"unstable\"",
+				".phase2.kubeadm.master_upgrade.method=\"init\"",
+				".phase2.kubernetes_version=\"latest-1.6\"",
+				".phase2.kubelet_version=\"foo\"",
+				".phase3.cni=\"weave\"",
+			},
+		},
+		{
+			name:              "kubeadm with ci kubelet version",
+			phase2:            "kubeadm",
+			kubeadmVersion:    "unstable",
+			kubeletCIVersion:  "vfoo",
 			kubernetesVersion: "latest-1.6",
 			expectConfigLines: []string{
 				".phase2.provider=\"kubeadm\"",
 				".phase2.kubeadm.version=\"unstable\"",
 				".phase2.kubernetes_version=\"latest-1.6\"",
-				".phase3.weave_net=y",
+				".phase2.kubelet_version=\"gs://kubernetes-release-dev/bazel/vfoo/bin/linux/amd64/\"",
+				".phase3.cni=\"weave\"",
 			},
 		},
+		{
+			name:              "kubeadm with ci kubelet version",
+			phase2:            "kubeadm",
+			kubeadmVersion:    "unstable",
+			kubeletCIVersion:  "latest",
+			kubernetesVersion: "latest-1.6",
+			expectConfigLines: []string{
+				".phase2.provider=\"kubeadm\"",
+				".phase2.kubeadm.version=\"unstable\"",
+				".phase2.kubernetes_version=\"latest-1.6\"",
+				".phase2.kubelet_version=\"gs://kubernetes-release-dev/bazel/vbar/bin/linux/amd64/\"",
+				".phase3.cni=\"weave\"",
+			},
+		},
+		{
+			name:              "kubeadm with 1.6 ci kubelet version",
+			phase2:            "kubeadm",
+			kubeadmVersion:    "unstable",
+			kubeletCIVersion:  "latest-1.6",
+			kubernetesVersion: "latest-1.6",
+			expectConfigLines: []string{
+				".phase2.provider=\"kubeadm\"",
+				".phase2.kubeadm.version=\"unstable\"",
+				".phase2.kubernetes_version=\"latest-1.6\"",
+				".phase2.kubelet_version=\"gs://kubernetes-release-dev/bazel/v1.6.12-beta.0.2+a03873b40780a3/build/debs/\"",
+				".phase3.cni=\"weave\"",
+			},
+		},
+		{
+			name:              "kubeadm with 1.7 ci kubelet version",
+			phase2:            "kubeadm",
+			kubeadmVersion:    "unstable",
+			kubeletCIVersion:  "latest-1.7",
+			kubernetesVersion: "latest-1.7",
+			expectConfigLines: []string{
+				".phase2.provider=\"kubeadm\"",
+				".phase2.kubeadm.version=\"unstable\"",
+				".phase2.kubernetes_version=\"latest-1.7\"",
+				".phase2.kubelet_version=\"gs://kubernetes-release-dev/bazel/v1.7.8-beta.0.22+9243a03f5fecc5/bin/linux/amd64/\"",
+				".phase3.cni=\"weave\"",
+			},
+		},
+	}
+
+	mockGSFiles := map[string]string{
+		"gs://kubernetes-release-dev/ci/latest-1.6.txt": "v1.6.12-beta.0.2+a03873b40780a3",
+		"gs://kubernetes-release-dev/ci/latest-1.7.txt": "v1.7.8-beta.0.22+9243a03f5fecc5",
+	}
+
+	originalReadGSFile := readGSFile
+	defer func() { readGSFile = originalReadGSFile }()
+
+	readGSFile = func(location string) (string, error) {
+		if val, ok := mockGSFiles[location]; ok {
+			return val, nil
+		}
+		return "vbar", nil
 	}
 
 	for _, tc := range cases {
@@ -78,6 +168,10 @@ func TestNewKubernetesAnywhere(t *testing.T) {
 		*kubernetesAnywherePhase2Provider = tc.phase2
 		*kubernetesAnywhereKubeadmVersion = tc.kubeadmVersion
 		*kubernetesAnywhereKubernetesVersion = tc.kubernetesVersion
+		*kubernetesAnywhereKubeletVersion = tc.kubeletVersion
+		*kubernetesAnywhereKubeletCIVersion = tc.kubeletCIVersion
+		*kubernetesAnywhereUpgradeMethod = tc.kubeadmUpgrade
+		*kubernetesAnywhereCNI = tc.cni
 
 		_, err = newKubernetesAnywhere("fake-project", "fake-zone")
 		if err != nil {
@@ -141,6 +235,12 @@ func TestNewKubernetesAnywhereMultiCluster(t *testing.T) {
 		},
 	}
 
+	originalReadGSFile := readGSFile
+	defer func() { readGSFile = originalReadGSFile }()
+	readGSFile = func(string) (string, error) {
+		return "vbar", nil
+	}
+
 	for testName, test := range tests {
 		t.Run(testName, func(t *testing.T) {
 			tmpdir, err := ioutil.TempDir("", "kubernetes-anywhere-multi-cluster-test")
@@ -186,7 +286,7 @@ func TestNewKubernetesAnywhereMultiCluster(t *testing.T) {
 					".phase2.provider=\"kubeadm\"",
 					".phase2.kubeadm.version=\"stable\"",
 					".phase2.kubernetes_version=\"\"",
-					".phase3.weave_net=y",
+					".phase3.cni=\"weave\"",
 					".phase1.cluster_name=\"" + cluster + "\"",
 					".phase1.gce.zone=\"" + zone + "\"",
 					".phase2.kube_context_name=\"" + kubeContext + "\"",

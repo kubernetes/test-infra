@@ -25,6 +25,7 @@ import (
 	"time"
 
 	"github.com/ghodss/yaml"
+	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/kube"
 )
@@ -41,6 +42,10 @@ type Config struct {
 	Tide   Tide   `json:"tide,omitempty"`
 	Plank  Plank  `json:"plank,omitempty"`
 	Sinker Sinker `json:"sinker,omitempty"`
+	Deck   Deck   `json:"deck,omitempty"`
+
+	// TODO: Move this out of the main config.
+	JenkinsOperator JenkinsOperator `json:"jenkins_operator,omitempty"`
 
 	// ProwJobNamespace is the namespace in the cluster that prow
 	// components will use for looking up ProwJobs. The namespace
@@ -52,6 +57,16 @@ type Config struct {
 	// The namespace needs to exist and will not be created by prow.
 	// Defaults to "default".
 	PodNamespace string `json:"pod_namespace,omitempty"`
+
+	// LogLevel enables dynamically updating the log level of the
+	// standard logger that is used by all prow components.
+	//
+	// Valid values:
+	//
+	// "debug", "info", "warn", "warning", "error", "fatal", "panic"
+	//
+	// Defaults to "info".
+	LogLevel string `json:"log_level,omitempty"`
 
 	// PushGateway is a prometheus push gateway.
 	PushGateway PushGateway `json:"push_gateway,omitempty"`
@@ -83,6 +98,39 @@ type Plank struct {
 	// will be passed a kube.ProwJob and can provide an optional blurb below
 	// the test failures comment.
 	ReportTemplate *template.Template `json:"-"`
+
+	// MaxConcurrency is the maximum number of tests running concurrently that
+	// will be allowed by plank. 0 implies no limit.
+	MaxConcurrency int `json:"max_concurrency,omitempty"`
+
+	// AllowCancellations enables aborting presubmit jobs for commits that
+	// have been superseded by newer commits in Github pull requests.
+	AllowCancellations bool `json:"allow_cancellations"`
+}
+
+// JenkinsOperator is config for the jenkins-operator controller.
+type JenkinsOperator struct {
+	// JobURLTemplateString compiles into JobURLTemplate at load time.
+	JobURLTemplateString string `json:"job_url_template,omitempty"`
+	// JobURLTemplate is compiled at load time from JobURLTemplateString. It
+	// will be passed a kube.ProwJob and is used to set the URL for the
+	// "details" link on GitHub as well as the link from deck.
+	JobURLTemplate *template.Template `json:"-"`
+
+	// ReportTemplateString compiles into ReportTemplate at load time.
+	ReportTemplateString string `json:"report_template,omitempty"`
+	// ReportTemplate is compiled at load time from ReportTemplateString. It
+	// will be passed a kube.ProwJob and can provide an optional blurb below
+	// the test failures comment.
+	ReportTemplate *template.Template `json:"-"`
+
+	// MaxConcurrency is the maximum number of tests running concurrently that
+	// will be allowed by jenkins-operator. 0 implies no limit.
+	MaxConcurrency int `json:"max_concurrency,omitempty"`
+
+	// AllowCancellations enables aborting presubmit jobs for commits that
+	// have been superseded by newer commits in Github pull requests.
+	AllowCancellations bool `json:"allow_cancellations"`
 }
 
 // Sinker is config for the sinker controller.
@@ -104,6 +152,25 @@ type Sinker struct {
 	MaxPodAge time.Duration `json:"-"`
 }
 
+// Deck holds config for deck.
+type Deck struct {
+	ExternalAgentLogs []ExternalAgentLog `json:"external_agent_logs,omitempty"`
+}
+
+// ExternalAgentLog ensures an external agent like Jenkins can expose
+// its logs in prow.
+type ExternalAgentLog struct {
+	// Agent is an external prow agent that supports exposing
+	// logs via deck.
+	Agent string `json:"agent,omitempty"`
+	// URLTemplateString compiles into URLTemplate at load time.
+	URLTemplateString string `json:"url_template,omitempty"`
+	// URLTemplate is compiled at load time from URLTemplateString. It
+	// will be passed a kube.ProwJob and the generated URL should provide
+	// logs for the ProwJob.
+	URLTemplate *template.Template `json:"-"`
+}
+
 // Load loads and parses the config at path.
 func Load(path string) (*Config, error) {
 	b, err := ioutil.ReadFile(path)
@@ -123,34 +190,46 @@ func Load(path string) (*Config, error) {
 func parseConfig(c *Config) error {
 	// Ensure that presubmit regexes are valid.
 	for _, vs := range c.Presubmits {
-		if err := setRegexes(vs); err != nil {
+		if err := SetRegexes(vs); err != nil {
 			return fmt.Errorf("could not set regex: %v", err)
 		}
 	}
 
-	// Ensure that presubmits have a pod spec.
+	// Validate presubmits.
 	for _, v := range c.AllPresubmits(nil) {
 		name := v.Name
 		agent := v.Agent
+		// Ensure that k8s presubmits have a pod spec.
 		if agent == string(kube.KubernetesAgent) && v.Spec == nil {
 			return fmt.Errorf("job %s has no spec", name)
 		}
+		// Ensure agent is a known value.
 		if agent != string(kube.KubernetesAgent) && agent != string(kube.JenkinsAgent) {
 			return fmt.Errorf("job %s has invalid agent (%s), it needs to be one of the following: %s %s",
 				name, agent, kube.KubernetesAgent, kube.JenkinsAgent)
+		}
+		// Ensure max_concurrency is non-negative.
+		if v.MaxConcurrency < 0 {
+			return fmt.Errorf("job %s jas invalid max_concurrency (%d), it needs to be a non-negative number", name, v.MaxConcurrency)
 		}
 	}
 
-	// Ensure that postsubmits have a pod spec.
+	// Validate postsubmits.
 	for _, j := range c.AllPostsubmits(nil) {
 		name := j.Name
 		agent := j.Agent
+		// Ensure that k8s postsubmits have a pod spec.
 		if agent == string(kube.KubernetesAgent) && j.Spec == nil {
 			return fmt.Errorf("job %s has no spec", name)
 		}
+		// Ensure agent is a known value.
 		if agent != string(kube.KubernetesAgent) && agent != string(kube.JenkinsAgent) {
 			return fmt.Errorf("job %s has invalid agent (%s), it needs to be one of the following: %s %s",
 				name, agent, kube.KubernetesAgent, kube.JenkinsAgent)
+		}
+		// Ensure max_concurrency is non-negative.
+		if j.MaxConcurrency < 0 {
+			return fmt.Errorf("job %s jas invalid max_concurrency (%d), it needs to be a non-negative number", name, j.MaxConcurrency)
 		}
 	}
 
@@ -187,6 +266,32 @@ func parseConfig(c *Config) error {
 		return fmt.Errorf("parsing template: %v", err)
 	}
 	c.Plank.ReportTemplate = reportTmpl
+	if c.Plank.MaxConcurrency < 0 {
+		return fmt.Errorf("plank has invalid max_concurrency (%d), it needs to be a non-negative number", c.Plank.MaxConcurrency)
+	}
+
+	jenkinsURLTmpl, err := template.New("JobURL").Parse(c.JenkinsOperator.JobURLTemplateString)
+	if err != nil {
+		return fmt.Errorf("parsing template: %v", err)
+	}
+	c.JenkinsOperator.JobURLTemplate = jenkinsURLTmpl
+
+	jenkinsReportTmpl, err := template.New("Report").Parse(c.JenkinsOperator.ReportTemplateString)
+	if err != nil {
+		return fmt.Errorf("parsing template: %v", err)
+	}
+	c.JenkinsOperator.ReportTemplate = jenkinsReportTmpl
+	if c.JenkinsOperator.MaxConcurrency < 0 {
+		return fmt.Errorf("jenkins-operator has invalid max_concurrency (%d), it needs to be a non-negative number", c.JenkinsOperator.MaxConcurrency)
+	}
+
+	for i, agentToTmpl := range c.Deck.ExternalAgentLogs {
+		urlTemplate, err := template.New(agentToTmpl.Agent).Parse(agentToTmpl.URLTemplateString)
+		if err != nil {
+			return fmt.Errorf("parsing template for agent %q: %v", agentToTmpl.Agent, err)
+		}
+		c.Deck.ExternalAgentLogs[i].URLTemplate = urlTemplate
+	}
 
 	if c.Sinker.ResyncPeriodString == "" {
 		c.Sinker.ResyncPeriod = time.Hour
@@ -224,10 +329,22 @@ func parseConfig(c *Config) error {
 	if c.PodNamespace == "" {
 		c.PodNamespace = "default"
 	}
+
+	if c.LogLevel == "" {
+		c.LogLevel = "info"
+	}
+	lvl, err := logrus.ParseLevel(c.LogLevel)
+	if err != nil {
+		return err
+	}
+	logrus.SetLevel(lvl)
+
 	return nil
 }
 
-func setRegexes(js []Presubmit) error {
+// SetRegexes compiles and validates all the regural expressions for
+// the provided presubmits.
+func SetRegexes(js []Presubmit) error {
 	for i, j := range js {
 		if re, err := regexp.Compile(j.Trigger); err == nil {
 			js[i].re = re
@@ -237,7 +354,7 @@ func setRegexes(js []Presubmit) error {
 		if !js[i].re.MatchString(j.RerunCommand) {
 			return fmt.Errorf("for job %s, rerun command \"%s\" does not match trigger \"%s\"", j.Name, j.RerunCommand, j.Trigger)
 		}
-		if err := setRegexes(j.RunAfterSuccess); err != nil {
+		if err := SetRegexes(j.RunAfterSuccess); err != nil {
 			return err
 		}
 		if j.RunIfChanged != "" {

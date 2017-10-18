@@ -80,15 +80,13 @@ type ProwJobSpec struct {
 }
 
 type ProwJobStatus struct {
-	StartTime       time.Time    `json:"startTime,omitempty"`
-	CompletionTime  time.Time    `json:"completionTime,omitempty"`
-	State           ProwJobState `json:"state,omitempty"`
-	Description     string       `json:"description,omitempty"`
-	URL             string       `json:"url,omitempty"`
-	PodName         string       `json:"pod_name,omitempty"`
-	BuildID         string       `json:"build_id,omitempty"`
-	JenkinsQueueURL string       `json:"jenkins_queue_url,omitempty"`
-	JenkinsEnqueued bool         `json:"jenkins_enqueued,omitempty"`
+	StartTime      time.Time    `json:"startTime,omitempty"`
+	CompletionTime time.Time    `json:"completionTime,omitempty"`
+	State          ProwJobState `json:"state,omitempty"`
+	Description    string       `json:"description,omitempty"`
+	URL            string       `json:"url,omitempty"`
+	PodName        string       `json:"pod_name,omitempty"`
+	BuildID        string       `json:"build_id,omitempty"`
 }
 
 func (j *ProwJob) Complete() bool {

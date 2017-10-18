@@ -12,6 +12,7 @@ go_test(
         "client_test.go",
         "hmac_test.go",
         "links_test.go",
+        "types_test.go",
     ],
     library = ":go_default_library",
 )

@@ -62,17 +62,13 @@ func TestJokesMedium(t *testing.T) {
 
 	comment := "/joke"
 
-	ice := github.IssueCommentEvent{
-		Action: github.IssueCommentActionCreated,
-		Comment: github.IssueComment{
-			Body: comment,
-		},
-		Issue: github.Issue{
-			Number: 5,
-			State:  "open",
-		},
+	e := &github.GenericCommentEvent{
+		Action:     github.GenericCommentActionCreated,
+		Body:       comment,
+		Number:     5,
+		IssueState: "open",
 	}
-	if err := handle(fc, logrus.WithField("plugin", pluginName), ice, realJoke(ts.URL)); err != nil {
+	if err := handle(fc, logrus.WithField("plugin", pluginName), e, realJoke(ts.URL)); err != nil {
 		t.Errorf("didn't expect error: %v", err)
 		return
 	}
@@ -89,18 +85,18 @@ func TestJokesMedium(t *testing.T) {
 func TestJokes(t *testing.T) {
 	var testcases = []struct {
 		name          string
-		action        github.IssueCommentEventAction
+		action        github.GenericCommentEventAction
 		body          string
 		state         string
 		joke          fakeJoke
-		pr            *struct{}
+		pr            bool
 		shouldComment bool
 		shouldError   bool
 	}{
 		{
 			name:          "ignore edited comment",
 			state:         "open",
-			action:        github.IssueCommentActionEdited,
+			action:        github.GenericCommentActionEdited,
 			body:          "/joke",
 			joke:          "this? that.",
 			shouldComment: false,
@@ -109,17 +105,17 @@ func TestJokes(t *testing.T) {
 		{
 			name:          "leave joke on pr",
 			state:         "open",
-			action:        github.IssueCommentActionCreated,
+			action:        github.GenericCommentActionCreated,
 			body:          "/joke",
 			joke:          "this? that.",
-			pr:            &struct{}{},
+			pr:            true,
 			shouldComment: true,
 			shouldError:   false,
 		},
 		{
 			name:          "leave joke on issue",
 			state:         "open",
-			action:        github.IssueCommentActionCreated,
+			action:        github.GenericCommentActionCreated,
 			body:          "/joke",
 			joke:          "this? that.",
 			shouldComment: true,
@@ -128,7 +124,7 @@ func TestJokes(t *testing.T) {
 		{
 			name:          "leave joke on issue, trailing space",
 			state:         "open",
-			action:        github.IssueCommentActionCreated,
+			action:        github.GenericCommentActionCreated,
 			body:          "/joke \r",
 			joke:          "this? that.",
 			shouldComment: true,
@@ -137,7 +133,7 @@ func TestJokes(t *testing.T) {
 		{
 			name:          "reject bad joke chars",
 			state:         "open",
-			action:        github.IssueCommentActionCreated,
+			action:        github.GenericCommentActionCreated,
 			body:          "/joke",
 			joke:          "[hello](url)",
 			shouldComment: false,
@@ -148,18 +144,14 @@ func TestJokes(t *testing.T) {
 		fc := &fakegithub.FakeClient{
 			IssueComments: make(map[int][]github.IssueComment),
 		}
-		ice := github.IssueCommentEvent{
-			Action: tc.action,
-			Comment: github.IssueComment{
-				Body: tc.body,
-			},
-			Issue: github.Issue{
-				Number:      5,
-				State:       tc.state,
-				PullRequest: tc.pr,
-			},
+		e := &github.GenericCommentEvent{
+			Action:     tc.action,
+			Body:       tc.body,
+			Number:     5,
+			IssueState: tc.state,
+			IsPR:       tc.pr,
 		}
-		err := handle(fc, logrus.WithField("plugin", pluginName), ice, tc.joke)
+		err := handle(fc, logrus.WithField("plugin", pluginName), e, tc.joke)
 		if !tc.shouldError && err != nil {
 			t.Errorf("For case %s, didn't expect error: %v", tc.name, err)
 			continue

@@ -12,13 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM alpine:3.6
+FROM gcr.io/k8s-prow/git:0.1
 LABEL maintainer="rmmh@google.com"
-
-RUN apk update && apk add --no-cache \
-    ca-certificates \
-    git \
-    && update-ca-certificates
 
 COPY splice /splice
 ENTRYPOINT ["/splice"]

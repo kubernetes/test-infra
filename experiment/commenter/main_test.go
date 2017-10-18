@@ -227,7 +227,7 @@ func TestRun(t *testing.T) {
 		{
 			name:    "find none",
 			query:   "none",
-			comment: "this should not happend",
+			comment: "this should not happen",
 			client:  fakeClient{issues: manyIssues},
 		},
 		{

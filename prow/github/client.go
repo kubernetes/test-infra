@@ -36,7 +36,7 @@ import (
 )
 
 type Logger interface {
-	Printf(s string, v ...interface{})
+	Debugf(s string, v ...interface{})
 }
 
 type Client struct {
@@ -101,7 +101,7 @@ func (c *Client) log(methodName string, args ...interface{}) {
 	for _, arg := range args {
 		as = append(as, fmt.Sprintf("%v", arg))
 	}
-	c.Logger.Printf("%s(%s)", methodName, strings.Join(as, ", "))
+	c.Logger.Debugf("%s(%s)", methodName, strings.Join(as, ", "))
 }
 
 var timeSleep = time.Sleep
@@ -334,6 +334,26 @@ func (c *Client) CreateIssueReaction(org, repo string, ID int, reaction string) 
 		exitCodes:   []int{200, 201},
 	}, nil)
 	return err
+}
+
+// DeleteStaleComments iterates over comments on an issue/PR, deleting those which the 'isStale'
+// function identifies as stale. If 'comments' is nil, the comments will be fetched from github.
+func (c *Client) DeleteStaleComments(org, repo string, number int, comments []IssueComment, isStale func(IssueComment) bool) error {
+	var err error
+	if comments == nil {
+		comments, err = c.ListIssueComments(org, repo, number)
+		if err != nil {
+			return fmt.Errorf("failed to list comments while deleting stale comments. err: %v", err)
+		}
+	}
+	for _, comment := range comments {
+		if isStale(comment) {
+			if err := c.DeleteComment(org, repo, comment.ID); err != nil {
+				return fmt.Errorf("failed to delete stale comment with ID '%d'", comment.ID)
+			}
+		}
+	}
+	return nil
 }
 
 // readPaginatedResults iterates over all objects in the paginated
@@ -613,11 +633,11 @@ func (c *Client) AssignIssue(org, repo string, number int, logins []string) erro
 		return err
 	}
 	for _, assignee := range i.Assignees {
-		assigned[assignee.Login] = true
+		assigned[NormLogin(assignee.Login)] = true
 	}
 	missing := MissingUsers{action: "assign"}
 	for _, login := range logins {
-		if !assigned[login] {
+		if !assigned[NormLogin(login)] {
 			missing.Users = append(missing.Users, login)
 		}
 	}
@@ -650,11 +670,11 @@ func (c *Client) UnassignIssue(org, repo string, number int, logins []string) er
 		return err
 	}
 	for _, assignee := range i.Assignees {
-		assigned[assignee.Login] = true
+		assigned[NormLogin(assignee.Login)] = true
 	}
 	extra := ExtraUsers{action: "unassign"}
 	for _, login := range logins {
-		if assigned[login] {
+		if assigned[NormLogin(login)] {
 			extra.Users = append(extra.Users, login)
 		}
 	}
@@ -739,7 +759,7 @@ func (c *Client) UnrequestReview(org, repo string, number int, logins []string) 
 	for _, user := range pr.RequestedReviewers {
 		found := false
 		for _, toDelete := range logins {
-			if user.Login == toDelete {
+			if NormLogin(user.Login) == NormLogin(toDelete) {
 				found = true
 				break
 			}
@@ -936,4 +956,49 @@ func (c *Client) ListTeamMembers(id int) ([]TeamMember, error) {
 		return nil, err
 	}
 	return teamMembers, nil
+}
+
+// MergeDetails contains desired properties of the merge.
+// See https://developer.github.com/v3/pulls/#merge-a-pull-request-merge-button
+type MergeDetails struct {
+	// CommitTitle defaults to the automatic message.
+	CommitTitle string `json:"commit_title,omitempty"`
+	// CommitMessage defaults to the automatic message.
+	CommitMessage string `json:"commit_message,omitempty"`
+	// The PR HEAD must match this to prevent races.
+	SHA string `json:"sha,omitempty"`
+	// Can be "merge", "squash", or "rebase". Defaults to merge.
+	MergeMethod string `json:"merge_method,omitempty"`
+}
+
+type ModifiedHeadError string
+
+func (e ModifiedHeadError) Error() string { return string(e) }
+
+type UnmergablePRError string
+
+func (e UnmergablePRError) Error() string { return string(e) }
+
+// Merge merges a PR.
+func (c *Client) Merge(org, repo string, pr int, details MergeDetails) error {
+	c.log("Merge", org, repo, pr, details)
+	var res struct {
+		Message string `json:"message"`
+	}
+	ec, err := c.request(&request{
+		method:      http.MethodPut,
+		path:        fmt.Sprintf("%s/repos/%s/%s/pulls/%d/merge", c.base, org, repo, pr),
+		requestBody: &details,
+		exitCodes:   []int{200, 405, 409},
+	}, &res)
+	if err != nil {
+		return err
+	}
+	if ec == 405 {
+		return UnmergablePRError(res.Message)
+	} else if ec == 409 {
+		return ModifiedHeadError(res.Message)
+	}
+
+	return nil
 }

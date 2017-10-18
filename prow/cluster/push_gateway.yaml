@@ -52,7 +52,7 @@ data:
         listen 0.0.0.0:8081;
         location / {
           limit_except GET {
-            return 403
+            deny all;
           }
           proxy_pass http://pushgateway;
         }

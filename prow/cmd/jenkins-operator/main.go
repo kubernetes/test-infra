@@ -39,7 +39,6 @@ var (
 	jenkinsTokenFile       = flag.String("jenkins-token-file", "", "Path to the file containing the Jenkins API token.")
 	jenkinsBearerTokenFile = flag.String("jenkins-bearer-token-file", "", "Path to the file containing the Jenkins API bearer token.")
 
-	_               = flag.String("github-bot-name", "", "Deprecated.")
 	githubEndpoint  = flag.String("github-endpoint", "https://api.github.com", "GitHub's API endpoint.")
 	githubTokenFile = flag.String("github-token-file", "/etc/github/oauth", "Path to the file containing the GitHub OAuth token.")
 	dryRun          = flag.Bool("dry-run", true, "Whether or not to make mutating API calls to GitHub.")
@@ -100,7 +99,16 @@ func main() {
 		ghc = github.NewClient(oauthSecret, *githubEndpoint)
 	}
 
+	logger := logrus.StandardLogger()
+	kc.Logger = logger.WithField("client", "kube")
+	jc.Logger = logger.WithField("client", "jenkins")
+	ghc.Logger = logger.WithField("client", "github")
+
 	c := jenkins.NewController(kc, jc, ghc, configAgent)
+
+	// Serve Jenkins logs from here and proxy deck to use this endpoint
+	// instead of baking agent-specific logic in deck.
+	go serveLogs(jc)
 
 	for range time.Tick(30 * time.Second) {
 		start := time.Now()

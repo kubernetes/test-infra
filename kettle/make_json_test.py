@@ -92,11 +92,14 @@ class MakeJsonTest(unittest.TestCase):
                 {'%s/artifacts/junit_%d.xml' % (path, n): junit for n, junit in enumerate(junits)})
             self.db.commit()
 
-        def expect(args, needles, negneedles):
+        def expect(args, needles, negneedles, expected_ret=None):
             buf = StringIO.StringIO()
             opts = make_json.parse_args(args)
-            make_json.main(self.db, opts, buf)
+            ret = make_json.main(self.db, opts, buf)
             result = buf.getvalue()
+
+            if expected_ret is not None:
+                self.assertEqual(ret, expected_ret)
 
             # validate that output is newline-delimited JSON
             for line in result.split('\n'):
@@ -128,6 +131,12 @@ class MakeJsonTest(unittest.TestCase):
         # verify that direct paths work
         expect(['gs://kubernetes-jenkins/logs/some-job/123'], ['123'], [])
         expect(['gs://kubernetes-jenkins/logs/some-job/123'], ['123'], [])
+
+        # verify that assert_oldest works
+        expect(['--days=30'], ['123', '456'], [])
+        expect(['--days=30', '--assert-oldest=60'], [], [], 0)
+        expect(['--days=30', '--assert-oldest=25'], [], [], 1)
+
 
 
 if __name__ == '__main__':

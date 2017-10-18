@@ -19,12 +19,12 @@
 set -o errexit
 set -o nounset
 IMAGE_NAME="gcr.io/k8s-testimages/planter"
-VERSION="0.5.4-1"
-IMAGE="${IMAGE_NAME}:${VERSION}"
+TAG="${TAG:-0.5.4-1}"
+IMAGE="${IMAGE_NAME}:${TAG}"
 # run our docker image as the host user with bazel cache and current repo dir
 REPO=$(git rev-parse --show-toplevel 2>/dev/null || true)
 REPO=${REPO:-${PWD}}
 VOLUMES="-v ${REPO}:${REPO} -v ${HOME}:${HOME} --tmpfs /tmp:exec,mode=777"
 GID="$(id -g ${USER})"
 ENV="-e USER=${USER} -e GID=${GID} -e UID=${UID} -e HOME=${HOME}"
-docker run --rm ${VOLUMES} --user ${UID} -w ${PWD} ${ENV} ${IMAGE} ${@}
+docker run --rm ${VOLUMES} --user ${UID} -w ${PWD} ${ENV} ${DOCKER_EXTRA:-} ${IMAGE} ${@}

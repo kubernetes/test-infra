@@ -61,14 +61,13 @@ func ReconcileTestGroup(currentTestGroup *config.TestGroup, defaultTestGroup *co
 		currentTestGroup.NumColumnsRecent = defaultTestGroup.NumColumnsRecent
 	}
 
+	if currentTestGroup.AlertStaleResultsHours == 0 {
+		currentTestGroup.AlertStaleResultsHours = defaultTestGroup.AlertStaleResultsHours
+	}
+
 	// is_external and user_kubernetes_client should always be true
 	currentTestGroup.IsExternal = true
 	currentTestGroup.UseKubernetesClient = true
-
-	// deprecated
-	if currentTestGroup.AlertStateResultsHours == 0 {
-		currentTestGroup.AlertStateResultsHours = defaultTestGroup.AlertStateResultsHours
-	}
 }
 
 // Set up unfilled field in a DashboardTab using the default DashboardTab
@@ -107,6 +106,10 @@ func ReconcileDashboardtab(currentTab *config.DashboardTab, defaultTab *config.D
 
 	if currentTab.CodeSearchUrlTemplate == nil {
 		currentTab.CodeSearchUrlTemplate = defaultTab.CodeSearchUrlTemplate
+	}
+
+	if currentTab.AlertOptions == nil {
+		currentTab.AlertOptions = defaultTab.AlertOptions
 	}
 }
 

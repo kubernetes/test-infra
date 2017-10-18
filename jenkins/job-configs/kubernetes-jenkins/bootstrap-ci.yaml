@@ -55,63 +55,6 @@
     - 'ci-{suffix}'
     name: bootstrap-ci
     suffix:
-    # START AWS
-    - kubernetes-e2e-kops-aws: #zmerlynn
-        job-name: ci-kubernetes-e2e-kops-aws
-        jenkins-timeout: 240
-        timeout: 140
-        frequency: 'H/5 * * * *' # At least every 30m
-        trigger-job: 'ci-kubernetes-build'
-    - kubernetes-e2e-kops-aws-slow: #zmerlynn
-        job-name: ci-kubernetes-e2e-kops-aws-slow
-        jenkins-timeout: 270
-        timeout: 170
-        frequency: 'H/5 * * * *' # At least every 30m
-        trigger-job: 'ci-kubernetes-build'
-    - kubernetes-e2e-kops-aws-serial: #zmerlynn
-        job-name: ci-kubernetes-e2e-kops-aws-serial
-        jenkins-timeout: 420
-        timeout: 320
-        frequency: 'H/5 * * * *' # At least every 30m
-        trigger-job: 'ci-kubernetes-build'
-    - kubernetes-e2e-kops-aws-release-1.5: #justinsb
-        job-name: ci-kubernetes-e2e-kops-aws-release-1.5
-        jenkins-timeout: 240
-        timeout: 140
-        frequency: '@daily'
-        trigger-job: ''
-    - kubernetes-e2e-kops-aws-release-1.6: #justinsb
-        job-name: ci-kubernetes-e2e-kops-aws-release-1.6
-        jenkins-timeout: 240
-        timeout: 140
-        frequency: '@daily'
-        trigger-job: ''
-    - kubernetes-e2e-kops-aws-release-1-7: #justinsb
-        job-name: ci-kubernetes-e2e-kops-aws-release-1-7
-        jenkins-timeout: 240
-        timeout: 140
-        frequency: '@hourly'
-        trigger-job: ''
-    - kubernetes-e2e-kops-aws-stable1: #justinsb
-        job-name: ci-kubernetes-e2e-kops-aws-stable1
-        jenkins-timeout: 240
-        timeout: 140
-        frequency: '@hourly'
-        trigger-job: ''
-    - kubernetes-e2e-kops-aws-updown: #zmerlynn
-        job-name: ci-kubernetes-e2e-kops-aws-updown
-        jenkins-timeout: 150
-        timeout: 50
-        frequency: 'H/5 * * * *' # At least every 30m
-        trigger-job: 'ci-kubernetes-build'
-    - kubernetes-e2e-kops-aws-weave: #justinsb
-        job-name: ci-kubernetes-e2e-kops-aws-weave
-        jenkins-timeout: 240
-        timeout: 140
-        frequency: '@daily'
-        trigger-job: ''
-    # END AWS
-
     # gce high-scale tests #shyamjvs
     - kubernetes-e2e-gce-large-correctness:
         job-name: ci-kubernetes-e2e-gce-large-correctness
@@ -215,12 +158,12 @@
         timeout: 80
         frequency: 'H/5 * * * *' # At least every 30m
         trigger-job: 'ci-kubernetes-build'
-    - kubernetes-kubemark-5-gce-1.5:
-        job-name: ci-kubernetes-kubemark-5-gce-1.5
+    - kubernetes-kubemark-5-gce-last-release:
+        job-name: ci-kubernetes-kubemark-5-gce-last-release
         jenkins-timeout: 180
         timeout: 80
         frequency: 'H/5 * * * *' # At least every 30m
-        trigger-job: 'ci-kubernetes-build-1.5'
+        trigger-job: 'ci-kubernetes-build-1.8'
     - kubernetes-kubemark-100-gce:
         job-name: ci-kubernetes-kubemark-100-gce
         jenkins-timeout: 360

@@ -37,7 +37,6 @@ var (
 	configPath   = flag.String("config-path", "/etc/config/config", "Path to config.yaml.")
 	buildCluster = flag.String("build-cluster", "", "Path to file containing a YAML-marshalled kube.Cluster object. If empty, uses the local cluster.")
 
-	_               = flag.String("github-bot-name", "", "Deprecated.")
 	githubEndpoint  = flag.String("github-endpoint", "https://api.github.com", "GitHub's API endpoint.")
 	githubTokenFile = flag.String("github-token-file", "/etc/github/oauth", "Path to the file containing the GitHub OAuth token.")
 	dryRun          = flag.Bool("dry-run", true, "Whether or not to make mutating API calls to GitHub.")
@@ -84,6 +83,11 @@ func main() {
 	} else {
 		ghc = github.NewClient(oauthSecret, *githubEndpoint)
 	}
+
+	logger := logrus.StandardLogger()
+	kc.Logger = logger.WithField("client", "kube")
+	pkc.Logger = logger.WithField("client", "kube")
+	ghc.Logger = logger.WithField("client", "github")
 
 	c, err := plank.NewController(kc, pkc, ghc, configAgent, *totURL)
 	if err != nil {

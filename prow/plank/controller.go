@@ -59,6 +59,7 @@ type githubClient interface {
 	CreateComment(org, repo string, number int, comment string) error
 	DeleteComment(org, repo string, ID int) error
 	EditComment(org, repo string, ID int, comment string) error
+	GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error)
 }
 
 type configAgent interface {
@@ -83,12 +84,35 @@ type Controller struct {
 	pendingJobs map[string]int
 }
 
-// getNumPendingJobs retrieves the number of pending
-// ProwJobs for a given job identifier
-func (c *Controller) getNumPendingJobs(key string) int {
-	c.lock.RLock()
-	defer c.lock.RUnlock()
-	return c.pendingJobs[key]
+// canExecuteConcurrently checks whether the provided ProwJob can
+// be executed concurrently.
+func (c *Controller) canExecuteConcurrently(pj *kube.ProwJob) bool {
+	c.lock.Lock()
+	defer c.lock.Unlock()
+
+	if max := c.ca.Config().Plank.MaxConcurrency; max > 0 {
+		var running int
+		for _, num := range c.pendingJobs {
+			running += num
+		}
+		if running >= max {
+			logrus.WithField("name", pj.Metadata.Name).Debugf("Not starting another job, already %d running.", running)
+			return false
+		}
+	}
+
+	if pj.Spec.MaxConcurrency == 0 {
+		c.pendingJobs[pj.Spec.Job]++
+		return true
+	}
+
+	numPending := c.pendingJobs[pj.Spec.Job]
+	if numPending >= pj.Spec.MaxConcurrency {
+		logrus.WithField("name", pj.Metadata.Name).Debugf("Not starting another instance of %s, already %d running.", pj.Spec.Job, numPending)
+		return false
+	}
+	c.pendingJobs[pj.Spec.Job]++
+	return true
 }
 
 // incrementNumPendingJobs increments the amount of
@@ -142,7 +166,7 @@ func (c *Controller) Sync() error {
 	pjs = k8sJobs
 
 	var syncErrs []error
-	if err := c.terminateDupes(pjs); err != nil {
+	if err := c.terminateDupes(pjs, pm); err != nil {
 		syncErrs = append(syncErrs, err)
 	}
 
@@ -166,8 +190,9 @@ func (c *Controller) Sync() error {
 	}
 
 	var reportErrs []error
+	reportTemplate := c.ca.Config().Plank.ReportTemplate
 	for report := range reportCh {
-		if err := reportlib.Report(c.ghc, c.ca, report); err != nil {
+		if err := reportlib.Report(c.ghc, reportTemplate, report); err != nil {
 			reportErrs = append(reportErrs, err)
 		}
 	}
@@ -181,9 +206,9 @@ func (c *Controller) Sync() error {
 // terminateDupes aborts presubmits that have a newer version. It modifies pjs
 // in-place when it aborts.
 // TODO: Dry this out - need to ensure we can abstract children cancellation first.
-func (c *Controller) terminateDupes(pjs []kube.ProwJob) error {
+func (c *Controller) terminateDupes(pjs []kube.ProwJob, pm map[string]kube.Pod) error {
 	// "job org/repo#number" -> newest job
-	dupes := make(map[string]kube.ProwJob)
+	dupes := make(map[string]int)
 	for i, pj := range pjs {
 		if pj.Complete() || pj.Spec.Type != kube.PresubmitJob {
 			continue
@@ -191,13 +216,23 @@ func (c *Controller) terminateDupes(pjs []kube.ProwJob) error {
 		n := fmt.Sprintf("%s %s/%s#%d", pj.Spec.Job, pj.Spec.Refs.Org, pj.Spec.Refs.Repo, pj.Spec.Refs.Pulls[0].Number)
 		prev, ok := dupes[n]
 		if !ok {
-			dupes[n] = pj
+			dupes[n] = i
 			continue
 		}
-		toCancel := pj
-		if prev.Status.StartTime.Before(pj.Status.StartTime) {
-			toCancel = prev
-			dupes[n] = pj
+		cancelIndex := i
+		if pjs[prev].Status.StartTime.Before(pj.Status.StartTime) {
+			cancelIndex = prev
+			dupes[n] = i
+		}
+		toCancel := pjs[cancelIndex]
+		// Allow aborting presubmit jobs for commits that have been superseded by
+		// newer commits in Github pull requests.
+		if c.ca.Config().Plank.AllowCancellations {
+			if pod, exists := pm[toCancel.Metadata.Name]; exists {
+				if err := c.pkc.DeletePod(pod.Metadata.Name); err != nil {
+					logrus.Warningf("Cannot cancel pod for prowjob %q: %v", toCancel.Metadata.Name, err)
+				}
+			}
 		}
 		toCancel.Status.CompletionTime = time.Now()
 		toCancel.Status.State = kube.AbortedState
@@ -205,7 +240,7 @@ func (c *Controller) terminateDupes(pjs []kube.ProwJob) error {
 		if err != nil {
 			return err
 		}
-		pjs[i] = npj
+		pjs[cancelIndex] = npj
 	}
 	return nil
 }
@@ -236,10 +271,18 @@ func (c *Controller) syncPendingJob(pj kube.ProwJob, pm map[string]kube.Pod, rep
 		// deleted manually. Start a new pod.
 		id, pn, err := c.startPod(pj)
 		if err != nil {
-			return fmt.Errorf("error starting pod: %v", err)
+			_, isUnprocessable := err.(kube.UnprocessableEntityError)
+			if !isUnprocessable {
+				return fmt.Errorf("error starting pod: %v", err)
+			}
+			pj.Status.State = kube.ErrorState
+			pj.Status.CompletionTime = time.Now()
+			pj.Status.Description = "Job cannot be processed."
+			logrus.WithField("job", pj.Spec.Job).WithError(err).Warning("Unprocessable pod.")
+		} else {
+			pj.Status.BuildID = id
+			pj.Status.PodName = pn
 		}
-		pj.Status.BuildID = id
-		pj.Status.PodName = pn
 	} else {
 		switch pod.Status.Phase {
 		case kube.PodUnknown:
@@ -254,6 +297,10 @@ func (c *Controller) syncPendingJob(pj kube.ProwJob, pm map[string]kube.Pod, rep
 			pj.Status.State = kube.SuccessState
 			pj.Status.Description = "Job succeeded."
 			for _, nj := range pj.Spec.RunAfterSuccess {
+				child := pjutil.NewProwJob(nj)
+				if !RunAfterSuccessCanRun(&pj, &child, c.ca, c.ghc) {
+					continue
+				}
 				if _, err := c.kc.CreateProwJob(pjutil.NewProwJob(nj)); err != nil {
 					return fmt.Errorf("error starting next prowjob: %v", err)
 				}
@@ -303,31 +350,39 @@ func (c *Controller) syncNonPendingJob(pj kube.ProwJob, pm map[string]kube.Pod, 
 	// and rerun the prowjob update.
 	if !podExists {
 		// Do not start more jobs than specified.
-		numPending := c.getNumPendingJobs(pj.Spec.Job)
-		if pj.Spec.MaxConcurrency > 0 && numPending >= pj.Spec.MaxConcurrency {
-			logrus.WithField("job", pj.Spec.Job).Infof("Not starting another instance of %s, already %d running.", pj.Spec.Job, numPending)
+		if !c.canExecuteConcurrently(&pj) {
 			return nil
 		}
 		// We haven't started the pod yet. Do so.
 		var err error
 		id, pn, err = c.startPod(pj)
 		if err != nil {
-			return fmt.Errorf("error starting pod: %v", err)
+			_, isUnprocessable := err.(kube.UnprocessableEntityError)
+			if !isUnprocessable {
+				return fmt.Errorf("error starting pod: %v", err)
+			}
+			pj.Status.State = kube.ErrorState
+			pj.Status.CompletionTime = time.Now()
+			pj.Status.Description = "Job cannot be processed."
+			logrus.WithField("job", pj.Spec.Job).WithError(err).Warning("Unprocessable pod.")
 		}
 	} else {
 		id = getPodBuildID(&pod)
 		pn = pod.Metadata.Name
 	}
 
-	var b bytes.Buffer
-	if err := c.ca.Config().Plank.JobURLTemplate.Execute(&b, &pj); err != nil {
-		return fmt.Errorf("error executing URL template: %v", err)
+	if pj.Status.State == kube.TriggeredState {
+		// BuildID needs to be set before we execute the job url template.
+		pj.Status.BuildID = id
+		pj.Status.State = kube.PendingState
+		pj.Status.PodName = pn
+		pj.Status.Description = "Job triggered."
+		var b bytes.Buffer
+		if err := c.ca.Config().Plank.JobURLTemplate.Execute(&b, &pj); err != nil {
+			return fmt.Errorf("error executing URL template: %v", err)
+		}
+		pj.Status.URL = b.String()
 	}
-	pj.Status.URL = b.String()
-	pj.Status.State = kube.PendingState
-	pj.Status.BuildID = id
-	pj.Status.PodName = pn
-	pj.Status.Description = "Job triggered."
 	reports <- pj
 
 	_, err := c.kc.ReplaceProwJob(pj.Metadata.Name, pj)
@@ -346,7 +401,7 @@ func (c *Controller) startPod(pj kube.ProwJob) (string, string, error) {
 
 	actual, err := c.pkc.CreatePod(*pod)
 	if err != nil {
-		return "", "", fmt.Errorf("error creating pod: %v", err)
+		return "", "", err
 	}
 	return buildID, actual.Metadata.Name, nil
 }
@@ -386,4 +441,41 @@ func getPodBuildID(pod *kube.Pod) string {
 	}
 	logrus.Warningf("BUILD_NUMBER was not found in pod %q: streaming logs from deck will not work", pod.Metadata.Name)
 	return ""
+}
+
+// RunAfterSuccessCanRun returns whether a child job (specified as run_after_success in the
+// prow config) can run once its parent job succeeds. The only case we will not run a child job
+// is when it is a presubmit job and has a run_if_changed regural expression specified which does
+// not match the changed filenames in the pull request the job was meant to run for.
+// TODO: Collapse with Jenkins, impossible to reuse as is due to the interfaces.
+func RunAfterSuccessCanRun(parent, child *kube.ProwJob, c configAgent, ghc githubClient) bool {
+	if parent.Spec.Type != kube.PresubmitJob {
+		return true
+	}
+
+	// TODO: Make sure that parent and child have always the same org/repo.
+	org := parent.Spec.Refs.Org
+	repo := parent.Spec.Refs.Repo
+	prNum := parent.Spec.Refs.Pulls[0].Number
+
+	ps := c.Config().GetPresubmit(org+"/"+repo, child.Spec.Job)
+	if ps == nil {
+		// The config has changed ever since we started the parent.
+		// Not sure what is more correct here. Run the child for now.
+		return true
+	}
+	if ps.RunIfChanged == "" {
+		return true
+	}
+	changesFull, err := ghc.GetPullRequestChanges(org, repo, prNum)
+	if err != nil {
+		logrus.Warningf("Cannot get PR changes for %d: %v", prNum, err)
+		return true
+	}
+	// We only care about the filenames here
+	var changes []string
+	for _, change := range changesFull {
+		changes = append(changes, change.Filename)
+	}
+	return ps.RunsAgainstChanges(changes)
 }

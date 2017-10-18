@@ -18,9 +18,10 @@ package updateconfig
 
 import (
 	"fmt"
-	"github.com/sirupsen/logrus"
 	"strings"
 	"testing"
+
+	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/github/fakegithub"
@@ -186,7 +187,7 @@ func TestUpdateConfig(t *testing.T) {
 			maps: map[string]kube.ConfigMap{},
 		}
 
-		if err := handle(fgc, fkc, log, event); err != nil {
+		if err := handle(fgc, fkc, log, event, "prow/config.yaml", "prow/plugins.yaml"); err != nil {
 			t.Fatal(err)
 		}
 

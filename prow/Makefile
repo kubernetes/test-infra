@@ -15,15 +15,17 @@
 all: build test
 
 
-HOOK_VERSION             ?= 0.165
-SINKER_VERSION           ?= 0.18
-DECK_VERSION             ?= 0.50
-SPLICE_VERSION           ?= 0.27
+ALPINE_VERSION           ?= 0.1
+GIT_VERSION              ?= 0.1
+HOOK_VERSION             ?= 0.174
+SINKER_VERSION           ?= 0.21
+DECK_VERSION             ?= 0.53
+SPLICE_VERSION           ?= 0.28
 TOT_VERSION              ?= 0.5
-HOROLOGIUM_VERSION       ?= 0.8
-PLANK_VERSION            ?= 0.44
-JENKINS-OPERATOR_VERSION ?= 0.43
-TIDE_VERSION             ?= 0.3
+HOROLOGIUM_VERSION       ?= 0.9
+PLANK_VERSION            ?= 0.50
+JENKINS-OPERATOR_VERSION ?= 0.48
+TIDE_VERSION             ?= 0.7
 
 # These are the usual GKE variables.
 PROJECT       ?= k8s-prow
@@ -57,7 +59,15 @@ test:
 
 .PHONY: update-config update-plugins build test get-cluster-credentials
 
-hook-image:
+alpine-image:
+	docker build -t "$(REGISTRY)/$(PROJECT)/alpine:$(ALPINE_VERSION)" $(DOCKER_LABELS) cmd/images/alpine
+	$(PUSH) "$(REGISTRY)/$(PROJECT)/alpine:$(ALPINE_VERSION)"
+
+git-image: alpine-image
+	docker build -t "$(REGISTRY)/$(PROJECT)/git:$(GIT_VERSION)" $(DOCKER_LABELS) cmd/images/git
+	$(PUSH) "$(REGISTRY)/$(PROJECT)/git:$(GIT_VERSION)"
+
+hook-image: git-image
 	CGO_ENABLED=0 go build -o cmd/hook/hook k8s.io/test-infra/prow/cmd/hook
 	docker build -t "$(REGISTRY)/$(PROJECT)/hook:$(HOOK_VERSION)" $(DOCKER_LABELS) cmd/hook
 	$(PUSH) "$(REGISTRY)/$(PROJECT)/hook:$(HOOK_VERSION)"
@@ -68,7 +78,7 @@ hook-deployment: get-cluster-credentials
 hook-service: get-cluster-credentials
 	kubectl apply -f cluster/hook_service.yaml
 
-sinker-image:
+sinker-image: alpine-image
 	CGO_ENABLED=0 go build -o cmd/sinker/sinker k8s.io/test-infra/prow/cmd/sinker
 	docker build -t "$(REGISTRY)/$(PROJECT)/sinker:$(SINKER_VERSION)" $(DOCKER_LABELS) cmd/sinker
 	$(PUSH) "$(REGISTRY)/$(PROJECT)/sinker:$(SINKER_VERSION)"
@@ -76,7 +86,7 @@ sinker-image:
 sinker-deployment: get-cluster-credentials
 	kubectl apply -f cluster/sinker_deployment.yaml
 
-deck-image:
+deck-image: alpine-image
 	CGO_ENABLED=0 go build -o cmd/deck/deck k8s.io/test-infra/prow/cmd/deck
 	docker build -t "$(REGISTRY)/$(PROJECT)/deck:$(DECK_VERSION)" $(DOCKER_LABELS) cmd/deck
 	$(PUSH) "$(REGISTRY)/$(PROJECT)/deck:$(DECK_VERSION)"
@@ -87,7 +97,7 @@ deck-deployment: get-cluster-credentials
 deck-service: get-cluster-credentials
 	kubectl apply -f cluster/deck_service.yaml
 
-splice-image:
+splice-image: git-image
 	CGO_ENABLED=0 go build -o cmd/splice/splice k8s.io/test-infra/prow/cmd/splice
 	docker build -t "$(REGISTRY)/$(PROJECT)/splice:$(SPLICE_VERSION)" $(DOCKER_LABELS) cmd/splice
 	$(PUSH) "$(REGISTRY)/$(PROJECT)/splice:$(SPLICE_VERSION)"
@@ -95,7 +105,7 @@ splice-image:
 splice-deployment: get-cluster-credentials
 	kubectl apply -f cluster/splice_deployment.yaml
 
-tot-image:
+tot-image: alpine-image
 	CGO_ENABLED=0 go build -o cmd/tot/tot k8s.io/test-infra/prow/cmd/tot
 	docker build -t "$(REGISTRY)/$(PROJECT)/tot:$(TOT_VERSION)" $(DOCKER_LABELS) cmd/tot
 	$(PUSH) "$(REGISTRY)/$(PROJECT)/tot:$(TOT_VERSION)"
@@ -106,7 +116,7 @@ tot-deployment: get-cluster-credentials
 tot-service: get-cluster-credentials
 	kubectl apply -f cluster/tot_service.yaml
 
-horologium-image:
+horologium-image: alpine-image
 	CGO_ENABLED=0 go build -o cmd/horologium/horologium k8s.io/test-infra/prow/cmd/horologium
 	docker build -t "$(REGISTRY)/$(PROJECT)/horologium:$(HOROLOGIUM_VERSION)" $(DOCKER_LABELS) cmd/horologium
 	$(PUSH) "$(REGISTRY)/$(PROJECT)/horologium:$(HOROLOGIUM_VERSION)"
@@ -114,7 +124,7 @@ horologium-image:
 horologium-deployment: get-cluster-credentials
 	kubectl apply -f cluster/horologium_deployment.yaml
 
-plank-image:
+plank-image: alpine-image
 	CGO_ENABLED=0 go build -o cmd/plank/plank k8s.io/test-infra/prow/cmd/plank
 	docker build -t "$(REGISTRY)/$(PROJECT)/plank:$(PLANK_VERSION)" $(DOCKER_LABELS) cmd/plank
 	$(PUSH) "$(REGISTRY)/$(PROJECT)/plank:$(PLANK_VERSION)"
@@ -122,7 +132,7 @@ plank-image:
 plank-deployment: get-cluster-credentials
 	kubectl apply -f cluster/plank_deployment.yaml
 
-jenkins-operator-image:
+jenkins-operator-image: alpine-image
 	CGO_ENABLED=0 go build -o cmd/jenkins-operator/jenkins-operator k8s.io/test-infra/prow/cmd/jenkins-operator
 	docker build -t "$(REGISTRY)/$(PROJECT)/jenkins-operator:$(JENKINS_VERSION)" $(DOCKER_LABELS) cmd/jenkins-operator
 	$(PUSH) "$(REGISTRY)/$(PROJECT)/jenkins-operator:$(JENKINS_VERSION)"
@@ -130,7 +140,10 @@ jenkins-operator-image:
 jenkins-operator-deployment: get-cluster-credentials
 	kubectl apply -f cluster/jenkins_deployment.yaml
 
-tide-image:
+push-gateway-deploy: get-cluster-credentials
+	kubectl apply -f cluster/push_gateway.yaml
+
+tide-image: git-image
 	CGO_ENABLED=0 go build -o cmd/tide/tide k8s.io/test-infra/prow/cmd/tide
 	docker build -t "$(REGISTRY)/$(PROJECT)/tide:$(TIDE_VERSION)" $(DOCKER_LABELS) cmd/tide
 	$(PUSH) "$(REGISTRY)/$(PROJECT)/tide:$(TIDE_VERSION)"

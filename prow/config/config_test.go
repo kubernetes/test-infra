@@ -103,7 +103,8 @@ func TestRetestMatchJobsName(t *testing.T) {
 }
 
 type SubmitQueueConfig struct {
-	Data map[string]string `json:"data"`
+	// this is the only field we need for the tests below
+	RequiredRetestContexts string `json:"required-retest-contexts"`
 }
 
 func FindRequired(t *testing.T, presubmits []Presubmit) []string {
@@ -136,11 +137,7 @@ func TestRequiredRetestContextsMatch(t *testing.T) {
 	if err = yaml.Unmarshal(b, sqc); err != nil {
 		t.Fatalf("Could not parse submit queue configmap: %v", err)
 	}
-	re := regexp.MustCompile(`"([^"]+)"`)
-	var required []string
-	for _, g := range re.FindAllStringSubmatch(sqc.Data["test-options.required-retest-contexts"], -1) {
-		required = append(required, g[1])
-	}
+	required := strings.Split(sqc.RequiredRetestContexts, ",")
 
 	running := FindRequired(t, c.Presubmits["kubernetes/kubernetes"])
 
@@ -175,6 +172,53 @@ func TestConfigSecurityJobsMatch(t *testing.T) {
 
 		if !reflect.DeepEqual(j, sp[i]) {
 			t.Fatalf("kubernetes/kubernetes prow config jobs do not match kubernetes-security/kubernetes jobs:\n%#v\nshould match: %#v", j, sp[i])
+		}
+	}
+}
+
+// CheckDockerSocketVolumes returns an error if any volume uses a hostpath
+// to the docker socket. we do not want to allow this
+func CheckDockerSocketVolumes(volumes []kube.Volume) error {
+	for _, volume := range volumes {
+		if volume.HostPath != nil && volume.HostPath.Path == "/var/run/docker.sock" {
+			return errors.New("job uses HostPath with docker socket")
+		}
+	}
+	return nil
+}
+
+// Make sure jobs are not using the docker socket as a host path
+func TestJobDoesNotHaveDockerSocket(t *testing.T) {
+	c, err := Load("../config.yaml")
+	if err != nil {
+		t.Fatalf("Could not load config: %v", err)
+	}
+
+	for _, pres := range c.Presubmits {
+		for _, presubmit := range pres {
+			if presubmit.Spec != nil {
+				if err := CheckDockerSocketVolumes(presubmit.Spec.Volumes); err != nil {
+					t.Errorf("Error in presubmit: %v", err)
+				}
+			}
+		}
+	}
+
+	for _, posts := range c.Postsubmits {
+		for _, postsubmit := range posts {
+			if postsubmit.Spec != nil {
+				if err := CheckDockerSocketVolumes(postsubmit.Spec.Volumes); err != nil {
+					t.Errorf("Error in postsubmit: %v", err)
+				}
+			}
+		}
+	}
+
+	for _, periodic := range c.Periodics {
+		if periodic.Spec != nil {
+			if err := CheckDockerSocketVolumes(periodic.Spec.Volumes); err != nil {
+				t.Errorf("Error in postsubmit: %v", err)
+			}
 		}
 	}
 }
@@ -373,17 +417,25 @@ func CheckBazelbuildSpec(t *testing.T, name string, spec *kube.PodSpec, periodic
 	if spec == nil {
 		return tags
 	}
+	// Tags look something like vDATE-SHA or vDATE-SHA-BAZELVERSION.
+	// We want to match only on the date + sha
+	tagRE := regexp.MustCompile(`^([^-]+-[^-]+)(-[^-]+)?$`)
 	for _, c := range spec.Containers {
 		parts := strings.SplitN(c.Image, ":", 2)
 		var i, tag string // image:tag
 		i = parts[0]
+		if i != img {
+			continue
+		}
 		if len(parts) == 1 {
 			tag = "latest"
 		} else {
-			tag = parts[1]
-		}
-		if i != img {
-			continue
+			submatches := tagRE.FindStringSubmatch(parts[1])
+			if submatches != nil {
+				tag = submatches[1]
+			} else {
+				t.Errorf("bazelbuild tag '%s' doesn't match expected format", parts[1])
+			}
 		}
 		tags[tag]++
 
@@ -487,11 +539,7 @@ func TestBazelbuildArgs(t *testing.T) {
 		}
 	}
 	pinnedJobs := map[string]string{
-		//job: reason for pinning
-		"ci-kubernetes-bazel-build-1-6":       "https://github.com/kubernetes/kubernetes/issues/51571",
-		"ci-kubernetes-bazel-test-1-6":        "https://github.com/kubernetes/kubernetes/issues/51571",
-		"periodic-kubernetes-bazel-build-1-6": "https://github.com/kubernetes/kubernetes/issues/51571",
-		"periodic-kubernetes-bazel-test-1-6":  "https://github.com/kubernetes/kubernetes/issues/51571",
+	//job: reason for pinning
 	}
 	maxTag := ""
 	maxN := 0

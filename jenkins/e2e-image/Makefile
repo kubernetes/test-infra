@@ -15,18 +15,46 @@
 IMG = gcr.io/k8s-testimages/kubekins-e2e
 TAG = $(shell date +v%Y%m%d)-$(shell git describe --tags --always --dirty)
 
+K8S ?= master
+
+GO ?= 1.8.3
+BAZEL ?= 0.6.1
+
+ifeq ($(K8S), 1.8)
+	GO = 1.8.3
+	BAZEL = 0.6.1
+endif
+
+ifeq ($(K8S), 1.7)
+	GO = 1.8.3
+	BAZEL = 0.6.1
+endif
+
+ifeq ($(K8S), 1.6)
+	GO = 1.7.4
+	BAZEL = 0.5.2
+endif
+
 all: build
 
 kubetest:
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o kubetest ../../kubetest
 
 build: kubetest
-	docker build -t $(IMG):$(TAG) .
-	docker tag $(IMG):$(TAG) $(IMG):latest
+	@echo Building with go:$(GO) and bazel:$(BAZEL)
+	docker build --build-arg GO_VERSION=$(GO) --build-arg BAZEL_VERSION=$(BAZEL) -t $(IMG):$(TAG)-$(K8S) .
+	docker tag $(IMG):$(TAG)-$(K8S) $(IMG):latest-$(K8S)
 	rm kubetest
-	@echo Built $(IMG):$(TAG) and tagged with latest
+	@echo Built $(IMG):$(TAG)-$(K8S) and tagged with latest-$(K8S)
 
 push: build
-	gcloud docker -- push $(IMG):$(TAG)
-	gcloud docker -- push $(IMG):latest
-	@echo Pushed $(IMG) with :latest and :$(TAG) tags
+	gcloud docker -- push $(IMG):$(TAG)-$(K8S)
+	gcloud docker -- push $(IMG):latest-$(K8S)
+	@echo Pushed $(IMG) with :latest-$(K8S) and :$(TAG)-$(K8S) tags
+
+.PHONY: all kubetest build push help
+
+help:
+	@echo "By default, build a master image"
+	@echo "But you can also specify a k8s version, i.e. :"
+	@echo "    - K8S=1.8 make build"

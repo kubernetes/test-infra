@@ -17,17 +17,19 @@ limitations under the License.
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"io"
+	"io/ioutil"
+	"net/http"
 	"regexp"
 	"sort"
-	"strconv"
 	"sync"
 	"time"
 
 	"github.com/sirupsen/logrus"
 
-	"k8s.io/test-infra/prow/jenkins"
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/kube"
 )
 
@@ -73,7 +75,7 @@ type podLogClient interface {
 type JobAgent struct {
 	kc        listPJClient
 	pkc       podLogClient
-	jc        *jenkins.Client
+	c         *config.Agent
 	jobs      []Job
 	jobsMap   map[string]Job                     // pod name -> Job
 	jobsIDMap map[string]map[string]kube.ProwJob // job name -> id -> ProwJob
@@ -109,16 +111,27 @@ func (ja *JobAgent) GetJobLog(job, id string) ([]byte, error) {
 	}
 	ja.mut.Unlock()
 	if !ok {
-		return nil, fmt.Errorf("no such job %s %s", job, id)
+		return nil, fmt.Errorf("no such job found: %s (id: %s)", job, id)
 	}
 	if j.Spec.Agent == kube.KubernetesAgent {
 		return ja.pkc.GetLog(j.Status.PodName)
 	}
-	num, err := strconv.Atoi(id)
-	if err != nil {
-		return nil, err
+	for _, agentToTmpl := range ja.c.Config().Deck.ExternalAgentLogs {
+		if agentToTmpl.Agent != string(j.Spec.Agent) {
+			continue
+		}
+		var b bytes.Buffer
+		if err := agentToTmpl.URLTemplate.Execute(&b, &j); err != nil {
+			return nil, fmt.Errorf("cannot execute URL template for prowjob %q with agent %q: %v", j.Metadata.Name, j.Spec.Agent, err)
+		}
+		resp, err := http.Get(b.String())
+		if err != nil {
+			return nil, err
+		}
+		defer resp.Body.Close()
+		return ioutil.ReadAll(resp.Body)
 	}
-	return ja.jc.GetLog(job, num)
+	return nil, fmt.Errorf("cannot get logs for prowjob %q with agent %q: the agent is missing from the prow config file", j.Metadata.Name, j.Spec.Agent)
 }
 
 func (ja *JobAgent) GetJobLogStream(job, id string, options map[string]string) (io.ReadCloser, error) {
@@ -130,13 +143,12 @@ func (ja *JobAgent) GetJobLogStream(job, id string, options map[string]string) (
 	}
 	ja.mut.Unlock()
 	if !ok {
-		return nil, fmt.Errorf("no such job %s %s", job, id)
+		return nil, fmt.Errorf("no such job found: %s (id: %s)", job, id)
 	}
 	if j.Spec.Agent == kube.KubernetesAgent {
 		return ja.pkc.GetLogStream(j.Status.PodName, options)
-	} else {
-		return nil, fmt.Errorf("Streaming is available for kubernetes clients only, job %s %s is not a job running under kubernetes.", job, id)
 	}
+	return nil, fmt.Errorf("streaming is available for kubernetes clients only, prowjob %q is running under %s.", j.Metadata.Name, j.Spec.Agent)
 }
 
 func (ja *JobAgent) tryUpdate() {

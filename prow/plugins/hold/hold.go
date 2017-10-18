@@ -38,19 +38,10 @@ var (
 	labelCancelRe = regexp.MustCompile(`(?mi)^/hold cancel\s*$`)
 )
 
-type event struct {
-	org      string
-	repo     string
-	number   int
-	body     string
-	htmlurl  string
-	hasLabel func() (bool, error)
-}
+type hasLabelFunc func(e *github.GenericCommentEvent) (bool, error)
 
 func init() {
-	plugins.RegisterIssueCommentHandler(pluginName, handleIssueComment)
-	plugins.RegisterReviewEventHandler(pluginName, handleReview)
-	plugins.RegisterReviewCommentEventHandler(pluginName, handleReviewComment)
+	plugins.RegisterGenericCommentHandler(pluginName, handleGenericComment)
 }
 
 type githubClient interface {
@@ -59,85 +50,43 @@ type githubClient interface {
 	GetIssueLabels(org, repo string, number int) ([]github.Label, error)
 }
 
-func handleIssueComment(pc plugins.PluginClient, ic github.IssueCommentEvent) error {
-	// Only consider open PRs.
-	if !ic.Issue.IsPullRequest() || ic.Issue.State != "open" || ic.Action != github.IssueCommentActionCreated {
-		return nil
+func handleGenericComment(pc plugins.PluginClient, e github.GenericCommentEvent) error {
+	hasLabel := func(e *github.GenericCommentEvent) (bool, error) {
+		return hasLabel(pc.GitHubClient, e.Repo.Owner.Login, e.Repo.Name, e.Number, label)
 	}
-
-	e := &event{
-		org:    ic.Repo.Owner.Login,
-		repo:   ic.Repo.Name,
-		number: ic.Issue.Number,
-		body:   ic.Comment.Body,
-		hasLabel: func() (bool, error) {
-			return ic.Issue.HasLabel(label), nil
-		},
-		htmlurl: ic.Comment.HTMLURL,
-	}
-	return handle(pc.GitHubClient, pc.Logger, e)
-}
-
-func handleReview(pc plugins.PluginClient, re github.ReviewEvent) error {
-	if re.Action != github.ReviewActionSubmitted {
-		return nil
-	}
-
-	e := &event{
-		org:    re.Repo.Owner.Login,
-		repo:   re.Repo.Name,
-		number: re.PullRequest.Number,
-		body:   re.Review.Body,
-		hasLabel: func() (bool, error) {
-			return hasLabel(pc.GitHubClient, re.Repo.Owner.Login, re.Repo.Name, re.PullRequest.Number, label)
-		},
-		htmlurl: re.Review.HTMLURL,
-	}
-	return handle(pc.GitHubClient, pc.Logger, e)
-}
-
-func handleReviewComment(pc plugins.PluginClient, rce github.ReviewCommentEvent) error {
-	if rce.Action != github.ReviewCommentActionCreated {
-		return nil
-	}
-
-	e := &event{
-		org:    rce.Repo.Owner.Login,
-		repo:   rce.Repo.Name,
-		number: rce.PullRequest.Number,
-		body:   rce.Comment.Body,
-		hasLabel: func() (bool, error) {
-			return hasLabel(pc.GitHubClient, rce.Repo.Owner.Login, rce.Repo.Name, rce.PullRequest.Number, label)
-		},
-		htmlurl: rce.Comment.HTMLURL,
-	}
-	return handle(pc.GitHubClient, pc.Logger, e)
+	return handle(pc.GitHubClient, pc.Logger, &e, hasLabel)
 }
 
 // handle drives the pull request to the desired state. If any user adds
 // a /hold directive, we want to add a label if one does not already exist.
 // If they add /hold cancel, we want to remove the label if it exists.
-func handle(gc githubClient, log *logrus.Entry, e *event) error {
+func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, f hasLabelFunc) error {
+	if e.Action != github.GenericCommentActionCreated {
+		return nil
+	}
 	needsLabel := false
-	if labelRe.MatchString(e.body) {
+	if labelRe.MatchString(e.Body) {
 		needsLabel = true
-	} else if labelCancelRe.MatchString(e.body) {
+	} else if labelCancelRe.MatchString(e.Body) {
 		needsLabel = false
 	} else {
 		return nil
 	}
 
-	hasLabel, err := e.hasLabel()
+	hasLabel, err := f(e)
 	if err != nil {
 		return err
 	}
 
+	org := e.Repo.Owner.Login
+	repo := e.Repo.Name
+
 	if hasLabel && !needsLabel {
-		log.Info("Removing %q label for %s/%s#%d", label, e.org, e.repo, e.number)
-		return gc.RemoveLabel(e.org, e.repo, e.number, label)
+		log.Info("Removing %q label for %s/%s#%d", label, org, repo, e.Number)
+		return gc.RemoveLabel(org, repo, e.Number, label)
 	} else if !hasLabel && needsLabel {
-		log.Info("Adding %q label for %s/%s#%d", label, e.org, e.repo, e.number)
-		return gc.AddLabel(e.org, e.repo, e.number, label)
+		log.Info("Adding %q label for %s/%s#%d", label, org, repo, e.Number)
+		return gc.AddLabel(org, repo, e.Number, label)
 	}
 	return nil
 }

@@ -23,12 +23,27 @@ import collections
 import json
 import os
 import re
+import sys
 
 import config_sort
 import env_gc
 import yaml
 
 # pylint: disable=too-many-public-methods, too-many-branches, too-many-locals, too-many-statements
+
+def get_required_jobs():
+    required_jobs = set()
+    configs_dir = config_sort.test_infra('mungegithub', 'submit-queue', 'deployment')
+    for root, _, files in os.walk(configs_dir):
+        for file_name in files:
+            if file_name == 'configmap.yaml':
+                path = os.path.join(root, file_name)
+                with open(path) as fp:
+                    conf = yaml.safe_load(fp)
+                    for job in conf.get('required-retest-contexts', '').split(','):
+                        if job:
+                            required_jobs.add(job)
+    return required_jobs
 
 class JobTest(unittest.TestCase):
 
@@ -59,11 +74,16 @@ class JobTest(unittest.TestCase):
 
     realjobs = {}
     prowjobs = []
+    presubmits = []
 
     @property
     def jobs(self):
         """[(job, job_path)] sequence"""
         for path, _, filenames in os.walk(config_sort.test_infra('jobs')):
+            print >>sys.stderr, path
+            if 'e2e_node' in path:
+                # Node e2e image configs, ignore them
+                continue
             for job in [f for f in filenames if f not in self.excludes]:
                 job_path = os.path.join(path, job)
                 yield job, job_path
@@ -269,7 +289,7 @@ class JobTest(unittest.TestCase):
                         if match:
                             real_job['timeout'] = match.group(1)
         if 'pull-' not in name and name in self.realjobs and name not in self.prowjobs:
-            self.fail('CI job %s exist in both Jenkins and Prow congfig!' % name)
+            self.fail('CI job %s exist in both Jenkins and Prow config!' % name)
         if name not in self.realjobs:
             self.realjobs[name] = real_job
             self.prowjobs.append(name)
@@ -294,10 +314,10 @@ class JobTest(unittest.TestCase):
         if 'postsubmits' not in doc:
             self.fail('No postsubmits in prow config!')
 
-        presubmits = doc.get('presubmits')
+        self.presubmits = doc.get('presubmits')
         postsubmits = doc.get('postsubmits')
 
-        for _repo, joblist in presubmits.items() + postsubmits.items():
+        for _repo, joblist in self.presubmits.items() + postsubmits.items():
             for job in joblist:
                 self.add_prow_job(job)
 
@@ -372,6 +392,25 @@ class JobTest(unittest.TestCase):
             self.load_prow_yaml(self.prow_config)
         self.assertIn(key, sorted(self.realjobs))  # sorted for clearer error message
         return self.realjobs.get(key)
+
+    def test_non_blocking_jenkins(self):
+        """All PR non-blocking jenkins jobs are always_run: false"""
+        # ref https://github.com/kubernetes/test-infra/issues/4637
+        if not self.presubmits:
+            self.load_prow_yaml(self.prow_config)
+        required_jobs = get_required_jobs()
+        # TODO(bentheelder): should we also include other repos?
+        # If we do, we need to check which ones have a deployment in get_required_jobs
+        # and ignore the ones without submit-queue deployments. This seems brittle
+        # and unnecessary for now though.
+        for job in self.presubmits.get('kubernetes/kubernetes', []):
+            if (job['agent'] == 'jenkins' and
+                    job['name'] not in required_jobs and
+                    job.get('always_run', False)):
+                self.fail(
+                    'Jenkins jobs should not be `always_run: true`'
+                    ' unless they are required! %s'
+                    % job['name'])
 
     def test_valid_timeout(self):
         """All jobs set a timeout less than 120m or set DOCKER_TIMEOUT."""
@@ -502,8 +541,8 @@ class JobTest(unittest.TestCase):
                         if match:
                             cluster = match.group(1)
                             self.assertLessEqual(
-                                len(cluster), 20,
-                                'Job %r, --cluster should be 20 chars or fewer' % job
+                                len(cluster), 23,
+                                'Job %r, --cluster should be 23 chars or fewer' % job
                                 )
                 # these args should not be combined:
                 # --use-shared-build and (--build or --extract)
@@ -513,7 +552,7 @@ class JobTest(unittest.TestCase):
                     if job in self.prowjobs:
                         for arg in args:
                             # --mode=local is default now
-                            self.assertNotIn('--mode', args, job)
+                            self.assertNotIn('--mode', arg, job)
                     else:
                         self.assertIn('--mode=docker', args, job)
                     for arg in args:
@@ -559,6 +598,7 @@ class JobTest(unittest.TestCase):
                     elif not extracts and not shared_builds and not node_e2e:
                         self.fail(('e2e job needs --extract or'
                                    ' --use-shared-build: %s %s') % (job, args))
+
                     if shared_builds or node_e2e:
                         expected = 0
                     elif any(s in job for s in [
@@ -587,8 +627,11 @@ class JobTest(unittest.TestCase):
                         self.fail('--image-family and --image-project must be'
                                   'both set or unset: %s' % job)
 
-                    if job.startswith('pull-kubernetes-'):
-                        self.assertIn('--cluster=', args)
+                    if job.startswith('pull-kubernetes-') and not node_e2e:
+                        if not 'pull-kubernetes-federation-e2e-gce' in job:
+                            # pull-kubernetes-federation-e2e-gce job uses a specific cluster names
+                            # instead of dynamic cluster names.
+                            self.assertIn('--cluster=', args)
                         if 'gke' in job:
                             stage = 'gs://kubernetes-release-dev/ci'
                             suffix = True
@@ -712,7 +755,10 @@ class JobTest(unittest.TestCase):
             'ci-kubernetes-e2e-gce-scalability-canary': 'ci-kubernetes-e2e-gce-scalability-*',
             # TODO(fejta): remove these (found while migrating jobs)
             'ci-kubernetes-kubemark-100-gce': 'ci-kubernetes-kubemark-*',
+            'ci-kubernetes-kubemark-5-prow-canary': 'ci-kubernetes-kubemark-*',
+            'ci-kubernetes-kubemark-100-canary': 'ci-kubernetes-kubemark-*',
             'ci-kubernetes-kubemark-5-gce': 'ci-kubernetes-kubemark-*',
+            'ci-kubernetes-kubemark-5-gce-last-release': 'ci-kubernetes-kubemark-*',
             'ci-kubernetes-kubemark-high-density-100-gce': 'ci-kubernetes-kubemark-*',
             'ci-kubernetes-kubemark-gce-scale': 'ci-kubernetes-scale-*',
             'pull-kubernetes-kubemark-e2e-gce-big': 'ci-kubernetes-scale-*',
@@ -736,8 +782,11 @@ class JobTest(unittest.TestCase):
             'pull-kubernetes-e2e-gce-canary': 'pull-kubernetes-e2e-gce-*',
             'ci-kubernetes-e2e-gce': 'ci-kubernetes-e2e-gce-*',
             'ci-kubernetes-e2e-gce-canary': 'ci-kubernetes-e2e-gce-*',
-            'ci-kubernetes-e2e-gke-gpu': 'ci-kubernetes-e2e-gke-gpu-*',
-            'pull-kubernetes-e2e-gke-gpu': 'ci-kubernetes-e2e-gke-gpu-*',
+            'ci-kubernetes-node-kubelet-serial': 'ci-kubernetes-node-kubelet-*',
+            'ci-kubernetes-node-kubelet-flaky': 'ci-kubernetes-node-kubelet-*',
+            'ci-kubernetes-node-kubelet-conformance': 'ci-kubernetes-node-kubelet-*',
+            'ci-kubernetes-node-kubelet-benchmark': 'ci-kubernetes-node-kubelet-*',
+            'ci-kubernetes-node-kubelet': 'ci-kubernetes-node-kubelet-*',
         }
         for soak_prefix in [
                 'ci-kubernetes-soak-gce-1.5',
@@ -844,6 +893,8 @@ class JobTest(unittest.TestCase):
             ('FAIL_ON_GCP_RESOURCE_LEAK=', '--check-leaked-resources=true|false'),
             ('FEDERATION_DOWN=', '--down=true|false'),
             ('FEDERATION_UP=', '--up=true|false'),
+            ('GINKGO_PARALLEL=', '--ginkgo-parallel=# (1 for serial)'),
+            ('GINKGO_PARALLEL_NODES=', '--ginkgo-parallel=# (1 for serial)'),
             ('GINKGO_TEST_ARGS=', '--test_args=FOO'),
             ('GINKGO_UPGRADE_TEST_ARGS=', '--upgrade_args=FOO'),
             ('JENKINS_FEDERATION_PREFIX=', '--stage=gs://FOO'),
@@ -867,6 +918,9 @@ class JobTest(unittest.TestCase):
             ('KUBEMARK_TESTS=', '--test_args=--ginkgo.focus=FOO'),
             ('KUBEMARK_MASTER_SIZE=', '--kubemark-master-size=FOO'),
             ('KUBEMARK_NUM_NODES=', '--kubemark-nodes=FOO'),
+            ('KUBE_OS_DISTRIBUTION=', '--gcp-node-image=FOO and --gcp-master-image=FOO'),
+            ('KUBE_NODE_OS_DISTRIBUTION=', '--gcp-node-image=FOO'),
+            ('KUBE_MASTER_OS_DISTRIBUTION=', '--gcp-master-image=FOO'),
             ('KUBERNETES_PROVIDER=', '--provider=FOO'),
             ('PERF_TESTS=', '--perf'),
             ('PROJECT=', '--gcp-project=FOO'),

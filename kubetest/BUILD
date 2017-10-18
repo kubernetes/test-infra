@@ -29,7 +29,10 @@ go_library(
         "stage.go",
         "util.go",
     ],
-    deps = ["//boskos/client:go_default_library"],
+    deps = [
+        "//boskos/client:go_default_library",
+        "//vendor/github.com/spf13/pflag:go_default_library",
+    ],
 )
 
 filegroup(

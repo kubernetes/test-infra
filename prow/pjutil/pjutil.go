@@ -141,7 +141,9 @@ func ProwJobToPod(pj kube.ProwJob, buildID string) *kube.Pod {
 			Labels: map[string]string{
 				kube.CreatedByProw: "true",
 				"type":             string(pj.Spec.Type),
-				"job":              pj.Spec.Job,
+			},
+			Annotations: map[string]string{
+				"job": pj.Spec.Job,
 			},
 		},
 		Spec: spec,
@@ -213,4 +215,20 @@ func PartitionPending(pjs []kube.ProwJob) (pending, nonPending chan kube.ProwJob
 	close(pending)
 	close(nonPending)
 	return pending, nonPending
+}
+
+// GetLatestPeriodics filters through the provided prowjobs and returns
+// a map of periodic jobs to their latest prowjobs.
+func GetLatestPeriodics(pjs []kube.ProwJob) map[string]kube.ProwJob {
+	latestJobs := make(map[string]kube.ProwJob)
+	for _, j := range pjs {
+		if j.Spec.Type != kube.PeriodicJob {
+			continue
+		}
+		name := j.Spec.Job
+		if j.Status.StartTime.After(latestJobs[name].Status.StartTime) {
+			latestJobs[name] = j
+		}
+	}
+	return latestJobs
 }

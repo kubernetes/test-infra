@@ -103,12 +103,16 @@ type Brancher struct {
 	Branches []string `json:"branches"`
 }
 
+func (br Brancher) RunsAgainstAllBranch() bool {
+	return len(br.SkipBranches) == 0 && len(br.Branches) == 0
+}
+
 func (br Brancher) RunsAgainstBranch(branch string) bool {
-	// Favor SkipBranches over Branches
-	if len(br.SkipBranches) == 0 && len(br.Branches) == 0 {
+	if br.RunsAgainstAllBranch() {
 		return true
 	}
 
+	// Favor SkipBranches over Branches
 	for _, s := range br.SkipBranches {
 		if s == branch {
 			return false
@@ -171,6 +175,18 @@ func (c *Config) RetestPresubmits(fullRepoName string, skipContexts, runContexts
 	return result
 }
 
+// GetPresubmit returns the presubmit job for the provided repo and job name.
+func (c *Config) GetPresubmit(repo, jobName string) *Presubmit {
+	presubmits := c.AllPresubmits([]string{repo})
+	for i := range presubmits {
+		ps := presubmits[i]
+		if ps.Name == jobName {
+			return &ps
+		}
+	}
+	return nil
+}
+
 func (c *Config) SetPresubmits(jobs map[string][]Presubmit) error {
 	nj := map[string][]Presubmit{}
 	for k, v := range jobs {
@@ -213,7 +229,6 @@ func (c *Config) AllPresubmits(repos []string) []Presubmit {
 				}
 			}
 		}
-
 	}
 
 	return res

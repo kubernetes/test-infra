@@ -36,7 +36,7 @@ import time
 ORIG_CWD = os.getcwd()  # Checkout changes cwd
 
 # Note: This variable is managed by experiment/bump_e2e_image.sh.
-DEFAULT_KUBEKINS_TAG = 'v20170913-ed4994ba'
+DEFAULT_KUBEKINS_TAG = 'v20171018-fb8014bc-master'
 
 def test_infra(*paths):
     """Return path relative to root of test-infra repo."""
@@ -71,6 +71,12 @@ def kubekins(tag):
 def parse_env(env):
     """Returns (FOO, BAR=MORE) for FOO=BAR=MORE."""
     return env.split('=', 1)
+
+def aws_role_config(profile, arn):
+    return (('[profile jenkins-assumed-role]\n' +
+             'role_arn = %s\n' +
+             'source_profile = %s\n') %
+            (arn, profile))
 
 def kubeadm_version(mode, shared_build_gcs_path):
     """Return string to use for kubeadm version, given the job's mode (ci/pull/periodic)."""
@@ -149,17 +155,17 @@ class LocalMode(object):
 
     def add_aws_cred(self, priv, pub, cred):
         """Sets aws keys and credentials."""
-        ssh_dir = '%s/.ssh' % self.workspace
+        ssh_dir = os.path.join(self.workspace, '.ssh')
         if not os.path.isdir(ssh_dir):
             os.makedirs(ssh_dir)
 
-        cred_dir = '%s/.aws' % self.workspace
+        cred_dir = os.path.join(self.workspace, '.aws')
         if not os.path.isdir(cred_dir):
             os.makedirs(cred_dir)
 
-        aws_ssh = '%s/kube_aws_rsa' % ssh_dir
-        aws_pub = '%s/kube_aws_rsa.pub' % ssh_dir
-        aws_cred = '%s/credentials' % cred_dir
+        aws_ssh = os.path.join(ssh_dir, 'kube_aws_rsa')
+        aws_pub = os.path.join(ssh_dir, 'kube_aws_rsa.pub')
+        aws_cred = os.path.join(cred_dir, 'credentials')
         shutil.copy(priv, aws_ssh)
         shutil.copy(pub, aws_pub)
         shutil.copy(cred, aws_cred)
@@ -170,14 +176,20 @@ class LocalMode(object):
             'JENKINS_AWS_CREDENTIALS_FILE=%s' % cred,
         )
 
+    def add_aws_role(self, profile, arn):
+        with open(os.path.join(self.workspace, '.aws', 'config'), 'w') as cfg:
+            cfg.write(aws_role_config(profile, arn))
+        self.add_environment('AWS_SDK_LOAD_CONFIG=true')
+        return 'jenkins-assumed-role'
+
     def add_gce_ssh(self, priv, pub):
         """Copies priv, pub keys to $WORKSPACE/.ssh."""
-        ssh_dir = '%s/.ssh' % self.workspace
+        ssh_dir = os.path.join(self.workspace, '.ssh')
         if not os.path.isdir(ssh_dir):
             os.makedirs(ssh_dir)
 
-        gce_ssh = '%s/google_compute_engine' % ssh_dir
-        gce_pub = '%s/google_compute_engine.pub' % ssh_dir
+        gce_ssh = os.path.join(ssh_dir, 'google_compute_engine')
+        gce_pub = os.path.join(ssh_dir, 'google_compute_engine.pub')
         shutil.copy(priv, gce_ssh)
         shutil.copy(pub, gce_pub)
         self.add_environment(
@@ -193,10 +205,6 @@ class LocalMode(object):
     def add_k8s(self, *a, **kw):
         """Add specified k8s.io repos (noop)."""
         pass
-
-    def add_aws_profile(self, _name, _config):
-        """Add aws profile envs."""
-        self.add_environment('AWS_SDK_LOAD_CONFIG=true')
 
     def use_latest_image(self, image_family, image_project):
         """Gets the latest image from the image_family in the image_project."""
@@ -221,7 +229,7 @@ class LocalMode(object):
     def add_aws_runner(self):
         """Start with kops-e2e-runner.sh"""
         # TODO(Krzyzacy):retire kops-e2e-runner.sh
-        self.command = '/workspace/kops-e2e-runner.sh'
+        self.command = os.path.join(self.workspace, 'kops-e2e-runner.sh')
 
     def start(self, args):
         """Starts kubetest."""
@@ -244,9 +252,10 @@ class DockerMode(object):
 
         print 'Starting %s...' % container
 
+        self.workspace = '/workspace'
         self.container = container
         self.local_artifacts = artifacts
-        self.artifacts = '/workspace/_artifacts'
+        self.artifacts = os.path.join(self.workspace, '_artifacts')
         self.cmd = [
             'docker', 'run', '--rm',
             '--name=%s' % container,
@@ -258,8 +267,11 @@ class DockerMode(object):
 
         if sudo:
             self.cmd.extend(['-v', '/var/run/docker.sock:/var/run/docker.sock'])
-        self.add_env('HOME=/workspace')
-        self.add_env('WORKSPACE=/workspace')
+        self.add_env('HOME=%s' % self.workspace)
+        self.add_env('WORKSPACE=%s' % self.workspace)
+        self.cmd.append(
+            '--entrypoint=/workspace/kubetest'
+        )
 
     def add_environment(self, *envs):
         """Adds FOO=BAR to the -e list for docker.
@@ -302,19 +314,11 @@ class DockerMode(object):
             self.cmd.extend([
                 '-v', '%s/%s:/go/src/k8s.io/%s' % (k8s, repo, repo)])
 
-    def add_aws_profile(self, name, config):
-        """Add aws profile envs."""
-        self.add_environment('AWS_SDK_LOAD_CONFIG=true')
-        self.cmd.extend([
-          '-v', '%s:%s:ro' % (name, config),
-          '-e', 'AWS_SDK_LOAD_CONFIG=true',
-        ])
-
     def add_aws_cred(self, priv, pub, cred):
         """Mounts aws keys/creds inside the container."""
-        aws_ssh = '/workspace/.ssh/kube_aws_rsa'
+        aws_ssh = os.path.join(self.workspace, '.ssh', 'kube_aws_rsa')
         aws_pub = '%s.pub' % aws_ssh
-        aws_cred = '/workspace/.aws/credentials'
+        aws_cred = os.path.join(self.workspace, '.aws', 'credentials')
 
         self.cmd.extend([
           '-v', '%s:%s:ro' % (priv, aws_ssh),
@@ -322,15 +326,24 @@ class DockerMode(object):
           '-v', '%s:%s:ro' % (cred, aws_cred),
         ])
 
+    def add_aws_role(self, profile, arn):
+        with tempfile.NamedTemporaryFile(prefix='aws-config', delete=False) as cfg:
+            cfg.write(aws_role_config(profile, arn))
+            self.cmd.extend([
+                '-v', '%s:%s:ro' % (os.path.join(self.workspace, '.aws', 'config'), cfg.name),
+                '-e', 'AWS_SDK_LOAD_CONFIG=true',
+            ])
+        return 'jenkins-assumed-role'
+
     def add_aws_runner(self):
         """Run kops_aws_runner for kops-aws jobs."""
         self.cmd.append(
-          '--entrypoint=/workspace/kops-e2e-runner.sh'
+          '--entrypoint=%s/kops-e2e-runner.sh' % self.workspace
         )
 
     def add_gce_ssh(self, priv, pub):
         """Mounts priv and pub inside the container."""
-        gce_ssh = '/workspace/.ssh/google_compute_engine'
+        gce_ssh = os.path.join(self.workspace, '.ssh', 'google_compute_engine')
         gce_pub = '%s.pub' % gce_ssh
         self.cmd.extend([
           '-v', '%s:%s:ro' % (priv, gce_ssh),
@@ -378,10 +391,10 @@ def cluster_name(cluster, build):
 
 
 # TODO(krzyzacy): Move this into kubetest
-def build_kops(workspace, mode):
+def build_kops(kops, mode):
     """Build kops, set kops related envs."""
-    if not os.path.basename(workspace) == 'kops':
-        raise ValueError(workspace)
+    if not os.path.basename(kops) == 'kops':
+        raise ValueError(kops)
     version = 'pull-' + check_output('git', 'describe', '--always').strip()
     job = os.getenv('JOB_NAME', 'pull-kops-e2e-kubernetes-aws')
     gcs = 'gs://kops-ci/pulls/%s' % job
@@ -393,23 +406,17 @@ def build_kops(workspace, mode):
     check('make', 'gcs-publish-ci', 'VERSION=%s' % version, 'GCS_LOCATION=%s' % gcs)
 
 
-def set_up_aws(args, mode, cluster, runner_args):
+def set_up_aws(workspace, args, mode, cluster, runner_args):
     """Set up aws related envs."""
     for path in [args.aws_ssh, args.aws_pub, args.aws_cred]:
         if not os.path.isfile(os.path.expandvars(path)):
             raise IOError(path, os.path.expandvars(path))
     mode.add_aws_cred(args.aws_ssh, args.aws_pub, args.aws_cred)
 
-    aws_config = '/workspace/.aws/config'
-    aws_ssh = '/workspace/.ssh/kube_aws_rsa'
+    aws_ssh = os.path.join(workspace, '.ssh', 'kube_aws_rsa')
     profile = args.aws_profile
     if args.aws_role_arn:
-        with tempfile.NamedTemporaryFile(prefix='aws-config', delete=False) as cfg:
-            cfg.write(
-                '[profile jenkins-assumed-role]\nrole_arn = %s\nsource_profile = %s\n' % (
-                    args.aws_role_arn, profile))
-            mode.add_aws_profile(cfg.name, aws_config)
-        profile = 'jenkins-assumed-role'
+        profile = mode.add_aws_role(profile, args.aws_role_arn)
 
     zones = args.kops_zones or random.choice([
         'us-west-1a',
@@ -472,7 +479,7 @@ def main(args):
 
     # Set up workspace/artifacts dir
     workspace = os.environ.get('WORKSPACE', os.getcwd())
-    artifacts = '%s/_artifacts' % workspace
+    artifacts = os.path.join(workspace, '_artifacts')
     if not os.path.isdir(artifacts):
         os.makedirs(artifacts)
 
@@ -537,7 +544,7 @@ def main(args):
         mode.add_k8s(os.path.dirname(k8s), 'kubernetes', 'release')
 
     if args.kops_build:
-        build_kops(workspace, mode)
+        build_kops(os.getcwd(), mode)
 
     if args.stage is not None:
         runner_args.append('--stage=%s' % args.stage)
@@ -572,14 +579,21 @@ def main(args):
     if args.kubeadm:
         version = kubeadm_version(args.kubeadm, shared_build_gcs_path)
         runner_args.extend([
-            '--kubernetes-anywhere-path=/workspace/kubernetes-anywhere',
+            '--kubernetes-anywhere-path=%s' % os.path.join(workspace, 'kubernetes-anywhere'),
             '--kubernetes-anywhere-phase2-provider=kubeadm',
             '--kubernetes-anywhere-cluster=%s' % cluster,
             '--kubernetes-anywhere-kubeadm-version=%s' % version,
         ])
 
+        if args.kubeadm == "pull":
+            # If this is a pull job; the kubelet version should equal
+            # the kubeadm version here: we should use debs from the PR build
+            runner_args.extend([
+                '--kubernetes-anywhere-kubelet-version=%s' % version,
+            ])
+
     if args.aws:
-        set_up_aws(args, mode, cluster, runner_args)
+        set_up_aws(mode.workspace, args, mode, cluster, runner_args)
     elif args.gce_ssh:
         mode.add_gce_ssh(args.gce_ssh, args.gce_pub)
 

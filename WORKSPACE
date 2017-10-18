@@ -1,18 +1,19 @@
 git_repository(
     name = "io_bazel_rules_go",
-    commit = "43a3bda3eb97e7bcd86f564a1e0a4b008d6c407c",
+    commit = "ee1fef7ec1379fcf36c002fd3ac0d00d940b147e",
     remote = "https://github.com/bazelbuild/rules_go.git",
 )
 
-load("@io_bazel_rules_go//go:def.bzl", "go_repositories")
+load("@io_bazel_rules_go//go:def.bzl", "go_rules_dependencies", "go_register_toolchains")
 
-go_repositories()
+go_rules_dependencies()
+go_register_toolchains()
 
 http_archive(
     name = "io_bazel_rules_docker",
-    sha256 = "a6f30b7806ac49ef89d4b5d84a3fd37a460d12e8d3d83324ea7db6c247e125a1",
-    strip_prefix = "rules_docker-9eda1acbc4781894c452de0e49d528eb221f1a66",
-    urls = ["https://github.com/bazelbuild/rules_docker/archive/9eda1acbc4781894c452de0e49d528eb221f1a66.tar.gz"],
+    sha256 = "076a8204c93071a130952c1ba4398d4085f60289bc9a12b530078d100608b1eb",
+    strip_prefix = "rules_docker-cdd259b3ba67fd4ef814c88070a2ebc7bec28dc5",
+    urls = ["https://github.com/bazelbuild/rules_docker/archive/cdd259b3ba67fd4ef814c88070a2ebc7bec28dc5.tar.gz"],
 )
 
 load("@io_bazel_rules_docker//docker:docker.bzl", "docker_repositories", "docker_pull")
@@ -27,12 +28,12 @@ docker_pull(
 )
 
 git_repository(
-    name = "org_pubref_rules_node",
-    commit = "bd14a465063da90f632bad46c1efbf802c339e68",
-    remote = "https://github.com/pubref/rules_node.git",
+    name = "org_dropbox_rules_node",
+    remote = "https://github.com/dropbox/rules_node.git",
+    commit = "4fe6494f3f8d1a272d47d32ecc66698f6c43ed09",
 )
 
-load("@org_pubref_rules_node//node:rules.bzl", "node_repositories", "npm_repository")
+load("@org_dropbox_rules_node//node:defs.bzl", "node_repositories")
 
 node_repositories()
 
@@ -51,13 +52,6 @@ py_library(
     sha256 = "350496f6fdd8c2bb17a0fa3fd2ec98431280cf12d72dae498b19ac0119c2bbad",
     strip_prefix = "ruamel.yaml-0.15.9",
     url = "https://pypi.python.org/packages/83/90/2eecde4bbd6a67805080091e83a29100c2f7d2afcaf926d75da5839f9283/ruamel.yaml-0.15.9.tar.gz",
-)
-
-npm_repository(
-    name = "npm_mocha",
-    deps = {
-        "mocha": "3.2.0",
-    },
 )
 
 # http_archives can be updated to newer version by doing the following:
@@ -128,10 +122,17 @@ py_library(
 )
 
 http_file(
-    name = "jq",
+    name = "jq_linux",
     executable = 1,
     sha256 = "c6b3a7d7d3e7b70c6f51b706a3b90bd01833846c54d32ca32f0027f00226ff6d",
     urls = ["https://github.com/stedolan/jq/releases/download/jq-1.5/jq-linux64"],
+)
+
+http_file(
+    name = "jq_osx",
+    executable = 1,
+    sha256 = "386e92c982a56fe4851468d7a931dfca29560cee306a0e66c6a1bd4065d3dac5",
+    urls = ["https://github.com/stedolan/jq/releases/download/jq-1.5/jq-osx-amd64"],
 )
 
 new_http_archive(
@@ -345,6 +346,9 @@ new_http_archive(
 py_library(
     name = "dateutil",
     srcs = glob(["**/*.py"]),
+    deps = [
+        "@six_lib//:six",
+    ],
     visibility = ["//visibility:public"],
 )
 """,

@@ -1,12 +1,5 @@
 "use strict";
 
-var types = {};
-var repos = {};
-var jobs = {};
-var authors = {};
-var pulls = {};
-var states = {};
-
 function getParameterByName(name) {  // http://stackoverflow.com/a/5158301/3694
     var match = RegExp('[?&]' + name + '=([^&/]*)').exec(window.location.search);
     return match && decodeURIComponent(match[1].replace(/\+/g, ' '));
@@ -22,40 +15,62 @@ function updateQueryStringParameter(uri, key, value) {
     }
 }
 
-window.onload = function() {
+function optionsForRepo(repo) {
+    var opts = {
+        types: {},
+        repos: {},
+        jobs: {},
+        authors: {},
+        pulls: {},
+        states: {},
+    };
+
     for (var i = 0; i < allBuilds.length; i++) {
-        types[allBuilds[i].type] = true;
-        repos[allBuilds[i].repo] = true;
-        jobs[allBuilds[i].job] = true;
-        if (allBuilds[i].type === "presubmit") {
-            authors[allBuilds[i].author] = true;
-            pulls[allBuilds[i].number] = true;
-            states[allBuilds[i].state] = true;
+        var build = allBuilds[i];
+        opts.types[build.type] = true;
+        opts.repos[build.repo] = true;
+        if (!repo || repo == build.repo) {
+            opts.jobs[build.job] = true;
+            if (build.type === "presubmit") {
+                opts.authors[build.author] = true;
+                opts.pulls[build.number] = true;
+                opts.states[build.state] = true;
+            }
         }
     }
 
-    var ts = Array.from(Object.keys(types)).sort();
+    return opts;
+}
+
+function redrawOptions(opts) {
+    var ts = Object.keys(opts.types).sort();
     addOptions(ts, "type");
-    var rs = Array.from(Object.keys(repos)).filter(function(r) { return r !== "/"; }).sort();
+    var rs = Object.keys(opts.repos).filter(function(r) { return r !== "/"; }).sort();
     addOptions(rs, "repo");
-    var js = Array.from(Object.keys(jobs)).sort();
+    var js = Object.keys(opts.jobs).sort();
     addOptions(js, "job");
-    var as = Array.from(Object.keys(authors)).sort(function (a, b) {
+    var as = Object.keys(opts.authors).sort(function (a, b) {
         return a.toLowerCase().localeCompare(b.toLowerCase());
     });
     addOptions(as, "author");
-    var ps = Array.from(Object.keys(pulls)).sort(function (a, b) {
+    var ps = Object.keys(opts.pulls).sort(function (a, b) {
         return parseInt(a) - parseInt(b);
     });
     addOptions(ps, "pull");
-    var ss = Array.from(Object.keys(states)).sort();
+    var ss = Object.keys(opts.states).sort();
     addOptions(ss, "state");
+};
 
+window.onload = function() {
+    // set dropdown based on options from query string
+    redrawOptions(optionsForRepo(""));
     redraw();
 };
 
 function addOptions(s, p) {
     var sel = document.getElementById(p);
+    while (sel.length > 1)
+        sel.removeChild(sel.lastChild);
     var param = getParameterByName(p);
     for (var i = 0; i < s.length; i++) {
         var o = document.createElement("option");
@@ -67,15 +82,12 @@ function addOptions(s, p) {
     }
 }
 
-function equalSelected(sel, t) {
-    return sel.selectedIndex == 0 || sel.options[sel.selectedIndex].text == t;
+function selectionText(sel, t) {
+    return sel.selectedIndex == 0 ? "" : sel.options[sel.selectedIndex].text;
 }
 
-function encodedText(sel) {
-    if (sel.selectedIndex == 0) {
-        return "";
-    }
-    return encodeURIComponent(sel.options[sel.selectedIndex].text);
+function equalSelected(sel, t) {
+    return sel === "" || sel == t;
 }
 
 function groupKey(build) {
@@ -94,45 +106,45 @@ function redraw() {
     while (builds.firstChild)
         builds.removeChild(builds.firstChild);
 
-    var typeSel = document.getElementById("type")
-    var repoSel = document.getElementById("repo")
-    var pullSel = document.getElementById("pull")
-    var authorSel = document.getElementById("author")
-    var jobSel = document.getElementById("job")
-    var stateSel = document.getElementById("state")
+    var args = [];
+    function getSelection(name) {
+        var sel = selectionText(document.getElementById(name));
+        if (sel && opts && !opts[name + 's'][sel]) return "";
+        if (sel !== "") args.push(name + "=" + encodeURIComponent(sel));
+        return sel;
+    }
+
+    var opts = null;
+    var repoSel = getSelection("repo");
+    opts = optionsForRepo(repoSel);
+
+    var typeSel = getSelection("type");
+    var pullSel = getSelection("pull");
+    var authorSel = getSelection("author");
+    var jobSel = getSelection("job");
+    var stateSel = getSelection("state");
 
     if (window.history && window.history.replaceState !== undefined) {
-        var args = [];
-        var tt = encodedText(typeSel);
-        if (tt !== "") args.push("type=" + tt);
-        var rt = encodedText(repoSel);
-        if (rt !== "") args.push("repo=" + rt);
-        var pt = encodedText(pullSel);
-        if (pt !== "") args.push("pull=" + pt);
-        var at = encodedText(authorSel);
-        if (at !== "") args.push("author=" + at);
-        var jt = encodedText(jobSel);
-        if (jt !== "") args.push("job=" + jt);
-        var st = encodedText(stateSel);
-        if (st !== "") args.push("state=" + st);
         if (args.length > 0) {
             history.replaceState(null, "", "/?" + args.join('&'));
         } else {
             history.replaceState(null, "", "/")
         }
     }
+    redrawOptions(opts);
 
     var lastKey = '';
     for (var i = 0, emitted = 0; i < allBuilds.length && emitted < 500; i++) {
         var build = allBuilds[i];
         if (!equalSelected(typeSel, build.type)) continue;
-
-        if (build.type !== "periodic" && !equalSelected(repoSel, build.repo)) continue;
+        if (!equalSelected(repoSel, build.repo)) continue;
         if (!equalSelected(stateSel, build.state)) continue;
         if (!equalSelected(jobSel, build.job)) continue;
         if (build.type === "presubmit") {
             if (!equalSelected(pullSel, build.number)) continue;
             if (!equalSelected(authorSel, build.author)) continue;
+        } else if (pullSel || authorSel) {
+            continue;
         }
         emitted++;
 
@@ -206,7 +218,7 @@ function createRerunCell(modal, rerun_command, prowjob) {
     a.title = "Show instructions for rerunning this job.";
     a.onclick = function() {
         modal.style.display = "block";
-        rerun_command.textContent = "kubectl create -f \"" + url + "\"";
+        rerun_command.innerHTML = "kubectl create -f \"<a href='" + url + "'>" + url + "</a>\"";
     };
     a.appendChild(document.createTextNode("\u27F3"));
     c.appendChild(a);

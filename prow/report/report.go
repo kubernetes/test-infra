@@ -22,8 +22,8 @@ import (
 	"bytes"
 	"fmt"
 	"strings"
+	"text/template"
 
-	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pjutil"
@@ -44,23 +44,22 @@ type GithubClient interface {
 	EditComment(org, repo string, ID int, comment string) error
 }
 
-type configAgent interface {
-	Config() *config.Config
-}
-
 // reportStatus should be called on status different from Success.
 // Once a parent ProwJob is pending, all children should be marked as Pending
 // Same goes for failed status.
 func reportStatus(ghc GithubClient, pj kube.ProwJob, cd string) error {
 	refs := pj.Spec.Refs
-	if err := ghc.CreateStatus(refs.Org, refs.Repo, refs.Pulls[0].SHA, github.Status{
-		State:       string(pj.Status.State),
-		Description: pj.Status.Description,
-		Context:     pj.Spec.Context,
-		TargetURL:   pj.Status.URL,
-	}); err != nil {
-		return err
+	if pj.Spec.Report {
+		if err := ghc.CreateStatus(refs.Org, refs.Repo, refs.Pulls[0].SHA, github.Status{
+			State:       string(pj.Status.State),
+			Description: pj.Status.Description,
+			Context:     pj.Spec.Context,
+			TargetURL:   pj.Status.URL,
+		}); err != nil {
+			return err
+		}
 	}
+
 	// Updating Children
 	if pj.Status.State != kube.SuccessState {
 		for _, nj := range pj.Spec.RunAfterSuccess {
@@ -76,7 +75,9 @@ func reportStatus(ghc GithubClient, pj kube.ProwJob, cd string) error {
 	return nil
 }
 
-func Report(ghc GithubClient, configAgent configAgent, pj kube.ProwJob) error {
+// Report is creating/updating/removing reports in Github based on the state of
+// the provided ProwJob.
+func Report(ghc GithubClient, reportTemplate *template.Template, pj kube.ProwJob) error {
 	if !pj.Spec.Report {
 		return nil
 	}
@@ -105,7 +106,7 @@ func Report(ghc GithubClient, configAgent configAgent, pj kube.ProwJob) error {
 		}
 	}
 	if len(entries) > 0 {
-		comment, err := createComment(configAgent, pj, entries)
+		comment, err := createComment(reportTemplate, pj, entries)
 		if err != nil {
 			return fmt.Errorf("generating comment: %v", err)
 		}
@@ -208,13 +209,13 @@ func createEntry(pj kube.ProwJob) string {
 // createComment take a ProwJob and a list of entries generated with
 // createEntry and returns a nicely formatted comment. It may fail if template
 // execution fails.
-func createComment(configAgent configAgent, pj kube.ProwJob, entries []string) (string, error) {
+func createComment(reportTemplate *template.Template, pj kube.ProwJob, entries []string) (string, error) {
 	plural := ""
 	if len(entries) > 1 {
 		plural = "s"
 	}
 	var b bytes.Buffer
-	if err := configAgent.Config().Plank.ReportTemplate.Execute(&b, &pj); err != nil {
+	if err := reportTemplate.Execute(&b, &pj); err != nil {
 		return "", err
 	}
 	lines := []string{

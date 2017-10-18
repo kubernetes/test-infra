@@ -19,7 +19,6 @@ package jenkins
 import (
 	"bytes"
 	"fmt"
-	"net/url"
 	"strconv"
 	"sync"
 	"time"
@@ -48,9 +47,9 @@ type kubeClient interface {
 }
 
 type jenkinsClient interface {
-	Build(*kube.ProwJob) (*url.URL, error)
-	Enqueued(string) (bool, error)
-	Status(job, id string) (*Status, error)
+	Build(*kube.ProwJob) error
+	ListJenkinsBuilds(jobs map[string]struct{}) (map[string]JenkinsBuild, error)
+	Abort(job string, build *JenkinsBuild) error
 }
 
 type githubClient interface {
@@ -60,13 +59,14 @@ type githubClient interface {
 	CreateComment(org, repo string, number int, comment string) error
 	DeleteComment(org, repo string, ID int) error
 	EditComment(org, repo string, ID int, comment string) error
+	GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error)
 }
 
 type configAgent interface {
 	Config() *config.Config
 }
 
-type syncFn func(pj kube.ProwJob, reports chan<- kube.ProwJob) error
+type syncFn func(kube.ProwJob, chan<- kube.ProwJob, map[string]JenkinsBuild) error
 
 // Controller manages ProwJobs.
 type Controller struct {
@@ -93,12 +93,35 @@ func NewController(kc *kube.Client, jc *Client, ghc *github.Client, ca *config.A
 	}
 }
 
-// getNumPendingJobs retrieves the number of pending
-// ProwJobs for a given job identifier
-func (c *Controller) getNumPendingJobs(key string) int {
-	c.lock.RLock()
-	defer c.lock.RUnlock()
-	return c.pendingJobs[key]
+// canExecuteConcurrently checks whether the provided ProwJob can
+// be executed concurrently.
+func (c *Controller) canExecuteConcurrently(pj *kube.ProwJob) bool {
+	c.lock.Lock()
+	defer c.lock.Unlock()
+
+	if max := c.ca.Config().JenkinsOperator.MaxConcurrency; max > 0 {
+		var running int
+		for _, num := range c.pendingJobs {
+			running += num
+		}
+		if running >= max {
+			logrus.WithField("name", pj.Metadata.Name).Debugf("Not starting another job, already %d running.", running)
+			return false
+		}
+	}
+
+	if pj.Spec.MaxConcurrency == 0 {
+		c.pendingJobs[pj.Spec.Job]++
+		return true
+	}
+
+	numPending := c.pendingJobs[pj.Spec.Job]
+	if numPending >= pj.Spec.MaxConcurrency {
+		logrus.WithField("name", pj.Metadata.Name).Debugf("Not starting another instance of %s, already %d running.", pj.Spec.Job, numPending)
+		return false
+	}
+	c.pendingJobs[pj.Spec.Job]++
+	return true
 }
 
 // incrementNumPendingJobs increments the amount of
@@ -122,9 +145,13 @@ func (c *Controller) Sync() error {
 		}
 	}
 	pjs = jenkinsJobs
+	jbs, err := c.jc.ListJenkinsBuilds(getJenkinsJobs(pjs))
+	if err != nil {
+		return fmt.Errorf("error listing jenkins builds: %v", err)
+	}
 
 	var syncErrs []error
-	if err := c.terminateDupes(pjs); err != nil {
+	if err := c.terminateDupes(pjs, jbs); err != nil {
 		syncErrs = append(syncErrs, err)
 	}
 
@@ -137,8 +164,8 @@ func (c *Controller) Sync() error {
 	c.pendingJobs = make(map[string]int)
 	// Sync pending jobs first so we can determine what is the maximum
 	// number of new jobs we can trigger when syncing the non-pendings.
-	syncProwJobs(c.syncPendingJob, pendingCh, reportCh, errCh)
-	syncProwJobs(c.syncNonPendingJob, nonPendingCh, reportCh, errCh)
+	syncProwJobs(c.syncPendingJob, pendingCh, reportCh, errCh, jbs)
+	syncProwJobs(c.syncNonPendingJob, nonPendingCh, reportCh, errCh, jbs)
 
 	close(errCh)
 	close(reportCh)
@@ -148,8 +175,9 @@ func (c *Controller) Sync() error {
 	}
 
 	var reportErrs []error
+	reportTemplate := c.ca.Config().JenkinsOperator.ReportTemplate
 	for report := range reportCh {
-		if err := reportlib.Report(c.ghc, c.ca, report); err != nil {
+		if err := reportlib.Report(c.ghc, reportTemplate, report); err != nil {
 			reportErrs = append(reportErrs, err)
 		}
 	}
@@ -160,11 +188,24 @@ func (c *Controller) Sync() error {
 	return fmt.Errorf("errors syncing: %v, errors reporting: %v", syncErrs, reportErrs)
 }
 
+// getJenkinsJobs returns all the active Jenkins jobs for the provided
+// list of prowjobs.
+func getJenkinsJobs(pjs []kube.ProwJob) map[string]struct{} {
+	jenkinsJobs := make(map[string]struct{})
+	for _, pj := range pjs {
+		if pj.Complete() {
+			continue
+		}
+		jenkinsJobs[pj.Spec.Job] = struct{}{}
+	}
+	return jenkinsJobs
+}
+
 // terminateDupes aborts presubmits that have a newer version. It modifies pjs
 // in-place when it aborts.
-func (c *Controller) terminateDupes(pjs []kube.ProwJob) error {
+func (c *Controller) terminateDupes(pjs []kube.ProwJob, jbs map[string]JenkinsBuild) error {
 	// "job org/repo#number" -> newest job
-	dupes := make(map[string]kube.ProwJob)
+	dupes := make(map[string]int)
 	for i, pj := range pjs {
 		if pj.Complete() || pj.Spec.Type != kube.PresubmitJob {
 			continue
@@ -172,33 +213,55 @@ func (c *Controller) terminateDupes(pjs []kube.ProwJob) error {
 		n := fmt.Sprintf("%s %s/%s#%d", pj.Spec.Job, pj.Spec.Refs.Org, pj.Spec.Refs.Repo, pj.Spec.Refs.Pulls[0].Number)
 		prev, ok := dupes[n]
 		if !ok {
-			dupes[n] = pj
+			dupes[n] = i
 			continue
 		}
-		toCancel := pj
-		if prev.Status.StartTime.Before(pj.Status.StartTime) {
-			toCancel = prev
-			dupes[n] = pj
+		cancelIndex := i
+		if pjs[prev].Status.StartTime.Before(pj.Status.StartTime) {
+			cancelIndex = prev
+			dupes[n] = i
+		}
+		toCancel := pjs[cancelIndex]
+		// Allow aborting presubmit jobs for commits that have been superseded by
+		// newer commits in Github pull requests.
+		if c.ca.Config().JenkinsOperator.AllowCancellations {
+			build, buildExists := jbs[toCancel.Metadata.Name]
+			// Avoid cancelling enqueued builds.
+			if buildExists && build.IsEnqueued() {
+				continue
+			}
+			// Otherwise, abort it.
+			if buildExists {
+				if err := c.jc.Abort(toCancel.Spec.Job, &build); err != nil {
+					logrus.Warningf("Cannot cancel Jenkins build for prowjob %q: %v", toCancel.Metadata.Name, err)
+				}
+			}
 		}
 		toCancel.Status.CompletionTime = time.Now()
 		toCancel.Status.State = kube.AbortedState
-		pjutil, err := c.kc.ReplaceProwJob(toCancel.Metadata.Name, toCancel)
+		npj, err := c.kc.ReplaceProwJob(toCancel.Metadata.Name, toCancel)
 		if err != nil {
 			return err
 		}
-		pjs[i] = pjutil
+		pjs[cancelIndex] = npj
 	}
 	return nil
 }
 
-func syncProwJobs(syncFn syncFn, jobs <-chan kube.ProwJob, reports chan<- kube.ProwJob, syncErrors chan<- error) {
+func syncProwJobs(
+	syncFn syncFn,
+	jobs <-chan kube.ProwJob,
+	reports chan<- kube.ProwJob,
+	syncErrors chan<- error,
+	jbs map[string]JenkinsBuild,
+) {
 	wg := &sync.WaitGroup{}
 	wg.Add(maxSyncRoutines)
 	for i := 0; i < maxSyncRoutines; i++ {
 		go func(jobs <-chan kube.ProwJob) {
 			defer wg.Done()
 			for pj := range jobs {
-				if err := syncFn(pj, reports); err != nil {
+				if err := syncFn(pj, reports, jbs); err != nil {
 					syncErrors <- err
 				}
 			}
@@ -207,102 +270,137 @@ func syncProwJobs(syncFn syncFn, jobs <-chan kube.ProwJob, reports chan<- kube.P
 	wg.Wait()
 }
 
-func (c *Controller) syncPendingJob(pj kube.ProwJob, reports chan<- kube.ProwJob) error {
-	var jerr error
-	if pj.Status.JenkinsEnqueued {
-		if eq, err := c.jc.Enqueued(pj.Status.JenkinsQueueURL); err != nil {
-			jerr = fmt.Errorf("error checking queue status for prowjob %s: %v", pj.Metadata.Name, err)
-			pj.Status.JenkinsEnqueued = false
-			pj.Status.CompletionTime = time.Now()
-			pj.Status.State = kube.ErrorState
-			pj.Status.URL = testInfra
-			pj.Status.Description = "Error checking queue status."
-			reports <- pj
-		} else if eq {
-			// Still in queue.
-			c.incrementNumPendingJobs(pj.Spec.Job)
-			return nil
-		} else {
-			pj.Status.JenkinsEnqueued = false
-		}
-	} else if status, err := c.jc.Status(pj.Spec.Job, pj.Metadata.Name); err != nil {
-		jerr = fmt.Errorf("error checking build status for prowjob %s: %v", pj.Metadata.Name, err)
+func (c *Controller) syncPendingJob(pj kube.ProwJob, reports chan<- kube.ProwJob, jbs map[string]JenkinsBuild) error {
+	jb, jbExists := jbs[pj.Metadata.Name]
+	if !jbExists {
 		pj.Status.CompletionTime = time.Now()
 		pj.Status.State = kube.ErrorState
 		pj.Status.URL = testInfra
-		pj.Status.Description = "Error checking job status."
-		reports <- pj
+		pj.Status.Description = "Error finding Jenkins job."
 	} else {
-		pj.Status.BuildID = strconv.Itoa(status.Number)
-		var b bytes.Buffer
-		if err := c.ca.Config().Plank.JobURLTemplate.Execute(&b, &pj); err != nil {
-			return fmt.Errorf("error executing URL template: %v", err)
-		}
-		url := b.String()
-		if pj.Status.URL != url {
-			pj.Status.URL = url
-			pj.Status.PodName = fmt.Sprintf("%s-%d", pj.Spec.Job, status.Number)
-		} else if status.Building {
-			// Build still going.
+		switch {
+		case jb.IsEnqueued():
+			// Still in queue.
 			c.incrementNumPendingJobs(pj.Spec.Job)
 			return nil
-		}
-		if !status.Building && status.Success {
+
+		case jb.IsRunning():
+			// Build still going.
+			c.incrementNumPendingJobs(pj.Spec.Job)
+			if pj.Status.Description == "Jenkins job running." {
+				return nil
+			}
+			pj.Status.Description = "Jenkins job running."
+
+		case jb.IsSuccess():
+			// Build is complete.
 			pj.Status.CompletionTime = time.Now()
 			pj.Status.State = kube.SuccessState
 			pj.Status.Description = "Jenkins job succeeded."
 			for _, nj := range pj.Spec.RunAfterSuccess {
+				child := pjutil.NewProwJob(nj)
+				if !RunAfterSuccessCanRun(&pj, &child, c.ca, c.ghc) {
+					continue
+				}
 				if _, err := c.kc.CreateProwJob(pjutil.NewProwJob(nj)); err != nil {
 					return fmt.Errorf("error starting next prowjob: %v", err)
 				}
 			}
-		} else if !status.Building {
+
+		case jb.IsFailure():
+			// Build either failed or aborted.
 			pj.Status.CompletionTime = time.Now()
 			pj.Status.State = kube.FailureState
 			pj.Status.Description = "Jenkins job failed."
 		}
-		reports <- pj
+		// Construct the status URL that will be used in reports.
+		pj.Status.PodName = fmt.Sprintf("%s-%d", pj.Spec.Job, jb.Number)
+		pj.Status.BuildID = strconv.Itoa(jb.Number)
+		var b bytes.Buffer
+		if err := c.ca.Config().JenkinsOperator.JobURLTemplate.Execute(&b, &pj); err != nil {
+			return fmt.Errorf("error executing URL template: %v", err)
+		}
+		pj.Status.URL = b.String()
 	}
-	if pj.Status.State == kube.PendingState {
-		c.incrementNumPendingJobs(pj.Spec.Job)
-	}
-	_, rerr := c.kc.ReplaceProwJob(pj.Metadata.Name, pj)
-	if rerr != nil || jerr != nil {
-		return fmt.Errorf("jenkins error: %v, error replacing prow job: %v", jerr, rerr)
-	}
-	return nil
+	// Report to Github.
+	reports <- pj
+
+	_, err := c.kc.ReplaceProwJob(pj.Metadata.Name, pj)
+	return err
 }
 
-func (c *Controller) syncNonPendingJob(pj kube.ProwJob, reports chan<- kube.ProwJob) error {
-	var jerr error
+func (c *Controller) syncNonPendingJob(pj kube.ProwJob, reports chan<- kube.ProwJob, jbs map[string]JenkinsBuild) error {
 	if pj.Complete() {
 		return nil
-	} else if pj.Status.State == kube.TriggeredState {
+	}
+
+	// The rest are new prowjobs.
+
+	if _, jbExists := jbs[pj.Metadata.Name]; !jbExists {
 		// Do not start more jobs than specified.
-		numPending := c.getNumPendingJobs(pj.Spec.Job)
-		if pj.Spec.MaxConcurrency > 0 && numPending >= pj.Spec.MaxConcurrency {
-			logrus.WithField("job", pj.Spec.Job).Infof("Not starting another instance of %s, already %d running.", pj.Spec.Job, numPending)
+		if !c.canExecuteConcurrently(&pj) {
 			return nil
 		}
-
 		// Start the Jenkins job.
-		if queueURL, err := c.jc.Build(&pj); err != nil {
-			jerr = fmt.Errorf("error starting Jenkins job for prowjob %s: %v", pj.Metadata.Name, err)
+		if err := c.jc.Build(&pj); err != nil {
+			logrus.WithField("job", pj.Spec.Job).Warningf("error starting Jenkins build: %v", err)
 			pj.Status.CompletionTime = time.Now()
 			pj.Status.State = kube.ErrorState
 			pj.Status.URL = testInfra
 			pj.Status.Description = "Error starting Jenkins job."
 		} else {
 			pj.Status.State = kube.PendingState
-			pj.Status.JenkinsQueueURL = queueURL.String()
-			pj.Status.JenkinsEnqueued = true
-			pj.Status.Description = "Jenkins job triggered."
+			pj.Status.Description = "Jenkins job enqueued."
 		}
-		reports <- pj
+	} else {
+		// If a Jenkins build already exists for this job, advance the ProwJob to Pending and
+		// it should be handled by syncPendingJob in the next sync.
+		pj.Status.State = kube.PendingState
+		pj.Status.Description = "Jenkins job enqueued."
 	}
-	_, rerr := c.kc.ReplaceProwJob(pj.Metadata.Name, pj)
-	if rerr != nil || jerr != nil {
-		return fmt.Errorf("jenkins error: %v, error replacing prow job: %v", jerr, rerr)
+	// Report to Github.
+	reports <- pj
+
+	_, err := c.kc.ReplaceProwJob(pj.Metadata.Name, pj)
+	if err != nil {
+		return fmt.Errorf("error replacing prow job: %v", err)
 	}
 	return nil
+}
+
+// RunAfterSuccessCanRun returns whether a child job (specified as run_after_success in the
+// prow config) can run once its parent job succeeds. The only case we will not run a child job
+// is when it is a presubmit job and has a run_if_changed regural expression specified which does
+// not match the changed filenames in the pull request the job was meant to run for.
+// TODO: Collapse with plank, impossible to reuse as is due to the interfaces.
+func RunAfterSuccessCanRun(parent, child *kube.ProwJob, c configAgent, ghc githubClient) bool {
+	if parent.Spec.Type != kube.PresubmitJob {
+		return true
+	}
+
+	// TODO: Make sure that parent and child have always the same org/repo.
+	org := parent.Spec.Refs.Org
+	repo := parent.Spec.Refs.Repo
+	prNum := parent.Spec.Refs.Pulls[0].Number
+
+	ps := c.Config().GetPresubmit(org+"/"+repo, child.Spec.Job)
+	if ps == nil {
+		// The config has changed ever since we started the parent.
+		// Not sure what is more correct here. Run the child for now.
+		return true
+	}
+	if ps.RunIfChanged == "" {
+		return true
+	}
+	changesFull, err := ghc.GetPullRequestChanges(org, repo, prNum)
+	if err != nil {
+		logrus.Warningf("Cannot get PR changes for %d: %v", prNum, err)
+		return true
+	}
+	// We only care about the filenames here
+	var changes []string
+	for _, change := range changesFull {
+		changes = append(changes, change.Filename)
+	}
+	return ps.RunsAgainstChanges(changes)
 }

@@ -28,6 +28,7 @@ DEPLOYMENTS = {
     "influxdb": "grafana-stack/influxdb.yaml",
     "prometheus": "grafana-stack/prometheus.yaml",
     "prometheus-config": "grafana-stack/prometheus-config.yaml",
+    "prober": "prober/blackbox.yaml",
     "grafana": "grafana-stack/grafana.yaml",
     "grafana-config": "grafana-stack/grafana-config.yaml",
     "nginx": "grafana-stack/nginx.yaml",
@@ -42,7 +43,7 @@ def main():
 
     with open(get_absolute_path(CONFIG)) as config_file:
         config = yaml.load(config_file)
-        print_deployments(["sqlproxy"], {})
+        print_deployments(["sqlproxy", "prober"], {})
         for project_name, project in config['projects'].items():
             public_ip = project.get('nginx', {}).get('public-ip', '') or ''
             print_deployments(["influxdb", "grafana", "nginx"], {

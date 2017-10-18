@@ -60,7 +60,11 @@ type User struct {
 	Login string `json:"login"`
 	Name  string `json:"name"`
 	Email string `json:"email"`
+	ID    int    `json:"id"`
 }
+
+// NormLogin normalizes GitHub login strings
+var NormLogin = strings.ToLower
 
 // PullRequestEventAction enumerates the triggers for this
 // webhook payload type. See also:
@@ -101,6 +105,7 @@ type PullRequest struct {
 	Body               string            `json:"body"`
 	RequestedReviewers []User            `json:"requested_reviewers"`
 	Assignees          []User            `json:"assignees"`
+	State              string            `json:"state"`
 	Merged             bool              `json:"merged"`
 	// ref https://developer.github.com/v3/pulls/#get-a-single-pull-request
 	// If Merged is true, MergeSHA is the SHA of the merge commit, or squashed commit
@@ -122,15 +127,26 @@ type Label struct {
 	Color string `json:"color"`
 }
 
+// PullRequestFileStatus enumerates the statuses for this webhook payload type.
+type PullRequestFileStatus string
+
+const (
+	PullRequestFileModified PullRequestFileStatus = "modified"
+	PullRequestFileAdded                          = "added"
+	PullRequestFileRemoved                        = "removed"
+	PullRequestFileRenamed                        = "renamed"
+)
+
 // PullRequestChange contains information about what a PR changed.
 type PullRequestChange struct {
 	SHA       string `json:"sha"`
 	Filename  string `json:"filename"`
-	Status    string `json:"added"`
+	Status    string `json:"status"`
 	Additions int    `json:"additions"`
 	Deletions int    `json:"deletions"`
 	Changes   int    `json:"changes"`
 	Patch     string `json:"patch"`
+	BlobURL   string `json:"blob_url"`
 }
 
 // Repo contains general repository information.
@@ -199,7 +215,7 @@ type Issue struct {
 
 func (i Issue) IsAssignee(login string) bool {
 	for _, assignee := range i.Assignees {
-		if login == assignee.Login {
+		if NormLogin(login) == NormLogin(assignee.Login) {
 			return true
 		}
 	}
@@ -207,7 +223,7 @@ func (i Issue) IsAssignee(login string) bool {
 }
 
 func (i Issue) IsAuthor(login string) bool {
-	return i.User.Login == login
+	return NormLogin(i.User.Login) == NormLogin(login)
 }
 
 func (i Issue) IsPullRequest() bool {
@@ -390,11 +406,14 @@ const (
 )
 
 type GenericCommentEvent struct {
-	IsPR    bool
-	Action  GenericCommentEventAction
-	Body    string
-	HTMLURL string
-	Number  int
-	Repo    Repo
-	User    User
+	IsPR        bool
+	Action      GenericCommentEventAction
+	Body        string
+	HTMLURL     string
+	Number      int
+	Repo        Repo
+	User        User
+	IssueAuthor User
+	Assignees   []User
+	IssueState  string
 }

@@ -18,7 +18,7 @@ LABEL maintainer="Benjamin Elder <bentheelder@google.com>"
 # Includes everything needed to build and test github.com/kubernetes/kubernetes
 # and github.com/kubernetes/test-infra with bazel and run bazel as the host UID
 
-ENV BAZEL_VERSION 0.5.4
+ARG BAZEL_VERSION
 
 WORKDIR "/workspace"
 RUN mkdir -p "/workspace"
@@ -38,8 +38,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     # remove these from the container if kettle is fixed.
     pip install pylint pyyaml
 
+SHELL ["/bin/bash", "-c"]
+
 RUN INSTALLER="bazel-${BAZEL_VERSION}-installer-linux-x86_64.sh"; \
-    wget -q "https://github.com/bazelbuild/bazel/releases/download/${BAZEL_VERSION}/${INSTALLER}" && \
+    if [[ "${BAZEL_VERSION}" =~ ([0-9\.]+)(rc[0-9]+) ]]; then \
+      DOWNLOAD_URL="https://storage.googleapis.com/bazel/${BASH_REMATCH[1]}/${BASH_REMATCH[2]}/${INSTALLER}"; \
+    else \
+      DOWNLOAD_URL="https://github.com/bazelbuild/bazel/releases/download/${BAZEL_VERSION}/${INSTALLER}"; \
+    fi; \
+    wget -q "${DOWNLOAD_URL}" && \
     chmod +x "${INSTALLER}" && "./${INSTALLER}" && rm "${INSTALLER}"
 
 # It turns out git and bazel pkg_tar and a bunch of other things fail if we

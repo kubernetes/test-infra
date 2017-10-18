@@ -8,6 +8,7 @@ triggers:
   - kubernetes-incubator
   - kubernetes-security
   - google/cadvisor
+  - jlewi/mlkube.io
   trusted_org: kubernetes
 
 heart:
@@ -15,8 +16,6 @@ heart:
   - k8s-merge-robot
 
 slack:
-  mentionchannels:
-  - sig-testing
   mergewarnings:
   - repos:
     - kubernetes/kubernetes
@@ -25,11 +24,15 @@ slack:
     whitelist:
     - k8s-merge-robot
 
-label:
+milestonestatus:
   # You can curl the following endpoint in order to determine the github ID of your team
   # responsible for maintaining the milestones:
   # curl -H "Authorization: token <token>" https://api.github.com/orgs/<org-name>/teams
-  milestone_maintainers_id: 2460384
+  maintainers_id: 2460384
+
+config_updater:
+  config_file: prow/config.yaml
+  plugin_file: prow/plugins.yaml
 
 plugins:
   google/cadvisor:
@@ -47,6 +50,7 @@ plugins:
   kubernetes/kubernetes:
   - trigger
   - release-note
+  - docs-no-retest
 
   kubernetes/test-infra:
   - trigger
@@ -62,6 +66,8 @@ plugins:
   - hold
   - label
   - lgtm
+  - milestonestatus
+  - sigmention
   - size
   - yuks
   - wip
@@ -69,18 +75,21 @@ plugins:
   - slackevents
 
   kubernetes-incubator:
-  - cla
   - assign
-  - size
-
-  kubernetes-incubator/kube-aws:
-  - lgtm
-
-  kubernetes-incubator/external-storage:
+  - cla
+  - close
   - label
   - lgtm
+  - reopen
+  - size
+
+  kubernetes-incubator/cri-containerd:
+  - trigger
 
   kubernetes-security/kubernetes:
+  - trigger
+
+  jlewi/mlkube.io:
   - trigger
 
   spxtr/envoy:

@@ -196,7 +196,7 @@ func removeSubdirs(dirList []string) sets.String {
 
 // Approval has the information about each approval on a PR
 type Approval struct {
-	Login     string // Login of the approver
+	Login     string // Login of the approver (can include uppercase)
 	How       string // How did the approver approved
 	Reference string // Where did the approver approved
 	NoIssue   bool   // Approval also accepts missing associated issue
@@ -214,7 +214,7 @@ func (a Approval) String() string {
 
 type Approvers struct {
 	owners          Owners
-	approvers       map[string]Approval
+	approvers       map[string]Approval // The keys of this map are normalized to lowercase.
 	assignees       sets.String
 	AssociatedIssue int
 	RequireIssue    bool
@@ -252,6 +252,7 @@ func NewApprovers(owners Owners) Approvers {
 // latest approval, unless a previous approval was "no-issue", and the
 // most recent isn't.
 func (ap *Approvers) shouldNotOverrideApproval(login string, noIssue bool) bool {
+	login = strings.ToLower(login)
 	approval, alreadyApproved := ap.approvers[login]
 
 	return alreadyApproved && approval.NoIssue && !noIssue
@@ -262,7 +263,7 @@ func (ap *Approvers) AddLGTMer(login, reference string, noIssue bool) {
 	if ap.shouldNotOverrideApproval(login, noIssue) {
 		return
 	}
-	ap.approvers[login] = Approval{
+	ap.approvers[strings.ToLower(login)] = Approval{
 		Login:     login,
 		How:       "LGTM",
 		Reference: reference,
@@ -275,7 +276,7 @@ func (ap *Approvers) AddApprover(login, reference string, noIssue bool) {
 	if ap.shouldNotOverrideApproval(login, noIssue) {
 		return
 	}
-	ap.approvers[login] = Approval{
+	ap.approvers[strings.ToLower(login)] = Approval{
 		Login:     login,
 		How:       "Approved",
 		Reference: reference,
@@ -288,7 +289,7 @@ func (ap *Approvers) AddAuthorSelfApprover(login, reference string) {
 	if ap.shouldNotOverrideApproval(login, false) {
 		return
 	}
-	ap.approvers[login] = Approval{
+	ap.approvers[strings.ToLower(login)] = Approval{
 		Login:     login,
 		How:       "Author self-approved",
 		Reference: reference,
@@ -298,20 +299,33 @@ func (ap *Approvers) AddAuthorSelfApprover(login, reference string) {
 
 // RemoveApprover removes an approver from the list.
 func (ap *Approvers) RemoveApprover(login string) {
-	delete(ap.approvers, login)
+	delete(ap.approvers, strings.ToLower(login))
 }
 
 // AddAssignees adds assignees to the list
 func (ap *Approvers) AddAssignees(logins ...string) {
-	ap.assignees.Insert(logins...)
+	for _, login := range logins {
+		ap.assignees.Insert(strings.ToLower(login))
+	}
 }
 
-// GetCurrentApproversSet returns the set of approvers (login only)
+// GetCurrentApproversSet returns the set of approvers (login only, normalized to lower case)
 func (ap Approvers) GetCurrentApproversSet() sets.String {
 	currentApprovers := sets.NewString()
 
 	for approver := range ap.approvers {
 		currentApprovers.Insert(approver)
+	}
+
+	return currentApprovers
+}
+
+// GetCurrentApproversSetCased returns the set of approvers logins with the original cases.
+func (ap Approvers) GetCurrentApproversSetCased() sets.String {
+	currentApprovers := sets.NewString()
+
+	for _, approval := range ap.approvers {
+		currentApprovers.Insert(approval.Login)
 	}
 
 	return currentApprovers
@@ -332,13 +346,13 @@ func (ap Approvers) GetNoIssueApproversSet() sets.String {
 // GetFilesApprovers returns a map from files -> list of current approvers.
 func (ap Approvers) GetFilesApprovers() map[string]sets.String {
 	filesApprovers := map[string]sets.String{}
-	currentApprovers := ap.GetCurrentApproversSet()
+	currentApprovers := ap.GetCurrentApproversSetCased()
 
 	for fn, potentialApprovers := range ap.owners.GetApprovers() {
 		// The order of parameter matters here:
-		// - currentApprovers is the list of github handle that have approved
-		// - potentialApprovers is the list of handle in OWNERSa
-		// files that can approve each file.
+		// - currentApprovers is the list of github handles that have approved
+		// - potentialApprovers is the list of handles in the OWNER
+		// files (lower case).
 		//
 		// We want to keep the syntax of the github handle
 		// rather than the potential mis-cased username found in
@@ -356,16 +370,16 @@ func (ap Approvers) NoIssueApprovers() map[string]Approval {
 	nia := map[string]Approval{}
 	reverseMap := ap.owners.GetReverseMap(ap.owners.GetApprovers())
 
-	for _, approver := range ap.approvers {
+	for login, approver := range ap.approvers {
 		if !approver.NoIssue {
 			continue
 		}
 
-		if len(reverseMap[approver.Login]) == 0 {
+		if len(reverseMap[login]) == 0 {
 			continue
 		}
 
-		nia[approver.Login] = approver
+		nia[login] = approver
 	}
 
 	return nia

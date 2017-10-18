@@ -3,13 +3,15 @@
     <head>
         <title>Prow Status</title>
         <link rel="stylesheet" type="text/css" href="style.css">
+        <link rel="stylesheet" type="text/css" href="extensions/style.css">
         <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
         <script type="text/javascript" src="script.js"></script>
         <script type="text/javascript" src="data.js?var=allBuilds"></script>
+        <script type="text/javascript" src="extensions/script.js"></script>
     </head>
     <body>
         <header>
-            <h1>Prow Status</h1>
+            <a href="/"><h1>Prow Status</h1></a>
         </header>
         <aside>
         <div>
@@ -17,6 +19,7 @@
                 <li>Filter</li>
                 <li><select id="type" onchange="redraw();"><option>all job types</option></select></li>
                 <li><select id="repo" onchange="redraw();"><option>all repositories</option></select></li>
+                &gt;&gt;
                 <li><select id="pull" onchange="redraw();"><option>all pull requests</option></select></li>
                 <li><select id="author" onchange="redraw();"><option>all authors</option></select></li>
                 <li><select id="job" onchange="redraw();"><option>all jobs</option></select></li>

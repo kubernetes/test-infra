@@ -33,25 +33,14 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: deck
-        image: gcr.io/k8s-prow/deck:0.50
+        image: gcr.io/k8s-prow/deck:0.53
         imagePullPolicy: Always
         ports:
           - name: http
             containerPort: 8080
         args:
-        - --jenkins-url=$(JENKINS_URL)
-        - --jenkins-token-file=/etc/jenkins/jenkins
         - --build-cluster=/etc/cluster/cluster
-        env:
-        - name: JENKINS_URL
-          valueFrom:
-            configMapKeyRef:
-              key: jenkins-address
-              name: jenkins-address
         volumeMounts:
-        - mountPath: /etc/jenkins
-          name: jenkins
-          readOnly: true
         - mountPath: /etc/cluster
           name: cluster
           readOnly: true
@@ -59,10 +48,6 @@ spec:
           mountPath: /etc/config
           readOnly: true
       volumes:
-      - name: jenkins
-        secret:
-          defaultMode: 420
-          secretName: jenkins-token
       - name: cluster
         secret:
           defaultMode: 420

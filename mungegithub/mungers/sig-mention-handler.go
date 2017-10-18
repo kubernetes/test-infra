@@ -18,20 +18,31 @@ package mungers
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 
-	"github.com/golang/glog"
 	"k8s.io/kubernetes/pkg/util/sets"
 	"k8s.io/test-infra/mungegithub/features"
 	"k8s.io/test-infra/mungegithub/github"
 	"k8s.io/test-infra/mungegithub/options"
+
+	"github.com/golang/glog"
+	githubapi "github.com/google/go-github/github"
 )
+
+var (
+	labelPrefixes = []string{"sig/", "committee/", "wg/"}
+	sigMentionRE  = regexp.MustCompile(`@\S+\nThere are no sig labels on this issue.`)
+)
+
+const needsSigLabel = "needs-sig"
 
 type SigMentionHandler struct{}
 
 func init() {
 	h := &SigMentionHandler{}
 	RegisterMungerOrDie(h)
+	RegisterStaleIssueComments(h)
 }
 
 // Name is the name usable in --pr-mungers
@@ -57,11 +68,13 @@ func (*SigMentionHandler) HasSigLabel(obj *github.MungeObject) bool {
 	labels := obj.Issue.Labels
 
 	for i := range labels {
-		if labels[i].Name != nil && strings.HasPrefix(*labels[i].Name, "sig/") {
-			return true
+		if labels[i].Name == nil {
+			continue
 		}
-		if labels[i].Name != nil && strings.HasPrefix(*labels[i].Name, "committee/") {
-			return true
+		for j := range labelPrefixes {
+			if strings.HasPrefix(*labels[i].Name, labelPrefixes[j]) {
+				return true
+			}
 		}
 	}
 
@@ -72,7 +85,7 @@ func (*SigMentionHandler) HasNeedsSigLabel(obj *github.MungeObject) bool {
 	labels := obj.Issue.Labels
 
 	for i := range labels {
-		if labels[i].Name != nil && strings.Compare(*labels[i].Name, "needs-sig") == 0 {
+		if labels[i].Name != nil && strings.Compare(*labels[i].Name, needsSigLabel) == 0 {
 			return true
 		}
 	}
@@ -98,12 +111,12 @@ func (s *SigMentionHandler) Munge(obj *github.MungeObject) {
 	hasNeedsSigLabel := s.HasNeedsSigLabel(obj)
 
 	if hasSigLabel && hasNeedsSigLabel {
-		if err := obj.RemoveLabel("needs-sig"); err != nil {
-			glog.Errorf("failed to remove needs-sig label for issue #%v", *obj.Issue.Number)
+		if err := obj.RemoveLabel(needsSigLabel); err != nil {
+			glog.Errorf("failed to remove needs-sig label for issue #%d", *obj.Issue.Number)
 		}
 	} else if !hasSigLabel && !hasNeedsSigLabel {
-		if err := obj.AddLabel("needs-sig"); err != nil {
-			glog.Errorf("failed to add needs-sig label for issue #%v", *obj.Issue.Number)
+		if err := obj.AddLabel(needsSigLabel); err != nil {
+			glog.Errorf("failed to add needs-sig label for issue #%d", *obj.Issue.Number)
 			return
 		}
 
@@ -116,11 +129,31 @@ There are no sig labels on this issue. Please [add a sig label](https://github.c
 2. specifying the label manually: `+"`/sig <label>`"+`
     e.g., `+"`/sig scalability`"+` to apply the `+"`sig/scalability`"+` label
 
-Note: Method 1 will trigger an email to the group. You can find the group list [here](https://github.com/kubernetes/community/blob/master/sig-list.md) and label list [here](https://github.com/kubernetes/kubernetes/labels).
+Note: Method 1 will trigger an email to the group. See the [group list](https://github.com/kubernetes/community/blob/master/sig-list.md) and [label list](https://github.com/kubernetes/kubernetes/labels).
 The `+"`<group-suffix>`"+` in the method 1 has to be replaced with one of these: _**bugs, feature-requests, pr-reviews, test-failures, proposals**_`, *obj.Issue.User.Login)
 
 		if err := obj.WriteComment(msg); err != nil {
-			glog.Errorf("failed to leave comment for %s that issue #%v needs sig label", *obj.Issue.User.Login, *obj.Issue.Number)
+			glog.Errorf("failed to leave comment for %s that issue #%d needs sig label", *obj.Issue.User.Login, *obj.Issue.Number)
 		}
 	}
+}
+
+// isStaleIssueComment determines if a comment is stale based on if the issue has the needs-sig label
+func (*SigMentionHandler) isStaleIssueComment(obj *github.MungeObject, comment *githubapi.IssueComment) bool {
+	if !obj.IsRobot(comment.User) {
+		return false
+	}
+	if !sigMentionRE.MatchString(*comment.Body) {
+		return false
+	}
+	stale := !obj.HasLabel(needsSigLabel)
+	if stale {
+		glog.V(6).Infof("Found stale SigMentionHandler comment")
+	}
+	return stale
+}
+
+// StaleIssueComments returns a slice of stale issue comments.
+func (s *SigMentionHandler) StaleIssueComments(obj *github.MungeObject, comments []*githubapi.IssueComment) []*githubapi.IssueComment {
+	return forEachCommentTest(obj, comments, s.isStaleIssueComment)
 }

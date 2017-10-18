@@ -1,11 +1,13 @@
+bootstrap/** @bentheelder
 boskos/** @krzyzacy
 gubernator/** @rmmh
 jenkins/bootstrap* @bentheelder @krzyzacy
 kettle/** @rmmh
+kubetest/** @krzyzacy
 logexporter/** @shyamjvs
 mungegithub/** @cjwagner
 planter/** @bentheelder
-prow/** @spxtr
+prow/** @cjwagner @kargakis
 prow/config.yaml @krzyzacy
 testgrid/** @krzyzacy @michelle192837
 triage/** @rmmh
