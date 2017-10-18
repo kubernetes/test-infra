@@ -30,13 +30,25 @@ const (
 
 // Possible contents for reactions.
 const (
-	ReactionThumbsUp   = "+1"
-	ReactionThumbsDown = "-1"
-	ReactionLaugh      = "laugh"
-	ReactionConfused   = "confused"
-	ReactionHeart      = "heart"
-	ReactionHooray     = "hooray"
+	ReactionThumbsUp                  = "+1"
+	ReactionThumbsDown                = "-1"
+	ReactionLaugh                     = "laugh"
+	ReactionConfused                  = "confused"
+	ReactionHeart                     = "heart"
+	ReactionHooray                    = "hooray"
+	stateCannotBeChangedMessagePrefix = "state cannot be changed."
 )
+
+// ClientError represents https://developer.github.com/v3/#client-errors
+type ClientError struct {
+	Message string `json:"message"`
+	Errors  []struct {
+		Resource string `json:"resource"`
+		Field    string `json:"field"`
+		Code     string `json:"code"`
+		Message  string `json:"message,omitempty"`
+	} `json:"errors,omitempty"`
+}
 
 type Reaction struct {
 	Content string `json:"content"`
