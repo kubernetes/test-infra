@@ -13,7 +13,7 @@
 # limitations under the License.
 
 FROM gcr.io/k8s-prow/alpine:0.1
-MAINTAINER mkargaki@redhat.com
+LABEL maintainer="mkargaki@redhat.com"
 
 COPY jenkins-operator /jenkins-operator
 ENTRYPOINT ["/jenkins-operator"]

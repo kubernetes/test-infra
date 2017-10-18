@@ -16,7 +16,7 @@
 # unit and integration tests
 
 FROM gcr.io/k8s-testimages/bootstrap:v20171008-2cd48707
-MAINTAINER  Sen Lu <senlu@google.com>
+LABEL maintainer "Sen Lu <senlu@google.com>"
 
 # install go
 ARG GO_VERSION

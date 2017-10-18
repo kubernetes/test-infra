@@ -14,7 +14,7 @@
 
 # Includes go and gcloud
 FROM golang:1.9
-MAINTAINER senlu@google.com
+LABEL maintainer="senlu@google.com"
 
 RUN apt-get update && apt-get install -y \
     python \

@@ -13,7 +13,7 @@
 # limitations under the License.
 
 FROM gcr.io/k8s-testimages/gcloud-in-go:0.4
-MAINTAINER zml@google.com
+LABEL maintainer="zml@google.com"
 
 RUN apt-get install ca-certificates && update-ca-certificates
 

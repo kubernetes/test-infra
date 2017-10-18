@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 FROM alpine:3.6
-MAINTAINER lukaszgryglicki@o2.pl
+LABEL maintainer="lukaszgryglicki@o2.pl"
 
 ADD label_sync /label_sync
 RUN mkdir /etc/config

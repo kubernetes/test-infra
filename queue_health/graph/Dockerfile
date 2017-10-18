@@ -13,7 +13,7 @@
 # limitations under the License.
 
 FROM gcr.io/k8s-testimages/queue-health-base:v20161020
-MAINTAINER Erick Fejta <fejta@google.com>
+LABEL maintainer="Erick Fejta <fejta@google.com>"
 
 # Install matplotlib
 RUN apt-get update \

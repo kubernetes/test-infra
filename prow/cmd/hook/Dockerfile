@@ -13,7 +13,7 @@
 # limitations under the License.
 
 FROM gcr.io/k8s-prow/git:0.1
-MAINTAINER spxtr@google.com
+LABEL maintainer="spxtr@google.com"
 
 COPY hook /hook
 ENTRYPOINT ["/hook"]

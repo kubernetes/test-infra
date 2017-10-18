@@ -14,7 +14,7 @@
 
 # Kubekins 1.7 + gcloud + heapster
 FROM gcr.io/k8s-testimages/kubekins-test:1.7-latest
-MAINTAINER senlu@google.com
+LABEL maintainer "senlu@google.com"
 
 ENV GCLOUD_VERSION 144.0.0
 RUN wget https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-$GCLOUD_VERSION-linux-x86_64.tar.gz && \
