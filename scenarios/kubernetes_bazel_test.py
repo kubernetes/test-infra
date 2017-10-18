@@ -57,16 +57,16 @@ class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-method
     callstack = []
 
     def setUp(self):
-        self.boiler = [
-            Stub(kubernetes_bazel, 'check', self.fake_check),
-            Stub(kubernetes_bazel, 'check_output', self.fake_check),
-            Stub(kubernetes_bazel, 'query', self.fake_query),
-            Stub(kubernetes_bazel, 'get_version', self.fake_version),
-            Stub(kubernetes_bazel, 'clean_file_in_dir', self.fake_clean),
-        ]
+        self.boiler = {
+            'check': Stub(kubernetes_bazel, 'check', self.fake_check),
+            'check_output': Stub(kubernetes_bazel, 'check_output', self.fake_check),
+            'query': Stub(kubernetes_bazel, 'query', self.fake_query),
+            'get_version': Stub(kubernetes_bazel, 'get_version', self.fake_version),
+            'clean_file_in_dir': Stub(kubernetes_bazel, 'clean_file_in_dir', self.fake_clean),
+        }
 
     def tearDown(self):
-        for stub in self.boiler:
+        for _, stub in self.boiler.items():
             with stub:  # Leaving with restores things
                 pass
         self.callstack[:] = []
@@ -124,13 +124,28 @@ class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-method
     def test_expand(self):
         """Make sure flags are expanded properly."""
         args = kubernetes_bazel.parse_args([
-            '--build=//b/... //c/...'
+            '--build=//b/... -//b/bb/... //c/...'
             ])
         kubernetes_bazel.main(args)
 
         call = self.callstack[-2]
         self.assertIn('//b/...', call)
+        self.assertIn('-//b/bb/...', call)
         self.assertIn('//c/...', call)
+
+
+    def test_query(self):
+        """Make sure query is constructed properly."""
+        args = kubernetes_bazel.parse_args([
+            '--build=//b/... -//b/bb/... //c/...'
+            ])
+        # temporarily un-stub query
+        with Stub(kubernetes_bazel, 'query', self.boiler['query'].old):
+            def check_query(*cmd):
+                self.assertIn('kind(.*_binary, rdeps(//b/... -//b/bb/... +//c/..., //...))', cmd)
+                return '//b/aa/...\n//c/...'
+            with Stub(kubernetes_bazel, 'check_output', check_query):
+                kubernetes_bazel.main(args)
 
     def test_expand_arg(self):
         """Make sure flags are expanded properly."""
