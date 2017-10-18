@@ -36,7 +36,7 @@ var (
 	kopsState        = flag.String("kops-state", "", "(kops only) s3:// path to kops state store. Must be set.")
 	kopsSSHKey       = flag.String("kops-ssh-key", "", "(kops only) Path to ssh key-pair for each node (defaults '~/.ssh/kube_aws_rsa' if unset.)")
 	kopsKubeVersion  = flag.String("kops-kubernetes-version", "", "(kops only) If set, the version of Kubernetes to deploy (can be a URL to a GCS path where the release is stored) (Defaults to kops default, latest stable release.).")
-	kopsZones        = flag.String("kops-zones", "us-west-2a", "(kops AWS only) AWS zones for kops deployment, comma delimited.")
+	kopsZones        = flag.String("kops-zones", "us-west-2a", "(kops only) zones for kops deployment, comma delimited.")
 	kopsNodes        = flag.Int("kops-nodes", 2, "(kops only) Number of nodes to create.")
 	kopsUpTimeout    = flag.Duration("kops-up-timeout", 20*time.Minute, "(kops only) Time limit between 'kops config / kops update' and a response from the Kubernetes API.")
 	kopsAdminAccess  = flag.String("kops-admin-access", "", "(kops only) If set, restrict apiserver access to this CIDR range.")
@@ -56,6 +56,12 @@ type kops struct {
 	image       string
 	args        string
 	kubecfg     string
+
+	// GCP project we should use
+	gcpProject string
+
+	// Cloud provider in use (gce, aws)
+	provider string
 }
 
 var _ deployer = kops{}
@@ -83,7 +89,7 @@ func migrateKopsEnv() error {
 	})
 }
 
-func newKops() (*kops, error) {
+func newKops(provider, gcpProject string) (*kops, error) {
 	if err := migrateKopsEnv(); err != nil {
 		return nil, err
 	}
@@ -156,10 +162,18 @@ func newKops() (*kops, error) {
 		image:       *kopsImage,
 		args:        *kopsArgs,
 		kubecfg:     kubecfg,
+		provider:    provider,
+		gcpProject:  gcpProject,
 	}, nil
 }
 
+func (k kops) isGoogleCloud() bool {
+	return k.provider == "gce"
+}
+
 func (k kops) Up() error {
+	var featureFlags []string
+
 	createArgs := []string{
 		"create", "cluster",
 		"--name", k.cluster,
@@ -176,9 +190,20 @@ func (k kops) Up() error {
 	if k.image != "" {
 		createArgs = append(createArgs, "--image", k.image)
 	}
+	if k.gcpProject != "" {
+		createArgs = append(createArgs, "--project", k.gcpProject)
+	}
+	if k.isGoogleCloud() {
+		featureFlags = append(featureFlags, "AlphaAllowGCE")
+	}
 	if k.args != "" {
 		createArgs = append(createArgs, strings.Split(k.args, " ")...)
 	}
+
+	if len(featureFlags) != 0 {
+		os.Setenv("KOPS_FEATURE_FLAGS", strings.Join(featureFlags, ","))
+	}
+
 	if err := finishRunning(exec.Command(k.path, createArgs...)); err != nil {
 		return fmt.Errorf("kops configuration failed: %v", err)
 	}
