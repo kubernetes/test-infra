@@ -11,12 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-FROM alpine:3.6
+FROM golang:latest
 MAINTAINER lukaszgryglicki@o2.pl
 
-ADD label_sync /label_sync
-RUN mkdir /etc/config
-ADD labels.yaml /etc/config/labels.yaml
-ADD repos.yaml /etc/config/repos.yaml
-
-ENTRYPOINT ["/label_sync"]
+COPY . /go/src/label_sync
+WORKDIR /go/src/label_sync
+RUN go get -u github.com/golang/dep/cmd/dep
+RUN dep ensure
+#CMD go run main.go -dry-run=false -gtf=/github/secret/munge_token -repos=test-repos.yaml -labels-path=labels.yaml -org=kubernetes

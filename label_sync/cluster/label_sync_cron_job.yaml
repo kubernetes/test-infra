@@ -11,19 +11,36 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+# to be used with 1.8 clusters +
 ---
-apiVersion: batch/v2alpha1
+apiVersion: batch/v1beta1
 kind: CronJob
 metadata:
-  name: label_sync_cron_job
+  name: label-sync-cron-job
 spec:
-  schedule: "17 23 * * 0"    # Every Sunday 23:17 / 11:17PM
+  schedule: "*/1 * * * *"    # Everyday at 5:00am
   jobTemplate:
     spec:
       template:
         spec:
           containers:
-            - name: label_sync
-              image: gcr.io/k8s-prow/label_sync:0.100
+            - name: label-sync
+              image: gcr.io/garretts-first-project/label_sync_no_run:0.1
+              args:
+                - go
+                - run
+                - main.go
+                - -dry-run=false
+                - -gtf=/github/secret/munge_token
+                - -repos=k8s-repos.yaml
+                - -labels-path=labels.yaml 
+                - -org=kubernetes
+              volumeMounts:
+                - name: gh-secret-vol
+                  mountPath: "/github/secret"
+                  readOnly: true
           restartPolicy: OnFailure
-          concurrencyPolicy: Forbid
+          volumes:
+          - name: gh-secret-vol
+            secret:
+              secretName: label-sync-token

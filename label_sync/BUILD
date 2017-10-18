@@ -51,6 +51,10 @@ filegroup(
 
 filegroup(
     name = "all-srcs",
-    srcs = [":package-srcs"],
+    srcs = [
+        ":package-srcs",
+        "//label_sync/Godeps/_workspace/src/k8s.io/test-infra/prow/github:all-srcs",
+        "//label_sync/vendor/k8s.io/test-infra:all-srcs",
+    ],
     tags = ["automanaged"],
 )

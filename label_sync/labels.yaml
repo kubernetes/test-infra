@@ -302,6 +302,8 @@ labels:
   - color: d2b48c
     name: sig/instrumentation
   - color: d2b48c
+    name: sig/multicluster
+  - color: d2b48c
     name: sig/network
   - color: d2b48c
     name: sig/node

@@ -15,28 +15,35 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: label_sync
+  name: label-sync
   labels:
-    app: label_sync
+    app: label-sync
 spec:
   replicas: 1
   template:
     metadata:
       labels:
-        app: label_sync
+        app: label-sync
     spec:
       terminationGracePeriodSeconds: 180
       containers:
-        - name: label_sync
-          image: gcr.io/k8s-prow/label_sync:0.100
+        - name: label-sync
+          image: gcr.io/garretts-first-project/label_sync_no_run:0.1
           args:
-          - --repos=/etc/config/repos.yaml
+            - go
+            - run
+            - main.go
+            - -dry-run=false
+            - -gtf=/github/secret/munge_token
+            - -repos=k8s-repos.yaml
+            - -labels-path=labels.yaml 
+            - -org=kubernetes
           imagePullPolicy: Always
           volumeMounts:
-            - name: oauth
-              mountPath: /etc/github
+            - name: gh-secret-vol
+              mountPath: "/github/secret"
               readOnly: true
       volumes:
-        - name: oauth
-          secret:
-            secretName: oauth-token
+      - name: gh-secret-vol
+        secret:
+          secretName: oauth-token
