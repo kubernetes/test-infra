@@ -8,12 +8,14 @@ load(
 
 go_binary(
     name = "reaper",
+    importpath = "k8s.io/test-infra/boskos/reaper",
     library = ":go_default_library",
 )
 
 go_library(
     name = "go_default_library",
     srcs = ["reaper.go"],
+    importpath = "k8s.io/test-infra/boskos/reaper",
     deps = [
         "//boskos/client:go_default_library",
         "//boskos/common:go_default_library",

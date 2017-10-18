@@ -10,6 +10,7 @@ load(
 
 go_binary(
     name = "metrics",
+    importpath = "k8s.io/test-infra/boskos/metrics",
     library = ":go_default_library",
     tags = ["automanaged"],
 )
@@ -17,6 +18,7 @@ go_binary(
 go_library(
     name = "go_default_library",
     srcs = ["metrics.go"],
+    importpath = "k8s.io/test-infra/boskos/metrics",
     tags = ["automanaged"],
     deps = [
         "//boskos/client:go_default_library",

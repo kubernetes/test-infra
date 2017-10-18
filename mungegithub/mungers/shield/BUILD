@@ -8,6 +8,7 @@ load(
 go_library(
     name = "go_default_library",
     srcs = ["shield.go"],
+    importpath = "k8s.io/test-infra/mungegithub/mungers/shield",
 )
 
 filegroup(

@@ -8,6 +8,7 @@ load(
 go_library(
     name = "go_default_library",
     srcs = ["localgit.go"],
+    importpath = "k8s.io/test-infra/prow/git/localgit",
     deps = [
         "//prow/git:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",

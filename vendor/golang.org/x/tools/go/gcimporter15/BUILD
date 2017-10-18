@@ -15,6 +15,7 @@ go_library(
         "isAlias18.go",
         "isAlias19.go",
     ],
+    importpath = "golang.org/x/tools/go/gcimporter15",
 )
 
 filegroup(

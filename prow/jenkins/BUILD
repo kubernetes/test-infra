@@ -12,6 +12,7 @@ go_library(
         "controller.go",
         "jenkins.go",
     ],
+    importpath = "k8s.io/test-infra/prow/jenkins",
     tags = ["automanaged"],
     deps = [
         "//prow/config:go_default_library",
@@ -42,6 +43,7 @@ go_test(
         "controller_test.go",
         "jenkins_test.go",
     ],
+    importpath = "k8s.io/test-infra/prow/jenkins",
     library = ":go_default_library",
     tags = ["automanaged"],
     deps = [

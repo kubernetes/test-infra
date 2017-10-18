@@ -8,6 +8,7 @@ load(
 go_library(
     name = "go_default_library",
     srcs = ["gzip.go"],
+    importpath = "github.com/NYTimes/gziphandler",
 )
 
 filegroup(

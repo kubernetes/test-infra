@@ -11,6 +11,7 @@ go_library(
         "idna.go",
         "punycode.go",
     ],
+    importpath = "golang.org/x/net/idna",
 )
 
 filegroup(

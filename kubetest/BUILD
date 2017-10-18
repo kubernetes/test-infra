@@ -9,6 +9,7 @@ load(
 
 go_binary(
     name = "kubetest",
+    importpath = "k8s.io/test-infra/kubetest",
     library = ":go_default_library",
 )
 
@@ -29,6 +30,7 @@ go_library(
         "stage.go",
         "util.go",
     ],
+    importpath = "k8s.io/test-infra/kubetest",
     deps = [
         "//boskos/client:go_default_library",
         "//vendor/github.com/spf13/pflag:go_default_library",
@@ -56,5 +58,6 @@ go_test(
         "main_test.go",
         "util_test.go",
     ],
+    importpath = "k8s.io/test-infra/kubetest",
     library = ":go_default_library",
 )

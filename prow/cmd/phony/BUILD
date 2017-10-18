@@ -8,12 +8,14 @@ load(
 
 go_binary(
     name = "phony",
+    importpath = "k8s.io/test-infra/prow/cmd/phony",
     library = ":go_default_library",
 )
 
 go_library(
     name = "go_default_library",
     srcs = ["main.go"],
+    importpath = "k8s.io/test-infra/prow/cmd/phony",
     deps = [
         "//prow/phony:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",

@@ -15,6 +15,7 @@ go_library(
         "namespace.go",
         "timeout.go",
     ],
+    importpath = "google.golang.org/appengine",
     deps = [
         "//vendor/github.com/golang/protobuf/proto:go_default_library",
         "//vendor/golang.org/x/net/context:go_default_library",

@@ -3,6 +3,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 go_library(
     name = "go_default_library",
     srcs = ["owner.go"],
+    importpath = "k8s.io/test-infra/robots/issue-creator/testowner",
     visibility = ["//visibility:public"],
     deps = ["//vendor/github.com/golang/glog:go_default_library"],
 )
@@ -10,6 +11,7 @@ go_library(
 go_test(
     name = "go_default_test",
     srcs = ["owner_test.go"],
+    importpath = "k8s.io/test-infra/robots/issue-creator/testowner",
     library = ":go_default_library",
 )
 

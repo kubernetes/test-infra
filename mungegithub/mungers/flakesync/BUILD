@@ -9,6 +9,7 @@ load(
 go_test(
     name = "go_default_test",
     srcs = ["cache_test.go"],
+    importpath = "k8s.io/test-infra/mungegithub/mungers/flakesync",
     library = ":go_default_library",
     deps = ["//vendor/github.com/google/gofuzz:go_default_library"],
 )
@@ -16,6 +17,7 @@ go_test(
 go_library(
     name = "go_default_library",
     srcs = ["cache.go"],
+    importpath = "k8s.io/test-infra/mungegithub/mungers/flakesync",
 )
 
 filegroup(

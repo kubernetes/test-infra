@@ -11,6 +11,7 @@ go_library(
         "uritemplates.go",
         "utils.go",
     ],
+    importpath = "google.golang.org/api/googleapi/internal/uritemplates",
 )
 
 filegroup(

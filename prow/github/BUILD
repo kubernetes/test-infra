@@ -14,6 +14,7 @@ go_test(
         "links_test.go",
         "types_test.go",
     ],
+    importpath = "k8s.io/test-infra/prow/github",
     library = ":go_default_library",
 )
 
@@ -25,6 +26,7 @@ go_library(
         "links.go",
         "types.go",
     ],
+    importpath = "k8s.io/test-infra/prow/github",
     deps = [
         "//vendor/github.com/shurcooL/githubql:go_default_library",
         "//vendor/golang.org/x/oauth2:go_default_library",

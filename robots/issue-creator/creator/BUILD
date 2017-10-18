@@ -3,6 +3,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 go_library(
     name = "go_default_library",
     srcs = ["creator.go"],
+    importpath = "k8s.io/test-infra/robots/issue-creator/creator",
     visibility = ["//visibility:public"],
     deps = [
         "//ghclient:go_default_library",
@@ -15,6 +16,7 @@ go_library(
 go_test(
     name = "go_default_test",
     srcs = ["creator_test.go"],
+    importpath = "k8s.io/test-infra/robots/issue-creator/creator",
     library = ":go_default_library",
     deps = [
         "//robots/issue-creator/testowner:go_default_library",

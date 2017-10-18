@@ -8,6 +8,7 @@ load(
 go_library(
     name = "go_default_library",
     srcs = ["app_identity_service.pb.go"],
+    importpath = "google.golang.org/appengine/internal/app_identity",
     deps = ["//vendor/github.com/golang/protobuf/proto:go_default_library"],
 )
 

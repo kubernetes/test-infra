@@ -3,6 +3,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 go_library(
     name = "go_default_library",
     srcs = ["tide.go"],
+    importpath = "k8s.io/test-infra/prow/tide",
     visibility = ["//visibility:public"],
     deps = [
         "//prow/config:go_default_library",
@@ -32,6 +33,7 @@ filegroup(
 go_test(
     name = "go_default_test",
     srcs = ["tide_test.go"],
+    importpath = "k8s.io/test-infra/prow/tide",
     library = ":go_default_library",
     deps = [
         "//prow/config:go_default_library",

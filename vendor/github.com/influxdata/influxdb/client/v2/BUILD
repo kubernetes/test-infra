@@ -11,6 +11,7 @@ go_library(
         "client.go",
         "udp.go",
     ],
+    importpath = "github.com/influxdata/influxdb/client/v2",
     deps = ["//vendor/github.com/influxdata/influxdb/models:go_default_library"],
 )
 

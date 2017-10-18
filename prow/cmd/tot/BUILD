@@ -9,18 +9,21 @@ load(
 
 go_binary(
     name = "tot",
+    importpath = "k8s.io/test-infra/prow/cmd/tot",
     library = ":go_default_library",
 )
 
 go_test(
     name = "go_default_test",
     srcs = ["main_test.go"],
+    importpath = "k8s.io/test-infra/prow/cmd/tot",
     library = ":go_default_library",
 )
 
 go_library(
     name = "go_default_library",
     srcs = ["main.go"],
+    importpath = "k8s.io/test-infra/prow/cmd/tot",
     deps = ["//vendor/github.com/sirupsen/logrus:go_default_library"],
 )
 

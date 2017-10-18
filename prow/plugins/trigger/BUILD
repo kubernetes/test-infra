@@ -12,6 +12,7 @@ go_test(
         "ic_test.go",
         "pr_test.go",
     ],
+    importpath = "k8s.io/test-infra/prow/plugins/trigger",
     library = ":go_default_library",
     deps = [
         "//prow/config:go_default_library",
@@ -30,6 +31,7 @@ go_library(
         "push.go",
         "trigger.go",
     ],
+    importpath = "k8s.io/test-infra/prow/plugins/trigger",
     deps = [
         "//prow/config:go_default_library",
         "//prow/github:go_default_library",

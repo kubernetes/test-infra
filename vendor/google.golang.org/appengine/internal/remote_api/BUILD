@@ -8,6 +8,7 @@ load(
 go_library(
     name = "go_default_library",
     srcs = ["remote_api.pb.go"],
+    importpath = "google.golang.org/appengine/internal/remote_api",
     deps = ["//vendor/github.com/golang/protobuf/proto:go_default_library"],
 )
 

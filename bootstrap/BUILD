@@ -9,12 +9,14 @@ go_library(
         "paths.go",
         "repos.go",
     ],
+    importpath = "k8s.io/test-infra/bootstrap",
     visibility = ["//visibility:private"],
     deps = ["//vendor/github.com/spf13/pflag:go_default_library"],
 )
 
 go_binary(
     name = "bootstrap",
+    importpath = "k8s.io/test-infra/bootstrap",
     library = ":go_default_library",
     visibility = ["//visibility:public"],
 )
@@ -41,5 +43,6 @@ go_test(
         "paths_test.go",
         "repos_test.go",
     ],
+    importpath = "k8s.io/test-infra/bootstrap",
     library = ":go_default_library",
 )
