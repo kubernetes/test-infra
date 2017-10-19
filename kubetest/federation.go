@@ -73,6 +73,10 @@ func (m *multiClusterDeployment) Set(value string) error {
 	return nil
 }
 
+func (m *multiClusterDeployment) Type() string {
+	return "multiClusterDeployment"
+}
+
 func (m *multiClusterDeployment) Enabled() bool {
 	return len(m.clusters) > 0
 }

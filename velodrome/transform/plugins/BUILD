@@ -25,6 +25,7 @@ go_library(
         "states.go",
         "type_filter_wrapper.go",
     ],
+    importpath = "k8s.io/test-infra/velodrome/transform/plugins",
     deps = [
         "//velodrome/sql:go_default_library",
         "//vendor/github.com/spf13/cobra:go_default_library",
@@ -66,6 +67,7 @@ go_test(
         "states_test.go",
         "type_filter_wrapper_test.go",
     ],
+    importpath = "k8s.io/test-infra/velodrome/transform/plugins",
     library = ":go_default_library",
     deps = [
         "//velodrome/sql:go_default_library",

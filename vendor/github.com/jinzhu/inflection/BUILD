@@ -8,6 +8,7 @@ load(
 go_library(
     name = "go_default_library",
     srcs = ["inflections.go"],
+    importpath = "github.com/jinzhu/inflection",
 )
 
 filegroup(

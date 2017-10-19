@@ -11,6 +11,7 @@ load(
 go_test(
     name = "go_default_test",
     srcs = ["report_test.go"],
+    importpath = "k8s.io/test-infra/prow/report",
     library = ":go_default_library",
     tags = ["automanaged"],
     deps = [
@@ -22,6 +23,7 @@ go_test(
 go_library(
     name = "go_default_library",
     srcs = ["report.go"],
+    importpath = "k8s.io/test-infra/prow/report",
     tags = ["automanaged"],
     deps = [
         "//prow/github:go_default_library",

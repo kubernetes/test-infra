@@ -8,6 +8,7 @@ load(
 go_library(
     name = "go_default_library",
     srcs = ["lint.go"],
+    importpath = "github.com/golang/lint",
     deps = ["//vendor/golang.org/x/tools/go/gcexportdata:go_default_library"],
 )
 

@@ -8,6 +8,7 @@ load(
 
 go_binary(
     name = "token-counter",
+    importpath = "k8s.io/test-infra/velodrome/token-counter",
     library = ":go_default_library",
 )
 
@@ -17,6 +18,7 @@ go_library(
         "influx.go",
         "token-counter.go",
     ],
+    importpath = "k8s.io/test-infra/velodrome/token-counter",
     deps = [
         "//vendor/github.com/golang/glog:go_default_library",
         "//vendor/github.com/google/go-github/github:go_default_library",

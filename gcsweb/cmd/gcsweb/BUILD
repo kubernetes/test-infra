@@ -8,12 +8,14 @@ load(
 
 go_binary(
     name = "gcsweb",
+    importpath = "k8s.io/test-infra/gcsweb/cmd/gcsweb",
     library = ":go_default_library",
 )
 
 go_library(
     name = "go_default_library",
     srcs = ["gcsweb.go"],
+    importpath = "k8s.io/test-infra/gcsweb/cmd/gcsweb",
     deps = ["//gcsweb/pkg/version:go_default_library"],
 )
 

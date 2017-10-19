@@ -12,6 +12,7 @@ go_test(
         "event_test.go",
         "finder_test.go",
     ],
+    importpath = "k8s.io/test-infra/mungegithub/mungers/matchers/event",
     library = ":go_default_library",
     deps = ["//vendor/github.com/google/go-github/github:go_default_library"],
 )
@@ -23,6 +24,7 @@ go_library(
         "finder.go",
         "operators.go",
     ],
+    importpath = "k8s.io/test-infra/mungegithub/mungers/matchers/event",
     deps = ["//vendor/github.com/google/go-github/github:go_default_library"],
 )
 

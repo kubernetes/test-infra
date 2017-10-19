@@ -8,6 +8,7 @@ load(
 go_library(
     name = "go_default_library",
     srcs = ["mysql.go"],
+    importpath = "github.com/jinzhu/gorm/dialects/mysql",
     deps = ["//vendor/github.com/go-sql-driver/mysql:go_default_library"],
 )
 

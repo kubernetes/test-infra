@@ -8,6 +8,7 @@ load(
 go_library(
     name = "go_default_library",
     srcs = ["encode.go"],
+    importpath = "github.com/google/go-querystring/query",
 )
 
 filegroup(

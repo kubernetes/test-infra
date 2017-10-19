@@ -76,7 +76,7 @@ const (
 	blockerLabel = "priority/critical-urgent"
 
 	sigLabelPrefix     = "sig/"
-	sigMentionTemplate = "@kubernetes/sig-%s-bugs"
+	sigMentionTemplate = "@kubernetes/sig-%s-misc"
 
 	milestoneOptModes                = "milestone-modes"
 	milestoneOptWarningInterval      = "milestone-warning-interval"

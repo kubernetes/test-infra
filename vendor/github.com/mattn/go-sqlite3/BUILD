@@ -45,6 +45,7 @@ go_library(
         ],
         "//conditions:default": [],
     }),
+    importpath = "github.com/mattn/go-sqlite3",
 )
 
 filegroup(

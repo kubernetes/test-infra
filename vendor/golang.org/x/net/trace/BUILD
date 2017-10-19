@@ -12,6 +12,7 @@ go_library(
         "histogram.go",
         "trace.go",
     ],
+    importpath = "golang.org/x/net/trace",
     deps = [
         "//vendor/golang.org/x/net/context:go_default_library",
         "//vendor/golang.org/x/net/internal/timeseries:go_default_library",

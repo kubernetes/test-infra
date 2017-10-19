@@ -11,6 +11,7 @@ go_library(
         "code_string.go",
         "codes.go",
     ],
+    importpath = "google.golang.org/grpc/codes",
 )
 
 filegroup(

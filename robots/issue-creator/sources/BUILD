@@ -6,6 +6,7 @@ go_library(
         "flakyjob-reporter.go",
         "triage-filer.go",
     ],
+    importpath = "k8s.io/test-infra/robots/issue-creator/sources",
     visibility = ["//visibility:public"],
     deps = [
         "//mungegithub/mungers/mungerutil:go_default_library",
@@ -21,6 +22,7 @@ go_test(
         "flakyjob-reporter_test.go",
         "triage-filer_test.go",
     ],
+    importpath = "k8s.io/test-infra/robots/issue-creator/sources",
     library = ":go_default_library",
     deps = [
         "//robots/issue-creator/creator:go_default_library",

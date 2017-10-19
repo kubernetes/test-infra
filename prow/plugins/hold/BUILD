@@ -3,6 +3,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 go_library(
     name = "go_default_library",
     srcs = ["hold.go"],
+    importpath = "k8s.io/test-infra/prow/plugins/hold",
     visibility = ["//visibility:public"],
     deps = [
         "//prow/github:go_default_library",
@@ -14,6 +15,7 @@ go_library(
 go_test(
     name = "go_default_test",
     srcs = ["hold_test.go"],
+    importpath = "k8s.io/test-infra/prow/plugins/hold",
     library = ":go_default_library",
     deps = [
         "//prow/github:go_default_library",

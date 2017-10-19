@@ -13,7 +13,7 @@
 # limitations under the License.
 
 FROM gcr.io/k8s-prow/alpine:0.1
-MAINTAINER rmmh@google.com
+LABEL maintainer="rmmh@google.com"
 
 COPY tot /tot
 ENTRYPOINT ["/tot"]

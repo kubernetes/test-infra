@@ -8,6 +8,7 @@ load(
 go_library(
     name = "go_default_library",
     srcs = ["snowflake.go"],
+    importpath = "github.com/bwmarrin/snowflake",
 )
 
 filegroup(

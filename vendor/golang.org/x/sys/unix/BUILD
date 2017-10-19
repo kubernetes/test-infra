@@ -51,6 +51,7 @@ go_library(
         "//conditions:default": [],
     }),
     cgo = True,
+    importpath = "golang.org/x/sys/unix",
 )
 
 filegroup(

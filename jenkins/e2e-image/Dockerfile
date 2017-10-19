@@ -16,7 +16,7 @@
 # unit and integration tests
 
 FROM gcr.io/k8s-testimages/bootstrap:v20171008-2cd48707
-MAINTAINER  Sen Lu <senlu@google.com>
+LABEL maintainer "Sen Lu <senlu@google.com>"
 
 # install go
 ARG GO_VERSION
@@ -25,8 +25,9 @@ RUN wget -q "https://storage.googleapis.com/golang/${GO_TARBALL}" && \
     tar xzf "${GO_TARBALL}" -C /usr/local && \
     rm "${GO_TARBALL}"
 
-ENV PATH /usr/local/go/bin:$PATH
 ENV GOPATH /go
+ENV PATH /usr/local/go/bin:$PATH
+ENV PATH $GOPATH/bin:$PATH
 
 # setup k8s repo symlink
 RUN mkdir -p /go/src/k8s.io/kubernetes \

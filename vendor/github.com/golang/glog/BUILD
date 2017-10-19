@@ -11,6 +11,7 @@ go_library(
         "glog.go",
         "glog_file.go",
     ],
+    importpath = "github.com/golang/glog",
 )
 
 filegroup(

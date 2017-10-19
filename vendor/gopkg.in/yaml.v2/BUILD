@@ -22,6 +22,7 @@ go_library(
         "yamlh.go",
         "yamlprivateh.go",
     ],
+    importpath = "gopkg.in/yaml.v2",
 )
 
 filegroup(

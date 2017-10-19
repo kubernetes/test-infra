@@ -23,6 +23,7 @@ go_library(
         "transaction.go",
         "utils.go",
     ],
+    importpath = "github.com/go-sql-driver/mysql",
 )
 
 filegroup(

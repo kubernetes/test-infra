@@ -9,6 +9,7 @@ load(
 go_test(
     name = "go_default_test",
     srcs = ["options_test.go"],
+    importpath = "k8s.io/test-infra/mungegithub/options",
     library = ":go_default_library",
     deps = ["//vendor/k8s.io/kubernetes/pkg/util/sets:go_default_library"],
 )
@@ -16,6 +17,7 @@ go_test(
 go_library(
     name = "go_default_library",
     srcs = ["options.go"],
+    importpath = "k8s.io/test-infra/mungegithub/options",
     deps = [
         "//vendor/github.com/ghodss/yaml:go_default_library",
         "//vendor/github.com/golang/glog:go_default_library",

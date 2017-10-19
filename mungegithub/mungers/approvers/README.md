@@ -75,7 +75,7 @@ The exact algorithm for selecting approvers is somewhat complex; it is an set co
 
 **Example**
 
-![Directory Structure](https://github.com/kubernetes/test-infra/tree/master/mungegithub/mungers/approvers/images/directory_structure.png)
+![Directory Structure](images/directory_structure.png)
 
 Suppose files in directories E and G are changed in a PR created by PRAuthor. Any combination of approver(s) listed below can approve the PR in order to get it merged:
 
@@ -187,7 +187,7 @@ K8s-bot updates comment:
 
 K8s-bot merges the PR. It needs to wait its turn in submit queue and passes tests.
 
-![Bot Notification for Approval Mechanism](https://github.com/kubernetes/test-infra/tree/master/mungegithub/mungers/approvers/images/bot_notification_for_approval_mechanism.png)
+![Bot Notification for Approval Mechanism](images/bot_notification_for_approval_selection_mechanism.png)
 
 **Final Notes**
 

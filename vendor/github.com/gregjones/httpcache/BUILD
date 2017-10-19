@@ -8,6 +8,7 @@ load(
 go_library(
     name = "go_default_library",
     srcs = ["httpcache.go"],
+    importpath = "github.com/gregjones/httpcache",
 )
 
 filegroup(

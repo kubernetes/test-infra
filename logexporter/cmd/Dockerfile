@@ -16,7 +16,7 @@
 # have a look at the tool's README.md file.
 
 FROM fedora
-MAINTAINER Shyam Jeedigunta <shyamjvs@google.com>
+LABEL maintainer="Shyam Jeedigunta <shyamjvs@google.com>"
 
 # Setup gcloud SDK for using gsutil.
 RUN dnf -y -q install which

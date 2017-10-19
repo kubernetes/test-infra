@@ -8,6 +8,7 @@ load(
 go_library(
     name = "go_default_library",
     srcs = ["cloud.go"],
+    importpath = "cloud.google.com/go/internal",
 )
 
 filegroup(

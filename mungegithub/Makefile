@@ -2,7 +2,7 @@ all: container
 
 # Path Prefix: the path the the mungegithub directory.
 DIR := $(shell dirname $(abspath $(lastword $(MAKEFILE_LIST))))
-CD := cd $(DIR) && 
+CD := cd $(DIR) &&
 
 DATE := $(shell date +%F)
 GIT := $(shell git rev-parse --short HEAD)
@@ -63,7 +63,7 @@ deploy: push deployment get-cluster-credentials
 # A new configuration is pushed by using the configmap specified using $(TARGET) and $(APP).
 push_config: get-cluster-credentials
 	# pushes a new configmap.
-	$(CD) kubectl --kubeconfig=$(KUBECONFIG) create configmap $(TARGET)-$(APP)-config --from-file=config=$(APP)/deployment/$(TARGET)/configmap.yaml --dry-run -o yaml | kubectl apply -f -
+	$(CD) kubectl --kubeconfig=$(KUBECONFIG) create configmap $(TARGET)-$(APP)-config --from-file=$(APP)/deployment/$(TARGET) --dry-run -o yaml | kubectl apply -f -
 
 # Creates a service resource spec for the specified target and app.
 service:

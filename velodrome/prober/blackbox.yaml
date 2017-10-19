@@ -28,6 +28,8 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: blackbox-prober-config
+  labels:
+    app: blackbox-prober
 data:
   prober.yaml: |-
     modules:

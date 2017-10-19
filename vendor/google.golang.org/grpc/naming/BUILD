@@ -8,6 +8,7 @@ load(
 go_library(
     name = "go_default_library",
     srcs = ["naming.go"],
+    importpath = "google.golang.org/grpc/naming",
 )
 
 filegroup(

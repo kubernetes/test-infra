@@ -9,6 +9,7 @@ load(
 go_library(
     name = "go_default_library",
     srcs = ["git.go"],
+    importpath = "k8s.io/test-infra/prow/git",
     deps = ["//vendor/github.com/sirupsen/logrus:go_default_library"],
 )
 
@@ -31,5 +32,6 @@ filegroup(
 go_test(
     name = "go_default_xtest",
     srcs = ["git_test.go"],
+    importpath = "k8s.io/test-infra/prow/git_test",
     deps = ["//prow/git/localgit:go_default_library"],
 )

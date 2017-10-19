@@ -34,6 +34,7 @@ go_library(
         "search.go",
         "utils.go",
     ],
+    importpath = "github.com/jinzhu/gorm",
     deps = ["//vendor/github.com/jinzhu/inflection:go_default_library"],
 )
 

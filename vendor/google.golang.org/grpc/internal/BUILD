@@ -8,6 +8,7 @@ load(
 go_library(
     name = "go_default_library",
     srcs = ["internal.go"],
+    importpath = "google.golang.org/grpc/internal",
 )
 
 filegroup(

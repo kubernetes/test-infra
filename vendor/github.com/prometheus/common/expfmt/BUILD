@@ -15,6 +15,7 @@ go_library(
         "text_create.go",
         "text_parse.go",
     ],
+    importpath = "github.com/prometheus/common/expfmt",
     deps = [
         "//vendor/bitbucket.org/ww/goautoneg:go_default_library",
         "//vendor/github.com/golang/protobuf/proto:go_default_library",

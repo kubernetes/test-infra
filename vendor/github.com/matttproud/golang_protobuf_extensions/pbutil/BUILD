@@ -12,6 +12,7 @@ go_library(
         "doc.go",
         "encode.go",
     ],
+    importpath = "github.com/matttproud/golang_protobuf_extensions/pbutil",
     deps = ["//vendor/github.com/golang/protobuf/proto:go_default_library"],
 )
 

@@ -3,6 +3,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 go_library(
     name = "go_default_library",
     srcs = ["blockade.go"],
+    importpath = "k8s.io/test-infra/prow/plugins/blockade",
     visibility = ["//visibility:public"],
     deps = [
         "//prow/github:go_default_library",
@@ -28,6 +29,7 @@ filegroup(
 go_test(
     name = "go_default_test",
     srcs = ["blockade_test.go"],
+    importpath = "k8s.io/test-infra/prow/plugins/blockade",
     library = ":go_default_library",
     deps = [
         "//prow/github:go_default_library",

@@ -8,6 +8,7 @@ load(
 go_library(
     name = "go_default_library",
     srcs = ["sqlite.go"],
+    importpath = "github.com/jinzhu/gorm/dialects/sqlite",
     deps = ["//vendor/github.com/mattn/go-sqlite3:go_default_library"],
 )
 

@@ -8,6 +8,7 @@ load(
 go_library(
     name = "go_default_library",
     srcs = ["datastore_v3.pb.go"],
+    importpath = "google.golang.org/appengine/internal/datastore",
     deps = ["//vendor/github.com/golang/protobuf/proto:go_default_library"],
 )
 

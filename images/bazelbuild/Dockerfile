@@ -14,7 +14,7 @@
 
 # Includes git, gcloud, and bazel.
 FROM ubuntu:16.04
-MAINTAINER spxtr@google.com
+LABEL maintainer="spxtr@google.com"
 
 ARG BAZEL_VERSION
 

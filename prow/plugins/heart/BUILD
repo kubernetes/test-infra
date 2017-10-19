@@ -9,6 +9,7 @@ load(
 go_library(
     name = "go_default_library",
     srcs = ["heart.go"],
+    importpath = "k8s.io/test-infra/prow/plugins/heart",
     deps = [
         "//prow/github:go_default_library",
         "//prow/plugins:go_default_library",
@@ -32,6 +33,7 @@ filegroup(
 go_test(
     name = "go_default_test",
     srcs = ["heart_test.go"],
+    importpath = "k8s.io/test-infra/prow/plugins/heart",
     library = ":go_default_library",
     deps = [
         "//prow/github:go_default_library",

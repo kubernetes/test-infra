@@ -8,6 +8,7 @@ load(
 go_library(
     name = "go_default_library",
     srcs = ["metrics.pb.go"],
+    importpath = "github.com/prometheus/client_model/go",
     deps = ["//vendor/github.com/golang/protobuf/proto:go_default_library"],
 )
 

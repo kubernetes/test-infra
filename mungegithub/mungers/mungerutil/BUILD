@@ -12,6 +12,7 @@ go_test(
         "time_cache_test.go",
         "util_test.go",
     ],
+    importpath = "k8s.io/test-infra/mungegithub/mungers/mungerutil",
     library = ":go_default_library",
     deps = ["//vendor/github.com/google/go-github/github:go_default_library"],
 )
@@ -24,6 +25,7 @@ go_library(
         "time_cache.go",
         "util.go",
     ],
+    importpath = "k8s.io/test-infra/mungegithub/mungers/mungerutil",
     deps = [
         "//vendor/github.com/golang/glog:go_default_library",
         "//vendor/github.com/google/go-github/github:go_default_library",

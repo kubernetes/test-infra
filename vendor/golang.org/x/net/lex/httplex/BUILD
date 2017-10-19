@@ -8,6 +8,7 @@ load(
 go_library(
     name = "go_default_library",
     srcs = ["httplex.go"],
+    importpath = "golang.org/x/net/lex/httplex",
     deps = ["//vendor/golang.org/x/net/idna:go_default_library"],
 )
 

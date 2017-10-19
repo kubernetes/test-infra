@@ -20,7 +20,7 @@ GIT_VERSION              ?= 0.1
 HOOK_VERSION             ?= 0.174
 SINKER_VERSION           ?= 0.21
 DECK_VERSION             ?= 0.53
-SPLICE_VERSION           ?= 0.27
+SPLICE_VERSION           ?= 0.28
 TOT_VERSION              ?= 0.5
 HOROLOGIUM_VERSION       ?= 0.9
 PLANK_VERSION            ?= 0.50
@@ -139,6 +139,9 @@ jenkins-operator-image: alpine-image
 
 jenkins-operator-deployment: get-cluster-credentials
 	kubectl apply -f cluster/jenkins_deployment.yaml
+
+push-gateway-deploy: get-cluster-credentials
+	kubectl apply -f cluster/push_gateway.yaml
 
 tide-image: git-image
 	CGO_ENABLED=0 go build -o cmd/tide/tide k8s.io/test-infra/prow/cmd/tide

@@ -12,6 +12,7 @@ go_test(
         "hook_test.go",
         "server_test.go",
     ],
+    importpath = "k8s.io/test-infra/prow/hook",
     library = ":go_default_library",
     deps = [
         "//prow/config:go_default_library",
@@ -29,6 +30,7 @@ go_library(
         "plugins.go",
         "server.go",
     ],
+    importpath = "k8s.io/test-infra/prow/hook",
     deps = [
         "//prow/commentpruner:go_default_library",
         "//prow/config:go_default_library",

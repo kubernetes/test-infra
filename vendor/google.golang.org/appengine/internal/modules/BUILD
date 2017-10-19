@@ -8,6 +8,7 @@ load(
 go_library(
     name = "go_default_library",
     srcs = ["modules_service.pb.go"],
+    importpath = "google.golang.org/appengine/internal/modules",
     deps = ["//vendor/github.com/golang/protobuf/proto:go_default_library"],
 )
 

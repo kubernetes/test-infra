@@ -8,6 +8,7 @@ load(
 go_library(
     name = "go_default_library",
     srcs = ["uuid.go"],
+    importpath = "github.com/satori/go.uuid",
 )
 
 filegroup(
