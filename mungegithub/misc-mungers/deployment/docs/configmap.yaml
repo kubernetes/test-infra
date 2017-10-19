@@ -2,7 +2,7 @@
 app: misc-mungers
 http-cache-dir: /cache/httpcache
 organization: kubernetes
-project: kubernetes.github.io
+project: website
 pr-mungers: blunderbuss
 state: open
 token-file: /etc/secret-volume/token
@@ -14,4 +14,4 @@ use-reviewers: true
 blunderbuss-number-assignees: 1
 
 # munger specific options.
-label-file: "/gitrepos/kubernetes.github.io/labels.yaml"
+label-file: "/gitrepos/website/labels.yaml"
