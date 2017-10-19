@@ -9,6 +9,7 @@ load(
 go_test(
     name = "go_default_test",
     srcs = ["yuks_test.go"],
+    importpath = "k8s.io/test-infra/prow/plugins/yuks",
     library = ":go_default_library",
     deps = [
         "//prow/github:go_default_library",
@@ -20,6 +21,7 @@ go_test(
 go_library(
     name = "go_default_library",
     srcs = ["yuks.go"],
+    importpath = "k8s.io/test-infra/prow/plugins/yuks",
     deps = [
         "//prow/github:go_default_library",
         "//prow/plugins:go_default_library",

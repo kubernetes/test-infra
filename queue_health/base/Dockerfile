@@ -13,7 +13,7 @@
 # limitations under the License.
 
 FROM ubuntu:14.04
-MAINTAINER Erick Fejta <fejta@google.com>
+LABEL maintainer="Erick Fejta <fejta@google.com>"
 
 # Set gcloud environment variables
 ENV CLOUDSDK_CORE_DISABLE_PROMPTS=1 \

@@ -16,6 +16,7 @@ go_library(
         "statistic.go",
         "time.go",
     ],
+    importpath = "github.com/influxdata/influxdb/models",
     deps = ["//vendor/github.com/influxdata/influxdb/pkg/escape:go_default_library"],
 )
 

@@ -12,6 +12,7 @@ go_test(
         "e2e_test.go",
         "resolved_test.go",
     ],
+    importpath = "k8s.io/test-infra/mungegithub/mungers/e2e",
     library = ":go_default_library",
     deps = [
         "//mungegithub/options:go_default_library",
@@ -25,6 +26,7 @@ go_library(
         "e2e.go",
         "resolved.go",
     ],
+    importpath = "k8s.io/test-infra/mungegithub/mungers/e2e",
     deps = [
         "//mungegithub/mungers/flakesync:go_default_library",
         "//mungegithub/options:go_default_library",

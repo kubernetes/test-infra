@@ -26,6 +26,7 @@ go_test(
         "//mungegithub:configs",
     ],
     features = ["-race"],
+    importpath = "k8s.io/test-infra/mungegithub/mungers",
     library = ":go_default_library",
     deps = [
         "//mungegithub/features:go_default_library",
@@ -82,6 +83,7 @@ go_library(
         "submit-queue.go",
         "submit-queue-batch.go",
     ],
+    importpath = "k8s.io/test-infra/mungegithub/mungers",
     deps = [
         "//mungegithub/features:go_default_library",
         "//mungegithub/github:go_default_library",

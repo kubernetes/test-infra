@@ -8,6 +8,7 @@ load(
 go_library(
     name = "go_default_library",
     srcs = ["autoneg.go"],
+    importpath = "bitbucket.org/ww/goautoneg",
 )
 
 filegroup(

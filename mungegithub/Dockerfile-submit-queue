@@ -21,8 +21,6 @@ EXPOSE 8080
 ENTRYPOINT ["/mungegithub"]
 CMD ["--dry-run", "--token-file=/token"]
 
-ADD path-label.txt /path-label.txt
-ADD block-path.yaml /block-path.yaml
 # Submit queue web interface
 ADD submit-queue/www /www
 ADD mungegithub /mungegithub

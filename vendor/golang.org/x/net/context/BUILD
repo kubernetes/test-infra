@@ -12,6 +12,7 @@ go_library(
         "go17.go",
         "pre_go17.go",
     ],
+    importpath = "golang.org/x/net/context",
 )
 
 filegroup(

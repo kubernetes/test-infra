@@ -8,6 +8,7 @@ load(
 go_library(
     name = "go_default_library",
     srcs = ["mungeopts.go"],
+    importpath = "k8s.io/test-infra/mungegithub/mungeopts",
     deps = [
         "//mungegithub/options:go_default_library",
         "//vendor/k8s.io/kubernetes/pkg/util/sets:go_default_library",

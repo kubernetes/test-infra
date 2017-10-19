@@ -3,6 +3,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 go_library(
     name = "go_default_library",
     srcs = ["sharedmux.go"],
+    importpath = "k8s.io/test-infra/mungegithub/sharedmux",
     visibility = ["//visibility:public"],
 )
 

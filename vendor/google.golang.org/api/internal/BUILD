@@ -11,6 +11,7 @@ go_library(
         "pool.go",
         "settings.go",
     ],
+    importpath = "google.golang.org/api/internal",
     deps = [
         "//vendor/golang.org/x/oauth2:go_default_library",
         "//vendor/google.golang.org/grpc:go_default_library",

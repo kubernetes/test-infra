@@ -8,6 +8,7 @@ load(
 go_library(
     name = "go_default_library",
     srcs = ["pubsub-gen.go"],
+    importpath = "google.golang.org/api/pubsub/v1",
     deps = [
         "//vendor/golang.org/x/net/context:go_default_library",
         "//vendor/golang.org/x/net/context/ctxhttp:go_default_library",

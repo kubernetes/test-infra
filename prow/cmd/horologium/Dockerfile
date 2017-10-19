@@ -13,7 +13,7 @@
 # limitations under the License.
 
 FROM gcr.io/k8s-prow/alpine:0.1
-MAINTAINER spxtr@google.com
+LABEL maintainer="spxtr@google.com"
 
 COPY horologium /horologium
 ENTRYPOINT ["/horologium"]

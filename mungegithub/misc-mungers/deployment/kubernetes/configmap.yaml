@@ -15,11 +15,11 @@ github-key-file: /etc/hook-secret-volume/secret
 # status context options.
 # Please keep these lists in sorted order.
 # !!! This *MUST* be kept in sync with
-#     submit-queue/deployment/kubernetes/configmap.yaml !!!
+#     ../../../submit-queue/deployment/kubernetes/configmap.yaml !!!
 required-retest-contexts: "\
   pull-kubernetes-bazel-build,\
   pull-kubernetes-bazel-test,\
-  pull-kubernetes-e2e-gce-etcd3,\
+  pull-kubernetes-e2e-gce,\
   pull-kubernetes-e2e-kops-aws,\
   pull-kubernetes-kubemark-e2e-gce,\
   pull-kubernetes-node-e2e,\
@@ -27,8 +27,8 @@ required-retest-contexts: "\
   pull-kubernetes-verify"
 
 # munger specific options.
-path-label-config: path-label.txt
-block-path-config: block-path.yaml
+path-label-config: "/etc/munge-config/path-label.txt"
+block-path-config: "/etc/munge-config/block-path.yaml"
 approval-requires-issue: true
 implicit-self-approval: true
 number-of-old-test-results: 5

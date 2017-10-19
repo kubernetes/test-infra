@@ -11,6 +11,7 @@ go_library(
         "gcexportdata.go",
         "importer.go",
     ],
+    importpath = "golang.org/x/tools/go/gcexportdata",
     deps = ["//vendor/golang.org/x/tools/go/gcimporter15:go_default_library"],
 )
 

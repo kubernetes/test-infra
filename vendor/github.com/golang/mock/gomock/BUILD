@@ -13,6 +13,7 @@ go_library(
         "controller.go",
         "matchers.go",
     ],
+    importpath = "github.com/golang/mock/gomock",
 )
 
 filegroup(

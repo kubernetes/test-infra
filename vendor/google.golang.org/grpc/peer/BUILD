@@ -8,6 +8,7 @@ load(
 go_library(
     name = "go_default_library",
     srcs = ["peer.go"],
+    importpath = "google.golang.org/grpc/peer",
     deps = [
         "//vendor/golang.org/x/net/context:go_default_library",
         "//vendor/google.golang.org/grpc/credentials:go_default_library",

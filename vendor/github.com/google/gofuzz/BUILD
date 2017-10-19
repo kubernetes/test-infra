@@ -11,6 +11,7 @@ go_library(
         "doc.go",
         "fuzz.go",
     ],
+    importpath = "github.com/google/gofuzz",
 )
 
 filegroup(

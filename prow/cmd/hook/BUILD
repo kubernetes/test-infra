@@ -12,6 +12,7 @@ go_binary(
     data = [
         "//prow:configs",
     ],
+    importpath = "k8s.io/test-infra/prow/cmd/hook",
     library = ":go_default_library",
 )
 
@@ -21,6 +22,7 @@ go_test(
     data = [
         "//prow:configs",
     ],
+    importpath = "k8s.io/test-infra/prow/cmd/hook",
     library = ":go_default_library",
     deps = ["//prow/plugins:go_default_library"],
 )
@@ -28,6 +30,7 @@ go_test(
 go_library(
     name = "go_default_library",
     srcs = ["main.go"],
+    importpath = "k8s.io/test-infra/prow/cmd/hook",
     deps = [
         "//prow/config:go_default_library",
         "//prow/git:go_default_library",

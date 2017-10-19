@@ -775,7 +775,7 @@ def job_script(job, extra_job_args):
         config = json.loads(fp.read())
     job_config = config[job]
     cmd = test_infra('scenarios/%s.py' % job_config['scenario'])
-    return [cmd] + job_args(extra_job_args + job_config.get('args', []))
+    return [cmd] + job_args(job_config.get('args', []) + extra_job_args)
 
 
 def gubernator_uri(paths):

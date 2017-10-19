@@ -11,6 +11,7 @@ go_library(
         "bucket.go",
         "utils.go",
     ],
+    importpath = "k8s.io/contrib/test-utils/utils",
     deps = ["//vendor/github.com/golang/glog:go_default_library"],
 )
 

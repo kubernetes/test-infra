@@ -363,6 +363,27 @@ func TestNeededPresubmits(t *testing.T) {
 			refs:     fakeRefs("ref", "sha"),
 			required: []string{"new"},
 		},
+		{
+			name: "handle branches/skipbranches specifiers",
+			possible: []config.Presubmit{
+				{
+					Name:      "old",
+					Brancher:  config.Brancher{Branches: []string{"release-1.2", "release-1.3"}},
+					AlwaysRun: true,
+				},
+				{
+					Name:      "outdated",
+					Brancher:  config.Brancher{SkipBranches: []string{"master"}},
+					AlwaysRun: true,
+				},
+				{
+					Name:      "latest",
+					Brancher:  config.Brancher{Branches: []string{"master"}},
+					AlwaysRun: true,
+				},
+			},
+			required: []string{"latest"},
+		},
 	}
 
 	for _, tc := range tests {

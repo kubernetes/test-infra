@@ -11,6 +11,7 @@ go_library(
         "doc.go",
         "errors.go",
     ],
+    importpath = "k8s.io/kubernetes/pkg/util/errors",
 )
 
 filegroup(

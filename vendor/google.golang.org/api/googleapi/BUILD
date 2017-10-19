@@ -11,6 +11,7 @@ go_library(
         "googleapi.go",
         "types.go",
     ],
+    importpath = "google.golang.org/api/googleapi",
     deps = ["//vendor/google.golang.org/api/googleapi/internal/uritemplates:go_default_library"],
 )
 

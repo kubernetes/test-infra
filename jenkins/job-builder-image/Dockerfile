@@ -15,7 +15,7 @@
 # This docker image runs Jenkins Job Builder (JJB) for automatic job reconciliation.
 
 FROM ubuntu:14.04
-MAINTAINER Joe Finney <spxtr@google.com>
+LABEL maintainer="Joe Finney <spxtr@google.com>"
 
 RUN mkdir /build
 WORKDIR /build

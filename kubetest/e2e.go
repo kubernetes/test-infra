@@ -202,6 +202,15 @@ func run(deploy deployer, o options) error {
 		}
 	}
 
+	if o.testCmd != "" {
+		errs = appendError(errs, xmlWrap(o.testCmdName, func() error {
+			cmdLine := os.ExpandEnv(o.testCmd)
+			return finishRunning(exec.Command(cmdLine))
+		}))
+	}
+
+	// TODO(bentheelder): consider remapping charts, etc to testCmd
+
 	if o.kubemark {
 		errs = appendError(errs, xmlWrap("Kubemark Overall", func() error {
 			return kubemarkTest(testArgs, dump, o.kubemarkNodes)
@@ -500,10 +509,7 @@ func perfTest() error {
 func chartsTest() error {
 	// Run helm tests.
 	cmdline := fmt.Sprintf("%s/src/k8s.io/charts/test/helm-test-e2e.sh", os.Getenv("GOPATH"))
-	if err := finishRunning(exec.Command(cmdline)); err != nil {
-		return err
-	}
-	return nil
+	return finishRunning(exec.Command(cmdline))
 }
 
 func nodeTest(nodeArgs []string, testArgs, nodeTestArgs, project, zone string) error {
@@ -538,10 +544,7 @@ func nodeTest(nodeArgs []string, testArgs, nodeTestArgs, project, zone string) e
 
 	runner = append(runner, nodeArgs...)
 
-	if err := finishRunning(exec.Command("go", runner...)); err != nil {
-		return err
-	}
-	return nil
+	return finishRunning(exec.Command("go", runner...))
 }
 
 func kubemarkTest(testArgs []string, dump, numNodes string) error {

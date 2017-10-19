@@ -8,12 +8,14 @@ load(
 
 go_binary(
     name = "mungegithub",
+    importpath = "k8s.io/test-infra/mungegithub",
     library = ":go_default_library",
 )
 
 go_library(
     name = "go_default_library",
     srcs = ["mungegithub.go"],
+    importpath = "k8s.io/test-infra/mungegithub",
     deps = [
         "//mungegithub/features:go_default_library",
         "//mungegithub/github:go_default_library",

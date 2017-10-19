@@ -13,7 +13,7 @@
 # limitations under the License.
 
 FROM alpine:3.5
-MAINTAINER senlu@google.com
+LABEL maintainer="senlu@google.com"
 
 ADD ["boskos", "/"]
 ENTRYPOINT ["/boskos"]

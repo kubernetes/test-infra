@@ -17,6 +17,8 @@ limitations under the License.
 package plugins
 
 import (
+	"errors"
+	"reflect"
 	"testing"
 )
 
@@ -80,6 +82,74 @@ func TestGetPlugins(t *testing.T) {
 					t.Errorf("Different plugin for case \"%s\": Got %v expected %v", tc.name, plugins, tc.expectedPlugins)
 				}
 			}
+		}
+	}
+}
+
+func TestValidateExternalPlugins(t *testing.T) {
+	tests := []struct {
+		name        string
+		plugins     map[string][]ExternalPlugin
+		expectedErr error
+	}{
+		{
+			name: "valid config",
+			plugins: map[string][]ExternalPlugin{
+				"kubernetes/test-infra": {
+					{
+						Name: "cherrypick",
+					},
+					{
+						Name: "configupdater",
+					},
+					{
+						Name: "tetris",
+					},
+				},
+				"kubernetes": {
+					{
+						Name: "coffeemachine",
+					},
+					{
+						Name: "blender",
+					},
+				},
+			},
+			expectedErr: nil,
+		},
+		{
+			name: "invalid config",
+			plugins: map[string][]ExternalPlugin{
+				"kubernetes/test-infra": {
+					{
+						Name: "cherrypick",
+					},
+					{
+						Name: "configupdater",
+					},
+					{
+						Name: "tetris",
+					},
+				},
+				"kubernetes": {
+					{
+						Name: "coffeemachine",
+					},
+					{
+						Name: "tetris",
+					},
+				},
+			},
+			expectedErr: errors.New("invalid plugin configuration:\n\texternal plugins [tetris] are duplicated for kubernetes/test-infra and kubernetes"),
+		},
+	}
+
+	for _, test := range tests {
+		t.Logf("Running scenario %q", test.name)
+
+		err := validateExternalPlugins(test.plugins)
+		if !reflect.DeepEqual(err, test.expectedErr) {
+			t.Errorf("unexpected error: %v, expected: %v", err, test.expectedErr)
 		}
 	}
 }

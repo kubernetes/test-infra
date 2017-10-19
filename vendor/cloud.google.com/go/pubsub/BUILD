@@ -19,6 +19,7 @@ go_library(
         "subscription.go",
         "topic.go",
     ],
+    importpath = "cloud.google.com/go/pubsub",
     deps = [
         "//vendor/golang.org/x/net/context:go_default_library",
         "//vendor/google.golang.org/api/googleapi:go_default_library",

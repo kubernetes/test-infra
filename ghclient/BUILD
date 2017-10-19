@@ -12,6 +12,7 @@ go_test(
         "core_test.go",
         "wrappers_test.go",
     ],
+    importpath = "k8s.io/test-infra/ghclient",
     library = ":go_default_library",
     tags = ["automanaged"],
     deps = ["//vendor/github.com/google/go-github/github:go_default_library"],
@@ -23,6 +24,7 @@ go_library(
         "core.go",
         "wrappers.go",
     ],
+    importpath = "k8s.io/test-infra/ghclient",
     tags = ["automanaged"],
     deps = [
         "//vendor/github.com/golang/glog:go_default_library",

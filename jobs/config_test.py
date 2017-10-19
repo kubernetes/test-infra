@@ -748,6 +748,13 @@ class JobTest(unittest.TestCase):
             'ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-serial': 'ci-kubernetes-e2e-gke-ubuntu*',
             'ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-slow': 'ci-kubernetes-e2e-gke-ubuntu*',
             'ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-updown': 'ci-kubernetes-e2e-gke-ubuntu*',
+            # ubuntu node image tests share the same ubuntu project
+            'ci-kubernetes-e2e-gce-ubuntu-1-6-node': 'ci-kubernetes-e2e-ubuntu-node*',
+            'ci-kubernetes-e2e-gce-ubuntu-1-7-node': 'ci-kubernetes-e2e-ubuntu-node*',
+            'ci-kubernetes-e2e-gce-ubuntu-node': 'ci-kubernetes-e2e-ubuntu-node*',
+            'ci-kubernetes-e2e-gce-ubuntu-1-6-node-serial': 'ci-kubernetes-e2e-ubuntu-node*',
+            'ci-kubernetes-e2e-gce-ubuntu-1-7-node-serial': 'ci-kubernetes-e2e-ubuntu-node*',
+            'ci-kubernetes-e2e-gce-ubuntu-node-serial': 'ci-kubernetes-e2e-ubuntu-node*',
             # The 1.5 and 1.6 scalability jobs intentionally share projects.
             'ci-kubernetes-e2e-gci-gce-scalability-release-1-7': 'ci-kubernetes-e2e-gci-gce-scalability-release-*',
             'ci-kubernetes-e2e-gci-gce-scalability-stable1': 'ci-kubernetes-e2e-gci-gce-scalability-release-*',
@@ -782,13 +789,15 @@ class JobTest(unittest.TestCase):
             'pull-kubernetes-e2e-gce-canary': 'pull-kubernetes-e2e-gce-*',
             'ci-kubernetes-e2e-gce': 'ci-kubernetes-e2e-gce-*',
             'ci-kubernetes-e2e-gce-canary': 'ci-kubernetes-e2e-gce-*',
-            'ci-kubernetes-e2e-gke-gpu': 'ci-kubernetes-e2e-gke-gpu-*',
-            'pull-kubernetes-e2e-gke-gpu': 'ci-kubernetes-e2e-gke-gpu-*',
             'ci-kubernetes-node-kubelet-serial': 'ci-kubernetes-node-kubelet-*',
             'ci-kubernetes-node-kubelet-flaky': 'ci-kubernetes-node-kubelet-*',
             'ci-kubernetes-node-kubelet-conformance': 'ci-kubernetes-node-kubelet-*',
             'ci-kubernetes-node-kubelet-benchmark': 'ci-kubernetes-node-kubelet-*',
             'ci-kubernetes-node-kubelet': 'ci-kubernetes-node-kubelet-*',
+            'ci-kubernetes-node-kubelet-stable1': 'ci-kubernetes-node-kubelet-*',
+            'ci-kubernetes-node-kubelet-stable2': 'ci-kubernetes-node-kubelet-*',
+            'ci-kubernetes-node-kubelet-stable3': 'ci-kubernetes-node-kubelet-*',
+            'ci-kubernetes-node-kubelet-non-cri-1-6': 'ci-kubernetes-node-kubelet-*',
         }
         for soak_prefix in [
                 'ci-kubernetes-soak-gce-1.5',

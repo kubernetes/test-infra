@@ -8,6 +8,7 @@ load(
 go_library(
     name = "go_default_library",
     srcs = ["config.pb.go"],
+    importpath = "k8s.io/test-infra/testgrid/config/pb",
     deps = ["//vendor/github.com/golang/protobuf/proto:go_default_library"],
 )
 

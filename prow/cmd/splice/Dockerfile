@@ -13,7 +13,7 @@
 # limitations under the License.
 
 FROM gcr.io/k8s-prow/git:0.1
-MAINTAINER rmmh@google.com
+LABEL maintainer="rmmh@google.com"
 
 COPY splice /splice
 ENTRYPOINT ["/splice"]

@@ -17,6 +17,7 @@ go_test(
         "operators_test.go",
         "pinger_test.go",
     ],
+    importpath = "k8s.io/test-infra/mungegithub/mungers/matchers/comment",
     library = ":go_default_library",
 )
 
@@ -31,6 +32,7 @@ go_library(
         "operators.go",
         "pinger.go",
     ],
+    importpath = "k8s.io/test-infra/mungegithub/mungers/matchers/comment",
     deps = [
         "//mungegithub/github:go_default_library",
         "//vendor/github.com/google/go-github/github:go_default_library",

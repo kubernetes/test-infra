@@ -9,6 +9,7 @@ load(
 go_test(
     name = "go_default_test",
     srcs = ["close_test.go"],
+    importpath = "k8s.io/test-infra/prow/plugins/close",
     library = ":go_default_library",
     deps = [
         "//prow/github:go_default_library",
@@ -19,6 +20,7 @@ go_test(
 go_library(
     name = "go_default_library",
     srcs = ["close.go"],
+    importpath = "k8s.io/test-infra/prow/plugins/close",
     deps = [
         "//prow/github:go_default_library",
         "//prow/plugins:go_default_library",

@@ -9,6 +9,7 @@ load(
 
 go_binary(
     name = "fetcher",
+    importpath = "k8s.io/test-infra/velodrome/fetcher",
     library = ":go_default_library",
 )
 
@@ -21,6 +22,7 @@ go_test(
         "issue-events_test.go",
         "issues_test.go",
     ],
+    importpath = "k8s.io/test-infra/velodrome/fetcher",
     library = ":go_default_library",
     deps = [
         "//velodrome/sql:go_default_library",
@@ -39,6 +41,7 @@ go_library(
         "issue-events.go",
         "issues.go",
     ],
+    importpath = "k8s.io/test-infra/velodrome/fetcher",
     deps = [
         "//velodrome/sql:go_default_library",
         "//vendor/github.com/golang/glog:go_default_library",

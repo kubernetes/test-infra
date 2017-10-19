@@ -113,7 +113,7 @@ func TestMilestoneMaintainer(t *testing.T) {
 
 	expectedBody := `[MILESTONENOTIFIER] Milestone Issue **Needs Approval**
 
-@user @kubernetes/sig-foo-bugs
+@user @kubernetes/sig-foo-misc
 
 
 **Action required**: This issue must have the ` + "`status/approved-for-milestone`" + ` label applied by a SIG maintainer. If the label is not applied within 2 days, the issue will be moved out of the v1.8 milestone.

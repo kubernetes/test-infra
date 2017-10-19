@@ -9,6 +9,7 @@ load(
 go_test(
     name = "go_default_test",
     srcs = ["sqlite_test.go"],
+    importpath = "k8s.io/test-infra/velodrome/sql/testing",
     library = ":go_default_library",
     deps = ["//velodrome/sql:go_default_library"],
 )
@@ -16,6 +17,7 @@ go_test(
 go_library(
     name = "go_default_library",
     srcs = ["sqlite.go"],
+    importpath = "k8s.io/test-infra/velodrome/sql/testing",
     deps = [
         "//velodrome/sql:go_default_library",
         "//vendor/github.com/jinzhu/gorm:go_default_library",

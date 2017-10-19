@@ -17,7 +17,7 @@ TAG = $(shell date +v%Y%m%d)-$(shell git describe --tags --always --dirty)
 
 K8S ?= master
 
-GO ?= 1.8.3
+GO ?= 1.9.1
 BAZEL ?= 0.6.1
 
 ifeq ($(K8S), 1.8)

@@ -19,7 +19,9 @@ package mungers
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
+	"os"
 	"runtime"
 	"testing"
 
@@ -33,6 +35,35 @@ import (
 var (
 	_ = fmt.Printf
 	_ = glog.Errorf
+)
+
+const (
+	pathLabelTestContents = `# This file is used by the path-label munger and is of the form:
+#  PATH REGEXP			LABEL
+
+^docs/proposals			kind/design
+^docs/design			kind/design
+
+# examples:
+# pkg/api/types.go
+# pkg/api/*/types.go
+^pkg/api/([^/]+/)?types.go$    kind/api-change
+^pkg/api/([^/]+/)?register.go$ kind/new-api
+
+# examples:
+# pkg/apis/*/types.go
+# pkg/apis/*/*/types.go
+^pkg/apis/[^/]+/([^/]+/)?types.go$    kind/api-change
+^pkg/apis/[^/]+/([^/]+/)?register.go$ kind/new-api
+
+# docs which are going away with move to separate doc repo
+^docs/getting-started-guides	kind/old-docs
+^docs/admin			kind/old-docs
+^docs/user-guide		kind/old-docs
+^docs/devel             kind/old-docs
+^docs/design            kind/old-docs
+^docs/proposals         kind/old-docs
+`
 )
 
 func docsProposalIssue(testBotName string) *github.Issue {
@@ -154,8 +185,20 @@ func TestPathLabelMunge(t *testing.T) {
 		config.SetClient(client)
 		config.BotName = testBotName
 
-		p := PathLabelMunger{pathLabelFile: "../path-label.txt"}
-		err := p.Initialize(config, nil)
+		pathLabelTestFile, err := ioutil.TempFile("", "path-label.txt")
+		if err != nil {
+			t.Fatalf("open tempfile for writing: %v", err)
+		}
+		defer os.Remove(pathLabelTestFile.Name()) // clean up temp file
+		if _, err := pathLabelTestFile.Write([]byte(pathLabelTestContents)); err != nil {
+			t.Fatalf("write to %q: %v", pathLabelTestFile.Name(), err)
+		}
+		if err := pathLabelTestFile.Close(); err != nil {
+			t.Fatalf("closing tempfile %q: %v", pathLabelTestFile.Name(), err)
+		}
+
+		p := PathLabelMunger{pathLabelFile: pathLabelTestFile.Name()}
+		err = p.Initialize(config, nil)
 		if err != nil {
 			t.Fatalf("%v", err)
 		}

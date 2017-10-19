@@ -21,6 +21,7 @@ genrule(
 
 go_binary(
     name = "config",
+    importpath = "k8s.io/test-infra/testgrid/config",
     library = ":go_default_library",
 )
 
@@ -31,6 +32,7 @@ go_test(
         "config.yaml",
         "//mungegithub:submit-queue/deployment/kubernetes/configmap.yaml",
     ],
+    importpath = "k8s.io/test-infra/testgrid/config",
     library = ":go_default_library",
     deps = [
         "//testgrid/config/yaml2proto:go_default_library",
@@ -41,6 +43,7 @@ go_test(
 go_library(
     name = "go_default_library",
     srcs = ["main.go"],
+    importpath = "k8s.io/test-infra/testgrid/config",
     deps = ["//testgrid/config/yaml2proto:go_default_library"],
 )
 
