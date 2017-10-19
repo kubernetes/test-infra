@@ -215,19 +215,17 @@ class BuildHandler(view_base.BaseHandler):
             build_log = get_build_log(build_dir)
 
         pr, pr_path, pr_digest, repo = None, None, None, None
-        external_config = get_pr_config(prefix, self.app.config)
+        external_config = get_build_config(prefix, self.app.config)
         if external_config is not None:
-            pr, pr_path, pr_digest, repo = get_pr_info(prefix, self.app.config)
+            if '/pull/' in prefix:
+                pr, pr_path, pr_digest, repo = get_pr_info(prefix, self.app.config)
             if want_build_log and not build_log:
                 build_log, build_log_src = get_running_build_log(job, build,
                                                                  external_config["prow_url"])
 
         # 'version' might be in either started or finished.
         # prefer finished.
-        if finished and 'version' in finished:
-            version = finished['version']
-        else:
-            version = started and started.get('version')
+        version = finished and finished.get('version') or started and started.get('version')
         commit = version and version.split('+')[-1]
 
         issues = list(models.GHIssueDigest.find_xrefs(build_dir))
@@ -251,9 +249,11 @@ class BuildHandler(view_base.BaseHandler):
             testgrid_query=testgrid_query))
 
 
-def get_pr_config(prefix, config):
-    for item in config["external_services"].values():
-        if prefix.startswith(item["gcs_pull_prefix"]):
+def get_build_config(prefix, config):
+    for item in config['external_services'].values():
+        if prefix.startswith(item['gcs_pull_prefix']):
+            return item
+        if 'gcs_bucket' in item and prefix.startswith(item['gcs_bucket']):
             return item
 
 def get_pr_info(prefix, config):

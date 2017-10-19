@@ -6,6 +6,7 @@ external_services:
     gcs_pull_prefix: istio-prow/pull
     prow_url: prow.istio.io
   kubernetes:
+    gcs_bucket: kubernetes-jenkins/
     gcs_pull_prefix: kubernetes-jenkins/pr-logs/pull
     prow_url: prow.k8s.io
 jobs:
