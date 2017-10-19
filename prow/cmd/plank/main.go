@@ -21,6 +21,9 @@ import (
 	"flag"
 	"io/ioutil"
 	"net/url"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -93,11 +96,22 @@ func main() {
 	if err != nil {
 		logrus.WithError(err).Fatal("Error creating plank controller.")
 	}
-	for range time.Tick(30 * time.Second) {
-		start := time.Now()
-		if err := c.Sync(); err != nil {
-			logrus.WithError(err).Error("Error syncing.")
+
+	tick := time.Tick(30 * time.Second)
+	sig := make(chan os.Signal, 1)
+	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
+
+	for {
+		select {
+		case <-tick:
+			start := time.Now()
+			if err := c.Sync(); err != nil {
+				logrus.WithError(err).Error("Error syncing.")
+			}
+			logrus.Infof("Sync time: %v", time.Since(start))
+		case <-sig:
+			logrus.Infof("Plank is shutting down...")
+			return
 		}
-		logrus.Infof("Sync time: %v", time.Since(start))
 	}
 }
