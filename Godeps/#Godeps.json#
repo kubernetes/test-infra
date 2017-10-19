@@ -489,202 +489,202 @@
 		{
 			"ImportPath": "gopkg.in/src-d/go-git.v4",
 			"Comment": "v4.0.0-rc15",
-			"Rev": "f9879dd043f84936a1f8acb8a53b74332a7ae135"
+			"Rev": "8ddbecf782c2e340fd85bb4ba4d00dc73d749f87"
 		},
 		{
 			"ImportPath": "gopkg.in/src-d/go-git.v4/config",
 			"Comment": "v4.0.0-rc15",
-			"Rev": "f9879dd043f84936a1f8acb8a53b74332a7ae135"
+			"Rev": "8ddbecf782c2e340fd85bb4ba4d00dc73d749f87"
 		},
 		{
 			"ImportPath": "gopkg.in/src-d/go-git.v4/internal/revision",
 			"Comment": "v4.0.0-rc15",
-			"Rev": "f9879dd043f84936a1f8acb8a53b74332a7ae135"
+			"Rev": "8ddbecf782c2e340fd85bb4ba4d00dc73d749f87"
 		},
 		{
 			"ImportPath": "gopkg.in/src-d/go-git.v4/plumbing",
 			"Comment": "v4.0.0-rc15",
-			"Rev": "f9879dd043f84936a1f8acb8a53b74332a7ae135"
+			"Rev": "8ddbecf782c2e340fd85bb4ba4d00dc73d749f87"
 		},
 		{
 			"ImportPath": "gopkg.in/src-d/go-git.v4/plumbing/cache",
 			"Comment": "v4.0.0-rc15",
-			"Rev": "f9879dd043f84936a1f8acb8a53b74332a7ae135"
+			"Rev": "8ddbecf782c2e340fd85bb4ba4d00dc73d749f87"
 		},
 		{
 			"ImportPath": "gopkg.in/src-d/go-git.v4/plumbing/filemode",
 			"Comment": "v4.0.0-rc15",
-			"Rev": "f9879dd043f84936a1f8acb8a53b74332a7ae135"
+			"Rev": "8ddbecf782c2e340fd85bb4ba4d00dc73d749f87"
 		},
 		{
 			"ImportPath": "gopkg.in/src-d/go-git.v4/plumbing/format/config",
 			"Comment": "v4.0.0-rc15",
-			"Rev": "f9879dd043f84936a1f8acb8a53b74332a7ae135"
+			"Rev": "8ddbecf782c2e340fd85bb4ba4d00dc73d749f87"
 		},
 		{
 			"ImportPath": "gopkg.in/src-d/go-git.v4/plumbing/format/diff",
 			"Comment": "v4.0.0-rc15",
-			"Rev": "f9879dd043f84936a1f8acb8a53b74332a7ae135"
+			"Rev": "8ddbecf782c2e340fd85bb4ba4d00dc73d749f87"
 		},
 		{
 			"ImportPath": "gopkg.in/src-d/go-git.v4/plumbing/format/gitignore",
 			"Comment": "v4.0.0-rc15",
-			"Rev": "f9879dd043f84936a1f8acb8a53b74332a7ae135"
+			"Rev": "8ddbecf782c2e340fd85bb4ba4d00dc73d749f87"
 		},
 		{
 			"ImportPath": "gopkg.in/src-d/go-git.v4/plumbing/format/idxfile",
 			"Comment": "v4.0.0-rc15",
-			"Rev": "f9879dd043f84936a1f8acb8a53b74332a7ae135"
+			"Rev": "8ddbecf782c2e340fd85bb4ba4d00dc73d749f87"
 		},
 		{
 			"ImportPath": "gopkg.in/src-d/go-git.v4/plumbing/format/index",
 			"Comment": "v4.0.0-rc15",
-			"Rev": "f9879dd043f84936a1f8acb8a53b74332a7ae135"
+			"Rev": "8ddbecf782c2e340fd85bb4ba4d00dc73d749f87"
 		},
 		{
 			"ImportPath": "gopkg.in/src-d/go-git.v4/plumbing/format/objfile",
 			"Comment": "v4.0.0-rc15",
-			"Rev": "f9879dd043f84936a1f8acb8a53b74332a7ae135"
+			"Rev": "8ddbecf782c2e340fd85bb4ba4d00dc73d749f87"
 		},
 		{
 			"ImportPath": "gopkg.in/src-d/go-git.v4/plumbing/format/packfile",
 			"Comment": "v4.0.0-rc15",
-			"Rev": "f9879dd043f84936a1f8acb8a53b74332a7ae135"
+			"Rev": "8ddbecf782c2e340fd85bb4ba4d00dc73d749f87"
 		},
 		{
 			"ImportPath": "gopkg.in/src-d/go-git.v4/plumbing/format/pktline",
 			"Comment": "v4.0.0-rc15",
-			"Rev": "f9879dd043f84936a1f8acb8a53b74332a7ae135"
+			"Rev": "8ddbecf782c2e340fd85bb4ba4d00dc73d749f87"
 		},
 		{
 			"ImportPath": "gopkg.in/src-d/go-git.v4/plumbing/object",
 			"Comment": "v4.0.0-rc15",
-			"Rev": "f9879dd043f84936a1f8acb8a53b74332a7ae135"
+			"Rev": "8ddbecf782c2e340fd85bb4ba4d00dc73d749f87"
 		},
 		{
 			"ImportPath": "gopkg.in/src-d/go-git.v4/plumbing/protocol/packp",
 			"Comment": "v4.0.0-rc15",
-			"Rev": "f9879dd043f84936a1f8acb8a53b74332a7ae135"
+			"Rev": "8ddbecf782c2e340fd85bb4ba4d00dc73d749f87"
 		},
 		{
 			"ImportPath": "gopkg.in/src-d/go-git.v4/plumbing/protocol/packp/capability",
 			"Comment": "v4.0.0-rc15",
-			"Rev": "f9879dd043f84936a1f8acb8a53b74332a7ae135"
+			"Rev": "8ddbecf782c2e340fd85bb4ba4d00dc73d749f87"
 		},
 		{
 			"ImportPath": "gopkg.in/src-d/go-git.v4/plumbing/protocol/packp/sideband",
 			"Comment": "v4.0.0-rc15",
-			"Rev": "f9879dd043f84936a1f8acb8a53b74332a7ae135"
+			"Rev": "8ddbecf782c2e340fd85bb4ba4d00dc73d749f87"
 		},
 		{
 			"ImportPath": "gopkg.in/src-d/go-git.v4/plumbing/revlist",
 			"Comment": "v4.0.0-rc15",
-			"Rev": "f9879dd043f84936a1f8acb8a53b74332a7ae135"
+			"Rev": "8ddbecf782c2e340fd85bb4ba4d00dc73d749f87"
 		},
 		{
 			"ImportPath": "gopkg.in/src-d/go-git.v4/plumbing/storer",
 			"Comment": "v4.0.0-rc15",
-			"Rev": "f9879dd043f84936a1f8acb8a53b74332a7ae135"
+			"Rev": "8ddbecf782c2e340fd85bb4ba4d00dc73d749f87"
 		},
 		{
 			"ImportPath": "gopkg.in/src-d/go-git.v4/plumbing/transport",
 			"Comment": "v4.0.0-rc15",
-			"Rev": "f9879dd043f84936a1f8acb8a53b74332a7ae135"
+			"Rev": "8ddbecf782c2e340fd85bb4ba4d00dc73d749f87"
 		},
 		{
 			"ImportPath": "gopkg.in/src-d/go-git.v4/plumbing/transport/client",
 			"Comment": "v4.0.0-rc15",
-			"Rev": "f9879dd043f84936a1f8acb8a53b74332a7ae135"
+			"Rev": "8ddbecf782c2e340fd85bb4ba4d00dc73d749f87"
 		},
 		{
 			"ImportPath": "gopkg.in/src-d/go-git.v4/plumbing/transport/file",
 			"Comment": "v4.0.0-rc15",
-			"Rev": "f9879dd043f84936a1f8acb8a53b74332a7ae135"
+			"Rev": "8ddbecf782c2e340fd85bb4ba4d00dc73d749f87"
 		},
 		{
 			"ImportPath": "gopkg.in/src-d/go-git.v4/plumbing/transport/git",
 			"Comment": "v4.0.0-rc15",
-			"Rev": "f9879dd043f84936a1f8acb8a53b74332a7ae135"
+			"Rev": "8ddbecf782c2e340fd85bb4ba4d00dc73d749f87"
 		},
 		{
 			"ImportPath": "gopkg.in/src-d/go-git.v4/plumbing/transport/http",
 			"Comment": "v4.0.0-rc15",
-			"Rev": "f9879dd043f84936a1f8acb8a53b74332a7ae135"
+			"Rev": "8ddbecf782c2e340fd85bb4ba4d00dc73d749f87"
 		},
 		{
 			"ImportPath": "gopkg.in/src-d/go-git.v4/plumbing/transport/internal/common",
 			"Comment": "v4.0.0-rc15",
-			"Rev": "f9879dd043f84936a1f8acb8a53b74332a7ae135"
+			"Rev": "8ddbecf782c2e340fd85bb4ba4d00dc73d749f87"
 		},
 		{
 			"ImportPath": "gopkg.in/src-d/go-git.v4/plumbing/transport/server",
 			"Comment": "v4.0.0-rc15",
-			"Rev": "f9879dd043f84936a1f8acb8a53b74332a7ae135"
+			"Rev": "8ddbecf782c2e340fd85bb4ba4d00dc73d749f87"
 		},
 		{
 			"ImportPath": "gopkg.in/src-d/go-git.v4/plumbing/transport/ssh",
 			"Comment": "v4.0.0-rc15",
-			"Rev": "f9879dd043f84936a1f8acb8a53b74332a7ae135"
+			"Rev": "8ddbecf782c2e340fd85bb4ba4d00dc73d749f87"
 		},
 		{
 			"ImportPath": "gopkg.in/src-d/go-git.v4/storage",
 			"Comment": "v4.0.0-rc15",
-			"Rev": "f9879dd043f84936a1f8acb8a53b74332a7ae135"
+			"Rev": "8ddbecf782c2e340fd85bb4ba4d00dc73d749f87"
 		},
 		{
 			"ImportPath": "gopkg.in/src-d/go-git.v4/storage/filesystem",
 			"Comment": "v4.0.0-rc15",
-			"Rev": "f9879dd043f84936a1f8acb8a53b74332a7ae135"
+			"Rev": "8ddbecf782c2e340fd85bb4ba4d00dc73d749f87"
 		},
 		{
 			"ImportPath": "gopkg.in/src-d/go-git.v4/storage/filesystem/internal/dotgit",
 			"Comment": "v4.0.0-rc15",
-			"Rev": "f9879dd043f84936a1f8acb8a53b74332a7ae135"
+			"Rev": "8ddbecf782c2e340fd85bb4ba4d00dc73d749f87"
 		},
 		{
 			"ImportPath": "gopkg.in/src-d/go-git.v4/storage/memory",
 			"Comment": "v4.0.0-rc15",
-			"Rev": "f9879dd043f84936a1f8acb8a53b74332a7ae135"
+			"Rev": "8ddbecf782c2e340fd85bb4ba4d00dc73d749f87"
 		},
 		{
 			"ImportPath": "gopkg.in/src-d/go-git.v4/utils/binary",
 			"Comment": "v4.0.0-rc15",
-			"Rev": "f9879dd043f84936a1f8acb8a53b74332a7ae135"
+			"Rev": "8ddbecf782c2e340fd85bb4ba4d00dc73d749f87"
 		},
 		{
 			"ImportPath": "gopkg.in/src-d/go-git.v4/utils/diff",
 			"Comment": "v4.0.0-rc15",
-			"Rev": "f9879dd043f84936a1f8acb8a53b74332a7ae135"
+			"Rev": "8ddbecf782c2e340fd85bb4ba4d00dc73d749f87"
 		},
 		{
 			"ImportPath": "gopkg.in/src-d/go-git.v4/utils/ioutil",
 			"Comment": "v4.0.0-rc15",
-			"Rev": "f9879dd043f84936a1f8acb8a53b74332a7ae135"
+			"Rev": "8ddbecf782c2e340fd85bb4ba4d00dc73d749f87"
 		},
 		{
 			"ImportPath": "gopkg.in/src-d/go-git.v4/utils/merkletrie",
 			"Comment": "v4.0.0-rc15",
-			"Rev": "f9879dd043f84936a1f8acb8a53b74332a7ae135"
+			"Rev": "8ddbecf782c2e340fd85bb4ba4d00dc73d749f87"
 		},
 		{
 			"ImportPath": "gopkg.in/src-d/go-git.v4/utils/merkletrie/filesystem",
 			"Comment": "v4.0.0-rc15",
-			"Rev": "f9879dd043f84936a1f8acb8a53b74332a7ae135"
+			"Rev": "8ddbecf782c2e340fd85bb4ba4d00dc73d749f87"
 		},
 		{
 			"ImportPath": "gopkg.in/src-d/go-git.v4/utils/merkletrie/index",
 			"Comment": "v4.0.0-rc15",
-			"Rev": "f9879dd043f84936a1f8acb8a53b74332a7ae135"
+			"Rev": "8ddbecf782c2e340fd85bb4ba4d00dc73d749f87"
 		},
 		{
 			"ImportPath": "gopkg.in/src-d/go-git.v4/utils/merkletrie/internal/frame",
 			"Comment": "v4.0.0-rc15",
-			"Rev": "f9879dd043f84936a1f8acb8a53b74332a7ae135"
+			"Rev": "8ddbecf782c2e340fd85bb4ba4d00dc73d749f87"
 		},
 		{
 			"ImportPath": "gopkg.in/src-d/go-git.v4/utils/merkletrie/noder",
 			"Comment": "v4.0.0-rc15",
-			"Rev": "f9879dd043f84936a1f8acb8a53b74332a7ae135"
+			"Rev": "8ddbecf782c2e340fd85bb4ba4d00dc73d749f87"
 		},
 		{
 			"ImportPath": "gopkg.in/warnings.v0",
@@ -724,18 +724,6 @@
 			"ImportPath": "k8s.io/kubernetes/pkg/util/yaml",
 			"Comment": "v1.5.0-alpha.0-1022-g87b40782c9",
 			"Rev": "87b40782c9c1cc82ba42f75de4cf23126297e0a3"
-		},
-		{
-			"ImportPath": "golang.org/x/text/unicode/norm",
-			"Rev": "b19bf474d317b857955b12035d2c5acb57ce8b01"
-		},
-		{
-			"ImportPath": "github.com/mitchellh/go-homedir",
-			"Rev": "b8bc1bf767474819792c23f32d8286a45736f1c6"
-		},
-		{
-			"ImportPath": "golang.org/x/text/transform",
-			"Rev": "b19bf474d317b857955b12035d2c5acb57ce8b01"
 		}
 	]
 }

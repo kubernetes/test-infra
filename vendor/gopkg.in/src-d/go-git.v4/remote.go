@@ -43,8 +43,11 @@ func (r *Remote) Config() *config.RemoteConfig {
 }
 
 func (r *Remote) String() string {
-	fetch := r.c.URL
-	push := r.c.URL
+	var fetch, push string
+	if len(r.c.URLs) > 0 {
+		fetch = r.c.URLs[0]
+		push = r.c.URLs[0]
+	}
 
 	return fmt.Sprintf("%s\t%s (fetch)\n%[1]s\t%[3]s (push)", r.c.Name, fetch, push)
 }
@@ -62,7 +65,6 @@ func (r *Remote) Push(o *PushOptions) error {
 // operation is complete, an error is returned. The context only affects to the
 // transport operations.
 func (r *Remote) PushContext(ctx context.Context, o *PushOptions) error {
-	// TODO: Sideband support
 	if err := o.Validate(); err != nil {
 		return err
 	}
@@ -71,7 +73,7 @@ func (r *Remote) PushContext(ctx context.Context, o *PushOptions) error {
 		return fmt.Errorf("remote names don't match: %s != %s", o.RemoteName, r.c.Name)
 	}
 
-	s, err := newSendPackSession(r.c.URL, o.Auth)
+	s, err := newSendPackSession(r.c.URLs[0], o.Auth)
 	if err != nil {
 		return err
 	}
@@ -89,9 +91,14 @@ func (r *Remote) PushContext(ctx context.Context, o *PushOptions) error {
 	}
 
 	isDelete := false
+	allDelete := true
 	for _, rs := range o.RefSpecs {
 		if rs.IsDelete() {
 			isDelete = true
+		} else {
+			allDelete = false
+		}
+		if isDelete && !allDelete {
 			break
 		}
 	}
@@ -100,9 +107,8 @@ func (r *Remote) PushContext(ctx context.Context, o *PushOptions) error {
 		return ErrDeleteRefNotSupported
 	}
 
-	req := packp.NewReferenceUpdateRequestFromCapabilities(ar.Capabilities)
-	if err := r.addReferencesToUpdate(o.RefSpecs, remoteRefs, req); err != nil {
-
+	req, err := r.newReferenceUpdateRequest(o, remoteRefs, ar)
+	if err != nil {
 		return err
 	}
 
@@ -129,9 +135,13 @@ func (r *Remote) PushContext(ctx context.Context, o *PushOptions) error {
 	// we are aware.
 	haves = append(haves, stop...)
 
-	hashesToPush, err := revlist.Objects(r.s, objects, haves)
-	if err != nil {
-		return err
+	var hashesToPush []plumbing.Hash
+	// Avoid the expensive revlist operation if we're only doing deletes.
+	if !allDelete {
+		hashesToPush, err = revlist.Objects(r.s, objects, haves)
+		if err != nil {
+			return err
+		}
 	}
 
 	rs, err := pushHashes(ctx, s, r.s, req, hashesToPush)
@@ -144,6 +154,25 @@ func (r *Remote) PushContext(ctx context.Context, o *PushOptions) error {
 	}
 
 	return r.updateRemoteReferenceStorage(req, rs)
+}
+
+func (r *Remote) newReferenceUpdateRequest(o *PushOptions, remoteRefs storer.ReferenceStorer, ar *packp.AdvRefs) (*packp.ReferenceUpdateRequest, error) {
+	req := packp.NewReferenceUpdateRequestFromCapabilities(ar.Capabilities)
+
+	if o.Progress != nil {
+		req.Progress = o.Progress
+		if ar.Capabilities.Supports(capability.Sideband64k) {
+			req.Capabilities.Set(capability.Sideband64k)
+		} else if ar.Capabilities.Supports(capability.Sideband) {
+			req.Capabilities.Set(capability.Sideband)
+		}
+	}
+
+	if err := r.addReferencesToUpdate(o.RefSpecs, remoteRefs, req); err != nil {
+		return nil, err
+	}
+
+	return req, nil
 }
 
 func (r *Remote) updateRemoteReferenceStorage(
@@ -211,7 +240,7 @@ func (r *Remote) fetch(ctx context.Context, o *FetchOptions) (storer.ReferenceSt
 		o.RefSpecs = r.c.Fetch
 	}
 
-	s, err := newUploadPackSession(r.c.URL, o.Auth)
+	s, err := newUploadPackSession(r.c.URLs[0], o.Auth)
 	if err != nil {
 		return nil, err
 	}
@@ -250,7 +279,7 @@ func (r *Remote) fetch(ctx context.Context, o *FetchOptions) (storer.ReferenceSt
 		}
 	}
 
-	updated, err := r.updateLocalReferenceStorage(o.RefSpecs, refs, remoteRefs)
+	updated, err := r.updateLocalReferenceStorage(o.RefSpecs, refs, remoteRefs, o.Tags)
 	if err != nil {
 		return nil, err
 	}
@@ -452,10 +481,17 @@ func getHaves(localRefs storer.ReferenceStorer) ([]plumbing.Hash, error) {
 	return result, nil
 }
 
-func calculateRefs(spec []config.RefSpec,
+const refspecTag = "+refs/tags/*:refs/tags/*"
+
+func calculateRefs(
+	spec []config.RefSpec,
 	remoteRefs storer.ReferenceStorer,
-	tags TagFetchMode,
+	tagMode TagMode,
 ) (memory.ReferenceStorage, error) {
+	if tagMode == AllTags {
+		spec = append(spec, refspecTag)
+	}
+
 	iter, err := remoteRefs.IterReferences()
 	if err != nil {
 		return nil, err
@@ -464,9 +500,7 @@ func calculateRefs(spec []config.RefSpec,
 	refs := make(memory.ReferenceStorage, 0)
 	return refs, iter.ForEach(func(ref *plumbing.Reference) error {
 		if !config.MatchAny(spec, ref.Name()) {
-			if !ref.IsTag() || tags != AllTags {
-				return nil
-			}
+			return nil
 		}
 
 		if ref.Type() == plumbing.SymbolicReference {
@@ -616,6 +650,7 @@ func buildSidebandIfSupported(l *capability.List, reader io.Reader, p sideband.P
 func (r *Remote) updateLocalReferenceStorage(
 	specs []config.RefSpec,
 	fetchedRefs, remoteRefs memory.ReferenceStorage,
+	tagMode TagMode,
 ) (updated bool, err error) {
 	isWildcard := true
 	for _, spec := range specs {
@@ -645,6 +680,10 @@ func (r *Remote) updateLocalReferenceStorage(
 		}
 	}
 
+	if tagMode == NoTags {
+		return updated, nil
+	}
+
 	tags := fetchedRefs
 	if isWildcard {
 		tags = remoteRefs
@@ -663,7 +702,7 @@ func (r *Remote) updateLocalReferenceStorage(
 
 func (r *Remote) buildFetchedTags(refs memory.ReferenceStorage) (updated bool, err error) {
 	for _, ref := range refs {
-		if !ref.IsTag() {
+		if !ref.Name().IsTag() {
 			continue
 		}
 

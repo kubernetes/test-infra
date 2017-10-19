@@ -30,6 +30,7 @@ var (
 	ErrRemoteExists            = errors.New("remote already exists	")
 	ErrWorktreeNotProvided     = errors.New("worktree should be provided")
 	ErrIsBareRepository        = errors.New("worktree not available in a bare repository")
+	ErrUnableToResolveCommit   = errors.New("unable to resolve commit")
 )
 
 // Repository represents a git repository
@@ -286,7 +287,7 @@ func dotGitFileToOSFilesystem(path string, fs billy.Filesystem) (billy.Filesyste
 		return nil, fmt.Errorf(".git file has no %s prefix", prefix)
 	}
 
-	gitdir := line[len(prefix):]
+	gitdir := strings.Split(line[len(prefix):], "\n")[0]
 	gitdir = strings.TrimSpace(gitdir)
 	if filepath.IsAbs(gitdir) {
 		return osfs.New(gitdir), nil
@@ -400,6 +401,25 @@ func (r *Repository) DeleteRemote(name string) error {
 	return r.Storer.SetConfig(cfg)
 }
 
+func (r *Repository) resolveToCommitHash(h plumbing.Hash) (plumbing.Hash, error) {
+	obj, err := r.Storer.EncodedObject(plumbing.AnyObject, h)
+	if err != nil {
+		return plumbing.ZeroHash, err
+	}
+	switch obj.Type() {
+	case plumbing.TagObject:
+		t, err := object.DecodeTag(r.Storer, obj)
+		if err != nil {
+			return plumbing.ZeroHash, err
+		}
+		return r.resolveToCommitHash(t.Target)
+	case plumbing.CommitObject:
+		return h, nil
+	default:
+		return plumbing.ZeroHash, ErrUnableToResolveCommit
+	}
+}
+
 // Clone clones a remote repository
 func (r *Repository) clone(ctx context.Context, o *CloneOptions) error {
 	if err := o.Validate(); err != nil {
@@ -408,18 +428,19 @@ func (r *Repository) clone(ctx context.Context, o *CloneOptions) error {
 
 	c := &config.RemoteConfig{
 		Name: o.RemoteName,
-		URL:  o.URL,
+		URLs: []string{o.URL},
 	}
 
 	if _, err := r.CreateRemote(c); err != nil {
 		return err
 	}
 
-	head, err := r.fetchAndUpdateReferences(ctx, &FetchOptions{
+	ref, err := r.fetchAndUpdateReferences(ctx, &FetchOptions{
 		RefSpecs: r.cloneRefSpec(o, c),
 		Depth:    o.Depth,
 		Auth:     o.Auth,
 		Progress: o.Progress,
+		Tags:     o.Tags,
 	}, o.ReferenceName)
 	if err != nil {
 		return err
@@ -431,34 +452,49 @@ func (r *Repository) clone(ctx context.Context, o *CloneOptions) error {
 			return err
 		}
 
-		if err := w.Reset(&ResetOptions{Commit: head.Hash()}); err != nil {
+		head, err := r.Head()
+		if err != nil {
+			return err
+		}
+
+		if err := w.Reset(&ResetOptions{
+			Mode:   MergeReset,
+			Commit: head.Hash(),
+		}); err != nil {
 			return err
 		}
 
 		if o.RecurseSubmodules != NoRecurseSubmodules {
-			if err := w.updateSubmodules(o.RecurseSubmodules); err != nil {
+			if err := w.updateSubmodules(&SubmoduleUpdateOptions{
+				RecurseSubmodules: o.RecurseSubmodules,
+				Auth:              o.Auth,
+			}); err != nil {
 				return err
 			}
 		}
 	}
 
-	return r.updateRemoteConfigIfNeeded(o, c, head)
+	return r.updateRemoteConfigIfNeeded(o, c, ref)
 }
 
-func (r *Repository) cloneRefSpec(o *CloneOptions,
-	c *config.RemoteConfig) []config.RefSpec {
+const (
+	refspecTagWithDepth     = "+refs/tags/%s:refs/tags/%[1]s"
+	refspecSingleBranch     = "+refs/heads/%s:refs/remotes/%s/%[1]s"
+	refspecSingleBranchHEAD = "+HEAD:refs/remotes/%s/HEAD"
+)
 
-	if !o.SingleBranch {
-		return c.Fetch
-	}
-
+func (r *Repository) cloneRefSpec(o *CloneOptions, c *config.RemoteConfig) []config.RefSpec {
 	var rs string
 
-	if o.ReferenceName == plumbing.HEAD {
+	switch {
+	case o.ReferenceName.IsTag() && o.Depth > 0:
+		rs = fmt.Sprintf(refspecTagWithDepth, o.ReferenceName.Short())
+	case o.SingleBranch && o.ReferenceName == plumbing.HEAD:
 		rs = fmt.Sprintf(refspecSingleBranchHEAD, c.Name)
-	} else {
-		rs = fmt.Sprintf(refspecSingleBranch,
-			o.ReferenceName.Short(), c.Name)
+	case o.SingleBranch:
+		rs = fmt.Sprintf(refspecSingleBranch, o.ReferenceName.Short(), c.Name)
+	default:
+		return c.Fetch
 	}
 
 	return []config.RefSpec{config.RefSpec(rs)}
@@ -473,11 +509,6 @@ func (r *Repository) setIsBare(isBare bool) error {
 	cfg.Core.IsBare = isBare
 	return r.Storer.SetConfig(cfg)
 }
-
-const (
-	refspecSingleBranch     = "+refs/heads/%s:refs/remotes/%s/%[1]s"
-	refspecSingleBranchHEAD = "+HEAD:refs/remotes/%s/HEAD"
-)
 
 func (r *Repository) updateRemoteConfigIfNeeded(o *CloneOptions, c *config.RemoteConfig, head *plumbing.Reference) error {
 	if !o.SingleBranch {
@@ -518,12 +549,12 @@ func (r *Repository) fetchAndUpdateReferences(
 		return nil, err
 	}
 
-	head, err := storer.ResolveReference(remoteRefs, ref)
+	resolvedRef, err := storer.ResolveReference(remoteRefs, ref)
 	if err != nil {
 		return nil, err
 	}
 
-	refsUpdated, err := r.updateReferences(remote.c.Fetch, head)
+	refsUpdated, err := r.updateReferences(remote.c.Fetch, resolvedRef)
 	if err != nil {
 		return nil, err
 	}
@@ -532,26 +563,30 @@ func (r *Repository) fetchAndUpdateReferences(
 		return nil, NoErrAlreadyUpToDate
 	}
 
-	return head, nil
+	return resolvedRef, nil
 }
 
 func (r *Repository) updateReferences(spec []config.RefSpec,
-	resolvedHead *plumbing.Reference) (updated bool, err error) {
+	resolvedRef *plumbing.Reference) (updated bool, err error) {
 
-	if !resolvedHead.IsBranch() {
+	if !resolvedRef.Name().IsBranch() {
 		// Detached HEAD mode
-		head := plumbing.NewHashReference(plumbing.HEAD, resolvedHead.Hash())
+		h, err := r.resolveToCommitHash(resolvedRef.Hash())
+		if err != nil {
+			return false, err
+		}
+		head := plumbing.NewHashReference(plumbing.HEAD, h)
 		return updateReferenceStorerIfNeeded(r.Storer, head)
 	}
 
 	refs := []*plumbing.Reference{
-		// Create local reference for the resolved head
-		resolvedHead,
+		// Create local reference for the resolved ref
+		resolvedRef,
 		// Create local symbolic HEAD
-		plumbing.NewSymbolicReference(plumbing.HEAD, resolvedHead.Name()),
+		plumbing.NewSymbolicReference(plumbing.HEAD, resolvedRef.Name()),
 	}
 
-	refs = append(refs, r.calculateRemoteHeadReference(spec, resolvedHead)...)
+	refs = append(refs, r.calculateRemoteHeadReference(spec, resolvedRef)...)
 
 	for _, ref := range refs {
 		u, err := updateReferenceStorerIfNeeded(r.Storer, ref)
@@ -698,7 +733,7 @@ func (r *Repository) Tags() (storer.ReferenceIter, error) {
 
 	return storer.NewReferenceFilteredIter(
 		func(r *plumbing.Reference) bool {
-			return r.IsTag()
+			return r.Name().IsTag()
 		}, refIter), nil
 }
 
@@ -711,7 +746,7 @@ func (r *Repository) Branches() (storer.ReferenceIter, error) {
 
 	return storer.NewReferenceFilteredIter(
 		func(r *plumbing.Reference) bool {
-			return r.IsBranch()
+			return r.Name().IsBranch()
 		}, refIter), nil
 }
 
@@ -724,7 +759,7 @@ func (r *Repository) Notes() (storer.ReferenceIter, error) {
 
 	return storer.NewReferenceFilteredIter(
 		func(r *plumbing.Reference) bool {
-			return r.IsNote()
+			return r.Name().IsNote()
 		}, refIter), nil
 }
 
