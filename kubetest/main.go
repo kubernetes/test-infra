@@ -52,6 +52,7 @@ var (
 
 type options struct {
 	build               buildStrategy
+	buildFederation     buildFederationStrategy
 	charts              bool
 	checkLeaks          bool
 	checkSkew           bool
@@ -61,6 +62,7 @@ type options struct {
 	down                bool
 	dump                string
 	extract             extractStrategies
+	extractFederation   extractFederationStrategies
 	federation          bool
 	gcpCloudSdk         string
 	gcpMasterImage      string
@@ -92,6 +94,7 @@ type options struct {
 	soak                bool
 	soakDuration        time.Duration
 	stage               stageStrategy
+	stageFederation     stageFederationStrategy
 	test                bool
 	testArgs            string
 	testCmd             string
@@ -103,7 +106,8 @@ type options struct {
 
 func defineFlags() *options {
 	o := options{}
-	flag.Var(&o.build, "build", "Rebuild k8s binaries, optionally forcing (release|quick|bazel) stategy")
+	flag.Var(&o.build, "build", "Rebuild k8s binaries, optionally forcing (release|quick|bazel) strategy")
+	flag.Var(&o.buildFederation, "build-federation", "Rebuild federation binaries, optionally forcing (release|quick|bazel) strategy")
 	flag.BoolVar(&o.charts, "charts", false, "If true, run charts tests")
 	flag.BoolVar(&o.checkSkew, "check-version-skew", true, "Verify client and server versions match")
 	flag.BoolVar(&o.checkLeaks, "check-leaked-resources", false, "Ensure project ends with the same resources")
@@ -113,6 +117,7 @@ func defineFlags() *options {
 	flag.BoolVar(&o.down, "down", false, "If true, tear down the cluster before exiting.")
 	flag.StringVar(&o.dump, "dump", "", "If set, dump cluster logs to this location on test or cluster-up failure")
 	flag.Var(&o.extract, "extract", "Extract k8s binaries from the specified release location")
+	flag.Var(&o.extractFederation, "extract-federation", "Extract federation binaries from the specified release location")
 	flag.BoolVar(&o.federation, "federation", false, "If true, start/tear down the federation control plane along with the clusters. To only start/tear down the federation control plane, specify --deployment=none")
 	flag.Var(&o.ginkgoParallel, "ginkgo-parallel", fmt.Sprintf("Run Ginkgo tests in parallel, default %d runners. Use --ginkgo-parallel=N to specify an exact count.", defaultGinkgoParallel))
 	flag.StringVar(&o.gcpCloudSdk, "gcp-cloud-sdk", "", "Install/upgrade google-cloud-sdk to the gs:// path if set")
@@ -145,6 +150,7 @@ func defineFlags() *options {
 	flag.BoolVar(&o.soak, "soak", false, "If true, job runs in soak mode")
 	flag.DurationVar(&o.soakDuration, "soak-duration", 7*24*time.Hour, "Maximum age of a soak cluster before it gets recycled")
 	flag.Var(&o.stage, "stage", "Upload binaries to gs://bucket/devel/job-suffix if set")
+	flag.Var(&o.stageFederation, "stage-federation", "Upload federation binaries to gs://bucket/devel/job-suffix if set")
 	flag.StringVar(&o.stage.versionSuffix, "stage-suffix", "", "Append suffix to staged version when set")
 	flag.BoolVar(&o.test, "test", false, "Run Ginkgo tests.")
 	flag.StringVar(&o.testArgs, "test_args", "", "Space-separated list of arguments to pass to Ginkgo test runner.")
@@ -331,6 +337,14 @@ func complete(o *options) error {
 	if err := acquireKubernetes(o); err != nil {
 		return fmt.Errorf("failed to acquire k8s binaries: %v", err)
 	}
+	if err := acquireFederation(o); err != nil {
+		return fmt.Errorf("failed to acquire federation binaries: %v", err)
+	}
+	if o.extract.Enabled() {
+		if err := os.Chdir("kubernetes"); err != nil {
+			return fmt.Errorf("failed to chdir to kubernetes dir: %v", err)
+		}
+	}
 	if err := validWorkingDirectory(); err != nil {
 		return fmt.Errorf("called from invalid working directory: %v", err)
 	}
@@ -421,6 +435,33 @@ func acquireKubernetes(o *options) error {
 		if err != nil {
 			return err
 		}
+	}
+	return nil
+}
+
+func acquireFederation(o *options) error {
+	// Potentially build federation
+	if o.buildFederation.Enabled() {
+		if err := xmlWrap("BuildFederation", o.buildFederation.Build); err != nil {
+			return err
+		}
+	}
+
+	// Potentially stage federation binaries somewhere on GCS
+	if o.stageFederation.Enabled() {
+		if err := xmlWrap("StageFederation", func() error {
+			return o.stageFederation.Stage()
+		}); err != nil {
+			return err
+		}
+	}
+
+	// Potentially download existing federation binaries and extract them.
+	if o.extractFederation.Enabled() {
+		err := xmlWrap("ExtractFederation", func() error {
+			return o.extractFederation.Extract(o.gcpProject, o.gcpZone)
+		})
+		return err
 	}
 	return nil
 }

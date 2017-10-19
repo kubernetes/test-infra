@@ -146,7 +146,7 @@ func (l extractStrategies) Extract(project, zone string) error {
 		}
 	}
 
-	return os.Chdir("kubernetes")
+	return nil
 }
 
 // Find get-kube.sh at PWD, in PATH or else download it.
