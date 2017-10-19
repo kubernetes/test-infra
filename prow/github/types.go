@@ -18,6 +18,7 @@ package github
 
 import (
 	"strings"
+	"time"
 )
 
 // These are possible State entries for a Status.
@@ -119,6 +120,8 @@ type PullRequest struct {
 	Assignees          []User            `json:"assignees"`
 	State              string            `json:"state"`
 	Merged             bool              `json:"merged"`
+	CreatedAt          time.Time         `json:"created_at,omitempty"`
+	UpdatedAt          time.Time         `json:"updated_at,omitempty"`
 	// ref https://developer.github.com/v3/pulls/#get-a-single-pull-request
 	// If Merged is true, MergeSHA is the SHA of the merge commit, or squashed commit
 	// If Merged is false, MergeSHA is a commit SHA that github created to test if
@@ -188,10 +191,19 @@ const (
 	IssueActionReopened                      = "reopened"
 )
 
+// IssueEvent represents an issue event from a webhook payload (not from the events API).
 type IssueEvent struct {
 	Action IssueEventAction `json:"action"`
 	Issue  Issue            `json:"issue"`
 	Repo   Repo             `json:"repository"`
+}
+
+// ListedIssueEvent represents an issue event from the events API (not from a webhook payload).
+type ListedIssueEvent struct {
+	Event     IssueEventAction `json:"event"` // This is the same as IssueEvent.Action.
+	Actor     User             `json:"actor"`
+	Label     Label            `json:"label"`
+	CreatedAt time.Time        `json:"created_at"`
 }
 
 // IssueCommentEventAction enumerates the triggers for this
@@ -213,14 +225,16 @@ type IssueCommentEvent struct {
 }
 
 type Issue struct {
-	User      User    `json:"user"`
-	Number    int     `json:"number"`
-	Title     string  `json:"title"`
-	State     string  `json:"state"`
-	HTMLURL   string  `json:"html_url"`
-	Labels    []Label `json:"labels"`
-	Assignees []User  `json:"assignees"`
-	Body      string  `json:"body"`
+	User      User      `json:"user"`
+	Number    int       `json:"number"`
+	Title     string    `json:"title"`
+	State     string    `json:"state"`
+	HTMLURL   string    `json:"html_url"`
+	Labels    []Label   `json:"labels"`
+	Assignees []User    `json:"assignees"`
+	Body      string    `json:"body"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 
 	// This will be non-nil if it is a pull request.
 	PullRequest *struct{} `json:"pull_request,omitempty"`
@@ -253,10 +267,12 @@ func (i Issue) HasLabel(labelToFind string) bool {
 }
 
 type IssueComment struct {
-	ID      int    `json:"id,omitempty"`
-	Body    string `json:"body"`
-	User    User   `json:"user,omitempty"`
-	HTMLURL string `json:"html_url,omitempty"`
+	ID        int       `json:"id,omitempty"`
+	Body      string    `json:"body"`
+	User      User      `json:"user,omitempty"`
+	HTMLURL   string    `json:"html_url,omitempty"`
+	CreatedAt time.Time `json:"created_at,omitempty"`
+	UpdatedAt time.Time `json:"updated_at,omitempty"`
 }
 
 type StatusEvent struct {
@@ -324,11 +340,12 @@ type ReviewEvent struct {
 
 // Review describes a Pull Request review.
 type Review struct {
-	ID      int    `json:"id"`
-	User    User   `json:"user"`
-	Body    string `json:"body"`
-	State   string `json:"state"`
-	HTMLURL string `json:"html_url"`
+	ID          int       `json:"id"`
+	User        User      `json:"user"`
+	Body        string    `json:"body"`
+	State       string    `json:"state"`
+	HTMLURL     string    `json:"html_url"`
+	SubmittedAt time.Time `json:"submitted_at"`
 }
 
 // ReviewCommentEventAction enumerates the triggers for this
@@ -352,12 +369,14 @@ type ReviewCommentEvent struct {
 
 // ReviewComment describes a Pull Request review.
 type ReviewComment struct {
-	ID       int    `json:"id"`
-	ReviewID int    `json:"pull_request_review_id"`
-	User     User   `json:"user"`
-	Body     string `json:"body"`
-	Path     string `json:"path"`
-	HTMLURL  string `json:"html_url"`
+	ID        int       `json:"id"`
+	ReviewID  int       `json:"pull_request_review_id"`
+	User      User      `json:"user"`
+	Body      string    `json:"body"`
+	Path      string    `json:"path"`
+	HTMLURL   string    `json:"html_url"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 	// Position will be nil if the code has changed such that the comment is no
 	// longer relevant.
 	Position *int `json:"position"`
