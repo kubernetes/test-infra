@@ -98,8 +98,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws
 - name: ci-kubernetes-e2e-kops-aws-canary
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-canary
-  alert_stale_results_hours: 24
-  num_failures_to_alert: 1
 - name: ci-kubernetes-e2e-kops-aws-slow
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-slow
 - name: ci-kubernetes-e2e-kops-aws-serial
@@ -343,8 +341,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-ci-master
 - name: ci-kubernetes-e2e-gke-canary
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-canary
-  alert_stale_results_hours: 24
-  num_failures_to_alert: 1
 - name: ci-kubernetes-kubemark-100-gce
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-kubemark-100-gce
 - name: ci-kubernetes-kubemark-100-canary
@@ -1028,8 +1024,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-test-infra-triage
 - name: ci-kubernetes-e2e-prow-canary
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-prow-canary
-  alert_stale_results_hours: 24
-  num_failures_to_alert: 1
 - name: ci-kubernetes-e2e-node-canary
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-node-canary
 - name: issue-creator
@@ -1480,8 +1474,6 @@ test_groups:
 # master-1 to master
 - name: ci-kubernetes-e2e-gce-new-master-upgrade-master
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-new-master-upgrade-master
-  alert_stale_results_hours: 24
-  num_failures_to_alert: 1
 - name: ci-kubernetes-e2e-gce-new-master-upgrade-cluster-parallel
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-new-master-upgrade-cluster-parallel
 - name: ci-kubernetes-e2e-gce-new-master-upgrade-cluster
@@ -1529,10 +1521,14 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-bazel-build
   days_of_results: 1
   num_columns_recent: 20
+  alert_stale_results_hours: 24
+  num_failures_to_alert: 10
 - name: pull-kubernetes-bazel-test
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-bazel-test
   days_of_results: 1
   num_columns_recent: 20
+  alert_stale_results_hours: 24
+  num_failures_to_alert: 10
 - name: pull-kubernetes-cross
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-cross
   days_of_results: 1
@@ -1541,6 +1537,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-gce
   days_of_results: 1
   num_columns_recent: 20
+  alert_stale_results_hours: 24
+  num_failures_to_alert: 10
 - name: pull-kubernetes-e2e-gce-gpu
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-gce-gpu
   days_of_results: 1
@@ -1557,6 +1555,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-kops-aws
   days_of_results: 1
   num_columns_recent: 20
+  alert_stale_results_hours: 24
+  num_failures_to_alert: 10
 - name: pull-kubernetes-e2e-kops-aws-prow
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-kops-aws-prow
   num_columns_recent: 20
@@ -1576,6 +1576,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-kubemark-e2e-gce
   days_of_results: 1
   num_columns_recent: 20
+  alert_stale_results_hours: 24
+  num_failures_to_alert: 10
 - name: pull-kubernetes-kubemark-e2e-gce-big
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-kubemark-e2e-gce-big
   days_of_results: 1
@@ -1584,14 +1586,20 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-node-e2e
   days_of_results: 1
   num_columns_recent: 20
+  alert_stale_results_hours: 24
+  num_failures_to_alert: 10
 - name: pull-kubernetes-unit
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-unit
   days_of_results: 1
   num_columns_recent: 20
+  alert_stale_results_hours: 24
+  num_failures_to_alert: 10
 - name: pull-kubernetes-verify
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-verify
   days_of_results: 1
   num_columns_recent: 20
+  alert_stale_results_hours: 24
+  num_failures_to_alert: 10
 - name: pull-test-infra-bazel
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-test-infra-bazel
   days_of_results: 1
@@ -3911,15 +3919,21 @@ dashboards:
   - name: pull-kubernetes-bazel-build
     test_group_name: pull-kubernetes-bazel-build
     base_options: 'width=10'
+    alert_options:
+      alert_mail_to_addresses: 'michelle.192837+alerts@gmail.com, lusensjtu+alerts@gmail.com'
   - name: pull-kubernetes-bazel-test
     test_group_name: pull-kubernetes-bazel-test
     base_options: 'width=10'
+    alert_options:
+      alert_mail_to_addresses: 'michelle.192837+alerts@gmail.com, lusensjtu+alerts@gmail.com'
   - name: pull-kubernetes-cross
     test_group_name: pull-kubernetes-cross
     base_options: 'width=10'
   - name: pull-kubernetes-e2e-gce
     test_group_name: pull-kubernetes-e2e-gce
     base_options: 'width=10'
+    alert_options:
+      alert_mail_to_addresses: 'michelle.192837+alerts@gmail.com, lusensjtu+alerts@gmail.com'
   - name: pull-kubernetes-e2e-gce-gpu
     test_group_name: pull-kubernetes-e2e-gce-gpu
     base_options: 'width=10'
@@ -3932,6 +3946,8 @@ dashboards:
   - name: pull-kubernetes-e2e-kops-aws
     test_group_name: pull-kubernetes-e2e-kops-aws
     base_options: 'width=10'
+    alert_options:
+      alert_mail_to_addresses: 'michelle.192837+alerts@gmail.com, lusensjtu+alerts@gmail.com'
   - name: pull-kubernetes-e2e-kops-aws-prow
     test_group_name: pull-kubernetes-e2e-kops-aws-prow
   - name: pull-kubernetes-e2e-kubeadm-gce
@@ -3946,18 +3962,26 @@ dashboards:
   - name: pull-kubernetes-kubemark-e2e-gce
     test_group_name: pull-kubernetes-kubemark-e2e-gce
     base_options: 'width=10'
+    alert_options:
+      alert_mail_to_addresses: 'michelle.192837+alerts@gmail.com, lusensjtu+alerts@gmail.com'
   - name: pull-kubernetes-kubemark-e2e-gce-big
     test_group_name: pull-kubernetes-kubemark-e2e-gce-big
     base_options: 'width=10'
   - name: pull-kubernetes-node-e2e
     test_group_name: pull-kubernetes-node-e2e
     base_options: 'width=10'
+    alert_options:
+      alert_mail_to_addresses: 'michelle.192837+alerts@gmail.com, lusensjtu+alerts@gmail.com'
   - name: pull-kubernetes-unit
     test_group_name: pull-kubernetes-unit
     base_options: 'width=10'
+    alert_options:
+      alert_mail_to_addresses: 'michelle.192837+alerts@gmail.com, lusensjtu+alerts@gmail.com'
   - name: pull-kubernetes-verify
     test_group_name: pull-kubernetes-verify
     base_options: 'width=10'
+    alert_options:
+      alert_mail_to_addresses: 'michelle.192837+alerts@gmail.com, lusensjtu+alerts@gmail.com'
 
 - name: presubmits-test-infra
   dashboard_tab:
