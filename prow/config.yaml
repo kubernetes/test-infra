@@ -405,8 +405,8 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--" # end bootstrap args, scenario args below
-        # -//pkg/kubelet/config because: https://github.com/kubernetes/kubernetes/issues/53016
-        - "--test=//cmd/... //pkg/... //federation/... //plugin/... //third_party/... //hack/... //hack:verify-all -//pkg/kubelet/config"
+        # -//pkg/kubelet/config:go_default_test because: https://github.com/kubernetes/kubernetes/issues/53016
+        - "--test=//cmd/... //pkg/... //federation/... //plugin/... //third_party/... //hack/... //hack:verify-all -//pkg/kubelet/config:go_default_test"
         - "--test-args=--test_tag_filters=-integration"
         - "--test-args=--flaky_test_attempts=3"
         env:
@@ -1454,8 +1454,8 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--" # end bootstrap args, scenario args below
-        # -//pkg/kubelet/config because: https://github.com/kubernetes/kubernetes/issues/53016
-        - "--test=//cmd/... //pkg/... //federation/... //plugin/... //third_party/... //hack/... //hack:verify-all -//pkg/kubelet/config"
+        # -//pkg/kubelet/config:go_default_test because: https://github.com/kubernetes/kubernetes/issues/53016
+        - "--test=//cmd/... //pkg/... //federation/... //plugin/... //third_party/... //hack/... //hack:verify-all -//pkg/kubelet/config:go_default_test"
         - "--test-args=--test_tag_filters=-integration"
         - "--test-args=--flaky_test_attempts=3"
         env:
