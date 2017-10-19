@@ -26,15 +26,17 @@ import (
 const botName = "k8s-ci-robot"
 
 type FakeClient struct {
-	Issues             []github.Issue
-	OrgMembers         []string
-	Collaborators      []string
-	IssueComments      map[int][]github.IssueComment
-	IssueCommentID     int
-	PullRequests       map[int]*github.PullRequest
-	PullRequestChanges map[int][]github.PullRequestChange
-	CombinedStatuses   map[string]*github.CombinedStatus
-	IssueEvents        map[int][]github.ListedIssueEvent
+	Issues              []github.Issue
+	OrgMembers          []string
+	Collaborators       []string
+	IssueComments       map[int][]github.IssueComment
+	IssueCommentID      int
+	PullRequests        map[int]*github.PullRequest
+	PullRequestChanges  map[int][]github.PullRequestChange
+	PullRequestComments map[int][]github.ReviewComment
+	Reviews             map[int][]github.Review
+	CombinedStatuses    map[string]*github.CombinedStatus
+	IssueEvents         map[int][]github.ListedIssueEvent
 
 	//All Labels That Exist In The Repo
 	ExistingLabels []string
@@ -76,8 +78,16 @@ func (f *FakeClient) ListIssueComments(owner, repo string, number int) ([]github
 	return append([]github.IssueComment{}, f.IssueComments[number]...), nil
 }
 
-func (f *FakeClient) ListIssueEvents(owner, repo string, number int) ([]github.IssueEvent, error) {
-	return append([]github.IssueEvent{}, f.IssueEvents[number]...), nil
+func (f *FakeClient) ListPullRequestComments(owner, repo string, number int) ([]github.ReviewComment, error) {
+	return append([]github.ReviewComment{}, f.PullRequestComments[number]...), nil
+}
+
+func (f *FakeClient) ListReviews(owner, repo string, number int) ([]github.Review, error) {
+	return append([]github.Review{}, f.Reviews[number]...), nil
+}
+
+func (f *FakeClient) ListIssueEvents(owner, repo string, number int) ([]github.ListedIssueEvent, error) {
+	return append([]github.ListedIssueEvent{}, f.IssueEvents[number]...), nil
 }
 
 func (f *FakeClient) CreateComment(owner, repo string, number int, comment string) error {

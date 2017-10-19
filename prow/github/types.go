@@ -105,6 +105,7 @@ type PullRequestEvent struct {
 	PullRequest PullRequest            `json:"pull_request"`
 	Repo        Repo                   `json:"repository"`
 	Label       Label                  `json:"label"`
+	Sender      User                   `json:"sender"`
 }
 
 // PullRequest contains information about a PullRequest.
