@@ -10031,6 +10031,7 @@
   "pull-kubernetes-e2e-gce-gpu": {
     "args": [
       "--build=bazel",
+      "--check-leaked-resources",
       "--cluster=",
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/pull-kubernetes-e2e.env",
