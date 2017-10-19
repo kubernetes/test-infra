@@ -21,7 +21,6 @@ import (
 	"os"
 
 	"github.com/NYTimes/gziphandler"
-	"github.com/golang/glog"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
@@ -50,7 +49,7 @@ type ServerFeature struct {
 		tokenUsage prometheus.Gauge
 	}
 
-	getTokenUsage func() (int, error)
+	getTokenUsage func() int
 }
 
 func init() {
@@ -101,12 +100,7 @@ func (s *ServerFeature) Initialize(config *github.Config) error {
 // EachLoop is called at the start of every munge loop
 func (s *ServerFeature) EachLoop() error {
 	s.prometheus.loops.Inc()
-	tokenUsage, err := s.getTokenUsage()
-	if err != nil {
-		glog.Warningf("Cannot get token usage: %v", err)
-	} else {
-		s.prometheus.tokenUsage.Set(float64(tokenUsage))
-	}
+	s.prometheus.tokenUsage.Set(float64(s.getTokenUsage()))
 	return nil
 }
 
