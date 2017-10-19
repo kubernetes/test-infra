@@ -3681,24 +3681,6 @@
       "sig-autoscaling"
     ]
   },
-  "ci-kubernetes-e2e-gci-gce-docker": {
-    "args": [
-      "--check-leaked-resources",
-      "--env-file=jobs/platform/gce.env",
-      "--extract=gci/gci-canary-test/latest",
-      "--gcp-master-image=gci",
-      "--gcp-node-image=gci",
-      "--gcp-zone=us-central1-f",
-      "--ginkgo-parallel=25",
-      "--provider=gce",
-      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
-      "--timeout=50m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "UNKNOWN"
-    ]
-  },
   "ci-kubernetes-e2e-gci-gce-es-logging": {
     "args": [
       "--check-leaked-resources",
@@ -8767,33 +8749,6 @@
     "scenario": "kubernetes_e2e",
     "sigOwners": [
       "sig-scale"
-    ]
-  },
-  "ci-kubernetes-node-cos-docker-validation": {
-    "args": [
-      "--properties=test/e2e_node/jenkins/docker_validation/cos-docker-validation.properties"
-    ],
-    "scenario": "kubernetes_kubelet",
-    "sigOwners": [
-      "UNKNOWN"
-    ]
-  },
-  "ci-kubernetes-node-docker": {
-    "args": [
-      "--properties=test/e2e_node/jenkins/docker_validation/jenkins-validation.properties"
-    ],
-    "scenario": "kubernetes_kubelet",
-    "sigOwners": [
-      "UNKNOWN"
-    ]
-  },
-  "ci-kubernetes-node-docker-benchmark": {
-    "args": [
-      "--properties=test/e2e_node/jenkins/docker_validation/jenkins-perf.properties"
-    ],
-    "scenario": "kubernetes_kubelet",
-    "sigOwners": [
-      "UNKNOWN"
     ]
   },
   "ci-kubernetes-node-kubelet": {

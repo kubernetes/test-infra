@@ -966,20 +966,12 @@ test_groups:
 - name: periodic-multi-platform-kubeadm-packet-arm64
   gcs_prefix: kubernetes-multiarch-e2e-results/logs/kubeadm-luxas-packet-arm64
 # docker
-- name: ci-kubernetes-e2e-gci-gce-docker
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-docker
-- name: ci-kubernetes-node-docker-benchmark
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-docker-benchmark
-- name: ci-kubernetes-node-docker
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-docker
 - name: ci-kubernetes-e2e-cos-docker-validation
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-cos-docker-validation
 - name: ci-kubernetes-e2e-cos-docker-validation-serial
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-cos-docker-validation-serial
 - name: ci-kubernetes-e2e-cos-docker-validation-slow
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-cos-docker-validation-slow
-- name: ci-kubernetes-node-cos-docker-validation
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-cos-docker-validation
 # garbage collector tests
 - name: ci-kubernetes-e2e-gci-gce-garbage
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-garbage
@@ -1856,20 +1848,12 @@ dashboards:
 
 - name: google-docker
   dashboard_tab:
-  - name: e2e-gci
-    test_group_name: ci-kubernetes-e2e-gci-gce-docker
-  - name: benchmark
-    test_group_name: ci-kubernetes-node-docker-benchmark
-  - name: kubelet
-    test_group_name: ci-kubernetes-node-docker
   - name: e2e-cos
     test_group_name: ci-kubernetes-e2e-cos-docker-validation
   - name: e2e-cos-serial
     test_group_name: ci-kubernetes-e2e-cos-docker-validation-serial
   - name: e2e-cos-slow
     test_group_name: ci-kubernetes-e2e-cos-docker-validation-slow
-  - name: node-cos
-    test_group_name: ci-kubernetes-node-cos-docker-validation
   - name: soak-cos-test
     test_group_name: ci-kubernetes-soak-cos-docker-validation-test
   - name: soak-cos-deploy
@@ -3652,15 +3636,6 @@ dashboards:
   - name: e2e-gce-cosstable1-k8sstable3-serial
     test_group_name: ci-kubernetes-e2e-gce-cosstable1-k8sstable3-serial
 
-- name: sig-node-docker
-  dashboard_tab:
-  - name: docker-kubelet
-    test_group_name: ci-kubernetes-node-docker
-  - name: docker-e2e
-    test_group_name: ci-kubernetes-e2e-gci-gce-docker
-  - name: docker-kubelet-benchmark
-    test_group_name: ci-kubernetes-node-docker-benchmark
-
 - name: sig-node-kubelet
   dashboard_tab:
   - name: kubelet-benchmark-gce-e2e
@@ -3679,12 +3654,6 @@ dashboards:
     test_group_name: ci-kubernetes-node-kubelet-stable2
   - name: kubelet-1.6
     test_group_name: ci-kubernetes-node-kubelet-stable3
-  - name: docker-kubelet
-    test_group_name: ci-kubernetes-node-docker
-  - name: docker-e2e
-    test_group_name: ci-kubernetes-e2e-gci-gce-docker
-  - name: docker-kubelet-benchmark
-    test_group_name: ci-kubernetes-node-docker-benchmark
 
 - name: sig-node-ppc64le
   dashboard_tab:
@@ -4038,7 +4007,6 @@ dashboard_groups:
   dashboard_names:
   - sig-node-cadvisor
   - sig-node-cos-image
-  - sig-node-docker
   - sig-node-kubelet
   - sig-node-containerd
   - sig-node-rkt
