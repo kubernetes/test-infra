@@ -18,6 +18,7 @@ package main
 
 import (
 	"errors"
+	"os"
 	"os/exec"
 	"strings"
 )
@@ -81,15 +82,43 @@ func (m *multiClusterDeployment) Enabled() bool {
 	return len(m.clusters) > 0
 }
 
+// TODO: Remove below logic in main repo once we drop testing support for
+// federation in release branches. ~ around 1.11 release frame.
+func useFederationRepo() bool {
+	federationRepo := os.Getenv("FEDERATION_REPO")
+	if federationRepo == "" {
+		return false
+	}
+	return true
+}
+
 func fedUp() error {
-	return finishRunning(exec.Command("./federation/cluster/federation-up.sh"))
+	var cmd string
+	if useFederationRepo() {
+		cmd = "../federation/deploy/cluster/federation-up.sh"
+	} else {
+		cmd = "./federation/cluster/federation-up.sh"
+	}
+	return finishRunning(exec.Command(cmd))
 }
 
 func federationTest(testArgs []string) error {
+	var cmd string
+	if useFederationRepo() {
+		cmd = "../federation/hack/federated-ginkgo-e2e.sh"
+	} else {
+		cmd = "./hack/federated-ginkgo-e2e.sh"
+	}
 	testArgs = setFieldDefault(testArgs, "--ginkgo.focus", "\\[Feature:Federation\\]")
-	return finishRunning(exec.Command("./hack/federated-ginkgo-e2e.sh", testArgs...))
+	return finishRunning(exec.Command(cmd, testArgs...))
 }
 
 func fedDown() error {
-	return finishRunning(exec.Command("./federation/cluster/federation-down.sh"))
+	var cmd string
+	if useFederationRepo() {
+		cmd = "../federation/deploy/cluster/federation-down.sh"
+	} else {
+		cmd = "./federation/cluster/federation-down.sh"
+	}
+	return finishRunning(exec.Command(cmd))
 }

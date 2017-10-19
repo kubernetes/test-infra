@@ -1657,6 +1657,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-min-node-permissions
 - name: ci-federation-build
   gcs_prefix: kubernetes-jenkins/logs/ci-federation-build
+- name: ci-federation-e2e-gce
+  gcs_prefix: kubernetes-jenkins/logs/ci-federation-e2e-gce
 # GCE Guest compute-image-tools
 - name: ci-daisy-e2e
   gcs_prefix: gce-daisy-test/logs/ci-daisy-e2e
@@ -3181,6 +3183,8 @@ dashboards:
 
 - name: sig-multicluster-federation-gce
   dashboard_tab:
+  - name: gce
+    test_group_name: ci-federation-e2e-gce
   - name: build
     test_group_name: ci-federation-build
 
