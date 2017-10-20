@@ -1653,10 +1653,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-reboot-stable1
 - name: ci-kubernetes-e2e-gci-gke-reboot-stable1
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-reboot-stable1
-- name: ci-kubernetes-soak-gci-gce-stable1-deploy
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gci-gce-stable1-deploy
-- name: ci-kubernetes-soak-gci-gce-stable1-test
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gci-gce-stable1-test
+- name: ci-kubernetes-soak-gci-gce-stable1
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gci-gce-stable1
 - name: ci-kubernetes-e2e-gce-federation-release-1-8
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-federation-release-1-8
 - name: ci-kubernetes-e2e-gke-gci-stable2-gci-stable1-upgrade-master
@@ -2714,10 +2712,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gci-gke-ingress-stable1
   - name: gci-gke-reboot-1.8
     test_group_name: ci-kubernetes-e2e-gci-gke-reboot-stable1
-  - name: gci-gce-soak-deploy-1.8
-    test_group_name: ci-kubernetes-soak-gci-gce-stable1-deploy
-  - name: gci-gce-soak-test-1.8
-    test_group_name: ci-kubernetes-soak-gci-gce-stable1-test
+  - name: gci-gce-soak-1.8
+    test_group_name: ci-kubernetes-soak-gci-gce-stable1
   - name: kops-aws-1.8
     test_group_name: ci-kubernetes-e2e-kops-aws-stable1
   - name: federation-build-1.8

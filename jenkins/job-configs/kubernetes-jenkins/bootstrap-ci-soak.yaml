@@ -157,20 +157,6 @@
         timeout: 620
         soak-repos: '--bare'
 
-    - kubernetes-soak-gci-gce-stable1-deploy:
-        blocker: ci-kubernetes-soak-gci-gce-stable1-test
-        job-name: ci-kubernetes-soak-gci-gce-stable1-deploy
-        frequency: 'H 0 * * 2'
-        scan: DISABLED
-        timeout: 110
-        soak-repos: '--bare'
-    - kubernetes-soak-gci-gce-stable1-test:
-        blocker: ci-kubernetes-soak-gci-gce-stable1-deploy
-        job-name: ci-kubernetes-soak-gci-gce-stable1-test
-        frequency: 'H/30 * * * *'
-        scan: ALL
-        timeout: 620
-        soak-repos: '--bare'
     - kubernetes-soak-gci-gce-1-7-deploy:
         blocker: ci-kubernetes-soak-gci-gce-1-7-test
         job-name: ci-kubernetes-soak-gci-gce-1-7-deploy
