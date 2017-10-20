@@ -3885,12 +3885,12 @@ dashboards:
     test_group_name: pull-kubernetes-bazel-build
     base_options: 'width=10'
     alert_options:
-      alert_mail_to_addresses: 'michelle.192837+alerts@gmail.com, lusensjtu+alerts@gmail.com'
+      alert_mail_to_addresses: 'michelle.192837+alerts@gmail.com, lusensjtu+alerts@gmail.com, bentheelder+alerts@google.com'
   - name: pull-kubernetes-bazel-test
     test_group_name: pull-kubernetes-bazel-test
     base_options: 'width=10'
     alert_options:
-      alert_mail_to_addresses: 'michelle.192837+alerts@gmail.com, lusensjtu+alerts@gmail.com'
+      alert_mail_to_addresses: 'michelle.192837+alerts@gmail.com, lusensjtu+alerts@gmail.com, bentheelder+alerts@google.com'
   - name: pull-kubernetes-cross
     test_group_name: pull-kubernetes-cross
     base_options: 'width=10'
@@ -3898,7 +3898,7 @@ dashboards:
     test_group_name: pull-kubernetes-e2e-gce
     base_options: 'width=10'
     alert_options:
-      alert_mail_to_addresses: 'michelle.192837+alerts@gmail.com, lusensjtu+alerts@gmail.com'
+      alert_mail_to_addresses: 'michelle.192837+alerts@gmail.com, lusensjtu+alerts@gmail.com, bentheelder+alerts@google.com'
   - name: pull-kubernetes-e2e-gce-gpu
     test_group_name: pull-kubernetes-e2e-gce-gpu
     base_options: 'width=10'
@@ -3953,6 +3953,8 @@ dashboards:
   - name: bazel
     test_group_name: pull-test-infra-bazel
     base_options: 'width=10'
+    alerts_options:
+      alert_mail_to_addresses: 'bentheelder+alerts@google.com'
   - name: gubernator
     test_group_name: pull-test-infra-gubernator
     base_options: 'width=10'

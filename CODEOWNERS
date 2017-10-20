@@ -8,6 +8,6 @@ logexporter/** @shyamjvs
 mungegithub/** @cjwagner
 planter/** @bentheelder
 prow/** @cjwagner @kargakis
-prow/config.yaml @krzyzacy
+prow/config.yaml @bentheelder @krzyzacy
 testgrid/** @krzyzacy @michelle192837
 triage/** @rmmh
