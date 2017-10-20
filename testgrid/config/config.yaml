@@ -1925,6 +1925,8 @@ dashboards:
   dashboard_tab:
     - name: daisy-e2e
       test_group_name: ci-daisy-e2e
+      open_test_template:
+        url: https://storage.googleapis.com/<gcs_prefix>/<changelist>/artifacts/log-<test-id>.txt
 
 - name: sig-scalability-gce-scale
   dashboard_tab:
