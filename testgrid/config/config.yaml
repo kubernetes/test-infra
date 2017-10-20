@@ -1718,6 +1718,11 @@ test_groups:
 # GCE Guest compute-image-tools
 - name: ci-daisy-e2e
   gcs_prefix: gce-daisy-test/logs/ci-daisy-e2e
+# Cluster registry
+- name: pull-cluster-registry-bazel
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-registry-bazel
+  days_of_results: 1
+  num_columns_recent: 20
 
 # Add New Testgroups Here
 
@@ -3968,6 +3973,12 @@ dashboards:
     test_group_name: pull-test-infra-verify-gofmt
     base_options: 'width=10'
 
+- name: presubmits-cluster-registry
+  dashboard_tab:
+  - name: bazel
+    test_group_name: pull-cluster-registry-bazel
+    base_options: 'width=10'
+
 #
 # Start dashboard groups
 #
@@ -3989,6 +4000,7 @@ dashboard_groups:
 
 - name: presubmits
   dashboard_names:
+  - presubmits-cluster-registry
   - presubmits-kubernetes
   - presubmits-test-infra
 

@@ -41,6 +41,9 @@ plugins:
   kubernetes/charts:
   - trigger
 
+  kubernetes/cluster-registry:
+  - trigger
+
   kubernetes/heapster:
   - trigger
 
