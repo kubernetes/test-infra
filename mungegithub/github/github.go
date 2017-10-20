@@ -49,6 +49,9 @@ const (
 	maxInt     = int(^uint(0) >> 1)
 	tokenLimit = 250 // How many github api tokens to not use
 
+	authenticatedTokenLimit   = 5000
+	unauthenticatedTokenLimit = 60
+
 	headerRateRemaining = "X-RateLimit-Remaining"
 	headerRateReset     = "X-RateLimit-Reset"
 
@@ -873,12 +876,15 @@ func (config *Config) GetBranchCommits(branch string, limit int) ([]*github.Repo
 }
 
 // GetTokenUsage returns the api token usage of the current github user.
-func (config *Config) GetTokenUsage() (int, error) {
-	limits, _, err := config.client.RateLimits(context.Background())
-	if err != nil {
-		return -1, err
+func (config *Config) GetTokenUsage() int {
+	config.apiLimit.Lock()
+	remaining := config.apiLimit.remaining
+	config.apiLimit.Unlock()
+
+	if config.tokenInUse != "" {
+		return authenticatedTokenLimit - remaining
 	}
-	return limits.Core.Limit - limits.Core.Remaining, nil
+	return unauthenticatedTokenLimit - remaining
 }
 
 // Branch returns the branch the PR is for. Return "" if this is not a PR or

@@ -17,6 +17,7 @@ limitations under the License.
 package reopen
 
 import (
+	"fmt"
 	"regexp"
 
 	"github.com/sirupsen/logrus"
@@ -74,9 +75,23 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent) e
 
 	if e.IsPR {
 		log.Info("Re-opening PR.")
-		return gc.ReopenPR(org, repo, number)
+		err := gc.ReopenPR(org, repo, number)
+		if err != nil {
+			if scbc, ok := err.(github.StateCannotBeChanged); ok {
+				resp := fmt.Sprintf("failed to re-open PR: %v", scbc)
+				return gc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, resp))
+			}
+		}
+		return err
 	}
 
 	log.Info("Re-opening issue.")
-	return gc.ReopenIssue(org, repo, number)
+	err := gc.ReopenIssue(org, repo, number)
+	if err != nil {
+		if scbc, ok := err.(github.StateCannotBeChanged); ok {
+			resp := fmt.Sprintf("failed to re-open Issue: %v", scbc)
+			return gc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, resp))
+		}
+	}
+	return err
 }
