@@ -114,6 +114,15 @@ type request struct {
 	exitCodes   []int
 }
 
+type requestError struct {
+	ClientError
+	ErrorString string
+}
+
+func (r requestError) Error() string {
+	return r.ErrorString
+}
+
 // Make a request with retries. If ret is not nil, unmarshal the response body
 // into it. Returns an error if the exit code is not one of the provided codes.
 func (c *Client) request(r *request, ret interface{}) (int, error) {
@@ -137,7 +146,14 @@ func (c *Client) request(r *request, ret interface{}) (int, error) {
 		}
 	}
 	if !okCode {
-		return resp.StatusCode, fmt.Errorf("status code %d not one of %v, body: %s", resp.StatusCode, r.exitCodes, string(b))
+		clientError := ClientError{}
+		if err := json.Unmarshal(b, clientError); err != nil {
+			return resp.StatusCode, err
+		}
+		return resp.StatusCode, requestError{
+			ClientError: clientError,
+			ErrorString: fmt.Sprintf("status code %d not one of %v, body: %s", resp.StatusCode, r.exitCodes, string(b)),
+		}
 	}
 	if ret != nil {
 		if err := json.Unmarshal(b, ret); err != nil {
@@ -786,6 +802,34 @@ func (c *Client) CloseIssue(org, repo string, number int) error {
 	return err
 }
 
+// StateCannotBeChanged represents the "custom" GitHub API
+// error that occurs when a resource cannot be changed
+type StateCannotBeChanged struct {
+	Message string
+}
+
+func (s StateCannotBeChanged) Error() string {
+	return s.Message
+}
+
+// StateCannotBeChanged implements error
+var _ error = (*StateCannotBeChanged)(nil)
+
+// convert to a StateCannotBeChanged if appropriate or else return the original error
+func stateCannotBeChangedOrOriginalError(err error) error {
+	requestErr, ok := err.(requestError)
+	if ok && len(requestErr.Errors) > 0 {
+		for _, subErr := range requestErr.Errors {
+			if strings.Contains(subErr.Message, stateCannotBeChangedMessagePrefix) {
+				return StateCannotBeChanged{
+					Message: subErr.Message,
+				}
+			}
+		}
+	}
+	return err
+}
+
 // ReopenIssue re-opens the existing, closed issue provided
 func (c *Client) ReopenIssue(org, repo string, number int) error {
 	c.log("ReopenIssue", org, repo, number)
@@ -795,7 +839,7 @@ func (c *Client) ReopenIssue(org, repo string, number int) error {
 		requestBody: map[string]string{"state": "open"},
 		exitCodes:   []int{200},
 	}, nil)
-	return err
+	return stateCannotBeChangedOrOriginalError(err)
 }
 
 // ClosePR closes the existing, open PR provided
@@ -819,7 +863,7 @@ func (c *Client) ReopenPR(org, repo string, number int) error {
 		requestBody: map[string]string{"state": "open"},
 		exitCodes:   []int{200},
 	}, nil)
-	return err
+	return stateCannotBeChangedOrOriginalError(err)
 }
 
 // GetRef returns the SHA of the given ref, such as "heads/master".
