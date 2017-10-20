@@ -467,7 +467,8 @@ presubmits:
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--" # end bootstrap args, scenario args below
         - "--test=//... //hack:verify-all -//build/... -//vendor/..."
-        - "--test-args=--test_tag_filters=-integration"
+        - "--test-args=--build_tag_filters=-e2e,-integration"
+        - "--test-args=--test_tag_filters=-e2e,-integration"
         - "--test-args=--flaky_test_attempts=3"
         env:
         - name: TEST_TMPDIR
@@ -1666,7 +1667,8 @@ presubmits:
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--" # end bootstrap args, scenario args below
         - "--test=//... //hack:verify-all -//build/... -//vendor/..."
-        - "--test-args=--test_tag_filters=-integration"
+        - "--test-args=--build_tag_filters=-e2e,-integration"
+        - "--test-args=--test_tag_filters=-e2e,-integration"
         - "--test-args=--flaky_test_attempts=3"
         env:
         - name: TEST_TMPDIR
