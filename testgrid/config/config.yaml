@@ -230,6 +230,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-serial-release-1-5
 - name: ci-kubernetes-e2e-gci-gce-slow
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-slow
+- name: ci-kubernetes-e2e-gci-gce-sig-cli
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-sig-cli
 - name: ci-kubernetes-e2e-gci-gce-slow-release-1-5
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-slow-release-1-5
 - name: ci-kubernetes-e2e-gci-gce-ingress
@@ -309,6 +311,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-release-1-5
 - name: ci-kubernetes-e2e-gci-gke-serial-release-1-5
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-serial-release-1-5
+- name: ci-kubernetes-e2e-gci-gke-sig-cli
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-sig-cli
 - name: ci-kubernetes-e2e-gci-gke-slow-release-1-5
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-slow-release-1-5
 - name: ci-kubernetes-e2e-gke-staging-latest-serial
@@ -3247,13 +3251,15 @@ dashboards:
 - name: sig-cli-master
   dashboard_tab:
   - name: gce
-    test_group_name: ci-kubernetes-e2e-gci-gce
-    base_options: 'include-filter-by-regex=Kubectl%7Ckubectl'
+    test_group_name: ci-kubernetes-e2e-gci-gce-sig-cli
     description: 'kubectl gce e2e tests for master branch'
+    alert_options:
+      alert_mail_to_addresses: 'kubernetes-sig-cli-oncall+alerts@gmail.com'
   - name: gke
-    test_group_name: ci-kubernetes-e2e-gci-gke
-    base_options: 'include-filter-by-regex=Kubectl%7Ckubectl'
+    test_group_name: ci-kubernetes-e2e-gci-gke-sig-cli
     description: 'kubectl gke e2e tests for master branch'
+    alert_options:
+      alert_mail_to_addresses: 'kubernetes-sig-cli-oncall+alerts@gmail.com'
   - name: gce-serial
     test_group_name: ci-kubernetes-e2e-gce-gci-serial-sig-cli
     description: 'kubectl gce serial e2e tests for master branch'
