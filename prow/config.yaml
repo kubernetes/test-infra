@@ -194,7 +194,7 @@ presubmits:
       agent: kubernetes
       context: pull-kubernetes-e2e-kubeadm-gce
       max_concurrency: 8
-      skip_report: false
+      skip_report: true
       run_if_changed: '^(cmd/kubeadm|build/debs).*$'
       rerun_command: "/test pull-kubernetes-e2e-kubeadm-gce"
       trigger: "(?m)^/test pull-kubernetes-e2e-kubeadm-gce,?(\\s+|$)"
@@ -296,7 +296,7 @@ presubmits:
       agent: kubernetes
       context: pull-kubernetes-e2e-kubeadm-gce
       max_concurrency: 8
-      skip_report: false
+      skip_report: true
       run_if_changed: '^(cmd/kubeadm|build/debs).*$'
       rerun_command: "/test pull-kubernetes-e2e-kubeadm-gce"
       trigger: "(?m)^/test pull-kubernetes-e2e-kubeadm-gce,?(\\s+|$)"
@@ -394,7 +394,7 @@ presubmits:
       agent: kubernetes
       context: pull-kubernetes-e2e-kubeadm-gce
       max_concurrency: 8
-      skip_report: false
+      skip_report: true
       run_if_changed: '^(cmd/kubeadm|build/debs).*$'
       rerun_command: "/test pull-kubernetes-e2e-kubeadm-gce"
       trigger: "(?m)^/test pull-kubernetes-e2e-kubeadm-gce,?(\\s+|$)"
@@ -1394,7 +1394,7 @@ presubmits:
       agent: kubernetes
       context: pull-security-kubernetes-e2e-kubeadm-gce
       max_concurrency: 8
-      skip_report: false
+      skip_report: true
       run_if_changed: '^(cmd/kubeadm|build/debs).*$'
       rerun_command: "/test pull-security-kubernetes-e2e-kubeadm-gce"
       trigger: "(?m)^/test pull-security-kubernetes-e2e-kubeadm-gce,?(\\s+|$)"
@@ -1496,7 +1496,7 @@ presubmits:
       agent: kubernetes
       context: pull-security-kubernetes-e2e-kubeadm-gce
       max_concurrency: 8
-      skip_report: false
+      skip_report: true
       run_if_changed: '^(cmd/kubeadm|build/debs).*$'
       rerun_command: "/test pull-security-kubernetes-e2e-kubeadm-gce"
       trigger: "(?m)^/test pull-security-kubernetes-e2e-kubeadm-gce,?(\\s+|$)"
@@ -1594,7 +1594,7 @@ presubmits:
       agent: kubernetes
       context: pull-security-kubernetes-e2e-kubeadm-gce
       max_concurrency: 8
-      skip_report: false
+      skip_report: true
       run_if_changed: '^(cmd/kubeadm|build/debs).*$'
       rerun_command: "/test pull-security-kubernetes-e2e-kubeadm-gce"
       trigger: "(?m)^/test pull-security-kubernetes-e2e-kubeadm-gce,?(\\s+|$)"
