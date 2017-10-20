@@ -95,6 +95,26 @@ Add a short description to a dashboard tab describing its purpose.
     description: 'kubectl gce e2e tests for master branch'
 ```
 
+### Column headers
+TestGrid shows date, build number, and k8s and test-infra commit shas above
+each run's results by default. To add your own custom column headers, add a
+key-value pair in your tests' metadata (see [metadata for
+finished.json](https://github.com/kubernetes/test-infra/tree/master/gubernator#job-artifact-gcs-layout)),
+and add the key for that pair as a `configuration_value` under `column_header`
+for your test group. Example:
+
+```
+test_groups:
+- name: ci-kubernetes-e2e-gce-ubuntudev-k8sdev-default
+  gcs_prefix:
+  kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntudev-k8sdev-default
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+```
+
 ### Email alerts
 In TestGroup, set `num_failures_to_alert` (alerts for consistent failures)
 and/or `alert_stale_results_hours` (alerts when tests haven't run recently.)
@@ -113,7 +133,7 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce
   alert_stale_results_hours: 24
   num_failures_to_alert: 3
-  
+
 dashboards:
 - name: google-gce
   dashboard_tab:
