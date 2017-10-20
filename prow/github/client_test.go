@@ -1021,3 +1021,29 @@ func TestListCollaborators(t *testing.T) {
 		t.Errorf("Wrong user login for index 1: %v", users[1])
 	}
 }
+
+func TestListIssueEvents(t *testing.T) {
+	ts := simpleTestServer(
+		t,
+		"/repos/org/repo/issues/1/events",
+		[]ListedIssueEvent{
+			{Event: IssueActionLabeled},
+			{Event: IssueActionClosed},
+		},
+	)
+	defer ts.Close()
+	c := getClient(ts.URL)
+	events, err := c.ListIssueEvents("org", "repo", 1)
+	if err != nil {
+		t.Errorf("Didn't expect error: %v", err)
+	} else if len(events) != 2 {
+		t.Errorf("Expected two events, found %d: %v", len(events), events)
+		return
+	}
+	if events[0].Event != IssueActionLabeled {
+		t.Errorf("Wrong event for index 0: %v", events[0])
+	}
+	if events[1].Event != IssueActionClosed {
+		t.Errorf("Wrong event for index 1: %v", events[1])
+	}
+}

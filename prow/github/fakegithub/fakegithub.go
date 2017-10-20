@@ -23,6 +23,8 @@ import (
 	"k8s.io/test-infra/prow/github"
 )
 
+const botName = "k8s-ci-robot"
+
 type FakeClient struct {
 	Issues             []github.Issue
 	OrgMembers         []string
@@ -32,6 +34,7 @@ type FakeClient struct {
 	PullRequests       map[int]*github.PullRequest
 	PullRequestChanges map[int][]github.PullRequestChange
 	CombinedStatuses   map[string]*github.CombinedStatus
+	IssueEvents        map[int][]github.ListedIssueEvent
 
 	//All Labels That Exist In The Repo
 	ExistingLabels []string
@@ -57,7 +60,7 @@ type FakeClient struct {
 }
 
 func (f *FakeClient) BotName() (string, error) {
-	return "k8s-ci-robot", nil
+	return botName, nil
 }
 
 func (f *FakeClient) IsMember(org, user string) (bool, error) {
@@ -73,11 +76,16 @@ func (f *FakeClient) ListIssueComments(owner, repo string, number int) ([]github
 	return append([]github.IssueComment{}, f.IssueComments[number]...), nil
 }
 
+func (f *FakeClient) ListIssueEvents(owner, repo string, number int) ([]github.IssueEvent, error) {
+	return append([]github.IssueEvent{}, f.IssueEvents[number]...), nil
+}
+
 func (f *FakeClient) CreateComment(owner, repo string, number int, comment string) error {
 	f.IssueCommentsAdded = append(f.IssueCommentsAdded, fmt.Sprintf("%s/%s#%d:%s", owner, repo, number, comment))
 	f.IssueComments[number] = append(f.IssueComments[number], github.IssueComment{
 		ID:   f.IssueCommentID,
 		Body: comment,
+		User: github.User{Login: botName},
 	})
 	f.IssueCommentID++
 	return nil

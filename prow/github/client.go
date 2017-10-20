@@ -1166,3 +1166,26 @@ func (c *Client) CreateFork(owner, repo string) error {
 	}, nil)
 	return err
 }
+
+func (c *Client) ListIssueEvents(org, repo string, num int) ([]ListedIssueEvent, error) {
+	c.log("ListIssueEvents", org, repo, num)
+	if c.fake {
+		return nil, nil
+	}
+	path := fmt.Sprintf("/repos/%s/%s/issues/%d/events", org, repo, num)
+	var events []ListedIssueEvent
+	err := c.readPaginatedResults(
+		path,
+		"",
+		func() interface{} {
+			return &[]ListedIssueEvent{}
+		},
+		func(obj interface{}) {
+			events = append(events, *(obj.(*[]ListedIssueEvent))...)
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+	return events, nil
+}
