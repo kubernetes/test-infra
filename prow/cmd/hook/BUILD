@@ -37,6 +37,7 @@ go_library(
         "//prow/github:go_default_library",
         "//prow/hook:go_default_library",
         "//prow/kube:go_default_library",
+        "//prow/owners:go_default_library",
         "//prow/plugins:go_default_library",
         "//prow/slack:go_default_library",
         "//vendor/github.com/prometheus/client_golang/prometheus:go_default_library",

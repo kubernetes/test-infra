@@ -58,10 +58,10 @@ func getTestClient(enableMdYaml, includeAliases bool) (*Client, func(), error) {
 	}
 
 	return &Client{
-			git:   git,
-			ghc:   &fakegithub.FakeClient{Collaborators: []string{"cjwagner", "k8s-ci-robot", "alice", "bob", "carl"}},
-			log:   logrus.WithField("client", "owners"),
-			cache: make(map[string]cacheEntry),
+			git:    git,
+			ghc:    &fakegithub.FakeClient{Collaborators: []string{"cjwagner", "k8s-ci-robot", "alice", "bob", "carl"}},
+			Logger: logrus.WithField("client", "owners"),
+			cache:  make(map[string]cacheEntry),
 
 			mdYAMLEnabled: func(org, repo string) bool {
 				return enableMdYaml

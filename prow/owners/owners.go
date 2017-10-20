@@ -62,9 +62,9 @@ type cacheEntry struct {
 }
 
 type Client struct {
-	git *git.Client
-	ghc githubClient
-	log *logrus.Entry
+	git    *git.Client
+	ghc    githubClient
+	Logger *logrus.Entry
 
 	mdYAMLEnabled func(org, repo string) bool
 
@@ -72,12 +72,12 @@ type Client struct {
 	cache map[string]cacheEntry
 }
 
-func NewClient(ca *config.Agent, gc *git.Client, ghc *github.Client, log *logrus.Entry) *Client {
+func NewClient(ca *config.Agent, gc *git.Client, ghc *github.Client) *Client {
 	return &Client{
-		git:   gc,
-		ghc:   ghc,
-		log:   log,
-		cache: make(map[string]cacheEntry),
+		git:    gc,
+		ghc:    ghc,
+		Logger: logrus.NewEntry(logrus.StandardLogger()),
+		cache:  make(map[string]cacheEntry),
 
 		mdYAMLEnabled: mdYAMLEnabledFromConfig(ca),
 	}
@@ -102,7 +102,7 @@ type RepoOwners struct {
 // If the repo does not have an aliases file then an empty alias map is returned with no error.
 // Note: The returned RepoAliases should be treated as read only.
 func (c *Client) LoadRepoAliases(org, repo string) (RepoAliases, error) {
-	log := c.log.WithFields(logrus.Fields{"org": org, "repo": repo})
+	log := c.Logger.WithFields(logrus.Fields{"org": org, "repo": repo})
 	fullName := fmt.Sprintf("%s/%s", org, repo)
 	sha, err := c.ghc.GetRef(org, repo, "heads/master")
 	if err != nil {
@@ -131,7 +131,7 @@ func (c *Client) LoadRepoAliases(org, repo string) (RepoAliases, error) {
 // LoadRepoOwners returns an up-to-date RepoOwners struct for the specified repo.
 // Note: The returned *RepoOwners should be treated as read only.
 func (c *Client) LoadRepoOwners(org, repo string) (*RepoOwners, error) {
-	log := c.log.WithFields(logrus.Fields{"org": org, "repo": repo})
+	log := c.Logger.WithFields(logrus.Fields{"org": org, "repo": repo})
 
 	fullName := fmt.Sprintf("%s/%s", org, repo)
 	mdYaml := c.mdYAMLEnabled(org, repo)
