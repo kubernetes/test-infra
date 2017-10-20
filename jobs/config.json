@@ -3689,6 +3689,23 @@
       "UNKNOWN"
     ]
   },
+  "ci-kubernetes-e2e-gci-gce-etcd3-sig-cli": {
+    "args": [
+      "--check-leaked-resources",
+      "--env-file=jobs/platform/gce.env",
+      "--extract=ci/latest",
+      "--gcp-node-image=gci",
+      "--gcp-zone=us-central1-f",
+      "--ginkgo-parallel=25",
+      "--provider=gce",
+      "--test_args=--ginkgo.focus=\\[sig-cli\\] --ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
+      "--timeout=50m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-cli"
+    ]
+  },
   "ci-kubernetes-e2e-gci-gce-flaky": {
     "args": [
       "--check-leaked-resources",
