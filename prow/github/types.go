@@ -438,14 +438,16 @@ const (
 )
 
 type GenericCommentEvent struct {
-	IsPR        bool
-	Action      GenericCommentEventAction
-	Body        string
-	HTMLURL     string
-	Number      int
-	Repo        Repo
-	User        User
-	IssueAuthor User
-	Assignees   []User
-	IssueState  string
+	IsPR         bool
+	Action       GenericCommentEventAction
+	Body         string
+	HTMLURL      string
+	Number       int
+	Repo         Repo
+	User         User
+	IssueAuthor  User
+	Assignees    []User
+	IssueState   string
+	IssueBody    string
+	IssueHTMLURL string
 }
