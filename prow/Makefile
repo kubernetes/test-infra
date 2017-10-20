@@ -23,7 +23,7 @@ DECK_VERSION             ?= 0.53
 SPLICE_VERSION           ?= 0.28
 TOT_VERSION              ?= 0.5
 HOROLOGIUM_VERSION       ?= 0.9
-PLANK_VERSION            ?= 0.50
+PLANK_VERSION            ?= 0.51
 JENKINS-OPERATOR_VERSION ?= 0.48
 TIDE_VERSION             ?= 0.7
 
