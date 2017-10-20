@@ -109,13 +109,14 @@ type ObjectFieldSelector struct {
 }
 
 type Container struct {
-	Name    string   `json:"name,omitempty"`
-	Image   string   `json:"image,omitempty"`
-	Command []string `json:"command,omitempty"`
-	Args    []string `json:"args,omitempty"`
-	WorkDir string   `json:"workingDir,omitempty"`
-	Env     []EnvVar `json:"env,omitempty"`
-	Ports   []Port   `json:"ports,omitempty"`
+	Name            string   `json:"name,omitempty"`
+	Image           string   `json:"image,omitempty"`
+	ImagePullPolicy string   `json:"imagePullPolicy,omitempty"`
+	Command         []string `json:"command,omitempty"`
+	Args            []string `json:"args,omitempty"`
+	WorkDir         string   `json:"workingDir,omitempty"`
+	Env             []EnvVar `json:"env,omitempty"`
+	Ports           []Port   `json:"ports,omitempty"`
 
 	Resources       Resources        `json:"resources,omitempty"`
 	SecurityContext *SecurityContext `json:"securityContext,omitempty"`
