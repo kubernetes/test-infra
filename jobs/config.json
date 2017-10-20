@@ -4820,7 +4820,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-cli"
     ]
   },
   "ci-kubernetes-e2e-gci-gke-slow": {
