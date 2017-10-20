@@ -3535,7 +3535,7 @@
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
       "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[Feature:(Audit|LocalPersistentVolumes|FlexVolume|PodPreset)\\]|Networking --ginkgo.skip=Networking-Performance --minStartupPods=8",
+      "--test_args=--ginkgo.focus=\\[Feature:(Audit|LocalPersistentVolumes|FlexVolume|PodPreset)\\]|Networking --ginkgo.skip=Networking-Performance|IPv6 --minStartupPods=8",
       "--timeout=180m"
     ],
     "scenario": "kubernetes_e2e",
@@ -4354,7 +4354,7 @@
       "--gke-create-command=container clusters create --quiet --enable-kubernetes-alpha",
       "--gke-environment=test",
       "--provider=gke",
-      "--test_args=--ginkgo.focus=\\[Feature:DynamicKubeletConfig\\]|Networking --ginkgo.skip=Networking-Performance --minStartupPods=8",
+      "--test_args=--ginkgo.focus=\\[Feature:DynamicKubeletConfig\\]|Networking --ginkgo.skip=Networking-Performance|IPv6 --minStartupPods=8",
       "--timeout=180m"
     ],
     "scenario": "kubernetes_e2e",
