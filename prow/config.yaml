@@ -466,7 +466,7 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--" # end bootstrap args, scenario args below
-        - "--test=//... //hack:verify-all -//build/... -//vendor/..."
+        - "--test=//... //hack:verify-all -//build/... -//vendor/... -//examples/..."
         - "--test-args=--build_tag_filters=-e2e,-integration"
         - "--test-args=--test_tag_filters=-e2e,-integration"
         - "--test-args=--flaky_test_attempts=3"
@@ -1666,7 +1666,7 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--" # end bootstrap args, scenario args below
-        - "--test=//... //hack:verify-all -//build/... -//vendor/..."
+        - "--test=//... //hack:verify-all -//build/... -//vendor/... -//examples/..."
         - "--test-args=--build_tag_filters=-e2e,-integration"
         - "--test-args=--test_tag_filters=-e2e,-integration"
         - "--test-args=--flaky_test_attempts=3"
