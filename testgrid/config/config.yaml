@@ -3269,9 +3269,13 @@ dashboards:
   - name: gce-serial
     test_group_name: ci-kubernetes-e2e-gce-gci-serial-sig-cli
     description: 'kubectl gce serial e2e tests for master branch'
+    alert_options:
+      alert_mail_to_addresses: 'kubernetes-sig-cli-oncall+alerts@gmail.com'
   - name: gke-serial
     test_group_name: ci-kubernetes-e2e-gke-gci-serial-sig-cli
     description: 'kubectl gke serial e2e tests for master branch'
+    alert_options:
+      alert_mail_to_addresses: 'kubernetes-sig-cli-oncall+alerts@gmail.com'
   - name: gce-etcd3
     test_group_name: ci-kubernetes-e2e-gci-gce-etcd3
     base_options: 'include-filter-by-regex=Kubectl%7Ckubectl'
