@@ -25,22 +25,6 @@ import re
 import subprocess
 import sys
 
-
-BRANCH_VERSION = {
-    '1.2': '1.4',
-    '1.3': '1.4',
-    'master': '1.8',
-}
-
-VERSION_TAG = {
-    '1.4': '1.4-v20161130-8958f82',
-    '1.5': '1.5-v20161205-d664d14',
-    '1.6': '1.6-v20161205-ad918bc',
-    '1.7': '1.7-v20170713-c28e0556',
-    '1.8': '1.8-v20170906-3a1c5ae5',
-}
-
-
 def check_output(*cmd):
     """Log and run the command, return output, raising on errors."""
     print >>sys.stderr, 'Run:', cmd
@@ -59,40 +43,17 @@ def main(branch, script, force):
     verify_branch = re.match(r'master|release-(\d+\.\d+)', branch)
     if not verify_branch:
         raise ValueError(branch)
-    # Extract version if any.
-    ver = verify_branch.group(1) or verify_branch.group(0)
-    tag = VERSION_TAG[BRANCH_VERSION.get(ver, ver)]
     force = 'y' if force else 'n'
-    artifacts = '%s/_artifacts' % os.environ['WORKSPACE']
     k8s = os.getcwd()
     if not os.path.basename(k8s) == 'kubernetes':
         raise ValueError(k8s)
 
-    check('rm', '-rf', '.gsutil')
-    remote = 'bootstrap-upstream'
-    uri = 'https://github.com/kubernetes/kubernetes.git'
+    check('mkdir', '-p', 'artifacts')
+    check('ln', '-s', 'artifacts', '_artifacts')
 
-    current_remotes = check_output('git', 'remote')
-    if re.search('^%s$' % remote, current_remotes, flags=re.MULTILINE):
-        check('git', 'remote', 'remove', remote)
-    check('git', 'remote', 'add', remote, uri)
-    check('git', 'remote', 'set-url', '--push', remote, 'no_push')
-    # If .git is cached between runs this data may be stale
-    check('git', 'fetch', remote)
-
-    if not os.path.isdir(artifacts):
-        os.makedirs(artifacts)
     check(
-        'docker', 'run', '--rm=true', '--privileged=true',
-        '-v', '/var/run/docker.sock:/var/run/docker.sock',
-        '-v', '/etc/localtime:/etc/localtime:ro',
-        '-v', '%s:/go/src/k8s.io/kubernetes' % k8s,
-        '-v', '%s:/workspace/artifacts' % artifacts,
-        '-e', 'KUBE_FORCE_VERIFY_CHECKS=%s' % force,
-        '-e', 'KUBE_VERIFY_GIT_BRANCH=%s' % branch,
-        '-e', 'REPO_DIR=%s' % k8s,  # hack/lib/swagger.sh depends on this
-        'gcr.io/k8s-testimages/kubekins-test:%s' % tag,
-        'bash', '-c', 'cd kubernetes && %s' % script,
+        'bash', '-c',
+        'cd /go/src/k8s.io/kubernetes && KUBE_FORCE_VERIFY_CHECKS=%s KUBE_VERIFY_GIT_BRANCH=%s %s' % (force, branch, script),
     )
 
 
