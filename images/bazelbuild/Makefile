@@ -15,7 +15,8 @@
 IMG = gcr.io/k8s-testimages/bazelbuild
 TAG = $(shell date +v%Y%m%d)-$(shell git describe --tags --always --dirty)
 
-BAZEL_VERSIONS=0.5.2 0.5.4 0.6.1
+# TODO(bentheelder): retire 0.6.1 in favor of 0.7.0
+BAZEL_VERSIONS=0.5.2 0.5.4 0.6.1 0.7.0
 
 all: build
 
