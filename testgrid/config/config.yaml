@@ -110,6 +110,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-updown
 - name: ci-kubernetes-e2e-kops-aws-weave
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-weave
+- name: ci-kubernetes-e2e-kops-gce
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-gce
 - name: ci-kubernetes-e2e-gce-canary
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-canary
 - name: ci-kubernetes-e2e-gce-device-plugin-gpu
@@ -1934,6 +1936,11 @@ dashboards:
           value: 'E2E: <test-name>'
         - key: body
           value: <test-url>
+
+- name: google-kops-gce
+  dashboard_tab:
+  - name: kops-gce
+    test_group_name: ci-kubernetes-e2e-kops-gce
 
 - name: sig-scalability-gce-scale
   dashboard_tab:
