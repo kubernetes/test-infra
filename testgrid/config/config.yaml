@@ -1828,7 +1828,7 @@ dashboards:
   - name: e2e-etcd-serial
     test_group_name: ci-tectonic-e2e-etcd-serial
 
-- name: google-kops
+- name: google-aws
   dashboard_tab:
   - name: kops-aws
     test_group_name: ci-kubernetes-e2e-kops-aws
@@ -1850,8 +1850,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-kops-aws-updown
   - name: kops-aws-weave
     test_group_name: ci-kubernetes-e2e-kops-aws-weave
-  - name: kops-gce
-    test_group_name: ci-kubernetes-e2e-kops-gce
 
 - name: google-docker
   dashboard_tab:
@@ -1938,6 +1936,11 @@ dashboards:
           value: 'E2E: <test-name>'
         - key: body
           value: <test-url>
+
+- name: google-kops-gce
+  dashboard_tab:
+  - name: kops-gce
+    test_group_name: ci-kubernetes-e2e-kops-gce
 
 - name: sig-scalability-gce-scale
   dashboard_tab:
