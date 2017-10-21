@@ -2596,7 +2596,7 @@ presubmits:
     trigger: "(?m)^/test( all| pull-test-infra-bazel),?(\\s+|$)"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171013-53473ec5-0.6.1
+      - image: gcr.io/k8s-testimages/bazelbuild:v20171020-b76ac241-0.7.0
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -3353,7 +3353,7 @@ postsubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171013-53473ec5-0.6.1
+      - image: gcr.io/k8s-testimages/bazelbuild:v20171020-b76ac241-0.7.0
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -17550,7 +17550,7 @@ periodics:
   agent: kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bazelbuild:v20171013-53473ec5-0.6.1
+    - image: gcr.io/k8s-testimages/bazelbuild:v20171020-b76ac241-0.7.0
       args:
       - "--clean"
       - "--git-cache=/root/.cache/git"

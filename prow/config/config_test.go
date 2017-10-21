@@ -539,7 +539,9 @@ func TestBazelbuildArgs(t *testing.T) {
 		}
 	}
 	pinnedJobs := map[string]string{
-	//job: reason for pinning
+		//job: reason for pinning
+		"pull-test-infra-bazel": "testing test-infra with the shiniest bazel",
+		"ci-test-infra-bazel":   "testing test-infra with the shiniest bazel",
 	}
 	maxTag := ""
 	maxN := 0
