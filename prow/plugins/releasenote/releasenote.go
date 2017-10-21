@@ -46,8 +46,7 @@ const (
 Please see: https://github.com/kubernetes/community/blob/master/contributors/devel/pull-requests.md#write-release-notes-if-needed.`
 	parentReleaseNoteFormat = `All 'parent' PRs of a cherry-pick PR must have one of the %q or %q labels, or this PR must follow the standard/parent release note labeling requirement.`
 
-	noReleaseNoteComment = "none"
-	actionRequiredNote   = "action required"
+	actionRequiredNote = "action required"
 )
 
 var (
@@ -58,6 +57,7 @@ var (
 
 	noteMatcherRE = regexp.MustCompile(`(?s)(?:Release note\*\*:\s*(?:<!--[^<>]*-->\s*)?` + "```(?:release-note)?|```release-note)(.+?)```")
 	cpRe          = regexp.MustCompile(`Cherry pick of #([[:digit:]]+) on release-([[:digit:]]+\.[[:digit:]]+).`)
+	noneRe        = regexp.MustCompile(`(?i)^\W*NONE\W*$`)
 
 	allRNLabels = []string{
 		releaseNoteNone,
@@ -295,7 +295,7 @@ func determineReleaseNoteLabel(body string) string {
 	if composedReleaseNote == "" {
 		return releaseNoteLabelNeeded
 	}
-	if composedReleaseNote == noReleaseNoteComment {
+	if noneRe.MatchString(composedReleaseNote) {
 		return releaseNoteNone
 	}
 	if strings.Contains(composedReleaseNote, actionRequiredNote) {

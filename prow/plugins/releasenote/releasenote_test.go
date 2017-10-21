@@ -493,7 +493,6 @@ func sliceDifference(a, b []string) []string {
 }
 
 func TestGetReleaseNote(t *testing.T) {
-
 	tests := []struct {
 		body                        string
 		expectedReleaseNote         string
@@ -532,6 +531,16 @@ func TestGetReleaseNote(t *testing.T) {
 		{
 			body:                        "```release-note\nNONE\n```",
 			expectedReleaseNote:         "NONE",
+			expectedReleaseNoteVariable: releaseNoteNone,
+		},
+		{
+			body:                        "```release-note\n`NONE`\n```",
+			expectedReleaseNote:         "`NONE`",
+			expectedReleaseNoteVariable: releaseNoteNone,
+		},
+		{
+			body:                        "```release-note\n`\"NONE\"`\n```",
+			expectedReleaseNote:         "`\"NONE\"`",
 			expectedReleaseNoteVariable: releaseNoteNone,
 		},
 		{
