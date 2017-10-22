@@ -428,6 +428,7 @@ def set_up_kops_gce(workspace, args, mode, cluster, runner_args):
         '--kops-state=%s' % args.kops_state_gce,
         '--kops-nodes=%s' % args.kops_nodes,
         '--kops-ssh-key=%s' % gce_ssh,
+        '--kops-version=%s' % args.kops_version,
     ])
 
 
@@ -762,6 +763,7 @@ def create_parser():
         '--kops-zones', help='Comma-separated list of zones else random choice')
     parser.add_argument(
         '--kops-build', action='store_true', help='If we need to build kops locally')
+    parser.add_argument('--kops-version', help='URL containing kops version to test')
 
     return parser
 
