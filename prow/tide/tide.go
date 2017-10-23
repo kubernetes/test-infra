@@ -19,8 +19,11 @@ package tide
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"net/http"
 	"strings"
+	"sync"
 
 	"github.com/shurcooL/githubql"
 	"github.com/sirupsen/logrus"
@@ -51,6 +54,36 @@ type Controller struct {
 	ghc    githubClient
 	kc     kubeClient
 	gc     *git.Client
+
+	m     sync.Mutex
+	pools []Pool
+}
+
+type Action string
+
+const (
+	Wait         Action = "WAIT"
+	Trigger             = "TRIGGER"
+	TriggerBatch        = "TRIGGER_BATCH"
+	Merge               = "MERGE"
+	MergeBatch          = "MERGE_BATCH"
+)
+
+type Pool struct {
+	Org    string
+	Repo   string
+	Branch string
+
+	// PRs with passing tests, pending tests, and missing or failed tests.
+	// Note that these results are rolled up. If all tests for a PR are passing
+	// except for one pending, it will be in PendingPRs.
+	SuccessPRs []PullRequest
+	PendingPRs []PullRequest
+	MissingPRs []PullRequest
+
+	// Which action did we last take, and to what target(s), if any.
+	Action Action
+	Target []PullRequest
 }
 
 // NewController makes a Controller out of the given clients.
@@ -67,7 +100,7 @@ func NewController(ghc *github.Client, kc *kube.Client, ca *config.Agent, gc *gi
 func (c *Controller) Sync() error {
 	ctx := context.Background()
 	c.Logger.Info("Building tide pool.")
-	var pool []pullRequest
+	var pool []PullRequest
 	for _, q := range c.ca.Config().Tide.Queries {
 		prs, err := c.search(ctx, q)
 		if err != nil {
@@ -87,12 +120,28 @@ func (c *Controller) Sync() error {
 	if err != nil {
 		return err
 	}
+	// This may take a while, which may cause ServeHTTP requests to block for
+	// some time. This is not a frontend service, so that's okay.
+	c.m.Lock()
+	defer c.m.Unlock()
+	c.pools = make([]Pool, 0, len(sps))
 	for _, sp := range sps {
 		if err := c.syncSubpool(sp); err != nil {
 			return err
 		}
 	}
 	return nil
+}
+
+func (c *Controller) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	c.m.Lock()
+	defer c.m.Unlock()
+	b, err := json.Marshal(c.pools)
+	if err != nil {
+		c.Logger.WithError(err).Error("Decoding JSON.")
+		b = []byte("[]")
+	}
+	fmt.Fprintf(w, string(b))
 }
 
 type simpleState string
@@ -112,9 +161,9 @@ func toSimpleState(s kube.ProwJobState) simpleState {
 	return noneState
 }
 
-func pickSmallestPassingNumber(prs []pullRequest) (bool, pullRequest) {
+func pickSmallestPassingNumber(prs []PullRequest) (bool, PullRequest) {
 	smallestNumber := -1
-	var smallestPR pullRequest
+	var smallestPR PullRequest
 	for _, pr := range prs {
 		if smallestNumber != -1 && int(pr.Number) >= smallestNumber {
 			continue
@@ -135,13 +184,13 @@ func pickSmallestPassingNumber(prs []pullRequest) (bool, pullRequest) {
 // accumulateBatch returns a list of PRs that can be merged after passing batch
 // testing, if any exist. It also returns whether or not a batch is currently
 // running.
-func accumulateBatch(presubmits []string, prs []pullRequest, pjs []kube.ProwJob) ([]pullRequest, bool) {
-	prNums := make(map[int]pullRequest)
+func accumulateBatch(presubmits []string, prs []PullRequest, pjs []kube.ProwJob) ([]PullRequest, bool) {
+	prNums := make(map[int]PullRequest)
 	for _, pr := range prs {
 		prNums[int(pr.Number)] = pr
 	}
 	type accState struct {
-		prs       []pullRequest
+		prs       []PullRequest
 		jobStates map[string]simpleState
 		// Are the pull requests in the ref still acceptable? That is, do they
 		// still point to the heads of the PRs?
@@ -202,7 +251,7 @@ func accumulateBatch(presubmits []string, prs []pullRequest, pjs []kube.ProwJob)
 
 // accumulate returns the supplied PRs sorted into three buckets based on their
 // accumulated state across the presubmits.
-func accumulate(presubmits []string, prs []pullRequest, pjs []kube.ProwJob) (successes, pendings, nones []pullRequest) {
+func accumulate(presubmits []string, prs []PullRequest, pjs []kube.ProwJob) (successes, pendings, nones []PullRequest) {
 	for _, pr := range prs {
 		// Accumulate the best result for each job.
 		psStates := make(map[string]simpleState)
@@ -243,7 +292,7 @@ func accumulate(presubmits []string, prs []pullRequest, pjs []kube.ProwJob) (suc
 	return
 }
 
-func prNumbers(prs []pullRequest) []int {
+func prNumbers(prs []PullRequest) []int {
 	var nums []int
 	for _, pr := range prs {
 		nums = append(nums, int(pr.Number))
@@ -251,7 +300,7 @@ func prNumbers(prs []pullRequest) []int {
 	return nums
 }
 
-func (c *Controller) pickBatch(sp subpool) ([]pullRequest, error) {
+func (c *Controller) pickBatch(sp subpool) ([]PullRequest, error) {
 	r, err := c.gc.Clone(sp.org + "/" + sp.repo)
 	if err != nil {
 		return nil, err
@@ -267,7 +316,7 @@ func (c *Controller) pickBatch(sp subpool) ([]pullRequest, error) {
 		return nil, err
 	}
 	// TODO(spxtr): Limit batch size.
-	var res []pullRequest
+	var res []PullRequest
 	for _, pr := range sp.prs {
 		// TODO(spxtr): Check the actual statuses for individual jobs.
 		if string(pr.Commits.Nodes[0].Commit.Status.State) != "SUCCESS" {
@@ -282,7 +331,7 @@ func (c *Controller) pickBatch(sp subpool) ([]pullRequest, error) {
 	return res, nil
 }
 
-func (c *Controller) mergePRs(sp subpool, prs []pullRequest) error {
+func (c *Controller) mergePRs(sp subpool, prs []PullRequest) error {
 	for _, pr := range prs {
 		if err := c.ghc.Merge(sp.org, sp.repo, int(pr.Number), github.MergeDetails{
 			SHA: string(pr.HeadRef.Target.OID),
@@ -303,7 +352,7 @@ func (c *Controller) mergePRs(sp subpool, prs []pullRequest) error {
 	return nil
 }
 
-func (c *Controller) trigger(sp subpool, prs []pullRequest) error {
+func (c *Controller) trigger(sp subpool, prs []PullRequest) error {
 	for _, ps := range c.ca.Config().Presubmits[sp.org+"/"+sp.repo] {
 		if ps.SkipReport || !ps.AlwaysRun || !ps.RunsAgainstBranch(sp.branch) {
 			continue
@@ -339,53 +388,47 @@ func (c *Controller) trigger(sp subpool, prs []pullRequest) error {
 	return nil
 }
 
-func (c *Controller) takeAction(sp subpool, batchPending bool, successes, pendings, nones, batchMerges []pullRequest) error {
+func (c *Controller) takeAction(sp subpool, batchPending bool, successes, pendings, nones, batchMerges []PullRequest) (Action, []PullRequest, error) {
 	// Merge the batch!
 	if len(batchMerges) > 0 {
-		c.Logger.Infof("Merge PRs %v.", prNumbers(batchMerges))
 		if c.DryRun {
-			return nil
+			return MergeBatch, batchMerges, nil
 		}
-		return c.mergePRs(sp, batchMerges)
+		return MergeBatch, batchMerges, c.mergePRs(sp, batchMerges)
 	}
 	// Do not merge PRs while waiting for a batch to complete. We don't want to
 	// invalidate the old batch result.
 	if len(successes) > 0 && !batchPending {
 		if ok, pr := pickSmallestPassingNumber(successes); ok {
-			c.Logger.Infof("Merge PR #%d.", int(pr.Number))
 			if c.DryRun {
-				return nil
+				return Merge, []PullRequest{pr}, nil
 			}
-			return c.mergePRs(sp, []pullRequest{pr})
+			return Merge, []PullRequest{pr}, c.mergePRs(sp, []PullRequest{pr})
 		}
 	}
 	// If we have no serial jobs pending or successful, trigger one.
 	if len(nones) > 0 && len(pendings) == 0 && len(successes) == 0 {
 		if ok, pr := pickSmallestPassingNumber(nones); ok {
-			c.Logger.Infof("Trigger tests for PR #%d.", int(pr.Number))
-			if !c.DryRun {
-				if err := c.trigger(sp, []pullRequest{pr}); err != nil {
-					return err
-				}
+			if c.DryRun {
+				return Trigger, []PullRequest{pr}, nil
 			}
+			return Trigger, []PullRequest{pr}, c.trigger(sp, []PullRequest{pr})
 		}
 	}
 	// If we have no batch, trigger one.
 	if len(sp.prs) > 1 && !batchPending {
 		batch, err := c.pickBatch(sp)
 		if err != nil {
-			return err
+			return Wait, nil, err
 		}
 		if len(batch) > 1 {
-			c.Logger.Infof("Trigger batch for %v", prNumbers(batch))
-			if !c.DryRun {
-				if err := c.trigger(sp, batch); err != nil {
-					return err
-				}
+			if c.DryRun {
+				return TriggerBatch, batch, nil
 			}
+			return TriggerBatch, batch, c.trigger(sp, batch)
 		}
 	}
-	return nil
+	return Wait, nil, nil
 }
 
 func (c *Controller) syncSubpool(sp subpool) error {
@@ -404,7 +447,21 @@ func (c *Controller) syncSubpool(sp subpool) error {
 	c.Logger.Infof("Missing PRs: %v", prNumbers(nones))
 	c.Logger.Infof("Passing batch: %v", prNumbers(batchMerge))
 	c.Logger.Infof("Pending batch: %v", batchPending)
-	return c.takeAction(sp, batchPending, successes, pendings, nones, batchMerge)
+	act, targets, err := c.takeAction(sp, batchPending, successes, pendings, nones, batchMerge)
+	c.Logger.Infof("Action: %v, Targets: %v", act, targets)
+	c.pools = append(c.pools, Pool{
+		Org:    sp.org,
+		Repo:   sp.repo,
+		Branch: sp.branch,
+
+		SuccessPRs: successes,
+		PendingPRs: pendings,
+		MissingPRs: nones,
+
+		Action: act,
+		Target: targets,
+	})
+	return err
 }
 
 type subpool struct {
@@ -413,12 +470,12 @@ type subpool struct {
 	branch string
 	sha    string
 	pjs    []kube.ProwJob
-	prs    []pullRequest
+	prs    []PullRequest
 }
 
 // dividePool splits up the list of pull requests and prow jobs into a group
 // per repo and branch. It only keeps ProwJobs that match the latest branch.
-func (c *Controller) dividePool(pool []pullRequest, pjs []kube.ProwJob) ([]subpool, error) {
+func (c *Controller) dividePool(pool []PullRequest, pjs []kube.ProwJob) ([]subpool, error) {
 	sps := make(map[string]*subpool)
 	for _, pr := range pool {
 		org := string(pr.Repository.Owner.Login)
@@ -457,8 +514,8 @@ func (c *Controller) dividePool(pool []pullRequest, pjs []kube.ProwJob) ([]subpo
 	return ret, nil
 }
 
-func (c *Controller) search(ctx context.Context, q string) ([]pullRequest, error) {
-	var ret []pullRequest
+func (c *Controller) search(ctx context.Context, q string) ([]PullRequest, error) {
+	var ret []PullRequest
 	vars := map[string]interface{}{
 		"query":        githubql.String(q),
 		"searchCursor": (*githubql.String)(nil),
@@ -484,7 +541,7 @@ func (c *Controller) search(ctx context.Context, q string) ([]pullRequest, error
 	return ret, nil
 }
 
-type pullRequest struct {
+type PullRequest struct {
 	Number githubql.Int
 	Author struct {
 		Login githubql.String
@@ -527,7 +584,7 @@ type searchQuery struct {
 			EndCursor   githubql.String
 		}
 		Nodes []struct {
-			PullRequest pullRequest `graphql:"... on PullRequest"`
+			PullRequest PullRequest `graphql:"... on PullRequest"`
 		}
 	} `graphql:"search(type: ISSUE, first: 100, after: $searchCursor, query: $query)"`
 }
