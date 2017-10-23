@@ -19,11 +19,11 @@ ALPINE_VERSION           ?= 0.1
 GIT_VERSION              ?= 0.1
 HOOK_VERSION             ?= 0.174
 SINKER_VERSION           ?= 0.21
-DECK_VERSION             ?= 0.53
+DECK_VERSION             ?= 0.54
 SPLICE_VERSION           ?= 0.28
 TOT_VERSION              ?= 0.5
-HOROLOGIUM_VERSION       ?= 0.9
-PLANK_VERSION            ?= 0.51
+HOROLOGIUM_VERSION       ?= 0.10
+PLANK_VERSION            ?= 0.52
 JENKINS-OPERATOR_VERSION ?= 0.48
 TIDE_VERSION             ?= 0.7
 

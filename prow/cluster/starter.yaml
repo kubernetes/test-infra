@@ -112,7 +112,7 @@ spec:
     spec:
       containers:
       - name: plank
-        image: gcr.io/k8s-prow/plank:0.51
+        image: gcr.io/k8s-prow/plank:0.52
         args:
         - --dry-run=false
         volumeMounts:
@@ -176,7 +176,7 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: deck
-        image: gcr.io/k8s-prow/deck:0.53
+        image: gcr.io/k8s-prow/deck:0.54
         ports:
           - name: http
             containerPort: 8080
@@ -217,7 +217,7 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: horologium
-        image: gcr.io/k8s-prow/horologium:0.9
+        image: gcr.io/k8s-prow/horologium:0.10
         volumeMounts:
         - name: config
           mountPath: /etc/config

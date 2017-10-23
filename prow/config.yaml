@@ -17085,7 +17085,8 @@ periodics:
   agent: kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20171018-fb8014bc-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+      imagePullPolicy: Always
       args:
       - --bare
       - --timeout=80
