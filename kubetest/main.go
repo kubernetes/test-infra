@@ -20,6 +20,7 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"errors"
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -34,7 +35,7 @@ import (
 
 	"k8s.io/test-infra/boskos/client"
 
-	flag "github.com/spf13/pflag"
+	"github.com/spf13/pflag"
 )
 
 // Hardcoded in ginkgo-e2e.sh
@@ -145,12 +146,14 @@ func defineFlags() *options {
 	flag.StringVar(&o.testArgs, "test_args", "", "Space-separated list of arguments to pass to Ginkgo test runner.")
 	flag.StringVar(&o.testCmd, "test-cmd", "", "command to run against the cluster instead of Ginkgo e2e tests")
 	flag.StringVar(&o.testCmdName, "test-cmd-name", "", "name to log the test command as in xml results")
-	flag.StringArrayVar(&o.testCmdArgs, "test-cmd-args", []string{}, "args for test-cmd")
 	flag.DurationVar(&timeout, "timeout", time.Duration(0), "Terminate testing after the timeout duration (s/m/h)")
 	flag.BoolVar(&o.up, "up", false, "If true, start the the e2e cluster. If cluster is already up, recreate it.")
 	flag.StringVar(&o.upgradeArgs, "upgrade_args", "", "If set, run upgrade tests before other tests")
 
-	flag.BoolVarP(&verbose, "v", "v", false, "If true, print all command output.")
+	flag.BoolVar(&verbose, "v", false, "If true, print all command output.")
+
+	// go flag does not support StringArrayVar
+	pflag.StringArrayVar(&o.testCmdArgs, "test-cmd-args", []string{}, "args for test-cmd")
 	return &o
 }
 
@@ -249,13 +252,18 @@ func validateFlags(o *options) error {
 
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
+	pflag.CommandLine = pflag.NewFlagSet(os.Args[0], pflag.ContinueOnError)
 	o := defineFlags()
-	flag.Parse()
-	err := complete(o)
+	pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
+	if err := pflag.CommandLine.Parse(os.Args[1:]); err != nil {
+		log.Fatalf("Flag parse failed: %v", err)
+	}
 
 	if err := validateFlags(o); err != nil {
 		log.Fatalf("Flags validation failed. err: %v", err)
 	}
+
+	err := complete(o)
 
 	if boskos.HasResource() {
 		if berr := boskos.ReleaseAll("dirty"); berr != nil {
