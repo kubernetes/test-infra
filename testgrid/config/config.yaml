@@ -1502,12 +1502,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-master-new-downgrade-cluster-parallel
 - name: ci-kubernetes-e2e-gce-new-master-upgrade-cluster-new
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-new-master-upgrade-cluster-new
-- name: ci-kubernetes-e2e-gke-cvm-new-gci-master-upgrade-master
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cvm-new-gci-master-upgrade-master
-- name: ci-kubernetes-e2e-gke-cvm-new-gci-master-upgrade-cluster
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cvm-new-gci-master-upgrade-cluster
-- name: ci-kubernetes-e2e-gke-cvm-new-gci-master-upgrade-cluster-new
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cvm-new-gci-master-upgrade-cluster-new
 - name: ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-master
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-master
 - name: ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster-parallel
@@ -2324,87 +2318,78 @@ dashboards:
 
 - name: sig-release-master-kubectl-skew
   dashboard_tab:
-  - name: skew-cluster1.7-kubectl1.8-gce
+  - name: skew-cluster1.8-kubectlmaster-gce
     test_group_name: ci-kubernetes-e2e-gce-new-master-gci-kubectl-skew
-    description: '1.7 e2e tests run against a 1.7 gce cluster using a 1.8 kubectl binary'
-  - name: skew-cluster1.7-kubectl1.8-gke
+    description: '1.8 e2e tests run against a 1.8 gce cluster using a master kubectl binary'
+  - name: skew-cluster1.8-kubectlmaster-gke
     test_group_name: ci-kubernetes-e2e-gke-new-master-gci-kubectl-skew
-    description: '1.7 e2e tests run against a 1.7 gke cluster using a 1.8 kubectl binary'
-  - name: skew-cluster1.8-kubectl1.7-gce
+    description: '1.8 e2e tests run against a 1.8 gke cluster using a master kubectl binary'
+  - name: skew-clustermaster-kubectl1.8-gce
     test_group_name: ci-kubernetes-e2e-gce-master-new-gci-kubectl-skew
-    description: '1.7 e2e tests run against a 1.8 gce cluster using a 1.7 kubectl binary'
-  - name: skew-cluster1.8-kubectl1.7-gke
+    description: '1.8 e2e tests run against a master gce cluster using a 1.8 kubectl binary'
+  - name: skew-cluster1.8-kubectl1.8-gke
     test_group_name: ci-kubernetes-e2e-gke-master-new-gci-kubectl-skew
-    description: '1.7 e2e tests run against a 1.8 gke cluster using a 1.7 kubectl binary'
-  - name: skew-cluster1.7-kubectl1.8-gce-serial
+    description: '1.8 e2e tests run against a master gke cluster using a 1.8 kubectl binary'
+  - name: skew-cluster1.8-kubectlmaster-gce-serial
     test_group_name: ci-kubernetes-e2e-gce-new-master-gci-kubectl-skew-serial
-    description: '1.7 serial tests run against a 1.7 gke cluster using a 1.8 kubectl binary'
-  - name: skew-cluster1.7-kubectl1.8-gke-serial
+    description: '1.8 serial tests run against a 1.8 gke cluster using a master kubectl binary'
+  - name: skew-cluster1.8-kubectlmaster-gke-serial
     test_group_name: ci-kubernetes-e2e-gke-new-master-gci-kubectl-skew-serial
-    description: '1.7 serial tests run against a 1.7 gce cluster using a 1.8 kubectl binary'
-  - name: skew-cluster1.8-kubectl1.7-gce-serial
+    description: '1.8 serial tests run against a 1,8 gce cluster using a master kubectl binary'
+  - name: skew-clustermaster-kubectl1.8-gce-serial
     test_group_name: ci-kubernetes-e2e-gce-master-new-gci-kubectl-skew-serial
-    description: '1.7 serial tests run against a 1.8 gce cluster using a 1.7 kubectl binary'
-  - name: skew-cluster1.8-kubectl1.7-gke-serial
+    description: '1.8 serial tests run against a master gce cluster using a 1.8 kubectl binary'
+  - name: skew-clustermaster-kubectl1.8-gke-serial
     test_group_name: ci-kubernetes-e2e-gke-master-new-gci-kubectl-skew-serial
-    description: '1.7 serial tests run against a 1.8 gke cluster using a 1.7 kubectl binary'
+    description: '1.8 serial tests run against a master gke cluster using a 1.8 kubectl binary'
 
 - name: sig-release-master-upgrade-optional
   dashboard_tab:
-  - name: gke-cvm-1.6-gci-master-upgrade-master
+  - name: gke-cvm-1.7-gci-master-upgrade-master
     test_group_name: ci-kubernetes-e2e-gke-cvm-stable-gci-master-upgrade-master
     description: 'Upgrade master only, in gke, from container_vm 1.6 to gci master'
-  - name: gke-gci-1.6-gci-master-upgrade-master
+  - name: gke-gci-1.7-gci-master-upgrade-master
     test_group_name: ci-kubernetes-e2e-gke-gci-stable-gci-master-upgrade-master
     description: 'Upgrade master only, in gke, from gci 1.6 to gci master'
-  - name: gke-cvm-1.7-gci-master-upgrade-master
-    test_group_name: ci-kubernetes-e2e-gke-cvm-new-gci-master-upgrade-master
-    description: 'Upgrade master only, in gke(container-vm), from container-vm 1.7 to gci master'
-  - name: gke-cvm-1.7-gci-master-upgrade-cluster
-    test_group_name: ci-kubernetes-e2e-gke-cvm-new-gci-master-upgrade-cluster
-    description: 'Upgrade master and node, in gke, from container-vm 1.7 to gci master'
-  - name: gke-cvm-1.7-gci-master-upgrade-cluster-new
-    test_group_name: ci-kubernetes-e2e-gke-cvm-new-gci-master-upgrade-cluster-new
-    description: 'Upgrade master and node, in gke, from container-vm 1.7 to gci master, and run skewed e2e tests'
 
 - name: sig-release-master-upgrade
   dashboard_tab:
-  - name: gce-1.7-master-upgrade-master
+  - name: gce-1.8-master-upgrade-master
     test_group_name: ci-kubernetes-e2e-gce-new-master-upgrade-master
-    description: 'Upgrade master only, in gce(debian), from 1.7 to master'
-  - name: gce-1.7-master-upgrade-cluster-parallel
+    description: 'Upgrade master only, in gce(gci), from 1.8 to master'
+  - name: gce-1.8-master-upgrade-cluster-parallel
     test_group_name: ci-kubernetes-e2e-gce-new-master-upgrade-cluster-parallel
-    description: 'Upgrade master and node, in gce(debian), from 1.7 to master, run parallel tests only'
-  - name: gce-1.7-master-upgrade-cluster
+    description: 'Upgrade master and node, in gce(gci), from 1.8 to master, run parallel tests only'
+  - name: gce-1.8-master-upgrade-cluster
     test_group_name: ci-kubernetes-e2e-gce-new-master-upgrade-cluster
-    description: 'Upgrade master and node, in gce(debian), from 1.7 to master'
-  - name: gce-master-1.7-downgrade-cluster
+    description: 'Upgrade master and node, in gce(gci), from 1.8 to master'
+  - name: gce-master-1.8-downgrade-cluster
     test_group_name: ci-kubernetes-e2e-gce-master-new-downgrade-cluster
-    description: 'Downgrade master and node, in gce(debian), from master to 1.7'
-  - name: gce-master-1.7-downgrade-cluster-parallel
+    description: 'Downgrade master and node, in gce(gci), from master to 1.8'
+  - name: gce-master-1.8-downgrade-cluster-parallel
     test_group_name: ci-kubernetes-e2e-gce-master-new-downgrade-cluster-parallel
-    description: 'Downgrade master and node, in gce(debian), from master to 1.7, run parallel tests only'
-  - name: gce-1.7-master-upgrade-cluster-new
+    description: 'Downgrade master and node, in gce(gci), from master to 1.8, run parallel tests only'
+  - name: gce-1.8-master-upgrade-cluster-new
     test_group_name: ci-kubernetes-e2e-gce-new-master-upgrade-cluster-new
-    description: 'Upgrade master and node, in gce(debian), from 1.7 to master, and run skewed e2e tests'
-  - name: gke-gci-1.7-gci-master-upgrade-master
+    description: 'Upgrade master and node, in gce(gci), from 1.8 to master, and run skewed e2e tests'
+  - name: gke-gci-1.8-gci-master-upgrade-master
     test_group_name: ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-master
-    description: 'Upgrade master only, in gke(gci), from 1.7 to master'
-  - name: gke-gci-1.7-gci-master-upgrade-cluster-parallel
+    description: 'Upgrade master only, in gke(gci), from 1.8 to master'
+  - name: gke-gci-1.8-gci-master-upgrade-cluster-parallel
     test_group_name: ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster-parallel
-    description: 'Upgrade master and node, in gke(gci), from 1.7 to master, run parallel tests only'
-  - name: gke-gci-1.7-gci-master-upgrade-cluster
+    description: 'Upgrade master and node, in gke(gci), from 1.8 to master, run parallel tests only'
+  - name: gke-gci-1.8-gci-master-upgrade-cluster
     test_group_name: ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster
-    description: 'Upgrade master and node, in gke(gci), from 1.7 to master'
-  - name: gke-gci-master-gci-1.7-downgrade-cluster
+    description: 'Upgrade master and node, in gke(gci), from 1.8 to master'
+  - name: gke-gci-master-gci-1.8-downgrade-cluster
     test_group_name: ci-kubernetes-e2e-gke-gci-master-gci-new-downgrade-cluster
-    description: 'Downgrade master and node, in gke(gci), from master to 1.7'
-  - name: gke-gci-master-gci-1.7-downgrade-cluster-parallel
+    description: 'Downgrade master and node, in gke(gci), from master to 1.8'
+  - name: gke-gci-master-gci-1.8-downgrade-cluster-parallel
     test_group_name: ci-kubernetes-e2e-gke-gci-master-gci-new-downgrade-cluster-parallel
-    description: 'Downgrade master and node, in gke(gci), from master to 1.7, run parallel tests only'
-  - name: gke-gci-1.7-gci-master-upgrade-cluster-new
+    description: 'Downgrade master and node, in gke(gci), from master to 1.8, run parallel tests only'
+  - name: gke-gci-1.8-gci-master-upgrade-cluster-new
     test_group_name: ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster-new
-    description: 'Upgrade master and node, in gke(gci), from 1.7 to master, and run skewed e2e tests'
+    description: 'Upgrade master and node, in gke(gci), from 1.8 to master, and run skewed e2e tests'
 
 - name: sig-release-skew-clusters
   dashboard_tab:
