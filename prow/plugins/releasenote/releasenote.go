@@ -196,7 +196,7 @@ func handlePR(gc githubClient, log *logrus.Entry, pr *github.PullRequestEvent) e
 	if labelToAdd == releaseNoteLabelNeeded {
 		if !prMustFollowRelNoteProcess(gc, log, pr, prLabels, true) {
 			ensureNoRelNoteNeededLabel(gc, log, pr, prLabels)
-			return clearStaleComments(gc, log, pr, prLabels, nil)
+			return clearStaleComments(gc, log, pr, nil)
 		}
 		// If /release-note-none has been left on PR then pretend the release-note body is "NONE" instead of empty.
 		comments, err = gc.ListIssueComments(org, repo, pr.Number)
@@ -235,11 +235,15 @@ func handlePR(gc githubClient, log *logrus.Entry, pr *github.PullRequestEvent) e
 		log.Error(err)
 	}
 
-	return clearStaleComments(gc, log, pr, prLabels, comments)
+	return clearStaleComments(gc, log, pr, comments)
 }
 
-func clearStaleComments(gc githubClient, log *logrus.Entry, pr *github.PullRequestEvent, prLabels []github.Label, comments []github.IssueComment) error {
-	// Clean up old comments.
+// Clean up old comments.
+func clearStaleComments(gc githubClient, log *logrus.Entry, pr *github.PullRequestEvent, comments []github.IssueComment) error {
+	prLabels, err := gc.GetIssueLabels(pr.Repo.Owner.Login, pr.Repo.Name, pr.Number)
+	if err != nil {
+		return fmt.Errorf("failed to list labels on PR #%d. err: %v", pr.Number, err)
+	}
 	// If the PR must follow the process and hasn't yet completed the process, don't remove comments.
 	if prMustFollowRelNoteProcess(gc, log, pr, prLabels, false) && !releaseNoteAlreadyAdded(prLabels) {
 		return nil
