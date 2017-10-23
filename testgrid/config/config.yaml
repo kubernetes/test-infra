@@ -116,14 +116,24 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-canary
 - name: ci-kubernetes-e2e-gce-device-plugin-gpu
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-device-plugin-gpu
+  alert_stale_results_hours: 24
+  num_failures_to_alert: 12 # Runs every 2h. Alert when it's been failing for a day.
 - name: ci-kubernetes-e2e-gce-device-plugin-gpu-stable1
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-device-plugin-gpu-stable1
+  alert_stale_results_hours: 24
+  num_failures_to_alert: 12 # Runs every 2h. Alert when it's been failing for a day.
 - name: ci-kubernetes-e2e-gce-gpu
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gpu
+  alert_stale_results_hours: 24
+  num_failures_to_alert: 12 # Runs every 2h. Alert when it's been failing for a day.
 - name: ci-kubernetes-e2e-gce-gpu-1-7
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gpu-1-7
+  alert_stale_results_hours: 36
+  num_failures_to_alert: 4 # Runs every 12h. Alert when it's been failing for a couple of days.
 - name: ci-kubernetes-e2e-gce-gpu-stable1
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gpu-stable1
+  alert_stale_results_hours: 24
+  num_failures_to_alert: 12 # Runs every 2h. Alert when it's been failing for a day.
 - name: ci-kubernetes-e2e-gci-gce-alpha-features
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-alpha-features
 - name: ci-kubernetes-e2e-gci-gce-alpha-features-release-1-5
@@ -256,10 +266,16 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-scalability-canary
 - name: ci-kubernetes-e2e-gke-device-plugin-gpu
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-device-plugin-gpu
+  alert_stale_results_hours: 24
+  num_failures_to_alert: 12 # Runs every 2h. Alert when it's been failing for a day.
 - name: ci-kubernetes-e2e-gke-device-plugin-gpu-stable1
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-device-plugin-gpu-stable1
+  alert_stale_results_hours: 24
+  num_failures_to_alert: 12 # Runs every 2h. Alert when it's been failing for a day.
 - name: ci-kubernetes-e2e-gke-gpu-1-7
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gpu-1-7
+  alert_stale_results_hours: 36
+  num_failures_to_alert: 4 # Runs every 12h. Alert when it's been failing for a couple of days.
 - name: ci-kubernetes-e2e-gci-gke-alpha-features
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-alpha-features
 - name: ci-kubernetes-e2e-gci-gke-autoscaling
@@ -3126,20 +3142,36 @@ dashboards:
   dashboard_tab:
   - name: gce-device-plugin-gpu
     test_group_name: ci-kubernetes-e2e-gce-device-plugin-gpu
+    alert_options:
+      alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
   - name: gce-device-plugin-gpu-1-8
     test_group_name: ci-kubernetes-e2e-gce-device-plugin-gpu-stable1
+    alert_options:
+      alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
   - name: gce-gpu
     test_group_name: ci-kubernetes-e2e-gce-gpu
+    alert_options:
+      alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
   - name: gce-gpu-1-7
     test_group_name: ci-kubernetes-e2e-gce-gpu-1-7
+    alert_options:
+      alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
   - name: gce-gpu-1-8
     test_group_name: ci-kubernetes-e2e-gce-gpu-stable1
+    alert_options:
+      alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
   - name: gke-device-plugin-gpu
     test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu
+    alert_options:
+      alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
   - name: gke-device-plugin-gpu-1-8
     test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-stable1
+    alert_options:
+      alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
   - name: gke-gpu-1-7
     test_group_name: ci-kubernetes-e2e-gke-gpu-1-7
+    alert_options:
+      alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
   - name: kubelet-serial-gce-e2e
     test_group_name: ci-kubernetes-node-kubelet-serial
     base_options: 'include-filter-by-regex=GPU'

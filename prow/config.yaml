@@ -6960,7 +6960,7 @@ periodics:
         secretName: ssh-key-secret
 
 - name: ci-kubernetes-e2e-gce-gpu-1-7
-  interval: 2h
+  interval: 12h
   agent: kubernetes
   spec:
     containers:
@@ -13614,7 +13614,7 @@ periodics:
         secretName: ssh-key-secret
 
 - name: ci-kubernetes-e2e-gke-gpu-1-7
-  interval: 2h
+  interval: 12h
   agent: kubernetes
   spec:
     containers:
