@@ -803,6 +803,7 @@ class JobTest(unittest.TestCase):
             'ci-kubernetes-node-kubelet-stable2': 'ci-kubernetes-node-kubelet-*',
             'ci-kubernetes-node-kubelet-stable3': 'ci-kubernetes-node-kubelet-*',
             'ci-kubernetes-node-kubelet-non-cri-1-6': 'ci-kubernetes-node-kubelet-*',
+            'pull-federation-e2e-gce': 'ci-kubernetes-pull-gce-federation-deploy',
         }
         for soak_prefix in [
                 'ci-kubernetes-soak-gce-1.5',
