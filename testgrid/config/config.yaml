@@ -1517,7 +1517,7 @@ test_groups:
 - name: mlkube-build-periodic
   gcs_prefix: kubernetes-jenkins/logs/mlkube-build-periodic
 - name: mlkube-build-presubmit
-  gcs_prefix: kubernetes-jenkins/logs/mlkube-build-presubmit
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/mlkube-build-presubmit
 - name: mlkube-build-postsubmit
   gcs_prefix: kubernetes-jenkins/logs/mlkube-build-postsubmit
 # kube-proxy daemonset migration jobs
