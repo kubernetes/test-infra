@@ -71,6 +71,7 @@ def clean_project(project, hours=24, dryrun=False):
 BLACKLIST = [
     '-soak', # We need to keep deployed resources for test uses
     'kubernetes-scale', # Let it's up/down job handle the resources
+    'k8s-scale-testing', # As it can be running some manual experiments
 ]
 
 PR_PROJECTS = {
