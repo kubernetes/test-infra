@@ -3698,6 +3698,9 @@ dashboards:
     test_group_name: ci-kubernetes-kubemark-500-gce
   - name: kubemark-5000
     test_group_name: ci-kubernetes-kubemark-gce-scale
+
+- name: sig-scalability-perf-tests
+  dashboard_tab:
   - name: kubemark-100-benchmark
     test_group_name: ci-perf-tests-kubemark-100-benchmark
   - name: cluster-loader
@@ -4065,6 +4068,7 @@ dashboard_groups:
   - sig-scalability-kubemark
   - sig-scalability-gce-scale
   - sig-scalability-gke-scale
+  - sig-scalability-perf-tests
 
 - name: sig-testing
   dashboard_names:
