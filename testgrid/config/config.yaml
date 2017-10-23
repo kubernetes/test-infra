@@ -228,6 +228,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-serial-sig-cli
 - name: ci-kubernetes-e2e-gke-gci-serial-sig-cli
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-serial-sig-cli
+- name: ci-kubernetes-e2e-gci-gce-etcd3-sig-cli
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-etcd3-sig-cli
 - name: ci-kubernetes-e2e-gci-gce-serial-release-1-5
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-serial-release-1-5
 - name: ci-kubernetes-e2e-gci-gce-slow
@@ -3287,9 +3289,10 @@ dashboards:
     alert_options:
       alert_mail_to_addresses: 'kubernetes-sig-cli-oncall+alerts@gmail.com'
   - name: gce-etcd3
-    test_group_name: ci-kubernetes-e2e-gci-gce-etcd3
-    base_options: 'include-filter-by-regex=Kubectl%7Ckubectl'
+    test_group_name: ci-kubernetes-e2e-gci-gce-etcd3-sig-cli
     description: 'e2e tests run against a cluster with an etcd3 instance'
+    alert_options:
+      alert_mail_to_addresses: 'kubernetes-sig-cli-oncall+alerts@gmail.com'
   - name: aws
     test_group_name: ci-kubernetes-e2e-kops-aws
     base_options: 'include-filter-by-regex=Kubectl%7Ckubectl'
