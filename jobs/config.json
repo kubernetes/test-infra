@@ -10031,21 +10031,21 @@
       "UNKNOWN"
     ]
   },
-  "pull-kubernetes-e2e-gce-gpu": {
+  "pull-kubernetes-e2e-gce-device-plugin-gpu": {
     "args": [
       "--build=bazel",
       "--cluster=",
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/pull-kubernetes-e2e.env",
-      "--env-file=jobs/env/pull-kubernetes-e2e-gce-gpu.env",
+      "--env-file=jobs/env/pull-kubernetes-e2e-gce-device-plugin-gpu.env",
       "--extract=local",
       "--gcp-node-image=gci",
       "--gcp-project=k8s-jkns-pr-gce-gpus",
       "--gcp-zone=us-west1-b",
       "--ginkgo-parallel=30",
       "--provider=gce",
-      "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-gpu",
-      "--test_args=--ginkgo.focus=\\[Feature:GPU\\] --minStartupPods=8",
+      "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce-device-plugin-gpu",
+      "--test_args=--ginkgo.focus=\\[Feature:GPUDevicePlugin\\] --minStartupPods=8",
       "--timeout=60m"
     ],
     "scenario": "kubernetes_e2e",

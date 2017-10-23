@@ -835,18 +835,19 @@ presubmits:
     branches:
     - release-1.6
 
-  - name: pull-kubernetes-e2e-gce-gpu
+  - name: pull-kubernetes-e2e-gce-device-plugin-gpu
     agent: kubernetes
     skip_branches:
     - release-1.4
     - release-1.5
     - release-1.6
+    - release-1.7
     always_run: true
     skip_report: false
     max_concurrency: 12
-    context: pull-kubernetes-e2e-gce-gpu
-    rerun_command: "/test pull-kubernetes-e2e-gce-gpu"
-    trigger: "(?m)^/test( all| pull-kubernetes-e2e-gce-gpu),?(\\s+|$)"
+    context: pull-kubernetes-e2e-gce-device-plugin-gpu
+    rerun_command: "/test pull-kubernetes-e2e-gce-device-plugin-gpu"
+    trigger: "(?m)^/test( all| pull-kubernetes-e2e-gce-device-plugin-gpu),?(\\s+|$)"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20171018-fb8014bc-master
@@ -2037,18 +2038,19 @@ presubmits:
     always_run: true
     branches:
     - release-1.6
-  - name: pull-security-kubernetes-e2e-gce-gpu
+  - name: pull-security-kubernetes-e2e-gce-device-plugin-gpu
     agent: kubernetes
     skip_branches:
     - release-1.4
     - release-1.5
     - release-1.6
+    - release-1.7
     always_run: true
     skip_report: false
     max_concurrency: 12
-    context: pull-security-kubernetes-e2e-gce-gpu
-    rerun_command: "/test pull-security-kubernetes-e2e-gce-gpu"
-    trigger: "(?m)^/test( all| pull-security-kubernetes-e2e-gce-gpu),?(\\s+|$)"
+    context: pull-security-kubernetes-e2e-gce-device-plugin-gpu
+    rerun_command: "/test pull-security-kubernetes-e2e-gce-device-plugin-gpu"
+    trigger: "(?m)^/test( all| pull-security-kubernetes-e2e-gce-device-plugin-gpu),?(\\s+|$)"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20171018-fb8014bc-master
