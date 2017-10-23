@@ -18,7 +18,10 @@ package tide
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 
 	"github.com/shurcooL/githubql"
@@ -30,7 +33,7 @@ import (
 	"k8s.io/test-infra/prow/kube"
 )
 
-func testPullsMatchList(t *testing.T, test string, actual []pullRequest, expected []int) {
+func testPullsMatchList(t *testing.T, test string, actual []PullRequest, expected []int) {
 	if len(actual) != len(expected) {
 		t.Errorf("Wrong size for case %s. Got PRs %+v, wanted numbers %v.", test, actual, expected)
 		return
@@ -139,9 +142,9 @@ func TestAccumulateBatch(t *testing.T) {
 		},
 	}
 	for _, test := range tests {
-		var pulls []pullRequest
+		var pulls []PullRequest
 		for _, p := range test.pulls {
-			pr := pullRequest{Number: githubql.Int(p.number)}
+			pr := PullRequest{Number: githubql.Int(p.number)}
 			pr.HeadRef.Target.OID = githubql.String(p.sha)
 			pulls = append(pulls, pr)
 		}
@@ -289,9 +292,9 @@ func TestAccumulate(t *testing.T) {
 	}
 
 	for i, test := range tests {
-		var pulls []pullRequest
+		var pulls []PullRequest
 		for _, p := range test.pullRequests {
-			pulls = append(pulls, pullRequest{Number: githubql.Int(p)})
+			pulls = append(pulls, PullRequest{Number: githubql.Int(p)})
 		}
 		var pjs []kube.ProwJob
 		for _, pj := range test.prowJobs {
@@ -425,9 +428,9 @@ func TestDividePool(t *testing.T) {
 	c := &Controller{
 		ghc: fc,
 	}
-	var pulls []pullRequest
+	var pulls []PullRequest
 	for _, p := range testPulls {
-		npr := pullRequest{Number: githubql.Int(p.number)}
+		npr := PullRequest{Number: githubql.Int(p.number)}
 		npr.BaseRef.Name = githubql.String(p.branch)
 		npr.BaseRef.Prefix = "refs/heads/"
 		npr.Repository.Name = githubql.String(p.repo)
@@ -541,7 +544,7 @@ func TestPickBatch(t *testing.T) {
 		if err := lg.Checkout("o", "r", "master"); err != nil {
 			t.Fatalf("Error checking out master: %v", err)
 		}
-		var pr pullRequest
+		var pr PullRequest
 		pr.Number = githubql.Int(i)
 		pr.Commits.Nodes = []struct {
 			Commit struct {
@@ -602,6 +605,7 @@ func TestTakeAction(t *testing.T) {
 		merged            int
 		triggered         int
 		triggered_batches int
+		action            Action
 	}{
 		{
 			name: "no prs to test, should do nothing",
@@ -614,6 +618,7 @@ func TestTakeAction(t *testing.T) {
 
 			merged:    0,
 			triggered: 0,
+			action:    Wait,
 		},
 		{
 			name: "pending batch, pending serial, nothing to do",
@@ -626,6 +631,7 @@ func TestTakeAction(t *testing.T) {
 
 			merged:    0,
 			triggered: 0,
+			action:    Wait,
 		},
 		{
 			name: "pending batch, successful serial, nothing to do",
@@ -638,6 +644,7 @@ func TestTakeAction(t *testing.T) {
 
 			merged:    0,
 			triggered: 0,
+			action:    Wait,
 		},
 		{
 			name: "pending batch, should trigger serial",
@@ -650,19 +657,21 @@ func TestTakeAction(t *testing.T) {
 
 			merged:    0,
 			triggered: 1,
+			action:    Trigger,
 		},
 		{
-			name: "no pending batch, should trigger serial and batch",
+			name: "no pending batch, should trigger batch",
 
 			batchPending: false,
 			successes:    []int{},
-			pendings:     []int{},
-			nones:        []int{0, 1, 2, 3},
+			pendings:     []int{0},
+			nones:        []int{1, 2, 3},
 			batchMerges:  []int{},
 
 			merged:            0,
-			triggered:         2,
+			triggered:         1,
 			triggered_batches: 1,
+			action:            TriggerBatch,
 		},
 		{
 			name: "one PR, should not trigger batch",
@@ -675,6 +684,7 @@ func TestTakeAction(t *testing.T) {
 
 			merged:    0,
 			triggered: 1,
+			action:    Trigger,
 		},
 		{
 			name: "successful PR, should merge",
@@ -687,6 +697,7 @@ func TestTakeAction(t *testing.T) {
 
 			merged:    1,
 			triggered: 0,
+			action:    Merge,
 		},
 		{
 			name: "successful batch, should merge",
@@ -699,6 +710,7 @@ func TestTakeAction(t *testing.T) {
 
 			merged:    3,
 			triggered: 0,
+			action:    MergeBatch,
 		},
 	}
 
@@ -733,8 +745,8 @@ func TestTakeAction(t *testing.T) {
 			branch: "master",
 			sha:    "master",
 		}
-		genPulls := func(nums []int) []pullRequest {
-			var prs []pullRequest
+		genPulls := func(nums []int) []PullRequest {
+			var prs []PullRequest
 			for _, i := range nums {
 				if err := lg.CheckoutNewBranch("o", "r", fmt.Sprintf("pr-%d", i)); err != nil {
 					t.Fatalf("Error checking out new branch: %v", err)
@@ -745,7 +757,7 @@ func TestTakeAction(t *testing.T) {
 				if err := lg.Checkout("o", "r", "master"); err != nil {
 					t.Fatalf("Error checking out master: %v", err)
 				}
-				var pr pullRequest
+				var pr PullRequest
 				pr.Number = githubql.Int(i)
 				pr.Commits.Nodes = []struct {
 					Commit struct {
@@ -769,9 +781,11 @@ func TestTakeAction(t *testing.T) {
 			kc:     &fkc,
 		}
 		t.Logf("Test case: %s", tc.name)
-		if err := c.takeAction(sp, tc.batchPending, genPulls(tc.successes), genPulls(tc.pendings), genPulls(tc.nones), genPulls(tc.batchMerges)); err != nil {
+		if act, _, err := c.takeAction(sp, tc.batchPending, genPulls(tc.successes), genPulls(tc.pendings), genPulls(tc.nones), genPulls(tc.batchMerges)); err != nil {
 			t.Errorf("Error in takeAction: %v", err)
 			continue
+		} else if act != tc.action {
+			t.Errorf("Wrong action. Got %v, wanted %v.", act, tc.action)
 		}
 		if tc.triggered != len(fkc.createdJobs) {
 			t.Errorf("Wrong number of jobs triggered. Got %d, expected %d.", len(fkc.createdJobs), tc.triggered)
@@ -792,5 +806,32 @@ func TestTakeAction(t *testing.T) {
 		if tc.triggered_batches != batches {
 			t.Errorf("Wrong number of batches triggered. Got %d, expected %d.", batches, tc.triggered_batches)
 		}
+	}
+}
+
+func TestServeHTTP(t *testing.T) {
+	c := &Controller{
+		pools: []Pool{
+			{
+				Action: Merge,
+			},
+		},
+	}
+	s := httptest.NewServer(c)
+	defer s.Close()
+	resp, err := http.Get(s.URL)
+	if err != nil {
+		t.Errorf("GET error: %v", err)
+	}
+	defer resp.Body.Close()
+	var pools []Pool
+	if err := json.NewDecoder(resp.Body).Decode(&pools); err != nil {
+		t.Errorf("JSON decoding error: %v", err)
+	}
+	if len(pools) != 1 {
+		t.Errorf("Wrong number of pools. Got %d, want 1.", len(pools))
+	}
+	if pools[0].Action != Merge {
+		t.Errorf("Wrong action. Got %v, want %v.", pools[0].Action, Merge)
 	}
 }

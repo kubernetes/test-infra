@@ -20,7 +20,9 @@ import (
 	"bytes"
 	"flag"
 	"io/ioutil"
+	"net/http"
 	"net/url"
+	"strconv"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -33,6 +35,8 @@ import (
 )
 
 var (
+	port = flag.Int("port", 8888, "Port to listen on.")
+
 	dryRun  = flag.Bool("dry-run", true, "Whether to mutate any real-world state.")
 	runOnce = flag.Bool("run-once", false, "If true, run only once then quit.")
 
@@ -98,9 +102,12 @@ func main() {
 	if *runOnce {
 		return
 	}
-	for range time.Tick(time.Minute) {
-		sync(c)
-	}
+	go func(c *tide.Controller) {
+		for range time.Tick(time.Minute) {
+			sync(c)
+		}
+	}(c)
+	logrus.Fatal(http.ListenAndServe(":"+strconv.Itoa(*port), nil))
 }
 
 func sync(c *tide.Controller) {
