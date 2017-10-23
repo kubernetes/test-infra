@@ -33,7 +33,7 @@ import (
 var (
 	// kops specific flags.
 	kopsPath         = flag.String("kops", "", "(kops only) Path to the kops binary. Must be set for kops.")
-	kopsCluster      = flag.String("kops-cluster", "", "(kops only) Cluster name. Must be set for kops.")
+	kopsCluster      = flag.String("kops-cluster", "", "(kops only) Deprecated. Cluster name for kops; if not set defaults to --cluster.")
 	kopsState        = flag.String("kops-state", "", "(kops only) s3:// path to kops state store. Must be set.")
 	kopsSSHKey       = flag.String("kops-ssh-key", "", "(kops only) Path to ssh key-pair for each node (defaults '~/.ssh/kube_aws_rsa' if unset.)")
 	kopsKubeVersion  = flag.String("kops-kubernetes-version", "", "(kops only) If set, the version of Kubernetes to deploy (can be a URL to a GCS path where the release is stored) (Defaults to kops default, latest stable release.).")
@@ -90,15 +90,19 @@ func migrateKopsEnv() error {
 	})
 }
 
-func newKops(provider, gcpProject string) (*kops, error) {
+func newKops(provider, gcpProject, cluster string) (*kops, error) {
 	if err := migrateKopsEnv(); err != nil {
 		return nil, err
 	}
 	if *kopsPath == "" {
 		return nil, fmt.Errorf("--kops must be set to a valid binary path for kops deployment")
 	}
-	if *kopsCluster == "" {
-		return nil, fmt.Errorf("--kops-cluster must be set to a valid cluster name for kops deployment")
+
+	if *kopsCluster != "" {
+		cluster = *kopsCluster
+	}
+	if cluster == "" {
+		return nil, fmt.Errorf("--cluster or --kops-cluster must be set to a valid cluster name for kops deployment")
 	}
 	if *kopsState == "" {
 		return nil, fmt.Errorf("--kops-state must be set to a valid S3 path for kops deployment")
@@ -159,7 +163,7 @@ func newKops(provider, gcpProject string) (*kops, error) {
 		zones:       zones,
 		nodes:       *kopsNodes,
 		adminAccess: *kopsAdminAccess,
-		cluster:     *kopsCluster,
+		cluster:     cluster,
 		image:       *kopsImage,
 		args:        *kopsArgs,
 		kubecfg:     kubecfg,
