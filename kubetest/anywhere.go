@@ -18,6 +18,7 @@ package main
 
 import (
 	"bytes"
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -27,8 +28,6 @@ import (
 	"strings"
 	"text/template"
 	"time"
-
-	flag "github.com/spf13/pflag"
 )
 
 const defaultKubeadmCNI = "weave"

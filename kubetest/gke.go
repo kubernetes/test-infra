@@ -22,6 +22,7 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -31,8 +32,6 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-
-	flag "github.com/spf13/pflag"
 )
 
 const (
