@@ -57,7 +57,6 @@ type githubClient interface {
 	GetIssueLabels(org, repo string, number int) ([]github.Label, error)
 	AddLabel(owner, repo string, number int, label string) error
 	RemoveLabel(owner, repo string, number int, label string) error
-	CreateComment(org, repo string, number int, comment string) error
 }
 
 func handlePullRequest(pc plugins.PluginClient, pe github.PullRequestEvent) error {
