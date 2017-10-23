@@ -198,17 +198,13 @@ func handlePR(gc githubClient, log *logrus.Entry, pr *github.PullRequestEvent) e
 			ensureNoRelNoteNeededLabel(gc, log, pr, prLabels)
 			return clearStaleComments(gc, log, pr, nil)
 		}
-		// If /release-note-none has been left on PR then pretend the release-note body is "NONE" instead of empty.
 		comments, err = gc.ListIssueComments(org, repo, pr.Number)
 		if err != nil {
 			return fmt.Errorf("failed to list comments on %s/%s#%d. err: %v", org, repo, pr.Number, err)
 		}
 		if containsNoneCommand(comments) {
 			labelToAdd = releaseNoteNone
-		}
-	}
-	if labelToAdd == releaseNoteLabelNeeded {
-		if !hasLabel(releaseNoteLabelNeeded, prLabels) {
+		} else if !hasLabel(releaseNoteLabelNeeded, prLabels) {
 			comment := plugins.FormatResponse(pr.PullRequest.User.Login, releaseNoteBody, releaseNoteSuffix)
 			if err := gc.CreateComment(org, repo, pr.Number, comment); err != nil {
 				log.WithError(err).Errorf("Failed to comment on %s/%s#%d with comment %q.", org, repo, pr.Number, comment)
