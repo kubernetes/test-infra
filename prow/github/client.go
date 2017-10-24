@@ -378,10 +378,10 @@ func (c *Client) DeleteStaleComments(org, repo string, number int, comments []Is
 // function should accept that populated slice for each page of
 // results.  An error is returned if encountered in making calls to
 // github or marshalling objects.
-func (c *Client) readPaginatedResults(path string, newObj func() interface{}, accumulate func(interface{})) error {
+func (c *Client) readPaginatedResults(path, accept string, newObj func() interface{}, accumulate func(interface{})) error {
 	url := fmt.Sprintf("%s%s?per_page=100", c.base, path)
 	for url != "" {
-		resp, err := c.requestRetry(http.MethodGet, url, "", nil)
+		resp, err := c.requestRetry(http.MethodGet, url, accept, nil)
 		if err != nil {
 			return err
 		}
@@ -416,7 +416,9 @@ func (c *Client) ListIssueComments(org, repo string, number int) ([]IssueComment
 	}
 	path := fmt.Sprintf("/repos/%s/%s/issues/%d/comments", org, repo, number)
 	var comments []IssueComment
-	err := c.readPaginatedResults(path,
+	err := c.readPaginatedResults(
+		path,
+		"",
 		func() interface{} {
 			return &[]IssueComment{}
 		},
@@ -450,7 +452,9 @@ func (c *Client) GetPullRequestChanges(org, repo string, number int) ([]PullRequ
 	}
 	path := fmt.Sprintf("/repos/%s/%s/pulls/%d/files", org, repo, number)
 	var changes []PullRequestChange
-	err := c.readPaginatedResults(path,
+	err := c.readPaginatedResults(
+		path,
+		"",
 		func() interface{} {
 			return &[]PullRequestChange{}
 		},
@@ -473,7 +477,9 @@ func (c *Client) ListPullRequestComments(org, repo string, number int) ([]Review
 	}
 	path := fmt.Sprintf("/repos/%s/%s/pulls/%d/comments", org, repo, number)
 	var comments []ReviewComment
-	err := c.readPaginatedResults(path,
+	err := c.readPaginatedResults(
+		path,
+		"",
 		func() interface{} {
 			return &[]ReviewComment{}
 		},
@@ -485,6 +491,31 @@ func (c *Client) ListPullRequestComments(org, repo string, number int) ([]Review
 		return nil, err
 	}
 	return comments, nil
+}
+
+// ListReviews returns all reviews on a pull request. This may use
+// more than one API token.
+func (c *Client) ListReviews(org, repo string, number int) ([]Review, error) {
+	c.log("ListReviews", org, repo, number)
+	if c.fake {
+		return nil, nil
+	}
+	path := fmt.Sprintf("/repos/%s/%s/pulls/%d/reviews", org, repo, number)
+	var reviews []Review
+	err := c.readPaginatedResults(
+		path,
+		"",
+		func() interface{} {
+			return &[]Review{}
+		},
+		func(obj interface{}) {
+			reviews = append(reviews, *(obj.(*[]Review))...)
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+	return reviews, nil
 }
 
 // CreateStatus creates or updates the status of a commit.
@@ -580,7 +611,9 @@ func (c *Client) getLabels(path string) ([]Label, error) {
 	if c.fake {
 		return labels, nil
 	}
-	err := c.readPaginatedResults(path,
+	err := c.readPaginatedResults(
+		path,
+		"",
 		func() interface{} {
 			return &[]Label{}
 		},
@@ -966,7 +999,9 @@ func (c *Client) ListTeams(org string) ([]Team, error) {
 	}
 	path := fmt.Sprintf("/orgs/%s/teams", org)
 	var teams []Team
-	err := c.readPaginatedResults(path,
+	err := c.readPaginatedResults(
+		path,
+		"",
 		func() interface{} {
 			return &[]Team{}
 		},
@@ -988,7 +1023,11 @@ func (c *Client) ListTeamMembers(id int) ([]TeamMember, error) {
 	}
 	path := fmt.Sprintf("/teams/%d/members", id)
 	var teamMembers []TeamMember
-	err := c.readPaginatedResults(path,
+	err := c.readPaginatedResults(
+		path,
+		// This accept header enables the nested teams preview.
+		// https://developer.github.com/changes/2017-08-30-preview-nested-teams/
+		"application/vnd.github.hellcat-preview+json",
 		func() interface{} {
 			return &[]TeamMember{}
 		},
@@ -1045,4 +1084,32 @@ func (c *Client) Merge(org, repo string, pr int, details MergeDetails) error {
 	}
 
 	return nil
+}
+
+// ListCollaborators gets a list of all users who have access to a repo (and can become assignees
+// or requested reviewers). This includes, org members with access, outside collaborators, and org
+// owners.
+func (c *Client) ListCollaborators(org, repo string) ([]User, error) {
+	c.log("ListCollaborators", org, repo)
+	if c.fake {
+		return nil, nil
+	}
+	path := fmt.Sprintf("/repos/%s/%s/collaborators", org, repo)
+	var users []User
+	err := c.readPaginatedResults(
+		path,
+		// This accept header enables the nested teams preview.
+		// https://developer.github.com/changes/2017-08-30-preview-nested-teams/
+		"application/vnd.github.hellcat-preview+json",
+		func() interface{} {
+			return &[]User{}
+		},
+		func(obj interface{}) {
+			users = append(users, *(obj.(*[]User))...)
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+	return users, nil
 }

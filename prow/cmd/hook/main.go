@@ -37,6 +37,7 @@ import (
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/hook"
 	"k8s.io/test-infra/prow/kube"
+	"k8s.io/test-infra/prow/owners"
 	"k8s.io/test-infra/prow/plugins"
 	"k8s.io/test-infra/prow/slack"
 )
@@ -137,20 +138,23 @@ func main() {
 		logrus.WithError(err).Fatal("Error getting git client.")
 	}
 
+	pluginAgent := &plugins.PluginAgent{}
+	ownersClient := owners.NewClient(gitClient, githubClient, pluginAgent.MDYAMLEnabled)
+
 	logger := logrus.StandardLogger()
 	githubClient.Logger = logger.WithField("client", "github")
 	kubeClient.Logger = logger.WithField("client", "kube")
 	gitClient.Logger = logger.WithField("client", "git")
 	slackClient.Logger = logger.WithField("client", "slack")
+	ownersClient.Logger = logger.WithField("client", "owners")
 
-	pluginAgent := &plugins.PluginAgent{
-		PluginClient: plugins.PluginClient{
-			GitHubClient: githubClient,
-			KubeClient:   kubeClient,
-			GitClient:    gitClient,
-			SlackClient:  slackClient,
-			Logger:       logrus.NewEntry(logrus.StandardLogger()),
-		},
+	pluginAgent.PluginClient = plugins.PluginClient{
+		GitHubClient: githubClient,
+		KubeClient:   kubeClient,
+		GitClient:    gitClient,
+		SlackClient:  slackClient,
+		OwnersClient: ownersClient,
+		Logger:       logrus.NewEntry(logrus.StandardLogger()),
 	}
 	if err := pluginAgent.Start(*pluginConfig); err != nil {
 		logrus.WithError(err).Fatal("Error starting plugins.")

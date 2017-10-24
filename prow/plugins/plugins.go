@@ -31,6 +31,7 @@ import (
 	"k8s.io/test-infra/prow/git"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
+	"k8s.io/test-infra/prow/owners"
 	"k8s.io/test-infra/prow/slack"
 )
 
@@ -108,6 +109,7 @@ type PluginClient struct {
 	KubeClient   *kube.Client
 	GitClient    *git.Client
 	SlackClient  *slack.Client
+	OwnersClient *owners.Client
 
 	CommentPruner *commentpruner.EventClient
 
@@ -140,6 +142,9 @@ type Configuration struct {
 	// external plugins.
 	ExternalPlugins map[string][]ExternalPlugin `json:"external_plugins,omitempty"`
 
+	// Owners contains configuration related to handling OWNERS files.
+	Owners Owners `json:"owners,omitempty"`
+
 	// Built-in plugins specific configuration.
 	Triggers        []Trigger       `json:"triggers,omitempty"`
 	Heart           Heart           `json:"heart,omitempty"`
@@ -161,6 +166,35 @@ type ExternalPlugin struct {
 	// server to the external plugin. If no events are specified,
 	// everything is sent.
 	Events []string `json:"events,omitempty"`
+}
+
+// Owners contains configuration related to handling OWNERS files.
+type Owners struct {
+	// MDYAMLRepos is a list of org and org/repo strings specifying the repos that support YAML
+	// OWNERS config headers at the top of markdown (*.md) files. These headers function just like
+	// the config in an OWNERS file, but only apply to the file itself instead of the entire
+	// directory and all sub-directories.
+	// The yaml header must be at the start of the file and be bracketed with "---" like so:
+	/*
+		---
+		approvers:
+		- mikedanese
+		- thockin
+
+		---
+	*/
+	MDYAMLRepos []string `json:"mdyamlrepos,omitempty"`
+}
+
+func (pa *PluginAgent) MDYAMLEnabled(org, repo string) bool {
+	full := fmt.Sprintf("%s/%s", org, repo)
+	for _, elem := range pa.Config().Owners.MDYAMLRepos {
+		if elem == org || elem == full {
+			return true
+		}
+	}
+	return false
+
 }
 
 /*

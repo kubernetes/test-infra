@@ -505,7 +505,9 @@ func TestReadPaginatedResults(t *testing.T) {
 	c := getClient(ts.URL)
 	path := "/label/foo"
 	var labels []Label
-	err := c.readPaginatedResults(path,
+	err := c.readPaginatedResults(
+		path,
+		"",
 		func() interface{} {
 			return &[]Label{}
 		},
@@ -998,5 +1000,24 @@ func TestListTeamMembers(t *testing.T) {
 		t.Errorf("Expected one team member, found %d: %v", len(teamMembers), teamMembers)
 	} else if teamMembers[0].Login != "foo" {
 		t.Errorf("Wrong team names: %v", teamMembers)
+	}
+}
+
+func TestListCollaborators(t *testing.T) {
+	ts := simpleTestServer(t, "/repos/org/repo/collaborators", []User{{Login: "foo"}, {Login: "bar"}})
+	defer ts.Close()
+	c := getClient(ts.URL)
+	users, err := c.ListCollaborators("org", "repo")
+	if err != nil {
+		t.Errorf("Didn't expect error: %v", err)
+	} else if len(users) != 2 {
+		t.Errorf("Expected two users, found %d: %v", len(users), users)
+		return
+	}
+	if users[0].Login != "foo" {
+		t.Errorf("Wrong user login for index 0: %v", users[0])
+	}
+	if users[1].Login != "bar" {
+		t.Errorf("Wrong user login for index 1: %v", users[1])
 	}
 }
