@@ -54,7 +54,7 @@ usage() {
 set -o nounset
 set -o errexit
 
-GO_VERSION='go1.8.3.linux-amd64'
+GO_VERSION='go1.9.1.linux-amd64'
 TIMEZONE='America/Los_Angeles'
 
 FAKE=
