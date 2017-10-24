@@ -33,16 +33,14 @@ config_updater:
 
 plugins:
 
-  kubernetes/kubernetes:
-  - trigger
-  - release-note
-  - docs-no-retest
-
-  kubernetes/test-infra:
+  jetstack-experimental/test-infra:
   - trigger
   - config-updater
 
-  kubernetes:
+  jetstack-experimental/cert-manager:
+  - trigger
+  - release-note
+  - docs-no-retest
   - assign
   - close
   - reopen

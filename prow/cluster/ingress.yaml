@@ -15,9 +15,8 @@
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
-  name: tls-ing
+  name: prow-ing
   annotations:
-    kubernetes.io/ingress.global-static-ip-name: prow
     kubernetes.io/tls-acme: "true"
     kubernetes.io/ingress.class: "nginx"
 spec:
@@ -26,7 +25,7 @@ spec:
     hosts:
     - prow.build-infra.jetstack.net
   rules:
-  - host: prow.k8s.io
+  - host: prow.build-infra.jetstack.net
     http:
       paths:
       - path: /

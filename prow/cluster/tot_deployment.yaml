@@ -11,23 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  labels:
-    app: tot
-  name: tot-storage
-spec:
-  capacity:
-    storage: 1Gi
-  accessModes:
-    - ReadWriteOnce
-  persistentVolumeReclaimPolicy: Retain
-  gcePersistentDisk:
-    pdName: tot-storage
-    fsType: ext4
----
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
