@@ -1518,6 +1518,7 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/mlkube-build-periodic
 - name: mlkube-build-presubmit
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/mlkube-build-presubmit
+  num_columns_recent: 30
 - name: mlkube-build-postsubmit
   gcs_prefix: kubernetes-jenkins/logs/mlkube-build-postsubmit
 # kube-proxy daemonset migration jobs
