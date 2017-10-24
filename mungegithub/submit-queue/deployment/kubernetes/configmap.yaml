@@ -31,7 +31,6 @@ nonblocking-jobs: "\
   ci-kubernetes-e2e-gci-gce-garbage,\
   ci-kubernetes-e2e-gce-etcd3,\
   ci-kubernetes-e2e-gce-examples,\
-  ci-kubernetes-e2e-gce-federation,\
   ci-kubernetes-e2e-gce-multizone,\
   ci-kubernetes-e2e-gce-scalability,\
   ci-kubernetes-e2e-gce-serial,\

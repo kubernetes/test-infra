@@ -794,7 +794,6 @@ class JobTest(unittest.TestCase):
             'ci-kubernetes-e2e-gke-large-deploy': 'ci-kubernetes-scale-*',
             'ci-kubernetes-e2e-gke-large-teardown': 'ci-kubernetes-scale-*',
             'ci-kubernetes-e2e-gke-scale-correctness': 'ci-kubernetes-scale-*',
-            'ci-kubernetes-e2e-gce-federation': 'ci-kubernetes-federation-*',
             'pull-kubernetes-federation-e2e-gce': 'pull-kubernetes-federation-e2e-gce-*',
             'ci-kubernetes-pull-gce-federation-deploy': 'pull-kubernetes-federation-e2e-gce-*',
             'pull-kubernetes-federation-e2e-gce-canary': 'pull-kubernetes-federation-e2e-gce-*',
