@@ -1621,6 +1621,10 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-test-infra-bazel
   days_of_results: 1
   num_columns_recent: 20
+- name: pull-test-infra-bazel-canary
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-test-infra-bazel-canary
+  days_of_results: 1
+  num_columns_recent: 20
 - name: pull-test-infra-gubernator
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-test-infra-gubernator
   days_of_results: 1
@@ -4014,6 +4018,9 @@ dashboards:
     base_options: 'width=10'
     alerts_options:
       alert_mail_to_addresses: 'bentheelder+alerts@google.com'
+  - name: bazel-canary
+    test_group_name: pull-test-infra-bazel-canary
+    base_options: 'width=10'
   - name: gubernator
     test_group_name: pull-test-infra-gubernator
     base_options: 'width=10'

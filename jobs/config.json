@@ -10329,6 +10329,18 @@
       "sig-testing"
     ]
   },
+  "pull-test-infra-bazel-canary": {
+    "args": [
+      "--build=//...",
+      "--install=gubernator/test_requirements.txt",
+      "--test=//... //verify:verify-all",
+      "--test-args=--test_output=errors"
+    ],
+    "scenario": "kubernetes_bazel",
+    "sigOwners": [
+      "sig-testing"
+    ]
+  },
   "pull-test-infra-gubernator": {
     "args": [
       "./gubernator/test-gubernator.sh"
