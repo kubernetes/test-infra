@@ -25,7 +25,6 @@ import re
 import shutil
 import string
 import tempfile
-import urllib
 import urllib2
 import unittest
 import time
@@ -393,9 +392,12 @@ class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-method
         self.assertIsNotNone(match)
         url = 'https://gcr.io/v2/%s/manifests/%s' % (match.group(1),
                                                      match.group(2))
-        data = json.loads(urllib.urlopen(url).read())
+        req = urllib2.Request(url)
+        req.add_header('Accept', 'application/vnd.docker.distribution.manifest.v2+json')
+        data = json.loads(urllib2.urlopen(req).read())
         self.assertNotIn('errors', data)
-        self.assertIn('name', data)
+        self.assertIn('config', data)
+        self.assertIn('digest', data.get('config'))
 
     def test_docker_env(self):
         """
