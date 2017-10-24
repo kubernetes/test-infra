@@ -98,6 +98,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws
 - name: ci-kubernetes-e2e-kops-aws-canary
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-canary
+- name: ci-kubernetes-e2e-kops-aws-sig-cli
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-sig-cli
 - name: ci-kubernetes-e2e-kops-aws-slow
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-slow
 - name: ci-kubernetes-e2e-kops-aws-serial
@@ -3314,8 +3316,9 @@ dashboards:
     alert_options:
       alert_mail_to_addresses: 'kubernetes-sig-cli-oncall@gmail.com'
   - name: aws
-    test_group_name: ci-kubernetes-e2e-kops-aws
-    base_options: 'include-filter-by-regex=Kubectl%7Ckubectl'
+    test_group_name: ci-kubernetes-e2e-kops-aws-sig-cli
+    alert_options:
+      alert_mail_to_addresses: 'kubernetes-sig-cli-oncall@gmail.com'
   - name: soak-gce-gci-test
     test_group_name: ci-kubernetes-soak-gce-gci-test
     base_options: 'include-filter-by-regex=Kubectl%7Ckubectl'
