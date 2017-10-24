@@ -428,7 +428,6 @@ def set_up_kops_gce(workspace, args, mode, cluster, runner_args):
         '--kops-state=%s' % args.kops_state_gce,
         '--kops-nodes=%s' % args.kops_nodes,
         '--kops-ssh-key=%s' % gce_ssh,
-        '--kops-version=%s' % args.kops_version,
     ])
 
 
@@ -593,6 +592,12 @@ def main(args):
     if args.test == 'true':
         runner_args.append('--test')
 
+    # Passthrough some args to kubetest
+    if args.deployment:
+        runner_args.append('--deployment=%s' % args.deployment)
+    if args.provider:
+        runner_args.append('--provider=%s' % args.provider)
+
     cluster = cluster_name(args.cluster, os.getenv('BUILD_NUMBER', 0))
     runner_args.append('--cluster=%s' % cluster)
     runner_args.append('--gcp-network=%s' % cluster)
@@ -618,9 +623,9 @@ def main(args):
                 '--kubernetes-anywhere-kubelet-version=%s' % version,
             ])
 
-    if args.aws:
+    if args.aws or args.provider == 'aws':
         set_up_aws(mode.workspace, args, mode, cluster, runner_args)
-    elif args.kops:
+    elif args.deployment == 'kops' and args.provider == 'gce':
         set_up_kops_gce(mode.workspace, args, mode, cluster, runner_args)
     elif args.gce_ssh:
         mode.add_gce_ssh(args.gce_ssh, args.gce_pub)
@@ -717,12 +722,9 @@ def create_parser():
         default=[],
         help='Send unrecognized args directly to kubetest')
 
+
     # kops & aws
-    # At the moment, the logic is that `--aws` => kops & aws,
-    # and `--kops` => kops & gce.
-    # TODO(justinsb): get this using a `--provider` flag, just like kubetest
-    parser.add_argument(
-        '--kops', action='store_true', help='E2E job runs using kops')
+    # TODO(justinsb): replace with --provider=aws --deployment=kops
     parser.add_argument(
         '--aws', action='store_true', help='E2E job runs in aws')
     parser.add_argument(
@@ -757,13 +759,18 @@ def create_parser():
         '--kops-state', default='s3://k8s-kops-jenkins/',
         help='Name of the aws state storage')
     parser.add_argument(
-        '--kops-state-gce', default='gs://k8s-kops-gce-jenkins/',
+        '--kops-state-gce', default='gs://k8s-kops-gce/',
         help='Name of the kops state storage for GCE')
     parser.add_argument(
         '--kops-zones', help='Comma-separated list of zones else random choice')
     parser.add_argument(
         '--kops-build', action='store_true', help='If we need to build kops locally')
-    parser.add_argument('--kops-version', help='URL containing kops version to test')
+
+    # kubetest flags that also trigger behaviour here
+    parser.add_argument(
+        '--provider', help='provider flag as used by kubetest')
+    parser.add_argument(
+        '--deployment', help='deployment flag as used by kubetest')
 
     return parser
 
@@ -781,7 +788,7 @@ def parse_args(args=None):
         raise ValueError(
             '--image-family and --image-project must be both set or unset')
 
-    if args.aws:
+    if args.aws or args.provider == 'aws':
         # If aws keys are missing, try to fetch from HOME dir
         if not args.aws_ssh or not args.aws_pub or not args.aws_cred:
             home = os.environ.get('HOME')

@@ -7786,7 +7786,6 @@
       "--env-file=jobs/platform/kops_gce.env",
       "--extract=ci/latest",
       "--ginkgo-parallel=30",
-      "--kops",
       "--kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci.txt",
       "--kops-zones=us-central1-a",
       "--provider=gce",
