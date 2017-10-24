@@ -138,7 +138,8 @@ func main() {
 		logrus.WithError(err).Fatal("Error getting git client.")
 	}
 
-	ownersClient := owners.NewClient(configAgent, gitClient, githubClient)
+	pluginAgent := &plugins.PluginAgent{}
+	ownersClient := owners.NewClient(gitClient, githubClient, pluginAgent.MDYAMLEnabled)
 
 	logger := logrus.StandardLogger()
 	githubClient.Logger = logger.WithField("client", "github")
@@ -147,15 +148,13 @@ func main() {
 	slackClient.Logger = logger.WithField("client", "slack")
 	ownersClient.Logger = logger.WithField("client", "owners")
 
-	pluginAgent := &plugins.PluginAgent{
-		PluginClient: plugins.PluginClient{
-			GitHubClient: githubClient,
-			KubeClient:   kubeClient,
-			GitClient:    gitClient,
-			SlackClient:  slackClient,
-			OwnersClient: ownersClient,
-			Logger:       logrus.NewEntry(logrus.StandardLogger()),
-		},
+	pluginAgent.PluginClient = plugins.PluginClient{
+		GitHubClient: githubClient,
+		KubeClient:   kubeClient,
+		GitClient:    gitClient,
+		SlackClient:  slackClient,
+		OwnersClient: ownersClient,
+		Logger:       logrus.NewEntry(logrus.StandardLogger()),
 	}
 	if err := pluginAgent.Start(*pluginConfig); err != nil {
 		logrus.WithError(err).Fatal("Error starting plugins.")

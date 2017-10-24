@@ -6,7 +6,6 @@ go_library(
     importpath = "k8s.io/test-infra/prow/owners",
     visibility = ["//visibility:public"],
     deps = [
-        "//prow/config:go_default_library",
         "//prow/git:go_default_library",
         "//prow/github:go_default_library",
         "//vendor/github.com/ghodss/yaml:go_default_library",

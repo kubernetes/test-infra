@@ -29,7 +29,6 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/kubernetes/pkg/util/sets"
-	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/git"
 	"k8s.io/test-infra/prow/github"
 )
@@ -72,14 +71,14 @@ type Client struct {
 	cache map[string]cacheEntry
 }
 
-func NewClient(ca *config.Agent, gc *git.Client, ghc *github.Client) *Client {
+func NewClient(gc *git.Client, ghc *github.Client, mdYAMLEnabled func(org, repo string) bool) *Client {
 	return &Client{
 		git:    gc,
 		ghc:    ghc,
 		Logger: logrus.NewEntry(logrus.StandardLogger()),
 		cache:  make(map[string]cacheEntry),
 
-		mdYAMLEnabled: mdYAMLEnabledFromConfig(ca),
+		mdYAMLEnabled: mdYAMLEnabled,
 	}
 }
 
@@ -173,19 +172,6 @@ func (c *Client) LoadRepoOwners(org, repo string) (*RepoOwners, error) {
 		owners = entry.owners.filterCollaborators(collaborators)
 	}
 	return owners, nil
-}
-
-func mdYAMLEnabledFromConfig(ca *config.Agent) func(org, repo string) bool {
-	return func(org, repo string) bool {
-		enabledRepos := ca.Config().Owners.MDYAMLRepos
-		full := fmt.Sprintf("%s/%s", org, repo)
-		for _, elem := range enabledRepos {
-			if elem == org || elem == full {
-				return true
-			}
-		}
-		return false
-	}
 }
 
 func (a RepoAliases) ExpandAlias(alias string) sets.String {

@@ -70,31 +70,10 @@ type Config struct {
 
 	// PushGateway is a prometheus push gateway.
 	PushGateway PushGateway `json:"push_gateway,omitempty"`
-
-	// Owners contains configuration related to handling OWNERS files.
-	Owners Owners `json:"owners,omitempty"`
 }
 
 type PushGateway struct {
 	Endpoint string `json:"endpoint,omitempty"`
-}
-
-// Owners contains configuration related to handling OWNERS files.
-type Owners struct {
-	// MDYAMLRepos is a list of org and org/repo strings specifying the repos that support YAML
-	// OWNERS config headers at the top of markdown (*.md) files. These headers function just like
-	// the config in an OWNERS file, but only apply to the file itself instead of the entire
-	// directory and all sub-directories.
-	// The yaml header must be at the start of the file and be bracketed with "---" like so:
-	/*
-		---
-		approvers:
-		- mikedanese
-		- thockin
-
-		---
-	*/
-	MDYAMLRepos []string `json:"mdyamlrepos,omitempty"`
 }
 
 // Tide is config for the tide pool.
