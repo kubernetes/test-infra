@@ -123,6 +123,7 @@ def main(args):
                 raise ValueError('Invalid install path: %s' % install)
             check('pip', 'install', '-r', install)
 
+    check('bazel', 'version')
     check('bazel', 'clean', '--expunge')
     res = 0
     try:
