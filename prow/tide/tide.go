@@ -59,6 +59,8 @@ type Controller struct {
 	pools []Pool
 }
 
+// Action represents what actions the controller can take. It will take
+// exactly one action each sync.
 type Action string
 
 const (
@@ -69,6 +71,8 @@ const (
 	MergeBatch          = "MERGE_BATCH"
 )
 
+// Pool represents information about a tide pool. There is one for every
+// org/repo/branch combination that has PRs in the pool.
 type Pool struct {
 	Org    string
 	Repo   string

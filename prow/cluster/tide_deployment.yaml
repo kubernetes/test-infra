@@ -27,9 +27,12 @@ spec:
     spec:
       containers:
       - name: tide
-        image: gcr.io/k8s-prow/tide:0.7
+        image: gcr.io/k8s-prow/tide:0.8
         args:
         - --dry-run=false
+        ports:
+          - name: http
+            containerPort: 8888
         volumeMounts:
         - name: oauth
           mountPath: /etc/github

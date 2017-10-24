@@ -102,12 +102,12 @@ func main() {
 	if *runOnce {
 		return
 	}
-	go func(c *tide.Controller) {
+	go func() {
 		for range time.Tick(time.Minute) {
 			sync(c)
 		}
-	}(c)
-	logrus.Fatal(http.ListenAndServe(":"+strconv.Itoa(*port), nil))
+	}()
+	logrus.Fatal(http.ListenAndServe(":"+strconv.Itoa(*port), c))
 }
 
 func sync(c *tide.Controller) {

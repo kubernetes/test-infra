@@ -25,7 +25,7 @@ TOT_VERSION              ?= 0.5
 HOROLOGIUM_VERSION       ?= 0.10
 PLANK_VERSION            ?= 0.52
 JENKINS-OPERATOR_VERSION ?= 0.48
-TIDE_VERSION             ?= 0.7
+TIDE_VERSION             ?= 0.8
 
 # These are the usual GKE variables.
 PROJECT       ?= k8s-prow
