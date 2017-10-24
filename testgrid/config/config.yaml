@@ -1529,6 +1529,8 @@ test_groups:
 #ibm ppc64le test results
 - name: ppc64le-conformance
   gcs_prefix: ppc64le-kubernetes/logs/ci-conformance-kubernetes
+- name: ppc64le-unit
+  gcs_prefix: ppc64le-kubernetes/logs/ci-unit-kubernetes
 #presubmits
 - name: pull-kubernetes-bazel-build
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-bazel-build
@@ -3708,6 +3710,9 @@ dashboards:
   - name: conformance
     test_group_name: ppc64le-conformance
     description: 'conformance test results for ppc64le'
+  - name: unit-tests
+    test_group_name: ppc64le-unit
+    description: 'unit test results for ppc64le'
 
 # Move sig-release here
 
