@@ -4,5 +4,5 @@ metadata:
   name: kube-lego
   namespace: default
 data:
-  lego.email: "colew@google.com"
+  lego.email: "james@jetstack.io"
   lego.url: "https://acme-v01.api.letsencrypt.org/directory"

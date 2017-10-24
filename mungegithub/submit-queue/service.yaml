@@ -13,4 +13,4 @@ spec:
   selector:
     app: submit-queue
     target-repo: @@
-  type: NodePort
+  type: ClusterIP

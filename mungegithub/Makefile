@@ -9,7 +9,7 @@ GIT := $(shell git rev-parse --short HEAD)
 
 TAG ?= $(DATE)-$(GIT)
 
-DEFAULTREPO := gcr.io/k8s-testimages
+DEFAULTREPO := gcr.io/jetstack-build-infra
 REPO ?= $(DEFAULTREPO)
 APP ?= submit-queue
 CONTAINER := $(REPO)/$(APP):$(TAG)
@@ -26,16 +26,16 @@ hooksecret64=$(shell base64 $(HOOKSECRET))
 
 READONLY ?= true
 
-CLUSTER ?= mungegithub
-PROJECT ?= k8s-mungegithub
-ZONE ?= us-central1-b
+CLUSTER ?= github-build-infra
+PROJECT ?= jetstack-build-infra
+ZONE ?= europe-west1-b
 
 get-cluster-credentials:
 	gcloud container clusters get-credentials "$(CLUSTER)" --project="$(PROJECT)" --zone="$(ZONE)"
 
 # just build the binary
 mungegithub build:
-	$(CD) GOBIN=$(DIR) CGO_ENABLED=0 GOOS=linux go install -installsuffix cgo -ldflags '-w'
+	$(CD) GOBIN=$(DIR) CGO_ENABLED=0 GOOS=linux go build -installsuffix cgo -ldflags '-w'
 
 test: mungegithub
 	# in case of error ignore all lines of 'getsockopt: connection refused' these are background go threads that don't matter
@@ -109,17 +109,15 @@ push_secret: secret get-cluster-credentials
 
 # Generate resource spec files for the persistent volume and claim.
 volume:
-ifneq ("", "$(and $(wildcard $(APP)/pv.yaml), $(wildcard $(APP)/pvc.yaml))")
+ifneq ("", "$(wildcard $(APP)/pvc.yaml)")
 	# Updating pv.yaml and pvc.yaml by replacing @@ with TARGET.
-	$(CD) sed -e 's!@@!$(TARGET)!g' $(APP)/pv.yaml > $(APP)/local.pv.yaml
 	$(CD) sed -e 's!@@!$(TARGET)!g' $(APP)/pvc.yaml > $(APP)/local.pvc.yaml
 endif
 
 # Create the persistent volume and persistent volume claim.
 push_volume: volume get-cluster-credentials
-ifneq ("", "$(and $(wildcard $(APP)/pv.yaml), $(wildcard $(APP)/pvc.yaml))")
+ifneq ("", "$(wildcard $(APP)/pvc.yaml)")
 	# Creating persistent volume and persistent volume claim.
-	$(CD) kubectl --kubeconfig=$(KUBECONFIG) create -f $(APP)/local.pv.yaml
 	# Sleeping for 1s to allow persistent volume to be created.
 	@sleep 1
 	$(CD) kubectl --kubeconfig=$(KUBECONFIG) create -f $(APP)/local.pvc.yaml

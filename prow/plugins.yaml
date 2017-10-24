@@ -4,64 +4,44 @@
 ---
 triggers:
 - repos:
-  - kubernetes
-  - kubernetes-incubator
-  - kubernetes-security
-  - google/cadvisor
-  - jlewi/mlkube.io
-  trusted_org: kubernetes
+  - jetstack-experimental/cert-manager
+  - jetstack-experimental/test-infra
+  trusted_org: jetstack-experimental
 
-heart:
-  adorees:
-  - k8s-merge-robot
+# heart:
+#   adorees:
+#   - k8s-merge-robot
 
-slack:
-  mergewarnings:
-  - repos:
-    - kubernetes/kubernetes
-    channels:
-    - kubernetes-dev
-    whitelist:
-    - k8s-merge-robot
+# slack:
+#   mergewarnings:
+#   - repos:
+#     - kubernetes/kubernetes
+#     channels:
+#     - kubernetes-dev
+#     whitelist:
+#     - k8s-merge-robot
 
-milestonestatus:
-  # You can curl the following endpoint in order to determine the github ID of your team
-  # responsible for maintaining the milestones:
-  # curl -H "Authorization: token <token>" https://api.github.com/orgs/<org-name>/teams
-  maintainers_id: 2460384
+# milestonestatus:
+#   # You can curl the following endpoint in order to determine the github ID of your team
+#   # responsible for maintaining the milestones:
+#   # curl -H "Authorization: token <token>" https://api.github.com/orgs/<org-name>/teams
+#   maintainers_id: 2460384
 
 config_updater:
   config_file: prow/config.yaml
   plugin_file: prow/plugins.yaml
 
 plugins:
-  google/cadvisor:
-  - trigger
 
-  kubernetes/charts:
-  - trigger
-
-  kubernetes/cluster-registry:
-  - trigger
-
-  kubernetes/heapster:
-  - trigger
-
-  kubernetes/kops:
-  - trigger
-
-  kubernetes/kubernetes:
-  - trigger
-  - release-note
-  - docs-no-retest
-
-  kubernetes/test-infra:
+  jetstack-experimental/test-infra:
   - trigger
   - config-updater
 
-  kubernetes:
+  jetstack-experimental/cert-manager:
+  - trigger
+  - release-note
+  - docs-no-retest
   - assign
-  - cla
   - close
   - reopen
   - golint
@@ -69,35 +49,8 @@ plugins:
   - hold
   - label
   - lgtm
-  - milestonestatus
-  - sigmention
+  # - milestonestatus
   - size
   - yuks
   - wip
   - shrug
-  - slackevents
-
-  kubernetes-incubator:
-  - assign
-  - cla
-  - close
-  - label
-  - lgtm
-  - reopen
-  - size
-
-  kubernetes-incubator/cri-containerd:
-  - trigger
-
-  kubernetes-security/kubernetes:
-  - trigger
-
-  jlewi/mlkube.io:
-  - trigger
-
-  spxtr/envoy:
-  - assign
-  - close
-  - reopen
-  - lgtm
-  - trigger

@@ -1,0 +1,36 @@
+# basic config options.
+http-cache-dir: /cache/httpcache
+organization: jetstack-experimental
+project: cert-manager
+# Make sure approval-handler and blunderbuss run before submit-queue.
+# Otherwise it's going to take an extra-cycle to detect the label change.
+pr-mungers: approval-handler,blunderbuss,lgtm-after-commit,submit-queue,needs-rebase
+state: open
+token-file: /etc/secret-volume/token
+period: 20s
+repo-dir: /gitrepos
+github-key-file: /etc/hook-secret-volume/secret
+
+# status contexts options.
+required-contexts: "continuous-integration/travis-ci/pr"
+required-retest-contexts: ""
+# protected-branches-extra-contexts: "cla/linuxfoundation"
+
+# submit-queue options.
+protected-branches: "master"
+nonblocking-jobs: ""
+do-not-merge-milestones: ""
+admin-port: 9999
+context-url: https://cert-manager.submit-queue.build-infra.jetstack.net
+prow-url: https://prow.build-infra.jetstack.net
+batch-enabled: true
+
+# munger specific options.
+label-file: "/gitrepos/cert-manager/labels.yaml"
+
+use-reviewers: true
+gate-approved: true
+gate-cla: false
+
+# extra message when PR is merged to master branch, it must not end in a period.
+merge-to-master-message: "If you want to cherry-pick this change to another branch, please follow the instructions <a href=\"https://github.com/kubernetes/community/blob/master/contributors/devel/cherry-picks.md\">here</a>"

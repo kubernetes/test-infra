@@ -19,7 +19,7 @@ metadata:
   labels:
     app: deck
 spec:
-  replicas: 3
+  replicas: 2
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -38,20 +38,11 @@ spec:
         ports:
           - name: http
             containerPort: 8080
-        args:
-        - --build-cluster=/etc/cluster/cluster
         volumeMounts:
-        - mountPath: /etc/cluster
-          name: cluster
-          readOnly: true
         - name: config
           mountPath: /etc/config
           readOnly: true
       volumes:
-      - name: cluster
-        secret:
-          defaultMode: 420
-          secretName: build-cluster
       - name: config
         configMap:
           name: config
