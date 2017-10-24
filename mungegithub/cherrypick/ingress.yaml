@@ -1,19 +1,19 @@
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
-  name: submit-queue
+  name: cherrypick
   annotations:
     kubernetes.io/ingress.class: nginx
     kubernetes.io/tls-acme: "true"
 spec:
   rules:
-  - host: cert-manager.submit-queue.build-infra.jetstack.net
+  - host: cert-manager.cherrypick.build-infra.jetstack.net
     http:
       paths:
         - backend:
-            serviceName: cert-manager-sq-status
+            serviceName: cert-manager-cp-status
             servicePort: 80
   tls:
   - hosts:
-    - cert-manager.submit-queue.build-infra.jetstack.net
-    secretName: submit-queue-tls
+    - cert-manager.cherrypick.build-infra.jetstack.net
+    secretName: cherrypick-tls
