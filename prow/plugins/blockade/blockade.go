@@ -54,7 +54,7 @@ type pruneClient interface {
 }
 
 func init() {
-	plugins.RegisterPullRequestHandler(pluginName, handlePullRequest)
+	plugins.RegisterPullRequestHandler(pluginName, handlePullRequest, nil)
 }
 
 type blockCalc func([]github.PullRequestChange, []blockade) summary

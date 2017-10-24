@@ -41,6 +41,7 @@ filegroup(
         "//prow/phony:all-srcs",
         "//prow/pjutil:all-srcs",
         "//prow/plank:all-srcs",
+        "//prow/pluginhelp:all-srcs",
         "//prow/plugins:all-srcs",
         "//prow/repoowners:all-srcs",
         "//prow/report:all-srcs",

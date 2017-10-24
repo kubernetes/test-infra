@@ -38,6 +38,7 @@ go_library(
         "//prow/hook:go_default_library",
         "//prow/kube:go_default_library",
         "//prow/metrics:go_default_library",
+        "//prow/pluginhelp/hook:go_default_library",
         "//prow/plugins:go_default_library",
         "//prow/repoowners:go_default_library",
         "//prow/slack:go_default_library",
