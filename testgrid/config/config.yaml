@@ -383,38 +383,12 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-kubemark-gce-scale
 - name: ci-kubernetes-kubemark-high-density-100-gce
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-kubemark-high-density-100-gce
-- name: ci-kubernetes-soak-cos-docker-validation-test
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-cos-docker-validation-test
-- name: ci-kubernetes-soak-gce-test
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gce-test
-- name: ci-kubernetes-soak-gce-1.5-test
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gce-1.5-test
-- name: ci-kubernetes-soak-gci-gce-1.5-test
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gci-gce-1.5-test
-- name: ci-kubernetes-soak-gce-2-test
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gce-2-test
-- name: ci-kubernetes-soak-gce-gci-test
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gce-gci-test
-- name: ci-kubernetes-soak-gke-test
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gke-test
-- name: ci-kubernetes-soak-gke-gci-test
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gke-gci-test
-- name: ci-kubernetes-soak-cos-docker-validation-deploy
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-cos-docker-validation-deploy
-- name: ci-kubernetes-soak-gce-deploy
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gce-deploy
-- name: ci-kubernetes-soak-gce-1.5-deploy
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gce-1.5-deploy
-- name: ci-kubernetes-soak-gci-gce-1.5-deploy
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gci-gce-1.5-deploy
-- name: ci-kubernetes-soak-gce-2-deploy
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gce-2-deploy
-- name: ci-kubernetes-soak-gce-gci-deploy
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gce-gci-deploy
-- name: ci-kubernetes-soak-gke-deploy
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gke-deploy
-- name: ci-kubernetes-soak-gke-gci-deploy
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gke-gci-deploy
+- name: ci-kubernetes-soak-cos-docker-validation
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-cos-docker-validation
+- name: ci-kubernetes-soak-gce-gci
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gce-gci
+- name: ci-kubernetes-soak-gke-gci
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gke-gci
 - name: ci-kubernetes-test-go
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-test-go
   days_of_results: 4
@@ -572,14 +546,10 @@ test_groups:
 - name: ci-kubernetes-e2e-gke-slow-release-1-6
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-slow-release-1-6
 # 1.6 soak
-- name: ci-kubernetes-soak-gce-1.6-deploy
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gce-1.6-deploy
-- name: ci-kubernetes-soak-gce-1.6-test
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gce-1.6-test
-- name: ci-kubernetes-soak-gci-gce-1.6-deploy
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gci-gce-1.6-deploy
-- name: ci-kubernetes-soak-gci-gce-1.6-test
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gci-gce-1.6-test
+- name: ci-kubernetes-soak-gce-1-6
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gce-1-6
+- name: ci-kubernetes-soak-gci-gce-stable3
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gci-gce-stable3
 # 1.6 skew
 - name: ci-kubernetes-e2e-gce-1-6-1-7-cvm-kubectl-skew
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-1-6-1-7-cvm-kubectl-skew
@@ -1173,14 +1143,10 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-reboot-release-1-7
 - name: ci-kubernetes-e2e-gci-gke-reboot-release-1-7
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-reboot-release-1-7
-- name: ci-kubernetes-soak-gce-1-7-deploy
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gce-1-7-deploy
-- name: ci-kubernetes-soak-gce-1-7-test
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gce-1-7-test
-- name: ci-kubernetes-soak-gci-gce-1-7-deploy
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gci-gce-1-7-deploy
-- name: ci-kubernetes-soak-gci-gce-1-7-test
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gci-gce-1-7-test
+- name: ci-kubernetes-soak-gce-1-7
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gce-1-7
+- name: ci-kubernetes-soak-gci-gce-stable2
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gci-gce-stable2
 # cos image validation.
 - name: ci-kubernetes-e2enode-cosbeta-k8sdev-default
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cosbeta-k8sdev-default
@@ -1884,10 +1850,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-cos-docker-validation-serial
   - name: e2e-cos-slow
     test_group_name: ci-kubernetes-e2e-cos-docker-validation-slow
-  - name: soak-cos-test
-    test_group_name: ci-kubernetes-soak-cos-docker-validation-test
-  - name: soak-cos-deploy
-    test_group_name: ci-kubernetes-soak-cos-docker-validation-deploy
+  - name: soak-cos
+    test_group_name: ci-kubernetes-soak-cos-docker-validation
 
 - name: google-gce
   dashboard_tab:
@@ -2253,34 +2217,10 @@ dashboards:
 
 - name: google-soak
   dashboard_tab:
-  - name: gce-test
-    test_group_name: ci-kubernetes-soak-gce-test
-  - name: gce-1.5-test
-    test_group_name: ci-kubernetes-soak-gce-1.5-test
-  - name: gci-gce-1.5-test
-    test_group_name: ci-kubernetes-soak-gci-gce-1.5-test
-  - name: gce-2-test
-    test_group_name: ci-kubernetes-soak-gce-2-test
-  - name: gce-gci-test
-    test_group_name: ci-kubernetes-soak-gce-gci-test
-  - name: gke-test
-    test_group_name: ci-kubernetes-soak-gke-test
-  - name: gke-gci-test
-    test_group_name: ci-kubernetes-soak-gke-gci-test
-  - name: gce-deploy
-    test_group_name: ci-kubernetes-soak-gce-deploy
-  - name: gce-1.5-deploy
-    test_group_name: ci-kubernetes-soak-gce-1.5-deploy
-  - name: gci-gce-1.5-deploy
-    test_group_name: ci-kubernetes-soak-gci-gce-1.5-deploy
-  - name: gce-2-deploy
-    test_group_name: ci-kubernetes-soak-gce-2-deploy
-  - name: gce-gci-deploy
-    test_group_name: ci-kubernetes-soak-gce-gci-deploy
-  - name: gke-deploy
-    test_group_name: ci-kubernetes-soak-gke-deploy
-  - name: gke-gci-deploy
-    test_group_name: ci-kubernetes-soak-gke-gci-deploy
+  - name: gce-gci
+    test_group_name: ci-kubernetes-soak-gce-gci
+  - name: gke-gci
+    test_group_name: ci-kubernetes-soak-gke-gci
 
 - name: google-unit
   dashboard_tab:
@@ -2490,14 +2430,10 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-slow-release-1-6
   - name: kubeadm-gce-1.6
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-6
-  - name: soak-gce-1.6-deploy
-    test_group_name: ci-kubernetes-soak-gce-1.6-deploy
-  - name: soak-gce-1.6-test
-    test_group_name: ci-kubernetes-soak-gce-1.6-test
-  - name: soak-gci-gce-1.6-deploy
-    test_group_name: ci-kubernetes-soak-gci-gce-1.6-deploy
-  - name: soak-gci-gce-1.6-test
-    test_group_name: ci-kubernetes-soak-gci-gce-1.6-test
+  - name: soak-gce-1-6
+    test_group_name: ci-kubernetes-soak-gce-1-6
+  - name: soak-gci-gce-stable3
+    test_group_name: ci-kubernetes-soak-gci-gce-stable3
   - name: kops-aws-1.6
     test_group_name: ci-kubernetes-e2e-kops-aws-release-1-6
   - name: periodic-bazel-test-1.6
@@ -2590,14 +2526,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gci-gce-reboot
   - name: gci-gke-reboot
     test_group_name: ci-kubernetes-e2e-gci-gke-reboot
-  - name: soak-gce-deploy
-    test_group_name: ci-kubernetes-soak-gce-deploy
-  - name: soak-gce-test
-    test_group_name: ci-kubernetes-soak-gce-test
-  - name: soak-gce-gci-deploy
-    test_group_name: ci-kubernetes-soak-gce-gci-deploy
-  - name: soak-gce-gci-test
-    test_group_name: ci-kubernetes-soak-gce-gci-test
+  - name: soak-gce-gci
+    test_group_name: ci-kubernetes-soak-gce-gci
   - name: kubeadm-gce
     test_group_name: ci-kubernetes-e2e-kubeadm-gce
 
@@ -2672,14 +2602,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gci-gce-serial-release-1-5
   - name: gci-1.5
     test_group_name: ci-kubernetes-e2e-gci-gce-release-1-5
-  - name: soak-gce-1.5-deploy
-    test_group_name: ci-kubernetes-soak-gce-1.5-deploy
-  - name: soak-gci-gce-1.5-deploy
-    test_group_name: ci-kubernetes-soak-gci-gce-1.5-deploy
-  - name: soak-gce-1.5-test
-    test_group_name: ci-kubernetes-soak-gce-1.5-test
-  - name: soak-gci-gce-1.5-test
-    test_group_name: ci-kubernetes-soak-gci-gce-1.5-test
 
 - name: sig-release-1.5-blocking
   dashboard_tab:
@@ -3025,14 +2947,10 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-reboot-release-1-7
   - name: gci-gke-reboot-release-1-7
     test_group_name: ci-kubernetes-e2e-gci-gke-reboot-release-1-7
-  - name: soak-gce-1-7-deploy
-    test_group_name: ci-kubernetes-soak-gce-1-7-deploy
-  - name: soak-gce-1-7-test
-    test_group_name: ci-kubernetes-soak-gce-1-7-test
-  - name: soak-gci-gce-1-7-deploy
-    test_group_name: ci-kubernetes-soak-gci-gce-1-7-deploy
-  - name: soak-gci-gce-1-7-test
-    test_group_name: ci-kubernetes-soak-gci-gce-1-7-test
+  - name: soak-gce-1-7
+    test_group_name: ci-kubernetes-soak-gce-1-7
+  - name: soak-gci-gce-stable2
+    test_group_name: ci-kubernetes-soak-gci-gce-stable2
   - name: gce-gpu-1-7
     test_group_name: ci-kubernetes-e2e-gce-gpu-1-7
   - name: gke-gpu-1-7
@@ -3123,10 +3041,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-reboot-release-1-7
   - name: gci-gke-reboot-release-1-7
     test_group_name: ci-kubernetes-e2e-gci-gke-reboot-release-1-7
-  - name: soak-gci-gce-1-7-deploy
-    test_group_name: ci-kubernetes-soak-gci-gce-1-7-deploy
-  - name: soak-gci-gce-1-7-test
-    test_group_name: ci-kubernetes-soak-gci-gce-1-7-test
+  - name: soak-gci-gce-1-7
+    test_group_name: ci-kubernetes-soak-gci-gce-stable2
   - name: gce-gpu-1-7
     test_group_name: ci-kubernetes-e2e-gce-gpu-1-7
   - name: gke-gpu-1-7
@@ -3323,11 +3239,11 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-kops-aws-sig-cli
     alert_options:
       alert_mail_to_addresses: 'kubernetes-sig-cli-oncall@gmail.com'
-  - name: soak-gce-gci-test
-    test_group_name: ci-kubernetes-soak-gce-gci-test
+  - name: soak-gce-gci
+    test_group_name: ci-kubernetes-soak-gce-gci
     base_options: 'include-filter-by-regex=Kubectl%7Ckubectl'
-  - name: soak-gke-gci-test
-    test_group_name: ci-kubernetes-soak-gke-gci-test
+  - name: soak-gke-gci
+    test_group_name: ci-kubernetes-soak-gke-gci
     base_options: 'include-filter-by-regex=Kubectl%7Ckubectl'
   - name: unit-integration-cmd
     test_group_name: ci-kubernetes-test-go
