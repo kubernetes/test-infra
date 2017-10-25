@@ -42,6 +42,92 @@ presubmits:
     context: pull-charts-e2e
     rerun_command: "/test pull-charts-e2e"
     trigger: "(?m)^/test( all| pull-charts-e2e),?(\\s+|$)"
+  kubernetes/federation:
+  - name: pull-federation-bazel-build
+    agent: kubernetes
+    context: pull-federation-bazel-build
+    always_run: true
+    rerun_command: "/test pull-federation-bazel-build"
+    trigger: "(?m)^/test( all| pull-federation-bazel-build),?(\\s+|$)"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/bazelbuild:v20171013-53473ec5-0.6.1
+        args:
+        - "--clean"
+        - "--git-cache=/root/.cache/git"
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--" # end bootstrap args, scenario args below
+        - "--build=//... -//vendor/..."
+        - "--release=//build/release-tars"
+        env:
+        - name: TEST_TMPDIR
+          value: /root/.cache/bazel
+        # Bazel needs privileged mode in order to sandbox builds.
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: service
+          mountPath: /etc/service-account
+          readOnly: true
+        - name: cache-ssd
+          mountPath: /root/.cache
+        ports:
+        - containerPort: 9999
+          hostPort: 9999
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
+      - name: cache-ssd
+        hostPath:
+          path: /mnt/disks/ssd0
+  - name: pull-federation-bazel-test
+    agent: kubernetes
+    context: pull-federation-bazel-test
+    always_run: true
+    rerun_command: "/test pull-federation-bazel-test"
+    trigger: "(?m)^/test( all| pull-federation-bazel-test),?(\\s+|$)"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/bazelbuild:v20171013-53473ec5-0.6.1
+        args:
+        - "--clean"
+        - "--git-cache=/root/.cache/git"
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--" # end bootstrap args, scenario args below
+        - "--test=//... -//build/... -//vendor/..."
+        - "--manual-test=//hack:verify-all"
+        - "--test-args=--build_tag_filters=-e2e"
+        - "--test-args=--test_tag_filters=-e2e"
+        - "--test-args=--flaky_test_attempts=3"
+        env:
+        - name: TEST_TMPDIR
+          value: /root/.cache/bazel
+        # Bazel needs privileged mode in order to sandbox builds.
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: service
+          mountPath: /etc/service-account
+          readOnly: true
+        - name: cache-ssd
+          mountPath: /root/.cache
+        ports:
+        - containerPort: 9999
+          hostPort: 9999
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
+      - name: cache-ssd
+        hostPath:
+          path: /mnt/disks/ssd0
   kubernetes/heapster:
   - name: pull-heapster-e2e
     agent: jenkins
