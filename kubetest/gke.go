@@ -32,6 +32,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 )
 
 const (
@@ -510,4 +511,23 @@ func (g *gkeDeployer) Down() error {
 
 func (g *gkeDeployer) containerArgs(args ...string) []string {
 	return append(append(append([]string{}, g.commandGroup...), "container"), args...)
+}
+
+func (g *gkeDeployer) GetClusterCreated(gcpProject string) (time.Time, error) {
+	res, err := output(exec.Command(
+		"gcloud",
+		"compute",
+		"instance-groups",
+		"list",
+		"--project="+gcpProject,
+		"--format=json(name,creationTimestamp)"))
+	if err != nil {
+		return time.Time{}, fmt.Errorf("list instance-group failed : %v", err)
+	}
+
+	created, err := getLatestClusterUpTime(string(res))
+	if err != nil {
+		return time.Time{}, fmt.Errorf("parse time failed : got gcloud res %s, err %v", string(res), err)
+	}
+	return created, nil
 }

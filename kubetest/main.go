@@ -89,6 +89,8 @@ type options struct {
 	runtimeConfig       string
 	save                string
 	skew                bool
+	soak                bool
+	soakDuration        time.Duration
 	stage               stageStrategy
 	test                bool
 	testArgs            string
@@ -140,6 +142,8 @@ func defineFlags() *options {
 	flag.StringVar(&o.stage.dockerRegistry, "registry", "", "Push images to the specified docker registry (e.g. gcr.io/a-test-project)")
 	flag.StringVar(&o.save, "save", "", "Save credentials to gs:// path on --up if set (or load from there if not --up)")
 	flag.BoolVar(&o.skew, "skew", false, "If true, run tests in another version at ../kubernetes/hack/e2e.go")
+	flag.BoolVar(&o.soak, "soak", false, "If true, job runs in soak mode")
+	flag.DurationVar(&o.soakDuration, "soak-duration", 7*24*time.Hour, "Maximum age of a soak cluster before it gets recycled")
 	flag.Var(&o.stage, "stage", "Upload binaries to gs://bucket/devel/job-suffix if set")
 	flag.StringVar(&o.stage.versionSuffix, "stage-suffix", "", "Append suffix to staged version when set")
 	flag.BoolVar(&o.test, "test", false, "Run Ginkgo tests.")
@@ -219,6 +223,7 @@ type deployer interface {
 	DumpClusterLogs(localPath, gcsPath string) error
 	TestSetup() error
 	Down() error
+	GetClusterCreated(gcpProject string) (time.Time, error)
 }
 
 func getDeployer(o *options) (deployer, error) {
@@ -308,6 +313,21 @@ func complete(o *options) error {
 	if err != nil {
 		return fmt.Errorf("error creating deployer: %v", err)
 	}
+
+	// Check soaking before run tests
+	if o.soak {
+		if created, err := deploy.GetClusterCreated(o.gcpProject); err != nil {
+			// continue, but log the error
+			log.Printf("deploy %v, GetClusterCreated failed: %v", o.deployment, err)
+		} else {
+			if time.Now().After(created.Add(o.soakDuration)) {
+				// flip up on - which will tear down previous custer and start a new one
+				log.Printf("Previous soak cluster created at %v, will recreate the cluster", created)
+				o.up = true
+			}
+		}
+	}
+
 	if err := acquireKubernetes(o); err != nil {
 		return fmt.Errorf("failed to acquire k8s binaries: %v", err)
 	}
