@@ -34,8 +34,9 @@ const (
 )
 
 var (
-	docFilesRegex    = regexp.MustCompile(`^.*\.(md|png|svg|dia)$`)
-	ownersFilesRegex = regexp.MustCompile(`^OWNERS$`)
+	docFilesRegex     = regexp.MustCompile(`^.*\.(md|png|svg|dia)$`)
+	ownersFilesRegex  = regexp.MustCompile(`^OWNERS$`)
+	licenseFilesRegex = regexp.MustCompile(`^LICENSE$`)
 )
 
 func init() {
@@ -79,6 +80,9 @@ func handlePR(gc githubClient, pe github.PullRequestEvent) error {
 			continue
 		}
 		if ownersFilesRegex.MatchString(basename) {
+			continue
+		}
+		if licenseFilesRegex.MatchString(basename) {
 			continue
 		}
 		docsOnly = false
