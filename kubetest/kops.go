@@ -250,6 +250,10 @@ func (k kops) Up() error {
 	}
 	if k.adminAccess != "" {
 		createArgs = append(createArgs, "--admin-access", k.adminAccess)
+
+		// Enable nodeport access from the same IP (we expect it to be the test IPs)
+		featureFlags = append(featureFlags, "SpecOverrideFlag")
+		createArgs = append(createArgs, "--override", "cluster.spec.nodePortAccess="+k.adminAccess)
 	}
 	if k.image != "" {
 		createArgs = append(createArgs, "--image", k.image)
