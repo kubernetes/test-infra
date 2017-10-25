@@ -2812,13 +2812,13 @@ presubmits:
         hostPath:
           path: /mnt/disks/ssd0
 
-  jlewi/mlkube.io:
-  - name: mlkube-build-presubmit
-    context: mlkube-build-presubmit
+  tensorflow/k8s:
+  - name: tf-k8s-presubmit
+    context: tf-k8s-presubmit
     agent: kubernetes
     always_run: true         # Run for every PR, or only when requested.
-    rerun_command: "/test mlkube-build-presubmit"
-    trigger: "(?m)^/test( all| mlkube-build-presubmit),?(\\s+|$)"
+    rerun_command: "/test tf-k8s-presubmit"
+    trigger: "(?m)^/test( all| tf-k8s-presubmit),?(\\s+|$)"
     branches:
     - master
     spec:
@@ -3490,8 +3490,8 @@ postsubmits:
         secret:
           secretName: service-account
 
-  jlewi/mlkube.io:
-  - name: mlkube-build-postsubmit
+  tensorflow/k8s:
+  - name: tf-k8s-postsubmit
     agent: kubernetes
     branches:
     - master
@@ -18096,26 +18096,6 @@ periodics:
       secret:
         secretName: velodrome-influxdb
 
-- interval: 8h
-  agent: kubernetes
-  name: mlkube-build-periodic
-  spec:
-    containers:
-    # TODO(jlewi): Replace latest with a specific tag once the images stabilize.
-    - image: gcr.io/mlkube-testing/builder:latest
-      imagePullPolicy: Always
-      env:
-      - name: GOOGLE_APPLICATION_CREDENTIALS
-        value: /etc/service-account/service-account.json
-      volumeMounts:
-      - name: service
-        mountPath: /etc/service-account
-        readOnly: true
-    volumes:
-    - name: service
-      secret:
-        secretName: service-account
-
 - name: periodic-kubernetes-bazel-build-1-6
   interval: 2h
   agent: kubernetes
@@ -18594,4 +18574,24 @@ periodics:
     - name: token
       secret:
         secretName: fejta-bot-token
+
+- interval: 8h
+  agent: kubernetes
+  name: tf-k8s-periodic
+  spec:
+    containers:
+    # TODO(jlewi): Replace latest with a specific tag once the images stabilize.
+    - image: gcr.io/mlkube-testing/builder:latest
+      imagePullPolicy: Always
+      env:
+      - name: GOOGLE_APPLICATION_CREDENTIALS
+        value: /etc/service-account/service-account.json
+      volumeMounts:
+      - name: service
+        mountPath: /etc/service-account
+        readOnly: true
+    volumes:
+    - name: service
+      secret:
+        secretName: service-account
 
