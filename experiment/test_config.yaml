@@ -796,7 +796,7 @@ testSuites:
 nodeCommon:
     args:
     - --deployment=node
-    - --node-test=true
+    - --node-tests=true
     - --provider=gce
     - --gcp-zone=us-central1-f
 
@@ -840,8 +840,8 @@ nodeTestSuites:
   default:
     args:
     - --timeout=60m
-    - --ginkgo-flags=--nodes=8 --skip="\[Flaky\]|\[Serial\]"
-    - --test_args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
+    - --test_args=--nodes=8 --skip="\[Flaky\]|\[Serial\]"
+    - --node-test-args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
   gkespec:
     args:
     - --node-args=--system-spec-name=gke
