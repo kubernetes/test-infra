@@ -100,10 +100,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-canary
 - name: ci-kubernetes-e2e-kops-aws-sig-cli
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-sig-cli
-- name: ci-kubernetes-e2e-kops-aws-slow
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-slow
-- name: ci-kubernetes-e2e-kops-aws-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-serial
 - name: ci-kubernetes-e2e-kops-aws-release-1-6
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-release-1-6
 - name: ci-kubernetes-e2e-kops-aws-updown
@@ -1801,10 +1797,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-kops-aws
   - name: kops-aws-canary
     test_group_name: ci-kubernetes-e2e-kops-aws-canary
-  - name: kops-aws-slow
-    test_group_name: ci-kubernetes-e2e-kops-aws-slow
-  - name: kops-aws-serial
-    test_group_name: ci-kubernetes-e2e-kops-aws-serial
   - name: kops-aws-1.6
     test_group_name: ci-kubernetes-e2e-kops-aws-release-1-6
   - name: kops-aws-1.7
