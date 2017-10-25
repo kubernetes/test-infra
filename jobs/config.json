@@ -9575,6 +9575,16 @@
       "sig-multicluster"
     ]
   },
+  "pull-community-verify": {
+    "args": [
+      "make",
+      "verify"
+    ],
+    "scenario": "execute",
+    "sigOwners": [
+      "sig-contributor-experience"
+    ]
+  },
   "pull-cri-containerd-build": {
     "args": [
       "./test/e2e_node/build.sh"
