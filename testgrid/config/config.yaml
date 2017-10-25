@@ -1516,13 +1516,13 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-master-gci-new-downgrade-cluster-parallel
 - name: ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster-new
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster-new
-- name: mlkube-build-periodic
-  gcs_prefix: kubernetes-jenkins/logs/mlkube-build-periodic
-- name: mlkube-build-presubmit
-  gcs_prefix: kubernetes-jenkins/pr-logs/directory/mlkube-build-presubmit
+- name: tf-k8s-periodic
+  gcs_prefix: kubernetes-jenkins/logs/tf-k8s-periodic
+- name: tf-k8s-presubmit
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/tf-k8s-presubmit
   num_columns_recent: 30
-- name: mlkube-build-postsubmit
-  gcs_prefix: kubernetes-jenkins/logs/mlkube-build-postsubmit
+- name: tf-k8s-postsubmit
+  gcs_prefix: kubernetes-jenkins/logs/tf-k8s-postsubmit
 # kube-proxy daemonset migration jobs
 - name: ci-kubernetes-e2e-gci-gce-latest-downgrade-kube-proxy-ds
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-latest-downgrade-kube-proxy-ds
@@ -3267,15 +3267,15 @@ dashboards:
 
 - name: sig-big-data
   dashboard_tab:
-  - name: mlkube-build-periodic
+  - name: tf-k8s-periodic
     description: Periodic builds and testing of TfJob CRD at head running on stable GKE.
-    test_group_name: mlkube-build-periodic
-  - name: mlkube-build-postsubmit
+    test_group_name: tf-k8s-periodic
+  - name: tf-k8s-postsubmit
     description: Postsubmit tests of TfJob CRD running on stable GKE.
-    test_group_name: mlkube-build-postsubmit
-  - name: mlkube-build-presubmit
+    test_group_name: tf-k8s-postsubmit
+  - name: tf-k8s-presubmit
     description: Presubmit tests of TfJob CRD running on stable GKE.
-    test_group_name: mlkube-build-presubmit
+    test_group_name: tf-k8s-presubmit
 
 - name: sig-autoscaling
   dashboard_tab:
