@@ -17574,6 +17574,146 @@ periodics:
 
 - interval: 12h
   agent: kubernetes
+  name: ci-kubernetes-soak-cos-docker-validation
+  spec:
+    containers:
+    - args:
+      - --timeout=620
+      - --bare
+      env:
+      - name: GOOGLE_APPLICATION_CREDENTIALS
+        value: /etc/service-account/service-account.json
+      - name: USER
+        value: prow
+      - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-private
+      - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-public
+      # TODO(krzyzacy): use stable tag once verify it works
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171024-74d82dbc-master
+      volumeMounts:
+      - mountPath: /etc/service-account
+        name: service
+        readOnly: true
+      - mountPath: /etc/ssh-key-secret
+        name: ssh
+        readOnly: true
+    volumes:
+    - name: service
+      secret:
+        secretName: service-account
+    - name: ssh
+      secret:
+        defaultMode: 256
+        secretName: ssh-key-secret
+
+- interval: 12h
+  agent: kubernetes
+  name: ci-kubernetes-soak-gce-1-6
+  spec:
+    containers:
+    - args:
+      - --timeout=620
+      - --bare
+      env:
+      - name: GOOGLE_APPLICATION_CREDENTIALS
+        value: /etc/service-account/service-account.json
+      - name: USER
+        value: prow
+      - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-private
+      - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-public
+      # TODO(krzyzacy): use stable tag once verify it works
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171024-74d82dbc-master
+      volumeMounts:
+      - mountPath: /etc/service-account
+        name: service
+        readOnly: true
+      - mountPath: /etc/ssh-key-secret
+        name: ssh
+        readOnly: true
+    volumes:
+    - name: service
+      secret:
+        secretName: service-account
+    - name: ssh
+      secret:
+        defaultMode: 256
+        secretName: ssh-key-secret
+
+- interval: 12h
+  agent: kubernetes
+  name: ci-kubernetes-soak-gce-1-7
+  spec:
+    containers:
+    - args:
+      - --timeout=620
+      - --bare
+      env:
+      - name: GOOGLE_APPLICATION_CREDENTIALS
+        value: /etc/service-account/service-account.json
+      - name: USER
+        value: prow
+      - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-private
+      - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-public
+      # TODO(krzyzacy): use stable tag once verify it works
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171024-74d82dbc-master
+      volumeMounts:
+      - mountPath: /etc/service-account
+        name: service
+        readOnly: true
+      - mountPath: /etc/ssh-key-secret
+        name: ssh
+        readOnly: true
+    volumes:
+    - name: service
+      secret:
+        secretName: service-account
+    - name: ssh
+      secret:
+        defaultMode: 256
+        secretName: ssh-key-secret
+
+- interval: 12h
+  agent: kubernetes
+  name: ci-kubernetes-soak-gce-gci
+  spec:
+    containers:
+    - args:
+      - --timeout=620
+      - --bare
+      env:
+      - name: GOOGLE_APPLICATION_CREDENTIALS
+        value: /etc/service-account/service-account.json
+      - name: USER
+        value: prow
+      - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-private
+      - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-public
+      # TODO(krzyzacy): use stable tag once verify it works
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171024-74d82dbc-master
+      volumeMounts:
+      - mountPath: /etc/service-account
+        name: service
+        readOnly: true
+      - mountPath: /etc/ssh-key-secret
+        name: ssh
+        readOnly: true
+    volumes:
+    - name: service
+      secret:
+        secretName: service-account
+    - name: ssh
+      secret:
+        defaultMode: 256
+        secretName: ssh-key-secret
+
+- interval: 12h
+  agent: kubernetes
   name: ci-kubernetes-soak-gci-gce-stable1
   spec:
     containers:
@@ -17590,8 +17730,7 @@ periodics:
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
       # TODO(krzyzacy): use stable tag once verify it works
-      image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
-      imagePullPolicy: Always
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171024-74d82dbc-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -17607,6 +17746,112 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
+
+- interval: 12h
+  agent: kubernetes
+  name: ci-kubernetes-soak-gci-gce-stable2
+  spec:
+    containers:
+    - args:
+      - --timeout=620
+      - --bare
+      env:
+      - name: GOOGLE_APPLICATION_CREDENTIALS
+        value: /etc/service-account/service-account.json
+      - name: USER
+        value: prow
+      - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-private
+      - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-public
+      # TODO(krzyzacy): use stable tag once verify it works
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171024-74d82dbc-master
+      volumeMounts:
+      - mountPath: /etc/service-account
+        name: service
+        readOnly: true
+      - mountPath: /etc/ssh-key-secret
+        name: ssh
+        readOnly: true
+    volumes:
+    - name: service
+      secret:
+        secretName: service-account
+    - name: ssh
+      secret:
+        defaultMode: 256
+        secretName: ssh-key-secret
+
+- interval: 12h
+  agent: kubernetes
+  name: ci-kubernetes-soak-gci-gce-stable3
+  spec:
+    containers:
+    - args:
+      - --timeout=620
+      - --bare
+      env:
+      - name: GOOGLE_APPLICATION_CREDENTIALS
+        value: /etc/service-account/service-account.json
+      - name: USER
+        value: prow
+      - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-private
+      - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-public
+      # TODO(krzyzacy): use stable tag once verify it works
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171024-74d82dbc-master
+      volumeMounts:
+      - mountPath: /etc/service-account
+        name: service
+        readOnly: true
+      - mountPath: /etc/ssh-key-secret
+        name: ssh
+        readOnly: true
+    volumes:
+    - name: service
+      secret:
+        secretName: service-account
+    - name: ssh
+      secret:
+        defaultMode: 256
+        secretName: ssh-key-secret
+
+- interval: 12h
+  agent: kubernetes
+  name: ci-kubernetes-soak-gke-gci
+  spec:
+    containers:
+    - args:
+      - --timeout=620
+      - --bare
+      env:
+      - name: GOOGLE_APPLICATION_CREDENTIALS
+        value: /etc/service-account/service-account.json
+      - name: USER
+        value: prow
+      - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-private
+      - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-public
+      # TODO(krzyzacy): use stable tag once verify it works
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171024-74d82dbc-master
+      volumeMounts:
+      - mountPath: /etc/service-account
+        name: service
+        readOnly: true
+      - mountPath: /etc/ssh-key-secret
+        name: ssh
+        readOnly: true
+    volumes:
+    - name: service
+      secret:
+        secretName: service-account
+    - name: ssh
+      secret:
+        defaultMode: 256
+        secretName: ssh-key-secret
+
 
 - name: ci-perf-tests-e2e-gce-clusterloader
   interval: 2h
