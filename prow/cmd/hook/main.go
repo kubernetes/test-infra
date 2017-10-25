@@ -37,8 +37,8 @@ import (
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/hook"
 	"k8s.io/test-infra/prow/kube"
-	"k8s.io/test-infra/prow/owners"
 	"k8s.io/test-infra/prow/plugins"
+	"k8s.io/test-infra/prow/repoowners"
 	"k8s.io/test-infra/prow/slack"
 )
 
@@ -139,14 +139,14 @@ func main() {
 	}
 
 	pluginAgent := &plugins.PluginAgent{}
-	ownersClient := owners.NewClient(gitClient, githubClient, pluginAgent.MDYAMLEnabled)
+	ownersClient := repoowners.NewClient(gitClient, githubClient, pluginAgent.MDYAMLEnabled)
 
 	logger := logrus.StandardLogger()
 	githubClient.Logger = logger.WithField("client", "github")
 	kubeClient.Logger = logger.WithField("client", "kube")
 	gitClient.Logger = logger.WithField("client", "git")
 	slackClient.Logger = logger.WithField("client", "slack")
-	ownersClient.Logger = logger.WithField("client", "owners")
+	ownersClient.Logger = logger.WithField("client", "repoowners")
 
 	pluginAgent.PluginClient = plugins.PluginClient{
 		GitHubClient: githubClient,
