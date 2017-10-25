@@ -444,6 +444,41 @@ func (c *Client) GetPullRequest(org, repo string, number int) (*PullRequest, err
 	return &pr, err
 }
 
+// CreatePullRequest creates a new pull request and returns its number if
+// the creation is successful, otherwise any error that is encountered.
+func (c *Client) CreatePullRequest(org, repo, title, body, head, base string, canModify bool) (int, error) {
+	c.log("CreatePullRequest", org, repo, title)
+	data := struct {
+		Title string `json:"title"`
+		Body  string `json:"body"`
+		Head  string `json:"head"`
+		Base  string `json:"base"`
+		// MaintainerCanModify allows maintainers of the repo to modify this
+		// pull request, eg. push changes to it before merging.
+		MaintainerCanModify bool `json:"maintainer_can_modify"`
+	}{
+		Title: title,
+		Body:  body,
+		Head:  head,
+		Base:  base,
+
+		MaintainerCanModify: canModify,
+	}
+	var resp struct {
+		Num int `json:"number"`
+	}
+	_, err := c.request(&request{
+		method:      http.MethodPost,
+		path:        fmt.Sprintf("%s/repos/%s/%s/pulls", c.base, org, repo),
+		requestBody: &data,
+		exitCodes:   []int{201},
+	}, &resp)
+	if err != nil {
+		return 0, err
+	}
+	return resp.Num, nil
+}
+
 // GetPullRequestChanges gets a list of files modified in a pull request.
 func (c *Client) GetPullRequestChanges(org, repo string, number int) ([]PullRequestChange, error) {
 	c.log("GetPullRequestChanges", org, repo, number)
@@ -876,6 +911,7 @@ func (c *Client) ReopenIssue(org, repo string, number int) error {
 }
 
 // ClosePR closes the existing, open PR provided
+// TODO: Rename to ClosePullRequest
 func (c *Client) ClosePR(org, repo string, number int) error {
 	c.log("ClosePR", org, repo, number)
 	_, err := c.request(&request{
@@ -888,6 +924,7 @@ func (c *Client) ClosePR(org, repo string, number int) error {
 }
 
 // ReopenPR re-opens the existing, closed PR provided
+// TODO: Rename to ReopenPullRequest
 func (c *Client) ReopenPR(org, repo string, number int) error {
 	c.log("ReopenPR", org, repo, number)
 	_, err := c.request(&request{
@@ -1112,4 +1149,20 @@ func (c *Client) ListCollaborators(org, repo string) ([]User, error) {
 		return nil, err
 	}
 	return users, nil
+}
+
+// CreateFork creates a fork for the authenticated user. Forking a repository
+// happens asynchronously. Therefore, we may have to wait a short period before
+// accessing the git objects. If this takes longer than 5 minutes, Github
+// recommends contacting their support.
+//
+// See https://developer.github.com/v3/repos/forks/#create-a-fork
+func (c *Client) CreateFork(owner, repo string) error {
+	c.log("CreateFork", owner, repo)
+	_, err := c.request(&request{
+		method:    http.MethodPost,
+		path:      fmt.Sprintf("%s/repos/%s/%s/forks", c.base, owner, repo),
+		exitCodes: []int{202},
+	}, nil)
+	return err
 }
