@@ -53,16 +53,18 @@ def check(*cmd):
     print >>sys.stderr, 'Run:', cmd
     subprocess.check_call(cmd)
 
+def get_tag(branch):
+    #If branch 3-part version, only take the first two parts
+    release = re.match(r'release-(\d+\.\d+)', branch)
+    if release:
+        ver = release.group(1)
+        return VERSION_TAG[BRANCH_VERSION.get(ver, ver)]
+
+    return VERSION_TAG[BRANCH_VERSION.get('master')]
 
 def main(branch, script, force):
     """Test branch using script, optionally forcing verify checks."""
-    # If branch has 3-part version, only take first 2 parts.
-    verify_branch = re.match(r'master|release-(\d+\.\d+)', branch)
-    if not verify_branch:
-        raise ValueError(branch)
-    # Extract version if any.
-    ver = verify_branch.group(1) or verify_branch.group(0)
-    tag = VERSION_TAG[BRANCH_VERSION.get(ver, ver)]
+    tag = get_tag(branch)
     force = 'y' if force else 'n'
     artifacts = '%s/_artifacts' % os.environ['WORKSPACE']
     k8s = os.getcwd()

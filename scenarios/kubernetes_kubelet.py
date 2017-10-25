@@ -27,8 +27,8 @@ import subprocess
 import sys
 
 BRANCH_VERSION = {
-    'release-1.2': 'release-1.4',
-    'release-1.3': 'release-1.4',
+    '1.2': 'release-1.4',
+    '1.3': 'release-1.4',
     'master': 'release-1.8',
 }
 
@@ -53,14 +53,20 @@ def var(path):
     """Expands '${foo} interesting' to 'something interesting'."""
     return os.path.expandvars(path)
 
+def get_tag(branch):
+    #If branch 3-part version, only take the first two parts
+    release = re.match(r'release-(\d+\.\d+)', branch)
+    if release:
+        ver = release.group(1)
+        return VERSION_TAG[BRANCH_VERSION.get(ver, ver)]
+
+    return VERSION_TAG[BRANCH_VERSION.get('master')]
+
 
 def run_docker_mode(script, properties, branch, ssh, ssh_pub, robot):
     """Test node branch by sending script specified properties and creds."""
     # If branch has 3-part version, only take first 2 parts.
-    mat = re.match(r'master|release-\d+\.\d+', branch)
-    if not mat:
-        raise ValueError(branch)
-    tag = VERSION_TAG[BRANCH_VERSION.get(mat.group(0), mat.group(0))]
+    tag = get_tag(branch)
     img = 'gcr.io/k8s-testimages/kubekins-node:%s' % tag
     artifacts = '%s/_artifacts' % os.environ['WORKSPACE']
     if not os.path.isdir(artifacts):
