@@ -719,6 +719,8 @@ class JobTest(unittest.TestCase):
             'ci-kubernetes-e2e-gce-cosstable1-k8sstable3-default': 'ci-kubernetes-e2e-gce-cos*',
             'ci-kubernetes-e2e-gce-cosstable1-k8sstable3-serial': 'ci-kubernetes-e2e-gce-cos*',
             'ci-kubernetes-e2e-gce-cosstable1-k8sstable3-slow': 'ci-kubernetes-e2e-gce-cos*',
+            'ci-kubernetes-e2enode-cosbeta-k8sdev-default': 'ci-kubernetes-e2e-gce-cos*',
+            'ci-kubernetes-e2enode-cosbeta-k8sdev-serial': 'ci-kubernetes-e2e-gce-cos*',
 
             # The ubuntu image validation jobs intentionally share projects.
             'ci-kubernetes-e2e-gce-ubuntudev-k8sdev-default': 'ci-kubernetes-e2e-gce-ubuntu*',
@@ -755,6 +757,18 @@ class JobTest(unittest.TestCase):
             'ci-kubernetes-e2e-gce-ubuntu-1-6-node-serial': 'ci-kubernetes-e2e-ubuntu-node*',
             'ci-kubernetes-e2e-gce-ubuntu-1-7-node-serial': 'ci-kubernetes-e2e-ubuntu-node*',
             'ci-kubernetes-e2e-gce-ubuntu-node-serial': 'ci-kubernetes-e2e-ubuntu-node*',
+            'ci-kubernetes-e2enode-ubuntustable1-k8sdev-gkespec': 'ci-kubernetes-e2e-ubuntu-node*',
+            'ci-kubernetes-e2enode-ubuntudev-k8sstable1-gkespec': 'ci-kubernetes-e2e-ubuntu-node*',
+            'ci-kubernetes-e2enode-ubuntudev-k8sstable2-serial': 'ci-kubernetes-e2e-ubuntu-node*',
+            'ci-kubernetes-e2enode-ubuntustable1-k8sstable1-gkespec': 'ci-kubernetes-e2e-ubuntu-node*',
+            'ci-kubernetes-e2enode-ubuntudev-k8sstable2-gkespec': 'ci-kubernetes-e2e-ubuntu-node*',
+            'ci-kubernetes-e2enode-ubuntudev-k8sdev-serial': 'ci-kubernetes-e2e-ubuntu-node*',
+            'ci-kubernetes-e2enode-ubuntustable1-k8sstable2-serial': 'ci-kubernetes-e2e-ubuntu-node*',
+            'ci-kubernetes-e2enode-ubuntudev-k8sdev-gkespec': 'ci-kubernetes-e2e-ubuntu-node*',
+            'ci-kubernetes-e2enode-ubuntustable1-k8sstable2-gkespec': 'ci-kubernetes-e2e-ubuntu-node*',
+            'ci-kubernetes-e2enode-ubuntustable1-k8sdev-serial': 'ci-kubernetes-e2e-ubuntu-node*',
+            'ci-kubernetes-e2enode-ubuntustable1-k8sstable1-serial': 'ci-kubernetes-e2e-ubuntu-node*',
+            'ci-kubernetes-e2enode-ubuntudev-k8sstable1-serial': 'ci-kubernetes-e2e-ubuntu-node*',
             # The 1.5 and 1.6 scalability jobs intentionally share projects.
             'ci-kubernetes-e2e-gci-gce-scalability-release-1-7': 'ci-kubernetes-e2e-gci-gce-scalability-release-*',
             'ci-kubernetes-e2e-gci-gce-scalability-stable1': 'ci-kubernetes-e2e-gci-gce-scalability-release-*',
