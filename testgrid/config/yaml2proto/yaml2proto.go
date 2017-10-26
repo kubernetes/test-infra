@@ -72,6 +72,9 @@ func ReconcileTestGroup(currentTestGroup *config.TestGroup, defaultTestGroup *co
 
 // Set up unfilled field in a DashboardTab using the default DashboardTab
 func ReconcileDashboardtab(currentTab *config.DashboardTab, defaultTab *config.DashboardTab) {
+	if currentTab.BaseOptions == "" {
+		currentTab.BaseOptions = defaultTab.BaseOptions
+	}
 	if currentTab.BugComponent == 0 {
 		currentTab.BugComponent = defaultTab.BugComponent
 	}

@@ -166,6 +166,10 @@ func TestConfig(t *testing.T) {
 				t.Errorf("Dashboard %v, tab %v: - Must have a name and a testgroup name", dashboard.Name, tabindex)
 			}
 
+			if !strings.Contains(dashboardtab.BaseOptions, "sort-by-") {
+				t.Errorf("Dashboard %v, tab %v: base_options must select a sort strategy: &sort-by-failure or &sort-by-name", dashboard.Name, dashboardtab.Name)
+			}
+
 			// All dashboardtab within a dashboard must not have duplicated names
 			if dashboardtabmap[dashboardtab.Name] {
 				t.Errorf("Duplicated dashboardtab: %v", dashboardtab.Name)
