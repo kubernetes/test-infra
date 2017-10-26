@@ -1888,29 +1888,6 @@ dashboards:
   - name: kops-gce
     test_group_name: ci-kubernetes-e2e-kops-gce
 
-- name: sig-scalability-gce-scale
-  dashboard_tab:
-  - name: gce-1.7
-    test_group_name: ci-kubernetes-e2e-gce-scalability-release-1-7
-  - name: gce-large-manual-up
-    test_group_name: ci-kubernetes-e2e-gce-large-manual-up
-  - name: gce-large-manual-down
-    test_group_name: ci-kubernetes-e2e-gce-large-manual-down
-  - name: gce-large-correctness
-    test_group_name: ci-kubernetes-e2e-gce-large-correctness
-  - name: gce-large-performance
-    test_group_name: ci-kubernetes-e2e-gce-large-performance
-  - name: gce-scale-correctness
-    test_group_name: ci-kubernetes-e2e-gce-scale-correctness
-  - name: gce-scale-performance
-    test_group_name: ci-kubernetes-e2e-gce-scale-performance
-  - name: gci-gce
-    test_group_name: ci-kubernetes-e2e-gci-gce-scalability
-  - name: gci-gce-1.8
-    test_group_name: ci-kubernetes-e2e-gci-gce-scalability-stable1
-  - name: gci-gce-1.7
-    test_group_name: ci-kubernetes-e2e-gci-gce-scalability-release-1-7
-
 # "google-gci-dev" is a tab for tests that are used for GCI(aka COS) image
 # development and qualification. It should not be confused with the "google-gci"
 # tab that is for k8s development and release qualification.
@@ -2109,19 +2086,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-slow
   - name: gke-ubuntustable1-k8sstable2-updown
     test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-updown
-
-- name: sig-scalability-gke-scale
-  dashboard_tab:
-  - name: gke-large-correctness
-    test_group_name: ci-kubernetes-e2e-gke-large-correctness
-  - name: gke-large-performance
-    test_group_name: ci-kubernetes-e2e-gke-large-performance
-  - name: gke-large-deploy
-    test_group_name: ci-kubernetes-e2e-gke-large-deploy
-  - name: gke-large-teardown
-    test_group_name: ci-kubernetes-e2e-gke-large-teardown
-  - name: gke-scale-correctness
-    test_group_name: ci-kubernetes-e2e-gke-scale-correctness
 
 - name: google-gke-staging
   dashboard_tab:
@@ -3511,16 +3475,44 @@ dashboards:
 
 # Move sig-release here
 
+- name: sig-scalability-gce
+  dashboard_tab:
+  - name: gce
+    test_group_name: ci-kubernetes-e2e-gci-gce-scalability
+  - name: gce-1.8
+    test_group_name: ci-kubernetes-e2e-gci-gce-scalability-stable1
+  - name: gce-1.7
+    test_group_name: ci-kubernetes-e2e-gci-gce-scalability-release-1-7
+  - name: cvm-gce-1.7
+    test_group_name: ci-kubernetes-e2e-gce-scalability-release-1-7
+  - name: gce-large-correctness
+    test_group_name: ci-kubernetes-e2e-gce-large-correctness
+  - name: gce-large-performance
+    test_group_name: ci-kubernetes-e2e-gce-large-performance
+  - name: gce-scale-correctness
+    test_group_name: ci-kubernetes-e2e-gce-scale-correctness
+  - name: gce-scale-performance
+    test_group_name: ci-kubernetes-e2e-gce-scale-performance
+
+- name: sig-scalability-gke
+  dashboard_tab:
+  - name: gke-large-correctness
+    test_group_name: ci-kubernetes-e2e-gke-large-correctness
+  - name: gke-large-performance
+    test_group_name: ci-kubernetes-e2e-gke-large-performance
+  - name: gke-scale-correctness
+    test_group_name: ci-kubernetes-e2e-gke-scale-correctness
+
 - name: sig-scalability-kubemark
   dashboard_tab:
-  - name: kubemark-100
-    test_group_name: ci-kubernetes-kubemark-100-gce
-  - name: kubemark-100-high-density
-    test_group_name: ci-kubernetes-kubemark-high-density-100-gce
   - name: kubemark-small
     test_group_name: ci-kubernetes-kubemark-5-gce
   - name: kubemark-small-last-release
     test_group_name: ci-kubernetes-kubemark-5-gce-last-release
+  - name: kubemark-100
+    test_group_name: ci-kubernetes-kubemark-100-gce
+  - name: kubemark-100-high-density
+    test_group_name: ci-kubernetes-kubemark-high-density-100-gce
   - name: kubemark-500
     test_group_name: ci-kubernetes-kubemark-500-gce
   - name: kubemark-5000
@@ -3533,6 +3525,16 @@ dashboards:
   - name: cluster-loader
     test_group_name: ci-perf-tests-e2e-gce-clusterloader
 
+- name: sig-scalability-manual
+  dashboard_tab:
+  - name: gce-large-manual-up
+    test_group_name: ci-kubernetes-e2e-gce-large-manual-up
+  - name: gce-large-manual-down
+    test_group_name: ci-kubernetes-e2e-gce-large-manual-down
+  - name: gke-large-deploy
+    test_group_name: ci-kubernetes-e2e-gke-large-deploy
+  - name: gke-large-teardown
+    test_group_name: ci-kubernetes-e2e-gke-large-teardown
 
 - name: sig-scheduling
   dashboard_tab:
@@ -3893,10 +3895,11 @@ dashboard_groups:
 
 - name: sig-scalability
   dashboard_names:
+  - sig-scalability-gce
+  - sig-scalability-gke
   - sig-scalability-kubemark
-  - sig-scalability-gce-scale
-  - sig-scalability-gke-scale
   - sig-scalability-perf-tests
+  - sig-scalability-manual
 
 - name: sig-testing
   dashboard_names:
