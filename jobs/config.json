@@ -9715,6 +9715,7 @@
   },
   "pull-test-infra-bazel-canary": {
     "args": [
+      "--batch",
       "--build=//...",
       "--install=gubernator/test_requirements.txt",
       "--test=//... //verify:verify-all",
