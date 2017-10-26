@@ -155,8 +155,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-sd-logging
 - name: ci-kubernetes-e2e-gci-gce-etcd3
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-etcd3
-- name: ci-kubernetes-e2e-gce-federation-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-federation-serial
 - name: ci-kubernetes-soak-gce-federation-deploy
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gce-federation-deploy
 - name: ci-kubernetes-soak-gce-federation-test
@@ -3208,8 +3206,6 @@ dashboards:
 
 - name: sig-multicluster-gce
   dashboard_tab:
-  - name: gce-serial
-    test_group_name: ci-kubernetes-e2e-gce-federation-serial
   - name: gce-1.6
     test_group_name: ci-kubernetes-e2e-gce-federation-release-1-6
   - name: gce-1.7

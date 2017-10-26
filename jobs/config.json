@@ -1714,26 +1714,6 @@
       "sig-multicluster"
     ]
   },
-  "ci-kubernetes-e2e-gce-federation-serial": {
-    "args": [
-      "--check-leaked-resources",
-      "--cluster=prow-us-central1-f",
-      "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gce-federation-serial.env",
-      "--extract=ci/latest",
-      "--federation",
-      "--gcp-node-image=gci",
-      "--gcp-project=k8s-jkns-e2e-gce-f8n-serial",
-      "--gcp-zone=us-central1-f",
-      "--provider=gce",
-      "--test_args=--ginkgo.focus=(\\[Feature:Federation\\].*(\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[NoCluster\\])) --minStartupPods=8",
-      "--timeout=900m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-multicluster"
-    ]
-  },
   "ci-kubernetes-e2e-gce-gci-1-5-rollback-etcd": {
     "args": [
       "--check-leaked-resources",
