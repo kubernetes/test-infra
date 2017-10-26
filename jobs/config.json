@@ -8684,52 +8684,6 @@
       "UNKNOWN"
     ]
   },
-  "ci-kubernetes-soak-gce-federation-deploy": {
-    "args": [
-      "--build",
-      "--down=false",
-      "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-soak-gce-federation-deploy.env",
-      "--extract=local",
-      "--federation",
-      "--gcp-node-image=gci",
-      "--gcp-project=k8s-jkns-gce-federation-soak",
-      "--gcp-zone=us-central1-f",
-      "--mode=docker",
-      "--provider=gce",
-      "--save=gs://kubernetes-jenkins/soak/ci-kubernetes-soak-gce-federation-deploy",
-      "--stage=gs://kubernetes-release-dev/ci/ci-kubernetes-soak-gce-federation-deploy",
-      "--test=false",
-      "--timeout=90m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-multicluster"
-    ]
-  },
-  "ci-kubernetes-soak-gce-federation-test": {
-    "args": [
-      "--down=false",
-      "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-soak-gce-federation-test.env",
-      "--extract=ci/latest",
-      "--federation",
-      "--gcp-node-image=gci",
-      "--gcp-project=k8s-jkns-gce-federation-soak",
-      "--gcp-zone=us-central1-f",
-      "--ginkgo-parallel=25",
-      "--mode=docker",
-      "--provider=gce",
-      "--save=gs://kubernetes-jenkins/soak/ci-kubernetes-soak-gce-federation-deploy",
-      "--test_args=--ginkgo.focus=\\[Feature:Federation\\] --ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[NoCluster\\] --clean-start=true --minStartupPods=8",
-      "--timeout=90m",
-      "--up=false"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-multicluster"
-    ]
-  },
   "ci-kubernetes-soak-gce-gci": {
     "args": [
       "--down=false",

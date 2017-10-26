@@ -813,7 +813,6 @@ class JobTest(unittest.TestCase):
                 'ci-kubernetes-soak-gci-gce-1.5',
                 'ci-kubernetes-soak-gce-gci',
                 'ci-kubernetes-soak-gke-gci',
-                'ci-kubernetes-soak-gce-federation',
                 'ci-kubernetes-soak-gci-gce-stable1',
                 'ci-kubernetes-soak-gci-gce-1.6',
                 'ci-kubernetes-soak-gci-gce-1-7',

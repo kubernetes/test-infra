@@ -155,10 +155,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-sd-logging
 - name: ci-kubernetes-e2e-gci-gce-etcd3
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-etcd3
-- name: ci-kubernetes-soak-gce-federation-deploy
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gce-federation-deploy
-- name: ci-kubernetes-soak-gce-federation-test
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gce-federation-test
 - name: ci-kubernetes-pull-gce-federation-deploy
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-pull-gce-federation-deploy
 - name: ci-kubernetes-federation-build-1.6
@@ -3208,10 +3204,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-federation-release-1-7
   - name: gce-1.8
     test_group_name: ci-kubernetes-e2e-gce-federation-release-1-8
-  - name: soak-gce-deploy
-    test_group_name: ci-kubernetes-soak-gce-federation-deploy
-  - name: soak-gce-test
-    test_group_name: ci-kubernetes-soak-gce-federation-test
   - name: pull-gce-deploy
     test_group_name: ci-kubernetes-pull-gce-federation-deploy
   - name: build-1.6
