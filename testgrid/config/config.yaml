@@ -161,8 +161,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gce-federation-test
 - name: ci-kubernetes-pull-gce-federation-deploy
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-pull-gce-federation-deploy
-- name: ci-kubernetes-federation-build
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-federation-build
 - name: ci-kubernetes-federation-build-1.6
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-federation-build-1.6
 - name: ci-kubernetes-federation-build-1.7
@@ -2410,8 +2408,6 @@ dashboards:
     test_group_name: ci-kubernetes-verify-master
   - name: kubelet
     test_group_name: ci-kubernetes-node-kubelet
-  - name: federation-build
-    test_group_name: ci-kubernetes-federation-build
   - name: gci-gce
     test_group_name: ci-kubernetes-e2e-gci-gce
   - name: gci-gke
@@ -3218,8 +3214,6 @@ dashboards:
     test_group_name: ci-kubernetes-soak-gce-federation-test
   - name: pull-gce-deploy
     test_group_name: ci-kubernetes-pull-gce-federation-deploy
-  - name: build
-    test_group_name: ci-kubernetes-federation-build
   - name: build-1.6
     test_group_name: ci-kubernetes-federation-build-1.6
   - name: build-1.7

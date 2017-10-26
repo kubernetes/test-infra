@@ -8231,17 +8231,6 @@
       "generated"
     ]
   },
-  "ci-kubernetes-federation-build": {
-    "args": [
-      "--fast",
-      "--federation=k8s-jkns-e2e-gce-federation",
-      "--release=kubernetes-federation-release"
-    ],
-    "scenario": "kubernetes_build",
-    "sigOwners": [
-      "sig-multicluster"
-    ]
-  },
   "ci-kubernetes-federation-build-1.6": {
     "args": [
       "--fast",
