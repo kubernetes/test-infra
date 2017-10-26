@@ -619,14 +619,16 @@ function reset-godeps() {
     local f_clean_commit=${1}
 
     # checkout or delete Godeps/Godeps.json
-    if [ -n "$(git ls-tree ${f_clean_commit}^{tree} Godeps/Godeps.json)" ]; then
-        git checkout ${f_clean_commit} Godeps/Godeps.json
-    else
-        rm -rf Godeps/Godeps.json
+    if [ -n "$(git ls-tree ${f_clean_commit}^{tree} Godeps)" ]; then
+        git checkout ${f_clean_commit} Godeps
+        git add Godeps
+    elif [ -d Godeps ]; then
+        rm -rf Godeps
+        git rm -rf Godeps
     fi
 
     # commit Godeps/Godeps.json unconditionally
-    git commit -q -m "sync: reset Godeps/Godeps.json" --allow-empty -- Godeps/Godeps.json
+    git commit -q -m "sync: reset Godeps/Godeps.json" --allow-empty
 }
 
 # Squash the last $1 commits into one, with the commit message of the last.
@@ -692,7 +694,7 @@ update_full_godeps() {
     # checkout k8s.io/* dependencies
     checkout-deps-to-kube-commit "${deps}"
 
-    # recreate vendor/ and Godeps/Godeps.sjon
+    # recreate vendor/ and Godeps/Godeps.json
     rm -rf ./Godeps
     rm -rf ./vendor
 
