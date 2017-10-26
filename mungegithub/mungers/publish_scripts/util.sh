@@ -133,9 +133,14 @@ sync_repo() {
     readonly subdirectory src_branch dst_branch kubernetes_remote deps is_library
 
     local new_branch="false"
+    local orphan="false"
     if ! git rev-parse -q --verify HEAD; then
         echo "Found repo without ${dst_branch} branch, creating initial commit."
         git commit -m "Initial commit" --allow-empty
+        new_branch="true"
+        orphan="true"
+    elif [ $(ls -1 | wc -l) = 0 ]; then
+        echo "Found repo without files, assuming it's new."
         new_branch="true"
     else
         echo "Starting at existing ${dst_branch} commit $(git rev-parse HEAD)."
@@ -167,8 +172,13 @@ sync_repo() {
         # the corresponding fast-forward merge and left the feature branch commits)
         f_mainline_commits=$(git log --first-parent --format='%H' --reverse HEAD)
 
-        # create and checkout new, empty master branch
-        git checkout -q ${dst_branch} --orphan
+        # create and checkout new, empty master branch. We only need this non-orphan case for the master
+        # as that usually exists for new repos.
+        if [ ${orphan} = true ]; then
+            git checkout -q ${dst_branch} --orphan
+        else
+            git checkout -q ${dst_branch}
+        fi
     else
         # create filtered-branch-base before filtering for
         # - new branches that branch off master (i.e. the branching point)
