@@ -3331,6 +3331,14 @@ dashboards:
     description: 'downgrade cluster and migrate kube-proxy from a daemonset to static pods'
     alert_options:
       alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
+  - name: kubeadm-gce-cni-calico
+    test_group_name: ci-kubernetes-e2e-kubeadm-gce-cni-calico
+    alert_options:
+      alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
+  - name: kubeadm-gce-cni-flannel
+    test_group_name: ci-kubernetes-e2e-kubeadm-gce-cni-flannel
+    alert_options:
+      alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
 
 - name: sig-node-containerd
   dashboard_tab:
