@@ -8651,26 +8651,6 @@
       "sig-multicluster"
     ]
   },
-  "ci-kubernetes-pull-gce-federation-deploy-canary": {
-    "args": [
-      "--cluster=prow-us-central1-f",
-      "--down=false",
-      "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-pull-gce-federation-deploy-canary.env",
-      "--extract=ci/latest",
-      "--gcp-node-image=gci",
-      "--gcp-project=k8s-jkns-pr-cnry-e2e-gce-fdrtn",
-      "--gcp-zone=us-central1-f",
-      "--provider=gce",
-      "--save=gs://kubernetes-jenkins/federation/ci-kubernetes-pull-gce-federation-deploy-canary",
-      "--test=false",
-      "--timeout=90m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-multicluster"
-    ]
-  },
   "ci-kubernetes-soak-cos-docker-validation": {
     "args": [
       "--down=false",
@@ -9563,31 +9543,6 @@
       "--provider=gce",
       "--save=gs://kubernetes-jenkins/federation/ci-kubernetes-pull-gce-federation-deploy",
       "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-federation-e2e-gce",
-      "--test_args=--ginkgo.focus=\\[Feature:Federation\\] --ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[NoCluster\\] --minStartupPods=8",
-      "--timeout=90m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-multicluster"
-    ]
-  },
-  "pull-kubernetes-federation-e2e-gce-canary": {
-    "args": [
-      "--build=bazel",
-      "--cluster=prow-us-central1-f",
-      "--deployment=none",
-      "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/pull-kubernetes-e2e.env",
-      "--env-file=jobs/env/pull-kubernetes-federation-e2e-gce-canary.env",
-      "--extract=local",
-      "--federation",
-      "--gcp-project=k8s-jkns-pr-cnry-e2e-gce-fdrtn",
-      "--gcp-zone=us-central1-f",
-      "--ginkgo-parallel=30",
-      "--multiple-federations",
-      "--provider=gce",
-      "--save=gs://kubernetes-jenkins/federation/ci-kubernetes-pull-gce-federation-deploy-canary",
-      "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-federation-e2e-gce-canary",
       "--test_args=--ginkgo.focus=\\[Feature:Federation\\] --ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[NoCluster\\] --minStartupPods=8",
       "--timeout=90m"
     ],

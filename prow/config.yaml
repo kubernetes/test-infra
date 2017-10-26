@@ -1231,67 +1231,6 @@ presubmits:
     context: pull-kubernetes-federation-e2e-gce
     rerun_command: "/test pull-kubernetes-federation-e2e-gce"
     trigger: "(?m)^/test pull-kubernetes-federation-e2e-gce,?(\\s+|$)"
-  - name: pull-kubernetes-federation-e2e-gce-canary
-    agent: kubernetes
-    skip_branches:
-    - release-1.6
-    always_run: false
-    skip_report: false
-    max_concurrency: 12
-    context: pull-kubernetes-federation-e2e-gce-canary
-    rerun_command: "/test pull-kubernetes-federation-e2e-gce-canary"
-    trigger: "(?m)^/test pull-kubernetes-federation-e2e-gce-canary,?(\\s+|$)"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
-        args:
-        - --root=/go/src
-        - "--clean"
-        - "--git-cache=/root/.cache/git"
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--repo=k8s.io/release"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--timeout=110"
-        env:
-        - name: GOOGLE_APPLICATION_CREDENTIALS
-          value: /etc/service-account/service-account.json
-        - name: USER
-          value: prow
-        - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
-          value: /etc/ssh-key-secret/ssh-private
-        - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
-          value: /etc/ssh-key-secret/ssh-public
-        - name: TEST_TMPDIR
-          value: /root/.cache/bazel
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
-        volumeMounts:
-        - mountPath: /etc/service-account
-          name: service
-          readOnly: true
-        - mountPath: /etc/ssh-key-secret
-          name: ssh
-          readOnly: true
-        - mountPath: /root/.cache
-          name: cache-ssd
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
-      volumes:
-      - name: service
-        secret:
-          secretName: service-account
-      - name: ssh
-        secret:
-          defaultMode: 256
-          secretName: ssh-key-secret
-      - hostPath:
-          path: /mnt/disks/ssd0
-        name: cache-ssd
-
   - name: pull-kubernetes-kubemark-e2e-gce
     agent: jenkins
     always_run: true
@@ -2413,67 +2352,6 @@ presubmits:
     context: pull-security-kubernetes-federation-e2e-gce
     rerun_command: "/test pull-security-kubernetes-federation-e2e-gce"
     trigger: "(?m)^/test pull-security-kubernetes-federation-e2e-gce,?(\\s+|$)"
-  - name: pull-security-kubernetes-federation-e2e-gce-canary
-    agent: kubernetes
-    skip_branches:
-    - release-1.6
-    always_run: false
-    skip_report: false
-    max_concurrency: 12
-    context: pull-security-kubernetes-federation-e2e-gce-canary
-    rerun_command: "/test pull-security-kubernetes-federation-e2e-gce-canary"
-    trigger: "(?m)^/test pull-security-kubernetes-federation-e2e-gce-canary,?(\\s+|$)"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
-        args:
-        - --root=/go/src
-        - "--clean"
-        - "--git-cache=/root/.cache/git"
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--repo=k8s.io/release"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - --timeout=110
-        env:
-        - name: GOOGLE_APPLICATION_CREDENTIALS
-          value: /etc/service-account/service-account.json
-        - name: USER
-          value: prow
-        - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
-          value: /etc/ssh-key-secret/ssh-private
-        - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
-          value: /etc/ssh-key-secret/ssh-public
-        - name: TEST_TMPDIR
-          value: /root/.cache/bazel
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
-        volumeMounts:
-        - mountPath: /etc/service-account
-          name: service
-          readOnly: true
-        - mountPath: /etc/ssh-key-secret
-          name: ssh
-          readOnly: true
-        - mountPath: /root/.cache
-          name: cache-ssd
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
-      volumes:
-      - name: service
-        secret:
-          secretName: service-account
-      - name: ssh
-        secret:
-          defaultMode: 256
-          secretName: ssh-key-secret
-      - hostPath:
-          path: /mnt/disks/ssd0
-        name: cache-ssd
-
   - name: pull-security-kubernetes-kubemark-e2e-gce
     agent: jenkins
     always_run: true
@@ -17080,41 +16958,6 @@ periodics:
       secret:
         secretName: ssh-key-secret
         defaultMode: 0400
-
-- interval: 24h
-  agent: kubernetes
-  name: ci-kubernetes-pull-gce-federation-deploy-canary
-  spec:
-    containers:
-    - args:
-      - --timeout=60
-      - --repo=k8s.io/kubernetes
-      - --root=/go/src
-      env:
-      - name: GOOGLE_APPLICATION_CREDENTIALS
-        value: /etc/service-account/service-account.json
-      - name: USER
-        value: prow
-      - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
-        value: /etc/ssh-key-secret/ssh-private
-      - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
-        value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
-      volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
-      - mountPath: /etc/ssh-key-secret
-        name: ssh
-        readOnly: true
-    volumes:
-    - name: service
-      secret:
-        secretName: service-account
-    - name: ssh
-      secret:
-        defaultMode: 256
-        secretName: ssh-key-secret
 
 - interval: 12h
   agent: kubernetes

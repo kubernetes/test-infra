@@ -163,8 +163,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gce-federation-test
 - name: ci-kubernetes-pull-gce-federation-deploy
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-pull-gce-federation-deploy
-- name: ci-kubernetes-pull-gce-federation-deploy-canary
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-pull-gce-federation-deploy-canary
 - name: ci-kubernetes-federation-build
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-federation-build
 - name: ci-kubernetes-federation-build-1.6
@@ -1516,10 +1514,6 @@ test_groups:
   num_columns_recent: 20
 - name: pull-kubernetes-federation-e2e-gce
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-federation-e2e-gce
-  days_of_results: 1
-  num_columns_recent: 20
-- name: pull-kubernetes-federation-e2e-gce-canary
-  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-federation-e2e-gce-canary
   days_of_results: 1
   num_columns_recent: 20
 - name: pull-kubernetes-kubemark-e2e-gce
@@ -3232,8 +3226,6 @@ dashboards:
     test_group_name: ci-kubernetes-soak-gce-federation-test
   - name: pull-gce-deploy
     test_group_name: ci-kubernetes-pull-gce-federation-deploy
-  - name: pull-gce-deploy-canary
-    test_group_name: ci-kubernetes-pull-gce-federation-deploy-canary
   - name: build
     test_group_name: ci-kubernetes-federation-build
   - name: build-1.6
@@ -3765,9 +3757,6 @@ dashboards:
     base_options: 'width=10'
   - name: pull-kubernetes-federation-e2e-gce
     test_group_name: pull-kubernetes-federation-e2e-gce
-    base_options: 'width=10'
-  - name: pull-kubernetes-federation-e2e-gce-canary
-    test_group_name: pull-kubernetes-federation-e2e-gce-canary
     base_options: 'width=10'
   - name: pull-kubernetes-kubemark-e2e-gce
     test_group_name: pull-kubernetes-kubemark-e2e-gce
