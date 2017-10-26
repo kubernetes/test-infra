@@ -670,14 +670,11 @@ update_full_godeps() {
     local dep=""
     local branch=""
     local depbranch=""
-    for depbranch in ${deps//,/ }; do
+    for depbranch in ${deps//,/ } $(basename "${PWD}"); do # due to a bug in kube's update-staging-godeps script we have reflexive dependencies. Remove them as well.
         IFS=: read dep branch <<<"${depbranch}"
         jq '.Deps |= map(select(.ImportPath | (startswith("k8s.io/'${dep}'/") or . == "k8s.io/'${dep}'") | not))' Godeps/Godeps.json > Godeps/Godeps.json.clean
         mv Godeps/Godeps.json.clean Godeps/Godeps.json
     done
-    # due to a bug we have xxxx revisions for reflexive dependencies. Remove them.
-    jq '.Deps |= map(select(.Rev == "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" | not))' Godeps/Godeps.json > Godeps/Godeps.json.clean
-    mv Godeps/Godeps.json.clean Godeps/Godeps.json
 
     echo "Running godep restore."
     godep restore
@@ -767,6 +764,10 @@ update-deps-in-godep-json() {
             echo "Ignoring k8s.io/${dep} dependency because it seems not to be used."
         fi
     done
+
+    # due to a bug we have xxxx revisions for reflexive dependencies. Remove them.
+    jq '.Deps |= map(select(.ImportPath | (startswith("k8s.io/'$(basename "${PWD}")'/") or . == "k8s.io/'$(basename "${PWD}")'") | not))' Godeps/Godeps.json > Godeps/Godeps.json.clean
+    mv Godeps/Godeps.json.clean Godeps/Godeps.json
 
     git add Godeps/Godeps.json
 
