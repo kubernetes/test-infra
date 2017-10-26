@@ -63,6 +63,7 @@ type options struct {
 	dump                string
 	extract             extractStrategies
 	extractFederation   extractFederationStrategies
+	extractSource       bool
 	federation          bool
 	gcpCloudSdk         string
 	gcpMasterImage      string
@@ -118,6 +119,7 @@ func defineFlags() *options {
 	flag.StringVar(&o.dump, "dump", "", "If set, dump cluster logs to this location on test or cluster-up failure")
 	flag.Var(&o.extract, "extract", "Extract k8s binaries from the specified release location")
 	flag.Var(&o.extractFederation, "extract-federation", "Extract federation binaries from the specified release location")
+	flag.BoolVar(&o.extractSource, "extract-source", false, "Extract k8s src together with other tarballs")
 	flag.BoolVar(&o.federation, "federation", false, "If true, start/tear down the federation control plane along with the clusters. To only start/tear down the federation control plane, specify --deployment=none")
 	flag.Var(&o.ginkgoParallel, "ginkgo-parallel", fmt.Sprintf("Run Ginkgo tests in parallel, default %d runners. Use --ginkgo-parallel=N to specify an exact count.", defaultGinkgoParallel))
 	flag.StringVar(&o.gcpCloudSdk, "gcp-cloud-sdk", "", "Install/upgrade google-cloud-sdk to the gs:// path if set")
@@ -257,6 +259,9 @@ func getDeployer(o *options) (deployer, error) {
 func validateFlags(o *options) error {
 	if o.multiClusters.Enabled() && o.deployment != "kubernetes-anywhere" {
 		return errors.New("--multi-clusters flag cannot be passed with deployments other than 'kubernetes-anywhere'")
+	}
+	if !o.extract.Enabled() && o.extractSource {
+		return errors.New("--extract-source flag cannot be passed without --extract")
 	}
 	return nil
 }
@@ -421,7 +426,13 @@ func acquireKubernetes(o *options) error {
 				if !o.up {
 					// Restore version and .kube/config from --up
 					log.Printf("Overwriting extract strategy to load kubeconfig and version from %s", o.save)
-					o.extract = extractStrategies{extractStrategy{mode: load, option: o.save}}
+					o.extract = extractStrategies{
+						extractStrategy{
+							mode:       load,
+							option:     o.save,
+							extractSrc: o.extractSource,
+						},
+					}
 				} else if o.federation && o.up && o.deployment == "none" {
 					// Only restore .kube/config from previous --up, use the regular
 					// extraction strategy to restore version.
