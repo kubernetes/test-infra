@@ -138,3 +138,11 @@
         job-name: ci-kubernetes-build-debian-unstable
         repo-name: k8s.io/release
         timeout: 300
+
+    - federation-build:
+        branch: master
+        commit-frequency: 'H/5 * * * *'
+        giturl: 'https://github.com/kubernetes/federation'
+        job-name: ci-federation-build
+        repo-name: k8s.io/federation
+        timeout: 50

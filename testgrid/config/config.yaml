@@ -1556,6 +1556,18 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-test-infra-verify-gofmt
   days_of_results: 1
   num_columns_recent: 20
+- name: pull-federation-bazel-build
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-federation-bazel-build
+  days_of_results: 1
+  num_columns_recent: 20
+- name: pull-federation-bazel-test
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-federation-bazel-test
+  days_of_results: 1
+  num_columns_recent: 20
+- name: pull-federation-e2e-gce
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-federation-e2e-gce
+  days_of_results: 1
+  num_columns_recent: 20
 # release-1.8
 - name: ci-kubernetes-e2e-gci-gce-stable1
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-stable1
@@ -1655,6 +1667,12 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-stable1-gci-stable2-downgrade-cluster-parallel
 - name: ci-kubernetes-e2e-gce-min-node-permissions
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-min-node-permissions
+- name: ci-federation-build
+  gcs_prefix: kubernetes-jenkins/logs/ci-federation-build
+- name: ci-federation-e2e-gce
+  gcs_prefix: kubernetes-jenkins/logs/ci-federation-e2e-gce
+- name: ci-federation-e2e-gce-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-federation-e2e-gce-serial
 # GCE Guest compute-image-tools
 - name: ci-daisy-e2e
   gcs_prefix: gce-daisy-test/logs/ci-daisy-e2e
@@ -3160,7 +3178,7 @@ dashboards:
     test_group_name: periodic-multi-platform-kubeadm-packet-arm64
 
 
-- name: sig-multicluster-gce
+- name: sig-multicluster-federation-gce-old
   dashboard_tab:
   - name: gce-1.6
     test_group_name: ci-kubernetes-e2e-gce-federation-release-1-6
@@ -3176,6 +3194,15 @@ dashboards:
     test_group_name: ci-kubernetes-federation-build-1.7
   - name: build-1.8
     test_group_name: ci-kubernetes-federation-build-1.8
+
+- name: sig-multicluster-federation-gce
+  dashboard_tab:
+  - name: gce
+    test_group_name: ci-federation-e2e-gce
+  - name: gce-serial
+    test_group_name: ci-federation-e2e-gce-serial
+  - name: build
+    test_group_name: ci-federation-build
 
 - name: sig-instrumentation
   dashboard_tab:
@@ -3788,6 +3815,18 @@ dashboards:
     test_group_name: pull-cluster-registry-bazel
     base_options: 'width=10'
 
+- name: presubmits-federation
+  dashboard_tab:
+  - name: bazel-build
+    test_group_name: pull-federation-bazel-build
+    base_options: 'width=10'
+  - name: bazel-test
+    test_group_name: pull-federation-bazel-test
+    base_options: 'width=10'
+  - name: e2e-gce
+    test_group_name: pull-federation-e2e-gce
+    base_options: 'width=10'
+
 #
 # Start dashboard groups
 #
@@ -3810,6 +3849,7 @@ dashboard_groups:
 - name: presubmits
   dashboard_names:
   - presubmits-cluster-registry
+  - presubmits-federation
   - presubmits-kubernetes
   - presubmits-test-infra
 
@@ -3825,6 +3865,11 @@ dashboard_groups:
   - sig-cluster-lifecycle-1.8-upgrade-skew
   - sig-cluster-lifecycle-1.6-upgrade-skew
   - sig-cluster-lifecycle-multi-platform
+
+- name: sig-multicluster
+  dashboard_names:
+  - sig-multicluster-federation-gce-old
+  - sig-multicluster-federation-gce
 
 - name: sig-node
   dashboard_names:
