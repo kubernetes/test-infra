@@ -119,9 +119,11 @@ message Dashboard {
   // This is displayed on any dashboard tab in this dashboard.
   repeated Notification notifications = 3;
 
-  // Option to show 'Summary' tab instead of first results tab when you view
-  // this dashboard.
-  bool show_summary_first = 4;
+  reserved 4;  // Deprecated show_summary_first bool, unused
+
+  // Control which tab is displayed when first opening a dashboard.
+  // Defaults to Summary
+  string default_tab = 5;
 }
 
 message LinkTemplate {
@@ -235,7 +237,4 @@ message DefaultConfiguration {
 
   // A default dashboard tab with default initialization data
   DashboardTab default_dashboard_tab = 2;
-
-  // A default dashboard with default initialization data
-  Dashboard default_dashboard = 3;
 }

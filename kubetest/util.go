@@ -18,6 +18,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -488,4 +489,45 @@ func execError(err error) string {
 		return fmt.Sprintf("%v (output: %q)", err, string(ee.Stderr))
 	}
 	return err.Error()
+}
+
+// ensureExecutable sets the executable file mode bits, for all users, to ensure that we can execute a file
+func ensureExecutable(p string) error {
+	s, err := os.Stat(p)
+	if err != nil {
+		return fmt.Errorf("error doing stat on %q: %v", p, err)
+	}
+	if err := os.Chmod(p, s.Mode()|0111); err != nil {
+		return fmt.Errorf("error doing chmod on %q: %v", p, err)
+	}
+	return nil
+}
+
+type instanceGroup struct {
+	Name              string `json:"name"`
+	CreationTimestamp string `json:"creationTimestamp"`
+}
+
+// getLatestClusterUpTime returns latest created instanceGroup timestamp from gcloud parsing results
+func getLatestClusterUpTime(gcloudJSON string) (time.Time, error) {
+	igs := []instanceGroup{}
+	if err := json.Unmarshal([]byte(gcloudJSON), &igs); err != nil {
+		return time.Time{}, fmt.Errorf("error when unmarshal json: %v", err)
+	}
+
+	latest := time.Time{}
+
+	for _, ig := range igs {
+		created, err := time.Parse(time.RFC3339, ig.CreationTimestamp)
+		if err != nil {
+			return time.Time{}, fmt.Errorf("error when parse time from %s: %v", ig.CreationTimestamp, err)
+		}
+
+		if created.After(latest) {
+			latest = created
+		}
+	}
+
+	// this returns time.Time{} if no ig exists, which will always force a new cluster
+	return latest, nil
 }

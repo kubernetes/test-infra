@@ -40,6 +40,7 @@ filegroup(
         "//prow/pjutil:all-srcs",
         "//prow/plank:all-srcs",
         "//prow/plugins:all-srcs",
+        "//prow/repoowners:all-srcs",
         "//prow/report:all-srcs",
         "//prow/slack:all-srcs",
         "//prow/tide:all-srcs",

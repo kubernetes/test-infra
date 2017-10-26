@@ -56,7 +56,7 @@ PROW_CONFIG_TEMPLATE = """
           value: /etc/ssh-key-secret/ssh-private
         - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
           value: /etc/ssh-key-secret/ssh-public
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20171018-fb8014bc-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
         volumeMounts:
         - mountPath: /etc/service-account
           name: service
@@ -163,8 +163,8 @@ class E2ENodeTest(object):
     def __get_job_def(self, args):
         """Returns the job definition from the given args."""
         return {
-            'scenario': 'kubernetes_kubelet',
-            'args': ['--mode=local'] + args,
+            'scenario': 'kubernetes_e2e',
+            'args': args,
             'sigOwners': self.job.get('sigOwners') or ['UNNOWN'],
             # Indicates that this job definition is auto-generated.
             'tags': ['generated'],
@@ -178,8 +178,8 @@ class E2ENodeTest(object):
         prow_config['interval'] = self.job['interval']
         # Assumes that the value in --timeout is of minutes.
         timeout = int(next(
-            x[15:-1] for x in test_suite['args'] if (
-                x.startswith('--test-timeout='))))
+            x[10:-1] for x in test_suite['args'] if (
+                x.startswith('--timeout='))))
         container = prow_config['spec']['containers'][0]
         if not container['args']:
             container['args'] = []
@@ -215,6 +215,23 @@ class E2ENodeTest(object):
         # Generates prow config.
         prow_config = self.__get_prow_config(
             test_suite, get_args(self.job_name, k8s_version))
+
+        # Combine --node-args
+        node_args = []
+        job_args = []
+        for arg in job_config['args']:
+            if '--node-args=' in arg:
+                node_args.append(arg.split('=', 1)[1])
+            else:
+                job_args.append(arg)
+
+        if node_args:
+            flag = '--node-args='
+            for node_arg in node_args:
+                flag += '%s ' % node_arg
+            job_args.append(flag.strip())
+
+        job_config['args'] = job_args
 
         return envs, job_config, prow_config
 

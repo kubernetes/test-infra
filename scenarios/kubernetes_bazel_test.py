@@ -142,7 +142,11 @@ class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-method
         # temporarily un-stub query
         with Stub(kubernetes_bazel, 'query', self.boiler['query'].old):
             def check_query(*cmd):
-                self.assertIn('kind(.*_binary, rdeps(//b/... -//b/bb/... +//c/..., //...))', cmd)
+                self.assertIn(
+                    'kind(.*_binary, rdeps(//b/... -//b/bb/... +//c/..., //...))'
+                    ' except attr(\'tags\', \'manual\', //...)',
+                    cmd
+                )
                 return '//b/aa/...\n//c/...'
             with Stub(kubernetes_bazel, 'check_output', check_query):
                 kubernetes_bazel.main(args)
