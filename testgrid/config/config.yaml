@@ -1512,10 +1512,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-kubeadm-gce
   days_of_results: 1
   num_columns_recent: 20
-- name: pull-kubernetes-federation-e2e-gce
-  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-federation-e2e-gce
-  days_of_results: 1
-  num_columns_recent: 20
 - name: pull-kubernetes-kubemark-e2e-gce
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-kubemark-e2e-gce
   days_of_results: 1
@@ -3754,9 +3750,6 @@ dashboards:
     test_group_name: pull-kubernetes-e2e-kops-aws-prow
   - name: pull-kubernetes-e2e-kubeadm-gce
     test_group_name: pull-kubernetes-e2e-kubeadm-gce
-    base_options: 'width=10'
-  - name: pull-kubernetes-federation-e2e-gce
-    test_group_name: pull-kubernetes-federation-e2e-gce
     base_options: 'width=10'
   - name: pull-kubernetes-kubemark-e2e-gce
     test_group_name: pull-kubernetes-kubemark-e2e-gce

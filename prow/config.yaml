@@ -1223,14 +1223,6 @@ presubmits:
         hostPath:
           path: /mnt/disks/ssd0
 
-  - name: pull-kubernetes-federation-e2e-gce
-    agent: jenkins
-    skip_branches:
-    - release-1.6
-    always_run: false
-    context: pull-kubernetes-federation-e2e-gce
-    rerun_command: "/test pull-kubernetes-federation-e2e-gce"
-    trigger: "(?m)^/test pull-kubernetes-federation-e2e-gce,?(\\s+|$)"
   - name: pull-kubernetes-kubemark-e2e-gce
     agent: jenkins
     always_run: true
@@ -2344,14 +2336,6 @@ presubmits:
         hostPath:
           path: /mnt/disks/ssd0
 
-  - name: pull-security-kubernetes-federation-e2e-gce
-    agent: jenkins
-    skip_branches:
-    - release-1.6
-    always_run: false
-    context: pull-security-kubernetes-federation-e2e-gce
-    rerun_command: "/test pull-security-kubernetes-federation-e2e-gce"
-    trigger: "(?m)^/test pull-security-kubernetes-federation-e2e-gce,?(\\s+|$)"
   - name: pull-security-kubernetes-kubemark-e2e-gce
     agent: jenkins
     always_run: true
