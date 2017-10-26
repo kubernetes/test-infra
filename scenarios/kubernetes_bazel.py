@@ -37,6 +37,60 @@ def check_output(*cmd):
     print >>sys.stderr, 'Run:', cmd
     return subprocess.check_output(cmd)
 
+
+class Bazel(object):
+    def __init__(self, batch):
+        self.batch = batch
+
+    def check(self, *cmd):
+        """wrapper for check('bazel', *cmd) that respects batch"""
+        if self.batch:
+            check('bazel', '--batch', *cmd)
+        else:
+            check('bazel', *cmd)
+
+    def check_output(self, *cmd):
+        """wrapper for check_output('bazel', *cmd) that respects batch"""
+        if self.batch:
+            return check_output('bazel', '--batch', *cmd)
+        return check_output('bazel', *cmd)
+
+    def query(self, kind, selected_pkgs, changed_pkgs):
+        """
+        Run a bazel query against target kind, include targets from args.
+
+        Returns a list of kind objects from bazel query.
+        """
+
+        # Changes are calculated and no packages found, return empty list.
+        if changed_pkgs == []:
+            return []
+
+        selection = '//...'
+        if selected_pkgs:
+            # targets without a '-' operator prefix are implicitly additive
+            # when specifying build targets
+            selection = selected_pkgs[0]
+            for pkg in selected_pkgs[1:]:
+                if pkg.startswith('-'):
+                    selection += ' '+pkg
+                else:
+                    selection += ' +'+pkg
+
+
+        changes = '//...'
+        if changed_pkgs:
+            changes = 'set(%s)' % ' '.join(changed_pkgs)
+
+        query_pat = 'kind(%s, rdeps(%s, %s)) except attr(\'tags\', \'manual\', //...)'
+        return filter(None, self.check_output(
+            'query',
+            '--keep_going',
+            '--noshow_progress',
+            query_pat % (kind, selection, changes)
+        ).split('\n'))
+
+
 def upload_string(gcs_path, text):
     """Uploads text to gcs_path"""
     cmd = ['gsutil', '-q', '-h', 'Content-Type:text/plain', 'cp', '-', gcs_path]
@@ -71,42 +125,6 @@ def get_changed(base, pull):
         '--noshow_progress',
         'set(%s)' % diff).split('\n')
 
-def query(kind, selected_pkgs, changed_pkgs):
-    """
-    Run a bazel query against target kind, include targets from args.
-
-    Returns a list of kind objects from bazel query.
-    """
-
-    # Changes are calculated and no packages found, return empty list.
-    if changed_pkgs == []:
-        return []
-
-    selection = '//...'
-    if selected_pkgs:
-        # targets without a '-' operator prefix are implicitly additive
-        # when specifying build targets
-        selection = selected_pkgs[0]
-        for pkg in selected_pkgs[1:]:
-            if pkg.startswith('-'):
-                selection += ' '+pkg
-            else:
-                selection += ' +'+pkg
-
-
-    changes = '//...'
-    if changed_pkgs:
-        changes = 'set(%s)' % ' '.join(changed_pkgs)
-
-    query_pat = 'kind(%s, rdeps(%s, %s)) except attr(\'tags\', \'manual\', //...)'
-    return filter(None, check_output(
-        'bazel', 'query',
-        '--keep_going',
-        '--noshow_progress',
-        query_pat % (kind, selection, changes)
-    ).split('\n'))
-
-
 def clean_file_in_dir(dirname, filename):
     """Recursively remove all file with filename in dirname."""
     for parent, _, filenames in os.walk(dirname):
@@ -123,8 +141,10 @@ def main(args):
                 raise ValueError('Invalid install path: %s' % install)
             check('pip', 'install', '-r', install)
 
-    check('bazel', 'version')
-    check('bazel', 'clean', '--expunge')
+    bazel = Bazel(args.batch)
+
+    bazel.check('version')
+    bazel.check('clean', '--expunge')
     res = 0
     try:
         affected = None
@@ -150,26 +170,26 @@ def main(args):
 
         buildables = []
         if build_pkgs or manual_build_targets or affected:
-            buildables = query('.*_binary', build_pkgs, affected) + manual_build_targets
+            buildables = bazel.query('.*_binary', build_pkgs, affected) + manual_build_targets
 
         if buildables:
-            check('bazel', 'build', *buildables)
+            bazel.check('build', *buildables)
         else:
             # Call bazel build regardless, to establish bazel symlinks
-            check('bazel', 'build')
+            bazel.check('build')
 
         # clean up previous test.xml
         clean_file_in_dir('./bazel-testlogs', 'test.xml')
 
         if args.release:
-            check('bazel', 'build', *args.release.split(' '))
+            bazel.check('build', *args.release.split(' '))
 
         if test_pkgs or manual_test_targets or affected:
-            tests = query('test', test_pkgs, affected) + manual_test_targets
+            tests = bazel.query('test', test_pkgs, affected) + manual_test_targets
             if tests:
                 if args.test_args:
                     tests = args.test_args + tests
-                check('bazel', 'test', *tests)
+                bazel.check('test', *tests)
     except subprocess.CalledProcessError as exp:
         res = exp.returncode
 
@@ -181,7 +201,7 @@ def main(args):
         else:
             try:
                 gcs_build = '%s/%s' % (args.gcs, version)
-                check('bazel', 'run', '//:push-build', '--', gcs_build)
+                bazel.check('run', '//:push-build', '--', gcs_build)
                 # log push-build location to path child jobs can find
                 # (gs://<shared-bucket>/$PULL_REFS/bazel-build-location.txt)
                 pull_refs = os.getenv('PULL_REFS', '')
@@ -232,6 +252,8 @@ def create_parser():
         '--gcs',
         default='gs://kubernetes-release-dev/bazel',
         help='GCS path for where to push build')
+    parser.add_argument(
+        '--batch', action='store_true', help=" run Bazel in batch mode")
     return parser
 
 def parse_args(args=None):
