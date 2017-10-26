@@ -42,6 +42,26 @@ presubmits:
     context: pull-charts-e2e
     rerun_command: "/test pull-charts-e2e"
     trigger: "(?m)^/test( all| pull-charts-e2e),?(\\s+|$)"
+  kubernetes/community:
+  - name: pull-community-verify
+    agent: kubernetes
+    context: pull-community-verify
+    branches:
+    - master
+    rerun_command: "/test pull-community-verify"
+    trigger: "(?m)^/test( all| pull-community-verify),?(\\s+|$)"
+    always_run: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/gcloud-in-go:0.4
+        args:
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--root=/go/src"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--clean"
+        env:
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /etc/service-account/service-account.json
   kubernetes/federation:
   - name: pull-federation-bazel-build
     agent: kubernetes
@@ -275,7 +295,7 @@ presubmits:
     trigger: "(?m)^/test( all| pull-kubernetes-bazel-build),?(\\s+|$)"
     skip_branches:
     - release-1.6 # doesn't have BUILD files under //vendor/k8s.io
-    - release-1.7 # different target set 
+    - release-1.7 # different target set
     - release-1.8 # different target set
     spec:
       containers:
@@ -323,7 +343,7 @@ presubmits:
       trigger: "(?m)^/test pull-kubernetes-e2e-kubeadm-gce,?(\\s+|$)"
       skip_branches:
       - release-1.6 # doesn't have BUILD files under //vendor/k8s.io
-      - release-1.7 # different target set 
+      - release-1.7 # different target set
       - release-1.8 # different target set
       spec:
         containers:
@@ -1458,7 +1478,7 @@ presubmits:
     trigger: "(?m)^/test( all| pull-security-kubernetes-bazel-build),?(\\s+|$)"
     skip_branches:
     - release-1.6 # doesn't have BUILD files under //vendor/k8s.io
-    - release-1.7 # different target set 
+    - release-1.7 # different target set
     - release-1.8 # different target set
     spec:
       containers:
@@ -1506,7 +1526,7 @@ presubmits:
       trigger: "(?m)^/test pull-security-kubernetes-e2e-kubeadm-gce,?(\\s+|$)"
       skip_branches:
       - release-1.6 # doesn't have BUILD files under //vendor/k8s.io
-      - release-1.7 # different target set 
+      - release-1.7 # different target set
       - release-1.8 # different target set
       spec:
         containers:
@@ -18136,4 +18156,3 @@ periodics:
     - name: service
       secret:
         secretName: service-account
-
