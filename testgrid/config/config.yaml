@@ -223,6 +223,7 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-sig-cli
 - name: ci-kubernetes-e2e-gci-gce-ingress
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-ingress
+  alert_stale_results_hours: 24
 - name: ci-kubernetes-e2e-gce-multizone
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-multizone
 - name: ci-kubernetes-e2e-gci-gce-statefulset
@@ -261,6 +262,7 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-slow
 - name: ci-kubernetes-e2e-gci-gke-ingress
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-ingress
+  alert_stale_results_hours: 24
 - name: ci-kubernetes-e2e-gke-large-correctness
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-large-correctness
   days_of_results: 60
@@ -474,6 +476,7 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-alpha-features-release-1-6
 - name: ci-kubernetes-e2e-gci-gce-ingress-release-1-6
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-ingress-release-1-6
+  alert_stale_results_hours: 24
 - name: ci-kubernetes-e2e-gci-gce-reboot-release-1-6
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-reboot-release-1-6
 - name: ci-kubernetes-e2e-gci-gce-release-1-6
@@ -484,6 +487,7 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-slow-release-1-6
 - name: ci-kubernetes-e2e-gci-gke-ingress-release-1-6
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-ingress-release-1-6
+  alert_stale_results_hours: 24
 - name: ci-kubernetes-e2e-gci-gke-reboot-release-1-6
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-reboot-release-1-6
 - name: ci-kubernetes-e2e-gci-gke-release-1-6
@@ -1449,8 +1453,10 @@ test_groups:
 # kube-proxy daemonset migration jobs
 - name: ci-kubernetes-e2e-gci-gce-latest-downgrade-kube-proxy-ds
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-latest-downgrade-kube-proxy-ds
+  alert_stale_results_hours: 24
 - name: ci-kubernetes-e2e-gci-gce-latest-upgrade-kube-proxy-ds
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-latest-upgrade-kube-proxy-ds
+  alert_stale_results_hours: 24
 #ibm ppc64le test results
 - name: ppc64le-conformance
   gcs_prefix: ppc64le-kubernetes/logs/ci-conformance-kubernetes
@@ -3232,58 +3238,98 @@ dashboards:
   dashboard_tab:
   - name: cosbeta-no-snat
     test_group_name: ci-kubernetes-e2e-gce-cosbeta-k8sdev-nosnat
+    alert_options:
+      alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
   - name: gci-gce-ingress
     test_group_name: ci-kubernetes-e2e-gci-gce-ingress
+    alert_options:
+      alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
   - name: gci-gce-ingress-release-1-6
     test_group_name: ci-kubernetes-e2e-gci-gce-ingress-release-1-6
+    alert_options:
+      alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
   - name: gci-gce-ingress-release-1-7
     test_group_name: ci-kubernetes-e2e-gci-gce-ingress-release-1-7
+    alert_options:
+      alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
   - name: gci-gce-ip-alias
     test_group_name: ci-kubernetes-e2e-gci-gce-ip-alias
+    alert_options:
+      alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
   - name: gce-alpha-api
     test_group_name: ci-kubernetes-e2e-gce-alpha-api
+    alert_options:
+      alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
   - name: gci-gke-ingress
     test_group_name: ci-kubernetes-e2e-gci-gke-ingress
+    alert_options:
+      alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
   - name: gci-gke-ingress-release-1-6
     test_group_name: ci-kubernetes-e2e-gci-gke-ingress-release-1-6
+    alert_options:
+      alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
   - name: gci-gke-ingress-release-1-7
     test_group_name: ci-kubernetes-e2e-gci-gke-ingress-release-1-7
+    alert_options:
+      alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
   - name: gke-ubuntustable1-k8sdev-ingress
     test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-ingress
+    alert_options:
+      alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
   - name: gke-ubuntustable1-k8sstable1-ingress
     test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-ingress
+    alert_options:
+      alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
   - name: gke-ubuntustable1-k8sstable2-ingress
     test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-ingress
+    alert_options:
+      alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
   - name: gci-gce
     test_group_name: ci-kubernetes-e2e-gci-gce
     base_options: 'include-filter-by-regex=\[sig-network\]'
     description: 'network gci-gce e2e tests for master branch'
+    alert_options:
+      alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
   - name: gci-gke
     test_group_name: ci-kubernetes-e2e-gci-gke
     base_options: 'include-filter-by-regex=\[sig-network\]'
     description: 'network gci-gke e2e tests for master branch'
+    alert_options:
+      alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
   - name: gci-gce-slow
     test_group_name: ci-kubernetes-e2e-gci-gce-slow
     base_options: 'include-filter-by-regex=\[sig-network\]'
     description: 'network gci-gce slow e2e tests for master branch'
+    alert_options:
+      alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
   - name: gci-gke-slow
     test_group_name: ci-kubernetes-e2e-gci-gke-slow
     base_options: 'include-filter-by-regex=\[sig-network\]'
     description: 'network gci-gke slow e2e tests for master branch'
+    alert_options:
+      alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
   - name: gci-gce-serial
     test_group_name: ci-kubernetes-e2e-gci-gce-serial
     base_options: 'include-filter-by-regex=\[sig-network\]'
     description: 'network gci-gce serial e2e tests for master branch'
+    alert_options:
+      alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
   - name: gci-gke-serial
     test_group_name: ci-kubernetes-e2e-gci-gke-serial
     base_options: 'include-filter-by-regex=\[sig-network\]'
     description: 'network gci-gke serial e2e tests for master branch'
+    alert_options:
+      alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
   - name: gci-gce-latest-upgrade-kube-proxy-ds
     test_group_name: ci-kubernetes-e2e-gci-gce-latest-upgrade-kube-proxy-ds
     description: 'upgrade cluster and migrate kube-proxy from static pods to a daemonset'
+    alert_options:
+      alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
   - name: gci-gce-latest-downgrade-kube-proxy-ds
     test_group_name: ci-kubernetes-e2e-gci-gce-latest-downgrade-kube-proxy-ds
     description: 'downgrade cluster and migrate kube-proxy from a daemonset to static pods'
+    alert_options:
+      alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
 
 - name: sig-node-containerd
   dashboard_tab:
