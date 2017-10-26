@@ -209,7 +209,7 @@ var (
 	sleep = time.Sleep
 )
 
-// Calls KUBERNETES_RELASE_URL=url KUBERNETES_RELEASE=version get-kube.sh.
+// Calls KUBERNETES_RELEASE_URL=url KUBERNETES_RELEASE=version get-kube.sh.
 // This will download version from the specified url subdir and extract
 // the tarballs.
 var getKube = func(url, version string) error {

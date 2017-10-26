@@ -236,6 +236,19 @@ func (k kops) isGoogleCloud() bool {
 }
 
 func (k kops) Up() error {
+	// If we downloaded kubernetes, pass that version to kops
+	if k.kubeVersion == "" {
+		// TODO(justinsb): figure out a refactor that allows us to get this from acquireKubernetes cleanly
+		kubeReleaseUrl := os.Getenv("KUBERNETES_RELEASE_URL")
+		kubeRelease := os.Getenv("KUBERNETES_RELEASE")
+		if kubeReleaseUrl != "" && kubeRelease != "" {
+			if !strings.HasSuffix(kubeReleaseUrl, "/") {
+				kubeReleaseUrl += "/"
+			}
+			k.kubeVersion = kubeReleaseUrl + kubeRelease
+		}
+	}
+
 	var featureFlags []string
 
 	createArgs := []string{
