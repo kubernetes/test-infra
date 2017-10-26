@@ -32,7 +32,7 @@ import (
 func NewProwJob(spec kube.ProwJobSpec) kube.ProwJob {
 	return kube.ProwJob{
 		APIVersion: "prow.k8s.io/v1",
-		Kind:       "ProwJob",
+		Kind:       "prowjob",
 		Metadata: kube.ObjectMeta{
 			Name: uuid.NewV1().String(),
 		},
