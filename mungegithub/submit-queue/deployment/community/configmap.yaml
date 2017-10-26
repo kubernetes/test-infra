@@ -15,7 +15,7 @@ github-key-file: /etc/hook-secret-volume/secret
 
 # status contexts options.
 protected-branches-extra-contexts: "cla/linuxfoundation"
-required-retest-contexts: ""
+required-retest-contexts: "pull-community-verify"
 
 # submit-queue options.
 protected-branches: "master"
