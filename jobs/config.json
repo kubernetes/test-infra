@@ -6236,7 +6236,7 @@
       "--gcp-project=k8s-jkns-e2e-regional",
       "--gcp-region=us-central1",
       "--ginkgo-parallel",
-      "--gke-command-group=alpha",
+      "--gke-command-group=beta",
       "--gke-environment=test",
       "--provider=gke",
       "--test_args=--gce-multizone=true --ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
