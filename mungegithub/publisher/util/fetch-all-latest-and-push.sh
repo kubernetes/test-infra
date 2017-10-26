@@ -31,6 +31,7 @@ repos=(
     apiserver
     kube-aggregator
     sample-apiserver
+    sample-controller
     apiextensions-apiserver
     metrics
     code-generator
