@@ -28,7 +28,15 @@ if [[ -a "${PROW_SERVICE_ACCOUNT:-}" ]] ; then
 	gcloud auth activate-service-account --key-file="${PROW_SERVICE_ACCOUNT}"
 fi
 
+if ! [ -x "$(command -v kubectl)" ]; then
+	gcloud components install kubectl 
+fi
 
 pushd "${TREE}/boskos"
 make update-config
 popd
+
+# switch back to default service account for uploading logs
+if [[ -a "${GOOGLE_APPLICATION_CREDENTIALS:-}" ]] ; then
+	gcloud auth activate-service-account --key-file="${GOOGLE_APPLICATION_CREDENTIALS}"
+fi

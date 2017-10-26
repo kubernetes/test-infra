@@ -86,7 +86,7 @@ I understand the commands that are listed [here](https://github.com/kubernetes/t
 %s
 </details>
 `
-	comment := fmt.Sprintf(commentTemplate, pr.User.Login, trustedOrg, trustedOrg, plugins.AboutThisBot)
+	comment := fmt.Sprintf(commentTemplate, pr.User.Login, trustedOrg, trustedOrg, plugins.AboutThisBotWithoutCommands)
 
 	owner := pr.Base.Repo.Owner.Login
 	name := pr.Base.Repo.Name

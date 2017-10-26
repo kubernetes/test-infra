@@ -18,6 +18,7 @@ package main
 
 import (
 	"bytes"
+	"errors"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -90,6 +91,11 @@ const kubernetesAnywhereConfigTemplate = `
 .phase3.cni="{{.CNI}}"
 `
 
+const kubernetesAnywhereMultiClusterConfigTemplate = kubernetesAnywhereConfigTemplate + `
+.phase2.enable_cloud_provider=y
+.phase3.gce_storage_class=y
+`
+
 type kubernetesAnywhere struct {
 	path string
 	// These are exported only because their use in the config template requires it.
@@ -107,7 +113,7 @@ type kubernetesAnywhere struct {
 	CNI               string
 }
 
-func newKubernetesAnywhere(project, zone string) (deployer, error) {
+func initializeKubernetesAnywhere(project, zone string) (*kubernetesAnywhere, error) {
 	if *kubernetesAnywherePath == "" {
 		return nil, fmt.Errorf("--kubernetes-anywhere-path is required")
 	}
@@ -133,19 +139,7 @@ func newKubernetesAnywhere(project, zone string) (deployer, error) {
 		kubeletVersion = bazelBuildPath(resolvedVersion)
 	}
 
-	// Set KUBERNETES_CONFORMANCE_TEST so the auth info is picked up
-	// from kubectl instead of bash inference.
-	if err := os.Setenv("KUBERNETES_CONFORMANCE_TEST", "yes"); err != nil {
-		return nil, err
-	}
-
-	// Set KUBERNETES_CONFORMANCE_PROVIDER since KUBERNETES_CONFORMANCE_TEST is set
-	// to ensure the right provider is passed onto the test.
-	if err := os.Setenv("KUBERNETES_CONFORMANCE_PROVIDER", "kubernetes-anywhere"); err != nil {
-		return nil, err
-	}
-
-	// preserve backwards compatability for e2e tests which never provided cni name
+	// preserve backwards compatibility for e2e tests which never provided cni name
 	if *kubernetesAnywhereCNI == "" && *kubernetesAnywherePhase2Provider == "kubeadm" {
 		*kubernetesAnywhereCNI = defaultKubeadmCNI
 	}
@@ -165,7 +159,28 @@ func newKubernetesAnywhere(project, zone string) (deployer, error) {
 		CNI:               *kubernetesAnywhereCNI,
 	}
 
-	if err := k.writeConfig(); err != nil {
+	return k, nil
+}
+
+func newKubernetesAnywhere(project, zone string) (deployer, error) {
+	k, err := initializeKubernetesAnywhere(project, zone)
+	if err != nil {
+		return nil, err
+	}
+
+	// Set KUBERNETES_CONFORMANCE_TEST so the auth info is picked up
+	// from kubectl instead of bash inference.
+	if err := os.Setenv("KUBERNETES_CONFORMANCE_TEST", "yes"); err != nil {
+		return nil, err
+	}
+
+	// Set KUBERNETES_CONFORMANCE_PROVIDER since KUBERNETES_CONFORMANCE_TEST is set
+	// to ensure the right provider is passed onto the test.
+	if err := os.Setenv("KUBERNETES_CONFORMANCE_PROVIDER", "kubernetes-anywhere"); err != nil {
+		return nil, err
+	}
+
+	if err := k.writeConfig(kubernetesAnywhereConfigTemplate); err != nil {
 		return nil, err
 	}
 	return k, nil
@@ -201,9 +216,9 @@ func readGSFileImpl(filepath string) (string, error) {
 	return strings.TrimSpace(string(contents)), nil
 }
 
-func (k *kubernetesAnywhere) getConfig() ([]byte, error) {
+func (k *kubernetesAnywhere) getConfig(configTemplate string) ([]byte, error) {
 	// As needed, plumb through more CLI options to replace these defaults
-	tmpl, err := template.New("kubernetes-anywhere-config").Parse(kubernetesAnywhereConfigTemplate)
+	tmpl, err := template.New("kubernetes-anywhere-config").Parse(configTemplate)
 	if err != nil {
 		return nil, fmt.Errorf("Error creating template for KubernetesAnywhere config: %v", err)
 	}
@@ -216,8 +231,8 @@ func (k *kubernetesAnywhere) getConfig() ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
-func (k *kubernetesAnywhere) writeConfig() error {
-	config, err := k.getConfig()
+func (k *kubernetesAnywhere) writeConfig(configTemplate string) error {
+	config, err := k.getConfig(configTemplate)
 	if err != nil {
 		return fmt.Errorf("Could not generate config: %v", err)
 	}
@@ -289,12 +304,17 @@ func (k *kubernetesAnywhere) Down() error {
 	return finishRunning(exec.Command("make", "-C", k.path, "FORCE_DESTROY=y", "destroy"))
 }
 
+func (k *kubernetesAnywhere) GetClusterCreated(gcpProject string) (time.Time, error) {
+	return time.Time{}, errors.New("not implemented")
+}
+
 const defaultConfigFile = ".config"
 
 type kubernetesAnywhereMultiCluster struct {
 	*kubernetesAnywhere
-	multiClusters multiClusterDeployment
-	configFile    map[string]string
+	multiClusters  multiClusterDeployment
+	configFile     map[string]string
+	kubeContextMap map[string]string
 }
 
 // newKubernetesAnywhereMultiCluster returns the deployer based on kubernetes-anywhere
@@ -303,11 +323,11 @@ func newKubernetesAnywhereMultiCluster(project, zone string, multiClusters multi
 	if len(multiClusters.clusters) < 1 {
 		return nil, fmt.Errorf("invalid --multi-clusters flag passed")
 	}
-	k, err := newKubernetesAnywhere(project, zone)
+	k, err := initializeKubernetesAnywhere(project, zone)
 	if err != nil {
 		return nil, err
 	}
-	mk := &kubernetesAnywhereMultiCluster{k.(*kubernetesAnywhere), multiClusters, make(map[string]string)}
+	mk := &kubernetesAnywhereMultiCluster{k, multiClusters, make(map[string]string), make(map[string]string)}
 
 	for _, cluster := range mk.multiClusters.clusters {
 		specificZone, specified := mk.multiClusters.zones[cluster]
@@ -315,9 +335,12 @@ func newKubernetesAnywhereMultiCluster(project, zone string, multiClusters multi
 			mk.Zone = specificZone
 		}
 		mk.Cluster = cluster
-		mk.KubeContext = mk.Zone + "-" + mk.Cluster
+		// TODO: revisit the naming of kubecontexts. Currently the federation CI jobs require that the
+		// cluster contexts be prefixed with `federation-` and with particular pattern.
+		mk.KubeContext = "federation-e2e-gce-" + mk.Zone
+		mk.kubeContextMap[cluster] = mk.KubeContext
 		mk.configFile[cluster] = defaultConfigFile + "-" + mk.Cluster
-		if err := mk.writeConfig(); err != nil {
+		if err := mk.writeConfig(kubernetesAnywhereMultiClusterConfigTemplate); err != nil {
 			return nil, err
 		}
 	}
@@ -326,8 +349,8 @@ func newKubernetesAnywhereMultiCluster(project, zone string, multiClusters multi
 
 // writeConfig writes the kubernetes-anywhere config file to file system after
 // rendering the template file with configuration in deployer.
-func (k *kubernetesAnywhereMultiCluster) writeConfig() error {
-	config, err := k.getConfig()
+func (k *kubernetesAnywhereMultiCluster) writeConfig(configTemplate string) error {
+	config, err := k.getConfig(configTemplate)
 	if err != nil {
 		return fmt.Errorf("could not generate config: %v", err)
 	}
@@ -352,6 +375,7 @@ func (k *kubernetesAnywhereMultiCluster) Up() error {
 
 // TestSetup sets up test environment by merging kubeconfig of multiple deployments.
 func (k *kubernetesAnywhereMultiCluster) TestSetup() error {
+	mergedKubeconfigPath := k.path + "/kubeconfig.json"
 	var kubecfg string
 	for _, cluster := range k.multiClusters.clusters {
 		o, err := output(exec.Command("make", "--silent", "-C", k.path, "CONFIG_FILE="+k.configFile[cluster], "kubeconfig-path"))
@@ -363,11 +387,25 @@ func (k *kubernetesAnywhereMultiCluster) TestSetup() error {
 		}
 		kubecfg += strings.TrimSuffix(string(o), "\n")
 	}
+	if len(kubecfg) != 0 {
+		kubecfg += ":" + mergedKubeconfigPath
+	}
 
 	if err := os.Setenv("KUBECONFIG", kubecfg); err != nil {
 		return err
 	}
-	return nil
+
+	o, err := output(exec.Command("kubectl", "config", "view", "--flatten=true", "--raw=true"))
+	if err != nil {
+		return fmt.Errorf("could not get kubeconfig-path: %v", err)
+	}
+
+	err = ioutil.WriteFile(mergedKubeconfigPath, o, 0644)
+	if err != nil {
+		return err
+	}
+
+	return os.Setenv("KUBECONFIG", mergedKubeconfigPath)
 }
 
 // IsUp checks if all the clusters in the deployer are up.
@@ -377,8 +415,7 @@ func (k *kubernetesAnywhereMultiCluster) IsUp() error {
 	}
 
 	for _, cluster := range k.multiClusters.clusters {
-		zone := k.multiClusters.zones[cluster]
-		kubeContext := zone + "-" + cluster
+		kubeContext := k.kubeContextMap[cluster]
 		o, err := output(exec.Command("kubectl", "--context="+kubeContext, "get", "nodes", "--no-headers"))
 		if err != nil {
 			log.Printf("kubectl get nodes failed for cluster %s: %s\n%s", cluster, wrapError(err).Error(), string(o))

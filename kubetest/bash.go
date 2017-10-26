@@ -17,9 +17,11 @@ limitations under the License.
 package main
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
 	"strconv"
+	"time"
 )
 
 type bashDeployer struct {
@@ -63,6 +65,25 @@ func (b *bashDeployer) TestSetup() error {
 
 func (b *bashDeployer) Down() error {
 	return finishRunning(exec.Command("./hack/e2e-internal/e2e-down.sh"))
+}
+
+func (b *bashDeployer) GetClusterCreated(gcpProject string) (time.Time, error) {
+	res, err := output(exec.Command(
+		"gcloud",
+		"compute",
+		"instance-groups",
+		"list",
+		"--project="+gcpProject,
+		"--format=json(name,creationTimestamp)"))
+	if err != nil {
+		return time.Time{}, fmt.Errorf("list instance-group failed : %v", err)
+	}
+
+	created, err := getLatestClusterUpTime(string(res))
+	if err != nil {
+		return time.Time{}, fmt.Errorf("parse time failed : got gcloud res %s, err %v", string(res), err)
+	}
+	return created, nil
 }
 
 // Calculates the cluster IP range based on the no. of nodes in the cluster.

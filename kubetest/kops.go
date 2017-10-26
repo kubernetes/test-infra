@@ -17,9 +17,12 @@ limitations under the License.
 package main
 
 import (
+	"bytes"
+	"errors"
 	"flag"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
 	"os/exec"
 	"os/user"
@@ -31,8 +34,8 @@ import (
 
 var (
 	// kops specific flags.
-	kopsPath         = flag.String("kops", "", "(kops only) Path to the kops binary. Must be set for kops.")
-	kopsCluster      = flag.String("kops-cluster", "", "(kops only) Cluster name. Must be set for kops.")
+	kopsPath         = flag.String("kops", "", "(kops only) Path to the kops binary. kops will be downloaded from kops-base-url if not set.")
+	kopsCluster      = flag.String("kops-cluster", "", "(kops only) Deprecated. Cluster name for kops; if not set defaults to --cluster.")
 	kopsState        = flag.String("kops-state", "", "(kops only) s3:// path to kops state store. Must be set.")
 	kopsSSHKey       = flag.String("kops-ssh-key", "", "(kops only) Path to ssh key-pair for each node (defaults '~/.ssh/kube_aws_rsa' if unset.)")
 	kopsKubeVersion  = flag.String("kops-kubernetes-version", "", "(kops only) If set, the version of Kubernetes to deploy (can be a URL to a GCS path where the release is stored) (Defaults to kops default, latest stable release.).")
@@ -43,6 +46,8 @@ var (
 	kopsImage        = flag.String("kops-image", "", "(kops only) Image (AMI) for nodes to use. (Defaults to kops default, a Debian image with a custom kubernetes kernel.)")
 	kopsArgs         = flag.String("kops-args", "", "(kops only) Additional space-separated args to pass unvalidated to 'kops create cluster', e.g. '--kops-args=\"--dns private --node-size t2.micro\"'")
 	kopsPriorityPath = flag.String("kops-priority-path", "", "Insert into PATH if set")
+	kopsBaseURL      = flag.String("kops-base-url", "", "Base URL for a prebuilt version of kops")
+	kopsVersion      = flag.String("kops-version", "", "URL to a file containing a valid kops-base-url")
 )
 
 type kops struct {
@@ -89,15 +94,21 @@ func migrateKopsEnv() error {
 	})
 }
 
-func newKops(provider, gcpProject string) (*kops, error) {
+func newKops(provider, gcpProject, cluster string) (*kops, error) {
+	tmpdir, err := ioutil.TempDir("", "kops")
+	if err != nil {
+		return nil, err
+	}
+
 	if err := migrateKopsEnv(); err != nil {
 		return nil, err
 	}
-	if *kopsPath == "" {
-		return nil, fmt.Errorf("--kops must be set to a valid binary path for kops deployment")
+
+	if *kopsCluster != "" {
+		cluster = *kopsCluster
 	}
-	if *kopsCluster == "" {
-		return nil, fmt.Errorf("--kops-cluster must be set to a valid cluster name for kops deployment")
+	if cluster == "" {
+		return nil, fmt.Errorf("--cluster or --kops-cluster must be set to a valid cluster name for kops deployment")
 	}
 	if *kopsState == "" {
 		return nil, fmt.Errorf("--kops-state must be set to a valid S3 path for kops deployment")
@@ -120,18 +131,21 @@ func newKops(provider, gcpProject string) (*kops, error) {
 	if err := os.Setenv("KOPS_STATE_STORE", *kopsState); err != nil {
 		return nil, err
 	}
-	f, err := ioutil.TempFile("", "kops-kubecfg")
+
+	// Repoint KUBECONFIG to an isolated kubeconfig in our temp directory
+	kubecfg := filepath.Join(tmpdir, "kubeconfig")
+	f, err := os.Create(kubecfg)
 	if err != nil {
 		return nil, err
 	}
 	defer f.Close()
-	kubecfg := f.Name()
 	if err := f.Chmod(0600); err != nil {
 		return nil, err
 	}
 	if err := os.Setenv("KUBECONFIG", kubecfg); err != nil {
 		return nil, err
 	}
+
 	// Set KUBERNETES_CONFORMANCE_TEST so the auth info is picked up
 	// from kubectl instead of bash inference.
 	if err := os.Setenv("KUBERNETES_CONFORMANCE_TEST", "yes"); err != nil {
@@ -151,6 +165,56 @@ func newKops(provider, gcpProject string) (*kops, error) {
 	if err := os.Setenv("ZONE", zones[0]); err != nil {
 		return nil, err
 	}
+
+	// Set kops-base-url from kops-version
+	if *kopsVersion != "" {
+		if *kopsBaseURL != "" {
+			return nil, fmt.Errorf("cannot set --kops-version and --kops-base-url")
+		}
+
+		var b bytes.Buffer
+		if err := httpRead(*kopsVersion, &b); err != nil {
+			return nil, err
+		}
+		latest := strings.TrimSpace(b.String())
+
+		log.Printf("Got latest kops version from %v: %v", *kopsVersion, latest)
+		if latest == "" {
+			return nil, fmt.Errorf("version URL %v was empty", *kopsVersion)
+		}
+		*kopsBaseURL = latest
+	}
+
+	// kops looks at KOPS_BASE_URL env var, so export it here
+	if *kopsBaseURL != "" {
+		if err := os.Setenv("KOPS_BASE_URL", *kopsBaseURL); err != nil {
+			return nil, err
+		}
+	}
+
+	// Download kops from kopsBaseURL if kopsPath is not set
+	if *kopsPath == "" {
+		if *kopsBaseURL == "" {
+			return nil, fmt.Errorf("--kops or --kops-base-url must be set")
+		}
+
+		kopsBinURL := *kopsBaseURL + "/linux/amd64/kops"
+		log.Printf("Download kops binary from %s", kopsBinURL)
+		kopsBin := filepath.Join(tmpdir, "kops")
+		f, err := os.Create(kopsBin)
+		if err != nil {
+			return nil, fmt.Errorf("error creating file %q: %v", kopsBin, err)
+		}
+		defer f.Close()
+		if err := httpRead(kopsBinURL, f); err != nil {
+			return nil, err
+		}
+		if err := ensureExecutable(kopsBin); err != nil {
+			return nil, err
+		}
+		*kopsPath = kopsBin
+	}
+
 	return &kops{
 		path:        *kopsPath,
 		kubeVersion: *kopsKubeVersion,
@@ -158,7 +222,7 @@ func newKops(provider, gcpProject string) (*kops, error) {
 		zones:       zones,
 		nodes:       *kopsNodes,
 		adminAccess: *kopsAdminAccess,
-		cluster:     *kopsCluster,
+		cluster:     cluster,
 		image:       *kopsImage,
 		args:        *kopsArgs,
 		kubecfg:     kubecfg,
@@ -172,6 +236,19 @@ func (k kops) isGoogleCloud() bool {
 }
 
 func (k kops) Up() error {
+	// If we downloaded kubernetes, pass that version to kops
+	if k.kubeVersion == "" {
+		// TODO(justinsb): figure out a refactor that allows us to get this from acquireKubernetes cleanly
+		kubeReleaseUrl := os.Getenv("KUBERNETES_RELEASE_URL")
+		kubeRelease := os.Getenv("KUBERNETES_RELEASE")
+		if kubeReleaseUrl != "" && kubeRelease != "" {
+			if !strings.HasSuffix(kubeReleaseUrl, "/") {
+				kubeReleaseUrl += "/"
+			}
+			k.kubeVersion = kubeReleaseUrl + kubeRelease
+		}
+	}
+
 	var featureFlags []string
 
 	createArgs := []string{
@@ -186,6 +263,10 @@ func (k kops) Up() error {
 	}
 	if k.adminAccess != "" {
 		createArgs = append(createArgs, "--admin-access", k.adminAccess)
+
+		// Enable nodeport access from the same IP (we expect it to be the test IPs)
+		featureFlags = append(featureFlags, "SpecOverrideFlag")
+		createArgs = append(createArgs, "--override", "cluster.spec.nodePortAccess="+k.adminAccess)
 	}
 	if k.image != "" {
 		createArgs = append(createArgs, "--image", k.image)
@@ -249,4 +330,8 @@ func (k kops) Down() error {
 		return nil
 	}
 	return finishRunning(exec.Command(k.path, "delete", "cluster", k.cluster, "--yes"))
+}
+
+func (k kops) GetClusterCreated(gcpProject string) (time.Time, error) {
+	return time.Time{}, errors.New("not implemented")
 }

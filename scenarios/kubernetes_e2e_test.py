@@ -25,7 +25,6 @@ import re
 import shutil
 import string
 import tempfile
-import urllib
 import urllib2
 import unittest
 import time
@@ -228,7 +227,6 @@ class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-method
             '--extract=this',
             '--extract=that',
             '--perf-tests',
-            '--deployment=yay',
             '--save=somewhere',
             '--skew',
             '--publish=location',
@@ -237,12 +235,21 @@ class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-method
             '--check-leaked-resources=true',
             '--charts',
         ]
-        args = kubernetes_e2e.parse_args(['--mode=docker'] + migrated + ['--test=false'])
+        explicit_passthrough_args = [
+            '--deployment=yay',
+            '--provider=gce',
+        ]
+        args = kubernetes_e2e.parse_args(['--mode=docker']
+                                         + migrated
+                                         + explicit_passthrough_args
+                                         + ['--test=false'])
         self.assertEquals(migrated, args.kubetest_args)
         with Stub(kubernetes_e2e, 'check_env', self.fake_check_env):
             kubernetes_e2e.main(args)
         lastcall = self.callstack[-2]
         for arg in migrated:
+            self.assertIn(arg, lastcall)
+        for arg in explicit_passthrough_args:
             self.assertIn(arg, lastcall)
 
     def test_updown_default(self):
@@ -393,9 +400,12 @@ class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-method
         self.assertIsNotNone(match)
         url = 'https://gcr.io/v2/%s/manifests/%s' % (match.group(1),
                                                      match.group(2))
-        data = json.loads(urllib.urlopen(url).read())
+        req = urllib2.Request(url)
+        req.add_header('Accept', 'application/vnd.docker.distribution.manifest.v2+json')
+        data = json.loads(urllib2.urlopen(req).read())
         self.assertNotIn('errors', data)
-        self.assertIn('name', data)
+        self.assertIn('config', data)
+        self.assertIn('digest', data.get('config'))
 
     def test_docker_env(self):
         """
@@ -492,6 +502,28 @@ class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-method
             self.envs['JENKINS_AWS_SSH_PUBLIC_KEY_FILE'], temp.name)
         self.assertEqual(
             self.envs['JENKINS_AWS_CREDENTIALS_FILE'], temp.name)
+
+    def test_kops_gce(self):
+        temp = tempfile.NamedTemporaryFile()
+        args = kubernetes_e2e.parse_args([
+            '--provider=gce',
+            '--deployment=kops',
+            '--cluster=foo.example.com',
+            '--gce-ssh=%s' % temp.name,
+            '--gce-pub=%s' % temp.name,
+            ])
+        with Stub(kubernetes_e2e, 'check_env', self.fake_check_env):
+            kubernetes_e2e.main(args)
+
+        lastcall = self.callstack[-1]
+        self.assertIn('kubetest', lastcall)
+        self.assertIn('--provider=gce', lastcall)
+        self.assertIn('--deployment=kops', lastcall)
+        self.assertIn('--kops-cluster=foo.example.com', lastcall)
+        self.assertIn('--kops-zones', lastcall)
+        self.assertIn('--kops-state=gs://k8s-kops-gce/', lastcall)
+        self.assertIn('--kops-nodes=4', lastcall)
+        self.assertIn('--kops-ssh-key', lastcall)
 
     def test_use_shared_build(self):
         # normal path

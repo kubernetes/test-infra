@@ -1,5 +1,4 @@
-#!/bin/bash
-# Copyright 2016 The Kubernetes Authors.
+# Copyright 2017 The Kubernetes Authors All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,22 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set -o errexit
-set -o nounset
-set -o pipefail
-
-# A wrapper script for running node-e2e tests
-
-# Update gcloud
-gcloud components update
-
-# Authenticate gcloud
-if [[ -n "${GOOGLE_APPLICATION_CREDENTIALS:-}" ]]; then
-  gcloud auth activate-service-account --key-file="${GOOGLE_APPLICATION_CREDENTIALS}"
-fi
-
-# Go to kubernetes repo
-cd "${GOPATH}/src/k8s.io/kubernetes"
-
-# Run script
-"${NODE_TEST_SCRIPT}" "${NODE_TEST_PROPERTIES}"
+apiVersion: v1
+kind: Service
+metadata:
+  name: tide
+spec:
+  selector:
+    app: tide
+  ports:
+  - port: 8888
+  type: NodePort

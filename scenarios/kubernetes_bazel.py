@@ -98,11 +98,12 @@ def query(kind, selected_pkgs, changed_pkgs):
     if changed_pkgs:
         changes = 'set(%s)' % ' '.join(changed_pkgs)
 
+    query_pat = 'kind(%s, rdeps(%s, %s)) except attr(\'tags\', \'manual\', //...)'
     return filter(None, check_output(
         'bazel', 'query',
         '--keep_going',
         '--noshow_progress',
-        'kind(%s, rdeps(%s, %s))' % (kind, selection, changes)
+        query_pat % (kind, selection, changes)
     ).split('\n'))
 
 
@@ -122,6 +123,7 @@ def main(args):
                 raise ValueError('Invalid install path: %s' % install)
             check('pip', 'install', '-r', install)
 
+    check('bazel', 'version')
     check('bazel', 'clean', '--expunge')
     res = 0
     try:
@@ -133,16 +135,22 @@ def main(args):
                 raise ValueError('PULL_BASE_SHA must be set!')
             affected = get_changed(base, pull)
 
-        build_pkgs = None
-        test_pkgs = None
+        build_pkgs = []
+        manual_build_targets = []
+        test_pkgs = []
+        manual_test_targets = []
         if args.build:
             build_pkgs = args.build.split(' ')
+        if args.manual_build:
+            manual_build_targets = args.manual_build.split(' ')
         if args.test:
             test_pkgs = args.test.split(' ')
+        if args.manual_test:
+            manual_test_targets = args.manual_test.split(' ')
 
         buildables = []
-        if build_pkgs or affected:
-            buildables = query('.*_binary', build_pkgs, affected)
+        if build_pkgs or manual_build_targets or affected:
+            buildables = query('.*_binary', build_pkgs, affected) + manual_build_targets
 
         if buildables:
             check('bazel', 'build', *buildables)
@@ -156,8 +164,8 @@ def main(args):
         if args.release:
             check('bazel', 'build', *args.release.split(' '))
 
-        if test_pkgs or affected:
-            tests = query('test', test_pkgs, affected)
+        if test_pkgs or manual_test_targets or affected:
+            tests = query('test', test_pkgs, affected) + manual_test_targets
             if tests:
                 if args.test_args:
                     tests = args.test_args + tests
@@ -198,7 +206,11 @@ def create_parser():
         '--affected', action='store_true',
         help='If build/test affected targets. Filtered by --build and --test flags.')
     parser.add_argument(
-        '--build', help='Bazel build targets, split by one space')
+        '--build', help='Bazel build target patterns, split by one space')
+    parser.add_argument(
+        '--manual-build',
+        help='Bazel build targets that should always be manually included, split by one space'
+    )
     # TODO(krzyzacy): Convert to bazel build rules
     parser.add_argument(
         '--install', action="append", help='Python dependency(s) that need to be installed')
@@ -209,7 +221,11 @@ def create_parser():
         default="gs://kubernetes-jenkins/shared-results/",
         help='If $PULL_REFS is set push build location to this bucket')
     parser.add_argument(
-        '--test', help='Bazel test targets, split by one space')
+        '--test', help='Bazel test target patterns, split by one space')
+    parser.add_argument(
+        '--manual-test',
+        help='Bazel test targets that should always be manually included, split by one space'
+    )
     parser.add_argument(
         '--test-args', action="append", help='Bazel test args')
     parser.add_argument(

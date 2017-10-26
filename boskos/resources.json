@@ -402,12 +402,6 @@
       "kube-gce-upg-1-4-1-5-upg-mas",
       "kube-gce-upg-lat-cluster",
       "kube-gce-upg-lat-master",
-      "kubekins-gce-gci-ci-1-4",
-      "kubekins-gce-gci-ci-1-5",
-      "kubekins-gce-gci-ci-serial-1-4",
-      "kubekins-gce-gci-ci-serial-1-5",
-      "kubekins-gce-gci-ci-slow-1-4",
-      "kubekins-gce-gci-ci-slow-1-5",
       "kubernetes-es-logging",
       "kubernetes-gci-es-logging",
       "kubernetes-gci-flannel",
@@ -444,7 +438,13 @@
       "k8s-gci-boskos-6",
       "k8s-gci-boskos-7",
       "k8s-gci-boskos-8",
-      "k8s-gci-boskos-9"
+      "k8s-gci-boskos-9",
+      "kubekins-gce-gci-ci-1-4",
+      "kubekins-gce-gci-ci-1-5",
+      "kubekins-gce-gci-ci-serial-1-4",
+      "kubekins-gce-gci-ci-serial-1-5",
+      "kubekins-gce-gci-ci-slow-1-4",
+      "kubekins-gce-gci-ci-slow-1-5"
     ],
     "state": "dirty",
     "type": "gci-qa-project"

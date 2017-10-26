@@ -554,125 +554,125 @@ jobs:
   ci-kubernetes-e2enode-cosbeta-k8sdev-default:
     interval: 2h
     args:
-    - --project=cos-image-validation
+    - --gcp-project=cos-image-validation
     sigOwners: ['sig-node']
   ci-kubernetes-e2enode-cosbeta-k8sdev-serial:
     interval: 2h
     args:
-    - --project=cos-image-validation
+    - --gcp-project=cos-image-validation
     sigOwners: ['sig-node']
   ci-kubernetes-e2enode-cosstable1-k8sdev-default:
     interval: 2h
     args:
-    - --project=k8s-test-63a7f7788a
+    - --gcp-project=k8s-test-63a7f7788a
     - --instance-metadata=user-data<test/e2e_node/jenkins/cos-init-live-restore.yaml,gci-update-strategy=update_disabled
     sigOwners: ['sig-node']
   ci-kubernetes-e2enode-cosstable1-k8sdev-serial:
     interval: 2h
     args:
-    - --project=k8s-test-39a894cbd4
+    - --gcp-project=k8s-test-39a894cbd4
     - --instance-metadata=user-data<test/e2e_node/jenkins/cos-init-live-restore.yaml,gci-update-strategy=update_disabled
     sigOwners: ['sig-node']
   ci-kubernetes-e2enode-cosstable1-k8sbeta-default:
     interval: 2h
     args:
-    - --project=k8s-test-f1ca4a9c02
+    - --gcp-project=k8s-test-f1ca4a9c02
     sigOwners: ['sig-node']
   ci-kubernetes-e2enode-cosstable1-k8sbeta-serial:
     interval: 2h
     args:
-    - --project=k8s-test-1d6ad79530
+    - --gcp-project=k8s-test-1d6ad79530
     sigOwners: ['sig-node']
   ci-kubernetes-e2enode-cosstable1-k8sstable1-default:
     interval: 2h
     args:
-    - --project=k8s-test-7714104ae1
+    - --gcp-project=k8s-test-7714104ae1
     sigOwners: ['sig-node']
   ci-kubernetes-e2enode-cosstable1-k8sstable1-serial:
     interval: 2h
     args:
-    - --project=k8s-test-27d359e3d6
+    - --gcp-project=k8s-test-27d359e3d6
     sigOwners: ['sig-node']
   ci-kubernetes-e2enode-cosstable1-k8sstable2-default:
     interval: 6h
     args:
-    - --project=k8s-test-9f6500beee
+    - --gcp-project=k8s-test-9f6500beee
     sigOwners: ['sig-node']
   ci-kubernetes-e2enode-cosstable1-k8sstable2-serial:
     interval: 6h
     args:
-    - --project=k8s-test-5f678591cd
+    - --gcp-project=k8s-test-5f678591cd
     sigOwners: ['sig-node']
   ci-kubernetes-e2enode-cosstable1-k8sstable3-default:
     interval: 6h
     args:
-    - --project=k8s-test-1cee98f86d
+    - --gcp-project=k8s-test-1cee98f86d
     sigOwners: ['sig-node']
   ci-kubernetes-e2enode-cosstable1-k8sstable3-serial:
     interval: 6h
     args:
-    - --project=k8s-test-592642f0ef
+    - --gcp-project=k8s-test-592642f0ef
     sigOwners: ['sig-node']
 
   ci-kubernetes-e2enode-ubuntudev-k8sdev-gkespec:
     interval: 2h
     args:
-    - --project=ubuntu-image-validation
+    - --gcp-project=ubuntu-image-validation
     sigOwners: ['sig-node']
   ci-kubernetes-e2enode-ubuntudev-k8sdev-serial:
     interval: 2h
     args:
-    - --project=ubuntu-image-validation
+    - --gcp-project=ubuntu-image-validation
     sigOwners: ['sig-node']
   ci-kubernetes-e2enode-ubuntudev-k8sstable1-gkespec:
     interval: 2h
     args:
-    - --project=ubuntu-image-validation
+    - --gcp-project=ubuntu-image-validation
     sigOwners: ['sig-node']
   ci-kubernetes-e2enode-ubuntudev-k8sstable1-serial:
     interval: 2h
     args:
-    - --project=ubuntu-image-validation
+    - --gcp-project=ubuntu-image-validation
     sigOwners: ['sig-node']
   ci-kubernetes-e2enode-ubuntudev-k8sstable2-gkespec:
     interval: 2h
     args:
-    - --project=ubuntu-image-validation
+    - --gcp-project=ubuntu-image-validation
     sigOwners: ['sig-node']
   ci-kubernetes-e2enode-ubuntudev-k8sstable2-serial:
     interval: 2h
     args:
-    - --project=ubuntu-image-validation
+    - --gcp-project=ubuntu-image-validation
     sigOwners: ['sig-node']
   ci-kubernetes-e2enode-ubuntustable1-k8sdev-gkespec:
     interval: 2h
     args:
-    - --project=ubuntu-image-validation
+    - --gcp-project=ubuntu-image-validation
     sigOwners: ['sig-node']
   ci-kubernetes-e2enode-ubuntustable1-k8sdev-serial:
     interval: 2h
     args:
-    - --project=ubuntu-image-validation
+    - --gcp-project=ubuntu-image-validation
     sigOwners: ['sig-node']
   ci-kubernetes-e2enode-ubuntustable1-k8sstable1-gkespec:
     interval: 2h
     args:
-    - --project=ubuntu-image-validation
+    - --gcp-project=ubuntu-image-validation
     sigOwners: ['sig-node']
   ci-kubernetes-e2enode-ubuntustable1-k8sstable1-serial:
     interval: 2h
     args:
-    - --project=ubuntu-image-validation
+    - --gcp-project=ubuntu-image-validation
     sigOwners: ['sig-node']
   ci-kubernetes-e2enode-ubuntustable1-k8sstable2-gkespec:
     interval: 2h
     args:
-    - --project=ubuntu-image-validation
+    - --gcp-project=ubuntu-image-validation
     sigOwners: ['sig-node']
   ci-kubernetes-e2enode-ubuntustable1-k8sstable2-serial:
     interval: 2h
     args:
-    - --project=ubuntu-image-validation
+    - --gcp-project=ubuntu-image-validation
     sigOwners: ['sig-node']
 
 
@@ -795,27 +795,28 @@ testSuites:
 
 nodeCommon:
     args:
-    - --cleanup=true
-    - --ssh-user=prow
-    - --zone=us-central1-f
+    - --deployment=node
+    - --node-tests=true
+    - --provider=gce
+    - --gcp-zone=us-central1-f
 
 nodeImages:
   cosbeta:
     args:
-    - --images=cos-beta-61-9765-31-0
-    - --image-project=cos-cloud
+    - --node-args=--images=cos-beta-61-9765-31-0
+    - --node-args=--image-project=cos-cloud
   cosstable1:
     args:
-    - --images=cos-stable-60-9592-84-0
-    - --image-project=cos-cloud
+    - --node-args=--images=cos-stable-60-9592-84-0
+    - --node-args=--image-project=cos-cloud
   ubuntudev:
     args:
-    - --images=ubuntu-gke-1604-xenial-v20170816-1
-    - --image-project=ubuntu-os-gke-cloud-devel
+    - --node-args=--images=ubuntu-gke-1604-xenial-v20170816-1
+    - --node-args=--image-project=ubuntu-os-gke-cloud-devel
   ubuntustable1:
     args:
-    - --images=ubuntu-gke-1604-xenial-v20170816-1
-    - --image-project=ubuntu-os-gke-cloud
+    - --node-args=--images=ubuntu-gke-1604-xenial-v20170816-1
+    - --node-args=--image-project=ubuntu-os-gke-cloud
 
 nodeK8sVersions:
   dev:
@@ -838,17 +839,17 @@ nodeK8sVersions:
 nodeTestSuites:
   default:
     args:
-    - --test-timeout=60m
-    - --ginkgo-flags=--nodes=8 --skip="\[Flaky\]|\[Serial\]"
-    - --test_args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
+    - --timeout=60m
+    - --test_args=--nodes=8 --skip="\[Flaky\]|\[Serial\]"
+    - --node-test-args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
   gkespec:
     args:
-    - --system-spec-name=gke
-    - --test-timeout=60m
-    - --ginkgo-flags=--nodes=8 --skip="\[Flaky\]|\[Serial\]"
-    - --test_args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
+    - --node-args=--system-spec-name=gke
+    - --timeout=60m
+    - --test_args=--nodes=8 --skip="\[Flaky\]|\[Serial\]"
+    - --node-test-args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
   serial:
     args:
-    - --test-timeout=180m
-    - --ginkgo-flags=--nodes=1 --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]"
-    - --test_args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/" --feature-gates=DynamicKubeletConfig=true
+    - --timeout=180m
+    - --test_args=--nodes=1 --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]"
+    - --node-test-args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/" --feature-gates=DynamicKubeletConfig=true
