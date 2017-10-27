@@ -42,11 +42,16 @@ const (
 
 var dirBlacklist = sets.NewString(".git", "_output")
 
+type dirOptions struct {
+	NoParentOwners bool `json:"no_parent_owners,omitempty"`
+}
+
 type ownersConfig struct {
-	Assignees []string `json:"assignees,omitempty"`
-	Approvers []string `json:"approvers,omitempty"`
-	Reviewers []string `json:"reviewers,omitempty"`
-	Labels    []string `json:"labels,omitempty"`
+	Options   dirOptions `json:"options,omitempty"`
+	Assignees []string   `json:"assignees,omitempty"`
+	Approvers []string   `json:"approvers,omitempty"`
+	Reviewers []string   `json:"reviewers,omitempty"`
+	Labels    []string   `json:"labels,omitempty"`
 }
 
 type githubClient interface {
@@ -90,6 +95,7 @@ type RepoOwners struct {
 	approvers map[string]sets.String
 	reviewers map[string]sets.String
 	labels    map[string]sets.String
+	options   map[string]dirOptions
 
 	baseDir      string
 	enableMDYAML bool
@@ -229,6 +235,7 @@ func loadOwnersFrom(baseDir string, mdYaml bool, aliases RepoAliases, log *logru
 		approvers: make(map[string]sets.String),
 		reviewers: make(map[string]sets.String),
 		labels:    make(map[string]sets.String),
+		options:   make(map[string]dirOptions),
 	}
 
 	return o, filepath.Walk(o.baseDir, o.walkFunc)
@@ -328,6 +335,8 @@ func normLogins(logins []string) sets.String {
 	return normed
 }
 
+var defaultDirOptions = dirOptions{}
+
 func (o *RepoOwners) applyConfigToPath(path string, config *ownersConfig) {
 	if len(config.Approvers) > 0 || len(config.Assignees) > 0 {
 		o.approvers[path] = o.ExpandAliases(normLogins(config.Approvers).Union(normLogins(config.Assignees)))
@@ -337,6 +346,9 @@ func (o *RepoOwners) applyConfigToPath(path string, config *ownersConfig) {
 	}
 	if len(config.Labels) > 0 {
 		o.labels[path] = sets.NewString(config.Labels...)
+	}
+	if config.Options != defaultDirOptions {
+		o.options[path] = config.Options
 	}
 }
 
@@ -361,7 +373,7 @@ func (o *RepoOwners) filterCollaborators(toKeep []github.User) *RepoOwners {
 }
 
 // findOwnersForPath returns the OWNERS file path furthest down the tree for a specified file
-// By default we use the reviewers section of owners flag but this can be configured by setting approvers to true
+// using ownerMap to check for entries
 func findOwnersForPath(path string, ownerMap map[string]sets.String) string {
 	d := path
 
@@ -394,7 +406,7 @@ func (o *RepoOwners) FindReviewersOwnersForPath(path string) string {
 // FindLabelsForPath returns a set of labels which should be applied to PRs
 // modifying files under the given path.
 func (o *RepoOwners) FindLabelsForPath(path string) sets.String {
-	return entriesForPath(path, o.labels, false, o.enableMDYAML)
+	return entriesForPath(path, o.labels, o.options, false, o.enableMDYAML)
 }
 
 // entriesForPath returns a set of users who are assignees to the
@@ -402,7 +414,7 @@ func (o *RepoOwners) FindLabelsForPath(path string) sets.String {
 // and not directory as the final directory will be discounted if enableMDYAML is true
 // leafOnly indicates whether only the OWNERS deepest in the tree (closest to the file)
 // should be returned or if all OWNERS in filepath should be returned
-func entriesForPath(path string, people map[string]sets.String, leafOnly bool, enableMDYAML bool) sets.String {
+func entriesForPath(path string, people map[string]sets.String, options map[string]dirOptions, leafOnly bool, enableMDYAML bool) sets.String {
 	d := path
 	if !enableMDYAML || !strings.HasSuffix(path, ".md") {
 		// if path is a directory, this will remove the leaf directory, and returns "." for topmost dir
@@ -412,15 +424,16 @@ func entriesForPath(path string, people map[string]sets.String, leafOnly bool, e
 
 	out := sets.NewString()
 	for {
-		s, ok := people[d]
-		if ok {
+		if s, ok := people[d]; ok {
 			out = out.Union(s)
 			if leafOnly && out.Len() > 0 {
-
 				break
 			}
 		}
 		if d == baseDirConvention {
+			break
+		}
+		if op, ok := options[d]; ok && op.NoParentOwners {
 			break
 		}
 		d = filepath.Dir(d)
@@ -433,7 +446,7 @@ func entriesForPath(path string, people map[string]sets.String, leafOnly bool, e
 // requested file. If pkg/OWNERS has user1 and pkg/util/OWNERS has user2 this
 // will only return user2 for the path pkg/util/sets/file.go
 func (o *RepoOwners) LeafApprovers(path string) sets.String {
-	return entriesForPath(path, o.approvers, true, o.enableMDYAML)
+	return entriesForPath(path, o.approvers, o.options, true, o.enableMDYAML)
 }
 
 // Approvers returns ALL of the users who are approvers for the
@@ -441,14 +454,14 @@ func (o *RepoOwners) LeafApprovers(path string) sets.String {
 // If pkg/OWNERS has user1 and pkg/util/OWNERS has user2 this
 // will return both user1 and user2 for the path pkg/util/sets/file.go
 func (o *RepoOwners) Approvers(path string) sets.String {
-	return entriesForPath(path, o.approvers, false, o.enableMDYAML)
+	return entriesForPath(path, o.approvers, o.options, false, o.enableMDYAML)
 }
 
 // LeafReviewers returns a set of users who are the closest reviewers to the
 // requested file. If pkg/OWNERS has user1 and pkg/util/OWNERS has user2 this
 // will only return user2 for the path pkg/util/sets/file.go
 func (o *RepoOwners) LeafReviewers(path string) sets.String {
-	return entriesForPath(path, o.reviewers, true, o.enableMDYAML)
+	return entriesForPath(path, o.reviewers, o.options, true, o.enableMDYAML)
 }
 
 // Reviewers returns ALL of the users who are reviewers for the
@@ -456,5 +469,5 @@ func (o *RepoOwners) LeafReviewers(path string) sets.String {
 // If pkg/OWNERS has user1 and pkg/util/OWNERS has user2 this
 // will return both user1 and user2 for the path pkg/util/sets/file.go
 func (o *RepoOwners) Reviewers(path string) sets.String {
-	return entriesForPath(path, o.reviewers, false, o.enableMDYAML)
+	return entriesForPath(path, o.reviewers, o.options, false, o.enableMDYAML)
 }
