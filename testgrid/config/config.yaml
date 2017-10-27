@@ -1471,12 +1471,20 @@ test_groups:
   num_columns_recent: 20
   alert_stale_results_hours: 24
   num_failures_to_alert: 10
+- name: pull-kubernetes-bazel-build-canary
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-bazel-build-canary
+  days_of_results: 1
+  num_columns_recent: 20
 - name: pull-kubernetes-bazel-test
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-bazel-test
   days_of_results: 1
   num_columns_recent: 20
   alert_stale_results_hours: 24
   num_failures_to_alert: 10
+- name: pull-kubernetes-bazel-test-canary
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-bazel-test-canary
+  days_of_results: 1
+  num_columns_recent: 20
 - name: pull-kubernetes-cross
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-cross
   days_of_results: 1
@@ -3773,6 +3781,14 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-scalability-canary
     code_search_url_template:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+  - name: test-infra-bazel-canary
+    test_group_name: pull-test-infra-bazel-canary
+    code_search_url_template:
+      url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+  - name: bazel-build-canary
+    test_group_name: pull-kubernetes-bazel-build-canary
+  - name: bazel-test-canary
+    test_group_name: pull-kubernetes-bazel-test-canary
 
 - name: sig-ui
   dashboard_tab:
