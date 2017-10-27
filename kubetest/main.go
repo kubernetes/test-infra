@@ -203,6 +203,18 @@ func validWorkingDirectory() error {
 }
 
 func writeXML(dump string, start time.Time) {
+	// Note whether timeout occurred
+	c := testCase{
+		Name:      "Timeout",
+		ClassName: "e2e.go",
+		Time:      timeout.Seconds(),
+	}
+	if isInterrupted() {
+		c.Failure = "kubetest --timeout triggered"
+		suite.Failures++
+	}
+	suite.Cases = append(suite.Cases, c)
+	// Write xml
 	suite.Time = time.Since(start).Seconds()
 	out, err := xml.MarshalIndent(&suite, "", "    ")
 	if err != nil {
