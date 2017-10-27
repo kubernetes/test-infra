@@ -58,20 +58,26 @@ func waitForReadyNodes(desiredCount int, timeout time.Duration) error {
 			log.Printf("kubectl get nodes failed, sleeping: %v", err)
 			continue
 		}
-		var ready []*node
-		for i := range nodes.Items {
-			node := &nodes.Items[i]
-			if isReady(node) {
-				ready = append(ready, node)
-			}
+		readyNodes := countReadyNodes(nodes)
+		if readyNodes >= desiredCount {
+			return nil
 		}
-		if len(ready) < desiredCount {
-			log.Printf("%d (ready nodes) < %d (requested instances), sleeping", len(ready), desiredCount)
-			continue
-		}
-		return nil
+
+		log.Printf("%d (ready nodes) < %d (requested instances), sleeping", readyNodes, desiredCount)
 	}
 	return fmt.Errorf("waiting for ready nodes timed out")
+}
+
+// countReadyNodes returns the number of nodes that have isReady == true
+func countReadyNodes(nodes *nodeList) int {
+	var ready []*node
+	for i := range nodes.Items {
+		node := &nodes.Items[i]
+		if isReady(node) {
+			ready = append(ready, node)
+		}
+	}
+	return len(ready)
 }
 
 // nodeList is a simplified version of the v1.NodeList API type
