@@ -7397,6 +7397,23 @@
       "sig-testing"
     ]
   },
+  "ci-kubernetes-e2e-kops-aws-newrunner": {
+    "args": [
+      "--cluster=e2e-kops-aws-newrunner.test-aws.k8s.io",
+      "--deployment=kops",
+      "--env-file=jobs/platform/kops_aws.env",
+      "--extract=ci/latest",
+      "--ginkgo-parallel",
+      "--kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci.txt",
+      "--provider=aws",
+      "--test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]|\\[HPA\\]|Dashboard|Services.*functioning.*NodePort",
+      "--timeout=120m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-aws"
+    ]
+  },
   "ci-kubernetes-e2e-kops-aws-release-1-6": {
     "args": [
       "--aws",

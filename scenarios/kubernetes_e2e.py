@@ -431,8 +431,50 @@ def set_up_kops_gce(workspace, args, mode, cluster, runner_args):
     ])
 
 
+def set_up_kops_aws(workspace, args, mode, cluster, runner_args):
+    """Set up aws related envs for kops.  Will replace set_up_aws."""
+    for path in [args.aws_ssh, args.aws_pub, args.aws_cred]:
+        if not os.path.isfile(os.path.expandvars(path)):
+            raise IOError(path, os.path.expandvars(path))
+    mode.add_aws_cred(args.aws_ssh, args.aws_pub, args.aws_cred)
+
+    aws_ssh = os.path.join(workspace, '.ssh', 'kube_aws_rsa')
+    profile = args.aws_profile
+    if args.aws_role_arn:
+        profile = mode.add_aws_role(profile, args.aws_role_arn)
+
+    zones = args.kops_zones or random.choice([
+        'us-west-1a',
+        'us-west-1c',
+        'us-west-2a',
+        'us-west-2b',
+        'us-east-1a',
+        'us-east-1d',
+        'us-east-2a',
+        'us-east-2b',
+    ])
+    regions = ','.join([zone[:-1] for zone in zones.split(',')])
+
+    mode.add_environment(
+      'AWS_PROFILE=%s' % profile,
+      'AWS_DEFAULT_PROFILE=%s' % profile,
+      'KOPS_REGIONS=%s' % regions,
+    )
+
+    if args.aws_cluster_domain:
+        cluster = '%s.%s' % (cluster, args.aws_cluster_domain)
+
+    runner_args.extend([
+        '--kops-cluster=%s' % cluster,
+        '--kops-zones=%s' % zones,
+        '--kops-state=%s' % args.kops_state,
+        '--kops-nodes=%s' % args.kops_nodes,
+        '--kops-ssh-key=%s' % aws_ssh,
+    ])
+
+
 def set_up_aws(workspace, args, mode, cluster, runner_args):
-    """Set up aws related envs."""
+    """Set up aws related envs.  Legacy; will be replaced by set_up_kops_aws."""
     for path in [args.aws_ssh, args.aws_pub, args.aws_cred]:
         if not os.path.isfile(os.path.expandvars(path)):
             raise IOError(path, os.path.expandvars(path))
@@ -623,8 +665,12 @@ def main(args):
                 '--kubernetes-anywhere-kubelet-version=%s' % version,
             ])
 
-    if args.aws or args.provider == 'aws':
+    if args.aws:
+        # Legacy - prefer passing --deployment=kops, --provider=aws,
+        # which does not use kops-e2e-runner.sh
         set_up_aws(mode.workspace, args, mode, cluster, runner_args)
+    elif args.deployment == 'kops' and args.provider == 'aws':
+        set_up_kops_aws(mode.workspace, args, mode, cluster, runner_args)
     elif args.deployment == 'kops' and args.provider == 'gce':
         set_up_kops_gce(mode.workspace, args, mode, cluster, runner_args)
     elif args.gce_ssh:
