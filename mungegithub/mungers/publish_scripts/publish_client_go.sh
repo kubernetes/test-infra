@@ -33,6 +33,7 @@
 set -o errexit
 set -o nounset
 set -o pipefail
+set -o xtrace
 
 if [ ! $# -eq 4 ]; then
     echo "usage: $0 src_branch dst_branch dependent_k8s_repos kubernetes_remote"
@@ -44,8 +45,11 @@ SCRIPT_DIR=$(dirname "${BASH_SOURCE}")
 
 basic_tests() {
     go build ./...
-    go test ./...
+    go test $(go list ./... | grep -v /vendor/)
 }
 
 # Smoke test client-go
-basic_tests
+if [ "$(git rev-parse origin/${2} || true)" != $(git rev-parse HEAD) ]; then
+    godep restore
+    basic_tests
+fi

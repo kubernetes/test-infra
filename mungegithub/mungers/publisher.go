@@ -25,6 +25,7 @@ import (
 	"strings"
 
 	"github.com/golang/glog"
+
 	"k8s.io/kubernetes/pkg/util/sets"
 	"k8s.io/test-infra/mungegithub/features"
 	"k8s.io/test-infra/mungegithub/github"
@@ -57,6 +58,8 @@ type repoRules struct {
 	srcToDst []branchRule
 	// if empty (e.g., for client-go), publisher will use its default publish script
 	publishScript string
+	// not updated when true
+	skipped bool
 }
 
 // PublisherMunger publishes content from one repository to another one.
@@ -86,13 +89,17 @@ func (p *PublisherMunger) Initialize(config *github.Config, features *features.F
 	p.k8sIOPath = filepath.Join(gopath, "src", "k8s.io")
 
 	clientGo := repoRules{
+		skipped: false,
 		dstRepo: "client-go",
 		srcToDst: []branchRule{
 			{
 				// rule for the client-go master branch
-				src:  coordinate{repo: config.Project, branch: "master", dir: "staging/src/k8s.io/client-go"},
-				dst:  coordinate{repo: "client-go", branch: "master", dir: "./"},
-				deps: []coordinate{{repo: "apimachinery", branch: "master"}},
+				src: coordinate{repo: config.Project, branch: "master", dir: "staging/src/k8s.io/client-go"},
+				dst: coordinate{repo: "client-go", branch: "master", dir: "./"},
+				deps: []coordinate{
+					{repo: "apimachinery", branch: "master"},
+					{repo: "api", branch: "master"},
+				},
 			},
 			{
 				// rule for the client-go release-2.0 branch
@@ -111,11 +118,21 @@ func (p *PublisherMunger) Initialize(config *github.Config, features *features.F
 				dst:  coordinate{repo: "client-go", branch: "release-4.0", dir: "./"},
 				deps: []coordinate{{repo: "apimachinery", branch: "release-1.7"}},
 			},
+			{
+				// rule for the client-go release-5.0 branch
+				src: coordinate{repo: config.Project, branch: "release-1.8", dir: "staging/src/k8s.io/client-go"},
+				dst: coordinate{repo: "client-go", branch: "release-5.0", dir: "./"},
+				deps: []coordinate{
+					{repo: "apimachinery", branch: "release-1.8"},
+					{repo: "api", branch: "release-1.8"},
+				},
+			},
 		},
 		publishScript: "/publish_scripts/publish_client_go.sh",
 	}
 
 	apimachinery := repoRules{
+		skipped: false,
 		dstRepo: "apimachinery",
 		srcToDst: []branchRule{
 			{
@@ -133,11 +150,17 @@ func (p *PublisherMunger) Initialize(config *github.Config, features *features.F
 				src: coordinate{repo: config.Project, branch: "release-1.7", dir: "staging/src/k8s.io/apimachinery"},
 				dst: coordinate{repo: "apimachinery", branch: "release-1.7", dir: "./"},
 			},
+			{
+				// rule for the apimachinery 1.8 branch
+				src: coordinate{repo: config.Project, branch: "release-1.8", dir: "staging/src/k8s.io/apimachinery"},
+				dst: coordinate{repo: "apimachinery", branch: "release-1.8", dir: "./"},
+			},
 		},
 		publishScript: "/publish_scripts/publish_apimachinery.sh",
 	}
 
 	apiserver := repoRules{
+		skipped: false,
 		dstRepo: "apiserver",
 		srcToDst: []branchRule{
 			{
@@ -146,6 +169,7 @@ func (p *PublisherMunger) Initialize(config *github.Config, features *features.F
 				dst: coordinate{repo: "apiserver", branch: "master", dir: "./"},
 				deps: []coordinate{
 					{repo: "apimachinery", branch: "master"},
+					{repo: "api", branch: "master"},
 					{repo: "client-go", branch: "master"},
 				},
 			},
@@ -158,11 +182,31 @@ func (p *PublisherMunger) Initialize(config *github.Config, features *features.F
 					{repo: "client-go", branch: "release-3.0"},
 				},
 			},
+			{
+				// rule for the apiserver 1.7 branch
+				src: coordinate{repo: config.Project, branch: "release-1.7", dir: "staging/src/k8s.io/apiserver"},
+				dst: coordinate{repo: "apiserver", branch: "release-1.7", dir: "./"},
+				deps: []coordinate{
+					{repo: "apimachinery", branch: "release-1.7"},
+					{repo: "client-go", branch: "release-4.0"},
+				},
+			},
+			{
+				// rule for the apiserver 1.8 branch
+				src: coordinate{repo: config.Project, branch: "release-1.8", dir: "staging/src/k8s.io/apiserver"},
+				dst: coordinate{repo: "apiserver", branch: "release-1.8", dir: "./"},
+				deps: []coordinate{
+					{repo: "apimachinery", branch: "release-1.8"},
+					{repo: "api", branch: "release-1.8"},
+					{repo: "client-go", branch: "release-5.0"},
+				},
+			},
 		},
 		publishScript: "/publish_scripts/publish_apiserver.sh",
 	}
 
 	kubeAggregator := repoRules{
+		skipped: false,
 		dstRepo: "kube-aggregator",
 		srcToDst: []branchRule{
 			{
@@ -171,6 +215,7 @@ func (p *PublisherMunger) Initialize(config *github.Config, features *features.F
 				dst: coordinate{repo: "kube-aggregator", branch: "master", dir: "./"},
 				deps: []coordinate{
 					{repo: "apimachinery", branch: "master"},
+					{repo: "api", branch: "master"},
 					{repo: "client-go", branch: "master"},
 					{repo: "apiserver", branch: "master"},
 				},
@@ -185,11 +230,33 @@ func (p *PublisherMunger) Initialize(config *github.Config, features *features.F
 					{repo: "apiserver", branch: "release-1.6"},
 				},
 			},
+			{
+				// rule for the kube-aggregator 1.7 branch
+				src: coordinate{repo: config.Project, branch: "release-1.7", dir: "staging/src/k8s.io/kube-aggregator"},
+				dst: coordinate{repo: "kube-aggregator", branch: "release-1.7", dir: "./"},
+				deps: []coordinate{
+					{repo: "apimachinery", branch: "release-1.7"},
+					{repo: "client-go", branch: "release-4.0"},
+					{repo: "apiserver", branch: "release-1.7"},
+				},
+			},
+			{
+				// rule for the kube-aggregator 1.8 branch
+				src: coordinate{repo: config.Project, branch: "release-1.8", dir: "staging/src/k8s.io/kube-aggregator"},
+				dst: coordinate{repo: "kube-aggregator", branch: "release-1.8", dir: "./"},
+				deps: []coordinate{
+					{repo: "apimachinery", branch: "release-1.8"},
+					{repo: "api", branch: "release-1.8"},
+					{repo: "client-go", branch: "release-5.0"},
+					{repo: "apiserver", branch: "release-1.8"},
+				},
+			},
 		},
 		publishScript: "/publish_scripts/publish_kube_aggregator.sh",
 	}
 
 	sampleAPIServer := repoRules{
+		skipped: false,
 		dstRepo: "sample-apiserver",
 		srcToDst: []branchRule{
 			{
@@ -198,6 +265,7 @@ func (p *PublisherMunger) Initialize(config *github.Config, features *features.F
 				dst: coordinate{repo: "sample-apiserver", branch: "master", dir: "./"},
 				deps: []coordinate{
 					{repo: "apimachinery", branch: "master"},
+					{repo: "api", branch: "master"},
 					{repo: "client-go", branch: "master"},
 					{repo: "apiserver", branch: "master"},
 				},
@@ -210,6 +278,27 @@ func (p *PublisherMunger) Initialize(config *github.Config, features *features.F
 					{repo: "apimachinery", branch: "release-1.6"},
 					{repo: "client-go", branch: "release-3.0"},
 					{repo: "apiserver", branch: "release-1.6"},
+				},
+			},
+			{
+				// rule for the sample-apiserver 1.7 branch
+				src: coordinate{repo: config.Project, branch: "release-1.7", dir: "staging/src/k8s.io/sample-apiserver"},
+				dst: coordinate{repo: "sample-apiserver", branch: "release-1.7", dir: "./"},
+				deps: []coordinate{
+					{repo: "apimachinery", branch: "release-1.7"},
+					{repo: "client-go", branch: "release-4.0"},
+					{repo: "apiserver", branch: "release-1.7"},
+				},
+			},
+			{
+				// rule for the sample-apiserver 1.8 branch
+				src: coordinate{repo: config.Project, branch: "release-1.8", dir: "staging/src/k8s.io/sample-apiserver"},
+				dst: coordinate{repo: "sample-apiserver", branch: "release-1.8", dir: "./"},
+				deps: []coordinate{
+					{repo: "apimachinery", branch: "release-1.8"},
+					{repo: "api", branch: "release-1.8"},
+					{repo: "client-go", branch: "release-5.0"},
+					{repo: "apiserver", branch: "release-1.8"},
 				},
 			},
 		},
@@ -225,8 +314,30 @@ func (p *PublisherMunger) Initialize(config *github.Config, features *features.F
 				dst: coordinate{repo: "apiextensions-apiserver", branch: "master", dir: "./"},
 				deps: []coordinate{
 					{repo: "apimachinery", branch: "master"},
+					{repo: "api", branch: "master"},
 					{repo: "client-go", branch: "master"},
 					{repo: "apiserver", branch: "master"},
+				},
+			},
+			{
+				// rule for the sample-apiserver 1.7 branch
+				src: coordinate{repo: config.Project, branch: "release-1.7", dir: "staging/src/k8s.io/apiextensions-apiserver"},
+				dst: coordinate{repo: "apiextensions-apiserver", branch: "release-1.7", dir: "./"},
+				deps: []coordinate{
+					{repo: "apimachinery", branch: "release-1.7"},
+					{repo: "client-go", branch: "release-4.0"},
+					{repo: "apiserver", branch: "release-1.7"},
+				},
+			},
+			{
+				// rule for the sample-apiserver 1.8 branch
+				src: coordinate{repo: config.Project, branch: "release-1.8", dir: "staging/src/k8s.io/apiextensions-apiserver"},
+				dst: coordinate{repo: "apiextensions-apiserver", branch: "release-1.8", dir: "./"},
+				deps: []coordinate{
+					{repo: "apimachinery", branch: "release-1.8"},
+					{repo: "api", branch: "release-1.8"},
+					{repo: "client-go", branch: "release-5.0"},
+					{repo: "apiserver", branch: "release-1.8"},
 				},
 			},
 		},
@@ -234,6 +345,7 @@ func (p *PublisherMunger) Initialize(config *github.Config, features *features.F
 	}
 
 	api := repoRules{
+		skipped: false,
 		dstRepo: "api",
 		srcToDst: []branchRule{
 			{
@@ -244,11 +356,75 @@ func (p *PublisherMunger) Initialize(config *github.Config, features *features.F
 					{repo: "apimachinery", branch: "master"},
 				},
 			},
+			{
+				// rule for the api release-1.8 branch
+				src: coordinate{repo: config.Project, branch: "release-1.8", dir: "staging/src/k8s.io/api"},
+				dst: coordinate{repo: "api", branch: "release-1.8", dir: "./"},
+				deps: []coordinate{
+					{repo: "apimachinery", branch: "release-1.8"},
+				},
+			},
 		},
 		publishScript: "/publish_scripts/publish_api.sh",
 	}
+
+	metrics := repoRules{
+		dstRepo: "metrics",
+		srcToDst: []branchRule{
+			{
+				// rule for the metrics master branch
+				src: coordinate{repo: config.Project, branch: "master", dir: "staging/src/k8s.io/metrics"},
+				dst: coordinate{repo: "metrics", branch: "master", dir: "./"},
+				deps: []coordinate{
+					{repo: "apimachinery", branch: "master"},
+					{repo: "api", branch: "master"},
+					{repo: "client-go", branch: "master"},
+				},
+			},
+			{
+				// rule for the sample-apiserver 1.7 branch
+				src: coordinate{repo: config.Project, branch: "release-1.7", dir: "staging/src/k8s.io/metrics"},
+				dst: coordinate{repo: "metrics", branch: "release-1.7", dir: "./"},
+				deps: []coordinate{
+					{repo: "apimachinery", branch: "release-1.7"},
+					{repo: "client-go", branch: "release-4.0"},
+				},
+			},
+			{
+				// rule for the sample-apiserver 1.8 branch
+				src: coordinate{repo: config.Project, branch: "release-1.8", dir: "staging/src/k8s.io/metrics"},
+				dst: coordinate{repo: "metrics", branch: "release-1.8", dir: "./"},
+				deps: []coordinate{
+					{repo: "apimachinery", branch: "release-1.8"},
+					{repo: "api", branch: "release-1.8"},
+					{repo: "client-go", branch: "release-5.0"},
+				},
+			},
+		},
+		publishScript: "/publish_scripts/publish_metrics.sh",
+	}
+
+	codeGenerator := repoRules{
+		dstRepo: "code-generator",
+		srcToDst: []branchRule{
+			{
+				// rule for the metrics master branch
+				src:  coordinate{repo: config.Project, branch: "master", dir: "staging/src/k8s.io/code-generator"},
+				dst:  coordinate{repo: "code-generator", branch: "master", dir: "./"},
+				deps: []coordinate{},
+			},
+			{
+				// rule for the metrics release-1.8 branch
+				src:  coordinate{repo: config.Project, branch: "release-1.8", dir: "staging/src/k8s.io/code-generator"},
+				dst:  coordinate{repo: "code-generator", branch: "release-1.8", dir: "./"},
+				deps: []coordinate{},
+			},
+		},
+		publishScript: "/publish_scripts/publish_code_generator.sh",
+	}
+
 	// NOTE: Order of the repos is sensitive!!! A dependent repo needs to be published first, so that other repos can vendor its latest revision.
-	p.reposRules = []repoRules{apimachinery, api, clientGo, apiserver, kubeAggregator, sampleAPIServer, apiExtensionsAPIServer}
+	p.reposRules = []repoRules{apimachinery, api, clientGo, apiserver, kubeAggregator, sampleAPIServer, apiExtensionsAPIServer, metrics, codeGenerator}
 	glog.Infof("publisher munger rules: %#v\n", p.reposRules)
 	p.features = features
 	p.githubConfig = config
@@ -259,30 +435,27 @@ func (p *PublisherMunger) Initialize(config *github.Config, features *features.F
 func (p *PublisherMunger) updateKubernetes() error {
 	cmd := exec.Command("git", "fetch", "origin")
 	cmd.Dir = filepath.Join(p.k8sIOPath, "kubernetes")
-	output, err := cmd.CombinedOutput()
-	p.plog.Infof("%s", output)
-	if err != nil {
+	if err := p.plog.Run(cmd); err != nil {
 		return err
 	}
 	// update kubernetes branches that are needed by other k8s.io repos.
 	for _, repoRules := range p.reposRules {
+		if repoRules.skipped {
+			continue
+		}
 		for _, branchRule := range repoRules.srcToDst {
 			src := branchRule.src
 			// we assume src.repo is always kubernetes
 			cmd := exec.Command("git", "branch", "-f", src.branch, fmt.Sprintf("origin/%s", src.branch))
 			cmd.Dir = filepath.Join(p.k8sIOPath, "kubernetes")
-			output, err := cmd.CombinedOutput()
-			p.plog.Infof("%s", output)
-			if err == nil {
+			if err := p.plog.Run(cmd); err == nil {
 				continue
 			}
 			// probably the error is because we cannot do `git branch -f` while
 			// current branch is src.branch, so try `git reset --hard` instead.
 			cmd = exec.Command("git", "reset", "--hard", fmt.Sprintf("origin/%s", src.branch))
 			cmd.Dir = filepath.Join(p.k8sIOPath, "kubernetes")
-			output, err = cmd.CombinedOutput()
-			p.plog.Infof("%s", output)
-			if err != nil {
+			if err := p.plog.Run(cmd); err != nil {
 				return err
 			}
 		}
@@ -300,17 +473,21 @@ func (p *PublisherMunger) ensureCloned(dst string, dstURL string) error {
 	if err != nil {
 		return err
 	}
-	err = exec.Command("git", "clone", dstURL, dst).Run()
-	return err
+	cmd := exec.Command("git", "clone", dstURL, dst)
+	return p.plog.Run(cmd)
 }
 
 // constructs all the repos, but does not push the changes to remotes.
 func (p *PublisherMunger) construct() error {
 	kubernetesRemote := filepath.Join(p.k8sIOPath, "kubernetes", ".git")
 	for _, repoRules := range p.reposRules {
+		if repoRules.skipped {
+			continue
+		}
+
 		// clone the destination repo
 		dstDir := filepath.Join(p.k8sIOPath, repoRules.dstRepo, "")
-		dstURL := fmt.Sprintf("https://github.com/%s/%s.git", p.githubConfig.Org, repoRules.dstRepo)
+		dstURL := fmt.Sprintf("https://github.com/%s/%s.git", "--no-tags", p.githubConfig.Org, repoRules.dstRepo)
 		if err := p.ensureCloned(dstDir, dstURL); err != nil {
 			p.plog.Errorf("%v", err)
 			return err
@@ -319,6 +496,13 @@ func (p *PublisherMunger) construct() error {
 		if err := os.Chdir(dstDir); err != nil {
 			return err
 		}
+
+		// delete tags
+		cmd := exec.Command("/bin/bash", "-c", "git tag | xargs git tag -d >/dev/null")
+		if err := p.plog.Run(cmd); err != nil {
+			return err
+		}
+
 		// construct branches
 		formatDeps := func(deps []coordinate) string {
 			var depStrings []string
@@ -330,9 +514,7 @@ func (p *PublisherMunger) construct() error {
 
 		for _, branchRule := range repoRules.srcToDst {
 			cmd := exec.Command(repoRules.publishScript, branchRule.src.branch, branchRule.dst.branch, formatDeps(branchRule.deps), kubernetesRemote)
-			output, err := cmd.CombinedOutput()
-			p.plog.Infof("%s", output)
-			if err != nil {
+			if err := p.plog.Run(cmd); err != nil {
 				return err
 			}
 			p.plog.Infof("Successfully constructed %s", branchRule.dst)
@@ -353,9 +535,7 @@ func (p *PublisherMunger) publish() error {
 		}
 		for _, branchRule := range repoRules.srcToDst {
 			cmd := exec.Command("/publish_scripts/push.sh", p.githubConfig.Token(), branchRule.dst.branch)
-			output, err := cmd.CombinedOutput()
-			p.plog.Infof("%s", output)
-			if err != nil {
+			if err := p.plog.Run(cmd); err != nil {
 				return err
 			}
 		}

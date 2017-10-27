@@ -31,10 +31,12 @@ TOKEN="${1}"
 BRANCH="${2}"
 readonly TOKEN BRANCH
 
-SCRIPT_DIR=$(dirname "${BASH_SOURCE}")
-source "${SCRIPT_DIR}"/util.sh
-
-set_github_token "${TOKEN}"
+# set up github token in /netrc/.netrc
+echo "machine github.com login ${TOKEN}" > /netrc/.netrc
+cleanup_github_token() {
+    rm -rf /netrc/.netrc
+}
 trap cleanup_github_token EXIT SIGINT
 
-git push origin "${BRANCH}"
+HOME=/netrc git push origin "${BRANCH}" --no-tags
+HOME=/netrc ../push-tags-$(basename "${PWD}")-${BRANCH}.sh

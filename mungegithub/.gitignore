@@ -1,4 +1,5 @@
 mungegithub
+./collapsed-kube-commit-mapper
 token
 hook-secret
 local.*.yaml
