@@ -25,6 +25,7 @@ go_library(
         "federation.go",
         "gke.go",
         "kops.go",
+        "kubernetes.go",
         "main.go",
         "node.go",
         "none.go",
@@ -53,9 +54,11 @@ filegroup(
 
 go_test(
     name = "go_default_test",
+    size = "small",
     srcs = [
         "anywhere_test.go",
         "extract_test.go",
+        "kubernetes_test.go",
         "main_test.go",
         "util_test.go",
     ],
