@@ -409,6 +409,11 @@ func (o *RepoOwners) FindLabelsForPath(path string) sets.String {
 	return entriesForPath(path, o.labels, o.options, false, o.enableMDYAML)
 }
 
+// IsNoParentOwners checks if an OWNERS file path refers to an OWNERS file with NoParentOwners enabled.
+func (o *RepoOwners) IsNoParentOwners(path string) bool {
+	return o.options[path].NoParentOwners
+}
+
 // entriesForPath returns a set of users who are assignees to the
 // requested file. The path variable should be a full path to a filename
 // and not directory as the final directory will be discounted if enableMDYAML is true
