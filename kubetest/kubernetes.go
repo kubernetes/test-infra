@@ -26,7 +26,7 @@ import (
 
 // kubectlGetNodes lists nodes by executing kubectl get nodes, parsing the output into a nodeList object
 func kubectlGetNodes() (*nodeList, error) {
-	o, err := output(exec.Command("kubectl", "get", "nodes", "-ojson"))
+	o, err := output(exec.CommandContext(kubetestContext, "kubectl", "get", "nodes", "-ojson"))
 	if err != nil {
 		log.Printf("kubectl get nodes failed: %s\n%s", wrapError(err).Error(), string(o))
 		return nil, err
