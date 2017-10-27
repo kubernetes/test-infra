@@ -102,6 +102,7 @@ go_library(
         "//vendor/github.com/golang/glog:go_default_library",
         "//vendor/github.com/google/go-github/github:go_default_library",
         "//vendor/github.com/prometheus/client_golang/prometheus:go_default_library",
+        "//vendor/github.com/shurcooL/go/indentwriter:go_default_library",
         "//vendor/k8s.io/contrib/test-utils/utils:go_default_library",
         "//vendor/k8s.io/kubernetes/pkg/util/clock:go_default_library",
         "//vendor/k8s.io/kubernetes/pkg/util/sets:go_default_library",
