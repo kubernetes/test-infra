@@ -954,12 +954,8 @@ test_groups:
 # upgrade CI tests
 - name: ci-kubernetes-e2e-gce-gci-latest-upgrade-etcd
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-latest-upgrade-etcd
-- name: ci-kubernetes-e2e-gce-gci-1-5-upgrade-etcd
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-1-5-upgrade-etcd
 - name: ci-kubernetes-e2e-gce-gci-latest-rollback-etcd
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-latest-rollback-etcd
-- name: ci-kubernetes-e2e-gce-gci-1-5-rollback-etcd
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-1-5-rollback-etcd
 - name: periodic-kubernetes-e2e-kubeadm-gce-upgrade-1-6-1-7
   gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-e2e-kubeadm-gce-upgrade-1-6-1-7
 - name: periodic-kubernetes-e2e-kubeadm-gce-upgrade-1-7-1-8
@@ -1013,12 +1009,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-1-6-1-7-upgrade-master
 - name: ci-kubernetes-e2e-gce-1-6-1-7-upgrade-cluster-new
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-1-6-1-7-upgrade-cluster-new
-- name: ci-kubernetes-e2e-gke-cvm-1-6-cvm-1-7-upgrade-cluster
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cvm-1-6-cvm-1-7-upgrade-cluster
-- name: ci-kubernetes-e2e-gke-cvm-1-6-cvm-1-7-upgrade-master
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cvm-1-6-cvm-1-7-upgrade-master
-- name: ci-kubernetes-e2e-gke-cvm-1-6-cvm-1-7-upgrade-cluster-new
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cvm-1-6-cvm-1-7-upgrade-cluster-new
 - name: ci-kubernetes-e2e-gke-gci-1-6-gci-1-7-upgrade-cluster
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-1-6-gci-1-7-upgrade-cluster
 - name: ci-kubernetes-e2e-gke-gci-1-6-gci-1-7-upgrade-master
@@ -1031,12 +1021,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cvm-1-6-gci-1-7-upgrade-master
 - name: ci-kubernetes-e2e-gke-cvm-1-6-gci-1-7-upgrade-cluster-new
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cvm-1-6-gci-1-7-upgrade-cluster-new
-- name: ci-kubernetes-e2e-gke-gci-1-6-cvm-1-7-upgrade-cluster
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-1-6-cvm-1-7-upgrade-cluster
-- name: ci-kubernetes-e2e-gke-gci-1-6-cvm-1-7-upgrade-master
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-1-6-cvm-1-7-upgrade-master
-- name: ci-kubernetes-e2e-gke-gci-1-6-cvm-1-7-upgrade-cluster-new
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-1-6-cvm-1-7-upgrade-cluster-new
 # release-1.7 suites
 - name: ci-kubernetes-e2e-gce-release-1-7
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-release-1-7
@@ -2261,12 +2245,8 @@ dashboards:
   dashboard_tab:
   - name: gce-latest
     test_group_name: ci-kubernetes-e2e-gce-gci-latest-upgrade-etcd
-  - name: gce-1.5
-    test_group_name: ci-kubernetes-e2e-gce-gci-1-5-upgrade-etcd
   - name: gce-rollback-latest
     test_group_name: ci-kubernetes-e2e-gce-gci-latest-rollback-etcd
-  - name: gce-rollback-1.5
-    test_group_name: ci-kubernetes-e2e-gce-gci-1-5-rollback-etcd
 
 - name: sig-release-1.6-all
   dashboard_tab:
@@ -2710,12 +2690,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-1-6-1-7-upgrade-master
   - name: gce-upgrade-cluster-new
     test_group_name: ci-kubernetes-e2e-gce-1-6-1-7-upgrade-cluster-new
-  - name: gke-cvm-upgrade-cluster
-    test_group_name: ci-kubernetes-e2e-gke-cvm-1-6-cvm-1-7-upgrade-cluster
-  - name: gke-cvm-upgrade-master
-    test_group_name: ci-kubernetes-e2e-gke-cvm-1-6-cvm-1-7-upgrade-master
-  - name: gke-cvm-upgrade-cluster-new
-    test_group_name: ci-kubernetes-e2e-gke-cvm-1-6-cvm-1-7-upgrade-cluster-new
   - name: gke-gci-upgrade-cluster
     test_group_name: ci-kubernetes-e2e-gke-gci-1-6-gci-1-7-upgrade-cluster
   - name: gke-gci-upgrade-master
@@ -2728,12 +2702,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-cvm-1-6-gci-1-7-upgrade-master
   - name: gke-cvm-gci-upgrade-cluster-new
     test_group_name: ci-kubernetes-e2e-gke-cvm-1-6-gci-1-7-upgrade-cluster-new
-  - name: gke-gci-cvm-upgrade-cluster
-    test_group_name: ci-kubernetes-e2e-gke-gci-1-6-cvm-1-7-upgrade-cluster
-  - name: gke-gci-cvm-upgrade-master
-    test_group_name: ci-kubernetes-e2e-gke-gci-1-6-cvm-1-7-upgrade-master
-  - name: gke-gci-cvm-upgrade-cluster-new
-    test_group_name: ci-kubernetes-e2e-gke-gci-1-6-cvm-1-7-upgrade-cluster-new
 
 - name: sig-release-1.7-all
   dashboard_tab:

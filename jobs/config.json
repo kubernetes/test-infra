@@ -1769,46 +1769,6 @@
       "sig-multicluster"
     ]
   },
-  "ci-kubernetes-e2e-gce-gci-1-5-rollback-etcd": {
-    "args": [
-      "--check-leaked-resources",
-      "--check-version-skew=false",
-      "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gce-gci-1-5-rollback-etcd.env",
-      "--extract=ci/latest-1.5",
-      "--extract=ci/latest-1.5",
-      "--gcp-node-image=gci",
-      "--gcp-zone=us-central1-f",
-      "--provider=gce",
-      "--test=false",
-      "--timeout=60m",
-      "--upgrade_args=--ginkgo.focus=\\[Feature:EtcdUpgrade\\] --etcd-upgrade-storage=etcd2 --etcd-upgrade-version=2.2.1"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "UNKNOWN"
-    ]
-  },
-  "ci-kubernetes-e2e-gce-gci-1-5-upgrade-etcd": {
-    "args": [
-      "--check-leaked-resources",
-      "--check-version-skew=false",
-      "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gce-gci-1-5-upgrade-etcd.env",
-      "--extract=ci/latest-1.5",
-      "--extract=ci/latest-1.5",
-      "--gcp-node-image=gci",
-      "--gcp-zone=us-central1-f",
-      "--provider=gce",
-      "--test=false",
-      "--timeout=60m",
-      "--upgrade_args=--ginkgo.focus=\\[Feature:EtcdUpgrade\\] --etcd-upgrade-storage=etcd3 --etcd-upgrade-version=3.0.17"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "UNKNOWN"
-    ]
-  },
   "ci-kubernetes-e2e-gce-gci-ci-master": {
     "args": [
       "--check-leaked-resources",
@@ -5101,73 +5061,6 @@
       "sig-cluster-lifecycle"
     ]
   },
-  "ci-kubernetes-e2e-gke-cvm-1-6-cvm-1-7-upgrade-cluster": {
-    "args": [
-      "--check-leaked-resources",
-      "--check-version-skew=false",
-      "--deployment=gke",
-      "--extract=ci/latest-1.7",
-      "--extract=ci/latest-1.6",
-      "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
-      "--gcp-node-image=container_vm",
-      "--gcp-zone=us-central1-a",
-      "--ginkgo-parallel",
-      "--gke-environment=test",
-      "--provider=gke",
-      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8",
-      "--timeout=120m",
-      "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=ci/latest-1.7 --upgrade-image=container_vm"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "UNKNOWN"
-    ]
-  },
-  "ci-kubernetes-e2e-gke-cvm-1-6-cvm-1-7-upgrade-cluster-new": {
-    "args": [
-      "--check-leaked-resources",
-      "--check-version-skew=false",
-      "--deployment=gke",
-      "--extract=ci/latest-1.7",
-      "--extract=ci/latest-1.6",
-      "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
-      "--gcp-node-image=container_vm",
-      "--gcp-zone=us-central1-a",
-      "--ginkgo-parallel",
-      "--gke-environment=test",
-      "--provider=gke",
-      "--skew",
-      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
-      "--timeout=120m",
-      "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=ci/latest-1.7 --upgrade-image=container_vm"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "UNKNOWN"
-    ]
-  },
-  "ci-kubernetes-e2e-gke-cvm-1-6-cvm-1-7-upgrade-master": {
-    "args": [
-      "--check-leaked-resources",
-      "--check-version-skew=false",
-      "--deployment=gke",
-      "--extract=ci/latest-1.7",
-      "--extract=ci/latest-1.6",
-      "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
-      "--gcp-node-image=container_vm",
-      "--gcp-zone=us-central1-a",
-      "--ginkgo-parallel",
-      "--gke-environment=test",
-      "--provider=gke",
-      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8",
-      "--timeout=120m",
-      "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --upgrade-target=ci/latest-1.7 --upgrade-image=container_vm"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "UNKNOWN"
-    ]
-  },
   "ci-kubernetes-e2e-gke-cvm-1-6-gci-1-7-upgrade-cluster": {
     "args": [
       "--check-leaked-resources",
@@ -5428,73 +5321,6 @@
     "scenario": "kubernetes_e2e",
     "sigOwners": [
       "sig-scheduling"
-    ]
-  },
-  "ci-kubernetes-e2e-gke-gci-1-6-cvm-1-7-upgrade-cluster": {
-    "args": [
-      "--check-leaked-resources",
-      "--check-version-skew=false",
-      "--deployment=gke",
-      "--extract=ci/latest-1.7",
-      "--extract=ci/latest-1.6",
-      "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
-      "--gcp-node-image=gci",
-      "--gcp-zone=us-central1-a",
-      "--ginkgo-parallel",
-      "--gke-environment=test",
-      "--provider=gke",
-      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8",
-      "--timeout=120m",
-      "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=ci/latest-1.7 --upgrade-image=container_vm"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "UNKNOWN"
-    ]
-  },
-  "ci-kubernetes-e2e-gke-gci-1-6-cvm-1-7-upgrade-cluster-new": {
-    "args": [
-      "--check-leaked-resources",
-      "--check-version-skew=false",
-      "--deployment=gke",
-      "--extract=ci/latest-1.7",
-      "--extract=ci/latest-1.6",
-      "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
-      "--gcp-node-image=gci",
-      "--gcp-zone=us-central1-a",
-      "--ginkgo-parallel",
-      "--gke-environment=test",
-      "--provider=gke",
-      "--skew",
-      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
-      "--timeout=120m",
-      "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=ci/latest-1.7 --upgrade-image=container_vm"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "UNKNOWN"
-    ]
-  },
-  "ci-kubernetes-e2e-gke-gci-1-6-cvm-1-7-upgrade-master": {
-    "args": [
-      "--check-leaked-resources",
-      "--check-version-skew=false",
-      "--deployment=gke",
-      "--extract=ci/latest-1.7",
-      "--extract=ci/latest-1.6",
-      "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
-      "--gcp-node-image=gci",
-      "--gcp-zone=us-central1-a",
-      "--ginkgo-parallel",
-      "--gke-environment=test",
-      "--provider=gke",
-      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8",
-      "--timeout=120m",
-      "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --upgrade-target=ci/latest-1.7 --upgrade-image=container_vm"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "UNKNOWN"
     ]
   },
   "ci-kubernetes-e2e-gke-gci-1-6-gci-1-7-upgrade-cluster": {
