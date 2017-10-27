@@ -810,6 +810,20 @@ func prepareGcp(o *options) error {
 			return err
 		}
 	}
+
+	if o.kubemark {
+		if p := os.Getenv("KUBEMARK_BAZEL_BUILD"); strings.ToLower(p) == "y" {
+			// we need docker-credential-gcr to get authed properly
+			// https://github.com/bazelbuild/rules_docker#authorization
+			if err := finishRunning(exec.Command("gcloud", "components", "install", "docker-credential-gcr")); err != nil {
+				return err
+			}
+			if err := finishRunning(exec.Command("docker-credential-gcr", "configure-docker")); err != nil {
+				return err
+			}
+		}
+	}
+
 	return nil
 }
 
