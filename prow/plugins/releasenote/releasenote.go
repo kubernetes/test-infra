@@ -24,6 +24,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	"k8s.io/kubernetes/pkg/util/sets"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/plugins"
 )
@@ -148,6 +149,11 @@ func handleComment(gc githubClient, log *logrus.Entry, ic github.IssueCommentEve
 			return err
 		}
 	}
+
+	labels := sets.String{}
+	for _, label := range ic.Issue.Labels {
+		labels.Insert(label.Name)
+	}
 	// Remove all other release-note-* labels if necessary.
 	return removeOtherLabels(
 		func(l string) error {
@@ -155,17 +161,18 @@ func handleComment(gc githubClient, log *logrus.Entry, ic github.IssueCommentEve
 		},
 		releaseNoteNone,
 		allRNLabels,
-		ic.Issue.Labels,
+		labels,
 	)
 }
 
-func removeOtherLabels(remover func(string) error, label string, labelSet []string, currentLabels []github.Label) error {
+func removeOtherLabels(remover func(string) error, label string, labelSet []string, currentLabels sets.String) error {
 	var errs []error
 	for _, elem := range labelSet {
-		if elem != label && hasLabel(elem, currentLabels) {
+		if elem != label && currentLabels.Has(elem) {
 			if err := remover(elem); err != nil {
 				errs = append(errs, err)
 			}
+			currentLabels.Delete(elem)
 		}
 	}
 	if len(errs) > 0 {
@@ -186,9 +193,13 @@ func handlePR(gc githubClient, log *logrus.Entry, pr *github.PullRequestEvent) e
 	org := pr.Repo.Owner.Login
 	repo := pr.Repo.Name
 
-	prLabels, err := gc.GetIssueLabels(org, repo, pr.Number)
+	prInitLabels, err := gc.GetIssueLabels(org, repo, pr.Number)
 	if err != nil {
 		return fmt.Errorf("failed to list labels on PR #%d. err: %v", pr.Number, err)
+	}
+	prLabels := sets.String{}
+	for _, label := range prInitLabels {
+		prLabels.Insert(label.Name)
 	}
 
 	var comments []github.IssueComment
@@ -196,7 +207,7 @@ func handlePR(gc githubClient, log *logrus.Entry, pr *github.PullRequestEvent) e
 	if labelToAdd == releaseNoteLabelNeeded {
 		if !prMustFollowRelNoteProcess(gc, log, pr, prLabels, true) {
 			ensureNoRelNoteNeededLabel(gc, log, pr, prLabels)
-			return clearStaleComments(gc, log, pr, nil)
+			return clearStaleComments(gc, log, pr, prLabels, nil)
 		}
 		comments, err = gc.ListIssueComments(org, repo, pr.Number)
 		if err != nil {
@@ -204,7 +215,7 @@ func handlePR(gc githubClient, log *logrus.Entry, pr *github.PullRequestEvent) e
 		}
 		if containsNoneCommand(comments) {
 			labelToAdd = releaseNoteNone
-		} else if !hasLabel(releaseNoteLabelNeeded, prLabels) {
+		} else if !prLabels.Has(releaseNoteLabelNeeded) {
 			comment := plugins.FormatResponse(pr.PullRequest.User.Login, releaseNoteBody, releaseNoteSuffix)
 			if err := gc.CreateComment(org, repo, pr.Number, comment); err != nil {
 				log.WithError(err).Errorf("Failed to comment on %s/%s#%d with comment %q.", org, repo, pr.Number, comment)
@@ -213,10 +224,11 @@ func handlePR(gc githubClient, log *logrus.Entry, pr *github.PullRequestEvent) e
 	}
 
 	// Add the label if needed
-	if !hasLabel(labelToAdd, prLabels) {
+	if !prLabels.Has(labelToAdd) {
 		if err = gc.AddLabel(org, repo, pr.Number, labelToAdd); err != nil {
 			return err
 		}
+		prLabels.Insert(labelToAdd)
 	}
 
 	err = removeOtherLabels(
@@ -231,15 +243,11 @@ func handlePR(gc githubClient, log *logrus.Entry, pr *github.PullRequestEvent) e
 		log.Error(err)
 	}
 
-	return clearStaleComments(gc, log, pr, comments)
+	return clearStaleComments(gc, log, pr, prLabels, comments)
 }
 
-// Clean up old comments.
-func clearStaleComments(gc githubClient, log *logrus.Entry, pr *github.PullRequestEvent, comments []github.IssueComment) error {
-	prLabels, err := gc.GetIssueLabels(pr.Repo.Owner.Login, pr.Repo.Name, pr.Number)
-	if err != nil {
-		return fmt.Errorf("failed to list labels on PR #%d. err: %v", pr.Number, err)
-	}
+// clearStaleComments deletes old comments that are no longer applicable.
+func clearStaleComments(gc githubClient, log *logrus.Entry, pr *github.PullRequestEvent, prLabels sets.String, comments []github.IssueComment) error {
 	// If the PR must follow the process and hasn't yet completed the process, don't remove comments.
 	if prMustFollowRelNoteProcess(gc, log, pr, prLabels, false) && !releaseNoteAlreadyAdded(prLabels) {
 		return nil
@@ -271,16 +279,16 @@ func containsNoneCommand(comments []github.IssueComment) bool {
 	return false
 }
 
-func ensureNoRelNoteNeededLabel(gc githubClient, log *logrus.Entry, pr *github.PullRequestEvent, prLabels []github.Label) {
+func ensureNoRelNoteNeededLabel(gc githubClient, log *logrus.Entry, pr *github.PullRequestEvent, prLabels sets.String) {
 	org := pr.Repo.Owner.Login
 	repo := pr.Repo.Name
 	format := "Failed to remove the label %q from %s/%s#%d."
-	if hasLabel(releaseNoteLabelNeeded, prLabels) {
+	if prLabels.Has(releaseNoteLabelNeeded) {
 		if err := gc.RemoveLabel(org, repo, pr.Number, releaseNoteLabelNeeded); err != nil {
 			log.WithError(err).Errorf(format, releaseNoteLabelNeeded, org, repo, pr.Number)
 		}
 	}
-	if hasLabel(deprecatedReleaseNoteLabelNeeded, prLabels) {
+	if prLabels.Has(deprecatedReleaseNoteLabelNeeded) {
 		if err := gc.RemoveLabel(org, repo, pr.Number, deprecatedReleaseNoteLabelNeeded); err != nil {
 			log.WithError(err).Errorf(format, deprecatedReleaseNoteLabelNeeded, org, repo, pr.Number)
 		}
@@ -314,13 +322,11 @@ func getReleaseNote(body string) string {
 	return strings.TrimSpace(potentialMatch[1])
 }
 
-func releaseNoteAlreadyAdded(prLabels []github.Label) bool {
-	return hasLabel(releaseNote, prLabels) ||
-		hasLabel(releaseNoteActionRequired, prLabels) ||
-		hasLabel(releaseNoteNone, prLabels)
+func releaseNoteAlreadyAdded(prLabels sets.String) bool {
+	return prLabels.HasAny(releaseNote, releaseNoteActionRequired, releaseNoteNone)
 }
 
-func prMustFollowRelNoteProcess(gc githubClient, log *logrus.Entry, pr *github.PullRequestEvent, prLabels []github.Label, comment bool) bool {
+func prMustFollowRelNoteProcess(gc githubClient, log *logrus.Entry, pr *github.PullRequestEvent, prLabels sets.String, comment bool) bool {
 	if pr.PullRequest.Base.Ref == "master" {
 		return true
 	}
@@ -353,7 +359,7 @@ func prMustFollowRelNoteProcess(gc githubClient, log *logrus.Entry, pr *github.P
 		return false
 	}
 
-	if comment && !hasLabel(releaseNoteLabelNeeded, prLabels) {
+	if comment && !prLabels.Has(releaseNoteLabelNeeded) {
 		comment := plugins.FormatResponse(
 			pr.PullRequest.User.Login,
 			parentReleaseNoteBody,
