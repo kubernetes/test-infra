@@ -452,9 +452,8 @@ func acquireKubernetes(o *options) error {
 					log.Printf("Overwriting extract strategy to load kubeconfig and version from %s", o.save)
 					o.extract = extractStrategies{
 						extractStrategy{
-							mode:       load,
-							option:     o.save,
-							extractSrc: o.extractSource,
+							mode:   load,
+							option: o.save,
 						},
 					}
 				} else if o.federation && o.up && o.deployment == "none" {
@@ -464,8 +463,9 @@ func acquireKubernetes(o *options) error {
 					loadKubeconfig(o.save)
 				}
 			}
+
 			// New deployment, extract new version
-			return o.extract.Extract(o.gcpProject, o.gcpZone)
+			return o.extract.Extract(o.gcpProject, o.gcpZone, o.extractSource)
 		})
 		if err != nil {
 			return err

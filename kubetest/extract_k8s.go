@@ -49,11 +49,10 @@ const (
 )
 
 type extractStrategy struct {
-	mode       extractMode
-	option     string
-	ciVersion  string
-	value      string
-	extractSrc bool
+	mode      extractMode
+	option    string
+	ciVersion string
+	value     string
 }
 
 type extractStrategies []extractStrategy
@@ -118,7 +117,7 @@ func (e extractStrategy) name() string {
 	return filepath.Base(e.option)
 }
 
-func (l extractStrategies) Extract(project, zone string) error {
+func (l extractStrategies) Extract(project, zone string, extractSrc bool) error {
 	// rm -rf kubernetes*
 	files, err := ioutil.ReadDir(".")
 	if err != nil {
@@ -142,7 +141,7 @@ func (l extractStrategies) Extract(project, zone string) error {
 				return err
 			}
 		}
-		if err := e.Extract(project, zone); err != nil {
+		if err := e.Extract(project, zone, extractSrc); err != nil {
 			return err
 		}
 	}
@@ -342,7 +341,7 @@ func setReleaseFromGci(image string, getSrc bool) error {
 	return getKube("https://storage.googleapis.com/kubernetes-release/release", strings.TrimSpace(r), getSrc)
 }
 
-func (e extractStrategy) Extract(project, zone string) error {
+func (e extractStrategy) Extract(project, zone string, extractSrc bool) error {
 	switch e.mode {
 	case local:
 		url := k8s("kubernetes", "_output", "gcs-stage")
@@ -361,14 +360,14 @@ func (e extractStrategy) Extract(project, zone string) error {
 		if len(release) == 0 {
 			return fmt.Errorf("No releases found in %v", url)
 		}
-		return getKube(fmt.Sprintf("file://%s", url), release, e.extractSrc)
+		return getKube(fmt.Sprintf("file://%s", url), release, extractSrc)
 	case gci, gciCi:
 		if i, err := setupGciVars(e.option); err != nil {
 			return err
 		} else if e.ciVersion != "" {
-			return setReleaseFromGcs(true, e.ciVersion, e.extractSrc)
+			return setReleaseFromGcs(true, e.ciVersion, extractSrc)
 		} else {
-			return setReleaseFromGci(i, e.extractSrc)
+			return setReleaseFromGci(i, extractSrc)
 		}
 	case gke:
 		// TODO(fejta): prod v staging v test
@@ -394,11 +393,11 @@ func (e extractStrategy) Extract(project, zone string) error {
 		// launch the default.
 		// TODO(fejta): clean up this logic. Setting/unsetting the same env var is gross.
 		defer os.Unsetenv("CLUSTER_API_VERSION")
-		return setReleaseFromGcs(true, "latest-"+mat[1], e.extractSrc)
+		return setReleaseFromGcs(true, "latest-"+mat[1], extractSrc)
 	case ci:
-		return setReleaseFromGcs(true, e.option, e.extractSrc)
+		return setReleaseFromGcs(true, e.option, extractSrc)
 	case rc, stable:
-		return setReleaseFromGcs(false, e.option, e.extractSrc)
+		return setReleaseFromGcs(false, e.option, extractSrc)
 	case version:
 		var url string
 		release := e.option
@@ -410,16 +409,16 @@ func (e extractStrategy) Extract(project, zone string) error {
 		} else {
 			url = "https://storage.googleapis.com/kubernetes-release/release"
 		}
-		return getKube(url, release, e.extractSrc)
+		return getKube(url, release, extractSrc)
 	case gcs:
 		// strip gs://foo -> /foo
 		withoutGS := e.option[3:]
 		url := "https://storage.googleapis.com" + path.Dir(withoutGS)
-		return getKube(url, path.Base(withoutGS), e.extractSrc)
+		return getKube(url, path.Base(withoutGS), extractSrc)
 	case load:
-		return loadState(e.option, e.extractSrc)
+		return loadState(e.option, extractSrc)
 	case bazel:
-		return getKube("", e.option, e.extractSrc)
+		return getKube("", e.option, extractSrc)
 	}
 	return fmt.Errorf("Unrecognized extraction: %v(%v)", e.mode, e.value)
 }
