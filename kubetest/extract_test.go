@@ -74,7 +74,7 @@ func TestGetKube(t *testing.T) {
 		if err := ioutil.WriteFile("./get-kube.sh", bytes, 0700); err != nil {
 			t.Fatal(err)
 		}
-		err := getKube("url", "version")
+		err := getKube("url", "version", false)
 		if tc.success && err != nil {
 			t.Errorf("%s did not succeed: %s", tc.name, err)
 		}
@@ -130,7 +130,7 @@ func TestExtractStrategies(t *testing.T) {
 	// arguments.
 	oldGetKube := getKube
 	defer func() { getKube = oldGetKube }()
-	getKube = func(url, version string) error {
+	getKube = func(url, version string, _ bool) error {
 		gotURL = url
 		gotVersion = version
 		// This is needed or else Extract() will think that getKube failed.
