@@ -540,7 +540,9 @@ func TestBazelbuildArgs(t *testing.T) {
 	}
 	pinnedJobs := map[string]string{
 		//job: reason for pinning
-		"pull-test-infra-bazel-canary": "canary testing the latest bazelbuild",
+		"pull-test-infra-bazel-canary":       "canary testing the latest bazel",
+		"pull-kubernetes-bazel-build-canary": "canary testing the latest bazel",
+		"pull-kubernetes-bazel-test-canary":  "canary testing the latest bazel",
 	}
 	maxTag := ""
 	maxN := 0
