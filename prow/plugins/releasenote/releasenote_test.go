@@ -474,24 +474,6 @@ func TestReleaseNotePR(t *testing.T) {
 	}
 }
 
-// sliceDifference returns 'a' with all elems of 'b' removed.
-func sliceDifference(a, b []string) []string {
-	var out []string
-	for _, aa := range a {
-		found := false
-		for _, bb := range b {
-			if aa == bb {
-				found = true
-				break
-			}
-		}
-		if !found {
-			out = append(out, aa)
-		}
-	}
-	return out
-}
-
 func TestGetReleaseNote(t *testing.T) {
 
 	tests := []struct {
