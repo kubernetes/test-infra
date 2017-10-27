@@ -18,7 +18,7 @@ TAG = $(shell date +v%Y%m%d)-$(shell git describe --tags --always --dirty)
 all: build
 
 build:
-	docker build -t $(IMG):$(TAG) .
+	docker build --no-cache -t $(IMG):$(TAG) .
 	docker tag $(IMG):$(TAG) $(IMG):latest
 	@echo Built $(IMG):$(TAG) and tagged with latest
 
