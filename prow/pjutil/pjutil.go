@@ -29,12 +29,13 @@ import (
 )
 
 // NewProwJob initializes a ProwJob out of a ProwJobSpec.
-func NewProwJob(spec kube.ProwJobSpec) kube.ProwJob {
+func NewProwJob(spec kube.ProwJobSpec, labels map[string]string) kube.ProwJob {
 	return kube.ProwJob{
 		APIVersion: "prow.k8s.io/v1",
 		Kind:       "ProwJob",
 		Metadata: kube.ObjectMeta{
-			Name: uuid.NewV1().String(),
+			Name:   uuid.NewV1().String(),
+			Labels: labels,
 		},
 		Spec: spec,
 		Status: kube.ProwJobStatus{

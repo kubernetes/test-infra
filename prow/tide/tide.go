@@ -384,7 +384,7 @@ func (c *Controller) trigger(sp subpool, prs []PullRequest) error {
 		} else {
 			spec = pjutil.BatchSpec(ps, refs)
 		}
-		pj := pjutil.NewProwJob(spec)
+		pj := pjutil.NewProwJob(spec, ps.Labels)
 		if _, err := c.kc.CreateProwJob(pj); err != nil {
 			return err
 		}
