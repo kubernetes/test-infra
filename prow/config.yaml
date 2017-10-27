@@ -1819,7 +1819,7 @@ presubmits:
             path: /mnt/disks/ssd0
   - name: pull-security-kubernetes-bazel-build-canary
     agent: kubernetes
-    context: pull-securitykubernetes-bazel-build-canary
+    context: pull-security-kubernetes-bazel-build-canary
     always_run: false
     rerun_command: "/test pull-security-kubernetes-bazel-build-canary"
     trigger: "(?m)^/test pull-security-kubernetes-bazel-build-canary,?(\\s+|$)"
