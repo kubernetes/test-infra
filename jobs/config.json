@@ -767,7 +767,7 @@
       "--image-family=cos-beta",
       "--image-project=cos-cloud",
       "--provider=gce",
-      "--test_args=--ginkgo.focus=\\\\[Feature:NoSNAT\\\\] --minStartupPods=8",
+      "--test_args=--ginkgo.focus=\\[Feature:NoSNAT\\] --minStartupPods=8",
       "--timeout=20m"
     ],
     "scenario": "kubernetes_e2e",
