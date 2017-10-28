@@ -29,41 +29,36 @@ import (
 )
 
 const (
-	TEST_SEED         = int64(0)
-	FAKE_REPO_ORG     = "fake_org"
-	FAKE_REPO_PROJECT = "fake_project"
+	TEST_SEED = int64(0)
 )
 
 type FakeRepo struct {
-	ApproversMap     map[string]sets.String
-	LeafApproversMap map[string]sets.String
-}
-
-func (f FakeRepo) Org() string {
-	return FAKE_REPO_ORG
-}
-
-func (f FakeRepo) Project() string {
-	return FAKE_REPO_PROJECT
+	approversMap      map[string]sets.String
+	leafApproversMap  map[string]sets.String
+	noParentOwnersMap map[string]bool
 }
 
 func (f FakeRepo) Approvers(path string) sets.String {
-	return f.ApproversMap[path]
+	return f.approversMap[path]
 }
 
 func (f FakeRepo) LeafApprovers(path string) sets.String {
-	return f.LeafApproversMap[path]
+	return f.leafApproversMap[path]
 }
 
 func (f FakeRepo) FindApproverOwnersForPath(path string) string {
 	dir, _ := filepath.Split(path)
 	for dir != "." {
-		if _, ok := f.LeafApproversMap[dir]; ok {
+		if _, ok := f.leafApproversMap[dir]; ok {
 			return dir
 		}
 		dir = filepath.Dir(dir)
 	}
 	return ""
+}
+
+func (f FakeRepo) IsNoParentOwners(path string) bool {
+	return f.noParentOwnersMap[path]
 }
 
 type dir struct {
@@ -96,7 +91,7 @@ func createFakeRepo(la map[string]sets.String) FakeRepo {
 		}
 	}
 
-	return FakeRepo{ApproversMap: a, LeafApproversMap: la}
+	return FakeRepo{approversMap: a, leafApproversMap: la}
 }
 
 func setToLower(s sets.String) sets.String {
@@ -684,36 +679,60 @@ func TestGetShuffledApprovers(t *testing.T) {
 
 func TestRemoveSubdirs(t *testing.T) {
 	tests := []struct {
-		testName    string
-		directories []string
-		expected    sets.String
+		testName       string
+		directories    sets.String
+		noParentOwners map[string]bool
+
+		expected sets.String
 	}{
 		{
 			testName:    "Empty PR",
-			directories: []string{},
+			directories: sets.NewString(),
 			expected:    sets.NewString(),
 		},
 		{
 			testName:    "Root and One Level Below PR",
-			directories: []string{"", "a/"},
+			directories: sets.NewString("", "a/"),
 			expected:    sets.NewString(""),
 		},
 		{
 			testName:    "Two Separate Branches",
-			directories: []string{"a/", "c/"},
+			directories: sets.NewString("a/", "c/"),
 			expected:    sets.NewString("a/", "c/"),
 		},
 		{
 			testName:    "Lots of Branches and Leaves",
-			directories: []string{"a", "a/combo", "a/d", "b", "c"},
+			directories: sets.NewString("a", "a/combo", "a/d", "b", "c"),
 			expected:    sets.NewString("a", "b", "c"),
+		},
+		{
+			testName:       "NoParentOwners",
+			directories:    sets.NewString("a", "a/combo"),
+			noParentOwners: map[string]bool{"a/combo": true},
+			expected:       sets.NewString("a", "a/combo"),
+		},
+		{
+			testName:       "NoParentOwners in relative path",
+			directories:    sets.NewString("a", "a/b/combo"),
+			noParentOwners: map[string]bool{"a/b": true},
+			expected:       sets.NewString("a", "a/b/combo"),
+		},
+		{
+			testName:       "NoParentOwners with child",
+			directories:    sets.NewString("a", "a/b", "a/b/combo"),
+			noParentOwners: map[string]bool{"a/b": true},
+			expected:       sets.NewString("a", "a/b"),
 		},
 	}
 
 	for _, test := range tests {
-		calculated := removeSubdirs(test.directories)
-		if !reflect.DeepEqual(test.expected, calculated) {
-			t.Errorf("Failed to remove subdirectories for test %v.  Expected files: %v. Found %v", test.testName, test.expected, calculated)
+		if test.noParentOwners == nil {
+			test.noParentOwners = map[string]bool{}
+		}
+		o := &Owners{repo: FakeRepo{noParentOwnersMap: test.noParentOwners}}
+		o.removeSubdirs(test.directories)
+		if !reflect.DeepEqual(test.expected, test.directories) {
+			t.Errorf("Failed to remove subdirectories for test %v.  Expected files: %q. Found %q", test.testName, test.expected.List(), test.directories.List())
 
 		}
 	}

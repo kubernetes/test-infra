@@ -40,6 +40,7 @@ type RepoInterface interface {
 	Approvers(path string) sets.String
 	LeafApprovers(path string) sets.String
 	FindApproverOwnersForPath(path string) string
+	IsNoParentOwners(path string) bool
 }
 
 type Owners struct {
@@ -164,7 +165,8 @@ func (o Owners) GetOwnersSet() sets.String {
 	for _, fn := range o.filenames {
 		owners.Insert(o.repo.FindApproverOwnersForPath(fn))
 	}
-	return removeSubdirs(owners.List())
+	o.removeSubdirs(owners)
+	return owners
 }
 
 // Shuffles the potential approvers so that we don't always suggest the same people
@@ -178,23 +180,31 @@ func (o Owners) GetShuffledApprovers() []string {
 	return people
 }
 
-// removeSubdirs takes a list of directories as an input and returns a set of directories with all
-// subdirectories removed.  E.g. [/a,/a/b/c,/d/e,/d/e/f] -> [/a, /d/e]
-func removeSubdirs(dirList []string) sets.String {
-	toDel := sets.String{}
-	for i := 0; i < len(dirList)-1; i++ {
-		for j := i + 1; j < len(dirList); j++ {
-			// ex /a/b has prefix /a so if remove /a/b since its already covered
-			if strings.HasPrefix(dirList[i], dirList[j]) {
-				toDel.Insert(dirList[i])
-			} else if strings.HasPrefix(dirList[j], dirList[i]) {
-				toDel.Insert(dirList[j])
+// removeSubdirs takes a set of directories as an input and removes all subdirectories.
+// E.g. [a, a/b/c, d/e, d/e/f] -> [a, d/e]
+// Subdirs will not be removed if they are configured to have no parent OWNERS files or if any
+// OWNERS file in the relative path between the subdir and the higher level dir is configured to
+// have no parent OWNERS files.
+func (o Owners) removeSubdirs(dirs sets.String) {
+	canonicalize := func(p string) string {
+		if p == "." {
+			return ""
+		}
+		return p
+	}
+	for _, dir := range dirs.List() {
+		path := dir
+		for {
+			if o.repo.IsNoParentOwners(path) || canonicalize(path) == "" {
+				break
+			}
+			path = filepath.Dir(path)
+			if dirs.Has(canonicalize(path)) {
+				dirs.Delete(dir)
+				break
 			}
 		}
 	}
-	finalSet := sets.NewString(dirList...)
-	finalSet.Delete(toDel.List()...)
-	return finalSet
 }
 
 // Approval has the information about each approval on a PR

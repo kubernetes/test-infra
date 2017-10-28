@@ -130,6 +130,9 @@ func (fr fakeRepo) LeafApprovers(path string) sets.String {
 func (fr fakeRepo) FindApproverOwnersForPath(path string) string {
 	return fr.approverOwners[path]
 }
+func (fr fakeRepo) IsNoParentOwners(path string) bool {
+	return false
+}
 
 func TestHandleGenericComment(t *testing.T) {
 	// This function does not need to test IsApproved, that is tested in approvers/approvers_test.go.
