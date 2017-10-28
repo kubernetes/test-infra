@@ -28,7 +28,6 @@ gate-approved: false
 
 # munger specific options.
 # label-file: "/gitrepos/community/labels.yaml"
-
 use-reviewers: true
-
 generated-files-config: .generated_files
+alias-file: "/gitrepos/community/OWNERS_ALIASES"
