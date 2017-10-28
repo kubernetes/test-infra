@@ -100,7 +100,11 @@ func handleIC(c client, trustedOrg string, ic github.IssueCommentEvent) error {
 	if err != nil {
 		return err
 	} else if !orgMember {
-		trusted, err := trustedPullRequest(c.GitHubClient, *pr, trustedOrg)
+		comments, err := c.GitHubClient.ListIssueComments(pr.Base.Repo.Owner.Login, pr.Base.Repo.Name, pr.Number)
+		if err != nil {
+			return err
+		}
+		trusted, err := trustedPullRequest(c.GitHubClient, *pr, trustedOrg, comments)
 		if err != nil {
 			return err
 		}

@@ -53,21 +53,29 @@ func handlePR(c client, trustedOrg string, pr github.PullRequestEvent) error {
 		// When a PR is updated, check that the user is in the org or that an org
 		// member has said "/ok-to-test" before building. There's no need to ask
 		// for "/ok-to-test" because we do that once when the PR is created.
-		trusted, err := trustedPullRequest(c.GitHubClient, pr.PullRequest, trustedOrg)
+		comments, err := c.GitHubClient.ListIssueComments(pr.PullRequest.Base.Repo.Owner.Login, pr.PullRequest.Base.Repo.Name, pr.PullRequest.Number)
+		if err != nil {
+			return err
+		}
+		trusted, err := trustedPullRequest(c.GitHubClient, pr.PullRequest, trustedOrg, comments)
 		if err != nil {
 			return fmt.Errorf("could not validate PR: %s", err)
 		} else if trusted {
 			c.Logger.Info("Starting all jobs for updated PR.")
-			err = clearStaleComments(c.GitHubClient, trustedOrg, pr, nil)
+			err = clearStaleComments(c.GitHubClient, trustedOrg, pr, comments)
 			if err != nil {
 				c.Logger.Warnf("Failed to clear stale comments: %v.", err)
 			}
 			return buildAll(c, pr.PullRequest)
 		}
 	case github.PullRequestActionLabeled:
+		comments, err := c.GitHubClient.ListIssueComments(pr.PullRequest.Base.Repo.Owner.Login, pr.PullRequest.Base.Repo.Name, pr.PullRequest.Number)
+		if err != nil {
+			return err
+		}
 		// When a PR is LGTMd, if it is untrusted then build it once.
 		if pr.Label.Name == lgtmLabel {
-			trusted, err := trustedPullRequest(c.GitHubClient, pr.PullRequest, trustedOrg)
+			trusted, err := trustedPullRequest(c.GitHubClient, pr.PullRequest, trustedOrg, comments)
 			if err != nil {
 				return fmt.Errorf("could not validate PR: %s", err)
 			} else if !trusted {
@@ -106,7 +114,7 @@ I understand the commands that are listed [here](https://github.com/kubernetes/t
 // trustedPullRequest returns whether or not the given PR should be tested.
 // It first checks if the author is in the org, then looks for "/ok-to-test"
 // comments by org members.
-func trustedPullRequest(ghc githubClient, pr github.PullRequest, trustedOrg string) (bool, error) {
+func trustedPullRequest(ghc githubClient, pr github.PullRequest, trustedOrg string, comments []github.IssueComment) (bool, error) {
 	author := pr.User.Login
 	// First check if the author is a member of the org.
 	orgMember, err := ghc.IsMember(trustedOrg, author)
@@ -116,10 +124,6 @@ func trustedPullRequest(ghc githubClient, pr github.PullRequest, trustedOrg stri
 		return true, nil
 	}
 	// Next look for "/ok-to-test" comments on the PR.
-	comments, err := ghc.ListIssueComments(pr.Base.Repo.Owner.Login, pr.Base.Repo.Name, pr.Number)
-	if err != nil {
-		return false, err
-	}
 	for _, comment := range comments {
 		commentAuthor := comment.User.Login
 		// Skip comments by the PR author.
@@ -212,6 +216,7 @@ func buildAll(c client, pr github.PullRequest) error {
 	return nil
 }
 
+// clearStaleComments deletes old comments that are no longer applicable.
 func clearStaleComments(gc githubClient, trustedOrg string, pr github.PullRequestEvent, comments []github.IssueComment) error {
 	botName, err := gc.BotName()
 	if err != nil {
