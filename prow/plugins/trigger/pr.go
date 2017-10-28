@@ -60,8 +60,8 @@ func handlePR(c client, trustedOrg string, pr github.PullRequestEvent) error {
 			return buildAll(c, pr.PullRequest)
 		}
 	case github.PullRequestActionLabeled:
-		// When a PR is LGTMd, if it is untrusted then build it once.
-		if pr.Label.Name == lgtmLabel {
+		// When a PR is approved or LGTMd, if it is untrusted then build it once.
+		if pr.Label.Name == approvedLabel || pr.Label.Name == lgtmLabel {
 			trusted, err := trustedPullRequest(c.GitHubClient, pr.PullRequest, trustedOrg)
 			if err != nil {
 				return fmt.Errorf("could not validate PR: %s", err)
