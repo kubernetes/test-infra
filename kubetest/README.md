@@ -24,6 +24,12 @@ Note that developers frequently use `kubetest` by calling `go run hack/e2e.go`
 in the `kubernetes/kubernetes` repository. This `hack/e2e.go` program is a
 wrapper around updating `kubetest` (at most once a day) before calling it.
 
+If you're making a change to kubetest, watch the canary jobs after it has merged;
+these run the latest images of `kubekins-e2e`, and thus don't have to wait
+for a version bump in the prow config.  The canary jobs are used to give early
+signal on whether new kubetest features are working as intended, before bumping
+the image for general e2e tests.
+
 ## Installation
 
 Please run `go get -u k8s.io/test-infra/kubetest` to install kubetest.
