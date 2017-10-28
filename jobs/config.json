@@ -9197,7 +9197,21 @@
       "sig-testing"
     ]
   },
+  "pull-kubernetes-bazel-build-canary": {
+    "args": [],
+    "scenario": "kubernetes_bazel",
+    "sigOwners": [
+      "sig-testing"
+    ]
+  },
   "pull-kubernetes-bazel-test": {
+    "args": [],
+    "scenario": "kubernetes_bazel",
+    "sigOwners": [
+      "sig-testing"
+    ]
+  },
+  "pull-kubernetes-bazel-test-canary": {
     "args": [],
     "scenario": "kubernetes_bazel",
     "sigOwners": [
@@ -9458,25 +9472,14 @@
     ]
   },
   "pull-test-infra-bazel": {
-    "args": [
-      "--build=//...",
-      "--install=gubernator/test_requirements.txt",
-      "--test=//... //verify:verify-all",
-      "--test-args=--test_output=errors"
-    ],
+    "args": [],
     "scenario": "kubernetes_bazel",
     "sigOwners": [
       "sig-testing"
     ]
   },
   "pull-test-infra-bazel-canary": {
-    "args": [
-      "--batch",
-      "--build=//...",
-      "--install=gubernator/test_requirements.txt",
-      "--test=//... //verify:verify-all",
-      "--test-args=--test_output=errors"
-    ],
+    "args": [],
     "scenario": "kubernetes_bazel",
     "sigOwners": [
       "sig-testing"

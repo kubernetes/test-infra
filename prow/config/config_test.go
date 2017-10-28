@@ -540,7 +540,15 @@ func TestBazelbuildArgs(t *testing.T) {
 	}
 	pinnedJobs := map[string]string{
 		//job: reason for pinning
-		"pull-test-infra-bazel-canary": "canary testing the latest bazelbuild",
+		"pull-test-infra-bazel-canary":       "canary testing the latest bazel",
+		"pull-kubernetes-bazel-build-canary": "canary testing the latest bazel",
+		"pull-kubernetes-bazel-test-canary":  "canary testing the latest bazel",
+	}
+	// auto insert pull-security-kubernetes-*
+	for job, reason := range pinnedJobs {
+		if strings.HasPrefix(job, "pull-kubernetes") {
+			pinnedJobs[strings.Replace(job, "pull-kubernetes", "pull-security-kubernetes", 1)] = reason
+		}
 	}
 	maxTag := ""
 	maxN := 0
