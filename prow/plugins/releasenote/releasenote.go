@@ -205,13 +205,13 @@ func handlePR(gc githubClient, log *logrus.Entry, pr *github.PullRequestEvent) e
 	var comments []github.IssueComment
 	labelToAdd := determineReleaseNoteLabel(pr.PullRequest.Body)
 	if labelToAdd == releaseNoteLabelNeeded {
-		if !prMustFollowRelNoteProcess(gc, log, pr, prLabels, true) {
-			ensureNoRelNoteNeededLabel(gc, log, pr, prLabels)
-			return clearStaleComments(gc, log, pr, prLabels, nil)
-		}
 		comments, err = gc.ListIssueComments(org, repo, pr.Number)
 		if err != nil {
 			return fmt.Errorf("failed to list comments on %s/%s#%d. err: %v", org, repo, pr.Number, err)
+		}
+		if !prMustFollowRelNoteProcess(gc, log, pr, prLabels, true) {
+			ensureNoRelNoteNeededLabel(gc, log, pr, prLabels)
+			return clearStaleComments(gc, log, pr, prLabels, comments)
 		}
 		if containsNoneCommand(comments) {
 			labelToAdd = releaseNoteNone
