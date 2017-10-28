@@ -123,23 +123,15 @@ func trustedPullRequest(ghc githubClient, pr github.PullRequest, trustedOrg stri
 	} else if orgMember {
 		return true, nil
 	}
+	botName, err := ghc.BotName()
+	if err != nil {
+		return false, err
+	}
 	// Next look for "/ok-to-test" comments on the PR.
 	for _, comment := range comments {
 		commentAuthor := comment.User.Login
-		// Skip comments by the PR author.
-		if commentAuthor == author {
-			continue
-		}
-		// Skip bot comments.
-		botName, err := ghc.BotName()
-		if err != nil {
-			return false, err
-		}
-		if commentAuthor == botName {
-			continue
-		}
-		// Look for "/ok-to-test"
-		if !okToTest.MatchString(comment.Body) {
+		// Skip comments: by the PR author, or by bot, or not matching "/ok-to-test".
+		if commentAuthor == author || commentAuthor == botName || !okToTest.MatchString(comment.Body) {
 			continue
 		}
 		// Ensure that the commenter is in the org.
