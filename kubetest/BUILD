@@ -11,6 +11,9 @@ go_binary(
     name = "kubetest",
     importpath = "k8s.io/test-infra/kubetest",
     library = ":go_default_library",
+    x_defs = {
+        "main.BuildTag": "{DOCKER_TAG}",  # keep
+    },
 )
 
 go_library(
