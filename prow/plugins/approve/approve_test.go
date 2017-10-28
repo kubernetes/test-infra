@@ -157,7 +157,6 @@ func TestHandleGenericComment(t *testing.T) {
 	}{
 
 		// breaking cases
-		// case: human added approved label (comment should be updated)
 		// case: /approve in PR body
 
 		{
@@ -174,8 +173,6 @@ func TestHandleGenericComment(t *testing.T) {
 			expectedComment: `[APPROVALNOTIFIER] This PR is **APPROVED**
 
 This pull-request has been approved by: *<a href="#" title="Author self-approved">cjwagner</a>*
-
-
 
 The full list of commands accepted by this bot can be found [here](https://github.com/kubernetes/test-infra/blob/master/commands.md).
 
@@ -206,8 +203,6 @@ This pull-request has been approved by:
 We suggest the following additional approver: **cjwagner**
 
 Assign the PR to them by writing ` + "`/assign @cjwagner`" + ` in a comment when ready.
-
-
 
 The full list of commands accepted by this bot can be found [here](https://github.com/kubernetes/test-infra/blob/master/commands.md).
 
@@ -444,22 +439,38 @@ You can cancel your approval by writing `+"`/approve cancel`"+` in a comment
 			expectToggle:  true,
 			expectComment: true,
 		},
-		// {
-		// 	name:          "human added approve",
-		// 	hasLabel:      true,
-		// 	humanApproved: true,
-		// 	files:         []string{"a/a.go"},
-		// 	comments: []github.IssueComment{
-		// 		newTestComment("k8s-ci-robot", "[APPROVALNOTIFIER] This PR is **NOT APPROVED**\n\nblah"),
-		// 	},
-		// 	selfApprove: false,
-		// 	needsIssue:  false,
+		{
+			name:          "human added approve",
+			hasLabel:      true,
+			humanApproved: true,
+			files:         []string{"a/a.go"},
+			comments: []github.IssueComment{
+				newTestComment("k8s-ci-robot", "[APPROVALNOTIFIER] This PR is **NOT APPROVED**\n\nblah"),
+			},
+			selfApprove: false,
+			needsIssue:  false,
 
-		// 	expectDelete:    true,
-		// 	expectToggle:    false,
-		// 	expectComment:   true,
-		// 	expectedComment: "a",
-		// },
+			expectDelete:  true,
+			expectToggle:  false,
+			expectComment: true,
+			expectedComment: `[APPROVALNOTIFIER] This PR is **APPROVED**
+
+Approval requirements bypassed by manually added approval.
+
+This pull-request has been approved by: 
+
+The full list of commands accepted by this bot can be found [here](https://github.com/kubernetes/test-infra/blob/master/commands.md).
+
+<details >
+Needs approval from an approver in each of these OWNERS Files:
+
+- **[a/OWNERS](https://github.com/org/repo/blob/master/a/OWNERS)**
+
+You can indicate your approval by writing ` + "`/approve`" + ` in a comment
+You can cancel your approval by writing ` + "`/approve cancel`" + ` in a comment
+</details>
+<!-- META={"approvers":["alice"]} -->`,
+		},
 		// {
 		// 	name:          "",
 		// 	hasLabel:      false,

@@ -147,7 +147,7 @@ func (o Owners) KeepCoveringApprovers(reverseMap map[string]sets.String, knownAp
 // approving every OWNERS file in the PR
 func (o Owners) GetSuggestedApprovers(reverseMap map[string]sets.String, potentialApprovers []string) sets.String {
 	ap := NewApprovers(o)
-	for !ap.IsApproved() {
+	for !ap.RequirementsMet() {
 		newApprover := findMostCoveringApprover(potentialApprovers, reverseMap, ap.UnapprovedFiles())
 		if newApprover == "" {
 			o.log.Warnf("Couldn't find/suggest approvers for each files. Unapproved: %q", ap.UnapprovedFiles().List())
@@ -231,6 +231,8 @@ type Approvers struct {
 	assignees       sets.String
 	AssociatedIssue int
 	RequireIssue    bool
+
+	ManuallyApproved func() bool
 }
 
 // IntersectSetsCase runs the intersection between to sets.String in a
@@ -256,6 +258,10 @@ func NewApprovers(owners Owners) Approvers {
 		owners:    owners,
 		approvers: map[string]Approval{},
 		assignees: sets.NewString(),
+
+		ManuallyApproved: func() bool {
+			return false
+		},
 	}
 }
 
@@ -461,14 +467,24 @@ func (ap Approvers) AreFilesApproved() bool {
 	return ap.UnapprovedFiles().Len() == 0
 }
 
-// IsApproved returns a bool indicating whether the PR is fully approved:
+// RequirementsMet returns a bool indicating whether the PR has met all approval requirements:
 // - all OWNERS files associated with the PR have been approved AND
 // EITHER
 // 	- the munger config is such that an issue is not required to be associated with the PR
 // 	- that there is an associated issue with the PR
 // 	- an OWNER has indicated that the PR is trivial enough that an issue need not be associated with the PR
-func (ap Approvers) IsApproved() bool {
+func (ap Approvers) RequirementsMet() bool {
 	return ap.AreFilesApproved() && (!ap.RequireIssue || ap.AssociatedIssue != 0 || len(ap.NoIssueApprovers()) != 0)
+}
+
+// IsApproved returns a bool indicating whether the PR is fully approved.
+// If a human manually added the approved label, this returns true, ignoring normal approval rules.
+func (ap Approvers) IsApproved() bool {
+	reqsMet := ap.RequirementsMet()
+	if !reqsMet && ap.ManuallyApproved() {
+		return true
+	}
+	return reqsMet
 }
 
 // ListApprovals returns the list of approvals
@@ -542,8 +558,13 @@ func GenerateTemplate(templ, name string, data interface{}) (string, error) {
 // 	- how an approver can indicate their approval
 // 	- how an approver can cancel their approval
 func GetMessage(ap Approvers, org, project string) *string {
-	message, err := GenerateTemplate(`This pull-request has been approved by: {{range $index, $approval := .ap.ListApprovals}}{{if $index}}, {{end}}{{$approval}}{{end}}
-{{- if (not .ap.AreFilesApproved) }}
+	message, err := GenerateTemplate(`{{if (and (not .ap.RequirementsMet) (call .ap.ManuallyApproved )) }}
+Approval requirements bypassed by manually added approval.
+
+{{end -}}
+This pull-request has been approved by: {{range $index, $approval := .ap.ListApprovals}}{{if $index}}, {{end}}{{$approval}}{{end}}
+
+{{- if (and (not .ap.AreFilesApproved) (not (call .ap.ManuallyApproved))) }}
 We suggest the following additional approver{{if ne 1 (len .ap.GetCCs)}}s{{end}}: {{range $index, $cc := .ap.GetCCs}}{{if $index}}, {{end}}**{{$cc}}**{{end}}
 
 Assign the PR to them by writing `+"`/assign {{range $index, $cc := .ap.GetCCs}}{{if $index}} {{end}}@{{$cc}}{{end}}`"+` in a comment when ready.
@@ -552,15 +573,21 @@ Assign the PR to them by writing `+"`/assign {{range $index, $cc := .ap.GetCCs}}
 {{if not .ap.RequireIssue -}}
 {{else if .ap.AssociatedIssue -}}
 Associated issue: *{{.ap.AssociatedIssue}}*
-{{- else if len .ap.NoIssueApprovers -}}
+
+{{ else if len .ap.NoIssueApprovers -}}
 Associated issue requirement bypassed by: {{range $index, $approval := .ap.ListNoIssueApprovals}}{{if $index}}, {{end}}{{$approval}}{{end}}
-{{- else -}}
+
+{{ else if call .ap.ManuallyApproved -}}
+*No associated issue*. Requirement bypassed by manually added approval.
+
+{{ else -}}
 *No associated issue*. Update pull-request body to add a reference to an issue, or get approval with `+"`/approve no-issue`"+`
-{{- end}}
+
+{{ end -}}
 
 The full list of commands accepted by this bot can be found [here](https://github.com/kubernetes/test-infra/blob/master/commands.md).
 
-<details {{if (not .ap.AreFilesApproved) }}open{{end}}>
+<details {{if (and (not .ap.AreFilesApproved) (not (call .ap.ManuallyApproved))) }}open{{end}}>
 Needs approval from an approver in each of these OWNERS Files:
 
 {{range .ap.GetFiles .org .project}}{{.}}{{end}}

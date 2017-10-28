@@ -232,14 +232,6 @@ func handle(log *logrus.Entry, ghc githubClient, repo approvers.RepoInterface, o
 		return fetchErr("reviews", err)
 	}
 
-	commentsFromIssueComments := commentsFromIssueComments(issueComments)
-	comments := append(commentsFromReviewComments(reviewComments), commentsFromIssueComments...)
-	comments = append(comments, commentsFromReviews(reviews)...)
-	sort.SliceStable(comments, func(i, j int) bool {
-		return comments[i].CreatedAt.Before(comments[j].CreatedAt)
-	})
-
-	approveComments := filterComments(comments, approvalCommandMatcher(botName))
 	approversHandler := approvers.NewApprovers(
 		approvers.NewOwners(
 			log,
@@ -250,10 +242,20 @@ func handle(log *logrus.Entry, ghc githubClient, repo approvers.RepoInterface, o
 	)
 	approversHandler.AssociatedIssue = findAssociatedIssue(pr.body)
 	approversHandler.RequireIssue = opts.IssueRequired
+	approversHandler.ManuallyApproved = humanAddedApproved(ghc, log, pr.org, pr.repo, pr.number, botName, hasApprovedLabel)
+
 	// Author implicitly approves their own PR if config allows it
 	if opts.ImplicitSelfApprove {
 		approversHandler.AddAuthorSelfApprover(pr.author, pr.htmlURL+"#", false)
 	}
+
+	commentsFromIssueComments := commentsFromIssueComments(issueComments)
+	comments := append(commentsFromReviewComments(reviewComments), commentsFromIssueComments...)
+	comments = append(comments, commentsFromReviews(reviews)...)
+	sort.SliceStable(comments, func(i, j int) bool {
+		return comments[i].CreatedAt.Before(comments[j].CreatedAt)
+	})
+	approveComments := filterComments(comments, approvalCommandMatcher(botName))
 	addApprovers(&approversHandler, approveComments, pr.author)
 
 	for _, user := range pr.assignees {
@@ -275,41 +277,52 @@ func handle(log *logrus.Entry, ghc githubClient, repo approvers.RepoInterface, o
 	}
 
 	if !approversHandler.IsApproved() {
-		if hasApprovedLabel && !humanAddedApproved(ghc, log, pr.org, pr.repo, pr.number, botName) {
+		if hasApprovedLabel {
 			if err := ghc.RemoveLabel(pr.org, pr.repo, pr.number, approvedLabel); err != nil {
 				log.WithError(err).Errorf("Failed to remove %q label from %s/%s#%d.", approvedLabel, pr.org, pr.repo, pr.number)
 			}
 		}
-	} else {
-		//pr is fully approved
-		if !hasApprovedLabel {
-			if err := ghc.AddLabel(pr.org, pr.repo, pr.number, approvedLabel); err != nil {
-				log.WithError(err).Errorf("Failed to add %q label to %s/%s#%d.", approvedLabel, pr.org, pr.repo, pr.number)
-			}
+	} else if !hasApprovedLabel {
+		if err := ghc.AddLabel(pr.org, pr.repo, pr.number, approvedLabel); err != nil {
+			log.WithError(err).Errorf("Failed to add %q label to %s/%s#%d.", approvedLabel, pr.org, pr.repo, pr.number)
 		}
 	}
 	return nil
 }
 
-func humanAddedApproved(ghc githubClient, log *logrus.Entry, org, repo string, number int, botName string) bool {
-	events, err := ghc.ListIssueEvents(org, repo, number)
-	if err != nil {
-		log.WithError(err).Errorf("Failed to list issue events for %s/%s#%d.", org, repo, number)
-		return false
-	}
-	var lastAdded github.ListedIssueEvent
-	for _, event := range events {
-		// Only consider "approved" label added events.
-		if event.Event != github.IssueActionLabeled || event.Label.Name != approvedLabel {
-			continue
+func humanAddedApproved(ghc githubClient, log *logrus.Entry, org, repo string, number int, botName string, hasLabel bool) func() bool {
+	findOut := func() bool {
+		if !hasLabel {
+			return false
 		}
-		lastAdded = event
+		events, err := ghc.ListIssueEvents(org, repo, number)
+		if err != nil {
+			log.WithError(err).Errorf("Failed to list issue events for %s/%s#%d.", org, repo, number)
+			return false
+		}
+		var lastAdded github.ListedIssueEvent
+		for _, event := range events {
+			// Only consider "approved" label added events.
+			if event.Event != github.IssueActionLabeled || event.Label.Name != approvedLabel {
+				continue
+			}
+			lastAdded = event
+		}
+
+		if lastAdded.Actor.Login == "" || lastAdded.Actor.Login == botName || lastAdded.Actor.Login == deprecatedBotName {
+			return false
+		}
+		return true
 	}
 
-	if lastAdded.Actor.Login == "" || lastAdded.Actor.Login == botName || lastAdded.Actor.Login == deprecatedBotName {
-		return false
+	var cache *bool
+	return func() bool {
+		if cache == nil {
+			val := findOut()
+			cache = &val
+		}
+		return *cache
 	}
-	return true
 }
 
 func approvalCommandMatcher(botName string) func(*comment) bool {
