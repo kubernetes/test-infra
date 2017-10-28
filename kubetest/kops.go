@@ -18,9 +18,11 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"flag"
 	"fmt"
+	"golang.org/x/crypto/ssh"
 	"io/ioutil"
 	"log"
 	"os"
@@ -53,7 +55,6 @@ var (
 type kops struct {
 	path        string
 	kubeVersion string
-	sshKey      string
 	zones       []string
 	nodes       int
 	adminAccess string
@@ -61,6 +62,11 @@ type kops struct {
 	image       string
 	args        string
 	kubecfg     string
+
+	// sshPublicKey is the path to the SSH public key matching sshPrivateKey
+	sshPublicKey string
+	// sshPublicKey is the path to the SSH private key matching sshPublicKey
+	sshPrivateKey string
 
 	// GCP project we should use
 	gcpProject string
@@ -216,18 +222,19 @@ func newKops(provider, gcpProject, cluster string) (*kops, error) {
 	}
 
 	return &kops{
-		path:        *kopsPath,
-		kubeVersion: *kopsKubeVersion,
-		sshKey:      sshKey + ".pub", // kops only needs the public key, e2es need the private key.
-		zones:       zones,
-		nodes:       *kopsNodes,
-		adminAccess: *kopsAdminAccess,
-		cluster:     cluster,
-		image:       *kopsImage,
-		args:        *kopsArgs,
-		kubecfg:     kubecfg,
-		provider:    provider,
-		gcpProject:  gcpProject,
+		path:          *kopsPath,
+		kubeVersion:   *kopsKubeVersion,
+		sshPrivateKey: sshKey,
+		sshPublicKey:  sshKey + ".pub",
+		zones:         zones,
+		nodes:         *kopsNodes,
+		adminAccess:   *kopsAdminAccess,
+		cluster:       cluster,
+		image:         *kopsImage,
+		args:          *kopsArgs,
+		kubecfg:       kubecfg,
+		provider:      provider,
+		gcpProject:    gcpProject,
 	}, nil
 }
 
@@ -254,7 +261,7 @@ func (k kops) Up() error {
 	createArgs := []string{
 		"create", "cluster",
 		"--name", k.cluster,
-		"--ssh-public-key", k.sshKey,
+		"--ssh-public-key", k.sshPublicKey,
 		"--node-count", strconv.Itoa(k.nodes),
 		"--zones", strings.Join(k.zones, ","),
 	}
@@ -302,7 +309,52 @@ func (k kops) IsUp() error {
 }
 
 func (k kops) DumpClusterLogs(localPath, gcsPath string) error {
-	return defaultDumpClusterLogs(localPath, gcsPath)
+	privateKeyPath := k.sshPrivateKey
+	if strings.HasPrefix(privateKeyPath, "~/") {
+		privateKeyPath = filepath.Join(os.Getenv("HOME"), privateKeyPath[2:])
+	}
+	key, err := ioutil.ReadFile(privateKeyPath)
+	if err != nil {
+		return fmt.Errorf("error reading private key %q: %v", k.sshPrivateKey, err)
+	}
+
+	signer, err := ssh.ParsePrivateKey(key)
+	if err != nil {
+		return fmt.Errorf("error parsing private key %q: %v", k.sshPrivateKey, err)
+	}
+
+	sshConfig := &ssh.ClientConfig{
+		User: "admin",
+		Auth: []ssh.AuthMethod{
+			ssh.PublicKeys(signer),
+		},
+		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
+	}
+
+	sshClientFactory := &sshClientFactoryImplementation{
+		sshConfig: sshConfig,
+	}
+	logDumper, err := newLogDumper(sshClientFactory, localPath)
+	if err != nil {
+		return err
+	}
+
+	ctx, cancel := context.WithCancel(context.TODO())
+	defer cancel()
+
+	finished := make(chan error)
+	go func() {
+		finished <- logDumper.DumpAllNodes(ctx)
+	}()
+
+	for {
+		select {
+		case <-interrupt.C:
+			cancel()
+		case err := <-finished:
+			return err
+		}
+	}
 }
 
 func (k kops) TestSetup() error {
