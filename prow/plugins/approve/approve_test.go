@@ -157,7 +157,6 @@ func TestHandleGenericComment(t *testing.T) {
 	}{
 
 		// breaking cases
-		// case: pr sync changes approve state (comment should be updated)
 		// case: human added approved label (comment should be updated)
 		// case: /approve in PR body
 
@@ -404,7 +403,23 @@ You can cancel your approval by writing ` + "`/approve cancel`" + ` in a comment
 			files:    []string{"a/a.go", "a/aa.go"},
 			comments: []github.IssueComment{
 				newTestComment("alice", "stuff\n/lgtm \nblah"),
-				newTestCommentTime(time.Now(), "k8s-ci-robot", "[APPROVALNOTIFIER] This PR is **APPROVED**\n\nblah"),
+				newTestCommentTime(time.Now(), "k8s-ci-robot", `[APPROVALNOTIFIER] This PR is **APPROVED**
+
+This pull-request has been approved by: *<a href="" title="LGTM">alice</a>*
+
+Associated issue: *1*
+
+The full list of commands accepted by this bot can be found [here](https://github.com/kubernetes/test-infra/blob/master/commands.md).
+
+<details >
+Needs approval from an approver in each of these OWNERS Files:
+
+- ~~[a/OWNERS](https://github.com/org/repo/blob/master/a/OWNERS)~~ [alice]
+
+You can indicate your approval by writing `+"`/approve`"+` in a comment
+You can cancel your approval by writing `+"`/approve cancel`"+` in a comment
+</details>
+<!-- META={"approvers":[]} -->`),
 			},
 			selfApprove: false,
 			needsIssue:  true,
@@ -412,6 +427,22 @@ You can cancel your approval by writing ` + "`/approve cancel`" + ` in a comment
 			expectDelete:  false,
 			expectToggle:  false,
 			expectComment: false,
+		},
+		{
+			name:     "out of date, poked by pr sync",
+			prBody:   "Finally fixes kubernetes/kubernetes#1\n",
+			hasLabel: false,
+			files:    []string{"a/a.go", "a/aa.go"}, // previous commits may have been ["b/b.go"]
+			comments: []github.IssueComment{
+				newTestComment("alice", "stuff\n/lgtm \nblah"),
+				newTestCommentTime(time.Now(), "k8s-ci-robot", "[APPROVALNOTIFIER] This PR is **NOT APPROVED**\n\nblah"),
+			},
+			selfApprove: false,
+			needsIssue:  true,
+
+			expectDelete:  true,
+			expectToggle:  true,
+			expectComment: true,
 		},
 		// {
 		// 	name:          "human added approve",

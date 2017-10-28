@@ -262,8 +262,7 @@ func handle(log *logrus.Entry, ghc githubClient, repo approvers.RepoInterface, o
 
 	notifications := filterComments(commentsFromIssueComments, notificationMatcher(botName))
 	latestNotification := getLast(notifications)
-	latestApprove := getLast(approveComments)
-	newMessage := updateNotification(pr.org, pr.repo, latestNotification, latestApprove, approversHandler)
+	newMessage := updateNotification(pr.org, pr.repo, latestNotification, approversHandler)
 	if newMessage != nil {
 		for _, notif := range notifications {
 			if err := ghc.DeleteComment(pr.org, pr.repo, notif.ID); err != nil {
@@ -338,14 +337,12 @@ func notificationMatcher(botName string) func(*comment) bool {
 	}
 }
 
-func updateNotification(org, project string, latestNotification, latestApprove *comment, approversHandler approvers.Approvers) *string {
-	if latestNotification != nil && (latestApprove == nil || latestApprove.CreatedAt.Before(latestNotification.CreatedAt)) {
-		// if we have an existing notification AND
-		// the latestApprove happened before we updated
-		// the notification, we do NOT need to update
+func updateNotification(org, project string, latestNotification *comment, approversHandler approvers.Approvers) *string {
+	message := approvers.GetMessage(approversHandler, org, project)
+	if message == nil || (latestNotification != nil && strings.Contains(latestNotification.Body, *message)) {
 		return nil
 	}
-	return approvers.GetMessage(approversHandler, org, project)
+	return message
 }
 
 // addApprovers iterates through the list of comments on a PR
