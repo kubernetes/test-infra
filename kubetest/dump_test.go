@@ -345,7 +345,7 @@ func (f *mockSSHClientFactory) Dial(ctx context.Context, host string) (sshClient
 // Close implements sshClient::Close.  It records that the client was closed; future calls will fail
 func (m *mockSSHClient) Close() error {
 	if m.closed {
-		return fmt.Errorf("Close called on Closed mockSSHClient")
+		return fmt.Errorf("mockSSHClient::Close called on Closed mockSSHClient")
 	}
 	m.closed = true
 	return nil
@@ -355,7 +355,7 @@ func (m *mockSSHClient) Close() error {
 // If no command is found, it returns an error.
 func (m *mockSSHClient) ExecPiped(ctx context.Context, command string, stdout io.Writer, stderr io.Writer) error {
 	if m.closed {
-		return fmt.Errorf("ExecPiped called on Closed mockSSHClient")
+		return fmt.Errorf("mockSSHClient::ExecPiped called on Closed mockSSHClient")
 	}
 	for i := range m.commands {
 		c := m.commands[i]

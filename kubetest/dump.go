@@ -86,6 +86,11 @@ func (d *logDumper) DumpAllNodes(ctx context.Context) error {
 	for i := range nodes.Items {
 		node := &nodes.Items[i]
 
+		if ctx.Err() != nil {
+			log.Printf("skipping dumping %s: %v", node.Metadata.Name, ctx.Err())
+			continue
+		}
+
 		host := ""
 		for _, address := range node.Status.Addresses {
 			if address.Type == "ExternalIP" {
@@ -161,6 +166,10 @@ func (n *logDumperNode) Close() error {
 
 // dump captures the well-known set of logs
 func (n *logDumperNode) dump(ctx context.Context) []error {
+	if ctx.Err() != nil {
+		return []error{ctx.Err()}
+	}
+
 	var errors []error
 
 	// Capture kernel log
@@ -274,6 +283,10 @@ var _ sshClient = &sshClientImplementation{}
 
 // ExecPiped implements sshClientImplementation::ExecPiped
 func (s *sshClientImplementation) ExecPiped(ctx context.Context, cmd string, stdout io.Writer, stderr io.Writer) error {
+	if ctx.Err() != nil {
+		return ctx.Err()
+	}
+
 	finished := make(chan error)
 	go func() {
 		session, err := s.client.NewSession()

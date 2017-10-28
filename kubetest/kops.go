@@ -18,6 +18,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"flag"
 	"fmt"
@@ -338,7 +339,22 @@ func (k kops) DumpClusterLogs(localPath, gcsPath string) error {
 		return err
 	}
 
-	return logDumper.DumpAllNodes(kubetestContext)
+	ctx, cancel := context.WithCancel(context.TODO())
+	defer cancel()
+
+	finished := make(chan error)
+	go func() {
+		finished <- logDumper.DumpAllNodes(ctx)
+	}()
+
+	for {
+		select {
+		case <-interrupt.C:
+			cancel()
+		case err := <-finished:
+			return err
+		}
+	}
 }
 
 func (k kops) TestSetup() error {
