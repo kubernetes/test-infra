@@ -405,15 +405,6 @@ func complete(o *options) error {
 		return err
 	}
 
-	// Save the state if we upped a new cluster without downing it
-	// or we are turning up federated clusters without turning up
-	// the federation control plane.
-	if o.save != "" && ((!o.down && o.up) || (!o.federation && o.up && o.deployment != "none")) {
-		if err := saveState(o.save); err != nil {
-			return err
-		}
-	}
-
 	// Publish the successfully tested version when requested
 	if o.publish != "" {
 		if err := publish(o.publish); err != nil {

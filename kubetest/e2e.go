@@ -268,6 +268,15 @@ func run(deploy deployer, o options) error {
 		}))
 	}
 
+	// Save the state if we upped a new cluster without downing it
+	// or we are turning up federated clusters without turning up
+	// the federation control plane.
+	if o.save != "" && ((!o.down && o.up) || (!o.federation && o.up && o.deployment != "none")) {
+		errs = appendError(errs, xmlWrap("Save Cluster State", func() error {
+			return saveState(o.save)
+		}))
+	}
+
 	if o.checkLeaks {
 		log.Print("Sleeping for 30 seconds...") // Wait for eventually consistent listing
 		time.Sleep(30 * time.Second)
