@@ -18,6 +18,7 @@ package trigger
 
 import (
 	"fmt"
+	"strings"
 
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
@@ -108,6 +109,14 @@ func trustedPullRequest(ghc githubClient, pr github.PullRequest, trustedOrg stri
 	if err != nil {
 		return false, err
 	} else if orgMember {
+		return true, nil
+	}
+	labels, err := ghc.GetIssueLabels(pr.Base.Repo.Owner.Login, pr.Base.Repo.Name, pr.Number)
+	if err != nil {
+		return false, err
+	}
+	// If the PR's "needs-ok-to-test" has been removed, it's trusted.
+	if !hasLabel(needsOkToTest, labels) {
 		return true, nil
 	}
 	// Next look for "/ok-to-test" comments on the PR.
@@ -205,4 +214,13 @@ func buildAll(c client, pr github.PullRequest) error {
 		}
 	}
 	return nil
+}
+
+func hasLabel(str string, labels []github.Label) bool {
+	for _, label := range labels {
+		if strings.ToLower(label.Name) == strings.ToLower(str) {
+			return true
+		}
+	}
+	return false
 }
