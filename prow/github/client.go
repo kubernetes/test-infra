@@ -1167,6 +1167,10 @@ func (c *Client) CreateFork(owner, repo string) error {
 	return err
 }
 
+// ListIssueEvents gets a list events from github's events API that pertain to the specified issue.
+// The events that are returned have a different format than webhook events and certain event types
+// are excluded.
+// https://developer.github.com/v3/issues/events/
 func (c *Client) ListIssueEvents(org, repo string, num int) ([]ListedIssueEvent, error) {
 	c.log("ListIssueEvents", org, repo, num)
 	if c.fake {

@@ -200,6 +200,7 @@ type IssueEvent struct {
 }
 
 // ListedIssueEvent represents an issue event from the events API (not from a webhook payload).
+// https://developer.github.com/v3/issues/events/
 type ListedIssueEvent struct {
 	Event     IssueEventAction `json:"event"` // This is the same as IssueEvent.Action.
 	Actor     User             `json:"actor"`
@@ -438,6 +439,14 @@ const (
 	GenericCommentActionDeleted                           = "deleted" // "dismissed"
 )
 
+// GenericCommentEvent is a fake event type that is instantiated for any github event that contains
+// comment like content.
+// The specific events that are also handled as GenericCommentEvents are:
+// - issue_comment events
+// - pull_request_review events
+// - pull_request_review_comment events
+// - pull_request events with action in ["opened", "edited"]
+// - issue events with action in ["opened", "edited"]
 type GenericCommentEvent struct {
 	IsPR         bool
 	Action       GenericCommentEventAction
