@@ -225,8 +225,8 @@ type fakeGhClient struct {
 	status []github.Status
 }
 
-func (gh fakeGhClient) BotName() (string, error) {
-	return "BotName", nil
+func (gh fakeGhClient) BotName() string {
+	return "BotName"
 }
 func (gh *fakeGhClient) CreateStatus(org, repo, ref string, s github.Status) error {
 	gh.status = append(gh.status, s)

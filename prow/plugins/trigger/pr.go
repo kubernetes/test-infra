@@ -122,11 +122,7 @@ func trustedPullRequest(ghc githubClient, pr github.PullRequest, trustedOrg stri
 			continue
 		}
 		// Skip bot comments.
-		botName, err := ghc.BotName()
-		if err != nil {
-			return false, err
-		}
-		if commentAuthor == botName {
+		if commentAuthor == ghc.BotName() {
 			continue
 		}
 		// Look for "/ok-to-test"

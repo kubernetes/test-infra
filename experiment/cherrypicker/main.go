@@ -82,10 +82,7 @@ func main() {
 	gitClient.Logger = logger.WithField("client", "git")
 
 	// The bot name is used to determine to what fork we can push cherry-pick branches.
-	botName, err := githubClient.BotName()
-	if err != nil {
-		logrus.WithError(err).Fatal("Error getting bot name.")
-	}
+	botName := githubClient.BotName()
 
 	repos, err := githubClient.GetRepos(botName, true)
 	if err != nil {

@@ -28,7 +28,6 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/shurcooL/githubql"
@@ -50,8 +49,6 @@ type Client struct {
 	dry    bool
 	fake   bool
 
-	// botName is protected by this mutex.
-	mut     sync.Mutex
 	botName string
 }
 
@@ -246,22 +243,22 @@ func (c *Client) doRequest(method, path, accept string, body interface{}) (*http
 	return c.client.Do(req)
 }
 
-func (c *Client) BotName() (string, error) {
-	c.mut.Lock()
-	defer c.mut.Unlock()
-	if c.botName == "" {
-		var u User
-		_, err := c.request(&request{
-			method:    http.MethodGet,
-			path:      fmt.Sprintf("%s/user", c.base),
-			exitCodes: []int{200},
-		}, &u)
-		if err != nil {
-			return "", fmt.Errorf("fetching bot name from GitHub: %v", err)
-		}
-		c.botName = u.Login
+func (c *Client) BotName() string {
+	return c.botName
+}
+
+func (c *Client) SetBotName() error {
+	var u User
+	_, err := c.request(&request{
+		method:    http.MethodGet,
+		path:      fmt.Sprintf("%s/user", c.base),
+		exitCodes: []int{200},
+	}, &u)
+	if err != nil {
+		return fmt.Errorf("fetching bot name from GitHub: %v", err)
 	}
-	return c.botName, nil
+	c.botName = u.Login
+	return nil
 }
 
 // IsMember returns whether or not the user is a member of the org.

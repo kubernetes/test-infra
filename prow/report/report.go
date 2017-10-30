@@ -36,7 +36,7 @@ const (
 )
 
 type GithubClient interface {
-	BotName() (string, error)
+	BotName() string
 	CreateStatus(org, repo, ref string, s github.Status) error
 	ListIssueComments(org, repo string, number int) ([]github.IssueComment, error)
 	CreateComment(org, repo string, number int, comment string) error
@@ -95,11 +95,7 @@ func Report(ghc GithubClient, reportTemplate *template.Template, pj kube.ProwJob
 	if err != nil {
 		return fmt.Errorf("error listing comments: %v", err)
 	}
-	botName, err := ghc.BotName()
-	if err != nil {
-		return fmt.Errorf("error getting bot name: %v", err)
-	}
-	deletes, entries, updateID := parseIssueComments(pj, botName, ics)
+	deletes, entries, updateID := parseIssueComments(pj, ghc.BotName(), ics)
 	for _, delete := range deletes {
 		if err := ghc.DeleteComment(refs.Org, refs.Repo, delete); err != nil {
 			return fmt.Errorf("error deleting comment: %v", err)

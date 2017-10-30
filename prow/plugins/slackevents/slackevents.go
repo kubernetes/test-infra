@@ -35,7 +35,7 @@ type slackClient interface {
 }
 
 type githubClient interface {
-	BotName() (string, error)
+	BotName() string
 }
 
 type client struct {
@@ -103,11 +103,7 @@ func stringInArray(str string, list []string) bool {
 
 func echoToSlack(pc client, e github.GenericCommentEvent) error {
 	// Ignore bot comments and comments that aren't new.
-	botName, err := pc.GithubClient.BotName()
-	if err != nil {
-		return err
-	}
-	if e.User.Login == botName {
+	if e.User.Login == pc.GithubClient.BotName() {
 		return nil
 	}
 	if e.Action != github.GenericCommentActionCreated {

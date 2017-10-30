@@ -148,6 +148,11 @@ func main() {
 	slackClient.Logger = logger.WithField("client", "slack")
 	ownersClient.Logger = logger.WithField("client", "repoowners")
 
+	err = githubClient.SetBotName()
+	if err != nil {
+		logrus.WithError(err).Fatal("Error setting bot name.")
+	}
+
 	pluginAgent.PluginClient = plugins.PluginClient{
 		GitHubClient: githubClient,
 		KubeClient:   kubeClient,

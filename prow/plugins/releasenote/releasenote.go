@@ -86,7 +86,7 @@ type githubClient interface {
 	GetIssueLabels(org, repo string, number int) ([]github.Label, error)
 	ListIssueComments(org, repo string, number int) ([]github.IssueComment, error)
 	DeleteStaleComments(org, repo string, number int, comments []github.IssueComment, isStale func(github.IssueComment) bool) error
-	BotName() (string, error)
+	BotName() string
 }
 
 func handleIssueComment(pc plugins.PluginClient, ic github.IssueCommentEvent) error {
@@ -252,17 +252,13 @@ func clearStaleComments(gc githubClient, log *logrus.Entry, pr *github.PullReque
 	if prMustFollowRelNoteProcess(gc, log, pr, prLabels, false) && !releaseNoteAlreadyAdded(prLabels) {
 		return nil
 	}
-	botName, err := gc.BotName()
-	if err != nil {
-		return err
-	}
 	return gc.DeleteStaleComments(
 		pr.Repo.Owner.Login,
 		pr.Repo.Name,
 		pr.Number,
 		comments,
 		func(c github.IssueComment) bool { // isStale function
-			return c.User.Login == botName &&
+			return c.User.Login == gc.BotName() &&
 				(strings.Contains(c.Body, releaseNoteBody) ||
 					strings.Contains(c.Body, parentReleaseNoteBody) ||
 					strings.Contains(c.Body, deprecatedReleaseNoteBody))
