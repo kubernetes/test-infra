@@ -24,6 +24,7 @@ default_test_group:
   num_failures_to_alert: 3 # Consider a test failed if it has 3 or more consecutive failures.
 
 default_dashboard_tab:
+  base_options: 'sort-by-failures='
   open_test_template: # The URL template to visit after clicking on a cell
     url: https://k8s-gubernator.appspot.com/build/<gcs_prefix>/<changelist>
   file_bug_template: # The URL template to visit when filing a bug
@@ -2916,72 +2917,72 @@ dashboards:
       alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
   - name: kubelet-serial-gce-e2e
     test_group_name: ci-kubernetes-node-kubelet-serial
-    base_options: 'include-filter-by-regex=GPU'
+    base_options: 'include-filter-by-regex=GPU&sort-by-failures='
 
 - name: sig-api-machinery
   dashboard_tab:
   - name: gce
     test_group_name: ci-kubernetes-e2e-gci-gce
-    base_options: 'include-filter-by-regex=sig-api-machinery'
+    base_options: 'include-filter-by-regex=sig-api-machinery&sort-by-failures='
     description: 'apimachinery gce e2e tests for master branch'
   - name: gke
     test_group_name: ci-kubernetes-e2e-gci-gke
-    base_options: 'include-filter-by-regex=sig-api-machinery'
+    base_options: 'include-filter-by-regex=sig-api-machinery&sort-by-failures='
     description: 'apimachinery gke e2e tests for master branch'
   - name: gce-flaky
     test_group_name: ci-kubernetes-e2e-gci-gce-flaky
-    base_options: 'include-filter-by-regex=sig-api-machinery'
+    base_options: 'include-filter-by-regex=sig-api-machinery&sort-by-failures='
     description: 'apimachinery gce flaky e2e tests for master branch'
   - name: gke-flaky
     test_group_name: ci-kubernetes-e2e-gci-gke-flaky
-    base_options: 'include-filter-by-regex=sig-api-machinery'
+    base_options: 'include-filter-by-regex=sig-api-machinery&sort-by-failures='
     description: 'apimachinery gke flaky e2e tests for master branch'
   - name: gce-slow
     test_group_name: ci-kubernetes-e2e-gci-gce-slow
-    base_options: 'include-filter-by-regex=sig-api-machinery'
+    base_options: 'include-filter-by-regex=sig-api-machinery&sort-by-failures='
     description: 'apimachinery gce slow e2e tests for master branch'
   - name: gke-slow
     test_group_name: ci-kubernetes-e2e-gci-gke-slow
-    base_options: 'include-filter-by-regex=sig-api-machinery'
+    base_options: 'include-filter-by-regex=sig-api-machinery&sort-by-failures='
     description: 'apimachinery gke slow e2e tests for master branch'
   - name: gce-serial
     test_group_name: ci-kubernetes-e2e-gci-gce-serial
-    base_options: 'include-filter-by-regex=sig-api-machinery'
+    base_options: 'include-filter-by-regex=sig-api-machinery&sort-by-failures='
     description: 'apimachinery gce serial e2e tests for master branch'
   - name: gke-serial
     test_group_name: ci-kubernetes-e2e-gci-gke-serial
-    base_options: 'include-filter-by-regex=sig-api-machinery'
+    base_options: 'include-filter-by-regex=sig-api-machinery&sort-by-failures='
     description: 'apimachinery gke serial e2e tests for master branch'
 
 - name: sig-apps # TODO(crimsonfaith91): add upgrade tests when k8s v1.9 rolls out
   dashboard_tab:
   - name: gce
     test_group_name: ci-kubernetes-e2e-gci-gce
-    base_options: 'include-filter-by-regex=sig-apps'
+    base_options: 'include-filter-by-regex=sig-apps&sort-by-failures='
     description: 'apps gce e2e tests for master branch'
   - name: gke
     test_group_name: ci-kubernetes-e2e-gci-gke
-    base_options: 'include-filter-by-regex=sig-apps'
+    base_options: 'include-filter-by-regex=sig-apps&sort-by-failures='
     description: 'apps gke e2e tests for master branch'
   - name: gce-slow
     test_group_name: ci-kubernetes-e2e-gci-gce-slow
-    base_options: 'include-filter-by-regex=sig-apps'
+    base_options: 'include-filter-by-regex=sig-apps&sort-by-failures='
     description: 'apps gce slow e2e tests for master branch'
   - name: gke-slow
     test_group_name: ci-kubernetes-e2e-gci-gke-slow
-    base_options: 'include-filter-by-regex=sig-apps'
+    base_options: 'include-filter-by-regex=sig-apps&sort-by-failures='
     description: 'apps gke slow e2e tests for master branch'
   - name: gce-serial
     test_group_name: ci-kubernetes-e2e-gci-gce-serial
-    base_options: 'include-filter-by-regex=sig-apps'
+    base_options: 'include-filter-by-regex=sig-apps&sort-by-failures='
     description: 'apps gce serial e2e tests for master branch'
   - name: gke-serial
     test_group_name: ci-kubernetes-e2e-gci-gke-serial
-    base_options: 'include-filter-by-regex=sig-apps'
+    base_options: 'include-filter-by-regex=sig-apps&sort-by-failures='
     description: 'apps gke serial e2e tests for master branch'
   - name: gce-statefulset
     test_group_name: ci-kubernetes-e2e-gci-gce-statefulset
-    base_options: 'include-filter-by-regex=sig-apps'
+    base_options: 'include-filter-by-regex=sig-apps&sort-by-failures='
     description: 'apps gce statefulset e2e tests for master branch'
   - name: charts-gce
     test_group_name: ci-kubernetes-charts-gce
@@ -2990,27 +2991,27 @@ dashboards:
   dashboard_tab:
   - name: gce
     test_group_name: ci-kubernetes-e2e-gci-gce
-    base_options: 'include-filter-by-regex=sig-auth'
+    base_options: 'include-filter-by-regex=sig-auth&sort-by-failures='
     description: 'apps gce e2e tests for master branch'
   - name: gke
     test_group_name: ci-kubernetes-e2e-gci-gke
-    base_options: 'include-filter-by-regex=sig-auth'
+    base_options: 'include-filter-by-regex=sig-auth&sort-by-failures='
     description: 'apps gke e2e tests for master branch'
   - name: gce-slow
     test_group_name: ci-kubernetes-e2e-gci-gce-slow
-    base_options: 'include-filter-by-regex=sig-auth'
+    base_options: 'include-filter-by-regex=sig-auth&sort-by-failures='
     description: 'apps gce slow e2e tests for master branch'
   - name: gke-slow
     test_group_name: ci-kubernetes-e2e-gci-gke-slow
-    base_options: 'include-filter-by-regex=sig-auth'
+    base_options: 'include-filter-by-regex=sig-auth&sort-by-failures='
     description: 'apps gke slow e2e tests for master branch'
   - name: gce-serial
     test_group_name: ci-kubernetes-e2e-gci-gce-serial
-    base_options: 'include-filter-by-regex=sig-auth'
+    base_options: 'include-filter-by-regex=sig-auth&sort-by-failures='
     description: 'apps gce serial e2e tests for master branch'
   - name: gke-serial
     test_group_name: ci-kubernetes-e2e-gci-gke-serial
-    base_options: 'include-filter-by-regex=sig-auth'
+    base_options: 'include-filter-by-regex=sig-auth&sort-by-failures='
     description: 'apps gke serial e2e tests for master branch'
 
 - name: sig-big-data
@@ -3073,13 +3074,13 @@ dashboards:
       alert_mail_to_addresses: 'kubernetes-sig-cli-oncall@gmail.com'
   - name: soak-gce-gci
     test_group_name: ci-kubernetes-soak-gce-gci
-    base_options: 'include-filter-by-regex=Kubectl%7Ckubectl'
+    base_options: 'include-filter-by-regex=Kubectl%7Ckubectl&sort-by-failures='
   - name: soak-gke-gci
     test_group_name: ci-kubernetes-soak-gke-gci
-    base_options: 'include-filter-by-regex=Kubectl%7Ckubectl'
+    base_options: 'include-filter-by-regex=Kubectl%7Ckubectl&sort-by-failures='
   - name: unit-integration-cmd
     test_group_name: ci-kubernetes-test-go
-    base_options: 'include-filter-by-regex=kubectl%7COverall'
+    base_options: 'include-filter-by-regex=kubectl%7COverall&sort-by-failures='
     description: 'unit, integration and cmd tests for master branch'
   - name: skew-cluster1.7-kubectl1.8-gce
     test_group_name: ci-kubernetes-e2e-gce-new-master-gci-kubectl-skew
@@ -3198,58 +3199,58 @@ dashboards:
   dashboard_tab:
   - name: gce
     test_group_name: ci-kubernetes-e2e-gci-gce
-    base_options: 'include-filter-by-regex=sig-instrumentation'
+    base_options: 'include-filter-by-regex=sig-instrumentation&sort-by-failures='
     description: 'instrumentation gce e2e tests for master branch'
   - name: gke
     test_group_name: ci-kubernetes-e2e-gci-gke
-    base_options: 'include-filter-by-regex=sig-instrumentation'
+    base_options: 'include-filter-by-regex=sig-instrumentation&sort-by-failures='
     description: 'instrumentation gke e2e tests for master branch'
   - name: gce-1.7
     test_group_name: ci-kubernetes-e2e-gci-gce-release-1-7
-    base_options: 'include-filter-by-regex=sig-instrumentation'
+    base_options: 'include-filter-by-regex=sig-instrumentation&sort-by-failures='
     description: 'instrumentation gce e2e tests for 1.7 branch'
   - name: gke-1.7
     test_group_name: ci-kubernetes-e2e-gci-gke-release-1-7
-    base_options: 'include-filter-by-regex=sig-instrumentation'
+    base_options: 'include-filter-by-regex=sig-instrumentation&sort-by-failures='
     description: 'instrumentation gke e2e tests for 1.7 branch'
   - name: gce-1.6
     test_group_name: ci-kubernetes-e2e-gci-gce-release-1-6
-    base_options: 'include-filter-by-regex=sig-instrumentation'
+    base_options: 'include-filter-by-regex=sig-instrumentation&sort-by-failures='
     description: 'instrumentation gce e2e tests for 1.6 branch'
   - name: gke-1.6
     test_group_name: ci-kubernetes-e2e-gci-gke-release-1-6
-    base_options: 'include-filter-by-regex=sig-instrumentation'
+    base_options: 'include-filter-by-regex=sig-instrumentation&sort-by-failures='
     description: 'instrumentation gke e2e tests for 1.6 branch'
   - name: gce-serial
     test_group_name: ci-kubernetes-e2e-gci-gce-serial
-    base_options: 'include-filter-by-regex=sig-instrumentation'
+    base_options: 'include-filter-by-regex=sig-instrumentation&sort-by-failures='
     description: 'instrumentation gce serial e2e tests for master branch'
   - name: gke-serial
     test_group_name: ci-kubernetes-e2e-gci-gke-serial
-    base_options: 'include-filter-by-regex=sig-instrumentation'
+    base_options: 'include-filter-by-regex=sig-instrumentation&sort-by-failures='
     description: 'sig-instrumentation gke serial e2e tests for master branch'
   - name: gce-es-logging
     test_group_name: ci-kubernetes-e2e-gci-gce-es-logging
-    base_options: 'include-filter-by-regex=sig-instrumentation'
+    base_options: 'include-filter-by-regex=sig-instrumentation&sort-by-failures='
     description: 'sig-instrumentation gce elasticsearch logging e2e tests for master branch'
   - name: gce-sd-logging
     test_group_name: ci-kubernetes-e2e-gci-gce-sd-logging
-    base_options: 'include-filter-by-regex=sig-instrumentation'
+    base_options: 'include-filter-by-regex=sig-instrumentation&sort-by-failures='
     description: 'sig-instrumentation gce stackdriver logging e2e tests for master branch'
   - name: gce-sd-monitoring
     test_group_name: ci-kubernetes-e2e-gce-stackdriver
-    base_options: 'include-filter-by-regex=sig-instrumentation'
+    base_options: 'include-filter-by-regex=sig-instrumentation&sort-by-failures='
     description: 'sig-instrumentation gce stackdriver monitoring e2e tests for master branch'
   - name: gke-sd-monitoring
     test_group_name: ci-kubernetes-e2e-gke-stackdriver
-    base_options: 'include-filter-by-regex=sig-instrumentation'
+    base_options: 'include-filter-by-regex=sig-instrumentation&sort-by-failures='
     description: 'sig-instrumentation gke stackdriver monitoring e2e tests for master branch'
 
 - name: sig-network
   dashboard_tab:
   - name: cosbeta-no-snat
     test_group_name: ci-kubernetes-e2e-gce-cosbeta-k8sdev-nosnat
-    base_options: 'include-filter-by-regex=\[sig-network\]'
+    base_options: 'include-filter-by-regex=\[sig-network\]&sort-by-failures='
     alert_options:
       alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
   - name: gci-gce-ingress
@@ -3302,37 +3303,37 @@ dashboards:
       alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
   - name: gci-gce
     test_group_name: ci-kubernetes-e2e-gci-gce
-    base_options: 'include-filter-by-regex=\[sig-network\]'
+    base_options: 'include-filter-by-regex=\[sig-network\]&sort-by-failures='
     description: 'network gci-gce e2e tests for master branch'
     alert_options:
       alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
   - name: gci-gke
     test_group_name: ci-kubernetes-e2e-gci-gke
-    base_options: 'include-filter-by-regex=\[sig-network\]'
+    base_options: 'include-filter-by-regex=\[sig-network\]&sort-by-failures='
     description: 'network gci-gke e2e tests for master branch'
     alert_options:
       alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
   - name: gci-gce-slow
     test_group_name: ci-kubernetes-e2e-gci-gce-slow
-    base_options: 'include-filter-by-regex=\[sig-network\]'
+    base_options: 'include-filter-by-regex=\[sig-network\]&sort-by-failures='
     description: 'network gci-gce slow e2e tests for master branch'
     alert_options:
       alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
   - name: gci-gke-slow
     test_group_name: ci-kubernetes-e2e-gci-gke-slow
-    base_options: 'include-filter-by-regex=\[sig-network\]'
+    base_options: 'include-filter-by-regex=\[sig-network\]&sort-by-failures='
     description: 'network gci-gke slow e2e tests for master branch'
     alert_options:
       alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
   - name: gci-gce-serial
     test_group_name: ci-kubernetes-e2e-gci-gce-serial
-    base_options: 'include-filter-by-regex=\[sig-network\]'
+    base_options: 'include-filter-by-regex=\[sig-network\]&sort-by-failures='
     description: 'network gci-gce serial e2e tests for master branch'
     alert_options:
       alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
   - name: gci-gke-serial
     test_group_name: ci-kubernetes-e2e-gci-gke-serial
-    base_options: 'include-filter-by-regex=\[sig-network\]'
+    base_options: 'include-filter-by-regex=\[sig-network\]&sort-by-failures='
     description: 'network gci-gke serial e2e tests for master branch'
     alert_options:
       alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
@@ -3586,78 +3587,78 @@ dashboards:
   dashboard_tab:
   - name: gce
     test_group_name: ci-kubernetes-e2e-gci-gce
-    base_options: 'include-filter-by-regex=sig-scheduling'
+    base_options: 'include-filter-by-regex=sig-scheduling&sort-by-failures='
     description: 'scheduling gce e2e tests for master branch'
   - name: gke
     test_group_name: ci-kubernetes-e2e-gci-gke
-    base_options: 'include-filter-by-regex=sig-scheduling'
+    base_options: 'include-filter-by-regex=sig-scheduling&sort-by-failures='
     description: 'scheduling gke e2e tests for master branch'
   - name: gce-slow
     test_group_name: ci-kubernetes-e2e-gci-gce-slow
-    base_options: 'include-filter-by-regex=sig-scheduling'
+    base_options: 'include-filter-by-regex=sig-scheduling&sort-by-failures='
     description: 'scheduling gce slow e2e tests for master branch'
   - name: gke-slow
     test_group_name: ci-kubernetes-e2e-gci-gke-slow
-    base_options: 'include-filter-by-regex=sig-scheduling'
+    base_options: 'include-filter-by-regex=sig-scheduling&sort-by-failures='
     description: 'scheduling gke slow e2e tests for master branch'
   - name: gce-serial
     test_group_name: ci-kubernetes-e2e-gci-gce-serial
-    base_options: 'include-filter-by-regex=sig-scheduling'
+    base_options: 'include-filter-by-regex=sig-scheduling&sort-by-failures='
     description: 'scheduling gce serial e2e tests for master branch'
   - name: gke-serial
     test_group_name: ci-kubernetes-e2e-gci-gke-serial
-    base_options: 'include-filter-by-regex=sig-scheduling'
+    base_options: 'include-filter-by-regex=sig-scheduling&sort-by-failures='
     description: 'scheduling gke serial e2e tests for master branch'
   - name: gce-statefulset
     test_group_name: ci-kubernetes-e2e-gci-gce-statefulset
-    base_options: 'include-filter-by-regex=sig-scheduling'
+    base_options: 'include-filter-by-regex=sig-scheduling&sort-by-failures='
     description: 'scheduling gce statefulset e2e tests for master branch'
 
 - name: sig-storage
   dashboard_tab:
   - name: gci-gce
     test_group_name: ci-kubernetes-e2e-gci-gce
-    base_options: 'include-filter-by-regex=Volume%7Cstorage'
+    base_options: 'include-filter-by-regex=Volume%7Cstorage&sort-by-failures='
     description: 'storage gci gce e2e tests for master branch'
   - name: gci-gke
     test_group_name: ci-kubernetes-e2e-gci-gke
-    base_options: 'include-filter-by-regex=Volume%7Cstorage'
+    base_options: 'include-filter-by-regex=Volume%7Cstorage&sort-by-failures='
     description: 'storage gci gke e2e tests for master branch'
   - name: gce-1.6
     test_group_name: ci-kubernetes-e2e-gce-release-1-6
-    base_options: 'include-filter-by-regex=Volume%7Cstorage'
+    base_options: 'include-filter-by-regex=Volume%7Cstorage&sort-by-failures='
     description: 'storage gce e2e tests for 1.6 branch'
   - name: gke-1.6
     test_group_name: ci-kubernetes-e2e-gke-release-1-6
-    base_options: 'include-filter-by-regex=Volume%7Cstorage'
+    base_options: 'include-filter-by-regex=Volume%7Cstorage&sort-by-failures='
     description: 'storage gke e2e tests for 1.6 branch'
   - name: gce-flaky
     test_group_name: ci-kubernetes-e2e-gci-gce-flaky
-    base_options: 'include-filter-by-regex=Volume%7Cstorage'
+    base_options: 'include-filter-by-regex=Volume%7Cstorage&sort-by-failures='
     description: 'storage gce flaky e2e tests for master branch'
   - name: gke-flaky
     test_group_name: ci-kubernetes-e2e-gci-gke-flaky
-    base_options: 'include-filter-by-regex=Volume%7Cstorage'
+    base_options: 'include-filter-by-regex=Volume%7Cstorage&sort-by-failures='
     description: 'storage gke flaky e2e tests for master branch'
   - name: gci-gce-slow
     test_group_name: ci-kubernetes-e2e-gci-gce-slow
-    base_options: 'include-filter-by-regex=Volume%7Cstorage'
+    base_options: 'include-filter-by-regex=Volume%7Cstorage&sort-by-failures='
     description: 'storage gci cigce slow e2e tests for master branch'
   - name: gci-gke-slow
     test_group_name: ci-kubernetes-e2e-gci-gke-slow
-    base_options: 'include-filter-by-regex=Volume%7Cstorage'
+    base_options: 'include-filter-by-regex=Volume%7Cstorage&sort-by-failures='
     description: 'storage gci gke slow e2e tests for master branch'
   - name: gci-gce-serial
     test_group_name: ci-kubernetes-e2e-gci-gce-serial
-    base_options: 'include-filter-by-regex=Volume%7Cstorage'
+    base_options: 'include-filter-by-regex=Volume%7Cstorage&sort-by-failures='
     description: 'storage gci gce serial e2e tests for master branch'
   - name: gci-gke-serial
     test_group_name: ci-kubernetes-e2e-gci-gke-serial
-    base_options: 'include-filter-by-regex=Volume%7Cstorage'
+    base_options: 'include-filter-by-regex=Volume%7Cstorage&sort-by-failures='
     description: 'storage gci gke serial e2e tests for master branch'
   - name: gci-gce-alpha
     test_group_name: ci-kubernetes-e2e-gci-gce-alpha-features
-    base_options: 'include-filter-by-regex=Volume%7Cstorage'
+    base_options: 'include-filter-by-regex=Volume%7Cstorage&sort-by-failures='
     description: 'storage gci gce alpha features e2e tests for master branch'
 
 - name: sig-testing-misc
@@ -3790,62 +3791,62 @@ dashboards:
   dashboard_tab:
   - name: pull-kubernetes-bazel-build
     test_group_name: pull-kubernetes-bazel-build
-    base_options: 'width=10'
+    base_options: 'width=10&sort-by-failures='
     alert_options:
       alert_mail_to_addresses: 'michelle.192837+alerts@gmail.com, lusensjtu+alerts@gmail.com, bentheelder+alerts@google.com'
   - name: pull-kubernetes-bazel-test
     test_group_name: pull-kubernetes-bazel-test
-    base_options: 'width=10'
+    base_options: 'width=10&sort-by-failures='
     alert_options:
       alert_mail_to_addresses: 'michelle.192837+alerts@gmail.com, lusensjtu+alerts@gmail.com, bentheelder+alerts@google.com'
   - name: pull-kubernetes-cross
     test_group_name: pull-kubernetes-cross
-    base_options: 'width=10'
+    base_options: 'width=10&sort-by-failures='
   - name: pull-kubernetes-e2e-gce
     test_group_name: pull-kubernetes-e2e-gce
-    base_options: 'width=10'
+    base_options: 'width=10&sort-by-failures='
     alert_options:
       alert_mail_to_addresses: 'michelle.192837+alerts@gmail.com, lusensjtu+alerts@gmail.com, bentheelder+alerts@google.com'
   - name: pull-kubernetes-e2e-gce-device-plugin-gpu
     test_group_name: pull-kubernetes-e2e-gce-device-plugin-gpu
-    base_options: 'width=10'
+    base_options: 'width=10&sort-by-failures='
   - name: pull-kubernetes-e2e-gke-device-plugin-gpu
     test_group_name: pull-kubernetes-e2e-gke-device-plugin-gpu
-    base_options: 'width=10'
+    base_options: 'width=10&sort-by-failures='
   - name: pull-kubernetes-e2e-gke-gci
     test_group_name: pull-kubernetes-e2e-gke-gci
-    base_options: 'width=10'
+    base_options: 'width=10&sort-by-failures='
   - name: pull-kubernetes-e2e-kops-aws
     test_group_name: pull-kubernetes-e2e-kops-aws
-    base_options: 'width=10'
+    base_options: 'width=10&sort-by-failures='
     alert_options:
       alert_mail_to_addresses: 'michelle.192837+alerts@gmail.com, lusensjtu+alerts@gmail.com'
   - name: pull-kubernetes-e2e-kops-aws-prow
     test_group_name: pull-kubernetes-e2e-kops-aws-prow
   - name: pull-kubernetes-e2e-kubeadm-gce
     test_group_name: pull-kubernetes-e2e-kubeadm-gce
-    base_options: 'width=10'
+    base_options: 'width=10&sort-by-failures='
   - name: pull-kubernetes-kubemark-e2e-gce
     test_group_name: pull-kubernetes-kubemark-e2e-gce
-    base_options: 'width=10'
+    base_options: 'width=10&sort-by-failures='
     alert_options:
       alert_mail_to_addresses: 'michelle.192837+alerts@gmail.com, lusensjtu+alerts@gmail.com'
   - name: pull-kubernetes-kubemark-e2e-gce-big
     test_group_name: pull-kubernetes-kubemark-e2e-gce-big
-    base_options: 'width=10'
+    base_options: 'width=10&sort-by-failures='
   - name: pull-kubernetes-node-e2e
     test_group_name: pull-kubernetes-node-e2e
-    base_options: 'width=10'
+    base_options: 'width=10&sort-by-failures='
     alert_options:
       alert_mail_to_addresses: 'michelle.192837+alerts@gmail.com, lusensjtu+alerts@gmail.com'
   - name: pull-kubernetes-unit
     test_group_name: pull-kubernetes-unit
-    base_options: 'width=10'
+    base_options: 'width=10&sort-by-failures='
     alert_options:
       alert_mail_to_addresses: 'michelle.192837+alerts@gmail.com, lusensjtu+alerts@gmail.com'
   - name: pull-kubernetes-verify
     test_group_name: pull-kubernetes-verify
-    base_options: 'width=10'
+    base_options: 'width=10&sort-by-failures='
     alert_options:
       alert_mail_to_addresses: 'michelle.192837+alerts@gmail.com, lusensjtu+alerts@gmail.com'
 
@@ -3853,42 +3854,42 @@ dashboards:
   dashboard_tab:
   - name: bazel
     test_group_name: pull-test-infra-bazel
-    base_options: 'width=10'
+    base_options: 'width=10&sort-by-failures='
     alerts_options:
       alert_mail_to_addresses: 'bentheelder+alerts@google.com'
   - name: bazel-canary
     test_group_name: pull-test-infra-bazel-canary
-    base_options: 'width=10'
+    base_options: 'width=10&sort-by-failures='
   - name: gubernator
     test_group_name: pull-test-infra-gubernator
-    base_options: 'width=10'
+    base_options: 'width=10&sort-by-failures='
   - name: verify-bazel
     test_group_name: pull-test-infra-verify-bazel
-    base_options: 'width=10'
+    base_options: 'width=10&sort-by-failures='
   - name: verify-govet
     test_group_name: pull-test-infra-verify-govet
-    base_options: 'width=10'
+    base_options: 'width=10&sort-by-failures='
   - name: verify-gofmt
     test_group_name: pull-test-infra-verify-gofmt
-    base_options: 'width=10'
+    base_options: 'width=10&sort-by-failures='
 
 - name: presubmits-cluster-registry
   dashboard_tab:
   - name: bazel
     test_group_name: pull-cluster-registry-bazel
-    base_options: 'width=10'
+    base_options: 'width=10&sort-by-failures='
 
 - name: presubmits-federation
   dashboard_tab:
   - name: bazel-build
     test_group_name: pull-federation-bazel-build
-    base_options: 'width=10'
+    base_options: 'width=10&sort-by-failures='
   - name: bazel-test
     test_group_name: pull-federation-bazel-test
-    base_options: 'width=10'
+    base_options: 'width=10&sort-by-failures='
   - name: e2e-gce
     test_group_name: pull-federation-e2e-gce
-    base_options: 'width=10'
+    base_options: 'width=10&sort-by-failures='
 
 #
 # Start dashboard groups
