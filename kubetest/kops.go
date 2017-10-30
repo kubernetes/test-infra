@@ -360,6 +360,11 @@ func (k kops) DumpClusterLogs(localPath, gcsPath string) error {
 
 // dumpAllNodes connects to every node and dumps the logs
 func (k *kops) dumpAllNodes(ctx context.Context, d *logDumper) error {
+	// Make sure kubeconfig is set, in particular before calling DumpAllNodes, which calls kubectlGetNodes
+	if err := k.TestSetup(); err != nil {
+		return fmt.Errorf("error setting up kubeconfig: %v", err)
+	}
+
 	var additionalIPs []string
 	dump, err := runKopsDump(k.cluster)
 	if err != nil {
@@ -387,15 +392,29 @@ func (k *kops) dumpAllNodes(ctx context.Context, d *logDumper) error {
 func (k kops) TestSetup() error {
 	info, err := os.Stat(k.kubecfg)
 	if err != nil {
-		return err
-	}
-	if info.Size() > 0 {
+		if os.IsNotExist(err) {
+			log.Printf("kubeconfig file %s not found", k.kubecfg)
+		} else {
+			return err
+		}
+	} else if info.Size() > 0 {
 		// Assume that if we already have it, it's good.
 		return nil
 	}
+
 	if err := finishRunning(exec.Command(k.path, "export", "kubecfg", k.cluster)); err != nil {
-		return fmt.Errorf("Failure exporting kops kubecfg: %v", err)
+		return fmt.Errorf("failure from 'kops export kubecfg %s': %v", k.cluster, err)
 	}
+
+	// Double-check that the file was exported
+	info, err = os.Stat(k.kubecfg)
+	if err != nil {
+		return fmt.Errorf("kubeconfig file %s was not exported", k.kubecfg)
+	}
+	if info.Size() == 0 {
+		return fmt.Errorf("exported kubeconfig file %s was empty", k.kubecfg)
+	}
+
 	return nil
 }
 
