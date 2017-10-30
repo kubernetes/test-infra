@@ -348,8 +348,8 @@ func prMustFollowRelNoteProcess(gc githubClient, log *logrus.Entry, pr *github.P
 			log.WithError(err).Errorf("Failed to list labels on PR #%d (parent of #%d).", parent, pr.Number)
 			continue
 		}
-		if !hasLabel(releaseNote, parentLabels) &&
-			!hasLabel(releaseNoteActionRequired, parentLabels) {
+		if !github.HasLabel(releaseNote, parentLabels) &&
+			!github.HasLabel(releaseNoteActionRequired, parentLabels) {
 			notelessParents = append(notelessParents, "#"+strconv.Itoa(parent))
 		}
 	}
@@ -392,14 +392,4 @@ func getCherrypickParentPRNums(body string) []int {
 		out = append(out, parentNum)
 	}
 	return out
-}
-
-func hasLabel(label string, issueLabels []github.Label) bool {
-	label = strings.ToLower(label)
-	for _, l := range issueLabels {
-		if strings.ToLower(l.Name) == label {
-			return true
-		}
-	}
-	return false
 }

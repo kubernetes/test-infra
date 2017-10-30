@@ -82,8 +82,8 @@ func TestHandle(t *testing.T) {
 			Number: 1,
 			Repo:   github.Repo{Owner: github.User{Login: "org"}, Name: "repo"},
 		}
-		hasLabel := func(e *github.GenericCommentEvent) (bool, error) {
-			return tc.hasLabel, nil
+		hasLabel := func(label string, issueLabels []github.Label) bool {
+			return tc.hasLabel
 		}
 
 		if err := handle(fc, logrus.WithField("plugin", pluginName), e, hasLabel); err != nil {
