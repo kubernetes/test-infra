@@ -32,8 +32,8 @@ type fakeGHClient struct {
 	listCallCount   int
 }
 
-func (f *fakeGHClient) BotName() (string, error) {
-	return "k8s-ci-robot", nil
+func (f *fakeGHClient) BotName() string {
+	return "k8s-ci-robot"
 }
 
 func (f *fakeGHClient) ListIssueComments(_, _ string, _ int) ([]github.IssueComment, error) {

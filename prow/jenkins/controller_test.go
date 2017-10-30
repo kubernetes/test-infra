@@ -159,10 +159,10 @@ func (f *fghc) GetPullRequestChanges(org, repo string, number int) ([]github.Pul
 	return f.changes, f.err
 }
 
-func (f *fghc) BotName() (string, error) {
+func (f *fghc) BotName() string {
 	f.Lock()
 	defer f.Unlock()
-	return "bot", nil
+	return "bot"
 }
 func (f *fghc) CreateStatus(org, repo, ref string, s github.Status) error {
 	f.Lock()
