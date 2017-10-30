@@ -36,7 +36,7 @@ type fghc struct {
 
 	comments   []string
 	prs        []string
-	prComments []github.ReviewComment
+	prComments []github.IssueComment
 	createdNum int
 }
 
@@ -68,7 +68,7 @@ func (f *fghc) CreatePullRequest(org, repo, title, body, head, base string, canM
 	return f.createdNum, nil
 }
 
-func (f *fghc) ListPullRequestComments(org, repo string, number int) ([]github.ReviewComment, error) {
+func (f *fghc) ListIssueComments(org, repo string, number int) ([]github.IssueComment, error) {
 	return f.prComments, nil
 }
 
@@ -228,7 +228,7 @@ func TestCherryPickPR(t *testing.T) {
 	}
 
 	ghc := &fghc{
-		prComments: []github.ReviewComment{
+		prComments: []github.IssueComment{
 			{
 				User: github.User{
 					Login: "developer",

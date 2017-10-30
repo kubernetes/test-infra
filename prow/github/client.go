@@ -503,7 +503,7 @@ func (c *Client) GetPullRequestChanges(org, repo string, number int) ([]PullRequ
 	return changes, nil
 }
 
-// ListPullRequestComments returns all comments on a pull request. This may use
+// ListPullRequestComments returns all *review* comments on a pull request. This may use
 // more than one API token.
 func (c *Client) ListPullRequestComments(org, repo string, number int) ([]ReviewComment, error) {
 	c.log("ListPullRequestComments", org, repo, number)
