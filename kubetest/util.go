@@ -531,3 +531,16 @@ func getLatestClusterUpTime(gcloudJSON string) (time.Time, error) {
 	// this returns time.Time{} if no ig exists, which will always force a new cluster
 	return latest, nil
 }
+
+// jsonForDebug returns a json representation of the value, or a string representation of an error
+// It is useful for an easy implementation of fmt.Stringer
+func jsonForDebug(o interface{}) string {
+	if o == nil {
+		return "nil"
+	}
+	v, err := json.Marshal(o)
+	if err != nil {
+		return fmt.Sprintf("error[%v]", err)
+	}
+	return string(v)
+}
