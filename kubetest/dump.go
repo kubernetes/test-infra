@@ -76,50 +76,98 @@ func newLogDumper(sshClientFactory sshClientFactory, artifactsDir string) (*logD
 	return d, nil
 }
 
-// DumpAllNodes connects to every node and dumps the logs
-func (d *logDumper) DumpAllNodes(ctx context.Context) error {
+// DumpAllNodes connects to every node from kubectl get nodes and dumps the logs.
+// additionalIPs holds IP addresses of instances found by the deployment tool;
+// if the IPs are not found from kubectl get nodes, then these will be dumped also.
+// This allows for dumping log on nodes even if they don't register as a kubernetes
+// node, or if a node fails to register, or if the whole cluster fails to start.
+func (d *logDumper) DumpAllNodes(ctx context.Context, additionalIPs []string) error {
+	var dumped []*node
+
 	nodes, err := kubectlGetNodes()
 	if err != nil {
-		return err
-	}
+		log.Printf("Failed to get nodes for dumping via kubectl: %v", err)
+	} else {
+		for i := range nodes.Items {
+			if ctx.Err() != nil {
+				log.Printf("stopping dumping nodes: %v", ctx.Err())
+				return ctx.Err()
+			}
 
-	for i := range nodes.Items {
-		node := &nodes.Items[i]
+			node := &nodes.Items[i]
 
-		if ctx.Err() != nil {
-			log.Printf("skipping dumping %s: %v", node.Metadata.Name, ctx.Err())
-			continue
-		}
+			ip := ""
+			for _, address := range node.Status.Addresses {
+				if address.Type == "ExternalIP" {
+					ip = address.Address
+					break
+				}
+			}
 
-		host := ""
-		for _, address := range node.Status.Addresses {
-			if address.Type == "ExternalIP" {
-				host = address.Address
-				break
+			err := d.dumpNode(ctx, node.Metadata.Name, ip)
+			if err != nil {
+				log.Printf("could not dump node %s (%s): %v", node.Metadata.Name, ip, err)
+			} else {
+				dumped = append(dumped, node)
 			}
 		}
+	}
 
-		if host == "" {
-			log.Printf("could not find address for %v", node.Metadata.Name)
-			continue
+	notDumped := findInstancesNotDumped(additionalIPs, dumped)
+	for _, ip := range notDumped {
+		if ctx.Err() != nil {
+			log.Printf("stopping dumping nodes: %v", ctx.Err())
+			return ctx.Err()
 		}
 
-		log.Printf("Dumping node %s", node.Metadata.Name)
-
-		n, err := d.connectToNode(ctx, node.Metadata.Name, host)
+		log.Printf("dumping node not registered in kubernetes: %s", ip)
+		err := d.dumpNode(ctx, ip, ip)
 		if err != nil {
-			log.Printf("could not connect to %s (%s): %v", node.Metadata.Name, host, err)
-			continue
+			log.Printf("error dumping node %s: %v", ip, err)
 		}
+	}
 
-		errors := n.dump(ctx)
-		for _, e := range errors {
-			log.Printf("error dumping %s: %v", node.Metadata.Name, e)
-		}
+	return nil
+}
 
-		if err := n.Close(); err != nil {
-			log.Printf("error closing connection to %s: %v", node.Metadata.Name, err)
+// findInstancesNotDumped returns ips from the slice that do not appear as any address of the nodes
+func findInstancesNotDumped(ips []string, dumped []*node) []string {
+	var notDumped []string
+	dumpedAddresses := make(map[string]bool)
+	for _, node := range dumped {
+		for _, address := range node.Status.Addresses {
+			dumpedAddresses[address.Address] = true
 		}
+	}
+
+	for _, ip := range ips {
+		if !dumpedAddresses[ip] {
+			notDumped = append(notDumped, ip)
+		}
+	}
+	return notDumped
+}
+
+// DumpNode connects to a node and dumps the logs.
+func (d *logDumper) dumpNode(ctx context.Context, name string, ip string) error {
+	if ip == "" {
+		return fmt.Errorf("could not find address for %v, ", name)
+	}
+
+	log.Printf("Dumping node %s", name)
+
+	n, err := d.connectToNode(ctx, name, ip)
+	if err != nil {
+		return fmt.Errorf("could not connect: %v", err)
+	}
+
+	errors := n.dump(ctx)
+	for _, e := range errors {
+		log.Printf("error dumping node %s: %v", name, e)
+	}
+
+	if err := n.Close(); err != nil {
+		log.Printf("error closing connection: %v", err)
 	}
 
 	return nil
