@@ -36,7 +36,7 @@ import time
 ORIG_CWD = os.getcwd()  # Checkout changes cwd
 
 # Note: This variable is managed by experiment/bump_e2e_image.sh.
-DEFAULT_KUBEKINS_TAG = 'v20171027-35f67f55-master'
+DEFAULT_KUBEKINS_TAG = 'v20171029-c4db3be8-master'
 
 def test_infra(*paths):
     """Return path relative to root of test-infra repo."""
