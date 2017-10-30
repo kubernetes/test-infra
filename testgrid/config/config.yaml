@@ -3336,6 +3336,18 @@ dashboards:
     description: 'network gci-gke serial e2e tests for master branch'
     alert_options:
       alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
+  - name: gci-gce-alpha-features
+    test_group_name: ci-kubernetes-e2e-gci-gce-alpha-features
+    base_options: 'include-filter-by-regex=\[sig-network\]'
+    description: 'network gci-gce alpha features e2e tests for master branch'
+    alert_options:
+      alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
+  - name: gci-gke-alpha-features
+    test_group_name: ci-kubernetes-e2e-gci-gke-alpha-features
+    base_options: 'include-filter-by-regex=\[sig-network\]'
+    description: 'network gci-gke alpha features e2e tests for master branch'
+    alert_options:
+      alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
   - name: gci-gce-latest-upgrade-kube-proxy-ds
     test_group_name: ci-kubernetes-e2e-gci-gce-latest-upgrade-kube-proxy-ds
     description: 'upgrade cluster and migrate kube-proxy from static pods to a daemonset'
