@@ -64,6 +64,7 @@ plugins:
   kubernetes/test-infra:
   - trigger
   - config-updater
+  - approve
 
   kubernetes:
   - assign
