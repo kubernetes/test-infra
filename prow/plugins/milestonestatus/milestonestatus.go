@@ -31,7 +31,7 @@ const pluginName = "milestonestatus"
 
 var (
 	statusRegex   = regexp.MustCompile(`(?m)^/status\s+(.+)$`)
-	mustBeSigLead = "You must be a member of the @kubernetes/kubernetes-milestone-maintainers github team to add status labels."
+	mustBeSigLead = "You must be a member of the [kubernetes/kubernetes-milestone-maintainers](https://github.com/orgs/kubernetes/teams/kubernetes-milestone-maintainers/members) github team to add status labels."
 	statusMap     = map[string]string{
 		"approved-for-milestone": "status/approved-for-milestone",
 		"in-progress":            "status/in-progress",
