@@ -2737,7 +2737,7 @@ presubmits:
     trigger: "(?m)^/test( all| pull-test-infra-bazel),?(\\s+|$)"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171013-53473ec5-0.6.1
+      - image: gcr.io/k8s-testimages/bazelbuild:v20171020-844b54d7-0.7.0
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -2746,6 +2746,7 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--" # end bootstrap args, scenario args below
+        - "--batch" # mitigation for https://github.com/bazelbuild/bazel/issues/3956
         - "--build=//..."
         - "--install=gubernator/test_requirements.txt"
         - "--test=//... //verify:verify-all"
@@ -3547,7 +3548,7 @@ postsubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171013-53473ec5-0.6.1
+      - image: gcr.io/k8s-testimages/bazelbuild:v20171020-844b54d7-0.7.0
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -3555,6 +3556,12 @@ postsubmits:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/logs"
+        - "--" # end bootstrap args, scenario args below
+        - "--batch" # mitigation for https://github.com/bazelbuild/bazel/issues/3956
+        - "--build=//..."
+        - "--install=gubernator/test_requirements.txt"
+        - "--test=//... //verify:verify-all"
+        - "--test-args=--test_output=errors"
         env:
         - name: TEST_TMPDIR
           value: /root/.cache/bazel
@@ -17336,7 +17343,7 @@ periodics:
   agent: kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bazelbuild:v20171013-53473ec5-0.6.1
+    - image: gcr.io/k8s-testimages/bazelbuild:v20171020-844b54d7-0.7.0
       args:
       - "--clean"
       - "--git-cache=/root/.cache/git"
@@ -17344,6 +17351,12 @@ periodics:
       - "--repo=k8s.io/test-infra=master"
       - "--service-account=/etc/service-account/service-account.json"
       - "--upload=gs://kubernetes-jenkins/logs"
+      - "--" # end bootstrap args, scenario args below
+      - "--batch" # mitigation for https://github.com/bazelbuild/bazel/issues/3956
+      - "--build=//..."
+      - "--install=gubernator/test_requirements.txt"
+      - "--test=//... //verify:verify-all"
+      - "--test-args=--test_output=errors"
       env:
       - name: TEST_TMPDIR
         value: /root/.cache/bazel
