@@ -39,6 +39,7 @@ var (
 
 	configPath   = flag.String("config-path", "/etc/config/config", "Path to config.yaml.")
 	buildCluster = flag.String("build-cluster", "", "Path to file containing a YAML-marshalled kube.Cluster object. If empty, uses the local cluster.")
+	selector     = flag.String("label-selector", kube.EmptySelector, "Label selector to be applied in prowjobs. See https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors for constructing a label selector.")
 
 	githubEndpoint  = flag.String("github-endpoint", "https://api.github.com", "GitHub's API endpoint.")
 	githubTokenFile = flag.String("github-token-file", "/etc/github/oauth", "Path to the file containing the GitHub OAuth token.")
@@ -87,7 +88,7 @@ func main() {
 		ghc = github.NewClient(oauthSecret, *githubEndpoint)
 	}
 
-	c, err := plank.NewController(kc, pkc, ghc, configAgent, *totURL)
+	c, err := plank.NewController(kc, pkc, ghc, configAgent, *totURL, *selector)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error creating plank controller.")
 	}

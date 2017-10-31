@@ -36,6 +36,7 @@ import (
 
 var (
 	configPath = flag.String("config-path", "/etc/config/config", "Path to config.yaml.")
+	selector   = flag.String("label-selector", kube.EmptySelector, "Label selector to be applied in prowjobs. See https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors for constructing a label selector.")
 
 	jenkinsURL             = flag.String("jenkins-url", "http://jenkins-proxy", "Jenkins URL")
 	jenkinsUserName        = flag.String("jenkins-user", "jenkins-trigger", "Jenkins username")
@@ -102,7 +103,7 @@ func main() {
 		ghc = github.NewClient(oauthSecret, *githubEndpoint)
 	}
 
-	c := jenkins.NewController(kc, jc, ghc, configAgent)
+	c := jenkins.NewController(kc, jc, ghc, configAgent, *selector)
 
 	// Serve Jenkins logs from here and proxy deck to use this endpoint
 	// instead of baking agent-specific logic in deck.
