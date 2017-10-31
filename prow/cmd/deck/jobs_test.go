@@ -28,7 +28,7 @@ import (
 
 type fkc []kube.ProwJob
 
-func (f fkc) ListProwJobs(l map[string]string) ([]kube.ProwJob, error) {
+func (f fkc) ListProwJobs(s string) ([]kube.ProwJob, error) {
 	return f, nil
 }
 

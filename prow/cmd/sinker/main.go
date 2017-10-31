@@ -18,6 +18,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -28,10 +29,10 @@ import (
 )
 
 type kubeClient interface {
-	ListPods(labels map[string]string) ([]kube.Pod, error)
+	ListPods(selector string) ([]kube.Pod, error)
 	DeletePod(name string) error
 
-	ListProwJobs(labels map[string]string) ([]kube.ProwJob, error)
+	ListProwJobs(selector string) ([]kube.ProwJob, error)
 	DeleteProwJob(name string) error
 }
 
@@ -88,7 +89,7 @@ func main() {
 
 func clean(kc, pkc kubeClient, configAgent configAgent) {
 	// Clean up old prow jobs first.
-	prowJobs, err := kc.ListProwJobs(nil)
+	prowJobs, err := kc.ListProwJobs(kube.EmptySelector)
 	if err != nil {
 		logrus.WithError(err).Error("Error listing prow jobs.")
 		return
@@ -137,8 +138,8 @@ func clean(kc, pkc kubeClient, configAgent configAgent) {
 	}
 
 	// Now clean up old pods.
-	labels := map[string]string{kube.CreatedByProw: "true"}
-	pods, err := pkc.ListPods(labels)
+	selector := fmt.Sprintf("%s = %s", kube.CreatedByProw, "true")
+	pods, err := pkc.ListPods(selector)
 	if err != nil {
 		logrus.WithError(err).Error("Error listing pods.")
 		return

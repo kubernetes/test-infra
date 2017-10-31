@@ -42,7 +42,7 @@ const (
 
 type kubeClient interface {
 	CreateProwJob(kube.ProwJob) (kube.ProwJob, error)
-	ListProwJobs(map[string]string) ([]kube.ProwJob, error)
+	ListProwJobs(string) ([]kube.ProwJob, error)
 	ReplaceProwJob(string, kube.ProwJob) (kube.ProwJob, error)
 }
 
@@ -134,7 +134,7 @@ func (c *Controller) incrementNumPendingJobs(job string) {
 
 // Sync does one sync iteration.
 func (c *Controller) Sync() error {
-	pjs, err := c.kc.ListProwJobs(nil)
+	pjs, err := c.kc.ListProwJobs(kube.EmptySelector)
 	if err != nil {
 		return fmt.Errorf("error listing prow jobs: %v", err)
 	}

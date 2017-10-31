@@ -44,11 +44,11 @@ const (
 
 type kubeClient interface {
 	CreateProwJob(kube.ProwJob) (kube.ProwJob, error)
-	ListProwJobs(map[string]string) ([]kube.ProwJob, error)
+	ListProwJobs(string) ([]kube.ProwJob, error)
 	ReplaceProwJob(string, kube.ProwJob) (kube.ProwJob, error)
 
 	CreatePod(kube.Pod) (kube.Pod, error)
-	ListPods(map[string]string) ([]kube.Pod, error)
+	ListPods(string) ([]kube.Pod, error)
 	DeletePod(string) error
 }
 
@@ -143,12 +143,12 @@ func NewController(kc, pkc *kube.Client, ghc *github.Client, ca *config.Agent, t
 
 // Sync does one sync iteration.
 func (c *Controller) Sync() error {
-	pjs, err := c.kc.ListProwJobs(nil)
+	pjs, err := c.kc.ListProwJobs(kube.EmptySelector)
 	if err != nil {
 		return fmt.Errorf("error listing prow jobs: %v", err)
 	}
-	labels := map[string]string{kube.CreatedByProw: "true"}
-	pods, err := c.pkc.ListPods(labels)
+	selector := fmt.Sprintf("%s = %s", kube.CreatedByProw, "true")
+	pods, err := c.pkc.ListPods(selector)
 	if err != nil {
 		return fmt.Errorf("error listing pods: %v", err)
 	}

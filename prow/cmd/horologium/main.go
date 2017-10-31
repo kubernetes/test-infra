@@ -57,12 +57,12 @@ func main() {
 }
 
 type kubeClient interface {
-	ListProwJobs(map[string]string) ([]kube.ProwJob, error)
+	ListProwJobs(string) ([]kube.ProwJob, error)
 	CreateProwJob(kube.ProwJob) (kube.ProwJob, error)
 }
 
 func sync(kc kubeClient, cfg *config.Config, now time.Time) error {
-	jobs, err := kc.ListProwJobs(nil)
+	jobs, err := kc.ListProwJobs(kube.EmptySelector)
 	if err != nil {
 		return fmt.Errorf("error listing prow jobs: %v", err)
 	}
