@@ -2793,6 +2793,7 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--" # end bootstrap args, scenario args below
+        - "--batch" # mitigation for https://github.com/bazelbuild/bazel/issues/3956
         - "--build=//..."
         - "--install=gubernator/test_requirements.txt"
         - "--test=//... //verify:verify-all"
