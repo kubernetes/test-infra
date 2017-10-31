@@ -63,7 +63,7 @@ func reportStatus(ghc GithubClient, pj kube.ProwJob, cd string) error {
 	// Updating Children
 	if pj.Status.State != kube.SuccessState {
 		for _, nj := range pj.Spec.RunAfterSuccess {
-			cpj := pjutil.NewProwJob(nj)
+			cpj := pjutil.NewProwJob(nj, pj.Metadata.Labels)
 			cpj.Status.State = pj.Status.State
 			cpj.Status.Description = cd
 			cpj.Spec.Refs = refs

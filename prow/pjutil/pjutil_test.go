@@ -131,6 +131,7 @@ func TestProwJobToPod(t *testing.T) {
 	tests := []struct {
 		podName string
 		buildID string
+		labels  map[string]string
 		pjSpec  kube.ProwJobSpec
 
 		expected *kube.Pod
@@ -138,6 +139,7 @@ func TestProwJobToPod(t *testing.T) {
 		{
 			podName: "pod",
 			buildID: "blabla",
+			labels:  map[string]string{"needstobe": "inherited"},
 			pjSpec: kube.ProwJobSpec{
 				Type: kube.PresubmitJob,
 				Job:  "job-name",
@@ -170,6 +172,7 @@ func TestProwJobToPod(t *testing.T) {
 					Labels: map[string]string{
 						kube.CreatedByProw: "true",
 						"type":             "presubmit",
+						"needstobe":        "inherited",
 					},
 					Annotations: map[string]string{
 						"job": "job-name",
@@ -202,7 +205,7 @@ func TestProwJobToPod(t *testing.T) {
 
 	for i, test := range tests {
 		t.Logf("test run #%d", i)
-		pj := kube.ProwJob{Metadata: kube.ObjectMeta{Name: test.podName}, Spec: test.pjSpec}
+		pj := kube.ProwJob{Metadata: kube.ObjectMeta{Name: test.podName, Labels: test.labels}, Spec: test.pjSpec}
 		got := ProwJobToPod(pj, test.buildID)
 		// TODO: For now I am just comparing fields manually, eventually we
 		// should port the semantic.DeepEqual helper from the api-machinery
@@ -217,6 +220,16 @@ func TestProwJobToPod(t *testing.T) {
 			}
 			if key == "type" && value == string(pj.Spec.Type) {
 				foundTypeLabel = true
+			}
+			var match bool
+			for k, v := range test.expected.Metadata.Labels {
+				if k == key && v == value {
+					match = true
+					break
+				}
+			}
+			if !match {
+				t.Errorf("expected labels: %v, got: %v", test.expected.Metadata.Labels, got.Metadata.Labels)
 			}
 		}
 		for key, value := range got.Metadata.Annotations {

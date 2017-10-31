@@ -628,10 +628,6 @@ class JobTest(unittest.TestCase):
                                   'both set or unset: %s' % job)
 
                     if job.startswith('pull-kubernetes-') and not node_e2e:
-                        if not 'pull-kubernetes-federation-e2e-gce' in job:
-                            # pull-kubernetes-federation-e2e-gce job uses a specific cluster names
-                            # instead of dynamic cluster names.
-                            self.assertIn('--cluster=', args)
                         if 'gke' in job:
                             stage = 'gs://kubernetes-release-dev/ci'
                             suffix = True
@@ -794,11 +790,6 @@ class JobTest(unittest.TestCase):
             'ci-kubernetes-e2e-gke-large-deploy': 'ci-kubernetes-scale-*',
             'ci-kubernetes-e2e-gke-large-teardown': 'ci-kubernetes-scale-*',
             'ci-kubernetes-e2e-gke-scale-correctness': 'ci-kubernetes-scale-*',
-            'ci-kubernetes-e2e-gce-federation': 'ci-kubernetes-federation-*',
-            'pull-kubernetes-federation-e2e-gce': 'pull-kubernetes-federation-e2e-gce-*',
-            'ci-kubernetes-pull-gce-federation-deploy': 'pull-kubernetes-federation-e2e-gce-*',
-            'pull-kubernetes-federation-e2e-gce-canary': 'pull-kubernetes-federation-e2e-gce-*',
-            'ci-kubernetes-pull-gce-federation-deploy-canary': 'pull-kubernetes-federation-e2e-gce-*',
             'pull-kubernetes-e2e-gce': 'pull-kubernetes-e2e-gce-*',
             'pull-kubernetes-e2e-gce-canary': 'pull-kubernetes-e2e-gce-*',
             'ci-kubernetes-e2e-gce': 'ci-kubernetes-e2e-gce-*',
@@ -812,6 +803,7 @@ class JobTest(unittest.TestCase):
             'ci-kubernetes-node-kubelet-stable2': 'ci-kubernetes-node-kubelet-*',
             'ci-kubernetes-node-kubelet-stable3': 'ci-kubernetes-node-kubelet-*',
             'ci-kubernetes-node-kubelet-non-cri-1-6': 'ci-kubernetes-node-kubelet-*',
+            'pull-federation-e2e-gce': 'ci-kubernetes-pull-gce-federation-deploy',
         }
         for soak_prefix in [
                 'ci-kubernetes-soak-gce-1.5',
@@ -822,7 +814,6 @@ class JobTest(unittest.TestCase):
                 'ci-kubernetes-soak-gci-gce-1.5',
                 'ci-kubernetes-soak-gce-gci',
                 'ci-kubernetes-soak-gke-gci',
-                'ci-kubernetes-soak-gce-federation',
                 'ci-kubernetes-soak-gci-gce-stable1',
                 'ci-kubernetes-soak-gci-gce-1.6',
                 'ci-kubernetes-soak-gci-gce-1-7',

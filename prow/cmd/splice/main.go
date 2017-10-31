@@ -287,7 +287,7 @@ func main() {
 	for range time.Tick(1 * time.Minute) {
 		start := time.Now()
 		// List batch jobs, only start a new one if none are active.
-		currentJobs, err := kc.ListProwJobs(nil)
+		currentJobs, err := kc.ListProwJobs(kube.EmptySelector)
 		if err != nil {
 			log.WithError(err).Error("Error listing prow jobs.")
 			continue
@@ -341,7 +341,7 @@ func main() {
 		refs := splicer.makeBuildRefs(*orgName, *repoName, batchPRs)
 		presubmits := configAgent.Config().Presubmits[fmt.Sprintf("%s/%s", *orgName, *repoName)]
 		for _, job := range neededPresubmits(presubmits, currentJobs, refs) {
-			if _, err := kc.CreateProwJob(pjutil.NewProwJob(pjutil.BatchSpec(job, refs))); err != nil {
+			if _, err := kc.CreateProwJob(pjutil.NewProwJob(pjutil.BatchSpec(job, refs), job.Labels)); err != nil {
 				log.WithError(err).WithField("job", job.Name).Error("Error starting batch job.")
 			}
 		}

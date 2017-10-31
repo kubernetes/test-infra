@@ -560,6 +560,42 @@ func TestListPullRequestComments(t *testing.T) {
 	}
 }
 
+func TestListReviews(t *testing.T) {
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			t.Errorf("Bad method: %s", r.Method)
+		}
+		if r.URL.Path == "/repos/k8s/kuber/pulls/15/reviews" {
+			reviews := []Review{{ID: 1}}
+			b, err := json.Marshal(reviews)
+			if err != nil {
+				t.Fatalf("Didn't expect error: %v", err)
+			}
+			w.Header().Set("Link", fmt.Sprintf(`<blorp>; rel="first", <https://%s/someotherpath>; rel="next"`, r.Host))
+			fmt.Fprint(w, string(b))
+		} else if r.URL.Path == "/someotherpath" {
+			reviews := []Review{{ID: 2}}
+			b, err := json.Marshal(reviews)
+			if err != nil {
+				t.Fatalf("Didn't expect error: %v", err)
+			}
+			fmt.Fprint(w, string(b))
+		} else {
+			t.Errorf("Bad request path: %s", r.URL.Path)
+		}
+	}))
+	defer ts.Close()
+	c := getClient(ts.URL)
+	reviews, err := c.ListReviews("k8s", "kuber", 15)
+	if err != nil {
+		t.Errorf("Didn't expect error: %v", err)
+	} else if len(reviews) != 2 {
+		t.Errorf("Expected two reviews, found %d: %v", len(reviews), reviews)
+	} else if reviews[0].ID != 1 || reviews[1].ID != 2 {
+		t.Errorf("Wrong review IDs: %v", reviews)
+	}
+}
+
 func TestRequestReview(t *testing.T) {
 	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
@@ -1019,5 +1055,31 @@ func TestListCollaborators(t *testing.T) {
 	}
 	if users[1].Login != "bar" {
 		t.Errorf("Wrong user login for index 1: %v", users[1])
+	}
+}
+
+func TestListIssueEvents(t *testing.T) {
+	ts := simpleTestServer(
+		t,
+		"/repos/org/repo/issues/1/events",
+		[]ListedIssueEvent{
+			{Event: IssueActionLabeled},
+			{Event: IssueActionClosed},
+		},
+	)
+	defer ts.Close()
+	c := getClient(ts.URL)
+	events, err := c.ListIssueEvents("org", "repo", 1)
+	if err != nil {
+		t.Errorf("Didn't expect error: %v", err)
+	} else if len(events) != 2 {
+		t.Errorf("Expected two events, found %d: %v", len(events), events)
+		return
+	}
+	if events[0].Event != IssueActionLabeled {
+		t.Errorf("Wrong event for index 0: %v", events[0])
+	}
+	if events[1].Event != IssueActionClosed {
+		t.Errorf("Wrong event for index 1: %v", events[1])
 	}
 }

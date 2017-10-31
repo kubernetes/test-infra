@@ -6,7 +6,7 @@ project: community
 # Otherwise it's going to take an extra-cycle to detect the label change.
 # Run blunderbuss before approval-handler, so that we can suggest approvers
 # based on assigned reviewer.
-pr-mungers: blunderbuss, submit-queue, needs-rebase, sig-mention-handler, lgtm-after-commit, comment-deleter, close-stale
+pr-mungers: blunderbuss,close-stale,comment-deleter,lgtm-after-commit,needs-rebase,owner-label,sig-mention-handler,submit-queue
 state: open
 token-file: /etc/secret-volume/token
 period: 5m
@@ -15,7 +15,7 @@ github-key-file: /etc/hook-secret-volume/secret
 
 # status contexts options.
 protected-branches-extra-contexts: "cla/linuxfoundation"
-required-retest-contexts: ""
+required-retest-contexts: "pull-community-verify"
 
 # submit-queue options.
 protected-branches: "master"
@@ -28,7 +28,6 @@ gate-approved: false
 
 # munger specific options.
 # label-file: "/gitrepos/community/labels.yaml"
-
 use-reviewers: true
-
 generated-files-config: .generated_files
+alias-file: "/gitrepos/community/OWNERS_ALIASES"

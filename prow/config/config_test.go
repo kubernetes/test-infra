@@ -217,7 +217,7 @@ func TestJobDoesNotHaveDockerSocket(t *testing.T) {
 	for _, periodic := range c.Periodics {
 		if periodic.Spec != nil {
 			if err := CheckDockerSocketVolumes(periodic.Spec.Volumes); err != nil {
-				t.Errorf("Error in postsubmit: %v", err)
+				t.Errorf("Error in periodic: %v", err)
 			}
 		}
 	}
@@ -540,7 +540,17 @@ func TestBazelbuildArgs(t *testing.T) {
 	}
 	pinnedJobs := map[string]string{
 		//job: reason for pinning
-		"pull-test-infra-bazel-canary": "canary testing the latest bazelbuild",
+		"pull-test-infra-bazel":              "test-infra adopts bazel upgrades first",
+		"ci-test-infra-bazel":                "test-infra adopts bazel upgrades first",
+		"pull-test-infra-bazel-canary":       "canary testing the latest bazel",
+		"pull-kubernetes-bazel-build-canary": "canary testing the latest bazel",
+		"pull-kubernetes-bazel-test-canary":  "canary testing the latest bazel",
+	}
+	// auto insert pull-security-kubernetes-*
+	for job, reason := range pinnedJobs {
+		if strings.HasPrefix(job, "pull-kubernetes") {
+			pinnedJobs[strings.Replace(job, "pull-kubernetes", "pull-security-kubernetes", 1)] = reason
+		}
 	}
 	maxTag := ""
 	maxN := 0
@@ -796,6 +806,65 @@ func TestPullKubernetesCross(t *testing.T) {
 		if got != test.expected {
 			t.Errorf("expected changes (%s) to run cross job: %t, got: %t",
 				test.changedFile, test.expected, got)
+		}
+	}
+}
+
+// CheckLatestUsesImagePullPolicy returns an error if an image is a `latest-.*` tag,
+// but doesn't have imagePullPolicy: Always
+func CheckLatestUsesImagePullPolicy(spec *kube.PodSpec) error {
+	for _, container := range spec.Containers {
+		if strings.Contains(container.Image, ":latest-") {
+			// If the job doesn't specify imagePullPolicy: Always,
+			// we aren't guaranteed to check for the latest version of the image.
+			if container.ImagePullPolicy == "" || container.ImagePullPolicy != "Always" {
+				return errors.New("job uses latest- tag, but does not specify imagePullPolicy: Always")
+			}
+		}
+		if strings.HasSuffix(container.Image, ":latest") {
+			// The k8s default for `:latest` images is `imagePullPolicy: Always`
+			// Check the job didn't override
+			if container.ImagePullPolicy != "" && container.ImagePullPolicy != "Always" {
+				return errors.New("job uses latest tag, but does not specify imagePullPolicy: Always")
+			}
+		}
+
+	}
+	return nil
+}
+
+// Make sure jobs that use `latest-*` tags specify `imagePullPolicy: Always`
+func TestLatestUsesImagePullPolicy(t *testing.T) {
+	c, err := Load("../config.yaml")
+	if err != nil {
+		t.Fatalf("Could not load config: %v", err)
+	}
+
+	for _, pres := range c.Presubmits {
+		for _, presubmit := range pres {
+			if presubmit.Spec != nil {
+				if err := CheckLatestUsesImagePullPolicy(presubmit.Spec); err != nil {
+					t.Errorf("Error in presubmit %q: %v", presubmit.Name, err)
+				}
+			}
+		}
+	}
+
+	for _, posts := range c.Postsubmits {
+		for _, postsubmit := range posts {
+			if postsubmit.Spec != nil {
+				if err := CheckLatestUsesImagePullPolicy(postsubmit.Spec); err != nil {
+					t.Errorf("Error in postsubmit %q: %v", postsubmit.Name, err)
+				}
+			}
+		}
+	}
+
+	for _, periodic := range c.Periodics {
+		if periodic.Spec != nil {
+			if err := CheckLatestUsesImagePullPolicy(periodic.Spec); err != nil {
+				t.Errorf("Error in periodic %q: %v", periodic.Name, err)
+			}
 		}
 	}
 }

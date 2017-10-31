@@ -103,13 +103,13 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent) e
 			nonexistent = append(nonexistent, "sig/"+sigMatch[1])
 			continue
 		}
-		if !hasLabel(sigLabel, labels) {
+		if !github.HasLabel(sigLabel, labels) {
 			if err := gc.AddLabel(org, repo, e.Number, sigLabel); err != nil {
 				log.WithError(err).Errorf("Github failed to add the following label: %s", sigLabel)
 			}
 		}
 
-		if kindLabel, ok := kindMap[sigMatch[2]]; ok && !hasLabel(kindLabel, labels) {
+		if kindLabel, ok := kindMap[sigMatch[2]]; ok && !github.HasLabel(kindLabel, labels) {
 			if err := gc.AddLabel(org, repo, e.Number, kindLabel); err != nil {
 				log.WithError(err).Errorf("Github failed to add the following label: %s", kindLabel)
 			}
@@ -132,13 +132,4 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent) e
 
 	msg := fmt.Sprintf(chatBack, strings.Join(toRepeat, ", "))
 	return gc.CreateComment(org, repo, e.Number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, msg))
-}
-
-func hasLabel(str string, labels []github.Label) bool {
-	for _, label := range labels {
-		if strings.ToLower(label.Name) == strings.ToLower(str) {
-			return true
-		}
-	}
-	return false
 }

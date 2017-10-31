@@ -69,7 +69,6 @@ def clean_project(project, hours=24, dryrun=False):
 
 
 BLACKLIST = [
-    '-soak', # We need to keep deployed resources for test uses
     'kubernetes-scale', # Let it's up/down job handle the resources
     'k8s-scale-testing', # As it can be running some manual experiments
 ]
@@ -116,7 +115,10 @@ def check_ci_jobs():
                 continue
             if project in PR_PROJECTS:
                 continue # CI janitor skips all PR jobs
-            clean_project(project)
+            clean_hours = 24
+            if '-soak' in project:
+                clean_hours = 24 * 10
+            clean_project(project, clean_hours)
 
     # Hard code node-ci project here
     clean_project('k8s-jkns-ci-node-e2e')

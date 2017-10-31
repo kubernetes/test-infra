@@ -788,7 +788,7 @@ testSuites:
   nosnat:
     args:
     - --timeout=20m
-    - --test_args=--ginkgo.focus=\\[Feature:NoSNAT\\] --minStartupPods=8
+    - --test_args=--ginkgo.focus=\[Feature:NoSNAT\] --minStartupPods=8
     - --ginkgo-parallel=1
 
 # The following settings are used by node e2e tests.

@@ -218,13 +218,20 @@ func (c *Client) doRequest(method, path string) (*http.Response, error) {
 // the ProwJob is going to be used as the buildId parameter that will help
 // us track the build before it's scheduled by Jenkins.
 func (c *Client) Build(pj *kube.ProwJob) error {
-	c.log(fmt.Sprintf("Build (type=%s job=%s buildId=%s)", pj.Spec.Type, pj.Spec.Job, pj.Metadata.Name))
-	u, err := url.Parse(fmt.Sprintf("%s/job/%s/buildWithParameters", c.baseURL, pj.Spec.Job))
+	return c.BuildFromSpec(&pj.Spec, pj.Metadata.Name)
+}
+
+// BuildFromSpec triggers a Jenkins build for the provided ProwJobSpec. The
+// name of the ProwJob is going to be used as the buildId parameter that will
+// help us track the build before it's scheduled by Jenkins.
+func (c *Client) BuildFromSpec(spec *kube.ProwJobSpec, buildId string) error {
+	c.log(fmt.Sprintf("Build (type=%s job=%s buildId=%s)", spec.Type, spec.Job, buildId))
+	u, err := url.Parse(fmt.Sprintf("%s/job/%s/buildWithParameters", c.baseURL, spec.Job))
 	if err != nil {
 		return err
 	}
-	env := pjutil.EnvForSpec(pj.Spec)
-	env[buildID] = pj.Metadata.Name
+	env := pjutil.EnvForSpec(*spec)
+	env[buildID] = buildId
 
 	q := u.Query()
 	for key, value := range env {

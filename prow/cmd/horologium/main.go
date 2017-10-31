@@ -57,12 +57,12 @@ func main() {
 }
 
 type kubeClient interface {
-	ListProwJobs(map[string]string) ([]kube.ProwJob, error)
+	ListProwJobs(string) ([]kube.ProwJob, error)
 	CreateProwJob(kube.ProwJob) (kube.ProwJob, error)
 }
 
 func sync(kc kubeClient, cfg *config.Config, now time.Time) error {
-	jobs, err := kc.ListProwJobs(nil)
+	jobs, err := kc.ListProwJobs(kube.EmptySelector)
 	if err != nil {
 		return fmt.Errorf("error listing prow jobs: %v", err)
 	}
@@ -71,7 +71,7 @@ func sync(kc kubeClient, cfg *config.Config, now time.Time) error {
 	for _, p := range cfg.Periodics {
 		j, ok := latestJobs[p.Name]
 		if !ok || (j.Complete() && now.Sub(j.Status.StartTime) > p.GetInterval()) {
-			if _, err := kc.CreateProwJob(pjutil.NewProwJob(pjutil.PeriodicSpec(p))); err != nil {
+			if _, err := kc.CreateProwJob(pjutil.NewProwJob(pjutil.PeriodicSpec(p), p.Labels)); err != nil {
 				return fmt.Errorf("error creating prow job: %v", err)
 			}
 		}

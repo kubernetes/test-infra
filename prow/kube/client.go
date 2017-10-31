@@ -36,6 +36,7 @@ const (
 	inClusterBaseURL = "https://kubernetes.default"
 	maxRetries       = 8
 	retryDelay       = 2 * time.Second
+	EmptySelector    = ""
 )
 
 type Logger interface {
@@ -315,14 +316,6 @@ func NewClient(c *Cluster, namespace string) (*Client, error) {
 	}, nil
 }
 
-func labelsToSelector(labels map[string]string) string {
-	var sel []string
-	for k, v := range labels {
-		sel = append(sel, fmt.Sprintf("%s = %s", k, v))
-	}
-	return strings.Join(sel, ",")
-}
-
 func (c *Client) GetPod(name string) (Pod, error) {
 	c.log("GetPod", name)
 	var retPod Pod
@@ -333,15 +326,15 @@ func (c *Client) GetPod(name string) (Pod, error) {
 	return retPod, err
 }
 
-func (c *Client) ListPods(labels map[string]string) ([]Pod, error) {
-	c.log("ListPods", labels)
+func (c *Client) ListPods(selector string) ([]Pod, error) {
+	c.log("ListPods", selector)
 	var pl struct {
 		Items []Pod `json:"items"`
 	}
 	err := c.request(&request{
 		method: http.MethodGet,
 		path:   fmt.Sprintf("/api/v1/namespaces/%s/pods", c.namespace),
-		query:  map[string]string{"labelSelector": labelsToSelector(labels)},
+		query:  map[string]string{"labelSelector": selector},
 	}, &pl)
 	return pl.Items, err
 }
@@ -375,15 +368,15 @@ func (c *Client) GetProwJob(name string) (ProwJob, error) {
 	return pj, err
 }
 
-func (c *Client) ListProwJobs(labels map[string]string) ([]ProwJob, error) {
-	c.log("ListProwJobs", labels)
+func (c *Client) ListProwJobs(selector string) ([]ProwJob, error) {
+	c.log("ListProwJobs", selector)
 	var jl struct {
 		Items []ProwJob `json:"items"`
 	}
 	err := c.request(&request{
 		method: http.MethodGet,
 		path:   fmt.Sprintf("/apis/prow.k8s.io/v1/namespaces/%s/prowjobs", c.namespace),
-		query:  map[string]string{"labelSelector": labelsToSelector(labels)},
+		query:  map[string]string{"labelSelector": selector},
 	}, &jl)
 	return jl.Items, err
 }

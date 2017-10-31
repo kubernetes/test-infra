@@ -36,6 +36,7 @@ go_library(
         "//prow/config:go_default_library",
         "//prow/github:go_default_library",
         "//prow/plugins:go_default_library",
+        "//prow/plugins/approve:go_default_library",
         "//prow/plugins/assign:go_default_library",
         "//prow/plugins/cla:go_default_library",
         "//prow/plugins/close:go_default_library",

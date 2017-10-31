@@ -164,6 +164,12 @@ presubmits:
       - name: cache-ssd
         hostPath:
           path: /mnt/disks/ssd0
+  - name: pull-federation-e2e-gce
+    agent: jenkins
+    always_run: false
+    context: pull-federation-e2e-gce
+    rerun_command: "/test pull-federation-e2e-gce"
+    trigger: "(?m)^/test pull-federation-e2e-gce,?(\\s+|$)"
   kubernetes/heapster:
   - name: pull-heapster-e2e
     agent: jenkins
@@ -257,7 +263,7 @@ presubmits:
       trigger: "(?m)^/test( all| pull-cri-containerd-node-e2e),?(\\s+|$)"
       spec:
         containers:
-        - image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+        - image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
           args:
           - --root=/go/src
           - "--clean"
@@ -363,7 +369,7 @@ presubmits:
       - release-1.8 # different target set
       spec:
         containers:
-        - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171023-10ade723
+        - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171030-e52272c1
           args:
           - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
           - "--upload=gs://kubernetes-jenkins/pr-logs"
@@ -462,7 +468,7 @@ presubmits:
       - release-1.8
       spec:
         containers:
-        - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171023-10ade723
+        - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171030-e52272c1
           args:
           - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
           - "--upload=gs://kubernetes-jenkins/pr-logs"
@@ -559,7 +565,7 @@ presubmits:
       - release-1.6
       spec:
         containers:
-        - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171023-10ade723
+        - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171030-e52272c1
           args:
           - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
           - "--upload=gs://kubernetes-jenkins/pr-logs"
@@ -600,6 +606,53 @@ presubmits:
         - name: cache-ssd
           hostPath:
             path: /mnt/disks/ssd0
+
+  - name: pull-kubernetes-bazel-build-canary
+    agent: kubernetes
+    context: pull-kubernetes-bazel-build-canary
+    always_run: false
+    rerun_command: "/test pull-kubernetes-bazel-build-canary"
+    trigger: "(?m)^/test pull-kubernetes-bazel-build-canary,?(\\s+|$)"
+    branches:
+    - master
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/bazelbuild:latest-latest
+        imagePullPolicy: Always
+        args:
+        - "--clean"
+        - "--git-cache=/root/.cache/git"
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--" # end bootstrap args, scenario args below
+        - "--batch" # mitigation for https://github.com/bazelbuild/bazel/issues/3956
+        - "--build=//... -//vendor/..."
+        - "--release=//build/release-tars"
+        env:
+        - name: TEST_TMPDIR
+          value: /root/.cache/bazel
+        # Bazel needs privileged mode in order to sandbox builds.
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: service
+          mountPath: /etc/service-account
+          readOnly: true
+        - name: cache-ssd
+          mountPath: /root/.cache
+        ports:
+        - containerPort: 9999
+          hostPort: 9999
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
+      - name: cache-ssd
+        hostPath:
+          path: /mnt/disks/ssd0
+
   - name: pull-kubernetes-bazel-test
     agent: kubernetes
     context: pull-kubernetes-bazel-test
@@ -740,6 +793,56 @@ presubmits:
       - name: cache-ssd
         hostPath:
           path: /mnt/disks/ssd0
+
+  - name: pull-kubernetes-bazel-test-canary
+    agent: kubernetes
+    context: pull-kubernetes-bazel-test-canary
+    always_run: false
+    rerun_command: "/test pull-kubernetes-bazel-test-canary"
+    trigger: "(?m)^/test pull-kubernetes-bazel-test-canary,?(\\s+|$)"
+    branches:
+    - master
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/bazelbuild:latest-latest
+        imagePullPolicy: Always
+        args:
+        - "--clean"
+        - "--git-cache=/root/.cache/git"
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--" # end bootstrap args, scenario args below
+        - "--batch" # mitigation for https://github.com/bazelbuild/bazel/issues/3956
+        - "--test=//... -//build/... -//vendor/..."
+        - "--manual-test=//hack:verify-all"
+        - "--test-args=--build_tag_filters=-e2e,-integration"
+        - "--test-args=--test_tag_filters=-e2e,-integration"
+        - "--test-args=--flaky_test_attempts=3"
+        env:
+        - name: TEST_TMPDIR
+          value: /root/.cache/bazel
+        # Bazel needs privileged mode in order to sandbox builds.
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: service
+          mountPath: /etc/service-account
+          readOnly: true
+        - name: cache-ssd
+          mountPath: /root/.cache
+        ports:
+        - containerPort: 9999
+          hostPort: 9999
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
+      - name: cache-ssd
+        hostPath:
+          path: /mnt/disks/ssd0
+
   - name: pull-kubernetes-cross
     agent: jenkins
     context: pull-kubernetes-cross
@@ -773,6 +876,8 @@ presubmits:
         - --
         - --build=bazel
         - --mode=local
+        # this only works for 1.7+
+        - --runtime-config=batch/v2alpha1=true,admissionregistration.k8s.io/v1alpha1=true
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
@@ -789,7 +894,7 @@ presubmits:
         # https://docs.bazel.build/versions/master/output_directories.html#documentation-of-the-current-bazel-output-directory-layout
         - name: TEST_TMPDIR
           value: /root/.cache/bazel
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
         volumeMounts:
         - mountPath: /etc/service-account
           name: service
@@ -836,6 +941,8 @@ presubmits:
         - --
         - --build=bazel
         - --mode=local
+        # this only works for 1.7+
+        - --runtime-config=batch/v2alpha1=true,admissionregistration.k8s.io/v1alpha1=true
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
@@ -852,7 +959,7 @@ presubmits:
         # https://docs.bazel.build/versions/master/output_directories.html#documentation-of-the-current-bazel-output-directory-layout
         - name: TEST_TMPDIR
           value: /root/.cache/bazel
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-1.8
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-1.8
         volumeMounts:
         - mountPath: /etc/service-account
           name: service
@@ -899,6 +1006,8 @@ presubmits:
         - --
         - --build=bazel
         - --mode=local
+        # this only works for 1.7+
+        - --runtime-config=batch/v2alpha1=true,admissionregistration.k8s.io/v1alpha1=true
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
@@ -915,7 +1024,7 @@ presubmits:
         # https://docs.bazel.build/versions/master/output_directories.html#documentation-of-the-current-bazel-output-directory-layout
         - name: TEST_TMPDIR
           value: /root/.cache/bazel
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-1.7
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-1.7
         volumeMounts:
         - mountPath: /etc/service-account
           name: service
@@ -962,7 +1071,7 @@ presubmits:
     trigger: "(?m)^/test( all| pull-kubernetes-e2e-gce-device-plugin-gpu),?(\\s+|$)"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
         args:
         - --root=/go/src
         - "--clean"
@@ -1024,7 +1133,7 @@ presubmits:
     trigger: "(?m)^/test pull-kubernetes-e2e-gke-device-plugin-gpu,?(\\s+|$)"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
         args:
         - --root=/go/src
         - "--clean"
@@ -1096,7 +1205,7 @@ presubmits:
     trigger: "(?m)^/test pull-kubernetes-e2e-kops-aws-prow,?(\\s+|$)"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
         args:
         - --root=/go/src
         - "--clean"
@@ -1165,7 +1274,7 @@ presubmits:
     trigger: "(?m)^/test pull-kubernetes-e2e-kops-aws-prow,?(\\s+|$)"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
         args:
         - --root=/go/src
         - "--clean"
@@ -1223,75 +1332,6 @@ presubmits:
         hostPath:
           path: /mnt/disks/ssd0
 
-  - name: pull-kubernetes-federation-e2e-gce
-    agent: jenkins
-    skip_branches:
-    - release-1.6
-    always_run: false
-    context: pull-kubernetes-federation-e2e-gce
-    rerun_command: "/test pull-kubernetes-federation-e2e-gce"
-    trigger: "(?m)^/test pull-kubernetes-federation-e2e-gce,?(\\s+|$)"
-  - name: pull-kubernetes-federation-e2e-gce-canary
-    agent: kubernetes
-    skip_branches:
-    - release-1.6
-    always_run: false
-    skip_report: false
-    max_concurrency: 12
-    context: pull-kubernetes-federation-e2e-gce-canary
-    rerun_command: "/test pull-kubernetes-federation-e2e-gce-canary"
-    trigger: "(?m)^/test pull-kubernetes-federation-e2e-gce-canary,?(\\s+|$)"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
-        args:
-        - --root=/go/src
-        - "--clean"
-        - "--git-cache=/root/.cache/git"
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--repo=k8s.io/release"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--timeout=110"
-        env:
-        - name: GOOGLE_APPLICATION_CREDENTIALS
-          value: /etc/service-account/service-account.json
-        - name: USER
-          value: prow
-        - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
-          value: /etc/ssh-key-secret/ssh-private
-        - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
-          value: /etc/ssh-key-secret/ssh-public
-        - name: TEST_TMPDIR
-          value: /root/.cache/bazel
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
-        volumeMounts:
-        - mountPath: /etc/service-account
-          name: service
-          readOnly: true
-        - mountPath: /etc/ssh-key-secret
-          name: ssh
-          readOnly: true
-        - mountPath: /root/.cache
-          name: cache-ssd
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
-      volumes:
-      - name: service
-        secret:
-          secretName: service-account
-      - name: ssh
-        secret:
-          defaultMode: 256
-          secretName: ssh-key-secret
-      - hostPath:
-          path: /mnt/disks/ssd0
-        name: cache-ssd
-
   - name: pull-kubernetes-kubemark-e2e-gce
     agent: jenkins
     always_run: true
@@ -1318,7 +1358,7 @@ presubmits:
     trigger: "(?m)^/test( all| pull-kubernetes-node-e2e),?(\\s+|$)"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
         args:
         - --root=/go/src
         - "--clean"
@@ -1373,7 +1413,7 @@ presubmits:
     trigger: "(?m)^/test( all| pull-kubernetes-node-e2e),?(\\s+|$)"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-1.7
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-1.7
         args:
         - --root=/go/src
         - "--clean"
@@ -1428,7 +1468,7 @@ presubmits:
     trigger: "(?m)^/test( all| pull-kubernetes-node-e2e),?(\\s+|$)"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-1.6
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-1.6
         args:
         - --root=/go/src
         - "--clean"
@@ -1546,7 +1586,7 @@ presubmits:
       - release-1.8 # different target set
       spec:
         containers:
-        - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171023-10ade723
+        - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171030-e52272c1
           args:
           - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
           - "--upload=gs://kubernetes-jenkins/pr-logs"
@@ -1645,7 +1685,7 @@ presubmits:
       - release-1.8
       spec:
         containers:
-        - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171023-10ade723
+        - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171030-e52272c1
           args:
           - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
           - "--upload=gs://kubernetes-jenkins/pr-logs"
@@ -1742,7 +1782,7 @@ presubmits:
       - release-1.6
       spec:
         containers:
-        - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171023-10ade723
+        - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171030-e52272c1
           args:
           - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
           - "--upload=gs://kubernetes-jenkins/pr-logs"
@@ -1783,6 +1823,51 @@ presubmits:
         - name: cache-ssd
           hostPath:
             path: /mnt/disks/ssd0
+  - name: pull-security-kubernetes-bazel-build-canary
+    agent: kubernetes
+    context: pull-security-kubernetes-bazel-build-canary
+    always_run: false
+    rerun_command: "/test pull-security-kubernetes-bazel-build-canary"
+    trigger: "(?m)^/test pull-security-kubernetes-bazel-build-canary,?(\\s+|$)"
+    branches:
+    - master
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/bazelbuild:latest-latest
+        imagePullPolicy: Always
+        args:
+        - "--clean"
+        - "--git-cache=/root/.cache/git"
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--" # end bootstrap args, scenario args below
+        - "--batch" # mitigation for https://github.com/bazelbuild/bazel/issues/3956
+        - "--build=//... -//vendor/..."
+        - "--release=//build/release-tars"
+        env:
+        - name: TEST_TMPDIR
+          value: /root/.cache/bazel
+        # Bazel needs privileged mode in order to sandbox builds.
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: service
+          mountPath: /etc/service-account
+          readOnly: true
+        - name: cache-ssd
+          mountPath: /root/.cache
+        ports:
+        - containerPort: 9999
+          hostPort: 9999
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
+      - name: cache-ssd
+        hostPath:
+          path: /mnt/disks/ssd0
   - name: pull-security-kubernetes-bazel-test
     agent: kubernetes
     context: pull-security-kubernetes-bazel-test
@@ -1923,6 +2008,55 @@ presubmits:
       - name: cache-ssd
         hostPath:
           path: /mnt/disks/ssd0
+  - name: pull-security-kubernetes-bazel-test-canary
+    agent: kubernetes
+    context: pull-security-kubernetes-bazel-test-canary
+    always_run: false
+    rerun_command: "/test pull-security-kubernetes-bazel-test-canary"
+    trigger: "(?m)^/test pull-security-kubernetes-bazel-test-canary,?(\\s+|$)"
+    branches:
+    - master
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/bazelbuild:latest-latest
+        imagePullPolicy: Always
+        args:
+        - "--clean"
+        - "--git-cache=/root/.cache/git"
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--" # end bootstrap args, scenario args below
+        - "--batch" # mitigation for https://github.com/bazelbuild/bazel/issues/3956
+        - "--test=//... -//build/... -//vendor/..."
+        - "--manual-test=//hack:verify-all"
+        - "--test-args=--build_tag_filters=-e2e,-integration"
+        - "--test-args=--test_tag_filters=-e2e,-integration"
+        - "--test-args=--flaky_test_attempts=3"
+        env:
+        - name: TEST_TMPDIR
+          value: /root/.cache/bazel
+        # Bazel needs privileged mode in order to sandbox builds.
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: service
+          mountPath: /etc/service-account
+          readOnly: true
+        - name: cache-ssd
+          mountPath: /root/.cache
+        ports:
+        - containerPort: 9999
+          hostPort: 9999
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
+      - name: cache-ssd
+        hostPath:
+          path: /mnt/disks/ssd0
+
   - name: pull-security-kubernetes-cross
     agent: jenkins
     context: pull-security-kubernetes-cross
@@ -1956,6 +2090,8 @@ presubmits:
         - --
         - --build=bazel
         - --mode=local
+        # this only works for 1.7+
+        - --runtime-config=batch/v2alpha1=true,admissionregistration.k8s.io/v1alpha1=true
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
@@ -1972,7 +2108,7 @@ presubmits:
         # https://docs.bazel.build/versions/master/output_directories.html#documentation-of-the-current-bazel-output-directory-layout
         - name: TEST_TMPDIR
           value: /root/.cache/bazel
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
         volumeMounts:
         - mountPath: /etc/service-account
           name: service
@@ -2019,6 +2155,8 @@ presubmits:
         - --
         - --build=bazel
         - --mode=local
+        # this only works for 1.7+
+        - --runtime-config=batch/v2alpha1=true,admissionregistration.k8s.io/v1alpha1=true
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
@@ -2035,7 +2173,7 @@ presubmits:
         # https://docs.bazel.build/versions/master/output_directories.html#documentation-of-the-current-bazel-output-directory-layout
         - name: TEST_TMPDIR
           value: /root/.cache/bazel
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-1.8
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-1.8
         volumeMounts:
         - mountPath: /etc/service-account
           name: service
@@ -2082,6 +2220,8 @@ presubmits:
         - --
         - --build=bazel
         - --mode=local
+        # this only works for 1.7+
+        - --runtime-config=batch/v2alpha1=true,admissionregistration.k8s.io/v1alpha1=true
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
@@ -2098,7 +2238,7 @@ presubmits:
         # https://docs.bazel.build/versions/master/output_directories.html#documentation-of-the-current-bazel-output-directory-layout
         - name: TEST_TMPDIR
           value: /root/.cache/bazel
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-1.7
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-1.7
         volumeMounts:
         - mountPath: /etc/service-account
           name: service
@@ -2144,7 +2284,7 @@ presubmits:
     trigger: "(?m)^/test( all| pull-security-kubernetes-e2e-gce-device-plugin-gpu),?(\\s+|$)"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
         args:
         - --root=/go/src
         - "--clean"
@@ -2206,7 +2346,7 @@ presubmits:
     trigger: "(?m)^/test pull-security-kubernetes-e2e-gke-device-plugin-gpu,?(\\s+|$)"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
         args:
         - --root=/go/src
         - "--clean"
@@ -2278,7 +2418,7 @@ presubmits:
     trigger: "(?m)^/test pull-security-kubernetes-e2e-kops-aws-prow,?(\\s+|$)"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
         args:
         - --root=/go/src
         - "--clean"
@@ -2347,7 +2487,7 @@ presubmits:
     trigger: "(?m)^/test pull-security-kubernetes-e2e-kops-aws-prow,?(\\s+|$)"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
         args:
         - --root=/go/src
         - "--clean"
@@ -2405,75 +2545,6 @@ presubmits:
         hostPath:
           path: /mnt/disks/ssd0
 
-  - name: pull-security-kubernetes-federation-e2e-gce
-    agent: jenkins
-    skip_branches:
-    - release-1.6
-    always_run: false
-    context: pull-security-kubernetes-federation-e2e-gce
-    rerun_command: "/test pull-security-kubernetes-federation-e2e-gce"
-    trigger: "(?m)^/test pull-security-kubernetes-federation-e2e-gce,?(\\s+|$)"
-  - name: pull-security-kubernetes-federation-e2e-gce-canary
-    agent: kubernetes
-    skip_branches:
-    - release-1.6
-    always_run: false
-    skip_report: false
-    max_concurrency: 12
-    context: pull-security-kubernetes-federation-e2e-gce-canary
-    rerun_command: "/test pull-security-kubernetes-federation-e2e-gce-canary"
-    trigger: "(?m)^/test pull-security-kubernetes-federation-e2e-gce-canary,?(\\s+|$)"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
-        args:
-        - --root=/go/src
-        - "--clean"
-        - "--git-cache=/root/.cache/git"
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--repo=k8s.io/release"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - --timeout=110
-        env:
-        - name: GOOGLE_APPLICATION_CREDENTIALS
-          value: /etc/service-account/service-account.json
-        - name: USER
-          value: prow
-        - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
-          value: /etc/ssh-key-secret/ssh-private
-        - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
-          value: /etc/ssh-key-secret/ssh-public
-        - name: TEST_TMPDIR
-          value: /root/.cache/bazel
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
-        volumeMounts:
-        - mountPath: /etc/service-account
-          name: service
-          readOnly: true
-        - mountPath: /etc/ssh-key-secret
-          name: ssh
-          readOnly: true
-        - mountPath: /root/.cache
-          name: cache-ssd
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
-      volumes:
-      - name: service
-        secret:
-          secretName: service-account
-      - name: ssh
-        secret:
-          defaultMode: 256
-          secretName: ssh-key-secret
-      - hostPath:
-          path: /mnt/disks/ssd0
-        name: cache-ssd
-
   - name: pull-security-kubernetes-kubemark-e2e-gce
     agent: jenkins
     always_run: true
@@ -2500,7 +2571,7 @@ presubmits:
     trigger: "(?m)^/test( all| pull-security-kubernetes-node-e2e),?(\\s+|$)"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
         args:
         - --root=/go/src
         - "--clean"
@@ -2555,7 +2626,7 @@ presubmits:
     trigger: "(?m)^/test( all| pull-security-kubernetes-node-e2e),?(\\s+|$)"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-1.7
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-1.7
         args:
         - --root=/go/src
         - "--clean"
@@ -2610,7 +2681,7 @@ presubmits:
     trigger: "(?m)^/test( all| pull-security-kubernetes-node-e2e),?(\\s+|$)"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-1.6
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-1.6
         args:
         - --root=/go/src
         - "--clean"
@@ -2678,7 +2749,7 @@ presubmits:
     trigger: "(?m)^/test( all| pull-test-infra-bazel),?(\\s+|$)"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171013-53473ec5-0.6.1
+      - image: gcr.io/k8s-testimages/bazelbuild:v20171020-844b54d7-0.7.0
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -2686,6 +2757,12 @@ presubmits:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--" # end bootstrap args, scenario args below
+        - "--batch" # mitigation for https://github.com/bazelbuild/bazel/issues/3956
+        - "--build=//..."
+        - "--install=gubernator/test_requirements.txt"
+        - "--test=//... //verify:verify-all"
+        - "--test-args=--test_output=errors"
         env:
         - name: TEST_TMPDIR
           value: /root/.cache/bazel
@@ -2719,7 +2796,7 @@ presubmits:
     trigger: "(?m)^/test pull-test-infra-bazel-canary,?(\\s+|$)"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:latest-0.7.0
+      - image: gcr.io/k8s-testimages/bazelbuild:latest-latest
         imagePullPolicy: Always
         args:
         - "--clean"
@@ -2728,6 +2805,12 @@ presubmits:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--" # end bootstrap args, scenario args below
+        - "--batch" # mitigation for https://github.com/bazelbuild/bazel/issues/3956
+        - "--build=//..."
+        - "--install=gubernator/test_requirements.txt"
+        - "--test=//... //verify:verify-all"
+        - "--test-args=--test_output=errors"
         env:
         - name: TEST_TMPDIR
           value: /root/.cache/bazel
@@ -2934,6 +3017,9 @@ postsubmits:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/logs"
+        - "--" # end bootstrap args, scenario args below
+        - "--build=//... -//vendor/..."
+        - "--release=//build/release-tars"
         env:
         - name: TEST_TMPDIR
           value: /root/.cache/bazel
@@ -2969,6 +3055,12 @@ postsubmits:
           - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
           - "--service-account=/etc/service-account/service-account.json"
           - "--upload=gs://kubernetes-jenkins/logs"
+          - "--" # end bootstrap args, scenario args below
+          - "--test=//... -//build/... -//vendor/..."
+          - "--manual-test=//hack:verify-all"
+          - "--test-args=--build_tag_filters=-e2e,-integration"
+          - "--test-args=--test_tag_filters=-e2e,-integration"
+          - "--test-args=--flaky_test_attempts=3"
           env:
           - name: TEST_TMPDIR
             value: /root/.cache/bazel
@@ -3065,7 +3157,7 @@ postsubmits:
       agent: kubernetes
       spec:
         containers:
-        - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171023-10ade723
+        - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171030-e52272c1
           args:
           - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
           - "--clean"
@@ -3183,7 +3275,7 @@ postsubmits:
       agent: kubernetes
       spec:
         containers:
-        - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171023-10ade723
+        - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171030-e52272c1
           args:
           - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
           - "--clean"
@@ -3226,7 +3318,7 @@ postsubmits:
       agent: kubernetes
       spec:
         containers:
-        - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171023-10ade723
+        - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171030-e52272c1
           args:
           - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
           - "--clean"
@@ -3269,7 +3361,7 @@ postsubmits:
       agent: kubernetes
       spec:
         containers:
-        - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171023-10ade723
+        - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171030-e52272c1
           args:
           - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
           - "--clean"
@@ -3387,7 +3479,7 @@ postsubmits:
       agent: kubernetes
       spec:
         containers:
-        - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171023-10ade723
+        - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171030-e52272c1
           args:
           - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
           - "--clean"
@@ -3430,7 +3522,7 @@ postsubmits:
       agent: kubernetes
       spec:
         containers:
-        - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171023-10ade723
+        - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171030-e52272c1
           args:
           - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
           - "--clean"
@@ -3477,7 +3569,7 @@ postsubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171013-53473ec5-0.6.1
+      - image: gcr.io/k8s-testimages/bazelbuild:v20171020-844b54d7-0.7.0
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -3485,6 +3577,12 @@ postsubmits:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/logs"
+        - "--" # end bootstrap args, scenario args below
+        - "--batch" # mitigation for https://github.com/bazelbuild/bazel/issues/3956
+        - "--build=//..."
+        - "--install=gubernator/test_requirements.txt"
+        - "--test=//... //verify:verify-all"
+        - "--test-args=--test_output=errors"
         env:
         - name: TEST_TMPDIR
           value: /root/.cache/bazel
@@ -3620,7 +3718,7 @@ periodics:
   agent: kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       args:
       - --root=/go/src
       - "--clean"
@@ -3665,6 +3763,73 @@ periodics:
       hostPath:
         path: /mnt/disks/ssd0
 
+- interval: 30m
+  agent: kubernetes
+  name: ci-federation-e2e-gce
+  spec:
+    containers:
+    - args:
+      - --timeout=920
+      - --bare
+      env:
+      - name: GOOGLE_APPLICATION_CREDENTIALS
+        value: /etc/service-account/service-account.json
+      - name: USER
+        value: prow
+      - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-private
+      - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-public
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
+      volumeMounts:
+      - mountPath: /etc/service-account
+        name: service
+        readOnly: true
+      - mountPath: /etc/ssh-key-secret
+        name: ssh
+        readOnly: true
+    volumes:
+    - name: service
+      secret:
+        secretName: service-account
+    - name: ssh
+      secret:
+        defaultMode: 256
+        secretName: ssh-key-secret
+- interval: 30m
+  agent: kubernetes
+  name: ci-federation-e2e-gce-serial
+  spec:
+    containers:
+    - args:
+      - --timeout=920
+      - --bare
+      env:
+      - name: GOOGLE_APPLICATION_CREDENTIALS
+        value: /etc/service-account/service-account.json
+      - name: USER
+        value: prow
+      - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-private
+      - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-public
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
+      volumeMounts:
+      - mountPath: /etc/service-account
+        name: service
+        readOnly: true
+      - mountPath: /etc/ssh-key-secret
+        name: ssh
+        readOnly: true
+    volumes:
+    - name: service
+      secret:
+        secretName: service-account
+    - name: ssh
+      secret:
+        defaultMode: 256
+        secretName: ssh-key-secret
+
 - name: ci-kubernetes-bazel-build
   interval: 30m
   agent: kubernetes
@@ -3705,7 +3870,7 @@ periodics:
     agent: kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171023-10ade723
+      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171030-e52272c1
         args:
         - "--repo=k8s.io/kubernetes=master"
         - "--clean"
@@ -3748,7 +3913,7 @@ periodics:
     agent: kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171023-10ade723
+      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171030-e52272c1
         args:
         - "--repo=k8s.io/kubernetes=master"
         - "--clean"
@@ -3791,7 +3956,7 @@ periodics:
     agent: kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171023-10ade723
+      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171030-e52272c1
         args:
         - "--repo=k8s.io/kubernetes=master"
         - "--clean"
@@ -3834,7 +3999,7 @@ periodics:
     agent: kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171023-10ade723
+      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171030-e52272c1
         args:
         - "--repo=k8s.io/kubernetes=master"
         - "--clean"
@@ -3891,7 +4056,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -3925,7 +4090,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -3959,7 +4124,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -3993,7 +4158,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -4027,7 +4192,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -4061,7 +4226,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -4095,7 +4260,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -4129,7 +4294,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -4163,7 +4328,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -4197,7 +4362,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -4231,7 +4396,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -4265,7 +4430,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -4299,7 +4464,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -4333,7 +4498,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -4367,7 +4532,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -4401,7 +4566,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -4435,7 +4600,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -4469,7 +4634,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -4503,7 +4668,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -4574,7 +4739,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -4610,7 +4775,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -4646,7 +4811,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -4682,7 +4847,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -4718,7 +4883,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -4754,7 +4919,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -4790,7 +4955,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -4826,7 +4991,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -4862,7 +5027,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -4898,7 +5063,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -4934,7 +5099,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -4970,7 +5135,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -5006,7 +5171,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -5042,7 +5207,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -5078,7 +5243,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -5114,7 +5279,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -5150,7 +5315,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -5186,7 +5351,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -5222,7 +5387,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -5258,7 +5423,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -5294,7 +5459,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -5330,7 +5495,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -5366,7 +5531,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -5402,7 +5567,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -5438,7 +5603,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -5474,7 +5639,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -5510,7 +5675,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -5546,7 +5711,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -5582,7 +5747,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -5618,7 +5783,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -5654,7 +5819,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -5690,7 +5855,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -5726,7 +5891,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -5762,7 +5927,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -5798,7 +5963,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -5834,7 +5999,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -5870,7 +6035,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -5906,7 +6071,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -5942,7 +6107,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -5978,7 +6143,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -6012,7 +6177,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       - name: USER
         value: prow
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -6046,7 +6211,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       - name: USER
         value: prow
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -6080,41 +6245,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
-      volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
-      - mountPath: /etc/ssh-key-secret
-        name: ssh
-        readOnly: true
-    volumes:
-    - name: service
-      secret:
-        secretName: service-account
-    - name: ssh
-      secret:
-        defaultMode: 256
-        secretName: ssh-key-secret
-
-- interval: 30m
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gce-federation
-  spec:
-    containers:
-    - args:
-      - --timeout=920
-      - --bare
-      env:
-      - name: GOOGLE_APPLICATION_CREDENTIALS
-        value: /etc/service-account/service-account.json
-      - name: USER
-        value: prow
-      - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
-        value: /etc/ssh-key-secret/ssh-private
-      - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
-        value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -6148,7 +6279,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -6182,7 +6313,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -6216,109 +6347,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
-      volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
-      - mountPath: /etc/ssh-key-secret
-        name: ssh
-        readOnly: true
-    volumes:
-    - name: service
-      secret:
-        secretName: service-account
-    - name: ssh
-      secret:
-        defaultMode: 256
-        secretName: ssh-key-secret
-
-- interval: 30m
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gce-federation-serial
-  spec:
-    containers:
-    - args:
-      - --timeout=920
-      - --bare
-      env:
-      - name: GOOGLE_APPLICATION_CREDENTIALS
-        value: /etc/service-account/service-account.json
-      - name: USER
-        value: prow
-      - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
-        value: /etc/ssh-key-secret/ssh-private
-      - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
-        value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
-      volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
-      - mountPath: /etc/ssh-key-secret
-        name: ssh
-        readOnly: true
-    volumes:
-    - name: service
-      secret:
-        secretName: service-account
-    - name: ssh
-      secret:
-        defaultMode: 256
-        secretName: ssh-key-secret
-
-- interval: 2h
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gce-gci-1-5-rollback-etcd
-  spec:
-    containers:
-    - args:
-      - --timeout=110
-      - --bare
-      env:
-      - name: GOOGLE_APPLICATION_CREDENTIALS
-        value: /etc/service-account/service-account.json
-      - name: USER
-        value: prow
-      - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
-        value: /etc/ssh-key-secret/ssh-private
-      - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
-        value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
-      volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
-      - mountPath: /etc/ssh-key-secret
-        name: ssh
-        readOnly: true
-    volumes:
-    - name: service
-      secret:
-        secretName: service-account
-    - name: ssh
-      secret:
-        defaultMode: 256
-        secretName: ssh-key-secret
-
-- interval: 2h
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gce-gci-1-5-upgrade-etcd
-  spec:
-    containers:
-    - args:
-      - --timeout=110
-      - --bare
-      env:
-      - name: GOOGLE_APPLICATION_CREDENTIALS
-        value: /etc/service-account/service-account.json
-      - name: USER
-        value: prow
-      - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
-        value: /etc/ssh-key-secret/ssh-private
-      - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
-        value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -6352,7 +6381,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -6386,7 +6415,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -6420,7 +6449,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -6454,7 +6483,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -6488,7 +6517,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -6522,7 +6551,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -6556,7 +6585,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -6590,7 +6619,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -6624,7 +6653,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -6658,7 +6687,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -6692,7 +6721,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -6726,7 +6755,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -6760,7 +6789,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -6794,7 +6823,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -6828,7 +6857,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -6862,7 +6891,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -6896,7 +6925,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -6930,7 +6959,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -6964,7 +6993,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -6998,7 +7027,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -7032,7 +7061,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -7066,7 +7095,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       - name: USER
         value: prow
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -7100,7 +7129,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       - name: USER
         value: prow
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -7134,7 +7163,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       - name: USER
         value: prow
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -7168,7 +7197,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -7202,7 +7231,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -7236,7 +7265,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -7270,7 +7299,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -7304,7 +7333,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -7338,7 +7367,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -7372,7 +7401,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -7406,7 +7435,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -7440,7 +7469,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -7474,7 +7503,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -7508,7 +7537,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -7542,7 +7571,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -7576,7 +7605,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -7610,7 +7639,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -7644,7 +7673,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -7678,7 +7707,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -7712,7 +7741,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -7781,7 +7810,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -7815,7 +7844,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -7849,7 +7878,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -7883,7 +7912,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -7917,7 +7946,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -7951,7 +7980,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -7985,7 +8014,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -8019,7 +8048,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -8053,7 +8082,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -8087,7 +8116,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -8121,7 +8150,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -8155,7 +8184,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -8189,7 +8218,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -8223,7 +8252,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -8257,7 +8286,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -8279,7 +8308,7 @@ periodics:
   agent: kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-1.6
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-1.6
       args:
       - --repo=k8s.io/kubernetes=release-1.6
       - --timeout=90
@@ -8316,7 +8345,7 @@ periodics:
   agent: kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-1.6
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-1.6
       args:
       - --repo=k8s.io/kubernetes=release-1.6
       - --timeout=240
@@ -8354,7 +8383,7 @@ periodics:
   agent: kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-1.7
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-1.7
       args:
       - --repo=k8s.io/kubernetes=release-1.7
       - --timeout=90
@@ -8391,7 +8420,7 @@ periodics:
   agent: kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-1.7
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-1.7
       args:
       - --repo=k8s.io/kubernetes=release-1.7
       - --timeout=240
@@ -8428,7 +8457,7 @@ periodics:
   agent: kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --timeout=90
@@ -8465,7 +8494,7 @@ periodics:
   agent: kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --timeout=240
@@ -8516,7 +8545,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -8552,7 +8581,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -8588,7 +8617,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -8624,7 +8653,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -8660,7 +8689,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -8696,7 +8725,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -8732,7 +8761,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -8768,7 +8797,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -8804,7 +8833,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -8840,7 +8869,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -8876,7 +8905,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -8912,7 +8941,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -8948,7 +8977,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -8984,7 +9013,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -9020,7 +9049,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -9056,7 +9085,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -9092,7 +9121,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -9128,7 +9157,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -9162,7 +9191,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -9196,7 +9225,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -9230,7 +9259,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -9264,7 +9293,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -9298,7 +9327,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -9332,7 +9361,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -9366,7 +9395,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -9400,7 +9429,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -9434,7 +9463,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -9468,7 +9497,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -9502,7 +9531,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -9536,7 +9565,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -9570,7 +9599,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -9604,7 +9633,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -9638,7 +9667,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -9672,7 +9701,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -9706,7 +9735,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -9740,7 +9769,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -9774,7 +9803,41 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
+      volumeMounts:
+      - mountPath: /etc/service-account
+        name: service
+        readOnly: true
+      - mountPath: /etc/ssh-key-secret
+        name: ssh
+        readOnly: true
+    volumes:
+    - name: service
+      secret:
+        secretName: service-account
+    - name: ssh
+      secret:
+        defaultMode: 256
+        secretName: ssh-key-secret
+
+- interval: 1h
+  agent: kubernetes
+  name: ci-kubernetes-e2e-gci-gce-ipvs
+  spec:
+    containers:
+    - args:
+      - --timeout=80
+      - --bare
+      env:
+      - name: GOOGLE_APPLICATION_CREDENTIALS
+        value: /etc/service-account/service-account.json
+      - name: USER
+        value: prow
+      - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-private
+      - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-public
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -9808,7 +9871,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -9842,7 +9905,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -9876,7 +9939,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -9910,7 +9973,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -9944,7 +10007,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -9978,7 +10041,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -10012,7 +10075,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -10047,7 +10110,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -10081,7 +10144,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -10115,7 +10178,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -10149,7 +10212,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -10183,7 +10246,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -10217,7 +10280,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -10251,7 +10314,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -10285,7 +10348,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -10319,7 +10382,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -10353,7 +10416,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -10387,7 +10450,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -10421,7 +10484,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -10455,7 +10518,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -10489,7 +10552,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -10523,7 +10586,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -10557,7 +10620,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -10591,7 +10654,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -10625,7 +10688,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -10659,7 +10722,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -10693,7 +10756,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -10727,7 +10790,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -10761,7 +10824,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -10795,7 +10858,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -10829,7 +10892,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -10863,7 +10926,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -10897,7 +10960,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -10931,7 +10994,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -10965,7 +11028,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -10999,7 +11062,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -11033,7 +11096,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -11067,7 +11130,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -11101,7 +11164,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -11135,7 +11198,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -11169,7 +11232,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -11203,7 +11266,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -11237,7 +11300,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -11271,7 +11334,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -11305,7 +11368,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -11339,7 +11402,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -11373,7 +11436,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -11407,7 +11470,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -11441,7 +11504,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -11475,7 +11538,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -11509,7 +11572,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -11543,7 +11606,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -11577,7 +11640,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -11611,7 +11674,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -11645,7 +11708,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -11679,7 +11742,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -11713,7 +11776,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -11747,7 +11810,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -11781,7 +11844,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -11815,7 +11878,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -11849,7 +11912,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -11883,7 +11946,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -11917,7 +11980,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -11971,108 +12034,6 @@ periodics:
 
 - interval: 2h
   agent: kubernetes
-  name: ci-kubernetes-e2e-gke-cvm-1-6-cvm-1-7-upgrade-cluster
-  spec:
-    containers:
-    - args:
-      - --timeout=140
-      - --bare
-      env:
-      - name: GOOGLE_APPLICATION_CREDENTIALS
-        value: /etc/service-account/service-account.json
-      - name: USER
-        value: prow
-      - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
-        value: /etc/ssh-key-secret/ssh-private
-      - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
-        value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
-      volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
-      - mountPath: /etc/ssh-key-secret
-        name: ssh
-        readOnly: true
-    volumes:
-    - name: service
-      secret:
-        secretName: service-account
-    - name: ssh
-      secret:
-        defaultMode: 256
-        secretName: ssh-key-secret
-
-- interval: 2h
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gke-cvm-1-6-cvm-1-7-upgrade-cluster-new
-  spec:
-    containers:
-    - args:
-      - --timeout=140
-      - --bare
-      env:
-      - name: GOOGLE_APPLICATION_CREDENTIALS
-        value: /etc/service-account/service-account.json
-      - name: USER
-        value: prow
-      - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
-        value: /etc/ssh-key-secret/ssh-private
-      - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
-        value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
-      volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
-      - mountPath: /etc/ssh-key-secret
-        name: ssh
-        readOnly: true
-    volumes:
-    - name: service
-      secret:
-        secretName: service-account
-    - name: ssh
-      secret:
-        defaultMode: 256
-        secretName: ssh-key-secret
-
-- interval: 2h
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gke-cvm-1-6-cvm-1-7-upgrade-master
-  spec:
-    containers:
-    - args:
-      - --timeout=140
-      - --bare
-      env:
-      - name: GOOGLE_APPLICATION_CREDENTIALS
-        value: /etc/service-account/service-account.json
-      - name: USER
-        value: prow
-      - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
-        value: /etc/ssh-key-secret/ssh-private
-      - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
-        value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
-      volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
-      - mountPath: /etc/ssh-key-secret
-        name: ssh
-        readOnly: true
-    volumes:
-    - name: service
-      secret:
-        secretName: service-account
-    - name: ssh
-      secret:
-        defaultMode: 256
-        secretName: ssh-key-secret
-
-- interval: 2h
-  agent: kubernetes
   name: ci-kubernetes-e2e-gke-cvm-1-6-gci-1-7-upgrade-cluster
   spec:
     containers:
@@ -12088,7 +12049,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -12122,7 +12083,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -12156,7 +12117,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -12190,7 +12151,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -12224,7 +12185,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -12258,7 +12219,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -12292,7 +12253,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -12326,7 +12287,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -12360,7 +12321,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -12394,7 +12355,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -12428,7 +12389,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       - name: USER
         value: prow
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -12462,109 +12423,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       - name: USER
         value: prow
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
-      volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
-      - mountPath: /etc/ssh-key-secret
-        name: ssh
-        readOnly: true
-    volumes:
-    - name: service
-      secret:
-        secretName: service-account
-    - name: ssh
-      secret:
-        defaultMode: 256
-        secretName: ssh-key-secret
-
-- interval: 2h
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gke-gci-1-6-cvm-1-7-upgrade-cluster
-  spec:
-    containers:
-    - args:
-      - --timeout=140
-      - --bare
-      env:
-      - name: GOOGLE_APPLICATION_CREDENTIALS
-        value: /etc/service-account/service-account.json
-      - name: USER
-        value: prow
-      - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
-        value: /etc/ssh-key-secret/ssh-private
-      - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
-        value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
-      volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
-      - mountPath: /etc/ssh-key-secret
-        name: ssh
-        readOnly: true
-    volumes:
-    - name: service
-      secret:
-        secretName: service-account
-    - name: ssh
-      secret:
-        defaultMode: 256
-        secretName: ssh-key-secret
-
-- interval: 2h
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gke-gci-1-6-cvm-1-7-upgrade-cluster-new
-  spec:
-    containers:
-    - args:
-      - --timeout=140
-      - --bare
-      env:
-      - name: GOOGLE_APPLICATION_CREDENTIALS
-        value: /etc/service-account/service-account.json
-      - name: USER
-        value: prow
-      - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
-        value: /etc/ssh-key-secret/ssh-private
-      - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
-        value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
-      volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
-      - mountPath: /etc/ssh-key-secret
-        name: ssh
-        readOnly: true
-    volumes:
-    - name: service
-      secret:
-        secretName: service-account
-    - name: ssh
-      secret:
-        defaultMode: 256
-        secretName: ssh-key-secret
-
-- interval: 2h
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gke-gci-1-6-cvm-1-7-upgrade-master
-  spec:
-    containers:
-    - args:
-      - --timeout=140
-      - --bare
-      env:
-      - name: GOOGLE_APPLICATION_CREDENTIALS
-        value: /etc/service-account/service-account.json
-      - name: USER
-        value: prow
-      - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
-        value: /etc/ssh-key-secret/ssh-private
-      - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
-        value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -12598,7 +12457,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -12632,7 +12491,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -12666,7 +12525,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -12700,7 +12559,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -12735,7 +12594,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -12769,7 +12628,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -12803,7 +12662,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -12837,7 +12696,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -12871,7 +12730,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -12905,7 +12764,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -12939,7 +12798,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -12973,7 +12832,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -13007,7 +12866,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -13041,7 +12900,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -13075,7 +12934,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -13109,7 +12968,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -13143,7 +13002,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -13177,7 +13036,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -13211,7 +13070,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -13245,7 +13104,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -13279,7 +13138,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       - name: USER
         value: prow
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -13313,7 +13172,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -13347,7 +13206,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -13381,7 +13240,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -13415,7 +13274,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -13449,7 +13308,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -13483,7 +13342,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -13517,7 +13376,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -13551,7 +13410,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -13585,7 +13444,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -13619,7 +13478,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -13653,7 +13512,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -13687,7 +13546,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -13721,7 +13580,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -13755,7 +13614,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -13789,7 +13648,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -13823,7 +13682,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -13857,7 +13716,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -13891,7 +13750,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -13925,7 +13784,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -13959,7 +13818,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -13993,7 +13852,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -14027,7 +13886,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -14061,7 +13920,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -14095,7 +13954,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -14129,7 +13988,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -14163,7 +14022,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -14197,7 +14056,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -14231,7 +14090,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -14265,7 +14124,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -14299,7 +14158,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -14333,7 +14192,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -14369,7 +14228,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -14405,7 +14264,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -14441,7 +14300,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -14477,7 +14336,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -14513,7 +14372,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -14549,7 +14408,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -14585,7 +14444,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -14621,7 +14480,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -14657,7 +14516,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -14693,7 +14552,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -14729,7 +14588,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -14765,7 +14624,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -14802,7 +14661,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -14838,7 +14697,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -14874,7 +14733,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -14910,7 +14769,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -14946,7 +14805,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -14982,7 +14841,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -15018,7 +14877,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -15054,7 +14913,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -15090,7 +14949,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -15126,7 +14985,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -15162,7 +15021,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -15198,7 +15057,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -15234,7 +15093,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -15270,7 +15129,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -15306,7 +15165,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -15340,7 +15199,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -15376,7 +15235,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: JENKINS_AWS_SSH_PUBLIC_KEY_FILE
         value: /etc/aws-ssh/aws-ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -15444,6 +15303,50 @@ periodics:
         defaultMode: 256
         secretName: aws-cred
 
+- interval: 1h
+  agent: kubernetes
+  name: ci-kubernetes-e2e-kops-aws-newrunner
+  spec:
+    containers:
+    - args:
+      - --timeout=140
+      - --bare
+      env:
+      - name: GOOGLE_APPLICATION_CREDENTIALS
+        value: /etc/service-account/service-account.json
+      - name: USER
+        value: prow
+      - name: JENKINS_AWS_CREDENTIALS_FILE
+        value: /etc/aws-cred/credentials
+      - name: JENKINS_AWS_SSH_PRIVATE_KEY_FILE
+        value: /etc/aws-ssh/aws-ssh-private
+      - name: JENKINS_AWS_SSH_PUBLIC_KEY_FILE
+        value: /etc/aws-ssh/aws-ssh-public
+      image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+      imagePullPolicy: Always
+      volumeMounts:
+      - mountPath: /etc/service-account
+        name: service
+        readOnly: true
+      - mountPath: /etc/aws-ssh
+        name: aws-ssh
+        readOnly: true
+      - mountPath: /etc/aws-cred
+        name: aws-cred
+        readOnly: true
+    volumes:
+    - name: service
+      secret:
+        secretName: service-account
+    - name: aws-ssh
+      secret:
+        defaultMode: 256
+        secretName: aws-ssh-key-secret
+    - name: aws-cred
+      secret:
+        defaultMode: 256
+        secretName: aws-cred
+
 - interval: 24h
   agent: kubernetes
   name: ci-kubernetes-e2e-kops-aws-release-1-6
@@ -15463,7 +15366,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: JENKINS_AWS_SSH_PUBLIC_KEY_FILE
         value: /etc/aws-ssh/aws-ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -15506,7 +15409,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: JENKINS_AWS_SSH_PUBLIC_KEY_FILE
         value: /etc/aws-ssh/aws-ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -15549,7 +15452,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: JENKINS_AWS_SSH_PUBLIC_KEY_FILE
         value: /etc/aws-ssh/aws-ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -15592,7 +15495,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: JENKINS_AWS_SSH_PUBLIC_KEY_FILE
         value: /etc/aws-ssh/aws-ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -15635,7 +15538,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: JENKINS_AWS_SSH_PUBLIC_KEY_FILE
         value: /etc/aws-ssh/aws-ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -15678,7 +15581,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: JENKINS_AWS_SSH_PUBLIC_KEY_FILE
         value: /etc/aws-ssh/aws-ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -15719,7 +15622,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171024-4f12da13-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -15831,7 +15734,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -15870,7 +15773,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -15909,7 +15812,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -15948,7 +15851,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -15987,7 +15890,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -16026,7 +15929,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -16065,7 +15968,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -16104,7 +16007,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -16143,7 +16046,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -16182,7 +16085,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -16221,7 +16124,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -16260,7 +16163,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -16299,7 +16202,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -16338,7 +16241,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -16377,7 +16280,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -16416,7 +16319,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -16455,7 +16358,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -16494,7 +16397,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -16533,7 +16436,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -16572,7 +16475,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -16611,7 +16514,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -16650,7 +16553,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -16689,7 +16592,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -16728,7 +16631,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -16787,7 +16690,7 @@ periodics:
   agent: kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --timeout=90
@@ -16824,7 +16727,7 @@ periodics:
   agent: kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --timeout=90
@@ -16861,7 +16764,7 @@ periodics:
   agent: kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --timeout=90
@@ -16898,7 +16801,7 @@ periodics:
   agent: kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --timeout=90
@@ -16935,7 +16838,7 @@ periodics:
   agent: kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-1.6
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-1.6
       args:
       - --repo=k8s.io/kubernetes=release-1.6
       - --timeout=90
@@ -16972,7 +16875,7 @@ periodics:
   agent: kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       args:
       - --repo=k8s.io/kubernetes=master
       - --timeout=240
@@ -17009,7 +16912,7 @@ periodics:
   agent: kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-1.8
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-1.8
       args:
       - --repo=k8s.io/kubernetes=release-1.8
       - --timeout=90
@@ -17046,7 +16949,7 @@ periodics:
   agent: kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-1.7
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-1.7
       args:
       - --repo=k8s.io/kubernetes=release-1.7
       - --timeout=90
@@ -17083,7 +16986,7 @@ periodics:
   agent: kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-1.6
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-1.6
       args:
       - --repo=k8s.io/kubernetes=release-1.6
       - --timeout=90
@@ -17115,41 +17018,6 @@ periodics:
         secretName: ssh-key-secret
         defaultMode: 0400
 
-- interval: 24h
-  agent: kubernetes
-  name: ci-kubernetes-pull-gce-federation-deploy-canary
-  spec:
-    containers:
-    - args:
-      - --timeout=60
-      - --repo=k8s.io/kubernetes
-      - --root=/go/src
-      env:
-      - name: GOOGLE_APPLICATION_CREDENTIALS
-        value: /etc/service-account/service-account.json
-      - name: USER
-        value: prow
-      - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
-        value: /etc/ssh-key-secret/ssh-private
-      - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
-        value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
-      volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
-      - mountPath: /etc/ssh-key-secret
-        name: ssh
-        readOnly: true
-    volumes:
-    - name: service
-      secret:
-        secretName: service-account
-    - name: ssh
-      secret:
-        defaultMode: 256
-        secretName: ssh-key-secret
-
 - interval: 12h
   agent: kubernetes
   name: ci-kubernetes-soak-cos-docker-validation
@@ -17168,7 +17036,7 @@ periodics:
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
       # TODO(krzyzacy): use stable tag once verify it works
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171024-74d82dbc-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -17203,7 +17071,7 @@ periodics:
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
       # TODO(krzyzacy): use stable tag once verify it works
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171024-74d82dbc-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -17238,7 +17106,7 @@ periodics:
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
       # TODO(krzyzacy): use stable tag once verify it works
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171024-74d82dbc-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -17273,7 +17141,7 @@ periodics:
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
       # TODO(krzyzacy): use stable tag once verify it works
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171024-74d82dbc-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -17308,7 +17176,7 @@ periodics:
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
       # TODO(krzyzacy): use stable tag once verify it works
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171024-74d82dbc-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -17343,7 +17211,7 @@ periodics:
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
       # TODO(krzyzacy): use stable tag once verify it works
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171024-74d82dbc-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -17378,7 +17246,7 @@ periodics:
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
       # TODO(krzyzacy): use stable tag once verify it works
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171024-74d82dbc-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -17413,7 +17281,7 @@ periodics:
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
       # TODO(krzyzacy): use stable tag once verify it works
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171024-74d82dbc-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -17436,7 +17304,7 @@ periodics:
   agent: kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       args:
       - "--repo=k8s.io/kubernetes=master"
       - "--repo=k8s.io/perf-tests=master"
@@ -17472,7 +17340,7 @@ periodics:
   agent: kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20171023-364289b6-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
       args:
       - "--repo=k8s.io/perf-tests=master"
       - "--root=/go/src"
@@ -17496,7 +17364,7 @@ periodics:
   agent: kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bazelbuild:v20171013-53473ec5-0.6.1
+    - image: gcr.io/k8s-testimages/bazelbuild:v20171020-844b54d7-0.7.0
       args:
       - "--clean"
       - "--git-cache=/root/.cache/git"
@@ -17504,6 +17372,12 @@ periodics:
       - "--repo=k8s.io/test-infra=master"
       - "--service-account=/etc/service-account/service-account.json"
       - "--upload=gs://kubernetes-jenkins/logs"
+      - "--" # end bootstrap args, scenario args below
+      - "--batch" # mitigation for https://github.com/bazelbuild/bazel/issues/3956
+      - "--build=//..."
+      - "--install=gubernator/test_requirements.txt"
+      - "--test=//... //verify:verify-all"
+      - "--test-args=--test_output=errors"
       env:
       - name: TEST_TMPDIR
         value: /root/.cache/bazel
@@ -17747,7 +17621,7 @@ periodics:
     agent: kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171023-10ade723
+      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171030-e52272c1
         args:
         - "--repo=k8s.io/kubernetes=release-1.6"
         - "--clean"
@@ -17866,7 +17740,7 @@ periodics:
     agent: kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171023-10ade723
+      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171030-e52272c1
         args:
         - "--repo=k8s.io/kubernetes=release-1.7"
         - "--clean"
@@ -17911,7 +17785,7 @@ periodics:
     agent: kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171023-10ade723
+      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171030-e52272c1
         args:
         - "--repo=k8s.io/kubernetes=release-1.7"
         - "--clean"
@@ -18028,7 +17902,7 @@ periodics:
     agent: kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171023-10ade723
+      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171030-e52272c1
         args:
         - "--repo=k8s.io/kubernetes=release-1.8"
         - "--clean"
@@ -18073,7 +17947,7 @@ periodics:
     agent: kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171023-10ade723
+      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171030-e52272c1
         args:
         - "--repo=k8s.io/kubernetes=release-1.8"
         - "--clean"

@@ -19,11 +19,14 @@ go_library(
         "anywhere.go",
         "bash.go",
         "build.go",
+        "dump.go",
         "e2e.go",
-        "extract.go",
+        "extract_federation.go",
+        "extract_k8s.go",
         "federation.go",
         "gke.go",
         "kops.go",
+        "kubernetes.go",
         "main.go",
         "node.go",
         "none.go",
@@ -34,6 +37,7 @@ go_library(
     deps = [
         "//boskos/client:go_default_library",
         "//vendor/github.com/spf13/pflag:go_default_library",
+        "//vendor/golang.org/x/crypto/ssh:go_default_library",
     ],
 )
 
@@ -52,9 +56,12 @@ filegroup(
 
 go_test(
     name = "go_default_test",
+    size = "small",
     srcs = [
         "anywhere_test.go",
+        "dump_test.go",
         "extract_test.go",
+        "kubernetes_test.go",
         "main_test.go",
         "util_test.go",
     ],

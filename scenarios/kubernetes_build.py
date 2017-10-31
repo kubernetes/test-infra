@@ -54,6 +54,8 @@ def main(args):
         env['PROJECT'] = args.federation
         env['FEDERATION_PUSH_REPO_BASE'] = 'gcr.io/%s' % args.federation
         push_build_args.append('--federation')
+    if args.release_kind:
+        push_build_args.append('--release-kind=%s' % args.release_kind)
     if args.release:
         push_build_args.append('--bucket=%s' % args.release)
     if args.registry:
@@ -83,6 +85,10 @@ if __name__ == '__main__':
     PARSER.add_argument(
         '--federation',
         help='Push federation images to the specified project')
+    PARSER.add_argument(
+        '--release-kind',
+        default='kubernetes',
+        help='The release kind to push to GCS. Supported values are kubernetes or federation')
     PARSER.add_argument(
         '--registry', help='Push images to the specified docker registry')
     PARSER.add_argument(

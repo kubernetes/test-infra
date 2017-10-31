@@ -70,10 +70,10 @@
         job-name: pull-kubernetes-e2e-gce
         repo-name: 'k8s.io/kubernetes'
         timeout: 85
-    - kubernetes-federation-e2e-gce:
+    - federation-e2e-gce:
         max-total: 12
-        job-name: pull-kubernetes-federation-e2e-gce
-        repo-name: 'k8s.io/kubernetes'
+        job-name: pull-federation-e2e-gce
+        repo-name: 'k8s.io/federation'
         timeout: 110
     - kubernetes-kubemark-e2e-gce:
         max-total: 12

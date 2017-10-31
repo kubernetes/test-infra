@@ -5,6 +5,7 @@
 	"Packages": [
 		"./prow/...",
 		"./gcsweb/...",
+		"./kubetest/...",
 		"./mungegithub/...",
 		"./testgrid/...",
 		"./velodrome/..."
@@ -217,6 +218,22 @@
 			"ImportPath": "github.com/spf13/pflag",
 			"Comment": "v1.0.0-3-g7aff26d",
 			"Rev": "7aff26db30c1be810f9de5038ec5ef96ac41fd7c"
+		},
+		{
+			"ImportPath": "golang.org/x/crypto/curve25519",
+			"Rev": "81e90905daefcd6fd217b62423c0908922eadb30"
+		},
+		{
+			"ImportPath": "golang.org/x/crypto/ed25519",
+			"Rev": "81e90905daefcd6fd217b62423c0908922eadb30"
+		},
+		{
+			"ImportPath": "golang.org/x/crypto/ed25519/internal/edwards25519",
+			"Rev": "81e90905daefcd6fd217b62423c0908922eadb30"
+		},
+		{
+			"ImportPath": "golang.org/x/crypto/ssh",
+			"Rev": "81e90905daefcd6fd217b62423c0908922eadb30"
 		},
 		{
 			"ImportPath": "golang.org/x/net/context",

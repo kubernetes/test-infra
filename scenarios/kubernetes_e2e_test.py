@@ -496,12 +496,40 @@ class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-method
         self.assertIn('--kops-nodes=4', lastcall)
         self.assertIn('--kops-ssh-key', lastcall)
 
+        self.assertNotIn('kubetest', lastcall)
+        self.assertIn('kops-e2e-runner.sh', lastcall)
+
         self.assertEqual(
             self.envs['JENKINS_AWS_SSH_PRIVATE_KEY_FILE'], temp.name)
         self.assertEqual(
             self.envs['JENKINS_AWS_SSH_PUBLIC_KEY_FILE'], temp.name)
         self.assertEqual(
             self.envs['JENKINS_AWS_CREDENTIALS_FILE'], temp.name)
+
+    def test_kops_aws(self):
+        temp = tempfile.NamedTemporaryFile()
+        args = kubernetes_e2e.parse_args([
+            '--provider=aws',
+            '--deployment=kops',
+            '--cluster=foo.example.com',
+            '--aws-ssh=%s' % temp.name,
+            '--aws-pub=%s' % temp.name,
+            '--aws-cred=%s' % temp.name,
+            ])
+        with Stub(kubernetes_e2e, 'check_env', self.fake_check_env):
+            kubernetes_e2e.main(args)
+
+        lastcall = self.callstack[-1]
+        self.assertIn('kubetest', lastcall)
+        self.assertIn('--provider=aws', lastcall)
+        self.assertIn('--deployment=kops', lastcall)
+        self.assertIn('--kops-cluster=foo.example.com', lastcall)
+        self.assertIn('--kops-zones', lastcall)
+        self.assertIn('--kops-state=s3://k8s-kops-jenkins/', lastcall)
+        self.assertIn('--kops-nodes=4', lastcall)
+        self.assertIn('--kops-ssh-key', lastcall)
+        self.assertIn('kubetest', lastcall)
+        self.assertNotIn('kops-e2e-runner.sh', lastcall)
 
     def test_kops_gce(self):
         temp = tempfile.NamedTemporaryFile()

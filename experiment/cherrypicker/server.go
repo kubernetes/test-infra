@@ -44,7 +44,7 @@ type githubClient interface {
 	CreateComment(org, repo string, number int, comment string) error
 	IsMember(org, user string) (bool, error)
 	CreatePullRequest(org, repo, title, body, head, base string, canModify bool) (int, error)
-	ListPullRequestComments(org, repo string, number int) ([]github.ReviewComment, error)
+	ListIssueComments(org, repo string, number int) ([]github.IssueComment, error)
 	CreateFork(org, repo string) error
 }
 
@@ -205,7 +205,7 @@ func (s *Server) handlePullRequest(pre github.PullRequestEvent) error {
 		return nil
 	}
 
-	comments, err := s.ghc.ListPullRequestComments(org, repo, num)
+	comments, err := s.ghc.ListIssueComments(org, repo, num)
 	if err != nil {
 		return err
 	}
@@ -220,7 +220,7 @@ func (s *Server) handlePullRequest(pre github.PullRequestEvent) error {
 		// TODO: Collect all "/cherrypick" comments and figure out if any
 		// comes from an org member?
 		targetBranch = cherryPickMatches[0][1]
-		ic = &github.IssueComment{ID: c.ID, User: c.User, Body: c.Body, HTMLURL: c.HTMLURL}
+		ic = &c
 		break
 	}
 	if targetBranch == "" || ic == nil {

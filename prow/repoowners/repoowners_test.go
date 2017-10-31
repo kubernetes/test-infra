@@ -31,11 +31,12 @@ import (
 
 func getTestClient(enableMdYaml, includeAliases bool) (*Client, func(), error) {
 	testFiles := map[string][]byte{
-		"foo":            []byte("approvers:\n- bob"),
-		"OWNERS":         []byte("approvers: \n- cjwagner\nreviewers:\n- Alice\n- bob\nlabels:\n - EVERYTHING"),
-		"src/OWNERS":     []byte("approvers:\n- Best-Approvers"),
-		"src/dir/OWNERS": []byte("assignees:\n - bob\nreviewers:\n- alice\n- CJWagner\nlabels:\n- src-code"),
-		"docs/file.md":   []byte("---\napprovers: \n- ALICE\n\nlabels:\n- docs\n---"),
+		"foo":                        []byte("approvers:\n- bob"),
+		"OWNERS":                     []byte("approvers: \n- cjwagner\nreviewers:\n- Alice\n- bob\nlabels:\n - EVERYTHING"),
+		"src/OWNERS":                 []byte("approvers:\n- Best-Approvers"),
+		"src/dir/OWNERS":             []byte("assignees:\n - bob\nreviewers:\n- alice\n- CJWagner\nlabels:\n- src-code"),
+		"src/dir/conformance/OWNERS": []byte("options:\n no_parent_owners: true\napprovers:\n - mml"),
+		"docs/file.md":               []byte("---\napprovers: \n- ALICE\n\nlabels:\n- docs\n---"),
 	}
 	testAliasesFile := map[string][]byte{
 		"OWNERS_ALIASES": []byte("aliases:\n  Best-approvers:\n  - carl\n  - cjwagner\n  best-reviewers:\n  - Carl\n  - BOB"),
@@ -59,7 +60,7 @@ func getTestClient(enableMdYaml, includeAliases bool) (*Client, func(), error) {
 
 	return &Client{
 			git:    git,
-			ghc:    &fakegithub.FakeClient{Collaborators: []string{"cjwagner", "k8s-ci-robot", "alice", "bob", "carl"}},
+			ghc:    &fakegithub.FakeClient{Collaborators: []string{"cjwagner", "k8s-ci-robot", "alice", "bob", "carl", "mml"}},
 			Logger: logrus.WithField("client", "repoowners"),
 			cache:  make(map[string]cacheEntry),
 
@@ -82,13 +83,16 @@ func TestLoadRepoOwners(t *testing.T) {
 		aliasesFileExists bool
 
 		expectedApprovers, expectedReviewers, expectedLabels map[string]sets.String
+
+		expectedOptions map[string]dirOptions
 	}{
 		{
 			name: "no alias, no md",
 			expectedApprovers: map[string]sets.String{
-				"":        sets.NewString("cjwagner"),
-				"src":     sets.NewString(),
-				"src/dir": sets.NewString("bob"),
+				"":                    sets.NewString("cjwagner"),
+				"src":                 sets.NewString(),
+				"src/dir":             sets.NewString("bob"),
+				"src/dir/conformance": sets.NewString("mml"),
 			},
 			expectedReviewers: map[string]sets.String{
 				"":        sets.NewString("alice", "bob"),
@@ -97,15 +101,21 @@ func TestLoadRepoOwners(t *testing.T) {
 			expectedLabels: map[string]sets.String{
 				"":        sets.NewString("EVERYTHING"),
 				"src/dir": sets.NewString("src-code"),
+			},
+			expectedOptions: map[string]dirOptions{
+				"src/dir/conformance": {
+					NoParentOwners: true,
+				},
 			},
 		},
 		{
 			name:              "alias, no md",
 			aliasesFileExists: true,
 			expectedApprovers: map[string]sets.String{
-				"":        sets.NewString("cjwagner"),
-				"src":     sets.NewString("carl", "cjwagner"),
-				"src/dir": sets.NewString("bob"),
+				"":                    sets.NewString("cjwagner"),
+				"src":                 sets.NewString("carl", "cjwagner"),
+				"src/dir":             sets.NewString("bob"),
+				"src/dir/conformance": sets.NewString("mml"),
 			},
 			expectedReviewers: map[string]sets.String{
 				"":        sets.NewString("alice", "bob"),
@@ -114,6 +124,11 @@ func TestLoadRepoOwners(t *testing.T) {
 			expectedLabels: map[string]sets.String{
 				"":        sets.NewString("EVERYTHING"),
 				"src/dir": sets.NewString("src-code"),
+			},
+			expectedOptions: map[string]dirOptions{
+				"src/dir/conformance": {
+					NoParentOwners: true,
+				},
 			},
 		},
 		{
@@ -121,10 +136,11 @@ func TestLoadRepoOwners(t *testing.T) {
 			aliasesFileExists: true,
 			mdEnabled:         true,
 			expectedApprovers: map[string]sets.String{
-				"":             sets.NewString("cjwagner"),
-				"src":          sets.NewString("carl", "cjwagner"),
-				"src/dir":      sets.NewString("bob"),
-				"docs/file.md": sets.NewString("alice"),
+				"":                    sets.NewString("cjwagner"),
+				"src":                 sets.NewString("carl", "cjwagner"),
+				"src/dir":             sets.NewString("bob"),
+				"src/dir/conformance": sets.NewString("mml"),
+				"docs/file.md":        sets.NewString("alice"),
 			},
 			expectedReviewers: map[string]sets.String{
 				"":        sets.NewString("alice", "bob"),
@@ -134,6 +150,11 @@ func TestLoadRepoOwners(t *testing.T) {
 				"":             sets.NewString("EVERYTHING"),
 				"src/dir":      sets.NewString("src-code"),
 				"docs/file.md": sets.NewString("docs"),
+			},
+			expectedOptions: map[string]dirOptions{
+				"src/dir/conformance": {
+					NoParentOwners: true,
+				},
 			},
 		},
 	}
@@ -173,15 +194,10 @@ func TestLoadRepoOwners(t *testing.T) {
 		check("approvers", test.expectedApprovers, ro.approvers)
 		check("reviewers", test.expectedReviewers, ro.reviewers)
 		check("labels", test.expectedLabels, ro.labels)
+		if !reflect.DeepEqual(test.expectedOptions, ro.options) {
+			t.Errorf("[%s] Expected %s to be %#v, but got %#v.", test.name, "options", test.expectedOptions, ro.options)
+		}
 	}
-
-	// case: missing aliases file
-
-	// case: aliases should be expanded
-	// case: mixed case in OWNERS files
-	// case: legacy 'assignees' instead of approvers
-	// case: labels and reviewers in addition to approvers
-	// case: mdYaml
 }
 
 func TestLoadRepoAliases(t *testing.T) {
@@ -227,14 +243,21 @@ func TestLoadRepoAliases(t *testing.T) {
 const (
 	baseDir        = ""
 	leafDir        = "a/b/c"
+	noParentsDir   = "d"
 	nonExistentDir = "DELETED_DIR"
 )
 
 func TestGetApprovers(t *testing.T) {
 	ro := &RepoOwners{
 		approvers: map[string]sets.String{
-			baseDir: sets.NewString("alice", "bob"),
-			leafDir: sets.NewString("carl", "dave"),
+			baseDir:      sets.NewString("alice", "bob"),
+			leafDir:      sets.NewString("carl", "dave"),
+			noParentsDir: sets.NewString("mml"),
+		},
+		options: map[string]dirOptions{
+			noParentsDir: {
+				NoParentOwners: true,
+			},
 		},
 	}
 	tests := []struct {
@@ -257,6 +280,13 @@ func TestGetApprovers(t *testing.T) {
 			expectedOwnersPath: leafDir,
 			expectedLeafOwners: ro.approvers[leafDir],
 			expectedAllOwners:  ro.approvers[leafDir].Union(ro.approvers[baseDir]),
+		},
+		{
+			name:               "Modified NoParentOwners Dir Only",
+			filePath:           filepath.Join(noParentsDir, "testFile.go"),
+			expectedOwnersPath: noParentsDir,
+			expectedLeafOwners: ro.approvers[noParentsDir],
+			expectedAllOwners:  ro.approvers[noParentsDir],
 		},
 		{
 			name:               "Modified Nonexistent Dir (Default to Base)",

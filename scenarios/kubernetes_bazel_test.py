@@ -60,7 +60,7 @@ class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-method
         self.boiler = {
             'check': Stub(kubernetes_bazel, 'check', self.fake_check),
             'check_output': Stub(kubernetes_bazel, 'check_output', self.fake_check),
-            'query': Stub(kubernetes_bazel, 'query', self.fake_query),
+            'query': Stub(kubernetes_bazel.Bazel, 'query', self.fake_query),
             'get_version': Stub(kubernetes_bazel, 'get_version', self.fake_version),
             'clean_file_in_dir': Stub(kubernetes_bazel, 'clean_file_in_dir', self.fake_clean),
         }
@@ -90,7 +90,7 @@ class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-method
         return 'v1.0+abcde'
 
     @staticmethod
-    def fake_query(_kind, selected, changed):
+    def fake_query(_self, _kind, selected, changed):
         """Simple filter selected by changed."""
         if changed == []:
             return changed
@@ -140,7 +140,7 @@ class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-method
             '--build=//b/... -//b/bb/... //c/...'
             ])
         # temporarily un-stub query
-        with Stub(kubernetes_bazel, 'query', self.boiler['query'].old):
+        with Stub(kubernetes_bazel.Bazel, 'query', self.boiler['query'].old):
             def check_query(*cmd):
                 self.assertIn(
                     'kind(.*_binary, rdeps(//b/... -//b/bb/... +//c/..., //...))'

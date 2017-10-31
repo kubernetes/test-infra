@@ -219,7 +219,7 @@ func handleRerun(kc pjClient) http.HandlerFunc {
 			logrus.WithError(err).Warning("Error returned.")
 			return
 		}
-		pjutil := pjutil.NewProwJob(pj.Spec)
+		pjutil := pjutil.NewProwJob(pj.Spec, pj.Metadata.Labels)
 		b, err := yaml.Marshal(&pjutil)
 		if err != nil {
 			http.Error(w, fmt.Sprintf("Error marshaling: %v", err), http.StatusInternalServerError)

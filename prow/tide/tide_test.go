@@ -582,7 +582,7 @@ type fkc struct {
 	createdJobs []kube.ProwJob
 }
 
-func (c *fkc) ListProwJobs(map[string]string) ([]kube.ProwJob, error) {
+func (c *fkc) ListProwJobs(string) ([]kube.ProwJob, error) {
 	return nil, nil
 }
 

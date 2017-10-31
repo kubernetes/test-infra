@@ -38,7 +38,7 @@ var (
 	labelCancelRe = regexp.MustCompile(`(?mi)^/hold cancel\s*$`)
 )
 
-type hasLabelFunc func(e *github.GenericCommentEvent) (bool, error)
+type hasLabelFunc func(label string, issueLabels []github.Label) bool
 
 func init() {
 	plugins.RegisterGenericCommentHandler(pluginName, handleGenericComment)
@@ -51,8 +51,8 @@ type githubClient interface {
 }
 
 func handleGenericComment(pc plugins.PluginClient, e github.GenericCommentEvent) error {
-	hasLabel := func(e *github.GenericCommentEvent) (bool, error) {
-		return hasLabel(pc.GitHubClient, e.Repo.Owner.Login, e.Repo.Name, e.Number, label)
+	hasLabel := func(label string, labels []github.Label) bool {
+		return github.HasLabel(label, labels)
 	}
 	return handle(pc.GitHubClient, pc.Logger, &e, hasLabel)
 }
@@ -73,14 +73,14 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, f
 		return nil
 	}
 
-	hasLabel, err := f(e)
-	if err != nil {
-		return err
-	}
-
 	org := e.Repo.Owner.Login
 	repo := e.Repo.Name
+	labels, err := gc.GetIssueLabels(org, repo, e.Number)
+	if err != nil {
+		return fmt.Errorf("failed to get the labels on %s/%s#%d: %v", org, repo, e.Number, err)
+	}
 
+	hasLabel := f(label, labels)
 	if hasLabel && !needsLabel {
 		log.Info("Removing %q label for %s/%s#%d", label, org, repo, e.Number)
 		return gc.RemoveLabel(org, repo, e.Number, label)
@@ -89,18 +89,4 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, f
 		return gc.AddLabel(org, repo, e.Number, label)
 	}
 	return nil
-}
-
-// hasLabel checks if a label is applied to a pr.
-func hasLabel(c githubClient, org, repo string, num int, label string) (bool, error) {
-	labels, err := c.GetIssueLabels(org, repo, num)
-	if err != nil {
-		return false, fmt.Errorf("failed to get the labels on %s/%s#%d: %v", org, repo, num, err)
-	}
-	for _, candidate := range labels {
-		if candidate.Name == label {
-			return true, nil
-		}
-	}
-	return false, nil
 }
