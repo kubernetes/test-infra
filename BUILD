@@ -42,6 +42,7 @@ filegroup(
         "//maintenance/migratestatus:all-srcs",
         "//metrics:all-srcs",
         "//mungegithub:all-srcs",
+        "//planter:all-srcs",
         "//prow:all-srcs",
         "//robots/issue-creator:all-srcs",
         "//scenarios:all-srcs",
