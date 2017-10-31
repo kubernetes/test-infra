@@ -8822,11 +8822,7 @@
     ]
   },
   "ci-test-infra-bazel": {
-    "args": [
-      "--build=//...",
-      "--install=gubernator/test_requirements.txt",
-      "--test=//... //verify:verify-all"
-    ],
+    "args": [],
     "scenario": "kubernetes_bazel",
     "sigOwners": [
       "sig-testing"
