@@ -26,8 +26,9 @@ import (
 )
 
 const (
-	pluginName = "trigger"
-	lgtmLabel  = "lgtm"
+	pluginName    = "trigger"
+	lgtmLabel     = "lgtm"
+	approvedLabel = "approved"
 )
 
 func init() {
