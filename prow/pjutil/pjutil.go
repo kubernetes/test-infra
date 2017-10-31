@@ -136,13 +136,16 @@ func ProwJobToPod(pj kube.ProwJob, buildID string) *kube.Pod {
 		spec.Containers[i].Name = fmt.Sprintf("%s-%d", pj.Metadata.Name, i)
 		spec.Containers[i].Env = append(spec.Containers[i].Env, kubeEnv(env)...)
 	}
+	podLabels := make(map[string]string)
+	for k, v := range pj.Metadata.Labels {
+		podLabels[k] = v
+	}
+	podLabels[kube.CreatedByProw] = "true"
+	podLabels["type"] = string(pj.Spec.Type)
 	return &kube.Pod{
 		Metadata: kube.ObjectMeta{
-			Name: pj.Metadata.Name,
-			Labels: map[string]string{
-				kube.CreatedByProw: "true",
-				"type":             string(pj.Spec.Type),
-			},
+			Name:   pj.Metadata.Name,
+			Labels: podLabels,
 			Annotations: map[string]string{
 				"job": pj.Spec.Job,
 			},
