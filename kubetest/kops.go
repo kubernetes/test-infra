@@ -19,6 +19,7 @@ package main
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
@@ -344,7 +345,7 @@ func (k kops) DumpClusterLogs(localPath, gcsPath string) error {
 
 	finished := make(chan error)
 	go func() {
-		finished <- logDumper.DumpAllNodes(ctx)
+		finished <- k.dumpAllNodes(ctx, logDumper)
 	}()
 
 	for {
@@ -357,18 +358,63 @@ func (k kops) DumpClusterLogs(localPath, gcsPath string) error {
 	}
 }
 
+// dumpAllNodes connects to every node and dumps the logs
+func (k *kops) dumpAllNodes(ctx context.Context, d *logDumper) error {
+	// Make sure kubeconfig is set, in particular before calling DumpAllNodes, which calls kubectlGetNodes
+	if err := k.TestSetup(); err != nil {
+		return fmt.Errorf("error setting up kubeconfig: %v", err)
+	}
+
+	var additionalIPs []string
+	dump, err := runKopsDump(k.cluster)
+	if err != nil {
+		log.Printf("unable to get cluster status from kops: %v", err)
+	} else {
+		for _, instance := range dump.Instances {
+			name := instance.Name
+
+			if len(instance.PublicAddresses) == 0 {
+				log.Printf("ignoring instance in kops status with no public address: %v", name)
+				continue
+			}
+
+			additionalIPs = append(additionalIPs, instance.PublicAddresses[0])
+		}
+	}
+
+	if err := d.DumpAllNodes(ctx, additionalIPs); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (k kops) TestSetup() error {
 	info, err := os.Stat(k.kubecfg)
 	if err != nil {
-		return err
-	}
-	if info.Size() > 0 {
+		if os.IsNotExist(err) {
+			log.Printf("kubeconfig file %s not found", k.kubecfg)
+		} else {
+			return err
+		}
+	} else if info.Size() > 0 {
 		// Assume that if we already have it, it's good.
 		return nil
 	}
+
 	if err := finishRunning(exec.Command(k.path, "export", "kubecfg", k.cluster)); err != nil {
-		return fmt.Errorf("Failure exporting kops kubecfg: %v", err)
+		return fmt.Errorf("failure from 'kops export kubecfg %s': %v", k.cluster, err)
 	}
+
+	// Double-check that the file was exported
+	info, err = os.Stat(k.kubecfg)
+	if err != nil {
+		return fmt.Errorf("kubeconfig file %s was not exported", k.kubecfg)
+	}
+	if info.Size() == 0 {
+		return fmt.Errorf("exported kubeconfig file %s was empty", k.kubecfg)
+	}
+
 	return nil
 }
 
@@ -386,4 +432,41 @@ func (k kops) Down() error {
 
 func (k kops) GetClusterCreated(gcpProject string) (time.Time, error) {
 	return time.Time{}, errors.New("not implemented")
+}
+
+// kopsDump is the format of data as dumped by `kops toolbox dump -ojson`
+type kopsDump struct {
+	Instances []*kopsDumpInstance `json:"instances"`
+}
+
+// String implements fmt.Stringer
+func (o *kopsDump) String() string {
+	return jsonForDebug(o)
+}
+
+// kopsDumpInstance is the format of an instance (machine) in a kops dump
+type kopsDumpInstance struct {
+	Name            string   `json:"name"`
+	PublicAddresses []string `json:"publicAddresses"`
+}
+
+// String implements fmt.Stringer
+func (o *kopsDumpInstance) String() string {
+	return jsonForDebug(o)
+}
+
+// runKopsDump runs a kops toolbox dump to dump the status of the cluster
+func runKopsDump(clusterName string) (*kopsDump, error) {
+	o, err := output(exec.Command("kops", "toolbox", "dump", "--name", clusterName, "-ojson"))
+	if err != nil {
+		log.Printf("error running kops toolbox dump: %s\n%s", wrapError(err).Error(), string(o))
+		return nil, err
+	}
+
+	dump := &kopsDump{}
+	if err := json.Unmarshal(o, dump); err != nil {
+		return nil, fmt.Errorf("error parsing kops toolbox dump output: %v", err)
+	}
+
+	return dump, nil
 }

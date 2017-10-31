@@ -376,3 +376,70 @@ func (m *mockSSHClient) ExecPiped(ctx context.Context, command string, stdout io
 
 	return fmt.Errorf("unexpected command: %s", command)
 }
+
+func TestFindInstancesNotDumped(t *testing.T) {
+	n1 := &node{
+		Status: nodeStatus{
+			Addresses: []nodeAddress{{Address: "10.0.0.1"}},
+		},
+	}
+
+	n2 := &node{
+		Status: nodeStatus{
+			Addresses: []nodeAddress{{Address: "10.0.0.2"}},
+		},
+	}
+	n3 := &node{
+		Status: nodeStatus{
+			Addresses: []nodeAddress{
+				{Address: "10.0.0.3"},
+				{Address: "10.0.3.3"},
+			},
+		},
+	}
+
+	grid := []struct {
+		ips      []string
+		dumped   []*node
+		expected []string
+	}{
+		{
+			ips:      nil,
+			dumped:   nil,
+			expected: nil,
+		},
+		{
+			ips:      []string{"10.0.0.1"},
+			dumped:   nil,
+			expected: []string{"10.0.0.1"},
+		},
+		{
+			ips:      []string{"10.0.0.1"},
+			dumped:   []*node{n1},
+			expected: nil,
+		},
+		{
+			ips:      []string{"10.0.0.1", "10.0.0.2"},
+			dumped:   []*node{n1},
+			expected: []string{"10.0.0.2"},
+		},
+		{
+			ips:      []string{"10.0.0.1", "10.0.0.2", "10.0.3.3"},
+			dumped:   []*node{n1, n2, n3},
+			expected: nil,
+		},
+		{
+			ips:      []string{"10.0.0.1", "10.0.0.2", "10.0.3.3"},
+			dumped:   []*node{n1, n2},
+			expected: []string{"10.0.3.3"},
+		},
+	}
+
+	for _, g := range grid {
+		actual := findInstancesNotDumped(g.ips, g.dumped)
+
+		if !reflect.DeepEqual(actual, g.expected) {
+			t.Errorf("unexpected result from findInstancesNotDumped.  actual=%v, expected=%v", actual, g.expected)
+		}
+	}
+}
