@@ -111,10 +111,8 @@
     ]
   },
   "ci-kubernetes-bazel-build": {
-    "args": [
-      "--build=//cmd/... //pkg/... //plugin/... //third_party/... //examples/... //test/... //vendor/k8s.io/...",
-      "--release=//build/release-tars"
-    ],
+    "_comment": "NOTE: args for this are in prow/config.yaml after the `--` !",
+    "args": [],
     "scenario": "kubernetes_bazel",
     "sigOwners": [
       "sig-testing"
@@ -151,11 +149,8 @@
     ]
   },
   "ci-kubernetes-bazel-test": {
-    "args": [
-      "--test=//cmd/... //pkg/... //plugin/... //third_party/... //hack/... //hack:verify-all //vendor/k8s.io/...",
-      "--test-args=--test_tag_filters=-integration",
-      "--test-args=--flaky_test_attempts=3"
-    ],
+    "_comment": "NOTE: args for this are in prow/config.yaml after the `--` !",
+    "args": [],
     "scenario": "kubernetes_bazel",
     "sigOwners": [
       "sig-testing"
@@ -8822,6 +8817,7 @@
     ]
   },
   "ci-test-infra-bazel": {
+    "_comment": "NOTE: args for this are in prow/config.yaml after the `--` !",
     "args": [],
     "scenario": "kubernetes_bazel",
     "sigOwners": [
@@ -9207,6 +9203,7 @@
     ]
   },
   "pull-kubernetes-bazel-build": {
+    "_comment": "NOTE: args for this are in prow/config.yaml after the `--` !",
     "args": [],
     "scenario": "kubernetes_bazel",
     "sigOwners": [
@@ -9214,6 +9211,7 @@
     ]
   },
   "pull-kubernetes-bazel-build-canary": {
+    "_comment": "NOTE: args for this are in prow/config.yaml after the `--` !",
     "args": [],
     "scenario": "kubernetes_bazel",
     "sigOwners": [
@@ -9221,6 +9219,7 @@
     ]
   },
   "pull-kubernetes-bazel-test": {
+    "_comment": "NOTE: args for this are in prow/config.yaml after the `--` !",
     "args": [],
     "scenario": "kubernetes_bazel",
     "sigOwners": [
@@ -9228,6 +9227,7 @@
     ]
   },
   "pull-kubernetes-bazel-test-canary": {
+    "_comment": "NOTE: args for this are in prow/config.yaml after the `--` !",
     "args": [],
     "scenario": "kubernetes_bazel",
     "sigOwners": [
@@ -9246,6 +9246,9 @@
     ]
   },
   "pull-kubernetes-e2e-gce": {
+    "_comment1": "NOTE: THESE ARE THE JENKINS ARGS / COMMON ARGS (!)",
+    "_comment2": "PLEASE PUT ARGS THAT WILL WORK FOR 1.6 HERE",
+    "_comment3": "Args for 1.7+ should go in prow/config.yaml after the `--` !",
     "args": [
       "--build",
       "--cluster=",
@@ -9259,7 +9262,6 @@
       "--ginkgo-parallel=30",
       "--mode=docker",
       "--provider=gce",
-      "--runtime-config=batch/v2alpha1=true,admissionregistration.k8s.io/v1alpha1=true",
       "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce",
       "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
       "--timeout=65m"
@@ -9489,6 +9491,7 @@
     ]
   },
   "pull-test-infra-bazel": {
+    "_comment": "NOTE: args for this are in prow/config.yaml after the `--` !",
     "args": [],
     "scenario": "kubernetes_bazel",
     "sigOwners": [
@@ -9496,6 +9499,7 @@
     ]
   },
   "pull-test-infra-bazel-canary": {
+    "_comment": "NOTE: args for this are in prow/config.yaml after the `--` !",
     "args": [],
     "scenario": "kubernetes_bazel",
     "sigOwners": [
