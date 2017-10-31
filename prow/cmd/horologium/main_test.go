@@ -29,7 +29,7 @@ type fakeKube struct {
 	created bool
 }
 
-func (fk *fakeKube) ListProwJobs(ls map[string]string) ([]kube.ProwJob, error) {
+func (fk *fakeKube) ListProwJobs(s string) ([]kube.ProwJob, error) {
 	return fk.jobs, nil
 }
 

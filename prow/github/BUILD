@@ -22,6 +22,7 @@ go_library(
     name = "go_default_library",
     srcs = [
         "client.go",
+        "helpers.go",
         "hmac.go",
         "links.go",
         "types.go",

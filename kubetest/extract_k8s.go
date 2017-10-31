@@ -117,7 +117,7 @@ func (e extractStrategy) name() string {
 	return filepath.Base(e.option)
 }
 
-func (l extractStrategies) Extract(project, zone string) error {
+func (l extractStrategies) Extract(project, zone string, extractSrc bool) error {
 	// rm -rf kubernetes*
 	files, err := ioutil.ReadDir(".")
 	if err != nil {
@@ -141,12 +141,12 @@ func (l extractStrategies) Extract(project, zone string) error {
 				return err
 			}
 		}
-		if err := e.Extract(project, zone); err != nil {
+		if err := e.Extract(project, zone, extractSrc); err != nil {
 			return err
 		}
 	}
 
-	return os.Chdir("kubernetes")
+	return nil
 }
 
 // Find get-kube.sh at PWD, in PATH or else download it.
@@ -182,17 +182,28 @@ func ensureKube() (string, error) {
 	return f.Name(), nil
 }
 
-// Download test binaries for kubernetes versions before 1.5.
-func getTestBinaries(url, version string) error {
-	f, err := os.Create("kubernetes-test.tar.gz")
+// Download named binaries for kubernetes
+func getNamedBinaries(url, version, tarball string, retry int) error {
+	f, err := os.Create(tarball)
 	if err != nil {
 		return err
 	}
 	defer f.Close()
-	full := fmt.Sprintf("%v/%v/kubernetes-test.tar.gz", url, version)
-	if err := httpRead(full, f); err != nil {
-		return err
+	full := fmt.Sprintf("%s/%s/%s", url, version, tarball)
+
+	for i := 0; i < retry; i++ {
+		log.Printf("downloading %v from %v", tarball, full)
+		if err := httpRead(full, f); err == nil {
+			break
+		}
+		err = fmt.Errorf("url=%s version=%s failed get %v: %v", url, version, tarball, err)
+		if i == retry-1 {
+			return err
+		}
+		log.Println(err)
+		sleep(time.Duration(i) * time.Second)
 	}
+
 	f.Close()
 	o, err := output(exec.Command("md5sum", f.Name()))
 	if err != nil {
@@ -212,7 +223,7 @@ var (
 // Calls KUBERNETES_RELEASE_URL=url KUBERNETES_RELEASE=version get-kube.sh.
 // This will download version from the specified url subdir and extract
 // the tarballs.
-var getKube = func(url, version string) error {
+var getKube = func(url, version string, getSrc bool) error {
 	k, err := ensureKube()
 	if err != nil {
 		return err
@@ -250,17 +261,17 @@ var getKube = func(url, version string) error {
 		log.Println(err)
 		sleep(time.Duration(i) * time.Second)
 	}
-	i, err := os.Stat("./kubernetes/cluster/get-kube-binaries.sh")
-	if err != nil || i.IsDir() {
-		log.Printf("Grabbing test binaries since R=%s < 1.5", version)
-		if err = getTestBinaries(url, version); err != nil {
+
+	// TODO(krzyzacy): migrate rest of the get-kube.sh logic into kubetest, using getNamedBinaries
+	if getSrc {
+		if err := getNamedBinaries(url, version, "kubernetes-src.tar.gz", 3); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func setReleaseFromGcs(ci bool, suffix string) error {
+func setReleaseFromGcs(ci bool, suffix string, getSrc bool) error {
 	var prefix string
 	if ci {
 		prefix = "kubernetes-release-dev/ci"
@@ -274,7 +285,7 @@ func setReleaseFromGcs(ci bool, suffix string) error {
 	if err != nil {
 		return err
 	}
-	return getKube(url, strings.TrimSpace(string(release)))
+	return getKube(url, strings.TrimSpace(string(release)), getSrc)
 }
 
 func setupGciVars(family string) (string, error) {
@@ -320,17 +331,17 @@ func setupGciVars(family string) (string, error) {
 	return i, nil
 }
 
-func setReleaseFromGci(image string) error {
+func setReleaseFromGci(image string, getSrc bool) error {
 	u := fmt.Sprintf("gs://container-vm-image-staging/k8s-version-map/%s", image)
 	b, err := output(exec.Command("gsutil", "cat", u))
 	if err != nil {
 		return err
 	}
 	r := fmt.Sprintf("v%s", b)
-	return getKube("https://storage.googleapis.com/kubernetes-release/release", strings.TrimSpace(r))
+	return getKube("https://storage.googleapis.com/kubernetes-release/release", strings.TrimSpace(r), getSrc)
 }
 
-func (e extractStrategy) Extract(project, zone string) error {
+func (e extractStrategy) Extract(project, zone string, extractSrc bool) error {
 	switch e.mode {
 	case local:
 		url := k8s("kubernetes", "_output", "gcs-stage")
@@ -349,14 +360,14 @@ func (e extractStrategy) Extract(project, zone string) error {
 		if len(release) == 0 {
 			return fmt.Errorf("No releases found in %v", url)
 		}
-		return getKube(fmt.Sprintf("file://%s", url), release)
+		return getKube(fmt.Sprintf("file://%s", url), release, extractSrc)
 	case gci, gciCi:
 		if i, err := setupGciVars(e.option); err != nil {
 			return err
 		} else if e.ciVersion != "" {
-			return setReleaseFromGcs(true, e.ciVersion)
+			return setReleaseFromGcs(true, e.ciVersion, extractSrc)
 		} else {
-			return setReleaseFromGci(i)
+			return setReleaseFromGci(i, extractSrc)
 		}
 	case gke:
 		// TODO(fejta): prod v staging v test
@@ -382,11 +393,11 @@ func (e extractStrategy) Extract(project, zone string) error {
 		// launch the default.
 		// TODO(fejta): clean up this logic. Setting/unsetting the same env var is gross.
 		defer os.Unsetenv("CLUSTER_API_VERSION")
-		return setReleaseFromGcs(true, "latest-"+mat[1])
+		return setReleaseFromGcs(true, "latest-"+mat[1], extractSrc)
 	case ci:
-		return setReleaseFromGcs(true, e.option)
+		return setReleaseFromGcs(true, e.option, extractSrc)
 	case rc, stable:
-		return setReleaseFromGcs(false, e.option)
+		return setReleaseFromGcs(false, e.option, extractSrc)
 	case version:
 		var url string
 		release := e.option
@@ -398,16 +409,16 @@ func (e extractStrategy) Extract(project, zone string) error {
 		} else {
 			url = "https://storage.googleapis.com/kubernetes-release/release"
 		}
-		return getKube(url, release)
+		return getKube(url, release, extractSrc)
 	case gcs:
 		// strip gs://foo -> /foo
 		withoutGS := e.option[3:]
 		url := "https://storage.googleapis.com" + path.Dir(withoutGS)
-		return getKube(url, path.Base(withoutGS))
+		return getKube(url, path.Base(withoutGS), extractSrc)
 	case load:
-		return loadState(e.option)
+		return loadState(e.option, extractSrc)
 	case bazel:
-		return getKube("", e.option)
+		return getKube("", e.option, extractSrc)
 	}
 	return fmt.Errorf("Unrecognized extraction: %v(%v)", e.mode, e.value)
 }
@@ -423,7 +434,7 @@ func loadKubeconfig(save string) error {
 	return finishRunning(exec.Command("gsutil", "cp", cURL, home(".kube", "config")))
 }
 
-func loadState(save string) error {
+func loadState(save string, getSrc bool) error {
 	log.Printf("Restore state from %s", save)
 
 	uURL, err := joinURL(save, "release-url.txt")
@@ -447,7 +458,7 @@ func loadState(save string) error {
 	if err != nil {
 		return err
 	}
-	return getKube(string(url), string(release))
+	return getKube(string(url), string(release), getSrc)
 }
 
 func saveState(save string) error {

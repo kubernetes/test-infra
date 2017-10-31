@@ -76,7 +76,14 @@ func main() {
 	}
 
 	// Also check k/k presubmit, prow postsubmit and periodic jobs
-	for _, job := range prowConfig.AllPresubmits([]string{"kubernetes/kubernetes", "kubernetes/test-infra", "kubernetes/cluster-registry", "tensorflow/k8s"}) {
+	for _, job := range prowConfig.AllPresubmits([]string{
+		"jlewi/mlkube.io",
+		"kubernetes/kubernetes",
+		"kubernetes/test-infra",
+		"kubernetes/cluster-registry",
+		"kubernetes/federation",
+		"tensorflow/k8s",
+	}) {
 		jobs[job.Name] = false
 	}
 

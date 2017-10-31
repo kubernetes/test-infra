@@ -152,6 +152,7 @@ type Configuration struct {
 	Slack           Slack           `json:"slack,omitempty"`
 	ConfigUpdater   ConfigUpdater   `json:"config_updater,omitempty"`
 	Blockades       []Blockade      `json:"blockades,omitempty"`
+	Approve         []Approve       `json:"approve,omitempty"`
 }
 
 // ExternalPlugin holds configuration for registering an external
@@ -231,6 +232,17 @@ type Blockade struct {
 	// Explanation is a string that will be included in the comment left when blocking a PR. This should
 	// be an explanation of why the paths specified are blockaded.
 	Explanation string `json:"explanation,omitempty"`
+}
+
+type Approve struct {
+	// Repos is either of the form org/repos or just org.
+	Repos []string `json:"repos,omitempty"`
+	// IssueRequired indicates if an associated issue is required for approval in
+	// the specified repos.
+	IssueRequired bool `json:"issue_required,omitempty"`
+	// ImplicitSelfApprove indicates if authors implicitly approve their own PRs
+	// in the specified repos.
+	ImplicitSelfApprove bool `json:"implicit_self_approve,omitempty"`
 }
 
 type Trigger struct {

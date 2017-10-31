@@ -268,6 +268,15 @@ func run(deploy deployer, o options) error {
 		}))
 	}
 
+	// Save the state if we upped a new cluster without downing it
+	// or we are turning up federated clusters without turning up
+	// the federation control plane.
+	if o.save != "" && ((!o.down && o.up) || (!o.federation && o.up && o.deployment != "none")) {
+		errs = appendError(errs, xmlWrap("Save Cluster State", func() error {
+			return saveState(o.save)
+		}))
+	}
+
 	if o.checkLeaks {
 		log.Print("Sleeping for 30 seconds...") // Wait for eventually consistent listing
 		time.Sleep(30 * time.Second)
@@ -444,22 +453,6 @@ func isUp(d deployer) error {
 		return fmt.Errorf("cluster found, but %d nodes reported", n)
 	}
 	return nil
-}
-
-func waitForNodes(d deployer, nodes int, timeout time.Duration) error {
-	for stop := time.Now().Add(timeout); time.Now().Before(stop); time.Sleep(30 * time.Second) {
-		n, err := clusterSize(d)
-		if err != nil {
-			log.Printf("Can't get cluster size, sleeping: %v", err)
-			continue
-		}
-		if n < nodes {
-			log.Printf("%d (current nodes) < %d (requested instances), sleeping", n, nodes)
-			continue
-		}
-		return nil
-	}
-	return fmt.Errorf("waiting for nodes timed out")
 }
 
 func defaultDumpClusterLogs(localArtifactsDir, logexporterGCSPath string) error {

@@ -27,4 +27,10 @@ REPO=${REPO:-${PWD}}
 VOLUMES="-v ${REPO}:${REPO} -v ${HOME}:${HOME} --tmpfs /tmp:exec,mode=777"
 GID="$(id -g ${USER})"
 ENV="-e USER=${USER} -e GID=${GID} -e UID=${UID} -e HOME=${HOME}"
-docker run --rm ${VOLUMES} --user ${UID} -w ${PWD} ${ENV} ${DOCKER_EXTRA:-} ${IMAGE} ${@}
+# the final command to run
+CMD="docker run --rm ${VOLUMES} --user ${UID} -w ${PWD} ${ENV} ${DOCKER_EXTRA:-} ${IMAGE} ${@}"
+if [ -n "${DRY_RUN+set}" ]; then
+    echo "${CMD}"
+else
+    ${CMD}
+fi

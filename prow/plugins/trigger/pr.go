@@ -200,7 +200,7 @@ func buildAll(c client, pr github.PullRequest) error {
 				},
 			},
 		}
-		if _, err := c.KubeClient.CreateProwJob(pjutil.NewProwJob(pjutil.PresubmitSpec(job, kr))); err != nil {
+		if _, err := c.KubeClient.CreateProwJob(pjutil.NewProwJob(pjutil.PresubmitSpec(job, kr), job.Labels)); err != nil {
 			return err
 		}
 	}

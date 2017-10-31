@@ -503,7 +503,7 @@ func (c *Client) GetPullRequestChanges(org, repo string, number int) ([]PullRequ
 	return changes, nil
 }
 
-// ListPullRequestComments returns all comments on a pull request. This may use
+// ListPullRequestComments returns all *review* comments on a pull request. This may use
 // more than one API token.
 func (c *Client) ListPullRequestComments(org, repo string, number int) ([]ReviewComment, error) {
 	c.log("ListPullRequestComments", org, repo, number)
@@ -1165,4 +1165,31 @@ func (c *Client) CreateFork(owner, repo string) error {
 		exitCodes: []int{202},
 	}, nil)
 	return err
+}
+
+// ListIssueEvents gets a list events from github's events API that pertain to the specified issue.
+// The events that are returned have a different format than webhook events and certain event types
+// are excluded.
+// https://developer.github.com/v3/issues/events/
+func (c *Client) ListIssueEvents(org, repo string, num int) ([]ListedIssueEvent, error) {
+	c.log("ListIssueEvents", org, repo, num)
+	if c.fake {
+		return nil, nil
+	}
+	path := fmt.Sprintf("/repos/%s/%s/issues/%d/events", org, repo, num)
+	var events []ListedIssueEvent
+	err := c.readPaginatedResults(
+		path,
+		"",
+		func() interface{} {
+			return &[]ListedIssueEvent{}
+		},
+		func(obj interface{}) {
+			events = append(events, *(obj.(*[]ListedIssueEvent))...)
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+	return events, nil
 }

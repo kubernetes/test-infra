@@ -64,7 +64,7 @@ type Job struct {
 }
 
 type listPJClient interface {
-	ListProwJobs(labels map[string]string) ([]kube.ProwJob, error)
+	ListProwJobs(selector string) ([]kube.ProwJob, error)
 }
 
 type podLogClient interface {
@@ -164,7 +164,7 @@ func (a byStartTime) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a byStartTime) Less(i, j int) bool { return a[i].st.After(a[j].st) }
 
 func (ja *JobAgent) update() error {
-	pjs, err := ja.kc.ListProwJobs(nil)
+	pjs, err := ja.kc.ListProwJobs(kube.EmptySelector)
 	if err != nil {
 		return err
 	}

@@ -78,8 +78,8 @@ See [extract.go] for further details.
 ## Cluster-lifecycle
 
 There are various ways to deploy kubernetes. Choose a strategy with the
-`--deployment=kubernetes-anywhere` flag. See kubetest help for current list of
-options.
+`--deployment` flag (for example `--deployment=kops` or `--deployment=kubernetes-anywhere`).
+See `kubetest --help` for a full list of options.
 
 ### Up
 

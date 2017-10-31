@@ -48,6 +48,7 @@ func main() {
 	}
 
 	var pjs kube.ProwJobSpec
+	var labels map[string]string
 	var found bool
 	var needsBaseRef bool
 	var needsPR bool
@@ -63,6 +64,7 @@ func main() {
 					Repo:  repo,
 					Pulls: []kube.Pull{{}},
 				})
+				labels = p.Labels
 				found = true
 				needsBaseRef = true
 				needsPR = true
@@ -80,6 +82,7 @@ func main() {
 					Org:  org,
 					Repo: repo,
 				})
+				labels = p.Labels
 				found = true
 				needsBaseRef = true
 			}
@@ -88,6 +91,7 @@ func main() {
 	for _, p := range conf.Periodics {
 		if p.Name == *jobName {
 			pjs = pjutil.PeriodicSpec(p)
+			labels = p.Labels
 			found = true
 		}
 	}
@@ -108,7 +112,7 @@ func main() {
 		fmt.Fprint(os.Stderr, "PR SHA (e.g. 72bcb5d80): ")
 		fmt.Scanln(&pjs.Refs.Pulls[0].SHA)
 	}
-	pj := pjutil.NewProwJob(pjs)
+	pj := pjutil.NewProwJob(pjs, labels)
 	b, err := yaml.Marshal(&pj)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error marshalling YAML.")

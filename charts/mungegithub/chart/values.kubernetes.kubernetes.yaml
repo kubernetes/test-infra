@@ -34,7 +34,6 @@ config:
     pull-kubernetes-bazel-build,\
     pull-kubernetes-bazel-test,\
     pull-kubernetes-e2e-kops-aws,\
-    pull-kubernetes-federation-e2e-gce"
   protected-branches-extra-contexts: "cla/linuxfoundation"
 
   # submit-queue options. Keep job lists sorted!
@@ -47,7 +46,6 @@ config:
     ci-kubernetes-e2e-gci-gce-garbage,\
     ci-kubernetes-e2e-gce-etcd3,\
     ci-kubernetes-e2e-gce-examples,\
-    ci-kubernetes-e2e-gce-federation,\
     ci-kubernetes-e2e-gce-multizone,\
     ci-kubernetes-e2e-gce-scalability,\
     ci-kubernetes-e2e-gce-serial,\

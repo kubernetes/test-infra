@@ -48,6 +48,7 @@ filegroup(
     name = "all-srcs",
     srcs = [
         ":package-srcs",
+        "//prow/plugins/approve:all-srcs",
         "//prow/plugins/assign:all-srcs",
         "//prow/plugins/blockade:all-srcs",
         "//prow/plugins/cla:all-srcs",

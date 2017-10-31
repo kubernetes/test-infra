@@ -101,7 +101,7 @@ func (f *fkc) CreateProwJob(pj kube.ProwJob) (kube.ProwJob, error) {
 	return pj, nil
 }
 
-func (f *fkc) ListProwJobs(map[string]string) ([]kube.ProwJob, error) {
+func (f *fkc) ListProwJobs(selector string) ([]kube.ProwJob, error) {
 	f.Lock()
 	defer f.Unlock()
 	return f.prowjobs, nil
@@ -129,7 +129,7 @@ func (f *fkc) CreatePod(pod kube.Pod) (kube.Pod, error) {
 	return pod, nil
 }
 
-func (f *fkc) ListPods(map[string]string) ([]kube.Pod, error) {
+func (f *fkc) ListPods(selector string) ([]kube.Pod, error) {
 	f.Lock()
 	defer f.Unlock()
 	return f.pods, nil
@@ -973,7 +973,7 @@ func TestPeriodic(t *testing.T) {
 	totServ := httptest.NewServer(http.HandlerFunc(handleTot))
 	defer totServ.Close()
 	fc := &fkc{
-		prowjobs: []kube.ProwJob{pjutil.NewProwJob(pjutil.PeriodicSpec(per))},
+		prowjobs: []kube.ProwJob{pjutil.NewProwJob(pjutil.PeriodicSpec(per), nil)},
 	}
 	c := Controller{
 		kc:          fc,

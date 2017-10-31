@@ -52,6 +52,7 @@ var (
 
 type options struct {
 	build               buildStrategy
+	buildFederation     buildFederationStrategy
 	charts              bool
 	checkLeaks          bool
 	checkSkew           bool
@@ -61,6 +62,8 @@ type options struct {
 	down                bool
 	dump                string
 	extract             extractStrategies
+	extractFederation   extractFederationStrategies
+	extractSource       bool
 	federation          bool
 	gcpCloudSdk         string
 	gcpMasterImage      string
@@ -92,6 +95,7 @@ type options struct {
 	soak                bool
 	soakDuration        time.Duration
 	stage               stageStrategy
+	stageFederation     stageFederationStrategy
 	test                bool
 	testArgs            string
 	testCmd             string
@@ -103,7 +107,8 @@ type options struct {
 
 func defineFlags() *options {
 	o := options{}
-	flag.Var(&o.build, "build", "Rebuild k8s binaries, optionally forcing (release|quick|bazel) stategy")
+	flag.Var(&o.build, "build", "Rebuild k8s binaries, optionally forcing (release|quick|bazel) strategy")
+	flag.Var(&o.buildFederation, "build-federation", "Rebuild federation binaries, optionally forcing (release|quick|bazel) strategy")
 	flag.BoolVar(&o.charts, "charts", false, "If true, run charts tests")
 	flag.BoolVar(&o.checkSkew, "check-version-skew", true, "Verify client and server versions match")
 	flag.BoolVar(&o.checkLeaks, "check-leaked-resources", false, "Ensure project ends with the same resources")
@@ -113,6 +118,8 @@ func defineFlags() *options {
 	flag.BoolVar(&o.down, "down", false, "If true, tear down the cluster before exiting.")
 	flag.StringVar(&o.dump, "dump", "", "If set, dump cluster logs to this location on test or cluster-up failure")
 	flag.Var(&o.extract, "extract", "Extract k8s binaries from the specified release location")
+	flag.Var(&o.extractFederation, "extract-federation", "Extract federation binaries from the specified release location")
+	flag.BoolVar(&o.extractSource, "extract-source", false, "Extract k8s src together with other tarballs")
 	flag.BoolVar(&o.federation, "federation", false, "If true, start/tear down the federation control plane along with the clusters. To only start/tear down the federation control plane, specify --deployment=none")
 	flag.Var(&o.ginkgoParallel, "ginkgo-parallel", fmt.Sprintf("Run Ginkgo tests in parallel, default %d runners. Use --ginkgo-parallel=N to specify an exact count.", defaultGinkgoParallel))
 	flag.StringVar(&o.gcpCloudSdk, "gcp-cloud-sdk", "", "Install/upgrade google-cloud-sdk to the gs:// path if set")
@@ -145,6 +152,7 @@ func defineFlags() *options {
 	flag.BoolVar(&o.soak, "soak", false, "If true, job runs in soak mode")
 	flag.DurationVar(&o.soakDuration, "soak-duration", 7*24*time.Hour, "Maximum age of a soak cluster before it gets recycled")
 	flag.Var(&o.stage, "stage", "Upload binaries to gs://bucket/devel/job-suffix if set")
+	flag.Var(&o.stageFederation, "stage-federation", "Upload federation binaries to gs://bucket/devel/job-suffix if set")
 	flag.StringVar(&o.stage.versionSuffix, "stage-suffix", "", "Append suffix to staged version when set")
 	flag.BoolVar(&o.test, "test", false, "Run Ginkgo tests.")
 	flag.StringVar(&o.testArgs, "test_args", "", "Space-separated list of arguments to pass to Ginkgo test runner.")
@@ -196,7 +204,27 @@ func validWorkingDirectory() error {
 	return nil
 }
 
+func validGoEnv() error {
+	gp := os.Getenv("GOPATH")
+	if gp == "" {
+		return fmt.Errorf("GOPATH not set, please check your golang env setting.")
+	}
+	return nil
+}
+
 func writeXML(dump string, start time.Time) {
+	// Note whether timeout occurred
+	c := testCase{
+		Name:      "Timeout",
+		ClassName: "e2e.go",
+		Time:      timeout.Seconds(),
+	}
+	if isInterrupted() {
+		c.Failure = "kubetest --timeout triggered"
+		suite.Failures++
+	}
+	suite.Cases = append(suite.Cases, c)
+	// Write xml
 	suite.Time = time.Since(start).Seconds()
 	out, err := xml.MarshalIndent(&suite, "", "    ")
 	if err != nil {
@@ -251,6 +279,9 @@ func getDeployer(o *options) (deployer, error) {
 func validateFlags(o *options) error {
 	if o.multiClusters.Enabled() && o.deployment != "kubernetes-anywhere" {
 		return errors.New("--multi-clusters flag cannot be passed with deployments other than 'kubernetes-anywhere'")
+	}
+	if !o.extract.Enabled() && o.extractSource {
+		return errors.New("--extract-source flag cannot be passed without --extract")
 	}
 	return nil
 }
@@ -331,8 +362,20 @@ func complete(o *options) error {
 	if err := acquireKubernetes(o); err != nil {
 		return fmt.Errorf("failed to acquire k8s binaries: %v", err)
 	}
+	if err := acquireFederation(o); err != nil {
+		return fmt.Errorf("failed to acquire federation binaries: %v", err)
+	}
+	if o.extract.Enabled() {
+		if err := os.Chdir("kubernetes"); err != nil {
+			return fmt.Errorf("failed to chdir to kubernetes dir: %v", err)
+		}
+	}
 	if err := validWorkingDirectory(); err != nil {
 		return fmt.Errorf("called from invalid working directory: %v", err)
+	}
+
+	if err := validGoEnv(); err != nil {
+		return fmt.Errorf("invalid Go Env: %v", err)
 	}
 
 	if o.down {
@@ -360,15 +403,6 @@ func complete(o *options) error {
 
 	if err := run(deploy, *o); err != nil {
 		return err
-	}
-
-	// Save the state if we upped a new cluster without downing it
-	// or we are turning up federated clusters without turning up
-	// the federation control plane.
-	if o.save != "" && ((!o.down && o.up) || (!o.federation && o.up && o.deployment != "none")) {
-		if err := saveState(o.save); err != nil {
-			return err
-		}
 	}
 
 	// Publish the successfully tested version when requested
@@ -407,7 +441,12 @@ func acquireKubernetes(o *options) error {
 				if !o.up {
 					// Restore version and .kube/config from --up
 					log.Printf("Overwriting extract strategy to load kubeconfig and version from %s", o.save)
-					o.extract = extractStrategies{extractStrategy{mode: load, option: o.save}}
+					o.extract = extractStrategies{
+						extractStrategy{
+							mode:   load,
+							option: o.save,
+						},
+					}
 				} else if o.federation && o.up && o.deployment == "none" {
 					// Only restore .kube/config from previous --up, use the regular
 					// extraction strategy to restore version.
@@ -415,12 +454,40 @@ func acquireKubernetes(o *options) error {
 					loadKubeconfig(o.save)
 				}
 			}
+
 			// New deployment, extract new version
-			return o.extract.Extract(o.gcpProject, o.gcpZone)
+			return o.extract.Extract(o.gcpProject, o.gcpZone, o.extractSource)
 		})
 		if err != nil {
 			return err
 		}
+	}
+	return nil
+}
+
+func acquireFederation(o *options) error {
+	// Potentially build federation
+	if o.buildFederation.Enabled() {
+		if err := xmlWrap("BuildFederation", o.buildFederation.Build); err != nil {
+			return err
+		}
+	}
+
+	// Potentially stage federation binaries somewhere on GCS
+	if o.stageFederation.Enabled() {
+		if err := xmlWrap("StageFederation", func() error {
+			return o.stageFederation.Stage()
+		}); err != nil {
+			return err
+		}
+	}
+
+	// Potentially download existing federation binaries and extract them.
+	if o.extractFederation.Enabled() {
+		err := xmlWrap("ExtractFederation", func() error {
+			return o.extractFederation.Extract(o.gcpProject, o.gcpZone)
+		})
+		return err
 	}
 	return nil
 }

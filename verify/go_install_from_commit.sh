@@ -20,6 +20,7 @@ set -o pipefail
 PKG=$1
 COMMIT=$2
 export GOPATH=$3
+export GOBIN="$GOPATH/bin"
 
 go get -d -u "${PKG}"
 cd "${GOPATH}/src/${PKG}"
