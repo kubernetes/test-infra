@@ -298,11 +298,11 @@ func (c *Controller) syncPendingJob(pj kube.ProwJob, reports chan<- kube.ProwJob
 			pj.Status.State = kube.SuccessState
 			pj.Status.Description = "Jenkins job succeeded."
 			for _, nj := range pj.Spec.RunAfterSuccess {
-				child := pjutil.NewProwJob(nj)
+				child := pjutil.NewProwJob(nj, pj.Metadata.Labels)
 				if !RunAfterSuccessCanRun(&pj, &child, c.ca, c.ghc) {
 					continue
 				}
-				if _, err := c.kc.CreateProwJob(pjutil.NewProwJob(nj)); err != nil {
+				if _, err := c.kc.CreateProwJob(pjutil.NewProwJob(nj, pj.Metadata.Labels)); err != nil {
 					return fmt.Errorf("error starting next prowjob: %v", err)
 				}
 			}

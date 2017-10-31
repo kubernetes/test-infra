@@ -148,7 +148,7 @@ func handleIC(c client, trustedOrg string, ic github.IssueCommentEvent) error {
 				},
 			},
 		}
-		if _, err := c.KubeClient.CreateProwJob(pjutil.NewProwJob(pjutil.PresubmitSpec(job, kr))); err != nil {
+		if _, err := c.KubeClient.CreateProwJob(pjutil.NewProwJob(pjutil.PresubmitSpec(job, kr), job.Labels)); err != nil {
 			errors = append(errors, err)
 		}
 	}

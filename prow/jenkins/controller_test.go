@@ -582,7 +582,7 @@ func TestBatch(t *testing.T) {
 				SHA:    "qwe",
 			},
 		},
-	}))
+	}), nil)
 	pj.Metadata.Name = "known_name"
 	fc := &fkc{
 		prowjobs: []kube.ProwJob{pj},

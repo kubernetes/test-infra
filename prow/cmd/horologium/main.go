@@ -71,7 +71,7 @@ func sync(kc kubeClient, cfg *config.Config, now time.Time) error {
 	for _, p := range cfg.Periodics {
 		j, ok := latestJobs[p.Name]
 		if !ok || (j.Complete() && now.Sub(j.Status.StartTime) > p.GetInterval()) {
-			if _, err := kc.CreateProwJob(pjutil.NewProwJob(pjutil.PeriodicSpec(p))); err != nil {
+			if _, err := kc.CreateProwJob(pjutil.NewProwJob(pjutil.PeriodicSpec(p), p.Labels)); err != nil {
 				return fmt.Errorf("error creating prow job: %v", err)
 			}
 		}

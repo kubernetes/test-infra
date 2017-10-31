@@ -973,7 +973,7 @@ func TestPeriodic(t *testing.T) {
 	totServ := httptest.NewServer(http.HandlerFunc(handleTot))
 	defer totServ.Close()
 	fc := &fkc{
-		prowjobs: []kube.ProwJob{pjutil.NewProwJob(pjutil.PeriodicSpec(per))},
+		prowjobs: []kube.ProwJob{pjutil.NewProwJob(pjutil.PeriodicSpec(per), nil)},
 	}
 	c := Controller{
 		kc:          fc,

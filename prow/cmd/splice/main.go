@@ -341,7 +341,7 @@ func main() {
 		refs := splicer.makeBuildRefs(*orgName, *repoName, batchPRs)
 		presubmits := configAgent.Config().Presubmits[fmt.Sprintf("%s/%s", *orgName, *repoName)]
 		for _, job := range neededPresubmits(presubmits, currentJobs, refs) {
-			if _, err := kc.CreateProwJob(pjutil.NewProwJob(pjutil.BatchSpec(job, refs))); err != nil {
+			if _, err := kc.CreateProwJob(pjutil.NewProwJob(pjutil.BatchSpec(job, refs), job.Labels)); err != nil {
 				log.WithError(err).WithField("job", job.Name).Error("Error starting batch job.")
 			}
 		}

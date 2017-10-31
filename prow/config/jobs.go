@@ -27,6 +27,8 @@ import (
 type Presubmit struct {
 	// eg kubernetes-pull-build-test-e2e-gce
 	Name string `json:"name"`
+	// Labels are added in prowjobs created for this job.
+	Labels map[string]string `json:"labels"`
 	// Run for every PR, or only when a comment triggers it.
 	AlwaysRun bool `json:"always_run"`
 	// Run if the PR modifies a file that matches this regex.
@@ -58,6 +60,8 @@ type Presubmit struct {
 // Postsubmit runs on push events.
 type Postsubmit struct {
 	Name string `json:"name"`
+	// Labels are added in prowjobs created for this job.
+	Labels map[string]string `json:"labels"`
 	// Agent that will take care of running this job.
 	Agent string `json:"agent"`
 	// Kubernetes pod spec.
@@ -73,6 +77,8 @@ type Postsubmit struct {
 // Periodic runs on a timer.
 type Periodic struct {
 	Name string `json:"name"`
+	// Labels are added in prowjobs created for this job.
+	Labels map[string]string `json:"labels"`
 	// Agent that will take care of running this job.
 	Agent string `json:"agent"`
 	// Kubernetes pod spec.
