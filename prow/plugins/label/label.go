@@ -99,7 +99,7 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent) e
 
 	// Add labels
 	for _, labelToAdd := range labelsToAdd {
-		if hasLabel(labelToAdd, labels) {
+		if github.HasLabel(labelToAdd, labels) {
 			continue
 		}
 
@@ -115,7 +115,7 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent) e
 
 	// Remove labels
 	for _, labelToRemove := range labelsToRemove {
-		if !hasLabel(labelToRemove, labels) {
+		if !github.HasLabel(labelToRemove, labels) {
 			noSuchLabelsOnIssue = append(noSuchLabelsOnIssue, labelToRemove)
 			continue
 		}
@@ -142,13 +142,4 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent) e
 	}
 
 	return nil
-}
-
-func hasLabel(str string, labels []github.Label) bool {
-	for _, label := range labels {
-		if strings.ToLower(label.Name) == strings.ToLower(str) {
-			return true
-		}
-	}
-	return false
 }
