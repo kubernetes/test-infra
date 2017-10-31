@@ -24,6 +24,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/cron"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pjutil"
 )
@@ -44,9 +45,13 @@ func main() {
 		logrus.WithError(err).Fatal("Error getting kube client.")
 	}
 
+	// start a cron
+	cr := cron.NewClient()
+	cr.Start()
+
 	for now := range time.Tick(1 * time.Minute) {
 		start := time.Now()
-		if err := sync(kc, configAgent.Config(), now); err != nil {
+		if err := sync(kc, configAgent.Config(), cr, now); err != nil {
 			logrus.WithError(err).Error("Error syncing periodic jobs.")
 		}
 		logrus.Infof("Sync time: %v", time.Since(start))
@@ -58,20 +63,34 @@ type kubeClient interface {
 	CreateProwJob(kube.ProwJob) (kube.ProwJob, error)
 }
 
-func sync(kc kubeClient, cfg *config.Config, now time.Time) error {
+func sync(kc kubeClient, cfg *config.Config, cr *cron.Cron, now time.Time) error {
 	jobs, err := kc.ListProwJobs(kube.EmptySelector)
 	if err != nil {
 		return fmt.Errorf("error listing prow jobs: %v", err)
 	}
 	latestJobs := pjutil.GetLatestPeriodics(jobs)
 
+	// TODO(krzyzacy): retire the interval check, migrate everything to use cron
+	cr.SyncConfig(cfg)
+	cronTriggers := cr.QueuedJobs()
+
 	for _, p := range cfg.Periodics {
 		j, ok := latestJobs[p.Name]
-		if !ok || (j.Complete() && now.Sub(j.Status.StartTime) > p.GetInterval()) {
-			if _, err := kc.CreateProwJob(pjutil.NewProwJob(pjutil.PeriodicSpec(p), p.Labels)); err != nil {
-				return fmt.Errorf("error creating prow job: %v", err)
+
+		if p.Cron == "" {
+			if !ok || (j.Complete() && now.Sub(j.Status.StartTime) > p.GetInterval()) {
+				if _, err := kc.CreateProwJob(pjutil.NewProwJob(pjutil.PeriodicSpec(p), p.Labels)); err != nil {
+					return fmt.Errorf("error creating prow job: %v", err)
+				}
+			}
+		} else if _, exist := cronTriggers[p.Name]; exist {
+			if !ok || j.Complete() {
+				if _, err := kc.CreateProwJob(pjutil.NewProwJob(pjutil.PeriodicSpec(p), p.Labels)); err != nil {
+					return fmt.Errorf("error creating prow job: %v", err)
+				}
 			}
 		}
 	}
+
 	return nil
 }
