@@ -101,7 +101,7 @@ func (f *fkc) CreateProwJob(pj kube.ProwJob) (kube.ProwJob, error) {
 	return pj, nil
 }
 
-func (f *fkc) ListProwJobs(map[string]string) ([]kube.ProwJob, error) {
+func (f *fkc) ListProwJobs(selector string) ([]kube.ProwJob, error) {
 	f.Lock()
 	defer f.Unlock()
 	return f.prowjobs, nil
@@ -129,7 +129,7 @@ func (f *fkc) CreatePod(pod kube.Pod) (kube.Pod, error) {
 	return pod, nil
 }
 
-func (f *fkc) ListPods(map[string]string) ([]kube.Pod, error) {
+func (f *fkc) ListPods(selector string) ([]kube.Pod, error) {
 	f.Lock()
 	defer f.Unlock()
 	return f.pods, nil

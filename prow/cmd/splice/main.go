@@ -287,7 +287,7 @@ func main() {
 	for range time.Tick(1 * time.Minute) {
 		start := time.Now()
 		// List batch jobs, only start a new one if none are active.
-		currentJobs, err := kc.ListProwJobs(nil)
+		currentJobs, err := kc.ListProwJobs(kube.EmptySelector)
 		if err != nil {
 			log.WithError(err).Error("Error listing prow jobs.")
 			continue

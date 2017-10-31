@@ -70,7 +70,7 @@ func TestListPods(t *testing.T) {
 	}))
 	defer ts.Close()
 	c := getClient(ts.URL)
-	ps, err := c.ListPods(nil)
+	ps, err := c.ListPods(EmptySelector)
 	if err != nil {
 		t.Errorf("Didn't expect error: %v", err)
 	}

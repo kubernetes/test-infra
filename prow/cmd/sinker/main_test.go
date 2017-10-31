@@ -34,20 +34,20 @@ type fakeClient struct {
 	DeletedProwJobs []kube.ProwJob
 }
 
-func (c *fakeClient) ListPods(labels map[string]string) ([]kube.Pod, error) {
+func (c *fakeClient) ListPods(selector string) ([]kube.Pod, error) {
 	pl := make([]kube.Pod, 0, len(c.Pods))
 	for _, p := range c.Pods {
-		if labelsMatch(labels, p.Metadata.Labels) {
+		if labelsMatch(selector, p.Metadata.Labels) {
 			pl = append(pl, p)
 		}
 	}
 	return pl, nil
 }
 
-func (c *fakeClient) ListProwJobs(labels map[string]string) ([]kube.ProwJob, error) {
+func (c *fakeClient) ListProwJobs(selector string) ([]kube.ProwJob, error) {
 	jl := make([]kube.ProwJob, 0, len(c.ProwJobs))
 	for _, j := range c.ProwJobs {
-		if labelsMatch(labels, j.Metadata.Labels) {
+		if labelsMatch(selector, j.Metadata.Labels) {
 			jl = append(jl, j)
 		}
 	}
@@ -76,7 +76,25 @@ func (c *fakeClient) DeletePod(name string) error {
 	return fmt.Errorf("pod %s not found", name)
 }
 
-func labelsMatch(l1 map[string]string, l2 map[string]string) bool {
+func parseSelector(selector string) map[string]string {
+	if selector == "" {
+		return nil
+	}
+	s := make(map[string]string)
+	for _, pair := range strings.Split(selector, ",") {
+		parts := strings.Split(pair, "=")
+		if len(parts) != 2 {
+			panic(fmt.Sprintf("bad selector: %s", selector))
+		}
+		key := strings.TrimSpace(parts[0])
+		value := strings.TrimSpace(parts[1])
+		s[key] = value
+	}
+	return s
+}
+
+func labelsMatch(selector string, l2 map[string]string) bool {
+	l1 := parseSelector(selector)
 	for k1, v1 := range l1 {
 		matched := false
 		for k2, v2 := range l2 {
@@ -271,7 +289,9 @@ func TestClean(t *testing.T) {
 		Pods:     pods,
 		ProwJobs: prowJobs,
 	}
+	// Run
 	clean(kc, kc, newFakeConfigAgent())
+	// Check
 	if len(deletedPods) != len(kc.DeletedPods) {
 		var got []string
 		for _, pj := range kc.DeletedPods {

@@ -95,7 +95,7 @@ func (f *fkc) CreateProwJob(pj kube.ProwJob) (kube.ProwJob, error) {
 	return pj, nil
 }
 
-func (f *fkc) ListProwJobs(map[string]string) ([]kube.ProwJob, error) {
+func (f *fkc) ListProwJobs(string) ([]kube.ProwJob, error) {
 	f.Lock()
 	defer f.Unlock()
 	return f.prowjobs, nil

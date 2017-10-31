@@ -36,7 +36,7 @@ import (
 )
 
 type kubeClient interface {
-	ListProwJobs(map[string]string) ([]kube.ProwJob, error)
+	ListProwJobs(string) ([]kube.ProwJob, error)
 	CreateProwJob(kube.ProwJob) (kube.ProwJob, error)
 }
 
@@ -115,7 +115,7 @@ func (c *Controller) Sync() error {
 	var pjs []kube.ProwJob
 	var err error
 	if len(pool) > 0 {
-		pjs, err = c.kc.ListProwJobs(nil)
+		pjs, err = c.kc.ListProwJobs(kube.EmptySelector)
 		if err != nil {
 			return err
 		}
