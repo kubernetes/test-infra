@@ -36,6 +36,7 @@ go_library(
     importpath = "k8s.io/test-infra/prow/config",
     deps = [
         "//prow/kube:go_default_library",
+        "//prow/kube/labels:go_default_library",
         "//vendor/github.com/ghodss/yaml:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
     ],
