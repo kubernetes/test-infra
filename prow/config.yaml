@@ -876,6 +876,8 @@ presubmits:
         - --
         - --build=bazel
         - --mode=local
+        # this only works for 1.7+
+        - --runtime-config=batch/v2alpha1=true,admissionregistration.k8s.io/v1alpha1=true
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
@@ -939,6 +941,8 @@ presubmits:
         - --
         - --build=bazel
         - --mode=local
+        # this only works for 1.7+
+        - --runtime-config=batch/v2alpha1=true,admissionregistration.k8s.io/v1alpha1=true
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
@@ -1002,6 +1006,8 @@ presubmits:
         - --
         - --build=bazel
         - --mode=local
+        # this only works for 1.7+
+        - --runtime-config=batch/v2alpha1=true,admissionregistration.k8s.io/v1alpha1=true
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
@@ -2084,6 +2090,8 @@ presubmits:
         - --
         - --build=bazel
         - --mode=local
+        # this only works for 1.7+
+        - --runtime-config=batch/v2alpha1=true,admissionregistration.k8s.io/v1alpha1=true
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
@@ -2147,6 +2155,8 @@ presubmits:
         - --
         - --build=bazel
         - --mode=local
+        # this only works for 1.7+
+        - --runtime-config=batch/v2alpha1=true,admissionregistration.k8s.io/v1alpha1=true
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
@@ -2210,6 +2220,8 @@ presubmits:
         - --
         - --build=bazel
         - --mode=local
+        # this only works for 1.7+
+        - --runtime-config=batch/v2alpha1=true,admissionregistration.k8s.io/v1alpha1=true
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
@@ -3005,6 +3017,9 @@ postsubmits:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/logs"
+        - "--" # end bootstrap args, scenario args below
+        - "--build=//... -//vendor/..."
+        - "--release=//build/release-tars"
         env:
         - name: TEST_TMPDIR
           value: /root/.cache/bazel
@@ -3040,6 +3055,12 @@ postsubmits:
           - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
           - "--service-account=/etc/service-account/service-account.json"
           - "--upload=gs://kubernetes-jenkins/logs"
+          - "--" # end bootstrap args, scenario args below
+          - "--test=//... -//build/... -//vendor/..."
+          - "--manual-test=//hack:verify-all"
+          - "--test-args=--build_tag_filters=-e2e,-integration"
+          - "--test-args=--test_tag_filters=-e2e,-integration"
+          - "--test-args=--flaky_test_attempts=3"
           env:
           - name: TEST_TMPDIR
             value: /root/.cache/bazel
