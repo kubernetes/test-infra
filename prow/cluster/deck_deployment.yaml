@@ -33,13 +33,14 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: deck
-        image: gcr.io/k8s-prow/deck:0.55
+        image: gcr.io/k8s-prow/deck:0.56
         imagePullPolicy: Always
         ports:
           - name: http
             containerPort: 8080
         args:
         - --build-cluster=/etc/cluster/cluster
+        - --tide-url=http://tide/
         volumeMounts:
         - mountPath: /etc/cluster
           name: cluster

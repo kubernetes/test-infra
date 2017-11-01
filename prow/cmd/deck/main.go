@@ -41,6 +41,7 @@ import (
 var (
 	configPath   = flag.String("config-path", "/etc/config/config", "Path to config.yaml.")
 	buildCluster = flag.String("build-cluster", "", "Path to file containing a YAML-marshalled kube.Cluster object. If empty, uses the local cluster.")
+	tideURL      = flag.String("tide-url", "", "Path to tide. If empty, do not serve tide data.")
 )
 
 // Matches letters, numbers, hyphens, and underscores.
@@ -81,6 +82,15 @@ func main() {
 	http.Handle("/log", gziphandler.GzipHandler(handleLog(ja)))
 	http.Handle("/rerun", gziphandler.GzipHandler(handleRerun(kc)))
 
+	if *tideURL != "" {
+		ta := &tideAgent{
+			log:  logrus.WithField("agent", "tide"),
+			path: *tideURL,
+		}
+		ta.start()
+		http.Handle("/tide.js", gziphandler.GzipHandler(handleTide(ta)))
+	}
+
 	logrus.WithError(http.ListenAndServe(":8080", nil)).Fatal("ListenAndServe returned.")
 }
 
@@ -106,8 +116,29 @@ func handleData(ja *JobAgent) http.HandlerFunc {
 		if v := r.URL.Query().Get("var"); v != "" {
 			fmt.Fprintf(w, "var %s = %s;", v, string(jd))
 		} else {
-			fmt.Fprintf(w, string(jd))
+			fmt.Fprint(w, string(jd))
 		}
+	}
+}
+
+func handleTide(ta *tideAgent) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Cache-Control", "no-cache")
+		ta.Lock()
+		defer ta.Unlock()
+		pd, err := json.Marshal(ta.pools)
+		if err != nil {
+			logrus.WithError(err).Error("Error marshaling pools.")
+			pd = []byte("[]")
+		}
+		// If we have a "var" query, then write out "var value = [...];".
+		// Otherwise, just write out the JSON.
+		if v := r.URL.Query().Get("var"); v != "" {
+			fmt.Fprintf(w, "var %s = %s;", v, string(pd))
+		} else {
+			fmt.Fprint(w, string(pd))
+		}
+
 	}
 }
 
