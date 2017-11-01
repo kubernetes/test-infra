@@ -9150,6 +9150,20 @@
       "sig-node"
     ]
   },
+  "pull-federation-bazel-build": {
+    "args": [],
+    "scenario": "kubernetes_bazel",
+    "sigOwners": [
+      "sig-multicluster"
+    ]
+  },
+  "pull-federation-bazel-test": {
+    "args": [],
+    "scenario": "kubernetes_bazel",
+    "sigOwners": [
+      "sig-multicluster"
+    ]
+  },
   "pull-federation-e2e-gce": {
     "args": [
       "--build-federation",
