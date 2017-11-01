@@ -23,6 +23,7 @@ import (
 
 	"gopkg.in/yaml.v2"
 	"k8s.io/test-infra/testgrid/config/yaml2proto"
+	"path/filepath"
 )
 
 type SQConfig struct {
@@ -85,10 +86,13 @@ func TestConfig(t *testing.T) {
 			t.Errorf("Testgroup %v: UseKubernetesClient should always be true!", testgroup.Name)
 		}
 
-		// All testgroup from kubernetes must have testgroup name match its bucket name
 		if strings.HasPrefix(testgroup.GcsPrefix, "kubernetes-jenkins/logs/") {
-			if strings.TrimPrefix(testgroup.GcsPrefix, "kubernetes-jenkins/logs/") != testgroup.Name {
-				t.Errorf("Kubernetes Testgroup %v, name does not match GCS Bucket %v", testgroup.Name, testgroup.GcsPrefix)
+			// The expectation is that testgroup.Name is the name of a Prow job and the GCSPrefix
+			// follows the convention kubernetes-jenkins/logs/.../jobName
+			// The final part of the prefix should be the job name.
+			expected := filepath.Join(filepath.Dir(testgroup.GcsPrefix), testgroup.Name)
+			if expected != testgroup.GcsPrefix {
+				t.Errorf("Kubernetes Testgroup %v GcsPrefix; Got %v; Want %v", testgroup.Name, testgroup.GcsPrefix, expected)
 			}
 		}
 
