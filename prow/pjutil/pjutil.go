@@ -26,6 +26,7 @@ import (
 
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/kube"
+	"encoding/json"
 )
 
 // NewProwJob initializes a ProwJob out of a ProwJobSpec.
@@ -174,6 +175,15 @@ func EnvForSpec(spec kube.ProwJobSpec) map[string]string {
 	env := map[string]string{
 		"JOB_NAME": spec.Job,
 	}
+
+	rawSpecData, err := json.Marshal(spec)
+	if err != nil {
+		// there should be no point at which these objects
+		// cannot be serialized, or we couldn't store them
+		// in the apiserver in the first place
+		panic(err)
+	}
+	env["PROW_JOB_SPEC"] = string(rawSpecData)
 
 	if spec.Type == kube.PeriodicJob {
 		return env
