@@ -26,6 +26,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/sirupsen/logrus"
+
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pjutil"
 )
@@ -115,8 +117,8 @@ func (jb *JenkinsBuild) BuildID() string {
 }
 
 type Client struct {
-	// If Logger is non-nil, log all method calls with it.
-	Logger Logger
+	// If logger is non-nil, log all method calls with it.
+	logger Logger
 
 	client     *http.Client
 	baseURL    string
@@ -141,6 +143,7 @@ type BearerTokenAuthConfig struct {
 
 func NewClient(url string, authConfig *AuthConfig) *Client {
 	return &Client{
+		logger:     logrus.WithField("client", "jenkins"),
 		baseURL:    url,
 		authConfig: authConfig,
 		client:     &http.Client{},
@@ -148,14 +151,14 @@ func NewClient(url string, authConfig *AuthConfig) *Client {
 }
 
 func (c *Client) log(methodName string, args ...interface{}) {
-	if c.Logger == nil {
+	if c.logger == nil {
 		return
 	}
 	var as []string
 	for _, arg := range args {
 		as = append(as, fmt.Sprintf("%v", arg))
 	}
-	c.Logger.Debugf("%s(%s)", methodName, strings.Join(as, ", "))
+	c.logger.Debugf("%s(%s)", methodName, strings.Join(as, ", "))
 }
 
 // Get fetches the data found in the provided path. It includes retries
@@ -289,7 +292,7 @@ func (c *Client) ListJenkinsBuilds(jobs map[string]struct{}) (map[string]Jenkins
 		if err != nil {
 			// Ignore 404s so we will not block processing the rest of the jobs.
 			if _, isNotFound := err.(NotFoundError); isNotFound {
-				c.Logger.Warnf("cannot list builds for job %q: %v", job, err)
+				c.logger.Warnf("cannot list builds for job %q: %v", job, err)
 				continue
 			}
 			return nil, fmt.Errorf("cannot list builds for job %q: %v", job, err)

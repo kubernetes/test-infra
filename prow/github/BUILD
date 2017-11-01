@@ -30,6 +30,7 @@ go_library(
     importpath = "k8s.io/test-infra/prow/github",
     deps = [
         "//vendor/github.com/shurcooL/githubql:go_default_library",
+        "//vendor/github.com/sirupsen/logrus:go_default_library",
         "//vendor/golang.org/x/oauth2:go_default_library",
     ],
 )

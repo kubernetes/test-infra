@@ -156,7 +156,7 @@ func TestListJenkinsBuilds(t *testing.T) {
 		defer ts.Close()
 
 		jc := Client{
-			Logger:  logrus.StandardLogger(),
+			logger:  logrus.WithField("client", "jenkins"),
 			client:  ts.Client(),
 			baseURL: ts.URL,
 		}

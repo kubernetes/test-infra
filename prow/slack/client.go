@@ -24,6 +24,8 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+
+	"github.com/sirupsen/logrus"
 )
 
 type Logger interface {
@@ -33,8 +35,8 @@ type Logger interface {
 // Client allows you to provide connection to Slack API Server
 // It contains a token that allows to authenticate connection to post and work with channels in the domain
 type Client struct {
-	// If Logger is non-nil, log all method calls with it.
-	Logger Logger
+	// If logger is non-nil, log all method calls with it.
+	logger Logger
 
 	token string
 	fake  bool
@@ -99,7 +101,8 @@ type ChannelList struct {
 // NewClient creates a slack client with an API token.
 func NewClient(token string) *Client {
 	return &Client{
-		token: token,
+		logger: logrus.WithField("client", "slack"),
+		token:  token,
 	}
 }
 
@@ -111,14 +114,14 @@ func NewFakeClient() *Client {
 }
 
 func (sl *Client) log(methodName string, args ...interface{}) {
-	if sl.Logger == nil {
+	if sl.logger == nil {
 		return
 	}
 	var as []string
 	for _, arg := range args {
 		as = append(as, fmt.Sprintf("%v", arg))
 	}
-	sl.Logger.Debugf("%s(%s)", methodName, strings.Join(as, ", "))
+	sl.logger.Debugf("%s(%s)", methodName, strings.Join(as, ", "))
 }
 
 func (sl *Client) VerifyAPI() (bool, error) {
