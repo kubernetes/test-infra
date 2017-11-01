@@ -1439,7 +1439,7 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/tf-k8s-presubmit
   num_columns_recent: 30
 - name: tf-k8s-postsubmit
-  gcs_prefix: kubernetes-jenkins/logs/tf-k8s-postsubmit
+  gcs_prefix: kubernetes-jenkins/logs/tensorflow_k8s/tf-k8s-postsubmit
 # kube-proxy daemonset migration jobs
 - name: ci-kubernetes-e2e-gci-gce-latest-downgrade-kube-proxy-ds
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-latest-downgrade-kube-proxy-ds
