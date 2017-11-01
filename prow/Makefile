@@ -24,7 +24,7 @@ HOOK_VERSION             ?= 0.175
 # SINKER_VERSION is the version of the sinker image
 SINKER_VERSION           ?= 0.21
 # DECK_VERSION is the version of the deck image
-DECK_VERSION             ?= 0.56
+DECK_VERSION             ?= 0.57
 # SPLICE_VERSION is the version of the splice image
 SPLICE_VERSION           ?= 0.28
 # TOT_VERSION is the version of the tot image
@@ -32,9 +32,9 @@ TOT_VERSION              ?= 0.5
 # HOROLOGIUM_VERSION is the version of the horologium image
 HOROLOGIUM_VERSION       ?= 0.10
 # PLANK_VERSION is the version of the plank image
-PLANK_VERSION            ?= 0.52
+PLANK_VERSION            ?= 0.53
 # JENKINS-OPERATOR_VERSION is the version of the jenkins-oprator image
-JENKINS-OPERATOR_VERSION ?= 0.48
+JENKINS-OPERATOR_VERSION ?= 0.49
 # TIDE_VERSION is the version of the tide image
 TIDE_VERSION             ?= 0.8
 
