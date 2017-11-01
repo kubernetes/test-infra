@@ -32,6 +32,7 @@ import (
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/jenkins"
 	"k8s.io/test-infra/prow/kube"
+	"k8s.io/test-infra/prow/kube/labels"
 )
 
 var (
@@ -51,6 +52,10 @@ var (
 func main() {
 	flag.Parse()
 	logrus.SetFormatter(&logrus.JSONFormatter{})
+
+	if _, err := labels.Parse(*selector); err != nil {
+		logrus.WithError(err).Fatal("Error parsing label selector.")
+	}
 
 	configAgent := &config.Agent{}
 	if err := configAgent.Start(*configPath); err != nil {
