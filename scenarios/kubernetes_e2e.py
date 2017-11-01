@@ -552,7 +552,7 @@ def main(args):
 
     container = '%s-%s' % (os.environ.get('JOB_NAME'), os.environ.get('BUILD_NUMBER'))
     if args.mode == 'docker':
-        sudo = args.docker_in_docker or args.build is not None
+        sudo = args.docker_in_docker or args.build or args.build_federation is not None
         mode = DockerMode(container, artifacts, sudo, args.tag, args.mount_paths)
     elif args.mode == 'local':
         mode = LocalMode(workspace, artifacts)  # pylint: disable=bad-option-value
@@ -609,6 +609,13 @@ def main(args):
         if not os.path.basename(k8s) == 'kubernetes':
             raise ValueError(k8s)
         mode.add_k8s(os.path.dirname(k8s), 'kubernetes', 'release')
+
+    if args.build_federation is not None:
+        runner_args.append('--build-federation=%s' % args.build_federation)
+        fed = os.getcwd()
+        if not os.path.basename(fed) == 'federation':
+            raise ValueError(fed)
+        mode.add_k8s(os.path.dirname(fed), 'federation', 'release')
 
     if args.kops_build:
         build_kops(os.getcwd(), mode)
@@ -735,6 +742,9 @@ def create_parser():
     parser.add_argument(
         '--build', nargs='?', default=None, const='',
         help='Build kubernetes binaries if set, optionally specifying strategy')
+    parser.add_argument(
+        '--build-federation', nargs='?', default=None, const='',
+        help='Build federation binaries if set, optionally specifying strategy')
     parser.add_argument(
         '--use-shared-build', nargs='?', default=None, const='',
         help='Use prebuilt kubernetes binaries if set, optionally specifying strategy')
