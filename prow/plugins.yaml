@@ -52,6 +52,12 @@ plugins:
   kubernetes/community:
   - trigger
 
+  kubernetes/dns:
+  - trigger
+
+  kubernetes/ingress-gce:
+  - trigger
+
   kubernetes/federation:
   - trigger
 
