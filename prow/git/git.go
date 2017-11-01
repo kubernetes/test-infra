@@ -34,8 +34,8 @@ const github = "https://github.com"
 // Client can clone repos. It keeps a local cache, so successive clones of the
 // same repo should be quick. Create with NewClient. Be sure to clean it up.
 type Client struct {
-	// Logger will be used to log git operations and must be set.
-	Logger *logrus.Entry
+	// logger will be used to log git operations and must be set.
+	logger *logrus.Entry
 
 	// dir is the location of the git cache.
 	dir string
@@ -70,6 +70,7 @@ func NewClient() (*Client, error) {
 		return nil, err
 	}
 	return &Client{
+		logger:    logrus.WithField("client", "git"),
 		dir:       t,
 		git:       g,
 		base:      github,
@@ -114,19 +115,19 @@ func (c *Client) Clone(repo string) (*Repo, error) {
 	cache := filepath.Join(c.dir, repo) + ".git"
 	if _, err := os.Stat(cache); os.IsNotExist(err) {
 		// Cache miss, clone it now.
-		c.Logger.Infof("Cloning %s for the first time.", repo)
+		c.logger.Infof("Cloning %s for the first time.", repo)
 		if err := os.Mkdir(filepath.Dir(cache), os.ModePerm); err != nil && !os.IsExist(err) {
 			return nil, err
 		}
-		if b, err := retryCmd(c.Logger, "", c.git, "clone", "--mirror", remote, cache); err != nil {
+		if b, err := retryCmd(c.logger, "", c.git, "clone", "--mirror", remote, cache); err != nil {
 			return nil, fmt.Errorf("git cache clone error: %v. output: %s", err, string(b))
 		}
 	} else if err != nil {
 		return nil, err
 	} else {
 		// Cache hit. Do a git fetch to keep updated.
-		c.Logger.Infof("Fetching %s.", repo)
-		if b, err := retryCmd(c.Logger, cache, c.git, "fetch"); err != nil {
+		c.logger.Infof("Fetching %s.", repo)
+		if b, err := retryCmd(c.logger, cache, c.git, "fetch"); err != nil {
 			return nil, fmt.Errorf("git fetch error: %v. output: %s", err, string(b))
 		}
 	}
@@ -139,7 +140,7 @@ func (c *Client) Clone(repo string) (*Repo, error) {
 	}
 	return &Repo{
 		Dir:    t,
-		logger: c.Logger,
+		logger: c.logger,
 		git:    c.git,
 		base:   c.base,
 		repo:   repo,

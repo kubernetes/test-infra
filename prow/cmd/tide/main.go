@@ -89,14 +89,7 @@ func main() {
 	}
 	defer gc.Clean()
 
-	logger := logrus.StandardLogger()
-	ghc.Logger = logger.WithField("client", "github")
-	kc.Logger = logger.WithField("client", "kube")
-	gc.Logger = logger.WithField("client", "git")
-
-	c := tide.NewController(ghc, kc, configAgent, gc)
-	c.Logger = logger.WithField("controller", "tide")
-	c.DryRun = *dryRun
+	c := tide.NewController(ghc, kc, configAgent, gc, *dryRun)
 
 	sync(c)
 	if *runOnce {
