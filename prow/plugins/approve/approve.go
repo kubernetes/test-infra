@@ -92,7 +92,7 @@ func handleGenericCommentEvent(pc plugins.PluginClient, ce github.GenericComment
 }
 
 func handleGenericComment(log *logrus.Entry, ghc githubClient, repo approvers.RepoInterface, config *plugins.Configuration, ce *github.GenericCommentEvent) error {
-	if ce.Action != github.GenericCommentActionCreated || !ce.IsPR {
+	if ce.Action != github.GenericCommentActionCreated || !ce.IsPR || ce.IssueState == "closed" {
 		return nil
 	}
 
@@ -143,7 +143,7 @@ func handlePullRequest(log *logrus.Entry, ghc githubClient, repo approvers.RepoI
 		return err
 	}
 	if pre.Action == github.PullRequestActionLabeled &&
-		(pre.Label.Name != approvedLabel || pre.Sender.Login == botName) {
+		(pre.Label.Name != approvedLabel || pre.Sender.Login == botName || pre.PullRequest.State == "closed") {
 		return nil
 	}
 
