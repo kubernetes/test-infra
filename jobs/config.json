@@ -9282,6 +9282,15 @@
       "UNKNOWN"
     ]
   },
+  "pull-kubernetes-dns-test": {
+    "args": [
+      "make"
+    ],
+    "scenario": "execute",
+    "sigOwners": [
+      "sig-network"
+    ]
+  },
   "pull-kubernetes-e2e-gce": {
     "_comment1": "NOTE: THESE ARE THE JENKINS ARGS / COMMON ARGS (!)",
     "_comment2": "PLEASE PUT ARGS THAT WILL WORK FOR 1.6 HERE",
@@ -9441,6 +9450,15 @@
     "scenario": "kubernetes_e2e",
     "sigOwners": [
       "sig-cluster-lifecycle"
+    ]
+  },
+  "pull-kubernetes-ingress-gce-test": {
+    "args": [
+      "make"
+    ],
+    "scenario": "execute",
+    "sigOwners": [
+      "sig-network"
     ]
   },
   "pull-kubernetes-kubemark-e2e-gce": {
