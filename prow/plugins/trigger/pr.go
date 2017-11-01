@@ -61,11 +61,11 @@ func handlePR(c client, trustedOrg string, pr github.PullRequestEvent) error {
 		if err != nil {
 			return fmt.Errorf("could not validate PR: %s", err)
 		} else if trusted {
-			c.Logger.Info("Starting all jobs for updated PR.")
-			err = clearStaleComments(c.GitHubClient, trustedOrg, pr, comments)
+			err = clearStaleComments(c.GitHubClient, trustedOrg, pr.PullRequest, comments)
 			if err != nil {
 				c.Logger.Warnf("Failed to clear stale comments: %v.", err)
 			}
+			c.Logger.Info("Starting all jobs for updated PR.")
 			return buildAll(c, pr.PullRequest)
 		}
 	case github.PullRequestActionLabeled:
@@ -209,7 +209,7 @@ func buildAll(c client, pr github.PullRequest) error {
 }
 
 // clearStaleComments deletes old comments that are no longer applicable.
-func clearStaleComments(gc githubClient, trustedOrg string, pr github.PullRequestEvent, comments []github.IssueComment) error {
+func clearStaleComments(gc githubClient, trustedOrg string, pr github.PullRequest, comments []github.IssueComment) error {
 	botName, err := gc.BotName()
 	if err != nil {
 		return err
@@ -218,8 +218,8 @@ func clearStaleComments(gc githubClient, trustedOrg string, pr github.PullReques
 	waitingComment := fmt.Sprintf("I'm waiting for a [%s](https://github.com/orgs/%s/people) member to verify that this patch is reasonable to test.", trustedOrg, trustedOrg)
 
 	return gc.DeleteStaleComments(
-		pr.Repo.Owner.Login,
-		pr.Repo.Name,
+		trustedOrg,
+		pr.Base.Repo.Name,
 		pr.Number,
 		comments,
 		func(c github.IssueComment) bool { // isStale function
