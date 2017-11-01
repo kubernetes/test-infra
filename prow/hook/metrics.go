@@ -26,18 +26,27 @@ var (
 		Name: "prow_webhook_counter",
 		Help: "A counter of the webhooks made to prow.",
 	}, []string{"event_type"})
+
+	// Plugin usage counters
+	pluginsCounter = prometheus.NewCounterVec(prometheus.CounterOpts{
+		Name: "prow_plugins_counter",
+		Help: "A counter of a prow plugin being triggered.",
+	}, []string{"plugin_type"})
 )
 
 func init() {
 	prometheus.MustRegister(webhookCounter)
+	prometheus.MustRegister(pluginsCounter)
 }
 
 type Metrics struct {
 	WebhookCounter *prometheus.CounterVec
+	PluginsCounter *prometheus.CounterVec
 }
 
 func NewMetrics() (*Metrics, error) {
 	return &Metrics{
 		WebhookCounter: webhookCounter,
+		pluginsCounter: pluginsCounter,
 	}, nil
 }

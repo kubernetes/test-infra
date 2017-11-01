@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"regexp"
 
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/github"
@@ -43,10 +44,10 @@ type githubClient interface {
 }
 
 func handleGenericComment(pc plugins.PluginClient, e github.GenericCommentEvent) error {
-	return handle(pc.GitHubClient, pc.Logger, &e)
+	return handle(pc.GitHubClient, pc.Logger, &e, pc.GetPluginCounter(pluginName))
 }
 
-func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent) error {
+func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, c prometheus.Counter) error {
 	// Only consider open issues and new comments.
 	if e.IssueState != "open" || e.Action != github.GenericCommentActionCreated {
 		return nil
@@ -54,6 +55,10 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent) e
 
 	if !closeRe.MatchString(e.Body) {
 		return nil
+	}
+
+	if c != nil {
+		c.Inc()
 	}
 
 	org := e.Repo.Owner.Login
