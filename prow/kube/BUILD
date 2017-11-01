@@ -39,6 +39,9 @@ filegroup(
 
 filegroup(
     name = "all-srcs",
-    srcs = [":package-srcs"],
+    srcs = [
+        ":package-srcs",
+        "//prow/kube/labels:all-srcs",
+    ],
     tags = ["automanaged"],
 )
