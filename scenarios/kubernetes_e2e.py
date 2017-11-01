@@ -552,7 +552,7 @@ def main(args):
 
     container = '%s-%s' % (os.environ.get('JOB_NAME'), os.environ.get('BUILD_NUMBER'))
     if args.mode == 'docker':
-        sudo = args.docker_in_docker or args.build or args.build_federation is not None
+        sudo = args.docker_in_docker or args.build is not None or args.build_federation is not None
         mode = DockerMode(container, artifacts, sudo, args.tag, args.mount_paths)
     elif args.mode == 'local':
         mode = LocalMode(workspace, artifacts)  # pylint: disable=bad-option-value
