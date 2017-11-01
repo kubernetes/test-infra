@@ -46,7 +46,7 @@ func main() {
 	}
 
 	// start a cron
-	cr := cron.NewClient()
+	cr := cron.New()
 	cr.Start()
 
 	for now := range time.Tick(1 * time.Minute) {
@@ -63,7 +63,12 @@ type kubeClient interface {
 	CreateProwJob(kube.ProwJob) (kube.ProwJob, error)
 }
 
-func sync(kc kubeClient, cfg *config.Config, cr *cron.Cron, now time.Time) error {
+type cronClient interface {
+	SyncConfig(cfg *config.Config) error
+	QueuedJobs() []string
+}
+
+func sync(kc kubeClient, cfg *config.Config, cr cronClient, now time.Time) error {
 	jobs, err := kc.ListProwJobs(kube.EmptySelector)
 	if err != nil {
 		return fmt.Errorf("error listing prow jobs: %v", err)
@@ -71,25 +76,36 @@ func sync(kc kubeClient, cfg *config.Config, cr *cron.Cron, now time.Time) error
 	latestJobs := pjutil.GetLatestPeriodics(jobs)
 
 	// TODO(krzyzacy): retire the interval check, migrate everything to use cron
-	cr.SyncConfig(cfg)
-	cronTriggers := cr.QueuedJobs()
+	if err := cr.SyncConfig(cfg); err != nil {
+		logrus.WithError(err).Error("Error syncing cron jobs.")
+	}
 
+	cronTriggers := map[string]bool{}
+	for _, job := range cr.QueuedJobs() {
+		cronTriggers[job] = true
+	}
+
+	errs := []error{}
 	for _, p := range cfg.Periodics {
 		j, ok := latestJobs[p.Name]
 
 		if p.Cron == "" {
 			if !ok || (j.Complete() && now.Sub(j.Status.StartTime) > p.GetInterval()) {
 				if _, err := kc.CreateProwJob(pjutil.NewProwJob(pjutil.PeriodicSpec(p), p.Labels)); err != nil {
-					return fmt.Errorf("error creating prow job: %v", err)
+					errs = append(errs, err)
 				}
 			}
 		} else if _, exist := cronTriggers[p.Name]; exist {
 			if !ok || j.Complete() {
 				if _, err := kc.CreateProwJob(pjutil.NewProwJob(pjutil.PeriodicSpec(p), p.Labels)); err != nil {
-					return fmt.Errorf("error creating prow job: %v", err)
+					errs = append(errs, err)
 				}
 			}
 		}
+	}
+
+	if len(errs) > 0 {
+		return fmt.Errorf("failed to create %d prowjobs: %v", len(errs), errs)
 	}
 
 	return nil

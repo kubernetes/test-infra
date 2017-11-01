@@ -16,6 +16,10 @@ go_test(
     srcs = ["cron_test.go"],
     importpath = "k8s.io/test-infra/prow/cron",
     library = ":go_default_library",
+    deps = [
+        "//prow/config:go_default_library",
+        "//vendor/github.com/robfig/cron:go_default_library",
+    ],
 )
 
 filegroup(

@@ -14,11 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// a wrapper package of cron.Cron, which manages schedule cron jobs for horologium
+// Package cron provides a wrapper of robfig/cron, which manages schedule cron jobs for horologium
 package cron
 
 import (
 	"fmt"
+	"strings"
 	"sync"
 
 	"github.com/robfig/cron"
@@ -26,20 +27,29 @@ import (
 	"k8s.io/test-infra/prow/config"
 )
 
+// jobStatus is a cache layer for tracking existing cron jobs
+type jobStatus struct {
+	// entryID is a unique-identifier for each cron entry generated from cronAgent
+	entryID cron.EntryID
+	// triggered marks if a job has been triggered for the next cron.QueuedJobs() call
+	triggered bool
+	// cronStr is a cache for job's cron status
+	// cron entry will be regenerated if cron string changes from the periodic job
+	cronStr string
+}
+
 // Cron is a wrapper for cron.Cron
 type Cron struct {
 	cronAgent *cron.Cron
-	jobs      map[string]cron.EntryID
-	trigger   map[string]bool
+	jobs      map[string]*jobStatus
 	lock      sync.Mutex
 }
 
-// NewClient makes a new Cron object
-func NewClient() *Cron {
+// New makes a new Cron object
+func New() *Cron {
 	return &Cron{
 		cronAgent: cron.New(),
-		jobs:      map[string]cron.EntryID{},
-		trigger:   map[string]bool{},
+		jobs:      map[string]*jobStatus{},
 	}
 }
 
@@ -53,29 +63,55 @@ func (c *Cron) Stop() {
 	c.cronAgent.Stop()
 }
 
-// DumpQueuedJobs returns job need to be triggered
-func (c *Cron) QueuedJobs() map[string]bool {
+// QueuedJobs returns a list of jobs that need to be triggered
+// and reset trigger in jobStatus
+func (c *Cron) QueuedJobs() []string {
 	c.lock.Lock()
 	defer c.lock.Unlock()
 
-	res := map[string]bool{}
-	for k, v := range c.trigger {
-		res[k] = v
+	res := []string{}
+	for k, v := range c.jobs {
+		if v.triggered {
+			res = append(res, k)
+		}
+		c.jobs[k].triggered = false
 	}
-	c.trigger = map[string]bool{}
 	return res
 }
 
 // SyncConfig syncs current cronAgent with current prow config
 // which add/delete jobs accordingly.
 func (c *Cron) SyncConfig(cfg *config.Config) error {
+	c.lock.Lock()
+	defer c.lock.Unlock()
+
 	for _, p := range cfg.Periodics {
 		if err := c.addPeriodic(p); err != nil {
 			return err
 		}
 	}
 
+	exist := map[string]bool{}
+	for _, p := range cfg.AllPeriodics() {
+		exist[p.Name] = true
+	}
+
+	for k := range c.jobs {
+		if _, ok := exist[k]; !ok {
+			defer c.removeJob(k)
+		}
+	}
+
 	return nil
+}
+
+// HasJob returns if a job has been scheduled in cronAgent or not
+func (c *Cron) HasJob(name string) bool {
+	c.lock.Lock()
+	defer c.lock.Unlock()
+
+	_, ok := c.jobs[name]
+	return ok
 }
 
 func (c *Cron) addPeriodic(p config.Periodic) error {
@@ -83,8 +119,14 @@ func (c *Cron) addPeriodic(p config.Periodic) error {
 		return nil
 	}
 
-	if _, ok := c.jobs[p.Name]; ok {
-		return nil
+	if job, ok := c.jobs[p.Name]; ok {
+		if job.cronStr == p.Cron {
+			return nil
+		}
+		// job updated, remove old entry
+		if err := c.removeJob(p.Name); err != nil {
+			return err
+		}
 	}
 
 	if err := c.addJob(p.Name, p.Cron); err != nil {
@@ -102,15 +144,21 @@ func (c *Cron) addPeriodic(p config.Periodic) error {
 
 // addJob adds a cron entry for a job to cronAgent
 func (c *Cron) addJob(name, cron string) error {
-	if id, err := c.cronAgent.AddFunc(cron, func() {
+	id, err := c.cronAgent.AddFunc(cron, func() {
 		c.lock.Lock()
 		defer c.lock.Unlock()
 		// We want to ignore second trigger if first trigger is not consumed yet.
-		c.trigger[name] = true
-	}); err != nil {
+		c.jobs[name].triggered = true
+	})
+
+	if err != nil {
 		return fmt.Errorf("cronAgent fails to add job %s with cron %s: %v", name, cron, err)
-	} else {
-		c.jobs[name] = id
+	}
+
+	c.jobs[name] = &jobStatus{
+		entryID: id,
+		// try to kick of a periodic trigger right away
+		triggered: strings.HasPrefix(cron, "@every"),
 	}
 
 	return nil
@@ -118,10 +166,11 @@ func (c *Cron) addJob(name, cron string) error {
 
 // removeJob removes the job from cronAgent
 func (c *Cron) removeJob(name string) error {
-	id, ok := c.jobs[name]
+	job, ok := c.jobs[name]
 	if !ok {
 		return fmt.Errorf("job %s has not been added to cronAgent yet", name)
 	}
-	c.cronAgent.Remove(id)
+	c.cronAgent.Remove(job.entryID)
+	delete(c.jobs, name)
 	return nil
 }
