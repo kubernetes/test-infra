@@ -132,7 +132,7 @@ func (f *fjc) Build(pj *kube.ProwJob) error {
 	return nil
 }
 
-func (f *fjc) ListJenkinsBuilds(jobs map[string]struct{}) (map[string]JenkinsBuild, error) {
+func (f *fjc) ListBuilds(jobs []string) (map[string]JenkinsBuild, error) {
 	f.Lock()
 	defer f.Unlock()
 	if f.err != nil {
@@ -861,7 +861,7 @@ func TestGetJenkinsJobs(t *testing.T) {
 	tests := []struct {
 		name     string
 		pjs      []kube.ProwJob
-		expected map[string]struct{}
+		expected []string
 	}{
 		{
 			name: "both complete and running",
@@ -881,7 +881,7 @@ func TestGetJenkinsJobs(t *testing.T) {
 					Status: kube.ProwJobStatus{},
 				},
 			},
-			expected: map[string]struct{}{"maradona": {}},
+			expected: []string{"maradona"},
 		},
 		{
 			name: "only complete",
@@ -903,7 +903,7 @@ func TestGetJenkinsJobs(t *testing.T) {
 					},
 				},
 			},
-			expected: map[string]struct{}{},
+			expected: nil,
 		},
 		{
 			name: "only running",
@@ -921,7 +921,7 @@ func TestGetJenkinsJobs(t *testing.T) {
 					Status: kube.ProwJobStatus{},
 				},
 			},
-			expected: map[string]struct{}{"maradona": {}, "coolio": {}},
+			expected: []string{"maradona", "coolio"},
 		},
 	}
 
@@ -932,9 +932,16 @@ func TestGetJenkinsJobs(t *testing.T) {
 			t.Errorf("unexpected job amount: %d (%v), expected: %d (%v)",
 				len(got), got, len(test.expected), test.expected)
 		}
-		for job := range test.expected {
-			if _, ok := got[job]; !ok {
-				t.Errorf("expected job %q was not found, got %v", job, got)
+		for _, ej := range test.expected {
+			var found bool
+			for _, gj := range got {
+				if ej == gj {
+					found = true
+					break
+				}
+			}
+			if !found {
+				t.Errorf("expected jobs: %v\ngot: %v", test.expected, got)
 			}
 		}
 	}

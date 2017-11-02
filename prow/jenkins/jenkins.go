@@ -161,8 +161,9 @@ func (c *Client) log(methodName string, args ...interface{}) {
 	c.logger.Debugf("%s(%s)", methodName, strings.Join(as, ", "))
 }
 
-// Get fetches the data found in the provided path. It includes retries
-// on transport failures and 500s.
+// Get fetches the data found in the provided path. It returns the
+// content of the response or any errors that occured during the
+// request or http errors.
 func (c *Client) Get(path string) ([]byte, error) {
 	resp, err := c.request(http.MethodGet, fmt.Sprintf("%s%s", c.baseURL, path))
 	if err != nil {
@@ -182,7 +183,8 @@ func (c *Client) Get(path string) ([]byte, error) {
 	return buf, nil
 }
 
-// Retry on transport failures and 500s.
+// request executes a request with the provided method and path.
+// It retry on transport failures and 500s.
 func (c *Client) request(method, path string) (*http.Response, error) {
 	var resp *http.Response
 	var err error
@@ -201,6 +203,10 @@ func (c *Client) request(method, path string) (*http.Response, error) {
 	return resp, err
 }
 
+// doRequest executes a request with the provided method and path
+// exactly once. It sets up authentication if the jenkins client
+// is configured accordingly. It's up to callers of this function
+// to build retries and error handling.
 func (c *Client) doRequest(method, path string) (*http.Response, error) {
 	req, err := http.NewRequest(method, path, nil)
 	if err != nil {
@@ -224,9 +230,8 @@ func (c *Client) Build(pj *kube.ProwJob) error {
 	return c.BuildFromSpec(&pj.Spec, pj.Metadata.Name)
 }
 
-// BuildFromSpec triggers a Jenkins build for the provided ProwJobSpec. The
-// name of the ProwJob is going to be used as the buildId parameter that will
-// help us track the build before it's scheduled by Jenkins.
+// BuildFromSpec triggers a Jenkins build for the provided ProwJobSpec.
+// buildId helps us track the build before it's scheduled by Jenkins.
 func (c *Client) BuildFromSpec(spec *kube.ProwJobSpec, buildId string) error {
 	c.log(fmt.Sprintf("Build (type=%s job=%s buildId=%s)", spec.Type, spec.Job, buildId))
 	u, err := url.Parse(fmt.Sprintf("%s/job/%s/buildWithParameters", c.baseURL, spec.Job))
@@ -252,15 +257,34 @@ func (c *Client) BuildFromSpec(spec *kube.ProwJobSpec, buildId string) error {
 	return nil
 }
 
-// ListJenkinsBuilds returns a list of all in-flight builds for the
-// provided jobs. Both running and unscheduled builds will be returned.
-func (c *Client) ListJenkinsBuilds(jobs map[string]struct{}) (map[string]JenkinsBuild, error) {
-	jenkinsBuilds := make(map[string]JenkinsBuild)
-
+// ListBuilds returns a list of all Jenkins builds for the
+// provided jobs (both scheduled and enqueued).
+func (c *Client) ListBuilds(jobs []string) (map[string]JenkinsBuild, error) {
 	// Get queued builds.
-	queuePath := "/queue/api/json?tree=items[task[name],actions[parameters[name,value]]]"
-	c.log("ListJenkinsBuilds", queuePath)
-	data, err := c.Get(queuePath)
+	jenkinsBuilds, err := c.GetEnqueuedBuilds(jobs)
+	if err != nil {
+		return nil, err
+	}
+
+	// Get all running builds for all provided jobs.
+	for _, job := range jobs {
+		builds, err := c.GetBuilds(job)
+		if err != nil {
+			return nil, err
+		}
+		for id, build := range builds {
+			jenkinsBuilds[id] = build
+		}
+	}
+
+	return jenkinsBuilds, nil
+}
+
+// GetEnqueuedBuilds lists all enqueued builds for the provided jobs.
+func (c *Client) GetEnqueuedBuilds(jobs []string) (map[string]JenkinsBuild, error) {
+	c.log("GetEnqueuedBuilds")
+
+	data, err := c.Get("/queue/api/json?tree=items[task[name],actions[parameters[name,value]]]")
 	if err != nil {
 		return nil, fmt.Errorf("cannot list builds from the queue: %v", err)
 	}
@@ -270,49 +294,60 @@ func (c *Client) ListJenkinsBuilds(jobs map[string]struct{}) (map[string]Jenkins
 	if err := json.Unmarshal(data, &page); err != nil {
 		return nil, fmt.Errorf("cannot unmarshal builds from the queue: %v", err)
 	}
+	jenkinsBuilds := make(map[string]JenkinsBuild)
 	for _, jb := range page.QueuedBuilds {
 		buildID := jb.BuildID()
 		// Ignore builds with missing buildId parameters.
 		if buildID == "" {
 			continue
 		}
-		// Ignore builds we didn't ask for.
-		if _, exists := jobs[jb.Task.Name]; !exists {
+		// Ignore builds for jobs we didn't ask for.
+		var exists bool
+		for _, job := range jobs {
+			if jb.Task.Name == job {
+				exists = true
+				break
+			}
+		}
+		if !exists {
 			continue
 		}
 		jb.enqueued = true
 		jenkinsBuilds[buildID] = jb
 	}
+	return jenkinsBuilds, nil
+}
 
-	// Get all running builds for all provided jobs.
-	for job := range jobs {
-		path := fmt.Sprintf("/job/%s/api/json?tree=builds[number,result,actions[parameters[name,value]]]", job)
-		c.log("ListJenkinsBuilds", path)
-		data, err := c.Get(path)
-		if err != nil {
-			// Ignore 404s so we will not block processing the rest of the jobs.
-			if _, isNotFound := err.(NotFoundError); isNotFound {
-				c.logger.Warnf("cannot list builds for job %q: %v", job, err)
-				continue
-			}
-			return nil, fmt.Errorf("cannot list builds for job %q: %v", job, err)
+// GetBuilds lists all scheduled builds for the provided job.
+// In newer Jenkins versions, this also includes enqueued
+// builds (tested in 2.73.2).
+func (c *Client) GetBuilds(job string) (map[string]JenkinsBuild, error) {
+	c.log("GetBuilds", job)
+
+	data, err := c.Get(fmt.Sprintf("/job/%s/api/json?tree=builds[number,result,actions[parameters[name,value]]]", job))
+	if err != nil {
+		// Ignore 404s so we will not block processing the rest of the jobs.
+		if _, isNotFound := err.(NotFoundError); isNotFound {
+			c.logger.Warnf("cannot list builds for job %q: %v", job, err)
+			return nil, nil
 		}
-		page := struct {
-			Builds []JenkinsBuild `json:"builds"`
-		}{}
-		if err := json.Unmarshal(data, &page); err != nil {
-			return nil, fmt.Errorf("cannot unmarshal builds for job %q: %v", job, err)
-		}
-		for _, jb := range page.Builds {
-			buildID := jb.BuildID()
-			// Ignore builds with missing buildId parameters.
-			if buildID == "" {
-				continue
-			}
-			jenkinsBuilds[buildID] = jb
-		}
+		return nil, fmt.Errorf("cannot list builds for job %q: %v", job, err)
 	}
-
+	page := struct {
+		Builds []JenkinsBuild `json:"builds"`
+	}{}
+	if err := json.Unmarshal(data, &page); err != nil {
+		return nil, fmt.Errorf("cannot unmarshal builds for job %q: %v", job, err)
+	}
+	jenkinsBuilds := make(map[string]JenkinsBuild)
+	for _, jb := range page.Builds {
+		buildID := jb.BuildID()
+		// Ignore builds with missing buildId parameters.
+		if buildID == "" {
+			continue
+		}
+		jenkinsBuilds[buildID] = jb
+	}
 	return jenkinsBuilds, nil
 }
 
@@ -324,14 +359,13 @@ func (c *Client) Abort(job string, build *JenkinsBuild) error {
 	}
 
 	c.log("Abort", job, build.Number)
-	u := fmt.Sprintf("%s/job/%s/%d/stop", c.baseURL, job, build.Number)
-	resp, err := c.request(http.MethodPost, u)
+	resp, err := c.request(http.MethodPost, fmt.Sprintf("%s/job/%s/%d/stop", c.baseURL, job, build.Number))
 	if err != nil {
 		return err
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return fmt.Errorf("response not 2XX: %s: (%s)", resp.Status, u)
+		return fmt.Errorf("response not 2XX: %s", resp.Status)
 	}
 	return nil
 }
