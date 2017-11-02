@@ -20,7 +20,7 @@ You can use the `dep` instructions for [adding](https://github.com/golang/dep#ad
 Once you've updated, make sure to run:
 ```
 dep prune
-verify/update-bazel.sh
+hack/update-bazel.sh
 ```
 
 To prune unneeded deps, and then update all the bazel files that `dep` blows away.

@@ -9565,7 +9565,7 @@
   },
   "pull-test-infra-verify-bazel": {
     "args": [
-      "./verify/verify-bazel.sh"
+      "./hack/verify-bazel.sh"
     ],
     "scenario": "execute",
     "sigOwners": [
@@ -9574,7 +9574,7 @@
   },
   "pull-test-infra-verify-gofmt": {
     "args": [
-      "./verify/verify-gofmt.sh"
+      "./hack/verify-gofmt.sh"
     ],
     "scenario": "execute",
     "sigOwners": [
@@ -9583,7 +9583,7 @@
   },
   "pull-test-infra-verify-govet": {
     "args": [
-      "./verify/verify-govet.sh"
+      "./hack/verify-govet.sh"
     ],
     "scenario": "execute",
     "sigOwners": [

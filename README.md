@@ -108,7 +108,7 @@ The [test-infra oncall] must push prow changes (`make -C prow update-config`).
 
 We use [Bazel](https://www.bazel.io/) to build and test the code in this repo.
 The commands `bazel build //...` and `bazel test //...` should be all you need
-for most cases. If you modify Go code, run `./verify/update-bazel.sh` to keep
+for most cases. If you modify Go code, run `./hack/update-bazel.sh` to keep
 `BUILD` files up-to-date.
 
 ## Federated Testing
