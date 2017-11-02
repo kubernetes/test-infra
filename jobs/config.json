@@ -9277,7 +9277,7 @@
   },
   "pull-kubernetes-dns-test": {
     "args": [
-      "make"
+      "true"
     ],
     "scenario": "execute",
     "sigOwners": [
@@ -9447,7 +9447,7 @@
   },
   "pull-kubernetes-ingress-gce-test": {
     "args": [
-      "make"
+      "true"
     ],
     "scenario": "execute",
     "sigOwners": [
