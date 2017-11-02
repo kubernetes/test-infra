@@ -31,8 +31,8 @@ go_library(
         "//mungegithub/mungers/flakesync:go_default_library",
         "//mungegithub/options:go_default_library",
         "//vendor/github.com/golang/glog:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
         "//vendor/k8s.io/contrib/test-utils/utils:go_default_library",
-        "//vendor/k8s.io/kubernetes/pkg/util/sets:go_default_library",
     ],
 )
 

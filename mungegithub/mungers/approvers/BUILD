@@ -14,7 +14,7 @@ go_test(
     ],
     importpath = "k8s.io/test-infra/mungegithub/mungers/approvers",
     library = ":go_default_library",
-    deps = ["//vendor/k8s.io/kubernetes/pkg/util/sets:go_default_library"],
+    deps = ["//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library"],
 )
 
 go_library(
@@ -23,7 +23,7 @@ go_library(
     importpath = "k8s.io/test-infra/mungegithub/mungers/approvers",
     deps = [
         "//vendor/github.com/golang/glog:go_default_library",
-        "//vendor/k8s.io/kubernetes/pkg/util/sets:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
     ],
 )
 
