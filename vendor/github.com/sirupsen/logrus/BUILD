@@ -1,9 +1,4 @@
-package(default_visibility = ["//visibility:public"])
-
-load(
-    "@io_bazel_rules_go//go:def.bzl",
-    "go_library",
-)
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 
 go_library(
     name = "go_default_library",
@@ -34,6 +29,23 @@ go_library(
         "//conditions:default": [],
     }),
     importpath = "github.com/sirupsen/logrus",
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = [
+        "alt_exit_test.go",
+        "entry_test.go",
+        "formatter_bench_test.go",
+        "hook_test.go",
+        "json_formatter_test.go",
+        "logrus_test.go",
+        "text_formatter_test.go",
+    ],
+    importpath = "github.com/sirupsen/logrus",
+    library = ":go_default_library",
+    deps = ["//vendor/github.com/stretchr/testify/assert:go_default_library"],
 )
 
 filegroup(
@@ -47,4 +59,5 @@ filegroup(
     name = "all-srcs",
     srcs = [":package-srcs"],
     tags = ["automanaged"],
+    visibility = ["//visibility:public"],
 )

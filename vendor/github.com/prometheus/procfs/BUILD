@@ -1,9 +1,4 @@
-package(default_visibility = ["//visibility:public"])
-
-load(
-    "@io_bazel_rules_go//go:def.bzl",
-    "go_library",
-)
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 
 go_library(
     name = "go_default_library",
@@ -19,6 +14,23 @@ go_library(
         "stat.go",
     ],
     importpath = "github.com/prometheus/procfs",
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = [
+        "fs_test.go",
+        "ipvs_test.go",
+        "mdstat_test.go",
+        "proc_io_test.go",
+        "proc_limits_test.go",
+        "proc_stat_test.go",
+        "proc_test.go",
+        "stat_test.go",
+    ],
+    importpath = "github.com/prometheus/procfs",
+    library = ":go_default_library",
 )
 
 filegroup(
@@ -32,4 +44,5 @@ filegroup(
     name = "all-srcs",
     srcs = [":package-srcs"],
     tags = ["automanaged"],
+    visibility = ["//visibility:public"],
 )

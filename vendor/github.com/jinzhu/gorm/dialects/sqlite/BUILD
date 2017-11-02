@@ -1,14 +1,10 @@
-package(default_visibility = ["//visibility:public"])
-
-load(
-    "@io_bazel_rules_go//go:def.bzl",
-    "go_library",
-)
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
     srcs = ["sqlite.go"],
     importpath = "github.com/jinzhu/gorm/dialects/sqlite",
+    visibility = ["//visibility:public"],
     deps = ["//vendor/github.com/mattn/go-sqlite3:go_default_library"],
 )
 
@@ -23,4 +19,5 @@ filegroup(
     name = "all-srcs",
     srcs = [":package-srcs"],
     tags = ["automanaged"],
+    visibility = ["//visibility:public"],
 )

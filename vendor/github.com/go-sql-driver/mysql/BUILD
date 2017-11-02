@@ -1,9 +1,4 @@
-package(default_visibility = ["//visibility:public"])
-
-load(
-    "@io_bazel_rules_go//go:def.bzl",
-    "go_library",
-)
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 
 go_library(
     name = "go_default_library",
@@ -24,6 +19,20 @@ go_library(
         "utils.go",
     ],
     importpath = "github.com/go-sql-driver/mysql",
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = [
+        "benchmark_test.go",
+        "driver_test.go",
+        "dsn_test.go",
+        "errors_test.go",
+        "utils_test.go",
+    ],
+    importpath = "github.com/go-sql-driver/mysql",
+    library = ":go_default_library",
 )
 
 filegroup(
@@ -37,4 +46,5 @@ filegroup(
     name = "all-srcs",
     srcs = [":package-srcs"],
     tags = ["automanaged"],
+    visibility = ["//visibility:public"],
 )
