@@ -13,7 +13,7 @@
 // Deprecated: this package will be deleted in October 2017.
 // New code should use golang.org/x/tools/go/gcexportdata.
 //
-package gcimporter
+package gcimporter // import "golang.org/x/tools/go/gcimporter15"
 
 import (
 	"bufio"

@@ -31,6 +31,8 @@ TMP_GOPATH=$(mktemp -d)
   c72631a220406c4fae276861ee286aaec82c5af2 \
   "${TMP_GOPATH}"
 
+touch "${TESTINFRA_ROOT}/vendor/BUILD"
+
 "${TMP_GOPATH}/bin/gazelle" fix \
   -build_file_name=BUILD,BUILD.bazel \
   -external=vendored \

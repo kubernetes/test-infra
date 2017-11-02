@@ -118,6 +118,10 @@ test jobs for a variety of platforms (e.g., Azure, rktnetes).  The test-history
 scripts gather e2e results from these federated jobs.  For information about
 how to contribute test results, see [Federated Testing](docs/federated_testing.md).
 
+## Other Docs
+
+* [kubernetes/test-infra dependency management](docs/dep.md)
+
 
 [`jobs/config.json`]: https://github.com/kubernetes/test-infra/blob/master/jobs/config.json
 [`prow/config.yaml`]: https://github.com/kubernetes/test-infra/blob/master/prow/config.yaml
