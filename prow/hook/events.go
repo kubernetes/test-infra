@@ -19,9 +19,36 @@ package hook
 import (
 	"github.com/sirupsen/logrus"
 
+	"k8s.io/kubernetes/pkg/util/sets"
 	"k8s.io/test-infra/prow/commentpruner"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/plugins"
+)
+
+const failedCommentCoerceFmt = "Could not coerce %s event to a GenericCommentEvent. Unknown 'action': %q."
+
+var (
+	nonCommentIssueActions = sets.NewString(
+		string(github.IssueActionAssigned),
+		string(github.IssueActionUnassigned),
+		string(github.IssueActionLabeled),
+		string(github.IssueActionUnlabeled),
+		string(github.IssueActionMilestoned),
+		string(github.IssueActionDemilestoned),
+		string(github.IssueActionClosed),
+		string(github.IssueActionReopened),
+	)
+	nonCommentPullRequestActions = sets.NewString(
+		string(github.PullRequestActionAssigned),
+		string(github.PullRequestActionUnassigned),
+		string(github.PullRequestActionReviewRequested),
+		string(github.PullRequestActionReviewRequestRemoved),
+		string(github.PullRequestActionLabeled),
+		string(github.PullRequestActionUnlabeled),
+		string(github.PullRequestActionClosed),
+		string(github.PullRequestActionReopened),
+		string(github.PullRequestActionSynchronize),
+	)
 )
 
 func (s *Server) handleReviewEvent(l *logrus.Entry, re github.ReviewEvent) {
@@ -54,6 +81,7 @@ func (s *Server) handleReviewEvent(l *logrus.Entry, re github.ReviewEvent) {
 	}
 	action := genericCommentAction(string(re.Action))
 	if action == "" {
+		l.Errorf(failedCommentCoerceFmt, "pull_request_review", string(re.Action))
 		return
 	}
 	s.handleGenericComment(
@@ -105,6 +133,7 @@ func (s *Server) handleReviewCommentEvent(l *logrus.Entry, rce github.ReviewComm
 	}
 	action := genericCommentAction(string(rce.Action))
 	if action == "" {
+		l.Errorf(failedCommentCoerceFmt, "pull_request_review_comment", string(rce.Action))
 		return
 	}
 	s.handleGenericComment(
@@ -155,6 +184,9 @@ func (s *Server) handlePullRequestEvent(l *logrus.Entry, pr github.PullRequestEv
 	}
 	action := genericCommentAction(string(pr.Action))
 	if action == "" {
+		if !nonCommentPullRequestActions.Has(string(pr.Action)) {
+			l.Errorf(failedCommentCoerceFmt, "pull_request", string(pr.Action))
+		}
 		return
 	}
 	s.handleGenericComment(
@@ -226,6 +258,9 @@ func (s *Server) handleIssueEvent(l *logrus.Entry, i github.IssueEvent) {
 	}
 	action := genericCommentAction(string(i.Action))
 	if action == "" {
+		if !nonCommentIssueActions.Has(string(i.Action)) {
+			l.Errorf(failedCommentCoerceFmt, "pull_request", string(i.Action))
+		}
 		return
 	}
 	s.handleGenericComment(
@@ -276,6 +311,7 @@ func (s *Server) handleIssueCommentEvent(l *logrus.Entry, ic github.IssueComment
 	}
 	action := genericCommentAction(string(ic.Action))
 	if action == "" {
+		l.Errorf(failedCommentCoerceFmt, "issue_comment", string(ic.Action))
 		return
 	}
 	s.handleGenericComment(

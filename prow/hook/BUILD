@@ -59,6 +59,7 @@ go_library(
         "//prow/plugins/yuks:go_default_library",
         "//vendor/github.com/prometheus/client_golang/prometheus:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/util/sets:go_default_library",
     ],
 )
 

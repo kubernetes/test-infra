@@ -447,6 +447,9 @@ const (
 // - pull_request_review_comment events
 // - pull_request events with action in ["opened", "edited"]
 // - issue events with action in ["opened", "edited"]
+//
+// Issue and PR "closed" events are not coerced to the "deleted" Action and do not trigger
+// a GenericCommentEvent because these events don't actually remove the comment content from GH.
 type GenericCommentEvent struct {
 	IsPR         bool
 	Action       GenericCommentEventAction
