@@ -611,7 +611,10 @@ def main(args):
         mode.add_k8s(os.path.dirname(k8s), 'kubernetes', 'release')
 
     if args.build_federation is not None:
-        runner_args.append('--build-federation=%s' % args.build_federation)
+        if args.build_federation == '':
+            runner_args.append('--build-federation')
+        else:
+            runner_args.append('--build-federation=%s' % args.build_federation)
         fed = os.getcwd()
         if not os.path.basename(fed) == 'federation':
             raise ValueError(fed)
