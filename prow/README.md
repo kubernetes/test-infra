@@ -29,6 +29,8 @@ Note: versions specified in these announcements may not include bug fixes made
 in more recent versions so it is recommended that the most recent versions are
 used when updating deployments.
 
+ - *November 2, 2017* `plank:0.53` changes the `type` label key to `prow.k8s.io/type`
+   and the `job` annotation key to `prow.k8s.io/job` added in pods.
  - *October 13, 2017* `hook:0.174`, `plank:0.50`, and `jenkins-operator:0.47`
    drop the deprecated `github-bot-name` flag.
  - *October 2, 2017* `hook` version 0.171. The label plugin was split into three
