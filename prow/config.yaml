@@ -2792,7 +2792,7 @@ presubmits:
         - "--batch" # mitigation for https://github.com/bazelbuild/bazel/issues/3956
         - "--build=//... -//vendor/..."
         - "--install=gubernator/test_requirements.txt"
-        - "--test=//... //verify:verify-all -//vendor/..."
+        - "--test=//... //hack:verify-all -//vendor/..."
         - "--test-args=--test_output=errors"
         env:
         - name: TEST_TMPDIR
@@ -2840,7 +2840,7 @@ presubmits:
         - "--batch" # mitigation for https://github.com/bazelbuild/bazel/issues/3956
         - "--build=//... -//vendor/..."
         - "--install=gubernator/test_requirements.txt"
-        - "--test=//... //verify:verify-all -//vendor/..."
+        - "--test=//... //hack:verify-all -//vendor/..."
         - "--test-args=--test_output=errors"
         env:
         - name: TEST_TMPDIR
@@ -3612,7 +3612,7 @@ postsubmits:
         - "--batch" # mitigation for https://github.com/bazelbuild/bazel/issues/3956
         - "--build=//... -//vendor/..."
         - "--install=gubernator/test_requirements.txt"
-        - "--test=//... //verify:verify-all -//vendor/..."
+        - "--test=//... //hack:verify-all -//vendor/..."
         - "--test-args=--test_output=errors"
         env:
         - name: TEST_TMPDIR
@@ -17450,7 +17450,7 @@ periodics:
       - "--batch" # mitigation for https://github.com/bazelbuild/bazel/issues/3956
       - "--build=//... -//vendor/..."
       - "--install=gubernator/test_requirements.txt"
-      - "--test=//... //verify:verify-all -//vendor/..."
+      - "--test=//... //hack:verify-all -//vendor/..."
       - "--test-args=--test_output=errors"
       env:
       - name: TEST_TMPDIR
