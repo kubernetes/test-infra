@@ -21,7 +21,7 @@ go_library(
         "//mungegithub/options:go_default_library",
         "//vendor/github.com/golang/glog:go_default_library",
         "//vendor/github.com/spf13/cobra:go_default_library",
-        "//vendor/k8s.io/kubernetes/pkg/util/flag:go_default_library",
+        "//vendor/k8s.io/apiserver/pkg/util/flag:go_default_library",
     ],
 )
 

@@ -25,7 +25,7 @@ import (
 	"testing"
 	"time"
 
-	"k8s.io/kubernetes/pkg/util/sets"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/mungegithub/github"
 	github_test "k8s.io/test-infra/mungegithub/github/testing"
 	c "k8s.io/test-infra/mungegithub/mungers/matchers/comment"

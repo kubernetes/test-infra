@@ -18,7 +18,7 @@ go_test(
     library = ":go_default_library",
     deps = [
         "//prow/github:go_default_library",
-        "//vendor/k8s.io/kubernetes/pkg/util/sets:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
     ],
 )
 
