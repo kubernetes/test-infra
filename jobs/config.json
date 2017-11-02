@@ -21,7 +21,7 @@
   },
   "ci-cri-containerd-build": {
     "args": [
-      "./test/e2e_node/build.sh"
+      "./test/build.sh"
     ],
     "scenario": "execute",
     "sigOwners": [
@@ -9150,7 +9150,7 @@
   },
   "pull-cri-containerd-build": {
     "args": [
-      "./test/e2e_node/build.sh"
+      "./test/build.sh"
     ],
     "scenario": "execute",
     "sigOwners": [
