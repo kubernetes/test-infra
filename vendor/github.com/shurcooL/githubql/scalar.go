@@ -24,6 +24,9 @@ type (
 	// Boolean represents true or false values.
 	Boolean graphql.Boolean
 
+	// Date is an ISO-8601 encoded date.
+	Date struct{ time.Time }
+
 	// DateTime is an ISO-8601 encoded UTC date.
 	DateTime struct{ time.Time }
 
@@ -67,6 +70,7 @@ type (
 )
 
 var scalars = []reflect.Type{
+	reflect.TypeOf(Date{}),
 	reflect.TypeOf(DateTime{}),
 	reflect.TypeOf(GitTimestamp{}),
 	reflect.TypeOf(URI{}),
@@ -109,6 +113,9 @@ func (x *X509Certificate) UnmarshalJSON(data []byte) error {
 
 // NewBoolean is a helper to make a new *Boolean.
 func NewBoolean(v Boolean) *Boolean { return &v }
+
+// NewDate is a helper to make a new *Date.
+func NewDate(v Date) *Date { return &v }
 
 // NewDateTime is a helper to make a new *DateTime.
 func NewDateTime(v DateTime) *DateTime { return &v }

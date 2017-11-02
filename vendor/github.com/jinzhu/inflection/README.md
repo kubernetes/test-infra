@@ -13,15 +13,15 @@ inflection.Plural("bus")    => "buses"
 inflection.Plural("BUS")    => "BUSES"
 inflection.Plural("Bus")    => "Buses"
 
-inflection.Singularize("people") => "person"
-inflection.Singularize("People") => "Person"
-inflection.Singularize("PEOPLE") => "PERSON"
-inflection.Singularize("buses")  => "bus"
-inflection.Singularize("BUSES")  => "BUS"
-inflection.Singularize("Buses")  => "Bus"
+inflection.Singular("people") => "person"
+inflection.Singular("People") => "Person"
+inflection.Singular("PEOPLE") => "PERSON"
+inflection.Singular("buses")  => "bus"
+inflection.Singular("BUSES")  => "BUS"
+inflection.Singular("Buses")  => "Bus"
 
 inflection.Plural("FancyPerson") => "FancyPeople"
-inflection.Singularize("FancyPeople") => "FancyPerson"
+inflection.Singular("FancyPeople") => "FancyPerson"
 ```
 
 ## Register Rules
@@ -37,3 +37,19 @@ inflection.AddPlural("(bu)s$", "${1}ses") # "bus" => "buses" / "BUS" => "BUSES" 
 inflection.AddSingular("(bus)(es)?$", "${1}") # "buses" => "bus" / "Buses" => "Bus" / "BUSES" => "BUS"
 ```
 
+## Supporting the project
+
+[![http://patreon.com/jinzhu](http://patreon_public_assets.s3.amazonaws.com/sized/becomeAPatronBanner.png)](http://patreon.com/jinzhu)
+
+
+## Author
+
+**jinzhu**
+
+* <http://github.com/jinzhu>
+* <wosmvp@gmail.com>
+* <http://twitter.com/zhangjinzhu>
+
+## License
+
+Released under the [MIT License](http://www.opensource.org/licenses/MIT).

@@ -9,7 +9,6 @@ go_library(
         "callback_delete.go",
         "callback_query.go",
         "callback_query_preload.go",
-        "callback_row_query.go",
         "callback_save.go",
         "callback_update.go",
         "dialect.go",

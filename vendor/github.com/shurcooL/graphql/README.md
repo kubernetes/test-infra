@@ -69,7 +69,7 @@ var query struct {
 }
 ```
 
-And call `client.Query`, passing a pointer to it:
+Then call `client.Query`, passing a pointer to it:
 
 ```Go
 err := client.Query(context.Background(), &query, nil)
@@ -107,7 +107,7 @@ var q struct {
 }
 ```
 
-And call `client.Query`:
+Then call `client.Query`:
 
 ```Go
 err := client.Query(context.Background(), &q, nil)
@@ -151,6 +151,80 @@ if err != nil {
 }
 ```
 
+### Inline Fragments
+
+Some GraphQL queries contain inline fragments. You can use the `graphql` struct field tag to express them.
+
+For example, to make the following GraphQL query:
+
+```GraphQL
+{
+	hero(episode: "JEDI") {
+		name
+		... on Droid {
+			primaryFunction
+		}
+		... on Human {
+			height
+		}
+	}
+}
+```
+
+You can define this variable:
+
+```Go
+var q struct {
+	Hero struct {
+		Name  graphql.String
+		Droid struct {
+			PrimaryFunction graphql.String
+		} `graphql:"... on Droid"`
+		Human struct {
+			Height graphql.Float
+		} `graphql:"... on Human"`
+	} `graphql:"hero(episode: \"JEDI\")"`
+}
+```
+
+Alternatively, you can define the struct types corresponding to inline fragments, and use them as embedded fields in your query:
+
+```Go
+type (
+	DroidFragment struct {
+		PrimaryFunction graphql.String
+	}
+	HumanFragment struct {
+		Height graphql.Float
+	}
+)
+
+var q struct {
+	Hero struct {
+		Name          graphql.String
+		DroidFragment `graphql:"... on Droid"`
+		HumanFragment `graphql:"... on Human"`
+	} `graphql:"hero(episode: \"JEDI\")"`
+}
+```
+
+Then call `client.Query`:
+
+```Go
+err := client.Query(context.Background(), &q, nil)
+if err != nil {
+	// Handle error.
+}
+fmt.Println(q.Hero.Name)
+fmt.Println(q.Hero.PrimaryFunction)
+fmt.Println(q.Hero.Height)
+
+// Output:
+// R2-D2
+// Astromech
+// 0
+```
+
 ### Mutations
 
 Mutations often require information that you can only find out by performing a query first. Let's suppose you've already done that.
@@ -191,7 +265,7 @@ variables := map[string]interface{}{
 }
 ```
 
-And call `client.Mutate`:
+Then call `client.Mutate`:
 
 ```Go
 err := client.Mutate(context.Background(), &m, variables)

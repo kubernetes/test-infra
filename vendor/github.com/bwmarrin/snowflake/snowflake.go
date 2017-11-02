@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"encoding/binary"
 	"errors"
+	"fmt"
 	"strconv"
 	"sync"
 	"time"
@@ -22,6 +23,13 @@ const (
 const encodeBase58Map = "123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ"
 
 var decodeBase58Map [256]byte
+
+// A JSONSyntaxError is returned from UnmarshalJSON if an invalid ID is provided.
+type JSONSyntaxError struct{ original []byte }
+
+func (j JSONSyntaxError) Error() string {
+	return fmt.Sprintf("invalid snowflake ID %q", string(j.original))
+}
 
 // Create a map for decoding Base58.  This speeds up the process tremendously.
 func init() {
@@ -200,6 +208,10 @@ func (f ID) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON converts a json byte array of a snowflake ID into an ID type.
 func (f *ID) UnmarshalJSON(b []byte) error {
+	if len(b) < 3 || b[0] != '"' || b[len(b)-1] != '"' {
+		return JSONSyntaxError{b}
+	}
+
 	i, err := strconv.ParseInt(string(b[1:len(b)-1]), 10, 64)
 	if err != nil {
 		return err

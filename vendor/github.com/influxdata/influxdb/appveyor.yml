@@ -12,7 +12,7 @@ clone_folder: c:\gopath\src\github.com\influxdata\influxdb
 
 # Environment variables
 environment:
-  GOROOT: C:\go17
+  GOROOT: C:\go19
   GOPATH: C:\gopath
 
 # Scripts that run after cloning repository
@@ -31,7 +31,7 @@ install:
 # To run your custom scripts instead of automatic MSBuild
 build_script:
  - go get -t -v ./...
- - go test -race -v ./...
+ - go test -timeout 15m -v ./...
 
 # To disable deployment
 deploy: off

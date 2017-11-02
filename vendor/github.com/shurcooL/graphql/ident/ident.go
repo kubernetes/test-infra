@@ -173,7 +173,11 @@ func isTwoInitialisms(word string) (string, string, bool) {
 }
 
 // initialisms is the set of initialisms in the MixedCaps naming convention.
+// Only add entries that are highly unlikely to be non-initialisms.
+// For instance, "ID" is fine (Freudian code is rare), but "AND" is not.
 var initialisms = map[string]struct{}{
+	// These are the common initialisms from golint. Keep them in sync
+	// with https://gotools.org/github.com/golang/lint#commonInitialisms.
 	"ACL":   {},
 	"API":   {},
 	"ASCII": {},
@@ -212,4 +216,7 @@ var initialisms = map[string]struct{}{
 	"XMPP":  {},
 	"XSRF":  {},
 	"XSS":   {},
+
+	// Additional common initialisms.
+	"RSS": {},
 }

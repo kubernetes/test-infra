@@ -60,7 +60,7 @@ type Utils struct {
 	derefCacheLock sync.Mutex
 }
 
-// NewUtils returnes new Utils struct for a given bucket name and subdirectory
+// NewUtils returns new Utils struct for a given bucket name and subdirectory
 func NewUtils(bucket, directory string) *Utils {
 	return &Utils{
 		bucket:     NewBucket(bucket),
@@ -69,7 +69,7 @@ func NewUtils(bucket, directory string) *Utils {
 	}
 }
 
-// NewWithPresubmitDetection returnes new Utils struct for a given bucket name
+// NewWithPresubmitDetection returns new Utils struct for a given bucket name
 // and subdirectory. If a job name contains the presubmitKey, it will be gotten
 // from the presubmitDirectory and trigger the dereferencing logic.
 func NewWithPresubmitDetection(bucket, directory, presubmitKey, presubmitDirectory string) *Utils {
@@ -82,7 +82,7 @@ func NewWithPresubmitDetection(bucket, directory, presubmitKey, presubmitDirecto
 	}
 }
 
-// NewTestUtils returnes new Utils struct for a given url pointing to a file server.
+// NewTestUtils returns new Utils struct for a given url pointing to a file server.
 func NewTestUtils(bucket, directory, url string) *Utils {
 	return &Utils{
 		bucket:     NewTestBucket(bucket, url),
@@ -199,7 +199,7 @@ func (u *Utils) GetLastestBuildNumberFromJenkinsGoogleBucket(job string) (int, e
 	return lastBuildNo, nil
 }
 
-// StartedFile is a type in which we store test starting informatio in GCS as started.json
+// StartedFile is a type in which we store test starting information in GCS as started.json
 type StartedFile struct {
 	Version     string `json:"version"`
 	Timestamp   uint64 `json:"timestamp"`

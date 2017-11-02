@@ -26,6 +26,9 @@ TMP_GOPATH=$(mktemp -d)
 # ref: https://github.com/kubernetes/test-infra/pull/5411
 find ${TESTINFRA_ROOT}/vendor/ -name "*_test.go" -delete
 
+# Gazelle will recreate the BUILD files
+find ${TESTINFRA_ROOT}/vendor/ -name "BUILD" -delete
+
 "${TESTINFRA_ROOT}/hack/go_install_from_commit.sh" \
   github.com/kubernetes/repo-infra/kazel \
   e26fc85d14a1d3dc25569831acc06919673c545a \

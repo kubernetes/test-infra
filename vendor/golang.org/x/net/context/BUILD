@@ -5,7 +5,9 @@ go_library(
     srcs = [
         "context.go",
         "go17.go",
+        "go19.go",
         "pre_go17.go",
+        "pre_go19.go",
     ],
     importpath = "golang.org/x/net/context",
     visibility = ["//visibility:public"],
@@ -20,7 +22,10 @@ filegroup(
 
 filegroup(
     name = "all-srcs",
-    srcs = [":package-srcs"],
+    srcs = [
+        ":package-srcs",
+        "//vendor/golang.org/x/net/context/ctxhttp:all-srcs",
+    ],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],
 )

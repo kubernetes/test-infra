@@ -1,9 +1,14 @@
 # Kubernetes Contrib
 
 [![Build Status](https://travis-ci.org/kubernetes/contrib.svg)](https://travis-ci.org/kubernetes/contrib)
+[![Go Report Card](https://goreportcard.com/badge/github.com/kubernetes/contrib)](https://goreportcard.com/report/github.com/kubernetes/contrib)
+[![APACHEv2 License](https://img.shields.io/badge/license-APACHEv2-blue.svg)](https://github.com/kubernetes/contrib/blob/master/LICENSE)
 
-This is a place for various components in the Kubernetes ecosystem
-that aren't part of the Kubernetes core.
+**Do not add new projects to this repository.** We eventually want to
+move all code in this repository to more appropriate repositories (see 
+[#762](https://github.com/kubernetes/contrib/issues/762)). Create a new
+repository in `kubernetes-incubator` instead 
+([process](https://github.com/kubernetes/community/blob/master/incubator.md)).
 
 ## Getting the Code
 
@@ -23,7 +28,7 @@ Godeps in contrib/ has a different layout than in kubernetes/ proper. This is be
 contrib contains multiple tiny projects, each with their own dependencies. Each
 in contrib/ has it's own Godeps.json. For example the Godeps.json for Ingress
 is Ingress/Godeps/Godeps.json. This means that godeps commands like `godep restore`
-or `godep test` work in the root directory. Theys should be run from inside the
+or `godep test` do not work in the root directory. They should be run from inside the
 subproject directory you want to test.
 
 ## Prerequisites for updating Godeps
@@ -52,9 +57,9 @@ $ go build -o godep *.go
 
 ## Updating Godeps
 
-The most common dep to update is obviously going to be kuberetes proper. Updating
+The most common dep to update is obviously going to be kubernetes proper. Updating
 kubernetes and it's dependancies in the Ingress subproject for example can be done
-as follows (the example assumes you Kubernetes repo is rooted at `$GOPATH/src/github.com/kubernetes`, `s/github.com\/kubernetes/k8s.io/` as required):
+as follows (the example assumes your Kubernetes repo is rooted at `$GOPATH/src/github.com/kubernetes`, `s/github.com\/kubernetes/k8s.io/` as required):
 ```shell
 cd $GOPATH/src/github.com/kubernetes/contrib/ingress
 godep restore
@@ -86,3 +91,9 @@ To run all go test in all projects do this:
 ```shell
 ./hack/for-go-proj.sh test
 ```
+
+## Getting PRs Merged Into Contrib
+
+In order for your PR to get merged, it must have the both `lgtm` AND `approved` labels.  When you open a PR, the k8s-merge-bot will automatically assign a reviewer from the `OWNERS` files.  Once assigned, the reviewer can then comment `/lgtm`, which will add the `lgtm` label, or if he/she has permission, the reviewer can add the label directly.
+
+Each file modified in the PR will also need to be approved by an approver from its `OWNERS` file or an approver in a parent directory's `OWNERS` file.  A file is approved when the approver comments `/approve`, and it is unapproved if an approver comments `/approve cancel`.  When all files have been approved, the `approved` label will automatically be added by the k8s-merge-bot and the PR will be added to the submit-queue to be merged.
