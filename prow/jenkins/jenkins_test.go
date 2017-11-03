@@ -101,12 +101,12 @@ func intP(i int) *int {
 	return &i
 }
 
-func TestListJenkinsBuilds(t *testing.T) {
+func TestListBuilds(t *testing.T) {
 	tests := []struct {
 		name string
 
 		existingJobs  []string
-		requestedJobs map[string]struct{}
+		requestedJobs []string
 		builds        map[string][]JenkinsBuild
 		status        *int
 
@@ -117,7 +117,7 @@ func TestListJenkinsBuilds(t *testing.T) {
 			name: "missing job does not block",
 
 			existingJobs:  []string{"unit", "integration"},
-			requestedJobs: map[string]struct{}{"unit": {}, "integration": {}, "e2e": {}},
+			requestedJobs: []string{"unit", "integration", "e2e"},
 			builds: map[string][]JenkinsBuild{
 				"unit": {
 					{Number: 1, Result: strP(Succeess), Actions: []Action{{Parameters: []Parameter{{Name: buildID, Value: "first"}}}}},
@@ -142,7 +142,7 @@ func TestListJenkinsBuilds(t *testing.T) {
 			name: "bad error",
 
 			existingJobs:  []string{"unit"},
-			requestedJobs: map[string]struct{}{"unit": {}},
+			requestedJobs: []string{"unit"},
 			status:        intP(502),
 
 			expectedErr: fmt.Errorf("cannot list builds for job \"unit\": response not 2XX: 502 Bad Gateway"),
@@ -161,7 +161,7 @@ func TestListJenkinsBuilds(t *testing.T) {
 			baseURL: ts.URL,
 		}
 
-		builds, err := jc.ListJenkinsBuilds(test.requestedJobs)
+		builds, err := jc.ListBuilds(test.requestedJobs)
 		if !reflect.DeepEqual(err, test.expectedErr) {
 			t.Errorf("unexpected error: %v, expected: %v", err, test.expectedErr)
 		}

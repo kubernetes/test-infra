@@ -48,7 +48,7 @@ type kubeClient interface {
 
 type jenkinsClient interface {
 	Build(*kube.ProwJob) error
-	ListJenkinsBuilds(jobs map[string]struct{}) (map[string]JenkinsBuild, error)
+	ListBuilds(jobs []string) (map[string]JenkinsBuild, error)
 	Abort(job string, build *JenkinsBuild) error
 }
 
@@ -145,7 +145,7 @@ func (c *Controller) Sync() error {
 		}
 	}
 	pjs = jenkinsJobs
-	jbs, err := c.jc.ListJenkinsBuilds(getJenkinsJobs(pjs))
+	jbs, err := c.jc.ListBuilds(getJenkinsJobs(pjs))
 	if err != nil {
 		return fmt.Errorf("error listing jenkins builds: %v", err)
 	}
@@ -188,9 +188,9 @@ func (c *Controller) Sync() error {
 	return fmt.Errorf("errors syncing: %v, errors reporting: %v", syncErrs, reportErrs)
 }
 
-// getJenkinsJobs returns all the active Jenkins jobs for the provided
-// list of prowjobs.
-func getJenkinsJobs(pjs []kube.ProwJob) map[string]struct{} {
+// getJenkinsJobs returns all the Jenkins jobs for all active
+// prowjobs from the provided list. It handles deduplication.
+func getJenkinsJobs(pjs []kube.ProwJob) []string {
 	jenkinsJobs := make(map[string]struct{})
 	for _, pj := range pjs {
 		if pj.Complete() {
@@ -198,7 +198,11 @@ func getJenkinsJobs(pjs []kube.ProwJob) map[string]struct{} {
 		}
 		jenkinsJobs[pj.Spec.Job] = struct{}{}
 	}
-	return jenkinsJobs
+	var jobs []string
+	for job := range jenkinsJobs {
+		jobs = append(jobs, job)
+	}
+	return jobs
 }
 
 // terminateDupes aborts presubmits that have a newer version. It modifies pjs
