@@ -3474,7 +3474,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-gcp"
     ]
   },
   "ci-kubernetes-e2e-gci-gce-alpha-features": {
@@ -3491,7 +3491,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-gcp"
     ]
   },
   "ci-kubernetes-e2e-gci-gce-alpha-features-release-1-6": {
@@ -3875,7 +3875,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-gcp"
     ]
   },
   "ci-kubernetes-e2e-gci-gce-reboot-release-1-6": {
@@ -4050,7 +4050,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-gcp"
     ]
   },
   "ci-kubernetes-e2e-gci-gce-serial-release-1-6": {
@@ -4137,7 +4137,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-gcp"
     ]
   },
   "ci-kubernetes-e2e-gci-gce-slow-release-1-6": {
@@ -4242,7 +4242,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-gcp"
     ]
   },
   "ci-kubernetes-e2e-gci-gke-alpha-features": {
@@ -4476,7 +4476,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-gcp"
     ]
   },
   "ci-kubernetes-e2e-gci-gke-reboot-release-1-6": {
@@ -4592,7 +4592,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-gcp"
     ]
   },
   "ci-kubernetes-e2e-gci-gke-serial-release-1-6": {
@@ -4689,7 +4689,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-gcp"
     ]
   },
   "ci-kubernetes-e2e-gci-gke-slow-release-1-6": {
@@ -8605,7 +8605,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-gcp"
     ]
   },
   "ci-kubernetes-soak-gci-gce-stable1": {
@@ -8701,7 +8701,7 @@
     ],
     "scenario": "kubernetes_verify",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-testing"
     ]
   },
   "ci-kubernetes-test-go-release-1.6": {
@@ -8742,7 +8742,7 @@
     ],
     "scenario": "kubernetes_verify",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-testing"
     ]
   },
   "ci-kubernetes-verify-release-1.6": {
