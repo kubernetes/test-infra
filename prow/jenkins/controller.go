@@ -74,6 +74,8 @@ type Controller struct {
 	jc  jenkinsClient
 	ghc githubClient
 	ca  configAgent
+	// selector that will be applied on prowjobs.
+	selector string
 
 	lock sync.RWMutex
 	// pendingJobs is a short-lived cache that helps in limiting
@@ -82,13 +84,13 @@ type Controller struct {
 }
 
 // NewController creates a new Controller from the provided clients.
-func NewController(kc *kube.Client, jc *Client, ghc *github.Client, ca *config.Agent) *Controller {
+func NewController(kc *kube.Client, jc *Client, ghc *github.Client, ca *config.Agent, selector string) *Controller {
 	return &Controller{
 		kc:          kc,
 		jc:          jc,
 		ghc:         ghc,
 		ca:          ca,
-		lock:        sync.RWMutex{},
+		selector:    selector,
 		pendingJobs: make(map[string]int),
 	}
 }
@@ -134,10 +136,12 @@ func (c *Controller) incrementNumPendingJobs(job string) {
 
 // Sync does one sync iteration.
 func (c *Controller) Sync() error {
-	pjs, err := c.kc.ListProwJobs(kube.EmptySelector)
+	pjs, err := c.kc.ListProwJobs(c.selector)
 	if err != nil {
 		return fmt.Errorf("error listing prow jobs: %v", err)
 	}
+	// TODO: Replace the following filtering with a field selector once CRDs support field selectors.
+	// https://github.com/kubernetes/kubernetes/issues/53459
 	var jenkinsJobs []kube.ProwJob
 	for _, pj := range pjs {
 		if pj.Spec.Agent == kube.JenkinsAgent {

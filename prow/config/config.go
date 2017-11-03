@@ -28,6 +28,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/kube"
+	"k8s.io/test-infra/prow/kube/labels"
 )
 
 // Config is a read-only snapshot of the config.
@@ -163,6 +164,12 @@ type ExternalAgentLog struct {
 	// Agent is an external prow agent that supports exposing
 	// logs via deck.
 	Agent string `json:"agent,omitempty"`
+	// SelectorString compiles into Selector at load time.
+	SelectorString string `json:"selector,omitempty"`
+	// Selector can be used in prow deployments where the workload has
+	// been sharded between controllers of the same agent. For more info
+	// see https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors
+	Selector labels.Selector `json:"-"`
 	// URLTemplateString compiles into URLTemplate at load time.
 	URLTemplateString string `json:"url_template,omitempty"`
 	// URLTemplate is compiled at load time from URLTemplateString. It
@@ -291,6 +298,13 @@ func parseConfig(c *Config) error {
 			return fmt.Errorf("parsing template for agent %q: %v", agentToTmpl.Agent, err)
 		}
 		c.Deck.ExternalAgentLogs[i].URLTemplate = urlTemplate
+		// we need to validate selectors used by deck since these are not
+		// sent to the api server.
+		s, err := labels.Parse(c.Deck.ExternalAgentLogs[i].SelectorString)
+		if err != nil {
+			return fmt.Errorf("error parsing selector %q: %v", c.Deck.ExternalAgentLogs[i].SelectorString, err)
+		}
+		c.Deck.ExternalAgentLogs[i].Selector = s
 	}
 
 	if c.Sinker.ResyncPeriodString == "" {
