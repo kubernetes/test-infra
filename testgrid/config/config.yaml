@@ -1520,6 +1520,12 @@ test_groups:
   num_columns_recent: 20
   alert_stale_results_hours: 24
   num_failures_to_alert: 10
+- name: pull-kubernetes-verify-prow
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-verify-prow
+  days_of_results: 1
+  num_columns_recent: 20
+  alert_stale_results_hours: 24
+  num_failures_to_alert: 10
 - name: pull-test-infra-bazel
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-test-infra-bazel
   days_of_results: 1
@@ -3775,6 +3781,8 @@ dashboards:
     test_group_name: pull-kubernetes-bazel-build-canary
   - name: bazel-test-canary
     test_group_name: pull-kubernetes-bazel-test-canary
+  - name: pull-kubernetes-verify-prow
+    test_group_name: pull-kubernetes-verify-prow
 
 - name: sig-ui
   dashboard_tab:
