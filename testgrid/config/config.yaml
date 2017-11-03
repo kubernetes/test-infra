@@ -157,8 +157,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-etcd3
 - name: ci-kubernetes-pull-gce-federation-deploy
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-pull-gce-federation-deploy
-- name: ci-kubernetes-federation-build-1.6
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-federation-build-1.6
 - name: ci-kubernetes-federation-build-1.7
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-federation-build-1.7
 - name: ci-kubernetes-federation-build-1.8
@@ -464,8 +462,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-alpha-features-release-1-6
 - name: ci-kubernetes-e2e-gce-etcd2-release-1-6
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-etcd2-release-1-6
-- name: ci-kubernetes-e2e-gce-federation-release-1-6
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-federation-release-1-6
 - name: ci-kubernetes-e2e-gce-reboot-release-1-6
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-reboot-release-1-6
 - name: ci-kubernetes-e2e-gce-release-1-6
@@ -2274,14 +2270,10 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-alpha-features-release-1-6
   - name: gce-etcd2-1.6
     test_group_name: ci-kubernetes-e2e-gce-etcd2-release-1-6
-  - name: gce-federation-1.6
-    test_group_name: ci-kubernetes-e2e-gce-federation-release-1-6
   - name: gce-reboot-1.6
     test_group_name: ci-kubernetes-e2e-gce-reboot-release-1-6
   - name: gce-1.6
     test_group_name: ci-kubernetes-e2e-gce-release-1-6
-  - name: federation-build-1.6
-    test_group_name: ci-kubernetes-federation-build-1.6
   - name: gce-serial-1.6
     test_group_name: ci-kubernetes-e2e-gce-serial-release-1-6
   - name: gce-slow-1.6
@@ -3170,14 +3162,10 @@ dashboards:
 
 - name: sig-multicluster-federation-gce-old
   dashboard_tab:
-  - name: gce-1.6
-    test_group_name: ci-kubernetes-e2e-gce-federation-release-1-6
   - name: gce-1.7
     test_group_name: ci-kubernetes-e2e-gce-federation-release-1-7
   - name: gce-1.8
     test_group_name: ci-kubernetes-e2e-gce-federation-release-1-8
-  - name: build-1.6
-    test_group_name: ci-kubernetes-federation-build-1.6
   - name: build-1.7
     test_group_name: ci-kubernetes-federation-build-1.7
   - name: build-1.8
