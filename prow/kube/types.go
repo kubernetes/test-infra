@@ -75,15 +75,18 @@ type PodStatus struct {
 }
 
 type Volume struct {
-	Name        string             `json:"name,omitempty"`
-	Secret      *SecretSource      `json:"secret,omitempty"`
-	DownwardAPI *DownwardAPISource `json:"downwardAPI,omitempty"`
-	HostPath    *HostPathSource    `json:"hostPath,omitempty"`
-	ConfigMap   *ConfigMapSource   `json:"configMap,omitempty"`
+	Name         string `json:"name,omitempty"`
+	VolumeSource `json:",inline"`
 }
 
-type ConfigMapSource struct {
-	Name string `json:"name,omitempty"`
+// VolumeSource represents the source location of a volume to mount.
+// Only one of its members may be specified.
+type VolumeSource struct {
+	HostPath    *HostPathSource       `json:"hostPath,omitempty"`
+	EmptyDir    *EmptyDirVolumeSource `json:"emptyDir,omitemtpy"`
+	Secret      *SecretSource         `json:"secret,omitempty"`
+	DownwardAPI *DownwardAPISource    `json:"downwardAPI,omitempty"`
+	ConfigMap   *ConfigMapSource      `json:"configMap,omitempty"`
 }
 
 type HostPathSource struct {
@@ -93,6 +96,14 @@ type HostPathSource struct {
 type SecretSource struct {
 	Name        string `json:"secretName,omitempty"`
 	DefaultMode int32  `json:"defaultMode,omitempty"`
+}
+
+type EmptyDirVolumeSource struct {
+	// NOTE: fields ommitted here as Prow does not currently use them
+}
+
+type ConfigMapSource struct {
+	Name string `json:"name,omitempty"`
 }
 
 type DownwardAPISource struct {
