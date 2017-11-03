@@ -31,7 +31,7 @@ used when updating deployments.
 
  - *November 3, 2017* Added `EmptyDir` volume type. To update to `hook:0.176+`
    or `horologium:0.11+` the following components must have the associated
-   minimum versions: `deck:0.57+`, `plank:0.53+`, `jenkins-operator:0.49+`.
+   minimum versions: `deck:0.58+`, `plank:0.54+`, `jenkins-operator:0.50+`.
  - *November 2, 2017* `plank:0.53` changes the `type` label key to `prow.k8s.io/type`
    and the `job` annotation key to `prow.k8s.io/job` added in pods.
  - *October 13, 2017* `hook:0.174`, `plank:0.50`, and `jenkins-operator:0.47`
