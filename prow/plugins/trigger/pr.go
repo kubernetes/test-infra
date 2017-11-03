@@ -65,6 +65,10 @@ func handlePR(c client, trustedOrg string, pr github.PullRequestEvent) error {
 			if err != nil {
 				c.Logger.Warnf("Failed to clear stale comments: %v.", err)
 			}
+			// Just try to remove "needs-ok-to-test" label if existing, we don't care about the result.
+			if err = c.GitHubClient.RemoveLabel(trustedOrg, pr.PullRequest.Base.Repo.Name, pr.PullRequest.Number, needsOkToTest); err != nil {
+				c.Logger.Warnf("Failed at removing %s label: %v", needsOkToTest, err)
+			}
 			c.Logger.Info("Starting all jobs for updated PR.")
 			return buildAll(c, pr.PullRequest)
 		}
