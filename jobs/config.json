@@ -2586,7 +2586,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-scalability"
     ]
   },
   "ci-kubernetes-e2e-gce-scale-correctness": {
@@ -3895,7 +3895,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-scalability"
     ]
   },
   "ci-kubernetes-e2e-gci-gce-scalability-stable1": {
@@ -3914,7 +3914,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-scalability"
     ]
   },
   "ci-kubernetes-e2e-gci-gce-sd-logging": {
