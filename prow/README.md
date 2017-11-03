@@ -29,6 +29,9 @@ Note: versions specified in these announcements may not include bug fixes made
 in more recent versions so it is recommended that the most recent versions are
 used when updating deployments.
 
+ - *November 6, 2017* `plank:0.55` provides `Pods` with the `$BUILD_ID` variable
+   as well as the `$BUILD_NUMBER` variable. The latter is deprecated and will be
+   removed in a future version.
  - *November 3, 2017* Added `EmptyDir` volume type. To update to `hook:0.176+`
    or `horologium:0.11+` the following components must have the associated
    minimum versions: `deck:0.58+`, `plank:0.54+`, `jenkins-operator:0.50+`.
@@ -231,6 +234,9 @@ the build.
 Variable | Periodic | Postsubmit | Batch | Presubmit | Description | Example
 --- |:---:|:---:|:---:|:---:| --- | ---
 `JOB_NAME` | ✓ | ✓ | ✓ | ✓ | Name of the job. | `pull-test-infra-bazel`
+`JOB_TYPE` | ✓ | ✓ | ✓ | ✓ | Type of job. | `presubmit`
+`JOB_SPEC` | ✓ | ✓ | ✓ | ✓ | JSON-encoded job specification. | see below
+`BUILD_ID` | ✓ | ✓ | ✓ | ✓ | Unique build number for each run. | `12345`
 `BUILD_NUMBER` | ✓ | ✓ | ✓ | ✓ | Unique build number for each run. | `12345`
 `REPO_OWNER` | | ✓ | ✓ | ✓ | GitHub org that triggered the job. | `kubernetes`
 `REPO_NAME` | | ✓ | ✓ | ✓ | GitHub repo that triggered the job. | `test-infra`
@@ -242,6 +248,30 @@ Variable | Periodic | Postsubmit | Batch | Presubmit | Description | Example
 
 Note: to not overwrite the Jenkins `$BUILD_NUMBER` variable, the build identifier
 will be passed as `$buildId` to Jenkins jobs.
+
+Note: Use of `$BUILD_NUMBER` is deprecated. Please use `$BUILD_ID` instead.
+
+Note: Examples of the JSON-encoded job specification follow for the different
+job types:
+
+Periodic Job:
+```json
+{"type":"periodic","job":"job-name","buildid":"0","refs":{}}
+```
+
+Postsubmit Job:
+```json
+{"type":"postsubmit","job":"job-name","buildid":"0","refs":{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha"}}```
+
+Presubmit Job:
+```json
+{"type":"presubmit","job":"job-name","buildid":"0","refs":{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha","pulls":[{"number":1,"author":"author-name","sha":"pull-sha"}]}}
+```
+
+Batch Job:
+```json
+{"type":"batch","job":"job-name","buildid":"0","refs":{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha","pulls":[{"number":1,"author":"author-name","sha":"pull-sha"},{"number":2,"author":"other-author-name","sha":"second-pull-sha"}]}}
+```
 
 ## Bots home
 
