@@ -4196,6 +4196,7 @@
   "ci-kubernetes-e2e-gci-gce-stable1": {
     "args": [
       "--check-leaked-resources",
+      "--env=ENABLE_POD_SECURITY_POLICY=true",
       "--env-file=jobs/platform/gce.env",
       "--extract=ci/k8s-stable1",
       "--gcp-node-image=gci",
@@ -8612,6 +8613,7 @@
     "args": [
       "--down=false",
       "--env=DOCKER_TEST_LOG_LEVEL=--log-level=warn",
+      "--env=ENABLE_POD_SECURITY_POLICY=true",
       "--env-file=jobs/platform/gce.env",
       "--extract=ci/k8s-stable1",
       "--gcp-node-image=gci",
