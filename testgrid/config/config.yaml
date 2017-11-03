@@ -3176,8 +3176,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-federation-release-1-7
   - name: gce-1.8
     test_group_name: ci-kubernetes-e2e-gce-federation-release-1-8
-  - name: pull-gce-deploy
-    test_group_name: ci-kubernetes-pull-gce-federation-deploy
   - name: build-1.6
     test_group_name: ci-kubernetes-federation-build-1.6
   - name: build-1.7
@@ -3193,6 +3191,8 @@ dashboards:
     test_group_name: ci-federation-e2e-gce-serial
   - name: build
     test_group_name: ci-federation-build
+  - name: pull-gce-deploy
+    test_group_name: ci-kubernetes-pull-gce-federation-deploy
 
 - name: sig-instrumentation
   dashboard_tab:
