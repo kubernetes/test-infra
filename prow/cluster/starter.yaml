@@ -58,7 +58,7 @@ spec:
       terminationGracePeriodSeconds: 180
       containers:
       - name: hook
-        image: gcr.io/k8s-prow/hook:0.175
+        image: gcr.io/k8s-prow/hook:0.176
         imagePullPolicy: Always
         args:
         - --dry-run=false
@@ -223,7 +223,7 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: horologium
-        image: gcr.io/k8s-prow/horologium:0.10
+        image: gcr.io/k8s-prow/horologium:0.11
         volumeMounts:
         - name: config
           mountPath: /etc/config
