@@ -2,6 +2,7 @@ bootstrap/** @bentheelder
 boskos/** @krzyzacy
 gubernator/** @rmmh
 jenkins/bootstrap* @bentheelder @krzyzacy
+jobs/** @bentheelder @krzyzacy
 kettle/** @rmmh
 kubetest/** @krzyzacy
 logexporter/** @shyamjvs
