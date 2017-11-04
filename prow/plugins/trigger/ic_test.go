@@ -193,7 +193,7 @@ func TestHandleIssueComment(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
-		t.Logf("running scenarion %q", tc.name)
+		t.Logf("running scenario %q", tc.name)
 		if tc.Branch == "" {
 			tc.Branch = "master"
 		}
