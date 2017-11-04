@@ -24,7 +24,10 @@ go_library(
         "types.go",
     ],
     importpath = "k8s.io/test-infra/prow/kube",
-    deps = ["//vendor/github.com/ghodss/yaml:go_default_library"],
+    deps = [
+        "//vendor/github.com/ghodss/yaml:go_default_library",
+        "//vendor/github.com/sirupsen/logrus:go_default_library",
+    ],
 )
 
 filegroup(
@@ -36,6 +39,9 @@ filegroup(
 
 filegroup(
     name = "all-srcs",
-    srcs = [":package-srcs"],
+    srcs = [
+        ":package-srcs",
+        "//prow/kube/labels:all-srcs",
+    ],
     tags = ["automanaged"],
 )

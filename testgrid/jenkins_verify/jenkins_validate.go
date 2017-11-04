@@ -103,7 +103,8 @@ func main() {
 	testgroups := make(map[string]bool)
 	for _, testgroup := range config.TestGroups {
 		if strings.Contains(testgroup.GcsPrefix, "kubernetes-jenkins/logs/") {
-			job := strings.TrimPrefix(testgroup.GcsPrefix, "kubernetes-jenkins/logs/")
+			// The convention is that the job name is the final part of the GcsPrefix
+			job := filepath.Base(testgroup.GcsPrefix)
 			testgroups[job] = false
 		}
 

@@ -47,13 +47,25 @@ const (
 	JenkinsAgent                 = "jenkins"
 )
 
-// CreatedByProw is added on pods created by prow. We cannot
-// really use owner references because pods may reside on a
-// different namespace from the namespace parent prowjobs
-// live and that would cause the k8s garbage collector to
-// identify those prow pods as orphans and delete them
-// instantly.
-const CreatedByProw = "created-by-prow"
+const (
+	// CreatedByProw is added on pods created by prow. We cannot
+	// really use owner references because pods may reside on a
+	// different namespace from the namespace parent prowjobs
+	// live and that would cause the k8s garbage collector to
+	// identify those prow pods as orphans and delete them
+	// instantly.
+	// TODO: Namespace this label.
+	CreatedByProw = "created-by-prow"
+	// ProwJobTypeLabel is added in pods created by prow and
+	// carries the job type (presubmit, postsubmit, periodic, batch)
+	// that the pod is running.
+	ProwJobTypeLabel = "prow.k8s.io/type"
+	// ProwJobAnnotation is added in pods created by prow and
+	// carries the name of the job that the pod is running. Since
+	// job names can be arbitrarily long, this is added as
+	// an annotation instead of a label.
+	ProwJobAnnotation = "prow.k8s.io/job"
+)
 
 type ProwJob struct {
 	APIVersion string        `json:"apiVersion,omitempty"`

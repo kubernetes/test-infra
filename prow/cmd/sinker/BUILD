@@ -21,6 +21,7 @@ go_test(
     deps = [
         "//prow/config:go_default_library",
         "//prow/kube:go_default_library",
+        "//prow/kube/labels:go_default_library",
     ],
 )
 

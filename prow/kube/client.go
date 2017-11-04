@@ -30,6 +30,7 @@ import (
 	"time"
 
 	"github.com/ghodss/yaml"
+	"github.com/sirupsen/logrus"
 )
 
 const (
@@ -45,8 +46,8 @@ type Logger interface {
 
 // Client interacts with the Kubernetes api-server.
 type Client struct {
-	// If Logger is non-nil, log all method calls with it.
-	Logger Logger
+	// If logger is non-nil, log all method calls with it.
+	logger Logger
 
 	baseURL   string
 	client    *http.Client
@@ -63,14 +64,14 @@ func (c *Client) Namespace(ns string) *Client {
 }
 
 func (c *Client) log(methodName string, args ...interface{}) {
-	if c.Logger == nil {
+	if c.logger == nil {
 		return
 	}
 	var as []string
 	for _, arg := range args {
 		as = append(as, fmt.Sprintf("%v", arg))
 	}
-	c.Logger.Debugf("%s(%s)", methodName, strings.Join(as, ", "))
+	c.logger.Debugf("%s(%s)", methodName, strings.Join(as, ", "))
 }
 
 type ConflictError struct {
@@ -243,6 +244,7 @@ func NewClientInCluster(namespace string) (*Client, error) {
 	}
 	c := &http.Client{Transport: tr}
 	return &Client{
+		logger:    logrus.WithField("client", "kube"),
 		baseURL:   inClusterBaseURL,
 		client:    c,
 		token:     string(token),
@@ -310,6 +312,7 @@ func NewClient(c *Cluster, namespace string) (*Client, error) {
 		},
 	}
 	return &Client{
+		logger:    logrus.WithField("client", "kube"),
 		baseURL:   c.Endpoint,
 		client:    &http.Client{Transport: tr},
 		namespace: namespace,

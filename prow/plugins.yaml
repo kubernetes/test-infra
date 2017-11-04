@@ -11,6 +11,11 @@ triggers:
   - tensorflow/k8s
   trusted_org: kubernetes
 
+approve:
+- repos:
+  - kubernetes
+  implicit_self_approve: true
+
 heart:
   adorees:
   - k8s-merge-robot
@@ -45,6 +50,12 @@ plugins:
   - trigger
 
   kubernetes/community:
+  - trigger
+
+  kubernetes/dns:
+  - trigger
+
+  kubernetes/ingress-gce:
   - trigger
 
   kubernetes/federation:

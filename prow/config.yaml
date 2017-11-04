@@ -78,32 +78,26 @@ presubmits:
       - name: cache-ssd
         hostPath:
           path: /mnt/disks/ssd0
-  kubernetes/federation:
-  - name: pull-federation-bazel-build
+  kubernetes/dns:
+  - name: pull-kubernetes-dns-test
     agent: kubernetes
-    context: pull-federation-bazel-build
+    context: pull-kubernetes-dns-test
+    branches:
+    - master
+    rerun_command: "/test pull-kubernetes-dns-test"
+    trigger: "(?m)^/test( all| pull-kubernetes-dns-test),?(\\s+|$)"
     always_run: true
-    rerun_command: "/test pull-federation-bazel-build"
-    trigger: "(?m)^/test( all| pull-federation-bazel-build),?(\\s+|$)"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171013-53473ec5-0.6.1
+      - image: gcr.io/k8s-testimages/gcloud-in-go:0.4
         args:
-        - "--clean"
-        - "--git-cache=/root/.cache/git"
-        - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--service-account=/etc/service-account/service-account.json"
+        - "--root=/go/src"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--" # end bootstrap args, scenario args below
-        - "--build=//... -//vendor/..."
-        - "--release=//build/release-tars"
+        - "--clean"
         env:
-        - name: TEST_TMPDIR
-          value: /root/.cache/bazel
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /etc/service-account/service-account.json
         volumeMounts:
         - name: service
           mountPath: /etc/service-account
@@ -120,6 +114,43 @@ presubmits:
       - name: cache-ssd
         hostPath:
           path: /mnt/disks/ssd0
+  kubernetes/ingress-gce:
+  - name: pull-kubernetes-ingress-gce-test
+    agent: kubernetes
+    context: pull-kubernetes-ingress-gce-test
+    branches:
+    - master
+    rerun_command: "/test pull-kubernetes-ingress-gce-test"
+    trigger: "(?m)^/test( all| pull-kubernetes-ingress-gce-test),?(\\s+|$)"
+    always_run: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/gcloud-in-go:0.4
+        args:
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--root=/go/src"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--clean"
+        env:
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /etc/service-account/service-account.json
+        volumeMounts:
+        - name: service
+          mountPath: /etc/service-account
+          readOnly: true
+        - name: cache-ssd
+          mountPath: /root/.cache
+        ports:
+        - containerPort: 9999
+          hostPort: 9999
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
+      - name: cache-ssd
+        hostPath:
+          path: /mnt/disks/ssd0
+  kubernetes/federation:
   - name: pull-federation-bazel-test
     agent: kubernetes
     context: pull-federation-bazel-test
@@ -166,10 +197,10 @@ presubmits:
           path: /mnt/disks/ssd0
   - name: pull-federation-e2e-gce
     agent: jenkins
-    always_run: false
+    always_run: true
     context: pull-federation-e2e-gce
     rerun_command: "/test pull-federation-e2e-gce"
-    trigger: "(?m)^/test pull-federation-e2e-gce,?(\\s+|$)"
+    trigger: "(?m)^/test( all| pull-federation-e2e-gce),?(\\s+|$)"
   kubernetes/heapster:
   - name: pull-heapster-e2e
     agent: jenkins
@@ -2759,9 +2790,9 @@ presubmits:
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--" # end bootstrap args, scenario args below
         - "--batch" # mitigation for https://github.com/bazelbuild/bazel/issues/3956
-        - "--build=//..."
+        - "--build=//... -//vendor/..."
         - "--install=gubernator/test_requirements.txt"
-        - "--test=//... //verify:verify-all"
+        - "--test=//... //hack:verify-all -//vendor/..."
         - "--test-args=--test_output=errors"
         env:
         - name: TEST_TMPDIR
@@ -2807,9 +2838,9 @@ presubmits:
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--" # end bootstrap args, scenario args below
         - "--batch" # mitigation for https://github.com/bazelbuild/bazel/issues/3956
-        - "--build=//..."
+        - "--build=//... -//vendor/..."
         - "--install=gubernator/test_requirements.txt"
-        - "--test=//... //verify:verify-all"
+        - "--test=//... //hack:verify-all -//vendor/..."
         - "--test-args=--test_output=errors"
         env:
         - name: TEST_TMPDIR
@@ -3579,9 +3610,9 @@ postsubmits:
         - "--upload=gs://kubernetes-jenkins/logs"
         - "--" # end bootstrap args, scenario args below
         - "--batch" # mitigation for https://github.com/bazelbuild/bazel/issues/3956
-        - "--build=//..."
+        - "--build=//... -//vendor/..."
         - "--install=gubernator/test_requirements.txt"
-        - "--test=//... //verify:verify-all"
+        - "--test=//... //hack:verify-all -//vendor/..."
         - "--test-args=--test_output=errors"
         env:
         - name: TEST_TMPDIR
@@ -3910,6 +3941,49 @@ periodics:
         hostPath:
           path: /mnt/disks/ssd0
   - name: ci-kubernetes-e2e-kubeadm-gce-stable-on-master
+    agent: kubernetes
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171030-e52272c1
+        args:
+        - "--repo=k8s.io/kubernetes=master"
+        - "--clean"
+        - "--git-cache=/root/.cache/git"
+        - "--timeout=320"
+        - "--upload=gs://kubernetes-jenkins/logs"
+        env:
+        - name: USER
+          value: prow
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /etc/service-account/service-account.json
+        - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+          value: /etc/ssh-key-secret/ssh-private
+        - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+          value: /etc/ssh-key-secret/ssh-public
+        volumeMounts:
+        - name: service
+          mountPath: /etc/service-account
+          readOnly: true
+        - name: ssh
+          mountPath: /etc/ssh-key-secret
+          readOnly: true
+        - name: cache-ssd
+          mountPath: /root/.cache
+        ports:
+        - containerPort: 9999
+          hostPort: 9999
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
+      - name: ssh
+        secret:
+          secretName: ssh-key-secret
+          defaultMode: 0400
+      - name: cache-ssd
+        hostPath:
+          path: /mnt/disks/ssd0
+  - name: ci-kubernetes-e2e-kubeadm-gce-upgrade-stable-master
     agent: kubernetes
     spec:
       containers:
@@ -6235,40 +6309,6 @@ periodics:
     containers:
     - args:
       - --timeout=70
-      - --bare
-      env:
-      - name: GOOGLE_APPLICATION_CREDENTIALS
-        value: /etc/service-account/service-account.json
-      - name: USER
-        value: prow
-      - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
-        value: /etc/ssh-key-secret/ssh-private
-      - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
-        value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171030-bcf1a6a2-master
-      volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
-      - mountPath: /etc/ssh-key-secret
-        name: ssh
-        readOnly: true
-    volumes:
-    - name: service
-      secret:
-        secretName: service-account
-    - name: ssh
-      secret:
-        defaultMode: 256
-        secretName: ssh-key-secret
-
-- interval: 6h
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gce-federation-release-1-6
-  spec:
-    containers:
-    - args:
-      - --timeout=920
       - --bare
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -17374,9 +17414,9 @@ periodics:
       - "--upload=gs://kubernetes-jenkins/logs"
       - "--" # end bootstrap args, scenario args below
       - "--batch" # mitigation for https://github.com/bazelbuild/bazel/issues/3956
-      - "--build=//..."
+      - "--build=//... -//vendor/..."
       - "--install=gubernator/test_requirements.txt"
-      - "--test=//... //verify:verify-all"
+      - "--test=//... //hack:verify-all -//vendor/..."
       - "--test-args=--test_output=errors"
       env:
       - name: TEST_TMPDIR

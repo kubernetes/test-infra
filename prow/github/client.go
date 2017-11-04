@@ -32,6 +32,7 @@ import (
 	"time"
 
 	"github.com/shurcooL/githubql"
+	"github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
 )
 
@@ -40,8 +41,8 @@ type Logger interface {
 }
 
 type Client struct {
-	// If Logger is non-nil, log all method calls with it.
-	Logger Logger
+	// If logger is non-nil, log all method calls with it.
+	logger Logger
 
 	gqlc   *githubql.Client
 	client *http.Client
@@ -65,6 +66,7 @@ const (
 // NewClient creates a new fully operational GitHub client.
 func NewClient(token, base string) *Client {
 	return &Client{
+		logger: logrus.WithField("client", "github"),
 		gqlc:   githubql.NewClient(oauth2.NewClient(context.Background(), oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token}))),
 		client: &http.Client{},
 		token:  token,
@@ -78,6 +80,7 @@ func NewClient(token, base string) *Client {
 // use up API tokens.
 func NewDryRunClient(token, base string) *Client {
 	return &Client{
+		logger: logrus.WithField("client", "github"),
 		client: &http.Client{},
 		token:  token,
 		base:   base,
@@ -88,20 +91,21 @@ func NewDryRunClient(token, base string) *Client {
 // NewFakeClient creates a new client that will not perform any actions at all.
 func NewFakeClient() *Client {
 	return &Client{
-		fake: true,
-		dry:  true,
+		logger: logrus.WithField("client", "github"),
+		fake:   true,
+		dry:    true,
 	}
 }
 
 func (c *Client) log(methodName string, args ...interface{}) {
-	if c.Logger == nil {
+	if c.logger == nil {
 		return
 	}
 	var as []string
 	for _, arg := range args {
 		as = append(as, fmt.Sprintf("%v", arg))
 	}
-	c.Logger.Debugf("%s(%s)", methodName, strings.Join(as, ", "))
+	c.logger.Debugf("%s(%s)", methodName, strings.Join(as, ", "))
 }
 
 var timeSleep = time.Sleep

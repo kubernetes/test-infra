@@ -31,6 +31,7 @@ import (
 
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/kube"
+	"k8s.io/test-infra/prow/kube/labels"
 )
 
 const (
@@ -118,6 +119,9 @@ func (ja *JobAgent) GetJobLog(job, id string) ([]byte, error) {
 	}
 	for _, agentToTmpl := range ja.c.Config().Deck.ExternalAgentLogs {
 		if agentToTmpl.Agent != string(j.Spec.Agent) {
+			continue
+		}
+		if !agentToTmpl.Selector.Matches(labels.Set(j.Metadata.Labels)) {
 			continue
 		}
 		var b bytes.Buffer

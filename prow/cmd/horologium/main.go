@@ -44,9 +44,6 @@ func main() {
 		logrus.WithError(err).Fatal("Error getting kube client.")
 	}
 
-	logger := logrus.StandardLogger()
-	kc.Logger = logger.WithField("client", "kube")
-
 	for now := range time.Tick(1 * time.Minute) {
 		start := time.Now()
 		if err := sync(kc, configAgent.Config(), now); err != nil {

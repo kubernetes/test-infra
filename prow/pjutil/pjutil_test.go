@@ -170,12 +170,12 @@ func TestProwJobToPod(t *testing.T) {
 				Metadata: kube.ObjectMeta{
 					Name: "pod",
 					Labels: map[string]string{
-						kube.CreatedByProw: "true",
-						"type":             "presubmit",
-						"needstobe":        "inherited",
+						kube.CreatedByProw:    "true",
+						kube.ProwJobTypeLabel: "presubmit",
+						"needstobe":           "inherited",
 					},
 					Annotations: map[string]string{
-						"job": "job-name",
+						kube.ProwJobAnnotation: "job-name",
 					},
 				},
 				Spec: kube.PodSpec{
@@ -218,7 +218,7 @@ func TestProwJobToPod(t *testing.T) {
 			if key == kube.CreatedByProw && value == "true" {
 				foundCreatedByLabel = true
 			}
-			if key == "type" && value == string(pj.Spec.Type) {
+			if key == kube.ProwJobTypeLabel && value == string(pj.Spec.Type) {
 				foundTypeLabel = true
 			}
 			var match bool
@@ -233,7 +233,7 @@ func TestProwJobToPod(t *testing.T) {
 			}
 		}
 		for key, value := range got.Metadata.Annotations {
-			if key == "job" && value == pj.Spec.Job {
+			if key == kube.ProwJobAnnotation && value == pj.Spec.Job {
 				foundJobAnnotation = true
 			}
 		}
@@ -241,10 +241,10 @@ func TestProwJobToPod(t *testing.T) {
 			t.Errorf("expected a created-by-prow=true label in %v", got.Metadata.Labels)
 		}
 		if !foundTypeLabel {
-			t.Errorf("expected a type=%s label in %v", pj.Spec.Type, got.Metadata.Labels)
+			t.Errorf("expected a %s=%s label in %v", kube.ProwJobTypeLabel, pj.Spec.Type, got.Metadata.Labels)
 		}
 		if !foundJobAnnotation {
-			t.Errorf("expected a job=%s annotation in %v", pj.Spec.Job, got.Metadata.Annotations)
+			t.Errorf("expected a %s=%s annotation in %v", kube.ProwJobAnnotation, pj.Spec.Job, got.Metadata.Annotations)
 		}
 
 		expectedContainer := test.expected.Spec.Containers[i]

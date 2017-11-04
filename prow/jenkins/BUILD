@@ -10,6 +10,7 @@ go_library(
     name = "go_default_library",
     srcs = [
         "controller.go",
+        "doc.go",
         "jenkins.go",
     ],
     importpath = "k8s.io/test-infra/prow/jenkins",

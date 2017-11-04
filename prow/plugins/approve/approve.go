@@ -84,19 +84,10 @@ func init() {
 }
 
 func handleGenericCommentEvent(pc plugins.PluginClient, ce github.GenericCommentEvent) error {
-	ro, err := pc.OwnersClient.LoadRepoOwners(ce.Repo.Owner.Login, ce.Repo.Name)
-	if err != nil {
-		return err
-	}
-	return handleGenericComment(pc.Logger, pc.GitHubClient, ro, pc.PluginConfig, &ce)
-}
-
-func handleGenericComment(log *logrus.Entry, ghc githubClient, repo approvers.RepoInterface, config *plugins.Configuration, ce *github.GenericCommentEvent) error {
-	if ce.Action != github.GenericCommentActionCreated || !ce.IsPR {
+	if ce.Action != github.GenericCommentActionCreated || !ce.IsPR || ce.IssueState == "closed" {
 		return nil
 	}
-
-	botName, err := ghc.BotName()
+	botName, err := pc.GitHubClient.BotName()
 	if err != nil {
 		return err
 	}
@@ -105,6 +96,14 @@ func handleGenericComment(log *logrus.Entry, ghc githubClient, repo approvers.Re
 		return nil
 	}
 
+	ro, err := pc.OwnersClient.LoadRepoOwners(ce.Repo.Owner.Login, ce.Repo.Name)
+	if err != nil {
+		return err
+	}
+	return handleGenericComment(pc.Logger, pc.GitHubClient, ro, pc.PluginConfig, &ce)
+}
+
+func handleGenericComment(log *logrus.Entry, ghc githubClient, repo approvers.RepoInterface, config *plugins.Configuration, ce *github.GenericCommentEvent) error {
 	return handle(
 		log,
 		ghc,
@@ -123,6 +122,21 @@ func handleGenericComment(log *logrus.Entry, ghc githubClient, repo approvers.Re
 }
 
 func handlePullRequestEvent(pc plugins.PluginClient, pre github.PullRequestEvent) error {
+	if pre.Action != github.PullRequestActionOpened &&
+		pre.Action != github.PullRequestActionReopened &&
+		pre.Action != github.PullRequestActionSynchronize &&
+		pre.Action != github.PullRequestActionLabeled {
+		return nil
+	}
+	botName, err := pc.GitHubClient.BotName()
+	if err != nil {
+		return err
+	}
+	if pre.Action == github.PullRequestActionLabeled &&
+		(pre.Label.Name != approvedLabel || pre.Sender.Login == botName || pre.PullRequest.State == "closed") {
+		return nil
+	}
+
 	ro, err := pc.OwnersClient.LoadRepoOwners(pre.Repo.Owner.Login, pre.Repo.Name)
 	if err != nil {
 		return err
@@ -131,22 +145,6 @@ func handlePullRequestEvent(pc plugins.PluginClient, pre github.PullRequestEvent
 }
 
 func handlePullRequest(log *logrus.Entry, ghc githubClient, repo approvers.RepoInterface, config *plugins.Configuration, pre *github.PullRequestEvent) error {
-	if pre.Action != github.PullRequestActionOpened &&
-		pre.Action != github.PullRequestActionReopened &&
-		pre.Action != github.PullRequestActionSynchronize &&
-		pre.Action != github.PullRequestActionLabeled {
-		return nil
-	}
-
-	botName, err := ghc.BotName()
-	if err != nil {
-		return err
-	}
-	if pre.Action == github.PullRequestActionLabeled &&
-		(pre.Label.Name != approvedLabel || pre.Sender.Login == botName) {
-		return nil
-	}
-
 	return handle(
 		log,
 		ghc,

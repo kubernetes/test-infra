@@ -48,8 +48,8 @@ type githubClient interface {
 
 // Controller knows how to sync PRs and PJs.
 type Controller struct {
-	Logger *logrus.Entry
-	DryRun bool
+	logger *logrus.Entry
+	dryRun bool
 	ca     *config.Agent
 	ghc    githubClient
 	kc     kubeClient
@@ -91,19 +91,21 @@ type Pool struct {
 }
 
 // NewController makes a Controller out of the given clients.
-func NewController(ghc *github.Client, kc *kube.Client, ca *config.Agent, gc *git.Client) *Controller {
+func NewController(ghc *github.Client, kc *kube.Client, ca *config.Agent, gc *git.Client, dryRun bool) *Controller {
 	return &Controller{
-		ghc: ghc,
-		kc:  kc,
-		ca:  ca,
-		gc:  gc,
+		logger: logrus.WithField("controller", "tide"),
+		dryRun: dryRun,
+		ghc:    ghc,
+		kc:     kc,
+		ca:     ca,
+		gc:     gc,
 	}
 }
 
 // Sync runs one sync iteration.
 func (c *Controller) Sync() error {
 	ctx := context.Background()
-	c.Logger.Info("Building tide pool.")
+	c.logger.Info("Building tide pool.")
 	var pool []PullRequest
 	for _, q := range c.ca.Config().Tide.Queries {
 		prs, err := c.search(ctx, q)
@@ -142,7 +144,7 @@ func (c *Controller) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	defer c.m.Unlock()
 	b, err := json.Marshal(c.pools)
 	if err != nil {
-		c.Logger.WithError(err).Error("Decoding JSON.")
+		c.logger.WithError(err).Error("Decoding JSON.")
 		b = []byte("[]")
 	}
 	fmt.Fprintf(w, string(b))
@@ -345,9 +347,9 @@ func (c *Controller) mergePRs(sp subpool, prs []PullRequest) error {
 				// modifies their PR as we try to merge it in a batch then we
 				// end up in an untested state. This is unlikely to cause any
 				// real problems.
-				c.Logger.WithError(err).Info("Merge failed: PR was modified.")
+				c.logger.WithError(err).Info("Merge failed: PR was modified.")
 			} else if _, ok = err.(github.UnmergablePRError); ok {
-				c.Logger.WithError(err).Warning("Merge failed: PR is unmergable. How did it pass tests?!")
+				c.logger.WithError(err).Warning("Merge failed: PR is unmergable. How did it pass tests?!")
 			} else {
 				return err
 			}
@@ -395,7 +397,7 @@ func (c *Controller) trigger(sp subpool, prs []PullRequest) error {
 func (c *Controller) takeAction(sp subpool, batchPending bool, successes, pendings, nones, batchMerges []PullRequest) (Action, []PullRequest, error) {
 	// Merge the batch!
 	if len(batchMerges) > 0 {
-		if c.DryRun {
+		if c.dryRun {
 			return MergeBatch, batchMerges, nil
 		}
 		return MergeBatch, batchMerges, c.mergePRs(sp, batchMerges)
@@ -404,7 +406,7 @@ func (c *Controller) takeAction(sp subpool, batchPending bool, successes, pendin
 	// invalidate the old batch result.
 	if len(successes) > 0 && !batchPending {
 		if ok, pr := pickSmallestPassingNumber(successes); ok {
-			if c.DryRun {
+			if c.dryRun {
 				return Merge, []PullRequest{pr}, nil
 			}
 			return Merge, []PullRequest{pr}, c.mergePRs(sp, []PullRequest{pr})
@@ -413,7 +415,7 @@ func (c *Controller) takeAction(sp subpool, batchPending bool, successes, pendin
 	// If we have no serial jobs pending or successful, trigger one.
 	if len(nones) > 0 && len(pendings) == 0 && len(successes) == 0 {
 		if ok, pr := pickSmallestPassingNumber(nones); ok {
-			if c.DryRun {
+			if c.dryRun {
 				return Trigger, []PullRequest{pr}, nil
 			}
 			return Trigger, []PullRequest{pr}, c.trigger(sp, []PullRequest{pr})
@@ -426,7 +428,7 @@ func (c *Controller) takeAction(sp subpool, batchPending bool, successes, pendin
 			return Wait, nil, err
 		}
 		if len(batch) > 1 {
-			if c.DryRun {
+			if c.dryRun {
 				return TriggerBatch, batch, nil
 			}
 			return TriggerBatch, batch, c.trigger(sp, batch)
@@ -436,7 +438,7 @@ func (c *Controller) takeAction(sp subpool, batchPending bool, successes, pendin
 }
 
 func (c *Controller) syncSubpool(sp subpool) error {
-	c.Logger.Infof("%s/%s %s: %d PRs, %d PJs.", sp.org, sp.repo, sp.branch, len(sp.prs), len(sp.pjs))
+	c.logger.Infof("%s/%s %s: %d PRs, %d PJs.", sp.org, sp.repo, sp.branch, len(sp.prs), len(sp.pjs))
 	var presubmits []string
 	for _, ps := range c.ca.Config().Presubmits[sp.org+"/"+sp.repo] {
 		if ps.SkipReport || !ps.AlwaysRun || !ps.RunsAgainstBranch(sp.branch) {
@@ -446,13 +448,13 @@ func (c *Controller) syncSubpool(sp subpool) error {
 	}
 	successes, pendings, nones := accumulate(presubmits, sp.prs, sp.pjs)
 	batchMerge, batchPending := accumulateBatch(presubmits, sp.prs, sp.pjs)
-	c.Logger.Infof("Passing PRs: %v", prNumbers(successes))
-	c.Logger.Infof("Pending PRs: %v", prNumbers(pendings))
-	c.Logger.Infof("Missing PRs: %v", prNumbers(nones))
-	c.Logger.Infof("Passing batch: %v", prNumbers(batchMerge))
-	c.Logger.Infof("Pending batch: %v", batchPending)
+	c.logger.Infof("Passing PRs: %v", prNumbers(successes))
+	c.logger.Infof("Pending PRs: %v", prNumbers(pendings))
+	c.logger.Infof("Missing PRs: %v", prNumbers(nones))
+	c.logger.Infof("Passing batch: %v", prNumbers(batchMerge))
+	c.logger.Infof("Pending batch: %v", batchPending)
 	act, targets, err := c.takeAction(sp, batchPending, successes, pendings, nones, batchMerge)
-	c.Logger.Infof("Action: %v, Targets: %v", act, targets)
+	c.logger.Infof("Action: %v, Targets: %v", act, targets)
 	c.pools = append(c.pools, Pool{
 		Org:    sp.org,
 		Repo:   sp.repo,
@@ -541,7 +543,7 @@ func (c *Controller) search(ctx context.Context, q string) ([]PullRequest, error
 		}
 		vars["searchCursor"] = githubql.NewString(sq.Search.PageInfo.EndCursor)
 	}
-	c.Logger.Infof("Search for query \"%s\" cost %d point(s). %d remaining.", q, totalCost, remaining)
+	c.logger.Infof("Search for query \"%s\" cost %d point(s). %d remaining.", q, totalCost, remaining)
 	return ret, nil
 }
 

@@ -1,9 +1,4 @@
-package(default_visibility = ["//visibility:public"])
-
-load(
-    "@io_bazel_rules_go//go:def.bzl",
-    "go_library",
-)
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 
 go_library(
     name = "go_default_library",
@@ -52,6 +47,52 @@ go_library(
     }),
     cgo = True,
     importpath = "golang.org/x/sys/unix",
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = select({
+        "@io_bazel_rules_go//go/platform:darwin_amd64": [
+            "export_test.go",
+        ],
+        "@io_bazel_rules_go//go/platform:linux_amd64": [
+            "export_test.go",
+        ],
+        "//conditions:default": [],
+    }),
+    importpath = "golang.org/x/sys/unix",
+    library = ":go_default_library",
+)
+
+go_test(
+    name = "go_default_xtest",
+    srcs = select({
+        "@io_bazel_rules_go//go/platform:darwin_amd64": [
+            "mmap_unix_test.go",
+            "syscall_bsd_test.go",
+            "syscall_test.go",
+            "syscall_unix_test.go",
+        ],
+        "@io_bazel_rules_go//go/platform:linux_amd64": [
+            "creds_test.go",
+            "mmap_unix_test.go",
+            "syscall_linux_test.go",
+            "syscall_test.go",
+            "syscall_unix_test.go",
+        ],
+        "//conditions:default": [],
+    }),
+    importpath = "golang.org/x/sys/unix_test",
+    deps = select({
+        "@io_bazel_rules_go//go/platform:darwin_amd64": [
+            ":go_default_library",
+        ],
+        "@io_bazel_rules_go//go/platform:linux_amd64": [
+            ":go_default_library",
+        ],
+        "//conditions:default": [],
+    }),
 )
 
 filegroup(
@@ -65,4 +106,5 @@ filegroup(
     name = "all-srcs",
     srcs = [":package-srcs"],
     tags = ["automanaged"],
+    visibility = ["//visibility:public"],
 )
