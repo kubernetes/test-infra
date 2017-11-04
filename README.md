@@ -108,7 +108,7 @@ The [test-infra oncall] must push prow changes (`make -C prow update-config`).
 
 We use [Bazel](https://www.bazel.io/) to build and test the code in this repo.
 The commands `bazel build //...` and `bazel test //...` should be all you need
-for most cases. If you modify Go code, run `./verify/update-bazel.sh` to keep
+for most cases. If you modify Go code, run `./hack/update-bazel.sh` to keep
 `BUILD` files up-to-date.
 
 ## Federated Testing
@@ -117,6 +117,10 @@ The Kubernetes project encourages organizations to contribute execution of e2e
 test jobs for a variety of platforms (e.g., Azure, rktnetes).  The test-history
 scripts gather e2e results from these federated jobs.  For information about
 how to contribute test results, see [Federated Testing](docs/federated_testing.md).
+
+## Other Docs
+
+* [kubernetes/test-infra dependency management](docs/dep.md)
 
 
 [`jobs/config.json`]: https://github.com/kubernetes/test-infra/blob/master/jobs/config.json

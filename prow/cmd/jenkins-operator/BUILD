@@ -21,6 +21,7 @@ go_library(
         "//prow/github:go_default_library",
         "//prow/jenkins:go_default_library",
         "//prow/kube:go_default_library",
+        "//prow/kube/labels:go_default_library",
         "//vendor/github.com/NYTimes/gziphandler:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
     ],

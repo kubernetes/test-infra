@@ -1,9 +1,4 @@
-package(default_visibility = ["//visibility:public"])
-
-load(
-    "@io_bazel_rules_go//go:def.bzl",
-    "go_library",
-)
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 
 go_library(
     name = "go_default_library",
@@ -46,6 +41,20 @@ go_library(
         "//conditions:default": [],
     }),
     importpath = "github.com/mattn/go-sqlite3",
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = [
+        "callback_test.go",
+        "error_test.go",
+        "sqlite3_fts3_test.go",
+        "sqlite3_test.go",
+    ],
+    importpath = "github.com/mattn/go-sqlite3",
+    library = ":go_default_library",
+    deps = ["//vendor/github.com/mattn/go-sqlite3/sqlite3_test:go_default_library"],
 )
 
 filegroup(
@@ -59,4 +68,5 @@ filegroup(
     name = "all-srcs",
     srcs = [":package-srcs"],
     tags = ["automanaged"],
+    visibility = ["//visibility:public"],
 )

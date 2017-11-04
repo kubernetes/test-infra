@@ -95,12 +95,18 @@ func handleIC(c client, trustedOrg string, ic github.IssueCommentEvent) error {
 		requestedJobs = append(requestedJobs, c.Config.RetestPresubmits(ic.Repo.FullName, skipContexts, runContexts)...)
 	}
 
+	var comments []github.IssueComment
+
 	// Skip untrusted users.
 	orgMember, err := c.GitHubClient.IsMember(trustedOrg, commentAuthor)
 	if err != nil {
 		return err
 	} else if !orgMember {
-		trusted, err := trustedPullRequest(c.GitHubClient, *pr, trustedOrg)
+		comments, err = c.GitHubClient.ListIssueComments(pr.Base.Repo.Owner.Login, pr.Base.Repo.Name, pr.Number)
+		if err != nil {
+			return err
+		}
+		trusted, err := trustedPullRequest(c.GitHubClient, *pr, trustedOrg, comments)
 		if err != nil {
 			return err
 		}
@@ -114,6 +120,10 @@ func handleIC(c client, trustedOrg string, ic github.IssueCommentEvent) error {
 	if okToTest.MatchString(ic.Comment.Body) && ic.Issue.HasLabel(needsOkToTest) {
 		if err := c.GitHubClient.RemoveLabel(ic.Repo.Owner.Login, ic.Repo.Name, ic.Issue.Number, needsOkToTest); err != nil {
 			c.Logger.WithError(err).Errorf("Failed at removing %s label", needsOkToTest)
+		}
+		err = clearStaleComments(c.GitHubClient, trustedOrg, *pr, comments)
+		if err != nil {
+			c.Logger.Warnf("Failed to clear stale comments: %v.", err)
 		}
 	}
 

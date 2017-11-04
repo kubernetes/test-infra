@@ -141,13 +141,13 @@ func ProwJobToPod(pj kube.ProwJob, buildID string) *kube.Pod {
 		podLabels[k] = v
 	}
 	podLabels[kube.CreatedByProw] = "true"
-	podLabels["type"] = string(pj.Spec.Type)
+	podLabels[kube.ProwJobTypeLabel] = string(pj.Spec.Type)
 	return &kube.Pod{
 		Metadata: kube.ObjectMeta{
 			Name:   pj.Metadata.Name,
 			Labels: podLabels,
 			Annotations: map[string]string{
-				"job": pj.Spec.Job,
+				kube.ProwJobAnnotation: pj.Spec.Job,
 			},
 		},
 		Spec: spec,

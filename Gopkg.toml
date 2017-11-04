@@ -1,0 +1,77 @@
+# Gopkg.toml for k8s.io/test-infra
+
+# Ignore AWS SDK used by jenkins/aws-janitor
+ignored = ["github.com/aws/aws-sdk-go*"]
+
+[[constraint]]
+  name = "github.com/NYTimes/gziphandler"
+
+[[constraint]]
+  name = "github.com/bwmarrin/snowflake"
+
+[[constraint]]
+  name = "github.com/ghodss/yaml"
+
+[[constraint]]
+  name = "github.com/golang/glog"
+
+[[constraint]]
+  name = "github.com/golang/lint"
+
+[[constraint]]
+  name = "github.com/golang/mock"
+
+[[constraint]]
+  name = "github.com/golang/protobuf"
+
+[[constraint]]
+  name = "github.com/google/go-github"
+
+[[constraint]]
+  name = "github.com/google/gofuzz"
+
+[[constraint]]
+  name = "github.com/gregjones/httpcache"
+
+[[constraint]]
+  name = "github.com/influxdata/influxdb"
+
+[[constraint]]
+  name = "github.com/jinzhu/gorm"
+
+[[constraint]]
+  name = "github.com/peterbourgon/diskv"
+
+[[constraint]]
+  name = "github.com/prometheus/client_golang"
+  version = "0.8.0"
+
+[[constraint]]
+  name = "github.com/satori/go.uuid"
+
+[[constraint]]
+  name = "github.com/shurcooL/githubql"
+
+[[constraint]]
+  name = "github.com/sirupsen/logrus"
+
+[[constraint]]
+  name = "github.com/spf13/cobra"
+
+[[constraint]]
+  name = "github.com/spf13/pflag"
+
+[[constraint]]
+  name = "golang.org/x/crypto"
+
+[[constraint]]
+  name = "golang.org/x/oauth2"
+
+[[constraint]]
+  name = "gopkg.in/yaml.v2"
+
+[[constraint]]
+  name = "k8s.io/contrib"
+
+[[constraint]]
+  name = "k8s.io/kubernetes"

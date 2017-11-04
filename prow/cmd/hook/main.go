@@ -139,21 +139,13 @@ func main() {
 	}
 
 	pluginAgent := &plugins.PluginAgent{}
-	ownersClient := repoowners.NewClient(gitClient, githubClient, pluginAgent.MDYAMLEnabled)
-
-	logger := logrus.StandardLogger()
-	githubClient.Logger = logger.WithField("client", "github")
-	kubeClient.Logger = logger.WithField("client", "kube")
-	gitClient.Logger = logger.WithField("client", "git")
-	slackClient.Logger = logger.WithField("client", "slack")
-	ownersClient.Logger = logger.WithField("client", "repoowners")
 
 	pluginAgent.PluginClient = plugins.PluginClient{
 		GitHubClient: githubClient,
 		KubeClient:   kubeClient,
 		GitClient:    gitClient,
 		SlackClient:  slackClient,
-		OwnersClient: ownersClient,
+		OwnersClient: repoowners.NewClient(gitClient, githubClient, pluginAgent.MDYAMLEnabled),
 		Logger:       logrus.NewEntry(logrus.StandardLogger()),
 	}
 	if err := pluginAgent.Start(*pluginConfig); err != nil {

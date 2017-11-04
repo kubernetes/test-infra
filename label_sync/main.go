@@ -352,7 +352,6 @@ func main() {
 
 	if *local {
 		githubClient = github.NewFakeClient()
-		githubClient.Logger = logrus.StandardLogger()
 
 		if *reposData != "" {
 			if err := UnmarshalReposData(&repos); err != nil {

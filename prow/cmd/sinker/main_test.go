@@ -24,6 +24,7 @@ import (
 
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/kube"
+	"k8s.io/test-infra/prow/kube/labels"
 )
 
 type fakeClient struct {
@@ -35,9 +36,13 @@ type fakeClient struct {
 }
 
 func (c *fakeClient) ListPods(selector string) ([]kube.Pod, error) {
+	s, err := labels.Parse(selector)
+	if err != nil {
+		return nil, err
+	}
 	pl := make([]kube.Pod, 0, len(c.Pods))
 	for _, p := range c.Pods {
-		if labelsMatch(selector, p.Metadata.Labels) {
+		if s.Matches(labels.Set(p.Metadata.Labels)) {
 			pl = append(pl, p)
 		}
 	}
@@ -45,9 +50,13 @@ func (c *fakeClient) ListPods(selector string) ([]kube.Pod, error) {
 }
 
 func (c *fakeClient) ListProwJobs(selector string) ([]kube.ProwJob, error) {
+	s, err := labels.Parse(selector)
+	if err != nil {
+		return nil, err
+	}
 	jl := make([]kube.ProwJob, 0, len(c.ProwJobs))
 	for _, j := range c.ProwJobs {
-		if labelsMatch(selector, j.Metadata.Labels) {
+		if s.Matches(labels.Set(j.Metadata.Labels)) {
 			jl = append(jl, j)
 		}
 	}
@@ -74,40 +83,6 @@ func (c *fakeClient) DeletePod(name string) error {
 		}
 	}
 	return fmt.Errorf("pod %s not found", name)
-}
-
-func parseSelector(selector string) map[string]string {
-	if selector == "" {
-		return nil
-	}
-	s := make(map[string]string)
-	for _, pair := range strings.Split(selector, ",") {
-		parts := strings.Split(pair, "=")
-		if len(parts) != 2 {
-			panic(fmt.Sprintf("bad selector: %s", selector))
-		}
-		key := strings.TrimSpace(parts[0])
-		value := strings.TrimSpace(parts[1])
-		s[key] = value
-	}
-	return s
-}
-
-func labelsMatch(selector string, l2 map[string]string) bool {
-	l1 := parseSelector(selector)
-	for k1, v1 := range l1 {
-		matched := false
-		for k2, v2 := range l2 {
-			if k1 == k2 && v1 == v2 {
-				matched = true
-				break
-			}
-		}
-		if !matched {
-			return false
-		}
-	}
-	return true
 }
 
 const (

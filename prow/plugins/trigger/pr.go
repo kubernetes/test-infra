@@ -18,6 +18,7 @@ package trigger
 
 import (
 	"fmt"
+	"strings"
 
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
@@ -52,17 +53,29 @@ func handlePR(c client, trustedOrg string, pr github.PullRequestEvent) error {
 		// When a PR is updated, check that the user is in the org or that an org
 		// member has said "/ok-to-test" before building. There's no need to ask
 		// for "/ok-to-test" because we do that once when the PR is created.
-		trusted, err := trustedPullRequest(c.GitHubClient, pr.PullRequest, trustedOrg)
+		comments, err := c.GitHubClient.ListIssueComments(pr.PullRequest.Base.Repo.Owner.Login, pr.PullRequest.Base.Repo.Name, pr.PullRequest.Number)
+		if err != nil {
+			return err
+		}
+		trusted, err := trustedPullRequest(c.GitHubClient, pr.PullRequest, trustedOrg, comments)
 		if err != nil {
 			return fmt.Errorf("could not validate PR: %s", err)
 		} else if trusted {
+			err = clearStaleComments(c.GitHubClient, trustedOrg, pr.PullRequest, comments)
+			if err != nil {
+				c.Logger.Warnf("Failed to clear stale comments: %v.", err)
+			}
 			c.Logger.Info("Starting all jobs for updated PR.")
 			return buildAll(c, pr.PullRequest)
 		}
 	case github.PullRequestActionLabeled:
+		comments, err := c.GitHubClient.ListIssueComments(pr.PullRequest.Base.Repo.Owner.Login, pr.PullRequest.Base.Repo.Name, pr.PullRequest.Number)
+		if err != nil {
+			return err
+		}
 		// When a PR is LGTMd, if it is untrusted then build it once.
 		if pr.Label.Name == lgtmLabel {
-			trusted, err := trustedPullRequest(c.GitHubClient, pr.PullRequest, trustedOrg)
+			trusted, err := trustedPullRequest(c.GitHubClient, pr.PullRequest, trustedOrg, comments)
 			if err != nil {
 				return fmt.Errorf("could not validate PR: %s", err)
 			} else if !trusted {
@@ -101,7 +114,7 @@ I understand the commands that are listed [here](https://github.com/kubernetes/t
 // trustedPullRequest returns whether or not the given PR should be tested.
 // It first checks if the author is in the org, then looks for "/ok-to-test"
 // comments by org members.
-func trustedPullRequest(ghc githubClient, pr github.PullRequest, trustedOrg string) (bool, error) {
+func trustedPullRequest(ghc githubClient, pr github.PullRequest, trustedOrg string, comments []github.IssueComment) (bool, error) {
 	author := pr.User.Login
 	// First check if the author is a member of the org.
 	orgMember, err := ghc.IsMember(trustedOrg, author)
@@ -110,27 +123,15 @@ func trustedPullRequest(ghc githubClient, pr github.PullRequest, trustedOrg stri
 	} else if orgMember {
 		return true, nil
 	}
-	// Next look for "/ok-to-test" comments on the PR.
-	comments, err := ghc.ListIssueComments(pr.Base.Repo.Owner.Login, pr.Base.Repo.Name, pr.Number)
+	botName, err := ghc.BotName()
 	if err != nil {
 		return false, err
 	}
+	// Next look for "/ok-to-test" comments on the PR.
 	for _, comment := range comments {
 		commentAuthor := comment.User.Login
-		// Skip comments by the PR author.
-		if commentAuthor == author {
-			continue
-		}
-		// Skip bot comments.
-		botName, err := ghc.BotName()
-		if err != nil {
-			return false, err
-		}
-		if commentAuthor == botName {
-			continue
-		}
-		// Look for "/ok-to-test"
-		if !okToTest.MatchString(comment.Body) {
+		// Skip comments: by the PR author, or by bot, or not matching "/ok-to-test".
+		if commentAuthor == author || commentAuthor == botName || !okToTest.MatchString(comment.Body) {
 			continue
 		}
 		// Ensure that the commenter is in the org.
@@ -205,4 +206,24 @@ func buildAll(c client, pr github.PullRequest) error {
 		}
 	}
 	return nil
+}
+
+// clearStaleComments deletes old comments that are no longer applicable.
+func clearStaleComments(gc githubClient, trustedOrg string, pr github.PullRequest, comments []github.IssueComment) error {
+	botName, err := gc.BotName()
+	if err != nil {
+		return err
+	}
+
+	waitingComment := fmt.Sprintf("I'm waiting for a [%s](https://github.com/orgs/%s/people) member to verify that this patch is reasonable to test.", trustedOrg, trustedOrg)
+
+	return gc.DeleteStaleComments(
+		trustedOrg,
+		pr.Base.Repo.Name,
+		pr.Number,
+		comments,
+		func(c github.IssueComment) bool { // isStale function
+			return c.User.Login == botName && strings.Contains(c.Body, waitingComment)
+		},
+	)
 }

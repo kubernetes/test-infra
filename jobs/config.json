@@ -21,7 +21,7 @@
   },
   "ci-cri-containerd-build": {
     "args": [
-      "./test/e2e_node/build.sh"
+      "./test/build.sh"
     ],
     "scenario": "execute",
     "sigOwners": [
@@ -1699,27 +1699,6 @@
     "scenario": "kubernetes_e2e",
     "sigOwners": [
       "UNKNOWN"
-    ]
-  },
-  "ci-kubernetes-e2e-gce-federation-release-1-6": {
-    "args": [
-      "--check-leaked-resources",
-      "--cluster=prow-us-central1-f",
-      "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gce-federation-release-1-6.env",
-      "--extract=ci/latest",
-      "--federation",
-      "--gcp-node-image=gci",
-      "--gcp-project=k8s-jkns-e2e-gce-f8n-1-6",
-      "--gcp-zone=us-central1-f",
-      "--ginkgo-parallel=25",
-      "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[Feature:Federation\\] --ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[NoCluster\\] --minStartupPods=8",
-      "--timeout=900m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-multicluster"
     ]
   },
   "ci-kubernetes-e2e-gce-federation-release-1-7": {
@@ -3495,7 +3474,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-gcp"
     ]
   },
   "ci-kubernetes-e2e-gci-gce-alpha-features": {
@@ -3512,7 +3491,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-gcp"
     ]
   },
   "ci-kubernetes-e2e-gci-gce-alpha-features-release-1-6": {
@@ -3896,7 +3875,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-gcp"
     ]
   },
   "ci-kubernetes-e2e-gci-gce-reboot-release-1-6": {
@@ -4071,7 +4050,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-gcp"
     ]
   },
   "ci-kubernetes-e2e-gci-gce-serial-release-1-6": {
@@ -4158,7 +4137,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-gcp"
     ]
   },
   "ci-kubernetes-e2e-gci-gce-slow-release-1-6": {
@@ -4217,6 +4196,7 @@
   "ci-kubernetes-e2e-gci-gce-stable1": {
     "args": [
       "--check-leaked-resources",
+      "--env=ENABLE_POD_SECURITY_POLICY=true",
       "--env-file=jobs/platform/gce.env",
       "--extract=ci/k8s-stable1",
       "--gcp-node-image=gci",
@@ -4263,7 +4243,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-gcp"
     ]
   },
   "ci-kubernetes-e2e-gci-gke-alpha-features": {
@@ -4497,7 +4477,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-gcp"
     ]
   },
   "ci-kubernetes-e2e-gci-gke-reboot-release-1-6": {
@@ -4613,7 +4593,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-gcp"
     ]
   },
   "ci-kubernetes-e2e-gci-gke-serial-release-1-6": {
@@ -4710,7 +4690,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-gcp"
     ]
   },
   "ci-kubernetes-e2e-gci-gke-slow-release-1-6": {
@@ -7604,6 +7584,29 @@
       "sig-cluster-lifecycle"
     ]
   },
+  "ci-kubernetes-e2e-kubeadm-gce-upgrade-stable-master": {
+    "args": [
+      "--cluster=",
+      "--deployment=kubernetes-anywhere",
+      "--env-file=jobs/platform/gce.env",
+      "--extract=ci/latest",
+      "--extract=release/stable",
+      "--gcp-zone=us-central1-f",
+      "--kubeadm=periodic",
+      "--kubernetes-anywhere-kubelet-version=stable",
+      "--kubernetes-anywhere-kubernetes-version=stable",
+      "--kubernetes-anywhere-upgrade-method=upgrade",
+      "--provider=kubernetes-anywhere",
+      "--skew",
+      "--test_args=--ginkgo.focus=\\[Conformance\\]|\\[Feature:BootstrapTokens\\]|\\[Feature:NodeAuthorizer\\] --minStartupPods=8",
+      "--timeout=300m",
+      "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --upgrade-target=ci/latest"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-cluster-lifecycle"
+    ]
+  },
   "ci-kubernetes-e2e-node-canary": {
     "args": [
       "--deployment=node",
@@ -7727,8 +7730,7 @@
       "--deployment=node",
       "--gcp-project=k8s-test-63a7f7788a",
       "--gcp-zone=us-central1-f",
-      "--instance-metadata=user-data<test/e2e_node/jenkins/cos-init-live-restore.yaml,gci-update-strategy=update_disabled",
-      "--node-args=--images=cos-stable-60-9592-84-0 --image-project=cos-cloud",
+      "--node-args=--images=cos-stable-60-9592-84-0 --image-project=cos-cloud --instance-metadata=user-data<test/e2e_node/jenkins/cos-init-live-restore.yaml,gci-update-strategy=update_disabled",
       "--node-test-args=--kubelet-flags=\"--cgroups-per-qos=true --cgroup-root=/\"",
       "--node-tests=true",
       "--provider=gce",
@@ -7749,8 +7751,7 @@
       "--deployment=node",
       "--gcp-project=k8s-test-39a894cbd4",
       "--gcp-zone=us-central1-f",
-      "--instance-metadata=user-data<test/e2e_node/jenkins/cos-init-live-restore.yaml,gci-update-strategy=update_disabled",
-      "--node-args=--images=cos-stable-60-9592-84-0 --image-project=cos-cloud",
+      "--node-args=--images=cos-stable-60-9592-84-0 --image-project=cos-cloud --instance-metadata=user-data<test/e2e_node/jenkins/cos-init-live-restore.yaml,gci-update-strategy=update_disabled",
       "--node-test-args=--kubelet-flags=\"--cgroups-per-qos=true --cgroup-root=/\" --feature-gates=DynamicKubeletConfig=true",
       "--node-tests=true",
       "--provider=gce",
@@ -8141,17 +8142,6 @@
     ],
     "tags": [
       "generated"
-    ]
-  },
-  "ci-kubernetes-federation-build-1.6": {
-    "args": [
-      "--fast",
-      "--federation=k8s-jkns-e2e-gce-f8n-1-6",
-      "--release=kubernetes-federation-release-1-6"
-    ],
-    "scenario": "kubernetes_build",
-    "sigOwners": [
-      "sig-multicluster"
     ]
   },
   "ci-kubernetes-federation-build-1.7": {
@@ -8616,13 +8606,14 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-gcp"
     ]
   },
   "ci-kubernetes-soak-gci-gce-stable1": {
     "args": [
       "--down=false",
       "--env=DOCKER_TEST_LOG_LEVEL=--log-level=warn",
+      "--env=ENABLE_POD_SECURITY_POLICY=true",
       "--env-file=jobs/platform/gce.env",
       "--extract=ci/k8s-stable1",
       "--gcp-node-image=gci",
@@ -8712,7 +8703,7 @@
     ],
     "scenario": "kubernetes_verify",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-testing"
     ]
   },
   "ci-kubernetes-test-go-release-1.6": {
@@ -8753,7 +8744,7 @@
     ],
     "scenario": "kubernetes_verify",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-testing"
     ]
   },
   "ci-kubernetes-verify-release-1.6": {
@@ -9127,7 +9118,7 @@
   },
   "pull-cri-containerd-build": {
     "args": [
-      "./test/e2e_node/build.sh"
+      "./test/build.sh"
     ],
     "scenario": "execute",
     "sigOwners": [
@@ -9150,6 +9141,13 @@
       "sig-node"
     ]
   },
+  "pull-federation-bazel-test": {
+    "args": [],
+    "scenario": "kubernetes_bazel",
+    "sigOwners": [
+      "sig-multicluster"
+    ]
+  },
   "pull-federation-e2e-gce": {
     "args": [
       "--build-federation",
@@ -9168,6 +9166,7 @@
       "--multiple-federations",
       "--provider=gce",
       "--save=gs://kubernetes-jenkins/federation/ci-kubernetes-pull-gce-federation-deploy",
+      "--stage-federation=gs://kubernetes-release-pull/ci/pull-federation-e2e-gce",
       "--test_args=--ginkgo.focus=\\[Feature:Federation\\] --ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[NoCluster\\] --minStartupPods=8",
       "--timeout=90m"
     ],
@@ -9243,6 +9242,15 @@
     "scenario": "execute",
     "sigOwners": [
       "UNKNOWN"
+    ]
+  },
+  "pull-kubernetes-dns-test": {
+    "args": [
+      "true"
+    ],
+    "scenario": "execute",
+    "sigOwners": [
+      "sig-network"
     ]
   },
   "pull-kubernetes-e2e-gce": {
@@ -9406,6 +9414,15 @@
       "sig-cluster-lifecycle"
     ]
   },
+  "pull-kubernetes-ingress-gce-test": {
+    "args": [
+      "true"
+    ],
+    "scenario": "execute",
+    "sigOwners": [
+      "sig-network"
+    ]
+  },
   "pull-kubernetes-kubemark-e2e-gce": {
     "args": [
       "--build",
@@ -9517,7 +9534,7 @@
   },
   "pull-test-infra-verify-bazel": {
     "args": [
-      "./verify/verify-bazel.sh"
+      "./hack/verify-bazel.sh"
     ],
     "scenario": "execute",
     "sigOwners": [
@@ -9526,7 +9543,7 @@
   },
   "pull-test-infra-verify-gofmt": {
     "args": [
-      "./verify/verify-gofmt.sh"
+      "./hack/verify-gofmt.sh"
     ],
     "scenario": "execute",
     "sigOwners": [
@@ -9535,7 +9552,7 @@
   },
   "pull-test-infra-verify-govet": {
     "args": [
-      "./verify/verify-govet.sh"
+      "./hack/verify-govet.sh"
     ],
     "scenario": "execute",
     "sigOwners": [

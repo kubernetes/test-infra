@@ -8,6 +8,6 @@
 // opportunities for improvement are discovered; it is not yet frozen.
 //
 // For now, see README for more details.
-package githubql
+package githubql // import "github.com/shurcooL/githubql"
 
 //go:generate go run gen.go

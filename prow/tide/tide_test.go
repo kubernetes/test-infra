@@ -774,7 +774,7 @@ func TestTakeAction(t *testing.T) {
 		var fkc fkc
 		var fgc fgc
 		c := &Controller{
-			Logger: logrus.StandardLogger().WithField("controller", "tide"),
+			logger: logrus.WithField("controller", "tide"),
 			gc:     gc,
 			ghc:    &fgc,
 			ca:     ca,

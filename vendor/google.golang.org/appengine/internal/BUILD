@@ -1,9 +1,4 @@
-package(default_visibility = ["//visibility:public"])
-
-load(
-    "@io_bazel_rules_go//go:def.bzl",
-    "go_library",
-)
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 
 go_library(
     name = "go_default_library",
@@ -20,12 +15,31 @@ go_library(
         "transaction.go",
     ],
     importpath = "google.golang.org/appengine/internal",
+    visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/golang/protobuf/proto:go_default_library",
         "//vendor/golang.org/x/net/context:go_default_library",
         "//vendor/google.golang.org/appengine/internal/base:go_default_library",
         "//vendor/google.golang.org/appengine/internal/datastore:go_default_library",
         "//vendor/google.golang.org/appengine/internal/log:go_default_library",
+        "//vendor/google.golang.org/appengine/internal/remote_api:go_default_library",
+    ],
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = [
+        "api_test.go",
+        "app_id_test.go",
+        "internal_vm_test.go",
+        "net_test.go",
+    ],
+    importpath = "google.golang.org/appengine/internal",
+    library = ":go_default_library",
+    deps = [
+        "//vendor/github.com/golang/protobuf/proto:go_default_library",
+        "//vendor/golang.org/x/net/context:go_default_library",
+        "//vendor/google.golang.org/appengine/internal/base:go_default_library",
         "//vendor/google.golang.org/appengine/internal/remote_api:go_default_library",
     ],
 )
@@ -47,6 +61,8 @@ filegroup(
         "//vendor/google.golang.org/appengine/internal/log:all-srcs",
         "//vendor/google.golang.org/appengine/internal/modules:all-srcs",
         "//vendor/google.golang.org/appengine/internal/remote_api:all-srcs",
+        "//vendor/google.golang.org/appengine/internal/urlfetch:all-srcs",
     ],
     tags = ["automanaged"],
+    visibility = ["//visibility:public"],
 )
