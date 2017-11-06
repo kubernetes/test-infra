@@ -33,8 +33,8 @@ TOT_VERSION              ?= 0.5
 HOROLOGIUM_VERSION       ?= 0.11
 # PLANK_VERSION is the version of the plank image
 PLANK_VERSION            ?= 0.54
-# JENKINS_OPERATOR_VERSION is the version of the jenkins-oprator image
-JENKINS_OPERATOR_VERSION ?= 0.50
+# JENKINS-OPERATOR_VERSION is the version of the jenkins-operator image
+JENKINS-OPERATOR_VERSION ?= 0.50
 # TIDE_VERSION is the version of the tide image
 TIDE_VERSION             ?= 0.8
 
@@ -145,8 +145,8 @@ plank-deployment: get-cluster-credentials
 
 jenkins-operator-image: alpine-image
 	CGO_ENABLED=0 go build -o cmd/jenkins-operator/jenkins-operator k8s.io/test-infra/prow/cmd/jenkins-operator
-	docker build -t "$(REGISTRY)/$(PROJECT)/jenkins-operator:$(JENKINS_OPERATOR_VERSION)" $(DOCKER_LABELS) cmd/jenkins-operator
-	$(PUSH) "$(REGISTRY)/$(PROJECT)/jenkins-operator:$(JENKINS_OPERATOR_VERSION)"
+	docker build -t "$(REGISTRY)/$(PROJECT)/jenkins-operator:$(JENKINS-OPERATOR_VERSION)" $(DOCKER_LABELS) cmd/jenkins-operator
+	$(PUSH) "$(REGISTRY)/$(PROJECT)/jenkins-operator:$(JENKINS-OPERATOR_VERSION)"
 
 jenkins-operator-deployment: get-cluster-credentials
 	kubectl apply -f cluster/jenkins_deployment.yaml
