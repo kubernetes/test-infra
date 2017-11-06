@@ -269,8 +269,6 @@ test_groups:
 - name: ci-kubernetes-e2e-gke-large-performance
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-large-performance
   days_of_results: 60
-- name: ci-kubernetes-e2e-gke-multizone
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-multizone
 - name: ci-kubernetes-e2e-gci-gke-multizone
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-multizone
 - name: ci-kubernetes-e2e-gke-regional
@@ -1958,8 +1956,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gci-gke-slow
   - name: gci-gke-ingress
     test_group_name: ci-kubernetes-e2e-gci-gke-ingress
-  - name: gke-multizone
-    test_group_name: ci-kubernetes-e2e-gke-multizone
   - name: gci-gke-multizone
     test_group_name: ci-kubernetes-e2e-gci-gke-multizone
   - name: gke-regional
