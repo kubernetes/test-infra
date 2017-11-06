@@ -159,8 +159,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-sd-logging
 - name: ci-kubernetes-e2e-gci-gce-etcd3
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-etcd3
-- name: ci-kubernetes-pull-gce-federation-deploy
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-pull-gce-federation-deploy
 - name: ci-kubernetes-federation-build-1.7
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-federation-build-1.7
 - name: ci-kubernetes-federation-build-1.8
@@ -3176,8 +3174,6 @@ dashboards:
     test_group_name: ci-federation-e2e-gce-serial
   - name: build
     test_group_name: ci-federation-build
-  - name: pull-gce-deploy
-    test_group_name: ci-kubernetes-pull-gce-federation-deploy
 
 - name: sig-instrumentation
   dashboard_tab:

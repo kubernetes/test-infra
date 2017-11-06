@@ -218,25 +218,6 @@ class JobTest(unittest.TestCase):
             'jenkins/job-configs/kubernetes-jenkins/bootstrap-ci-repo.yaml',
             check)
 
-    def test_bootstrap_ci_soak_yaml(self):
-        def check(job, name):
-            job_name = 'ci-%s' % name
-            self.assertIn('blocker', job)
-            self.assertIn('frequency', job)
-            self.assertIn('scan', job)
-            self.assertNotIn('repo-name', job)
-            self.assertNotIn('branch', job)
-            self.assertIn('timeout', job)
-            self.assertIn('soak-repos', job)
-            self.assertNotIn('use-logexporter', job)
-            self.assertGreater(job['timeout'], 0, name)
-
-            return job_name
-
-        self.check_bootstrap_yaml(
-            'jenkins/job-configs/kubernetes-jenkins/bootstrap-ci-soak.yaml',
-            check)
-
     def test_bootstrap_ci_dockerpush(self):
         def check(job, name):
             job_name = 'ci-%s' % name
@@ -803,7 +784,6 @@ class JobTest(unittest.TestCase):
             'ci-kubernetes-node-kubelet-stable2': 'ci-kubernetes-node-kubelet-*',
             'ci-kubernetes-node-kubelet-stable3': 'ci-kubernetes-node-kubelet-*',
             'ci-kubernetes-node-kubelet-non-cri-1-6': 'ci-kubernetes-node-kubelet-*',
-            'pull-federation-e2e-gce': 'ci-kubernetes-pull-gce-federation-deploy',
         }
         for soak_prefix in [
                 'ci-kubernetes-soak-gce-1.5',
