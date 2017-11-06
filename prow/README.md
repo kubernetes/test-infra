@@ -226,6 +226,7 @@ the build.
 
 Variable | Periodic | Postsubmit | Batch | Presubmit | Description | Example
 --- |:---:|:---:|:---:|:---:| --- | ---
+`PROW_JOB_SPEC` | ✓ | ✓ | ✓ | ✓ | Serialized JSON of the `ProwJobSpec`. | `n/a`
 `JOB_NAME` | ✓ | ✓ | ✓ | ✓ | Name of the job. | `pull-test-infra-bazel`
 `BUILD_NUMBER` | ✓ | ✓ | ✓ | ✓ | Unique build number for each run. | `12345`
 `REPO_OWNER` | | ✓ | ✓ | ✓ | GitHub org that triggered the job. | `kubernetes`
