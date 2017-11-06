@@ -2188,7 +2188,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "sig-scale"
+      "sig-scalability"
     ]
   },
   "ci-kubernetes-e2e-gce-large-manual-down": {
@@ -2206,7 +2206,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "sig-scale"
+      "sig-scalability"
     ]
   },
   "ci-kubernetes-e2e-gce-large-manual-up": {
@@ -2226,7 +2226,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "sig-scale"
+      "sig-scalability"
     ]
   },
   "ci-kubernetes-e2e-gce-large-performance": {
@@ -2246,7 +2246,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "sig-scale"
+      "sig-scalability"
     ]
   },
   "ci-kubernetes-e2e-gce-master-new-downgrade-cluster": {
@@ -2607,7 +2607,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "sig-scale"
+      "sig-scalability"
     ]
   },
   "ci-kubernetes-e2e-gce-scale-performance": {
@@ -2625,7 +2625,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "sig-scale"
+      "sig-scalability"
     ]
   },
   "ci-kubernetes-e2e-gce-serial-release-1-6": {
@@ -3978,7 +3978,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "sig-scale"
+      "sig-scalability"
     ]
   },
   "ci-kubernetes-e2e-gci-gce-scalability-release-1-7": {
@@ -5789,7 +5789,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "sig-scale"
+      "sig-scalability"
     ]
   },
   "ci-kubernetes-e2e-gke-large-deploy": {
@@ -5812,7 +5812,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "sig-scale"
+      "sig-scalability"
     ]
   },
   "ci-kubernetes-e2e-gke-large-performance": {
@@ -5834,7 +5834,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "sig-scale"
+      "sig-scalability"
     ]
   },
   "ci-kubernetes-e2e-gke-large-teardown": {
@@ -5857,7 +5857,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "sig-scale"
+      "sig-scalability"
     ]
   },
   "ci-kubernetes-e2e-gke-master-new-gci-kubectl-skew": {
@@ -6139,7 +6139,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "sig-scale"
+      "sig-scalability"
     ]
   },
   "ci-kubernetes-e2e-gke-serial-release-1-6": {
@@ -8209,7 +8209,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "sig-scale"
+      "sig-scalability"
     ]
   },
   "ci-kubernetes-kubemark-5-gce": {
@@ -8232,7 +8232,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "sig-scale"
+      "sig-scalability"
     ]
   },
   "ci-kubernetes-kubemark-5-gce-last-release": {
@@ -8254,7 +8254,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "sig-scale"
+      "sig-scalability"
     ]
   },
   "ci-kubernetes-kubemark-5-prow-canary": {
@@ -8298,7 +8298,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "sig-scale"
+      "sig-scalability"
     ]
   },
   "ci-kubernetes-kubemark-gce-scale": {
@@ -8322,7 +8322,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "sig-scale"
+      "sig-scalability"
     ]
   },
   "ci-kubernetes-kubemark-high-density-100-gce": {
@@ -8346,7 +8346,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "sig-scale"
+      "sig-scalability"
     ]
   },
   "ci-kubernetes-node-kubelet": {
@@ -9445,7 +9445,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "sig-scale"
+      "sig-scalability"
     ]
   },
   "pull-kubernetes-kubemark-e2e-gce-big": {
@@ -9469,7 +9469,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "sig-scale"
+      "sig-scalability"
     ]
   },
   "pull-kubernetes-node-e2e": {
