@@ -22,7 +22,9 @@ go_library(
         "//prow/jenkins:go_default_library",
         "//prow/kube:go_default_library",
         "//prow/kube/labels:go_default_library",
+        "//prow/metrics:go_default_library",
         "//vendor/github.com/NYTimes/gziphandler:go_default_library",
+        "//vendor/github.com/prometheus/client_golang/prometheus/promhttp:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
     ],
 )
