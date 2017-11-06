@@ -401,7 +401,10 @@ func (c *Controller) startPod(pj kube.ProwJob) (string, string, error) {
 		return "", "", fmt.Errorf("error getting build ID: %v", err)
 	}
 
-	pod := pjutil.ProwJobToPod(pj, buildID)
+	pod, err := pjutil.ProwJobToPod(pj, buildID)
+	if err != nil {
+		return "", "", err
+	}
 
 	actual, err := c.pkc.CreatePod(*pod)
 	if err != nil {

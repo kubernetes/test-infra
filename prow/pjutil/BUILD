@@ -10,7 +10,10 @@ load(
 
 go_library(
     name = "go_default_library",
-    srcs = ["pjutil.go"],
+    srcs = [
+        "jobspec.go",
+        "pjutil.go",
+    ],
     importpath = "k8s.io/test-infra/prow/pjutil",
     tags = ["automanaged"],
     deps = [
@@ -35,7 +38,10 @@ filegroup(
 
 go_test(
     name = "go_default_test",
-    srcs = ["pjutil_test.go"],
+    srcs = [
+        "jobspec_test.go",
+        "pjutil_test.go",
+    ],
     importpath = "k8s.io/test-infra/prow/pjutil",
     library = ":go_default_library",
     tags = ["automanaged"],
