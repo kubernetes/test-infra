@@ -575,18 +575,6 @@ test_groups:
 - name: ci-tectonic-e2e-etcd-serial
   gcs_prefix: upstream-jenkins-logs/logs/ci-tectonic-e2e-etcd-serial
 # Ubuntu node e2e tests (contact: @kubernetes/ubuntu-image on github)
-- name: ci-kubernetes-e2e-gce-ubuntu-node
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntu-node
-- name: ci-kubernetes-e2e-gce-ubuntu-node-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntu-node-serial
-- name: ci-kubernetes-e2e-gce-ubuntu-1-7-node
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntu-1-7-node
-- name: ci-kubernetes-e2e-gce-ubuntu-1-7-node-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntu-1-7-node-serial
-- name: ci-kubernetes-e2e-gce-ubuntu-1-6-node
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntu-1-6-node
-- name: ci-kubernetes-e2e-gce-ubuntu-1-6-node-serial
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntu-1-6-node-serial
 - name: ci-kubernetes-e2enode-ubuntudev-k8sdev-gkespec
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-ubuntudev-k8sdev-gkespec
 - name: ci-kubernetes-e2enode-ubuntudev-k8sdev-serial
@@ -1685,80 +1673,89 @@ test_groups:
 #
 
 dashboards:
-- name: canonical
+- name: canonical-ubuntudev-k8sdev
   dashboard_tab:
-  - name: gce-ubuntu-node
-    test_group_name: ci-kubernetes-e2e-gce-ubuntu-node
-  - name: gce-ubuntu-node-serial
-    test_group_name: ci-kubernetes-e2e-gce-ubuntu-node-serial
-  - name: gce-ubuntu-1.7-node
-    test_group_name: ci-kubernetes-e2e-gce-ubuntu-1-7-node
-  - name: gce-ubuntu-1.7-node-serial
-    test_group_name: ci-kubernetes-e2e-gce-ubuntu-1-7-node-serial
-  - name: gce-ubuntu-1.6-node
-    test_group_name: ci-kubernetes-e2e-gce-ubuntu-1-6-node
-  - name: gce-ubuntu-1.6-node-serial
-    test_group_name: ci-kubernetes-e2e-gce-ubuntu-1-6-node-serial
   - name: e2enode-ubuntudev-k8sdev-default(gkespec)
     test_group_name: ci-kubernetes-e2enode-ubuntudev-k8sdev-gkespec
   - name: e2enode-ubuntudev-k8sdev-serial
     test_group_name: ci-kubernetes-e2enode-ubuntudev-k8sdev-serial
-  - name: e2enode-ubuntudev-k8sstable1-default(gkespec)
-    test_group_name: ci-kubernetes-e2enode-ubuntudev-k8sstable1-gkespec
-  - name: e2enode-ubuntudev-k8sstable1-serial
-    test_group_name: ci-kubernetes-e2enode-ubuntudev-k8sstable1-serial
-  - name: e2enode-ubuntudev-k8sstable2-default(gkespec)
-    test_group_name: ci-kubernetes-e2enode-ubuntudev-k8sstable2-gkespec
-  - name: e2enode-ubuntudev-k8sstable2-serial
-    test_group_name: ci-kubernetes-e2enode-ubuntudev-k8sstable2-serial
-  - name: e2enode-ubuntustable1-k8sdev-default(gkespec)
-    test_group_name: ci-kubernetes-e2enode-ubuntustable1-k8sdev-gkespec
-  - name: e2enode-ubuntustable1-k8sdev-serial
-    test_group_name: ci-kubernetes-e2enode-ubuntustable1-k8sdev-serial
-  - name: e2enode-ubuntustable1-k8sstable1-default(gkespec)
-    test_group_name: ci-kubernetes-e2enode-ubuntustable1-k8sstable1-gkespec
-  - name: e2enode-ubuntustable1-k8sstable1-serial
-    test_group_name: ci-kubernetes-e2enode-ubuntustable1-k8sstable1-serial
-  - name: e2enode-ubuntustable1-k8sstable2-default(gkespec)
-    test_group_name: ci-kubernetes-e2enode-ubuntustable1-k8sstable2-gkespec
-  - name: e2enode-ubuntustable1-k8sstable2-serial
-    test_group_name: ci-kubernetes-e2enode-ubuntustable1-k8sstable2-serial
   - name: gce-ubuntudev-k8sdev-default
     test_group_name: ci-kubernetes-e2e-gce-ubuntudev-k8sdev-default
   - name: gce-ubuntudev-k8sdev-serial
     test_group_name: ci-kubernetes-e2e-gce-ubuntudev-k8sdev-serial
   - name: gce-ubuntudev-k8sdev-slow
     test_group_name: ci-kubernetes-e2e-gce-ubuntudev-k8sdev-slow
+
+- name: canonical-ubuntudev-k8sbeta
+  dashboard_tab:
   - name: gce-ubuntudev-k8sbeta-default
     test_group_name: ci-kubernetes-e2e-gce-ubuntudev-k8sbeta-default
   - name: gce-ubuntudev-k8sbeta-serial
     test_group_name: ci-kubernetes-e2e-gce-ubuntudev-k8sbeta-serial
   - name: gce-ubuntudev-k8sbeta-slow
     test_group_name: ci-kubernetes-e2e-gce-ubuntudev-k8sbeta-slow
+
+- name: canonical-ubuntudev-k8sstable1
+  dashboard_tab:
+  - name: e2enode-ubuntudev-k8sstable1-default(gkespec)
+    test_group_name: ci-kubernetes-e2enode-ubuntudev-k8sstable1-gkespec
+  - name: e2enode-ubuntudev-k8sstable1-serial
+    test_group_name: ci-kubernetes-e2enode-ubuntudev-k8sstable1-serial
   - name: gce-ubuntudev-k8sstable1-default
     test_group_name: ci-kubernetes-e2e-gce-ubuntudev-k8sstable1-default
   - name: gce-ubuntudev-k8sstable1-serial
     test_group_name: ci-kubernetes-e2e-gce-ubuntudev-k8sstable1-serial
   - name: gce-ubuntudev-k8sstable1-slow
     test_group_name: ci-kubernetes-e2e-gce-ubuntudev-k8sstable1-slow
+
+- name: canonical-ubuntudev-k8sstable2
+  dashboard_tab:
+  - name: e2enode-ubuntudev-k8sstable2-default(gkespec)
+    test_group_name: ci-kubernetes-e2enode-ubuntudev-k8sstable2-gkespec
+  - name: e2enode-ubuntudev-k8sstable2-serial
+    test_group_name: ci-kubernetes-e2enode-ubuntudev-k8sstable2-serial
+
+- name: canonical-ubuntustable1-k8sdev
+  dashboard_tab:
+  - name: e2enode-ubuntustable1-k8sdev-default(gkespec)
+    test_group_name: ci-kubernetes-e2enode-ubuntustable1-k8sdev-gkespec
+  - name: e2enode-ubuntustable1-k8sdev-serial
+    test_group_name: ci-kubernetes-e2enode-ubuntustable1-k8sdev-serial
   - name: gce-ubuntustable1-k8sdev-default
     test_group_name: ci-kubernetes-e2e-gce-ubuntustable1-k8sdev-default
   - name: gce-ubuntustable1-k8sdev-serial
     test_group_name: ci-kubernetes-e2e-gce-ubuntustable1-k8sdev-serial
   - name: gce-ubuntustable1-k8sdev-slow
     test_group_name: ci-kubernetes-e2e-gce-ubuntustable1-k8sdev-slow
+
+- name: canonical-ubuntustable1-k8sstable1
+  dashboard_tab:
+  - name: e2enode-ubuntustable1-k8sstable1-default(gkespec)
+    test_group_name: ci-kubernetes-e2enode-ubuntustable1-k8sstable1-gkespec
+  - name: e2enode-ubuntustable1-k8sstable1-serial
+    test_group_name: ci-kubernetes-e2enode-ubuntustable1-k8sstable1-serial
   - name: gce-ubuntustable1-k8sstable1-default
     test_group_name: ci-kubernetes-e2e-gce-ubuntustable1-k8sstable1-default
   - name: gce-ubuntustable1-k8sstable1-serial
     test_group_name: ci-kubernetes-e2e-gce-ubuntustable1-k8sstable1-serial
   - name: gce-ubuntustable1-k8sstable1-slow
     test_group_name: ci-kubernetes-e2e-gce-ubuntustable1-k8sstable1-slow
+
+- name: canonical-ubuntustable1-k8sstable2
+  dashboard_tab:
+  - name: e2enode-ubuntustable1-k8sstable2-default(gkespec)
+    test_group_name: ci-kubernetes-e2enode-ubuntustable1-k8sstable2-gkespec
+  - name: e2enode-ubuntustable1-k8sstable2-serial
+    test_group_name: ci-kubernetes-e2enode-ubuntustable1-k8sstable2-serial
   - name: gce-ubuntustable1-k8sstable2-default
     test_group_name: ci-kubernetes-e2e-gce-ubuntustable1-k8sstable2-default
   - name: gce-ubuntustable1-k8sstable2-serial
     test_group_name: ci-kubernetes-e2e-gce-ubuntustable1-k8sstable2-serial
   - name: gce-ubuntustable1-k8sstable2-slow
     test_group_name: ci-kubernetes-e2e-gce-ubuntustable1-k8sstable2-slow
+
+- name: canonical-cdk
+  dashboard_tab:
   - name: cdk-gce-node
     test_group_name: canonical-kubernetes-e2e-gce
 
@@ -3881,6 +3878,17 @@ dashboards:
 #
 
 dashboard_groups:
+- name: canonical
+  dashboard_names:
+  - canonical-ubuntudev-k8sdev
+  - canonical-ubuntudev-k8sbeta
+  - canonical-ubuntudev-k8sstable1
+  - canonical-ubuntudev-k8sstable2
+  - canonical-ubuntustable1-k8sdev
+  - canonical-ubuntustable1-k8sstable1
+  - canonical-ubuntustable1-k8sstable2
+  - canonical-cdk
+
 - name: google
   dashboard_names:
   - google-aws
