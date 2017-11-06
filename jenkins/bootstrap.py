@@ -421,9 +421,12 @@ def metadata(repos, artifacts, call):
             with open(path) as fp:
                 meta = json.loads(fp.read())
         except (IOError, ValueError):
-            pass
+            logging.warning('Failed to open %s', path)
+    else:
+        logging.warning('metadata path %s does not exist', path)
 
     if not meta or not isinstance(meta, dict):
+        logging.warning('metadata not found or invalid, init with empty metadata')
         meta = {}
     if repos:
         meta['repo'] = repos.main
