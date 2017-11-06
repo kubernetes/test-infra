@@ -34,9 +34,13 @@ used when updating deployments.
    minimum versions: `deck:0.58+`, `plank:0.54+`, `jenkins-operator:0.50+`.
  - *November 2, 2017* `plank:0.53` changes the `type` label key to `prow.k8s.io/type`
    and the `job` annotation key to `prow.k8s.io/job` added in pods.
+ - *October 14, 2017* `deck:0:53+` needs to be updated in conjunction with
+   `jenkins-operator:0:48+` since Jenkins logs are now exposed from the
+   operator and `deck` needs to use the `external_agent_logs` option in order
+   to redirect requests to the location `jenkins-operator` exposes logs.
  - *October 13, 2017* `hook:0.174`, `plank:0.50`, and `jenkins-operator:0.47`
    drop the deprecated `github-bot-name` flag.
- - *October 2, 2017* `hook` version 0.171. The label plugin was split into three
+ - *October 2, 2017* `hook:0.171`: The label plugin was split into three
    plugins (label, sigmention, milestonestatus). Breaking changes:
    - The configuration key for the milestone maintainer team's ID has been
    changed. Previously the team ID was stored in the plugins config at key
@@ -46,7 +50,7 @@ used when updating deployments.
    - The sigmention and milestonestatus plugins must be enabled on any repos
    that require them since their functionality is no longer included in the 
    label plugin.
- - *September 3, 2017* sinker:0.17 now deletes pods labeled by plank:0.42 in
+ - *September 3, 2017* `sinker:0.17` now deletes pods labeled by `plank:0.42` in
    order to avoid cleaning up unrelated pods that happen to be found in the
    same namespace prow runs pods. If you run other pods in the same namespace,
    you will have to manually delete or label the prow-owned pods, otherwise you
@@ -55,15 +59,15 @@ used when updating deployments.
    ```
    kubectl label pods --all -n pod_namespace created-by-prow=true
    ```
- - *September 1, 2017* `deck` version 0.44 and `jenkins-operator` version 0.41
-   controllers no longer provide a default value for the `--jenkins-token-file` flag.
+ - *September 1, 2017* `deck:0.44` and `jenkins-operator:0.41` controllers
+   no longer provide a default value for the `--jenkins-token-file` flag.
    Cluster administrators should provide `--jenkins-token-file=/etc/jenkins/jenkins`
    explicitly when upgrading to a new version of these components if they were
    previously relying on the default. For more context, please see
    [this pull request.](https://github.com/kubernetes/test-infra/pull/4210)
  - *August 29, 2017* Configuration specific to plugins is now held in in the
    `plugins` `ConfigMap` and serialized in this repo in the `plugins.yaml` file.
-   Cluster administrators upgrading to `hook` version 0.148 or newer should move
+   Cluster administrators upgrading to `hook:0.148` or newer should move
    plugin configuration from the main `ConfigMap`. For more context, please see
    [this pull request.](https://github.com/kubernetes/test-infra/pull/4213)
 
