@@ -7,10 +7,6 @@
 body {
   background-color: #fafafa;
   color: #222;
-  font-family: "Roboto", "Arial", sans-serif;
-  font-size: .85rem;
-  line-height: 1.4;
-  margin: 0 2vw 100px;
 }
 .build-success {
  background-color: #b9f6b8;
@@ -97,6 +93,12 @@ div#log {
 div#log hr {
   display: none;
 }
+.nav {
+  padding: 0;
+}
+.nav li {
+  background-color: #e3e9ff;
+}
 pre.error {
   border-radius: 5px;
   margin: 20px;
@@ -107,6 +109,7 @@ pre.error hr {
 }
 table.build-meta {
   margin-top: 30px;
+  min-width: 40vw;
 }
 table.build-meta td:first-child {
   white-space: nowrap;

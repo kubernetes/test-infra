@@ -9,12 +9,13 @@
 % block header
 <div>
 <h1>{% if pr and pr != "batch"  %}<a href="/pr/{{pr_path}}{{pr}}">{% if repo != "kubernetes/kubernetes"%}{{repo}} {% endif %}PR #{{pr}}</a> {% endif %}
+	<span>
 	% if testgrid_query
 		<a href="{{testgrid_query|tg_url}}">{{job}}</a>
 	% else
 		{{job}}
 	% endif
-	<span>#{{build}}</span></h1>
+	#{{build}}</span></h1>
 	<p><a href="/builds{{job_dir}}">Recent runs</a> |
        <a href="https://ci.openshift.redhat.com/jenkins/job/{{job}}/{{build}}/">View job in Jenkins</a>
 </div>
