@@ -32,7 +32,7 @@ TOT_VERSION              ?= 0.5
 # HOROLOGIUM_VERSION is the version of the horologium image
 HOROLOGIUM_VERSION       ?= 0.11
 # PLANK_VERSION is the version of the plank image
-PLANK_VERSION            ?= 0.55
+PLANK_VERSION            ?= 0.56
 # JENKINS-OPERATOR_VERSION is the version of the jenkins-operator image
 JENKINS-OPERATOR_VERSION ?= 0.51
 # TIDE_VERSION is the version of the tide image
