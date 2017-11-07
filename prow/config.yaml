@@ -1631,7 +1631,7 @@ presubmits:
           path: /mnt/disks/ssd0
       - name: docker-graph
         hostPath:
-          path: /mt/disks/ssd0/docker-graph
+          path: /mnt/disks/ssd0/docker-graph
       - name: var-lib-docker
         emptyDir: {}
 
@@ -2890,7 +2890,7 @@ presubmits:
           path: /mnt/disks/ssd0
       - name: docker-graph
         hostPath:
-          path: /mt/disks/ssd0/docker-graph
+          path: /mnt/disks/ssd0/docker-graph
       - name: var-lib-docker
         emptyDir: {}
 
