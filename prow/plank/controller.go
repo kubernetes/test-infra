@@ -150,7 +150,10 @@ func (c *Controller) Sync() error {
 	if err != nil {
 		return fmt.Errorf("error listing prow jobs: %v", err)
 	}
-	selector := strings.Join([]string{c.selector, fmt.Sprintf("%s=true", kube.CreatedByProw)}, ",")
+	selector := fmt.Sprintf("%s=true", kube.CreatedByProw)
+	if len(c.selector) > 0 {
+		selector = strings.Join([]string{c.selector, selector}, ",")
+	}
 	pods, err := c.pkc.ListPods(selector)
 	if err != nil {
 		return fmt.Errorf("error listing pods: %v", err)
