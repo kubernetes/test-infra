@@ -19,7 +19,6 @@ package hook
 import (
 	"github.com/sirupsen/logrus"
 
-	"k8s.io/kubernetes/pkg/util/sets"
 	"k8s.io/test-infra/prow/commentpruner"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/plugins"
@@ -28,27 +27,27 @@ import (
 const failedCommentCoerceFmt = "Could not coerce %s event to a GenericCommentEvent. Unknown 'action': %q."
 
 var (
-	nonCommentIssueActions = sets.NewString(
-		string(github.IssueActionAssigned),
-		string(github.IssueActionUnassigned),
-		string(github.IssueActionLabeled),
-		string(github.IssueActionUnlabeled),
-		string(github.IssueActionMilestoned),
-		string(github.IssueActionDemilestoned),
-		string(github.IssueActionClosed),
-		string(github.IssueActionReopened),
-	)
-	nonCommentPullRequestActions = sets.NewString(
-		string(github.PullRequestActionAssigned),
-		string(github.PullRequestActionUnassigned),
-		string(github.PullRequestActionReviewRequested),
-		string(github.PullRequestActionReviewRequestRemoved),
-		string(github.PullRequestActionLabeled),
-		string(github.PullRequestActionUnlabeled),
-		string(github.PullRequestActionClosed),
-		string(github.PullRequestActionReopened),
-		string(github.PullRequestActionSynchronize),
-	)
+	nonCommentIssueActions = map[github.IssueEventAction]bool{
+		github.IssueActionAssigned:     true,
+		github.IssueActionUnassigned:   true,
+		github.IssueActionLabeled:      true,
+		github.IssueActionUnlabeled:    true,
+		github.IssueActionMilestoned:   true,
+		github.IssueActionDemilestoned: true,
+		github.IssueActionClosed:       true,
+		github.IssueActionReopened:     true,
+	}
+	nonCommentPullRequestActions = map[github.PullRequestEventAction]bool{
+		github.PullRequestActionAssigned:             true,
+		github.PullRequestActionUnassigned:           true,
+		github.PullRequestActionReviewRequested:      true,
+		github.PullRequestActionReviewRequestRemoved: true,
+		github.PullRequestActionLabeled:              true,
+		github.PullRequestActionUnlabeled:            true,
+		github.PullRequestActionClosed:               true,
+		github.PullRequestActionReopened:             true,
+		github.PullRequestActionSynchronize:          true,
+	}
 )
 
 func (s *Server) handleReviewEvent(l *logrus.Entry, re github.ReviewEvent) {
@@ -184,7 +183,7 @@ func (s *Server) handlePullRequestEvent(l *logrus.Entry, pr github.PullRequestEv
 	}
 	action := genericCommentAction(string(pr.Action))
 	if action == "" {
-		if !nonCommentPullRequestActions.Has(string(pr.Action)) {
+		if !nonCommentPullRequestActions[pr.Action] {
 			l.Errorf(failedCommentCoerceFmt, "pull_request", string(pr.Action))
 		}
 		return
@@ -258,7 +257,7 @@ func (s *Server) handleIssueEvent(l *logrus.Entry, i github.IssueEvent) {
 	}
 	action := genericCommentAction(string(i.Action))
 	if action == "" {
-		if !nonCommentIssueActions.Has(string(i.Action)) {
+		if !nonCommentIssueActions[i.Action] {
 			l.Errorf(failedCommentCoerceFmt, "pull_request", string(i.Action))
 		}
 		return
