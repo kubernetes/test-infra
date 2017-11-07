@@ -25,39 +25,34 @@ import (
 )
 
 type bashDeployer struct {
-	clusterIPRange *string
+	clusterIPRange string
 }
 
 var _ deployer = &bashDeployer{}
 
 func newBash(clusterIPRange *string) *bashDeployer {
-	b := &bashDeployer{clusterIPRange}
+	if *clusterIPRange == "" {
+		if numNodes, err := strconv.Atoi(os.Getenv("NUM_NODES")); err == nil {
+			*clusterIPRange = getClusterIPRange(numNodes)
+		}
+	}
+	b := &bashDeployer{*clusterIPRange}
 	return b
 }
 
 func (b *bashDeployer) Up() error {
-	if b.clusterIPRange == nil || *b.clusterIPRange == "" {
-		if numNodes, err := strconv.Atoi(os.Getenv("NUM_NODES")); err == nil {
-			*b.clusterIPRange = getClusterIPRange(numNodes)
-		}
-	}
-	if *b.clusterIPRange != "" {
-		pop, err := pushEnv("CLUSTER_IP_RANGE", *b.clusterIPRange)
-		if err != nil {
-			return err
-		}
-		defer pop()
-	}
-
 	// TODO(shashidharatd): Remove below logic of choosing the scripts to run from federation
 	// repo once the k8s deployment in federation jobs moves to kubernetes-anywhere
-	var cmd string
+	var script string
 	if useFederationRepo() {
-		cmd = "../federation/hack/e2e-internal/e2e-up.sh"
+		script = "../federation/hack/e2e-internal/e2e-up.sh"
 	} else {
-		cmd = "./hack/e2e-internal/e2e-up.sh"
+		script = "./hack/e2e-internal/e2e-up.sh"
 	}
-	return finishRunning(exec.Command(cmd))
+	cmd := exec.Command(script)
+	cmd.Env = os.Environ()
+	cmd.Env = append(cmd.Env, fmt.Sprintf("CLUSTER_IP_RANGE=%s", b.clusterIPRange))
+	return finishRunning(cmd)
 }
 
 func (b *bashDeployer) IsUp() error {
