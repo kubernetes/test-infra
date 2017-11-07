@@ -49,7 +49,27 @@ func handlePR(c client, trustedOrg string, pr github.PullRequestEvent) error {
 				return fmt.Errorf("could not welcome non-org member %q: %v", author, err)
 			}
 		}
-	case github.PullRequestActionReopened, github.PullRequestActionSynchronize:
+	case github.PullRequestActionReopened:
+		// When a PR is reopened, check that the user is in the org or that an org
+		// member had said "/ok-to-test" before building.
+		comments, err := c.GitHubClient.ListIssueComments(pr.PullRequest.Base.Repo.Owner.Login, pr.PullRequest.Base.Repo.Name, pr.PullRequest.Number)
+		if err != nil {
+			return err
+		}
+		trusted, err := trustedPullRequest(c.GitHubClient, pr.PullRequest, trustedOrg, comments)
+		if err != nil {
+			return fmt.Errorf("could not validate PR: %s", err)
+		} else if trusted {
+			err = clearStaleComments(c.GitHubClient, trustedOrg, pr.PullRequest, comments)
+			if err != nil {
+				c.Logger.Warnf("Failed to clear stale comments: %v.", err)
+			}
+			// Just try to remove "needs-ok-to-test" label if existing, we don't care about the result.
+			c.GitHubClient.RemoveLabel(trustedOrg, pr.PullRequest.Base.Repo.Name, pr.PullRequest.Number, needsOkToTest)
+			c.Logger.Info("Starting all jobs for updated PR.")
+			return buildAll(c, pr.PullRequest)
+		}
+	case github.PullRequestActionSynchronize:
 		// When a PR is updated, check that the user is in the org or that an org
 		// member has said "/ok-to-test" before building. There's no need to ask
 		// for "/ok-to-test" because we do that once when the PR is created.
@@ -64,10 +84,6 @@ func handlePR(c client, trustedOrg string, pr github.PullRequestEvent) error {
 			err = clearStaleComments(c.GitHubClient, trustedOrg, pr.PullRequest, comments)
 			if err != nil {
 				c.Logger.Warnf("Failed to clear stale comments: %v.", err)
-			}
-			// Just try to remove "needs-ok-to-test" label if existing, we don't care about the result.
-			if err = c.GitHubClient.RemoveLabel(trustedOrg, pr.PullRequest.Base.Repo.Name, pr.PullRequest.Number, needsOkToTest); err != nil {
-				c.Logger.Warnf("Failed at removing %s label: %v", needsOkToTest, err)
 			}
 			c.Logger.Info("Starting all jobs for updated PR.")
 			return buildAll(c, pr.PullRequest)
