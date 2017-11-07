@@ -7,15 +7,17 @@
 % endif
 % endblock
 % block header
+<div>
 <h1>{% if pr and pr != "batch"  %}<a href="/pr/{{pr_path}}{{pr}}">{% if repo != "kubernetes/kubernetes"%}{{repo}} {% endif %}PR #{{pr}}</a> {% endif %}
 	% if testgrid_query
 		<a href="{{testgrid_query|tg_url}}">{{job}}</a>
 	% else
 		{{job}}
 	% endif
-	#{{build}}</h1>
-	<p><a href="/builds{{job_dir}}">Recent runs</a><br>
-       <a href="https://ci.openshift.redhat.com/jenkins/job/{{job}}/{{build}}/">View job in Jenkins</a><br>
+	<span>#{{build}}</span></h1>
+	<p><a href="/builds{{job_dir}}">Recent runs</a> |
+       <a href="https://ci.openshift.redhat.com/jenkins/job/{{job}}/{{build}}/">View job in Jenkins</a>
+</div>
 % endblock
 % block content
 <div id="summary">
@@ -25,7 +27,7 @@
 		<tr><td>PR<td><a href="/pr/{{pl['author']}}">{{pl['author']}}</a>: {{pl['title']}}
 	% endif
 		% set result = finished['result'] if finished else 'Not Finished'
-		<tr><td>Result<td><span class="build-{{result | slugify}}">{{result}}</span>
+		<tr><td>Result<td class="build-{{result | slugify}}">{{result}}
 	% if started
 		% if finished
 			<tr><td>Tests<td>

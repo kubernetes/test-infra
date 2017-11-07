@@ -6,7 +6,7 @@
 % block content
 <div id="content">
 % if testgrid_query
-<a href="{{testgrid_query | tg_url}}"><h3>Testgrid History for Job</h3></a>
+<a href="{{testgrid_query | tg_url}}"><h3>Testgrid History for Job</h3></a><br>
 % endif
 <a href="{{job_dir | gcs_browse_url}}">GCS Storage Browser</a><br>
 % if '/pull/' in job_dir and 'directory' not in job_dir
@@ -14,9 +14,9 @@
 % endif
 <h3>Builds</h3>
 % for build, loc, started, finished in builds
-<a href="/build{{loc}}/">{{build}}
+<a href="/build{{loc}}/"><span class="build-number">{{build}}</span>
 % if finished
-  <span class="build-{{finished['result'] | slugify}}" title="Result: {{finished['result']}}">
+  <span class="build-{{finished['result'] | slugify}} build-timestamp" title="Result: {{finished['result']}}">
   % if started and 'timestamp' in started
     {{started['timestamp'] | timestamp}}
     % if 'timestamp' in finished

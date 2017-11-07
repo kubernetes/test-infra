@@ -1,57 +1,109 @@
 body {
-    font-family: "Roboto", "Arial", sans-serif;
-    padding: 0;
-    margin: 0;
-    scroll-behavior: smooth;
+  font-family: "Roboto", "Arial", sans-serif;
+  font-size: .85rem;
+  line-height: 1.4;
+  margin: 0 2vw 100px;
+  padding: 0;
+  scroll-behavior: smooth;
 }
 #header {
-    background-color: black;
-    color: white;
-    text-align: center;
-    padding: 8px;
-    box-shadow: 0px 0px 10px #666;
+    align-items: center;
+    background-color: #3f51b5;
+    box-shadow: 0px 0px 8px #666;
+    color: #fff;
+    display: flex;
+    justify-content: space-between;
+    margin: 0 -2vw 20px;
+    padding: .5rem 2vw;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
     min-height: 100px;
 }
-#header a {
-    color: white;
+#header img {
+  height: 100px;
+  width: auto;
+}
+#header h1 {
+  font-size: 1.75em;
+  margin: 0;
+  padding: 0 15px;
+  text-align: center;
+}
+#header > div {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+#header h1 > span {
+  font-size: .6em;
+  display: block;
+}
+#header p {
+  font-size: 12px;
+  text-align: center;
+}
+#header p a {
+  display: inline;
+  padding: 0 10px;
+}
+@media(max-width: 769px) {
+  #header h1 {
+    font-size: 15px;
+    padding: 0 10px;
+    text-align: right;
+  }
+  #header h1 > span {
+    font-size: 12px;
+    word-break: break-word;
+  }
+  #header p {
+    text-align: right;
+  }
+}
+@media (max-width:480px) {
+  #header {
+    align-items: center;
+    flex-direction: column;
+    height: auto;
+    justify-content: center;
+    max-height: initial;
+  }
+  #header h1 {
+    margin-top: 0;
+    text-align: center;
+  }
+  #header img {
+    height: 60px;
+    margin: 5px 0;
+  }
+  #header p {
+    width: 100%;
+    margin-bottom: 0;
+    text-align: center;
+  }
 }
 .link {
     text-align: center;
 }
-#header img {
-    width: 233px;
-    height: 100px;
-    float: left;
-    padding-left: 20px;
+#content {
+  margin: 10px 0;
 }
-#summary {
-    text-align: center;
+#help {
+  margin: 10px 0;
+}
+#content a {
+  display: inline-block;
+  text-decoration: none;
 }
 #failures {
     padding: 0 0 0 10px;
 }
-#content {
-    margin: 10px;
+#summary {
+  text-align: center;
 }
-#help {
-    margin: 30px;
-}
-#jobs-list {
-    list-style-type: none;
-}
-.jobs-list {
-    background-color: #f4f4f4;
-    margin-bottom: 20px;
-    padding: 15px;
-    border-bottom-left-radius: 15px;
-    border-top-left-radius: 15px;
-    border-width: 3px 0px 3px 3px;
-    border-color: grey;
-    border-style: solid;
-}
-.section-header {
-    color: black;
-    padding-left: 40px;
+h3 {
+    margin: 0.67em 0;
 }
 h3 {
     margin: 0.67em 0 0 0;
@@ -144,8 +196,6 @@ label:hover {
 }
 table.pr-dash {
     border-spacing: 0;
-    background: #EEE;
-    border: 2px solid black;
 }
 table.pr-dash tbody tr {
     cursor: pointer;
@@ -154,7 +204,7 @@ table.pr-dash tbody tr:nth-child(odd) {
     background: #EEE;
 }
 table.pr-dash tbody tr:hover {
-    background: #E3E9A0;
+    background: #e3e9ff;
 }
 #prdash-nav {
     margin: 10px 0 0 40px;
@@ -163,7 +213,6 @@ table.pr-dash tbody tr:hover {
     width: 10em;
 }
 table.build-meta {
-    padding-top: 20px;
     text-align: left;
     word-break: break-word;
     margin: 0 auto;  /* center */
@@ -175,7 +224,7 @@ table.build-meta td:nth-child(2) {
     max-width: 60vw;
 }
 table.build-meta td {
-    padding:4px 10px 4px 10px;
+    padding:2px 5px 2px 5px;
 }
 h3.pr-section {
     margin: 1em 0 0 1em;
@@ -222,7 +271,6 @@ li.nav {
 }
 div#log {
     padding: 0 0 0 10px;
-    background-color: #f4f4f4;
 }
 ul.log {
     list-style-type:none;
@@ -233,7 +281,43 @@ li.log {
     padding: 5px;
     display: inline-block;
 }
-
+span.build-number {
+  display: inline-block;
+  min-width: 45px;
+}
+span.build-timestamp {
+  display: inline-block;
+  min-width: 370px;
+  padding-left: 10px;
+}
+@media(max-width: 480px) {
+  span.build-timestamp {
+    min-width: 245px;
+    padding-left: 5px;
+    margin-left: 0;
+  }
+  h1 {
+    font-size: 1.5em;
+  }
+  h2 {
+    font-size: 1.2em;
+  }
+  ul {
+    padding-left: 20px;
+  }
+  ul li {
+    word-wrap: break-word;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    min-width: 0;
+  }
+  ul.results {
+    padding-left: 0;
+  }
+  ul.results > li {
+    list-style: none;
+  }
+}
 /* weak mobile support */
 @media (max-device-width: 500px) {
     body { font-size: xx-large; }
