@@ -150,6 +150,42 @@ presubmits:
       - name: cache-ssd
         hostPath:
           path: /mnt/disks/ssd0
+  GoogleCloudPlatform/k8s-multicluster-ingress:
+  - name: pull-kubernetes-multicluster-ingress-test
+    agent: kubernetes
+    context: pull-kubernetes-multicluster-ingress-test
+    branches:
+    - master
+    rerun_command: "/test pull-kubernetes-multicluster-ingress-test"
+    trigger: "(?m)^/test( all| pull-kubernetes-multicluster-ingress-test),?(\\s+|$)"
+    always_run: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/gcloud-in-go:0.4
+        args:
+        - "--repo=github.com/$(REPO_NAME)=$(PULL_REFS)"
+        - "--root=/go/src"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--clean"
+        env:
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /etc/service-account/service-account.json
+        volumeMounts:
+        - name: service
+          mountPath: /etc/service-account
+          readOnly: true
+        - name: cache-ssd
+          mountPath: /root/.cache
+        ports:
+        - containerPort: 9999
+          hostPort: 9999
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
+      - name: cache-ssd
+        hostPath:
+          path: /mnt/disks/ssd0
   kubernetes/federation:
   - name: pull-federation-bazel-test
     agent: kubernetes
