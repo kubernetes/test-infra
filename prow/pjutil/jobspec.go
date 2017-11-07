@@ -64,8 +64,11 @@ func EnvForSpec(spec JobSpec) (map[string]string, error) {
 
 	// for backwards compatibility, we provide the build ID
 	// in both $BUILD_ID and $BUILD_NUMBER for Prow agents
+	// and in both $buildId and $BUILD_NUMBER for Jenkins
 	if spec.agent == kube.KubernetesAgent {
 		env["BUILD_NUMBER"] = spec.BuildId
+	} else if spec.agent == kube.JenkinsAgent {
+		env["buildId"] = spec.BuildId
 	}
 
 	raw, err := json.Marshal(spec)
