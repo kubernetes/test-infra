@@ -1554,6 +1554,10 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-federation-e2e-gce
   days_of_results: 1
   num_columns_recent: 20
+- name: pull-federation-verify
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-federation-verify
+  days_of_results: 1
+  num_columns_recent: 20
 # release-1.8
 - name: ci-kubernetes-e2e-gci-gce-stable1
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-stable1
@@ -3883,6 +3887,9 @@ dashboards:
     base_options: 'width=10'
   - name: e2e-gce
     test_group_name: pull-federation-e2e-gce
+    base_options: 'width=10'
+  - name: verify
+    test_group_name: pull-federation-verify
     base_options: 'width=10'
 
 #
