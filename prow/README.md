@@ -29,6 +29,8 @@ Note: versions specified in these announcements may not include bug fixes made
 in more recent versions so it is recommended that the most recent versions are
 used when updating deployments.
 
+ - *November 7, 2017* `plank:0.56` fixes bug introduced in `plank:0.53` that
+   affects controllers using an empty kubernetes selector.
  - *November 7, 2017* `jenkins-operator:0.51` provides jobs with the `$BUILD_ID`
    variable as well as the `$buildId` variable. The latter is deprecated and will
    be removed in a future version.
