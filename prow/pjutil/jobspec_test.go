@@ -134,6 +134,38 @@ func TestEnvironmentForSpec(t *testing.T) {
 				"PULL_PULL_SHA": "pull-sha",
 			},
 		},
+		{
+			name: "kubernetes agent",
+			spec: JobSpec{
+				Type:    kube.PeriodicJob,
+				Job:     "job-name",
+				BuildId: "0",
+				agent:   kube.KubernetesAgent,
+			},
+			expected: map[string]string{
+				"JOB_NAME":     "job-name",
+				"BUILD_ID":     "0",
+				"BUILD_NUMBER": "0",
+				"JOB_TYPE":     "periodic",
+				"JOB_SPEC":     `{"type":"periodic","job":"job-name","buildid":"0","refs":{}}`,
+			},
+		},
+		{
+			name: "jenkins agent",
+			spec: JobSpec{
+				Type:    kube.PeriodicJob,
+				Job:     "job-name",
+				BuildId: "0",
+				agent:   kube.JenkinsAgent,
+			},
+			expected: map[string]string{
+				"JOB_NAME": "job-name",
+				"BUILD_ID": "0",
+				"buildId":  "0",
+				"JOB_TYPE": "periodic",
+				"JOB_SPEC": `{"type":"periodic","job":"job-name","buildid":"0","refs":{}}`,
+			},
+		},
 	}
 
 	for _, test := range tests {
