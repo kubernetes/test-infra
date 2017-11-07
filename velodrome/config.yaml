@@ -164,7 +164,7 @@ projects:
       istio/mixer: *transform-istio
       istio/proxy: *transform-istio
     nginx:
-      public-ip:
+      public-ip: "130.211.224.127"
     grafana:
       google-analytics-uaid: ""
     prometheus:
@@ -201,7 +201,7 @@ projects:
     grafana:
       google-analytics-uaid: ""
     nginx:
-      public-ip:
+      public-ip: "104.155.152.163"
   beam:
     repositories:
       apache/beam: &transform-beam
@@ -226,3 +226,5 @@ projects:
       apache/beam-site: *transform-beam
     grafana:
       google-analytics-uaid: ""
+    nginx:
+      public-ip: "130.211.226.122"
