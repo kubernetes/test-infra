@@ -478,7 +478,14 @@ func defaultDumpClusterLogs(localArtifactsDir, logexporterGCSPath string) error 
 }
 
 func dumpFederationLogs(location string) error {
-	logDumpPath := "./federation/cluster/log-dump.sh"
+	// TODO(shashidharatd): Remove below logic of choosing the scripts to run from federation
+	// repo once the k8s deployment in federation jobs moves to kubernetes-anywhere
+	var logDumpPath string
+	if useFederationRepo() {
+		logDumpPath = "../federation/deploy/cluster/log-dump.sh"
+	} else {
+		logDumpPath = "./federation/cluster/log-dump.sh"
+	}
 	// federation/cluster/log-dump.sh only exists in the Kubernetes tree
 	// post-1.6. If it doesn't exist, do nothing and do not report an error.
 	if _, err := os.Stat(logDumpPath); err == nil {
