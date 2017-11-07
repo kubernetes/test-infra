@@ -3624,7 +3624,7 @@ dashboards:
   - name: gci-gce-slow
     test_group_name: ci-kubernetes-e2e-gci-gce-slow
     base_options: 'include-filter-by-regex=Volume%7Cstorage'
-    description: 'storage gci cigce slow e2e tests for master branch'
+    description: 'storage gci gce slow e2e tests for master branch'
   - name: gci-gke-slow
     test_group_name: ci-kubernetes-e2e-gci-gke-slow
     base_options: 'include-filter-by-regex=Volume%7Cstorage'
@@ -3641,6 +3641,14 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gci-gce-alpha-features
     base_options: 'include-filter-by-regex=Volume%7Cstorage'
     description: 'storage gci gce alpha features e2e tests for master branch'
+  - name: gci-gke-multizone
+    test_group_name: ci-kubernetes-e2e-gci-gke-multizone
+    base_options: 'include-filter-by-regex=Volume%7Cstorage'
+    description: 'storage gci gke multizone e2e tests for master branch'
+  - name: gce-multizone
+    test_group_name: ci-kubernetes-e2e-gce-multizone
+    base_options: 'include-filter-by-regex=Volume%7Cstorage'
+    description: 'storage gce multizone e2e tests for master branch'
 
 - name: sig-testing-misc
   dashboard_tab:
