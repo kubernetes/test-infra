@@ -9403,11 +9403,22 @@
   "pull-kubernetes-verify": {
     "args": [
       "--branch=${PULL_BASE_REF}",
+      "--jenkins",
       "--script=./hack/jenkins/verify-dockerized.sh"
     ],
     "scenario": "kubernetes_verify",
     "sigOwners": [
       "UNKNOWN"
+    ]
+  },
+  "pull-kubernetes-verify-prow": {
+    "args": [
+      "--branch=${PULL_BASE_REF}",
+      "--script=./hack/jenkins/verify-dockerized.sh"
+    ],
+    "scenario": "kubernetes_verify",
+    "sigOwners": [
+      "sig-testing"
     ]
   },
   "pull-test-infra-bazel": {

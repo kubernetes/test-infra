@@ -1589,6 +1589,52 @@ presubmits:
     context: pull-kubernetes-verify
     rerun_command: "/test pull-kubernetes-verify"
     trigger: "(?m)^/test( all| pull-kubernetes-verify),?(\\s+|$)"
+  - name: pull-kubernetes-verify-prow
+    agent: kubernetes
+    always_run: false
+    context: pull-kubernetes-verify-prow
+    rerun_command: "/test pull-kubernetes-verify-prow"
+    trigger: "(?m)^/test pull-kubernetes-verify-prow,?(\\s+|$)"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/prow-test-image:1.9-latest
+        imagePullPolicy: Always
+        args:
+        - "--clean"
+        - "--git-cache=/root/.cache/git"
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        # docker-in-docker needs privilged mode
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: service
+          mountPath: /etc/service-account
+          readOnly: true
+        - name: cache-ssd
+          mountPath: /root/.cache
+        - name: docker-graph
+          mountPath: /docker-graph
+        - name: var-lib-docker
+          mountPath: /var/lib/docker
+        ports:
+        - containerPort: 9999
+          hostPort: 9999
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
+      - name: cache-ssd
+        hostPath:
+          path: /mnt/disks/ssd0
+      - name: docker-graph
+        hostPath:
+          path: /mt/disks/ssd0/docker-graph
+      - name: var-lib-docker
+        emptyDir: {}
+
   kubernetes-security/kubernetes:
   - name: pull-security-kubernetes-bazel-build
     agent: kubernetes
@@ -2802,6 +2848,52 @@ presubmits:
     context: pull-security-kubernetes-verify
     rerun_command: "/test pull-security-kubernetes-verify"
     trigger: "(?m)^/test( all| pull-security-kubernetes-verify),?(\\s+|$)"
+  - name: pull-security-kubernetes-verify-prow
+    agent: kubernetes
+    always_run: false
+    context: pull-security-kubernetes-verify-prow
+    rerun_command: "/test pull-security-kubernetes-verify-prow"
+    trigger: "(?m)^/test pull-security-kubernetes-verify-prow,?(\\s+|$)"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/prow-test-image:1.9-latest
+        imagePullPolicy: Always
+        args:
+        - "--clean"
+        - "--git-cache=/root/.cache/git"
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        # docker-in-docker needs privilged mode
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: service
+          mountPath: /etc/service-account
+          readOnly: true
+        - name: cache-ssd
+          mountPath: /root/.cache
+        - name: docker-graph
+          mountPath: /docker-graph
+        - name: var-lib-docker
+          mountPath: /var/lib/docker
+        ports:
+        - containerPort: 9999
+          hostPort: 9999
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
+      - name: cache-ssd
+        hostPath:
+          path: /mnt/disks/ssd0
+      - name: docker-graph
+        hostPath:
+          path: /mt/disks/ssd0/docker-graph
+      - name: var-lib-docker
+        emptyDir: {}
+
   kubernetes/test-infra:
   - name: pull-test-infra-bazel
     agent: kubernetes
