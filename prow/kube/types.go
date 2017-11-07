@@ -47,6 +47,7 @@ type Pod struct {
 }
 
 type PodSpec struct {
+	HostNetwork   bool              `json:"hostNetwork,omitempty"`
 	Volumes       []Volume          `json:"volumes,omitempty"`
 	Containers    []Container       `json:"containers,omitempty"`
 	RestartPolicy string            `json:"restartPolicy,omitempty"`
