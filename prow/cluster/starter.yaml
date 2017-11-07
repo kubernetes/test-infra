@@ -58,7 +58,7 @@ spec:
       terminationGracePeriodSeconds: 180
       containers:
       - name: hook
-        image: gcr.io/k8s-prow/hook:0.176
+        image: gcr.io/k8s-prow/hook:0.177
         imagePullPolicy: Always
         args:
         - --dry-run=false
@@ -118,7 +118,7 @@ spec:
     spec:
       containers:
       - name: plank
-        image: gcr.io/k8s-prow/plank:0.55
+        image: gcr.io/k8s-prow/plank:0.56
         args:
         - --dry-run=false
         volumeMounts:
@@ -182,7 +182,7 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: deck
-        image: gcr.io/k8s-prow/deck:0.58
+        image: gcr.io/k8s-prow/deck:0.59
         ports:
           - name: http
             containerPort: 8080
@@ -223,7 +223,7 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: horologium
-        image: gcr.io/k8s-prow/horologium:0.11
+        image: gcr.io/k8s-prow/horologium:0.12
         volumeMounts:
         - name: config
           mountPath: /etc/config

@@ -20,23 +20,23 @@ ALPINE_VERSION           ?= 0.1
 # GIT_VERSION is the version of the alpine+git image
 GIT_VERSION              ?= 0.1
 # HOOK_VERSION is the version of the hook image
-HOOK_VERSION             ?= 0.176
+HOOK_VERSION             ?= 0.177
 # SINKER_VERSION is the version of the sinker image
 SINKER_VERSION           ?= 0.21
 # DECK_VERSION is the version of the deck image
-DECK_VERSION             ?= 0.58
+DECK_VERSION             ?= 0.59
 # SPLICE_VERSION is the version of the splice image
-SPLICE_VERSION           ?= 0.28
+SPLICE_VERSION           ?= 0.29
 # TOT_VERSION is the version of the tot image
 TOT_VERSION              ?= 0.5
 # HOROLOGIUM_VERSION is the version of the horologium image
-HOROLOGIUM_VERSION       ?= 0.11
+HOROLOGIUM_VERSION       ?= 0.12
 # PLANK_VERSION is the version of the plank image
-PLANK_VERSION            ?= 0.55
+PLANK_VERSION            ?= 0.56
 # JENKINS-OPERATOR_VERSION is the version of the jenkins-operator image
-JENKINS-OPERATOR_VERSION ?= 0.51
+JENKINS-OPERATOR_VERSION ?= 0.52
 # TIDE_VERSION is the version of the tide image
-TIDE_VERSION             ?= 0.8
+TIDE_VERSION             ?= 0.9
 
 # These are the usual GKE variables.
 PROJECT       ?= k8s-prow
