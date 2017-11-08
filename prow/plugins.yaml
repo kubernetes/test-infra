@@ -97,6 +97,7 @@ plugins:
   - trigger
   - release-note
   - docs-no-retest
+  - blockade
 
   kubernetes/test-infra:
   - trigger

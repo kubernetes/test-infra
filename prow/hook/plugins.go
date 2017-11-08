@@ -21,6 +21,7 @@ package hook
 import (
 	_ "k8s.io/test-infra/prow/plugins/approve"
 	_ "k8s.io/test-infra/prow/plugins/assign"
+	_ "k8s.io/test-infra/prow/plugins/blockade"
 	_ "k8s.io/test-infra/prow/plugins/cla"
 	_ "k8s.io/test-infra/prow/plugins/close"
 	_ "k8s.io/test-infra/prow/plugins/docs-no-retest"
