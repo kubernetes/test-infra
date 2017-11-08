@@ -54,6 +54,28 @@ def check(*cmd):
     subprocess.check_call(cmd)
 
 
+def retry(func, times=5):
+    """call func until it returns true at most times times"""
+    success = False
+    for _ in range(0, times):
+        success = func()
+        if success:
+            return success
+    return success
+
+
+def try_call(cmds):
+    """returns true if check(cmd) does not throw an exception
+    over all cmds where cmds = [[cmd, arg, arg2], [cmd2, arg]]"""
+    try:
+        for cmd in cmds:
+            check(*cmd)
+        return True
+    # pylint: disable=bare-except
+    except:
+        return False
+
+
 def main(branch, script, force, on_prow):
     """Test branch using script, optionally forcing verify checks."""
     # If branch has 3-part version, only take first 2 parts.
@@ -98,12 +120,41 @@ def main(branch, script, force, on_prow):
             'bash', '-c', 'cd kubernetes && %s' % script,
         )
     else:
-        os.environ["REPO_DIR"] = k8s # hack/lib/swagger.sh depends on this
-        os.environ["KUBE_FORCE_VERIFY_CHECKS"] = str(force)
-        os.environ["KUBE_VERIFY_GIT_BRANCH"] = str(branch)
-        check(
-            'bash', '-c', 'cd kubernetes && %s' % script,
-        )
+        # make sure we are cd-ed to the repo
+        k8s = '/go/src/k8s.io/kubernetes'
+        os.chdir(k8s)
+
+        # setup env
+        os.environ['REPO_DIR'] = k8s # hack/lib/swagger.sh depends on this
+        os.environ['KUBE_FORCE_VERIFY_CHECKS'] = str(force)
+        os.environ['KUBE_VERIFY_GIT_BRANCH'] = str(branch)
+
+        # TODO(bentheelder): mimic the other script too, and eventually
+        # migrate this flag to be a bool between the two possible scripts instead.
+        if script == './hack/jenkins/verify-dockerized.sh':
+            # mimic k8s.io/kubernetes/hack/jenkins/verify-dockerized.sh
+            # but patched slightly to work appropriately on prow
+            path_prefix = os.environ['GOPATH'] + '/bin'
+            path_prefix += ':' + os.getcwd() + '/third_party/etcd:/usr/local/go/bin'
+            os.environ['PATH'] = path_prefix + ':' + os.environ['PATH']
+            os.environ['ARTIFACTS_DIR'] = os.environ['WORKSPACE'] + '/artifacts'
+            os.environ['LOG_LEVEL'] = '4'
+
+            # setup requirements before make verify
+            retry(lambda: try_call([
+                ['go', 'get', 'github.com/tools/godep'],
+                ['godep', 'version']
+            ]))
+            retry(lambda: try_call([
+                ['bash', '-c', './hack/install-etcd.sh']
+            ]))
+            retry(lambda: try_call([
+                ['bash', '-c', './hack/godep-restore.sh']
+            ]), times=2)
+
+            # and now `make verify`
+            check('bash', '-c', 'make verify')
+
 
 
 if __name__ == '__main__':
