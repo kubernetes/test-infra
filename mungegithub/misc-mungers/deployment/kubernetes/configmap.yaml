@@ -5,7 +5,7 @@ organization: kubernetes
 project: kubernetes
 # Run blunderbuss before approval-handler, so that we can suggest approvers
 # based on assigned reviewer.
-pr-mungers: blunderbuss,approval-handler,lgtm-after-commit,cherrypick-auto-approve,label-unapproved-picks,needs-rebase,path-label,stale-green-ci,block-path,comment-deleter,close-stale,sig-mention-handler,milestone-maintainer
+pr-mungers: blunderbuss,approval-handler,lgtm-after-commit,cherrypick-auto-approve,label-unapproved-picks,needs-rebase,path-label,stale-green-ci,comment-deleter,close-stale,sig-mention-handler,milestone-maintainer
 state: open
 token-file: /etc/secret-volume/token
 period: 60s
@@ -28,7 +28,6 @@ required-retest-contexts: "\
 
 # munger specific options.
 path-label-config: "/etc/munge-config/path-label.txt"
-block-path-config: "/etc/munge-config/block-path.yaml"
 approval-requires-issue: true
 implicit-self-approval: true
 number-of-old-test-results: 5

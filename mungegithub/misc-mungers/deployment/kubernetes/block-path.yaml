@@ -1,8 +1,0 @@
-blockRegexp:
-  - ^docs/man
-  - ^docs/user-guide
-  - ^docs/yaml
-doNotBlockRegexp:
-  - ^docs/man/man1/.*\.1$
-  - ^docs/user-guide/kubectl/kubectl.*\.md$
-  - ^docs/yaml/kubectl/kubectl_.*\.yaml$
