@@ -20,6 +20,9 @@ set -o pipefail
 TESTINFRA_ROOT=$(git rev-parse --show-toplevel)
 TMP_GOPATH=$(mktemp -d)
 
+# no unit tests in vendor
+find ${TESTINFRA_ROOT}/vendor/ -name "*_test.go" -delete
+
 "${TESTINFRA_ROOT}/hack/go_install_from_commit.sh" \
   github.com/kubernetes/repo-infra/kazel \
   e26fc85d14a1d3dc25569831acc06919673c545a \

@@ -45,9 +45,13 @@ kazel_diff=$("${TMP_GOPATH}/bin/kazel" \
   -print-diff \
   -root="${TESTINFRA_ROOT}")
 
-if [[ -n "${gazelle_diff}" || -n "${kazel_diff}" ]]; then
+# check if there are vendor/*_test.go
+vendor_tests=$(find ${TESTINFRA_ROOT}/vendor/ -name "*_test.go" | wc -l)
+
+if [[ -n "${gazelle_diff}" || -n "${kazel_diff}" || "${vendor_tests}" -ne "0" ]]; then
   echo "${gazelle_diff}"
   echo "${kazel_diff}"
+  echo "number of vendor/*_test.go: ${vendor_tests}"
   echo
   echo "Run ./hack/update-bazel.sh"
   exit 1
