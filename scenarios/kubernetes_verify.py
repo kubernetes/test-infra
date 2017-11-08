@@ -54,7 +54,7 @@ def check(*cmd):
     subprocess.check_call(cmd)
 
 
-def main(branch, script, force, on_jenkins):
+def main(branch, script, force, on_prow):
     """Test branch using script, optionally forcing verify checks."""
     # If branch has 3-part version, only take first 2 parts.
     verify_branch = re.match(r'master|release-(\d+\.\d+)', branch)
@@ -84,7 +84,7 @@ def main(branch, script, force, on_jenkins):
     if not os.path.isdir(artifacts):
         os.makedirs(artifacts)
 
-    if on_jenkins:
+    if not on_prow:
         check(
             'docker', 'run', '--rm=true', '--privileged=true',
             '-v', '/var/run/docker.sock:/var/run/docker.sock',
@@ -118,7 +118,7 @@ if __name__ == '__main__':
         default='./hack/jenkins/test-dockerized.sh',
         help='Script in kubernetes/kubernetes that runs checks')
     PARSER.add_argument(
-        '--jenkins', action='store_true', help='Force Jenkins mode'
+        '--prow', action='store_true', help='Force Prow mode'
     )
     ARGS = PARSER.parse_args()
-    main(ARGS.branch, ARGS.script, ARGS.force, ARGS.jenkins)
+    main(ARGS.branch, ARGS.script, ARGS.force, ARGS.prow)

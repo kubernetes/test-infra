@@ -9403,7 +9403,6 @@
   "pull-kubernetes-verify": {
     "args": [
       "--branch=${PULL_BASE_REF}",
-      "--jenkins",
       "--script=./hack/jenkins/verify-dockerized.sh"
     ],
     "scenario": "kubernetes_verify",
@@ -9414,6 +9413,7 @@
   "pull-kubernetes-verify-prow": {
     "args": [
       "--branch=${PULL_BASE_REF}",
+      "--prow=true",
       "--script=./hack/jenkins/verify-dockerized.sh"
     ],
     "scenario": "kubernetes_verify",
