@@ -140,7 +140,7 @@ def build_details(build_dir):
     finished = json.loads(finished)
 
     junit_paths = [f.filename for f in view_base.gcs_ls_recursive('%s/artifacts' % build_dir)
-                   if re.match(r'.*\.xml', os.path.basename(f.filename))]
+                   if f.filename.endswith('.xml')]
 
     junit_futures = {f: gcs_async.read(f) for f in junit_paths}
 
