@@ -120,11 +120,21 @@ func (ha *HelpAgent) generateExternalPluginHelp(config *plugins.Configuration, r
 	}
 
 	pluginHelp = map[string]pluginhelp.PluginHelp{}
-	for result := range externalResultChan {
-		if result.help == nil {
-			continue
+	timeout := time.After(time.Second)
+Done:
+	for {
+		select {
+		case <-timeout:
+			break Done
+		case result, ok := <-externalResultChan:
+			if !ok {
+				break Done
+			}
+			if result.help == nil {
+				continue
+			}
+			pluginHelp[result.name] = *result.help
 		}
-		pluginHelp[result.name] = *result.help
 	}
 	return
 }
@@ -137,6 +147,7 @@ func (ha *HelpAgent) GeneratePluginHelp() *pluginhelp.Help {
 	normalRevMap, externalRevMap := reversePluginMaps(config, orgToRepos)
 
 	allPlugins, pluginHelp := ha.generateNormalPluginHelp(config, normalRevMap)
+
 	allExternalPlugins, externalPluginHelp := ha.generateExternalPluginHelp(config, externalRevMap)
 
 	// Load repo->plugins maps from config
