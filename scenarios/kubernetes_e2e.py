@@ -470,6 +470,7 @@ def set_up_kops_aws(workspace, args, mode, cluster, runner_args):
         '--kops-state=%s' % args.kops_state,
         '--kops-nodes=%s' % args.kops_nodes,
         '--kops-ssh-key=%s' % aws_ssh,
+        "--kops-ssh-user=admin",
     ])
 
 
@@ -512,6 +513,7 @@ def set_up_aws(workspace, args, mode, cluster, runner_args):
         '--kops-state=%s' % args.kops_state,
         '--kops-nodes=%s' % args.kops_nodes,
         '--kops-ssh-key=%s' % aws_ssh,
+        "--kops-ssh-user=admin",
     ])
     # TODO(krzyzacy):Remove after retire kops-e2e-runner.sh
     mode.add_aws_runner()
