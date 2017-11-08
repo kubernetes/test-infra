@@ -150,7 +150,10 @@ func (c *Controller) Sync() error {
 	if err != nil {
 		return fmt.Errorf("error listing prow jobs: %v", err)
 	}
-	selector := strings.Join([]string{c.selector, fmt.Sprintf("%s=true", kube.CreatedByProw)}, ",")
+	selector := fmt.Sprintf("%s=true", kube.CreatedByProw)
+	if len(c.selector) > 0 {
+		selector = strings.Join([]string{c.selector, selector}, ",")
+	}
 	pods, err := c.pkc.ListPods(selector)
 	if err != nil {
 		return fmt.Errorf("error listing pods: %v", err)
@@ -401,7 +404,10 @@ func (c *Controller) startPod(pj kube.ProwJob) (string, string, error) {
 		return "", "", fmt.Errorf("error getting build ID: %v", err)
 	}
 
-	pod := pjutil.ProwJobToPod(pj, buildID)
+	pod, err := pjutil.ProwJobToPod(pj, buildID)
+	if err != nil {
+		return "", "", err
+	}
 
 	actual, err := c.pkc.CreatePod(*pod)
 	if err != nil {

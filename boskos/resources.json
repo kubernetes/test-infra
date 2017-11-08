@@ -162,6 +162,7 @@
       "k8s-jkns-e2e-gke-ci-reboot",
       "k8s-jkns-e2e-gke-gci-ci",
       "k8s-jkns-e2e-gke-gci-slow",
+      "k8s-jkns-e2e-gke-multizone",
       "k8s-jkns-e2e-gke-prod",
       "k8s-jkns-e2e-gke-release-1-1",
       "k8s-jkns-e2e-gke-serial-1-2",

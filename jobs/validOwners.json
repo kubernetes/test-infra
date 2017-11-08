@@ -19,7 +19,7 @@
    "sig-openstack",
    "kubernetes-pm",
    "kubernetes-release",
-   "sig-scale",
+   "sig-scalability",
    "sig-scheduling",
    "sig-service-catalog",
    "sig-storage",

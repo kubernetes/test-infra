@@ -346,6 +346,7 @@ class GSUtil(object):
         if not os.path.isdir(artifacts):
             logging.warning('Artifacts dir %s is missing.', artifacts)
             return
+        original_artifacts = artifacts
         try:
             # If remote path exists, it will create .../_artifacts subdir instead
             gsutil.ls(path)
@@ -367,6 +368,11 @@ class GSUtil(object):
             artifacts, path,
         ]
         self.call(cmd)
+
+        # rename the artifacts dir back
+        # other places still references the original artifacts dir
+        if original_artifacts != artifacts:
+            os.rename(artifacts, original_artifacts)
 
 
 def append_result(gsutil, path, build, version, passed):
@@ -421,9 +427,12 @@ def metadata(repos, artifacts, call):
             with open(path) as fp:
                 meta = json.loads(fp.read())
         except (IOError, ValueError):
-            pass
+            logging.warning('Failed to open %s', path)
+    else:
+        logging.warning('metadata path %s does not exist', path)
 
     if not meta or not isinstance(meta, dict):
+        logging.warning('metadata not found or invalid, init with empty metadata')
         meta = {}
     if repos:
         meta['repo'] = repos.main

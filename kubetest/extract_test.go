@@ -120,6 +120,16 @@ func TestExtractStrategies(t *testing.T) {
 			"https://storage.googleapis.com/kubernetes-release-gke/release",
 			"v1.8.0-gke.0",
 		},
+		{
+			"ci/latest",
+			"https://storage.googleapis.com/kubernetes-release-dev/ci",
+			"v1.2.3+abcde",
+		},
+		{
+			"ci/gke-staging-latest",
+			"https://storage.googleapis.com/kubernetes-release-gke/release",
+			"v1.2.3+abcde",
+		},
 	}
 
 	var gotURL string
@@ -136,6 +146,12 @@ func TestExtractStrategies(t *testing.T) {
 		// This is needed or else Extract() will think that getKube failed.
 		os.Mkdir("kubernetes", 0775)
 		return nil
+	}
+
+	oldCat := gsutilCat
+	defer func() { gsutilCat = oldCat }()
+	gsutilCat = func(url string) ([]byte, error) {
+		return []byte("v1.2.3+abcde"), nil
 	}
 
 	for _, tc := range cases {

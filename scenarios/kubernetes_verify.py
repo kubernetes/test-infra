@@ -54,7 +54,7 @@ def check(*cmd):
     subprocess.check_call(cmd)
 
 
-def main(branch, script, force):
+def main(branch, script, force, on_prow):
     """Test branch using script, optionally forcing verify checks."""
     # If branch has 3-part version, only take first 2 parts.
     verify_branch = re.match(r'master|release-(\d+\.\d+)', branch)
@@ -83,18 +83,27 @@ def main(branch, script, force):
 
     if not os.path.isdir(artifacts):
         os.makedirs(artifacts)
-    check(
-        'docker', 'run', '--rm=true', '--privileged=true',
-        '-v', '/var/run/docker.sock:/var/run/docker.sock',
-        '-v', '/etc/localtime:/etc/localtime:ro',
-        '-v', '%s:/go/src/k8s.io/kubernetes' % k8s,
-        '-v', '%s:/workspace/artifacts' % artifacts,
-        '-e', 'KUBE_FORCE_VERIFY_CHECKS=%s' % force,
-        '-e', 'KUBE_VERIFY_GIT_BRANCH=%s' % branch,
-        '-e', 'REPO_DIR=%s' % k8s,  # hack/lib/swagger.sh depends on this
-        'gcr.io/k8s-testimages/kubekins-test:%s' % tag,
-        'bash', '-c', 'cd kubernetes && %s' % script,
-    )
+
+    if not on_prow:
+        check(
+            'docker', 'run', '--rm=true', '--privileged=true',
+            '-v', '/var/run/docker.sock:/var/run/docker.sock',
+            '-v', '/etc/localtime:/etc/localtime:ro',
+            '-v', '%s:/go/src/k8s.io/kubernetes' % k8s,
+            '-v', '%s:/workspace/artifacts' % artifacts,
+            '-e', 'KUBE_FORCE_VERIFY_CHECKS=%s' % force,
+            '-e', 'KUBE_VERIFY_GIT_BRANCH=%s' % branch,
+            '-e', 'REPO_DIR=%s' % k8s,  # hack/lib/swagger.sh depends on this
+            'gcr.io/k8s-testimages/kubekins-test:%s' % tag,
+            'bash', '-c', 'cd kubernetes && %s' % script,
+        )
+    else:
+        os.environ["REPO_DIR"] = k8s # hack/lib/swagger.sh depends on this
+        os.environ["KUBE_FORCE_VERIFY_CHECKS"] = str(force)
+        os.environ["KUBE_VERIFY_GIT_BRANCH"] = str(branch)
+        check(
+            'bash', '-c', 'cd kubernetes && %s' % script,
+        )
 
 
 if __name__ == '__main__':
@@ -108,5 +117,8 @@ if __name__ == '__main__':
         '--script',
         default='./hack/jenkins/test-dockerized.sh',
         help='Script in kubernetes/kubernetes that runs checks')
+    PARSER.add_argument(
+        '--prow', action='store_true', help='Force Prow mode'
+    )
     ARGS = PARSER.parse_args()
-    main(ARGS.branch, ARGS.script, ARGS.force)
+    main(ARGS.branch, ARGS.script, ARGS.force, ARGS.prow)

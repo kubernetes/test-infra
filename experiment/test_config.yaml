@@ -565,13 +565,11 @@ jobs:
     interval: 2h
     args:
     - --gcp-project=k8s-test-63a7f7788a
-    - --node-args=--instance-metadata=user-data<test/e2e_node/jenkins/cos-init-live-restore.yaml,gci-update-strategy=update_disabled
     sigOwners: ['sig-node']
   ci-kubernetes-e2enode-cosstable1-k8sdev-serial:
     interval: 2h
     args:
     - --gcp-project=k8s-test-39a894cbd4
-    - --node-args=--instance-metadata=user-data<test/e2e_node/jenkins/cos-init-live-restore.yaml,gci-update-strategy=update_disabled
     sigOwners: ['sig-node']
   ci-kubernetes-e2enode-cosstable1-k8sbeta-default:
     interval: 2h
@@ -803,15 +801,15 @@ nodeCommon:
 nodeImages:
   cosbeta:
     args:
-    - --node-args=--images=cos-beta-61-9765-31-0
+    - --node-args=--images=cos-beta-63-10032-22-0
     - --node-args=--image-project=cos-cloud
   cosstable1:
     args:
-    - --node-args=--images=cos-stable-60-9592-84-0
+    - --node-args=--images=cos-stable-62-9901-59-0
     - --node-args=--image-project=cos-cloud
   ubuntudev:
     args:
-    - --node-args=--images=ubuntu-gke-1604-xenial-v20170816-1
+    - --node-args=--images=ubuntu-gke-1604-xenial-v20171101
     - --node-args=--image-project=ubuntu-os-gke-cloud-devel
   ubuntustable1:
     args:
