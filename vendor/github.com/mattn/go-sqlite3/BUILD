@@ -1,4 +1,4 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
@@ -42,19 +42,6 @@ go_library(
     }),
     importpath = "github.com/mattn/go-sqlite3",
     visibility = ["//visibility:public"],
-)
-
-go_test(
-    name = "go_default_test",
-    srcs = [
-        "callback_test.go",
-        "error_test.go",
-        "sqlite3_fts3_test.go",
-        "sqlite3_test.go",
-    ],
-    importpath = "github.com/mattn/go-sqlite3",
-    library = ":go_default_library",
-    deps = ["//vendor/github.com/mattn/go-sqlite3/sqlite3_test:go_default_library"],
 )
 
 filegroup(

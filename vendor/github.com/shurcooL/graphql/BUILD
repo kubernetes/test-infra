@@ -1,4 +1,4 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
@@ -15,20 +15,6 @@ go_library(
         "//vendor/github.com/shurcooL/graphql/ident:go_default_library",
         "//vendor/github.com/shurcooL/graphql/internal/jsonutil:go_default_library",
     ],
-)
-
-go_test(
-    name = "go_default_test",
-    srcs = ["query_test.go"],
-    importpath = "github.com/shurcooL/graphql",
-    library = ":go_default_library",
-)
-
-go_test(
-    name = "go_default_xtest",
-    srcs = ["scalar_test.go"],
-    importpath = "github.com/shurcooL/graphql_test",
-    deps = [":go_default_library"],
 )
 
 filegroup(

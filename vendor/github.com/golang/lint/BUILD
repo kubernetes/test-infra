@@ -1,4 +1,4 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
@@ -6,13 +6,6 @@ go_library(
     importpath = "github.com/golang/lint",
     visibility = ["//visibility:public"],
     deps = ["//vendor/golang.org/x/tools/go/gcexportdata:go_default_library"],
-)
-
-go_test(
-    name = "go_default_test",
-    srcs = ["lint_test.go"],
-    importpath = "github.com/golang/lint",
-    library = ":go_default_library",
 )
 
 filegroup(
