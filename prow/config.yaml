@@ -15351,7 +15351,7 @@ periodics:
     - name: aws-cred
       secret:
         defaultMode: 256
-        secretName: aws-cred
+        secretName: aws-cred-new
 
 - interval: 1h
   agent: kubernetes
