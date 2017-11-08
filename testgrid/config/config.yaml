@@ -240,6 +240,10 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-device-plugin-gpu
   alert_stale_results_hours: 24
   num_failures_to_alert: 12 # Runs every 2h. Alert when it's been failing for a day.
+- name: ci-kubernetes-e2e-gke-device-plugin-gpu-p100
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-device-plugin-gpu-p100
+  alert_stale_results_hours: 36
+  num_failures_to_alert: 4 # Runs every 12h. Alert when it's been failing for a couple of days.
 - name: ci-kubernetes-e2e-gke-device-plugin-gpu-stable1
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-device-plugin-gpu-stable1
   alert_stale_results_hours: 24
@@ -1988,6 +1992,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gci-gke-updown
   - name: gke-device-plugin-gpu
     test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu
+  - name: gke-device-plugin-gpu-p100
+    test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-p100
   - name: gke-canary
     test_group_name: ci-kubernetes-e2e-gke-canary
   # K8S 1.6 branch on GKE
@@ -2395,6 +2401,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-device-plugin-gpu
   - name: gke-device-plugin-gpu
     test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu
+  - name: gke-device-plugin-gpu-p100
+    test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-p100
   - name: gci-gce-slow
     test_group_name: ci-kubernetes-e2e-gci-gce-slow
   - name: gci-gke-slow
@@ -2899,6 +2907,10 @@ dashboards:
       alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
   - name: gke-device-plugin-gpu
     test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu
+    alert_options:
+      alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
+  - name: gke-device-plugin-gpu-p100
+    test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-p100
     alert_options:
       alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
   - name: gke-device-plugin-gpu-1-8
