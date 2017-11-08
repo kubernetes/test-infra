@@ -30,7 +30,7 @@ SPLICE_VERSION           ?= 0.29
 # TOT_VERSION is the version of the tot image
 TOT_VERSION              ?= 0.5
 # HOROLOGIUM_VERSION is the version of the horologium image
-HOROLOGIUM_VERSION       ?= 0.12
+HOROLOGIUM_VERSION       ?= 0.13
 # PLANK_VERSION is the version of the plank image
 PLANK_VERSION            ?= 0.56
 # JENKINS-OPERATOR_VERSION is the version of the jenkins-operator image
