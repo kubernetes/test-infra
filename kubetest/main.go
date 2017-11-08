@@ -94,6 +94,7 @@ type options struct {
 	skew                bool
 	soak                bool
 	soakDuration        time.Duration
+	sshUser             string
 	stage               stageStrategy
 	stageFederation     stageFederationStrategy
 	test                bool
@@ -769,7 +770,7 @@ func prepareGcp(o *options) error {
 		}
 	}
 
-	// Install custom gcloud verion if necessary
+	// Install custom gcloud version if necessary
 	if o.gcpCloudSdk != "" {
 		for i := 0; i < 3; i++ {
 			if err := finishRunning(exec.Command("gsutil", "-mq", "cp", "-r", o.gcpCloudSdk, home())); err == nil {

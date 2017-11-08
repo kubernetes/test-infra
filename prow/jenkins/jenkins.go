@@ -238,8 +238,10 @@ func (c *Client) BuildFromSpec(spec *kube.ProwJobSpec, buildId string) error {
 	if err != nil {
 		return err
 	}
-	env := pjutil.EnvForSpec(*spec)
-	env[buildID] = buildId
+	env, err := pjutil.EnvForSpec(pjutil.NewJobSpec(*spec, buildId))
+	if err != nil {
+		return err
+	}
 
 	q := u.Query()
 	for key, value := range env {

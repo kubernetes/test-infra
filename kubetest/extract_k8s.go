@@ -271,17 +271,14 @@ var getKube = func(url, version string, getSrc bool) error {
 	return nil
 }
 
-func setReleaseFromGcs(ci bool, suffix string, getSrc bool) error {
-	var prefix string
-	if ci {
-		prefix = "kubernetes-release-dev/ci"
-	} else {
-		prefix = "kubernetes-release/release"
-	}
+// wrapper for gsutil cat
+var gsutilCat = func(url string) ([]byte, error) {
+	return output(exec.Command("gsutil", "cat", url))
+}
 
+func setReleaseFromGcs(prefix, suffix string, getSrc bool) error {
 	url := fmt.Sprintf("https://storage.googleapis.com/%v", prefix)
-	cat := fmt.Sprintf("gs://%v/%v.txt", prefix, suffix)
-	release, err := output(exec.Command("gsutil", "cat", cat))
+	release, err := gsutilCat(fmt.Sprintf("gs://%v/%v.txt", prefix, suffix))
 	if err != nil {
 		return err
 	}
@@ -332,8 +329,7 @@ func setupGciVars(family string) (string, error) {
 }
 
 func setReleaseFromGci(image string, getSrc bool) error {
-	u := fmt.Sprintf("gs://container-vm-image-staging/k8s-version-map/%s", image)
-	b, err := output(exec.Command("gsutil", "cat", u))
+	b, err := gsutilCat(fmt.Sprintf("gs://container-vm-image-staging/k8s-version-map/%s", image))
 	if err != nil {
 		return err
 	}
@@ -365,7 +361,7 @@ func (e extractStrategy) Extract(project, zone string, extractSrc bool) error {
 		if i, err := setupGciVars(e.option); err != nil {
 			return err
 		} else if e.ciVersion != "" {
-			return setReleaseFromGcs(true, e.ciVersion, extractSrc)
+			return setReleaseFromGcs("kubernetes-release-dev/ci", e.ciVersion, extractSrc)
 		} else {
 			return setReleaseFromGci(i, extractSrc)
 		}
@@ -393,11 +389,15 @@ func (e extractStrategy) Extract(project, zone string, extractSrc bool) error {
 		// launch the default.
 		// TODO(fejta): clean up this logic. Setting/unsetting the same env var is gross.
 		defer os.Unsetenv("CLUSTER_API_VERSION")
-		return setReleaseFromGcs(true, "latest-"+mat[1], extractSrc)
+		return setReleaseFromGcs("kubernetes-release-dev/ci", "latest-"+mat[1], extractSrc)
 	case ci:
-		return setReleaseFromGcs(true, e.option, extractSrc)
+		prefix := "kubernetes-release-dev/ci"
+		if strings.HasPrefix(e.option, "gke-") {
+			prefix = "kubernetes-release-gke/release"
+		}
+		return setReleaseFromGcs(prefix, e.option, extractSrc)
 	case rc, stable:
-		return setReleaseFromGcs(false, e.option, extractSrc)
+		return setReleaseFromGcs("kubernetes-release/release", e.option, extractSrc)
 	case version:
 		var url string
 		release := e.option
@@ -450,11 +450,11 @@ func loadState(save string, getSrc bool) error {
 		return fmt.Errorf("failed loading kubeconfig: %v", err)
 	}
 
-	url, err := output(exec.Command("gsutil", "cat", uURL))
+	url, err := gsutilCat(uURL)
 	if err != nil {
 		return err
 	}
-	release, err := output(exec.Command("gsutil", "cat", rURL))
+	release, err := gsutilCat(rURL)
 	if err != nil {
 		return err
 	}

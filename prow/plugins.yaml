@@ -67,6 +67,9 @@ plugins:
   kubernetes/kops:
   - trigger
 
+  kubernetes/kubectl:
+  - approve
+
   kubernetes/kubernetes:
   - trigger
   - release-note

@@ -177,7 +177,8 @@ func main() {
 
 	if err = jc.BuildFromSpec(&spec, o.jobName); err != nil {
 		log.Println("Submitting the following to Jenkins:")
-		for k, v := range pjutil.EnvForSpec(spec) {
+		env, _ := pjutil.EnvForSpec(pjutil.NewJobSpec(spec, "0"))
+		for k, v := range env {
 			log.Printf("  %s=%s\n", k, v)
 		}
 		log.Fatalf("for %s/%s#%d resulted in an error: %v", o.org, o.repo, o.num, err)

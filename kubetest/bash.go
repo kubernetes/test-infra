@@ -25,34 +25,44 @@ import (
 )
 
 type bashDeployer struct {
-	clusterIPRange *string
+	clusterIPRange string
 }
 
 var _ deployer = &bashDeployer{}
 
 func newBash(clusterIPRange *string) *bashDeployer {
-	b := &bashDeployer{clusterIPRange}
+	if *clusterIPRange == "" {
+		if numNodes, err := strconv.Atoi(os.Getenv("NUM_NODES")); err == nil {
+			*clusterIPRange = getClusterIPRange(numNodes)
+		}
+	}
+	b := &bashDeployer{*clusterIPRange}
 	return b
 }
 
 func (b *bashDeployer) Up() error {
-	if b.clusterIPRange == nil || *b.clusterIPRange == "" {
-		if numNodes, err := strconv.Atoi(os.Getenv("NUM_NODES")); err == nil {
-			*b.clusterIPRange = getClusterIPRange(numNodes)
-		}
+	// TODO(shashidharatd): Remove below logic of choosing the scripts to run from federation
+	// repo once the k8s deployment in federation jobs moves to kubernetes-anywhere
+	var script string
+	if useFederationRepo() {
+		script = "../federation/hack/e2e-internal/e2e-up.sh"
+	} else {
+		script = "./hack/e2e-internal/e2e-up.sh"
 	}
-	if *b.clusterIPRange != "" {
-		pop, err := pushEnv("CLUSTER_IP_RANGE", *b.clusterIPRange)
-		if err != nil {
-			return err
-		}
-		defer pop()
-	}
-	return finishRunning(exec.Command("./hack/e2e-internal/e2e-up.sh"))
+	cmd := exec.Command(script)
+	cmd.Env = os.Environ()
+	cmd.Env = append(cmd.Env, fmt.Sprintf("CLUSTER_IP_RANGE=%s", b.clusterIPRange))
+	return finishRunning(cmd)
 }
 
 func (b *bashDeployer) IsUp() error {
-	return finishRunning(exec.Command("./hack/e2e-internal/e2e-status.sh"))
+	var cmd string
+	if useFederationRepo() {
+		cmd = "../federation/hack/e2e-internal/e2e-status.sh"
+	} else {
+		cmd = "./hack/e2e-internal/e2e-status.sh"
+	}
+	return finishRunning(exec.Command(cmd))
 }
 
 func (b *bashDeployer) DumpClusterLogs(localPath, gcsPath string) error {
@@ -64,7 +74,13 @@ func (b *bashDeployer) TestSetup() error {
 }
 
 func (b *bashDeployer) Down() error {
-	return finishRunning(exec.Command("./hack/e2e-internal/e2e-down.sh"))
+	var cmd string
+	if useFederationRepo() {
+		cmd = "../federation/hack/e2e-internal/e2e-down.sh"
+	} else {
+		cmd = "./hack/e2e-internal/e2e-down.sh"
+	}
+	return finishRunning(exec.Command(cmd))
 }
 
 func (b *bashDeployer) GetClusterCreated(gcpProject string) (time.Time, error) {

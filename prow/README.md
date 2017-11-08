@@ -18,7 +18,7 @@ not make any attempt to preserve backwards compatibility.
 * `cmd/horologium` starts periodic jobs when necessary.
 * `cmd/mkpj` creates `ProwJobs`.
 
-See also: [Life of a Prow Job](./architecture.md) 
+See also: [Life of a Prow Job](./architecture.md)
 
 ## Announcements
 
@@ -29,14 +29,26 @@ Note: versions specified in these announcements may not include bug fixes made
 in more recent versions so it is recommended that the most recent versions are
 used when updating deployments.
 
+ - *November 7, 2017* `plank:0.56` fixes bug introduced in `plank:0.53` that
+   affects controllers using an empty kubernetes selector.
+ - *November 7, 2017* `jenkins-operator:0.51` provides jobs with the `$BUILD_ID`
+   variable as well as the `$buildId` variable. The latter is deprecated and will
+   be removed in a future version.
+ - *November 6, 2017* `plank:0.55` provides `Pods` with the `$BUILD_ID` variable
+   as well as the `$BUILD_NUMBER` variable. The latter is deprecated and will be
+   removed in a future version.
  - *November 3, 2017* Added `EmptyDir` volume type. To update to `hook:0.176+`
    or `horologium:0.11+` the following components must have the associated
    minimum versions: `deck:0.58+`, `plank:0.54+`, `jenkins-operator:0.50+`.
  - *November 2, 2017* `plank:0.53` changes the `type` label key to `prow.k8s.io/type`
    and the `job` annotation key to `prow.k8s.io/job` added in pods.
+ - *October 14, 2017* `deck:0:53+` needs to be updated in conjunction with
+   `jenkins-operator:0:48+` since Jenkins logs are now exposed from the
+   operator and `deck` needs to use the `external_agent_logs` option in order
+   to redirect requests to the location `jenkins-operator` exposes logs.
  - *October 13, 2017* `hook:0.174`, `plank:0.50`, and `jenkins-operator:0.47`
    drop the deprecated `github-bot-name` flag.
- - *October 2, 2017* `hook` version 0.171. The label plugin was split into three
+ - *October 2, 2017* `hook:0.171`: The label plugin was split into three
    plugins (label, sigmention, milestonestatus). Breaking changes:
    - The configuration key for the milestone maintainer team's ID has been
    changed. Previously the team ID was stored in the plugins config at key
@@ -44,9 +56,9 @@ used when updating deployments.
    handled in the `milestonestatus` plugin instead of the `label` plugin, the
    team ID is stored at key `milestonestatus`>>`maintainers_id`.
    - The sigmention and milestonestatus plugins must be enabled on any repos
-   that require them since their functionality is no longer included in the 
+   that require them since their functionality is no longer included in the
    label plugin.
- - *September 3, 2017* sinker:0.17 now deletes pods labeled by plank:0.42 in
+ - *September 3, 2017* `sinker:0.17` now deletes pods labeled by `plank:0.42` in
    order to avoid cleaning up unrelated pods that happen to be found in the
    same namespace prow runs pods. If you run other pods in the same namespace,
    you will have to manually delete or label the prow-owned pods, otherwise you
@@ -55,15 +67,15 @@ used when updating deployments.
    ```
    kubectl label pods --all -n pod_namespace created-by-prow=true
    ```
- - *September 1, 2017* `deck` version 0.44 and `jenkins-operator` version 0.41
-   controllers no longer provide a default value for the `--jenkins-token-file` flag.
+ - *September 1, 2017* `deck:0.44` and `jenkins-operator:0.41` controllers
+   no longer provide a default value for the `--jenkins-token-file` flag.
    Cluster administrators should provide `--jenkins-token-file=/etc/jenkins/jenkins`
    explicitly when upgrading to a new version of these components if they were
    previously relying on the default. For more context, please see
    [this pull request.](https://github.com/kubernetes/test-infra/pull/4210)
  - *August 29, 2017* Configuration specific to plugins is now held in in the
    `plugins` `ConfigMap` and serialized in this repo in the `plugins.yaml` file.
-   Cluster administrators upgrading to `hook` version 0.148 or newer should move
+   Cluster administrators upgrading to `hook:0.148` or newer should move
    plugin configuration from the main `ConfigMap`. For more context, please see
    [this pull request.](https://github.com/kubernetes/test-infra/pull/4213)
 
@@ -107,10 +119,10 @@ number.
 ## How to update the cluster
 
 Any modifications to Go code will require redeploying the affected binaries.
-Fortunately, this should result in no downtime for the system. Run `./bump.sh <program-name>` 
+Fortunately, this should result in no downtime for the system. Run `./bump.sh <program-name>`
 to bump the relevant version number in the makefile as well as in the `cluster` manifest,
-then run the image and deployment make targets on a branch which has the 
-changes. For instance, if you bumped the hook version, run 
+then run the image and deployment make targets on a branch which has the
+changes. For instance, if you bumped the hook version, run
 `make hook-image && make hook-deployment`.
 
 **Please ensure that your git tree is up to date before updating anything.**
@@ -131,10 +143,10 @@ plugin to mimic.
 
 ## How to enable a plugin on a repo
 
-Add an entry to [plugins.yaml](plugins.yaml). If you misspell the name then a 
-unit test will fail. If you have [update-config](plugins/updateconfig) plugin 
-deployed then the config will be automatically updated once the PR is merged, 
-else you will need to run `make update-plugins`. This does not require 
+Add an entry to [plugins.yaml](plugins.yaml). If you misspell the name then a
+unit test will fail. If you have [update-config](plugins/updateconfig) plugin
+deployed then the config will be automatically updated once the PR is merged,
+else you will need to run `make update-plugins`. This does not require
 redeploying the binaries, and will take effect within a minute.
 
 Note that Github events triggered by the account that is managing the plugins
@@ -144,10 +156,10 @@ second account is `tide` or the `submit-queue` munger.
 
 ## How to add new jobs
 
-To add a new job you'll need to add an entry into [config.yaml](config.yaml). 
-If you have [update-config](plugins/updateconfig) plugin deployed then the 
-config will be automatically updated once the PR is merged, else you will need 
-to run `make update-config`. This does not require redeploying any binaries, 
+To add a new job you'll need to add an entry into [config.yaml](config.yaml).
+If you have [update-config](plugins/updateconfig) plugin deployed then the
+config will be automatically updated once the PR is merged, else you will need
+to run `make update-config`. This does not require redeploying any binaries,
 and will take effect within a minute.
 
 Periodic config looks like so:
@@ -227,6 +239,9 @@ the build.
 Variable | Periodic | Postsubmit | Batch | Presubmit | Description | Example
 --- |:---:|:---:|:---:|:---:| --- | ---
 `JOB_NAME` | ✓ | ✓ | ✓ | ✓ | Name of the job. | `pull-test-infra-bazel`
+`JOB_TYPE` | ✓ | ✓ | ✓ | ✓ | Type of job. | `presubmit`
+`JOB_SPEC` | ✓ | ✓ | ✓ | ✓ | JSON-encoded job specification. | see below
+`BUILD_ID` | ✓ | ✓ | ✓ | ✓ | Unique build number for each run. | `12345`
 `BUILD_NUMBER` | ✓ | ✓ | ✓ | ✓ | Unique build number for each run. | `12345`
 `REPO_OWNER` | | ✓ | ✓ | ✓ | GitHub org that triggered the job. | `kubernetes`
 `REPO_NAME` | | ✓ | ✓ | ✓ | GitHub repo that triggered the job. | `test-infra`
@@ -239,10 +254,34 @@ Variable | Periodic | Postsubmit | Batch | Presubmit | Description | Example
 Note: to not overwrite the Jenkins `$BUILD_NUMBER` variable, the build identifier
 will be passed as `$buildId` to Jenkins jobs.
 
+Note: Use of `$BUILD_NUMBER` is deprecated. Please use `$BUILD_ID` instead.
+
+Note: Examples of the JSON-encoded job specification follow for the different
+job types:
+
+Periodic Job:
+```json
+{"type":"periodic","job":"job-name","buildid":"0","refs":{}}
+```
+
+Postsubmit Job:
+```json
+{"type":"postsubmit","job":"job-name","buildid":"0","refs":{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha"}}```
+
+Presubmit Job:
+```json
+{"type":"presubmit","job":"job-name","buildid":"0","refs":{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha","pulls":[{"number":1,"author":"author-name","sha":"pull-sha"}]}}
+```
+
+Batch Job:
+```json
+{"type":"batch","job":"job-name","buildid":"0","refs":{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha","pulls":[{"number":1,"author":"author-name","sha":"pull-sha"},{"number":2,"author":"other-author-name","sha":"second-pull-sha"}]}}
+```
+
 ## Bots home
 
 [@k8s-ci-robot](https://github.com/k8s-ci-robot) and its silent counterpart
 [@k8s-bot](https://github.com/k8s-bot) both live here as triggers to GitHub
 messages defined in [config.yaml](config.yaml). Here is a
 [command list](https://github.com/kubernetes/test-infra/blob/master/commands.md)
-for them. 
+for them.
