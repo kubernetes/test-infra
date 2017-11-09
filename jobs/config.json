@@ -3796,7 +3796,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-api-machinery"
     ]
   },
   "ci-kubernetes-e2e-gci-gce-reboot": {
