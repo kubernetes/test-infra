@@ -881,8 +881,8 @@ presubmits:
         - "--batch" # mitigation for https://github.com/bazelbuild/bazel/issues/3956
         - "--test=//... -//build/... -//vendor/..."
         - "--manual-test=//hack:verify-all"
-        - "--test-args=--build_tag_filters=-e2e,-integration"
-        - "--test-args=--test_tag_filters=-e2e,-integration"
+        - "--test-args=--build_tag_filters=-e2e"
+        - "--test-args=--test_tag_filters=-e2e"
         - "--test-args=--flaky_test_attempts=3"
         env:
         - name: TEST_TMPDIR
@@ -2144,8 +2144,8 @@ presubmits:
         - "--batch" # mitigation for https://github.com/bazelbuild/bazel/issues/3956
         - "--test=//... -//build/... -//vendor/..."
         - "--manual-test=//hack:verify-all"
-        - "--test-args=--build_tag_filters=-e2e,-integration"
-        - "--test-args=--test_tag_filters=-e2e,-integration"
+        - "--test-args=--build_tag_filters=-e2e"
+        - "--test-args=--test_tag_filters=-e2e"
         - "--test-args=--flaky_test_attempts=3"
         env:
         - name: TEST_TMPDIR
@@ -3220,8 +3220,8 @@ postsubmits:
           - "--" # end bootstrap args, scenario args below
           - "--test=//... -//build/... -//vendor/..."
           - "--manual-test=//hack:verify-all"
-          - "--test-args=--build_tag_filters=-e2e,-integration"
-          - "--test-args=--test_tag_filters=-e2e,-integration"
+          - "--test-args=--build_tag_filters=-e2e"
+          - "--test-args=--test_tag_filters=-e2e"
           - "--test-args=--flaky_test_attempts=3"
           env:
           - name: TEST_TMPDIR
