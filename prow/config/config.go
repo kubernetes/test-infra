@@ -84,13 +84,14 @@ type Tide struct {
 	Queries []string `json:"queries,omitempty"`
 }
 
-// Plank is config for the plank controller.
-type Plank struct {
+// Controller holds configuration applicable to all agent-specific
+// prow controllers.
+type Controller struct {
 	// JobURLTemplateString compiles into JobURLTemplate at load time.
 	JobURLTemplateString string `json:"job_url_template,omitempty"`
 	// JobURLTemplate is compiled at load time from JobURLTemplateString. It
 	// will be passed a kube.ProwJob and is used to set the URL for the
-	// "details" link on GitHub as well as the link from deck.
+	// "Details" link on GitHub as well as the link from deck.
 	JobURLTemplate *template.Template `json:"-"`
 
 	// ReportTemplateString compiles into ReportTemplate at load time.
@@ -101,7 +102,7 @@ type Plank struct {
 	ReportTemplate *template.Template `json:"-"`
 
 	// MaxConcurrency is the maximum number of tests running concurrently that
-	// will be allowed by plank. 0 implies no limit.
+	// will be allowed by the controller. 0 implies no limit.
 	MaxConcurrency int `json:"max_concurrency,omitempty"`
 
 	// AllowCancellations enables aborting presubmit jobs for commits that
@@ -109,29 +110,14 @@ type Plank struct {
 	AllowCancellations bool `json:"allow_cancellations"`
 }
 
+// Plank is config for the plank controller.
+type Plank struct {
+	Controller `json:",inline"`
+}
+
 // JenkinsOperator is config for the jenkins-operator controller.
 type JenkinsOperator struct {
-	// JobURLTemplateString compiles into JobURLTemplate at load time.
-	JobURLTemplateString string `json:"job_url_template,omitempty"`
-	// JobURLTemplate is compiled at load time from JobURLTemplateString. It
-	// will be passed a kube.ProwJob and is used to set the URL for the
-	// "details" link on GitHub as well as the link from deck.
-	JobURLTemplate *template.Template `json:"-"`
-
-	// ReportTemplateString compiles into ReportTemplate at load time.
-	ReportTemplateString string `json:"report_template,omitempty"`
-	// ReportTemplate is compiled at load time from ReportTemplateString. It
-	// will be passed a kube.ProwJob and can provide an optional blurb below
-	// the test failures comment.
-	ReportTemplate *template.Template `json:"-"`
-
-	// MaxConcurrency is the maximum number of tests running concurrently that
-	// will be allowed by jenkins-operator. 0 implies no limit.
-	MaxConcurrency int `json:"max_concurrency,omitempty"`
-
-	// AllowCancellations enables aborting presubmit jobs for commits that
-	// have been superseded by newer commits in Github pull requests.
-	AllowCancellations bool `json:"allow_cancellations"`
+	Controller `json:",inline"`
 }
 
 // Sinker is config for the sinker controller.
@@ -262,34 +248,12 @@ func parseConfig(c *Config) error {
 		c.Periodics[j].interval = d
 	}
 
-	urlTmpl, err := template.New("JobURL").Parse(c.Plank.JobURLTemplateString)
-	if err != nil {
-		return fmt.Errorf("parsing template: %v", err)
-	}
-	c.Plank.JobURLTemplate = urlTmpl
-
-	reportTmpl, err := template.New("Report").Parse(c.Plank.ReportTemplateString)
-	if err != nil {
-		return fmt.Errorf("parsing template: %v", err)
-	}
-	c.Plank.ReportTemplate = reportTmpl
-	if c.Plank.MaxConcurrency < 0 {
-		return fmt.Errorf("plank has invalid max_concurrency (%d), it needs to be a non-negative number", c.Plank.MaxConcurrency)
+	if err := ValidateController(&c.Plank.Controller); err != nil {
+		return fmt.Errorf("validating plank config: %v", err)
 	}
 
-	jenkinsURLTmpl, err := template.New("JobURL").Parse(c.JenkinsOperator.JobURLTemplateString)
-	if err != nil {
-		return fmt.Errorf("parsing template: %v", err)
-	}
-	c.JenkinsOperator.JobURLTemplate = jenkinsURLTmpl
-
-	jenkinsReportTmpl, err := template.New("Report").Parse(c.JenkinsOperator.ReportTemplateString)
-	if err != nil {
-		return fmt.Errorf("parsing template: %v", err)
-	}
-	c.JenkinsOperator.ReportTemplate = jenkinsReportTmpl
-	if c.JenkinsOperator.MaxConcurrency < 0 {
-		return fmt.Errorf("jenkins-operator has invalid max_concurrency (%d), it needs to be a non-negative number", c.JenkinsOperator.MaxConcurrency)
+	if err := ValidateController(&c.JenkinsOperator.Controller); err != nil {
+		return fmt.Errorf("validating jenkins-operator config: %v", err)
 	}
 
 	for i, agentToTmpl := range c.Deck.ExternalAgentLogs {
@@ -353,6 +317,25 @@ func parseConfig(c *Config) error {
 	}
 	logrus.SetLevel(lvl)
 
+	return nil
+}
+
+// ValidateController validates the provided controller config.
+func ValidateController(c *Controller) error {
+	urlTmpl, err := template.New("JobURL").Parse(c.JobURLTemplateString)
+	if err != nil {
+		return fmt.Errorf("parsing template: %v", err)
+	}
+	c.JobURLTemplate = urlTmpl
+
+	reportTmpl, err := template.New("Report").Parse(c.ReportTemplateString)
+	if err != nil {
+		return fmt.Errorf("parsing template: %v", err)
+	}
+	c.ReportTemplate = reportTmpl
+	if c.MaxConcurrency < 0 {
+		return fmt.Errorf("controller has invalid max_concurrency (%d), it needs to be a non-negative number", c.MaxConcurrency)
+	}
 	return nil
 }
 
