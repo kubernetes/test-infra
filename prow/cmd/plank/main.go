@@ -50,19 +50,20 @@ var (
 func main() {
 	flag.Parse()
 	logrus.SetFormatter(&logrus.JSONFormatter{})
+	logger := logrus.WithField("component", "plank")
 
 	if _, err := labels.Parse(*selector); err != nil {
-		logrus.WithError(err).Fatal("Error parsing label selector.")
+		logger.WithError(err).Fatal("Error parsing label selector.")
 	}
 
 	configAgent := &config.Agent{}
 	if err := configAgent.Start(*configPath); err != nil {
-		logrus.WithError(err).Fatal("Error starting config agent.")
+		logger.WithError(err).Fatal("Error starting config agent.")
 	}
 
 	kc, err := kube.NewClientInCluster(configAgent.Config().ProwJobNamespace)
 	if err != nil {
-		logrus.WithError(err).Fatal("Error getting kube client.")
+		logger.WithError(err).Fatal("Error getting kube client.")
 	}
 	var pkc *kube.Client
 	if *buildCluster == "" {
@@ -70,18 +71,18 @@ func main() {
 	} else {
 		pkc, err = kube.NewClientFromFile(*buildCluster, configAgent.Config().PodNamespace)
 		if err != nil {
-			logrus.WithError(err).Fatal("Error getting kube client to build cluster.")
+			logger.WithError(err).Fatal("Error getting kube client to build cluster.")
 		}
 	}
 
 	oauthSecretRaw, err := ioutil.ReadFile(*githubTokenFile)
 	if err != nil {
-		logrus.WithError(err).Fatalf("Could not read oauth secret file.")
+		logger.WithError(err).Fatalf("Could not read oauth secret file.")
 	}
 
 	_, err = url.Parse(*githubEndpoint)
 	if err != nil {
-		logrus.WithError(err).Fatalf("Must specify a valid --github-endpoint URL.")
+		logger.WithError(err).Fatalf("Must specify a valid --github-endpoint URL.")
 	}
 
 	oauthSecret := string(bytes.TrimSpace(oauthSecretRaw))
@@ -95,7 +96,7 @@ func main() {
 
 	c, err := plank.NewController(kc, pkc, ghc, configAgent, *totURL, *selector)
 	if err != nil {
-		logrus.WithError(err).Fatal("Error creating plank controller.")
+		logger.WithError(err).Fatal("Error creating plank controller.")
 	}
 
 	tick := time.Tick(30 * time.Second)
@@ -107,11 +108,11 @@ func main() {
 		case <-tick:
 			start := time.Now()
 			if err := c.Sync(); err != nil {
-				logrus.WithError(err).Error("Error syncing.")
+				logger.WithError(err).Error("Error syncing.")
 			}
-			logrus.Infof("Sync time: %v", time.Since(start))
+			logger.Infof("Sync time: %v", time.Since(start))
 		case <-sig:
-			logrus.Infof("Plank is shutting down...")
+			logger.Infof("Plank is shutting down...")
 			return
 		}
 	}
