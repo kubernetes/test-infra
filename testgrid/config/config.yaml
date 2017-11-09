@@ -3258,7 +3258,7 @@ dashboards:
     base_options: 'include-filter-by-regex=sig-instrumentation'
     description: 'sig-instrumentation gke stackdriver monitoring e2e tests for master branch'
 
-- name: sig-network
+- name: sig-network-gce
   dashboard_tab:
   - name: cosbeta-no-snat
     test_group_name: ci-kubernetes-e2e-gce-cosbeta-k8sdev-nosnat
@@ -3290,6 +3290,51 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-alpha-api
     alert_options:
       alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
+  - name: gci-gce
+    test_group_name: ci-kubernetes-e2e-gci-gce
+    base_options: 'include-filter-by-regex=\[sig-network\]'
+    description: 'network gci-gce e2e tests for master branch'
+    alert_options:
+      alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
+  - name: gci-gce-slow
+    test_group_name: ci-kubernetes-e2e-gci-gce-slow
+    base_options: 'include-filter-by-regex=\[sig-network\]'
+    description: 'network gci-gce slow e2e tests for master branch'
+    alert_options:
+      alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
+  - name: gci-gce-serial
+    test_group_name: ci-kubernetes-e2e-gci-gce-serial
+    base_options: 'include-filter-by-regex=\[sig-network\]'
+    description: 'network gci-gce serial e2e tests for master branch'
+    alert_options:
+      alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
+  - name: gci-gce-alpha-features
+    test_group_name: ci-kubernetes-e2e-gci-gce-alpha-features
+    base_options: 'include-filter-by-regex=\[sig-network\]'
+    description: 'network gci-gce alpha features e2e tests for master branch'
+    alert_options:
+      alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
+  - name: gci-gce-latest-upgrade-kube-proxy-ds
+    test_group_name: ci-kubernetes-e2e-gci-gce-latest-upgrade-kube-proxy-ds
+    description: 'upgrade cluster and migrate kube-proxy from static pods to a daemonset'
+    alert_options:
+      alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
+  - name: gci-gce-latest-downgrade-kube-proxy-ds
+    test_group_name: ci-kubernetes-e2e-gci-gce-latest-downgrade-kube-proxy-ds
+    description: 'downgrade cluster and migrate kube-proxy from a daemonset to static pods'
+    alert_options:
+      alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
+  - name: kubeadm-gce-cni-calico
+    test_group_name: ci-kubernetes-e2e-kubeadm-gce-cni-calico
+    alert_options:
+      alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
+  - name: kubeadm-gce-cni-flannel
+    test_group_name: ci-kubernetes-e2e-kubeadm-gce-cni-flannel
+    alert_options:
+      alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
+
+- name: sig-network-gke
+  dashboard_tab:
   - name: gci-gke-ingress
     test_group_name: ci-kubernetes-e2e-gci-gke-ingress
     alert_options:
@@ -3314,22 +3359,10 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-ingress
     alert_options:
       alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
-  - name: gci-gce
-    test_group_name: ci-kubernetes-e2e-gci-gce
-    base_options: 'include-filter-by-regex=\[sig-network\]'
-    description: 'network gci-gce e2e tests for master branch'
-    alert_options:
-      alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
   - name: gci-gke
     test_group_name: ci-kubernetes-e2e-gci-gke
     base_options: 'include-filter-by-regex=\[sig-network\]'
     description: 'network gci-gke e2e tests for master branch'
-    alert_options:
-      alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
-  - name: gci-gce-slow
-    test_group_name: ci-kubernetes-e2e-gci-gce-slow
-    base_options: 'include-filter-by-regex=\[sig-network\]'
-    description: 'network gci-gce slow e2e tests for master branch'
     alert_options:
       alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
   - name: gci-gke-slow
@@ -3338,46 +3371,16 @@ dashboards:
     description: 'network gci-gke slow e2e tests for master branch'
     alert_options:
       alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
-  - name: gci-gce-serial
-    test_group_name: ci-kubernetes-e2e-gci-gce-serial
-    base_options: 'include-filter-by-regex=\[sig-network\]'
-    description: 'network gci-gce serial e2e tests for master branch'
-    alert_options:
-      alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
   - name: gci-gke-serial
     test_group_name: ci-kubernetes-e2e-gci-gke-serial
     base_options: 'include-filter-by-regex=\[sig-network\]'
     description: 'network gci-gke serial e2e tests for master branch'
     alert_options:
       alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
-  - name: gci-gce-alpha-features
-    test_group_name: ci-kubernetes-e2e-gci-gce-alpha-features
-    base_options: 'include-filter-by-regex=\[sig-network\]'
-    description: 'network gci-gce alpha features e2e tests for master branch'
-    alert_options:
-      alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
   - name: gci-gke-alpha-features
     test_group_name: ci-kubernetes-e2e-gci-gke-alpha-features
     base_options: 'include-filter-by-regex=\[sig-network\]'
     description: 'network gci-gke alpha features e2e tests for master branch'
-    alert_options:
-      alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
-  - name: gci-gce-latest-upgrade-kube-proxy-ds
-    test_group_name: ci-kubernetes-e2e-gci-gce-latest-upgrade-kube-proxy-ds
-    description: 'upgrade cluster and migrate kube-proxy from static pods to a daemonset'
-    alert_options:
-      alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
-  - name: gci-gce-latest-downgrade-kube-proxy-ds
-    test_group_name: ci-kubernetes-e2e-gci-gce-latest-downgrade-kube-proxy-ds
-    description: 'downgrade cluster and migrate kube-proxy from a daemonset to static pods'
-    alert_options:
-      alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
-  - name: kubeadm-gce-cni-calico
-    test_group_name: ci-kubernetes-e2e-kubeadm-gce-cni-calico
-    alert_options:
-      alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
-  - name: kubeadm-gce-cni-flannel
-    test_group_name: ci-kubernetes-e2e-kubeadm-gce-cni-flannel
     alert_options:
       alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
 
@@ -3972,6 +3975,11 @@ dashboard_groups:
   dashboard_names:
   - sig-multicluster-federation-gce-old
   - sig-multicluster-federation-gce
+
+- name: sig-network
+  dashboard_names:
+  - sig-network-gce
+  - sig-network-gke
 
 - name: sig-node
   dashboard_names:
