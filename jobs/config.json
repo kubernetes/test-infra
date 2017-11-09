@@ -2926,7 +2926,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-instrumentation"
     ]
   },
   "ci-kubernetes-e2e-gce-taint-evict": {
@@ -6255,7 +6255,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-instrumentation"
     ]
   },
   "ci-kubernetes-e2e-gke-staging-default-latest-upgrade-cluster": {
