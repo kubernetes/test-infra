@@ -9414,6 +9414,15 @@
       "sig-scalability"
     ]
   },
+  "pull-kubernetes-multicluster-ingress-test": {
+    "args": [
+      "make test"
+    ],
+    "scenario": "execute",
+    "sigOwners": [
+      "sig-multicluster"
+    ]
+  },
   "pull-kubernetes-node-e2e": {
     "args": [
       "--deployment=node",

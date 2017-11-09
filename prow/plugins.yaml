@@ -9,6 +9,7 @@ triggers:
   - kubernetes-security
   - google/cadvisor
   - tensorflow/k8s
+  - GoogleCloudPlatform/k8s-multicluster-ingress
   trusted_org: kubernetes
 
 approve:
@@ -152,4 +153,7 @@ plugins:
   - close
   - reopen
   - lgtm
+  - trigger
+
+  GoogleCloudPlatform/k8s-multicluster-ingress:
   - trigger
