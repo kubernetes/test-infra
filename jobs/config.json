@@ -3620,6 +3620,7 @@
     ]
   },
   "ci-kubernetes-e2e-gci-gce-garbage": {
+    "_comment": "TODO: remove this job, kubernetes/kubernetes#49262 removed the Feature:GarbageCollector tag",
     "args": [
       "--check-leaked-resources",
       "--cluster=gc-feature",
@@ -3633,7 +3634,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-api-machinery"
     ]
   },
   "ci-kubernetes-e2e-gci-gce-ingress": {
