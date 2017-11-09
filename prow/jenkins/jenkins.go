@@ -96,7 +96,11 @@ func (jb *JenkinsBuild) IsSuccess() bool {
 }
 
 func (jb *JenkinsBuild) IsFailure() bool {
-	return jb.Result != nil && (*jb.Result == Failure || *jb.Result == Aborted)
+	return jb.Result != nil && *jb.Result == Failure
+}
+
+func (jb *JenkinsBuild) IsAborted() bool {
+	return jb.Result != nil && *jb.Result == Aborted
 }
 
 func (jb *JenkinsBuild) IsEnqueued() bool {
