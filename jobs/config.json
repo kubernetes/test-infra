@@ -3526,6 +3526,7 @@
       "--gcp-project=k8s-jkns-gci-autoscaling",
       "--gcp-zone=us-central1-f",
       "--provider=gce",
+      "--runtime-config=scheduling.k8s.io/v1alpha1=true",
       "--test_args=--ginkgo.focus=\\[Feature:ClusterSizeAutoscalingScaleUp\\]|\\[Feature:ClusterSizeAutoscalingScaleDown\\]|\\[Feature:InitialResources\\]|\\[Feature:CustomMetricsAutoscaling\\] --ginkgo.skip=\\[Flaky\\] --minStartupPods=8",
       "--timeout=300m"
     ],
@@ -3544,6 +3545,7 @@
       "--gcp-project=k8s-jkns-gci-autoscaling-migs",
       "--gcp-zone=us-central1-f",
       "--provider=gce",
+      "--runtime-config=scheduling.k8s.io/v1alpha1=true",
       "--test_args=--ginkgo.focus=\\[Feature:ClusterSizeAutoscalingScaleUp\\]|\\[Feature:ClusterSizeAutoscalingScaleDown\\]|\\[Feature:CustomMetricsAutoscaling\\] --ginkgo.skip=\\[Flaky\\] --minStartupPods=8",
       "--timeout=300m"
     ],
