@@ -32,7 +32,7 @@ class ParseJunitTest(unittest.TestCase):
     @staticmethod
     def parse(xml):
         parser = view_build.JUnitParser()
-        parser.parse_xml(xml, 'fp')
+        parser.parse_xml(xml, 'junit_filename.xml')
         return parser.get_results()
 
     def test_normal(self):
@@ -41,7 +41,7 @@ class ParseJunitTest(unittest.TestCase):
         self.assertEqual(results, {
             'passed': ['Second'],
             'skipped': ['First'],
-            'failed': [('Third', 96.49, stack, "fp", "")],
+            'failed': [('Third', 96.49, stack, "junit_filename.xml", "")],
         })
 
     def test_testsuites(self):
@@ -60,7 +60,7 @@ class ParseJunitTest(unittest.TestCase):
                 </testsuite>
             </testsuites>''')
         self.assertEqual(results['failed'], [(
-            'k8s.io/suite TestBad', 0.1, 'something bad', "fp",
+            'k8s.io/suite TestBad', 0.1, 'something bad', "junit_filename.xml",
             "out: first line\nout: second line\nerr: first line",
             )])
 
@@ -82,7 +82,7 @@ class ParseJunitTest(unittest.TestCase):
                 </testsuite>
             </testsuites>''')
         self.assertEqual(results['failed'], [(
-            'k8s.io/suite/sub TestBad', 0.1, 'something bad', "fp",
+            'k8s.io/suite/sub TestBad', 0.1, 'something bad', "junit_filename.xml",
             "out: first line\nout: second line\nerr: first line",
             )])
 
@@ -99,12 +99,14 @@ class ParseJunitTest(unittest.TestCase):
                     </testcase>
                 </testsuite>
             </testsuites>''')['failed']
-        self.assertEqual(failures, [('a Corrupt', 0.0, 'something bad ?', 'fp', '')])
+        self.assertEqual(failures, [('a Corrupt', 0.0, 'something bad ?',
+                                     'junit_filename.xml', '')])
 
     def test_not_xml(self):
         failures = self.parse('\x01')['failed']
         self.assertEqual(failures,
-            [(failures[0][0], 0.0, 'not well-formed (invalid token): line 1, column 0', 'fp', '')])
+            [(failures[0][0], 0.0, 'not well-formed (invalid token): line 1, column 0',
+              'junit_filename.xml', '')])
 
 class BuildTest(main_test.TestBase):
     # pylint: disable=too-many-public-methods

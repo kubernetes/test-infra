@@ -120,6 +120,13 @@ def gcs_ls(path):
         path += '/'
     return list(gcs.listbucket(path, delimiter='/'))
 
+@memcache_memoize('gs-ls-recursive://', expires=60)
+def gcs_ls_recursive(path):
+    """Enumerate files in a GCS directory recursively. Returns a list of FileStats."""
+    if path[-1] != '/':
+        path += '/'
+
+    return list(gcs.listbucket(path))
 
 def pad_numbers(s):
     """Modify a string to make its numbers suitable for natural sorting."""
