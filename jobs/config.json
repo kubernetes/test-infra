@@ -4161,7 +4161,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-apps"
     ]
   },
   "ci-kubernetes-e2e-gci-gke": {
