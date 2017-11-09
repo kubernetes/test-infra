@@ -12,8 +12,8 @@ go_test(
         "plugins_test.go",
         "respond_test.go",
     ],
+    embed = [":go_default_library"],
     importpath = "k8s.io/test-infra/prow/plugins",
-    library = ":go_default_library",
     deps = ["//prow/github:go_default_library"],
 )
 

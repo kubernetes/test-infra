@@ -9,16 +9,16 @@ load(
 
 go_binary(
     name = "boskos",
+    embed = [":go_default_library"],
     importpath = "k8s.io/test-infra/boskos",
-    library = ":go_default_library",
 )
 
 go_test(
     name = "go_default_test",
     srcs = ["boskos_test.go"],
     data = ["resources.json"],
+    embed = [":go_default_library"],
     importpath = "k8s.io/test-infra/boskos",
-    library = ":go_default_library",
     deps = [
         "//boskos/common:go_default_library",
         "//boskos/ranch:go_default_library",

@@ -9,15 +9,15 @@ load(
 
 go_binary(
     name = "tot",
+    embed = [":go_default_library"],
     importpath = "k8s.io/test-infra/prow/cmd/tot",
-    library = ":go_default_library",
 )
 
 go_test(
     name = "go_default_test",
     srcs = ["main_test.go"],
+    embed = [":go_default_library"],
     importpath = "k8s.io/test-infra/prow/cmd/tot",
-    library = ":go_default_library",
 )
 
 go_library(

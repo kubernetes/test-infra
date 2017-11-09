@@ -14,8 +14,8 @@ go_library(
 go_test(
     name = "go_default_test",
     srcs = ["docs-no-retest_test.go"],
+    embed = [":go_default_library"],
     importpath = "k8s.io/test-infra/prow/plugins/docs-no-retest",
-    library = ":go_default_library",
     deps = [
         "//prow/github:go_default_library",
         "//vendor/k8s.io/kubernetes/pkg/util/sets:go_default_library",

@@ -12,8 +12,8 @@ go_test(
         "client_test.go",
         "prowjob_test.go",
     ],
+    embed = [":go_default_library"],
     importpath = "k8s.io/test-infra/prow/kube",
-    library = ":go_default_library",
 )
 
 go_library(

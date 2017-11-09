@@ -25,9 +25,9 @@ go_test(
     data = [
         "//mungegithub:configs",
     ],
+    embed = [":go_default_library"],
     features = ["-race"],
     importpath = "k8s.io/test-infra/mungegithub/mungers",
-    library = ":go_default_library",
     deps = [
         "//mungegithub/features:go_default_library",
         "//mungegithub/github:go_default_library",

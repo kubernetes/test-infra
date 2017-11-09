@@ -22,8 +22,8 @@ go_test(
         "flakyjob-reporter_test.go",
         "triage-filer_test.go",
     ],
+    embed = [":go_default_library"],
     importpath = "k8s.io/test-infra/robots/issue-creator/sources",
-    library = ":go_default_library",
     deps = [
         "//robots/issue-creator/creator:go_default_library",
         "//robots/issue-creator/testowner:go_default_library",

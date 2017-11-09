@@ -9,8 +9,8 @@ load(
 go_test(
     name = "go_default_test",
     srcs = ["client_test.go"],
+    embed = [":go_default_library"],
     importpath = "k8s.io/test-infra/boskos/client",
-    library = ":go_default_library",
     deps = ["//boskos/common:go_default_library"],
 )
 

@@ -12,8 +12,8 @@ go_test(
         "model_test.go",
         "mysql_test.go",
     ],
+    embed = [":go_default_library"],
     importpath = "k8s.io/test-infra/velodrome/sql",
-    library = ":go_default_library",
 )
 
 go_library(

@@ -8,8 +8,8 @@ load(
 
 go_binary(
     name = "token-counter",
+    embed = [":go_default_library"],
     importpath = "k8s.io/test-infra/velodrome/token-counter",
-    library = ":go_default_library",
 )
 
 go_library(

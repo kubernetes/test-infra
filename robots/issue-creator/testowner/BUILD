@@ -11,8 +11,8 @@ go_library(
 go_test(
     name = "go_default_test",
     srcs = ["owner_test.go"],
+    embed = [":go_default_library"],
     importpath = "k8s.io/test-infra/robots/issue-creator/testowner",
-    library = ":go_default_library",
 )
 
 filegroup(

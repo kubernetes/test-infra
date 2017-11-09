@@ -12,8 +12,8 @@ go_test(
         "core_test.go",
         "wrappers_test.go",
     ],
+    embed = [":go_default_library"],
     importpath = "k8s.io/test-infra/ghclient",
-    library = ":go_default_library",
     tags = ["automanaged"],
     deps = ["//vendor/github.com/google/go-github/github:go_default_library"],
 )

@@ -12,8 +12,8 @@ go_test(
         "hook_test.go",
         "server_test.go",
     ],
+    embed = [":go_default_library"],
     importpath = "k8s.io/test-infra/prow/hook",
-    library = ":go_default_library",
     deps = [
         "//prow/config:go_default_library",
         "//prow/github:go_default_library",

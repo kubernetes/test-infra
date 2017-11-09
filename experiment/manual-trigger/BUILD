@@ -15,8 +15,8 @@ go_library(
 
 go_binary(
     name = "manual-trigger",
+    embed = [":go_default_library"],
     importpath = "k8s.io/test-infra/experiment/manual-trigger",
-    library = ":go_default_library",
     visibility = ["//visibility:public"],
 )
 
