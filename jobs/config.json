@@ -3566,7 +3566,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-instrumentation"
     ]
   },
   "ci-kubernetes-e2e-gci-gce-etcd3": {
