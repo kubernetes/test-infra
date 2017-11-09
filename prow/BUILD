@@ -30,6 +30,7 @@ filegroup(
         "//prow/cmd/tot:all-srcs",
         "//prow/commentpruner:all-srcs",
         "//prow/config:all-srcs",
+        "//prow/cron:all-srcs",
         "//prow/genfiles:all-srcs",
         "//prow/git:all-srcs",
         "//prow/github:all-srcs",

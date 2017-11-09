@@ -19,6 +19,7 @@ go_library(
     importpath = "k8s.io/test-infra/prow/cmd/horologium",
     deps = [
         "//prow/config:go_default_library",
+        "//prow/cron:go_default_library",
         "//prow/kube:go_default_library",
         "//prow/pjutil:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
