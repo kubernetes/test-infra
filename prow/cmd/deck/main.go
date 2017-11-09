@@ -36,12 +36,14 @@ import (
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pjutil"
+	"k8s.io/test-infra/prow/pluginhelp"
 )
 
 var (
 	configPath   = flag.String("config-path", "/etc/config/config", "Path to config.yaml.")
 	buildCluster = flag.String("build-cluster", "", "Path to file containing a YAML-marshalled kube.Cluster object. If empty, uses the local cluster.")
 	tideURL      = flag.String("tide-url", "", "Path to tide. If empty, do not serve tide data.")
+	hookURL      = flag.String("hook-url", "", "Path to hook plugin help endpoint.")
 )
 
 // Matches letters, numbers, hyphens, and underscores.
@@ -82,6 +84,10 @@ func main() {
 	http.Handle("/data.js", gziphandler.GzipHandler(handleData(ja)))
 	http.Handle("/log", gziphandler.GzipHandler(handleLog(ja)))
 	http.Handle("/rerun", gziphandler.GzipHandler(handleRerun(kc)))
+
+	if *hookURL != "" {
+		http.Handle("/plugin-help.js", gziphandler.GzipHandler(handlePluginHelp(newHelpAgent(*hookURL))))
+	}
 
 	if *tideURL != "" {
 		ta := &tideAgent{
@@ -140,6 +146,29 @@ func handleTide(ta *tideAgent) http.HandlerFunc {
 			fmt.Fprint(w, string(pd))
 		}
 
+	}
+}
+
+func handlePluginHelp(ha *helpAgent) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Cache-Control", "no-cache")
+		help, err := ha.getHelp()
+		if err != nil {
+			logrus.WithError(err).Error("Getting plugin help from hook.")
+			help = &pluginhelp.Help{}
+		}
+		b, err := json.Marshal(*help)
+		if err != nil {
+			logrus.WithError(err).Error("Marshaling plugin help.")
+			b = []byte("[]")
+		}
+		// If we have a "var" query, then write out "var value = [...];".
+		// Otherwise, just write out the JSON.
+		if v := r.URL.Query().Get("var"); v != "" {
+			fmt.Fprintf(w, "var %s = %s;", v, string(b))
+		} else {
+			fmt.Fprint(w, string(b))
+		}
 	}
 }
 

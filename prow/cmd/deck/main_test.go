@@ -27,6 +27,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"reflect"
 	"strconv"
 	"testing"
 	"time"
@@ -34,6 +35,7 @@ import (
 	"github.com/ghodss/yaml"
 
 	"k8s.io/test-infra/prow/kube"
+	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/tide"
 )
 
@@ -237,4 +239,56 @@ func TestTide(t *testing.T) {
 	if res[0].Org != "o" {
 		t.Errorf("Wrong org in pool. Got %s, expected o in %v", res[0].Org, res)
 	}
+}
+
+func TestHelp(t *testing.T) {
+	hitCount := 0
+	help := pluginhelp.Help{
+		AllRepos:            []string{"org/repo"},
+		RepoPlugins:         map[string][]string{"org": {"plugin"}},
+		RepoExternalPlugins: map[string][]string{"org/repo": {"external-plugin"}},
+		PluginHelp:          map[string]pluginhelp.PluginHelp{"plugin": {Description: "plugin"}},
+		ExternalPluginHelp:  map[string]pluginhelp.PluginHelp{"external-plugin": {Description: "external-plugin"}},
+	}
+	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		hitCount++
+		b, err := json.Marshal(help)
+		if err != nil {
+			t.Fatalf("Marshaling: %v", err)
+		}
+		fmt.Fprintf(w, string(b))
+	}))
+	ha := &helpAgent{
+		path: s.URL,
+	}
+	handler := handlePluginHelp(ha)
+	handleAndCheck := func() {
+		req, err := http.NewRequest(http.MethodGet, "/plugin-help.js", nil)
+		if err != nil {
+			t.Fatalf("Error making request: %v", err)
+		}
+		rr := httptest.NewRecorder()
+		handler.ServeHTTP(rr, req)
+		if rr.Code != http.StatusOK {
+			t.Fatalf("Bad error code: %d", rr.Code)
+		}
+		resp := rr.Result()
+		defer resp.Body.Close()
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			t.Fatalf("Error reading response body: %v", err)
+		}
+		var res pluginhelp.Help
+		if err := yaml.Unmarshal(body, &res); err != nil {
+			t.Fatalf("Error unmarshaling: %v", err)
+		}
+		if !reflect.DeepEqual(help, res) {
+			t.Errorf("Invalid plugin help. Got %q, expected %q", res, help)
+		}
+		if hitCount != 1 {
+			t.Errorf("Expected fake hook endpoint to be hit once, but endpoint was hit %d times.", hitCount)
+		}
+	}
+	handleAndCheck()
+	handleAndCheck()
 }
