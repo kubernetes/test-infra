@@ -25,11 +25,8 @@ import (
 	"os/signal"
 	"strconv"
 	"syscall"
-	"time"
 
-	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/prometheus/client_golang/prometheus/push"
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/config"
@@ -37,6 +34,7 @@ import (
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/hook"
 	"k8s.io/test-infra/prow/kube"
+	m "k8s.io/test-infra/prow/metrics"
 	"k8s.io/test-infra/prow/plugins"
 	"k8s.io/test-infra/prow/repoowners"
 	"k8s.io/test-infra/prow/slack"
@@ -152,20 +150,11 @@ func main() {
 		logrus.WithError(err).Fatal("Error starting plugins.")
 	}
 
-	metrics, err := hook.NewMetrics()
-	if err != nil {
-		logrus.WithError(err).Fatal("Failed to initialize metrics.")
-	}
+	metrics := hook.NewMetrics()
 
-	if configAgent.Config().PushGateway.Endpoint != "" {
-		go func() {
-			for {
-				time.Sleep(time.Minute)
-				if err := push.FromGatherer("hook", push.HostnameGroupingKey(), configAgent.Config().PushGateway.Endpoint, prometheus.DefaultGatherer); err != nil {
-					logrus.WithError(err).Error("Failed to push metrics.")
-				}
-			}
-		}()
+	// Push metrics to the configured prometheus pushgateway endpoint.
+	if endpoint := configAgent.Config().PushGateway.Endpoint; endpoint != "" {
+		go m.PushMetrics("hook", endpoint)
 	}
 
 	server := &hook.Server{
