@@ -24,7 +24,7 @@ See also: [Life of a Prow Job](./architecture.md)
 
 New features added to each components:
 
- - *November 8, 2017* `horologium:0.53` prow periodic job now support cron
+ - *November 8, 2017* `horologium:0.14` prow periodic job now support cron
    triggers.
 
 Breaking changes to external APIs (labels, GitHub interactions, configuration
