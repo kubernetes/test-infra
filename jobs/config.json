@@ -271,7 +271,7 @@
     ],
     "scenario": "execute",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-release"
     ]
   },
   "ci-kubernetes-charts-gce": {
@@ -299,7 +299,7 @@
     ],
     "scenario": "kubernetes_build",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-release"
     ]
   },
   "ci-kubernetes-e2e-cos-docker-validation": {
@@ -9184,7 +9184,7 @@
     ],
     "scenario": "execute",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-release"
     ]
   },
   "pull-kubernetes-dns-test": {
