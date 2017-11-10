@@ -163,7 +163,7 @@ presubmits:
       containers:
       - image: gcr.io/k8s-testimages/gcloud-in-go:0.4
         args:
-        - "--repo=github.com/$(REPO_NAME)=$(PULL_REFS)"
+        - "--repo=github.com/GoogleCloudPlatform/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--clean"
@@ -174,18 +174,10 @@ presubmits:
         - name: service
           mountPath: /etc/service-account
           readOnly: true
-        - name: cache-ssd
-          mountPath: /root/.cache
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
       volumes:
       - name: service
         secret:
           secretName: service-account
-      - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0
   kubernetes/federation:
   - name: pull-federation-bazel-test
     agent: kubernetes
