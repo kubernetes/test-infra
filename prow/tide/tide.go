@@ -91,9 +91,9 @@ type Pool struct {
 }
 
 // NewController makes a Controller out of the given clients.
-func NewController(ghc *github.Client, kc *kube.Client, ca *config.Agent, gc *git.Client, dryRun bool) *Controller {
+func NewController(ghc *github.Client, kc *kube.Client, ca *config.Agent, gc *git.Client, dryRun bool, logger *logrus.Entry) *Controller {
 	return &Controller{
-		logger: logrus.WithField("controller", "tide"),
+		logger: logger,
 		dryRun: dryRun,
 		ghc:    ghc,
 		kc:     kc,

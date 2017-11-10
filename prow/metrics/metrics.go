@@ -38,10 +38,10 @@ func PushMetrics(component, endpoint string) {
 		select {
 		case <-time.Tick(time.Minute):
 			if err := push.FromGatherer(component, push.HostnameGroupingKey(), endpoint, prometheus.DefaultGatherer); err != nil {
-				logrus.WithError(err).Error("Failed to push metrics.")
+				logrus.WithField("component", component).WithError(err).Error("Failed to push metrics.")
 			}
 		case <-sig:
-			logrus.Infof("Metrics pusher shutting down...")
+			logrus.WithField("component", component).Infof("Metrics pusher shutting down...")
 			return
 		}
 	}

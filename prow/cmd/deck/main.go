@@ -50,15 +50,16 @@ var objReg = regexp.MustCompile(`^[\w-]+$`)
 func main() {
 	flag.Parse()
 	logrus.SetFormatter(&logrus.JSONFormatter{})
+	logger := logrus.WithField("component", "deck")
 
 	configAgent := &config.Agent{}
 	if err := configAgent.Start(*configPath); err != nil {
-		logrus.WithError(err).Fatal("Error starting config agent.")
+		logger.WithError(err).Fatal("Error starting config agent.")
 	}
 
 	kc, err := kube.NewClientInCluster(configAgent.Config().ProwJobNamespace)
 	if err != nil {
-		logrus.WithError(err).Fatal("Error getting client.")
+		logger.WithError(err).Fatal("Error getting client.")
 	}
 	var pkc *kube.Client
 	if *buildCluster == "" {
@@ -66,7 +67,7 @@ func main() {
 	} else {
 		pkc, err = kube.NewClientFromFile(*buildCluster, configAgent.Config().PodNamespace)
 		if err != nil {
-			logrus.WithError(err).Fatal("Error getting kube client to build cluster.")
+			logger.WithError(err).Fatal("Error getting kube client to build cluster.")
 		}
 	}
 
@@ -84,14 +85,14 @@ func main() {
 
 	if *tideURL != "" {
 		ta := &tideAgent{
-			log:  logrus.WithField("agent", "tide"),
+			log:  logger.WithField("agent", "tide"),
 			path: *tideURL,
 		}
 		ta.start()
 		http.Handle("/tide.js", gziphandler.GzipHandler(handleTide(ta)))
 	}
 
-	logrus.WithError(http.ListenAndServe(":8080", nil)).Fatal("ListenAndServe returned.")
+	logger.WithError(http.ListenAndServe(":8080", nil)).Fatal("ListenAndServe returned.")
 }
 
 func loadToken(file string) (string, error) {
