@@ -36,6 +36,8 @@ import (
 	"k8s.io/test-infra/prow/slack"
 )
 
+const defaultBlunderbussReviewerCount = 2
+
 var (
 	pluginHelp                 = map[string]HelpProvider{}
 	genericCommentHandlers     = map[string]GenericCommentHandler{}
@@ -160,6 +162,7 @@ type Configuration struct {
 	ConfigUpdater   ConfigUpdater   `json:"config_updater,omitempty"`
 	Blockades       []Blockade      `json:"blockades,omitempty"`
 	Approve         []Approve       `json:"approve,omitempty"`
+	Blunderbuss     Blunderbuss     `json:"blunderbuss,omitempty"`
 }
 
 // ExternalPlugin holds configuration for registering an external
@@ -174,6 +177,12 @@ type ExternalPlugin struct {
 	// server to the external plugin. If no events are specified,
 	// everything is sent.
 	Events []string `json:"events,omitempty"`
+}
+
+type Blunderbuss struct {
+	// ReviewerCount is the number of reviewers to request reviews from.
+	// A value of 0 will default to requesting reviews from 2 reviewers.
+	ReviewerCount int `json:"request_count,omitempty"`
 }
 
 // Owners contains configuration related to handling OWNERS files.
@@ -335,6 +344,9 @@ func (c *Configuration) setDefaults() {
 			}
 			c.ExternalPlugins[repo][i].Endpoint = fmt.Sprintf("http://%s", p.Name)
 		}
+	}
+	if c.Blunderbuss.ReviewerCount == 0 {
+		c.Blunderbuss.ReviewerCount = defaultBlunderbussReviewerCount
 	}
 }
 
