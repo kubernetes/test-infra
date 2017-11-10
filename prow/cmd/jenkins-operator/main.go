@@ -88,7 +88,7 @@ func main() {
 	} else {
 		logrus.Fatal("An auth token for basic or bearer token auth must be supplied.")
 	}
-	jc := jenkins.NewClient(*jenkinsURL, ac)
+	jc := jenkins.NewClient(*jenkinsURL, ac, nil)
 
 	oauthSecretRaw, err := ioutil.ReadFile(*githubTokenFile)
 	if err != nil {

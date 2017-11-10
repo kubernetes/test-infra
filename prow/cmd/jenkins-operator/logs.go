@@ -56,7 +56,7 @@ func handleLog(jc *jenkins.Client) http.HandlerFunc {
 			return
 		}
 
-		log, err := jc.Get(r.URL.Path)
+		log, err := jc.GetSkipMetrics(r.URL.Path)
 		if err != nil {
 			http.Error(w, fmt.Sprintf("Log not found: %v", err), http.StatusNotFound)
 			logrus.WithError(err).Warning(fmt.Sprintf("Cannot get logs from Jenkins (GET %s).", r.URL.Path))

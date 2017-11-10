@@ -12,6 +12,7 @@ go_library(
         "controller.go",
         "doc.go",
         "jenkins.go",
+        "metrics.go",
     ],
     importpath = "k8s.io/test-infra/prow/jenkins",
     tags = ["automanaged"],
@@ -21,6 +22,7 @@ go_library(
         "//prow/kube:go_default_library",
         "//prow/pjutil:go_default_library",
         "//prow/report:go_default_library",
+        "//vendor/github.com/prometheus/client_golang/prometheus:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
     ],
 )

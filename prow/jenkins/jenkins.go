@@ -127,6 +127,8 @@ type Client struct {
 	client     *http.Client
 	baseURL    string
 	authConfig *AuthConfig
+
+	metrics *ClientMetrics
 }
 
 // AuthConfig configures how we auth with Jenkins.
@@ -145,12 +147,13 @@ type BearerTokenAuthConfig struct {
 	Token string
 }
 
-func NewClient(url string, authConfig *AuthConfig) *Client {
+func NewClient(url string, authConfig *AuthConfig, metrics *ClientMetrics) *Client {
 	return &Client{
 		logger:     logrus.WithField("client", "jenkins"),
 		baseURL:    url,
 		authConfig: authConfig,
 		client:     &http.Client{},
+		metrics:    metrics,
 	}
 }
 
@@ -165,15 +168,41 @@ func (c *Client) log(methodName string, args ...interface{}) {
 	c.logger.Debugf("%s(%s)", methodName, strings.Join(as, ", "))
 }
 
+// measure records metrics about the provided method, path, and code.
+// start needs to be recorded before doing the request.
+func (c *Client) measure(method, path string, code int, start time.Time) {
+	if c.metrics == nil {
+		return
+	}
+	c.metrics.RequestLatency.WithLabelValues(method, path).Observe(time.Since(start).Seconds())
+	c.metrics.Requests.WithLabelValues(method, path, fmt.Sprintf("%d", code)).Inc()
+}
+
+// GetSkipMetrics fetches the data found in the provided path. It returns the
+// content of the response or any errors that occured during the request or
+// http errors. Metrics will not be gathered for this request.
+func (c *Client) GetSkipMetrics(path string) ([]byte, error) {
+	resp, err := c.request(http.MethodGet, path, nil, false)
+	if err != nil {
+		return nil, err
+	}
+	return readResp(resp)
+}
+
 // Get fetches the data found in the provided path. It returns the
 // content of the response or any errors that occured during the
 // request or http errors.
 func (c *Client) Get(path string) ([]byte, error) {
-	resp, err := c.request(http.MethodGet, fmt.Sprintf("%s%s", c.baseURL, path))
+	resp, err := c.request(http.MethodGet, path, nil, true)
 	if err != nil {
 		return nil, err
 	}
+	return readResp(resp)
+}
+
+func readResp(resp *http.Response) ([]byte, error) {
 	defer resp.Body.Close()
+
 	if resp.StatusCode == 404 {
 		return nil, NewNotFoundError(errors.New(resp.Status))
 	}
@@ -188,21 +217,36 @@ func (c *Client) Get(path string) ([]byte, error) {
 }
 
 // request executes a request with the provided method and path.
-// It retry on transport failures and 500s.
-func (c *Client) request(method, path string) (*http.Response, error) {
+// It retries on transport failures and 500s. measure is provided
+// to enable or disable gathering metrics for specific requests
+// to avoid high-cardinality metrics.
+func (c *Client) request(method, path string, params url.Values, measure bool) (*http.Response, error) {
 	var resp *http.Response
 	var err error
 	backoff := retryDelay
+
+	urlPath := fmt.Sprintf("%s%s", c.baseURL, path)
+	if params != nil {
+		urlPath = fmt.Sprintf("%s?%s", urlPath, params.Encode())
+	}
+
+	start := time.Now()
 	for retries := 0; retries < maxRetries; retries++ {
-		resp, err = c.doRequest(method, path)
+		resp, err = c.doRequest(method, urlPath)
 		if err == nil && resp.StatusCode < 500 {
 			break
 		} else if err == nil && retries+1 < maxRetries {
 			resp.Body.Close()
 		}
-
+		// Capture the retry in a metric.
+		if measure && c.metrics != nil {
+			c.metrics.RequestRetries.Inc()
+		}
 		time.Sleep(backoff)
 		backoff *= 2
+	}
+	if measure && resp != nil {
+		c.measure(method, path, resp.StatusCode, start)
 	}
 	return resp, err
 }
@@ -237,22 +281,17 @@ func (c *Client) Build(pj *kube.ProwJob) error {
 // BuildFromSpec triggers a Jenkins build for the provided ProwJobSpec.
 // buildId helps us track the build before it's scheduled by Jenkins.
 func (c *Client) BuildFromSpec(spec *kube.ProwJobSpec, buildId string) error {
-	c.log(fmt.Sprintf("Build (type=%s job=%s buildId=%s)", spec.Type, spec.Job, buildId))
-	u, err := url.Parse(fmt.Sprintf("%s/job/%s/buildWithParameters", c.baseURL, spec.Job))
-	if err != nil {
-		return err
-	}
+	c.log("Build", "type="+spec.Type, "job="+spec.Job, "buildId="+buildId)
 	env, err := pjutil.EnvForSpec(pjutil.NewJobSpec(*spec, buildId))
 	if err != nil {
 		return err
 	}
-
-	q := u.Query()
+	params := url.Values{}
 	for key, value := range env {
-		q.Set(key, value)
+		params.Set(key, value)
 	}
-	u.RawQuery = q.Encode()
-	resp, err := c.request(http.MethodPost, u.String())
+	path := fmt.Sprintf("/job/%s/buildWithParameters", spec.Job)
+	resp, err := c.request(http.MethodPost, path, params, true)
 	if err != nil {
 		return err
 	}
@@ -365,7 +404,7 @@ func (c *Client) Abort(job string, build *JenkinsBuild) error {
 	}
 
 	c.log("Abort", job, build.Number)
-	resp, err := c.request(http.MethodPost, fmt.Sprintf("%s/job/%s/%d/stop", c.baseURL, job, build.Number))
+	resp, err := c.request(http.MethodPost, fmt.Sprintf("/job/%s/%d/stop", job, build.Number), nil, false)
 	if err != nil {
 		return err
 	}
