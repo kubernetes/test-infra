@@ -5505,7 +5505,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-cli"
     ]
   },
   "ci-kubernetes-e2e-gke-gci-stable-gci-master-upgrade-master": {
