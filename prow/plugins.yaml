@@ -92,6 +92,7 @@ plugins:
 
   kubernetes/federation:
   - trigger
+  - approve
 
   kubernetes/heapster:
   - trigger
