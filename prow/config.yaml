@@ -1623,8 +1623,8 @@ presubmits:
         - name: var-lib-docker
           mountPath: /var/lib/docker
         ports:
-        - containerPort: 9999
-          hostPort: 9999
+        - containerPort: 7777
+          hostPort: 7777
       volumes:
       - name: service
         secret:
@@ -2885,8 +2885,8 @@ presubmits:
         - name: var-lib-docker
           mountPath: /var/lib/docker
         ports:
-        - containerPort: 9999
-          hostPort: 9999
+        - containerPort: 7777
+          hostPort: 7777
       volumes:
       - name: service
         secret:
