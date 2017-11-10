@@ -288,7 +288,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-apps"
     ]
   },
   "ci-kubernetes-cross-build": {
@@ -9029,7 +9029,7 @@
     ],
     "scenario": "execute",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-apps"
     ]
   },
   "pull-cluster-registry-bazel": {
