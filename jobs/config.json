@@ -9033,9 +9033,9 @@
   },
   "pull-cluster-registry-bazel": {
     "args": [
-      "./hack/bazel-test.sh"
+      "--test=//cmd/... //pkg/... -//cmd/clusterregistry:push-clusterregistry-image -//pkg/client/..."
     ],
-    "scenario": "execute",
+    "scenario": "kubernetes_bazel",
     "sigOwners": [
       "sig-multicluster"
     ]
