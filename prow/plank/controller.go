@@ -273,9 +273,8 @@ func (c *Controller) syncPendingJob(pj kube.ProwJob, pm map[string]kube.Pod, rep
 	pod, podExists := pm[pj.Metadata.Name]
 	if !podExists {
 		c.incrementNumPendingJobs(pj.Spec.Job)
-		// Pod is missing. This can happen in case we deleted the previous pod because
-		// it was stuck in Unknown/Evicted state due to a node problem or the pod was
-		// deleted manually. Start a new pod.
+		// Pod is missing. This can happen in case the previous pod was deleted manually or by
+		// a rescheduler. Start a new pod.
 		id, pn, err := c.startPod(pj)
 		if err != nil {
 			_, isUnprocessable := err.(kube.UnprocessableEntityError)
