@@ -22,18 +22,10 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/NYTimes/gziphandler"
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/jenkins"
 )
-
-// serveLogs starts a http server and serves Jenkins logs.
-// Meant to be called inside a goroutine.
-func serveLogs(jc *jenkins.Client) {
-	http.Handle("/", gziphandler.GzipHandler(handleLog(jc)))
-	logrus.WithError(http.ListenAndServe(":8080", nil)).Fatal("ListenAndServe returned.")
-}
 
 // Matches letters, numbers, hyphens, and underscores.
 var objReg = regexp.MustCompile(`^[\w-]+$`)
@@ -56,7 +48,7 @@ func handleLog(jc *jenkins.Client) http.HandlerFunc {
 			return
 		}
 
-		log, err := jc.Get(r.URL.Path)
+		log, err := jc.GetSkipMetrics(r.URL.Path)
 		if err != nil {
 			http.Error(w, fmt.Sprintf("Log not found: %v", err), http.StatusNotFound)
 			logrus.WithError(err).Warning(fmt.Sprintf("Cannot get logs from Jenkins (GET %s).", r.URL.Path))

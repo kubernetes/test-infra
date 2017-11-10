@@ -20,12 +20,15 @@ import (
 	"bytes"
 	"flag"
 	"io/ioutil"
+	"net/http"
 	"net/url"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
+	"github.com/NYTimes/gziphandler"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/config"
@@ -33,6 +36,7 @@ import (
 	"k8s.io/test-infra/prow/jenkins"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/kube/labels"
+	m "k8s.io/test-infra/prow/metrics"
 )
 
 var (
@@ -52,26 +56,27 @@ var (
 func main() {
 	flag.Parse()
 	logrus.SetFormatter(&logrus.JSONFormatter{})
+	logger := logrus.WithField("component", "jenkins-operator")
 
 	if _, err := labels.Parse(*selector); err != nil {
-		logrus.WithError(err).Fatal("Error parsing label selector.")
+		logger.WithError(err).Fatal("Error parsing label selector.")
 	}
 
 	configAgent := &config.Agent{}
 	if err := configAgent.Start(*configPath); err != nil {
-		logrus.WithError(err).Fatal("Error starting config agent.")
+		logger.WithError(err).Fatal("Error starting config agent.")
 	}
 
 	kc, err := kube.NewClientInCluster(configAgent.Config().ProwJobNamespace)
 	if err != nil {
-		logrus.WithError(err).Fatal("Error getting kube client.")
+		logger.WithError(err).Fatal("Error getting kube client.")
 	}
 
 	ac := &jenkins.AuthConfig{}
 	if *jenkinsTokenFile != "" {
 		token, err := loadToken(*jenkinsTokenFile)
 		if err != nil {
-			logrus.WithError(err).Fatalf("Could not read token file.")
+			logger.WithError(err).Fatalf("Could not read token file.")
 		}
 		ac.Basic = &jenkins.BasicAuthConfig{
 			User:  *jenkinsUserName,
@@ -80,25 +85,26 @@ func main() {
 	} else if *jenkinsBearerTokenFile != "" {
 		token, err := loadToken(*jenkinsBearerTokenFile)
 		if err != nil {
-			logrus.WithError(err).Fatalf("Could not read bearer token file.")
+			logger.WithError(err).Fatalf("Could not read bearer token file.")
 		}
 		ac.BearerToken = &jenkins.BearerTokenAuthConfig{
 			Token: token,
 		}
 	} else {
-		logrus.Fatal("An auth token for basic or bearer token auth must be supplied.")
+		logger.Fatal("An auth token for basic or bearer token auth must be supplied.")
 	}
-	jc := jenkins.NewClient(*jenkinsURL, ac)
+	metrics := jenkins.NewMetrics()
+	jc := jenkins.NewClient(*jenkinsURL, ac, metrics.ClientMetrics)
 
 	oauthSecretRaw, err := ioutil.ReadFile(*githubTokenFile)
 	if err != nil {
-		logrus.WithError(err).Fatalf("Could not read Github oauth secret file.")
+		logger.WithError(err).Fatalf("Could not read Github oauth secret file.")
 	}
 	oauthSecret := string(bytes.TrimSpace(oauthSecretRaw))
 
 	_, err = url.Parse(*githubEndpoint)
 	if err != nil {
-		logrus.WithError(err).Fatal("Must specify a valid --github-endpoint URL.")
+		logger.WithError(err).Fatal("Must specify a valid --github-endpoint URL.")
 	}
 
 	var ghc *github.Client
@@ -110,9 +116,14 @@ func main() {
 
 	c := jenkins.NewController(kc, jc, ghc, configAgent, *selector)
 
-	// Serve Jenkins logs from here and proxy deck to use this endpoint
-	// instead of baking agent-specific logic in deck.
-	go serveLogs(jc)
+	// Push metrics to the configured prometheus pushgateway endpoint.
+	if endpoint := configAgent.Config().PushGateway.Endpoint; endpoint != "" {
+		go m.PushMetrics("jenkins-operator", endpoint)
+	}
+	// Serve Jenkins logs here and proxy deck to use this endpoint
+	// instead of baking agent-specific logic in deck. This func also
+	// serves prometheus metrics.
+	go serve(jc)
 
 	tick := time.Tick(30 * time.Second)
 	sig := make(chan os.Signal, 1)
@@ -123,11 +134,13 @@ func main() {
 		case <-tick:
 			start := time.Now()
 			if err := c.Sync(); err != nil {
-				logrus.WithError(err).Error("Error syncing.")
+				logger.WithError(err).Error("Error syncing.")
 			}
-			logrus.Infof("Sync time: %v", time.Since(start))
+			duration := time.Since(start)
+			logger.Infof("Sync time: %v", duration)
+			metrics.ResyncPeriod.Observe(duration.Seconds())
 		case <-sig:
-			logrus.Infof("Jenkins operator is shutting down...")
+			logger.Infof("Jenkins operator is shutting down...")
 			return
 		}
 	}
@@ -139,4 +152,13 @@ func loadToken(file string) (string, error) {
 		return "", err
 	}
 	return string(bytes.TrimSpace(raw)), nil
+}
+
+// serve starts a http server and serves Jenkins logs
+// and prometheus metrics. Meant to be called inside
+// a goroutine.
+func serve(jc *jenkins.Client) {
+	http.Handle("/", gziphandler.GzipHandler(handleLog(jc)))
+	http.Handle("/metrics", promhttp.Handler())
+	logrus.WithError(http.ListenAndServe(":8080", nil)).Fatal("ListenAndServe returned.")
 }

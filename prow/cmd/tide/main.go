@@ -51,21 +51,22 @@ var (
 func main() {
 	flag.Parse()
 	logrus.SetFormatter(&logrus.JSONFormatter{})
+	logger := logrus.WithField("component", "tide")
 
 	configAgent := &config.Agent{}
 	if err := configAgent.Start(*configPath); err != nil {
-		logrus.WithError(err).Fatal("Error starting config agent.")
+		logger.WithError(err).Fatal("Error starting config agent.")
 	}
 
 	oauthSecretRaw, err := ioutil.ReadFile(*githubTokenFile)
 	if err != nil {
-		logrus.WithError(err).Fatalf("Could not read oauth secret file.")
+		logger.WithError(err).Fatalf("Could not read oauth secret file.")
 	}
 	oauthSecret := string(bytes.TrimSpace(oauthSecretRaw))
 
 	_, err = url.Parse(*githubEndpoint)
 	if err != nil {
-		logrus.WithError(err).Fatalf("Must specify a valid --github-endpoint URL.")
+		logger.WithError(err).Fatalf("Must specify a valid --github-endpoint URL.")
 	}
 
 	ghc := github.NewClient(oauthSecret, *githubEndpoint)
@@ -74,22 +75,22 @@ func main() {
 	if *cluster == "" {
 		kc, err = kube.NewClientInCluster(configAgent.Config().ProwJobNamespace)
 		if err != nil {
-			logrus.WithError(err).Fatal("Error getting kube client.")
+			logger.WithError(err).Fatal("Error getting kube client.")
 		}
 	} else {
 		kc, err = kube.NewClientFromFile(*cluster, configAgent.Config().ProwJobNamespace)
 		if err != nil {
-			logrus.WithError(err).Fatal("Error getting kube client.")
+			logger.WithError(err).Fatal("Error getting kube client.")
 		}
 	}
 
 	gc, err := git.NewClient()
 	if err != nil {
-		logrus.WithError(err).Fatal("Error getting git client.")
+		logger.WithError(err).Fatal("Error getting git client.")
 	}
 	defer gc.Clean()
 
-	c := tide.NewController(ghc, kc, configAgent, gc, *dryRun)
+	c := tide.NewController(ghc, kc, configAgent, gc, *dryRun, logger)
 
 	sync(c)
 	if *runOnce {
@@ -100,7 +101,7 @@ func main() {
 			sync(c)
 		}
 	}()
-	logrus.Fatal(http.ListenAndServe(":"+strconv.Itoa(*port), c))
+	logger.Fatal(http.ListenAndServe(":"+strconv.Itoa(*port), c))
 }
 
 func sync(c *tide.Controller) {

@@ -316,10 +316,14 @@ func (c *Controller) syncPendingJob(pj kube.ProwJob, reports chan<- kube.ProwJob
 			}
 
 		case jb.IsFailure():
-			// Build either failed or aborted.
 			pj.Status.CompletionTime = time.Now()
 			pj.Status.State = kube.FailureState
 			pj.Status.Description = "Jenkins job failed."
+
+		case jb.IsAborted():
+			pj.Status.CompletionTime = time.Now()
+			pj.Status.State = kube.AbortedState
+			pj.Status.Description = "Jenkins job aborted."
 		}
 		// Construct the status URL that will be used in reports.
 		pj.Status.PodName = fmt.Sprintf("%s-%d", pj.Spec.Job, jb.Number)

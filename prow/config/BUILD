@@ -23,6 +23,7 @@ go_test(
     deps = [
         "//prow/kube:go_default_library",
         "//vendor/github.com/ghodss/yaml:go_default_library",
+        "//vendor/github.com/robfig/cron:go_default_library",
     ],
 )
 

@@ -9,12 +9,42 @@ triggers:
   - kubernetes-security
   - google/cadvisor
   - tensorflow/k8s
+  - GoogleCloudPlatform/k8s-multicluster-ingress
   trusted_org: kubernetes
 
 approve:
 - repos:
   - kubernetes
   implicit_self_approve: true
+
+blockades:
+- repos:
+  - kubernetes/kubernetes
+  blockregexps:
+  - ^docs/man
+  exceptionregexps:
+  - ^docs/man/man1/.*\.1$
+  explanation: "Files under `docs/man` must be in the `man1` directory and have suffix `.1`."
+- repos:
+  - kubernetes/kubernetes
+  blockregexps:
+  - ^docs/user-guide
+  exceptionregexps:
+  - ^docs/user-guide/kubectl/kubectl.*\.md$
+  explanation: "Files under `docs/user-guide` must be in the `kubectl` directory and match pattern `kubectl*.md`."
+- repos:
+  - kubernetes/kubernetes
+  blockregexps:
+  - ^docs/yaml
+  exceptionregexps:
+  - ^docs/yaml/kubectl/kubectl_.*\.yaml$
+  explanation: "Files under `docs/yaml` must be in the `kubectl` directory and match pattern `kubectl_*.yaml`."
+- repos:
+  - kubernetes/community
+  blockregexps:
+  - ^community/2016-events
+  - ^community/elections/2017
+  explanation: "These files are historical, and from events that have already occurred."
 
 heart:
   adorees:
@@ -51,6 +81,7 @@ plugins:
 
   kubernetes/community:
   - trigger
+  - blockade
 
   kubernetes/dns:
   - trigger
@@ -74,6 +105,7 @@ plugins:
   - trigger
   - release-note
   - docs-no-retest
+  - blockade
 
   kubernetes/test-infra:
   - trigger
@@ -121,4 +153,7 @@ plugins:
   - close
   - reopen
   - lgtm
+  - trigger
+
+  GoogleCloudPlatform/k8s-multicluster-ingress:
   - trigger

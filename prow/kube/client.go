@@ -37,7 +37,9 @@ const (
 	inClusterBaseURL = "https://kubernetes.default"
 	maxRetries       = 8
 	retryDelay       = 2 * time.Second
-	EmptySelector    = ""
+	requestTimeout   = time.Minute
+
+	EmptySelector = ""
 )
 
 type Logger interface {
@@ -242,11 +244,10 @@ func NewClientInCluster(namespace string) (*Client, error) {
 			RootCAs:    cp,
 		},
 	}
-	c := &http.Client{Transport: tr}
 	return &Client{
 		logger:    logrus.WithField("client", "kube"),
 		baseURL:   inClusterBaseURL,
-		client:    c,
+		client:    &http.Client{Transport: tr, Timeout: requestTimeout},
 		token:     string(token),
 		namespace: namespace,
 	}, nil
@@ -314,7 +315,7 @@ func NewClient(c *Cluster, namespace string) (*Client, error) {
 	return &Client{
 		logger:    logrus.WithField("client", "kube"),
 		baseURL:   c.Endpoint,
-		client:    &http.Client{Transport: tr},
+		client:    &http.Client{Transport: tr, Timeout: requestTimeout},
 		namespace: namespace,
 	}, nil
 }

@@ -27,10 +27,7 @@ import (
 )
 
 func TestServeHTTPErrors(t *testing.T) {
-	metrics, err := NewMetrics()
-	if err != nil {
-		t.Fatal(err)
-	}
+	metrics := NewMetrics()
 	pa := &plugins.PluginAgent{}
 	pa.Set(&plugins.Configuration{})
 	s := &Server{

@@ -3526,6 +3526,7 @@
       "--gcp-project=k8s-jkns-gci-autoscaling",
       "--gcp-zone=us-central1-f",
       "--provider=gce",
+      "--runtime-config=scheduling.k8s.io/v1alpha1=true",
       "--test_args=--ginkgo.focus=\\[Feature:ClusterSizeAutoscalingScaleUp\\]|\\[Feature:ClusterSizeAutoscalingScaleDown\\]|\\[Feature:InitialResources\\]|\\[Feature:CustomMetricsAutoscaling\\] --ginkgo.skip=\\[Flaky\\] --minStartupPods=8",
       "--timeout=300m"
     ],
@@ -3544,6 +3545,7 @@
       "--gcp-project=k8s-jkns-gci-autoscaling-migs",
       "--gcp-zone=us-central1-f",
       "--provider=gce",
+      "--runtime-config=scheduling.k8s.io/v1alpha1=true",
       "--test_args=--ginkgo.focus=\\[Feature:ClusterSizeAutoscalingScaleUp\\]|\\[Feature:ClusterSizeAutoscalingScaleDown\\]|\\[Feature:CustomMetricsAutoscaling\\] --ginkgo.skip=\\[Flaky\\] --minStartupPods=8",
       "--timeout=300m"
     ],
@@ -4195,7 +4197,7 @@
       "--gke-create-command=container clusters create --quiet --enable-kubernetes-alpha",
       "--gke-environment=test",
       "--provider=gke",
-      "--test_args=--ginkgo.focus=\\[Feature:DynamicKubeletConfig\\]|Networking --ginkgo.skip=Networking-Performance|IPv6 --minStartupPods=8",
+      "--test_args=--ginkgo.focus=\\[Feature:(DynamicKubeletConfig|LocalPersistentVolumes)\\]|Networking --ginkgo.skip=Networking-Performance|IPv6 --minStartupPods=8",
       "--timeout=180m"
     ],
     "scenario": "kubernetes_e2e",
@@ -5233,6 +5235,26 @@
       "sig-scheduling"
     ]
   },
+  "ci-kubernetes-e2e-gke-device-plugin-gpu-p100": {
+    "args": [
+      "--check-leaked-resources",
+      "--deployment=gke",
+      "--extract=ci/latest",
+      "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
+      "--gcp-node-image=gci",
+      "--gcp-project-type=gpu-project",
+      "--gcp-zone=us-west1-b",
+      "--gke-create-command=alpha container clusters create --quiet --enable-kubernetes-alpha --accelerator=type=nvidia-tesla-p100,count=2",
+      "--gke-environment=test",
+      "--provider=gke",
+      "--test_args=--ginkgo.focus=\\[Feature:GPUDevicePlugin\\] --minStartupPods=8",
+      "--timeout=180m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-scheduling"
+    ]
+  },
   "ci-kubernetes-e2e-gke-device-plugin-gpu-stable1": {
     "args": [
       "--check-leaked-resources",
@@ -6242,7 +6264,7 @@
       "--check-leaked-resources",
       "--check-version-skew=false",
       "--deployment=gke",
-      "--extract=gs://kubernetes-release-gke/release/v1.8.2-gke.0",
+      "--extract=ci/gke-staging-latest",
       "--extract=gke",
       "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
       "--gcp-node-image=gci",
@@ -6263,7 +6285,7 @@
       "--check-leaked-resources",
       "--check-version-skew=false",
       "--deployment=gke",
-      "--extract=gs://kubernetes-release-gke/release/v1.8.2-gke.0",
+      "--extract=ci/gke-staging-latest",
       "--extract=gke",
       "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
       "--gcp-node-image=gci",
@@ -6284,7 +6306,7 @@
       "--check-leaked-resources",
       "--check-version-skew=false",
       "--deployment=gke",
-      "--extract=gs://kubernetes-release-gke/release/v1.8.2-gke.0",
+      "--extract=ci/gke-staging-latest",
       "--extract=gke",
       "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
       "--gcp-node-image=gci",
@@ -6341,12 +6363,32 @@
       "UNKNOWN"
     ]
   },
+  "ci-kubernetes-e2e-gke-staging-latest-device-plugin-gpu": {
+    "args": [
+      "--check-leaked-resources",
+      "--deployment=gke",
+      "--extract=ci/gke-staging-latest",
+      "--gcp-cloud-sdk=gs://cloud-sdk-testing/rc",
+      "--gcp-node-image=gci",
+      "--gcp-project-type=gpu-project",
+      "--gcp-zone=us-west1-b",
+      "--gke-create-command=alpha container clusters create --quiet --enable-kubernetes-alpha --accelerator=type=nvidia-tesla-k80,count=2",
+      "--gke-environment=staging",
+      "--provider=gke",
+      "--test_args=--ginkgo.focus=\\[Feature:GPUDevicePlugin\\] --minStartupPods=8",
+      "--timeout=80m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-gcp"
+    ]
+  },
   "ci-kubernetes-e2e-gke-staging-latest-parallel": {
     "args": [
       "--check-leaked-resources",
       "--check-version-skew=false",
       "--deployment=gke",
-      "--extract=gs://kubernetes-release-gke/release/v1.8.2-gke.0",
+      "--extract=ci/gke-staging-latest",
       "--gcp-cloud-sdk=gs://cloud-sdk-testing/rc",
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
@@ -6366,7 +6408,7 @@
       "--check-leaked-resources",
       "--check-version-skew=false",
       "--deployment=gke",
-      "--extract=gs://kubernetes-release-gke/release/v1.8.2-gke.0",
+      "--extract=ci/gke-staging-latest",
       "--gcp-cloud-sdk=gs://cloud-sdk-testing/rc",
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
@@ -7187,6 +7229,24 @@
       "sig-testing"
     ]
   },
+  "ci-kubernetes-e2e-kops-aws-cncf-canary": {
+    "args": [
+      "--aws",
+      "--aws-cluster-domain=test-aws.k8s.io",
+      "--cluster=e2e-kops-aws-canary",
+      "--env-file=jobs/platform/kops_aws.env",
+      "--env-file=jobs/env/ci-kubernetes-e2e-kops-aws-canary.env",
+      "--extract=ci/latest",
+      "--ginkgo-parallel",
+      "--provider=aws",
+      "--test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]|\\[HPA\\]|Dashboard|Services.*functioning.*NodePort",
+      "--timeout=120m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-testing"
+    ]
+  },
   "ci-kubernetes-e2e-kops-aws-newrunner": {
     "args": [
       "--cluster=e2e-kops-aws-newrunner.test-aws.k8s.io",
@@ -7813,7 +7873,7 @@
       "--deployment=node",
       "--gcp-project=ubuntu-image-validation",
       "--gcp-zone=us-central1-f",
-      "--node-args=--images=ubuntu-gke-1604-xenial-v20171101 --image-project=ubuntu-os-gke-cloud-devel --system-spec-name=gke",
+      "--node-args=--images=ubuntu-gke-1604-xenial-v20171108-1 --image-project=ubuntu-os-gke-cloud-devel --system-spec-name=gke",
       "--node-test-args=--kubelet-flags=\"--cgroups-per-qos=true --cgroup-root=/\"",
       "--node-tests=true",
       "--provider=gce",
@@ -7834,7 +7894,7 @@
       "--deployment=node",
       "--gcp-project=ubuntu-image-validation",
       "--gcp-zone=us-central1-f",
-      "--node-args=--images=ubuntu-gke-1604-xenial-v20171101 --image-project=ubuntu-os-gke-cloud-devel",
+      "--node-args=--images=ubuntu-gke-1604-xenial-v20171108-1 --image-project=ubuntu-os-gke-cloud-devel",
       "--node-test-args=--kubelet-flags=\"--cgroups-per-qos=true --cgroup-root=/\" --feature-gates=DynamicKubeletConfig=true",
       "--node-tests=true",
       "--provider=gce",
@@ -7855,7 +7915,7 @@
       "--deployment=node",
       "--gcp-project=ubuntu-image-validation",
       "--gcp-zone=us-central1-f",
-      "--node-args=--images=ubuntu-gke-1604-xenial-v20171101 --image-project=ubuntu-os-gke-cloud-devel --system-spec-name=gke",
+      "--node-args=--images=ubuntu-gke-1604-xenial-v20171108-1 --image-project=ubuntu-os-gke-cloud-devel --system-spec-name=gke",
       "--node-test-args=--kubelet-flags=\"--cgroups-per-qos=true --cgroup-root=/\"",
       "--node-tests=true",
       "--provider=gce",
@@ -7876,7 +7936,7 @@
       "--deployment=node",
       "--gcp-project=ubuntu-image-validation",
       "--gcp-zone=us-central1-f",
-      "--node-args=--images=ubuntu-gke-1604-xenial-v20171101 --image-project=ubuntu-os-gke-cloud-devel",
+      "--node-args=--images=ubuntu-gke-1604-xenial-v20171108-1 --image-project=ubuntu-os-gke-cloud-devel",
       "--node-test-args=--kubelet-flags=\"--cgroups-per-qos=true --cgroup-root=/\" --feature-gates=DynamicKubeletConfig=true",
       "--node-tests=true",
       "--provider=gce",
@@ -7897,7 +7957,7 @@
       "--deployment=node",
       "--gcp-project=ubuntu-image-validation",
       "--gcp-zone=us-central1-f",
-      "--node-args=--images=ubuntu-gke-1604-xenial-v20171101 --image-project=ubuntu-os-gke-cloud-devel --system-spec-name=gke",
+      "--node-args=--images=ubuntu-gke-1604-xenial-v20171108-1 --image-project=ubuntu-os-gke-cloud-devel --system-spec-name=gke",
       "--node-test-args=--kubelet-flags=\"--cgroups-per-qos=true --cgroup-root=/\"",
       "--node-tests=true",
       "--provider=gce",
@@ -7918,7 +7978,7 @@
       "--deployment=node",
       "--gcp-project=ubuntu-image-validation",
       "--gcp-zone=us-central1-f",
-      "--node-args=--images=ubuntu-gke-1604-xenial-v20171101 --image-project=ubuntu-os-gke-cloud-devel",
+      "--node-args=--images=ubuntu-gke-1604-xenial-v20171108-1 --image-project=ubuntu-os-gke-cloud-devel",
       "--node-test-args=--kubelet-flags=\"--cgroups-per-qos=true --cgroup-root=/\" --feature-gates=DynamicKubeletConfig=true",
       "--node-tests=true",
       "--provider=gce",
@@ -8179,7 +8239,7 @@
       "--env-file=jobs/env/ci-kubernetes-kubemark-5-gce.env",
       "--extract=ci/latest",
       "--extract-source",
-      "--gcp-project=k8s-jenkins-gci-kubemark",
+      "--gcp-project=sen-lu-test",
       "--gcp-zone=us-central1-f",
       "--kubemark",
       "--kubemark-nodes=5",
@@ -8209,7 +8269,7 @@
       "--provider=gce",
       "--test=false",
       "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --gather-resource-usage=true --gather-metrics-at-teardown=true --output-print-type=json",
-      "--timeout=120m"
+      "--timeout=70m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -8993,9 +9053,9 @@
   },
   "pull-cluster-registry-bazel": {
     "args": [
-      "./hack/bazel-test.sh"
+      "--test=//cmd/... //pkg/... -//cmd/clusterregistry:push-clusterregistry-image -//pkg/client/..."
     ],
-    "scenario": "execute",
+    "scenario": "kubernetes_bazel",
     "sigOwners": [
       "sig-multicluster"
     ]
@@ -9367,11 +9427,21 @@
       "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-kubemark-e2e-gce-big",
       "--test=false",
       "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --gather-resource-usage=true --gather-metrics-at-teardown=true --output-print-type=json",
-      "--timeout=140m"
+      "--timeout=80m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
       "sig-scalability"
+    ]
+  },
+  "pull-kubernetes-multicluster-ingress-test": {
+    "args": [
+      "make",
+      "test"
+    ],
+    "scenario": "execute",
+    "sigOwners": [
+      "sig-multicluster"
     ]
   },
   "pull-kubernetes-node-e2e": {

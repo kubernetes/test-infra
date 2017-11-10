@@ -38,6 +38,29 @@ func (fk *fakeKube) CreateProwJob(j kube.ProwJob) (kube.ProwJob, error) {
 	return j, nil
 }
 
+type fakeCron struct {
+	jobs []string
+}
+
+func (fc *fakeCron) SyncConfig(cfg *config.Config) error {
+	for _, p := range cfg.Periodics {
+		if p.Cron != "" {
+			fc.jobs = append(fc.jobs, p.Name)
+		}
+	}
+
+	return nil
+}
+
+func (fc *fakeCron) QueuedJobs() []string {
+	res := []string{}
+	for _, job := range fc.jobs {
+		res = append(res, job)
+	}
+	fc.jobs = []string{}
+	return res
+}
+
 // Assumes there is one periodic job called "p" with an interval of one minute.
 func TestSync(t *testing.T) {
 	testcases := []struct {
@@ -112,7 +135,71 @@ func TestSync(t *testing.T) {
 			}
 		}
 		kc := &fakeKube{jobs: jobs}
-		if err := sync(kc, &cfg, now); err != nil {
+		fc := &fakeCron{}
+		if err := sync(kc, &cfg, fc, now); err != nil {
+			t.Fatalf("For case %s, didn't expect error: %v", tc.testName, err)
+		}
+		if tc.shouldStart != kc.created {
+			t.Errorf("For case %s, did the wrong thing.", tc.testName)
+		}
+	}
+}
+
+// Test sync periodic job scheduled by cron.
+func TestSyncCron(t *testing.T) {
+	testcases := []struct {
+		testName    string
+		jobName     string
+		jobComplete bool
+		shouldStart bool
+	}{
+		{
+			testName:    "no job",
+			shouldStart: true,
+		},
+		{
+			testName:    "job with other name",
+			jobName:     "not-j",
+			jobComplete: true,
+			shouldStart: true,
+		},
+		{
+			testName:    "job still running",
+			jobName:     "j",
+			jobComplete: false,
+			shouldStart: false,
+		},
+		{
+			testName:    "job finished",
+			jobName:     "j",
+			jobComplete: true,
+			shouldStart: true,
+		},
+	}
+	for _, tc := range testcases {
+		cfg := config.Config{
+			Periodics: []config.Periodic{{Name: "j", Cron: "@every 1m"}},
+		}
+
+		var jobs []kube.ProwJob
+		now := time.Now()
+		if tc.jobName != "" {
+			jobs = []kube.ProwJob{{
+				Spec: kube.ProwJobSpec{
+					Type: kube.PeriodicJob,
+					Job:  tc.jobName,
+				},
+				Status: kube.ProwJobStatus{
+					StartTime: now.Add(-time.Hour),
+				},
+			}}
+			if tc.jobComplete {
+				jobs[0].Status.CompletionTime = now.Add(-time.Millisecond)
+			}
+		}
+		kc := &fakeKube{jobs: jobs}
+		fc := &fakeCron{}
+		if err := sync(kc, &cfg, fc, now); err != nil {
 			t.Fatalf("For case %s, didn't expect error: %v", tc.testName, err)
 		}
 		if tc.shouldStart != kc.created {

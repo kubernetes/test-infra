@@ -37,6 +37,7 @@ filegroup(
         "//vendor/github.com/prometheus/common/expfmt:all-srcs",
         "//vendor/github.com/prometheus/common/model:all-srcs",
         "//vendor/github.com/prometheus/procfs:all-srcs",
+        "//vendor/github.com/robfig/cron:all-srcs",
         "//vendor/github.com/satori/go.uuid:all-srcs",
         "//vendor/github.com/shurcooL/githubql:all-srcs",
         "//vendor/github.com/shurcooL/go/ctxhttp:all-srcs",

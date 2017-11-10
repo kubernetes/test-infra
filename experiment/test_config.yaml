@@ -809,7 +809,7 @@ nodeImages:
     - --node-args=--image-project=cos-cloud
   ubuntudev:
     args:
-    - --node-args=--images=ubuntu-gke-1604-xenial-v20171101
+    - --node-args=--images=ubuntu-gke-1604-xenial-v20171108-1
     - --node-args=--image-project=ubuntu-os-gke-cloud-devel
   ubuntustable1:
     args:

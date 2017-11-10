@@ -72,8 +72,10 @@ func newFakeConfigAgent(t *testing.T, maxConcurrency int) *fca {
 	return &fca{
 		c: &config.Config{
 			Plank: config.Plank{
-				JobURLTemplate: template.Must(template.New("test").Parse("{{.Metadata.Name}}/{{.Status.State}}")),
-				MaxConcurrency: maxConcurrency,
+				Controller: config.Controller{
+					JobURLTemplate: template.Must(template.New("test").Parse("{{.Metadata.Name}}/{{.Status.State}}")),
+					MaxConcurrency: maxConcurrency,
+				},
 			},
 			Presubmits: presubmitMap,
 		},
@@ -331,7 +333,9 @@ func TestTerminateDupes(t *testing.T) {
 		fca := &fca{
 			c: &config.Config{
 				Plank: config.Plank{
-					AllowCancellations: tc.allowCancellations,
+					Controller: config.Controller{
+						AllowCancellations: tc.allowCancellations,
+					},
 				},
 			},
 		}

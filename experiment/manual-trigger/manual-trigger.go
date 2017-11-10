@@ -138,7 +138,7 @@ func main() {
 		log.Fatalf("no jenkins auth token provided")
 	}
 
-	jc := jenkins.NewClient(o.jenkinsURL, &ac)
+	jc := jenkins.NewClient(o.jenkinsURL, &ac, nil)
 
 	token, err := loadToken(o.githubTokenFile)
 	if err != nil {
