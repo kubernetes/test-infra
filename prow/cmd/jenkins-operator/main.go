@@ -20,12 +20,15 @@ import (
 	"bytes"
 	"flag"
 	"io/ioutil"
+	"net/http"
 	"net/url"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
+	"github.com/NYTimes/gziphandler"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/config"
@@ -33,6 +36,7 @@ import (
 	"k8s.io/test-infra/prow/jenkins"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/kube/labels"
+	m "k8s.io/test-infra/prow/metrics"
 )
 
 var (
@@ -89,7 +93,8 @@ func main() {
 	} else {
 		logger.Fatal("An auth token for basic or bearer token auth must be supplied.")
 	}
-	jc := jenkins.NewClient(*jenkinsURL, ac, nil)
+	metrics := jenkins.NewMetrics()
+	jc := jenkins.NewClient(*jenkinsURL, ac, metrics.ClientMetrics)
 
 	oauthSecretRaw, err := ioutil.ReadFile(*githubTokenFile)
 	if err != nil {
@@ -111,9 +116,14 @@ func main() {
 
 	c := jenkins.NewController(kc, jc, ghc, configAgent, *selector)
 
-	// Serve Jenkins logs from here and proxy deck to use this endpoint
-	// instead of baking agent-specific logic in deck.
-	go serveLogs(jc)
+	// Push metrics to the configured prometheus pushgateway endpoint.
+	if endpoint := configAgent.Config().PushGateway.Endpoint; endpoint != "" {
+		go m.PushMetrics("jenkins-operator", endpoint)
+	}
+	// Serve Jenkins logs here and proxy deck to use this endpoint
+	// instead of baking agent-specific logic in deck. This func also
+	// serves prometheus metrics.
+	go serve(jc)
 
 	tick := time.Tick(30 * time.Second)
 	sig := make(chan os.Signal, 1)
@@ -126,7 +136,9 @@ func main() {
 			if err := c.Sync(); err != nil {
 				logger.WithError(err).Error("Error syncing.")
 			}
-			logger.Infof("Sync time: %v", time.Since(start))
+			duration := time.Since(start)
+			logger.Infof("Sync time: %v", duration)
+			metrics.ResyncPeriod.Observe(duration.Seconds())
 		case <-sig:
 			logger.Infof("Jenkins operator is shutting down...")
 			return
@@ -140,4 +152,13 @@ func loadToken(file string) (string, error) {
 		return "", err
 	}
 	return string(bytes.TrimSpace(raw)), nil
+}
+
+// serve starts a http server and serves Jenkins logs
+// and prometheus metrics. Meant to be called inside
+// a goroutine.
+func serve(jc *jenkins.Client) {
+	http.Handle("/", gziphandler.GzipHandler(handleLog(jc)))
+	http.Handle("/metrics", promhttp.Handler())
+	logrus.WithError(http.ListenAndServe(":8080", nil)).Fatal("ListenAndServe returned.")
 }
