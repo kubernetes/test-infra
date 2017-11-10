@@ -49,15 +49,16 @@ var (
 func main() {
 	flag.Parse()
 	logrus.SetFormatter(&logrus.JSONFormatter{})
+	logger := logrus.WithField("component", "sinker")
 
 	configAgent := &config.Agent{}
 	if err := configAgent.Start(*configPath); err != nil {
-		logrus.WithError(err).Fatal("Error starting config agent.")
+		logger.WithError(err).Fatal("Error starting config agent.")
 	}
 
 	kc, err := kube.NewClientInCluster(configAgent.Config().ProwJobNamespace)
 	if err != nil {
-		logrus.WithError(err).Error("Error getting client.")
+		logger.WithError(err).Error("Error getting client.")
 		return
 	}
 
@@ -67,15 +68,22 @@ func main() {
 	} else {
 		pkc, err = kube.NewClientFromFile(*cluster, configAgent.Config().PodNamespace)
 		if err != nil {
-			logrus.WithError(err).Fatal("Error getting kube client.")
+			logger.WithError(err).Fatal("Error getting kube client.")
 		}
+	}
+
+	c := controller{
+		logger:      logger,
+		kc:          kc,
+		pkc:         pkc,
+		configAgent: configAgent,
 	}
 
 	// Clean now and regularly from now on.
 	for {
 		start := time.Now()
-		clean(kc, pkc, configAgent)
-		logrus.Infof("Sync time: %v", time.Since(start))
+		c.clean()
+		logger.Infof("Sync time: %v", time.Since(start))
 		if *runOnce {
 			break
 		}
@@ -83,24 +91,31 @@ func main() {
 	}
 }
 
-func clean(kc, pkc kubeClient, configAgent configAgent) {
+type controller struct {
+	logger      *logrus.Entry
+	kc          kubeClient
+	pkc         kubeClient
+	configAgent configAgent
+}
+
+func (c *controller) clean() {
 	// Clean up old prow jobs first.
-	prowJobs, err := kc.ListProwJobs(kube.EmptySelector)
+	prowJobs, err := c.kc.ListProwJobs(kube.EmptySelector)
 	if err != nil {
-		logrus.WithError(err).Error("Error listing prow jobs.")
+		c.logger.WithError(err).Error("Error listing prow jobs.")
 		return
 	}
-	maxProwJobAge := configAgent.Config().Sinker.MaxProwJobAge
+	maxProwJobAge := c.configAgent.Config().Sinker.MaxProwJobAge
 	for _, prowJob := range prowJobs {
 		// Handle periodics separately.
 		if prowJob.Spec.Type == kube.PeriodicJob {
 			continue
 		}
 		if prowJob.Complete() && time.Since(prowJob.Status.StartTime) > maxProwJobAge {
-			if err := kc.DeleteProwJob(prowJob.Metadata.Name); err == nil {
-				logrus.WithField("prowjob", prowJob.Metadata.Name).Info("Deleted prowjob.")
+			if err := c.kc.DeleteProwJob(prowJob.Metadata.Name); err == nil {
+				c.logger.WithField("prowjob", prowJob.Metadata.Name).Info("Deleted prowjob.")
 			} else {
-				logrus.WithField("prowjob", prowJob.Metadata.Name).WithError(err).Error("Error deleting prowjob.")
+				c.logger.WithField("prowjob", prowJob.Metadata.Name).WithError(err).Error("Error deleting prowjob.")
 			}
 		}
 	}
@@ -108,7 +123,7 @@ func clean(kc, pkc kubeClient, configAgent configAgent) {
 	// Keep track of what periodic jobs are in the config so we will
 	// not clean up their last prowjob.
 	isActivePeriodic := make(map[string]bool)
-	for _, p := range configAgent.Config().Periodics {
+	for _, p := range c.configAgent.Config().Periodics {
 		isActivePeriodic[p.Name] = true
 	}
 	// Get the jobs that we need to retain so horologium can continue working
@@ -125,30 +140,30 @@ func clean(kc, pkc kubeClient, configAgent configAgent) {
 			continue
 		}
 		if prowJob.Complete() && time.Since(prowJob.Status.StartTime) > maxProwJobAge {
-			if err := kc.DeleteProwJob(prowJob.Metadata.Name); err == nil {
-				logrus.WithField("prowjob", prowJob.Metadata.Name).Info("Deleted prowjob.")
+			if err := c.kc.DeleteProwJob(prowJob.Metadata.Name); err == nil {
+				c.logger.WithField("prowjob", prowJob.Metadata.Name).Info("Deleted prowjob.")
 			} else {
-				logrus.WithField("prowjob", prowJob.Metadata.Name).WithError(err).Error("Error deleting prowjob.")
+				c.logger.WithField("prowjob", prowJob.Metadata.Name).WithError(err).Error("Error deleting prowjob.")
 			}
 		}
 	}
 
 	// Now clean up old pods.
 	selector := fmt.Sprintf("%s = %s", kube.CreatedByProw, "true")
-	pods, err := pkc.ListPods(selector)
+	pods, err := c.pkc.ListPods(selector)
 	if err != nil {
-		logrus.WithError(err).Error("Error listing pods.")
+		c.logger.WithError(err).Error("Error listing pods.")
 		return
 	}
-	maxPodAge := configAgent.Config().Sinker.MaxPodAge
+	maxPodAge := c.configAgent.Config().Sinker.MaxPodAge
 	for _, pod := range pods {
 		if (pod.Status.Phase == kube.PodSucceeded || pod.Status.Phase == kube.PodFailed) &&
 			time.Since(pod.Status.StartTime) > maxPodAge {
 			// Delete old completed pods. Don't quit if we fail to delete one.
-			if err := pkc.DeletePod(pod.Metadata.Name); err == nil {
-				logrus.WithField("pod", pod.Metadata.Name).Info("Deleted old completed pod.")
+			if err := c.pkc.DeletePod(pod.Metadata.Name); err == nil {
+				c.logger.WithField("pod", pod.Metadata.Name).Info("Deleted old completed pod.")
 			} else {
-				logrus.WithField("pod", pod.Metadata.Name).WithError(err).Error("Error deleting pod.")
+				c.logger.WithField("pod", pod.Metadata.Name).WithError(err).Error("Error deleting pod.")
 			}
 		}
 	}

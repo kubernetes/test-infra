@@ -25,6 +25,22 @@ config_setting(
     visibility = ["//visibility:public"],
 )
 
+py_binary(
+    name = "bigquery",
+    srcs = ["bigquery.py"],
+    data = glob(["configs/**"]) + select({
+        ":darwin": ["@jq_osx//file"],
+        ":k8": ["@jq_linux//file"],
+    }),
+    deps = [
+        "@dateutil//:dateutil",
+        "@influxdb//:influxdb",
+        "@pytz//:pytz",
+        "@requests//:requests",
+        "@yaml//:yaml",
+    ],
+)
+
 py_test(
     name = "bigquery_test",
     srcs = [

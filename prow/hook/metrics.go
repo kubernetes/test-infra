@@ -36,8 +36,8 @@ type Metrics struct {
 	WebhookCounter *prometheus.CounterVec
 }
 
-func NewMetrics() (*Metrics, error) {
+func NewMetrics() *Metrics {
 	return &Metrics{
 		WebhookCounter: webhookCounter,
-	}, nil
+	}
 }

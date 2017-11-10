@@ -31,6 +31,7 @@ import influxdb
 import requests
 import yaml
 
+
 def check(*cmd, **keyargs):
     """Logs and runs the command, raising on errors."""
     print >>sys.stderr, 'Run:', cmd
@@ -43,6 +44,7 @@ def check(*cmd, **keyargs):
         return
     subprocess.check_call(*cmd, **keyargs)
 
+
 def validate_metric_name(name):
     """Raise ValueError if name is non-trivial."""
     # Regex '$' symbol matches an optional terminating new line
@@ -51,12 +53,14 @@ def validate_metric_name(name):
     if not re.match(r'^[\w-]+$', name) or name[-1] == '\n':
         raise ValueError(name)
 
+
 def do_jq(jq_filter, data_filename, out_filename, jq_bin='jq'):
     """Executes jq on a file and outputs the results to a file."""
     with open(out_filename, 'w') as out_file:
         check([jq_bin, jq_filter, data_filename], stdout=out_file)
 
-class BigQueryer(object):
+
+class BigQuerier(object):
     def __init__(self, project, bucket_path, backfill_days, influx_client):
         if not project:
             raise ValueError('project', project)
@@ -169,16 +173,18 @@ class BigQueryer(object):
             if not last_time:
                 last_time = int(time.time() - (60*60*24*self.backfill_days))
         else:
-            # InfluxDB is not enabled so skip backfill, just query for last day.
-            last_time = int(time.time() - (60*60*24))
+            # InfluxDB is not enabled so skip backfill so use default
+            last_time = int(time.time() - (60*60*24)*self.backfill_days)
 
         # replace tag with formatted time
         config['query'] = config['query'].replace('<LAST_DATA_TIME>', str(last_time))
+
 
 def all_configs(search='**.yaml'):
     """Returns config files in the metrics dir."""
     return glob.glob(os.path.join(
         os.path.dirname(__file__), 'configs', search))
+
 
 def make_influx_client():
     """Make an InfluxDB client from config at path $VELODROME_INFLUXDB_CONFIG"""
@@ -203,6 +209,7 @@ def make_influx_client():
         database='metrics',
     )
 
+
 def ints_to_floats(point):
     for key, val in point.iteritems():
         if key == 'time':
@@ -213,9 +220,10 @@ def ints_to_floats(point):
             point[key] = ints_to_floats(val)
     return point
 
+
 def main(configs, project, bucket_path, backfill_days):
     """Loads metric config files and runs each metric."""
-    queryer = BigQueryer(project, bucket_path, backfill_days, make_influx_client())
+    queryer = BigQuerier(project, bucket_path, backfill_days, make_influx_client())
 
     # the 'bq show' command is called as a hack to dodge the config prompts that bq presents
     # the first time it is run. A newline is passed to stdin to skip the prompt for default project

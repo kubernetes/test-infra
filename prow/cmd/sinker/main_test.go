@@ -22,6 +22,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/sirupsen/logrus"
+
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/kube/labels"
@@ -265,7 +267,13 @@ func TestClean(t *testing.T) {
 		ProwJobs: prowJobs,
 	}
 	// Run
-	clean(kc, kc, newFakeConfigAgent())
+	c := controller{
+		logger:      logrus.WithField("component", "sinker"),
+		kc:          kc,
+		pkc:         kc,
+		configAgent: newFakeConfigAgent(),
+	}
+	c.clean()
 	// Check
 	if len(deletedPods) != len(kc.DeletedPods) {
 		var got []string

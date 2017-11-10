@@ -41,7 +41,7 @@
         - 'test-infra/.git/'
         external-deletion-command: 'sudo rm -rf %s'
     - timeout:
-        timeout: 130
+        timeout: 200
         fail: true
     builders:
     - shell: |
@@ -84,7 +84,7 @@
         max-total: 12
         job-name: pull-kubernetes-kubemark-e2e-gce-big
         repo-name: 'k8s.io/kubernetes'
-        timeout: 160
+        timeout: 100
     - cadvisor-e2e:  # owner: stclair@google.com
         job-name: pull-cadvisor-e2e
         max-total: 5

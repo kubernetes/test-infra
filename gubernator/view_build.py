@@ -71,8 +71,9 @@ class JUnitParser(object):
             try:
                 tree = ET.fromstring(re.sub(r'[\x00\x80-\xFF]+', '?', xml))
             except ET.ParseError, e:
-                self.failed.append(
-                    ('Gubernator Internal Fatal XML Parse Error', 0.0, str(e), filename, ''))
+                if re.match(r'junit.*\.xml', os.path.basename(filename)):
+                    self.failed.append(
+                        ('Gubernator Internal Fatal XML Parse Error', 0.0, str(e), filename, ''))
                 return
         if tree.tag == 'testsuite':
             self.handle_suite(tree, filename)
@@ -138,8 +139,8 @@ def build_details(build_dir):
     started = json.loads(started)
     finished = json.loads(finished)
 
-    junit_paths = [f.filename for f in view_base.gcs_ls('%s/artifacts' % build_dir)
-                   if re.match(r'junit_.*\.xml', os.path.basename(f.filename))]
+    junit_paths = [f.filename for f in view_base.gcs_ls_recursive('%s/artifacts' % build_dir)
+                   if f.filename.endswith('.xml')]
 
     junit_futures = {f: gcs_async.read(f) for f in junit_paths}
 

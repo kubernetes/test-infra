@@ -83,9 +83,12 @@ type Periodic struct {
 	Agent string `json:"agent"`
 	// Kubernetes pod spec.
 	Spec *kube.PodSpec `json:"spec,omitempty"`
-	// Interval to wait between two runs of the job.
-	Interval string   `json:"interval"`
-	Tags     []string `json:"tags,omitempty"`
+	// (deprecated)Interval to wait between two runs of the job.
+	Interval string `json:"interval"`
+	// Cron representation of job trigger time
+	Cron string `json:"cron"`
+	// Tags for config entries
+	Tags []string `json:"tags,omitempty"`
 	// Run these jobs after successfully running this one.
 	RunAfterSuccess []Periodic `json:"run_after_success"`
 
