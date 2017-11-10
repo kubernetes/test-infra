@@ -25,6 +25,7 @@ import (
 	"time"
 
 	"github.com/ghodss/yaml"
+	"github.com/robfig/cron"
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/kube"
@@ -240,12 +241,22 @@ func parseConfig(c *Config) error {
 	}
 	// Set the interval on the periodic jobs. It doesn't make sense to do this
 	// for child jobs.
-	for j := range c.Periodics {
-		d, err := time.ParseDuration(c.Periodics[j].Interval)
-		if err != nil {
-			return fmt.Errorf("cannot parse duration for %s: %v", c.Periodics[j].Name, err)
+	for j, p := range c.Periodics {
+		if p.Cron != "" && p.Interval != "" {
+			return fmt.Errorf("cron and interval cannot be both set in periodic %s", p.Name)
+		} else if p.Cron == "" && p.Interval == "" {
+			return fmt.Errorf("cron and interval cannot be both empty in periodic %s", p.Name)
+		} else if p.Cron != "" {
+			if _, err := cron.Parse(p.Cron); err != nil {
+				return fmt.Errorf("invalid cron string %s in periodic %s: %v", p.Cron, p.Name, err)
+			}
+		} else {
+			d, err := time.ParseDuration(c.Periodics[j].Interval)
+			if err != nil {
+				return fmt.Errorf("cannot parse duration for %s: %v", c.Periodics[j].Name, err)
+			}
+			c.Periodics[j].interval = d
 		}
-		c.Periodics[j].interval = d
 	}
 
 	if err := ValidateController(&c.Plank.Controller); err != nil {

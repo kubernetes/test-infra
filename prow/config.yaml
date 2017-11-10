@@ -15381,7 +15381,7 @@ periodics:
         defaultMode: 256
         secretName: aws-cred
 
-- interval: 2h
+- cron: "30 8 * * 6"
   agent: kubernetes
   name: ci-kubernetes-e2e-kops-aws-cncf-canary
   spec:
@@ -17083,7 +17083,7 @@ periodics:
         secretName: ssh-key-secret
 
 - name: ci-kubernetes-kubemark-5-prow-canary
-  interval: 1h
+  cron: "0 * * * *"
   agent: kubernetes
   spec:
     containers:

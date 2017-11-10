@@ -27,7 +27,6 @@ import (
 	"testing"
 
 	"github.com/ghodss/yaml"
-	"github.com/robfig/cron"
 
 	"k8s.io/test-infra/prow/kube"
 )
@@ -866,26 +865,6 @@ func TestLatestUsesImagePullPolicy(t *testing.T) {
 		if periodic.Spec != nil {
 			if err := CheckLatestUsesImagePullPolicy(periodic.Spec); err != nil {
 				t.Errorf("Error in periodic %q: %v", periodic.Name, err)
-			}
-		}
-	}
-}
-
-// Make sure periodic jobs has valid cron and interval
-func TestValidPeriodic(t *testing.T) {
-	c, err := Load("../config.yaml")
-	if err != nil {
-		t.Fatalf("Could not load config: %v", err)
-	}
-
-	for _, periodic := range c.Periodics {
-		if periodic.Cron != "" && periodic.Interval != "" {
-			t.Errorf("cron and interval cannot be both set in periodic %s", periodic.Name)
-		} else if periodic.Cron == "" && periodic.Interval == "" {
-			t.Errorf("cron and interval cannot be both empty in periodic %s", periodic.Name)
-		} else if periodic.Cron != "" {
-			if _, err := cron.Parse(periodic.Cron); err != nil {
-				t.Errorf("invalid cron string %s in periodic %s: %v", periodic.Cron, periodic.Name, err)
 			}
 		}
 	}
