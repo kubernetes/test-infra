@@ -1097,6 +1097,23 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cosbeta-k8sdev-default
 - name: ci-kubernetes-e2enode-cosbeta-k8sdev-serial
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cosbeta-k8sdev-serial
+- name: ci-kubernetes-e2enode-cosbeta-k8sbeta-default
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cosbeta-k8sbeta-default
+- name: ci-kubernetes-e2enode-cosbeta-k8sbeta-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cosbeta-k8sbeta-serial
+- name: ci-kubernetes-e2enode-cosbeta-k8sstable1-default
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cosbeta-k8sstable1-default
+- name: ci-kubernetes-e2enode-cosbeta-k8sstable1-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cosbeta-k8sstable1-serial
+- name: ci-kubernetes-e2enode-cosbeta-k8sstable2-default
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cosbeta-k8sstable2-default
+- name: ci-kubernetes-e2enode-cosbeta-k8sstable2-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cosbeta-k8sstable2-serial
+- name: ci-kubernetes-e2enode-cosbeta-k8sstable3-default
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cosbeta-k8sstable3-default
+- name: ci-kubernetes-e2enode-cosbeta-k8sstable3-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cosbeta-k8sstable3-serial
+
 - name: ci-kubernetes-e2enode-cosstable1-k8sdev-default
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-cosstable1-k8sdev-default
 - name: ci-kubernetes-e2enode-cosstable1-k8sdev-serial
@@ -3415,6 +3432,22 @@ dashboards:
     test_group_name: ci-kubernetes-e2enode-cosbeta-k8sdev-default
   - name: e2enode-cosbeta-k8sdev-serial
     test_group_name: ci-kubernetes-e2enode-cosbeta-k8sdev-serial
+  - name: e2enode-cosbeta-k8sbeta-default
+    test_group_name: ci-kubernetes-e2enode-cosbeta-k8sbeta-default
+  - name: e2enode-cosbeta-k8sbeta-serial
+    test_group_name: ci-kubernetes-e2enode-cosbeta-k8sbeta-serial
+  - name: e2enode-cosbeta-k8sstable1-default
+    test_group_name: ci-kubernetes-e2enode-cosbeta-k8sstable1-default
+  - name: e2enode-cosbeta-k8sstable1-serial
+    test_group_name: ci-kubernetes-e2enode-cosbeta-k8sstable1-serial
+  - name: e2enode-cosbeta-k8sstable2-default
+    test_group_name: ci-kubernetes-e2enode-cosbeta-k8sstable2-default
+  - name: e2enode-cosbeta-k8sstable2-serial
+    test_group_name: ci-kubernetes-e2enode-cosbeta-k8sstable2-serial
+  - name: e2enode-cosbeta-k8sstable3-default
+    test_group_name: ci-kubernetes-e2enode-cosbeta-k8sstable3-default
+  - name: e2enode-cosbeta-k8sstable3-serial
+    test_group_name: ci-kubernetes-e2enode-cosbeta-k8sstable3-serial
   - name: e2enode-cosstable1-k8sdev-default
     test_group_name: ci-kubernetes-e2enode-cosstable1-k8sdev-default
   - name: e2enode-cosstable1-k8sdev-serial

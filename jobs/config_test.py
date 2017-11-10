@@ -698,6 +698,14 @@ class JobTest(unittest.TestCase):
             'ci-kubernetes-e2e-gce-cosstable1-k8sstable3-slow': 'ci-kubernetes-e2e-gce-cos*',
             'ci-kubernetes-e2enode-cosbeta-k8sdev-default': 'ci-kubernetes-e2e-gce-cos*',
             'ci-kubernetes-e2enode-cosbeta-k8sdev-serial': 'ci-kubernetes-e2e-gce-cos*',
+            'ci-kubernetes-e2enode-cosbeta-k8sbeta-default': 'ci-kubernetes-e2e-gce-cos*',
+            'ci-kubernetes-e2enode-cosbeta-k8sbeta-serial': 'ci-kubernetes-e2e-gce-cos*',
+            'ci-kubernetes-e2enode-cosbeta-k8sstable1-default': 'ci-kubernetes-e2e-gce-cos*',
+            'ci-kubernetes-e2enode-cosbeta-k8sstable1-serial': 'ci-kubernetes-e2e-gce-cos*',
+            'ci-kubernetes-e2enode-cosbeta-k8sstable2-default': 'ci-kubernetes-e2e-gce-cos*',
+            'ci-kubernetes-e2enode-cosbeta-k8sstable2-serial': 'ci-kubernetes-e2e-gce-cos*',
+            'ci-kubernetes-e2enode-cosbeta-k8sstable3-default': 'ci-kubernetes-e2e-gce-cos*',
+            'ci-kubernetes-e2enode-cosbeta-k8sstable3-serial': 'ci-kubernetes-e2e-gce-cos*',
 
             # The ubuntu image validation jobs intentionally share projects.
             'ci-kubernetes-e2e-gce-ubuntudev-k8sdev-default': 'ci-kubernetes-e2e-gce-ubuntu*',
