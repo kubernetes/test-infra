@@ -133,6 +133,27 @@ type Container struct {
 	Resources       Resources        `json:"resources,omitempty"`
 	SecurityContext *SecurityContext `json:"securityContext,omitempty"`
 	VolumeMounts    []VolumeMount    `json:"volumeMounts,omitempty"`
+	Lifecycle       *Lifecycle       `json:"lifecycle,omitempty"`
+}
+
+// Lifecycle describes actions that the management system should take in response to container lifecycle
+// events. For the PostStart and PreStop lifecycle handlers, management of the container blocks
+// until the action is complete, unless the container process fails, in which case the handler is aborted.
+type Lifecycle struct {
+	PostStart *Handler `json:"postStart,omitempty"`
+	PreStop   *Handler `json:"preStop,omitempty"`
+}
+
+// Handler defines a specific action that should be taken
+// TODO: pass structured data to these actions, and document that data here.
+type Handler struct {
+	// Exec specifies the action to take.
+	Exec *ExecAction `json:"exec,omitempty"`
+}
+
+// ExecAction describes a "run in container" action.
+type ExecAction struct {
+	Command []string `json:"command,omitempty"`
 }
 
 type Port struct {
