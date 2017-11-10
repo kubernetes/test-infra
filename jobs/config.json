@@ -8911,6 +8911,15 @@
       "sig-testing"
     ]
   },
+  "periodic-kubernetes-e2e-debs-pushed": {
+    "args": [
+      "./tests/e2e/pinned_releases.sh"
+    ],
+    "scenario": "execute",
+    "sigOwners": [
+      "sig-cluster-lifecycle"
+    ]
+  },
   "periodic-kubernetes-e2e-kubeadm-gce-1-6": {
     "args": [
       "--cluster=",

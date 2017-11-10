@@ -947,6 +947,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-1-8
 - name: ci-kubernetes-e2e-kubeadm-gce-1-7-on-1-8
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-1-7-on-1-8
+- name: periodic-kubernetes-e2e-debs-pushed
+  gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-e2e-debs-pushed
 # upgrade CI tests
 - name: ci-kubernetes-e2e-gce-gci-latest-upgrade-etcd
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-latest-upgrade-etcd
@@ -2439,6 +2441,8 @@ dashboards:
     test_group_name: ci-kubernetes-soak-gce-gci
   - name: kubeadm-gce
     test_group_name: ci-kubernetes-e2e-kubeadm-gce
+  - name: periodic-kubernetes-e2e-debs-pushed
+    test_group_name: periodic-kubernetes-e2e-debs-pushed
 
 - name: sig-cluster-lifecycle-1.6-upgrade-skew
   dashboard_tab:
@@ -2495,6 +2499,8 @@ dashboards:
     test_group_name: periodic-kubernetes-e2e-kubeadm-gce-1-8
   - name: periodic-kubernetes-e2e-kubeadm-gce-upgrade-1-7-1-8
     test_group_name: periodic-kubernetes-e2e-kubeadm-gce-upgrade-1-7-1-8
+  - name: periodic-kubernetes-e2e-debs-pushed
+    test_group_name: periodic-kubernetes-e2e-debs-pushed
   - name: gci-gce-1.8
     test_group_name: ci-kubernetes-e2e-gci-gce-stable1
   - name: gci-gce-slow-1.8
@@ -3160,6 +3166,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-7-on-1-8
   - name: kubeadm-gce-upgrade-1.7-1.8
     test_group_name: periodic-kubernetes-e2e-kubeadm-gce-upgrade-1-7-1-8
+  - name: periodic-kubernetes-e2e-debs-pushed
+    test_group_name: periodic-kubernetes-e2e-debs-pushed
   - name: kubeadm-gce-1.8
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-8
   - name: periodic-kubeadm-gce-1.8
