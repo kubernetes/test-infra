@@ -9416,7 +9416,8 @@
   },
   "pull-kubernetes-multicluster-ingress-test": {
     "args": [
-      "make test"
+      "make",
+      "test"
     ],
     "scenario": "execute",
     "sigOwners": [
