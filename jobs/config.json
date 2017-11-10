@@ -146,7 +146,7 @@
     ],
     "scenario": "execute",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-aws"
     ]
   },
   "ci-kubernetes-bazel-build": {
