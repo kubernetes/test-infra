@@ -14,7 +14,8 @@ triggers:
 
 approve:
 - repos:
-  - kubernetes
+  - kubernetes/test-infra
+  - kubernetes/kubectl
   implicit_self_approve: true
 
 blockades:
