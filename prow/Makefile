@@ -162,4 +162,7 @@ tide-image: git-image
 tide-deployment: get-cluster-credentials
 	kubectl apply -f cluster/tide_deployment.yaml
 
-.PHONY: hook-image hook-deployment hook-service sinker-image sinker-deployment deck-image deck-deployment deck-service splice-image splice-deployment tot-image tot-service tot-deployment horologium-image horologium-deployment plank-image plank-deployment jenkins-operator-image jenkins-operator-deployment tide-image tide-deployment
+mem-range-deployment: get-build-cluster-credentials
+	kubectl apply -f cluster/mem_limit_range.yaml
+
+.PHONY: hook-image hook-deployment hook-service sinker-image sinker-deployment deck-image deck-deployment deck-service splice-image splice-deployment tot-image tot-service tot-deployment horologium-image horologium-deployment plank-image plank-deployment jenkins-operator-image jenkins-operator-deployment tide-image tide-deployment mem-range-deployment
