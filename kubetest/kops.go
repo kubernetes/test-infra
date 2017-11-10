@@ -370,7 +370,7 @@ func (k *kops) dumpAllNodes(ctx context.Context, d *logDumper) error {
 	}
 
 	var additionalIPs []string
-	dump, err := runKopsDump(k.cluster)
+	dump, err := k.runKopsDump()
 	if err != nil {
 		log.Printf("unable to get cluster status from kops: %v", err)
 	} else {
@@ -460,8 +460,8 @@ func (o *kopsDumpInstance) String() string {
 }
 
 // runKopsDump runs a kops toolbox dump to dump the status of the cluster
-func runKopsDump(clusterName string) (*kopsDump, error) {
-	o, err := output(exec.Command("kops", "toolbox", "dump", "--name", clusterName, "-ojson"))
+func (k *kops) runKopsDump() (*kopsDump, error) {
+	o, err := output(exec.Command(k.path, "toolbox", "dump", "--name", k.cluster, "-ojson"))
 	if err != nil {
 		log.Printf("error running kops toolbox dump: %s\n%s", wrapError(err).Error(), string(o))
 		return nil, err
