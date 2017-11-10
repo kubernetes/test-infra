@@ -2942,7 +2942,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-apps"
     ]
   },
   "ci-kubernetes-e2e-gce-ubuntudev-k8sbeta-default": {
