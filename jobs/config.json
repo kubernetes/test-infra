@@ -2206,7 +2206,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-cluster-lifecycle"
     ]
   },
   "ci-kubernetes-e2e-gce-large-correctness": {
