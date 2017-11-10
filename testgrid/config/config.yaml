@@ -1414,6 +1414,36 @@ test_groups:
   - configuration_value: master_os_image
   - configuration_value: Commit
   - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-cosbeta-k8sdev-soak
+  gcs_prefix: kubernetes-jenkins/soak/ci-kubernetes-e2e-gke-cosbeta-k8sdev-soak
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-cosbeta-k8sbeta-soak
+  gcs_prefix: kubernetes-jenkins/soak/ci-kubernetes-e2e-gke-cosbeta-k8sbeta-soak
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-cosbeta-k8sstable1-soak
+  gcs_prefix: kubernetes-jenkins/soak/ci-kubernetes-e2e-gke-cosbeta-k8sstable1-soak
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-cosbeta-k8sstable2-soak
+  gcs_prefix: kubernetes-jenkins/soak/ci-kubernetes-e2e-gke-cosbeta-k8sstable2-soak
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-cosbeta-k8sstable3-soak
+  gcs_prefix: kubernetes-jenkins/soak/ci-kubernetes-e2e-gke-cosbeta-k8sstable3-soak
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 # master-2 to master
 - name: ci-kubernetes-e2e-gke-cvm-stable-gci-master-upgrade-master
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cvm-stable-gci-master-upgrade-master
@@ -3546,6 +3576,16 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-cosstable1-k8sstable3-slow
   - name: e2e-gce-cosstable1-k8sstable3-serial
     test_group_name: ci-kubernetes-e2e-gce-cosstable1-k8sstable3-serial
+  - name: e2e-gke-cosbeta-k8sdev-soak
+    test_group_name: ci-kubernetes-e2e-gke-cosbeta-k8sdev-soak
+  - name: e2e-gke-cosbeta-k8sbeta-soak
+    test_group_name: ci-kubernetes-e2e-gke-cosbeta-k8sbeta-soak
+  - name: e2e-gke-cosbeta-k8sstable1-soak
+    test_group_name: ci-kubernetes-e2e-gke-cosbeta-k8sstable1-soak
+  - name: e2e-gke-cosbeta-k8sstable2-soak
+    test_group_name: ci-kubernetes-e2e-gke-cosbeta-k8sstable2-soak
+  - name: e2e-gke-cosbeta-k8sstable3-soak
+    test_group_name: ci-kubernetes-e2e-gke-cosbeta-k8sstable3-soak
 
 - name: sig-node-kubelet
   dashboard_tab:
