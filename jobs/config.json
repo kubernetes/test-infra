@@ -9219,7 +9219,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-gcp"
     ]
   },
   "pull-kubernetes-e2e-gce-device-plugin-gpu": {
@@ -9291,7 +9291,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-gcp"
     ]
   },
   "pull-kubernetes-e2e-kops-aws": {
