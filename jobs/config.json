@@ -7,7 +7,7 @@
     ],
     "scenario": "canarypush",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-node"
     ]
   },
   "ci-cadvisor-node-kubelet": {
@@ -16,7 +16,7 @@
     ],
     "scenario": "execute",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-node"
     ]
   },
   "ci-cri-containerd-build": {
@@ -9020,7 +9020,7 @@
     ],
     "scenario": "execute",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-node"
     ]
   },
   "pull-charts-e2e": {
