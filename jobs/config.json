@@ -8730,7 +8730,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-scalability"
     ]
   },
   "ci-perf-tests-kubemark-100-benchmark": {
@@ -8739,7 +8739,7 @@
     ],
     "scenario": "execute",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-scalability"
     ]
   },
   "ci-test-infra-bazel": {
