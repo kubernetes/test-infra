@@ -8845,7 +8845,7 @@
     ],
     "scenario": "execute",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-testing"
     ]
   },
   "periodic-kubernetes-bazel-build-1-6": {
