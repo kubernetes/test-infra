@@ -38,7 +38,7 @@ endif
 all: build
 
 kubetest:
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o kubetest ../../kubetest
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o kubetest -ldflags "-X main.BuildTag=${TAG}" ../../kubetest
 
 build: kubetest
 	@echo Building with go:$(GO) and bazel:$(BAZEL)

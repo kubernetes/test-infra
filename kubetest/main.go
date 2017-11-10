@@ -42,6 +42,12 @@ import (
 const defaultGinkgoParallel = 25
 
 var (
+	// BuildTag is set by the build process to diagnostic information to identify the build,
+	// ideally including the git SHA
+	BuildTag = ""
+)
+
+var (
 	artifacts = filepath.Join(os.Getenv("WORKSPACE"), "_artifacts")
 	interrupt = time.NewTimer(time.Duration(0)) // interrupt testing at this time.
 	terminate = time.NewTimer(time.Duration(0)) // terminate testing at this time.
@@ -288,6 +294,8 @@ func validateFlags(o *options) error {
 }
 
 func main() {
+	fmt.Fprintf(os.Stderr, "kubetest (tag:%s)\n", BuildTag)
+
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	pflag.CommandLine = pflag.NewFlagSet(os.Args[0], pflag.ContinueOnError)
 	o := defineFlags()
