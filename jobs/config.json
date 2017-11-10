@@ -318,7 +318,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-node"
     ]
   },
   "ci-kubernetes-e2e-cos-docker-validation-serial": {
@@ -336,7 +336,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-node"
     ]
   },
   "ci-kubernetes-e2e-cos-docker-validation-slow": {
@@ -355,7 +355,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-node"
     ]
   },
   "ci-kubernetes-e2e-gce-1-6-1-7-cvm-kubectl-skew": {
@@ -8477,7 +8477,7 @@
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
-      "UNKNOWN"
+      "sig-node"
     ]
   },
   "ci-kubernetes-soak-gce-1-6": {
