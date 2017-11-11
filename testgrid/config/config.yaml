@@ -1420,8 +1420,20 @@ test_groups:
   - configuration_value: node_os_image
   - configuration_value: Commit
   - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-cosbeta-k8sdev-stackdriver
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cosbeta-k8sdev-stackdriver
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gke-cosbeta-k8sbeta-soak
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cosbeta-k8sbeta-soak
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-cosbeta-k8sbeta-stackdriver
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cosbeta-k8sbeta-stackdriver
   column_header:
   - configuration_value: node_os_image
   - configuration_value: Commit
@@ -1432,14 +1444,32 @@ test_groups:
   - configuration_value: node_os_image
   - configuration_value: Commit
   - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-cosbeta-k8sstable1-stackdriver
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cosbeta-k8sstable1-stackdriver
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gke-cosbeta-k8sstable2-soak
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cosbeta-k8sstable2-soak
   column_header:
   - configuration_value: node_os_image
   - configuration_value: Commit
   - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-cosbeta-k8sstable2-stackdriver
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cosbeta-k8sstable2-stackdriver
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gke-cosbeta-k8sstable3-soak
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cosbeta-k8sstable3-soak
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-cosbeta-k8sstable3-stackdriver
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cosbeta-k8sstable3-stackdriver
   column_header:
   - configuration_value: node_os_image
   - configuration_value: Commit
@@ -3578,14 +3608,24 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-cosstable1-k8sstable3-serial
   - name: e2e-gke-cosbeta-k8sdev-soak
     test_group_name: ci-kubernetes-e2e-gke-cosbeta-k8sdev-soak
+  - name: e2e-gke-cosbeta-k8sdev-stackdriver
+    test_group_name: ci-kubernetes-e2e-gke-cosbeta-k8sdev-stackdriver
   - name: e2e-gke-cosbeta-k8sbeta-soak
     test_group_name: ci-kubernetes-e2e-gke-cosbeta-k8sbeta-soak
+  - name: e2e-gke-cosbeta-k8sbeta-stackdriver
+    test_group_name: ci-kubernetes-e2e-gke-cosbeta-k8sbeta-stackdriver
   - name: e2e-gke-cosbeta-k8sstable1-soak
     test_group_name: ci-kubernetes-e2e-gke-cosbeta-k8sstable1-soak
+  - name: e2e-gke-cosbeta-k8sstable1-stackdriver
+    test_group_name: ci-kubernetes-e2e-gke-cosbeta-k8sstable1-stackdriver
   - name: e2e-gke-cosbeta-k8sstable2-soak
     test_group_name: ci-kubernetes-e2e-gke-cosbeta-k8sstable2-soak
+  - name: e2e-gke-cosbeta-k8sstable2-stackdriver
+    test_group_name: ci-kubernetes-e2e-gke-cosbeta-k8sstable2-stackdriver
   - name: e2e-gke-cosbeta-k8sstable3-soak
     test_group_name: ci-kubernetes-e2e-gke-cosbeta-k8sstable3-soak
+  - name: e2e-gke-cosbeta-k8sstable3-stackdriver
+    test_group_name: ci-kubernetes-e2e-gke-cosbeta-k8sstable3-stackdriver
 
 - name: sig-node-kubelet
   dashboard_tab:
