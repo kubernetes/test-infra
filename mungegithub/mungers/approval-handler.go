@@ -170,28 +170,31 @@ func (h *ApprovalHandler) Munge(obj *github.MungeObject) {
 		}
 	}
 
-	notificationMatcher := c.MungerNotificationName(approvers.ApprovalNotificationName, h.botName)
-
-	notifications := c.FilterComments(commentsFromIssueComments, notificationMatcher)
-	latestNotification := notifications.GetLast()
-	latestApprove := approveComments.GetLast()
-	newMessage := h.updateNotification(obj.Org(), obj.Project(), latestNotification, latestApprove, approversHandler)
-	if newMessage != nil {
-		for _, notif := range notifications {
-			obj.DeleteComment(notif.Source.(*githubapi.IssueComment))
-		}
-		obj.WriteComment(*newMessage)
-	}
-
+	forceNotification := false
 	if !approversHandler.IsApproved() {
 		if obj.HasLabel(approvedLabel) && !humanAddedApproved(obj) {
 			obj.RemoveLabel(approvedLabel)
+			forceNotification = true
 		}
 	} else {
 		//pr is fully approved
 		if !obj.HasLabel(approvedLabel) {
 			obj.AddLabel(approvedLabel)
+			forceNotification = true
 		}
+	}
+
+	notificationMatcher := c.MungerNotificationName(approvers.ApprovalNotificationName, h.botName)
+
+	notifications := c.FilterComments(commentsFromIssueComments, notificationMatcher)
+	latestNotification := notifications.GetLast()
+	latestApprove := approveComments.GetLast()
+	newMessage := h.updateNotification(obj.Org(), obj.Project(), latestNotification, latestApprove, forceNotification, approversHandler)
+	if newMessage != nil {
+		for _, notif := range notifications {
+			obj.DeleteComment(notif.Source.(*githubapi.IssueComment))
+		}
+		obj.WriteComment(*newMessage)
 	}
 
 }
@@ -216,8 +219,8 @@ func getApproveComments(comments []*c.Comment, botName string) c.FilteredComment
 	return c.FilterComments(comments, c.And{c.HumanActor(botName), c.Or{approverMatcher, lgtmMatcher}})
 }
 
-func (h *ApprovalHandler) updateNotification(org, project string, latestNotification, latestApprove *c.Comment, approversHandler approvers.Approvers) *string {
-	if latestNotification != nil && (latestApprove == nil || latestApprove.CreatedAt.Before(*latestNotification.CreatedAt)) {
+func (h *ApprovalHandler) updateNotification(org, project string, latestNotification, latestApprove *c.Comment, forceNotification bool, approversHandler approvers.Approvers) *string {
+	if latestNotification != nil && forceNotification == false && (latestApprove == nil || latestApprove.CreatedAt.Before(*latestNotification.CreatedAt)) {
 		// if we have an existing notification AND
 		// the latestApprove happened before we updated
 		// the notification, we do NOT need to update
