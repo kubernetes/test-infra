@@ -83,7 +83,7 @@ func (r Repos) Main() *Repo {
 
 // ParseRepos converts the refs related arguments to []Repo
 // each repoArgs is expect to be "name=branch:commit,branch:commit"
-// with one or more comma seperated "branch:commit".
+// with one or more comma separated "branch:commit".
 // EG: "k8s.io/kubernetes=master:42e2ca8c18c93ba25eb0e5bd02ecba2eaa05e871,52057:b4f639f57ae0a89cdf1b43d1810b617c76f4b1b3"
 func ParseRepos(repoArgs []string) (Repos, error) {
 	repos := []Repo{}
