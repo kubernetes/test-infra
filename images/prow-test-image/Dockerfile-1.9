@@ -20,8 +20,8 @@ LABEL maintainer="Benjamin Elder <bentheelder@google.com>"
 
 # Setup workspace and symlink to gopath
 WORKDIR /workspace
-RUN mkdir -p /go/src/k8s.io/kubernetes /workspace \
-    && ln -s /go/src/k8s.io/kubernetes /workspace/kubernetes
+RUN mkdir -p /go/src/k8s.io/kubernetes /workspace/k8s.io \
+    && ln -s /go/src/k8s.io/kubernetes /workspace/k8s.io/kubernetes
 ENV WORKSPACE=/workspace \
     TERM=xterm
 
@@ -48,9 +48,7 @@ RUN apt-get -o Acquire::Check-Valid-Until=false update && apt-get install -y \
 RUN go get \
         github.com/golang/lint/golint
 
-
 # install gcloud
-
 ENV GCLOUD_VERSION 163.0.0
 RUN wget https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-$GCLOUD_VERSION-linux-x86_64.tar.gz && \
     tar xf google-cloud-sdk-$GCLOUD_VERSION-linux-x86_64.tar.gz -C / && \
