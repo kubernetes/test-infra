@@ -545,8 +545,9 @@ func TestBazelbuildArgs(t *testing.T) {
 	}
 	pinnedJobs := map[string]string{
 		//job: reason for pinning
-		"pull-test-infra-bazel":              "test-infra adopts bazel upgrades first",
-		"ci-test-infra-bazel":                "test-infra adopts bazel upgrades first",
+		// these frequently need to be pinned...
+		//"pull-test-infra-bazel":              "test-infra adopts bazel upgrades first",
+		//"ci-test-infra-bazel":                "test-infra adopts bazel upgrades first",
 		"pull-test-infra-bazel-canary":       "canary testing the latest bazel",
 		"pull-kubernetes-bazel-build-canary": "canary testing the latest bazel",
 		"pull-kubernetes-bazel-test-canary":  "canary testing the latest bazel",
