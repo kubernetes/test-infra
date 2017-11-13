@@ -42,12 +42,13 @@ const (
 )
 
 var (
-	gkeAdditionalZones = flag.String("gke-additional-zones", "", "(gke only) List of additional Google Compute Engine zones to use. Clusters are created symmetrically across zones by default, see --gke-shape for details.")
-	gkeEnvironment     = flag.String("gke-environment", "", "(gke only) Container API endpoint to use, one of 'test', 'staging', 'prod', or a custom https:// URL")
-	gkeShape           = flag.String("gke-shape", `{"default":{"Nodes":3,"MachineType":"n1-standard-2"}}`, `(gke only) A JSON description of node pools to create. The node pool 'default' is required and used for initial cluster creation. All node pools are symmetric across zones, so the cluster total node count is {total nodes in --gke-shape} * {1 + (length of --gke-additional-zones)}. Example: '{"default":{"Nodes":999,"MachineType:":"n1-standard-1"},"heapster":{"Nodes":1, "MachineType":"n1-standard-8"}}`)
-	gkeCreateArgs      = flag.String("gke-create-args", "", "(gke only) (deprecated, use a modified --gke-create-command') Additional arguments passed directly to 'gcloud container clusters create'")
-	gkeCommandGroup    = flag.String("gke-command-group", "", "(gke only) Use a different gcloud track (e.g. 'alpha') for all 'gcloud container' commands. Note: This is added to --gke-create-command on create. You should only use --gke-command-group if you need to change the gcloud track for *every* gcloud container command.")
-	gkeCreateCommand   = flag.String("gke-create-command", defaultCreate, "(gke only) gcloud subcommand used to create a cluster. Modify if you need to pass arbitrary arguments to create.")
+	gkeAdditionalZones             = flag.String("gke-additional-zones", "", "(gke only) List of additional Google Compute Engine zones to use. Clusters are created symmetrically across zones by default, see --gke-shape for details.")
+	gkeEnvironment                 = flag.String("gke-environment", "", "(gke only) Container API endpoint to use, one of 'test', 'staging', 'prod', or a custom https:// URL")
+	gkeShape                       = flag.String("gke-shape", `{"default":{"Nodes":3,"MachineType":"n1-standard-2"}}`, `(gke only) A JSON description of node pools to create. The node pool 'default' is required and used for initial cluster creation. All node pools are symmetric across zones, so the cluster total node count is {total nodes in --gke-shape} * {1 + (length of --gke-additional-zones)}. Example: '{"default":{"Nodes":999,"MachineType:":"n1-standard-1"},"heapster":{"Nodes":1, "MachineType":"n1-standard-8"}}`)
+	gkeCreateArgs                  = flag.String("gke-create-args", "", "(gke only) (deprecated, use a modified --gke-create-command') Additional arguments passed directly to 'gcloud container clusters create'")
+	gkeCommandGroup                = flag.String("gke-command-group", "", "(gke only) Use a different gcloud track (e.g. 'alpha') for all 'gcloud container' commands. Note: This is added to --gke-create-command on create. You should only use --gke-command-group if you need to change the gcloud track for *every* gcloud container command.")
+	gkeCreateCommand               = flag.String("gke-create-command", defaultCreate, "(gke only) gcloud subcommand used to create a cluster. Modify if you need to pass arbitrary arguments to create.")
+	gkeSingleZoneNodeInstanceGroup = flag.Bool("gke-single-zone-node-instance-group", true, "(gke only) Add instance groups from a single zone to the NODE_INSTANCE_GROUP env variable.")
 
 	// poolRe matches instance group URLs of the form `https://www.googleapis.com/compute/v1/projects/some-project/zones/a-zone/instanceGroupManagers/gke-some-cluster-some-pool-90fcb815-grp`. Match meaning:
 	// m[0]: path starting with zones/
@@ -65,17 +66,18 @@ type gkeNodePool struct {
 }
 
 type gkeDeployer struct {
-	project         string
-	zone            string
-	region          string
-	location        string
-	additionalZones string
-	cluster         string
-	shape           map[string]gkeNodePool
-	network         string
-	image           string
-	commandGroup    []string
-	createCommand   []string
+	project                     string
+	zone                        string
+	region                      string
+	location                    string
+	additionalZones             string
+	cluster                     string
+	shape                       map[string]gkeNodePool
+	network                     string
+	image                       string
+	commandGroup                []string
+	createCommand               []string
+	singleZoneNodeInstanceGroup bool
 
 	setup          bool
 	kubecfg        string
@@ -240,6 +242,8 @@ func newGKE(provider, project, zone, region, network, image, cluster string, tes
 		*upgradeArgs = strings.Join(setFieldDefault(fields, "--num-nodes", numNodes), " ")
 	}
 
+	g.singleZoneNodeInstanceGroup = *gkeSingleZoneNodeInstanceGroup
+
 	return g, nil
 }
 
@@ -269,6 +273,10 @@ func (g *gkeDeployer) Up() error {
 	)
 	if g.additionalZones != "" {
 		args = append(args, "--additional-zones="+g.additionalZones)
+		if err := os.Setenv("MULTIZONE", "true"); err != nil {
+			return fmt.Errorf("error setting MULTIZONE env variable: %v", err)
+		}
+
 	}
 	// TODO(zmerlynn): The version should be plumbed through Extract
 	// or a separate flag rather than magic env variables.
@@ -402,12 +410,14 @@ func (g *gkeDeployer) getKubeConfig() error {
 // would be nice to handle this elsewhere, and not with env
 // variables. c.f. kubernetes/test-infra#3330.
 func (g *gkeDeployer) setupEnv() error {
-	// Set NODE_INSTANCE_GROUP to the names of instance groups that
-	// are in the same zone as the lexically first instance group.
+	// If singleZoneNodeInstanceGroup is true, set NODE_INSTANCE_GROUP to the
+	// names of instance groups that are in the same zone as the lexically first
+	// instance group. Otherwise set NODE_INSTANCE_GROUP to the names of all
+	// instance groups.
 	var filt []string
 	zone := g.instanceGroups[0].zone
 	for _, ig := range g.instanceGroups {
-		if ig.zone == zone {
+		if !g.singleZoneNodeInstanceGroup || ig.zone == zone {
 			filt = append(filt, ig.name)
 		}
 	}
