@@ -3936,6 +3936,517 @@ dashboards:
   - summary: Please configure this skeleton dashboard and remove this notification
     context_link: https://github.com/kubernetes/test-infra/tree/master/testgrid/config
 
+- name: sig-gcp-master
+  dashboard_tab:
+  - name: gci-gke
+    test_group_name: ci-kubernetes-e2e-gci-gke
+    column_header:
+    - configuration_value: node_os_image
+    - configuration_value: Commit
+    - configuration_value: infra-commit
+  - name: gci-gke-serial
+    test_group_name: ci-kubernetes-e2e-gci-gke-serial
+    column_header:
+    - configuration_value: node_os_image
+    - configuration_value: Commit
+    - configuration_value: infra-commit
+  - name: gci-gke-slow
+    test_group_name: ci-kubernetes-e2e-gci-gke-slow
+    column_header:
+    - configuration_value: node_os_image
+    - configuration_value: Commit
+    - configuration_value: infra-commit
+  - name: gci-gke-alpha-features
+    test_group_name: ci-kubernetes-e2e-gci-gke-alpha-features
+    column_header:
+    - configuration_value: node_os_image
+    - configuration_value: Commit
+    - configuration_value: infra-commit
+  - name: gci-gke-flaky
+    test_group_name: ci-kubernetes-e2e-gci-gke-flaky
+    column_header:
+    - configuration_value: node_os_image
+    - configuration_value: Commit
+    - configuration_value: infra-commit
+  - name: gci-gke-ingress
+    test_group_name: ci-kubernetes-e2e-gci-gke-ingress
+    column_header:
+    - configuration_value: node_os_image
+    - configuration_value: Commit
+    - configuration_value: infra-commit
+  - name: gci-gke-multizone
+    test_group_name: ci-kubernetes-e2e-gci-gke-multizone
+    column_header:
+    - configuration_value: node_os_image
+    - configuration_value: Commit
+    - configuration_value: infra-commit
+  - name: gci-gke-reboot
+    test_group_name: ci-kubernetes-e2e-gci-gke-reboot
+    column_header:
+    - configuration_value: node_os_image
+    - configuration_value: Commit
+    - configuration_value: infra-commit
+  - name: gci-gke-subnet
+    test_group_name: ci-kubernetes-e2e-gci-gke-subnet
+    column_header:
+    - configuration_value: node_os_image
+    - configuration_value: Commit
+    - configuration_value: infra-commit
+  - name: gci-gke-test
+    test_group_name: ci-kubernetes-e2e-gci-gke-test
+    column_header:
+    - configuration_value: node_os_image
+    - configuration_value: Commit
+    - configuration_value: infra-commit
+  - name: gci-gke-updown
+    test_group_name: ci-kubernetes-e2e-gci-gke-updown
+    column_header:
+    - configuration_value: node_os_image
+    - configuration_value: Commit
+    - configuration_value: infra-commit
+  - name: gke-device-plugin-gpu
+    test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu
+    column_header:
+    - configuration_value: node_os_image
+    - configuration_value: Commit
+    - configuration_value: infra-commit
+  - name: gke-device-plugin-gpu-p100
+    test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-p100
+    column_header:
+    - configuration_value: node_os_image
+    - configuration_value: Commit
+    - configuration_value: infra-commit
+  - name: gke-canary
+    test_group_name: ci-kubernetes-e2e-gke-canary
+    column_header:
+    - configuration_value: node_os_image
+    - configuration_value: Commit
+    - configuration_value: infra-commit
+  - name: e2e-gke-cosbeta-k8sdev-soak
+    test_group_name: ci-kubernetes-e2e-gke-cosbeta-k8sdev-soak
+    column_header:
+    - configuration_value: node_os_image
+    - configuration_value: Commit
+    - configuration_value: infra-commit
+  - name: e2e-gke-cosbeta-k8sdev-stackdriver
+    test_group_name: ci-kubernetes-e2e-gke-cosbeta-k8sdev-stackdriver
+    column_header:
+    - configuration_value: node_os_image
+    - configuration_value: Commit
+    - configuration_value: infra-commit
+  - name: e2e-gke-cosbeta-k8sbeta-soak
+    test_group_name: ci-kubernetes-e2e-gke-cosbeta-k8sbeta-soak
+    column_header:
+    - configuration_value: node_os_image
+    - configuration_value: Commit
+    - configuration_value: infra-commit
+  - name: e2e-gke-cosbeta-k8sbeta-stackdriver
+    test_group_name: ci-kubernetes-e2e-gke-cosbeta-k8sbeta-stackdriver
+    column_header:
+    - configuration_value: node_os_image
+    - configuration_value: Commit
+    - configuration_value: infra-commit
+
+- name: sig-gcp-release-1.8
+  dashboard_tab:
+  - name: gci-gke-1.8
+    test_group_name: ci-kubernetes-e2e-gci-gke-stable1
+    column_header:
+    - configuration_value: node_os_image
+    - configuration_value: Commit
+    - configuration_value: infra-commit
+  - name: gci-gke-slow-1.8
+    test_group_name: ci-kubernetes-e2e-gci-gke-slow-stable1
+    column_header:
+    - configuration_value: node_os_image
+    - configuration_value: Commit
+    - configuration_value: infra-commit
+  - name: gci-gke-serial-1.8
+    test_group_name: ci-kubernetes-e2e-gci-gke-serial-stable1
+    column_header:
+    - configuration_value: node_os_image
+    - configuration_value: Commit
+    - configuration_value: infra-commit
+  - name: gci-gke-ingress-1.8
+    test_group_name: ci-kubernetes-e2e-gci-gke-ingress-stable1
+    column_header:
+    - configuration_value: node_os_image
+    - configuration_value: Commit
+    - configuration_value: infra-commit
+  - name: gci-gke-reboot-1.8
+    test_group_name: ci-kubernetes-e2e-gci-gke-reboot-stable1
+    column_header:
+    - configuration_value: node_os_image
+    - configuration_value: Commit
+    - configuration_value: infra-commit
+  - name: e2e-gke-cosbeta-k8sstable1-soak
+    test_group_name: ci-kubernetes-e2e-gke-cosbeta-k8sstable1-soak
+    column_header:
+    - configuration_value: node_os_image
+    - configuration_value: Commit
+    - configuration_value: infra-commit
+  - name: e2e-gke-cosbeta-k8sstable1-stackdriver
+    test_group_name: ci-kubernetes-e2e-gke-cosbeta-k8sstable1-stackdriver
+    column_header:
+    - configuration_value: node_os_image
+    - configuration_value: Commit
+    - configuration_value: infra-commit
+  - name: gke-gci-1.6-gci-1.8-upgrade-master
+    test_group_name: ci-kubernetes-e2e-gke-gci-stable3-gci-stable1-upgrade-master
+  - name: gke-gci-1.6-gci-1.8-upgrade-cluster
+    test_group_name: ci-kubernetes-e2e-gke-gci-stable3-gci-stable1-upgrade-cluster
+  - name: gke-gci-1.6-gci-1.8-upgrade-cluster-new
+    test_group_name: ci-kubernetes-e2e-gke-gci-stable3-gci-stable1-upgrade-cluster-new
+  - name: gke-gci-1.7-gci-1.8-upgrade-master
+    test_group_name: ci-kubernetes-e2e-gke-gci-stable2-gci-stable1-upgrade-master
+  - name: gke-gci-1.7-gci-1.8-upgrade-cluster
+    test_group_name: ci-kubernetes-e2e-gke-gci-stable2-gci-stable1-upgrade-cluster
+  - name: gke-gci-1.7-gci-1.8-upgrade-cluster-new
+    test_group_name: ci-kubernetes-e2e-gke-gci-stable2-gci-stable1-upgrade-cluster-new
+  - name: gke-cvm-1-6-gci-1-8-upgrade-master
+    test_group_name: ci-kubernetes-e2e-gke-cvm-1-6-gci-1-8-upgrade-master
+  - name: gke-cvm-1-6-gci-1-8-upgrade-cluster
+    test_group_name: ci-kubernetes-e2e-gke-cvm-1-6-gci-1-8-upgrade-cluster
+  - name: gke-cvm-1-6-gci-1-8-upgrade-cluster-new
+    test_group_name: ci-kubernetes-e2e-gke-cvm-1-6-gci-1-8-upgrade-cluster-new
+  - name: gke-cvm-1-7-gci-1-8-upgrade-master
+    test_group_name: ci-kubernetes-e2e-gke-cvm-1-7-gci-1-8-upgrade-master
+  - name: gke-cvm-1.7-gci-1.8-upgrade-cluster
+    test_group_name: ci-kubernetes-e2e-gke-cvm-1-7-gci-1-8-upgrade-cluster
+  - name: gke-cvm-1.7-gci-1.8-upgrade-cluster-new
+    test_group_name: ci-kubernetes-e2e-gke-cvm-1-7-gci-1-8-upgrade-cluster-new
+  - name: gke-1.8-1.7-gci-kubectl-skew
+    test_group_name: ci-kubernetes-e2e-gke-stable1-stable2-gci-kubectl-skew
+  - name: gke-1.7-1.8-gci-kubectl-skew
+    test_group_name: ci-kubernetes-e2e-gke-stable2-stable1-gci-kubectl-skew
+  - name: gke-1.8-1.7-gci-kubectl-skew-serial
+    test_group_name: ci-kubernetes-e2e-gke-stable1-stable2-gci-kubectl-skew-serial
+  - name: gke-1.7-1.8-gci-kubectl-skew-serial
+    test_group_name: ci-kubernetes-e2e-gke-stable2-stable1-gci-kubectl-skew-serial
+  - name: gke-device-plugin-gpu-1-8
+    test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-stable1
+
+- name: sig-gcp-release-1.7
+  dashboard_tab:
+  - name: gci-gke-release-1-7
+    test_group_name: ci-kubernetes-e2e-gci-gke-release-1-7
+    column_header:
+    - configuration_value: node_os_image
+    - configuration_value: Commit
+    - configuration_value: infra-commit
+  - name: gci-gke-slow-release-1-7
+    test_group_name: ci-kubernetes-e2e-gci-gke-slow-release-1-7
+    column_header:
+    - configuration_value: node_os_image
+    - configuration_value: Commit
+    - configuration_value: infra-commit
+  - name: gci-gke-serial-release-1-7
+    test_group_name: ci-kubernetes-e2e-gci-gke-serial-release-1-7
+    column_header:
+    - configuration_value: node_os_image
+    - configuration_value: Commit
+    - configuration_value: infra-commit
+  - name: gci-gke-ingress-release-1-7
+    test_group_name: ci-kubernetes-e2e-gci-gke-ingress-release-1-7
+    column_header:
+    - configuration_value: node_os_image
+    - configuration_value: Commit
+    - configuration_value: infra-commit
+  - name: gci-gke-reboot-release-1-7
+    test_group_name: ci-kubernetes-e2e-gci-gke-reboot-release-1-7
+    column_header:
+    - configuration_value: node_os_image
+    - configuration_value: Commit
+    - configuration_value: infra-commit
+  - name: gke-gpu-1-7
+    test_group_name: ci-kubernetes-e2e-gke-gpu-1-7
+    column_header:
+    - configuration_value: node_os_image
+    - configuration_value: Commit
+    - configuration_value: infra-commit
+  - name: e2e-gke-cosbeta-k8sstable2-soak
+    test_group_name: ci-kubernetes-e2e-gke-cosbeta-k8sstable2-soak
+    column_header:
+    - configuration_value: node_os_image
+    - configuration_value: Commit
+    - configuration_value: infra-commit
+  - name: e2e-gke-cosbeta-k8sstable2-stackdriver
+    test_group_name: ci-kubernetes-e2e-gke-cosbeta-k8sstable2-stackdriver
+    column_header:
+    - configuration_value: node_os_image
+    - configuration_value: Commit
+    - configuration_value: infra-commit
+  - name: gke-release-1-7
+    test_group_name: ci-kubernetes-e2e-gke-release-1-7
+    column_header:
+    - configuration_value: node_os_image
+    - configuration_value: Commit
+    - configuration_value: infra-commit
+  - name: gke-slow-release-1-7
+    test_group_name: ci-kubernetes-e2e-gke-slow-release-1-7
+    column_header:
+    - configuration_value: node_os_image
+    - configuration_value: Commit
+    - configuration_value: infra-commit
+  - name: gke-serial-release-1-7
+    test_group_name: ci-kubernetes-e2e-gke-serial-release-1-7
+    column_header:
+    - configuration_value: node_os_image
+    - configuration_value: Commit
+    - configuration_value: infra-commit
+  - name: gke-reboot-release-1-7
+    test_group_name: ci-kubernetes-e2e-gke-reboot-release-1-7
+    column_header:
+    - configuration_value: node_os_image
+    - configuration_value: Commit
+    - configuration_value: infra-commit
+  - name: gke-alpha-features-release-1-7
+    test_group_name: ci-kubernetes-e2e-gke-alpha-features-release-1-7
+    column_header:
+    - configuration_value: node_os_image
+    - configuration_value: Commit
+    - configuration_value: infra-commit
+
+- name: sig-gcp-release-1.6
+  dashboard_tab:
+  - name: gci-gke-1.6
+    test_group_name: ci-kubernetes-e2e-gci-gke-release-1-6
+    column_header:
+    - configuration_value: node_os_image
+    - configuration_value: Commit
+    - configuration_value: infra-commit
+  - name: gci-gke-serial-1.6
+    test_group_name: ci-kubernetes-e2e-gci-gke-serial-release-1-6
+    column_header:
+    - configuration_value: node_os_image
+    - configuration_value: Commit
+    - configuration_value: infra-commit
+  - name: gci-gke-slow-1.6
+    test_group_name: ci-kubernetes-e2e-gci-gke-slow-release-1-6
+    column_header:
+    - configuration_value: node_os_image
+    - configuration_value: Commit
+    - configuration_value: infra-commit
+  - name: gci-gke-ingress-1.6
+    test_group_name: ci-kubernetes-e2e-gci-gke-ingress-release-1-6
+    column_header:
+    - configuration_value: node_os_image
+    - configuration_value: Commit
+    - configuration_value: infra-commit
+  - name: gci-gke-reboot-1.6
+    test_group_name: ci-kubernetes-e2e-gci-gke-reboot-release-1-6
+    column_header:
+    - configuration_value: node_os_image
+    - configuration_value: Commit
+    - configuration_value: infra-commit
+  - name: e2e-gke-cosbeta-k8sstable3-soak
+    test_group_name: ci-kubernetes-e2e-gke-cosbeta-k8sstable3-soak
+    column_header:
+    - configuration_value: node_os_image
+    - configuration_value: Commit
+    - configuration_value: infra-commit
+  - name: e2e-gke-cosbeta-k8sstable3-stackdriver
+    test_group_name: ci-kubernetes-e2e-gke-cosbeta-k8sstable3-stackdriver
+    column_header:
+    - configuration_value: node_os_image
+    - configuration_value: Commit
+    - configuration_value: infra-commit
+  - name: gke-1.6
+    test_group_name: ci-kubernetes-e2e-gke-release-1-6
+    column_header:
+    - configuration_value: node_os_image
+    - configuration_value: Commit
+    - configuration_value: infra-commit
+  - name: gke-serial-1.6
+    test_group_name: ci-kubernetes-e2e-gke-serial-release-1-6
+    column_header:
+    - configuration_value: node_os_image
+    - configuration_value: Commit
+    - configuration_value: infra-commit
+  - name: gke-slow-1.6
+    test_group_name: ci-kubernetes-e2e-gke-slow-release-1-6
+    column_header:
+    - configuration_value: node_os_image
+    - configuration_value: Commit
+    - configuration_value: infra-commit
+  - name: gke-alpha-features-1.6
+    test_group_name: ci-kubernetes-e2e-gke-alpha-features-release-1-6
+    column_header:
+    - configuration_value: node_os_image
+    - configuration_value: Commit
+    - configuration_value: infra-commit
+  - name: gke-reboot-1.6
+    test_group_name: ci-kubernetes-e2e-gke-reboot-release-1-6
+    column_header:
+    - configuration_value: node_os_image
+    - configuration_value: Commit
+    - configuration_value: infra-commit
+
+- name: sig-gcp-ubuntu
+  dashboard_tab:
+  - name: gke-ubuntustable1-k8sdev-alphafeatures
+    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-alphafeatures
+    column_header:
+    - configuration_value: node_os_image
+    - configuration_value: Commit
+    - configuration_value: infra-commit
+  - name: gke-ubuntustable1-k8sdev-autoscaling
+    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-autoscaling
+    column_header:
+    - configuration_value: node_os_image
+    - configuration_value: Commit
+    - configuration_value: infra-commit
+  - name: gke-ubuntustable1-k8sdev-default
+    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-default
+    column_header:
+    - configuration_value: node_os_image
+    - configuration_value: Commit
+    - configuration_value: infra-commit
+  - name: gke-ubuntustable1-k8sdev-flaky
+    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-flaky
+    column_header:
+    - configuration_value: node_os_image
+    - configuration_value: Commit
+    - configuration_value: infra-commit
+  - name: gke-ubuntustable1-k8sdev-ingress
+    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-ingress
+    column_header:
+    - configuration_value: node_os_image
+    - configuration_value: Commit
+    - configuration_value: infra-commit
+  - name: gke-ubuntustable1-k8sdev-reboot
+    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-reboot
+    column_header:
+    - configuration_value: node_os_image
+    - configuration_value: Commit
+    - configuration_value: infra-commit
+  - name: gke-ubuntustable1-k8sdev-serial
+    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-serial
+    column_header:
+    - configuration_value: node_os_image
+    - configuration_value: Commit
+    - configuration_value: infra-commit
+  - name: gke-ubuntustable1-k8sdev-slow
+    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-slow
+    column_header:
+    - configuration_value: node_os_image
+    - configuration_value: Commit
+    - configuration_value: infra-commit
+  - name: gke-ubuntustable1-k8sdev-updown
+    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-updown
+    column_header:
+    - configuration_value: node_os_image
+    - configuration_value: Commit
+    - configuration_value: infra-commit
+  - name: gke-ubuntustable1-k8sstable1-alphafeatures
+    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-alphafeatures
+    column_header:
+    - configuration_value: node_os_image
+    - configuration_value: Commit
+    - configuration_value: infra-commit
+  - name: gke-ubuntustable1-k8sstable1-autoscaling
+    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-autoscaling
+    column_header:
+    - configuration_value: node_os_image
+    - configuration_value: Commit
+    - configuration_value: infra-commit
+  - name: gke-ubuntustable1-k8sstable1-default
+    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-default
+    column_header:
+    - configuration_value: node_os_image
+    - configuration_value: Commit
+    - configuration_value: infra-commit
+  - name: gke-ubuntustable1-k8sstable1-flaky
+    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-flaky
+    column_header:
+    - configuration_value: node_os_image
+    - configuration_value: Commit
+    - configuration_value: infra-commit
+  - name: gke-ubuntustable1-k8sstable1-ingress
+    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-ingress
+    column_header:
+    - configuration_value: node_os_image
+    - configuration_value: Commit
+    - configuration_value: infra-commit
+  - name: gke-ubuntustable1-k8sstable1-reboot
+    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-reboot
+    column_header:
+    - configuration_value: node_os_image
+    - configuration_value: Commit
+    - configuration_value: infra-commit
+  - name: gke-ubuntustable1-k8sstable1-serial
+    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-serial
+    column_header:
+    - configuration_value: node_os_image
+    - configuration_value: Commit
+    - configuration_value: infra-commit
+  - name: gke-ubuntustable1-k8sstable1-slow
+    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-slow
+    column_header:
+    - configuration_value: node_os_image
+    - configuration_value: Commit
+    - configuration_value: infra-commit
+  - name: gke-ubuntustable1-k8sstable1-updown
+    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-updown
+    column_header:
+    - configuration_value: node_os_image
+    - configuration_value: Commit
+    - configuration_value: infra-commit
+  - name: gke-ubuntustable1-k8sstable2-alphafeatures
+    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-alphafeatures
+    column_header:
+    - configuration_value: node_os_image
+    - configuration_value: Commit
+    - configuration_value: infra-commit
+  - name: gke-ubuntustable1-k8sstable2-autoscaling
+    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-autoscaling
+    column_header:
+    - configuration_value: node_os_image
+    - configuration_value: Commit
+    - configuration_value: infra-commit
+  - name: gke-ubuntustable1-k8sstable2-default
+    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-default
+    column_header:
+    - configuration_value: node_os_image
+    - configuration_value: Commit
+    - configuration_value: infra-commit
+  - name: gke-ubuntustable1-k8sstable2-flaky
+    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-flaky
+    column_header:
+    - configuration_value: node_os_image
+    - configuration_value: Commit
+    - configuration_value: infra-commit
+  - name: gke-ubuntustable1-k8sstable2-ingress
+    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-ingress
+    column_header:
+    - configuration_value: node_os_image
+    - configuration_value: Commit
+    - configuration_value: infra-commit
+  - name: gke-ubuntustable1-k8sstable2-reboot
+    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-reboot
+    column_header:
+    - configuration_value: node_os_image
+    - configuration_value: Commit
+    - configuration_value: infra-commit
+  - name: gke-ubuntustable1-k8sstable2-serial
+    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-serial
+    column_header:
+    - configuration_value: node_os_image
+    - configuration_value: Commit
+    - configuration_value: infra-commit
+  - name: gke-ubuntustable1-k8sstable2-slow
+    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-slow
+    column_header:
+    - configuration_value: node_os_image
+    - configuration_value: Commit
+    - configuration_value: infra-commit
+  - name: gke-ubuntustable1-k8sstable2-updown
+    test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-updown
+    column_header:
+    - configuration_value: node_os_image
+    - configuration_value: Commit
+    - configuration_value: infra-commit
+
 - name: presubmits-kubernetes
   dashboard_tab:
   - name: pull-kubernetes-bazel-build
@@ -4137,3 +4648,11 @@ dashboard_groups:
   dashboard_names:
   - sig-testing-misc
   - sig-testing-canaries
+
+- name: sig-gcp
+  dashboard_names:
+  - sig-gcp-master
+  - sig-gcp-release-1.8
+  - sig-gcp-release-1.7
+  - sig-gcp-release-1.6
+  - sig-gcp-ubuntu
