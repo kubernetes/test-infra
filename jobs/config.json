@@ -39,7 +39,7 @@
       "--gcp-zone=us-central1-f",
       "--ginkgo-parallel=30",
       "--provider=gce",
-      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
+      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8 --systemd-services=containerd,cri-containerd,cri-containerd-installation",
       "--timeout=50m"
     ],
     "scenario": "kubernetes_e2e",
@@ -59,7 +59,7 @@
       "--image-family=ubuntu-gke-1604-lts",
       "--image-project=ubuntu-os-gke-cloud",
       "--provider=gce",
-      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
+      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8 --systemd-services=containerd,cri-containerd,cri-containerd-installation",
       "--timeout=50m"
     ],
     "scenario": "kubernetes_e2e",
