@@ -512,6 +512,10 @@ func CheckBazelbuildSpec(t *testing.T, name string, spec *kube.PodSpec, periodic
 				t.Errorf("%s: non-periodic jobs need a --repo=org/$(REPO_NAME) somewhere", name)
 			}
 		}
+
+		if c.Resources.Requests == nil {
+			t.Errorf("%s: bazel jobs need to place a resource request", name)
+		}
 	}
 	return tags
 }
