@@ -763,6 +763,78 @@ jobs:
     args:
     - --gcp-project=ubuntu-image-validation
     sigOwners: ['sig-node']
+  # release branch jobs (stable2 and stable3)
+  ci-kubernetes-e2e-gce-gci-k8sstable3-alphafeatures:
+    interval: 6h
+    args:
+    - --env=KUBE_FEATURE_GATES=AllAlpha=true
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gce-gci-k8sstable2-alphafeatures:
+    interval: 2h
+    args:
+    - --env=KUBE_FEATURE_GATES=AllAlpha=true
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gce-gci-k8sstable3-ingress:
+    interval: 6h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gce-gci-k8sstable2-ingress:
+    interval: 2h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gce-gci-k8sstable3-reboot:
+    interval: 6h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gce-gci-k8sstable2-reboot:
+    interval: 2h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gce-gci-k8sstable3-default:
+    interval: 6h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gce-gci-k8sstable2-default:
+    interval: 2h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gce-gci-k8sstable3-serial:
+    interval: 6h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gce-gci-k8sstable2-serial:
+    interval: 2h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gce-gci-k8sstable3-slow:
+    interval: 6h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gce-gci-k8sstable2-slow:
+    interval: 2h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-gci-k8sstable3-ingress:
+    interval: 6h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-gci-k8sstable2-ingress:
+    interval: 2h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-gci-k8sstable3-reboot:
+    interval: 6h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-gci-k8sstable2-reboot:
+    interval: 2h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-gci-k8sstable3-default:
+    interval: 6h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-gci-k8sstable2-default:
+    interval: 2h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-gci-k8sstable3-serial:
+    interval: 6h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-gci-k8sstable2-serial:
+    interval: 2h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-gci-k8sstable3-slow:
+    interval: 6h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-gci-k8sstable2-slow:
+    interval: 2h
+    sigOwners: ['sig-gcp']
+
 
 
 # The following settings are used by cluster e2e tests.
@@ -813,6 +885,9 @@ images:
     - --image-family=ubuntu-gke-1604-lts
     - --image-project=ubuntu-os-gke-cloud
     - --gcp-node-image=ubuntu
+  gci:
+    args:
+    - --gcp-node-image=gci
 
 k8sVersions:
   dev:
@@ -836,7 +911,7 @@ testSuites:
   alphafeatures:
     args:
     - --timeout=180m
-    - --test_args=--ginkgo.focus=\[Feature:DynamicKubeletConfig\] --minStartupPods=8
+    - --test_args=--ginkgo.focus=\[Feature:(ExternalTrafficLocalOnly|DynamicKubeletConfig)\] --minStartupPods=8
   autoscaling:
     args:
     - --timeout=300m
@@ -852,7 +927,7 @@ testSuites:
     - --test_args=--ginkgo.focus=\[Flaky\] --ginkgo.skip=\[Feature:.+\] --minStartupPods=8
   ingress:
     args:
-    - --timeout=300m
+    - --timeout=90m
     - --test_args=--ginkgo.focus=\[Feature:Ingress\] --minStartupPods=8
   reboot:
     args:
