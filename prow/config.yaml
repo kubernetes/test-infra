@@ -216,6 +216,9 @@ presubmits:
         ports:
         - containerPort: 9999
           hostPort: 9999
+        resources:
+          requests:
+            memory: "6Gi"
       volumes:
       - name: service
         secret:
@@ -308,6 +311,9 @@ presubmits:
         ports:
         - containerPort: 9999
           hostPort: 9999
+        resources:
+          requests:
+            memory: "2Gi"
       volumes:
       - name: service
         secret:
@@ -439,6 +445,9 @@ presubmits:
         ports:
         - containerPort: 9999
           hostPort: 9999
+        resources:
+          requests:
+            memory: "6Gi"
       volumes:
       - name: service
         secret:
@@ -539,6 +548,9 @@ presubmits:
         ports:
         - containerPort: 9999
           hostPort: 9999
+        resources:
+          requests:
+            memory: "6Gi"
       volumes:
       - name: service
         secret:
@@ -637,6 +649,9 @@ presubmits:
         ports:
         - containerPort: 9999
           hostPort: 9999
+        resources:
+          requests:
+            memory: "6Gi"
       volumes:
       - name: service
         secret:
@@ -737,6 +752,9 @@ presubmits:
         ports:
         - containerPort: 9999
           hostPort: 9999
+        resources:
+          requests:
+            memory: "6Gi"
       volumes:
       - name: service
         secret:
@@ -786,6 +804,9 @@ presubmits:
         ports:
         - containerPort: 9999
           hostPort: 9999
+        resources:
+          requests:
+            memory: "6Gi"
       volumes:
       - name: service
         secret:
@@ -832,6 +853,9 @@ presubmits:
         ports:
         - containerPort: 9999
           hostPort: 9999
+        resources:
+          requests:
+            memory: "6Gi"
       volumes:
       - name: service
         secret:
@@ -878,6 +902,9 @@ presubmits:
         ports:
         - containerPort: 9999
           hostPort: 9999
+        resources:
+          requests:
+            memory: "6Gi"
       volumes:
       - name: service
         secret:
@@ -927,6 +954,9 @@ presubmits:
         ports:
         - containerPort: 9999
           hostPort: 9999
+        resources:
+          requests:
+            memory: "6Gi"
       volumes:
       - name: service
         secret:
@@ -1705,6 +1735,9 @@ presubmits:
         ports:
         - containerPort: 9999
           hostPort: 9999
+        resources:
+          requests:
+            memory: "6Gi"
       volumes:
       - name: service
         secret:
@@ -1805,6 +1838,9 @@ presubmits:
         ports:
         - containerPort: 9999
           hostPort: 9999
+        resources:
+          requests:
+            memory: "6Gi"
       volumes:
       - name: service
         secret:
@@ -1903,6 +1939,9 @@ presubmits:
         ports:
         - containerPort: 9999
           hostPort: 9999
+        resources:
+          requests:
+            memory: "6Gi"
       volumes:
       - name: service
         secret:
@@ -2002,6 +2041,9 @@ presubmits:
         ports:
         - containerPort: 9999
           hostPort: 9999
+        resources:
+          requests:
+            memory: "6Gi"
       volumes:
       - name: service
         secret:
@@ -2050,6 +2092,9 @@ presubmits:
         ports:
         - containerPort: 9999
           hostPort: 9999
+        resources:
+          requests:
+            memory: "6Gi"
       volumes:
       - name: service
         secret:
@@ -2096,6 +2141,9 @@ presubmits:
         ports:
         - containerPort: 9999
           hostPort: 9999
+        resources:
+          requests:
+            memory: "6Gi"
       volumes:
       - name: service
         secret:
@@ -2142,6 +2190,9 @@ presubmits:
         ports:
         - containerPort: 9999
           hostPort: 9999
+        resources:
+          requests:
+            memory: "6Gi"
       volumes:
       - name: service
         secret:
@@ -2190,6 +2241,9 @@ presubmits:
         ports:
         - containerPort: 9999
           hostPort: 9999
+        resources:
+          requests:
+            memory: "6Gi"
       volumes:
       - name: service
         secret:
@@ -2968,6 +3022,9 @@ presubmits:
         ports:
         - containerPort: 9999
           hostPort: 9999
+        resources:
+          requests:
+            memory: "2Gi"
       volumes:
       - name: service
         secret:
@@ -3016,6 +3073,9 @@ presubmits:
         ports:
         - containerPort: 9999
           hostPort: 9999
+        resources:
+          requests:
+            memory: "2Gi"
       volumes:
       - name: service
         secret:
@@ -3225,6 +3285,9 @@ postsubmits:
         ports:
         - containerPort: 9999
           hostPort: 9999
+        resources:
+          requests:
+            memory: "6Gi"
       volumes:
       - name: service
         secret:
@@ -3265,6 +3328,9 @@ postsubmits:
           ports:
           - containerPort: 9999
             hostPort: 9999
+          resources:
+            requests:
+              memory: "6Gi"
         volumes:
         - name: service
           secret:
@@ -3302,6 +3368,9 @@ postsubmits:
         ports:
         - containerPort: 9999
           hostPort: 9999
+        resources:
+          requests:
+            memory: "6Gi"
       volumes:
       - name: service
         secret:
@@ -3336,6 +3405,9 @@ postsubmits:
           ports:
           - containerPort: 9999
             hostPort: 9999
+          resources:
+            requests:
+              memory: "6Gi"
         volumes:
         - name: service
           secret:
@@ -3418,6 +3490,9 @@ postsubmits:
         ports:
         - containerPort: 9999
           hostPort: 9999
+        resources:
+          requests:
+            memory: "6Gi"
       volumes:
       - name: service
         secret:
@@ -3454,6 +3529,9 @@ postsubmits:
           ports:
           - containerPort: 9999
             hostPort: 9999
+          resources:
+            requests:
+              memory: "6Gi"
         volumes:
         - name: service
           secret:
@@ -3622,6 +3700,9 @@ postsubmits:
         ports:
         - containerPort: 9999
           hostPort: 9999
+        resources:
+          requests:
+            memory: "6Gi"
       volumes:
       - name: service
         secret:
@@ -3658,6 +3739,9 @@ postsubmits:
           ports:
           - containerPort: 9999
             hostPort: 9999
+          resources:
+            requests:
+              memory: "6Gi"
         volumes:
         - name: service
           secret:
@@ -3788,6 +3872,9 @@ postsubmits:
         ports:
         - containerPort: 9999
           hostPort: 9999
+        resources:
+          requests:
+            memory: "2Gi"
       volumes:
       - name: service
         secret:
@@ -3853,6 +3940,9 @@ postsubmits:
         - name: service
           mountPath: /etc/service-account
           readOnly: true
+        resources:
+          requests:
+            memory: "1Gi"
       volumes:
       - name: service
         secret:
@@ -4116,6 +4206,9 @@ periodics:
       ports:
       - containerPort: 9999
         hostPort: 9999
+      resources:
+        requests:
+          memory: "6Gi"
     volumes:
     - name: service
       secret:
@@ -18187,6 +18280,9 @@ periodics:
       ports:
       - containerPort: 9999
         hostPort: 9999
+      resources:
+        requests:
+          memory: "2Gi"
     volumes:
     - name: service
       secret:
@@ -18367,6 +18463,9 @@ periodics:
         readOnly: true
       - name: cache-ssd
         mountPath: /root/.cache
+      resources:
+        requests:
+          memory: "6Gi"
       ports:
       - containerPort: 9999
         hostPort: 9999
@@ -18404,6 +18503,9 @@ periodics:
         ports:
         - containerPort: 9999
           hostPort: 9999
+        resources:
+          requests:
+            memory: "6Gi"
       volumes:
       - name: service
         secret:
@@ -18487,6 +18589,9 @@ periodics:
       ports:
       - containerPort: 9999
         hostPort: 9999
+      resources:
+        requests:
+          memory: "6Gi"
     volumes:
     - name: service
       secret:
@@ -18523,6 +18628,9 @@ periodics:
         ports:
         - containerPort: 9999
           hostPort: 9999
+        resources:
+          requests:
+            memory: "6Gi"
       volumes:
       - name: service
         secret:
@@ -18649,6 +18757,9 @@ periodics:
       ports:
       - containerPort: 9999
         hostPort: 9999
+      resources:
+        requests:
+          memory: "6Gi"
     volumes:
     - name: service
       secret:
@@ -18685,6 +18796,9 @@ periodics:
         ports:
         - containerPort: 9999
           hostPort: 9999
+        resources:
+          requests:
+            memory: "6Gi"
       volumes:
       - name: service
         secret:
