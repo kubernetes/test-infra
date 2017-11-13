@@ -7907,7 +7907,7 @@
       "--node-tests=true",
       "--provider=gce",
       "--test_args=--nodes=8 --skip=\"\\[Flaky\\]|\\[Serial\\]\"",
-      "--timeout=60m"
+      "--timeout=70m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -7949,7 +7949,7 @@
       "--node-tests=true",
       "--provider=gce",
       "--test_args=--nodes=8 --skip=\"\\[Flaky\\]|\\[Serial\\]\"",
-      "--timeout=60m"
+      "--timeout=70m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -7991,7 +7991,7 @@
       "--node-tests=true",
       "--provider=gce",
       "--test_args=--nodes=8 --skip=\"\\[Flaky\\]|\\[Serial\\]\"",
-      "--timeout=60m"
+      "--timeout=70m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -8033,7 +8033,7 @@
       "--node-tests=true",
       "--provider=gce",
       "--test_args=--nodes=8 --skip=\"\\[Flaky\\]|\\[Serial\\]\"",
-      "--timeout=60m"
+      "--timeout=70m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -8075,7 +8075,7 @@
       "--node-tests=true",
       "--provider=gce",
       "--test_args=--nodes=8 --skip=\"\\[Flaky\\]|\\[Serial\\]\"",
-      "--timeout=60m"
+      "--timeout=70m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -8117,7 +8117,7 @@
       "--node-tests=true",
       "--provider=gce",
       "--test_args=--nodes=8 --skip=\"\\[Flaky\\]|\\[Serial\\]\"",
-      "--timeout=60m"
+      "--timeout=70m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -8159,7 +8159,7 @@
       "--node-tests=true",
       "--provider=gce",
       "--test_args=--nodes=8 --skip=\"\\[Flaky\\]|\\[Serial\\]\"",
-      "--timeout=60m"
+      "--timeout=70m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -8201,7 +8201,7 @@
       "--node-tests=true",
       "--provider=gce",
       "--test_args=--nodes=8 --skip=\"\\[Flaky\\]|\\[Serial\\]\"",
-      "--timeout=60m"
+      "--timeout=70m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -8243,7 +8243,7 @@
       "--node-tests=true",
       "--provider=gce",
       "--test_args=--nodes=8 --skip=\"\\[Flaky\\]|\\[Serial\\]\"",
-      "--timeout=60m"
+      "--timeout=70m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -8285,7 +8285,7 @@
       "--node-tests=true",
       "--provider=gce",
       "--test_args=--nodes=8 --skip=\"\\[Flaky\\]|\\[Serial\\]\"",
-      "--timeout=60m"
+      "--timeout=70m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
