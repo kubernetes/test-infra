@@ -34,20 +34,19 @@ var (
 		Name: "jenkins_request_retries",
 		Help: "Number of Jenkins request retries made from prow.",
 	})
-	requestLatency = prometheus.NewHistogramVec(prometheus.HistogramOpts{
-		Name:    "jenkins_request_latency",
-		Help:    "Time for a request to roundtrip between prow and Jenkins.",
-		Buckets: prometheus.DefBuckets,
+	requestLatency = prometheus.NewSummaryVec(prometheus.SummaryOpts{
+		Name:       "jenkins_request_latency",
+		Help:       "Time for a request to roundtrip between prow and Jenkins.",
+		Objectives: map[float64]float64{0.5: 0.05, 0.9: 0.01, 0.99: 0.001},
 	}, []string{
 		// http verb of the request
 		"verb",
 		// path of the request
 		"handler",
 	})
-	resyncPeriod = prometheus.NewHistogram(prometheus.HistogramOpts{
-		Name:    "resync_period_seconds",
-		Help:    "Time the controller takes to complete one reconcilation loop.",
-		Buckets: prometheus.ExponentialBuckets(1, 3, 5),
+	resyncPeriod = prometheus.NewGauge(prometheus.GaugeOpts{
+		Name: "resync_period_seconds",
+		Help: "Time the controller takes to complete one reconcilation loop.",
 	})
 )
 
@@ -62,14 +61,14 @@ func init() {
 type ClientMetrics struct {
 	Requests       *prometheus.CounterVec
 	RequestRetries prometheus.Counter
-	RequestLatency *prometheus.HistogramVec
+	RequestLatency *prometheus.SummaryVec
 }
 
 // Metrics is a set of metrics gathered by the Jenkins operator.
 // It includes client metrics and metrics related to the controller loop.
 type Metrics struct {
 	ClientMetrics *ClientMetrics
-	ResyncPeriod  prometheus.Histogram
+	ResyncPeriod  prometheus.Gauge
 }
 
 // NewMetrics creates a new set of metrics for the Jenkins operator.
