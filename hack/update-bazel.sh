@@ -21,6 +21,9 @@ TESTINFRA_ROOT=$(git rev-parse --show-toplevel)
 TMP_GOPATH=$(mktemp -d)
 
 # no unit tests in vendor
+# previously we used godeps which did this, but `dep` does not handle this
+# properly yet. some of these tests don't build well. see:
+# ref: https://github.com/kubernetes/test-infra/pull/5411
 find ${TESTINFRA_ROOT}/vendor/ -name "*_test.go" -delete
 
 "${TESTINFRA_ROOT}/hack/go_install_from_commit.sh" \

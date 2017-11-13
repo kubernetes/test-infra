@@ -46,12 +46,15 @@ kazel_diff=$("${TMP_GOPATH}/bin/kazel" \
   -root="${TESTINFRA_ROOT}")
 
 # check if there are vendor/*_test.go
+# previously we used godeps which did this, but `dep` does not handle this
+# properly yet. some of these tests don't build well. see:
+# ref: https://github.com/kubernetes/test-infra/pull/5411
 vendor_tests=$(find ${TESTINFRA_ROOT}/vendor/ -name "*_test.go" | wc -l)
 
 if [[ -n "${gazelle_diff}" || -n "${kazel_diff}" || "${vendor_tests}" -ne "0" ]]; then
   echo "${gazelle_diff}"
   echo "${kazel_diff}"
-  echo "number of vendor/*_test.go: ${vendor_tests}"
+  echo "number of vendor/*_test.go: ${vendor_tests} (want: 0)"
   echo
   echo "Run ./hack/update-bazel.sh"
   exit 1
