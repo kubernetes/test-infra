@@ -146,15 +146,19 @@ test_groups:
 - name: ci-kubernetes-e2e-gce-large-correctness
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-large-correctness
   days_of_results: 60
+  num_failures_to_alert: 1
 - name: ci-kubernetes-e2e-gce-large-performance
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-large-performance
   days_of_results: 60
+  num_failures_to_alert: 1
 - name: ci-kubernetes-e2e-gce-scale-correctness
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-scale-correctness
   days_of_results: 60
+  num_failures_to_alert: 1
 - name: ci-kubernetes-e2e-gce-scale-performance
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-scale-performance
   days_of_results: 60
+  num_failures_to_alert: 1
 - name: ci-kubernetes-e2e-gci-gce-es-logging
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-es-logging
 - name: ci-kubernetes-e2e-gci-gce-sd-logging
@@ -207,6 +211,7 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-slow-master
 - name: ci-kubernetes-e2e-gci-gce-scalability
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-scalability
+  num_failures_to_alert: 1
 - name: ci-kubernetes-e2e-gci-gce-ip-alias
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-ip-alias
 - name: ci-kubernetes-e2e-ubuntu-gce-ipvs
@@ -274,9 +279,11 @@ test_groups:
 - name: ci-kubernetes-e2e-gke-large-correctness
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-large-correctness
   days_of_results: 60
+  num_failures_to_alert: 1
 - name: ci-kubernetes-e2e-gke-large-performance
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-large-performance
   days_of_results: 60
+  num_failures_to_alert: 1
 - name: ci-kubernetes-e2e-gci-gke-multizone
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-multizone
 - name: ci-kubernetes-e2e-gke-regional
@@ -284,6 +291,7 @@ test_groups:
 - name: ci-kubernetes-e2e-gke-scale-correctness
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-scale-correctness
   days_of_results: 60
+  num_failures_to_alert: 1
 - name: ci-kubernetes-e2e-gke-prod
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-prod
 - name: ci-kubernetes-e2e-gci-gke-prod
@@ -334,20 +342,26 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-canary
 - name: ci-kubernetes-kubemark-100-gce
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-kubemark-100-gce
+  num_failures_to_alert: 1
 - name: ci-kubernetes-kubemark-100-canary
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-kubemark-100-canary
 - name: ci-kubernetes-kubemark-5-prow-canary
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-kubemark-5-prow-canary
 - name: ci-kubernetes-kubemark-5-gce
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-kubemark-5-gce
+  num_failures_to_alert: 1
 - name: ci-kubernetes-kubemark-5-gce-last-release
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-kubemark-5-gce-last-release
+  num_failures_to_alert: 1
 - name: ci-kubernetes-kubemark-500-gce
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-kubemark-500-gce
+  num_failures_to_alert: 1
 - name: ci-kubernetes-kubemark-gce-scale
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-kubemark-gce-scale
+  num_failures_to_alert: 1
 - name: ci-kubernetes-kubemark-high-density-100-gce
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-kubemark-high-density-100-gce
+  num_failures_to_alert: 1
 - name: ci-kubernetes-soak-cos-docker-validation
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-cos-docker-validation
 - name: ci-kubernetes-soak-gce-gci
@@ -1070,8 +1084,10 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-audit-release-1-7
 - name: ci-kubernetes-e2e-gce-scalability-release-1-7
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-scalability-release-1-7
+  num_failures_to_alert: 1
 - name: ci-kubernetes-e2e-gci-gce-scalability-release-1-7
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-scalability-release-1-7
+  num_failures_to_alert: 1
 - name: ci-kubernetes-e2e-gci-gce-ingress-release-1-7
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-ingress-release-1-7
 - name: ci-kubernetes-e2e-gci-gke-ingress-release-1-7
@@ -1676,6 +1692,7 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-alpha-features-stable1
 - name: ci-kubernetes-e2e-gci-gce-scalability-stable1
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-scalability-stable1
+  num_failures_to_alert: 1
 - name: ci-kubernetes-e2e-gci-gce-ingress-stable1
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-ingress-stable1
 - name: ci-kubernetes-e2e-gci-gke-ingress-stable1
@@ -3653,44 +3670,78 @@ dashboards:
   dashboard_tab:
   - name: gce
     test_group_name: ci-kubernetes-e2e-gci-gce-scalability
+    alert_options:
+      alert_mail_to_addresses: 'porridge+test-alerts@google.com'
   - name: gce-1.8
     test_group_name: ci-kubernetes-e2e-gci-gce-scalability-stable1
+    alert_options:
+      alert_mail_to_addresses: 'porridge+test-alerts@google.com'
   - name: gce-1.7
     test_group_name: ci-kubernetes-e2e-gci-gce-scalability-release-1-7
+    alert_options:
+      alert_mail_to_addresses: 'porridge+test-alerts@google.com'
   - name: cvm-gce-1.7
     test_group_name: ci-kubernetes-e2e-gce-scalability-release-1-7
+    alert_options:
+      alert_mail_to_addresses: 'porridge+test-alerts@google.com'
   - name: gce-large-correctness
     test_group_name: ci-kubernetes-e2e-gce-large-correctness
+    alert_options:
+      alert_mail_to_addresses: 'porridge+test-alerts@google.com'
   - name: gce-large-performance
     test_group_name: ci-kubernetes-e2e-gce-large-performance
+    alert_options:
+      alert_mail_to_addresses: 'porridge+test-alerts@google.com'
   - name: gce-scale-correctness
     test_group_name: ci-kubernetes-e2e-gce-scale-correctness
+    alert_options:
+      alert_mail_to_addresses: 'porridge+test-alerts@google.com'
   - name: gce-scale-performance
     test_group_name: ci-kubernetes-e2e-gce-scale-performance
+    alert_options:
+      alert_mail_to_addresses: 'porridge+test-alerts@google.com'
 
 - name: sig-scalability-gke
   dashboard_tab:
   - name: gke-large-correctness
     test_group_name: ci-kubernetes-e2e-gke-large-correctness
+    alert_options:
+      alert_mail_to_addresses: 'porridge+test-alerts@google.com'
   - name: gke-large-performance
     test_group_name: ci-kubernetes-e2e-gke-large-performance
+    alert_options:
+      alert_mail_to_addresses: 'porridge+test-alerts@google.com'
   - name: gke-scale-correctness
     test_group_name: ci-kubernetes-e2e-gke-scale-correctness
+    alert_options:
+      alert_mail_to_addresses: 'porridge+test-alerts@google.com'
 
 - name: sig-scalability-kubemark
   dashboard_tab:
   - name: kubemark-small
     test_group_name: ci-kubernetes-kubemark-5-gce
+    alert_options:
+      alert_mail_to_addresses: 'porridge+test-alerts@google.com'
   - name: kubemark-small-last-release
     test_group_name: ci-kubernetes-kubemark-5-gce-last-release
+    alert_options:
+      alert_mail_to_addresses: 'porridge+test-alerts@google.com'
   - name: kubemark-100
     test_group_name: ci-kubernetes-kubemark-100-gce
+    alert_options:
+      alert_mail_to_addresses: 'porridge+test-alerts@google.com'
   - name: kubemark-100-high-density
     test_group_name: ci-kubernetes-kubemark-high-density-100-gce
+    alert_options:
+      alert_mail_to_addresses: 'porridge+test-alerts@google.com'
   - name: kubemark-500
     test_group_name: ci-kubernetes-kubemark-500-gce
+    alert_options:
+      alert_mail_to_addresses: 'porridge+test-alerts@google.com'
   - name: kubemark-5000
     test_group_name: ci-kubernetes-kubemark-gce-scale
+    alert_options:
+      alert_mail_to_addresses: 'porridge+test-alerts@google.com'
 
 - name: sig-scalability-perf-tests
   dashboard_tab:
