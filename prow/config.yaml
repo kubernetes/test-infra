@@ -53,7 +53,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-in-go:0.4
+      - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
         args:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
@@ -89,7 +89,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-in-go:0.4
+      - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
         args:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
@@ -125,7 +125,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-in-go:0.4
+      - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
         args:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
@@ -161,7 +161,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-in-go:0.4
+      - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
         args:
         - "--repo=github.com/GoogleCloudPlatform/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
@@ -240,7 +240,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-in-go:0.4
+      - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
         args:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
@@ -332,7 +332,7 @@ presubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-in-go:0.4
+      - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
         args:
         - "--repo=github.com/kubernetes-incubator/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
@@ -3127,7 +3127,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-in-go:0.4
+      - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
         args:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
@@ -3163,7 +3163,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-in-go:0.4
+      - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
         args:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
@@ -3199,7 +3199,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-in-go:0.4
+      - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
         args:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
@@ -3889,7 +3889,7 @@ postsubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-in-go:0.4
+      - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -3976,7 +3976,7 @@ periodics:
   agent: kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/gcloud-in-go:0.4
+    - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
       args:
       - "--repo=github.com/kubernetes-incubator/cri-containerd=master"
       - "--root=/go/src"
@@ -18311,7 +18311,7 @@ periodics:
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
         value: /etc/service-account/service-account.json
-      image: gcr.io/k8s-testimages/gcloud-in-go:0.4
+      image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -18334,7 +18334,7 @@ periodics:
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
         value: /etc/service-account/service-account.json
-      image: gcr.io/k8s-testimages/gcloud-in-go:0.4
+      image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
