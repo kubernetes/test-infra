@@ -235,6 +235,10 @@ type SubmitQueue struct {
 	// on top of the existing required ("lgtm", "approved", "cncf-cla: yes").
 	AdditionalRequiredLabels []string
 
+	// BlockingLabels is a set of labels that forces the submit queue to ignore
+	// pull requests.
+	BlockingLabels []string
+
 	// If FakeE2E is true, don't try to connect to JenkinsHost, all jobs are passing.
 	FakeE2E bool
 
@@ -588,6 +592,7 @@ func (sq *SubmitQueue) RegisterOptions(opts *options.Options) sets.String {
 	sq.opts = opts
 	opts.RegisterStringSlice(&sq.NonBlockingJobNames, "nonblocking-jobs", []string{}, "Comma separated list of jobs that don't block merges, but will have status reported and issues filed.")
 	opts.RegisterStringSlice(&sq.AdditionalRequiredLabels, "additional-required-labels", []string{}, "Comma separated list of labels required for merging PRs on top of the existing required.")
+	opts.RegisterStringSlice(&sq.BlockingLabels, "blocking-labels", []string{}, "Comma separated list of labels required to miss from PRs in order to consider them mergeable.")
 	opts.RegisterBool(&sq.FakeE2E, "fake-e2e", false, "Whether to use a fake for testing E2E stability.")
 	opts.RegisterStringSlice(&sq.DoNotMergeMilestones, "do-not-merge-milestones", []string{}, "List of milestones which, when applied, will cause the PR to not be merged.")
 	opts.RegisterInt(&sq.AdminPort, "admin-port", 9999, "If non-zero, will serve administrative actions on this port.")
@@ -635,6 +640,7 @@ func (sq *SubmitQueue) RegisterOptions(opts *options.Options) sets.String {
 		"gate-approved",
 		// Need to remunge all PRs if anything changes in the following sets.
 		"additional-required-labels",
+		"blocking-labels",
 		"cla-yes-labels",
 		"required-retest-contexts",
 	)
@@ -1054,6 +1060,7 @@ func (sq *SubmitQueue) validForMergeExt(obj *github.MungeObject, checkStatus boo
 	mergeContexts := mungeopts.RequiredContexts.Merge
 	retestContexts := mungeopts.RequiredContexts.Retest
 	additionalLabels := sq.AdditionalRequiredLabels
+	blockingLabels := sq.BlockingLabels
 	claYesLabels := sq.ClaYesLabels
 	sq.opts.Unlock()
 
@@ -1161,6 +1168,13 @@ func (sq *SubmitQueue) validForMergeExt(obj *github.MungeObject, checkStatus boo
 	for _, label := range additionalLabels {
 		if !obj.HasLabel(label) {
 			sq.SetMergeStatus(obj, noAdditionalLabelMessage(label))
+			return false
+		}
+	}
+
+	for _, label := range blockingLabels {
+		if obj.HasLabel(label) {
+			sq.SetMergeStatus(obj, noMergeMessage(label))
 			return false
 		}
 	}
@@ -1641,6 +1655,7 @@ func (sq *SubmitQueue) serveMergeInfo(res http.ResponseWriter, req *http.Request
 	sq.opts.Lock()
 	doNotMergeMilestones := sq.DoNotMergeMilestones
 	additionalLabels := sq.AdditionalRequiredLabels
+	blockingLabels := sq.BlockingLabels
 	gateApproved := sq.GateApproved
 	gateCLA := sq.GateCLA
 	mergeContexts := mungeopts.RequiredContexts.Merge
@@ -1676,6 +1691,9 @@ func (sq *SubmitQueue) serveMergeInfo(res http.ResponseWriter, req *http.Request
 	}
 	if len(additionalLabels) > 0 {
 		out.WriteString(fmt.Sprintf(`<li>The PR must have the following labels: %q</li>`, additionalLabels))
+	}
+	if len(blockingLabels) > 0 {
+		out.WriteString(fmt.Sprintf(`<li>The PR must not have the following labels: %q</li>`, blockingLabels))
 	}
 	out.WriteString(`<li>The PR must not have the any labels starting with "do-not-merge"</li>`)
 	out.WriteString(`</ol><br>`)
