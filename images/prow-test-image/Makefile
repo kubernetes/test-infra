@@ -14,19 +14,25 @@
 
 IMG = gcr.io/k8s-testimages/prow-test-image
 TAG = $(shell date +v%Y%m%d)-$(shell git describe --tags --always --dirty)
-VERSIONS := $(wildcard ./Dockerfile-*)
+
+# <kubernetes version>:<golang version>
+VERSIONS := 1.6:1.7.4 1.7:1.8.3 1.8:1.8.3 1.9:1.9.1
+
 
 do_build = \
-	$(eval VERSION := $(subst ./Dockerfile-,,$(v)))\
-	docker build -f ./Dockerfile-$(VERSION) -t $(IMG):$(VERSION)-$(TAG) . ;\
-	docker tag $(IMG):$(VERSION)-$(TAG) $(IMG):$(VERSION)-latest ;\
-	echo Built $(IMG):$(VERSION)-$(TAG) and tagged with $(IMG):$(VERSION)-latest ;
+	$(eval VERSION_PARTS := $(subst :, ,$(v))) \
+	$(eval K8S := $(firstword $(VERSION_PARTS))) \
+	$(eval GO := $(lastword $(VERSION_PARTS))) \
+	docker build --build-arg GO_VERSION=$(GO) -f ./Dockerfile -t $(IMG):$(TAG)-$(K8S) . &&\
+	docker tag $(IMG):$(TAG)-$(K8S) $(IMG):latest-$(K8S) &&\
+	echo Built $(IMG):$(TAG)-$(K8S) and tagged with $(IMG):latest-$(K8S) ;
 
 do_push = \
-	$(eval VERSION := $(subst ./Dockerfile-,,$(v)))\
-	gcloud docker -- push $(IMG):$(VERSION)-$(TAG);\
-	gcloud docker -- push $(IMG):$(VERSION)-latest;\
-	echo Pushed $(IMG):$(VERSION)-latest and $(IMG):$(VERSION)-$(TAG);
+    $(eval VERSION_PARTS := $(subst :, ,$(v))) \
+    $(eval K8S := $(firstword $(VERSION_PARTS))) \
+	gcloud docker -- push $(IMG):$(TAG)-$(K8S);\
+	gcloud docker -- push $(IMG):latest-$(K8S);\
+	echo Pushed $(IMG):latest-$(K8S) and $(IMG):$(TAG)-$(K8S);
 
 .PHONY: all build push help
 
@@ -39,14 +45,8 @@ push: build
 	@$(foreach v,$(VERSIONS),$(do_push))
 
 help:
-	@echo "VARIABLES:"
-	@echo " VERSIONS:       Dockerfile to be built/pushed, can be either full file name or a tag"
-	@echo " 				- make build VERSIONS=./Dockerfile-1.9"
-	@echo " 				- make build VERSIONS=1.9"
-	@echo " 				are equivalent and both valid."
-	@echo ""
 	@echo "TARGETS:"
 	@echo " all:            build"
-	@echo " build:      	builds all the Dockerfile-* in VERSIONS"
-	@echo " push:       	builds all the Dockerfile-* in VERSIONS and pushes to k8s-testimages"
+	@echo " build:      	builds all of the VERSIONS"
+	@echo " push:       	builds all the VERSIONS and pushes to k8s-testimages"
 
