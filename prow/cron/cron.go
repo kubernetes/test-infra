@@ -23,6 +23,7 @@ import (
 	"sync"
 
 	"github.com/robfig/cron"
+	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/config"
 )
@@ -147,8 +148,9 @@ func (c *Cron) addJob(name, cron string) error {
 	id, err := c.cronAgent.AddFunc(cron, func() {
 		c.lock.Lock()
 		defer c.lock.Unlock()
-		// We want to ignore second trigger if first trigger is not consumed yet.
+
 		c.jobs[name].triggered = true
+		logrus.Infof("triggering cron job %s", name)
 	})
 
 	if err != nil {
@@ -161,6 +163,7 @@ func (c *Cron) addJob(name, cron string) error {
 		triggered: strings.HasPrefix(cron, "@every"),
 	}
 
+	logrus.Infof("Added new cron job %s with trigger %s", name, cron)
 	return nil
 }
 
@@ -172,5 +175,6 @@ func (c *Cron) removeJob(name string) error {
 	}
 	c.cronAgent.Remove(job.entryID)
 	delete(c.jobs, name)
+	logrus.Infof("Removed previous cron job %s", name)
 	return nil
 }
