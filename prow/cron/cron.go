@@ -43,6 +43,7 @@ type jobStatus struct {
 type Cron struct {
 	cronAgent *cron.Cron
 	jobs      map[string]*jobStatus
+	logger    *logrus.Entry
 	lock      sync.Mutex
 }
 
@@ -51,6 +52,7 @@ func New() *Cron {
 	return &Cron{
 		cronAgent: cron.New(),
 		jobs:      map[string]*jobStatus{},
+		logger:    logrus.WithField("client", "cron"),
 	}
 }
 
@@ -150,7 +152,7 @@ func (c *Cron) addJob(name, cron string) error {
 		defer c.lock.Unlock()
 
 		c.jobs[name].triggered = true
-		logrus.Infof("triggering cron job %s", name)
+		c.logger.Infof("Triggering cron job %s.", name)
 	})
 
 	if err != nil {
@@ -163,7 +165,7 @@ func (c *Cron) addJob(name, cron string) error {
 		triggered: strings.HasPrefix(cron, "@every"),
 	}
 
-	logrus.Infof("Added new cron job %s with trigger %s", name, cron)
+	c.logger.Infof("Added new cron job %s with trigger %s.", name, cron)
 	return nil
 }
 
@@ -175,6 +177,6 @@ func (c *Cron) removeJob(name string) error {
 	}
 	c.cronAgent.Remove(job.entryID)
 	delete(c.jobs, name)
-	logrus.Infof("Removed previous cron job %s", name)
+	c.logger.Infof("Removed previous cron job %s.", name)
 	return nil
 }
