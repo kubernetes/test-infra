@@ -286,7 +286,7 @@ jobs:
     sigOwners: ['sig-node']
 
   ci-kubernetes-e2e-gke-cosbeta-k8sdev-soak:
-    interval: 6h
+    interval: 2h
     args:
     - --check-leaked-resources=false
     - --gcp-project=k8s-test-97384bb7a5
@@ -296,7 +296,7 @@ jobs:
     interval: 6h
     sigOwners: ['sig-gcp']
   ci-kubernetes-e2e-gke-cosbeta-k8sbeta-soak:
-    interval: 6h
+    interval: 2h
     args:
     - --check-leaked-resources=false
     - --gcp-project=k8s-test-c2fd36a600
@@ -306,7 +306,7 @@ jobs:
     interval: 6h
     sigOwners: ['sig-gcp']
   ci-kubernetes-e2e-gke-cosbeta-k8sstable1-soak:
-    interval: 6h
+    interval: 2h
     args:
     - --check-leaked-resources=false
     - --gcp-project=k8s-test-606c50aeb1
@@ -316,7 +316,7 @@ jobs:
     interval: 6h
     sigOwners: ['sig-gcp']
   ci-kubernetes-e2e-gke-cosbeta-k8sstable2-soak:
-    interval: 6h
+    interval: 2h
     args:
     - --check-leaked-resources=false
     - --gcp-project=k8s-test-a43174570e
@@ -326,7 +326,7 @@ jobs:
     interval: 6h
     sigOwners: ['sig-gcp']
   ci-kubernetes-e2e-gke-cosbeta-k8sstable3-soak:
-    interval: 6h
+    interval: 2h
     args:
     - --check-leaked-resources=false
     - --gcp-project=k8s-test-764f8afa34
