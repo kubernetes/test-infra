@@ -20,6 +20,12 @@ set -o pipefail
 TESTINFRA_ROOT=$(git rev-parse --show-toplevel)
 TMP_GOPATH=$(mktemp -d)
 
+# no unit tests in vendor
+# previously we used godeps which did this, but `dep` does not handle this
+# properly yet. some of these tests don't build well. see:
+# ref: https://github.com/kubernetes/test-infra/pull/5411
+find ${TESTINFRA_ROOT}/vendor/ -name "*_test.go" -delete
+
 "${TESTINFRA_ROOT}/hack/go_install_from_commit.sh" \
   github.com/kubernetes/repo-infra/kazel \
   e26fc85d14a1d3dc25569831acc06919673c545a \

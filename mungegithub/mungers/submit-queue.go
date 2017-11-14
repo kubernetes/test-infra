@@ -633,9 +633,10 @@ func (sq *SubmitQueue) RegisterOptions(opts *options.Options) sets.String {
 		// For the following: need to remunge all PRs if changed from true to false.
 		"gate-cla",
 		"gate-approved",
-		// Need to remunge all PRs if anything changes in the following set of labels.
+		// Need to remunge all PRs if anything changes in the following sets.
 		"additional-required-labels",
 		"cla-yes-labels",
+		"required-retest-contexts",
 	)
 }
 

@@ -1,4 +1,4 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
@@ -14,24 +14,6 @@ go_library(
     importpath = "github.com/influxdata/influxdb/models",
     visibility = ["//visibility:public"],
     deps = ["//vendor/github.com/influxdata/influxdb/pkg/escape:go_default_library"],
-)
-
-go_test(
-    name = "go_default_test",
-    srcs = ["inline_strconv_parse_test.go"],
-    importpath = "github.com/influxdata/influxdb/models",
-    library = ":go_default_library",
-)
-
-go_test(
-    name = "go_default_xtest",
-    srcs = [
-        "inline_fnv_test.go",
-        "points_test.go",
-        "statistic_test.go",
-    ],
-    importpath = "github.com/influxdata/influxdb/models_test",
-    deps = [":go_default_library"],
 )
 
 filegroup(

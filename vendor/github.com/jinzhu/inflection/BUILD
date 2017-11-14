@@ -1,17 +1,10 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
     srcs = ["inflections.go"],
     importpath = "github.com/jinzhu/inflection",
     visibility = ["//visibility:public"],
-)
-
-go_test(
-    name = "go_default_xtest",
-    srcs = ["inflections_test.go"],
-    importpath = "github.com/jinzhu/inflection_test",
-    deps = ["//vendor/github.com/qor/inflection:go_default_library"],
 )
 
 filegroup(

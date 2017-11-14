@@ -285,6 +285,57 @@ jobs:
     - --gcp-project=cos-image-validation
     sigOwners: ['sig-node']
 
+  ci-kubernetes-e2e-gke-cosbeta-k8sdev-soak:
+    interval: 6h
+    args:
+    - --check-leaked-resources=false
+    - --gcp-project=k8s-test-97384bb7a5
+    - --save=gs://kubernetes-jenkins/soak/ci-kubernetes-e2e-gke-cosbeta-k8sdev-soak
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-cosbeta-k8sdev-stackdriver:
+    interval: 6h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-cosbeta-k8sbeta-soak:
+    interval: 6h
+    args:
+    - --check-leaked-resources=false
+    - --gcp-project=k8s-test-c2fd36a600
+    - --save=gs://kubernetes-jenkins/soak/ci-kubernetes-e2e-gke-cosbeta-k8sbeta-soak
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-cosbeta-k8sbeta-stackdriver:
+    interval: 6h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-cosbeta-k8sstable1-soak:
+    interval: 6h
+    args:
+    - --check-leaked-resources=false
+    - --gcp-project=k8s-test-606c50aeb1
+    - --save=gs://kubernetes-jenkins/soak/ci-kubernetes-e2e-gke-cosbeta-k8sstable1-soak
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-cosbeta-k8sstable1-stackdriver:
+    interval: 6h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-cosbeta-k8sstable2-soak:
+    interval: 6h
+    args:
+    - --check-leaked-resources=false
+    - --gcp-project=k8s-test-a43174570e
+    - --save=gs://kubernetes-jenkins/soak/ci-kubernetes-e2e-gke-cosbeta-k8sstable2-soak
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-cosbeta-k8sstable2-stackdriver:
+    interval: 6h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-cosbeta-k8sstable3-soak:
+    interval: 6h
+    args:
+    - --check-leaked-resources=false
+    - --gcp-project=k8s-test-764f8afa34
+    - --save=gs://kubernetes-jenkins/soak/ci-kubernetes-e2e-gke-cosbeta-k8sstable3-soak
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-cosbeta-k8sstable3-stackdriver:
+    interval: 6h
+    sigOwners: ['sig-gcp']
+
   # Ubuntu image validation.
   #
   # +---------------+----------+----------+------------+------------+------------+
@@ -561,6 +612,46 @@ jobs:
     args:
     - --gcp-project=cos-image-validation
     sigOwners: ['sig-node']
+  ci-kubernetes-e2enode-cosbeta-k8sbeta-default:
+    interval: 2h
+    args:
+    - --gcp-project=cos-image-validation
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2enode-cosbeta-k8sbeta-serial:
+    interval: 2h
+    args:
+    - --gcp-project=cos-image-validation
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2enode-cosbeta-k8sstable1-default:
+    interval: 2h
+    args:
+    - --gcp-project=cos-image-validation
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2enode-cosbeta-k8sstable1-serial:
+    interval: 2h
+    args:
+    - --gcp-project=cos-image-validation
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2enode-cosbeta-k8sstable2-default:
+    interval: 2h
+    args:
+    - --gcp-project=cos-image-validation
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2enode-cosbeta-k8sstable2-serial:
+    interval: 2h
+    args:
+    - --gcp-project=cos-image-validation
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2enode-cosbeta-k8sstable3-default:
+    interval: 2h
+    args:
+    - --gcp-project=cos-image-validation
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2enode-cosbeta-k8sstable3-serial:
+    interval: 2h
+    args:
+    - --gcp-project=cos-image-validation
+    sigOwners: ['sig-node']
   ci-kubernetes-e2enode-cosstable1-k8sdev-default:
     interval: 2h
     args:
@@ -679,7 +770,6 @@ jobs:
 common:
   args:
   - --cluster=test-${job_name_hash}
-  - --gcp-project=k8s-test-${job_name_hash}
 
 cloudProviders:
   gce:
@@ -778,6 +868,18 @@ testSuites:
     - --timeout=150m
     - --test_args=--ginkgo.focus=\[Slow\] --ginkgo.skip=\[Serial\]|\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --minStartupPods=8
     - --ginkgo-parallel=30
+  soak:
+    args:
+    - --check-version-skew=false
+    - --down=false
+    - --soak
+    - --test_args=--ginkgo.skip=\[Disruptive\]|\[Flaky\]|\[Feature:.+\] --clean-start=true --minStartupPods=8
+    - --timeout=600m
+    - --up=false
+  stackdriver:
+    args:
+    - --test_args=--ginkgo.focus=\[Feature:StackdriverMonitoring\]|\[Feature:StackdriverCustomMetrics\] --minStartupPods=8
+    - --timeout=50m
   updown:
     args:
     - --timeout=30m
@@ -837,7 +939,7 @@ nodeK8sVersions:
 nodeTestSuites:
   default:
     args:
-    - --timeout=60m
+    - --timeout=70m
     - --test_args=--nodes=8 --skip="\[Flaky\]|\[Serial\]"
     - --node-test-args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
   gkespec:

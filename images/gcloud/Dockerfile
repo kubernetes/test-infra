@@ -18,6 +18,7 @@ LABEL maintainer="senlu@google.com"
 
 RUN apt-get update && apt-get install -y \
     python \
+    rsync \
     wget && \
     apt-get clean
 
