@@ -764,74 +764,74 @@ jobs:
     - --gcp-project=ubuntu-image-validation
     sigOwners: ['sig-node']
   # release branch jobs (stable2 and stable3)
-  ci-kubernetes-e2e-gce-gci-k8sstable3-alphafeatures:
+  ci-kubernetes-e2e-gce-cos-k8sstable3-alphafeatures:
     interval: 6h
     args:
     - --env=KUBE_FEATURE_GATES=AllAlpha=true
     sigOwners: ['sig-gcp']
-  ci-kubernetes-e2e-gce-gci-k8sstable2-alphafeatures:
+  ci-kubernetes-e2e-gce-cos-k8sstable2-alphafeatures:
     interval: 2h
     args:
     - --env=KUBE_FEATURE_GATES=AllAlpha=true
     sigOwners: ['sig-gcp']
-  ci-kubernetes-e2e-gce-gci-k8sstable3-ingress:
+  ci-kubernetes-e2e-gce-cos-k8sstable3-ingress:
     interval: 6h
     sigOwners: ['sig-gcp']
-  ci-kubernetes-e2e-gce-gci-k8sstable2-ingress:
+  ci-kubernetes-e2e-gce-cos-k8sstable2-ingress:
     interval: 2h
     sigOwners: ['sig-gcp']
-  ci-kubernetes-e2e-gce-gci-k8sstable3-reboot:
-    interval: 6h
+  ci-kubernetes-e2e-gce-cos-k8sstable3-reboot:
+    interval: 6h˙
     sigOwners: ['sig-gcp']
-  ci-kubernetes-e2e-gce-gci-k8sstable2-reboot:
+  ci-kubernetes-e2e-gce-cos-k8sstable2-reboot:
     interval: 2h
     sigOwners: ['sig-gcp']
-  ci-kubernetes-e2e-gce-gci-k8sstable3-default:
+  ci-kubernetes-e2e-gce-cos-k8sstable3-default:
     interval: 6h
     sigOwners: ['sig-gcp']
-  ci-kubernetes-e2e-gce-gci-k8sstable2-default:
+  ci-kubernetes-e2e-gce-cos-k8sstable2-default:
     interval: 2h
     sigOwners: ['sig-gcp']
-  ci-kubernetes-e2e-gce-gci-k8sstable3-serial:
+  ci-kubernetes-e2e-gce-cos-k8sstable3-serial:
     interval: 6h
     sigOwners: ['sig-gcp']
-  ci-kubernetes-e2e-gce-gci-k8sstable2-serial:
+  ci-kubernetes-e2e-gce-cos-k8sstable2-serial:
     interval: 2h
     sigOwners: ['sig-gcp']
-  ci-kubernetes-e2e-gce-gci-k8sstable3-slow:
+  ci-kubernetes-e2e-gce-cos-k8sstable3-slow:
     interval: 6h
     sigOwners: ['sig-gcp']
-  ci-kubernetes-e2e-gce-gci-k8sstable2-slow:
+  ci-kubernetes-e2e-gce-cos-k8sstable2-slow:
     interval: 2h
     sigOwners: ['sig-gcp']
-  ci-kubernetes-e2e-gke-gci-k8sstable3-ingress:
+  ci-kubernetes-e2e-gke-cos-k8sstable3-ingress:
     interval: 6h
     sigOwners: ['sig-gcp']
-  ci-kubernetes-e2e-gke-gci-k8sstable2-ingress:
+  ci-kubernetes-e2e-gke-cos-k8sstable2-ingress:
     interval: 2h
     sigOwners: ['sig-gcp']
-  ci-kubernetes-e2e-gke-gci-k8sstable3-reboot:
+  ci-kubernetes-e2e-gke-cos-k8sstable3-reboot:
     interval: 6h
     sigOwners: ['sig-gcp']
-  ci-kubernetes-e2e-gke-gci-k8sstable2-reboot:
+  ci-kubernetes-e2e-gke-cos-k8sstable2-reboot:
     interval: 2h
     sigOwners: ['sig-gcp']
-  ci-kubernetes-e2e-gke-gci-k8sstable3-default:
+  ci-kubernetes-e2e-gke-cos-k8sstable3-default:
     interval: 6h
     sigOwners: ['sig-gcp']
-  ci-kubernetes-e2e-gke-gci-k8sstable2-default:
+  ci-kubernetes-e2e-gke-cos-k8sstable2-default:
     interval: 2h
     sigOwners: ['sig-gcp']
-  ci-kubernetes-e2e-gke-gci-k8sstable3-serial:
+  ci-kubernetes-e2e-gke-cos-k8sstable3-serial:
     interval: 6h
     sigOwners: ['sig-gcp']
-  ci-kubernetes-e2e-gke-gci-k8sstable2-serial:
+  ci-kubernetes-e2e-gke-cos-k8sstable2-serial:
     interval: 2h
     sigOwners: ['sig-gcp']
-  ci-kubernetes-e2e-gke-gci-k8sstable3-slow:
+  ci-kubernetes-e2e-gke-cos-k8sstable3-slow:
     interval: 6h
     sigOwners: ['sig-gcp']
-  ci-kubernetes-e2e-gke-gci-k8sstable2-slow:
+  ci-kubernetes-e2e-gke-cos-k8sstable2-slow:
     interval: 2h
     sigOwners: ['sig-gcp']
 
@@ -885,7 +885,7 @@ images:
     - --image-family=ubuntu-gke-1604-lts
     - --image-project=ubuntu-os-gke-cloud
     - --gcp-node-image=ubuntu
-  gci:
+  cos:
     args:
     - --gcp-node-image=gci
 
