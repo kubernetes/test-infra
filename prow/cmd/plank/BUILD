@@ -10,6 +10,8 @@ go_binary(
     name = "plank",
     embed = [":go_default_library"],
     importpath = "k8s.io/test-infra/prow/cmd/plank",
+    pure = "on",
+    race = "off",
 )
 
 go_library(

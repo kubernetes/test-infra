@@ -11,6 +11,8 @@ go_binary(
     name = "horologium",
     embed = [":go_default_library"],
     importpath = "k8s.io/test-infra/prow/cmd/horologium",
+    pure = "on",
+    race = "off",
 )
 
 go_library(

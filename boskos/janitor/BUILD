@@ -11,6 +11,8 @@ go_binary(
     name = "janitor",
     embed = [":go_default_library"],
     importpath = "k8s.io/test-infra/boskos/janitor",
+    pure = "on",
+    race = "off",
 )
 
 go_library(

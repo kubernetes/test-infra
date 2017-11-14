@@ -14,6 +14,8 @@ go_binary(
     ],
     embed = [":go_default_library"],
     importpath = "k8s.io/test-infra/prow/cmd/hook",
+    pure = "on",
+    race = "off",
 )
 
 go_test(

@@ -13,6 +13,8 @@ go_binary(
     name = "label_sync",
     embed = [":go_default_library"],
     importpath = "k8s.io/test-infra/label_sync",
+    pure = "on",
+    race = "off",
     tags = ["automanaged"],
 )
 

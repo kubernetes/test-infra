@@ -19,6 +19,8 @@ go_binary(
     name = "tide",
     embed = [":go_default_library"],
     importpath = "k8s.io/test-infra/prow/cmd/tide",
+    pure = "on",
+    race = "off",
     visibility = ["//visibility:public"],
 )
 

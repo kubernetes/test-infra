@@ -11,6 +11,8 @@ go_binary(
     name = "boskos",
     embed = [":go_default_library"],
     importpath = "k8s.io/test-infra/boskos",
+    pure = "on",
+    race = "off",
 )
 
 go_test(

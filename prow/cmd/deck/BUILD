@@ -11,6 +11,8 @@ go_binary(
     name = "deck",
     embed = [":go_default_library"],
     importpath = "k8s.io/test-infra/prow/cmd/deck",
+    pure = "on",
+    race = "off",
 )
 
 go_test(

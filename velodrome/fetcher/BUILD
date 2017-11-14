@@ -11,6 +11,8 @@ go_binary(
     name = "fetcher",
     embed = [":go_default_library"],
     importpath = "k8s.io/test-infra/velodrome/fetcher",
+    pure = "on",
+    race = "off",
 )
 
 go_test(

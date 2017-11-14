@@ -11,6 +11,8 @@ go_binary(
     name = "sinker",
     embed = [":go_default_library"],
     importpath = "k8s.io/test-infra/prow/cmd/sinker",
+    pure = "on",
+    race = "off",
 )
 
 go_test(

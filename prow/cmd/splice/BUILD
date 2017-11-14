@@ -11,6 +11,8 @@ go_binary(
     name = "splice",
     embed = [":go_default_library"],
     importpath = "k8s.io/test-infra/prow/cmd/splice",
+    pure = "on",
+    race = "off",
 )
 
 go_test(

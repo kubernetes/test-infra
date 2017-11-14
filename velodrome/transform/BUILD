@@ -11,6 +11,8 @@ go_binary(
     name = "transform",
     embed = [":go_default_library"],
     importpath = "k8s.io/test-infra/velodrome/transform",
+    pure = "on",
+    race = "off",
 )
 
 go_test(
