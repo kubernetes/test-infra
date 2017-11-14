@@ -99,6 +99,7 @@ plugins:
 
   kubernetes/kops:
   - trigger
+  - approve
 
   kubernetes/kubectl:
   - approve
