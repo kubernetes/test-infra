@@ -149,7 +149,7 @@ _**sig owner**_: Must specify at least one label prefixed with ` + "`sig/`." + `
 <summary>Issue Labels</summary>
 
 - ` + "`sig/foo`: Issue will be escalated to these SIGs if needed." + `
-- ` + "`priority/critical-urgent`: Never automatically move out of a release milestone; continually escalate to contributor and SIG through all available channels." + `
+- ` + "`priority/critical-urgent`: Never automatically move issue out of a release milestone; continually escalate to contributor and SIG through all available channels." + `
 - ` + "`kind/bug`: Fixes a bug discovered during the current release." + `
 </details>
 `
@@ -548,16 +548,11 @@ func TestNotificationIsCurrent(t *testing.T) {
 
 func TestIgnoreObject(t *testing.T) {
 	tests := map[string]struct {
-		isPR            bool
 		isClosed        bool
 		milestone       string
 		activeMilestone string
 		expectedIgnore  bool
 	}{
-		"Ignore PR": {
-			isPR:           true,
-			expectedIgnore: true,
-		},
 		"Ignore closed issue": {
 			isClosed:       true,
 			expectedIgnore: true,
@@ -566,7 +561,7 @@ func TestIgnoreObject(t *testing.T) {
 	}
 	for testName, test := range tests {
 		t.Run(testName, func(t *testing.T) {
-			issue := github_test.Issue("user", 1, nil, test.isPR)
+			issue := github_test.Issue("user", 1, nil, false)
 			issue.Milestone = &githubapi.Milestone{Title: stringPtr(test.milestone), Number: intPtr(1)}
 			if test.isClosed {
 				issue.State = stringPtr("closed")
