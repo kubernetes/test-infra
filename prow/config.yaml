@@ -15766,7 +15766,7 @@ periodics:
         defaultMode: 256
         secretName: aws-cred
 
-- cron: "30 8 * * 6"
+- interval: 1h
   agent: kubernetes
   name: ci-kubernetes-e2e-kops-aws-cncf-canary
   spec:
