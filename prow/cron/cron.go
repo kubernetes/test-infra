@@ -161,6 +161,7 @@ func (c *Cron) addJob(name, cron string) error {
 
 	c.jobs[name] = &jobStatus{
 		entryID: id,
+		cronStr: cron,
 		// try to kick of a periodic trigger right away
 		triggered: strings.HasPrefix(cron, "@every"),
 	}

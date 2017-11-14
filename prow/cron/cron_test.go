@@ -77,8 +77,11 @@ func TestSync(t *testing.T) {
 		t.Error("1st sync, should not have job 'interval'")
 	}
 
+	var cronID cron.EntryID
 	if !c.HasJob("cron") {
 		t.Error("1st sync, should have job 'cron'")
+	} else {
+		cronID = c.jobs["cron"].entryID
 	}
 
 	if err := c.SyncConfig(addAndUpdate); err != nil {
@@ -87,9 +90,13 @@ func TestSync(t *testing.T) {
 
 	if !c.HasJob("cron") {
 		t.Error("2nd sync, should have job 'cron'")
+	} else {
+		newCronID := c.jobs["cron"].entryID
+		if newCronID != cronID {
+			t.Errorf("2nd sync, entryID for 'cron' should not be updated")
+		}
 	}
 
-	var cronID cron.EntryID
 	if !c.HasJob("cron-2") {
 		t.Error("2nd sync, should have job 'cron-2'")
 	} else {
@@ -109,7 +116,7 @@ func TestSync(t *testing.T) {
 	} else {
 		newCronID := c.jobs["cron-2"].entryID
 		if newCronID == cronID {
-			t.Errorf("3rd sync, cron-2 should be updated")
+			t.Errorf("3rd sync, entryID for 'cron-2' should be updated")
 		}
 	}
 }
