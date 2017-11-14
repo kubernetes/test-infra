@@ -1653,9 +1653,161 @@ presubmits:
     context: pull-kubernetes-verify-prow
     rerun_command: "/test pull-kubernetes-verify-prow"
     trigger: "(?m)^/test pull-kubernetes-verify-prow,?(\\s+|$)"
+    branches:
+    - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/prow-test-image:1.9-latest
+      - image: gcr.io/k8s-testimages/prow-test-image:latest-1.9
+        imagePullPolicy: Always
+        args:
+        - "--clean"
+        - "--git-cache=/root/.cache/git"
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        env:
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /etc/service-account/service-account.json
+        # docker-in-docker needs privilged mode
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: service
+          mountPath: /etc/service-account
+          readOnly: true
+        - name: cache-ssd
+          mountPath: /root/.cache
+        - name: docker-graph
+          mountPath: /docker-graph
+        - name: var-lib-docker
+          mountPath: /var/lib/docker
+        ports:
+        - containerPort: 9999
+          hostPort: 9999
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
+      - name: cache-ssd
+        hostPath:
+          path: /mnt/disks/ssd0
+      - name: docker-graph
+        hostPath:
+          path: /mnt/disks/ssd0/docker-graph
+      - name: var-lib-docker
+        emptyDir: {}
+  - name: pull-kubernetes-verify-prow
+    agent: kubernetes
+    always_run: false
+    context: pull-kubernetes-verify-prow
+    rerun_command: "/test pull-kubernetes-verify-prow"
+    trigger: "(?m)^/test pull-kubernetes-verify-prow,?(\\s+|$)"
+    branches:
+    - release-1.8
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/prow-test-image:latest-1.8
+        imagePullPolicy: Always
+        args:
+        - "--clean"
+        - "--git-cache=/root/.cache/git"
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        env:
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /etc/service-account/service-account.json
+        # docker-in-docker needs privilged mode
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: service
+          mountPath: /etc/service-account
+          readOnly: true
+        - name: cache-ssd
+          mountPath: /root/.cache
+        - name: docker-graph
+          mountPath: /docker-graph
+        - name: var-lib-docker
+          mountPath: /var/lib/docker
+        ports:
+        - containerPort: 9999
+          hostPort: 9999
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
+      - name: cache-ssd
+        hostPath:
+          path: /mnt/disks/ssd0
+      - name: docker-graph
+        hostPath:
+          path: /mnt/disks/ssd0/docker-graph
+      - name: var-lib-docker
+        emptyDir: {}
+  - name: pull-kubernetes-verify-prow
+    agent: kubernetes
+    always_run: false
+    context: pull-kubernetes-verify-prow
+    rerun_command: "/test pull-kubernetes-verify-prow"
+    trigger: "(?m)^/test pull-kubernetes-verify-prow,?(\\s+|$)"
+    branches:
+    - release-1.7
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/prow-test-image:latest-1.7
+        imagePullPolicy: Always
+        args:
+        - "--clean"
+        - "--git-cache=/root/.cache/git"
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        env:
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /etc/service-account/service-account.json
+        # docker-in-docker needs privilged mode
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: service
+          mountPath: /etc/service-account
+          readOnly: true
+        - name: cache-ssd
+          mountPath: /root/.cache
+        - name: docker-graph
+          mountPath: /docker-graph
+        - name: var-lib-docker
+          mountPath: /var/lib/docker
+        ports:
+        - containerPort: 9999
+          hostPort: 9999
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
+      - name: cache-ssd
+        hostPath:
+          path: /mnt/disks/ssd0
+      - name: docker-graph
+        hostPath:
+          path: /mnt/disks/ssd0/docker-graph
+      - name: var-lib-docker
+        emptyDir: {}
+  - name: pull-kubernetes-verify-prow
+    agent: kubernetes
+    always_run: false
+    context: pull-kubernetes-verify-prow
+    rerun_command: "/test pull-kubernetes-verify-prow"
+    trigger: "(?m)^/test pull-kubernetes-verify-prow,?(\\s+|$)"
+    branches:
+    - release-1.6
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/prow-test-image:latest-1.6
         imagePullPolicy: Always
         args:
         - "--clean"
@@ -2939,9 +3091,161 @@ presubmits:
     context: pull-security-kubernetes-verify-prow
     rerun_command: "/test pull-security-kubernetes-verify-prow"
     trigger: "(?m)^/test pull-security-kubernetes-verify-prow,?(\\s+|$)"
+    branches:
+    - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/prow-test-image:1.9-latest
+      - image: gcr.io/k8s-testimages/prow-test-image:latest-1.9
+        imagePullPolicy: Always
+        args:
+        - "--clean"
+        - "--git-cache=/root/.cache/git"
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        env:
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /etc/service-account/service-account.json
+        # docker-in-docker needs privilged mode
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: service
+          mountPath: /etc/service-account
+          readOnly: true
+        - name: cache-ssd
+          mountPath: /root/.cache
+        - name: docker-graph
+          mountPath: /docker-graph
+        - name: var-lib-docker
+          mountPath: /var/lib/docker
+        ports:
+        - containerPort: 9999
+          hostPort: 9999
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
+      - name: cache-ssd
+        hostPath:
+          path: /mnt/disks/ssd0
+      - name: docker-graph
+        hostPath:
+          path: /mnt/disks/ssd0/docker-graph
+      - name: var-lib-docker
+        emptyDir: {}
+  - name: pull-security-kubernetes-verify-prow
+    agent: kubernetes
+    always_run: false
+    context: pull-security-kubernetes-verify-prow
+    rerun_command: "/test pull-security-kubernetes-verify-prow"
+    trigger: "(?m)^/test pull-security-kubernetes-verify-prow,?(\\s+|$)"
+    branches:
+    - release-1.8
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/prow-test-image:latest-1.8
+        imagePullPolicy: Always
+        args:
+        - "--clean"
+        - "--git-cache=/root/.cache/git"
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        env:
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /etc/service-account/service-account.json
+        # docker-in-docker needs privilged mode
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: service
+          mountPath: /etc/service-account
+          readOnly: true
+        - name: cache-ssd
+          mountPath: /root/.cache
+        - name: docker-graph
+          mountPath: /docker-graph
+        - name: var-lib-docker
+          mountPath: /var/lib/docker
+        ports:
+        - containerPort: 9999
+          hostPort: 9999
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
+      - name: cache-ssd
+        hostPath:
+          path: /mnt/disks/ssd0
+      - name: docker-graph
+        hostPath:
+          path: /mnt/disks/ssd0/docker-graph
+      - name: var-lib-docker
+        emptyDir: {}
+  - name: pull-security-kubernetes-verify-prow
+    agent: kubernetes
+    always_run: false
+    context: pull-security-kubernetes-verify-prow
+    rerun_command: "/test pull-security-kubernetes-verify-prow"
+    trigger: "(?m)^/test pull-security-kubernetes-verify-prow,?(\\s+|$)"
+    branches:
+    - release-1.7
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/prow-test-image:latest-1.7
+        imagePullPolicy: Always
+        args:
+        - "--clean"
+        - "--git-cache=/root/.cache/git"
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        env:
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /etc/service-account/service-account.json
+        # docker-in-docker needs privilged mode
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: service
+          mountPath: /etc/service-account
+          readOnly: true
+        - name: cache-ssd
+          mountPath: /root/.cache
+        - name: docker-graph
+          mountPath: /docker-graph
+        - name: var-lib-docker
+          mountPath: /var/lib/docker
+        ports:
+        - containerPort: 9999
+          hostPort: 9999
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
+      - name: cache-ssd
+        hostPath:
+          path: /mnt/disks/ssd0
+      - name: docker-graph
+        hostPath:
+          path: /mnt/disks/ssd0/docker-graph
+      - name: var-lib-docker
+        emptyDir: {}
+  - name: pull-security-kubernetes-verify-prow
+    agent: kubernetes
+    always_run: false
+    context: pull-security-kubernetes-verify-prow
+    rerun_command: "/test pull-security-kubernetes-verify-prow"
+    trigger: "(?m)^/test pull-security-kubernetes-verify-prow,?(\\s+|$)"
+    branches:
+    - release-1.6
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/prow-test-image:latest-1.6
         imagePullPolicy: Always
         args:
         - "--clean"
