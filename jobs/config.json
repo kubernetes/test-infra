@@ -9850,6 +9850,7 @@
   "pull-kubernetes-multicluster-ingress-test": {
     "args": [
       "make",
+      "--",
       "-j",
       "2",
       "test",
