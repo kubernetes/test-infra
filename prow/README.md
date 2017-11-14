@@ -24,6 +24,7 @@ See also: [Life of a Prow Job](./architecture.md)
 
 New features added to each components:
 
+ - *November 14, 2017* `jenkins-operator:0.58` exposes prometheus metrics.
  - *November 8, 2017* `horologium:0.14` prow periodic job now support cron
    triggers.
 
