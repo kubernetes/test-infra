@@ -16227,7 +16227,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=80
+      - --timeout=90
       - --repo=k8s.io/kubernetes=master
       - --root=/go/src
       env:
@@ -16305,7 +16305,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=80
+      - --timeout=90
       - --repo=k8s.io/kubernetes=master
       - --root=/go/src
       env:
@@ -16383,7 +16383,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=80
+      - --timeout=90
       - --repo=k8s.io/kubernetes=release-1.8
       - --root=/go/src
       env:
@@ -16461,7 +16461,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=80
+      - --timeout=90
       - --repo=k8s.io/kubernetes=release-1.7
       - --root=/go/src
       env:
@@ -16539,7 +16539,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=80
+      - --timeout=90
       - --repo=k8s.io/kubernetes=release-1.6
       - --root=/go/src
       env:
@@ -16617,7 +16617,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=80
+      - --timeout=90
       - --repo=k8s.io/kubernetes=master
       - --root=/go/src
       env:
@@ -16695,7 +16695,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=80
+      - --timeout=90
       - --repo=k8s.io/kubernetes=master
       - --root=/go/src
       env:
@@ -16773,7 +16773,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=80
+      - --timeout=90
       - --repo=k8s.io/kubernetes=release-1.8
       - --root=/go/src
       env:
@@ -16851,7 +16851,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=80
+      - --timeout=90
       - --repo=k8s.io/kubernetes=release-1.7
       - --root=/go/src
       env:
@@ -16929,7 +16929,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=80
+      - --timeout=90
       - --repo=k8s.io/kubernetes=release-1.6
       - --root=/go/src
       env:
