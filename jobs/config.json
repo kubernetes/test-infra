@@ -9850,7 +9850,10 @@
   "pull-kubernetes-multicluster-ingress-test": {
     "args": [
       "make",
-      "test"
+      "-j",
+      "2",
+      "test",
+      "coveralls"
     ],
     "scenario": "execute",
     "sigOwners": [

@@ -174,10 +174,16 @@ presubmits:
         - name: service
           mountPath: /etc/service-account
           readOnly: true
+        - name: coveralls
+          mountPath: /etc/coveralls-token
+          readOnly: true
       volumes:
       - name: service
         secret:
           secretName: service-account
+      - name: coveralls
+        secret:
+          secretName: k8s-multicluster-ingress-coveralls-token
   kubernetes/federation:
   - name: pull-federation-bazel-test
     agent: kubernetes
