@@ -262,7 +262,7 @@ func TestNewKubernetesAnywhereMultiCluster(t *testing.T) {
 			_, err = newKubernetesAnywhereMultiCluster("fake-project", zone, multiClusters)
 			if test.expectError {
 				if err == nil {
-					t.Errorf("expected err but newKubernetesAnywhereMultiCluster(%s) suceeded.", testName)
+					t.Errorf("expected err but newKubernetesAnywhereMultiCluster(%s) succeeded.", testName)
 				}
 			} else {
 				if err != nil {

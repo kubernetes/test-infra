@@ -53,7 +53,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-in-go:0.4
+      - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
         args:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
@@ -89,7 +89,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-in-go:0.4
+      - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
         args:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
@@ -125,7 +125,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-in-go:0.4
+      - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
         args:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
@@ -161,7 +161,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-in-go:0.4
+      - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
         args:
         - "--repo=github.com/GoogleCloudPlatform/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
@@ -187,7 +187,7 @@ presubmits:
     trigger: "(?m)^/test( all| pull-federation-bazel-test),?(\\s+|$)"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171013-53473ec5-0.6.1
+      - image: gcr.io/k8s-testimages/bazelbuild:v20171113-ae73dc58-0.6.1
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -216,6 +216,9 @@ presubmits:
         ports:
         - containerPort: 9999
           hostPort: 9999
+        resources:
+          requests:
+            memory: "6Gi"
       volumes:
       - name: service
         secret:
@@ -237,7 +240,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-in-go:0.4
+      - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
         args:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
@@ -285,7 +288,7 @@ presubmits:
     trigger: "(?m)^/test( all| pull-cluster-registry-bazel),?(\\s+|$)"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171013-53473ec5-0.6.1
+      - image: gcr.io/k8s-testimages/bazelbuild:v20171113-ae73dc58-0.6.1
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -308,6 +311,9 @@ presubmits:
         ports:
         - containerPort: 9999
           hostPort: 9999
+        resources:
+          requests:
+            memory: "2Gi"
       volumes:
       - name: service
         secret:
@@ -326,7 +332,7 @@ presubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-in-go:0.4
+      - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
         args:
         - "--repo=github.com/kubernetes-incubator/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
@@ -413,7 +419,7 @@ presubmits:
     - release-1.8 # different target set
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171013-53473ec5-0.6.1
+      - image: gcr.io/k8s-testimages/bazelbuild:v20171113-ae73dc58-0.6.1
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -439,6 +445,9 @@ presubmits:
         ports:
         - containerPort: 9999
           hostPort: 9999
+        resources:
+          requests:
+            memory: "6Gi"
       volumes:
       - name: service
         secret:
@@ -513,7 +522,7 @@ presubmits:
     - release-1.8
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171013-53473ec5-0.6.1
+      - image: gcr.io/k8s-testimages/bazelbuild:v20171113-ae73dc58-0.6.1
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -539,6 +548,9 @@ presubmits:
         ports:
         - containerPort: 9999
           hostPort: 9999
+        resources:
+          requests:
+            memory: "6Gi"
       volumes:
       - name: service
         secret:
@@ -611,7 +623,7 @@ presubmits:
     - release-1.6
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171013-53473ec5-0.5.2
+      - image: gcr.io/k8s-testimages/bazelbuild:v20171113-ae73dc58-0.5.2
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -637,6 +649,9 @@ presubmits:
         ports:
         - containerPort: 9999
           hostPort: 9999
+        resources:
+          requests:
+            memory: "6Gi"
       volumes:
       - name: service
         secret:
@@ -737,6 +752,9 @@ presubmits:
         ports:
         - containerPort: 9999
           hostPort: 9999
+        resources:
+          requests:
+            memory: "6Gi"
       volumes:
       - name: service
         secret:
@@ -757,7 +775,7 @@ presubmits:
     - release-1.8 # different set of targets
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171013-53473ec5-0.6.1
+      - image: gcr.io/k8s-testimages/bazelbuild:v20171113-ae73dc58-0.6.1
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -786,6 +804,9 @@ presubmits:
         ports:
         - containerPort: 9999
           hostPort: 9999
+        resources:
+          requests:
+            memory: "6Gi"
       volumes:
       - name: service
         secret:
@@ -804,7 +825,7 @@ presubmits:
     - release-1.8
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171013-53473ec5-0.6.1
+      - image: gcr.io/k8s-testimages/bazelbuild:v20171113-ae73dc58-0.6.1
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -832,6 +853,9 @@ presubmits:
         ports:
         - containerPort: 9999
           hostPort: 9999
+        resources:
+          requests:
+            memory: "6Gi"
       volumes:
       - name: service
         secret:
@@ -849,7 +873,7 @@ presubmits:
     - release-1.6
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171013-53473ec5-0.5.2
+      - image: gcr.io/k8s-testimages/bazelbuild:v20171113-ae73dc58-0.5.2
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -878,6 +902,9 @@ presubmits:
         ports:
         - containerPort: 9999
           hostPort: 9999
+        resources:
+          requests:
+            memory: "6Gi"
       volumes:
       - name: service
         secret:
@@ -927,6 +954,9 @@ presubmits:
         ports:
         - containerPort: 9999
           hostPort: 9999
+        resources:
+          requests:
+            memory: "6Gi"
       volumes:
       - name: service
         secret:
@@ -1679,7 +1709,7 @@ presubmits:
     - release-1.8 # different target set
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171013-53473ec5-0.6.1
+      - image: gcr.io/k8s-testimages/bazelbuild:v20171113-ae73dc58-0.6.1
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -1705,6 +1735,9 @@ presubmits:
         ports:
         - containerPort: 9999
           hostPort: 9999
+        resources:
+          requests:
+            memory: "6Gi"
       volumes:
       - name: service
         secret:
@@ -1779,7 +1812,7 @@ presubmits:
     - release-1.8
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171013-53473ec5-0.6.1
+      - image: gcr.io/k8s-testimages/bazelbuild:v20171113-ae73dc58-0.6.1
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -1805,6 +1838,9 @@ presubmits:
         ports:
         - containerPort: 9999
           hostPort: 9999
+        resources:
+          requests:
+            memory: "6Gi"
       volumes:
       - name: service
         secret:
@@ -1877,7 +1913,7 @@ presubmits:
     - release-1.6
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171013-53473ec5-0.5.2
+      - image: gcr.io/k8s-testimages/bazelbuild:v20171113-ae73dc58-0.5.2
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -1903,6 +1939,9 @@ presubmits:
         ports:
         - containerPort: 9999
           hostPort: 9999
+        resources:
+          requests:
+            memory: "6Gi"
       volumes:
       - name: service
         secret:
@@ -2002,6 +2041,9 @@ presubmits:
         ports:
         - containerPort: 9999
           hostPort: 9999
+        resources:
+          requests:
+            memory: "6Gi"
       volumes:
       - name: service
         secret:
@@ -2021,7 +2063,7 @@ presubmits:
     - release-1.8 # different set of targets
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171013-53473ec5-0.6.1
+      - image: gcr.io/k8s-testimages/bazelbuild:v20171113-ae73dc58-0.6.1
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -2050,6 +2092,9 @@ presubmits:
         ports:
         - containerPort: 9999
           hostPort: 9999
+        resources:
+          requests:
+            memory: "6Gi"
       volumes:
       - name: service
         secret:
@@ -2068,7 +2113,7 @@ presubmits:
     - release-1.8
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171013-53473ec5-0.6.1
+      - image: gcr.io/k8s-testimages/bazelbuild:v20171113-ae73dc58-0.6.1
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -2096,6 +2141,9 @@ presubmits:
         ports:
         - containerPort: 9999
           hostPort: 9999
+        resources:
+          requests:
+            memory: "6Gi"
       volumes:
       - name: service
         secret:
@@ -2113,7 +2161,7 @@ presubmits:
     - release-1.6
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171013-53473ec5-0.5.2
+      - image: gcr.io/k8s-testimages/bazelbuild:v20171113-ae73dc58-0.5.2
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -2142,6 +2190,9 @@ presubmits:
         ports:
         - containerPort: 9999
           hostPort: 9999
+        resources:
+          requests:
+            memory: "6Gi"
       volumes:
       - name: service
         secret:
@@ -2190,6 +2241,9 @@ presubmits:
         ports:
         - containerPort: 9999
           hostPort: 9999
+        resources:
+          requests:
+            memory: "6Gi"
       volumes:
       - name: service
         secret:
@@ -2939,7 +2993,7 @@ presubmits:
     trigger: "(?m)^/test( all| pull-test-infra-bazel),?(\\s+|$)"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171020-844b54d7-0.7.0
+      - image: gcr.io/k8s-testimages/bazelbuild:v20171113-ae73dc58-0.7.0
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -2968,6 +3022,9 @@ presubmits:
         ports:
         - containerPort: 9999
           hostPort: 9999
+        resources:
+          requests:
+            memory: "2Gi"
       volumes:
       - name: service
         secret:
@@ -3016,6 +3073,9 @@ presubmits:
         ports:
         - containerPort: 9999
           hostPort: 9999
+        resources:
+          requests:
+            memory: "2Gi"
       volumes:
       - name: service
         secret:
@@ -3067,7 +3127,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-in-go:0.4
+      - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
         args:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
@@ -3103,7 +3163,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-in-go:0.4
+      - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
         args:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
@@ -3139,7 +3199,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-in-go:0.4
+      - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
         args:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
@@ -3199,7 +3259,7 @@ postsubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171013-53473ec5-0.6.1
+      - image: gcr.io/k8s-testimages/bazelbuild:v20171113-ae73dc58-0.6.1
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -3225,6 +3285,9 @@ postsubmits:
         ports:
         - containerPort: 9999
           hostPort: 9999
+        resources:
+          requests:
+            memory: "6Gi"
       volumes:
       - name: service
         secret:
@@ -3237,7 +3300,7 @@ postsubmits:
       agent: kubernetes
       spec:
         containers:
-        - image: gcr.io/k8s-testimages/bazelbuild:v20171013-53473ec5-0.6.1
+        - image: gcr.io/k8s-testimages/bazelbuild:v20171113-ae73dc58-0.6.1
           args:
           - "--clean"
           - "--git-cache=/root/.cache/git"
@@ -3265,6 +3328,9 @@ postsubmits:
           ports:
           - containerPort: 9999
             hostPort: 9999
+          resources:
+            requests:
+              memory: "6Gi"
         volumes:
         - name: service
           secret:
@@ -3279,7 +3345,7 @@ postsubmits:
     - release-1.6
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171013-53473ec5-0.5.2  # https://github.com/kubernetes/kubernetes/issues/51571
+      - image: gcr.io/k8s-testimages/bazelbuild:v20171113-ae73dc58-0.5.2  # https://github.com/kubernetes/kubernetes/issues/51571
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -3302,6 +3368,9 @@ postsubmits:
         ports:
         - containerPort: 9999
           hostPort: 9999
+        resources:
+          requests:
+            memory: "6Gi"
       volumes:
       - name: service
         secret:
@@ -3314,7 +3383,7 @@ postsubmits:
       agent: kubernetes
       spec:
         containers:
-        - image: gcr.io/k8s-testimages/bazelbuild:v20171013-53473ec5-0.5.2  # https://github.com/kubernetes/kubernetes/issues/51571
+        - image: gcr.io/k8s-testimages/bazelbuild:v20171113-ae73dc58-0.5.2  # https://github.com/kubernetes/kubernetes/issues/51571
           args:
           - "--clean"
           - "--git-cache=/root/.cache/git"
@@ -3336,6 +3405,9 @@ postsubmits:
           ports:
           - containerPort: 9999
             hostPort: 9999
+          resources:
+            requests:
+              memory: "6Gi"
         volumes:
         - name: service
           secret:
@@ -3393,7 +3465,7 @@ postsubmits:
     - release-1.7
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171013-53473ec5-0.6.1
+      - image: gcr.io/k8s-testimages/bazelbuild:v20171113-ae73dc58-0.6.1
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -3418,6 +3490,9 @@ postsubmits:
         ports:
         - containerPort: 9999
           hostPort: 9999
+        resources:
+          requests:
+            memory: "6Gi"
       volumes:
       - name: service
         secret:
@@ -3430,7 +3505,7 @@ postsubmits:
       agent: kubernetes
       spec:
         containers:
-        - image: gcr.io/k8s-testimages/bazelbuild:v20171013-53473ec5-0.6.1
+        - image: gcr.io/k8s-testimages/bazelbuild:v20171113-ae73dc58-0.6.1
           args:
           - "--clean"
           - "--git-cache=/root/.cache/git"
@@ -3454,6 +3529,9 @@ postsubmits:
           ports:
           - containerPort: 9999
             hostPort: 9999
+          resources:
+            requests:
+              memory: "6Gi"
         volumes:
         - name: service
           secret:
@@ -3597,7 +3675,7 @@ postsubmits:
     - release-1.8
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171013-53473ec5-0.6.1
+      - image: gcr.io/k8s-testimages/bazelbuild:v20171113-ae73dc58-0.6.1
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -3622,6 +3700,9 @@ postsubmits:
         ports:
         - containerPort: 9999
           hostPort: 9999
+        resources:
+          requests:
+            memory: "6Gi"
       volumes:
       - name: service
         secret:
@@ -3634,7 +3715,7 @@ postsubmits:
       agent: kubernetes
       spec:
         containers:
-        - image: gcr.io/k8s-testimages/bazelbuild:v20171013-53473ec5-0.6.1
+        - image: gcr.io/k8s-testimages/bazelbuild:v20171113-ae73dc58-0.6.1
           args:
           - "--clean"
           - "--git-cache=/root/.cache/git"
@@ -3658,6 +3739,9 @@ postsubmits:
           ports:
           - containerPort: 9999
             hostPort: 9999
+          resources:
+            requests:
+              memory: "6Gi"
         volumes:
         - name: service
           secret:
@@ -3759,7 +3843,7 @@ postsubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171020-844b54d7-0.7.0
+      - image: gcr.io/k8s-testimages/bazelbuild:v20171113-ae73dc58-0.7.0
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -3788,6 +3872,9 @@ postsubmits:
         ports:
         - containerPort: 9999
           hostPort: 9999
+        resources:
+          requests:
+            memory: "2Gi"
       volumes:
       - name: service
         secret:
@@ -3802,7 +3889,7 @@ postsubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-in-go:0.4
+      - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -3836,7 +3923,7 @@ postsubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171013-53473ec5-0.6.1
+      - image: gcr.io/k8s-testimages/bazelbuild:v20171113-ae73dc58-0.6.1
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -3853,6 +3940,9 @@ postsubmits:
         - name: service
           mountPath: /etc/service-account
           readOnly: true
+        resources:
+          requests:
+            memory: "1Gi"
       volumes:
       - name: service
         secret:
@@ -3886,7 +3976,7 @@ periodics:
   agent: kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/gcloud-in-go:0.4
+    - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
       args:
       - "--repo=github.com/kubernetes-incubator/cri-containerd=master"
       - "--root=/go/src"
@@ -4093,7 +4183,7 @@ periodics:
   agent: kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bazelbuild:v20171013-53473ec5-0.6.1
+    - image: gcr.io/k8s-testimages/bazelbuild:v20171113-ae73dc58-0.6.1
       args:
       - "--clean"
       - "--git-cache=/root/.cache/git"
@@ -4116,6 +4206,9 @@ periodics:
       ports:
       - containerPort: 9999
         hostPort: 9999
+      resources:
+        requests:
+          memory: "6Gi"
     volumes:
     - name: service
       secret:
@@ -9864,40 +9957,6 @@ periodics:
         defaultMode: 256
         secretName: ssh-key-secret
 
-- interval: 1h
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gci-gce-ipvs
-  spec:
-    containers:
-    - args:
-      - --timeout=80
-      - --bare
-      env:
-      - name: GOOGLE_APPLICATION_CREDENTIALS
-        value: /etc/service-account/service-account.json
-      - name: USER
-        value: prow
-      - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
-        value: /etc/ssh-key-secret/ssh-private
-      - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
-        value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171108-8b5aad9f-master
-      volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
-      - mountPath: /etc/ssh-key-secret
-        name: ssh
-        readOnly: true
-    volumes:
-    - name: service
-      secret:
-        secretName: service-account
-    - name: ssh
-      secret:
-        defaultMode: 256
-        secretName: ssh-key-secret
-
 - interval: 2h
   agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-latest-downgrade-kube-proxy-ds
@@ -11601,40 +11660,6 @@ periodics:
 
 - interval: 30m
   agent: kubernetes
-  name: ci-kubernetes-e2e-gci-gke-subnet
-  spec:
-    containers:
-    - args:
-      - --timeout=500
-      - --bare
-      env:
-      - name: GOOGLE_APPLICATION_CREDENTIALS
-        value: /etc/service-account/service-account.json
-      - name: USER
-        value: prow
-      - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
-        value: /etc/ssh-key-secret/ssh-private
-      - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
-        value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171108-8b5aad9f-master
-      volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
-      - mountPath: /etc/ssh-key-secret
-        name: ssh
-        readOnly: true
-    volumes:
-    - name: service
-      secret:
-        secretName: service-account
-    - name: ssh
-      secret:
-        defaultMode: 256
-        secretName: ssh-key-secret
-
-- interval: 30m
-  agent: kubernetes
   name: ci-kubernetes-e2e-gci-gke-test
   spec:
     containers:
@@ -12060,6 +12085,366 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
       imagePullPolicy: Always
+      volumeMounts:
+      - mountPath: /etc/service-account
+        name: service
+        readOnly: true
+      - mountPath: /etc/ssh-key-secret
+        name: ssh
+        readOnly: true
+    volumes:
+    - name: service
+      secret:
+        secretName: service-account
+    - name: ssh
+      secret:
+        defaultMode: 256
+        secretName: ssh-key-secret
+
+- tags:
+  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
+  interval: 6h
+  agent: kubernetes
+  name: ci-kubernetes-e2e-gke-cosbeta-k8sbeta-soak
+  spec:
+    containers:
+    - args:
+      - --bare
+      - --timeout=620
+      env:
+      - name: GOOGLE_APPLICATION_CREDENTIALS
+        value: /etc/service-account/service-account.json
+      - name: USER
+        value: prow
+      - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-private
+      - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-public
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171108-8b5aad9f-master
+      volumeMounts:
+      - mountPath: /etc/service-account
+        name: service
+        readOnly: true
+      - mountPath: /etc/ssh-key-secret
+        name: ssh
+        readOnly: true
+    volumes:
+    - name: service
+      secret:
+        secretName: service-account
+    - name: ssh
+      secret:
+        defaultMode: 256
+        secretName: ssh-key-secret
+
+- tags:
+  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
+  interval: 6h
+  agent: kubernetes
+  name: ci-kubernetes-e2e-gke-cosbeta-k8sbeta-stackdriver
+  spec:
+    containers:
+    - args:
+      - --bare
+      - --timeout=70
+      env:
+      - name: GOOGLE_APPLICATION_CREDENTIALS
+        value: /etc/service-account/service-account.json
+      - name: USER
+        value: prow
+      - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-private
+      - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-public
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171108-8b5aad9f-master
+      volumeMounts:
+      - mountPath: /etc/service-account
+        name: service
+        readOnly: true
+      - mountPath: /etc/ssh-key-secret
+        name: ssh
+        readOnly: true
+    volumes:
+    - name: service
+      secret:
+        secretName: service-account
+    - name: ssh
+      secret:
+        defaultMode: 256
+        secretName: ssh-key-secret
+
+- tags:
+  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
+  interval: 6h
+  agent: kubernetes
+  name: ci-kubernetes-e2e-gke-cosbeta-k8sdev-soak
+  spec:
+    containers:
+    - args:
+      - --bare
+      - --timeout=620
+      env:
+      - name: GOOGLE_APPLICATION_CREDENTIALS
+        value: /etc/service-account/service-account.json
+      - name: USER
+        value: prow
+      - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-private
+      - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-public
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171108-8b5aad9f-master
+      volumeMounts:
+      - mountPath: /etc/service-account
+        name: service
+        readOnly: true
+      - mountPath: /etc/ssh-key-secret
+        name: ssh
+        readOnly: true
+    volumes:
+    - name: service
+      secret:
+        secretName: service-account
+    - name: ssh
+      secret:
+        defaultMode: 256
+        secretName: ssh-key-secret
+
+- tags:
+  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
+  interval: 6h
+  agent: kubernetes
+  name: ci-kubernetes-e2e-gke-cosbeta-k8sdev-stackdriver
+  spec:
+    containers:
+    - args:
+      - --bare
+      - --timeout=70
+      env:
+      - name: GOOGLE_APPLICATION_CREDENTIALS
+        value: /etc/service-account/service-account.json
+      - name: USER
+        value: prow
+      - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-private
+      - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-public
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171108-8b5aad9f-master
+      volumeMounts:
+      - mountPath: /etc/service-account
+        name: service
+        readOnly: true
+      - mountPath: /etc/ssh-key-secret
+        name: ssh
+        readOnly: true
+    volumes:
+    - name: service
+      secret:
+        secretName: service-account
+    - name: ssh
+      secret:
+        defaultMode: 256
+        secretName: ssh-key-secret
+
+- tags:
+  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
+  interval: 6h
+  agent: kubernetes
+  name: ci-kubernetes-e2e-gke-cosbeta-k8sstable1-soak
+  spec:
+    containers:
+    - args:
+      - --bare
+      - --timeout=620
+      env:
+      - name: GOOGLE_APPLICATION_CREDENTIALS
+        value: /etc/service-account/service-account.json
+      - name: USER
+        value: prow
+      - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-private
+      - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-public
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171108-8b5aad9f-master
+      volumeMounts:
+      - mountPath: /etc/service-account
+        name: service
+        readOnly: true
+      - mountPath: /etc/ssh-key-secret
+        name: ssh
+        readOnly: true
+    volumes:
+    - name: service
+      secret:
+        secretName: service-account
+    - name: ssh
+      secret:
+        defaultMode: 256
+        secretName: ssh-key-secret
+
+- tags:
+  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
+  interval: 6h
+  agent: kubernetes
+  name: ci-kubernetes-e2e-gke-cosbeta-k8sstable1-stackdriver
+  spec:
+    containers:
+    - args:
+      - --bare
+      - --timeout=70
+      env:
+      - name: GOOGLE_APPLICATION_CREDENTIALS
+        value: /etc/service-account/service-account.json
+      - name: USER
+        value: prow
+      - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-private
+      - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-public
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171108-8b5aad9f-master
+      volumeMounts:
+      - mountPath: /etc/service-account
+        name: service
+        readOnly: true
+      - mountPath: /etc/ssh-key-secret
+        name: ssh
+        readOnly: true
+    volumes:
+    - name: service
+      secret:
+        secretName: service-account
+    - name: ssh
+      secret:
+        defaultMode: 256
+        secretName: ssh-key-secret
+
+- tags:
+  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
+  interval: 6h
+  agent: kubernetes
+  name: ci-kubernetes-e2e-gke-cosbeta-k8sstable2-soak
+  spec:
+    containers:
+    - args:
+      - --bare
+      - --timeout=620
+      env:
+      - name: GOOGLE_APPLICATION_CREDENTIALS
+        value: /etc/service-account/service-account.json
+      - name: USER
+        value: prow
+      - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-private
+      - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-public
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171108-8b5aad9f-master
+      volumeMounts:
+      - mountPath: /etc/service-account
+        name: service
+        readOnly: true
+      - mountPath: /etc/ssh-key-secret
+        name: ssh
+        readOnly: true
+    volumes:
+    - name: service
+      secret:
+        secretName: service-account
+    - name: ssh
+      secret:
+        defaultMode: 256
+        secretName: ssh-key-secret
+
+- tags:
+  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
+  interval: 6h
+  agent: kubernetes
+  name: ci-kubernetes-e2e-gke-cosbeta-k8sstable2-stackdriver
+  spec:
+    containers:
+    - args:
+      - --bare
+      - --timeout=70
+      env:
+      - name: GOOGLE_APPLICATION_CREDENTIALS
+        value: /etc/service-account/service-account.json
+      - name: USER
+        value: prow
+      - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-private
+      - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-public
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171108-8b5aad9f-master
+      volumeMounts:
+      - mountPath: /etc/service-account
+        name: service
+        readOnly: true
+      - mountPath: /etc/ssh-key-secret
+        name: ssh
+        readOnly: true
+    volumes:
+    - name: service
+      secret:
+        secretName: service-account
+    - name: ssh
+      secret:
+        defaultMode: 256
+        secretName: ssh-key-secret
+
+- tags:
+  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
+  interval: 6h
+  agent: kubernetes
+  name: ci-kubernetes-e2e-gke-cosbeta-k8sstable3-soak
+  spec:
+    containers:
+    - args:
+      - --bare
+      - --timeout=620
+      env:
+      - name: GOOGLE_APPLICATION_CREDENTIALS
+        value: /etc/service-account/service-account.json
+      - name: USER
+        value: prow
+      - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-private
+      - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-public
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171108-8b5aad9f-master
+      volumeMounts:
+      - mountPath: /etc/service-account
+        name: service
+        readOnly: true
+      - mountPath: /etc/ssh-key-secret
+        name: ssh
+        readOnly: true
+    volumes:
+    - name: service
+      secret:
+        secretName: service-account
+    - name: ssh
+      secret:
+        defaultMode: 256
+        secretName: ssh-key-secret
+
+- tags:
+  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
+  interval: 6h
+  agent: kubernetes
+  name: ci-kubernetes-e2e-gke-cosbeta-k8sstable3-stackdriver
+  spec:
+    containers:
+    - args:
+      - --bare
+      - --timeout=70
+      env:
+      - name: GOOGLE_APPLICATION_CREDENTIALS
+        value: /etc/service-account/service-account.json
+      - name: USER
+        value: prow
+      - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-private
+      - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-public
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171108-8b5aad9f-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -14221,40 +14606,6 @@ periodics:
 
 - interval: 30m
   agent: kubernetes
-  name: ci-kubernetes-e2e-gke-subnet
-  spec:
-    containers:
-    - args:
-      - --timeout=500
-      - --bare
-      env:
-      - name: GOOGLE_APPLICATION_CREDENTIALS
-        value: /etc/service-account/service-account.json
-      - name: USER
-        value: prow
-      - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
-        value: /etc/ssh-key-secret/ssh-private
-      - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
-        value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171108-8b5aad9f-master
-      volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
-      - mountPath: /etc/ssh-key-secret
-        name: ssh
-        readOnly: true
-    volumes:
-    - name: service
-      secret:
-        secretName: service-account
-    - name: ssh
-      secret:
-        defaultMode: 256
-        secretName: ssh-key-secret
-
-- interval: 30m
-  agent: kubernetes
   name: ci-kubernetes-e2e-gke-test
   spec:
     containers:
@@ -15381,7 +15732,7 @@ periodics:
         defaultMode: 256
         secretName: aws-cred
 
-- interval: 2h
+- interval: 1h
   agent: kubernetes
   name: ci-kubernetes-e2e-kops-aws-cncf-canary
   spec:
@@ -15834,6 +16185,118 @@ periodics:
         secretName: ssh-key-secret
         defaultMode: 0400
 
+- interval: 1h
+  agent: kubernetes
+  name: ci-kubernetes-e2e-ubuntu-gce-ipvs
+  spec:
+    containers:
+    - args:
+      - --timeout=80
+      - --bare
+      env:
+      - name: GOOGLE_APPLICATION_CREDENTIALS
+        value: /etc/service-account/service-account.json
+      - name: USER
+        value: prow
+      - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-private
+      - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-public
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171108-8b5aad9f-master
+      volumeMounts:
+      - mountPath: /etc/service-account
+        name: service
+        readOnly: true
+      - mountPath: /etc/ssh-key-secret
+        name: ssh
+        readOnly: true
+    volumes:
+    - name: service
+      secret:
+        secretName: service-account
+    - name: ssh
+      secret:
+        defaultMode: 256
+        secretName: ssh-key-secret
+
+- tags:
+  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
+  interval: 2h
+  agent: kubernetes
+  name: ci-kubernetes-e2enode-cosbeta-k8sbeta-default
+  spec:
+    containers:
+    - args:
+      - --timeout=90
+      - --repo=k8s.io/kubernetes=master
+      - --root=/go/src
+      env:
+      - name: GOOGLE_APPLICATION_CREDENTIALS
+        value: /etc/service-account/service-account.json
+      - name: USER
+        value: prow
+      - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-private
+      - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-public
+      - name: GOPATH
+        value: /go
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171108-8b5aad9f-master
+      volumeMounts:
+      - mountPath: /etc/service-account
+        name: service
+        readOnly: true
+      - mountPath: /etc/ssh-key-secret
+        name: ssh
+        readOnly: true
+    volumes:
+    - name: service
+      secret:
+        secretName: service-account
+    - name: ssh
+      secret:
+        defaultMode: 256
+        secretName: ssh-key-secret
+
+- tags:
+  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
+  interval: 2h
+  agent: kubernetes
+  name: ci-kubernetes-e2enode-cosbeta-k8sbeta-serial
+  spec:
+    containers:
+    - args:
+      - --timeout=200
+      - --repo=k8s.io/kubernetes=master
+      - --root=/go/src
+      env:
+      - name: GOOGLE_APPLICATION_CREDENTIALS
+        value: /etc/service-account/service-account.json
+      - name: USER
+        value: prow
+      - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-private
+      - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-public
+      - name: GOPATH
+        value: /go
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171108-8b5aad9f-master
+      volumeMounts:
+      - mountPath: /etc/service-account
+        name: service
+        readOnly: true
+      - mountPath: /etc/ssh-key-secret
+        name: ssh
+        readOnly: true
+    volumes:
+    - name: service
+      secret:
+        secretName: service-account
+    - name: ssh
+      secret:
+        defaultMode: 256
+        secretName: ssh-key-secret
+
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
@@ -15842,7 +16305,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=80
+      - --timeout=90
       - --repo=k8s.io/kubernetes=master
       - --root=/go/src
       env:
@@ -15916,11 +16379,245 @@ periodics:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
   agent: kubernetes
+  name: ci-kubernetes-e2enode-cosbeta-k8sstable1-default
+  spec:
+    containers:
+    - args:
+      - --timeout=90
+      - --repo=k8s.io/kubernetes=release-1.8
+      - --root=/go/src
+      env:
+      - name: GOOGLE_APPLICATION_CREDENTIALS
+        value: /etc/service-account/service-account.json
+      - name: USER
+        value: prow
+      - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-private
+      - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-public
+      - name: GOPATH
+        value: /go
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171108-8b5aad9f-master
+      volumeMounts:
+      - mountPath: /etc/service-account
+        name: service
+        readOnly: true
+      - mountPath: /etc/ssh-key-secret
+        name: ssh
+        readOnly: true
+    volumes:
+    - name: service
+      secret:
+        secretName: service-account
+    - name: ssh
+      secret:
+        defaultMode: 256
+        secretName: ssh-key-secret
+
+- tags:
+  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
+  interval: 2h
+  agent: kubernetes
+  name: ci-kubernetes-e2enode-cosbeta-k8sstable1-serial
+  spec:
+    containers:
+    - args:
+      - --timeout=200
+      - --repo=k8s.io/kubernetes=release-1.8
+      - --root=/go/src
+      env:
+      - name: GOOGLE_APPLICATION_CREDENTIALS
+        value: /etc/service-account/service-account.json
+      - name: USER
+        value: prow
+      - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-private
+      - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-public
+      - name: GOPATH
+        value: /go
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171108-8b5aad9f-master
+      volumeMounts:
+      - mountPath: /etc/service-account
+        name: service
+        readOnly: true
+      - mountPath: /etc/ssh-key-secret
+        name: ssh
+        readOnly: true
+    volumes:
+    - name: service
+      secret:
+        secretName: service-account
+    - name: ssh
+      secret:
+        defaultMode: 256
+        secretName: ssh-key-secret
+
+- tags:
+  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
+  interval: 2h
+  agent: kubernetes
+  name: ci-kubernetes-e2enode-cosbeta-k8sstable2-default
+  spec:
+    containers:
+    - args:
+      - --timeout=90
+      - --repo=k8s.io/kubernetes=release-1.7
+      - --root=/go/src
+      env:
+      - name: GOOGLE_APPLICATION_CREDENTIALS
+        value: /etc/service-account/service-account.json
+      - name: USER
+        value: prow
+      - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-private
+      - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-public
+      - name: GOPATH
+        value: /go
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171108-8b5aad9f-master
+      volumeMounts:
+      - mountPath: /etc/service-account
+        name: service
+        readOnly: true
+      - mountPath: /etc/ssh-key-secret
+        name: ssh
+        readOnly: true
+    volumes:
+    - name: service
+      secret:
+        secretName: service-account
+    - name: ssh
+      secret:
+        defaultMode: 256
+        secretName: ssh-key-secret
+
+- tags:
+  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
+  interval: 2h
+  agent: kubernetes
+  name: ci-kubernetes-e2enode-cosbeta-k8sstable2-serial
+  spec:
+    containers:
+    - args:
+      - --timeout=200
+      - --repo=k8s.io/kubernetes=release-1.7
+      - --root=/go/src
+      env:
+      - name: GOOGLE_APPLICATION_CREDENTIALS
+        value: /etc/service-account/service-account.json
+      - name: USER
+        value: prow
+      - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-private
+      - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-public
+      - name: GOPATH
+        value: /go
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171108-8b5aad9f-master
+      volumeMounts:
+      - mountPath: /etc/service-account
+        name: service
+        readOnly: true
+      - mountPath: /etc/ssh-key-secret
+        name: ssh
+        readOnly: true
+    volumes:
+    - name: service
+      secret:
+        secretName: service-account
+    - name: ssh
+      secret:
+        defaultMode: 256
+        secretName: ssh-key-secret
+
+- tags:
+  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
+  interval: 2h
+  agent: kubernetes
+  name: ci-kubernetes-e2enode-cosbeta-k8sstable3-default
+  spec:
+    containers:
+    - args:
+      - --timeout=90
+      - --repo=k8s.io/kubernetes=release-1.6
+      - --root=/go/src
+      env:
+      - name: GOOGLE_APPLICATION_CREDENTIALS
+        value: /etc/service-account/service-account.json
+      - name: USER
+        value: prow
+      - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-private
+      - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-public
+      - name: GOPATH
+        value: /go
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171108-8b5aad9f-master
+      volumeMounts:
+      - mountPath: /etc/service-account
+        name: service
+        readOnly: true
+      - mountPath: /etc/ssh-key-secret
+        name: ssh
+        readOnly: true
+    volumes:
+    - name: service
+      secret:
+        secretName: service-account
+    - name: ssh
+      secret:
+        defaultMode: 256
+        secretName: ssh-key-secret
+
+- tags:
+  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
+  interval: 2h
+  agent: kubernetes
+  name: ci-kubernetes-e2enode-cosbeta-k8sstable3-serial
+  spec:
+    containers:
+    - args:
+      - --timeout=200
+      - --repo=k8s.io/kubernetes=release-1.6
+      - --root=/go/src
+      env:
+      - name: GOOGLE_APPLICATION_CREDENTIALS
+        value: /etc/service-account/service-account.json
+      - name: USER
+        value: prow
+      - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-private
+      - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-public
+      - name: GOPATH
+        value: /go
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171108-8b5aad9f-master
+      volumeMounts:
+      - mountPath: /etc/service-account
+        name: service
+        readOnly: true
+      - mountPath: /etc/ssh-key-secret
+        name: ssh
+        readOnly: true
+    volumes:
+    - name: service
+      secret:
+        secretName: service-account
+    - name: ssh
+      secret:
+        defaultMode: 256
+        secretName: ssh-key-secret
+
+- tags:
+  - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
+  interval: 2h
+  agent: kubernetes
   name: ci-kubernetes-e2enode-cosstable1-k8sbeta-default
   spec:
     containers:
     - args:
-      - --timeout=80
+      - --timeout=90
       - --repo=k8s.io/kubernetes=master
       - --root=/go/src
       env:
@@ -15998,7 +16695,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=80
+      - --timeout=90
       - --repo=k8s.io/kubernetes=master
       - --root=/go/src
       env:
@@ -16076,7 +16773,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=80
+      - --timeout=90
       - --repo=k8s.io/kubernetes=release-1.8
       - --root=/go/src
       env:
@@ -16154,7 +16851,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=80
+      - --timeout=90
       - --repo=k8s.io/kubernetes=release-1.7
       - --root=/go/src
       env:
@@ -16232,7 +16929,7 @@ periodics:
   spec:
     containers:
     - args:
-      - --timeout=80
+      - --timeout=90
       - --repo=k8s.io/kubernetes=release-1.6
       - --root=/go/src
       env:
@@ -16771,7 +17468,7 @@ periodics:
         secretName: ssh-key-secret
 
 - name: ci-kubernetes-kubemark-5-prow-canary
-  interval: 1h
+  cron: "0 * * * *"
   agent: kubernetes
   spec:
     containers:
@@ -17486,7 +18183,7 @@ periodics:
   agent: kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bazelbuild:v20171020-844b54d7-0.7.0
+    - image: gcr.io/k8s-testimages/bazelbuild:v20171113-ae73dc58-0.7.0
       args:
       - "--clean"
       - "--git-cache=/root/.cache/git"
@@ -17515,6 +18212,9 @@ periodics:
       ports:
       - containerPort: 9999
         hostPort: 9999
+      resources:
+        requests:
+          memory: "2Gi"
     volumes:
     - name: service
       secret:
@@ -17611,7 +18311,7 @@ periodics:
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
         value: /etc/service-account/service-account.json
-      image: gcr.io/k8s-testimages/gcloud-in-go:0.4
+      image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -17634,7 +18334,7 @@ periodics:
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
         value: /etc/service-account/service-account.json
-      image: gcr.io/k8s-testimages/gcloud-in-go:0.4
+      image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -17675,7 +18375,7 @@ periodics:
   agent: kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bazelbuild:v20171013-53473ec5-0.5.2  # https://github.com/kubernetes/kubernetes/issues/51571
+    - image: gcr.io/k8s-testimages/bazelbuild:v20171113-ae73dc58-0.5.2  # https://github.com/kubernetes/kubernetes/issues/51571
       args:
       - "--clean"
       - "--git-cache=/root/.cache/git"
@@ -17695,6 +18395,9 @@ periodics:
         readOnly: true
       - name: cache-ssd
         mountPath: /root/.cache
+      resources:
+        requests:
+          memory: "6Gi"
       ports:
       - containerPort: 9999
         hostPort: 9999
@@ -17710,7 +18413,7 @@ periodics:
     agent: kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171013-53473ec5-0.5.2  # https://github.com/kubernetes/kubernetes/issues/51571
+      - image: gcr.io/k8s-testimages/bazelbuild:v20171113-ae73dc58-0.5.2  # https://github.com/kubernetes/kubernetes/issues/51571
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -17732,6 +18435,9 @@ periodics:
         ports:
         - containerPort: 9999
           hostPort: 9999
+        resources:
+          requests:
+            memory: "6Gi"
       volumes:
       - name: service
         secret:
@@ -17790,7 +18496,7 @@ periodics:
   agent: kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bazelbuild:v20171013-53473ec5-0.6.1
+    - image: gcr.io/k8s-testimages/bazelbuild:v20171113-ae73dc58-0.6.1
       args:
       - "--clean"
       - "--git-cache=/root/.cache/git"
@@ -17815,6 +18521,9 @@ periodics:
       ports:
       - containerPort: 9999
         hostPort: 9999
+      resources:
+        requests:
+          memory: "6Gi"
     volumes:
     - name: service
       secret:
@@ -17827,7 +18536,7 @@ periodics:
     agent: kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171013-53473ec5-0.6.1
+      - image: gcr.io/k8s-testimages/bazelbuild:v20171113-ae73dc58-0.6.1
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -17851,6 +18560,9 @@ periodics:
         ports:
         - containerPort: 9999
           hostPort: 9999
+        resources:
+          requests:
+            memory: "6Gi"
       volumes:
       - name: service
         secret:
@@ -17952,7 +18664,7 @@ periodics:
   agent: kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bazelbuild:v20171013-53473ec5-0.6.1
+    - image: gcr.io/k8s-testimages/bazelbuild:v20171113-ae73dc58-0.6.1
       args:
       - "--clean"
       - "--git-cache=/root/.cache/git"
@@ -17977,6 +18689,9 @@ periodics:
       ports:
       - containerPort: 9999
         hostPort: 9999
+      resources:
+        requests:
+          memory: "6Gi"
     volumes:
     - name: service
       secret:
@@ -17989,7 +18704,7 @@ periodics:
     agent: kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171013-53473ec5-0.6.1
+      - image: gcr.io/k8s-testimages/bazelbuild:v20171113-ae73dc58-0.6.1
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -18013,6 +18728,9 @@ periodics:
         ports:
         - containerPort: 9999
           hostPort: 9999
+        resources:
+          requests:
+            memory: "6Gi"
       volumes:
       - name: service
         secret:

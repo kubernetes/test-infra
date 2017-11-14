@@ -88,7 +88,9 @@ func Report(ghc GithubClient, reportTemplate *template.Template, pj kube.ProwJob
 	if err := reportStatus(ghc, pj, parentJobChanged+pj.Status.Description); err != nil {
 		return fmt.Errorf("error setting status: %v", err)
 	}
-	if pj.Status.State != github.StatusSuccess && pj.Status.State != github.StatusFailure {
+	// Report manually aborted Jenkins jobs and jobs with invalid pod specs alongside
+	// test successes/failures.
+	if !pj.Complete() {
 		return nil
 	}
 	ics, err := ghc.ListIssueComments(refs.Org, refs.Repo, refs.Pulls[0].Number)

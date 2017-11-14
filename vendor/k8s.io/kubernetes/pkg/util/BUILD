@@ -1,4 +1,4 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
@@ -18,20 +18,6 @@ go_library(
     importpath = "k8s.io/kubernetes/pkg/util",
     visibility = ["//visibility:public"],
     deps = ["//vendor/github.com/golang/glog:go_default_library"],
-)
-
-go_test(
-    name = "go_default_test",
-    srcs = [
-        "template_test.go",
-        "util_test.go",
-    ],
-    importpath = "k8s.io/kubernetes/pkg/util",
-    library = ":go_default_library",
-    deps = [
-        "//vendor/github.com/stretchr/testify/assert:go_default_library",
-        "//vendor/k8s.io/kubernetes/pkg/util/diff:go_default_library",
-    ],
 )
 
 filegroup(

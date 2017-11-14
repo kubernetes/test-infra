@@ -1,17 +1,10 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
     srcs = ["ident.go"],
     importpath = "github.com/shurcooL/graphql/ident",
     visibility = ["//visibility:public"],
-)
-
-go_test(
-    name = "go_default_xtest",
-    srcs = ["ident_test.go"],
-    importpath = "github.com/shurcooL/graphql/ident_test",
-    deps = [":go_default_library"],
 )
 
 filegroup(

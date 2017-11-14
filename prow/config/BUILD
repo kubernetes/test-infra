@@ -23,7 +23,6 @@ go_test(
     deps = [
         "//prow/kube:go_default_library",
         "//vendor/github.com/ghodss/yaml:go_default_library",
-        "//vendor/github.com/robfig/cron:go_default_library",
     ],
 )
 
@@ -39,6 +38,7 @@ go_library(
         "//prow/kube:go_default_library",
         "//prow/kube/labels:go_default_library",
         "//vendor/github.com/ghodss/yaml:go_default_library",
+        "//vendor/github.com/robfig/cron:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
     ],
 )
