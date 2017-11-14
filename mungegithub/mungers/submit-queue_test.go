@@ -526,6 +526,7 @@ func TestSubmitQueue(t *testing.T) {
 		commits          []*github.RepositoryCommit
 		events           []*github.IssueEvent
 		additionalLabels []string
+		blockingLabels   []string
 		ciStatus         *github.CombinedStatus
 		lastBuildNumber  int
 		gcsResult        utils.FinishedFile
@@ -882,6 +883,21 @@ func TestSubmitQueue(t *testing.T) {
 			isMerged:         true,
 		},
 		{
+			name:            "Fail because vendor-update label is required to be missing but exists",
+			pr:              ValidPR(),
+			issue:           AdditionalLabelIssue("vendor-update"),
+			blockingLabels:  []string{"vendor-update"},
+			events:          NewLGTMEvents(),
+			commits:         Commits(), // Modified at time.Unix(7), 8, and 9
+			ciStatus:        SuccessStatus(),
+			lastBuildNumber: LastBuildNumber(),
+			gcsResult:       SuccessGCS(),
+			retest1Pass:     true,
+			retest2Pass:     true,
+			reason:          noMergeMessage("vendor-update"),
+			state:           "pending",
+		},
+		{
 			name:            "Fail because deprecated missing release note label is present",
 			pr:              ValidPR(),
 			issue:           DeprecatedMissingReleaseNoteIssue(),
@@ -1166,6 +1182,7 @@ func TestSubmitQueue(t *testing.T) {
 		sq := getTestSQ(true, config, server)
 		sq.setEmergencyMergeStop(test.emergencyMergeStop)
 		sq.AdditionalRequiredLabels = test.additionalLabels
+		sq.BlockingLabels = test.blockingLabels
 
 		obj := github_util.NewTestObject(config, test.issue, test.pr, test.commits, test.events)
 		if test.imBaseSHA != "" && test.imHeadSHA != "" {
