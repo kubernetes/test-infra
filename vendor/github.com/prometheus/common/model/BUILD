@@ -1,4 +1,4 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
@@ -16,19 +16,6 @@ go_library(
     ],
     importpath = "github.com/prometheus/common/model",
     visibility = ["//visibility:public"],
-)
-
-go_test(
-    name = "go_default_test",
-    srcs = [
-        "labels_test.go",
-        "metric_test.go",
-        "signature_test.go",
-        "time_test.go",
-        "value_test.go",
-    ],
-    importpath = "github.com/prometheus/common/model",
-    library = ":go_default_library",
 )
 
 filegroup(

@@ -1,4 +1,4 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
@@ -32,52 +32,6 @@ go_library(
     importpath = "github.com/jinzhu/gorm",
     visibility = ["//visibility:public"],
     deps = ["//vendor/github.com/jinzhu/inflection:go_default_library"],
-)
-
-go_test(
-    name = "go_default_test",
-    srcs = [
-        "callback_system_test.go",
-        "search_test.go",
-    ],
-    importpath = "github.com/jinzhu/gorm",
-    library = ":go_default_library",
-)
-
-go_test(
-    name = "go_default_xtest",
-    srcs = [
-        "association_test.go",
-        "callbacks_test.go",
-        "create_test.go",
-        "customize_column_test.go",
-        "delete_test.go",
-        "embedded_struct_test.go",
-        "errors_test.go",
-        "field_test.go",
-        "join_table_test.go",
-        "main_test.go",
-        "migration_test.go",
-        "multi_primary_keys_test.go",
-        "pointer_test.go",
-        "polymorphic_test.go",
-        "preload_test.go",
-        "query_test.go",
-        "scaner_test.go",
-        "scope_test.go",
-        "update_test.go",
-        "utils_test.go",
-    ],
-    importpath = "github.com/jinzhu/gorm_test",
-    deps = [
-        ":go_default_library",
-        "//vendor/github.com/erikstmartin/go-testdb:go_default_library",
-        "//vendor/github.com/jinzhu/gorm/dialects/mssql:go_default_library",
-        "//vendor/github.com/jinzhu/gorm/dialects/mysql:go_default_library",
-        "//vendor/github.com/jinzhu/gorm/dialects/postgres:go_default_library",
-        "//vendor/github.com/jinzhu/gorm/dialects/sqlite:go_default_library",
-        "//vendor/github.com/jinzhu/now:go_default_library",
-    ],
 )
 
 filegroup(

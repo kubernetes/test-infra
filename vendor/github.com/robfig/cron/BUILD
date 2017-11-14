@@ -1,4 +1,4 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
@@ -11,18 +11,6 @@ go_library(
     ],
     importpath = "github.com/robfig/cron",
     visibility = ["//visibility:public"],
-)
-
-go_test(
-    name = "go_default_test",
-    srcs = [
-        "constantdelay_test.go",
-        "cron_test.go",
-        "parser_test.go",
-        "spec_test.go",
-    ],
-    importpath = "github.com/robfig/cron",
-    library = ":go_default_library",
 )
 
 filegroup(

@@ -1,17 +1,10 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
     srcs = ["ctxhttp.go"],
     importpath = "github.com/shurcooL/go/ctxhttp",
     visibility = ["//visibility:public"],
-)
-
-go_test(
-    name = "go_default_test",
-    srcs = ["ctxhttp_test.go"],
-    importpath = "github.com/shurcooL/go/ctxhttp",
-    library = ":go_default_library",
 )
 
 filegroup(
