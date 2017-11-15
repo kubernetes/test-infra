@@ -9730,6 +9730,17 @@
       "sig-release"
     ]
   },
+  "pull-kubernetes-cross-prow": {
+    "args": [
+      "--env=KUBE_RELEASE_RUN_TESTS=n",
+      "make",
+      "release"
+    ],
+    "scenario": "execute",
+    "sigOwners": [
+      "sig-testing"
+    ]
+  },
   "pull-kubernetes-dns-test": {
     "args": [
       "true"
