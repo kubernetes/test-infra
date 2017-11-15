@@ -185,9 +185,15 @@ class E2ENodeTest(object):
             container['args'] = []
         # Prow timeout = job timeout + 20min
         container['args'].append('--timeout=%d' % (timeout + 20))
-        container['args'].extend(k8s_version)
+        container['args'].extend(k8s_version.get('args', []))
         container['args'].append('--root=/go/src')
         container['env'].extend([{'name':'GOPATH', 'value': '/go'}])
+        # Specify the appropriate kubekins-e2e image. This allows us to use a
+        # specific image (containing a particular Go version) to build and
+        # trigger the node e2e test to avoid issues like
+        # https://github.com/kubernetes/kubernetes/issues/43534.
+        if k8s_version.get('prowImage', None):
+            container['image'] = k8s_version['prowImage']
         return prow_config
 
     def generate(self):
@@ -213,8 +219,7 @@ class E2ENodeTest(object):
         # Generates job config.
         job_config = self.__get_job_def(args)
         # Generates prow config.
-        prow_config = self.__get_prow_config(
-            test_suite, get_args(self.job_name, k8s_version))
+        prow_config = self.__get_prow_config(test_suite, k8s_version)
 
         # Combine --node-args
         node_args = []
