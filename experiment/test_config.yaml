@@ -905,10 +905,12 @@ nodeImages:
     args:
     - --node-args=--images=cos-beta-63-10032-22-0
     - --node-args=--image-project=cos-cloud
+    - --node-args=--instance-metadata=user-data<test/e2e_node/jenkins/gci-init.yaml,gci-update-strategy=update_disabled
   cosstable1:
     args:
     - --node-args=--images=cos-stable-62-9901-59-0
     - --node-args=--image-project=cos-cloud
+    - --node-args=--instance-metadata=user-data<test/e2e_node/jenkins/gci-init.yaml,gci-update-strategy=update_disabled
   ubuntudev:
     args:
     - --node-args=--images=ubuntu-gke-1604-xenial-v20171108-1
