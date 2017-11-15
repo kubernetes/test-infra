@@ -791,7 +791,7 @@ jobs:
     interval: 2h
     sigOwners: ['sig-gcp']
   ci-kubernetes-e2e-gce-cos-k8sstable3-reboot:
-    interval: 6h˙
+    interval: 6h
     sigOwners: ['sig-gcp']
   ci-kubernetes-e2e-gce-cos-k8sstable2-reboot:
     interval: 2h
@@ -1009,19 +1009,24 @@ nodeK8sVersions:
   dev:
     args:
     - --repo=k8s.io/kubernetes=master
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20171108-8b5aad9f-master
   beta:
     args:
     # Run against HEAD since there's currently no Kubernetes beta release.
     - --repo=k8s.io/kubernetes=master
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20171108-8b5aad9f-master
   stable1:
     args:
     - --repo=k8s.io/kubernetes=release-1.8
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20171108-8b5aad9f-1.8
   stable2:
     args:
     - --repo=k8s.io/kubernetes=release-1.7
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20171108-8b5aad9f-1.7
   stable3:
     args:
     - --repo=k8s.io/kubernetes=release-1.6
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20171108-8b5aad9f-1.6
 
 nodeTestSuites:
   default:
