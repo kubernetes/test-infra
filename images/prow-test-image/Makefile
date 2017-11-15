@@ -23,7 +23,7 @@ do_build = \
 	$(eval VERSION_PARTS := $(subst :, ,$(v))) \
 	$(eval K8S := $(firstword $(VERSION_PARTS))) \
 	$(eval GO := $(lastword $(VERSION_PARTS))) \
-	docker build --build-arg GO_VERSION=$(GO) -f ./Dockerfile -t $(IMG):$(TAG)-$(K8S) . &&\
+	docker build --no-cache --build-arg GO_VERSION=$(GO) -f ./Dockerfile -t $(IMG):$(TAG)-$(K8S) . &&\
 	docker tag $(IMG):$(TAG)-$(K8S) $(IMG):latest-$(K8S) &&\
 	echo Built $(IMG):$(TAG)-$(K8S) and tagged with $(IMG):latest-$(K8S) ;
 
