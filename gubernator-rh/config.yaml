@@ -2,6 +2,12 @@
 default_org: openshift
 default_repo: origin
 external_services:
+  kubernetes:
+    gcs_pull_prefix: origin-federated-results/pr-logs/pull
+    prow_url: deck-ci.svc.ci.openshift.org
+  kubernetes-incubator:
+    gcs_pull_prefix: origin-federated-results/pr-logs/pull
+    prow_url: deck-ci.svc.ci.openshift.org
   openshift:
     gcs_pull_prefix: origin-ci-test/pr-logs/pull
     prow_url: deck-ci.svc.ci.openshift.org
@@ -31,3 +37,10 @@ jobs:
     - test_pull_request_origin_extended_conformance_gce
     - test_pull_request_origin_extended_conformance_install_update
     - test_pull_request_origin_extended_networking_minimal
+  origin-ci-test/pr-logs/directory/:
+    - test_pull_request_crio_ami_fedora
+    - test_pull_request_crio_ami_rhel
+    - test_pull_request_crio_e2e_fedora
+    - test_pull_request_crio_e2e_rhel
+    - test_pull_request_crio_integration_fedora
+    - test_pull_request_crio_integration_rhel
