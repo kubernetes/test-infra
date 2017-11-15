@@ -65,6 +65,7 @@ type options struct {
 	extractFederation   extractFederationStrategies
 	extractSource       bool
 	federation          bool
+	flushMemAfterBuild  bool
 	gcpCloudSdk         string
 	gcpMasterImage      string
 	gcpNetwork          string
@@ -122,6 +123,7 @@ func defineFlags() *options {
 	flag.Var(&o.extractFederation, "extract-federation", "Extract federation binaries from the specified release location")
 	flag.BoolVar(&o.extractSource, "extract-source", false, "Extract k8s src together with other tarballs")
 	flag.BoolVar(&o.federation, "federation", false, "If true, start/tear down the federation control plane along with the clusters. To only start/tear down the federation control plane, specify --deployment=none")
+	flag.BoolVar(&o.flushMemAfterBuild, "flush-mem-after-build", false, "If true, try to flush container memory after building")
 	flag.Var(&o.ginkgoParallel, "ginkgo-parallel", fmt.Sprintf("Run Ginkgo tests in parallel, default %d runners. Use --ginkgo-parallel=N to specify an exact count.", defaultGinkgoParallel))
 	flag.StringVar(&o.gcpCloudSdk, "gcp-cloud-sdk", "", "Install/upgrade google-cloud-sdk to the gs:// path if set")
 	flag.StringVar(&o.gcpProject, "gcp-project", "", "For use with gcloud commands")
@@ -418,7 +420,11 @@ func complete(o *options) error {
 func acquireKubernetes(o *options) error {
 	// Potentially build kubernetes
 	if o.build.Enabled() {
-		if err := xmlWrap("Build", o.build.Build); err != nil {
+		err := xmlWrap("Build", o.build.Build)
+		if o.flushMemAfterBuild {
+			flushMem()
+		}
+		if err != nil {
 			return err
 		}
 	}
@@ -469,7 +475,11 @@ func acquireKubernetes(o *options) error {
 func acquireFederation(o *options) error {
 	// Potentially build federation
 	if o.buildFederation.Enabled() {
-		if err := xmlWrap("BuildFederation", o.buildFederation.Build); err != nil {
+		err := xmlWrap("BuildFederation", o.buildFederation.Build)
+		if o.flushMemAfterBuild {
+			flushMem()
+		}
+		if err != nil {
 			return err
 		}
 	}
