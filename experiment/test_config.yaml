@@ -293,7 +293,9 @@ jobs:
     - --save=gs://kubernetes-jenkins/soak/ci-kubernetes-e2e-gke-cosbeta-k8sdev-soak
     sigOwners: ['sig-gcp']
   ci-kubernetes-e2e-gke-cosbeta-k8sdev-stackdriver:
-    interval: 6h
+    args:
+    - --gcp-project=k8s-test-5349734a53
+    interval: 3h
     sigOwners: ['sig-gcp']
   ci-kubernetes-e2e-gke-cosbeta-k8sbeta-soak:
     interval: 2h
@@ -303,7 +305,9 @@ jobs:
     - --save=gs://kubernetes-jenkins/soak/ci-kubernetes-e2e-gke-cosbeta-k8sbeta-soak
     sigOwners: ['sig-gcp']
   ci-kubernetes-e2e-gke-cosbeta-k8sbeta-stackdriver:
-    interval: 6h
+    args:
+    - --gcp-project=k8s-test-2494226a76
+    interval: 3h
     sigOwners: ['sig-gcp']
   ci-kubernetes-e2e-gke-cosbeta-k8sstable1-soak:
     interval: 2h
@@ -313,7 +317,9 @@ jobs:
     - --save=gs://kubernetes-jenkins/soak/ci-kubernetes-e2e-gke-cosbeta-k8sstable1-soak
     sigOwners: ['sig-gcp']
   ci-kubernetes-e2e-gke-cosbeta-k8sstable1-stackdriver:
-    interval: 6h
+    args:
+    - --gcp-project=k8s-test-693a35d815
+    interval: 3h
     sigOwners: ['sig-gcp']
   ci-kubernetes-e2e-gke-cosbeta-k8sstable2-soak:
     interval: 2h
@@ -323,7 +329,9 @@ jobs:
     - --save=gs://kubernetes-jenkins/soak/ci-kubernetes-e2e-gke-cosbeta-k8sstable2-soak
     sigOwners: ['sig-gcp']
   ci-kubernetes-e2e-gke-cosbeta-k8sstable2-stackdriver:
-    interval: 6h
+    args:
+    - --gcp-project=k8s-test-2ab0b3e075
+    interval: 3h
     sigOwners: ['sig-gcp']
   ci-kubernetes-e2e-gke-cosbeta-k8sstable3-soak:
     interval: 2h
@@ -333,7 +341,9 @@ jobs:
     - --save=gs://kubernetes-jenkins/soak/ci-kubernetes-e2e-gke-cosbeta-k8sstable3-soak
     sigOwners: ['sig-gcp']
   ci-kubernetes-e2e-gke-cosbeta-k8sstable3-stackdriver:
-    interval: 6h
+    args:
+    - --gcp-project=k8s-test-3250d8c2bf
+    interval: 3h
     sigOwners: ['sig-gcp']
 
   # Ubuntu image validation.
