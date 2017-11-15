@@ -183,6 +183,8 @@ spec:
       containers:
       - name: deck
         image: gcr.io/k8s-prow/deck:0.62
+        args:
+        - --hook-url=http://hook:8888/plugin-help
         ports:
           - name: http
             containerPort: 8080
