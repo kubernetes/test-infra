@@ -1315,6 +1315,7 @@ presubmits:
     context: pull-kubernetes-e2e-gke-gci
     rerun_command: "/test pull-kubernetes-e2e-gke-gci"
     trigger: "(?m)^/test pull-kubernetes-e2e-gke-gci,?(\\s+|$)"
+    run_if_changed: '^(cluster/gce|cluster/addons).*$'
   - name: pull-kubernetes-e2e-kops-aws
     agent: jenkins
     always_run: true
@@ -2753,6 +2754,7 @@ presubmits:
     context: pull-security-kubernetes-e2e-gke-gci
     rerun_command: "/test pull-security-kubernetes-e2e-gke-gci"
     trigger: "(?m)^/test pull-security-kubernetes-e2e-gke-gci,?(\\s+|$)"
+    run_if_changed: '^(cluster/gce|cluster/addons).*$'
   - name: pull-security-kubernetes-e2e-kops-aws
     agent: jenkins
     always_run: true
