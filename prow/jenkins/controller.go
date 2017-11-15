@@ -155,8 +155,10 @@ func (c *Controller) Sync() error {
 	}
 
 	var syncErrs []error
-	if err := c.terminateDupes(pjs, jbs); err != nil {
-		syncErrs = append(syncErrs, err)
+	if c.ca.Config().JenkinsOperator.AllowCancellations {
+		if err := c.terminateDupes(pjs, jbs); err != nil {
+			syncErrs = append(syncErrs, err)
+		}
 	}
 
 	pendingCh, nonPendingCh := pjutil.PartitionPending(pjs)
@@ -230,19 +232,15 @@ func (c *Controller) terminateDupes(pjs []kube.ProwJob, jbs map[string]JenkinsBu
 			dupes[n] = i
 		}
 		toCancel := pjs[cancelIndex]
-		// Allow aborting presubmit jobs for commits that have been superseded by
-		// newer commits in Github pull requests.
-		if c.ca.Config().JenkinsOperator.AllowCancellations {
-			build, buildExists := jbs[toCancel.Metadata.Name]
-			// Avoid cancelling enqueued builds.
-			if buildExists && build.IsEnqueued() {
-				continue
-			}
-			// Otherwise, abort it.
-			if buildExists {
-				if err := c.jc.Abort(toCancel.Spec.Job, &build); err != nil {
-					logrus.Warningf("Cannot cancel Jenkins build for prowjob %q: %v", toCancel.Metadata.Name, err)
-				}
+		build, buildExists := jbs[toCancel.Metadata.Name]
+		// Avoid cancelling enqueued builds.
+		if buildExists && build.IsEnqueued() {
+			continue
+		}
+		// Otherwise, abort it.
+		if buildExists {
+			if err := c.jc.Abort(toCancel.Spec.Job, &build); err != nil {
+				logrus.Warningf("Cannot cancel Jenkins build for prowjob %q: %v", toCancel.Metadata.Name, err)
 			}
 		}
 		toCancel.Status.CompletionTime = time.Now()
