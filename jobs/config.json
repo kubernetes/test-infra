@@ -2430,7 +2430,7 @@
   },
   "ci-kubernetes-e2e-gce-large-correctness": {
     "args": [
-      "--cluster=gce-large-cluster",
+      "--cluster=gce-scale-cluster",
       "--env-file=jobs/env/ci-kubernetes-e2e-gce-large-correctness.env",
       "--extract=ci/latest",
       "--gcp-master-image=gci",
@@ -2489,7 +2489,7 @@
   },
   "ci-kubernetes-e2e-gce-large-performance": {
     "args": [
-      "--cluster=gce-large-cluster",
+      "--cluster=gce-scale-cluster",
       "--env-file=jobs/env/ci-kubernetes-e2e-gce-large-performance.env",
       "--extract=ci/latest",
       "--gcp-master-image=gci",
@@ -6034,7 +6034,7 @@
   },
   "ci-kubernetes-e2e-gke-large-correctness": {
     "args": [
-      "--cluster=gke-large-cluster",
+      "--cluster=gke-scale-cluster",
       "--deployment=gke",
       "--extract=ci/latest",
       "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
@@ -6080,7 +6080,7 @@
   },
   "ci-kubernetes-e2e-gke-large-performance": {
     "args": [
-      "--cluster=gke-large-cluster",
+      "--cluster=gke-scale-cluster",
       "--deployment=gke",
       "--extract=ci/latest",
       "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
