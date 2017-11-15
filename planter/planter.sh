@@ -19,7 +19,7 @@
 set -o errexit
 set -o nounset
 IMAGE_NAME="gcr.io/k8s-testimages/planter"
-TAG="${TAG:-0.7.0-1}"
+TAG="${TAG:-0.7.0}"
 IMAGE="${IMAGE_NAME}:${TAG}"
 # run our docker image as the host user with bazel cache and current repo dir
 REPO=$(git rev-parse --show-toplevel 2>/dev/null || true)
@@ -28,9 +28,9 @@ VOLUMES="-v ${REPO}:${REPO} -v ${HOME}:${HOME} --tmpfs /tmp:exec,mode=777"
 GID="$(id -g ${USER})"
 ENV="-e USER=${USER} -e GID=${GID} -e UID=${UID} -e HOME=${HOME}"
 # the final command to run
-CMD="docker run --rm ${VOLUMES} --user ${UID} -w ${PWD} ${ENV} ${DOCKER_EXTRA:-} ${IMAGE} ${@}"
+CMD="docker pull ${IMAGE} && docker run --rm ${VOLUMES} --user ${UID} -w ${PWD} ${ENV} ${DOCKER_EXTRA:-} ${IMAGE} ${@}"
 if [ -n "${DRY_RUN+set}" ]; then
     echo "${CMD}"
 else
-    ${CMD}
+    eval ${CMD}
 fi
