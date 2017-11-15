@@ -33,7 +33,7 @@ import (
 const pluginName = "size"
 
 func init() {
-	plugins.RegisterPullRequestHandler(pluginName, handlePullRequest)
+	plugins.RegisterPullRequestHandler(pluginName, handlePullRequest, nil)
 }
 
 func handlePullRequest(pc plugins.PluginClient, pe github.PullRequestEvent) error {

@@ -79,8 +79,8 @@ type state struct {
 }
 
 func init() {
-	plugins.RegisterGenericCommentHandler(pluginName, handleGenericCommentEvent)
-	plugins.RegisterPullRequestHandler(pluginName, handlePullRequestEvent)
+	plugins.RegisterGenericCommentHandler(pluginName, handleGenericCommentEvent, nil)
+	plugins.RegisterPullRequestHandler(pluginName, handlePullRequestEvent, nil)
 }
 
 func handleGenericCommentEvent(pc plugins.PluginClient, ce github.GenericCommentEvent) error {

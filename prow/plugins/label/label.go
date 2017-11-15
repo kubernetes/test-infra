@@ -36,7 +36,7 @@ var (
 )
 
 func init() {
-	plugins.RegisterGenericCommentHandler(pluginName, handleGenericComment)
+	plugins.RegisterGenericCommentHandler(pluginName, handleGenericComment, nil)
 }
 
 func handleGenericComment(pc plugins.PluginClient, e github.GenericCommentEvent) error {

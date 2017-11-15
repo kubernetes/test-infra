@@ -54,7 +54,7 @@ It may take a couple minutes for the CLA signature to be fully registered; after
 )
 
 func init() {
-	plugins.RegisterStatusEventHandler(pluginName, handleStatusEvent)
+	plugins.RegisterStatusEventHandler(pluginName, handleStatusEvent, nil)
 }
 
 type gitHubClient interface {

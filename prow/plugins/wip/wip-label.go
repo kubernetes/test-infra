@@ -49,7 +49,7 @@ type event struct {
 }
 
 func init() {
-	plugins.RegisterPullRequestHandler(pluginName, handlePullRequest)
+	plugins.RegisterPullRequestHandler(pluginName, handlePullRequest, nil)
 }
 
 // Strict subset of *github.Client methods.

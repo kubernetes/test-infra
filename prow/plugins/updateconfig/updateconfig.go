@@ -31,7 +31,7 @@ const (
 )
 
 func init() {
-	plugins.RegisterPullRequestHandler(pluginName, handlePullRequest)
+	plugins.RegisterPullRequestHandler(pluginName, handlePullRequest, nil)
 }
 
 type githubClient interface {

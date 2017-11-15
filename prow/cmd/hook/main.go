@@ -34,7 +34,8 @@ import (
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/hook"
 	"k8s.io/test-infra/prow/kube"
-	m "k8s.io/test-infra/prow/metrics"
+	"k8s.io/test-infra/prow/metrics"
+	pluginhelp "k8s.io/test-infra/prow/pluginhelp/hook"
 	"k8s.io/test-infra/prow/plugins"
 	"k8s.io/test-infra/prow/repoowners"
 	"k8s.io/test-infra/prow/slack"
@@ -150,18 +151,18 @@ func main() {
 		logger.WithError(err).Fatal("Error starting plugins.")
 	}
 
-	metrics := hook.NewMetrics()
+	promMetrics := hook.NewMetrics()
 
 	// Push metrics to the configured prometheus pushgateway endpoint.
 	if endpoint := configAgent.Config().PushGateway.Endpoint; endpoint != "" {
-		go m.PushMetrics("hook", endpoint)
+		go metrics.PushMetrics("hook", endpoint)
 	}
 
 	server := &hook.Server{
 		HMACSecret:  webhookSecret,
 		ConfigAgent: configAgent,
 		Plugins:     pluginAgent,
-		Metrics:     metrics,
+		Metrics:     promMetrics,
 	}
 
 	// Return 200 on / for health checks.
@@ -169,5 +170,8 @@ func main() {
 	http.Handle("/metrics", promhttp.Handler())
 	// For /hook, handle a webhook normally.
 	http.Handle("/hook", server)
+	// Serve plugin help information from /plugin-help.
+	http.Handle("/plugin-help", pluginhelp.NewHelpAgent(pluginAgent, githubClient))
+
 	logger.Fatal(http.ListenAndServe(":"+strconv.Itoa(*port), nil))
 }

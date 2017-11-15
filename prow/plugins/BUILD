@@ -30,6 +30,7 @@ go_library(
         "//prow/git:go_default_library",
         "//prow/github:go_default_library",
         "//prow/kube:go_default_library",
+        "//prow/pluginhelp:go_default_library",
         "//prow/repoowners:go_default_library",
         "//prow/slack:go_default_library",
         "//vendor/github.com/ghodss/yaml:go_default_library",

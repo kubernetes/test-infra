@@ -45,8 +45,8 @@ type client struct {
 }
 
 func init() {
-	plugins.RegisterPushEventHandler(pluginName, handlePush)
-	plugins.RegisterGenericCommentHandler(pluginName, handleComment)
+	plugins.RegisterPushEventHandler(pluginName, handlePush, nil)
+	plugins.RegisterGenericCommentHandler(pluginName, handleComment, nil)
 }
 
 func handleComment(pc plugins.PluginClient, e github.GenericCommentEvent) error {
