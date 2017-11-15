@@ -52,237 +52,120 @@ jobs:
   # +------------+----------+----------+------------+------------+------------+
   ci-kubernetes-e2e-gce-cosdev-k8sdev-default:
     interval: 2h
-    args:
-    - --check-leaked-resources=false # disabled since it uses shared project.
-    - --gcp-project=cos-image-validation
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-cosdev-k8sdev-slow:
     interval: 2h
-    args:
-    - --check-leaked-resources=false # disabled since it uses shared project.
-    - --gcp-project=cos-image-validation
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-cosdev-k8sdev-serial:
     interval: 2h
-    args:
-    - --check-leaked-resources=false # disabled since it uses shared project.
-    - --gcp-project=cos-image-validation
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-cosdev-k8sbeta-default:
     interval: 2h
-    args:
-    - --check-leaked-resources=false # disabled since it uses shared project.
-    - --gcp-project=cos-image-validation
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-cosdev-k8sbeta-slow:
     interval: 2h
-    args:
-    - --check-leaked-resources=false # disabled since it uses shared project.
-    - --gcp-project=cos-image-validation
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-cosdev-k8sbeta-serial:
     interval: 2h
-    args:
-    - --check-leaked-resources=false # disabled since it uses shared project.
-    - --gcp-project=cos-image-validation
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-cosdev-k8sstable1-default:
     interval: 2h
-    args:
-    - --check-leaked-resources=false # disabled since it uses shared project.
-    - --gcp-project=cos-image-validation
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-cosdev-k8sstable1-slow:
     interval: 2h
-    args:
-    - --check-leaked-resources=false # disabled since it uses shared project.
-    - --gcp-project=cos-image-validation
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-cosdev-k8sstable1-serial:
     interval: 2h
-    args:
-    - --check-leaked-resources=false # disabled since it uses shared project.
-    - --gcp-project=cos-image-validation
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-cosbeta-k8sdev-default:
     interval: 2h
-    args:
-    - --check-leaked-resources=false # disabled since it uses shared project.
-    - --gcp-project=cos-image-validation
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-cosbeta-k8sdev-slow:
     interval: 2h
-    args:
-    - --check-leaked-resources=false # disabled since it uses shared project.
-    - --gcp-project=cos-image-validation
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-cosbeta-k8sdev-serial:
     interval: 2h
-    args:
-    - --check-leaked-resources=false # disabled since it uses shared project.
-    - --gcp-project=cos-image-validation
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-cosbeta-k8sbeta-default:
     interval: 2h
-    args:
-    - --check-leaked-resources=false # disabled since it uses shared project.
-    - --gcp-project=cos-image-validation
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-cosbeta-k8sbeta-slow:
     interval: 2h
-    args:
-    - --check-leaked-resources=false # disabled since it uses shared project.
-    - --gcp-project=cos-image-validation
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-cosbeta-k8sbeta-serial:
     interval: 2h
-    args:
-    - --check-leaked-resources=false # disabled since it uses shared project.
-    - --gcp-project=cos-image-validation
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-cosbeta-k8sstable1-default:
     interval: 2h
-    args:
-    - --check-leaked-resources=false # disabled since it uses shared project.
-    - --gcp-project=cos-image-validation
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-cosbeta-k8sstable1-slow:
     interval: 2h
-    args:
-    - --check-leaked-resources=false # disabled since it uses shared project.
-    - --gcp-project=cos-image-validation
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-cosbeta-k8sstable1-serial:
     interval: 2h
-    args:
-    - --check-leaked-resources=false # disabled since it uses shared project.
-    - --gcp-project=cos-image-validation
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-cosbeta-k8sstable2-default:
     interval: 2h
-    args:
-    - --check-leaked-resources=false # disabled since it uses shared project.
-    - --gcp-project=cos-image-validation
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-cosbeta-k8sstable2-slow:
     interval: 2h
-    args:
-    - --check-leaked-resources=false # disabled since it uses shared project.
-    - --gcp-project=cos-image-validation
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-cosbeta-k8sstable2-serial:
     interval: 2h
-    args:
-    - --check-leaked-resources=false # disabled since it uses shared project.
-    - --gcp-project=cos-image-validation
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-cosbeta-k8sstable3-default:
     interval: 2h
-    args:
-    - --check-leaked-resources=false # disabled since it uses shared project.
-    - --gcp-project=cos-image-validation
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-cosbeta-k8sstable3-slow:
     interval: 2h
-    args:
-    - --check-leaked-resources=false # disabled since it uses shared project.
-    - --gcp-project=cos-image-validation
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-cosbeta-k8sstable3-serial:
     interval: 2h
-    args:
-    - --check-leaked-resources=false # disabled since it uses shared project.
-    - --gcp-project=cos-image-validation
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-cosstable1-k8sdev-default:
     interval: 2h
-    args:
-    - --check-leaked-resources=false # disabled since it uses shared project.
-    - --gcp-project=cos-image-validation
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-cosstable1-k8sdev-slow:
     interval: 2h
-    args:
-    - --check-leaked-resources=false # disabled since it uses shared project.
-    - --gcp-project=cos-image-validation
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-cosstable1-k8sdev-serial:
     interval: 2h
-    args:
-    - --check-leaked-resources=false # disabled since it uses shared project.
-    - --gcp-project=cos-image-validation
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-cosstable1-k8sbeta-default:
     interval: 2h
-    args:
-    - --check-leaked-resources=false # disabled since it uses shared project.
-    - --gcp-project=cos-image-validation
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-cosstable1-k8sbeta-slow:
     interval: 2h
-    args:
-    - --check-leaked-resources=false # disabled since it uses shared project.
-    - --gcp-project=cos-image-validation
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-cosstable1-k8sbeta-serial:
     interval: 2h
-    args:
-    - --check-leaked-resources=false # disabled since it uses shared project.
-    - --gcp-project=cos-image-validation
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-cosstable1-k8sstable1-default:
     interval: 6h
-    args:
-    - --check-leaked-resources=false # disabled since it uses shared project.
-    - --gcp-project=cos-image-validation
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-cosstable1-k8sstable1-slow:
     interval: 6h
-    args:
-    - --check-leaked-resources=false # disabled since it uses shared project.
-    - --gcp-project=cos-image-validation
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-cosstable1-k8sstable1-serial:
     interval: 6h
-    args:
-    - --check-leaked-resources=false # disabled since it uses shared project.
-    - --gcp-project=cos-image-validation
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-cosstable1-k8sstable2-default:
     interval: 6h
-    args:
-    - --check-leaked-resources=false # disabled since it uses shared project.
-    - --gcp-project=cos-image-validation
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-cosstable1-k8sstable2-slow:
     interval: 6h
-    args:
-    - --check-leaked-resources=false # disabled since it uses shared project.
-    - --gcp-project=cos-image-validation
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-cosstable1-k8sstable2-serial:
     interval: 6h
-    args:
-    - --check-leaked-resources=false # disabled since it uses shared project.
-    - --gcp-project=cos-image-validation
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-cosstable1-k8sstable3-default:
     interval: 6h
-    args:
-    - --check-leaked-resources=false # disabled since it uses shared project.
-    - --gcp-project=cos-image-validation
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-cosstable1-k8sstable3-slow:
     interval: 6h
-    args:
-    - --check-leaked-resources=false # disabled since it uses shared project.
-    - --gcp-project=cos-image-validation
     sigOwners: ['sig-node']
   ci-kubernetes-e2e-gce-cosstable1-k8sstable3-serial:
     interval: 6h
-    args:
-    - --check-leaked-resources=false # disabled since it uses shared project.
-    - --gcp-project=cos-image-validation
     sigOwners: ['sig-node']
 
   ci-kubernetes-e2e-gke-cosbeta-k8sdev-soak:
