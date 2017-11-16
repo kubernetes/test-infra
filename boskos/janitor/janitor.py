@@ -169,13 +169,13 @@ def clean_gke_cluster(project, age, filt):
             'gcloud', 'container', '-q', 'clusters', 'list',
             '--project=%s' % project,
             '--filter=%s' % filt,
-            '--format=json(name,createTime)'
+            '--format=json(name,createTime,zone)'
             ]
         print 'running %s' % cmd
         for item in json.loads(subprocess.check_output(cmd)):
             print 'cluster info: %r' % item
-            if 'name' not in item or 'createTime' not in item:
-                print >>sys.stderr, 'name and createTime must present'
+            if 'name' not in item or 'createTime' not in item or 'zone' not in item:
+                print >>sys.stderr, 'name, createTime and zone must present'
                 raise ValueError('%r' % item)
 
             # The raw createTime string looks like 2017-08-30T18:33:14+00:00
@@ -184,20 +184,22 @@ def clean_gke_cluster(project, age, filt):
             item['createTime'] = item['createTime'].split('+')[0]
             created = datetime.datetime.strptime(
                 item['createTime'], '%Y-%m-%dT%H:%M:%S')
-            print ('Found gke cluster %r in %r, created time = %r' %
-                   (item['name'], endpoint, item['createTime']))
+
             if created < age:
+                print ('Found stale gke cluster %r in %r, created time = %r' %
+                       (item['name'], endpoint, item['createTime']))
                 delete = [
                     'gcloud', 'container', '-q', 'clusters', 'delete',
                     item['name'],
                     '--project=%s' % project,
+                    '--zone=%s' % item['zone'],
                 ]
-            try:
-                print 'running %s' % delete
-                subprocess.check_call(delete)
-            except subprocess.CalledProcessError as exc:
-                err = 1
-                print >>sys.stderr, 'Error try to delete cluster %s: %r' % (item['name'], exc)
+                try:
+                    print 'running %s' % delete
+                    subprocess.check_call(delete)
+                except subprocess.CalledProcessError as exc:
+                    err = 1
+                    print >>sys.stderr, 'Error try to delete cluster %s: %r' % (item['name'], exc)
 
     return err
 
