@@ -760,8 +760,8 @@ images:
     - --gcp-node-image=gci
   cosbeta:
     args:
-    - --image-family=cos-beta
-    - --image-project=cos-cloud
+    - --env=KUBE_GCE_NODE_IMAGE=cos-only-for-testing-63-10032-39-0
+    - --env=KUBE_GCE_NODE_PROJECT=gke-node-images
     - --gcp-node-image=gci
   cosstable1:
     args:
@@ -871,8 +871,8 @@ nodeCommon:
 nodeImages:
   cosbeta:
     args:
-    - --node-args=--images=cos-beta-63-10032-22-0
-    - --node-args=--image-project=cos-cloud
+    - --node-args=--images=cos-only-for-testing-63-10032-39-0
+    - --node-args=--image-project=gke-node-images
     - --node-args=--instance-metadata=user-data<test/e2e_node/jenkins/gci-init.yaml,gci-update-strategy=update_disabled
   cosstable1:
     args:
