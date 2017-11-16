@@ -20,32 +20,34 @@ import argparse
 import collections
 import datetime
 import json
+import os
 import subprocess
 import sys
 
 
 # A resource that need to be cleared.
-Resource = collections.namedtuple('Resource', 'name group condition managed')
+Resource = collections.namedtuple('Resource', 'name group condition managed tolerate')
 DEMOLISH_ORDER = [
-    # Beware of insertion order
-    Resource('instances', None, 'zone', None),
-    Resource('addresses', None, 'region', None),
-    Resource('disks', None, 'zone', None),
-    Resource('firewall-rules', None, None, None),
-    Resource('routes', None, None, None),
-    Resource('forwarding-rules', None, 'region', None),
-    Resource('target-http-proxies', None, None, None),
-    Resource('target-https-proxies', None, None, None),
-    Resource('url-maps', None, None, None),
-    Resource('backend-services', None, 'region', None),
-    Resource('target-pools', None, 'region', None),
-    Resource('health-checks', None, None, None),
-    Resource('http-health-checks', None, None, None),
-    Resource('instance-groups', None, 'zone', 'Yes'),
-    Resource('instance-groups', None, 'zone', 'No'),
-    Resource('instance-templates', None, None, None),
-    Resource('networks', 'subnets', 'region', None),
-    Resource('networks', None, '', None),
+    # [WARNING FROM KRZYZACY] : TOUCH THIS WITH CARE!
+    # ORDER REALLY MATTERS HERE!
+    Resource('instances', None, 'zone', None, False),
+    Resource('addresses', None, 'region', None, False),
+    Resource('disks', None, 'zone', None, False),
+    Resource('firewall-rules', None, None, None, False),
+    Resource('routes', None, None, None, False),
+    Resource('forwarding-rules', None, 'region', None, False),
+    Resource('target-http-proxies', None, None, None, False),
+    Resource('target-https-proxies', None, None, None, False),
+    Resource('url-maps', None, None, None, False),
+    Resource('backend-services', None, 'region', None, False),
+    Resource('target-pools', None, 'region', None, False),
+    Resource('health-checks', None, None, None, False),
+    Resource('http-health-checks', None, None, None, False),
+    Resource('instance-groups', None, 'zone', 'Yes', False),
+    Resource('instance-groups', None, 'zone', 'No', False),
+    Resource('instance-templates', None, None, None, False),
+    Resource('networks', 'subnets', 'region', None, True),
+    Resource('networks', None, '', None, False),
 ]
 
 
@@ -143,8 +145,60 @@ def clear_resources(project, cols, resource):
         try:
             subprocess.check_call(base + list(items))
         except subprocess.CalledProcessError as exc:
-            err = 1
+            if not resource.tolerate:
+                err = 1
             print >>sys.stderr, 'Error try to delete resources: %r' % exc
+    return err
+
+
+def clean_gke_cluster(project, age, filt):
+    """Clean up potential leaking gke cluster"""
+
+    # a cluster can be created in one of those three endpoints
+    endpoints = [
+        'https://test-container.sandbox.googleapis.com/', # test
+        'https://staging-container.sandbox.googleapis.com/', # staging
+        'https://container.googleapis.com/', # prod
+    ]
+
+    err = 0
+    for endpoint in endpoints:
+        os.environ['CLOUDSDK_API_ENDPOINT_OVERRIDES_CONTAINER'] = endpoint
+        print "checking endpoint %s" % endpoint
+        cmd = [
+            'gcloud', 'container', '-q', 'clusters', 'list',
+            '--project=%s' % project,
+            '--filter=%s' % filt,
+            '--format=json(name,createTime)'
+            ]
+        print 'running %s' % cmd
+        for item in json.loads(subprocess.check_output(cmd)):
+            print 'cluster info: %r' % item
+            if 'name' not in item or 'createTime' not in item:
+                print >>sys.stderr, 'name and createTime must present'
+                raise ValueError('%r' % item)
+
+            # The raw createTime string looks like 2017-08-30T18:33:14+00:00
+            # Which python 2.7 does not support timezones.
+            # Since age is already in UTC time we'll just strip the timezone part
+            item['createTime'] = item['createTime'].split('+')[0]
+            created = datetime.datetime.strptime(
+                item['createTime'], '%Y-%m-%dT%H:%M:%S')
+            print ('Found gke cluster %r in %r, created time = %r' %
+                   (item['name'], endpoint, item['createTime']))
+            if created < age:
+                delete = [
+                    'gcloud', 'container', '-q', 'clusters', 'delete',
+                    item['name'],
+                    '--project=%s' % project,
+                ]
+            try:
+                print 'running %s' % delete
+                subprocess.check_call(delete)
+            except subprocess.CalledProcessError as exc:
+                err = 1
+                print >>sys.stderr, 'Error try to delete cluster %s: %r' % (item['name'], exc)
+
     return err
 
 
@@ -169,9 +223,17 @@ def main(project, days, hours, filt):
             col = collect(project, age, res, filt)
             if col:
                 err |= clear_resources(project, col, res)
-        except ValueError:
+        except (subprocess.CalledProcessError, ValueError):
             err |= 1 # keep clean the other resource
             print >>sys.stderr, 'Fail to list resource %r from project %r' % (res.name, project)
+
+    # try to clean leaking gke cluster
+    if 'gke' in project:
+        try:
+            err |= clean_gke_cluster(project, age, filt)
+        except ValueError:
+            err |= 1 # keep clean the other resource
+            print >>sys.stderr, 'Fail to clean up cluster from project %r' % project
 
     print '[=== Finish Janitor on project %r with status %r ===]' % (project, err)
     sys.exit(err)
