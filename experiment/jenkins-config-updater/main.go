@@ -77,12 +77,6 @@ func main() {
 		logrus.WithError(err).Fatal("Error getting git client.")
 	}
 
-	logger := logrus.StandardLogger()
-	// TODO: Use global option from the prow config.
-	logrus.SetLevel(logrus.DebugLevel)
-	githubClient.Logger = logger.WithField("client", "github")
-	gitClient.Logger = logger.WithField("client", "git")
-
 	botName, err := githubClient.BotName()
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting bot name.")
