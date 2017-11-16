@@ -2430,7 +2430,7 @@
   },
   "ci-kubernetes-e2e-gce-large-correctness": {
     "args": [
-      "--cluster=gce-large-cluster",
+      "--cluster=gce-scale-cluster",
       "--env-file=jobs/env/ci-kubernetes-e2e-gce-large-correctness.env",
       "--extract=ci/latest",
       "--gcp-master-image=gci",
@@ -2441,7 +2441,7 @@
       "--mode=docker",
       "--provider=gce",
       "--test_args=--ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]|\\[DisabledForLargeClusters\\] --allowed-not-ready-nodes=20 --node-schedulable-timeout=60m --minStartupPods=8 --gather-resource-usage=master --gather-metrics-at-teardown=master",
-      "--timeout=600m",
+      "--timeout=390m",
       "--use-logexporter"
     ],
     "scenario": "kubernetes_e2e",
@@ -2489,7 +2489,7 @@
   },
   "ci-kubernetes-e2e-gce-large-performance": {
     "args": [
-      "--cluster=gce-large-cluster",
+      "--cluster=gce-scale-cluster",
       "--env-file=jobs/env/ci-kubernetes-e2e-gce-large-performance.env",
       "--extract=ci/latest",
       "--gcp-master-image=gci",
@@ -2499,7 +2499,7 @@
       "--mode=docker",
       "--provider=gce",
       "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --allowed-not-ready-nodes=20 --node-schedulable-timeout=60m --minStartupPods=8 --gather-resource-usage=master --gather-metrics-at-teardown=master",
-      "--timeout=900m",
+      "--timeout=510m",
       "--use-logexporter"
     ],
     "scenario": "kubernetes_e2e",
@@ -2859,7 +2859,7 @@
       "--mode=docker",
       "--provider=gce",
       "--test_args=--ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]|\\[DisabledForLargeClusters\\] --allowed-not-ready-nodes=50 --node-schedulable-timeout=90m --minStartupPods=8 --gather-resource-usage=master --gather-metrics-at-teardown=master",
-      "--timeout=1000m",
+      "--timeout=570m",
       "--use-logexporter"
     ],
     "scenario": "kubernetes_e2e",
@@ -2877,7 +2877,7 @@
       "--mode=docker",
       "--provider=gce",
       "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --allowed-not-ready-nodes=50 --node-schedulable-timeout=90m --minStartupPods=8 --gather-resource-usage=master --gather-metrics-at-teardown=master",
-      "--timeout=1300m",
+      "--timeout=1290m",
       "--use-logexporter"
     ],
     "scenario": "kubernetes_e2e",
@@ -6034,7 +6034,7 @@
   },
   "ci-kubernetes-e2e-gke-large-correctness": {
     "args": [
-      "--cluster=gke-large-cluster",
+      "--cluster=gke-scale-cluster",
       "--deployment=gke",
       "--extract=ci/latest",
       "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
@@ -6047,7 +6047,7 @@
       "--mode=docker",
       "--provider=gke",
       "--test_args=--ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --allowed-not-ready-nodes=20 --node-schedulable-timeout=60m --minStartupPods=8",
-      "--timeout=600m",
+      "--timeout=450m",
       "--use-logexporter"
     ],
     "scenario": "kubernetes_e2e",
@@ -6080,7 +6080,7 @@
   },
   "ci-kubernetes-e2e-gke-large-performance": {
     "args": [
-      "--cluster=gke-large-cluster",
+      "--cluster=gke-scale-cluster",
       "--deployment=gke",
       "--extract=ci/latest",
       "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
@@ -6092,7 +6092,7 @@
       "--mode=docker",
       "--provider=gke",
       "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --allowed-not-ready-nodes=20 --node-schedulable-timeout=60m",
-      "--timeout=900m",
+      "--timeout=570m",
       "--use-logexporter"
     ],
     "scenario": "kubernetes_e2e",
@@ -6376,7 +6376,7 @@
       "--mode=docker",
       "--provider=gke",
       "--test_args=--ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --allowed-not-ready-nodes=40 --node-schedulable-timeout=90m --minStartupPods=8",
-      "--timeout=1000m",
+      "--timeout=990m",
       "--use-logexporter"
     ],
     "scenario": "kubernetes_e2e",
