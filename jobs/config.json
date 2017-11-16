@@ -2456,7 +2456,6 @@
       "--extract=ci/latest",
       "--gcp-project=k8s-scale-testing",
       "--gcp-zone=us-east1-a",
-      "--mode=docker",
       "--provider=gce",
       "--test=false",
       "--timeout=180m",
@@ -2477,7 +2476,6 @@
       "--gcp-node-image=gci",
       "--gcp-project=k8s-scale-testing",
       "--gcp-zone=us-east1-a",
-      "--mode=docker",
       "--provider=gce",
       "--test_args=--ginkgo.focus=\\[Feature:Empty\\] --allowed-not-ready-nodes=10 --node-schedulable-timeout=60m",
       "--timeout=300m"
@@ -6068,7 +6066,6 @@
       "--gke-create-command=container clusters create --quiet --max-nodes-per-pool=1000",
       "--gke-environment=staging",
       "--gke-shape={\"default\":{\"Nodes\":2,\"MachineType\":\"g1-small\"},\"heapster-pool\":{\"Nodes\":1,\"MachineType\":\"n1-standard-8\"}}",
-      "--mode=docker",
       "--provider=gke",
       "--test_args=--ginkgo.focus=\\[Feature:Empty\\] --allowed-not-ready-nodes=0 --node-schedulable-timeout=360m --system-pods-startup-timeout=60m --minStartupPods=8",
       "--timeout=1200m"
@@ -6112,7 +6109,6 @@
       "--gke-create-command=container clusters create --quiet --max-nodes-per-pool=1000",
       "--gke-environment=staging",
       "--gke-shape={\"default\":{\"Nodes\":5000,\"MachineType\":\"n1-standard-2\"}}",
-      "--mode=docker",
       "--provider=gke",
       "--test=false",
       "--timeout=180m",
