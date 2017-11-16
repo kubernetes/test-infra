@@ -135,6 +135,7 @@ func FakeRun(fb *fakeBoskos, buffer chan string, res string) (int, error) {
 	timeout := time.NewTimer(5 * time.Second).C
 
 	totalClean := 0
+	maxAcquire := poolSize + bufferSize + 1
 
 	for {
 		select {
@@ -146,9 +147,9 @@ func FakeRun(fb *fakeBoskos, buffer chan string, res string) (int, error) {
 			} else if proj == "" {
 				return totalClean, errors.New("not expect to run out of resources")
 			} else {
-				if totalClean > poolSize+bufferSize+1 {
+				if totalClean > maxAcquire {
 					// poolSize in janitor, bufferSize more in janitor pool, 1 more hanging and will exit the loop
-					return totalClean, errors.New("should not acquire more than 12 projects")
+					return totalClean, fmt.Errorf("should not acquire more than %d projects", maxAcquire)
 				}
 				boom := time.After(50 * time.Millisecond)
 				select {
