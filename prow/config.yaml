@@ -1029,7 +1029,9 @@ presubmits:
           path: /mnt/disks/ssd0/docker-graph
       - name: var-lib-docker
         emptyDir: {}
-
+      resources:
+        requests:
+          memory: "10Gi"
   - name: pull-kubernetes-e2e-gce
     agent: kubernetes
     context: pull-kubernetes-e2e-gce
@@ -2522,8 +2524,9 @@ presubmits:
           path: /mnt/disks/ssd0/docker-graph
       - name: var-lib-docker
         emptyDir: {}
-
-
+      resources:
+        requests:
+          memory: "10Gi"
   - name: pull-security-kubernetes-e2e-gce
     agent: kubernetes
     context: pull-security-kubernetes-e2e-gce
