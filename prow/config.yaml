@@ -1031,7 +1031,7 @@ presubmits:
         emptyDir: {}
       resources:
         requests:
-          memory: "10Gi"
+          memory: "30Gi"
   - name: pull-kubernetes-e2e-gce
     agent: kubernetes
     context: pull-kubernetes-e2e-gce
@@ -2526,7 +2526,7 @@ presubmits:
         emptyDir: {}
       resources:
         requests:
-          memory: "10Gi"
+          memory: "30Gi"
   - name: pull-security-kubernetes-e2e-gce
     agent: kubernetes
     context: pull-security-kubernetes-e2e-gce
