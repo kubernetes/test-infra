@@ -100,6 +100,7 @@ type SecretSource struct {
 }
 
 type EmptyDirVolumeSource struct {
+	Medium string `json:"medium,omitempty"`
 	// NOTE: fields ommitted here as Prow does not currently use them
 }
 
