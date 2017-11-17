@@ -172,7 +172,15 @@ def clean_gke_cluster(project, age, filt):
             '--format=json(name,createTime,zone)'
             ]
         print 'running %s' % cmd
-        for item in json.loads(subprocess.check_output(cmd)):
+
+        output = ''
+        try:
+            output = subprocess.check_output(cmd)
+        except subprocess.CalledProcessError as exc:
+            print >>sys.stderr, 'Cannot reach endpoint %s with %r, continue' % (endpoint, exc)
+            continue
+
+        for item in json.loads(output):
             print 'cluster info: %r' % item
             if 'name' not in item or 'createTime' not in item or 'zone' not in item:
                 print >>sys.stderr, 'name, createTime and zone must present'
