@@ -572,7 +572,7 @@ Assign the PR to them by writing `+"`/assign {{range $index, $cc := .ap.GetCCs}}
 
 {{if not .ap.RequireIssue -}}
 {{else if .ap.AssociatedIssue -}}
-Associated issue: *{{.ap.AssociatedIssue}}*
+Associated issue: *#{{.ap.AssociatedIssue}}*
 
 {{ else if len .ap.NoIssueApprovers -}}
 Associated issue requirement bypassed by: {{range $index, $approval := .ap.ListNoIssueApprovals}}{{if $index}}, {{end}}{{$approval}}{{end}}
