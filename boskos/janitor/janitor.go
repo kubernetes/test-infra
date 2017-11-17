@@ -28,15 +28,16 @@ import (
 )
 
 var (
-	poolSize       = 100 // Maximum concurrent janitor goroutines TODO(krzyzacy): should remove this limit
-	bufferSize     = 1   // Maximum holding resources
+	bufferSize     = 1 // Maximum holding resources
 	serviceAccount = flag.String("service-account", "", "Path to projects service account")
 )
 
 var rTypes common.ResTypes
+var poolSize int
 
 func init() {
 	flag.Var(&rTypes, "resource-type", "comma-separated list of resources need to be cleaned up")
+	flag.IntVar(&poolSize, "pool-size", 20, "number of concurrent janitor goroutine")
 }
 
 func main() {

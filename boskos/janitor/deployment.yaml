@@ -6,7 +6,7 @@ metadata:
     app: boskos-janitor
   namespace: test-pods
 spec:
-  replicas: 1  # one canonical source of resources
+  replicas: 5  # 5 distributed janitor instances
   template:
     metadata:
       labels:
@@ -15,10 +15,11 @@ spec:
       terminationGracePeriodSeconds: 300
       containers:
       - name: boskos-janitor
-        image: gcr.io/k8s-testimages/janitor:v20170921-b5302345
+        image: gcr.io/k8s-testimages/janitor:v20171116-9055042fb
         args:
         - --service-account=/etc/service-account/service-account.json
         - --resource-type=gce-project,gke-project,gci-qa-project,gpu-project
+        - --pool-size=20
         volumeMounts:
         - mountPath: /etc/service-account
           name: service
