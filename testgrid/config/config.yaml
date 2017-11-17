@@ -373,6 +373,9 @@ test_groups:
 - name: ci-kubernetes-test-go
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-test-go
   days_of_results: 4
+- name: ci-kubernetes-test-go-release-1.9
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-test-go-release-1.9
+  days_of_results: 4
 - name: ci-kubernetes-test-go-release-1.8
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-test-go-release-1.8
   days_of_results: 4
@@ -390,6 +393,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-verify-release-1.6
 - name: ci-kubernetes-verify-release-1.8
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-verify-release-1.8
+- name: ci-kubernetes-verify-release-1.9
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-verify-release-1.9
 - name: ci-kubernetes-e2e-gke-new-master-gci-kubectl-skew-serial
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-new-master-gci-kubectl-skew-serial
 - name: ci-kubernetes-e2e-gke-new-master-gci-kubectl-skew
@@ -2271,6 +2276,8 @@ dashboards:
     test_group_name: ci-kubernetes-test-go-release-1.7
   - name: test-go-1.8
     test_group_name: ci-kubernetes-test-go-release-1.8
+  - name: test-go-1.9
+    test_group_name: ci-kubernetes-test-go-release-1.9
   - name: verify-master
     test_group_name: ci-kubernetes-verify-master
   - name: verify-1.6
@@ -2577,11 +2584,19 @@ dashboards:
   dashboard_tab:
   - name: build-1.9
     test_group_name: ci-kubernetes-build-1.9
+  - name: verify-1.9
+    test_group_name: ci-kubernetes-verify-release-1.9
+  - name: test-go-1.9
+    test_group_name: ci-kubernetes-test-go-release-1.9
 
 - name: sig-release-1.9-blocking
   dashboard_tab:
   - name: build-1.9
     test_group_name: ci-kubernetes-build-1.9
+  - name: verify-1.9
+    test_group_name: ci-kubernetes-verify-release-1.9
+  - name: test-go-1.9
+    test_group_name: ci-kubernetes-test-go-release-1.9
 
 - name: sig-release-1.8-all
   dashboard_tab:
@@ -4689,6 +4704,8 @@ dashboard_groups:
   - sig-release-master-kubectl-skew
   - sig-release-master-upgrade
   - sig-release-master-upgrade-optional
+  - sig-release-1.9-all
+  - sig-release-1.9-blocking
   - sig-release-1.8-all
   - sig-release-1.8-blocking
   - sig-release-skew-clusters
