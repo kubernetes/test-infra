@@ -87,6 +87,8 @@ test_groups:
     - target_config: Tests name
     - target_config: Context
     name_format: '%s [%s]'
+- name: ci-kubernetes-build-1.9
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-build-1.9
 - name: ci-kubernetes-build
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-build
 - name: ci-kubernetes-build-1.8
@@ -2570,6 +2572,16 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-1-7-1-6-gci-kubectl-skew
   - name: gke-1-7-1.6-gci-kubectl-skew-serial
     test_group_name: ci-kubernetes-e2e-gke-1-7-1-6-gci-kubectl-skew-serial
+
+- name: sig-release-1.9-all
+  dashboard_tab:
+  - name: build-1.9
+    test_group_name: ci-kubernetes-build-1.9
+
+- name: sig-release-1.9-blocking
+  dashboard_tab:
+  - name: build-1.9
+    test_group_name: ci-kubernetes-build-1.9
 
 - name: sig-release-1.8-all
   dashboard_tab:
