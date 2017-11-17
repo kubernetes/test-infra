@@ -1675,45 +1675,45 @@ test_groups:
   days_of_results: 1
   num_columns_recent: 20
 # release-1.8
-- name: ci-kubernetes-e2e-gci-gce-stable1
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-stable1
-- name: ci-kubernetes-e2e-gci-gke-stable1
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-stable1
+- name: ci-kubernetes-e2e-gce-cos-k8sstable1-default
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos-k8sstable1-default
+- name: ci-kubernetes-e2e-gke-cos-k8sstable1-default
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos-k8sstable1-default
   column_header:
   - configuration_value: node_os_image
   - configuration_value: Commit
   - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-kops-aws-stable1
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-stable1
-- name: ci-kubernetes-e2e-gci-gce-slow-stable1
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-slow-stable1
-- name: ci-kubernetes-e2e-gci-gke-slow-stable1
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-slow-stable1
+- name: ci-kubernetes-e2e-gce-cos-k8sstable1-slow
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos-k8sstable1-slow
+- name: ci-kubernetes-e2e-gke-cos-k8sstable1-slow
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos-k8sstable1-slow
   column_header:
   - configuration_value: node_os_image
   - configuration_value: Commit
   - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gci-gce-serial-stable1
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-serial-stable1
-- name: ci-kubernetes-e2e-gci-gke-serial-stable1
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-serial-stable1
+- name: ci-kubernetes-e2e-gce-cos-k8sstable1-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos-k8sstable1-serial
+- name: ci-kubernetes-e2e-gke-cos-k8sstable1-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos-k8sstable1-serial
   column_header:
   - configuration_value: node_os_image
   - configuration_value: Commit
   - configuration_value: infra-commit
-- name: ci-kubernetes-e2e-gci-gce-alpha-features-stable1
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-alpha-features-stable1
+- name: ci-kubernetes-e2e-gce-cos-k8sstable1-alphafeatures
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos-k8sstable1-alphafeatures
 - name: ci-kubernetes-e2e-gci-gce-scalability-stable1
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-scalability-stable1
   num_failures_to_alert: 1
-- name: ci-kubernetes-e2e-gci-gce-ingress-stable1
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-ingress-stable1
-- name: ci-kubernetes-e2e-gci-gke-ingress-stable1
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-ingress-stable1
-- name: ci-kubernetes-e2e-gci-gce-reboot-stable1
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-reboot-stable1
-- name: ci-kubernetes-e2e-gci-gke-reboot-stable1
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-reboot-stable1
+- name: ci-kubernetes-e2e-gce-cos-k8sstable1-ingress
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos-k8sstable1-ingress
+- name: ci-kubernetes-e2e-gke-cos-k8sstable1-ingress
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos-k8sstable1-ingress
+- name: ci-kubernetes-e2e-gce-cos-k8sstable1-reboot
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos-k8sstable1-reboot
+- name: ci-kubernetes-e2e-gke-cos-k8sstable1-reboot
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos-k8sstable1-reboot
 - name: ci-kubernetes-soak-gci-gce-stable1
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-soak-gci-gce-stable1
 - name: ci-kubernetes-e2e-gce-federation-release-1-8
@@ -1788,6 +1788,29 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-registry-bazel
   days_of_results: 1
   num_columns_recent: 20
+# k8s-beta (active release branch) jobs
+- name: ci-kubernetes-e2e-gce-cos-k8sbeta-default
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos-k8sbeta-default
+- name: ci-kubernetes-e2e-gce-cos-k8sbeta-reboot
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos-k8sbeta-reboot
+- name: ci-kubernetes-e2e-gce-cos-k8sbeta-slow
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos-k8sbeta-slow
+- name: ci-kubernetes-e2e-gce-cos-k8sbeta-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos-k8sbeta-serial
+- name: ci-kubernetes-e2e-gce-cos-k8sbeta-ingress
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos-k8sbeta-ingress
+- name: ci-kubernetes-e2e-gce-cos-k8sbeta-alphafeatures
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos-k8sbeta-alphafeatures
+- name: ci-kubernetes-e2e-gke-cos-k8sbeta-default
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos-k8sbeta-default
+- name: ci-kubernetes-e2e-gke-cos-k8sbeta-reboot
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos-k8sbeta-reboot
+- name: ci-kubernetes-e2e-gke-cos-k8sbeta-slow
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos-k8sbeta-slow
+- name: ci-kubernetes-e2e-gke-cos-k8sbeta-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos-k8sbeta-serial
+- name: ci-kubernetes-e2e-gke-cos-k8sbeta-ingress
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos-k8sbeta-ingress
 
 # Add New Testgroups Here
 
@@ -2588,6 +2611,28 @@ dashboards:
     test_group_name: ci-kubernetes-verify-release-1.9
   - name: test-go-1.9
     test_group_name: ci-kubernetes-test-go-release-1.9
+  - name: gce-1.9
+    test_group_name: ci-kubernetes-e2e-gce-cos-k8sbeta-default
+  - name: gce-reboot-1.9
+    test_group_name: ci-kubernetes-e2e-gce-cos-k8sbeta-reboot
+  - name: gce-serial-1.9
+    test_group_name: ci-kubernetes-e2e-gce-cos-k8sbeta-serial
+  - name: gce-slow-1.9
+    test_group_name: ci-kubernetes-e2e-gce-cos-k8sbeta-slow
+  - name: gce-ingress-1.9
+    test_group_name: ci-kubernetes-e2e-gce-cos-k8sbeta-ingress
+  - name: gce-alpha-features-1.9
+    test_group_name: ci-kubernetes-e2e-gce-cos-k8sbeta-alphafeatures
+  - name: gke-1.9
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sbeta-default
+  - name: gke-reboot-1.9
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sbeta-reboot
+  - name: gke-serial-1.9
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sbeta-serial
+  - name: gke-slow-1.9
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sbeta-slow
+  - name: gke-ingress-1.9
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sbeta-ingress
 
 - name: sig-release-1.9-blocking
   dashboard_tab:
@@ -2597,6 +2642,28 @@ dashboards:
     test_group_name: ci-kubernetes-verify-release-1.9
   - name: test-go-1.9
     test_group_name: ci-kubernetes-test-go-release-1.9
+  - name: gce-1.9
+    test_group_name: ci-kubernetes-e2e-gce-cos-k8sbeta-default
+  - name: gce-reboot-1.9
+    test_group_name: ci-kubernetes-e2e-gce-cos-k8sbeta-reboot
+  - name: gce-serial-1.9
+    test_group_name: ci-kubernetes-e2e-gce-cos-k8sbeta-serial
+  - name: gce-slow-1.9
+    test_group_name: ci-kubernetes-e2e-gce-cos-k8sbeta-slow
+  - name: gce-ingress-1.9
+    test_group_name: ci-kubernetes-e2e-gce-cos-k8sbeta-ingress
+  - name: gce-alpha-features-1.9
+    test_group_name: ci-kubernetes-e2e-gce-cos-k8sbeta-alphafeatures
+  - name: gke-1.9
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sbeta-default
+  - name: gke-reboot-1.9
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sbeta-reboot
+  - name: gke-serial-1.9
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sbeta-serial
+  - name: gke-slow-1.9
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sbeta-slow
+  - name: gke-ingress-1.9
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sbeta-ingress
 
 - name: sig-release-1.8-all
   dashboard_tab:
@@ -2621,29 +2688,29 @@ dashboards:
   - name: periodic-kubernetes-e2e-debs-pushed
     test_group_name: periodic-kubernetes-e2e-debs-pushed
   - name: gci-gce-1.8
-    test_group_name: ci-kubernetes-e2e-gci-gce-stable1
+    test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable1-default
   - name: gci-gce-slow-1.8
-    test_group_name: ci-kubernetes-e2e-gci-gce-slow-stable1
+    test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable1-slow
   - name: gci-gce-serial-1.8
-    test_group_name: ci-kubernetes-e2e-gci-gce-serial-stable1
+    test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable1-serial
   - name: gci-gce-alpha-features-1.8
-    test_group_name: ci-kubernetes-e2e-gci-gce-alpha-features-stable1
+    test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable1-alphafeatures
   - name: gci-gce-scalability-1.8
     test_group_name: ci-kubernetes-e2e-gci-gce-scalability-stable1
   - name: gci-gce-ingress-1.8
-    test_group_name: ci-kubernetes-e2e-gci-gce-ingress-stable1
+    test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable1-ingress
   - name: gci-gce-reboot-1.8
-    test_group_name: ci-kubernetes-e2e-gci-gce-reboot-stable1
+    test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable1-reboot
   - name: gci-gke-1.8
-    test_group_name: ci-kubernetes-e2e-gci-gke-stable1
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable1-default
   - name: gci-gke-slow-1.8
-    test_group_name: ci-kubernetes-e2e-gci-gke-slow-stable1
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable1-slow
   - name: gci-gke-serial-1.8
-    test_group_name: ci-kubernetes-e2e-gci-gke-serial-stable1
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable1-serial
   - name: gci-gke-ingress-1.8
-    test_group_name: ci-kubernetes-e2e-gci-gke-ingress-stable1
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable1-ingress
   - name: gci-gke-reboot-1.8
-    test_group_name: ci-kubernetes-e2e-gci-gke-reboot-stable1
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable1-reboot
   - name: gci-gce-soak-1.8
     test_group_name: ci-kubernetes-soak-gci-gce-stable1
   - name: kops-aws-1.8
@@ -2720,29 +2787,29 @@ dashboards:
   - name: periodic-gce-kubeadm-1.8
     test_group_name: periodic-kubernetes-e2e-kubeadm-gce-1-8
   - name: gci-gce-1.8
-    test_group_name: ci-kubernetes-e2e-gci-gce-stable1
+    test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable1-default
   - name: gci-gce-slow-1.8
-    test_group_name: ci-kubernetes-e2e-gci-gce-stable1
+    test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable1-default
   - name: gci-gce-serial-1.8
-    test_group_name: ci-kubernetes-e2e-gci-gce-serial-stable1
+    test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable1-serial
   - name: gci-gce-alpha-features-1.8
-    test_group_name: ci-kubernetes-e2e-gci-gce-alpha-features-stable1
+    test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable1-alphafeatures
   - name: gci-gce-scalability-1.8
     test_group_name: ci-kubernetes-e2e-gci-gce-scalability-stable1
   - name: gci-gce-ingress-1.8
-    test_group_name: ci-kubernetes-e2e-gci-gce-ingress-stable1
+    test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable1-ingress
   - name: gci-gce-reboot-1.8
-    test_group_name: ci-kubernetes-e2e-gci-gce-reboot-stable1
+    test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable1-reboot
   - name: gci-gke-1.8
-    test_group_name: ci-kubernetes-e2e-gci-gke-stable1
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable1-default
   - name: gci-gke-slow-1.8
-    test_group_name: ci-kubernetes-e2e-gci-gke-slow-stable1
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable1-slow
   - name: gci-gke-serial-1.8
-    test_group_name: ci-kubernetes-e2e-gci-gke-serial-stable1
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable1-serial
   - name: gci-gke-ingress-1.8
-    test_group_name: ci-kubernetes-e2e-gci-gke-ingress-stable1
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable1-ingress
   - name: gci-gke-reboot-1.8
-    test_group_name: ci-kubernetes-e2e-gci-gke-reboot-stable1
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable1-reboot
   - name: kops-aws-1.8
     test_group_name: ci-kubernetes-e2e-kops-aws-stable1
   - name: federation-build-1.8
@@ -4128,31 +4195,31 @@ dashboards:
 - name: sig-gcp-release-1.8
   dashboard_tab:
   - name: gci-gke-1.8
-    test_group_name: ci-kubernetes-e2e-gci-gke-stable1
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable1-default
     column_header:
     - configuration_value: node_os_image
     - configuration_value: Commit
     - configuration_value: infra-commit
   - name: gci-gke-slow-1.8
-    test_group_name: ci-kubernetes-e2e-gci-gke-slow-stable1
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable1-slow
     column_header:
     - configuration_value: node_os_image
     - configuration_value: Commit
     - configuration_value: infra-commit
   - name: gci-gke-serial-1.8
-    test_group_name: ci-kubernetes-e2e-gci-gke-serial-stable1
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable1-serial
     column_header:
     - configuration_value: node_os_image
     - configuration_value: Commit
     - configuration_value: infra-commit
   - name: gci-gke-ingress-1.8
-    test_group_name: ci-kubernetes-e2e-gci-gke-ingress-stable1
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable1-ingress
     column_header:
     - configuration_value: node_os_image
     - configuration_value: Commit
     - configuration_value: infra-commit
   - name: gci-gke-reboot-1.8
-    test_group_name: ci-kubernetes-e2e-gci-gke-reboot-stable1
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable1-reboot
     column_header:
     - configuration_value: node_os_image
     - configuration_value: Commit
