@@ -1017,6 +1017,9 @@ presubmits:
         ports:
         - containerPort: 9999
           hostPort: 9999
+        resources:
+          requests:
+            memory: "30Gi"
       volumes:
       - name: service
         secret:
@@ -1029,9 +1032,6 @@ presubmits:
           path: /mnt/disks/ssd0/docker-graph
       - name: var-lib-docker
         emptyDir: {}
-      resources:
-        requests:
-          memory: "30Gi"
   - name: pull-kubernetes-e2e-gce
     agent: kubernetes
     context: pull-kubernetes-e2e-gce
@@ -2512,6 +2512,9 @@ presubmits:
         ports:
         - containerPort: 9999
           hostPort: 9999
+        resources:
+          requests:
+            memory: "30Gi"
       volumes:
       - name: service
         secret:
@@ -2524,9 +2527,6 @@ presubmits:
           path: /mnt/disks/ssd0/docker-graph
       - name: var-lib-docker
         emptyDir: {}
-      resources:
-        requests:
-          memory: "30Gi"
   - name: pull-security-kubernetes-e2e-gce
     agent: kubernetes
     context: pull-security-kubernetes-e2e-gce
