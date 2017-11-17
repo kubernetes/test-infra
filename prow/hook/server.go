@@ -228,7 +228,9 @@ func (s *Server) demuxExternal(l *logrus.Entry, externalPlugins []plugins.Extern
 	for _, p := range externalPlugins {
 		go func(p plugins.ExternalPlugin) {
 			if err := s.dispatch(p.Endpoint, payload, h); err != nil {
-				l.WithError(err).Errorf("Error dispatching event to external plugin %q.", p.Name)
+				l.WithError(err).WithField("external-plugin", p.Name).Error("Error dispatching event to external plugin.")
+			} else {
+				l.WithField("external-plugin", p.Name).Info("Dispatched event to external plugin")
 			}
 		}(p)
 	}
