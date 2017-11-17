@@ -1019,7 +1019,8 @@ presubmits:
           hostPort: 9999
         resources:
           requests:
-            memory: "30Gi"
+            cpu: 6
+            memory: "15Gi"
       volumes:
       - name: service
         secret:
@@ -2514,7 +2515,8 @@ presubmits:
           hostPort: 9999
         resources:
           requests:
-            memory: "30Gi"
+            cpu: 6
+            memory: "15Gi"
       volumes:
       - name: service
         secret:
