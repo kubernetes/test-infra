@@ -238,7 +238,7 @@
   },
   "ci-kubernetes-build-1.6": {
     "args": [
-      "--extra-publish-file=k8s-stable3"
+      "--extra-publish-file=k8s-stable4"
     ],
     "scenario": "kubernetes_build",
     "sigOwners": [
@@ -247,7 +247,7 @@
   },
   "ci-kubernetes-build-1.7": {
     "args": [
-      "--extra-publish-file=k8s-stable2"
+      "--extra-publish-file=k8s-stable3"
     ],
     "scenario": "kubernetes_build",
     "sigOwners": [
@@ -255,6 +255,17 @@
     ]
   },
   "ci-kubernetes-build-1.8": {
+    "args": [
+      "--extra-publish-file=k8s-stable2",
+      "--hyperkube",
+      "--registry=gcr.io/kubernetes-ci-images"
+    ],
+    "scenario": "kubernetes_build",
+    "sigOwners": [
+      "sig-release"
+    ]
+  },
+  "ci-kubernetes-build-1.9": {
     "args": [
       "--extra-publish-file=k8s-stable1",
       "--hyperkube",
