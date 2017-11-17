@@ -147,7 +147,7 @@ func (c *Cron) addPeriodic(p config.Periodic) error {
 
 // addJob adds a cron entry for a job to cronAgent
 func (c *Cron) addJob(name, cron string) error {
-	id, err := c.cronAgent.AddFunc(cron, func() {
+	id, err := c.cronAgent.AddFunc("TZ=UTC " + cron, func() {
 		c.lock.Lock()
 		defer c.lock.Unlock()
 
