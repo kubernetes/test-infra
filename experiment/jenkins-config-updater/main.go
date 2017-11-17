@@ -20,6 +20,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"flag"
 	"io/ioutil"
 	"net/http"
@@ -40,6 +41,7 @@ var (
 	githubEndpoint    = flag.String("github-endpoint", "https://api.github.com", "GitHub's API endpoint.")
 	githubTokenFile   = flag.String("github-token-file", "/etc/github/oauth", "Path to the file containing the GitHub OAuth secret.")
 	webhookSecretFile = flag.String("hmac-secret-file", "/etc/webhook/hmac", "Path to the file containing the GitHub HMAC secret.")
+	actionConfigFile  = flag.String("action-config-file", "/etc/config/actions.json", "Path to the file containing the action configurations.")
 )
 
 func main() {
@@ -49,6 +51,15 @@ func main() {
 	// We'll get SIGTERM first and then SIGKILL after our graceful termination
 	// deadline.
 	signal.Ignore(syscall.SIGTERM)
+
+	actionConfigRaw, err := ioutil.ReadFile(*actionConfigFile)
+	if err != nil {
+		logrus.WithError(err).Fatal("Could not read action config file.")
+	}
+	var actionConfig ActionConfig
+	if err := json.Unmarshal(actionConfigRaw, &actionConfig); err != nil {
+		logrus.WithError(err).Fatal("Could not parse action config file.")
+	}
 
 	webhookSecretRaw, err := ioutil.ReadFile(*webhookSecretFile)
 	if err != nil {
@@ -82,12 +93,7 @@ func main() {
 		logrus.WithError(err).Fatal("Error getting bot name.")
 	}
 
-	repos, err := githubClient.GetRepos(botName, true)
-	if err != nil {
-		logrus.WithError(err).Fatal("Error listing bot repositories.")
-	}
-
-	server := NewServer(botName, oauthSecret, webhookSecret, gitClient, githubClient, repos)
+	server := NewServer(botName, oauthSecret, webhookSecret, gitClient, githubClient, actionConfig)
 
 	http.Handle("/", server)
 	logrus.Fatal(http.ListenAndServe(":"+strconv.Itoa(*port), nil))
