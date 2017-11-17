@@ -1898,6 +1898,10 @@ test_groups:
   gcs_prefix: origin-federated-results/pr-logs/directory/test_pull_request_crio_e2e_fedora
 - name: test_pull_request_crio_e2e_rhel
   gcs_prefix: origin-federated-results/pr-logs/directory/test_pull_request_crio_e2e_rhel
+# Istio
+- name: istio-api-postsubmit
+  gcs_prefix: istio-prow/api-postsubmit
+  num_failures_to_alert: 5
 
 # Add New Testgroups Here
 
@@ -4882,6 +4886,13 @@ dashboards:
   - name: crio-e2e-rhel
     test_group_name: test_pull_request_crio_e2e_rhel
     base_options: 'width=10'
+
+- name: istio
+  dashboard_tab:
+  - name: api-postsubmit
+    test_group_name: istio-api-postsubmit
+    alert_options:
+      alert_mail_to_addresses: 'istio-oncall@googlegroups.com'
 
 #
 # Start dashboard groups

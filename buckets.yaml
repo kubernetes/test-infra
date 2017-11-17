@@ -37,3 +37,6 @@ gs://origin-federated-results/pr-logs/directory/:
 gs://kubernetes-github-redhat/logs/:
   contact: "ingvagabund"
   prefix: "redhat:"
+gs://istio-prow/:
+  contact: "chxchx"
+  prefix: ""
