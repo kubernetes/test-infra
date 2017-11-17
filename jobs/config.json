@@ -265,6 +265,17 @@
       "sig-release"
     ]
   },
+  "ci-kubernetes-build-1.9": {
+    "args": [
+      "--extra-publish-file=k8s-beta",
+      "--hyperkube",
+      "--registry=gcr.io/kubernetes-ci-images"
+    ],
+    "scenario": "kubernetes_build",
+    "sigOwners": [
+      "sig-release"
+    ]
+  },
   "ci-kubernetes-build-debian-unstable": {
     "args": [
       "./debian/jenkins.sh"
