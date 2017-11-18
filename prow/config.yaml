@@ -412,6 +412,32 @@ presubmits:
         - name: cache-ssd
           hostPath:
             path: /mnt/disks/ssd0
+  - name: pull-cri-containerd-verify
+    agent: kubernetes
+    always_run: true
+    context: pull-cri-containerd-verify
+    rerun_command: "/test pull-cri-containerd-verify"
+    trigger: "(?m)^/test( all| pull-cri-containerd-verify),?(\\s+|$)"
+    branches:
+    - master
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
+        args:
+        - "--repo=github.com/kubernetes-incubator/$(REPO_NAME)=$(PULL_REFS)"
+        - "--root=/go/src"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        env:
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /etc/service-account/service-account.json
+        volumeMounts:
+        - name: service
+          mountPath: /etc/service-account
+          readOnly: true
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
   kubernetes/kubernetes:
   - name: pull-kubernetes-bazel-build
     agent: kubernetes

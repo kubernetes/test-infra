@@ -9882,6 +9882,15 @@
       "sig-node"
     ]
   },
+  "pull-cri-containerd-verify": {
+    "args": [
+      "./test/verify.sh"
+    ],
+    "scenario": "execute",
+    "sigOwners": [
+      "sig-node"
+    ]
+  },
   "pull-federation-bazel-test": {
     "args": [],
     "scenario": "kubernetes_bazel",
