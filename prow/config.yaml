@@ -18596,7 +18596,7 @@ periodics:
         secretName: ssh-key-secret
 
 - name: ci-kubernetes-kubemark-5-prow-canary
-  cron: "0 * * * *"
+  cron: "0 0 * * *" # to make sure the prow timezone
   agent: kubernetes
   spec:
     containers:
