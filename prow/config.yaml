@@ -1009,8 +1009,6 @@ presubmits:
     rerun_command: "/test pull-kubernetes-cross-prow"
     trigger: "(?m)^/test pull-kubernetes-cross-prow,?(\\s+|$)"
     always_run: false
-    branches:
-    - master
     spec:
       containers:
       # TODO(bentheelder): when we migrate off of jenkins clean up this image
@@ -2507,8 +2505,6 @@ presubmits:
     rerun_command: "/test pull-security-kubernetes-cross-prow"
     trigger: "(?m)^/test pull-security-kubernetes-cross-prow,?(\\s+|$)"
     always_run: false
-    branches:
-    - master
     spec:
       containers:
       # TODO(bentheelder): when we migrate off of jenkins clean up this image
