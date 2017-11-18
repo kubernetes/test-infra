@@ -9468,6 +9468,16 @@
       "sig-testing"
     ]
   },
+  "ci-kubernetes-test-go-release-1.9": {
+    "args": [
+      "--branch=release-1.8",
+      "--force"
+    ],
+    "scenario": "kubernetes_verify",
+    "sigOwners": [
+      "sig-testing"
+    ]
+  },
   "ci-kubernetes-verify-master": {
     "args": [
       "--branch=master",
@@ -9504,6 +9514,17 @@
   "ci-kubernetes-verify-release-1.8": {
     "args": [
       "--branch=release-1.8",
+      "--force",
+      "--script=./hack/jenkins/verify-dockerized.sh"
+    ],
+    "scenario": "kubernetes_verify",
+    "sigOwners": [
+      "sig-testing"
+    ]
+  },
+  "ci-kubernetes-verify-release-1.9": {
+    "args": [
+      "--branch=release-1.9",
       "--force",
       "--script=./hack/jenkins/verify-dockerized.sh"
     ],
