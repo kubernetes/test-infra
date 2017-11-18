@@ -16,7 +16,22 @@
 set -o errexit
 set -o nounset
 set -o pipefail
+set -x
 
+# Check if the job has opted-in to docker-in-docker availability.
+export DOCKER_IN_DOCKER_ENABLED=${DOCKER_IN_DOCKER_ENABLED:-false}
+if [ "$DOCKER_IN_DOCKER_ENABLED" == "true" ]; then
+# If we have opted in to docker in docker, start the docker daemon.
+# sometimes there may be errors about cgroups already being mounted,
+# these should not be a problem.
+    echo "Please ignore benign 'cgroup is already mounted' errors here :-)"
+    service docker start
+else
+# If not, make sure `docker` points to the old one compatible with our Jenkins
+    export PATH=/docker-no-dind-bin/:$PATH
+fi
+
+# Clone test-infra and start bootstrap
 git clone https://github.com/kubernetes/test-infra
 ./test-infra/jenkins/bootstrap.py \
     --job=${JOB_NAME} \
