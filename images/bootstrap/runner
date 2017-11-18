@@ -24,8 +24,8 @@ if [ "$DOCKER_IN_DOCKER_ENABLED" == "true" ]; then
 # If we have opted in to docker in docker, start the docker daemon.
 # sometimes there may be errors about cgroups already being mounted,
 # these should not be a problem.
-    echo "Please ignore benign 'cgroup is already mounted' errors here :-)"
     service docker start
+    echo "Please ignore benign 'rmdir: failed ...' / 'cgroup is already mounted' errors here :-)"
 else
 # If not, make sure `docker` points to the old one compatible with our Jenkins
     export PATH=/docker-no-dind-bin/:$PATH
