@@ -1015,7 +1015,7 @@ presubmits:
       containers:
       # TODO(bentheelder): when we migrate off of jenkins clean up this image
       # and possibly use release-in-a-container instead.
-      - image: gcr.io/k8s-testimages/prow-test-image:latest-1.9
+      - image: gcr.io/k8s-testimages/bootstrap:latest
         imagePullPolicy: Always
         args:
         - "--clean"
@@ -1025,6 +1025,8 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         env:
+        - name: DOCKER_IN_DOCKER_ENABLED
+          value: true
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: /etc/service-account/service-account.json
         # docker-in-docker needs privilged mode
@@ -2511,7 +2513,7 @@ presubmits:
       containers:
       # TODO(bentheelder): when we migrate off of jenkins clean up this image
       # and possibly use release-in-a-container instead.
-      - image: gcr.io/k8s-testimages/prow-test-image:latest-1.9
+      - image: gcr.io/k8s-testimages/bootstrap:latest
         imagePullPolicy: Always
         args:
         - "--clean"
@@ -2521,6 +2523,8 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         env:
+        - name: DOCKER_IN_DOCKER_ENABLED
+          value: true
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: /etc/service-account/service-account.json
         # docker-in-docker needs privilged mode
