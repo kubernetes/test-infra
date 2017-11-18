@@ -8994,7 +8994,7 @@
       "--docker-in-docker",
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/ci-kubernetes-kubemark-5-gce.env",
-      "--extract=ci/latest-1.8",
+      "--extract=ci/latest-1.9",
       "--gcp-project=k8s-jenkins-kubemark",
       "--gcp-zone=us-central1-f",
       "--kubemark",
