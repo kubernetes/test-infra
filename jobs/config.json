@@ -187,6 +187,14 @@
       "sig-testing"
     ]
   },
+  "ci-kubernetes-bazel-build-1-9": {
+    "_comment": "NOTE: args for this are in prow/config.yaml after the `--` !",
+    "args": [],
+    "scenario": "kubernetes_bazel",
+    "sigOwners": [
+      "sig-testing"
+    ]
+  },
   "ci-kubernetes-bazel-test": {
     "_comment": "NOTE: args for this are in prow/config.yaml after the `--` !",
     "args": [],
@@ -222,6 +230,14 @@
       "--test-args=--test_tag_filters=-integration",
       "--test-args=--flaky_test_attempts=3"
     ],
+    "scenario": "kubernetes_bazel",
+    "sigOwners": [
+      "sig-testing"
+    ]
+  },
+  "ci-kubernetes-bazel-test-1-9": {
+    "_comment": "NOTE: args for this are in prow/config.yaml after the `--` !",
+    "args": [],
     "scenario": "kubernetes_bazel",
     "sigOwners": [
       "sig-testing"
@@ -8090,6 +8106,25 @@
       "sig-cluster-lifecycle"
     ]
   },
+  "ci-kubernetes-e2e-kubeadm-gce-1-8-on-1-9": {
+    "args": [
+      "--cluster=",
+      "--deployment=kubernetes-anywhere",
+      "--env-file=jobs/platform/gce.env",
+      "--extract=ci/latest-1.8",
+      "--gcp-zone=us-central1-f",
+      "--kubeadm=ci",
+      "--kubernetes-anywhere-kubelet-ci-version=latest-1.8",
+      "--kubernetes-anywhere-kubernetes-version=latest-1.8",
+      "--provider=kubernetes-anywhere",
+      "--test_args=--ginkgo.focus=\\[Conformance\\]|\\[Feature:BootstrapTokens\\]|\\[Feature:NodeAuthorizer\\ --minStartupPods=8",
+      "--timeout=300m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-cluster-lifecycle"
+    ]
+  },
   "ci-kubernetes-e2e-kubeadm-gce-cni-calico": {
     "args": [
       "--cluster=",
@@ -9696,6 +9731,14 @@
       "sig-testing"
     ]
   },
+  "periodic-kubernetes-bazel-build-1-9": {
+    "_comment": "NOTE: args for this are in prow/config.yaml after the `--` !",
+    "args": [],
+    "scenario": "kubernetes_bazel",
+    "sigOwners": [
+      "sig-testing"
+    ]
+  },
   "periodic-kubernetes-bazel-test-1-6": {
     "args": [
       "--test=//cmd/... //pkg/... //federation/... //plugin/... //third_party/... //hack/... //hack:verify-all",
@@ -9723,6 +9766,14 @@
       "--test-args=--test_tag_filters=-integration",
       "--test-args=--flaky_test_attempts=3"
     ],
+    "scenario": "kubernetes_bazel",
+    "sigOwners": [
+      "sig-testing"
+    ]
+  },
+  "periodic-kubernetes-bazel-test-1-9": {
+    "_comment": "NOTE: args for this are in prow/config.yaml after the `--` !",
+    "args": [],
     "scenario": "kubernetes_bazel",
     "sigOwners": [
       "sig-testing"
@@ -9794,6 +9845,25 @@
       "sig-cluster-lifecycle"
     ]
   },
+  "periodic-kubernetes-e2e-kubeadm-gce-1-9": {
+    "args": [
+      "--cluster=",
+      "--deployment=kubernetes-anywhere",
+      "--env-file=jobs/platform/gce.env",
+      "--extract=ci/latest-1.9",
+      "--gcp-zone=us-central1-f",
+      "--kubeadm=ci",
+      "--kubernetes-anywhere-kubelet-ci-version=latest-1.9",
+      "--kubernetes-anywhere-kubernetes-version=latest-1.9",
+      "--provider=kubernetes-anywhere",
+      "--test_args=--ginkgo.focus=\\[Conformance\\]|\\[Feature:BootstrapTokens\\]|\\[Feature:NodeAuthorizer\\] --minStartupPods=8",
+      "--timeout=300m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-cluster-lifecycle"
+    ]
+  },
   "periodic-kubernetes-e2e-kubeadm-gce-upgrade-1-6-1-7": {
     "args": [
       "--cluster=",
@@ -9834,6 +9904,29 @@
       "--test_args=--ginkgo.focus=\\[Conformance\\]|\\[Feature:BootstrapTokens\\]|\\[Feature:NodeAuthorizer\\] --minStartupPods=8",
       "--timeout=300m",
       "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --upgrade-target=release/latest-1.8"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-cluster-lifecycle"
+    ]
+  },
+  "periodic-kubernetes-e2e-kubeadm-gce-upgrade-1-8-1-9": {
+    "args": [
+      "--cluster=",
+      "--deployment=kubernetes-anywhere",
+      "--env-file=jobs/platform/gce.env",
+      "--extract=release/latest-1.9",
+      "--extract=ci/latest-1.8",
+      "--gcp-zone=us-central1-f",
+      "--kubeadm=periodic",
+      "--kubernetes-anywhere-kubelet-ci-version=latest-1.8",
+      "--kubernetes-anywhere-kubernetes-version=latest-1.8",
+      "--kubernetes-anywhere-upgrade-method=upgrade",
+      "--provider=kubernetes-anywhere",
+      "--skew",
+      "--test_args=--ginkgo.focus=\\[Conformance\\]|\\[Feature:BootstrapTokens\\]|\\[Feature:NodeAuthorizer\\] --minStartupPods=8",
+      "--timeout=300m",
+      "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --upgrade-target=release/latest-1.9"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
