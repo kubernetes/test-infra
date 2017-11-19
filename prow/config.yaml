@@ -1005,7 +1005,7 @@ presubmits:
     run_if_changed: '^(build\/|hack\/lib\/)|(Makefile)|(.*_(windows|linux|osx|unsupported)(_test)?\.go)$'
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bootstrap:v20171118-97e2da33
+      - image: gcr.io/k8s-testimages/bootstrap:v20171118-8e58e913
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -2546,7 +2546,7 @@ presubmits:
     run_if_changed: '^(build\/|hack\/lib\/)|(Makefile)|(.*_(windows|linux|osx|unsupported)(_test)?\.go)$'
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bootstrap:v20171118-97e2da33
+      - image: gcr.io/k8s-testimages/bootstrap:v20171118-8e58e913
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
