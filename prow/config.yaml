@@ -998,11 +998,58 @@ presubmits:
           path: /mnt/disks/ssd0
 
   - name: pull-kubernetes-cross
-    agent: jenkins
+    agent: kubernetes
     context: pull-kubernetes-cross
     rerun_command: "/test pull-kubernetes-cross"
     trigger: "(?m)^/test pull-kubernetes-cross,?(\\s+|$)"
     run_if_changed: '^(build\/|hack\/lib\/)|(Makefile)|(.*_(windows|linux|osx|unsupported)(_test)?\.go)$'
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/bootstrap:v20171118-97e2da33
+        args:
+        - "--clean"
+        - "--git-cache=/root/.cache/git"
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        env:
+        - name: DOCKER_IN_DOCKER_ENABLED
+          value: true
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /etc/service-account/service-account.json
+        # docker-in-docker needs privilged mode
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: service
+          mountPath: /etc/service-account
+          readOnly: true
+        - name: cache-ssd
+          mountPath: /root/.cache
+        - name: docker-graph
+          mountPath: /docker-graph
+        - name: var-lib-docker
+          mountPath: /var/lib/docker
+        ports:
+        - containerPort: 9999
+          hostPort: 9999
+        resources:
+          requests:
+            cpu: 6
+            memory: "15Gi"
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
+      - name: cache-ssd
+        hostPath:
+          path: /mnt/disks/ssd0
+      - name: docker-graph
+        hostPath:
+          path: /mnt/disks/ssd0/docker-graph
+      - name: var-lib-docker
+        emptyDir: {}
   - name: pull-kubernetes-cross-prow
     agent: kubernetes
     context: pull-kubernetes-cross-prow
@@ -1011,8 +1058,6 @@ presubmits:
     always_run: false
     spec:
       containers:
-      # TODO(bentheelder): when we migrate off of jenkins clean up this image
-      # and possibly use release-in-a-container instead.
       - image: gcr.io/k8s-testimages/bootstrap:latest
         imagePullPolicy: Always
         args:
@@ -2494,11 +2539,58 @@ presubmits:
           path: /mnt/disks/ssd0
 
   - name: pull-security-kubernetes-cross
-    agent: jenkins
+    agent: kubernetes
     context: pull-security-kubernetes-cross
     rerun_command: "/test pull-security-kubernetes-cross"
     trigger: "(?m)^/test pull-security-kubernetes-cross,?(\\s+|$)"
     run_if_changed: '^(build\/|hack\/lib\/)|(Makefile)|(.*_(windows|linux|osx|unsupported)(_test)?\.go)$'
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/bootstrap:v20171118-97e2da33
+        args:
+        - "--clean"
+        - "--git-cache=/root/.cache/git"
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        env:
+        - name: DOCKER_IN_DOCKER_ENABLED
+          value: true
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /etc/service-account/service-account.json
+        # docker-in-docker needs privilged mode
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: service
+          mountPath: /etc/service-account
+          readOnly: true
+        - name: cache-ssd
+          mountPath: /root/.cache
+        - name: docker-graph
+          mountPath: /docker-graph
+        - name: var-lib-docker
+          mountPath: /var/lib/docker
+        ports:
+        - containerPort: 9999
+          hostPort: 9999
+        resources:
+          requests:
+            cpu: 6
+            memory: "15Gi"
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
+      - name: cache-ssd
+        hostPath:
+          path: /mnt/disks/ssd0
+      - name: docker-graph
+        hostPath:
+          path: /mnt/disks/ssd0/docker-graph
+      - name: var-lib-docker
+        emptyDir: {}
   - name: pull-security-kubernetes-cross-prow
     agent: kubernetes
     context: pull-security-kubernetes-cross-prow
@@ -2507,8 +2599,6 @@ presubmits:
     always_run: false
     spec:
       containers:
-      # TODO(bentheelder): when we migrate off of jenkins clean up this image
-      # and possibly use release-in-a-container instead.
       - image: gcr.io/k8s-testimages/bootstrap:latest
         imagePullPolicy: Always
         args:
