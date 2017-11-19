@@ -91,8 +91,14 @@ RUN curl -fsSL https://download.docker.com/linux/$(. /etc/os-release; echo "$ID"
     $(lsb_release -cs) stable"
 
 # Install Docker
+# TODO(bentheelder): this is a bit of a hack, look into alternatives.
+# Why this exists: `docker service start` on debian runs a `cgroupfs_mount` method,
+# We're already inside docker though so we can be sure these are already mounted.
+# Trying to remount these makes for a very noisy error block in the beginning of
+# the pod logs, so we just comment out the call to it... :shrug:
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends docker-ce
+    apt-get install -y --no-install-recommends docker-ce && \
+    sed -i 's/cgroupfs_mount$/#cgroupfs_mount\n/' /etc/init.d/docker
 
 
 # Move Docker's storage location
