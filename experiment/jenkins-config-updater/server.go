@@ -22,12 +22,16 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"os/exec"
-	"strings"
+	"path/filepath"
 	"time"
 
 	"github.com/sirupsen/logrus"
+	yaml "gopkg.in/yaml.v2"
+
+	"regexp"
 
 	"k8s.io/test-infra/prow/git"
 	"k8s.io/test-infra/prow/github"
@@ -47,19 +51,20 @@ type githubClient interface {
 	CreateFork(org, repo string) error
 }
 
-type ActionConfig struct {
-	Actions []Action `json:"actions"`
+type UpdateConfig struct {
+	Targets  []string  `json:"targets"`
+	Matchers []Matcher `json:"matchers"`
 }
 
-type Action struct {
-	Prefix     string `json:"prefix"`
-	MakeTarget string `json:"action"`
+type Matcher struct {
+	Regex  regexp.Regexp `json:"regex"`
+	Target string        `json:"target"`
 }
 
 type result struct {
-	action Action
-	output string
-	err    error
+	command []string
+	output  string
+	err     error
 }
 
 // Server implements http.Handler. It validates incoming GitHub webhooks and
@@ -73,11 +78,11 @@ type Server struct {
 	ghc githubClient
 	log *logrus.Entry
 
-	actionConfig ActionConfig
+	updateConfig UpdateConfig
 }
 
 // NewServer returns new server
-func NewServer(name, creds string, hmac []byte, gc *git.Client, ghc *github.Client, config ActionConfig) *Server {
+func NewServer(name, creds string, hmac []byte, gc *git.Client, ghc *github.Client, config UpdateConfig) *Server {
 	return &Server{
 		hmacSecret:  hmac,
 		credentials: creds,
@@ -87,7 +92,7 @@ func NewServer(name, creds string, hmac []byte, gc *git.Client, ghc *github.Clie
 		ghc: ghc,
 		log: logrus.StandardLogger().WithField("client", "jenkins-config-updater"),
 
-		actionConfig: config,
+		updateConfig: config,
 	}
 }
 
@@ -160,63 +165,52 @@ func (s *Server) handleEvent(eventType, eventGUID string, payload []byte) error 
 	}
 	s.log.WithField("duration", time.Since(startClone)).Info("Cloned and checked out target branch.")
 
-	completedTasks := []result{}
-	failedTasks := []result{}
-	for _, action := range s.actionConfig.Actions {
-		logger := s.log.WithField("target", action.MakeTarget)
-		found := false
+	results := results{}
+	tasks := [][]string{}
+
+	for _, target := range s.updateConfig.Targets {
 		for _, change := range changes {
-			logger.Debug("considering change to file: " + change.Filename)
-			if strings.HasPrefix(change.Filename, action.Prefix) {
-				logger.Debug("file looks applicable")
-				found = true
-				break
-			} else {
-				logger.Debug("file does not look applicable")
+			if change.Filename == target {
+				args, err := determineTargetForConfig(filepath.Join(r.Dir, change.Filename))
+				if err != nil {
+					results.internal = append(results.internal, err)
+				} else {
+					tasks = append(tasks, args)
+				}
 			}
 		}
-		if !found {
-			logger.Debug("did not find applicable changed file")
-			return nil
+	}
+	for _, matcher := range s.updateConfig.Matchers {
+		for _, change := range changes {
+			if matcher.Regex.MatchString(change.Filename) {
+				tasks = append(tasks, []string{"/usr/bin/make", matcher.Target})
+				break
+			}
 		}
+	}
 
-		logger.Info("Running action")
+	for _, task := range tasks {
 		startAction := time.Now()
-		cmd := exec.Command("/usr/bin/make", action.MakeTarget)
+		cmd := exec.Command(task[0], task[1:]...)
 		cmd.Dir = r.Dir
 		out, err := cmd.CombinedOutput()
-		logger.Info("output: " + string(out[:]))
-		logger.WithField("duration", time.Since(startAction)).Info("Ran action")
-		taskResult := result{action, string(out), err}
+		s.log.WithFields(map[string]interface{}{
+			"duration":  time.Since(startAction),
+			"args":      task,
+			"output":    out,
+			"succeeded": err == nil,
+		}).Info("Ran command")
+		taskResult := result{task, string(out), err}
 
 		if err != nil {
-			failedTasks = append(failedTasks, taskResult)
+			results.failed = append(results.failed, taskResult)
 		} else {
-			completedTasks = append(completedTasks, taskResult)
+			results.succeeded = append(results.succeeded, taskResult)
 		}
 	}
 
-	if len(completedTasks) == 0 && len(failedTasks) == 0 {
+	if len(results.succeeded) == 0 && len(results.failed) == 0 && len(results.internal) == 0 {
 		return nil
-	}
-
-	var commentBuffer bytes.Buffer
-	if len(completedTasks) > 0 {
-		commentBuffer.WriteString("The following updates succeeded:\n")
-		commentBuffer.WriteString("<ul>\n")
-		for _, task := range completedTasks {
-			commentBuffer.WriteString(formatDetails(task))
-		}
-		commentBuffer.WriteString("</ul>\n")
-	}
-
-	if len(failedTasks) > 0 {
-		commentBuffer.WriteString("The following updates failed:\n")
-		commentBuffer.WriteString("<ul>\n")
-		for _, task := range failedTasks {
-			commentBuffer.WriteString(formatDetails(task))
-		}
-		commentBuffer.WriteString("</ul>\n")
 	}
 
 	return s.ghc.CreateComment(
@@ -225,22 +219,85 @@ func (s *Server) handleEvent(eventType, eventGUID string, payload []byte) error 
 			pre.PullRequest.Body,
 			pre.PullRequest.HTMLURL,
 			pre.PullRequest.User.Login,
-			commentBuffer.String(),
+			results.formatResults(),
 		),
 	)
+}
+
+func determineTargetForConfig(config string) ([]string, error) {
+	content, err := ioutil.ReadFile(config)
+	if err != nil {
+		return nil, fmt.Errorf("cannot read object YAML/JSON from %v", config)
+	}
+	object := map[interface{}]interface{}{}
+	err = yaml.Unmarshal(content, &object)
+	if err != nil {
+		return nil, fmt.Errorf("cannot parse object YAML/JSON from %v", config)
+	}
+	objectType, ok := object["kind"]
+	if !ok {
+		return nil, fmt.Errorf("cannot access object kind from %v", config)
+	}
+
+	var makeTarget string
+	switch objectType {
+	case "Template":
+		makeTarget = "applyTemplate"
+	default:
+		makeTarget = "apply"
+	}
+	return []string{"/usr/bin/make", makeTarget, fmt.Sprintf("WHAT=%s", config)}, nil
+}
+
+type results struct {
+	succeeded []result
+	failed    []result
+	internal  []error
+}
+
+func (r *results) formatResults() string {
+	var commentBuffer bytes.Buffer
+	if len(r.succeeded) > 0 {
+		commentBuffer.WriteString("The following updates succeeded:\n")
+		commentBuffer.WriteString("<ul>\n")
+		for _, task := range r.succeeded {
+			commentBuffer.WriteString(formatDetails(task))
+		}
+		commentBuffer.WriteString("</ul>\n")
+	}
+
+	if len(r.failed) > 0 {
+		commentBuffer.WriteString("The following updates failed:\n")
+		commentBuffer.WriteString("<ul>\n")
+		for _, task := range r.failed {
+			commentBuffer.WriteString(formatDetails(task))
+		}
+		commentBuffer.WriteString("</ul>\n")
+	}
+
+	if len(r.internal) > 0 {
+		commentBuffer.WriteString("The following internal errors occurred:\n")
+		commentBuffer.WriteString("<ul>\n")
+		for _, err := range r.internal {
+			commentBuffer.WriteString(fmt.Sprintf(`  <li>%v</li>`, err))
+		}
+		commentBuffer.WriteString("</ul>\n")
+	}
+
+	return commentBuffer.String()
 }
 
 func formatDetails(taskResult result) string {
 	return fmt.Sprintf(`  <li>
     <details>
-    <summary><code>make %s</code><summary>
+    <summary><code>%s</code><summary>
 
     <pre><code>
-    $ make %s
+    $ %s
     %s
     %v
     </pre></code>
 
     </details>
-  </li>`, taskResult.action.MakeTarget, taskResult.action.MakeTarget, taskResult.output, taskResult.err)
+  </li>`, taskResult.command, taskResult.command, taskResult.output, taskResult.err)
 }
