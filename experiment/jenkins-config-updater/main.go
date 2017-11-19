@@ -20,7 +20,6 @@ package main
 
 import (
 	"bytes"
-	"encoding/json"
 	"flag"
 	"io/ioutil"
 	"net/http"
@@ -30,6 +29,7 @@ import (
 	"syscall"
 
 	"github.com/sirupsen/logrus"
+	yaml "gopkg.in/yaml.v2"
 
 	"k8s.io/test-infra/prow/git"
 	"k8s.io/test-infra/prow/github"
@@ -41,7 +41,7 @@ var (
 	githubEndpoint    = flag.String("github-endpoint", "https://api.github.com", "GitHub's API endpoint.")
 	githubTokenFile   = flag.String("github-token-file", "/etc/github/oauth", "Path to the file containing the GitHub OAuth secret.")
 	webhookSecretFile = flag.String("hmac-secret-file", "/etc/webhook/hmac", "Path to the file containing the GitHub HMAC secret.")
-	actionConfigFile  = flag.String("action-config-file", "/etc/config/actions.json", "Path to the file containing the action configurations.")
+	updateConfigFile  = flag.String("update-config-file", "/etc/config/update.yaml", "Path to the file containing the configurations to update.")
 )
 
 func main() {
@@ -52,13 +52,13 @@ func main() {
 	// deadline.
 	signal.Ignore(syscall.SIGTERM)
 
-	actionConfigRaw, err := ioutil.ReadFile(*actionConfigFile)
+	updateConfigRaw, err := ioutil.ReadFile(*updateConfigFile)
 	if err != nil {
-		logrus.WithError(err).Fatal("Could not read action config file.")
+		logrus.WithError(err).Fatal("Could not read update config file.")
 	}
-	var actionConfig ActionConfig
-	if err := json.Unmarshal(actionConfigRaw, &actionConfig); err != nil {
-		logrus.WithError(err).Fatal("Could not parse action config file.")
+	var updateConf UpdateConfig
+	if err := yaml.Unmarshal(updateConfigRaw, &updateConf); err != nil {
+		logrus.WithError(err).Fatal("Could not parse update config file.")
 	}
 
 	webhookSecretRaw, err := ioutil.ReadFile(*webhookSecretFile)
@@ -93,7 +93,7 @@ func main() {
 		logrus.WithError(err).Fatal("Error getting bot name.")
 	}
 
-	server := NewServer(botName, oauthSecret, webhookSecret, gitClient, githubClient, actionConfig)
+	server := NewServer(botName, oauthSecret, webhookSecret, gitClient, githubClient, updateConf)
 
 	http.Handle("/", server)
 	logrus.Fatal(http.ListenAndServe(":"+strconv.Itoa(*port), nil))
