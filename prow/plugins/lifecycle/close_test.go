@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package close
+package lifecycle
 
 import (
 	"errors"
@@ -25,35 +25,35 @@ import (
 	"k8s.io/test-infra/prow/github"
 )
 
-type fakeClient struct {
+type fakeClientClose struct {
 	commented      bool
 	closed         bool
 	AssigneesAdded []string
 }
 
-func (c *fakeClient) CreateComment(owner, repo string, number int, comment string) error {
+func (c *fakeClientClose) CreateComment(owner, repo string, number int, comment string) error {
 	c.commented = true
 	return nil
 }
 
-func (c *fakeClient) CloseIssue(owner, repo string, number int) error {
+func (c *fakeClientClose) CloseIssue(owner, repo string, number int) error {
 	c.closed = true
 	return nil
 }
 
-func (c *fakeClient) ClosePR(owner, repo string, number int) error {
+func (c *fakeClientClose) ClosePR(owner, repo string, number int) error {
 	c.closed = true
 	return nil
 }
 
-func (c *fakeClient) IsMember(owner, login string) (bool, error) {
+func (c *fakeClientClose) IsMember(owner, login string) (bool, error) {
 	if login == "non-member" {
 		return false, nil
 	}
 	return true, nil
 }
 
-func (c *fakeClient) AssignIssue(owner, repo string, number int, assignees []string) error {
+func (c *fakeClientClose) AssignIssue(owner, repo string, number int, assignees []string) error {
 	if assignees[0] == "non-member" || assignees[0] == "non-owner-assign-error" {
 		return errors.New("Failed to assign")
 	}
@@ -159,7 +159,7 @@ func TestCloseComment(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
-		fc := &fakeClient{}
+		fc := &fakeClientClose{}
 		e := &github.GenericCommentEvent{
 			Action:      tc.action,
 			IssueState:  tc.state,
@@ -169,7 +169,7 @@ func TestCloseComment(t *testing.T) {
 			Assignees:   []github.User{{Login: "a"}, {Login: "r1"}, {Login: "r2"}},
 			IssueAuthor: github.User{Login: "a"},
 		}
-		if err := handle(fc, logrus.WithField("plugin", pluginName), e); err != nil {
+		if err := closeHandle(fc, logrus.WithField("plugin", pluginName), e); err != nil {
 			t.Errorf("For case %s, didn't expect error from handle: %v", tc.name, err)
 			continue
 		}

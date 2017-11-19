@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package close
+package lifecycle
 
 import (
 	"fmt"
@@ -27,12 +27,12 @@ import (
 	"k8s.io/test-infra/prow/plugins"
 )
 
-const pluginName = "close"
+const closeName = "close"
 
 var closeRe = regexp.MustCompile(`(?mi)^/close\s*$`)
 
 func init() {
-	plugins.RegisterGenericCommentHandler(pluginName, handleGenericComment, helpProvider)
+	plugins.RegisterGenericCommentHandler(closeName, closeHandleGenericComment, helpProvider)
 }
 
 func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
@@ -44,9 +44,7 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 			Examples:    []string{"/close"},
 		},
 		nil
-}
-
-type githubClient interface {
+type closeClient interface {
 	CreateComment(owner, repo string, number int, comment string) error
 	CloseIssue(owner, repo string, number int) error
 	ClosePR(owner, repo string, number int) error
@@ -54,11 +52,11 @@ type githubClient interface {
 	AssignIssue(owner, repo string, number int, assignees []string) error
 }
 
-func handleGenericComment(pc plugins.PluginClient, e github.GenericCommentEvent) error {
-	return handle(pc.GitHubClient, pc.Logger, &e)
+func closeHandleGenericComment(pc plugins.PluginClient, e github.GenericCommentEvent) error {
+	return closeHandle(pc.GitHubClient, pc.Logger, &e)
 }
 
-func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent) error {
+func closeHandle(gc closeClient, log *logrus.Entry, e *github.GenericCommentEvent) error {
 	// Only consider open issues and new comments.
 	if e.IssueState != "open" || e.Action != github.GenericCommentActionCreated {
 		return nil
