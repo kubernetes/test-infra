@@ -57,7 +57,7 @@ you'll need to do the following:
   - If this is a kubetest job create the corresponding `jobs/env/FOO.env` file
   - It will pick a free project from [boskos](/boskos) pool by default, or
   - You can also set --gcp-project=foo in [`jobs/config.json`] for a dedicated project, make sure the project has the right [IAM grants](jenkins/check_projects.py)
-* Add the job name to the `test_groups` list in [`testgrid/config/config.yaml`](config/config.yaml)
+* Add the job name to the `test_groups` list in [`testgrid/config/config.yaml`](testgrid/config/config.yaml)
   - Also the group to at least one `dashboard_tab`
 * Add the job to the appropriate section in [`prow/config.yaml`](prow/config.yaml)
   - Presubmit jobs run on unmerged code in PRs
