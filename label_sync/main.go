@@ -24,6 +24,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"strings"
+	"time"
 
 	"github.com/ghodss/yaml"
 	"github.com/sirupsen/logrus"
@@ -31,299 +32,333 @@ import (
 	"k8s.io/test-infra/prow/github"
 )
 
-// Label single label
+// A label in a repository.
 type Label struct {
-	Name  string `json:"name"`
-	Color string `json:"color"`
+	Name        string     `json:"name"`                  // Current name of the label
+	Color       string     `json:"color"`                 // rrggbb or color
+	Previously  []Label    `json:"previously,omitempty"`  // Previous names for this label
+	DeleteAfter *time.Time `json:"deleteAfter,omitempty"` // Retired labels deleted on this date
+	parent      *Label     // Current name for previous labels (used internally)
 }
 
-// RequiredLabels is a list of Required Labels to sync in all kubernetes repos
-type RequiredLabels struct {
+// Configuration is a list of Required Labels to sync in all kubernetes repos
+type Configuration struct {
 	Labels []Label `json:"labels"`
 }
 
-// RepoList is a list of Repositories from Org to be checked by this program
-type RepoList struct {
-	Org   string        `json:"org"`
-	Repos []github.Repo `json:"repos"`
+type RepoList []github.Repo
+type RepoLabels map[string][]github.Label
+
+// Update a label in a repo
+type Update struct {
+	repo    string
+	Why     string
+	Wanted  *Label `json:"wanted,omitempty"`
+	Current *Label `json:"current,omitempty"`
 }
 
-// RepoLabels is a mapping repository name --> current list of labels
-type RepoLabels struct {
-	Labels map[string][]github.Label
-}
-
-// UpdateItem is a single item to update
-// update can mean: update Label in repo or add missing label in repo
-type UpdateItem struct {
-	Why                         string
-	RequiredLabel, CurrentLabel Label
-}
-
-// UpdateData Repositories to update: map repo name --> list of Updates
-type UpdateData struct {
-	ReposToUpdate map[string][]UpdateItem
-}
+// RepoUpdates Repositories to update: map repo name --> list of Updates
+type RepoUpdates map[string][]Update
 
 var (
-	labelsPath         = flag.String("labels-path", "/etc/config/labels.yaml", "Path to labels.yaml.")
-	githubTokenFile    = flag.String("github-token-file", "/etc/github/oauth", "Path to the file containing the GitHub OAuth secret.")
-	org                = flag.String("org", "kubernetes", "Organization to fetch repository list from, to fetch user's public repositories, use user:user_name")
-	dry                = flag.Bool("dry-run", true, "Dry run for testing. Uses API tokens but does not mutate.")
-	local              = flag.Bool("local", false, "Run locally for testing purposes only. Does not require secret files.")
-	reposData          = flag.String("repos", "", "Repository file saved as YAML to save GitHub API points, can be used to specify repositories to run")
-	repoLabelsData     = flag.String("repo-labels", "", "Repository Labels file saved as YAML to save GitHub API points")
-	dumpReposData      = flag.String("dump-repos", "", "Save repositories found as YAML (so this file can be used again with -repos without using Gihub API points in -local mode)")
-	dumpRepoLabelsData = flag.String("dump-repo-labels", "", "Save repositories labels found as YAML (so this file can be used again with -repo-labels without using Gihub API points in -local mode)")
-	debug              = flag.Bool("debug", false, "Turn on debug to be more verbose")
-	endPoint           = flag.String("endpoint", "https://api.github.com", "GitHub's API endpoint")
+	labelsPath = flag.String("config", "", "Path to labels.yaml")
+	token      = flag.String("token", "", "Path to github oauth secret")
+	orgs       = flag.String("orgs", "", "Comma separated list of orgs to sync")
+	skipRepos  = flag.String("skip", "", "Comma separated list of org/repos to skip syncing")
+	onlyRepos  = flag.String("only", "", "Only look at the following comma separated org/repos")
+	dry        = flag.Bool("dry-run", true, "Dry run for testing. Uses API tokens but does not mutate.")
+	debug      = flag.Bool("debug", false, "Turn on debug to be more verbose")
+	endpoint   = flag.String("endpoint", "https://api.github.com", "GitHub's API endpoint")
 )
 
-// Load labels from labels.yaml file
-func (rl *RequiredLabels) Load(path string) (err error) {
+// Ensures that no two label names (including previous names) have the same lowercase value.
+func validate(labels []Label, parent string, seen map[string]string) error {
+	for _, l := range labels {
+		name := strings.ToLower(l.Name)
+		path := parent + "." + name
+		if other, present := seen[name]; present {
+			return fmt.Errorf("duplicate label %s at %s and %s", name, path, other)
+		}
+		seen[name] = path
+		if err := validate(l.Previously, path, seen); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// Ensures the config does not duplicate label names
+func (c Configuration) validate() error {
+	seen := make(map[string]string)
+	if err := validate(c.Labels, "", seen); err != nil {
+		return fmt.Errorf("invalid config: %v", err)
+	}
+	return nil
+}
+
+// Load yaml config at path
+func LoadConfig(path string) (*Configuration, error) {
+	if path == "" {
+		return nil, errors.New("empty path")
+	}
+	var c Configuration
 	data, err := ioutil.ReadFile(path)
 	if err != nil {
-		return
+		return nil, err
 	}
-	return yaml.Unmarshal(data, rl)
+	if err = yaml.Unmarshal(data, &c); err != nil {
+		return nil, err
+	}
+	if err = c.validate(); err != nil { // Ensure no dups
+		return nil, err
+	}
+	return &c, nil
 }
 
 // GetOrg returns organization from "org" or "user:name"
 // Org can be organization name like "kubernetes"
 // But we can also request all user's public repos via user:github_user_name
-func GetOrg(org string) (outOrg string, isUser bool) {
-	data, isUser, outOrg := strings.Split(org, ":"), false, org
+func GetOrg(org string) (string, bool) {
+	data := strings.Split(org, ":")
 	if len(data) == 2 && data[0] == "user" {
-		outOrg = data[1]
-		isUser = true
+		return data[1], true
 	}
-	return
+	return org, false
 }
 
 // Get reads repository list for given org
 // Use provided githubClient (real, dry, fake)
 // Uses GitHub: /orgs/:org/repos
-func (rl *RepoList) Get(gc *github.Client) (err error) {
-	org, isUser := GetOrg(*org)
+func LoadRepos(org string, gc *github.Client, filt filter) (RepoList, error) {
+	org, isUser := GetOrg(org)
 	repos, err := gc.GetRepos(org, isUser)
 	if err != nil {
-		return
+		return nil, err
 	}
-	rl.Repos = repos
-	rl.Org = org
-	return
+	var rl RepoList
+	for _, r := range repos {
+		if !filt(org, r.Name) {
+			continue
+		}
+		rl = append(rl, r)
+	}
+	return rl, nil
 }
 
 // Get reads repository's labels list
 // Use provided githubClient (real, dry, fake)
 // Uses GitHub: /repos/:org/:repo/labels
-func (rl *RepoLabels) Get(gc *github.Client, repos *RepoList) error {
-	for _, repo := range repos.Repos {
-		labels, err := gc.GetRepoLabels(repos.Org, repo.Name)
+func LoadLabels(gc *github.Client, org string, repos RepoList) (*RepoLabels, error) {
+	rl := RepoLabels{}
+	for _, repo := range repos {
+		logrus.Infof("Get labels in %s/%s", org, repo.Name)
+		labels, err := gc.GetRepoLabels(org, repo.Name)
 		if err != nil {
-			logrus.Errorf("Error getting labels for %s/%s", repos.Org, repo.Name)
-			return err
+			logrus.Errorf("Error getting labels for %s/%s", org, repo.Name)
+			return nil, err
 		}
-		rl.Labels[repo.Name] = labels
+		rl[repo.Name] = labels
 	}
-	return nil
+	return &rl, nil
 }
 
-// UnmarshalReposData returns GitHub data recorded to YAML file via -dump-repos
-// This data can be saved in repos.yaml
-// This is to save GitHub API points and speedup local development
-// This file can also be used to overwite repository list to run this program on
-func UnmarshalReposData(repos *RepoList) error {
-	data, err := ioutil.ReadFile(*reposData)
-	if err != nil {
-		return err
-	}
-	err = yaml.Unmarshal(data, repos)
-	if err != nil {
-		return err
-	}
-	return nil
+// Delete the label
+func kill(repo string, label Label) Update {
+	logrus.Infof("kill %s", label.Name)
+	return Update{Why: "dead", Current: &label, repo: repo}
 }
 
-// UnmarshalRepoLabelsData returns GitHub data recorded to YAML file via -dump-repo-labels
-// This data can be saved in repo_labels.yaml
-// This is to save GitHub API points and speedup local development
-func UnmarshalRepoLabelsData(repoLabels *RepoLabels) error {
-	data, err := ioutil.ReadFile(*repoLabelsData)
-	if err != nil {
-		return err
-	}
-	err = yaml.Unmarshal(data, repoLabels)
-	if err != nil {
-		return err
-	}
-	return nil
+// Create the label
+func create(repo string, label Label) Update {
+	logrus.Infof("create %s", label.Name)
+	return Update{Why: "missing", Wanted: &label, repo: repo}
 }
 
-// MarshalReposData is used to save repos data into YAML file
-// If -dump-repos parameter is used
-func MarshalReposData(repos *RepoList) error {
-	data, err := yaml.Marshal(repos)
-	if err != nil {
-		return err
-	}
-	if err := ioutil.WriteFile(*dumpReposData, []byte(data), 0644); err != nil {
-		return err
-	}
-	return nil
+// Rename the label (will also update color)
+func rename(repo string, previous, wanted Label) Update {
+	logrus.Infof("rename %s to %s", previous.Name, wanted.Name)
+	return Update{Why: "rename", Current: &previous, Wanted: &wanted, repo: repo}
 }
 
-// MarshalReposLabelsData is used to save repo labels data into YAML file
-// If -dump-repo-labels parameter is used
-func MarshalReposLabelsData(repoLabels *RepoLabels) error {
-	data, err := yaml.Marshal(repoLabels)
-	if err != nil {
-		return err
-	}
-	if err = ioutil.WriteFile(*dumpRepoLabelsData, []byte(data), 0644); err != nil {
-		return err
-	}
-	return nil
+// Update the label color
+func recolor(repo string, label Label) Update {
+	logrus.Infof("recolor %s to %s", label.Name, label.Color)
+	return Update{Why: "recolor", Current: &label, Wanted: &label, repo: repo}
 }
 
-// InitWithRepo initialize (possibly empty UpdatesData)
-// Create map if not yet created
-// Create empty list for given repo if this repo is not in the map
-func (ud *UpdateData) InitWithRepo(repo string) {
-	if ud.ReposToUpdate == nil {
-		ud.ReposToUpdate = make(map[string][]UpdateItem)
-	}
-	if _, foundRepo := ud.ReposToUpdate[repo]; !foundRepo {
-		ud.ReposToUpdate[repo] = []UpdateItem{}
-	}
+// Migrate labels to another label
+func move(repo string, previous, wanted Label) Update {
+	logrus.Infof("move %s to %s", previous.Name, wanted.Name)
+	return Update{Why: "migrate", Wanted: &wanted, Current: &previous, repo: repo}
 }
 
-// Eq compares two labels - they're equal if their Name and Color match
-func (l *Label) Eq(otherLabel *Label) bool {
-	return l.Name == otherLabel.Name && l.Color == otherLabel.Color
-}
-
-// SyncLabels this is a main workhorse.
-// Pre requisites:
-// `labels.yaml` file should should have unique labels with a case insensitive comparison! Otherwise it reports FATAL and exits
-// Each repository's labels should be unique when comapred witout case sensitive, if not it reports FATAL and exits
-// Labels can be non-unique (without case sensitive) in different repos - because that mean each wrong case label is unique per repo so can be updated there.
-// It iterates all repos to see if they have required labels
-// Possible cases (for each label on each repo compared with required) iteration: all repos, then all required labels
-// 1. Exact match - all OK
-// 2. Name exact match - wrong color --> add this label to update list
-// 3. If required label (downcased) matches some repo's label (downcased) - wrong name --> add this label to update list
-// In this case we have actual repo's label (wrong case) and required (with correct case) we will update name (using wrong case as key) and evetually color too
-// 4. Not found (no exact name match and no match without case) --> add this label to update list (with mising flag which mean that it needs to be added)
-func SyncLabels(required *RequiredLabels, curr *RepoLabels) (updates UpdateData, err error) {
-	var (
-		currMap      map[string]map[string]Label
-		currMapLower map[string]map[string]Label
-		reqMap       map[string]Label
-		reqMapLower  map[string]Label
-	)
-
-	// Create mapping of required labels --> their label data (name & color)
-	// Make sure that downcased names are unique (required labels are constant from labels.yaml file)
-	reqMap = make(map[string]Label)
-	reqMapLower = make(map[string]Label)
-	for _, label := range required.Labels {
-		lbl := Label{Name: label.Name, Color: label.Color}
-		reqMap[label.Name] = lbl
-		lowerName := strings.ToLower(label.Name)
-		if _, ok := reqMapLower[lowerName]; ok {
-			logrus.Errorf("ERROR: label %s is not unique when downcased", label.Name)
-			err = errors.New("label " + label.Name + " is not unique when downcased in input config")
-			return
+func ClassifyLabels(labels []Label, required, archaic, dead map[string]Label, now time.Time, parent *Label) {
+	for i, l := range labels {
+		first := parent
+		if first == nil {
+			first = &labels[i]
 		}
-		reqMapLower[lowerName] = lbl
+		lower := strings.ToLower(l.Name)
+		switch {
+		case parent == nil && l.DeleteAfter == nil: // Live label
+			required[lower] = l
+		case l.DeleteAfter != nil && now.After(*l.DeleteAfter):
+			dead[lower] = l
+		case parent != nil:
+			l.parent = parent
+			archaic[lower] = l
+		}
+		ClassifyLabels(l.Previously, required, archaic, dead, now, first)
+	}
+}
+
+func SyncLabels(config Configuration, repos RepoLabels) (RepoUpdates, error) {
+	// Ensure the config is valid
+	if err := config.validate(); err != nil {
+		return nil, fmt.Errorf("invalid config: %v", err)
 	}
 
-	// create map of [repo][label anme] --> label data
-	// Also create map with downcased names
-	// Warn if downcased label names are not unique
-	currMap = make(map[string]map[string]Label)
-	currMapLower = make(map[string]map[string]Label)
-	for repo, labels := range curr.Labels {
-		currMap[repo] = make(map[string]Label)
-		currMapLower[repo] = make(map[string]Label)
-		for _, label := range labels {
-			lbl := Label{Name: label.Name, Color: label.Color}
-			currMap[repo][label.Name] = lbl
-			lowerName := strings.ToLower(label.Name)
-			if _, ok := currMapLower[repo][lowerName]; ok {
-				logrus.Infof("ERROR: repo %s, label %s is not unique when downcased", repo, label.Name)
-				err = errors.New("repository: " + repo + ", label " + label.Name + " is not unique when downcased in input config")
-				return
+	// Find required, dead and archaic labels
+	required := make(map[string]Label) // Must exist
+	archaic := make(map[string]Label)  // Migrate
+	dead := make(map[string]Label)     // Delete
+	ClassifyLabels(config.Labels, required, archaic, dead, time.Now(), nil)
+
+	var actions []Update
+	// Process all repos
+	for repo, repoLabels := range repos {
+		// Convert github.Label to Label
+		var labels []Label
+		for _, l := range repoLabels {
+			labels = append(labels, Label{Name: l.Name, Color: l.Color})
+		}
+		// Check for any duplicate labels
+		if err := validate(labels, "", make(map[string]string)); err != nil {
+			return nil, fmt.Errorf("invalid labels in %s: %v", repo, err)
+		}
+		// Create lowercase map of current labels, checking for dead labels to delete.
+		current := make(map[string]Label)
+		for _, l := range labels {
+			lower := strings.ToLower(l.Name)
+			// Should we delete this dead label?
+			if _, found := dead[lower]; found {
+				actions = append(actions, kill(repo, l))
 			}
-			currMapLower[repo][lowerName] = lbl
+			current[lower] = l
 		}
-	}
 
-	// Iterate all repos
-	for repo, repoLabels := range currMap {
-		repoLabelsLower := currMapLower[repo]
-		//logrus.Infof("Checking repo: %s, %T", repo, repoLabels)
-		// Iterate required labels
-		for requiredName, requiredLab := range reqMap {
-			//logrus.Infof("Checking for label: %s, %T", requiredName, requiredLab)
-			foundLabel, ok := repoLabels[requiredName]
-			if ok && foundLabel.Eq(&requiredLab) {
-				// Case 1 - exact label found
-				//logrus.Infof("Repo: %s, Label: %s - found exact", repo, requiredName)
+		var moveActions []Update // Separate list to do last
+		// Look for labels to migrate
+		for name, l := range archaic {
+			// Does the archaic label exist?
+			cur, found := current[name]
+			if !found { // No
 				continue
 			}
-			if ok {
-				// Case 2: Wrong label color
-				//logrus.Infof("Repo: %s, Label: %s - found but needs color update %s --> %s", repo, requiredName, foundLabel.Color, requiredLab.Color)
-				updates.InitWithRepo(repo)
-				updates.ReposToUpdate[repo] = append(updates.ReposToUpdate[repo], UpdateItem{Why: "invalid_color", RequiredLabel: requiredLab, CurrentLabel: foundLabel})
-				continue
+			// What do we want to migrate it to?
+			desired := Label{Name: l.parent.Name, Color: l.parent.Color}
+			desiredName := strings.ToLower(l.parent.Name)
+			// Does the new label exist?
+			_, found = current[desiredName]
+			if found { // Yes, migrate all these labels
+				moveActions = append(moveActions, move(repo, cur, desired))
+			} else { // No, rename the existing label
+				actions = append(actions, rename(repo, cur, desired))
+				current[desiredName] = desired
 			}
-			requiredNameLower := strings.ToLower(requiredName)
-			foundLabel, ok = repoLabelsLower[requiredNameLower]
-			if ok {
-				// Case 3 - wrong label name (wrong case) and possibly color too (it needs update anyway)
-				//logrus.Infof("Repo: %s, Label: %s - found but needs name update (and maybe color): %v --> %v", repo, requiredName, foundLabel, requiredLab)
-				updates.InitWithRepo(repo)
-				updates.ReposToUpdate[repo] = append(updates.ReposToUpdate[repo], UpdateItem{Why: "invalid_name", RequiredLabel: requiredLab, CurrentLabel: foundLabel})
-				continue
+		}
+
+		// Look for missing labels
+		for name, l := range required {
+			cur, found := current[name]
+			switch {
+			case !found:
+				actions = append(actions, create(repo, l))
+			case l.Name != cur.Name:
+				actions = append(actions, rename(repo, cur, l))
+			case l.Color != cur.Color:
+				actions = append(actions, recolor(repo, l))
 			}
-			// Case 4: label not found - add to missing labels
-			//logrus.Infof("Repo: %s, Label: %s - not found %v", repo, requiredName, requiredLab)
-			updates.InitWithRepo(repo)
-			updates.ReposToUpdate[repo] = append(updates.ReposToUpdate[repo], UpdateItem{Why: "missing", RequiredLabel: requiredLab, CurrentLabel: Label{}})
+		}
+
+		for _, a := range moveActions {
+			actions = append(actions, a)
 		}
 	}
-	return
+
+	u := RepoUpdates{}
+	for _, a := range actions {
+		u[a.repo] = append(u[a.repo], a)
+	}
+	return u, nil
 }
 
 // DoUpdates iterates generated update data and adds and/or modifies labels on repositories
 // Uses AddLabel GH API to add missing labels
 // And UpdateLabel GH API to update color or name (name only when case differs)
-func (ud *UpdateData) DoUpdates(gc *github.Client) error {
-	org, _ := GetOrg(*org)
-	for repo, list := range ud.ReposToUpdate {
-		for _, item := range list {
+func (ru RepoUpdates) DoUpdates(org string, gc *github.Client) error {
+	for repo, updates := range ru {
+		logrus.Infof("Applying %d changes to %s/%s", len(updates), org, repo)
+		for _, item := range updates {
 			if *debug {
-				fmt.Printf("%s/%s: %s %+v\n", org, repo, item.Why, item.RequiredLabel)
+				fmt.Printf("%s/%s: %s %+v\n", org, repo, item.Why, item.Wanted)
 			}
-			if item.Why == "missing" {
-				err := gc.AddRepoLabel(org, repo, item.RequiredLabel.Name, item.RequiredLabel.Color)
+			switch item.Why {
+			case "missing":
+				err := gc.AddRepoLabel(org, repo, item.Wanted.Name, item.Wanted.Color)
 				if err != nil {
 					return err
 				}
-			} else if item.Why == "invalid_color" || item.Why == "invalid_name" {
-				err := gc.UpdateRepoLabel(org, repo, item.RequiredLabel.Name, item.RequiredLabel.Color)
+			case "recolor", "rename":
+				err := gc.UpdateRepoLabel(org, repo, item.Current.Name, item.Wanted.Name, item.Wanted.Color)
 				if err != nil {
 					return err
 				}
-			} else {
+			case "dead":
+				err := gc.DeleteRepoLabel(org, repo, item.Current.Name)
+				if err != nil {
+					return err
+				}
+			case "migrate":
+				issues, err := gc.FindIssues(fmt.Sprintf("repo:%s/%s label:\"%s\" -label:\"%s\"", org, repo, item.Current.Name, item.Wanted.Name), "", false)
+				if err != nil {
+					return err
+				}
+				if len(issues) == 0 {
+					if err = gc.DeleteRepoLabel(org, repo, item.Current.Name); err != nil {
+						return err
+					}
+				}
+				for _, i := range issues {
+					if err = gc.AddLabel(org, repo, i.Number, item.Wanted.Name); err != nil {
+						return err
+					}
+					if err = gc.RemoveLabel(org, repo, i.Number, item.Wanted.Name); err != nil {
+						return err
+					}
+				}
+			default:
 				return errors.New("unknown label operation: " + item.Why)
 			}
 		}
 	}
 	return nil
+}
+
+func newClient(tokenPath, host string, dryRun bool) (*github.Client, error) {
+	if tokenPath == "" {
+		return nil, errors.New("--token unset")
+	}
+	b, err := ioutil.ReadFile(tokenPath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read --token=%s: %v", tokenPath, err)
+	}
+	oauthSecret := string(bytes.TrimSpace(b))
+
+	if dryRun {
+		return github.NewDryRunClient(oauthSecret, host), nil
+	}
+	return github.NewClient(oauthSecret, host), nil
 }
 
 // Main function
@@ -333,107 +368,90 @@ func (ud *UpdateData) DoUpdates(gc *github.Client) error {
 // github OAuth2 token in "/etc/github/oauth", this token must have write access to all org's repos
 // default org is "kubernetes"
 // It uses request retrying (in case of run out of GH API points)
-// It took about 10 minutes to process all my 8 repos with all required "kubernetes" labels (70+)
+// It took about 10 minutes to process all my 8 repos with all wanted "kubernetes" labels (70+)
 // Next run takes about 22 seconds to check if all labels are correct on all repos
 func main() {
 	flag.Parse()
 
-	var (
-		labels       RequiredLabels
-		repos        RepoList
-		currLabels   RepoLabels
-		githubClient *github.Client
-	)
-	currLabels.Labels = make(map[string][]github.Label)
-
-	if err := labels.Load(*labelsPath); err != nil {
-		logrus.WithError(err).Fatalf("cannot read labels file: %v", *labelsPath)
-	}
-
-	if *local {
-		githubClient = github.NewFakeClient()
-
-		if *reposData != "" {
-			if err := UnmarshalReposData(&repos); err != nil {
-				logrus.WithError(err).Fatalf("cannot unmarshal repositories from %s", *reposData)
-			}
-		}
-		if *repoLabelsData != "" {
-			if err := UnmarshalRepoLabelsData(&currLabels); err != nil {
-				logrus.WithError(err).Fatalf("cannot unmarshal repositories labels from %s", *repoLabelsData)
-			}
-		}
-
-		if *reposData == "" || *repoLabelsData == "" {
-			logrus.Infof("Cannot get repository and labels data in -local mode without generated YAML files.")
-			logrus.Infof("Please provide example data with -repos and -repo-labels (eventually generate it from non-local run via -dump-repos and -dump-repo-labels)")
-			logrus.Fatalf("No example data provided for -local mode")
-		}
-
-	} else {
-		oauthSecretRaw, err := ioutil.ReadFile(*githubTokenFile)
-		if err != nil {
-			logrus.WithError(err).Fatal("could not read oauth secret file.")
-		}
-		oauthSecret := string(bytes.TrimSpace(oauthSecretRaw))
-
-		if *dry {
-			githubClient = github.NewDryRunClient(oauthSecret, *endPoint)
-		} else {
-			githubClient = github.NewClient(oauthSecret, *endPoint)
-		}
-
-		if *reposData != "" {
-			if err := UnmarshalReposData(&repos); err != nil {
-				logrus.WithError(err).Fatalf("cannot unmarshal repositories from %s", *reposData)
-			}
-		} else {
-			// This is a real GH API call to get repos and labels, please avoid in local dev if possible
-			// Just run once with -dump-repos and -dump-repo-labels and then use generated YAML files to save GH API points
-			if err := repos.Get(githubClient); err != nil {
-				logrus.WithError(err).Fatalf("cannot read %v repositories", *org)
-			}
-		}
-
-		if *repoLabelsData != "" {
-			if err := UnmarshalRepoLabelsData(&currLabels); err != nil {
-				logrus.WithError(err).Fatalf("cannot unmarshal repositories labels from %s", *repoLabelsData)
-			}
-		} else {
-			if err := currLabels.Get(githubClient, &repos); err != nil {
-				logrus.WithError(err).Fatalf("cannot read %v repositories labels", *org)
-			}
-		}
-	}
-
-	if *dumpReposData != "" {
-		if err := MarshalReposData(&repos); err != nil {
-			logrus.WithError(err).Fatalf("cannot marshal repositories to %s", *dumpReposData)
-		}
-	}
-
-	if *dumpRepoLabelsData != "" {
-		if err := MarshalReposLabelsData(&currLabels); err != nil {
-			logrus.WithError(err).Fatalf("cannot marshal repositories labels data to %s", *dumpRepoLabelsData)
-		}
-	}
-
-	updates, err := SyncLabels(&labels, &currLabels)
+	config, err := LoadConfig(*labelsPath)
 	if err != nil {
-		logrus.WithError(err).Fatalf("failed to sync labels")
+		logrus.WithError(err).Fatalf("failed to load --config=%s", *labelsPath)
 	}
-	y, err := yaml.Marshal(&updates)
+
+	githubClient, err := newClient(*token, *endpoint, *dry)
+	if err != nil {
+		logrus.WithError(err).Fatal("failed to create client")
+	}
+
+	var filt filter
+	switch {
+	case *onlyRepos != "":
+		if *skipRepos != "" {
+			logrus.Fatalf("--only and --skip cannot both be set")
+		}
+		only := make(map[string]bool)
+		for _, r := range strings.Split(*onlyRepos, ",") {
+			only[strings.TrimSpace(r)] = true
+		}
+		filt = func(org, repo string) bool {
+			_, ok := only[org+"/"+repo]
+			return ok
+		}
+	case *skipRepos != "":
+		skip := make(map[string]bool)
+		for _, r := range strings.Split(*skipRepos, ",") {
+			skip[strings.TrimSpace(r)] = true
+		}
+		filt = func(org, repo string) bool {
+			_, ok := skip[org+"/"+repo]
+			return !ok
+		}
+	default:
+		filt = func(o, r string) bool {
+			return true
+		}
+	}
+
+	for _, org := range strings.Split(*orgs, ",") {
+		org = strings.TrimSpace(org)
+		if err = SyncOrg(org, githubClient, *config, filt); err != nil {
+			logrus.WithError(err).Fatalf("failed to update %s", org)
+		}
+	}
+}
+
+type filter func(string, string) bool
+
+func SyncOrg(org string, githubClient *github.Client, config Configuration, filt filter) error {
+	logrus.Infof("Reading repos in %s", org)
+	repos, err := LoadRepos(org, githubClient, filt)
+	if err != nil {
+		return err
+	}
+
+	logrus.Infof("Reading labels in %d repos in %s", len(repos), org)
+	currLabels, err := LoadLabels(githubClient, org, repos)
+	if err != nil {
+		return err
+	}
+
+	logrus.Infof("Syncing labels for %d repos in %s", len(repos), org)
+	updates, err := SyncLabels(config, *currLabels)
+	if err != nil {
+		return err
+	}
 	if *debug {
-		fmt.Printf(string(y))
+		y, _ := yaml.Marshal(updates)
+		fmt.Println(string(y))
 	}
 
-	if *dry || *local {
-		logrus.Infof("No real update labels in -dry-run or local -mode, exiting")
-		return
+	if *dry {
+		logrus.Infof("No real update labels in --dry-run")
+		return nil
 	}
 
-	err = updates.DoUpdates(githubClient)
-	if err != nil {
-		logrus.WithError(err).Fatalf("failed to update labels")
+	if err = updates.DoUpdates(org, githubClient); err != nil {
+		return err
 	}
+	return nil
 }

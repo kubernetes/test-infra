@@ -1,6 +1,0 @@
-org: kubernetes
-repos:
-- full_name: kubernetes/test-infra
-  name: test-infra
-- full_name: kubernetes/community
-  name: community

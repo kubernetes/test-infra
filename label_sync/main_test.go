@@ -18,178 +18,182 @@ package main
 
 import (
 	"encoding/json"
-	"errors"
 	"reflect"
 	"strings"
 	"testing"
-
-	"k8s.io/test-infra/prow/github"
+	"time"
 )
 
 // Tests for getting data from GitHub are not needed:
 // The would have to use real API point or test stubs
 
-// Test SyncLabels(required *RequiredLabels, curr *RepoLabels) (updates UpdateData, err error)
-// Input: RequiredLabels list and Current labels list on multiple repos
-// Output: list of required label updates (update due to name or color) addition due to missing labels
+// Test SyncLabels(config *Configuration, curr *RepoLabels) (updates RepoUpdates, err error)
+// Input: Configuration list and Current labels list on multiple repos
+// Output: list of wanted label updates (update due to name or color) addition due to missing labels
 // This is main testing for this program
 func TestSyncLabels(t *testing.T) {
 	var testcases = []struct {
 		name            string
-		requiredLabels  RequiredLabels
-		currentLabels   RepoLabels
-		expectedUpdates UpdateData
-		expectedError   error
+		config          Configuration
+		current         RepoLabels
+		expectedUpdates RepoUpdates
+		expectedError   bool
+		now             time.Time
 	}{
 		{
-			name:            "All empty",
-			requiredLabels:  RequiredLabels{},
-			currentLabels:   RepoLabels{},
-			expectedUpdates: UpdateData{},
+			name: "All empty",
 		},
 		{
-			name: "Duplicate required label",
-			requiredLabels: RequiredLabels{Labels: []Label{
+			name: "Duplicate wanted label",
+			config: Configuration{Labels: []Label{
 				{Name: "lab1", Color: "deadbe"},
 				{Name: "lab1", Color: "befade"},
 			}},
-			currentLabels:   RepoLabels{},
-			expectedUpdates: UpdateData{},
-			expectedError:   errors.New("label lab1 is not unique when downcased in input config"),
+			expectedError: true,
 		},
 		{
 			name: "Required label has non unique labels when downcased",
-			requiredLabels: RequiredLabels{Labels: []Label{
+			config: Configuration{Labels: []Label{
 				{Name: "lab1", Color: "deadbe"},
 				{Name: "LAB1", Color: "deadbe"},
 			}},
-			currentLabels:   RepoLabels{},
-			expectedUpdates: UpdateData{},
-			expectedError:   errors.New("label LAB1 is not unique when downcased in input config"),
+			expectedError: true,
 		},
 		{
-			name:           "Duplicate label on repo1",
-			requiredLabels: RequiredLabels{},
-			currentLabels: RepoLabels{Labels: map[string][]github.Label{
+			name: "Duplicate label on repo1",
+			current: RepoLabels{
 				"repo1": {
 					{Name: "lab1", Color: "deadbe"},
 					{Name: "lab1", Color: "befade"},
 				},
-			}},
-			expectedUpdates: UpdateData{},
-			expectedError:   errors.New("repository: repo1, label lab1 is not unique when downcased in input config"),
+			},
+			expectedError: true,
 		},
 		{
-			name:           "Non unique label on repo1 when downcased",
-			requiredLabels: RequiredLabels{},
-			currentLabels: RepoLabels{Labels: map[string][]github.Label{
+			name: "Non unique label on repo1 when downcased",
+			current: RepoLabels{
 				"repo1": {
 					{Name: "lab1", Color: "deadbe"},
 					{Name: "LAB1", Color: "deadbe"},
 				},
-			}},
-			expectedUpdates: UpdateData{},
-			expectedError:   errors.New("repository: repo1, label LAB1 is not unique when downcased in input config"),
+			},
+			expectedError: true,
 		},
 		{
-			name:           "Non unique label but on different repos - allowed",
-			requiredLabels: RequiredLabels{},
-			currentLabels: RepoLabels{Labels: map[string][]github.Label{
+			name: "Non unique label but on different repos - allowed",
+			current: RepoLabels{
 				"repo1": {{Name: "lab1", Color: "deadbe"}},
 				"repo2": {{Name: "lab1", Color: "deadbe"}},
-			}},
-			expectedUpdates: UpdateData{},
+			},
 		},
 		{
-			name: "Repo has exactly all required labels",
-			requiredLabels: RequiredLabels{Labels: []Label{
+			name: "Repo has exactly all wanted labels",
+			config: Configuration{Labels: []Label{
 				{Name: "lab1", Color: "deadbe"},
 			}},
-			currentLabels: RepoLabels{Labels: map[string][]github.Label{
+			current: RepoLabels{
 				"repo1": {
 					{Name: "lab1", Color: "deadbe"},
 				},
-			}},
-			expectedUpdates: UpdateData{},
+			},
 		},
 		{
 			name: "Repo has label with wrong color",
-			requiredLabels: RequiredLabels{Labels: []Label{
+			config: Configuration{Labels: []Label{
 				{Name: "lab1", Color: "deadbe"},
 			}},
-			currentLabels: RepoLabels{Labels: map[string][]github.Label{
+			current: RepoLabels{
 				"repo1": {
 					{Name: "lab1", Color: "bebeef"},
 				},
-			}},
-			expectedUpdates: UpdateData{ReposToUpdate: map[string][]UpdateItem{
+			},
+			expectedUpdates: RepoUpdates{
 				"repo1": {
-					{Why: "invalid_color", RequiredLabel: Label{Name: "lab1", Color: "deadbe"}, CurrentLabel: Label{Name: "lab1", Color: "bebeef"}},
+					{Why: "recolor", Current: &Label{Name: "lab1", Color: "deadbe"}, Wanted: &Label{Name: "lab1", Color: "deadbe"}},
 				},
-			}},
+			},
 		},
 		{
 			name: "Repo has label with wrong name (different case)",
-			requiredLabels: RequiredLabels{Labels: []Label{
+			config: Configuration{Labels: []Label{
 				{Name: "Lab1", Color: "deadbe"},
 			}},
-			currentLabels: RepoLabels{Labels: map[string][]github.Label{
+			current: RepoLabels{
 				"repo1": {
 					{Name: "laB1", Color: "deadbe"},
 				},
-			}},
-			expectedUpdates: UpdateData{ReposToUpdate: map[string][]UpdateItem{
+			},
+			expectedUpdates: RepoUpdates{
 				"repo1": {
-					{Why: "invalid_name", RequiredLabel: Label{Name: "Lab1", Color: "deadbe"}, CurrentLabel: Label{Name: "laB1", Color: "deadbe"}},
+					{Why: "rename", Wanted: &Label{Name: "Lab1", Color: "deadbe"}, Current: &Label{Name: "laB1", Color: "deadbe"}},
 				},
+			},
+		},
+		{
+			name: "old name",
+			config: Configuration{Labels: []Label{
+				{Name: "current", Color: "blue", Previously: []Label{{Name: "old", Color: "gray"}}},
 			}},
+			current: RepoLabels{
+				"no current": {{Name: "old", Color: "much gray"}},
+				"has current": {
+					{Name: "old", Color: "gray"},
+					{Name: "current", Color: "blue"},
+				},
+			},
+			expectedUpdates: RepoUpdates{
+				"no current": {
+					{Why: "rename", Current: &Label{Name: "old", Color: "much gray"}, Wanted: &Label{Name: "current", Color: "blue"}},
+				},
+				"has current": {
+					{Why: "migrate", Current: &Label{Name: "old", Color: "gray"}, Wanted: &Label{Name: "current", Color: "blue"}},
+				},
+			},
 		},
 		{
 			name: "Repo is missing a label",
-			requiredLabels: RequiredLabels{Labels: []Label{
+			config: Configuration{Labels: []Label{
 				{Name: "Lab1", Color: "deadbe"},
 			}},
-			currentLabels: RepoLabels{Labels: map[string][]github.Label{
+			current: RepoLabels{
 				"repo1": {},
-			}},
-			expectedUpdates: UpdateData{ReposToUpdate: map[string][]UpdateItem{
+			},
+			expectedUpdates: RepoUpdates{
 				"repo1": {
-					{Why: "missing", RequiredLabel: Label{Name: "Lab1", Color: "deadbe"}, CurrentLabel: Label{}},
+					{Why: "missing", Wanted: &Label{Name: "Lab1", Color: "deadbe"}},
 				},
-			}},
+			},
 		},
 		{
 			name: "Repo is missing multiple labels, and expected labels order is changed",
-			requiredLabels: RequiredLabels{Labels: []Label{
+			config: Configuration{Labels: []Label{
 				{Name: "Lab1", Color: "deadbe"},
 				{Name: "Lab2", Color: "000000"},
 				{Name: "Lab3", Color: "ffffff"},
 			}},
-			currentLabels: RepoLabels{Labels: map[string][]github.Label{
+			current: RepoLabels{
 				"repo1": {},
+				"repo2": {{Name: "Lab2", Color: "000000"}},
+			},
+			expectedUpdates: RepoUpdates{
 				"repo2": {
-					{Name: "Lab2", Color: "000000"},
-				},
-			}},
-			expectedUpdates: UpdateData{ReposToUpdate: map[string][]UpdateItem{
-				"repo2": {
-					{Why: "missing", RequiredLabel: Label{Name: "Lab3", Color: "ffffff"}, CurrentLabel: Label{}},
-					{CurrentLabel: Label{}, Why: "missing", RequiredLabel: Label{Name: "Lab1", Color: "deadbe"}},
+					{Why: "missing", Wanted: &Label{Name: "Lab3", Color: "ffffff"}},
+					{Why: "missing", Wanted: &Label{Name: "Lab1", Color: "deadbe"}},
 				},
 				"repo1": {
-					{Why: "missing", RequiredLabel: Label{Color: "000000", Name: "Lab2"}, CurrentLabel: Label{}},
-					{Why: "missing", RequiredLabel: Label{Name: "Lab3", Color: "ffffff"}, CurrentLabel: Label{}},
-					{Why: "missing", RequiredLabel: Label{Name: "Lab1", Color: "deadbe"}, CurrentLabel: Label{}},
+					{Why: "missing", Wanted: &Label{Color: "000000", Name: "Lab2"}},
+					{Why: "missing", Wanted: &Label{Name: "Lab3", Color: "ffffff"}},
+					{Why: "missing", Wanted: &Label{Name: "Lab1", Color: "deadbe"}},
 				},
-			}},
+			},
 		},
 		{
 			name: "Multiple repos complex case",
-			requiredLabels: RequiredLabels{Labels: []Label{
+			config: Configuration{Labels: []Label{
 				{Name: "priority/P0", Color: "ff0000"},
 				{Name: "lgtm", Color: "00ff00"},
 			}},
-			currentLabels: RepoLabels{Labels: map[string][]github.Label{
+			current: RepoLabels{
 				"repo1": {
 					{Name: "Priority/P0", Color: "ee3333"},
 					{Name: "LGTM", Color: "00ff00"},
@@ -208,40 +212,38 @@ func TestSyncLabels(t *testing.T) {
 				"repo5": {
 					{Name: "lgtm", Color: "00ff00"},
 				},
-			}},
-			expectedUpdates: UpdateData{ReposToUpdate: map[string][]UpdateItem{
+			},
+			expectedUpdates: RepoUpdates{
 				"repo1": {
-					{Why: "invalid_name", RequiredLabel: Label{Name: "priority/P0", Color: "ff0000"}, CurrentLabel: Label{Name: "Priority/P0", Color: "ee3333"}},
-					{Why: "invalid_name", RequiredLabel: Label{Name: "lgtm", Color: "00ff00"}, CurrentLabel: Label{Name: "LGTM", Color: "00ff00"}},
+					{Why: "rename", Wanted: &Label{Name: "priority/P0", Color: "ff0000"}, Current: &Label{Name: "Priority/P0", Color: "ee3333"}},
+					{Why: "rename", Wanted: &Label{Name: "lgtm", Color: "00ff00"}, Current: &Label{Name: "LGTM", Color: "00ff00"}},
 				},
 				"repo2": {
-					{Why: "invalid_color", RequiredLabel: Label{Name: "priority/P0", Color: "ff0000"}, CurrentLabel: Label{Name: "priority/P0", Color: "ee3333"}},
+					{Why: "recolor", Current: &Label{Name: "priority/P0", Color: "ff0000"}, Wanted: &Label{Name: "priority/P0", Color: "ff0000"}},
 				},
 				"repo3": {
-					{Why: "invalid_name", RequiredLabel: Label{Name: "priority/P0", Color: "ff0000"}, CurrentLabel: Label{Name: "PRIORITY/P0", Color: "ff0000"}},
-					{Why: "invalid_color", RequiredLabel: Label{Name: "lgtm", Color: "00ff00"}, CurrentLabel: Label{Name: "lgtm", Color: "0000ff"}},
+					{Why: "rename", Wanted: &Label{Name: "priority/P0", Color: "ff0000"}, Current: &Label{Name: "PRIORITY/P0", Color: "ff0000"}},
+					{Why: "recolor", Current: &Label{Name: "lgtm", Color: "00ff00"}, Wanted: &Label{Name: "lgtm", Color: "00ff00"}},
 				},
 				"repo4": {
-					{Why: "missing", RequiredLabel: Label{Name: "lgtm", Color: "00ff00"}, CurrentLabel: Label{}},
+					{Why: "missing", Wanted: &Label{Name: "lgtm", Color: "00ff00"}},
 				},
 				"repo5": {
-					{Why: "missing", RequiredLabel: Label{Name: "priority/P0", Color: "ff0000"}, CurrentLabel: Label{}},
+					{Why: "missing", Wanted: &Label{Name: "priority/P0", Color: "ff0000"}},
 				},
-			}},
+			},
 		},
 	}
 
 	// Do tests
-	for i, tc := range testcases {
-		actualUpdates, err := SyncLabels(&tc.requiredLabels, &tc.currentLabels)
-		if err == nil && tc.expectedError != nil || err != nil && tc.expectedError == nil {
-			t.Errorf("TestSyncLabel: test case number %d: '%s': expected err '%+v', got '%+v'", i+1, tc.name, tc.expectedError, err)
-		}
-		if err != nil && tc.expectedError != nil && err.Error() != tc.expectedError.Error() {
-			t.Errorf("TestSyncLabel: test case number %d: '%s: expected err '%+v', got '%+v'", i+1, tc.name, tc.expectedError.Error(), err.Error())
-		}
-		if !equalUpdates(&actualUpdates, &tc.expectedUpdates, t) {
-			t.Errorf("TestSyncLabel: test case number %d: '%s': expected updates:\n%+v\ngot:\n%+v", i+1, tc.name, tc.expectedUpdates, actualUpdates)
+	for _, tc := range testcases {
+		actualUpdates, err := SyncLabels(tc.config, tc.current)
+		if err == nil && tc.expectedError {
+			t.Errorf("%s: failed to raise error", tc.name)
+		} else if err != nil && !tc.expectedError {
+			t.Errorf("%s: unexpected error: %v", tc.name, err)
+		} else if !tc.expectedError && !equalUpdates(actualUpdates, tc.expectedUpdates, t) {
+			t.Errorf("%s: expected updates:\n%+v\ngot:\n%+v", tc.name, tc.expectedUpdates, actualUpdates)
 		}
 	}
 }
@@ -249,8 +251,7 @@ func TestSyncLabels(t *testing.T) {
 // This is needed to compare Update sets, two update sets are equal
 // only if their maps have the same lists (but order can be different)
 // Using standard `reflect.DeepEqual` for entire structures makes tests flaky
-func equalUpdates(updateData1, updateData2 *UpdateData, t *testing.T) bool {
-	updates1, updates2 := updateData1.ReposToUpdate, updateData2.ReposToUpdate
+func equalUpdates(updates1, updates2 RepoUpdates, t *testing.T) bool {
 	if len(updates1) != len(updates2) {
 		t.Errorf("ERROR: expected and actual update sets have different repo sets")
 		return false
@@ -294,36 +295,37 @@ func equalUpdates(updateData1, updateData2 *UpdateData, t *testing.T) bool {
 
 // Test loading YAML file (labels.yaml)
 func TestLoadYAML(t *testing.T) {
+	d := time.Date(2017, 1, 1, 13, 0, 0, 0, time.UTC)
 	var testcases = []struct {
 		path     string
-		expected RequiredLabels
+		expected Configuration
 		ok       bool
 		errMsg   string
 	}{
 		{
 			path: "labels_example.yaml",
-			expected: RequiredLabels{Labels: []Label{
+			expected: Configuration{Labels: []Label{
 				{Name: "lgtm", Color: "green"},
-				{Name: "priority/P0", Color: "red"},
+				{Name: "priority/P0", Color: "red", Previously: []Label{{Name: "P0", Color: "blue"}}},
+				{Name: "dead-label", DeleteAfter: &d},
 			}},
 			ok: true,
 		},
 		{
 			path:     "syntax_error_example.yaml",
-			expected: RequiredLabels{},
+			expected: Configuration{},
 			ok:       false,
 			errMsg:   "error converting",
 		},
 		{
 			path:     "no_such_file.yaml",
-			expected: RequiredLabels{},
+			expected: Configuration{},
 			ok:       false,
 			errMsg:   "no such file",
 		},
 	}
 	for i, tc := range testcases {
-		actual := RequiredLabels{}
-		err := actual.Load(tc.path)
+		actual, err := LoadConfig(tc.path)
 		errNil := (err == nil)
 		if errNil != tc.ok {
 			t.Errorf("TestLoadYAML: test case number %d, expected ok: %v, got %v (error=%v)", i+1, tc.ok, err == nil, err)
@@ -331,7 +333,7 @@ func TestLoadYAML(t *testing.T) {
 		if !errNil && !strings.Contains(err.Error(), tc.errMsg) {
 			t.Errorf("TestLoadYAML: test case number %d, expected error '%v' to contain '%v'", i+1, err.Error(), tc.errMsg)
 		}
-		if errNil && !reflect.DeepEqual(actual, tc.expected) {
+		if errNil && !reflect.DeepEqual(*actual, tc.expected) {
 			t.Errorf("TestLoadYAML: test case number %d, expected labels %v, got %v", i+1, tc.expected, actual)
 		}
 	}
