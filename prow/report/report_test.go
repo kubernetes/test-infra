@@ -246,33 +246,75 @@ func (gh fakeGhClient) EditComment(org, repo string, ID int, comment string) err
 	return nil
 }
 
-func createChildren(pjs *kube.ProwJobSpec, d int) int {
-	count := 0
+func createChildren(pj *kube.ProwJobSpec, d int) {
 	for i := 0; i < d; i++ {
-		report := false
-		if d%2 == 0 {
-			report = true
-			count++
+		npj := &kube.ProwJobSpec{
+			// TODO: Support testing this via defining expected behavior in TestReportStatus
+			Report:  true,
+			Context: fmt.Sprintf("%s/child_%d", pj.Context, i),
 		}
-		npjs := &kube.ProwJobSpec{
-			Report:  report,
-			Context: fmt.Sprintf("%s/child_%d", pjs.Context, i),
-		}
-		count += createChildren(npjs, d-1)
-		pjs.RunAfterSuccess = append(pjs.RunAfterSuccess, *npjs)
+		pj.RunAfterSuccess = append(pj.RunAfterSuccess, *npj)
 	}
-	return count
 }
 
 func TestReportStatus(t *testing.T) {
-	type tc struct {
-		name        string
-		pj          kube.ProwJob
-		statusCount int
-	}
-	children := 3
-	createTc := func(n string, state kube.ProwJobState, report bool) tc {
+	tests := []struct {
+		name string
 
+		// TODO: This should be the RunAfterSuccess spec and not a single int.
+		children int
+		state    kube.ProwJobState
+		report   bool
+
+		expectedStatuses []string
+	}{
+		{
+			name: "successful_job-report_true",
+
+			children: 3,
+			state:    kube.SuccessState,
+			report:   true,
+
+			expectedStatuses: []string{"success"},
+		},
+		{
+			name: "successful_job-report_false",
+
+			children: 3,
+			state:    kube.SuccessState,
+			report:   false,
+
+			expectedStatuses: []string{},
+		},
+		{
+			name: "pending_job-report_true",
+
+			children: 3,
+			state:    kube.PendingState,
+			report:   true,
+
+			expectedStatuses: []string{"pending", "pending", "pending", "pending"},
+		},
+		{
+			name: "pending_job-report_false",
+
+			children: 3,
+			state:    kube.PendingState,
+			report:   false,
+
+			expectedStatuses: []string{"pending", "pending", "pending"},
+		},
+		{
+			name: "aborted_job-report_true",
+
+			state:  kube.AbortedState,
+			report: true,
+
+			expectedStatuses: []string{"failure"},
+		},
+	}
+
+	createPJ := func(state kube.ProwJobState, report bool, children int) kube.ProwJob {
 		pj := kube.ProwJob{
 			Status: kube.ProwJobStatus{
 				State:       state,
@@ -293,46 +335,26 @@ func TestReportStatus(t *testing.T) {
 				},
 			},
 		}
-
-		statusCount := createChildren(&pj.Spec, children)
-		if report {
-			statusCount++
-		}
-
-		return tc{
-			name:        n,
-			pj:          pj,
-			statusCount: statusCount,
-		}
+		createChildren(&pj.Spec, children)
+		return pj
 	}
-	for _, tc := range []tc{
-		createTc("successful job", kube.SuccessState, true),
-		createTc("successful job", kube.SuccessState, false),
-		createTc("pending jobs", kube.PendingState, true),
-		createTc("pending jobs", kube.PendingState, false),
-	} {
+	for _, tc := range tests {
+		t.Logf("Running scenario %q", tc.name)
+		// Setup
 		ghc := &fakeGhClient{}
-		if err := reportStatus(ghc, tc.pj, parentJobChanged); err != nil {
+		pj := createPJ(tc.state, tc.report, tc.children)
+		// Run
+		if err := reportStatus(ghc, pj, parentJobChanged); err != nil {
 			t.Error(err)
 		}
-		if tc.pj.Status.State == kube.SuccessState {
-			if tc.pj.Spec.Report {
-				if len(ghc.status) != 1 {
-					t.Errorf("There should only be one status sent, found %d", len(ghc.status))
-				}
-			} else {
-				if len(ghc.status) != 0 {
-					t.Errorf("There should only no status sent, found %d", len(ghc.status))
-				}
-			}
-		} else {
-			if len(ghc.status) != tc.statusCount {
-				t.Errorf("There should be %d status, found %d", tc.statusCount, len(ghc.status))
-			}
-			for i := 1; i < tc.statusCount; i++ {
-				if !strings.HasPrefix(ghc.status[i].Description, parentJobChanged) {
-					t.Errorf("Description should start with prefix %s", parentJobChanged)
-				}
+		// Check
+		if len(ghc.status) != len(tc.expectedStatuses) {
+			t.Errorf("expected %d status(es), found %d", len(tc.expectedStatuses), len(ghc.status))
+			continue
+		}
+		for i, status := range ghc.status {
+			if status.State != tc.expectedStatuses[i] {
+				t.Errorf("unexpected status: %s, expected: %s", status.State, tc.expectedStatuses[i])
 			}
 		}
 	}
