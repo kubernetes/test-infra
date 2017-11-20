@@ -1825,6 +1825,42 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos-k8sbeta-serial
 - name: ci-kubernetes-e2e-gke-cos-k8sbeta-ingress
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos-k8sbeta-ingress
+- name: ci-kubernetes-e2e-gce-beta-stable1-downgrade-cluster
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-beta-stable1-downgrade-cluster
+- name: ci-kubernetes-e2e-gce-beta-stable1-downgrade-cluster-parallel
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-beta-stable1-downgrade-cluster-parallel
+- name: ci-kubernetes-e2e-gce-beta-stable1-gci-kubectl-skew
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-beta-stable1-gci-kubectl-skew
+- name: ci-kubernetes-e2e-gce-beta-stable1-gci-kubectl-skew-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-beta-stable1-gci-kubectl-skew-serial
+- name: ci-kubernetes-e2e-gce-stable1-beta-gci-kubectl-skew
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-stable1-beta-gci-kubectl-skew
+- name: ci-kubernetes-e2e-gce-stable1-beta-gci-kubectl-skew-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-stable1-beta-gci-kubectl-skew-serial
+- name: ci-kubernetes-e2e-gce-stable1-beta-upgrade-cluster
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-stable1-beta-upgrade-cluster
+- name: ci-kubernetes-e2e-gce-stable1-beta-upgrade-cluster-new
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-stable1-beta-upgrade-cluster-new
+- name: ci-kubernetes-e2e-gce-stable1-beta-upgrade-master
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-stable1-beta-upgrade-master
+- name: ci-kubernetes-e2e-gke-beta-stable1-downgrade-cluster
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-beta-stable1-downgrade-cluster
+- name: ci-kubernetes-e2e-gke-beta-stable1-downgrade-cluster-parallel
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-beta-stable1-downgrade-cluster-parallel
+- name: ci-kubernetes-e2e-gke-stable1-beta-upgrade-cluster
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-stable1-beta-upgrade-cluster
+- name: ci-kubernetes-e2e-gke-stable1-beta-upgrade-cluster-new
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-stable1-beta-upgrade-cluster-new
+- name: ci-kubernetes-e2e-gke-stable1-beta-upgrade-master
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-stable1-beta-upgrade-master
+- name: ci-kubernetes-e2e-gke-beta-stable1-gci-kubectl-skew
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-beta-stable1-gci-kubectl-skew
+- name: ci-kubernetes-e2e-gke-beta-stable1-gci-kubectl-skew-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-beta-stable1-gci-kubectl-skew-serial
+- name: ci-kubernetes-e2e-gke-stable1-beta-gci-kubectl-skew
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-stable1-beta-gci-kubectl-skew
+- name: ci-kubernetes-e2e-gke-stable1-beta-gci-kubectl-skew-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-stable1-beta-gci-kubectl-skew-serial
 
 # Add New Testgroups Here
 
@@ -2661,6 +2697,42 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sbeta-slow
   - name: gke-ingress-1.9
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sbeta-ingress
+  - name: gce-1.9-1.8-downgrade
+    test_group_name: ci-kubernetes-e2e-gce-beta-stable1-downgrade-cluster
+  - name: gce-1.9-1.8-downgrade-parallel
+    test_group_name: ci-kubernetes-e2e-gce-beta-stable1-downgrade-cluster-parallel
+  - name: gce-1.8-1.9-upgrade-cluster
+    test_group_name: ci-kubernetes-e2e-gce-stable1-beta-upgrade-cluster
+  - name: gce-1.8-1.9-upgrade-cluster-skew
+    test_group_name: ci-kubernetes-e2e-gce-stable1-beta-upgrade-cluster-new
+  - name: gce-1.8-1.9-upgrade-master
+    test_group_name: ci-kubernetes-e2e-gce-stable1-beta-upgrade-master
+  - name: gce-1.9-1.8-kubectl-skew
+    test_group_name: ci-kubernetes-e2e-gce-beta-stable1-gci-kubectl-skew
+  - name: gce-1.9-1.8-kubectl-skew-serial
+    test_group_name: ci-kubernetes-e2e-gce-beta-stable1-gci-kubectl-skew-serial
+  - name: gce-1.8-1.9-kubectl-skew
+    test_group_name: ci-kubernetes-e2e-gce-stable1-beta-gci-kubectl-skew
+  - name: gce-1.8-1.9-kubectl-skew-serial
+    test_group_name: ci-kubernetes-e2e-gce-stable1-beta-gci-kubectl-skew-serial
+  - name: gke-1.9-1.8-downgrade
+    test_group_name: ci-kubernetes-e2e-gke-beta-stable1-downgrade-cluster
+  - name: gke-1.9-1.8-downgrade-parallel
+    test_group_name: ci-kubernetes-e2e-gke-beta-stable1-downgrade-cluster-parallel
+  - name: gke-1.8-1.9-upgrade-cluster
+    test_group_name: ci-kubernetes-e2e-gke-stable1-beta-upgrade-cluster
+  - name: gke-1.8-1.9-upgrade-cluster-new
+    test_group_name: ci-kubernetes-e2e-gke-stable1-beta-upgrade-cluster-new
+  - name: gke-1.8-1.9-upgrade-master
+    test_group_name: ci-kubernetes-e2e-gke-stable1-beta-upgrade-master
+  - name: gke-1.9-1.8-kubectl-skew
+    test_group_name: ci-kubernetes-e2e-gke-beta-stable1-gci-kubectl-skew
+  - name: gke-1.9-1.8-kubectl-skew-serial
+    test_group_name: ci-kubernetes-e2e-gke-beta-stable1-gci-kubectl-skew-serial
+  - name: gke-1.8-1.9-kubectl-skew
+    test_group_name: ci-kubernetes-e2e-gke-stable1-beta-gci-kubectl-skew
+  - name: gke-1.8-1.9-kubectl-skew-serial
+    test_group_name: ci-kubernetes-e2e-gke-stable1-beta-gci-kubectl-skew-serial
 
 - name: sig-release-1.9-blocking
   dashboard_tab:
