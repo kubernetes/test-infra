@@ -37,6 +37,7 @@ import (
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/hook"
 	"k8s.io/test-infra/prow/plugins"
+	"strings"
 )
 
 const pluginName = "jenkins-config-updater"
@@ -172,7 +173,7 @@ func (s *Server) handleEvent(eventType, eventGUID string, payload []byte) error 
 	for _, target := range s.updateConfig.Targets {
 		for _, change := range changes {
 			if change.Filename == target {
-				args, err := determineTargetForConfig(filepath.Join(r.Dir, change.Filename))
+				args, err := determineTargetForConfig(r.Dir, change.Filename)
 				if err != nil {
 					results.internal = append(results.internal, err)
 				} else {
@@ -225,8 +226,9 @@ func (s *Server) handleEvent(eventType, eventGUID string, payload []byte) error 
 	)
 }
 
-func determineTargetForConfig(config string) ([]string, error) {
-	content, err := ioutil.ReadFile(config)
+func determineTargetForConfig(dir, config string) ([]string, error) {
+	configFile := filepath.Join(dir, config)
+	content, err := ioutil.ReadFile(configFile)
 	if err != nil {
 		return nil, fmt.Errorf("cannot read object YAML/JSON from %v", config)
 	}
@@ -260,7 +262,7 @@ func (r *results) formatResults() string {
 	var commentBuffer bytes.Buffer
 	if len(r.succeeded) > 0 {
 		commentBuffer.WriteString("The following updates succeeded:\n")
-		commentBuffer.WriteString("<ul>\n")
+		commentBuffer.WriteString("<ul>")
 		for _, task := range r.succeeded {
 			commentBuffer.WriteString(formatDetails(task))
 		}
@@ -269,7 +271,7 @@ func (r *results) formatResults() string {
 
 	if len(r.failed) > 0 {
 		commentBuffer.WriteString("The following updates failed:\n")
-		commentBuffer.WriteString("<ul>\n")
+		commentBuffer.WriteString("<ul>")
 		for _, task := range r.failed {
 			commentBuffer.WriteString(formatDetails(task))
 		}
@@ -278,9 +280,9 @@ func (r *results) formatResults() string {
 
 	if len(r.internal) > 0 {
 		commentBuffer.WriteString("The following internal errors occurred:\n")
-		commentBuffer.WriteString("<ul>\n")
+		commentBuffer.WriteString("<ul>")
 		for _, err := range r.internal {
-			commentBuffer.WriteString(fmt.Sprintf(`  <li>%v</li>`, err))
+			commentBuffer.WriteString(fmt.Sprintf(`<li>%v</li>`, err))
 		}
 		commentBuffer.WriteString("</ul>\n")
 	}
@@ -289,16 +291,15 @@ func (r *results) formatResults() string {
 }
 
 func formatDetails(taskResult result) string {
-	return fmt.Sprintf(`  <li>
-    <details>
-    <summary><code>%s</code><summary>
+	output := taskResult.output
+	if taskResult.err != nil {
+		output = fmt.Sprintf("%s\n%v", taskResult.output, taskResult.err)
+	}
 
-    <pre><code>
-    $ %s
-    %s
-    %v
-    </pre></code>
+	args := strings.Join(taskResult.command, " ")
 
-    </details>
-  </li>`, taskResult.command, taskResult.command, taskResult.output, taskResult.err)
+	return fmt.Sprintf(`<li><details><summary><code>%s</code></summary><pre><code>
+$ %s
+%s
+</pre></code></details></li>`, args, args, output)
 }
