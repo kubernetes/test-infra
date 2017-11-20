@@ -456,6 +456,56 @@ presubmits:
       - name: service
         secret:
           secretName: service-account
+  kubernetes/kubernetes-anywhere:
+  - name: pull-k8s-anywhere-e2e-gce
+    agent: kubernetes
+    always_run: true
+    context: pull-k8s-anywhere-e2e-gce
+    rerun_command: "/test pull-k8s-anywhere-e2e-gce"
+    trigger: "(?m)^/test( all| pull-k8s-anywhere-e2e-gce),?(\\s+|$)"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171108-e53c04a8
+        args:
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--git-cache=/root/.cache/git"
+        - "--timeout=75"
+        - "--clean"
+        env:
+        - name: USER
+          value: prow
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /etc/service-account/service-account.json
+        - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+          value: /etc/ssh-key-secret/ssh-private
+        - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+          value: /etc/ssh-key-secret/ssh-public
+        - name: SKIP_RELEASE_VALIDATION # See: https://github.com/kubernetes/kubernetes/pull/50391
+          value: true
+        volumeMounts:
+        - name: service
+          mountPath: /etc/service-account
+          readOnly: true
+        - name: ssh
+          mountPath: /etc/ssh-key-secret
+          readOnly: true
+        - name: cache-ssd
+          mountPath: /root/.cache
+        ports:
+        - containerPort: 9999
+          hostPort: 9999
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
+      - name: ssh
+        secret:
+          secretName: ssh-key-secret
+          defaultMode: 0400
+      - name: cache-ssd
+        hostPath:
+          path: /mnt/disks/ssd0
   kubernetes/kubernetes:
   - name: pull-kubernetes-bazel-build
     agent: kubernetes

@@ -79,6 +79,7 @@ func main() {
 	for _, job := range prowConfig.AllPresubmits([]string{
 		"jlewi/mlkube.io",
 		"kubernetes/kubernetes",
+		"kubernetes/kubernetes-anywhere",
 		"kubernetes/test-infra",
 		"kubernetes/cluster-registry",
 		"kubernetes/federation",
