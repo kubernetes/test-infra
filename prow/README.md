@@ -26,7 +26,8 @@ New features added to each components:
 
  - *November 14, 2017* `jenkins-operator:0.58` exposes prometheus metrics.
  - *November 8, 2017* `horologium:0.14` prow periodic job now support cron
-   triggers.
+   triggers. See https://godoc.org/gopkg.in/robfig/cron.v2 for doc to the 
+   cron library we are using. 
 
 Breaking changes to external APIs (labels, GitHub interactions, configuration
 or deployment) will be documented in this section. Prow is in a pre-release
