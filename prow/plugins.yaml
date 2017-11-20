@@ -118,6 +118,10 @@ plugins:
   - docs-no-retest
   - blockade
 
+  kubernetes/kubernetes-anywhere:
+  - trigger
+  - approve
+
   kubernetes/test-infra:
   - trigger
   - config-updater
