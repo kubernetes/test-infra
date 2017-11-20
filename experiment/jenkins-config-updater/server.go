@@ -100,6 +100,7 @@ func NewServer(name, creds string, hmac []byte, gc *git.Client, ghc *github.Clie
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	eventType, eventGUID, payload, ok := hook.ValidateWebhook(w, r, s.hmacSecret)
 	if !ok {
+		s.log.Error("Failed to validate payload")
 		return
 	}
 	fmt.Fprint(w, "Event received. Have a nice day.")
