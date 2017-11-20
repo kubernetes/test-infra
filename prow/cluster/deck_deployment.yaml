@@ -41,6 +41,7 @@ spec:
         args:
         - --build-cluster=/etc/cluster/cluster
         - --tide-url=http://tide/
+        - --hook-url=http://hook:8888/plugin-help
         volumeMounts:
         - mountPath: /etc/cluster
           name: cluster

@@ -43,7 +43,7 @@ const (
 var lintRe = regexp.MustCompile(`(?mi)^/lint\s*$`)
 
 func init() {
-	plugins.RegisterGenericCommentHandler(pluginName, handleGenericComment)
+	plugins.RegisterGenericCommentHandler(pluginName, handleGenericComment, nil)
 }
 
 type githubClient interface {

@@ -31,7 +31,7 @@ const pluginName = "reopen"
 var reopenRe = regexp.MustCompile(`(?mi)^/reopen\s*$`)
 
 func init() {
-	plugins.RegisterGenericCommentHandler(pluginName, handleGenericComment)
+	plugins.RegisterGenericCommentHandler(pluginName, handleGenericComment, nil)
 }
 
 type githubClient interface {

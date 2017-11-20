@@ -835,7 +835,7 @@ func TestGetMessageApprovedIssueAssociated(t *testing.T) {
 
 This pull-request has been approved by: *<a href="REFERENCE" title="Approved">Alice</a>*, *<a href="REFERENCE" title="Approved">Bill</a>*, *<a href="REFERENCE" title="Author self-approved">John</a>*
 
-Associated issue: *12345*
+Associated issue: *#12345*
 
 The full list of commands accepted by this bot can be found [here](https://github.com/kubernetes/test-infra/blob/master/commands.md).
 

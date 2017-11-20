@@ -31,12 +31,13 @@ import (
 	"k8s.io/test-infra/prow/git"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
+	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/repoowners"
 	"k8s.io/test-infra/prow/slack"
 )
 
 var (
-	allPlugins                 = map[string]struct{}{}
+	pluginHelp                 = map[string]HelpProvider{}
 	genericCommentHandlers     = map[string]GenericCommentHandler{}
 	issueHandlers              = map[string]IssueHandler{}
 	issueCommentHandlers       = map[string]IssueCommentHandler{}
@@ -47,59 +48,65 @@ var (
 	statusEventHandlers        = map[string]StatusEventHandler{}
 )
 
+type HelpProvider func(config *Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error)
+
+func HelpProviders() map[string]HelpProvider {
+	return pluginHelp
+}
+
 type IssueHandler func(PluginClient, github.IssueEvent) error
 
-func RegisterIssueHandler(name string, fn IssueHandler) {
-	allPlugins[name] = struct{}{}
+func RegisterIssueHandler(name string, fn IssueHandler, help HelpProvider) {
+	pluginHelp[name] = help
 	issueHandlers[name] = fn
 }
 
 type IssueCommentHandler func(PluginClient, github.IssueCommentEvent) error
 
-func RegisterIssueCommentHandler(name string, fn IssueCommentHandler) {
-	allPlugins[name] = struct{}{}
+func RegisterIssueCommentHandler(name string, fn IssueCommentHandler, help HelpProvider) {
+	pluginHelp[name] = help
 	issueCommentHandlers[name] = fn
 }
 
 type PullRequestHandler func(PluginClient, github.PullRequestEvent) error
 
-func RegisterPullRequestHandler(name string, fn PullRequestHandler) {
-	allPlugins[name] = struct{}{}
+func RegisterPullRequestHandler(name string, fn PullRequestHandler, help HelpProvider) {
+	pluginHelp[name] = help
 	pullRequestHandlers[name] = fn
 }
 
 type StatusEventHandler func(PluginClient, github.StatusEvent) error
 
-func RegisterStatusEventHandler(name string, fn StatusEventHandler) {
-	allPlugins[name] = struct{}{}
+func RegisterStatusEventHandler(name string, fn StatusEventHandler, help HelpProvider) {
+	pluginHelp[name] = help
 	statusEventHandlers[name] = fn
 }
 
 type PushEventHandler func(PluginClient, github.PushEvent) error
 
-func RegisterPushEventHandler(name string, fn PushEventHandler) {
-	allPlugins[name] = struct{}{}
+func RegisterPushEventHandler(name string, fn PushEventHandler, help HelpProvider) {
+	pluginHelp[name] = help
 	pushEventHandlers[name] = fn
 }
 
 type ReviewEventHandler func(PluginClient, github.ReviewEvent) error
 
-func RegisterReviewEventHandler(name string, fn ReviewEventHandler) {
-	allPlugins[name] = struct{}{}
+func RegisterReviewEventHandler(name string, fn ReviewEventHandler, help HelpProvider) {
+	pluginHelp[name] = help
 	reviewEventHandlers[name] = fn
 }
 
 type ReviewCommentEventHandler func(PluginClient, github.ReviewCommentEvent) error
 
-func RegisterReviewCommentEventHandler(name string, fn ReviewCommentEventHandler) {
-	allPlugins[name] = struct{}{}
+func RegisterReviewCommentEventHandler(name string, fn ReviewCommentEventHandler, help HelpProvider) {
+	pluginHelp[name] = help
 	reviewCommentEventHandlers[name] = fn
 }
 
 type GenericCommentHandler func(PluginClient, github.GenericCommentEvent) error
 
-func RegisterGenericCommentHandler(name string, fn GenericCommentHandler) {
-	allPlugins[name] = struct{}{}
+func RegisterGenericCommentHandler(name string, fn GenericCommentHandler, help HelpProvider) {
+	pluginHelp[name] = help
 	genericCommentHandlers[name] = fn
 }
 
@@ -372,7 +379,7 @@ func validatePlugins(plugins map[string][]string) error {
 	var errors []string
 	for _, configuration := range plugins {
 		for _, plugin := range configuration {
-			if _, ok := allPlugins[plugin]; !ok {
+			if _, ok := pluginHelp[plugin]; !ok {
 				errors = append(errors, fmt.Sprintf("unknown plugin: %s", plugin))
 			}
 		}
@@ -589,4 +596,33 @@ func (pa *PluginAgent) getPlugins(owner, repo string) []string {
 	plugins = append(plugins, pa.configuration.Plugins[fullName]...)
 
 	return plugins
+}
+
+func EventsForPlugin(name string) []string {
+	var events []string
+	if _, ok := issueHandlers[name]; ok {
+		events = append(events, "issue")
+	}
+	if _, ok := issueCommentHandlers[name]; ok {
+		events = append(events, "issue_comment")
+	}
+	if _, ok := pullRequestHandlers[name]; ok {
+		events = append(events, "pull_request")
+	}
+	if _, ok := pushEventHandlers[name]; ok {
+		events = append(events, "push")
+	}
+	if _, ok := reviewEventHandlers[name]; ok {
+		events = append(events, "pull_request_review")
+	}
+	if _, ok := reviewCommentEventHandlers[name]; ok {
+		events = append(events, "pull_request_review_comment")
+	}
+	if _, ok := statusEventHandlers[name]; ok {
+		events = append(events, "status")
+	}
+	if _, ok := genericCommentHandlers[name]; ok {
+		events = append(events, "<GenericCommentEvent. Includes: [issue_comment, pull_request_review, pull_request_review_comment, status] and for text modifying actions: [issue, pull_request]>")
+	}
+	return events
 }

@@ -15,7 +15,8 @@
 # This file creates a build environment for building and running kubernetes
 # unit and integration tests
 
-FROM golang:1.9.1
+ARG GO_VERSION=1.9.1
+FROM golang:${GO_VERSION}
 LABEL maintainer="Benjamin Elder <bentheelder@google.com>"
 
 # Setup workspace and symlink to gopath

@@ -17,7 +17,9 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+set -x
 service docker start
+echo "Ignore 'cgroup is already mounted' errors here :-)"
 git clone https://github.com/kubernetes/test-infra
 ./test-infra/jenkins/bootstrap.py \
     --job=${JOB_NAME} \

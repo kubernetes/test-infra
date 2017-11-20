@@ -58,7 +58,7 @@ def check_output(*cmd):
 def check_env(env, *cmd):
     """Log and run the command with a specific env, raising on errors."""
     print >>sys.stderr, 'Environment:'
-    for key, value in env.items():
+    for key, value in sorted(env.items()):
         print >>sys.stderr, '%s=%s' % (key, value)
     print >>sys.stderr, 'Run:', cmd
     subprocess.check_call(cmd, env=env)

@@ -151,7 +151,7 @@ func (c *Client) request(r *request, ret interface{}) (int, error) {
 	}
 	if !okCode {
 		clientError := ClientError{}
-		if err := json.Unmarshal(b, clientError); err != nil {
+		if err := json.Unmarshal(b, &clientError); err != nil {
 			return resp.StatusCode, err
 		}
 		return resp.StatusCode, requestError{

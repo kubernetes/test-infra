@@ -106,6 +106,14 @@
         job-name: ci-kubernetes-build-1.8
         repo-name: k8s.io/kubernetes
         timeout: 120
+    
+    - kubernetes-build-1.9:
+        branch: release-1.9
+        commit-frequency: 'H/5 * * * *'
+        giturl: 'https://github.com/kubernetes/kubernetes'
+        job-name: ci-kubernetes-build-1.9
+        repo-name: k8s.io/kubernetes
+        timeout: 120
 
     - kubernetes-federation-build-1.7:
         branch: release-1.7

@@ -135,7 +135,7 @@ def main(branch, script, force, on_prow):
             # mimic k8s.io/kubernetes/hack/jenkins/verify-dockerized.sh
             # but patched slightly to work appropriately on prow
             path_prefix = os.environ['GOPATH'] + '/bin'
-            path_prefix += ':' + os.getcwd() + '/third_party/etcd:/usr/local/go/bin'
+            path_prefix += ':' + k8s + '/third_party/etcd:/usr/local/go/bin'
             os.environ['PATH'] = path_prefix + ':' + os.environ['PATH']
             os.environ['ARTIFACTS_DIR'] = os.environ['WORKSPACE'] + '/artifacts'
             os.environ['LOG_LEVEL'] = '4'
