@@ -31,9 +31,9 @@ const (
 )
 
 func init() {
-	plugins.RegisterIssueCommentHandler(pluginName, handleIssueComment)
-	plugins.RegisterPullRequestHandler(pluginName, handlePullRequest)
-	plugins.RegisterPushEventHandler(pluginName, handlePush)
+	plugins.RegisterIssueCommentHandler(pluginName, handleIssueComment, nil)
+	plugins.RegisterPullRequestHandler(pluginName, handlePullRequest, nil)
+	plugins.RegisterPushEventHandler(pluginName, handlePush, nil)
 }
 
 type githubClient interface {

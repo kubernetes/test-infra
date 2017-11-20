@@ -23,6 +23,7 @@ go_test(
     library = ":go_default_library",
     deps = [
         "//prow/kube:go_default_library",
+        "//prow/pluginhelp:go_default_library",
         "//prow/tide:go_default_library",
         "//vendor/github.com/ghodss/yaml:go_default_library",
     ],
@@ -33,6 +34,7 @@ go_library(
     srcs = [
         "jobs.go",
         "main.go",
+        "pluginhelp.go",
         "tide.go",
     ],
     importpath = "k8s.io/test-infra/prow/cmd/deck",
@@ -41,6 +43,7 @@ go_library(
         "//prow/kube:go_default_library",
         "//prow/kube/labels:go_default_library",
         "//prow/pjutil:go_default_library",
+        "//prow/pluginhelp:go_default_library",
         "//prow/tide:go_default_library",
         "//vendor/github.com/NYTimes/gziphandler:go_default_library",
         "//vendor/github.com/ghodss/yaml:go_default_library",

@@ -42,8 +42,8 @@ var reactions = []string{
 }
 
 func init() {
-	plugins.RegisterIssueCommentHandler(pluginName, handleIssueComment)
-	plugins.RegisterPullRequestHandler(pluginName, handlePullRequest)
+	plugins.RegisterIssueCommentHandler(pluginName, handleIssueComment, nil)
+	plugins.RegisterPullRequestHandler(pluginName, handlePullRequest, nil)
 }
 
 type githubClient interface {

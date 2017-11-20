@@ -15,7 +15,7 @@
 # Includes basic workspace setup, with gcloud and a bootstrap runner
 
 FROM debian:jessie
-LABEL authors="Sen Lu <senlu@google.com>"
+LABEL maintainer="Sen Lu <senlu@google.com>"
 
 WORKDIR /workspace
 RUN mkdir -p /workspace
@@ -60,12 +60,61 @@ RUN wget -q https://dl.google.com/dl/cloudsdk/channels/rapid/google-cloud-sdk.ta
     gcloud components install alpha beta kubectl && \
     gcloud info | tee /workspace/gcloud-info.txt
 
-# Install docker
+# Get docker client binary for use with our jenkins nodes, and put it in it's
+# own bin dir. The runner will add this to the path if dind mode is not enabled.
 # Note: 1.11+ changes the tarball format
-RUN curl -L "https://get.docker.com/builds/Linux/x86_64/docker-1.9.1.tgz" \
-    | tar -C /usr/bin -xvzf- --strip-components=3 usr/local/bin/docker
+RUN mkdir /docker-no-dind-bin/ && \
+    curl -L "https://get.docker.com/builds/Linux/x86_64/docker-1.9.1.tgz" \
+    | tar -C /docker-no-dind-bin -xvzf- --strip-components=3 usr/local/bin/docker
 
 
+#
+# BEGIN: DOCKER IN DOCKER SETUP
+#
+
+# Install Docker deps, some of these are already installed in the image but
+# that's fine since they won't re-install and we can reuse the code below
+# for another image someday.
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    apt-transport-https \
+    ca-certificates \
+    curl \
+    gnupg2 \
+    software-properties-common \
+    lsb-release
+
+# Add the Docker apt-repository
+RUN curl -fsSL https://download.docker.com/linux/$(. /etc/os-release; echo "$ID")/gpg \
+    | apt-key add - && \
+    add-apt-repository \
+    "deb [arch=amd64] https://download.docker.com/linux/$(. /etc/os-release; echo "$ID") \
+    $(lsb_release -cs) stable"
+
+# Install Docker
+# TODO(bentheelder): this is a bit of a hack, look into alternatives.
+# Why this exists: `docker service start` on debian runs a `cgroupfs_mount` method,
+# We're already inside docker though so we can be sure these are already mounted.
+# Trying to remount these makes for a very noisy error block in the beginning of
+# the pod logs, so we just comment out the call to it... :shrug:
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends docker-ce && \
+    sed -i 's/cgroupfs_mount$/#cgroupfs_mount\n/' /etc/init.d/docker
+
+
+# Move Docker's storage location
+RUN echo 'DOCKER_OPTS="${DOCKER_OPTS} --graph=/docker-graph"' | \
+    tee --append /etc/default/docker
+# NOTE this should be mounted and persisted as a volume ideally (!)
+# We will make a fallback one now just in case
+RUN mkdir /docker-graph
+
+#
+# END: DOCKER IN DOCKER SETUP
+#
+
+
+# note the runner is also responsible for making docker in docker function if
+# env DOCKER_IN_DOCKER_ENABLED is set
 ADD ["runner", \
     "/workspace/"]
 

@@ -48,10 +48,14 @@ func TestHook(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Marshalling ICE: %v", err)
 	}
-	plugins.RegisterIssueHandler("baz", func(pc plugins.PluginClient, ie github.IssueEvent) error {
-		called <- true
-		return nil
-	})
+	plugins.RegisterIssueHandler(
+		"baz",
+		func(pc plugins.PluginClient, ie github.IssueEvent) error {
+			called <- true
+			return nil
+		},
+		nil,
+	)
 	pa := &plugins.PluginAgent{}
 	pa.Set(&plugins.Configuration{Plugins: map[string][]string{"foo/bar": {"baz"}}})
 	ca := &config.Agent{}

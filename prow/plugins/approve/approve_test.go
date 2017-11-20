@@ -261,7 +261,7 @@ You can cancel your approval by writing ` + "`/approve cancel`" + ` in a comment
 
 This pull-request has been approved by: *<a href="" title="Approved">Alice</a>*
 
-Associated issue: *42*
+Associated issue: *#42*
 
 The full list of commands accepted by this bot can be found [here](https://github.com/kubernetes/test-infra/blob/master/commands.md).
 
@@ -402,7 +402,7 @@ You can cancel your approval by writing ` + "`/approve cancel`" + ` in a comment
 
 This pull-request has been approved by: *<a href="" title="LGTM">alice</a>*
 
-Associated issue: *1*
+Associated issue: *#1*
 
 The full list of commands accepted by this bot can be found [here](https://github.com/kubernetes/test-infra/blob/master/commands.md).
 

@@ -29,6 +29,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     python \
     python-pip \
+    rpm \
     unzip \
     wget \
     zip \

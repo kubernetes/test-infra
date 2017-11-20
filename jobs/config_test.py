@@ -765,7 +765,6 @@ class JobTest(unittest.TestCase):
             'ci-kubernetes-kubemark-100-canary': 'ci-kubernetes-kubemark-*',
             'ci-kubernetes-kubemark-5-gce': 'ci-kubernetes-kubemark-*',
             'ci-kubernetes-kubemark-5-gce-last-release': 'ci-kubernetes-kubemark-*',
-            'ci-kubernetes-kubemark-500-gce': 'ci-kubernetes-scale-*',
             'ci-kubernetes-kubemark-high-density-100-gce': 'ci-kubernetes-kubemark-*',
             'ci-kubernetes-kubemark-gce-scale': 'ci-kubernetes-scale-*',
             'pull-kubernetes-kubemark-e2e-gce-big': 'ci-kubernetes-scale-*',

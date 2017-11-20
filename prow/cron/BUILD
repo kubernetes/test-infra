@@ -8,6 +8,7 @@ go_library(
     deps = [
         "//prow/config:go_default_library",
         "//vendor/github.com/robfig/cron:go_default_library",
+        "//vendor/github.com/sirupsen/logrus:go_default_library",
     ],
 )
 

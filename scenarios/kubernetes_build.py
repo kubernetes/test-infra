@@ -36,9 +36,10 @@ def main(args):
 
     This is a python port of the kubernetes/hack/jenkins/build.sh script.
     """
-    if os.path.split(os.getcwd())[-1] != 'kubernetes':
+    if os.path.split(os.getcwd())[-1] != 'kubernetes' and \
+        os.path.split(os.getcwd())[-1] != 'federation':
         print >>sys.stderr, (
-            'Scenario should only run from a kubernetes directory!')
+            'Scenario should only run from either kubernetes or federation directory!')
         sys.exit(1)
     env = {
         # Skip gcloud update checking; do we still need this?

@@ -20,7 +20,8 @@ Then from `$GOPATH/src/k8s.io/kubernetes/` run:
 Planter repects the following environment variables:
 
  - `TAG`: the planter image tag, this will default to the current stable version
- used to build kubernetes, but you may override it with EG `TAG=0.6.1-1`
+ used to build kubernetes, but you may override it with EG `TAG=0.6.1`
+   - These should now match bazel release versions eg `0.8.0rc2`
  - `DRY_RUN`: if set planter will only echo the docker command that would have been run
 
  - `HOME`: your home directory, this will be mounted in to the container

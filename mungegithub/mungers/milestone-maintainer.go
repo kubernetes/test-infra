@@ -97,21 +97,21 @@ const (
 
 	milestoneMessageTemplate = `
 {{- if .warnUnapproved}}
-**Action required**: This issue must have the {{.approvedLabel}} label applied by a SIG maintainer.{{.unapprovedRemovalWarning}}
+**Action required**: This {{.objType}} must have the {{.approvedLabel}} label applied by a SIG maintainer.{{.unapprovedRemovalWarning}}
 {{end -}}
 {{- if .removeUnapproved}}
-**Important**: This issue was missing the {{.approvedLabel}} label for more than {{.approvalGracePeriod}}.
+**Important**: This {{.objType}} was missing the {{.approvedLabel}} label for more than {{.approvalGracePeriod}}.
 {{end -}}
 {{- if .warnMissingInProgress}}
-**Action required**: During code {{.mode}}, issues in the milestone should be in progress.
-If this issue is not being actively worked on, please remove it from the milestone.
-If it is being worked on, please add the {{.inProgressLabel}} label so it can be tracked with other in-flight issues.
+**Action required**: During code {{.mode}}, {{.objTypePlural}} in the milestone should be in progress.
+If this {{.objType}} is not being actively worked on, please remove it from the milestone.
+If it is being worked on, please add the {{.inProgressLabel}} label so it can be tracked with other in-flight {{.objTypePlural}}.
 {{end -}}
 {{- if .warnUpdateRequired}}
-**Action Required**: This issue has not been updated since {{.lastUpdated}}. Please provide an update.
+**Action Required**: This {{.objType}} has not been updated since {{.lastUpdated}}. Please provide an update.
 {{end -}}
 {{- if .warnUpdateInterval}}
-**Note**: This issue is marked as {{.blockerLabel}}, and must be updated every {{.updateInterval}} during code {{.mode}}.
+**Note**: This {{.objType}} is marked as {{.blockerLabel}}, and must be updated every {{.updateInterval}} during code {{.mode}}.
 
 Example update:
 
@@ -122,20 +122,20 @@ Risks: Complicated fix required
 ` + "```" + `
 {{end -}}
 {{- if .warnNonBlockerRemoval}}
-**Note**: If this issue is not resolved or labeled as {{.blockerLabel}} by {{.freezeDate}} it will be moved out of the {{.milestone}}.
+**Note**: If this {{.objType}} is not resolved or labeled as {{.blockerLabel}} by {{.freezeDate}} it will be moved out of the {{.milestone}}.
 {{end -}}
 {{- if .removeNonBlocker}}
-**Important**: Code freeze is in effect and only issues with {{.blockerLabel}} may remain in the {{.milestone}}.
+**Important**: Code freeze is in effect and only {{.objTypePlural}} with {{.blockerLabel}} may remain in the {{.milestone}}.
 {{end -}}
 {{- if .warnIncompleteLabels}}
-**Action required**: This issue requires label changes.{{.incompleteLabelsRemovalWarning}}
+**Action required**: This {{.objType}} requires label changes.{{.incompleteLabelsRemovalWarning}}
 
 {{range $index, $labelError := .labelErrors -}}
 {{$labelError}}
 {{end -}}
 {{end -}}
 {{- if .removeIncompleteLabels}}
-**Important**: This issue was missing labels required for the {{.milestone}} for more than {{.labelGracePeriod}}:
+**Important**: This {{.objType}} was missing labels required for the {{.milestone}} for more than {{.labelGracePeriod}}:
 
 {{range $index, $labelError := .labelErrors -}}
 {{$labelError}}
@@ -143,9 +143,9 @@ Risks: Complicated fix required
 {{end -}}
 {{- if .summarizeLabels -}}
 <details{{if .onlySummary}} open{{end}}>
-<summary>Issue Labels</summary>
+<summary>{{.objTypeTitle}} Labels</summary>
 
-- {{range $index, $sigLabel := .sigLabels}}{{if $index}} {{end}}{{$sigLabel}}{{end}}: Issue will be escalated to these SIGs if needed.
+- {{range $index, $sigLabel := .sigLabels}}{{if $index}} {{end}}{{$sigLabel}}{{end}}: {{.objTypeTitle}} will be escalated to these SIGs if needed.
 - {{.priorityLabel}}: {{.priorityDescription}}
 - {{.kindLabel}}: {{.kindDescription}}
 </details>
@@ -158,27 +158,27 @@ var (
 
 	milestoneStateConfigs = map[milestoneState]milestoneStateConfig{
 		milestoneCurrent: {
-			title: "Milestone Issue **Current**",
+			title: "Milestone %s **Current**",
 		},
 		milestoneNeedsLabeling: {
-			title:          "Milestone Labels **Incomplete**",
+			title:          "Milestone %s Labels **Incomplete**",
 			label:          milestoneLabelsIncompleteLabel,
 			warnOnInterval: true,
 		},
 		milestoneNeedsApproval: {
-			title:          "Milestone Issue **Needs Approval**",
+			title:          "Milestone %s **Needs Approval**",
 			label:          milestoneNeedsApprovalLabel,
 			warnOnInterval: true,
 			notifySIGs:     true,
 		},
 		milestoneNeedsAttention: {
-			title:          "Milestone Issue **Needs Attention**",
+			title:          "Milestone %s **Needs Attention**",
 			label:          milestoneNeedsAttentionLabel,
 			warnOnInterval: true,
 			notifySIGs:     true,
 		},
 		milestoneNeedsRemoval: {
-			title:      "Milestone **Removed**",
+			title:      "Milestone **Removed** From %s",
 			label:      milestoneRemovedLabel,
 			notifySIGs: true,
 		},
@@ -201,9 +201,9 @@ var (
 	}
 
 	priorityMap = map[string]string{
-		blockerLabel:                  "Never automatically move out of a release milestone; continually escalate to contributor and SIG through all available channels.",
-		"priority/important-soon":     "Escalate to the issue owners and SIG owner; move out of milestone after several unsuccessful escalation attempts.",
-		"priority/important-longterm": "Escalate to the issue owners; move out of the milestone after 1 attempt.",
+		blockerLabel:                  "Never automatically move %s out of a release milestone; continually escalate to contributor and SIG through all available channels.",
+		"priority/important-soon":     "Escalate to the %s owners and SIG owner; move out of milestone after several unsuccessful escalation attempts.",
+		"priority/important-longterm": "Escalate to the %s owners; move out of the milestone after 1 attempt.",
 	}
 )
 
@@ -340,11 +340,11 @@ func (m *MilestoneMaintainer) EachLoop() error { return nil }
 // RegisterOptions registers options for this munger; returns any that require a restart when changed.
 func (m *MilestoneMaintainer) RegisterOptions(opts *options.Options) sets.String {
 	opts.RegisterString(&m.milestoneModes, milestoneOptModes, "", fmt.Sprintf("The comma-separated list of milestones and the mode to maintain them in (one of %v). Example: v1.8=%s,v1.9=%s", milestoneModes.List(), milestoneModeDev, milestoneModeSlush))
-	opts.RegisterDuration(&m.warningInterval, milestoneOptWarningInterval, 24*time.Hour, "The interval to wait between warning about an incomplete issue in the active milestone.")
-	opts.RegisterDuration(&m.labelGracePeriod, milestoneOptLabelGracePeriod, 72*time.Hour, "The grace period to wait before removing a non-blocking issue with incomplete labels from the active milestone.")
-	opts.RegisterDuration(&m.approvalGracePeriod, milestoneOptApprovalGracePeriod, 168*time.Hour, "The grace period to wait before removing a non-blocking issue without sig approval from the active milestone.")
-	opts.RegisterDuration(&m.slushUpdateInterval, milestoneOptSlushUpdateInterval, 72*time.Hour, "The expected interval, during code slush, between updates to a blocking issue in the active milestone.")
-	opts.RegisterDuration(&m.freezeUpdateInterval, milestoneOptFreezeUpdateInterval, 24*time.Hour, "The expected interval, during code freeze, between updates to a blocking issue in the active milestone.")
+	opts.RegisterDuration(&m.warningInterval, milestoneOptWarningInterval, 24*time.Hour, "The interval to wait between warning about an incomplete issue/pr in the active milestone.")
+	opts.RegisterDuration(&m.labelGracePeriod, milestoneOptLabelGracePeriod, 72*time.Hour, "The grace period to wait before removing a non-blocking issue/pr with incomplete labels from the active milestone.")
+	opts.RegisterDuration(&m.approvalGracePeriod, milestoneOptApprovalGracePeriod, 168*time.Hour, "The grace period to wait before removing a non-blocking issue/pr without sig approval from the active milestone.")
+	opts.RegisterDuration(&m.slushUpdateInterval, milestoneOptSlushUpdateInterval, 72*time.Hour, "The expected interval, during code slush, between updates to a blocking issue/pr in the active milestone.")
+	opts.RegisterDuration(&m.freezeUpdateInterval, milestoneOptFreezeUpdateInterval, 24*time.Hour, "The expected interval, during code freeze, between updates to a blocking issue/pr in the active milestone.")
 	// Slush mode requires a freeze date to include in notifications
 	// indicating the date by which non-critical issues must be closed
 	// or upgraded in priority to avoid being moved out of the
@@ -463,8 +463,11 @@ func (m *MilestoneMaintainer) issueChange(obj *github.MungeObject) *issueChange 
 		commentInterval = &m.warningInterval
 	}
 
+	// Ensure the title refers to the correct type (issue or pr)
+	title := fmt.Sprintf(stateConfig.title, strings.Title(objTypeString(obj)))
+
 	return &issueChange{
-		notification:        c.NewNotification(milestoneNotifierName, stateConfig.title, message),
+		notification:        c.NewNotification(milestoneNotifierName, title, message),
 		label:               stateConfig.label,
 		removeFromMilestone: icc.state == milestoneNeedsRemoval,
 		commentInterval:     commentInterval,
@@ -483,6 +486,8 @@ func (m *MilestoneMaintainer) issueChangeConfig(obj *github.MungeObject) *issueC
 
 	updateInterval := m.updateInterval(mode)
 
+	objType := objTypeString(obj)
+
 	icc := &issueChangeConfig{
 		enabledSections: sets.String{},
 		templateArguments: map[string]interface{}{
@@ -494,6 +499,9 @@ func (m *MilestoneMaintainer) issueChangeConfig(obj *github.MungeObject) *issueC
 			"labelGracePeriod":    durationToMaxDays(m.labelGracePeriod),
 			"milestone":           fmt.Sprintf("%s milestone", milestone),
 			"mode":                mode,
+			"objType":             objType,
+			"objTypePlural":       fmt.Sprintf("%ss", objType),
+			"objTypeTitle":        strings.Title(objType),
 			"updateInterval":      durationToMaxDays(updateInterval),
 		},
 		sigLabels: []string{},
@@ -502,10 +510,10 @@ func (m *MilestoneMaintainer) issueChangeConfig(obj *github.MungeObject) *issueC
 	isBlocker := obj.HasLabel(blockerLabel)
 
 	if kind, priority, sigs, labelErrors := checkLabels(obj.Issue.Labels); len(labelErrors) == 0 {
-		icc.summarizeLabels(kind, priority, sigs)
+		icc.summarizeLabels(objType, kind, priority, sigs)
 		if !obj.HasLabel(statusApprovedLabel) {
 			if isBlocker {
-				icc.warnUnapproved(nil, milestone)
+				icc.warnUnapproved(nil, objType, milestone)
 			} else {
 				removeAfter, ok := gracePeriodRemaining(obj, m.botName, milestoneNeedsApprovalLabel, m.approvalGracePeriod, time.Now(), false)
 				if !ok {
@@ -513,7 +521,7 @@ func (m *MilestoneMaintainer) issueChangeConfig(obj *github.MungeObject) *issueC
 				}
 
 				if removeAfter == nil || *removeAfter >= 0 {
-					icc.warnUnapproved(removeAfter, milestone)
+					icc.warnUnapproved(removeAfter, objType, milestone)
 				} else {
 					icc.removeUnapproved()
 				}
@@ -556,12 +564,19 @@ func (m *MilestoneMaintainer) issueChangeConfig(obj *github.MungeObject) *issueC
 		}
 
 		if removeAfter == nil || *removeAfter >= 0 {
-			icc.warnIncompleteLabels(removeAfter, labelErrors, milestone)
+			icc.warnIncompleteLabels(removeAfter, labelErrors, objType, milestone)
 		} else {
 			icc.removeIncompleteLabels(labelErrors)
 		}
 	}
 	return icc
+}
+
+func objTypeString(obj *github.MungeObject) string {
+	if obj.IsPR() {
+		return "pull request"
+	}
+	return "issue"
 }
 
 // issueChangeConfig is the config required to change an issue (via
@@ -591,7 +606,7 @@ func (icc *issueChangeConfig) enableSection(sectionName string) {
 	icc.enabledSections.Insert(sectionName)
 }
 
-func (icc *issueChangeConfig) summarizeLabels(kindLabel, priorityLabel string, sigLabels []string) {
+func (icc *issueChangeConfig) summarizeLabels(objType, kindLabel, priorityLabel string, sigLabels []string) {
 	icc.enableSection("summarizeLabels")
 	icc.state = milestoneCurrent
 	icc.sigLabels = sigLabels
@@ -603,7 +618,7 @@ func (icc *issueChangeConfig) summarizeLabels(kindLabel, priorityLabel string, s
 		"kindLabel":           quoteLabel(kindLabel),
 		"kindDescription":     kindMap[kindLabel],
 		"priorityLabel":       quoteLabel(priorityLabel),
-		"priorityDescription": priorityMap[priorityLabel],
+		"priorityDescription": fmt.Sprintf(priorityMap[priorityLabel], objType),
 		"sigLabels":           quotedSigLabels,
 	}
 	for k, v := range arguments {
@@ -611,13 +626,13 @@ func (icc *issueChangeConfig) summarizeLabels(kindLabel, priorityLabel string, s
 	}
 }
 
-func (icc *issueChangeConfig) warnUnapproved(removeAfter *time.Duration, milestone string) {
+func (icc *issueChangeConfig) warnUnapproved(removeAfter *time.Duration, objType, milestone string) {
 	icc.enableSection("warnUnapproved")
 	icc.state = milestoneNeedsApproval
 	var warning string
 	if removeAfter != nil {
-		warning = fmt.Sprintf(" If the label is not applied within %s, the issue will be moved out of the %s milestone.",
-			durationToMaxDays(*removeAfter), milestone)
+		warning = fmt.Sprintf(" If the label is not applied within %s, the %s will be moved out of the %s milestone.",
+			durationToMaxDays(*removeAfter), objType, milestone)
 	}
 	icc.templateArguments["unapprovedRemovalWarning"] = warning
 
@@ -644,13 +659,13 @@ func (icc *issueChangeConfig) warnUpdateRequired(lastUpdated time.Time) {
 	icc.templateArguments["lastUpdated"] = lastUpdated.Format("Jan 2")
 }
 
-func (icc *issueChangeConfig) warnIncompleteLabels(removeAfter *time.Duration, labelErrors []string, milestone string) {
+func (icc *issueChangeConfig) warnIncompleteLabels(removeAfter *time.Duration, labelErrors []string, objType, milestone string) {
 	icc.enableSection("warnIncompleteLabels")
 	icc.state = milestoneNeedsLabeling
 	var warning string
 	if removeAfter != nil {
-		warning = fmt.Sprintf(" If the required changes are not made within %s, the issue will be moved out of the %s milestone.",
-			durationToMaxDays(*removeAfter), milestone)
+		warning = fmt.Sprintf(" If the required changes are not made within %s, the %s will be moved out of the %s milestone.",
+			durationToMaxDays(*removeAfter), objType, milestone)
 	}
 	icc.templateArguments["incompleteLabelsRemovalWarning"] = warning
 	icc.templateArguments["labelErrors"] = labelErrors
@@ -675,12 +690,7 @@ func (icc *issueChangeConfig) sigMentions() string {
 // ignoreObject indicates whether the munger should ignore the given
 // object.
 func ignoreObject(obj *github.MungeObject) bool {
-	// Only target issues
-	if obj.IsPR() {
-		return true
-	}
-
-	// Ignore closed issues
+	// Ignore closed
 	if obj.Issue.State != nil && *obj.Issue.State == "closed" {
 		return true
 	}

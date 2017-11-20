@@ -58,6 +58,12 @@
         job-name: ci-kubernetes-verify-master
         repo-name: k8s.io/kubernetes
         timeout: 80
+    - kubernetes-verify-release-1.9:
+        branch: release-1.9
+        frequency: 'H/5 * * * *'
+        job-name: ci-kubernetes-verify-release-1.9
+        repo-name: k8s.io/kubernetes
+        timeout: 80
     - kubernetes-verify-release-1.8:
         branch: release-1.8
         frequency: 'H/5 * * * *'
@@ -82,6 +88,12 @@
         branch: master
         frequency: 'H/5 * * * *'
         job-name: ci-kubernetes-test-go
+        repo-name: k8s.io/kubernetes
+        timeout: 100
+    - kubernetes-test-go-release-1.9:
+        branch: release-1.9
+        frequency: 'H/5 * * * *'
+        job-name: ci-kubernetes-test-go-release-1.9
         repo-name: k8s.io/kubernetes
         timeout: 100
     - kubernetes-test-go-release-1.8:
