@@ -2585,8 +2585,6 @@ dashboards:
     test_group_name: ci-kubernetes-soak-gce-gci
   - name: kubeadm-gce
     test_group_name: ci-kubernetes-e2e-kubeadm-gce
-  - name: periodic-kubernetes-e2e-debs-pushed
-    test_group_name: periodic-kubernetes-e2e-debs-pushed
 
 - name: sig-cluster-lifecycle-1.6-upgrade-skew
   dashboard_tab:
