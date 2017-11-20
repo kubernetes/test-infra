@@ -2543,8 +2543,6 @@ dashboards:
     test_group_name: ci-kubernetes-node-kubelet
   - name: gci-gce
     test_group_name: ci-kubernetes-e2e-gci-gce
-  - name: gci-gke
-    test_group_name: ci-kubernetes-e2e-gci-gke
   - name: aws
     test_group_name: ci-kubernetes-e2e-kops-aws
   - name: gce-gpu
@@ -2557,12 +2555,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-p100
   - name: gci-gce-slow
     test_group_name: ci-kubernetes-e2e-gci-gce-slow
-  - name: gci-gke-slow
-    test_group_name: ci-kubernetes-e2e-gci-gke-slow
   - name: gci-gce-serial
     test_group_name: ci-kubernetes-e2e-gci-gce-serial
-  - name: gci-gke-serial
-    test_group_name: ci-kubernetes-e2e-gci-gke-serial
   - name: gci-gce-alpha-features
     test_group_name: ci-kubernetes-e2e-gci-gce-alpha-features
   - name: gci-gce-audit
@@ -2575,12 +2569,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-scale-performance
   - name: gci-gce-ingress
     test_group_name: ci-kubernetes-e2e-gci-gce-ingress
-  - name: gci-gke-ingress
-    test_group_name: ci-kubernetes-e2e-gci-gke-ingress
   - name: gci-gce-reboot
     test_group_name: ci-kubernetes-e2e-gci-gce-reboot
-  - name: gci-gke-reboot
-    test_group_name: ci-kubernetes-e2e-gci-gke-reboot
   - name: soak-gce-gci
     test_group_name: ci-kubernetes-soak-gce-gci
   - name: kubeadm-gce
