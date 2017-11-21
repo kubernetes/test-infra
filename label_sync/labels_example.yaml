@@ -5,4 +5,9 @@ labels:
     name: lgtm
   - color: red
     name: priority/P0
+    previously:
+    - color: blue
+      name: P0
+  - name: dead-label
+    deleteAfter: 2017-01-01T13:00:00Z
 ...

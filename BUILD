@@ -44,6 +44,7 @@ filegroup(
         "//metrics:all-srcs",
         "//mungegithub:all-srcs",
         "//prow:all-srcs",
+        "//queue_health/graph:all-srcs",
         "//robots/issue-creator:all-srcs",
         "//scenarios:all-srcs",
         "//testgrid/config:all-srcs",

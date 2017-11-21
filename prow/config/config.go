@@ -74,8 +74,16 @@ type Config struct {
 	PushGateway PushGateway `json:"push_gateway,omitempty"`
 }
 
+// PushGateway is a prometheus push gateway.
 type PushGateway struct {
+	// Endpoint is the location of the prometheus pushgateway
+	// where prow will push metrics to.
 	Endpoint string `json:"endpoint,omitempty"`
+	// IntervalString compiles into Interval at load time.
+	IntervalString string `json:"interval,omitempty"`
+	// Interval specifies how often prow will push metrics
+	// to the pushgateway. Defaults to 1m.
+	Interval time.Duration `json:"-"`
 }
 
 // Tide is config for the tide pool.
@@ -299,12 +307,22 @@ func parseConfig(c *Config) error {
 		c.Deck.ExternalAgentLogs[i].Selector = s
 	}
 
+	if c.PushGateway.IntervalString == "" {
+		c.PushGateway.Interval = time.Minute
+	} else {
+		interval, err := time.ParseDuration(c.PushGateway.IntervalString)
+		if err != nil {
+			return fmt.Errorf("cannot parse duration for push_gateway.interval: %v", err)
+		}
+		c.PushGateway.Interval = interval
+	}
+
 	if c.Sinker.ResyncPeriodString == "" {
 		c.Sinker.ResyncPeriod = time.Hour
 	} else {
 		resyncPeriod, err := time.ParseDuration(c.Sinker.ResyncPeriodString)
 		if err != nil {
-			return fmt.Errorf("cannot parse duration for resync_period: %v", err)
+			return fmt.Errorf("cannot parse duration for sinker.resync_period: %v", err)
 		}
 		c.Sinker.ResyncPeriod = resyncPeriod
 	}

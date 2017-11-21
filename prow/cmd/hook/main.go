@@ -154,8 +154,9 @@ func main() {
 	promMetrics := hook.NewMetrics()
 
 	// Push metrics to the configured prometheus pushgateway endpoint.
-	if endpoint := configAgent.Config().PushGateway.Endpoint; endpoint != "" {
-		go metrics.PushMetrics("hook", endpoint)
+	pushGateway := configAgent.Config().PushGateway
+	if pushGateway.Endpoint != "" {
+		go metrics.PushMetrics("hook", pushGateway.Endpoint, pushGateway.Interval)
 	}
 
 	server := &hook.Server{

@@ -46,6 +46,7 @@ func TestHandleIssueComment(t *testing.T) {
 		IsPR          bool
 		Branch        string
 		ShouldBuild   bool
+		ShouldReport  bool
 		HasOkToTest   bool
 		IsOkToTest    bool
 		StartsExactly string
@@ -137,12 +138,13 @@ func TestHandleIssueComment(t *testing.T) {
 		{
 			name: "Wrong branch.",
 
-			Author:      "t",
-			Body:        "/test",
-			State:       "open",
-			IsPR:        true,
-			Branch:      "other",
-			ShouldBuild: false,
+			Author:       "t",
+			Body:         "/test all",
+			State:        "open",
+			IsPR:         true,
+			Branch:       "other",
+			ShouldBuild:  false,
+			ShouldReport: true,
 		},
 		{
 			name: "Retest with one running and one failed",
@@ -191,6 +193,112 @@ func TestHandleIssueComment(t *testing.T) {
 			},
 			IssueLabels: []github.Label{{Name: "needs-ok-to-test"}},
 		},
+		{
+			name:   "Wrong branch w/ SkipReport",
+			Author: "t",
+			Body:   "/test all",
+			Branch: "other",
+			State:  "open",
+			IsPR:   true,
+			Presubmits: map[string][]config.Presubmit{
+				"org/repo": {
+					{
+						Name:       "job",
+						AlwaysRun:  true,
+						SkipReport: true,
+						Context:    "pull-job",
+						Trigger:    `/test all`,
+						Brancher:   config.Brancher{Branches: []string{"master"}},
+					},
+				},
+			},
+		},
+		{
+			name:   "Retest of run_if_changed job that hasn't run",
+			Author: "t",
+			Body:   "/retest",
+			State:  "open",
+			IsPR:   true,
+			Presubmits: map[string][]config.Presubmit{
+				"org/repo": {
+					{
+						Name:         "jab",
+						RunIfChanged: "CHANGED",
+						SkipReport:   true,
+						Context:      "pull-jab",
+						Trigger:      `/test all`,
+					},
+				},
+			},
+			ShouldBuild:   true,
+			StartsExactly: "pull-jab",
+		},
+		{
+			name:   "Retest should 'skip' run_if_changed job that doesn't need to run on the changes",
+			Author: "t",
+			Body:   "/retest",
+			State:  "open",
+			IsPR:   true,
+			Presubmits: map[string][]config.Presubmit{
+				"org/repo": {
+					{
+						Name:         "jib",
+						RunIfChanged: "CHANGED2",
+						Context:      "pull-jib",
+						Trigger:      `/test all`,
+					},
+				},
+			},
+			ShouldReport: true,
+		},
+		{
+			name:   "Retest should not build/report run_if_changed SkipReport job that doesn't need to run on the changes",
+			Author: "t",
+			Body:   "/retest",
+			State:  "open",
+			IsPR:   true,
+			Presubmits: map[string][]config.Presubmit{
+				"org/repo": {
+					{
+						Name:         "jib",
+						RunIfChanged: "CHANGED2",
+						SkipReport:   true,
+						Context:      "pull-jib",
+						Trigger:      `/test all`,
+					},
+				},
+			},
+		},
+		{
+			name:          "Retest and explicit trigger of same job",
+			Author:        "t",
+			Body:          "/retest\n/test jib",
+			State:         "open",
+			IsPR:          true,
+			ShouldBuild:   true,
+			StartsExactly: "pull-jib",
+		},
+		{
+			name:       "Run if changed job triggered by /ok-to-test",
+			Author:     "t",
+			Body:       "/ok-to-test",
+			State:      "open",
+			IsPR:       true,
+			IsOkToTest: true,
+			Presubmits: map[string][]config.Presubmit{
+				"org/repo": {
+					{
+						Name:         "jab",
+						RunIfChanged: "CHANGED",
+						Context:      "pull-jab",
+						Trigger:      `/test all`,
+					},
+				},
+			},
+			ShouldBuild:   true,
+			StartsExactly: "pull-jab",
+			IssueLabels:   []github.Label{{Name: "needs-ok-to-test"}},
+		},
 	}
 	for _, tc := range testcases {
 		t.Logf("running scenario %q", tc.name)
@@ -198,8 +306,9 @@ func TestHandleIssueComment(t *testing.T) {
 			tc.Branch = "master"
 		}
 		g := &fakegithub.FakeClient{
-			IssueComments: map[int][]github.IssueComment{},
-			OrgMembers:    []string{"t"},
+			CreatedStatuses: map[string][]github.Status{},
+			IssueComments:   map[int][]github.IssueComment{},
+			OrgMembers:      []string{"t"},
 			PullRequests: map[int]*github.PullRequest{
 				0: {
 					Number: 0,
@@ -214,6 +323,7 @@ func TestHandleIssueComment(t *testing.T) {
 					},
 				},
 			},
+			PullRequestChanges: map[int][]github.PullRequestChange{0: {{Filename: "CHANGED"}}},
 			CombinedStatuses: map[string]*github.CombinedStatus{
 				"cafe": {
 					Statuses: []github.Status{
@@ -291,6 +401,11 @@ func TestHandleIssueComment(t *testing.T) {
 		}
 		if tc.StartsExactly != "" && (len(kc.started) != 1 || kc.started[0] != tc.StartsExactly) {
 			t.Errorf("Didn't build expected context %v, instead built %v", tc.StartsExactly, kc.started)
+		}
+		if tc.ShouldReport && len(g.CreatedStatuses) == 0 {
+			t.Error("Expected report to github")
+		} else if !tc.ShouldReport && len(g.CreatedStatuses) > 0 {
+			t.Errorf("Expected no reports to github, but got %d", len(g.CreatedStatuses))
 		}
 		if tc.IsOkToTest {
 			if len(g.LabelsRemoved) != 1 {

@@ -123,6 +123,10 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-device-plugin-gpu-stable1
   alert_stale_results_hours: 24
   num_failures_to_alert: 12 # Runs every 2h. Alert when it's been failing for a day.
+- name: ci-kubernetes-e2e-gce-device-plugin-gpu-beta
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-device-plugin-gpu-beta
+  alert_stale_results_hours: 24
+  num_failures_to_alert: 12 # Runs every 2h. Alert when it's been failing for a day.
 - name: ci-kubernetes-e2e-gce-gpu
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gpu
   alert_stale_results_hours: 24
@@ -133,6 +137,10 @@ test_groups:
   num_failures_to_alert: 4 # Runs every 12h. Alert when it's been failing for a couple of days.
 - name: ci-kubernetes-e2e-gce-gpu-stable1
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gpu-stable1
+  alert_stale_results_hours: 24
+  num_failures_to_alert: 12 # Runs every 2h. Alert when it's been failing for a day.
+- name: ci-kubernetes-e2e-gce-gpu-beta
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gpu-beta
   alert_stale_results_hours: 24
   num_failures_to_alert: 12 # Runs every 2h. Alert when it's been failing for a day.
 - name: ci-kubernetes-e2e-gci-gce-alpha-features
@@ -255,6 +263,10 @@ test_groups:
   num_failures_to_alert: 4 # Runs every 12h. Alert when it's been failing for a couple of days.
 - name: ci-kubernetes-e2e-gke-device-plugin-gpu-stable1
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-device-plugin-gpu-stable1
+  alert_stale_results_hours: 24
+  num_failures_to_alert: 12 # Runs every 2h. Alert when it's been failing for a day.
+- name: ci-kubernetes-e2e-gke-device-plugin-gpu-beta
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-device-plugin-gpu-beta
   alert_stale_results_hours: 24
   num_failures_to_alert: 12 # Runs every 2h. Alert when it's been failing for a day.
 - name: ci-kubernetes-e2e-gke-gpu-1-7
@@ -1825,6 +1837,44 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos-k8sbeta-serial
 - name: ci-kubernetes-e2e-gke-cos-k8sbeta-ingress
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos-k8sbeta-ingress
+- name: ci-kubernetes-e2e-gce-beta-stable1-downgrade-cluster
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-beta-stable1-downgrade-cluster
+- name: ci-kubernetes-e2e-gce-beta-stable1-downgrade-cluster-parallel
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-beta-stable1-downgrade-cluster-parallel
+- name: ci-kubernetes-e2e-gce-beta-stable1-gci-kubectl-skew
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-beta-stable1-gci-kubectl-skew
+- name: ci-kubernetes-e2e-gce-beta-stable1-gci-kubectl-skew-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-beta-stable1-gci-kubectl-skew-serial
+- name: ci-kubernetes-e2e-gce-stable1-beta-gci-kubectl-skew
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-stable1-beta-gci-kubectl-skew
+- name: ci-kubernetes-e2e-gce-stable1-beta-gci-kubectl-skew-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-stable1-beta-gci-kubectl-skew-serial
+- name: ci-kubernetes-e2e-gce-stable1-beta-upgrade-cluster
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-stable1-beta-upgrade-cluster
+- name: ci-kubernetes-e2e-gce-stable1-beta-upgrade-cluster-new
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-stable1-beta-upgrade-cluster-new
+- name: ci-kubernetes-e2e-gce-stable1-beta-upgrade-master
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-stable1-beta-upgrade-master
+- name: ci-kubernetes-e2e-gke-beta-stable1-downgrade-cluster
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-beta-stable1-downgrade-cluster
+- name: ci-kubernetes-e2e-gke-beta-stable1-downgrade-cluster-parallel
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-beta-stable1-downgrade-cluster-parallel
+- name: ci-kubernetes-e2e-gke-stable1-beta-upgrade-cluster
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-stable1-beta-upgrade-cluster
+- name: ci-kubernetes-e2e-gke-stable1-beta-upgrade-cluster-new
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-stable1-beta-upgrade-cluster-new
+- name: ci-kubernetes-e2e-gke-stable1-beta-upgrade-master
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-stable1-beta-upgrade-master
+- name: ci-kubernetes-e2e-gke-beta-stable1-gci-kubectl-skew
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-beta-stable1-gci-kubectl-skew
+- name: ci-kubernetes-e2e-gke-beta-stable1-gci-kubectl-skew-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-beta-stable1-gci-kubectl-skew-serial
+- name: ci-kubernetes-e2e-gke-stable1-beta-gci-kubectl-skew
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-stable1-beta-gci-kubectl-skew
+- name: ci-kubernetes-e2e-gke-stable1-beta-gci-kubectl-skew-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-stable1-beta-gci-kubectl-skew-serial
+- name: ci-kubernetes-e2e-kops-aws-beta
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-beta
 
 # Add New Testgroups Here
 
@@ -1951,6 +2001,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-kops-aws-release-1-7
   - name: kops-aws-1.8
     test_group_name: ci-kubernetes-e2e-kops-aws-stable1
+  - name: kops-aws-1.9
+    test_group_name: ci-kubernetes-e2e-kops-aws-beta
   - name: kops-aws-updown
     test_group_name: ci-kubernetes-e2e-kops-aws-updown
   - name: kops-aws-weave
@@ -2585,8 +2637,6 @@ dashboards:
     test_group_name: ci-kubernetes-soak-gce-gci
   - name: kubeadm-gce
     test_group_name: ci-kubernetes-e2e-kubeadm-gce
-  - name: periodic-kubernetes-e2e-debs-pushed
-    test_group_name: periodic-kubernetes-e2e-debs-pushed
 
 - name: sig-cluster-lifecycle-1.6-upgrade-skew
   dashboard_tab:
@@ -2663,6 +2713,50 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sbeta-slow
   - name: gke-ingress-1.9
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sbeta-ingress
+  - name: gce-1.9-1.8-downgrade
+    test_group_name: ci-kubernetes-e2e-gce-beta-stable1-downgrade-cluster
+  - name: gce-1.9-1.8-downgrade-parallel
+    test_group_name: ci-kubernetes-e2e-gce-beta-stable1-downgrade-cluster-parallel
+  - name: gce-1.8-1.9-upgrade-cluster
+    test_group_name: ci-kubernetes-e2e-gce-stable1-beta-upgrade-cluster
+  - name: gce-1.8-1.9-upgrade-cluster-skew
+    test_group_name: ci-kubernetes-e2e-gce-stable1-beta-upgrade-cluster-new
+  - name: gce-1.8-1.9-upgrade-master
+    test_group_name: ci-kubernetes-e2e-gce-stable1-beta-upgrade-master
+  - name: gce-1.9-1.8-kubectl-skew
+    test_group_name: ci-kubernetes-e2e-gce-beta-stable1-gci-kubectl-skew
+  - name: gce-1.9-1.8-kubectl-skew-serial
+    test_group_name: ci-kubernetes-e2e-gce-beta-stable1-gci-kubectl-skew-serial
+  - name: gce-1.8-1.9-kubectl-skew
+    test_group_name: ci-kubernetes-e2e-gce-stable1-beta-gci-kubectl-skew
+  - name: gce-1.8-1.9-kubectl-skew-serial
+    test_group_name: ci-kubernetes-e2e-gce-stable1-beta-gci-kubectl-skew-serial
+  - name: gke-1.9-1.8-downgrade
+    test_group_name: ci-kubernetes-e2e-gke-beta-stable1-downgrade-cluster
+  - name: gke-1.9-1.8-downgrade-parallel
+    test_group_name: ci-kubernetes-e2e-gke-beta-stable1-downgrade-cluster-parallel
+  - name: gke-1.8-1.9-upgrade-cluster
+    test_group_name: ci-kubernetes-e2e-gke-stable1-beta-upgrade-cluster
+  - name: gke-1.8-1.9-upgrade-cluster-new
+    test_group_name: ci-kubernetes-e2e-gke-stable1-beta-upgrade-cluster-new
+  - name: gke-1.8-1.9-upgrade-master
+    test_group_name: ci-kubernetes-e2e-gke-stable1-beta-upgrade-master
+  - name: gke-1.9-1.8-kubectl-skew
+    test_group_name: ci-kubernetes-e2e-gke-beta-stable1-gci-kubectl-skew
+  - name: gke-1.9-1.8-kubectl-skew-serial
+    test_group_name: ci-kubernetes-e2e-gke-beta-stable1-gci-kubectl-skew-serial
+  - name: gke-1.8-1.9-kubectl-skew
+    test_group_name: ci-kubernetes-e2e-gke-stable1-beta-gci-kubectl-skew
+  - name: gke-1.8-1.9-kubectl-skew-serial
+    test_group_name: ci-kubernetes-e2e-gke-stable1-beta-gci-kubectl-skew-serial
+  - name: gce-gpu-1-9
+    test_group_name: ci-kubernetes-e2e-gce-gpu-beta
+  - name: gce-device-plugin-gpu-1-9
+    test_group_name: ci-kubernetes-e2e-gce-device-plugin-gpu-beta
+  - name: gke-device-plugin-gpu-1-9
+    test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-beta
+  - name: kops-aws-1.9
+    test_group_name: ci-kubernetes-e2e-kops-aws-beta
 
 - name: sig-release-1.9-blocking
   dashboard_tab:
@@ -2704,6 +2798,15 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sbeta-slow
   - name: gke-ingress-1.9
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sbeta-ingress
+  - name: gce-gpu-1-9
+    test_group_name: ci-kubernetes-e2e-gce-gpu-beta
+  - name: gce-device-plugin-gpu-1-9
+    test_group_name: ci-kubernetes-e2e-gce-device-plugin-gpu-beta
+  - name: gke-device-plugin-gpu-1-9
+    test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-beta
+  - name: kops-aws-1.9
+    test_group_name: ci-kubernetes-e2e-kops-aws-beta
+
 
 - name: sig-release-1.8-all
   dashboard_tab:
@@ -3131,6 +3234,10 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-device-plugin-gpu-stable1
     alert_options:
       alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
+  - name: gce-device-plugin-gpu-1-9
+    test_group_name: ci-kubernetes-e2e-gce-device-plugin-gpu-beta
+    alert_options:
+      alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
   - name: gce-gpu
     test_group_name: ci-kubernetes-e2e-gce-gpu
     alert_options:
@@ -3141,6 +3248,10 @@ dashboards:
       alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
   - name: gce-gpu-1-8
     test_group_name: ci-kubernetes-e2e-gce-gpu-stable1
+    alert_options:
+      alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
+  - name: gce-gpu-1-9
+    test_group_name: ci-kubernetes-e2e-gce-gpu-beta
     alert_options:
       alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
   - name: gke-device-plugin-gpu
@@ -3157,6 +3268,10 @@ dashboards:
       alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
   - name: gke-device-plugin-gpu-1-8
     test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-stable1
+    alert_options:
+      alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
+  - name: gke-device-plugin-gpu-1-9
+    test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-beta
     alert_options:
       alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
   - name: gke-gpu-1-7
@@ -4638,7 +4753,7 @@ dashboards:
     - configuration_value: Commit
     - configuration_value: infra-commit
 
-- name: presubmits-kubernetes
+- name: presubmits-kubernetes-blocking
   dashboard_tab:
   - name: pull-kubernetes-bazel-build
     test_group_name: pull-kubernetes-bazel-build
@@ -4650,41 +4765,21 @@ dashboards:
     base_options: 'width=10'
     alert_options:
       alert_mail_to_addresses: 'michelle.192837+alerts@gmail.com, lusensjtu+alerts@gmail.com, bentheelder+alerts@google.com'
-  - name: pull-kubernetes-cross
-    test_group_name: pull-kubernetes-cross
-    base_options: 'width=10'
   - name: pull-kubernetes-e2e-gce
     test_group_name: pull-kubernetes-e2e-gce
     base_options: 'width=10'
     alert_options:
       alert_mail_to_addresses: 'michelle.192837+alerts@gmail.com, lusensjtu+alerts@gmail.com, bentheelder+alerts@google.com'
-  - name: pull-kubernetes-e2e-gce-device-plugin-gpu
-    test_group_name: pull-kubernetes-e2e-gce-device-plugin-gpu
-    base_options: 'width=10'
-  - name: pull-kubernetes-e2e-gke-device-plugin-gpu
-    test_group_name: pull-kubernetes-e2e-gke-device-plugin-gpu
-    base_options: 'width=10'
-  - name: pull-kubernetes-e2e-gke-gci
-    test_group_name: pull-kubernetes-e2e-gke-gci
-    base_options: 'width=10'
   - name: pull-kubernetes-e2e-kops-aws
     test_group_name: pull-kubernetes-e2e-kops-aws
     base_options: 'width=10'
     alert_options:
       alert_mail_to_addresses: 'michelle.192837+alerts@gmail.com, lusensjtu+alerts@gmail.com'
-  - name: pull-kubernetes-e2e-kops-aws-prow
-    test_group_name: pull-kubernetes-e2e-kops-aws-prow
-  - name: pull-kubernetes-e2e-kubeadm-gce
-    test_group_name: pull-kubernetes-e2e-kubeadm-gce
-    base_options: 'width=10'
   - name: pull-kubernetes-kubemark-e2e-gce
     test_group_name: pull-kubernetes-kubemark-e2e-gce
     base_options: 'width=10'
     alert_options:
       alert_mail_to_addresses: 'michelle.192837+alerts@gmail.com, lusensjtu+alerts@gmail.com'
-  - name: pull-kubernetes-kubemark-e2e-gce-big
-    test_group_name: pull-kubernetes-kubemark-e2e-gce-big
-    base_options: 'width=10'
   - name: pull-kubernetes-node-e2e
     test_group_name: pull-kubernetes-node-e2e
     base_options: 'width=10'
@@ -4700,6 +4795,29 @@ dashboards:
     base_options: 'width=10'
     alert_options:
       alert_mail_to_addresses: 'michelle.192837+alerts@gmail.com, lusensjtu+alerts@gmail.com'
+
+- name: presubmits-kubernetes-nonblocking
+  dashboard_tab:
+  - name: pull-kubernetes-cross
+    test_group_name: pull-kubernetes-cross
+    base_options: 'width=10'
+  - name: pull-kubernetes-e2e-gce-device-plugin-gpu
+    test_group_name: pull-kubernetes-e2e-gce-device-plugin-gpu
+    base_options: 'width=10'
+  - name: pull-kubernetes-e2e-gke-device-plugin-gpu
+    test_group_name: pull-kubernetes-e2e-gke-device-plugin-gpu
+    base_options: 'width=10'
+  - name: pull-kubernetes-e2e-gke-gci
+    test_group_name: pull-kubernetes-e2e-gke-gci
+    base_options: 'width=10'
+  - name: pull-kubernetes-e2e-kops-aws-prow
+    test_group_name: pull-kubernetes-e2e-kops-aws-prow
+  - name: pull-kubernetes-e2e-kubeadm-gce
+    test_group_name: pull-kubernetes-e2e-kubeadm-gce
+    base_options: 'width=10'
+  - name: pull-kubernetes-kubemark-e2e-gce-big
+    test_group_name: pull-kubernetes-kubemark-e2e-gce-big
+    base_options: 'width=10'
 
 - name: presubmits-test-infra
   dashboard_tab:
@@ -4776,7 +4894,8 @@ dashboard_groups:
   dashboard_names:
   - presubmits-cluster-registry
   - presubmits-federation
-  - presubmits-kubernetes
+  - presubmits-kubernetes-blocking
+  - presubmits-kubernetes-nonblocking
   - presubmits-test-infra
 
 - name: sig-cli

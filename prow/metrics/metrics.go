@@ -30,13 +30,13 @@ import (
 
 // PushMetrics is meant to run in a goroutine and continuously push
 // metrics to the provided endpoint.
-func PushMetrics(component, endpoint string) {
+func PushMetrics(component, endpoint string, interval time.Duration) {
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
 
 	for {
 		select {
-		case <-time.Tick(time.Minute):
+		case <-time.Tick(interval):
 			if err := push.FromGatherer(component, push.HostnameGroupingKey(), endpoint, prometheus.DefaultGatherer); err != nil {
 				logrus.WithField("component", component).WithError(err).Error("Failed to push metrics.")
 			}
