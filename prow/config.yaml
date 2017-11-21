@@ -4790,19 +4790,28 @@ periodics:
       - --timeout=920
       - --bare
       env:
+      - name: DOCKER_IN_DOCKER_ENABLED
+        value: true
       - name: GOOGLE_APPLICATION_CREDENTIALS
         value: /etc/service-account/service-account.json
       - name: USER
         value: prow
+      # docker-in-docker needs privilged mode
+      securityContext:
+        privileged: true
       image: gcr.io/k8s-testimages/kubekins-e2e:v20171120-5e89f3c1-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
         readOnly: true
+      - name: var-lib-docker
+        mountPath: /var/lib/docker
     volumes:
     - name: service
       secret:
         secretName: service-account
+    - name: var-lib-docker
+      emptyDir: {}
 - interval: 30m
   agent: kubernetes
   name: ci-federation-e2e-gce-serial
@@ -4812,19 +4821,28 @@ periodics:
       - --timeout=920
       - --bare
       env:
+      - name: DOCKER_IN_DOCKER_ENABLED
+        value: true
       - name: GOOGLE_APPLICATION_CREDENTIALS
         value: /etc/service-account/service-account.json
       - name: USER
         value: prow
+      # docker-in-docker needs privilged mode
+      securityContext:
+        privileged: true
       image: gcr.io/k8s-testimages/kubekins-e2e:v20171120-5e89f3c1-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
         readOnly: true
+      - name: var-lib-docker
+        mountPath: /var/lib/docker
     volumes:
     - name: service
       secret:
         secretName: service-account
+    - name: var-lib-docker
+      emptyDir: {}
 
 - name: ci-kubernetes-bazel-build
   interval: 30m
