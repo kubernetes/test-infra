@@ -106,6 +106,7 @@ def check_ci_jobs():
     match_re = re.compile(r'--gcp-project=(.+)')
     for value in config.values():
         clean_hours = 24
+        found = None
         for arg in value.get('args', []):
             # lifetime for soak cluster should be 7 days
             # clean up everything older than 10 days to prevent leak
@@ -120,7 +121,9 @@ def check_ci_jobs():
                 continue
             if project in PR_PROJECTS:
                 continue # CI janitor skips all PR jobs
-            clean_project(project, clean_hours)
+            found = project
+        if found:
+            clean_project(found, clean_hours)
 
     # Hard code node-ci project here
     clean_project('k8s-jkns-ci-node-e2e')
