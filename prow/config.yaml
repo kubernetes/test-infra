@@ -17966,6 +17966,49 @@ periodics:
 
 - interval: 1h
   agent: kubernetes
+  name: ci-kubernetes-e2e-kops-aws-beta
+  spec:
+    containers:
+    - args:
+      - --timeout=140
+      - --bare
+      env:
+      - name: GOOGLE_APPLICATION_CREDENTIALS
+        value: /etc/service-account/service-account.json
+      - name: USER
+        value: prow
+      - name: JENKINS_AWS_CREDENTIALS_FILE
+        value: /etc/aws-cred/credentials
+      - name: JENKINS_AWS_SSH_PRIVATE_KEY_FILE
+        value: /etc/aws-ssh/aws-ssh-private
+      - name: JENKINS_AWS_SSH_PUBLIC_KEY_FILE
+        value: /etc/aws-ssh/aws-ssh-public
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171108-8b5aad9f-master
+      volumeMounts:
+      - mountPath: /etc/service-account
+        name: service
+        readOnly: true
+      - mountPath: /etc/aws-ssh
+        name: aws-ssh
+        readOnly: true
+      - mountPath: /etc/aws-cred
+        name: aws-cred
+        readOnly: true
+    volumes:
+    - name: service
+      secret:
+        secretName: service-account
+    - name: aws-ssh
+      secret:
+        defaultMode: 256
+        secretName: aws-ssh-key-secret
+    - name: aws-cred
+      secret:
+        defaultMode: 256
+        secretName: aws-cred
+
+- interval: 1h
+  agent: kubernetes
   name: ci-kubernetes-e2e-kops-aws-canary
   spec:
     containers:
@@ -18139,7 +18182,7 @@ periodics:
         defaultMode: 256
         secretName: aws-cred
 
-- interval: 1h
+- interval: 6h
   agent: kubernetes
   name: ci-kubernetes-e2e-kops-aws-release-1-7
   spec:
@@ -18225,7 +18268,7 @@ periodics:
         defaultMode: 256
         secretName: aws-cred
 
-- interval: 1h
+- interval: 2h
   agent: kubernetes
   name: ci-kubernetes-e2e-kops-aws-stable1
   spec:
