@@ -21,8 +21,24 @@ set -x
 # Check if the job has opted-in to docker-in-docker availability.
 export DOCKER_IN_DOCKER_ENABLED=${DOCKER_IN_DOCKER_ENABLED:-false}
 if [ "$DOCKER_IN_DOCKER_ENABLED" == "true" ]; then
-# If we have opted in to docker in docker, start the docker daemon.
-    service docker start
+    # If we have opted in to docker in docker, start the docker daemon,
+    # and wait a second for it to be fully up.
+    echo "Starting docker..." && service docker start && sleep 1
+    # begin cleaning up after any previous runs
+    echo "Starting to clean up docker graph."
+    # make sure any lingering containers are removed from the data root
+    docker stop $(docker ps -aq) || true
+    docker rm $(docker ps -aq) || true
+    # cleanup kube-build images from kubernetes' dockerized builds
+    docker rmi -f $(docker images -q kube-build) || true
+    # then cleanup images and volumes not associated with tagged images
+    docker rmi -f $(docker images --filter dangling=true -qa) || true
+    docker volume prune -f || true
+    # list what images and volumes remain
+    echo "Remaining docker images and volumes are:"
+    docker images --all
+    docker volume ls
+    echo "Done setting up docker in docker."
 else
 # If not, make sure `docker` points to the old one compatible with our Jenkins
     export PATH=/docker-no-dind-bin/:$PATH
@@ -35,3 +51,4 @@ git clone https://github.com/kubernetes/test-infra
     --service-account=${GOOGLE_APPLICATION_CREDENTIALS} \
     --upload='gs://kubernetes-jenkins/logs' \
     "$@"
+
