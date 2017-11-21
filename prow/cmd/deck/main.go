@@ -83,6 +83,7 @@ func main() {
 
 	http.Handle("/", gziphandler.GzipHandler(http.FileServer(http.Dir("/static"))))
 	http.Handle("/data.js", gziphandler.GzipHandler(handleData(ja)))
+	http.Handle("/prowjobs.js", gziphandler.GzipHandler(handleProwJobs(ja)))
 	http.Handle("/log", gziphandler.GzipHandler(handleLog(ja)))
 	http.Handle("/rerun", gziphandler.GzipHandler(handleRerun(kc)))
 
@@ -108,6 +109,25 @@ func loadToken(file string) (string, error) {
 		return "", err
 	}
 	return string(bytes.TrimSpace(raw)), nil
+}
+
+func handleProwJobs(ja *JobAgent) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Cache-Control", "no-cache")
+		jobs := ja.ProwJobs()
+		jd, err := json.Marshal(jobs)
+		if err != nil {
+			logrus.WithError(err).Error("Error marshaling jobs.")
+			jd = []byte("[]")
+		}
+		// If we have a "var" query, then write out "var value = {...};".
+		// Otherwise, just write out the JSON.
+		if v := r.URL.Query().Get("var"); v != "" {
+			fmt.Fprintf(w, "var %s = %s;", v, string(jd))
+		} else {
+			fmt.Fprint(w, string(jd))
+		}
+	}
 }
 
 func handleData(ja *JobAgent) http.HandlerFunc {
