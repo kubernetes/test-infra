@@ -467,9 +467,11 @@
       "k8s-gke-gpu-boskos-05",
       "k8s-jkns-e2e-gce-gpus",
       "k8s-jkns-e2e-gce-gpus-1-7",
+      "k8s-jkns-e2e-gce-gpus-beta",
       "k8s-jkns-e2e-gce-plugin-gpus",
       "k8s-jkns-e2e-gke-gpus",
       "k8s-jkns-e2e-gke-gpus-1-7",
+      "k8s-jkns-e2e-gke-gpus-beta",
       "k8s-jkns-e2e-gke-plugin-gpus"
     ],
     "state": "dirty",
