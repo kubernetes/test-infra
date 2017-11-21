@@ -25,7 +25,6 @@ go_test(
     importpath = "k8s.io/test-infra/label_sync",
     library = ":go_default_library",
     tags = ["automanaged"],
-    deps = ["//prow/github:go_default_library"],
 )
 
 go_library(

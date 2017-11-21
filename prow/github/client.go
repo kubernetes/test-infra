@@ -620,14 +620,26 @@ func (c *Client) AddRepoLabel(org, repo, label, color string) error {
 	return err
 }
 
-// Updates org/repo label to label/color
-func (c *Client) UpdateRepoLabel(org, repo, label, color string) error {
-	c.log("UpdateRepoLabel", org, repo, label, color)
+// Updates org/repo label to new name and color
+func (c *Client) UpdateRepoLabel(org, repo, label, name, color string) error {
+	c.log("UpdateRepoLabel", org, repo, label, name, color)
 	_, err := c.request(&request{
 		method:      http.MethodPatch,
 		path:        fmt.Sprintf("%s/repos/%s/%s/labels/%s", c.base, org, repo, label),
-		requestBody: Label{Name: label, Color: color},
+		requestBody: Label{Name: name, Color: color},
 		exitCodes:   []int{200},
+	}, nil)
+	return err
+}
+
+// Delete label in org/repo
+func (c *Client) DeleteRepoLabel(org, repo, label string) error {
+	c.log("DeleteRepoLabel", org, repo, label)
+	_, err := c.request(&request{
+		method:      http.MethodDelete,
+		path:        fmt.Sprintf("%s/repos/%s/%s/labels/%s", c.base, org, repo, label),
+		requestBody: Label{Name: label},
+		exitCodes:   []int{204},
 	}, nil)
 	return err
 }
