@@ -4790,30 +4790,28 @@ periodics:
       - --timeout=920
       - --bare
       env:
+      - name: DOCKER_IN_DOCKER_ENABLED
+        value: true
       - name: GOOGLE_APPLICATION_CREDENTIALS
         value: /etc/service-account/service-account.json
       - name: USER
         value: prow
-      - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
-        value: /etc/ssh-key-secret/ssh-private
-      - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
-        value: /etc/ssh-key-secret/ssh-public
+      # docker-in-docker needs privilged mode
+      securityContext:
+        privileged: true
       image: gcr.io/k8s-testimages/kubekins-e2e:v20171120-5e89f3c1-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
         readOnly: true
-      - mountPath: /etc/ssh-key-secret
-        name: ssh
-        readOnly: true
+      - name: var-lib-docker
+        mountPath: /var/lib/docker
     volumes:
     - name: service
       secret:
         secretName: service-account
-    - name: ssh
-      secret:
-        defaultMode: 256
-        secretName: ssh-key-secret
+    - name: var-lib-docker
+      emptyDir: {}
 - interval: 30m
   agent: kubernetes
   name: ci-federation-e2e-gce-serial
@@ -4823,30 +4821,28 @@ periodics:
       - --timeout=920
       - --bare
       env:
+      - name: DOCKER_IN_DOCKER_ENABLED
+        value: true
       - name: GOOGLE_APPLICATION_CREDENTIALS
         value: /etc/service-account/service-account.json
       - name: USER
         value: prow
-      - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
-        value: /etc/ssh-key-secret/ssh-private
-      - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
-        value: /etc/ssh-key-secret/ssh-public
+      # docker-in-docker needs privilged mode
+      securityContext:
+        privileged: true
       image: gcr.io/k8s-testimages/kubekins-e2e:v20171120-5e89f3c1-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
         readOnly: true
-      - mountPath: /etc/ssh-key-secret
-        name: ssh
-        readOnly: true
+      - name: var-lib-docker
+        mountPath: /var/lib/docker
     volumes:
     - name: service
       secret:
         secretName: service-account
-    - name: ssh
-      secret:
-        defaultMode: 256
-        secretName: ssh-key-secret
+    - name: var-lib-docker
+      emptyDir: {}
 
 - name: ci-kubernetes-bazel-build
   interval: 30m
