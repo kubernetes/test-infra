@@ -22,7 +22,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/robfig/cron"
+	"github.com/robfig/cron" // using v2 api, doc at https://godoc.org/gopkg.in/robfig/cron.v2
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/config"

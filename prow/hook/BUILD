@@ -39,6 +39,7 @@ go_library(
         "//prow/plugins/approve:go_default_library",
         "//prow/plugins/assign:go_default_library",
         "//prow/plugins/blockade:go_default_library",
+        "//prow/plugins/blunderbuss:go_default_library",
         "//prow/plugins/cla:go_default_library",
         "//prow/plugins/close:go_default_library",
         "//prow/plugins/docs-no-retest:go_default_library",

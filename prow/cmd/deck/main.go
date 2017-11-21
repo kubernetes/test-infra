@@ -20,6 +20,7 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -82,6 +83,7 @@ func main() {
 
 	http.Handle("/", gziphandler.GzipHandler(http.FileServer(http.Dir("/static"))))
 	http.Handle("/data.js", gziphandler.GzipHandler(handleData(ja)))
+	http.Handle("/prowjobs.js", gziphandler.GzipHandler(handleProwJobs(ja)))
 	http.Handle("/log", gziphandler.GzipHandler(handleLog(ja)))
 	http.Handle("/rerun", gziphandler.GzipHandler(handleRerun(kc)))
 
@@ -107,6 +109,25 @@ func loadToken(file string) (string, error) {
 		return "", err
 	}
 	return string(bytes.TrimSpace(raw)), nil
+}
+
+func handleProwJobs(ja *JobAgent) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Cache-Control", "no-cache")
+		jobs := ja.ProwJobs()
+		jd, err := json.Marshal(jobs)
+		if err != nil {
+			logrus.WithError(err).Error("Error marshaling jobs.")
+			jd = []byte("[]")
+		}
+		// If we have a "var" query, then write out "var value = {...};".
+		// Otherwise, just write out the JSON.
+		if v := r.URL.Query().Get("var"); v != "" {
+			fmt.Fprintf(w, "var %s = %s;", v, string(jd))
+		} else {
+			fmt.Fprint(w, string(jd))
+		}
+	}
 }
 
 func handleData(ja *JobAgent) http.HandlerFunc {
@@ -226,41 +247,51 @@ func handleLog(lc logClient) http.HandlerFunc {
 			w.Header().Set("Transfer-Encoding", "chunked")
 			logStreamRequested = true
 		}
-		if job != "" && id != "" {
-			if !objReg.MatchString(job) {
-				http.Error(w, "Invalid job query", http.StatusBadRequest)
-				return
-			}
-			if !objReg.MatchString(id) {
-				http.Error(w, "Invalid ID query", http.StatusBadRequest)
-				return
-			}
-			if !logStreamRequested {
-				log, err := lc.GetJobLog(job, id)
-				if err != nil {
-					http.Error(w, fmt.Sprintf("Log not found: %v", err), http.StatusNotFound)
-					logrus.WithError(err).Warning("Error returned.")
-					return
-				}
-				if _, err = w.Write(log); err != nil {
-					logrus.WithError(err).Warning("Error writing log.")
-				}
-			} else {
-				//run http chunking
-				options := getOptions(r.URL.Query())
-				log, err := lc.GetJobLogStream(job, id, options)
-				if err != nil {
-					http.Error(w, fmt.Sprintf("Log stream caused: %v", err), http.StatusNotFound)
-					logrus.WithError(err).Warning("Error returned.")
-					return
-				}
-				httpChunking(log, w)
-			}
-		} else {
-			http.Error(w, "Missing job and ID query", http.StatusBadRequest)
+		if err := validateRequest(r); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
+		if !logStreamRequested {
+			log, err := lc.GetJobLog(job, id)
+			if err != nil {
+				http.Error(w, fmt.Sprintf("Log not found: %v", err), http.StatusNotFound)
+				logrus.WithError(err).Warning("Error returned.")
+				return
+			}
+			if _, err = w.Write(log); err != nil {
+				logrus.WithError(err).Warning("Error writing log.")
+			}
+		} else {
+			//run http chunking
+			options := getOptions(r.URL.Query())
+			log, err := lc.GetJobLogStream(job, id, options)
+			if err != nil {
+				http.Error(w, fmt.Sprintf("Log stream caused: %v", err), http.StatusNotFound)
+				logrus.WithError(err).Warning("Error returned.")
+				return
+			}
+			httpChunking(log, w)
+		}
 	}
+}
+
+func validateRequest(r *http.Request) error {
+	job := r.URL.Query().Get("job")
+	id := r.URL.Query().Get("id")
+
+	if job == "" {
+		return errors.New("Missing job query")
+	}
+	if id == "" {
+		return errors.New("Missing ID query")
+	}
+	if !objReg.MatchString(job) {
+		return fmt.Errorf("Invalid job query: %s", job)
+	}
+	if !objReg.MatchString(id) {
+		return fmt.Errorf("Invalid ID query: %s", id)
+	}
+	return nil
 }
 
 type pjClient interface {

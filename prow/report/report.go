@@ -50,8 +50,14 @@ type GithubClient interface {
 func reportStatus(ghc GithubClient, pj kube.ProwJob, cd string) error {
 	refs := pj.Spec.Refs
 	if pj.Spec.Report {
+		contextState := pj.Status.State
+		if contextState == kube.AbortedState {
+			contextState = kube.FailureState
+		}
 		if err := ghc.CreateStatus(refs.Org, refs.Repo, refs.Pulls[0].SHA, github.Status{
-			State:       string(pj.Status.State),
+			// The state of the status. Can be one of error, failure, pending, or success.
+			// https://developer.github.com/v3/repos/statuses/#create-a-status
+			State:       string(contextState),
 			Description: pj.Status.Description,
 			Context:     pj.Spec.Context,
 			TargetURL:   pj.Status.URL,

@@ -36,6 +36,7 @@ type FakeClient struct {
 	PullRequestComments map[int][]github.ReviewComment
 	Reviews             map[int][]github.Review
 	CombinedStatuses    map[string]*github.CombinedStatus
+	CreatedStatuses     map[string][]github.Status
 	IssueEvents         map[int][]github.ListedIssueEvent
 
 	//All Labels That Exist In The Repo
@@ -151,6 +152,7 @@ func (f *FakeClient) GetRef(owner, repo, ref string) (string, error) {
 }
 
 func (f *FakeClient) CreateStatus(owner, repo, ref string, s github.Status) error {
+	f.CreatedStatuses[ref] = append(f.CreatedStatuses[ref], s)
 	return nil
 }
 

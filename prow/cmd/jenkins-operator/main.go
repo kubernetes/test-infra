@@ -117,8 +117,9 @@ func main() {
 	c := jenkins.NewController(kc, jc, ghc, configAgent, *selector)
 
 	// Push metrics to the configured prometheus pushgateway endpoint.
-	if endpoint := configAgent.Config().PushGateway.Endpoint; endpoint != "" {
-		go m.PushMetrics("jenkins-operator", endpoint)
+	pushGateway := configAgent.Config().PushGateway
+	if pushGateway.Endpoint != "" {
+		go m.PushMetrics("jenkins-operator", pushGateway.Endpoint, pushGateway.Interval)
 	}
 	// Serve Jenkins logs here and proxy deck to use this endpoint
 	// instead of baking agent-specific logic in deck. This func also

@@ -794,19 +794,19 @@ jobs:
     interval: 24h
     sigOwners: ['sig-gcp']
   ci-kubernetes-e2e-gke-cos-k8sstable3-ingress:
-    interval: 24h
+    interval: 6h # runs more frequently because it's also used in cos image validation.
     sigOwners: ['sig-gcp']
   ci-kubernetes-e2e-gke-cos-k8sstable3-reboot:
-    interval: 24h
+    interval: 6h # runs more frequently because it's also used in cos image validation.
     sigOwners: ['sig-gcp']
   ci-kubernetes-e2e-gke-cos-k8sstable3-default:
-    interval: 24h
+    interval: 6h # runs more frequently because it's also used in cos image validation.
     sigOwners: ['sig-gcp']
   ci-kubernetes-e2e-gke-cos-k8sstable3-serial:
-    interval: 24h
+    interval: 6h # runs more frequently because it's also used in cos image validation.
     sigOwners: ['sig-gcp']
   ci-kubernetes-e2e-gke-cos-k8sstable3-slow:
-    interval: 24h
+    interval: 6h # runs more frequently because it's also used in cos image validation.
     sigOwners: ['sig-gcp']
   ci-kubernetes-e2e-gce-cos-k8sstable3-alphafeatures:
     interval: 24h
