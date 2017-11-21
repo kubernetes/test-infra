@@ -30,14 +30,20 @@ import time
 import traceback
 
 # pylint: disable=import-error,wrong-import-position
-import matplotlib
-matplotlib.use('Agg')  # For savefig
+try:
+    import matplotlib
+    matplotlib.use('Agg')  # For savefig
 
-import matplotlib.dates as mdates
-import matplotlib.patches as mpatches
-import matplotlib.pyplot as plt
+    import matplotlib.dates as mdates
+    import matplotlib.patches as mpatches
+    import matplotlib.pyplot as plt
 
-import numpy
+    import numpy
+except ImportError:
+    # TODO(fejta): figure out how to add matplotlib and numpy to the bazel
+    # workspace. Until then hack around this for unit testing.
+    # pylint: disable=invalid-name
+    numpy = mdates = mpatches = plt = NotImplementedError
 # pylint: enable=wrong-import-position,import-error
 
 DAYS = 21  # Graph this many days of history.
@@ -50,9 +56,11 @@ def parse_line(
         date, timenow, online, pulls, queue,
         run, blocked, merge_count=0):  # merge_count may be missing
     """Parse a sq/history.txt line."""
+    if '.' not in timenow:
+        timenow = '%s.0' % timenow
     return (
         datetime.datetime.strptime(
-            '{} {}'.format(date, timenow),
+            '%s %s' % (date, timenow),
             '%Y-%m-%d %H:%M:%S.%f'),
         online == 'True',  # Merge queue is down/initializing
         int(pulls),  # Number of open PRs
