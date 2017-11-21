@@ -38,6 +38,7 @@ const (
 	period = 30 * time.Second
 )
 
+// TODO(#5216): Remove this, and all associated machinery.
 type Job struct {
 	Type        string            `json:"type"`
 	Repo        string            `json:"repo"`
@@ -77,6 +78,7 @@ type JobAgent struct {
 	kc        listPJClient
 	pkc       podLogClient
 	c         *config.Agent
+	prowJobs  []kube.ProwJob
 	jobs      []Job
 	jobsMap   map[string]Job                     // pod name -> Job
 	jobsIDMap map[string]map[string]kube.ProwJob // job name -> id -> ProwJob
@@ -98,6 +100,14 @@ func (ja *JobAgent) Jobs() []Job {
 	defer ja.mut.Unlock()
 	res := make([]Job, len(ja.jobs))
 	copy(res, ja.jobs)
+	return res
+}
+
+func (ja *JobAgent) ProwJobs() []kube.ProwJob {
+	ja.mut.Lock()
+	defer ja.mut.Unlock()
+	res := make([]kube.ProwJob, len(ja.prowJobs))
+	copy(res, ja.prowJobs)
 	return res
 }
 
@@ -222,6 +232,7 @@ func (ja *JobAgent) update() error {
 
 	ja.mut.Lock()
 	defer ja.mut.Unlock()
+	ja.prowJobs = pjs
 	ja.jobs = njs
 	ja.jobsMap = njsMap
 	ja.jobsIDMap = njsIDMap
