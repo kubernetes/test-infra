@@ -1873,6 +1873,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-stable1-beta-gci-kubectl-skew
 - name: ci-kubernetes-e2e-gke-stable1-beta-gci-kubectl-skew-serial
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-stable1-beta-gci-kubectl-skew-serial
+- name: ci-kubernetes-e2e-kops-aws-beta
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-beta
 
 # Add New Testgroups Here
 
@@ -1999,6 +2001,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-kops-aws-release-1-7
   - name: kops-aws-1.8
     test_group_name: ci-kubernetes-e2e-kops-aws-stable1
+  - name: kops-aws-1.9
+    test_group_name: ci-kubernetes-e2e-kops-aws-beta
   - name: kops-aws-updown
     test_group_name: ci-kubernetes-e2e-kops-aws-updown
   - name: kops-aws-weave
@@ -2751,6 +2755,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-device-plugin-gpu-beta
   - name: gke-device-plugin-gpu-1-9
     test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-beta
+  - name: kops-aws-1.9
+    test_group_name: ci-kubernetes-e2e-kops-aws-beta
 
 - name: sig-release-1.9-blocking
   dashboard_tab:
@@ -2798,6 +2804,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-device-plugin-gpu-beta
   - name: gke-device-plugin-gpu-1-9
     test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-beta
+  - name: kops-aws-1.9
+    test_group_name: ci-kubernetes-e2e-kops-aws-beta
 
 
 - name: sig-release-1.8-all
