@@ -31,3 +31,6 @@ gs://kubernetes-multiarch-e2e-results/logs/:
 gs://gce-daisy-test/logs/:
   contact: "crunk1"
   prefix: ""
+gs://origin-federated-results/pr-logs/directory/:
+  contact: "lsm5"
+  prefix: "cri-o"

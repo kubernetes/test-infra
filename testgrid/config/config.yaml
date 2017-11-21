@@ -1874,6 +1874,12 @@ test_groups:
 - name: ci-kubernetes-e2e-gke-stable1-beta-gci-kubectl-skew-serial
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-stable1-beta-gci-kubectl-skew-serial
 
+# CRI-O
+- name: test_pull_request_crio_e2e_fedora
+  gcs_prefix: origin-federated-results/pr-logs/directory/test_pull_request_crio_e2e_fedora
+- name: test_pull_request_crio_e2e_rhel
+  gcs_prefix: origin-federated-results/pr-logs/directory/test_pull_request_crio_e2e_rhel
+
 # Add New Testgroups Here
 
 #
@@ -4852,6 +4858,15 @@ dashboards:
     test_group_name: pull-federation-verify
     base_options: 'width=10'
 
+- name: cri-o
+  dashboard_tab:
+  - name: crio-e2e-fedora
+    test_group_name: test_pull_request_crio_e2e_fedora
+    base_options: 'width=10'
+  - name: crio-e2e-rhel
+    test_group_name: test_pull_request_crio_e2e_rhel
+    base_options: 'width=10'
+
 #
 # Start dashboard groups
 #
@@ -4960,3 +4975,4 @@ dashboard_groups:
   - sig-gcp-release-1.7
   - sig-gcp-release-1.6
   - sig-gcp-ubuntu
+
