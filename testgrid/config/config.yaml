@@ -4047,11 +4047,13 @@ dashboards:
 
 - name: sig-storage
   dashboard_tab:
-  - name: gci-gce
+  - name: gce
     test_group_name: ci-kubernetes-e2e-gci-gce
     base_options: 'include-filter-by-regex=Volume%7Cstorage'
     description: 'storage gci gce e2e tests for master branch'
-  - name: gci-gke
+    alert_options:
+      alert_mail_to_addresses: 'kubernetes-sig-storage-test-failures@googlegroups.com'
+  - name: gke
     test_group_name: ci-kubernetes-e2e-gci-gke
     base_options: 'include-filter-by-regex=Volume%7Cstorage'
     description: 'storage gci gke e2e tests for master branch'
@@ -4059,42 +4061,58 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-release-1-6
     base_options: 'include-filter-by-regex=Volume%7Cstorage'
     description: 'storage gce e2e tests for 1.6 branch'
+    alert_options:
+      alert_mail_to_addresses: 'kubernetes-sig-storage-test-failures@googlegroups.com'
   - name: gce-flaky
     test_group_name: ci-kubernetes-e2e-gci-gce-flaky
     base_options: 'include-filter-by-regex=Volume%7Cstorage'
     description: 'storage gce flaky e2e tests for master branch'
+    alert_options:
+      alert_mail_to_addresses: 'kubernetes-sig-storage-test-failures@googlegroups.com'
   - name: gke-flaky
     test_group_name: ci-kubernetes-e2e-gci-gke-flaky
     base_options: 'include-filter-by-regex=Volume%7Cstorage'
     description: 'storage gke flaky e2e tests for master branch'
-  - name: gci-gce-slow
+  - name: gce-slow
     test_group_name: ci-kubernetes-e2e-gci-gce-slow
     base_options: 'include-filter-by-regex=Volume%7Cstorage'
     description: 'storage gci gce slow e2e tests for master branch'
-  - name: gci-gke-slow
+    alert_options:
+      alert_mail_to_addresses: 'kubernetes-sig-storage-test-failures@googlegroups.com'
+  - name: gke-slow
     test_group_name: ci-kubernetes-e2e-gci-gke-slow
     base_options: 'include-filter-by-regex=Volume%7Cstorage'
     description: 'storage gci gke slow e2e tests for master branch'
-  - name: gci-gce-serial
+  - name: gce-serial
     test_group_name: ci-kubernetes-e2e-gci-gce-serial
     base_options: 'include-filter-by-regex=Volume%7Cstorage'
     description: 'storage gci gce serial e2e tests for master branch'
-  - name: gci-gke-serial
+    alert_options:
+      alert_mail_to_addresses: 'kubernetes-sig-storage-test-failures@googlegroups.com'
+  - name: gke-serial
     test_group_name: ci-kubernetes-e2e-gci-gke-serial
     base_options: 'include-filter-by-regex=Volume%7Cstorage'
     description: 'storage gci gke serial e2e tests for master branch'
-  - name: gci-gce-alpha
+  - name: gce-alpha
     test_group_name: ci-kubernetes-e2e-gci-gce-alpha-features
     base_options: 'include-filter-by-regex=Volume%7Cstorage'
     description: 'storage gci gce alpha features e2e tests for master branch'
-  - name: gci-gke-multizone
-    test_group_name: ci-kubernetes-e2e-gci-gke-multizone
+    alert_options:
+      alert_mail_to_addresses: 'kubernetes-sig-storage-test-failures@googlegroups.com'
+  - name: gke-alpha
+    test_group_name: ci-kubernetes-e2e-gci-gke-alpha-features
     base_options: 'include-filter-by-regex=Volume%7Cstorage'
-    description: 'storage gci gke multizone e2e tests for master branch'
+    description: 'storage gci gke alpha features e2e tests for master branch'
   - name: gce-multizone
     test_group_name: ci-kubernetes-e2e-gce-multizone
     base_options: 'include-filter-by-regex=Volume%7Cstorage'
     description: 'storage gce multizone e2e tests for master branch'
+    alert_options:
+      alert_mail_to_addresses: 'kubernetes-sig-storage-test-failures@googlegroups.com'
+  - name: gke-multizone
+    test_group_name: ci-kubernetes-e2e-gci-gke-multizone
+    base_options: 'include-filter-by-regex=Volume%7Cstorage'
+    description: 'storage gci gke multizone e2e tests for master branch'
 
 - name: sig-testing-misc
   dashboard_tab:
