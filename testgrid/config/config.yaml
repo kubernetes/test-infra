@@ -450,6 +450,13 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-large-deploy
 - name: ci-kubernetes-cross-build
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-cross-build
+- name: ci-kubernetes-node-kubelet-beta
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-beta
+  test_name_config:
+    name_elements:
+    - target_config: Tests name
+    - target_config: Context
+    name_format: '%s [%s]'
 - name: ci-kubernetes-node-kubelet-stable1
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-stable1
   test_name_config:
@@ -1110,9 +1117,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-audit-release-1-7
 - name: ci-kubernetes-e2e-gci-gce-audit-release-1-7
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-audit-release-1-7
-- name: ci-kubernetes-e2e-gce-scalability-release-1-7
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-scalability-release-1-7
-  num_failures_to_alert: 1
 - name: ci-kubernetes-e2e-gci-gce-scalability-release-1-7
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-scalability-release-1-7
   num_failures_to_alert: 1
@@ -1866,6 +1870,9 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-stable1-beta-gci-kubectl-skew-serial
 - name: ci-kubernetes-e2e-kops-aws-beta
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-beta
+- name: ci-kubernetes-e2e-gci-gce-scalability-beta
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-scalability-beta
+  num_failures_to_alert: 1
 
 # Add New Testgroups Here
 
@@ -2042,8 +2049,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gci-gce-reboot
   - name: gci-gce-scalability
     test_group_name: ci-kubernetes-e2e-gci-gce-scalability
-  - name: gce-scalability-1.7
-    test_group_name: ci-kubernetes-e2e-gce-scalability-release-1-7
   - name: gci-gce-scalability-1.7
     test_group_name: ci-kubernetes-e2e-gci-gce-scalability-release-1-7
   - name: gci-gce-ip-alias
@@ -2742,6 +2747,10 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-beta
   - name: kops-aws-1.9
     test_group_name: ci-kubernetes-e2e-kops-aws-beta
+  - name: kubelet-1.9
+    test_group_name: ci-kubernetes-node-kubelet-beta
+  - name: gce-scalability-1.9
+    test_group_name: ci-kubernetes-e2e-gci-gce-scalability-beta
 
 - name: sig-release-1.9-blocking
   dashboard_tab:
@@ -2791,6 +2800,10 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-beta
   - name: kops-aws-1.9
     test_group_name: ci-kubernetes-e2e-kops-aws-beta
+  - name: kubelet-1.9
+    test_group_name: ci-kubernetes-node-kubelet-beta
+  - name: gce-scalability-1.9
+    test_group_name: ci-kubernetes-e2e-gci-gce-scalability-beta
 
 
 - name: sig-release-1.8-all
@@ -3086,8 +3099,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-audit-release-1-7
   - name: gci-gce-audit-release-1.7
     test_group_name: ci-kubernetes-e2e-gci-gce-audit-release-1-7
-  - name: gce-scalability-release-1.7
-    test_group_name: ci-kubernetes-e2e-gce-scalability-release-1-7
   - name: gci-gce-scalability-release-1.7
     test_group_name: ci-kubernetes-e2e-gci-gce-scalability-release-1-7
   - name: gci-gce-ingress-release-1.7
@@ -3144,8 +3155,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-slow-release-1-7
   - name: gce-reboot-release-1.7
     test_group_name: ci-kubernetes-e2e-gce-reboot-release-1-7
-  - name: gce-scalability-release-1.7
-    test_group_name: ci-kubernetes-e2e-gce-scalability-release-1-7
   - name: test-go-1.7
     test_group_name: ci-kubernetes-test-go-release-1.7
   - name: verify-1.7
@@ -3920,8 +3929,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gci-gce-scalability-release-1-7
     alert_options:
       alert_mail_to_addresses: 'porridge+test-alerts@google.com'
-  - name: cvm-gce-1.7
-    test_group_name: ci-kubernetes-e2e-gce-scalability-release-1-7
+  - name: gce-1.9
+    test_group_name: ci-kubernetes-e2e-gci-gce-scalability-beta
     alert_options:
       alert_mail_to_addresses: 'porridge+test-alerts@google.com'
   - name: gce-large-correctness
