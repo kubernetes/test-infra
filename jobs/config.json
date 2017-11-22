@@ -3243,24 +3243,6 @@
       "sig-testing"
     ]
   },
-  "ci-kubernetes-e2e-gce-scalability-release-1-7": {
-    "args": [
-      "--cluster=e2e-scalability-1-7",
-      "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gce-scalability-release-1-7.env",
-      "--extract=ci/latest-1.7",
-      "--gcp-node-image=debian",
-      "--gcp-project=k8s-e2e-gce-scalability-1-1",
-      "--gcp-zone=us-east1-b",
-      "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --kube-api-content-type=application/vnd.kubernetes.protobuf --allowed-not-ready-nodes=1 --gather-resource-usage=true --gather-metrics-at-teardown=true --gather-logs-sizes=true --output-print-type=json --minStartupPods=8",
-      "--timeout=120m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-scalability"
-    ]
-  },
   "ci-kubernetes-e2e-gce-scale-correctness": {
     "args": [
       "--cluster=gce-scale-cluster",
@@ -4444,6 +4426,24 @@
       "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --gather-resource-usage=true --gather-metrics-at-teardown=true --gather-logs-sizes=true --output-print-type=json --minStartupPods=8",
       "--timeout=120m",
       "--use-logexporter"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-scalability"
+    ]
+  },
+  "ci-kubernetes-e2e-gci-gce-scalability-beta": {
+    "args": [
+      "--cluster=e2e-scalability-beta",
+      "--env-file=jobs/platform/gce.env",
+      "--env-file=jobs/env/ci-kubernetes-e2e-gci-gce-scalability-beta.env",
+      "--extract=ci/k8s-beta",
+      "--gcp-node-image=gci",
+      "--gcp-project=k8s-e2e-gce-scalability-1-1",
+      "--gcp-zone=us-east1-b",
+      "--provider=gce",
+      "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --kube-api-content-type=application/vnd.kubernetes.protobuf --allowed-not-ready-nodes=1 --gather-resource-usage=true --gather-metrics-at-teardown=true --gather-logs-sizes=true --output-print-type=json --minStartupPods=8",
+      "--timeout=120m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -9487,6 +9487,23 @@
       "--node-tests=true",
       "--provider=gce",
       "--test_args=--nodes=1 --skip=\"\\[Flaky\\]\"",
+      "--timeout=65m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-node"
+    ]
+  },
+  "ci-kubernetes-node-kubelet-beta": {
+    "args": [
+      "--deployment=node",
+      "--gcp-project=k8s-jkns-ci-node-e2e",
+      "--gcp-zone=us-central1-f",
+      "--node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml",
+      "--node-test-args=--kubelet-flags=\"--cgroups-per-qos=true --cgroup-root=/\"",
+      "--node-tests=true",
+      "--provider=gce",
+      "--test_args=--nodes=8 --skip=\"\\[Flaky\\]|\\[Serial\\]\"",
       "--timeout=65m"
     ],
     "scenario": "kubernetes_e2e",
