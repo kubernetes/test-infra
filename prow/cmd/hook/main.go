@@ -45,10 +45,11 @@ var (
 	port = flag.Int("port", 8888, "Port to listen on.")
 
 	configPath   = flag.String("config-path", "/etc/config/config", "Path to config.yaml.")
+	cluster      = flag.String("cluster", "", "Path to kube.Cluster YAML file. If empty, uses the local cluster.")
 	pluginConfig = flag.String("plugin-config", "/etc/plugins/plugins", "Path to plugin config file.")
 
-	local  = flag.Bool("local", false, "Run locally for testing purposes only. Does not require secret files.")
-	dryRun = flag.Bool("dry-run", true, "Dry run for testing. Uses API tokens but does not mutate.")
+	dryRun  = flag.Bool("dry-run", true, "Dry run for testing. Uses API tokens but does not mutate.")
+	deckURL = flag.String("deck-url", "", "Deck URL for read-only access to the cluster.")
 
 	githubEndpoint  = flag.String("github-endpoint", "https://api.github.com", "GitHub's API endpoint.")
 	githubTokenFile = flag.String("github-token-file", "/etc/github/oauth", "Path to the file containing the GitHub OAuth secret.")
@@ -67,65 +68,61 @@ func main() {
 		logger.WithError(err).Fatal("Error starting config agent.")
 	}
 
-	var webhookSecret []byte
+	// Ignore SIGTERM so that we don't drop hooks when the pod is removed.
+	// We'll get SIGTERM first and then SIGKILL after our graceful termination
+	// deadline.
+	signal.Ignore(syscall.SIGTERM)
+
+	webhookSecretRaw, err := ioutil.ReadFile(*webhookSecretFile)
+	if err != nil {
+		logger.WithError(err).Fatal("Could not read webhook secret file.")
+	}
+	webhookSecret := bytes.TrimSpace(webhookSecretRaw)
+
+	oauthSecretRaw, err := ioutil.ReadFile(*githubTokenFile)
+	if err != nil {
+		logger.WithError(err).Fatal("Could not read oauth secret file.")
+	}
+	oauthSecret := string(bytes.TrimSpace(oauthSecretRaw))
+
+	var teamToken string
+	if *slackTokenFile != "" {
+		teamTokenRaw, err := ioutil.ReadFile(*slackTokenFile)
+		if err != nil {
+			logger.WithError(err).Fatal("Could not read slack token file.")
+		}
+		teamToken = string(bytes.TrimSpace(teamTokenRaw))
+	}
+
+	_, err = url.Parse(*githubEndpoint)
+	if err != nil {
+		logger.WithError(err).Fatal("Must specify a valid --github-endpoint URL.")
+	}
+
 	var githubClient *github.Client
 	var kubeClient *kube.Client
-	var slackClient *slack.Client
-	if *local {
-		logger.Warning("Running in local mode for dev only.")
-
-		logger.Print("HMAC Secret: abcde12345")
-		webhookSecret = []byte("abcde12345")
-
-		githubClient = github.NewFakeClient()
-		kubeClient = kube.NewFakeClient()
+	if *dryRun {
+		githubClient = github.NewDryRunClient(oauthSecret, *githubEndpoint)
+		kubeClient = kube.NewFakeClient(*deckURL)
 	} else {
-		// Ignore SIGTERM so that we don't drop hooks when the pod is removed.
-		// We'll get SIGTERM first and then SIGKILL after our graceful termination
-		// deadline.
-		signal.Ignore(syscall.SIGTERM)
-
-		webhookSecretRaw, err := ioutil.ReadFile(*webhookSecretFile)
-		if err != nil {
-			logger.WithError(err).Fatal("Could not read webhook secret file.")
-		}
-		webhookSecret = bytes.TrimSpace(webhookSecretRaw)
-
-		oauthSecretRaw, err := ioutil.ReadFile(*githubTokenFile)
-		if err != nil {
-			logger.WithError(err).Fatal("Could not read oauth secret file.")
-		}
-		oauthSecret := string(bytes.TrimSpace(oauthSecretRaw))
-
-		var teamToken string
-		if *slackTokenFile != "" {
-			teamTokenRaw, err := ioutil.ReadFile(*slackTokenFile)
+		githubClient = github.NewClient(oauthSecret, *githubEndpoint)
+		if *cluster == "" {
+			kubeClient, err = kube.NewClientInCluster(configAgent.Config().ProwJobNamespace)
 			if err != nil {
-				logger.WithError(err).Fatal("Could not read slack token file.")
+				logger.WithError(err).Fatal("Error getting kube client.")
 			}
-			teamToken = string(bytes.TrimSpace(teamTokenRaw))
-		}
-
-		_, err = url.Parse(*githubEndpoint)
-		if err != nil {
-			logger.WithError(err).Fatal("Must specify a valid --github-endpoint URL.")
-		}
-
-		if *dryRun {
-			githubClient = github.NewDryRunClient(oauthSecret, *githubEndpoint)
 		} else {
-			githubClient = github.NewClient(oauthSecret, *githubEndpoint)
+			kubeClient, err = kube.NewClientFromFile(*cluster, configAgent.Config().ProwJobNamespace)
+			if err != nil {
+				logger.WithError(err).Fatal("Error getting kube client.")
+			}
 		}
+	}
 
-		kubeClient, err = kube.NewClientInCluster(configAgent.Config().ProwJobNamespace)
-		if err != nil {
-			logger.WithError(err).Fatal("Error getting kube client.")
-		}
-
-		if !*dryRun && teamToken != "" {
-			logger.Info("Using real slack client.")
-			slackClient = slack.NewClient(teamToken)
-		}
+	var slackClient *slack.Client
+	if !*dryRun && teamToken != "" {
+		logger.Info("Using real slack client.")
+		slackClient = slack.NewClient(teamToken)
 	}
 	if slackClient == nil {
 		logger.Info("Using fake slack client.")

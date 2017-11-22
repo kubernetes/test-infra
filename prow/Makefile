@@ -24,7 +24,7 @@ HOOK_VERSION             ?= 0.181
 # SINKER_VERSION is the version of the sinker image
 SINKER_VERSION           ?= 0.23
 # DECK_VERSION is the version of the deck image
-DECK_VERSION             ?= 0.64
+DECK_VERSION             ?= 0.65
 # SPLICE_VERSION is the version of the splice image
 SPLICE_VERSION           ?= 0.32
 # TOT_VERSION is the version of the tot image
