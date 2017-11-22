@@ -7,7 +7,7 @@ Package `githubql` is a client library for accessing GitHub GraphQL API v4 (http
 
 If you're looking for a client library for GitHub REST API v3, the recommended package is [`github.com/google/go-github/github`](https://godoc.org/github.com/google/go-github/github).
 
-**Status:** In active early research and development. The API will change when opportunities for improvement are discovered; it is not yet frozen.
+**Status:** In research and development. The API will change when opportunities for improvement are discovered; it is not yet frozen.
 
 Focus
 -----
@@ -15,51 +15,6 @@ Focus
 -	Friendly, simple and powerful API.
 -	Correctness, high performance and efficiency.
 -	Support all of GitHub GraphQL API v4 via code generation from schema.
-
-### Roadmap
-
-Currently implemented:
-
--	[x] Basic and intermediate queries.
--	[x] All mutations.
--	[x] Query minification before network transfer.
--	[x] Scalars.
-	-	[ ] Improved support (https://github.com/shurcooL/githubql/issues/9).
--	[x] Specifying arguments and passing variables.
--	[x] Thorough test coverage.
-	-	[x] Initial basic tests (hacky but functional).
-	-	[x] Better organized, medium sized tests.
--	[x] Aliases.
-	-	[ ] Documentation.
-	-	[x] Improved support.
--	[x] [Inline fragments](http://graphql.org/learn/queries/#inline-fragments).
--	[x] Generate all of objects, enums, input objects, etc.
-	-	[x] Clean up GitHub documentation to pass `golint`.
--	[x] Unions.
-	-	[x] Functional.
-	-	[x] Improved support (https://github.com/shurcooL/githubql/issues/10).
--	[ ] Directives (haven't tested yet, but expect it to be supported).
--	[ ] Research and complete, document the rest of GraphQL features.
--	[ ] Fully document (and add tests for edge cases) the `graphql` struct field tag.
--	[ ] Extremely clean, beautiful, idiomatic Go code (100% coverage, 0 lines of hacky code).
-	-	[x] Document all public identifiers.
-	-	[ ] Clean up implementations of some private helpers (currently functional, but hacky).
-
-Future:
-
--	[ ] GitHub Enterprise support (when it's available; GitHub themselves haven't released support yet, see [here](https://platform.github.community/t/is-graphql-available-for-github-enterprise/1224)).
--	[ ] Frontend support (e.g., using `githubql` in frontend Go code via [GopherJS](https://github.com/gopherjs/gopherjs)).
--	[ ] Local error detection (maybe).
--	[ ] Calculating a rate limit score before running the call.
--	[ ] Avoiding making network calls when rate limit quota exceeded and not yet reset.
--	[ ] Support for OpenTracing.
-
-Known unknowns:
-
--	Whether or not the current API design will scale to support all of advanced GraphQL specification features, and future changes. So far, things are looking great, no major blockers found. I am constantly evaluating it against alternative API designs that I've considered and prototyped myself, and new ones that I become aware of.
--	I have only explored roughly 80% of the GraphQL specification (Working Draft – October 2016).
--	Performance, allocations, memory usage under heavy workloads in long-running processes.
--	Optimal long-term package/code layout (i.e., whether to split off some of the parts into smaller sub-packages).
 
 Installation
 ------------
@@ -116,7 +71,7 @@ var query struct {
 }
 ```
 
-And call `client.Query`, passing a pointer to it:
+Then call `client.Query`, passing a pointer to it:
 
 ```Go
 err := client.Query(context.Background(), &query, nil)
@@ -155,7 +110,7 @@ var q struct {
 }
 ```
 
-And call `client.Query`:
+Then call `client.Query`:
 
 ```Go
 err := client.Query(context.Background(), &q, nil)
@@ -195,6 +150,80 @@ Finally, call `client.Query` providing `variables`:
 	err := client.Query(ctx, &q, variables)
 	return string(q.Repository.Description), err
 }
+```
+
+### Inline Fragments
+
+Some GraphQL queries contain inline fragments. You can use the `graphql` struct field tag to express them.
+
+For example, to make the following GraphQL query:
+
+```GraphQL
+{
+	repositoryOwner(login: "github") {
+		login
+		... on Organization {
+			description
+		}
+		... on User {
+			bio
+		}
+	}
+}
+```
+
+You can define this variable:
+
+```Go
+var q struct {
+	RepositoryOwner struct {
+		Login        githubql.String
+		Organization struct {
+			Description githubql.String
+		} `graphql:"... on Organization"`
+		User struct {
+			Bio githubql.String
+		} `graphql:"... on User"`
+	} `graphql:"repositoryOwner(login: \"github\")"`
+}
+```
+
+Alternatively, you can define the struct types corresponding to inline fragments, and use them as embedded fields in your query:
+
+```Go
+type (
+	OrganizationFragment struct {
+		Description githubql.String
+	}
+	UserFragment struct {
+		Bio githubql.String
+	}
+)
+
+var q struct {
+	RepositoryOwner struct {
+		Login                githubql.String
+		OrganizationFragment `graphql:"... on Organization"`
+		UserFragment         `graphql:"... on User"`
+	} `graphql:"repositoryOwner(login: \"github\")"`
+}
+```
+
+Then call `client.Query`:
+
+```Go
+err := client.Query(context.Background(), &q, nil)
+if err != nil {
+	// Handle error.
+}
+fmt.Println(q.RepositoryOwner.Login)
+fmt.Println(q.RepositoryOwner.Description)
+fmt.Println(q.RepositoryOwner.Bio)
+
+// Output:
+// github
+// How people build software.
+//
 ```
 
 ### Pagination
@@ -291,7 +320,7 @@ input := githubql.AddReactionInput{
 }
 ```
 
-And call `client.Mutate`:
+Then call `client.Mutate`:
 
 ```Go
 err := client.Mutate(context.Background(), &m, input, nil)

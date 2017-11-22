@@ -26,7 +26,7 @@ import (
 	github_test "k8s.io/test-infra/mungegithub/github/testing"
 
 	"github.com/google/go-github/github"
-	"k8s.io/kubernetes/pkg/util/sets"
+	"k8s.io/apimachinery/pkg/util/sets"
 )
 
 type testOwnerLabeler struct{}

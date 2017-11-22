@@ -36,7 +36,7 @@ go_library(
         "//vendor/github.com/gregjones/httpcache/diskcache:go_default_library",
         "//vendor/github.com/peterbourgon/diskv:go_default_library",
         "//vendor/golang.org/x/oauth2:go_default_library",
-        "//vendor/k8s.io/kubernetes/pkg/util/sets:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
     ],
 )
 

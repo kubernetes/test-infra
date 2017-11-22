@@ -23,7 +23,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 
-	utilflag "k8s.io/kubernetes/pkg/util/flag"
+	utilflag "k8s.io/apiserver/pkg/util/flag"
 	"k8s.io/test-infra/mungegithub/github"
 	"k8s.io/test-infra/mungegithub/options"
 )

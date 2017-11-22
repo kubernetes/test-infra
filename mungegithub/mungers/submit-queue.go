@@ -30,8 +30,8 @@ import (
 	"sync/atomic"
 	"time"
 
-	utilclock "k8s.io/kubernetes/pkg/util/clock"
-	"k8s.io/kubernetes/pkg/util/sets"
+	utilclock "k8s.io/apimachinery/pkg/util/clock"
+	"k8s.io/apimachinery/pkg/util/sets"
 
 	"k8s.io/contrib/test-utils/utils"
 	"k8s.io/test-infra/mungegithub/features"

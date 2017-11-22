@@ -10,8 +10,11 @@ go_library(
         "sqlite3.go",
         "sqlite3-binding.c",
         "sqlite3-binding.h",
+        "sqlite3_context.go",
+        "sqlite3_go18.go",
         "sqlite3_load_extension.go",
         "sqlite3_other.go",
+        "sqlite3_type.go",
         "sqlite3ext.h",
     ] + select({
         "@io_bazel_rules_go//go/platform:windows_amd64": [
@@ -31,8 +34,11 @@ go_library(
     }),
     copts = [
         "-std=gnu99",
-        "-DSQLITE_ENABLE_RTREE -DSQLITE_THREADSAFE",
+        "-DSQLITE_ENABLE_RTREE -DSQLITE_THREADSAFE=1",
         "-DSQLITE_ENABLE_FTS3 -DSQLITE_ENABLE_FTS3_PARENTHESIS -DSQLITE_ENABLE_FTS4_UNICODE61",
+        "-DSQLITE_TRACE_SIZE_LIMIT=15",
+        "-DSQLITE_DISABLE_INTRINSIC",
+        "-Wno-deprecated-declarations",
         "-Ivendor/github.com/mattn/go-sqlite3",
     ] + select({
         "@io_bazel_rules_go//go/platform:windows_amd64": [
@@ -42,6 +48,7 @@ go_library(
     }),
     importpath = "github.com/mattn/go-sqlite3",
     visibility = ["//visibility:public"],
+    deps = ["//vendor/golang.org/x/net/context:go_default_library"],
 )
 
 filegroup(
