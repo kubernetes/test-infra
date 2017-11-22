@@ -20045,6 +20045,43 @@ periodics:
         secretName: ssh-key-secret
         defaultMode: 0400
 
+- name: ci-kubernetes-node-kubelet-serial-cpu-manager
+  interval: 4h
+  agent: kubernetes
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20171108-8b5aad9f-master
+      args:
+      - --repo=k8s.io/kubernetes=master
+      - --timeout=240
+      - --root=/go/src
+      env:
+      - name: GOOGLE_APPLICATION_CREDENTIALS
+        value: /etc/service-account/service-account.json
+      - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-private
+      - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-public
+      - name: USER
+        value: prow
+      - name: GOPATH
+        value: /go
+      volumeMounts:
+      - name: service
+        mountPath: /etc/service-account
+        readOnly: true
+      - name: ssh
+        mountPath: /etc/ssh-key-secret
+        readOnly: true
+    volumes:
+    - name: service
+      secret:
+        secretName: service-account
+    - name: ssh
+      secret:
+        secretName: ssh-key-secret
+        defaultMode: 0400
+
 - name: ci-kubernetes-node-kubelet-stable1
   interval: 1h
   agent: kubernetes

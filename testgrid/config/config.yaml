@@ -74,6 +74,13 @@ test_groups:
     - target_config: Tests name
     - target_config: Context
     name_format: '%s [%s]'
+- name: ci-kubernetes-node-kubelet-serial-cpu-manager
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-serial-cpu-manager
+  test_name_config:
+    name_elements:
+    - target_config: Tests name
+    - target_config: Context
+    name_format: '%s [%s]'
 - name: ci-cri-containerd-build
   gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-build
 - name: ci-cri-containerd-e2e-gci-gce
@@ -3281,6 +3288,10 @@ dashboards:
   - name: kubelet-serial-gce-e2e
     test_group_name: ci-kubernetes-node-kubelet-serial
     base_options: 'include-filter-by-regex=GPU'
+  - name: kubelet-serial-gce-e2e-cpu-manager
+    test_group_name: ci-kubernetes-node-kubelet-serial-cpu-manager
+    alert_options:
+      alert_mail_to_addresses: 'balaji.warft@gmail.com, connor.p.d@gmail.com'
 
 - name: sig-api-machinery
   dashboard_tab:
