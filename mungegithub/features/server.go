@@ -24,7 +24,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
-	"k8s.io/kubernetes/pkg/util/sets"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/mungegithub/github"
 	"k8s.io/test-infra/mungegithub/mungeopts"
 	"k8s.io/test-infra/mungegithub/options"

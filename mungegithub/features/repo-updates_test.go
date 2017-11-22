@@ -25,7 +25,7 @@ import (
 
 	"github.com/golang/glog"
 	"github.com/google/go-github/github"
-	"k8s.io/kubernetes/pkg/util/sets"
+	"k8s.io/apimachinery/pkg/util/sets"
 )
 
 var (

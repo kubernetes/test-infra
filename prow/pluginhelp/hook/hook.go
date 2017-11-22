@@ -33,7 +33,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"k8s.io/kubernetes/pkg/util/sets"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/pluginhelp/externalplugins"

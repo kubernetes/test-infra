@@ -28,7 +28,7 @@ import (
 	"testing"
 	"time"
 
-	utilclock "k8s.io/kubernetes/pkg/util/clock"
+	utilclock "k8s.io/apimachinery/pkg/util/clock"
 
 	"k8s.io/contrib/test-utils/utils"
 	"k8s.io/test-infra/mungegithub/features"
