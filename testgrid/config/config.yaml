@@ -2579,6 +2579,10 @@ dashboards:
     test_group_name: ci-kubernetes-build
   - name: test-go
     test_group_name: ci-kubernetes-test-go
+  - name: bazel-build
+    test_group_name: ci-kubernetes-bazel-build
+  - name: bazel-test
+    test_group_name: ci-kubernetes-bazel-test
   - name: verify
     test_group_name: ci-kubernetes-verify-master
   - name: kubelet
