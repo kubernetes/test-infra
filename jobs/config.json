@@ -9562,6 +9562,23 @@
       "sig-node"
     ]
   },
+  "ci-kubernetes-node-kubelet-serial-cpu-manager": {
+    "args": [
+      "--deployment=node",
+      "--gcp-project=k8s-jkns-ci-node-e2e",
+      "--gcp-zone=us-west1-b",
+      "--node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config-serial-cpu-manager.yaml",
+      "--node-test-args=--feature-gates=DynamicKubeletConfig=true --kubelet-flags=\"--cgroups-per-qos=true --cgroup-root=/\"",
+      "--node-tests=true",
+      "--provider=gce",
+      "--test_args=--nodes=1 --focus=\"\\[Feature:CPUManager\\]\"",
+      "--timeout=180m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-node"
+    ]
+  },
   "ci-kubernetes-node-kubelet-stable1": {
     "args": [
       "--deployment=node",
