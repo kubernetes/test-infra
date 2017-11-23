@@ -7,14 +7,8 @@ load(
 
 go_library(
     name = "go_default_library",
-    srcs = ["reports.go"],
-    importpath = "k8s.io/test-infra/mungegithub/reports",
-    deps = [
-        "//mungegithub/github:go_default_library",
-        "//mungegithub/options:go_default_library",
-        "//vendor/github.com/golang/glog:go_default_library",
-        "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
-    ],
+    srcs = ["clock.go"],
+    importpath = "k8s.io/apimachinery/pkg/util/clock",
 )
 
 filegroup(

@@ -7,13 +7,18 @@ load(
 
 go_library(
     name = "go_default_library",
-    srcs = ["reports.go"],
-    importpath = "k8s.io/test-infra/mungegithub/reports",
+    srcs = [
+        "configuration_map.go",
+        "flags.go",
+        "map_string_bool.go",
+        "namedcertkey_flag.go",
+        "string_flag.go",
+        "tristate.go",
+    ],
+    importpath = "k8s.io/apiserver/pkg/util/flag",
     deps = [
-        "//mungegithub/github:go_default_library",
-        "//mungegithub/options:go_default_library",
         "//vendor/github.com/golang/glog:go_default_library",
-        "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
+        "//vendor/github.com/spf13/pflag:go_default_library",
     ],
 )
 
