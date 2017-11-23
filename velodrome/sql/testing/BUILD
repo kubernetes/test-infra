@@ -9,8 +9,8 @@ load(
 go_test(
     name = "go_default_test",
     srcs = ["sqlite_test.go"],
+    embed = [":go_default_library"],
     importpath = "k8s.io/test-infra/velodrome/sql/testing",
-    library = ":go_default_library",
     deps = ["//velodrome/sql:go_default_library"],
 )
 

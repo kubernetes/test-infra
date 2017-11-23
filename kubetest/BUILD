@@ -9,8 +9,10 @@ load(
 
 go_binary(
     name = "kubetest",
+    embed = [":go_default_library"],
     importpath = "k8s.io/test-infra/kubetest",
-    library = ":go_default_library",
+    pure = "on",
+    race = "off",
 )
 
 go_library(
@@ -65,6 +67,6 @@ go_test(
         "main_test.go",
         "util_test.go",
     ],
+    embed = [":go_default_library"],
     importpath = "k8s.io/test-infra/kubetest",
-    library = ":go_default_library",
 )

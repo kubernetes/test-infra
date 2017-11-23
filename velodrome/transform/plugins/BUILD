@@ -67,8 +67,8 @@ go_test(
         "states_test.go",
         "type_filter_wrapper_test.go",
     ],
+    embed = [":go_default_library"],
     importpath = "k8s.io/test-infra/velodrome/transform/plugins",
-    library = ":go_default_library",
     deps = [
         "//velodrome/sql:go_default_library",
         "//vendor/github.com/golang/mock/gomock:go_default_library",

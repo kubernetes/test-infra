@@ -8,8 +8,8 @@ load(
 
 go_binary(
     name = "jenkins_verify",
+    embed = [":go_default_library"],
     importpath = "k8s.io/test-infra/testgrid/jenkins_verify",
-    library = ":go_default_library",
 )
 
 go_library(

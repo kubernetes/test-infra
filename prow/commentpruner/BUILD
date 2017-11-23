@@ -14,8 +14,8 @@ go_library(
 go_test(
     name = "go_default_test",
     srcs = ["commentpruner_test.go"],
+    embed = [":go_default_library"],
     importpath = "k8s.io/test-infra/prow/commentpruner",
-    library = ":go_default_library",
     deps = [
         "//prow/github:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",

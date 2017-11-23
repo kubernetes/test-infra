@@ -10,8 +10,10 @@ load(
 
 go_binary(
     name = "metrics",
+    embed = [":go_default_library"],
     importpath = "k8s.io/test-infra/boskos/metrics",
-    library = ":go_default_library",
+    pure = "on",
+    race = "off",
     tags = ["automanaged"],
 )
 

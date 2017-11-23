@@ -9,8 +9,8 @@ load(
 go_test(
     name = "go_default_test",
     srcs = ["repo-updates_test.go"],
+    embed = [":go_default_library"],
     importpath = "k8s.io/test-infra/mungegithub/features",
-    library = ":go_default_library",
     deps = [
         "//vendor/github.com/golang/glog:go_default_library",
         "//vendor/github.com/google/go-github/github:go_default_library",
