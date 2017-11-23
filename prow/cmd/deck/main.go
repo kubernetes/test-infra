@@ -115,10 +115,12 @@ func handleProwJobs(ja *JobAgent) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Cache-Control", "no-cache")
 		jobs := ja.ProwJobs()
-		jd, err := json.Marshal(jobs)
+		jd, err := json.Marshal(struct {
+			Items []kube.ProwJob `json:"items"`
+		}{jobs})
 		if err != nil {
 			logrus.WithError(err).Error("Error marshaling jobs.")
-			jd = []byte("[]")
+			jd = []byte("{}")
 		}
 		// If we have a "var" query, then write out "var value = {...};".
 		// Otherwise, just write out the JSON.
