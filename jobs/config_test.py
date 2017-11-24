@@ -784,6 +784,7 @@ class JobTest(unittest.TestCase):
             'ci-kubernetes-e2e-gce': 'ci-kubernetes-e2e-gce-*',
             'ci-kubernetes-e2e-gce-canary': 'ci-kubernetes-e2e-gce-*',
             'ci-kubernetes-node-kubelet-serial': 'ci-kubernetes-node-kubelet-*',
+            'ci-kubernetes-node-kubelet-serial-cpu-manager': 'ci-kubernetes-node-kubelet-*',
             'ci-kubernetes-node-kubelet-flaky': 'ci-kubernetes-node-kubelet-*',
             'ci-kubernetes-node-kubelet-conformance': 'ci-kubernetes-node-kubelet-*',
             'ci-kubernetes-node-kubelet-benchmark': 'ci-kubernetes-node-kubelet-*',
@@ -791,6 +792,7 @@ class JobTest(unittest.TestCase):
             'ci-kubernetes-node-kubelet-stable1': 'ci-kubernetes-node-kubelet-*',
             'ci-kubernetes-node-kubelet-stable2': 'ci-kubernetes-node-kubelet-*',
             'ci-kubernetes-node-kubelet-stable3': 'ci-kubernetes-node-kubelet-*',
+            'ci-kubernetes-node-kubelet-beta': 'ci-kubernetes-node-kubelet-*',
             'ci-kubernetes-node-kubelet-non-cri-1-6': 'ci-kubernetes-node-kubelet-*',
         }
         for soak_prefix in [

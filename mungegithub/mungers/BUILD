@@ -25,9 +25,9 @@ go_test(
     data = [
         "//mungegithub:configs",
     ],
-    features = ["-race"],
+    embed = [":go_default_library"],
     importpath = "k8s.io/test-infra/mungegithub/mungers",
-    library = ":go_default_library",
+    race = "off",  # kubernetes/test-infra/issues/3639
     deps = [
         "//mungegithub/features:go_default_library",
         "//mungegithub/github:go_default_library",

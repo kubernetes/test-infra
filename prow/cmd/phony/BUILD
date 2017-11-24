@@ -8,8 +8,8 @@ load(
 
 go_binary(
     name = "phony",
+    embed = [":go_default_library"],
     importpath = "k8s.io/test-infra/prow/cmd/phony",
-    library = ":go_default_library",
 )
 
 go_library(

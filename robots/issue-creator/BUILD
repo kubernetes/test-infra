@@ -48,8 +48,8 @@ go_library(
 
 go_binary(
     name = "issue-creator",
+    embed = [":go_default_library"],
     importpath = "k8s.io/test-infra/robots/issue-creator",
-    library = ":go_default_library",
     visibility = ["//visibility:public"],
 )
 

@@ -12,8 +12,8 @@ go_test(
         "e2e_test.go",
         "resolved_test.go",
     ],
+    embed = [":go_default_library"],
     importpath = "k8s.io/test-infra/mungegithub/mungers/e2e",
-    library = ":go_default_library",
     deps = [
         "//mungegithub/options:go_default_library",
         "//vendor/k8s.io/contrib/test-utils/utils:go_default_library",

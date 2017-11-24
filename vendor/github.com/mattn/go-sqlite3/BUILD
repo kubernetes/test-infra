@@ -11,9 +11,14 @@ go_library(
         "sqlite3-binding.c",
         "sqlite3-binding.h",
         "sqlite3_load_extension.go",
-        "sqlite3_other.go",
         "sqlite3ext.h",
     ] + select({
+        "@io_bazel_rules_go//go/platform:darwin_amd64": [
+            "sqlite3_other.go",
+        ],
+        "@io_bazel_rules_go//go/platform:linux_amd64": [
+            "sqlite3_other.go",
+        ],
         "@io_bazel_rules_go//go/platform:windows_amd64": [
             "sqlite3_windows.go",
         ],
@@ -33,8 +38,13 @@ go_library(
         "-std=gnu99",
         "-DSQLITE_ENABLE_RTREE -DSQLITE_THREADSAFE",
         "-DSQLITE_ENABLE_FTS3 -DSQLITE_ENABLE_FTS3_PARENTHESIS -DSQLITE_ENABLE_FTS4_UNICODE61",
-        "-Ivendor/github.com/mattn/go-sqlite3",
     ] + select({
+        "@io_bazel_rules_go//go/platform:darwin_amd64": [
+            "-Ivendor/github.com/mattn/go-sqlite3",
+        ],
+        "@io_bazel_rules_go//go/platform:linux_amd64": [
+            "-Ivendor/github.com/mattn/go-sqlite3",
+        ],
         "@io_bazel_rules_go//go/platform:windows_amd64": [
             "-Ivendor/github.com/mattn/go-sqlite3 -fno-stack-check -fno-stack-protector -mno-stack-arg-probe",
         ],

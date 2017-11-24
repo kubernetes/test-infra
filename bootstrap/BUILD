@@ -16,8 +16,8 @@ go_library(
 
 go_binary(
     name = "bootstrap",
+    embed = [":go_default_library"],
     importpath = "k8s.io/test-infra/bootstrap",
-    library = ":go_default_library",
     visibility = ["//visibility:public"],
 )
 
@@ -43,6 +43,6 @@ go_test(
         "paths_test.go",
         "repos_test.go",
     ],
+    embed = [":go_default_library"],
     importpath = "k8s.io/test-infra/bootstrap",
-    library = ":go_default_library",
 )

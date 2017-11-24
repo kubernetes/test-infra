@@ -18,8 +18,8 @@ go_test(
         "//prow:configs",
         "//scenarios",
     ],
+    embed = [":go_default_library"],
     importpath = "k8s.io/test-infra/prow/config",
-    library = ":go_default_library",
     deps = [
         "//prow/kube:go_default_library",
         "//vendor/github.com/ghodss/yaml:go_default_library",

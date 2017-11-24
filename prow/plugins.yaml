@@ -59,6 +59,10 @@ slack:
     - kubernetes-dev
     whitelist:
     - k8s-merge-robot
+    - enisoc # 1.6 patch release manager
+    - wojtek-t # 1.7 patch release manager
+    - jpbetz # 1.8 patch release manager
+    - dashpole # 1.9 branch manager
 
 milestonestatus:
   # You can curl the following endpoint in order to determine the github ID of your team

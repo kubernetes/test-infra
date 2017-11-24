@@ -8,8 +8,8 @@ load(
 
 go_binary(
     name = "migratestatus",
+    embed = [":go_default_library"],
     importpath = "k8s.io/test-infra/maintenance/migratestatus",
-    library = ":go_default_library",
 )
 
 go_library(

@@ -44,7 +44,9 @@ filegroup(
 
 go_binary(
     name = "jenkins-operator",
+    embed = [":go_default_library"],
     importpath = "k8s.io/test-infra/prow/cmd/jenkins-operator",
-    library = ":go_default_library",
+    pure = "on",
+    race = "off",
     tags = ["automanaged"],
 )

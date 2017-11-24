@@ -11,8 +11,10 @@ load(
 
 go_binary(
     name = "label_sync",
+    embed = [":go_default_library"],
     importpath = "k8s.io/test-infra/label_sync",
-    library = ":go_default_library",
+    pure = "on",
+    race = "off",
     tags = ["automanaged"],
 )
 
@@ -22,8 +24,8 @@ go_test(
     data = [
         "//label_sync:test_examples",
     ],
+    embed = [":go_default_library"],
     importpath = "k8s.io/test-infra/label_sync",
-    library = ":go_default_library",
     tags = ["automanaged"],
 )
 

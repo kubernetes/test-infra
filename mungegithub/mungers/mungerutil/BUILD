@@ -12,8 +12,8 @@ go_test(
         "time_cache_test.go",
         "util_test.go",
     ],
+    embed = [":go_default_library"],
     importpath = "k8s.io/test-infra/mungegithub/mungers/mungerutil",
-    library = ":go_default_library",
     deps = ["//vendor/github.com/google/go-github/github:go_default_library"],
 )
 

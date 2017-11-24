@@ -21,8 +21,8 @@ go_library(
 
 go_binary(
     name = "cherrypicker",
+    embed = [":go_default_library"],
     importpath = "k8s.io/test-infra/experiment/cherrypicker",
-    library = ":go_default_library",
     visibility = ["//visibility:public"],
 )
 
@@ -43,8 +43,8 @@ filegroup(
 go_test(
     name = "go_default_test",
     srcs = ["server_test.go"],
+    embed = [":go_default_library"],
     importpath = "k8s.io/test-infra/experiment/cherrypicker",
-    library = ":go_default_library",
     deps = [
         "//prow/git/localgit:go_default_library",
         "//prow/github:go_default_library",

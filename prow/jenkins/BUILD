@@ -46,8 +46,8 @@ go_test(
         "controller_test.go",
         "jenkins_test.go",
     ],
+    embed = [":go_default_library"],
     importpath = "k8s.io/test-infra/prow/jenkins",
-    library = ":go_default_library",
     tags = ["automanaged"],
     deps = [
         "//prow/config:go_default_library",

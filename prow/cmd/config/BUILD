@@ -15,8 +15,8 @@ go_library(
 go_binary(
     name = "config",
     data = ["//prow:configs"],
+    embed = [":go_default_library"],
     importpath = "k8s.io/test-infra/prow/cmd/config",
-    library = ":go_default_library",
     visibility = ["//visibility:public"],
 )
 

@@ -12,8 +12,8 @@ go_test(
         "approvers_test.go",
         "owners_test.go",
     ],
+    embed = [":go_default_library"],
     importpath = "k8s.io/test-infra/mungegithub/mungers/approvers",
-    library = ":go_default_library",
     deps = ["//vendor/k8s.io/kubernetes/pkg/util/sets:go_default_library"],
 )
 

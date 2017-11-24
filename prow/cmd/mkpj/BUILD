@@ -10,8 +10,8 @@ go_binary(
     name = "mkpj",
     args = ["--config-path=$(location //prow:config.yaml)"],
     data = ["//prow:config.yaml"],
+    embed = [":go_default_library"],
     importpath = "k8s.io/test-infra/prow/cmd/mkpj",
-    library = ":go_default_library",
 )
 
 go_library(

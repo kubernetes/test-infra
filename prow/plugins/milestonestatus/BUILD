@@ -29,8 +29,8 @@ filegroup(
 go_test(
     name = "go_default_test",
     srcs = ["milestonestatus_test.go"],
+    embed = [":go_default_library"],
     importpath = "k8s.io/test-infra/prow/plugins/milestonestatus",
-    library = ":go_default_library",
     deps = [
         "//prow/github:go_default_library",
         "//prow/github/fakegithub:go_default_library",

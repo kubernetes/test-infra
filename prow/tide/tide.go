@@ -49,7 +49,6 @@ type githubClient interface {
 // Controller knows how to sync PRs and PJs.
 type Controller struct {
 	logger *logrus.Entry
-	dryRun bool
 	ca     *config.Agent
 	ghc    githubClient
 	kc     kubeClient
@@ -91,10 +90,9 @@ type Pool struct {
 }
 
 // NewController makes a Controller out of the given clients.
-func NewController(ghc *github.Client, kc *kube.Client, ca *config.Agent, gc *git.Client, dryRun bool, logger *logrus.Entry) *Controller {
+func NewController(ghc *github.Client, kc *kube.Client, ca *config.Agent, gc *git.Client, logger *logrus.Entry) *Controller {
 	return &Controller{
 		logger: logger,
-		dryRun: dryRun,
 		ghc:    ghc,
 		kc:     kc,
 		ca:     ca,
@@ -397,27 +395,18 @@ func (c *Controller) trigger(sp subpool, prs []PullRequest) error {
 func (c *Controller) takeAction(sp subpool, batchPending bool, successes, pendings, nones, batchMerges []PullRequest) (Action, []PullRequest, error) {
 	// Merge the batch!
 	if len(batchMerges) > 0 {
-		if c.dryRun {
-			return MergeBatch, batchMerges, nil
-		}
 		return MergeBatch, batchMerges, c.mergePRs(sp, batchMerges)
 	}
 	// Do not merge PRs while waiting for a batch to complete. We don't want to
 	// invalidate the old batch result.
 	if len(successes) > 0 && !batchPending {
 		if ok, pr := pickSmallestPassingNumber(successes); ok {
-			if c.dryRun {
-				return Merge, []PullRequest{pr}, nil
-			}
 			return Merge, []PullRequest{pr}, c.mergePRs(sp, []PullRequest{pr})
 		}
 	}
 	// If we have no serial jobs pending or successful, trigger one.
 	if len(nones) > 0 && len(pendings) == 0 && len(successes) == 0 {
 		if ok, pr := pickSmallestPassingNumber(nones); ok {
-			if c.dryRun {
-				return Trigger, []PullRequest{pr}, nil
-			}
 			return Trigger, []PullRequest{pr}, c.trigger(sp, []PullRequest{pr})
 		}
 	}
@@ -428,9 +417,6 @@ func (c *Controller) takeAction(sp subpool, batchPending bool, successes, pendin
 			return Wait, nil, err
 		}
 		if len(batch) > 1 {
-			if c.dryRun {
-				return TriggerBatch, batch, nil
-			}
 			return TriggerBatch, batch, c.trigger(sp, batch)
 		}
 	}

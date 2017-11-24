@@ -14,8 +14,8 @@ go_test(
         "links_test.go",
         "types_test.go",
     ],
+    embed = [":go_default_library"],
     importpath = "k8s.io/test-infra/prow/github",
-    library = ":go_default_library",
 )
 
 go_library(

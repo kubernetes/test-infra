@@ -17,8 +17,8 @@ go_test(
         "operators_test.go",
         "pinger_test.go",
     ],
+    embed = [":go_default_library"],
     importpath = "k8s.io/test-infra/mungegithub/mungers/matchers/comment",
-    library = ":go_default_library",
 )
 
 go_library(

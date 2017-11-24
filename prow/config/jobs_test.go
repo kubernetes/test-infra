@@ -54,7 +54,7 @@ func flattenJobs(jobs []Presubmit) []Presubmit {
 }
 
 // Returns if two brancher has overlapping branches
-func CheckOverlapBrancher(b1, b2 Brancher) bool {
+func checkOverlapBrancher(b1, b2 Brancher) bool {
 	if b1.RunsAgainstAllBranch() || b2.RunsAgainstAllBranch() {
 		return true
 	}
@@ -77,10 +77,6 @@ func CheckOverlapBrancher(b1, b2 Brancher) bool {
 // TODO(spxtr): Some of this is generic prowjob stuff and some of this is k8s-
 // specific. Figure out which is which and split this up.
 func TestPresubmits(t *testing.T) {
-	c, err := Load("../config.yaml")
-	if err != nil {
-		t.Fatalf("Could not load config: %v", err)
-	}
 	if len(c.Presubmits) == 0 {
 		t.Fatalf("No jobs found in presubmit.yaml.")
 	}
@@ -131,7 +127,7 @@ func TestPresubmits(t *testing.T) {
 						t.Errorf("Jobs %s share same name but has different max_concurrency", job.Name)
 					}
 					// Make sure branches are not overlapping
-					if CheckOverlapBrancher(job.Brancher, job2.Brancher) {
+					if checkOverlapBrancher(job.Brancher, job2.Brancher) {
 						t.Errorf("Two jobs have the same name: %s, and has conflicted branches", job.Name)
 					}
 				} else {
@@ -622,10 +618,6 @@ func TestRunAgainstBranch(t *testing.T) {
 }
 
 func TestValidPodNames(t *testing.T) {
-	c, err := Load("../config.yaml")
-	if err != nil {
-		t.Fatalf("Could not load config: %v", err)
-	}
 	for _, j := range c.AllPresubmits([]string{}) {
 		if !podRe.MatchString(j.Name) {
 			t.Errorf("Job \"%s\" must match regex \"%s\".", j.Name, podRe.String())
@@ -644,11 +636,6 @@ func TestValidPodNames(t *testing.T) {
 }
 
 func TestNoDuplicateJobs(t *testing.T) {
-	c, err := Load("../config.yaml")
-	if err != nil {
-		t.Fatalf("Could not load config: %v", err)
-	}
-
 	// Presubmit test is covered under TestPresubmits() above
 
 	allJobs := make(map[string]bool)

@@ -8,8 +8,10 @@ load(
 
 go_binary(
     name = "mungegithub",
+    embed = [":go_default_library"],
     importpath = "k8s.io/test-infra/mungegithub",
-    library = ":go_default_library",
+    pure = "on",
+    race = "off",
 )
 
 go_library(
