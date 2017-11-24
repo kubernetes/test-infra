@@ -15,8 +15,8 @@ go_library(
 go_test(
     name = "go_default_test",
     srcs = ["wip-label_test.go"],
+    embed = [":go_default_library"],
     importpath = "k8s.io/test-infra/prow/plugins/wip",
-    library = ":go_default_library",
     deps = [
         "//prow/github:go_default_library",
         "//prow/github/fakegithub:go_default_library",

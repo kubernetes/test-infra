@@ -8,8 +8,10 @@ load(
 
 go_binary(
     name = "cmd",
+    embed = [":go_default_library"],
     importpath = "k8s.io/test-infra/logexporter/cmd",
-    library = ":go_default_library",
+    pure = "on",
+    race = "off",
 )
 
 go_library(

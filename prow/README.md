@@ -106,15 +106,7 @@ Test with:
 bazel test --features=race //prow/...
 ```
 
-You can run `cmd/hook` in a local mode for testing, and hit it with arbitrary
-fake webhooks. To do this, run in one shell:
-```
-./bazel-bin/prow/cmd/hook/hook --local --config-path prow/config.yaml --plugin-config prow/plugins.yaml
-```
-This will listen on `localhost:8888` for webhooks. Send one with:
-```
-./bazel-bin/prow/cmd/phony/phony --event issue_comment --payload prow/cmd/phony/examples/test_comment.json
-```
+**TODO**(spxtr): Unify and document how to run prow components locally.
 
 ## How to run a given job on prow
 

@@ -52,6 +52,7 @@ type Client struct {
 	logger Logger
 
 	baseURL   string
+	deckURL   string
 	client    *http.Client
 	token     string
 	namespace string
@@ -103,6 +104,7 @@ func NewUnprocessableEntityError(e error) UnprocessableEntityError {
 type request struct {
 	method      string
 	path        string
+	deckPath    string
 	query       map[string]string
 	requestBody interface{}
 }
@@ -125,7 +127,7 @@ func (c *Client) retry(r *request) (*http.Response, error) {
 	var err error
 	backoff := retryDelay
 	for retries := 0; retries < maxRetries; retries++ {
-		resp, err = c.doRequest(r.method, r.path, r.query, r.requestBody)
+		resp, err = c.doRequest(r.method, r.deckPath, r.path, r.query, r.requestBody)
 		if err == nil {
 			if resp.StatusCode < 500 {
 				break
@@ -141,7 +143,7 @@ func (c *Client) retry(r *request) (*http.Response, error) {
 
 // Retry on transport failures. Does not retry on 500s.
 func (c *Client) requestRetryStream(r *request) (io.ReadCloser, error) {
-	if c.fake {
+	if c.fake && r.deckPath == "" {
 		return nil, nil
 	}
 	resp, err := c.retry(r)
@@ -158,7 +160,7 @@ func (c *Client) requestRetryStream(r *request) (io.ReadCloser, error) {
 
 // Retry on transport failures. Does not retry on 500s.
 func (c *Client) requestRetry(r *request) ([]byte, error) {
-	if c.fake {
+	if c.fake && r.deckPath == "" {
 		return []byte("{}"), nil
 	}
 	resp, err := c.retry(r)
@@ -181,8 +183,11 @@ func (c *Client) requestRetry(r *request) ([]byte, error) {
 	return rb, nil
 }
 
-func (c *Client) doRequest(method, urlPath string, query map[string]string, body interface{}) (*http.Response, error) {
+func (c *Client) doRequest(method, deckPath, urlPath string, query map[string]string, body interface{}) (*http.Response, error) {
 	url := c.baseURL + urlPath
+	if c.deckURL != "" && deckPath != "" {
+		url = c.deckURL + deckPath
+	}
 	var buf io.Reader
 	if body != nil {
 		b, err := json.Marshal(body)
@@ -213,10 +218,13 @@ func (c *Client) doRequest(method, urlPath string, query map[string]string, body
 	return c.client.Do(req)
 }
 
-// NewFakeClient creates a client that doesn't do anything.
-func NewFakeClient() *Client {
+// NewFakeClient creates a client that doesn't do anything. If you provide a
+// deck URL then the client will hit that for the supported calls.
+func NewFakeClient(deckURL string) *Client {
 	return &Client{
 		namespace: "default",
+		deckURL:   deckURL,
+		client:    &http.Client{},
 		fake:      true,
 	}
 }
@@ -324,8 +332,7 @@ func (c *Client) GetPod(name string) (Pod, error) {
 	c.log("GetPod", name)
 	var retPod Pod
 	err := c.request(&request{
-		method: http.MethodGet,
-		path:   fmt.Sprintf("/api/v1/namespaces/%s/pods/%s", c.namespace, name),
+		path: fmt.Sprintf("/api/v1/namespaces/%s/pods/%s", c.namespace, name),
 	}, &retPod)
 	return retPod, err
 }
@@ -336,9 +343,8 @@ func (c *Client) ListPods(selector string) ([]Pod, error) {
 		Items []Pod `json:"items"`
 	}
 	err := c.request(&request{
-		method: http.MethodGet,
-		path:   fmt.Sprintf("/api/v1/namespaces/%s/pods", c.namespace),
-		query:  map[string]string{"labelSelector": selector},
+		path:  fmt.Sprintf("/api/v1/namespaces/%s/pods", c.namespace),
+		query: map[string]string{"labelSelector": selector},
 	}, &pl)
 	return pl.Items, err
 }
@@ -366,8 +372,7 @@ func (c *Client) GetProwJob(name string) (ProwJob, error) {
 	c.log("GetProwJob", name)
 	var pj ProwJob
 	err := c.request(&request{
-		method: http.MethodGet,
-		path:   fmt.Sprintf("/apis/prow.k8s.io/v1/namespaces/%s/prowjobs/%s", c.namespace, name),
+		path: fmt.Sprintf("/apis/prow.k8s.io/v1/namespaces/%s/prowjobs/%s", c.namespace, name),
 	}, &pj)
 	return pj, err
 }
@@ -378,9 +383,9 @@ func (c *Client) ListProwJobs(selector string) ([]ProwJob, error) {
 		Items []ProwJob `json:"items"`
 	}
 	err := c.request(&request{
-		method: http.MethodGet,
-		path:   fmt.Sprintf("/apis/prow.k8s.io/v1/namespaces/%s/prowjobs", c.namespace),
-		query:  map[string]string{"labelSelector": selector},
+		path:     fmt.Sprintf("/apis/prow.k8s.io/v1/namespaces/%s/prowjobs", c.namespace),
+		deckPath: "/prowjobs.js",
+		query:    map[string]string{"labelSelector": selector},
 	}, &jl)
 	return jl.Items, err
 }
@@ -418,17 +423,15 @@ func (c *Client) CreatePod(p Pod) (Pod, error) {
 func (c *Client) GetLog(pod string) ([]byte, error) {
 	c.log("GetLog", pod)
 	return c.requestRetry(&request{
-		method: http.MethodGet,
-		path:   fmt.Sprintf("/api/v1/namespaces/%s/pods/%s/log", c.namespace, pod),
+		path: fmt.Sprintf("/api/v1/namespaces/%s/pods/%s/log", c.namespace, pod),
 	})
 }
 
 func (c *Client) GetLogStream(pod string, options map[string]string) (io.ReadCloser, error) {
 	c.log("GetLogStream", pod)
 	return c.requestRetryStream(&request{
-		method: http.MethodGet,
-		path:   fmt.Sprintf("/api/v1/namespaces/%s/pods/%s/log", c.namespace, pod),
-		query:  options,
+		path:  fmt.Sprintf("/api/v1/namespaces/%s/pods/%s/log", c.namespace, pod),
+		query: options,
 	})
 }
 

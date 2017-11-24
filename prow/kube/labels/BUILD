@@ -22,8 +22,8 @@ go_test(
         "selector_test.go",
         "validation_test.go",
     ],
+    embed = [":go_default_library"],
     importpath = "k8s.io/test-infra/prow/kube/labels",
-    library = ":go_default_library",
     deps = ["//vendor/k8s.io/kubernetes/pkg/util/sets:go_default_library"],
 )
 

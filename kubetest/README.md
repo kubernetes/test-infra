@@ -166,7 +166,7 @@ tests.
 
 Tests can use `--skew` and `--upgrade_args` if they provided multiple
 `--extract` flags (or manually created a `kubernetes/kubernetes_skew` directory
-as a sibling to `kubernetes/kubernetes`. This will cause tests to run from the
+as a sibling to `kubernetes/kubernetes`). This will cause tests to run from the
 skew directory, potentially to upgrade/downgrade kubernetes to another version.
 
 A simple example is:<br>

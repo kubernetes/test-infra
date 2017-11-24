@@ -12,8 +12,8 @@ go_test(
         "github_test.go",
         "status_change_test.go",
     ],
+    embed = [":go_default_library"],
     importpath = "k8s.io/test-infra/mungegithub/github",
-    library = ":go_default_library",
     deps = [
         "//mungegithub/github/testing:go_default_library",
         "//vendor/github.com/google/go-github/github:go_default_library",

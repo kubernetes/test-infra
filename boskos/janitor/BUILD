@@ -9,8 +9,10 @@ load(
 
 go_binary(
     name = "janitor",
+    embed = [":go_default_library"],
     importpath = "k8s.io/test-infra/boskos/janitor",
-    library = ":go_default_library",
+    pure = "on",
+    race = "off",
 )
 
 go_library(
@@ -40,7 +42,7 @@ filegroup(
 go_test(
     name = "go_default_test",
     srcs = ["janitor_test.go"],
+    embed = [":go_default_library"],
     importpath = "k8s.io/test-infra/boskos/janitor",
-    library = ":go_default_library",
     deps = ["//boskos/common:go_default_library"],
 )

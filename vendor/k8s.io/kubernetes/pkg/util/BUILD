@@ -7,9 +7,14 @@ go_library(
         "string_flag.go",
         "template.go",
         "trace.go",
-        "umask.go",
         "util.go",
     ] + select({
+        "@io_bazel_rules_go//go/platform:darwin_amd64": [
+            "umask.go",
+        ],
+        "@io_bazel_rules_go//go/platform:linux_amd64": [
+            "umask.go",
+        ],
         "@io_bazel_rules_go//go/platform:windows_amd64": [
             "umask_windows.go",
         ],

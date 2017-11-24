@@ -33,8 +33,8 @@ filegroup(
 go_test(
     name = "go_default_test",
     srcs = ["tide_test.go"],
+    embed = [":go_default_library"],
     importpath = "k8s.io/test-infra/prow/tide",
-    library = ":go_default_library",
     deps = [
         "//prow/config:go_default_library",
         "//prow/git/localgit:go_default_library",

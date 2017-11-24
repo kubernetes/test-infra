@@ -9,8 +9,8 @@ load(
 go_test(
     name = "go_default_test",
     srcs = ["controller_test.go"],
+    embed = [":go_default_library"],
     importpath = "k8s.io/test-infra/prow/plank",
-    library = ":go_default_library",
     deps = [
         "//prow/config:go_default_library",
         "//prow/github:go_default_library",

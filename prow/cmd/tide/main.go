@@ -39,6 +39,7 @@ var (
 
 	dryRun  = flag.Bool("dry-run", true, "Whether to mutate any real-world state.")
 	runOnce = flag.Bool("run-once", false, "If true, run only once then quit.")
+	deckURL = flag.String("deck-url", "", "Deck URL for read-only access to the cluster.")
 
 	configPath = flag.String("config-path", "/etc/config/config", "Path to config.yaml.")
 	cluster    = flag.String("cluster", "", "Path to kube.Cluster YAML file. If empty, uses the local cluster.")
@@ -68,18 +69,23 @@ func main() {
 		logger.WithError(err).Fatalf("Must specify a valid --github-endpoint URL.")
 	}
 
-	ghc := github.NewClient(oauthSecret, *githubEndpoint)
-
+	var ghc *github.Client
 	var kc *kube.Client
-	if *cluster == "" {
-		kc, err = kube.NewClientInCluster(configAgent.Config().ProwJobNamespace)
-		if err != nil {
-			logger.WithError(err).Fatal("Error getting kube client.")
-		}
+	if *dryRun {
+		ghc = github.NewDryRunClient(oauthSecret, *githubEndpoint)
+		kc = kube.NewFakeClient(*deckURL)
 	} else {
-		kc, err = kube.NewClientFromFile(*cluster, configAgent.Config().ProwJobNamespace)
-		if err != nil {
-			logger.WithError(err).Fatal("Error getting kube client.")
+		ghc = github.NewClient(oauthSecret, *githubEndpoint)
+		if *cluster == "" {
+			kc, err = kube.NewClientInCluster(configAgent.Config().ProwJobNamespace)
+			if err != nil {
+				logger.WithError(err).Fatal("Error getting kube client.")
+			}
+		} else {
+			kc, err = kube.NewClientFromFile(*cluster, configAgent.Config().ProwJobNamespace)
+			if err != nil {
+				logger.WithError(err).Fatal("Error getting kube client.")
+			}
 		}
 	}
 
@@ -89,7 +95,7 @@ func main() {
 	}
 	defer gc.Clean()
 
-	c := tide.NewController(ghc, kc, configAgent, gc, *dryRun, logger)
+	c := tide.NewController(ghc, kc, configAgent, gc, logger)
 
 	sync(c)
 	if *runOnce {

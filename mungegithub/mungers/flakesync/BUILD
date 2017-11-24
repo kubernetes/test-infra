@@ -9,8 +9,8 @@ load(
 go_test(
     name = "go_default_test",
     srcs = ["cache_test.go"],
+    embed = [":go_default_library"],
     importpath = "k8s.io/test-infra/mungegithub/mungers/flakesync",
-    library = ":go_default_library",
     deps = ["//vendor/github.com/google/gofuzz:go_default_library"],
 )
 

@@ -844,8 +844,9 @@ images:
     - --gcp-node-image=gci
   cosbeta:
     args:
-    - --env=KUBE_GCE_NODE_IMAGE=cos-only-for-testing-63-10032-39-0
+    - --env=KUBE_GCE_NODE_IMAGE=cos-beta-63-10032-50-0-p
     - --env=KUBE_GCE_NODE_PROJECT=gke-node-images
+    - --env=DISABLE_DOCKER_LIVE_RESTORE=true
     - --gcp-node-image=gci
   cosstable1:
     args:
@@ -954,9 +955,9 @@ nodeCommon:
 nodeImages:
   cosbeta:
     args:
-    - --node-args=--images=cos-only-for-testing-63-10032-39-0
+    - --node-args=--images=cos-beta-63-10032-50-0-p
     - --node-args=--image-project=gke-node-images
-    - --node-args=--instance-metadata=user-data<test/e2e_node/jenkins/gci-init.yaml,gci-update-strategy=update_disabled
+    - --node-args=--instance-metadata=user-data<test/e2e_node/jenkins/cos-init-disable-live-restore.yaml,gci-update-strategy=update_disabled
   cosstable1:
     args:
     - --node-args=--images=cos-stable-62-9901-59-0

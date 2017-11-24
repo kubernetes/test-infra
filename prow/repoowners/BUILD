@@ -17,8 +17,8 @@ go_library(
 go_test(
     name = "go_default_test",
     srcs = ["repoowners_test.go"],
+    embed = [":go_default_library"],
     importpath = "k8s.io/test-infra/prow/repoowners",
-    library = ":go_default_library",
     deps = [
         "//prow/git/localgit:go_default_library",
         "//prow/github/fakegithub:go_default_library",

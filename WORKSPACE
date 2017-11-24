@@ -6,20 +6,22 @@ http_archive(
 )
 
 load("@io_kubernetes_build//defs:bazel_version.bzl", "check_version")
+
 # Ensure minimum supported bazel version
 check_version("0.6.0")
 
 git_repository(
     name = "io_bazel_rules_go",
-    commit = "c72631a220406c4fae276861ee286aaec82c5af2",
+    commit = "b655527ae7769bdf5ac0b772c844f322bdd65b34",
     remote = "https://github.com/bazelbuild/rules_go.git",
 )
 
 load("@io_bazel_rules_go//go:def.bzl", "go_rules_dependencies", "go_register_toolchains")
 
 go_rules_dependencies()
+
 go_register_toolchains(
-    go_version = "1.9.1",
+    go_version = "1.9.2",
 )
 
 http_archive(
@@ -42,8 +44,8 @@ docker_pull(
 
 git_repository(
     name = "org_dropbox_rules_node",
-    remote = "https://github.com/dropbox/rules_node.git",
     commit = "4fe6494f3f8d1a272d47d32ecc66698f6c43ed09",
+    remote = "https://github.com/dropbox/rules_node.git",
 )
 
 load("@org_dropbox_rules_node//node:defs.bzl", "node_repositories")

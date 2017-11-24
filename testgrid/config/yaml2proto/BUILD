@@ -9,8 +9,8 @@ load(
 go_test(
     name = "go_default_test",
     srcs = ["yaml2proto_test.go"],
+    embed = [":go_default_library"],
     importpath = "k8s.io/test-infra/testgrid/config/yaml2proto",
-    library = ":go_default_library",
 )
 
 go_library(
