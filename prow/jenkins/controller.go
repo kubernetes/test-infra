@@ -201,6 +201,13 @@ func (c *Controller) Sync() error {
 	return fmt.Errorf("errors syncing: %v, errors reporting: %v", syncErrs, reportErrs)
 }
 
+// SyncMetrics records metrics for the cached prowjobs.
+func (c *Controller) SyncMetrics() {
+	c.pjLock.RLock()
+	defer c.pjLock.RUnlock()
+	kube.GatherProwJobMetrics(c.pjs)
+}
+
 // getJenkinsJobs returns all the Jenkins jobs for all active
 // prowjobs from the provided list. It handles deduplication.
 func getJenkinsJobs(pjs []kube.ProwJob) []string {

@@ -20,18 +20,21 @@ import (
 	"bytes"
 	"flag"
 	"io/ioutil"
+	"net/http"
 	"net/url"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/kube/labels"
+	"k8s.io/test-infra/prow/metrics"
 	"k8s.io/test-infra/prow/plank"
 )
 
@@ -112,6 +115,16 @@ func main() {
 		logger.WithError(err).Fatal("Error creating plank controller.")
 	}
 
+	// Push metrics to the configured prometheus pushgateway endpoint.
+	pushGateway := configAgent.Config().PushGateway
+	if pushGateway.Endpoint != "" {
+		go metrics.PushMetrics("plank", pushGateway.Endpoint, pushGateway.Interval)
+	}
+	// serve prometheus metrics.
+	go serve()
+	// gather metrics for the jobs handled by plank.
+	go gather(c)
+
 	tick := time.Tick(30 * time.Second)
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
@@ -126,6 +139,34 @@ func main() {
 			logger.Infof("Sync time: %v", time.Since(start))
 		case <-sig:
 			logger.Infof("Plank is shutting down...")
+			return
+		}
+	}
+}
+
+// serve starts a http server and serves prometheus metrics.
+// Meant to be called inside a goroutine.
+func serve() {
+	http.Handle("/metrics", promhttp.Handler())
+	logrus.WithError(http.ListenAndServe(":8080", nil)).Fatal("ListenAndServe returned.")
+}
+
+// gather metrics from plank.
+// Meant to be called inside a goroutine.
+func gather(c *plank.Controller) {
+	tick := time.Tick(30 * time.Second)
+	sig := make(chan os.Signal, 1)
+	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
+
+	for {
+		select {
+		case <-tick:
+			start := time.Now()
+			c.SyncMetrics()
+			duration := time.Since(start)
+			logrus.Debugf("Sync metrics time: %v", duration)
+		case <-sig:
+			logrus.Debugf("Plank gatherer is shutting down...")
 			return
 		}
 	}

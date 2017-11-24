@@ -219,6 +219,13 @@ func (c *Controller) Sync() error {
 	return fmt.Errorf("errors syncing: %v, errors reporting: %v", syncErrs, reportErrs)
 }
 
+// SyncMetrics records metrics for the cached prowjobs.
+func (c *Controller) SyncMetrics() {
+	c.pjLock.RLock()
+	defer c.pjLock.RUnlock()
+	kube.GatherProwJobMetrics(c.pjs)
+}
+
 // terminateDupes aborts presubmits that have a newer version. It modifies pjs
 // in-place when it aborts.
 // TODO: Dry this out - need to ensure we can abstract children cancellation first.

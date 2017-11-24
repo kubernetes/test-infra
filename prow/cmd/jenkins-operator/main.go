@@ -125,6 +125,8 @@ func main() {
 	// instead of baking agent-specific logic in deck. This func also
 	// serves prometheus metrics.
 	go serve(jc)
+	// gather metrics for the jobs handled by the jenkins controller.
+	go gather(c)
 
 	tick := time.Tick(30 * time.Second)
 	sig := make(chan os.Signal, 1)
@@ -162,4 +164,25 @@ func serve(jc *jenkins.Client) {
 	http.Handle("/", gziphandler.GzipHandler(handleLog(jc)))
 	http.Handle("/metrics", promhttp.Handler())
 	logrus.WithError(http.ListenAndServe(":8080", nil)).Fatal("ListenAndServe returned.")
+}
+
+// gather metrics from the jenkins controller.
+// Meant to be called inside a goroutine.
+func gather(c *jenkins.Controller) {
+	tick := time.Tick(30 * time.Second)
+	sig := make(chan os.Signal, 1)
+	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
+
+	for {
+		select {
+		case <-tick:
+			start := time.Now()
+			c.SyncMetrics()
+			duration := time.Since(start)
+			logrus.Debugf("Sync metrics time: %v", duration)
+		case <-sig:
+			logrus.Debugf("Jenkins operator gatherer is shutting down...")
+			return
+		}
+	}
 }
