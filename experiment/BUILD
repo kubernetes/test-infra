@@ -29,6 +29,7 @@ filegroup(
         "//experiment/cherrypicker:all-srcs",
         "//experiment/commenter:all-srcs",
         "//experiment/manual-trigger:all-srcs",
+        "//experiment/metrics-server:all-srcs",
     ],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],
