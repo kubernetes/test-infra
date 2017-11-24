@@ -20,12 +20,14 @@ go_library(
     name = "go_default_library",
     srcs = [
         "client.go",
+        "metrics.go",
         "prowjob.go",
         "types.go",
     ],
     importpath = "k8s.io/test-infra/prow/kube",
     deps = [
         "//vendor/github.com/ghodss/yaml:go_default_library",
+        "//vendor/github.com/prometheus/client_golang/prometheus:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
     ],
 )
