@@ -20797,7 +20797,7 @@ periodics:
     agent: kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171120-fd7d8854
+      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171108-e53c04a8
         args:
         - "--repo=k8s.io/kubernetes=release-1.7"
         - "--clean"
@@ -20842,7 +20842,7 @@ periodics:
     agent: kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171120-fd7d8854
+      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171108-e53c04a8
         args:
         - "--repo=k8s.io/kubernetes=release-1.7"
         - "--clean"
