@@ -85,6 +85,10 @@ type Controller struct {
 	// pendingJobs is a short-lived cache that helps in limiting
 	// the maximum concurrency of jobs.
 	pendingJobs map[string]int
+
+	pjLock sync.RWMutex
+	// shared across the controller and a goroutine that gathers metrics.
+	pjs []kube.ProwJob
 }
 
 // canExecuteConcurrently checks whether the provided ProwJob can
@@ -176,6 +180,11 @@ func (c *Controller) Sync() error {
 	if err := c.terminateDupes(pjs, pm); err != nil {
 		syncErrs = append(syncErrs, err)
 	}
+
+	// Share what we have for gathering metrics.
+	c.pjLock.Lock()
+	c.pjs = pjs
+	c.pjLock.Unlock()
 
 	pendingCh, nonPendingCh := pjutil.PartitionPending(pjs)
 	errCh := make(chan error, len(pjs))
