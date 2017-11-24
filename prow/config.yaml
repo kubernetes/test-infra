@@ -4131,7 +4131,7 @@ postsubmits:
           - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
           - "--clean"
           - "--git-cache=/root/.cache/git"
-          - "--timeout=320"
+          - "--timeout=110"
           - "--upload=gs://kubernetes-jenkins/logs"
           env:
           - name: USER
