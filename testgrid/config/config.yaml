@@ -2678,8 +2678,12 @@ dashboards:
   - name: test-go-1.9
     test_group_name: ci-kubernetes-test-go-release-1.9
   - name: bazel-build-1.9
-    test_group_name: periodic-kubernetes-bazel-build-1-9
+    test_group_name: ci-kubernetes-bazel-build-1-9
   - name: bazel-test-1.9
+    test_group_name: ci-kubernetes-bazel-test-1-9
+  - name: periodic-bazel-build-1.9
+    test_group_name: periodic-kubernetes-bazel-build-1-9
+  - name: periodic-bazel-test-1.9
     test_group_name: periodic-kubernetes-bazel-test-1-9
   - name: gce-kubeadm-1.8-on-1.9
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-8-on-1-9
@@ -2769,8 +2773,12 @@ dashboards:
   - name: test-go-1.9
     test_group_name: ci-kubernetes-test-go-release-1.9
   - name: bazel-build-1.9
-    test_group_name: periodic-kubernetes-bazel-build-1-9
+    test_group_name: ci-kubernetes-bazel-build-1-9
   - name: bazel-test-1.9
+    test_group_name: ci-kubernetes-bazel-test-1-9
+  - name: periodic-bazel-build-1.9
+    test_group_name: periodic-kubernetes-bazel-build-1-9
+  - name: periodic-bazel-test-1.9
     test_group_name: periodic-kubernetes-bazel-test-1-9
   - name: gce-kubeadm-1.8-on-1.9
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-8-on-1-9
