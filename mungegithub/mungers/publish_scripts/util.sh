@@ -324,8 +324,14 @@ sync_repo() {
             echo "Deferring master merge commit ${k_mainline_commit}: $(commit-subject ${f_mainline_commit})."
         elif [ ${dst_branch} != master ] && [ -n "${k_pending_merge_commit}" ] && is-merge-with-master "${k_pending_merge_commit}"; then
             echo "Skipping master commit ${k_mainline_commit}: $(commit-subject ${f_mainline_commit}). Master merge commit ${k_pending_merge_commit} is pending."
-        elif ! git show -q ${f_mainline_commit} | grep -q "^Merge: "; then
-            echo "Cherry-picking k8s.io/kubernetes single-commit ${k_mainline_commit}: $(commit-subject ${f_mainline_commit})."
+        elif ! git show -q ${f_mainline_commit} | grep -q "^Merge: " || pick-merge-as-single-commit ${k_mainline_commit}; then
+            local pick_args=""
+            if git show -q ${f_mainline_commit} | grep -q "^Merge: "; then
+                pick_args="-m 1"
+                echo "Cherry-picking k8s.io/kubernetes merge-commit  ${k_mainline_commit}: $(commit-subject ${f_mainline_commit})."
+            else
+                echo "Cherry-picking k8s.io/kubernetes single-commit ${k_mainline_commit}: $(commit-subject ${f_mainline_commit})."
+            fi
 
             # reset Godeps.json?
             local squash_commits=1
@@ -336,7 +342,7 @@ sync_repo() {
             fi
 
             # finally cherry-pick
-            if ! GIT_COMMITTER_DATE="$(commit-date ${f_mainline_commit})" git cherry-pick --keep-redundant-commits ${f_mainline_commit} >/dev/null; then
+            if ! GIT_COMMITTER_DATE="$(commit-date ${f_mainline_commit})" git cherry-pick --keep-redundant-commits ${pick_args} ${f_mainline_commit} >/dev/null; then
                 echo
                 show-working-dir-status
                 return 1
@@ -474,6 +480,13 @@ sync_repo() {
         echo "No merge commit on ${dst_branch} branch, must be old. Skipping look-up table."
         echo > ../kube-commits-${repo}-${dst_branch}
     fi
+}
+
+# for some PR branches cherry-picks fail. Put commits here where we only pick the whole merge as a single commit.
+function pick-merge-as-single-commit() {
+    grep -F -q -x "$1" <<EOF
+25ebf875b4235cb8f43be2aec699d62e78339cec
+EOF
 }
 
 # amend-godeps-at checks out the Godeps.json at the given commit and amend it to the previous commit.
