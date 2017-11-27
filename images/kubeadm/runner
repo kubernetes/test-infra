@@ -26,7 +26,7 @@ if [ ! -e kubernetes-anywhere ]; then
 
   # Explicitly version this dependency so that upstream commits can't
   # immediately break e2e jobs, and we have control over upgrading/downgrading.
-  git -C kubernetes-anywhere checkout 09cd264cc6a45031f2645fe7bdd07fb08e9ff3a1
+  git -C kubernetes-anywhere checkout ebd9b5caf22f69d5416c2965f90ea3789364b457
 fi
 
 # This is required until https://github.com/kubernetes/kubernetes-anywhere/issues/332
