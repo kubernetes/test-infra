@@ -53,6 +53,10 @@ func GatherProwJobMetrics(pjs []ProwJob) {
 		metricMap[pj.Spec.Job][string(pj.Spec.Type)][string(pj.Status.State)]++
 	}
 
+	// This may be racing with the prometheus server but we need to remove
+	// stale metrics like triggered or pending jobs that are now complete.
+	prowJobs.Reset()
+
 	for job, jobMap := range metricMap {
 		for jobType, typeMap := range jobMap {
 			for state, count := range typeMap {
