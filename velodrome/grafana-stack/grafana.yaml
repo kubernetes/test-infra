@@ -27,6 +27,17 @@ spec:
         - mountPath: /var/lib/grafana
           name: database-volume
         env:
+          - name: GF_SMTP_ENABLED
+            value: "true"
+          - name: GF_SMTP_HOST
+            value: "smtp.sendgrid.net:2525"
+          - name: GF_SMTP_USER
+            value: "kubernetes-jenkins"
+          - name: GF_SMTP_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: smtp-password
+                key: password
           - name: GF_AUTH_ANONYMOUS_ENABLED
             value: "true"
           - name: GF_USERS_ALLOW_SIGN_UP
