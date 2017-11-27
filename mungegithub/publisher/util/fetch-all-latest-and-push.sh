@@ -18,12 +18,17 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-if [ ! $# -eq 1 ]; then
-    echo "usage: $0 github_user_name"
+if [ "$#" = 0 ] || [ "$#" -gt 2 ]; then
+    echo "usage: $0 [source-github-user-name] dest-github-user-name"
     exit 1
 fi
 
-USER="${1}"
+FROM="kubernetes"
+TO="${1}"
+if [ "$#" -ge 2 ]; then
+    FROM="${TO}"
+    TO="${2}"
+fi
 repos=(
     apimachinery
     api
@@ -47,7 +52,7 @@ function delete() {
 trap delete EXIT INT
 
 # safety check
-if [ "$USER" = "kubernetes" ]; then
+if [ "${TO}" = "kubernetes" ]; then
     echo "Cannot operate on kubernetes directly" 1>&2
     exit 1
 fi
@@ -56,28 +61,27 @@ echo "==================="
 echo " sync with upstream"
 echo "==================="
 for (( i=0; i<${repo_count}; i++ )); do
-    git clone git@github.com:"${USER}/${repos[i]}".git ${TMPDIR}/"${repos[i]}"
+    git clone git@github.com:"${TO}/${repos[i]}".git ${TMPDIR}/"${repos[i]}"
     pushd ${TMPDIR}/"${repos[i]}"
-    git remote add upstream git@github.com:kubernetes/"${repos[i]}".git
+    git remote add upstream git@github.com:"${FROM}/${repos[i]}".git
 
     # delete all tags and branches in origin
     rm -f .git/refs/tags/*
     branches=$(git branch -r | grep "^ *origin" | sed 's,^ *origin/,,' | grep -v HEAD | grep -v '^master' || true)
-    if [ -n "${branches}" ]; then
-        git push --delete origin ${branches}
-    fi
     tags=$(git tag | sed 's,^,refs/tags/,')
-    if [ -n "${tags}" ]; then
-        git push --delete origin ${tags}
+    if [ -n "${branches}${tags}" ]; then
+        git push --delete origin ${branches} ${tags}
     fi
 
     # push all upstream tags and branches to origin
     git tag | xargs git tag -d
-    git fetch upstream --prune
+    git fetch upstream --prune -q
     branches=$(git branch -r | grep "^ *upstream" | sed 's,^ *upstream/,,' | grep -v HEAD || true)
+    branches_arg=""
     for branch in ${branches}; do
-        git push --tags -f origin upstream/${branch}:refs/heads/${branch}
+        branches_arg+=" upstream/${branch}:refs/heads/${branch}"
     done
+    git push --tags -f origin ${branches_arg}
 
     popd
 done
