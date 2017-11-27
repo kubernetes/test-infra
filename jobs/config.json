@@ -9880,7 +9880,7 @@
   },
   "ci-kubernetes-test-go-release-1.9": {
     "args": [
-      "--branch=release-1.8",
+      "--branch=release-1.9",
       "--force"
     ],
     "scenario": "kubernetes_verify",
