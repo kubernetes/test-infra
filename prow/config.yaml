@@ -19619,7 +19619,7 @@ periodics:
         secretName: ssh-key-secret
 
 - name: ci-kubernetes-kubemark-5-prow-canary
-  cron: "0 0 * * *" # to make sure the prow timezone
+  cron: "0 * * * *"
   agent: kubernetes
   spec:
     containers:
@@ -19629,6 +19629,11 @@ periodics:
       - --bare
       - --timeout=80
       env:
+      # TODO(krzyzacy): Figure out bazel built kubemark image
+      # - name: KUBEMARK_BAZEL_BUILD
+      # value: "y" 
+      - name: DOCKER_IN_DOCKER_ENABLED
+        value: true
       - name: GOOGLE_APPLICATION_CREDENTIALS
         value: /etc/service-account/service-account.json
       - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
@@ -19637,8 +19642,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       - name: USER
         value: prow
-      - name: KUBEMARK_BAZEL_BUILD
-        value: "y"
       volumeMounts:
       - name: service
         mountPath: /etc/service-account
@@ -19646,6 +19649,15 @@ periodics:
       - name: ssh
         mountPath: /etc/ssh-key-secret
         readOnly: true
+      - name: docker-graph
+        mountPath: /docker-graph
+      # TODO(bentheelder): sort out container port
+      ports:
+      - containerPort: 9999
+        hostPort: 9999
+      # docker-in-docker needs privilged mode
+      securityContext:
+        privileged: true
     volumes:
     - name: service
       secret:
@@ -19654,6 +19666,9 @@ periodics:
       secret:
         secretName: ssh-key-secret
         defaultMode: 0400
+    - name: docker-graph
+      hostPath:
+        path: /mnt/disks/ssd0/docker-graph
 
 - name: ci-kubernetes-node-kubelet
   interval: 1h
