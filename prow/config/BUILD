@@ -38,8 +38,8 @@ go_library(
         "//prow/kube:go_default_library",
         "//prow/kube/labels:go_default_library",
         "//vendor/github.com/ghodss/yaml:go_default_library",
-        "//vendor/github.com/robfig/cron:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
+        "//vendor/gopkg.in/robfig/cron.v2:go_default_library",
     ],
 )
 

@@ -7,7 +7,7 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/sirupsen/logrus:go_default_library",
-        "//vendor/k8s.io/kubernetes/pkg/util/sets:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
     ],
 )
 
@@ -21,7 +21,7 @@ go_test(
     importpath = "k8s.io/test-infra/prow/plugins/approve/approvers",
     deps = [
         "//vendor/github.com/sirupsen/logrus:go_default_library",
-        "//vendor/k8s.io/kubernetes/pkg/util/sets:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
     ],
 )
 

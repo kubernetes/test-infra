@@ -25,8 +25,8 @@ import (
 	"time"
 
 	"github.com/ghodss/yaml"
-	"github.com/robfig/cron"
 	"github.com/sirupsen/logrus"
+	"gopkg.in/robfig/cron.v2"
 
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/kube/labels"
