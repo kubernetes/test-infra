@@ -37,10 +37,6 @@ import (
 
 const (
 	testInfra = "https://github.com/kubernetes/test-infra/issues"
-
-	// maxSyncRoutines is the maximum number of goroutines
-	// that will be active at any one time for the sync
-	maxSyncRoutines = 20
 )
 
 type kubeClient interface {
@@ -186,8 +182,9 @@ func (c *Controller) Sync() error {
 	c.pendingJobs = make(map[string]int)
 	// Sync pending jobs first so we can determine what is the maximum
 	// number of new jobs we can trigger when syncing the non-pendings.
-	syncProwJobs(c.syncPendingJob, pendingCh, reportCh, errCh, pm)
-	syncProwJobs(c.syncNonPendingJob, nonPendingCh, reportCh, errCh, pm)
+	maxSyncRoutines := c.ca.Config().Plank.MaxGoroutines
+	syncProwJobs(c.syncPendingJob, maxSyncRoutines, pendingCh, reportCh, errCh, pm)
+	syncProwJobs(c.syncNonPendingJob, maxSyncRoutines, nonPendingCh, reportCh, errCh, pm)
 
 	close(errCh)
 	close(reportCh)
@@ -253,9 +250,17 @@ func (c *Controller) terminateDupes(pjs []kube.ProwJob, pm map[string]kube.Pod) 
 }
 
 // TODO: Dry this out
-func syncProwJobs(syncFn syncFn, jobs <-chan kube.ProwJob, reports chan<- kube.ProwJob, syncErrors chan<- error, pm map[string]kube.Pod) {
+func syncProwJobs(
+	syncFn syncFn,
+	maxSyncRoutines int,
+	jobs <-chan kube.ProwJob,
+	reports chan<- kube.ProwJob,
+	syncErrors chan<- error,
+	pm map[string]kube.Pod,
+) {
 	wg := &sync.WaitGroup{}
 	wg.Add(maxSyncRoutines)
+	// TODO: Start len(jobs) goroutines if maxSyncRoutines is greater than len(jobs).
 	for i := 0; i < maxSyncRoutines; i++ {
 		go func(jobs <-chan kube.ProwJob) {
 			defer wg.Done()

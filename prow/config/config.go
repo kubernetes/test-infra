@@ -114,6 +114,11 @@ type Controller struct {
 	// will be allowed by the controller. 0 implies no limit.
 	MaxConcurrency int `json:"max_concurrency,omitempty"`
 
+	// MaxGoroutines is the maximum number of goroutines spawned inside the
+	// controller to handle tests. Defaults to 20. Needs to be a positive
+	// number.
+	MaxGoroutines int `json:"max_goroutines,omitempty"`
+
 	// AllowCancellations enables aborting presubmit jobs for commits that
 	// have been superseded by newer commits in Github pull requests.
 	AllowCancellations bool `json:"allow_cancellations"`
@@ -381,6 +386,12 @@ func ValidateController(c *Controller) error {
 	c.ReportTemplate = reportTmpl
 	if c.MaxConcurrency < 0 {
 		return fmt.Errorf("controller has invalid max_concurrency (%d), it needs to be a non-negative number", c.MaxConcurrency)
+	}
+	if c.MaxGoroutines == 0 {
+		c.MaxGoroutines = 20
+	}
+	if c.MaxGoroutines <= 0 {
+		return fmt.Errorf("controller has invalid max_goroutines (%d), it needs to be a positive number", c.MaxGoroutines)
 	}
 	return nil
 }
