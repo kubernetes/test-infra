@@ -198,7 +198,12 @@ func handleIC(c client, trustedOrg string, ic github.IssueCommentEvent) error {
 				},
 			},
 		}
-		if _, err := c.KubeClient.CreateProwJob(pjutil.NewProwJob(pjutil.PresubmitSpec(job, kr), job.Labels)); err != nil {
+		labels := make(map[string]string)
+		for k, v := range job.Labels {
+			labels[k] = v
+		}
+		labels[github.EventGUID] = ic.GUID
+		if _, err := c.KubeClient.CreateProwJob(pjutil.NewProwJob(pjutil.PresubmitSpec(job, kr), labels)); err != nil {
 			errors = append(errors, err)
 		}
 	}

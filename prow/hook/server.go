@@ -114,8 +114,8 @@ func ValidateWebhook(w http.ResponseWriter, r *http.Request, hmacSecret []byte) 
 func (s *Server) demuxEvent(eventType, eventGUID string, payload []byte, h http.Header) error {
 	l := logrus.WithFields(
 		logrus.Fields{
-			"event-type": eventType,
-			"event-GUID": eventGUID,
+			"event-type":     eventType,
+			github.EventGUID: eventGUID,
 		},
 	)
 	// We don't want to fail the webhook due to a metrics error.
@@ -131,6 +131,7 @@ func (s *Server) demuxEvent(eventType, eventGUID string, payload []byte, h http.
 		if err := json.Unmarshal(payload, &i); err != nil {
 			return err
 		}
+		i.GUID = eventGUID
 		srcRepo = i.Repo.FullName
 		go s.handleIssueEvent(l, i)
 	case "issue_comment":
@@ -138,6 +139,7 @@ func (s *Server) demuxEvent(eventType, eventGUID string, payload []byte, h http.
 		if err := json.Unmarshal(payload, &ic); err != nil {
 			return err
 		}
+		ic.GUID = eventGUID
 		srcRepo = ic.Repo.FullName
 		go s.handleIssueCommentEvent(l, ic)
 	case "pull_request":
@@ -145,6 +147,7 @@ func (s *Server) demuxEvent(eventType, eventGUID string, payload []byte, h http.
 		if err := json.Unmarshal(payload, &pr); err != nil {
 			return err
 		}
+		pr.GUID = eventGUID
 		srcRepo = pr.Repo.FullName
 		go s.handlePullRequestEvent(l, pr)
 	case "pull_request_review":
@@ -152,6 +155,7 @@ func (s *Server) demuxEvent(eventType, eventGUID string, payload []byte, h http.
 		if err := json.Unmarshal(payload, &re); err != nil {
 			return err
 		}
+		re.GUID = eventGUID
 		srcRepo = re.Repo.FullName
 		go s.handleReviewEvent(l, re)
 	case "pull_request_review_comment":
@@ -159,6 +163,7 @@ func (s *Server) demuxEvent(eventType, eventGUID string, payload []byte, h http.
 		if err := json.Unmarshal(payload, &rce); err != nil {
 			return err
 		}
+		rce.GUID = eventGUID
 		srcRepo = rce.Repo.FullName
 		go s.handleReviewCommentEvent(l, rce)
 	case "push":
@@ -166,6 +171,7 @@ func (s *Server) demuxEvent(eventType, eventGUID string, payload []byte, h http.
 		if err := json.Unmarshal(payload, &pe); err != nil {
 			return err
 		}
+		pe.GUID = eventGUID
 		srcRepo = pe.Repo.FullName
 		go s.handlePushEvent(l, pe)
 	case "status":
@@ -173,6 +179,7 @@ func (s *Server) demuxEvent(eventType, eventGUID string, payload []byte, h http.
 		if err := json.Unmarshal(payload, &se); err != nil {
 			return err
 		}
+		se.GUID = eventGUID
 		srcRepo = se.Repo.FullName
 		go s.handleStatusEvent(l, se)
 	}
