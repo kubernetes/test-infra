@@ -676,23 +676,6 @@
       "sig-gcp"
     ]
   },
-  "ci-kubernetes-e2e-gce-audit-release-1-7": {
-    "args": [
-      "--check-leaked-resources",
-      "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gce-audit-release-1-7.env",
-      "--extract=ci/latest-1.7",
-      "--gcp-node-image=debian",
-      "--gcp-zone=us-central1-f",
-      "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[Feature:Audit\\] --minStartupPods=8",
-      "--timeout=180m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-auth"
-    ]
-  },
   "ci-kubernetes-e2e-gce-beta-stable1-downgrade-cluster": {
     "args": [
       "--check-leaked-resources",
@@ -4139,40 +4122,6 @@
     "scenario": "kubernetes_e2e",
     "sigOwners": [
       "sig-gcp"
-    ]
-  },
-  "ci-kubernetes-e2e-gci-gce-audit": {
-    "args": [
-      "--check-leaked-resources",
-      "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gci-gce-audit.env",
-      "--extract=ci/latest",
-      "--gcp-node-image=gci",
-      "--gcp-zone=us-central1-f",
-      "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[Feature:Audit\\] --minStartupPods=8",
-      "--timeout=180m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-auth"
-    ]
-  },
-  "ci-kubernetes-e2e-gci-gce-audit-release-1-7": {
-    "args": [
-      "--check-leaked-resources",
-      "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gci-gce-audit-release-1-7.env",
-      "--extract=ci/latest-1.7",
-      "--gcp-node-image=gci",
-      "--gcp-zone=us-central1-f",
-      "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[Feature:Audit\\] --minStartupPods=8",
-      "--timeout=180m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-auth"
     ]
   },
   "ci-kubernetes-e2e-gci-gce-autoscaling": {
