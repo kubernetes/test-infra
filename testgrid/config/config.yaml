@@ -1624,6 +1624,14 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-kubeadm-gce
   days_of_results: 1
   num_columns_recent: 20
+- name: pull-kubernetes-node-e2e-containerd
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-node-e2e-containerd
+  days_of_results: 1
+  num_columns_recent: 20
+- name: pull-kubernetes-e2e-containerd-gce
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-containerd-gce
+  days_of_results: 1
+  num_columns_recent: 20
 - name: pull-kubernetes-kubemark-e2e-gce
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-kubemark-e2e-gce
   days_of_results: 1
@@ -3752,6 +3760,12 @@ dashboards:
     test_group_name: ci-cri-containerd-e2e-gci-gce
   - name: e2e-ubuntu
     test_group_name: ci-cri-containerd-e2e-ubuntu-gce
+  - name: pull-node-e2e
+    test_group_name: pull-kubernetes-node-e2e-containerd
+    base_options: 'width=10'
+  - name: pull-e2e-gci
+    test_group_name: pull-kubernetes-e2e-containerd-gce
+    base_options: 'width=10'
 
 - name: sig-node-rkt
   dashboard_tab:
