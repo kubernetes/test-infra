@@ -15,7 +15,7 @@
 # This file creates a build environment for building and running kubernetes
 # unit and integration tests
 
-FROM gcr.io/k8s-testimages/bootstrap:v20171118-8e58e913
+FROM gcr.io/k8s-testimages/bootstrap:v20171127-a1522ede
 LABEL maintainer "Sen Lu <senlu@google.com>"
 
 # install go
