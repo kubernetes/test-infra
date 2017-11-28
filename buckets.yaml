@@ -34,3 +34,6 @@ gs://gce-daisy-test/logs/:
 gs://origin-federated-results/pr-logs/directory/:
   contact: "lsm5"
   prefix: "cri-o"
+gs://kubernetes-github-redhat/logs/:
+  contact: "ingvagabund"
+  prefix: "redhat:"
