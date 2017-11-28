@@ -676,23 +676,6 @@
       "sig-gcp"
     ]
   },
-  "ci-kubernetes-e2e-gce-audit-release-1-7": {
-    "args": [
-      "--check-leaked-resources",
-      "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gce-audit-release-1-7.env",
-      "--extract=ci/latest-1.7",
-      "--gcp-node-image=debian",
-      "--gcp-zone=us-central1-f",
-      "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[Feature:Audit\\] --minStartupPods=8",
-      "--timeout=180m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-auth"
-    ]
-  },
   "ci-kubernetes-e2e-gce-beta-stable1-downgrade-cluster": {
     "args": [
       "--check-leaked-resources",
@@ -2858,7 +2841,7 @@
       "--gcp-zone=us-east1-a",
       "--ginkgo-parallel=30",
       "--provider=gce",
-      "--test_args=--ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]|\\[DisabledForLargeClusters\\] --allowed-not-ready-nodes=20 --node-schedulable-timeout=60m --minStartupPods=8 --gather-resource-usage=master --gather-metrics-at-teardown=master",
+      "--test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]|\\[DisabledForLargeClusters\\] --allowed-not-ready-nodes=20 --node-schedulable-timeout=60m --minStartupPods=8 --gather-resource-usage=master --gather-metrics-at-teardown=master",
       "--timeout=390m",
       "--use-logexporter"
     ],
@@ -3254,7 +3237,7 @@
       "--gcp-zone=us-east1-a",
       "--ginkgo-parallel=30",
       "--provider=gce",
-      "--test_args=--ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]|\\[DisabledForLargeClusters\\] --allowed-not-ready-nodes=50 --node-schedulable-timeout=90m --minStartupPods=8 --gather-resource-usage=master --gather-metrics-at-teardown=master",
+      "--test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]|\\[DisabledForLargeClusters\\] --allowed-not-ready-nodes=50 --node-schedulable-timeout=90m --minStartupPods=8 --gather-resource-usage=master --gather-metrics-at-teardown=master",
       "--timeout=570m",
       "--use-logexporter"
     ],
@@ -4133,46 +4116,12 @@
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
       "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[Feature:(Audit|LocalPersistentVolumes|FlexVolume|PodPreset)\\]|Networking --ginkgo.skip=Networking-Performance|IPv6 --minStartupPods=8",
+      "--test_args=--ginkgo.focus=\\[Feature:(Audit|LocalPersistentVolumes|FlexVolume|PodPreset)\\]|Networking --ginkgo.skip=Networking-Performance|IPv6|StatefulSet --minStartupPods=8",
       "--timeout=180m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
       "sig-gcp"
-    ]
-  },
-  "ci-kubernetes-e2e-gci-gce-audit": {
-    "args": [
-      "--check-leaked-resources",
-      "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gci-gce-audit.env",
-      "--extract=ci/latest",
-      "--gcp-node-image=gci",
-      "--gcp-zone=us-central1-f",
-      "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[Feature:Audit\\] --minStartupPods=8",
-      "--timeout=180m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-auth"
-    ]
-  },
-  "ci-kubernetes-e2e-gci-gce-audit-release-1-7": {
-    "args": [
-      "--check-leaked-resources",
-      "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gci-gce-audit-release-1-7.env",
-      "--extract=ci/latest-1.7",
-      "--gcp-node-image=gci",
-      "--gcp-zone=us-central1-f",
-      "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[Feature:Audit\\] --minStartupPods=8",
-      "--timeout=180m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-auth"
     ]
   },
   "ci-kubernetes-e2e-gci-gce-autoscaling": {
@@ -4602,7 +4551,7 @@
       "--gke-create-command=container clusters create --quiet --enable-kubernetes-alpha",
       "--gke-environment=test",
       "--provider=gke",
-      "--test_args=--ginkgo.focus=\\[Feature:(DynamicKubeletConfig|LocalPersistentVolumes)\\]|Networking --ginkgo.skip=Networking-Performance|IPv6 --minStartupPods=8",
+      "--test_args=--ginkgo.focus=\\[Feature:(DynamicKubeletConfig|LocalPersistentVolumes)\\]|Networking --ginkgo.skip=Networking-Performance|IPv6|StatefulSet --minStartupPods=8",
       "--timeout=180m"
     ],
     "scenario": "kubernetes_e2e",
@@ -9880,7 +9829,7 @@
   },
   "ci-kubernetes-test-go-release-1.9": {
     "args": [
-      "--branch=release-1.8",
+      "--branch=release-1.9",
       "--force"
     ],
     "scenario": "kubernetes_verify",

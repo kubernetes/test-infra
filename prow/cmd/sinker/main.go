@@ -128,7 +128,7 @@ func (c *controller) clean() {
 	}
 	// Get the jobs that we need to retain so horologium can continue working
 	// as intended.
-	latestPeriodics := pjutil.GetLatestPeriodics(prowJobs)
+	latestPeriodics := pjutil.GetLatestProwJobs(prowJobs, kube.PeriodicJob)
 	for _, prowJob := range prowJobs {
 		if prowJob.Spec.Type != kube.PeriodicJob {
 			continue

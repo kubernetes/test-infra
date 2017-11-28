@@ -21,7 +21,6 @@ limitations under the License.
 //
 // Changes:
 // - glog is replaced by logrus.
-// - k8s.io/kubernetes/pkg/util/sets is used in favor of k8s.io/apimachinery/pkg/util/sets since that's vendored currently in test-infra.
 // - k8s.io/apimachinery/pkg/selection is copied in this file instead of using it from a separate package.
 // - k8s.io/apimachinery/pkg/util/validation is copied in a separate file inside this package instead of using it from a separate package.
 // - deep-copying is dropped from the selector interface since that requires importing the apimachinery/pkg/conversion.
@@ -36,7 +35,7 @@ import (
 	"strings"
 
 	"github.com/sirupsen/logrus"
-	"k8s.io/kubernetes/pkg/util/sets"
+	"k8s.io/apimachinery/pkg/util/sets"
 )
 
 // Operator represents a key/field's relationship to value(s).

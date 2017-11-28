@@ -18,7 +18,7 @@ go_test(
     importpath = "k8s.io/test-infra/prow/plugins/docs-no-retest",
     deps = [
         "//prow/github:go_default_library",
-        "//vendor/k8s.io/kubernetes/pkg/util/sets:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
     ],
 )
 
