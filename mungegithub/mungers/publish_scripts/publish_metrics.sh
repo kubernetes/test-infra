@@ -40,4 +40,4 @@ if [ ! $# -eq 4 ]; then
 fi
 
 SCRIPT_DIR=$(dirname "${BASH_SOURCE}")
-"${SCRIPT_DIR}"/publish_template.sh "metrics" "${1}" "${2}" "${3}" "${4}" "false"
+"${SCRIPT_DIR}"/publish_template.sh "metrics" "${1}" "${2}" "${3}" "${4}" "true"

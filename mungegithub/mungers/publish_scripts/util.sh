@@ -607,9 +607,9 @@ function fix-godeps() {
         update-deps-in-godep-json "${deps}" "${is_library}"
     fi
 
-    # remove vendor/ on non-master branches
-    if [ "$(git rev-parse --abbrev-ref HEAD)" != master ] && [ -d vendor/ ]; then
-        echo "Removing vendor/ on non-master branch"
+    # remove vendor/ on non-master branches for libraries
+    if [ "$(git rev-parse --abbrev-ref HEAD)" != master ] && [ -d vendor/ ] && [ "${is_library}" = "true" ]; then
+        echo "Removing vendor/ on non-master branch because this is a library"
         git rm -q -rf vendor/
         if ! git-index-clean; then
             git commit -q -m "sync: remove vendor/"
@@ -718,23 +718,25 @@ update_full_godeps() {
     jq 'del(.Deps[].Comment)' Godeps/Godeps.json | unexpand --first-only --tabs=2 > Godeps/Godeps.json.clean
     mv Godeps/Godeps.json.clean Godeps/Godeps.json
 
-    if [ "$(git rev-parse --abbrev-ref HEAD)" != master ]; then
-        echo "Removing complete vendor/ on non-master branch."
-        rm -rf vendor/
-    elif [ "${is_library}" = "true" ]; then
-        echo "Removing k8s.io/*, gofuzz, go-openapi and glog from vendor/ because this is a library."
-        # glog uses global variables, it panics when multiple copies are compiled.
-        rm -rf ./vendor/github.com/golang/glog
-        # this ensures users who get the repository via `go get` won't end up with
-        # multiple copies of k8s.io/ repos. The only copy will be the one in the
-        # GOPATH.
-        # Godeps.json has a complete, up-to-date list of dependencies, so
-        # Godeps.json will be the ground truth for users using godep/glide/dep.
-        rm -rf ./vendor/k8s.io
-        # see https://github.com/kubernetes/kubernetes/issues/45693
-        rm -rf ./vendor/github.com/google/gofuzz
-        # go-openapi is shared between apiserver and apimachinery
-        rm -rf ./vendor/github.com/go-openapi
+    if [ "${is_library}" = "true" ]; then
+        if [ "$(git rev-parse --abbrev-ref HEAD)" != master ]; then
+            echo "Removing complete vendor/ on non-master branch because this is a library."
+            rm -rf vendor/
+        else
+            echo "Removing k8s.io/*, gofuzz, go-openapi and glog from vendor/ because this is a library."
+            # glog uses global variables, it panics when multiple copies are compiled.
+            rm -rf ./vendor/github.com/golang/glog
+            # this ensures users who get the repository via `go get` won't end up with
+            # multiple copies of k8s.io/ repos. The only copy will be the one in the
+            # GOPATH.
+            # Godeps.json has a complete, up-to-date list of dependencies, so
+            # Godeps.json will be the ground truth for users using godep/glide/dep.
+            rm -rf ./vendor/k8s.io
+            # see https://github.com/kubernetes/kubernetes/issues/45693
+            rm -rf ./vendor/github.com/google/gofuzz
+            # go-openapi is shared between apiserver and apimachinery
+            rm -rf ./vendor/github.com/go-openapi
+        fi
     fi
 
     git add Godeps/Godeps.json
