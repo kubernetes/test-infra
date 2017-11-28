@@ -152,8 +152,6 @@ test_groups:
   num_failures_to_alert: 12 # Runs every 2h. Alert when it's been failing for a day.
 - name: ci-kubernetes-e2e-gci-gce-alpha-features
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-alpha-features
-- name: ci-kubernetes-e2e-gci-gce-audit
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-audit
 - name: ci-kubernetes-e2e-gci-gce-autoscaling
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-autoscaling
 - name: ci-kubernetes-e2e-gci-gce-autoscaling-migs
@@ -1117,10 +1115,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-alpha-features-release-1-7
 - name: ci-kubernetes-e2e-gce-cos-k8sstable2-alphafeatures
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos-k8sstable2-alphafeatures
-- name: ci-kubernetes-e2e-gce-audit-release-1-7
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-audit-release-1-7
-- name: ci-kubernetes-e2e-gci-gce-audit-release-1-7
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-audit-release-1-7
 - name: ci-kubernetes-e2e-gci-gce-scalability-release-1-7
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-scalability-release-1-7
   num_failures_to_alert: 1
@@ -2029,8 +2023,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gci-gce
   - name: gci-gce-alpha-features
     test_group_name: ci-kubernetes-e2e-gci-gce-alpha-features
-  - name: gci-gce-audit
-    test_group_name: ci-kubernetes-e2e-gci-gce-audit
   - name: gce-stackdriver
     test_group_name: ci-kubernetes-e2e-gce-stackdriver
   - name: gci-gce-es-logging
@@ -2615,8 +2607,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gci-gke-serial
   - name: gci-gce-alpha-features
     test_group_name: ci-kubernetes-e2e-gci-gce-alpha-features
-  - name: gci-gce-audit
-    test_group_name: ci-kubernetes-e2e-gci-gce-audit
   - name: gci-gce-100
     test_group_name: ci-kubernetes-e2e-gci-gce-scalability
   - name: gce-scale-correctness
@@ -3113,10 +3103,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-alpha-features-release-1-7
   - name: gci-gce-alpha-features-release-1.7
     test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable2-alphafeatures
-  - name: gce-audit-release-1.7
-    test_group_name: ci-kubernetes-e2e-gce-audit-release-1-7
-  - name: gci-gce-audit-release-1.7
-    test_group_name: ci-kubernetes-e2e-gci-gce-audit-release-1-7
   - name: gci-gce-scalability-release-1.7
     test_group_name: ci-kubernetes-e2e-gci-gce-scalability-release-1-7
   - name: gci-gce-ingress-release-1.7
