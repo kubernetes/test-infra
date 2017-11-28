@@ -159,7 +159,19 @@ func handleIC(c client, trustedOrg string, ic github.IssueCommentEvent) error {
 
 	var errors []error
 	for _, job := range requestedJobs {
-		if !job.RunsAgainstBranch(pr.Base.Ref) || (!job.AlwaysRun && job.RunIfChanged != "" && !job.RunsAgainstChanges(changedFiles)) {
+		build := true
+		if !job.RunsAgainstBranch(pr.Base.Ref) {
+			build = false
+		} else if !job.AlwaysRun && job.RunIfChanged != "" {
+			changes, err := files()
+			if err != nil {
+				return err
+			}
+			if !job.RunsAgainstChanges(changes) {
+				build = false
+			}
+		}
+		if !build {
 			if !job.SkipReport {
 				if err := c.GitHubClient.CreateStatus(org, repo, pr.Head.SHA, github.Status{
 					State:       github.StatusSuccess,
@@ -171,6 +183,7 @@ func handleIC(c client, trustedOrg string, ic github.IssueCommentEvent) error {
 			}
 			continue
 		}
+
 		c.Logger.Infof("Starting %s build.", job.Name)
 		kr := kube.Refs{
 			Org:     org,
