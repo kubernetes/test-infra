@@ -4549,7 +4549,7 @@ postsubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171113-ae73dc58-0.6.1
+      - image: gcr.io/k8s-testimages/bazelbuild:v20171113-ae73dc58-0.7.0
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
