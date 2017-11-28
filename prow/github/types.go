@@ -106,6 +106,9 @@ type PullRequestEvent struct {
 	Repo        Repo                   `json:"repository"`
 	Label       Label                  `json:"label"`
 	Sender      User                   `json:"sender"`
+
+	// GUID is included in the header of the request received by Github.
+	GUID string
 }
 
 // PullRequest contains information about a PullRequest.
@@ -197,6 +200,9 @@ type IssueEvent struct {
 	Action IssueEventAction `json:"action"`
 	Issue  Issue            `json:"issue"`
 	Repo   Repo             `json:"repository"`
+
+	// GUID is included in the header of the request received by Github.
+	GUID string
 }
 
 // ListedIssueEvent represents an issue event from the events API (not from a webhook payload).
@@ -224,6 +230,9 @@ type IssueCommentEvent struct {
 	Issue   Issue                   `json:"issue"`
 	Comment IssueComment            `json:"comment"`
 	Repo    Repo                    `json:"repository"`
+
+	// GUID is included in the header of the request received by Github.
+	GUID string
 }
 
 type Issue struct {
@@ -287,6 +296,9 @@ type StatusEvent struct {
 	Context     string `json:"context,omitempty"`
 	Sender      User   `json:"sender,omitempty"`
 	Repo        Repo   `json:"repository,omitempty"`
+
+	// GUID is included in the header of the request received by Github.
+	GUID string
 }
 
 // IssuesSearchResult represents the result of an issues search.
@@ -306,6 +318,9 @@ type PushEvent struct {
 	// Sender contains more information that Pusher about the user.
 	Sender User `json:"sender"`
 	Repo   Repo `json:"repository"`
+
+	// GUID is included in the header of the request received by Github.
+	GUID string
 }
 
 func (pe PushEvent) Branch() string {
@@ -338,6 +353,9 @@ type ReviewEvent struct {
 	PullRequest PullRequest       `json:"pull_request"`
 	Repo        Repo              `json:"repository"`
 	Review      Review            `json:"review"`
+
+	// GUID is included in the header of the request received by Github.
+	GUID string
 }
 
 // Review describes a Pull Request review.
@@ -367,6 +385,9 @@ type ReviewCommentEvent struct {
 	PullRequest PullRequest              `json:"pull_request"`
 	Repo        Repo                     `json:"repository"`
 	Comment     ReviewComment            `json:"comment"`
+
+	// GUID is included in the header of the request received by Github.
+	GUID string
 }
 
 // ReviewComment describes a Pull Request review.
