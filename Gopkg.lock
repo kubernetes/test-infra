@@ -140,12 +140,6 @@
   revision = "454a56f35412459b5e684fd5ec0f9211b94f002a"
 
 [[projects]]
-  name = "github.com/robfig/cron"
-  packages = ["."]
-  revision = "be2e0b0deed5a68ffee390b4583a13aff8321535"
-  version = "v2"
-
-[[projects]]
   name = "github.com/satori/go.uuid"
   packages = ["."]
   revision = "0aa62d5ddceb50dbcb909d790b5345affd3669b6"
@@ -211,23 +205,36 @@
   revision = "78199dcb0669fc381c22e919e1e97eba879e8f60"
 
 [[projects]]
+  branch = "v2"
+  name = "gopkg.in/robfig/cron.v2"
+  packages = ["."]
+  revision = "be2e0b0deed5a68ffee390b4583a13aff8321535"
+
+[[projects]]
   name = "gopkg.in/yaml.v2"
   packages = ["."]
   revision = "a83829b6f1293c91addabc89d0571c246397bbf4"
+
+[[projects]]
+  branch = "master"
+  name = "k8s.io/apimachinery"
+  packages = ["pkg/util/clock","pkg/util/sets","pkg/util/yaml"]
+  revision = "18a564baac720819100827c16fdebcadb05b2d0d"
+
+[[projects]]
+  branch = "master"
+  name = "k8s.io/apiserver"
+  packages = ["pkg/util/flag"]
+  revision = "7001bc4df8883d4a0ec84cd4b2117655a0009b6c"
 
 [[projects]]
   name = "k8s.io/contrib"
   packages = ["test-utils/utils"]
   revision = "8f0f928c68f2c76ade9c1ee0249ae5cea5673cac"
 
-[[projects]]
-  name = "k8s.io/kubernetes"
-  packages = ["pkg/util/clock","pkg/util/flag","pkg/util/sets","pkg/util/yaml"]
-  revision = "87b40782c9c1cc82ba42f75de4cf23126297e0a3"
-
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "57efd387804883f77681c2595ebe988095893870b5d49651fb4213152df21f3c"
+  inputs-digest = "d14022b355ab9259b9d1cbd4752a8b38e4500414dee0f51b45089962253dfeaa"
   solver-name = "gps-cdcl"
   solver-version = 1

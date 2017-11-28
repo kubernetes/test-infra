@@ -25,8 +25,8 @@ import (
 	"strings"
 	"sync"
 
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/contrib/test-utils/utils"
-	"k8s.io/kubernetes/pkg/util/sets"
 	cache "k8s.io/test-infra/mungegithub/mungers/flakesync"
 	"k8s.io/test-infra/mungegithub/options"
 

@@ -71,6 +71,7 @@ func newFakeConfigAgent(t *testing.T, maxConcurrency int) *fca {
 				Controller: config.Controller{
 					JobURLTemplate: template.Must(template.New("test").Parse("{{.Status.PodName}}/{{.Status.State}}")),
 					MaxConcurrency: maxConcurrency,
+					MaxGoroutines:  20,
 				},
 			},
 			Presubmits: presubmitMap,
@@ -852,7 +853,7 @@ func TestMaxConcurrencyWithNewlyTriggeredJobs(t *testing.T) {
 		reports := make(chan<- kube.ProwJob, len(test.pjs))
 		errors := make(chan<- error, len(test.pjs))
 
-		syncProwJobs(c.syncNonPendingJob, jobs, reports, errors, nil)
+		syncProwJobs(c.syncNonPendingJob, 20, jobs, reports, errors, nil)
 		if len(fjc.pjs) != test.expectedBuilds {
 			t.Errorf("expected builds: %d, got: %d", test.expectedBuilds, len(fjc.pjs))
 		}

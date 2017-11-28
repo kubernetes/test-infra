@@ -19,7 +19,6 @@ limitations under the License.
 // * https://github.com/kubernetes/apimachinery/blob/18a564baac720819100827c16fdebcadb05b2d0d/pkg/labels/selector_test.go
 //
 // Changes:
-// - k8s.io/kubernetes/pkg/util/sets is used in favor of k8s.io/apimachinery/pkg/util/sets since that's vendored currently.
 // - k8s.io/apimachinery/pkg/selection is copied in this package instead of using it as a separate package.
 
 package labels
@@ -29,7 +28,7 @@ import (
 	"strings"
 	"testing"
 
-	"k8s.io/kubernetes/pkg/util/sets"
+	"k8s.io/apimachinery/pkg/util/sets"
 )
 
 func TestSelectorParse(t *testing.T) {

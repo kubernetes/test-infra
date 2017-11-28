@@ -72,6 +72,3 @@ ignored = ["github.com/aws/aws-sdk-go*"]
 
 [[constraint]]
   name = "k8s.io/contrib"
-
-[[constraint]]
-  name = "k8s.io/kubernetes"

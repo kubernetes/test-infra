@@ -34,10 +34,6 @@ import (
 
 const (
 	testInfra = "https://github.com/kubernetes/test-infra/issues"
-
-	// maxSyncRoutines is the maximum number of goroutines
-	// that will be active at any one time for the sync
-	maxSyncRoutines = 20
 )
 
 type kubeClient interface {
@@ -81,6 +77,10 @@ type Controller struct {
 	// pendingJobs is a short-lived cache that helps in limiting
 	// the maximum concurrency of jobs.
 	pendingJobs map[string]int
+
+	pjLock sync.RWMutex
+	// shared across the controller and a goroutine that gathers metrics.
+	pjs []kube.ProwJob
 }
 
 // NewController creates a new Controller from the provided clients.
@@ -159,6 +159,11 @@ func (c *Controller) Sync() error {
 		syncErrs = append(syncErrs, err)
 	}
 
+	// Share what we have for gathering metrics.
+	c.pjLock.Lock()
+	c.pjs = pjs
+	c.pjLock.Unlock()
+
 	pendingCh, nonPendingCh := pjutil.PartitionPending(pjs)
 	errCh := make(chan error, len(pjs))
 	reportCh := make(chan kube.ProwJob, len(pjs))
@@ -168,8 +173,9 @@ func (c *Controller) Sync() error {
 	c.pendingJobs = make(map[string]int)
 	// Sync pending jobs first so we can determine what is the maximum
 	// number of new jobs we can trigger when syncing the non-pendings.
-	syncProwJobs(c.syncPendingJob, pendingCh, reportCh, errCh, jbs)
-	syncProwJobs(c.syncNonPendingJob, nonPendingCh, reportCh, errCh, jbs)
+	maxSyncRoutines := c.ca.Config().JenkinsOperator.MaxGoroutines
+	syncProwJobs(c.syncPendingJob, maxSyncRoutines, pendingCh, reportCh, errCh, jbs)
+	syncProwJobs(c.syncNonPendingJob, maxSyncRoutines, nonPendingCh, reportCh, errCh, jbs)
 
 	close(errCh)
 	close(reportCh)
@@ -190,6 +196,13 @@ func (c *Controller) Sync() error {
 		return nil
 	}
 	return fmt.Errorf("errors syncing: %v, errors reporting: %v", syncErrs, reportErrs)
+}
+
+// SyncMetrics records metrics for the cached prowjobs.
+func (c *Controller) SyncMetrics() {
+	c.pjLock.RLock()
+	defer c.pjLock.RUnlock()
+	kube.GatherProwJobMetrics(c.pjs)
 }
 
 // getJenkinsJobs returns all the Jenkins jobs for all active
@@ -258,6 +271,7 @@ func (c *Controller) terminateDupes(pjs []kube.ProwJob, jbs map[string]JenkinsBu
 
 func syncProwJobs(
 	syncFn syncFn,
+	maxSyncRoutines int,
 	jobs <-chan kube.ProwJob,
 	reports chan<- kube.ProwJob,
 	syncErrors chan<- error,
@@ -265,6 +279,7 @@ func syncProwJobs(
 ) {
 	wg := &sync.WaitGroup{}
 	wg.Add(maxSyncRoutines)
+	// TODO: Start len(jobs) goroutines if maxSyncRoutines is greater than len(jobs).
 	for i := 0; i < maxSyncRoutines; i++ {
 		go func(jobs <-chan kube.ProwJob) {
 			defer wg.Done()

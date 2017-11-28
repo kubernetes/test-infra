@@ -42,7 +42,7 @@ func handlePR(c client, trustedOrg string, pr github.PullRequestEvent) error {
 			return fmt.Errorf("could not check membership: %s", err)
 		} else if member {
 			c.Logger.Info("Starting all jobs for new PR.")
-			return buildAll(c, pr.PullRequest)
+			return buildAll(c, pr.PullRequest, pr.GUID)
 		} else {
 			c.Logger.Infof("Welcome message to PR author %q.", author)
 			if err := welcomeMsg(c.GitHubClient, pr.PullRequest, trustedOrg); err != nil {
@@ -67,7 +67,7 @@ func handlePR(c client, trustedOrg string, pr github.PullRequestEvent) error {
 			// Just try to remove "needs-ok-to-test" label if existing, we don't care about the result.
 			c.GitHubClient.RemoveLabel(trustedOrg, pr.PullRequest.Base.Repo.Name, pr.PullRequest.Number, needsOkToTest)
 			c.Logger.Info("Starting all jobs for updated PR.")
-			return buildAll(c, pr.PullRequest)
+			return buildAll(c, pr.PullRequest, pr.GUID)
 		}
 	case github.PullRequestActionSynchronize:
 		// When a PR is updated, check that the user is in the org or that an org
@@ -86,7 +86,7 @@ func handlePR(c client, trustedOrg string, pr github.PullRequestEvent) error {
 				c.Logger.Warnf("Failed to clear stale comments: %v.", err)
 			}
 			c.Logger.Info("Starting all jobs for updated PR.")
-			return buildAll(c, pr.PullRequest)
+			return buildAll(c, pr.PullRequest, pr.GUID)
 		}
 	case github.PullRequestActionLabeled:
 		comments, err := c.GitHubClient.ListIssueComments(pr.PullRequest.Base.Repo.Owner.Login, pr.PullRequest.Base.Repo.Name, pr.PullRequest.Number)
@@ -100,7 +100,7 @@ func handlePR(c client, trustedOrg string, pr github.PullRequestEvent) error {
 				return fmt.Errorf("could not validate PR: %s", err)
 			} else if !trusted {
 				c.Logger.Info("Starting all jobs for untrusted PR with LGTM.")
-				return buildAll(c, pr.PullRequest)
+				return buildAll(c, pr.PullRequest, pr.GUID)
 			}
 		}
 	}
@@ -165,7 +165,7 @@ func trustedPullRequest(ghc githubClient, pr github.PullRequest, trustedOrg stri
 	return false, nil
 }
 
-func buildAll(c client, pr github.PullRequest) error {
+func buildAll(c client, pr github.PullRequest, eventGUID string) error {
 	org := pr.Base.Repo.Owner.Login
 	repo := pr.Base.Repo.Name
 	var ref string
@@ -221,7 +221,12 @@ func buildAll(c client, pr github.PullRequest) error {
 				},
 			},
 		}
-		if _, err := c.KubeClient.CreateProwJob(pjutil.NewProwJob(pjutil.PresubmitSpec(job, kr), job.Labels)); err != nil {
+		labels := make(map[string]string)
+		for k, v := range job.Labels {
+			labels[k] = v
+		}
+		labels[github.EventGUID] = eventGUID
+		if _, err := c.KubeClient.CreateProwJob(pjutil.NewProwJob(pjutil.PresubmitSpec(job, kr), labels)); err != nil {
 			return err
 		}
 	}

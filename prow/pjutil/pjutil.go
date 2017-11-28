@@ -198,12 +198,12 @@ func PartitionPending(pjs []kube.ProwJob) (pending, nonPending chan kube.ProwJob
 	return pending, nonPending
 }
 
-// GetLatestPeriodics filters through the provided prowjobs and returns
-// a map of periodic jobs to their latest prowjobs.
-func GetLatestPeriodics(pjs []kube.ProwJob) map[string]kube.ProwJob {
+// GetLatestProwJobs filters through the provided prowjobs and returns
+// a map of jobType jobs to their latest prowjobs.
+func GetLatestProwJobs(pjs []kube.ProwJob, jobType kube.ProwJobType) map[string]kube.ProwJob {
 	latestJobs := make(map[string]kube.ProwJob)
 	for _, j := range pjs {
-		if j.Spec.Type != kube.PeriodicJob {
+		if j.Spec.Type != jobType {
 			continue
 		}
 		name := j.Spec.Job

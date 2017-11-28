@@ -10,7 +10,7 @@ go_library(
         "//prow/pluginhelp:go_default_library",
         "//prow/plugins:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
-        "//vendor/k8s.io/kubernetes/pkg/util/sets:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
     ],
 )
 
@@ -36,6 +36,6 @@ go_test(
     deps = [
         "//prow/github:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
-        "//vendor/k8s.io/kubernetes/pkg/util/sets:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
     ],
 )

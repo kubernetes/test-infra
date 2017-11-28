@@ -234,6 +234,44 @@ func TestHandleIssueComment(t *testing.T) {
 			StartsExactly: "pull-jab",
 		},
 		{
+			name:   "Retest of run_if_changed job that failed",
+			Author: "t",
+			Body:   "/retest",
+			State:  "open",
+			IsPR:   true,
+			Presubmits: map[string][]config.Presubmit{
+				"org/repo": {
+					{
+						Name:         "jib",
+						RunIfChanged: "CHANGED",
+						Context:      "pull-jib",
+						Trigger:      `/test all`,
+					},
+				},
+			},
+			ShouldBuild:   true,
+			StartsExactly: "pull-jib",
+		},
+		{
+			name:   "Rerun of run_if_changed job that has passed",
+			Author: "t",
+			Body:   "/test jub",
+			State:  "open",
+			IsPR:   true,
+			Presubmits: map[string][]config.Presubmit{
+				"org/repo": {
+					{
+						Name:         "jub",
+						RunIfChanged: "CHANGED",
+						Context:      "pull-jub",
+						Trigger:      `/test jub`,
+					},
+				},
+			},
+			ShouldBuild:   true,
+			StartsExactly: "pull-jub",
+		},
+		{
 			name:   "Retest should 'skip' run_if_changed job that doesn't need to run on the changes",
 			Author: "t",
 			Body:   "/retest",
@@ -329,6 +367,7 @@ func TestHandleIssueComment(t *testing.T) {
 					Statuses: []github.Status{
 						{State: "pending", Context: "pull-job"},
 						{State: "failure", Context: "pull-jib"},
+						{State: "success", Context: "pull-jub"},
 					},
 				},
 			},

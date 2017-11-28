@@ -73,7 +73,7 @@ func sync(kc kubeClient, cfg *config.Config, cr cronClient, now time.Time) error
 	if err != nil {
 		return fmt.Errorf("error listing prow jobs: %v", err)
 	}
-	latestJobs := pjutil.GetLatestPeriodics(jobs)
+	latestJobs := pjutil.GetLatestProwJobs(jobs, kube.PeriodicJob)
 
 	// TODO(krzyzacy): retire the interval check, migrate everything to use cron
 	if err := cr.SyncConfig(cfg); err != nil {

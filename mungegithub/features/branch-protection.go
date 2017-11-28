@@ -17,7 +17,7 @@ limitations under the License.
 package features
 
 import (
-	"k8s.io/kubernetes/pkg/util/sets"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/mungegithub/github"
 	"k8s.io/test-infra/mungegithub/mungeopts"
 	"k8s.io/test-infra/mungegithub/options"

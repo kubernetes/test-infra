@@ -23,8 +23,8 @@ import (
 	"path/filepath"
 	"time"
 
-	utilflag "k8s.io/kubernetes/pkg/util/flag"
-	"k8s.io/kubernetes/pkg/util/sets"
+	"k8s.io/apimachinery/pkg/util/sets"
+	utilflag "k8s.io/apiserver/pkg/util/flag"
 	"k8s.io/test-infra/mungegithub/features"
 	github_util "k8s.io/test-infra/mungegithub/github"
 	"k8s.io/test-infra/mungegithub/mungeopts"
