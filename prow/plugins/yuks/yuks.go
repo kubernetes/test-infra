@@ -26,6 +26,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
 )
 
@@ -41,7 +42,18 @@ const (
 )
 
 func init() {
-	plugins.RegisterGenericCommentHandler(pluginName, handleGenericComment, nil)
+	plugins.RegisterGenericCommentHandler(pluginName, handleGenericComment, helpProvider)
+}
+
+func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
+	// The Config field is omitted because this plugin is not configurable.
+	return &pluginhelp.PluginHelp{
+			Description: "The yuks plugin comments with jokes in response to the `/joke` command.",
+			WhoCanUse:   "Anyone can use the `/joke` command.",
+			Usage:       "/joke",
+			Examples:    []string{"/joke"},
+		},
+		nil
 }
 
 type githubClient interface {
