@@ -114,8 +114,8 @@ func ValidateWebhook(w http.ResponseWriter, r *http.Request, hmacSecret []byte) 
 func (s *Server) demuxEvent(eventType, eventGUID string, payload []byte, h http.Header) error {
 	l := logrus.WithFields(
 		logrus.Fields{
-			"event-type": eventType,
-			"event-GUID": eventGUID,
+			"event-type":     eventType,
+			github.EventGUID: eventGUID,
 		},
 	)
 	// We don't want to fail the webhook due to a metrics error.

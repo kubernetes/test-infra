@@ -21,6 +21,9 @@ import (
 	"time"
 )
 
+// EventGUID is sent by Github in a header of every webhook request.
+const EventGUID = "event-GUID"
+
 // These are possible State entries for a Status.
 const (
 	StatusPending = "pending"
