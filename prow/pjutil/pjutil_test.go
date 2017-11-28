@@ -18,6 +18,7 @@ package pjutil
 
 import (
 	"testing"
+	"time"
 
 	"k8s.io/test-infra/prow/kube"
 )
@@ -248,6 +249,105 @@ func TestPartitionPending(t *testing.T) {
 		for job := range nonPendingCh {
 			if _, ok := test.nonPending[job.Metadata.Name]; !ok {
 				t.Errorf("didn't find non-pending job %#v", job)
+			}
+		}
+	}
+}
+
+func TestGetLatestProwJobs(t *testing.T) {
+	tests := []struct {
+		name string
+
+		pjs     []kube.ProwJob
+		jobType string
+
+		expected map[string]struct{}
+	}{
+		{
+			pjs: []kube.ProwJob{
+				{
+					Metadata: kube.ObjectMeta{
+						Name: "831c7df0-baa4-11e7-a1a4-0a58ac10134a",
+					},
+					Spec: kube.ProwJobSpec{
+						Type:  kube.PresubmitJob,
+						Agent: kube.JenkinsAgent,
+						Job:   "test_pull_request_origin_extended_networking_minimal",
+						Refs: kube.Refs{
+							Org:     "openshift",
+							Repo:    "origin",
+							BaseRef: "master",
+							BaseSHA: "e92d5c525795eafb82cf16e3ab151b567b47e333",
+							Pulls: []kube.Pull{
+								{
+									Number: 17061,
+									Author: "enj",
+									SHA:    "f94a3a51f59a693642e39084f03efa83af9442d3",
+								},
+							},
+						},
+						Report:       true,
+						Context:      "ci/openshift-jenkins/extended_networking_minimal",
+						RerunCommand: "/test extended_networking_minimal",
+					},
+					Status: kube.ProwJobStatus{
+						StartTime:   time.Date(2017, time.October, 26, 23, 22, 19, 0, time.UTC),
+						State:       kube.FailureState,
+						Description: "Jenkins job failed.",
+						URL:         "https://openshift-gce-devel.appspot.com/build/origin-ci-test/pr-logs/pull/17061/test_pull_request_origin_extended_networking_minimal/9756/",
+						PodName:     "test_pull_request_origin_extended_networking_minimal-9756",
+						BuildID:     "9756",
+					},
+				},
+				{
+					Metadata: kube.ObjectMeta{
+						Name: "0079d4d3-ba25-11e7-ae3f-0a58ac10123b",
+					},
+					Spec: kube.ProwJobSpec{
+						Type:  kube.PresubmitJob,
+						Agent: kube.JenkinsAgent,
+						Job:   "test_pull_request_origin_extended_networking_minimal",
+						Refs: kube.Refs{
+							Org:     "openshift",
+							Repo:    "origin",
+							BaseRef: "master",
+							BaseSHA: "e92d5c525795eafb82cf16e3ab151b567b47e333",
+							Pulls: []kube.Pull{
+								{
+									Number: 17061,
+									Author: "enj",
+									SHA:    "f94a3a51f59a693642e39084f03efa83af9442d3",
+								},
+							},
+						},
+						Report:       true,
+						Context:      "ci/openshift-jenkins/extended_networking_minimal",
+						RerunCommand: "/test extended_networking_minimal",
+					},
+					Status: kube.ProwJobStatus{
+						StartTime:   time.Date(2017, time.October, 26, 22, 22, 19, 0, time.UTC),
+						State:       kube.FailureState,
+						Description: "Jenkins job failed.",
+						URL:         "https://openshift-gce-devel.appspot.com/build/origin-ci-test/pr-logs/pull/17061/test_pull_request_origin_extended_networking_minimal/9755/",
+						PodName:     "test_pull_request_origin_extended_networking_minimal-9755",
+						BuildID:     "9755",
+					},
+				},
+			},
+			jobType:  "presubmit",
+			expected: map[string]struct{}{"831c7df0-baa4-11e7-a1a4-0a58ac10134a": {}},
+		},
+	}
+
+	for _, test := range tests {
+		got := GetLatestProwJobs(test.pjs, kube.ProwJobType(test.jobType))
+		if len(got) != len(test.expected) {
+			t.Errorf("expected jobs:\n%+v\ngot jobs:\n%+v", test.expected, got)
+			continue
+		}
+		for name := range test.expected {
+			if _, ok := got[name]; ok {
+				t.Errorf("expected job: %s", name)
 			}
 		}
 	}
