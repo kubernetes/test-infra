@@ -25,6 +25,35 @@ h1 {
     margin: 2px;
 }
 
+h2, h3 {
+    font-weight: bold;
+    margin: 0;
+}
+
+h4 {
+    margin: 5px;
+}
+
+p, pre, ul {
+    margin: 0;
+}
+
+.indented {
+    margin-left: 30px;
+}
+
+ul.indented {
+    margin-left: 0;
+}
+
+div {
+    padding-left: 20px;
+}
+
+h3.plugin {
+    color: blue;
+}
+
 div {
     background: #fff;
     padding: 8px;
@@ -37,15 +66,19 @@ aside {
     margin: 8px;
 }
 
-ul {
+ul.noBullets {
     list-style-type: none;
     margin: 0;
     padding: 0;
 }
 
-li {
+ul.noBullets li {
     margin: 0 8px;
     display: inline-block;
+}
+
+ul, ul li {
+    list-style-type: circle;
 }
 
 select {
@@ -66,6 +99,10 @@ table {
     box-shadow: 0 0 4px #e0e0e0;
     border-collapse: collapse;
     width: 100%;
+}
+
+table.headered {
+    background: initial;
 }
 
 tr {
