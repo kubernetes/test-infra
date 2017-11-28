@@ -146,8 +146,6 @@ sync_repo() {
         echo "Starting at existing ${dst_branch} commit $(git rev-parse HEAD)."
     fi
 
-    local dst_old_head=$(git rev-parse HEAD) # will be the initial commit for new branch
-
     # fetch upstream kube and checkout $src_branch, name it filtered-branch
     git remote rm upstream-kube >/dev/null || true
     git remote add upstream-kube "${kubernetes_remote}" >/dev/null
@@ -240,6 +238,8 @@ sync_repo() {
         git rm -q kubernetes-sha
         git commit -q -m "sync: remove kubernetes-sha"
     fi
+
+    local dst_old_head=$(git rev-parse HEAD) # will be the initial commit for new branch
 
     # apply all PRs
     local k_pending_merge_commit=""
@@ -467,7 +467,7 @@ sync_repo() {
     # get consistent and complete godeps on each sync. Skip if nothing changed.
     # NOTE: we cannot skip collapsed-kube-commit-mapper below because its
     #       output depends on upstream's HEAD.
-    if [ $(git rev-parse HEAD) != "${dst_old_head}" ]; then
+    if [ $(git rev-parse HEAD) != "${dst_old_head}" ] || [ "${new_branch}" = "true" ]; then
         fix-godeps "${deps}" "${is_library}" true
     fi
 
