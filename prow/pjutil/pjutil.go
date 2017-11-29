@@ -22,8 +22,10 @@ import (
 	"time"
 
 	uuid "github.com/satori/go.uuid"
+	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
 )
 
@@ -212,4 +214,16 @@ func GetLatestProwJobs(pjs []kube.ProwJob, jobType kube.ProwJobType) map[string]
 		}
 	}
 	return latestJobs
+}
+
+// ProwJobFields extracts logrus fields from a prowjob useful for logging.
+func ProwJobFields(pj *kube.ProwJob) logrus.Fields {
+	fields := make(logrus.Fields)
+	fields["name"] = pj.Metadata.Name
+	fields["job"] = pj.Spec.Job
+	fields["type"] = pj.Spec.Type
+	if len(pj.Metadata.Labels[github.EventGUID]) > 0 {
+		fields[github.EventGUID] = pj.Metadata.Labels[github.EventGUID]
+	}
+	return fields
 }

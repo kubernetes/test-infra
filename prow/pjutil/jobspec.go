@@ -18,9 +18,8 @@ package pjutil
 
 import (
 	"encoding/json"
-	"strconv"
-
 	"fmt"
+	"strconv"
 
 	"k8s.io/test-infra/prow/kube"
 )

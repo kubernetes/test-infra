@@ -19,6 +19,7 @@ package main
 import (
 	"bytes"
 	"flag"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -94,7 +95,7 @@ func main() {
 		logger.Fatal("An auth token for basic or bearer token auth must be supplied.")
 	}
 	metrics := jenkins.NewMetrics()
-	jc := jenkins.NewClient(*jenkinsURL, ac, metrics.ClientMetrics)
+	jc := jenkins.NewClient(*jenkinsURL, ac, logger, metrics.ClientMetrics)
 
 	oauthSecretRaw, err := ioutil.ReadFile(*githubTokenFile)
 	if err != nil {
@@ -114,7 +115,7 @@ func main() {
 		ghc = github.NewClient(oauthSecret, *githubEndpoint)
 	}
 
-	c := jenkins.NewController(kc, jc, ghc, configAgent, *selector)
+	c := jenkins.NewController(kc, jc, ghc, logger, configAgent, *selector)
 
 	// Push metrics to the configured prometheus pushgateway endpoint.
 	pushGateway := configAgent.Config().PushGateway
@@ -126,7 +127,7 @@ func main() {
 	// serves prometheus metrics.
 	go serve(jc)
 	// gather metrics for the jobs handled by the jenkins controller.
-	go gather(c)
+	go gather(c, logger)
 
 	tick := time.Tick(30 * time.Second)
 	sig := make(chan os.Signal, 1)
@@ -140,10 +141,10 @@ func main() {
 				logger.WithError(err).Error("Error syncing.")
 			}
 			duration := time.Since(start)
-			logger.Infof("Sync time: %v", duration)
+			logger.WithField("duration", fmt.Sprintf("%v", duration)).Info("Synced")
 			metrics.ResyncPeriod.Observe(duration.Seconds())
 		case <-sig:
-			logger.Infof("Jenkins operator is shutting down...")
+			logger.Info("Jenkins operator is shutting down...")
 			return
 		}
 	}
@@ -168,7 +169,7 @@ func serve(jc *jenkins.Client) {
 
 // gather metrics from the jenkins controller.
 // Meant to be called inside a goroutine.
-func gather(c *jenkins.Controller) {
+func gather(c *jenkins.Controller, logger *logrus.Entry) {
 	tick := time.Tick(30 * time.Second)
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
@@ -178,10 +179,9 @@ func gather(c *jenkins.Controller) {
 		case <-tick:
 			start := time.Now()
 			c.SyncMetrics()
-			duration := time.Since(start)
-			logrus.Debugf("Sync metrics time: %v", duration)
+			logger.WithField("duration", fmt.Sprintf("%v", time.Since(start))).Debug("Metrics synced")
 		case <-sig:
-			logrus.Debugf("Jenkins operator gatherer is shutting down...")
+			logger.Debug("Jenkins operator gatherer is shutting down...")
 			return
 		}
 	}
