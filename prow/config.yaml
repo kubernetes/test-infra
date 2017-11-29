@@ -1799,6 +1799,8 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         env:
+        - name: DOCKER_IN_DOCKER_ENABLED
+          value: true
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: /etc/service-account/service-account.json
         # docker-in-docker needs privilged mode
@@ -3187,6 +3189,8 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         env:
+        - name: DOCKER_IN_DOCKER_ENABLED
+          value: true
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: /etc/service-account/service-account.json
         # docker-in-docker needs privilged mode
