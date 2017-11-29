@@ -80,7 +80,7 @@ def get_git_cache(k8s):
     if not os.path.isfile(git):
         return None
     with open(git) as git_file:
-        return git_file.read()
+        return git_file.read().replace("gitdir: ", "")
 
 
 def main(branch, script, force, on_prow):
