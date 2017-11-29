@@ -10718,6 +10718,16 @@
       "sig-testing"
     ]
   },
+  "pull-kubernetes-unit-prow": {
+    "args": [
+      "--branch=${PULL_BASE_REF}",
+      "--prow"
+    ],
+    "scenario": "kubernetes_verify",
+    "sigOwners": [
+      "sig-testing"
+    ]
+  },
   "pull-kubernetes-verify": {
     "args": [
       "--branch=${PULL_BASE_REF}",
@@ -10731,6 +10741,7 @@
   "pull-kubernetes-verify-prow": {
     "args": [
       "--branch=${PULL_BASE_REF}",
+      "--prow",
       "--script=./hack/jenkins/verify-dockerized.sh"
     ],
     "scenario": "kubernetes_verify",
