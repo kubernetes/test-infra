@@ -34,6 +34,7 @@ import (
 	_ "k8s.io/test-infra/prow/plugins/milestonestatus"
 	_ "k8s.io/test-infra/prow/plugins/releasenote"
 	_ "k8s.io/test-infra/prow/plugins/reopen"
+	_ "k8s.io/test-infra/prow/plugins/requiresig"
 	_ "k8s.io/test-infra/prow/plugins/shrug"
 	_ "k8s.io/test-infra/prow/plugins/sigmention"
 	_ "k8s.io/test-infra/prow/plugins/size"

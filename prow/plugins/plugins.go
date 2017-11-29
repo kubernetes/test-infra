@@ -163,6 +163,7 @@ type Configuration struct {
 	Blockades       []Blockade      `json:"blockades,omitempty"`
 	Approve         []Approve       `json:"approve,omitempty"`
 	Blunderbuss     Blunderbuss     `json:"blunderbuss,omitempty"`
+	RequireSIG      RequireSIG      `json:"requiresig,omitempty"`
 }
 
 // ExternalPlugin holds configuration for registering an external
@@ -212,6 +213,12 @@ func (pa *PluginAgent) MDYAMLEnabled(org, repo string) bool {
 	}
 	return false
 
+}
+
+// RequireSIG specifies configuration for the require-sig plugin.
+type RequireSIG struct {
+	// GroupListURL is the URL where a list of the available SIGs can be found.
+	GroupListURL string `json:"group_list_url,omitempty"`
 }
 
 /*
