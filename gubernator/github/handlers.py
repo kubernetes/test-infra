@@ -25,6 +25,7 @@ from webapp2_extras import security
 
 from google.appengine.api.runtime import memory_usage
 from google.appengine.datastore import datastore_query
+from google.appengine.ext import deferred
 
 import classifier
 import models
@@ -83,15 +84,16 @@ class GithubHandler(webapp2.RequestHandler):
             repo=repo, number=number, event=event, body=body, **kwargs)
         webhook.put()
 
+        # Defer digest updates, so they'll retry on failure.
         if event == 'status':
             status = models.GHStatus.from_json(body_json)
             models.save_if_newer(status)
             query = models.GHIssueDigest.find_head(repo, status.sha)
             for issue in query.fetch():
-                update_issue_digest(issue.repo, issue.number)
+                deferred.defer(update_issue_digest, issue.repo, issue.number)
 
         if number is not None:
-            update_issue_digest(repo, number)
+            deferred.defer(update_issue_digest, repo, number)
 
 
 def update_issue_digest(repo, number, always_put=False):
