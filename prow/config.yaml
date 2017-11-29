@@ -1804,8 +1804,6 @@ presubmits:
           mountPath: /root/.cache
         - name: docker-graph
           mountPath: /docker-graph
-        - name: var-lib-docker
-          mountPath: /var/lib/docker
         ports:
         - containerPort: 9999
           hostPort: 9999
@@ -1819,8 +1817,6 @@ presubmits:
       - name: docker-graph
         hostPath:
           path: /mnt/disks/ssd0/docker-graph
-      - name: var-lib-docker
-        emptyDir: {}
   - name: pull-kubernetes-verify
     agent: jenkins
     always_run: true
@@ -1839,7 +1835,6 @@ presubmits:
         imagePullPolicy: Always
         args:
         - "--clean"
-        - "--git-cache=/root/.cache/git"
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
@@ -1856,12 +1851,8 @@ presubmits:
         - name: service
           mountPath: /etc/service-account
           readOnly: true
-        - name: cache-ssd
-          mountPath: /root/.cache
         - name: docker-graph
           mountPath: /docker-graph
-        - name: var-lib-docker
-          mountPath: /var/lib/docker
         ports:
         - containerPort: 9999
           hostPort: 9999
@@ -1869,14 +1860,9 @@ presubmits:
       - name: service
         secret:
           secretName: service-account
-      - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0
       - name: docker-graph
         hostPath:
           path: /mnt/disks/ssd0/docker-graph
-      - name: var-lib-docker
-        emptyDir: {}
 
   kubernetes-security/kubernetes:
   - name: pull-security-kubernetes-bazel-build
@@ -3240,8 +3226,6 @@ presubmits:
           mountPath: /root/.cache
         - name: docker-graph
           mountPath: /docker-graph
-        - name: var-lib-docker
-          mountPath: /var/lib/docker
         ports:
         - containerPort: 9999
           hostPort: 9999
@@ -3255,8 +3239,6 @@ presubmits:
       - name: docker-graph
         hostPath:
           path: /mnt/disks/ssd0/docker-graph
-      - name: var-lib-docker
-        emptyDir: {}
   - name: pull-security-kubernetes-verify
     agent: jenkins
     always_run: true
@@ -3275,7 +3257,6 @@ presubmits:
         imagePullPolicy: Always
         args:
         - "--clean"
-        - "--git-cache=/root/.cache/git"
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
@@ -3292,12 +3273,8 @@ presubmits:
         - name: service
           mountPath: /etc/service-account
           readOnly: true
-        - name: cache-ssd
-          mountPath: /root/.cache
         - name: docker-graph
           mountPath: /docker-graph
-        - name: var-lib-docker
-          mountPath: /var/lib/docker
         ports:
         - containerPort: 9999
           hostPort: 9999
@@ -3305,14 +3282,9 @@ presubmits:
       - name: service
         secret:
           secretName: service-account
-      - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0
       - name: docker-graph
         hostPath:
           path: /mnt/disks/ssd0/docker-graph
-      - name: var-lib-docker
-        emptyDir: {}
 
   kubernetes/test-infra:
   - name: pull-test-infra-bazel
