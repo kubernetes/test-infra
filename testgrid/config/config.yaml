@@ -2787,8 +2787,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-1-8-on-1-9
   - name: periodic-gce-kubeadm-1.9
     test_group_name: periodic-kubernetes-e2e-kubeadm-gce-1-9
-  - name: gce-kubeadm-upgrade-1.8-1.9
-    test_group_name: periodic-kubernetes-e2e-kubeadm-gce-upgrade-1-8-1-9
   - name: gce-1.9
     test_group_name: ci-kubernetes-e2e-gce-cos-k8sbeta-default
   - name: gce-reboot-1.9
