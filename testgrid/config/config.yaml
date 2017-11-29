@@ -490,6 +490,7 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/maintenance-boskos-config-upload
 - name: maintenance-ci-testgrid-config-upload
   gcs_prefix: kubernetes-jenkins/logs/maintenance-ci-testgrid-config-upload
+  num_failures_to_alert: 1
 - name: maintenance-daily
   gcs_prefix: kubernetes-jenkins/logs/maintenance-daily
 - name: maintenance-all-daily
@@ -4147,6 +4148,8 @@ dashboards:
     test_group_name: maintenance-ci-testgrid-config-upload
     code_search_url_template:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+    alert_options:
+      alert_mail_to_addresses: 'gke-kubernetes-engprod+alerts@google.com'
   - name: triage
     description: College results for triage page
     test_group_name: ci-test-infra-triage
