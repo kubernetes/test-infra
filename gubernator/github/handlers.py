@@ -189,6 +189,7 @@ class Timeline(BaseHandler):
 
         self.response.write('<h3>%d Raw Events</h3>' % (len(events)))
         self.response.write('<table border=2>')
+        self.response.write('<tr><th>Timestamp<th>Event<th>Action<th>Sender<th>Body</tr>')
         merged = {}
         for event in events:
             body_json = json.loads(event.body)
@@ -215,7 +216,7 @@ class Timeline(BaseHandler):
             self.response.write(json.dumps([e.body for e in events], indent=True))
             return
         self.response.write(
-            '<style>td pre{max-height:200px;overflow:scroll}</style>')
+            '<style>td pre{max-height:200px;max-width:800px;overflow:scroll}</style>')
         self.response.write('<p>Memory: %s' % memory_usage().current())
         self.emit_classified(repo, number)
         self.response.write('<p>Memory: %s' % memory_usage().current())
