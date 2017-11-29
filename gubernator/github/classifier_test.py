@@ -135,7 +135,7 @@ class CalculateTest(unittest.TestCase):
                     'label': {'name': 'release-note-none', 'color': 'orange'},
                 }, 3),
                 make_comment_event(2, 'k8s-merge-robot', '<!-- META={"approvers":["o"]} -->', ts=4),
-            ], {'e2e': ['failure', None, 'stuff is broken']}
+            ], status_fetcher={'abcdef': {'e2e': ['failure', None, 'stuff is broken']}}.get
         ),
         (True, True, ['a', 'b', 'o'],
          {
@@ -275,7 +275,7 @@ class CalculateTest(unittest.TestCase):
 class CommentsTest(unittest.TestCase):
     def test_basic(self):
         self.assertEqual(classifier.get_comments([make_comment_event(1, 'aaa', 'msg', ts=2016)]),
-            [{'author': 'aaa', 'comment': 'msg', 'timestamp': 2016}])
+            [{'id': 1, 'author': 'aaa', 'comment': 'msg', 'timestamp': 2016}])
 
     def test_deleted(self):
         self.assertEqual(classifier.get_comments([
@@ -288,7 +288,7 @@ class CommentsTest(unittest.TestCase):
         self.assertEqual(classifier.get_comments([
             make_comment_event(1, 'aaa', 'msg', ts=2016),
             make_comment_event(1, 'aaa', 'redacted', ts=2016.1, action='edited')]),
-            [{'author': 'aaa', 'comment': 'redacted', 'timestamp': 2016.1}])
+            [{'id': 1, 'author': 'aaa', 'comment': 'redacted', 'timestamp': 2016.1}])
 
 
 if __name__ == '__main__':
