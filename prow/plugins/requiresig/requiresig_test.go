@@ -1,0 +1,159 @@
+/*
+Copyright 2017 The Kubernetes Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+package requiresig
+
+import (
+	"testing"
+
+	"github.com/sirupsen/logrus"
+	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/github/fakegithub"
+)
+
+const (
+	helpWanted          = "help-wanted"
+	open                = "open"
+	sigApps             = "sig/apps"
+	committeeSteering   = "committee/steering"
+	wgContainerIdentity = "wg/container-identity"
+	username            = "Ali"
+)
+
+type fakePruner struct{}
+
+func (fp *fakePruner) PruneComments(shouldPrune func(github.IssueComment) bool) {}
+
+func TestHandle(t *testing.T) {
+	tests := []struct {
+		name           string
+		action         github.IssueEventAction
+		isPR           bool
+		initialLabels  []string
+		expectComment  bool
+		expectedAdd    string
+		expectedRemove string
+	}{
+		{
+			name:          "ignore PRs",
+			action:        github.IssueActionLabeled,
+			isPR:          true,
+			initialLabels: []string{helpWanted},
+		},
+		{
+			name:          "issue closed action",
+			action:        github.IssueActionClosed,
+			initialLabels: []string{helpWanted},
+		},
+		{
+			name:          "issue has sig/foo label, no needs-sig label",
+			action:        github.IssueActionLabeled,
+			initialLabels: []string{helpWanted, sigApps},
+		},
+		{
+			name:          "issue has no sig/foo label, no needs-sig label",
+			action:        github.IssueActionUnlabeled,
+			initialLabels: []string{helpWanted},
+			expectComment: true,
+			expectedAdd:   needsSigLabel,
+		},
+		{
+			name:          "issue has needs-sig label, no sig/foo label",
+			action:        github.IssueActionLabeled,
+			initialLabels: []string{helpWanted, needsSigLabel},
+		},
+		{
+			name:           "issue has both needs-sig label and sig/foo label",
+			action:         github.IssueActionLabeled,
+			initialLabels:  []string{helpWanted, needsSigLabel, sigApps},
+			expectedRemove: needsSigLabel,
+		},
+		{
+			name:          "issue has committee/foo label, no needs-sig label",
+			action:        github.IssueActionLabeled,
+			initialLabels: []string{helpWanted, committeeSteering},
+		},
+		{
+			name:           "issue has both needs-sig label and committee/foo label",
+			action:         github.IssueActionLabeled,
+			initialLabels:  []string{helpWanted, needsSigLabel, committeeSteering},
+			expectedRemove: needsSigLabel,
+		},
+		{
+			name:          "issue has wg/foo label, no needs-sig label",
+			action:        github.IssueActionLabeled,
+			initialLabels: []string{helpWanted, wgContainerIdentity},
+		},
+		{
+			name:           "issue has both needs-sig label and wg/foo label",
+			action:         github.IssueActionLabeled,
+			initialLabels:  []string{helpWanted, needsSigLabel, wgContainerIdentity},
+			expectedRemove: needsSigLabel,
+		},
+	}
+
+	for _, test := range tests {
+		fghc := &fakegithub.FakeClient{
+			IssueComments: make(map[int][]github.IssueComment),
+		}
+
+		var initLabels []github.Label
+		for _, label := range test.initialLabels {
+			initLabels = append(initLabels, github.Label{Name: label})
+		}
+		var pr *struct{}
+		if test.isPR {
+			pr = &struct{}{}
+		}
+		ie := &github.IssueEvent{
+			Action: test.action,
+			Issue: github.Issue{
+				Labels:      initLabels,
+				Number:      5,
+				PullRequest: pr,
+			},
+		}
+		if err := handle(logrus.WithField("plugin", "require-sig"), fghc, &fakePruner{}, ie); err != nil {
+			t.Fatalf("[%s] Unexpected error from handle: %v.", test.name, err)
+		}
+
+		if got := len(fghc.IssueComments[5]); test.expectComment && got != 1 {
+			t.Errorf("[%s] Expected 1 comment to be created but got %d.", test.name, got)
+		} else if !test.expectComment && got != 0 {
+			t.Errorf("[%s] Expected no comments to be created but got %d.", test.name, got)
+		}
+
+		if count := len(fghc.LabelsAdded); test.expectedAdd == "" && count != 0 {
+			t.Errorf("[%s] Unexpected labels added: %q.", test.name, fghc.LabelsAdded)
+		} else if test.expectedAdd != "" && count == 1 {
+			if expected, got := "/#5:"+test.expectedAdd, fghc.LabelsAdded[0]; got != expected {
+				t.Errorf("[%s] Expected label %q to be added but got %q.", test.name, expected, got)
+			}
+		} else if test.expectedAdd != "" && count > 1 {
+			t.Errorf("[%s] Expected label \"/#5:%s\" to be added but got %q.", test.name, test.expectedAdd, fghc.LabelsAdded)
+		}
+
+		if count := len(fghc.LabelsRemoved); test.expectedRemove == "" && count != 0 {
+			t.Errorf("[%s] Unexpected labels removed: %q.", test.name, fghc.LabelsRemoved)
+		} else if test.expectedRemove != "" && count == 1 {
+			if expected, got := "/#5:"+test.expectedRemove, fghc.LabelsRemoved[0]; got != expected {
+				t.Errorf("[%s] Expected label %q to be removed but got %q.", test.name, expected, got)
+			}
+		} else if test.expectedRemove != "" && count > 1 {
+			t.Errorf("[%s] Expected label \"/#5:%s\" to be removed but got %q.", test.name, test.expectedRemove, fghc.LabelsRemoved)
+		}
+	}
+}

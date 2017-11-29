@@ -75,6 +75,13 @@ def try_call(cmds):
     except:
         return False
 
+def get_git_cache(k8s):
+    git = os.path.join(k8s, ".git")
+    if not os.path.isfile(git):
+        return None
+    with open(git) as git_file:
+        return git_file.read().replace("gitdir: ", "")
+
 
 def main(branch, script, force, on_prow):
     """Test branch using script, optionally forcing verify checks."""
@@ -106,7 +113,23 @@ def main(branch, script, force, on_prow):
     if not os.path.isdir(artifacts):
         os.makedirs(artifacts)
 
-    if not on_prow:
+    git_cache = get_git_cache(k8s)
+
+    if on_prow and git_cache is not None:
+        check(
+                'docker', 'run', '--rm=true', '--privileged=true',
+                '-v', '/var/run/docker.sock:/var/run/docker.sock',
+                '-v', '/etc/localtime:/etc/localtime:ro',
+                '-v', '%s:/go/src/k8s.io/kubernetes' % k8s,
+                '-v', '%s:%s' % (git_cache, git_cache),
+                '-v', '%s:/workspace/artifacts' % artifacts,
+                '-e', 'KUBE_FORCE_VERIFY_CHECKS=%s' % force,
+                '-e', 'KUBE_VERIFY_GIT_BRANCH=%s' % branch,
+                '-e', 'REPO_DIR=%s' % k8s,  # hack/lib/swagger.sh depends on this
+                'gcr.io/k8s-testimages/kubekins-test:%s' % tag,
+                'bash', '-c', 'cd kubernetes && %s' % script,
+            )
+    else:
         check(
             'docker', 'run', '--rm=true', '--privileged=true',
             '-v', '/var/run/docker.sock:/var/run/docker.sock',
@@ -119,41 +142,6 @@ def main(branch, script, force, on_prow):
             'gcr.io/k8s-testimages/kubekins-test:%s' % tag,
             'bash', '-c', 'cd kubernetes && %s' % script,
         )
-    else:
-        # make sure we are cd-ed to the repo
-        k8s = '/go/src/k8s.io/kubernetes'
-        os.chdir(k8s)
-
-        # setup env
-        os.environ['REPO_DIR'] = k8s # hack/lib/swagger.sh depends on this
-        os.environ['KUBE_FORCE_VERIFY_CHECKS'] = str(force)
-        os.environ['KUBE_VERIFY_GIT_BRANCH'] = str(branch)
-
-        # TODO(bentheelder): mimic the other script too, and eventually
-        # migrate this flag to be a bool between the two possible scripts instead.
-        if script == './hack/jenkins/verify-dockerized.sh':
-            # mimic k8s.io/kubernetes/hack/jenkins/verify-dockerized.sh
-            # but patched slightly to work appropriately on prow
-            path_prefix = os.environ['GOPATH'] + '/bin'
-            path_prefix += ':' + k8s + '/third_party/etcd:/usr/local/go/bin'
-            os.environ['PATH'] = path_prefix + ':' + os.environ['PATH']
-            os.environ['ARTIFACTS_DIR'] = os.environ['WORKSPACE'] + '/artifacts'
-            os.environ['LOG_LEVEL'] = '4'
-
-            # setup requirements before make verify
-            retry(lambda: try_call([
-                ['go', 'get', 'github.com/tools/godep'],
-                ['godep', 'version']
-            ]))
-            retry(lambda: try_call([
-                ['bash', '-c', './hack/install-etcd.sh']
-            ]))
-            retry(lambda: try_call([
-                ['bash', '-c', './hack/godep-restore.sh']
-            ]), times=2)
-
-            # and now `make verify`
-            check('bash', '-c', 'make verify')
 
 
 
