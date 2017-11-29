@@ -66,7 +66,9 @@ def classify_issue(repo, number):
     '''
     ancestor = models.GithubResource.make_key(repo, number)
     logging.debug('finding webhooks for %s %s', repo, number)
-    event_keys = list(models.GithubWebhookRaw.query(ancestor=ancestor).fetch(keys_only=True))
+    event_keys = list(models.GithubWebhookRaw.query(ancestor=ancestor)
+        .order(models.GithubWebhookRaw.timestamp)
+        .fetch(keys_only=True))
 
     logging.debug('classifying %s %s (%d events)', repo, number, len(event_keys))
     event_tuples = []
@@ -83,8 +85,6 @@ def classify_issue(repo, number):
         events = ndb.get_multi(event_keys[x:x+100])
         last_event_timestamp = max(last_event_timestamp, max(e.timestamp for e in events))
         event_tuples.extend([deduper.dedup(event.to_tuple()) for event in events])
-
-    event_tuples.sort(key=lambda x: x[2])  # sort by timestamp
 
     del deduper  # attempt to save memory
     del events

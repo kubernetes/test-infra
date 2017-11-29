@@ -177,8 +177,8 @@ class Timeline(BaseHandler):
 
     def emit_events(self, repo, number):
         ancestor = models.GithubResource.make_key(repo, number)
-        events = list(models.GithubWebhookRaw.query(ancestor=ancestor))
-        events.sort(key=lambda e: e.timestamp)
+        events = list(models.GithubWebhookRaw.query(ancestor=ancestor)
+            .order(models.GithubWebhookRaw.timestamp))
 
         self.response.write('<h3>Distilled Events</h3>')
         self.response.write('<pre>')
