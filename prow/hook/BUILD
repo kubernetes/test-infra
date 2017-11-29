@@ -51,6 +51,7 @@ go_library(
         "//prow/plugins/milestonestatus:go_default_library",
         "//prow/plugins/releasenote:go_default_library",
         "//prow/plugins/reopen:go_default_library",
+        "//prow/plugins/requiresig:go_default_library",
         "//prow/plugins/shrug:go_default_library",
         "//prow/plugins/sigmention:go_default_library",
         "//prow/plugins/size:go_default_library",

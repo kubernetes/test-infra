@@ -193,7 +193,7 @@ presubmits:
     trigger: "(?m)^/test( all| pull-federation-bazel-test),?(\\s+|$)"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171113-ae73dc58-0.6.1
+      - image: gcr.io/k8s-testimages/bazelbuild:v20171128-a188d25f-0.6.1
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -294,7 +294,7 @@ presubmits:
     trigger: "(?m)^/test( all| pull-cluster-registry-bazel),?(\\s+|$)"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171113-ae73dc58-0.6.1
+      - image: gcr.io/k8s-testimages/bazelbuild:v20171128-a188d25f-0.6.1
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -451,7 +451,7 @@ presubmits:
     - release-1.8 # different target set
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171113-ae73dc58-0.6.1
+      - image: gcr.io/k8s-testimages/bazelbuild:v20171128-a188d25f-0.6.1
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -554,7 +554,7 @@ presubmits:
     - release-1.8
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171113-ae73dc58-0.6.1
+      - image: gcr.io/k8s-testimages/bazelbuild:v20171128-a188d25f-0.6.1
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -655,7 +655,7 @@ presubmits:
     - release-1.6
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171113-ae73dc58-0.5.2
+      - image: gcr.io/k8s-testimages/bazelbuild:v20171128-a188d25f-0.5.2
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -807,7 +807,7 @@ presubmits:
     - release-1.8 # different set of targets
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171113-ae73dc58-0.6.1
+      - image: gcr.io/k8s-testimages/bazelbuild:v20171128-a188d25f-0.6.1
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -857,7 +857,7 @@ presubmits:
     - release-1.8
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171113-ae73dc58-0.6.1
+      - image: gcr.io/k8s-testimages/bazelbuild:v20171128-a188d25f-0.6.1
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -905,7 +905,7 @@ presubmits:
     - release-1.6
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171113-ae73dc58-0.5.2
+      - image: gcr.io/k8s-testimages/bazelbuild:v20171128-a188d25f-0.5.2
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -1083,8 +1083,6 @@ presubmits:
           mountPath: /root/.cache
         - name: docker-graph
           mountPath: /docker-graph
-        - name: var-lib-docker
-          mountPath: /var/lib/docker
         ports:
         - containerPort: 9999
           hostPort: 9999
@@ -1102,8 +1100,6 @@ presubmits:
       - name: docker-graph
         hostPath:
           path: /mnt/disks/ssd0/docker-graph
-      - name: var-lib-docker
-        emptyDir: {}
   - name: pull-kubernetes-e2e-gce
     agent: kubernetes
     context: pull-kubernetes-e2e-gce
@@ -1775,6 +1771,56 @@ presubmits:
     context: pull-kubernetes-unit
     rerun_command: "/test pull-kubernetes-unit"
     trigger: "(?m)^/test( all| pull-kubernetes-unit),?(\\s+|$)"
+  - name: pull-kubernetes-unit-prow
+    agent: kubernetes
+    always_run: false
+    context: pull-kubernetes-unit-prow
+    rerun_command: "/test pull-kubernetes-unit-prow"
+    trigger: "(?m)^/test pull-kubernetes-unit-prow,?(\\s+|$)"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/bootstrap:latest
+        imagePullPolicy: Always
+        args:
+        - "--clean"
+        - "--git-cache=/root/.cache/git"
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        env:
+        - name: DOCKER_IN_DOCKER_ENABLED
+          value: true
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /etc/service-account/service-account.json
+        # docker-in-docker needs privilged mode
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: service
+          mountPath: /etc/service-account
+          readOnly: true
+        - name: cache-ssd
+          mountPath: /root/.cache
+        - name: docker-graph
+          mountPath: /docker-graph
+        - name: var-lib-docker
+          mountPath: /var/lib/docker
+        ports:
+        - containerPort: 9999
+          hostPort: 9999
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
+      - name: cache-ssd
+        hostPath:
+          path: /mnt/disks/ssd0
+      - name: docker-graph
+        hostPath:
+          path: /mnt/disks/ssd0/docker-graph
+      - name: var-lib-docker
+        emptyDir: {}
   - name: pull-kubernetes-verify
     agent: jenkins
     always_run: true
@@ -1787,11 +1833,9 @@ presubmits:
     context: pull-kubernetes-verify-prow
     rerun_command: "/test pull-kubernetes-verify-prow"
     trigger: "(?m)^/test pull-kubernetes-verify-prow,?(\\s+|$)"
-    branches:
-    - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/prow-test-image:latest-1.9
+      - image: gcr.io/k8s-testimages/bootstrap:latest
         imagePullPolicy: Always
         args:
         - "--clean"
@@ -1801,156 +1845,8 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         env:
-        - name: GOOGLE_APPLICATION_CREDENTIALS
-          value: /etc/service-account/service-account.json
-        # docker-in-docker needs privilged mode
-        securityContext:
-          privileged: true
-        volumeMounts:
-        - name: service
-          mountPath: /etc/service-account
-          readOnly: true
-        - name: cache-ssd
-          mountPath: /root/.cache
-        - name: docker-graph
-          mountPath: /docker-graph
-        - name: var-lib-docker
-          mountPath: /var/lib/docker
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
-      volumes:
-      - name: service
-        secret:
-          secretName: service-account
-      - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0
-      - name: docker-graph
-        hostPath:
-          path: /mnt/disks/ssd0/docker-graph
-      - name: var-lib-docker
-        emptyDir: {}
-  - name: pull-kubernetes-verify-prow
-    agent: kubernetes
-    always_run: false
-    context: pull-kubernetes-verify-prow
-    rerun_command: "/test pull-kubernetes-verify-prow"
-    trigger: "(?m)^/test pull-kubernetes-verify-prow,?(\\s+|$)"
-    branches:
-    - release-1.8
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/prow-test-image:latest-1.8
-        imagePullPolicy: Always
-        args:
-        - "--clean"
-        - "--git-cache=/root/.cache/git"
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        env:
-        - name: GOOGLE_APPLICATION_CREDENTIALS
-          value: /etc/service-account/service-account.json
-        # docker-in-docker needs privilged mode
-        securityContext:
-          privileged: true
-        volumeMounts:
-        - name: service
-          mountPath: /etc/service-account
-          readOnly: true
-        - name: cache-ssd
-          mountPath: /root/.cache
-        - name: docker-graph
-          mountPath: /docker-graph
-        - name: var-lib-docker
-          mountPath: /var/lib/docker
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
-      volumes:
-      - name: service
-        secret:
-          secretName: service-account
-      - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0
-      - name: docker-graph
-        hostPath:
-          path: /mnt/disks/ssd0/docker-graph
-      - name: var-lib-docker
-        emptyDir: {}
-  - name: pull-kubernetes-verify-prow
-    agent: kubernetes
-    always_run: false
-    context: pull-kubernetes-verify-prow
-    rerun_command: "/test pull-kubernetes-verify-prow"
-    trigger: "(?m)^/test pull-kubernetes-verify-prow,?(\\s+|$)"
-    branches:
-    - release-1.7
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/prow-test-image:latest-1.7
-        imagePullPolicy: Always
-        args:
-        - "--clean"
-        - "--git-cache=/root/.cache/git"
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        env:
-        - name: GOOGLE_APPLICATION_CREDENTIALS
-          value: /etc/service-account/service-account.json
-        # docker-in-docker needs privilged mode
-        securityContext:
-          privileged: true
-        volumeMounts:
-        - name: service
-          mountPath: /etc/service-account
-          readOnly: true
-        - name: cache-ssd
-          mountPath: /root/.cache
-        - name: docker-graph
-          mountPath: /docker-graph
-        - name: var-lib-docker
-          mountPath: /var/lib/docker
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
-      volumes:
-      - name: service
-        secret:
-          secretName: service-account
-      - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0
-      - name: docker-graph
-        hostPath:
-          path: /mnt/disks/ssd0/docker-graph
-      - name: var-lib-docker
-        emptyDir: {}
-  - name: pull-kubernetes-verify-prow
-    agent: kubernetes
-    always_run: false
-    context: pull-kubernetes-verify-prow
-    rerun_command: "/test pull-kubernetes-verify-prow"
-    trigger: "(?m)^/test pull-kubernetes-verify-prow,?(\\s+|$)"
-    branches:
-    - release-1.6
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/prow-test-image:latest-1.6
-        imagePullPolicy: Always
-        args:
-        - "--clean"
-        - "--git-cache=/root/.cache/git"
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        env:
+        - name: DOCKER_IN_DOCKER_ENABLED
+          value: true
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: /etc/service-account/service-account.json
         # docker-in-docker needs privilged mode
@@ -1995,7 +1891,7 @@ presubmits:
     - release-1.8 # different target set
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171113-ae73dc58-0.6.1
+      - image: gcr.io/k8s-testimages/bazelbuild:v20171128-a188d25f-0.6.1
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -2098,7 +1994,7 @@ presubmits:
     - release-1.8
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171113-ae73dc58-0.6.1
+      - image: gcr.io/k8s-testimages/bazelbuild:v20171128-a188d25f-0.6.1
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -2199,7 +2095,7 @@ presubmits:
     - release-1.6
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171113-ae73dc58-0.5.2
+      - image: gcr.io/k8s-testimages/bazelbuild:v20171128-a188d25f-0.5.2
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -2349,7 +2245,7 @@ presubmits:
     - release-1.8 # different set of targets
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171113-ae73dc58-0.6.1
+      - image: gcr.io/k8s-testimages/bazelbuild:v20171128-a188d25f-0.6.1
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -2399,7 +2295,7 @@ presubmits:
     - release-1.8
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171113-ae73dc58-0.6.1
+      - image: gcr.io/k8s-testimages/bazelbuild:v20171128-a188d25f-0.6.1
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -2447,7 +2343,7 @@ presubmits:
     - release-1.6
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171113-ae73dc58-0.5.2
+      - image: gcr.io/k8s-testimages/bazelbuild:v20171128-a188d25f-0.5.2
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -2624,8 +2520,6 @@ presubmits:
           mountPath: /root/.cache
         - name: docker-graph
           mountPath: /docker-graph
-        - name: var-lib-docker
-          mountPath: /var/lib/docker
         ports:
         - containerPort: 9999
           hostPort: 9999
@@ -2643,8 +2537,6 @@ presubmits:
       - name: docker-graph
         hostPath:
           path: /mnt/disks/ssd0/docker-graph
-      - name: var-lib-docker
-        emptyDir: {}
   - name: pull-security-kubernetes-e2e-gce
     agent: kubernetes
     context: pull-security-kubernetes-e2e-gce
@@ -3315,6 +3207,56 @@ presubmits:
     context: pull-security-kubernetes-unit
     rerun_command: "/test pull-security-kubernetes-unit"
     trigger: "(?m)^/test( all| pull-security-kubernetes-unit),?(\\s+|$)"
+  - name: pull-security-kubernetes-unit-prow
+    agent: kubernetes
+    always_run: false
+    context: pull-security-kubernetes-unit-prow
+    rerun_command: "/test pull-security-kubernetes-unit-prow"
+    trigger: "(?m)^/test pull-security-kubernetes-unit-prow,?(\\s+|$)"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/bootstrap:latest
+        imagePullPolicy: Always
+        args:
+        - "--clean"
+        - "--git-cache=/root/.cache/git"
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        env:
+        - name: DOCKER_IN_DOCKER_ENABLED
+          value: true
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /etc/service-account/service-account.json
+        # docker-in-docker needs privilged mode
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: service
+          mountPath: /etc/service-account
+          readOnly: true
+        - name: cache-ssd
+          mountPath: /root/.cache
+        - name: docker-graph
+          mountPath: /docker-graph
+        - name: var-lib-docker
+          mountPath: /var/lib/docker
+        ports:
+        - containerPort: 9999
+          hostPort: 9999
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
+      - name: cache-ssd
+        hostPath:
+          path: /mnt/disks/ssd0
+      - name: docker-graph
+        hostPath:
+          path: /mnt/disks/ssd0/docker-graph
+      - name: var-lib-docker
+        emptyDir: {}
   - name: pull-security-kubernetes-verify
     agent: jenkins
     always_run: true
@@ -3327,11 +3269,9 @@ presubmits:
     context: pull-security-kubernetes-verify-prow
     rerun_command: "/test pull-security-kubernetes-verify-prow"
     trigger: "(?m)^/test pull-security-kubernetes-verify-prow,?(\\s+|$)"
-    branches:
-    - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/prow-test-image:latest-1.9
+      - image: gcr.io/k8s-testimages/bootstrap:latest
         imagePullPolicy: Always
         args:
         - "--clean"
@@ -3341,156 +3281,8 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         env:
-        - name: GOOGLE_APPLICATION_CREDENTIALS
-          value: /etc/service-account/service-account.json
-        # docker-in-docker needs privilged mode
-        securityContext:
-          privileged: true
-        volumeMounts:
-        - name: service
-          mountPath: /etc/service-account
-          readOnly: true
-        - name: cache-ssd
-          mountPath: /root/.cache
-        - name: docker-graph
-          mountPath: /docker-graph
-        - name: var-lib-docker
-          mountPath: /var/lib/docker
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
-      volumes:
-      - name: service
-        secret:
-          secretName: service-account
-      - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0
-      - name: docker-graph
-        hostPath:
-          path: /mnt/disks/ssd0/docker-graph
-      - name: var-lib-docker
-        emptyDir: {}
-  - name: pull-security-kubernetes-verify-prow
-    agent: kubernetes
-    always_run: false
-    context: pull-security-kubernetes-verify-prow
-    rerun_command: "/test pull-security-kubernetes-verify-prow"
-    trigger: "(?m)^/test pull-security-kubernetes-verify-prow,?(\\s+|$)"
-    branches:
-    - release-1.8
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/prow-test-image:latest-1.8
-        imagePullPolicy: Always
-        args:
-        - "--clean"
-        - "--git-cache=/root/.cache/git"
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        env:
-        - name: GOOGLE_APPLICATION_CREDENTIALS
-          value: /etc/service-account/service-account.json
-        # docker-in-docker needs privilged mode
-        securityContext:
-          privileged: true
-        volumeMounts:
-        - name: service
-          mountPath: /etc/service-account
-          readOnly: true
-        - name: cache-ssd
-          mountPath: /root/.cache
-        - name: docker-graph
-          mountPath: /docker-graph
-        - name: var-lib-docker
-          mountPath: /var/lib/docker
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
-      volumes:
-      - name: service
-        secret:
-          secretName: service-account
-      - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0
-      - name: docker-graph
-        hostPath:
-          path: /mnt/disks/ssd0/docker-graph
-      - name: var-lib-docker
-        emptyDir: {}
-  - name: pull-security-kubernetes-verify-prow
-    agent: kubernetes
-    always_run: false
-    context: pull-security-kubernetes-verify-prow
-    rerun_command: "/test pull-security-kubernetes-verify-prow"
-    trigger: "(?m)^/test pull-security-kubernetes-verify-prow,?(\\s+|$)"
-    branches:
-    - release-1.7
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/prow-test-image:latest-1.7
-        imagePullPolicy: Always
-        args:
-        - "--clean"
-        - "--git-cache=/root/.cache/git"
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        env:
-        - name: GOOGLE_APPLICATION_CREDENTIALS
-          value: /etc/service-account/service-account.json
-        # docker-in-docker needs privilged mode
-        securityContext:
-          privileged: true
-        volumeMounts:
-        - name: service
-          mountPath: /etc/service-account
-          readOnly: true
-        - name: cache-ssd
-          mountPath: /root/.cache
-        - name: docker-graph
-          mountPath: /docker-graph
-        - name: var-lib-docker
-          mountPath: /var/lib/docker
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
-      volumes:
-      - name: service
-        secret:
-          secretName: service-account
-      - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0
-      - name: docker-graph
-        hostPath:
-          path: /mnt/disks/ssd0/docker-graph
-      - name: var-lib-docker
-        emptyDir: {}
-  - name: pull-security-kubernetes-verify-prow
-    agent: kubernetes
-    always_run: false
-    context: pull-security-kubernetes-verify-prow
-    rerun_command: "/test pull-security-kubernetes-verify-prow"
-    trigger: "(?m)^/test pull-security-kubernetes-verify-prow,?(\\s+|$)"
-    branches:
-    - release-1.6
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/prow-test-image:latest-1.6
-        imagePullPolicy: Always
-        args:
-        - "--clean"
-        - "--git-cache=/root/.cache/git"
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        env:
+        - name: DOCKER_IN_DOCKER_ENABLED
+          value: true
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: /etc/service-account/service-account.json
         # docker-in-docker needs privilged mode
@@ -3533,7 +3325,7 @@ presubmits:
     trigger: "(?m)^/test( all| pull-test-infra-bazel),?(\\s+|$)"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171113-ae73dc58-0.7.0
+      - image: gcr.io/k8s-testimages/bazelbuild:v20171128-a188d25f-0.8.0
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -3542,7 +3334,6 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--" # end bootstrap args, scenario args below
-        - "--batch" # mitigation for https://github.com/bazelbuild/bazel/issues/3956
         - "--build=//... -//vendor/..."
         - "--install=gubernator/test_requirements.txt"
         - "--test=//... //hack:verify-all -//vendor/..."
@@ -3798,7 +3589,7 @@ postsubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171113-ae73dc58-0.6.1
+      - image: gcr.io/k8s-testimages/bazelbuild:v20171128-a188d25f-0.6.1
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -3839,7 +3630,7 @@ postsubmits:
       agent: kubernetes
       spec:
         containers:
-        - image: gcr.io/k8s-testimages/bazelbuild:v20171113-ae73dc58-0.6.1
+        - image: gcr.io/k8s-testimages/bazelbuild:v20171128-a188d25f-0.6.1
           args:
           - "--clean"
           - "--git-cache=/root/.cache/git"
@@ -3884,7 +3675,7 @@ postsubmits:
     - release-1.6
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171113-ae73dc58-0.5.2  # https://github.com/kubernetes/kubernetes/issues/51571
+      - image: gcr.io/k8s-testimages/bazelbuild:v20171128-a188d25f-0.5.2  # https://github.com/kubernetes/kubernetes/issues/51571
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -3922,7 +3713,7 @@ postsubmits:
       agent: kubernetes
       spec:
         containers:
-        - image: gcr.io/k8s-testimages/bazelbuild:v20171113-ae73dc58-0.5.2  # https://github.com/kubernetes/kubernetes/issues/51571
+        - image: gcr.io/k8s-testimages/bazelbuild:v20171128-a188d25f-0.5.2  # https://github.com/kubernetes/kubernetes/issues/51571
           args:
           - "--clean"
           - "--git-cache=/root/.cache/git"
@@ -4004,7 +3795,7 @@ postsubmits:
     - release-1.7
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171113-ae73dc58-0.6.1
+      - image: gcr.io/k8s-testimages/bazelbuild:v20171128-a188d25f-0.6.1
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -4044,7 +3835,7 @@ postsubmits:
       agent: kubernetes
       spec:
         containers:
-        - image: gcr.io/k8s-testimages/bazelbuild:v20171113-ae73dc58-0.6.1
+        - image: gcr.io/k8s-testimages/bazelbuild:v20171128-a188d25f-0.6.1
           args:
           - "--clean"
           - "--git-cache=/root/.cache/git"
@@ -4171,7 +3962,7 @@ postsubmits:
     - release-1.8
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171113-ae73dc58-0.6.1
+      - image: gcr.io/k8s-testimages/bazelbuild:v20171128-a188d25f-0.6.1
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -4211,7 +4002,7 @@ postsubmits:
       agent: kubernetes
       spec:
         containers:
-        - image: gcr.io/k8s-testimages/bazelbuild:v20171113-ae73dc58-0.6.1
+        - image: gcr.io/k8s-testimages/bazelbuild:v20171128-a188d25f-0.6.1
           args:
           - "--clean"
           - "--git-cache=/root/.cache/git"
@@ -4338,7 +4129,7 @@ postsubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171113-ae73dc58-0.6.1
+      - image: gcr.io/k8s-testimages/bazelbuild:v20171128-a188d25f-0.6.1
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -4379,7 +4170,7 @@ postsubmits:
       agent: kubernetes
       spec:
         containers:
-        - image: gcr.io/k8s-testimages/bazelbuild:v20171113-ae73dc58-0.6.1
+        - image: gcr.io/k8s-testimages/bazelbuild:v20171128-a188d25f-0.6.1
           args:
           - "--clean"
           - "--git-cache=/root/.cache/git"
@@ -4469,7 +4260,7 @@ postsubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171113-ae73dc58-0.7.0
+      - image: gcr.io/k8s-testimages/bazelbuild:v20171128-a188d25f-0.8.0
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -4549,7 +4340,7 @@ postsubmits:
     - master
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171113-ae73dc58-0.6.1
+      - image: gcr.io/k8s-testimages/bazelbuild:v20171128-a188d25f-0.8.0
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -4827,7 +4618,7 @@ periodics:
   agent: kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bazelbuild:v20171113-ae73dc58-0.6.1
+    - image: gcr.io/k8s-testimages/bazelbuild:v20171128-a188d25f-0.6.1
       args:
       - "--clean"
       - "--git-cache=/root/.cache/git"
@@ -20305,7 +20096,7 @@ periodics:
   agent: kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bazelbuild:v20171113-ae73dc58-0.7.0
+    - image: gcr.io/k8s-testimages/bazelbuild:v20171128-a188d25f-0.8.0
       args:
       - "--clean"
       - "--git-cache=/root/.cache/git"
@@ -20497,7 +20288,7 @@ periodics:
   agent: kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bazelbuild:v20171113-ae73dc58-0.5.2  # https://github.com/kubernetes/kubernetes/issues/51571
+    - image: gcr.io/k8s-testimages/bazelbuild:v20171128-a188d25f-0.5.2  # https://github.com/kubernetes/kubernetes/issues/51571
       args:
       - "--clean"
       - "--git-cache=/root/.cache/git"
@@ -20535,7 +20326,7 @@ periodics:
     agent: kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171113-ae73dc58-0.5.2  # https://github.com/kubernetes/kubernetes/issues/51571
+      - image: gcr.io/k8s-testimages/bazelbuild:v20171128-a188d25f-0.5.2  # https://github.com/kubernetes/kubernetes/issues/51571
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -20618,7 +20409,7 @@ periodics:
   agent: kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bazelbuild:v20171113-ae73dc58-0.6.1
+    - image: gcr.io/k8s-testimages/bazelbuild:v20171128-a188d25f-0.6.1
       args:
       - "--clean"
       - "--git-cache=/root/.cache/git"
@@ -20658,7 +20449,7 @@ periodics:
     agent: kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171113-ae73dc58-0.6.1
+      - image: gcr.io/k8s-testimages/bazelbuild:v20171128-a188d25f-0.6.1
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -20786,7 +20577,7 @@ periodics:
   agent: kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bazelbuild:v20171113-ae73dc58-0.6.1
+    - image: gcr.io/k8s-testimages/bazelbuild:v20171128-a188d25f-0.6.1
       args:
       - "--clean"
       - "--git-cache=/root/.cache/git"
@@ -20826,7 +20617,7 @@ periodics:
     agent: kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171113-ae73dc58-0.6.1
+      - image: gcr.io/k8s-testimages/bazelbuild:v20171128-a188d25f-0.6.1
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -20956,7 +20747,7 @@ periodics:
   - master
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bazelbuild:v20171113-ae73dc58-0.6.1
+    - image: gcr.io/k8s-testimages/bazelbuild:v20171128-a188d25f-0.6.1
       args:
       - "--clean"
       - "--git-cache=/root/.cache/git"
@@ -20997,7 +20788,7 @@ periodics:
     agent: kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171113-ae73dc58-0.6.1
+      - image: gcr.io/k8s-testimages/bazelbuild:v20171128-a188d25f-0.6.1
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"

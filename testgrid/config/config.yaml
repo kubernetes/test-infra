@@ -1645,6 +1645,12 @@ test_groups:
   num_columns_recent: 20
   alert_stale_results_hours: 24
   num_failures_to_alert: 10
+- name: pull-kubernetes-unit-prow
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-unit-prow
+  days_of_results: 1
+  num_columns_recent: 20
+  alert_stale_results_hours: 24
+  num_failures_to_alert: 10
 - name: pull-kubernetes-verify
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-verify
   days_of_results: 1
@@ -3240,20 +3246,24 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu
     alert_options:
       alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
-  - name: gke-device-plugin-gpu-p100
-    test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-p100
-    alert_options:
-      alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
-  - name: gke-staging-latest-device-plugin-gpu
-    test_group_name: ci-kubernetes-e2e-gke-staging-latest-device-plugin-gpu
-    alert_options:
-      alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
   - name: gke-device-plugin-gpu-1.8
     test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-stable1
     alert_options:
       alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
   - name: gke-device-plugin-gpu-1.9
     test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-beta
+    alert_options:
+      alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
+  - name: gke-device-plugin-gpu-p100
+    test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-p100
+    alert_options:
+      alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
+  - name: gke-device-plugin-gpu-p100-1.9
+    test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-p100-beta
+    alert_options:
+      alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
+  - name: gke-staging-latest-device-plugin-gpu
+    test_group_name: ci-kubernetes-e2e-gke-staging-latest-device-plugin-gpu
     alert_options:
       alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
   - name: gke-gpu-1.7
@@ -4237,6 +4247,8 @@ dashboards:
     test_group_name: pull-kubernetes-bazel-test-canary
   - name: pull-kubernetes-verify-prow
     test_group_name: pull-kubernetes-verify-prow
+  - name: pull-kubernetes-unit-prow
+    test_group_name: pull-kubernetes-unit-prow
   - name: pull-kubernetes-cross-prow
     test_group_name: pull-kubernetes-cross-prow
 

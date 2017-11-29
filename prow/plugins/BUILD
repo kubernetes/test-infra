@@ -64,6 +64,7 @@ filegroup(
         "//prow/plugins/milestonestatus:all-srcs",
         "//prow/plugins/releasenote:all-srcs",
         "//prow/plugins/reopen:all-srcs",
+        "//prow/plugins/requiresig:all-srcs",
         "//prow/plugins/shrug:all-srcs",
         "//prow/plugins/sigmention:all-srcs",
         "//prow/plugins/size:all-srcs",
