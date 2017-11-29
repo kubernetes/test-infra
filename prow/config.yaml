@@ -1083,8 +1083,6 @@ presubmits:
           mountPath: /root/.cache
         - name: docker-graph
           mountPath: /docker-graph
-        - name: var-lib-docker
-          mountPath: /var/lib/docker
         ports:
         - containerPort: 9999
           hostPort: 9999
@@ -1102,8 +1100,6 @@ presubmits:
       - name: docker-graph
         hostPath:
           path: /mnt/disks/ssd0/docker-graph
-      - name: var-lib-docker
-        emptyDir: {}
   - name: pull-kubernetes-e2e-gce
     agent: kubernetes
     context: pull-kubernetes-e2e-gce
@@ -1775,6 +1771,56 @@ presubmits:
     context: pull-kubernetes-unit
     rerun_command: "/test pull-kubernetes-unit"
     trigger: "(?m)^/test( all| pull-kubernetes-unit),?(\\s+|$)"
+  - name: pull-kubernetes-unit-prow
+    agent: kubernetes
+    always_run: false
+    context: pull-kubernetes-unit-prow
+    rerun_command: "/test pull-kubernetes-unit-prow"
+    trigger: "(?m)^/test pull-kubernetes-unit-prow,?(\\s+|$)"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/bootstrap:latest
+        imagePullPolicy: Always
+        args:
+        - "--clean"
+        - "--git-cache=/root/.cache/git"
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        env:
+        - name: DOCKER_IN_DOCKER_ENABLED
+          value: true
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /etc/service-account/service-account.json
+        # docker-in-docker needs privilged mode
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: service
+          mountPath: /etc/service-account
+          readOnly: true
+        - name: cache-ssd
+          mountPath: /root/.cache
+        - name: docker-graph
+          mountPath: /docker-graph
+        - name: var-lib-docker
+          mountPath: /var/lib/docker
+        ports:
+        - containerPort: 9999
+          hostPort: 9999
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
+      - name: cache-ssd
+        hostPath:
+          path: /mnt/disks/ssd0
+      - name: docker-graph
+        hostPath:
+          path: /mnt/disks/ssd0/docker-graph
+      - name: var-lib-docker
+        emptyDir: {}
   - name: pull-kubernetes-verify
     agent: jenkins
     always_run: true
@@ -2474,8 +2520,6 @@ presubmits:
           mountPath: /root/.cache
         - name: docker-graph
           mountPath: /docker-graph
-        - name: var-lib-docker
-          mountPath: /var/lib/docker
         ports:
         - containerPort: 9999
           hostPort: 9999
@@ -2493,8 +2537,6 @@ presubmits:
       - name: docker-graph
         hostPath:
           path: /mnt/disks/ssd0/docker-graph
-      - name: var-lib-docker
-        emptyDir: {}
   - name: pull-security-kubernetes-e2e-gce
     agent: kubernetes
     context: pull-security-kubernetes-e2e-gce
@@ -3165,6 +3207,56 @@ presubmits:
     context: pull-security-kubernetes-unit
     rerun_command: "/test pull-security-kubernetes-unit"
     trigger: "(?m)^/test( all| pull-security-kubernetes-unit),?(\\s+|$)"
+  - name: pull-security-kubernetes-unit-prow
+    agent: kubernetes
+    always_run: false
+    context: pull-security-kubernetes-unit-prow
+    rerun_command: "/test pull-security-kubernetes-unit-prow"
+    trigger: "(?m)^/test pull-security-kubernetes-unit-prow,?(\\s+|$)"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/bootstrap:latest
+        imagePullPolicy: Always
+        args:
+        - "--clean"
+        - "--git-cache=/root/.cache/git"
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        env:
+        - name: DOCKER_IN_DOCKER_ENABLED
+          value: true
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /etc/service-account/service-account.json
+        # docker-in-docker needs privilged mode
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: service
+          mountPath: /etc/service-account
+          readOnly: true
+        - name: cache-ssd
+          mountPath: /root/.cache
+        - name: docker-graph
+          mountPath: /docker-graph
+        - name: var-lib-docker
+          mountPath: /var/lib/docker
+        ports:
+        - containerPort: 9999
+          hostPort: 9999
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
+      - name: cache-ssd
+        hostPath:
+          path: /mnt/disks/ssd0
+      - name: docker-graph
+        hostPath:
+          path: /mnt/disks/ssd0/docker-graph
+      - name: var-lib-docker
+        emptyDir: {}
   - name: pull-security-kubernetes-verify
     agent: jenkins
     always_run: true
