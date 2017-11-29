@@ -22,7 +22,8 @@ log_level: info
 
 tide:
   queries:
-  - "type:pr state:open repo:kubernetes/test-infra repo:kubernetes/federation repo:kubernetes/kubectl label:lgtm label:approved -label:needs-ok-to-test -label:do-not-merge/work-in-progress -label:do-not-merge/hold label:\"cncf-cla: yes\""
+  - "type:pr state:open repo:kubernetes/test-infra repo:kubernetes/federation label:lgtm label:approved -label:needs-ok-to-test -label:do-not-merge/work-in-progress -label:do-not-merge/hold label:\"cncf-cla: yes\""
+  - "type:pr state:open repo:kubernetes/kubectl review:approved -label:do-not-merge/work-in-progress -label:do-not-merge/hold"
 
 push_gateway:
   endpoint: pushgateway
