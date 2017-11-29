@@ -27,23 +27,22 @@ import (
 	"k8s.io/test-infra/prow/plugins"
 )
 
-const closeName = "close"
-
 var closeRe = regexp.MustCompile(`(?mi)^/close\s*$`)
 
 func init() {
-	plugins.RegisterGenericCommentHandler(closeName, closeHandleGenericComment, helpProvider)
+	plugins.RegisterGenericCommentHandler("close", deprecatedCloseHandleComment, closeHelp)
 }
 
-func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
+func closeHelp(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
 	// The Config field is omitted because this plugin is not configurable.
 	return &pluginhelp.PluginHelp{
-			Description: "The close plugin is used to close issues and pull requests.",
-			WhoCanUse:   "Authors and assignees of the pull request or issue.",
-			Usage:       "/close",
-			Examples:    []string{"/close"},
-		},
-		nil
+		Description: "Deprecated! Please use the lifecycle plugin instead of close.",
+		WhoCanUse:   "Authors and assignees of the pull request or issue.",
+		Usage:       "/close",
+		Examples:    []string{"/close"},
+	}, nil
+}
+
 type closeClient interface {
 	CreateComment(owner, repo string, number int, comment string) error
 	CloseIssue(owner, repo string, number int) error
@@ -52,11 +51,11 @@ type closeClient interface {
 	AssignIssue(owner, repo string, number int, assignees []string) error
 }
 
-func closeHandleGenericComment(pc plugins.PluginClient, e github.GenericCommentEvent) error {
-	return closeHandle(pc.GitHubClient, pc.Logger, &e)
+func deprecatedCloseHandleComment(pc plugins.PluginClient, e github.GenericCommentEvent) error {
+	return handleClose(pc.GitHubClient, pc.Logger, &e, deprecatedWarn)
 }
 
-func closeHandle(gc closeClient, log *logrus.Entry, e *github.GenericCommentEvent) error {
+func handleClose(gc closeClient, log *logrus.Entry, e *github.GenericCommentEvent, warn bool) error {
 	// Only consider open issues and new comments.
 	if e.IssueState != "open" || e.Action != github.GenericCommentActionCreated {
 		return nil
@@ -93,6 +92,12 @@ func closeHandle(gc closeClient, log *logrus.Entry, e *github.GenericCommentEven
 			resp := fmt.Sprintf("you can't close an issue unless you authored it or you are assigned to it, %s.", msg)
 			log.Infof("Commenting \"%s\".", resp)
 			return gc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, commentAuthor, resp))
+		}
+	}
+
+	if warn {
+		if err := deprecate(gc, "close", org, repo, number, e); err != nil {
+			return err
 		}
 	}
 

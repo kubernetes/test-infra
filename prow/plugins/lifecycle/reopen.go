@@ -27,18 +27,16 @@ import (
 	"k8s.io/test-infra/prow/plugins"
 )
 
-const pluginName = "reopen"
-
 var reopenRe = regexp.MustCompile(`(?mi)^/reopen\s*$`)
 
 func init() {
-	plugins.RegisterGenericCommentHandler(pluginName, handleGenericComment, helpProvider)
+	plugins.RegisterGenericCommentHandler("reopen", deprecatedHandleReopenComment, reopenHelp)
 }
 
-func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
+func reopenHelp(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
 	// The Config field is omitted because this plugin is not configurable.
 	return &pluginhelp.PluginHelp{
-			Description: "The reopen plugin is used to reopen closed issues and pull requests.",
+			Description: "Deprecated! Please use the lifecycle plugin instead of reopen.",
 			WhoCanUse:   "Authors and assignees of the pull request or issue.",
 			Usage:       "/reopen",
 			Examples:    []string{"/reopen"},
@@ -52,11 +50,12 @@ type githubClient interface {
 	ReopenPR(owner, repo string, number int) error
 }
 
-func handleGenericComment(pc plugins.PluginClient, e github.GenericCommentEvent) error {
-	return handle(pc.GitHubClient, pc.Logger, &e)
+func deprecatedHandleReopenComment(pc plugins.PluginClient, e github.GenericCommentEvent) error {
+	warn := true
+	return handleReopen(pc.GitHubClient, pc.Logger, &e, warn)
 }
 
-func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent) error {
+func handleReopen(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, warn bool) error {
 	// Only consider closed issues and new comments.
 	if e.IssueState != "closed" || e.Action != github.GenericCommentActionCreated {
 		return nil
@@ -85,8 +84,14 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent) e
 		return gc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, resp))
 	}
 
+	if warn {
+		if err := deprecate(gc, "reopen", org, repo, number, e); err != nil {
+			return err
+		}
+	}
+
 	if e.IsPR {
-		log.Info("Re-opening PR.")
+		log.Infof("/reopen PR")
 		err := gc.ReopenPR(org, repo, number)
 		if err != nil {
 			if scbc, ok := err.(github.StateCannotBeChanged); ok {
@@ -97,7 +102,7 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent) e
 		return err
 	}
 
-	log.Info("Re-opening issue.")
+	log.Infof("/reopen issue")
 	err := gc.ReopenIssue(org, repo, number)
 	if err != nil {
 		if scbc, ok := err.(github.StateCannotBeChanged); ok {

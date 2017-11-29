@@ -24,22 +24,22 @@ import (
 	"k8s.io/test-infra/prow/github"
 )
 
-type fakeClient struct {
+type fakeClientReopen struct {
 	commented bool
 	open      bool
 }
 
-func (c *fakeClient) CreateComment(owner, repo string, number int, comment string) error {
+func (c *fakeClientReopen) CreateComment(owner, repo string, number int, comment string) error {
 	c.commented = true
 	return nil
 }
 
-func (c *fakeClient) ReopenIssue(owner, repo string, number int) error {
+func (c *fakeClientReopen) ReopenIssue(owner, repo string, number int) error {
 	c.open = true
 	return nil
 }
 
-func (c *fakeClient) ReopenPR(owner, repo string, number int) error {
+func (c *fakeClientReopen) ReopenPR(owner, repo string, number int) error {
 	c.open = true
 	return nil
 }
@@ -120,7 +120,7 @@ func TestOpenComment(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
-		fc := &fakeClient{}
+		fc := &fakeClientReopen{}
 		e := &github.GenericCommentEvent{
 			Action:      tc.action,
 			IssueState:  tc.state,
@@ -130,7 +130,7 @@ func TestOpenComment(t *testing.T) {
 			Assignees:   []github.User{{Login: "a"}, {Login: "r1"}, {Login: "r2"}},
 			IssueAuthor: github.User{Login: "a"},
 		}
-		if err := handle(fc, logrus.WithField("plugin", pluginName), e); err != nil {
+		if err := handleReopen(fc, logrus.WithField("plugin", "fake-reopen"), e, false); err != nil {
 			t.Errorf("For case %s, didn't expect error from handle: %v", tc.name, err)
 			continue
 		}
