@@ -10684,9 +10684,11 @@
       "make",
       "--",
       "-j",
-      "2",
+      "4",
       "test",
-      "coveralls"
+      "coveralls",
+      "vet",
+      "fmt"
     ],
     "scenario": "execute",
     "sigOwners": [
