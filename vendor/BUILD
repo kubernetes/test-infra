@@ -29,6 +29,7 @@ filegroup(
         "//vendor/github.com/aws/aws-sdk-go/service/iam:all-srcs",
         "//vendor/github.com/aws/aws-sdk-go/service/s3:all-srcs",
         "//vendor/github.com/aws/aws-sdk-go/service/sts:all-srcs",
+        "//vendor/github.com/bazelbuild/buildtools:all-srcs",
         "//vendor/github.com/beorn7/perks/quantile:all-srcs",
         "//vendor/github.com/boltdb/bolt:all-srcs",
         "//vendor/github.com/bwmarrin/snowflake:all-srcs",

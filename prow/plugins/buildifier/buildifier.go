@@ -45,7 +45,7 @@ const (
 var buildifyRe = regexp.MustCompile(`(?mi)^/buildif(y|ier)\s*$`)
 
 func init() {
-	plugins.RegisterGenericCommentHandler(pluginName, handleGenericComment)
+	plugins.RegisterGenericCommentHandler(pluginName, handleGenericComment, nil)
 }
 
 type githubClient interface {

@@ -98,6 +98,12 @@
   version = "v1.12.53"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/bazelbuild/buildtools"
+  packages = ["build","tables"]
+  revision = "6e6c419fb3240a6469f69981b1d2e70e685bea11"
+
+[[projects]]
   name = "github.com/beorn7/perks"
   packages = ["quantile"]
   revision = "3ac7bf7a47d159a033b107610db8a1b6575507a4"
