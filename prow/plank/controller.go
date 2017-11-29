@@ -173,8 +173,10 @@ func (c *Controller) Sync() error {
 	pjs = k8sJobs
 
 	var syncErrs []error
-	if err := c.terminateDupes(pjs, pm); err != nil {
-		syncErrs = append(syncErrs, err)
+	if c.ca.Config().Plank.AllowCancellations {
+		if err := c.terminateDupes(pjs, pm); err != nil {
+			syncErrs = append(syncErrs, err)
+		}
 	}
 
 	// Share what we have for gathering metrics.
@@ -247,11 +249,9 @@ func (c *Controller) terminateDupes(pjs []kube.ProwJob, pm map[string]kube.Pod) 
 		toCancel := pjs[cancelIndex]
 		// Allow aborting presubmit jobs for commits that have been superseded by
 		// newer commits in Github pull requests.
-		if c.ca.Config().Plank.AllowCancellations {
-			if pod, exists := pm[toCancel.Metadata.Name]; exists {
-				if err := c.pkc.DeletePod(pod.Metadata.Name); err != nil {
-					logrus.Warningf("Cannot cancel pod for prowjob %q: %v", toCancel.Metadata.Name, err)
-				}
+		if pod, exists := pm[toCancel.Metadata.Name]; exists {
+			if err := c.pkc.DeletePod(pod.Metadata.Name); err != nil {
+				logrus.Warningf("Cannot cancel pod for prowjob %q: %v", toCancel.Metadata.Name, err)
 			}
 		}
 		toCancel.Status.CompletionTime = time.Now()
