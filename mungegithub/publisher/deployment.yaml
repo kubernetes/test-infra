@@ -69,4 +69,4 @@ spec:
           medium: Memory
       - name: publisher-gopath
         persistentVolumeClaim:
-          claimName: publisher-gopath
+          claimName: @@-publisher-gopath
