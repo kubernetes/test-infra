@@ -8506,6 +8506,26 @@
       "sig-cluster-lifecycle"
     ]
   },
+  "ci-kubernetes-e2e-kubeadm-gce-ipvs": {
+    "args": [
+      "--cluster=",
+      "--deployment=kubernetes-anywhere",
+      "--env-file=jobs/platform/gce.env",
+      "--extract=ci/latest",
+      "--gcp-zone=us-central1-f",
+      "--kubeadm=ci",
+      "--kubernetes-anywhere-kubelet-ci-version=latest",
+      "--kubernetes-anywhere-kubernetes-version=ci/latest",
+      "--kubernetes-anywhere-proxy-mode=ipvs",
+      "--provider=kubernetes-anywhere",
+      "--test_args=--ginkgo.focus=\\[Conformance\\]|\\[Feature:BootstrapTokens\\]|\\[Feature:NodeAuthorizer\\] --minStartupPods=8",
+      "--timeout=300m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-cluster-lifecycle"
+    ]
+  },
   "ci-kubernetes-e2e-kubeadm-gce-stable-on-master": {
     "args": [
       "--cluster=",

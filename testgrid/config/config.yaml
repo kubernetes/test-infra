@@ -972,6 +972,8 @@ test_groups:
 # kubeadm tests
 - name: ci-kubernetes-e2e-kubeadm-gce
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce
+- name: ci-kubernetes-e2e-kubeadm-gce-ipvs
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-ipvs
 - name: ci-kubernetes-e2e-kubeadm-gce-cni-calico
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-cni-calico
 - name: ci-kubernetes-e2e-kubeadm-gce-cni-flannel
@@ -3669,6 +3671,10 @@ dashboards:
   - name: gci-gce-latest-downgrade-kube-proxy-ds
     test_group_name: ci-kubernetes-e2e-gci-gce-latest-downgrade-kube-proxy-ds
     description: 'downgrade cluster and migrate kube-proxy from a daemonset to static pods'
+    alert_options:
+      alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
+  - name: kubeadm-gce-ipvs
+    test_group_name: ci-kubernetes-e2e-kubeadm-gce-ipvs
     alert_options:
       alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
   - name: kubeadm-gce-cni-calico
