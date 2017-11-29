@@ -20,6 +20,8 @@ set -o pipefail
 
 if [ "$#" = 0 ] || [ "$#" -gt 2 ]; then
     echo "usage: $0 [source-github-user-name] dest-github-user-name"
+    echo
+    echo "This connects to git@github.com:<from>/<repo>. Set GITHUB_HOST to access git@<GITHUB_HOST>:<from>/<repo> instead."
     exit 1
 fi
 
@@ -29,6 +31,7 @@ if [ "$#" -ge 2 ]; then
     FROM="${TO}"
     TO="${2}"
 fi
+GITHUB_HOST=${GITHUB_HOST:-github.com}
 repos=(
     apimachinery
     api
@@ -61,9 +64,9 @@ echo "==================="
 echo " sync with upstream"
 echo "==================="
 for (( i=0; i<${repo_count}; i++ )); do
-    git clone git@github.com:"${TO}/${repos[i]}".git ${TMPDIR}/"${repos[i]}"
+    git clone git@${GITHUB_HOST}:"${TO}/${repos[i]}".git ${TMPDIR}/"${repos[i]}"
     pushd ${TMPDIR}/"${repos[i]}"
-    git remote add upstream git@github.com:"${FROM}/${repos[i]}".git
+    git remote add upstream git@${GITHUB_HOST}:"${FROM}/${repos[i]}".git
 
     # delete all tags and branches in origin
     rm -f .git/refs/tags/*
