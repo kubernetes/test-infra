@@ -4672,7 +4672,7 @@ periodics:
     agent: kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171127-562c3fdd
+      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171129-1d8700d93
         args:
         - "--repo=k8s.io/kubernetes=master"
         - "--clean"
