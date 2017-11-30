@@ -132,7 +132,7 @@ def main(branch, script, force, on_prow):
             '-e', 'KUBE_VERIFY_GIT_BRANCH=%s' % branch,
             '-e', 'REPO_DIR=%s' % k8s,  # hack/lib/swagger.sh depends on this
             '-e', 'TMPDIR=/tmp',  # https://golang.org/src/os/file_unix.go
-            '--tmpfs /tmp:exec,mode=777',
+            '--tmpfs', '/tmp:exec,mode=777',
             'gcr.io/k8s-testimages/kubekins-test:%s' % tag,
             'bash', '-c', 'cd kubernetes && %s' % script,
         ])
