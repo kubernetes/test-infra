@@ -10231,6 +10231,15 @@
       "sig-cluster-lifecycle"
     ]
   },
+  "periodic-kubernetes-e2e-rpms-pushed": {
+    "args": [
+      "./tests/e2e/pinned_rpms.sh"
+    ],
+    "scenario": "execute",
+    "sigOwners": [
+      "sig-cluster-lifecycle"
+    ]
+  },
   "pull-cadvisor-e2e": {
     "args": [
       "--env=BUILDER=true",
