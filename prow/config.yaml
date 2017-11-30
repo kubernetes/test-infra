@@ -1014,6 +1014,7 @@ presubmits:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--timeout=90"
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
           value: true
@@ -1068,6 +1069,7 @@ presubmits:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--timeout=90"
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
           value: true
@@ -1789,6 +1791,7 @@ presubmits:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--timeout=60"
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
           value: true
@@ -1840,6 +1843,7 @@ presubmits:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--timeout=75"
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
           value: true
@@ -2437,6 +2441,7 @@ presubmits:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--timeout=90"
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
           value: true
@@ -2491,6 +2496,7 @@ presubmits:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--timeout=90"
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
           value: true
@@ -3211,6 +3217,7 @@ presubmits:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--timeout=60"
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
           value: true
@@ -3262,6 +3269,7 @@ presubmits:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--timeout=75"
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
           value: true
