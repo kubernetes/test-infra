@@ -9901,6 +9901,15 @@
       "sig-testing"
     ]
   },
+  "cluster-registry-nightly": {
+    "args": [
+      "./hack/release.sh"
+    ],
+    "scenario": "execute",
+    "sigOwners": [
+      "sig-multicluster"
+    ]
+  },
   "fake-branch": {
     "args": [
       "./fake/fake-branch.sh"

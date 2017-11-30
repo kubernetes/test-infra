@@ -1814,6 +1814,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-registry-bazel
   days_of_results: 1
   num_columns_recent: 20
+- name: cluster-registry-nightly
+  gcs_prefix: kubernetes-jenkins/logs/cluster-registry-nightly
 # k8s-beta (active release branch) jobs
 - name: ci-kubernetes-e2e-gce-cos-k8sbeta-default
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos-k8sbeta-default
@@ -3543,6 +3545,11 @@ dashboards:
     test_group_name: periodic-multi-platform-kubeadm-packet-arm64
 
 
+- name: sig-multicluster-cluster-registry
+  dashboard_tab:
+  - name: nightly
+    test_group_name: cluster-registry-nightly
+
 - name: sig-multicluster-federation-gce-old
   dashboard_tab:
   - name: gce-1.7
@@ -4893,6 +4900,7 @@ dashboard_groups:
 
 - name: sig-multicluster
   dashboard_names:
+  - sig-multicluster-cluster-registry
   - sig-multicluster-federation-gce-old
   - sig-multicluster-federation-gce
 
