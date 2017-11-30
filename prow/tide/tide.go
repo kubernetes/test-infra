@@ -84,6 +84,9 @@ type Pool struct {
 	PendingPRs []PullRequest
 	MissingPRs []PullRequest
 
+	// Empty if there is no pending batch.
+	BatchPending []PullRequest
+
 	// Which action did we last take, and to what target(s), if any.
 	Action Action
 	Target []PullRequest
@@ -186,9 +189,9 @@ func pickSmallestPassingNumber(prs []PullRequest) (bool, PullRequest) {
 }
 
 // accumulateBatch returns a list of PRs that can be merged after passing batch
-// testing, if any exist. It also returns whether or not a batch is currently
-// running.
-func accumulateBatch(presubmits []string, prs []PullRequest, pjs []kube.ProwJob) ([]PullRequest, bool) {
+// testing, if any exist. It also returns a list of PRs currently being batch
+// tested.
+func accumulateBatch(presubmits []string, prs []PullRequest, pjs []kube.ProwJob) ([]PullRequest, []PullRequest) {
 	prNums := make(map[int]PullRequest)
 	for _, pr := range prs {
 		prNums[int(pr.Number)] = pr
@@ -207,7 +210,11 @@ func accumulateBatch(presubmits []string, prs []PullRequest, pjs []kube.ProwJob)
 		}
 		// If any batch job is pending, return now.
 		if toSimpleState(pj.Status.State) == pendingState {
-			return nil, true
+			var pending []PullRequest
+			for _, pull := range pj.Spec.Refs.Pulls {
+				pending = append(pending, prNums[pull.Number])
+			}
+			return nil, pending
 		}
 		// Otherwise, accumulate results.
 		ref := pj.Spec.Refs.String()
@@ -248,9 +255,9 @@ func accumulateBatch(presubmits []string, prs []PullRequest, pjs []kube.ProwJob)
 		if !passesAll {
 			continue
 		}
-		return state.prs, false
+		return state.prs, nil
 	}
-	return nil, false
+	return nil, nil
 }
 
 // accumulate returns the supplied PRs sorted into three buckets based on their
@@ -392,14 +399,14 @@ func (c *Controller) trigger(sp subpool, prs []PullRequest) error {
 	return nil
 }
 
-func (c *Controller) takeAction(sp subpool, batchPending bool, successes, pendings, nones, batchMerges []PullRequest) (Action, []PullRequest, error) {
+func (c *Controller) takeAction(sp subpool, batchPending, successes, pendings, nones, batchMerges []PullRequest) (Action, []PullRequest, error) {
 	// Merge the batch!
 	if len(batchMerges) > 0 {
 		return MergeBatch, batchMerges, c.mergePRs(sp, batchMerges)
 	}
 	// Do not merge PRs while waiting for a batch to complete. We don't want to
 	// invalidate the old batch result.
-	if len(successes) > 0 && !batchPending {
+	if len(successes) > 0 && len(batchPending) == 0 {
 		if ok, pr := pickSmallestPassingNumber(successes); ok {
 			return Merge, []PullRequest{pr}, c.mergePRs(sp, []PullRequest{pr})
 		}
@@ -411,7 +418,7 @@ func (c *Controller) takeAction(sp subpool, batchPending bool, successes, pendin
 		}
 	}
 	// If we have no batch, trigger one.
-	if len(sp.prs) > 1 && !batchPending {
+	if len(sp.prs) > 1 && len(batchPending) == 0 {
 		batch, err := c.pickBatch(sp)
 		if err != nil {
 			return Wait, nil, err
@@ -438,7 +445,7 @@ func (c *Controller) syncSubpool(sp subpool) error {
 	c.logger.Infof("Pending PRs: %v", prNumbers(pendings))
 	c.logger.Infof("Missing PRs: %v", prNumbers(nones))
 	c.logger.Infof("Passing batch: %v", prNumbers(batchMerge))
-	c.logger.Infof("Pending batch: %v", batchPending)
+	c.logger.Infof("Pending batch: %v", prNumbers(batchPending))
 	act, targets, err := c.takeAction(sp, batchPending, successes, pendings, nones, batchMerge)
 	c.logger.Infof("Action: %v, Targets: %v", act, targets)
 	c.pools = append(c.pools, Pool{
@@ -449,6 +456,8 @@ func (c *Controller) syncSubpool(sp subpool) error {
 		SuccessPRs: successes,
 		PendingPRs: pendings,
 		MissingPRs: nones,
+
+		BatchPending: batchPending,
 
 		Action: act,
 		Target: targets,
@@ -533,6 +542,7 @@ func (c *Controller) search(ctx context.Context, q string) ([]PullRequest, error
 	return ret, nil
 }
 
+// TODO(spxtr): Add useful information for frontend stuff such as links.
 type PullRequest struct {
 	Number githubql.Int
 	Author struct {
