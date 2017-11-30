@@ -27,6 +27,7 @@ import (
 	"time"
 
 	"github.com/bwmarrin/snowflake"
+	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
@@ -340,7 +341,12 @@ func TestTerminateDupes(t *testing.T) {
 				},
 			},
 		}
-		c := Controller{kc: fkc, pkc: fkc, ca: fca}
+		c := Controller{
+			kc:  fkc,
+			pkc: fkc,
+			log: logrus.NewEntry(logrus.StandardLogger()),
+			ca:  fca,
+		}
 
 		if err := c.terminateDupes(fkc.prowjobs, tc.pm); err != nil {
 			t.Fatalf("Error terminating dupes: %v", err)
@@ -614,6 +620,7 @@ func TestSyncNonPendingJobs(t *testing.T) {
 		c := Controller{
 			kc:          fc,
 			pkc:         fpc,
+			log:         logrus.NewEntry(logrus.StandardLogger()),
 			ca:          newFakeConfigAgent(t, tc.maxConcurrency),
 			totURL:      totServ.URL,
 			pendingJobs: make(map[string]int),
@@ -917,6 +924,7 @@ func TestSyncPendingJob(t *testing.T) {
 		c := Controller{
 			kc:          fc,
 			pkc:         fpc,
+			log:         logrus.NewEntry(logrus.StandardLogger()),
 			ca:          newFakeConfigAgent(t, 0),
 			totURL:      totServ.URL,
 			pendingJobs: make(map[string]int),
@@ -983,6 +991,7 @@ func TestPeriodic(t *testing.T) {
 	c := Controller{
 		kc:          fc,
 		pkc:         fc,
+		log:         logrus.NewEntry(logrus.StandardLogger()),
 		ca:          newFakeConfigAgent(t, 0),
 		totURL:      totServ.URL,
 		pendingJobs: make(map[string]int),
@@ -1125,7 +1134,9 @@ func TestRunAfterSuccessCanRun(t *testing.T) {
 			err:     test.err,
 		}
 
-		got := RunAfterSuccessCanRun(test.parent, test.child, newFakeConfigAgent(t, 0), fakeGH)
+		c := Controller{log: logrus.NewEntry(logrus.StandardLogger())}
+
+		got := c.RunAfterSuccessCanRun(test.parent, test.child, newFakeConfigAgent(t, 0), fakeGH)
 		if got != test.expected {
 			t.Errorf("expected to run: %t, got: %t", test.expected, got)
 		}
@@ -1240,6 +1251,7 @@ func TestMaxConcurrencyWithNewlyTriggeredJobs(t *testing.T) {
 		c := Controller{
 			kc:          fc,
 			pkc:         fpc,
+			log:         logrus.NewEntry(logrus.StandardLogger()),
 			ca:          newFakeConfigAgent(t, 0),
 			node:        n,
 			pendingJobs: test.pendingJobs,
