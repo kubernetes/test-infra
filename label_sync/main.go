@@ -61,14 +61,14 @@ type Update struct {
 type RepoUpdates map[string][]Update
 
 var (
+	debug      = flag.Bool("debug", false, "Turn on debug to be more verbose")
+	dry        = flag.Bool("dry-run", true, "Dry run for testing. Uses API tokens but does not mutate.")
+	endpoint   = flag.String("endpoint", "https://api.github.com", "GitHub's API endpoint")
 	labelsPath = flag.String("config", "", "Path to labels.yaml")
-	token      = flag.String("token", "", "Path to github oauth secret")
+	onlyRepos  = flag.String("only", "", "Only look at the following comma separated org/repos")
 	orgs       = flag.String("orgs", "", "Comma separated list of orgs to sync")
 	skipRepos  = flag.String("skip", "", "Comma separated list of org/repos to skip syncing")
-	onlyRepos  = flag.String("only", "", "Only look at the following comma separated org/repos")
-	dry        = flag.Bool("dry-run", true, "Dry run for testing. Uses API tokens but does not mutate.")
-	debug      = flag.Bool("debug", false, "Turn on debug to be more verbose")
-	endpoint   = flag.String("endpoint", "https://api.github.com", "GitHub's API endpoint")
+	token      = flag.String("token", "", "Path to github oauth secret")
 )
 
 // Ensures that no two label names (including previous names) have the same lowercase value.
@@ -129,7 +129,7 @@ func GetOrg(org string) (string, bool) {
 // Get reads repository list for given org
 // Use provided githubClient (real, dry, fake)
 // Uses GitHub: /orgs/:org/repos
-func LoadRepos(org string, gc *github.Client, filt filter) (RepoList, error) {
+func LoadRepos(org string, gc client, filt filter) (RepoList, error) {
 	org, isUser := GetOrg(org)
 	repos, err := gc.GetRepos(org, isUser)
 	if err != nil {
@@ -148,7 +148,7 @@ func LoadRepos(org string, gc *github.Client, filt filter) (RepoList, error) {
 // Get reads repository's labels list
 // Use provided githubClient (real, dry, fake)
 // Uses GitHub: /repos/:org/:repo/labels
-func LoadLabels(gc *github.Client, org string, repos RepoList) (*RepoLabels, error) {
+func LoadLabels(gc client, org string, repos RepoList) (*RepoLabels, error) {
 	rl := RepoLabels{}
 	for _, repo := range repos {
 		logrus.Infof("Get labels in %s/%s", org, repo.Name)
@@ -296,13 +296,11 @@ func SyncLabels(config Configuration, repos RepoLabels) (RepoUpdates, error) {
 // DoUpdates iterates generated update data and adds and/or modifies labels on repositories
 // Uses AddLabel GH API to add missing labels
 // And UpdateLabel GH API to update color or name (name only when case differs)
-func (ru RepoUpdates) DoUpdates(org string, gc *github.Client) error {
+func (ru RepoUpdates) DoUpdates(org string, gc client) error {
 	for repo, updates := range ru {
 		logrus.Infof("Applying %d changes to %s/%s", len(updates), org, repo)
 		for _, item := range updates {
-			if *debug {
-				fmt.Printf("%s/%s: %s %+v\n", org, repo, item.Why, item.Wanted)
-			}
+			logrus.Debugf("%s/%s: %s %+v", org, repo, item.Why, item.Wanted)
 			switch item.Why {
 			case "missing":
 				err := gc.AddRepoLabel(org, repo, item.Wanted.Name, item.Wanted.Color)
@@ -345,7 +343,18 @@ func (ru RepoUpdates) DoUpdates(org string, gc *github.Client) error {
 	return nil
 }
 
-func newClient(tokenPath, host string, dryRun bool) (*github.Client, error) {
+type client interface {
+	AddRepoLabel(org, repo, name, color string) error
+	UpdateRepoLabel(org, repo, currentName, newName, color string) error
+	DeleteRepoLabel(org, repo, label string) error
+	AddLabel(org, repo string, number int, label string) error
+	RemoveLabel(org, repo string, number int, label string) error
+	FindIssues(query, order string, ascending bool) ([]github.Issue, error)
+	GetRepos(org string, isUser bool) ([]github.Repo, error)
+	GetRepoLabels(string, string) ([]github.Label, error)
+}
+
+func newClient(tokenPath, host string, dryRun bool) (client, error) {
 	if tokenPath == "" {
 		return nil, errors.New("--token unset")
 	}
@@ -358,7 +367,9 @@ func newClient(tokenPath, host string, dryRun bool) (*github.Client, error) {
 	if dryRun {
 		return github.NewDryRunClient(oauthSecret, host), nil
 	}
-	return github.NewClient(oauthSecret, host), nil
+	c := github.NewClient(oauthSecret, host)
+	c.Throttle(300, 100) // 300 hourly tokens, bursts of 100
+	return c, nil
 }
 
 // Main function
@@ -372,6 +383,9 @@ func newClient(tokenPath, host string, dryRun bool) (*github.Client, error) {
 // Next run takes about 22 seconds to check if all labels are correct on all repos
 func main() {
 	flag.Parse()
+	if *debug {
+		logrus.SetLevel(logrus.DebugLevel)
+	}
 
 	config, err := LoadConfig(*labelsPath)
 	if err != nil {
@@ -422,7 +436,7 @@ func main() {
 
 type filter func(string, string) bool
 
-func SyncOrg(org string, githubClient *github.Client, config Configuration, filt filter) error {
+func SyncOrg(org string, githubClient client, config Configuration, filt filter) error {
 	logrus.Infof("Reading repos in %s", org)
 	repos, err := LoadRepos(org, githubClient, filt)
 	if err != nil {
