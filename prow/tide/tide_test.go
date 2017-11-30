@@ -166,7 +166,7 @@ func TestAccumulateBatch(t *testing.T) {
 			pjs = append(pjs, npj)
 		}
 		merges, pending := accumulateBatch(test.presubmits, pulls, pjs)
-		if pending != test.pending {
+		if (len(pending) > 0) != test.pending {
 			t.Errorf("For case \"%s\", got wrong pending.", test.name)
 		}
 		testPullsMatchList(t, test.name, merges, test.merges)
@@ -780,8 +780,12 @@ func TestTakeAction(t *testing.T) {
 			ca:     ca,
 			kc:     &fkc,
 		}
+		var batchPending []PullRequest
+		if tc.batchPending {
+			batchPending = []PullRequest{{}}
+		}
 		t.Logf("Test case: %s", tc.name)
-		if act, _, err := c.takeAction(sp, tc.batchPending, genPulls(tc.successes), genPulls(tc.pendings), genPulls(tc.nones), genPulls(tc.batchMerges)); err != nil {
+		if act, _, err := c.takeAction(sp, batchPending, genPulls(tc.successes), genPulls(tc.pendings), genPulls(tc.nones), genPulls(tc.batchMerges)); err != nil {
 			t.Errorf("Error in takeAction: %v", err)
 			continue
 		} else if act != tc.action {

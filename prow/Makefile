@@ -24,7 +24,7 @@ HOOK_VERSION             ?= 0.181
 # SINKER_VERSION is the version of the sinker image
 SINKER_VERSION           ?= 0.23
 # DECK_VERSION is the version of the deck image
-DECK_VERSION             ?= 0.65
+DECK_VERSION             ?= 0.66
 # SPLICE_VERSION is the version of the splice image
 SPLICE_VERSION           ?= 0.32
 # TOT_VERSION is the version of the tot image
@@ -36,7 +36,7 @@ PLANK_VERSION            ?= 0.60
 # JENKINS-OPERATOR_VERSION is the version of the jenkins-operator image
 JENKINS-OPERATOR_VERSION ?= 0.58
 # TIDE_VERSION is the version of the tide image
-TIDE_VERSION             ?= 0.12
+TIDE_VERSION             ?= 0.13
 
 # These are the usual GKE variables.
 PROJECT       ?= k8s-prow
