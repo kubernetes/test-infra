@@ -20152,6 +20152,46 @@ periodics:
       secret:
         secretName: triage-service-account
 
+- cron: "1 5 * * *" # Run at 21:01PST daily (05:01 UTC)
+  agent: kubernetes
+  name: cluster-registry-nightly
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/bazelbuild:v20171128-a188d25f-0.6.1
+      args:
+      - "--clean"
+      - "--git-cache=/root/.cache/git"
+      - "--job=$(JOB_NAME)"
+      - "--repo=k8s.io/cluster-registry=master"
+      - "--service-account=/etc/service-account/service-account.json"
+      - "--upload=gs://kubernetes-jenkins/logs"
+      env:
+      - name: TEST_TMPDIR
+        value: /root/.cache/bazel
+      - name: GOOGLE_APPLICATION_CREDENTIALS
+        value: /etc/service-account/service-account.json
+      # Bazel needs privileged mode in order to sandbox builds.
+      securityContext:
+        privileged: true
+      volumeMounts:
+      - name: service
+        mountPath: /etc/service-account
+        readOnly: true
+      - name: cache-ssd
+        mountPath: /root/.cache
+      ports:
+      - containerPort: 9999
+        hostPort: 9999
+      resources:
+        requests:
+          memory: "2Gi"
+    volumes:
+    - name: service
+      secret:
+        secretName: service-account
+    - name: cache-ssd
+      hostPath:
+        path: /mnt/disks/ssd0
 - name: issue-creator
   agent: kubernetes
   interval: 24h
