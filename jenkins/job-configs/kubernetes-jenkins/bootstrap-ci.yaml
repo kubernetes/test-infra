@@ -56,36 +56,7 @@
     name: bootstrap-ci
     suffix:
     # START KUBEMARK
-    - kubernetes-kubemark-5-gce:
-        job-name: ci-kubernetes-kubemark-5-gce
-        jenkins-timeout: 180
-        timeout: 80
-        frequency: 'H/5 * * * *' # At least every 30m
-        trigger-job: 'ci-kubernetes-build'
-    - kubernetes-kubemark-5-gce-last-release:
-        job-name: ci-kubernetes-kubemark-5-gce-last-release
-        jenkins-timeout: 180
-        timeout: 80
-        frequency: 'H/5 * * * *' # At least every 30m
-        trigger-job: 'ci-kubernetes-build-1.9'
-    - kubernetes-kubemark-100-gce:
-        job-name: ci-kubernetes-kubemark-100-gce
-        jenkins-timeout: 360
-        timeout: 260
-        frequency: 'H H/6 * * *'
-        trigger-job: 'ci-kubernetes-build'
-    - kubernetes-kubemark-100-canary:
-        job-name: ci-kubernetes-kubemark-100-canary
-        jenkins-timeout: 360
-        timeout: 260
-        frequency: '@hourly'
-        trigger-job: 'ci-kubernetes-build'
-    - kubernetes-kubemark-high-density-100-gce:
-        job-name: ci-kubernetes-kubemark-high-density-100-gce
-        jenkins-timeout: 400
-        timeout: 300
-        frequency: '@daily'
-        trigger-job: ''
+    # TODO(krzyzacy): Move to Prow!
     - kubernetes-kubemark-500-gce:
         job-name: ci-kubernetes-kubemark-500-gce
         jenkins-timeout: 240
