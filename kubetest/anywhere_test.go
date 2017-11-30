@@ -34,6 +34,7 @@ func TestNewKubernetesAnywhere(t *testing.T) {
 		kubernetesVersion string
 		cni               string
 		expectConfigLines []string
+		kubeproxyMode     string
 	}{
 		{
 			name:   "kubeadm defaults",
@@ -137,6 +138,21 @@ func TestNewKubernetesAnywhere(t *testing.T) {
 				".phase3.cni=\"weave\"",
 			},
 		},
+		{
+			name:          "kubeadm with kube-proxy in ipvs mode",
+			phase2:        "kubeadm",
+			kubeproxyMode: "ipvs",
+
+			expectConfigLines: []string{
+				".phase2.provider=\"kubeadm\"",
+				".phase2.kubeadm.version=\"\"",
+				".phase2.kubeadm.master_upgrade.method=\"\"",
+				".phase2.kubernetes_version=\"\"",
+				".phase2.kubelet_version=\"\"",
+				".phase2.proxy_mode=\"ipvs\"",
+				".phase3.cni=\"weave\"",
+			},
+		},
 	}
 
 	mockGSFiles := map[string]string{
@@ -172,6 +188,7 @@ func TestNewKubernetesAnywhere(t *testing.T) {
 		*kubernetesAnywhereKubeletCIVersion = tc.kubeletCIVersion
 		*kubernetesAnywhereUpgradeMethod = tc.kubeadmUpgrade
 		*kubernetesAnywhereCNI = tc.cni
+		*kubernetesAnywhereProxyMode = tc.kubeproxyMode
 
 		_, err = newKubernetesAnywhere("fake-project", "fake-zone")
 		if err != nil {

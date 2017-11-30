@@ -392,6 +392,22 @@ You can cancel your approval by writing ` + "`/approve cancel`" + ` in a comment
 			expectComment: true,
 		},
 		{
+			name:     "cancel implicit self approve (with lgtm-after-commit message)",
+			prBody:   "Changes the thing.\n fixes #42",
+			hasLabel: true,
+			files:    []string{"c/c.go"},
+			comments: []github.IssueComment{
+				newTestComment("k8s-ci-robot", "[APPROVALNOTIFIER] This PR is **APPROVED**\n\nblah"),
+				newTestCommentTime(time.Now(), "CJWagner", "/lgtm cancel //PR changed after LGTM, removing LGTM."),
+			},
+			selfApprove: true,
+			needsIssue:  true,
+
+			expectDelete:  true,
+			expectToggle:  true,
+			expectComment: true,
+		},
+		{
 			name:     "up to date, poked by pr sync",
 			prBody:   "Finally fixes kubernetes/kubernetes#1\n",
 			hasLabel: true,

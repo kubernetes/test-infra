@@ -235,7 +235,7 @@ func checkBazelPortPresubmit(presubmits []Presubmit) error {
 		}
 		hasCache := false
 		for _, volume := range presubmit.Spec.Volumes {
-			if volume.Name == "cache-ssd" {
+			if volume.Name == "cache-ssd" || volume.Name == "docker-graph" {
 				hasCache = true
 			}
 		}
@@ -258,7 +258,8 @@ func checkBazelPortPostsubmit(postsubmits []Postsubmit) error {
 	for _, postsubmit := range postsubmits {
 		hasCache := false
 		for _, volume := range postsubmit.Spec.Volumes {
-			if volume.Name == "cache-ssd" {
+			// TODO(bentheelder): rewrite these tests and the entire caching layout...
+			if volume.Name == "cache-ssd" || volume.Name == "docker-graph" {
 				hasCache = true
 			}
 		}
@@ -281,7 +282,7 @@ func checkBazelPortPeriodic(periodics []Periodic) error {
 	for _, periodic := range periodics {
 		hasCache := false
 		for _, volume := range periodic.Spec.Volumes {
-			if volume.Name == "cache-ssd" {
+			if volume.Name == "cache-ssd" || volume.Name == "docker-graph" {
 				hasCache = true
 			}
 		}
