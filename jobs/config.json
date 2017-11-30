@@ -8429,6 +8429,26 @@
       "sig-cluster-lifecycle"
     ]
   },
+  "ci-kubernetes-e2e-kubeadm-gce-ipvs": {
+    "args": [
+      "--cluster=",
+      "--deployment=kubernetes-anywhere",
+      "--env-file=jobs/platform/gce.env",
+      "--extract=ci/latest",
+      "--gcp-zone=us-central1-f",
+      "--kubeadm=ci",
+      "--kubernetes-anywhere-kubelet-ci-version=latest",
+      "--kubernetes-anywhere-kubernetes-version=ci/latest",
+      "--kubernetes-anywhere-proxy-mode=ipvs",
+      "--provider=kubernetes-anywhere",
+      "--test_args=--ginkgo.focus=\\[Conformance\\]|\\[Feature:BootstrapTokens\\]|\\[Feature:NodeAuthorizer\\] --minStartupPods=8",
+      "--timeout=300m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-cluster-lifecycle"
+    ]
+  },
   "ci-kubernetes-e2e-kubeadm-gce-stable-on-master": {
     "args": [
       "--cluster=",
@@ -8502,26 +8522,6 @@
     "scenario": "kubernetes_e2e",
     "sigOwners": [
       "sig-testing"
-    ]
-  },
-  "ci-kubernetes-e2e-ubuntu-gce-ipvs": {
-    "args": [
-      "--check-leaked-resources",
-      "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-ubuntu-gce-ipvs.env",
-      "--extract=ci/latest",
-      "--gcp-node-image=ubuntu",
-      "--gcp-zone=us-central1-f",
-      "--ginkgo-parallel=30",
-      "--image-family=ubuntu-gke-1604-lts",
-      "--image-project=ubuntu-os-gke-cloud",
-      "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[sig-network\\] --ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
-      "--timeout=60m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-network"
     ]
   },
   "ci-kubernetes-e2enode-cosbeta-k8sbeta-default": {

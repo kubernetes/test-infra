@@ -229,8 +229,6 @@ test_groups:
   num_failures_to_alert: 1
 - name: ci-kubernetes-e2e-gci-gce-ip-alias
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-ip-alias
-- name: ci-kubernetes-e2e-ubuntu-gce-ipvs
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-ubuntu-gce-ipvs
 - name: ci-kubernetes-e2e-gce-alpha-api
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-alpha-api
 - name: ci-kubernetes-e2e-gci-gce-serial
@@ -973,6 +971,8 @@ test_groups:
 # kubeadm tests
 - name: ci-kubernetes-e2e-kubeadm-gce
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce
+- name: ci-kubernetes-e2e-kubeadm-gce-ipvs
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-ipvs
 - name: ci-kubernetes-e2e-kubeadm-gce-cni-calico
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-cni-calico
 - name: ci-kubernetes-e2e-kubeadm-gce-cni-flannel
@@ -2062,8 +2062,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gci-gce-scalability-release-1-7
   - name: gci-gce-ip-alias
     test_group_name: ci-kubernetes-e2e-gci-gce-ip-alias
-  - name: ubuntu-gce-ipvs
-    test_group_name: ci-kubernetes-e2e-ubuntu-gce-ipvs
   - name: gce-alpha-api
     test_group_name: ci-kubernetes-e2e-gce-alpha-api
   - name: gci-gce-serial
@@ -3638,10 +3636,6 @@ dashboards:
     base_options: 'include-filter-by-regex=\[sig-network\]'
     alert_options:
       alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
-  - name: ubuntu-gce-ipvs
-    test_group_name: ci-kubernetes-e2e-ubuntu-gce-ipvs
-    alert_options:
-      alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
   - name: gce-alpha-api
     test_group_name: ci-kubernetes-e2e-gce-alpha-api
     alert_options:
@@ -3678,6 +3672,10 @@ dashboards:
   - name: gci-gce-latest-downgrade-kube-proxy-ds
     test_group_name: ci-kubernetes-e2e-gci-gce-latest-downgrade-kube-proxy-ds
     description: 'downgrade cluster and migrate kube-proxy from a daemonset to static pods'
+    alert_options:
+      alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
+  - name: kubeadm-gce-ipvs
+    test_group_name: ci-kubernetes-e2e-kubeadm-gce-ipvs
     alert_options:
       alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
   - name: kubeadm-gce-cni-calico

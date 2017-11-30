@@ -49,6 +49,8 @@ var (
 		"(kubernetes-anywhere only) If specified, the ci version for the kubelt to use. Overrides kubernetes-anywhere-kubelet-version.")
 	kubernetesAnywhereCluster = flag.String("kubernetes-anywhere-cluster", "",
 		"(kubernetes-anywhere only) Cluster name. Must be set for kubernetes-anywhere.")
+	kubernetesAnywhereProxyMode = flag.String("kubernetes-anywhere-proxy-mode", "",
+		"(kubernetes-anywhere only) Chose kube-proxy mode.")
 	kubernetesAnywhereUpTimeout = flag.Duration("kubernetes-anywhere-up-timeout", 20*time.Minute,
 		"(kubernetes-anywhere only) Time limit between starting a cluster and making a successful call to the Kubernetes API.")
 	kubernetesAnywhereNumNodes = flag.Int("kubernetes-anywhere-num-nodes", 4,
@@ -81,6 +83,7 @@ const kubernetesAnywhereConfigTemplate = `
 .phase2.kubelet_version="{{.KubeletVersion}}"
 .phase2.kubeadm.version="{{.KubeadmVersion}}"
 .phase2.kube_context_name="{{.KubeContext}}"
+.phase2.proxy_mode="{{.KubeproxyMode}}"
 .phase2.kubeadm.master_upgrade.method="{{.UpgradeMethod}}"
 
 .phase3.run_addons=y
@@ -111,6 +114,7 @@ type kubernetesAnywhere struct {
 	Region            string
 	KubeContext       string
 	CNI               string
+	KubeproxyMode     string
 }
 
 func initializeKubernetesAnywhere(project, zone string) (*kubernetesAnywhere, error) {
@@ -157,6 +161,7 @@ func initializeKubernetesAnywhere(project, zone string) (*kubernetesAnywhere, er
 		Zone:              zone,
 		Region:            regexp.MustCompile(`-[^-]+$`).ReplaceAllString(zone, ""),
 		CNI:               *kubernetesAnywhereCNI,
+		KubeproxyMode:     *kubernetesAnywhereProxyMode,
 	}
 
 	return k, nil
