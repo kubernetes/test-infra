@@ -39,16 +39,16 @@ const (
 	lgtmCommand     = "LGTM"
 	cancelArgument  = "cancel"
 	noIssueArgument = "no-issue"
-
-	// deprecatedBotName is the name of the bot that previously handled approvals.
-	// It can be removed once every PR approved by the old bot has been merged or unapproved.
-	deprecatedBotName = "k8s-merge-robot"
 )
 
 var (
 	associatedIssueRegex = regexp.MustCompile(`(?:kubernetes/[^/]+/issues/|#)(\d+)`)
 	commandRegex         = regexp.MustCompile(`(?m)^/([^\s]+)[\t ]*([^\n\r]*)`)
 	notificationRegex    = regexp.MustCompile(`(?is)^\[` + approvers.ApprovalNotificationName + `\] *?([^\n]*)(?:\n\n(.*))?`)
+
+	// deprecatedBotNames are the names of the bots that previously handled approvals.
+	// Each can be removed once every PR approved by the old bot has been merged or unapproved.
+	deprecatedBotNames = []string{"k8s-merge-robot", "openshift-merge-robot"}
 )
 
 type githubClient interface {
@@ -307,7 +307,7 @@ func humanAddedApproved(ghc githubClient, log *logrus.Entry, org, repo string, n
 			lastAdded = event
 		}
 
-		if lastAdded.Actor.Login == "" || lastAdded.Actor.Login == botName || lastAdded.Actor.Login == deprecatedBotName {
+		if lastAdded.Actor.Login == "" || lastAdded.Actor.Login == botName || isDeprecatedBot(lastAdded.Actor.Login) {
 			return false
 		}
 		return true
@@ -325,7 +325,7 @@ func humanAddedApproved(ghc githubClient, log *logrus.Entry, org, repo string, n
 
 func approvalCommandMatcher(botName string) func(*comment) bool {
 	return func(c *comment) bool {
-		if c.Author == botName || c.Author == deprecatedBotName {
+		if c.Author == botName || isDeprecatedBot(c.Author) {
 			return false
 		}
 		for _, match := range commandRegex.FindAllStringSubmatch(c.Body, -1) {
@@ -340,7 +340,7 @@ func approvalCommandMatcher(botName string) func(*comment) bool {
 
 func notificationMatcher(botName string) func(*comment) bool {
 	return func(c *comment) bool {
-		if c.Author != botName && c.Author != deprecatedBotName {
+		if c.Author != botName && !isDeprecatedBot(c.Author) {
 			return false
 		}
 		match := notificationRegex.FindStringSubmatch(c.Body)
@@ -371,7 +371,7 @@ func addApprovers(approversHandler *approvers.Approvers, approveComments []*comm
 				continue
 			}
 			args := strings.ToLower(strings.TrimSpace(match[2]))
-			if args == cancelArgument {
+			if strings.Contains(args, cancelArgument) {
 				approversHandler.RemoveApprover(c.Author)
 				continue
 			}
@@ -510,4 +510,13 @@ func getLast(cs []*comment) *comment {
 		return nil
 	}
 	return cs[len(cs)-1]
+}
+
+func isDeprecatedBot(login string) bool {
+	for _, deprecated := range deprecatedBotNames {
+		if deprecated == login {
+			return true
+		}
+	}
+	return false
 }

@@ -22,7 +22,8 @@ log_level: info
 
 tide:
   queries:
-  - "type:pr state:open repo:kubernetes/test-infra repo:kubernetes/federation repo:kubernetes/kubectl label:lgtm label:approved -label:needs-ok-to-test -label:do-not-merge/work-in-progress -label:do-not-merge/hold label:\"cncf-cla: yes\""
+  - "type:pr state:open repo:kubernetes/test-infra repo:kubernetes/federation label:lgtm label:approved -label:needs-ok-to-test -label:do-not-merge/work-in-progress -label:do-not-merge/hold label:\"cncf-cla: yes\""
+  - "type:pr state:open repo:kubernetes/kubectl review:approved -label:do-not-merge/work-in-progress -label:do-not-merge/hold"
 
 push_gateway:
   endpoint: pushgateway
@@ -1013,6 +1014,7 @@ presubmits:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--timeout=90"
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
           value: true
@@ -1067,6 +1069,7 @@ presubmits:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--timeout=90"
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
           value: true
@@ -1788,6 +1791,7 @@ presubmits:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--timeout=60"
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
           value: true
@@ -1804,8 +1808,6 @@ presubmits:
           mountPath: /root/.cache
         - name: docker-graph
           mountPath: /docker-graph
-        - name: var-lib-docker
-          mountPath: /var/lib/docker
         ports:
         - containerPort: 9999
           hostPort: 9999
@@ -1819,8 +1821,6 @@ presubmits:
       - name: docker-graph
         hostPath:
           path: /mnt/disks/ssd0/docker-graph
-      - name: var-lib-docker
-        emptyDir: {}
   - name: pull-kubernetes-verify
     agent: jenkins
     always_run: true
@@ -1839,11 +1839,11 @@ presubmits:
         imagePullPolicy: Always
         args:
         - "--clean"
-        - "--git-cache=/root/.cache/git"
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--timeout=75"
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
           value: true
@@ -1856,12 +1856,8 @@ presubmits:
         - name: service
           mountPath: /etc/service-account
           readOnly: true
-        - name: cache-ssd
-          mountPath: /root/.cache
         - name: docker-graph
           mountPath: /docker-graph
-        - name: var-lib-docker
-          mountPath: /var/lib/docker
         ports:
         - containerPort: 9999
           hostPort: 9999
@@ -1869,14 +1865,9 @@ presubmits:
       - name: service
         secret:
           secretName: service-account
-      - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0
       - name: docker-graph
         hostPath:
           path: /mnt/disks/ssd0/docker-graph
-      - name: var-lib-docker
-        emptyDir: {}
 
   kubernetes-security/kubernetes:
   - name: pull-security-kubernetes-bazel-build
@@ -2450,6 +2441,7 @@ presubmits:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--timeout=90"
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
           value: true
@@ -2504,6 +2496,7 @@ presubmits:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--timeout=90"
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
           value: true
@@ -3224,6 +3217,7 @@ presubmits:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--timeout=60"
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
           value: true
@@ -3240,8 +3234,6 @@ presubmits:
           mountPath: /root/.cache
         - name: docker-graph
           mountPath: /docker-graph
-        - name: var-lib-docker
-          mountPath: /var/lib/docker
         ports:
         - containerPort: 9999
           hostPort: 9999
@@ -3255,8 +3247,6 @@ presubmits:
       - name: docker-graph
         hostPath:
           path: /mnt/disks/ssd0/docker-graph
-      - name: var-lib-docker
-        emptyDir: {}
   - name: pull-security-kubernetes-verify
     agent: jenkins
     always_run: true
@@ -3275,11 +3265,11 @@ presubmits:
         imagePullPolicy: Always
         args:
         - "--clean"
-        - "--git-cache=/root/.cache/git"
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--timeout=75"
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
           value: true
@@ -3292,12 +3282,8 @@ presubmits:
         - name: service
           mountPath: /etc/service-account
           readOnly: true
-        - name: cache-ssd
-          mountPath: /root/.cache
         - name: docker-graph
           mountPath: /docker-graph
-        - name: var-lib-docker
-          mountPath: /var/lib/docker
         ports:
         - containerPort: 9999
           hostPort: 9999
@@ -3305,14 +3291,9 @@ presubmits:
       - name: service
         secret:
           secretName: service-account
-      - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0
       - name: docker-graph
         hostPath:
           path: /mnt/disks/ssd0/docker-graph
-      - name: var-lib-docker
-        emptyDir: {}
 
   kubernetes/test-infra:
   - name: pull-test-infra-bazel
@@ -4126,7 +4107,7 @@ postsubmits:
   - name: ci-kubernetes-bazel-build-1-9
     agent: kubernetes
     branches:
-    - master
+    - release-1.9
     spec:
       containers:
       - image: gcr.io/k8s-testimages/bazelbuild:v20171128-a188d25f-0.6.1
@@ -4695,6 +4676,40 @@ periodics:
       - name: cache-ssd
         hostPath:
           path: /mnt/disks/ssd0
+  - name: ci-kubernetes-e2e-kubeadm-gce-ipvs
+    agent: kubernetes
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171129-1d8700d93
+        args:
+        - "--repo=k8s.io/kubernetes=master"
+        - "--clean"
+        - "--timeout=320"
+        - "--upload=gs://kubernetes-jenkins/logs"
+        env:
+        - name: USER
+          value: prow
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /etc/service-account/service-account.json
+        - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+          value: /etc/ssh-key-secret/ssh-private
+        - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+          value: /etc/ssh-key-secret/ssh-public
+        volumeMounts:
+        - name: service
+          mountPath: /etc/service-account
+          readOnly: true
+        - name: ssh
+          mountPath: /etc/ssh-key-secret
+          readOnly: true
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
+      - name: ssh
+        secret:
+          secretName: ssh-key-secret
+          defaultMode: 0400
   - name: ci-kubernetes-e2e-kubeadm-gce-stable-on-master
     agent: kubernetes
     spec:
@@ -18024,40 +18039,6 @@ periodics:
         secretName: ssh-key-secret
         defaultMode: 0400
 
-- interval: 1h
-  agent: kubernetes
-  name: ci-kubernetes-e2e-ubuntu-gce-ipvs
-  spec:
-    containers:
-    - args:
-      - --timeout=80
-      - --bare
-      env:
-      - name: GOOGLE_APPLICATION_CREDENTIALS
-        value: /etc/service-account/service-account.json
-      - name: USER
-        value: prow
-      - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
-        value: /etc/ssh-key-secret/ssh-private
-      - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
-        value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171108-8b5aad9f-master
-      volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
-      - mountPath: /etc/ssh-key-secret
-        name: ssh
-        readOnly: true
-    volumes:
-    - name: service
-      secret:
-        secretName: service-account
-    - name: ssh
-      secret:
-        defaultMode: 256
-        secretName: ssh-key-secret
-
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
   interval: 2h
@@ -19307,7 +19288,7 @@ periodics:
         secretName: ssh-key-secret
 
 - name: ci-kubernetes-kubemark-5-prow-canary
-  cron: "0 0 * * *" # to make sure the prow timezone
+  cron: "0 * * * *"
   agent: kubernetes
   spec:
     containers:
@@ -19317,6 +19298,11 @@ periodics:
       - --bare
       - --timeout=80
       env:
+      # TODO(krzyzacy): Figure out bazel built kubemark image
+      # - name: KUBEMARK_BAZEL_BUILD
+      # value: "y" 
+      - name: DOCKER_IN_DOCKER_ENABLED
+        value: true
       - name: GOOGLE_APPLICATION_CREDENTIALS
         value: /etc/service-account/service-account.json
       - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
@@ -19325,8 +19311,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       - name: USER
         value: prow
-      - name: KUBEMARK_BAZEL_BUILD
-        value: "y"
       volumeMounts:
       - name: service
         mountPath: /etc/service-account
@@ -19334,6 +19318,15 @@ periodics:
       - name: ssh
         mountPath: /etc/ssh-key-secret
         readOnly: true
+      - name: docker-graph
+        mountPath: /docker-graph
+      # TODO(bentheelder): sort out container port
+      ports:
+      - containerPort: 9999
+        hostPort: 9999
+      # docker-in-docker needs privilged mode
+      securityContext:
+        privileged: true
     volumes:
     - name: service
       secret:
@@ -19342,6 +19335,9 @@ periodics:
       secret:
         secretName: ssh-key-secret
         defaultMode: 0400
+    - name: docker-graph
+      hostPath:
+        path: /mnt/disks/ssd0/docker-graph
 
 - name: ci-kubernetes-node-kubelet
   interval: 1h

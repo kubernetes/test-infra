@@ -80,7 +80,7 @@ def get_git_cache(k8s):
     if not os.path.isfile(git):
         return None
     with open(git) as git_file:
-        return git_file.read().replace("gitdir: ", "")
+        return git_file.read().replace("gitdir: ", "").rstrip("\n")
 
 
 def main(branch, script, force, on_prow):
@@ -113,22 +113,28 @@ def main(branch, script, force, on_prow):
     if not os.path.isdir(artifacts):
         os.makedirs(artifacts)
 
-    git_cache = get_git_cache(k8s)
-
-    if on_prow and git_cache is not None:
-        check(
-                'docker', 'run', '--rm=true', '--privileged=true',
-                '-v', '/var/run/docker.sock:/var/run/docker.sock',
-                '-v', '/etc/localtime:/etc/localtime:ro',
-                '-v', '%s:/go/src/k8s.io/kubernetes' % k8s,
-                '-v', '%s:%s' % (git_cache, git_cache),
-                '-v', '%s:/workspace/artifacts' % artifacts,
-                '-e', 'KUBE_FORCE_VERIFY_CHECKS=%s' % force,
-                '-e', 'KUBE_VERIFY_GIT_BRANCH=%s' % branch,
-                '-e', 'REPO_DIR=%s' % k8s,  # hack/lib/swagger.sh depends on this
-                'gcr.io/k8s-testimages/kubekins-test:%s' % tag,
-                'bash', '-c', 'cd kubernetes && %s' % script,
-            )
+    if on_prow:
+        # TODO(bentheelder): on prow REPO_DIR should be /go/src/k8s.io/kubernetes
+        # however these paths are brittle enough as is...
+        git_cache = get_git_cache(k8s)
+        cmd = [
+            'docker', 'run', '--rm=true', '--privileged=true',
+            '-v', '/var/run/docker.sock:/var/run/docker.sock',
+            '-v', '/etc/localtime:/etc/localtime:ro',
+            '-v', '%s:/go/src/k8s.io/kubernetes' % k8s,
+        ]
+        if git_cache is not None:
+            cmd.extend(['-v', '%s:%s' % (git_cache, git_cache)])
+        cmd.extend([
+            '-v', '/workspace/k8s.io/:/workspace/k8s.io/',
+            '-v', '%s:/workspace/artifacts' % artifacts,
+            '-e', 'KUBE_FORCE_VERIFY_CHECKS=%s' % force,
+            '-e', 'KUBE_VERIFY_GIT_BRANCH=%s' % branch,
+            '-e', 'REPO_DIR=%s' % k8s,  # hack/lib/swagger.sh depends on this
+            'gcr.io/k8s-testimages/kubekins-test:%s' % tag,
+            'bash', '-c', 'cd kubernetes && %s' % script,
+        ])
+        check(*cmd)
     else:
         check(
             'docker', 'run', '--rm=true', '--privileged=true',
