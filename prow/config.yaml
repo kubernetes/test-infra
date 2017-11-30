@@ -4099,7 +4099,7 @@ postsubmits:
   - name: ci-kubernetes-bazel-build-1-9
     agent: kubernetes
     branches:
-    - master
+    - release-1.9
     spec:
       containers:
       - image: gcr.io/k8s-testimages/bazelbuild:v20171128-a188d25f-0.6.1
