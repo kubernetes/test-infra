@@ -18,8 +18,6 @@ package main
 
 import (
 	"fmt"
-	"net/http"
-	"net/http/httptest"
 	"sync"
 	"testing"
 
@@ -34,6 +32,7 @@ type fghc struct {
 	pr       *github.PullRequest
 	isMember bool
 
+	patch      []byte
 	comments   []string
 	prs        []string
 	prComments []github.IssueComment
@@ -44,6 +43,12 @@ func (f *fghc) GetPullRequest(org, repo string, number int) (*github.PullRequest
 	f.Lock()
 	defer f.Unlock()
 	return f.pr, nil
+}
+
+func (f *fghc) GetPullRequestPatch(org, repo string, number int) ([]byte, error) {
+	f.Lock()
+	defer f.Unlock()
+	return f.patch, nil
 }
 
 func (f *fghc) CreateComment(org, repo string, number int, comment string) error {
@@ -57,6 +62,12 @@ func (f *fghc) IsMember(org, user string) (bool, error) {
 	f.Lock()
 	defer f.Unlock()
 	return f.isMember, nil
+}
+
+func (f *fghc) GetRepo(owner, name string) (github.Repo, error) {
+	f.Lock()
+	defer f.Unlock()
+	return github.Repo{}, nil
 }
 
 var expectedFmt = `repo=%s title=%q body=%q head=%s base=%s maintainer_can_modify=%t`
@@ -142,6 +153,7 @@ func TestCherryPickIC(t *testing.T) {
 		},
 		isMember:   true,
 		createdNum: 3,
+		patch:      patch,
 	}
 	ic := github.IssueCommentEvent{
 		Action: github.IssueCommentActionCreated,
@@ -165,16 +177,6 @@ func TestCherryPickIC(t *testing.T) {
 		},
 	}
 
-	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		t.Logf("test request %+v", r)
-		expected := "/raw/foo/bar/pull/2.patch"
-		if r.URL.Path != expected {
-			t.Fatalf("wrong link was queried: %s, expected: %s", r.URL.Path, expected)
-		}
-		w.Write(patch)
-	}))
-	defer ts.Close()
-
 	botName := "ci-robot"
 	expectedRepo := "foo/bar"
 	expectedTitle := "Automated cherry-pick of #2 on stage"
@@ -184,16 +186,13 @@ func TestCherryPickIC(t *testing.T) {
 	expected := fmt.Sprintf(expectedFmt, expectedRepo, expectedTitle, expectedBody, expectedHead, expectedBase, true)
 
 	s := &Server{
-		credentials: "012345",
-		botName:     botName,
-		gc:          c,
-		push:        func(botName, credentials, repo, newBranch string) error { return nil },
-		ghc:         ghc,
-		hmacSecret:  []byte("sha=abcdefg"),
-		bare:        ts.Client(),
-		patchURL:    ts.URL,
-		log:         logrus.StandardLogger().WithField("client", "cherrypicker"),
-		repos:       []github.Repo{{Fork: true, FullName: "ci-robot/bar"}},
+		botName:    botName,
+		gc:         c,
+		push:       func(repo, newBranch string) error { return nil },
+		ghc:        ghc,
+		hmacSecret: []byte("sha=abcdefg"),
+		log:        logrus.StandardLogger().WithField("client", "cherrypicker"),
+		repos:      []github.Repo{{Fork: true, FullName: "ci-robot/bar"}},
 	}
 
 	if err := s.handleIssueComment(logrus.NewEntry(logrus.StandardLogger()), ic); err != nil {
@@ -250,6 +249,7 @@ func TestCherryPickPR(t *testing.T) {
 		},
 		isMember:   true,
 		createdNum: 3,
+		patch:      patch,
 	}
 	pr := github.PullRequestEvent{
 		Action: github.PullRequestActionClosed,
@@ -269,16 +269,6 @@ func TestCherryPickPR(t *testing.T) {
 		},
 	}
 
-	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		t.Logf("test request %+v", r)
-		expected := "/raw/foo/bar/pull/2.patch"
-		if r.URL.Path != expected {
-			t.Fatalf("wrong link was queried: %s, expected: %s", r.URL.Path, expected)
-		}
-		w.Write(patch)
-	}))
-	defer ts.Close()
-
 	botName := "ci-robot"
 	expectedRepo := "foo/bar"
 	expectedTitle := "Automated cherry-pick of #2 on release-1.5"
@@ -288,16 +278,13 @@ func TestCherryPickPR(t *testing.T) {
 	expected := fmt.Sprintf(expectedFmt, expectedRepo, expectedTitle, expectedBody, expectedHead, expectedBase, true)
 
 	s := &Server{
-		credentials: "012345",
-		botName:     botName,
-		gc:          c,
-		push:        func(botName, credentials, repo, newBranch string) error { return nil },
-		ghc:         ghc,
-		hmacSecret:  []byte("sha=abcdefg"),
-		bare:        ts.Client(),
-		patchURL:    ts.URL,
-		log:         logrus.StandardLogger().WithField("client", "cherrypicker"),
-		repos:       []github.Repo{{Fork: true, FullName: "ci-robot/bar"}},
+		botName:    botName,
+		gc:         c,
+		push:       func(repo, newBranch string) error { return nil },
+		ghc:        ghc,
+		hmacSecret: []byte("sha=abcdefg"),
+		log:        logrus.StandardLogger().WithField("client", "cherrypicker"),
+		repos:      []github.Repo{{Fork: true, FullName: "ci-robot/bar"}},
 	}
 
 	if err := s.handlePullRequest(logrus.NewEntry(logrus.StandardLogger()), pr); err != nil {
