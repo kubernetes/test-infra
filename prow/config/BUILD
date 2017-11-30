@@ -11,6 +11,7 @@ go_test(
     srcs = [
         "config_test.go",
         "jobs_test.go",
+        "tide_test.go",
     ],
     data = [
         "//jobs",
@@ -32,6 +33,7 @@ go_library(
         "agent.go",
         "config.go",
         "jobs.go",
+        "tide.go",
     ],
     importpath = "k8s.io/test-infra/prow/config",
     deps = [

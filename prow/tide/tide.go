@@ -109,7 +109,7 @@ func (c *Controller) Sync() error {
 	c.logger.Info("Building tide pool.")
 	var pool []PullRequest
 	for _, q := range c.ca.Config().Tide.Queries {
-		prs, err := c.search(ctx, q)
+		prs, err := c.search(ctx, q.Query())
 		if err != nil {
 			return err
 		}
