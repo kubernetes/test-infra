@@ -12,48 +12,36 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-all: build test
+all: bazel
 
 
-LABEL_SYNC_VERSION       ?= 0.1
-
+# TODO(fejta): deploy via bazel
 # These are the usual GKE variables.
 PROJECT       ?= k8s-prow
-BUILD_PROJECT ?= k8s-prow-builds
 ZONE          ?= us-central1-f
 CLUSTER       ?= prow
 
-# Build and push specific variables.
-REGISTRY ?= gcr.io
-PUSH     ?= gcloud docker -- push
-
-DOCKER_LABELS=--label io.k8s.prow.git-describe="$(shell git describe --tags --always --dirty)"
+bazel:
+	@echo Use bazel foo or ./planter/planter.sh bazel foo
+	@echo "  bazel build //label_sync/...  # build"
+	@echo "  bazel test //label_sync/...  # test"
+	@echo "  bazel run //label_sync:push  # push image"
+	@echo "  bazel run //label_sync:deploy # deploy"
+	@exit 1
 
 get-cluster-credentials:
 	gcloud container clusters get-credentials "$(CLUSTER)" --project="$(PROJECT)" --zone="$(ZONE)"
 
-get-build-cluster-credentials:
-	gcloud container clusters get-credentials "$(CLUSTER)" --project="$(BUILD_PROJECT)" --zone="$(ZONE)"
+.PHONY: bazel get-cluster-credentials
 
-build:
-	go install ./...
+update-config: get-cluster-credentials
+	# Oddy the first time requires creating it instead of replacing it...
+	kubectl create configmap label-config --from-file=labels.yaml=labels.yaml --dry-run -o yaml | kubectl replace configmap label-config -f -
 
-test:
-	go test -race -cover $$(go list ./... | grep -v "\/vendor\/")
-
-.PHONY: build test get-cluster-credentials
-
-compile-static:
-	CGO_ENABLED=0 go build -o label_sync k8s.io/test-infra/label_sync
-
-label_sync-image: compile-static
-	docker build -t "$(REGISTRY)/$(PROJECT)/label_sync:$(LABEL_SYNC_VERSION)" $(DOCKER_LABELS) .
-	$(PUSH) "$(REGISTRY)/$(PROJECT)/label_sync:$(LABEL_SYNC_VERSION)"
-
-label_sync-deployment: get-cluster-credentials
-	kubectl apply -f cluster/label_sync_deployment.yaml
+label_sync-job: get-cluster-credentials
+	kubectl apply -f cluster/label_sync_job.yaml
 
 label_sync-cronjob: get-cluster-credentials
 	kubectl apply -f cluster/label_sync_cron_job.yaml
 
-.PHONY: label_sync-image label_sync-deployment label_sync-cronjob
+.PHONY: label_sync-job label_sync-cronjob bazel
