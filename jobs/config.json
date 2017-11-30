@@ -3399,8 +3399,8 @@
       "--gcp-zone=us-central1-f",
       "--provider=gce",
       "--skew",
-      "--timeout=900m",
       "--test_args=--ginkgo.skip=\\[sig\\-apps\\]\\sNetwork\\sPartition",
+      "--timeout=900m",
       "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=ci/k8s-beta --upgrade-image=gci"
     ],
     "scenario": "kubernetes_e2e",
