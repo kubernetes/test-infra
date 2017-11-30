@@ -4595,7 +4595,7 @@ periodics:
       emptyDir: {}
 
 - name: ci-kubernetes-bazel-build
-  interval: 30m
+  interval: 6h
   agent: kubernetes
   spec:
     containers:
@@ -4882,6 +4882,7 @@ periodics:
       - name: cache-ssd
         hostPath:
           path: /mnt/disks/ssd0
+
 - interval: 1h
   agent: kubernetes
   name: ci-kubernetes-charts-gce
@@ -20280,7 +20281,7 @@ periodics:
         secretName: velodrome-influxdb
 
 - name: periodic-kubernetes-bazel-build-1-6
-  interval: 2h
+  interval: 24h
   agent: kubernetes
   spec:
     containers:
@@ -20401,7 +20402,7 @@ periodics:
           path: /mnt/disks/ssd0
 
 - name: periodic-kubernetes-bazel-build-1-7
-  interval: 2h
+  interval: 12h
   agent: kubernetes
   spec:
     containers:
@@ -20569,7 +20570,7 @@ periodics:
           path: /mnt/disks/ssd0
 
 - name: periodic-kubernetes-bazel-build-1-8
-  interval: 2h
+  interval: 6h
   agent: kubernetes
   spec:
     containers:
@@ -20737,7 +20738,7 @@ periodics:
           path: /mnt/disks/ssd0
 
 - name: periodic-kubernetes-bazel-build-1-9
-  interval: 2h
+  interval: 6h
   agent: kubernetes
   branches:
   - master
