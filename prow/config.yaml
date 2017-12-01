@@ -1524,6 +1524,9 @@ presubmits:
         ports:
         - containerPort: 9999
           hostPort: 9999
+        resources:
+          requests:
+            memory: "6Gi"
       volumes:
       - name: service
         secret:
@@ -2912,6 +2915,9 @@ presubmits:
         ports:
         - containerPort: 9999
           hostPort: 9999
+        resources:
+          requests:
+            memory: "6Gi"
       volumes:
       - name: service
         secret:
