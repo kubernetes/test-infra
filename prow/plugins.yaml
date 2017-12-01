@@ -85,8 +85,9 @@ plugins:
   - trigger
 
   kubernetes/community:
-  - trigger
+  - approve
   - blockade
+  - trigger
 
   kubernetes/contrib:
   - approve
