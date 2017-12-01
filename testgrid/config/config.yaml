@@ -1617,11 +1617,16 @@ test_groups:
   num_columns_recent: 20
   alert_stale_results_hours: 24
   num_failures_to_alert: 10
-- name: pull-kubernetes-e2e-kops-aws-prow
-  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-kops-aws-prow
-  num_columns_recent: 20
 - name: pull-kubernetes-e2e-kubeadm-gce
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-kubeadm-gce
+  days_of_results: 1
+  num_columns_recent: 20
+- name: pull-kubernetes-node-e2e-containerd
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-node-e2e-containerd
+  days_of_results: 1
+  num_columns_recent: 20
+- name: pull-kubernetes-e2e-containerd-gce
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-containerd-gce
   days_of_results: 1
   num_columns_recent: 20
 - name: pull-kubernetes-kubemark-e2e-gce
@@ -1814,6 +1819,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-registry-bazel
   days_of_results: 1
   num_columns_recent: 20
+- name: cluster-registry-nightly
+  gcs_prefix: kubernetes-jenkins/logs/cluster-registry-nightly
 # k8s-beta (active release branch) jobs
 - name: ci-kubernetes-e2e-gce-cos-k8sbeta-default
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos-k8sbeta-default
@@ -3541,6 +3548,11 @@ dashboards:
     test_group_name: periodic-multi-platform-kubeadm-packet-arm64
 
 
+- name: sig-multicluster-cluster-registry
+  dashboard_tab:
+  - name: nightly
+    test_group_name: cluster-registry-nightly
+
 - name: sig-multicluster-federation-gce-old
   dashboard_tab:
   - name: gce-1.7
@@ -3748,6 +3760,12 @@ dashboards:
     test_group_name: ci-cri-containerd-e2e-gci-gce
   - name: e2e-ubuntu
     test_group_name: ci-cri-containerd-e2e-ubuntu-gce
+  - name: pull-node-e2e
+    test_group_name: pull-kubernetes-node-e2e-containerd
+    base_options: 'width=10'
+  - name: pull-e2e-gci
+    test_group_name: pull-kubernetes-e2e-containerd-gce
+    base_options: 'width=10'
 
 - name: sig-node-rkt
   dashboard_tab:
@@ -4779,8 +4797,6 @@ dashboards:
   - name: pull-kubernetes-e2e-gke-gci
     test_group_name: pull-kubernetes-e2e-gke-gci
     base_options: 'width=10'
-  - name: pull-kubernetes-e2e-kops-aws-prow
-    test_group_name: pull-kubernetes-e2e-kops-aws-prow
   - name: pull-kubernetes-e2e-kubeadm-gce
     test_group_name: pull-kubernetes-e2e-kubeadm-gce
     base_options: 'width=10'
@@ -4891,6 +4907,7 @@ dashboard_groups:
 
 - name: sig-multicluster
   dashboard_names:
+  - sig-multicluster-cluster-registry
   - sig-multicluster-federation-gce-old
   - sig-multicluster-federation-gce
 
