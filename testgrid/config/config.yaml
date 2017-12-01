@@ -3643,6 +3643,14 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable2-ingress
     alert_options:
       alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
+  - name: gci-gce-ingress-release-1.8
+    test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable1-ingress
+    alert_options:
+      alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
+  - name: gci-gce-ingress-release-1.9
+    test_group_name: ci-kubernetes-e2e-gce-cos-k8sbeta-ingress
+    alert_options:
+      alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
   - name: gci-gce-ip-alias
     test_group_name: ci-kubernetes-e2e-gci-gce-ip-alias
     base_options: 'include-filter-by-regex=\[sig-network\]'
@@ -3711,6 +3719,14 @@ dashboards:
       alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
   - name: gci-gke-ingress-release-1.7
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable2-ingress
+    alert_options:
+      alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
+  - name: gci-gke-ingress-release-1.8
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable1-ingress
+    alert_options:
+      alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
+  - name: gci-gke-ingress-release-1.9
+    test_group_name: ci-kubernetes-e2e-gke-cos-k8sbeta-ingress
     alert_options:
       alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
   - name: gke-ubuntustable1-k8sdev-ingress
