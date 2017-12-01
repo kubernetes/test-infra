@@ -9132,6 +9132,10 @@ periodics:
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
+      resources:
+        requests:
+          cpu: 6
+          memory: "16Gi"
     volumes:
     - name: service
       secret:
@@ -9236,6 +9240,10 @@ periodics:
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
+      resources:
+        requests:
+          cpu: 6
+          memory: "16Gi"
     volumes:
     - name: service
       secret:
@@ -9849,6 +9857,10 @@ periodics:
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
+      resources:
+        requests:
+          cpu: 6
+          memory: "16Gi"
     volumes:
     - name: service
       secret:
@@ -9883,6 +9895,10 @@ periodics:
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
+      resources:
+        requests:
+          cpu: 6
+          memory: "16Gi"
     volumes:
     - name: service
       secret:
@@ -15388,6 +15404,10 @@ periodics:
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
+      resources:
+        requests:
+          cpu: 6
+          memory: "16Gi"
     volumes:
     - name: service
       secret:
@@ -15457,6 +15477,10 @@ periodics:
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
+      resources:
+        requests:
+          cpu: 6
+          memory: "16Gi"
     volumes:
     - name: service
       secret:
@@ -15798,6 +15822,10 @@ periodics:
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
+      resources:
+        requests:
+          cpu: 6
+          memory: "16Gi"
     volumes:
     - name: service
       secret:
