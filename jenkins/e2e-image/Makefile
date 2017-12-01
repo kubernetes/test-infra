@@ -19,20 +19,24 @@ K8S ?= master
 
 GO ?= 1.9.1
 BAZEL ?= 0.6.1
+CFSSL ?= R1.2
 
 ifeq ($(K8S), 1.8)
 	GO = 1.8.3
 	BAZEL = 0.6.1
+	CFSSL = R1.2
 endif
 
 ifeq ($(K8S), 1.7)
 	GO = 1.8.3
 	BAZEL = 0.6.1
+	CFSSL = R1.2
 endif
 
 ifeq ($(K8S), 1.6)
 	GO = 1.7.4
 	BAZEL = 0.5.2
+	CFSSL = R1.2
 endif
 
 all: build
@@ -42,7 +46,7 @@ kubetest:
 
 build: kubetest
 	@echo Building with go:$(GO) and bazel:$(BAZEL)
-	docker build --build-arg GO_VERSION=$(GO) --build-arg BAZEL_VERSION=$(BAZEL) -t $(IMG):$(TAG)-$(K8S) .
+	docker build --build-arg GO_VERSION=$(GO) --build-arg BAZEL_VERSION=$(BAZEL) --build-arg CFSSL_VERSION=$(CFSSL) -t $(IMG):$(TAG)-$(K8S) .
 	docker tag $(IMG):$(TAG)-$(K8S) $(IMG):latest-$(K8S)
 	rm kubetest
 	@echo Built $(IMG):$(TAG)-$(K8S) and tagged with latest-$(K8S)

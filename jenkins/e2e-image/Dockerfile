@@ -18,6 +18,16 @@
 FROM gcr.io/k8s-testimages/bootstrap:v20171127-a1522ede
 LABEL maintainer "Sen Lu <senlu@google.com>"
 
+# install cfssl to prevent https://github.com/kubernetes/kubernetes/issues/55589
+# The invocation at the end is to prevent download failures downloads as in the bug.
+# TODO(porridge): bump CFSSL_VERSION to one where cfssljson supports the -version flag and test it as well.
+ARG CFSSL_VERSION
+RUN wget -q -O cfssl "https://pkg.cfssl.org/${CFSSL_VERSION}/cfssl_linux-amd64" && \
+    wget -q -O cfssljson "https://pkg.cfssl.org/${CFSSL_VERSION}/cfssljson_linux-amd64" && \
+    chmod +x cfssl cfssljson && \
+    mv cfssl cfssljson /usr/local/bin && \
+    cfssl version
+
 # install go
 ARG GO_VERSION
 ENV GO_TARBALL "go${GO_VERSION}.linux-amd64.tar.gz"
