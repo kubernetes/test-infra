@@ -25,31 +25,6 @@ XREF_RE = re.compile(r'k8s-gubernator.appspot.com/build(/[^])\s]+/\d+)')
 APPROVERS_RE = re.compile(r'<!-- META={"?approvers"?:\[([^]]*)\]} -->')
 
 
-class Deduper(object):
-    ''' A memory-saving string deduplicator for Python datastructures.
-
-    This is somewhat like the built-in intern() function, but without pinning memory
-    permanently.
-
-    Tries to reduce memory usage by making equivalent strings point at the same object.
-    This reduces memory usage for large, repetitive JSON structures by >2x.
-    '''
-
-    def __init__(self):
-        self.strings = {}
-
-    def dedup(self, obj):
-        if isinstance(obj, basestring):
-            return self.strings.setdefault(obj, obj)
-        elif isinstance(obj, dict):
-            return {self.dedup(k): self.dedup(v) for k, v in obj.iteritems()}
-        elif isinstance(obj, tuple):
-            return tuple(self.dedup(x) for x in obj)
-        elif isinstance(obj, list):
-            return [self.dedup(x) for x in obj]
-        return obj
-
-
 def classify_issue(repo, number):
     '''
     Classify an issue in a repo based on events in Datastore.
