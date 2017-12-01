@@ -24,6 +24,8 @@ import (
 	"text/template"
 	"time"
 
+	"github.com/sirupsen/logrus"
+
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
@@ -302,6 +304,7 @@ func TestSyncNonPendingJobs(t *testing.T) {
 		c := Controller{
 			kc:          fkc,
 			jc:          fjc,
+			log:         logrus.NewEntry(logrus.StandardLogger()),
 			ca:          newFakeConfigAgent(t, tc.maxConcurrency),
 			lock:        sync.RWMutex{},
 			pendingJobs: make(map[string]int),
@@ -512,6 +515,7 @@ func TestSyncPendingJobs(t *testing.T) {
 		c := Controller{
 			kc:          fkc,
 			jc:          fjc,
+			log:         logrus.NewEntry(logrus.StandardLogger()),
 			ca:          newFakeConfigAgent(t, 0),
 			lock:        sync.RWMutex{},
 			pendingJobs: make(map[string]int),
@@ -598,6 +602,7 @@ func TestBatch(t *testing.T) {
 	c := Controller{
 		kc:          fc,
 		jc:          jc,
+		log:         logrus.NewEntry(logrus.StandardLogger()),
 		ca:          newFakeConfigAgent(t, 0),
 		pendingJobs: make(map[string]int),
 		lock:        sync.RWMutex{},
@@ -735,7 +740,9 @@ func TestRunAfterSuccessCanRun(t *testing.T) {
 			err:     test.err,
 		}
 
-		got := RunAfterSuccessCanRun(test.parent, test.child, newFakeConfigAgent(t, 0), fakeGH)
+		c := Controller{log: logrus.NewEntry(logrus.StandardLogger())}
+
+		got := c.RunAfterSuccessCanRun(test.parent, test.child, newFakeConfigAgent(t, 0), fakeGH)
 		if got != test.expected {
 			t.Errorf("expected to run: %t, got: %t", test.expected, got)
 		}
@@ -846,6 +853,7 @@ func TestMaxConcurrencyWithNewlyTriggeredJobs(t *testing.T) {
 		c := Controller{
 			kc:          fc,
 			jc:          fjc,
+			log:         logrus.NewEntry(logrus.StandardLogger()),
 			ca:          newFakeConfigAgent(t, 0),
 			pendingJobs: test.pendingJobs,
 		}
