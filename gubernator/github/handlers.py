@@ -92,7 +92,7 @@ class GithubHandler(webapp2.RequestHandler):
             for issue in query.fetch():
                 deferred.defer(update_issue_digest, issue.repo, issue.number)
 
-        if number is not None:
+        if number:
             deferred.defer(update_issue_digest, repo, number)
 
 
