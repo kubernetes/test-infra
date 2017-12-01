@@ -36,6 +36,8 @@ Note: versions specified in these announcements may not include bug fixes made
 in more recent versions so it is recommended that the most recent versions are
 used when updating deployments.
 
+ - *November 30, 2017* If you use tide, you'll need to switch your query format
+ and bump all prow component versions to reflect the changes in #5754.
  - *November 14, 2017* `horologium:0.17` fixes cron job not being scheduled.
  - *November 10, 2017* If you want to use cron feature in prow, you need to bump to:
  `hook:0.181`, `sinker:0.23`, `deck:0.62`, `splice:0.32`, `horologium:0.15`
