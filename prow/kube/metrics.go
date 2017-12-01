@@ -26,7 +26,7 @@ var (
 		Help: "Number of prowjobs in the system",
 	}, []string{
 		// name of the job
-		"job",
+		"job_name",
 		// type of the prowjob: presubmit, postsubmit, periodic, batch
 		"type",
 		// state of the prowjob: triggered, pending, success, failure, aborted, error
