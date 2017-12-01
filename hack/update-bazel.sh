@@ -39,7 +39,7 @@ rm -f ${TESTINFRA_ROOT}/vendor/k8s.io/apimachinery/pkg/util/sets/BUILD
 # The gazelle commit should match the rules_go commit in the WORKSPACE file.
 "${TESTINFRA_ROOT}/hack/go_install_from_commit.sh" \
   github.com/bazelbuild/rules_go/go/tools/gazelle/gazelle \
-  b655527ae7769bdf5ac0b772c844f322bdd65b34 \
+  f80dec7889568c36eb191d3d1534d2db4574d430 \
   "${TMP_GOPATH}"
 
 touch "${TESTINFRA_ROOT}/vendor/BUILD"
