@@ -19,6 +19,7 @@ package main
 import (
 	"bytes"
 	"flag"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -110,7 +111,7 @@ func main() {
 		}
 	}
 
-	c, err := plank.NewController(kc, pkc, ghc, configAgent, *totURL, *selector)
+	c, err := plank.NewController(kc, pkc, ghc, logger, configAgent, *totURL, *selector)
 	if err != nil {
 		logger.WithError(err).Fatal("Error creating plank controller.")
 	}
@@ -123,7 +124,7 @@ func main() {
 	// serve prometheus metrics.
 	go serve()
 	// gather metrics for the jobs handled by plank.
-	go gather(c)
+	go gather(c, logger)
 
 	tick := time.Tick(30 * time.Second)
 	sig := make(chan os.Signal, 1)
@@ -136,9 +137,9 @@ func main() {
 			if err := c.Sync(); err != nil {
 				logger.WithError(err).Error("Error syncing.")
 			}
-			logger.Infof("Sync time: %v", time.Since(start))
+			logger.WithField("duration", fmt.Sprintf("%v", time.Since(start))).Info("Synced")
 		case <-sig:
-			logger.Infof("Plank is shutting down...")
+			logger.Info("Plank is shutting down...")
 			return
 		}
 	}
@@ -153,7 +154,7 @@ func serve() {
 
 // gather metrics from plank.
 // Meant to be called inside a goroutine.
-func gather(c *plank.Controller) {
+func gather(c *plank.Controller, logger *logrus.Entry) {
 	tick := time.Tick(30 * time.Second)
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
@@ -163,10 +164,9 @@ func gather(c *plank.Controller) {
 		case <-tick:
 			start := time.Now()
 			c.SyncMetrics()
-			duration := time.Since(start)
-			logrus.Debugf("Sync metrics time: %v", duration)
+			logger.WithField("duration", fmt.Sprintf("%v", time.Since(start))).Debug("Metrics synced")
 		case <-sig:
-			logrus.Debugf("Plank gatherer is shutting down...")
+			logger.Debug("Plank gatherer is shutting down...")
 			return
 		}
 	}
