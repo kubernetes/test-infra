@@ -10444,6 +10444,29 @@
       "sig-network"
     ]
   },
+  "pull-kubernetes-e2e-containerd-gce": {
+    "args": [
+      "--build=bazel",
+      "--cluster=",
+      "--env-file=jobs/platform/gce.env",
+      "--env-file=jobs/env/ci-cri-containerd-e2e-gce.env",
+      "--extract=local",
+      "--gcp-master-image=gci",
+      "--gcp-node-image=gci",
+      "--gcp-project=k8s-c8d-pr-e2e",
+      "--gcp-zone=us-central1-f",
+      "--ginkgo-parallel=30",
+      "--provider=gce",
+      "--runtime-config=batch/v2alpha1=true,admissionregistration.k8s.io/v1alpha1=true",
+      "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-containerd-gce",
+      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
+      "--timeout=65m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-node"
+    ]
+  },
   "pull-kubernetes-e2e-gce": {
     "_comment1": "NOTE: THESE ARE THE JENKINS ARGS / COMMON ARGS (!)",
     "_comment2": "PLEASE PUT ARGS THAT WILL WORK FOR 1.6 HERE",
@@ -10670,6 +10693,23 @@
       "--node-tests=true",
       "--provider=gce",
       "--test_args=--nodes=8 --skip=\"\\[Flaky\\]|\\[Slow\\]|\\[Serial\\]\" --flakeAttempts=2",
+      "--timeout=65m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-node"
+    ]
+  },
+  "pull-kubernetes-node-e2e-containerd": {
+    "args": [
+      "--deployment=node",
+      "--gcp-project=k8s-c8d-pr-node-e2e",
+      "--gcp-zone=us-central1-f",
+      "--node-args=--image-config-file=test/e2e_node/image-config.yaml --image-config-dir=$GOPATH/src/github.com/kubernetes-incubator/cri-containerd",
+      "--node-test-args=--container-runtime=remote --container-runtime-endpoint=/var/run/cri-containerd.sock --kubelet-flags=\"--cgroups-per-qos=true --cgroup-root=/ --container-runtime=remote --container-runtime-endpoint=/var/run/cri-containerd.sock\" --extra-log=\"{\\\"name\\\": \\\"containerd.log\\\", \\\"journalctl\\\": [\\\"-u\\\", \\\"containerd\\\"]}\" --extra-log=\"{\\\"name\\\": \\\"cri-containerd.log\\\", \\\"journalctl\\\": [\\\"-u\\\", \\\"cri-containerd\\\"]}\"",
+      "--node-tests=true",
+      "--provider=gce",
+      "--test_args=--nodes=8 --skip=\"\\[Flaky\\]|\\[Slow\\]|\\[Serial\\]|querying\\s\\/stats\\/summary\" --flakeAttempts=2",
       "--timeout=65m"
     ],
     "scenario": "kubernetes_e2e",
