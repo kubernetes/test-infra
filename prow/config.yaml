@@ -1904,6 +1904,9 @@ presubmits:
         ports:
         - containerPort: 9999
           hostPort: 9999
+        resources:
+          requests:
+            cpu: 4
       volumes:
       - name: service
         secret:
@@ -1954,6 +1957,9 @@ presubmits:
         ports:
         - containerPort: 9999
           hostPort: 9999
+        resources:
+          requests:
+            cpu: 4
       volumes:
       - name: service
         secret:
@@ -3408,6 +3414,9 @@ presubmits:
         ports:
         - containerPort: 9999
           hostPort: 9999
+        resources:
+          requests:
+            cpu: 4
       volumes:
       - name: service
         secret:
@@ -3458,6 +3467,9 @@ presubmits:
         ports:
         - containerPort: 9999
           hostPort: 9999
+        resources:
+          requests:
+            cpu: 4
       volumes:
       - name: service
         secret:
