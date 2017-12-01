@@ -768,6 +768,8 @@ class JobTest(unittest.TestCase):
             'ci-kubernetes-kubemark-high-density-100-gce': 'ci-kubernetes-kubemark-*',
             'ci-kubernetes-kubemark-gce-scale': 'ci-kubernetes-scale-*',
             'pull-kubernetes-kubemark-e2e-gce-big': 'ci-kubernetes-scale-*',
+            'pull-kubernetes-kubemark-e2e-gce': 'pr-kubernetes-kubemark-*',
+            'pull-kubernetes-kubemark-e2e-gce-prow': 'pr-kubernetes-kubemark-*',
             'ci-kubernetes-e2e-gce-large-manual-up': 'ci-kubernetes-scale-*',
             'ci-kubernetes-e2e-gce-large-manual-down': 'ci-kubernetes-scale-*',
             'ci-kubernetes-e2e-gce-large-correctness': 'ci-kubernetes-scale-*',

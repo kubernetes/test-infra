@@ -1631,6 +1631,77 @@ presubmits:
     context: pull-kubernetes-kubemark-e2e-gce-big
     rerun_command: "/test pull-kubernetes-kubemark-e2e-gce-big"
     trigger: "(?m)^/test pull-kubernetes-kubemark-e2e-gce-big,?(\\s+|$)"
+  - name: pull-kubernetes-kubemark-e2e-gce-prow
+    agent: kubernetes
+    always_run: false
+    skip_report: false
+    max_concurrency: 3
+    context: pull-kubernetes-kubemark-e2e-gce-prow
+    rerun_command: "/test pull-kubernetes-kubemark-e2e-gce-prow"
+    trigger: "(?m)^/test pull-kubernetes-kubemark-e2e-gce-prow,?(\\s+|$)"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+        imagePullPolicy: Always
+        args:
+        - --root=/go/src
+        - "--clean"
+        - "--git-cache=/root/.cache/git"
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--repo=k8s.io/release"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--timeout=90"
+        env:
+        # TODO(krzyzacy): Figure out bazel built kubemark image
+        # - name: KUBEMARK_BAZEL_BUILD
+        # value: "y" 
+        - name: DOCKER_IN_DOCKER_ENABLED
+          value: true
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /etc/service-account/service-account.json
+        - name: USER
+          value: prow
+        - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+          value: /etc/ssh-key-secret/ssh-private
+        - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+          value: /etc/ssh-key-secret/ssh-public
+        - name: TEST_TMPDIR
+          value: /root/.cache/bazel
+        # Bazel needs privileged mode in order to sandbox builds.
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - mountPath: /etc/service-account
+          name: service
+          readOnly: true
+        - mountPath: /etc/ssh-key-secret
+          name: ssh
+          readOnly: true
+        - name: cache-ssd
+          mountPath: /root/.cache
+        ports:
+        - containerPort: 9999
+          hostPort: 9999
+        resources:
+          requests:
+            memory: "6Gi"
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
+      - name: ssh
+        secret:
+          defaultMode: 256
+          secretName: ssh-key-secret
+      - name: cache-ssd
+        hostPath:
+          path: /mnt/disks/ssd0
+      - name: docker-graph
+        hostPath:
+          path: /mnt/disks/ssd0/docker-graph
+
   - name: pull-kubernetes-node-e2e
     agent: kubernetes
     skip_branches:
@@ -3141,6 +3212,76 @@ presubmits:
     context: pull-security-kubernetes-kubemark-e2e-gce-big
     rerun_command: "/test pull-security-kubernetes-kubemark-e2e-gce-big"
     trigger: "(?m)^/test pull-security-kubernetes-kubemark-e2e-gce-big,?(\\s+|$)"
+  - name: pull-security-kubernetes-kubemark-e2e-gce-prow
+    agent: kubernetes
+    always_run: false
+    skip_report: false
+    max_concurrency: 3
+    context: pull-security-kubernetes-kubemark-e2e-gce-prow
+    rerun_command: "/test pull-security-kubernetes-kubemark-e2e-gce-prow"
+    trigger: "(?m)^/test pull-security-kubernetes-kubemark-e2e-gce-prow,?(\\s+|$)"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+        imagePullPolicy: Always
+        args:
+        - --root=/go/src
+        - "--clean"
+        - "--git-cache=/root/.cache/git"
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--repo=k8s.io/release"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--timeout=90"
+        env:
+        # TODO(krzyzacy): Figure out bazel built kubemark image
+        # - name: KUBEMARK_BAZEL_BUILD
+        # value: "y" 
+        - name: DOCKER_IN_DOCKER_ENABLED
+          value: true
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /etc/service-account/service-account.json
+        - name: USER
+          value: prow
+        - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+          value: /etc/ssh-key-secret/ssh-private
+        - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+          value: /etc/ssh-key-secret/ssh-public
+        - name: TEST_TMPDIR
+          value: /root/.cache/bazel
+        # Bazel needs privileged mode in order to sandbox builds.
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - mountPath: /etc/service-account
+          name: service
+          readOnly: true
+        - mountPath: /etc/ssh-key-secret
+          name: ssh
+          readOnly: true
+        - name: cache-ssd
+          mountPath: /root/.cache
+        ports:
+        - containerPort: 9999
+          hostPort: 9999
+        resources:
+          requests:
+            memory: "6Gi"
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
+      - name: ssh
+        secret:
+          defaultMode: 256
+          secretName: ssh-key-secret
+      - name: cache-ssd
+        hostPath:
+          path: /mnt/disks/ssd0
+      - name: docker-graph
+        hostPath:
+          path: /mnt/disks/ssd0/docker-graph
   - name: pull-security-kubernetes-node-e2e
     agent: kubernetes
     skip_branches:
