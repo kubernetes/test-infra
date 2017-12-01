@@ -20,7 +20,7 @@ ALPINE_VERSION           ?= 0.1
 # GIT_VERSION is the version of the alpine+git image
 GIT_VERSION              ?= 0.1
 # HOOK_VERSION is the version of the hook image
-HOOK_VERSION             ?= 0.181
+HOOK_VERSION             ?= 0.182
 # SINKER_VERSION is the version of the sinker image
 SINKER_VERSION           ?= 0.23
 # DECK_VERSION is the version of the deck image

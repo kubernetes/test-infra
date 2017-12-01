@@ -3378,7 +3378,7 @@
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
       "--provider=gce",
-      "--test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8",
+      "--test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8 --ginkgo.skip=\\[sig\\-apps\\]\\sNetwork\\sPartition",
       "--timeout=900m",
       "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=ci/k8s-beta --upgrade-image=gci"
     ],
@@ -3399,6 +3399,7 @@
       "--gcp-zone=us-central1-f",
       "--provider=gce",
       "--skew",
+      "--test_args=--ginkgo.skip=\\[sig\\-apps\\]\\sNetwork\\sPartition",
       "--timeout=900m",
       "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=ci/k8s-beta --upgrade-image=gci"
     ],
@@ -3418,7 +3419,7 @@
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
       "--provider=gce",
-      "--test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8",
+      "--test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8 --ginkgo.skip=\\[sig\\-apps\\]\\sNetwork\\sPartition",
       "--timeout=900m",
       "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --upgrade-target=ci/k8s-beta"
     ],
@@ -7170,7 +7171,7 @@
       "--provider=gke",
       "--test_args=--ginkgo.skip=\\[Flaky\\]|\\[Feature:.+\\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8",
       "--timeout=900m",
-      "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=v1.8.2-gke.0 --upgrade-image=gci"
+      "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=v1.8.4-gke.0 --upgrade-image=gci"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -7191,7 +7192,7 @@
       "--provider=gke",
       "--skew",
       "--timeout=900m",
-      "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=v1.8.2-gke.0 --upgrade-image=gci"
+      "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=v1.8.4-gke.0 --upgrade-image=gci"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -7212,7 +7213,7 @@
       "--provider=gke",
       "--test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8",
       "--timeout=900m",
-      "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --upgrade-target=v1.8.2-gke.0 --upgrade-image=gci"
+      "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --upgrade-target=v1.8.4-gke.0 --upgrade-image=gci"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -8381,7 +8382,7 @@
       "--kubernetes-anywhere-kubelet-ci-version=latest-1.8",
       "--kubernetes-anywhere-kubernetes-version=latest-1.8",
       "--provider=kubernetes-anywhere",
-      "--test_args=--ginkgo.focus=\\[Conformance\\]|\\[Feature:BootstrapTokens\\]|\\[Feature:NodeAuthorizer\\ --minStartupPods=8",
+      "--test_args=--ginkgo.focus=\\[Conformance\\]|\\[Feature:BootstrapTokens\\]|\\[Feature:NodeAuthorizer\\] --minStartupPods=8",
       "--timeout=300m"
     ],
     "scenario": "kubernetes_e2e",
@@ -9315,14 +9316,14 @@
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/ci-kubernetes-kubemark-5-gce.env",
       "--extract=ci/latest",
-      "--extract-source",
-      "--gcp-project=sen-lu-test",
+      "--gcp-node-image=gci",
+      "--gcp-project=k8s-jenkins-kubemark",
       "--gcp-zone=us-central1-f",
       "--kubemark",
       "--kubemark-nodes=5",
       "--provider=gce",
       "--test=false",
-      "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --gather-resource-usage=true --gather-metrics-at-teardown=true --output-print-type=json",
+      "--test_args=--ginkgo.focus=\\[Feature:Empty\\] --gather-resource-usage=true --gather-metrics-at-teardown=true --output-print-type=json",
       "--timeout=60m"
     ],
     "scenario": "kubernetes_e2e",
@@ -9901,6 +9902,15 @@
       "sig-testing"
     ]
   },
+  "cluster-registry-nightly": {
+    "args": [
+      "./hack/release.sh"
+    ],
+    "scenario": "execute",
+    "sigOwners": [
+      "sig-multicluster"
+    ]
+  },
   "fake-branch": {
     "args": [
       "./fake/fake-branch.sh"
@@ -10434,6 +10444,29 @@
       "sig-network"
     ]
   },
+  "pull-kubernetes-e2e-containerd-gce": {
+    "args": [
+      "--build=bazel",
+      "--cluster=",
+      "--env-file=jobs/platform/gce.env",
+      "--env-file=jobs/env/ci-cri-containerd-e2e-gce.env",
+      "--extract=local",
+      "--gcp-master-image=gci",
+      "--gcp-node-image=gci",
+      "--gcp-project=k8s-c8d-pr-e2e",
+      "--gcp-zone=us-central1-f",
+      "--ginkgo-parallel=30",
+      "--provider=gce",
+      "--runtime-config=batch/v2alpha1=true,admissionregistration.k8s.io/v1alpha1=true",
+      "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-containerd-gce",
+      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
+      "--timeout=65m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-node"
+    ]
+  },
   "pull-kubernetes-e2e-gce": {
     "_comment1": "NOTE: THESE ARE THE JENKINS ARGS / COMMON ARGS (!)",
     "_comment2": "PLEASE PUT ARGS THAT WILL WORK FOR 1.6 HERE",
@@ -10533,6 +10566,9 @@
     ]
   },
   "pull-kubernetes-e2e-kops-aws": {
+    "_comment1": "NOTE: THESE ARE THE JENKINS ARGS / COMMON ARGS (!)",
+    "_comment2": "PLEASE PUT ARGS THAT WILL WORK FOR 1.6 HERE",
+    "_comment3": "Args for 1.7+ should go in prow/config.yaml after the `--` !",
     "args": [
       "--aws",
       "--aws-cluster-domain=test-aws.k8s.io",
@@ -10546,27 +10582,6 @@
       "--mode=docker",
       "--provider=aws",
       "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-kops-aws",
-      "--test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]|\\[HPA\\]|Dashboard|Services.*functioning.*NodePort",
-      "--timeout=55m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-aws"
-    ]
-  },
-  "pull-kubernetes-e2e-kops-aws-prow": {
-    "args": [
-      "--aws",
-      "--aws-cluster-domain=test-aws.k8s.io",
-      "--build=bazel",
-      "--check-leaked-resources=false",
-      "--cluster=",
-      "--env-file=jobs/platform/kops_aws.env",
-      "--env-file=jobs/env/pull-kubernetes-e2e-kops-aws-prow.env",
-      "--extract=local",
-      "--ginkgo-parallel",
-      "--provider=aws",
-      "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-kops-aws-prow",
       "--test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]|\\[HPA\\]|Dashboard|Services.*functioning.*NodePort",
       "--timeout=55m"
     ],
@@ -10678,6 +10693,23 @@
       "--node-tests=true",
       "--provider=gce",
       "--test_args=--nodes=8 --skip=\"\\[Flaky\\]|\\[Slow\\]|\\[Serial\\]\" --flakeAttempts=2",
+      "--timeout=65m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-node"
+    ]
+  },
+  "pull-kubernetes-node-e2e-containerd": {
+    "args": [
+      "--deployment=node",
+      "--gcp-project=k8s-c8d-pr-node-e2e",
+      "--gcp-zone=us-central1-f",
+      "--node-args=--image-config-file=test/e2e_node/image-config.yaml --image-config-dir=$GOPATH/src/github.com/kubernetes-incubator/cri-containerd",
+      "--node-test-args=--container-runtime=remote --container-runtime-endpoint=/var/run/cri-containerd.sock --kubelet-flags=\"--cgroups-per-qos=true --cgroup-root=/ --container-runtime=remote --container-runtime-endpoint=/var/run/cri-containerd.sock\" --extra-log=\"{\\\"name\\\": \\\"containerd.log\\\", \\\"journalctl\\\": [\\\"-u\\\", \\\"containerd\\\"]}\" --extra-log=\"{\\\"name\\\": \\\"cri-containerd.log\\\", \\\"journalctl\\\": [\\\"-u\\\", \\\"cri-containerd\\\"]}\"",
+      "--node-tests=true",
+      "--provider=gce",
+      "--test_args=--nodes=8 --skip=\"\\[Flaky\\]|\\[Slow\\]|\\[Serial\\]|querying\\s\\/stats\\/summary\" --flakeAttempts=2",
       "--timeout=65m"
     ],
     "scenario": "kubernetes_e2e",

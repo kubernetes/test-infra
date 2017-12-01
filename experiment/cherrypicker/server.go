@@ -175,12 +175,6 @@ func (s *Server) handleIssueComment(ic github.IssueCommentEvent) error {
 		return s.ghc.CreateComment(org, repo, num, plugins.FormatICResponse(ic.Comment, resp))
 	}
 
-	if baseBranch != "master" {
-		resp := "The base branch needs to be master in order to cherry-pick to a different branch."
-		s.log.Info(resp)
-		return s.ghc.CreateComment(org, repo, num, plugins.FormatICResponse(ic.Comment, resp))
-	}
-
 	return s.handle(ic.Comment, org, repo, baseBranch, targetBranch, num)
 }
 
@@ -199,11 +193,6 @@ func (s *Server) handlePullRequest(pre github.PullRequestEvent) error {
 	repo := pr.Base.Repo.Name
 	baseBranch := pr.Base.Ref
 	num := pr.Number
-
-	if baseBranch != "master" {
-		// We can't know at this point whether there was actually a /cherrypick comment in the PR.
-		return nil
-	}
 
 	comments, err := s.ghc.ListIssueComments(org, repo, num)
 	if err != nil {
