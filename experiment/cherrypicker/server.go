@@ -256,7 +256,9 @@ func (s *Server) handle(comment github.IssueComment, org, repo, baseBranch, targ
 		}
 	}()
 	if err := r.Checkout(targetBranch); err != nil {
-		return err
+		resp := fmt.Sprintf("Cannot checkout %s: %v", targetBranch, err)
+		s.log.Info(resp)
+		return s.ghc.CreateComment(org, repo, num, plugins.FormatICResponse(comment, resp))
 	}
 	s.log.WithField("duration", time.Since(startClone)).Info("Cloned and checked out target branch.")
 
