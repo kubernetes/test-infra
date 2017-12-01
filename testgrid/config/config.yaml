@@ -1617,9 +1617,6 @@ test_groups:
   num_columns_recent: 20
   alert_stale_results_hours: 24
   num_failures_to_alert: 10
-- name: pull-kubernetes-e2e-kops-aws-prow
-  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-kops-aws-prow
-  num_columns_recent: 20
 - name: pull-kubernetes-e2e-kubeadm-gce
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-e2e-kubeadm-gce
   days_of_results: 1
@@ -4786,8 +4783,6 @@ dashboards:
   - name: pull-kubernetes-e2e-gke-gci
     test_group_name: pull-kubernetes-e2e-gke-gci
     base_options: 'width=10'
-  - name: pull-kubernetes-e2e-kops-aws-prow
-    test_group_name: pull-kubernetes-e2e-kops-aws-prow
   - name: pull-kubernetes-e2e-kubeadm-gce
     test_group_name: pull-kubernetes-e2e-kubeadm-gce
     base_options: 'width=10'
