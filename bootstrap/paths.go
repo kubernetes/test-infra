@@ -71,7 +71,7 @@ func PRPaths(base string, repos Repos, job, build string) (*Paths, error) {
 	prNums := repo.PullNumbers()
 	var pull string
 	switch len(prNums) {
-	// TODO(bentheelder): jenkins/bootstrap.py would do equivilant to:
+	// TODO(bentheelder): jenkins/bootstrap.py would do equivalent to:
 	// `pull = filepath.Join(prefix, repo.Pull)` in this case, though we
 	// don't appear to ever have used this and probably shouldn't.
 	// Revisit if we want to error here or do the previous screwy behavior

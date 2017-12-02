@@ -100,7 +100,7 @@ type SecretSource struct {
 }
 
 type EmptyDirVolumeSource struct {
-	// NOTE: fields ommitted here as Prow does not currently use them
+	// NOTE: fields omitted here as Prow does not currently use them
 }
 
 type ConfigMapSource struct {

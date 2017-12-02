@@ -165,7 +165,7 @@ func (c *Client) measure(method, path string, code int, start time.Time) {
 }
 
 // GetSkipMetrics fetches the data found in the provided path. It returns the
-// content of the response or any errors that occured during the request or
+// content of the response or any errors that occurred during the request or
 // http errors. Metrics will not be gathered for this request.
 func (c *Client) GetSkipMetrics(path string) ([]byte, error) {
 	resp, err := c.request(http.MethodGet, path, nil, false)
@@ -176,7 +176,7 @@ func (c *Client) GetSkipMetrics(path string) ([]byte, error) {
 }
 
 // Get fetches the data found in the provided path. It returns the
-// content of the response or any errors that occured during the
+// content of the response or any errors that occurred during the
 // request or http errors.
 func (c *Client) Get(path string) ([]byte, error) {
 	resp, err := c.request(http.MethodGet, path, nil, true)
