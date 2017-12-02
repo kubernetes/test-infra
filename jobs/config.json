@@ -3378,7 +3378,7 @@
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
       "--provider=gce",
-      "--test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8 --ginkgo.skip=\\[sig\\-apps\\]\\sNetwork\\sPartition",
+      "--test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8",
       "--timeout=900m",
       "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=ci/k8s-beta --upgrade-image=gci"
     ],
@@ -3399,7 +3399,6 @@
       "--gcp-zone=us-central1-f",
       "--provider=gce",
       "--skew",
-      "--test_args=--ginkgo.skip=\\[sig\\-apps\\]\\sNetwork\\sPartition",
       "--timeout=900m",
       "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=ci/k8s-beta --upgrade-image=gci"
     ],
@@ -3419,7 +3418,7 @@
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
       "--provider=gce",
-      "--test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8 --ginkgo.skip=\\[sig\\-apps\\]\\sNetwork\\sPartition",
+      "--test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8",
       "--timeout=900m",
       "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --upgrade-target=ci/k8s-beta"
     ],
