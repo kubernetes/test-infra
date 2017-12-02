@@ -1084,6 +1084,8 @@ test_groups:
   - configuration_value: node_os_image
   - configuration_value: Commit
   - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-kops-aws-ena-nvme
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-ena-nvme
 - name: ci-kubernetes-e2e-kops-aws-newrunner
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-newrunner
 - name: ci-kubernetes-e2e-kops-aws-release-1-7
@@ -2026,6 +2028,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-kops-aws-updown
   - name: kops-aws-weave
     test_group_name: ci-kubernetes-e2e-kops-aws-weave
+  - name: kops-aws-ena-nvme
+    test_group_name: ci-kubernetes-e2e-kops-aws-ena-nvme
   - name: kops-aws-newrunner
     test_group_name: ci-kubernetes-e2e-kops-aws-newrunner
 
