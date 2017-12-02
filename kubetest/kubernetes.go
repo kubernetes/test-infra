@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -26,14 +27,20 @@ import (
 
 // kubectlGetNodes lists nodes by executing kubectl get nodes, parsing the output into a nodeList object
 func kubectlGetNodes() (*nodeList, error) {
-	o, err := output(exec.Command("kubectl", "get", "nodes", "-ojson"))
+	cmd := exec.Command("kubectl", "get", "nodes", "-ojson")
+	var stdout bytes.Buffer
+	cmd.Stdout = &stdout
+	var stderr bytes.Buffer
+	cmd.Stderr = &stderr
+
+	err := finishRunning(cmd)
 	if err != nil {
-		log.Printf("kubectl get nodes failed: %s\n%s", wrapError(err).Error(), string(o))
+		log.Printf("kubectl get nodes failed: %s\nstdout=%s\nstderr=%s", wrapError(err).Error(), stdout.String(), stderr.String())
 		return nil, err
 	}
 
 	nodes := &nodeList{}
-	if err := json.Unmarshal(o, nodes); err != nil {
+	if err := json.Unmarshal(stdout.Bytes(), nodes); err != nil {
 		return nil, fmt.Errorf("error parsing kubectl get nodes output: %v", err)
 	}
 
