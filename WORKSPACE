@@ -8,11 +8,11 @@ http_archive(
 load("@io_kubernetes_build//defs:bazel_version.bzl", "check_version")
 
 # Ensure minimum supported bazel version
-check_version("0.6.0")
+check_version("0.8.0")
 
 git_repository(
     name = "io_bazel_rules_go",
-    commit = "b655527ae7769bdf5ac0b772c844f322bdd65b34",
+    commit = "f80dec7889568c36eb191d3d1534d2db4574d430",
     remote = "https://github.com/bazelbuild/rules_go.git",
 )
 

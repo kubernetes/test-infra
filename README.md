@@ -136,12 +136,11 @@ The commands `bazel build //...` and `bazel test //...` should be all you need
 for most cases. If you modify Go code, run `./hack/update-bazel.sh` to keep
 `BUILD` files up-to-date.
 
-## Federated Testing
+## Contributing Test Results
 
 The Kubernetes project encourages organizations to contribute execution of e2e
-test jobs for a variety of platforms (e.g., Azure, rktnetes).  The test-history
-scripts gather e2e results from these federated jobs.  For information about
-how to contribute test results, see [Federated Testing](docs/federated_testing.md).
+test jobs for a variety of platforms (e.g., Azure, rktnetes). For information about
+how to contribute test results, see [Contributing Test Results](docs/contributing-test-results.md).
 
 ## Other Docs
 

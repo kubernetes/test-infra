@@ -24,7 +24,7 @@ do-not-merge-milestones: ""
 admin-port: 9999
 context-url: https://community.submit-queue.k8s.io
 gate-cla: true
-gate-approved: false
+gate-approved: true
 
 # munger specific options.
 # label-file: "/gitrepos/community/labels.yaml"

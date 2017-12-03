@@ -86,13 +86,6 @@ type PushGateway struct {
 	Interval time.Duration `json:"-"`
 }
 
-// Tide is config for the tide pool.
-type Tide struct {
-	// These must be valid GitHub search queries. They should not overlap,
-	// which is to say two queries should never return the same PR.
-	Queries []string `json:"queries,omitempty"`
-}
-
 // Controller holds configuration applicable to all agent-specific
 // prow controllers.
 type Controller struct {

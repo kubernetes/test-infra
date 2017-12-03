@@ -225,5 +225,8 @@ func ProwJobFields(pj *kube.ProwJob) logrus.Fields {
 	if len(pj.Metadata.Labels[github.EventGUID]) > 0 {
 		fields[github.EventGUID] = pj.Metadata.Labels[github.EventGUID]
 	}
+	if len(pj.Spec.Refs.Pulls) == 1 {
+		fields["pr"] = pj.Spec.Refs.Pulls[0].Number
+	}
 	return fields
 }
