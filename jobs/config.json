@@ -8117,6 +8117,26 @@
       "sig-testing"
     ]
   },
+  "ci-kubernetes-e2e-kops-aws-ena-nvme": {
+    "args": [
+      "--cluster=e2e-kops-aws-ena-nvme.test-cncf-aws.k8s.io",
+      "--deployment=kops",
+      "--env-file=jobs/platform/kops_aws.env",
+      "--extract=ci/latest",
+      "--ginkgo-parallel",
+      "--kops-args=--node-size=m5.large --master-size=m5.large",
+      "--kops-state=s3://k8s-kops-prow/",
+      "--kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci.txt",
+      "--kops-zones=us-west-2a",
+      "--provider=aws",
+      "--test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]|\\[HPA\\]|Dashboard|Services.*functioning.*NodePort",
+      "--timeout=120m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-aws"
+    ]
+  },
   "ci-kubernetes-e2e-kops-aws-newrunner": {
     "args": [
       "--cluster=e2e-kops-aws-newrunner.test-aws.k8s.io",
