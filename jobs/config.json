@@ -8124,7 +8124,7 @@
       "--env-file=jobs/platform/kops_aws.env",
       "--extract=ci/latest",
       "--ginkgo-parallel",
-      "--kops-args=--node-size=m5.large --master-size=m5.large",
+      "--kops-args=--node-size=m5.large --master-size=m5.large --channel=alpha",
       "--kops-state=s3://k8s-kops-prow/",
       "--kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci.txt",
       "--kops-zones=us-west-2a",
