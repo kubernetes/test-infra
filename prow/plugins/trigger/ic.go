@@ -26,23 +26,25 @@ import (
 	"k8s.io/test-infra/prow/plugins"
 )
 
-var okToTest = regexp.MustCompile(`(?m)^/ok-to-test\s*$`)
-var retest = regexp.MustCompile(`(?m)^/retest\s*$`)
+var (
+	okToTest = regexp.MustCompile(`(?m)^/ok-to-test\s*$`)
+	retest   = regexp.MustCompile(`(?m)^/retest\s*$`)
+)
 
-func handleIC(c client, trustedOrg string, ic github.IssueCommentEvent) error {
-	org := ic.Repo.Owner.Login
-	repo := ic.Repo.Name
-	number := ic.Issue.Number
-	commentAuthor := ic.Comment.User.Login
+func handleCE(c client, trustedOrg string, e *github.GenericCommentEvent) error {
+	org := e.Repo.Owner.Login
+	repo := e.Repo.Name
+	number := e.Number
+	commentAuthor := e.User.Login
 	// Only take action when a comment is first created.
-	if ic.Action != github.IssueCommentActionCreated {
+	if e.Action != github.GenericCommentActionCreated {
 		return nil
 	}
 	// If it's not an open PR, skip it.
-	if !ic.Issue.IsPullRequest() {
+	if !e.IsPR {
 		return nil
 	}
-	if ic.Issue.State != "open" {
+	if e.IssueState != "open" {
 		return nil
 	}
 	// Skip bot comments.
@@ -71,24 +73,13 @@ func handleIC(c client, trustedOrg string, ic github.IssueCommentEvent) error {
 	}
 
 	// Which jobs does the comment want us to run?
-	testAll := okToTest.MatchString(ic.Comment.Body)
-	shouldRetestFailed := retest.MatchString(ic.Comment.Body)
-	requestedJobs, err := c.Config.MatchingPresubmits(ic.Repo.FullName, ic.Comment.Body, testAll, files)
+	testAll := okToTest.MatchString(e.Body)
+	shouldRetestFailed := retest.MatchString(e.Body)
+	requestedJobs, err := c.Config.MatchingPresubmits(e.Repo.FullName, e.Body, testAll, files)
 	if err != nil {
 		return err
 	}
 	if !shouldRetestFailed && len(requestedJobs) == 0 {
-		// Check for the presence of the needs-ok-to-test label and remove it
-		// if a trusted member has commented "/ok-to-test".
-		if testAll && ic.Issue.HasLabel(needsOkToTest) {
-			orgMember, err := c.GitHubClient.IsMember(trustedOrg, commentAuthor)
-			if err != nil {
-				return err
-			}
-			if orgMember {
-				return c.GitHubClient.RemoveLabel(ic.Repo.Owner.Login, ic.Repo.Name, ic.Issue.Number, needsOkToTest)
-			}
-		}
 		return nil
 	}
 
@@ -112,7 +103,7 @@ func handleIC(c client, trustedOrg string, ic github.IssueCommentEvent) error {
 				runContexts[status.Context] = true
 			}
 		}
-		retests, err := c.Config.RetestPresubmits(ic.Repo.FullName, skipContexts, runContexts, files)
+		retests, err := c.Config.RetestPresubmits(e.Repo.FullName, skipContexts, runContexts, files)
 		if err != nil {
 			return err
 		}
@@ -138,17 +129,24 @@ func handleIC(c client, trustedOrg string, ic github.IssueCommentEvent) error {
 		if !trusted {
 			resp := fmt.Sprintf("you can't request testing unless you are a [%s](https://github.com/orgs/%s/people) member.", trustedOrg, trustedOrg)
 			c.Logger.Infof("Commenting \"%s\".", resp)
-			return c.GitHubClient.CreateComment(org, repo, number, plugins.FormatICResponse(ic.Comment, resp))
+			return c.GitHubClient.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, e.User.Login, resp))
 		}
 	}
 
-	if testAll && ic.Issue.HasLabel(needsOkToTest) {
-		if err := c.GitHubClient.RemoveLabel(ic.Repo.Owner.Login, ic.Repo.Name, ic.Issue.Number, needsOkToTest); err != nil {
-			c.Logger.WithError(err).Errorf("Failed at removing %s label", needsOkToTest)
-		}
-		err = clearStaleComments(c.GitHubClient, trustedOrg, *pr, comments)
+	if testAll {
+		prHasLabel, err := checkPRHasLabel(c.GitHubClient, *pr, needsOkToTest)
 		if err != nil {
-			c.Logger.Warnf("Failed to clear stale comments: %v.", err)
+			c.Logger.Warn(err)
+		}
+		if prHasLabel {
+			err = clearStaleComments(c.GitHubClient, trustedOrg, *pr, comments)
+			if err != nil {
+				c.Logger.Warnf("Failed to clear stale comments: %v.", err)
+			}
+			err = removePRLabelIfExists(c.GitHubClient, *pr, needsOkToTest)
+			if err != nil {
+				c.Logger.Warnf("Failed to check/remove label: %v.", err)
+			}
 		}
 	}
 
@@ -202,7 +200,7 @@ func handleIC(c client, trustedOrg string, ic github.IssueCommentEvent) error {
 		for k, v := range job.Labels {
 			labels[k] = v
 		}
-		labels[github.EventGUID] = ic.GUID
+		labels[github.EventGUID] = e.GUID
 		if _, err := c.KubeClient.CreateProwJob(pjutil.NewProwJob(pjutil.PresubmitSpec(job, kr), labels)); err != nil {
 			errors = append(errors, err)
 		}

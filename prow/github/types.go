@@ -487,4 +487,7 @@ type GenericCommentEvent struct {
 	IssueState   string
 	IssueBody    string
 	IssueHTMLURL string
+
+	// GUID is included in the header of the request received by Github.
+	GUID string
 }

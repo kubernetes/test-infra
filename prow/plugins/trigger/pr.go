@@ -60,12 +60,16 @@ func handlePR(c client, trustedOrg string, pr github.PullRequestEvent) error {
 		if err != nil {
 			return fmt.Errorf("could not validate PR: %s", err)
 		} else if trusted {
+			// Clear any stale comments
 			err = clearStaleComments(c.GitHubClient, trustedOrg, pr.PullRequest, comments)
 			if err != nil {
 				c.Logger.Warnf("Failed to clear stale comments: %v.", err)
 			}
-			// Just try to remove "needs-ok-to-test" label if existing, we don't care about the result.
-			c.GitHubClient.RemoveLabel(trustedOrg, pr.PullRequest.Base.Repo.Name, pr.PullRequest.Number, needsOkToTest)
+			// Remove needs-ok-to-test if it exists on the PR
+			err = removePRLabelIfExists(c.GitHubClient, pr.PullRequest, needsOkToTest)
+			if err != nil {
+				c.Logger.Warnf("Failed to check/remove label: %v.", err)
+			}
 			c.Logger.Info("Starting all jobs for updated PR.")
 			return buildAll(c, pr.PullRequest, pr.GUID)
 		}
@@ -81,9 +85,15 @@ func handlePR(c client, trustedOrg string, pr github.PullRequestEvent) error {
 		if err != nil {
 			return fmt.Errorf("could not validate PR: %s", err)
 		} else if trusted {
+			// Clear any stale comments
 			err = clearStaleComments(c.GitHubClient, trustedOrg, pr.PullRequest, comments)
 			if err != nil {
 				c.Logger.Warnf("Failed to clear stale comments: %v.", err)
+			}
+			// Remove needs-ok-to-test if it exists on the PR
+			err = removePRLabelIfExists(c.GitHubClient, pr.PullRequest, needsOkToTest)
+			if err != nil {
+				c.Logger.Warnf("Failed to check/remove label: %v.", err)
 			}
 			c.Logger.Info("Starting all jobs for updated PR.")
 			return buildAll(c, pr.PullRequest, pr.GUID)
@@ -251,4 +261,31 @@ func clearStaleComments(gc githubClient, trustedOrg string, pr github.PullReques
 			return c.User.Login == botName && strings.Contains(c.Body, waitingComment)
 		},
 	)
+}
+
+func checkPRHasLabel(gc githubClient, pr github.PullRequest, targetLabel string) (bool, error) {
+	labels, err := gc.GetIssueLabels(pr.Base.Repo.Owner.Login, pr.Base.Repo.Name, pr.Number)
+	if err != nil {
+		return false, fmt.Errorf("failed to get issue labels for %s/%s#%d: %v", pr.Base.Repo.Owner.Login, pr.Base.Repo.Name, pr.Number, err)
+	}
+	hasTargetLabel := false
+	for _, label := range labels {
+		if label.Name == targetLabel {
+			hasTargetLabel = true
+			break
+		}
+	}
+	return hasTargetLabel, nil
+}
+
+// removePRLabelIfExists removes a target label from a PR if it exists
+func removePRLabelIfExists(gc githubClient, pr github.PullRequest, targetLabel string) error {
+	prHasLabel, err := checkPRHasLabel(gc, pr, targetLabel)
+	if err != nil {
+		return err
+	}
+	if prHasLabel {
+		return gc.RemoveLabel(pr.Base.Repo.Owner.Login, pr.Base.Repo.Name, pr.Number, targetLabel)
+	}
+	return nil
 }
