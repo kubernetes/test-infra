@@ -22,8 +22,23 @@ log_level: info
 
 tide:
   queries:
-  - "type:pr state:open repo:kubernetes/test-infra repo:kubernetes/federation label:lgtm label:approved -label:needs-ok-to-test -label:do-not-merge/work-in-progress -label:do-not-merge/hold label:\"cncf-cla: yes\""
-  - "type:pr state:open repo:kubernetes/kubectl review:approved -label:do-not-merge/work-in-progress -label:do-not-merge/hold"
+  - repos:
+    - kubernetes/test-infra
+    - kubernetes/federation
+    labels:
+    - lgtm
+    - approved
+    - "cncf-cla: yes"
+    missingLabels:
+    - needs-ok-to-test
+    - do-not-merge/work-in-progress
+    - do-not-merge/hold
+  - repos:
+    - kubernetes/kubectl
+    missingLabels:
+    - do-not-merge/work-in-progress
+    - do-not-merge/hold
+    reviewApprovedRequired: true
 
 push_gateway:
   endpoint: pushgateway
@@ -1616,6 +1631,77 @@ presubmits:
     context: pull-kubernetes-kubemark-e2e-gce-big
     rerun_command: "/test pull-kubernetes-kubemark-e2e-gce-big"
     trigger: "(?m)^/test pull-kubernetes-kubemark-e2e-gce-big,?(\\s+|$)"
+  - name: pull-kubernetes-kubemark-e2e-gce-prow
+    agent: kubernetes
+    always_run: false
+    skip_report: false
+    max_concurrency: 3
+    context: pull-kubernetes-kubemark-e2e-gce-prow
+    rerun_command: "/test pull-kubernetes-kubemark-e2e-gce-prow"
+    trigger: "(?m)^/test pull-kubernetes-kubemark-e2e-gce-prow,?(\\s+|$)"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+        imagePullPolicy: Always
+        args:
+        - --root=/go/src
+        - "--clean"
+        - "--git-cache=/root/.cache/git"
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--repo=k8s.io/release"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--timeout=90"
+        env:
+        # TODO(krzyzacy): Figure out bazel built kubemark image
+        # - name: KUBEMARK_BAZEL_BUILD
+        # value: "y" 
+        - name: DOCKER_IN_DOCKER_ENABLED
+          value: true
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /etc/service-account/service-account.json
+        - name: USER
+          value: prow
+        - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+          value: /etc/ssh-key-secret/ssh-private
+        - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+          value: /etc/ssh-key-secret/ssh-public
+        - name: TEST_TMPDIR
+          value: /root/.cache/bazel
+        # Bazel needs privileged mode in order to sandbox builds.
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - mountPath: /etc/service-account
+          name: service
+          readOnly: true
+        - mountPath: /etc/ssh-key-secret
+          name: ssh
+          readOnly: true
+        - name: cache-ssd
+          mountPath: /root/.cache
+        ports:
+        - containerPort: 9999
+          hostPort: 9999
+        resources:
+          requests:
+            memory: "6Gi"
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
+      - name: ssh
+        secret:
+          defaultMode: 256
+          secretName: ssh-key-secret
+      - name: cache-ssd
+        hostPath:
+          path: /mnt/disks/ssd0
+      - name: docker-graph
+        hostPath:
+          path: /mnt/disks/ssd0/docker-graph
+
   - name: pull-kubernetes-node-e2e
     agent: kubernetes
     skip_branches:
@@ -1889,6 +1975,9 @@ presubmits:
         ports:
         - containerPort: 9999
           hostPort: 9999
+        resources:
+          requests:
+            cpu: 4
       volumes:
       - name: service
         secret:
@@ -1939,6 +2028,9 @@ presubmits:
         ports:
         - containerPort: 9999
           hostPort: 9999
+        resources:
+          requests:
+            cpu: 4
       volumes:
       - name: service
         secret:
@@ -3120,6 +3212,76 @@ presubmits:
     context: pull-security-kubernetes-kubemark-e2e-gce-big
     rerun_command: "/test pull-security-kubernetes-kubemark-e2e-gce-big"
     trigger: "(?m)^/test pull-security-kubernetes-kubemark-e2e-gce-big,?(\\s+|$)"
+  - name: pull-security-kubernetes-kubemark-e2e-gce-prow
+    agent: kubernetes
+    always_run: false
+    skip_report: false
+    max_concurrency: 3
+    context: pull-security-kubernetes-kubemark-e2e-gce-prow
+    rerun_command: "/test pull-security-kubernetes-kubemark-e2e-gce-prow"
+    trigger: "(?m)^/test pull-security-kubernetes-kubemark-e2e-gce-prow,?(\\s+|$)"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+        imagePullPolicy: Always
+        args:
+        - --root=/go/src
+        - "--clean"
+        - "--git-cache=/root/.cache/git"
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--repo=k8s.io/release"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--timeout=90"
+        env:
+        # TODO(krzyzacy): Figure out bazel built kubemark image
+        # - name: KUBEMARK_BAZEL_BUILD
+        # value: "y" 
+        - name: DOCKER_IN_DOCKER_ENABLED
+          value: true
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /etc/service-account/service-account.json
+        - name: USER
+          value: prow
+        - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+          value: /etc/ssh-key-secret/ssh-private
+        - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+          value: /etc/ssh-key-secret/ssh-public
+        - name: TEST_TMPDIR
+          value: /root/.cache/bazel
+        # Bazel needs privileged mode in order to sandbox builds.
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - mountPath: /etc/service-account
+          name: service
+          readOnly: true
+        - mountPath: /etc/ssh-key-secret
+          name: ssh
+          readOnly: true
+        - name: cache-ssd
+          mountPath: /root/.cache
+        ports:
+        - containerPort: 9999
+          hostPort: 9999
+        resources:
+          requests:
+            memory: "6Gi"
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
+      - name: ssh
+        secret:
+          defaultMode: 256
+          secretName: ssh-key-secret
+      - name: cache-ssd
+        hostPath:
+          path: /mnt/disks/ssd0
+      - name: docker-graph
+        hostPath:
+          path: /mnt/disks/ssd0/docker-graph
   - name: pull-security-kubernetes-node-e2e
     agent: kubernetes
     skip_branches:
@@ -3393,6 +3555,9 @@ presubmits:
         ports:
         - containerPort: 9999
           hostPort: 9999
+        resources:
+          requests:
+            cpu: 4
       volumes:
       - name: service
         secret:
@@ -3443,6 +3608,9 @@ presubmits:
         ports:
         - containerPort: 9999
           hostPort: 9999
+        resources:
+          requests:
+            cpu: 4
       volumes:
       - name: service
         secret:
@@ -17729,6 +17897,50 @@ periodics:
 - interval: 1h
   agent: kubernetes
   name: ci-kubernetes-e2e-kops-aws-cncf-canary
+  spec:
+    containers:
+    - args:
+      - --timeout=140
+      - --bare
+      env:
+      - name: GOOGLE_APPLICATION_CREDENTIALS
+        value: /etc/service-account/service-account.json
+      - name: USER
+        value: prow
+      - name: JENKINS_AWS_CREDENTIALS_FILE
+        value: /etc/aws-cred/credentials
+      - name: JENKINS_AWS_SSH_PRIVATE_KEY_FILE
+        value: /etc/aws-ssh/aws-ssh-private
+      - name: JENKINS_AWS_SSH_PUBLIC_KEY_FILE
+        value: /etc/aws-ssh/aws-ssh-public
+      image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+      imagePullPolicy: Always
+      volumeMounts:
+      - mountPath: /etc/service-account
+        name: service
+        readOnly: true
+      - mountPath: /etc/aws-ssh
+        name: aws-ssh
+        readOnly: true
+      - mountPath: /etc/aws-cred
+        name: aws-cred
+        readOnly: true
+    volumes:
+    - name: service
+      secret:
+        secretName: service-account
+    - name: aws-ssh
+      secret:
+        defaultMode: 256
+        secretName: aws-ssh-key-secret
+    - name: aws-cred
+      secret:
+        defaultMode: 256
+        secretName: aws-cred-new
+
+- interval: 1h
+  agent: kubernetes
+  name: ci-kubernetes-e2e-kops-aws-ena-nvme
   spec:
     containers:
     - args:

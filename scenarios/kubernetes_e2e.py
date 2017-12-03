@@ -445,7 +445,7 @@ def set_up_kops_aws(workspace, args, mode, cluster, runner_args):
 
     zones = args.kops_zones or random.choice([
         'us-west-1a',
-        'us-west-1c',
+        #'us-west-1c', Some accounts have b but not c, some c but not b
         'us-west-2a',
         'us-west-2b',
         'us-east-1a',
@@ -488,7 +488,7 @@ def set_up_aws(workspace, args, mode, cluster, runner_args):
 
     zones = args.kops_zones or random.choice([
         'us-west-1a',
-        'us-west-1c',
+        #'us-west-1c', Some accounts have b but not c, some c but not b
         'us-west-2a',
         'us-west-2b',
         'us-east-1a',
