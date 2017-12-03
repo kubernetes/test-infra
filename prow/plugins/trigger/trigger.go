@@ -31,7 +31,7 @@ const (
 )
 
 func init() {
-	plugins.RegisterIssueCommentHandler(pluginName, handleIssueComment, nil)
+	plugins.RegisterGenericCommentHandler(pluginName, handleGenericComment, nil)
 	plugins.RegisterPullRequestHandler(pluginName, handlePullRequest, nil)
 	plugins.RegisterPushEventHandler(pluginName, handlePush, nil)
 }
@@ -47,6 +47,7 @@ type githubClient interface {
 	CreateStatus(owner, repo, ref string, status github.Status) error
 	GetCombinedStatus(org, repo, ref string) (*github.CombinedStatus, error)
 	GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error)
+	GetIssueLabels(org, repo string, number int) ([]github.Label, error)
 	RemoveLabel(org, repo string, number int, label string) error
 	DeleteStaleComments(org, repo string, number int, comments []github.IssueComment, isStale func(github.IssueComment) bool) error
 }
@@ -83,8 +84,8 @@ func handlePullRequest(pc plugins.PluginClient, pr github.PullRequestEvent) erro
 	return handlePR(getClient(pc), trustedOrg, pr)
 }
 
-func handleIssueComment(pc plugins.PluginClient, ic github.IssueCommentEvent) error {
-	org, repo := ic.Repo.Owner.Login, ic.Repo.Name
+func handleGenericComment(pc plugins.PluginClient, e github.GenericCommentEvent) error {
+	org, repo := e.Repo.Owner.Login, e.Repo.Name
 	config := pc.PluginConfig.TriggerFor(org, repo)
 	var trustedOrg string
 	if config == nil || config.TrustedOrg == "" {
@@ -92,7 +93,7 @@ func handleIssueComment(pc plugins.PluginClient, ic github.IssueCommentEvent) er
 	} else {
 		trustedOrg = config.TrustedOrg
 	}
-	return handleIC(getClient(pc), trustedOrg, ic)
+	return handleCE(getClient(pc), trustedOrg, &e)
 }
 
 func handlePush(pc plugins.PluginClient, pe github.PushEvent) error {

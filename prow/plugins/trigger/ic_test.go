@@ -167,33 +167,6 @@ func TestHandleIssueComment(t *testing.T) {
 			StartsExactly: "pull-jib",
 		},
 		{
-			name: "needs-ok-to-test label is removed when no presubmit runs by default",
-
-			Author:      "t",
-			Body:        "/ok-to-test",
-			State:       "open",
-			IsPR:        true,
-			IsOkToTest:  true,
-			ShouldBuild: false,
-			Presubmits: map[string][]config.Presubmit{
-				"org/repo": {
-					{
-						Name:      "job",
-						AlwaysRun: false,
-						Context:   "pull-job",
-						Trigger:   `/test all`,
-					},
-					{
-						Name:      "jib",
-						AlwaysRun: false,
-						Context:   "pull-jib",
-						Trigger:   `/test jib`,
-					},
-				},
-			},
-			IssueLabels: []github.Label{{Name: "needs-ok-to-test"}},
-		},
-		{
 			name:   "Wrong branch w/ SkipReport",
 			Author: "t",
 			Body:   "/test all",
@@ -335,7 +308,6 @@ func TestHandleIssueComment(t *testing.T) {
 			},
 			ShouldBuild:   true,
 			StartsExactly: "pull-jab",
-			IssueLabels:   []github.Label{{Name: "needs-ok-to-test"}},
 		},
 	}
 	for _, tc := range testcases {
@@ -401,36 +373,25 @@ func TestHandleIssueComment(t *testing.T) {
 		}
 		c.Config.SetPresubmits(presubmits)
 
-		var pr *struct{}
-		if tc.IsPR {
-			pr = &struct{}{}
-		}
 		if tc.HasOkToTest {
 			g.IssueComments[0] = []github.IssueComment{{
 				Body: "/ok-to-test",
 				User: github.User{Login: "t"},
 			}}
 		}
-		event := github.IssueCommentEvent{
-			Action: github.IssueCommentActionCreated,
+		event := github.GenericCommentEvent{
+			Action: github.GenericCommentActionCreated,
 			Repo: github.Repo{
 				Name:     "repo",
 				FullName: "org/repo",
 			},
-			Comment: github.IssueComment{
-				Body: tc.Body,
-				User: github.User{Login: tc.Author},
-			},
-			Issue: github.Issue{
-				PullRequest: pr,
-				State:       tc.State,
-			},
-		}
-		if len(tc.IssueLabels) > 0 {
-			event.Issue.Labels = tc.IssueLabels
+			Body:       tc.Body,
+			User:       github.User{Login: tc.Author},
+			IssueState: tc.State,
+			IsPR:       tc.IsPR,
 		}
 
-		if err := handleIC(c, "kubernetes", event); err != nil {
+		if err := handleCE(c, "kubernetes", &event); err != nil {
 			t.Fatalf("Didn't expect error: %s", err)
 		}
 		if len(kc.started) > 0 && !tc.ShouldBuild {
@@ -445,15 +406,6 @@ func TestHandleIssueComment(t *testing.T) {
 			t.Error("Expected report to github")
 		} else if !tc.ShouldReport && len(g.CreatedStatuses) > 0 {
 			t.Errorf("Expected no reports to github, but got %d", len(g.CreatedStatuses))
-		}
-		if tc.IsOkToTest {
-			if len(g.LabelsRemoved) != 1 {
-				t.Errorf("expected a label to be removed")
-				continue
-			}
-			if g.LabelsRemoved[0] != "/repo#0:needs-ok-to-test" {
-				t.Errorf("expected %q to be removed, got %q", "/repo#0:needs-ok-to-test", g.LabelsRemoved[0])
-			}
 		}
 	}
 }
