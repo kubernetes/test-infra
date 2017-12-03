@@ -8107,6 +8107,7 @@
       "--extract=ci/latest",
       "--ginkgo-parallel",
       "--kops-state=s3://k8s-kops-prow/",
+      "--kops-zones=us-west-2c",
       "--provider=aws",
       "--test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]|\\[HPA\\]|Dashboard|Services.*functioning.*NodePort",
       "--timeout=120m"
