@@ -102,7 +102,7 @@ instead just say `YOUR_ORG:` and the plugin will run for every repo in the org.
 Run the following to test the file, replacing the path as necessary:
 
 ```
-bazel run //prow/cmd/config -- --plugin-path=path/to/plugins.yaml
+bazel run //prow/cmd/config -- --plugin-config=path/to/plugins.yaml
 ```
 
 There should be no errors. You can run this as a part of your presubmit testing
