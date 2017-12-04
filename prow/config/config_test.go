@@ -151,9 +151,12 @@ func TestRequiredRetestContextsMatch(t *testing.T) {
 }
 
 func TestConfigSecurityJobsMatch(t *testing.T) {
-	var kp, sp []Presubmit
-	reflect.Copy(reflect.ValueOf(kp), reflect.ValueOf(c.Presubmits["kubernetes/kubernetes"]))
-	reflect.Copy(reflect.ValueOf(sp), reflect.ValueOf(c.Presubmits["kubernetes-security/kubernetes"]))
+	conf, err := Load("../config.yaml")
+	if err != nil {
+		t.Fatalf("fail to load config for TestConfigSecurityJobsMatch : %v", err)
+	}
+	kp := conf.Presubmits["kubernetes/kubernetes"]
+	sp := conf.Presubmits["kubernetes-security/kubernetes"]
 	if len(kp) != len(sp) {
 		t.Fatalf("length of kubernetes/kubernetes presubmits %d does not equal length of kubernetes-security/kubernetes presubmits %d", len(kp), len(sp))
 	}
