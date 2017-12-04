@@ -9332,7 +9332,7 @@
   },
   "ci-kubernetes-kubemark-5-prow-canary": {
     "args": [
-      "--cluster=kubemark-5-prow-canary",
+      "--cluster=prow-kubemark-canary",
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/ci-kubernetes-kubemark-5-gce.env",
       "--extract=ci/latest",
