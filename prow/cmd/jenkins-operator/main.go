@@ -179,7 +179,7 @@ func gather(c *jenkins.Controller, logger *logrus.Entry) {
 		case <-tick:
 			start := time.Now()
 			c.SyncMetrics()
-			logger.WithField("duration", fmt.Sprintf("%v", time.Since(start))).Debug("Metrics synced")
+			logger.WithField("metrics-duration", fmt.Sprintf("%v", time.Since(start))).Debug("Metrics synced")
 		case <-sig:
 			logger.Debug("Jenkins operator gatherer is shutting down...")
 			return
