@@ -21265,7 +21265,7 @@ periodics:
       containers:
       - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171127-562c3fdd
         args:
-        - "--repo=k8s.io/kubernetes=release-1.8"
+        - "--repo=k8s.io/kubernetes=release-1.9"
         - "--clean"
         - "--git-cache=/root/.cache/git"
         - "--timeout=320"
