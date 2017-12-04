@@ -21,8 +21,20 @@ import (
 	"time"
 )
 
-// EventGUID is sent by Github in a header of every webhook request.
-const EventGUID = "event-GUID"
+const (
+	// EventGUID is sent by Github in a header of every webhook request.
+	// Used as a log field across prow.
+	EventGUID = "event-GUID"
+	// PrLogField is the number of a PR.
+	// Used as a log field across prow.
+	PrLogField = "pr"
+	// OrgLogField is the organization of a PR.
+	// Used as a log field across prow.
+	OrgLogField = "org"
+	// RepoLogField is the repository of a PR.
+	// Used as a log field across prow.
+	RepoLogField = "repo"
+)
 
 // These are possible State entries for a Status.
 const (
