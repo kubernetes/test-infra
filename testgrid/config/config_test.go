@@ -37,6 +37,7 @@ var (
 		"google",
 		"kopeio",
 		"tectonic",
+		"redhat",
 	}
 	orgs = []string{
 		"presubmits",

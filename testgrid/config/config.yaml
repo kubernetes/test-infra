@@ -1890,6 +1890,11 @@ test_groups:
 - name: ci-kubernetes-e2e-gci-gce-scalability-beta
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-scalability-beta
   num_failures_to_alert: 1
+# RHEL node e2e tests on AWS (contact: aos-pod@redhat.com)
+- name: ci-kubernetes-conformance-node-e2e-containerized-rhel
+  gcs_prefix: kubernetes-github-redhat/logs/ci-kubernetes-conformance-node-e2e-containerized-rhel
+- name: ci-kubernetes-conformance-node-e2e-rhel
+  gcs_prefix: kubernetes-github-redhat/logs/ci-kubernetes-conformance-node-e2e-rhel
 
 # CRI-O
 - name: test_pull_request_crio_e2e_fedora
@@ -3961,6 +3966,10 @@ dashboards:
     test_group_name: ci-kubernetes-node-kubelet-stable2
   - name: kubelet-1.6
     test_group_name: ci-kubernetes-node-kubelet-stable3
+  - name: kubelet-conformance-aws-e2e-rhel
+    test_group_name: ci-kubernetes-conformance-node-e2e-rhel
+  - name: kubelet-containerized-conformance-aws-e2e-rhel
+    test_group_name: ci-kubernetes-conformance-node-e2e-containerized-rhel
 
 - name: sig-node-ppc64le
   dashboard_tab:
