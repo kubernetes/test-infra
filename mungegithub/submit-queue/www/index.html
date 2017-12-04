@@ -70,7 +70,7 @@
               <md-subheader class="md-primary">CURRENTLY RUNNING</md-subheader>
               <md-list layout-padding>
                 <md-list-item class="md-2-line" ng-repeat="pr in cntl.e2erunning track by pr.Number">
-                  <a class="md-avatar" ng-href="{{cntl.metadata.RepoPullUrl}}{{pr.Login}}">
+                  <a class="md-avatar" ng-href="{{cntl.metadata.RepoPullURL}}{{pr.Login}}">
                     <img ng-src="{{pr.AvatarURL}}" alt="{{pr.Login}}">
                   </a>
                   <md-content class="md-list-item-text" layout="column">
