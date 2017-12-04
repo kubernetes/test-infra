@@ -1638,7 +1638,7 @@ presubmits:
     trigger: "(?m)^/test( all| pull-kubernetes-kubemark-e2e-gce),?(\\s+|$)"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20171108-8b5aad9f-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20171201-f8fa79b46-master
         imagePullPolicy: Always
         args:
         - --root=/go/src
@@ -3227,7 +3227,7 @@ presubmits:
     trigger: "(?m)^/test( all| pull-security-kubernetes-kubemark-e2e-gce),?(\\s+|$)"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20171108-8b5aad9f-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20171201-f8fa79b46-master
         imagePullPolicy: Always
         args:
         - --root=/go/src
