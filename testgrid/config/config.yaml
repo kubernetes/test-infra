@@ -1637,9 +1637,6 @@ test_groups:
   num_columns_recent: 20
   alert_stale_results_hours: 24
   num_failures_to_alert: 10
-- name: pull-kubernetes-kubemark-e2e-gce-prow
-  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-kubemark-e2e-gce-prow
-  num_columns_recent: 20
 - name: pull-kubernetes-kubemark-e2e-gce-big
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-kubemark-e2e-gce-big
   days_of_results: 1
@@ -4306,8 +4303,6 @@ dashboards:
     test_group_name: pull-kubernetes-unit-prow
   - name: pull-kubernetes-cross-prow
     test_group_name: pull-kubernetes-cross-prow
-  - name: pull-kubernetes-kubemark-e2e-gce-prow
-    test_group_name: pull-kubernetes-kubemark-e2e-gce-prow
 
 - name: sig-ui
   dashboard_tab:

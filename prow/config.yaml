@@ -1620,28 +1620,25 @@ presubmits:
   - name: pull-kubernetes-kubemark-e2e-gce
     agent: jenkins
     always_run: true
+    max_concurrency: 12
     context: pull-kubernetes-kubemark-e2e-gce
     rerun_command: "/test pull-kubernetes-kubemark-e2e-gce"
     trigger: "(?m)^/test( all| pull-kubernetes-kubemark-e2e-gce),?(\\s+|$)"
-    skip_branches:
-    - release-1.4
-  - name: pull-kubernetes-kubemark-e2e-gce-big
-    agent: jenkins
-    always_run: false
-    context: pull-kubernetes-kubemark-e2e-gce-big
-    rerun_command: "/test pull-kubernetes-kubemark-e2e-gce-big"
-    trigger: "(?m)^/test pull-kubernetes-kubemark-e2e-gce-big,?(\\s+|$)"
-  - name: pull-kubernetes-kubemark-e2e-gce-prow
+    branches:
+    - release-1.6
+
+  - name: pull-kubernetes-kubemark-e2e-gce
     agent: kubernetes
-    always_run: false
-    skip_report: false
-    max_concurrency: 3
-    context: pull-kubernetes-kubemark-e2e-gce-prow
-    rerun_command: "/test pull-kubernetes-kubemark-e2e-gce-prow"
-    trigger: "(?m)^/test pull-kubernetes-kubemark-e2e-gce-prow,?(\\s+|$)"
+    always_run: true
+    max_concurrency: 12
+    skip_branches:
+    - release-1.6
+    context: pull-kubernetes-kubemark-e2e-gce
+    rerun_command: "/test pull-kubernetes-kubemark-e2e-gce"
+    trigger: "(?m)^/test( all| pull-kubernetes-kubemark-e2e-gce),?(\\s+|$)"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20171108-8b5aad9f-master
         imagePullPolicy: Always
         args:
         - --root=/go/src
@@ -1653,6 +1650,11 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--timeout=90"
+        # the release-1.6 version of this job uses Jenkins, so here we override
+        # some args for jobs on Prow
+        - --
+        - --build=bazel
+        - --mode=local
         env:
         # TODO(krzyzacy): Figure out bazel built kubemark image
         # - name: KUBEMARK_BAZEL_BUILD
@@ -1702,6 +1704,12 @@ presubmits:
         hostPath:
           path: /mnt/disks/ssd0/docker-graph
 
+  - name: pull-kubernetes-kubemark-e2e-gce-big
+    agent: jenkins
+    always_run: false
+    context: pull-kubernetes-kubemark-e2e-gce-big
+    rerun_command: "/test pull-kubernetes-kubemark-e2e-gce-big"
+    trigger: "(?m)^/test pull-kubernetes-kubemark-e2e-gce-big,?(\\s+|$)"
   - name: pull-kubernetes-node-e2e
     agent: kubernetes
     skip_branches:
@@ -3201,28 +3209,25 @@ presubmits:
   - name: pull-security-kubernetes-kubemark-e2e-gce
     agent: jenkins
     always_run: true
+    max_concurrency: 12
     context: pull-security-kubernetes-kubemark-e2e-gce
     rerun_command: "/test pull-security-kubernetes-kubemark-e2e-gce"
     trigger: "(?m)^/test( all| pull-security-kubernetes-kubemark-e2e-gce),?(\\s+|$)"
-    skip_branches:
-    - release-1.4
-  - name: pull-security-kubernetes-kubemark-e2e-gce-big
-    agent: jenkins
-    always_run: false
-    context: pull-security-kubernetes-kubemark-e2e-gce-big
-    rerun_command: "/test pull-security-kubernetes-kubemark-e2e-gce-big"
-    trigger: "(?m)^/test pull-security-kubernetes-kubemark-e2e-gce-big,?(\\s+|$)"
-  - name: pull-security-kubernetes-kubemark-e2e-gce-prow
+    branches:
+    - release-1.6
+
+  - name: pull-security-kubernetes-kubemark-e2e-gce
     agent: kubernetes
-    always_run: false
-    skip_report: false
-    max_concurrency: 3
-    context: pull-security-kubernetes-kubemark-e2e-gce-prow
-    rerun_command: "/test pull-security-kubernetes-kubemark-e2e-gce-prow"
-    trigger: "(?m)^/test pull-security-kubernetes-kubemark-e2e-gce-prow,?(\\s+|$)"
+    always_run: true
+    max_concurrency: 12
+    skip_branches:
+    - release-1.6
+    context: pull-security-kubernetes-kubemark-e2e-gce
+    rerun_command: "/test pull-security-kubernetes-kubemark-e2e-gce"
+    trigger: "(?m)^/test( all| pull-security-kubernetes-kubemark-e2e-gce),?(\\s+|$)"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20171108-8b5aad9f-master
         imagePullPolicy: Always
         args:
         - --root=/go/src
@@ -3234,6 +3239,11 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--timeout=90"
+        # the release-1.6 version of this job uses Jenkins, so here we override
+        # some args for jobs on Prow
+        - --
+        - --build=bazel
+        - --mode=local
         env:
         # TODO(krzyzacy): Figure out bazel built kubemark image
         # - name: KUBEMARK_BAZEL_BUILD
@@ -3282,6 +3292,13 @@ presubmits:
       - name: docker-graph
         hostPath:
           path: /mnt/disks/ssd0/docker-graph
+
+  - name: pull-security-kubernetes-kubemark-e2e-gce-big
+    agent: jenkins
+    always_run: false
+    context: pull-security-kubernetes-kubemark-e2e-gce-big
+    rerun_command: "/test pull-security-kubernetes-kubemark-e2e-gce-big"
+    trigger: "(?m)^/test pull-security-kubernetes-kubemark-e2e-gce-big,?(\\s+|$)"
   - name: pull-security-kubernetes-node-e2e
     agent: kubernetes
     skip_branches:
