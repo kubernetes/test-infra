@@ -116,9 +116,7 @@ func handleIC(c client, trustedOrg string, ic github.IssueCommentEvent) error {
 		if err != nil {
 			return err
 		}
-		for _, job := range retests {
-			requestedJobs[job.Name] = job
-		}
+		requestedJobs = append(requestedJobs, retests...)
 	}
 
 	var comments []github.IssueComment
