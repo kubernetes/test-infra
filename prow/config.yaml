@@ -18041,7 +18041,7 @@ periodics:
     - name: aws-cred
       secret:
         defaultMode: 256
-        secretName: aws-cred
+        secretName: aws-cred-new
 
 - interval: 24h
   agent: kubernetes
@@ -18084,7 +18084,7 @@ periodics:
     - name: aws-cred
       secret:
         defaultMode: 256
-        secretName: aws-cred
+        secretName: aws-cred-new
 
 - interval: 6h
   agent: kubernetes
@@ -18127,7 +18127,7 @@ periodics:
     - name: aws-cred
       secret:
         defaultMode: 256
-        secretName: aws-cred
+        secretName: aws-cred-new
 
 - interval: 2h
   agent: kubernetes
@@ -18170,7 +18170,7 @@ periodics:
     - name: aws-cred
       secret:
         defaultMode: 256
-        secretName: aws-cred
+        secretName: aws-cred-new
 
 - interval: 2h
   agent: kubernetes
@@ -18213,7 +18213,7 @@ periodics:
     - name: aws-cred
       secret:
         defaultMode: 256
-        secretName: aws-cred
+        secretName: aws-cred-new
 
 - interval: 1h
   agent: kubernetes
@@ -18299,7 +18299,7 @@ periodics:
     - name: aws-cred
       secret:
         defaultMode: 256
-        secretName: aws-cred
+        secretName: aws-cred-new
 
 - interval: 30m
   agent: kubernetes
