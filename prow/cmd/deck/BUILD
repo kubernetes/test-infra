@@ -42,6 +42,7 @@ go_test(
     srcs = [
         "jobs_test.go",
         "main_test.go",
+        "trace_test.go",
     ],
     embed = [":go_default_library"],
     importpath = "k8s.io/test-infra/prow/cmd/deck",
@@ -61,10 +62,12 @@ go_library(
         "main.go",
         "pluginhelp.go",
         "tide.go",
+        "trace.go",
     ],
     importpath = "k8s.io/test-infra/prow/cmd/deck",
     deps = [
         "//prow/config:go_default_library",
+        "//prow/github:go_default_library",
         "//prow/kube:go_default_library",
         "//prow/kube/labels:go_default_library",
         "//prow/pjutil:go_default_library",
