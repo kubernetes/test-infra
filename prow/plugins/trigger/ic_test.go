@@ -308,15 +308,6 @@ func TestHandleIssueComment(t *testing.T) {
 			},
 		},
 		{
-			name:          "Retest and explicit trigger of same job",
-			Author:        "t",
-			Body:          "/retest\n/test jib",
-			State:         "open",
-			IsPR:          true,
-			ShouldBuild:   true,
-			StartsExactly: "pull-jib",
-		},
-		{
 			name:       "Run if changed job triggered by /ok-to-test",
 			Author:     "t",
 			Body:       "/ok-to-test",
@@ -336,6 +327,32 @@ func TestHandleIssueComment(t *testing.T) {
 			ShouldBuild:   true,
 			StartsExactly: "pull-jab",
 			IssueLabels:   []github.Label{{Name: "needs-ok-to-test"}},
+		},
+		{
+			name:   "/test of branch-sharded job",
+			Author: "t",
+			Body:   "/test jab",
+			State:  "open",
+			IsPR:   true,
+			Presubmits: map[string][]config.Presubmit{
+				"org/repo": {
+					{
+						Name:     "jab",
+						Brancher: config.Brancher{Branches: []string{"master"}},
+						Context:  "pull-jab",
+						Trigger:  `/test jab`,
+					},
+					{
+						Name:     "jab",
+						Brancher: config.Brancher{Branches: []string{"release"}},
+						Context:  "pull-jab",
+						Trigger:  `/test jab`,
+					},
+				},
+			},
+			ShouldBuild:   true,
+			ShouldReport:  true,
+			StartsExactly: "pull-jab",
 		},
 	}
 	for _, tc := range testcases {
