@@ -780,7 +780,7 @@ def create_parser():
     parser.add_argument(
         '--kubetest_args',
         action='append',
-        default=[],
+        default=['--flush-mem-after-build'],
         help='Send unrecognized args directly to kubetest')
 
 
