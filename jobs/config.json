@@ -9331,6 +9331,7 @@
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/ci-kubernetes-kubemark-5-gce.env",
       "--extract=ci/latest",
+      "--extract-source",
       "--gcp-node-image=gci",
       "--gcp-project=k8s-jenkins-kubemark",
       "--gcp-zone=us-central1-f",

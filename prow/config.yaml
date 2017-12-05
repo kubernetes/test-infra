@@ -1037,7 +1037,7 @@ presubmits:
           value: true
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: /etc/service-account/service-account.json
-        # docker-in-docker needs privilged mode
+        # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
         volumeMounts:
@@ -1092,7 +1092,7 @@ presubmits:
           value: true
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: /etc/service-account/service-account.json
-        # docker-in-docker needs privilged mode
+        # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
         volumeMounts:
@@ -1971,7 +1971,7 @@ presubmits:
           value: true
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: /etc/service-account/service-account.json
-        # docker-in-docker needs privilged mode
+        # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
         volumeMounts:
@@ -2026,7 +2026,7 @@ presubmits:
           value: true
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: /etc/service-account/service-account.json
-        # docker-in-docker needs privilged mode
+        # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
         volumeMounts:
@@ -2627,7 +2627,7 @@ presubmits:
           value: true
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: /etc/service-account/service-account.json
-        # docker-in-docker needs privilged mode
+        # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
         volumeMounts:
@@ -2682,7 +2682,7 @@ presubmits:
           value: true
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: /etc/service-account/service-account.json
-        # docker-in-docker needs privilged mode
+        # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
         volumeMounts:
@@ -3560,7 +3560,7 @@ presubmits:
           value: true
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: /etc/service-account/service-account.json
-        # docker-in-docker needs privilged mode
+        # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
         volumeMounts:
@@ -3615,7 +3615,7 @@ presubmits:
           value: true
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: /etc/service-account/service-account.json
-        # docker-in-docker needs privilged mode
+        # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
         volumeMounts:
@@ -4871,7 +4871,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      # docker-in-docker needs privilged mode
+      # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
       image: gcr.io/k8s-testimages/kubekins-e2e:v20171204-8e1bbdcba-master
@@ -4913,7 +4913,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
-      # docker-in-docker needs privilged mode
+      # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
       image: gcr.io/k8s-testimages/kubekins-e2e:v20171204-8e1bbdcba-master
@@ -19736,7 +19736,7 @@ periodics:
       ports:
       - containerPort: 9999
         hostPort: 9999
-      # docker-in-docker needs privilged mode
+      # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
     volumes:
@@ -19784,7 +19784,7 @@ periodics:
       ports:
       - containerPort: 9999
         hostPort: 9999
-      # docker-in-docker needs privilged mode
+      # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
     volumes:
@@ -19832,7 +19832,7 @@ periodics:
       ports:
       - containerPort: 9999
         hostPort: 9999
-      # docker-in-docker needs privilged mode
+      # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
     volumes:
@@ -19880,7 +19880,7 @@ periodics:
       ports:
       - containerPort: 9999
         hostPort: 9999
-      # docker-in-docker needs privilged mode
+      # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
     volumes:
@@ -19906,11 +19906,8 @@ periodics:
       - --bare
       - --timeout=80
       env:
-      # TODO(krzyzacy): Figure out bazel built kubemark image
-      # - name: KUBEMARK_BAZEL_BUILD
-      # value: "y" 
-      - name: DOCKER_IN_DOCKER_ENABLED
-        value: true
+      - name: KUBEMARK_BAZEL_BUILD
+        value: "y"
       - name: GOOGLE_APPLICATION_CREDENTIALS
         value: /etc/service-account/service-account.json
       - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
@@ -19926,13 +19923,7 @@ periodics:
       - name: ssh
         mountPath: /etc/ssh-key-secret
         readOnly: true
-      - name: docker-graph
-        mountPath: /docker-graph
-      # TODO(bentheelder): sort out container port
-      ports:
-      - containerPort: 9999
-        hostPort: 9999
-      # docker-in-docker needs privilged mode
+      # bazel needs privileged mode to sandbox builds
       securityContext:
         privileged: true
     volumes:
@@ -19943,9 +19934,6 @@ periodics:
       secret:
         secretName: ssh-key-secret
         defaultMode: 0400
-    - name: docker-graph
-      hostPath:
-        path: /mnt/disks/ssd0/docker-graph
 
 - name: ci-kubernetes-kubemark-high-density-100-gce
   interval: 24h
@@ -19980,7 +19968,7 @@ periodics:
       ports:
       - containerPort: 9999
         hostPort: 9999
-      # docker-in-docker needs privilged mode
+      # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
     volumes:
