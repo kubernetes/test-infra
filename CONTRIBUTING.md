@@ -5,8 +5,11 @@ In the PR body, feel free to add an area label if appropriate by saying `/area <
 The list of labels is [here](https://github.com/kubernetes/test-infra/labels). 
 Also feel free to suggest a reviewer with `/assign @theirname`.
 
-Once your reviewer is happy, they will say `/lgtm`. 
-If you do not have write access to this repo, they will merge for you. 
-Otherwise, click the big green merge button when ready to merge. 
-If neither you nor your reviewer has write access, please `/assign` someone from 
-[OWNERS](https://github.com/kubernetes/test-infra/blob/master/OWNERS) and ask them to merge for you.
+Once your reviewer is happy, they will say `/lgtm` which will apply the 
+`lgtm` label, and will apply the `approved` label if they are an 
+[owner](https://github.com/kubernetes/test-infra/blob/master/OWNERS).
+The `approved` label will also automatically be applied to PRs opened by an 
+OWNER. If neither you nor your reviewer is an owner, please `/assign` someone
+ who is.
+Your PR will be automatically merged once it has the the `lgtm` and `approved` 
+labels, does not have any `do-not-merge/*` labels, and all tests are passing.
