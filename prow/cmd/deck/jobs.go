@@ -71,6 +71,7 @@ type listPJClient interface {
 }
 
 type podLogClient interface {
+	ListPods(selector string) ([]kube.Pod, error)
 	GetLog(pod string) ([]byte, error)
 	GetLogStream(pod string, options map[string]string) (io.ReadCloser, error)
 }
