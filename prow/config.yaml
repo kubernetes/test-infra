@@ -19709,7 +19709,6 @@ periodics:
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20171201-f8fa79b46-master
-      imagePullPolicy: Always
       args:
       - --bare
       - --timeout=260
@@ -19753,12 +19752,11 @@ periodics:
         path: /mnt/disks/ssd0/docker-graph
 
 - name: ci-kubernetes-kubemark-100-gce
-  interval: 6h
+  interval: 3h
   agent: kubernetes
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20171201-f8fa79b46-master
-      imagePullPolicy: Always
       args:
       - --bare
       - --timeout=260
@@ -19807,7 +19805,6 @@ periodics:
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20171201-f8fa79b46-master
-      imagePullPolicy: Always
       args:
       - --bare
       - --timeout=80
@@ -19856,7 +19853,6 @@ periodics:
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20171201-f8fa79b46-master
-      imagePullPolicy: Always
       args:
       - --bare
       - --timeout=80
@@ -19957,7 +19953,6 @@ periodics:
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20171201-f8fa79b46-master
-      imagePullPolicy: Always
       args:
       - --bare
       - --timeout=300
