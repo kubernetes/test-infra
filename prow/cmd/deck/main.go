@@ -45,6 +45,8 @@ var (
 	buildCluster = flag.String("build-cluster", "", "Path to file containing a YAML-marshalled kube.Cluster object. If empty, uses the local cluster.")
 	tideURL      = flag.String("tide-url", "", "Path to tide. If empty, do not serve tide data.")
 	hookURL      = flag.String("hook-url", "", "Path to hook plugin help endpoint.")
+	// Feature flag for now, can be removed in the future.
+	enableTracing = flag.Bool("enable-tracing", false, "Enable log tracing in prow.")
 )
 
 // Matches letters, numbers, hyphens, and underscores.
@@ -86,6 +88,9 @@ func main() {
 	http.Handle("/prowjobs.js", gziphandler.GzipHandler(handleProwJobs(ja)))
 	http.Handle("/log", gziphandler.GzipHandler(handleLog(ja)))
 	http.Handle("/rerun", gziphandler.GzipHandler(handleRerun(kc)))
+	if *enableTracing {
+		http.Handle("/trace", gziphandler.GzipHandler(handleTrace(ja)))
+	}
 
 	if *hookURL != "" {
 		http.Handle("/plugin-help.js", gziphandler.GzipHandler(handlePluginHelp(newHelpAgent(*hookURL))))
@@ -249,7 +254,7 @@ func handleLog(lc logClient) http.HandlerFunc {
 			w.Header().Set("Transfer-Encoding", "chunked")
 			logStreamRequested = true
 		}
-		if err := validateRequest(r); err != nil {
+		if err := validateLogRequest(r); err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
@@ -277,7 +282,7 @@ func handleLog(lc logClient) http.HandlerFunc {
 	}
 }
 
-func validateRequest(r *http.Request) error {
+func validateLogRequest(r *http.Request) error {
 	job := r.URL.Query().Get("job")
 	id := r.URL.Query().Get("id")
 

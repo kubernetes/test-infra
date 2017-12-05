@@ -373,10 +373,10 @@ func (e extractStrategy) Extract(project, zone string, extractSrc bool) error {
 		if zone == "" {
 			return fmt.Errorf("--gcp-zone unset")
 		}
-		if e.option == "gke" {
+		if e.value == "gke" {
 			log.Print("*** --extract=gke is deprecated, migrate to --extract=gke-default ***")
 		}
-		if strings.HasSuffix(e.option, "-latest") {
+		if e.option == "latest" {
 			// get latest supported master version
 			res, err := output(exec.Command("gcloud", "container", "get-server-config", fmt.Sprintf("--project=%v", project), fmt.Sprintf("--zone=%v", zone), "--format=value(validMasterVersions)"))
 			if err != nil {
@@ -386,7 +386,7 @@ func (e extractStrategy) Extract(project, zone string, extractSrc bool) error {
 			if len(versions) == 0 {
 				return fmt.Errorf("invalid gke master version string: %s", string(res))
 			}
-			return setReleaseFromGcs("kubernetes-release/release", versions[0], extractSrc)
+			return getKube("https://storage.googleapis.com/kubernetes-release-gke/release", "v"+versions[0], extractSrc)
 		}
 
 		// get default cluster version for default extract strategy
