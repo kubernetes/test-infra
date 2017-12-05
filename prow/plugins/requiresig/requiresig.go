@@ -64,12 +64,16 @@ func init() {
 }
 
 func helpProvider(config *plugins.Configuration, _ []string) (*pluginhelp.PluginHelp, error) {
+	url := config.RequireSIG.GroupListURL
+	if url == "" {
+		url = "<no url provided>"
+	}
 	// Only the 'Description' and 'Config' fields are necessary because this plugin does not react
 	// to any commands.
 	return &pluginhelp.PluginHelp{
 			Description: fmt.Sprintf("When a new issue is opened the require-sig plugin adds the %q label and leaves a comment requesting that a SIG (Special Interest Group) label be added to the issue. SIG labels are labels that have one of the following prefixes: %q.\nOnce a SIG label has been added to an issue, this plugin removes the %q label and deletes the comment it made previously.", needsSigLabel, labelPrefixes, needsSigLabel),
 			Config: map[string]string{
-				"": fmt.Sprintf("The comment the plugin creates includes this link to a list of the existing groups: %s", config.RequireSIG.GroupListURL),
+				"": fmt.Sprintf("The comment the plugin creates includes this link to a list of the existing groups: %s", url),
 			},
 		},
 		nil

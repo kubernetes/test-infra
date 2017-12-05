@@ -37,7 +37,7 @@ function selectionText(sel) {
 // applicablePlugins takes an org/repo string and a repo to plugin map and returns the plugins that apply to the repo.
 function applicablePlugins(repoSel, repoPlugins) {
     if (repoSel == "") {
-        return repoPlugins[""]
+        return repoPlugins[""].sort()
     }
     var parts = repoSel.split("/")
     var plugins = [];
@@ -92,7 +92,7 @@ function ulFromElemList(list) {
 
 function redrawHelpTable(repo, names, helpMap, tableParent) {
     var table = tableParent.getElementsByTagName("table")[0];
-    if (names.length == 0) {
+    if (!names || names.length == 0) {
         tableParent.style.display = "none";
         return
     } else {
