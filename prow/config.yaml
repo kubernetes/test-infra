@@ -4950,6 +4950,9 @@ periodics:
       - "--repo=k8s.io/kubernetes=master"
       - "--service-account=/etc/service-account/service-account.json"
       - "--upload=gs://kubernetes-jenkins/logs"
+      - "--" # end bootstrap args, scenario args below
+      - "--build=//... -//vendor/..."
+      - "--release=//build/release-tars"
       env:
       - name: TEST_TMPDIR
         value: /root/.cache/bazel
