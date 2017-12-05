@@ -2065,9 +2065,9 @@ presubmits:
         - "--clean"
         - "--git-cache=/root/.cache/git"
         - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--upload=gs://kubernetes-security-jenkins/pr-logs"
         - "--" # end bootstrap args, scenario args below
         - "--build=//... -//vendor/..."
         - "--release=//build/release-tars"
@@ -2113,8 +2113,8 @@ presubmits:
         containers:
         - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171201-6540ed059
           args:
-          - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-          - "--upload=gs://kubernetes-jenkins/pr-logs"
+          - "--repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)"
+          - "--upload=gs://kubernetes-security-jenkins/pr-logs"
           - "--git-cache=/root/.cache/git"
           - "--timeout=75"
           - "--clean"
@@ -2168,9 +2168,9 @@ presubmits:
         - "--clean"
         - "--git-cache=/root/.cache/git"
         - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--upload=gs://kubernetes-security-jenkins/pr-logs"
         - "--" # end bootstrap args, scenario args below
         - "--build=//cmd/... //pkg/... //federation/... //plugin/... //third_party/... //examples/... //test/... //vendor/k8s.io/..."
         - "--release=//build/release-tars"
@@ -2215,8 +2215,8 @@ presubmits:
         containers:
         - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171201-6540ed059
           args:
-          - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-          - "--upload=gs://kubernetes-jenkins/pr-logs"
+          - "--repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)"
+          - "--upload=gs://kubernetes-security-jenkins/pr-logs"
           - "--git-cache=/root/.cache/git"
           - "--timeout=75"
           - "--clean"
@@ -2269,9 +2269,9 @@ presubmits:
         - "--clean"
         - "--git-cache=/root/.cache/git"
         - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--upload=gs://kubernetes-security-jenkins/pr-logs"
         - "--" # end bootstrap args, scenario args below
         - "--build=//cmd/... //pkg/... //federation/... //plugin/... //third_party/... //examples/... //test/..."
         - "--release=//build/release-tars"
@@ -2315,8 +2315,8 @@ presubmits:
         containers:
         - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171201-6540ed059
           args:
-          - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-          - "--upload=gs://kubernetes-jenkins/pr-logs"
+          - "--repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)"
+          - "--upload=gs://kubernetes-security-jenkins/pr-logs"
           - "--git-cache=/root/.cache/git"
           - "--timeout=75"
           - "--clean"
@@ -2370,9 +2370,9 @@ presubmits:
         - "--clean"
         - "--git-cache=/root/.cache/git"
         - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--upload=gs://kubernetes-security-jenkins/pr-logs"
         - "--" # end bootstrap args, scenario args below
         - "--batch" # mitigation for https://github.com/bazelbuild/bazel/issues/3956
         - "--build=//... -//vendor/..."
@@ -2419,9 +2419,9 @@ presubmits:
         - "--clean"
         - "--git-cache=/root/.cache/git"
         - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--upload=gs://kubernetes-security-jenkins/pr-logs"
         - "--" # end bootstrap args, scenario args below
         - "--test=//... -//build/... -//vendor/..."
         - "--manual-test=//hack:verify-all"
@@ -2469,9 +2469,9 @@ presubmits:
         - "--clean"
         - "--git-cache=/root/.cache/git"
         - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--upload=gs://kubernetes-security-jenkins/pr-logs"
         - "--" # end bootstrap args, scenario args below
         - "--test=//cmd/... //pkg/... //federation/... //plugin/... //third_party/... //hack/... //vendor/k8s.io/..."
         - "--manual-test=//hack:verify-all"
@@ -2517,9 +2517,9 @@ presubmits:
         - "--clean"
         - "--git-cache=/root/.cache/git"
         - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--upload=gs://kubernetes-security-jenkins/pr-logs"
         - "--" # end bootstrap args, scenario args below
         # -//pkg/kubelet/config:go_default_test because: https://github.com/kubernetes/kubernetes/issues/53016
         - "--test=//cmd/... //pkg/... //federation/... //plugin/... //third_party/... //hack/... -//pkg/kubelet/config:go_default_test"
@@ -2567,9 +2567,9 @@ presubmits:
         - "--clean"
         - "--git-cache=/root/.cache/git"
         - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--upload=gs://kubernetes-security-jenkins/pr-logs"
         - "--" # end bootstrap args, scenario args below
         - "--batch" # mitigation for https://github.com/bazelbuild/bazel/issues/3956
         - "--test=//... -//build/... -//vendor/..."
@@ -2616,9 +2616,9 @@ presubmits:
         - "--clean"
         - "--git-cache=/root/.cache/git"
         - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--upload=gs://kubernetes-security-jenkins/pr-logs"
         - "--timeout=90"
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
@@ -2671,9 +2671,9 @@ presubmits:
         - "--clean"
         - "--git-cache=/root/.cache/git"
         - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--upload=gs://kubernetes-security-jenkins/pr-logs"
         - "--timeout=90"
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
@@ -2720,10 +2720,10 @@ presubmits:
       containers:
       - args:
         - --root=/go/src
-        - --repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)
+        - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --repo=k8s.io/release
         - --repo=github.com/kubernetes-incubator/cri-containerd
-        - --upload=gs://kubernetes-jenkins/pr-logs
+        - --upload=gs://kubernetes-security-jenkins/pr-logs
         - --git-cache=/root/.cache/git
         - --clean
         - --timeout=90
@@ -2783,9 +2783,9 @@ presubmits:
       containers:
       - args:
         - --root=/go/src
-        - --repo=k8s.io/kubernetes=$(PULL_REFS)
+        - --repo=github.com/kubernetes-security/kubernetes=$(PULL_REFS)
         - --repo=k8s.io/release
-        - --upload=gs://kubernetes-jenkins/pr-logs
+        - --upload=gs://kubernetes-security-jenkins/pr-logs
         - --git-cache=/root/.cache/git
         - --clean
         - --timeout=90
@@ -2851,9 +2851,9 @@ presubmits:
       containers:
       - args:
         - --root=/go/src
-        - --repo=k8s.io/kubernetes=$(PULL_REFS)
+        - --repo=github.com/kubernetes-security/kubernetes=$(PULL_REFS)
         - --repo=k8s.io/release
-        - --upload=gs://kubernetes-jenkins/pr-logs
+        - --upload=gs://kubernetes-security-jenkins/pr-logs
         - --git-cache=/root/.cache/git
         - --clean
         - --timeout=90
@@ -2919,9 +2919,9 @@ presubmits:
       containers:
       - args:
         - --root=/go/src
-        - --repo=k8s.io/kubernetes=$(PULL_REFS)
+        - --repo=github.com/kubernetes-security/kubernetes=$(PULL_REFS)
         - --repo=k8s.io/release
-        - --upload=gs://kubernetes-jenkins/pr-logs
+        - --upload=gs://kubernetes-security-jenkins/pr-logs
         - --git-cache=/root/.cache/git
         - --clean
         - --timeout=90
@@ -3003,10 +3003,10 @@ presubmits:
         - "--clean"
         - "--git-cache=/root/.cache/git"
         - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)"
         - "--repo=k8s.io/release"
         - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--upload=gs://kubernetes-security-jenkins/pr-logs"
         - "--timeout=90"
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -3068,10 +3068,10 @@ presubmits:
         - "--clean"
         - "--git-cache=/root/.cache/git"
         - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)"
         - "--repo=k8s.io/release"
         - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--upload=gs://kubernetes-security-jenkins/pr-logs"
         - "--timeout=90"
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -3146,10 +3146,10 @@ presubmits:
         - "--clean"
         - "--git-cache=/root/.cache/git"
         - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)"
         - "--repo=k8s.io/release"
         - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--upload=gs://kubernetes-security-jenkins/pr-logs"
         - "--timeout=75"
         # the release-1.6 version of this job uses Jenkins, so here we override
         # some args for jobs on Prow
@@ -3234,10 +3234,10 @@ presubmits:
         - "--clean"
         - "--git-cache=/root/.cache/git"
         - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)"
         - "--repo=k8s.io/release"
         - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--upload=gs://kubernetes-security-jenkins/pr-logs"
         - "--timeout=90"
         # the release-1.6 version of this job uses Jenkins, so here we override
         # some args for jobs on Prow
@@ -3317,9 +3317,9 @@ presubmits:
         - "--clean"
         - "--git-cache=/root/.cache/git"
         - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--upload=gs://kubernetes-security-jenkins/pr-logs"
         - "--timeout=90"
         - "--" # end bootstrap args, scenario args below
         - "--node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml"
@@ -3375,9 +3375,9 @@ presubmits:
         - "--clean"
         - "--git-cache=/root/.cache/git"
         - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--upload=gs://kubernetes-security-jenkins/pr-logs"
         - "--timeout=90"
         - "--" # end bootstrap args, scenario args below
         - "--node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config-1-7.yaml"
@@ -3433,9 +3433,9 @@ presubmits:
         - "--clean"
         - "--git-cache=/root/.cache/git"
         - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--upload=gs://kubernetes-security-jenkins/pr-logs"
         - "--timeout=90"
         - "--" # end bootstrap args, scenario args below
         - "--node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config-1-6.yaml"
@@ -3492,10 +3492,10 @@ presubmits:
         - "--clean"
         - "--git-cache=/root/.cache/git"
         - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)"
         - "--repo=github.com/kubernetes-incubator/cri-containerd"
         - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--upload=gs://kubernetes-security-jenkins/pr-logs"
         - "--timeout=90"
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -3549,9 +3549,9 @@ presubmits:
         - "--clean"
         - "--git-cache=/root/.cache/git"
         - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--upload=gs://kubernetes-security-jenkins/pr-logs"
         - "--timeout=60"
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
@@ -3604,9 +3604,9 @@ presubmits:
         args:
         - "--clean"
         - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--upload=gs://kubernetes-security-jenkins/pr-logs"
         - "--timeout=75"
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
