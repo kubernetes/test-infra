@@ -12,6 +12,8 @@ sinker:
   max_pod_age: 30m
 
 deck:
+  hidden_repos:
+  - kubernetes-security
   external_agent_logs:
   - agent: jenkins
     url_template: 'http://jenkins-operator/job/{{.Spec.Job}}/{{.Status.BuildID}}/consoleText'
