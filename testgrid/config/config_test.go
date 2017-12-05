@@ -34,6 +34,7 @@ var (
 	companies = []string{
 		"canonical",
 		"cri-o",
+		"istio",
 		"google",
 		"kopeio",
 		"tectonic",
