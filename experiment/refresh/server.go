@@ -53,7 +53,7 @@ func NewServer(creds string, hmac []byte, ghc *github.Client, prowURL string, co
 		prowURL:     prowURL,
 		configAgent: configAgent,
 		ghc:         ghc,
-		log:         logrus.StandardLogger().WithField("plugin", "refresh"),
+		log:         logrus.StandardLogger().WithField("plugin", pluginName),
 	}
 }
 
@@ -70,6 +70,13 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleEvent(eventType, eventGUID string, payload []byte) error {
+	l := logrus.WithFields(
+		logrus.Fields{
+			"event-type":     eventType,
+			github.EventGUID: eventGUID,
+		},
+	)
+
 	switch eventType {
 	case "issue_comment":
 		var ic github.IssueCommentEvent
@@ -77,8 +84,8 @@ func (s *Server) handleEvent(eventType, eventGUID string, payload []byte) error 
 			return err
 		}
 		go func() {
-			if err := s.handleIssueComment(ic); err != nil {
-				s.log.WithError(err).Info("Refreshing github statuses failed.")
+			if err := s.handleIssueComment(l, ic); err != nil {
+				s.log.WithError(err).WithFields(l.Data).Info("Refreshing github statuses failed.")
 			}
 		}()
 	default:
@@ -87,7 +94,7 @@ func (s *Server) handleEvent(eventType, eventGUID string, payload []byte) error 
 	return nil
 }
 
-func (s *Server) handleIssueComment(ic github.IssueCommentEvent) error {
+func (s *Server) handleIssueComment(l *logrus.Entry, ic github.IssueCommentEvent) error {
 	if !ic.Issue.IsPullRequest() || ic.Action != github.IssueCommentActionCreated || ic.Issue.State == "closed" {
 		return nil
 	}
@@ -96,10 +103,16 @@ func (s *Server) handleIssueComment(ic github.IssueCommentEvent) error {
 	repo := ic.Repo.Name
 	num := ic.Issue.Number
 
+	l = l.WithFields(logrus.Fields{
+		github.OrgLogField:  org,
+		github.RepoLogField: repo,
+		github.PrLogField:   num,
+	})
+
 	if !refreshRe.MatchString(ic.Comment.Body) {
 		return nil
 	}
-	s.log.Infof("Requested a status refresh for PR %s/%s#%d", org, repo, num)
+	s.log.WithFields(l.Data).Info("Requested a status refresh.")
 
 	// TODO: Retries
 	resp, err := http.Get(s.prowURL + "/prowjobs.js")
@@ -146,20 +159,20 @@ func (s *Server) handleIssueComment(ic github.IssueCommentEvent) error {
 	}
 
 	if len(presubmits) == 0 {
-		s.log.Infof("No prowjobs found for %s/%s#%d", org, repo, num)
+		s.log.WithFields(l.Data).Info("No prowjobs found.")
 		return nil
 	}
 
 	jenkinsReport := s.configAgent.Config().JenkinsOperator.ReportTemplate
 	kubeReport := s.configAgent.Config().Plank.ReportTemplate
 	for _, pj := range pjutil.GetLatestProwJobs(presubmits, kube.PresubmitJob) {
-		s.log.Infof("Refreshing the status of job %q in PR %s/%s#%d (pj: %s)", pj.Spec.Job, org, repo, num, pj.Metadata.Name)
+		s.log.WithFields(l.Data).Infof("Refreshing the status of job %q (pj: %s)", pj.Spec.Job, pj.Metadata.Name)
 		reportTemplate := jenkinsReport
 		if pj.Spec.Agent == "kubernetes" {
 			reportTemplate = kubeReport
 		}
 		if err := report.Report(s.ghc, reportTemplate, pj); err != nil {
-			logrus.WithError(err).Info("Failed report.")
+			s.log.WithError(err).WithFields(l.Data).Info("Failed report.")
 		}
 	}
 	return nil
