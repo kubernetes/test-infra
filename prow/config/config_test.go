@@ -54,6 +54,23 @@ func replace(j *Presubmit, ks *Presubmit) error {
 	j.RerunCommand = strings.Replace(j.RerunCommand, "pull-kubernetes", "pull-security-kubernetes", -1)
 	j.Trigger = strings.Replace(j.Trigger, "pull-kubernetes", "pull-security-kubernetes", -1)
 	j.Context = strings.Replace(j.Context, "pull-kubernetes", "pull-security-kubernetes", -1)
+
+	if j.Agent == "kubernetes" {
+		if len(j.Spec.Containers) != 1 {
+			return fmt.Errorf("expected a single container for %s", name)
+		}
+		for i, arg := range j.Spec.Containers[0].Args {
+			// handle --repo substitution for main repo
+			if strings.HasPrefix(arg, "--repo=k8s.io/kubernetes") || strings.HasPrefix(arg, "--repo=k8s.io/$(REPO_NAME)") {
+				j.Spec.Containers[0].Args[i] = strings.Replace(arg, "k8s.io/", "github.com/kubernetes-security/", 1)
+
+				// handle upload bucket
+			} else if strings.HasPrefix(arg, "--upload=") {
+				j.Spec.Containers[0].Args[i] = "--upload=gs://kubernetes-security-jenkins/pr-logs"
+			}
+		}
+	}
+
 	j.re = ks.re
 	if len(j.RunAfterSuccess) != len(ks.RunAfterSuccess) {
 		return fmt.Errorf("length of RunAfterSuccess should match. - %s", name)
@@ -151,9 +168,12 @@ func TestRequiredRetestContextsMatch(t *testing.T) {
 }
 
 func TestConfigSecurityJobsMatch(t *testing.T) {
-	var kp, sp []Presubmit
-	reflect.Copy(reflect.ValueOf(kp), reflect.ValueOf(c.Presubmits["kubernetes/kubernetes"]))
-	reflect.Copy(reflect.ValueOf(sp), reflect.ValueOf(c.Presubmits["kubernetes-security/kubernetes"]))
+	conf, err := Load("../config.yaml")
+	if err != nil {
+		t.Fatalf("fail to load config for TestConfigSecurityJobsMatch : %v", err)
+	}
+	kp := conf.Presubmits["kubernetes/kubernetes"]
+	sp := conf.Presubmits["kubernetes-security/kubernetes"]
 	if len(kp) != len(sp) {
 		t.Fatalf("length of kubernetes/kubernetes presubmits %d does not equal length of kubernetes-security/kubernetes presubmits %d", len(kp), len(sp))
 	}

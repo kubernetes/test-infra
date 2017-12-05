@@ -116,9 +116,7 @@ func handleIC(c client, trustedOrg string, ic github.IssueCommentEvent) error {
 		if err != nil {
 			return err
 		}
-		for _, job := range retests {
-			requestedJobs[job.Name] = job
-		}
+		requestedJobs = append(requestedJobs, retests...)
 	}
 
 	var comments []github.IssueComment
@@ -203,7 +201,9 @@ func handleIC(c client, trustedOrg string, ic github.IssueCommentEvent) error {
 			labels[k] = v
 		}
 		labels[github.EventGUID] = ic.GUID
-		if _, err := c.KubeClient.CreateProwJob(pjutil.NewProwJob(pjutil.PresubmitSpec(job, kr), labels)); err != nil {
+		pj := pjutil.NewProwJob(pjutil.PresubmitSpec(job, kr), labels)
+		c.Logger.WithFields(pjutil.ProwJobFields(&pj)).Info("Creating a new prowjob.")
+		if _, err := c.KubeClient.CreateProwJob(pj); err != nil {
 			errors = append(errors, err)
 		}
 	}

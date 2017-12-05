@@ -118,7 +118,7 @@ func (c *Client) LoadRepoAliases(org, repo string) (RepoAliases, error) {
 	defer c.lock.Unlock()
 	entry, ok := c.cache[fullName]
 	if !ok || entry.sha != sha {
-		// entry is non-existant or stale.
+		// entry is non-existent or stale.
 		gitRepo, err := c.git.Clone(fullName)
 		if err != nil {
 			return nil, fmt.Errorf("failed to clone %s: %v", fullName, err)

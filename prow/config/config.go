@@ -148,6 +148,9 @@ type Sinker struct {
 
 // Deck holds config for deck.
 type Deck struct {
+	// HiddenRepos is a list of orgs and/or repos that should not be displayed by Deck.
+	HiddenRepos []string `json:"hidden_repos,omitempty"`
+	// ExternalAgentLogs is a list of ExternalAgenLog configs.
 	ExternalAgentLogs []ExternalAgentLog `json:"external_agent_logs,omitempty"`
 }
 

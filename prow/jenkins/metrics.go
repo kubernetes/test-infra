@@ -46,7 +46,7 @@ var (
 	})
 	resyncPeriod = prometheus.NewHistogram(prometheus.HistogramOpts{
 		Name:    "resync_period_seconds",
-		Help:    "Time the controller takes to complete one reconcilation loop.",
+		Help:    "Time the controller takes to complete one reconciliation loop.",
 		Buckets: prometheus.ExponentialBuckets(1, 3, 5),
 	})
 )

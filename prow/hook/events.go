@@ -52,12 +52,12 @@ var (
 
 func (s *Server) handleReviewEvent(l *logrus.Entry, re github.ReviewEvent) {
 	l = l.WithFields(logrus.Fields{
-		"org":      re.Repo.Owner.Login,
-		"repo":     re.Repo.Name,
-		"pr":       re.PullRequest.Number,
-		"review":   re.Review.ID,
-		"reviewer": re.Review.User.Login,
-		"url":      re.Review.HTMLURL,
+		github.OrgLogField:  re.Repo.Owner.Login,
+		github.RepoLogField: re.Repo.Name,
+		github.PrLogField:   re.PullRequest.Number,
+		"review":            re.Review.ID,
+		"reviewer":          re.Review.User.Login,
+		"url":               re.Review.HTMLURL,
 	})
 	l.Infof("Review %s.", re.Action)
 	for p, h := range s.Plugins.ReviewEventHandlers(re.PullRequest.Base.Repo.Owner.Login, re.PullRequest.Base.Repo.Name) {
@@ -104,12 +104,12 @@ func (s *Server) handleReviewEvent(l *logrus.Entry, re github.ReviewEvent) {
 
 func (s *Server) handleReviewCommentEvent(l *logrus.Entry, rce github.ReviewCommentEvent) {
 	l = l.WithFields(logrus.Fields{
-		"org":       rce.Repo.Owner.Login,
-		"repo":      rce.Repo.Name,
-		"pr":        rce.PullRequest.Number,
-		"review":    rce.Comment.ReviewID,
-		"commenter": rce.Comment.User.Login,
-		"url":       rce.Comment.HTMLURL,
+		github.OrgLogField:  rce.Repo.Owner.Login,
+		github.RepoLogField: rce.Repo.Name,
+		github.PrLogField:   rce.PullRequest.Number,
+		"review":            rce.Comment.ReviewID,
+		"commenter":         rce.Comment.User.Login,
+		"url":               rce.Comment.HTMLURL,
 	})
 	l.Infof("Review comment %s.", rce.Action)
 	for p, h := range s.Plugins.ReviewCommentEventHandlers(rce.PullRequest.Base.Repo.Owner.Login, rce.PullRequest.Base.Repo.Name) {
@@ -156,11 +156,11 @@ func (s *Server) handleReviewCommentEvent(l *logrus.Entry, rce github.ReviewComm
 
 func (s *Server) handlePullRequestEvent(l *logrus.Entry, pr github.PullRequestEvent) {
 	l = l.WithFields(logrus.Fields{
-		"org":    pr.Repo.Owner.Login,
-		"repo":   pr.Repo.Name,
-		"pr":     pr.Number,
-		"author": pr.PullRequest.User.Login,
-		"url":    pr.PullRequest.HTMLURL,
+		github.OrgLogField:  pr.Repo.Owner.Login,
+		github.RepoLogField: pr.Repo.Name,
+		github.PrLogField:   pr.Number,
+		"author":            pr.PullRequest.User.Login,
+		"url":               pr.PullRequest.HTMLURL,
 	})
 	l.Infof("Pull request %s.", pr.Action)
 	for p, h := range s.Plugins.PullRequestHandlers(pr.PullRequest.Base.Repo.Owner.Login, pr.PullRequest.Base.Repo.Name) {
@@ -209,10 +209,10 @@ func (s *Server) handlePullRequestEvent(l *logrus.Entry, pr github.PullRequestEv
 
 func (s *Server) handlePushEvent(l *logrus.Entry, pe github.PushEvent) {
 	l = l.WithFields(logrus.Fields{
-		"org":  pe.Repo.Owner.Name,
-		"repo": pe.Repo.Name,
-		"ref":  pe.Ref,
-		"head": pe.After,
+		github.OrgLogField:  pe.Repo.Owner.Name,
+		github.RepoLogField: pe.Repo.Name,
+		"ref":               pe.Ref,
+		"head":              pe.After,
 	})
 	l.Info("Push event.")
 	for p, h := range s.Plugins.PushEventHandlers(pe.Repo.Owner.Name, pe.Repo.Name) {
@@ -230,11 +230,11 @@ func (s *Server) handlePushEvent(l *logrus.Entry, pe github.PushEvent) {
 
 func (s *Server) handleIssueEvent(l *logrus.Entry, i github.IssueEvent) {
 	l = l.WithFields(logrus.Fields{
-		"org":    i.Repo.Owner.Login,
-		"repo":   i.Repo.Name,
-		"pr":     i.Issue.Number,
-		"author": i.Issue.User.Login,
-		"url":    i.Issue.HTMLURL,
+		github.OrgLogField:  i.Repo.Owner.Login,
+		github.RepoLogField: i.Repo.Name,
+		github.PrLogField:   i.Issue.Number,
+		"author":            i.Issue.User.Login,
+		"url":               i.Issue.HTMLURL,
 	})
 	l.Infof("Issue %s.", i.Action)
 	for p, h := range s.Plugins.IssueHandlers(i.Repo.Owner.Login, i.Repo.Name) {
@@ -283,11 +283,11 @@ func (s *Server) handleIssueEvent(l *logrus.Entry, i github.IssueEvent) {
 
 func (s *Server) handleIssueCommentEvent(l *logrus.Entry, ic github.IssueCommentEvent) {
 	l = l.WithFields(logrus.Fields{
-		"org":    ic.Repo.Owner.Login,
-		"repo":   ic.Repo.Name,
-		"pr":     ic.Issue.Number,
-		"author": ic.Comment.User.Login,
-		"url":    ic.Comment.HTMLURL,
+		github.OrgLogField:  ic.Repo.Owner.Login,
+		github.RepoLogField: ic.Repo.Name,
+		github.PrLogField:   ic.Issue.Number,
+		"author":            ic.Comment.User.Login,
+		"url":               ic.Comment.HTMLURL,
 	})
 	l.Infof("Issue comment %s.", ic.Action)
 	for p, h := range s.Plugins.IssueCommentHandlers(ic.Repo.Owner.Login, ic.Repo.Name) {
@@ -334,12 +334,12 @@ func (s *Server) handleIssueCommentEvent(l *logrus.Entry, ic github.IssueComment
 
 func (s *Server) handleStatusEvent(l *logrus.Entry, se github.StatusEvent) {
 	l = l.WithFields(logrus.Fields{
-		"org":     se.Repo.Owner.Login,
-		"repo":    se.Repo.Name,
-		"context": se.Context,
-		"sha":     se.SHA,
-		"state":   se.State,
-		"id":      se.ID,
+		github.OrgLogField:  se.Repo.Owner.Login,
+		github.RepoLogField: se.Repo.Name,
+		"context":           se.Context,
+		"sha":               se.SHA,
+		"state":             se.State,
+		"id":                se.ID,
 	})
 	l.Infof("Status description %s.", se.Description)
 	for p, h := range s.Plugins.StatusEventHandlers(se.Repo.Owner.Login, se.Repo.Name) {

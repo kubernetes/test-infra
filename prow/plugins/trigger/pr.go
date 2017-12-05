@@ -226,7 +226,9 @@ func buildAll(c client, pr github.PullRequest, eventGUID string) error {
 			labels[k] = v
 		}
 		labels[github.EventGUID] = eventGUID
-		if _, err := c.KubeClient.CreateProwJob(pjutil.NewProwJob(pjutil.PresubmitSpec(job, kr), labels)); err != nil {
+		pj := pjutil.NewProwJob(pjutil.PresubmitSpec(job, kr), labels)
+		c.Logger.WithFields(pjutil.ProwJobFields(&pj)).Info("Creating a new prowjob.")
+		if _, err := c.KubeClient.CreateProwJob(pj); err != nil {
 			return err
 		}
 	}

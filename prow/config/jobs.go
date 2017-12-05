@@ -149,32 +149,37 @@ func (ps Presubmit) RunsAgainstChanges(changes []string) bool {
 
 type ChangedFilesProvider func() ([]string, error)
 
-func matching(result map[string]Presubmit, j Presubmit, body string, testAll bool, changes ChangedFilesProvider) error {
+func matching(j Presubmit, body string, testAll bool, changes ChangedFilesProvider) ([]Presubmit, error) {
+	var result []Presubmit
 	if (testAll && j.AlwaysRun) || j.re.MatchString(body) {
-		result[j.Name] = j
+		result = append(result, j)
 	} else if testAll && j.RunIfChanged != "" {
 		files, err := changes()
 		if err != nil {
-			return err
+			return nil, err
 		}
 		if j.RunsAgainstChanges(files) {
-			result[j.Name] = j
+			result = append(result, j)
 		}
 	}
 	for _, child := range j.RunAfterSuccess {
-		if err := matching(result, child, body, testAll, changes); err != nil {
-			return err
+		if subRes, err := matching(child, body, testAll, changes); err != nil {
+			return nil, err
+		} else {
+			result = append(result, subRes...)
 		}
 	}
-	return nil
+	return result, nil
 }
 
-func (c *Config) MatchingPresubmits(fullRepoName, body string, testAll bool, changes ChangedFilesProvider) (map[string]Presubmit, error) {
-	result := make(map[string]Presubmit)
+func (c *Config) MatchingPresubmits(fullRepoName, body string, testAll bool, changes ChangedFilesProvider) ([]Presubmit, error) {
+	var result []Presubmit
 	if jobs, ok := c.Presubmits[fullRepoName]; ok {
 		for _, job := range jobs {
-			if err := matching(result, job, body, testAll, changes); err != nil {
+			if subRes, err := matching(job, body, testAll, changes); err != nil {
 				return nil, err
+			} else {
+				result = append(result, subRes...)
 			}
 		}
 	}
