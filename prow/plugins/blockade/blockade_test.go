@@ -203,7 +203,7 @@ func (f *fakePruner) PruneComments(_ func(ic github.IssueComment) bool) {}
 func TestHandle(t *testing.T) {
 	// Don't need to validate the following because they are validated by other tests:
 	// - Block calculation. (Whether or not changes justify blocking the PR.)
-	// - Comment contents, just existance.
+	// - Comment contents, just existence.
 	otherLabel := "lgtm"
 
 	tcs := []struct {

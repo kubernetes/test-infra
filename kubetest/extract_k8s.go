@@ -38,7 +38,7 @@ const (
 	local               // local
 	gci                 // gci/FAMILY
 	gciCi               // gci/FAMILY/CI_VERSION
-	gke                 // gke, gke-staging, gke-test
+	gke                 // gke(deprecated), gke-default, gke-latest
 	ci                  // ci/latest, ci/latest-1.5
 	rc                  // release/latest, release/latest-1.5
 	stable              // release/stable, release/stable-1.5
@@ -69,7 +69,7 @@ func (l *extractStrategies) String() string {
 func (l *extractStrategies) Set(value string) error {
 	var strategies = map[string]extractMode{
 		`^(local)`:                    local,
-		`^gke-?(staging|test)?$`:      gke,
+		`^gke-?(default|latest)?$`:    gke,
 		`^gci/([\w-]+)$`:              gci,
 		`^gci/([\w-]+)/(.+)$`:         gciCi,
 		`^ci/(.+)$`:                   ci,
@@ -373,6 +373,23 @@ func (e extractStrategy) Extract(project, zone string, extractSrc bool) error {
 		if zone == "" {
 			return fmt.Errorf("--gcp-zone unset")
 		}
+		if e.option == "gke" {
+			log.Print("*** --extract=gke is deprecated, migrate to --extract=gke-default ***")
+		}
+		if strings.HasSuffix(e.option, "-latest") {
+			// get latest supported master version
+			res, err := output(exec.Command("gcloud", "container", "get-server-config", fmt.Sprintf("--project=%v", project), fmt.Sprintf("--zone=%v", zone), "--format=value(validMasterVersions)"))
+			if err != nil {
+				return err
+			}
+			versions := strings.Split(string(res), ";")
+			if len(versions) == 0 {
+				return fmt.Errorf("invalid gke master version string: %s", string(res))
+			}
+			return setReleaseFromGcs("kubernetes-release/release", versions[0], extractSrc)
+		}
+
+		// get default cluster version for default extract strategy
 		ci, err := output(exec.Command("gcloud", "container", "get-server-config", fmt.Sprintf("--project=%v", project), fmt.Sprintf("--zone=%v", zone), "--format=value(defaultClusterVersion)"))
 		if err != nil {
 			return err

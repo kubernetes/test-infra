@@ -113,9 +113,9 @@ func (c *controller) clean() {
 		}
 		if prowJob.Complete() && time.Since(prowJob.Status.StartTime) > maxProwJobAge {
 			if err := c.kc.DeleteProwJob(prowJob.Metadata.Name); err == nil {
-				c.logger.WithField("prowjob", prowJob.Metadata.Name).Info("Deleted prowjob.")
+				c.logger.WithFields(pjutil.ProwJobFields(&prowJob)).Info("Deleted prowjob.")
 			} else {
-				c.logger.WithField("prowjob", prowJob.Metadata.Name).WithError(err).Error("Error deleting prowjob.")
+				c.logger.WithFields(pjutil.ProwJobFields(&prowJob)).WithError(err).Error("Error deleting prowjob.")
 			}
 		}
 	}
@@ -141,9 +141,9 @@ func (c *controller) clean() {
 		}
 		if prowJob.Complete() && time.Since(prowJob.Status.StartTime) > maxProwJobAge {
 			if err := c.kc.DeleteProwJob(prowJob.Metadata.Name); err == nil {
-				c.logger.WithField("prowjob", prowJob.Metadata.Name).Info("Deleted prowjob.")
+				c.logger.WithFields(pjutil.ProwJobFields(&prowJob)).Info("Deleted prowjob.")
 			} else {
-				c.logger.WithField("prowjob", prowJob.Metadata.Name).WithError(err).Error("Error deleting prowjob.")
+				c.logger.WithFields(pjutil.ProwJobFields(&prowJob)).WithError(err).Error("Error deleting prowjob.")
 			}
 		}
 	}

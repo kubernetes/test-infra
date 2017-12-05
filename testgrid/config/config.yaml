@@ -194,34 +194,34 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-ci-serial-master
 - name: ci-kubernetes-e2e-gce-gci-ci-slow-master
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-ci-slow-master
-- name: ci-kubernetes-e2e-gce-gci-qa-m60
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-m60
 - name: ci-kubernetes-e2e-gce-gci-qa-m61
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-m61
 - name: ci-kubernetes-e2e-gce-gci-qa-m62
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-m62
 - name: ci-kubernetes-e2e-gce-gci-qa-m63
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-m63
+- name: ci-kubernetes-e2e-gce-gci-qa-m64
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-m64
 - name: ci-kubernetes-e2e-gce-gci-qa-master
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-master
-- name: ci-kubernetes-e2e-gce-gci-qa-serial-m60
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-serial-m60
 - name: ci-kubernetes-e2e-gce-gci-qa-serial-m61
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-serial-m61
 - name: ci-kubernetes-e2e-gce-gci-qa-serial-m62
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-serial-m62
 - name: ci-kubernetes-e2e-gce-gci-qa-serial-m63
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-serial-m63
+- name: ci-kubernetes-e2e-gce-gci-qa-serial-m64
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-serial-m64
 - name: ci-kubernetes-e2e-gce-gci-qa-serial-master
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-serial-master
-- name: ci-kubernetes-e2e-gce-gci-qa-slow-m60
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-slow-m60
 - name: ci-kubernetes-e2e-gce-gci-qa-slow-m61
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-slow-m61
 - name: ci-kubernetes-e2e-gce-gci-qa-slow-m62
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-slow-m62
 - name: ci-kubernetes-e2e-gce-gci-qa-slow-m63
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-slow-m63
+- name: ci-kubernetes-e2e-gce-gci-qa-slow-m64
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-slow-m64
 - name: ci-kubernetes-e2e-gce-gci-qa-slow-master
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gci-qa-slow-master
 - name: ci-kubernetes-e2e-gci-gce-scalability
@@ -1637,9 +1637,6 @@ test_groups:
   num_columns_recent: 20
   alert_stale_results_hours: 24
   num_failures_to_alert: 10
-- name: pull-kubernetes-kubemark-e2e-gce-prow
-  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-kubemark-e2e-gce-prow
-  num_columns_recent: 20
 - name: pull-kubernetes-kubemark-e2e-gce-big
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-kubemark-e2e-gce-big
   days_of_results: 1
@@ -1890,12 +1887,21 @@ test_groups:
 - name: ci-kubernetes-e2e-gci-gce-scalability-beta
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-scalability-beta
   num_failures_to_alert: 1
+# RHEL node e2e tests on AWS (contact: aos-pod@redhat.com)
+- name: ci-kubernetes-conformance-node-e2e-containerized-rhel
+  gcs_prefix: kubernetes-github-redhat/logs/ci-kubernetes-conformance-node-e2e-containerized-rhel
+- name: ci-kubernetes-conformance-node-e2e-rhel
+  gcs_prefix: kubernetes-github-redhat/logs/ci-kubernetes-conformance-node-e2e-rhel
 
 # CRI-O
 - name: test_pull_request_crio_e2e_fedora
   gcs_prefix: origin-federated-results/pr-logs/directory/test_pull_request_crio_e2e_fedora
 - name: test_pull_request_crio_e2e_rhel
   gcs_prefix: origin-federated-results/pr-logs/directory/test_pull_request_crio_e2e_rhel
+# Istio
+- name: istio-api-postsubmit
+  gcs_prefix: istio-prow/api-postsubmit
+  num_failures_to_alert: 5
 
 # Add New Testgroups Here
 
@@ -2124,34 +2130,34 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-gci-ci-serial-master
   - name: ci-slow-master
     test_group_name: ci-kubernetes-e2e-gce-gci-ci-slow-master
-  - name: qa-m60
-    test_group_name: ci-kubernetes-e2e-gce-gci-qa-m60
   - name: qa-m61
     test_group_name: ci-kubernetes-e2e-gce-gci-qa-m61
   - name: qa-m62
     test_group_name: ci-kubernetes-e2e-gce-gci-qa-m62
   - name: qa-m63
     test_group_name: ci-kubernetes-e2e-gce-gci-qa-m63
+  - name: qa-m64
+    test_group_name: ci-kubernetes-e2e-gce-gci-qa-m64
   - name: qa-master
     test_group_name: ci-kubernetes-e2e-gce-gci-qa-master
-  - name: qa-serial-m60
-    test_group_name: ci-kubernetes-e2e-gce-gci-qa-serial-m60
   - name: qa-serial-m61
     test_group_name: ci-kubernetes-e2e-gce-gci-qa-serial-m61
   - name: qa-serial-m62
     test_group_name: ci-kubernetes-e2e-gce-gci-qa-serial-m62
   - name: qa-serial-m63
     test_group_name: ci-kubernetes-e2e-gce-gci-qa-serial-m63
+  - name: qa-serial-m64
+    test_group_name: ci-kubernetes-e2e-gce-gci-qa-serial-m64
   - name: qa-serial-master
     test_group_name: ci-kubernetes-e2e-gce-gci-qa-serial-master
-  - name: qa-slow-m60
-    test_group_name: ci-kubernetes-e2e-gce-gci-qa-slow-m60
   - name: qa-slow-m61
     test_group_name: ci-kubernetes-e2e-gce-gci-qa-slow-m61
   - name: qa-slow-m62
     test_group_name: ci-kubernetes-e2e-gce-gci-qa-slow-m62
   - name: qa-slow-m63
     test_group_name: ci-kubernetes-e2e-gce-gci-qa-slow-m63
+  - name: qa-slow-m64
+    test_group_name: ci-kubernetes-e2e-gce-gci-qa-slow-m64
   - name: qa-slow-master
     test_group_name: ci-kubernetes-e2e-gce-gci-qa-slow-master
   - name: ci-gke-master
@@ -3961,6 +3967,10 @@ dashboards:
     test_group_name: ci-kubernetes-node-kubelet-stable2
   - name: kubelet-1.6
     test_group_name: ci-kubernetes-node-kubelet-stable3
+  - name: kubelet-conformance-aws-e2e-rhel
+    test_group_name: ci-kubernetes-conformance-node-e2e-rhel
+  - name: kubelet-containerized-conformance-aws-e2e-rhel
+    test_group_name: ci-kubernetes-conformance-node-e2e-containerized-rhel
 
 - name: sig-node-ppc64le
   dashboard_tab:
@@ -4297,8 +4307,6 @@ dashboards:
     test_group_name: pull-kubernetes-unit-prow
   - name: pull-kubernetes-cross-prow
     test_group_name: pull-kubernetes-cross-prow
-  - name: pull-kubernetes-kubemark-e2e-gce-prow
-    test_group_name: pull-kubernetes-kubemark-e2e-gce-prow
 
 - name: sig-ui
   dashboard_tab:
@@ -4878,6 +4886,13 @@ dashboards:
   - name: crio-e2e-rhel
     test_group_name: test_pull_request_crio_e2e_rhel
     base_options: 'width=10'
+
+- name: istio
+  dashboard_tab:
+  - name: api-postsubmit
+    test_group_name: istio-api-postsubmit
+    alert_options:
+      alert_mail_to_addresses: 'istio-oncall@googlegroups.com'
 
 #
 # Start dashboard groups

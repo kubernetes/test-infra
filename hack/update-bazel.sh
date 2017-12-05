@@ -18,6 +18,8 @@ set -o nounset
 set -o pipefail
 
 TESTINFRA_ROOT=$(git rev-parse --show-toplevel)
+# https://github.com/kubernetes/test-infra/issues/5699#issuecomment-348350792
+cd ${TESTINFRA_ROOT}
 TMP_GOPATH=$(mktemp -d)
 
 # no unit tests in vendor

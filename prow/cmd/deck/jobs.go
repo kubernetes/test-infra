@@ -29,6 +29,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/kube/labels"
@@ -74,10 +75,14 @@ type podLogClient interface {
 	GetLogStream(pod string, options map[string]string) (io.ReadCloser, error)
 }
 
+type configAgent interface {
+	Config() *config.Config
+}
+
 type JobAgent struct {
 	kc        listPJClient
 	pkc       podLogClient
-	c         *config.Agent
+	c         configAgent
 	prowJobs  []kube.ProwJob
 	jobs      []Job
 	jobsMap   map[string]Job                     // pod name -> Job
@@ -182,14 +187,21 @@ func (ja *JobAgent) update() error {
 	if err != nil {
 		return err
 	}
+	hidden := sets.NewString(ja.c.Config().Deck.HiddenRepos...)
+	var pjsFiltered []kube.ProwJob
 	var njs []Job
 	njsMap := make(map[string]Job)
 	njsIDMap := make(map[string]map[string]kube.ProwJob)
 	for _, j := range pjs {
+		repo := fmt.Sprintf("%s/%s", j.Spec.Refs.Org, j.Spec.Refs.Repo)
+		if hidden.Has(repo) || hidden.Has(j.Spec.Refs.Org) {
+			continue
+		}
+		pjsFiltered = append(pjsFiltered, j)
 		buildID := j.Status.BuildID
 		nj := Job{
 			Type:    string(j.Spec.Type),
-			Repo:    fmt.Sprintf("%s/%s", j.Spec.Refs.Org, j.Spec.Refs.Repo),
+			Repo:    repo,
 			Refs:    j.Spec.Refs.String(),
 			BaseRef: j.Spec.Refs.BaseRef,
 			BaseSHA: j.Spec.Refs.BaseSHA,
@@ -232,7 +244,7 @@ func (ja *JobAgent) update() error {
 
 	ja.mut.Lock()
 	defer ja.mut.Unlock()
-	ja.prowJobs = pjs
+	ja.prowJobs = pjsFiltered
 	ja.jobs = njs
 	ja.jobsMap = njsMap
 	ja.jobsIDMap = njsIDMap
