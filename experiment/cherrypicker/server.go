@@ -26,7 +26,6 @@ import (
 	"sync"
 	"time"
 
-	uuid "github.com/satori/go.uuid"
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/git"
@@ -76,7 +75,7 @@ func NewServer(name, creds string, hmac []byte, gc *git.Client, ghc *github.Clie
 
 		gc:  gc,
 		ghc: ghc,
-		log: logrus.StandardLogger().WithField("client", "cherrypicker"),
+		log: logrus.StandardLogger().WithField("plugin", pluginName),
 
 		bare:     &http.Client{},
 		patchURL: "https://patch-diff.githubusercontent.com",
@@ -99,6 +98,12 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleEvent(eventType, eventGUID string, payload []byte) error {
+	l := logrus.WithFields(
+		logrus.Fields{
+			"event-type":     eventType,
+			github.EventGUID: eventGUID,
+		},
+	)
 	switch eventType {
 	case "issue_comment":
 		var ic github.IssueCommentEvent
@@ -106,8 +111,8 @@ func (s *Server) handleEvent(eventType, eventGUID string, payload []byte) error 
 			return err
 		}
 		go func() {
-			if err := s.handleIssueComment(ic); err != nil {
-				s.log.WithError(err).Info("Cherry-pick failed.")
+			if err := s.handleIssueComment(l, ic); err != nil {
+				s.log.WithError(err).WithFields(l.Data).Info("Cherry-pick failed.")
 			}
 		}()
 	case "pull_request":
@@ -116,8 +121,8 @@ func (s *Server) handleEvent(eventType, eventGUID string, payload []byte) error 
 			return err
 		}
 		go func() {
-			if err := s.handlePullRequest(pr); err != nil {
-				s.log.WithError(err).Info("Cherry-pick failed.")
+			if err := s.handlePullRequest(l, pr); err != nil {
+				s.log.WithError(err).WithFields(l.Data).Info("Cherry-pick failed.")
 			}
 		}()
 	default:
@@ -126,7 +131,7 @@ func (s *Server) handleEvent(eventType, eventGUID string, payload []byte) error 
 	return nil
 }
 
-func (s *Server) handleIssueComment(ic github.IssueCommentEvent) error {
+func (s *Server) handleIssueComment(l *logrus.Entry, ic github.IssueCommentEvent) error {
 	// Only consider new comments in PRs.
 	if !ic.Issue.IsPullRequest() || ic.Action != github.IssueCommentActionCreated {
 		return nil
@@ -137,6 +142,12 @@ func (s *Server) handleIssueComment(ic github.IssueCommentEvent) error {
 	num := ic.Issue.Number
 	commentAuthor := ic.Comment.User.Login
 
+	l = l.WithFields(logrus.Fields{
+		github.OrgLogField:  org,
+		github.RepoLogField: repo,
+		github.PrLogField:   num,
+	})
+
 	cherryPickMatches := cherryPickRe.FindAllStringSubmatch(ic.Comment.Body, -1)
 	if len(cherryPickMatches) == 0 || len(cherryPickMatches[0]) != 2 {
 		return nil
@@ -144,7 +155,9 @@ func (s *Server) handleIssueComment(ic github.IssueCommentEvent) error {
 	targetBranch := cherryPickMatches[0][1]
 
 	if targetBranch == "master" {
-		return s.ghc.CreateComment(org, repo, num, plugins.FormatICResponse(ic.Comment, "I don't cherrypick pull requests onto master."))
+		resp := "I don't cherrypick pull requests onto master."
+		s.log.WithFields(l.Data).Info(resp)
+		return s.ghc.CreateComment(org, repo, num, plugins.FormatICResponse(ic.Comment, resp))
 	}
 
 	if ic.Issue.State != "closed" {
@@ -154,11 +167,12 @@ func (s *Server) handleIssueComment(ic github.IssueCommentEvent) error {
 			return err
 		}
 		if !ok {
-			resp := fmt.Sprintf("Only [%s](https://github.com/orgs/%s/people) org members may request cherry picks. You can still do the cherry-pick manually.", org, org)
-			s.log.Info(resp)
+			resp := fmt.Sprintf("only [%s](https://github.com/orgs/%s/people) org members may request cherry picks. You can still do the cherry-pick manually.", org, org)
+			s.log.WithFields(l.Data).Info(resp)
 			return s.ghc.CreateComment(org, repo, num, plugins.FormatICResponse(ic.Comment, resp))
 		}
-		resp := fmt.Sprintf("@%s once the present PR merges, I will cherry-pick it on top of %s in a new PR and assign it to you.", commentAuthor, targetBranch)
+		resp := fmt.Sprintf("once the present PR merges, I will cherry-pick it on top of %s in a new PR and assign it to you.", targetBranch)
+		s.log.WithFields(l.Data).Info(resp)
 		return s.ghc.CreateComment(org, repo, num, plugins.FormatICResponse(ic.Comment, resp))
 	}
 
@@ -171,14 +185,14 @@ func (s *Server) handleIssueComment(ic github.IssueCommentEvent) error {
 	// Cherry-pick only merged PRs.
 	if !pr.Merged {
 		resp := "cannot cherry-pick an unmerged PR"
-		s.log.Info(resp)
+		s.log.WithFields(l.Data).Info(resp)
 		return s.ghc.CreateComment(org, repo, num, plugins.FormatICResponse(ic.Comment, resp))
 	}
 
-	return s.handle(ic.Comment, org, repo, baseBranch, targetBranch, num)
+	return s.handle(l, ic.Comment, org, repo, baseBranch, targetBranch, num)
 }
 
-func (s *Server) handlePullRequest(pre github.PullRequestEvent) error {
+func (s *Server) handlePullRequest(l *logrus.Entry, pre github.PullRequestEvent) error {
 	// Only consider newly merged PRs
 	if pre.Action != github.PullRequestActionClosed {
 		return nil
@@ -193,6 +207,12 @@ func (s *Server) handlePullRequest(pre github.PullRequestEvent) error {
 	repo := pr.Base.Repo.Name
 	baseBranch := pr.Base.Ref
 	num := pr.Number
+
+	l = l.WithFields(logrus.Fields{
+		github.OrgLogField:  org,
+		github.RepoLogField: repo,
+		github.PrLogField:   num,
+	})
 
 	comments, err := s.ghc.ListIssueComments(org, repo, num)
 	if err != nil {
@@ -215,16 +235,16 @@ func (s *Server) handlePullRequest(pre github.PullRequestEvent) error {
 	if targetBranch == "" || ic == nil {
 		return nil
 	}
-	return s.handle(*ic, org, repo, baseBranch, targetBranch, num)
+	return s.handle(l, *ic, org, repo, baseBranch, targetBranch, num)
 }
 
 var cherryPickBranchFmt = "cherry-pick-%d-to-%s"
 
-func (s *Server) handle(comment github.IssueComment, org, repo, baseBranch, targetBranch string, num int) error {
+func (s *Server) handle(l *logrus.Entry, comment github.IssueComment, org, repo, baseBranch, targetBranch string, num int) error {
 	// TODO: Use a whitelist for allowed base and target branches.
 	if baseBranch == targetBranch {
-		resp := fmt.Sprintf("Base branch (%s) needs to differ from target branch (%s)", baseBranch, targetBranch)
-		s.log.Info(resp)
+		resp := fmt.Sprintf("base branch (%s) needs to differ from target branch (%s)", baseBranch, targetBranch)
+		s.log.WithFields(l.Data).Info(resp)
 		return s.ghc.CreateComment(org, repo, num, plugins.FormatICResponse(comment, resp))
 	}
 
@@ -235,8 +255,8 @@ func (s *Server) handle(comment github.IssueComment, org, repo, baseBranch, targ
 		return err
 	}
 	if !ok {
-		resp := fmt.Sprintf("Only [%s](https://github.com/orgs/%s/people) org members may request cherry picks. You can still do the cherry-pick manually.", org, org)
-		s.log.Info(resp)
+		resp := fmt.Sprintf("only [%s](https://github.com/orgs/%s/people) org members may request cherry picks. You can still do the cherry-pick manually.", org, org)
+		s.log.WithFields(l.Data).Info(resp)
 		return s.ghc.CreateComment(org, repo, num, plugins.FormatICResponse(comment, resp))
 	}
 
@@ -252,15 +272,15 @@ func (s *Server) handle(comment github.IssueComment, org, repo, baseBranch, targ
 	}
 	defer func() {
 		if err := r.Clean(); err != nil {
-			s.log.WithError(err).Error("Error cleaning up repo.")
+			s.log.WithError(err).WithFields(l.Data).Error("Error cleaning up repo.")
 		}
 	}()
 	if err := r.Checkout(targetBranch); err != nil {
-		resp := fmt.Sprintf("Cannot checkout %s: %v", targetBranch, err)
-		s.log.Info(resp)
+		resp := fmt.Sprintf("cannot checkout %s: %v", targetBranch, err)
+		s.log.WithFields(l.Data).Info(resp)
 		return s.ghc.CreateComment(org, repo, num, plugins.FormatICResponse(comment, resp))
 	}
-	s.log.WithField("duration", time.Since(startClone)).Info("Cloned and checked out target branch.")
+	s.log.WithFields(l.Data).WithField("duration", time.Since(startClone)).Info("Cloned and checked out target branch.")
 
 	// Fetch the patch from Github
 	localPath, err := s.getPatch(org, repo, num)
@@ -283,7 +303,8 @@ func (s *Server) handle(comment github.IssueComment, org, repo, baseBranch, targ
 
 	// Apply the patch.
 	if err := r.Apply(localPath); err != nil {
-		resp := fmt.Sprintf("PR %d failed to apply on top of branch %q: %v", num, targetBranch, err)
+		resp := fmt.Sprintf("#%d failed to apply on top of branch %q: %v", num, targetBranch, err)
+		s.log.WithFields(l.Data).Info(resp)
 		return s.ghc.CreateComment(org, repo, num, plugins.FormatICResponse(comment, resp))
 	}
 
@@ -293,7 +314,8 @@ func (s *Server) handle(comment github.IssueComment, org, repo, baseBranch, targ
 	}
 	// Push the new branch in the bot's fork.
 	if err := push(s.botName, s.credentials, repo, newBranch); err != nil {
-		resp := fmt.Sprintf("Failed to push cherry-picked changes in Github: %v", err)
+		resp := fmt.Sprintf("failed to push cherry-picked changes in Github: %v", err)
+		s.log.WithFields(l.Data).Info(resp)
 		return s.ghc.CreateComment(org, repo, num, plugins.FormatICResponse(comment, resp))
 	}
 
@@ -304,10 +326,12 @@ func (s *Server) handle(comment github.IssueComment, org, repo, baseBranch, targ
 	head := fmt.Sprintf("%s:%s", s.botName, newBranch)
 	createdNum, err := s.ghc.CreatePullRequest(org, repo, title, body, head, targetBranch, true)
 	if err != nil {
-		resp := fmt.Sprintf("New pull request could not be created: %v", err)
+		resp := fmt.Sprintf("new pull request could not be created: %v", err)
+		s.log.WithFields(l.Data).Info(resp)
 		return s.ghc.CreateComment(org, repo, num, plugins.FormatICResponse(comment, resp))
 	}
-	resp := fmt.Sprintf("New pull request created: #%d", createdNum)
+	resp := fmt.Sprintf("new pull request created: #%d", createdNum)
+	s.log.WithFields(l.Data).Info(resp)
 	return s.ghc.CreateComment(org, repo, num, plugins.FormatICResponse(comment, resp))
 }
 
@@ -380,7 +404,7 @@ func (s *Server) getPatch(org, repo string, num int) (string, error) {
 	if resp.StatusCode < 200 || resp.StatusCode > 299 {
 		return "", fmt.Errorf("cannot get Github patch for PR %d: %s", num, resp.Status)
 	}
-	localPath := fmt.Sprintf("/tmp/%d-%s.patch", num, uuid.NewV1().String())
+	localPath := fmt.Sprintf("/tmp/%s_%s_%d.patch", org, repo, num)
 	out, err := os.Create(localPath)
 	if err != nil {
 		return "", err
