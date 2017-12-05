@@ -40,9 +40,24 @@ type Logger interface {
 	Debugf(s string, v ...interface{})
 }
 
+type timeClient interface {
+	Sleep(time.Duration)
+	Until(time.Time) time.Duration
+}
+
+type standardTime struct{}
+
+func (s *standardTime) Sleep(d time.Duration) {
+	time.Sleep(d)
+}
+func (s *standardTime) Until(t time.Time) time.Duration {
+	return time.Until(t)
+}
+
 type Client struct {
 	// If logger is non-nil, log all method calls with it.
 	logger Logger
+	time   timeClient
 
 	gqlc   *githubql.Client
 	client *http.Client
@@ -67,6 +82,7 @@ const (
 func NewClient(token, base string) *Client {
 	return &Client{
 		logger: logrus.WithField("client", "github"),
+		time:   &standardTime{},
 		gqlc:   githubql.NewClient(oauth2.NewClient(context.Background(), oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token}))),
 		client: &http.Client{},
 		token:  token,
@@ -81,6 +97,7 @@ func NewClient(token, base string) *Client {
 func NewDryRunClient(token, base string) *Client {
 	return &Client{
 		logger: logrus.WithField("client", "github"),
+		time:   &standardTime{},
 		gqlc:   githubql.NewClient(oauth2.NewClient(context.Background(), oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token}))),
 		client: &http.Client{},
 		token:  token,
@@ -93,6 +110,7 @@ func NewDryRunClient(token, base string) *Client {
 func NewFakeClient() *Client {
 	return &Client{
 		logger: logrus.WithField("client", "github"),
+		time:   &standardTime{},
 		fake:   true,
 		dry:    true,
 	}
@@ -108,8 +126,6 @@ func (c *Client) log(methodName string, args ...interface{}) {
 	}
 	c.logger.Debugf("%s(%s)", methodName, strings.Join(as, ", "))
 }
-
-var timeSleep = time.Sleep
 
 type request struct {
 	method      string
@@ -185,7 +201,7 @@ func (c *Client) requestRetry(method, path, accept string, body interface{}) (*h
 				// be caused by a bad API call and we'll just burn through API
 				// tokens.
 				resp.Body.Close()
-				timeSleep(backoff)
+				c.time.Sleep(backoff)
 				backoff *= 2
 			} else if resp.StatusCode == 403 {
 				if resp.Header.Get("X-RateLimit-Remaining") == "0" {
@@ -195,9 +211,9 @@ func (c *Client) requestRetry(method, path, accept string, body interface{}) (*h
 					if t, err = strconv.Atoi(resp.Header.Get("X-RateLimit-Reset")); err == nil {
 						// Sleep an extra second plus how long GitHub wants us to
 						// sleep. If it's going to take too long, then break.
-						sleepTime := time.Until(time.Unix(int64(t), 0)) + time.Second
+						sleepTime := c.time.Until(time.Unix(int64(t), 0)) + time.Second
 						if sleepTime > 0 && sleepTime < maxSleepTime {
-							timeSleep(sleepTime)
+							c.time.Sleep(sleepTime)
 						} else {
 							break
 						}
@@ -213,11 +229,11 @@ func (c *Client) requestRetry(method, path, accept string, body interface{}) (*h
 			} else {
 				// Retry 500 after a break.
 				resp.Body.Close()
-				timeSleep(backoff)
+				c.time.Sleep(backoff)
 				backoff *= 2
 			}
 		} else {
-			timeSleep(backoff)
+			c.time.Sleep(backoff)
 			backoff *= 2
 		}
 	}

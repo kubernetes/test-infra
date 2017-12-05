@@ -30,8 +30,21 @@ import (
 	"time"
 )
 
+type testTime struct {
+	now   time.Time
+	slept time.Duration
+}
+
+func (tt *testTime) Sleep(d time.Duration) {
+	tt.slept = d
+}
+func (tt *testTime) Until(t time.Time) time.Duration {
+	return t.Sub(tt.now)
+}
+
 func getClient(url string) *Client {
 	return &Client{
+		time: &standardTime{},
 		client: &http.Client{
 			Transport: &http.Transport{
 				TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
@@ -42,39 +55,37 @@ func getClient(url string) *Client {
 }
 
 func TestRequestRateLimit(t *testing.T) {
-	var slept time.Duration
-	timeSleep = func(d time.Duration) { slept = d }
-	defer func() { timeSleep = time.Sleep }()
+	tc := &testTime{now: time.Now()}
 	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if slept == 0 {
+		if tc.slept == 0 {
 			w.Header().Set("X-RateLimit-Remaining", "0")
-			w.Header().Set("X-RateLimit-Reset", strconv.Itoa(int(time.Now().Add(time.Second).Unix())))
+			w.Header().Set("X-RateLimit-Reset", strconv.Itoa(int(tc.now.Add(time.Second).Unix())))
 			http.Error(w, "403 Forbidden", http.StatusForbidden)
 		}
 	}))
 	defer ts.Close()
 	c := getClient(ts.URL)
+	c.time = tc
 	resp, err := c.requestRetry(http.MethodGet, c.base, "", nil)
 	if err != nil {
 		t.Errorf("Error from request: %v", err)
 	} else if resp.StatusCode != 200 {
 		t.Errorf("Expected status code 200, got %d", resp.StatusCode)
-	} else if slept < time.Second {
-		t.Errorf("Expected to sleep for at least a second, got %v", slept)
+	} else if tc.slept < time.Second {
+		t.Errorf("Expected to sleep for at least a second, got %v", tc.slept)
 	}
 }
 
 func TestRetry404(t *testing.T) {
-	var slept int
-	timeSleep = func(d time.Duration) { slept++ }
-	defer func() { timeSleep = time.Sleep }()
+	tc := &testTime{now: time.Now()}
 	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if slept == 0 {
+		if tc.slept == 0 {
 			http.Error(w, "404 Not Found", http.StatusNotFound)
 		}
 	}))
 	defer ts.Close()
 	c := getClient(ts.URL)
+	c.time = tc
 	resp, err := c.requestRetry(http.MethodGet, c.base, "", nil)
 	if err != nil {
 		t.Errorf("Error from request: %v", err)
