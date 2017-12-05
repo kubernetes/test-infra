@@ -182,7 +182,7 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: deck
-        image: gcr.io/k8s-prow/deck:0.67
+        image: gcr.io/k8s-prow/deck:0.68
         args:
         - --hook-url=http://hook:8888/plugin-help
         ports:

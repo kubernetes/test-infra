@@ -24,6 +24,7 @@ go_test(
     embed = [":go_default_library"],
     importpath = "k8s.io/test-infra/prow/cmd/deck",
     deps = [
+        "//prow/config:go_default_library",
         "//prow/kube:go_default_library",
         "//prow/pluginhelp:go_default_library",
         "//prow/tide:go_default_library",
@@ -50,6 +51,7 @@ go_library(
         "//vendor/github.com/NYTimes/gziphandler:go_default_library",
         "//vendor/github.com/ghodss/yaml:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
     ],
 )
 
