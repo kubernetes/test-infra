@@ -92,7 +92,7 @@ function ulFromElemList(list) {
 
 function redrawHelpTable(repo, names, helpMap, tableParent) {
     var table = tableParent.getElementsByTagName("table")[0];
-    if (names.length == 0) {
+    if (!names || names.length == 0) {
         tableParent.style.display = "none";
         return
     } else {
