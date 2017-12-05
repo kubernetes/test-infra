@@ -24,7 +24,7 @@ IMAGE="${IMAGE_NAME}:${TAG}"
 # run our docker image as the host user with bazel cache and current repo dir
 REPO=$(git rev-parse --show-toplevel 2>/dev/null || true)
 REPO=${REPO:-${PWD}}
-VOLUMES="-v ${REPO}:${REPO} -v ${HOME}:${HOME} --tmpfs /tmp:exec,mode=777"
+VOLUMES="-v ${REPO}:${REPO} -v ${HOME}:${HOME} --mount type=tmpfs,destination=${HOME}/.docker --tmpfs /tmp:exec,mode=777"
 GID="$(id -g ${USER})"
 ENV="-e USER=${USER} -e GID=${GID} -e UID=${UID} -e HOME=${HOME}"
 # the final command to run
