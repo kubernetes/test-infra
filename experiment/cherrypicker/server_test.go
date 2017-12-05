@@ -196,7 +196,7 @@ func TestCherryPickIC(t *testing.T) {
 		repos:       []github.Repo{{Fork: true, FullName: "ci-robot/bar"}},
 	}
 
-	if err := s.handleIssueComment(ic); err != nil {
+	if err := s.handleIssueComment(logrus.NewEntry(logrus.StandardLogger()), ic); err != nil {
 		t.Errorf("unexpected error: %v", err)
 	}
 	if ghc.prs[0] != expected {
@@ -300,7 +300,7 @@ func TestCherryPickPR(t *testing.T) {
 		repos:       []github.Repo{{Fork: true, FullName: "ci-robot/bar"}},
 	}
 
-	if err := s.handlePullRequest(pr); err != nil {
+	if err := s.handlePullRequest(logrus.NewEntry(logrus.StandardLogger()), pr); err != nil {
 		t.Errorf("unexpected error: %v", err)
 	}
 	if ghc.prs[0] != expected {

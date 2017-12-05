@@ -23,6 +23,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"sync"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -297,12 +298,37 @@ func (c *Client) ListBuilds(jobs []string) (map[string]JenkinsBuild, error) {
 		return nil, err
 	}
 
+	buildChan := make(chan map[string]JenkinsBuild, len(jobs))
+	errChan := make(chan error, len(jobs))
+	wg := &sync.WaitGroup{}
+	wg.Add(len(jobs))
+
 	// Get all running builds for all provided jobs.
 	for _, job := range jobs {
-		builds, err := c.GetBuilds(job)
+		// Start a goroutine per list
+		go func(job string) {
+			defer wg.Done()
+
+			builds, err := c.GetBuilds(job)
+			if err != nil {
+				errChan <- err
+			} else {
+				buildChan <- builds
+			}
+		}(job)
+	}
+	wg.Wait()
+
+	close(buildChan)
+	close(errChan)
+
+	for err := range errChan {
 		if err != nil {
 			return nil, err
 		}
+	}
+
+	for builds := range buildChan {
 		for id, build := range builds {
 			jenkinsBuilds[id] = build
 		}
