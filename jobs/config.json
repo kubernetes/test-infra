@@ -9307,7 +9307,7 @@
   },
   "ci-kubernetes-kubemark-5-gce-last-release": {
     "args": [
-      "--cluster=kubemark-5-old",
+      "--cluster=kubemark-latest",
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/ci-kubernetes-kubemark-5-gce.env",
       "--extract=ci/latest-1.9",
