@@ -49,6 +49,10 @@ RUN INSTALLER="bazel-${BAZEL_VERSION}-installer-linux-x86_64.sh"; \
     wget -q "https://github.com/bazelbuild/bazel/releases/download/${BAZEL_VERSION}/${INSTALLER}" && \
     chmod +x "${INSTALLER}" && "./${INSTALLER}" && rm "${INSTALLER}"
 
+# add env we can debug with the image name:tag
+ARG IMAGE
+ENV IMAGE=${IMAGE}}
+
 ADD ["e2e-runner.sh", \
     "kops-e2e-runner.sh", \
     "kubetest", \
