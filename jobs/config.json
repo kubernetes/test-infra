@@ -9248,7 +9248,6 @@
   "ci-kubernetes-kubemark-100-canary": {
     "args": [
       "--cluster=kubemark-100-canary",
-      "--docker-in-docker",
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/ci-kubernetes-kubemark-100-gce.env",
       "--extract=ci/latest",
@@ -9256,7 +9255,6 @@
       "--gcp-zone=us-central1-f",
       "--kubemark",
       "--kubemark-nodes=100",
-      "--mode=docker",
       "--provider=gce",
       "--tag=latest-master",
       "--test=false",
@@ -9271,7 +9269,6 @@
   "ci-kubernetes-kubemark-100-gce": {
     "args": [
       "--cluster=kubemark-100",
-      "--docker-in-docker",
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/ci-kubernetes-kubemark-100-gce.env",
       "--extract=ci/latest",
@@ -9280,7 +9277,6 @@
       "--gcp-zone=us-central1-f",
       "--kubemark",
       "--kubemark-nodes=100",
-      "--mode=docker",
       "--provider=gce",
       "--test=false",
       "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --gather-resource-usage=true --gather-metrics-at-teardown=true --output-print-type=json",
@@ -9294,7 +9290,6 @@
   "ci-kubernetes-kubemark-5-gce": {
     "args": [
       "--cluster=kubemark-5",
-      "--docker-in-docker",
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/ci-kubernetes-kubemark-5-gce.env",
       "--extract=ci/latest",
@@ -9303,7 +9298,6 @@
       "--gcp-zone=us-central1-f",
       "--kubemark",
       "--kubemark-nodes=5",
-      "--mode=docker",
       "--provider=gce",
       "--test=false",
       "--test_args=--ginkgo.focus=\\[Feature:Empty\\] --gather-resource-usage=true --gather-metrics-at-teardown=true --output-print-type=json",
@@ -9317,7 +9311,6 @@
   "ci-kubernetes-kubemark-5-gce-last-release": {
     "args": [
       "--cluster=kubemark-5-old",
-      "--docker-in-docker",
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/ci-kubernetes-kubemark-5-gce.env",
       "--extract=ci/latest-1.9",
@@ -9325,7 +9318,6 @@
       "--gcp-zone=us-central1-f",
       "--kubemark",
       "--kubemark-nodes=5",
-      "--mode=docker",
       "--provider=gce",
       "--test=false",
       "--test_args=--ginkgo.focus=\\[Feature:Empty\\] --gather-resource-usage=true --gather-metrics-at-teardown=true --output-print-type=json",
@@ -9407,7 +9399,6 @@
   "ci-kubernetes-kubemark-high-density-100-gce": {
     "args": [
       "--cluster=kubemark-100pods",
-      "--docker-in-docker",
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/ci-kubernetes-kubemark-high-density-100-gce.env",
       "--extract=ci/latest",
@@ -9417,7 +9408,6 @@
       "--kubemark",
       "--kubemark-master-size=n1-standard-32",
       "--kubemark-nodes=600",
-      "--mode=docker",
       "--provider=gce",
       "--test=false",
       "--test_args=--ginkgo.focus=\\[Feature:HighDensityPerformance\\] --gather-resource-usage=true --gather-metrics-at-teardown=true --output-print-type=json",

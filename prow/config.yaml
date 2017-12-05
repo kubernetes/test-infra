@@ -19701,6 +19701,202 @@ periodics:
         defaultMode: 256
         secretName: ssh-key-secret
 
+- name: ci-kubernetes-kubemark-100-canary
+  interval: 1h
+  agent: kubernetes
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20171108-8b5aad9f-master
+      imagePullPolicy: Always
+      args:
+      - --bare
+      - --timeout=260
+      env:
+      - name: DOCKER_IN_DOCKER_ENABLED
+        value: true
+      - name: GOOGLE_APPLICATION_CREDENTIALS
+        value: /etc/service-account/service-account.json
+      - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-private
+      - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-public
+      - name: USER
+        value: prow
+      volumeMounts:
+      - name: service
+        mountPath: /etc/service-account
+        readOnly: true
+      - name: ssh
+        mountPath: /etc/ssh-key-secret
+        readOnly: true
+      - name: docker-graph
+        mountPath: /docker-graph
+      # TODO(bentheelder): sort out container port
+      ports:
+      - containerPort: 9999
+        hostPort: 9999
+      # docker-in-docker needs privilged mode
+      securityContext:
+        privileged: true
+    volumes:
+    - name: service
+      secret:
+        secretName: service-account
+    - name: ssh
+      secret:
+        secretName: ssh-key-secret
+        defaultMode: 0400
+    - name: docker-graph
+      hostPath:
+        path: /mnt/disks/ssd0/docker-graph
+
+- name: ci-kubernetes-kubemark-100-gce
+  interval: 6h
+  agent: kubernetes
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20171108-8b5aad9f-master
+      imagePullPolicy: Always
+      args:
+      - --bare
+      - --timeout=260
+      env:
+      - name: DOCKER_IN_DOCKER_ENABLED
+        value: true
+      - name: GOOGLE_APPLICATION_CREDENTIALS
+        value: /etc/service-account/service-account.json
+      - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-private
+      - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-public
+      - name: USER
+        value: prow
+      volumeMounts:
+      - name: service
+        mountPath: /etc/service-account
+        readOnly: true
+      - name: ssh
+        mountPath: /etc/ssh-key-secret
+        readOnly: true
+      - name: docker-graph
+        mountPath: /docker-graph
+      # TODO(bentheelder): sort out container port
+      ports:
+      - containerPort: 9999
+        hostPort: 9999
+      # docker-in-docker needs privilged mode
+      securityContext:
+        privileged: true
+    volumes:
+    - name: service
+      secret:
+        secretName: service-account
+    - name: ssh
+      secret:
+        secretName: ssh-key-secret
+        defaultMode: 0400
+    - name: docker-graph
+      hostPath:
+        path: /mnt/disks/ssd0/docker-graph
+
+- name: ci-kubernetes-kubemark-5-gce
+  interval: 30m
+  agent: kubernetes
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20171108-8b5aad9f-master
+      imagePullPolicy: Always
+      args:
+      - --bare
+      - --timeout=80
+      env:
+      - name: DOCKER_IN_DOCKER_ENABLED
+        value: true
+      - name: GOOGLE_APPLICATION_CREDENTIALS
+        value: /etc/service-account/service-account.json
+      - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-private
+      - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-public
+      - name: USER
+        value: prow
+      volumeMounts:
+      - name: service
+        mountPath: /etc/service-account
+        readOnly: true
+      - name: ssh
+        mountPath: /etc/ssh-key-secret
+        readOnly: true
+      - name: docker-graph
+        mountPath: /docker-graph
+      # TODO(bentheelder): sort out container port
+      ports:
+      - containerPort: 9999
+        hostPort: 9999
+      # docker-in-docker needs privilged mode
+      securityContext:
+        privileged: true
+    volumes:
+    - name: service
+      secret:
+        secretName: service-account
+    - name: ssh
+      secret:
+        secretName: ssh-key-secret
+        defaultMode: 0400
+    - name: docker-graph
+      hostPath:
+        path: /mnt/disks/ssd0/docker-graph
+
+- name: ci-kubernetes-kubemark-5-gce-last-release
+  interval: 30m
+  agent: kubernetes
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20171108-8b5aad9f-master
+      imagePullPolicy: Always
+      args:
+      - --bare
+      - --timeout=80
+      env:
+      - name: DOCKER_IN_DOCKER_ENABLED
+        value: true
+      - name: GOOGLE_APPLICATION_CREDENTIALS
+        value: /etc/service-account/service-account.json
+      - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-private
+      - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-public
+      - name: USER
+        value: prow
+      volumeMounts:
+      - name: service
+        mountPath: /etc/service-account
+        readOnly: true
+      - name: ssh
+        mountPath: /etc/ssh-key-secret
+        readOnly: true
+      - name: docker-graph
+        mountPath: /docker-graph
+      # TODO(bentheelder): sort out container port
+      ports:
+      - containerPort: 9999
+        hostPort: 9999
+      # docker-in-docker needs privilged mode
+      securityContext:
+        privileged: true
+    volumes:
+    - name: service
+      secret:
+        secretName: service-account
+    - name: ssh
+      secret:
+        secretName: ssh-key-secret
+        defaultMode: 0400
+    - name: docker-graph
+      hostPath:
+        path: /mnt/disks/ssd0/docker-graph
+
 - name: ci-kubernetes-kubemark-5-prow-canary
   cron: "0 * * * *"
   agent: kubernetes
@@ -19715,6 +19911,55 @@ periodics:
       # TODO(krzyzacy): Figure out bazel built kubemark image
       # - name: KUBEMARK_BAZEL_BUILD
       # value: "y" 
+      - name: DOCKER_IN_DOCKER_ENABLED
+        value: true
+      - name: GOOGLE_APPLICATION_CREDENTIALS
+        value: /etc/service-account/service-account.json
+      - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-private
+      - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-public
+      - name: USER
+        value: prow
+      volumeMounts:
+      - name: service
+        mountPath: /etc/service-account
+        readOnly: true
+      - name: ssh
+        mountPath: /etc/ssh-key-secret
+        readOnly: true
+      - name: docker-graph
+        mountPath: /docker-graph
+      # TODO(bentheelder): sort out container port
+      ports:
+      - containerPort: 9999
+        hostPort: 9999
+      # docker-in-docker needs privilged mode
+      securityContext:
+        privileged: true
+    volumes:
+    - name: service
+      secret:
+        secretName: service-account
+    - name: ssh
+      secret:
+        secretName: ssh-key-secret
+        defaultMode: 0400
+    - name: docker-graph
+      hostPath:
+        path: /mnt/disks/ssd0/docker-graph
+
+- name: ci-kubernetes-kubemark-high-density-100-gce
+  interval: 24h
+  agent: kubernetes
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20171108-8b5aad9f-master
+      imagePullPolicy: Always
+      args:
+      - --bare
+      - --timeout=300
+      env:
       - name: DOCKER_IN_DOCKER_ENABLED
         value: true
       - name: GOOGLE_APPLICATION_CREDENTIALS
