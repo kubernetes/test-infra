@@ -19706,7 +19706,7 @@ periodics:
   agent: kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20171108-8b5aad9f-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20171201-f8fa79b46-master
       imagePullPolicy: Always
       args:
       - --bare
@@ -19755,7 +19755,7 @@ periodics:
   agent: kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20171108-8b5aad9f-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20171201-f8fa79b46-master
       imagePullPolicy: Always
       args:
       - --bare
@@ -19804,7 +19804,7 @@ periodics:
   agent: kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20171108-8b5aad9f-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20171201-f8fa79b46-master
       imagePullPolicy: Always
       args:
       - --bare
@@ -19853,7 +19853,7 @@ periodics:
   agent: kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20171108-8b5aad9f-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20171201-f8fa79b46-master
       imagePullPolicy: Always
       args:
       - --bare
@@ -19954,7 +19954,7 @@ periodics:
   agent: kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20171108-8b5aad9f-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20171201-f8fa79b46-master
       imagePullPolicy: Always
       args:
       - --bare
