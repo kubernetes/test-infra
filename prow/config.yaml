@@ -42,9 +42,6 @@ tide:
     - do-not-merge/hold
     reviewApprovedRequired: true
 
-push_gateway:
-  endpoint: pushgateway
-
 presubmits:
   google/cadvisor:
   - name: pull-cadvisor-e2e
