@@ -29,6 +29,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/shurcooL/githubql"
@@ -59,15 +60,15 @@ type Client struct {
 	logger Logger
 	time   timeClient
 
-	gqlc   *githubql.Client
-	client *http.Client
-	token  string
-	base   string
-	dry    bool
-	fake   bool
+	gqlc     gqlClient
+	client   httpClient
+	token    string
+	base     string
+	dry      bool
+	fake     bool
+	throttle throttler
 
-	// botName is protected by this mutex.
-	mut     sync.Mutex
+	mut     sync.Mutex // protects botName
 	botName string
 }
 
@@ -77,6 +78,105 @@ const (
 	maxSleepTime  = 2 * time.Minute
 	initialDelay  = 2 * time.Second
 )
+
+// Interface for how prow interacts with the http client, which we may throttle.
+type httpClient interface {
+	Do(req *http.Request) (*http.Response, error)
+}
+
+// Inteface for how prow interacts with the graphql client, which we may throttle.
+type gqlClient interface {
+	Query(ctx context.Context, q interface{}, vars map[string]interface{}) error
+}
+
+// throttler sets a ceiling on the rate of github requests.
+// Configure with Client.Throttle()
+type throttler struct {
+	ticker   *time.Ticker
+	throttle chan time.Time
+	http     httpClient
+	graph    gqlClient
+	slow     int32 // Helps log once when requests start/stop being throttled
+	lock     sync.RWMutex
+}
+
+func (t *throttler) Wait() {
+	log := logrus.WithFields(logrus.Fields{"client": "github", "throttled": true})
+	t.lock.RLock()
+	defer t.lock.RUnlock()
+	var more bool
+	select {
+	case _, more = <-t.throttle:
+		// If we were throttled and the channel is now somewhat (25%+) full, note this
+		if len(t.throttle) > cap(t.throttle)/4 && atomic.CompareAndSwapInt32(&t.slow, 1, 0) {
+			log.Debug("Unthrottled")
+		}
+		if !more {
+			log.Debug("Throttle channel closed")
+		}
+		return
+	default: // Do not wait if nothing is available right now
+	}
+	// If this is the first time we are waiting, note this
+	if slow := atomic.SwapInt32(&t.slow, 1); slow == 0 {
+		log.Debug("Throttled")
+	}
+	_, more = <-t.throttle
+	if !more {
+		log.Debug("Throttle channel closed")
+	}
+}
+
+func (t *throttler) Do(req *http.Request) (*http.Response, error) {
+	t.Wait()
+	return t.http.Do(req)
+}
+
+func (t *throttler) Query(ctx context.Context, q interface{}, vars map[string]interface{}) error {
+	t.Wait()
+	return t.graph.Query(ctx, q, vars)
+}
+
+// Throttle client to a rate of at most hourlyTokens requests per hour,
+// allowing burst tokens.
+func (c *Client) Throttle(hourlyTokens, burst int) {
+	c.log("Throttle", hourlyTokens, burst)
+	c.throttle.lock.Lock()
+	defer c.throttle.lock.Unlock()
+	previouslyThrottled := c.throttle.ticker != nil
+	if hourlyTokens <= 0 || burst <= 0 { // Disable throttle
+		if previouslyThrottled { // Unwrap clients if necessary
+			c.client = c.throttle.http
+			c.gqlc = c.throttle.graph
+			c.throttle.ticker.Stop()
+			c.throttle.ticker = nil
+		}
+		return
+	}
+	rate := time.Hour / time.Duration(hourlyTokens)
+	ticker := time.NewTicker(rate)
+	throttle := make(chan time.Time, burst)
+	for i := 0; i < burst; i++ { // Fill up the channel
+		throttle <- time.Now()
+	}
+	go func() {
+		// Refill the channel
+		for t := range ticker.C {
+			select {
+			case throttle <- t:
+			default:
+			}
+		}
+	}()
+	if !previouslyThrottled { // Wrap clients if we haven't already
+		c.throttle.http = c.client
+		c.throttle.graph = c.gqlc
+		c.client = &c.throttle
+		c.gqlc = &c.throttle
+	}
+	c.throttle.ticker = ticker
+	c.throttle.throttle = throttle
+}
 
 // NewClient creates a new fully operational GitHub client.
 func NewClient(token, base string) *Client {
