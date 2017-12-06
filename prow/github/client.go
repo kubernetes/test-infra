@@ -147,17 +147,32 @@ func (r requestError) Error() string {
 // Make a request with retries. If ret is not nil, unmarshal the response body
 // into it. Returns an error if the exit code is not one of the provided codes.
 func (c *Client) request(r *request, ret interface{}) (int, error) {
+	statusCode, b, err := c.requestRaw(r)
+	if err != nil {
+		return statusCode, err
+	}
+	if ret != nil {
+		if err := json.Unmarshal(b, ret); err != nil {
+			return statusCode, err
+		}
+	}
+	return statusCode, nil
+}
+
+// requestRaw makes a request with retries and returns the response body.
+// Returns an error if the exit code is not one of the provided codes.
+func (c *Client) requestRaw(r *request) (int, []byte, error) {
 	if c.fake || (c.dry && r.method != http.MethodGet) {
-		return r.exitCodes[0], nil
+		return r.exitCodes[0], nil, nil
 	}
 	resp, err := c.requestRetry(r.method, r.path, r.accept, r.requestBody)
 	if err != nil {
-		return 0, err
+		return 0, nil, err
 	}
 	defer resp.Body.Close()
 	b, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return 0, err
+		return 0, nil, err
 	}
 	var okCode bool
 	for _, code := range r.exitCodes {
@@ -169,19 +184,14 @@ func (c *Client) request(r *request, ret interface{}) (int, error) {
 	if !okCode {
 		clientError := ClientError{}
 		if err := json.Unmarshal(b, &clientError); err != nil {
-			return resp.StatusCode, err
+			return resp.StatusCode, b, err
 		}
-		return resp.StatusCode, requestError{
+		return resp.StatusCode, b, requestError{
 			ClientError: clientError,
 			ErrorString: fmt.Sprintf("status code %d not one of %v, body: %s", resp.StatusCode, r.exitCodes, string(b)),
 		}
 	}
-	if ret != nil {
-		if err := json.Unmarshal(b, ret); err != nil {
-			return 0, err
-		}
-	}
-	return resp.StatusCode, nil
+	return resp.StatusCode, b, nil
 }
 
 // Retry on transport failures. Retries on 500s, retries after sleep on
@@ -465,6 +475,18 @@ func (c *Client) GetPullRequest(org, repo string, number int) (*PullRequest, err
 	return &pr, err
 }
 
+// GetPullRequestPatch gets the patch version of a pull request.
+func (c *Client) GetPullRequestPatch(org, repo string, number int) ([]byte, error) {
+	c.log("GetPullRequestPatch", org, repo, number)
+	_, patch, err := c.requestRaw(&request{
+		accept:    "application/vnd.github.VERSION.patch",
+		method:    http.MethodGet,
+		path:      fmt.Sprintf("%s/repos/%s/%s/pulls/%d", c.base, org, repo, number),
+		exitCodes: []int{200},
+	})
+	return patch, err
+}
+
 // CreatePullRequest creates a new pull request and returns its number if
 // the creation is successful, otherwise any error that is encountered.
 func (c *Client) CreatePullRequest(org, repo, title, body, head, base string, canModify bool) (int, error) {
@@ -584,6 +606,19 @@ func (c *Client) CreateStatus(org, repo, ref string, s Status) error {
 		exitCodes:   []int{201},
 	}, nil)
 	return err
+}
+
+// GetRepo returns the repo for the provided owner/name combination.
+func (c *Client) GetRepo(owner, name string) (Repo, error) {
+	c.log("GetRepo", owner, name)
+
+	var repo Repo
+	_, err := c.request(&request{
+		method:    http.MethodGet,
+		path:      fmt.Sprintf("%s/repos/%s/%s", c.base, owner, name),
+		exitCodes: []int{200},
+	}, &repo)
+	return repo, err
 }
 
 func (c *Client) GetRepos(org string, isUser bool) ([]Repo, error) {

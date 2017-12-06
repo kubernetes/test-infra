@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -40,23 +41,24 @@ var cherryPickRe = regexp.MustCompile(`(?m)^/cherrypick\s+(.+)$`)
 
 type githubClient interface {
 	GetPullRequest(org, repo string, number int) (*github.PullRequest, error)
+	GetPullRequestPatch(org, repo string, number int) ([]byte, error)
 	CreateComment(org, repo string, number int, comment string) error
 	IsMember(org, user string) (bool, error)
 	CreatePullRequest(org, repo, title, body, head, base string, canModify bool) (int, error)
 	ListIssueComments(org, repo string, number int) ([]github.IssueComment, error)
 	CreateFork(org, repo string) error
+	GetRepo(owner, name string) (github.Repo, error)
 }
 
 // Server implements http.Handler. It validates incoming GitHub webhooks and
 // then dispatches them to the appropriate plugins.
 type Server struct {
-	hmacSecret  []byte
-	credentials string
-	botName     string
+	hmacSecret []byte
+	botName    string
 
 	gc *git.Client
 	// Used for unit testing
-	push func(botName, credentials, repo, newBranch string) error
+	push func(repo, newBranch string) error
 	ghc  githubClient
 	log  *logrus.Entry
 
@@ -67,11 +69,10 @@ type Server struct {
 	repos    []github.Repo
 }
 
-func NewServer(name, creds string, hmac []byte, gc *git.Client, ghc *github.Client, repos []github.Repo) *Server {
+func NewServer(name string, hmac []byte, gc *git.Client, ghc *github.Client, repos []github.Repo) *Server {
 	return &Server{
-		hmacSecret:  hmac,
-		credentials: creds,
-		botName:     name,
+		hmacSecret: hmac,
+		botName:    name,
 
 		gc:  gc,
 		ghc: ghc,
@@ -313,7 +314,7 @@ func (s *Server) handle(l *logrus.Entry, comment github.IssueComment, org, repo,
 		push = s.push
 	}
 	// Push the new branch in the bot's fork.
-	if err := push(s.botName, s.credentials, repo, newBranch); err != nil {
+	if err := push(repo, newBranch); err != nil {
 		resp := fmt.Sprintf("failed to push cherry-picked changes in Github: %v", err)
 		s.log.WithFields(l.Data).Info(resp)
 		return s.ghc.CreateComment(org, repo, num, plugins.FormatICResponse(comment, resp))
@@ -340,23 +341,13 @@ func (s *Server) ensureForkExists(org, repo string) error {
 	s.repoLock.Lock()
 	defer s.repoLock.Unlock()
 
-	var exists bool
-	fork := s.botName + "/" + repo
-	for _, r := range s.repos {
-		if !r.Fork {
-			continue
-		}
-		if r.FullName == fork {
-			exists = true
-			break
-		}
-	}
 	// Fork repo if it doesn't exist.
-	if !exists {
+	fork := s.botName + "/" + repo
+	if !repoExists(fork, s.repos) {
 		if err := s.ghc.CreateFork(org, repo); err != nil {
 			return fmt.Errorf("cannot fork %s/%s: %v", org, repo, err)
 		}
-		if err := waitFork(fmt.Sprintf("https://github.com/%s/%s", s.botName, repo)); err != nil {
+		if err := waitForRepo(s.botName, repo, s.ghc); err != nil {
 			return fmt.Errorf("fork of %s/%s cannot show up on Github: %v", org, repo, err)
 		}
 		s.repos = append(s.repos, github.Repo{FullName: fork, Fork: true})
@@ -364,45 +355,50 @@ func (s *Server) ensureForkExists(org, repo string) error {
 	return nil
 }
 
-func waitFork(forkURL string) error {
+func waitForRepo(owner, name string, ghc githubClient) error {
 	// Wait for at most 5 minutes for the fork to appear on Github.
 	after := time.After(5 * time.Minute)
 	tick := time.Tick(5 * time.Second)
 
+	var ghErr string
 	for {
 		select {
 		case <-tick:
-			resp, err := http.Get(forkURL)
-			if err == nil && resp.StatusCode == 200 {
-				resp.Body.Close()
+			repo, err := ghc.GetRepo(owner, name)
+			if err != nil {
+				ghErr = fmt.Sprintf(": %v", err)
+				logrus.WithError(err).Warn("Error getting bot repository.")
+				continue
+			}
+			ghErr = ""
+			if repoExists(owner+"/"+name, []github.Repo{repo}) {
 				return nil
 			}
-			if err == nil {
-				resp.Body.Close()
-			}
 		case <-after:
-			return fmt.Errorf("timed out waiting for %s to appear on Github", forkURL)
+			return fmt.Errorf("timed out waiting for %s to appear on Github%s", owner+"/"+name, ghErr)
 		}
 	}
+}
+
+func repoExists(repo string, repos []github.Repo) bool {
+	for _, r := range repos {
+		if !r.Fork {
+			continue
+		}
+		if r.FullName == repo {
+			return true
+		}
+	}
+	return false
 }
 
 // getPatch gets the patch for the provided PR and creates a local
 // copy of it. It returns its location in the filesystem and any
 // encountered error.
 func (s *Server) getPatch(org, repo, targetBranch string, num int) (string, error) {
-	url := fmt.Sprintf(s.patchURL+"/raw/%s/%s/pull/%d.patch", org, repo, num)
-	req, err := http.NewRequest(http.MethodGet, url, nil)
+	patch, err := s.ghc.GetPullRequestPatch(org, repo, num)
 	if err != nil {
 		return "", err
-	}
-	// TODO: Add retries
-	resp, err := s.bare.Do(req)
-	if err != nil {
-		return "", err
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode < 200 || resp.StatusCode > 299 {
-		return "", fmt.Errorf("cannot get Github patch for PR %d: %s", num, resp.Status)
 	}
 	localPath := fmt.Sprintf("/tmp/%s_%s_%d_%s.patch", org, repo, num, targetBranch)
 	out, err := os.Create(localPath)
@@ -410,7 +406,7 @@ func (s *Server) getPatch(org, repo, targetBranch string, num int) (string, erro
 		return "", err
 	}
 	defer out.Close()
-	if _, err := io.Copy(out, resp.Body); err != nil {
+	if _, err := io.Copy(out, bytes.NewBuffer(patch)); err != nil {
 		return "", err
 	}
 	return localPath, nil

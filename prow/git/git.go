@@ -18,6 +18,7 @@ limitations under the License.
 package git
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -29,13 +30,19 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-const github = "https://github.com"
+const github = "github.com"
 
 // Client can clone repos. It keeps a local cache, so successive clones of the
 // same repo should be quick. Create with NewClient. Be sure to clean it up.
 type Client struct {
 	// logger will be used to log git operations and must be set.
 	logger *logrus.Entry
+
+	credLock sync.RWMutex
+	// user is used when pushing or pulling code if specified.
+	user string
+	// pass is used when pushing or pulling code if specified.
+	pass string
 
 	// dir is the location of the git cache.
 	dir string
@@ -73,7 +80,7 @@ func NewClient() (*Client, error) {
 		logger:    logrus.WithField("client", "git"),
 		dir:       t,
 		git:       g,
-		base:      github,
+		base:      fmt.Sprintf("https://%s", github),
 		repoLocks: make(map[string]*sync.Mutex),
 	}, nil
 }
@@ -83,6 +90,21 @@ func NewClient() (*Client, error) {
 // objects spun out of the client will also hit that path.
 func (c *Client) SetRemote(remote string) {
 	c.base = remote
+}
+
+// SetCredentials sets credentials in the client to be used for pushing to
+// or pulling from remote repositories.
+func (c *Client) SetCredentials(user, pass string) {
+	c.credLock.Lock()
+	defer c.credLock.Unlock()
+	c.user = user
+	c.pass = pass
+}
+
+func (c *Client) getCredentials() (string, string) {
+	c.credLock.RLock()
+	defer c.credLock.RUnlock()
+	return c.user, c.pass
 }
 
 func (c *Client) lockRepo(repo string) {
@@ -112,6 +134,10 @@ func (c *Client) Clone(repo string) (*Repo, error) {
 	defer c.unlockRepo(repo)
 
 	remote := c.base + "/" + repo
+	user, pass := c.getCredentials()
+	if user != "" && pass != "" {
+		remote = fmt.Sprintf("https://%s:%s@%s/%s", user, pass, github, repo)
+	}
 	cache := filepath.Join(c.dir, repo) + ".git"
 	if _, err := os.Stat(cache); os.IsNotExist(err) {
 		// Cache miss, clone it now.
@@ -144,6 +170,8 @@ func (c *Client) Clone(repo string) (*Repo, error) {
 		git:    c.git,
 		base:   c.base,
 		repo:   repo,
+		user:   user,
+		pass:   pass,
 	}, nil
 }
 
@@ -159,6 +187,10 @@ type Repo struct {
 	base string
 	// repo is the full repo name: "org/repo".
 	repo string
+	// user is used for pushing to the remote repo.
+	user string
+	// pass is used for pushing to the remote repo.
+	pass string
 
 	logger *logrus.Entry
 }
@@ -238,9 +270,12 @@ func (r *Repo) Apply(path string) error {
 
 // Push pushes over https to the provided owner/repo#branch using a password
 // for basic auth.
-func (r *Repo) Push(owner, pass, repo, branch string) error {
-	r.logger.Infof("Pushing to '%s/%s %s'.", owner, repo, branch)
-	remote := fmt.Sprintf("https://%s:%s@github.com/%s/%s", owner, pass, owner, repo)
+func (r *Repo) Push(repo, branch string) error {
+	if r.user == "" || r.pass == "" {
+		return errors.New("cannot push without credentials - configure your git client")
+	}
+	r.logger.Infof("Pushing to '%s/%s (branch: %s)'.", r.user, repo, branch)
+	remote := fmt.Sprintf("https://%s:%s@%s/%s/%s", r.user, r.pass, github, r.user, repo)
 	co := r.gitCommand("push", remote, branch)
 	_, err := co.CombinedOutput()
 	return err
