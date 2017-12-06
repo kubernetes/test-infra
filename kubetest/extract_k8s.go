@@ -224,6 +224,31 @@ var (
 // This will download version from the specified url subdir and extract
 // the tarballs.
 var getKube = func(url, version string, getSrc bool) error {
+	// TODO(krzyzacy): migrate rest of the get-kube.sh logic into kubetest, using getNamedBinaries
+	// get/extract the src tarball first since bazel needs a clean tree
+	if getSrc {
+		cwd, err := os.Getwd()
+		if err != nil {
+			return err
+		}
+		if cwd != "kubernetes" {
+			if err = os.Mkdir("kubernetes", 0755); err != nil {
+				return err
+			}
+			if err = os.Chdir("kubernetes"); err != nil {
+				return err
+			}
+		}
+
+		if err := os.Setenv("KUBE_GIT_VERSION", version); err != nil {
+			return err
+		}
+
+		if err := getNamedBinaries(url, version, "kubernetes-src.tar.gz", 3); err != nil {
+			return err
+		}
+	}
+
 	k, err := ensureKube()
 	if err != nil {
 		return err
@@ -262,12 +287,6 @@ var getKube = func(url, version string, getSrc bool) error {
 		sleep(time.Duration(i) * time.Second)
 	}
 
-	// TODO(krzyzacy): migrate rest of the get-kube.sh logic into kubetest, using getNamedBinaries
-	if getSrc {
-		if err := getNamedBinaries(url, version, "kubernetes-src.tar.gz", 3); err != nil {
-			return err
-		}
-	}
 	return nil
 }
 
