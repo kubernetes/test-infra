@@ -12,29 +12,16 @@ load(
     "go_library",
     "go_test",
 )
-load(
-    "@io_bazel_rules_docker//docker:docker.bzl",
-    "docker_build",
-    "docker_bundle",
-)
-load(
-    "@io_bazel_rules_docker//contrib:push-all.bzl",
-    "docker_push",
-)
-
-docker_build(
-    name = "image",
-    base = "@distroless-base//image",
-    entrypoint = ["/label_sync"],
-    files = [":label_sync"],
-)
+load("@io_bazel_rules_docker//go:image.bzl", "go_image")
+load("@io_bazel_rules_docker//docker:docker.bzl", "docker_bundle")
+load("@io_bazel_rules_docker//contrib:push-all.bzl", "docker_push")
 
 docker_bundle(
     name = "bundle",
     images = {
-        "{STABLE_DOCKER_REPO}/label_sync:{DOCKER_TAG}": ":image",
-        "{STABLE_DOCKER_REPO}/label_sync:latest": ":image",
-        "{STABLE_DOCKER_REPO}/label_sync:latest-{BUILD_USER}": ":image",
+        "{STABLE_DOCKER_REPO}/label_sync:{DOCKER_TAG}": ":label_sync-image",
+        "{STABLE_DOCKER_REPO}/label_sync:latest": ":label_sync-image",
+        "{STABLE_DOCKER_REPO}/label_sync:latest-{BUILD_USER}": ":label_sync-image",
     },
     stamp = True,
 )
@@ -44,8 +31,11 @@ docker_push(
     bundle = ":bundle",
 )
 
-go_binary(
-    name = "label_sync",
+# bazel-bin/.../label_sync loads the image into docker
+# bazel-bin/.../label_sync.binary is the binary
+go_image(
+    name = "label_sync-image",
+    base = "@distroless-base//image",
     embed = [":go_default_library"],
     importpath = "k8s.io/test-infra/label_sync",
     pure = "on",
@@ -92,4 +82,11 @@ filegroup(
     name = "all-srcs",
     srcs = [":package-srcs"],
     tags = ["automanaged"],
+)
+
+# Delete after gazelle stops forcing its creation
+go_binary(
+    name = "label_sync",
+    embed = [":go_default_library"],
+    importpath = "k8s.io/test-infra/label_sync",
 )

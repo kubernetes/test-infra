@@ -1,29 +1,14 @@
-load(
-    "@io_bazel_rules_docker//docker:docker.bzl",
-    "docker_build",
-    "docker_bundle",
-)
-load(
-    "@io_bazel_rules_docker//contrib:push-all.bzl",
-    "docker_push",
-)
-
-docker_build(
-    name = "image",
-    base = "@distroless-base//image",
-    entrypoint = ["/issue-creator"],
-    files = [
-        ":issue-creator",
-        ":test-owners-csv",
-    ],
-)
+load("@io_bazel_rules_docker//docker:docker.bzl", "docker_bundle")
+load("@io_bazel_rules_docker//contrib:push-all.bzl", "docker_push")
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+load("@io_bazel_rules_docker//go:image.bzl", "go_image")
 
 docker_bundle(
     name = "bundle",
     images = {
-        "{STABLE_DOCKER_REPO}/issue-creator:{DOCKER_TAG}": ":image",
-        "{STABLE_DOCKER_REPO}/issue-creator:latest": ":image",
-        "{STABLE_DOCKER_REPO}/issue-creator:latest-{BUILD_USER}": ":image",
+        "{STABLE_DOCKER_REPO}/issue-creator:{DOCKER_TAG}": ":issue-creator-image",
+        "{STABLE_DOCKER_REPO}/issue-creator:latest": ":issue-creator-image",
+        "{STABLE_DOCKER_REPO}/issue-creator:latest-{BUILD_USER}": ":issue-creator-image",
     },
     stamp = True,
 )
@@ -32,8 +17,6 @@ docker_push(
     name = "push",
     bundle = ":bundle",
 )
-
-load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
 
 go_library(
     name = "go_default_library",
@@ -46,8 +29,9 @@ go_library(
     ],
 )
 
-go_binary(
-    name = "issue-creator",
+go_image(
+    name = "issue-creator-image",
+    base = "@distroless-base//image",
     embed = [":go_default_library"],
     importpath = "k8s.io/test-infra/robots/issue-creator",
     visibility = ["//visibility:public"],
@@ -56,7 +40,6 @@ go_binary(
 filegroup(
     name = "package-srcs",
     srcs = glob(["**"]),
-    tags = ["automanaged"],
     visibility = ["//visibility:private"],
 )
 
@@ -68,7 +51,6 @@ filegroup(
         "//robots/issue-creator/sources:all-srcs",
         "//robots/issue-creator/testowner:all-srcs",
     ],
-    tags = ["automanaged"],
     visibility = ["//visibility:public"],
 )
 
@@ -77,4 +59,12 @@ filegroup(
     srcs = [
         "test_owners.csv",
     ],
+)
+
+# Delete after gazelle stops forcing its creation
+go_binary(
+    name = "issue-creator",
+    embed = [":go_default_library"],
+    importpath = "k8s.io/test-infra/robots/issue-creator",
+    visibility = ["//visibility:public"],
 )
