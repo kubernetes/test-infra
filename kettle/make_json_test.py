@@ -78,6 +78,11 @@ class MakeJsonTest(unittest.TestCase):
                      {'name': 't2', 'time': 2.0}])
 
     def test_main(self):
+        # these tests look for dissallowed substrings in the json, so we guarantee
+        # a fixed timestamp that will not produce them :shrug:
+        # https://github.com/kubernetes/test-infra/issues/4825
+        time.time = lambda: 1512507930.230854
+
         now = time.time()
         last_month = now - (60 * 60 * 24 * 30)
         junits = ['<testsuite><testcase name="t1" time="3.0"></testcase></testsuite>']

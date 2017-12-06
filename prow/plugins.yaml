@@ -14,9 +14,13 @@ triggers:
 
 approve:
 - repos:
-  - kubernetes/test-infra
   - kubernetes/kubectl
+  - kubernetes/test-infra
   implicit_self_approve: true
+- repos:
+  - kubernetes/kubernetes
+  implicit_self_approve: true
+  issue_required: true
 
 blockades:
 - repos:
@@ -113,6 +117,7 @@ plugins:
   - approve
 
   kubernetes/kubernetes:
+  - approve
   - trigger
   - release-note
   - docs-no-retest

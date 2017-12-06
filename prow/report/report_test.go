@@ -344,7 +344,7 @@ func TestReportStatus(t *testing.T) {
 		ghc := &fakeGhClient{}
 		pj := createPJ(tc.state, tc.report, tc.children)
 		// Run
-		if err := reportStatus(ghc, pj, parentJobChanged); err != nil {
+		if err := reportStatus(ghc, pj, "Parent Status Changed"); err != nil {
 			t.Error(err)
 		}
 		// Check
