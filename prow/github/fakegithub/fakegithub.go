@@ -27,7 +27,7 @@ const botName = "k8s-ci-robot"
 
 type FakeClient struct {
 	Issues              []github.Issue
-	OrgMembers          []string
+	OrgMembers          map[string][]string
 	Collaborators       []string
 	IssueComments       map[int][]github.IssueComment
 	IssueCommentID      int
@@ -67,7 +67,7 @@ func (f *FakeClient) BotName() (string, error) {
 }
 
 func (f *FakeClient) IsMember(org, user string) (bool, error) {
-	for _, m := range f.OrgMembers {
+	for _, m := range f.OrgMembers[org] {
 		if m == user {
 			return true, nil
 		}
