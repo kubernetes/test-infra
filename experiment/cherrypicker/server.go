@@ -283,7 +283,7 @@ func (s *Server) handle(l *logrus.Entry, comment github.IssueComment, org, repo,
 	s.log.WithFields(l.Data).WithField("duration", time.Since(startClone)).Info("Cloned and checked out target branch.")
 
 	// Fetch the patch from Github
-	localPath, err := s.getPatch(org, repo, num)
+	localPath, err := s.getPatch(org, repo, targetBranch, num)
 	if err != nil {
 		return err
 	}
@@ -389,7 +389,7 @@ func waitFork(forkURL string) error {
 // getPatch gets the patch for the provided PR and creates a local
 // copy of it. It returns its location in the filesystem and any
 // encountered error.
-func (s *Server) getPatch(org, repo string, num int) (string, error) {
+func (s *Server) getPatch(org, repo, targetBranch string, num int) (string, error) {
 	url := fmt.Sprintf(s.patchURL+"/raw/%s/%s/pull/%d.patch", org, repo, num)
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
@@ -404,7 +404,7 @@ func (s *Server) getPatch(org, repo string, num int) (string, error) {
 	if resp.StatusCode < 200 || resp.StatusCode > 299 {
 		return "", fmt.Errorf("cannot get Github patch for PR %d: %s", num, resp.Status)
 	}
-	localPath := fmt.Sprintf("/tmp/%s_%s_%d.patch", org, repo, num)
+	localPath := fmt.Sprintf("/tmp/%s_%s_%d_%s.patch", org, repo, num, targetBranch)
 	out, err := os.Create(localPath)
 	if err != nil {
 		return "", err
