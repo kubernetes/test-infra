@@ -2007,7 +2007,6 @@ presubmits:
       - image: gcr.io/k8s-testimages/bootstrap:v20171127-a1522ede
         args:
         - "--clean"
-        - "--git-cache=/root/.cache/git"
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
@@ -2025,8 +2024,6 @@ presubmits:
         - name: service
           mountPath: /etc/service-account
           readOnly: true
-        - name: cache-ssd
-          mountPath: /root/.cache
         - name: docker-graph
           mountPath: /docker-graph
         ports:
@@ -2039,9 +2036,6 @@ presubmits:
       - name: service
         secret:
           secretName: service-account
-      - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0
       - name: docker-graph
         hostPath:
           path: /mnt/disks/ssd0/docker-graph
@@ -3730,7 +3724,6 @@ presubmits:
       - image: gcr.io/k8s-testimages/bootstrap:v20171127-a1522ede
         args:
         - "--clean"
-        - "--git-cache=/root/.cache/git"
         - "--job=$(JOB_NAME)"
         - "--repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
@@ -3748,8 +3741,6 @@ presubmits:
         - name: service
           mountPath: /etc/service-account
           readOnly: true
-        - name: cache-ssd
-          mountPath: /root/.cache
         - name: docker-graph
           mountPath: /docker-graph
         ports:
@@ -3762,9 +3753,6 @@ presubmits:
       - name: service
         secret:
           secretName: service-account
-      - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0
       - name: docker-graph
         hostPath:
           path: /mnt/disks/ssd0/docker-graph
