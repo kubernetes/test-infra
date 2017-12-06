@@ -243,7 +243,7 @@ class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-method
                                          + migrated
                                          + explicit_passthrough_args
                                          + ['--test=false'])
-        self.assertEquals(migrated, args.kubetest_args)
+        self.assertEquals(['--flush-mem-after-build'] + migrated, args.kubetest_args)
         with Stub(kubernetes_e2e, 'check_env', self.fake_check_env):
             kubernetes_e2e.main(args)
         lastcall = self.callstack[-2]
@@ -443,7 +443,7 @@ class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-method
             '--mode=local',
             '--some-kubetest-arg=foo',
             '--cluster=test'])
-        self.assertEqual(args.kubetest_args, ['--some-kubetest-arg=foo'])
+        self.assertEqual(args.kubetest_args, ['--flush-mem-after-build', '--some-kubetest-arg=foo'])
         self.assertEqual(args.mode, 'local')
         self.assertEqual(args.cluster, 'test')
 
