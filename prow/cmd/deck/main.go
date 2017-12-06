@@ -88,6 +88,7 @@ func main() {
 	http.Handle("/prowjobs.js", gziphandler.GzipHandler(handleProwJobs(ja)))
 	http.Handle("/log", gziphandler.GzipHandler(handleLog(ja)))
 	http.Handle("/rerun", gziphandler.GzipHandler(handleRerun(kc)))
+	http.Handle("/config", gziphandler.GzipHandler(handleConfig(configAgent)))
 	if *enableTracing {
 		http.Handle("/trace", gziphandler.GzipHandler(handleTrace(ja)))
 	}
@@ -327,6 +328,26 @@ func handleRerun(kc pjClient) http.HandlerFunc {
 		}
 		if _, err := w.Write(b); err != nil {
 			logrus.WithError(err).Error("Error writing log.")
+		}
+	}
+}
+
+func handleConfig(ca configAgent) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// TODO(bentheelder): add the ability to query for portions of the config?
+		w.Header().Set("Cache-Control", "no-cache")
+		config := ca.Config()
+		b, err := yaml.Marshal(config)
+		if err != nil {
+			logrus.WithError(err).Error("Error marshaling config.")
+			http.Error(w, "Failed to marhshal config.", http.StatusInternalServerError)
+			return
+		}
+		buff := bytes.NewBuffer(b)
+		_, err = buff.WriteTo(w)
+		if err != nil {
+			logrus.WithError(err).Error("Error writing config.")
+			http.Error(w, "Failed to write config.", http.StatusInternalServerError)
 		}
 	}
 }
