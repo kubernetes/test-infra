@@ -653,6 +653,7 @@ NODE_ENV = 'NODE_NAME'
 SERVICE_ACCOUNT_ENV = 'GOOGLE_APPLICATION_CREDENTIALS'
 WORKSPACE_ENV = 'WORKSPACE'
 GCS_ARTIFACTS_ENV = 'GCS_ARTIFACTS_DIR'
+IMAGE_NAME_ENV = 'IMAGE'
 
 
 def build_name(started):
@@ -907,6 +908,8 @@ def bootstrap(args):
     gsutil = GSUtil(call)
 
     logging.info('Bootstrap %s...', job)
+    if IMAGE_NAME_ENV in os.environ:
+        logging.info('Image: %s', os.environ[IMAGE_NAME_ENV])
     build = build_name(started)
 
     if upload:

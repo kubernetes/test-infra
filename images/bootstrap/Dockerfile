@@ -22,6 +22,10 @@ RUN mkdir -p /workspace
 ENV WORKSPACE=/workspace \
     TERM=xterm
 
+# add env we can debug with the image name:tag
+ARG IMAGE
+ENV IMAGE=${IMAGE}
+
 # common util tools
 # https://github.com/GoogleCloudPlatform/gsutil/issues/446 for python-openssl
 RUN apt-get update && apt-get install -y --no-install-recommends \
