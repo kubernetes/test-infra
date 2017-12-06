@@ -812,6 +812,60 @@ presubmits:
       - name: cache-ssd
         hostPath:
           path: /mnt/disks/ssd0
+    run_after_success:
+    - name: pull-kubernetes-e2e-kubeadm-gce-canary
+      agent: kubernetes
+      context: pull-kubernetes-e2e-kubeadm-gce-canary
+      max_concurrency: 8
+      skip_report: false
+      run_if_changed: '^(cmd/kubeadm|build/debs).*$'
+      rerun_command: "/test pull-kubernetes-e2e-kubeadm-gce-canary"
+      trigger: "(?m)^/test pull-kubernetes-e2e-kubeadm-gce-canary,?(\\s+|$)"
+      branches:
+      - release-1.6
+      spec:
+        containers:
+        - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171204-13a5e5dc5
+          args:
+          - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+          - "--upload=gs://kubernetes-jenkins/pr-logs"
+          - "--git-cache=/root/.cache/git"
+          - "--timeout=75"
+          - "--clean"
+          env:
+          - name: USER
+            value: prow
+          - name: GOOGLE_APPLICATION_CREDENTIALS
+            value: /etc/service-account/service-account.json
+          - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+            value: /etc/ssh-key-secret/ssh-private
+          - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+            value: /etc/ssh-key-secret/ssh-public
+          - name: SKIP_RELEASE_VALIDATION # See: https://github.com/kubernetes/kubernetes/pull/50391
+            value: true
+          volumeMounts:
+          - name: service
+            mountPath: /etc/service-account
+            readOnly: true
+          - name: ssh
+            mountPath: /etc/ssh-key-secret
+            readOnly: true
+          - name: cache-ssd
+            mountPath: /root/.cache
+          ports:
+          - containerPort: 9999
+            hostPort: 9999
+        volumes:
+        - name: service
+          secret:
+            secretName: service-account
+        - name: ssh
+          secret:
+            secretName: ssh-key-secret
+            defaultMode: 0400
+        - name: cache-ssd
+          hostPath:
+            path: /mnt/disks/ssd0
 
   - name: pull-kubernetes-bazel-test
     agent: kubernetes
@@ -2404,6 +2458,60 @@ presubmits:
       - name: cache-ssd
         hostPath:
           path: /mnt/disks/ssd0
+    run_after_success:
+    - name: pull-security-kubernetes-e2e-kubeadm-gce-canary
+      agent: kubernetes
+      context: pull-security-kubernetes-e2e-kubeadm-gce-canary
+      max_concurrency: 8
+      skip_report: false
+      run_if_changed: '^(cmd/kubeadm|build/debs).*$'
+      rerun_command: "/test pull-security-kubernetes-e2e-kubeadm-gce-canary"
+      trigger: "(?m)^/test pull-security-kubernetes-e2e-kubeadm-gce-canary,?(\\s+|$)"
+      branches:
+      - release-1.6
+      spec:
+        containers:
+        - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171204-13a5e5dc5
+          args:
+          - "--repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)"
+          - "--upload=gs://kubernetes-security-jenkins/pr-logs"
+          - "--git-cache=/root/.cache/git"
+          - "--timeout=75"
+          - "--clean"
+          env:
+          - name: USER
+            value: prow
+          - name: GOOGLE_APPLICATION_CREDENTIALS
+            value: /etc/service-account/service-account.json
+          - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+            value: /etc/ssh-key-secret/ssh-private
+          - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+            value: /etc/ssh-key-secret/ssh-public
+          - name: SKIP_RELEASE_VALIDATION # See: https://github.com/kubernetes/kubernetes/pull/50391
+            value: true
+          volumeMounts:
+          - name: service
+            mountPath: /etc/service-account
+            readOnly: true
+          - name: ssh
+            mountPath: /etc/ssh-key-secret
+            readOnly: true
+          - name: cache-ssd
+            mountPath: /root/.cache
+          ports:
+          - containerPort: 9999
+            hostPort: 9999
+        volumes:
+        - name: service
+          secret:
+            secretName: service-account
+        - name: ssh
+          secret:
+            secretName: ssh-key-secret
+            defaultMode: 0400
+        - name: cache-ssd
+          hostPath:
+            path: /mnt/disks/ssd0
   - name: pull-security-kubernetes-bazel-test
     agent: kubernetes
     context: pull-security-kubernetes-bazel-test
