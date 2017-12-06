@@ -18,6 +18,8 @@
 FROM gcr.io/k8s-testimages/bootstrap:v20171127-a1522ede
 LABEL maintainer "Sen Lu <senlu@google.com>"
 
+ENV KUBETEST_IN_DOCKER="true"
+
 # install cfssl to prevent https://github.com/kubernetes/kubernetes/issues/55589
 # The invocation at the end is to prevent download failures downloads as in the bug.
 # TODO(porridge): bump CFSSL_VERSION to one where cfssljson supports the -version flag and test it as well.

@@ -302,6 +302,11 @@ func main() {
 		log.Fatalf("Flags validation failed. err: %v", err)
 	}
 
+	// do things when we know we are running in the CI (see the kubetest image)
+	if os.Getenv("KUBETEST_IN_DOCKER") == "true" {
+		o.flushMemAfterBuild = true
+	}
+
 	err := complete(o)
 
 	if boskos.HasResource() {
