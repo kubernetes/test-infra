@@ -60,8 +60,11 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 		if len(parts) != 2 {
 			return nil, fmt.Errorf("invalid repo in enabledRepos: %q", repo)
 		}
-		mw := getMergeWarning(config.Slack.MergeWarnings, parts[0], parts[1])
-		configInfo[repo] = fmt.Sprintf("In this repo merges are considered manual and trigger manual merge warnings if the user who merged is not a member of this whitelist: %s.\nWarnings are sent to the following Slack channels: %s.", strings.Join(mw.WhiteList, ", "), strings.Join(mw.Channels, ", "))
+		if mw := getMergeWarning(config.Slack.MergeWarnings, parts[0], parts[1]); mw != nil {
+			configInfo[repo] = fmt.Sprintf("In this repo merges are considered manual and trigger manual merge warnings if the user who merged is not a member of this whitelist: %s.\nWarnings are sent to the following Slack channels: %s.", strings.Join(mw.WhiteList, ", "), strings.Join(mw.Channels, ", "))
+		} else {
+			configInfo[repo] = "There are no manual merge warnings configured for this repo."
+		}
 	}
 	return &pluginhelp.PluginHelp{
 			Description: `The slackevents plugin reacts to various Github events by commenting in Slack channels.
