@@ -26,7 +26,7 @@ APPROVERS_RE = re.compile(r'<!-- META={"?approvers"?:\[([^]]*)\]} -->')
 
 
 def classify_issue(repo, number):
-    '''
+    """
     Classify an issue in a repo based on events in Datastore.
 
     Args:
@@ -38,7 +38,7 @@ def classify_issue(repo, number):
         involved: list of strings representing usernames involved
         payload: a dict, see full description for classify below.
         last_event_timestamp: the timestamp of the most recent event.
-    '''
+    """
     ancestor = models.GithubResource.make_key(repo, number)
     logging.debug('finding webhooks for %s %s', repo, number)
     event_keys = list(models.GithubWebhookRaw.query(ancestor=ancestor)
@@ -68,7 +68,7 @@ def classify_issue(repo, number):
 
 
 def get_merged(events, merged=None):
-    '''
+    """
     Determine the most up-to-date view of the issue given its inclusion
     in a series of events.
 
@@ -81,7 +81,7 @@ def get_merged(events, merged=None):
         merged: the result of a previous invocation.
     Returns:
         body: a dict representing the issue's latest state.
-    '''
+    """
     merged = merged or {}
     for _event, body, _timestamp in events:
         if 'issue' in body:
@@ -92,14 +92,14 @@ def get_merged(events, merged=None):
 
 
 def get_labels(events, labels=None):
-    '''
+    """
     Determine the labels applied to an issue.
 
     Args:
         events: a list of (event_type str, event_body dict, timestamp).
     Returns:
         labels: the currently applied labels as {label_name: label_color}
-    '''
+    """
     labels = labels or []
     for event, body, _timestamp in events:
         if 'issue' in body:
@@ -128,7 +128,7 @@ def get_labels(events, labels=None):
 
 
 def get_skip_comments(events, skip_users=None):
-    '''
+    """
     Determine comment ids that should be ignored, either because of
         deletion or because the user should be skipped.
 
@@ -137,7 +137,7 @@ def get_skip_comments(events, skip_users=None):
     Returns:
         comment_ids: a set of comment ids that were deleted or made by
             users that should be skiped.
-    '''
+    """
     skip_users = skip_users or []
     skip_comments = set()
     for event, body, _timestamp in events:
@@ -149,7 +149,7 @@ def get_skip_comments(events, skip_users=None):
     return skip_comments
 
 def classify(events, status_fetcher=None):
-    '''
+    """
     Given an event-stream for an issue and status-getter, process
     the events and determine what action should be taken, if any.
 
@@ -171,7 +171,7 @@ def classify(events, status_fetcher=None):
                 'comments': [{'user': str name, 'comment': comment, 'timestamp': str iso8601}],
                 'xrefs': list of builds referenced (by GCS path),
             }
-    '''
+    """
     merged = get_merged(events)
     labels = get_labels(events)
     comments = get_comments(events)
@@ -246,7 +246,7 @@ def get_xrefs(comments, merged):
 
 
 def get_comments(events, comments=None):
-    '''
+    """
     Pick comments and pull-request review comments out of a list of events.
     Args:
         events: a list of (event_type str, event_body dict, timestamp).
@@ -254,7 +254,7 @@ def get_comments(events, comments=None):
     Returns:
         comments: a list of dict(author=..., comment=..., timestamp=...),
                   ordered with the earliest comment first.
-    '''
+    """
     if not comments:
         comments = {}
     else:
@@ -278,9 +278,9 @@ def get_comments(events, comments=None):
 
 
 def get_reviewers(events, reviewers=None):
-    '''
+    """
     Return the set of users that have a code review requested or completed.
-    '''
+    """
     reviewers = reviewers or set()
     for event, body, _timestamp in events:
         action = body.get('action')
@@ -296,11 +296,11 @@ def get_reviewers(events, reviewers=None):
 
 
 def get_approvers(comments):
-    '''
+    """
     Return approvers requested in comments.
 
     This MUST be kept in sync with mungegithub's getGubernatorMetadata().
-    '''
+    """
     approvers = []
     for comment in comments:
         if comment['author'] == 'k8s-merge-robot':
@@ -311,10 +311,10 @@ def get_approvers(comments):
 
 
 def distill_events(events, distilled_events=None):
-    '''
+    """
     Given a sequence of events, return a series of user-action tuples
     relevant to determining user state.
-    '''
+    """
     bots = [
         'k8s-bot',
         'k8s-ci-robot',
@@ -346,7 +346,7 @@ def distill_events(events, distilled_events=None):
 
 
 def evaluate_fsm(events, start, transitions):
-    '''
+    """
     Given a series of event tuples and a start state, execute the list of transitions
     and return the resulting state, the time it entered that state, and the last time
     the state would be entered (self-transitions are allowed).
@@ -356,7 +356,7 @@ def evaluate_fsm(events, start, transitions):
 
     The transition occurs if condition equals the action (as a str), or if
     condition(action, user) is True.
-    '''
+    """
     state = start
     state_start = 0 # time that we entered this state
     state_last = 0  # time of last transition into this state
@@ -373,9 +373,9 @@ def evaluate_fsm(events, start, transitions):
 
 
 def get_author_state(author, distilled_events):
-    '''
+    """
     Determine the state of the author given a series of distilled events.
-    '''
+    """
     return evaluate_fsm(distilled_events, start='waiting', transitions=[
         # before, after, condition
         (None, 'address comments', lambda a, u: a == 'comment' and u != author),
@@ -385,9 +385,9 @@ def get_author_state(author, distilled_events):
 
 
 def get_assignee_state(assignee, author, distilled_events):
-    '''
+    """
     Determine the state of an assignee given a series of distilled events.
-    '''
+    """
     return evaluate_fsm(distilled_events, start='needs review', transitions=[
         # before, after, condition
         ('needs review', 'waiting', lambda a, u: u == assignee and a in ('comment', 'label lgtm')),
@@ -397,13 +397,13 @@ def get_assignee_state(assignee, author, distilled_events):
 
 
 def calculate_attention(distilled_events, payload):
-    '''
+    """
     Given information about an issue, determine who should look at it.
 
     It can include start and last update time for various states --
     "address comments#123#456" means that something has been in 'address comments' since
     123, and there was some other event that put it in 'address comments' at 456.
-    '''
+    """
     author = payload['author']
     assignees = payload['assignees']
 

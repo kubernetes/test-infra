@@ -44,13 +44,13 @@ def make_signature(body):
 
 
 class GithubHandler(webapp2.RequestHandler):
-    '''
+    """
     Handle POSTs delivered using GitHub's webhook interface. Posts are
     authenticated with HMAC signatures and a shared secret.
 
     Each event is saved to a database, and can trigger additional
     processing.
-    '''
+    """
     def post(self):
         event = self.request.headers.get('x-github-event')
         signature = self.request.headers.get('x-hub-signature', '')
@@ -115,10 +115,10 @@ class BaseHandler(webapp2.RequestHandler):
 
 
 class Events(BaseHandler):
-    '''
+    """
     Perform input/output on a series of webhook events from the datastore, for
     debugging purposes.
-    '''
+    """
     def get(self):
         cursor = datastore_query.Cursor(urlsafe=self.request.get('cursor'))
         repo = self.request.get('repo')
@@ -157,11 +157,11 @@ class Status(BaseHandler):
 
 
 class Timeline(BaseHandler):
-    '''
+    """
     Render all the information in the datastore about a particular issue.
 
     This is used for debugging and investigations.
-    '''
+    """
     def emit_classified(self, repo, number):
         try:
             self.response.write('<h3>Classifier Output</h3>')

@@ -114,10 +114,10 @@ def do_parse_pod_name(text):
 
 
 def do_label_attr(labels, name):
-    '''
+    """
     >> do_label_attr(['needs-rebase', 'size/XS'], 'size')
     'XS'
-    '''
+    """
     name += '/'
     for label in labels:
         if label.startswith(name):
@@ -125,10 +125,10 @@ def do_label_attr(labels, name):
     return ''
 
 def do_classify_size(payload):
-    '''
+    """
     Determine the size class for a PR, based on either its labels or
     on the magnitude of its changes.
-    '''
+    """
     size = do_label_attr(payload['labels'], 'size')
     if not size and 'additions' in payload and 'deletions' in payload:
         lines = payload['additions'] + payload['deletions']

@@ -35,7 +35,7 @@ write = gcs_async_test.write
 
 app = webtest.TestApp(main.app)
 
-JUNIT_SUITE = '''<testsuite tests="8" failures="0" time="1000.24">
+JUNIT_SUITE = """<testsuite tests="8" failures="0" time="1000.24">
     <testcase name="First" classname="Example e2e suite" time="0">
         <skipped/>
     </testcase>
@@ -44,7 +44,7 @@ JUNIT_SUITE = '''<testsuite tests="8" failures="0" time="1000.24">
         <failure>/go/src/k8s.io/kubernetes/test.go:123
 Error Goes Here</failure>
     </testcase>
-</testsuite>'''
+</testsuite>"""
 
 
 def init_build(build_dir, started=True, finished=True,

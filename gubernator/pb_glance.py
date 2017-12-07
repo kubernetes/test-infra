@@ -13,16 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-'''
+"""
 A tiny, minimal protobuf2 parser that's able to extract enough information
 to be useful.
-'''
+"""
 
 import cStringIO as StringIO
 
 
 def parse_protobuf(data, schema=None):
-    '''
+    """
     Do a simple parse of a protobuf2 given minimal type information.
 
     Args:
@@ -36,7 +36,7 @@ def parse_protobuf(data, schema=None):
         dict: mapping from fields to values. The fields may be strings instead of
             numbers if schema named them, and the value will *always* be
             a list of values observed for that key.
-    '''
+    """
     if schema is None:
         schema = {}
 
