@@ -47,11 +47,14 @@ type Pod struct {
 }
 
 type PodSpec struct {
-	HostNetwork   bool              `json:"hostNetwork,omitempty"`
-	Volumes       []Volume          `json:"volumes,omitempty"`
-	Containers    []Container       `json:"containers,omitempty"`
-	RestartPolicy string            `json:"restartPolicy,omitempty"`
-	NodeSelector  map[string]string `json:"nodeSelector,omitempty"`
+	HostNetwork        bool              `json:"hostNetwork,omitempty"`
+	Volumes            []Volume          `json:"volumes,omitempty"`
+	InitContainers     []Container       `json:"initContainers,omitempty"`
+	Containers         []Container       `json:"containers,omitempty"`
+	RestartPolicy      string            `json:"restartPolicy,omitempty"`
+	ServiceAccountName string            `json:"serviceAccountName,omitempty"`
+	Tolerations        []Toleration      `json:"tolerations,omitempty"`
+	NodeSelector       map[string]string `json:"nodeSelector,omitempty"`
 }
 
 type PodPhase string
@@ -200,3 +203,15 @@ type ConfigMap struct {
 	Metadata ObjectMeta        `json:"metadata,omitempty"`
 	Data     map[string]string `json:"data,omitempty"`
 }
+
+type Toleration struct {
+	Key               string             `json:"key,omitempty"`
+	Operator          TolerationOperator `json:"operator,omitempty"`
+	Value             string             `json:"value,omitempty"`
+	Effect            TaintEffect        `json:"effect,omitempty"`
+	TolerationSeconds *int64             `json:"tolerationSeconds,omitempty"`
+}
+
+type TaintEffect string
+
+type TolerationOperator string
