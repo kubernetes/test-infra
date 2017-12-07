@@ -293,7 +293,7 @@ func (oa *orgAgent) orgToReposMap(config *plugins.Configuration) map[string]sets
 		syncReason = fmt.Sprintf("the following orgs were added to the config: %q", diff.List())
 	}
 	if syncReason != "" {
-		oa.log.Infof("Syncing org to repos mapping because %s.")
+		oa.log.Infof("Syncing org to repos mapping because %s.", syncReason)
 		oa.sync(config)
 	}
 	return oa.orgToRepos
