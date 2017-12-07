@@ -137,12 +137,13 @@ function redrawHelpTable(repo, names, helpMap, tableParent) {
         var pluginHeader = document.createElement("h3");
         pluginHeader.className = "plugin";
         pluginHeader.appendChild(document.createTextNode(closedArrow + name));
-        pluginHeader.addEventListener('click', clickHandler(div), true);
+        pluginHeader.addEventListener("click", clickHandler(div), true);
         var outerDiv = document.createElement("div");
         outerDiv.appendChild(pluginHeader);
         outerDiv.appendChild(div);
         var tr = document.createElement("tr");
         tr.appendChild(outerDiv);
+        tr.id = "plugin-" + name;
         tbody.appendChild(tr);
     }
 }

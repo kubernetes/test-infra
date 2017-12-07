@@ -23,7 +23,6 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/github"
-	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
 )
 
@@ -48,18 +47,7 @@ type event struct {
 }
 
 func init() {
-	plugins.RegisterGenericCommentHandler(pluginName, handleGenericComment, helpProvider)
-}
-
-func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
-	// The Config field is omitted because this plugin is not configurable.
-	return &pluginhelp.PluginHelp{
-			Description: "The shrug plugin applies and removes the shruggie label.",
-			WhoCanUse:   "Anyone can use the shrug plugin commands as long as they physically shrug while doing so.",
-			Usage:       "/[un]shrug",
-			Examples:    []string{"/shrug", "/unshrug"},
-		},
-		nil
+	plugins.RegisterGenericCommentHandler(pluginName, handleGenericComment, nil)
 }
 
 type githubClient interface {
