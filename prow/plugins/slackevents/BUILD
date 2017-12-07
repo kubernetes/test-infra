@@ -26,6 +26,7 @@ go_library(
     importpath = "k8s.io/test-infra/prow/plugins/slackevents",
     deps = [
         "//prow/github:go_default_library",
+        "//prow/pluginhelp:go_default_library",
         "//prow/plugins:go_default_library",
     ],
 )

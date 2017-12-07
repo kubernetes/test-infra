@@ -27,6 +27,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
 	"k8s.io/test-infra/prow/plugins/approve/approvers"
 )
@@ -79,8 +80,38 @@ type state struct {
 }
 
 func init() {
-	plugins.RegisterGenericCommentHandler(pluginName, handleGenericCommentEvent, nil)
-	plugins.RegisterPullRequestHandler(pluginName, handlePullRequestEvent, nil)
+	plugins.RegisterGenericCommentHandler(pluginName, handleGenericCommentEvent, helpProvider)
+	plugins.RegisterPullRequestHandler(pluginName, handlePullRequestEvent, helpProvider)
+}
+
+func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
+	doNot := func(b bool) string {
+		if b {
+			return ""
+		}
+		return "do not "
+	}
+
+	approveConfig := map[string]string{}
+	for _, repo := range enabledRepos {
+		parts := strings.Split(repo, "/")
+		if len(parts) != 2 {
+			return nil, fmt.Errorf("invalid repo in enabledRepos: %q", repo)
+		}
+		opts := optionsForRepo(config, parts[0], parts[1])
+		approveConfig[repo] = fmt.Sprintf("Pull requests %srequire an associated issue.\nPull request authors %simplicitly approve their own PRs.", doNot(opts.IssueRequired), doNot(opts.ImplicitSelfApprove))
+	}
+	return &pluginhelp.PluginHelp{
+			Description: `The approve plugin implements a pull request approval process that manages the '` + approvedLabel + `' label and an approval notification comment. Approval is achieved when the set of users that have approved the PR is capable of approving every file changed by the PR. A user is able to approve a file if their username or an alias they belong to is listed in the 'approvers' section of an OWNERS file in the directory of the file or higher in the directory tree.
+
+Per-repo configuration may be used to require that PRs link to an associated issue before approval is granted. It may also be used to specify that the PR authors implicitly approve their own PRs.
+For more information see <a href=\"https://github.com/kubernetes/test-infra/blob/master/prow/plugins/approve/approvers/README.md\">here</a>.`,
+			WhoCanUse: "Users listed as 'approvers' in appropriate OWNERS files.",
+			Usage:     "/(approve|lgtm) [no-issue|cancel]",
+			Examples:  []string{"/approve", "/approve no-issue", "/lgtm", "/lgtm cancel"},
+			Config:    approveConfig,
+		},
+		nil
 }
 
 func handleGenericCommentEvent(pc plugins.PluginClient, ce github.GenericCommentEvent) error {

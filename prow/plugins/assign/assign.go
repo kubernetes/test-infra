@@ -24,6 +24,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
 )
 
@@ -35,7 +36,18 @@ var (
 )
 
 func init() {
-	plugins.RegisterGenericCommentHandler(pluginName, handleGenericComment, nil)
+	plugins.RegisterGenericCommentHandler(pluginName, handleGenericComment, helpProvider)
+}
+
+func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
+	// The Config field is omitted because this plugin is not configurable.
+	return &pluginhelp.PluginHelp{
+			Description: "The assign plugin assigns or requests reviews from users. Specific users can be assigned with the command '/assign @user1' or have reviews requested of them with the command '/cc @user1'. If no user is specified the commands default to targetting the user who created the command. Assignments and requested reviews can be removed in the same way that they are added by prefixing the commands with 'un'.",
+			WhoCanUse:   "Anyone can use the assign plugin to assign or request reviews, but the target must be a member of the organization that owns the repository.",
+			Usage:       "/[un](assign|cc) [[@]<username>...]",
+			Examples:    []string{"/assign", "/assign @k8s-ci-robot", "/unassign", "/cc k8s-ci-robot k8s-merge-robot", "/uncc @k8s-ci-robot"},
+		},
+		nil
 }
 
 type githubClient interface {

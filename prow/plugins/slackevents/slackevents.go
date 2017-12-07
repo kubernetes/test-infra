@@ -19,8 +19,10 @@ package slackevents
 import (
 	"fmt"
 	"regexp"
+	"strings"
 
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
 )
 
@@ -45,8 +47,29 @@ type client struct {
 }
 
 func init() {
-	plugins.RegisterPushEventHandler(pluginName, handlePush, nil)
-	plugins.RegisterGenericCommentHandler(pluginName, handleComment, nil)
+	plugins.RegisterPushEventHandler(pluginName, handlePush, helpProvider)
+	plugins.RegisterGenericCommentHandler(pluginName, handleComment, helpProvider)
+}
+
+func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
+	configInfo := map[string]string{
+		"": fmt.Sprintf("SIG mentions on Github are reiterated for the following SIG Slack channels: %s.", strings.Join(config.Slack.MentionChannels, ", ")),
+	}
+	for _, repo := range enabledRepos {
+		parts := strings.Split(repo, "/")
+		if len(parts) != 2 {
+			return nil, fmt.Errorf("invalid repo in enabledRepos: %q", repo)
+		}
+		mw := getMergeWarning(config.Slack.MergeWarnings, parts[0], parts[1])
+		configInfo[repo] = fmt.Sprintf("In this repo merges are considered manual and trigger manual merge warnings if the user who merged is not a member of this whitelist: %s.\nWarnings are sent to the following Slack channels: %s.", strings.Join(mw.WhiteList, ", "), strings.Join(mw.Channels, ", "))
+	}
+	return &pluginhelp.PluginHelp{
+			Description: `The slackevents plugin reacts to various Github events by commenting in Slack channels.
+	1) The plugin can create comments to alert on manual merges. Manual merges are merges made by a normal user instead of a bot or trusted user.
+	2) The plugin can create comments to reiterate SIG mentions like '@kubernetes/sig-testing-bugs' from Github.`,
+			Config: configInfo,
+		},
+		nil
 }
 
 func handleComment(pc plugins.PluginClient, e github.GenericCommentEvent) error {
@@ -68,12 +91,12 @@ func handlePush(pc plugins.PluginClient, pe github.PushEvent) error {
 }
 
 func notifyOnSlackIfManualMerge(pc client, pe github.PushEvent) error {
-	//Fetch slackevent configuration for the repo we received the merge event.
-	if se := getSlackEvent(pc.SlackConfig.MergeWarnings, pe.Repo.Owner.Login, pe.Repo.Name); se != nil {
-		//If the slackevent whitelist has the merge user then no need to send a message.
-		if !stringInArray(pe.Pusher.Name, se.WhiteList) && !stringInArray(pe.Sender.Login, se.WhiteList) {
+	//Fetch MergeWarning for the repo we received the merge event.
+	if mw := getMergeWarning(pc.SlackConfig.MergeWarnings, pe.Repo.Owner.Login, pe.Repo.Name); mw != nil {
+		//If the MergeWarning whitelist has the merge user then no need to send a message.
+		if !stringInArray(pe.Pusher.Name, mw.WhiteList) && !stringInArray(pe.Sender.Login, mw.WhiteList) {
 			message := fmt.Sprintf("Warning: <@%s> manually merged %s", pe.Sender.Login, pe.Compare)
-			for _, channel := range se.Channels {
+			for _, channel := range mw.Channels {
 				if err := pc.SlackClient.WriteMessage(message, channel); err != nil {
 					return err
 				}
@@ -83,10 +106,10 @@ func notifyOnSlackIfManualMerge(pc client, pe github.PushEvent) error {
 	return nil
 }
 
-func getSlackEvent(slackEvents []plugins.MergeWarning, org, repo string) *plugins.MergeWarning {
-	for _, se := range slackEvents {
-		if stringInArray(org, se.Repos) || stringInArray(fmt.Sprintf("%s/%s", org, repo), se.Repos) {
-			return &se
+func getMergeWarning(mergeWarnings []plugins.MergeWarning, org, repo string) *plugins.MergeWarning {
+	for _, mw := range mergeWarnings {
+		if stringInArray(org, mw.Repos) || stringInArray(fmt.Sprintf("%s/%s", org, repo), mw.Repos) {
+			return &mw
 		}
 	}
 	return nil
