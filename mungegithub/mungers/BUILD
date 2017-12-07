@@ -75,8 +75,6 @@ go_library(
         "owner-label.go",
         "path_label.go",
         "prow.go",
-        "publisher.go",
-        "publisher_logger.go",
         "sig-mention-handler.go",
         "stale-green-ci.go",
         "stale-pending-ci.go",
