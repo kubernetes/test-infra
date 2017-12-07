@@ -2041,7 +2041,7 @@ presubmits:
         hostPath:
           path: /mnt/disks/ssd0/docker-graph
   - name: pull-kubernetes-unit
-    agent: kubernetes
+    agent: jenkins
     branches:
     - release-1.6
     - release-1.7
@@ -2050,49 +2050,6 @@ presubmits:
     context: pull-kubernetes-unit
     rerun_command: "/test pull-kubernetes-unit"
     trigger: "(?m)^/test( all| pull-kubernetes-unit),?(\\s+|$)"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/bootstrap@sha256:67fce8e69adabf150c8f0af2f953dd396712ea2c5a247dd8e69faf6b78291ab0
-        args:
-        - "--clean"
-        - "--git-cache=/root/.cache/git"
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--timeout=60"
-        env:
-        - name: DOCKER_IN_DOCKER_ENABLED
-          value: true
-        - name: GOOGLE_APPLICATION_CREDENTIALS
-          value: /etc/service-account/service-account.json
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-        volumeMounts:
-        - name: service
-          mountPath: /etc/service-account
-          readOnly: true
-        - name: cache-ssd
-          mountPath: /root/.cache
-        - name: docker-graph
-          mountPath: /docker-graph
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
-        resources:
-          requests:
-            cpu: 4
-      volumes:
-      - name: service
-        secret:
-          secretName: service-account
-      - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0
-      - name: docker-graph
-        hostPath:
-          path: /mnt/disks/ssd0/docker-graph
   - name: pull-kubernetes-unit-prow
     agent: kubernetes
     always_run: false
@@ -3815,7 +3772,7 @@ presubmits:
         hostPath:
           path: /mnt/disks/ssd0/docker-graph
   - name: pull-security-kubernetes-unit
-    agent: kubernetes
+    agent: jenkins
     branches:
     - release-1.6
     - release-1.7
@@ -3824,49 +3781,6 @@ presubmits:
     context: pull-security-kubernetes-unit
     rerun_command: "/test pull-security-kubernetes-unit"
     trigger: "(?m)^/test( all| pull-security-kubernetes-unit),?(\\s+|$)"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/bootstrap@sha256:67fce8e69adabf150c8f0af2f953dd396712ea2c5a247dd8e69faf6b78291ab0
-        args:
-        - "--clean"
-        - "--git-cache=/root/.cache/git"
-        - "--job=$(JOB_NAME)"
-        - "--repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-security-jenkins/pr-logs"
-        - "--timeout=60"
-        env:
-        - name: DOCKER_IN_DOCKER_ENABLED
-          value: true
-        - name: GOOGLE_APPLICATION_CREDENTIALS
-          value: /etc/service-account/service-account.json
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
-        volumeMounts:
-        - name: service
-          mountPath: /etc/service-account
-          readOnly: true
-        - name: cache-ssd
-          mountPath: /root/.cache
-        - name: docker-graph
-          mountPath: /docker-graph
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
-        resources:
-          requests:
-            cpu: 4
-      volumes:
-      - name: service
-        secret:
-          secretName: service-account
-      - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0
-      - name: docker-graph
-        hostPath:
-          path: /mnt/disks/ssd0/docker-graph
   - name: pull-security-kubernetes-unit-prow
     agent: kubernetes
     always_run: false
