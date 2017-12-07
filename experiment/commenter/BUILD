@@ -1,28 +1,15 @@
 package(default_visibility = ["//visibility:public"])
 
-load(
-    "@io_bazel_rules_docker//docker:docker.bzl",
-    "docker_build",
-    "docker_bundle",
-)
-load(
-    "@io_bazel_rules_docker//contrib:push-all.bzl",
-    "docker_push",
-)
-
-docker_build(
-    name = "image",
-    base = "@distroless-base//image",
-    entrypoint = ["/commenter"],
-    files = [":commenter"],
-)
+load("@io_bazel_rules_docker//docker:docker.bzl", "docker_bundle")
+load("@io_bazel_rules_docker//contrib:push-all.bzl", "docker_push")
+load("@io_bazel_rules_docker//go:image.bzl", "go_image")
 
 docker_bundle(
     name = "bundle",
     images = {
-        "{STABLE_DOCKER_REPO}/commenter:{DOCKER_TAG}": ":image",
-        "{STABLE_DOCKER_REPO}/commenter:latest": ":image",
-        "{STABLE_DOCKER_REPO}/commenter:latest-{BUILD_USER}": ":image",
+        "{STABLE_DOCKER_REPO}/commenter:{DOCKER_TAG}": ":commenter-image",
+        "{STABLE_DOCKER_REPO}/commenter:latest": ":commenter-image",
+        "{STABLE_DOCKER_REPO}/commenter:latest-{BUILD_USER}": ":commenter-image",
     },
     stamp = True,
 )
@@ -39,8 +26,9 @@ load(
     "go_test",
 )
 
-go_binary(
-    name = "commenter",
+go_image(
+    name = "commenter-image",
+    base = "@distroless-base//image",
     embed = [":go_default_library"],
     importpath = "k8s.io/test-infra/experiment/commenter",
 )
@@ -71,4 +59,11 @@ go_test(
     embed = [":go_default_library"],
     importpath = "k8s.io/test-infra/experiment/commenter",
     deps = ["//prow/github:go_default_library"],
+)
+
+# Delete after gazelle stops forcing its creation
+go_binary(
+    name = "commenter",
+    embed = [":go_default_library"],
+    importpath = "k8s.io/test-infra/experiment/commenter",
 )

@@ -37,7 +37,11 @@ function selectionText(sel) {
 // applicablePlugins takes an org/repo string and a repo to plugin map and returns the plugins that apply to the repo.
 function applicablePlugins(repoSel, repoPlugins) {
     if (repoSel == "") {
-        return repoPlugins[""].sort()
+        var all = repoPlugins[""];
+        if (all) {
+            return all.sort();
+        }
+        return [];
     }
     var parts = repoSel.split("/")
     var plugins = [];
@@ -137,12 +141,13 @@ function redrawHelpTable(repo, names, helpMap, tableParent) {
         var pluginHeader = document.createElement("h3");
         pluginHeader.className = "plugin";
         pluginHeader.appendChild(document.createTextNode(closedArrow + name));
-        pluginHeader.addEventListener('click', clickHandler(div), true);
+        pluginHeader.addEventListener("click", clickHandler(div), true);
         var outerDiv = document.createElement("div");
         outerDiv.appendChild(pluginHeader);
         outerDiv.appendChild(div);
         var tr = document.createElement("tr");
         tr.appendChild(outerDiv);
+        tr.id = "plugin-" + name;
         tbody.appendChild(tr);
     }
 }

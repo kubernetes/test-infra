@@ -178,3 +178,7 @@ a:link {
     width: 80%;
     text-align: center;
 }
+
+#plugin-shrug {
+    display: none;
+}

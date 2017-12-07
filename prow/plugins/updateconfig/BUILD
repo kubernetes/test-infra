@@ -26,6 +26,7 @@ go_library(
     deps = [
         "//prow/github:go_default_library",
         "//prow/kube:go_default_library",
+        "//prow/pluginhelp:go_default_library",
         "//prow/plugins:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
     ],

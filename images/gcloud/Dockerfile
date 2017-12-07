@@ -16,6 +16,10 @@
 FROM golang:1.9
 LABEL maintainer="senlu@google.com"
 
+# add env we can debug with the image name:tag
+ARG IMAGE
+ENV IMAGE=${IMAGE}
+
 RUN apt-get update && apt-get install -y \
     python \
     rsync \

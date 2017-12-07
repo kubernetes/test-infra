@@ -83,13 +83,16 @@ func main() {
 	if err != nil {
 		logrus.WithError(err).Fatal("Error getting bot name.")
 	}
+	// The bot needs to be able to push to its own Github fork and potentially pull
+	// from private repos.
+	gitClient.SetCredentials(botName, oauthSecret)
 
 	repos, err := githubClient.GetRepos(botName, true)
 	if err != nil {
 		logrus.WithError(err).Fatal("Error listing bot repositories.")
 	}
 
-	server := NewServer(botName, oauthSecret, webhookSecret, gitClient, githubClient, repos)
+	server := NewServer(botName, webhookSecret, gitClient, githubClient, repos)
 
 	http.Handle("/", server)
 	logrus.Fatal(http.ListenAndServe(":"+strconv.Itoa(*port), nil))

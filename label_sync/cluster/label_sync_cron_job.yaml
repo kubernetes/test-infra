@@ -12,18 +12,41 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 ---
-apiVersion: batch/v2alpha1
+apiVersion: batch/v1beta1
 kind: CronJob
 metadata:
-  name: label_sync_cron_job
+  name: label-sync
 spec:
   schedule: "17 23 * * 0"    # Every Sunday 23:17 / 11:17PM
+  concurrencyPolicy: Forbid
   jobTemplate:
+    metadata:
+      labels:
+        app: label-sync
     spec:
       template:
         spec:
           containers:
-            - name: label_sync
-              image: gcr.io/k8s-prow/label_sync:0.100
-          restartPolicy: OnFailure
-          concurrencyPolicy: Forbid
+            - name: label-sync
+              image: gcr.io/k8s-testimages/label_sync:v20171130-3d5c57308
+              args:
+              - --config=/etc/config/labels.yaml
+              - --dry-run=false
+              - --orgs=kubernetes
+              - --token=/etc/github/oauth
+              volumeMounts:
+              - name: oauth
+                mountPath: /etc/github
+                readOnly: true
+              - name: config
+                mountPath: /etc/config
+                readOnly: true
+          restartPolicy: Never
+          volumes:
+          - name: oauth
+            secret:
+              secretName: oauth-token
+          - name: config
+            configMap:
+              name: label-config
+

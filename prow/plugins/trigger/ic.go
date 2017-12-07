@@ -155,22 +155,18 @@ func handleIC(c client, trustedOrg string, ic github.IssueCommentEvent) error {
 		return err
 	}
 
+	// Determine if any branch-shard of a given job runs against the base branch.
+	anyShardRunsAgainstBranch := map[string]bool{}
+	for _, job := range requestedJobs {
+		if job.RunsAgainstBranch(pr.Base.Ref) {
+			anyShardRunsAgainstBranch[job.Context] = true
+		}
+	}
+
 	var errors []error
 	for _, job := range requestedJobs {
-		build := true
 		if !job.RunsAgainstBranch(pr.Base.Ref) {
-			build = false
-		} else if !job.AlwaysRun && job.RunIfChanged != "" {
-			changes, err := files()
-			if err != nil {
-				return err
-			}
-			if !job.RunsAgainstChanges(changes) {
-				build = false
-			}
-		}
-		if !build {
-			if !job.SkipReport {
+			if !job.SkipReport && !anyShardRunsAgainstBranch[job.Context] {
 				if err := c.GitHubClient.CreateStatus(org, repo, pr.Head.SHA, github.Status{
 					State:       github.StatusSuccess,
 					Context:     job.Context,

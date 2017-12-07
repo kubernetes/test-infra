@@ -384,7 +384,7 @@ func handleTot(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, "42")
 }
 
-func TestSyncNonPendingJobs(t *testing.T) {
+func TestSyncTriggeredJobs(t *testing.T) {
 	var testcases = []struct {
 		name string
 
@@ -404,30 +404,6 @@ func TestSyncNonPendingJobs(t *testing.T) {
 		expectedBuildID    string
 		expectError        bool
 	}{
-		{
-			name: "completed prow job",
-			pj: kube.ProwJob{
-				Status: kube.ProwJobStatus{
-					CompletionTime: time.Now(),
-					State:          kube.FailureState,
-				},
-			},
-			expectedState:    kube.FailureState,
-			expectedComplete: true,
-		},
-		{
-			name: "completed prow job, missing pod",
-			pj: kube.ProwJob{
-				Status: kube.ProwJobStatus{
-					CompletionTime: time.Now(),
-					State:          kube.FailureState,
-					PodName:        "boop-41",
-				},
-			},
-			expectedState:    kube.FailureState,
-			expectedNumPods:  0,
-			expectedComplete: true,
-		},
 		{
 			name: "start new pod",
 			pj: kube.ProwJob{
@@ -630,7 +606,7 @@ func TestSyncNonPendingJobs(t *testing.T) {
 		}
 
 		reports := make(chan kube.ProwJob, 100)
-		if err := c.syncNonPendingJob(tc.pj, pm, reports); (err != nil) != tc.expectError {
+		if err := c.syncTriggeredJob(tc.pj, pm, reports); (err != nil) != tc.expectError {
 			if tc.expectError {
 				t.Errorf("for case %q expected an error, but got none", tc.name)
 			} else {
@@ -1261,7 +1237,7 @@ func TestMaxConcurrencyWithNewlyTriggeredJobs(t *testing.T) {
 		errors := make(chan error, len(test.pjs))
 		pm := make(map[string]kube.Pod)
 
-		syncProwJobs(c.syncNonPendingJob, 20, jobs, reports, errors, pm)
+		syncProwJobs(c.log, c.syncTriggeredJob, 20, jobs, reports, errors, pm)
 		if len(fpc.pods) != test.expectedPods {
 			t.Errorf("expected pods: %d, got: %d", test.expectedPods, len(fpc.pods))
 		}

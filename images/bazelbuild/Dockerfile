@@ -14,7 +14,12 @@
 
 # Includes git, gcloud, and bazel.
 FROM ubuntu:16.04
-LABEL maintainer="spxtr@google.com"
+# TODO(bentheelder): consider replacing all maintainers with a test-infra-maintainers alias of some sort
+LABEL maintainer="bentheelder@google.com"
+
+# add env we can debug with the image name:tag
+ARG IMAGE
+ENV IMAGE=${IMAGE}
 
 ARG BAZEL_VERSION
 

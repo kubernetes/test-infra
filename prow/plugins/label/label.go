@@ -24,6 +24,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
 )
 
@@ -36,7 +37,18 @@ var (
 )
 
 func init() {
-	plugins.RegisterGenericCommentHandler(pluginName, handleGenericComment, nil)
+	plugins.RegisterGenericCommentHandler(pluginName, handleGenericComment, helpProvider)
+}
+
+func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
+	// The Config field is omitted because this plugin is not configurable.
+	return &pluginhelp.PluginHelp{
+			Description: "The label plugin provides commands that add or remove certain types of labels. Labels of the following types can be manipulated: 'area/*', 'priority/*', 'kind/*', and 'sig/*'.",
+			WhoCanUse:   "Members of the repository's organization may use the label commands.",
+			Usage:       "/[remove-](area|priority|kind|sig) <target>",
+			Examples:    []string{"/kind bug", "/remove-area prow", "/sig testing"},
+		},
+		nil
 }
 
 func handleGenericComment(pc plugins.PluginClient, e github.GenericCommentEvent) error {
