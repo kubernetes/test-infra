@@ -151,10 +151,10 @@ func LoadRepos(org string, gc client, filt filter) (RepoList, error) {
 func LoadLabels(gc client, org string, repos RepoList) (*RepoLabels, error) {
 	rl := RepoLabels{}
 	for _, repo := range repos {
-		logrus.Infof("Get labels in %s/%s", org, repo.Name)
+		logrus.WithField("org", org).WithField("repo", repo.Name).Info("Listing labels")
 		labels, err := gc.GetRepoLabels(org, repo.Name)
 		if err != nil {
-			logrus.Errorf("Error getting labels for %s/%s", org, repo.Name)
+			logrus.WithField("org", org).WithField("repo", repo.Name).Error("Failed to list labels")
 			return nil, err
 		}
 		rl[repo.Name] = labels
@@ -164,31 +164,31 @@ func LoadLabels(gc client, org string, repos RepoList) (*RepoLabels, error) {
 
 // Delete the label
 func kill(repo string, label Label) Update {
-	logrus.Infof("kill %s", label.Name)
+	logrus.WithField("repo", repo).WithField("label", label.Name).Info("kill")
 	return Update{Why: "dead", Current: &label, repo: repo}
 }
 
 // Create the label
 func create(repo string, label Label) Update {
-	logrus.Infof("create %s", label.Name)
+	logrus.WithField("repo", repo).WithField("label", label.Name).Info("create")
 	return Update{Why: "missing", Wanted: &label, repo: repo}
 }
 
 // Rename the label (will also update color)
 func rename(repo string, previous, wanted Label) Update {
-	logrus.Infof("rename %s to %s", previous.Name, wanted.Name)
+	logrus.WithField("repo", repo).WithField("from", previous.Name).WithField("to", wanted.Name).Info("rename")
 	return Update{Why: "rename", Current: &previous, Wanted: &wanted, repo: repo}
 }
 
 // Update the label color
 func recolor(repo string, label Label) Update {
-	logrus.Infof("recolor %s to %s", label.Name, label.Color)
+	logrus.WithField("repo", repo).WithField("label", label.Name).WithField("color", label.Color).Info("recolor")
 	return Update{Why: "recolor", Current: &label, Wanted: &label, repo: repo}
 }
 
 // Migrate labels to another label
 func move(repo string, previous, wanted Label) Update {
-	logrus.Infof("move %s to %s", previous.Name, wanted.Name)
+	logrus.WithField("repo", repo).WithField("from", previous.Name).WithField("to", wanted.Name).Info("migrate")
 	return Update{Why: "migrate", Wanted: &wanted, Current: &previous, repo: repo}
 }
 
@@ -298,9 +298,9 @@ func SyncLabels(config Configuration, repos RepoLabels) (RepoUpdates, error) {
 // And UpdateLabel GH API to update color or name (name only when case differs)
 func (ru RepoUpdates) DoUpdates(org string, gc client) error {
 	for repo, updates := range ru {
-		logrus.Infof("Applying %d changes to %s/%s", len(updates), org, repo)
+		logrus.WithField("org", org).WithField("repo", repo).Infof("Applying %d changes", len(updates))
 		for _, item := range updates {
-			logrus.Debugf("%s/%s: %s %+v", org, repo, item.Why, item.Wanted)
+			logrus.WithField("org", org).WithField("repo", repo).WithField("why", item.Why).Debug("running update")
 			switch item.Why {
 			case "missing":
 				err := gc.AddRepoLabel(org, repo, item.Wanted.Name, item.Wanted.Color)
@@ -437,30 +437,29 @@ func main() {
 type filter func(string, string) bool
 
 func SyncOrg(org string, githubClient client, config Configuration, filt filter) error {
-	logrus.Infof("Reading repos in %s", org)
+	logrus.WithField("org", org).Info("Reading repos")
 	repos, err := LoadRepos(org, githubClient, filt)
 	if err != nil {
 		return err
 	}
 
-	logrus.Infof("Reading labels in %d repos in %s", len(repos), org)
+	logrus.WithField("org", org).Infof("Found %d repos", len(repos))
 	currLabels, err := LoadLabels(githubClient, org, repos)
 	if err != nil {
 		return err
 	}
 
-	logrus.Infof("Syncing labels for %d repos in %s", len(repos), org)
+	logrus.WithField("org", org).Infof("Syncing labels for %d repos", len(repos))
 	updates, err := SyncLabels(config, *currLabels)
 	if err != nil {
 		return err
 	}
-	if *debug {
-		y, _ := yaml.Marshal(updates)
-		fmt.Println(string(y))
-	}
+
+	y, _ := yaml.Marshal(updates)
+	logrus.Debug(string(y))
 
 	if *dry {
-		logrus.Infof("No real update labels in --dry-run")
+		logrus.Infof("Running in --dry-run mode, no mutations made")
 		return nil
 	}
 
