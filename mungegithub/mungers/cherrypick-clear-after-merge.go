@@ -32,10 +32,15 @@ const (
 	clearAfterMergeName = "cherrypick-clear-after-merge"
 )
 
+type LogFinder interface {
+	FoundLog(branch, logString string, regexSearch bool) (bool, string)
+}
+
 // ClearPickAfterMerge will remove the the cherrypick-candidate label from
 // any PR that does not have a 'release' milestone set.
 type ClearPickAfterMerge struct {
 	features *features.Features
+	logs     LogFinder
 }
 
 func init() {
@@ -51,6 +56,7 @@ func (c *ClearPickAfterMerge) RequiredFeatures() []string { return []string{feat
 // Initialize will initialize the munger
 func (c *ClearPickAfterMerge) Initialize(config *github.Config, features *features.Features) error {
 	c.features = features
+	c.logs = c
 	return nil
 }
 
@@ -67,9 +73,9 @@ func handleFound(obj *github.MungeObject, branch string) error {
 	return nil
 }
 
-// foundLog will return if the given `logString` exists on the branch in question.
+// FoundLog will return if the given `logString` exists on the branch in question.
 // it will also return the actual logs for further processing
-func (c *ClearPickAfterMerge) foundLog(branch string, logString string) (bool, string) {
+func (c *ClearPickAfterMerge) FoundLog(branch, logString string, regexSearch bool) (bool, string) {
 	args := []string{"merge-base", "origin/master", "origin/" + branch}
 	out, err := c.features.Repos.GitCommand(args)
 	base := string(out)
@@ -87,7 +93,13 @@ func (c *ClearPickAfterMerge) foundLog(branch string, logString string) (bool, s
 	// abcdef123..origin/release-1.2
 	logRefs := fmt.Sprintf("%s..origin/%s", base, branch)
 
-	args = []string{"log", "--pretty=tformat:%H%n%s%n%b", "-F", "--grep", logString, logRefs}
+	var regexFlag string
+	if regexSearch {
+		regexFlag = "-E"
+	} else {
+		regexFlag = "-F"
+	}
+	args = []string{"log", "--pretty=tformat:%H%n%s%n%b", regexFlag, "--grep", logString, logRefs}
 	out, err = c.features.Repos.GitCommand(args)
 	logs := string(out)
 	if err != nil {
@@ -95,11 +107,6 @@ func (c *ClearPickAfterMerge) foundLog(branch string, logString string) (bool, s
 		return false, ""
 	}
 	glog.V(10).Infof("args:%v", args)
-
-	glog.V(10).Infof("Searching for %q in %q", logString, logs)
-	if !strings.Contains(logs, logString) {
-		return false, ""
-	}
 	return true, logs
 }
 
@@ -115,7 +122,7 @@ func (c *ClearPickAfterMerge) foundByPickDashX(obj *github.MungeObject, branch s
 	}
 
 	cherrypickMsg := fmt.Sprintf("(cherry picked from commit %s)", *sha)
-	found, logs := c.foundLog(branch, cherrypickMsg)
+	found, logs := c.logs.FoundLog(branch, cherrypickMsg, false)
 	if !found {
 		return false
 	}
@@ -133,7 +140,7 @@ func (c *ClearPickAfterMerge) foundByPickDashX(obj *github.MungeObject, branch s
 func (c *ClearPickAfterMerge) foundByPickWithoutDashX(obj *github.MungeObject, branch string) bool {
 	logMsg := fmt.Sprintf("Merge pull request #%d from ", *obj.Issue.Number)
 
-	found, _ := c.foundLog(branch, logMsg)
+	found, _ := c.logs.FoundLog(branch, logMsg, false)
 	if found {
 		glog.Infof("Found cherry-pick for %d using log matching for `git cherry-pick` in branch %q", *obj.Issue.Number, branch)
 	}
@@ -154,7 +161,7 @@ func (c *ClearPickAfterMerge) foundByAllCommits(obj *github.MungeObject, branch 
 		if commit.Commit.Message == nil {
 			return false
 		}
-		found, _ := c.foundLog(branch, *commit.Commit.Message)
+		found, _ := c.logs.FoundLog(branch, *commit.Commit.Message, false)
 		if !found {
 			return false
 		}
@@ -164,9 +171,9 @@ func (c *ClearPickAfterMerge) foundByAllCommits(obj *github.MungeObject, branch 
 
 // Can we find a commit in the changelog that looks like it was done using the hack/cherry_pick_pull.sh script ?
 func (c *ClearPickAfterMerge) foundByScript(obj *github.MungeObject, branch string) bool {
-	logMsg := fmt.Sprintf("Automated cherry pick of #%d", *obj.Issue.Number)
+	logMsg := fmt.Sprintf(`^Automated cherry pick of( #[0-9]+)* #%d( #[0-9]+)*$`, *obj.Issue.Number)
 
-	found, _ := c.foundLog(branch, logMsg)
+	found, _ := c.logs.FoundLog(branch, logMsg, true)
 	if found {
 		glog.Infof("Found cherry-pick for %d using log matching for `hack/cherry_pick_pull.sh` in branch %q", *obj.Issue.Number, branch)
 	}
