@@ -179,12 +179,12 @@ func TestProwJobToPod(t *testing.T) {
 	}
 }
 
-func TestPartitionPending(t *testing.T) {
+func TestPartitionActive(t *testing.T) {
 	tests := []struct {
 		pjs []kube.ProwJob
 
-		pending    map[string]struct{}
-		nonPending map[string]struct{}
+		pending   map[string]struct{}
+		triggered map[string]struct{}
 	}{
 		{
 			pjs: []kube.ProwJob{
@@ -232,23 +232,23 @@ func TestPartitionPending(t *testing.T) {
 			pending: map[string]struct{}{
 				"bar": {}, "bak": {},
 			},
-			nonPending: map[string]struct{}{
-				"foo": {}, "baz": {}, "error": {},
+			triggered: map[string]struct{}{
+				"foo": {},
 			},
 		},
 	}
 
 	for i, test := range tests {
 		t.Logf("test run #%d", i)
-		pendingCh, nonPendingCh := PartitionPending(test.pjs)
+		pendingCh, triggeredCh := PartitionActive(test.pjs)
 		for job := range pendingCh {
 			if _, ok := test.pending[job.Metadata.Name]; !ok {
 				t.Errorf("didn't find pending job %#v", job)
 			}
 		}
-		for job := range nonPendingCh {
-			if _, ok := test.nonPending[job.Metadata.Name]; !ok {
-				t.Errorf("didn't find non-pending job %#v", job)
+		for job := range triggeredCh {
+			if _, ok := test.triggered[job.Metadata.Name]; !ok {
+				t.Errorf("didn't find triggered job %#v", job)
 			}
 		}
 	}

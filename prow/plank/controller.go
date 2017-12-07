@@ -187,7 +187,7 @@ func (c *Controller) Sync() error {
 	c.pjs = pjs
 	c.pjLock.Unlock()
 
-	pendingCh, nonPendingCh := pjutil.PartitionPending(pjs)
+	pendingCh, triggeredCh := pjutil.PartitionActive(pjs)
 	errCh := make(chan error, len(pjs))
 	reportCh := make(chan kube.ProwJob, len(pjs))
 
@@ -197,8 +197,10 @@ func (c *Controller) Sync() error {
 	// Sync pending jobs first so we can determine what is the maximum
 	// number of new jobs we can trigger when syncing the non-pendings.
 	maxSyncRoutines := c.ca.Config().Plank.MaxGoroutines
-	syncProwJobs(c.syncPendingJob, maxSyncRoutines, pendingCh, reportCh, errCh, pm)
-	syncProwJobs(c.syncNonPendingJob, maxSyncRoutines, nonPendingCh, reportCh, errCh, pm)
+	c.log.Debugf("Handling %d pending prowjobs", len(pendingCh))
+	syncProwJobs(c.log, c.syncPendingJob, maxSyncRoutines, pendingCh, reportCh, errCh, pm)
+	c.log.Debugf("Handling %d triggered prowjobs", len(triggeredCh))
+	syncProwJobs(c.log, c.syncTriggeredJob, maxSyncRoutines, triggeredCh, reportCh, errCh, pm)
 
 	close(errCh)
 	close(reportCh)
@@ -276,6 +278,7 @@ func (c *Controller) terminateDupes(pjs []kube.ProwJob, pm map[string]kube.Pod) 
 
 // TODO: Dry this out
 func syncProwJobs(
+	l *logrus.Entry,
 	syncFn syncFn,
 	maxSyncRoutines int,
 	jobs <-chan kube.ProwJob,
@@ -283,23 +286,28 @@ func syncProwJobs(
 	syncErrors chan<- error,
 	pm map[string]kube.Pod,
 ) {
+	goroutines := maxSyncRoutines
+	if goroutines > len(jobs) {
+		goroutines = len(jobs)
+	}
 	wg := &sync.WaitGroup{}
-	wg.Add(maxSyncRoutines)
-	// TODO: Start len(jobs) goroutines if maxSyncRoutines is greater than len(jobs).
-	for i := 0; i < maxSyncRoutines; i++ {
-		go func(jobs <-chan kube.ProwJob) {
+	wg.Add(goroutines)
+	l.Debugf("Firing up %d goroutines", goroutines)
+	for i := 0; i < goroutines; i++ {
+		go func() {
 			defer wg.Done()
 			for pj := range jobs {
 				if err := syncFn(pj, pm, reports); err != nil {
 					syncErrors <- err
 				}
 			}
-		}(jobs)
+		}()
 	}
 	wg.Wait()
 }
 
 func (c *Controller) syncPendingJob(pj kube.ProwJob, pm map[string]kube.Pod, reports chan<- kube.ProwJob) error {
+	// Record last known state so we can log state transitions.
 	prevState := pj.Status.State
 
 	pod, podExists := pm[pj.Metadata.Name]
@@ -377,12 +385,8 @@ func (c *Controller) syncPendingJob(pj kube.ProwJob, pm map[string]kube.Pod, rep
 	return err
 }
 
-func (c *Controller) syncNonPendingJob(pj kube.ProwJob, pm map[string]kube.Pod, reports chan<- kube.ProwJob) error {
-	if pj.Complete() {
-		return nil
-	}
-
-	// The rest are new prowjobs.
+func (c *Controller) syncTriggeredJob(pj kube.ProwJob, pm map[string]kube.Pod, reports chan<- kube.ProwJob) error {
+	// Record last known state so we can log state transitions.
 	prevState := pj.Status.State
 
 	var id, pn string
