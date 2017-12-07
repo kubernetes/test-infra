@@ -12,12 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 ---
-apiVersion: batch/v2alpha1
+apiVersion: batch/v1beta1
 kind: CronJob
 metadata:
   name: label-sync
 spec:
   schedule: "17 23 * * 0"    # Every Sunday 23:17 / 11:17PM
+  concurrencyPolicy: Forbid
   jobTemplate:
     metadata:
       labels:
@@ -41,7 +42,6 @@ spec:
                 mountPath: /etc/config
                 readOnly: true
           restartPolicy: Never
-          concurrencyPolicy: Forbid
           volumes:
           - name: oauth
             secret:
