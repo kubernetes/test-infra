@@ -195,7 +195,7 @@ func (f *fghc) EditComment(org, repo string, ID int, comment string) error {
 	return nil
 }
 
-func TestSyncNonPendingJobs(t *testing.T) {
+func TestSyncTriggeredJobs(t *testing.T) {
 	var testcases = []struct {
 		name           string
 		pj             kube.ProwJob
@@ -211,15 +211,6 @@ func TestSyncNonPendingJobs(t *testing.T) {
 		expectedEnqueued bool
 		expectedError    bool
 	}{
-		{
-			name: "complete pj",
-			pj: kube.ProwJob{
-				Status: kube.ProwJobStatus{
-					CompletionTime: time.Now(),
-				},
-			},
-			expectedComplete: true,
-		},
 		{
 			name: "start new job",
 			pj: kube.ProwJob{
@@ -314,7 +305,7 @@ func TestSyncNonPendingJobs(t *testing.T) {
 		}
 
 		reports := make(chan kube.ProwJob, 100)
-		if err := c.syncNonPendingJob(tc.pj, reports, tc.builds); err != nil {
+		if err := c.syncTriggeredJob(tc.pj, reports, tc.builds); err != nil {
 			t.Errorf("unexpected error: %v", err)
 			continue
 		}
@@ -861,7 +852,7 @@ func TestMaxConcurrencyWithNewlyTriggeredJobs(t *testing.T) {
 		reports := make(chan<- kube.ProwJob, len(test.pjs))
 		errors := make(chan<- error, len(test.pjs))
 
-		syncProwJobs(c.syncNonPendingJob, 20, jobs, reports, errors, nil)
+		syncProwJobs(c.log, c.syncTriggeredJob, 20, jobs, reports, errors, nil)
 		if len(fjc.pjs) != test.expectedBuilds {
 			t.Errorf("expected builds: %d, got: %d", test.expectedBuilds, len(fjc.pjs))
 		}
