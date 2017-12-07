@@ -65,7 +65,7 @@ type RepoUpdates map[string][]Update
 
 var (
 	debug      = flag.Bool("debug", false, "Turn on debug to be more verbose")
-	dry        = flag.Bool("dry-run", true, "Dry run for testing. Uses API tokens but does not mutate.")
+	confirm    = flag.Bool("confirm", false, "Make mutating API calls to GitHub.")
 	endpoint   = flag.String("endpoint", "https://api.github.com", "GitHub's API endpoint")
 	labelsPath = flag.String("config", "", "Path to labels.yaml")
 	onlyRepos  = flag.String("only", "", "Only look at the following comma separated org/repos")
@@ -476,7 +476,7 @@ func main() {
 		logrus.WithError(err).Fatalf("failed to load --config=%s", *labelsPath)
 	}
 
-	githubClient, err := newClient(*token, *endpoint, *dry)
+	githubClient, err := newClient(*token, *endpoint, !*confirm)
 	if err != nil {
 		logrus.WithError(err).Fatal("failed to create client")
 	}
@@ -542,8 +542,8 @@ func SyncOrg(org string, githubClient client, config Configuration, filt filter)
 	y, _ := yaml.Marshal(updates)
 	logrus.Debug(string(y))
 
-	if *dry {
-		logrus.Infof("Running in --dry-run mode, no mutations made")
+	if !*confirm {
+		logrus.Infof("Running without --confirm, no mutations made")
 		return nil
 	}
 
