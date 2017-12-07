@@ -23,6 +23,7 @@ import (
 
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
+	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
 )
 
@@ -31,7 +32,26 @@ const (
 )
 
 func init() {
-	plugins.RegisterPullRequestHandler(pluginName, handlePullRequest, nil)
+	plugins.RegisterPullRequestHandler(pluginName, handlePullRequest, helpProvider)
+}
+
+func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
+	var configInfo map[string]string
+	if len(enabledRepos) == 1 {
+		msg := fmt.Sprintf(
+			"The main configuration is kept in sync with %s/%s.\nThe plugin configuration is kept in sync with %s/%s.",
+			enabledRepos[0],
+			config.ConfigUpdater.ConfigFile,
+			enabledRepos[0],
+			config.ConfigUpdater.PluginFile,
+		)
+		configInfo = map[string]string{"": msg}
+	}
+	return &pluginhelp.PluginHelp{
+			Description: "The config-updater plugin automatically redeploys configuration and plugin configuration files when they change. The plugin watches for pull request merges that modify either of the config files and updates the cluster's configmap resources in response.",
+			Config:      configInfo,
+		},
+		nil
 }
 
 type githubClient interface {

@@ -24,6 +24,7 @@ go_library(
     importpath = "k8s.io/test-infra/prow/plugins/releasenote",
     deps = [
         "//prow/github:go_default_library",
+        "//prow/pluginhelp:go_default_library",
         "//prow/plugins:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",

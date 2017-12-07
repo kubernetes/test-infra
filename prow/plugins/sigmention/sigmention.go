@@ -26,6 +26,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
 )
 
@@ -54,7 +55,17 @@ type githubClient interface {
 }
 
 func init() {
-	plugins.RegisterGenericCommentHandler(pluginName, handleGenericComment, nil)
+	plugins.RegisterGenericCommentHandler(pluginName, handleGenericComment, helpProvider)
+}
+
+func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
+	// Only the Description field is specified because this plugin is not triggered with commands and is not configurable.
+	return &pluginhelp.PluginHelp{
+			Description: `The sigmention plugin responds to SIG (Special Interest Group) Github team mentions like '@kubernetes/sig-testing-bugs'. The plugin responds in two ways:
+	1) The appropriate 'sig/*' and 'kind/*' labels are applied to the issue or pull request. In this case 'sig/testing' and 'kind/bug'.
+	2) If the user who mentioned the Github team is not a member of the organization that owns the repository the bot will create a comment that repeats the mention. This is necessary because non-member mentions do not trigger Github notifications.`,
+		},
+		nil
 }
 
 func handleGenericComment(pc plugins.PluginClient, e github.GenericCommentEvent) error {

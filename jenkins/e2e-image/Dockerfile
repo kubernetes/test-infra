@@ -18,6 +18,8 @@
 FROM gcr.io/k8s-testimages/bootstrap:v20171127-a1522ede
 LABEL maintainer "Sen Lu <senlu@google.com>"
 
+ENV KUBETEST_IN_DOCKER="true"
+
 # install cfssl to prevent https://github.com/kubernetes/kubernetes/issues/55589
 # The invocation at the end is to prevent download failures downloads as in the bug.
 # TODO(porridge): bump CFSSL_VERSION to one where cfssljson supports the -version flag and test it as well.
@@ -48,6 +50,10 @@ ARG BAZEL_VERSION
 RUN INSTALLER="bazel-${BAZEL_VERSION}-installer-linux-x86_64.sh"; \
     wget -q "https://github.com/bazelbuild/bazel/releases/download/${BAZEL_VERSION}/${INSTALLER}" && \
     chmod +x "${INSTALLER}" && "./${INSTALLER}" && rm "${INSTALLER}"
+
+# add env we can debug with the image name:tag
+ARG IMAGE
+ENV IMAGE=${IMAGE}}
 
 ADD ["e2e-runner.sh", \
     "kops-e2e-runner.sh", \

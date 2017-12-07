@@ -233,8 +233,10 @@ func reversePluginMaps(config *plugins.Configuration, orgToRepos map[string]sets
 	normal = map[string][]string{}
 	for repo, plugins := range config.Plugins {
 		var repos []string
-		if flattened, ok := orgToRepos[repo]; ok {
-			repos = flattened.List()
+		if !strings.Contains(repo, "/") {
+			if flattened, ok := orgToRepos[repo]; ok {
+				repos = flattened.List()
+			}
 		} else {
 			repos = []string{repo}
 		}
@@ -293,7 +295,7 @@ func (oa *orgAgent) orgToReposMap(config *plugins.Configuration) map[string]sets
 		syncReason = fmt.Sprintf("the following orgs were added to the config: %q", diff.List())
 	}
 	if syncReason != "" {
-		oa.log.Infof("Syncing org to repos mapping because %s.")
+		oa.log.Infof("Syncing org to repos mapping because %s.", syncReason)
 		oa.sync(config)
 	}
 	return oa.orgToRepos

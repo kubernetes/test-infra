@@ -26,6 +26,7 @@ go_library(
         "//prow/genfiles:go_default_library",
         "//prow/git:go_default_library",
         "//prow/github:go_default_library",
+        "//prow/pluginhelp:go_default_library",
         "//prow/plugins:go_default_library",
         "//vendor/github.com/golang/lint:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",

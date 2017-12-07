@@ -214,7 +214,7 @@ func TestHandleIssueComment(t *testing.T) {
 			},
 		},
 		{
-			name:   "Retest of run_if_changed job that hasn't run",
+			name:   "Retest of run_if_changed job that hasn't run. Changes require job",
 			Author: "t",
 			Body:   "/retest",
 			State:  "open",
@@ -234,7 +234,7 @@ func TestHandleIssueComment(t *testing.T) {
 			StartsExactly: "pull-jab",
 		},
 		{
-			name:   "Retest of run_if_changed job that failed",
+			name:   "Retest of run_if_changed job that failed. Changes require job",
 			Author: "t",
 			Body:   "/retest",
 			State:  "open",
@@ -272,7 +272,7 @@ func TestHandleIssueComment(t *testing.T) {
 			StartsExactly: "pull-jub",
 		},
 		{
-			name:   "Retest should 'skip' run_if_changed job that doesn't need to run on the changes",
+			name:   "Retest of run_if_changed job that failed. Changes do not require the job",
 			Author: "t",
 			Body:   "/retest",
 			State:  "open",
@@ -287,25 +287,7 @@ func TestHandleIssueComment(t *testing.T) {
 					},
 				},
 			},
-			ShouldReport: true,
-		},
-		{
-			name:   "Retest should not build/report run_if_changed SkipReport job that doesn't need to run on the changes",
-			Author: "t",
-			Body:   "/retest",
-			State:  "open",
-			IsPR:   true,
-			Presubmits: map[string][]config.Presubmit{
-				"org/repo": {
-					{
-						Name:         "jib",
-						RunIfChanged: "CHANGED2",
-						SkipReport:   true,
-						Context:      "pull-jib",
-						Trigger:      `/test all`,
-					},
-				},
-			},
+			ShouldBuild: true,
 		},
 		{
 			name:       "Run if changed job triggered by /ok-to-test",
@@ -351,8 +333,32 @@ func TestHandleIssueComment(t *testing.T) {
 				},
 			},
 			ShouldBuild:   true,
-			ShouldReport:  true,
 			StartsExactly: "pull-jab",
+		},
+		{
+			name:   "branch-sharded job. no shard matches base branch",
+			Author: "t",
+			Branch: "branch",
+			Body:   "/test jab",
+			State:  "open",
+			IsPR:   true,
+			Presubmits: map[string][]config.Presubmit{
+				"org/repo": {
+					{
+						Name:     "jab",
+						Brancher: config.Brancher{Branches: []string{"master"}},
+						Context:  "pull-jab",
+						Trigger:  `/test jab`,
+					},
+					{
+						Name:     "jab",
+						Brancher: config.Brancher{Branches: []string{"release"}},
+						Context:  "pull-jab",
+						Trigger:  `/test jab`,
+					},
+				},
+			},
+			ShouldReport: true,
 		},
 	}
 	for _, tc := range testcases {

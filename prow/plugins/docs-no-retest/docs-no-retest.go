@@ -25,6 +25,7 @@ import (
 	"regexp"
 
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
 )
 
@@ -40,7 +41,17 @@ var (
 )
 
 func init() {
-	plugins.RegisterPullRequestHandler(pluginName, handlePullRequest, nil)
+	plugins.RegisterPullRequestHandler(pluginName, handlePullRequest, helpProvider)
+}
+
+func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
+	// The {WhoCanUse, Usage, Examples, Config} fields are omitted because this plugin cannot be
+	// manually triggered and is not configurable.
+	return &pluginhelp.PluginHelp{
+			Description: `The docs-no-retest plugin applies the '` + labelSkipRetest + `' label to pull requests that only touch documentation type files and thus do not need to be retested against the latest master commit before merging.
+Files extensions '.md', '.png', '.svg', and '.dia' are considered documentation.`,
+		},
+		nil
 }
 
 func handlePullRequest(pc plugins.PluginClient, pe github.PullRequestEvent) error {

@@ -17,13 +17,16 @@ limitations under the License.
 package heart
 
 import (
+	"fmt"
 	"math/rand"
 	"path/filepath"
 	"regexp"
+	"strings"
 
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
 )
 
@@ -42,8 +45,22 @@ var reactions = []string{
 }
 
 func init() {
-	plugins.RegisterIssueCommentHandler(pluginName, handleIssueComment, nil)
-	plugins.RegisterPullRequestHandler(pluginName, handlePullRequest, nil)
+	plugins.RegisterIssueCommentHandler(pluginName, handleIssueComment, helpProvider)
+	plugins.RegisterPullRequestHandler(pluginName, handlePullRequest, helpProvider)
+}
+
+func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
+	// The {WhoCanUse, Usage, Examples} fields are omitted because this plugin is not triggered with commands.
+	return &pluginhelp.PluginHelp{
+			Description: "The heart plugin celebrates certain Github actions with the reaction emojis. Emojis are added to merge notifications left by mungegithub's submit-queue and to pull requests that make additions to OWNERS files.",
+			Config: map[string]string{
+				"": fmt.Sprintf(
+					"The heart plugin is configured to react to merge notifications left by the following Github users: %s.",
+					strings.Join(config.Heart.Adorees, ", "),
+				),
+			},
+		},
+		nil
 }
 
 type githubClient interface {

@@ -31,6 +31,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
 )
 
@@ -54,7 +55,32 @@ type pruneClient interface {
 }
 
 func init() {
-	plugins.RegisterPullRequestHandler(pluginName, handlePullRequest, nil)
+	plugins.RegisterPullRequestHandler(pluginName, handlePullRequest, helpProvider)
+}
+
+func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
+	// The {WhoCanUse, Usage, Examples} fields are omitted because this plugin cannot be triggered manually.
+	blockConfig := map[string]string{}
+	for _, repo := range enabledRepos {
+		parts := strings.Split(repo, "/")
+		if len(parts) != 2 {
+			return nil, fmt.Errorf("invalid repo in enabledRepos: %q", repo)
+		}
+		var buf bytes.Buffer
+		fmt.Fprint(&buf, "The following blockades apply in this repository:")
+		for _, blockade := range config.Blockades {
+			if !stringInSlice(parts[0], blockade.Repos) && !stringInSlice(repo, blockade.Repos) {
+				continue
+			}
+			fmt.Fprintf(&buf, "\nBlock reason: '%s'\n\tBlock regexps: %q\n\tException regexps: %q\n", blockade.Explanation, blockade.BlockRegexps, blockade.ExceptionRegexps)
+		}
+		blockConfig[repo] = buf.String()
+	}
+	return &pluginhelp.PluginHelp{
+			Description: "The blockade plugin blocks pull requests from merging if they touch specific files. The plugin applies the '" + blockedPathsLabel + "' label to pull requests that touch files that match a blockade's block regular expression and none of the corresponding exception regular expressions.",
+			Config:      blockConfig,
+		},
+		nil
 }
 
 type blockCalc func([]github.PullRequestChange, []blockade) summary

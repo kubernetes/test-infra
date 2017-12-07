@@ -23,6 +23,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
 )
 
@@ -31,7 +32,18 @@ const pluginName = "reopen"
 var reopenRe = regexp.MustCompile(`(?mi)^/reopen\s*$`)
 
 func init() {
-	plugins.RegisterGenericCommentHandler(pluginName, handleGenericComment, nil)
+	plugins.RegisterGenericCommentHandler(pluginName, handleGenericComment, helpProvider)
+}
+
+func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
+	// The Config field is omitted because this plugin is not configurable.
+	return &pluginhelp.PluginHelp{
+			Description: "The reopen plugin is used to reopen closed issues and pull requests.",
+			WhoCanUse:   "Authors and assignees of the pull request or issue.",
+			Usage:       "/reopen",
+			Examples:    []string{"/reopen"},
+		},
+		nil
 }
 
 type githubClient interface {

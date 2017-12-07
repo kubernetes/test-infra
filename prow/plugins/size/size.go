@@ -27,13 +27,28 @@ import (
 
 	"k8s.io/test-infra/prow/genfiles"
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
 )
 
 const pluginName = "size"
 
 func init() {
-	plugins.RegisterPullRequestHandler(pluginName, handlePullRequest, nil)
+	plugins.RegisterPullRequestHandler(pluginName, handlePullRequest, helpProvider)
+}
+
+func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
+	// Only the Description field is specified because this plugin is not triggered with commands and is not configurable.
+	return &pluginhelp.PluginHelp{
+			Description: `The size plugin manages the 'size/*' labels, maintaining the appropriate label on each pull request as it is updated. Generated files identified by the config file '.generated_files' at the repo root are ignored. Labels are applied based on the total number of lines of changes (additions and deletions):
+	size/XS:	0-9
+	size/S:	10-29
+	size/M:	30-99
+	size/L	100-499
+	size/XL:	500-999
+	size/XXL:	1000+`,
+		},
+		nil
 }
 
 func handlePullRequest(pc plugins.PluginClient, pe github.PullRequestEvent) error {

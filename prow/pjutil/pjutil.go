@@ -171,33 +171,37 @@ func kubeEnv(environment map[string]string) []kube.EnvVar {
 	return kubeEnvironment
 }
 
-// PartitionPending separates the provided prowjobs into pending and non-pending
+// PartitionActive separates the provided prowjobs into pending and triggered
 // and returns them inside channels so that they can be consumed in parallel
-// by different goroutines. Controller loops need to handle pending jobs first
-// so they can conform to maximum concurrency requirements that different jobs
-// may have.
-func PartitionPending(pjs []kube.ProwJob) (pending, nonPending chan kube.ProwJob) {
-	// Determine pending job size in order to size the channels correctly.
-	pendingCount := 0
+// by different goroutines. Complete prowjobs are filtered out. Controller
+// loops need to handle pending jobs first so they can conform to maximum
+// concurrency requirements that different jobs may have.
+func PartitionActive(pjs []kube.ProwJob) (pending, triggered chan kube.ProwJob) {
+	// Size channels correctly.
+	pendingCount, triggeredCount := 0, 0
 	for _, pj := range pjs {
-		if pj.Status.State == kube.PendingState {
+		switch pj.Status.State {
+		case kube.PendingState:
 			pendingCount++
+		case kube.TriggeredState:
+			triggeredCount++
 		}
 	}
 	pending = make(chan kube.ProwJob, pendingCount)
-	nonPending = make(chan kube.ProwJob, len(pjs)-pendingCount)
+	triggered = make(chan kube.ProwJob, triggeredCount)
 
 	// Partition the jobs into the two separate channels.
 	for _, pj := range pjs {
-		if pj.Status.State == kube.PendingState {
+		switch pj.Status.State {
+		case kube.PendingState:
 			pending <- pj
-		} else {
-			nonPending <- pj
+		case kube.TriggeredState:
+			triggered <- pj
 		}
 	}
 	close(pending)
-	close(nonPending)
-	return pending, nonPending
+	close(triggered)
+	return pending, triggered
 }
 
 // GetLatestProwJobs filters through the provided prowjobs and returns

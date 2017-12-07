@@ -15,7 +15,7 @@
 VERSION = $(shell date +v%Y%m%d)-$(shell git describe --tags --always --dirty)
 
 image:
-	docker build -t "gcr.io/k8s-testimages/gcloud-in-go:$(VERSION)" .
+	docker build --build-arg IMAGE="gcr.io/k8s-testimages/gcloud-in-go:$(VERSION)" -t "gcr.io/k8s-testimages/gcloud-in-go:$(VERSION)" .
 
 push: image
 	gcloud docker -- push "gcr.io/k8s-testimages/gcloud-in-go:$(VERSION)"
