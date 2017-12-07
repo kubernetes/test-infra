@@ -1047,6 +1047,14 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-bazel-build-1-8
 - name: periodic-kubernetes-bazel-build-1-9
   gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-bazel-build-1-9
+- name: periodic-test-infra-unfreeze
+  gcs_prefix: kubernetes-jenkins/logs/periodic-test-infra-unfreeze
+- name: periodic-test-infra-stale
+  gcs_prefix: kubernetes-jenkins/logs/periodic-test-infra-stale
+- name: periodic-test-infra-rotten
+  gcs_prefix: kubernetes-jenkins/logs/periodic-test-infra-rotten
+- name: periodic-test-infra-close
+  gcs_prefix: kubernetes-jenkins/logs/periodic-test-infra-close
 - name: periodic-test-infra-retester
   gcs_prefix: kubernetes-jenkins/logs/periodic-test-infra-retester
 # perf tests
@@ -4277,6 +4285,18 @@ dashboards:
     test_group_name: periodic-test-infra-retester
     code_search_url_template:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+  - name: unfreeze
+    description: Removes lifecycle/frozen from issues after 30d of inactivity
+    test_group_name: periodic-test-infra-unfreeze
+  - name: stale
+    description: Adds lifecycle/stale to issues after 30d of inactivity
+    test_group_name: periodic-test-infra-stale
+  - name: rotten
+    description: Adds lifecycle/rotten to stale issues after 30d of inactivity
+    test_group_name: periodic-test-infra-rotten
+  - name: close
+    description: Closes rotten issues after 30d of inactivity
+    test_group_name: periodic-test-infra-close
   - name: issue-creator
     description: Creates github issues based on data from various 'IssueSource's.
     test_group_name: issue-creator
