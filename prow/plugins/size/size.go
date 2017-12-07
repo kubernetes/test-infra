@@ -40,13 +40,14 @@ func init() {
 func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
 	// Only the Description field is specified because this plugin is not triggered with commands and is not configurable.
 	return &pluginhelp.PluginHelp{
-			Description: `The size plugin manages the 'size/*' labels, maintaining the appropriate label on each pull request as it is updated. Generated files identified by the config file '.generated_files' at the repo root are ignored. Labels are applied based on the total number of lines of changes (additions and deletions):
-	size/XS:	0-9
-	size/S:	10-29
-	size/M:	30-99
-	size/L	100-499
-	size/XL:	500-999
-	size/XXL:	1000+`,
+			Description: `The size plugin manages the 'size/*' labels, maintaining the appropriate label on each pull request as it is updated. Generated files identified by the config file '.generated_files' at the repo root are ignored. Labels are applied based on the total number of lines of changes (additions and deletions):<ul>
+<li>size/XS:	0-9</li>
+<li>size/S:	10-29</li>
+<li>size/M:	30-99</li>
+<li>size/L	100-499</li>
+<li>size/XL:	500-999</li>
+<li>size/XXL:	1000+</li>
+</ul>`,
 		},
 		nil
 }

@@ -82,11 +82,11 @@ func init() {
 func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
 	return &pluginhelp.PluginHelp{
 			Description: `The releasenote plugin implements a release note process that uses a markdown 'releasenote' code block to associate a release note with a pull request. Until the 'releasenote' block in the pull request body is populated the PR will be assigned the '` + releaseNoteLabelNeeded + `' label.
-There are three valid types of release notes that can replace this label:
-	- PRs with a normal release note in the 'releasenote' block are given the label '` + releaseNote + `'.
-	- PRs that have a release note of 'none' in the block are given the label '` + releaseNoteNone + `' to indicate that the PR does not warrant a release note.
-	- PRs that contain 'action required' in their 'releasenote' block are given the label '` + releaseNoteActionRequired + `' to indicate that the PR introduces potentially breaking changes that necessitate user action before upgrading to the release.
-To support old behavior, this plugin also provides a '/release-note-none' command that can be used by organization members to specify that no release note is needed for the PR as an alternative to setting the 'releasenote' block contents to 'none'.`,
+<br>There are three valid types of release notes that can replace this label:
+<br>&nbsp&nbsp&nbsp&nbsp- PRs with a normal release note in the 'releasenote' block are given the label '` + releaseNote + `'.
+<br>&nbsp&nbsp&nbsp&nbsp- PRs that have a release note of 'none' in the block are given the label '` + releaseNoteNone + `' to indicate that the PR does not warrant a release note.
+<br>&nbsp&nbsp&nbsp&nbsp- PRs that contain 'action required' in their 'releasenote' block are given the label '` + releaseNoteActionRequired + `' to indicate that the PR introduces potentially breaking changes that necessitate user action before upgrading to the release.
+<br>To support old behavior, this plugin also provides a '/release-note-none' command that can be used by organization members to specify that no release note is needed for the PR as an alternative to setting the 'releasenote' block contents to 'none'.`,
 			Usage: "In the pull request body text:\n\n```releasenote\n<release note content>\n```",
 		},
 		nil

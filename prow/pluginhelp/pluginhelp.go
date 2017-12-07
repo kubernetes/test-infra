@@ -22,10 +22,12 @@ package pluginhelp
 // This includes repo specific configuration for every repo that the plugin is enabled for.
 type PluginHelp struct {
 	// Description is a description of what the plugin does and what purpose it achieves.
+	// This field may include HTML.
 	Description string
 	// WhoCanUse is a description of the permissions/role/authorization required to use the plugin.
 	// This is usually specified as a github permissions, but it can also be a github team, an
 	// OWNERS file alias, etc.
+	// This field may include HTML.
 	WhoCanUse string
 	// Usage is a usage string for the plugin. Leave empty if not applicable.
 	Usage string
@@ -33,6 +35,7 @@ type PluginHelp struct {
 	Examples []string
 	// Config is a map from org/repo strings to a string describing the configuration for that repo.
 	// The key "" should map to a string describing configuration that applies to all repos if any.
+	// This configuration strings may include HTML.
 	Config map[string]string
 
 	// Events is a slice containing the events that are handled by the plugin.

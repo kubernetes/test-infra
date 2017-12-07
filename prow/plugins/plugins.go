@@ -641,7 +641,7 @@ func EventsForPlugin(name string) []string {
 		events = append(events, "status")
 	}
 	if _, ok := genericCommentHandlers[name]; ok {
-		events = append(events, "<GenericCommentEvent. Includes: [issue_comment, pull_request_review, pull_request_review_comment, status] and for text modifying actions: [issue, pull_request]>")
+		events = append(events, "GenericCommentEvent (any event for user text)")
 	}
 	return events
 }
