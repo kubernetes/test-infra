@@ -233,8 +233,10 @@ func reversePluginMaps(config *plugins.Configuration, orgToRepos map[string]sets
 	normal = map[string][]string{}
 	for repo, plugins := range config.Plugins {
 		var repos []string
-		if flattened, ok := orgToRepos[repo]; ok {
-			repos = flattened.List()
+		if !strings.Contains(repo, "/") {
+			if flattened, ok := orgToRepos[repo]; ok {
+				repos = flattened.List()
+			}
 		} else {
 			repos = []string{repo}
 		}
