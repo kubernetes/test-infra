@@ -2052,7 +2052,7 @@ presubmits:
     trigger: "(?m)^/test( all| pull-kubernetes-unit),?(\\s+|$)"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bootstrap:v20171127-a1522ede
+      - image: gcr.io/k8s-testimages/bootstrap@sha256:67fce8e69adabf150c8f0af2f953dd396712ea2c5a247dd8e69faf6b78291ab0
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -3826,7 +3826,7 @@ presubmits:
     trigger: "(?m)^/test( all| pull-security-kubernetes-unit),?(\\s+|$)"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bootstrap:v20171127-a1522ede
+      - image: gcr.io/k8s-testimages/bootstrap@sha256:67fce8e69adabf150c8f0af2f953dd396712ea2c5a247dd8e69faf6b78291ab0
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
