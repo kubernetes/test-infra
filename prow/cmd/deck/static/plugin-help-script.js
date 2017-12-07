@@ -37,7 +37,11 @@ function selectionText(sel) {
 // applicablePlugins takes an org/repo string and a repo to plugin map and returns the plugins that apply to the repo.
 function applicablePlugins(repoSel, repoPlugins) {
     if (repoSel == "") {
-        return repoPlugins[""].sort()
+        var all = repoPlugins[""];
+        if (all) {
+            return all.sort();
+        }
+        return [];
     }
     var parts = repoSel.split("/")
     var plugins = [];
