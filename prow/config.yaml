@@ -1995,6 +1995,10 @@ presubmits:
           path: /mnt/disks/ssd0
   - name: pull-kubernetes-unit
     agent: kubernetes
+    skip_branches:
+    - release-1.6
+    - release-1.7
+    - release-1.8
     always_run: true
     context: pull-kubernetes-unit
     rerun_command: "/test pull-kubernetes-unit"
@@ -2033,6 +2037,59 @@ presubmits:
       - name: service
         secret:
           secretName: service-account
+      - name: docker-graph
+        hostPath:
+          path: /mnt/disks/ssd0/docker-graph
+  - name: pull-kubernetes-unit
+    agent: kubernetes
+    branches:
+    - release-1.6
+    - release-1.7
+    - release-1.8
+    always_run: true
+    context: pull-kubernetes-unit
+    rerun_command: "/test pull-kubernetes-unit"
+    trigger: "(?m)^/test( all| pull-kubernetes-unit),?(\\s+|$)"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/bootstrap:v20171127-a1522ede
+        args:
+        - "--clean"
+        - "--git-cache=/root/.cache/git"
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--timeout=60"
+        env:
+        - name: DOCKER_IN_DOCKER_ENABLED
+          value: true
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /etc/service-account/service-account.json
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: service
+          mountPath: /etc/service-account
+          readOnly: true
+        - name: cache-ssd
+          mountPath: /root/.cache
+        - name: docker-graph
+          mountPath: /docker-graph
+        ports:
+        - containerPort: 9999
+          hostPort: 9999
+        resources:
+          requests:
+            cpu: 4
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
+      - name: cache-ssd
+        hostPath:
+          path: /mnt/disks/ssd0
       - name: docker-graph
         hostPath:
           path: /mnt/disks/ssd0/docker-graph
@@ -3712,6 +3769,10 @@ presubmits:
           path: /mnt/disks/ssd0
   - name: pull-security-kubernetes-unit
     agent: kubernetes
+    skip_branches:
+    - release-1.6
+    - release-1.7
+    - release-1.8
     always_run: true
     context: pull-security-kubernetes-unit
     rerun_command: "/test pull-security-kubernetes-unit"
@@ -3750,6 +3811,59 @@ presubmits:
       - name: service
         secret:
           secretName: service-account
+      - name: docker-graph
+        hostPath:
+          path: /mnt/disks/ssd0/docker-graph
+  - name: pull-security-kubernetes-unit
+    agent: kubernetes
+    branches:
+    - release-1.6
+    - release-1.7
+    - release-1.8
+    always_run: true
+    context: pull-security-kubernetes-unit
+    rerun_command: "/test pull-security-kubernetes-unit"
+    trigger: "(?m)^/test( all| pull-security-kubernetes-unit),?(\\s+|$)"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/bootstrap:v20171127-a1522ede
+        args:
+        - "--clean"
+        - "--git-cache=/root/.cache/git"
+        - "--job=$(JOB_NAME)"
+        - "--repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-security-jenkins/pr-logs"
+        - "--timeout=60"
+        env:
+        - name: DOCKER_IN_DOCKER_ENABLED
+          value: true
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /etc/service-account/service-account.json
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: service
+          mountPath: /etc/service-account
+          readOnly: true
+        - name: cache-ssd
+          mountPath: /root/.cache
+        - name: docker-graph
+          mountPath: /docker-graph
+        ports:
+        - containerPort: 9999
+          hostPort: 9999
+        resources:
+          requests:
+            cpu: 4
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
+      - name: cache-ssd
+        hostPath:
+          path: /mnt/disks/ssd0
       - name: docker-graph
         hostPath:
           path: /mnt/disks/ssd0/docker-graph
