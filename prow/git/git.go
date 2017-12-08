@@ -252,11 +252,12 @@ func (r *Repo) Merge(commitlike string) (bool, error) {
 	return false, nil
 }
 
-// Apply tries to apply the patch in the given path into the current branch.
-// It returns an error if the patch cannot be applied.
-func (r *Repo) Apply(path string) error {
+// Am tries to apply the patch in the given path into the current branch
+// by performing a three-way merge (similar to git cherry-pick). It returns
+// an error if the patch cannot be applied.
+func (r *Repo) Am(path string) error {
 	r.logger.Infof("Applying %s.", path)
-	co := r.gitCommand("am", path)
+	co := r.gitCommand("am", "--3way", path)
 	b, err := co.CombinedOutput()
 	if err == nil {
 		return nil
