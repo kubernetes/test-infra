@@ -323,7 +323,7 @@ func TestLabel(t *testing.T) {
 			Issues:         make([]github.Issue, 1),
 			IssueComments:  make(map[int][]github.IssueComment),
 			ExistingLabels: tc.repoLabels,
-			OrgMembers:     []string{orgMember},
+			OrgMembers:     map[string][]string{"org": {orgMember}},
 			LabelsAdded:    []string{},
 			LabelsRemoved:  []string{},
 		}

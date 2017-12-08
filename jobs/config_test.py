@@ -63,7 +63,6 @@ class JobTest(unittest.TestCase):
         'jenkins/job-configs/bootstrap-maintenance.yaml' : 'suffix',
         'jenkins/job-configs/kubernetes-jenkins-pull/bootstrap-pull-json.yaml' : 'jsonsuffix',
         'jenkins/job-configs/kubernetes-jenkins-pull/bootstrap-security-pull.yaml' : 'suffix',
-        'jenkins/job-configs/kubernetes-jenkins/bootstrap-ci.yaml' : 'suffix',
         'jenkins/job-configs/kubernetes-jenkins/bootstrap-ci-commit.yaml' : 'commit-suffix',
         'jenkins/job-configs/kubernetes-jenkins/bootstrap-ci-repo.yaml' : 'repo-suffix',
         'jenkins/job-configs/kubernetes-jenkins/bootstrap-ci-soak.yaml' : 'soak-suffix',
@@ -169,21 +168,6 @@ class JobTest(unittest.TestCase):
                     continue
                 self.assertEquals(job[attr], job2[attr])
 
-
-    def test_bootstrap_ci_yaml(self):
-        def check(job, name):
-            job_name = 'ci-%s' % name
-            self.assertIn('frequency', job)
-            self.assertIn('trigger-job', job)
-            self.assertNotIn('branch', job)
-            self.assertNotIn('json', job)
-            self.assertGreater(job['timeout'], 0, job_name)
-            self.assertGreaterEqual(job['jenkins-timeout'], job['timeout']+100, job_name)
-            return job_name
-
-        self.check_bootstrap_yaml(
-            'jenkins/job-configs/kubernetes-jenkins/bootstrap-ci.yaml',
-            check)
 
     def test_bootstrap_ci_commit_yaml(self):
         def check(job, name):

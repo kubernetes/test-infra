@@ -303,7 +303,7 @@ func (s *Server) handle(l *logrus.Entry, comment github.IssueComment, org, repo,
 	}
 
 	// Apply the patch.
-	if err := r.Apply(localPath); err != nil {
+	if err := r.Am(localPath); err != nil {
 		resp := fmt.Sprintf("#%d failed to apply on top of branch %q: %v", num, targetBranch, err)
 		s.log.WithFields(l.Data).Info(resp)
 		return s.ghc.CreateComment(org, repo, num, plugins.FormatICResponse(comment, resp))

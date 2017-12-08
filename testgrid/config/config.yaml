@@ -1903,8 +1903,17 @@ test_groups:
 - name: test_pull_request_crio_e2e_rhel
   gcs_prefix: origin-federated-results/pr-logs/directory/test_pull_request_crio_e2e_rhel
 # Istio
-- name: istio-api-postsubmit
-  gcs_prefix: istio-prow/api-postsubmit
+- name: istio-istio-postsubmit
+  gcs_prefix: istio-prow/istio-postsubmit
+  num_failures_to_alert: 1
+- name: istio-e2e-suite-rbac-no_auth
+  gcs_prefix: istio-prow/e2e-suite-rbac-no_auth
+  num_failures_to_alert: 3
+- name: istio-e2e-suite-rbac-auth
+  gcs_prefix: istio-prow/e2e-suite-rbac-auth
+  num_failures_to_alert: 3
+- name: istio-e2e-cluster_wide-auth
+  gcs_prefix: istio-prow/e2e-cluster_wide-auth
   num_failures_to_alert: 5
 
 # Add New Testgroups Here
@@ -4895,8 +4904,20 @@ dashboards:
 
 - name: istio
   dashboard_tab:
-  - name: api-postsubmit
-    test_group_name: istio-api-postsubmit
+  - name: istio-postsubmit
+    test_group_name: istio-istio-postsubmit
+    alert_options:
+      alert_mail_to_addresses: 'istio-oncall@googlegroups.com'
+  - name: e2e-suite-rbac-no_auth
+    test_group_name: istio-e2e-suite-rbac-no_auth
+    alert_options:
+      alert_mail_to_addresses: 'istio-oncall@googlegroups.com'
+  - name: e2e-suite-rbac-auth
+    test_group_name: istio-e2e-suite-rbac-auth
+    alert_options:
+      alert_mail_to_addresses: 'istio-oncall@googlegroups.com'
+  - name: e2e-cluster_wide-auth
+    test_group_name: istio-e2e-cluster_wide-auth
     alert_options:
       alert_mail_to_addresses: 'istio-oncall@googlegroups.com'
 

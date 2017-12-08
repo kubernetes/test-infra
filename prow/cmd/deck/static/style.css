@@ -19,6 +19,22 @@ header a {
     color: inherit;
 }
 
+header ul {
+    list-style-type: none;
+    overflow: auto;
+}
+
+header ul li {
+    float: right;
+    list-style-type: none;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+header ul li:first-child {
+    float: left;
+}
+
 h1 {
     font-weight: normal;
     font-size: 2em;

@@ -36,6 +36,13 @@ func TestTrusted(t *testing.T) {
 			},
 			Trusted: true,
 		},
+		// Repo's org member.
+		{
+			PR: github.PullRequest{
+				User: github.User{Login: "t2"},
+			},
+			Trusted: true,
+		},
 		// Non org member, no comments.
 		{
 			PR: github.PullRequest{
@@ -78,6 +85,21 @@ func TestTrusted(t *testing.T) {
 				{
 					Body: "/ok-to-test",
 					User: github.User{Login: "t1"},
+				},
+			},
+			Trusted: true,
+		},
+		// Non org member, ok to test comment by repo's org member.
+		{
+			PR: github.PullRequest{
+				User: github.User{Login: "u"},
+			},
+
+			Comments: []github.
+				IssueComment{
+				{
+					Body: "/ok-to-test",
+					User: github.User{Login: "t2"},
 				},
 			},
 			Trusted: true,
@@ -163,11 +185,12 @@ func TestTrusted(t *testing.T) {
 	}
 	for _, tc := range testcases {
 		g := &fakegithub.FakeClient{
-			OrgMembers: []string{"t1"},
+			OrgMembers: map[string][]string{"kubernetes": {"t1"}, "kubernetes-incubator": {"t2"}},
 			IssueComments: map[int][]github.IssueComment{
 				0: tc.Comments,
 			},
 		}
+		tc.PR.Base.Repo.Owner.Login = "kubernetes-incubator"
 		trusted, err := trustedPullRequest(g, tc.PR, "kubernetes", tc.Comments)
 		if err != nil {
 			t.Fatalf("Didn't expect error: %s", err)
