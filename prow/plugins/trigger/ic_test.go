@@ -369,7 +369,7 @@ func TestHandleIssueComment(t *testing.T) {
 		g := &fakegithub.FakeClient{
 			CreatedStatuses: map[string][]github.Status{},
 			IssueComments:   map[int][]github.IssueComment{},
-			OrgMembers:      []string{"t"},
+			OrgMembers:      map[string][]string{"org": {"t"}},
 			PullRequests: map[int]*github.PullRequest{
 				0: {
 					Number: 0,
@@ -379,7 +379,8 @@ func TestHandleIssueComment(t *testing.T) {
 					Base: github.PullRequestBranch{
 						Ref: tc.Branch,
 						Repo: github.Repo{
-							Name: "repo",
+							Owner: github.User{Login: "org"},
+							Name:  "repo",
 						},
 					},
 				},
@@ -437,6 +438,7 @@ func TestHandleIssueComment(t *testing.T) {
 		event := github.IssueCommentEvent{
 			Action: github.IssueCommentActionCreated,
 			Repo: github.Repo{
+				Owner:    github.User{Login: "org"},
 				Name:     "repo",
 				FullName: "org/repo",
 			},
@@ -474,8 +476,9 @@ func TestHandleIssueComment(t *testing.T) {
 				t.Errorf("expected a label to be removed")
 				continue
 			}
-			if g.LabelsRemoved[0] != "/repo#0:needs-ok-to-test" {
-				t.Errorf("expected %q to be removed, got %q", "/repo#0:needs-ok-to-test", g.LabelsRemoved[0])
+			expected := "org/repo#0:needs-ok-to-test"
+			if g.LabelsRemoved[0] != expected {
+				t.Errorf("expected %q to be removed, got %q", expected, g.LabelsRemoved[0])
 			}
 		}
 	}

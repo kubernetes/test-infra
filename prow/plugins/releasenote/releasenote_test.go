@@ -159,7 +159,7 @@ func TestReleaseNoteComment(t *testing.T) {
 	for _, tc := range testcases {
 		fc := &fakegithub.FakeClient{
 			IssueComments: make(map[int][]github.IssueComment),
-			OrgMembers:    []string{"m"},
+			OrgMembers:    map[string][]string{"": {"m"}},
 		}
 		ice := github.IssueCommentEvent{
 			Action: tc.action,

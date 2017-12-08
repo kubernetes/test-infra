@@ -115,3 +115,19 @@ func trustedOrgForRepo(config *plugins.Configuration, org, repo string) string {
 	}
 	return org
 }
+
+func isUserTrusted(ghc githubClient, user, trustedOrg, org string) (bool, error) {
+	orgMember, err := ghc.IsMember(trustedOrg, user)
+	if err != nil {
+		return false, err
+	} else if orgMember {
+		return true, nil
+	}
+	if org != trustedOrg {
+		orgMember, err = ghc.IsMember(org, user)
+		if err != nil {
+			return false, err
+		}
+	}
+	return orgMember, nil
+}
