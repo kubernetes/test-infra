@@ -9,7 +9,7 @@ go_library(
         "paths.go",
         "repos.go",
     ],
-    importpath = "k8s.io/test-infra/bootstrap",
+    importpath = "k8s.io/test-infra/experiment/bootstrap",
     visibility = ["//visibility:private"],
     deps = ["//vendor/github.com/spf13/pflag:go_default_library"],
 )
@@ -17,7 +17,7 @@ go_library(
 go_binary(
     name = "bootstrap",
     embed = [":go_default_library"],
-    importpath = "k8s.io/test-infra/bootstrap",
+    importpath = "k8s.io/test-infra/experiment/bootstrap",
     visibility = ["//visibility:public"],
 )
 
@@ -44,5 +44,5 @@ go_test(
         "repos_test.go",
     ],
     embed = [":go_default_library"],
-    importpath = "k8s.io/test-infra/bootstrap",
+    importpath = "k8s.io/test-infra/experiment/bootstrap",
 )
