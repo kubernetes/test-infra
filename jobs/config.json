@@ -10272,6 +10272,7 @@
   },
   "pull-cluster-registry-bazel": {
     "args": [
+      "--build=//examples/...",
       "--test=//cmd/... //pkg/... -//cmd/clusterregistry:push-clusterregistry-image -//pkg/client/..."
     ],
     "scenario": "kubernetes_bazel",
