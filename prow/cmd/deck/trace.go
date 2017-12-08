@@ -40,6 +40,7 @@ type lineData struct {
 	Repo      string `json:"repo"`
 	Org       string `json:"org"`
 	EventGUID string `json:"event-GUID"`
+	URL       string `json:"url"`
 }
 
 type podLine struct {
@@ -80,6 +81,15 @@ func (pl linesByTimestamp) String() string {
 
 	return fmt.Sprintf("[%s]", log)
 }
+
+// ic is the prefix of a URL fragment for a Github comment.
+// The URL fragment has the following format:
+//
+// issuecomment-#id
+//
+// We use #id in order to figure out the event-GUID for a
+// comment and trace commments across prow.
+const ic = "issuecomment"
 
 func handleTrace(ja *JobAgent) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -122,6 +132,10 @@ func handleTrace(ja *JobAgent) http.HandlerFunc {
 		org := r.URL.Query().Get(github.OrgLogField)
 		eventGUID := r.URL.Query().Get(github.EventGUID)
 
+		icID := r.URL.Query().Get(ic)
+		var icChecked bool
+		var icEventGUID string
+
 		log := make(linesByTimestamp, 0)
 		var buf *bytes.Buffer
 		for _, pod := range targets {
@@ -161,6 +175,12 @@ func handleTrace(ja *JobAgent) http.HandlerFunc {
 				if org != "" && jsonLine.Org != org {
 					continue
 				}
+				// If issuecomment is specified, figure out its event-GUID and
+				// and select logs based on the event-GUID.
+				if icID != "" && !icChecked && strings.HasSuffix(jsonLine.URL, fmt.Sprintf("%s-%s", ic, icID)) {
+					icChecked = true
+					icEventGUID = jsonLine.EventGUID
+				}
 				jsonLine.time, err = time.Parse(time.RFC3339, jsonLine.TimeStr)
 				if err != nil {
 					logrus.Debugf("could not parse time format: %v", err)
@@ -170,19 +190,42 @@ func handleTrace(ja *JobAgent) http.HandlerFunc {
 				log = append(log, podLine{actual: line, unmarshaled: jsonLine})
 			}
 		}
+
+		// No event-GUID was found for the provided issuecomment.
+		// No logs should be returned.
+		if icID != "" && icEventGUID == "" {
+			fmt.Fprint(w, "[]")
+			return
+		}
+
+		if icEventGUID != "" {
+			tmpLog := make(linesByTimestamp, 0)
+			for _, l := range log {
+				if l.unmarshaled.EventGUID != icEventGUID {
+					continue
+				}
+				tmpLog = append(tmpLog, l)
+			}
+			log = tmpLog
+		}
+
 		fmt.Fprint(w, log)
 	}
 }
 
 func validateTraceRequest(r *http.Request) (int, error) {
+	icID := r.URL.Query().Get(ic)
 	pr := r.URL.Query().Get(github.PrLogField)
 	repo := r.URL.Query().Get(github.RepoLogField)
 	org := r.URL.Query().Get(github.OrgLogField)
 	eventGUID := r.URL.Query().Get(github.EventGUID)
 
-	if (pr == "" || repo == "" || org == "") && eventGUID == "" {
-		return 0, fmt.Errorf("need either %q, %q, and %q or %q to be specified",
-			github.PrLogField, github.RepoLogField, github.OrgLogField, github.EventGUID)
+	if (pr == "" || repo == "" || org == "") && eventGUID == "" && icID == "" {
+		return 0, fmt.Errorf("need either %q, %q, and %q, or %q, or %q to be specified",
+			github.PrLogField, github.RepoLogField, github.OrgLogField, github.EventGUID, ic)
+	}
+	if icID != "" && eventGUID != "" {
+		return 0, fmt.Errorf("cannot specify both %s (%s) and %s (%s)", ic, icID, github.EventGUID, eventGUID)
 	}
 	var prNum int
 	if pr != "" {
