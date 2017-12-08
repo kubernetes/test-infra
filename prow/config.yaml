@@ -2059,10 +2059,6 @@ presubmits:
           path: /mnt/disks/ssd0
   - name: pull-kubernetes-unit
     agent: kubernetes
-    skip_branches:
-    - release-1.6
-    - release-1.7
-    - release-1.8
     always_run: true
     context: pull-kubernetes-unit
     rerun_command: "/test pull-kubernetes-unit"
@@ -2104,16 +2100,6 @@ presubmits:
       - name: docker-graph
         hostPath:
           path: /mnt/disks/ssd0/docker-graph
-  - name: pull-kubernetes-unit
-    agent: jenkins
-    branches:
-    - release-1.6
-    - release-1.7
-    - release-1.8
-    always_run: true
-    context: pull-kubernetes-unit
-    rerun_command: "/test pull-kubernetes-unit"
-    trigger: "(?m)^/test( all| pull-kubernetes-unit),?(\\s+|$)"
   - name: pull-kubernetes-unit-prow
     agent: kubernetes
     always_run: false
@@ -3854,10 +3840,6 @@ presubmits:
           path: /mnt/disks/ssd0
   - name: pull-security-kubernetes-unit
     agent: kubernetes
-    skip_branches:
-    - release-1.6
-    - release-1.7
-    - release-1.8
     always_run: true
     context: pull-security-kubernetes-unit
     rerun_command: "/test pull-security-kubernetes-unit"
@@ -3899,16 +3881,6 @@ presubmits:
       - name: docker-graph
         hostPath:
           path: /mnt/disks/ssd0/docker-graph
-  - name: pull-security-kubernetes-unit
-    agent: jenkins
-    branches:
-    - release-1.6
-    - release-1.7
-    - release-1.8
-    always_run: true
-    context: pull-security-kubernetes-unit
-    rerun_command: "/test pull-security-kubernetes-unit"
-    trigger: "(?m)^/test( all| pull-security-kubernetes-unit),?(\\s+|$)"
   - name: pull-security-kubernetes-unit-prow
     agent: kubernetes
     always_run: false

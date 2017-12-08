@@ -10749,7 +10749,8 @@
   },
   "pull-kubernetes-unit": {
     "args": [
-      "--branch=${PULL_BASE_REF}"
+      "--branch=${PULL_BASE_REF}",
+      "--prow"
     ],
     "scenario": "kubernetes_verify",
     "sigOwners": [
