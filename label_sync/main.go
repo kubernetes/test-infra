@@ -24,6 +24,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/ghodss/yaml"
@@ -31,6 +32,8 @@ import (
 
 	"k8s.io/test-infra/prow/github"
 )
+
+const maxConcurrentWorkers = 20
 
 // A label in a repository.
 type Label struct {
@@ -62,7 +65,7 @@ type RepoUpdates map[string][]Update
 
 var (
 	debug      = flag.Bool("debug", false, "Turn on debug to be more verbose")
-	dry        = flag.Bool("dry-run", true, "Dry run for testing. Uses API tokens but does not mutate.")
+	confirm    = flag.Bool("confirm", false, "Make mutating API calls to GitHub.")
 	endpoint   = flag.String("endpoint", "https://api.github.com", "GitHub's API endpoint")
 	labelsPath = flag.String("config", "", "Path to labels.yaml")
 	onlyRepos  = flag.String("only", "", "Only look at the following comma separated org/repos")
@@ -149,46 +152,81 @@ func LoadRepos(org string, gc client, filt filter) (RepoList, error) {
 // Use provided githubClient (real, dry, fake)
 // Uses GitHub: /repos/:org/:repo/labels
 func LoadLabels(gc client, org string, repos RepoList) (*RepoLabels, error) {
-	rl := RepoLabels{}
+	repoChan := make(chan github.Repo, len(repos))
 	for _, repo := range repos {
-		logrus.Infof("Get labels in %s/%s", org, repo.Name)
-		labels, err := gc.GetRepoLabels(org, repo.Name)
-		if err != nil {
-			logrus.Errorf("Error getting labels for %s/%s", org, repo.Name)
-			return nil, err
-		}
-		rl[repo.Name] = labels
+		repoChan <- repo
 	}
-	return &rl, nil
+	close(repoChan)
+
+	wg := sync.WaitGroup{}
+	wg.Add(maxConcurrentWorkers)
+	labels := make(chan RepoLabels, len(repos))
+	errChan := make(chan error, len(repos))
+	for i := 0; i < maxConcurrentWorkers; i++ {
+		go func(repositories <-chan github.Repo) {
+			defer wg.Done()
+			for repository := range repositories {
+				logrus.WithField("org", org).WithField("repo", repository.Name).Info("Listing labels for repo")
+				repoLabels, err := gc.GetRepoLabels(org, repository.Name)
+				if err != nil {
+					logrus.WithField("org", org).WithField("repo", repository.Name).Error("Failed listing labels for repo")
+					errChan <- err
+				}
+				labels <- RepoLabels{repository.Name: repoLabels}
+			}
+		}(repoChan)
+	}
+
+	wg.Wait()
+	close(labels)
+	close(errChan)
+
+	rl := RepoLabels{}
+	for data := range labels {
+		for repo, repoLabels := range data {
+			rl[repo] = repoLabels
+		}
+	}
+
+	var overallErr error
+	if len(errChan) > 0 {
+		var listErrs []error
+		for listErr := range errChan {
+			listErrs = append(listErrs, listErr)
+		}
+		overallErr = fmt.Errorf("failed to list labels: %v", listErrs)
+	}
+
+	return &rl, overallErr
 }
 
 // Delete the label
 func kill(repo string, label Label) Update {
-	logrus.Infof("kill %s", label.Name)
+	logrus.WithField("repo", repo).WithField("label", label.Name).Info("kill")
 	return Update{Why: "dead", Current: &label, repo: repo}
 }
 
 // Create the label
 func create(repo string, label Label) Update {
-	logrus.Infof("create %s", label.Name)
+	logrus.WithField("repo", repo).WithField("label", label.Name).Info("create")
 	return Update{Why: "missing", Wanted: &label, repo: repo}
 }
 
 // Rename the label (will also update color)
 func rename(repo string, previous, wanted Label) Update {
-	logrus.Infof("rename %s to %s", previous.Name, wanted.Name)
+	logrus.WithField("repo", repo).WithField("from", previous.Name).WithField("to", wanted.Name).Info("rename")
 	return Update{Why: "rename", Current: &previous, Wanted: &wanted, repo: repo}
 }
 
 // Update the label color
 func recolor(repo string, label Label) Update {
-	logrus.Infof("recolor %s to %s", label.Name, label.Color)
+	logrus.WithField("repo", repo).WithField("label", label.Name).WithField("color", label.Color).Info("recolor")
 	return Update{Why: "recolor", Current: &label, Wanted: &label, repo: repo}
 }
 
 // Migrate labels to another label
 func move(repo string, previous, wanted Label) Update {
-	logrus.Infof("move %s to %s", previous.Name, wanted.Name)
+	logrus.WithField("repo", repo).WithField("from", previous.Name).WithField("to", wanted.Name).Info("migrate")
 	return Update{Why: "migrate", Wanted: &wanted, Current: &previous, repo: repo}
 }
 
@@ -224,6 +262,7 @@ func SyncLabels(config Configuration, repos RepoLabels) (RepoUpdates, error) {
 	dead := make(map[string]Label)     // Delete
 	ClassifyLabels(config.Labels, required, archaic, dead, time.Now(), nil)
 
+	var validationErrors []error
 	var actions []Update
 	// Process all repos
 	for repo, repoLabels := range repos {
@@ -234,7 +273,8 @@ func SyncLabels(config Configuration, repos RepoLabels) (RepoUpdates, error) {
 		}
 		// Check for any duplicate labels
 		if err := validate(labels, "", make(map[string]string)); err != nil {
-			return nil, fmt.Errorf("invalid labels in %s: %v", repo, err)
+			validationErrors = append(validationErrors, fmt.Errorf("invalid labels in %s: %v", repo, err))
+			continue
 		}
 		// Create lowercase map of current labels, checking for dead labels to delete.
 		current := make(map[string]Label)
@@ -290,57 +330,101 @@ func SyncLabels(config Configuration, repos RepoLabels) (RepoUpdates, error) {
 	for _, a := range actions {
 		u[a.repo] = append(u[a.repo], a)
 	}
-	return u, nil
+
+	var overallErr error
+	if len(validationErrors) > 0 {
+		overallErr = fmt.Errorf("label validation failed: %v", validationErrors)
+	}
+	return u, overallErr
+}
+
+type repoUpdate struct {
+	repo   string
+	update Update
 }
 
 // DoUpdates iterates generated update data and adds and/or modifies labels on repositories
 // Uses AddLabel GH API to add missing labels
 // And UpdateLabel GH API to update color or name (name only when case differs)
 func (ru RepoUpdates) DoUpdates(org string, gc client) error {
+	var numUpdates int
+	for _, updates := range ru {
+		numUpdates += len(updates)
+	}
+
+	updateChan := make(chan repoUpdate, numUpdates)
 	for repo, updates := range ru {
-		logrus.Infof("Applying %d changes to %s/%s", len(updates), org, repo)
+		logrus.WithField("org", org).WithField("repo", repo).Infof("Applying %d changes", len(updates))
 		for _, item := range updates {
-			logrus.Debugf("%s/%s: %s %+v", org, repo, item.Why, item.Wanted)
-			switch item.Why {
-			case "missing":
-				err := gc.AddRepoLabel(org, repo, item.Wanted.Name, item.Wanted.Color)
-				if err != nil {
-					return err
-				}
-			case "recolor", "rename":
-				err := gc.UpdateRepoLabel(org, repo, item.Current.Name, item.Wanted.Name, item.Wanted.Color)
-				if err != nil {
-					return err
-				}
-			case "dead":
-				err := gc.DeleteRepoLabel(org, repo, item.Current.Name)
-				if err != nil {
-					return err
-				}
-			case "migrate":
-				issues, err := gc.FindIssues(fmt.Sprintf("repo:%s/%s label:\"%s\" -label:\"%s\"", org, repo, item.Current.Name, item.Wanted.Name), "", false)
-				if err != nil {
-					return err
-				}
-				if len(issues) == 0 {
-					if err = gc.DeleteRepoLabel(org, repo, item.Current.Name); err != nil {
-						return err
-					}
-				}
-				for _, i := range issues {
-					if err = gc.AddLabel(org, repo, i.Number, item.Wanted.Name); err != nil {
-						return err
-					}
-					if err = gc.RemoveLabel(org, repo, i.Number, item.Wanted.Name); err != nil {
-						return err
-					}
-				}
-			default:
-				return errors.New("unknown label operation: " + item.Why)
-			}
+			updateChan <- repoUpdate{repo: repo, update: item}
 		}
 	}
-	return nil
+	close(updateChan)
+
+	wg := sync.WaitGroup{}
+	wg.Add(maxConcurrentWorkers)
+	errChan := make(chan error, numUpdates)
+	for i := 0; i < maxConcurrentWorkers; i++ {
+		go func(updates <-chan repoUpdate) {
+			defer wg.Done()
+			for item := range updates {
+				repo := item.repo
+				update := item.update
+				logrus.WithField("org", org).WithField("repo", repo).WithField("why", update.Why).Debug("running update")
+				switch update.Why {
+				case "missing":
+					err := gc.AddRepoLabel(org, repo, update.Wanted.Name, update.Wanted.Color)
+					if err != nil {
+						errChan <- err
+					}
+				case "recolor", "rename":
+					err := gc.UpdateRepoLabel(org, repo, update.Current.Name, update.Wanted.Name, update.Wanted.Color)
+					if err != nil {
+						errChan <- err
+					}
+				case "dead":
+					err := gc.DeleteRepoLabel(org, repo, update.Current.Name)
+					if err != nil {
+						errChan <- err
+					}
+				case "migrate":
+					issues, err := gc.FindIssues(fmt.Sprintf("repo:%s/%s label:\"%s\" -label:\"%s\"", org, repo, update.Current.Name, update.Wanted.Name), "", false)
+					if err != nil {
+						errChan <- err
+					}
+					if len(issues) == 0 {
+						if err = gc.DeleteRepoLabel(org, repo, update.Current.Name); err != nil {
+							errChan <- err
+						}
+					}
+					for _, i := range issues {
+						if err = gc.AddLabel(org, repo, i.Number, update.Wanted.Name); err != nil {
+							errChan <- err
+						}
+						if err = gc.RemoveLabel(org, repo, i.Number, update.Wanted.Name); err != nil {
+							errChan <- err
+						}
+					}
+				default:
+					errChan <- errors.New("unknown label operation: " + update.Why)
+				}
+			}
+		}(updateChan)
+	}
+
+	wg.Wait()
+	close(errChan)
+
+	var overallErr error
+	if len(errChan) > 0 {
+		var updateErrs []error
+		for updateErr := range errChan {
+			updateErrs = append(updateErrs, updateErr)
+		}
+		overallErr = fmt.Errorf("failed to list labels: %v", updateErrs)
+	}
+
+	return overallErr
 }
 
 type client interface {
@@ -392,7 +476,7 @@ func main() {
 		logrus.WithError(err).Fatalf("failed to load --config=%s", *labelsPath)
 	}
 
-	githubClient, err := newClient(*token, *endpoint, *dry)
+	githubClient, err := newClient(*token, *endpoint, !*confirm)
 	if err != nil {
 		logrus.WithError(err).Fatal("failed to create client")
 	}
@@ -437,30 +521,29 @@ func main() {
 type filter func(string, string) bool
 
 func SyncOrg(org string, githubClient client, config Configuration, filt filter) error {
-	logrus.Infof("Reading repos in %s", org)
+	logrus.WithField("org", org).Info("Reading repos")
 	repos, err := LoadRepos(org, githubClient, filt)
 	if err != nil {
 		return err
 	}
 
-	logrus.Infof("Reading labels in %d repos in %s", len(repos), org)
+	logrus.WithField("org", org).Infof("Found %d repos", len(repos))
 	currLabels, err := LoadLabels(githubClient, org, repos)
 	if err != nil {
 		return err
 	}
 
-	logrus.Infof("Syncing labels for %d repos in %s", len(repos), org)
+	logrus.WithField("org", org).Infof("Syncing labels for %d repos", len(repos))
 	updates, err := SyncLabels(config, *currLabels)
 	if err != nil {
 		return err
 	}
-	if *debug {
-		y, _ := yaml.Marshal(updates)
-		fmt.Println(string(y))
-	}
 
-	if *dry {
-		logrus.Infof("No real update labels in --dry-run")
+	y, _ := yaml.Marshal(updates)
+	logrus.Debug(string(y))
+
+	if !*confirm {
+		logrus.Infof("Running without --confirm, no mutations made")
 		return nil
 	}
 

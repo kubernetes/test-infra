@@ -37,10 +37,11 @@ func handlePR(c client, trustedOrg string, pr github.PullRequestEvent) error {
 		// When a PR is opened, if the author is in the org then build it.
 		// Otherwise, ask for "/ok-to-test". There's no need to look for previous
 		// "/ok-to-test" comments since the PR was just opened!
-		member, err := c.GitHubClient.IsMember(trustedOrg, author)
+		member, err := isUserTrusted(c.GitHubClient, author, trustedOrg, pr.Repo.Owner.Login)
 		if err != nil {
 			return fmt.Errorf("could not check membership: %s", err)
-		} else if member {
+		}
+		if member {
 			c.Logger.Info("Starting all jobs for new PR.")
 			return buildAll(c, pr.PullRequest, pr.GUID)
 		} else {
@@ -110,7 +111,7 @@ func handlePR(c client, trustedOrg string, pr github.PullRequestEvent) error {
 func welcomeMsg(ghc githubClient, pr github.PullRequest, trustedOrg string) error {
 	commentTemplate := `Hi @%s. Thanks for your PR.
 
-I'm waiting for a [%s](https://github.com/orgs/%s/people) member to verify that this patch is reasonable to test. If it is, they should reply with ` + "`/ok-to-test`" + ` on its own line. Until that is done, I will not automatically test new commits in this PR, but the usual testing commands by org members will still work. Regular contributors should join the org to skip this step.
+I'm waiting for a [%s](https://github.com/orgs/%s/people) %smember to verify that this patch is reasonable to test. If it is, they should reply with ` + "`/ok-to-test`" + ` on its own line. Until that is done, I will not automatically test new commits in this PR, but the usual testing commands by org members will still work. Regular contributors should join the org to skip this step.
 
 I understand the commands that are listed [here](https://github.com/kubernetes/test-infra/blob/master/commands.md).
 
@@ -119,10 +120,14 @@ I understand the commands that are listed [here](https://github.com/kubernetes/t
 %s
 </details>
 `
-	comment := fmt.Sprintf(commentTemplate, pr.User.Login, trustedOrg, trustedOrg, plugins.AboutThisBotWithoutCommands)
-
 	owner := pr.Base.Repo.Owner.Login
 	name := pr.Base.Repo.Name
+	var more string
+	if owner != trustedOrg {
+		more = fmt.Sprintf("or [%s](https://github.com/orgs/%s/people) ", owner, owner)
+	}
+	comment := fmt.Sprintf(commentTemplate, pr.User.Login, trustedOrg, trustedOrg, more, plugins.AboutThisBotWithoutCommands)
+
 	err1 := ghc.AddLabel(owner, name, pr.Number, needsOkToTest)
 	err2 := ghc.CreateComment(owner, name, pr.Number, comment)
 	if err1 != nil || err2 != nil {
@@ -136,11 +141,13 @@ I understand the commands that are listed [here](https://github.com/kubernetes/t
 // comments by org members.
 func trustedPullRequest(ghc githubClient, pr github.PullRequest, trustedOrg string, comments []github.IssueComment) (bool, error) {
 	author := pr.User.Login
+	org := pr.Base.Repo.Owner.Login
 	// First check if the author is a member of the org.
-	orgMember, err := ghc.IsMember(trustedOrg, author)
+	orgMember, err := isUserTrusted(ghc, author, trustedOrg, org)
 	if err != nil {
 		return false, err
-	} else if orgMember {
+	}
+	if orgMember {
 		return true, nil
 	}
 	botName, err := ghc.BotName()
@@ -155,10 +162,11 @@ func trustedPullRequest(ghc githubClient, pr github.PullRequest, trustedOrg stri
 			continue
 		}
 		// Ensure that the commenter is in the org.
-		commentAuthorMember, err := ghc.IsMember(trustedOrg, commentAuthor)
+		commentAuthorMember, err := isUserTrusted(ghc, commentAuthor, trustedOrg, org)
 		if err != nil {
 			return false, err
-		} else if commentAuthorMember {
+		}
+		if commentAuthorMember {
 			return true, nil
 		}
 	}
@@ -242,7 +250,11 @@ func clearStaleComments(gc githubClient, trustedOrg string, pr github.PullReques
 		return err
 	}
 
-	waitingComment := fmt.Sprintf("I'm waiting for a [%s](https://github.com/orgs/%s/people) member to verify that this patch is reasonable to test.", trustedOrg, trustedOrg)
+	var more string
+	if org := pr.Base.Repo.Owner.Login; org != trustedOrg {
+		more = fmt.Sprintf("or [%s](https://github.com/orgs/%s/people) ", org, org)
+	}
+	waitingComment := fmt.Sprintf("I'm waiting for a [%s](https://github.com/orgs/%s/people) %smember to verify that this patch is reasonable to test.", trustedOrg, trustedOrg, more)
 
 	return gc.DeleteStaleComments(
 		trustedOrg,

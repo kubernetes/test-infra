@@ -81,7 +81,7 @@ func handleIC(c client, trustedOrg string, ic github.IssueCommentEvent) error {
 		// Check for the presence of the needs-ok-to-test label and remove it
 		// if a trusted member has commented "/ok-to-test".
 		if testAll && ic.Issue.HasLabel(needsOkToTest) {
-			orgMember, err := c.GitHubClient.IsMember(trustedOrg, commentAuthor)
+			orgMember, err := isUserTrusted(c.GitHubClient, commentAuthor, trustedOrg, org)
 			if err != nil {
 				return err
 			}
@@ -121,11 +121,12 @@ func handleIC(c client, trustedOrg string, ic github.IssueCommentEvent) error {
 
 	var comments []github.IssueComment
 	// Skip untrusted users.
-	orgMember, err := c.GitHubClient.IsMember(trustedOrg, commentAuthor)
+	orgMember, err := isUserTrusted(c.GitHubClient, commentAuthor, trustedOrg, org)
 	if err != nil {
 		return err
-	} else if !orgMember {
-		comments, err = c.GitHubClient.ListIssueComments(pr.Base.Repo.Owner.Login, pr.Base.Repo.Name, pr.Number)
+	}
+	if !orgMember {
+		comments, err = c.GitHubClient.ListIssueComments(org, repo, number)
 		if err != nil {
 			return err
 		}
@@ -134,7 +135,11 @@ func handleIC(c client, trustedOrg string, ic github.IssueCommentEvent) error {
 			return err
 		}
 		if !trusted {
-			resp := fmt.Sprintf("you can't request testing unless you are a [%s](https://github.com/orgs/%s/people) member.", trustedOrg, trustedOrg)
+			var more string
+			if org != trustedOrg {
+				more = fmt.Sprintf("or [%s](https://github.com/orgs/%s/people) ", org, org)
+			}
+			resp := fmt.Sprintf("you can't request testing unless you are a [%s](https://github.com/orgs/%s/people) %smember.", trustedOrg, trustedOrg, more)
 			c.Logger.Infof("Commenting \"%s\".", resp)
 			return c.GitHubClient.CreateComment(org, repo, number, plugins.FormatICResponse(ic.Comment, resp))
 		}
