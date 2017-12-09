@@ -140,6 +140,12 @@
   revision = "454a56f35412459b5e684fd5ec0f9211b94f002a"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/ramr/go-reaper"
+  packages = ["."]
+  revision = "35f6a64e44ff062abfcec2d27cef674212d445c0"
+
+[[projects]]
   name = "github.com/satori/go.uuid"
   packages = ["."]
   revision = "0aa62d5ddceb50dbcb909d790b5345affd3669b6"
@@ -235,6 +241,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "d14022b355ab9259b9d1cbd4752a8b38e4500414dee0f51b45089962253dfeaa"
+  inputs-digest = "43bcd9900b0ef26125a5073588a24f6c7a3968d00ded91870bf0bebb4b2617a9"
   solver-name = "gps-cdcl"
   solver-version = 1
