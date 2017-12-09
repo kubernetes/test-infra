@@ -17,6 +17,5 @@ LABEL maintainer="senlu@google.com"
 
 ADD ["janitor", \
      "janitor.py", \
-     "/"]
-RUN ["chmod", "+x", "/janitor.py"]
-ENTRYPOINT ["/janitor"]
+     "/bin/"]
+ENTRYPOINT ["/bin/sh", "-c", "/bin/echo started && /bin/janitor \"$@\"", "--"]
