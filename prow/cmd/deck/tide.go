@@ -28,6 +28,11 @@ import (
 	"k8s.io/test-infra/prow/tide"
 )
 
+type tideData struct {
+	Queries []string
+	Pools   []tide.Pool
+}
+
 type tideAgent struct {
 	log  *logrus.Entry
 	path string

@@ -5,13 +5,45 @@ window.onload = function() {
 };
 
 function redraw() {
+    redrawQueries();
+    redrawPools();
+}
+
+function redrawQueries() {
+    var queries = document.getElementById("queries");
+    while (queries.firstChild)
+        queries.removeChild(queries.firstChild);
+
+    if (!tideData.Queries) {
+        return;
+    }
+    for (var i = 0; i < tideData.Queries.length; i++) {
+        var query = tideData.Queries[i];
+
+        var a = document.createElement("a");
+        a.href = "https://github.com/search?utf8=" + encodeURIComponent("\u2713") + "&q=" + encodeURIComponent(query);
+        a.appendChild(document.createTextNode(query));
+
+        //var div = document.createElement("div");
+        //div.appendChild(a);
+        var li = document.createElement("li");
+        li.appendChild(a);
+
+        queries.appendChild(li);
+    }
+}
+
+function redrawPools() {
     var pools = document.getElementById("pools").getElementsByTagName("tbody")[0];
     while (pools.firstChild)
         pools.removeChild(pools.firstChild);
 
     // TODO(spxtr): Sort these.
-    for (var i = 0; i < allPools.length; i++) {
-        var pool = allPools[i];
+    if (!tideData.Pools) {
+        return;
+    }
+    for (var i = 0; i < tideData.Pools.length; i++) {
+        var pool = tideData.Pools[i];
         var r = document.createElement("tr");
 
         var repoName = pool.Org + "/" + pool.Repo + " " + pool.Branch;
