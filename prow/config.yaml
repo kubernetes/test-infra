@@ -1940,7 +1940,7 @@ presubmits:
       - name: aws-cred
         secret:
           defaultMode: 256
-          secretName: aws-cred
+          secretName: aws-cred-new
       - name: cache-ssd
         hostPath:
           path: /mnt/disks/ssd0
@@ -4535,7 +4535,7 @@ presubmits:
       - name: aws-cred
         secret:
           defaultMode: 256
-          secretName: aws-cred
+          secretName: aws-cred-new
       - name: cache-ssd
         hostPath:
           path: /mnt/disks/ssd0
@@ -20855,7 +20855,7 @@ periodics:
     - name: aws-cred
       secret:
         defaultMode: 256
-        secretName: aws-cred
+        secretName: aws-cred-new
 
 - interval: 1h
   agent: kubernetes
@@ -20898,7 +20898,7 @@ periodics:
     - name: aws-cred
       secret:
         defaultMode: 256
-        secretName: aws-cred
+        secretName: aws-cred-new
 
 - interval: 1h
   agent: kubernetes
@@ -20942,7 +20942,7 @@ periodics:
     - name: aws-cred
       secret:
         defaultMode: 256
-        secretName: aws-cred
+        secretName: aws-cred-new
 
 - interval: 1h
   agent: kubernetes
@@ -21289,7 +21289,7 @@ periodics:
     - name: aws-cred
       secret:
         defaultMode: 256
-        secretName: aws-cred
+        secretName: aws-cred-new
 
 - interval: 24h
   agent: kubernetes
@@ -24198,7 +24198,7 @@ periodics:
     - name: aws-cred
       secret:
         defaultMode: 256
-        secretName: aws-cred
+        secretName: aws-cred-new
 
 - interval: 24h
   agent: kubernetes
