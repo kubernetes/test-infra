@@ -48,7 +48,7 @@ reaper-image:
 
 janitor-image:
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o janitor/janitor k8s.io/test-infra/boskos/janitor/
-	docker build -t "gcr.io/k8s-testimages/janitor:$(TAG)" janitor
+	docker build --no-cache -t "gcr.io/k8s-testimages/janitor:$(TAG)" janitor
 	gcloud docker -- push "gcr.io/k8s-testimages/janitor:$(TAG)"
 	rm janitor/janitor
 
