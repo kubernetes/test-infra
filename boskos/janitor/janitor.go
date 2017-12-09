@@ -22,6 +22,7 @@ import (
 	"os/exec"
 	"time"
 
+	reaper "github.com/ramr/go-reaper"
 	"github.com/sirupsen/logrus"
 	"k8s.io/test-infra/boskos/client"
 	"k8s.io/test-infra/boskos/common"
@@ -44,6 +45,8 @@ func main() {
 	logrus.SetFormatter(&logrus.JSONFormatter{})
 	boskos := client.NewClient("Janitor", "http://boskos")
 	logrus.Info("Initialized boskos client!")
+
+	go reaper.Reap()
 
 	// Activate service account
 	flag.Parse()

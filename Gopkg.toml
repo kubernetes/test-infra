@@ -72,3 +72,6 @@ ignored = ["github.com/aws/aws-sdk-go*"]
 
 [[constraint]]
   name = "k8s.io/contrib"
+
+[[constraint]]
+  name = "github.com/ramr/go-reaper"
