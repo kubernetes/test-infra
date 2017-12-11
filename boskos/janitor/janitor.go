@@ -72,7 +72,7 @@ type clean func(string) error
 
 // Clean by janitor script
 func janitorClean(proj string) error {
-	cmd := exec.Command("/janitor.py", fmt.Sprintf("--project=%s", proj), "--hour=0")
+	cmd := exec.Command("/bin/janitor.py", fmt.Sprintf("--project=%s", proj), "--hour=0")
 	err := cmd.Run()
 	if err != nil {
 		logrus.WithError(err).Errorf("failed to clean up project %s", proj)
