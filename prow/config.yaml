@@ -20095,10 +20095,10 @@ periodics:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20171210-0beb83d94-master
       args:
       - --bare
-      - --timeout=280
+      - --timeout=260
       env:
-      - name: KUBEMARK_BAZEL_BUILD
-        value: "y"
+      - name: DOCKER_IN_DOCKER_ENABLED
+        value: true
       - name: GOOGLE_APPLICATION_CREDENTIALS
         value: /etc/service-account/service-account.json
       - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
@@ -20114,7 +20114,13 @@ periodics:
       - name: ssh
         mountPath: /etc/ssh-key-secret
         readOnly: true
-      # bazel needs privileged mode to sandbox builds
+      - name: docker-graph
+        mountPath: /docker-graph
+      # TODO(bentheelder): sort out container port
+      ports:
+      - containerPort: 9999
+        hostPort: 9999
+      # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
     volumes:
@@ -20125,6 +20131,9 @@ periodics:
       secret:
         secretName: ssh-key-secret
         defaultMode: 0400
+    - name: docker-graph
+      hostPath:
+        path: /mnt/disks/ssd0/docker-graph
 
 - name: ci-kubernetes-kubemark-100-gce
   interval: 3h
@@ -20134,10 +20143,10 @@ periodics:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20171210-0beb83d94-master
       args:
       - --bare
-      - --timeout=280
+      - --timeout=260
       env:
-      - name: KUBEMARK_BAZEL_BUILD
-        value: "y"
+      - name: DOCKER_IN_DOCKER_ENABLED
+        value: true
       - name: GOOGLE_APPLICATION_CREDENTIALS
         value: /etc/service-account/service-account.json
       - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
@@ -20153,7 +20162,13 @@ periodics:
       - name: ssh
         mountPath: /etc/ssh-key-secret
         readOnly: true
-      # bazel needs privileged mode to sandbox builds
+      - name: docker-graph
+        mountPath: /docker-graph
+      # TODO(bentheelder): sort out container port
+      ports:
+      - containerPort: 9999
+        hostPort: 9999
+      # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
     volumes:
@@ -20164,6 +20179,9 @@ periodics:
       secret:
         secretName: ssh-key-secret
         defaultMode: 0400
+    - name: docker-graph
+      hostPath:
+        path: /mnt/disks/ssd0/docker-graph
 
 - name: ci-kubernetes-kubemark-5-gce
   interval: 30m
@@ -20173,10 +20191,10 @@ periodics:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20171210-0beb83d94-master
       args:
       - --bare
-      - --timeout=100
+      - --timeout=80
       env:
-      - name: KUBEMARK_BAZEL_BUILD
-        value: "y"
+      - name: DOCKER_IN_DOCKER_ENABLED
+        value: true
       - name: GOOGLE_APPLICATION_CREDENTIALS
         value: /etc/service-account/service-account.json
       - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
@@ -20192,7 +20210,13 @@ periodics:
       - name: ssh
         mountPath: /etc/ssh-key-secret
         readOnly: true
-      # bazel needs privileged mode to sandbox builds
+      - name: docker-graph
+        mountPath: /docker-graph
+      # TODO(bentheelder): sort out container port
+      ports:
+      - containerPort: 9999
+        hostPort: 9999
+      # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
     volumes:
@@ -20203,6 +20227,9 @@ periodics:
       secret:
         secretName: ssh-key-secret
         defaultMode: 0400
+    - name: docker-graph
+      hostPath:
+        path: /mnt/disks/ssd0/docker-graph
 
 - name: ci-kubernetes-kubemark-5-gce-last-release
   interval: 30m
@@ -20212,10 +20239,10 @@ periodics:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20171210-0beb83d94-master
       args:
       - --bare
-      - --timeout=100
+      - --timeout=80
       env:
-      - name: KUBEMARK_BAZEL_BUILD
-        value: "y"
+      - name: DOCKER_IN_DOCKER_ENABLED
+        value: true
       - name: GOOGLE_APPLICATION_CREDENTIALS
         value: /etc/service-account/service-account.json
       - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
@@ -20231,7 +20258,13 @@ periodics:
       - name: ssh
         mountPath: /etc/ssh-key-secret
         readOnly: true
-      # bazel needs privileged mode to sandbox builds
+      - name: docker-graph
+        mountPath: /docker-graph
+      # TODO(bentheelder): sort out container port
+      ports:
+      - containerPort: 9999
+        hostPort: 9999
+      # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
     volumes:
@@ -20242,6 +20275,9 @@ periodics:
       secret:
         secretName: ssh-key-secret
         defaultMode: 0400
+    - name: docker-graph
+      hostPath:
+        path: /mnt/disks/ssd0/docker-graph
 
 - name: ci-kubernetes-kubemark-5-prow-canary
   cron: "0 * * * *"
@@ -20252,7 +20288,7 @@ periodics:
       imagePullPolicy: Always
       args:
       - --bare
-      - --timeout=100
+      - --timeout=80
       env:
       - name: KUBEMARK_BAZEL_BUILD
         value: "y"
@@ -20291,10 +20327,10 @@ periodics:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20171210-0beb83d94-master
       args:
       - --bare
-      - --timeout=160
+      - --timeout=140
       env:
-      - name: KUBEMARK_BAZEL_BUILD
-        value: "y"
+      - name: DOCKER_IN_DOCKER_ENABLED
+        value: true
       - name: GOOGLE_APPLICATION_CREDENTIALS
         value: /etc/service-account/service-account.json
       - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
@@ -20310,7 +20346,13 @@ periodics:
       - name: ssh
         mountPath: /etc/ssh-key-secret
         readOnly: true
-      # bazel needs privileged mode to sandbox builds
+      - name: docker-graph
+        mountPath: /docker-graph
+      # TODO(bentheelder): sort out container port
+      ports:
+      - containerPort: 9999
+        hostPort: 9999
+      # docker-in-docker needs privilged mode
       securityContext:
         privileged: true
     volumes:
@@ -20321,6 +20363,9 @@ periodics:
       secret:
         secretName: ssh-key-secret
         defaultMode: 0400
+    - name: docker-graph
+      hostPath:
+        path: /mnt/disks/ssd0/docker-graph
 
 - name: ci-kubernetes-kubemark-gce-scale
   interval: 12h
@@ -20330,10 +20375,10 @@ periodics:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20171210-0beb83d94-master
       args:
       - --bare
-      - --timeout=1120
+      - --timeout=1100
       env:
-      - name: KUBEMARK_BAZEL_BUILD
-        value: "y"
+      - name: DOCKER_IN_DOCKER_ENABLED
+        value: true
       - name: GOOGLE_APPLICATION_CREDENTIALS
         value: /etc/service-account/service-account.json
       - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
@@ -20349,7 +20394,13 @@ periodics:
       - name: ssh
         mountPath: /etc/ssh-key-secret
         readOnly: true
-      # bazel needs privileged mode to sandbox builds
+      - name: docker-graph
+        mountPath: /docker-graph
+      # TODO(bentheelder): sort out container port
+      ports:
+      - containerPort: 9999
+        hostPort: 9999
+      # docker-in-docker needs privilged mode
       securityContext:
         privileged: true
     volumes:
@@ -20360,6 +20411,9 @@ periodics:
       secret:
         secretName: ssh-key-secret
         defaultMode: 0400
+    - name: docker-graph
+      hostPath:
+        path: /mnt/disks/ssd0/docker-graph
 
 - name: ci-kubernetes-kubemark-high-density-100-gce
   interval: 24h
@@ -20369,10 +20423,10 @@ periodics:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20171210-0beb83d94-master
       args:
       - --bare
-      - --timeout=320
+      - --timeout=300
       env:
-      - name: KUBEMARK_BAZEL_BUILD
-        value: "y"
+      - name: DOCKER_IN_DOCKER_ENABLED
+        value: true
       - name: GOOGLE_APPLICATION_CREDENTIALS
         value: /etc/service-account/service-account.json
       - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
@@ -20388,7 +20442,13 @@ periodics:
       - name: ssh
         mountPath: /etc/ssh-key-secret
         readOnly: true
-      # bazel needs privileged mode to sandbox builds
+      - name: docker-graph
+        mountPath: /docker-graph
+      # TODO(bentheelder): sort out container port
+      ports:
+      - containerPort: 9999
+        hostPort: 9999
+      # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
     volumes:
@@ -20399,6 +20459,9 @@ periodics:
       secret:
         secretName: ssh-key-secret
         defaultMode: 0400
+    - name: docker-graph
+      hostPath:
+        path: /mnt/disks/ssd0/docker-graph
 
 - name: ci-kubernetes-node-kubelet
   interval: 1h

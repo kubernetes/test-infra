@@ -9248,7 +9248,6 @@
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/ci-kubernetes-kubemark-100-gce.env",
       "--extract=ci/latest",
-      "--extract-source",
       "--gcp-project=k8s-jenkins-gci-kubemark",
       "--gcp-zone=us-central1-f",
       "--kubemark",
@@ -9257,7 +9256,7 @@
       "--tag=latest-master",
       "--test=false",
       "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --gather-resource-usage=true --gather-metrics-at-teardown=true --output-print-type=json",
-      "--timeout=260m"
+      "--timeout=240m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -9270,7 +9269,6 @@
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/ci-kubernetes-kubemark-100-gce.env",
       "--extract=ci/latest",
-      "--extract-source",
       "--gcp-node-image=gci",
       "--gcp-project=k8s-jenkins-kubemark",
       "--gcp-zone=us-central1-f",
@@ -9279,7 +9277,7 @@
       "--provider=gce",
       "--test=false",
       "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --gather-resource-usage=true --gather-metrics-at-teardown=true --output-print-type=json",
-      "--timeout=260m"
+      "--timeout=240m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -9292,7 +9290,6 @@
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/ci-kubernetes-kubemark-5-gce.env",
       "--extract=ci/latest",
-      "--extract-source",
       "--gcp-node-image=gci",
       "--gcp-project=k8s-jenkins-kubemark",
       "--gcp-zone=us-central1-f",
@@ -9301,7 +9298,7 @@
       "--provider=gce",
       "--test=false",
       "--test_args=--ginkgo.focus=\\[Feature:Empty\\] --gather-resource-usage=true --gather-metrics-at-teardown=true --output-print-type=json",
-      "--timeout=80m"
+      "--timeout=60m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -9314,7 +9311,6 @@
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/ci-kubernetes-kubemark-5-gce.env",
       "--extract=ci/latest-1.9",
-      "--extract-source",
       "--gcp-project=k8s-jenkins-kubemark",
       "--gcp-zone=us-central1-f",
       "--kubemark",
@@ -9322,7 +9318,7 @@
       "--provider=gce",
       "--test=false",
       "--test_args=--ginkgo.focus=\\[Feature:Empty\\] --gather-resource-usage=true --gather-metrics-at-teardown=true --output-print-type=json",
-      "--timeout=80m"
+      "--timeout=60m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -9344,7 +9340,7 @@
       "--provider=gce",
       "--test=false",
       "--test_args=--ginkgo.focus=\\[Feature:Empty\\] --gather-resource-usage=true --gather-metrics-at-teardown=true --output-print-type=json",
-      "--timeout=80m"
+      "--timeout=60m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -9357,7 +9353,6 @@
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/ci-kubernetes-kubemark-500-gce.env",
       "--extract=ci/latest",
-      "--extract-source",
       "--gcp-node-image=gci",
       "--gcp-project=k8s-jenkins-blocking-kubemark",
       "--gcp-zone=us-central1-f",
@@ -9366,7 +9361,7 @@
       "--provider=gce",
       "--test=false",
       "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --gather-resource-usage=true --gather-metrics-at-teardown=true --output-print-type=json",
-      "--timeout=90m"
+      "--timeout=70m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -9379,7 +9374,6 @@
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/ci-kubernetes-kubemark-gce-scale.env",
       "--extract=ci/latest",
-      "--extract-source",
       "--gcp-node-image=gci",
       "--gcp-project=kubemark-scalability-testing",
       "--gcp-zone=us-east1-b",
@@ -9388,7 +9382,7 @@
       "--provider=gce",
       "--test=false",
       "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --gather-resource-usage=true --gather-metrics-at-teardown=true --output-print-type=json",
-      "--timeout=1100m",
+      "--timeout=1080m",
       "--use-logexporter"
     ],
     "scenario": "kubernetes_e2e",
@@ -9402,7 +9396,6 @@
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/ci-kubernetes-kubemark-high-density-100-gce.env",
       "--extract=ci/latest",
-      "--extract-source",
       "--gcp-node-image=gci",
       "--gcp-project=k8s-jenkins-kubemark",
       "--gcp-zone=us-central1-f",
@@ -9412,7 +9405,7 @@
       "--provider=gce",
       "--test=false",
       "--test_args=--ginkgo.focus=\\[Feature:HighDensityPerformance\\] --gather-resource-usage=true --gather-metrics-at-teardown=true --output-print-type=json",
-      "--timeout=300m"
+      "--timeout=280m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
