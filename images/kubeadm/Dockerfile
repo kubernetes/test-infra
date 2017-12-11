@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM gcr.io/k8s-testimages/kubekins-e2e:v20171204-8e1bbdcba-master
+FROM gcr.io/k8s-testimages/kubekins-e2e:v20171210-0beb83d94-master
 LABEL maintainer "beacham@google.com"
 
 RUN apt-get update && apt-get install -y \
