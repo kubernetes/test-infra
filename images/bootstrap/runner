@@ -16,31 +16,48 @@
 set -o errexit
 set -o nounset
 set -o pipefail
-set -x
 
 # Check if the job has opted-in to docker-in-docker availability.
 export DOCKER_IN_DOCKER_ENABLED=${DOCKER_IN_DOCKER_ENABLED:-false}
-if [ "$DOCKER_IN_DOCKER_ENABLED" == "true" ]; then
+if [[ "${DOCKER_IN_DOCKER_ENABLED}" == "true" ]]; then
+    echo "Docker in Docker enabled, initializing..."
+    printf '=%.0s' {1..80}; echo
     # If we have opted in to docker in docker, start the docker daemon,
-    # and wait a second for it to be fully up.
-    # TODO(bentheelder): there has to be a more reliable solution to this
-    echo "Starting docker..." && service docker start && sleep 5
+    service docker start
+    # the service can be started but the docker socket not ready, wait for ready
+    WAIT_N=0
+    MAX_WAIT=5
+    while true; do
+        # docker ps -q should only work if the daemon is ready
+        docker ps -q > /dev/null 2>&1 && break
+        if [[ ${WAIT_N} -lt ${MAX_WAIT} ]]; then
+            WAIT_N=$((WAIT_N+1))
+            echo "Waiting for docker to be ready, sleeping for ${WAIT_N} seconds."
+            sleep ${WAIT_N}
+        else
+            echo "Reached maximum attempts, not waiting any longer..."
+            break
+        fi
+    done
     # begin cleaning up after any previous runs
     echo "Starting to clean up docker graph."
     # make sure any lingering containers are removed from the data root
-    docker stop $(docker ps -aq) || true
-    docker rm $(docker ps -aq) || true
+    docker ps -aq | xargs -r docker stop || true
+    docker ps -aq | xargs -r docker rm || true
     # cleanup kube-build images from kubernetes' dockerized builds
-    docker rmi -f $(docker images -q kube-build) || true
+    docker images -q kube-build | xargs -r docker rmi -f || true
     # then cleanup images and volumes not associated with tagged images
-    docker rmi -f $(docker images --filter dangling=true -qa) || true
+    docker images --filter dangling=true -qa | xargs -r docker rmi -f || true
+    echo "NOTE: The total reclaimed space below is ONLY for volumes."
     docker volume prune -f || true
     # list what images and volumes remain
     echo "Remaining docker images and volumes are:"
     docker images --all || true
     docker volume ls || true
+    printf '=%.0s' {1..80}; echo
     echo "Done setting up docker in docker."
 else
+# TODO(bentheelder): remove this once we are no longer using Jenkins
 # If not, make sure `docker` points to the old one compatible with our Jenkins
     export PATH=/docker-no-dind-bin/:$PATH
 fi
