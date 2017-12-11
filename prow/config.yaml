@@ -1074,7 +1074,7 @@ presubmits:
     run_if_changed: '^(build\/|hack\/lib\/)|(Makefile)|(.*_(windows|linux|osx|unsupported)(_test)?\.go)$'
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bootstrap:v20171127-a1522ede
+      - image: gcr.io/k8s-testimages/bootstrap:v20171210-9bf1eccaf
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -2065,7 +2065,7 @@ presubmits:
     trigger: "(?m)^/test( all| pull-kubernetes-unit),?(\\s+|$)"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bootstrap:v20171127-a1522ede
+      - image: gcr.io/k8s-testimages/bootstrap:v20171210-9bf1eccaf
         args:
         - "--clean"
         - "--job=$(JOB_NAME)"
@@ -2158,7 +2158,7 @@ presubmits:
     trigger: "(?m)^/test( all| pull-kubernetes-verify),?(\\s+|$)"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bootstrap:v20171127-a1522ede
+      - image: gcr.io/k8s-testimages/bootstrap:v20171210-9bf1eccaf
         args:
         - "--clean"
         - "--job=$(JOB_NAME)"
@@ -2856,7 +2856,7 @@ presubmits:
     run_if_changed: '^(build\/|hack\/lib\/)|(Makefile)|(.*_(windows|linux|osx|unsupported)(_test)?\.go)$'
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bootstrap:v20171127-a1522ede
+      - image: gcr.io/k8s-testimages/bootstrap:v20171210-9bf1eccaf
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -3846,7 +3846,7 @@ presubmits:
     trigger: "(?m)^/test( all| pull-security-kubernetes-unit),?(\\s+|$)"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bootstrap:v20171127-a1522ede
+      - image: gcr.io/k8s-testimages/bootstrap:v20171210-9bf1eccaf
         args:
         - "--clean"
         - "--job=$(JOB_NAME)"
@@ -3939,7 +3939,7 @@ presubmits:
     trigger: "(?m)^/test( all| pull-security-kubernetes-verify),?(\\s+|$)"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bootstrap:v20171127-a1522ede
+      - image: gcr.io/k8s-testimages/bootstrap:v20171210-9bf1eccaf
         args:
         - "--clean"
         - "--job=$(JOB_NAME)"
