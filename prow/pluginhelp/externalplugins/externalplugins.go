@@ -36,47 +36,50 @@ import (
 type ExternalPluginHelpProvider func(enabledRepos []string) (*pluginhelp.PluginHelp, error)
 
 // ServeExternalPluginHelp returns a HandlerFunc that serves plugin help information that is
-// providied by the specified ExternalPluginHelpProvider.
-func ServeExternalPluginHelp(log *logrus.Entry, provider ExternalPluginHelpProvider) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Cache-Control", "no-cache")
+// provided by the specified ExternalPluginHelpProvider.
+func ServeExternalPluginHelp(mux *http.ServeMux, log *logrus.Entry, provider ExternalPluginHelpProvider) {
+	mux.HandleFunc(
+		"/help",
+		func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Cache-Control", "no-cache")
 
-		serverError := func(action string, err error) {
-			log.WithError(err).Errorf("Error %s.", action)
-			msg := fmt.Sprintf("500 Internal server error %s: %v", action, err)
-			http.Error(w, msg, http.StatusInternalServerError)
-		}
+			serverError := func(action string, err error) {
+				log.WithError(err).Errorf("Error %s.", action)
+				msg := fmt.Sprintf("500 Internal server error %s: %v", action, err)
+				http.Error(w, msg, http.StatusInternalServerError)
+			}
 
-		if r.Method != http.MethodPost {
-			log.Errorf("Invalid request method: %v.", r.Method)
-			http.Error(w, "405 Method not allowed", http.StatusMethodNotAllowed)
-			return
-		}
-		b, err := ioutil.ReadAll(r.Body)
-		if err != nil {
-			serverError("reading request body", err)
-			return
-		}
-		var enabledRepos []string
-		if err := json.Unmarshal(b, &enabledRepos); err != nil {
-			serverError("unmarshaling request body", err)
-			return
-		}
-		if provider == nil {
-			serverError("generating plugin help", errors.New("help provider is nil"))
-			return
-		}
-		help, err := provider(enabledRepos)
-		if err != nil {
-			serverError("generating plugin help", err)
-			return
-		}
-		b, err = json.Marshal(help)
-		if err != nil {
-			serverError("marshaling plugin help", err)
-			return
-		}
+			if r.Method != http.MethodPost {
+				log.Errorf("Invalid request method: %v.", r.Method)
+				http.Error(w, "405 Method not allowed", http.StatusMethodNotAllowed)
+				return
+			}
+			b, err := ioutil.ReadAll(r.Body)
+			if err != nil {
+				serverError("reading request body", err)
+				return
+			}
+			var enabledRepos []string
+			if err := json.Unmarshal(b, &enabledRepos); err != nil {
+				serverError("unmarshaling request body", err)
+				return
+			}
+			if provider == nil {
+				serverError("generating plugin help", errors.New("help provider is nil"))
+				return
+			}
+			help, err := provider(enabledRepos)
+			if err != nil {
+				serverError("generating plugin help", err)
+				return
+			}
+			b, err = json.Marshal(help)
+			if err != nil {
+				serverError("marshaling plugin help", err)
+				return
+			}
 
-		fmt.Fprint(w, string(b))
-	}
+			fmt.Fprint(w, string(b))
+		},
+	)
 }

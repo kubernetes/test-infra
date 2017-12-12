@@ -41,6 +41,19 @@ func FormatResponse(to, message, reason string) string {
 	return fmt.Sprintf(format, to, message, reason, AboutThisBotWithoutCommands)
 }
 
+// FormatSimpleReponse formats a response that does not warrant additional explanation in the
+// details section.
+func FormatSimpleResponse(to, message string) string {
+	format := `@%s: %s
+
+<details>
+
+%s
+</details>`
+
+	return fmt.Sprintf(format, to, message, AboutThisBotWithoutCommands)
+}
+
 // FormatICResponse nicely formats a response to an issue comment.
 func FormatICResponse(ic github.IssueComment, s string) string {
 	return FormatResponseRaw(ic.Body, ic.HTMLURL, ic.User.Login, s)

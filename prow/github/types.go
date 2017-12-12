@@ -146,6 +146,12 @@ type PullRequest struct {
 	// If Merged is false, MergeSHA is a commit SHA that github created to test if
 	// the PR can be merged automatically.
 	MergeSHA *string `json:"merge_commit_sha"`
+	// ref https://developer.github.com/v3/pulls/#response-1
+	// The value of the mergeable attribute can be true, false, or null. If the value
+	// is null, this means that the mergeability hasn't been computed yet, and a
+	// background job was started to compute it. When the job is complete, the response
+	// will include a non-null value for the mergeable attribute.
+	Mergable *bool `json:"mergeable,omitempty"`
 }
 
 // PullRequestBranch contains information about a particular branch in a PR.

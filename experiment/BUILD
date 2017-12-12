@@ -30,6 +30,7 @@ filegroup(
         "//experiment/cherrypicker:all-srcs",
         "//experiment/commenter:all-srcs",
         "//experiment/manual-trigger:all-srcs",
+        "//experiment/needs-rebase:all-srcs",
         "//experiment/refresh:all-srcs",
     ],
     tags = ["automanaged"],
