@@ -810,7 +810,9 @@ presubmits:
       context: pull-kubernetes-e2e-kubeadm-gce-canary
       max_concurrency: 8
       skip_report: false
-      run_if_changed: '^(cmd/kubeadm|build/debs).*$'
+      # use standard (pull-kubernetes-cross) regex we normally make sure
+      # to trigger on dummy / canary testing PRs
+      run_if_changed: '^(build\/|hack\/lib\/)|(Makefile)|(.*_(windows|linux|osx|unsupported)(_test)?\.go)$'
       rerun_command: "/test pull-kubernetes-e2e-kubeadm-gce-canary"
       trigger: "(?m)^/test pull-kubernetes-e2e-kubeadm-gce-canary,?(\\s+|$)"
       spec:
@@ -2587,7 +2589,9 @@ presubmits:
       context: pull-security-kubernetes-e2e-kubeadm-gce-canary
       max_concurrency: 8
       skip_report: false
-      run_if_changed: '^(cmd/kubeadm|build/debs).*$'
+      # use standard (pull-kubernetes-cross) regex we normally make sure
+      # to trigger on dummy / canary testing PRs
+      run_if_changed: '^(build\/|hack\/lib\/)|(Makefile)|(.*_(windows|linux|osx|unsupported)(_test)?\.go)$'
       rerun_command: "/test pull-security-kubernetes-e2e-kubeadm-gce-canary"
       trigger: "(?m)^/test pull-security-kubernetes-e2e-kubeadm-gce-canary,?(\\s+|$)"
       spec:
