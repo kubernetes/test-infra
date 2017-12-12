@@ -151,9 +151,27 @@ func (f *FakeClient) GetRef(owner, repo, ref string) (string, error) {
 	return "abcde", nil
 }
 
-func (f *FakeClient) CreateStatus(owner, repo, ref string, s github.Status) error {
-	f.CreatedStatuses[ref] = append(f.CreatedStatuses[ref], s)
+func (f *FakeClient) CreateStatus(owner, repo, sha string, s github.Status) error {
+	if f.CreatedStatuses == nil {
+		f.CreatedStatuses = make(map[string][]github.Status)
+	}
+	statuses := f.CreatedStatuses[sha]
+	var updated bool
+	for i := range statuses {
+		if statuses[i].Context == s.Context {
+			statuses[i] = s
+			updated = true
+		}
+	}
+	if !updated {
+		statuses = append(statuses, s)
+	}
+	f.CreatedStatuses[sha] = statuses
 	return nil
+}
+
+func (f *FakeClient) ListStatuses(org, repo, ref string) ([]github.Status, error) {
+	return f.CreatedStatuses[ref], nil
 }
 
 func (f *FakeClient) GetCombinedStatus(owner, repo, ref string) (*github.CombinedStatus, error) {

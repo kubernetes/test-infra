@@ -697,15 +697,27 @@ func (c *Client) ListReviews(org, repo string, number int) ([]Review, error) {
 }
 
 // CreateStatus creates or updates the status of a commit.
-func (c *Client) CreateStatus(org, repo, ref string, s Status) error {
-	c.log("CreateStatus", org, repo, ref, s)
+func (c *Client) CreateStatus(org, repo, sha string, s Status) error {
+	c.log("CreateStatus", org, repo, sha, s)
 	_, err := c.request(&request{
 		method:      http.MethodPost,
-		path:        fmt.Sprintf("%s/repos/%s/%s/statuses/%s", c.base, org, repo, ref),
+		path:        fmt.Sprintf("%s/repos/%s/%s/statuses/%s", c.base, org, repo, sha),
 		requestBody: &s,
 		exitCodes:   []int{201},
 	}, nil)
 	return err
+}
+
+// ListStatuses gets commit statuses for a given ref.
+func (c *Client) ListStatuses(org, repo, ref string) ([]Status, error) {
+	c.log("ListStatuses", org, repo, ref)
+	var statuses []Status
+	_, err := c.request(&request{
+		method:    http.MethodGet,
+		path:      fmt.Sprintf("%s/repos/%s/%s/statuses/%s", c.base, org, repo, ref),
+		exitCodes: []int{200},
+	}, &statuses)
+	return statuses, err
 }
 
 // GetRepo returns the repo for the provided owner/name combination.
