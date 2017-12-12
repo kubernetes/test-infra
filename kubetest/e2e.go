@@ -164,7 +164,14 @@ func run(deploy deployer, o options) error {
 			errs = appendError(errs, err)
 		} else {
 			errs = appendError(errs, xmlWrap("UpgradeTest", func() error {
-				return skewTest(argFields(o.upgradeArgs, dump, o.clusterIPRange), "upgrade", o.checkSkew)
+				// upgrade tests really only run one spec
+				var env []string
+				for _, v := range os.Environ() {
+					if !strings.HasPrefix(v, "GINKGO_PARALLEL") {
+						env = append(env, v)
+					}
+				}
+				return skewTestEnv(env, argFields(o.upgradeArgs, dump, o.clusterIPRange), "upgrade", o.checkSkew)
 			}))
 		}
 	}
@@ -604,8 +611,13 @@ func kubemarkTest(testArgs []string, dump, numNodes string) error {
 	return nil
 }
 
-// Runs tests in the kubernetes_skew directory, appending --repor-prefix flag to the run
+// Runs tests in the kubernetes_skew directory, appending --report-prefix flag to the run
 func skewTest(args []string, prefix string, checkSkew bool) error {
+	return skewTestEnv(nil, args, prefix, checkSkew)
+}
+
+// Runs tests in the kubernetes_skew directory, appending --report-prefix flag to the run
+func skewTestEnv(env, args []string, prefix string, checkSkew bool) error {
 	// TODO(fejta): run this inside this kubetest process, do not spawn a new one.
 	popS, err := pushd("../kubernetes_skew")
 	if err != nil {
@@ -613,13 +625,15 @@ func skewTest(args []string, prefix string, checkSkew bool) error {
 	}
 	defer popS()
 	args = appendField(args, "--report-prefix", prefix)
-	return finishRunning(exec.Command(
+	cmd := exec.Command(
 		"kubetest",
 		"--test",
 		"--test_args="+strings.Join(args, " "),
 		fmt.Sprintf("--v=%t", verbose),
 		fmt.Sprintf("--check-version-skew=%t", checkSkew),
-	))
+	)
+	cmd.Env = env
+	return finishRunning(cmd)
 }
 
 func test(testArgs []string) error {
