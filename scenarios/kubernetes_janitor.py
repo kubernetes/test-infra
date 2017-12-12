@@ -71,6 +71,8 @@ def clean_project(project, hours=24, dryrun=False):
 BLACKLIST = [
     'kubernetes-scale', # Let it's up/down job handle the resources
     'k8s-scale-testing', # As it can be running some manual experiments
+    'k8s-jkns-e2e-gce-f8n-1-7', # federation projects should use fedtidy to clean up
+    'k8s-jkns-e2e-gce-f8n-1-8', # federation projects should use fedtidy to clean up
 ]
 
 PR_PROJECTS = {
