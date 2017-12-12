@@ -813,8 +813,6 @@ presubmits:
       run_if_changed: '^(cmd/kubeadm|build/debs).*$'
       rerun_command: "/test pull-kubernetes-e2e-kubeadm-gce-canary"
       trigger: "(?m)^/test pull-kubernetes-e2e-kubeadm-gce-canary,?(\\s+|$)"
-      branches:
-      - release-1.6
       spec:
         containers:
         - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171210-b3b12c2df
@@ -2592,8 +2590,6 @@ presubmits:
       run_if_changed: '^(cmd/kubeadm|build/debs).*$'
       rerun_command: "/test pull-security-kubernetes-e2e-kubeadm-gce-canary"
       trigger: "(?m)^/test pull-security-kubernetes-e2e-kubeadm-gce-canary,?(\\s+|$)"
-      branches:
-      - release-1.6
       spec:
         containers:
         - image: gcr.io/k8s-testimages/e2e-kubeadm:v20171210-b3b12c2df
