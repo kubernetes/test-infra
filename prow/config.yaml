@@ -27,6 +27,7 @@ tide:
   - repos:
     - kubernetes/test-infra
     - kubernetes/federation
+    - kubernetes/charts
     labels:
     - lgtm
     - approved
