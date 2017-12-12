@@ -103,7 +103,7 @@ func main() {
 			path: *tideURL,
 		}
 		ta.start()
-		http.Handle("/tide.js", gziphandler.GzipHandler(handleTide(ta)))
+		http.Handle("/tide.js", gziphandler.GzipHandler(handleTide(configAgent, ta)))
 	}
 
 	logger.WithError(http.ListenAndServe(":8080", nil)).Fatal("ListenAndServe returned.")
@@ -157,17 +157,27 @@ func handleData(ja *JobAgent) http.HandlerFunc {
 	}
 }
 
-func handleTide(ta *tideAgent) http.HandlerFunc {
+func handleTide(ca *config.Agent, ta *tideAgent) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Cache-Control", "no-cache")
+		queryConfigs := ca.Config().Tide.Queries
+		queries := make([]string, 0, len(queryConfigs))
+		for _, qc := range queryConfigs {
+			queries = append(queries, qc.Query())
+		}
+
 		ta.Lock()
 		defer ta.Unlock()
-		pd, err := json.Marshal(ta.pools)
-		if err != nil {
-			logrus.WithError(err).Error("Error marshaling pools.")
-			pd = []byte("[]")
+		payload := tideData{
+			Queries: queries,
+			Pools:   ta.pools,
 		}
-		// If we have a "var" query, then write out "var value = [...];".
+		pd, err := json.Marshal(payload)
+		if err != nil {
+			logrus.WithError(err).Error("Error marshaling payload.")
+			pd = []byte("{}")
+		}
+		// If we have a "var" query, then write out "var value = {...};".
 		// Otherwise, just write out the JSON.
 		if v := r.URL.Query().Get("var"); v != "" {
 			fmt.Fprintf(w, "var %s = %s;", v, string(pd))

@@ -15,6 +15,6 @@
 
 cd static
 curl "https://prow.k8s.io/data.js?var=allBuilds" > data.js
-curl "https://prow.k8s.io/tide.js?var=allPools" > tide.js
+curl "https://prow.k8s.io/tide.js?var=tideData" > tide.js
 curl "https://prow.k8s.io/plugin-help.js?var=allHelp" > plugin-help.js
 python3 -m http.server
