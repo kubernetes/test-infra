@@ -10497,6 +10497,27 @@
       "sig-cluster-lifecycle"
     ]
   },
+  "periodic-kubernetes-e2e-kubeadm-gce-selfhosting": {
+    "args": [
+      "--cluster=",
+      "--deployment=kubernetes-anywhere",
+      "--env-file=jobs/platform/gce.env",
+      "--extract=ci/latest",
+      "--gcp-zone=us-central1-f",
+      "--kubeadm=ci",
+      "--kubernetes-anywhere-dump-cluster-logs=true",
+      "--kubernetes-anywhere-kubeadm-feature-gates=SelfHosting=true",
+      "--kubernetes-anywhere-kubelet-ci-version=latest",
+      "--kubernetes-anywhere-kubernetes-version=ci/latest",
+      "--provider=kubernetes-anywhere",
+      "--test_args=--ginkgo.focus=\\[Conformance\\]|\\[Feature:BootstrapTokens\\]|\\[Feature:NodeAuthorizer\\] --minStartupPods=8",
+      "--timeout=300m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-cluster-lifecycle"
+    ]
+  },
   "periodic-kubernetes-e2e-kubeadm-gce-upgrade-1-6-1-7": {
     "args": [
       "--cluster=",
