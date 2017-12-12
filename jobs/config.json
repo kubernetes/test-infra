@@ -680,6 +680,7 @@
     "args": [
       "--check-leaked-resources",
       "--check-version-skew=false",
+      "--env=ETCD_VERSION=3.0.17",
       "--env=STORAGE_MEDIA_TYPE=application/vnd.kubernetes.protobuf",
       "--env-file=jobs/platform/gce.env",
       "--extract=ci/k8s-stable1",
@@ -701,6 +702,7 @@
     "args": [
       "--check-leaked-resources",
       "--check-version-skew=false",
+      "--env=ETCD_VERSION=3.0.17",
       "--env=STORAGE_MEDIA_TYPE=application/vnd.kubernetes.protobuf",
       "--env-file=jobs/platform/gce.env",
       "--extract=ci/k8s-stable1",
