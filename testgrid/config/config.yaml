@@ -3792,6 +3792,15 @@ dashboards:
     alert_options:
       alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
 
+- name: sig-node-cri-o
+  dashboard_tab:
+  - name: crio-e2e-fedora
+    test_group_name: test_pull_request_crio_e2e_fedora
+    base_options: 'width=10'
+  - name: crio-e2e-rhel
+    test_group_name: test_pull_request_crio_e2e_rhel
+    base_options: 'width=10'
+
 - name: sig-node-containerd
   dashboard_tab:
   - name: build
@@ -4893,15 +4902,6 @@ dashboards:
     test_group_name: pull-federation-verify
     base_options: 'width=10'
 
-- name: cri-o
-  dashboard_tab:
-  - name: crio-e2e-fedora
-    test_group_name: test_pull_request_crio_e2e_fedora
-    base_options: 'width=10'
-  - name: crio-e2e-rhel
-    test_group_name: test_pull_request_crio_e2e_rhel
-    base_options: 'width=10'
-
 - name: istio
   dashboard_tab:
   - name: istio-postsubmit
@@ -4991,6 +4991,7 @@ dashboard_groups:
   - sig-node-containerd
   - sig-node-rkt
   - sig-node-ppc64le
+  - sig-node-cri-o
 
 - name: sig-release
   dashboard_names:
