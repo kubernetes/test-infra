@@ -67,85 +67,71 @@ func TestValidTraceRequest(t *testing.T) {
 	tests := []struct {
 		name        string
 		url         string
-		expectedNum int
 		expectedErr string
 	}{
 		{
 			name:        "valid request - eventGUID",
 			url:         "https://deck/trace?event-GUID=503265b0-d9a9-11e7-9b32-1fd823242322",
-			expectedNum: 0,
 			expectedErr: "",
 		},
 		{
 			name:        "valid request - org/repo#pr",
 			url:         "https://deck/trace?repo=origin&org=openshift&pr=17586",
-			expectedNum: 17586,
 			expectedErr: "",
 		},
 		{
 			name:        "valid request - org/repo#pr#issuecomment",
 			url:         "https://deck/trace?repo=origin&org=openshift&pr=17586&issuecomment=350075289",
-			expectedNum: 17586,
 			expectedErr: "",
 		},
 		{
 			name:        "invalid request - pr is not a number",
 			url:         "https://deck/trace?repo=origin&org=openshift&pr=175fd",
-			expectedNum: 0,
 			expectedErr: "invalid pr query \"175fd\": strconv.Atoi: parsing \"175fd\": invalid syntax",
 		},
 		{
 			name:        "invalid request - pr is not a positive number",
 			url:         "https://deck/trace?repo=origin&org=openshift&pr=-17453",
-			expectedNum: 0,
 			expectedErr: "invalid pr query \"-17453\": needs to be a positive number",
 		},
 		{
 			name:        "invalid request - missing org parameter",
 			url:         "https://deck/trace?repo=origin&pr=17453",
-			expectedNum: 0,
 			expectedErr: "need either \"pr\", \"repo\", and \"org\", or \"event-GUID\", or \"issuecomment\" to be specified",
 		},
 		{
 			name:        "invalid request - missing repo parameter",
 			url:         "https://deck/trace?org=openshift&pr=17453",
-			expectedNum: 0,
 			expectedErr: "need either \"pr\", \"repo\", and \"org\", or \"event-GUID\", or \"issuecomment\" to be specified",
 		},
 		{
 			name:        "invalid request - missing pr parameter",
 			url:         "https://deck/trace?org=openshift&repo=origin",
-			expectedNum: 0,
 			expectedErr: "need either \"pr\", \"repo\", and \"org\", or \"event-GUID\", or \"issuecomment\" to be specified",
 		},
 		{
 			name:        "invalid request - missing org and repo parameter",
 			url:         "https://deck/trace?pr=17453",
-			expectedNum: 0,
 			expectedErr: "need either \"pr\", \"repo\", and \"org\", or \"event-GUID\", or \"issuecomment\" to be specified",
 		},
 		{
 			name:        "invalid request - missing org and pr parameter",
 			url:         "https://deck/trace?repo=origin",
-			expectedNum: 0,
 			expectedErr: "need either \"pr\", \"repo\", and \"org\", or \"event-GUID\", or \"issuecomment\" to be specified",
 		},
 		{
 			name:        "invalid request - missing repo and pr parameter",
 			url:         "https://deck/trace?org=openshift",
-			expectedNum: 0,
 			expectedErr: "need either \"pr\", \"repo\", and \"org\", or \"event-GUID\", or \"issuecomment\" to be specified",
 		},
 		{
 			name:        "invalid request - no parameters",
 			url:         "https://deck/trace",
-			expectedNum: 0,
 			expectedErr: "need either \"pr\", \"repo\", and \"org\", or \"event-GUID\", or \"issuecomment\" to be specified",
 		},
 		{
 			name:        "invalid request - issuecomment and event-GUID are mutually exclusive",
 			url:         "https://deck/trace?repo=origin&org=openshift&pr=175&issuecomment=350075289&event-GUID=503265b0",
-			expectedNum: 0,
 			expectedErr: "cannot specify both issuecomment (350075289) and event-GUID (503265b0)",
 		},
 	}
@@ -156,11 +142,7 @@ func TestValidTraceRequest(t *testing.T) {
 			t.Errorf("%s: unexpected error: %v", test.name, err)
 			continue
 		}
-		gotNum, gotErr := validateTraceRequest(req)
-		if gotNum != test.expectedNum {
-			t.Errorf("%s: unexpected PR num: %d, expected: %d", test.name, gotNum, test.expectedNum)
-			continue
-		}
+		gotErr := validateTraceRequest(req)
 		if gotErr != nil && gotErr.Error() != test.expectedErr {
 			t.Errorf("%s: unexpected error: %q, expected: %q", test.name, gotErr.Error(), test.expectedErr)
 			continue
