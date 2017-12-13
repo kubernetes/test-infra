@@ -224,7 +224,7 @@ func (c *Client) log(methodName string, args ...interface{}) {
 	for _, arg := range args {
 		as = append(as, fmt.Sprintf("%v", arg))
 	}
-	c.logger.Debugf("%s(%s)", methodName, strings.Join(as, ", "))
+	c.logger.Infof("%s(%s)", methodName, strings.Join(as, ", "))
 }
 
 type request struct {
