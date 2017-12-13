@@ -68,6 +68,7 @@ filegroup(
         "//prow/plugins/shrug:all-srcs",
         "//prow/plugins/sigmention:all-srcs",
         "//prow/plugins/size:all-srcs",
+        "//prow/plugins/skip:all-srcs",
         "//prow/plugins/slackevents:all-srcs",
         "//prow/plugins/trigger:all-srcs",
         "//prow/plugins/updateconfig:all-srcs",

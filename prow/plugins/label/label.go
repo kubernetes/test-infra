@@ -44,7 +44,7 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 	// The Config field is omitted because this plugin is not configurable.
 	return &pluginhelp.PluginHelp{
 			Description: "The label plugin provides commands that add or remove certain types of labels. Labels of the following types can be manipulated: 'area/*', 'priority/*', 'kind/*', and 'sig/*'.",
-			WhoCanUse:   "Members of the repository's organization may use the label commands.",
+			WhoCanUse:   "Anyone can trigger this plugin on a PR.",
 			Usage:       "/[remove-](area|priority|kind|sig) <target>",
 			Examples:    []string{"/kind bug", "/remove-area prow", "/sig testing"},
 		},
@@ -57,7 +57,6 @@ func handleGenericComment(pc plugins.PluginClient, e github.GenericCommentEvent)
 
 type githubClient interface {
 	CreateComment(owner, repo string, number int, comment string) error
-	IsMember(org, user string) (bool, error)
 	AddLabel(owner, repo string, number int, label string) error
 	RemoveLabel(owner, repo string, number int, label string) error
 	GetRepoLabels(owner, repo string) ([]github.Label, error)
