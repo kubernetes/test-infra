@@ -25,9 +25,10 @@ log_level: info
 tide:
   queries:
   - repos:
-    - kubernetes/test-infra
-    - kubernetes/federation
     - kubernetes/charts
+    - kubernetes/federation
+    - kubernetes/kubernetes-template-project
+    - kubernetes/test-infra
     labels:
     - lgtm
     - approved
