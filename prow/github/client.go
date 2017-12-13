@@ -37,10 +37,6 @@ import (
 	"golang.org/x/oauth2"
 )
 
-type Logger interface {
-	Debugf(s string, v ...interface{})
-}
-
 type timeClient interface {
 	Sleep(time.Duration)
 	Until(time.Time) time.Duration
@@ -57,7 +53,7 @@ func (s *standardTime) Until(t time.Time) time.Duration {
 
 type Client struct {
 	// If logger is non-nil, log all method calls with it.
-	logger Logger
+	logger *logrus.Entry
 	time   timeClient
 
 	gqlc     gqlClient
@@ -216,6 +212,10 @@ func NewFakeClient() *Client {
 	}
 }
 
+func (c *Client) WithFields(fields logrus.Fields) {
+	c.logger = c.logger.WithFields(fields)
+}
+
 func (c *Client) log(methodName string, args ...interface{}) {
 	if c.logger == nil {
 		return
@@ -224,7 +224,7 @@ func (c *Client) log(methodName string, args ...interface{}) {
 	for _, arg := range args {
 		as = append(as, fmt.Sprintf("%v", arg))
 	}
-	c.logger.Debugf("%s(%s)", methodName, strings.Join(as, ", "))
+	c.logger.Infof("%s(%s)", methodName, strings.Join(as, ", "))
 }
 
 type request struct {
