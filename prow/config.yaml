@@ -43,6 +43,8 @@ tide:
     - do-not-merge/work-in-progress
     - do-not-merge/hold
     reviewApprovedRequired: true
+  merge_method:
+    kubernetes/charts: squash
 
 presubmits:
   google/cadvisor:
