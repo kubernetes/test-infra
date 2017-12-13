@@ -8,9 +8,13 @@ load(
 
 go_test(
     name = "go_default_test",
-    srcs = ["close_test.go"],
+    srcs = [
+        "close_test.go",
+        "lifecycle_test.go",
+        "reopen_test.go",
+    ],
     embed = [":go_default_library"],
-    importpath = "k8s.io/test-infra/prow/plugins/close",
+    importpath = "k8s.io/test-infra/prow/plugins/lifecycle",
     deps = [
         "//prow/github:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
@@ -19,8 +23,12 @@ go_test(
 
 go_library(
     name = "go_default_library",
-    srcs = ["close.go"],
-    importpath = "k8s.io/test-infra/prow/plugins/close",
+    srcs = [
+        "close.go",
+        "lifecycle.go",
+        "reopen.go",
+    ],
+    importpath = "k8s.io/test-infra/prow/plugins/lifecycle",
     deps = [
         "//prow/github:go_default_library",
         "//prow/pluginhelp:go_default_library",
