@@ -7169,7 +7169,7 @@
       "--provider=gke",
       "--test_args=--ginkgo.skip=\\[Flaky\\]|\\[Feature:.+\\] --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8",
       "--timeout=900m",
-      "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=v1.8.4-gke.0 --upgrade-image=gci"
+      "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=v1.8.4-gke.1 --upgrade-image=gci"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -7190,7 +7190,7 @@
       "--provider=gke",
       "--skew",
       "--timeout=900m",
-      "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=v1.8.4-gke.0 --upgrade-image=gci"
+      "--upgrade_args=--ginkgo.focus=\\[Feature:ClusterUpgrade\\] --upgrade-target=v1.8.4-gke.1 --upgrade-image=gci"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -7211,7 +7211,7 @@
       "--provider=gke",
       "--test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8",
       "--timeout=900m",
-      "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --upgrade-target=v1.8.4-gke.0 --upgrade-image=gci"
+      "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --upgrade-target=v1.8.4-gke.1 --upgrade-image=gci"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
