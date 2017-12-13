@@ -14,6 +14,7 @@ triggers:
 
 approve:
 - repos:
+  - kubernetes/charts
   - kubernetes/community
   - kubernetes/kubectl
   - kubernetes/test-infra
@@ -84,6 +85,7 @@ plugins:
   - trigger
 
   kubernetes/charts:
+  - approve
   - trigger
 
   kubernetes/cluster-registry:

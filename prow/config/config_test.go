@@ -408,7 +408,7 @@ func allJobs() ([]Presubmit, []Postsubmit, []Periodic, error) {
 //   * Presubmit, postsubmit jobs specify at least one --repo flag, the first of which uses PULL_REFS and REPO_NAME vars
 //   * Prow injected vars like REPO_NAME, PULL_REFS, etc are only used on non-periodic jobs
 //   * Deprecated --branch, --pull flags are not used
-//   * Required --service-account, --upload, --git-cache, --job, --clean flags are present
+//   * Required --service-account, --upload, --job, --clean flags are present
 func checkBazelbuildSpec(t *testing.T, name string, spec *kube.PodSpec, periodic bool) map[string]int {
 	img := "gcr.io/k8s-testimages/bazelbuild"
 	tags := map[string]int{}
@@ -463,7 +463,6 @@ func checkBazelbuildSpec(t *testing.T, name string, spec *kube.PodSpec, periodic
 		for _, f := range []string{
 			"--service-account",
 			"--upload",
-			"--git-cache",
 			"--job",
 			"--clean",
 		} {

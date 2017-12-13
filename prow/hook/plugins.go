@@ -38,6 +38,7 @@ import (
 	_ "k8s.io/test-infra/prow/plugins/shrug"
 	_ "k8s.io/test-infra/prow/plugins/sigmention"
 	_ "k8s.io/test-infra/prow/plugins/size"
+	_ "k8s.io/test-infra/prow/plugins/skip"
 	_ "k8s.io/test-infra/prow/plugins/slackevents"
 	_ "k8s.io/test-infra/prow/plugins/trigger"
 	_ "k8s.io/test-infra/prow/plugins/updateconfig"

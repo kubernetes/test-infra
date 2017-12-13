@@ -7,13 +7,19 @@
         <link rel="stylesheet" type="text/css" href="extensions/style.css">
         <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
         <script type="text/javascript" src="tidescript.js"></script>
-        <script type="text/javascript" src="tide.js?var=allPools"></script>
+        <script type="text/javascript" src="tide.js?var=tideData"></script>
         <script type="text/javascript" src="extensions/script.js"></script>
     </head>
     <body>
         <header>
             <a href="/"><h1>Tide Status</h1></a>
         </header>
+        <article>
+            <div>
+                <h4>Github search queries that define all merge requirements:</h4>
+                <ul id="queries"></ul>
+            </div>
+        </article>
         <article>
         <table id="pools">
             <thead>
