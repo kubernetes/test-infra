@@ -1711,6 +1711,10 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-federation-verify
   days_of_results: 1
   num_columns_recent: 20
+- name: pull-k8s-anywhere-e2e-gce
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-k8s-anywhere-e2e-gce
+  days_of_results: 1
+  num_columns_recent: 20
 # release-1.8
 - name: ci-kubernetes-e2e-gce-cos-k8sstable1-default
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos-k8sstable1-default
@@ -4921,6 +4925,12 @@ dashboards:
     alert_options:
       alert_mail_to_addresses: 'istio-oncall@googlegroups.com'
 
+- name: presubmits-k8s-anywhere
+  dashboard_tab:
+  - name: e2e-gce
+    test_group_name: pull-k8s-anywhere-e2e-gce
+    base_options: 'width=10'
+
 #
 # Start dashboard groups
 #
@@ -4958,6 +4968,7 @@ dashboard_groups:
   - presubmits-kubernetes-blocking
   - presubmits-kubernetes-nonblocking
   - presubmits-test-infra
+  - presubmits-k8s-anywhere
 
 - name: sig-cli
   dashboard_names:
