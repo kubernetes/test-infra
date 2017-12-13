@@ -44,6 +44,12 @@ labels:
     name: kind/feature
   - color: 15dd18
     name: lgtm
+  - color: d3e2f0
+    name: lifecycle/frozen
+  - color: "604460"
+    name: lifecycle/rotten
+  - color: "795548"
+    name: lifecycle/stale
   - color: b60205
     name: needs-ok-to-test
   - color: BDBDBD
@@ -348,8 +354,6 @@ unknown:
 #    name: priority/P3
 #  - color: d93f0b
 #    name: release-blocker
-#  - color: "795548"
-#    name: stale
 #  - color: ededed
 #    name: team/api (deprecated - do not use)
 #  - color: ededed
