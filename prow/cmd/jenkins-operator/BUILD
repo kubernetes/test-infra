@@ -15,7 +15,6 @@ go_image(
     embed = [":go_default_library"],
     importpath = "k8s.io/test-infra/prow/cmd/jenkins-operator",
     pure = "on",
-    race = "off",
 )
 
 go_library(

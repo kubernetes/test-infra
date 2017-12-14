@@ -12,8 +12,8 @@ check_version("0.8.0")
 
 git_repository(
     name = "io_bazel_rules_go",
-    commit = "f80dec7889568c36eb191d3d1534d2db4574d430",
     remote = "https://github.com/bazelbuild/rules_go.git",
+    tag = "0.8.1",
 )
 
 load("@io_bazel_rules_go//go:def.bzl", "go_rules_dependencies", "go_register_toolchains")
