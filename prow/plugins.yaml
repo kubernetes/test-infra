@@ -126,6 +126,9 @@ plugins:
   - docs-no-retest
   - blockade
 
+  kubernetes/kubernetes-template-project:
+  - approve
+
   kubernetes/test-infra:
   - trigger
   - config-updater
