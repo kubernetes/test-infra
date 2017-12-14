@@ -216,16 +216,16 @@
   revision = "a83829b6f1293c91addabc89d0571c246397bbf4"
 
 [[projects]]
-  branch = "master"
+  branch = "release-1.9"
   name = "k8s.io/apimachinery"
   packages = ["pkg/util/clock","pkg/util/sets","pkg/util/yaml"]
-  revision = "18a564baac720819100827c16fdebcadb05b2d0d"
+  revision = "180eddb345a5be3a157cea1c624700ad5bd27b8f"
 
 [[projects]]
-  branch = "master"
+  branch = "release-1.9"
   name = "k8s.io/apiserver"
   packages = ["pkg/util/flag"]
-  revision = "7001bc4df8883d4a0ec84cd4b2117655a0009b6c"
+  revision = "91e14f394e4796abf5a994a349a222e7081d86b6"
 
 [[projects]]
   name = "k8s.io/contrib"
@@ -235,6 +235,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "d14022b355ab9259b9d1cbd4752a8b38e4500414dee0f51b45089962253dfeaa"
+  inputs-digest = "f068aab2349a1eff215bc16974ade8215036fc16ae9a035463f6f5467d822cf8"
   solver-name = "gps-cdcl"
   solver-version = 1
