@@ -62,8 +62,8 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 	// Only the Description field is specified because this plugin is not triggered with commands and is not configurable.
 	return &pluginhelp.PluginHelp{
 			Description: `The sigmention plugin responds to SIG (Special Interest Group) Github team mentions like '@kubernetes/sig-testing-bugs'. The plugin responds in two ways:
-<br>&nbsp&nbsp&nbsp&nbsp1) The appropriate 'sig/*' and 'kind/*' labels are applied to the issue or pull request. In this case 'sig/testing' and 'kind/bug'.
-<br>&nbsp&nbsp&nbsp&nbsp2) If the user who mentioned the Github team is not a member of the organization that owns the repository the bot will create a comment that repeats the mention. This is necessary because non-member mentions do not trigger Github notifications.`,
+<ol><li> The appropriate 'sig/*' and 'kind/*' labels are applied to the issue or pull request. In this case 'sig/testing' and 'kind/bug'.</li>
+<li> If the user who mentioned the Github team is not a member of the organization that owns the repository the bot will create a comment that repeats the mention. This is necessary because non-member mentions do not trigger Github notifications.</li></ol>`,
 		},
 		nil
 }

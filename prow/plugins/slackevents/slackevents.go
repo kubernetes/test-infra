@@ -68,8 +68,8 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 	}
 	return &pluginhelp.PluginHelp{
 			Description: `The slackevents plugin reacts to various Github events by commenting in Slack channels.
-<br>&nbsp&nbsp&nbsp&nbsp1) The plugin can create comments to alert on manual merges. Manual merges are merges made by a normal user instead of a bot or trusted user.
-<br>&nbsp&nbsp&nbsp&nbsp2) The plugin can create comments to reiterate SIG mentions like '@kubernetes/sig-testing-bugs' from Github.`,
+<ol><li>The plugin can create comments to alert on manual merges. Manual merges are merges made by a normal user instead of a bot or trusted user.</li>
+<li>The plugin can create comments to reiterate SIG mentions like '@kubernetes/sig-testing-bugs' from Github.</li></ol>`,
 			Config: configInfo,
 		},
 		nil
