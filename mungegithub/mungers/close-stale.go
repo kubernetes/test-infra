@@ -18,7 +18,6 @@ package mungers
 
 import (
 	"fmt"
-	"math"
 	"regexp"
 	"time"
 
@@ -32,7 +31,6 @@ import (
 )
 
 const (
-	day            = time.Hour * 24
 	keepOpenLabel  = "keep-open"
 	kindFlakeLabel = "kind/flake"
 	stalePeriod    = 90 * day // Close the PR/Issue if no human interaction for `stalePeriod`
@@ -83,112 +81,6 @@ func (CloseStale) EachLoop() error { return nil }
 // RegisterOptions registers options for this munger; returns any that require a restart when changed.
 func (CloseStale) RegisterOptions(opts *options.Options) sets.String { return nil }
 
-func findLastHumanPullRequestUpdate(obj *github.MungeObject) (*time.Time, bool) {
-	pr, ok := obj.GetPR()
-	if !ok {
-		return nil, ok
-	}
-
-	comments, ok := obj.ListReviewComments()
-	if !ok {
-		return nil, ok
-	}
-
-	lastHuman := pr.CreatedAt
-	for i := range comments {
-		comment := comments[i]
-		if comment.User == nil || comment.User.Login == nil || comment.CreatedAt == nil || comment.Body == nil {
-			continue
-		}
-		if obj.IsRobot(comment.User) || *comment.User.Login == jenkinsBotName {
-			continue
-		}
-		if lastHuman.Before(*comment.UpdatedAt) {
-			lastHuman = comment.UpdatedAt
-		}
-	}
-
-	return lastHuman, true
-}
-
-func findLastHumanIssueUpdate(obj *github.MungeObject) (*time.Time, bool) {
-	lastHuman := obj.Issue.CreatedAt
-
-	comments, ok := obj.ListComments()
-	if !ok {
-		return nil, ok
-	}
-
-	for i := range comments {
-		comment := comments[i]
-		if !validComment(comment) {
-			continue
-		}
-		if obj.IsRobot(comment.User) || jenkinsBotComment(comment) {
-			continue
-		}
-		if lastHuman.Before(*comment.UpdatedAt) {
-			lastHuman = comment.UpdatedAt
-		}
-	}
-
-	return lastHuman, true
-}
-
-func findLastInterestingEventUpdate(obj *github.MungeObject) (*time.Time, bool) {
-	lastInteresting := obj.Issue.CreatedAt
-
-	events, ok := obj.GetEvents()
-	if !ok {
-		return nil, ok
-	}
-
-	for i := range events {
-		event := events[i]
-		if event.Event == nil || *event.Event != "reopened" {
-			continue
-		}
-
-		if lastInteresting.Before(*event.CreatedAt) {
-			lastInteresting = event.CreatedAt
-		}
-	}
-
-	return lastInteresting, true
-}
-
-func findLastModificationTime(obj *github.MungeObject) (*time.Time, bool) {
-	lastHumanIssue, ok := findLastHumanIssueUpdate(obj)
-	if !ok {
-		return nil, ok
-	}
-
-	lastInterestingEvent, ok := findLastInterestingEventUpdate(obj)
-	if !ok {
-		return nil, ok
-	}
-
-	var lastModif *time.Time
-	lastModif = lastHumanIssue
-
-	if lastInterestingEvent.After(*lastModif) {
-		lastModif = lastInterestingEvent
-	}
-
-	if obj.IsPR() {
-		lastHumanPR, ok := findLastHumanPullRequestUpdate(obj)
-		if !ok {
-			return lastModif, true
-		}
-
-		if lastHumanPR.After(*lastModif) {
-			lastModif = lastHumanPR
-		}
-	}
-
-	return lastModif, true
-}
-
 // Find the last warning comment that the bot has posted.
 // It can return an empty comment if it fails to find one, even if there are no errors.
 func findLatestWarningComment(obj *github.MungeObject) (*githubapi.IssueComment, bool) {
@@ -221,24 +113,6 @@ func findLatestWarningComment(obj *github.MungeObject) (*githubapi.IssueComment,
 	}
 
 	return lastFoundComment, true
-}
-
-func dayPhrase(days int) string {
-	dayString := "days"
-	if days == 1 || days == -1 {
-		dayString = "day"
-	}
-	return fmt.Sprintf("%d %s", days, dayString)
-}
-
-func durationToMinDays(duration time.Duration) string {
-	days := int(math.Floor(duration.Hours() / 24))
-	return dayPhrase(days)
-}
-
-func durationToMaxDays(duration time.Duration) string {
-	days := int(math.Floor(duration.Hours() / 24))
-	return dayPhrase(days)
 }
 
 func closeObj(obj *github.MungeObject, inactiveFor time.Duration) {
