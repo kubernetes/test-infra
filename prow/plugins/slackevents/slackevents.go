@@ -61,15 +61,15 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 			return nil, fmt.Errorf("invalid repo in enabledRepos: %q", repo)
 		}
 		if mw := getMergeWarning(config.Slack.MergeWarnings, parts[0], parts[1]); mw != nil {
-			configInfo[repo] = fmt.Sprintf("In this repo merges are considered manual and trigger manual merge warnings if the user who merged is not a member of this whitelist: %s.\nWarnings are sent to the following Slack channels: %s.", strings.Join(mw.WhiteList, ", "), strings.Join(mw.Channels, ", "))
+			configInfo[repo] = fmt.Sprintf("In this repo merges are considered manual and trigger manual merge warnings if the user who merged is not a member of this whitelist: %s.<br>Warnings are sent to the following Slack channels: %s.", strings.Join(mw.WhiteList, ", "), strings.Join(mw.Channels, ", "))
 		} else {
 			configInfo[repo] = "There are no manual merge warnings configured for this repo."
 		}
 	}
 	return &pluginhelp.PluginHelp{
 			Description: `The slackevents plugin reacts to various Github events by commenting in Slack channels.
-	1) The plugin can create comments to alert on manual merges. Manual merges are merges made by a normal user instead of a bot or trusted user.
-	2) The plugin can create comments to reiterate SIG mentions like '@kubernetes/sig-testing-bugs' from Github.`,
+<br>&nbsp&nbsp&nbsp&nbsp1) The plugin can create comments to alert on manual merges. Manual merges are merges made by a normal user instead of a bot or trusted user.
+<br>&nbsp&nbsp&nbsp&nbsp2) The plugin can create comments to reiterate SIG mentions like '@kubernetes/sig-testing-bugs' from Github.`,
 			Config: configInfo,
 		},
 		nil
