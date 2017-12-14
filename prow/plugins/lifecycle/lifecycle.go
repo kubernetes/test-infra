@@ -32,7 +32,7 @@ const deprecatedWarn = true
 
 var (
 	deprecatedTick = time.Tick(time.Hour) // Warn once per hour
-	lifecycleRe    = regexp.MustCompile(`(?mi)^/(remove-)?lifecycle (frozen|stale|putrid|rotten|frozen)\s*$`)
+	lifecycleRe    = regexp.MustCompile(`(?mi)^/(remove-)?lifecycle (frozen|stale|putrid|rotten)\s*$`)
 )
 
 func init() {
