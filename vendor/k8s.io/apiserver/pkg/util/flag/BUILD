@@ -8,10 +8,14 @@ load(
 go_library(
     name = "go_default_library",
     srcs = [
+        "colon_separated_multimap_string_string.go",
         "configuration_map.go",
         "flags.go",
+        "langle_separated_map_string_string.go",
         "map_string_bool.go",
+        "map_string_string.go",
         "namedcertkey_flag.go",
+        "omitempty.go",
         "string_flag.go",
         "tristate.go",
     ],
