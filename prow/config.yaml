@@ -22124,6 +22124,7 @@ periodics:
       - |-
         --query=org:kubernetes
         -label:lifecycle/frozen
+        -label:keep-open
         label:lifecycle/rotten
       - --updated=720h
       - --token=/etc/token/bot-github-token
@@ -22195,6 +22196,7 @@ periodics:
       - |-
         --query=org:kubernetes
         -label:lifecycle/frozen
+        -label:keep-open
         label:lifecycle/stale
         -label:lifecycle/rotten
       - --updated=720h
@@ -22230,6 +22232,7 @@ periodics:
       - |-
         --query=org:kubernetes
         -label:lifecycle/frozen
+        -label:keep-open
         -label:lifecycle/stale
         -label:lifecycle/rotten
       - --updated=720h
