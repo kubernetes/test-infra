@@ -107,6 +107,7 @@ plugins:
   - approve
   - blunderbuss
   - blockade
+  - require-sig
   - trigger
 
   kubernetes/contrib:
@@ -135,10 +136,11 @@ plugins:
 
   kubernetes/kubernetes:
   - approve
-  - trigger
-  - release-note
-  - docs-no-retest
   - blockade
+  - docs-no-retest
+  - release-note
+  - require-sig
+  - trigger
 
   kubernetes/kubernetes-template-project:
   - approve
