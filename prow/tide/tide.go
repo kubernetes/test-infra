@@ -326,9 +326,12 @@ func (c *Controller) pickBatch(sp subpool) ([]PullRequest, error) {
 	if err := r.Checkout(sp.sha); err != nil {
 		return nil, err
 	}
-	// TODO(spxtr): Limit batch size.
 	var res []PullRequest
-	for _, pr := range sp.prs {
+	for i, pr := range sp.prs {
+		// TODO: Make this configurable per subpool.
+		if i == 5 {
+			break
+		}
 		// TODO(spxtr): Check the actual statuses for individual jobs.
 		if string(pr.Commits.Nodes[0].Commit.Status.State) != "SUCCESS" {
 			continue
