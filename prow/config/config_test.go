@@ -22,7 +22,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"reflect"
 	"regexp"
 	"strings"
 	"testing"
@@ -167,6 +166,9 @@ func TestRequiredRetestContextsMatch(t *testing.T) {
 	}
 }
 
+// TODO(BenTheElder): this needs to be disabled after:
+// https://github.com/kubernetes/test-infra/issues/5848
+/*
 func TestConfigSecurityJobsMatch(t *testing.T) {
 	conf, err := Load("../config.yaml")
 	if err != nil {
@@ -187,6 +189,7 @@ func TestConfigSecurityJobsMatch(t *testing.T) {
 		}
 	}
 }
+*/
 
 // checkDockerSocketVolumes returns an error if any volume uses a hostpath
 // to the docker socket. we do not want to allow this
