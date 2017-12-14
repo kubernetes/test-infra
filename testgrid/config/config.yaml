@@ -1829,6 +1829,10 @@ test_groups:
 - name: ci-daisy-e2e
   gcs_prefix: gce-daisy-test/logs/ci-daisy-e2e
 # Cluster registry
+- name: pull-cluster-registry-verify-bazel
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-registry-verify-bazel
+  days_of_results: 1
+  num_columns_recent: 20
 - name: pull-cluster-registry-bazel
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-registry-bazel
   days_of_results: 1
@@ -4914,6 +4918,9 @@ dashboards:
 
 - name: presubmits-cluster-registry
   dashboard_tab:
+  - name: verify-bazel
+    test_group_name: pull-cluster-registry-verify-bazel
+    base_options: 'width=10'
   - name: bazel
     test_group_name: pull-cluster-registry-bazel
     base_options: 'width=10'

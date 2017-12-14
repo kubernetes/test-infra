@@ -10282,6 +10282,15 @@
       "sig-multicluster"
     ]
   },
+  "pull-cluster-registry-verify-bazel": {
+    "args": [
+      "./hack/verify-bazel.sh"
+    ],
+    "scenario": "execute",
+    "sigOwners": [
+      "sig-multicluster"
+    ]
+  },
   "pull-community-verify": {
     "args": [
       "make",
