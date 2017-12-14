@@ -99,7 +99,8 @@ func getClient(pc plugins.PluginClient) client {
 
 func handlePullRequest(pc plugins.PluginClient, pr github.PullRequestEvent) error {
 	trustedOrg := trustedOrgForRepo(pc.PluginConfig, pr.Repo.Owner.Login, pr.Repo.Name)
-	return handlePR(getClient(pc), trustedOrg, pr)
+	joinOrgURL := pc.PluginConfig.TriggerFor(pr.Repo.Owner.Login, pr.Repo.Name).JoinOrgURL
+	return handlePR(getClient(pc), trustedOrg, joinOrgURL, pr)
 }
 
 func handleIssueComment(pc plugins.PluginClient, ic github.IssueCommentEvent) error {
