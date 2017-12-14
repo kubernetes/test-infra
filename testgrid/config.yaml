@@ -4275,14 +4275,14 @@ dashboards:
   - name: crio-e2e-fedora
     test_group_name: test_pull_request_crio_e2e_fedora
     open_test_template:
-        url: https://gcsweb-ci.svc.ci.openshift.org/gcs/<gcs_prefix>/<changelist>.txt
+        url: https://gcsweb-ci.svc.ci.openshift.org/gcs/<gcs_prefix>/<changelist>/artifacts/artifacts/junit_01.xml
     results_url_template:
         url: https://gcsweb-ci.svc.ci.openshift.org/gcs/<gcs_prefix>
     base_options: 'width=10'
   - name: crio-e2e-rhel
     test_group_name: test_pull_request_crio_e2e_rhel
     open_test_template:
-        url: https://gcsweb-ci.svc.ci.openshift.org/gcs/<gcs_prefix>/<changelist>.txt
+        url: https://gcsweb-ci.svc.ci.openshift.org/gcs/<gcs_prefix>/<changelist>/artifacts/artifacts/junit_01.xml
     results_url_template:
         url: https://gcsweb-ci.svc.ci.openshift.org/gcs/<gcs_prefix>
     base_options: 'width=10'
