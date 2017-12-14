@@ -86,6 +86,7 @@ plugins:
 
   kubernetes/charts:
   - approve
+  - blunderbuss
   - trigger
 
   kubernetes/cluster-registry:
