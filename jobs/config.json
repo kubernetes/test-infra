@@ -10672,7 +10672,7 @@
       "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-kubemark-e2e-gce",
       "--test=false",
       "--test_args=--ginkgo.focus=\\[Feature:Empty\\] --gather-resource-usage=true",
-      "--timeout=45m"
+      "--timeout=60m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
