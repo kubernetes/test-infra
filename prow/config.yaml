@@ -1726,7 +1726,7 @@ presubmits:
         - "--repo=k8s.io/release"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--timeout=90"
+        - "--timeout=110"
         # the release-1.6 version of this job uses Jenkins, so here we override
         # some args for jobs on Prow
         - --
@@ -3502,7 +3502,7 @@ presubmits:
         - "--repo=k8s.io/release"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-security-jenkins/pr-logs"
-        - "--timeout=90"
+        - "--timeout=110"
         # the release-1.6 version of this job uses Jenkins, so here we override
         # some args for jobs on Prow
         - --
