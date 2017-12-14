@@ -30,7 +30,7 @@ const (
 	needsOkToTest = "needs-ok-to-test"
 )
 
-func handlePR(c client, trustedOrg string, pr github.PullRequestEvent) error {
+func handlePR(c client, trustedOrg, joinOrgURL string, pr github.PullRequestEvent) error {
 	author := pr.PullRequest.User.Login
 	switch pr.Action {
 	case github.PullRequestActionOpened:
@@ -46,7 +46,7 @@ func handlePR(c client, trustedOrg string, pr github.PullRequestEvent) error {
 			return buildAll(c, pr.PullRequest, pr.GUID)
 		} else {
 			c.Logger.Infof("Welcome message to PR author %q.", author)
-			if err := welcomeMsg(c.GitHubClient, pr.PullRequest, trustedOrg); err != nil {
+			if err := welcomeMsg(c.GitHubClient, pr.PullRequest, trustedOrg, joinOrgURL); err != nil {
 				return fmt.Errorf("could not welcome non-org member %q: %v", author, err)
 			}
 		}
@@ -108,10 +108,10 @@ func handlePR(c client, trustedOrg string, pr github.PullRequestEvent) error {
 	return nil
 }
 
-func welcomeMsg(ghc githubClient, pr github.PullRequest, trustedOrg string) error {
+func welcomeMsg(ghc githubClient, pr github.PullRequest, trustedOrg, joinOrgURL string) error {
 	commentTemplate := `Hi @%s. Thanks for your PR.
 
-I'm waiting for a [%s](https://github.com/orgs/%s/people) %smember to verify that this patch is reasonable to test. If it is, they should reply with ` + "`/ok-to-test`" + ` on its own line. Until that is done, I will not automatically test new commits in this PR, but the usual testing commands by org members will still work. Regular contributors should [join the org](https://github.com/kubernetes/community/blob/master/community-membership.md#member) to skip this step.
+I'm waiting for a [%s](https://github.com/orgs/%s/people) %smember to verify that this patch is reasonable to test. If it is, they should reply with ` + "`/ok-to-test`" + ` on its own line. Until that is done, I will not automatically test new commits in this PR, but the usual testing commands by org members will still work. Regular contributors should [join the org](%s) to skip this step.
 
 I understand the commands that are listed [here](https://github.com/kubernetes/test-infra/blob/master/commands.md).
 
@@ -126,7 +126,7 @@ I understand the commands that are listed [here](https://github.com/kubernetes/t
 	if owner != trustedOrg {
 		more = fmt.Sprintf("or [%s](https://github.com/orgs/%s/people) ", owner, owner)
 	}
-	comment := fmt.Sprintf(commentTemplate, pr.User.Login, trustedOrg, trustedOrg, more, plugins.AboutThisBotWithoutCommands)
+	comment := fmt.Sprintf(commentTemplate, pr.User.Login, trustedOrg, trustedOrg, more, joinOrgURL, plugins.AboutThisBotWithoutCommands)
 
 	err1 := ghc.AddLabel(owner, name, pr.Number, needsOkToTest)
 	err2 := ghc.CreateComment(owner, name, pr.Number, comment)
