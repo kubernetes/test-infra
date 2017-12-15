@@ -1827,6 +1827,10 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-registry-verify-bazel
   days_of_results: 1
   num_columns_recent: 20
+- name: pull-cluster-registry-verify-gensrc
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-registry-verify-gensrc
+  days_of_results: 1
+  num_columns_recent: 20
 - name: pull-cluster-registry-bazel
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-registry-bazel
   days_of_results: 1
@@ -4901,11 +4905,14 @@ dashboards:
 
 - name: presubmits-cluster-registry
   dashboard_tab:
+  - name: bazel
+    test_group_name: pull-cluster-registry-bazel
+    base_options: 'width=10'
   - name: verify-bazel
     test_group_name: pull-cluster-registry-verify-bazel
     base_options: 'width=10'
-  - name: bazel
-    test_group_name: pull-cluster-registry-bazel
+  - name: verify-gensrc
+    test_group_name: pull-cluster-registry-verify-gensrc
     base_options: 'width=10'
 
 - name: presubmits-federation
