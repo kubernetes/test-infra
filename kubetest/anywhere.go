@@ -69,7 +69,7 @@ const kubernetesAnywhereConfigTemplate = `
 .phase1.ssh_user=""
 .phase1.cloud_provider="gce"
 
-.phase1.gce.os_image="ubuntu-1604-xenial-v20160420c"
+.phase1.gce.os_image="ubuntu-1604-xenial-v20171212"
 .phase1.gce.instance_type="n1-standard-1"
 .phase1.gce.project="{{.Project}}"
 .phase1.gce.region="{{.Region}}"
