@@ -19,6 +19,8 @@ package config
 import (
 	"fmt"
 	"strings"
+
+	"k8s.io/test-infra/prow/github"
 )
 
 // Tide is config for the tide pool.
@@ -28,6 +30,27 @@ type Tide struct {
 	// TODO: This will only be possible when we allow specifying orgs. At that
 	//       point, verify the above condition.
 	Queries []TideQuery `json:"queries,omitempty"`
+
+	// A key/value pair of an org/repo as the key and merge method to override
+	// the default method of merge. Valid options are squash, rebase, and merge.
+	MergeType map[string]github.PullRequestMergeType `json:"merge_method,omitempty"`
+}
+
+// MergeMethod returns the merge method to use for a repo. The default of merge is
+// returned when not overridden.
+func (t *Tide) MergeMethod(org, repo string) github.PullRequestMergeType {
+	name := org + "/" + repo
+
+	v, ok := t.MergeType[name]
+	if !ok {
+		if ov, found := t.MergeType[org]; found {
+			return ov
+		}
+
+		return github.MergeMerge
+	}
+
+	return v
 }
 
 // TideQuery is turned into a GitHub search query. See the docs for details:

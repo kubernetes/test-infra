@@ -348,7 +348,8 @@ func (c *Controller) pickBatch(sp subpool) ([]PullRequest, error) {
 func (c *Controller) mergePRs(sp subpool, prs []PullRequest) error {
 	for _, pr := range prs {
 		if err := c.ghc.Merge(sp.org, sp.repo, int(pr.Number), github.MergeDetails{
-			SHA: string(pr.HeadRef.Target.OID),
+			SHA:         string(pr.HeadRef.Target.OID),
+			MergeMethod: string(c.ca.Config().Tide.MergeMethod(sp.org, sp.repo)),
 		}); err != nil {
 			if _, ok := err.(github.ModifiedHeadError); ok {
 				// This is a possible source of incorrect behavior. If someone
