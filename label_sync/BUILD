@@ -35,7 +35,6 @@ docker_push(
 # bazel-bin/.../label_sync.binary is the binary
 go_image(
     name = "label_sync-image",
-    base = "@distroless-base//image",
     embed = [":go_default_library"],
     importpath = "k8s.io/test-infra/label_sync",
     pure = "on",

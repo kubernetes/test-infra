@@ -26,12 +26,13 @@ spec:
       restartPolicy: Never  # https://github.com/kubernetes/kubernetes/issues/54870
       containers:
       - name: label-sync
-        image: gcr.io/k8s-testimages/label_sync:v20171215-9c0f9501e
+        image: gcr.io/k8s-testimages/label_sync:latest
         args:
         - --config=/etc/config/labels.yaml
         - --dry-run=false
         - --orgs=kubernetes
         - --token=/etc/github/oauth
+        - --only=kubernetes/contrib
         volumeMounts:
         - name: oauth
           mountPath: /etc/github
