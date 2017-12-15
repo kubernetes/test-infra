@@ -1,0 +1,17 @@
+---
+- name: reload systemd
+  command: systemctl --system daemon-reload
+
+- name: restart netmaster
+  service: name=netmaster state=restarted
+  when: netmaster_started.changed == false
+
+- name: restart netplugin
+  service: name=netplugin state=restarted
+  when: netplugin_started.changed == false
+
+- name: restart kubelet
+  service: name=kubelet state=restarted
+
+- name: Save iptables rules
+  command: service iptables save

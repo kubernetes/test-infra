@@ -1,0 +1,41 @@
+- name: CoreOS | Create bootstrap directory
+  raw: mkdir -p {{ bootstrap_script_dir }}
+
+- name: CoreOS | Download pypy source
+  raw: >
+         http_proxy="{{ http_proxy|default('') }}"
+         https_proxy="{{ https_proxy|default('') }}"
+         no_proxy="{{ no_proxy|default('') }}"
+         wget -O /tmp/pypy-{{ pypy_version }}-linux64.tar.bz2 {{ pypy_download_url }}
+
+- name: CoreOS | Extract pypy tar to tmp
+  raw: tar -xjf /tmp/pypy-{{ pypy_version }}-linux64.tar.bz2 -C /tmp
+
+- name: CoreOS | Move pypy source to python bootstrap directory
+  raw: mv -n /tmp/pypy-{{ pypy_version }}-linux64 {{ bootstrap_script_dir }}/pypy
+
+- name: CoreOS | Make pypy lib directory and link ncurses .so
+  raw: mkdir -p {{ bootstrap_script_dir }}/pypy/lib && ln -snf /lib64/libncurses.so.5.9 {{ bootstrap_script_dir }}/pypy/lib/libtinfo.so.5
+
+- name: CoreOS | Add python exec script to bootstrap directory
+  raw: >
+         printf "%s\n%s"
+         "#! /bin/bash"
+         "LD_LIBRARY_PATH={{ bootstrap_script_dir }}/pypy/lib:\$LD_LIBRARY_PATH exec {{ bootstrap_script_dir }}/pypy/bin/pypy \"\$@\""
+         > {{ bootstrap_script_dir }}/python
+
+- name: CoreOS | Add exec permission to python exec script
+  raw: chmod +x {{ bootstrap_script_dir }}/python
+
+- name: CoreOS | Check python executable linkage and mark .bootstrapped
+  raw: "{{ bootstrap_script_dir }}/python --version"
+
+- name: CoreOS | Add opt-path.sh to profile.d for adding python exec PATH
+  raw: >
+          printf "%s\n%s"
+          "#! /usr/bin/bash"
+          "PATH=\$PATH:{{ bin_dir }}"
+          > /etc/profile.d/opt-path.sh
+
+- name: CoreOS | Change permissions and ownership for opt-path.sh to run as root
+  raw: chmod 0755 /etc/profile.d/opt-path.sh && chown root /etc/profile.d/opt-path.sh

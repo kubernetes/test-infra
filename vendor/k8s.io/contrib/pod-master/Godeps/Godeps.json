@@ -1,0 +1,45 @@
+{
+	"ImportPath": "k8s.io/contrib/pod-master",
+	"GoVersion": "go1.5",
+	"Packages": [
+		"./..."
+	],
+	"Deps": [
+		{
+			"ImportPath": "github.com/coreos/etcd/client",
+			"Comment": "v2.2.2-4-ge0c7768",
+			"Rev": "e0c7768f94cdc268b2fce31ada1dea823f11f505"
+		},
+		{
+			"ImportPath": "github.com/coreos/etcd/pkg/pathutil",
+			"Comment": "v2.2.2-4-ge0c7768",
+			"Rev": "e0c7768f94cdc268b2fce31ada1dea823f11f505"
+		},
+		{
+			"ImportPath": "github.com/coreos/etcd/pkg/types",
+			"Comment": "v2.2.2-4-ge0c7768",
+			"Rev": "e0c7768f94cdc268b2fce31ada1dea823f11f505"
+		},
+		{
+			"ImportPath": "github.com/golang/glog",
+			"Rev": "44145f04b68cf362d9c4df2182967c2275eaefed"
+		},
+		{
+			"ImportPath": "github.com/spf13/pflag",
+			"Rev": "b084184666e02084b8ccb9b704bf0d79c466eb1d"
+		},
+		{
+			"ImportPath": "github.com/ugorji/go/codec",
+			"Rev": "f1f1a805ed361a0e078bb537e4ea78cd37dcf065"
+		},
+		{
+			"ImportPath": "golang.org/x/net/context",
+			"Rev": "c2528b2dd8352441850638a8bb678c2ad056fd3e"
+		},
+		{
+			"ImportPath": "k8s.io/kubernetes/pkg/storage/etcd/util",
+			"Comment": "v1.2.0-alpha.5-690-gab6edd8",
+			"Rev": "ab6edd8170522fa775fb5054d1c54b4e0d791444"
+		}
+	]
+}

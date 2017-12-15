@@ -1,0 +1,9 @@
+set terminal png
+set output ofilename
+set timefmt "%d:%H:%M:%S"
+set format x "%M:%S"
+set xdata time
+set xlabel "Time (M:S)"
+set ylabel "Latency (ms)"
+set style data lines
+plot ifilename every ::2 using 1:2 t '%50', '' every ::2 using 1:3 t '%75', '' every ::2 using 1:4 t '%95', '' every ::2 using 1:5 t '%99'

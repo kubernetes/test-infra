@@ -1,0 +1,392 @@
+I0108 14:46:43.842853   14261 e2e_test.go:185] Starting e2e run; "3f836a3c-b60e-11e5-b76b-7446a0bae05f"
+Running Suite: Kubernetes e2e suite
+===================================
+Random Seed: 1452260801 - Will randomize all specs
+Will run 1 of 213 specs
+
+SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS
+------------------------------
+Density [Skipped] 
+  [Performance] should allow starting 30 pods per node
+  /usr/local/google/home/gmarek/go/src/k8s.io/kubernetes/_output/local/go/src/k8s.io/kubernetes/test/e2e/density.go:433
+[BeforeEach] Density [Skipped]
+  /usr/local/google/home/gmarek/go/src/k8s.io/kubernetes/_output/local/go/src/k8s.io/kubernetes/test/e2e/framework.go:69
+STEP: Creating a kubernetes client
+Jan  8 14:46:43.854: INFO: >>> testContext.KubeConfig: /usr/local/google/home/gmarek/.kube/config
+
+STEP: Building a namespace api object
+Jan  8 14:46:43.993: INFO: Waiting up to 2m0s for service account default to be provisioned in ns e2e-tests-density-lusrj
+Jan  8 14:46:44.128: INFO: Service account default in ns e2e-tests-density-lusrj with secrets found. (134.98222ms)
+STEP: Waiting for a default service account to be provisioned in namespace
+Jan  8 14:46:44.128: INFO: Waiting up to 2m0s for service account default to be provisioned in ns e2e-tests-density-lusrj
+Jan  8 14:46:44.262: INFO: Service account default in ns e2e-tests-density-lusrj with secrets found. (134.22611ms)
+[BeforeEach] Density [Skipped]
+  /usr/local/google/home/gmarek/go/src/k8s.io/kubernetes/_output/local/go/src/k8s.io/kubernetes/test/e2e/density.go:188
+Jan  8 14:46:44.536: INFO: Waiting for terminating namespaces to be deleted...
+Jan  8 14:46:44.671: INFO: Resetting latency metrics in apiserver...
+Jan  8 14:46:44.804: INFO: Listing nodes for easy debugging:
+
+Jan  8 14:46:44.804: INFO: Name: e2e-test-gmarek-minion-17cv, clusterIP: 10.240.0.5, externalIP: 104.197.56.13
+Jan  8 14:46:44.804: INFO: Name: e2e-test-gmarek-minion-8pi6, clusterIP: 10.240.0.3, externalIP: 104.197.128.82
+Jan  8 14:46:44.804: INFO: Name: e2e-test-gmarek-minion-f6xf, clusterIP: 10.240.0.4, externalIP: 104.154.36.5
+[It] [Performance] Sample test
+  /usr/local/google/home/gmarek/go/src/k8s.io/kubernetes/_output/local/go/src/k8s.io/kubernetes/test/e2e/density.go:433
+STEP: creating replication controller density90-41575bd4-b60e-11e5-b76b-7446a0bae05f in namespace e2e-tests-density-lusrj
+Jan  8 14:46:45.079: INFO: Created replication controller with name: density90-41575bd4-b60e-11e5-b76b-7446a0bae05f, namespace: e2e-tests-density-lusrj, replica count: 90
+Jan  8 14:46:55.079: INFO: density90-41575bd4-b60e-11e5-b76b-7446a0bae05f Pods: 90 out of 90 created, 5 running, 85 pending, 0 waiting, 0 inactive, 0 terminating, 0 unknown, 0 runningButNotReady 
+Jan  8 14:47:05.080: INFO: density90-41575bd4-b60e-11e5-b76b-7446a0bae05f Pods: 90 out of 90 created, 31 running, 59 pending, 0 waiting, 0 inactive, 0 terminating, 0 unknown, 0 runningButNotReady 
+Jan  8 14:47:15.080: INFO: density90-41575bd4-b60e-11e5-b76b-7446a0bae05f Pods: 90 out of 90 created, 90 running, 0 pending, 0 waiting, 0 inactive, 0 terminating, 0 unknown, 0 runningButNotReady 
+Jan  8 14:47:15.081: INFO: E2E startup time for 90 pods: 30.276116951s
+STEP: Waiting for all events to be recorded
+Jan  8 14:47:25.081: INFO: Found 370 events
+Jan  8 14:47:25.081: INFO: - reason: Started, source: kubelet -> 90
+Jan  8 14:47:25.081: INFO: - reason: SuccessfulCreate, source: replication-controller -> 10
+Jan  8 14:47:25.081: INFO: - reason: Scheduled, source: default-scheduler -> 90
+Jan  8 14:47:25.081: INFO: - reason: Pulled, source: kubelet -> 90
+Jan  8 14:47:25.081: INFO: - reason: Created, source: kubelet -> 90
+Jan  8 14:47:25.081: INFO: Schedling additional Pods to measure startup latencies
+Jan  8 14:47:25.354: INFO: Waiting up to 5m0s for pod density-latency-pod-596d98fe-b60e-11e5-b76b-7446a0bae05f-1 status to be running
+Jan  8 14:47:25.648: INFO: Waiting up to 5m0s for pod density-latency-pod-596d98fe-b60e-11e5-b76b-7446a0bae05f-2 status to be running
+Jan  8 14:47:25.775: INFO: Waiting for pod density-latency-pod-596d98fe-b60e-11e5-b76b-7446a0bae05f-1 in namespace 'e2e-tests-density-lusrj' status to be 'running'(found phase: "Pending", readiness: false) (421.042511ms elapsed)
+Jan  8 14:47:25.782: INFO: Waiting up to 5m0s for pod density-latency-pod-596d98fe-b60e-11e5-b76b-7446a0bae05f-3 status to be running
+Jan  8 14:47:25.833: INFO: Waiting for pod density-latency-pod-596d98fe-b60e-11e5-b76b-7446a0bae05f-2 in namespace 'e2e-tests-density-lusrj' status to be 'running'(found phase: "Pending", readiness: false) (185.107943ms elapsed)
+Jan  8 14:47:25.919: INFO: Waiting for pod density-latency-pod-596d98fe-b60e-11e5-b76b-7446a0bae05f-3 in namespace 'e2e-tests-density-lusrj' status to be 'running'(found phase: "Pending", readiness: false) (136.405392ms elapsed)
+Jan  8 14:47:27.910: INFO: Found pod 'density-latency-pod-596d98fe-b60e-11e5-b76b-7446a0bae05f-1' on node 'e2e-test-gmarek-minion-8pi6'
+Jan  8 14:47:27.967: INFO: Found pod 'density-latency-pod-596d98fe-b60e-11e5-b76b-7446a0bae05f-2' on node 'e2e-test-gmarek-minion-17cv'
+Jan  8 14:47:28.053: INFO: Found pod 'density-latency-pod-596d98fe-b60e-11e5-b76b-7446a0bae05f-3' on node 'e2e-test-gmarek-minion-f6xf'
+Jan  8 14:47:28.053: INFO: Waiting for all Pods begin observed by the watch...
+Jan  8 14:47:28.481: INFO: 10% worst schedule latencies: [{density-latency-pod-596d98fe-b60e-11e5-b76b-7446a0bae05f-1 e2e-test-gmarek-minion-8pi6 0}]
+Jan  8 14:47:28.481: INFO: perc50: 0, perc90: 0, perc99: 0
+Jan  8 14:47:28.481: INFO: 10% worst run-after-schedule latencies: [{density-latency-pod-596d98fe-b60e-11e5-b76b-7446a0bae05f-1 e2e-test-gmarek-minion-8pi6 1s}]
+Jan  8 14:47:28.481: INFO: perc50: 1s, perc90: 1s, perc99: 1s
+Jan  8 14:47:28.481: INFO: 10% worst watch latencies: [{density-latency-pod-596d98fe-b60e-11e5-b76b-7446a0bae05f-2 e2e-test-gmarek-minion-17cv 1.832838869s}]
+Jan  8 14:47:28.481: INFO: perc50: 652.105434ms, perc90: 1.832838869s, perc99: 1.832838869s
+Jan  8 14:47:28.481: INFO: 10% worst scheduled-to-end total latencies: [{density-latency-pod-596d98fe-b60e-11e5-b76b-7446a0bae05f-2 e2e-test-gmarek-minion-17cv 2.832838869s}]
+Jan  8 14:47:28.481: INFO: perc50: 1.652105434s, perc90: 2.832838869s, perc99: 2.832838869s
+Jan  8 14:47:28.481: INFO: 10% worst e2e total latencies: [{density-latency-pod-596d98fe-b60e-11e5-b76b-7446a0bae05f-2 e2e-test-gmarek-minion-17cv 2.832838869s}]
+Jan  8 14:47:28.481: INFO: perc50: 1.652105434s, perc90: 2.832838869s, perc99: 2.832838869s
+Jan  8 14:47:28.481: INFO: Pod startup latency: {
+  "latency": {
+    "Perc50": 1652105434,
+    "Perc90": 2832838869,
+    "Perc99": 2832838869
+  }
+}
+
+Jan  8 14:47:28.482: INFO: Approx throughput: 63.54050065104497 pods/min
+[AfterEach] Density [Skipped]
+  /usr/local/google/home/gmarek/go/src/k8s.io/kubernetes/_output/local/go/src/k8s.io/kubernetes/test/e2e/density.go:148
+STEP: Cleaning up the replication controller
+STEP: deleting replication controller density90-41575bd4-b60e-11e5-b76b-7446a0bae05f in namespace e2e-tests-density-lusrj
+Jan  8 14:47:34.687: INFO: Deleting RC density90-41575bd4-b60e-11e5-b76b-7446a0bae05f took: 5.938028618s
+Jan  8 14:47:55.391: INFO: Terminating RC density90-41575bd4-b60e-11e5-b76b-7446a0bae05f pods took: 20.704117404s
+STEP: Removing additional pods if any
+Jan  8 14:47:56.098: INFO: Top latency metric: {Resource:pods Verb:LIST Latency:{Perc50:5.567ms Perc90:132.528ms Perc99:404.109ms}}
+Jan  8 14:47:56.098: INFO: Top latency metric: {Resource:pods Verb:POST Latency:{Perc50:2.532ms Perc90:67.439ms Perc99:92.435ms}}
+Jan  8 14:47:56.098: INFO: Top latency metric: {Resource:pods Verb:DELETE Latency:{Perc50:6.623ms Perc90:36.37ms Perc99:49.586ms}}
+Jan  8 14:47:56.098: INFO: Top latency metric: {Resource:bindings Verb:POST Latency:{Perc50:3.418ms Perc90:7.874ms Perc99:11.196ms}}
+Jan  8 14:47:56.098: INFO: Top latency metric: {Resource:pods Verb:PUT Latency:{Perc50:2.853ms Perc90:5.187ms Perc99:9.885ms}}
+Jan  8 14:47:56.098: INFO: API calls latencies: {
+  "apicalls": [
+    {
+      "resource": "pods",
+      "verb": "LIST",
+      "latency": {
+        "Perc50": 5567000,
+        "Perc90": 132528000,
+        "Perc99": 404109000
+      }
+    },
+    {
+      "resource": "pods",
+      "verb": "POST",
+      "latency": {
+        "Perc50": 2532000,
+        "Perc90": 67439000,
+        "Perc99": 92435000
+      }
+    },
+    {
+      "resource": "pods",
+      "verb": "DELETE",
+      "latency": {
+        "Perc50": 6623000,
+        "Perc90": 36370000,
+        "Perc99": 49586000
+      }
+    },
+    {
+      "resource": "bindings",
+      "verb": "POST",
+      "latency": {
+        "Perc50": 3418000,
+        "Perc90": 7874000,
+        "Perc99": 11196000
+      }
+    },
+    {
+      "resource": "pods",
+      "verb": "PUT",
+      "latency": {
+        "Perc50": 2853000,
+        "Perc90": 5187000,
+        "Perc99": 9885000
+      }
+    },
+    {
+      "resource": "nodes",
+      "verb": "PUT",
+      "latency": {
+        "Perc50": 3121000,
+        "Perc90": 5093000,
+        "Perc99": 8351000
+      }
+    },
+    {
+      "resource": "secrets",
+      "verb": "GET",
+      "latency": {
+        "Perc50": 1003000,
+        "Perc90": 2260000,
+        "Perc99": 5179000
+      }
+    },
+    {
+      "resource": "replicationcontrollers",
+      "verb": "POST",
+      "latency": {
+        "Perc50": 4743000,
+        "Perc90": 4743000,
+        "Perc99": 4743000
+      }
+    },
+    {
+      "resource": "pods",
+      "verb": "GET",
+      "latency": {
+        "Perc50": 968000,
+        "Perc90": 1219000,
+        "Perc99": 4014000
+      }
+    },
+    {
+      "resource": "replicationcontrollers",
+      "verb": "PUT",
+      "latency": {
+        "Perc50": 1762000,
+        "Perc90": 2539000,
+        "Perc99": 2539000
+      }
+    },
+    {
+      "resource": "endpoints",
+      "verb": "GET",
+      "latency": {
+        "Perc50": 1654000,
+        "Perc90": 2428000,
+        "Perc99": 2488000
+      }
+    },
+    {
+      "resource": "replicationcontrollers",
+      "verb": "GET",
+      "latency": {
+        "Perc50": 676000,
+        "Perc90": 1272000,
+        "Perc99": 2050000
+      }
+    },
+    {
+      "resource": "replicationcontrollers",
+      "verb": "DELETE",
+      "latency": {
+        "Perc50": 1766000,
+        "Perc90": 1766000,
+        "Perc99": 1766000
+      }
+    },
+    {
+      "resource": "nodes",
+      "verb": "LIST",
+      "latency": {
+        "Perc50": 1292000,
+        "Perc90": 1490000,
+        "Perc99": 1641000
+      }
+    },
+    {
+      "resource": "nodes",
+      "verb": "GET",
+      "latency": {
+        "Perc50": 993000,
+        "Perc90": 1285000,
+        "Perc99": 1448000
+      }
+    },
+    {
+      "resource": "replicationcontrollers",
+      "verb": "LIST",
+      "latency": {
+        "Perc50": 1140000,
+        "Perc90": 1369000,
+        "Perc99": 1369000
+      }
+    },
+    {
+      "resource": "namespaces",
+      "verb": "LIST",
+      "latency": {
+        "Perc50": 369000,
+        "Perc90": 625000,
+        "Perc99": 625000
+      }
+    },
+    {
+      "resource": "horizontalpodautoscalers",
+      "verb": "LIST",
+      "latency": {
+        "Perc50": 604000,
+        "Perc90": 604000,
+        "Perc99": 604000
+      }
+    },
+    {
+      "resource": "services",
+      "verb": "LIST",
+      "latency": {
+        "Perc50": 441000,
+        "Perc90": 465000,
+        "Perc99": 465000
+      }
+    },
+    {
+      "resource": "resourcequotas",
+      "verb": "LIST",
+      "latency": {
+        "Perc50": 277000,
+        "Perc90": 277000,
+        "Perc99": 277000
+      }
+    },
+    {
+      "resource": "daemonsets",
+      "verb": "LIST",
+      "latency": {
+        "Perc50": 258000,
+        "Perc90": 260000,
+        "Perc99": 260000
+      }
+    },
+    {
+      "resource": "jobs",
+      "verb": "LIST",
+      "latency": {
+        "Perc50": 226000,
+        "Perc90": 258000,
+        "Perc99": 258000
+      }
+    },
+    {
+      "resource": "deployments",
+      "verb": "LIST",
+      "latency": {
+        "Perc50": 144000,
+        "Perc90": 179000,
+        "Perc99": 179000
+      }
+    }
+  ]
+}
+
+Jan  8 14:47:57.691: INFO: Scheduling latency: {
+  "Scheduling": {
+    "Perc50": 581000,
+    "Perc90": 2182000,
+    "Perc99": 4597000
+  },
+  "binding": {
+    "Perc50": 7155000,
+    "Perc90": 15245000,
+    "Perc99": 42493000
+  },
+  "total": {
+    "Perc50": 8288000,
+    "Perc90": 16332000,
+    "Perc99": 43432000
+  }
+}
+
+[AfterEach] Density [Skipped]
+  /usr/local/google/home/gmarek/go/src/k8s.io/kubernetes/_output/local/go/src/k8s.io/kubernetes/test/e2e/framework.go:70
+Jan  8 14:47:57.692: INFO: Waiting up to 1m0s for all nodes to be ready
+STEP: Destroying namespace "e2e-tests-density-lusrj" for this suite.
+Jan  8 14:48:03.474: INFO: LogsSizeDataSummary JSON
+{
+  "104.154.36.5:22": {
+    "/var/log/kube-proxy.log": {
+      "AverageGenerationRate": 700,
+      "NumberOfProbes": 2
+    },
+    "/var/log/kubelet.log": {
+      "AverageGenerationRate": 24361,
+      "NumberOfProbes": 2
+    }
+  },
+  "104.197.128.82:22": {
+    "/var/log/kube-proxy.log": {
+      "AverageGenerationRate": 682,
+      "NumberOfProbes": 2
+    },
+    "/var/log/kubelet.log": {
+      "AverageGenerationRate": 22314,
+      "NumberOfProbes": 2
+    }
+  },
+  "104.197.56.13:22": {
+    "/var/log/kube-proxy.log": {
+      "AverageGenerationRate": 682,
+      "NumberOfProbes": 2
+    },
+    "/var/log/kubelet.log": {
+      "AverageGenerationRate": 21990,
+      "NumberOfProbes": 2
+    }
+  },
+  "23.236.62.166:22": {
+    "/var/log/kube-addons.log": {
+      "AverageGenerationRate": 0,
+      "NumberOfProbes": 2
+    },
+    "/var/log/kube-apiserver.log": {
+      "AverageGenerationRate": 6610,
+      "NumberOfProbes": 2
+    },
+    "/var/log/kube-controller-manager.log": {
+      "AverageGenerationRate": 13314,
+      "NumberOfProbes": 2
+    },
+    "/var/log/kube-master-addons.log": {
+      "AverageGenerationRate": 0,
+      "NumberOfProbes": 2
+    },
+    "/var/log/kube-scheduler.log": {
+      "AverageGenerationRate": 2646,
+      "NumberOfProbes": 2
+    },
+    "/var/log/kubelet.log": {
+      "AverageGenerationRate": 1789,
+      "NumberOfProbes": 2
+    }
+  }
+}
+Finished
+
+• [SLOW TEST:79.621 seconds]
+Density [Skipped]
+/usr/local/google/home/gmarek/go/src/k8s.io/kubernetes/_output/local/go/src/k8s.io/kubernetes/test/e2e/density.go:435
+  [Performance] should allow starting 30 pods per node
+  /usr/local/google/home/gmarek/go/src/k8s.io/kubernetes/_output/local/go/src/k8s.io/kubernetes/test/e2e/density.go:433
+------------------------------
+SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS
+Ran 1 of 213 Specs in 79.625 seconds
+SUCCESS! -- 1 Passed | 0 Failed | 0 Pending | 212 Skipped PASS

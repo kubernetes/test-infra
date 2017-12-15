@@ -1,0 +1,3 @@
+kubelet_working_dir: /var/lib/kubelet
+localBuildOutput: ../../_output/local/go/bin
+open_cadvisor_port: false

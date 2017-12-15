@@ -1,0 +1,33 @@
+{
+    "apiVersion": "v1",
+    "kind": "Pod",
+    "metadata": {
+        "namespace": "opencontrail",
+        "name": "ifmap-server"
+    },
+    "spec":{
+	"hostNetwork": true,
+	"containers":[{
+	    "name": "ifmap-server",
+	    "image": "opencontrail/ifmap-server:2.20",
+	    "ports": [{
+		"name": "ifmap",
+		"containerPort": 8443,
+		"hostPort": 8443
+	    }],
+	    "volumeMounts": [
+		{
+		    "name": "logs",
+		    "mountPath": "/var/log/contrail",
+		    "readOnly": false
+		}]
+	}],
+	"volumes": [
+	    {
+		"name": "logs",
+		"hostPath": {"path": "/var/log/ifmap-server"}
+	    }
+	]
+    }
+
+}

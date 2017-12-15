@@ -1,0 +1,8 @@
+[DEFAULT]
+hostip={{ hostvars[inventory_hostname]['ansible_' + opencontrail_interface]['ipv4']['address'] }}
+hostname={{ ansible_hostname }}
+
+[IFMAP]
+server_url=https://localhost:8443
+user=control-node
+password=control-node

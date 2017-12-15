@@ -1,0 +1,13 @@
+## 0.6
+- Update keepalived to 1.2.21
+
+## 0.5
+- Respect nodeSelector to build the list of peer nodes when --use-unicast is true 
+- Add support for UDP services
+
+## 0.4
+- Update keepalived to 1.2.20
+- Use iptables parameter to not respond on addresses that it does not own
+- Replace annotations with ConfigMap to specify services and IP addresses
+- Avoid unnecessary reloads if the configuration did not change
+- The parameter --password was removed because is not supported in vrrp v3

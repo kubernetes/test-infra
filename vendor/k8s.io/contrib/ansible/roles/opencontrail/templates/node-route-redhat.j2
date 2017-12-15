@@ -1,0 +1,1 @@
+{{ kube_service_addresses }} via {{ hostvars[groups['gateways'][0]]['ipaddr'] | ipaddr('address') }}

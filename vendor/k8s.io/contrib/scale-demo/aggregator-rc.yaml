@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: aggregator
+spec:
+  template:
+    metadata:
+      labels:
+        app: aggregator
+        track: alpha
+    spec:
+      containers:
+      - name: aggregator
+        image: gcr.io/google_containers/aggregator:2015-11-10-34b976a
+        command:
+        - /aggregator
+        - -selector=run=vegeta
+        - -use-ip=true
+        - -sleep=1s
+        - -address=0.0.0.0:8080
+        ports:
+        - containerPort: 8080
+        resources:
+          requests:
+            cpu: 500m
+      dnsPolicy: ClusterFirst

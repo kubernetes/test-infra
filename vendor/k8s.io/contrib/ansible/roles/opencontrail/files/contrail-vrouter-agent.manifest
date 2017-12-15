@@ -1,0 +1,51 @@
+{
+    "apiVersion": "v1",
+    "kind": "Pod",
+    "metadata": {
+        "namespace": "opencontrail",
+        "name":"contrail-vrouter-agent"
+    },
+    "spec":{
+	"hostNetwork": true,
+	"containers":[{
+	    "name": "contrail-vrouter-agent",
+	    "image": "opencontrail/vrouter-agent:2.20",
+	    "command": ["/usr/bin/contrail-vrouter-agent"],
+	    "securityContext": {
+	        "privileged": true
+	    },
+	    "ports": [{
+		"name": "vrouter-api",
+		"containerPort": 9090,
+		"hostPort": 9090
+	    }, {
+		"name": "ipc",
+		"containerPort": 9091,
+		"hostPort":9091 
+	    }, {
+		"name": "control-ui",
+		"containerPort": 8085,
+		"hostPort": 8085
+	    }],
+	    "volumeMounts": [
+		{
+		    "name": "config",
+		    "mountPath": "/etc/contrail"
+		},
+		{
+		    "name": "logs",
+		    "mountPath": "/var/log/contrail",
+		    "readOnly": false
+		}
+              ]
+	}],
+	"volumes": [{
+	    "name": "config",
+	    "hostPath": {"path": "/etc/contrail"}
+	},{
+	    "name": "logs",
+	    "hostPath": {"path": "/var/log/contrail"}
+	}
+       ]
+    }
+}

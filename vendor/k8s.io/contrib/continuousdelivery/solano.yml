@@ -1,0 +1,59 @@
+system:
+  docker: true
+
+environment:
+###!!! variable expansion is not available in solanoci so dynamic vars are handled as a special case by forcing evaluation in each build\test step !!!###
+  # a url that your ci system can hit to pull down your kube config file
+  KUBEURL: http://
+  KUBECHECKSUM: a1e27f4bfad4df1de8f9a4662223dac7
+  # contexts from your kubeconfig file that are used for deployment
+  KUBECONTEXTQA: aws_kubernetes
+  KUBECONTEXTPROD: aws_kubernetes2
+  # update this to the directory where your yaml\json files are for kubernetes relative to your project root directory
+  
+  KUBEDEPLOYMENTDIR: ./kubeyaml
+  BUILD: ${TDDIUM_TEST_EXEC_ID}
+  #BUILD is set to the following value in deploy-service.sh: ${TDDIUM_TEST_EXEC_ID}
+  # used for interpod and interservice communication
+  # Must be lowercase and <= 24 characters
+  
+  SERVICENAME: '$(git config user.email | awk -F@ ''{print substr($1,1,8)}'' | tr [A-Z] [a-z])-$(echo ${TDDIUM_REPO_ROOT} | awk -F/ ''{print "s" substr($NF,1,14)}'' | tr -d ''_-'' | tr [A-Z] [a-z])'
+  
+  # the docker repo
+  DOCKER_REGISTRY: docker-registry.yourcompany.com
+  
+  # the docker container defaulted to user/project  
+  CONTAINER1: '$(git config user.email | awk -F@ ''{print substr($1,1,8)}'' | tr [A-Z] [a-z])/$(echo ${TDDIUM_REPO_ROOT} | awk -F/ ''{print "s" substr($NF,1,14)}'' | tr -d ''_-'' | tr [A-Z] [a-z])'
+    
+timeout_hook: 900
+cache:
+  save_paths:
+    - "HOME/.kube"
+    
+hooks:
+  pre_setup: |
+    eval BUILD=${BUILD}
+    eval SERVICENAME=${SERVICENAME}
+    eval CONTAINER1=${CONTAINER1}
+    chmod +x ./deploy/ensure-kubectl.sh
+    ./deploy/ensure-kubectl.sh ${KUBEURL}
+    set +x
+    echo ${DOCKER_REGISTRY}/${CONTAINER1}
+    sudo docker build -t ${DOCKER_REGISTRY}/${CONTAINER1} .
+  pre: npm install
+  
+nodejs:
+  version: '0.10.31'
+  
+tests:
+  - |
+    set -e
+    eval BUILD=$BUILD
+    eval SERVICENAME=$SERVICENAME
+    eval CONTAINER1=$CONTAINER1
+    sudo docker run -p 3000 --label ${CONTAINER1} ${DOCKER_REGISTRY}/${CONTAINER1} bash -c "npm test"
+    sudo docker tag -f ${DOCKER_REGISTRY}/${CONTAINER1}:latest ${DOCKER_REGISTRY}/${CONTAINER1}:build${TDDIUM_TEST_EXEC_ID}
+    sudo docker push ${DOCKER_REGISTRY}/${CONTAINER1}:build${TDDIUM_TEST_EXEC_ID}
+    sudo docker push ${DOCKER_REGISTRY}/${CONTAINER1}:latest
+    chmod +x ./deploy/deploy-service.sh
+    ./deploy/deploy-service.sh ${KUBECONTEXTQA} ${KUBEDEPLOYMENTDIR}

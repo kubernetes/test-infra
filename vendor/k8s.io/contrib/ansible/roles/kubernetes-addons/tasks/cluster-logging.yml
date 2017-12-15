@@ -1,0 +1,17 @@
+---
+- name: LOGGING | Assures {{ kube_addons_dir }}/cluster-logging dir exists
+  file: path={{ kube_addons_dir }}/cluster-logging state=directory
+
+- name: LOGGING | Copy logging manifests to master
+  template:
+  args:
+    src: "cluster-logging/{{ item }}.j2"
+    dest: "{{ kube_addons_dir }}/cluster-logging/{{ item }}"
+    mode: 0644
+    owner: root
+    group: root
+  with_items:
+    - es-controller.yaml
+    - es-service.yaml
+    - kibana-controller.yaml
+    - kibana-service.yaml

@@ -1,0 +1,21 @@
+---
+- name: reload systemd
+  command: systemctl --system daemon-reload
+  notify:
+    - restart daemons
+  when: not (ansible_distribution == "Ubuntu" and ansible_distribution_major_version|int < 15)
+
+- name: restart daemons
+  command: /bin/true
+  notify:
+    - restart kubelet
+    - restart proxy
+
+- name: restart kubelet
+  service: name=kubelet state=restarted
+
+- name: restart proxy
+  service: name=kube-proxy state=restarted
+
+- name: restart iptables
+  service: name=iptables state=restarted

@@ -1,0 +1,15 @@
+---
+- name: KUBE-DASH | Assures {{ kube_addons_dir }}/kube-dash dir exists
+  file: path={{ kube_addons_dir }}/kube-dash state=directory
+
+- name: KUBE-DASH | Copy kube-dash manifests to master
+  template:
+  args:
+    src: "kube-dash/{{ item }}.j2"
+    dest: "{{ kube_addons_dir }}/kube-dash/{{ item }}"
+    mode: 0644
+    owner: root
+    group: root
+  with_items:
+    - kube-dash-rc.yaml
+    - kube-dash-svc.yaml

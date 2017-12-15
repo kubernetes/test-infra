@@ -1,9 +1,6 @@
 package gorm
 
-import (
-	"fmt"
-	"regexp"
-)
+import "fmt"
 
 type search struct {
 	db               *DB
@@ -16,15 +13,15 @@ type search struct {
 	assignAttrs      []interface{}
 	selects          map[string]interface{}
 	omits            []string
-	orders           []interface{}
+	orders           []string
 	preload          []searchPreload
-	offset           interface{}
-	limit            interface{}
+	offset           int
+	limit            int
 	group            string
 	tableName        string
 	raw              bool
 	Unscoped         bool
-	ignoreOrderQuery bool
+	countingQuery    bool
 }
 
 type searchPreload struct {
@@ -62,24 +59,20 @@ func (s *search) Assign(attrs ...interface{}) *search {
 	return s
 }
 
-func (s *search) Order(value interface{}, reorder ...bool) *search {
+func (s *search) Order(value string, reorder ...bool) *search {
 	if len(reorder) > 0 && reorder[0] {
-		s.orders = []interface{}{}
-	}
-
-	if value != nil {
+		if value != "" {
+			s.orders = []string{value}
+		} else {
+			s.orders = []string{}
+		}
+	} else if value != "" {
 		s.orders = append(s.orders, value)
 	}
 	return s
 }
 
-var distinctSQLRegexp = regexp.MustCompile(`(?i)distinct[^a-z]+[a-z]+`)
-
 func (s *search) Select(query interface{}, args ...interface{}) *search {
-	if distinctSQLRegexp.MatchString(fmt.Sprint(query)) {
-		s.ignoreOrderQuery = true
-	}
-
 	s.selects = map[string]interface{}{"query": query, "args": args}
 	return s
 }
@@ -89,12 +82,12 @@ func (s *search) Omit(columns ...string) *search {
 	return s
 }
 
-func (s *search) Limit(limit interface{}) *search {
+func (s *search) Limit(limit int) *search {
 	s.limit = limit
 	return s
 }
 
-func (s *search) Offset(offset interface{}) *search {
+func (s *search) Offset(offset int) *search {
 	s.offset = offset
 	return s
 }

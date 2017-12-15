@@ -1,0 +1,15 @@
+---
+- name: KUBE-UI | Assures {{ kube_addons_dir }}/kube-ui dir exists
+  file: path={{ kube_addons_dir }}/kube-ui state=directory
+
+- name: KUBE-UI | Copy kube-ui manifests to master
+  template:
+  args:
+    src: "kube-ui/{{ item }}.j2"
+    dest: "{{ kube_addons_dir }}/kube-ui/{{ item }}"
+    mode: 0644
+    owner: root
+    group: root
+  with_items:
+    - dashboard-controller.yaml
+    - dashboard-service.yaml

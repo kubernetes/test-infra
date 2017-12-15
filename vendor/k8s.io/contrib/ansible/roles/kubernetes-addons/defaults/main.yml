@@ -1,0 +1,13 @@
+kube_addons_dir: "{{ kube_config_dir }}/addons"
+
+local_temp_addon_dir: /tmp/kubernetes/addons
+
+metrics_memory_initial: 200
+metrics_memory_per_node: 4
+metrics_memory: "{{ metrics_memory_initial + (metrics_memory_per_node * (groups['nodes'] | count)) }}Mi"
+
+eventer_memory_initial: 200
+eventer_memory_per_node: 500
+eventer_memory: "{{ eventer_memory_initial + (eventer_memory_per_node * (groups['nodes'] | count) / 1024) | round | int }}Mi"
+
+grains: ""

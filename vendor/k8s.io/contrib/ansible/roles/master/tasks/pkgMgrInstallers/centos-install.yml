@@ -1,0 +1,14 @@
+---
+- name: CentOS | Install kubernetes master
+  yum:
+    pkg=kubernetes-master
+    state=latest
+  notify:
+    - restart daemons
+- name: CentOS | Install kubernetes node
+  yum:
+    pkg=kubernetes-node
+    state=latest
+  notify:
+    - restart daemons
+  when: networking == 'opencontrail'

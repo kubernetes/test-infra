@@ -1,0 +1,61 @@
+---
+- name: Determine if Atomic
+  stat: path=/run/ostree-booted
+  register: os_tree_check
+  changed_when: false
+  always_run: yes
+
+- name: Set the is_atomic fact
+  set_fact:
+    is_atomic: true
+  when: os_tree_check.stat.exists
+
+- name: Determine if CoreOS
+  raw: "grep '^NAME=' /etc/os-release | sed s'/NAME=//'"
+  register: distro
+  always_run: yes
+
+- name: Set the is_coreos fact
+  set_fact:
+    is_coreos: true
+  when: "'CoreOS' in distro.stdout"
+
+- name: Set the bin directory path for CoreOS
+  set_fact:
+    bin_dir: "/opt/bin"
+  when: is_coreos
+
+- name: Create the directory used to store binaries
+  file: path={{ bin_dir }} state=directory
+
+- name: Create Ansible temp directory
+  file: path={{ ansible_temp_dir }} state=directory
+
+- name: Determine if has rpm
+  stat: path=/usr/bin/rpm
+  register: rpm_check
+  changed_when: false
+  always_run: yes
+
+- name: Set the has_rpm fact
+  set_fact:
+    has_rpm: true
+  when: rpm_check.stat.exists
+
+# collect information about what packages are installed
+- include: rpm.yml
+  when: has_rpm
+
+- include: fedora-install.yml
+  when: not is_atomic and ansible_distribution == "Fedora"
+
+# enable cpu and memory accounting for systemd services by default
+- name: Create systemd dropin directory
+  file: path=/etc/systemd/system/system.conf.d state=directory mode=0755
+  when: source_type == "localBuild"
+
+- name: Enable cpu and memory accounting for systemd services
+  copy: src=kubernetes-accounting.conf dest="/etc/systemd/system/system.conf.d/kubernetes-accounting.conf"
+  when: source_type == "localBuild"
+  notify:
+    - reload systemd

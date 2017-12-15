@@ -1,0 +1,49 @@
+<html lang="en" ng-app="PerfDashApp">
+  <head>
+    <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/angular_material/0.9.4/angular-material.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=RobotoDraft:300,400,500,700,400italic">
+    <meta name="viewport" content="initial-scale=1" />
+  </head>
+  <body>
+    <div layout="column" style="margin-top: 20px; width: 80%" offset="10" ng-controller="AppCtrl">
+      <md-toolbar layout="row" layout-align="space-around center">
+        <h1 class="md-display-2">Performance Dashboard</h1>
+        <!-- TODO: Need a better logo here -->
+        <a href="https://k8s.io"><img src="https://raw.githubusercontent.com/kubernetes/kubernetes.github.io/master/images/favicon.png" style="width:84; height: 84" /></a>
+      </md-toolbar>
+      <div id="content" class="md-whiteframe-z2" style="padding: 20px">
+        <div style="width: 200px; display: inline-block;">
+          <md-input-container>
+            <md-select placeholder="TestName" ng-model="controller.testName"  ng-change="controller.testNameChanged()">
+              <md-option ng-value="testName" ng-repeat="testName in controller.testNames">
+                {{testName}}
+              </md-option>
+            </md-select>
+          </md-input-container>
+        </div>
+        <div ng-repeat="(name, items) in controller.labels" ng-model="controller.testName" ng-change="controller.labelChanged()" style="width: 200px; display: inline-block;">
+          <md-input-container>
+            <md-select placeholder="name" ng-model="controller.selectedLabels[name]"  ng-change="controller.labelChanged()">
+              <md-option ng-value="item" ng-repeat="item in items">
+                {{item}}
+              </md-option>
+            </md-select>
+          </md-input-container>
+        </div>
+        <canvas id="line" class="chart chart-line" chart-data="controller.seriesData"
+                chart-labels="controller.builds" chart-options="controller.options"
+                chart-series="controller.series" chart-click="controller.onClick">
+        </canvas>
+      </div>
+      <!-- Angular Material Dependencies -->
+      <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.15/angular.min.js"></script>
+      <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.15/angular-animate.min.js"></script>
+      <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.15/angular-aria.min.js"></script>
+
+      <script src="https://ajax.googleapis.com/ajax/libs/angular_material/0.9.4/angular-material.min.js"></script>
+      <script src="Chart.js"></script>
+      <script src="angular-chart.js"></script>
+      <script src="script.js"></script>
+    </div>
+  </body>
+</html>

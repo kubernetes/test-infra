@@ -1,0 +1,26 @@
+---
+- name: Get iptables rules
+  command: iptables -L --wait
+  register: iptablesrules
+  always_run: yes
+
+- name: Enable iptables at boot
+  service: name=iptables enabled=yes state=started
+
+- name: Open etcd client port with iptables
+  command: /sbin/iptables -I INPUT 1 -p tcp --dport {{ item }} -j ACCEPT -m comment --comment "etcd"
+  when: "'etcd' not in iptablesrules.stdout"
+  notify:
+    - Save iptables rules
+  with_items:
+    - "{{ etcd_client_port }}"
+    - "{{ etcd_peer_port }}"
+
+- name: Open etcd client legacy port with iptables
+  command: /sbin/iptables -I INPUT 1 -p tcp --dport {{ item }} -j ACCEPT -m comment --comment "etcd-legacy"
+  when: "'etcd-legacy' not in iptablesrules.stdout and networking == 'contiv'"
+  notify:
+    - Save iptables rules
+  with_items:
+    - "{{ etcd_client_legacy_port }}"
+    - "{{ etcd_peer_legacy_port }}"

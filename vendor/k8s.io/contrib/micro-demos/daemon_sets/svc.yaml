@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: demos
+  name: daemon-demo
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 9376
+  selector:
+    demo: daemons

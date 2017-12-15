@@ -1,7 +1,10 @@
+// Package client implements a now-deprecated client for InfluxDB;
+// use github.com/influxdata/influxdb/client/v2 instead.
 package client // import "github.com/influxdata/influxdb/client"
 
 import (
 	"bytes"
+	"context"
 	"crypto/tls"
 	"encoding/json"
 	"errors"
@@ -144,7 +147,7 @@ func NewClient(c Config) (*Client, error) {
 		// No need for compression in local communications.
 		tr.DisableCompression = true
 
-		tr.Dial = func(_, _ string) (net.Conn, error) {
+		tr.DialContext = func(_ context.Context, _, _ string) (net.Conn, error) {
 			return net.Dial("unix", c.UnixSocket)
 		}
 	}
@@ -177,6 +180,12 @@ func (c *Client) SetPrecision(precision string) {
 
 // Query sends a command to the server and returns the Response
 func (c *Client) Query(q Query) (*Response, error) {
+	return c.QueryContext(context.Background(), q)
+}
+
+// QueryContext sends a command to the server and returns the Response
+// It uses a context that can be cancelled by the command line client
+func (c *Client) QueryContext(ctx context.Context, q Query) (*Response, error) {
 	u := c.url
 
 	u.Path = "query"
@@ -202,6 +211,8 @@ func (c *Client) Query(q Query) (*Response, error) {
 	if c.username != "" {
 		req.SetBasicAuth(c.username, c.password)
 	}
+
+	req = req.WithContext(ctx)
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
@@ -774,7 +785,7 @@ func (c *Client) Addr() string {
 func checkPointTypes(p Point) error {
 	for _, v := range p.Fields {
 		switch v.(type) {
-		case int, int8, int16, int32, int64, uint, uint8, uint16, uint32, float32, float64, bool, string, nil:
+		case int, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64, float32, float64, bool, string, nil:
 			return nil
 		default:
 			return fmt.Errorf("unsupported point type: %T", v)

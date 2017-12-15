@@ -1,0 +1,12 @@
+[Service]
+# Note: ExecStart= is required to clear the ExecStart in the unit file
+ExecStart=
+ExecStart={{ bin_dir }}/kubelet \
+	    $KUBE_LOGTOSTDERR \
+	    $KUBE_LOG_LEVEL \
+	    $KUBELET_API_SERVER \
+	    $KUBELET_ADDRESS \
+	    $KUBELET_PORT \
+	    $KUBELET_HOSTNAME \
+	    $KUBE_ALLOW_PRIV \
+	    $KUBELET_ARGS

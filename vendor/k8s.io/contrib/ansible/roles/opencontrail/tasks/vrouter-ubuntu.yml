@@ -1,0 +1,14 @@
+---
+- name: Interface configuration file (physical)
+  template: src=interface.cfg.j2 dest=/etc/network/interfaces.d/{{ opencontrail_interface }}.cfg
+  notify:
+    - Bounce physical interface
+
+- name: Interface configuration file (vhost0)
+  template: src=vhost0.cfg.j2 dest=/etc/network/interfaces.d/vhost0.cfg
+  notify:
+    - Bounce vhost0 interface
+
+- name: Enable vhost0 interface
+  command: ifup vhost0
+

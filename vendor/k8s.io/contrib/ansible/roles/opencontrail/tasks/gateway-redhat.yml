@@ -1,0 +1,19 @@
+---
+
+- name: Interface configuration file
+  template: src=ifcfg-gateway.j2 dest=/etc/sysconfig/network-scripts/ifcfg-{{ item }}
+  with_items:
+    - gateway0
+    - gateway1
+
+- name: Static routes
+  template: src=route-{{ item }}.j2 dest=/etc/sysconfig/network-scripts/route-{{ item }}
+  with_items:
+    - gateway0
+    - gateway1
+
+- name: Activate gateway0
+  command: ifup gateway0
+
+- name: Activate gateway1
+  command: ifup gateway1

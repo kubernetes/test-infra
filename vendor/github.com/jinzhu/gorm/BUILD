@@ -9,7 +9,6 @@ go_library(
         "callback_delete.go",
         "callback_query.go",
         "callback_query_preload.go",
-        "callback_row_query.go",
         "callback_save.go",
         "callback_update.go",
         "dialect.go",
@@ -45,7 +44,9 @@ filegroup(
     name = "all-srcs",
     srcs = [
         ":package-srcs",
+        "//vendor/github.com/jinzhu/gorm/dialects/mssql:all-srcs",
         "//vendor/github.com/jinzhu/gorm/dialects/mysql:all-srcs",
+        "//vendor/github.com/jinzhu/gorm/dialects/postgres:all-srcs",
         "//vendor/github.com/jinzhu/gorm/dialects/sqlite:all-srcs",
     ],
     tags = ["automanaged"],

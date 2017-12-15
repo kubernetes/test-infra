@@ -1,0 +1,7 @@
+---
+- name: CentOS | Install kubernetes node
+  yum:
+    pkg=kubernetes-node
+    state=latest
+  notify:
+    - restart daemons

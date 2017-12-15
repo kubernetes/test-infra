@@ -1,19 +1,13 @@
 httpcache
 =========
 
-[![Build Status](https://travis-ci.org/gregjones/httpcache.svg?branch=master)](https://travis-ci.org/gregjones/httpcache)
-
-A Transport for Go's http.Client that will cache responses according to the HTTP RFC
+[![Build Status](https://travis-ci.org/gregjones/httpcache.svg?branch=master)](https://travis-ci.org/gregjones/httpcache) [![GoDoc](https://godoc.org/github.com/gregjones/httpcache?status.svg)](https://godoc.org/github.com/gregjones/httpcache)
 
 Package httpcache provides a http.RoundTripper implementation that works as a mostly RFC-compliant cache for http responses.
 
 It is only suitable for use as a 'private' cache (i.e. for a web-browser or an API-client and not for a shared proxy).
 
-**Documentation:** http://godoc.org/github.com/gregjones/httpcache
-
-**License:** MIT (see LICENSE.txt)
-
-Cache backends
+Cache Backends
 --------------
 
 - The built-in 'memory' cache stores responses in an in-memory map.
@@ -23,3 +17,9 @@ Cache backends
 - [`github.com/gregjones/httpcache/leveldbcache`](https://github.com/gregjones/httpcache/tree/master/leveldbcache) provides a filesystem-backed cache using [leveldb](https://github.com/syndtr/goleveldb/leveldb).
 - [`github.com/die-net/lrucache`](https://github.com/die-net/lrucache) provides an in-memory cache that will evict least-recently used entries.
 - [`github.com/die-net/lrucache/twotier`](https://github.com/die-net/lrucache/tree/master/twotier) allows caches to be combined, for example to use lrucache above with a persistent disk-cache.
+- [`github.com/birkelund/boltdbcache`](https://github.com/birkelund/boltdbcache) provides a BoltDB implementation (based on the [bbolt](https://github.com/coreos/bbolt) fork).
+
+License
+-------
+
+-	[MIT License](LICENSE.txt)

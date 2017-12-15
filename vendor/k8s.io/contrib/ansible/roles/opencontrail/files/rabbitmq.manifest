@@ -1,0 +1,35 @@
+{
+    "apiVersion": "v1",
+    "kind": "Pod",
+    "metadata": {
+        "namespace": "opencontrail",
+        "name": "rabbitmq"
+    },
+    "spec":{
+	"hostNetwork": true,
+	"containers":[{
+	    "name": "rabbitmq",
+	    "image": "rabbitmq:3.5.4",
+	    "ports": [{
+		"name": "rabbitmq",
+		"containerPort": 5672,
+		"hostPort": 5672
+	    }],
+	    "env": [{
+		"name": "RABBITMQ_NODENAME",
+		"value": "localhost"
+	    }],
+	    "volumeMounts": [{
+		"name": "logs",
+		"mountPath": "/var/log/rabbitmq"
+	    }]
+	}],
+	"volumes": [
+	    {
+		"name": "logs",
+		"hostPath": {"path": "/var/log/rabbitmq"}
+	    }
+	]
+    }
+
+}

@@ -1,0 +1,3 @@
+local.deployment.yaml
+local.secret.yaml
+local.service.yaml

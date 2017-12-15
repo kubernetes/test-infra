@@ -1,0 +1,17 @@
+{
+	"ImportPath": "k8s.io/contrib/podex",
+	"GoVersion": "go1.5",
+	"Packages": [
+		"./..."
+	],
+	"Deps": [
+		{
+			"ImportPath": "github.com/ghodss/yaml",
+			"Rev": "73d445a93680fa1a78ae23a5839bad48f32ba1ee"
+		},
+		{
+			"ImportPath": "gopkg.in/yaml.v2",
+			"Rev": "d466437aa4adc35830964cffc5b5f262c63ddcb4"
+		}
+	]
+}

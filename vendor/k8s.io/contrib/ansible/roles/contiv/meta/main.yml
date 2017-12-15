@@ -1,0 +1,4 @@
+---
+dependencies:
+    - { role: etcd }
+    - { role: kubernetes }

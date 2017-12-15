@@ -23,8 +23,8 @@ func (postgres) BindVar(i int) string {
 	return fmt.Sprintf("$%v", i)
 }
 
-func (s *postgres) DataTypeOf(field *StructField) string {
-	var dataValue, sqlType, size, additionalType = ParseFieldStructForDialect(field, s)
+func (postgres) DataTypeOf(field *StructField) string {
+	var dataValue, sqlType, size, additionalType = ParseFieldStructForDialect(field)
 
 	if sqlType == "" {
 		switch dataValue.Kind() {
@@ -32,14 +32,12 @@ func (s *postgres) DataTypeOf(field *StructField) string {
 			sqlType = "boolean"
 		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uintptr:
 			if _, ok := field.TagSettings["AUTO_INCREMENT"]; ok || field.IsPrimaryKey {
-				field.TagSettings["AUTO_INCREMENT"] = "AUTO_INCREMENT"
 				sqlType = "serial"
 			} else {
 				sqlType = "integer"
 			}
 		case reflect.Int64, reflect.Uint64:
 			if _, ok := field.TagSettings["AUTO_INCREMENT"]; ok || field.IsPrimaryKey {
-				field.TagSettings["AUTO_INCREMENT"] = "AUTO_INCREMENT"
 				sqlType = "bigserial"
 			} else {
 				sqlType = "bigint"
@@ -91,7 +89,7 @@ func (s postgres) HasIndex(tableName string, indexName string) bool {
 
 func (s postgres) HasForeignKey(tableName string, foreignKeyName string) bool {
 	var count int
-	s.db.QueryRow("SELECT count(con.conname) FROM pg_constraint con WHERE $1::regclass::oid = con.conrelid AND con.conname = $2 AND con.contype='f'", tableName, foreignKeyName).Scan(&count)
+	s.db.QueryRow("SELECT count(con.conname) FROM pg_constraint con WHERE $1::regclass::oid = con.conrelid AND con.conname = $2 AND con.contype='f'", s.currentDatabase(), foreignKeyName).Scan(&count)
 	return count > 0
 }
 
@@ -107,7 +105,7 @@ func (s postgres) HasColumn(tableName string, columnName string) bool {
 	return count > 0
 }
 
-func (s postgres) CurrentDatabase() (name string) {
+func (s postgres) currentDatabase() (name string) {
 	s.db.QueryRow("SELECT CURRENT_DATABASE()").Scan(&name)
 	return
 }

@@ -1,0 +1,57 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ${SERVICENAME}
+spec:
+  ports:
+    -
+      port: 80 # internal port for communication between internal pods and services using the service name
+      targetPort: 3000 # port on the POD
+      #you can specify a nodePort if you know one does not exist already
+      #nodePort: 31046 # port for ELB to load balance. since this gets created on each kubernetes minion node it must be unique cluster wide
+      #to obtain the nodePort on an existing service run "kubectl describe svc SERVICE --namespace=dev|qa|prod"
+  selector:
+    service: ${SERVICENAME}
+  type: ClusterIP
+---
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  # rc name matches service name for simplicity of rolling updates
+  name: ${SERVICENAME}
+spec:
+  replicas: 2
+  selector:
+    service: ${SERVICENAME}
+    build: build${BUILD}
+  template:
+    metadata:
+      name: mytemplate-${SERVICENAME}
+      labels:
+        service: ${SERVICENAME} #must match the selector of the rc, used for linking pods to services
+        build: build${BUILD}
+    spec:
+      containers: #many containers can be specified here that will be scheduled together onto the same host
+      - name: my-container #first container
+        image: ${DOCKER_REGISTRY}/${CONTAINER1}:build${BUILD} #container image location
+        ports:
+        - containerPort: 3000 #port running inside and outside the container on the pod IP address
+        #  hostPort: 3000 #not recommended\required but shown here, can be used to expose the container port directly on the kubernetes node
+        env: #environment variables provided to the container, there are also default ones created for each container that can be leveraged cluster wide.
+          - name: "DB_SERVER"
+            value: "mysql-service" #this can be a service endpoint that will be static, external value stored in a registry this is not required for this service and is only an example
+            #kubernetes adds a cluster wide dns entry for any service created when using the skydns plugin
+        livenessProbe: #health check configuration, will kill the container when this fails
+          httpGet: #http shown here, you can also detail out a command\script to execute inside the container that expects a 200 status code.
+            path: /
+            port: 3000
+          initialDelaySeconds: 120
+          timeoutSeconds: 1
+        readinessProbe: #health check configuration, will take the pod out of rotation when this fails
+          httpGet: #http shown here, you can also detail out a command\script to execute inside the container that expects a 200 status code.
+            path: /
+            port: 3000
+          initialDelaySeconds: 5
+          timeoutSeconds: 1
+#        command: # command to execute inside the container on creation
+#        - "npm start"

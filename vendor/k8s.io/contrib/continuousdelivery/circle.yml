@@ -1,0 +1,71 @@
+## Customize the test machine
+machine:
+#  services: uncomment if using circleci.com
+#    - docker #uncomment if using circleci.com or the container docker daemon
+  # Add some environment variables
+  environment:
+    # a url that your ci system can hit to pull down your kube config file
+    KUBEURL: http://
+    # checksum for the kubeconfig file
+    KUBECHECKSUM: a1e27f4bfad4df1de8f9a4662223dac7
+    # contexts from your kubeconfig file that are used for deployment
+    KUBECONTEXTQA: aws_kubernetes
+    KUBECONTEXTPROD: aws_kubernetes2
+    # update this to the directory where your yaml\json files are for kubernetes relative to your project root directory
+    KUBEDEPLOYMENTDIR: ./kubeyaml 
+    BUILD: ${CIRCLE_BUILD_NUM}
+    # used for interpod and interservice communication
+    # Must be lowercase and <= 24 characters
+    # defaulted to user-repo for circleci
+    SERVICENAME: $(tr [A-Z] [a-z] <<< ${CIRCLE_PROJECT_USERNAME:0:8})-$(tr [A-Z] [a-z] <<< ${CIRCLE_PROJECT_REPONAME:0:15} | tr -d '_-')
+    # This uses the docker socket on the host instead of inside the container for caching\performance reasons
+    DOCKER_HOST: unix:///tmp/docker.sock # comment this out if using circleci.com or the container docker daemon
+    # the docker repo
+    DOCKER_REGISTRY: docker-registry.yourcompany.com
+    # the docker container defaulted to user/project
+    CONTAINER1: $(tr [A-Z] [a-z] <<< ${CIRCLE_PROJECT_USERNAME:0:8})/$(tr [A-Z] [a-z] <<< ${CIRCLE_PROJECT_REPONAME:0:15}| tr -d '_-')
+    #https_proxy: https://xxx.xxx.xxx.xxx:8080/ #uncomment if you need to use a proxy to access the kubernetes api
+
+# Customize checkout
+# checkout:
+#  post:
+#    - git submodule sync
+#    - git submodule update --init # use submodules
+
+## Customize dependencies
+dependencies:
+  cache_directories:
+    - "~/.kube"
+  override:
+    - docker login -u ${dockeruser} -p ${dockerpass} -e user@domain.com ${DOCKER_REGISTRY}
+    # install any missing required binaries/config
+    - chmod +x ./deploy/ensure-kubectl.sh && ./deploy/ensure-kubectl.sh ${KUBEURL}
+    - docker build -t ${DOCKER_REGISTRY}/${CONTAINER1} .
+    - docker tag -f ${DOCKER_REGISTRY}/${CONTAINER1}:latest ${DOCKER_REGISTRY}/${CONTAINER1}:build${BUILD}
+
+test:
+  override:
+    # run the container and add a label
+    # do not specify a local port since the docker daemon is shared
+    - docker run -p 3000 -d --label ${CONTAINER1} ${DOCKER_REGISTRY}/${CONTAINER1}:latest
+    # show how to execute a command in your container
+    # run any commands to test inside\outside of the container here
+    - npm test
+    # stop the container
+    - docker stop $(docker ps -a -q --filter "label=${CONTAINER1}")
+    # cleanup any stopped containers
+    - docker rm $(docker ps -a -q) || /bin/true
+
+deployment:
+  qa:
+    branch: master
+    commands:
+       - docker push ${DOCKER_REGISTRY}/${CONTAINER1}:build${BUILD}
+       - docker push ${DOCKER_REGISTRY}/${CONTAINER1}:latest
+       - chmod +x ./deploy/deploy-service.sh && ./deploy/deploy-service.sh ${KUBECONTEXTQA} ${KUBEDEPLOYMENTDIR}
+       #put integration tests here
+       - echo "put integration tests here"
+       - ./deploy/deploy-service.sh ${KUBECONTEXTPROD} ${KUBEDEPLOYMENTDIR} rolling
+       #put deployment verification tests here
+       - echo "put deployment verification tests here"
+

@@ -1,0 +1,44 @@
+{
+    "apiVersion": "v1",
+    "kind": "Pod",
+    "metadata": {
+        "namespace": "opencontrail",
+        "name": "zookeeper"
+    },
+    "spec":{
+	"hostNetwork": true,
+	"containers":[{
+	    "name": "zookeeper",
+	    "image": "mesoscloud/zookeeper:3.4.6",
+	    "ports": [{
+		"name": "zookeeper",
+		"containerPort": 2181,
+		"hostPort": 2181
+	    }],
+	    "env": [{
+		"name": "MYID",
+		"value": "1"
+	    }, {
+		"name": "SERVERS",
+		"value": "localhost"
+	    }],
+	    "volumeMounts": [{
+		"name": "logs",
+		"mountPath": "/var/log/zookeeper",
+		"readOnly": false
+	    }, {
+		"name": "data",
+		"mountPath": "/var/lib/zookeeper",
+		"readOnly": false
+	    }]
+	}],
+	"volumes": [{
+		"name": "logs",
+		"hostPath": {"path": "/var/log/zookeeper"}
+	}, {
+		"name": "data",
+		"hostPath": {"path": "/var/lib/zookeeper"}
+	}]
+    }
+
+}
