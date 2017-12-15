@@ -150,8 +150,10 @@ func NewClient(url string, authConfig *AuthConfig, logger *logrus.Entry, metrics
 		logger:     logger.WithField("client", "jenkins"),
 		baseURL:    url,
 		authConfig: authConfig,
-		client:     &http.Client{},
-		metrics:    metrics,
+		client: &http.Client{
+			Timeout: 30 * time.Second,
+		},
+		metrics: metrics,
 	}
 }
 
