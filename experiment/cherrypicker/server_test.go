@@ -150,6 +150,7 @@ func TestCherryPickIC(t *testing.T) {
 				Ref: "master",
 			},
 			Merged: true,
+			Title:  "This is a fix for X",
 		},
 		isMember:   true,
 		createdNum: 3,
@@ -179,7 +180,7 @@ func TestCherryPickIC(t *testing.T) {
 
 	botName := "ci-robot"
 	expectedRepo := "foo/bar"
-	expectedTitle := "Automated cherry-pick of #2 on stage"
+	expectedTitle := "[stage] This is a fix for X"
 	expectedBody := "This is an automated cherry-pick of #2\n\n/assign wiseguy"
 	expectedBase := "stage"
 	expectedHead := fmt.Sprintf(botName+":"+cherryPickBranchFmt, 2, expectedBase)
@@ -266,12 +267,13 @@ func TestCherryPickPR(t *testing.T) {
 			Number:   2,
 			Merged:   true,
 			MergeSHA: new(string),
+			Title:    "This is a fix for Y",
 		},
 	}
 
 	botName := "ci-robot"
 	expectedRepo := "foo/bar"
-	expectedTitle := "Automated cherry-pick of #2 on release-1.5"
+	expectedTitle := "[release-1.5] This is a fix for Y"
 	expectedBody := "This is an automated cherry-pick of #2\n\n/assign approver"
 	expectedBase := "release-1.5"
 	expectedHead := fmt.Sprintf(botName+":"+cherryPickBranchFmt, 2, expectedBase)
