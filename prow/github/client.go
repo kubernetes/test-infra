@@ -64,8 +64,9 @@ type Client struct {
 	fake     bool
 	throttle throttler
 
-	mut     sync.Mutex // protects botName
+	mut     sync.Mutex // protects botName and email
 	botName string
+	email   string
 }
 
 const (
@@ -377,22 +378,45 @@ func (c *Client) doRequest(method, path, accept string, body interface{}) (*http
 	return c.client.Do(req)
 }
 
+// Not thread-safe - callers need to hold c.mut.
+func (c *Client) getUserData() error {
+	var u User
+	_, err := c.request(&request{
+		method:    http.MethodGet,
+		path:      fmt.Sprintf("%s/user", c.base),
+		exitCodes: []int{200},
+	}, &u)
+	if err != nil {
+		return err
+	}
+	c.botName = u.Login
+	// email needs to be publicly accessible via the profile
+	// of the current account. Read below for more info
+	// https://developer.github.com/v3/users/#get-a-single-user
+	c.email = u.Email
+	return nil
+}
+
 func (c *Client) BotName() (string, error) {
 	c.mut.Lock()
 	defer c.mut.Unlock()
 	if c.botName == "" {
-		var u User
-		_, err := c.request(&request{
-			method:    http.MethodGet,
-			path:      fmt.Sprintf("%s/user", c.base),
-			exitCodes: []int{200},
-		}, &u)
-		if err != nil {
+		if err := c.getUserData(); err != nil {
 			return "", fmt.Errorf("fetching bot name from GitHub: %v", err)
 		}
-		c.botName = u.Login
 	}
 	return c.botName, nil
+}
+
+func (c *Client) Email() (string, error) {
+	c.mut.Lock()
+	defer c.mut.Unlock()
+	if c.email == "" {
+		if err := c.getUserData(); err != nil {
+			return "", fmt.Errorf("fetching e-mail from GitHub: %v", err)
+		}
+	}
+	return c.email, nil
 }
 
 // IsMember returns whether or not the user is a member of the org.
