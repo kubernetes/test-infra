@@ -360,6 +360,9 @@ func (c *Configuration) setDefaults() {
 		c.Blunderbuss.ReviewerCount = defaultBlunderbussReviewerCount
 	}
 	for i, trigger := range c.Triggers {
+		if trigger.TrustedOrg == "" || trigger.JoinOrgURL != "" {
+			continue
+		}
 		c.Triggers[i].JoinOrgURL = fmt.Sprintf("https://github.com/orgs/%s/people", trigger.TrustedOrg)
 	}
 }

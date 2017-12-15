@@ -47,7 +47,7 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 		if len(parts) != 2 {
 			return nil, fmt.Errorf("invalid repo in enabledRepos: %q", repo)
 		}
-		trusted := trustedOrgForRepo(config, parts[0], parts[1])
+		trusted, _ := trustedOrgForRepo(config, parts[0], parts[1])
 		configInfo[repo] = fmt.Sprintf("The trusted Github organization for this repository is %q.", trusted)
 	}
 	return &pluginhelp.PluginHelp{
@@ -98,13 +98,12 @@ func getClient(pc plugins.PluginClient) client {
 }
 
 func handlePullRequest(pc plugins.PluginClient, pr github.PullRequestEvent) error {
-	trustedOrg := trustedOrgForRepo(pc.PluginConfig, pr.Repo.Owner.Login, pr.Repo.Name)
-	joinOrgURL := pc.PluginConfig.TriggerFor(pr.Repo.Owner.Login, pr.Repo.Name).JoinOrgURL
+	trustedOrg, joinOrgURL := trustedOrgForRepo(pc.PluginConfig, pr.Repo.Owner.Login, pr.Repo.Name)
 	return handlePR(getClient(pc), trustedOrg, joinOrgURL, pr)
 }
 
 func handleIssueComment(pc plugins.PluginClient, ic github.IssueCommentEvent) error {
-	trustedOrg := trustedOrgForRepo(pc.PluginConfig, ic.Repo.Owner.Login, ic.Repo.Name)
+	trustedOrg, _ := trustedOrgForRepo(pc.PluginConfig, ic.Repo.Owner.Login, ic.Repo.Name)
 	return handleIC(getClient(pc), trustedOrg, ic)
 }
 
@@ -112,11 +111,13 @@ func handlePush(pc plugins.PluginClient, pe github.PushEvent) error {
 	return handlePE(getClient(pc), pe)
 }
 
-func trustedOrgForRepo(config *plugins.Configuration, org, repo string) string {
+// trustedOrgForRepo returns the configured trusted organization and a URL for it
+// for the provided org and repo combination.
+func trustedOrgForRepo(config *plugins.Configuration, org, repo string) (string, string) {
 	if trigger := config.TriggerFor(org, repo); trigger != nil && trigger.TrustedOrg != "" {
-		return trigger.TrustedOrg
+		return trigger.TrustedOrg, trigger.JoinOrgURL
 	}
-	return org
+	return org, fmt.Sprintf("https://github.com/orgs/%s/people", org)
 }
 
 func isUserTrusted(ghc githubClient, user, trustedOrg, org string) (bool, error) {
