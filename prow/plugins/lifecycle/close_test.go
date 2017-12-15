@@ -29,6 +29,7 @@ type fakeClientClose struct {
 	commented      bool
 	closed         bool
 	AssigneesAdded []string
+	labels         []string
 }
 
 func (c *fakeClientClose) CreateComment(owner, repo string, number int, comment string) error {
@@ -61,6 +62,17 @@ func (c *fakeClientClose) AssignIssue(owner, repo string, number int, assignees 
 	return nil
 }
 
+func (c *fakeClientClose) GetIssueLabels(owner, repo string, number int) ([]github.Label, error) {
+	var labels []github.Label
+	for _, l := range c.labels {
+		if l == "error" {
+			return nil, errors.New("issue label 500")
+		}
+		labels = append(labels, github.Label{Name: l})
+	}
+	return labels, nil
+}
+
 func TestCloseComment(t *testing.T) {
 	// "a" is the author, "r1", and "r2" are reviewers.
 	var testcases = []struct {
@@ -69,6 +81,7 @@ func TestCloseComment(t *testing.T) {
 		state         string
 		body          string
 		commenter     string
+		labels        []string
 		shouldClose   bool
 		shouldComment bool
 		shouldAssign  bool
@@ -157,9 +170,41 @@ func TestCloseComment(t *testing.T) {
 			shouldComment: false,
 			shouldAssign:  true,
 		},
+		{
+			name:          "close by other person, stale issue",
+			action:        github.GenericCommentActionCreated,
+			state:         "open",
+			body:          "/close",
+			commenter:     "non-member",
+			labels:        []string{"lifecycle/stale"},
+			shouldClose:   true,
+			shouldComment: false,
+			shouldAssign:  false,
+		},
+		{
+			name:          "close by other person, rotten issue",
+			action:        github.GenericCommentActionCreated,
+			state:         "open",
+			body:          "/close",
+			commenter:     "non-member",
+			labels:        []string{"lifecycle/rotten"},
+			shouldClose:   true,
+			shouldComment: false,
+			shouldAssign:  false,
+		},
+		{
+			name:          "cannot close stale issue by other person when list issue fails",
+			action:        github.GenericCommentActionCreated,
+			state:         "open",
+			body:          "/close",
+			commenter:     "non-member",
+			labels:        []string{"error"},
+			shouldClose:   false,
+			shouldComment: true,
+		},
 	}
 	for _, tc := range testcases {
-		fc := &fakeClientClose{}
+		fc := &fakeClientClose{labels: tc.labels}
 		e := &github.GenericCommentEvent{
 			Action:      tc.action,
 			IssueState:  tc.state,

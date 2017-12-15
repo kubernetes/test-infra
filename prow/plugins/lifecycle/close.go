@@ -49,10 +49,24 @@ type closeClient interface {
 	ClosePR(owner, repo string, number int) error
 	IsMember(owner, login string) (bool, error)
 	AssignIssue(owner, repo string, number int, assignees []string) error
+	GetIssueLabels(owner, repo string, number int) ([]github.Label, error)
 }
 
 func deprecatedCloseHandleComment(pc plugins.PluginClient, e github.GenericCommentEvent) error {
 	return handleClose(pc.GitHubClient, pc.Logger, &e, deprecatedWarn)
+}
+
+func isActive(gc closeClient, org, repo string, number int) (bool, error) {
+	labels, err := gc.GetIssueLabels(org, repo, number)
+	if err != nil {
+		return true, fmt.Errorf("list issue labels error: %v", err)
+	}
+	for _, label := range []string{"lifecycle/stale", "lifecycle/rotten"} {
+		if github.HasLabel(label, labels) {
+			return false, nil
+		}
+	}
+	return true, nil
 }
 
 func handleClose(gc closeClient, log *logrus.Entry, e *github.GenericCommentEvent, warn bool) error {
@@ -78,20 +92,31 @@ func handleClose(gc closeClient, log *logrus.Entry, e *github.GenericCommentEven
 			break
 		}
 	}
-	if e.IssueAuthor.Login != commentAuthor && !isAssignee {
-		log.Infof("Assigning %s/%s#%d to %s", org, repo, number, commentAuthor)
-		if err := gc.AssignIssue(org, repo, number, []string{commentAuthor}); err != nil {
-			msg := "Assigning you to the issue failed."
-			if ok, merr := gc.IsMember(org, commentAuthor); merr == nil && !ok {
-				msg = "Only kubernetes org members may be assigned issues."
-			} else if merr != nil {
-				log.WithError(merr).Errorf("Failed IsMember(%s, %s)", org, commentAuthor)
-			} else {
-				log.WithError(err).Errorf("Failed AssignIssue(%s, %s, %d, %s)", org, repo, number, commentAuthor)
+	isAuthor := e.IssueAuthor.Login == commentAuthor
+
+	if !isAssignee && !isAuthor {
+		active, err := isActive(gc, org, repo, number)
+		if err != nil {
+			log.Infof("Cannot determine if issue is active: %v", err)
+			active = true // Fail active
+		}
+
+		if active {
+			// Try to assign the issue to the comment author
+			log.Infof("Assign to %s", commentAuthor)
+			if err := gc.AssignIssue(org, repo, number, []string{commentAuthor}); err != nil {
+				msg := "Assigning you to the issue failed."
+				if ok, merr := gc.IsMember(org, commentAuthor); merr == nil && !ok {
+					msg = "Can only assign issues to org members and/or repo collaborators."
+				} else if merr != nil {
+					log.WithError(merr).Errorf("Failed IsMember(%s, %s)", org, commentAuthor)
+				} else {
+					log.WithError(err).Errorf("Failed AssignIssue(%s, %s, %d, %s)", org, repo, number, commentAuthor)
+				}
+				resp := fmt.Sprintf("you can't close an active issue unless you authored it or you are assigned to it, %s.", msg)
+				log.Infof("Commenting \"%s\".", resp)
+				return gc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, commentAuthor, resp))
 			}
-			resp := fmt.Sprintf("you can't close an issue unless you authored it or you are assigned to it, %s.", msg)
-			log.Infof("Commenting \"%s\".", resp)
-			return gc.CreateComment(org, repo, number, plugins.FormatResponseRaw(e.Body, e.HTMLURL, commentAuthor, resp))
 		}
 	}
 
