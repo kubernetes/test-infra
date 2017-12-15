@@ -155,12 +155,6 @@ func (s *Server) handleIssueComment(l *logrus.Entry, ic github.IssueCommentEvent
 	}
 	targetBranch := cherryPickMatches[0][1]
 
-	if targetBranch == "master" {
-		resp := "I don't cherrypick pull requests onto master."
-		s.log.WithFields(l.Data).Info(resp)
-		return s.ghc.CreateComment(org, repo, num, plugins.FormatICResponse(ic.Comment, resp))
-	}
-
 	if ic.Issue.State != "closed" {
 		// Only members should be able to do cherry-picks.
 		ok, err := s.ghc.IsMember(org, commentAuthor)
