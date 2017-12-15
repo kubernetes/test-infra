@@ -182,6 +182,7 @@ func (s *Server) handleIssueComment(l *logrus.Entry, ic github.IssueCommentEvent
 		return err
 	}
 	baseBranch := pr.Base.Ref
+	title := pr.Title
 
 	// Cherry-pick only merged PRs.
 	if !pr.Merged {
@@ -190,7 +191,7 @@ func (s *Server) handleIssueComment(l *logrus.Entry, ic github.IssueCommentEvent
 		return s.ghc.CreateComment(org, repo, num, plugins.FormatICResponse(ic.Comment, resp))
 	}
 
-	return s.handle(l, ic.Comment, org, repo, baseBranch, targetBranch, num)
+	return s.handle(l, ic.Comment, org, repo, baseBranch, targetBranch, title, num)
 }
 
 func (s *Server) handlePullRequest(l *logrus.Entry, pre github.PullRequestEvent) error {
@@ -208,6 +209,7 @@ func (s *Server) handlePullRequest(l *logrus.Entry, pre github.PullRequestEvent)
 	repo := pr.Base.Repo.Name
 	baseBranch := pr.Base.Ref
 	num := pr.Number
+	title := pr.Title
 
 	l = l.WithFields(logrus.Fields{
 		github.OrgLogField:  org,
@@ -236,12 +238,12 @@ func (s *Server) handlePullRequest(l *logrus.Entry, pre github.PullRequestEvent)
 	if targetBranch == "" || ic == nil {
 		return nil
 	}
-	return s.handle(l, *ic, org, repo, baseBranch, targetBranch, num)
+	return s.handle(l, *ic, org, repo, baseBranch, targetBranch, title, num)
 }
 
 var cherryPickBranchFmt = "cherry-pick-%d-to-%s"
 
-func (s *Server) handle(l *logrus.Entry, comment github.IssueComment, org, repo, baseBranch, targetBranch string, num int) error {
+func (s *Server) handle(l *logrus.Entry, comment github.IssueComment, org, repo, baseBranch, targetBranch, title string, num int) error {
 	// TODO: Use a whitelist for allowed base and target branches.
 	if baseBranch == targetBranch {
 		resp := fmt.Sprintf("base branch (%s) needs to differ from target branch (%s)", baseBranch, targetBranch)
@@ -321,7 +323,7 @@ func (s *Server) handle(l *logrus.Entry, comment github.IssueComment, org, repo,
 	}
 
 	// Open a PR in Github.
-	title := fmt.Sprintf("Automated cherry-pick of #%d on %s", num, targetBranch)
+	title = fmt.Sprintf("[%s] %s", targetBranch, title)
 	// TODO: Make this a configurable template
 	body := fmt.Sprintf("This is an automated cherry-pick of #%d\n\n/assign %s", num, commentAuthor)
 	head := fmt.Sprintf("%s:%s", s.botName, newBranch)
