@@ -388,7 +388,7 @@ func (ru RepoUpdates) DoUpdates(org string, gc client) error {
 						errChan <- err
 					}
 				case "migrate":
-					issues, err := gc.FindIssues(fmt.Sprintf("repo:%s/%s label:\"%s\" -label:\"%s\"", org, repo, update.Current.Name, update.Wanted.Name), "", false)
+					issues, err := gc.FindIssues(fmt.Sprintf("is:open repo:%s/%s label:\"%s\" -label:\"%s\"", org, repo, update.Current.Name, update.Wanted.Name), "", false)
 					if err != nil {
 						errChan <- err
 					}
@@ -400,8 +400,9 @@ func (ru RepoUpdates) DoUpdates(org string, gc client) error {
 					for _, i := range issues {
 						if err = gc.AddLabel(org, repo, i.Number, update.Wanted.Name); err != nil {
 							errChan <- err
+							continue
 						}
-						if err = gc.RemoveLabel(org, repo, i.Number, update.Wanted.Name); err != nil {
+						if err = gc.RemoveLabel(org, repo, i.Number, update.Current.Name); err != nil {
 							errChan <- err
 						}
 					}
