@@ -24,6 +24,7 @@ import (
 	"net/http"
 	"os"
 	"regexp"
+	"strings"
 	"sync"
 	"time"
 
@@ -396,7 +397,7 @@ func (s *Server) getPatch(org, repo, targetBranch string, num int) (string, erro
 	if err != nil {
 		return "", err
 	}
-	localPath := fmt.Sprintf("/tmp/%s_%s_%d_%s.patch", org, repo, num, targetBranch)
+	localPath := fmt.Sprintf("/tmp/%s_%s_%d_%s.patch", org, repo, num, normalize(targetBranch))
 	out, err := os.Create(localPath)
 	if err != nil {
 		return "", err
@@ -406,4 +407,8 @@ func (s *Server) getPatch(org, repo, targetBranch string, num int) (string, erro
 		return "", err
 	}
 	return localPath, nil
+}
+
+func normalize(input string) string {
+	return strings.Replace(input, "/", "-", -1)
 }
