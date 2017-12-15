@@ -127,7 +127,7 @@ func (s *Server) handleEvent(eventType, eventGUID string, payload []byte) error 
 			}
 		}()
 	default:
-		return fmt.Errorf("received an event of type %q but didn't ask for it", eventType)
+		logrus.Debugf("skipping event of type %q", eventType)
 	}
 	return nil
 }
