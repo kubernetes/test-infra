@@ -34,6 +34,11 @@ labels:
     name: do-not-merge/release-note-label-needed
   - color: e11d21
     name: do-not-merge/work-in-progress
+  - color: 006b75
+    name: 'help wanted'
+    previously:
+      - name: help-wanted
+      - name: for-new-contributors
   - color: e11d21
     name: kind/bug
   - color: c7def8
@@ -311,10 +316,6 @@ unknown:
 #    name: beta-blocker
 #  - color: fbca04
 #    name: flake-has-meta
-#  - color: 006b75
-#    name: for-new-contributors
-#  - color: 006b75
-#    name: help-wanted
 #  - color: c7def8
 #    name: kind/api-change
 #  - color: c7def8
