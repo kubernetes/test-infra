@@ -39,8 +39,6 @@ labels:
     previously:
       - name: help-wanted
       - name: for-new-contributors
-  - color: fbca04
-    name: keep-open
   - color: e11d21
     name: kind/bug
   - color: c7def8
@@ -51,6 +49,9 @@ labels:
     name: lgtm
   - color: d3e2f0
     name: lifecycle/frozen
+    previously:
+    - color: fbca04
+      name: keep-open
   - color: "604460"
     name: lifecycle/rotten
   - color: "795548"

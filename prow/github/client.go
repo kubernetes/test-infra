@@ -398,6 +398,10 @@ func (c *Client) BotName() (string, error) {
 // IsMember returns whether or not the user is a member of the org.
 func (c *Client) IsMember(org, user string) (bool, error) {
 	c.log("IsMember", org, user)
+	if org == user {
+		// Make it possible to run a couple of plugins on personal repos.
+		return true, nil
+	}
 	code, err := c.request(&request{
 		method:    http.MethodGet,
 		path:      fmt.Sprintf("%s/orgs/%s/members/%s", c.base, org, user),
