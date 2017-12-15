@@ -55,6 +55,7 @@ type githubClient interface {
 type Server struct {
 	hmacSecret []byte
 	botName    string
+	email      string
 
 	gc *git.Client
 	// Used for unit testing
@@ -69,10 +70,11 @@ type Server struct {
 	repos    []github.Repo
 }
 
-func NewServer(name string, hmac []byte, gc *git.Client, ghc *github.Client, repos []github.Repo) *Server {
+func NewServer(name, email string, hmac []byte, gc *git.Client, ghc *github.Client, repos []github.Repo) *Server {
 	return &Server{
 		hmacSecret: hmac,
 		botName:    name,
+		email:      email,
 
 		gc:  gc,
 		ghc: ghc,
@@ -289,10 +291,14 @@ func (s *Server) handle(l *logrus.Entry, comment github.IssueComment, org, repo,
 		return err
 	}
 
-	if err := r.Config("user.name", "cherrypicker"); err != nil {
+	if err := r.Config("user.name", s.botName); err != nil {
 		return err
 	}
-	if err := r.Config("user.email", "cherrypicker@localhost"); err != nil {
+	email := s.email
+	if email == "" {
+		email = fmt.Sprintf("%s@localhost", s.botName)
+	}
+	if err := r.Config("user.email", email); err != nil {
 		return err
 	}
 
