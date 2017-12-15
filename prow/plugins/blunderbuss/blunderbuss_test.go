@@ -69,6 +69,7 @@ func (c *fakeGithubClient) GetPullRequestChanges(org, repo string, num int) ([]g
 }
 
 type fakeOwnersClient struct {
+	owners        map[string]string
 	reviewers     map[string]sets.String
 	leafReviewers map[string]sets.String
 }
@@ -81,30 +82,50 @@ func (foc *fakeOwnersClient) LeafReviewers(path string) sets.String {
 	return foc.leafReviewers[path]
 }
 
+func (foc *fakeOwnersClient) FindReviewersOwnersForPath(path string) string {
+	return foc.owners[path]
+}
+
 // TestHandle tests that the handle function requests reviews from the correct number of unique users.
 func TestHandle(t *testing.T) {
 	foc := &fakeOwnersClient{
+		owners: map[string]string{
+			"a.go":  "1",
+			"b.go":  "2",
+			"bb.go": "3",
+			"c.go":  "4",
+
+			"e.go":  "5",
+			"ee.go": "5",
+		},
 		reviewers: map[string]sets.String{
+			"a.go": sets.NewString("al"),
+			"b.go": sets.NewString("al"),
 			"c.go": sets.NewString("charles"),
-			"d.go": sets.NewString("dan"),
-			"e.go": sets.NewString("erick", "evan"),
+
+			"e.go":  sets.NewString("erick", "evan"),
+			"ee.go": sets.NewString("erick", "evan"),
 		},
 		leafReviewers: map[string]sets.String{
-			"a.go": sets.NewString("alice"),
-			"b.go": sets.NewString("bob"),
-			"c.go": sets.NewString("cole", "carl", "chad"),
-			"e.go": sets.NewString("erick"),
+			"a.go":  sets.NewString("alice"),
+			"b.go":  sets.NewString("bob"),
+			"bb.go": sets.NewString("bob", "ben"),
+			"c.go":  sets.NewString("cole", "carl", "chad"),
+
+			"e.go":  sets.NewString("erick", "ellen"),
+			"ee.go": sets.NewString("erick", "ellen"),
 		},
 	}
 
 	var testcases = []struct {
-		name              string
-		filesChanged      []string
-		reviewerCount     int
-		expectedRequested []string
+		name                       string
+		filesChanged               []string
+		reviewerCount              int
+		expectedRequested          []string
+		alternateExpectedRequested []string
 	}{
 		{
-			name:              "one file, 3 leaf reviewers, request 3",
+			name:              "one file, 3 leaf reviewers, 1 parent, request 3",
 			filesChanged:      []string{"c.go"},
 			reviewerCount:     3,
 			expectedRequested: []string{"cole", "carl", "chad"},
@@ -116,10 +137,16 @@ func TestHandle(t *testing.T) {
 			expectedRequested: []string{"cole", "carl", "chad", "charles"},
 		},
 		{
-			name:              "two files, 2 leaf reviewers, request 2",
+			name:              "two files, 2 leaf reviewers, 1 common parent, request 2",
 			filesChanged:      []string{"a.go", "b.go"},
 			reviewerCount:     2,
 			expectedRequested: []string{"alice", "bob"},
+		},
+		{
+			name:              "two files, 2 leaf reviewers, 1 common parent, request 3",
+			filesChanged:      []string{"a.go", "b.go"},
+			reviewerCount:     3,
+			expectedRequested: []string{"alice", "bob", "al"},
 		},
 		{
 			name:              "one files, 1 leaf reviewers, request 1",
@@ -128,22 +155,23 @@ func TestHandle(t *testing.T) {
 			expectedRequested: []string{"alice"},
 		},
 		{
-			name:              "one file, 0 leaf reviewers, 1 parent reviewer, request 1",
-			filesChanged:      []string{"d.go"},
-			reviewerCount:     1,
-			expectedRequested: []string{"dan"},
-		},
-		{
-			name:              "one file, 0 leaf reviewers, 1 parent reviewer, request 2",
-			filesChanged:      []string{"d.go"},
-			reviewerCount:     2,
-			expectedRequested: []string{"dan"},
-		},
-		{
-			name:              "one file, 1 leaf reviewers, 2 parent reviewers (1 dup), request 2",
+			name:              "one file, 2 leaf reviewer, 2 parent reviewers (1 dup), request 3",
 			filesChanged:      []string{"e.go"},
-			reviewerCount:     2,
-			expectedRequested: []string{"erick", "evan"},
+			reviewerCount:     3,
+			expectedRequested: []string{"erick", "ellen", "evan"},
+		},
+		{
+			name:                       "two files, 2 leaf reviewer, 2 parent reviewers (1 dup), request 1",
+			filesChanged:               []string{"e.go"},
+			reviewerCount:              1,
+			expectedRequested:          []string{"erick"},
+			alternateExpectedRequested: []string{"ellen"},
+		},
+		{
+			name:              "two files, 1 common leaf reviewer, one additional leaf, one parent, request 1",
+			filesChanged:      []string{"b.go", "bb.go"},
+			reviewerCount:     1,
+			expectedRequested: []string{"bob", "ben"},
 		},
 	}
 	for _, tc := range testcases {
@@ -160,7 +188,14 @@ func TestHandle(t *testing.T) {
 
 		sort.Strings(fghc.requested)
 		sort.Strings(tc.expectedRequested)
+		sort.Strings(tc.alternateExpectedRequested)
 		if !reflect.DeepEqual(fghc.requested, tc.expectedRequested) {
+			if len(tc.alternateExpectedRequested) > 0 {
+				if !reflect.DeepEqual(fghc.requested, tc.alternateExpectedRequested) {
+					t.Errorf("[%s] expected the requested reviewers to be %q or %q, but got %q.", tc.name, tc.expectedRequested, tc.alternateExpectedRequested, fghc.requested)
+				}
+				continue
+			}
 			t.Errorf("[%s] expected the requested reviewers to be %q, but got %q.", tc.name, tc.expectedRequested, fghc.requested)
 		}
 	}
