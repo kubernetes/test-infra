@@ -19,6 +19,7 @@ package mungers
 import (
 	"errors"
 	"fmt"
+	"math"
 	"sort"
 	"strings"
 	"time"
@@ -53,6 +54,7 @@ type milestoneStateConfig struct {
 }
 
 const (
+	day                   = time.Hour * 24
 	milestoneNotifierName = "MilestoneNotifier"
 
 	milestoneModeDev    = "dev"
@@ -277,6 +279,130 @@ func durationGreaterThanZero(name string, value time.Duration) error {
 		return fmt.Errorf("%s must be greater than zero", name)
 	}
 	return nil
+}
+
+func dayPhrase(days int) string {
+	dayString := "days"
+	if days == 1 || days == -1 {
+		dayString = "day"
+	}
+	return fmt.Sprintf("%d %s", days, dayString)
+}
+
+func durationToMinDays(duration time.Duration) string {
+	days := int(math.Floor(duration.Hours() / 24))
+	return dayPhrase(days)
+}
+
+func durationToMaxDays(duration time.Duration) string {
+	days := int(math.Floor(duration.Hours() / 24))
+	return dayPhrase(days)
+}
+
+func findLastHumanPullRequestUpdate(obj *github.MungeObject) (*time.Time, bool) {
+	pr, ok := obj.GetPR()
+	if !ok {
+		return nil, ok
+	}
+
+	comments, ok := obj.ListReviewComments()
+	if !ok {
+		return nil, ok
+	}
+
+	lastHuman := pr.CreatedAt
+	for i := range comments {
+		comment := comments[i]
+		if comment.User == nil || comment.User.Login == nil || comment.CreatedAt == nil || comment.Body == nil {
+			continue
+		}
+		if obj.IsRobot(comment.User) || *comment.User.Login == jenkinsBotName {
+			continue
+		}
+		if lastHuman.Before(*comment.UpdatedAt) {
+			lastHuman = comment.UpdatedAt
+		}
+	}
+
+	return lastHuman, true
+}
+
+func findLastHumanIssueUpdate(obj *github.MungeObject) (*time.Time, bool) {
+	lastHuman := obj.Issue.CreatedAt
+
+	comments, ok := obj.ListComments()
+	if !ok {
+		return nil, ok
+	}
+
+	for i := range comments {
+		comment := comments[i]
+		if !validComment(comment) {
+			continue
+		}
+		if obj.IsRobot(comment.User) || jenkinsBotComment(comment) {
+			continue
+		}
+		if lastHuman.Before(*comment.UpdatedAt) {
+			lastHuman = comment.UpdatedAt
+		}
+	}
+
+	return lastHuman, true
+}
+
+func findLastInterestingEventUpdate(obj *github.MungeObject) (*time.Time, bool) {
+	lastInteresting := obj.Issue.CreatedAt
+
+	events, ok := obj.GetEvents()
+	if !ok {
+		return nil, ok
+	}
+
+	for i := range events {
+		event := events[i]
+		if event.Event == nil || *event.Event != "reopened" {
+			continue
+		}
+
+		if lastInteresting.Before(*event.CreatedAt) {
+			lastInteresting = event.CreatedAt
+		}
+	}
+
+	return lastInteresting, true
+}
+
+func findLastModificationTime(obj *github.MungeObject) (*time.Time, bool) {
+	lastHumanIssue, ok := findLastHumanIssueUpdate(obj)
+	if !ok {
+		return nil, ok
+	}
+
+	lastInterestingEvent, ok := findLastInterestingEventUpdate(obj)
+	if !ok {
+		return nil, ok
+	}
+
+	var lastModif *time.Time
+	lastModif = lastHumanIssue
+
+	if lastInterestingEvent.After(*lastModif) {
+		lastModif = lastInterestingEvent
+	}
+
+	if obj.IsPR() {
+		lastHumanPR, ok := findLastHumanPullRequestUpdate(obj)
+		if !ok {
+			return lastModif, true
+		}
+
+		if lastHumanPR.After(*lastModif) {
+			lastModif = lastHumanPR
+		}
+	}
+
+	return lastModif, true
 }
 
 // parseMilestoneModes transforms a string containing milestones and
