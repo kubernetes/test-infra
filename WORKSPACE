@@ -26,9 +26,9 @@ go_register_toolchains(
 
 http_archive(
     name = "io_bazel_rules_docker",
-    sha256 = "076a8204c93071a130952c1ba4398d4085f60289bc9a12b530078d100608b1eb",
-    strip_prefix = "rules_docker-cdd259b3ba67fd4ef814c88070a2ebc7bec28dc5",
-    urls = ["https://github.com/bazelbuild/rules_docker/archive/cdd259b3ba67fd4ef814c88070a2ebc7bec28dc5.tar.gz"],
+    sha256 = "c919051945ab388c8440ea92d7ceb429fdbbf0a53639e6e0159b231881ceed02",
+    strip_prefix = "rules_docker-3caf72f166f8b6b0e529442477a74871ad4d35e9",
+    urls = ["https://github.com/bazelbuild/rules_docker/archive/3caf72f166f8b6b0e529442477a74871ad4d35e9.tar.gz"],
 )
 
 load("@io_bazel_rules_docker//docker:docker.bzl", "docker_repositories", "docker_pull")
