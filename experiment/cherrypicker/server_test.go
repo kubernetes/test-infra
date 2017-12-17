@@ -39,6 +39,12 @@ type fghc struct {
 	createdNum int
 }
 
+func (f *fghc) AssignIssue(org, repo string, number int, logins []string) error {
+	f.Lock()
+	defer f.Unlock()
+	return nil
+}
+
 func (f *fghc) GetPullRequest(org, repo string, number int) (*github.PullRequest, error) {
 	f.Lock()
 	defer f.Unlock()
@@ -194,6 +200,8 @@ func TestCherryPickIC(t *testing.T) {
 		hmacSecret: []byte("sha=abcdefg"),
 		log:        logrus.StandardLogger().WithField("client", "cherrypicker"),
 		repos:      []github.Repo{{Fork: true, FullName: "ci-robot/bar"}},
+
+		prowAssignments: true,
 	}
 
 	if err := s.handleIssueComment(logrus.NewEntry(logrus.StandardLogger()), ic); err != nil {
@@ -274,7 +282,7 @@ func TestCherryPickPR(t *testing.T) {
 	botName := "ci-robot"
 	expectedRepo := "foo/bar"
 	expectedTitle := "[release-1.5] This is a fix for Y"
-	expectedBody := "This is an automated cherry-pick of #2\n\n/assign approver"
+	expectedBody := "This is an automated cherry-pick of #2"
 	expectedBase := "release-1.5"
 	expectedHead := fmt.Sprintf(botName+":"+cherryPickBranchFmt, 2, expectedBase)
 	expected := fmt.Sprintf(expectedFmt, expectedRepo, expectedTitle, expectedBody, expectedHead, expectedBase, true)
@@ -287,6 +295,8 @@ func TestCherryPickPR(t *testing.T) {
 		hmacSecret: []byte("sha=abcdefg"),
 		log:        logrus.StandardLogger().WithField("client", "cherrypicker"),
 		repos:      []github.Repo{{Fork: true, FullName: "ci-robot/bar"}},
+
+		prowAssignments: false,
 	}
 
 	if err := s.handlePullRequest(logrus.NewEntry(logrus.StandardLogger()), pr); err != nil {

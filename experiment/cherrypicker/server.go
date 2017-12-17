@@ -41,6 +41,7 @@ const pluginName = "cherrypick"
 var cherryPickRe = regexp.MustCompile(`(?m)^/cherrypick\s+(.+)$`)
 
 type githubClient interface {
+	AssignIssue(org, repo string, number int, logins []string) error
 	GetPullRequest(org, repo string, number int) (*github.PullRequest, error)
 	GetPullRequestPatch(org, repo string, number int) ([]byte, error)
 	CreateComment(org, repo string, number int, comment string) error
@@ -64,6 +65,9 @@ type Server struct {
 	ghc  githubClient
 	log  *logrus.Entry
 
+	// Use prow to assign users to cherrypicked PRs.
+	prowAssignments bool
+
 	bare     *http.Client
 	patchURL string
 
@@ -71,7 +75,7 @@ type Server struct {
 	repos    []github.Repo
 }
 
-func NewServer(name, email string, hmac []byte, gc *git.Client, ghc *github.Client, repos []github.Repo) *Server {
+func NewServer(name, email string, hmac []byte, gc *git.Client, ghc *github.Client, repos []github.Repo, prowAssignments bool) *Server {
 	return &Server{
 		hmacSecret: hmac,
 		botName:    name,
@@ -80,6 +84,8 @@ func NewServer(name, email string, hmac []byte, gc *git.Client, ghc *github.Clie
 		gc:  gc,
 		ghc: ghc,
 		log: logrus.StandardLogger().WithField("plugin", pluginName),
+
+		prowAssignments: prowAssignments,
 
 		bare:     &http.Client{},
 		patchURL: "https://patch-diff.githubusercontent.com",
@@ -325,8 +331,10 @@ func (s *Server) handle(l *logrus.Entry, comment github.IssueComment, org, repo,
 
 	// Open a PR in Github.
 	title = fmt.Sprintf("[%s] %s", targetBranch, title)
-	// TODO: Make this a configurable template
-	body := fmt.Sprintf("This is an automated cherry-pick of #%d\n\n/assign %s", num, commentAuthor)
+	body := fmt.Sprintf("This is an automated cherry-pick of #%d", num)
+	if s.prowAssignments {
+		body = fmt.Sprintf("%s\n\n/assign %s", body, commentAuthor)
+	}
 	head := fmt.Sprintf("%s:%s", s.botName, newBranch)
 	createdNum, err := s.ghc.CreatePullRequest(org, repo, title, body, head, targetBranch, true)
 	if err != nil {
@@ -336,7 +344,15 @@ func (s *Server) handle(l *logrus.Entry, comment github.IssueComment, org, repo,
 	}
 	resp := fmt.Sprintf("new pull request created: #%d", createdNum)
 	s.log.WithFields(l.Data).Info(resp)
-	return s.ghc.CreateComment(org, repo, num, plugins.FormatICResponse(comment, resp))
+	if err := s.ghc.CreateComment(org, repo, num, plugins.FormatICResponse(comment, resp)); err != nil {
+		return err
+	}
+	if !s.prowAssignments {
+		if err := s.ghc.AssignIssue(org, repo, createdNum, []string{commentAuthor}); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // ensureForkExists ensures a fork of org/repo exists for the bot.
