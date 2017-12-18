@@ -72,7 +72,7 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 			if !stringInSlice(parts[0], blockade.Repos) && !stringInSlice(repo, blockade.Repos) {
 				continue
 			}
-			fmt.Fprintf(&buf, "\nBlock reason: '%s'\n\tBlock regexps: %q\n\tException regexps: %q\n", blockade.Explanation, blockade.BlockRegexps, blockade.ExceptionRegexps)
+			fmt.Fprintf(&buf, "<br>Block reason: '%s'<br>&nbsp&nbsp&nbsp&nbspBlock regexps: %q<br>&nbsp&nbsp&nbsp&nbspException regexps: %q<br>", blockade.Explanation, blockade.BlockRegexps, blockade.ExceptionRegexps)
 		}
 		blockConfig[repo] = buf.String()
 	}

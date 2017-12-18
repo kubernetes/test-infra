@@ -1047,6 +1047,12 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-bazel-build-1-8
 - name: periodic-kubernetes-bazel-build-1-9
   gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-bazel-build-1-9
+- name: periodic-test-infra-stale
+  gcs_prefix: kubernetes-jenkins/logs/periodic-test-infra-stale
+- name: periodic-test-infra-rotten
+  gcs_prefix: kubernetes-jenkins/logs/periodic-test-infra-rotten
+- name: periodic-test-infra-close
+  gcs_prefix: kubernetes-jenkins/logs/periodic-test-infra-close
 - name: periodic-test-infra-retester
   gcs_prefix: kubernetes-jenkins/logs/periodic-test-infra-retester
 # perf tests
@@ -1821,6 +1827,10 @@ test_groups:
 - name: ci-daisy-e2e
   gcs_prefix: gce-daisy-test/logs/ci-daisy-e2e
 # Cluster registry
+- name: pull-cluster-registry-verify-bazel
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-registry-verify-bazel
+  days_of_results: 1
+  num_columns_recent: 20
 - name: pull-cluster-registry-bazel
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-registry-bazel
   days_of_results: 1
@@ -3792,6 +3802,23 @@ dashboards:
     alert_options:
       alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
 
+- name: sig-node-cri-o
+  dashboard_tab:
+  - name: crio-e2e-fedora
+    test_group_name: test_pull_request_crio_e2e_fedora
+    open_test_template:
+        url: https://gcsweb-ci.svc.ci.openshift.org/gcs/<gcs_prefix>/<changelist>.txt
+    results_url_template:
+        url: https://gcsweb-ci.svc.ci.openshift.org/gcs/<gcs_prefix>
+    base_options: 'width=10'
+  - name: crio-e2e-rhel
+    test_group_name: test_pull_request_crio_e2e_rhel
+    open_test_template:
+        url: https://gcsweb-ci.svc.ci.openshift.org/gcs/<gcs_prefix>/<changelist>.txt
+    results_url_template:
+        url: https://gcsweb-ci.svc.ci.openshift.org/gcs/<gcs_prefix>
+    base_options: 'width=10'
+
 - name: sig-node-containerd
   dashboard_tab:
   - name: build
@@ -4260,6 +4287,15 @@ dashboards:
     test_group_name: periodic-test-infra-retester
     code_search_url_template:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
+  - name: stale
+    description: Adds lifecycle/stale to issues after 30d of inactivity
+    test_group_name: periodic-test-infra-stale
+  - name: rotten
+    description: Adds lifecycle/rotten to stale issues after 30d of inactivity
+    test_group_name: periodic-test-infra-rotten
+  - name: close
+    description: Closes rotten issues after 30d of inactivity
+    test_group_name: periodic-test-infra-close
   - name: issue-creator
     description: Creates github issues based on data from various 'IssueSource's.
     test_group_name: issue-creator
@@ -4877,6 +4913,9 @@ dashboards:
 
 - name: presubmits-cluster-registry
   dashboard_tab:
+  - name: verify-bazel
+    test_group_name: pull-cluster-registry-verify-bazel
+    base_options: 'width=10'
   - name: bazel
     test_group_name: pull-cluster-registry-bazel
     base_options: 'width=10'
@@ -4891,15 +4930,6 @@ dashboards:
     base_options: 'width=10'
   - name: verify
     test_group_name: pull-federation-verify
-    base_options: 'width=10'
-
-- name: cri-o
-  dashboard_tab:
-  - name: crio-e2e-fedora
-    test_group_name: test_pull_request_crio_e2e_fedora
-    base_options: 'width=10'
-  - name: crio-e2e-rhel
-    test_group_name: test_pull_request_crio_e2e_rhel
     base_options: 'width=10'
 
 - name: istio
@@ -4991,6 +5021,7 @@ dashboard_groups:
   - sig-node-containerd
   - sig-node-rkt
   - sig-node-ppc64le
+  - sig-node-cri-o
 
 - name: sig-release
   dashboard_names:

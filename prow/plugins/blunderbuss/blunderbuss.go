@@ -18,8 +18,8 @@ package blunderbuss
 
 import (
 	"fmt"
-	"math"
 	"math/rand"
+	"sort"
 
 	"github.com/sirupsen/logrus"
 
@@ -56,6 +56,7 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 type weightMap map[string]int64
 
 type ownersClient interface {
+	FindReviewersOwnersForPath(path string) string
 	Reviewers(path string) sets.String
 	LeafReviewers(path string) sets.String
 }
@@ -84,19 +85,12 @@ func handle(ghc githubClient, oc ownersClient, log *logrus.Entry, reviewerCount 
 		return fmt.Errorf("error getting PR changes: %v", err)
 	}
 
-	author := pre.PullRequest.User.Login
-	potentialReviewers, weightSum := getPotentialReviewers(oc, author, changes, true)
-	reviewers := selectMultipleReviewers(log, potentialReviewers, weightSum, reviewerCount)
-	if len(reviewers) < reviewerCount {
-		// Didn't find enough leaf reviewers, need to include reviewers from parent OWNERS files.
-		potentialReviewers, weightSum := getPotentialReviewers(oc, author, changes, false)
-		for _, reviewer := range reviewers {
-			delete(potentialReviewers, reviewer)
-		}
-		reviewers = append(reviewers, selectMultipleReviewers(log, potentialReviewers, weightSum, reviewerCount-len(reviewers))...)
-		if missing := reviewerCount - len(reviewers); missing > 0 {
-			log.Errorf("Not enough reviewers found in OWNERS files for files touched by this PR. %d/%d reviewers found.", len(reviewers), reviewerCount)
-		}
+	reviewers, err := getReviewers(oc, pre.PullRequest.User.Login, changes, reviewerCount)
+	if err != nil {
+		return err
+	}
+	if missing := reviewerCount - len(reviewers); missing > 0 {
+		log.Errorf("Not enough reviewers found in OWNERS files for files touched by this PR. %d/%d reviewers found.", len(reviewers), reviewerCount)
 	}
 	if len(reviewers) > 0 {
 		log.Infof("Requesting reviews from users %s.", reviewers)
@@ -105,72 +99,48 @@ func handle(ghc githubClient, oc ownersClient, log *logrus.Entry, reviewerCount 
 	return nil
 }
 
-func chance(val, total int64) float64 {
-	return 100.0 * float64(val) / float64(total)
-}
-
-func getPotentialReviewers(owners ownersClient, author string, files []github.PullRequestChange, leafOnly bool) (weightMap, int64) {
-	potentialReviewers := weightMap{}
-	weightSum := int64(0)
-	var fileOwners sets.String
+func getReviewers(owners ownersClient, author string, files []github.PullRequestChange, minReviewers int) ([]string, error) {
+	authorSet := sets.NewString(author)
+	reviewers := sets.NewString()
+	leafReviewers := sets.NewString()
+	ownersSeen := sets.NewString()
+	// first build 'reviewers' by taking a unique reviewer from each OWNERS file.
 	for _, file := range files {
-		fileWeight := int64(1)
-		if file.Changes != 0 {
-			fileWeight = int64(file.Changes)
+		ownersFile := owners.FindReviewersOwnersForPath(file.Filename)
+		if ownersSeen.Has(ownersFile) {
+			continue
 		}
-		// Judge file size on a log scale-- effectively this
-		// makes three buckets, we shouldn't have many 10k+
-		// line changes.
-		fileWeight = int64(math.Log10(float64(fileWeight))) + 1
-		if leafOnly {
-			fileOwners = owners.LeafReviewers(file.Filename)
-		} else {
-			fileOwners = owners.Reviewers(file.Filename)
+		ownersSeen.Insert(ownersFile)
+
+		fileUnusedLeafs := owners.LeafReviewers(file.Filename).Difference(reviewers).Difference(authorSet)
+		if fileUnusedLeafs.Len() == 0 {
+			continue
 		}
-
-		for _, owner := range fileOwners.List() {
-			if owner == author {
-				continue
-			}
-			potentialReviewers[owner] = potentialReviewers[owner] + fileWeight
-			weightSum += fileWeight
-		}
+		leafReviewers = leafReviewers.Union(fileUnusedLeafs)
+		reviewers.Insert(popRandom(fileUnusedLeafs))
 	}
-	return potentialReviewers, weightSum
-}
-
-func selectMultipleReviewers(log *logrus.Entry, potentialReviewers weightMap, weightSum int64, count int) []string {
-	for name, weight := range potentialReviewers {
-		log.Debugf("Reviewer %s had chance %02.2f%%", name, chance(weight, weightSum))
+	// now ensure that we request review from at least minReviewers reviewers. Favor leaf reviewers.
+	unusedLeafs := leafReviewers.Difference(reviewers)
+	for reviewers.Len() < minReviewers && unusedLeafs.Len() > 0 {
+		reviewers.Insert(popRandom(unusedLeafs))
 	}
-
-	// Make a copy of the map
-	pOwners := weightMap{}
-	for k, v := range potentialReviewers {
-		pOwners[k] = v
-	}
-
-	owners := []string{}
-
-	for i := 0; i < count; i++ {
-		if len(pOwners) == 0 || weightSum == 0 {
+	for _, file := range files {
+		if reviewers.Len() >= minReviewers {
 			break
 		}
-		selection := rand.Int63n(weightSum)
-		owner := ""
-		for o, w := range pOwners {
-			owner = o
-			selection -= w
-			if selection <= 0 {
-				break
-			}
+		fileReviewers := owners.Reviewers(file.Filename).Difference(authorSet)
+		for reviewers.Len() < minReviewers && fileReviewers.Len() > 0 {
+			reviewers.Insert(popRandom(fileReviewers))
 		}
-
-		owners = append(owners, owner)
-		weightSum -= pOwners[owner]
-
-		// Remove this person from the map.
-		delete(pOwners, owner)
 	}
-	return owners
+	return reviewers.List(), nil
+}
+
+// popRandom randomly selects an element of 'set' and pops it.
+func popRandom(set sets.String) string {
+	list := set.List()
+	sort.Strings(list)
+	sel := list[rand.Intn(len(list))]
+	set.Delete(sel)
+	return sel
 }

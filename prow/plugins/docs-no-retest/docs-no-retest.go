@@ -49,7 +49,7 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 	// manually triggered and is not configurable.
 	return &pluginhelp.PluginHelp{
 			Description: `The docs-no-retest plugin applies the '` + labelSkipRetest + `' label to pull requests that only touch documentation type files and thus do not need to be retested against the latest master commit before merging.
-Files extensions '.md', '.png', '.svg', and '.dia' are considered documentation.`,
+<br>Files extensions '.md', '.png', '.svg', and '.dia' are considered documentation.`,
 		},
 		nil
 }

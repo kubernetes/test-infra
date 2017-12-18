@@ -49,9 +49,9 @@ function redrawPools() {
         var repoName = pool.Org + "/" + pool.Repo + " " + pool.Branch;
         var repoLink = "https://github.com/" + pool.Org + "/" + pool.Repo + "/tree/" + pool.Branch;
         r.appendChild(createLinkCell(repoName, repoLink, ""));
-        r.appendChild(createTextCell(pool.Action));
+        r.appendChild(createActionCell(pool));
         r.appendChild(createPRCell(pool, pool.BatchPending));
-        r.appendChild(createPRCell(pool, pool.PassingPRs));
+        r.appendChild(createPRCell(pool, pool.SuccessPRs));
         r.appendChild(createPRCell(pool, pool.PendingPRs));
         r.appendChild(createPRCell(pool, pool.MissingPRs));
 
@@ -71,22 +71,39 @@ function createLinkCell(text, url, title) {
     return c;
 }
 
-function createTextCell(text) {
+function createActionCell(pool) {
+    var action = pool.Action;
+    var targetted = pool.Target && pool.Target.length
     var c = document.createElement("td");
-    c.appendChild(document.createTextNode(text));
+
+    if (targetted) {
+        action += ": "
+    }
+    c.appendChild(document.createTextNode(action));
+    if (targetted) {
+        addPRsToElem(c, pool, pool.Target)
+    }
     return c;
 }
 
 function createPRCell(pool, prs) {
     var c = document.createElement("td");
+    addPRsToElem(c, pool, prs)
+    return c;
+}
+
+// addPRsToElem adds a space separated list of PR numbers that link to the corresponding PR on github.
+function addPRsToElem(elem, pool, prs) {
     if (prs) {
         for (var i = 0; i < prs.length; i++) {
             var a = document.createElement("a");
             a.href = "https://github.com/" + pool.Org + "/" + pool.Repo + "/pull/" + prs[i].Number;
             a.appendChild(document.createTextNode("#" + prs[i].Number));
-            c.appendChild(a);
-            c.appendChild(document.createTextNode(" "));
+            elem.appendChild(a);
+            // Add a space after each PR number except the last.
+            if (i+1 < prs.length) {
+                elem.appendChild(document.createTextNode(" "));
+            }
         }
     }
-    return c;
 }

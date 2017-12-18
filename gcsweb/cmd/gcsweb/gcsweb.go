@@ -43,6 +43,7 @@ const gcsBrowserURL = "https://console.cloud.google.com/storage/browser"
 
 var flPort = flag.Int("p", 8080, "port number on which to listen")
 var flIcons = flag.String("i", "/icons", "path to the icons directory")
+var flStyles = flag.String("s", "/styles", "path to the styles directory")
 var flVersion = flag.Bool("version", false, "print version and exit")
 
 const (
@@ -91,8 +92,16 @@ func main() {
 	// Handle unknown buckets.
 	http.HandleFunc("/gcs/", unknownBucketRequest)
 
-	// Serve icons.
-	http.Handle("/icons/", http.StripPrefix("/icons/", http.FileServer(http.Dir(*flIcons))))
+	// Serve icons and styles.
+	longCacheServer := func(h http.Handler) http.HandlerFunc {
+		return func(w http.ResponseWriter, r *http.Request) {
+			// Mark as never expiring as per https://www.ietf.org/rfc/rfc2616.txt
+			w.Header().Add("Cache-Control", "max-age=31536000")
+			h.ServeHTTP(w, r)
+		}
+	}
+	http.Handle("/icons/", longCacheServer(http.StripPrefix("/icons/", http.FileServer(http.Dir(*flIcons)))))
+	http.Handle("/styles/", longCacheServer(http.StripPrefix("/styles/", http.FileServer(http.Dir(*flStyles)))))
 
 	// Serve HTTP.
 	http.HandleFunc("/healthz", healthzRequest)
@@ -303,11 +312,11 @@ type gcsDir struct {
 	CommonPrefixes []Prefix `xml:"CommonPrefixes"`
 }
 
-const tmplPageHeaderText = ` 
+const tmplPageHeaderText = `
     <!doctype html>
    	<html>
    	<head>
-   	    <link rel="stylesheet" href="https://yui-s.yahooapis.com/pure/0.6.0/pure-min.css">
+   	    <link rel="stylesheet" type="text/css" href="/styles/style.css">
    	    <meta charset="utf-8">
    	    <meta name="viewport" content="width=device-width, initial-scale=1.0">
    	    <title>GCS browser: {{.Name}}</title>

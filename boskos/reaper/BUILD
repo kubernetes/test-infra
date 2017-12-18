@@ -11,7 +11,6 @@ go_binary(
     embed = [":go_default_library"],
     importpath = "k8s.io/test-infra/boskos/reaper",
     pure = "on",
-    race = "off",
 )
 
 go_library(

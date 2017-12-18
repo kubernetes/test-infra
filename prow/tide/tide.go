@@ -326,9 +326,12 @@ func (c *Controller) pickBatch(sp subpool) ([]PullRequest, error) {
 	if err := r.Checkout(sp.sha); err != nil {
 		return nil, err
 	}
-	// TODO(spxtr): Limit batch size.
 	var res []PullRequest
-	for _, pr := range sp.prs {
+	for i, pr := range sp.prs {
+		// TODO: Make this configurable per subpool.
+		if i == 5 {
+			break
+		}
 		// TODO(spxtr): Check the actual statuses for individual jobs.
 		if string(pr.Commits.Nodes[0].Commit.Status.State) != "SUCCESS" {
 			continue
@@ -345,7 +348,8 @@ func (c *Controller) pickBatch(sp subpool) ([]PullRequest, error) {
 func (c *Controller) mergePRs(sp subpool, prs []PullRequest) error {
 	for _, pr := range prs {
 		if err := c.ghc.Merge(sp.org, sp.repo, int(pr.Number), github.MergeDetails{
-			SHA: string(pr.HeadRef.Target.OID),
+			SHA:         string(pr.HeadRef.Target.OID),
+			MergeMethod: string(c.ca.Config().Tide.MergeMethod(sp.org, sp.repo)),
 		}); err != nil {
 			if _, ok := err.(github.ModifiedHeadError); ok {
 				// This is a possible source of incorrect behavior. If someone

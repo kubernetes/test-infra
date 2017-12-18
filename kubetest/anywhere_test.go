@@ -35,6 +35,7 @@ func TestNewKubernetesAnywhere(t *testing.T) {
 		cni               string
 		expectConfigLines []string
 		kubeproxyMode     string
+		osImage           string
 	}{
 		{
 			name:   "kubeadm defaults",
@@ -153,6 +154,25 @@ func TestNewKubernetesAnywhere(t *testing.T) {
 				".phase3.cni=\"weave\"",
 			},
 		},
+		{
+			name:   "kubeadm with default os_image",
+			phase2: "kubeadm",
+
+			expectConfigLines: []string{
+				".phase1.gce.os_image=\"ubuntu-1604-xenial-v20171212\"",
+				".phase2.provider=\"kubeadm\"",
+			},
+		},
+		{
+			name:    "kubeadm with specific os_image",
+			phase2:  "kubeadm",
+			osImage: "my-awesome-os-image",
+
+			expectConfigLines: []string{
+				".phase1.gce.os_image=\"my-awesome-os-image\"",
+				".phase2.provider=\"kubeadm\"",
+			},
+		},
 	}
 
 	mockGSFiles := map[string]string{
@@ -189,6 +209,9 @@ func TestNewKubernetesAnywhere(t *testing.T) {
 		*kubernetesAnywhereUpgradeMethod = tc.kubeadmUpgrade
 		*kubernetesAnywhereCNI = tc.cni
 		*kubernetesAnywhereProxyMode = tc.kubeproxyMode
+		if tc.osImage != "" {
+			*kubernetesAnywhereOSImage = tc.osImage
+		}
 
 		_, err = newKubernetesAnywhere("fake-project", "fake-zone")
 		if err != nil {

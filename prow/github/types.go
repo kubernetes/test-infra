@@ -55,6 +55,18 @@ const (
 	stateCannotBeChangedMessagePrefix = "state cannot be changed."
 )
 
+// PullRequestMergeType enumerates the types of merges the GitHub API can
+// perform
+// https://developer.github.com/v3/pulls/#merge-a-pull-request-merge-button
+type PullRequestMergeType string
+
+// Possible types of merges for the GitHub merge API
+const (
+	MergeMerge  PullRequestMergeType = "merge"
+	MergeRebase PullRequestMergeType = "rebase"
+	MergeSquash PullRequestMergeType = "squash"
+)
+
 // ClientError represents https://developer.github.com/v3/#client-errors
 type ClientError struct {
 	Message string `json:"message"`

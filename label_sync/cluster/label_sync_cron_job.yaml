@@ -17,7 +17,7 @@ kind: CronJob
 metadata:
   name: label-sync
 spec:
-  schedule: "17 23 * * 0"    # Every Sunday 23:17 / 11:17PM
+  schedule: "17 23 * * *"    # Every day 23:17 / 11:17PM
   concurrencyPolicy: Forbid
   jobTemplate:
     metadata:
@@ -28,7 +28,7 @@ spec:
         spec:
           containers:
             - name: label-sync
-              image: gcr.io/k8s-testimages/label_sync:v20171130-3d5c57308
+              image: gcr.io/k8s-testimages/label_sync:v20171215-9c0f9501e
               args:
               - --config=/etc/config/labels.yaml
               - --dry-run=false

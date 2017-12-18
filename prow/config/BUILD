@@ -22,6 +22,7 @@ go_test(
     embed = [":go_default_library"],
     importpath = "k8s.io/test-infra/prow/config",
     deps = [
+        "//prow/github:go_default_library",
         "//prow/kube:go_default_library",
         "//vendor/github.com/ghodss/yaml:go_default_library",
     ],
@@ -37,6 +38,7 @@ go_library(
     ],
     importpath = "k8s.io/test-infra/prow/config",
     deps = [
+        "//prow/github:go_default_library",
         "//prow/kube:go_default_library",
         "//prow/kube/labels:go_default_library",
         "//vendor/github.com/ghodss/yaml:go_default_library",

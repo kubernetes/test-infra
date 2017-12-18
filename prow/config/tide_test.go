@@ -19,6 +19,8 @@ package config
 import (
 	"strings"
 	"testing"
+
+	"k8s.io/test-infra/prow/github"
 )
 
 func TestTideQuery(t *testing.T) {
@@ -42,4 +44,53 @@ func TestTideQuery(t *testing.T) {
 	checkTok("label:\"approved\"")
 	checkTok("-label:\"foo\"")
 	checkTok("review:approved")
+}
+
+func TestMergeMethod(t *testing.T) {
+	ti := &Tide{
+		MergeType: map[string]github.PullRequestMergeType{
+			"kubernetes/kops":             github.MergeRebase,
+			"kubernetes/charts":           github.MergeSquash,
+			"kubernetes-helm":             github.MergeSquash,
+			"kubernetes-helm/chartmuseum": github.MergeMerge,
+		},
+	}
+
+	var testcases = []struct {
+		org      string
+		repo     string
+		expected github.PullRequestMergeType
+	}{
+		{
+			"kubernetes",
+			"kubernetes",
+			github.MergeMerge,
+		},
+		{
+			"kubernetes",
+			"kops",
+			github.MergeRebase,
+		},
+		{
+			"kubernetes",
+			"charts",
+			github.MergeSquash,
+		},
+		{
+			"kubernetes-helm",
+			"monocular",
+			github.MergeSquash,
+		},
+		{
+			"kubernetes-helm",
+			"chartmuseum",
+			github.MergeMerge,
+		},
+	}
+
+	for _, test := range testcases {
+		if ti.MergeMethod(test.org, test.repo) != test.expected {
+			t.Errorf("Expected merge method %q but got %q for %s/%s", test.expected, ti.MergeMethod(test.org, test.repo), test.org, test.repo)
+		}
+	}
 }

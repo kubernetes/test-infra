@@ -24,6 +24,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"sync"
 	"time"
 
@@ -262,9 +263,15 @@ func (r *Repo) Am(path string) error {
 	if err == nil {
 		return nil
 	}
-	r.logger.WithError(err).Warningf("Patch apply failed with output: %s", string(b))
+	output := string(b)
+	r.logger.WithError(err).Warningf("Patch apply failed with output: %s", output)
 	if b, abortErr := r.gitCommand("am", "--abort").CombinedOutput(); err != nil {
-		r.logger.WithError(abortErr).Warningf("Patch apply failed with output: %s", string(b))
+		r.logger.WithError(abortErr).Warningf("Aborting patch apply failed with output: %s", string(b))
+	}
+	applyMsg := "The copy of the patch that failed is found in: .git/rebase-apply/patch"
+	if strings.Contains(output, applyMsg) {
+		i := strings.Index(output, applyMsg)
+		err = fmt.Errorf("%s", output[:i])
 	}
 	return err
 }

@@ -34,8 +34,11 @@ labels:
     name: do-not-merge/release-note-label-needed
   - color: e11d21
     name: do-not-merge/work-in-progress
-  - color: fbca04
-    name: keep-open
+  - color: 006b75
+    name: 'help wanted'
+    previously:
+      - name: help-wanted
+      - name: for-new-contributors
   - color: e11d21
     name: kind/bug
   - color: c7def8
@@ -44,6 +47,15 @@ labels:
     name: kind/feature
   - color: 15dd18
     name: lgtm
+  - color: d3e2f0
+    name: lifecycle/frozen
+    previously:
+    - color: fbca04
+      name: keep-open
+  - color: "604460"
+    name: lifecycle/rotten
+  - color: "795548"
+    name: lifecycle/stale
   - color: b60205
     name: needs-ok-to-test
   - color: BDBDBD
@@ -304,10 +316,6 @@ unknown:
 #    name: beta-blocker
 #  - color: fbca04
 #    name: flake-has-meta
-#  - color: 006b75
-#    name: for-new-contributors
-#  - color: 006b75
-#    name: help-wanted
 #  - color: c7def8
 #    name: kind/api-change
 #  - color: c7def8
@@ -348,8 +356,6 @@ unknown:
 #    name: priority/P3
 #  - color: d93f0b
 #    name: release-blocker
-#  - color: "795548"
-#    name: stale
 #  - color: ededed
 #    name: team/api (deprecated - do not use)
 #  - color: ededed

@@ -61,6 +61,8 @@ var (
 		"(kubernetes-anywhere only) The name of the CNI plugin used for the cluster's SDN.")
 	kubernetesAnywhereDumpClusterLogs = flag.Bool("kubernetes-anywhere-dump-cluster-logs", false,
 		"(kubernetes-anywhere only) Whether to dump cluster logs.")
+	kubernetesAnywhereOSImage = flag.String("kubernetes-anywhere-os-image", "ubuntu-1604-xenial-v20171212",
+		"(kubernetes-anywhere only) The name of the os_image to use for nodes")
 )
 
 const kubernetesAnywhereConfigTemplate = `
@@ -69,7 +71,7 @@ const kubernetesAnywhereConfigTemplate = `
 .phase1.ssh_user=""
 .phase1.cloud_provider="gce"
 
-.phase1.gce.os_image="ubuntu-1604-xenial-v20160420c"
+.phase1.gce.os_image="{{.OSImage}}"
 .phase1.gce.instance_type="n1-standard-1"
 .phase1.gce.project="{{.Project}}"
 .phase1.gce.region="{{.Region}}"
@@ -115,6 +117,7 @@ type kubernetesAnywhere struct {
 	KubeContext       string
 	CNI               string
 	KubeproxyMode     string
+	OSImage           string
 }
 
 func initializeKubernetesAnywhere(project, zone string) (*kubernetesAnywhere, error) {
@@ -162,6 +165,7 @@ func initializeKubernetesAnywhere(project, zone string) (*kubernetesAnywhere, er
 		Region:            regexp.MustCompile(`-[^-]+$`).ReplaceAllString(zone, ""),
 		CNI:               *kubernetesAnywhereCNI,
 		KubeproxyMode:     *kubernetesAnywhereProxyMode,
+		OSImage:           *kubernetesAnywhereOSImage,
 	}
 
 	return k, nil

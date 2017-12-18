@@ -30,13 +30,13 @@ go_image(
     name = "commenter-image",
     base = "@distroless-base//image",
     embed = [":go_default_library"],
-    importpath = "k8s.io/test-infra/experiment/commenter",
+    importpath = "k8s.io/test-infra/robots/commenter",
 )
 
 go_library(
     name = "go_default_library",
     srcs = ["main.go"],
-    importpath = "k8s.io/test-infra/experiment/commenter",
+    importpath = "k8s.io/test-infra/robots/commenter",
     deps = ["//prow/github:go_default_library"],
 )
 
@@ -57,7 +57,7 @@ go_test(
     name = "go_default_test",
     srcs = ["main_test.go"],
     embed = [":go_default_library"],
-    importpath = "k8s.io/test-infra/experiment/commenter",
+    importpath = "k8s.io/test-infra/robots/commenter",
     deps = ["//prow/github:go_default_library"],
 )
 
@@ -65,5 +65,5 @@ go_test(
 go_binary(
     name = "commenter",
     embed = [":go_default_library"],
-    importpath = "k8s.io/test-infra/experiment/commenter",
+    importpath = "k8s.io/test-infra/robots/commenter",
 )

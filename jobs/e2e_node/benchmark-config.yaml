@@ -1,96 +1,74 @@
 ---
 images:
-  cosstable3-resource1:
-    image: cos-stable-60-9592-90-0
-    project: cos-cloud
-    machine: n1-standard-1
-    metadata: "user-data<test/e2e_node/jenkins/gci-init.yaml,gci-update-strategy=update_disabled"
-    tests:
-      - 'resource tracking for 0 pods per node \[Benchmark\]'
-  cosstable3-resource2:
-    image: cos-stable-60-9592-90-0
-    project: cos-cloud
-    machine: n1-standard-1
-    metadata: "user-data<test/e2e_node/jenkins/gci-init.yaml,gci-update-strategy=update_disabled"
-    tests:
-      - 'resource tracking for 35 pods per node \[Benchmark\]'
-  cosstable3-resource3:
-    image: cos-stable-60-9592-90-0
-    project: cos-cloud
-    machine: n1-standard-1
-    metadata: "user-data<test/e2e_node/jenkins/gci-init.yaml,gci-update-strategy=update_disabled"
-    tests:
-      - 'resource tracking for 105 pods per node \[Benchmark\]'
-
-  cosstable3-density1:
-    image: cos-stable-60-9592-90-0
-    project: cos-cloud
-    machine: n1-standard-1
-    tests:
-      - 'create 35 pods with 0s? interval \[Benchmark\]'
-  cosstable3-density2:
-    image: cos-stable-60-9592-90-0
-    project: cos-cloud
-    machine: n1-standard-1
-    tests:
-      - 'create 105 pods with 0s? interval \[Benchmark\]'
-  cosstable3-density2-qps60:
-    image: cos-stable-60-9592-90-0
-    project: cos-cloud
-    machine: n1-standard-1
-    tests:
-      - 'create 105 pods with 0s? interval \(QPS 60\) \[Benchmark\]'
-  cosstable3-density3:
-    image: cos-stable-60-9592-90-0
-    project: cos-cloud
-    machine: n1-standard-2
-    tests:
-      - 'create 105 pods with 0s? interval \[Benchmark\]'
-  cosstable3-density4:
-    image: cos-stable-60-9592-90-0
-    project: cos-cloud
-    machine: n1-standard-1
-    tests:
-      - 'create 105 pods with 100ms interval \[Benchmark\]'
-
   cosstable2-resource1:
-    image: cos-stable-61-9765-89-0 
+    image: cos-stable-60-9592-90-0
     project: cos-cloud
     machine: n1-standard-1
     metadata: "user-data<test/e2e_node/jenkins/gci-init.yaml,gci-update-strategy=update_disabled"
     tests:
       - 'resource tracking for 0 pods per node \[Benchmark\]'
   cosstable2-resource2:
-    image: cos-stable-61-9765-89-0 
+    image: cos-stable-60-9592-90-0
     project: cos-cloud
     machine: n1-standard-1
     metadata: "user-data<test/e2e_node/jenkins/gci-init.yaml,gci-update-strategy=update_disabled"
     tests:
       - 'resource tracking for 35 pods per node \[Benchmark\]'
   cosstable2-resource3:
-    image: cos-stable-61-9765-89-0 
+    image: cos-stable-60-9592-90-0
     project: cos-cloud
     machine: n1-standard-1
     metadata: "user-data<test/e2e_node/jenkins/gci-init.yaml,gci-update-strategy=update_disabled"
     tests:
       - 'resource tracking for 105 pods per node \[Benchmark\]'
 
+  cosstable2-density1:
+    image: cos-stable-60-9592-90-0
+    project: cos-cloud
+    machine: n1-standard-1
+    tests:
+      - 'create 35 pods with 0s? interval \[Benchmark\]'
+  cosstable2-density2:
+    image: cos-stable-60-9592-90-0
+    project: cos-cloud
+    machine: n1-standard-1
+    tests:
+      - 'create 105 pods with 0s? interval \[Benchmark\]'
+  cosstable2-density2-qps60:
+    image: cos-stable-60-9592-90-0
+    project: cos-cloud
+    machine: n1-standard-1
+    tests:
+      - 'create 105 pods with 0s? interval \(QPS 60\) \[Benchmark\]'
+  cosstable2-density3:
+    image: cos-stable-60-9592-90-0
+    project: cos-cloud
+    machine: n1-standard-2
+    tests:
+      - 'create 105 pods with 0s? interval \[Benchmark\]'
+  cosstable2-density4:
+    image: cos-stable-60-9592-90-0
+    project: cos-cloud
+    machine: n1-standard-1
+    tests:
+      - 'create 105 pods with 100ms interval \[Benchmark\]'
+
   cosstable1-resource1:
-    image: cos-stable-62-9901-75-0
+    image: cos-stable-63-10032-71-0 
     project: cos-cloud
     machine: n1-standard-1
     metadata: "user-data<test/e2e_node/jenkins/gci-init.yaml,gci-update-strategy=update_disabled"
     tests:
       - 'resource tracking for 0 pods per node \[Benchmark\]'
   cosstable1-resource2:
-    image: cos-stable-62-9901-75-0
+    image: cos-stable-63-10032-71-0
     project: cos-cloud
     machine: n1-standard-1
     metadata: "user-data<test/e2e_node/jenkins/gci-init.yaml,gci-update-strategy=update_disabled"
     tests:
       - 'resource tracking for 35 pods per node \[Benchmark\]'
   cosstable1-resource3:
-    image: cos-stable-62-9901-75-0
+    image: cos-stable-63-10032-71-0
     project: cos-cloud
     machine: n1-standard-1
     metadata: "user-data<test/e2e_node/jenkins/gci-init.yaml,gci-update-strategy=update_disabled"
