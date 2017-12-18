@@ -16,7 +16,7 @@ header {
 }
 
 header a {
-    color: inherit;
+    color: inherit !important;
 }
 
 header ul {
