@@ -37,10 +37,6 @@ import (
 	"golang.org/x/oauth2"
 )
 
-type Logger interface {
-	Debugf(s string, v ...interface{})
-}
-
 type timeClient interface {
 	Sleep(time.Duration)
 	Until(time.Time) time.Duration
@@ -57,7 +53,7 @@ func (s *standardTime) Until(t time.Time) time.Duration {
 
 type Client struct {
 	// If logger is non-nil, log all method calls with it.
-	logger Logger
+	logger *logrus.Entry
 	time   timeClient
 
 	gqlc     gqlClient
