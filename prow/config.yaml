@@ -28,6 +28,7 @@ tide:
     - kubernetes/charts
     - kubernetes/federation
     - kubernetes/kubernetes-template-project
+    - kubernetes/sig-release
     - kubernetes/test-infra
     labels:
     - lgtm
