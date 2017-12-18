@@ -43,6 +43,11 @@ REPO=${REPO:-${PWD}}
 # to $GOPATH/src/k8s.io/kubernetes and github.com/kubernetes/test-infra
 # to $GOPATH/src/k8s.io/test-infra.
 #
+# Instead of mounting the full user ${HOME} which previously causes many issues like #5607 & #5736
+# We mount only the following folders:
+# - ${HOME}/.cache/bazel to share bazel cache across builds
+# - ${HOME}/.npm to share npm cache across builds
+#
 # - /tmp also needs to be a suitable tmpfs mounted with exec so that bazel
 # can use it when executing various things
 VOLUMES="-v ${REPO}:${REPO} -v ${HOME}/.cache/bazel:/${HOME}/.cache/bazel -v ${HOME}/.npm:/${HOME}/.npm --tmpfs /tmp:exec,mode=777"
