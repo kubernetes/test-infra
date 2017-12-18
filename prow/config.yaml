@@ -1741,7 +1741,6 @@ presubmits:
     rerun_command: "/test pull-kubernetes-e2e-gke-gci"
     trigger: "(?m)^/test pull-kubernetes-e2e-gke-gci,?(\\s+|$)"
     run_if_changed: '^(cluster/gce|cluster/addons).*$'
-
   - name: pull-kubernetes-e2e-kops-aws
     agent: kubernetes
     skip_branches:
@@ -1981,7 +1980,6 @@ presubmits:
     context: pull-kubernetes-e2e-kops-aws
     rerun_command: "/test pull-kubernetes-e2e-kops-aws"
     trigger: "(?m)^/test( all| pull-kubernetes-e2e-kops-aws),?(\\s+|$)"
-
   - name: pull-kubernetes-kubemark-e2e-gce
     agent: kubernetes
     always_run: true
@@ -4153,7 +4151,6 @@ presubmits:
     rerun_command: "/test pull-security-kubernetes-e2e-gke-gci"
     trigger: "(?m)^/test pull-security-kubernetes-e2e-gke-gci,?(\\s+|$)"
     run_if_changed: '^(cluster/gce|cluster/addons).*$'
-
   - name: pull-security-kubernetes-e2e-kops-aws
     agent: kubernetes
     skip_branches:
@@ -4393,7 +4390,6 @@ presubmits:
     context: pull-security-kubernetes-e2e-kops-aws
     rerun_command: "/test pull-security-kubernetes-e2e-kops-aws"
     trigger: "(?m)^/test( all| pull-security-kubernetes-e2e-kops-aws),?(\\s+|$)"
-
   - name: pull-security-kubernetes-kubemark-e2e-gce
     agent: kubernetes
     always_run: true
