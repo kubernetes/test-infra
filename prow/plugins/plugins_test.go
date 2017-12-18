@@ -153,3 +153,72 @@ func TestValidateExternalPlugins(t *testing.T) {
 		}
 	}
 }
+
+func TestSetDefaults(t *testing.T) {
+	tests := []struct {
+		name string
+
+		trustedOrg string
+		joinOrgURL string
+
+		expectedTrustedOrg string
+		expectedJoinOrgURL string
+	}{
+		{
+			name: "url defaults to org",
+
+			trustedOrg: "kubernetes",
+			joinOrgURL: "",
+
+			expectedTrustedOrg: "kubernetes",
+			expectedJoinOrgURL: "https://github.com/orgs/kubernetes/people",
+		},
+		{
+			name: "both org and url are set",
+
+			trustedOrg: "kubernetes",
+			joinOrgURL: "https://github.com/kubernetes/community/blob/master/community-membership.md#member",
+
+			expectedTrustedOrg: "kubernetes",
+			expectedJoinOrgURL: "https://github.com/kubernetes/community/blob/master/community-membership.md#member",
+		},
+		{
+			name: "only url is set",
+
+			trustedOrg: "",
+			joinOrgURL: "https://github.com/kubernetes/community/blob/master/community-membership.md#member",
+
+			expectedTrustedOrg: "",
+			expectedJoinOrgURL: "https://github.com/kubernetes/community/blob/master/community-membership.md#member",
+		},
+		{
+			name: "nothing is set",
+
+			trustedOrg: "",
+			joinOrgURL: "",
+
+			expectedTrustedOrg: "",
+			expectedJoinOrgURL: "",
+		},
+	}
+
+	for _, test := range tests {
+		c := &Configuration{
+			Triggers: []Trigger{
+				{
+					TrustedOrg: test.trustedOrg,
+					JoinOrgURL: test.joinOrgURL,
+				},
+			},
+		}
+
+		c.setDefaults()
+
+		if c.Triggers[0].TrustedOrg != test.expectedTrustedOrg {
+			t.Errorf("unexpected trusted_org: %s, expected: %s", c.Triggers[0].TrustedOrg, test.expectedTrustedOrg)
+		}
+		if c.Triggers[0].JoinOrgURL != test.expectedJoinOrgURL {
+			t.Errorf("unexpected join_org_url: %s, expected: %s", c.Triggers[0].JoinOrgURL, test.expectedJoinOrgURL)
+		}
+	}
+}
