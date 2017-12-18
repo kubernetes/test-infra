@@ -318,8 +318,9 @@ func TestAccumulate(t *testing.T) {
 }
 
 type fgc struct {
-	refs   map[string]string
-	merged int
+	refs      map[string]string
+	merged    int
+	setStatus bool
 }
 
 func (f *fgc) GetRef(o, r, ref string) (string, error) {
@@ -333,6 +334,120 @@ func (f *fgc) Query(ctx context.Context, q interface{}, vars map[string]interfac
 func (f *fgc) Merge(org, repo string, number int, details github.MergeDetails) error {
 	f.merged++
 	return nil
+}
+
+func (f *fgc) CreateStatus(org, repo, ref string, s github.Status) error {
+	f.setStatus = true
+	return nil
+}
+
+func TestSetStatuses(t *testing.T) {
+	testcases := []struct {
+		name string
+
+		inPool     bool
+		hasContext bool
+		state      githubql.StatusState
+		desc       string
+
+		shouldSet bool
+	}{
+		{
+			name: "in pool with proper context",
+
+			inPool:     true,
+			hasContext: true,
+			state:      githubql.StatusStateSuccess,
+			desc:       statusInPool,
+
+			shouldSet: false,
+		},
+		{
+			name: "in pool without context",
+
+			inPool:     true,
+			hasContext: false,
+
+			shouldSet: true,
+		},
+		{
+			name: "in pool with improper context",
+
+			inPool:     true,
+			hasContext: true,
+			state:      githubql.StatusStateSuccess,
+			desc:       statusNotInPool,
+
+			shouldSet: true,
+		},
+		{
+			name: "in pool with wrong state",
+
+			inPool:     true,
+			hasContext: true,
+			state:      githubql.StatusStatePending,
+			desc:       statusInPool,
+
+			shouldSet: true,
+		},
+		{
+			name: "not in pool with proper context",
+
+			inPool:     false,
+			hasContext: true,
+			state:      githubql.StatusStatePending,
+			desc:       statusNotInPool,
+
+			shouldSet: false,
+		},
+		{
+			name: "not in pool with improper context",
+
+			inPool:     false,
+			hasContext: true,
+			state:      githubql.StatusStatePending,
+			desc:       statusInPool,
+
+			shouldSet: true,
+		},
+		{
+			name: "not in pool with no context",
+
+			inPool:     false,
+			hasContext: false,
+
+			shouldSet: true,
+		},
+	}
+	for _, tc := range testcases {
+		var pr PullRequest
+		pr.Commits.Nodes = []struct{ Commit Commit }{{}}
+		if tc.hasContext {
+			pr.Commits.Nodes[0].Commit.Status.Contexts = []Context{
+				{
+					Context:     githubql.String(statusContext),
+					State:       tc.state,
+					Description: githubql.String(tc.desc),
+				},
+			}
+		}
+		var pool []PullRequest
+		if tc.inPool {
+			pool = []PullRequest{pr}
+		}
+		fc := &fgc{}
+		ca := &config.Agent{}
+		ca.Set(&config.Config{})
+		c := &Controller{ghc: fc, ca: ca}
+		if err := c.setStatuses([]PullRequest{pr}, pool); err != nil {
+			t.Errorf("For case %s: error setting status: %v", tc.name, err)
+		}
+		if tc.shouldSet && !fc.setStatus {
+			t.Errorf("For case %s: should set but didn't", tc.name)
+		} else if !tc.shouldSet && fc.setStatus {
+			t.Errorf("For case %s: should not set but did", tc.name)
+		}
+	}
 }
 
 // TestDividePool ensures that subpools returned by dividePool satisfy a few
@@ -547,12 +662,11 @@ func TestPickBatch(t *testing.T) {
 		var pr PullRequest
 		pr.Number = githubql.Int(i)
 		pr.Commits.Nodes = []struct {
-			Commit struct {
-				Status struct{ State githubql.String }
-			}
+			Commit Commit
 		}{{}}
-		if testpr.success {
-			pr.Commits.Nodes[0].Commit.Status.State = githubql.String("SUCCESS")
+		pr.Commits.Nodes[0].Commit.Status.Contexts = append(pr.Commits.Nodes[0].Commit.Status.Contexts, Context{State: githubql.StatusStateSuccess})
+		if !testpr.success {
+			pr.Commits.Nodes[0].Commit.Status.Contexts[0].State = githubql.StatusStateFailure
 		}
 		pr.HeadRef.Target.OID = githubql.String(fmt.Sprintf("origin/pr-%d", i))
 		sp.prs = append(sp.prs, pr)
@@ -572,8 +686,10 @@ func TestPickBatch(t *testing.T) {
 				break
 			}
 		}
-		if found != testpr.included {
+		if found && !testpr.included {
 			t.Errorf("PR %d should not be picked.", i)
+		} else if !found && testpr.included {
+			t.Errorf("PR %d should be picked.", i)
 		}
 	}
 }
@@ -760,11 +876,8 @@ func TestTakeAction(t *testing.T) {
 				var pr PullRequest
 				pr.Number = githubql.Int(i)
 				pr.Commits.Nodes = []struct {
-					Commit struct {
-						Status struct{ State githubql.String }
-					}
+					Commit Commit
 				}{{}}
-				pr.Commits.Nodes[0].Commit.Status.State = githubql.String("SUCCESS")
 				pr.HeadRef.Target.OID = githubql.String(fmt.Sprintf("origin/pr-%d", i))
 				sp.prs = append(sp.prs, pr)
 				prs = append(prs, pr)

@@ -14,7 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package tide contains a controller for managing a tide pool of PRs.
+// Package tide contains a controller for managing a tide pool of PRs. The
+// controller will automatically retest PRs in the pool and merge them if they
+// pass tests.
 package tide
 
 import (
@@ -35,6 +37,12 @@ import (
 	"k8s.io/test-infra/prow/pjutil"
 )
 
+const (
+	statusContext   string = "tide"
+	statusInPool           = "In tide pool."
+	statusNotInPool        = "Not in tide pool."
+)
+
 type kubeClient interface {
 	ListProwJobs(string) ([]kube.ProwJob, error)
 	CreateProwJob(kube.ProwJob) (kube.ProwJob, error)
@@ -42,6 +50,7 @@ type kubeClient interface {
 
 type githubClient interface {
 	GetRef(string, string, string) (string, error)
+	CreateStatus(string, string, string, github.Status) error
 	Query(context.Context, interface{}, map[string]interface{}) error
 	Merge(string, string, int, github.MergeDetails) error
 }
@@ -103,17 +112,78 @@ func NewController(ghc *github.Client, kc *kube.Client, ca *config.Agent, gc *gi
 	}
 }
 
+// org/repo -> number -> pr
+func byRepoAndNumber(prs []PullRequest) map[string]map[int]PullRequest {
+	m := make(map[string]map[int]PullRequest)
+	for _, pr := range prs {
+		r := string(pr.Repository.NameWithOwner)
+		if _, ok := m[r]; !ok {
+			m[r] = make(map[int]PullRequest)
+		}
+		m[r][int(pr.Number)] = pr
+	}
+	return m
+}
+
+// Returns expected status state and description.
+// TODO(spxtr): Useful information such as "missing label: foo."
+func expectedStatus(pr PullRequest, pool map[string]map[int]PullRequest) (githubql.StatusState, string) {
+	if _, ok := pool[string(pr.Repository.NameWithOwner)][int(pr.Number)]; !ok {
+		return githubql.StatusStatePending, statusNotInPool
+	}
+	return githubql.StatusStateSuccess, statusInPool
+}
+
+func (c *Controller) setStatuses(all, pool []PullRequest) error {
+	poolM := byRepoAndNumber(pool)
+	for _, pr := range all {
+		wantState, wantDesc := expectedStatus(pr, poolM)
+		var actualState githubql.StatusState
+		var actualDesc string
+		for _, ctx := range pr.Commits.Nodes[0].Commit.Status.Contexts {
+			if string(ctx.Context) == statusContext {
+				actualState = ctx.State
+				actualDesc = string(ctx.Description)
+			}
+		}
+		if wantState != actualState || wantDesc != actualDesc {
+			if err := c.ghc.CreateStatus(
+				string(pr.Repository.Owner.Login),
+				string(pr.Repository.Name),
+				string(pr.HeadRef.Target.OID),
+				github.Status{
+					Context:     statusContext,
+					State:       string(wantState),
+					Description: wantDesc,
+					TargetURL:   c.ca.Config().Tide.TargetURL,
+				}); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
 // Sync runs one sync iteration.
 func (c *Controller) Sync() error {
 	ctx := context.Background()
 	c.logger.Info("Building tide pool.")
 	var pool []PullRequest
+	var all []PullRequest
 	for _, q := range c.ca.Config().Tide.Queries {
-		prs, err := c.search(ctx, q.Query())
+		poolPRs, err := c.search(ctx, q.Query())
 		if err != nil {
 			return err
 		}
-		pool = append(pool, prs...)
+		pool = append(pool, poolPRs...)
+		allPRs, err := c.search(ctx, q.AllPRs())
+		if err != nil {
+			return err
+		}
+		all = append(all, allPRs...)
+	}
+	if err := c.setStatuses(all, pool); err != nil {
+		return err
 	}
 	var pjs []kube.ProwJob
 	var err error
@@ -168,6 +238,20 @@ func toSimpleState(s kube.ProwJobState) simpleState {
 	return noneState
 }
 
+// isPassingTests returns whether or not all contexts set on the PR except for
+// the tide pool context are passing.
+func isPassingTests(pr PullRequest) bool {
+	for _, ctx := range pr.Commits.Nodes[0].Commit.Status.Contexts {
+		if string(ctx.Context) == statusContext {
+			continue
+		}
+		if ctx.State != githubql.StatusStateSuccess {
+			return false
+		}
+	}
+	return true
+}
+
 func pickSmallestPassingNumber(prs []PullRequest) (bool, PullRequest) {
 	smallestNumber := -1
 	var smallestPR PullRequest
@@ -178,8 +262,7 @@ func pickSmallestPassingNumber(prs []PullRequest) (bool, PullRequest) {
 		if len(pr.Commits.Nodes) < 1 {
 			continue
 		}
-		// TODO(spxtr): Check the actual statuses for individual jobs.
-		if string(pr.Commits.Nodes[0].Commit.Status.State) != "SUCCESS" {
+		if !isPassingTests(pr) {
 			continue
 		}
 		smallestNumber = int(pr.Number)
@@ -332,8 +415,7 @@ func (c *Controller) pickBatch(sp subpool) ([]PullRequest, error) {
 		if i == 5 {
 			break
 		}
-		// TODO(spxtr): Check the actual statuses for individual jobs.
-		if string(pr.Commits.Nodes[0].Commit.Status.State) != "SUCCESS" {
+		if !isPassingTests(pr) {
 			continue
 		}
 		if ok, err := r.Merge(string(pr.HeadRef.Target.OID)); err != nil {
@@ -546,7 +628,6 @@ func (c *Controller) search(ctx context.Context, q string) ([]PullRequest, error
 	return ret, nil
 }
 
-// TODO(spxtr): Add useful information for frontend stuff such as links.
 type PullRequest struct {
 	Number githubql.Int
 	Author struct {
@@ -570,13 +651,21 @@ type PullRequest struct {
 	}
 	Commits struct {
 		Nodes []struct {
-			Commit struct {
-				Status struct {
-					State githubql.String
-				}
-			}
+			Commit Commit
 		}
 	} `graphql:"commits(last: 1)"`
+}
+
+type Commit struct {
+	Status struct {
+		Contexts []Context
+	}
+}
+
+type Context struct {
+	Context     githubql.String
+	Description githubql.String
+	State       githubql.StatusState
 }
 
 type searchQuery struct {
