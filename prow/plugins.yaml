@@ -69,6 +69,12 @@ slack:
     - wojtek-t # 1.7 patch release manager
     - jpbetz # 1.8 patch release manager
     - dashpole # 1.9 branch manager
+  - repos:
+    - kubernetes/test-infra
+    channels:
+    - testing-ops
+    whitelist:
+    - k8s-ci-robot
 
 milestonestatus:
   # You can curl the following endpoint in order to determine the github ID of your team
@@ -86,6 +92,7 @@ plugins:
 
   kubernetes/charts:
   - approve
+  - blunderbuss
   - trigger
 
   kubernetes/cluster-registry:
@@ -126,6 +133,9 @@ plugins:
   - docs-no-retest
   - blockade
 
+  kubernetes/kubernetes-template-project:
+  - approve
+
   kubernetes/test-infra:
   - trigger
   - config-updater
@@ -134,28 +144,26 @@ plugins:
   kubernetes:
   - assign
   - cla
-  - close
-  - reopen
   - golint
   - heart
   - hold
   - label
   - lgtm
+  - lifecycle
   - milestonestatus
+  - shrug
   - sigmention
   - size
-  - yuks
-  - wip
-  - shrug
   - slackevents
+  - wip
+  - yuks
 
   kubernetes-incubator:
   - assign
   - cla
-  - close
   - label
   - lgtm
-  - reopen
+  - lifecycle
   - size
 
   kubernetes-incubator/cri-containerd:
@@ -169,9 +177,8 @@ plugins:
 
   spxtr/envoy:
   - assign
-  - close
-  - reopen
   - lgtm
+  - lifecycle
   - trigger
 
   GoogleCloudPlatform/k8s-multicluster-ingress:

@@ -39,7 +39,7 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 	var configInfo map[string]string
 	if len(enabledRepos) == 1 {
 		msg := fmt.Sprintf(
-			"The main configuration is kept in sync with %s/%s.\nThe plugin configuration is kept in sync with %s/%s.",
+			"The main configuration is kept in sync with '%s/%s'.\nThe plugin configuration is kept in sync with '%s/%s'.",
 			enabledRepos[0],
 			config.ConfigUpdater.ConfigFile,
 			enabledRepos[0],

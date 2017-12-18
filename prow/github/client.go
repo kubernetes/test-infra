@@ -37,10 +37,6 @@ import (
 	"golang.org/x/oauth2"
 )
 
-type Logger interface {
-	Debugf(s string, v ...interface{})
-}
-
 type timeClient interface {
 	Sleep(time.Duration)
 	Until(time.Time) time.Duration
@@ -57,7 +53,7 @@ func (s *standardTime) Until(t time.Time) time.Duration {
 
 type Client struct {
 	// If logger is non-nil, log all method calls with it.
-	logger Logger
+	logger *logrus.Entry
 	time   timeClient
 
 	gqlc     gqlClient
@@ -68,8 +64,9 @@ type Client struct {
 	fake     bool
 	throttle throttler
 
-	mut     sync.Mutex // protects botName
+	mut     sync.Mutex // protects botName and email
 	botName string
+	email   string
 }
 
 const (
@@ -216,6 +213,10 @@ func NewFakeClient() *Client {
 	}
 }
 
+func (c *Client) WithFields(fields logrus.Fields) {
+	c.logger = c.logger.WithFields(fields)
+}
+
 func (c *Client) log(methodName string, args ...interface{}) {
 	if c.logger == nil {
 		return
@@ -224,7 +225,7 @@ func (c *Client) log(methodName string, args ...interface{}) {
 	for _, arg := range args {
 		as = append(as, fmt.Sprintf("%v", arg))
 	}
-	c.logger.Debugf("%s(%s)", methodName, strings.Join(as, ", "))
+	c.logger.Infof("%s(%s)", methodName, strings.Join(as, ", "))
 }
 
 type request struct {
@@ -377,27 +378,54 @@ func (c *Client) doRequest(method, path, accept string, body interface{}) (*http
 	return c.client.Do(req)
 }
 
+// Not thread-safe - callers need to hold c.mut.
+func (c *Client) getUserData() error {
+	var u User
+	_, err := c.request(&request{
+		method:    http.MethodGet,
+		path:      fmt.Sprintf("%s/user", c.base),
+		exitCodes: []int{200},
+	}, &u)
+	if err != nil {
+		return err
+	}
+	c.botName = u.Login
+	// email needs to be publicly accessible via the profile
+	// of the current account. Read below for more info
+	// https://developer.github.com/v3/users/#get-a-single-user
+	c.email = u.Email
+	return nil
+}
+
 func (c *Client) BotName() (string, error) {
 	c.mut.Lock()
 	defer c.mut.Unlock()
 	if c.botName == "" {
-		var u User
-		_, err := c.request(&request{
-			method:    http.MethodGet,
-			path:      fmt.Sprintf("%s/user", c.base),
-			exitCodes: []int{200},
-		}, &u)
-		if err != nil {
+		if err := c.getUserData(); err != nil {
 			return "", fmt.Errorf("fetching bot name from GitHub: %v", err)
 		}
-		c.botName = u.Login
 	}
 	return c.botName, nil
+}
+
+func (c *Client) Email() (string, error) {
+	c.mut.Lock()
+	defer c.mut.Unlock()
+	if c.email == "" {
+		if err := c.getUserData(); err != nil {
+			return "", fmt.Errorf("fetching e-mail from GitHub: %v", err)
+		}
+	}
+	return c.email, nil
 }
 
 // IsMember returns whether or not the user is a member of the org.
 func (c *Client) IsMember(org, user string) (bool, error) {
 	c.log("IsMember", org, user)
+	if org == user {
+		// Make it possible to run a couple of plugins on personal repos.
+		return true, nil
+	}
 	code, err := c.request(&request{
 		method:    http.MethodGet,
 		path:      fmt.Sprintf("%s/orgs/%s/members/%s", c.base, org, user),

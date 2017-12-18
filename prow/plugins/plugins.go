@@ -274,6 +274,10 @@ type Trigger struct {
 	// TrustedOrg is the org whose members' PRs will be automatically built
 	// for PRs to the above repos. The default is the PR's org.
 	TrustedOrg string `json:"trusted_org,omitempty"`
+	// JoinOrgURL is a link that redirects users to a location where they
+	// should be able to read more about joining the organization in order
+	// to become trusted members. Defaults to the Github link of TrustedOrg.
+	JoinOrgURL string `json:"join_org_url,omitempty"`
 }
 
 type Heart struct {
@@ -354,6 +358,9 @@ func (c *Configuration) setDefaults() {
 	}
 	if c.Blunderbuss.ReviewerCount == 0 {
 		c.Blunderbuss.ReviewerCount = defaultBlunderbussReviewerCount
+	}
+	for i, trigger := range c.Triggers {
+		c.Triggers[i].JoinOrgURL = fmt.Sprintf("https://github.com/orgs/%s/people", trigger.TrustedOrg)
 	}
 }
 
@@ -641,7 +648,7 @@ func EventsForPlugin(name string) []string {
 		events = append(events, "status")
 	}
 	if _, ok := genericCommentHandlers[name]; ok {
-		events = append(events, "<GenericCommentEvent. Includes: [issue_comment, pull_request_review, pull_request_review_comment, status] and for text modifying actions: [issue, pull_request]>")
+		events = append(events, "GenericCommentEvent (any event for user text)")
 	}
 	return events
 }

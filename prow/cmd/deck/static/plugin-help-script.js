@@ -69,12 +69,12 @@ function addSection(div, section, elem) {
 }
 
 function addTextSection(div, section, content) {
-    if (content == "") {
+    if (!content) {
         return;
     }
 
     var p = document.createElement("p");
-    p.appendChild(document.createTextNode(content));
+    p.innerHTML = content
     addSection(div, section, p);
 }
 

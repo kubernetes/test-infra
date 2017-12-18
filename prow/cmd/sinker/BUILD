@@ -14,7 +14,6 @@ go_image(
     embed = [":go_default_library"],
     importpath = "k8s.io/test-infra/prow/cmd/sinker",
     pure = "on",
-    race = "off",
 )
 
 go_binary(
@@ -22,7 +21,6 @@ go_binary(
     embed = [":go_default_library"],
     importpath = "k8s.io/test-infra/prow/cmd/sinker",
     pure = "on",
-    race = "off",
 )
 
 go_test(

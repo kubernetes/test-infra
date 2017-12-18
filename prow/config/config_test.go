@@ -29,6 +29,7 @@ import (
 
 	"github.com/ghodss/yaml"
 
+	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
 )
 
@@ -115,6 +116,16 @@ func checkRetest(t *testing.T, repo string, presubmits []Presubmit) {
 func TestRetestMatchJobsName(t *testing.T) {
 	for repo, presubmits := range c.Presubmits {
 		checkRetest(t, repo, presubmits)
+	}
+}
+
+func TestTideMergeMethod(t *testing.T) {
+	for name, method := range c.Tide.MergeType {
+		if method != github.MergeMerge &&
+			method != github.MergeRebase &&
+			method != github.MergeSquash {
+			t.Errorf("Merge type %q for %s is not a valid type", method, name)
+		}
 	}
 }
 

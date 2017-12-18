@@ -25,6 +25,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -96,124 +97,31 @@ func handleTrace(ja *JobAgent) http.HandlerFunc {
 		w.Header().Set("Cache-Control", "no-cache")
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 
-		prNum, err := validateTraceRequest(r)
-		if err != nil {
+		if err := validateTraceRequest(r); err != nil {
 			logrus.Debugf("Invalid request: %v", err)
 			http.Error(w, fmt.Sprintf("Invalid request: %v", err), http.StatusBadRequest)
 			return
 		}
 
-		var targets []kube.Pod
-		for _, selector := range ja.c.Config().Deck.TraceTargets {
-			pods, err := ja.pkc.ListPods(selector)
-			if err != nil {
-				logrus.Debugf("Cannot list pods with selector %q: %v", selector, err)
-				http.Error(w, fmt.Sprintf("Cannot list pods with selector %q: %v", selector, err), http.StatusBadGateway)
-				return
-			}
-			for _, pod := range pods {
-				if pod.Status.Phase != kube.PodRunning {
-					logrus.Debugf("Ignoring pod %q: not in %s phase (phase: %s, reason: %s)",
-						pod.Metadata.Name, kube.PodRunning, pod.Status.Phase, pod.Status.Reason)
-					continue
-				}
-				targets = append(targets, pod)
-			}
+		targets, err := getPods(ja)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadGateway)
+			return
 		}
-
 		if len(targets) == 0 {
 			logrus.Debug("No targets found.")
 			fmt.Fprint(w, "[]")
 			return
 		}
 
-		pr := r.URL.Query().Get(github.PrLogField)
-		repo := r.URL.Query().Get(github.RepoLogField)
-		org := r.URL.Query().Get(github.OrgLogField)
-		eventGUID := r.URL.Query().Get(github.EventGUID)
-
-		icID := r.URL.Query().Get(ic)
-		var icChecked bool
-		var icEventGUID string
-
-		log := make(linesByTimestamp, 0)
-		var buf *bytes.Buffer
-		for _, pod := range targets {
-			// TODO: Cache this and use "since" as a pod/log url parameter to fetch
-			// newer logs.
-			podLog, err := ja.pkc.GetLog(pod.Metadata.Name)
-			if err != nil {
-				logrus.Debugf("cannot get logs from %q: %v", pod.Metadata.Name, err)
-				continue
-			}
-			buf = bytes.NewBuffer(podLog)
-
-			for {
-				line, err := buf.ReadBytes('\n')
-				if err == io.EOF {
-					break
-				}
-				if err != nil {
-					logrus.Debugf("error while reading log line from %q: %v", pod.Metadata.Name, err)
-					continue
-				}
-
-				var jsonLine lineData
-				if err := json.Unmarshal(line, &jsonLine); err != nil {
-					logrus.Debugf("cannot unmarshal log line from %q (%s): %v", pod.Metadata.Name, string(line), err)
-					continue
-				}
-				if eventGUID != "" && jsonLine.EventGUID != eventGUID {
-					continue
-				}
-				if pr != "" && jsonLine.PrNum != prNum {
-					continue
-				}
-				if repo != "" && jsonLine.Repo != repo {
-					continue
-				}
-				if org != "" && jsonLine.Org != org {
-					continue
-				}
-				// If issuecomment is specified, figure out its event-GUID and
-				// and select logs based on the event-GUID.
-				if icID != "" && !icChecked && strings.HasSuffix(jsonLine.URL, fmt.Sprintf("%s-%s", ic, icID)) {
-					icChecked = true
-					icEventGUID = jsonLine.EventGUID
-				}
-				jsonLine.time, err = time.Parse(time.RFC3339, jsonLine.TimeStr)
-				if err != nil {
-					logrus.Debugf("could not parse time format: %v", err)
-					// Continue including this in the output at the expense
-					// of not having it sorted.
-				}
-				log = append(log, podLine{actual: line, unmarshaled: jsonLine})
-			}
-		}
-
-		// No event-GUID was found for the provided issuecomment.
-		// No logs should be returned.
-		if icID != "" && icEventGUID == "" {
-			fmt.Fprint(w, "[]")
-			return
-		}
-
-		if icEventGUID != "" {
-			tmpLog := make(linesByTimestamp, 0)
-			for _, l := range log {
-				if l.unmarshaled.EventGUID != icEventGUID {
-					continue
-				}
-				tmpLog = append(tmpLog, l)
-			}
-			log = tmpLog
-		}
-
-		fmt.Fprint(w, log)
+		// Return the logs from the found targets.
+		log := getPodLogs(ja, targets, r)
+		// Filter further if issuecomment has been provided.
+		fmt.Fprint(w, postFilter(log, r.URL.Query().Get(ic)))
 	}
 }
 
-func validateTraceRequest(r *http.Request) (int, error) {
+func validateTraceRequest(r *http.Request) error {
 	icID := r.URL.Query().Get(ic)
 	pr := r.URL.Query().Get(github.PrLogField)
 	repo := r.URL.Query().Get(github.RepoLogField)
@@ -221,22 +129,143 @@ func validateTraceRequest(r *http.Request) (int, error) {
 	eventGUID := r.URL.Query().Get(github.EventGUID)
 
 	if (pr == "" || repo == "" || org == "") && eventGUID == "" && icID == "" {
-		return 0, fmt.Errorf("need either %q, %q, and %q, or %q, or %q to be specified",
+		return fmt.Errorf("need either %q, %q, and %q, or %q, or %q to be specified",
 			github.PrLogField, github.RepoLogField, github.OrgLogField, github.EventGUID, ic)
 	}
 	if icID != "" && eventGUID != "" {
-		return 0, fmt.Errorf("cannot specify both %s (%s) and %s (%s)", ic, icID, github.EventGUID, eventGUID)
+		return fmt.Errorf("cannot specify both %s (%s) and %s (%s)", ic, icID, github.EventGUID, eventGUID)
 	}
 	var prNum int
 	if pr != "" {
 		var err error
 		prNum, err = strconv.Atoi(pr)
 		if err != nil {
-			return 0, fmt.Errorf("invalid pr query %q: %v", pr, err)
+			return fmt.Errorf("invalid pr query %q: %v", pr, err)
 		}
 		if prNum < 1 {
-			return 0, fmt.Errorf("invalid pr query %q: needs to be a positive number", pr)
+			return fmt.Errorf("invalid pr query %q: needs to be a positive number", pr)
 		}
 	}
-	return prNum, nil
+	return nil
+}
+
+func getPods(ja *JobAgent) ([]kube.Pod, error) {
+	var targets []kube.Pod
+	for _, selector := range ja.c.Config().Deck.TraceTargets {
+		pods, err := ja.pkc.ListPods(selector)
+		if err != nil {
+			return nil, fmt.Errorf("Cannot list pods with selector %q: %v", selector, err)
+		}
+		for _, pod := range pods {
+			if pod.Status.Phase != kube.PodRunning {
+				logrus.Debugf("Ignoring pod %q: not in %s phase (phase: %s, reason: %s)",
+					pod.Metadata.Name, kube.PodRunning, pod.Status.Phase, pod.Status.Reason)
+				continue
+			}
+			targets = append(targets, pod)
+		}
+	}
+	return targets, nil
+}
+
+func getPodLogs(ja *JobAgent, targets []kube.Pod, r *http.Request) linesByTimestamp {
+	var lock sync.Mutex
+	log := make(linesByTimestamp, 0)
+	wg := sync.WaitGroup{}
+	wg.Add(len(targets))
+	for _, pod := range targets {
+		go func(podName string) {
+			defer wg.Done()
+			podLog, err := getPodLog(podName, ja, r)
+			if err != nil {
+				logrus.Debugf("cannot get logs from %q: %v", podName, err)
+				return
+			}
+			lock.Lock()
+			log = append(log, podLog...)
+			lock.Unlock()
+		}(pod.Metadata.Name)
+	}
+	wg.Wait()
+	return log
+}
+
+func getPodLog(podName string, ja *JobAgent, r *http.Request) (linesByTimestamp, error) {
+	pr := r.URL.Query().Get(github.PrLogField)
+	// Error already checked in validateTraceRequest
+	prNum, _ := strconv.Atoi(pr)
+	repo := r.URL.Query().Get(github.RepoLogField)
+	org := r.URL.Query().Get(github.OrgLogField)
+	eventGUID := r.URL.Query().Get(github.EventGUID)
+
+	podLog, err := ja.pkc.GetLog(podName)
+	if err != nil {
+		return nil, err
+	}
+	buf := bytes.NewBuffer(podLog)
+
+	log := make(linesByTimestamp, 0)
+	for {
+		line, err := buf.ReadBytes('\n')
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			logrus.Debugf("error while reading log line from %q: %v", podName, err)
+			continue
+		}
+
+		var jsonLine lineData
+		if err := json.Unmarshal(line, &jsonLine); err != nil {
+			logrus.Debugf("cannot unmarshal log line from %q (%s): %v", podName, string(line), err)
+			continue
+		}
+		if eventGUID != "" && jsonLine.EventGUID != eventGUID {
+			continue
+		}
+		if pr != "" && jsonLine.PrNum != prNum {
+			continue
+		}
+		if repo != "" && jsonLine.Repo != repo {
+			continue
+		}
+		if org != "" && jsonLine.Org != org {
+			continue
+		}
+		jsonLine.time, err = time.Parse(time.RFC3339, jsonLine.TimeStr)
+		if err != nil {
+			logrus.Debugf("could not parse time format: %v", err)
+			// Continue including this in the output at the expense
+			// of not having it sorted.
+		}
+		log = append(log, podLine{actual: line, unmarshaled: jsonLine})
+	}
+	return log, nil
+}
+
+func postFilter(log linesByTimestamp, icID string) linesByTimestamp {
+	if icID == "" {
+		return log
+	}
+	var icEventGUID string
+	for _, l := range log {
+		if strings.HasSuffix(l.unmarshaled.URL, fmt.Sprintf("%s-%s", ic, icID)) {
+			icEventGUID = l.unmarshaled.EventGUID
+			break
+		}
+	}
+	// No event-GUID was found for the provided issuecomment.
+	// No logs should be returned.
+	if icEventGUID == "" {
+		return linesByTimestamp{}
+	}
+
+	filtered := make(linesByTimestamp, 0)
+	for _, l := range log {
+		if l.unmarshaled.EventGUID != icEventGUID {
+			continue
+		}
+		filtered = append(filtered, l)
+	}
+	return filtered
 }

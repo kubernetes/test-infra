@@ -61,7 +61,6 @@ go_library(
         "cherrypick-label-unapproved.go",
         "cherrypick-must-have-milestone.go",
         "cherrypick-queue.go",
-        "close-stale.go",
         "comment-deleter.go",
         "comment-deleter-jenkins.go",
         "doc.go",

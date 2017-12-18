@@ -28,7 +28,6 @@ filegroup(
         ":package-srcs",
         "//experiment/bootstrap:all-srcs",
         "//experiment/cherrypicker:all-srcs",
-        "//experiment/commenter:all-srcs",
         "//experiment/manual-trigger:all-srcs",
         "//experiment/refresh:all-srcs",
     ],
