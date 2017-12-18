@@ -29,6 +29,7 @@ tide:
     - kubernetes/federation
     - kubernetes/kubernetes-template-project
     - kubernetes/sig-release
+    - kubernetes/steering
     - kubernetes/test-infra
     labels:
     - lgtm

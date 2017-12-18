@@ -19,6 +19,7 @@ approve:
   - kubernetes/community
   - kubernetes/kubectl
   - kubernetes/sig-release
+  - kubernetes/steering
   - kubernetes/test-infra
   implicit_self_approve: true
 - repos:
@@ -139,6 +140,9 @@ plugins:
   - approve
 
   kubernetes/sig-release:
+  - approve
+
+  kubernetes/steering:
   - approve
 
   kubernetes/test-infra:
