@@ -26,6 +26,7 @@ tide:
   queries:
   - repos:
     - kubernetes/charts
+    - kubernetes/community
     - kubernetes/federation
     - kubernetes/kubernetes-template-project
     - kubernetes/sig-release
@@ -38,6 +39,7 @@ tide:
     - needs-ok-to-test
     - do-not-merge/work-in-progress
     - do-not-merge/hold
+    - do-not-merge/blocked-paths
   - repos:
     - kubernetes/kubectl
     missingLabels:
