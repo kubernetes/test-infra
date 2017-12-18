@@ -138,10 +138,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gpu
   alert_stale_results_hours: 24
   num_failures_to_alert: 12 # Runs every 2h. Alert when it's been failing for a day.
-- name: ci-kubernetes-e2e-gce-gpu-1-7
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gpu-1-7
-  alert_stale_results_hours: 36
-  num_failures_to_alert: 4 # Runs every 12h. Alert when it's been failing for a couple of days.
 - name: ci-kubernetes-e2e-gce-gpu-stable1
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gpu-stable1
   alert_stale_results_hours: 24
@@ -3171,8 +3167,6 @@ dashboards:
     test_group_name: ci-kubernetes-soak-gce-1-7
   - name: soak-gci-gce-stable2
     test_group_name: ci-kubernetes-soak-gci-gce-stable2
-  - name: gce-gpu-1.7
-    test_group_name: ci-kubernetes-e2e-gce-gpu-1-7
   - name: gke-gpu-1.7
     test_group_name: ci-kubernetes-e2e-gke-gpu-1-7
   - name: ci-gce-kubeadm-1.7
@@ -3253,8 +3247,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-cos-k8sstable2-reboot
   - name: soak-gci-gce-1.7
     test_group_name: ci-kubernetes-soak-gci-gce-stable2
-  - name: gce-gpu-1.7
-    test_group_name: ci-kubernetes-e2e-gce-gpu-1-7
   - name: gke-gpu-1.7
     test_group_name: ci-kubernetes-e2e-gke-gpu-1-7
 
@@ -3274,10 +3266,6 @@ dashboards:
       alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
   - name: gce-gpu
     test_group_name: ci-kubernetes-e2e-gce-gpu
-    alert_options:
-      alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
-  - name: gce-gpu-1.7
-    test_group_name: ci-kubernetes-e2e-gce-gpu-1-7
     alert_options:
       alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
   - name: gce-gpu-1.8
