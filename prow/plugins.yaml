@@ -17,6 +17,7 @@ approve:
   - kubernetes/charts
   - kubernetes/community
   - kubernetes/kubectl
+  - kubernetes/sig-release
   - kubernetes/test-infra
   implicit_self_approve: true
 - repos:
@@ -134,6 +135,9 @@ plugins:
   - blockade
 
   kubernetes/kubernetes-template-project:
+  - approve
+
+  kubernetes/sig-release:
   - approve
 
   kubernetes/test-infra:
