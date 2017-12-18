@@ -1480,8 +1480,9 @@ presubmits:
   - name: pull-kubernetes-e2e-gce-device-plugin-gpu
     agent: kubernetes
     skip_branches:
-    - release-1.6
-    - release-1.7
+    - release-1.6  # not supported
+    - release-1.7  # not supported
+    - release-1.8  # per-release image
     always_run: true
     skip_report: false
     max_concurrency: 12
@@ -1541,12 +1542,76 @@ presubmits:
       - name: cache-ssd
         hostPath:
           path: /mnt/disks/ssd0
+  - name: pull-kubernetes-e2e-gce-device-plugin-gpu
+    agent: kubernetes
+    branches:
+    - release-1.8
+    always_run: true
+    skip_report: false
+    max_concurrency: 12
+    context: pull-kubernetes-e2e-gce-device-plugin-gpu
+    rerun_command: "/test pull-kubernetes-e2e-gce-device-plugin-gpu"
+    trigger: "(?m)^/test( all| pull-kubernetes-e2e-gce-device-plugin-gpu),?(\\s+|$)"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20171218-a18c352b4-1.8
+        args:
+        - --root=/go/src
+        - "--clean"
+        - "--git-cache=/root/.cache/git"
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--repo=k8s.io/release"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--timeout=90"
+        env:
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /etc/service-account/service-account.json
+        - name: USER
+          value: prow
+        - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+          value: /etc/ssh-key-secret/ssh-private
+        - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+          value: /etc/ssh-key-secret/ssh-public
+        - name: TEST_TMPDIR
+          value: /root/.cache/bazel
+        # Bazel needs privileged mode in order to sandbox builds.
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - mountPath: /etc/service-account
+          name: service
+          readOnly: true
+        - mountPath: /etc/ssh-key-secret
+          name: ssh
+          readOnly: true
+        - name: cache-ssd
+          mountPath: /root/.cache
+        ports:
+        - containerPort: 9999
+          hostPort: 9999
+        resources:
+          requests:
+            memory: "6Gi"
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
+      - name: ssh
+        secret:
+          defaultMode: 256
+          secretName: ssh-key-secret
+      - name: cache-ssd
+        hostPath:
+          path: /mnt/disks/ssd0
 
   - name: pull-kubernetes-e2e-gke-device-plugin-gpu
     agent: kubernetes
     skip_branches:
-    - release-1.6
-    - release-1.7
+    - release-1.6  # not supported
+    - release-1.7  # not supported
+    - release-1.8  # per-release image
     always_run: false
     skip_report: false
     max_concurrency: 1
@@ -1556,6 +1621,69 @@ presubmits:
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20171218-a18c352b4-master
+        args:
+        - --root=/go/src
+        - "--clean"
+        - "--git-cache=/root/.cache/git"
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--repo=k8s.io/release"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--timeout=90"
+        env:
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /etc/service-account/service-account.json
+        - name: USER
+          value: prow
+        - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+          value: /etc/ssh-key-secret/ssh-private
+        - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+          value: /etc/ssh-key-secret/ssh-public
+        - name: TEST_TMPDIR
+          value: /root/.cache/bazel
+        # Bazel needs privileged mode in order to sandbox builds.
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - mountPath: /etc/service-account
+          name: service
+          readOnly: true
+        - mountPath: /etc/ssh-key-secret
+          name: ssh
+          readOnly: true
+        - name: cache-ssd
+          mountPath: /root/.cache
+        ports:
+        - containerPort: 9999
+          hostPort: 9999
+        resources:
+          requests:
+            memory: "6Gi"
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
+      - name: ssh
+        secret:
+          defaultMode: 256
+          secretName: ssh-key-secret
+      - name: cache-ssd
+        hostPath:
+          path: /mnt/disks/ssd0
+  - name: pull-kubernetes-e2e-gke-device-plugin-gpu
+    agent: kubernetes
+    branches:
+    - release-1.8  # per-release image
+    always_run: false
+    skip_report: false
+    max_concurrency: 1
+    context: pull-kubernetes-e2e-gke-device-plugin-gpu
+    rerun_command: "/test pull-kubernetes-e2e-gke-device-plugin-gpu"
+    trigger: "(?m)^/test pull-kubernetes-e2e-gke-device-plugin-gpu,?(\\s+|$)"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20171218-a18c352b4-1.8
         args:
         - --root=/go/src
         - "--clean"
@@ -3253,11 +3381,13 @@ presubmits:
     always_run: true
     branches:
     - release-1.6
+
   - name: pull-security-kubernetes-e2e-gce-device-plugin-gpu
     agent: kubernetes
     skip_branches:
-    - release-1.6
-    - release-1.7
+    - release-1.6  # not supported
+    - release-1.7  # not supported
+    - release-1.8  # per-release image
     always_run: true
     skip_report: false
     max_concurrency: 12
@@ -3317,12 +3447,76 @@ presubmits:
       - name: cache-ssd
         hostPath:
           path: /mnt/disks/ssd0
+  - name: pull-security-kubernetes-e2e-gce-device-plugin-gpu
+    agent: kubernetes
+    branches:
+    - release-1.8
+    always_run: true
+    skip_report: false
+    max_concurrency: 12
+    context: pull-security-kubernetes-e2e-gce-device-plugin-gpu
+    rerun_command: "/test pull-security-kubernetes-e2e-gce-device-plugin-gpu"
+    trigger: "(?m)^/test( all| pull-security-kubernetes-e2e-gce-device-plugin-gpu),?(\\s+|$)"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20171218-a18c352b4-1.8
+        args:
+        - --root=/go/src
+        - "--clean"
+        - "--git-cache=/root/.cache/git"
+        - "--job=$(JOB_NAME)"
+        - "--repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)"
+        - "--repo=k8s.io/release"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-security-jenkins/pr-logs"
+        - "--timeout=90"
+        env:
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /etc/service-account/service-account.json
+        - name: USER
+          value: prow
+        - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+          value: /etc/ssh-key-secret/ssh-private
+        - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+          value: /etc/ssh-key-secret/ssh-public
+        - name: TEST_TMPDIR
+          value: /root/.cache/bazel
+        # Bazel needs privileged mode in order to sandbox builds.
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - mountPath: /etc/service-account
+          name: service
+          readOnly: true
+        - mountPath: /etc/ssh-key-secret
+          name: ssh
+          readOnly: true
+        - name: cache-ssd
+          mountPath: /root/.cache
+        ports:
+        - containerPort: 9999
+          hostPort: 9999
+        resources:
+          requests:
+            memory: "6Gi"
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
+      - name: ssh
+        secret:
+          defaultMode: 256
+          secretName: ssh-key-secret
+      - name: cache-ssd
+        hostPath:
+          path: /mnt/disks/ssd0
 
   - name: pull-security-kubernetes-e2e-gke-device-plugin-gpu
     agent: kubernetes
     skip_branches:
-    - release-1.6
-    - release-1.7
+    - release-1.6  # not supported
+    - release-1.7  # not supported
+    - release-1.8  # per-release image
     always_run: false
     skip_report: false
     max_concurrency: 1
@@ -3332,6 +3526,69 @@ presubmits:
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20171218-a18c352b4-master
+        args:
+        - --root=/go/src
+        - "--clean"
+        - "--git-cache=/root/.cache/git"
+        - "--job=$(JOB_NAME)"
+        - "--repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)"
+        - "--repo=k8s.io/release"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-security-jenkins/pr-logs"
+        - "--timeout=90"
+        env:
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /etc/service-account/service-account.json
+        - name: USER
+          value: prow
+        - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+          value: /etc/ssh-key-secret/ssh-private
+        - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+          value: /etc/ssh-key-secret/ssh-public
+        - name: TEST_TMPDIR
+          value: /root/.cache/bazel
+        # Bazel needs privileged mode in order to sandbox builds.
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - mountPath: /etc/service-account
+          name: service
+          readOnly: true
+        - mountPath: /etc/ssh-key-secret
+          name: ssh
+          readOnly: true
+        - name: cache-ssd
+          mountPath: /root/.cache
+        ports:
+        - containerPort: 9999
+          hostPort: 9999
+        resources:
+          requests:
+            memory: "6Gi"
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
+      - name: ssh
+        secret:
+          defaultMode: 256
+          secretName: ssh-key-secret
+      - name: cache-ssd
+        hostPath:
+          path: /mnt/disks/ssd0
+  - name: pull-security-kubernetes-e2e-gke-device-plugin-gpu
+    agent: kubernetes
+    branches:
+    - release-1.8  # per-release image
+    always_run: false
+    skip_report: false
+    max_concurrency: 1
+    context: pull-security-kubernetes-e2e-gke-device-plugin-gpu
+    rerun_command: "/test pull-security-kubernetes-e2e-gke-device-plugin-gpu"
+    trigger: "(?m)^/test pull-security-kubernetes-e2e-gke-device-plugin-gpu,?(\\s+|$)"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20171218-a18c352b4-1.8
         args:
         - --root=/go/src
         - "--clean"
