@@ -34,13 +34,14 @@ var (
 	helpRe            = regexp.MustCompile(`(?mi)^/help\s*$`)
 	helpRemoveRe      = regexp.MustCompile(`(?mi)^/remove-help\s*$`)
 	helpGuidelinesURL = "https://git.k8s.io/community/contributors/devel/help-wanted.md"
+	helpMsgPruneMatch = "This request has been marked as needing help from a contributor."
 	helpMsg           = `
 This request has been marked as needing help from a contributor.
 
 Please ensure the request meets the requirements listed [here](` + helpGuidelinesURL + `).
 
 If this request no longer meets these requirements, the label can be removed
-by commenting with the "/remove-help" command.
+by commenting with the ` + "`/remove-help`" + ` command.
 `
 )
 
@@ -122,6 +123,6 @@ func shouldPrune(log *logrus.Entry, botName string) func(github.IssueComment) bo
 		if comment.User.Login != botName {
 			return false
 		}
-		return strings.Contains(comment.Body, helpMsg)
+		return strings.Contains(comment.Body, helpMsgPruneMatch)
 	}
 }
