@@ -57,6 +57,7 @@ filegroup(
         "//prow/plugins/docs-no-retest:all-srcs",
         "//prow/plugins/golint:all-srcs",
         "//prow/plugins/heart:all-srcs",
+        "//prow/plugins/help:all-srcs",
         "//prow/plugins/hold:all-srcs",
         "//prow/plugins/label:all-srcs",
         "//prow/plugins/lgtm:all-srcs",
