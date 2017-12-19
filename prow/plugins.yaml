@@ -155,6 +155,7 @@ plugins:
   - cla
   - golint
   - heart
+  - help
   - hold
   - label
   - lgtm

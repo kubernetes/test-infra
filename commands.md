@@ -17,6 +17,8 @@ Command | Implemented By | Who can run it | Description
 `/reopen` | prow [lifecycle](./prow/plugins/lifecycle) | authors and assignees | reopens a closed issue/PR
 `/lifecycle [state]` | prow [lifecycle](./prow/plugins/lifecycle) | anyone | adds a stale, rotten or frozen state label
 `/remove-lifecycle [state]` | prow [lifecycle](./prow/plugins/lifecycle) | anyone | removes a stale, rotten or frozen state label
+`/help` | prow [help](./prow/plugins/help) | anyone | adds the `help wanted` label
+`/remove-help` | prow [help](./prow/plugins/help) | anyone | removes the `help wanted` label
 `/hold` | prow [hold](./prow/plugins/hold) | anyone | adds the `do-not-merge/hold` label
 `/hold cancel` | prow [hold](./prow/plugins/hold) | anyone | removes the `do-not-merge/hold` label
 `/joke` | prow [yuks](./prow/plugins/yuks) | anyone | tells a bad joke, sometimes
