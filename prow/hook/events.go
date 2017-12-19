@@ -51,7 +51,7 @@ var (
 )
 
 func (s *Server) handleReviewEvent(l *logrus.Entry, re github.ReviewEvent) {
-	l = l.WithFields(logrus.Fields{
+	l = logrus.New().WithFields(l.Data).WithFields(logrus.Fields{
 		github.OrgLogField:  re.Repo.Owner.Login,
 		github.RepoLogField: re.Repo.Name,
 		github.PrLogField:   re.PullRequest.Number,
@@ -103,7 +103,7 @@ func (s *Server) handleReviewEvent(l *logrus.Entry, re github.ReviewEvent) {
 }
 
 func (s *Server) handleReviewCommentEvent(l *logrus.Entry, rce github.ReviewCommentEvent) {
-	l = l.WithFields(logrus.Fields{
+	l = logrus.New().WithFields(l.Data).WithFields(logrus.Fields{
 		github.OrgLogField:  rce.Repo.Owner.Login,
 		github.RepoLogField: rce.Repo.Name,
 		github.PrLogField:   rce.PullRequest.Number,
@@ -155,7 +155,7 @@ func (s *Server) handleReviewCommentEvent(l *logrus.Entry, rce github.ReviewComm
 }
 
 func (s *Server) handlePullRequestEvent(l *logrus.Entry, pr github.PullRequestEvent) {
-	l = l.WithFields(logrus.Fields{
+	l = logrus.New().WithFields(l.Data).WithFields(logrus.Fields{
 		github.OrgLogField:  pr.Repo.Owner.Login,
 		github.RepoLogField: pr.Repo.Name,
 		github.PrLogField:   pr.Number,
@@ -208,7 +208,7 @@ func (s *Server) handlePullRequestEvent(l *logrus.Entry, pr github.PullRequestEv
 }
 
 func (s *Server) handlePushEvent(l *logrus.Entry, pe github.PushEvent) {
-	l = l.WithFields(logrus.Fields{
+	l = logrus.New().WithFields(l.Data).WithFields(logrus.Fields{
 		github.OrgLogField:  pe.Repo.Owner.Name,
 		github.RepoLogField: pe.Repo.Name,
 		"ref":               pe.Ref,
@@ -229,7 +229,7 @@ func (s *Server) handlePushEvent(l *logrus.Entry, pe github.PushEvent) {
 }
 
 func (s *Server) handleIssueEvent(l *logrus.Entry, i github.IssueEvent) {
-	l = l.WithFields(logrus.Fields{
+	l = logrus.New().WithFields(l.Data).WithFields(logrus.Fields{
 		github.OrgLogField:  i.Repo.Owner.Login,
 		github.RepoLogField: i.Repo.Name,
 		github.PrLogField:   i.Issue.Number,
@@ -282,7 +282,7 @@ func (s *Server) handleIssueEvent(l *logrus.Entry, i github.IssueEvent) {
 }
 
 func (s *Server) handleIssueCommentEvent(l *logrus.Entry, ic github.IssueCommentEvent) {
-	l = l.WithFields(logrus.Fields{
+	l = logrus.New().WithFields(l.Data).WithFields(logrus.Fields{
 		github.OrgLogField:  ic.Repo.Owner.Login,
 		github.RepoLogField: ic.Repo.Name,
 		github.PrLogField:   ic.Issue.Number,
@@ -333,7 +333,7 @@ func (s *Server) handleIssueCommentEvent(l *logrus.Entry, ic github.IssueComment
 }
 
 func (s *Server) handleStatusEvent(l *logrus.Entry, se github.StatusEvent) {
-	l = l.WithFields(logrus.Fields{
+	l = logrus.New().WithFields(l.Data).WithFields(logrus.Fields{
 		github.OrgLogField:  se.Repo.Owner.Login,
 		github.RepoLogField: se.Repo.Name,
 		"context":           se.Context,
