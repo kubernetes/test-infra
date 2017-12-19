@@ -10,30 +10,60 @@ body {
 header {
     background-color: #3f51b5;
     color: white;
-    padding: 2px;
-    padding-left: 20px;
-    box-shadow: 0px 0px 10px #666;
+    padding: .1em;
+    box-shadow: 0px 0px .5em #666;
 }
 
 header a {
-    color: inherit;
+    color: inherit !important;
+}
+
+header a.logo {
+    height: 3em;
+    padding: 0;
+    margin: 0;
+}
+
+a.current {
+    text-decoration: underline !important;
+}
+
+img.logo {
+    height: inherit;
 }
 
 header ul {
     list-style-type: none;
     overflow: auto;
+    width: 100%;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: space-between;
 }
 
 header ul li {
-    float: right;
+    display: inline;
     list-style-type: none;
-    padding-left: 10px;
-    padding-right: 10px;
+    padding-left: .5em;
+    padding-right: .5em;
+    list-style: none;
+    display: inline-block;
 }
 
 header ul li:first-child {
-    float: left;
+    margin: 0;
+    padding-left: .25em;
+    padding-right: .25em;
+    display: flex;
 }
+
+header ul li:first-child a:first-child {
+   padding-right: .5em;
+}
+
 
 h1 {
     font-weight: normal;
@@ -155,7 +185,7 @@ th {
 }
 
 .success {
-    color: #22dd22;
+    color: #28a745;
 }
 
 .failure {
@@ -197,4 +227,8 @@ a:link {
 
 #plugin-shrug {
     display: none;
+}
+
+#queries li {
+    padding: .5em;
 }

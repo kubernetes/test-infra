@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
+        <meta charset="UTF-8">
         <title>Tide Status</title>
         <link rel="icon" type="image/png" href="favicon.ico">
         <link rel="stylesheet" type="text/css" href="style.css">
@@ -12,12 +13,18 @@
     </head>
     <body>
         <header>
-            <a href="/"><h1>Tide Status</h1></a>
+            <ul>
+                <li><a href="https://github.com/kubernetes/test-infra" class="logo"><img src="/logo.svg" alt="kubernetes logo" class="logo"></img></a><a href="/"><h1>Prow Status</h1></a></li>
+                <li><a href="/plugin-help.html"><h1>Plugin Help</h1></a></li>
+                <li><a href="/tide.html" class="current"><h1>Tide Status</h1></a></li>
+            </ul>
         </header>
         <article>
             <div>
-                <h4>Github search queries that define all merge requirements:</h4>
+                <h4>All <a href="https://help.github.com/articles/about-required-status-checks/">GitHub statuses</a> on a Pull Request must be passing / green to merge&nbsp;<span class="success">✓</span></h4>
+                <h4>These GitHub search queries define all other merge requirements:</h4>
                 <ul id="queries"></ul>
+                <h4>Your Pull Request must show up in one of these queries (you can click them to check).</h4>
             </div>
         </article>
         <article>
