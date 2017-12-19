@@ -66,6 +66,8 @@ func main() {
 	if err != nil {
 		logger.WithError(err).Fatal("Error getting client.")
 	}
+	kc.SetHiddenReposProvider(func() []string { return configAgent.Config().Deck.HiddenRepos })
+
 	var pkc *kube.Client
 	if *buildCluster == "" {
 		pkc = kc.Namespace(configAgent.Config().PodNamespace)
