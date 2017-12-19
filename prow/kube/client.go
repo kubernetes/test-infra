@@ -22,6 +22,7 @@ import (
 	"crypto/x509"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -31,6 +32,7 @@ import (
 
 	"github.com/ghodss/yaml"
 	"github.com/sirupsen/logrus"
+	"k8s.io/apimachinery/pkg/util/sets"
 )
 
 const (
@@ -57,6 +59,15 @@ type Client struct {
 	token     string
 	namespace string
 	fake      bool
+
+	hiddenReposProvider func() []string
+}
+
+// SetHiddenRepoProvider takes a continuation that fetches a list of orgs and repos for
+// which PJs should not be returned.
+// NOTE: This function is not thread safe and should be called before the client is in use.
+func (c *Client) SetHiddenReposProvider(p func() []string) {
+	c.hiddenReposProvider = p
 }
 
 // Namespace returns a copy of the client pointing at the specified namespace.
@@ -368,12 +379,30 @@ func (c *Client) CreateProwJob(j ProwJob) (ProwJob, error) {
 	return retJob, err
 }
 
+func (c *Client) getHiddenRepos() sets.String {
+	if c.hiddenReposProvider == nil {
+		return nil
+	}
+	return sets.NewString(c.hiddenReposProvider()...)
+}
+
+func shouldHide(pj *ProwJob, hiddenRepos sets.String) bool {
+	return hiddenRepos.HasAny(fmt.Sprintf("%s/%s", pj.Spec.Refs.Org, pj.Spec.Refs.Repo), pj.Spec.Refs.Org)
+}
+
 func (c *Client) GetProwJob(name string) (ProwJob, error) {
 	c.log("GetProwJob", name)
 	var pj ProwJob
 	err := c.request(&request{
 		path: fmt.Sprintf("/apis/prow.k8s.io/v1/namespaces/%s/prowjobs/%s", c.namespace, name),
 	}, &pj)
+	if err == nil && shouldHide(&pj, c.getHiddenRepos()) {
+		pj = ProwJob{}
+		// Revealing the existence of this prow job is ok because the the pj name cannot be used to
+		// retrieve the pj itself. Furthermore, a timing attack could differentiate true 404s from
+		// 404s returned when a hidden pj is queried so returning a 404 wouldn't hide the pj's existence.
+		err = errors.New("403 ProwJob is hidden")
+	}
 	return pj, err
 }
 
@@ -387,6 +416,16 @@ func (c *Client) ListProwJobs(selector string) ([]ProwJob, error) {
 		deckPath: "/prowjobs.js",
 		query:    map[string]string{"labelSelector": selector},
 	}, &jl)
+	if err == nil {
+		hidden := c.getHiddenRepos()
+		var pjs []ProwJob
+		for _, pj := range jl.Items {
+			if !shouldHide(&pj, hidden) {
+				pjs = append(pjs, pj)
+			}
+		}
+		jl.Items = pjs
+	}
 	return jl.Items, err
 }
 
