@@ -5,6 +5,8 @@ body {
     color: #444;
     padding: 0;
     margin: 0;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 header {
@@ -19,9 +21,10 @@ header a {
 }
 
 header a.logo {
-    height: 3em;
+    height: 2.5em;
     padding: 0;
     margin: 0;
+    margin-top: .2em;
 }
 
 a.current {
