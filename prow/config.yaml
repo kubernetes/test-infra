@@ -36,15 +36,18 @@ tide:
     - approved
     - "cncf-cla: yes"
     missingLabels:
-    - needs-ok-to-test
-    - do-not-merge/work-in-progress
-    - do-not-merge/hold
+    - do-not-merge
     - do-not-merge/blocked-paths
+    - do-not-merge/cherry-pick-not-approved
+    - do-not-merge/hold
+    - do-not-merge/release-note-label-needed
+    - do-not-merge/work-in-progress
+    - needs-ok-to-test
   - repos:
     - kubernetes/kubectl
     missingLabels:
-    - do-not-merge/work-in-progress
     - do-not-merge/hold
+    - do-not-merge/work-in-progress
     reviewApprovedRequired: true
   merge_method:
     kubernetes/charts: squash
