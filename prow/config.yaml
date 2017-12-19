@@ -23511,10 +23511,10 @@ periodics:
         -label:lifecycle/frozen
         -label:lifecycle/stale
         -label:lifecycle/rotten
-      - --updated=720h
+      - --updated=2160h
       - --token=/etc/token/bot-github-token
       - |-
-        --comment=Issues go stale after 30d of inactivity.
+        --comment=Issues go stale after 90d of inactivity.
         Mark the issue as fresh with `/remove-lifecycle stale`.
         Stale issues rot after an additional 30d of inactivity and eventually close.
 
