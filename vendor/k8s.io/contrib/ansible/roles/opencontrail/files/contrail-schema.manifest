@@ -1,0 +1,39 @@
+{
+    "apiVersion": "v1",
+    "kind": "Pod",
+    "metadata": {
+        "namespace": "opencontrail",
+        "name": "contrail-schema"
+    },
+    "spec":{
+	"hostNetwork": true,
+	"containers":[{
+	    "name": "contrail-schema",
+	    "image": "opencontrail/config:2.20",
+	    "command": ["/usr/bin/contrail-schema"],
+	    "ports": [{
+	    "name": "schema-ui",
+		"containerPort": 8087,
+		"hostPort": 8087
+	    }],
+	    "volumeMounts": [{
+		"name": "config",
+		"mountPath": "/etc/contrail"
+	    }, {
+		"name": "logs",
+		"mountPath": "/var/log/contrail",
+		"readOnly": false
+	    }]
+	}],
+	"volumes": [
+	    {
+		"name": "config",
+		"hostPath": {"path": "/etc/contrail"}
+	    },
+	    {
+		"name": "logs",
+		"hostPath": {"path": "/var/log/contrail"}
+	    }
+	]
+    }
+}

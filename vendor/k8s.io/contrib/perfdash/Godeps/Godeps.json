@@ -1,0 +1,19 @@
+{
+	"ImportPath": "k8s.io/contrib/perfdash",
+	"GoVersion": "go1.5",
+	"GodepVersion": "v62",
+	"Packages": [
+		"./..."
+	],
+	"Deps": [
+		{
+			"ImportPath": "github.com/golang/glog",
+			"Rev": "23def4e6c14b4da8ac2ed8007337bc5eb5007998"
+		},
+		{
+			"ImportPath": "k8s.io/kubernetes/test/e2e/perftype",
+			"Comment": "v1.3.0-alpha.3-580-g6f288b3",
+			"Rev": "6f288b31cff234db607c0038ef9afe1571021b48"
+		}
+	]
+}

@@ -18,7 +18,7 @@ func main() {
 }
 ```
 
-That will get you completions of subcommands and flags. If you make additional annotations to your code, you can get even more intelligent and flexible behavior.
+`out.sh` will get you completions of subcommands and flags. Copy it to `/etc/bash_completion.d/` as described [here](https://debian-administration.org/article/316/An_introduction_to_bash_completion_part_1) and reset your terminal to use autocompletion. If you make additional annotations to your code, you can get even more intelligent and flexible behavior.
 
 ## Creating your own custom functions
 
@@ -106,7 +106,7 @@ node                 pod                    replicationcontroller  service
 
 If your nouns have a number of aliases, you can define them alongside `ValidArgs` using `ArgAliases`:
 
-```go`
+```go
 argAliases []string = { "pods", "nodes", "services", "svc", "replicationcontrollers", "rc" }
 
 cmd := &cobra.Command{
@@ -117,7 +117,7 @@ cmd := &cobra.Command{
 ```
 
 The aliases are not shown to the user on tab completion, but they are accepted as valid nouns by
-the completion aglorithm if entered manually, e.g. in:
+the completion algorithm if entered manually, e.g. in:
 
 ```bash
 # kubectl get rc [tab][tab]
@@ -175,7 +175,7 @@ So while there are many other files in the CWD it only shows me subdirs and thos
 
 # Specifiy custom flag completion
 
-Similar to the filename completion and filtering usingn cobra.BashCompFilenameExt, you can specifiy
+Similar to the filename completion and filtering using cobra.BashCompFilenameExt, you can specifiy
 a custom flag completion function with cobra.BashCompCustom:
 
 ```go

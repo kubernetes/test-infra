@@ -1,0 +1,8 @@
+{
+	"ImportPath": "k8s.io/contrib/for-demos",
+	"GoVersion": "go1.5",
+	"Packages": [
+		"./..."
+	],
+	"Deps": []
+}

@@ -720,7 +720,7 @@ func (config *Config) SetBranchProtection(name string, contexts []string) error 
 			Strict:   false,
 			Contexts: contexts,
 		},
-		RequiredPullRequestReviews: prot.RequiredPullRequestReviews,
+		RequiredPullRequestReviews: *github.PullRequestReviewsEnforcementRequest,
 		Restrictions:               unchangedRestrictionRequest(prot.Restrictions),
 		EnforceAdmins:              false,
 	}

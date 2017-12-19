@@ -1,0 +1,10 @@
+[Unit]
+Description=Delay Kubernetes services until network is actually online
+Wants=network-online.target
+After=network-online.target
+Before=flanneld.service
+Before=kube-apiserver.service
+
+[Install]
+WantedBy=flanneld.service
+WantedBy=kube-apiserver.service

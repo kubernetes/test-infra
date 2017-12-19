@@ -1,0 +1,9 @@
+---
+- name: Install templates
+  copy: src="{{item}}" dest="{{ kube_manifest_dir }}"
+  with_items:
+    - cassandra.manifest
+    - rabbitmq.manifest
+    - zookeeper.manifest
+
+    

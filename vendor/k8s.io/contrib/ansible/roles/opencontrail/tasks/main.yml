@@ -1,0 +1,20 @@
+---
+- name: Build kernel module
+  include: kmod.yml
+  when: inventory_hostname == groups['masters'][0]
+
+- name: Install vrouter
+  include: vrouter.yml
+  when: inventory_hostname in groups['nodes'] or inventory_hostname in groups['gateways']
+
+- name: Install compute nodes
+  include: nodes.yml
+  when: inventory_hostname in groups['nodes']
+
+- name: Install gateways
+  include: gateways.yml
+  when: inventory_hostname in groups['gateways']
+
+- name: Install master
+  include: masters.yml
+  when: inventory_hostname in groups['masters']

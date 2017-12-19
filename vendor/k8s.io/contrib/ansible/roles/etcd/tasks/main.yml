@@ -1,0 +1,52 @@
+---
+- name: Install etcd
+  action: "{{ ansible_pkg_mgr }}"
+  args:
+        name: etcd
+        state: latest
+  notify:
+    - restart etcd
+  when: not is_atomic and ansible_distribution != "Ubuntu" and not is_coreos
+
+- name: Force etcd_source_type to github when packages are not available
+  set_fact:
+    etcd_source_type: "github-release"
+  when: ansible_distribution == "Ubuntu"
+
+- name: Install etcd from github
+  include: github-release.yml
+  when: etcd_source_type == "github-release"
+
+- name: Create etcd config directory
+  file: path={{ etcd_conf_dir }} state=directory
+
+- name: Write etcd config file
+  template: src=etcd.conf.j2 dest=/etc/etcd/etcd.conf
+  notify:
+    - restart etcd
+  when: not is_coreos
+
+- name: Write etcd systemd unit file for Debian
+  copy: src=etcd.service dest=/etc/systemd/system
+  notify:
+    - reload systemd
+    - restart etcd
+  when: ansible_distribution == "Debian"
+
+- name: Enable etcd
+  service: name=etcd enabled=yes
+  when: not is_coreos
+
+- name: Start etcd
+  service: name=etcd state=started
+  register: etcd_started
+  when: not is_coreos
+
+- include: coreos.yml
+  when: is_coreos
+
+- include: firewalld.yml
+  when: has_firewalld
+
+- include: iptables.yml
+  when: not has_firewalld and has_iptables

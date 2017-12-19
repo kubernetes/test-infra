@@ -1,0 +1,11 @@
+# The directory where binaries are stored on Ansible
+# # managed systems.
+bin_dir: /usr/bin
+
+# The directory where scripts used for bootstrapping CoreOS
+# reside.
+bootstrap_script_dir: /opt/bin
+pypy_version: 2.4.0
+
+pypy_download_url_base: "https://bitbucket.org/pypy/pypy/downloads"
+pypy_download_url: "{{ pypy_download_url_base }}/pypy-{{ pypy_version }}-linux64.tar.bz2"

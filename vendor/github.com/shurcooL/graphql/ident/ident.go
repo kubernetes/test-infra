@@ -131,6 +131,10 @@ func (n Name) ToMixedCaps() string {
 			n[i] = initialism
 			continue
 		}
+		if brand, ok := isBrand(word); ok {
+			n[i] = brand
+			continue
+		}
 		r, size := utf8.DecodeRuneInString(word)
 		n[i] = string(unicode.ToUpper(r)) + strings.ToLower(word[size:])
 	}
@@ -173,7 +177,11 @@ func isTwoInitialisms(word string) (string, string, bool) {
 }
 
 // initialisms is the set of initialisms in the MixedCaps naming convention.
+// Only add entries that are highly unlikely to be non-initialisms.
+// For instance, "ID" is fine (Freudian code is rare), but "AND" is not.
 var initialisms = map[string]struct{}{
+	// These are the common initialisms from golint. Keep them in sync
+	// with https://gotools.org/github.com/golang/lint#commonInitialisms.
 	"ACL":   {},
 	"API":   {},
 	"ASCII": {},
@@ -212,4 +220,21 @@ var initialisms = map[string]struct{}{
 	"XMPP":  {},
 	"XSRF":  {},
 	"XSS":   {},
+
+	// Additional common initialisms.
+	"RSS": {},
+}
+
+// isBrand reports whether word is a brand.
+func isBrand(word string) (string, bool) {
+	brand, ok := brands[strings.ToLower(word)]
+	return brand, ok
+}
+
+// brands is the map of brands in the MixedCaps naming convention;
+// see https://dmitri.shuralyov.com/idiomatic-go#for-brands-or-words-with-more-than-1-capital-letter-lowercase-all-letters.
+// Key is the lower case version of the brand, value is the canonical brand spelling.
+// Only add entries that are highly unlikely to be non-brands.
+var brands = map[string]string{
+	"github": "GitHub",
 }

@@ -1,0 +1,47 @@
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: kube-keepalived-vip
+  labels:
+    k8s-app: kube-keepalived-vip
+spec:
+  replicas: 1
+  selector:
+    k8s-app: kube-keepalived-vip
+  template:
+    metadata:
+      labels:
+        k8s-app: kube-keepalived-vip
+        name: kube-keepalived-vip
+    spec:
+      hostNetwork: true
+      containers:
+      - image: gcr.io/google_containers/kube-keepalived-vip:0.6
+        name: kube-keepalived-vip
+        imagePullPolicy: Always
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - mountPath: /lib/modules
+          name: modules
+          readOnly: true
+        # use downward API
+        env:
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+          - name: POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+        # to use unicast
+        args:
+        - --services-configmap=default/vip-configmap
+        # unicast uses the ip of the nodes instead of multicast
+        # this is useful if running in cloud providers (like AWS)
+        #- --use-unicast=true
+      volumes:
+      - hostPath:
+          path: /lib/modules
+        name: modules

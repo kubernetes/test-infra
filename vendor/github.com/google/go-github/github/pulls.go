@@ -51,6 +51,7 @@ type PullRequest struct {
 	Assignees           []*User    `json:"assignees,omitempty"`
 	Milestone           *Milestone `json:"milestone,omitempty"`
 	MaintainerCanModify *bool      `json:"maintainer_can_modify,omitempty"`
+	AuthorAssociation   *string    `json:"author_association,omitempty"`
 
 	Head *PullRequestBranch `json:"head,omitempty"`
 	Base *PullRequestBranch `json:"base,omitempty"`
@@ -138,7 +139,7 @@ func (s *PullRequestsService) Get(ctx context.Context, owner string, repo string
 	return pull, resp, nil
 }
 
-// GetRaw gets raw (diff or patch) format of a pull request.
+// GetRaw gets a single pull request in raw (diff or patch) format.
 func (s *PullRequestsService) GetRaw(ctx context.Context, owner string, repo string, number int, opt RawOptions) (string, *Response, error) {
 	u := fmt.Sprintf("repos/%v/%v/pulls/%d", owner, repo, number)
 	req, err := s.client.NewRequest("GET", u, nil)
@@ -155,13 +156,13 @@ func (s *PullRequestsService) GetRaw(ctx context.Context, owner string, repo str
 		return "", nil, fmt.Errorf("unsupported raw type %d", opt.Type)
 	}
 
-	ret := new(bytes.Buffer)
-	resp, err := s.client.Do(ctx, req, ret)
+	var buf bytes.Buffer
+	resp, err := s.client.Do(ctx, req, &buf)
 	if err != nil {
 		return "", resp, err
 	}
 
-	return ret.String(), resp, nil
+	return buf.String(), resp, nil
 }
 
 // NewPullRequest represents a new pull request to be created.
@@ -254,6 +255,9 @@ func (s *PullRequestsService) ListCommits(ctx context.Context, owner string, rep
 		return nil, nil, err
 	}
 
+	// TODO: remove custom Accept header when this API fully launches.
+	req.Header.Set("Accept", mediaTypeGitSigningPreview)
+
 	var commits []*RepositoryCommit
 	resp, err := s.client.Do(ctx, req, &commits)
 	if err != nil {
@@ -342,9 +346,6 @@ func (s *PullRequestsService) Merge(ctx context.Context, owner string, repo stri
 	if err != nil {
 		return nil, nil, err
 	}
-
-	// TODO: This header will be unnecessary when the API is no longer in preview.
-	req.Header.Set("Accept", mediaTypeSquashPreview)
 
 	mergeResult := new(PullRequestMergeResult)
 	resp, err := s.client.Do(ctx, req, mergeResult)

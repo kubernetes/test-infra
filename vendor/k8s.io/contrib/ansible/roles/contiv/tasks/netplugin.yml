@@ -1,0 +1,54 @@
+- include: netplugin_firewalld.yml
+  when: has_firewalld
+
+- include: netplugin_iptables.yml
+  when: not has_firewalld and has_iptables
+
+- include: ovs.yml
+  when: netplugin_driver == "ovs"
+
+- name: Netplugin | Create Netplugin bin symlink
+  file:
+    src: "{{ contiv_current_release_directory }}/netplugin"
+    dest: "{{ bin_dir }}/netplugin"
+    state: link
+
+
+- name: Netplugin | Ensure cni_bin_dir exists
+  file: path={{ cni_bin_dir }} recurse=yes state=directory
+
+- name: Netplugin | Create CNI bin symlink
+  file:
+    src: "{{ contiv_current_release_directory }}/contivk8s"
+    dest: "{{ cni_bin_dir }}/contivk8s"
+    state: link
+
+- name: Netplugin | Ensure kube_plugin_dir exists
+  file: path={{ kube_plugin_dir }} recurse=yes state=directory
+
+- name: Netplugin | Ensure contiv_config_dir exists
+  file: path="{{ contiv_config_dir }}" recurse=yes state=directory
+
+- name: Netplugin | Copy contiv_cni.conf file
+  copy: src=contiv_cni.conf dest={{ kube_plugin_dir }}/contiv_cni.conf
+  notify: restart kubelet
+
+- name: Netplugin | Setup contiv.json config for the cni plugin
+  template: src=contiv.cfg.j2 dest="{{ contiv_config_dir }}/contiv.json"
+  notify: restart netplugin
+
+- name: Netplugin | Copy environment file for netplugin
+  template: src=netplugin.j2 dest=/etc/default/netplugin mode=0644
+  notify: restart netplugin
+
+- name: Netplugin | Copy systemd unit for netplugin
+  template: src=netplugin.service dest=/etc/systemd/system/netplugin.service
+  notify: reload systemd
+
+- name: Netplugin | Enable Netplugin
+  service: name=netplugin enabled=yes
+
+- name: Netplugin | Start Netplugin
+  service: name=netplugin state=started
+  register: netplugin_started
+  notify: restart kubelet

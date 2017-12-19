@@ -1,0 +1,62 @@
+// Package comment.
+package p
+
+import (
+	"context"
+
+	"github.com/shurcooL/issues"
+)
+
+func (s service) List(ctx context.Context, repo issues.RepoSpec, opt issues.IssueListOptions) ([]issues.Issue, error) {
+	var is []issues.Issue
+
+	dirs, err := readDirIDs(s.fs, issuesDir(repo))
+	if err != nil {
+		return is, err
+	}
+	for i := len(dirs); i > 0; i-- {
+		dir := dirs[i-1]
+		if !dir.IsDir() {
+			continue
+		}
+
+		var issue issue
+		err = jsonDecodeFile(s.fs, issueCommentPath(repo, dir.ID, 0), &issue)
+		if err != nil {
+			return is, err
+		}
+
+		if opt.State != issues.AllStates && issue.State != issues.State(opt.State) {
+			continue
+		}
+
+		comments, err := readDirIDs(s.fs, issueDir(repo, dir.ID)) // Count comments.
+		if err != nil {
+			return is, err
+		}
+		author := issue.Author.UserSpec()
+		var labels []issues.Label
+		for _, l := range issue.Labels {
+			labels = append(labels, issues.Label{
+				Name:  l.Name,
+				Color: l.Color.RGB(),
+			})
+		}
+		is = append(is, issues.Issue{
+			ID:     dir.ID,
+			State:  issue.State,
+			Title:  issue.Title,
+			Labels: labels,
+			Comment: issues.Comment{
+				User:      s.user(ctx, author),
+				CreatedAt: issue.CreatedAt,
+			},
+			Replies: len(comments) - 1,
+		})
+	}
+
+	return is, nil
+}
+
+// Doesn't match because there's no generated comment.
+// But we still need to read the entire file to be sure.

@@ -12,45 +12,51 @@ go_library(
         "json_formatter.go",
         "logger.go",
         "logrus.go",
+        "terminal_check_notappengine.go",
         "text_formatter.go",
         "writer.go",
     ] + select({
         "@io_bazel_rules_go//go/platform:darwin": [
             "terminal_bsd.go",
-            "terminal_notwindows.go",
         ],
         "@io_bazel_rules_go//go/platform:dragonfly": [
             "terminal_bsd.go",
-            "terminal_notwindows.go",
         ],
         "@io_bazel_rules_go//go/platform:freebsd": [
             "terminal_bsd.go",
-            "terminal_notwindows.go",
         ],
         "@io_bazel_rules_go//go/platform:linux": [
             "terminal_linux.go",
-            "terminal_notwindows.go",
         ],
         "@io_bazel_rules_go//go/platform:netbsd": [
             "terminal_bsd.go",
-            "terminal_notwindows.go",
         ],
         "@io_bazel_rules_go//go/platform:openbsd": [
             "terminal_bsd.go",
-            "terminal_notwindows.go",
-        ],
-        "@io_bazel_rules_go//go/platform:solaris": [
-            "terminal_solaris.go",
-        ],
-        "@io_bazel_rules_go//go/platform:windows": [
-            "terminal_windows.go",
         ],
         "//conditions:default": [],
     }),
     importpath = "github.com/sirupsen/logrus",
     visibility = ["//visibility:public"],
-    deps = select({
-        "@io_bazel_rules_go//go/platform:solaris": [
+    deps = [
+        "//vendor/golang.org/x/crypto/ssh/terminal:go_default_library",
+    ] + select({
+        "@io_bazel_rules_go//go/platform:darwin": [
+            "//vendor/golang.org/x/sys/unix:go_default_library",
+        ],
+        "@io_bazel_rules_go//go/platform:dragonfly": [
+            "//vendor/golang.org/x/sys/unix:go_default_library",
+        ],
+        "@io_bazel_rules_go//go/platform:freebsd": [
+            "//vendor/golang.org/x/sys/unix:go_default_library",
+        ],
+        "@io_bazel_rules_go//go/platform:linux": [
+            "//vendor/golang.org/x/sys/unix:go_default_library",
+        ],
+        "@io_bazel_rules_go//go/platform:netbsd": [
+            "//vendor/golang.org/x/sys/unix:go_default_library",
+        ],
+        "@io_bazel_rules_go//go/platform:openbsd": [
             "//vendor/golang.org/x/sys/unix:go_default_library",
         ],
         "//conditions:default": [],
@@ -66,7 +72,11 @@ filegroup(
 
 filegroup(
     name = "all-srcs",
-    srcs = [":package-srcs"],
+    srcs = [
+        ":package-srcs",
+        "//vendor/github.com/sirupsen/logrus/hooks/syslog:all-srcs",
+        "//vendor/github.com/sirupsen/logrus/hooks/test:all-srcs",
+    ],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],
 )

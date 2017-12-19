@@ -1,0 +1,10 @@
+- name: Install kubernetes runtime dependencies
+  action: "{{ ansible_pkg_mgr }}"
+  args:
+        name: "{{ item }}"
+        state: latest
+  with_items:
+  - socat
+  - tar
+  - git
+  when: source_type == "localBuild" and (ansible_distribution == "Fedora" or ansible_distribution == "RedHat" or ansible_distribution == "CentOS")

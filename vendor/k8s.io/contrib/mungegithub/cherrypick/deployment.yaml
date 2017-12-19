@@ -1,0 +1,44 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: cherrypick
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: cherrypick
+    spec:
+      containers:
+      - name: cherrypick
+        command:
+        - /mungegithub
+        - --token-file=/etc/secret-volume/token
+        - --pr-mungers=cherrypick-must-have-milestone,cherrypick-clear-after-merge,cherrypick-queue
+        - --state=all
+        - --labels=cherrypick-candidate
+        - --dry-run=true
+        - --kubernetes-dir=/gitrepo/kubernetes
+        - --period=3m
+        image: docker.io/eparis/cherrypick:2016-03-14-7fb1dae
+        ports:
+        - name: status
+          containerPort: 8080
+        resources:
+          requests:
+            cpu: 100m
+          limits:
+            cpu: 600m
+        volumeMounts:
+        - mountPath: /etc/secret-volume
+          name: cherrypick-secret-volume
+        - mountPath: /gitrepo
+          name: kubernetes-repo
+      volumes:
+      - name: cherrypick-secret-volume
+        secret:
+          secretName: cherrypick-secret-volume
+      - name: kubernetes-repo
+        gitRepo:
+          repository: "https://github.com/kubernetes/kubernetes.git"
+          revision: "master"

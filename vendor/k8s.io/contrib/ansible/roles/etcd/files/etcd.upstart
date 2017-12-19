@@ -1,0 +1,19 @@
+description "etcd 2.0"
+
+start on (net-device-up and local-filesystems and runlevel [2345])
+stop on runlevel [016]
+
+respawn
+respawn limit 10 5
+
+script
+    if [ -f "/etc/etcd/etcd.conf" ]; then
+	set -a
+        . /etc/etcd/etcd.conf
+	set +a
+    fi
+
+    mkdir -p /var/etcd
+    chdir /var/etcd
+    exec /usr/bin/etcd >>/var/log/etcd.log 2>&1
+end script

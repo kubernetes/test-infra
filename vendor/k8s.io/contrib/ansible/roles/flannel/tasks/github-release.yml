@@ -1,0 +1,39 @@
+---
+- stat: path={{ flannel_releases_dir }}/flannel-{{ flannel_version }}
+  register: st
+
+- name: Download tar file
+  get_url:
+    url: "{{ flannel_download_url }}"
+    dest: "{{ ansible_temp_dir }}"
+    validate_certs: False
+  environment:
+    http_proxy: "{{ http_proxy|default('') }}"
+    https_proxy: "{{ https_proxy|default('') }}"
+    no_proxy: "{{ no_proxy|default('') }}"
+  when: st.stat.isdir is not defined
+
+- name: Extract tar file
+  unarchive:
+    src: "{{ ansible_temp_dir }}/flannel-{{ flannel_version }}-linux-amd64.tar.gz"
+    dest: "{{ flannel_releases_dir }}"
+    copy: no
+  when: st.stat.isdir is not defined
+
+- name: Create symlinks
+  file:
+    src: "{{ flannel_releases_dir }}/flannel-{{ flannel_version }}/{{ item }}"
+    dest: "{{ bin_dir }}/{{ item }}"
+    state: link
+    force: yes
+  with_items:
+    - flanneld
+    - mk-docker-opts.sh
+
+- name: Setup systemd service
+  include: systemd-service.yml
+  when: not flannel_use_upstart
+
+- name: Setup upstart service
+  include: upstart-service.yml
+  when: flannel_use_upstart

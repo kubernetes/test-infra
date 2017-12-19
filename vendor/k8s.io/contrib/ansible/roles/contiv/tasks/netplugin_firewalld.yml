@@ -1,0 +1,22 @@
+---
+- name: Netplugin Firewalld | Open Netplugin port
+  firewalld: port={{ netplugin_port }}/tcp permanent=false state=enabled
+  # in case this is also a node where firewalld turned off
+  ignore_errors: yes
+
+- name: Netplugin Firewalld | Save Netplugin port
+  firewalld: port={{ netplugin_port }}/tcp permanent=true state=enabled
+  # in case this is also a node where firewalld turned off
+  ignore_errors: yes
+
+- name: Netplugin Firewalld | Open vxlan port
+  firewalld: port=8472/udp permanent=false state=enabled
+  # in case this is also a node where firewalld turned off
+  ignore_errors: yes
+  when: contiv_encap_mode == "vxlan"
+
+- name: Netplugin Firewalld | Save firewalld vxlan port for flanneld
+  firewalld: port=8472/udp permanent=true state=enabled
+  # in case this is also a node where firewalld turned off
+  ignore_errors: yes
+  when: contiv_encap_mode == "vxlan"

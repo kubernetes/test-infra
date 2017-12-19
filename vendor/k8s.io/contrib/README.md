@@ -13,7 +13,7 @@ The code must be checked out as a subdirectory of `k8s.io`, and not `github.com`
 mkdir -p $GOPATH/src/k8s.io
 cd $GOPATH/src/k8s.io
 # Replace "$YOUR_GITHUB_USERNAME" below with your github username
-git clone https://github.com/$YOUR_GITHUB_USERNAME/contrib.git
+git clone https://github.com/kubernetes/contrib.git
 cd contrib
 ```
 

@@ -1,0 +1,19 @@
+- name: Download Bins | Create directory for current Contiv release
+  file: path={{ contiv_current_release_directory }} state=directory
+
+- name: Download Bins | Download Contiv tar file
+  get_url:
+    url: "{{ contiv_download_url }}"
+    dest: "{{ contiv_current_release_directory }}"
+    mode: 0755
+    validate_certs: False
+  environment:
+    http_proxy: "{{ http_proxy|default('') }}"
+    https_proxy: "{{ https_proxy|default('') }}"
+    no_proxy: "{{ no_proxy|default('') }}"
+
+- name: Download Bins | Extract Contiv tar file
+  unarchive:
+    src: "{{ contiv_current_release_directory }}/netplugin-{{ contiv_version }}.tar.bz2"
+    dest: "{{ contiv_current_release_directory }}"
+    copy: no

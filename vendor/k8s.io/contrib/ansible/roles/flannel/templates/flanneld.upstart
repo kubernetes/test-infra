@@ -1,0 +1,16 @@
+description "flanneld 0.5.5"
+
+start on (net-device-up and local-filesystems and runlevel [2345])
+stop on runlevel [016]
+
+respawn
+respawn limit 10 5
+
+script
+    if [ -f "/etc/flannel/flanneld" ]; then
+	set -a
+        . /etc/flannel/flanneld
+	set +a
+    fi
+    exec {{ bin_dir }}/flanneld -etcd-endpoints=$FLANNEL_ETCD -etcd-prefix=$FLANNEL_ETCD_KEY $FLANNEL_OPTIONS>>/var/log/flannel.log 2>&1
+end script

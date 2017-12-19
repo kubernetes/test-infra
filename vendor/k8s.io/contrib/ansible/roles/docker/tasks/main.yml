@@ -1,0 +1,79 @@
+---
+- name: Override docker config file directory for Debian
+  set_fact:
+    docker_config_dir: "/etc/default"
+  when: ansible_distribution == "Debian" or ansible_distribution == "Ubuntu"
+
+- name: Create config file directory
+  file: path={{ docker_config_dir }} state=directory
+
+- include: debian-install.yml
+  when: ansible_distribution == "Debian"
+
+- include: apt-docker-install.yml
+  when: ansible_distribution == "Ubuntu"
+
+- include: generic-install.yml
+  when: ansible_distribution != "Debian" and ansible_distribution != "Ubuntu" and not is_coreos
+
+- include: coreos.yml
+  when: is_coreos
+#
+# systemd service configuration uses EnvironmentFile (docker and docker-network)
+# upstart service configuration sources docker_config_dir / docker
+#
+- set_fact:
+    docker_use_upstart: ansible_distribution == 'Ubuntu' and ansible_distribution_major_version|int < 15
+
+- name: Local vars for systemd installs
+  set_fact:
+    docker_config_net: "{{ docker_config_dir }}/docker-network"
+    docker_env_export: ""
+
+- name: Local vars for upstart installs
+  set_fact:
+    docker_config_net: "{{ docker_config_dir }}/docker"
+    docker_env_export: "export "
+  when: docker_use_upstart
+
+- name: Verify docker config files exists
+  file: path={{ docker_config_dir }}/{{ item }} state=touch
+  changed_when: false
+  with_items:
+    - docker
+    - docker-network
+
+- name: Turn down docker logging
+  lineinfile: dest={{ docker_config_dir }}/docker regexp=^OPTIONS= line=OPTIONS="--selinux-enabled --log-level=warn"
+  notify:
+    - restart docker
+  when: docker_use_upstart
+
+- name: Install http_proxy into docker(-network)
+  lineinfile: dest={{ docker_config_net }} regexp="^{{ docker_env_export }}http_proxy=" line="{{docker_env_export}}http_proxy={{ http_proxy }}"
+  when: http_proxy is defined
+  notify:
+    - restart docker
+
+- name: Install https_proxy into docker(-network)
+  lineinfile: dest={{ docker_config_net }} regexp="^{{ docker_env_export }}https_proxy=" line="{{ docker_env_export }}https_proxy={{ https_proxy }}"
+  when: https_proxy is defined
+  notify:
+    - restart docker
+
+- name: Install no-proxy into docker(-network)
+  lineinfile: dest={{ docker_config_net }} regexp="^{{ docker_env_export }}no_proxy=" line="{{ docker_env_export }}no_proxy={{ no_proxy }}"
+  when: no_proxy is defined
+  notify:
+    - restart docker
+
+- name: Add any insecure registrys to docker config
+  lineinfile: dest={{ docker_config_dir }}/docker regexp=^INSECURE_REGISTRY= line=INSECURE_REGISTRY="{% for reg in insecure_registrys %}--insecure-registry={{ reg }} {% endfor %}"
+  when: insecure_registrys is defined and insecure_registrys > 0
+  notify:
+    - restart docker
+
+- name: Enable Docker
+  service: name=docker enabled=yes
+  notify:
+    - start docker

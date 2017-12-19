@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/url"
-	"reflect"
 	"time"
 
 	"github.com/shurcooL/graphql"
@@ -23,6 +22,9 @@ import (
 type (
 	// Boolean represents true or false values.
 	Boolean graphql.Boolean
+
+	// Date is an ISO-8601 encoded date.
+	Date struct{ time.Time }
 
 	// DateTime is an ISO-8601 encoded UTC date.
 	DateTime struct{ time.Time }
@@ -66,13 +68,6 @@ type (
 	X509Certificate struct{ *x509.Certificate }
 )
 
-var scalars = []reflect.Type{
-	reflect.TypeOf(DateTime{}),
-	reflect.TypeOf(GitTimestamp{}),
-	reflect.TypeOf(URI{}),
-	reflect.TypeOf(X509Certificate{}),
-}
-
 // MarshalJSON implements the json.Marshaler interface.
 // The URI is a quoted string.
 func (u URI) MarshalJSON() ([]byte, error) {
@@ -109,6 +104,9 @@ func (x *X509Certificate) UnmarshalJSON(data []byte) error {
 
 // NewBoolean is a helper to make a new *Boolean.
 func NewBoolean(v Boolean) *Boolean { return &v }
+
+// NewDate is a helper to make a new *Date.
+func NewDate(v Date) *Date { return &v }
 
 // NewDateTime is a helper to make a new *DateTime.
 func NewDateTime(v DateTime) *DateTime { return &v }

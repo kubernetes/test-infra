@@ -28,6 +28,7 @@ filegroup(
     name = "all-srcs",
     srcs = [
         ":package-srcs",
+        "//vendor/github.com/shurcooL/graphql/example/graphqldev:all-srcs",
         "//vendor/github.com/shurcooL/graphql/ident:all-srcs",
         "//vendor/github.com/shurcooL/graphql/internal/jsonutil:all-srcs",
     ],

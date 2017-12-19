@@ -1,0 +1,51 @@
+{
+    "apiVersion": "v1",
+    "kind": "Pod",
+    "metadata": {
+        "namespace": "opencontrail",
+        "name": "contrail-control"
+    },
+    "spec":{
+	"hostNetwork": true,
+	"containers":[{
+	    "name": "contrail-control",
+	    "image": "opencontrail/control:2.20",
+	    "command": ["/usr/bin/contrail-control"],
+	    "securityContext": {
+	    	"capabilities": {
+		    "add": ["NET_BIND_SERVICE"]
+		}
+	    },
+	    "ports": [{
+		"name": "bgp",
+		"containerPort": 179,
+		"hostPort": 179
+	    }, {
+		"name": "xmpp",
+		"containerPort": 5269,
+		"hostPort": 5269
+	    }, {
+		"name": "control-ui",
+		"containerPort": 8083,
+		"hostPort": 8083
+	    }],
+	    "volumeMounts": [
+		{
+		    "name": "config",
+		    "mountPath": "/etc/contrail"
+		},
+		{
+		    "name": "logs",
+		    "mountPath": "/var/log/contrail",
+		    "readOnly": false
+		}]
+	}],
+	"volumes": [{
+	    "name": "config",
+	    "hostPath": {"path": "/etc/contrail"}
+	},{
+	    "name": "logs",
+	    "hostPath": {"path": "/var/log/contrail"}
+	}]
+    }
+}

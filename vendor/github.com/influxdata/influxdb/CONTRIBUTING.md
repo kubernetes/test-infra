@@ -32,7 +32,7 @@ curl -G http://localhost:8086/query  --data-urlencode 'db=mydb' --data-urlencode
 ```
 **If you don't include a clear test case like this, your issue may not be investigated, and may even be closed**. If writing the data is too difficult, please zip up your data directory and include a link to it in your bug report.
 
-Please note that issues are *not the place to file general questions* such as "how do I use collectd with InfluxDB?" Questions of this nature should be sent to the [Google Group](https://groups.google.com/forum/#!forum/influxdb), not filed as issues. Issues like this will be closed.
+Please note that issues are *not the place to file general questions* such as "how do I use collectd with InfluxDB?" Questions of this nature should be sent to the [InfluxData Community](https://community.influxdata.com/), not filed as issues. Issues like this will be closed.
 
 Feature requests
 ---------------
@@ -69,7 +69,7 @@ second to sign our CLA, which can be found
 
 Installing Go
 -------------
-InfluxDB requires Go 1.7.4.
+InfluxDB requires Go 1.9.2.
 
 At InfluxDB we find gvm, a Go version manager, useful for installing Go. For instructions
 on how to install it see [the gvm page on github](https://github.com/moovweb/gvm).
@@ -77,8 +77,8 @@ on how to install it see [the gvm page on github](https://github.com/moovweb/gvm
 After installing gvm you can install and set the default go version by
 running the following:
 
-    gvm install go1.7.4
-    gvm use go1.7.4 --default
+    gvm install go1.9.2
+    gvm use go1.9.2 --default
 
 Installing GDM
 -------------
@@ -194,14 +194,14 @@ go generate ./...
 **Troubleshooting**
 
 If generating the protobuf code is failing for you, check each of the following:
-* Ensure the protobuf library can be found. Make sure that `LD_LIBRRARY_PATH` includes the directory in which the library `libprotoc.so` has been installed.
+* Ensure the protobuf library can be found. Make sure that `LD_LIBRARY_PATH` includes the directory in which the library `libprotoc.so` has been installed.
 * Ensure the command `protoc-gen-gogo`, found in `GOPATH/bin`, is on your path. This can be done by adding `GOPATH/bin` to `PATH`.
 
 
 Generated Go Templates
 ----------------------
 
-The query engine requires optimizes data structures for each data type so
+The query engine requires optimized data structures for each data type so
 instead of writing each implementation several times we use templates. _Do not
 change code that ends in a `.gen.go` extension!_ Instead you must edit the
 `.gen.go.tmpl` file that was used to generate it.

@@ -1,0 +1,16 @@
+---
+- name: kmod Dockerfile
+  template:
+    src: Dockerfile.debian.j2
+    dest: /tmp/.ansible/build/{{ kmod_build_tag }}/Dockerfile
+
+- name: Build docker container
+  command: docker build -t opencontrail/kmod_{{ kmod_build_tag }} {{ kmod_build_tag }}
+  args:
+    chdir: /tmp/.ansible/build
+
+- name: Build kernel module
+  command: docker run -v /tmp/.ansible/build/{{ kmod_build_tag }}:/src/vrouter/build opencontrail/kmod_{{ kmod_build_tag }} /bin/bash -c "USER=nobody scons --optimization=production --kernel-dir=/lib/modules/{{ ansible_kernel }}/build vrouter && cp vrouter/vrouter.ko build/kbuild"
+  args:
+      creates: /tmp/.ansible/build/{{ kmod_build_tag }}/kbuild/vrouter.ko
+

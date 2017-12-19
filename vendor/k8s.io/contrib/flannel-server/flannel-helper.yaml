@@ -1,0 +1,77 @@
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: flannel-server
+  namespace: kube-system
+  labels:
+    app: flannel-server
+    version: v0.1
+spec:
+  replicas: 1
+  selector:
+    app: flannel-server
+    version: v0.1
+  template:
+    metadata:
+      labels:
+        app: flannel-server
+        version: v0.1
+    spec:
+      hostNetwork: true
+      containers:
+      # Flannel helper just writes network configuration to etcd and services flannel healthz.
+      - image: bprashanth/flannel-server-helper:0.1
+        args:
+        - --network-config /network.json
+        - --etcd-prefix /kubernetes.io/network
+        - --etcd-server http://127.0.0.1:4001
+        name: flannel-server-helper
+        volumeMounts:
+        - name: networkconfig
+          mountPath: /network.json
+      # Flannel running in server mode listens for connections on 10253
+      - image: quay.io/coreos/flannel:0.5.5
+        command:
+        - /bin/sh
+        - -c
+        - /opt/bin/flanneld -listen 0.0.0.0:10253 -etcd-endpoints http://127.0.0.1:4001 -etcd-prefix /kubernetes.io/network 1>>/var/log/flannel_server.log 2>&1
+        name: flannel-container
+        ports:
+        - containerPort: 10253
+          hostPort: 10253
+        resources:
+          limits:
+            cpu: 100m
+        volumeMounts:
+        - mountPath: /var/log
+          name: varlogflannel
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8081
+            scheme: HTTP
+          initialDelaySeconds: 30
+          timeoutSeconds: 5
+      # Etcd stores flannel network/subnet configuration
+      - image: gcr.io/google_containers/etcd:2.2.1
+        command:
+        - /bin/sh
+        - -c
+        - /opt/bin/etcd --listen-peer-urls http://127.0.0.1:4001 --addr http://127.0.0.1:4001 --bind-addr 127.0.0.1:4001 --data-dir /var/etcd/data 1>>/var/log/etcd_flannel.log 2>&1
+        name: etcd-container
+        volumeMounts:
+        - name: etcdstorage
+          mountPath: /var/etcd/data
+        resources:
+          limits:
+            cpu: 100m
+            memory: 50Mi
+      volumes:
+      - hostPath:
+          path: /var/log
+        name: varlogflannel
+      - emptyDir: {}
+        name: etcdstorage
+      - hostPath:
+          path: /etc/kubernetes/network.json
+        name: networkconfig
