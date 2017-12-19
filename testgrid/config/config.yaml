@@ -633,6 +633,14 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-ubuntudev-k8sstable2-gkespec
 - name: ci-kubernetes-e2enode-ubuntudev-k8sstable2-serial
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-ubuntudev-k8sstable2-serial
+- name: ci-kubernetes-e2enode-ubuntudev2-k8sdev-gkespec
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-ubuntudev2-k8sdev-gkespec
+- name: ci-kubernetes-e2enode-ubuntudev2-k8sdev-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-ubuntudev2-k8sdev-serial
+- name: ci-kubernetes-e2enode-ubuntudev2-k8sbeta-gkespec
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-ubuntudev2-k8sbeta-gkespec
+- name: ci-kubernetes-e2enode-ubuntudev2-k8sbeta-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-ubuntudev2-k8sbeta-serial
 - name: ci-kubernetes-e2enode-ubuntustable1-k8sdev-gkespec
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2enode-ubuntustable1-k8sdev-gkespec
 - name: ci-kubernetes-e2enode-ubuntustable1-k8sdev-serial
@@ -704,6 +712,48 @@ test_groups:
   - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gce-ubuntudev-k8sstable1-slow
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntudev-k8sstable1-slow
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gce-ubuntudev2-k8sdev-default
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntudev2-k8sdev-default
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gce-ubuntudev2-k8sdev-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntudev2-k8sdev-serial
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gce-ubuntudev2-k8sdev-slow
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntudev2-k8sdev-slow
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gce-ubuntudev2-k8sbeta-default
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntudev2-k8sbeta-default
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gce-ubuntudev2-k8sbeta-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntudev2-k8sbeta-serial
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: master_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gce-ubuntudev2-k8sbeta-slow
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-ubuntudev2-k8sbeta-slow
   column_header:
   - configuration_value: node_os_image
   - configuration_value: master_os_image
@@ -1974,6 +2024,32 @@ dashboards:
     test_group_name: ci-kubernetes-e2enode-ubuntudev-k8sstable2-gkespec
   - name: e2enode-ubuntudev-k8sstable2-serial
     test_group_name: ci-kubernetes-e2enode-ubuntudev-k8sstable2-serial
+
+- name: canonical-ubuntudev2-k8sdev
+  dashboard_tab:
+  - name: e2enode-ubuntudev2-k8sdev-default(gkespec)
+    test_group_name: ci-kubernetes-e2enode-ubuntudev2-k8sdev-gkespec
+  - name: e2enode-ubuntudev2-k8sdev-serial
+    test_group_name: ci-kubernetes-e2enode-ubuntudev2-k8sdev-serial
+  - name: gce-ubuntudev2-k8sdev-default
+    test_group_name: ci-kubernetes-e2e-gce-ubuntudev2-k8sdev-default
+  - name: gce-ubuntudev2-k8sdev-serial
+    test_group_name: ci-kubernetes-e2e-gce-ubuntudev2-k8sdev-serial
+  - name: gce-ubuntudev2-k8sdev-slow
+    test_group_name: ci-kubernetes-e2e-gce-ubuntudev2-k8sdev-slow
+
+- name: canonical-ubuntudev2-k8sbeta
+  dashboard_tab:
+  - name: e2enode-ubuntudev2-k8sbeta-default(gkespec)
+    test_group_name: ci-kubernetes-e2enode-ubuntudev2-k8sbeta-gkespec
+  - name: e2enode-ubuntudev2-k8sbeta-serial
+    test_group_name: ci-kubernetes-e2enode-ubuntudev2-k8sbeta-serial
+  - name: gce-ubuntudev2-k8sbeta-default
+    test_group_name: ci-kubernetes-e2e-gce-ubuntudev2-k8sbeta-default
+  - name: gce-ubuntudev2-k8sbeta-serial
+    test_group_name: ci-kubernetes-e2e-gce-ubuntudev2-k8sbeta-serial
+  - name: gce-ubuntudev2-k8sbeta-slow
+    test_group_name: ci-kubernetes-e2e-gce-ubuntudev2-k8sbeta-slow
 
 - name: canonical-ubuntustable1-k8sdev
   dashboard_tab:
@@ -4957,6 +5033,8 @@ dashboard_groups:
   - canonical-ubuntudev-k8sbeta
   - canonical-ubuntudev-k8sstable1
   - canonical-ubuntudev-k8sstable2
+  - canonical-ubuntudev2-k8sdev
+  - canonical-ubuntudev2-k8sbeta
   - canonical-ubuntustable1-k8sdev
   - canonical-ubuntustable1-k8sstable1
   - canonical-ubuntustable1-k8sstable2

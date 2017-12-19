@@ -296,6 +296,26 @@ jobs:
     - --check-leaked-resources=false # disabled since it uses shared project.
     - --gcp-project=ubuntu-os-gke-cloud-dev-tests  # Canonical owned project.
     sigOwners: ['sig-node']
+
+  ci-kubernetes-e2e-gce-ubuntudev2-k8sdev-default:
+    interval: 2h
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2e-gce-ubuntudev2-k8sdev-slow:
+    interval: 2h
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2e-gce-ubuntudev2-k8sdev-serial:
+    interval: 2h
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2e-gce-ubuntudev2-k8sbeta-default:
+    interval: 2h
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2e-gce-ubuntudev2-k8sbeta-slow:
+    interval: 2h
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2e-gce-ubuntudev2-k8sbeta-serial:
+    interval: 2h
+    sigOwners: ['sig-node']
+
   ci-kubernetes-e2e-gce-ubuntustable1-k8sdev-default:
     interval: 2h
     args:
@@ -572,6 +592,28 @@ jobs:
     args:
     - --gcp-project=ubuntu-image-validation
     sigOwners: ['sig-node']
+
+  ci-kubernetes-e2enode-ubuntudev2-k8sdev-gkespec:
+    interval: 2h
+    args:
+    - --gcp-project=ubuntu-image-validation
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2enode-ubuntudev2-k8sdev-serial:
+    interval: 2h
+    args:
+    - --gcp-project=ubuntu-image-validation
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2enode-ubuntudev2-k8sbeta-gkespec:
+    interval: 2h
+    args:
+    - --gcp-project=ubuntu-image-validation
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2enode-ubuntudev2-k8sbeta-serial:
+    interval: 2h
+    args:
+    - --gcp-project=ubuntu-image-validation
+    sigOwners: ['sig-node']
+
   ci-kubernetes-e2enode-ubuntustable1-k8sdev-gkespec:
     interval: 2h
     args:
@@ -801,7 +843,12 @@ images:
     - --gcp-node-image=gci
   ubuntudev:
     args:
-    - --image-family=ubuntu-gke-1604-lts
+    - --image-family=ubuntu-gke-1604-lts-1
+    - --image-project=ubuntu-os-gke-cloud-devel
+    - --gcp-node-image=ubuntu
+  ubuntudev2:
+    args:
+    - --image-family=ubuntu-gke-1604-lts-2
     - --image-project=ubuntu-os-gke-cloud-devel
     - --gcp-node-image=ubuntu
   ubuntustable1:
@@ -911,7 +958,11 @@ nodeImages:
     - --node-args=--instance-metadata=user-data<test/e2e_node/jenkins/gci-init.yaml,gci-update-strategy=update_disabled
   ubuntudev:
     args:
-    - --node-args=--images=ubuntu-gke-1604-xenial-v20171108-1
+    - --node-args=--images=ubuntu-gke-1604-xenial-v20171215
+    - --node-args=--image-project=ubuntu-os-gke-cloud-devel
+  ubuntudev2:
+    args:
+    - --node-args=--images=ubuntu-gke-1604-xenial-v201712121
     - --node-args=--image-project=ubuntu-os-gke-cloud-devel
   ubuntustable1:
     args:
@@ -922,24 +973,24 @@ nodeK8sVersions:
   dev:
     args:
     - --repo=k8s.io/kubernetes=master
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20171108-8b5aad9f-master
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20171218-a18c352b4-master
   beta:
     args:
     # Run against HEAD since there's currently no Kubernetes beta release.
     - --repo=k8s.io/kubernetes=master
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20171108-8b5aad9f-master
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20171218-a18c352b4-master
   stable1:
     args:
     - --repo=k8s.io/kubernetes=release-1.8
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20171108-8b5aad9f-1.8
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20171218-a18c352b4-1.8
   stable2:
     args:
     - --repo=k8s.io/kubernetes=release-1.7
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20171108-8b5aad9f-1.7
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20171218-a18c352b4-1.7
   stable3:
     args:
     - --repo=k8s.io/kubernetes=release-1.6
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20171108-8b5aad9f-1.6
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20171218-a18c352b4-1.6
 
 nodeTestSuites:
   default:
