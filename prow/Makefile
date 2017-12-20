@@ -22,7 +22,7 @@ GIT_VERSION              ?= 0.1
 # HOOK_VERSION is the version of the hook image
 HOOK_VERSION             ?= 0.193
 # SINKER_VERSION is the version of the sinker image
-SINKER_VERSION           ?= 0.25
+SINKER_VERSION           ?= 0.26
 # DECK_VERSION is the version of the deck image
 DECK_VERSION             ?= 0.74
 # SPLICE_VERSION is the version of the splice image

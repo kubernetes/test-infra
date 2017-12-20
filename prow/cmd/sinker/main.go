@@ -105,17 +105,24 @@ func (c *controller) clean() {
 		c.logger.WithError(err).Error("Error listing prow jobs.")
 		return
 	}
+
+	// Only delete pod if its prowjob is marked as finished
+	isFinished := make(map[string]bool)
+
 	maxProwJobAge := c.configAgent.Config().Sinker.MaxProwJobAge
 	for _, prowJob := range prowJobs {
 		// Handle periodics separately.
 		if prowJob.Spec.Type == kube.PeriodicJob {
 			continue
 		}
-		if prowJob.Complete() && time.Since(prowJob.Status.StartTime) > maxProwJobAge {
-			if err := c.kc.DeleteProwJob(prowJob.Metadata.Name); err == nil {
-				c.logger.WithFields(pjutil.ProwJobFields(&prowJob)).Info("Deleted prowjob.")
-			} else {
-				c.logger.WithFields(pjutil.ProwJobFields(&prowJob)).WithError(err).Error("Error deleting prowjob.")
+		if prowJob.Complete() {
+			isFinished[prowJob.Metadata.Name] = true
+			if time.Since(prowJob.Status.StartTime) > maxProwJobAge {
+				if err := c.kc.DeleteProwJob(prowJob.Metadata.Name); err == nil {
+					c.logger.WithFields(pjutil.ProwJobFields(&prowJob)).Info("Deleted prowjob.")
+				} else {
+					c.logger.WithFields(pjutil.ProwJobFields(&prowJob)).WithError(err).Error("Error deleting prowjob.")
+				}
 			}
 		}
 	}
@@ -126,6 +133,7 @@ func (c *controller) clean() {
 	for _, p := range c.configAgent.Config().Periodics {
 		isActivePeriodic[p.Name] = true
 	}
+
 	// Get the jobs that we need to retain so horologium can continue working
 	// as intended.
 	latestPeriodics := pjutil.GetLatestProwJobs(prowJobs, kube.PeriodicJob)
@@ -139,11 +147,14 @@ func (c *controller) clean() {
 			// Ignore deleting this one.
 			continue
 		}
-		if prowJob.Complete() && time.Since(prowJob.Status.StartTime) > maxProwJobAge {
-			if err := c.kc.DeleteProwJob(prowJob.Metadata.Name); err == nil {
-				c.logger.WithFields(pjutil.ProwJobFields(&prowJob)).Info("Deleted prowjob.")
-			} else {
-				c.logger.WithFields(pjutil.ProwJobFields(&prowJob)).WithError(err).Error("Error deleting prowjob.")
+		if prowJob.Complete() {
+			isFinished[prowJob.Metadata.Name] = true
+			if time.Since(prowJob.Status.StartTime) > maxProwJobAge {
+				if err := c.kc.DeleteProwJob(prowJob.Metadata.Name); err == nil {
+					c.logger.WithFields(pjutil.ProwJobFields(&prowJob)).Info("Deleted prowjob.")
+				} else {
+					c.logger.WithFields(pjutil.ProwJobFields(&prowJob)).WithError(err).Error("Error deleting prowjob.")
+				}
 			}
 		}
 	}
@@ -157,6 +168,9 @@ func (c *controller) clean() {
 	}
 	maxPodAge := c.configAgent.Config().Sinker.MaxPodAge
 	for _, pod := range pods {
+		if _, ok := isFinished[pod.Metadata.Name]; !ok {
+			continue
+		}
 		if (pod.Status.Phase == kube.PodSucceeded || pod.Status.Phase == kube.PodFailed) &&
 			time.Since(pod.Status.StartTime) > maxPodAge {
 			// Delete old completed pods. Don't quit if we fail to delete one.

@@ -151,7 +151,7 @@ spec:
     spec:
       containers:
       - name: sinker
-        image: gcr.io/k8s-prow/sinker:0.25
+        image: gcr.io/k8s-prow/sinker:0.26
         volumeMounts:
         - name: config
           mountPath: /etc/config
