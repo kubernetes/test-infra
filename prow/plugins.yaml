@@ -16,6 +16,7 @@ triggers:
 approve:
 - repos:
   - kubernetes/charts
+  - kubernetes/cluster-registry
   - kubernetes/community
   - kubernetes/kubectl
   - kubernetes/sig-release
@@ -99,6 +100,7 @@ plugins:
   - trigger
 
   kubernetes/cluster-registry:
+  - approve
   - trigger
 
   kubernetes/community:
