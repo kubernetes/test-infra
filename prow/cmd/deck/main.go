@@ -171,8 +171,9 @@ func handleTide(ca *config.Agent, ta *tideAgent) http.HandlerFunc {
 		ta.Lock()
 		defer ta.Unlock()
 		payload := tideData{
-			Queries: queries,
-			Pools:   ta.pools,
+			Queries:     queries,
+			TideQueries: queryConfigs,
+			Pools:       ta.pools,
 		}
 		pd, err := json.Marshal(payload)
 		if err != nil {
