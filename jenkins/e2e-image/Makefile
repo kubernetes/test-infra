@@ -21,6 +21,12 @@ GO ?= 1.9.2
 BAZEL ?= 0.8.1
 CFSSL ?= R1.2
 
+ifeq ($(K8S), 1.9)
+	GO = 1.9.2
+	BAZEL = 0.8.1
+	CFSSL = R1.2
+endif
+
 ifeq ($(K8S), 1.8)
 	GO = 1.8.3
 	BAZEL = 0.6.1
@@ -33,6 +39,7 @@ ifeq ($(K8S), 1.7)
 	CFSSL = R1.2
 endif
 
+# TODO(krzyzacy): deprecate 1.6 images
 ifeq ($(K8S), 1.6)
 	GO = 1.7.4
 	BAZEL = 0.5.2
