@@ -976,9 +976,8 @@ nodeK8sVersions:
     prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20171218-a18c352b4-master
   beta:
     args:
-    # Run against HEAD since there's currently no Kubernetes beta release.
-    - --repo=k8s.io/kubernetes=master
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20171218-a18c352b4-master
+    - --repo=k8s.io/kubernetes=release-1.9
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20171218-a18c352b4-1.9
   stable1:
     args:
     - --repo=k8s.io/kubernetes=release-1.8
