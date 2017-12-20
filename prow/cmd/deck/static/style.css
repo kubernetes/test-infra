@@ -101,6 +101,7 @@ div {
 
 h3.plugin {
     color: blue;
+    cursor: pointer;
 }
 
 div {
