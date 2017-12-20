@@ -25,12 +25,14 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/tide"
 )
 
 type tideData struct {
-	Queries []string
-	Pools   []tide.Pool
+	Queries     []string
+	TideQueries []config.TideQuery
+	Pools       []tide.Pool
 }
 
 type tideAgent struct {
