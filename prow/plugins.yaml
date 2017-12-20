@@ -103,6 +103,7 @@ plugins:
 
   kubernetes/community:
   - approve
+  - blunderbuss
   - blockade
   - trigger
 
