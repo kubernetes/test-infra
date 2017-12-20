@@ -26,6 +26,7 @@ tide:
   queries:
   - repos:
     - kubernetes/charts
+    - kubernetes/cluster-registry
     - kubernetes/community
     - kubernetes/federation
     - kubernetes/kubernetes-template-project
