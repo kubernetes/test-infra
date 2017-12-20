@@ -143,6 +143,18 @@ func TestClean(t *testing.T) {
 		},
 		{
 			Metadata: kube.ObjectMeta{
+				Name: "old-just-complete",
+				Labels: map[string]string{
+					kube.CreatedByProw: "true",
+				},
+			},
+			Status: kube.PodStatus{
+				Phase:     kube.PodSucceeded,
+				StartTime: time.Now().Add(-maxPodAge).Add(-time.Second),
+			},
+		},
+		{
+			Metadata: kube.ObjectMeta{
 				Name: "new-failed",
 				Labels: map[string]string{
 					kube.CreatedByProw: "true",
@@ -192,6 +204,32 @@ func TestClean(t *testing.T) {
 		"old-succeeded",
 	}
 	prowJobs := []kube.ProwJob{
+		{
+			Metadata: kube.ObjectMeta{
+				Name: "old-failed",
+			},
+			Status: kube.ProwJobStatus{
+				StartTime:      time.Now().Add(-maxProwJobAge).Add(-time.Second),
+				CompletionTime: time.Now().Add(-time.Second),
+			},
+		},
+		{
+			Metadata: kube.ObjectMeta{
+				Name: "old-succeeded",
+			},
+			Status: kube.ProwJobStatus{
+				StartTime:      time.Now().Add(-maxProwJobAge).Add(-time.Second),
+				CompletionTime: time.Now().Add(-time.Second),
+			},
+		},
+		{
+			Metadata: kube.ObjectMeta{
+				Name: "old-just-complete",
+			},
+			Status: kube.ProwJobStatus{
+				StartTime: time.Now().Add(-maxProwJobAge).Add(-time.Second),
+			},
+		},
 		{
 			Metadata: kube.ObjectMeta{
 				Name: "old-complete",
@@ -258,6 +296,8 @@ func TestClean(t *testing.T) {
 		},
 	}
 	deletedProwJobs := []string{
+		"old-failed",
+		"old-succeeded",
 		"old-complete",
 		"older-periodic",
 		"oldest-periodic",
