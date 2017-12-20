@@ -20358,7 +20358,7 @@ periodics:
     containers:
     - args:
       - --timeout=90
-      - --repo=k8s.io/kubernetes=master
+      - --repo=k8s.io/kubernetes=release-1.9
       - --root=/go/src
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -20371,7 +20371,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171218-a18c352b4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171218-a18c352b4-1.9
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -20397,7 +20397,7 @@ periodics:
     containers:
     - args:
       - --timeout=200
-      - --repo=k8s.io/kubernetes=master
+      - --repo=k8s.io/kubernetes=release-1.9
       - --root=/go/src
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -20410,7 +20410,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171218-a18c352b4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171218-a18c352b4-1.9
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -20748,7 +20748,7 @@ periodics:
     containers:
     - args:
       - --timeout=90
-      - --repo=k8s.io/kubernetes=master
+      - --repo=k8s.io/kubernetes=release-1.9
       - --root=/go/src
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -20761,7 +20761,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171218-a18c352b4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171218-a18c352b4-1.9
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -20787,7 +20787,7 @@ periodics:
     containers:
     - args:
       - --timeout=200
-      - --repo=k8s.io/kubernetes=master
+      - --repo=k8s.io/kubernetes=release-1.9
       - --root=/go/src
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -20800,7 +20800,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171218-a18c352b4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171218-a18c352b4-1.9
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -21372,7 +21372,7 @@ periodics:
     containers:
     - args:
       - --timeout=80
-      - --repo=k8s.io/kubernetes=master
+      - --repo=k8s.io/kubernetes=release-1.9
       - --root=/go/src
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -21385,7 +21385,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171218-a18c352b4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171218-a18c352b4-1.9
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -21411,7 +21411,7 @@ periodics:
     containers:
     - args:
       - --timeout=200
-      - --repo=k8s.io/kubernetes=master
+      - --repo=k8s.io/kubernetes=release-1.9
       - --root=/go/src
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -21424,7 +21424,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20171218-a18c352b4-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171218-a18c352b4-1.9
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
