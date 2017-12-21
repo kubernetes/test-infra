@@ -111,6 +111,7 @@ plugins:
 
   kubernetes/contrib:
   - approve
+  - blunderbuss
 
   kubernetes/dns:
   - trigger

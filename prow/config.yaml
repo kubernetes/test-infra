@@ -28,6 +28,7 @@ tide:
     - kubernetes/charts
     - kubernetes/cluster-registry
     - kubernetes/community
+    - kubernetes/contrib
     - kubernetes/federation
     - kubernetes/kubernetes-template-project
     - kubernetes/sig-release
