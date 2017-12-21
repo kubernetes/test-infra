@@ -10929,7 +10929,7 @@
       "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-kubemark-e2e-gce-big",
       "--test=false",
       "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --gather-resource-usage=true --gather-metrics-at-teardown=true --output-print-type=json",
-      "--timeout=80m"
+      "--timeout=100m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
