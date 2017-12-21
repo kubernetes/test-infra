@@ -42,7 +42,12 @@ const (
 	requestTimeout   = time.Minute
 
 	EmptySelector = ""
+
+	DefaultClusterAlias = "default"
 )
+
+// newClient is used to allow mocking out the behavior of 'NewClient' while testing.
+var newClient func(c *Cluster, namespace string) (*Client, error) = NewClient
 
 type Logger interface {
 	Debugf(s string, v ...interface{})
@@ -299,6 +304,43 @@ func NewClientFromFile(clusterPath, namespace string) (*Client, error) {
 		return nil, err
 	}
 	return NewClient(&c, namespace)
+}
+
+// ClientMapFromFile reads the file at clustersPath and attempts to load a map of cluster aliases
+// to authenticated clients to the respective clusters.
+// The file at clustersPath is expected to be a yaml map from strings to Cluster structs OR it may
+// simply be a single Cluster struct which will be assigned the alias $DefaultClusterAlias.
+// If the file is an alias map, it must include the alias $DefaultClusterAlias.
+func ClientMapFromFile(clustersPath, namespace string) (map[string]*Client, error) {
+	data, err := ioutil.ReadFile(clustersPath)
+	if err != nil {
+		return nil, err
+	}
+	var raw map[string]Cluster
+	if err := yaml.Unmarshal(data, &raw); err != nil {
+		// If we failed to unmarshal the multicluster format try the single Cluster format.
+		var singleConfig Cluster
+		if err := yaml.Unmarshal(data, &singleConfig); err != nil {
+			return nil, err
+		}
+		raw = map[string]Cluster{DefaultClusterAlias: singleConfig}
+	}
+	foundDefault := false
+	result := map[string]*Client{}
+	for alias, config := range raw {
+		client, err := newClient(&config, namespace)
+		if err != nil {
+			return nil, fmt.Errorf("failed to load config for build cluster alias %q in file %q: %v", alias, clustersPath, err)
+		}
+		result[alias] = client
+		if alias == DefaultClusterAlias {
+			foundDefault = true
+		}
+	}
+	if !foundDefault {
+		return nil, fmt.Errorf("failed to find the required %q alias in build cluster config %q", DefaultClusterAlias, clustersPath)
+	}
+	return result, nil
 }
 
 // NewClient returns an authenticated Client using the keys in the Cluster.
