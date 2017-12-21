@@ -69,7 +69,7 @@ type syncFn func(pj kube.ProwJob, pm map[string]kube.Pod, reports chan<- kube.Pr
 // Controller manages ProwJobs.
 type Controller struct {
 	kc     kubeClient
-	pkc    kubeClient
+	pkcs   map[string]kubeClient
 	ghc    githubClient
 	log    *logrus.Entry
 	ca     configAgent
@@ -89,7 +89,7 @@ type Controller struct {
 }
 
 // NewController creates a new Controller from the provided clients.
-func NewController(kc, pkc *kube.Client, ghc *github.Client, logger *logrus.Entry, ca *config.Agent, totURL, selector string) (*Controller, error) {
+func NewController(kc *kube.Client, pkcs map[string]*kube.Client, ghc *github.Client, logger *logrus.Entry, ca *config.Agent, totURL, selector string) (*Controller, error) {
 	n, err := snowflake.NewNode(1)
 	if err != nil {
 		return nil, err
@@ -97,9 +97,13 @@ func NewController(kc, pkc *kube.Client, ghc *github.Client, logger *logrus.Entr
 	if logger == nil {
 		logger = logrus.NewEntry(logrus.StandardLogger())
 	}
+	buildClusters := map[string]kubeClient{}
+	for alias, client := range pkcs {
+		buildClusters[alias] = kubeClient(client)
+	}
 	return &Controller{
 		kc:          kc,
-		pkc:         pkc,
+		pkcs:        buildClusters,
 		ghc:         ghc,
 		log:         logger,
 		ca:          ca,
@@ -159,13 +163,16 @@ func (c *Controller) Sync() error {
 	if len(c.selector) > 0 {
 		selector = strings.Join([]string{c.selector, selector}, ",")
 	}
-	pods, err := c.pkc.ListPods(selector)
-	if err != nil {
-		return fmt.Errorf("error listing pods: %v", err)
-	}
+
 	pm := map[string]kube.Pod{}
-	for _, pod := range pods {
-		pm[pod.Metadata.Name] = pod
+	for alias, client := range c.pkcs {
+		pods, err := client.ListPods(selector)
+		if err != nil {
+			return fmt.Errorf("error listing pods in cluster %q: %v", alias, err)
+		}
+		for _, pod := range pods {
+			pm[pod.Metadata.Name] = pod
+		}
 	}
 	// TODO: Replace the following filtering with a field selector once CRDs support field selectors.
 	// https://github.com/kubernetes/kubernetes/issues/53459
@@ -256,7 +263,9 @@ func (c *Controller) terminateDupes(pjs []kube.ProwJob, pm map[string]kube.Pod) 
 		// newer commits in Github pull requests.
 		if c.ca.Config().Plank.AllowCancellations {
 			if pod, exists := pm[toCancel.Metadata.Name]; exists {
-				if err := c.pkc.DeletePod(pod.Metadata.Name); err != nil {
+				if client, ok := c.pkcs[toCancel.ClusterAlias()]; !ok {
+					c.log.WithFields(pjutil.ProwJobFields(&toCancel)).Errorf("Unknown cluster alias %q.", toCancel.ClusterAlias())
+				} else if err := client.DeletePod(pod.Metadata.Name); err != nil {
 					c.log.WithError(err).WithFields(pjutil.ProwJobFields(&toCancel)).Warn("Cannot delete pod")
 				}
 			}
@@ -337,7 +346,11 @@ func (c *Controller) syncPendingJob(pj kube.ProwJob, pm map[string]kube.Pod, rep
 			// Pod is in Unknown state. This can happen if there is a problem with
 			// the node. Delete the old pod, we'll start a new one next loop.
 			c.log.WithFields(pjutil.ProwJobFields(&pj)).Info("Pod is in unknown state, deleting & restarting pod")
-			return c.pkc.DeletePod(pj.Metadata.Name)
+			client, ok := c.pkcs[pj.ClusterAlias()]
+			if !ok {
+				return fmt.Errorf("Unknown cluster alias %q.", pj.ClusterAlias())
+			}
+			return client.DeletePod(pj.Metadata.Name)
 
 		case kube.PodSucceeded:
 			// Pod succeeded. Update ProwJob, talk to GitHub, and start next jobs.
@@ -358,7 +371,11 @@ func (c *Controller) syncPendingJob(pj kube.ProwJob, pm map[string]kube.Pod, rep
 			if pod.Status.Reason == kube.Evicted {
 				c.incrementNumPendingJobs(pj.Spec.Job)
 				// Pod was evicted. We will recreate it in the next resync.
-				return c.pkc.DeletePod(pj.Metadata.Name)
+				client, ok := c.pkcs[pj.ClusterAlias()]
+				if !ok {
+					return fmt.Errorf("Unknown cluster alias %q.", pj.ClusterAlias())
+				}
+				return client.DeletePod(pj.Metadata.Name)
 			}
 			// Pod failed. Update ProwJob, talk to GitHub.
 			pj.Status.CompletionTime = time.Now()
@@ -455,7 +472,11 @@ func (c *Controller) startPod(pj kube.ProwJob) (string, string, error) {
 		return "", "", err
 	}
 
-	actual, err := c.pkc.CreatePod(*pod)
+	client, ok := c.pkcs[pj.ClusterAlias()]
+	if !ok {
+		return "", "", fmt.Errorf("Unknown cluster alias %q.", pj.ClusterAlias())
+	}
+	actual, err := client.CreatePod(*pod)
 	if err != nil {
 		return "", "", err
 	}

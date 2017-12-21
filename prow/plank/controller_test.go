@@ -342,10 +342,10 @@ func TestTerminateDupes(t *testing.T) {
 			},
 		}
 		c := Controller{
-			kc:  fkc,
-			pkc: fkc,
-			log: logrus.NewEntry(logrus.StandardLogger()),
-			ca:  fca,
+			kc:   fkc,
+			pkcs: map[string]kubeClient{kube.DefaultClusterAlias: fkc},
+			log:  logrus.NewEntry(logrus.StandardLogger()),
+			ca:   fca,
 		}
 
 		if err := c.terminateDupes(fkc.prowjobs, tc.pm); err != nil {
@@ -391,12 +391,12 @@ func TestSyncTriggeredJobs(t *testing.T) {
 		pj             kube.ProwJob
 		pendingJobs    map[string]int
 		maxConcurrency int
-		pods           []kube.Pod
+		pods           map[string][]kube.Pod
 		podErr         error
 
 		expectedState      kube.ProwJobState
 		expectedPodHasName bool
-		expectedNumPods    int
+		expectedNumPods    map[string]int
 		expectedComplete   bool
 		expectedCreatedPJs int
 		expectedReport     bool
@@ -418,9 +418,10 @@ func TestSyncTriggeredJobs(t *testing.T) {
 					State: kube.TriggeredState,
 				},
 			},
+			pods:               map[string][]kube.Pod{"default": {}},
 			expectedState:      kube.PendingState,
 			expectedPodHasName: true,
-			expectedNumPods:    1,
+			expectedNumPods:    map[string]int{"default": 1},
 			expectedReport:     true,
 			expectedURL:        "blabla/pending",
 		},
@@ -429,6 +430,7 @@ func TestSyncTriggeredJobs(t *testing.T) {
 			pj: kube.ProwJob{
 				Spec: kube.ProwJobSpec{
 					Job:            "same",
+					Type:           kube.PeriodicJob,
 					MaxConcurrency: 1,
 				},
 				Status: kube.ProwJobStatus{
@@ -438,18 +440,86 @@ func TestSyncTriggeredJobs(t *testing.T) {
 			pendingJobs: map[string]int{
 				"same": 1,
 			},
-			pods: []kube.Pod{
-				{
-					Metadata: kube.ObjectMeta{
-						Name: "same-42",
-					},
-					Status: kube.PodStatus{
-						Phase: kube.PodRunning,
+			pods: map[string][]kube.Pod{
+				"default": {
+					{
+						Metadata: kube.ObjectMeta{
+							Name: "same-42",
+						},
+						Status: kube.PodStatus{
+							Phase: kube.PodRunning,
+						},
 					},
 				},
 			},
 			expectedState:   kube.TriggeredState,
-			expectedNumPods: 1,
+			expectedNumPods: map[string]int{"default": 1},
+		},
+		{
+			name: "trusted pod with a max concurrency of 1",
+			pj: kube.ProwJob{
+				Spec: kube.ProwJobSpec{
+					Job:            "same",
+					Type:           kube.PeriodicJob,
+					Cluster:        "trusted",
+					MaxConcurrency: 1,
+				},
+				Status: kube.ProwJobStatus{
+					State: kube.TriggeredState,
+				},
+			},
+			pendingJobs: map[string]int{
+				"same": 1,
+			},
+			pods: map[string][]kube.Pod{
+				"trusted": {
+					{
+						Metadata: kube.ObjectMeta{
+							Name: "same-42",
+						},
+						Status: kube.PodStatus{
+							Phase: kube.PodRunning,
+						},
+					},
+				},
+			},
+			expectedState:   kube.TriggeredState,
+			expectedNumPods: map[string]int{"trusted": 1},
+		},
+		{
+			name: "trusted pod with a max concurrency of 1 (can start)",
+			pj: kube.ProwJob{
+				Metadata: kube.ObjectMeta{
+					Name: "some",
+				},
+				Spec: kube.ProwJobSpec{
+					Job:            "some",
+					Type:           kube.PeriodicJob,
+					Cluster:        "trusted",
+					MaxConcurrency: 1,
+				},
+				Status: kube.ProwJobStatus{
+					State: kube.TriggeredState,
+				},
+			},
+			pods: map[string][]kube.Pod{
+				"default": {
+					{
+						Metadata: kube.ObjectMeta{
+							Name: "other-42",
+						},
+						Status: kube.PodStatus{
+							Phase: kube.PodRunning,
+						},
+					},
+				},
+				"trusted": {},
+			},
+			expectedState:      kube.PendingState,
+			expectedNumPods:    map[string]int{"default": 1, "trusted": 1},
+			expectedPodHasName: true,
+			expectedReport:     true,
+			expectedURL:        "some/pending",
 		},
 		{
 			name: "do not exceed global maxconcurrency",
@@ -483,10 +553,11 @@ func TestSyncTriggeredJobs(t *testing.T) {
 					State: kube.TriggeredState,
 				},
 			},
+			pods:            map[string][]kube.Pod{"default": {}},
 			maxConcurrency:  21,
 			pendingJobs:     map[string]int{"motherearth": 10, "allagash": 8, "krusovice": 2},
 			expectedState:   kube.PendingState,
-			expectedNumPods: 1,
+			expectedNumPods: map[string]int{"default": 1},
 			expectedReport:  true,
 			expectedURL:     "beer/pending",
 		},
@@ -501,6 +572,7 @@ func TestSyncTriggeredJobs(t *testing.T) {
 					State: kube.TriggeredState,
 				},
 			},
+			pods:             map[string][]kube.Pod{"default": {}},
 			podErr:           kube.NewUnprocessableEntityError(errors.New("no way jose")),
 			expectedState:    kube.ErrorState,
 			expectedComplete: true,
@@ -550,30 +622,32 @@ func TestSyncTriggeredJobs(t *testing.T) {
 					State: kube.TriggeredState,
 				},
 			},
-			pods: []kube.Pod{
-				{
-					Metadata: kube.ObjectMeta{
-						Name: "foo",
-					},
-					Spec: kube.PodSpec{
-						Containers: []kube.Container{
-							{
-								Env: []kube.EnvVar{
-									{
-										Name:  "BUILD_NUMBER",
-										Value: "0987654321",
+			pods: map[string][]kube.Pod{
+				"default": {
+					{
+						Metadata: kube.ObjectMeta{
+							Name: "foo",
+						},
+						Spec: kube.PodSpec{
+							Containers: []kube.Container{
+								{
+									Env: []kube.EnvVar{
+										{
+											Name:  "BUILD_NUMBER",
+											Value: "0987654321",
+										},
 									},
 								},
 							},
 						},
-					},
-					Status: kube.PodStatus{
-						Phase: kube.PodRunning,
+						Status: kube.PodStatus{
+							Phase: kube.PodRunning,
+						},
 					},
 				},
 			},
 			expectedState:   kube.PendingState,
-			expectedNumPods: 1,
+			expectedNumPods: map[string]int{"default": 1},
 			expectedReport:  true,
 			expectedURL:     "foo/pending",
 			expectedBuildID: "0987654321",
@@ -583,19 +657,24 @@ func TestSyncTriggeredJobs(t *testing.T) {
 		totServ := httptest.NewServer(http.HandlerFunc(handleTot))
 		defer totServ.Close()
 		pm := make(map[string]kube.Pod)
-		for i := range tc.pods {
-			pm[tc.pods[i].Metadata.Name] = tc.pods[i]
+		for _, pods := range tc.pods {
+			for i := range pods {
+				pm[pods[i].Metadata.Name] = pods[i]
+			}
 		}
 		fc := &fkc{
 			prowjobs: []kube.ProwJob{tc.pj},
 		}
-		fpc := &fkc{
-			pods: tc.pods,
-			err:  tc.podErr,
+		pkcs := map[string]kubeClient{}
+		for alias, pods := range tc.pods {
+			pkcs[alias] = &fkc{
+				pods: pods,
+				err:  tc.podErr,
+			}
 		}
 		c := Controller{
 			kc:          fc,
-			pkc:         fpc,
+			pkcs:        pkcs,
 			log:         logrus.NewEntry(logrus.StandardLogger()),
 			ca:          newFakeConfigAgent(t, tc.maxConcurrency),
 			totURL:      totServ.URL,
@@ -623,8 +702,10 @@ func TestSyncTriggeredJobs(t *testing.T) {
 		if (actual.Status.PodName == "") && tc.expectedPodHasName {
 			t.Errorf("for case %q got no pod name, expected one", tc.name)
 		}
-		if len(fpc.pods) != tc.expectedNumPods {
-			t.Errorf("for case %q got %d pods", tc.name, len(fpc.pods))
+		for alias, expected := range tc.expectedNumPods {
+			if got := len(pkcs[alias].(*fkc).pods); got != expected {
+				t.Errorf("for case %q got %d pods for alias %q, but expected %d", tc.name, got, alias, expected)
+			}
 		}
 		if actual.Complete() != tc.expectedComplete {
 			t.Errorf("for case %q got wrong completion", tc.name)
@@ -899,7 +980,7 @@ func TestSyncPendingJob(t *testing.T) {
 		}
 		c := Controller{
 			kc:          fc,
-			pkc:         fpc,
+			pkcs:        map[string]kubeClient{kube.DefaultClusterAlias: fpc},
 			log:         logrus.NewEntry(logrus.StandardLogger()),
 			ca:          newFakeConfigAgent(t, 0),
 			totURL:      totServ.URL,
@@ -945,8 +1026,9 @@ func TestSyncPendingJob(t *testing.T) {
 // TestPeriodic walks through the happy path of a periodic job.
 func TestPeriodic(t *testing.T) {
 	per := config.Periodic{
-		Name:  "ci-periodic-job",
-		Agent: "kubernetes",
+		Name:    "ci-periodic-job",
+		Agent:   "kubernetes",
+		Cluster: "trusted",
 		Spec: &kube.PodSpec{
 			Containers: []kube.Container{{}},
 		},
@@ -966,7 +1048,7 @@ func TestPeriodic(t *testing.T) {
 	}
 	c := Controller{
 		kc:          fc,
-		pkc:         fc,
+		pkcs:        map[string]kubeClient{kube.DefaultClusterAlias: &fkc{}, "trusted": fc},
 		log:         logrus.NewEntry(logrus.StandardLogger()),
 		ca:          newFakeConfigAgent(t, 0),
 		totURL:      totServ.URL,
@@ -1226,7 +1308,7 @@ func TestMaxConcurrencyWithNewlyTriggeredJobs(t *testing.T) {
 		}
 		c := Controller{
 			kc:          fc,
-			pkc:         fpc,
+			pkcs:        map[string]kubeClient{kube.DefaultClusterAlias: fpc},
 			log:         logrus.NewEntry(logrus.StandardLogger()),
 			ca:          newFakeConfigAgent(t, 0),
 			node:        n,
