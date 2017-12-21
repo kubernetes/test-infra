@@ -115,15 +115,17 @@ func (c *controller) clean() {
 		if prowJob.Spec.Type == kube.PeriodicJob {
 			continue
 		}
-		if prowJob.Complete() {
-			isFinished[prowJob.Metadata.Name] = true
-			if time.Since(prowJob.Status.StartTime) > maxProwJobAge {
-				if err := c.kc.DeleteProwJob(prowJob.Metadata.Name); err == nil {
-					c.logger.WithFields(pjutil.ProwJobFields(&prowJob)).Info("Deleted prowjob.")
-				} else {
-					c.logger.WithFields(pjutil.ProwJobFields(&prowJob)).WithError(err).Error("Error deleting prowjob.")
-				}
-			}
+		if !prowJob.Complete() {
+			continue
+		}
+		isFinished[prowJob.Metadata.Name] = true
+		if time.Since(prowJob.Status.StartTime) <= maxProwJobAge {
+			continue
+		}
+		if err := c.kc.DeleteProwJob(prowJob.Metadata.Name); err == nil {
+			c.logger.WithFields(pjutil.ProwJobFields(&prowJob)).Info("Deleted prowjob.")
+		} else {
+			c.logger.WithFields(pjutil.ProwJobFields(&prowJob)).WithError(err).Error("Error deleting prowjob.")
 		}
 	}
 
@@ -147,15 +149,17 @@ func (c *controller) clean() {
 			// Ignore deleting this one.
 			continue
 		}
-		if prowJob.Complete() {
-			isFinished[prowJob.Metadata.Name] = true
-			if time.Since(prowJob.Status.StartTime) > maxProwJobAge {
-				if err := c.kc.DeleteProwJob(prowJob.Metadata.Name); err == nil {
-					c.logger.WithFields(pjutil.ProwJobFields(&prowJob)).Info("Deleted prowjob.")
-				} else {
-					c.logger.WithFields(pjutil.ProwJobFields(&prowJob)).WithError(err).Error("Error deleting prowjob.")
-				}
-			}
+		if !prowJob.Complete() {
+			continue
+		}
+		isFinished[prowJob.Metadata.Name] = true
+		if time.Since(prowJob.Status.StartTime) <= maxProwJobAge {
+			continue
+		}
+		if err := c.kc.DeleteProwJob(prowJob.Metadata.Name); err == nil {
+			c.logger.WithFields(pjutil.ProwJobFields(&prowJob)).Info("Deleted prowjob.")
+		} else {
+			c.logger.WithFields(pjutil.ProwJobFields(&prowJob)).WithError(err).Error("Error deleting prowjob.")
 		}
 	}
 
@@ -169,6 +173,8 @@ func (c *controller) clean() {
 	maxPodAge := c.configAgent.Config().Sinker.MaxPodAge
 	for _, pod := range pods {
 		if _, ok := isFinished[pod.Metadata.Name]; !ok {
+			// prowjob is not marked as completed yet
+			// deleting the pod now will result in plank creating a brand new pod
 			continue
 		}
 		if (pod.Status.Phase == kube.PodSucceeded || pod.Status.Phase == kube.PodFailed) &&
