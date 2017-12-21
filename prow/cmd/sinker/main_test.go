@@ -294,6 +294,15 @@ func TestClean(t *testing.T) {
 				CompletionTime: time.Now().Add(-time.Hour),
 			},
 		},
+		{
+			Metadata: kube.ObjectMeta{
+				Name: "old-failed-trusted",
+			},
+			Status: kube.ProwJobStatus{
+				StartTime:      time.Now().Add(-maxProwJobAge).Add(-time.Second),
+				CompletionTime: time.Now().Add(-time.Second),
+			},
+		},
 	}
 	deletedProwJobs := []string{
 		"old-failed",
@@ -301,56 +310,81 @@ func TestClean(t *testing.T) {
 		"old-complete",
 		"older-periodic",
 		"oldest-periodic",
+		"old-failed-trusted",
 	}
+	podsTrusted := []kube.Pod{
+		{
+			Metadata: kube.ObjectMeta{
+				Name: "old-failed-trusted",
+				Labels: map[string]string{
+					kube.CreatedByProw: "true",
+				},
+			},
+			Status: kube.PodStatus{
+				Phase:     kube.PodFailed,
+				StartTime: time.Now().Add(-maxPodAge).Add(-time.Second),
+			},
+		},
+	}
+	deletedPodsTrusted := []string{"old-failed-trusted"}
+
 	kc := &fakeClient{
 		Pods:     pods,
 		ProwJobs: prowJobs,
+	}
+	kcTrusted := &fakeClient{
+		Pods:     podsTrusted,
+		ProwJobs: nil,
 	}
 	// Run
 	c := controller{
 		logger:      logrus.WithField("component", "sinker"),
 		kc:          kc,
-		pkc:         kc,
+		pkcs:        map[string]kubeClient{kube.DefaultClusterAlias: kc, "trusted": kcTrusted},
 		configAgent: newFakeConfigAgent(),
 	}
 	c.clean()
 	// Check
-	if len(deletedPods) != len(kc.DeletedPods) {
-		var got []string
-		for _, pj := range kc.DeletedPods {
-			got = append(got, pj.Metadata.Name)
+	check := func(kc *fakeClient, deletedPods, deletedProwJobs []string) {
+		if len(deletedPods) != len(kc.DeletedPods) {
+			var got []string
+			for _, pj := range kc.DeletedPods {
+				got = append(got, pj.Metadata.Name)
+			}
+			t.Errorf("Deleted wrong number of pods: got %d (%v), expected %d (%v)",
+				len(got), strings.Join(got, ", "), len(deletedPods), strings.Join(deletedPods, ", "))
 		}
-		t.Errorf("Deleted wrong number of pods: got %d (%v), expected %d (%v)",
-			len(got), strings.Join(got, ", "), len(deletedPods), strings.Join(deletedPods, ", "))
-	}
-	for _, n := range deletedPods {
-		found := false
-		for _, p := range kc.DeletedPods {
-			if p.Metadata.Name == n {
-				found = true
+		for _, n := range deletedPods {
+			found := false
+			for _, p := range kc.DeletedPods {
+				if p.Metadata.Name == n {
+					found = true
+				}
+			}
+			if !found {
+				t.Errorf("Did not delete pod %s", n)
 			}
 		}
-		if !found {
-			t.Errorf("Did not delete pod %s", n)
+		if len(deletedProwJobs) != len(kc.DeletedProwJobs) {
+			var got []string
+			for _, pj := range kc.DeletedProwJobs {
+				got = append(got, pj.Metadata.Name)
+			}
+			t.Errorf("Deleted wrong number of prowjobs: got %d (%s), expected %d (%s)",
+				len(got), strings.Join(got, ", "), len(deletedProwJobs), strings.Join(deletedProwJobs, ", "))
 		}
-	}
-	if len(deletedProwJobs) != len(kc.DeletedProwJobs) {
-		var got []string
-		for _, pj := range kc.DeletedProwJobs {
-			got = append(got, pj.Metadata.Name)
-		}
-		t.Errorf("Deleted wrong number of prowjobs: got %d (%s), expected %d (%s)",
-			len(got), strings.Join(got, ", "), len(deletedProwJobs), strings.Join(deletedProwJobs, ", "))
-	}
-	for _, n := range deletedProwJobs {
-		found := false
-		for _, j := range kc.DeletedProwJobs {
-			if j.Metadata.Name == n {
-				found = true
+		for _, n := range deletedProwJobs {
+			found := false
+			for _, j := range kc.DeletedProwJobs {
+				if j.Metadata.Name == n {
+					found = true
+				}
+			}
+			if !found {
+				t.Errorf("Did not delete prowjob %s", n)
 			}
 		}
-		if !found {
-			t.Errorf("Did not delete prowjob %s", n)
-		}
 	}
+	check(kc, deletedPods, deletedProwJobs)
+	check(kcTrusted, deletedPodsTrusted, nil)
 }
