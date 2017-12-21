@@ -296,6 +296,24 @@ jobs:
     - --check-leaked-resources=false # disabled since it uses shared project.
     - --gcp-project=ubuntu-os-gke-cloud-dev-tests  # Canonical owned project.
     sigOwners: ['sig-node']
+  ci-kubernetes-e2e-gce-ubuntudev-k8sstable2-default:
+    interval: 2h
+    args:
+    - --check-leaked-resources=false # disabled since it uses shared project.
+    - --gcp-project=ubuntu-os-gke-cloud-dev-tests  # Canonical owned project.
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2e-gce-ubuntudev-k8sstable2-slow:
+    interval: 2h
+    args:
+    - --check-leaked-resources=false # disabled since it uses shared project.
+    - --gcp-project=ubuntu-os-gke-cloud-dev-tests  # Canonical owned project.
+    sigOwners: ['sig-node']
+  ci-kubernetes-e2e-gce-ubuntudev-k8sstable2-serial:
+    interval: 2h
+    args:
+    - --check-leaked-resources=false # disabled since it uses shared project.
+    - --gcp-project=ubuntu-os-gke-cloud-dev-tests  # Canonical owned project.
+    sigOwners: ['sig-node']
 
   ci-kubernetes-e2e-gce-ubuntudev2-k8sdev-default:
     interval: 2h
