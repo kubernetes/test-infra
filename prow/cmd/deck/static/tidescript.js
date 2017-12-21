@@ -9,6 +9,26 @@ function redraw() {
     redrawPools();
 }
 
+function createLink(href, text) {
+    var a = document.createElement("a");
+    a.href = href;
+    a.appendChild(document.createTextNode(text));
+    return a;
+}
+
+function createSpan(classList, style, text) {
+    var s = document.createElement("span");
+    s.classList.add(...classList);
+    s.style = style;
+    s.appendChild(document.createTextNode(text));
+    return s;
+}
+
+function normalizeLabelToClass(label) {
+    // css class names cannot contain whitespace
+    return label.replace(" ", "");
+}
+
 function redrawQueries() {
     var queries = document.getElementById("queries");
     while (queries.firstChild)
@@ -19,16 +39,79 @@ function redrawQueries() {
     }
     for (var i = 0; i < tideData.Queries.length; i++) {
         var query = tideData.Queries[i];
+        var tideQuery = tideData.TideQueries[i];
 
-        var a = document.createElement("a");
-        a.href = "https://github.com/search?utf8=" + encodeURIComponent("\u2713") + "&q=" + encodeURIComponent(query);
-        a.appendChild(document.createTextNode(query));
-
-        //var div = document.createElement("div");
-        //div.appendChild(a);
+        // create list entry for the query, all details will be within this element
         var li = document.createElement("li");
+
+        // GitHub query search link
+        var a = createLink(
+            "https://github.com/search?utf8=" + encodeURIComponent("\u2713") + "&q=" + encodeURIComponent(query),
+            "Query Search Link"
+        );
         li.appendChild(a);
 
+        // build the description
+        // all queries should implicitly mean this
+        var explanationPrefix = " - Meaning: Is an open Pull Request in one of the following repos: ";
+        li.appendChild(document.createTextNode(explanationPrefix));
+        // add the list of repos
+        var repos = tideQuery["repos"];
+        for (var j = 0; j < repos.length; j++) {
+            var a = createLink("https://github.com/" + repos[j], repos[j]);
+            li.appendChild(a);
+            if (j+1 < repos.length) {
+                li.appendChild(document.createTextNode(", "));
+            }
+        }
+        // required labels
+        var hasLabels = tideQuery.hasOwnProperty("labels") && tideQuery["labels"].length > 0;
+        if (hasLabels) {
+            var labels = tideQuery["labels"];
+            li.appendChild(document.createTextNode("; "));
+            li.appendChild(createSpan(["emphasis"], "", "with"));
+            li.appendChild(document.createTextNode(" the following labels: "));
+            for (var j = 0; j < labels.length; j++) {
+                var label = labels[j];
+                li.appendChild(createSpan(["label", normalizeLabelToClass(label)], "", label));
+                if (j+1 < labels.length) {
+                    li.appendChild(document.createTextNode(", "));
+                }
+            }
+        }
+        // required to be not present labels
+        var hasMissingLabels = tideQuery.hasOwnProperty("missingLabels") && tideQuery["missingLabels"].length > 0;
+        if (hasMissingLabels) {
+            var missingLabels = tideQuery["missingLabels"];
+            if (hasLabels) {
+                li.appendChild(document.createTextNode("; and "));
+            } else {
+                li.appendChild(document.createTextNode("; "));
+            }
+            li.appendChild(createSpan(["emphasis"], "", "without"));
+            li.appendChild(document.createTextNode(" the following labels: "));
+            for (var j = 0; j < missingLabels.length; j++) {
+                var label = missingLabels[j];
+                li.appendChild(createSpan(["label", normalizeLabelToClass(label)], "", label));
+                if (j+1 < missingLabels.length) {
+                    li.appendChild(document.createTextNode(", "));
+                }
+            }
+        }
+
+        // GitHub native review required
+        var reviewApprovedRequired = tideQuery.hasOwnProperty("reviewApprovedRequired") && tideQuery["reviewApprovedRequired"];
+        if (reviewApprovedRequired) {
+            li.appendChild(document.createTextNode("; and must be approved "));
+            li.appendChild(createLink(
+                "https://help.github.com/articles/about-pull-request-reviews/",
+                "approved by GitHub review"
+            ));
+        }
+
+        li.appendChild(document.createTextNode("."));
+
+        // actually add the entry
         queries.appendChild(li);
     }
 }
@@ -47,8 +130,8 @@ function redrawPools() {
         var r = document.createElement("tr");
 
         var repoName = pool.Org + "/" + pool.Repo + " " + pool.Branch;
-        var repoLink = "https://github.com/" + pool.Org + "/" + pool.Repo + "/tree/" + pool.Branch;
-        r.appendChild(createLinkCell(repoName, repoLink, ""));
+        var deckLink = "/?repo="+pool.Org+"%2F"+pool.Repo;
+        r.appendChild(createLinkCell(repoName, deckLink, ""));
         r.appendChild(createActionCell(pool));
         r.appendChild(createPRCell(pool, pool.BatchPending));
         r.appendChild(createPRCell(pool, pool.SuccessPRs));

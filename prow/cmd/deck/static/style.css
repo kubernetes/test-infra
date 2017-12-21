@@ -234,5 +234,60 @@ a:link {
 }
 
 #queries li {
-    padding: .5em;
+    padding: .5em .35em;
+    line-height: 2;
+    color: black;
+}
+
+
+span.label {
+    padding: .11em .35em;
+    border-radius: .2em;
+    border: .1em solid transparent;
+    transition: opacity 0.2s linear;
+    font-weight: bold;
+    margin: 0 .1em;
+    text-align: center;
+    color: white;
+    box-shadow: inset 0 -1px 0 rgba(27,31,35,0.12);
+    background-color: #ededed;
+    color: #333333;
+    white-space: nowrap;
+}
+
+span.label:hover {
+    opacity: 0.85;
+}
+
+.emphasis {
+    font-weight: bold;
+}
+
+
+/* Known GitHub Labels, can be overriden in extensions/style.css */
+/* NOTE: spaces must be stripped from the label name */
+.label.lgtm {
+    background-color: #15dd18;
+    color: #fff;
+}
+.label.approved {
+    background-color: #0ffa16;
+    color: #033304;
+}
+.label.cncf-cla\:yes {
+    background-color: #bfe5bf;
+    color: black;
+}
+.label.needs-ok-to-test {
+    background-color: #b60205;
+    color: white;
+}
+.label.do-not-merge,
+.label.do-not-merge\/hold,
+.label.do-not-merge\/work-in-progress, 
+.label.do-not-merge\/release-note-label-needed, 
+.label.do-not-merge\/cherry-pick-not-approved,
+.label.do-not-merge\/blocked-paths {
+    background-color: #e11d21;
+    color: #fff;
 }
