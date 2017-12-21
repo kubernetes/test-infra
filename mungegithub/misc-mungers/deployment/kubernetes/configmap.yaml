@@ -3,8 +3,6 @@ app: misc-mungers
 http-cache-dir: /cache/httpcache
 organization: kubernetes
 project: kubernetes
-# Run blunderbuss before approval-handler, so that we can suggest approvers
-# based on assigned reviewer.
 pr-mungers: blunderbuss,lgtm-after-commit,cherrypick-auto-approve,label-unapproved-picks,needs-rebase,path-label,stale-green-ci,comment-deleter,sig-mention-handler,milestone-maintainer
 state: open
 token-file: /etc/secret-volume/token

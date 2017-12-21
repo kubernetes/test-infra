@@ -526,51 +526,6 @@ func GenerateTemplateOrFail(templ, name string, data interface{}) *string {
 	return &message
 }
 
-// getMessage returns the comment body that we want the approval-handler to display on PRs
-// The comment shows:
-// 	- a list of approvers files (and links) needed to get the PR approved
-// 	- a list of approvers files with strikethroughs that already have an approver's approval
-// 	- a suggested list of people from each OWNERS files that can fully approve the PR
-// 	- how an approver can indicate their approval
-// 	- how an approver can cancel their approval
-func GetMessage(ap Approvers, org, project string) *string {
-	message := GenerateTemplateOrFail(`This pull-request has been approved by: {{range $index, $approval := .ap.ListApprovals}}{{if $index}}, {{end}}{{$approval}}{{end}}
-{{- if (not .ap.AreFilesApproved) }}
-We suggest the following additional approver{{if ne 1 (len .ap.GetCCs)}}s{{end}}: {{range $index, $cc := .ap.GetCCs}}{{if $index}}, {{end}}**{{$cc}}**{{end}}
-
-Assign the PR to them by writing `+"`/assign {{range $index, $cc := .ap.GetCCs}}{{if $index}} {{end}}@{{$cc}}{{end}}`"+` in a comment when ready.
-{{- end}}
-
-{{if not .ap.RequireIssue -}}
-{{else if .ap.AssociatedIssue -}}
-Associated issue: *{{.ap.AssociatedIssue}}*
-{{- else if len .ap.NoIssueApprovers -}}
-Associated issue requirement bypassed by: {{range $index, $approval := .ap.ListNoIssueApprovals}}{{if $index}}, {{end}}{{$approval}}{{end}}
-{{- else -}}
-*No associated issue*. Update pull-request body to add a reference to an issue, or get approval with `+"`/approve no-issue`"+`
-{{- end}}
-
-The full list of commands accepted by this bot can be found [here](https://github.com/kubernetes/test-infra/blob/master/commands.md).
-
-<details {{if (not .ap.AreFilesApproved) }}open{{end}}>
-Needs approval from an approver in each of these OWNERS Files:
-
-{{range .ap.GetFiles .org .project}}{{.}}{{end}}
-You can indicate your approval by writing `+"`/approve`"+` in a comment
-You can cancel your approval by writing `+"`/approve cancel`"+` in a comment
-</details>`, "message", map[string]interface{}{"ap": ap, "org": org, "project": project})
-
-	*message += getGubernatorMetadata(ap.GetCCs())
-
-	title := GenerateTemplateOrFail("This PR is **{{if not .IsApproved}}NOT {{end}}APPROVED**", "title", ap)
-
-	if title == nil || message == nil {
-		return nil
-	}
-
-	return notification(ApprovalNotificationName, *title, *message)
-}
-
 func notification(name, arguments, context string) *string {
 	str := "[" + strings.ToUpper(name) + "]"
 

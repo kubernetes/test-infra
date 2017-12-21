@@ -51,7 +51,6 @@ go_test(
 go_library(
     name = "go_default_library",
     srcs = [
-        "approval-handler.go",
         "assign-fixes.go",
         "block_paths.go",
         "blunderbuss.go",

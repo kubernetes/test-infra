@@ -207,12 +207,14 @@ If an approval is cancelled, the bot will delete the status added to the PR and 
 
 **Code Implementation Links**
 
-Blunderbuss: [mungegithub/mungers/blunderbuss.go](https://github.com/kubernetes/test-infra/blob/master/mungegithub/mungers/blunderbuss.go)
+Blunderbuss: 
+[prow/plugins/blunderbuss/blunderbuss.go](https://github.com/kubernetes/test-infra/blob/master/prow/plugins/blunderbuss/blunderbuss.go)
 
 LGTM:
 [prow/plugins/lgtm/lgtm.go](https://github.com/kubernetes/test-infra/blob/master/prow/plugins/lgtm/lgtm.go)
 
 Approve:
-[mungegithub/mungers/approval-handler.go](https://github.com/kubernetes/test-infra/blob/master/mungegithub/mungers/approval-handler.go)
+[prow/plugins/approve/approve.go](https://github.com/kubernetes/test-infra/blob/master/prow/plugins/approve/approve.go)
 
-[mungegithub/mungers/approvers/owners.go](https://github.com/kubernetes/test-infra/blob/master/mungegithub/mungers/approvers/owners.go)
+[prow/plugins/approve/approvers/owners.go](https://github.com/kubernetes/test-infra/blob/master/prow/plugins/approve/approvers/owners.go)
+
