@@ -1044,6 +1044,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-cni-calico
 - name: ci-kubernetes-e2e-kubeadm-gce-cni-flannel
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-cni-flannel
+- name: ci-kubernetes-e2e-kubeadm-gce-dns-coredns
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-dns-coredns
 - name: ci-kubernetes-e2e-kubeadm-gce-stable-on-master
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-stable-on-master
 - name: ci-kubernetes-e2e-kubeadm-gce-upgrade-stable-master
@@ -3666,6 +3668,9 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-cni-calico
   - name: kubeadm-gce-cni-flannel
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-cni-flannel
+  - name: kubeadm-gce-dns-coredns
+    test_group_name: ci-kubernetes-e2e-kubeadm-gce-dns-coredns
+
 
 - name: sig-cluster-lifecycle-multi-platform
   dashboard_tab:
@@ -3835,6 +3840,10 @@ dashboards:
       alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
   - name: kubeadm-gce-cni-flannel
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-cni-flannel
+    alert_options:
+      alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
+  - name: kubeadm-gce-dns-coredns
+    test_group_name: ci-kubernetes-e2e-kubeadm-gce-dns-coredns
     alert_options:
       alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
 
