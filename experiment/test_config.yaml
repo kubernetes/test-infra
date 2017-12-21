@@ -991,11 +991,11 @@ nodeK8sVersions:
   dev:
     args:
     - --repo=k8s.io/kubernetes=master
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20171218-a18c352b4-master
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20171220-29cb083c9-master
   beta:
     args:
     - --repo=k8s.io/kubernetes=release-1.9
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20171218-a18c352b4-1.9
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20171220-29cb083c9-1.9
   stable1:
     args:
     - --repo=k8s.io/kubernetes=release-1.8
