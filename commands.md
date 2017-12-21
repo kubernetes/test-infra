@@ -2,6 +2,9 @@
 
 `k8s-ci-robot` and `k8s-merge-robot` understand several commands. They should all be uttered on their own line, and they are case-sensitive.
 
+For more detailed documentation on each of these commands, consult Prow's [plugin
+help](https://prow.k8s.io/plugin-help.html).
+
 Command | Implemented By | Who can run it | Description
 --- | --- | --- | ---
 `/approve` | mungegithub [approvers](./mungegithub/mungers/approvers) | owners | approve all the files for which you are an approver
