@@ -27,8 +27,8 @@ TMP_GOPATH=$(mktemp -d)
 
 # The gazelle commit should match the rules_go commit in the WORKSPACE file.
 "${TESTINFRA_ROOT}/hack/go_install_from_commit.sh" \
-  github.com/bazelbuild/rules_go/go/tools/gazelle/gazelle \
-  0.8.1 \
+  github.com/bazelbuild/bazel-gazelle/cmd/gazelle \
+  0.8 \
   "${TMP_GOPATH}"
 
 touch "${TESTINFRA_ROOT}/vendor/BUILD"
