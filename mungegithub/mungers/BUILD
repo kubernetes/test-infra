@@ -65,7 +65,6 @@ go_library(
         "prow.go",
         "sig-mention-handler.go",
         "stale-green-ci.go",
-        "stale-pending-ci.go",
         "submit-queue.go",
         "submit-queue-batch.go",
     ],

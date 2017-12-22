@@ -68,7 +68,6 @@ A small amount of information about some of the individual mungers inside each o
 * path-label - adds labels, such as `kind/new-api` based on if ANY file which matches changed
 * size - Adds the xs/s/m/l/xl labels and comments to PRs
 * stale-green-ci - Reruns the CI tests every X hours (96?) for PRs which passed. So PRs which sit around for a long time will notice failures sooner.
-* stale-pending-ci - Reruns the CI tests if they have been 'in progress'/'pending' for 24 hours.
 * submit-queue - This is the brains that actually tracks and merges PRs. It also provides the web site interface.
 
 ### cherrypick
