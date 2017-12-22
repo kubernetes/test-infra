@@ -57,8 +57,6 @@ TARGET=kubernetes REPO=docker.io/$USERNAME APP=submit-queue KUBECONFIG=/path/to/
 A small amount of information about some of the individual mungers inside each of the 3 varieties are listed below:
 
 ### submit-queue
-* approval-handler - reads approvers from OWNERs files and decides if a PR
-  should get the approved label based on who has written `/approve`
 * block-paths - add `do-not-merge` label to PRs which change files which should not be changed (mainly old docs moved to [kubernetes/website](https://github.com/kubernetes/website))
 * blunderbuss - assigned PRs to individuals based on the contents of OWNERS files in the main repo
 * cherrypick-auto-approve - adds `cherrypick-approved` to PRs in a release branch if the 'parent' pr in master was approved
