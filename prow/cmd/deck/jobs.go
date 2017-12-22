@@ -65,7 +65,9 @@ type Job struct {
 	ft time.Time
 }
 
-type listPJClient interface {
+type serviceClusterClient interface {
+	GetLog(pod string) ([]byte, error)
+	ListPods(selector string) ([]kube.Pod, error)
 	ListProwJobs(selector string) ([]kube.ProwJob, error)
 }
 
@@ -79,8 +81,8 @@ type configAgent interface {
 }
 
 type JobAgent struct {
-	kc        listPJClient
-	pkc       podLogClient
+	kc        serviceClusterClient
+	pkcs      map[string]podLogClient
 	c         configAgent
 	prowJobs  []kube.ProwJob
 	jobs      []Job
@@ -129,7 +131,11 @@ func (ja *JobAgent) GetJobLog(job, id string) ([]byte, error) {
 		return nil, fmt.Errorf("no such job found: %s (id: %s)", job, id)
 	}
 	if j.Spec.Agent == kube.KubernetesAgent {
-		return ja.pkc.GetLog(j.Status.PodName)
+		client, ok := ja.pkcs[j.ClusterAlias()]
+		if !ok {
+			return nil, fmt.Errorf("cannot get logs for prowjob %q with agent %q: unknown cluster alias %q", j.Metadata.Name, j.Spec.Agent, j.ClusterAlias())
+		}
+		return client.GetLog(j.Status.PodName)
 	}
 	for _, agentToTmpl := range ja.c.Config().Deck.ExternalAgentLogs {
 		if agentToTmpl.Agent != string(j.Spec.Agent) {
@@ -164,7 +170,11 @@ func (ja *JobAgent) GetJobLogStream(job, id string, options map[string]string) (
 		return nil, fmt.Errorf("no such job found: %s (id: %s)", job, id)
 	}
 	if j.Spec.Agent == kube.KubernetesAgent {
-		return ja.pkc.GetLogStream(j.Status.PodName, options)
+		client, ok := ja.pkcs[j.ClusterAlias()]
+		if !ok {
+			return nil, fmt.Errorf("cannot get logs for prowjob %q with agent %q: unknown cluster alias %q", j.Metadata.Name, j.Spec.Agent, j.ClusterAlias())
+		}
+		return client.GetLogStream(j.Status.PodName, options)
 	}
 	return nil, fmt.Errorf("streaming is available for kubernetes clients only, prowjob %q is running under %s.", j.Metadata.Name, j.Spec.Agent)
 }

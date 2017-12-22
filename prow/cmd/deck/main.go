@@ -69,20 +69,24 @@ func main() {
 	}
 	kc.SetHiddenReposProvider(func() []string { return configAgent.Config().Deck.HiddenRepos })
 
-	var pkc *kube.Client
+	var pkcs map[string]*kube.Client
 	if *buildCluster == "" {
-		pkc = kc.Namespace(configAgent.Config().PodNamespace)
+		pkcs = map[string]*kube.Client{kube.DefaultClusterAlias: kc.Namespace(configAgent.Config().PodNamespace)}
 	} else {
-		pkc, err = kube.NewClientFromFile(*buildCluster, configAgent.Config().PodNamespace)
+		pkcs, err = kube.ClientMapFromFile(*buildCluster, configAgent.Config().PodNamespace)
 		if err != nil {
 			logger.WithError(err).Fatal("Error getting kube client to build cluster.")
 		}
 	}
+	plClients := map[string]podLogClient{}
+	for alias, client := range pkcs {
+		plClients[alias] = client
+	}
 
 	ja := &JobAgent{
-		kc:  kc,
-		pkc: pkc,
-		c:   configAgent,
+		kc:   kc,
+		pkcs: plClients,
+		c:    configAgent,
 	}
 	ja.Start()
 
