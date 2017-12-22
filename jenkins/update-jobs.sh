@@ -24,7 +24,7 @@ else
   exit 1
 fi
 
-IMAGE="gcr.io/google_containers/kubekins-job-builder:5"
+IMAGE="k8s.gcr.io/kubekins-job-builder:5"
 
 # jenkins_jobs.ini contains administrative credentials for Jenkins.
 # Store it in /jenkins-master-data.
