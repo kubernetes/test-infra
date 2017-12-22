@@ -9,7 +9,6 @@ load(
 go_test(
     name = "go_default_test",
     srcs = [
-        "assign-fixes_test.go",
         "check-labels_test.go",
         "cherrypick-auto-approve_test.go",
         "cherrypick-clear-after-merge_test.go",
@@ -51,7 +50,6 @@ go_test(
 go_library(
     name = "go_default_library",
     srcs = [
-        "assign-fixes.go",
         "block_paths.go",
         "blunderbuss.go",
         "check-labels.go",
