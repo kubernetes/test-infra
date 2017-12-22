@@ -59,7 +59,6 @@ go_library(
         "lgtm_after_commit.go",
         "milestone-maintainer.go",
         "mungers.go",
-        "nag-flake-issues.go",
         "needs_rebase.go",
         "old-test-getter.go",
         "owner-label.go",
