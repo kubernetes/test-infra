@@ -60,7 +60,6 @@ go_library(
         "milestone-maintainer.go",
         "mungers.go",
         "needs_rebase.go",
-        "old-test-getter.go",
         "owner-label.go",
         "path_label.go",
         "prow.go",
