@@ -127,16 +127,18 @@ func (c *Controller) Sync() error {
 	if err != nil {
 		return err
 	}
-	// This may take a while, which may cause ServeHTTP requests to block for
-	// some time. This is not a frontend service, so that's okay.
-	c.m.Lock()
-	defer c.m.Unlock()
-	c.pools = make([]Pool, 0, len(sps))
+
+	pools := make([]Pool, 0, len(sps))
 	for _, sp := range sps {
-		if err := c.syncSubpool(sp); err != nil {
-			return err
+		if pool, err := c.syncSubpool(sp); err != nil {
+			c.logger.WithError(err).Errorf("Syncing subpool %s/%s:%s.", sp.org, sp.repo, sp.branch)
+		} else {
+			pools = append(pools, pool)
 		}
 	}
+	c.m.Lock()
+	defer c.m.Unlock()
+	c.pools = pools
 	return nil
 }
 
@@ -434,7 +436,7 @@ func (c *Controller) takeAction(sp subpool, batchPending, successes, pendings, n
 	return Wait, nil, nil
 }
 
-func (c *Controller) syncSubpool(sp subpool) error {
+func (c *Controller) syncSubpool(sp subpool) (Pool, error) {
 	c.logger.Infof("%s/%s %s: %d PRs, %d PJs.", sp.org, sp.repo, sp.branch, len(sp.prs), len(sp.pjs))
 	var presubmits []string
 	for _, ps := range c.ca.Config().Presubmits[sp.org+"/"+sp.repo] {
@@ -452,21 +454,21 @@ func (c *Controller) syncSubpool(sp subpool) error {
 	c.logger.Infof("Pending batch: %v", prNumbers(batchPending))
 	act, targets, err := c.takeAction(sp, batchPending, successes, pendings, nones, batchMerge)
 	c.logger.Infof("Action: %v, Targets: %v", act, targets)
-	c.pools = append(c.pools, Pool{
-		Org:    sp.org,
-		Repo:   sp.repo,
-		Branch: sp.branch,
+	return Pool{
+			Org:    sp.org,
+			Repo:   sp.repo,
+			Branch: sp.branch,
 
-		SuccessPRs: successes,
-		PendingPRs: pendings,
-		MissingPRs: nones,
+			SuccessPRs: successes,
+			PendingPRs: pendings,
+			MissingPRs: nones,
 
-		BatchPending: batchPending,
+			BatchPending: batchPending,
 
-		Action: act,
-		Target: targets,
-	})
-	return err
+			Action: act,
+			Target: targets,
+		},
+		err
 }
 
 type subpool struct {

@@ -48,7 +48,7 @@ func (ta *tideAgent) start() {
 		ta.log.WithError(err).Error("Updating pool for the first time.")
 	}
 	go func() {
-		for range time.Tick(time.Minute) {
+		for range time.Tick(time.Second * 10) {
 			if err := ta.update(); err != nil {
 				ta.log.WithError(err).Error("Updating pool.")
 			}
