@@ -11,7 +11,6 @@ go_test(
     srcs = [
         "cherrypick-auto-approve_test.go",
         "cherrypick-clear-after-merge_test.go",
-        "inactive-review-handler_test.go",
         "milestone-maintainer_test.go",
         "owner-label_test.go",
         "path_label_test.go",
@@ -56,7 +55,6 @@ go_library(
         "cherrypick-queue.go",
         "comment-deleter.go",
         "doc.go",
-        "inactive-review-handler.go",
         "issue-categorizer.go",
         "lgtm_after_commit.go",
         "milestone-maintainer.go",
