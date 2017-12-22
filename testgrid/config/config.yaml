@@ -1039,6 +1039,8 @@ test_groups:
 # kubeadm tests
 - name: ci-kubernetes-e2e-kubeadm-gce
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce
+- name: periodic-kubernetes-e2e-kubeadm-gce-selfhosting
+  gcs_prefix: kubernetes-jenkins/logs/periodic-kubernetes-e2e-kubeadm-gce-selfhosting
 - name: ci-kubernetes-e2e-kubeadm-gce-ipvs
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kubeadm-gce-ipvs
 - name: ci-kubernetes-e2e-kubeadm-gce-cni-calico
@@ -2783,6 +2785,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gci-gke-reboot
   - name: kubeadm-gce
     test_group_name: ci-kubernetes-e2e-kubeadm-gce
+  - name: kubeadm-gce-selfhosting
+    test_group_name: periodic-kubernetes-e2e-kubeadm-gce-selfhosting
 
 - name: sig-cluster-lifecycle-1.6-upgrade-skew
   dashboard_tab:
@@ -3665,6 +3669,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-upgrade-stable-master
   - name: kubeadm-gce
     test_group_name: ci-kubernetes-e2e-kubeadm-gce
+  - name: kubeadm-gce-selfhosting
+    test_group_name: periodic-kubernetes-e2e-kubeadm-gce-selfhosting
   - name: kubeadm-gce-cni-calico
     test_group_name: ci-kubernetes-e2e-kubeadm-gce-cni-calico
   - name: kubeadm-gce-cni-flannel

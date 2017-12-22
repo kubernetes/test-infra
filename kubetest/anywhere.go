@@ -64,7 +64,7 @@ var (
 	kubernetesAnywhereOSImage = flag.String("kubernetes-anywhere-os-image", "ubuntu-1604-xenial-v20171212",
 		"(kubernetes-anywhere only) The name of the os_image to use for nodes")
 	kubernetesAnywhereKubeadmFeatureGates = flag.String("kubernetes-anywhere-kubeadm-feature-gates", "",
-		"(kubernetes-anywhere only) If specified, that flag will pass on to kubeadm.")
+		"(kubernetes-anywhere only) A set of key=value pairs that describes feature gates for kubeadm features. If specified, this flag will pass on to kubeadm.")
 )
 
 const kubernetesAnywhereConfigTemplate = `
