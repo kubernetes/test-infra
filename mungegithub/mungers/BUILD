@@ -9,7 +9,6 @@ load(
 go_test(
     name = "go_default_test",
     srcs = [
-        "check-labels_test.go",
         "cherrypick-auto-approve_test.go",
         "cherrypick-clear-after-merge_test.go",
         "comment-deleter-jenkins_test.go",
@@ -51,7 +50,6 @@ go_library(
     name = "go_default_library",
     srcs = [
         "blunderbuss.go",
-        "check-labels.go",
         "cherrypick-auto-approve.go",
         "cherrypick-clear-after-merge.go",
         "cherrypick-label-unapproved.go",
