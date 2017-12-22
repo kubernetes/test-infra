@@ -61,7 +61,6 @@ A small amount of information about some of the individual mungers inside each o
 * cherrypick-auto-approve - adds `cherrypick-approved` to PRs in a release branch if the 'parent' pr in master was approved
 * cherrypick-label-unapproved - adds `do-not-merge` label to PRs against a release-\* branch which do not have `cherrypick-approved`
 * comment-deleter - deletes comments created by the k8s-merge-robot which are no longer relevant. Such as comments about a rebase being required if it has been rebased.
-* comment-deleter-jenkins - deleted comments create by the k8s-bot jenkins bot which are no longer relevant. Such as old test results.
 * issue-triager - takes the title and body of an issue and asks another web
   service to guess the appropriate routing label
 * lgtm-after-commit - removes `lgtm` label if a PR is changed after the label was added
