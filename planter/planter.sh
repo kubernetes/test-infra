@@ -22,7 +22,7 @@
 # - planter will always `docker pull $IMAGE` before running it, see below
 #
 # To build kubernetes, first you checkout github.com/kubernetes/kubernetes
-# to $GOPATH/src/k8s.io/kubernetes and github.com/kubernetes/test-infra 
+# to $GOPATH/src/k8s.io/kubernetes and github.com/kubernetes/test-infra
 # to $GOPATH/src/k8s.io/test-infra.
 #
 # Then you can build with:
@@ -39,10 +39,6 @@ IMAGE="${IMAGE_NAME}:${TAG}"
 # - WORKSPACE is assumed to be in your current git repo, or alternatively $PWD
 REPO=$(git rev-parse --show-toplevel 2>/dev/null || true)
 REPO=${REPO:-${PWD}}
-# To build kubernetes, first you checkout github.com/kubernetes/kubernetes
-# to $GOPATH/src/k8s.io/kubernetes and github.com/kubernetes/test-infra
-# to $GOPATH/src/k8s.io/test-infra.
-#
 # Instead of mounting the full user ${HOME} which previously causes many issues like #5607 & #5736
 # We mount only the following folders:
 # - ${HOME}/.cache/bazel to share bazel cache across builds
