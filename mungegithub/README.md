@@ -57,7 +57,6 @@ TARGET=kubernetes REPO=docker.io/$USERNAME APP=submit-queue KUBECONFIG=/path/to/
 A small amount of information about some of the individual mungers inside each of the 3 varieties are listed below:
 
 ### submit-queue
-* block-paths - add `do-not-merge` label to PRs which change files which should not be changed (mainly old docs moved to [kubernetes/website](https://github.com/kubernetes/website))
 * blunderbuss - assigned PRs to individuals based on the contents of OWNERS files in the main repo
 * cherrypick-auto-approve - adds `cherrypick-approved` to PRs in a release branch if the 'parent' pr in master was approved
 * cherrypick-label-unapproved - adds `do-not-merge` label to PRs against a release-\* branch which do not have `cherrypick-approved`

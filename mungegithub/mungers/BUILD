@@ -50,7 +50,6 @@ go_test(
 go_library(
     name = "go_default_library",
     srcs = [
-        "block_paths.go",
         "blunderbuss.go",
         "check-labels.go",
         "cherrypick-auto-approve.go",
