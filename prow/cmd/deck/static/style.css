@@ -233,10 +233,12 @@ a:link {
     display: none;
 }
 
+
 #queries li {
     padding: .5em .35em;
-    line-height: 2;
+    line-height: 1.75;
     color: black;
+    list-style-type: disc;
 }
 
 
@@ -290,4 +292,8 @@ span.label:hover {
 .label.do-not-merge\/blocked-paths {
     background-color: #e11d21;
     color: #fff;
+}
+.label.needs-rebase {
+    background-color: #BDBDBD;
+    color: #333333;
 }
