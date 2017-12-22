@@ -76,7 +76,6 @@ go_library(
         "//mungegithub/mungers/approvers:go_default_library",
         "//mungegithub/mungers/e2e:go_default_library",
         "//mungegithub/mungers/e2e/fake:go_default_library",
-        "//mungegithub/mungers/matchers:go_default_library",
         "//mungegithub/mungers/matchers/comment:go_default_library",
         "//mungegithub/mungers/matchers/event:go_default_library",
         "//mungegithub/mungers/mungerutil:go_default_library",
@@ -89,7 +88,6 @@ go_library(
         "//vendor/github.com/prometheus/client_golang/prometheus:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/clock:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
-        "//vendor/k8s.io/apimachinery/pkg/util/yaml:go_default_library",
         "//vendor/k8s.io/contrib/test-utils/utils:go_default_library",
     ],
 )
