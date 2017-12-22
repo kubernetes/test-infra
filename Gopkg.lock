@@ -12,6 +12,18 @@
   revision = "63027b26b87e2ae2ce3810393d4b81021cfd3a35"
 
 [[projects]]
+  name = "github.com/PuerkitoBio/purell"
+  packages = ["."]
+  revision = "0bcb03f4b4d0a9428594752bd2a3b9aa0a9d4bd4"
+  version = "v1.1.0"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/PuerkitoBio/urlesc"
+  packages = ["."]
+  revision = "de5bf2ad457846296e2031421a34e2568e304e35"
+
+[[projects]]
   name = "github.com/beorn7/perks"
   packages = ["quantile"]
   revision = "3ac7bf7a47d159a033b107610db8a1b6575507a4"
@@ -25,6 +37,30 @@
   name = "github.com/ghodss/yaml"
   packages = ["."]
   revision = "73d445a93680fa1a78ae23a5839bad48f32ba1ee"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/go-openapi/jsonpointer"
+  packages = ["."]
+  revision = "779f45308c19820f1a69e9a4cd965f496e0da10f"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/go-openapi/jsonreference"
+  packages = ["."]
+  revision = "36d33bfe519efae5632669801b180bf1a245da3b"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/go-openapi/spec"
+  packages = ["."]
+  revision = "fa03337d7da5735229ee8f5e9d5d0b996014b7f8"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/go-openapi/swag"
+  packages = ["."]
+  revision = "cf0bdb963811675a4d7e74901cefc7411a1df939"
 
 [[projects]]
   name = "github.com/go-sql-driver/mysql"
@@ -96,6 +132,12 @@
   name = "github.com/jinzhu/inflection"
   packages = ["."]
   revision = "3272df6c21d04180007eb3349844c89a3856bc25"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/mailru/easyjson"
+  packages = ["buffer","jlexer","jwriter"]
+  revision = "32fa128f234d041f196a9f3e0fea5ac9772c08e1"
 
 [[projects]]
   name = "github.com/mattn/go-sqlite3"
@@ -181,7 +223,7 @@
 
 [[projects]]
   name = "golang.org/x/net"
-  packages = ["context"]
+  packages = ["context","idna"]
   revision = "f2499483f923065a842d38eb4c7f1927e6fc6e6d"
 
 [[projects]]
@@ -193,6 +235,12 @@
   name = "golang.org/x/sys"
   packages = ["unix"]
   revision = "a646d33e2ee3172a661fc09bca23bb4889a41bc8"
+
+[[projects]]
+  branch = "master"
+  name = "golang.org/x/text"
+  packages = ["internal/gen","internal/triegen","internal/ucd","transform","unicode/cldr","unicode/norm","width"]
+  revision = "eb22672bea55af56d225d4e35405f4d2e9f062a0"
 
 [[projects]]
   name = "golang.org/x/tools"
@@ -235,6 +283,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "f068aab2349a1eff215bc16974ade8215036fc16ae9a035463f6f5467d822cf8"
+  inputs-digest = "de65c2658389b3af6ed40600df032b085779f261f8c2ffccf67388eba8fa0fc5"
   solver-name = "gps-cdcl"
   solver-version = 1
