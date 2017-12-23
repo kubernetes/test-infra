@@ -41,10 +41,11 @@ import (
 )
 
 var (
-	configPath   = flag.String("config-path", "/etc/config/config", "Path to config.yaml.")
-	buildCluster = flag.String("build-cluster", "", "Path to file containing a YAML-marshalled kube.Cluster object. If empty, uses the local cluster.")
-	tideURL      = flag.String("tide-url", "", "Path to tide. If empty, do not serve tide data.")
-	hookURL      = flag.String("hook-url", "", "Path to hook plugin help endpoint.")
+	configPath      = flag.String("config-path", "/etc/config/config", "Path to config.yaml.")
+	buildCluster    = flag.String("build-cluster", "", "Path to file containing a YAML-marshalled kube.Cluster object. If empty, uses the local cluster.")
+	tideURL         = flag.String("tide-url", "", "Path to tide. If empty, do not serve tide data.")
+	hookURL         = flag.String("hook-url", "", "Path to hook plugin help endpoint.")
+	redirectToHTTPS = flag.Bool("redirect-to-https", false, "Enable x-forwarded-proto http to https redirect.")
 	// Feature flag for now, can be removed in the future.
 	enableTracing = flag.Bool("enable-tracing", false, "Enable log tracing in prow.")
 )
@@ -85,18 +86,20 @@ func main() {
 	}
 	ja.Start()
 
-	http.Handle("/", gziphandler.GzipHandler(http.FileServer(http.Dir("/static"))))
-	http.Handle("/data.js", gziphandler.GzipHandler(handleData(ja)))
-	http.Handle("/prowjobs.js", gziphandler.GzipHandler(handleProwJobs(ja)))
-	http.Handle("/log", gziphandler.GzipHandler(handleLog(ja)))
-	http.Handle("/rerun", gziphandler.GzipHandler(handleRerun(kc)))
-	http.Handle("/config", gziphandler.GzipHandler(handleConfig(configAgent)))
+	mux := http.NewServeMux()
+
+	mux.Handle("/", gziphandler.GzipHandler(http.FileServer(http.Dir("/static"))))
+	mux.Handle("/data.js", gziphandler.GzipHandler(handleData(ja)))
+	mux.Handle("/prowjobs.js", gziphandler.GzipHandler(handleProwJobs(ja)))
+	mux.Handle("/log", gziphandler.GzipHandler(handleLog(ja)))
+	mux.Handle("/rerun", gziphandler.GzipHandler(handleRerun(kc)))
+	mux.Handle("/config", gziphandler.GzipHandler(handleConfig(configAgent)))
 	if *enableTracing {
-		http.Handle("/trace", gziphandler.GzipHandler(handleTrace(ja)))
+		mux.Handle("/trace", gziphandler.GzipHandler(handleTrace(ja)))
 	}
 
 	if *hookURL != "" {
-		http.Handle("/plugin-help.js", gziphandler.GzipHandler(handlePluginHelp(newHelpAgent(*hookURL))))
+		mux.Handle("/plugin-help.js", gziphandler.GzipHandler(handlePluginHelp(newHelpAgent(*hookURL))))
 	}
 
 	if *tideURL != "" {
@@ -105,10 +108,25 @@ func main() {
 			path: *tideURL,
 		}
 		ta.start()
-		http.Handle("/tide.js", gziphandler.GzipHandler(handleTide(configAgent, ta)))
+		mux.Handle("/tide.js", gziphandler.GzipHandler(handleTide(configAgent, ta)))
 	}
 
-	logger.WithError(http.ListenAndServe(":8080", nil)).Fatal("ListenAndServe returned.")
+	// optionally inject http->https redirect handler when behind loadbalancer
+	if *redirectToHTTPS {
+		redirectMux := http.NewServeMux()
+		redirectMux.Handle("/", func(oldMux *http.ServeMux) http.HandlerFunc {
+			return func(w http.ResponseWriter, r *http.Request) {
+				if r.Header.Get("x-forwarded-proto") == "http" {
+					r.URL.Scheme = "https"
+					http.Redirect(w, r, r.URL.String(), http.StatusMovedPermanently)
+				} else {
+					oldMux.ServeHTTP(w, r)
+				}
+			}
+		}(mux))
+		mux = redirectMux
+	}
+	logger.WithError(http.ListenAndServe(":8080", mux)).Fatal("ListenAndServe returned.")
 }
 
 func loadToken(file string) (string, error) {
