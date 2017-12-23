@@ -10726,6 +10726,21 @@
       "sig-instrumentation"
     ]
   },
+  "pull-ingress-gce-e2e": {
+    "args": [
+      "--buildIngressGCE",
+      "--cluster=",
+      "--extract=ci/latest",
+      "--gcp-zone=us-central1-f",
+      "--provider=gce",
+      "--test_args=--ginkgo.focus=\\[Feature:Ingress\\]",
+      "--timeout=60m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-network"
+    ]
+  },
   "pull-kops-e2e-kubernetes-aws": {
     "args": [
       "--aws",
@@ -10993,15 +11008,6 @@
     "scenario": "kubernetes_e2e",
     "sigOwners": [
       "sig-testing"
-    ]
-  },
-  "pull-kubernetes-ingress-gce-test": {
-    "args": [
-      "true"
-    ],
-    "scenario": "execute",
-    "sigOwners": [
-      "sig-network"
     ]
   },
   "pull-kubernetes-kubemark-e2e-gce": {

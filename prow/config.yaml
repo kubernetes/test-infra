@@ -144,13 +144,13 @@ presubmits:
         hostPath:
           path: /mnt/disks/ssd0
   kubernetes/ingress-gce:
-  - name: pull-kubernetes-ingress-gce-test
+  - name: pull-ingress-gce-e2e
     agent: kubernetes
-    context: pull-kubernetes-ingress-gce-test
+    context: pull-ingress-gce-e2e
     branches:
     - master
-    rerun_command: "/test pull-kubernetes-ingress-gce-test"
-    trigger: "(?m)^/test( all| pull-kubernetes-ingress-gce-test),?(\\s+|$)"
+    rerun_command: "/test pull-ingress-gce-e2e"
+    trigger: "(?m)^/test( all| pull-ingress-gce-e2e),?(\\s+|$)"
     always_run: true
     spec:
       containers:
@@ -2062,7 +2062,7 @@ presubmits:
         env:
         # TODO(krzyzacy): Figure out bazel built kubemark image
         # - name: KUBEMARK_BAZEL_BUILD
-        # value: "y" 
+        # value: "y"
         - name: DOCKER_IN_DOCKER_ENABLED
           value: true
         - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -2137,7 +2137,7 @@ presubmits:
         env:
         # TODO(krzyzacy): Figure out bazel built kubemark image
         # - name: KUBEMARK_BAZEL_BUILD
-        # value: "y" 
+        # value: "y"
         - name: DOCKER_IN_DOCKER_ENABLED
           value: true
         - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -2212,7 +2212,7 @@ presubmits:
         env:
         # TODO(krzyzacy): Figure out bazel built kubemark image
         # - name: KUBEMARK_BAZEL_BUILD
-        # value: "y" 
+        # value: "y"
         - name: DOCKER_IN_DOCKER_ENABLED
           value: true
         - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -2294,7 +2294,7 @@ presubmits:
         env:
         # TODO(krzyzacy): Figure out bazel built kubemark image
         # - name: KUBEMARK_BAZEL_BUILD
-        # value: "y" 
+        # value: "y"
         - name: DOCKER_IN_DOCKER_ENABLED
           value: true
         - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -2364,7 +2364,7 @@ presubmits:
         env:
         # TODO(krzyzacy): Figure out bazel built kubemark image
         # - name: KUBEMARK_BAZEL_BUILD
-        # value: "y" 
+        # value: "y"
         - name: DOCKER_IN_DOCKER_ENABLED
           value: true
         - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -2434,7 +2434,7 @@ presubmits:
         env:
         # TODO(krzyzacy): Figure out bazel built kubemark image
         # - name: KUBEMARK_BAZEL_BUILD
-        # value: "y" 
+        # value: "y"
         - name: DOCKER_IN_DOCKER_ENABLED
           value: true
         - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -4472,7 +4472,7 @@ presubmits:
         env:
         # TODO(krzyzacy): Figure out bazel built kubemark image
         # - name: KUBEMARK_BAZEL_BUILD
-        # value: "y" 
+        # value: "y"
         - name: DOCKER_IN_DOCKER_ENABLED
           value: true
         - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -4547,7 +4547,7 @@ presubmits:
         env:
         # TODO(krzyzacy): Figure out bazel built kubemark image
         # - name: KUBEMARK_BAZEL_BUILD
-        # value: "y" 
+        # value: "y"
         - name: DOCKER_IN_DOCKER_ENABLED
           value: true
         - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -4622,7 +4622,7 @@ presubmits:
         env:
         # TODO(krzyzacy): Figure out bazel built kubemark image
         # - name: KUBEMARK_BAZEL_BUILD
-        # value: "y" 
+        # value: "y"
         - name: DOCKER_IN_DOCKER_ENABLED
           value: true
         - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -4704,7 +4704,7 @@ presubmits:
         env:
         # TODO(krzyzacy): Figure out bazel built kubemark image
         # - name: KUBEMARK_BAZEL_BUILD
-        # value: "y" 
+        # value: "y"
         - name: DOCKER_IN_DOCKER_ENABLED
           value: true
         - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -4774,7 +4774,7 @@ presubmits:
         env:
         # TODO(krzyzacy): Figure out bazel built kubemark image
         # - name: KUBEMARK_BAZEL_BUILD
-        # value: "y" 
+        # value: "y"
         - name: DOCKER_IN_DOCKER_ENABLED
           value: true
         - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -4844,7 +4844,7 @@ presubmits:
         env:
         # TODO(krzyzacy): Figure out bazel built kubemark image
         # - name: KUBEMARK_BAZEL_BUILD
-        # value: "y" 
+        # value: "y"
         - name: DOCKER_IN_DOCKER_ENABLED
           value: true
         - name: GOOGLE_APPLICATION_CREDENTIALS
