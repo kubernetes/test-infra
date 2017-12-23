@@ -1,0 +1,9 @@
+---
+- name: CoreOS | Create docker dropin directory
+  file: path=/etc/systemd/system/docker.service.d state=directory mode=0755
+
+- name: CoreOS | Write docker dropin file
+  copy: src=10-env-file.conf dest="/etc/systemd/system/docker.service.d/10-env-file.conf"
+  register: docker_dropin
+  notify:
+    - reload systemd

@@ -1,0 +1,91 @@
+<!-- Page 1: builds -->
+<div class="config">
+    <!-- min build -->
+    <div>
+        <legend style="color: #3F51B5;">Min build:</legend>
+        <md-input-container class="md-block"">
+            <input ng-model="controller.minBuild" aria-label="minBuild">
+        </md-input-container>
+    </div>
+    <!-- max build -->
+    <div>
+        <legend style="color: #3F51B5;">Max build:</legend>
+        <md-input-container class="md-block">
+            <input ng-model="controller.maxBuild" aria-label="maxBuild">
+        </md-input-container>
+    </div>
+    <!-- load -->
+    <div>
+        <md-button class="md-raised" ng-click="controller.buildRangeChanged()">
+            Load
+        </md-button>
+    </div>
+    <!-- reset -->
+    <div>
+        <md-button class="md-raised" ng-click="controller.resetBuildRange()">
+            Reset
+         </md-button>
+    </div>
+</div>
+
+<hr color="#34495E">
+
+<div class="display-latency">
+    <!-- Plot Create Pod Latency -->
+    <div id="chart-div">
+        <p align="center">Pod Creation Latency</p>
+        <canvas id="line" class="chart chart-line" chart-data="controller.seriesDataMap['latency']"
+            chart-labels="controller.buildsMap['latency']" chart-options="controller.optionsMap['latency']"
+            chart-series="controller.seriesMap['latency']" chart-click="controller.onClick">
+        </canvas>
+        <div tc-chartjs-legend chart-legend="legendsMap['latency']"></div>
+    </div>
+
+     <!-- Plot Create Pod Throughput -->
+    <div id="chart-div">
+        <p align="center">Pod Creation Throughput</p>
+        <canvas id="line" class="chart chart-line" chart-data="controller.seriesDataMap['throughput']"
+            chart-labels="controller.buildsMap['throughput']" chart-options="controller.optionsMap['throughput']"
+            chart-series="controller.seriesMap['throughput']" chart-click="controller.onClick">
+        </canvas>
+        <div tc-chartjs-legend chart-legend="legendsMap['throughput']"></div>
+    </div>   
+</div>
+
+<div class="display-resource" align="center">
+	<!-- Plot Kubelet CPU Usage -->
+    <div id="chart-div">
+    	<p align="center">Kubelet CPU Usage</p>
+        <canvas id="line" class="chart chart-line" chart-data="controller.seriesDataMap['kubelet_cpu']"
+            chart-labels="controller.buildsMap['kubelet_cpu']" chart-options="controller.optionsMap['kubelet_cpu']"
+            chart-series="controller.seriesMap['kubelet_cpu']" chart-click="controller.onClick">
+        </canvas>
+    </div>
+
+    <!-- Plot Kubelet Memory Usage -->
+   <div id="chart-div">
+        <p align="center">Kubelet Memory Usage</p>
+        <canvas id="line" class="chart chart-line" chart-data="controller.seriesDataMap['kubelet_memory']"
+        	chart-labels="controller.buildsMap['kubelet_memory']" chart-options="controller.optionsMap['kubelet_memory']"
+            chart-series="controller.seriesMap['kubelet_memory']" chart-click="controller.onClick">
+        </canvas>
+    </div>
+
+    <!-- Plot Runtime CPU Usage -->
+    <div id="chart-div">
+        <p align="center">Runtime CPU Usage</p>
+        <canvas id="line" class="chart chart-line" chart-data="controller.seriesDataMap['runtime_cpu']"
+            chart-labels="controller.buildsMap['runtime_cpu']" chart-options="controller.optionsMap['runtime_cpu']"
+            chart-series="controller.seriesMap['runtime_cpu']" chart-click="controller.onClick">
+        </canvas>
+    </div>
+
+    <!-- Plot Runtime Memory Usage -->
+    <div id="chart-div">
+        <p align="center">Runtime Memory Usage</p>
+        <canvas id="line" class="chart chart-line" chart-data="controller.seriesDataMap['runtime_memory']"
+            chart-labels="controller.buildsMap['runtime_memory']" chart-options="controller.optionsMap['runtime_memory']"
+            chart-series="controller.seriesMap['runtime_memory']" chart-click="controller.onClick">
+        </canvas>
+    </div>
+</div>

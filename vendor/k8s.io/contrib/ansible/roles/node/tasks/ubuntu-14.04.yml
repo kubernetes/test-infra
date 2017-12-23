@@ -1,0 +1,36 @@
+---
+- name: Ubuntu | Get Upstart Config Files from Kubernetes repository
+  get_url:
+    url=https://raw.githubusercontent.com/kubernetes/kubernetes/master/cluster/ubuntu/minion/init_conf/{{ item }}.conf
+    dest=/etc/init/{{ item }}.conf
+    force=yes
+    mode=0755
+  with_items:
+    - kubelet
+    - kube-proxy
+  environment:
+    http_proxy: "{{ http_proxy|default('') }}"
+    https_proxy: "{{ https_proxy|default('') }}"
+    no_proxy: "{{ no_proxy|default('') }}"
+    
+- name: Ubuntu | Get Upstart Script Files from Kubernetes repository
+  get_url:
+    url=https://raw.githubusercontent.com/kubernetes/kubernetes/master/cluster/ubuntu/minion/init_scripts/{{ item }}
+    dest=/etc/init.d/{{ item }}
+    force=yes
+    mode=0755
+  register: "{{ item }}_service"
+  with_items:
+    - kubelet
+    - kube-proxy
+  environment:
+    http_proxy: "{{ http_proxy|default('') }}"
+    https_proxy: "{{ https_proxy|default('') }}"
+    no_proxy: "{{ no_proxy|default('') }}"
+
+- name: Ubuntu | Write Kubernetes Node Default files
+  template: src={{ item }}-default.j2 dest="/etc/default/{{ item }}"
+  register: "{{ item }}_default"
+  with_items:
+    - kubelet
+    - kube-proxy

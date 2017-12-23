@@ -1,0 +1,42 @@
+---
+- name: Open firewalld port for the kubelet
+  firewalld: port=10250/tcp permanent=false state=enabled
+  ignore_errors: yes
+
+- name: Save firewalld port for the kubelet
+  firewalld: port=10250/tcp permanent=true state=enabled
+  ignore_errors: yes
+
+- name: Open firewalld port for the cadvisor
+  firewalld: port=4194/tcp permanent=false state=enabled
+  ignore_errors: yes
+  when: open_cadvisor_port
+
+- name: Save firewalld port for the cadvisor
+  firewalld: port=4194/tcp permanent=true state=enabled
+  ignore_errors: yes
+  when: open_cadvisor_port
+
+# this is needed if the kube-proxy is running in userspace mode
+- name: Open redirected service traffic
+  command: /bin/firewall-cmd --direct --add-rule ipv4 filter INPUT 1
+           -i docker0 -j ACCEPT -m comment --comment "kube-proxy redirects"
+  ignore_errors: yes
+
+# this is needed if the kube-proxy is running in userspace mode
+- name: Save redirected service traffic
+  command: /bin/firewall-cmd --permanent --direct --add-rule ipv4 filter INPUT 1
+           -i docker0 -j ACCEPT -m comment --comment "kube-proxy redirects"
+  ignore_errors: yes
+
+# this is needed if the kube-proxy is running in iptables mode
+- name: Open DNAT'ed service traffic
+  command: /bin/firewall-cmd --direct --add-rule ipv4 filter FORWARD 1
+           -o docker0 -j ACCEPT -m comment --comment "docker subnet"
+  ignore_errors: yes
+
+# this is needed if the kube-proxy is running in iptables mode
+- name: Save DNAT'ed service traffic
+  command: /bin/firewall-cmd --permanent --direct --add-rule ipv4 filter FORWARD 1
+           -o docker0 -j ACCEPT -m comment --comment "docker subnet"
+  ignore_errors: yes

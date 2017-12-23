@@ -1,0 +1,10 @@
+- name: Ensure bin_dir exists
+  file: path={{ bin_dir }} recurse=yes state=directory
+
+- include: download_bins.yml
+
+- include: netmaster.yml
+  when: contiv_role == "netmaster"
+
+- include: netplugin.yml
+  when: contiv_role == "netplugin"

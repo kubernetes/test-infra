@@ -1,0 +1,24 @@
+---
+- name: RPM | Determine if firewalld installed
+  command: "rpm -q firewalld"
+  register: firewalld_check
+  changed_when: false
+  failed_when: false
+  always_run: yes
+
+- name: Set the has_firewalld fact
+  set_fact:
+    has_firewalld: true
+  when: firewalld_check.rc == 0
+
+- name: Determine if iptables-services installed
+  command: "rpm -q iptables-services"
+  register: iptables_check
+  changed_when: false
+  failed_when: false
+  always_run: yes
+
+- name: Set the has_iptables fact
+  set_fact:
+    has_iptables: true
+  when: iptables_check.rc == 0

@@ -1,0 +1,7 @@
+---
+- name: Write the delay-node-services target
+  copy: src=delay-node-services.target dest=/etc/systemd/system/ mode=0644
+
+- name: Enable delay-node-services
+  service: name=delay-node-services.target enabled=yes
+

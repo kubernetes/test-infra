@@ -1,0 +1,4 @@
+---
+- name: Restart apiserver
+  service: name=kube-apiserver state=restarted
+

@@ -1,0 +1,28 @@
+---
+- name: build tag
+  set_fact:
+     kmod_build_tag: "{{ ansible_distribution | lower}}{{ansible_distribution_version}}-{{ansible_kernel}}"
+
+- name: Unpack vrouter tarball
+  unarchive:
+    src: "/tmp/.ansible/artifacts/opencontrail-vrouter-{{ kmod_build_tag }}.tgz"
+    dest: /
+
+- name: Depmod
+  command: depmod
+
+# Reduce the vrouter table sizes in order to be able to execute on a 2G VM.
+- name: Reduce memory utilization of vrouter
+  copy: src=vrouter.conf dest=/etc/modprobe.d
+  when: ansible_memtotal_mb|int < 4096
+
+- name: Redhat-style interface configuration
+  include: vrouter-redhat.yml
+  when: ansible_distribution == "Fedora"
+
+- name: Ubuntu interface configuration
+  include: vrouter-ubuntu.yml
+  when: ansible_distribution == "Ubuntu"
+
+- name: Ensure configuration directory exists
+  file: path=/etc/contrail state=directory

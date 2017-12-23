@@ -1,0 +1,66 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: webhooks-publisher
+spec:
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: webhooks-publisher
+    spec:
+      containers:
+      - name: webhooks-publisher
+        args:
+        - --stderrthreshold=0
+        - --config=/config/config.yaml
+        image: gcr.io/google-containers/webhooks-publisher:v20160919-140720
+        ports:
+        - name: webhooks-port
+          containerPort: 8080
+        env:
+          - name: GOOGLE_APPLICATION_CREDENTIALS
+            value: /credentials/credential.json
+        resources:
+          requests:
+            cpu: 10m
+          limits:
+            cpu: 100m
+        volumeMounts:
+        - mountPath: /etc/ssl/certs
+          name: certificates
+        - mountPath: /credentials
+          name: credential
+        - mountPath: /config
+          name: config
+      volumes:
+      - name: certificates
+        configMap:
+          name: certificates
+          items:
+          - key: ca-certificates.crt
+            path: ca-certificates.crt
+      - name: config
+        configMap:
+          name: webhook-config-v1
+          items:
+          - key: config.yaml
+            path: config.yaml
+      - name: credential
+        secret:
+          secretName: webhooks-publisher-secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: webhooks-publisher
+  name: webhooks-service
+spec:
+  ports:
+  - name: webhooks-publisher
+    port: 80
+    targetPort: webhooks-port
+  selector:
+    app: webhooks-publisher
+  type: LoadBalancer

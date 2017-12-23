@@ -1,0 +1,6 @@
+---
+- name: Install docker custom repository
+  template: src=dockerrepo.repo.j2 dest=/etc/yum.repos.d/dockerrepo.repo
+
+- name: Install docker from custom repository
+  action: "{{ ansible_pkg_mgr }} name={{ docker_package_name }} state=latest enablerepo=dockerrepo"

@@ -1,0 +1,10 @@
+[dockerrepo]
+name=Docker Repository
+baseurl={{ docker_repository_baseurl }}
+enabled=0
+{% if docker_repository_gpgkey == "" %}
+gpgcheck=0
+{% else %}
+gpgcheck=1
+gpgkey={{ docker_repository_gpgkey }}
+{% endif %}

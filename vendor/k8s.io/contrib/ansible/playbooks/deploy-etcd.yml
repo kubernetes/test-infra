@@ -1,0 +1,9 @@
+---
+- name: Deploy etcd
+  hosts: etcd
+  sudo: yes
+  roles:
+    - etcd
+  tags:
+    - etcd
+

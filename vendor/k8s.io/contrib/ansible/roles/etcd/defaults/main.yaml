@@ -1,0 +1,54 @@
+---
+etcd_source_type: "pass"
+etcd_version: 2.2.3
+
+etcd_client_port: 2379
+etcd_peer_port: 2380
+# Remove etcd_client_legacy_port & etcd_peer_legacy_port
+# when https://github.com/contiv/netplugin/issues/323 is fixed
+etcd_client_legacy_port: 4001
+etcd_peer_legacy_port: 7001
+etcd_peers_group: etcd
+
+etcd_url_scheme: http
+etcd_peer_url_scheme: http
+# Set correspondingly to true when use https values above to enable cert auth
+etcd_client_cert_auth: false
+etcd_peer_client_cert_auth: false
+
+etcd_conf_dir: /etc/etcd
+etcd_script_dir: /usr/libexec/etcd
+etcd_ca_file: "{{ etcd_conf_dir }}/ca.crt"
+etcd_cert_file: "{{ etcd_conf_dir }}/server.crt"
+etcd_key_file: "{{ etcd_conf_dir }}/server.key"
+etcd_peer_ca_file: "{{ etcd_conf_dir }}/ca.crt"
+etcd_peer_cert_file: "{{ etcd_conf_dir }}/peer.crt"
+etcd_peer_key_file: "{{ etcd_conf_dir }}/peer.key"
+
+etcd_initial_cluster_state: new
+etcd_initial_cluster_token: etcd-k8-cluster
+
+# Interface on which etcd listens.
+# Useful on systems when default interface is not connected to other machines,
+# for example as in Vagrant+VirtualBox configuration.
+# Note that this variable can't be set in per-host manner with current implementation.
+etcd_interface: "{{ ansible_default_ipv4.interface }}"
+
+etcd_machine_address: "{{ hostvars[inventory_hostname]['ansible_' + etcd_interface].ipv4.address }}"
+etcd_initial_advertise_peer_urls: "{{ etcd_peer_url_scheme }}://{{ etcd_machine_address }}:{{ etcd_peer_port }}"
+etcd_listen_peer_urls: "{{ etcd_peer_url_scheme }}://0.0.0.0:{{ etcd_peer_port }}"
+etcd_advertise_client_urls: "{{ etcd_url_scheme }}://{{ etcd_machine_address }}:{{ etcd_client_port }}"
+etcd_listen_client_urls: "{{ etcd_url_scheme }}://0.0.0.0:{{ etcd_client_port }}"
+
+# Remove etcd_listen_peer_legacy_urls, etcd_advertise_client_legacy_urls
+# and etcd_listen_client_legacy_url when https://github.com/contiv/netplugin/issues/323 is fixed
+etcd_listen_peer_legacy_urls: "{{ etcd_peer_url_scheme }}://0.0.0.0:{{ etcd_peer_port }},{{ etcd_peer_url_scheme }}://0.0.0.0:{{ etcd_peer_legacy_port }}"
+etcd_advertise_client_legacy_urls: "{{ etcd_url_scheme }}://{{ etcd_machine_address }}:{{ etcd_client_port }},{{ etcd_url_scheme }}://{{ etcd_machine_address }}:{{ etcd_client_legacy_port }}"
+etcd_listen_client_legacy_urls: "{{ etcd_url_scheme }}://0.0.0.0:{{ etcd_client_port }},{{ etcd_url_scheme }}://0.0.0.0:{{ etcd_client_legacy_port }}"
+
+etcd_data_dir: /var/lib/etcd
+
+etcd_download_url_base: "https://github.com/coreos/etcd/releases/download/v{{ etcd_version }}"
+etcd_download_url: "{{ etcd_download_url_base }}/etcd-v{{ etcd_version }}-linux-amd64.tar.gz"
+
+etcd_enable: true

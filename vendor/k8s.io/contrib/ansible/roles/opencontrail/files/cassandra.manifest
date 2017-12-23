@@ -1,0 +1,40 @@
+{
+    "apiVersion": "v1",
+    "kind": "Pod",
+    "metadata": {
+        "namespace": "opencontrail",
+        "name": "cassandra"
+    },
+    "spec":{
+	"containers":[{
+	    "name": "opencontrail-config-db",
+	    "image": "cassandra:2.2.0",
+	    "command": [
+		"/bin/sh",
+		"-c",
+		"sed -ri 's/^(start_rpc:) .*/\\1 true/' /etc/cassandra/cassandra.yaml && /docker-entrypoint.sh cassandra -f"
+	    ],
+	    "ports": [{
+		"name": "cassandra",
+		"containerPort": 9160,
+		"hostPort": 9160
+	    }],
+	    "env": [{
+		"name": "CASSANDRA_CLUSTER_NAME",
+		"value": "OpenContrail-config"
+	    }],
+	    "volumeMounts": [{
+		"name": "data",
+		"mountPath": "/var/lib/cassandra",
+		"readOnly": false
+	    }]
+	}],
+	"volumes": [
+	    {
+		"name": "data",
+		"hostPath": {"path": "/var/lib/cassandra"}
+	    }
+	]
+    }
+
+}

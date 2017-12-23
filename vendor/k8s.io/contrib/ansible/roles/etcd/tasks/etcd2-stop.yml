@@ -1,0 +1,7 @@
+---
+- name: CoreOS | Disable etcd2
+  service: name=etcd2 enabled=no
+
+- name: CoreOS | Stop etcd2
+  service: name=etcd2 state=stopped
+  register: etcd2_stopped

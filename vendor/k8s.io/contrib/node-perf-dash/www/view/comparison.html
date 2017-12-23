@@ -1,0 +1,94 @@
+<!-- Page 2: comparison -->
+<div class="comparison-list">
+  <md-content>
+    <md-list class="test_list" flex="">
+      <legend style="color: #148F77;">Comparison list:</legend>
+      <md-list-item class="md-3-line" ng-repeat="item in controller.comparisonList">
+        <md-checkbox aria-label="Checkbox 1"
+          ng-checked="controller.exists(item.id, controller.comparisonListSelected)" 
+          ng-click="controller.toggle(item.id, controller.comparisonListSelected)">
+            Checkbox 1: {{ item.id }}
+        </md-checkbox>
+        <div class="md-list-item-text" layout="column">
+          <h4>{{ item.test }}</h4>
+          <h4>{{ item.node }}</h4>
+          <p>{{ item.detail }}</p>
+        </div>
+        <md-button class="md-raised" ng-click="controller.deleteSelectedTest(item)">
+          Delete
+        </md-button>
+      </md-list-item>
+    </md-list>
+  </md-content>
+</div>
+
+  <div>
+    <md-button class="md-raised" ng-click="controller.plotComparison()">
+      Load
+    </md-button>
+  </div>
+<hr color="#34495E"><br>
+          
+<div class="display-latency-bar">
+  <!-- Plot Create Pod Latency -->
+  <div id="chart-div">
+    <p align="center">Pod Creation Latency</p>
+    <canvas id="bar" class="chart chart-bar" chart-data="controller.comparisonSeriesDataMap['latency']" 
+      chart-labels="controller.comparisonLabelsMap['latency']" 
+      chart-series="controller.comparisonSeriesMap['latency']"
+      chart-options="controller.comparisonOptionsMap['latency']">
+    </canvas>
+  </div>
+
+  <!-- Plot Create Pod Throughput -->
+  <div id="chart-div">
+    <p align="center">Pod Creation Throughput</p>
+    <canvas id="bar" class="chart chart-bar" chart-data="controller.comparisonSeriesDataMap['throughput']" 
+      chart-labels="controller.comparisonLabelsMap['throughput']" 
+      chart-series="controller.comparisonSeriesMap['throughput']"
+      chart-options="controller.comparisonOptionsMap['throughput']">
+    </canvas>
+  </div>
+</div>
+
+<div class="display-resource-bar">
+  <!-- Plot Kubelet CPU Usage -->
+  <div id="chart-div">
+    <p align="center">Kubelet CPU Usage</p>
+    <canvas id="bar" class="chart chart-bar" chart-data="controller.comparisonSeriesDataMap['kubelet_cpu']" 
+      chart-labels="controller.comparisonLabelsMap['kubelet_cpu']" 
+      chart-series="controller.comparisonSeriesMap['kubelet_cpu']"
+      chart-options="controller.comparisonOptionsMap['kubelet_cpu']">
+    </canvas>
+  </div>
+
+  <!-- Plot Kubelet Memory Usage -->
+  <div id="chart-div">
+    <p align="center">Kubelet Memory Usage</p>
+    <canvas id="bar" class="chart chart-bar" chart-data="controller.comparisonSeriesDataMap['kubelet_memory']" 
+      chart-labels="controller.comparisonLabelsMap['kubelet_memory']" 
+      chart-series="controller.comparisonSeriesMap['kubelet_memory']"
+      chart-options="controller.comparisonOptionsMap['kubelet_memory']">
+    </canvas>
+  </div>
+
+  <!-- Plot Runtime CPU Usage -->
+  <div id="chart-div">
+    <p align="center">Runtime CPU Usage</p>
+    <canvas id="bar" class="chart chart-bar" chart-data="controller.comparisonSeriesDataMap['runtime_cpu']" 
+      chart-labels="controller.comparisonLabelsMap['runtime_cpu']" 
+      chart-series="controller.comparisonSeriesMap['runtime_cpu']"
+      chart-options="controller.comparisonOptionsMap['runtime_cpu']">
+    </canvas>
+  </div>
+
+  <!-- Plot Runtime Memory Usage -->
+  <div id="chart-div">
+    <p align="center">Runtime Memory Usage</p>
+    <canvas id="bar" class="chart chart-bar" chart-data="controller.comparisonSeriesDataMap['runtime_memory']" 
+      chart-labels="controller.comparisonLabelsMap['runtime_memory']" 
+      chart-series="controller.comparisonSeriesMap['runtime_memory']"
+      chart-options="controller.comparisonOptionsMap['runtime_memory']">
+    </canvas>
+  </div>
+</div>

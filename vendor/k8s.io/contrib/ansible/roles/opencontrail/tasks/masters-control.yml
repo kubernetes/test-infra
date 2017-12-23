@@ -1,0 +1,13 @@
+---
+- name: Ensure configuration directory exists
+  file: path="/etc/contrail" state=directory
+
+- name: Configure control-node
+  template: src=contrail-control.conf.j2 dest=/etc/contrail/contrail-control.conf
+  notify:
+    - restart contrail-control
+
+- name: Install control-node manifest
+  copy: src=contrail-control.manifest dest="{{ kube_manifest_dir }}"
+
+

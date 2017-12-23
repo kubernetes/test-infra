@@ -1,0 +1,6 @@
+---
+- name: reload systemd
+  command: systemctl --system daemon-reload
+
+- name: Save iptables rules
+  command: service iptables save

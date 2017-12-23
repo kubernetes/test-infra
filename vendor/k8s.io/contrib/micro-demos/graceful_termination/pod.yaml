@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  namespace: demos
+  name: graceful-demo
+  labels:
+    demo: graceful-termination
+spec:
+  terminationGracePeriodSeconds: 15
+  containers:
+  - name: busybox
+    image: busybox
+    command:
+    - sh
+    - -c
+    - "trap \"while true; do echo 'self destructing'; sleep 1; done\" SIGTERM; while true; do date; sleep 1; done"

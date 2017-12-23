@@ -1,0 +1,41 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "catalog_gen.go",
+        "main.go",
+    ],
+    importpath = "golang.org/x/text/cmd/gotext/examples/extract_http",
+    visibility = ["//visibility:private"],
+    deps = [
+        "//vendor/golang.org/x/text/cmd/gotext/examples/extract_http/pkg:go_default_library",
+        "//vendor/golang.org/x/text/language:go_default_library",
+        "//vendor/golang.org/x/text/message:go_default_library",
+        "//vendor/golang.org/x/text/message/catalog:go_default_library",
+    ],
+)
+
+go_binary(
+    name = "extract_http",
+    embed = [":go_default_library"],
+    importpath = "golang.org/x/text/cmd/gotext/examples/extract_http",
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [
+        ":package-srcs",
+        "//vendor/golang.org/x/text/cmd/gotext/examples/extract_http/pkg:all-srcs",
+    ],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)

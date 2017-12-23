@@ -1,0 +1,69 @@
+<!-- Page 3: time series -->
+<div class="select-series">
+    <div style="width: 150px" layout-gt-sm="row">
+        <legend style="color: #3F51B5;"><b>Select build:</b></legend>
+        <md-input-container md-no-float class="md-block">
+            <input ng-model="controller.build" aria-label="build">
+        </md-input-container>
+    </div>
+    <div>
+        <md-button class="md-raised" ng-click="controller.buildChanged()">
+            Load
+        </md-button>
+    </div>
+</div>
+
+<hr color="#34495E"><br>
+  
+<!-- Plot Create Pod Latency (not implemented yet) -->    
+<div class="display-series-latency">
+    <div id="chart-div">
+        <p align="center">Pod Creation Latency</p>
+        <canvas id="series_latency"></canvas>
+    </div>
+</div>
+
+<div>
+    <md-content flex layout-padding>
+    <pre>
+        Probe list (default in Kubelet):
+        1. 'create' (in test):      the test creates pods through client;
+        2. 'running' (in test):     the test watches that pods are running from API server;
+        3. 'pod_config_change':     the 'add pod' config change detected by Kubelet SyncLoop;
+        4. 'runtime manager':       runtime manager starts to create containers;
+        5. 'infra_container_start': the infra container for a pod starts;
+        6. 'container_start':       the container for a pod starts;
+        7. 'pod_status_running':    status manager updates status for a running pod;
+        8. 'pod_running':           a pod is running;
+        Suffix:
+        "_pleg":      event logged by PLEG; 
+        "_pleg_sync": PLEG event logged by SyncLoop
+    </pre>
+    </md-content>
+</div>
+
+<!-- Plot Kubelet CPU Usage -->
+<div class="display-resource">
+	<div id="chart-div">
+    	<p align="center">Kubelet CPU Usage</p>
+        <canvas id="series_kubelet_cpu"></canvas>
+    </div>
+
+    <!-- Plot Kubelet Memory Usage -->
+    <div id="chart-div">
+        <p align="center">Kubelet Memory Usage</p>
+        <canvas id="series_kubelet_memory"></canvas>
+    </div>
+
+    <!-- Plot Runtime CPU Usage -->
+    <div id="chart-div">
+        <p align="center">Runtime CPU Usage</p>
+        <canvas id="series_runtime_cpu"></canvas>
+    </div>
+
+    <!-- Plot Runtime Memory Usage -->
+    <div id="chart-div">
+        <p align="center">Runtime Memory Usage</p>
+        <canvas id="series_runtime_memory"></canvas>      
+    </div>
+</div>

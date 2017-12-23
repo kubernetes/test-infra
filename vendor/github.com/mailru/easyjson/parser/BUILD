@@ -1,0 +1,59 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "parser.go",
+    ] + select({
+        "@io_bazel_rules_go//go/platform:android": [
+            "parser_unix.go",
+        ],
+        "@io_bazel_rules_go//go/platform:darwin": [
+            "parser_unix.go",
+        ],
+        "@io_bazel_rules_go//go/platform:dragonfly": [
+            "parser_unix.go",
+        ],
+        "@io_bazel_rules_go//go/platform:freebsd": [
+            "parser_unix.go",
+        ],
+        "@io_bazel_rules_go//go/platform:linux": [
+            "parser_unix.go",
+        ],
+        "@io_bazel_rules_go//go/platform:nacl": [
+            "parser_unix.go",
+        ],
+        "@io_bazel_rules_go//go/platform:netbsd": [
+            "parser_unix.go",
+        ],
+        "@io_bazel_rules_go//go/platform:openbsd": [
+            "parser_unix.go",
+        ],
+        "@io_bazel_rules_go//go/platform:plan9": [
+            "parser_unix.go",
+        ],
+        "@io_bazel_rules_go//go/platform:solaris": [
+            "parser_unix.go",
+        ],
+        "@io_bazel_rules_go//go/platform:windows": [
+            "parser_windows.go",
+        ],
+        "//conditions:default": [],
+    }),
+    importpath = "github.com/mailru/easyjson/parser",
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [":package-srcs"],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)

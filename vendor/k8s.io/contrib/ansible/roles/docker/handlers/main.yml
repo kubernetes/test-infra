@@ -1,0 +1,43 @@
+---
+- name: reload systemd
+  command: systemctl --system daemon-reload
+
+- name: restart docker
+  command: /bin/true
+  notify:
+    - stop docker
+    - delete docker0
+    - start docker
+
+- name: start docker
+  command: /bin/true
+  notify:
+    - docker graph driver
+    - docker fix start on btrfs
+    - docker start service
+
+- name: stop docker
+  service: name=docker state=stopped
+  when: '"docker0" in ansible_interfaces'
+
+- name: delete docker0
+  command: ip link delete docker0
+  when: '"docker0" in ansible_interfaces'
+
+  # TODO: work only on default installation...
+- name: docker graph driver 
+  command: findmnt -no FSTYPE -T /var/lib/docker
+  register: docker_driver
+  ignore_errors: True
+  changed_when: false
+
+  # TODO: fail if no --selinux-enabled in 'OPTIONS'
+- name: docker fix start on btrfs
+  replace:
+    dest="{{ docker_config_dir }}/docker"
+    regexp="^(OPTIONS=.*)(--selinux-enabled(?!=false)([^\s\"\']*))"
+    replace="\1--selinux-enabled=false"
+  when: docker_driver.stdout == 'btrfs'
+
+- name: docker start service
+  service: name=docker state=started

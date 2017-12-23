@@ -1,0 +1,40 @@
+---
+# The kubernetes role invokes restart daemons. It must be defined here
+# since the opencontrail playbook depends on that role to setup basic
+# variables such as the kubernetes configuration file directory.
+- name: restart daemons
+  command: /bin/true
+
+- name: Bounce physical interface
+  shell: "ifdown {{ opencontrail_interface }} && ifup {{ opencontrail_interface }}"
+  ignore_errors: True
+
+- name: Bounce vhost0 interface
+  shell: "ifdown vhost0 && ifup vhost0"
+  ignore_errors: True
+
+- name: reload systemd
+  command: systemctl --system daemon-reload
+
+- name: restart contrail-vrouter-agent
+  service: name=contrail-vrouter-agent state=restarted
+
+- name: restart contrail-control
+  shell: docker ps | awk '/opencontrail\/control/ {print $1;}'
+  register: control_node_id
+  notify:
+    - kill contrail-control
+
+- name: kill contrail-control
+  command: docker kill {{ control_node_id.stdout }}
+  when: control_node_id.rc == 0 and control_node_id.stdout != ""
+
+- name: restart kube-network-manager
+  shell: docker ps | awk '/opencontrail\/kube-network-manager/ {print $1;}'
+  register: network_manager_id
+  notify:
+    - kill kube-network-manager
+
+- name: kill kube-network-manager
+  command: docker kill {{ network_manager_id.stdout }}
+  when: network_manager_id.rc == 0 and network_manager_id.stdout != ""

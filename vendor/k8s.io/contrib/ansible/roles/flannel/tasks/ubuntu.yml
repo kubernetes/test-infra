@@ -1,0 +1,13 @@
+---
+- name: Ubuntu | Configure Docker to use Flannel network
+  lineinfile:
+       dest: "{{ docker_config_dir }}/docker"
+       state: present
+       line: "{{ item.line }}"
+       regexp: "{{ item.regexp }}"
+  with_items:
+    - { line: '. /run/flannel/subnet.env', regexp: '. /run/flannel/subnet.env' }
+    - { line: 'DOCKER_OPTS="--bip ${FLANNEL_SUBNET} --mtu ${FLANNEL_MTU}"',regexp: '^DOCKER_OPTS=' }
+  when: ansible_distribution_major_version|int < 15
+  notify:
+    - restart flannel

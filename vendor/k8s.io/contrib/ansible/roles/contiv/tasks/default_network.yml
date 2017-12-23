@@ -1,0 +1,11 @@
+# Required until the following PR is merged:
+# https://github.com/contiv/netplugin/pull/325
+- name: Contiv | wait for netmaster
+  pause: seconds=10
+
+- name: Contiv | Delete default network
+  raw: netctl net delete default-net
+  ignore_errors: yes
+
+- name: Contiv | Configure network
+  raw: netctl net create default-net --subnet={{contiv_default_subnet}} --gateway={{contiv_default_gw}}

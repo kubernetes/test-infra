@@ -1,0 +1,23 @@
+{
+    "apiVersion": "v1",
+    "kind": "Pod",
+    "metadata": {
+        "namespace": "opencontrail",
+        "name": "kube-network-manager"
+    },
+    "spec":{
+	"hostNetwork": true,
+	"containers":[{
+	    "name": "kube-network-manager",
+	    "image": "opencontrail/kube-network-manager",
+	    "volumeMounts": [{
+		    "name": "config",
+		    "mountPath": "/etc/kubernetes"
+	    }]
+	}],
+	"volumes": [{
+	    "name": "config",
+	    "hostPath": {"path": "/etc/kubernetes"}
+	}]
+    } 
+}

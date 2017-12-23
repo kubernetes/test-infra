@@ -1,0 +1,9 @@
+[Unit]
+Description=OpenContrail VRouter agent
+
+[Service]
+ExecStart=/usr/bin/docker run --privileged=true --net=host -v /etc/contrail:/etc/contrail -v /var/log/contrail:/var/log/contrail opencontrail/vrouter-agent:2.20 /usr/bin/contrail-vrouter-agent
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

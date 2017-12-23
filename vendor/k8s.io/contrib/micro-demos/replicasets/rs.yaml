@@ -1,0 +1,17 @@
+apiVersion: extensions/v1beta1
+kind: ReplicaSet
+metadata:
+  name: hostnames 
+spec:
+  replicas: 5 
+  selector:
+    matchLabels:
+      run: hostnames
+  template:
+    metadata:
+      labels:
+        run: hostnames
+    spec:
+      containers:
+      - name: demo 
+        image: gcr.io/google_containers/serve_hostname:1.1

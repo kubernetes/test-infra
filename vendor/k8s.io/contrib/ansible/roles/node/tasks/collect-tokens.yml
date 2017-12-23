@@ -1,0 +1,15 @@
+---
+- name: Get the node token values
+  slurp:
+    src: "{{ kube_token_dir }}/{{ item }}-{{ inventory_hostname }}.token"
+  with_items:
+    - "system:kubelet"
+    - "system:proxy"
+  register: tokens
+  delegate_to: "{{ groups['masters'][0] }}"
+
+- name: Set token facts
+  set_fact:
+    kubelet_token: "{{ tokens.results[0].content|b64decode }}"
+    proxy_token: "{{ tokens.results[1].content|b64decode }}"
+

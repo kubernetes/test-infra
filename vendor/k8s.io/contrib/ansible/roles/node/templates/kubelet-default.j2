@@ -1,0 +1,11 @@
+. {{ kube_config_dir }}/config
+. {{ kube_config_dir }}/kubelet
+
+KUBELET_OPTS="$KUBE_LOGTOSTDERR \
+              $KUBE_LOG_LEVEL \
+              $KUBELET_API_SERVER \
+              $KUBELET_ADDRESS \
+              $KUBELET_PORT \
+              $KUBELET_HOSTNAME \
+              $KUBE_ALLOW_PRIV \
+              $KUBELET_ARGS"

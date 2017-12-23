@@ -1,0 +1,52 @@
+- include: netmaster_firewalld.yml
+  when: has_firewalld
+
+- include: netmaster_iptables.yml
+  when: not has_firewalld and has_iptables
+
+- name: Netmaster | Check is /etc/hosts file exists
+  stat: path=/etc/hosts
+  register: hosts
+
+- name: Netmaster | Create hosts file if it is not present
+  file: path=/etc/hosts state=touch
+  when: not hosts.stat.exists
+
+- name: Netmaster | Build hosts file
+  lineinfile:
+    dest=/etc/hosts
+    regexp=.*netmaster$
+    line="{{ hostvars[item]['ansible_' + netmaster_interface].ipv4.address }} netmaster"
+    state=present
+  when: hostvars[item]['ansible_' + netmaster_interface].ipv4.address is defined
+  with_items: groups['masters']
+
+- name: Netmaster | Create netmaster symlinks
+  file:
+    src: "{{ contiv_current_release_directory }}/{{ item }}"
+    dest: "{{ bin_dir }}/{{ item }}"
+    state: link
+  with_items:
+    - netmaster
+    - netctl
+
+- name: Netmaster | Copy environment file for netmaster
+  copy: src=netmaster.env dest=/etc/default/netmaster
+  notify: restart netmaster
+
+- name: Netmaster | Copy systemd units for netmaster
+  template: src=netmaster.service dest=/etc/systemd/system/netmaster.service
+  notify: reload systemd
+
+- name: Netmaster | Enable Netmaster
+  service: name=netmaster enabled=yes
+
+- name: Netmaster | Start Netmaster
+  service: name=netmaster state=started
+  register: netmaster_started
+
+- include: aci.yml
+  when: contiv_fabric_mode == "aci"
+
+- include: default_network.yml
+  when: contiv_default_network == true

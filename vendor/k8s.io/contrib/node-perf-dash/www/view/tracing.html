@@ -1,0 +1,45 @@
+<!-- Page 4: tracing -->
+<div class="tracing">
+    <div>
+        <md-button class="md-raised" ng-click="controller.loadProbes()">
+            Load probes
+        </md-button>
+    </div>
+    <div style="width: 300px; display: inline-block;">
+        <legend style="color: #3F51B5; ">Probe start</legend>
+        <md-input-container>
+        <md-select placeholder="probe start" ng-model="controller.probeStart"  ng-change="controller.plotBuildsTracing()">
+            <md-option ng-value="probeStart" ng-repeat="probeStart in controller.probes">
+                {{probeStart}}
+            </md-option>
+        </md-select>
+        </md-input-container> 
+    </div>
+    <div style="width: 300px; display: inline-block;">
+        <legend style="color: #3F51B5; ">Probe end</legend>
+        <md-input-container>
+        <md-select placeholder="probe end" ng-model="controller.probeEnd"  ng-change="controller.plotBuildsTracing()">
+            <md-option ng-value="probeEnd" ng-repeat="probeEnd in controller.probes">
+                {{probeEnd}}
+            </md-option>
+        </md-select>
+        </md-input-container> 
+    </div>
+</div>
+
+<hr color="#34495E"><br>
+
+<!-- Plot Create Pod Latency -->
+<div class="display-series-latency">
+    <div id="chart-div">
+        <p align="center">Latency</p>
+        <canvas id="line" class="chart chart-line" 
+            chart-data="controller.tracingData"
+            chart-labels="controller.tracingBuilds" 
+            chart-options="controller.tracingOptions"
+            chart-series="controller.tracingSeries" 
+            chart-click="controller.onClick">
+        </canvas>
+        <div tc-chartjs-legend chart-legend="legendsMap['latency']"></div>
+    </div>
+</div>

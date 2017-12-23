@@ -1,0 +1,67 @@
+---
+# This playbook deploys a kubernetes cluster
+# with the default addons.
+
+- hosts: all
+  gather_facts: false
+  become: yes
+  roles:
+    - pre-ansible
+  tags:
+    - pre-ansible
+
+# Install etcd
+- include: deploy-etcd.yml
+
+# Install docker
+- include: deploy-docker.yml
+
+# install flannel
+- hosts:
+    - masters
+    - nodes
+  become: yes
+  roles:
+    - { role: flannel, when: networking == 'flannel' }
+  tags:
+    - network-service-install
+
+# install opencontrail
+- hosts: all
+  become: yes
+  roles:
+    - { role: opencontrail, when: networking == 'opencontrail'}
+  tags:
+    - network-service-install
+
+# install contiv netmaster
+- hosts: masters
+  become: yes
+  roles:
+    - { role: contiv, contiv_role: netmaster, when: networking == 'contiv' }
+
+# install kube master services
+- include: deploy-master.yml
+
+# launch addons, like dns
+- include: deploy-addons.yml
+
+# install kubernetes on the nodes
+- include: deploy-node.yml
+
+# provision opencontrail once the services are operational
+- hosts:
+    - masters[0]
+    - nodes
+  become: yes
+  roles:
+    - { role: opencontrail-provision, when: networking == 'opencontrail' }
+  tags:
+    - network-service-config
+
+# install contiv netplugin
+- hosts: nodes
+  become: yes
+  roles:
+    - { role: contiv, contiv_role: netplugin, when: networking == 'contiv' }
+

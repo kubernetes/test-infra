@@ -1,0 +1,8 @@
+---
+- name: CoreOS | Enable etcd2
+  service: name=etcd2 enabled=yes
+  when: etcd_enable == true
+
+- name: CoreOS | Start etcd2
+  service: name=etcd2 state=started
+  register: etcd_started

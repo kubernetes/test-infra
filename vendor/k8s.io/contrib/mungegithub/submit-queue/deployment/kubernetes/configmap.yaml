@@ -1,0 +1,46 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kubernetes-sq-config
+data:
+  # basic config options.
+  config.http-cache-dir: /cache/httpcache
+  config.organization: kubernetes
+  config.project: kubernetes
+  config.pr-mungers: blunderbuss,lgtm-after-commit,cherrypick-auto-approve,label-unapproved-picks,needs-rebase,ok-to-test,path-label,size,stale-pending-ci,stale-green-ci,block-path,release-note-label,comment-deleter,submit-queue,issue-cacher,flake-manager,old-test-getter,close-stale-pr,docs-need-no-retest,issue-triager,nag-flake-issues,lgtm-handler
+  config.state: open
+  config.token-file: /etc/secret-volume/token
+
+  # test-options feature options.
+  test-options.required-retest-contexts: "\"Jenkins GCE e2e\",\"Jenkins unit/integration\",\"Jenkins verification\",\"Jenkins GCE Node e2e\",\"Jenkins Kubemark GCE e2e\""
+
+  # submit-queue options.
+  submit-queue.required-contexts: "Jenkins GCE Node e2e"
+  submit-queue.nonblocking-jenkins-jobs: kubernetes-cross-build,kubernetes-e2e-gke-staging,kubernetes-e2e-gke-staging-parallel,kubernetes-e2e-gce-serial,kubernetes-e2e-gke-serial,kubernetes-e2e-gke-test,kubernetes-e2e-gce-examples,kubernetes-e2e-gce-federation,kubernetes-e2e-gce-scalability,kubernetes-soak-continuous-e2e-gce,kubernetes-soak-continuous-e2e-gke,kubernetes-kubemark-5-gce,kubernetes-kubemark-gce-scale,kubernetes-e2e-gce-etcd3,kubelet-serial-gce-e2e-ci,kubernetes-e2e-gci-gce-alpha-features-release-1.4,kubernetes-e2e-gci-gce-flannel,kubernetes-e2e-gci-gce-es-logging,kubernetes-e2e-gci-gce,kubernetes-e2e-gci-gce-examples,kubernetes-e2e-gci-gce-federation,kubernetes-e2e-gci-gce-release-1.4,kubernetes-e2e-gci-gce-scalability,kubernetes-e2e-gci-gce-serial,kubernetes-e2e-gci-gce-serial-release-1.4,kubernetes-e2e-gci-gce-slow,kubernetes-e2e-gci-gce-slow-release-1.4,kubernetes-e2e-gci-gce-ingress,kubernetes-e2e-gci-gce-ingress-release-1.4,kubernetes-e2e-gci-gce-petset,kubernetes-e2e-gci-gce-reboot-release-1.4,kubernetes-e2e-gci-gce-scalability-release-1.4,kubernetes-e2e-gci-gke-autoscaling,kubernetes-e2e-gci-gke,kubernetes-e2e-gci-gke-serial,kubernetes-e2e-gci-gke-slow,kubernetes-e2e-gci-gke-ingress,kubernetes-e2e-gci-gke-ingress-release-1.4,kubernetes-e2e-gci-gke-multizone,kubernetes-e2e-gci-gke-pre-release,kubernetes-e2e-gci-gke-prod,kubernetes-e2e-gci-gke-prod-parallel,kubernetes-e2e-gci-gke-prod-smoke,kubernetes-e2e-gci-gke-reboot,kubernetes-e2e-gci-gke-reboot-release-1.4,kubernetes-e2e-gci-gke-release-1.4,kubernetes-e2e-gci-gke-serial-release-1.4,kubernetes-e2e-gci-gke-slow-release-1.4,kubernetes-e2e-gci-gke-staging,kubernetes-e2e-gci-gke-staging-parallel,kubernetes-e2e-gci-gke-subnet,kubernetes-e2e-gci-gke-test,kubernetes-e2e-gci-gke-updown,continuous-e2e-docker-validation-gci,kubernetes-e2e-gci-gce-autoscaling,kubernetes-e2e-gci-gce-autoscaling-migs,kubernetes-e2e-gci-gce-etcd3,kubernetes-e2e-gci-gce-kubenet,kubernetes-e2e-gci-gce-proto,kubernetes-e2e-gci-gce-reboot,kubernetes-e2e-gci-gke-alpha-features,kubernetes-garbagecollector-gci-feature,kubernetes-soak-continuous-e2e-gci-gce-1.4,kubernetes-soak-continuous-e2e-gke-gci,kubernetes-soak-weekly-deploy-gci-gce-1.4,kubernetes-soak-weekly-deploy-gke-gci,kubernetes-e2e-gce-multizone,kubernetes-e2e-gce-enormous-cluster,kuberentes-e2e-gce-enormous-deploy,kuberentes-e2e-gce-enormous-teardown,kubernetes-e2e-gke-large-cluster,kubernetes-e2e-aws,kubernetes-e2e-kops-aws-updown
+  submit-queue.jenkins-jobs: kubelet-gce-e2e-ci,kubernetes-build,kubernetes-test-go,kubernetes-verify-master,kubernetes-e2e-gce,kubernetes-e2e-gce-slow,kubernetes-e2e-gke,kubernetes-e2e-gke-slow,kubernetes-kubemark-500-gce
+  submit-queue.presubmit-jobs: kubernetes-pull-build-test-e2e-gce,kubernetes-pull-build-test-e2e-gke,kubernetes-pull-build-test-federation-e2e-gce,node-pull-build-e2e-test,kubernetes-pull-build-test-gci-e2e-gce,kubernetes-pull-build-test-gci-e2e-gke,kubernetes-pull-build-test-gci-kubemark-e2e-gce
+  submit-queue.weak-stable-jobs: "\"\""
+  submit-queue.do-not-merge-milestones: "\"\""
+  submit-queue.admin-port: "9999"
+  submit-queue.chart-url: http://storage.googleapis.com/kubernetes-test-history/k8s-queue-health.svg
+  submit-queue.history-url: http://storage.googleapis.com/kubernetes-test-history/static/index.html
+
+  # options used by the GCS feature.
+  gcs.gcs-bucket: kubernetes-jenkins
+  gcs.gcs-logs-dir: logs
+  gcs.pull-logs-dir: pr-logs
+  gcs.pull-key: pull
+
+  # munger specific options.
+  path-label.path-label-config: path-label.txt
+  block-path.block-path-config: block-path.yaml
+  gitrepo.repo-dir: /gitrepos
+  gitrepo.enable-md-yaml: "false"
+  flake-manager.test-owners-csv: /gitrepos/kubernetes/test/test_owners.csv
+  old-test-getter.number-of-old-test-results: "5"
+  assign-fixes.fixes-issue-reassign: "false"
+  blunderbuss.blunderbuss-reassign: "false"
+  size.generated-files-config: generated-files.txt
+  check-labels.label-file: "/gitrepos/kubernetes/labels.yaml"
+  issue-categorizer.triager-url: "http://issue-triager-service:5000"
+  cla.cla-status-context: ""

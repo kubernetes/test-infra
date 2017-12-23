@@ -1,0 +1,10 @@
+---
+# Write upstart Flannel configuration.
+
+# On non-github-release service files must be provided by flannel package.
+- assert:
+    that:
+      - flannel_source_type == "github-release"
+
+- name: Create Upstart Script
+  template: src=flanneld.upstart dest=/etc/init/flanneld.conf

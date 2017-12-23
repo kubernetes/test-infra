@@ -1,0 +1,33 @@
+---
+- name: PkgMgr CentOS | Install net-tools pkg for route
+  yum:
+    pkg=net-tools
+    state=latest
+
+- name: PkgMgr CentOS | Get openstack kilo rpm
+  get_url:
+    url: https://repos.fedorapeople.org/repos/openstack/openstack-kilo/rdo-release-kilo-1.noarch.rpm
+    dest: /tmp/rdo-release-kilo-1.noarch.rpm
+    validate_certs: False
+  environment:
+    http_proxy: "{{ http_proxy|default('') }}"
+    https_proxy: "{{ https_proxy|default('') }}"
+    no_proxy: "{{ no_proxy|default('') }}"
+  tags:
+       - ovs_install
+
+- name: PkgMgr CentOS | Install openstack kilo rpm
+  yum: name=/tmp/rdo-release-kilo-1.noarch.rpm state=present
+  tags:
+       - ovs_install
+
+- name: PkgMgr CentOS | Install ovs
+  yum:
+    pkg=openvswitch
+    state=latest
+  environment:
+    http_proxy: "{{ http_proxy|default('') }}"
+    https_proxy: "{{ https_proxy|default('') }}"
+    no_proxy: "{{ no_proxy|default('') }}"
+  tags:
+       - ovs_install

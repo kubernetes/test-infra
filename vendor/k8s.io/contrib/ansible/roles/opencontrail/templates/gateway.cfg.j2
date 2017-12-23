@@ -1,0 +1,15 @@
+auto {{ item }}
+iface {{ item }} inet static
+    pre-up modprobe vrouter
+    pre-up ip link add name {{ item }} type vhost
+    pre-up ip link set {{ item }} address 00:00:5e:00:01:00
+{% if item == "gateway0" and opencontrail_public_subnet is defined %}
+    up ip route add {{ opencontrail_public_subnet }} dev gateway0
+{% endif %}
+{% if item == "gateway1" %}
+    up ip route add {{ kube_service_addresses }} dev gateway1
+{% endif %}
+    address 0.0.0.0
+    post-down vif --list | awk '/^vif.*OS: {{ item }}/ {split($1, arr, "\/"); print arr[2];}' | xargs vif --delete
+    post-down ip link delete {{ item }}
+

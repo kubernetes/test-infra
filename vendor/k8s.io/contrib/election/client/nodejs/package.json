@@ -1,0 +1,6 @@
+{
+  "name": "election-client",
+  "version": "1.0.0",
+  "main": "server.js",
+  "license": "Apache 2.0"
+}

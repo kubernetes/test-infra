@@ -1,0 +1,22 @@
+[CONTROL-NODE]
+server={%for host in groups['masters']%}{{ hostvars[host]['ansible_' + opencontrail_interface]['ipv4']['address'] }} {% endfor %}
+
+
+[VIRTUAL-HOST-INTERFACE]
+name=vhost0
+ip={{ hostvars[inventory_hostname]['ipaddr'] }}
+{% if opencontrail_gateway  %}
+gateway={{ opencontrail_gateway }}
+{% endif %}
+physical_interface={{ opencontrail_interface }}
+
+[GATEWAY-0]
+routing_instance=default-domain:default-project:Public:Public
+interface=gateway0
+ip_blocks={{ opencontrail_public_subnet }}
+
+[GATEWAY-1]
+routing_instance=default-domain:kube-system:service-default:service-default
+interface=gateway1
+ip_blocks={{ kube_service_addresses }}
+routes={{ opencontrail_private_subnet }}

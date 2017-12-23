@@ -1,0 +1,12 @@
+ingress/controllers/nginx/configuration.md:**custom-http-errors:** Enables which HTTP codes should be passed for processing with the [error_page directive](http://nginx.org/en/docs/http/ngx_http_core_module.html#error_page)
+ingress/controllers/nginx/configuration.md:Setting at least one code this also enables [proxy_intercept_errors](http://nginx.org/en/docs/http/ngx_http_proxy_module.html#proxy_intercept_errors) (required to process error_page)
+ingress/controllers/nginx/nginx.tmpl:        require("error_page")
+ingress/controllers/nginx/nginx.tmpl:    error_page {{ $errCode }} = @custom_{{ $errCode }};{{ end }}
+ingress/controllers/nginx/nginx/config/config.go:	// enables which HTTP codes should be passed for processing with the error_page directive
+kubelet-to-gcm/monitor/kubelet/translate.go:				"container_name": containerName,
+kubelet-to-gcm/monitor/kubelet/translate.go:		"container_name": "",
+mungegithub/mungers/submit-queue.go:		sq.e2e = &fake_e2e.FakeE2ETester{
+mungegithub/mungers/submit-queue.go:	fake_e2e "k8s.io/contrib/mungegithub/mungers/e2e/fake"
+mungegithub/mungers/submit-queue_test.go:	e2e := sq.e2e.(*fake_e2e.FakeE2ETester)
+mungegithub/mungers/submit-queue_test.go:	fake_e2e "k8s.io/contrib/mungegithub/mungers/e2e/fake"
+mungegithub/mungers/submit-queue_test.go:	sq.e2e = &fake_e2e.FakeE2ETester{

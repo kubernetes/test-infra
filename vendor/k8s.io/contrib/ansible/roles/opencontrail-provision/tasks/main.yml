@@ -1,0 +1,12 @@
+---
+- name: Pull config image
+  command: docker pull opencontrail/config:2.20
+  delegate_to: "{{ groups['masters'][0] }}"
+
+- name: controller provisioning
+  include: master.yml
+  when: inventory_hostname == groups['masters'][0]
+
+- name: node provisioning
+  include: nodes.yml
+  when: inventory_hostname in groups['nodes'] or inventory_hostname in groups['gateways']

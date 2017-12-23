@@ -19,6 +19,8 @@ filegroup(
     srcs = [
         ":package-srcs",
         "//vendor/github.com/gregjones/httpcache/diskcache:all-srcs",
+        "//vendor/github.com/gregjones/httpcache/leveldbcache:all-srcs",
+        "//vendor/github.com/gregjones/httpcache/memcache:all-srcs",
     ],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],

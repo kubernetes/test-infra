@@ -1,0 +1,11 @@
+---
+- name: Write the config file for the controller-manager
+  template: src=controller-manager.j2 dest={{ kube_config_dir }}/controller-manager
+
+- name: Write the kubecfg (auth) file for controller-manager
+  template: src=controller-manager.kubeconfig.j2 dest={{ kube_config_dir }}/controller-manager.kubeconfig
+
+- name: Setting the controller_manager_modified fact to true
+  set_fact:
+    controller_manager_modified: true
+

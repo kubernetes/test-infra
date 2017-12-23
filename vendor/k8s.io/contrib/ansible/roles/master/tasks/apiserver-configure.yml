@@ -1,0 +1,16 @@
+---
+- name: Write the config file for the api server
+  template: src=apiserver.j2 dest={{ kube_config_dir }}/apiserver
+
+- name: Ensure that a token auth file exists (addons may populate it)
+  file: path={{ kube_token_dir }}/known_tokens.csv state=touch
+  changed_when: false
+
+- name: Add cap_net_bind_service to kube-apiserver
+  capabilities: path=/usr/bin/kube-apiserver capability=cap_net_bind_service=ep state=present
+  when: kube_source_type != "github-release" and not is_atomic and not is_coreos and not ansible_distribution == 'Ubuntu' and not ansible_distribution_major_version|int < 15
+
+- name: Setting the apiserver_modified fact to true
+  set_fact:
+    apiserver_modified: true
+

@@ -1,0 +1,8 @@
+---
+- name: Enable etcd
+  service: name=etcd enabled=yes
+  when: etcd_enable == true
+
+- name: Start etcd
+  service: name=etcd state=started
+  register: etcd_started

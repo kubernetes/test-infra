@@ -1,0 +1,8 @@
+---
+- name: Write the config files for kubelet
+  template: src=kubelet.j2 dest={{ kube_config_dir }}/kubelet
+
+- name: Setting the kubelet_modified fact to true
+  set_fact:
+    kubelet_modified: true
+

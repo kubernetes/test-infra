@@ -1,0 +1,16 @@
+---
+- name: CoreOS | Create etcd dropin directory
+  file: path=/etc/systemd/system/etcd2.service.d state=directory mode=0755
+
+- name: CoreOS | Write etcd dropin file
+  copy: src=10-conf-file.conf dest="/etc/systemd/system/etcd2.service.d/10-conf-file.conf"
+  register: etcd2_dropin
+  notify:
+    - reload systemd
+
+- name: CoreOS | Write etcd config file
+  template: src=etcd.conf.j2 dest=/etc/etcd/etcd.conf
+
+- name : Set the etcd2_modified fact to true
+  set_fact:
+    etcd2_modified: true

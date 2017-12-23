@@ -1,0 +1,18 @@
+---
+- include: debian-install.yml
+  when: ansible_distribution == "Debian" and docker_source_type == "package-manager"
+
+- include: apt-docker-install.yml
+  when: ansible_distribution == "Ubuntu" and docker_source_type == "package-manager"
+
+- include: generic-install.yml
+  when: ansible_distribution != "Debian" and ansible_distribution != "Ubuntu" and not is_coreos and docker_source_type == "package-manager"
+
+- include: coreos.yml
+  when: is_coreos
+
+- include: custom-repo-install.yml
+  when: docker_source_type == "custom-repository"
+
+- include: install-rpms.yml
+  when: docker_source_type == "distribution-rpm"

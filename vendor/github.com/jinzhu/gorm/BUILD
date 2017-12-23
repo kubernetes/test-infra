@@ -45,7 +45,9 @@ filegroup(
     name = "all-srcs",
     srcs = [
         ":package-srcs",
+        "//vendor/github.com/jinzhu/gorm/dialects/mssql:all-srcs",
         "//vendor/github.com/jinzhu/gorm/dialects/mysql:all-srcs",
+        "//vendor/github.com/jinzhu/gorm/dialects/postgres:all-srcs",
         "//vendor/github.com/jinzhu/gorm/dialects/sqlite:all-srcs",
     ],
     tags = ["automanaged"],

@@ -1,0 +1,17 @@
+---
+- name: Update {{ kube_script_dir }} if this is atomic
+  set_fact:
+    kube_script_dir: "/usr/local/libexec/kubernetes"
+  when: is_atomic and kube_script_dir == "/usr/libexec/kubernetes"
+
+- name: Initialize the python_bin fact
+  set_fact:
+    python_bin: "python"
+
+- name: Update facts if this is CoreOS or Ubuntu 14.04
+  set_fact:
+    bin_dir: "/opt/bin"
+    kube_script_dir: "/opt/bin/kubernetes"
+    python_bin: "/opt/bin/python"
+  when: is_coreos or ansible_distribution == 'Ubuntu' and ansible_distribution_major_version|int < 15
+

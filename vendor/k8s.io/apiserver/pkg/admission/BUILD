@@ -1,0 +1,64 @@
+package(default_visibility = ["//visibility:public"])
+
+load(
+    "@io_bazel_rules_go//go:def.bzl",
+    "go_library",
+)
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "attributes.go",
+        "chain.go",
+        "config.go",
+        "errors.go",
+        "handler.go",
+        "interfaces.go",
+        "plugins.go",
+    ],
+    importpath = "k8s.io/apiserver/pkg/admission",
+    deps = [
+        "//vendor/github.com/ghodss/yaml:go_default_library",
+        "//vendor/github.com/golang/glog:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/api/errors:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/api/meta:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/runtime:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/runtime/schema:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/runtime/serializer:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/util/errors:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
+        "//vendor/k8s.io/apiserver/pkg/apis/apiserver:go_default_library",
+        "//vendor/k8s.io/apiserver/pkg/apis/apiserver/v1alpha1:go_default_library",
+        "//vendor/k8s.io/apiserver/pkg/authentication/user:go_default_library",
+    ],
+)
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [
+        ":package-srcs",
+        "//vendor/k8s.io/apiserver/pkg/admission/configuration:all-srcs",
+        "//vendor/k8s.io/apiserver/pkg/admission/initializer:all-srcs",
+        "//vendor/k8s.io/apiserver/pkg/admission/metrics:all-srcs",
+        "//vendor/k8s.io/apiserver/pkg/admission/plugin/initialization:all-srcs",
+        "//vendor/k8s.io/apiserver/pkg/admission/plugin/namespace/lifecycle:all-srcs",
+        "//vendor/k8s.io/apiserver/pkg/admission/plugin/webhook/config:all-srcs",
+        "//vendor/k8s.io/apiserver/pkg/admission/plugin/webhook/errors:all-srcs",
+        "//vendor/k8s.io/apiserver/pkg/admission/plugin/webhook/initializer:all-srcs",
+        "//vendor/k8s.io/apiserver/pkg/admission/plugin/webhook/mutating:all-srcs",
+        "//vendor/k8s.io/apiserver/pkg/admission/plugin/webhook/namespace:all-srcs",
+        "//vendor/k8s.io/apiserver/pkg/admission/plugin/webhook/request:all-srcs",
+        "//vendor/k8s.io/apiserver/pkg/admission/plugin/webhook/rules:all-srcs",
+        "//vendor/k8s.io/apiserver/pkg/admission/plugin/webhook/testcerts:all-srcs",
+        "//vendor/k8s.io/apiserver/pkg/admission/plugin/webhook/validating:all-srcs",
+        "//vendor/k8s.io/apiserver/pkg/admission/plugin/webhook/versioned:all-srcs",
+    ],
+    tags = ["automanaged"],
+)

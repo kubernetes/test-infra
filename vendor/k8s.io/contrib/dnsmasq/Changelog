@@ -1,0 +1,8 @@
+## Version 1.1 (Fri May 27 2016 Abhi S. <abshah@google.com>
+ - First AMD64-only dnsmasq container
+## Version 1.2 (Wed June 8 2016 Girish Kalele <gkalele@google.com>
+ - Multiple Architecture builds and upgraded to Alpine 3.4
+## Version 1.3 (Fri June 11 2016 Lucas Käldström <lucas.kaldstrom@hotmail.co.uk>)
+ - Patched the multi-architecture images, so they'll work
+## Version 1.4 (Thu September 29 2016 Zihong Zheng <zihongz@google.com>)
+ - Redirect STOPSIGNAL for graceful termination

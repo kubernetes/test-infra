@@ -1,0 +1,23 @@
+---
+- name: Interface configuration file
+  template: src=gateway.cfg.j2 dest=/etc/network/interfaces.d/{{ item }}.cfg
+  with_items:
+    - gateway0
+    - gateway1
+
+- name: Activate gateway0
+  command: ifup gateway0
+
+- name: Activate gateway1
+  command: ifup gateway1
+
+- name: Install upstart configuration file
+  copy:
+    src: contrail-vrouter-agent.upstart
+    dest: /etc/init/contrail-vrouter-agent.conf
+
+- name: Create bridge sysvinit via upstart-job
+  file:
+    src: /lib/init/upstart-job
+    dest: /etc/init.d/contrail-vrouter-agent
+    state: link

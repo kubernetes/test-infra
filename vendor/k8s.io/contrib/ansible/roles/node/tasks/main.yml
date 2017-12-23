@@ -1,0 +1,57 @@
+---
+# Install the kube node components
+# E.g. applying package manager, downloading binaries from github, etc.
+- name: Install kube node
+  include: install.yml
+  tags: install
+
+# Configure and start node components
+# I.e. kubelet and proxy
+- name: Collect tokens for kubelet and proxy
+  include: collect-tokens.yml
+  tags: configure
+
+- name: Configure kubelet
+  include: kubelet-configure.yml
+  tags: configure
+
+- name: Install fluentd logging layer
+  include: fluentd-install.yml
+  tags: install
+
+- name: Start kubelet
+  include: kubelet-start.yml
+
+- name: Configure proxy
+  include: proxy-configure.yml
+  tags: configure
+
+- name: Start proxy
+  include: proxy-start.yml
+  when: networking != "opencontrail"
+
+- name: Run Ubuntu post tasks
+  include: ubuntu-post.yml
+  when: not ansible_distribution == 'Ubuntu' and not ansible_distribution_major_version|int < 15
+  tags: configure
+
+# Networking
+- include: firewalld.yml
+  when: has_firewalld
+  tags: configure
+
+- include: iptables.yml
+  when: not has_firewalld and has_iptables
+  tags: configure
+
+# Restart services - this happens when a cluster has a service already running
+# Either from previous ansible deployment or on an already set up cluster
+- name: Call restart kubelet
+  include: kubelet-restart.yml
+  when: kubelet_modified == true and kubelet_started.changed == false
+  tags: restart
+
+- name: Call restart proxy
+  include: proxy-restart.yml
+  when: proxy_modified == true and proxy_started.changed == false
+  tags: restart
