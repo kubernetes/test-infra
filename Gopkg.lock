@@ -24,6 +24,12 @@
   revision = "de5bf2ad457846296e2031421a34e2568e304e35"
 
 [[projects]]
+  name = "github.com/aws/aws-sdk-go"
+  packages = ["aws","aws/awserr","aws/awsutil","aws/client","aws/client/metadata","aws/corehandlers","aws/credentials","aws/credentials/ec2rolecreds","aws/credentials/endpointcreds","aws/credentials/stscreds","aws/defaults","aws/ec2metadata","aws/endpoints","aws/request","aws/session","aws/signer/v4","internal/shareddefaults","private/protocol","private/protocol/ec2query","private/protocol/query","private/protocol/query/queryutil","private/protocol/rest","private/protocol/restxml","private/protocol/xml/xmlutil","service/autoscaling","service/ec2","service/iam","service/s3","service/sts"]
+  revision = "82ad808f2307df0776c038bfd7ea85440a35c02e"
+  version = "v1.12.53"
+
+[[projects]]
   name = "github.com/beorn7/perks"
   packages = ["quantile"]
   revision = "3ac7bf7a47d159a033b107610db8a1b6575507a4"
@@ -37,6 +43,12 @@
   name = "github.com/ghodss/yaml"
   packages = ["."]
   revision = "73d445a93680fa1a78ae23a5839bad48f32ba1ee"
+
+[[projects]]
+  name = "github.com/go-ini/ini"
+  packages = ["."]
+  revision = "32e4c1e6bc4e7d0d8451aa6b75200d19e37a536a"
+  version = "v1.32.0"
 
 [[projects]]
   branch = "master"
@@ -132,6 +144,11 @@
   name = "github.com/jinzhu/inflection"
   packages = ["."]
   revision = "3272df6c21d04180007eb3349844c89a3856bc25"
+
+[[projects]]
+  name = "github.com/jmespath/go-jmespath"
+  packages = ["."]
+  revision = "0b12d6b5"
 
 [[projects]]
   branch = "master"
@@ -283,6 +300,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "de65c2658389b3af6ed40600df032b085779f261f8c2ffccf67388eba8fa0fc5"
+  inputs-digest = "4736ffdf067b57c414b5ca23f45af1021f140295e4f79230c06b14d1806eb2ed"
   solver-name = "gps-cdcl"
   solver-version = 1
