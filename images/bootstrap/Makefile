@@ -19,7 +19,7 @@ all: build
 
 build:
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o ./prune-docker ./prunedocker/
-	docker build --build-arg IMAGE=$(IMG):$(TAG) -t $(IMG):$(TAG) .
+	docker build --build-arg IMAGE_ARG=$(IMG):$(TAG) -t $(IMG):$(TAG) .
 	rm prune-docker
 	docker tag $(IMG):$(TAG) $(IMG):latest
 	@echo Built $(IMG):$(TAG) and tagged with latest

@@ -18,8 +18,8 @@ FROM ubuntu:16.04
 LABEL maintainer="bentheelder@google.com"
 
 # add env we can debug with the image name:tag
-ARG IMAGE
-ENV IMAGE=${IMAGE}
+ARG IMAGE_ARG
+ENV IMAGE=${IMAGE_ARG}
 
 ARG BAZEL_VERSION
 
