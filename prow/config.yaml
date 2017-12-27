@@ -30,6 +30,7 @@ tide:
     - kubernetes/community
     - kubernetes/contrib
     - kubernetes/federation
+    - kubernetes/kops
     - kubernetes/kubernetes-template-project
     - kubernetes/sig-release
     - kubernetes/steering
