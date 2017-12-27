@@ -1,0 +1,14 @@
+---
+- name: Write the config files for proxy
+  template: src=proxy.j2 dest={{ kube_config_dir }}/proxy
+  notify:
+    - restart proxy
+
+- name: Write the kubecfg (auth) file for kube-proxy
+  template: src=proxy.kubeconfig.j2 dest={{ kube_config_dir }}/proxy.kubeconfig
+  notify:
+    - restart proxy
+
+- name: Setting the proxy_modified fact to true
+  set_fact:
+    proxy_modified: true

@@ -1,0 +1,34 @@
+---
+- name: CoreOS | Get Systemd Unit Files from Kubernetes repository
+  get_url:
+    url=https://raw.githubusercontent.com/kubernetes/contrib/master/init/systemd/{{ item }}.service
+    dest=/etc/systemd/system/{{ item }}.service
+    force=yes
+  register: "{{ item }}_service"
+  notify:
+    - reload systemd
+  with_items:
+    - kube-apiserver
+    - kube-controller-manager
+    - kube-scheduler
+  environment:
+    http_proxy: "{{ http_proxy|default('') }}"
+    https_proxy: "{{ https_proxy|default('') }}"
+    no_proxy: "{{ no_proxy|default('') }}"
+
+- name: CoreOS | Create dropin directories for Kubernetes Master services
+  file: path=/etc/systemd/system/{{ item }}.service.d state=directory mode=0755
+  with_items:
+    - kube-apiserver
+    - kube-controller-manager
+    - kube-scheduler
+
+- name: CoreOS | Write Kubernetes Master dropin files
+  template: src={{ item }}-dropin.j2 dest="/etc/systemd/system/{{ item }}.service.d/10-conf-file.conf"
+  register: "{{ item }}_dropin"
+  with_items:
+    - kube-apiserver
+    - kube-controller-manager
+    - kube-scheduler
+  notify:
+    - reload systemd

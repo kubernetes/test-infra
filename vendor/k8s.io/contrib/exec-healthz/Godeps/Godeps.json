@@ -1,0 +1,25 @@
+{
+	"ImportPath": "k8s.io/contrib/exec-healthz",
+	"GoVersion": "go1.6",
+	"GodepVersion": "v74",
+	"Packages": [
+		"./..."
+	],
+	"Deps": [
+		{
+			"ImportPath": "k8s.io/kubernetes/pkg/util/clock",
+			"Comment": "v1.4.0-beta.3",
+			"Rev": "a0a9a282b431f437b048932eaf01631408b5bae0"
+		},
+		{
+			"ImportPath": "k8s.io/kubernetes/pkg/util/exec",
+			"Comment": "v1.4.0-beta.3",
+			"Rev": "a0a9a282b431f437b048932eaf01631408b5bae0"
+		},
+		{
+			"ImportPath": "k8s.io/kubernetes/pkg/util/wait",
+			"Comment": "v1.4.0-beta.3",
+			"Rev": "a0a9a282b431f437b048932eaf01631408b5bae0"
+		}
+	]
+}

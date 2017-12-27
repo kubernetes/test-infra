@@ -1,0 +1,8 @@
+---
+- name: Enable proxy
+  service: name=kube-proxy enabled=yes
+  when: services_enabled == true
+
+- name: Start proxy
+  service: name=kube-proxy state=started
+  register: proxy_started

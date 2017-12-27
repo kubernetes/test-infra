@@ -1,0 +1,8 @@
+---
+- name: Enable scheduler
+  service: name=kube-scheduler enabled=yes
+  when: services_enabled == true
+
+- name: Start scheduler
+  service: name=kube-scheduler state=started
+  register: scheduler_started

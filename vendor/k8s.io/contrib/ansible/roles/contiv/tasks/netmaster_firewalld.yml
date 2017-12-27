@@ -1,0 +1,10 @@
+---
+- name: Netmaster Firewalld | Open Netmaster port
+  firewalld: port={{ netmaster_port }}/tcp permanent=false state=enabled
+  # in case this is also a node where firewalld turned off
+  ignore_errors: yes
+
+- name: Netmaster Firewalld | Save Netmaster port
+  firewalld: port={{ netmaster_port }}/tcp permanent=true state=enabled
+  # in case this is also a node where firewalld turned off
+  ignore_errors: yes

@@ -1,0 +1,72 @@
+---
+# TODO(jchaloup): this needs to be refactored
+#     lets set the source type to package manager by default
+#     and to pass only when on atomic/coreos
+- name: Force etcd_source_type to package manager 
+  set_fact:
+    etcd_source_type: "package-manager"
+  when: not is_atomic and not is_coreos
+
+# TODO(jchaloup): temporary installing etcd from github release
+#     etcd installed via package manager leads to flannel failure
+- name: Force Ubuntu-16.04 to install etcd from github release
+  set_fact:
+    etcd_source_type: "github-release"
+  when: ansible_distribution == "Ubuntu" and ansible_distribution_major_version|int == 16
+
+# The following four tasks must be before check for Ubuntu < 16
+# Ubuntu-14.* handles the etcd user/group/etcd dir differently
+- name: Create system etcd group
+  group:
+    name: etcd
+    state: present
+  when: etcd_source_type == "github-release"
+
+- name: Create system etcd user
+  user:
+    name=etcd
+    comment="Etcd user"
+    shell=/sbin/nologin
+    state=present
+    system=yes
+    groups=etcd
+  when: etcd_source_type == "github-release"
+
+- name: Ensure /var/lib/etcd exists
+  file:
+    path=/var/lib/etcd
+    recurse=yes
+    state=directory
+    owner=etcd
+  when: etcd_source_type == "github-release"
+
+- name: Write etcd systemd unit file
+  copy: src=etcd.service dest=/etc/systemd/system
+  notify:
+    - reload systemd
+  when: etcd_source_type == "github-release"
+
+- name: Force Ubuntu-14.04 to install etcd from github release
+  set_fact:
+    etcd_source_type: "github-release"
+  when: ansible_distribution == "Ubuntu" and ansible_distribution_major_version|int < 16
+
+- name: Install etcd via package manager
+  action: "{{ ansible_pkg_mgr }}"
+  args:
+        name: etcd
+        state: latest
+  when: etcd_source_type == "package-manager"
+
+- name: Set the etcd_modified fact to true
+  set_fact:
+    etcd_modified: true
+  when: etcd_source_type == "package-manager"
+
+- name: Install etcd from github
+  include: etcd-install-github-release.yml
+  when: etcd_source_type == "github-release"
+
+- name: Create upstart script
+  copy: src=etcd.upstart dest=/etc/init/etcd.conf
+  when: ansible_distribution == "Ubuntu" and ansible_distribution_major_version|int < 16

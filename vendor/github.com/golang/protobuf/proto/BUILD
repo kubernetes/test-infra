@@ -28,7 +28,11 @@ filegroup(
 
 filegroup(
     name = "all-srcs",
-    srcs = [":package-srcs"],
+    srcs = [
+        ":package-srcs",
+        "//vendor/github.com/golang/protobuf/proto/proto3_proto:all-srcs",
+        "//vendor/github.com/golang/protobuf/proto/testdata:all-srcs",
+    ],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],
 )

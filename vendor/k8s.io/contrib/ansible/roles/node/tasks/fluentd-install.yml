@@ -1,0 +1,12 @@
+---
+- name: Install fluentd pod into each node
+  get_url:
+    url=https://raw.githubusercontent.com/kubernetes/kubernetes/master/cluster/saltbase/salt/fluentd-es/fluentd-es.yaml
+    dest="{{ kube_manifest_dir }}"
+    force=yes
+    validate_certs=False
+  environment:
+    http_proxy: "{{ http_proxy|default('') }}"
+    https_proxy: "{{ https_proxy|default('') }}"
+    no_proxy: "{{ no_proxy|default('') }}"
+  when: cluster_logging

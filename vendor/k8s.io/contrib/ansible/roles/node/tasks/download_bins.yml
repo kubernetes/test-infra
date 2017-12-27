@@ -1,0 +1,27 @@
+---
+- name: Create bin dir
+  file: path={{ bin_dir }} state=directory
+
+- name: Create directory for current Kubernetes release
+  file: path={{ kube_current_release_directory }} state=directory
+
+- name: Download Kubernetes binaries
+  get_url:
+    url: "{{ kube_download_url_base }}/{{ item }}"
+    dest: "{{ kube_current_release_directory }}/{{ item }}"
+    mode: 0755
+    validate_certs: False
+  environment:
+    http_proxy: "{{ http_proxy|default('') }}"
+    https_proxy: "{{ https_proxy|default('') }}"
+    no_proxy: "{{ no_proxy|default('') }}"
+  with_items:
+    - "{{ kube_node_binaries }}"
+
+- name: Create symlinks
+  file:
+    src: "{{ kube_current_release_directory }}/{{ item }}"
+    dest: "{{ bin_dir }}/{{ item }}"
+    state: link
+  with_items:
+    - "{{ kube_node_binaries }}"

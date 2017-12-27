@@ -1,0 +1,21 @@
+{
+	"ImportPath": "k8s.io/contrib/node-perf-dash",
+	"GoVersion": "go1.6",
+	"GodepVersion": "v74",
+	"Deps": [
+		{
+			"ImportPath": "github.com/golang/glog",
+			"Rev": "44145f04b68cf362d9c4df2182967c2275eaefed"
+		},
+		{
+			"ImportPath": "k8s.io/contrib/test-utils/utils",
+			"Comment": "cluster-autoscaler-0.2.2-212-g9f1d05d",
+			"Rev": "9f1d05d12aa64e05332b90cf55dd98833eaeb13e"
+		},
+		{
+			"ImportPath": "k8s.io/kubernetes/test/e2e/perftype",
+			"Comment": "v1.4.0-alpha.3-255-g0167f74",
+			"Rev": "0167f74c6cf5dc17abe451fe77f728ad553c0383"
+		}
+	]
+}

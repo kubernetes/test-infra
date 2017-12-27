@@ -1,0 +1,10 @@
+description "OpenContrail VRouter agent"
+
+start on started docker.io
+stop on runlevel [!2345]
+
+respawn
+
+script
+        /usr/bin/docker run --privileged=true --net=host -v /etc/contrail:/etc/contrail -v /var/log/contrail:/var/log/contrail opencontrail/vrouter-agent:2.20 /usr/bin/contrail-vrouter-agent
+end script

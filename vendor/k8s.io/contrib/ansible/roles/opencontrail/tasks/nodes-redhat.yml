@@ -1,0 +1,5 @@
+---
+- name: Static routes
+  template: src=node-route-redhat.j2 dest=/etc/sysconfig/network-scripts/route-vhost0
+  notify:
+    - Bounce vhost0 interface

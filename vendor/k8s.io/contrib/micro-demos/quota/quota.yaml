@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: demo-quota
+  namespace: demos
+spec:
+  hard:
+    cpu: 4
+    memory: 4Gi

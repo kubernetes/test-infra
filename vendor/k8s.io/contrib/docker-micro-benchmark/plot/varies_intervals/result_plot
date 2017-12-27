@@ -1,0 +1,9 @@
+set terminal png
+set output ofilename 
+set timefmt "%d:%H:%M:%S"
+set format x "%M:%S"
+set xdata time
+set xlabel "Time (M:S)"
+set ylabel "Interval (ms)"
+set style data line
+plot ifilename every ::2 using 1:6 t 'interval'

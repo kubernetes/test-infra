@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  namespace: default
+  name: elector-sidecar
+spec:
+  containers:
+  - image: gcr.io/google_containers/nodejs-election-client:0.1
+    imagePullPolicy: IfNotPresent
+    name: nodejs
+    ports:
+    - containerPort: 8080
+      protocol: TCP
+    resources:
+      requests:
+        cpu: 100m
+  - image: gcr.io/google_containers/leader-elector:0.5
+    imagePullPolicy: IfNotPresent
+    name: elector
+    args:
+      - --election=example
+      - --http=localhost:4040
+    ports:
+    - containerPort: 4040
+      protocol: TCP
+    resources:
+      requests:
+        cpu: 100m

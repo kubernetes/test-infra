@@ -1,0 +1,3 @@
+---
+- name: restart etcd2
+  service: name=etcd2 state=restarted

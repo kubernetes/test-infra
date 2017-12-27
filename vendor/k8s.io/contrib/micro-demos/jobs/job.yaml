@@ -1,0 +1,21 @@
+apiVersion: extensions/v1beta1
+kind: Job
+metadata:
+  name: jobs-demo
+  namespace: demos
+spec:
+  selector:
+    matchLabels:
+      demo: jobs
+  parallelism: 5
+  completions: 15
+  template:
+    metadata:
+      labels:
+        demo: jobs
+    spec:
+      containers:
+      - name: sleep
+        image: busybox
+        command: ["sh", "-c", "sleep 5; if [ $((RANDOM % 4)) -eq 0 ]; then exit 1; fi"]
+      restartPolicy: Never

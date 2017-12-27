@@ -1,0 +1,8 @@
+---
+- hosts: masters
+  become: yes
+  roles:
+    - kubernetes-addons
+  tags:
+    - addons
+    - dns

@@ -1,0 +1,112 @@
+.page  {
+    width: 95%;
+    margin-top: 20px;
+    margin-left: 10px;
+    margin-right: 10px;
+    flex-wrap: wrap;
+}
+
+.page #test_menu {
+    display: flex;
+    justify-content: space-between;
+}
+
+.page #test_type {
+    width: 150px; 
+    display: inline-block;
+}
+
+.page #test_option {
+    width: 200px; 
+    display: inline-block;
+}
+
+.page #node_menu {
+    display: flex;
+    justify-content: space-around;
+}
+
+.nav {
+    position: relative;
+    background-color: #cccccc;
+    margin-top: 20px;
+    margin-left: 0px;
+}
+
+.nav #chart {
+    background-color: rgb(255, 255, 255);
+    padding: 30px;
+    font-weight: 600;
+    border: 1px solid #999999;
+    border-top: none;
+}
+
+.display-latency {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+}
+
+.display-resource {
+    display: flex;
+    flex-wrap: wrap;   
+    justify-content: space-around;
+}
+
+.display-latency #chart-div {
+    width: 50%;
+}
+
+.display-resource #chart-div {
+    width: 50%;
+}
+
+.display-series-latency {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;  
+}
+.display-series-latency #chart-div {
+    width: 75%;
+}
+
+
+.display-latency-bar {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+}
+
+.display-resource-bar {
+    display: flex;
+    flex-wrap: wrap;   
+    justify-content: space-around;
+}
+
+.display-latency-bar #chart-div {
+    width: 50%;
+}
+
+.display-resource-bar #chart-div {
+    width: 50%;
+}
+
+.select-aggregation {
+    display: flex;
+    justify-content: space-around;
+}
+
+.select-series {
+    display: flex;
+    justify-content: space-around;
+}
+
+.config {
+    display: flex;
+    justify-content: space-around;
+}
+
+.tracing {
+    display: flex;
+    justify-content: space-around;
+}

@@ -1,0 +1,145 @@
+<html lang="en" ng-app="PerfDashApp">
+  <head>
+    <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/angular_material/0.11.0/angular-material.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=RobotoDraft:300,400,500,700,400italic">
+    <link rel="stylesheet" type="text/css" href="css/www.css">
+    <meta name="viewport" content="initial-scale=1" />
+  </head>
+  
+  <body>
+    <div offset="10" ng-controller="AppCtrl" class="page">
+      <div stype="height: 90px">
+        <md-toolbar layout="row" layout-align="space-around center">
+          <h1>Node Performance Dashboard</h1>
+          <a href="https://k8s.io">
+            <img src="https://raw.githubusercontent.com/kubernetes/kubernetes.github.io/master/images/favicon.png" 
+                 style="width:60; height: 60" />
+          </a>
+        </md-toolbar>
+      </div>
+
+      <div class="md-whiteframe-z2" style="padding: 20px">
+        <!-- Menu 0: select test -->
+        <div id="job_menu">
+          <!-- test -->
+          <div style="width: 600px">
+            <legend style="color: #3F51B5;"><b>Select job:</b></legend>
+            <md-input-container>
+              <md-select placeholder="Job" ng-model="controller.job"  ng-change="controller.jobChangedWrapper()">
+                <md-option ng-value="job" ng-repeat="job in controller.jobs">
+                  {{job}}
+                </md-option>
+              </md-select>
+            </md-input-container>
+          </div>
+        </div>        
+        <hr color="#34495E">
+
+        <!-- Menu 1: select test -->
+        <div id="test_menu">
+          <!-- test -->
+          <div style="width: 300px">
+            <legend style="color: #3F51B5;"><b>Select test:</b></legend>
+            <md-input-container>
+              <md-select placeholder="Test" ng-model="controller.test"  ng-change="controller.testChangedWrapper()">
+                <md-option ng-value="test" ng-repeat="test in controller.tests">
+                  {{test}}
+                </md-option>
+              </md-select>
+            </md-input-container>
+          </div>
+
+          <!-- compare button -->
+          <div layout="row" layout-align="space-around">
+            <md-button class="md-raised" ng-click="controller.addToComparison()">
+              compare it
+            </md-button>
+          </div>
+        </div>
+
+        <div id="test_type">
+          <legend style="color: #3F51B5;"><b>Or select test type:</b></legend>
+          <md-input-container>
+            <md-select placeholder="TestType" ng-model="controller.testType"  ng-change="controller.testTypeChanged()">
+              <md-option ng-value="testType" ng-repeat="testType in controller.testTypes">
+                {{testType}}
+              </md-option>
+            </md-select>
+          </md-input-container>
+        </div><br>
+
+        <div ng-repeat="(name, items) in controller.testOptions" ng-model="controller.testType" 
+             ng-change="controller.testTypeChanged()" id="test_option">
+          <md-input-container>
+            <legend style="color: #3F51B5;">{{name}}</legend>
+            <md-select placeholder="{{name}}" ng-model="controller.testSelectedOptions[name]"  
+                       ng-change="controller.testOptionChanged(name)">
+              <md-option ng-value="item" ng-repeat="item in items">
+                {{item}}
+              </md-option>
+            </md-select>
+          </md-input-container>
+        </div>
+
+        <div style="width: 600px">
+          <legend style="color: #148F77;">Test detail:</legend>
+          <p>
+            <pre>{{controller.testInfo.info[controller.test] | json}}</pre>
+          </p>
+        </div><br>
+        <hr color="#34495E">
+
+        <!-- Menu 2: select node -->
+        <div id="node_menu">
+          <legend style="color: #3F51B5;"><b>Select node:</b></legend>
+          <!-- image -->
+          <div style="width: 300px">
+            <md-input-container>
+              <md-select placeholder="Image" ng-model="controller.image"  ng-change="controller.imageChanged()">
+                <md-option ng-value="image" ng-repeat="image in controller.imageList">
+                  {{image}}
+                </md-option>
+              </md-select>
+            </md-input-container>
+          </div>   
+          <!-- machine -->
+          <div style="width: 300px">
+            <md-input-container>
+              <md-select placeholder="Machine" ng-model="controller.machine"  ng-change="controller.machineChanged()">
+                <md-option ng-value="machine" ng-repeat="machine in controller.machineList">
+                  {{machine}}
+                </md-option>
+              </md-select>
+            </md-input-container>
+          </div>
+        </div>
+        <hr color="#34495E">
+
+        <!-- Menu 3: navigation -->
+        <div class="nav">
+          <md-tabs md-stretch-tabs md-selected="selectedIndex">
+            <md-tab label="Builds"></md-tab> 
+            <md-tab label="Comparison"></md-tab>
+            <md-tab label="Time Series"></md-tab>
+            <md-tab label="Tracing"></md-tab>
+          </md-tabs>
+          <div id="chart" ui-view flex> </div>
+        </div>
+      </div>
+
+      <!-- Angular Material Dependencies -->
+      <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.8/angular.min.js"></script>
+      <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.8/angular-animate.min.js"></script>
+      <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.8/angular-aria.min.js"></script>
+      <script src="https://ajax.googleapis.com/ajax/libs/angular_material/1.0.7/angular-material.min.js"></script>
+      <script src="lib/Chart.js"></script>
+      <script src="lib/angular-chart.js"></script>
+      <script src="lib/angular-ui-router.min.js"></script>
+      <script src="controller/index.js"></script>
+      <script src="controller/builds.js"></script>
+      <script src="controller/comparison.js"></script>
+      <script src="controller/series.js"></script>
+      <script src="controller/tracing.js"></script>
+    </div>
+  </body>
+</html>

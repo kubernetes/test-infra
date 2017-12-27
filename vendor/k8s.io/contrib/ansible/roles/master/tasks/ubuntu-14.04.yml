@@ -1,0 +1,39 @@
+---
+- name: Ubuntu | Get Upstart Config Files from Kubernetes repository
+  get_url:
+    url=https://raw.githubusercontent.com/kubernetes/kubernetes/master/cluster/ubuntu/master/init_conf/{{ item }}.conf
+    dest=/etc/init/{{ item }}.conf
+    force=yes
+    mode=0755
+  with_items:
+    - kube-apiserver
+    - kube-controller-manager
+    - kube-scheduler
+  environment:
+    http_proxy: "{{ http_proxy|default('') }}"
+    https_proxy: "{{ https_proxy|default('') }}"
+    no_proxy: "{{ no_proxy|default('') }}"
+    
+- name: Ubuntu | Get Upstart Script Files from Kubernetes repository
+  get_url:
+    url=https://raw.githubusercontent.com/kubernetes/kubernetes/master/cluster/ubuntu/master/init_scripts/{{ item }}
+    dest=/etc/init.d/{{ item }}
+    force=yes
+    mode=0755
+  register: "{{ item }}_service"
+  with_items:
+    - kube-apiserver
+    - kube-controller-manager
+    - kube-scheduler
+  environment:
+    http_proxy: "{{ http_proxy|default('') }}"
+    https_proxy: "{{ https_proxy|default('') }}"
+    no_proxy: "{{ no_proxy|default('') }}"
+
+- name: Ubuntu | Write Kubernetes Master Default files
+  template: src={{ item }}-default.j2 dest="/etc/default/{{ item }}"
+  register: "{{ item }}_default"
+  with_items:
+    - kube-apiserver
+    - kube-controller-manager
+    - kube-scheduler

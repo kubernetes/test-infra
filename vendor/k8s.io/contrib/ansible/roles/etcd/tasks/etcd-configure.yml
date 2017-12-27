@@ -1,0 +1,7 @@
+---
+- name: Write etcd config file
+  template: src=etcd.conf.j2 dest=/etc/etcd/etcd.conf
+
+- name: Setting the etcd_modified fact to true
+  set_fact:
+    etcd_modified: true

@@ -1,0 +1,6 @@
+{% if contiv_encap_mode == "vlan" %}
+NETPLUGIN_ARGS='-vlan-if {{ netplugin_interface }} -ctrl-ip {{ netplugin_ctrl_ip }} -fwd-mode {{netplugin_fwd_mode}} -plugin-mode kubernetes'
+{% endif %}
+{% if contiv_encap_mode == "vxlan" %}
+NETPLUGIN_ARGS='-vtep-ip {{ netplugin_vtep_ip }} -ctrl-ip {{ netplugin_ctrl_ip }} -fwd-mode {{netplugin_fwd_mode}} -plugin-mode kubernetes'
+{% endif %}

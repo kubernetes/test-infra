@@ -1,0 +1,17 @@
+---
+- name: Install GPG key
+  command: apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 {% if http_proxy is defined -%}--keyserver-options http-proxy={{ http_proxy }} {% endif -%} --recv-keys 58118E89F3A912897C070ADBF76221572C52609D
+
+- name: Configure apt repository
+  template: src="docker.list.j2" dest="/etc/apt/sources.list.d/docker.list"
+  register: add_apt_source_docker
+
+- name: Update repository information
+  command: apt-get update
+  when: add_apt_source_docker.changed
+
+- name: Install docker engine
+  action: "{{ ansible_pkg_mgr }}"
+  args:
+    name: docker-engine
+    state: latest

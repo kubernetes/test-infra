@@ -41,7 +41,14 @@ filegroup(
 
 filegroup(
     name = "all-srcs",
-    srcs = [":package-srcs"],
+    srcs = [
+        ":package-srcs",
+        "//vendor/golang.org/x/crypto/ssh/agent:all-srcs",
+        "//vendor/golang.org/x/crypto/ssh/knownhosts:all-srcs",
+        "//vendor/golang.org/x/crypto/ssh/terminal:all-srcs",
+        "//vendor/golang.org/x/crypto/ssh/test:all-srcs",
+        "//vendor/golang.org/x/crypto/ssh/testdata:all-srcs",
+    ],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],
 )

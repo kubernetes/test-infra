@@ -1,0 +1,9 @@
+---
+- name: Deploy node
+  hosts: nodes
+  become: yes
+  roles:
+    - node
+  tags:
+    - nodes
+

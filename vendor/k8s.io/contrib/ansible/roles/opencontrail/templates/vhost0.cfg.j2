@@ -1,0 +1,15 @@
+auto vhost0
+iface vhost0 inet static
+    pre-up modprobe vrouter
+    pre-up ip link add name vhost0 type vhost
+    pre-up ip link set vhost0 address $(cat /sys/class/net/{{ opencontrail_interface }}/address)
+    pre-up vif --add {{ opencontrail_interface }} --mac $(cat /sys/class/net/{{ opencontrail_interface }}/address) --vrf 0 --vhost-phys --type physical
+    pre-up vif --add vhost0 --mac $(cat /sys/class/net/{{ opencontrail_interface }}/address) --vrf 0 --type vhost --xconnect {{ opencontrail_interface }}
+    address {{ hostvars[inventory_hostname]['ipaddr'] | ipaddr('address') }}
+    netmask {{ hostvars[inventory_hostname]['ipaddr'] | ipaddr('netmask') }}
+{% if inventory_hostname in groups['nodes'] %}
+    up ip route add {{ kube_service_addresses }} via {{ hostvars[groups['gateways'][0]]['ipaddr'] | ipaddr('address') }}
+{% endif %}
+    post-down vif --list | awk '/^vif.*OS: vhost0/ {split($1, arr, "\/"); print arr[2];}' | xargs vif --delete
+    post-down vif --list | awk '/^vif.*OS: {{ opencontrail_interface }}/ {split($1, arr, "\/"); print arr[2];}' | xargs vif --delete
+    post-down ip link delete vhost0

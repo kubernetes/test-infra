@@ -21,7 +21,11 @@ filegroup(
 
 filegroup(
     name = "all-srcs",
-    srcs = [":package-srcs"],
+    srcs = [
+        ":package-srcs",
+        "//vendor/github.com/peterbourgon/diskv/examples/content-addressable-store:all-srcs",
+        "//vendor/github.com/peterbourgon/diskv/examples/super-simple-store:all-srcs",
+    ],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],
 )

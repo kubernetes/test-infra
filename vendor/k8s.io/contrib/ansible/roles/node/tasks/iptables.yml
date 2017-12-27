@@ -1,0 +1,26 @@
+---
+- name: Get iptables rules
+  command: iptables -L --wait
+  register: iptablesrules
+  always_run: yes
+
+- name: Enable iptables at boot
+  service: name=iptables enabled=yes state=started
+
+- name: Open kubelet port with iptables
+  command: /sbin/iptables -I INPUT 1 -p tcp --dport 10250 -j ACCEPT -m comment --comment "kubelet"
+  when: "'kubelet' not in iptablesrules.stdout"
+
+# this is needed if the kube-proxy is running in userspace mode
+- name: Allow redirected service traffic
+  command: /sbin/iptables -I INPUT 1 -i docker0
+      -j ACCEPT -m comment --comment "kube-proxy redirects"
+
+# this is needed if the kube-proxy is running in iptables mode
+- name: Allow DNAT'ed traffic through to docker
+  command: /sbin/iptables -I FORWARD 1 -o docker0
+      -j ACCEPT -m comment --comment "docker subnet"
+
+- name: Save iptables rules
+  command: service iptables save
+  when: "'kubelet' not in iptablesrules.stdout"

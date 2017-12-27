@@ -1,0 +1,9 @@
+---
+- name: Deploy master
+  hosts: masters
+  become: yes
+  roles:
+    - master
+  tags:
+    - masters
+

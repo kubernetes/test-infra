@@ -1,0 +1,11 @@
+---
+- name: Write the config file for the scheduler
+  template: src=scheduler.j2 dest={{ kube_config_dir }}/scheduler
+
+- name: Write the kubecfg (auth) file for scheduler
+  template: src=scheduler.kubeconfig.j2 dest={{ kube_config_dir }}/scheduler.kubeconfig
+
+- name: Setting the scheduler_modified fact to true
+  set_fact:
+    scheduler_modified: true
+

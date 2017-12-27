@@ -1,0 +1,18 @@
+---
+- name: Netplugin IPtables | Get iptables rules
+  command: iptables -L --wait
+  register: iptablesrules
+  always_run: yes
+
+- name: Netplugin IPtables | Enable iptables at boot
+  service: name=iptables enabled=yes state=started
+
+- name: Netplugin IPtables | Open Netmaster with iptables
+  command: /sbin/iptables -I INPUT 1 -p tcp --dport {{ netmaster_port }} -j ACCEPT -m comment --comment "contiv"
+  when: "'contiv' not in iptablesrules.stdout"
+  notify:
+    - Save iptables rules
+
+- name: Netplugin IPtables | Open vxlan port with iptables
+  command: /sbin/iptables -I INPUT 1 -p udp --dport 8472 -j ACCEPT -m comment --comment "vxlan"
+  when: contiv_encap_mode == "vxlan"

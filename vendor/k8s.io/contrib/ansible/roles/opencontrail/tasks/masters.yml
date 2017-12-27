@@ -1,0 +1,13 @@
+---
+- name: Set selinux permissive to enable directory mounts
+  selinux: state=permissive policy={{ ansible_selinux.type }}
+  when: ansible_selinux is defined and ansible_selinux.status == "enabled"
+
+- name: Assures manifests dir exists
+  file: path={{ kube_manifest_dir }} state=directory
+
+- include: masters-services.yml
+
+- include: masters-config.yml
+
+- include: masters-control.yml

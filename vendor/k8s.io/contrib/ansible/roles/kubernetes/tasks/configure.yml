@@ -1,0 +1,9 @@
+---
+- name: Create kubernetes config directory
+  file: path={{ kube_config_dir }} state=directory
+
+- name: Write the global config file
+  template: src=config.j2 dest={{ kube_config_dir }}/config
+  notify:
+    - restart daemons
+

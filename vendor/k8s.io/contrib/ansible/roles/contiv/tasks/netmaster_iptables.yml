@@ -1,0 +1,14 @@
+---
+- name: Netmaster IPtables | Get iptables rules
+  command: iptables -L --wait
+  register: iptablesrules
+  always_run: yes
+
+- name: Netmaster IPtables | Enable iptables at boot
+  service: name=iptables enabled=yes state=started
+
+- name: Netmaster IPtables | Open Netmaster with iptables
+  command: /sbin/iptables -I INPUT 1 -p tcp --dport {{ netmaster_port }} -j ACCEPT -m comment --comment "contiv"
+  when: "'contiv' not in iptablesrules.stdout"
+  notify:
+    - Save iptables rules

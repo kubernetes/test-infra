@@ -1,0 +1,310 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+require "yaml"
+
+### This is a new provider, different then cloudbau's.
+### RUN: vagrant plugin uninstall vagrant-openstack-plugin"
+### Then RUN: "vagrant plugin install vagrant-openstack-provider"
+require 'vagrant-openstack-provider'
+
+require 'vagrant-aws'
+
+$num_nodes = (ENV['NUM_NODES'] || 2).to_i
+$num_masters = (ENV['NUM_MASTERS'] || 1).to_i
+$ansible_tags = ENV['ANSIBLE_TAGS']
+# OS image to use. Currently supported:
+# - "centos7" on openstack, libvirt, virtualbox
+# - "centosatomic" on openstack, libvirt, virtualbox
+# - "fedora" on openstack, libvirt, virtualbox
+# - "fedoraatomic" on openstack, libvirt, virtualbox
+# - "coreos" on virtualbox
+$os_image = (ENV['OS_IMAGE'] || "centos7").to_sym
+
+$coreos_update_channel = "stable"
+$coreos_image_version = "current"
+
+# Machines under VirtualBox provier use static IPs, based on VM index.
+# Master has index 0.
+VBOX_STATIC_IP_TEMPLATE = "172.32.128.1%d"
+
+VAGRANTFILE_API_VERSION = "2"
+
+# Openstack providers are best used with latest versions.
+Vagrant.require_version ">= 1.7"
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+  # By default, Vagrant 1.7+ automatically inserts a different
+  # insecure keypair for each new VM created. The easiest way
+  # to use the same keypair for all the machines is to disable
+  # this feature and rely on the legacy insecure key.
+  config.ssh.insert_key = false
+
+  # This explicitly sets the order that vagrant will use by default if no --provider given
+  config.vm.provider "virtualbox"
+  config.vm.provider "libvirt"
+  config.vm.provider "aws"
+  config.vm.provider "openstack"
+
+  def set_openstack_box(config)
+    case $os_image
+    when :centos7
+      # common config
+      config.vm.box = "dummy"
+      config.vm.box_url = "https://github.com/cloudbau/vagrant-openstack-plugin/raw/master/dummy.box"
+    end
+  end
+
+  def set_vbox_box(config)
+    case $os_image
+    when :centos7
+      config.vm.box = "centos/7"
+    when :centosatomic
+      config.vm.box = "centos/atomic-host"
+    when :fedora
+      config.vm.box = "fedora/23-cloud-base"
+    when :fedoraatomic
+      config.vm.box = "fedora/23-atomic-host"
+    when :coreos
+      config.vm.box = "coreos-%s" % $coreos_update_channel
+      if $coreos_image_version != "current"
+        config.vm.box_version = $coreos_image_version
+      end
+      config.vm.box_url = "https://storage.googleapis.com/%s.release.core-os.net/amd64-usr/%s/coreos_production_vagrant.json" %
+        [$coreos_update_channel, $coreos_image_version]
+    end
+  end
+
+  def set_libvirt_box(config)
+    case $os_image
+    when :centos7
+      config.vm.box = "centos/7"
+    when :centosatomic
+      config.vm.box = "centos/atomic-host"
+    when :fedora
+      config.vm.box = "fedora/23-cloud-base"
+    when :fedoraatomic
+      config.vm.box = "fedora/23-atomic-host"
+    end
+  end
+
+  def set_aws_box(config)
+    case $os_image
+    when :centos7
+      config.vm.box = "dummy"
+      config.vm.box_url = "https://github.com/mitchellh/vagrant-aws/raw/master/dummy.box"
+    end
+  end
+
+  def set_openstack(os, config, n)
+    set_openstack_box(config)
+
+    # this crap is to make it not fail if the file doesn't exist (which is ok if we are using a different provisioner)
+    __filename = File.join(File.dirname(__FILE__), "openstack_config.yml")
+    if File.exist?(__filename)
+      _config = YAML.load(File.open(__filename, File::RDONLY).read)
+    else
+      _config = Hash.new("")
+      _config['security_group'] = []
+    end
+
+    config.ssh.username = "fedora"
+    config.ssh.private_key_path = "~/.ssh/id_rsa"
+    config.vm.boot_timeout = 60*10
+
+    ### The below parameters need to be modified per your openstack instance.
+    os.username         = _config['os_username']
+    os.password         = _config['os_password']
+    os.tenant_name      = _config['os_tenant']
+    os.keypair_name     = _config['os_ssh_key_name']
+    os.openstack_auth_url = _config['os_auth_url']
+    os.region           = _config['os_region_name']
+    os.floating_ip_pool = _config['os_floating_ip_pool']
+    os.flavor           = _config['os_flavor']
+    os.image            = _config['os_image']
+    os.security_groups  = _config['os_security_groups']
+    os.server_name = n.vm.hostname
+  end
+
+  def set_vbox(vb, config, vm_idx)
+    set_vbox_box(config)
+
+    config.vm.network "private_network", ip: VBOX_STATIC_IP_TEMPLATE % vm_idx
+    vb.gui = false
+    vb.memory = 2048
+    vb.cpus = 2
+
+    # Use faster paravirtualized networking
+    vb.customize ["modifyvm", :id, "--nictype1", "virtio"]
+    vb.customize ["modifyvm", :id, "--nictype2", "virtio"]
+  end
+
+  def set_libvirt(lv, config)
+    set_libvirt_box(config)
+
+    lv.memory = 2048
+    lv.cpus = 2
+    lv.nested = true
+    lv.volume_cache = 'none'
+  end
+
+  def set_aws(aws, config, n)
+    set_aws_box(config)
+
+    config.ssh.username = "YOUR IMAGE UNAME"
+    config.ssh.private_key_path = "PATH TO YOUR KEY"
+
+    ### The below parameters need to be modified per your aws acct
+    aws.access_key_id = "YOUR KEY"
+    aws.secret_access_key = "YOUR SECRET KEY"
+    aws.session_token = "SESSION TOKEN"
+    aws.keypair_name = "KEYPAIR NAME"
+    aws.ami = "YOUR AMI"
+    aws.region = "YOUR REGION"
+  end
+
+  def set_provider(n, vm_idx)
+    n.vm.provider :openstack do |os, override|
+      set_openstack(os, override, n)
+    end
+    n.vm.provider :virtualbox do |vb, override|
+      set_vbox(vb, override, vm_idx)
+    end
+    n.vm.provider :libvirt do |lv, override|
+      set_libvirt(lv, override)
+    end
+     n.vm.provider :aws do |aws, override|
+      set_aws(aws, override, n)
+    end
+  end
+
+  def set_common_ansible_options(ansible)
+    ansible.groups = $groups
+    ansible.limit = "all" #otherwise the metadata wont be there for ipv4?
+    ansible.tags = $ansible_tags unless $ansible_tags.nil?
+    ansible.raw_ssh_args = ['-o ControlMaster=no']
+  end
+
+  def vagrant_ansible_provision(ansible, provider)
+    set_common_ansible_options(ansible)
+    # This set up the vagrant hosts before we run the main playbook
+    # Today this just creates /etc/hosts so machines can talk via their
+    # 'internal' IPs instead of the openstack public ip.
+    ansible.playbook = "./vagrant-ansible.yml"
+
+    if provider == :virtualbox
+      # On VirtualBox eth0 is used for NAT-ed internet connection,
+      # and actual connectivity with the host and other VMs is done
+      # using eth1 interface.
+      ansible.extra_vars = { public_iface: "eth1" }
+    end
+  end
+
+  def cluster_ansible_provision(ansible, provider)
+    set_common_ansible_options(ansible)
+
+    # This sets up both flannel and kube.
+    ansible.playbook = "../playbooks/deploy-cluster.yml"
+
+    # Copy group_vars directory if it exists
+    vagrant_inventory_directory = ".vagrant/provisioners/ansible/inventory"
+    unless File.directory?(vagrant_inventory_directory)
+      FileUtils.mkdir_p(vagrant_inventory_directory)
+    end
+
+    if File.directory?("../inventory/group_vars")
+      FileUtils.copy_entry "../inventory/group_vars", File.join(vagrant_inventory_directory, "group_vars")
+    end
+
+    if provider == :virtualbox
+      master_ip = VBOX_STATIC_IP_TEMPLATE % 0
+
+      # On VirtualBox eth0 is used for NAT-ed internet connection,
+      # and actual connectivity with the host and other VMs is done
+      # using eth1 interface.
+      ansible.extra_vars = {
+        flannel_opts: "--iface=eth1",
+        etcd_interface: "eth1",
+        netplugin_interface: "eth1",
+        netmaster_interface: "eth1",
+        kube_apiserver_bind_address: master_ip,
+      }
+    end
+  end
+
+  def run_ansible_provision(n)
+    n.vm.provider :openstack do |os, override|
+      override.vm.provision :ansible do |ansible|
+        yield ansible, :openstack
+      end
+    end
+    n.vm.provider :virtualbox do |vb, override|
+      override.vm.provision :ansible do |ansible|
+        yield ansible, :virtualbox
+      end
+    end
+    n.vm.provider :libvirt do |lv, override|
+      override.vm.provision :ansible do |ansible|
+        yield ansible, :libvirt
+      end
+    end
+    n.vm.provider :aws do |aws, override|
+      override.vm.provision :ansible do |ansible|
+        yield ansible, :aws
+      end
+    end
+  end
+
+  config.vm.synced_folder ".", "/vagrant", disabled: true
+
+  masters = Array.new()
+  $num_masters.times do |i|
+    # multi vm config
+    name = "kube-master-#{i+1}"
+    masters.push(name)
+    config.vm.define "#{name}" do |n|
+      n.vm.hostname = name
+      set_provider(n, i )
+    end
+  end
+
+  nodes = Array.new()
+  $num_nodes.times do |i|
+    # multi vm config
+    name = "kube-node-#{i+1}"
+    nodes.push(name)
+    config.vm.define "#{name}" do |n|
+      n.vm.hostname = name
+      set_provider(n, i + $num_masters)
+      if i == $num_nodes-1
+        # GROUP CONFIGURATION
+        # This is how we create the ansible inventory, see it in .vagrant
+        # if you want to debug, run 'VAGRANT_LOG=info vagrant up'
+        # and you'll see exactly how the cluster comes up via ansible inv.
+        $groups = {
+          "etcd:children" => ["masters"],
+          "masters" => masters,
+          "nodes" => nodes,
+          "all_groups:children" => ["etcd","masters","nodes"],
+        }
+        if $os_image == :coreos
+          # Vagrant prior version 1.8.0 doesn't write group variables into inventory file:
+          # <https://github.com/mitchellh/vagrant/commit/dd4ae1a51cfb246d561bced89d3b34ee90a0a38f>
+          Vagrant.require_version ">= 1.8.0"
+
+          # On CoreOS we use custom Python in Ansible.
+          $groups["all_groups:vars"] = ['ansible_python_interpreter="PATH=/opt/bin:$PATH python"']
+        end
+        # PROVISIONING
+        if $ansible_tags.nil?
+          run_ansible_provision n do |ansible, provider|
+            vagrant_ansible_provision(ansible, provider)
+          end
+        end
+
+        run_ansible_provision n do |ansible, provider|
+          cluster_ansible_provision(ansible, provider)
+        end
+      end
+    end
+  end
+end

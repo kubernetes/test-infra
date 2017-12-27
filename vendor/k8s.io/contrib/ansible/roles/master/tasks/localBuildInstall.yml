@@ -1,0 +1,49 @@
+---
+- name: Copy master binaries
+  copy:
+    src: "{{ localBuildOutput }}/{{ item }}"
+    dest: /usr/bin/
+    mode: 0755
+  with_items:
+    - kube-apiserver
+    - kube-scheduler
+    - kube-controller-manager
+    - kubectl
+    - kubelet
+  notify: restart daemons
+
+- name: Copy master service files
+  copy:
+    src: ../../init/systemd/{{ item }}
+    dest: /etc/systemd/system/
+    mode: 0644
+  with_items:
+    - kube-apiserver.service
+    - kube-scheduler.service
+    - kube-controller-manager.service
+    - kubelet.service
+  notify: reload systemd
+
+- name: Upstart service files
+  copy:
+    src: ../../init/upstart/{{ item }}
+    dest: /etc/init/
+    mode: 0644
+  when: ansible_distribution == "Ubuntu" and ansible_distribution_major_version|int < 15
+  with_items:
+    - kube-apiserver.conf
+    - kube-scheduler.conf
+    - kube-controller-manager.conf
+    - kubelet.conf
+
+- name: Copy systemd tmpfile for apiserver
+  copy:
+    src: ../../init/systemd/tmpfiles.d/
+    dest: /etc/tmpfiles.d/
+    mode: 0644
+  notify: reload systemd
+
+- name: Create the /var/lib/kubelet working directory
+  file:
+    path: /var/lib/kubelet
+    state: directory

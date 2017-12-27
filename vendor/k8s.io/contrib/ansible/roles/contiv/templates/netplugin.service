@@ -1,0 +1,8 @@
+[Unit]
+Description=Netplugin
+After=auditd.service systemd-user-sessions.service etcd.service
+
+[Service]
+EnvironmentFile=/etc/default/netplugin
+ExecStart={{ bin_dir }}/netplugin $NETPLUGIN_ARGS
+KillMode=control-group

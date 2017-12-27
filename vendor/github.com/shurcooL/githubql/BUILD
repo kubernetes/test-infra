@@ -23,7 +23,10 @@ filegroup(
 
 filegroup(
     name = "all-srcs",
-    srcs = [":package-srcs"],
+    srcs = [
+        ":package-srcs",
+        "//vendor/github.com/shurcooL/githubql/example/githubqldev:all-srcs",
+    ],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],
 )

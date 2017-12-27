@@ -66,7 +66,13 @@ filegroup(
 
 filegroup(
     name = "all-srcs",
-    srcs = [":package-srcs"],
+    srcs = [
+        ":package-srcs",
+        "//vendor/github.com/sirupsen/logrus/examples/basic:all-srcs",
+        "//vendor/github.com/sirupsen/logrus/examples/hook:all-srcs",
+        "//vendor/github.com/sirupsen/logrus/hooks/syslog:all-srcs",
+        "//vendor/github.com/sirupsen/logrus/hooks/test:all-srcs",
+    ],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],
 )

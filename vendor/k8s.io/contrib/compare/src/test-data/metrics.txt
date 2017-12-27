@@ -1,0 +1,200 @@
+[It] [Performance] Sample test
+Jan 13 16:28:32.843: INFO: Scheduling latency: {
+  "Scheduling": {
+    "Perc50": 0,
+    "Perc90": 0,
+    "Perc99": 0
+  },
+  "binding": {
+    "Perc50": 0,
+    "Perc90": 0,
+    "Perc99": 0
+  },
+  "total": {
+    "Perc50": 0,
+    "Perc90": 0,
+    "Perc99": 0
+  }
+}
+
+[AfterEach] Density [Skipped]
+  /usr/local/google/home/gmarek/go/src/k8s.io/kubernetes/_output/local/go/src/k8s.io/kubernetes/test/e2e/framework.go:70
+Jan 13 16:28:32.843: INFO: Waiting up to 1m0s for all nodes to be ready
+W0113 16:28:33.113519   15211 metrics_grabber.go:74] Master node is not registered. Grabbing metrics from Scheduler and ControllerManager is disabled.
+STEP: Destroying namespace "e2e-tests-density-j1mos" for this suite.
+Jan 13 16:28:40.805: INFO: MetricsForE2E JSON
+{
+  "ApiServerMetrics": {
+    "apiserver_request_count": [
+      {
+        "metric": {
+          "__name__": "apiserver_request_count",
+          "client": "e2e.test/v1.2.0 (linux/amd64) kubernetes/ba8efbd",
+          "code": "200",
+          "resource": "events",
+          "verb": "LIST"
+        },
+        "value": [
+          0,
+          "2"
+        ]
+      },
+      {
+        "metric": {
+          "__name__": "apiserver_request_count",
+          "client": "e2e.test/v1.2.0 (linux/amd64) kubernetes/ba8efbd",
+          "code": "200",
+          "resource": "events",
+          "verb": "WATCHLIST"
+        },
+        "value": [
+          0,
+          "1"
+        ]
+      },
+      {
+        "metric": {
+          "__name__": "apiserver_request_count",
+          "client": "e2e.test/v1.2.0 (linux/amd64) kubernetes/ba8efbd",
+          "code": "200",
+          "resource": "nodes",
+          "verb": "LIST"
+        },
+        "value": [
+          0,
+          "4"
+        ]
+      },
+      {
+        "metric": {
+          "__name__": "apiserver_request_count",
+          "client": "e2e.test/v1.2.0 (linux/amd64) kubernetes/ba8efbd",
+          "code": "200",
+          "resource": "pods",
+          "verb": "GET"
+        },
+        "value": [
+          0,
+          "8"
+        ]
+      },
+      {
+        "metric": {
+          "__name__": "apiserver_request_count",
+          "client": "e2e.test/v1.2.0 (linux/amd64) kubernetes/ba8efbd",
+          "code": "200",
+          "resource": "pods",
+          "verb": "LIST"
+        },
+        "value": [
+          0,
+          "2"
+        ]
+      },
+      {
+        "metric": {
+          "__name__": "apiserver_request_count",
+          "client": "e2e.test/v1.2.0 (linux/amd64) kubernetes/ba8efbd",
+          "code": "200",
+          "resource": "pods",
+          "verb": "POST"
+        },
+        "value": [
+          0,
+          "3"
+        ]
+      },
+      {
+        "metric": {
+          "__name__": "apiserver_request_count",
+          "client": "e2e.test/v1.2.0 (linux/amd64) kubernetes/ba8efbd",
+          "code": "200",
+          "resource": "pods",
+          "verb": "WATCHLIST"
+        },
+        "value": [
+          0,
+          "2"
+        ]
+      },
+      {
+        "metric": {
+          "__name__": "apiserver_request_count",
+          "client": "e2e.test/v1.2.0 (linux/amd64) kubernetes/ba8efbd",
+          "code": "200",
+          "resource": "replicationcontrollers",
+          "verb": "POST"
+        },
+        "value": [
+          0,
+          "1"
+        ]
+      },
+      {
+        "metric": {
+          "__name__": "apiserver_request_count",
+          "client": "heapster/v1.0.3 (linux/amd64) kubernetes/$Format",
+          "code": "200",
+          "resource": "namespaces",
+          "verb": "LIST"
+        },
+        "value": [
+          0,
+          "1"
+        ]
+      },
+      {
+        "metric": {
+          "__name__": "apiserver_request_count",
+          "client": "heapster/v1.0.3 (linux/amd64) kubernetes/$Format",
+          "code": "200",
+          "resource": "namespaces",
+          "verb": "WATCHLIST"
+        },
+        "value": [
+          0,
+          "1"
+        ]
+      },
+      {
+        "metric": {
+          "__name__": "apiserver_request_count",
+          "client": "kube-apiserver/v1.2.0 (linux/amd64) kubernetes/e0c876b",
+          "code": "200",
+          "resource": "limitranges",
+          "verb": "WATCHLIST"
+        },
+        "value": [
+          0,
+          "1"
+        ]
+      },
+      {
+        "metric": {
+          "__name__": "apiserver_request_count",
+          "client": "kube-apiserver/v1.2.0 (linux/amd64) kubernetes/e0c876b",
+          "code": "200",
+          "resource": "resourcequotas",
+          "verb": "WATCHLIST"
+        },
+        "value": [
+          0,
+          "1"
+        ]
+      }
+    ]
+  },
+  "SchedulerMetrics": null
+}
+
+Jan 13 16:28:58.171: INFO: Finished
+
+• [SLOW TEST:73.785 seconds]
+Density [Skipped]
+/usr/local/google/home/gmarek/go/src/k8s.io/kubernetes/_output/local/go/src/k8s.io/kubernetes/test/e2e/density.go:417
+  [Performance] should allow starting 30 pods per node
+  /usr/local/google/home/gmarek/go/src/k8s.io/kubernetes/_output/local/go/src/k8s.io/kubernetes/test/e2e/density.go:415
+------------------------------
+SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS
+Ran 1 of 214 Specs in 73.789 seconds
+SUCCESS! -- 1 Passed | 0 Failed | 0 Pending | 213 Skipped PASS

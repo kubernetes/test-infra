@@ -1,0 +1,25 @@
+kube_master_insecure_port: 8080
+
+localBuildOutput: ../../../_output/local/go/bin
+
+admission_controllers: NamespaceLifecycle,LimitRanger,ServiceAccount,ResourceQuota
+
+kube_apiserver_bind_address: "0.0.0.0"
+kube_apiserver_insecure_bind_address: "127.0.0.1"
+
+services_enabled: true
+apiserver_modified: false
+controller_manager_modified: false
+scheduler_modified: false
+kubelet_modified: false
+
+# List of Kubernetes binaries to download and install.
+kube_master_binaries:
+  - kube-apiserver
+  - kube-controller-manager
+  - kube-scheduler
+  - kubectl
+
+kube_master_rpms:
+  - kubernetes-client
+  - kubernetes-master

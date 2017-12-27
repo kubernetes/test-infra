@@ -1,0 +1,112 @@
+[It] [Performance] Sample test
+Jan 13 15:59:03.884: INFO: Scheduling latency: {
+  "Scheduling": {
+    "Perc50": 0,
+    "Perc90": 0,
+    "Perc99": 0
+  },
+  "binding": {
+    "Perc50": 0,
+    "Perc90": 0,
+    "Perc99": 0
+  },
+  "total": {
+    "Perc50": 0,
+    "Perc90": 0,
+    "Perc99": 0
+  }
+}
+
+[AfterEach] Density [Skipped]
+  /usr/local/google/home/gmarek/go/src/k8s.io/kubernetes/_output/local/go/src/k8s.io/kubernetes/test/e2e/framework.go:70
+Jan 13 15:59:03.884: INFO: Waiting up to 1m0s for all nodes to be ready
+STEP: Destroying namespace "e2e-tests-density-509uu" for this suite.
+Jan 13 15:59:09.566: INFO: ResourceUsageSummary JSON
+{
+  "90": [
+    {
+      "Name": "elasticsearch-logging-v1-qvcte/elasticsearch-logging",
+      "Cpu": 0.060779454406191896,
+      "Mem": 1199001600
+    },
+    {
+      "Name": "elasticsearch-logging-v1-rlcdl/elasticsearch-logging",
+      "Cpu": 0.07141353781663302,
+      "Mem": 1016840192
+    },
+    {
+      "Name": "heapster-v10-8zg3j/heapster",
+      "Cpu": 0.012815978918275425,
+      "Mem": 44511232
+    },
+    {
+      "Name": "kube-dns-v10-aenmc/etcd",
+      "Cpu": 0.006813616250669234,
+      "Mem": 13012992
+    },
+    {
+      "Name": "kube-dns-v10-aenmc/healthz",
+      "Cpu": 0.001173291677536088,
+      "Mem": 1257472
+    },
+    {
+      "Name": "kube-dns-v10-aenmc/kube2sky",
+      "Cpu": 0.005867475543394822,
+      "Mem": 7106560
+    },
+    {
+      "Name": "kube-dns-v10-aenmc/skydns",
+      "Cpu": 0.0012983584381255876,
+      "Mem": 3805184
+    }
+  ],
+  "99": [
+    {
+      "Name": "elasticsearch-logging-v1-qvcte/elasticsearch-logging",
+      "Cpu": 0.060779454406191896,
+      "Mem": 1199001600
+    },
+    {
+      "Name": "elasticsearch-logging-v1-rlcdl/elasticsearch-logging",
+      "Cpu": 0.07141353781663302,
+      "Mem": 1016840192
+    },
+    {
+      "Name": "heapster-v10-8zg3j/heapster",
+      "Cpu": 0.012815978918275425,
+      "Mem": 44511232
+    },
+    {
+      "Name": "kube-dns-v10-aenmc/etcd",
+      "Cpu": 0.006813616250669234,
+      "Mem": 13012992
+    },
+    {
+      "Name": "kube-dns-v10-aenmc/healthz",
+      "Cpu": 0.001173291677536088,
+      "Mem": 1257472
+    },
+    {
+      "Name": "kube-dns-v10-aenmc/kube2sky",
+      "Cpu": 0.005867475543394822,
+      "Mem": 7106560
+    },
+    {
+      "Name": "kube-dns-v10-aenmc/skydns",
+      "Cpu": 0.0012983584381255876,
+      "Mem": 3805184
+    }
+  ]
+}
+
+Jan 13 15:59:09.567: INFO: Finished
+
+• [SLOW TEST:62.060 seconds]
+Density [Skipped]
+/usr/local/google/home/gmarek/go/src/k8s.io/kubernetes/_output/local/go/src/k8s.io/kubernetes/test/e2e/density.go:417
+  [Performance] should allow starting 30 pods per node
+  /usr/local/google/home/gmarek/go/src/k8s.io/kubernetes/_output/local/go/src/k8s.io/kubernetes/test/e2e/density.go:415
+------------------------------
+SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS
+Ran 1 of 214 Specs in 62.064 seconds
+SUCCESS! -- 1 Passed | 0 Failed | 0 Pending | 213 Skipped PASS

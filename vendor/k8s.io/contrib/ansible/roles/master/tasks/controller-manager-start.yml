@@ -1,0 +1,8 @@
+---
+- name: Enable controller-manager
+  service: name=kube-controller-manager enabled=yes
+  when: services_enabled == true
+
+- name: Start controller-manager
+  service: name=kube-controller-manager state=started
+  register: controller_manager_started

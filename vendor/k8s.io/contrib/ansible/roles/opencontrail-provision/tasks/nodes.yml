@@ -1,0 +1,4 @@
+---
+- name: Create virtual-router object
+  command: docker run opencontrail/config:2.20 /usr/share/contrail-utils/provision_vrouter.py --api_server_ip {{ groups['masters'][0] }} --host_name "{{ inventory_hostname }}{% if hostvars[inventory_hostname]['ansible_domain'] != "" %}.{{ hostvars[inventory_hostname]['ansible_domain'] }}{% endif %}" --host_ip "{{ hostvars[inventory_hostname]['ipaddr'] }}"
+  delegate_to: "{{ groups['masters'][0] }}"

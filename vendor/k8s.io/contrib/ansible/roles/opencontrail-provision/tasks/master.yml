@@ -1,0 +1,29 @@
+---
+- name: Create temporary directory
+  command: mktemp -d
+  register: mktemp_result
+
+- name: Temporary directory var
+  set_fact:
+    host_tmp_dir: "{{ mktemp_result.stdout }}"
+
+- name: Namespace file
+  copy: src=namespace.yml dest={{ host_tmp_dir }}
+
+- name: Namespace status
+  command: kubectl get namespace opencontrail
+  ignore_errors: yes
+  register: namespace
+
+- name: Create namespace
+  command: kubectl create -f "{{ host_tmp_dir }}/namespace.yml"
+  when: namespace.rc != 0
+
+- name: Cleanup
+  file: path="{{ host_tmp_dir }}" state=absent
+
+- name: Metadata services
+  command: docker run opencontrail/config:2.20 /usr/share/contrail-utils/provision_linklocal.py --api_server_ip "{{ inventory_hostname }}" --api_server_port 8082 --linklocal_service_name kubernetes-ssl --linklocal_service_ip {{ kube_service_addresses | ipaddr('net') | ipaddr(1) | ipaddr('address')}} --linklocal_service_port 443 --ipfabric_service_ip "{{ hostvars[inventory_hostname]['ansible_' + opencontrail_interface]['ipv4']['address'] }}" --ipfabric_service_port 443 --oper add
+
+- name: Provision controller
+  command: docker run opencontrail/config:2.20 /usr/share/contrail-utils/provision_control.py --api_server_ip "{{ inventory_hostname }}" --api_server_port 8082 --host_name "{{ inventory_hostname }}" --host_ip "{{ hostvars[inventory_hostname]['ansible_' + opencontrail_interface]['ipv4']['address'] }}" --router_asn 64512 --oper add

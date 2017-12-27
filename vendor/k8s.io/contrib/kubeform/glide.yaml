@@ -1,0 +1,16 @@
+package: k8s.io/kubeform
+import:
+- package: github.com/hashicorp/terraform
+  version: 0.7.0-rc1
+  subpackages:
+  - helper/schema
+  - plugin
+  - terraform
+- package: k8s.io/kubernetes
+  # TODO(madhusudancs): Should be replaced with ^1.4.0. Temporary solution
+  # to get release_1_4 client.
+  version: ec47f5c926da7479939b4ab2948fda5479f0a999
+  subpackages:
+  - pkg/api
+  - pkg/client/clientset_generated/release_1_4
+  - pkg/client/unversioned/clientcmd

@@ -1,0 +1,16 @@
+---
+- name: Create the kubelet working directory
+  file: path={{ kubelet_working_dir }} state=directory
+
+- name: Write the config files for kubelet
+  template: src=kubelet.j2 dest={{ kube_config_dir }}/kubelet
+
+- name: Write the kubecfg (auth) file for kubelet
+  template: src=kubelet.kubeconfig.j2 dest={{ kube_config_dir }}/kubelet.kubeconfig
+
+- name: Make sure manifest directory exists
+  file: path={{ kube_manifest_dir }} state=directory
+
+- name: Setting the kubelet_modified fact to true
+  set_fact:
+    kubelet_modified: true

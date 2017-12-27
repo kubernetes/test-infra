@@ -1,0 +1,4 @@
+---
+- name: Restart proxy
+  service: name=kube-proxy state=restarted
+

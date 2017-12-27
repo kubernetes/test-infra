@@ -1,0 +1,64 @@
+---
+# Install OS specific files
+- include: coreos.yml
+  when: is_coreos
+
+- include: ubuntu-14.04.yml
+  when: ansible_distribution == 'Ubuntu' and ansible_distribution_major_version|int < 15
+
+- name: Set selinux permissive because tokens and selinux don't work together
+  selinux: state=permissive policy={{ ansible_selinux.type }}
+  when: ansible_selinux is defined and ansible_selinux.status == "enabled"
+
+- name: Retrieve systemd files for github-release kube_source_type type
+  include: retrieve-systemd-files.yml
+  when: kube_source_type == "github-release" or (ansible_distribution == 'Ubuntu' and ansible_distribution_major_version|int == 16)
+
+# Change default value of kube_source_type
+- name: Force kube_source_type to github
+  set_fact:
+    kube_source_type: "github-release"
+  when: is_coreos or ansible_distribution == 'Ubuntu'
+
+# Install kubernetes node components
+- include: packageManagerInstall.yml
+  when: kube_source_type == "packageManager"
+  tags:
+    - binary-update
+
+- include: localBuildInstall.yml
+  when: kube_source_type == "localBuild"
+  tags:
+    - binary-update
+
+- include: download_bins.yml
+  when: kube_source_type == "github-release"
+  tags:
+    - binary-update
+
+- include: install_rpms.yml
+  when: kube_source_type == "distribution-rpm"
+  tags:
+    - binary-update
+
+- name: Install kubernetes node runtime dependencies
+  action: "{{ ansible_pkg_mgr }}"
+  args:
+        name: "{{ item }}"
+        state: latest
+  with_items:
+  - socat
+  - tar
+  - git
+  when: (kube_source_type == "localBuild" or kube_source_type == "github-release") and (ansible_distribution == "Fedora" or ansible_distribution == "RedHat" or ansible_distribution == "CentOS")
+
+# enable cpu and memory accounting for systemd services by default
+- name: Create systemd dropin directory
+  file: path=/etc/systemd/system/system.conf.d state=directory mode=0755
+  when: (kube_source_type == "localBuild" or kube_source_type == "github-release") and (ansible_distribution == "Fedora" or ansible_distribution == "RedHat" or ansible_distribution == "CentOS")
+
+- name: Enable cpu and memory accounting for systemd services
+  copy: src=kubernetes-accounting.conf dest="/etc/systemd/system/system.conf.d/kubernetes-accounting.conf"
+  notify:
+    - reload systemd
+  when: (kube_source_type == "localBuild" or kube_source_type == "github-release") and (ansible_distribution == "Fedora" or ansible_distribution == "RedHat" or ansible_distribution == "CentOS")

@@ -1,0 +1,6 @@
+{
+    "name": "haproxy",
+    "reloadCmd": "./haproxy_reload",
+    "config": "haproxy_test.cfg",
+    "template": "template.cfg"
+}

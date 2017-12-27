@@ -1,0 +1,23 @@
+---
+- name: CentOS | Install kubernetes master
+  yum:
+    pkg=kubernetes-master
+    state=latest
+  notify:
+    - restart daemons
+  environment:
+    http_proxy: "{{ http_proxy|default('') }}"
+    https_proxy: "{{ https_proxy|default('') }}"
+    no_proxy: "{{ no_proxy|default('') }}"
+
+- name: CentOS | Install kubernetes node
+  yum:
+    pkg=kubernetes-node
+    state=latest
+  notify:
+    - restart daemons
+  environment:
+    http_proxy: "{{ http_proxy|default('') }}"
+    https_proxy: "{{ https_proxy|default('') }}"
+    no_proxy: "{{ no_proxy|default('') }}"
+  when: networking == 'opencontrail'

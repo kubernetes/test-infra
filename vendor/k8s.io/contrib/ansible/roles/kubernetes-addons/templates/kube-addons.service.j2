@@ -1,0 +1,14 @@
+[Unit]
+Description=Kubernetes Addon Object Manager
+Documentation=https://github.com/kubernetes/kubernetes
+
+[Service]
+Environment=HOME=/root
+Environment="TOKEN_DIR={{ kube_token_dir }}"
+Environment="KUBECTL_BIN={{ bin_dir }}/kubectl"
+Environment="KUBERNETES_MASTER_NAME={{ groups['masters'][0] }}"
+Environment="TRUSTY_MASTER=true"
+ExecStart={{ kube_script_dir }}/kube-addons.sh
+
+[Install]
+WantedBy=multi-user.target

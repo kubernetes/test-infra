@@ -1,0 +1,5 @@
+auto {{ opencontrail_interface }}
+iface {{ opencontrail_interface }} inet static
+    address 0.0.0.0
+    up ip link set $IFACE up
+    down ip link set $IFACE down

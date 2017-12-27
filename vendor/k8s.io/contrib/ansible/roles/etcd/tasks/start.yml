@@ -1,0 +1,6 @@
+---
+- include: etcd-start.yml
+  when: not is_coreos
+
+- include: etcd2-start.yml
+  when: is_coreos

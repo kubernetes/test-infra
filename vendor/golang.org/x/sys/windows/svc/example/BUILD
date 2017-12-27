@@ -1,0 +1,47 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = select({
+        "@io_bazel_rules_go//go/platform:windows": [
+            "beep.go",
+            "install.go",
+            "main.go",
+            "manage.go",
+            "service.go",
+        ],
+        "//conditions:default": [],
+    }),
+    importpath = "golang.org/x/sys/windows/svc/example",
+    visibility = ["//visibility:private"],
+    deps = select({
+        "@io_bazel_rules_go//go/platform:windows": [
+            "//vendor/golang.org/x/sys/windows/svc:go_default_library",
+            "//vendor/golang.org/x/sys/windows/svc/debug:go_default_library",
+            "//vendor/golang.org/x/sys/windows/svc/eventlog:go_default_library",
+            "//vendor/golang.org/x/sys/windows/svc/mgr:go_default_library",
+        ],
+        "//conditions:default": [],
+    }),
+)
+
+go_binary(
+    name = "example",
+    embed = [":go_default_library"],
+    importpath = "golang.org/x/sys/windows/svc/example",
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [":package-srcs"],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)

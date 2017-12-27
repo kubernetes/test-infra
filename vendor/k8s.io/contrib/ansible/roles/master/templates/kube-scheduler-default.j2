@@ -1,0 +1,7 @@
+. {{ kube_config_dir }}/config
+. {{ kube_config_dir }}/scheduler
+
+KUBE_SCHEDULER_OPTS="$KUBE_LOGTOSTDERR \
+                     $KUBE_LOG_LEVEL \
+                     $KUBE_MASTER \
+                     $KUBE_SCHEDULER_ARGS"

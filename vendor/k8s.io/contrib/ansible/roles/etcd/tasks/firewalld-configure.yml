@@ -1,0 +1,34 @@
+---
+- name: Open firewalld port for etcd
+  firewalld: port={{ item }}/tcp permanent=false state=enabled
+  # in case this is also a node where firewalld turned off
+  ignore_errors: yes
+  with_items:
+    - "{{ etcd_client_port }}"
+    - "{{ etcd_peer_port }}"
+
+- name: Save firewalld port for etcd
+  firewalld: port={{ item }}/tcp permanent=true state=enabled
+  # in case this is also a node where firewalld turned off
+  ignore_errors: yes
+  with_items:
+    - "{{ etcd_client_port }}"
+    - "{{ etcd_peer_port }}"
+
+- name: Open firewalld port for etcd legacy ports
+  firewalld: port={{ item }}/tcp permanent=false state=enabled
+  # in case this is also a node where firewalld turned off
+  ignore_errors: yes
+  when: networking == 'contiv'
+  with_items:
+    - "{{ etcd_client_legacy_port }}"
+    - "{{ etcd_peer_legacy_port }}"
+
+- name: Save firewalld port for etcd legacy ports
+  firewalld: port={{ item }}/tcp permanent=true state=enabled
+  # in case this is also a node where firewalld turned off
+  ignore_errors: yes
+  when: networking == 'contiv'
+  with_items:
+    - "{{ etcd_client_legacy_port }}"
+    - "{{ etcd_peer_legacy_port }}"

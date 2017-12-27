@@ -1,0 +1,17 @@
+---
+- name: Fedora | Remove docker window manager on F20
+  yum: pkg=docker state=absent
+  when: ansible_distribution == "Fedora" and ansible_distribution_major_version == "20"
+  tags: install
+
+- name: Override kubernetes facts
+  include: override_facts.yml
+
+- name: Configure kubernetes
+  include: configure.yml
+  tags: configure
+
+- include: secrets.yml
+  tags:
+    secrets
+  tags: configure

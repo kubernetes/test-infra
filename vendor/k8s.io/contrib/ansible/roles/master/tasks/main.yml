@@ -1,0 +1,87 @@
+---
+# Install the kube master components
+# E.g. applying package manager, downloading binaries from github, etc.
+- name: Install kube master
+  include: install.yml
+  tags: install
+
+# Configure and start master components
+# I.e. apiserver, controller manager, scheduler and kubectl
+- name: Configure apiserver
+  include: apiserver-configure.yml
+  tags: configure
+
+- name: Start apiserver
+  include: apiserver-start.yml
+
+- name: Collect master tokens
+  include: collect-tokens.yml
+  tags: configure
+
+- name: Configure controller-manager
+  include: controller-manager-configure.yml
+  tags: configure
+
+- name: Start controller-manager
+  include: controller-manager-start.yml
+
+- name: Configure scheduler
+  include: scheduler-configure.yml
+  tags: configure
+
+- name: Start scheduler
+  include: scheduler-start.yml
+
+- name: Configure kubectl
+  include: kubectl-configure.yml
+  tags: configure
+
+# Enable kubelet on master only when OpenContrail is in use; see
+# https://github.com/kubernetes/contrib/pull/183
+- name: Configure kubelet
+  include: kubelet-configure.yml
+  when: networking == 'opencontrail'
+  tags: configure
+
+- name: Start kubelet
+  include: kubelet-start.yml
+  when: networking == 'opencontrail'
+
+- name: Run Ubuntu post tasks
+  include: ubuntu-post.yml
+  when: not ansible_distribution == 'Ubuntu' and not ansible_distribution_major_version|int < 15
+  tags: configure
+
+# Networking
+- name: Update firewalld to open apiserver port
+  include: firewalld.yml
+  when: has_firewalld
+  tags: configure
+
+- name: Update iptables to open apiserver port
+  include: iptables.yml
+  when: not has_firewalld and has_iptables
+  tags: configure
+
+# Restart services - this happens when a cluster has a service already running
+# Either from previous ansible deployment or on an already set up cluster
+- name: Call restart apiserver
+  include: apiserver-restart.yml
+  when: apiserver_modified == true and apiserver_started.changed == false
+  tags: restart
+
+- name: Call restart controller-manager
+  include: controller-manager-restart.yml
+  when: controller_manager_modified == true and controller_manager_started.changed == false
+  tags: restart
+
+- name: Call restart scheduler
+  include: scheduler-restart.yml
+  when: scheduler_modified == true and scheduler_started.changed == false
+  tags: restart
+
+- name: Call restart kubelet
+  include: kubelet-restart.yml
+  when: kubelet_modified == true and kubelet_started.changed == false
+  tags: restart
+

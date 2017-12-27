@@ -1,0 +1,7 @@
+---
+- name: Write the delay-master-services target
+  copy: src=delay-master-services.target dest=/etc/systemd/system/ mode=0644
+
+- name: Enable delay-master-services
+  service: name=delay-master-services.target enabled=yes
+

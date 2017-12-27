@@ -1,0 +1,31 @@
+---
+- name: dump kube-apiserver log
+  hosts: masters
+  tasks:
+  - shell: journalctl -u kube-apiserver.service > /tmp/kube-apiserver.log
+  - shell: journalctl -u kube-controller-manager.service > /tmp/kube-controller-manager.log
+  - shell: journalctl -u kube-scheduler.service > /tmp/kube-scheduler.log
+  - shell: dmesg > /tmp/kernel.log
+
+- name: dump kube-proxy log
+  hosts: nodes
+  tasks:
+  - shell: journalctl -u kube-proxy.service > /tmp/kube-proxy.log
+  - shell: journalctl -u kubelet.service > /tmp/kubelet.log
+  - shell: dmesg > /tmp/kernel.log
+
+- name: retrieve logs from master
+  hosts: masters
+  tasks:
+  - fetch: src=/tmp/kube-apiserver.log dest={{ results_directory }}/{{ ansible_eth0.ipv4.address }}-kube-apiserver.log flat=yes fail_on_missing=yes
+  - fetch: src=/tmp/kube-scheduler.log dest={{ results_directory }}/{{ ansible_eth0.ipv4.address }}-kube-scheduler.log flat=yes fail_on_missing=yes
+  - fetch: src=/tmp/kube-controller-manager.log dest={{ results_directory }}/{{ ansible_eth0.ipv4.address }}-kube-controller-manager.log flat=yes fail_on_missing=yes
+  - fetch: src=/tmp/kernel.log dest={{ results_directory }}/{{ ansible_eth0.ipv4.address }}-kernel.log flat=yes fail_on_missing=yes
+
+- name: retrieve logs from nodes
+  hosts: nodes
+  tasks:
+  - fetch: src=/tmp/kube-proxy.log dest={{ results_directory }}/{{ ansible_eth0.ipv4.address }}-kube-proxy.log flat=yes fail_on_missing=yes
+  - fetch: src=/tmp/kubelet.log dest={{ results_directory }}/{{ ansible_eth0.ipv4.address }}-kubelet.log flat=yes fail_on_missing=yes
+  - fetch: src=/tmp/kernel.log dest={{ results_directory }}/{{ ansible_eth0.ipv4.address }}-kernel.log flat=yes fail_on_missing=yes
+

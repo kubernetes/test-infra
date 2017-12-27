@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: perfdash
+  namespace: default
+  labels:
+    app: perfdash
+    version: "0.6"
+spec:
+  containers:
+  - image: gcr.io/google_containers/perfdash:0.6
+    command:
+      - /perfdash
+      -   --www=true
+      -   --dir=/www
+      -   --address=0.0.0.0:8080
+      -   --builds=100
+    imagePullPolicy: Always
+    name: perfdash
+    ports:
+    - name: status
+      containerPort: 8080
+    livenessProbe:
+      httpGet:
+        path: /api
+        port: 8080
+      initialDelaySeconds: 10
+      timeoutSeconds: 1
+    resources:
+      requests:
+        cpu: 300m
+        memory: 300Mi
+      limits:
+        cpu: 300m
+        memory: 300Mi
+  restartPolicy: OnFailure

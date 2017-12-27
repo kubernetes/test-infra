@@ -1,0 +1,28 @@
+---
+- name: Init the did_install fact
+  set_fact:
+    did_install: false
+
+- name: Set fact for Atomic Host package install
+  set_fact:
+    did_install: true
+  when: is_atomic
+
+- include: pkgMgrInstallers/centos-install.yml
+  when: ansible_distribution == "CentOS" and not is_atomic
+
+- name: Set fact saying we did CentOS package install
+  set_fact:
+    did_install: true
+  when: ansible_distribution == "CentOS"
+
+- include: pkgMgrInstallers/fedora-install.yml
+  when: ansible_distribution == "Fedora" and ansible_distribution_release != "Rawhide" and not is_atomic
+
+- name: Set fact saying we did Fedora package install
+  set_fact:
+    did_install: true
+  when: ansible_distribution == "Fedora" and ansible_distribution_release != "Rawhide"
+
+- include: pkgMgrInstallers/generic-install.yml
+  when: not did_install

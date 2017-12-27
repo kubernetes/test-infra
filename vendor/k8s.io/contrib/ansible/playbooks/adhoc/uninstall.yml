@@ -1,0 +1,180 @@
+---
+- hosts:
+    - masters
+    - nodes
+    - etcd
+
+  become: yes
+
+  tasks:
+    - name: Detecting Operating System
+      shell: ls /run/ostree-booted
+      ignore_errors: yes
+      failed_when: false
+      register: ostree_output
+
+    - set_fact:
+        is_atomic: "{{ ostree_output.rc == 0 }}"
+    - set_fact:
+        is_containerized: "{{ is_atomic or containerized | default(false) | bool }}"
+
+    - name: Determine if CoreOS
+      raw: "grep '^NAME=' /etc/os-release | sed s'/NAME=//'"
+      register: distro
+      always_run: yes
+
+    - name: Initialize facts
+      set_fact:
+        is_coreos: false
+        etcd_svc_name: etcd
+        bin_dir: "/usr/bin"
+
+    - name: Set CoreOS facts
+      when: "'CoreOS' in distro.stdout"
+      set_fact:
+        is_coreos: true
+        etcd_svc_name: etcd2
+        bin_dir: "/opt/bin"
+
+    - name: Remove br0 interface
+      shell: ovs-vsctl del-br br0
+      changed_when: False
+      failed_when: False
+
+    - name: Clear etcd configuration data
+      command: etcdctl rm --recursive {{ item }}
+      with_items:
+        - "/registry"
+        - "/cluster.local" #cluster name. default in group_vars/all.yml
+      ignore_errors: True
+      when: inventory_hostname == groups['etcd'][0]
+
+    - name: Stop services
+      service: name={{ item }} state=stopped
+      with_items:
+        - kube-apiserver
+        - kube-controller-manager
+        - kubelet
+        - kube-proxy
+        - kube-scheduler
+        - kube-addons
+        - flanneld
+        - "{{ etcd_svc_name }}"
+      failed_when: false
+
+    - name: Remove packages
+      action: "{{ ansible_pkg_mgr }} name={{ item }} state=absent"
+      when: not is_coreos and not is_atomic | bool
+      with_items:
+        - flannel
+        - kubernetes-node
+        - kubernetes-master
+        - kubernetes-client
+        - "{{ etcd_svc_name }}"
+        - kube-addons
+        - atomic-enterprise
+        - atomic-enterprise-master
+        - atomic-enterprise-node
+
+    - name: CoreOS | Remove bins and systemd files
+      file: path={{ item }} state=absent
+      when: is_coreos
+      with_items:
+        - "{{ bin_dir }}/mk-docker-opts.sh"
+        - /etc/systemd/system/docker.service.d
+        - /etc/systemd/system/etcd2.service.d
+        - /etc/systemd/system/kube-apiserver.service.d
+        - /etc/systemd/system/kube-scheduler.service.d
+        - /etc/systemd/system/kube-controller-manager.service.d/
+        - /etc/systemd/system/kubelet.service.d
+        - /etc/systemd/system/kube-proxy.service.d
+
+    - name: Remove linux interfaces
+      shell: ip link del "{{ item }}"
+      changed_when: False
+      failed_when: False
+      with_items:
+        - flannel.1
+        - docker0
+
+    - shell: systemctl reset-failed
+      changed_when: False
+
+    - shell: systemctl daemon-reload
+      changed_when: False
+
+    - shell: find /var/lib/kubelet/pods -type d -exec umount {} \; 2>/dev/null || true
+      changed_when: False
+
+    - name: restart docker
+      service:
+        name: docker
+        state: restarted
+
+    - name: Remove remaining files
+      file: path={{ item }} state=absent
+      with_items:
+        - "{{ ansible_env.HOME }}/.kube"
+        - /root/.kube
+        - "{{ bin_dir }}/kube-apiserver"
+        - "{{ bin_dir }}/kube-controller-manager"
+        - "{{ bin_dir }}/kubectl"
+        - "{{ bin_dir }}/kubelet"
+        - "{{ bin_dir }}/kube-proxy"
+        - "{{ bin_dir }}/kube-scheduler"
+        - "{{ bin_dir }}/flanneld"
+        - /run/flannel_docker_opts.env
+        - /run/flannel
+        - /tmp/flannel-conf.json
+        - /opt/flannel-0.5.5 #flannel version can change
+        - /etc/kubernetes
+        - /etc/systemd/system/kube-addons.service
+        - /etc/systemd/system/kube-controller-manager.service
+        - /etc/systemd/system/kube-proxy.service
+        - /etc/systemd/system/kube-proxy.service.wants
+        - /etc/systemd/system/kube-apiserver.service
+        - /etc/systemd/system/kube-apiserver.service.wants
+        - /etc/systemd/system/kubelet.service
+        - /etc/systemd/system/kube-scheduler.service
+        - /etc/systemd/system/flanneld.service
+        - /etc/systemd/system/flanneld.service.wants
+        - /etc/systemd/system/multi-user.target.wants/etcd.service
+        - /etc/systemd/system/multi-user.target.wants/flanneld.service
+        - /etc/systemd/system/multi-user.target.wants/kubelet.service
+        - /etc/systemd/system/multi-user.target.wants/kube-proxy.service
+        - /etc/systemd/system/multi-user.target.wants/kube-apiserver.service
+        - /etc/systemd/system/multi-user.target.wants/kube-scheduler.service
+        - /etc/systemd/system/multi-user.target.wants/kube-controller-manager.service
+        - /etc/systemd/system/multi-user.target.wants/kube-addons.service
+        - /etc/systemd/system/delay-master-services.target
+        - /etc/systemd/system/delay-node-services.target
+        - /etc/sysconfig/flanneld
+        - "/etc/systemd/system/{{ etcd_svc_name }}.service"
+        - /etc/init/kubelet.conf
+        - /etc/init/kube-proxy.confA
+        - /etc/init/etcd.conf
+        - /usr/libexec/kubernetes
+        - /etc/etcd
+        - /etc/tmpfiles.d
+
+    - name: Reload systemd manager configuration
+      command: systemctl daemon-reload
+
+- hosts: nodes
+  become: yes
+  tasks:
+    - name: restart docker
+      service: name=docker state=restarted
+
+- hosts:
+    - masters
+    - nodes
+    - etcd
+  become: yes
+  tasks:
+    - name: CoreOS | unbootstrap python
+      raw: rm -r {{ item }}
+      when: is_coreos
+      with_items:
+        - "{{ bin_dir }}/python"
+        - "{{ bin_dir }}/pypy"

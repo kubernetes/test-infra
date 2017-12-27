@@ -1,0 +1,48 @@
+apiVersion: extensions/v1beta1
+kind: DaemonSet
+metadata:
+  name: kube-keepalived-vip
+spec:
+  template:
+    metadata:
+      labels:
+        name: kube-keepalived-vip
+    spec:
+      hostNetwork: true
+      containers:
+        - image: gcr.io/google_containers/kube-keepalived-vip:0.8
+          name: kube-keepalived-vip
+          imagePullPolicy: Always
+          securityContext:
+            privileged: true
+          volumeMounts:
+            - mountPath: /lib/modules
+              name: modules
+              readOnly: true
+            - mountPath: /dev
+              name: dev
+          # use downward API
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+          # to use unicast
+          args:
+          - --services-configmap=default/vip-configmap
+          # unicast uses the ip of the nodes instead of multicast
+          # this is useful if running in cloud providers (like AWS)
+          #- --use-unicast=true
+      volumes:
+        - name: modules
+          hostPath:
+            path: /lib/modules
+        - name: dev
+          hostPath:
+            path: /dev
+      nodeSelector:
+        type: worker

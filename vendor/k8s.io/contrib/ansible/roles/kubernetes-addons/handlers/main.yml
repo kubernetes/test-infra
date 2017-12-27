@@ -1,0 +1,17 @@
+---
+- name: reload and restart kube-addons
+  command: systemctl --system daemon-reload
+  notify:
+    - restart kube-addons
+
+- name: restart kube-addons
+  service: name=kube-addons state=restarted
+
+- name: restart apiserver
+  service: name=kube-apiserver state=restarted
+
+# The kubernetes role invokes restart daemons. It must be defined here
+# since the kubernetes-addons playbook depends on that role to setup basic
+# variables such as the kubernetes configuration file directory.
+- name: restart daemons
+  command: /bin/true
