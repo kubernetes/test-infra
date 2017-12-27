@@ -69,10 +69,9 @@ slack:
     - kubernetes-dev
     whitelist:
     - k8s-merge-robot
-    - enisoc # 1.6 patch release manager
     - wojtek-t # 1.7 patch release manager
     - jpbetz # 1.8 patch release manager
-    - dashpole # 1.9 branch manager
+    - mbohlool # 1.9 patch release manager
   - repos:
     - kubernetes/test-infra
     channels:
