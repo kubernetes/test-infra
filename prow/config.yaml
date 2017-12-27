@@ -154,7 +154,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20171222-40e8b22e3-master
         args:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
