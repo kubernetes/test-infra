@@ -58,6 +58,7 @@ const (
 	doNotMergeLabel                  = "do-not-merge"
 	wipLabel                         = "do-not-merge/work-in-progress"
 	holdLabel                        = "do-not-merge/hold"
+	blockedPathsLabel                = "do-not-merge/blocked-paths"
 	deprecatedReleaseNoteLabelNeeded = "release-note-label-needed"
 	releaseNoteLabelNeeded           = "do-not-merge/release-note-label-needed"
 	cncfClaYesLabel                  = "cncf-cla: yes"

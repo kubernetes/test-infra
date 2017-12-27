@@ -14,7 +14,7 @@ config:
   project: kubernetes
   # Make sure blunderbuss runs before submit-queue.
   # Otherwise it's going to take an extra-cycle to detect the label change.
-  pr-mungers: blunderbuss,lgtm-after-commit,cherrypick-auto-approve,label-unapproved-picks,needs-rebase,path-label,size,stale-green-ci,block-path,release-note-label,comment-deleter,submit-queue,issue-creator,triage-filer,flakyjob-reporter,old-test-getter,docs-need-no-retest,sig-mention-handler
+  pr-mungers: blunderbuss,lgtm-after-commit,cherrypick-auto-approve,label-unapproved-picks,needs-rebase,path-label,size,stale-green-ci,release-note-label,comment-deleter,submit-queue,issue-creator,triage-filer,flakyjob-reporter,docs-need-no-retest,sig-mention-handler
   state: open
   token-file: /etc/secret-volume/token
   period: 20s
