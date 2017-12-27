@@ -548,6 +548,7 @@ func jsonForDebug(o interface{}) string {
 // flushMem will try to reduce the memory usage of the container it is running in
 // run this after a build
 func flushMem() {
+	log.Println("Flushing memory.")
 	// it's ok if these fail
 	// flush memory buffers
 	err := exec.Command("sync").Run()
