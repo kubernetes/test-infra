@@ -154,7 +154,7 @@ presubmits:
     always_run: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20171222-40e8b22e3-master
         args:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
@@ -163,9 +163,16 @@ presubmits:
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: /etc/service-account/service-account.json
+        - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+          value: /etc/ssh-key-secret/ssh-private
+        - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+          value: /etc/ssh-key-secret/ssh-public
         volumeMounts:
         - name: service
           mountPath: /etc/service-account
+          readOnly: true
+        - mountPath: /etc/ssh-key-secret
+          name: ssh
           readOnly: true
         - name: cache-ssd
           mountPath: /root/.cache
@@ -176,6 +183,10 @@ presubmits:
       - name: service
         secret:
           secretName: service-account
+      - name: ssh
+        secret:
+          defaultMode: 256
+          secretName: ssh-key-secret
       - name: cache-ssd
         hostPath:
           path: /mnt/disks/ssd0
