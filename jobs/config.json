@@ -10836,7 +10836,7 @@
   },
   "pull-ingress-gce-e2e": {
     "args": [
-      "--buildIngressGCE",
+      "--build-ingressgce",
       "--cluster=",
       "--extract=ci/latest",
       "--gcp-zone=us-central1-f",
