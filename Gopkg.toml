@@ -1,8 +1,5 @@
 # Gopkg.toml for k8s.io/test-infra
 
-# Ignore AWS SDK used by jenkins/aws-janitor
-ignored = ["github.com/aws/aws-sdk-go*"]
-
 [[constraint]]
   name = "github.com/prometheus/client_golang"
   version = "0.8.0"
