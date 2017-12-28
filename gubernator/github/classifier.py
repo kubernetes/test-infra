@@ -100,11 +100,11 @@ def get_labels(events, labels=None):
     Returns:
         labels: the currently applied labels as {label_name: label_color}
     """
-    labels = labels or []
+    labels = labels or {}
     for event, body, _timestamp in events:
         if 'issue' in body:
             # issues come with labels, so we can update here
-            labels = body['issue']['labels']
+            labels = {l['name']: l['color'] for l in body['issue']['labels']}
         # pull_requests don't include their full labels :(
         action = body.get('action')
         if event == 'pull_request':
@@ -115,16 +115,14 @@ def get_labels(events, labels=None):
                     logging.warning('label event with no labels (multiple changes?)')
                 elif action == 'labeled':
                     label = body['label']
-                    if label not in labels:
-                        labels.append(label)
+                    if label['name'] not in labels:
+                        labels[label['name']] = label['color']
                 elif action == 'unlabeled':
-                    label = body['label']
-                    if label in labels:
-                        labels.remove(label)
+                    labels.pop(body['label']['name'], None)
             except:
                 logging.exception('??? %r', body)
                 raise
-    return {label['name']: label['color'] for label in labels}
+    return labels
 
 
 def get_skip_comments(events, skip_users=None):

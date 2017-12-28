@@ -45,8 +45,10 @@ def diffs_to_events(*diffs):
 
 
 class LabelsTest(unittest.TestCase):
-    def expect_labels(self, events, names):
+    def expect_labels(self, events, names, extra_events=None):
         labels = classifier.get_labels(events)
+        if extra_events:
+            labels = classifier.get_labels(extra_events, labels)
         self.assertEqual(sorted(labels.keys()), sorted(names))
 
     def test_empty(self):
@@ -64,6 +66,8 @@ class LabelsTest(unittest.TestCase):
         self.expect_labels(diffs_to_events('+a', '+a'), ['a'])
         self.expect_labels(diffs_to_events('+a', '-a'), [])
         self.expect_labels(diffs_to_events('+a', '+b', '-c', '-b'), ['a'])
+        self.expect_labels(diffs_to_events('+a', '+b', '-c'), ['a'],
+                           extra_events=diffs_to_events('-b'))
 
     def test_issue_overrides_action(self):
         labels = [{'name': 'x', 'color': 'y'}]
