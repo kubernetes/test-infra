@@ -2,12 +2,10 @@
 http-cache-dir: /cache/httpcache
 organization: kubernetes
 project: kops
-pr-mungers: check-labels,lgtm-after-commit,needs-rebase
+pr-mungers: lgtm-after-commit,needs-rebase
 state: open
 token-file: /etc/secret-volume/token
 period: 2m
 repo-dir: /gitrepos
 github-key-file: /etc/hook-secret-volume/secret
 
-# munger specific options.
-label-file: /gitrepos/kops/labels.yaml
