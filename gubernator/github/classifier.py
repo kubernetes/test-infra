@@ -25,33 +25,8 @@ XREF_RE = re.compile(r'k8s-gubernator.appspot.com/build(/[^])\s]+/\d+)')
 APPROVERS_RE = re.compile(r'<!-- META={"?approvers"?:\[([^]]*)\]} -->')
 
 
-class Deduper(object):
-    ''' A memory-saving string deduplicator for Python datastructures.
-
-    This is somewhat like the built-in intern() function, but without pinning memory
-    permanently.
-
-    Tries to reduce memory usage by making equivalent strings point at the same object.
-    This reduces memory usage for large, repetitive JSON structures by >2x.
-    '''
-
-    def __init__(self):
-        self.strings = {}
-
-    def dedup(self, obj):
-        if isinstance(obj, basestring):
-            return self.strings.setdefault(obj, obj)
-        elif isinstance(obj, dict):
-            return {self.dedup(k): self.dedup(v) for k, v in obj.iteritems()}
-        elif isinstance(obj, tuple):
-            return tuple(self.dedup(x) for x in obj)
-        elif isinstance(obj, list):
-            return [self.dedup(x) for x in obj]
-        return obj
-
-
 def classify_issue(repo, number):
-    '''
+    """
     Classify an issue in a repo based on events in Datastore.
 
     Args:
@@ -63,46 +38,37 @@ def classify_issue(repo, number):
         involved: list of strings representing usernames involved
         payload: a dict, see full description for classify below.
         last_event_timestamp: the timestamp of the most recent event.
-    '''
+    """
     ancestor = models.GithubResource.make_key(repo, number)
     logging.debug('finding webhooks for %s %s', repo, number)
-    event_keys = list(models.GithubWebhookRaw.query(ancestor=ancestor).fetch(keys_only=True))
+    event_keys = list(models.GithubWebhookRaw.query(ancestor=ancestor)
+        .order(models.GithubWebhookRaw.timestamp)
+        .fetch(keys_only=True))
 
     logging.debug('classifying %s %s (%d events)', repo, number, len(event_keys))
-    event_tuples = []
-    last_event_timestamp = datetime.datetime(2000, 1, 1)
+    last_event_timestamp = [datetime.datetime(2000, 1, 1)]
 
+    def events_iterator():
+        for x in xrange(0, len(event_keys), 100):
+            events = ndb.get_multi(event_keys[x:x+100])
+            for event in events:
+                last_event_timestamp[0] = max(last_event_timestamp[0], event.timestamp)
+            yield [event.to_tuple() for event in events]
 
-    if len(event_keys) > 800:
-        logging.warning('too many events. blackholing.')
-        return False, False, [], {'num_events': len(event_keys)}, last_event_timestamp
-
-    deduper = Deduper()
-
-    for x in xrange(0, len(event_keys), 100):
-        events = ndb.get_multi(event_keys[x:x+100])
-        last_event_timestamp = max(last_event_timestamp, max(e.timestamp for e in events))
-        event_tuples.extend([deduper.dedup(event.to_tuple()) for event in events])
-
-    event_tuples.sort(key=lambda x: x[2])  # sort by timestamp
-
-    del deduper  # attempt to save memory
-    del events
-
-    merged = get_merged(event_tuples)
-    statuses = None
-    if 'head' in merged:
+    def get_status_for(sha):
         statuses = {}
-        for status in models.GHStatus.query_for_sha(repo, merged['head']['sha']):
-            last_event_timestamp = max(last_event_timestamp, status.updated_at)
+        for status in models.GHStatus.query_for_sha(repo, sha):
+            last_event_timestamp[0] = max(last_event_timestamp[0], status.updated_at)
             statuses[status.context] = [
                 status.state, status.target_url, status.description]
+        return statuses
 
-    return list(classify(event_tuples, statuses)) + [last_event_timestamp]
+    classified = classify_from_iterator(events_iterator(), status_fetcher=get_status_for)
+    return list(classified) + last_event_timestamp
 
 
-def get_merged(events):
-    '''
+def get_merged(events, merged=None):
+    """
     Determine the most up-to-date view of the issue given its inclusion
     in a series of events.
 
@@ -112,10 +78,11 @@ def get_merged(events):
 
     Args:
         events: a list of (event_type str, event_body dict, timestamp).
+        merged: the result of a previous invocation.
     Returns:
         body: a dict representing the issue's latest state.
-    '''
-    merged = {}
+    """
+    merged = merged or {}
     for _event, body, _timestamp in events:
         if 'issue' in body:
             merged.update(body['issue'])
@@ -124,16 +91,16 @@ def get_merged(events):
     return merged
 
 
-def get_labels(events):
-    '''
+def get_labels(events, labels=None):
+    """
     Determine the labels applied to an issue.
 
     Args:
         events: a list of (event_type str, event_body dict, timestamp).
     Returns:
         labels: the currently applied labels as {label_name: label_color}
-    '''
-    labels = []
+    """
+    labels = labels or []
     for event, body, _timestamp in events:
         if 'issue' in body:
             # issues come with labels, so we can update here
@@ -161,7 +128,7 @@ def get_labels(events):
 
 
 def get_skip_comments(events, skip_users=None):
-    '''
+    """
     Determine comment ids that should be ignored, either because of
         deletion or because the user should be skipped.
 
@@ -170,10 +137,8 @@ def get_skip_comments(events, skip_users=None):
     Returns:
         comment_ids: a set of comment ids that were deleted or made by
             users that should be skiped.
-    '''
-    if skip_users is None:
-        skip_users = []
-
+    """
+    skip_users = skip_users or []
     skip_comments = set()
     for event, body, _timestamp in events:
         action = body.get('action')
@@ -183,14 +148,15 @@ def get_skip_comments(events, skip_users=None):
                 skip_comments.add(comment_id)
     return skip_comments
 
-
-def classify(events, statuses=None):
-    '''
+def classify(events, status_fetcher=None):
+    """
     Given an event-stream for an issue and status-getter, process
     the events and determine what action should be taken, if any.
 
-    Args:
+    Args: One of:
         events: a list of (event_type str, event_body dict, timestamp).
+        events_iterator: an iterable yielding successive events lists
+        status_fetcher: a function that returns statuses for the given SHA.
     Returns:
         is_pr: bool
         is_open: bool
@@ -205,13 +171,39 @@ def classify(events, statuses=None):
                 'comments': [{'user': str name, 'comment': comment, 'timestamp': str iso8601}],
                 'xrefs': list of builds referenced (by GCS path),
             }
-    '''
+    """
     merged = get_merged(events)
     labels = get_labels(events)
     comments = get_comments(events)
-    xrefs = get_xrefs(comments, merged)
-    approvers = get_approvers(comments)
     reviewers = get_reviewers(events)
+    distilled_events = distill_events(events)
+
+    return _classify_internal(
+        merged, labels, comments, reviewers, distilled_events, status_fetcher)
+
+
+def classify_from_iterator(events_iterator, status_fetcher=None):
+    """Like classify(), but process batches of events from an iterator."""
+    merged = None
+    labels = None
+    comments = None
+    reviewers = None
+    distilled_events = None
+
+    for events in events_iterator:
+        merged = get_merged(events, merged)
+        labels = get_labels(events, labels)
+        comments = get_comments(events, comments)
+        reviewers = get_reviewers(events, reviewers)
+        distilled_events = distill_events(events, distilled_events)
+
+    return _classify_internal(
+        merged, labels, comments, reviewers, distilled_events, status_fetcher)
+
+
+def _classify_internal(merged, labels, comments, reviewers, distilled_events, status_fetcher):
+
+    approvers = get_approvers(comments)
 
     is_pr = 'head' in merged or 'pull_request' in merged
     is_open = merged['state'] != 'closed'
@@ -224,7 +216,7 @@ def classify(events, statuses=None):
         'assignees': assignees,
         'title': merged['title'],
         'labels': labels,
-        'xrefs': xrefs,
+        'xrefs': get_xrefs(comments, merged),
     }
 
     if is_pr:
@@ -235,13 +227,13 @@ def classify(events, statuses=None):
         if 'head' in merged:
             payload['head'] = merged['head']['sha']
 
-    if statuses:
-        payload['status'] = statuses
-
     if approvers:
         payload['approvers'] = approvers
 
-    payload['attn'] = calculate_attention(distill_events(events), payload)
+    if status_fetcher and 'head' in payload:
+        payload['status'] = status_fetcher(payload['head'])
+
+    payload['attn'] = calculate_attention(distilled_events, payload)
 
     return is_pr, is_open, involved, payload
 
@@ -253,15 +245,20 @@ def get_xrefs(comments, merged):
     return sorted(xrefs)
 
 
-def get_comments(events):
-    '''
+def get_comments(events, comments=None):
+    """
     Pick comments and pull-request review comments out of a list of events.
     Args:
         events: a list of (event_type str, event_body dict, timestamp).
+        comments_prev: the previous output of this function.
     Returns:
         comments: a list of dict(author=..., comment=..., timestamp=...),
                   ordered with the earliest comment first.
-    '''
+    """
+    if not comments:
+        comments = {}
+    else:
+        comments = {c['id']: c for c in comments}
     comments = {}  # comment_id : comment
     for event, body, _timestamp in events:
         action = body.get('action')
@@ -270,22 +267,21 @@ def get_comments(events):
             if action == 'deleted':
                 comments.pop(comment_id, None)
             else:
-                comments[comment_id] = body['comment']
-    return [
-            {
-                'author': c['user']['login'],
-                'comment': c['body'],
-                'timestamp': c['created_at']
-            }
-            for c in sorted(comments.values(), key=lambda c: c['created_at'])
-    ]
+                c = body['comment']
+                comments[comment_id] = {
+                    'author': c['user']['login'],
+                    'comment': c['body'],
+                    'timestamp': c['created_at'],
+                    'id': c['id'],
+                }
+    return sorted(comments.values(), key=lambda c: c['timestamp'])
 
 
-def get_reviewers(events):
-    '''
+def get_reviewers(events, reviewers=None):
+    """
     Return the set of users that have a code review requested or completed.
-    '''
-    reviewers = set()
+    """
+    reviewers = reviewers or set()
     for event, body, _timestamp in events:
         action = body.get('action')
         if event == 'pull_request':
@@ -300,11 +296,11 @@ def get_reviewers(events):
 
 
 def get_approvers(comments):
-    '''
+    """
     Return approvers requested in comments.
 
     This MUST be kept in sync with mungegithub's getGubernatorMetadata().
-    '''
+    """
     approvers = []
     for comment in comments:
         if comment['author'] == 'k8s-merge-robot':
@@ -314,11 +310,11 @@ def get_approvers(comments):
     return approvers
 
 
-def distill_events(events):
-    '''
+def distill_events(events, distilled_events=None):
+    """
     Given a sequence of events, return a series of user-action tuples
     relevant to determining user state.
-    '''
+    """
     bots = [
         'k8s-bot',
         'k8s-ci-robot',
@@ -328,7 +324,7 @@ def distill_events(events):
     ]
     skip_comments = get_skip_comments(events, bots)
 
-    output = []
+    output = distilled_events or []
     for event, body, timestamp in events:
         action = body.get('action')
         user = body.get('sender', {}).get('login')
@@ -350,7 +346,7 @@ def distill_events(events):
 
 
 def evaluate_fsm(events, start, transitions):
-    '''
+    """
     Given a series of event tuples and a start state, execute the list of transitions
     and return the resulting state, the time it entered that state, and the last time
     the state would be entered (self-transitions are allowed).
@@ -360,7 +356,7 @@ def evaluate_fsm(events, start, transitions):
 
     The transition occurs if condition equals the action (as a str), or if
     condition(action, user) is True.
-    '''
+    """
     state = start
     state_start = 0 # time that we entered this state
     state_last = 0  # time of last transition into this state
@@ -377,9 +373,9 @@ def evaluate_fsm(events, start, transitions):
 
 
 def get_author_state(author, distilled_events):
-    '''
+    """
     Determine the state of the author given a series of distilled events.
-    '''
+    """
     return evaluate_fsm(distilled_events, start='waiting', transitions=[
         # before, after, condition
         (None, 'address comments', lambda a, u: a == 'comment' and u != author),
@@ -389,9 +385,9 @@ def get_author_state(author, distilled_events):
 
 
 def get_assignee_state(assignee, author, distilled_events):
-    '''
+    """
     Determine the state of an assignee given a series of distilled events.
-    '''
+    """
     return evaluate_fsm(distilled_events, start='needs review', transitions=[
         # before, after, condition
         ('needs review', 'waiting', lambda a, u: u == assignee and a in ('comment', 'label lgtm')),
@@ -401,13 +397,13 @@ def get_assignee_state(assignee, author, distilled_events):
 
 
 def calculate_attention(distilled_events, payload):
-    '''
+    """
     Given information about an issue, determine who should look at it.
 
     It can include start and last update time for various states --
     "address comments#123#456" means that something has been in 'address comments' since
     123, and there was some other event that put it in 'address comments' at 456.
-    '''
+    """
     author = payload['author']
     assignees = payload['assignees']
 

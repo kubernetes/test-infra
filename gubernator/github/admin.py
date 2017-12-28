@@ -77,14 +77,14 @@ class Digest(webapp2.RequestHandler):
 
 class AdminDash(webapp2.RequestHandler):
     def get(self):
-        self.response.write('''
+        self.response.write("""
 <form action="/admin/reprocess" method="post">
 <button>Reprocess Open Issues/PRs</button><input type="checkbox" name="background">Background
 </form>
 <form action="/admin/digest_sync" method="post">
 <button>Download GHIssueDigest from production</button>
 </form>
-        ''')
+        """)
 
     def check_csrf(self):
         # https://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)_Prevention_Cheat_Sheet

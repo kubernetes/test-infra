@@ -24,10 +24,10 @@ import view_base
 
 @view_base.memcache_memoize('log-file-junit://', expires=60*60*4)
 def find_log_junit(build_dir, junit, log_file):
-    '''
+    """
     Looks in build_dir for log_file in a folder that
     also includes the junit file.
-    '''
+    """
     tmps = [f.filename for f in view_base.gcs_ls('%s/artifacts' % build_dir)
             if '/tmp-node' in f.filename]
     for folder in tmps:
@@ -39,9 +39,9 @@ def find_log_junit(build_dir, junit, log_file):
 
 
 def find_log_files(all_logs, log_file):
-    '''
+    """
     Returns list of files named log_file from values in all_logs
-    '''
+    """
     log_files = []
     for folder in all_logs.itervalues():
         for log in folder:
@@ -53,10 +53,10 @@ def find_log_files(all_logs, log_file):
 
 @view_base.memcache_memoize('all-logs://', expires=60*60*4)
 def get_all_logs(directory, artifacts):
-    '''
+    """
     returns dictionary given the artifacts folder with the keys being the
     folders, and the values being the log files within the corresponding folder
-    '''
+    """
     log_files = {}
     if artifacts:
         dirs = [f.filename for f in view_base.gcs_ls('%s/artifacts' % directory)

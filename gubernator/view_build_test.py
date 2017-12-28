@@ -45,7 +45,7 @@ class ParseJunitTest(unittest.TestCase):
         })
 
     def test_testsuites(self):
-        results = self.parse('''
+        results = self.parse("""
             <testsuites>
                 <testsuite name="k8s.io/suite">
                     <properties>
@@ -58,14 +58,14 @@ class ParseJunitTest(unittest.TestCase):
                         <system-out>out: second line</system-out>
                     </testcase>
                 </testsuite>
-            </testsuites>''')
+            </testsuites>""")
         self.assertEqual(results['failed'], [(
             'k8s.io/suite TestBad', 0.1, 'something bad', "junit_filename.xml",
             "out: first line\nout: second line\nerr: first line",
             )])
 
     def test_nested_testsuites(self):
-        results = self.parse('''
+        results = self.parse("""
             <testsuites>
                 <testsuite name="k8s.io/suite">
                     <testsuite name="k8s.io/suite/sub">
@@ -80,25 +80,25 @@ class ParseJunitTest(unittest.TestCase):
                         </testcase>
                     </testsuite>
                 </testsuite>
-            </testsuites>''')
+            </testsuites>""")
         self.assertEqual(results['failed'], [(
             'k8s.io/suite/sub TestBad', 0.1, 'something bad', "junit_filename.xml",
             "out: first line\nout: second line\nerr: first line",
             )])
 
     def test_bad_xml(self):
-        self.assertEqual(self.parse('''<body />''')['failed'], [])
+        self.assertEqual(self.parse("""<body />""")['failed'], [])
 
     def test_corrupt_xml(self):
         self.assertEqual(self.parse('<a>\xff</a>')['failed'], [])
-        failures = self.parse('''
+        failures = self.parse("""
             <testsuites>
                 <testsuite name="a">
                     <testcase name="Corrupt" time="0">
                         <failure>something bad \xff</failure>
                     </testcase>
                 </testsuite>
-            </testsuites>''')['failed']
+            </testsuites>""")['failed']
         self.assertEqual(failures, [('a Corrupt', 0.0, 'something bad ?',
                                      'junit_filename.xml', '')])
 
@@ -242,14 +242,14 @@ class BuildTest(main_test.TestBase):
 
     def test_build_failure_no_text(self):
         # Some failures don't have any associated text.
-        write(self.BUILD_DIR + 'artifacts/junit_01.xml', '''
+        write(self.BUILD_DIR + 'artifacts/junit_01.xml', """
             <testsuites>
                 <testsuite tests="1" failures="1" time="3.274" name="k8s.io/test/integration">
                     <testcase classname="integration" name="TestUnschedulableNodes" time="0.210">
                         <failure message="Failed" type=""/>
                     </testcase>
                 </testsuite>
-            </testsuites>''')
+            </testsuites>""")
         response = self.get_build_page()
         self.assertIn('TestUnschedulableNodes', response)
         self.assertIn('junit_01.xml', response)
@@ -278,7 +278,7 @@ class BuildTest(main_test.TestBase):
             ('296', 'google/cadvisor/', 'google/cadvisor'))
 
     def test_build_pr_link(self):
-        ''' The build page for a PR build links to the PR results.'''
+        """ The build page for a PR build links to the PR results."""
         build_dir = '/kubernetes-jenkins/pr-logs/pull/123/e2e/567/'
         init_build(build_dir)
         response = app.get('/build' + build_dir)
@@ -293,7 +293,7 @@ class BuildTest(main_test.TestBase):
         self.assertIn('href="/pr/charts/123"', response)
 
     def test_build_xref(self):
-        '''Test that builds show issues that reference them.'''
+        """Test that builds show issues that reference them."""
         github.models.GHIssueDigest.make(
             'org/repo', 123, True, True, [],
             {'xrefs': [self.BUILD_DIR[:-1]], 'title': 'an update on testing'}, None).put()
