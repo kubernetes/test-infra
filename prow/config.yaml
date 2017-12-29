@@ -23467,7 +23467,7 @@ periodics:
         secretName: fejta-bot-token
 - name: kubeflow-periodic
   interval: 8h
-  agent: kubernetes  
+  agent: kubernetes
   spec:
     containers:
     - image: gcr.io/mlkube-testing/kubeflow-testing:latest
