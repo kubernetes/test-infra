@@ -193,7 +193,7 @@ plugins:
   kubernetes-security/kubernetes:
   - trigger
 
-  tensorflow/k8s:  
+  tensorflow/k8s:
   - trigger
 
   spxtr/envoy:
