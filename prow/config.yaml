@@ -65,6 +65,30 @@ presubmits:
     context: pull-cadvisor-e2e
     rerun_command: "/test pull-cadvisor-e2e"
     trigger: "(?m)^/test( all| pull-cadvisor-e2e),?(\\s+|$)"
+  google/kubeflow:
+  - name: kubeflow-presubmit
+    context: kubeflow-presubmit
+    agent: kubernetes
+    always_run: true         # Run for every PR, or only when requested.
+    rerun_command: "/test kubeflow-presubmit"
+    trigger: "(?m)^/test( all| kubeflow-presubmit),?(\\s+|$)"
+    branches:
+    - master
+    spec:
+      containers:
+      - image: gcr.io/mlkube-testing/kubeflow-testing:latest
+        imagePullPolicy: Always
+        env:
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /etc/service-account/service-account.json
+        volumeMounts:
+        - name: service
+          mountPath: /etc/service-account
+          readOnly: true
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
   kubernetes/charts:
   - name: pull-charts-e2e
     agent: jenkins
@@ -5635,6 +5659,26 @@ presubmits:
           secretName: service-account
 
 postsubmits:
+  google/kubeflow:
+  - name: kubeflow-postsubmit
+    agent: kubernetes
+    branches:
+    - master
+    spec:
+      containers:
+      - image: gcr.io/mlkube-testing/kubeflow-testing:latest
+        imagePullPolicy: Always
+        env:
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /etc/service-account/service-account.json
+        volumeMounts:
+        - name: service
+          mountPath: /etc/service-account
+          readOnly: true
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
   kubernetes/kubernetes:
   - name: ci-kubernetes-bazel-build
     agent: kubernetes
@@ -23421,6 +23465,24 @@ periodics:
     - name: token
       secret:
         secretName: fejta-bot-token
+- name: kubeflow-periodic
+  interval: 8h
+  agent: kubernetes  
+  spec:
+    containers:
+    - image: gcr.io/mlkube-testing/kubeflow-testing:latest
+      imagePullPolicy: Always
+      env:
+      - name: GOOGLE_APPLICATION_CREDENTIALS
+        value: /etc/service-account/service-account.json
+      volumeMounts:
+      - name: service
+        mountPath: /etc/service-account
+        readOnly: true
+    volumes:
+    - name: service
+      secret:
+        secretName: service-account
 
 - interval: 1h
   agent: kubernetes
