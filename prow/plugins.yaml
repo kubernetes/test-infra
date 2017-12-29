@@ -8,6 +8,7 @@ triggers:
   - kubernetes-incubator
   - kubernetes-security
   - google/cadvisor
+  - google/kubeflow
   - tensorflow/k8s
   - GoogleCloudPlatform/k8s-multicluster-ingress
   trusted_org: kubernetes
@@ -91,6 +92,11 @@ config_updater:
 
 plugins:
   google/cadvisor:
+  - trigger
+
+  google/kubeflow:  
+  - lgtm
+  - size
   - trigger
 
   kubernetes/charts:
@@ -187,7 +193,7 @@ plugins:
   kubernetes-security/kubernetes:
   - trigger
 
-  tensorflow/k8s:
+  tensorflow/k8s:  
   - trigger
 
   spxtr/envoy:
