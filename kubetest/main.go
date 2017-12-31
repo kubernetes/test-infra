@@ -24,6 +24,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"math/rand"
 	"os"
 	"os/exec"
 	"os/signal"
@@ -289,6 +290,10 @@ func validateFlags(o *options) error {
 
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
+
+	// Initialize global pseudo random generator. Intializing it to select random AWS Zones.
+	rand.Seed(time.Now().UnixNano())
+
 	pflag.CommandLine = pflag.NewFlagSet(os.Args[0], pflag.ContinueOnError)
 	o := defineFlags()
 	pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
