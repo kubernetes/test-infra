@@ -53,8 +53,8 @@ blockades:
 - repos:
   - kubernetes/community
   blockregexps:
-  - ^community/2016-events
-  - ^community/elections/2017
+  - ^events/2016
+  - ^events/elections/2017
   explanation: "These files are historical, and from events that have already occurred."
 
 heart:
