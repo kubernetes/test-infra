@@ -34,7 +34,7 @@ const (
 	claNoLabel             = "cncf-cla: no"
 	cncfclaNotFoundMessage = `Thanks for your pull request. Before we can look at your pull request, you'll need to sign a Contributor License Agreement (CLA).
 
-:memo: **Please follow instructions at <https://github.com/kubernetes/kubernetes/wiki/CLA-FAQ> to sign the CLA.**
+:memo: **Please follow instructions at <https://git.k8s.io/community/CLA.md#the-contributor-license-agreement> to sign the CLA.**
 
 It may take a couple minutes for the CLA signature to be fully registered; after that, please reply here with a new comment and we'll verify.  Thanks.
 
