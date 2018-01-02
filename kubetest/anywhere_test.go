@@ -25,17 +25,18 @@ import (
 
 func TestNewKubernetesAnywhere(t *testing.T) {
 	cases := []struct {
-		name              string
-		phase2            string
-		kubeadmVersion    string
-		kubeadmUpgrade    string
-		kubeletCIVersion  string
-		kubeletVersion    string
-		kubernetesVersion string
-		cni               string
-		expectConfigLines []string
-		kubeproxyMode     string
-		osImage           string
+		name                string
+		phase2              string
+		kubeadmVersion      string
+		kubeadmUpgrade      string
+		kubeletCIVersion    string
+		kubeletVersion      string
+		kubernetesVersion   string
+		cni                 string
+		expectConfigLines   []string
+		kubeproxyMode       string
+		osImage             string
+		KubeadmFeatureGates string
 	}{
 		{
 			name:   "kubeadm defaults",
@@ -173,6 +174,21 @@ func TestNewKubernetesAnywhere(t *testing.T) {
 				".phase2.provider=\"kubeadm\"",
 			},
 		},
+		{
+			name:                "kubeadm with SelfHosting feature enabled",
+			phase2:              "kubeadm",
+			KubeadmFeatureGates: "SelfHosting=true",
+
+			expectConfigLines: []string{
+				".phase2.provider=\"kubeadm\"",
+				".phase2.kubeadm.version=\"\"",
+				".phase2.kubeadm.master_upgrade.method=\"\"",
+				".phase2.kubernetes_version=\"\"",
+				".phase2.kubelet_version=\"\"",
+				".phase2.kubeadm.feature_gates=\"SelfHosting=true\"",
+				".phase3.cni=\"weave\"",
+			},
+		},
 	}
 
 	mockGSFiles := map[string]string{
@@ -212,6 +228,7 @@ func TestNewKubernetesAnywhere(t *testing.T) {
 		if tc.osImage != "" {
 			*kubernetesAnywhereOSImage = tc.osImage
 		}
+		*kubernetesAnywhereKubeadmFeatureGates = tc.KubeadmFeatureGates
 
 		_, err = newKubernetesAnywhere("fake-project", "fake-zone")
 		if err != nil {

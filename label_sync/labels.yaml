@@ -18,6 +18,10 @@ labels:
     name: 'cla: no'
   - color: bfe5bf
     name: 'cla: yes'
+  - color: c0ff4a
+    name: committee/conduct
+  - color: c0ff4a
+    name: committee/steering
   - color: e11d21
     name: 'cncf-cla: no'
   - color: bfe5bf

@@ -2,9 +2,7 @@
 http-cache-dir: /cache/httpcache
 organization: kubernetes
 project: contrib
-# Make sure approval-handler and blunderbuss run before submit-queue.
-# Otherwise it's going to take an extra-cycle to detect the label change.
-pr-mungers: blunderbuss,lgtm-after-commit,submit-queue,needs-rebase
+pr-mungers: lgtm-after-commit,needs-rebase
 state: open
 token-file: /etc/secret-volume/token
 period: 2m

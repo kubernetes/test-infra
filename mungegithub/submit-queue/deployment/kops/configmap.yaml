@@ -2,27 +2,10 @@
 http-cache-dir: /cache/httpcache
 organization: kubernetes
 project: kops
-pr-mungers: check-labels,lgtm-after-commit,submit-queue,needs-rebase
+pr-mungers: lgtm-after-commit,needs-rebase
 state: open
 token-file: /etc/secret-volume/token
 period: 2m
 repo-dir: /gitrepos
 github-key-file: /etc/hook-secret-volume/secret
 
-# status contexts options.
-required-contexts: "continuous-integration/travis-ci/pr"
-required-retest-contexts: "pull-kops-e2e-kubernetes-aws"
-protected-branches-extra-contexts: "cla/linuxfoundation"
-
-# submit-queue options.
-protected-branches: "master"
-nonblocking-jobs: ""
-do-not-merge-milestones: ""
-admin-port: 9999
-context-url: https://kops.submit-queue.k8s.io
-
-# munger specific options.
-label-file: /gitrepos/kops/labels.yaml
-
-gate-cla: true
-gate-approved: true

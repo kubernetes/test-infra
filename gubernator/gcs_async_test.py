@@ -49,7 +49,7 @@ def install_handler_dispatcher(stub, matches, dispatch):
 
 
 def install_handler(stub, structure, base='pr-logs/pull/'):
-    '''
+    """
     Add a stub to mock out GCS JSON API ListObject requests-- with
     just enough detail for our code.
 
@@ -60,7 +60,7 @@ def install_handler(stub, structure, base='pr-logs/pull/'):
         structure: a dictionary of {paths: subdirectory names}.
             This will be transformed into the (more verbose) form
             that the ListObject API returns.
-    '''
+    """
     prefixes_for_paths = {}
 
     for path, subdirs in structure.iteritems():

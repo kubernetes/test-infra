@@ -11,12 +11,16 @@ triggers:
   - tensorflow/k8s
   - GoogleCloudPlatform/k8s-multicluster-ingress
   trusted_org: kubernetes
+  join_org_url: "https://github.com/kubernetes/community/blob/master/community-membership.md#member"
 
 approve:
 - repos:
   - kubernetes/charts
+  - kubernetes/cluster-registry
   - kubernetes/community
   - kubernetes/kubectl
+  - kubernetes/sig-release
+  - kubernetes/steering
   - kubernetes/test-infra
   implicit_self_approve: true
 - repos:
@@ -49,8 +53,8 @@ blockades:
 - repos:
   - kubernetes/community
   blockregexps:
-  - ^community/2016-events
-  - ^community/elections/2017
+  - ^events/2016
+  - ^events/elections/2017
   explanation: "These files are historical, and from events that have already occurred."
 
 heart:
@@ -65,10 +69,9 @@ slack:
     - kubernetes-dev
     whitelist:
     - k8s-merge-robot
-    - enisoc # 1.6 patch release manager
     - wojtek-t # 1.7 patch release manager
     - jpbetz # 1.8 patch release manager
-    - dashpole # 1.9 branch manager
+    - mbohlool # 1.9 patch release manager
   - repos:
     - kubernetes/test-infra
     channels:
@@ -96,15 +99,19 @@ plugins:
   - trigger
 
   kubernetes/cluster-registry:
+  - approve
   - trigger
 
   kubernetes/community:
   - approve
+  - blunderbuss
   - blockade
+  - require-sig
   - trigger
 
   kubernetes/contrib:
   - approve
+  - blunderbuss
 
   kubernetes/dns:
   - trigger
@@ -128,12 +135,19 @@ plugins:
 
   kubernetes/kubernetes:
   - approve
-  - trigger
-  - release-note
-  - docs-no-retest
   - blockade
+  - docs-no-retest
+  - release-note
+  - require-sig
+  - trigger
 
   kubernetes/kubernetes-template-project:
+  - approve
+
+  kubernetes/sig-release:
+  - approve
+
+  kubernetes/steering:
   - approve
 
   kubernetes/test-infra:
@@ -146,6 +160,7 @@ plugins:
   - cla
   - golint
   - heart
+  - help
   - hold
   - label
   - lgtm

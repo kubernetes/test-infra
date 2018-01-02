@@ -56,8 +56,8 @@ VOLUMES="-v ${REPO}:${REPO} -v ${HOME}:${HOME} --mount type=tmpfs,destination=${
 # Part of this is handled in planter/entrypoint.sh
 GID="$(id -g ${USER})"
 ENV="-e USER=${USER} -e GID=${GID} -e UID=${UID} -e HOME=${HOME}"
-# construct the final docker command
-CMD="docker pull ${IMAGE} && docker run --rm ${VOLUMES} --user ${UID} -w ${PWD} ${ENV} ${DOCKER_EXTRA:-} ${IMAGE} ${@}"
+# construct the final docker command, with SELinux disabled for this container
+CMD="docker pull ${IMAGE} && docker run --security-opt label:disable --rm ${VOLUMES} --user ${UID} -w ${PWD} ${ENV} ${DOCKER_EXTRA:-} ${IMAGE} ${@}"
 if [ -n "${DRY_RUN+set}" ]; then
     echo "${CMD}"
 else

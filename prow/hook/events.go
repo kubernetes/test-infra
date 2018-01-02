@@ -66,7 +66,6 @@ func (s *Server) handleReviewEvent(l *logrus.Entry, re github.ReviewEvent) {
 			pc.Logger = l.WithField("plugin", p)
 			pc.Config = s.ConfigAgent.Config()
 			pc.PluginConfig = s.Plugins.Config()
-			pc.GitHubClient.WithFields(l.Data)
 			pc.CommentPruner = commentpruner.NewEventClient(
 				pc.GitHubClient,
 				l.WithField("client", "commentpruner"),
@@ -119,7 +118,6 @@ func (s *Server) handleReviewCommentEvent(l *logrus.Entry, rce github.ReviewComm
 			pc.Logger = l.WithField("plugin", p)
 			pc.Config = s.ConfigAgent.Config()
 			pc.PluginConfig = s.Plugins.Config()
-			pc.GitHubClient.WithFields(l.Data)
 			pc.CommentPruner = commentpruner.NewEventClient(
 				pc.GitHubClient,
 				l.WithField("client", "commentpruner"),
@@ -171,7 +169,6 @@ func (s *Server) handlePullRequestEvent(l *logrus.Entry, pr github.PullRequestEv
 			pc.Logger = l.WithField("plugin", p)
 			pc.Config = s.ConfigAgent.Config()
 			pc.PluginConfig = s.Plugins.Config()
-			pc.GitHubClient.WithFields(l.Data)
 			pc.CommentPruner = commentpruner.NewEventClient(
 				pc.GitHubClient,
 				l.WithField("client", "commentpruner"),
@@ -224,7 +221,6 @@ func (s *Server) handlePushEvent(l *logrus.Entry, pe github.PushEvent) {
 			pc.Logger = l.WithField("plugin", p)
 			pc.Config = s.ConfigAgent.Config()
 			pc.PluginConfig = s.Plugins.Config()
-			pc.GitHubClient.WithFields(l.Data)
 			if err := h(pc, pe); err != nil {
 				pc.Logger.WithError(err).Error("Error handling PushEvent.")
 			}
@@ -247,7 +243,6 @@ func (s *Server) handleIssueEvent(l *logrus.Entry, i github.IssueEvent) {
 			pc.Logger = l.WithField("plugin", p)
 			pc.Config = s.ConfigAgent.Config()
 			pc.PluginConfig = s.Plugins.Config()
-			pc.GitHubClient.WithFields(l.Data)
 			pc.CommentPruner = commentpruner.NewEventClient(
 				pc.GitHubClient,
 				l.WithField("client", "commentpruner"),
@@ -301,7 +296,6 @@ func (s *Server) handleIssueCommentEvent(l *logrus.Entry, ic github.IssueComment
 			pc.Logger = l.WithField("plugin", p)
 			pc.Config = s.ConfigAgent.Config()
 			pc.PluginConfig = s.Plugins.Config()
-			pc.GitHubClient.WithFields(l.Data)
 			pc.CommentPruner = commentpruner.NewEventClient(
 				pc.GitHubClient,
 				l.WithField("client", "commentpruner"),
@@ -354,7 +348,6 @@ func (s *Server) handleStatusEvent(l *logrus.Entry, se github.StatusEvent) {
 			pc.Logger = l.WithField("plugin", p)
 			pc.Config = s.ConfigAgent.Config()
 			pc.PluginConfig = s.Plugins.Config()
-			pc.GitHubClient.WithFields(l.Data)
 			if err := h(pc, se); err != nil {
 				pc.Logger.WithError(err).Error("Error handling StatusEvent.")
 			}
@@ -384,7 +377,6 @@ func (s *Server) handleGenericComment(l *logrus.Entry, ce *github.GenericComment
 			pc.Logger = l.WithField("plugin", p)
 			pc.Config = s.ConfigAgent.Config()
 			pc.PluginConfig = s.Plugins.Config()
-			pc.GitHubClient.WithFields(l.Data)
 			pc.CommentPruner = commentpruner.NewEventClient(
 				pc.GitHubClient,
 				l.WithField("client", "commentpruner"),

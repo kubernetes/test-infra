@@ -45,9 +45,9 @@ class Endpoint(view_base.BaseHandler):
         return client['id'], client['secret']
 
     def maybe_redirect(self, target):
-        '''
+        """
         Redirect to a given URL if it's determined to be safe.
-        '''
+        """
         if target.startswith('/pr'):
             self.redirect(target)
 

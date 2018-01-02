@@ -305,7 +305,7 @@ def get_build_numbers(job_dir, before, indirect):
 
 @view_base.memcache_memoize('build-list://', expires=60)
 def build_list(job_dir, before):
-    '''
+    """
     Given a job dir, give a (partial) list of recent build
     finished.jsons.
 
@@ -314,7 +314,7 @@ def build_list(job_dir, before):
     Returns:
         a list of [(build, finished)]. build is a string like "123",
         finished is either None or a dict of the finished.json.
-    '''
+    """
 
     # /directory/ folders have a series of .txt files pointing at the correct location,
     # as a sort of fake symlink.

@@ -89,8 +89,16 @@ type buildFederationStrategy struct {
 	buildStrategy
 }
 
+type buildIngressGCEStrategy struct {
+	buildStrategy
+}
+
 func (b *buildFederationStrategy) Type() string {
 	return "buildFederationStrategy"
+}
+
+func (b *buildIngressGCEStrategy) Type() string {
+	return "buildIngressGCEStrategy"
 }
 
 // Build federation according to specified strategy.
@@ -109,4 +117,20 @@ func (b *buildFederationStrategy) Build() error {
 	}
 
 	return finishRunning(exec.Command("make", "-C", k8s("federation"), target))
+}
+
+func (b *buildIngressGCEStrategy) Build() error {
+	// Currently, this is the only strategy.
+	var target = "push-e2e"
+
+	// Get image tag (git command is how ingress-gce Makefile generates the tag).
+	var c = exec.Command("git", "describe", "--tags", "--always", "--dirty")
+	var o, _ = c.Output()
+
+	// Make sure that kube-up uses the correct glbc image by exporting as
+	// environment variable
+	var e = fmt.Sprintf("GCE_GLBC_IMAGE=gcr.io/google_containers/ingress-gce-e2e-glbc-amd64:%s", o)
+	finishRunning(exec.Command("export", e))
+
+	return finishRunning(exec.Command("make", "-C", k8s("ingress-gce"), target))
 }
