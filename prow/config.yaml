@@ -50,6 +50,8 @@ tide:
     - needs-rebase
   - repos:
     - kubernetes/kubectl
+    labels:
+    - "cncf-cla: yes"
     missingLabels:
     - do-not-merge/hold
     - do-not-merge/work-in-progress
