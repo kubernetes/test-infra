@@ -27,10 +27,7 @@ class GithubResource(ndb.Model):
 
 
 def shrink(body):
-    '''
-    Recursively remove Github API urls from an object, to make it
-    more human-readable.
-    '''
+    """Recursively remove Github API urls from an object to make it more human-readable."""
     toremove = []
     for key, value in body.iteritems():
         if isinstance(value, basestring):

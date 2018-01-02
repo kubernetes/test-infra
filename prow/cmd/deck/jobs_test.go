@@ -23,7 +23,6 @@ import (
 	"io/ioutil"
 	"testing"
 
-	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/kube"
 )
 
@@ -53,12 +52,6 @@ func (f fpkc) GetLogStream(pod string, options map[string]string) (io.ReadCloser
 	return nil, fmt.Errorf("pod not found: %s", pod)
 }
 
-type fcfg config.Config
-
-func (f *fcfg) Config() *config.Config {
-	return (*config.Config)(f)
-}
-
 func TestGetLog(t *testing.T) {
 	kc := fkc{
 		kube.ProwJob{
@@ -75,7 +68,6 @@ func TestGetLog(t *testing.T) {
 	ja := &JobAgent{
 		kc:  kc,
 		pkc: &fpkc{},
-		c:   &fcfg{},
 	}
 	if err := ja.update(); err != nil {
 		t.Fatalf("Updating: %v", err)
@@ -86,15 +78,13 @@ func TestGetLog(t *testing.T) {
 }
 
 func TestProwJobs(t *testing.T) {
-	visibleOrg := "kubernetes"
-	hiddenOrg := "kubernetes-shhh"
 	kc := fkc{
 		kube.ProwJob{
 			Spec: kube.ProwJobSpec{
 				Agent: kube.KubernetesAgent,
 				Job:   "job",
 				Refs: kube.Refs{
-					Org:  visibleOrg,
+					Org:  "kubernetes",
 					Repo: "test-infra",
 				},
 			},
@@ -103,29 +93,10 @@ func TestProwJobs(t *testing.T) {
 				BuildID: "123",
 			},
 		},
-		kube.ProwJob{
-			Spec: kube.ProwJobSpec{
-				Agent: kube.KubernetesAgent,
-				Job:   "jib",
-				Refs: kube.Refs{
-					Org:  hiddenOrg,
-					Repo: "test-infra",
-				},
-			},
-			Status: kube.ProwJobStatus{
-				PodName: "wawawaw",
-				BuildID: "456",
-			},
-		},
 	}
 	ja := &JobAgent{
 		kc:  kc,
 		pkc: &fpkc{},
-		c: &fcfg{
-			Deck: config.Deck{
-				HiddenRepos: []string{hiddenOrg},
-			},
-		},
 	}
 	if err := ja.update(); err != nil {
 		t.Fatalf("Updating: %v", err)
@@ -134,7 +105,7 @@ func TestProwJobs(t *testing.T) {
 	if expect, got := 1, len(pjs); expect != got {
 		t.Fatalf("Expected %d prowjobs, but got %d.", expect, got)
 	}
-	if expect, got := visibleOrg, pjs[0].Spec.Refs.Org; expect != got {
+	if expect, got := "kubernetes", pjs[0].Spec.Refs.Org; expect != got {
 		t.Errorf("Expected prowjob to have org %q, but got %q.", expect, got)
 	}
 }

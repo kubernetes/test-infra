@@ -48,7 +48,7 @@ _testgrid_config = None
 
 
 def get_config():
-    '''
+    """
     Load the testgrid config loaded from a proto stored on GCS.
     It will be cached locally in memory for the life of this process.
 
@@ -60,7 +60,7 @@ def get_config():
                 'dashboard_tab': [{'name': ..., 'test_group_name': ...}]
             }]
         }
-    '''
+    """
     global _testgrid_config  # pylint: disable=global-statement
     if not _testgrid_config:
         data = gcs.open('/k8s-testgrid/config').read()
@@ -69,12 +69,12 @@ def get_config():
 
 
 def path_to_group_name(path):
-    '''
+    """
     Args:
         path: a job directory like "/kubernetes-jenkins/jobs/e2e-gce"
     Returns:
         test_group_name: the group name in the config, or None if not found
-    '''
+    """
     path = path.strip('/')  # the config doesn't have leading/trailing slashes
     try:
         config = get_config()
@@ -87,14 +87,14 @@ def path_to_group_name(path):
 
 
 def path_to_query(path):
-    '''
+    """
     Convert a GCS job directory to the testgrid path for its results.
 
     Args:
         path: a job directory like "/kubernetes-jenkins/jobs/e2e-gce"
     Returns:
         query: the url for the job, like "k8s#gce", or "" if not found.
-    '''
+    """
     group = path_to_group_name(path)
     if not group:
         return ''

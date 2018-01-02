@@ -19,7 +19,7 @@ BIN := gcsweb
 PKG := k8s.io/test-infra/gcsweb
 
 # Where to push the docker image.
-REGISTRY ?= gcr.io/google_containers
+REGISTRY ?= k8s.gcr.io
 
 # Which architecture to build - see $(ALL_ARCH) for options.
 ARCH ?= amd64

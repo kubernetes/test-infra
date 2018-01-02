@@ -328,6 +328,7 @@ func (c *Controller) syncPendingJob(pj kube.ProwJob, pm map[string]kube.Pod, rep
 		} else {
 			pj.Status.BuildID = id
 			pj.Status.PodName = pn
+			c.log.WithFields(pjutil.ProwJobFields(&pj)).Info("Pod is missing, starting a new pod")
 		}
 	} else {
 		switch pod.Status.Phase {
@@ -335,6 +336,7 @@ func (c *Controller) syncPendingJob(pj kube.ProwJob, pm map[string]kube.Pod, rep
 			c.incrementNumPendingJobs(pj.Spec.Job)
 			// Pod is in Unknown state. This can happen if there is a problem with
 			// the node. Delete the old pod, we'll start a new one next loop.
+			c.log.WithFields(pjutil.ProwJobFields(&pj)).Info("Pod is in unknown state, deleting & restarting pod")
 			return c.pkc.DeletePod(pj.Metadata.Name)
 
 		case kube.PodSucceeded:

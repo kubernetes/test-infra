@@ -90,7 +90,7 @@ func handle(ghc githubClient, oc ownersClient, log *logrus.Entry, reviewerCount 
 		return err
 	}
 	if missing := reviewerCount - len(reviewers); missing > 0 {
-		log.Errorf("Not enough reviewers found in OWNERS files for files touched by this PR. %d/%d reviewers found.", len(reviewers), reviewerCount)
+		log.Warnf("Not enough reviewers found in OWNERS files for files touched by this PR. %d/%d reviewers found.", len(reviewers), reviewerCount)
 	}
 	if len(reviewers) > 0 {
 		log.Infof("Requesting reviews from users %s.", reviewers)

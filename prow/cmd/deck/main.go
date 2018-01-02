@@ -66,6 +66,8 @@ func main() {
 	if err != nil {
 		logger.WithError(err).Fatal("Error getting client.")
 	}
+	kc.SetHiddenReposProvider(func() []string { return configAgent.Config().Deck.HiddenRepos })
+
 	var pkc *kube.Client
 	if *buildCluster == "" {
 		pkc = kc.Namespace(configAgent.Config().PodNamespace)
@@ -169,8 +171,9 @@ func handleTide(ca *config.Agent, ta *tideAgent) http.HandlerFunc {
 		ta.Lock()
 		defer ta.Unlock()
 		payload := tideData{
-			Queries: queries,
-			Pools:   ta.pools,
+			Queries:     queries,
+			TideQueries: queryConfigs,
+			Pools:       ta.pools,
 		}
 		pd, err := json.Marshal(payload)
 		if err != nil {

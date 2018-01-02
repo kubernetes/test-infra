@@ -213,6 +213,6 @@ LGTM:
 [prow/plugins/lgtm/lgtm.go](https://github.com/kubernetes/test-infra/blob/master/prow/plugins/lgtm/lgtm.go)
 
 Approve:
-[mungegithub/mungers/approval-handler.go](https://github.com/kubernetes/test-infra/blob/master/mungegithub/mungers/approval-handler.go)
+[prow/plugins/approve/approve.go](https://github.com/kubernetes/test-infra/blob/master/prow/plugins/approve/approve.go)
 
 [mungegithub/mungers/approvers/owners.go](https://github.com/kubernetes/test-infra/blob/master/mungegithub/mungers/approvers/owners.go)

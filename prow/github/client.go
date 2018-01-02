@@ -213,10 +213,6 @@ func NewFakeClient() *Client {
 	}
 }
 
-func (c *Client) WithFields(fields logrus.Fields) {
-	c.logger = c.logger.WithFields(fields)
-}
-
 func (c *Client) log(methodName string, args ...interface{}) {
 	if c.logger == nil {
 		return

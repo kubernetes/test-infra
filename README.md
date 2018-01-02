@@ -15,7 +15,8 @@ the different services interact.
   - [Gubernator](https://k8s-gubernator.appspot.com/) formats the output of each run
 * [PR Dashboard](https://k8s-gubernator.appspot.com/pr) finds PRs that need your attention
 * [Prow](https://prow.k8s.io) schedules testing and updates issues
-  - Prow responds to GitHub events, timers and manual commands
+  - Prow responds to GitHub events, timers and [manual commands](commands.md)
+    given in GitHub comments.
   - The [prow dashboard](https://prow.k8s.io/) shows what it is currently testing
   - Configure prow to run new tests at [prow/config.yaml](prow/config.yaml)
 * [Triage Dashboard](https://go.k8s.io/triage) aggregates failures

@@ -23,7 +23,7 @@ set -o pipefail
 docker run --rm=true \
   -w "/go/src/k8s.io/test-infra" \
   -v "${GOPATH}/src/k8s.io/test-infra:/go/src/k8s.io/test-infra" \
-  'gcr.io/google_containers/kubekins-job-builder:5' \
+  'k8s.gcr.io/kubekins-job-builder:5' \
   jenkins-jobs --ignore-cache test -o testgrid/output jenkins/job-configs:jenkins/job-configs/kubernetes-jenkins
 
 docker run --rm=true \

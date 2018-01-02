@@ -550,7 +550,7 @@ func GenerateTemplate(templ, name string, data interface{}) (string, error) {
 	return buf.String(), nil
 }
 
-// getMessage returns the comment body that we want the approval-handler to display on PRs
+// getMessage returns the comment body that we want the approve plugin to display on PRs
 // The comment shows:
 // 	- a list of approvers files (and links) needed to get the PR approved
 // 	- a list of approvers files with strikethroughs that already have an approver's approval

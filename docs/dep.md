@@ -24,3 +24,10 @@ hack/update-bazel.sh
 ```
 
 To prune unneeded deps, and then update all the bazel files that `dep` blows away.
+
+## Tips
+
+If `dep ensure` doesn't come back and freezes, please make sure `hg` command is
+installed on your environment. `dep ensure` requires `hg` command for getting
+bitbucket.org/ww/goautoneg , but `dep ensure` doesn't output such error message
+and just freezes. [reference](https://github.com/kubernetes/test-infra/issues/5987)

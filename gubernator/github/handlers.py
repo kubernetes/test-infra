@@ -25,6 +25,7 @@ from webapp2_extras import security
 
 from google.appengine.api.runtime import memory_usage
 from google.appengine.datastore import datastore_query
+from google.appengine.ext import deferred
 
 import classifier
 import models
@@ -43,13 +44,13 @@ def make_signature(body):
 
 
 class GithubHandler(webapp2.RequestHandler):
-    '''
+    """
     Handle POSTs delivered using GitHub's webhook interface. Posts are
     authenticated with HMAC signatures and a shared secret.
 
     Each event is saved to a database, and can trigger additional
     processing.
-    '''
+    """
     def post(self):
         event = self.request.headers.get('x-github-event')
         signature = self.request.headers.get('x-hub-signature', '')
@@ -83,15 +84,16 @@ class GithubHandler(webapp2.RequestHandler):
             repo=repo, number=number, event=event, body=body, **kwargs)
         webhook.put()
 
+        # Defer digest updates, so they'll retry on failure.
         if event == 'status':
             status = models.GHStatus.from_json(body_json)
             models.save_if_newer(status)
             query = models.GHIssueDigest.find_head(repo, status.sha)
             for issue in query.fetch():
-                update_issue_digest(issue.repo, issue.number)
+                deferred.defer(update_issue_digest, issue.repo, issue.number)
 
-        if number is not None:
-            update_issue_digest(repo, number)
+        if number:
+            deferred.defer(update_issue_digest, repo, number)
 
 
 def update_issue_digest(repo, number, always_put=False):
@@ -113,10 +115,10 @@ class BaseHandler(webapp2.RequestHandler):
 
 
 class Events(BaseHandler):
-    '''
+    """
     Perform input/output on a series of webhook events from the datastore, for
     debugging purposes.
-    '''
+    """
     def get(self):
         cursor = datastore_query.Cursor(urlsafe=self.request.get('cursor'))
         repo = self.request.get('repo')
@@ -155,11 +157,11 @@ class Status(BaseHandler):
 
 
 class Timeline(BaseHandler):
-    '''
+    """
     Render all the information in the datastore about a particular issue.
 
     This is used for debugging and investigations.
-    '''
+    """
     def emit_classified(self, repo, number):
         try:
             self.response.write('<h3>Classifier Output</h3>')
@@ -175,8 +177,8 @@ class Timeline(BaseHandler):
 
     def emit_events(self, repo, number):
         ancestor = models.GithubResource.make_key(repo, number)
-        events = list(models.GithubWebhookRaw.query(ancestor=ancestor))
-        events.sort(key=lambda e: e.timestamp)
+        events = list(models.GithubWebhookRaw.query(ancestor=ancestor)
+            .order(models.GithubWebhookRaw.timestamp))
 
         self.response.write('<h3>Distilled Events</h3>')
         self.response.write('<pre>')
@@ -187,6 +189,7 @@ class Timeline(BaseHandler):
 
         self.response.write('<h3>%d Raw Events</h3>' % (len(events)))
         self.response.write('<table border=2>')
+        self.response.write('<tr><th>Timestamp<th>Event<th>Action<th>Sender<th>Body</tr>')
         merged = {}
         for event in events:
             body_json = json.loads(event.body)
@@ -213,7 +216,7 @@ class Timeline(BaseHandler):
             self.response.write(json.dumps([e.body for e in events], indent=True))
             return
         self.response.write(
-            '<style>td pre{max-height:200px;overflow:scroll}</style>')
+            '<style>td pre{max-height:200px;max-width:800px;overflow:scroll}</style>')
         self.response.write('<p>Memory: %s' % memory_usage().current())
         self.emit_classified(repo, number)
         self.response.write('<p>Memory: %s' % memory_usage().current())

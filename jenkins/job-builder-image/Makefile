@@ -15,5 +15,5 @@
 TAG = 5
 
 all:
-	docker build -t gcr.io/google_containers/kubekins-job-builder:$(TAG) .
-	gcloud docker -- push gcr.io/google_containers/kubekins-job-builder:$(TAG)
+	docker build -t k8s.gcr.io/kubekins-job-builder:$(TAG) .
+	gcloud docker -- push k8s.gcr.io/kubekins-job-builder:$(TAG)
