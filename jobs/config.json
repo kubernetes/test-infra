@@ -10834,6 +10834,12 @@
       "sig-instrumentation"
     ]
   },
+  "pull-heapster-e2e-prow": {
+    "scenario": "execute",
+    "sigOwners": [
+      "sig-instrumentation"
+    ]
+  },
   "pull-ingress-gce-e2e": {
     "args": [
       "--build-ingressgce",
