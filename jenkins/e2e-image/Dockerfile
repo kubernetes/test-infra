@@ -52,8 +52,8 @@ RUN INSTALLER="bazel-${BAZEL_VERSION}-installer-linux-x86_64.sh"; \
     chmod +x "${INSTALLER}" && "./${INSTALLER}" && rm "${INSTALLER}"
 
 # add env we can debug with the image name:tag
-ARG IMAGE
-ENV IMAGE=${IMAGE}
+ARG IMAGE_ARG
+ENV IMAGE=${IMAGE_ARG}
 
 ADD ["e2e-runner.sh", \
     "kops-e2e-runner.sh", \

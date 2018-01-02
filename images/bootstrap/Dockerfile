@@ -23,8 +23,8 @@ ENV WORKSPACE=/workspace \
     TERM=xterm
 
 # add env we can debug with the image name:tag
-ARG IMAGE
-ENV IMAGE=${IMAGE}
+ARG IMAGE_ARG
+ENV IMAGE=${IMAGE_ARG}
 
 # common util tools
 # https://github.com/GoogleCloudPlatform/gsutil/issues/446 for python-openssl

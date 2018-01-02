@@ -15,6 +15,10 @@
 FROM gcr.io/k8s-testimages/kubekins-e2e:v20171222-40e8b22e3-master
 LABEL maintainer "beacham@google.com"
 
+# add env we can debug with the image name:tag
+ARG IMAGE_ARG
+ENV IMAGE=${IMAGE_ARG}
+
 RUN apt-get update && apt-get install -y \
     build-essential \
     pkg-config \
