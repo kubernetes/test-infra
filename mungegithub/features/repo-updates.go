@@ -44,7 +44,6 @@ const (
 )
 
 type assignmentConfig struct {
-	Assignees []string `json:"assignees" yaml:"assignees"`
 	Approvers []string `json:"approvers" yaml:"approvers"`
 	Reviewers []string `json:"reviewers" yaml:"reviewers"`
 	Labels    []string `json:"labels" yaml:"labels"`
@@ -137,7 +136,6 @@ func (o *RepoInfo) walkFunc(path string, info os.FileInfo, err error) error {
 		}
 		c.normalizeUsers()
 		o.approvers[path] = sets.NewString(c.Approvers...)
-		o.approvers[path].Insert(c.Assignees...)
 		o.reviewers[path] = sets.NewString(c.Reviewers...)
 		return nil
 	}
@@ -167,7 +165,6 @@ func (o *RepoInfo) walkFunc(path string, info os.FileInfo, err error) error {
 	path = canonicalize(path)
 	c.normalizeUsers()
 	o.approvers[path] = sets.NewString(c.Approvers...)
-	o.approvers[path].Insert(c.Assignees...)
 	o.reviewers[path] = sets.NewString(c.Reviewers...)
 	if len(c.Labels) > 0 {
 		o.labels[path] = sets.NewString(c.Labels...)
@@ -181,7 +178,6 @@ func (o *RepoInfo) walkFunc(path string, info os.FileInfo, err error) error {
 // insensitive operations on the entries
 func (c *assignmentConfig) normalizeUsers() {
 	c.Approvers = caseNormalizeAll(c.Approvers)
-	c.Assignees = caseNormalizeAll(c.Assignees)
 	c.Reviewers = caseNormalizeAll(c.Reviewers)
 }
 
