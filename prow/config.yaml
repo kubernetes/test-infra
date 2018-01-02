@@ -58,6 +58,7 @@ tide:
     reviewApprovedRequired: true
   merge_method:
     kubernetes/charts: squash
+  target_url: https://prow.k8s.io/tide.html
 
 presubmits:
   google/cadvisor:

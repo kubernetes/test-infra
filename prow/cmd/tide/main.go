@@ -88,6 +88,7 @@ func main() {
 			}
 		}
 	}
+	ghc.Throttle(1000, 1000)
 
 	gc, err := git.NewClient()
 	if err != nil {
