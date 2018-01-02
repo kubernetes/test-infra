@@ -48,7 +48,6 @@ type dirOptions struct {
 
 type ownersConfig struct {
 	Options   dirOptions `json:"options,omitempty"`
-	Assignees []string   `json:"assignees,omitempty"`
 	Approvers []string   `json:"approvers,omitempty"`
 	Reviewers []string   `json:"reviewers,omitempty"`
 	Labels    []string   `json:"labels,omitempty"`
@@ -338,8 +337,8 @@ func normLogins(logins []string) sets.String {
 var defaultDirOptions = dirOptions{}
 
 func (o *RepoOwners) applyConfigToPath(path string, config *ownersConfig) {
-	if len(config.Approvers) > 0 || len(config.Assignees) > 0 {
-		o.approvers[path] = o.ExpandAliases(normLogins(config.Approvers).Union(normLogins(config.Assignees)))
+	if len(config.Approvers) > 0 {
+		o.approvers[path] = o.ExpandAliases(normLogins(config.Approvers))
 	}
 	if len(config.Reviewers) > 0 {
 		o.reviewers[path] = o.ExpandAliases(normLogins(config.Reviewers))
