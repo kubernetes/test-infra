@@ -21,6 +21,7 @@ import (
 	"encoding/csv"
 	"flag"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -97,16 +98,9 @@ func getOpenAPISpec(url string) apiArray {
 //   I0919 15:34:14.943642    6611 round_trippers.go:414] GET https://172.27.138.63:6443/api/v1/namespaces/kube-system/replicationcontrollers
 var reAPILog = regexp.MustCompile(`round_trippers.go:\d+\] (GET|PUT|POST|DELETE|OPTIONS|HEAD|PATCH) (\S+)`)
 
-func parseAPILog(restlog string) apiArray {
-	var fp *os.File
+func parseAPILog(fp io.Reader) apiArray {
 	var apisLog apiArray
 	var err error
-
-	fp, err = os.Open(restlog)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer fp.Close()
 
 	reader := bufio.NewReaderSize(fp, 4096)
 	for line := ""; err == nil; line, err = reader.ReadString('\n') {
@@ -125,6 +119,19 @@ func parseAPILog(restlog string) apiArray {
 		apisLog = append(apisLog, api)
 	}
 	return apisLog
+}
+
+func getAPILog(restlog string) apiArray {
+	var fp *os.File
+	var err error
+
+	fp, err = os.Open(restlog)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer fp.Close()
+
+	return parseAPILog(fp)
 }
 
 func getTestedAPIs(apisOpenapi, apisLogs apiArray) apiArray {
@@ -224,7 +231,7 @@ func main() {
 	}
 
 	apisOpenapi := getOpenAPISpec(*openAPIFile)
-	apisLogs := parseAPILog(*restLog)
+	apisLogs := getAPILog(*restLog)
 	apisTested := getTestedAPIs(apisOpenapi, apisLogs)
 	outputCoverage(apisOpenapi, apisTested)
 }
