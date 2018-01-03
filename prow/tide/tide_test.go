@@ -337,8 +337,12 @@ func (f *fgc) Merge(org, repo string, number int, details github.MergeDetails) e
 }
 
 func (f *fgc) CreateStatus(org, repo, ref string, s github.Status) error {
-	f.setStatus = true
-	return nil
+	switch s.State {
+	case github.StatusSuccess, github.StatusError, github.StatusPending, github.StatusFailure:
+		f.setStatus = true
+		return nil
+	}
+	return fmt.Errorf("invalid 'state' value: %q", s.State)
 }
 
 func TestSetStatuses(t *testing.T) {
