@@ -35,6 +35,7 @@
                 <article>
                     <div class="card-box">
                         <p><strong>All <a href="https://help.github.com/articles/about-required-status-checks/">GitHub statuses</a> on a Pull Request must be passing / green for automatic merge&nbsp;<span class="success">✓</span></strong></p>
+                        <p><strong>Prow test results are ignored if they do not test the Pull Request against the most recent commit on the branch.</strong></p>
                         <p><strong>Your Pull Request must also match one of these GitHub search queries (you can click them to check):</strong></p>
                         <ul id="queries"></ul>
                     </div>
@@ -47,7 +48,7 @@
                         <th>Batch</th>
                         <th>Passing</th>
                         <th>Pending</th>
-                        <th>Missing</th>
+                        <th>Failing or Untested</th>
                         </thead>
                         <tbody>
                         </tbody>
