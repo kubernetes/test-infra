@@ -289,5 +289,5 @@ Batch Job:
 [@k8s-ci-robot](https://github.com/k8s-ci-robot) and its silent counterpart
 [@k8s-bot](https://github.com/k8s-bot) both live here as triggers to GitHub
 messages defined in [config.yaml](config.yaml). Here is a
-[command list](https://github.com/kubernetes/test-infra/blob/master/commands.md)
+[command list](https://go.k8s.io/bot-commands)
 for them.
