@@ -162,7 +162,7 @@ presubmits:
         args:
         - "--repo=k8s.io/ingress-gce=$(PULL_REFS)"
         - "--repo=k8s.io/kubernetes=master"
-        - "--root=/go/src/k8s.io"
+        - "--root=/go/src/"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--clean"
         env:

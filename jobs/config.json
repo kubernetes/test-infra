@@ -10842,9 +10842,10 @@
   },
   "pull-ingress-gce-e2e": {
     "args": [
+      "--build",
       "--build-ingressgce",
       "--cluster=",
-      "--extract=ci/latest",
+      "--extract=local",
       "--gcp-zone=us-central1-f",
       "--provider=gce",
       "--test_args=--ginkgo.focus=\\[Feature:Ingress\\]",
