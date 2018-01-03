@@ -29,6 +29,7 @@ import (
 	"net/url"
 	"regexp"
 	"strconv"
+	"time"
 
 	"github.com/NYTimes/gziphandler"
 	"github.com/ghodss/yaml"
@@ -105,8 +106,9 @@ func main() {
 
 	if *tideURL != "" {
 		ta := &tideAgent{
-			log:  logger.WithField("agent", "tide"),
-			path: *tideURL,
+			log:          logger.WithField("agent", "tide"),
+			path:         *tideURL,
+			updatePeriod: func() time.Duration { return configAgent.Config().Deck.TideUpdatePeriod },
 		}
 		ta.start()
 		mux.Handle("/tide.js", gziphandler.GzipHandler(handleTide(configAgent, ta)))

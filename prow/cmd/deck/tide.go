@@ -36,19 +36,23 @@ type tideData struct {
 }
 
 type tideAgent struct {
-	log  *logrus.Entry
-	path string
+	log          *logrus.Entry
+	path         string
+	updatePeriod func() time.Duration
 
 	sync.Mutex
 	pools []tide.Pool
 }
 
 func (ta *tideAgent) start() {
+	startTime := time.Now()
 	if err := ta.update(); err != nil {
 		ta.log.WithError(err).Error("Updating pool for the first time.")
 	}
 	go func() {
-		for range time.Tick(time.Minute) {
+		for {
+			time.Sleep(time.Until(startTime.Add(ta.updatePeriod())))
+			startTime = time.Now()
 			if err := ta.update(); err != nil {
 				ta.log.WithError(err).Error("Updating pool.")
 			}

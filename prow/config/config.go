@@ -148,6 +148,10 @@ type Sinker struct {
 
 // Deck holds config for deck.
 type Deck struct {
+	// TideUpdatePeriodString compiles into TideUpdatePeriod at load time.
+	TideUpdatePeriodString string `json:"tide_update_period,omitempty"`
+	// TideUpdatePeriod specifies how often Deck will fetch status from Tide. Defaults to 10s.
+	TideUpdatePeriod time.Duration `json:"-"`
 	// HiddenRepos is a list of orgs and/or repos that should not be displayed by Deck.
 	HiddenRepos []string `json:"hidden_repos,omitempty"`
 	// ExternalAgentLogs ensures external agents can expose
@@ -325,6 +329,16 @@ func parseConfig(c *Config) error {
 		}
 	}
 
+	if c.Deck.TideUpdatePeriodString == "" {
+		c.Deck.TideUpdatePeriod = time.Second * 10
+	} else {
+		period, err := time.ParseDuration(c.Deck.TideUpdatePeriodString)
+		if err != nil {
+			return fmt.Errorf("cannot parse duration for deck.tide_update_period: %v", err)
+		}
+		c.Deck.TideUpdatePeriod = period
+	}
+
 	if c.PushGateway.IntervalString == "" {
 		c.PushGateway.Interval = time.Minute
 	} else {
@@ -363,6 +377,16 @@ func parseConfig(c *Config) error {
 			return fmt.Errorf("cannot parse duration for max_pod_age: %v", err)
 		}
 		c.Sinker.MaxPodAge = maxPodAge
+	}
+
+	if c.Tide.SyncPeriodString == "" {
+		c.Tide.SyncPeriod = time.Minute
+	} else {
+		period, err := time.ParseDuration(c.Tide.SyncPeriodString)
+		if err != nil {
+			return fmt.Errorf("cannot parse duration for tide.sync_period: %v", err)
+		}
+		c.Tide.SyncPeriod = period
 	}
 
 	if c.ProwJobNamespace == "" {

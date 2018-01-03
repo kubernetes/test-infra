@@ -19,12 +19,17 @@ package config
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"k8s.io/test-infra/prow/github"
 )
 
 // Tide is config for the tide pool.
 type Tide struct {
+	// SyncPeriodString compiles into SyncPeriod at load time.
+	SyncPeriodString string `json:"sync_period,omitempty"`
+	// SyncPeriod specifies how often Tide will sync jobs with Github. Defaults to 1m.
+	SyncPeriod time.Duration `json:"-"`
 	// Queries must not overlap. It must be impossible for any two queries to
 	// ever return the same PR.
 	// TODO: This will only be possible when we allow specifying orgs. At that
