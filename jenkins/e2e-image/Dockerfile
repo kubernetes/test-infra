@@ -15,7 +15,7 @@
 # This file creates a build environment for building and running kubernetes
 # unit and integration tests
 
-FROM gcr.io/k8s-testimages/bootstrap:v20171210-9bf1eccaf
+FROM gcr.io/k8s-testimages/bootstrap:v20180102-695ace192
 LABEL maintainer "Sen Lu <senlu@google.com>"
 
 ENV KUBETEST_IN_DOCKER="true"
