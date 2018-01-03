@@ -173,6 +173,9 @@ presubmits:
           value: /etc/ssh-key-secret/ssh-private
         - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
           value: /etc/ssh-key-secret/ssh-public
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
         volumeMounts:
         - name: service
           mountPath: /etc/service-account
@@ -180,8 +183,6 @@ presubmits:
         - mountPath: /etc/ssh-key-secret
           name: ssh
           readOnly: true
-        - name: cache-ssd
-          mountPath: /root/.cache
         - name: docker-graph
           mountPath: /docker-graph
         ports:
@@ -195,9 +196,6 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-key-secret
-      - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0
       - name: docker-graph
         hostPath:
           path: /mnt/disks/ssd0/docker-graph
