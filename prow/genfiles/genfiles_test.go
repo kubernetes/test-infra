@@ -35,7 +35,7 @@ func TestGroupLoad(t *testing.T) {
 			src: `# Files that should be ignored by tools which do not want to consider generated
 # code.
 #
-# https://github.com/kubernetes/test-infra/blob/master/mungegithub/mungers/size.go
+# eg: https://git.k8s.io/test-infra/prow/plugins/size/size.go
 #
 # This file is a series of lines, each of the form:
 #     <type> <name>
