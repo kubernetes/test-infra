@@ -442,13 +442,15 @@ func TestSetStatuses(t *testing.T) {
 		fc := &fgc{}
 		ca := &config.Agent{}
 		ca.Set(&config.Config{})
+		// setStatuses logs instead of returning errors.
+		// Construct a logger to watch for errors to be printed.
 		log := logrus.WithField("component", "tide")
 		initialLog, err := log.String()
 		if err != nil {
 			t.Fatalf("Failed to get log output before testing: %v", err)
 		}
-		c := &Controller{ghc: fc, ca: ca, logger: log}
 
+		c := &Controller{ghc: fc, ca: ca, logger: log}
 		c.setStatuses([]PullRequest{pr}, pool)
 		if str, err := log.String(); err != nil {
 			t.Fatalf("For case %s: failed to get log output: %v", tc.name, err)
