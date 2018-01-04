@@ -17,6 +17,8 @@ limitations under the License.
 package main
 
 import (
+	"bytes"
+	"io"
 	"regexp"
 	"testing"
 )
@@ -91,6 +93,42 @@ func TestParseOpenAPI(t *testing.T) {
 			t.Errorf("OpenAPI did not match expected for test")
 			t.Errorf("%#v", res)
 			t.Errorf("%#v", test.Expected)
+		}
+	}
+}
+
+func TestParseAPILog(t *testing.T) {
+	testCases := []struct {
+		Rawdata  io.Reader
+		Expected apiArray
+	}{
+		{
+			Rawdata: bytes.NewReader(
+				[]byte(`
+I0919 15:34:14.943642    6611 round_trippers.go:414] GET https://k8s-api/api/v1/foo
+I0919 15:34:16.943642    6611 round_trippers.go:414] POST https://k8s-api/api/v1/bar
+`)),
+			Expected: apiArray{
+				{Method: "GET", URL: "https://k8s-api/api/v1/foo"},
+				{Method: "POST", URL: "https://k8s-api/api/v1/bar"},
+			},
+		},
+		{
+			Rawdata: bytes.NewReader(
+				[]byte(`
+I0919 15:34:14.943642    6611 round_trippers.go:414] GET https://k8s-api/api/v1/foo?other
+`)),
+			Expected: apiArray{
+				{Method: "GET", URL: "https://k8s-api/api/v1/foo"},
+			},
+		},
+	}
+	for _, test := range testCases {
+		res := parseAPILog(test.Rawdata)
+		if !equalAPIArray(res, test.Expected) {
+			t.Errorf("APILog did not match expected for test")
+			t.Errorf("Actual: %#v", res)
+			t.Errorf("Expected: %#v", test.Expected)
 		}
 	}
 }
