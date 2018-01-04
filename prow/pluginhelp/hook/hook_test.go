@@ -71,7 +71,9 @@ func TestGeneratePluginHelp(t *testing.T) {
 		http.Error(w, "404 Not Found", http.StatusNotFound)
 	}))
 	defer noHelpSever.Close()
-	helpfulServer := httptest.NewServer(externalplugins.ServeExternalPluginHelp(
+	mux := http.NewServeMux()
+	externalplugins.ServeExternalPluginHelp(
+		mux,
 		logrus.WithField("plugin", "helpful-external"),
 		func(enabledRepos []string) (*pluginhelp.PluginHelp, error) {
 			if got, expected := enabledRepos, []string{"org1/repo1"}; !reflect.DeepEqual(got, expected) {
@@ -79,7 +81,8 @@ func TestGeneratePluginHelp(t *testing.T) {
 			}
 			return &helpfulExternalHelp, nil
 		},
-	))
+	)
+	helpfulServer := httptest.NewServer(mux)
 	defer helpfulServer.Close()
 
 	config := &plugins.Configuration{

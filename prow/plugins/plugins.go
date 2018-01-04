@@ -655,3 +655,23 @@ func EventsForPlugin(name string) []string {
 	}
 	return events
 }
+
+func (c *Configuration) EnabledReposForPlugin(plugin string) (orgs, repos []string) {
+	for repo, plugins := range c.Plugins {
+		found := false
+		for _, candidate := range plugins {
+			if candidate == plugin {
+				found = true
+				break
+			}
+		}
+		if found {
+			if strings.Contains(repo, "/") {
+				repos = append(repos, repo)
+			} else {
+				orgs = append(orgs, repo)
+			}
+		}
+	}
+	return
+}

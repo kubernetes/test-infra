@@ -21,6 +21,7 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -1396,4 +1397,32 @@ func (c *Client) ListIssueEvents(org, repo string, num int) ([]ListedIssueEvent,
 		return nil, err
 	}
 	return events, nil
+}
+
+// IsMergeable determines if a PR can be merged.
+// Mergeability is calculated by a background job on github and is not immediately available when
+// new commits are added so the PR must be polled until the background job completes.
+func (c *Client) IsMergeable(org, repo string, number int, sha string) (bool, error) {
+	backoff := time.Second * 3
+	maxTries := 3
+	for try := 0; try < maxTries; try++ {
+		pr, err := c.GetPullRequest(org, repo, number)
+		if err != nil {
+			return false, err
+		}
+		if pr.Head.SHA != sha {
+			return false, fmt.Errorf("pull request head changed while checking mergeability (%s -> %s)", sha, pr.Head.SHA)
+		}
+		if pr.Merged {
+			return false, errors.New("pull request was merged while checking mergeability")
+		}
+		if pr.Mergable != nil {
+			return *pr.Mergable, nil
+		}
+		if try+1 < maxTries {
+			c.time.Sleep(backoff)
+			backoff *= 2
+		}
+	}
+	return false, fmt.Errorf("reached maximum number of retries (%d) checking mergeability", maxTries)
 }
