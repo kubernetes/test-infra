@@ -1,0 +1,60 @@
+syntax = "proto3";
+
+message Column {
+  string build = 1;  // Unique instance of the job, typically BUILD_NUMBER from prow or guid
+  reserved 2; // Useless
+  double started = 3; // milliseconds since start of epoch (python time.time() * 1000)
+  repeated string extra = 4; // Additional column headers like commit, image used, etc.
+}
+
+message Metric {
+  string name = 1;  // Name of metric, such as duration
+  // Sparse encoding of values. So given:
+  //   Indices: [0, 2, 6, 4]
+  //   Values: [0.1,0.2,6.1,6.2,6.3,6.4]
+  // Decoded 12-value equivalent is:
+  // [0.1, 0.2, nil, nil, nil, nil, nil, 6.1, 6.2, 6.3, 6.4, nil, nil, ...]
+  repeated int32 indices = 2; // n=index of first value, n+1=count of filled values
+  repeated double values = 3; // filled values
+}
+
+message Row {
+  string name = 1; // Name to display, which might process id to append/filter info.
+  string id = 2;  // raw id for the row, such as the bazel target or golang package.
+
+  enum Result {
+    NO_RESULT = 0;
+    PASS = 1;
+    PASS_WITH_ERRORS = 2;
+    PASS_WITH_SKIPS = 3;
+    RUNNING = 4;
+    reserved 5 to 11;
+    FAIL = 12;
+    FLAKY = 13;
+  }
+  // Results for this row, run-length encoded to reduce size/improve performance.
+  // Thus (encoded -> decoded equivalent):
+  //   [0, 3, 5, 4] -> [0, 0, 0, 5, 5, 5, 5]
+  //   [5, 1] -> [5]
+  //   [1, 5] -> [1, 1, 1, 1, 1]
+  // The decoded values are Result enums
+  repeated int32 results = 3;
+
+  repeated string cell_ids = 4; // In case each cell has a unique identifier, separate from the column
+  repeated string messages = 5; // Short description of the result, displayed on mouseover
+
+  reserved 6 to 7;  // Consider later
+
+  repeated Metric metrics = 8;  // Numerical performance/timing data, etc.
+
+  repeated string icons = 9;  // Put 1-2 chars inside cell (F for fail, etc)
+
+  reserved 10;  // Consider later
+}
+
+message Grid {
+  repeated Column columns = 1;
+  repeated Row rows = 2;
+
+  reserved 3 to 9;  // Consider later
+}
