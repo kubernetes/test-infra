@@ -34,7 +34,7 @@ func getTestClient(enableMdYaml, includeAliases bool) (*Client, func(), error) {
 		"foo":                        []byte("approvers:\n- bob"),
 		"OWNERS":                     []byte("approvers: \n- cjwagner\nreviewers:\n- Alice\n- bob\nlabels:\n - EVERYTHING"),
 		"src/OWNERS":                 []byte("approvers:\n- Best-Approvers"),
-		"src/dir/OWNERS":             []byte("assignees:\n - bob\nreviewers:\n- alice\n- CJWagner\nlabels:\n- src-code"),
+		"src/dir/OWNERS":             []byte("approvers:\n - bob\nreviewers:\n- alice\n- CJWagner\nlabels:\n- src-code"),
 		"src/dir/conformance/OWNERS": []byte("options:\n no_parent_owners: true\napprovers:\n - mml"),
 		"docs/file.md":               []byte("---\napprovers: \n- ALICE\n\nlabels:\n- docs\n---"),
 	}

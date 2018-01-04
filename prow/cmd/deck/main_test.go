@@ -211,7 +211,8 @@ func TestTide(t *testing.T) {
 		},
 	})
 	ta := tideAgent{
-		path: s.URL,
+		path:         s.URL,
+		updatePeriod: func() time.Duration { return time.Minute },
 	}
 	if err := ta.update(); err != nil {
 		t.Fatalf("Updating: %v", err)

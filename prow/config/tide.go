@@ -19,12 +19,17 @@ package config
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"k8s.io/test-infra/prow/github"
 )
 
 // Tide is config for the tide pool.
 type Tide struct {
+	// SyncPeriodString compiles into SyncPeriod at load time.
+	SyncPeriodString string `json:"sync_period,omitempty"`
+	// SyncPeriod specifies how often Tide will sync jobs with Github. Defaults to 1m.
+	SyncPeriod time.Duration `json:"-"`
 	// Queries must not overlap. It must be impossible for any two queries to
 	// ever return the same PR.
 	// TODO: This will only be possible when we allow specifying orgs. At that
@@ -34,6 +39,11 @@ type Tide struct {
 	// A key/value pair of an org/repo as the key and merge method to override
 	// the default method of merge. Valid options are squash, rebase, and merge.
 	MergeType map[string]github.PullRequestMergeType `json:"merge_method,omitempty"`
+
+	// URL for tide status contexts.
+	// We can consider allowing this to be set separately for separate repos, or
+	// allowing it to be a template.
+	TargetURL string `json:"target_url,omitempty"`
 }
 
 // MergeMethod returns the merge method to use for a repo. The default of merge is
@@ -55,6 +65,8 @@ func (t *Tide) MergeMethod(org, repo string) github.PullRequestMergeType {
 
 // TideQuery is turned into a GitHub search query. See the docs for details:
 // https://help.github.com/articles/searching-issues-and-pull-requests/
+// If we choose to add orgs or branches then be sure to update the logic
+// for listing all PRs in the tide package.
 type TideQuery struct {
 	Repos []string `json:"repos,omitempty"`
 
@@ -77,6 +89,15 @@ func (tq *TideQuery) Query() string {
 	}
 	if tq.ReviewApprovedRequired {
 		toks = append(toks, "review:approved")
+	}
+	return strings.Join(toks, " ")
+}
+
+// AllPRs returns all open PRs in the repos covered by the query.
+func (tq *TideQuery) AllPRs() string {
+	toks := []string{"is:pr", "state:open"}
+	for _, r := range tq.Repos {
+		toks = append(toks, fmt.Sprintf("repo:\"%s\"", r))
 	}
 	return strings.Join(toks, " ")
 }

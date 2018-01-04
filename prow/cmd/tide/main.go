@@ -88,6 +88,7 @@ func main() {
 			}
 		}
 	}
+	ghc.Throttle(1000, 1000)
 
 	gc, err := git.NewClient()
 	if err != nil {
@@ -97,12 +98,15 @@ func main() {
 
 	c := tide.NewController(ghc, kc, configAgent, gc, logger)
 
+	start := time.Now()
 	sync(c)
 	if *runOnce {
 		return
 	}
 	go func() {
-		for range time.Tick(time.Minute) {
+		for {
+			time.Sleep(time.Until(start.Add(configAgent.Config().Tide.SyncPeriod)))
+			start = time.Now()
 			sync(c)
 		}
 	}()

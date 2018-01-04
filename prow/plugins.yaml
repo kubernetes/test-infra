@@ -8,10 +8,11 @@ triggers:
   - kubernetes-incubator
   - kubernetes-security
   - google/cadvisor
+  - google/kubeflow
   - tensorflow/k8s
   - GoogleCloudPlatform/k8s-multicluster-ingress
   trusted_org: kubernetes
-  join_org_url: "https://github.com/kubernetes/community/blob/master/community-membership.md#member"
+  join_org_url: "https://git.k8s.io/community/community-membership.md#member"
 
 approve:
 - repos:
@@ -91,6 +92,11 @@ config_updater:
 
 plugins:
   google/cadvisor:
+  - trigger
+
+  google/kubeflow:  
+  - lgtm
+  - size
   - trigger
 
   kubernetes/charts:

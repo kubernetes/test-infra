@@ -362,6 +362,6 @@ Devs - `config.proto` changes require rebuilding to golang module:
 4. Commit both `config.proto` and `config.pb.go`
 
 
-[`config.proto`]: https://github.com/kubernetes/test-infra/blob/master/testgrid/config/config.proto
-[`config.yaml`]: https://github.com/kubernetes/test-infra/blob/master/testgrid/config/config.yaml
+[`config.proto`]: ./config.proto
+[`config.yaml`]: ./config.yaml
 [`protoc`]: https://github.com/golang/protobuf

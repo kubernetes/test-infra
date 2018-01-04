@@ -74,6 +74,6 @@ In order to configure a service please do the following:
     ```
 
 
-[credentials.yaml]: https://github.com/kubernetes/test-infra/blob/master/jenkins/job-configs/kubernetes-jenkins/credentials.yaml
-[example job]: https://github.com/kubernetes/test-infra/blob/master/jenkins/job-configs/kubernetes-jenkins/kubernetes-e2e-gce.yaml#L40
+[credentials.yaml]: ./job-configs/kubernetes-jenkins/credentials.yaml
+[example job]: ./job-configs/kubernetes-jenkins/kubernetes-e2e-gce.yaml#L40
 [service accounts]: https://console.developers.google.com/iam-admin/serviceaccounts/project

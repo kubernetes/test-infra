@@ -17,6 +17,15 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+cleanup_dind() {
+    # run custom docker data root cleanup binary
+    prune-docker || true
+    # list what images and volumes remain
+    echo "Remaining docker images and volumes are:"
+    docker images --all || true
+    docker volume ls || true
+}
+
 # Check if the job has opted-in to docker-in-docker availability.
 export DOCKER_IN_DOCKER_ENABLED=${DOCKER_IN_DOCKER_ENABLED:-false}
 if [[ "${DOCKER_IN_DOCKER_ENABLED}" == "true" ]]; then
@@ -39,21 +48,7 @@ if [[ "${DOCKER_IN_DOCKER_ENABLED}" == "true" ]]; then
             break
         fi
     done
-    # begin cleaning up after any previous runs
-    echo "Starting to clean up docker graph."
-    # make sure any lingering containers are removed from the data root
-    docker ps -aq | xargs -r docker stop || true
-    docker ps -aq | xargs -r docker rm || true
-    # cleanup kube-build images from kubernetes' dockerized builds
-    docker images -q kube-build | xargs -r docker rmi -f || true
-    # then cleanup images and volumes not associated with tagged images
-    docker images --filter dangling=true -qa | xargs -r docker rmi -f || true
-    echo "NOTE: The total reclaimed space below is ONLY for volumes."
-    docker volume prune -f || true
-    # list what images and volumes remain
-    echo "Remaining docker images and volumes are:"
-    docker images --all || true
-    docker volume ls || true
+    cleanup_dind
     printf '=%.0s' {1..80}; echo
     echo "Done setting up docker in docker."
 else
@@ -62,6 +57,8 @@ else
     export PATH=/docker-no-dind-bin/:$PATH
 fi
 
+# disable error exit so we can run post-command cleanup
+set +o errexit
 # Clone test-infra and start bootstrap
 git clone https://github.com/kubernetes/test-infra
 ./test-infra/jenkins/bootstrap.py \
@@ -69,4 +66,14 @@ git clone https://github.com/kubernetes/test-infra
     --service-account=${GOOGLE_APPLICATION_CREDENTIALS} \
     --upload='gs://kubernetes-jenkins/logs' \
     "$@"
-
+EXIT_VALUE=$?
+# cleanup after job
+if [[ "${DOCKER_IN_DOCKER_ENABLED}" == "true" ]]; then
+    echo "Cleaning up after docker in docker."
+    printf '=%.0s' {1..80}; echo
+    cleanup_dind
+    printf '=%.0s' {1..80}; echo
+    echo "Done cleaning up after docker in docker."
+fi
+# preserve exit value from job / bootstrap
+exit ${EXIT_VALUE}

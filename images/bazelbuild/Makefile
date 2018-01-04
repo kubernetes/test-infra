@@ -22,7 +22,7 @@ BAZEL_VERSIONS=0.5.2 0.5.4 0.6.1 0.7.0 $(LATEST_BAZEL_VERSION)
 all: build
 
 do_build = \
-	docker build --pull --build-arg BAZEL_VERSION=$(VERSION) --build-arg IMAGE=$(IMG):$(TAG)-$(VERSION) -t $(IMG):$(TAG)-$(VERSION) .;\
+	docker build --pull --build-arg BAZEL_VERSION=$(VERSION) --build-arg IMAGE_ARG=$(IMG):$(TAG)-$(VERSION) -t $(IMG):$(TAG)-$(VERSION) .;\
 	docker tag $(IMG):$(TAG)-$(VERSION) $(IMG):latest-$(VERSION);\
 	echo Built $(IMG):$(TAG)-$(VERSION) and tagged with latest-$(VERSION);\
 	[ "$(VERSION)" == "$(LATEST_BAZEL_VERSION)" ] &&\
