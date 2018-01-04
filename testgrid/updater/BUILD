@@ -19,6 +19,7 @@ go_library(
     visibility = ["//visibility:private"],
     deps = [
         ":state",
+        "//vendor/cloud.google.com/go/storage:go_default_library",
     ],
 )
 

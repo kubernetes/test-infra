@@ -17,12 +17,27 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"fmt"
+	"log"
 
 	"k8s.io/test-infra/testgrid/updater/state"
+
+	"cloud.google.com/go/storage"
 )
 
 func main() {
+	ctx := context.Background()
+	client, err := storage.NewClient(ctx)
+	if err != nil {
+		log.Fatalf("Failed to create storage client: %v", err)
+	}
+	bkt := client.Bucket("kubernetes-jenkins")
+	attrs, err := bkt.Attrs(ctx)
+	if err != nil {
+		log.Fatalf("Failed to access bucket: %v", err)
+	}
+	fmt.Printf("bucket %s, attrs %v", bkt, attrs)
 	g := state.Grid{}
 	g.Columns = append(g.Columns, &state.Column{Build: "first", Started: 1})
 	fmt.Println(g)
