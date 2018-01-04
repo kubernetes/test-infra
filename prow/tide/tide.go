@@ -134,7 +134,7 @@ func expectedStatus(pr PullRequest, pool map[string]map[int]PullRequest) (string
 	return github.StatusSuccess, statusInPool
 }
 
-func (c *Controller) setStatuses(all, pool []PullRequest) error {
+func (c *Controller) setStatuses(all, pool []PullRequest) {
 	poolM := byRepoAndNumber(pool)
 	for _, pr := range all {
 		wantState, wantDesc := expectedStatus(pr, poolM)
@@ -157,11 +157,16 @@ func (c *Controller) setStatuses(all, pool []PullRequest) error {
 					Description: wantDesc,
 					TargetURL:   c.ca.Config().Tide.TargetURL,
 				}); err != nil {
-				return err
+				c.logger.WithError(err).Errorf(
+					"Failed to set status context for %s/%s#%d sha: %s.",
+					string(pr.Repository.Owner.Login),
+					string(pr.Repository.Name),
+					int(pr.Number),
+					string(pr.HeadRef.Target.OID),
+				)
 			}
 		}
 	}
-	return nil
 }
 
 // Sync runs one sync iteration.
@@ -182,9 +187,8 @@ func (c *Controller) Sync() error {
 		}
 		all = append(all, allPRs...)
 	}
-	if err := c.setStatuses(all, pool); err != nil {
-		return err
-	}
+	c.setStatuses(all, pool)
+
 	var pjs []kube.ProwJob
 	var err error
 	if len(pool) > 0 {
