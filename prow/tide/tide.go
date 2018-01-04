@@ -127,11 +127,11 @@ func byRepoAndNumber(prs []PullRequest) map[string]map[int]PullRequest {
 
 // Returns expected status state and description.
 // TODO(spxtr): Useful information such as "missing label: foo."
-func expectedStatus(pr PullRequest, pool map[string]map[int]PullRequest) (githubql.StatusState, string) {
+func expectedStatus(pr PullRequest, pool map[string]map[int]PullRequest) (string, string) {
 	if _, ok := pool[string(pr.Repository.NameWithOwner)][int(pr.Number)]; !ok {
-		return githubql.StatusStatePending, statusNotInPool
+		return github.StatusPending, statusNotInPool
 	}
-	return githubql.StatusStateSuccess, statusInPool
+	return github.StatusSuccess, statusInPool
 }
 
 func (c *Controller) setStatuses(all, pool []PullRequest) error {
@@ -146,14 +146,14 @@ func (c *Controller) setStatuses(all, pool []PullRequest) error {
 				actualDesc = string(ctx.Description)
 			}
 		}
-		if wantState != actualState || wantDesc != actualDesc {
+		if wantState != strings.ToLower(string(actualState)) || wantDesc != actualDesc {
 			if err := c.ghc.CreateStatus(
 				string(pr.Repository.Owner.Login),
 				string(pr.Repository.Name),
 				string(pr.HeadRef.Target.OID),
 				github.Status{
 					Context:     statusContext,
-					State:       string(wantState),
+					State:       wantState,
 					Description: wantDesc,
 					TargetURL:   c.ca.Config().Tide.TargetURL,
 				}); err != nil {
