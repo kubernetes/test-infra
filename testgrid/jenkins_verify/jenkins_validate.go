@@ -77,7 +77,7 @@ func main() {
 
 	// Also check k/k presubmit, prow postsubmit and periodic jobs
 	for _, job := range prowConfig.AllPresubmits([]string{
-		"jlewi/mlkube.io",
+		"google/kubeflow",
 		"kubernetes/kubernetes",
 		"kubernetes/test-infra",
 		"kubernetes/cluster-registry",

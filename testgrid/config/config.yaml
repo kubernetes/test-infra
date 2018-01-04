@@ -1637,6 +1637,13 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-master-gci-new-downgrade-cluster-parallel
 - name: ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster-new
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster-new
+- name: kubeflow-periodic
+  gcs_prefix: kubernetes-jenkins/logs/kubeflow-periodic
+- name: kubeflow-presubmit
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/kubeflow-presubmit
+  num_columns_recent: 30
+- name: kubeflow-postsubmit
+  gcs_prefix: kubernetes-jenkins/logs/google_kubeflow/kubeflow-postsubmit
 - name: tf-k8s-periodic
   gcs_prefix: kubernetes-jenkins/logs/tf-k8s-periodic
 - name: tf-k8s-presubmit
@@ -3550,6 +3557,15 @@ dashboards:
 
 - name: sig-big-data
   dashboard_tab:
+  - name: kubeflow-periodic
+    description: Periodic testing of Kubeflow.
+    test_group_name: kubeflow-periodic
+  - name: kubeflow-postsubmit
+    description: Postsubmit tests for Kubeflow.
+    test_group_name: kubeflow-postsubmit
+  - name: kubeflow-presubmit
+    description: Presubmit tests for Kubeflow.
+    test_group_name: kubeflow-presubmit
   - name: tf-k8s-periodic
     description: Periodic builds and testing of TfJob CRD at head running on stable GKE.
     test_group_name: tf-k8s-periodic
