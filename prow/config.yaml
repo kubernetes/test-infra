@@ -24431,6 +24431,46 @@ periodics:
       secret:
         secretName: fejta-bot-token
 
+- interval: 1h
+  agent: kubernetes
+  name: spark-k8s-periodic
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20171218-a18c352b4-1.8
+      args:
+      - "--clean"
+      - "--job=$(JOB_NAME)"
+      - "--repo=github.com/apache-spark-on-k8s/spark-integration=cloud-testing-scripts"
+      - "--upload=gs://kubernetes-jenkins/logs/"
+      - "--timeout=150"
+      env:
+      - name: DOCKER_IN_DOCKER_ENABLED
+        value: true
+      - name: GOOGLE_APPLICATION_CREDENTIALS
+        value: /etc/service-account/service-account.json
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+      volumeMounts:
+      - name: service
+        mountPath: /etc/service-account
+        readOnly: true
+      - name: docker-graph
+        mountPath: /docker-graph
+      ports:
+      - containerPort: 9999
+        hostPort: 9999
+      resources:
+        requests:
+          cpu: 4
+    volumes:
+    - name: service
+      secret:
+        secretName: service-account
+    - name: docker-graph
+      hostPath:
+        path: /mnt/disks/ssd0/docker-graph
+
 - interval: 8h
   agent: kubernetes
   name: tf-k8s-periodic
@@ -24450,3 +24490,4 @@ periodics:
     - name: service
       secret:
         secretName: service-account
+
