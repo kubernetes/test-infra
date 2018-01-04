@@ -12,8 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM gcr.io/k8s-testimages/kubekins-e2e:v20171222-40e8b22e3-master
+FROM gcr.io/k8s-testimages/kubekins-e2e:v20180102-0e2b24a0b-master
 LABEL maintainer "beacham@google.com"
+
+# add env we can debug with the image name:tag
+ARG IMAGE_ARG
+ENV IMAGE=${IMAGE_ARG}
 
 RUN apt-get update && apt-get install -y \
     build-essential \

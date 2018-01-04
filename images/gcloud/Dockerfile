@@ -17,8 +17,8 @@ FROM golang:1.9
 LABEL maintainer="senlu@google.com"
 
 # add env we can debug with the image name:tag
-ARG IMAGE
-ENV IMAGE=${IMAGE}
+ARG IMAGE_ARG
+ENV IMAGE=${IMAGE_ARG}
 
 RUN apt-get update && apt-get install -y \
     python \

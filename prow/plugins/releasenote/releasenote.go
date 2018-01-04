@@ -45,7 +45,7 @@ const (
 
 	releaseNoteFormat       = `Adding %s because the release note process has not been followed.`
 	releaseNoteSuffixFormat = `One of the following labels is required %q, %q, or %q.
-Please see: https://github.com/kubernetes/community/blob/master/contributors/devel/pull-requests.md#write-release-notes-if-needed.`
+Please see: https://git.k8s.io/community/contributors/devel/pull-requests.md#write-release-notes-if-needed.`
 	parentReleaseNoteFormat = `All 'parent' PRs of a cherry-pick PR must have one of the %q or %q labels, or this PR must follow the standard/parent release note labeling requirement.`
 
 	actionRequiredNote = "action required"

@@ -113,7 +113,7 @@ func welcomeMsg(ghc githubClient, pr github.PullRequest, trustedOrg, joinOrgURL 
 
 I'm waiting for a [%s](https://github.com/orgs/%s/people) %smember to verify that this patch is reasonable to test. If it is, they should reply with ` + "`/ok-to-test`" + ` on its own line. Until that is done, I will not automatically test new commits in this PR, but the usual testing commands by org members will still work. Regular contributors should [join the org](%s) to skip this step.
 
-I understand the commands that are listed [here](https://github.com/kubernetes/test-infra/blob/master/commands.md).
+I understand the commands that are listed [here](https://go.k8s.io/bot-commands).
 
 <details>
 

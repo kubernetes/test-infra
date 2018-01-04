@@ -23,8 +23,8 @@ ENV WORKSPACE=/workspace \
     TERM=xterm
 
 # add env we can debug with the image name:tag
-ARG IMAGE
-ENV IMAGE=${IMAGE}
+ARG IMAGE_ARG
+ENV IMAGE=${IMAGE_ARG}
 
 # common util tools
 # https://github.com/GoogleCloudPlatform/gsutil/issues/446 for python-openssl
@@ -112,6 +112,9 @@ RUN echo 'DOCKER_OPTS="${DOCKER_OPTS} --data-root=/docker-graph"' | \
 # NOTE this should be mounted and persisted as a volume ideally (!)
 # We will make a fallback one now just in case
 RUN mkdir /docker-graph
+
+# add custom docker cleanup binary
+ADD ["prune-docker", "/usr/local/bin"]
 
 #
 # END: DOCKER IN DOCKER SETUP

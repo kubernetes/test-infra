@@ -33,6 +33,7 @@ filegroup(
         "//ghclient:all-srcs",
         "//hack:all-srcs",
         "//images/bazelbuild:all-srcs",
+        "//images/bootstrap/prunedocker:all-srcs",
         "//jenkins:all-srcs",
         "//jobs:all-srcs",
         "//kettle:all-srcs",

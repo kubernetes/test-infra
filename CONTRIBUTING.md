@@ -7,7 +7,7 @@ Also feel free to suggest a reviewer with `/assign @theirname`.
 
 Once your reviewer is happy, they will say `/lgtm` which will apply the 
 `lgtm` label, and will apply the `approved` label if they are an 
-[owner](https://github.com/kubernetes/test-infra/blob/master/OWNERS).
+[owner](/OWNERS).
 The `approved` label will also automatically be applied to PRs opened by an 
 OWNER. If neither you nor your reviewer is an owner, please `/assign` someone
  who is.

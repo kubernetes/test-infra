@@ -23,8 +23,8 @@ import (
 	"k8s.io/test-infra/prow/github"
 )
 
-const AboutThisBotWithoutCommands = "Instructions for interacting with me using PR comments are available [here](https://github.com/kubernetes/community/blob/master/contributors/devel/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository."
-const AboutThisBotCommands = "I understand the commands that are listed [here](https://github.com/kubernetes/test-infra/blob/master/commands.md)."
+const AboutThisBotWithoutCommands = "Instructions for interacting with me using PR comments are available [here](https://git.k8s.io/community/contributors/devel/pull-requests.md).  If you have questions or suggestions related to my behavior, please file an issue against the [kubernetes/test-infra](https://github.com/kubernetes/test-infra/issues/new?title=Prow%20issue:) repository."
+const AboutThisBotCommands = "I understand the commands that are listed [here](https://go.k8s.io/bot-commands)."
 const AboutThisBot = AboutThisBotWithoutCommands + " " + AboutThisBotCommands
 
 // FormatResponse nicely formats a response to a generic reason.
@@ -39,6 +39,19 @@ func FormatResponse(to, message, reason string) string {
 </details>`
 
 	return fmt.Sprintf(format, to, message, reason, AboutThisBotWithoutCommands)
+}
+
+// FormatSimpleReponse formats a response that does not warrant additional explanation in the
+// details section.
+func FormatSimpleResponse(to, message string) string {
+	format := `@%s: %s
+
+<details>
+
+%s
+</details>`
+
+	return fmt.Sprintf(format, to, message, AboutThisBotWithoutCommands)
 }
 
 // FormatICResponse nicely formats a response to an issue comment.

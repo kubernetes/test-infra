@@ -334,7 +334,7 @@ func checkBazelPortPeriodic(periodics []Periodic) error {
 
 // Set the HostPort to 9999 for all bazel pods so that they are forced
 // onto different nodes. Once pod affinity is GA, use that instead.
-// Until https://github.com/kubernetes/community/blob/master/contributors/design-proposals/local-storage-overview.md
+// Until https://git.k8s.io/community/contributors/design-proposals/storage/local-storage-overview.md
 func TestBazelJobHasContainerPort(t *testing.T) {
 	for _, pres := range c.Presubmits {
 		if err := checkBazelPortPresubmit(pres); err != nil {

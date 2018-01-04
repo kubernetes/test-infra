@@ -148,7 +148,7 @@ how to contribute test results, see [Contributing Test Results](docs/contributin
 * [kubernetes/test-infra dependency management](docs/dep.md)
 
 
-[`jobs/config.json`]: https://github.com/kubernetes/test-infra/blob/master/jobs/config.json
-[`prow/config.yaml`]: https://github.com/kubernetes/test-infra/blob/master/prow/config.yaml
-[`testgrid/config/config.yaml`]: https://github.com/kubernetes/test-infra/blob/master/testgrid/config/config.yaml
+[`jobs/config.json`]: /jobs/config.json
+[`prow/config.yaml`]: /prow/config.yaml
+[`testgrid/config/config.yaml`]: /testgrid/config/config.yaml
 [test-infra oncall]: https://go.k8s.io/oncall

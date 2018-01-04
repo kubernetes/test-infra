@@ -177,19 +177,19 @@ func TestSetDefaults(t *testing.T) {
 			name: "both org and url are set",
 
 			trustedOrg: "kubernetes",
-			joinOrgURL: "https://github.com/kubernetes/community/blob/master/community-membership.md#member",
+			joinOrgURL: "https://git.k8s.io/community/community-membership.md#member",
 
 			expectedTrustedOrg: "kubernetes",
-			expectedJoinOrgURL: "https://github.com/kubernetes/community/blob/master/community-membership.md#member",
+			expectedJoinOrgURL: "https://git.k8s.io/community/community-membership.md#member",
 		},
 		{
 			name: "only url is set",
 
 			trustedOrg: "",
-			joinOrgURL: "https://github.com/kubernetes/community/blob/master/community-membership.md#member",
+			joinOrgURL: "https://git.k8s.io/community/community-membership.md#member",
 
 			expectedTrustedOrg: "",
-			expectedJoinOrgURL: "https://github.com/kubernetes/community/blob/master/community-membership.md#member",
+			expectedJoinOrgURL: "https://git.k8s.io/community/community-membership.md#member",
 		},
 		{
 			name: "nothing is set",
