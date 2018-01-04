@@ -24431,7 +24431,7 @@ periodics:
       secret:
         secretName: fejta-bot-token
 
-- interval: 1h
+- interval: 5m
   agent: kubernetes
   name: spark-k8s-periodic
   spec:
