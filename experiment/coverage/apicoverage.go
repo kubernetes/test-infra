@@ -25,6 +25,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"regexp"
 	"strings"
@@ -109,12 +110,14 @@ func parseAPILog(fp io.Reader) apiArray {
 			continue
 		}
 		method := strings.ToUpper(string(result[1]))
-		url := string(result[2])
-		urlParts := strings.Split(url, "?")
-
+		rawurl := string(result[2])
+		parsedURL, err := url.Parse(rawurl)
+		if err != nil {
+			log.Fatal(err)
+		}
 		api := apiData{
 			Method: method,
-			URL:    urlParts[0],
+			URL:    "/" + parsedURL.Path,
 		}
 		apisLog = append(apisLog, api)
 	}
