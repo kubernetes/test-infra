@@ -29,6 +29,7 @@ tide:
     - kubernetes/cluster-registry
     - kubernetes/community
     - kubernetes/contrib
+    - kubernetes/features
     - kubernetes/federation
     - kubernetes/kops
     - kubernetes/kubernetes-template-project
