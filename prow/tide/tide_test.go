@@ -442,9 +442,18 @@ func TestSetStatuses(t *testing.T) {
 		fc := &fgc{}
 		ca := &config.Agent{}
 		ca.Set(&config.Config{})
-		c := &Controller{ghc: fc, ca: ca}
-		if err := c.setStatuses([]PullRequest{pr}, pool); err != nil {
-			t.Errorf("For case %s: error setting status: %v", tc.name, err)
+		log := logrus.WithField("component", "tide")
+		initialLog, err := log.String()
+		if err != nil {
+			t.Fatalf("Failed to get log output before testing: %v", err)
+		}
+		c := &Controller{ghc: fc, ca: ca, logger: log}
+
+		c.setStatuses([]PullRequest{pr}, pool)
+		if str, err := log.String(); err != nil {
+			t.Fatalf("For case %s: failed to get log output: %v", tc.name, err)
+		} else if str != initialLog {
+			t.Errorf("For case %s: error setting status: %s", tc.name, str)
 		}
 		if tc.shouldSet && !fc.setStatus {
 			t.Errorf("For case %s: should set but didn't", tc.name)
