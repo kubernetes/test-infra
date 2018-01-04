@@ -36,6 +36,7 @@ const (
 	maxRetries = 5
 	retryDelay = 100 * time.Millisecond
 	buildID    = "buildId"
+	newBuildID = "BUILD_ID"
 )
 
 const (
@@ -105,7 +106,7 @@ func (jb *JenkinsBuild) IsEnqueued() bool {
 func (jb *JenkinsBuild) BuildID() string {
 	for _, action := range jb.Actions {
 		for _, p := range action.Parameters {
-			if p.Name == buildID {
+			if p.Name == buildID || p.Name == newBuildID {
 				// This is not safe as far as Go is concerned. Consider
 				// stop using Jenkins if this ever breaks.
 				return p.Value.(string)
