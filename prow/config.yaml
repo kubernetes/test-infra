@@ -24433,12 +24433,12 @@ periodics:
       secret:
         secretName: fejta-bot-token
 
-- interval: 5m
+- interval: 2h
   agent: kubernetes
   name: spark-k8s-periodic
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20171218-a18c352b4-1.8
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180102-0e2b24a0b-1.8
       args:
       - "--clean"
       - "--job=$(JOB_NAME)"
