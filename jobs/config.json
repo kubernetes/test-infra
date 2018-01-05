@@ -10848,6 +10848,7 @@
       "--extract=local",
       "--gcp-zone=us-central1-f",
       "--provider=gce",
+      "--stage=gs://kubernetes-release-pull/ci/pull-ingress-gce-e2e",
       "--test_args=--ginkgo.focus=\\[Feature:Ingress\\]",
       "--timeout=60m"
     ],
