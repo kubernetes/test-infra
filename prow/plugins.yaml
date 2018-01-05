@@ -19,6 +19,7 @@ approve:
   - kubernetes/charts
   - kubernetes/cluster-registry
   - kubernetes/community
+  - kubernetes/features
   - kubernetes/kubectl
   - kubernetes/sig-release
   - kubernetes/steering
@@ -121,6 +122,9 @@ plugins:
 
   kubernetes/dns:
   - trigger
+
+  kubernetes/features:
+  - approve
 
   kubernetes/ingress-gce:
   - trigger

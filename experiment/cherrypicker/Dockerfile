@@ -13,7 +13,7 @@
 # limitations under the License.
 
 FROM gcr.io/k8s-prow/git:0.1
-MAINTAINER mkargaki@redhat.com
+LABEL maintainer="mkargaki@redhat.com"
 
 COPY cherrypicker /cherrypicker
 ENTRYPOINT ["/cherrypicker"]
