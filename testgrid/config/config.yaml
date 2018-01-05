@@ -2022,6 +2022,13 @@ test_groups:
 - name: istio-e2e-cluster_wide-auth
   gcs_prefix: istio-prow/e2e-cluster_wide-auth
   num_failures_to_alert: 1
+# gke 1.9.1 vs old etcd
+- name: ci-kubernetes-e2e-gke-cos-oldetcd-default
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos-oldetcd-default
+- name: ci-kubernetes-e2e-gke-cos-oldetcd-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos-oldetcd-serial
+- name: ci-kubernetes-e2e-gke-cos-oldetcd-slow
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos-oldetcd-slow
 
 # Add New Testgroups Here
 
@@ -2482,6 +2489,15 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-staging-default-latest-upgrade-cluster-new
   - name: gke-staging-latest-device-plugin-gpu
     test_group_name: ci-kubernetes-e2e-gke-staging-latest-device-plugin-gpu
+
+- name: google-gke-1.9-oldetcd
+  dashboard_tab:
+  - name: gke-oldetcd
+    test_group_name: ci-kubernetes-e2e-gke-cos-oldetcd-default
+  - name: gke-oldetcd-serial
+    test_group_name: ci-kubernetes-e2e-gke-cos-oldetcd-serial
+  - name: gke-oldetcd-slow
+    test_group_name: ci-kubernetes-e2e-gke-cos-oldetcd-slow
 
 - name: google-gke-prod
   dashboard_tab:
@@ -5167,6 +5183,7 @@ dashboard_groups:
   - google-gke
   - google-gke-staging
   - google-gke-prod
+  - google-gke-1.9-oldetcd
   - google-soak
   - google-unit
 
