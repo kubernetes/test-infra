@@ -26,6 +26,7 @@ filegroup(
     name = "all-srcs",
     srcs = [
         ":package-srcs",
+        "//experiment/audit-owners:all-srcs",
         "//experiment/bootstrap:all-srcs",
         "//experiment/cherrypicker:all-srcs",
         "//experiment/coverage:all-srcs",
