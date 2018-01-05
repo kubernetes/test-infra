@@ -107,9 +107,12 @@ func (jb *JenkinsBuild) BuildID() string {
 	for _, action := range jb.Actions {
 		for _, p := range action.Parameters {
 			if p.Name == buildID || p.Name == newBuildID {
-				// This is not safe as far as Go is concerned. Consider
-				// stop using Jenkins if this ever breaks.
-				return p.Value.(string)
+				value, ok := p.Value.(string)
+				if !ok {
+					logrus.Errorf("Cannot determine %s value for %#v", p.Name, jb)
+					continue
+				}
+				return value
 			}
 		}
 	}
