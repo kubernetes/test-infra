@@ -24435,7 +24435,7 @@ periodics:
 
 - interval: 2h
   agent: kubernetes
-  name: spark-k8s-periodic
+  name: spark-periodic-default-gke
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180102-0e2b24a0b-1.8
@@ -24471,7 +24471,60 @@ periodics:
         hostPort: 9999
       resources:
         requests:
-          cpu: 4
+          cpu: 6
+          memory: "8Gi"
+    volumes:
+    - name: service
+      secret:
+        secretName: service-account
+    - name: ssh
+      secret:
+        defaultMode: 256
+        secretName: ssh-key-secret
+    - name: docker-graph
+      hostPath:
+        path: /mnt/disks/ssd0/docker-graph
+
+- interval: 2h
+  agent: kubernetes
+  name: spark-periodic-latest-gke
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180102-0e2b24a0b-1.8
+      args:
+      - "--clean"
+      - "--job=$(JOB_NAME)"
+      - "--repo=github.com/apache-spark-on-k8s/spark-integration=cloud-testing-scripts"
+      - "--upload=gs://kubernetes-jenkins/logs/"
+      - "--timeout=150m"
+      env:
+      - name: DOCKER_IN_DOCKER_ENABLED
+        value: true
+      - name: GOOGLE_APPLICATION_CREDENTIALS
+        value: /etc/service-account/service-account.json
+      - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-private
+      - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-public
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+      volumeMounts:
+      - name: service
+        mountPath: /etc/service-account
+        readOnly: true
+      - name: ssh
+        mountPath: /etc/ssh-key-secret
+        readOnly: true
+      - name: docker-graph
+        mountPath: /docker-graph
+      ports:
+      - containerPort: 9999
+        hostPort: 9999
+      resources:
+        requests:
+          cpu: 6
+          memory: "8Gi"
     volumes:
     - name: service
       secret:
