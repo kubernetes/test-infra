@@ -63,7 +63,7 @@ View
 % endfor
 
 <div id="help">
-<p><b>Needs Attention</b> is a heuristic grouping based on a <a href="https://git.k8s.io/test-infra/gubernator/github/classifier.py#L397">simple state machine</a>. Use the "ACK" button to remove a PR from "Needs Attention" until something new occurs.
+  <p><b>Needs Attention</b> is a heuristic grouping based on a <a href="https://git.k8s.io/test-infra/gubernator/github/classifier.py#L397">simple state machine</a>. {% if user != login or not login %}<a href="/pr">Login</a> to use {% else %}Use {% endif %}<a href="/pr">Login</a> the "ACK" button to remove a PR from "Needs Attention" until something new occurs.
 <p>Have a problem? <a href="https://github.com/kubernetes/test-infra/issues/new?title=PR%20Dashboard:&labels=area/gubernator&assignee=rmmh">File a bug!</a>
 </div>
 % endblock
