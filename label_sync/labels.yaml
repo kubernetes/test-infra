@@ -129,11 +129,14 @@ labels:
   - color: d2b48c
     name: sig/docs
   - color: d2b48c
-    name: sig/federation
-  - color: d2b48c
     name: sig/gcp
   - color: d2b48c
     name: sig/instrumentation
+  - color: d2b48c
+    name: sig/multicluster
+    previously:
+      - name: sig/federation
+      - name: 'sig/federation (deprecated - do not use)'
   - color: d2b48c
     name: sig/network
   - color: d2b48c
