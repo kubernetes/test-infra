@@ -56,6 +56,19 @@ type Matcher struct {
 	Target string        `json:"target"`
 }
 
+// Load loads and parses the config at path.
+func Load(path string) (*UpdateConfig, error) {
+	b, err := ioutil.ReadFile(path)
+	if err != nil {
+		return nil, fmt.Errorf("error reading %s: %v", path, err)
+	}
+	nc := &UpdateConfig{}
+	if err := yaml.Unmarshal(b, nc); err != nil {
+		return nil, fmt.Errorf("error unmarshaling %s: %v", path, err)
+	}
+	return nc, nil
+}
+
 type result struct {
 	command []string
 	output  string
@@ -71,11 +84,11 @@ type Server struct {
 	ghc githubClient
 	log *logrus.Entry
 
-	updateConfig UpdateConfig
+	configAgent *Agent
 }
 
 // NewServer returns new server
-func NewServer(hmac []byte, gc *git.Client, ghc *github.Client, config UpdateConfig) *Server {
+func NewServer(hmac []byte, gc *git.Client, ghc *github.Client, configAgent *Agent) *Server {
 	return &Server{
 		hmacSecret: hmac,
 
@@ -83,7 +96,7 @@ func NewServer(hmac []byte, gc *git.Client, ghc *github.Client, config UpdateCon
 		ghc: ghc,
 		log: logrus.StandardLogger().WithField("plugin", pluginName),
 
-		updateConfig: config,
+		configAgent: configAgent,
 	}
 }
 
@@ -159,7 +172,8 @@ func (s *Server) handleEvent(eventType, eventGUID string, payload []byte) error 
 	results := results{}
 	tasks := [][]string{}
 
-	for _, target := range s.updateConfig.Targets {
+	updateConfig := s.configAgent.Config()
+	for _, target := range updateConfig.Targets {
 		for _, change := range changes {
 			if change.Filename == target {
 				args, err := determineTargetForConfig(r.Dir, change.Filename)
@@ -171,7 +185,7 @@ func (s *Server) handleEvent(eventType, eventGUID string, payload []byte) error 
 			}
 		}
 	}
-	for _, matcher := range s.updateConfig.Matchers {
+	for _, matcher := range updateConfig.Matchers {
 		for _, change := range changes {
 			if matcher.Regex.MatchString(change.Filename) {
 				tasks = append(tasks, []string{"/usr/bin/make", matcher.Target})
