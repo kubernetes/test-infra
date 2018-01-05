@@ -88,12 +88,7 @@ func main() {
 		logrus.WithError(err).Fatal("Error getting git client.")
 	}
 
-	botName, err := githubClient.BotName()
-	if err != nil {
-		logrus.WithError(err).Fatal("Error getting bot name.")
-	}
-
-	server := NewServer(botName, oauthSecret, webhookSecret, gitClient, githubClient, updateConf)
+	server := NewServer(webhookSecret, gitClient, githubClient, updateConf)
 
 	http.Handle("/", server)
 	logrus.Fatal(http.ListenAndServe(":"+strconv.Itoa(*port), nil))

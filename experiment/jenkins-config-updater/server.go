@@ -26,30 +26,24 @@ import (
 	"net/http"
 	"os/exec"
 	"path/filepath"
+	"regexp"
+	"strings"
 	"time"
 
 	"github.com/sirupsen/logrus"
 	yaml "gopkg.in/yaml.v2"
 
-	"regexp"
-
 	"k8s.io/test-infra/prow/git"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/hook"
 	"k8s.io/test-infra/prow/plugins"
-	"strings"
 )
 
 const pluginName = "jenkins-config-updater"
 
 type githubClient interface {
-	GetPullRequest(org, repo string, number int) (*github.PullRequest, error)
 	GetPullRequestChanges(org, repo string, number int) ([]github.PullRequestChange, error)
 	CreateComment(org, repo string, number int, comment string) error
-	IsMember(org, user string) (bool, error)
-	CreatePullRequest(org, repo, title, body, head, base string, canModify bool) (int, error)
-	ListPullRequestComments(org, repo string, number int) ([]github.ReviewComment, error)
-	CreateFork(org, repo string) error
 }
 
 type UpdateConfig struct {
@@ -71,9 +65,7 @@ type result struct {
 // Server implements http.Handler. It validates incoming GitHub webhooks and
 // then dispatches them to the appropriate plugins.
 type Server struct {
-	hmacSecret  []byte
-	credentials string
-	botName     string
+	hmacSecret []byte
 
 	gc  *git.Client
 	ghc githubClient
@@ -83,15 +75,13 @@ type Server struct {
 }
 
 // NewServer returns new server
-func NewServer(name, creds string, hmac []byte, gc *git.Client, ghc *github.Client, config UpdateConfig) *Server {
+func NewServer(hmac []byte, gc *git.Client, ghc *github.Client, config UpdateConfig) *Server {
 	return &Server{
-		hmacSecret:  hmac,
-		credentials: creds,
-		botName:     name,
+		hmacSecret: hmac,
 
 		gc:  gc,
 		ghc: ghc,
-		log: logrus.StandardLogger().WithField("client", "jenkins-config-updater"),
+		log: logrus.StandardLogger().WithField("plugin", pluginName),
 
 		updateConfig: config,
 	}
@@ -114,7 +104,8 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func (s *Server) handleEvent(eventType, eventGUID string, payload []byte) error {
 	s.log.WithField("eventType", eventType).WithField("eventGUID", eventGUID).Info("Received webhook")
 	if eventType != "pull_request" {
-		return fmt.Errorf("received an event of type %q but didn't ask for it", eventType)
+		s.log.Debugf("received an event of type %q but didn't ask for it", eventType)
+		return nil
 	}
 
 	var pre github.PullRequestEvent
@@ -144,16 +135,14 @@ func (s *Server) handleEvent(eventType, eventGUID string, payload []byte) error 
 
 	changes, err := s.ghc.GetPullRequestChanges(org, repo, num)
 	if err != nil {
-		s.log.Info("error getting pull request changes")
-		return nil
+		return fmt.Errorf("error getting pull request changes: %v", err)
 	}
 
 	startClone := time.Now()
 	s.log.Info("cloning " + org + "/" + repo)
 	r, err := s.gc.Clone(org + "/" + repo)
 	if err != nil {
-		s.log.Info("error cloning")
-		return err
+		return fmt.Errorf("error cloning: %v", err)
 	}
 	defer func() {
 		if err := r.Clean(); err != nil {
