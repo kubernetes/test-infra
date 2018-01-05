@@ -24442,7 +24442,7 @@ periodics:
       args:
       - "--clean"
       - "--job=$(JOB_NAME)"
-      - "--repo=github.com/apache-spark-on-k8s/spark-integration=cloud-testing-scripts"
+      - "--repo=github.com/apache-spark-on-k8s/spark-integration=master"
       - "--upload=gs://kubernetes-jenkins/logs/"
       - "--timeout=150"
       env:
@@ -24494,9 +24494,9 @@ periodics:
       args:
       - "--clean"
       - "--job=$(JOB_NAME)"
-      - "--repo=github.com/apache-spark-on-k8s/spark-integration=cloud-testing-scripts"
+      - "--repo=github.com/apache-spark-on-k8s/spark-integration=master"
       - "--upload=gs://kubernetes-jenkins/logs/"
-      - "--timeout=150m"
+      - "--timeout=150"
       env:
       - name: DOCKER_IN_DOCKER_ENABLED
         value: true
