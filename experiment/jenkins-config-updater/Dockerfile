@@ -13,7 +13,7 @@
 # limitations under the License.
 
 FROM gcr.io/k8s-prow/git:0.1
-MAINTAINER dthau@redhat.com
+LABEL maintainer="dthau@redhat.com"
 
 ENV GIT_COMMITTER_NAME=developer \
     GIT_COMMITTER_EMAIL=developer@redhat.com

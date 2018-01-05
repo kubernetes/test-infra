@@ -29,7 +29,6 @@ import (
 	"syscall"
 
 	"github.com/sirupsen/logrus"
-	yaml "gopkg.in/yaml.v2"
 
 	"k8s.io/test-infra/prow/git"
 	"k8s.io/test-infra/prow/github"
@@ -52,13 +51,9 @@ func main() {
 	// deadline.
 	signal.Ignore(syscall.SIGTERM)
 
-	updateConfigRaw, err := ioutil.ReadFile(*updateConfigFile)
-	if err != nil {
-		logrus.WithError(err).Fatal("Could not read update config file.")
-	}
-	var updateConf UpdateConfig
-	if err := yaml.Unmarshal(updateConfigRaw, &updateConf); err != nil {
-		logrus.WithError(err).Fatal("Could not parse update config file.")
+	configAgent := &Agent{}
+	if err := configAgent.Start(*updateConfigFile); err != nil {
+		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 
 	webhookSecretRaw, err := ioutil.ReadFile(*webhookSecretFile)
@@ -88,12 +83,7 @@ func main() {
 		logrus.WithError(err).Fatal("Error getting git client.")
 	}
 
-	botName, err := githubClient.BotName()
-	if err != nil {
-		logrus.WithError(err).Fatal("Error getting bot name.")
-	}
-
-	server := NewServer(botName, oauthSecret, webhookSecret, gitClient, githubClient, updateConf)
+	server := NewServer(webhookSecret, gitClient, githubClient, configAgent)
 
 	http.Handle("/", server)
 	logrus.Fatal(http.ListenAndServe(":"+strconv.Itoa(*port), nil))
