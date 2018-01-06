@@ -369,14 +369,14 @@ func complete(o *options) error {
 		}
 	}
 
+	if err := acquireIngressGCE(o); err != nil {
+		return fmt.Errorf("failed to acquire ingress-gce binaries: %v", err)
+	}
 	if err := acquireKubernetes(o); err != nil {
 		return fmt.Errorf("failed to acquire k8s binaries: %v", err)
 	}
 	if err := acquireFederation(o); err != nil {
 		return fmt.Errorf("failed to acquire federation binaries: %v", err)
-	}
-	if err := acquireIngressGCE(o); err != nil {
-		return fmt.Errorf("failed to acquire ingress-gce binaries: %v", err)
 	}
 	if o.extract.Enabled() {
 		if err := os.Chdir("kubernetes"); err != nil {

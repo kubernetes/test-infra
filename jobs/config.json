@@ -10842,15 +10842,15 @@
   },
   "pull-ingress-gce-e2e": {
     "args": [
-      "--build",
       "--build-ingressgce",
       "--cluster=",
-      "--extract=local",
+      "--extract=ci",
+      "--gcp-project=e2e-ingress-gce",
       "--gcp-zone=us-central1-f",
+      "--ginkgoParallel=",
       "--provider=gce",
-      "--stage=gs://kubernetes-release-pull/ci/pull-ingress-gce-e2e",
       "--test_args=--ginkgo.focus=\\[Feature:Ingress\\]",
-      "--timeout=60m"
+      "--timeout=90m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
