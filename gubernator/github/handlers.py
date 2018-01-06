@@ -29,13 +29,20 @@ from google.appengine.ext import deferred
 
 import classifier
 import models
+from .. import secrets
 
 
-try:
-    WEBHOOK_SECRET = open('webhook_secret').read().strip()
-except IOError:
-    logging.warning('unable to load webhook secret')
-    WEBHOOK_SECRET = 'default'
+WEBHOOK_SECRET = None
+
+def get_webhook_secret():
+    global WEBHOOK_SECRET  # pylint: disable=global-statement
+    if not WEBHOOK_SECRET:
+        try:
+            WEBHOOK_SECRET = secrets.get('github_webhook_secret', per_host=False)
+        except KeyError:
+            logging.exception('unable to load webhook secret')
+            return ''
+    return WEBHOOK_SECRET
 
 
 def make_signature(body):
