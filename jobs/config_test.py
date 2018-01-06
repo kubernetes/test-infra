@@ -794,6 +794,10 @@ class JobTest(unittest.TestCase):
             'ci-kubernetes-node-kubelet-stable3': 'ci-kubernetes-node-kubelet-*',
             'ci-kubernetes-node-kubelet-beta': 'ci-kubernetes-node-kubelet-*',
             'ci-kubernetes-node-kubelet-non-cri-1-6': 'ci-kubernetes-node-kubelet-*',
+            # The cri-containerd validation node e2e jobs intentionally share projects.
+            'ci-cri-containerd-node-e2e': 'cri-containerd-node-e2e-*',
+            'ci-cri-containerd-node-e2e-serial': 'cri-containerd-node-e2e-*',
+            'ci-cri-containerd-node-e2e-flaky': 'cri-containerd-node-e2e-*',
         }
         for soak_prefix in [
                 'ci-kubernetes-soak-gce-1.5',

@@ -94,6 +94,20 @@ test_groups:
     - target_config: Tests name
     - target_config: Context
     name_format: '%s [%s]'
+- name: ci-cri-containerd-node-e2e-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-node-e2e-serial
+  test_name_config:
+    name_elements:
+    - target_config: Tests name
+    - target_config: Context
+    name_format: '%s [%s]'
+- name: ci-cri-containerd-node-e2e-flaky
+  gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-node-e2e-flaky
+  test_name_config:
+    name_elements:
+    - target_config: Tests name
+    - target_config: Context
+    name_format: '%s [%s]'
 - name: ci-kubernetes-build-1.9
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-build-1.9
 - name: ci-kubernetes-build
@@ -3789,6 +3803,10 @@ dashboards:
     test_group_name: ci-cri-containerd-e2e-gci-gce
   - name: e2e-ubuntu
     test_group_name: ci-cri-containerd-e2e-ubuntu-gce
+  - name: node-e2e-serial
+    test_group_name: ci-cri-containerd-node-e2e-serial
+  - name: node-e2e-flaky
+    test_group_name: ci-cri-containerd-node-e2e-flaky
   - name: pull-node-e2e
     test_group_name: pull-kubernetes-node-e2e-containerd
     base_options: 'width=10'

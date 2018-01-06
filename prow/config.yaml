@@ -4810,47 +4810,117 @@ periodics:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20171201-f8fa79b46-master
       args:
       - --root=/go/src
-      - "--clean"
-      - "--git-cache=/root/.cache/git"
-      - "--job=$(JOB_NAME)"
-      - "--repo=k8s.io/kubernetes"
-      - "--repo=github.com/kubernetes-incubator/cri-containerd=master"
-      - "--service-account=/etc/service-account/service-account.json"
-      - "--timeout=90"
-      - "--"
+      - --repo=k8s.io/kubernetes
+      - --repo=github.com/kubernetes-incubator/cri-containerd=master
+      - --timeout=90
+      - --
       - "--node-args=--image-config-file=test/e2e_node/image-config.yaml --image-config-dir=$GOPATH/src/github.com/kubernetes-incubator/cri-containerd"
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
         value: /etc/service-account/service-account.json
-      - name: USER
-        value: prow
       - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
         value: /etc/ssh-key-secret/ssh-private
       - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
         value: /etc/ssh-key-secret/ssh-public
+      - name: USER
+        value: prow
+      - name: GOPATH
+        value: /go
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
+      - name: service
+        mountPath: /etc/service-account
         readOnly: true
-      - mountPath: /etc/ssh-key-secret
-        name: ssh
+      - name: ssh
+        mountPath: /etc/ssh-key-secret
         readOnly: true
-      - name: cache-ssd
-        mountPath: /root/.cache
-      ports:
-      - containerPort: 9999
-        hostPort: 9999
     volumes:
     - name: service
       secret:
         secretName: service-account
     - name: ssh
       secret:
-        defaultMode: 256
         secretName: ssh-key-secret
-    - name: cache-ssd
-      hostPath:
-        path: /mnt/disks/ssd0
+        defaultMode: 0400
+
+- name: ci-cri-containerd-node-e2e-flaky
+  interval: 2h
+  agent: kubernetes
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20171201-f8fa79b46-master
+      args:
+      - --root=/go/src
+      - --repo=k8s.io/kubernetes
+      - --repo=github.com/kubernetes-incubator/cri-containerd=master
+      - --timeout=120
+      - --
+      - "--node-args=--image-config-file=test/e2e_node/image-config.yaml --image-config-dir=$GOPATH/src/github.com/kubernetes-incubator/cri-containerd"
+      env:
+      - name: GOOGLE_APPLICATION_CREDENTIALS
+        value: /etc/service-account/service-account.json
+      - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-private
+      - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-public
+      - name: USER
+        value: prow
+      - name: GOPATH
+        value: /go
+      volumeMounts:
+      - name: service
+        mountPath: /etc/service-account
+        readOnly: true
+      - name: ssh
+        mountPath: /etc/ssh-key-secret
+        readOnly: true
+    volumes:
+    - name: service
+      secret:
+        secretName: service-account
+    - name: ssh
+      secret:
+        secretName: ssh-key-secret
+        defaultMode: 0400
+
+- name: ci-cri-containerd-node-e2e-serial
+  interval: 4h
+  agent: kubernetes
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20171201-f8fa79b46-master
+      args:
+      - --root=/go/src
+      - --repo=k8s.io/kubernetes
+      - --repo=github.com/kubernetes-incubator/cri-containerd=master
+      - --timeout=240
+      - --
+      - "--node-args=--image-config-file=test/e2e_node/image-config.yaml --image-config-dir=$GOPATH/src/github.com/kubernetes-incubator/cri-containerd"
+      env:
+      - name: GOOGLE_APPLICATION_CREDENTIALS
+        value: /etc/service-account/service-account.json
+      - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-private
+      - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-public
+      - name: USER
+        value: prow
+      - name: GOPATH
+        value: /go
+      volumeMounts:
+      - name: service
+        mountPath: /etc/service-account
+        readOnly: true
+      - name: ssh
+        mountPath: /etc/ssh-key-secret
+        readOnly: true
+    volumes:
+    - name: service
+      secret:
+        secretName: service-account
+    - name: ssh
+      secret:
+        secretName: ssh-key-secret
+        defaultMode: 0400
 
 - interval: 30m
   agent: kubernetes
