@@ -10879,7 +10879,7 @@
       "--extract=ci/latest",
       "--gcp-project=e2e-ingress-gce",
       "--gcp-zone=us-central1-f",
-      "--ginkgoParallel=",
+      "--ginkgo-parallel",
       "--provider=gce",
       "--test_args=--ginkgo.focus=\\[Feature:Ingress\\]",
       "--timeout=90m"
