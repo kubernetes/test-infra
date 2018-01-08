@@ -1157,3 +1157,79 @@ func TestThrottle(t *testing.T) {
 		t.Errorf("Expected context cancelation did not happen: %v", err)
 	}
 }
+
+func TestGetBranches(t *testing.T) {
+	ts := simpleTestServer(t, "/repos/org/repo/branches", []Branch{
+		{Name: "master", Protected: false},
+		{Name: "release-3.7", Protected: true},
+	})
+	defer ts.Close()
+	c := getClient(ts.URL)
+	branches, err := c.GetBranches("org", "repo")
+	if err != nil {
+		t.Errorf("Unexpected error: %v", err)
+	} else if len(branches) != 2 {
+		t.Errorf("Expected two branches, found %d, %v", len(branches), branches)
+		return
+	}
+	switch {
+	case branches[0].Name != "master":
+		t.Errorf("Wrong branch name for index 0: %v", branches[0])
+	case branches[1].Name != "release-3.7":
+		t.Errorf("Wrong branch name for index 1: %v", branches[1])
+	case branches[1].Protected == false:
+		t.Errorf("Wrong branch protection for index 1: %v", branches[1])
+	}
+}
+
+func TestRemoveBranchProtection(t *testing.T) {
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodDelete {
+			t.Errorf("Bad method: %s", r.Method)
+		}
+		if r.URL.Path != "/repos/org/repo/branches/master/protection" {
+			t.Errorf("Bad request path: %s", r.URL.Path)
+		}
+		http.Error(w, "204 No Content", http.StatusNoContent)
+	}))
+	defer ts.Close()
+	c := getClient(ts.URL)
+	if err := c.RemoveBranchProtection("org", "repo", "master"); err != nil {
+		t.Errorf("Unexpected error: %v", err)
+	}
+}
+
+func TestUpdateBranchProtection(t *testing.T) {
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPut {
+			t.Errorf("Bad method: %s", r.Method)
+		}
+		if r.URL.Path != "/repos/org/repo/branches/master/protection" {
+			t.Errorf("Bad request path: %s", r.URL.Path)
+		}
+		b, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			t.Fatalf("Could not read request body: %v", err)
+		}
+		var bpr BranchProtectionRequest
+		if err := json.Unmarshal(b, &bpr); err != nil {
+			t.Errorf("Could not unmarshal request: %v", err)
+		}
+		switch {
+		case len(bpr.RequiredStatusChecks.Contexts) != 2:
+			t.Errorf("Bad contexts: %v", bpr.RequiredStatusChecks.Contexts)
+		case bpr.RequiredStatusChecks.Contexts[0] != "foo-pr-test":
+			t.Errorf("Bad context name: %v", bpr.RequiredStatusChecks.Contexts)
+		case len(bpr.Restrictions.Teams) != 3:
+			t.Errorf("Bad teams: %v", bpr.Restrictions.Teams)
+		case bpr.Restrictions.Teams[1] != "awesome-team":
+			t.Errorf("Bad team: %v", bpr.Restrictions.Teams)
+		}
+		http.Error(w, "200 OK", http.StatusOK)
+	}))
+	defer ts.Close()
+	c := getClient(ts.URL)
+	if err := c.UpdateBranchProtection("org", "repo", "master", []string{"foo-pr-test", "other"}, []string{"movers", "awesome-team", "shakers"}); err != nil {
+		t.Errorf("Unexpected error: %v", err)
+	}
+}
