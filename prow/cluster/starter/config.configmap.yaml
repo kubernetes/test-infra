@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config
+data:
+  config: |
+    periodics:
+    - interval: 10m
+      agent: kubernetes
+      name: echo-test
+      spec:
+        containers:
+        - image: alpine
+          command: ["/bin/date"]

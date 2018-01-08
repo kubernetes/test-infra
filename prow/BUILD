@@ -16,6 +16,7 @@ filegroup(
     name = "all-srcs",
     srcs = [
         ":package-srcs",
+        "//prow/cluster/starter:all-srcs",
         "//prow/cmd/config:all-srcs",
         "//prow/cmd/deck:all-srcs",
         "//prow/cmd/hook:all-srcs",

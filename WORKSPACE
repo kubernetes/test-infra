@@ -66,6 +66,31 @@ docker_pull(
     repository = "k8s-prow/git",
 )
 
+http_archive(
+    name = "io_bazel_rules_k8s",
+    sha256 = "71d096bb3820f17fdeb0a28487a541a388a7af94193558903daf50d9d2c22a05",
+    strip_prefix = "rules_k8s-1fe2676a52ec0cdcc860b4d382e9dfbfede56073",
+    urls = ["https://github.com/bazelbuild/rules_k8s/archive/1fe2676a52ec0cdcc860b4d382e9dfbfede56073.tar.gz"],
+)
+
+load("@io_bazel_rules_k8s//k8s:k8s.bzl", "k8s_repositories", "k8s_defaults")
+
+k8s_repositories()
+
+[k8s_defaults(
+    name = "k8s_" + kind,
+    cluster = "{STABLE_K8S_CLUSTER}",
+    image_chroot = "{STABLE_DOCKER_REPO}/{BUILD_USER}",
+    kind = kind,
+) for kind in [
+    "configmap",
+    "deployment",
+    "secret",
+    "service",
+    "tpr",
+    "ingress",
+]]
+
 git_repository(
     name = "org_dropbox_rules_node",
     commit = "4fe6494f3f8d1a272d47d32ecc66698f6c43ed09",
@@ -113,20 +138,6 @@ py_library(
     sha256 = "5722cd09762faa01276230270ff16af7acf7c5c45d623868d9ba116f15791ce8",
     strip_prefix = "requests-2.13.0/requests",
     urls = ["https://pypi.python.org/packages/16/09/37b69de7c924d318e51ece1c4ceb679bf93be9d05973bb30c35babd596e2/requests-2.13.0.tar.gz"],
-)
-
-new_http_archive(
-    name = "yaml",
-    build_file_content = """
-py_library(
-    name = "yaml",
-    srcs = glob(["*.py"]),
-    visibility = ["//visibility:public"],
-)
-""",
-    sha256 = "592766c6303207a20efc445587778322d7f73b161bd994f227adaa341ba212ab",
-    strip_prefix = "PyYAML-3.12/lib/yaml",
-    urls = ["https://pypi.python.org/packages/4a/85/db5a2df477072b2902b0eb892feb37d88ac635d36245a72a6a69b23b383a/PyYAML-3.12.tar.gz"],
 )
 
 new_http_archive(
