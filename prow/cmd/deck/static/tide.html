@@ -33,11 +33,15 @@
             </div>
             <main class="mdl-layout__content">
                 <article>
-                    <div class="card-box">
-                        <p><strong>All <a href="https://help.github.com/articles/about-required-status-checks/">GitHub statuses</a> on a Pull Request must be passing / green for automatic merge&nbsp;<span class="success">✓</span></strong></p>
-                        <p><strong>Prow test results are ignored if they do not test the Pull Request against the most recent commit on the branch.</strong></p>
-                        <p><strong>Your Pull Request must also match one of these GitHub search queries (you can click them to check):</strong></p>
-                        <ul id="queries"></ul>
+                    <div id="info-div" class="card-box">
+                        <h4>Merge Requirements: (click to expand)</h4>
+                        <span class="hidden">
+                            <hr>
+                            <p><strong>All <a href="https://help.github.com/articles/about-required-status-checks/">GitHub statuses</a> on a Pull Request must be passing / green for automatic merge&nbsp;<span class="success">✓</span></strong></p>
+                            <p><strong>Prow test results are ignored if they do not test the Pull Request against the most recent commit on the branch.</strong></p>
+                            <p><strong>Your Pull Request must also match one of these GitHub search queries (you can click them to check):</strong></p>
+                            <ul id="queries"></ul>
+                        </span>
                     </div>
                 </article>
                 <article>
