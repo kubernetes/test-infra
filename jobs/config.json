@@ -10876,7 +10876,7 @@
     "args": [
       "--build-ingressgce",
       "--cluster=",
-      "--extract=ci",
+      "--extract=ci/latest",
       "--gcp-project=e2e-ingress-gce",
       "--gcp-zone=us-central1-f",
       "--ginkgoParallel=",
