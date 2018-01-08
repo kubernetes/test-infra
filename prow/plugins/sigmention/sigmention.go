@@ -33,8 +33,7 @@ import (
 const pluginName = "sigmention"
 
 var (
-	sigMatcher = regexp.MustCompile(`(?m)@kubernetes/sig-([\w-]*)-(misc|test-failures|bugs|feature-requests|proposals|pr-reviews|api-reviews)`)
-	chatBack   = "Reiterating the mentions to trigger a notification: \n%v\n"
+	chatBack = "Reiterating the mentions to trigger a notification: \n%v\n"
 
 	kindMap = map[string]string{
 		"bugs":             "kind/bug",
@@ -61,18 +60,22 @@ func init() {
 func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
 	// Only the Description field is specified because this plugin is not triggered with commands and is not configurable.
 	return &pluginhelp.PluginHelp{
-			Description: `The sigmention plugin responds to SIG (Special Interest Group) Github team mentions like '@kubernetes/sig-testing-bugs'. The plugin responds in two ways:
+			Description: fmt.Sprintf(`The sigmention plugin responds to SIG (Special Interest Group) Github team mentions like '@%s/sig-testing-bugs'. The plugin responds in two ways:
 <ol><li> The appropriate 'sig/*' and 'kind/*' labels are applied to the issue or pull request. In this case 'sig/testing' and 'kind/bug'.</li>
 <li> If the user who mentioned the Github team is not a member of the organization that owns the repository the bot will create a comment that repeats the mention. This is necessary because non-member mentions do not trigger Github notifications.</li></ol>`,
+				config.SigMention.OwningOrg),
+			Config: map[string]string{
+				"": fmt.Sprintf("Labels added by the plugin are triggered by mentions of Github teams owned by this org: %s", config.SigMention.OwningOrg),
+			},
 		},
 		nil
 }
 
 func handleGenericComment(pc plugins.PluginClient, e github.GenericCommentEvent) error {
-	return handle(pc.GitHubClient, pc.Logger, &e)
+	return handle(pc.GitHubClient, pc.Logger, &e, pc.PluginConfig.SigMention.OwningOrg)
 }
 
-func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent) error {
+func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, owningOrg string) error {
 	// Ignore bot comments and comments that aren't new.
 	botName, err := gc.BotName()
 	if err != nil {
@@ -85,7 +88,12 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent) e
 		return nil
 	}
 
-	sigMatches := sigMatcher.FindAllStringSubmatch(e.Body, -1)
+	re := fmt.Sprintf(`(?m)@%s/sig-([\w-]*)-(misc|test-failures|bugs|feature-requests|proposals|pr-reviews|api-reviews)`, owningOrg)
+	cRe, err := regexp.Compile(re)
+	if err != nil {
+		return err
+	}
+	sigMatches := cRe.FindAllStringSubmatch(e.Body, -1)
 	if len(sigMatches) == 0 {
 		return nil
 	}

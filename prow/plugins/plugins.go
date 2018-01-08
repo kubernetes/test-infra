@@ -164,6 +164,7 @@ type Configuration struct {
 	Approve         []Approve       `json:"approve,omitempty"`
 	Blunderbuss     Blunderbuss     `json:"blunderbuss,omitempty"`
 	RequireSIG      RequireSIG      `json:"requiresig,omitempty"`
+	SigMention      SigMention      `json:"sigmention,omitempty"`
 }
 
 // ExternalPlugin holds configuration for registering an external
@@ -219,6 +220,13 @@ func (pa *PluginAgent) MDYAMLEnabled(org, repo string) bool {
 type RequireSIG struct {
 	// GroupListURL is the URL where a list of the available SIGs can be found.
 	GroupListURL string `json:"group_list_url,omitempty"`
+}
+
+type SigMention struct {
+	// OwningOrg is the org whose teams will map to SIG labels.
+	// Mentions of owning_org teams (@owning_org/sig-team-name) will trigger
+	// labeling of issues/PRs.
+	OwningOrg string `json:"owning_org,omitempty"`
 }
 
 /*
@@ -364,6 +372,9 @@ func (c *Configuration) setDefaults() {
 			continue
 		}
 		c.Triggers[i].JoinOrgURL = fmt.Sprintf("https://github.com/orgs/%s/people", trigger.TrustedOrg)
+	}
+	if c.SigMention.OwningOrg == "" {
+		c.SigMention.OwningOrg = "kubernetes"
 	}
 }
 

@@ -52,6 +52,7 @@ func TestSigMention(t *testing.T) {
 		expectedNewLabels []string
 		issueLabels       []string
 		repoLabels        []string
+		owningOrg         string
 	}
 	testcases := []testCase{
 		{
@@ -62,6 +63,7 @@ func TestSigMention(t *testing.T) {
 			repoLabels:        []string{"area/infra", "priority/urgent", "sig/node"},
 			issueLabels:       []string{},
 			commenter:         orgMember,
+			owningOrg:         "kubernetes",
 		},
 		{
 			name:              "Dont repeat or label when bot adds mentions sig",
@@ -71,6 +73,7 @@ func TestSigMention(t *testing.T) {
 			repoLabels:        []string{"area/infra", "priority/urgent", "sig/node"},
 			issueLabels:       []string{},
 			commenter:         bot,
+			owningOrg:         "kubernetes",
 		},
 		{
 			name:              "Repeat when non org adds one sig label (sig label already present)",
@@ -80,6 +83,7 @@ func TestSigMention(t *testing.T) {
 			repoLabels:        []string{"area/infra", "priority/urgent", "sig/node", "kind/bug"},
 			issueLabels:       []string{"sig/node"},
 			commenter:         nonOrgMember,
+			owningOrg:         "kubernetes",
 		},
 		{
 			name:              "Don't repeat non existent labels",
@@ -89,6 +93,7 @@ func TestSigMention(t *testing.T) {
 			repoLabels:        []string{},
 			issueLabels:       []string{},
 			commenter:         nonOrgMember,
+			owningOrg:         "kubernetes",
 		},
 		{
 			name:              "Dont repeat multiple if org member (all labels present).",
@@ -98,6 +103,7 @@ func TestSigMention(t *testing.T) {
 			repoLabels:        []string{"sig/node", "sig/api-machinery", "kind/bug"},
 			issueLabels:       []string{"sig/node", "sig/api-machinery", "kind/bug"},
 			commenter:         orgMember,
+			owningOrg:         "kubernetes",
 		},
 		{
 			name:              "Repeat multiple valid labels from non org member",
@@ -107,33 +113,37 @@ func TestSigMention(t *testing.T) {
 			repoLabels:        []string{"sig/node", "sig/api-machinery", "kind/bug"},
 			issueLabels:       []string{},
 			commenter:         nonOrgMember,
+			owningOrg:         "kubernetes",
 		},
 		{
 			name:              "Repeat multiple valid labels with a line break from non org member.",
-			body:              "@kubernetes/sig-node-misc\n@kubernetes/sig-api-machinery-bugs",
-			expectedRepeats:   []string{"@kubernetes/sig-node-misc", "@kubernetes/sig-api-machinery-bugs"},
+			body:              "@openshift/sig-node-misc\n@openshift/sig-api-machinery-bugs",
+			expectedRepeats:   []string{"@openshift/sig-node-misc", "@openshift/sig-api-machinery-bugs"},
 			expectedNewLabels: []string{"sig/node", "sig/api-machinery", "kind/bug"},
 			repoLabels:        []string{"sig/node", "sig/api-machinery", "kind/bug"},
 			issueLabels:       []string{},
 			commenter:         nonOrgMember,
+			owningOrg:         "openshift",
 		},
 		{
 			name:              "Repeat Multiple Sig Labels Different Lines With Other Text",
-			body:              "Code Comment.  Design Review\n@kubernetes/sig-node-proposals\ncc @kubernetes/sig-api-machinery-bugs",
-			expectedRepeats:   []string{"@kubernetes/sig-node-proposals", "@kubernetes/sig-api-machinery-bugs"},
+			body:              "Code Comment.  Design Review\n@openshift/sig-node-proposals\ncc @openshift/sig-api-machinery-bugs",
+			expectedRepeats:   []string{"@openshift/sig-node-proposals", "@openshift/sig-api-machinery-bugs"},
 			expectedNewLabels: []string{"sig/node", "sig/api-machinery", "kind/bug"},
 			repoLabels:        []string{"area/infra", "priority/urgent", "sig/node", "sig/api-machinery", "kind/bug"},
 			issueLabels:       []string{},
 			commenter:         nonOrgMember,
+			owningOrg:         "openshift",
 		},
 		{
 			name:              "Repeat when multiple label adding commands (sig labels present)",
-			body:              "/area infra\n/priority urgent Design Review\n@kubernetes/sig-node-misc\ncc @kubernetes/sig-api-machinery-bugs",
-			expectedRepeats:   []string{"@kubernetes/sig-node-misc", "@kubernetes/sig-api-machinery-bugs"},
+			body:              "/area infra\n/priority urgent Design Review\n@openshift/sig-node-misc\ncc @openshift/sig-api-machinery-bugs",
+			expectedRepeats:   []string{"@openshift/sig-node-misc", "@openshift/sig-api-machinery-bugs"},
 			expectedNewLabels: []string{"sig/node", "kind/bug"},
 			repoLabels:        []string{"area/infra", "priority/urgent", "sig/node", "sig/api-machinery", "sig/testing", "kind/bug"},
 			issueLabels:       []string{"sig/api-machinery", "sig/testing"},
 			commenter:         nonOrgMember,
+			owningOrg:         "openshift",
 		},
 	}
 
@@ -155,7 +165,7 @@ func TestSigMention(t *testing.T) {
 			User:   github.User{Login: tc.commenter},
 		}
 
-		if err := handle(fakeClient, logrus.WithField("plugin", pluginName), e); err != nil {
+		if err := handle(fakeClient, logrus.WithField("plugin", pluginName), e, tc.owningOrg); err != nil {
 			t.Errorf("(%s): Unexpected error from handle: %v.", tc.name, err)
 			continue
 		}
