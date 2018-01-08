@@ -795,6 +795,9 @@ class JobTest(unittest.TestCase):
             'ci-cri-containerd-node-e2e': 'cri-containerd-node-e2e-*',
             'ci-cri-containerd-node-e2e-serial': 'cri-containerd-node-e2e-*',
             'ci-cri-containerd-node-e2e-flaky': 'cri-containerd-node-e2e-*',
+            # ingress-GCE e2e jobs
+            'pull-ingress-gce-e2e': 'e2e-ingress-gce',
+            'ci-ingress-gce-e2e': 'e2e-ingress-gce',
         }
         for soak_prefix in [
                 'ci-kubernetes-soak-gce-1.5',
