@@ -39,7 +39,7 @@ const (
 type RepoInterface interface {
 	Approvers(path string) sets.String
 	LeafApprovers(path string) sets.String
-	FindApproverOwnersForPath(path string) string
+	FindApproverOwnersForFile(file string) string
 	IsNoParentOwners(path string) bool
 }
 
@@ -163,7 +163,7 @@ func (o Owners) GetSuggestedApprovers(reverseMap map[string]sets.String, potenti
 func (o Owners) GetOwnersSet() sets.String {
 	owners := sets.NewString()
 	for _, fn := range o.filenames {
-		owners.Insert(o.repo.FindApproverOwnersForPath(fn))
+		owners.Insert(o.repo.FindApproverOwnersForFile(fn))
 	}
 	o.removeSubdirs(owners)
 	return owners

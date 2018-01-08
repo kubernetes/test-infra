@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"path/filepath"
 	"reflect"
+	"regexp"
 	"testing"
 
 	"github.com/sirupsen/logrus"
@@ -29,8 +30,8 @@ import (
 	"k8s.io/test-infra/prow/github/fakegithub"
 )
 
-func getTestClient(enableMdYaml, includeAliases bool) (*Client, func(), error) {
-	testFiles := map[string][]byte{
+var (
+	testFiles = map[string][]byte{
 		"foo":                        []byte("approvers:\n- bob"),
 		"OWNERS":                     []byte("approvers: \n- cjwagner\nreviewers:\n- Alice\n- bob\nlabels:\n - EVERYTHING"),
 		"src/OWNERS":                 []byte("approvers:\n- Best-Approvers"),
@@ -38,6 +39,38 @@ func getTestClient(enableMdYaml, includeAliases bool) (*Client, func(), error) {
 		"src/dir/conformance/OWNERS": []byte("options:\n no_parent_owners: true\napprovers:\n - mml"),
 		"docs/file.md":               []byte("---\napprovers: \n- ALICE\n\nlabels:\n- docs\n---"),
 	}
+
+	testFilesRe = map[string][]byte{
+		// regexp filtered
+		"re/OWNERS": []byte(`filters:
+  ".*":
+    labels:
+    - re/all
+  "\\.go$":
+    labels:
+    - re/go`),
+		"re/a/OWNERS": []byte(`filters:
+  "\\.md$":
+    labels:
+    - re/md-in-a
+  "\\.go$":
+    labels:
+    - re/go-in-a`),
+	}
+)
+
+// regexpAll is used to construct a default {regexp -> values} mapping for ".*"
+func regexpAll(values ...string) map[*regexp.Regexp]sets.String {
+	return map[*regexp.Regexp]sets.String{nil: sets.NewString(values...)}
+}
+
+// patternAll is used to construct a default {regexp string -> values} mapping for ".*"
+func patternAll(values ...string) map[string]sets.String {
+	// use "" to represent nil and distinguish it from a ".*" regexp (which shouldn't exist).
+	return map[string]sets.String{"": sets.NewString(values...)}
+}
+
+func getTestClient(files map[string][]byte, enableMdYaml, includeAliases bool) (*Client, func(), error) {
 	testAliasesFile := map[string][]byte{
 		"OWNERS_ALIASES": []byte("aliases:\n  Best-approvers:\n  - carl\n  - cjwagner\n  best-reviewers:\n  - Carl\n  - BOB"),
 	}
@@ -49,7 +82,7 @@ func getTestClient(enableMdYaml, includeAliases bool) (*Client, func(), error) {
 	if err := localGit.MakeFakeRepo("org", "repo"); err != nil {
 		return nil, nil, fmt.Errorf("Error making fake repo: %v", err)
 	}
-	if err := localGit.AddCommit("org", "repo", testFiles); err != nil {
+	if err := localGit.AddCommit("org", "repo", files); err != nil {
 		return nil, nil, fmt.Errorf("Error adding initial commit: %v", err)
 	}
 	if includeAliases {
@@ -76,31 +109,59 @@ func getTestClient(enableMdYaml, includeAliases bool) (*Client, func(), error) {
 		nil
 }
 
+func TestOwnersRegexpFiltering(t *testing.T) {
+	tests := map[string]sets.String{
+		"re/a/go.go":   sets.NewString("re/all", "re/go", "re/go-in-a"),
+		"re/a/md.md":   sets.NewString("re/all", "re/md-in-a"),
+		"re/a/txt.txt": sets.NewString("re/all"),
+		"re/go.go":     sets.NewString("re/all", "re/go"),
+		"re/txt.txt":   sets.NewString("re/all"),
+		"re/b/md.md":   sets.NewString("re/all"),
+	}
+
+	client, cleanup, err := getTestClient(testFilesRe, true, true)
+	if err != nil {
+		t.Fatalf("Error creating test client: %v.", err)
+	}
+	defer cleanup()
+
+	ro, err := client.LoadRepoOwners("org", "repo")
+	if err != nil {
+		t.Fatalf("Unexpected error loading RepoOwners: %v.", err)
+	}
+	t.Logf("labels: %#v\n\n", ro.labels)
+	for file, expected := range tests {
+		if got := ro.FindLabelsForFile(file); !got.Equal(expected) {
+			t.Errorf("For file %q expected labels %q, but got %q.", file, expected.List(), got.List())
+		}
+	}
+}
+
 func TestLoadRepoOwners(t *testing.T) {
 	tests := []struct {
 		name              string
 		mdEnabled         bool
 		aliasesFileExists bool
 
-		expectedApprovers, expectedReviewers, expectedLabels map[string]sets.String
+		expectedApprovers, expectedReviewers, expectedLabels map[string]map[string]sets.String
 
 		expectedOptions map[string]dirOptions
 	}{
 		{
 			name: "no alias, no md",
-			expectedApprovers: map[string]sets.String{
-				"":                    sets.NewString("cjwagner"),
-				"src":                 sets.NewString(),
-				"src/dir":             sets.NewString("bob"),
-				"src/dir/conformance": sets.NewString("mml"),
+			expectedApprovers: map[string]map[string]sets.String{
+				"":                    patternAll("cjwagner"),
+				"src":                 patternAll(),
+				"src/dir":             patternAll("bob"),
+				"src/dir/conformance": patternAll("mml"),
 			},
-			expectedReviewers: map[string]sets.String{
-				"":        sets.NewString("alice", "bob"),
-				"src/dir": sets.NewString("alice", "cjwagner"),
+			expectedReviewers: map[string]map[string]sets.String{
+				"":        patternAll("alice", "bob"),
+				"src/dir": patternAll("alice", "cjwagner"),
 			},
-			expectedLabels: map[string]sets.String{
-				"":        sets.NewString("EVERYTHING"),
-				"src/dir": sets.NewString("src-code"),
+			expectedLabels: map[string]map[string]sets.String{
+				"":        patternAll("EVERYTHING"),
+				"src/dir": patternAll("src-code"),
 			},
 			expectedOptions: map[string]dirOptions{
 				"src/dir/conformance": {
@@ -111,19 +172,19 @@ func TestLoadRepoOwners(t *testing.T) {
 		{
 			name:              "alias, no md",
 			aliasesFileExists: true,
-			expectedApprovers: map[string]sets.String{
-				"":                    sets.NewString("cjwagner"),
-				"src":                 sets.NewString("carl", "cjwagner"),
-				"src/dir":             sets.NewString("bob"),
-				"src/dir/conformance": sets.NewString("mml"),
+			expectedApprovers: map[string]map[string]sets.String{
+				"":                    patternAll("cjwagner"),
+				"src":                 patternAll("carl", "cjwagner"),
+				"src/dir":             patternAll("bob"),
+				"src/dir/conformance": patternAll("mml"),
 			},
-			expectedReviewers: map[string]sets.String{
-				"":        sets.NewString("alice", "bob"),
-				"src/dir": sets.NewString("alice", "cjwagner"),
+			expectedReviewers: map[string]map[string]sets.String{
+				"":        patternAll("alice", "bob"),
+				"src/dir": patternAll("alice", "cjwagner"),
 			},
-			expectedLabels: map[string]sets.String{
-				"":        sets.NewString("EVERYTHING"),
-				"src/dir": sets.NewString("src-code"),
+			expectedLabels: map[string]map[string]sets.String{
+				"":        patternAll("EVERYTHING"),
+				"src/dir": patternAll("src-code"),
 			},
 			expectedOptions: map[string]dirOptions{
 				"src/dir/conformance": {
@@ -135,21 +196,21 @@ func TestLoadRepoOwners(t *testing.T) {
 			name:              "alias, md",
 			aliasesFileExists: true,
 			mdEnabled:         true,
-			expectedApprovers: map[string]sets.String{
-				"":                    sets.NewString("cjwagner"),
-				"src":                 sets.NewString("carl", "cjwagner"),
-				"src/dir":             sets.NewString("bob"),
-				"src/dir/conformance": sets.NewString("mml"),
-				"docs/file.md":        sets.NewString("alice"),
+			expectedApprovers: map[string]map[string]sets.String{
+				"":                    patternAll("cjwagner"),
+				"src":                 patternAll("carl", "cjwagner"),
+				"src/dir":             patternAll("bob"),
+				"src/dir/conformance": patternAll("mml"),
+				"docs/file.md":        patternAll("alice"),
 			},
-			expectedReviewers: map[string]sets.String{
-				"":        sets.NewString("alice", "bob"),
-				"src/dir": sets.NewString("alice", "cjwagner"),
+			expectedReviewers: map[string]map[string]sets.String{
+				"":        patternAll("alice", "bob"),
+				"src/dir": patternAll("alice", "cjwagner"),
 			},
-			expectedLabels: map[string]sets.String{
-				"":             sets.NewString("EVERYTHING"),
-				"src/dir":      sets.NewString("src-code"),
-				"docs/file.md": sets.NewString("docs"),
+			expectedLabels: map[string]map[string]sets.String{
+				"":             patternAll("EVERYTHING"),
+				"src/dir":      patternAll("src-code"),
+				"docs/file.md": patternAll("docs"),
 			},
 			expectedOptions: map[string]dirOptions{
 				"src/dir/conformance": {
@@ -160,7 +221,7 @@ func TestLoadRepoOwners(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		client, cleanup, err := getTestClient(test.mdEnabled, test.aliasesFileExists)
+		client, cleanup, err := getTestClient(testFiles, test.mdEnabled, test.aliasesFileExists)
 		if err != nil {
 			t.Errorf("[%s] Error creating test client: %v.", test.name, err)
 			continue
@@ -186,9 +247,20 @@ func TestLoadRepoOwners(t *testing.T) {
 			continue
 		}
 
-		check := func(field string, expected, got map[string]sets.String) {
-			if !reflect.DeepEqual(expected, got) {
-				t.Errorf("[%s] Expected %s to be %#v, but got %#v.", test.name, field, expected, got)
+		check := func(field string, expected map[string]map[string]sets.String, got map[string]map[*regexp.Regexp]sets.String) {
+			converted := map[string]map[string]sets.String{}
+			for path, m := range got {
+				converted[path] = map[string]sets.String{}
+				for re, s := range m {
+					var pattern string
+					if re != nil {
+						pattern = re.String()
+					}
+					converted[path][pattern] = s
+				}
+			}
+			if !reflect.DeepEqual(expected, converted) {
+				t.Errorf("[%s] Expected %s to be %#v, but got %#v.", test.name, field, expected, converted)
 			}
 		}
 		check("approvers", test.expectedApprovers, ro.approvers)
@@ -221,7 +293,7 @@ func TestLoadRepoAliases(t *testing.T) {
 		},
 	}
 	for _, test := range tests {
-		client, cleanup, err := getTestClient(false, test.aliasFileExists)
+		client, cleanup, err := getTestClient(testFiles, false, test.aliasFileExists)
 		if err != nil {
 			t.Errorf("[%s] Error creating test client: %v.", test.name, err)
 			continue
@@ -249,10 +321,10 @@ const (
 
 func TestGetApprovers(t *testing.T) {
 	ro := &RepoOwners{
-		approvers: map[string]sets.String{
-			baseDir:      sets.NewString("alice", "bob"),
-			leafDir:      sets.NewString("carl", "dave"),
-			noParentsDir: sets.NewString("mml"),
+		approvers: map[string]map[*regexp.Regexp]sets.String{
+			baseDir:      regexpAll("alice", "bob"),
+			leafDir:      regexpAll("carl", "dave"),
+			noParentsDir: regexpAll("mml"),
 		},
 		options: map[string]dirOptions{
 			noParentsDir: {
@@ -271,35 +343,35 @@ func TestGetApprovers(t *testing.T) {
 			name:               "Modified Base Dir Only",
 			filePath:           filepath.Join(baseDir, "testFile.md"),
 			expectedOwnersPath: baseDir,
-			expectedLeafOwners: ro.approvers[baseDir],
-			expectedAllOwners:  ro.approvers[baseDir],
+			expectedLeafOwners: ro.approvers[baseDir][nil],
+			expectedAllOwners:  ro.approvers[baseDir][nil],
 		},
 		{
 			name:               "Modified Leaf Dir Only",
 			filePath:           filepath.Join(leafDir, "testFile.md"),
 			expectedOwnersPath: leafDir,
-			expectedLeafOwners: ro.approvers[leafDir],
-			expectedAllOwners:  ro.approvers[leafDir].Union(ro.approvers[baseDir]),
+			expectedLeafOwners: ro.approvers[leafDir][nil],
+			expectedAllOwners:  ro.approvers[baseDir][nil].Union(ro.approvers[leafDir][nil]),
 		},
 		{
 			name:               "Modified NoParentOwners Dir Only",
 			filePath:           filepath.Join(noParentsDir, "testFile.go"),
 			expectedOwnersPath: noParentsDir,
-			expectedLeafOwners: ro.approvers[noParentsDir],
-			expectedAllOwners:  ro.approvers[noParentsDir],
+			expectedLeafOwners: ro.approvers[noParentsDir][nil],
+			expectedAllOwners:  ro.approvers[noParentsDir][nil],
 		},
 		{
 			name:               "Modified Nonexistent Dir (Default to Base)",
 			filePath:           filepath.Join(nonExistentDir, "testFile.md"),
 			expectedOwnersPath: baseDir,
-			expectedLeafOwners: ro.approvers[baseDir],
-			expectedAllOwners:  ro.approvers[baseDir],
+			expectedLeafOwners: ro.approvers[baseDir][nil],
+			expectedAllOwners:  ro.approvers[baseDir][nil],
 		},
 	}
 	for testNum, test := range tests {
 		foundLeafApprovers := ro.LeafApprovers(test.filePath)
 		foundApprovers := ro.Approvers(test.filePath)
-		foundOwnersPath := ro.FindApproverOwnersForPath(test.filePath)
+		foundOwnersPath := ro.FindApproverOwnersForFile(test.filePath)
 		if !foundLeafApprovers.Equal(test.expectedLeafOwners) {
 			t.Errorf("The Leaf Approvers Found Do Not Match Expected For Test %d: %s", testNum, test.name)
 			t.Errorf("\tExpected Owners: %v\tFound Owners: %v ", test.expectedLeafOwners, foundLeafApprovers)
@@ -349,13 +421,13 @@ func TestFindLabelsForPath(t *testing.T) {
 	}
 
 	testOwners := &RepoOwners{
-		labels: map[string]sets.String{
-			baseDir: sets.NewString("sig/godzilla"),
-			leafDir: sets.NewString("wg/save-tokyo"),
+		labels: map[string]map[*regexp.Regexp]sets.String{
+			baseDir: regexpAll("sig/godzilla"),
+			leafDir: regexpAll("wg/save-tokyo"),
 		},
 	}
 	for _, test := range tests {
-		got := testOwners.FindLabelsForPath(test.path)
+		got := testOwners.FindLabelsForFile(test.path)
 		if !got.Equal(test.expectedLabels) {
 			t.Errorf(
 				"[%s] Expected labels %q for path %q, but got %q.",

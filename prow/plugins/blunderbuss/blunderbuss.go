@@ -56,7 +56,7 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 type weightMap map[string]int64
 
 type ownersClient interface {
-	FindReviewersOwnersForPath(path string) string
+	FindReviewersOwnersForFile(path string) string
 	Reviewers(path string) sets.String
 	LeafReviewers(path string) sets.String
 }
@@ -106,7 +106,7 @@ func getReviewers(owners ownersClient, author string, files []github.PullRequest
 	ownersSeen := sets.NewString()
 	// first build 'reviewers' by taking a unique reviewer from each OWNERS file.
 	for _, file := range files {
-		ownersFile := owners.FindReviewersOwnersForPath(file.Filename)
+		ownersFile := owners.FindReviewersOwnersForFile(file.Filename)
 		if ownersSeen.Has(ownersFile) {
 			continue
 		}
