@@ -92,32 +92,36 @@ func (pl linesByTimestamp) String() string {
 // comment and trace commments across prow.
 const ic = "issuecomment"
 
-func handleTrace(ja *JobAgent) http.HandlerFunc {
+func handleTrace(selector string, kc *kube.Client) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		logrus.Info("Started handling request")
+		start := time.Now()
 		w.Header().Set("Cache-Control", "no-cache")
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 
 		if err := validateTraceRequest(r); err != nil {
-			logrus.Debugf("Invalid request: %v", err)
+			logrus.Infof("Invalid request: %v", err)
 			http.Error(w, fmt.Sprintf("Invalid request: %v", err), http.StatusBadRequest)
 			return
 		}
 
-		targets, err := getPods(ja)
+		targets, err := getPods(selector, kc)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadGateway)
 			return
 		}
 		if len(targets) == 0 {
-			logrus.Debug("No targets found.")
+			logrus.Info("No targets found.")
 			fmt.Fprint(w, "[]")
 			return
 		}
 
 		// Return the logs from the found targets.
-		log := getPodLogs(ja, targets, r)
+		log := getPodLogs(kc, targets, r)
 		// Filter further if issuecomment has been provided.
 		fmt.Fprint(w, postFilter(log, r.URL.Query().Get(ic)))
+		logrus.Info("Finished handling request")
+		logrus.Infof("Sync time: %v", time.Since(start))
 	}
 }
 
@@ -149,26 +153,24 @@ func validateTraceRequest(r *http.Request) error {
 	return nil
 }
 
-func getPods(ja *JobAgent) ([]kube.Pod, error) {
+func getPods(selector string, kc *kube.Client) ([]kube.Pod, error) {
+	pods, err := kc.ListPods(selector)
+	if err != nil {
+		return nil, fmt.Errorf("Cannot list pods with selector %q: %v", selector, err)
+	}
 	var targets []kube.Pod
-	for _, selector := range ja.c.Config().Deck.TraceTargets {
-		pods, err := ja.pkc.ListPods(selector)
-		if err != nil {
-			return nil, fmt.Errorf("Cannot list pods with selector %q: %v", selector, err)
+	for _, pod := range pods {
+		if pod.Status.Phase != kube.PodRunning {
+			logrus.Warnf("Ignoring pod %q: not in %s phase (phase: %s, reason: %s)",
+				pod.Metadata.Name, kube.PodRunning, pod.Status.Phase, pod.Status.Reason)
+			continue
 		}
-		for _, pod := range pods {
-			if pod.Status.Phase != kube.PodRunning {
-				logrus.Debugf("Ignoring pod %q: not in %s phase (phase: %s, reason: %s)",
-					pod.Metadata.Name, kube.PodRunning, pod.Status.Phase, pod.Status.Reason)
-				continue
-			}
-			targets = append(targets, pod)
-		}
+		targets = append(targets, pod)
 	}
 	return targets, nil
 }
 
-func getPodLogs(ja *JobAgent, targets []kube.Pod, r *http.Request) linesByTimestamp {
+func getPodLogs(kc *kube.Client, targets []kube.Pod, r *http.Request) linesByTimestamp {
 	var lock sync.Mutex
 	log := make(linesByTimestamp, 0)
 	wg := sync.WaitGroup{}
@@ -176,9 +178,9 @@ func getPodLogs(ja *JobAgent, targets []kube.Pod, r *http.Request) linesByTimest
 	for _, pod := range targets {
 		go func(podName string) {
 			defer wg.Done()
-			podLog, err := getPodLog(podName, ja, r)
+			podLog, err := getPodLog(podName, kc, r)
 			if err != nil {
-				logrus.Debugf("cannot get logs from %q: %v", podName, err)
+				logrus.Warnf("cannot get logs from %q: %v", podName, err)
 				return
 			}
 			lock.Lock()
@@ -190,7 +192,7 @@ func getPodLogs(ja *JobAgent, targets []kube.Pod, r *http.Request) linesByTimest
 	return log
 }
 
-func getPodLog(podName string, ja *JobAgent, r *http.Request) (linesByTimestamp, error) {
+func getPodLog(podName string, kc *kube.Client, r *http.Request) (linesByTimestamp, error) {
 	pr := r.URL.Query().Get(github.PrLogField)
 	// Error already checked in validateTraceRequest
 	prNum, _ := strconv.Atoi(pr)
@@ -198,7 +200,7 @@ func getPodLog(podName string, ja *JobAgent, r *http.Request) (linesByTimestamp,
 	org := r.URL.Query().Get(github.OrgLogField)
 	eventGUID := r.URL.Query().Get(github.EventGUID)
 
-	podLog, err := ja.pkc.GetLog(podName)
+	podLog, err := kc.GetLog(podName)
 	if err != nil {
 		return nil, err
 	}

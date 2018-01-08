@@ -1651,8 +1651,10 @@ test_groups:
   num_columns_recent: 30
 - name: tf-k8s-postsubmit
   gcs_prefix: kubernetes-jenkins/logs/tensorflow_k8s/tf-k8s-postsubmit
-- name: spark-k8s-periodic
-  gcs_prefix: kubernetes-jenkins/logs/spark-k8s-periodic
+- name: spark-periodic-default-gke
+  gcs_prefix: kubernetes-jenkins/logs/spark-periodic-default-gke
+- name: spark-periodic-latest-gke
+  gcs_prefix: kubernetes-jenkins/logs/spark-periodic-latest-gke
 # kube-proxy daemonset migration jobs
 - name: ci-kubernetes-e2e-gci-gce-latest-downgrade-kube-proxy-ds
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-latest-downgrade-kube-proxy-ds
@@ -3577,9 +3579,12 @@ dashboards:
   - name: tf-k8s-presubmit
     description: Presubmit tests of TfJob CRD running on stable GKE.
     test_group_name: tf-k8s-presubmit
-  - name: spark-k8s-periodic
-    description: Periodic builds and testing of Apache Spark at head running on stable GKE.
-    test_group_name: spark-k8s-periodic
+  - name: spark-periodic-default-gke
+    description: Periodic builds and testing of Apache Spark on default version of GKE.
+    test_group_name: spark-periodic-default-gke
+  - name: spark-periodic-latest-gke
+    description: Periodic builds and testing of Apache Spark running on the newest stable GKE.
+    test_group_name: spark-periodic-latest-gke
 
 
 - name: sig-autoscaling
