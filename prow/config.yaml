@@ -185,9 +185,7 @@ presubmits:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180108-bf63630a9-master
         args:
-        - "--repo=k8s.io/kubernetes=master"
         - "--repo=k8s.io/ingress-gce=$(PULL_REFS)"
-        - "--repo=k8s.io/release"
         - "--root=/go/src/"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--clean"
