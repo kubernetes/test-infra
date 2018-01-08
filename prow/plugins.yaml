@@ -179,6 +179,7 @@ plugins:
   - shrug
   - sigmention
   - size
+  - skip
   - slackevents
   - wip
   - yuks

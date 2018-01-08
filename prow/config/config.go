@@ -157,16 +157,6 @@ type Deck struct {
 	// ExternalAgentLogs ensures external agents can expose
 	// their logs in prow.
 	ExternalAgentLogs []ExternalAgentLog `json:"external_agent_logs,omitempty"`
-	// TraceTargets is a set of label selectors deck uses to
-	// select prow components in order to trace logs.
-	//
-	// Example config:
-	//
-	// trace_targets:
-	// - app=prow
-	//
-	// In the example above, deck will select all pods with the app=prow label.
-	TraceTargets []string `json:"trace_targets,omitempty"`
 }
 
 // ExternalAgentLog ensures an external agent like Jenkins can expose
@@ -321,12 +311,6 @@ func parseConfig(c *Config) error {
 			return fmt.Errorf("error parsing selector %q: %v", c.Deck.ExternalAgentLogs[i].SelectorString, err)
 		}
 		c.Deck.ExternalAgentLogs[i].Selector = s
-	}
-
-	for i := range c.Deck.TraceTargets {
-		if _, err := labels.Parse(c.Deck.TraceTargets[i]); err != nil {
-			return fmt.Errorf("error parsing selector %q: %v", c.Deck.TraceTargets[i], err)
-		}
 	}
 
 	if c.Deck.TideUpdatePeriodString == "" {

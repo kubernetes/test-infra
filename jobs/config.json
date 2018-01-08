@@ -4324,7 +4324,7 @@
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
       "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[Feature:(Audit|LocalPersistentVolumes|FlexVolume|PodPreset|MountPropagation|PVCProtection)\\]|Networking --ginkgo.skip=Networking-Performance|IPv6 --minStartupPods=8",
+      "--test_args=--ginkgo.focus=\\[Feature:(Audit|LocalPersistentVolumes|PodPreset|MountPropagation|PVCProtection)\\]|Networking --ginkgo.skip=Networking-Performance|IPv6 --minStartupPods=8",
       "--timeout=180m"
     ],
     "scenario": "kubernetes_e2e",
@@ -11323,11 +11323,30 @@
       "sig-testing"
     ]
   },
-  "spark-k8s-periodic": {
+  "spark-periodic-default-gke": {
     "args": [
       "--check-leaked-resources",
       "--deployment=gke",
       "--extract=gke",
+      "--gcp-node-image=gci",
+      "--gcp-zone=us-central1-f",
+      "--gke-environment=prod",
+      "--provider=gke",
+      "--test=false",
+      "--test-cmd=../e2e/e2e-prow.sh",
+      "--test-cmd-name=spark-integration",
+      "--timeout=120m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-big-data"
+    ]
+  },
+  "spark-periodic-latest-gke": {
+    "args": [
+      "--check-leaked-resources",
+      "--deployment=gke",
+      "--extract=gke-latest",
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
       "--gke-environment=prod",

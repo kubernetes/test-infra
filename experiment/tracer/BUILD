@@ -1,0 +1,46 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library", "go_test")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "main.go",
+        "trace.go",
+    ],
+    importpath = "k8s.io/test-infra/experiment/tracer",
+    visibility = ["//visibility:private"],
+    deps = [
+        "//prow/github:go_default_library",
+        "//prow/kube:go_default_library",
+        "//prow/kube/labels:go_default_library",
+        "//vendor/github.com/NYTimes/gziphandler:go_default_library",
+        "//vendor/github.com/sirupsen/logrus:go_default_library",
+    ],
+)
+
+go_binary(
+    name = "tracer",
+    embed = [":go_default_library"],
+    importpath = "k8s.io/test-infra/experiment/tracer",
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = ["trace_test.go"],
+    embed = [":go_default_library"],
+    importpath = "k8s.io/test-infra/experiment/tracer",
+)
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [":package-srcs"],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)

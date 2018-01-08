@@ -34,10 +34,6 @@ func (f fkc) ListProwJobs(s string) ([]kube.ProwJob, error) {
 
 type fpkc struct{}
 
-func (f fpkc) ListPods(selector string) ([]kube.Pod, error) {
-	return nil, nil
-}
-
 func (f fpkc) GetLog(pod string) ([]byte, error) {
 	if pod == "wowowow" {
 		return []byte("wow"), nil

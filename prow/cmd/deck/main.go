@@ -48,8 +48,6 @@ var (
 	hookURL      = flag.String("hook-url", "", "Path to hook plugin help endpoint.")
 	// use when behind a load balancer
 	redirectHTTPTo = flag.String("redirect-http-to", "", "host to redirect http->https to based on x-forwarded-proto == http.")
-	// Feature flag for now, can be removed in the future.
-	enableTracing = flag.Bool("enable-tracing", false, "Enable log tracing in prow.")
 )
 
 // Matches letters, numbers, hyphens, and underscores.
@@ -96,9 +94,6 @@ func main() {
 	mux.Handle("/log", gziphandler.GzipHandler(handleLog(ja)))
 	mux.Handle("/rerun", gziphandler.GzipHandler(handleRerun(kc)))
 	mux.Handle("/config", gziphandler.GzipHandler(handleConfig(configAgent)))
-	if *enableTracing {
-		mux.Handle("/trace", gziphandler.GzipHandler(handleTrace(ja)))
-	}
 
 	if *hookURL != "" {
 		mux.Handle("/plugin-help.js", gziphandler.GzipHandler(handlePluginHelp(newHelpAgent(*hookURL))))
