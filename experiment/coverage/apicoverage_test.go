@@ -71,6 +71,15 @@ func TestParseOpenAPI(t *testing.T) {
 			},
 		},
 		{
+			Rawdata: []byte(`{"paths": {"/api/v1/": {
+				"get": {"description": "verify the end of / is removed"},
+				"post": {"description": "ditto"}}}}`),
+			Expected: apiArray{
+				{Method: "GET", URL: "/api/v1"},
+				{Method: "POST", URL: "/api/v1"},
+			},
+		},
+		{
 			Rawdata: []byte(`{"paths": {
 			"/resources": {
 				"get": {"description": "get available resources"},

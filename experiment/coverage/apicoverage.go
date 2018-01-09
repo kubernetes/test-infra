@@ -57,6 +57,9 @@ func parseOpenAPI(rawdata []byte) apiArray {
 	}
 
 	for path, pathItem := range swaggerSpec.Paths.Paths {
+		// Some paths contain "/" at the end of swagger spec, here removes "/" for comparing them easily later.
+		path = strings.TrimRight(path, "/")
+
 		// Standard HTTP methods: https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#path-item-object
 		methods := []string{"get", "put", "post", "delete", "options", "head", "patch"}
 		for _, method := range methods {
