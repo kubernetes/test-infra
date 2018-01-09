@@ -1,6 +1,3 @@
-# The aws-janitor is not properly vendored in this repo
-# gazelle:exclude aws-janitor
-
 py_test(
     name = "bootstrap_test",
     srcs = [
@@ -36,6 +33,7 @@ filegroup(
     name = "all-srcs",
     srcs = [
         ":package-srcs",
+        "//jenkins/aws-janitor:all-srcs",
         "//jenkins/job-configs:all-srcs",
     ],
     tags = ["automanaged"],
