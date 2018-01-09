@@ -250,7 +250,7 @@ class JobTest(unittest.TestCase):
             for container in spec.get('containers'):
                 if 'args' in container:
                     for arg in container.get('args'):
-                        match = re.match(r'--timeout=(\d+)', arg)
+                        match = re.match(r'[\'"]?--timeout=(\d+)', arg)
                         if match:
                             real_job['timeout'] = match.group(1)
         if 'pull-' not in name and name in self.realjobs and name not in self.prowjobs:
@@ -791,6 +791,10 @@ class JobTest(unittest.TestCase):
             'ci-kubernetes-node-kubelet-stable3': 'ci-kubernetes-node-kubelet-*',
             'ci-kubernetes-node-kubelet-beta': 'ci-kubernetes-node-kubelet-*',
             'ci-kubernetes-node-kubelet-non-cri-1-6': 'ci-kubernetes-node-kubelet-*',
+            # The cri-containerd validation node e2e jobs intentionally share projects.
+            'ci-cri-containerd-node-e2e': 'cri-containerd-node-e2e-*',
+            'ci-cri-containerd-node-e2e-serial': 'cri-containerd-node-e2e-*',
+            'ci-cri-containerd-node-e2e-flaky': 'cri-containerd-node-e2e-*',
         }
         for soak_prefix in [
                 'ci-kubernetes-soak-gce-1.5',

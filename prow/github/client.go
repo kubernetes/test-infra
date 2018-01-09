@@ -797,6 +797,48 @@ func (c *Client) GetRepos(org string, isUser bool) ([]Repo, error) {
 	return repos, nil
 }
 
+func (c *Client) GetBranches(org, repo string) ([]Branch, error) {
+	c.log("GetBranches", org, repo)
+	var branches []Branch
+	_, err := c.request(&request{
+		method:    http.MethodGet,
+		path:      fmt.Sprintf("%s/repos/%s/%s/branches", c.base, org, repo),
+		exitCodes: []int{200},
+	}, &branches)
+	return branches, err
+}
+
+func (c *Client) RemoveBranchProtection(org, repo, branch string) error {
+	c.log("RemoveBranchProtection", org, repo, branch)
+	_, err := c.request(&request{
+		method:    http.MethodDelete,
+		path:      fmt.Sprintf("%s/repos/%s/%s/branches/%s/protection", c.base, org, repo, branch),
+		exitCodes: []int{204},
+	}, nil)
+	return err
+}
+
+func (c *Client) UpdateBranchProtection(org, repo, branch string, requiredContexts []string, pushers []string) error {
+	c.log("UpdateBranchProtection", org, repo, branch, requiredContexts, pushers)
+	_, err := c.request(&request{
+		method: http.MethodPut,
+		path:   fmt.Sprintf("%s/repos/%s/%s/branches/%s/protection", c.base, org, repo, branch),
+		requestBody: BranchProtectionRequest{
+			RequiredStatusChecks: RequiredStatusChecks{
+				Strict:   false,
+				Contexts: requiredContexts,
+			},
+			EnforceAdmins:              false,
+			RequiredPullRequestReviews: nil,
+			Restrictions: Restrictions{
+				Teams: pushers,
+			},
+		},
+		exitCodes: []int{200},
+	}, nil)
+	return err
+}
+
 // Adds Label label/color to given org/repo
 func (c *Client) AddRepoLabel(org, repo, label, color string) error {
 	c.log("AddRepoLabel", org, repo, label, color)

@@ -32,6 +32,7 @@ go_library(
     name = "go_default_library",
     srcs = [
         "agent.go",
+        "branch_protection.go",
         "config.go",
         "jobs.go",
         "tide.go",

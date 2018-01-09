@@ -41,10 +41,11 @@ type Config struct {
 	// Periodics are not associated with any repo.
 	Periodics []Periodic `json:"periodics,omitempty"`
 
-	Tide   Tide   `json:"tide,omitempty"`
-	Plank  Plank  `json:"plank,omitempty"`
-	Sinker Sinker `json:"sinker,omitempty"`
-	Deck   Deck   `json:"deck,omitempty"`
+	Tide             Tide             `json:"tide,omitempty"`
+	Plank            Plank            `json:"plank,omitempty"`
+	Sinker           Sinker           `json:"sinker,omitempty"`
+	Deck             Deck             `json:"deck,omitempty"`
+	BranchProtection BranchProtection `json:"branch-protection,omitempty"`
 
 	// TODO: Move this out of the main config.
 	JenkinsOperator JenkinsOperator `json:"jenkins_operator,omitempty"`
