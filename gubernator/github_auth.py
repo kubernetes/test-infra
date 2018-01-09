@@ -45,8 +45,9 @@ class Endpoint(view_base.BaseHandler):
                 self.app.config['github_client'] = secrets.get('github_client')
             except KeyError:
                 self.abort(500,
-                           body_template='An admin must <a href="/config">'
-                           'configure Github secrets</a> first.')
+                           body_template=(
+                           'An admin must <a href="/config">'
+                           'configure Github secrets</a> first.'))
         client = self.app.config['github_client']
         return client['id'], client['secret']
 

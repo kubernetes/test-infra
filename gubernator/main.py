@@ -64,24 +64,27 @@ class ConfigHandler(view_base.BaseHandler):
         self.render('config.html', {'hostname': hostname})
 
     def post(self):
-        self.response.headers['Content-Type'] = 'text/plain'
         if users.is_current_user_admin():
+            oauth_set = False
+            webhook_set = False
+
             github_id = self.request.get('github_id')
             github_secret = self.request.get('github_secret')
             if github_id and github_secret:
                 value = {'id': github_id, 'secret': github_secret}
                 secrets.put('github_client', value)
                 app.config['github_client'] = value
-                self.response.write('set github oauth client!\n')
+                oauth_set = True
             github_webhook_secret = self.request.get('github_webhook_secret')
             if github_webhook_secret:
                 secrets.put('github_webhook_secret',
                             github_webhook_secret,
                             per_host=False)
-                self.response.write('set github webhook secret!\n')
-            self.response.write('done.')
+                webhook_set = True
+            self.render('config.html',
+                        {'hostname': hostname, 'oauth_set': oauth_set, 'webhook_set': webhook_set})
         else:
-            self.response.write('not admin, ignoring.')
+            self.abort(403)
 
 
 app = webapp2.WSGIApplication([

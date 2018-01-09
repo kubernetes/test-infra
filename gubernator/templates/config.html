@@ -13,4 +13,10 @@ GitHub OAuth Client Secret: <input type="text" name="github_secret"><br>
 <p>GitHub Webhook Secret: <input type="text" name="github_webhook_secret"><br>
 <input type="submit" value="Submit">
 </form>
+% if oauth_set
+<h2>OAuth secrets set!</h2>
+% endif
+% if webhook_set
+<h2>Github Webhook secret set!</h2>
+% endif
 % endblock
