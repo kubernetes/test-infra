@@ -675,3 +675,23 @@ func (c *Configuration) EnabledReposForPlugin(plugin string) (orgs, repos []stri
 	}
 	return
 }
+
+func (c *Configuration) EnabledReposForExternalPlugin(plugin string) (orgs, repos []string) {
+	for repo, plugins := range c.ExternalPlugins {
+		found := false
+		for _, candidate := range plugins {
+			if candidate.Name == plugin {
+				found = true
+				break
+			}
+		}
+		if found {
+			if strings.Contains(repo, "/") {
+				repos = append(repos, repo)
+			} else {
+				orgs = append(orgs, repo)
+			}
+		}
+	}
+	return
+}

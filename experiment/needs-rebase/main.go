@@ -52,7 +52,7 @@ func main() {
 	flag.Parse()
 	logrus.SetFormatter(&logrus.JSONFormatter{})
 	// TODO: Use global option from the prow config.
-	logrus.SetLevel(logrus.WarnLevel)
+	logrus.SetLevel(logrus.InfoLevel)
 	log := logrus.StandardLogger().WithField("plugin", "needs-rebase")
 
 	// Ignore SIGTERM so that we don't drop hooks when the pod is removed.

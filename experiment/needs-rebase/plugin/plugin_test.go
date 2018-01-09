@@ -242,15 +242,9 @@ func TestHandleAll(t *testing.T) {
 		}
 		for _, label := range testPR.labels {
 			s := struct {
-				Label struct {
-					Name githubql.String
-				}
+				Name githubql.String
 			}{
-				Label: struct {
-					Name githubql.String
-				}{
-					Name: githubql.String(label),
-				},
+				Name: githubql.String(label),
 			}
 			pr.Labels.Nodes = append(pr.Labels.Nodes, s)
 		}

@@ -210,6 +210,31 @@ type Repo struct {
 	Fork     bool   `json:"fork"`
 }
 
+type Branch struct {
+	Name      string `json:"name"`
+	Protected bool   `json:"protected"`
+}
+
+// https://developer.github.com/v3/repos/branches/#update-branch-protection
+type BranchProtectionRequest struct {
+	RequiredStatusChecks       RequiredStatusChecks        `json:"required_status_checks"`
+	EnforceAdmins              bool                        `json:"enforce_admins"`
+	RequiredPullRequestReviews *RequiredPullRequestReviews `json:"required_pull_request_reviews"`
+	Restrictions               Restrictions                `json:"restrictions"`
+}
+
+type RequiredStatusChecks struct {
+	Strict   bool     `json:"strict"`
+	Contexts []string `json:"contexts"`
+}
+
+type RequiredPullRequestReviews struct{}
+
+type Restrictions struct {
+	Users []string `json:"users"`
+	Teams []string `json:"teams"`
+}
+
 // IssueEventAction enumerates the triggers for this
 // webhook payload type. See also:
 // https://developer.github.com/v3/activity/events/types/#issuesevent

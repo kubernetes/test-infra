@@ -98,7 +98,8 @@ func HandleEvent(log *logrus.Entry, ghc githubClient, pre *github.PullRequestEve
 }
 
 func HandleAll(log *logrus.Entry, ghc githubClient, config *plugins.Configuration) error {
-	orgs, repos := config.EnabledReposForPlugin(pluginName)
+	log.Info("Checking all PRs.")
+	orgs, repos := config.EnabledReposForExternalPlugin(pluginName)
 	var buf bytes.Buffer
 	fmt.Fprint(&buf, "is:pr is:open")
 	for _, org := range orgs {
@@ -111,6 +112,7 @@ func HandleAll(log *logrus.Entry, ghc githubClient, config *plugins.Configuratio
 	if err != nil {
 		return err
 	}
+	log.Infof("Considering %d PRs.", len(prs))
 
 	for _, pr := range prs {
 		// Skip PRs that are calculating mergeability. They will be updated by event or next loop.
@@ -126,8 +128,8 @@ func HandleAll(log *logrus.Entry, ghc githubClient, config *plugins.Configuratio
 			"pr":   num,
 		})
 		hasLabel := false
-		for _, node := range pr.Labels.Nodes {
-			if node.Label.Name == needsRebaseLabel {
+		for _, label := range pr.Labels.Nodes {
+			if label.Name == needsRebaseLabel {
 				hasLabel = true
 				break
 			}
@@ -218,9 +220,7 @@ type pullRequest struct {
 	}
 	Labels struct {
 		Nodes []struct {
-			Label struct {
-				Name githubql.String
-			}
+			Name githubql.String
 		}
 	} `graphql:"labels(first:100)"`
 	Mergeable githubql.MergeableState
