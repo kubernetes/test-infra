@@ -52,6 +52,7 @@ var (
 	kopsPriorityPath = flag.String("kops-priority-path", "", "Insert into PATH if set")
 	kopsBaseURL      = flag.String("kops-base-url", "", "Base URL for a prebuilt version of kops")
 	kopsVersion      = flag.String("kops-version", "", "URL to a file containing a valid kops-base-url")
+	kopsDiskSize     = flag.Int("kops-disk-size", 48, "Disk size to use for nodes and masters")
 )
 
 type kops struct {
@@ -64,6 +65,7 @@ type kops struct {
 	image       string
 	args        string
 	kubecfg     string
+	diskSize    int
 
 	// sshUser is the username to use when SSHing to nodes (for example for log capture)
 	sshUser string
@@ -240,6 +242,7 @@ func newKops(provider, gcpProject, cluster string) (*kops, error) {
 		kubecfg:       kubecfg,
 		provider:      provider,
 		gcpProject:    gcpProject,
+		diskSize:      *kopsDiskSize,
 	}, nil
 }
 
@@ -268,6 +271,8 @@ func (k kops) Up() error {
 		"--name", k.cluster,
 		"--ssh-public-key", k.sshPublicKey,
 		"--node-count", strconv.Itoa(k.nodes),
+		"--node-volume-size", strconv.Itoa(k.diskSize),
+		"--master-volume-size", strconv.Itoa(k.diskSize),
 		"--zones", strings.Join(k.zones, ","),
 	}
 	if k.kubeVersion != "" {
@@ -288,6 +293,10 @@ func (k kops) Up() error {
 	}
 	if k.isGoogleCloud() {
 		featureFlags = append(featureFlags, "AlphaAllowGCE")
+		createArgs = append(createArgs, "--cloud", "gce")
+	} else {
+		// append cloud type to allow for use of new regions without updates
+		createArgs = append(createArgs, "--cloud", "aws")
 	}
 	if k.args != "" {
 		createArgs = append(createArgs, strings.Split(k.args, " ")...)
