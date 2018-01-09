@@ -253,6 +253,8 @@ func TestHandleAll(t *testing.T) {
 	fake := newFakeClient(prs, nil, false)
 	config := &plugins.Configuration{
 		Plugins: map[string][]string{"/": {"lgtm", pluginName}},
+
+		ExternalPlugins: map[string][]plugins.ExternalPlugin{"/": {{Name: pluginName}}},
 	}
 
 	if err := HandleAll(logrus.WithField("plugin", pluginName), fake, config); err != nil {
