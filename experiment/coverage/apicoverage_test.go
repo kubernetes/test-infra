@@ -34,10 +34,10 @@ func equalAPIArray(a, b apiArray) bool {
 	if len(a) != len(b) {
 		return false
 	}
-	for i := range a {
+	for _, i := range a {
 		found := false
-		for j := range b {
-			if i == j {
+		for _, j := range b {
+			if i.Method == j.Method && i.URL == j.URL {
 				found = true
 				break
 			}

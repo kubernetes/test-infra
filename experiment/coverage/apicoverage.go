@@ -117,7 +117,7 @@ func parseAPILog(fp io.Reader) apiArray {
 		}
 		api := apiData{
 			Method: method,
-			URL:    "/" + parsedURL.Path,
+			URL:    parsedURL.Path,
 		}
 		apisLog = append(apisLog, api)
 	}
