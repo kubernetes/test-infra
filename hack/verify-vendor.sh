@@ -13,8 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-script="$(dirname ${BASH_SOURCE})/prune-libraries.sh"  --check
-if ! "$script" ; then
-  echo "Run $script --fix"
+script="$(dirname ${BASH_SOURCE})/prune-libraries.sh"
+if ! "${script}" --check; then
+  echo "Run ${script} --fix"
   exit 1
 fi
