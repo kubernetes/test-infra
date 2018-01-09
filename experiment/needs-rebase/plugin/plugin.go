@@ -100,6 +100,10 @@ func HandleEvent(log *logrus.Entry, ghc githubClient, pre *github.PullRequestEve
 func HandleAll(log *logrus.Entry, ghc githubClient, config *plugins.Configuration) error {
 	log.Info("Checking all PRs.")
 	orgs, repos := config.EnabledReposForExternalPlugin(pluginName)
+	if len(orgs) == 0 && len(repos) == 0 {
+		log.Warnf("No repos have been configured for the %s plugin", pluginName)
+		return nil
+	}
 	var buf bytes.Buffer
 	fmt.Fprint(&buf, "is:pr is:open")
 	for _, org := range orgs {
