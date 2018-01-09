@@ -360,7 +360,12 @@ presubmits:
     trigger: "(?m)^/test pull-heapster-e2e-prow,?(\\s+|$)"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/heapster-test:0.8
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180102-0e2b24a0b-master
+        args:
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--root=/go/src"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--clean"
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: /etc/service-account/service-account.json

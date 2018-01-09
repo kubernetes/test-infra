@@ -10927,6 +10927,11 @@
     ]
   },
   "pull-heapster-e2e-prow": {
+    "args": [
+      "make",
+      "test-unit",
+      "test-integration"
+    ],
     "scenario": "execute",
     "sigOwners": [
       "sig-instrumentation"
