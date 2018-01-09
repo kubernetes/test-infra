@@ -43,6 +43,7 @@ filegroup(
         "//vendor/github.com/matttproud/golang_protobuf_extensions/pbutil:all-srcs",
         "//vendor/github.com/peterbourgon/diskv:all-srcs",
         "//vendor/github.com/prometheus/client_golang/prometheus:all-srcs",
+        "//vendor/github.com/prometheus/client_model/go:all-srcs",
         "//vendor/github.com/prometheus/common/expfmt:all-srcs",
         "//vendor/github.com/prometheus/common/model:all-srcs",
         "//vendor/github.com/prometheus/procfs:all-srcs",
