@@ -170,6 +170,23 @@
       "sig-multicluster"
     ]
   },
+  "ci-ingress-gce-e2e": {
+    "args": [
+      "--build-ingressgce",
+      "--cluster=",
+      "--extract=ci/latest",
+      "--gcp-project=e2e-ingress-gce",
+      "--gcp-zone=us-central1-f",
+      "--ginkgo-parallel",
+      "--provider=gce",
+      "--test_args=--ginkgo.focus=\\[Feature:Ingress\\]",
+      "--timeout=320m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-network"
+    ]
+  },
   "ci-kops-build": {
     "args": [
       "make",

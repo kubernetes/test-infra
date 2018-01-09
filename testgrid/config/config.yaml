@@ -109,6 +109,8 @@ test_groups:
     - target_config: Tests name
     - target_config: Context
     name_format: '%s [%s]'
+- name: ci-ingress-gce-e2e
+  gcs_prefix: kubernetes-jenkins/logs/ci-ingress-gce-e2e
 - name: ci-kubernetes-build-1.9
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-build-1.9
 - name: ci-kubernetes-build
@@ -3886,6 +3888,10 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gci-gce-ingress
     alert_options:
       alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
+  - name: ingress-gce-e2e
+    test_group_name: ci-ingress-gce-e2e
+    alert_options:
+      alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
   - name: gci-gce-ingress-release-1.6
     test_group_name: ci-kubernetes-e2e-gce-cos-k8sstable3-ingress
     alert_options:
@@ -5290,4 +5296,3 @@ dashboard_groups:
   - sig-gcp-release-1.7
   - sig-gcp-release-1.6
   - sig-gcp-ubuntu
-
