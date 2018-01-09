@@ -78,6 +78,17 @@ git-image: alpine-image
 	docker build -t "$(REGISTRY)/$(PROJECT)/git:$(GIT_VERSION)" $(DOCKER_LABELS) cmd/images/git
 	$(PUSH) "$(REGISTRY)/$(PROJECT)/git:$(GIT_VERSION)"
 
+.PHONY: alpine-image git-image
+
+branchprotector-image:
+	bazel run //prow/cmd/branchprotector:push
+
+branchprotector-cronjob: get-cluster-credentials
+	@echo Consider bazel run //prow/cluster:branchprotector_cronjob.apply instead
+	kubectl apply -f cluster/branchprotector_cronjob.yaml
+
+.PHONY: branchprotector-image branchprotector-cronjob
+
 hook-image: git-image
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o cmd/hook/hook k8s.io/test-infra/prow/cmd/hook
 	docker build -t "$(REGISTRY)/$(PROJECT)/hook:$(HOOK_VERSION)" $(DOCKER_LABELS) cmd/hook
