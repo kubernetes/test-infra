@@ -250,7 +250,7 @@ class JobTest(unittest.TestCase):
             for container in spec.get('containers'):
                 if 'args' in container:
                     for arg in container.get('args'):
-                        match = re.match(r'--timeout=(\d+)', arg)
+                        match = re.match(r'\'?--timeout=(\d+)', arg)
                         if match:
                             real_job['timeout'] = match.group(1)
         if 'pull-' not in name and name in self.realjobs and name not in self.prowjobs:
