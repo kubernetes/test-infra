@@ -47,8 +47,6 @@ type apiData struct {
 
 type apiArray []apiData
 
-var reOpenapi = regexp.MustCompile(`({\S+?})`)
-
 func parseOpenAPI(rawdata []byte) apiArray {
 	var swaggerSpec spec.Swagger
 	var apisOpenapi apiArray
@@ -136,6 +134,8 @@ func getAPILog(restlog string) apiArray {
 
 	return parseAPILog(fp)
 }
+
+var reOpenapi = regexp.MustCompile(`({\S+?})`)
 
 func getTestedAPIs(apisOpenapi, apisLogs apiArray) apiArray {
 	var found bool
