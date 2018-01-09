@@ -6,48 +6,62 @@
         <link rel="stylesheet" type="text/css" href="style.css?reload-me-please=1513905648">
         <link rel="stylesheet" type="text/css" href="extensions/style.css">
         <link href="https://fonts.googleapis.com/css?family=Roboto:400,700" rel="stylesheet">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+        <link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.indigo-pink.min.css">
         <script type="text/javascript" src="plugin-help-script.js"></script>
         <script type="text/javascript" src="plugin-help.js?var=allHelp"></script>
         <script type="text/javascript" src="extensions/script.js"></script>
+        <script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>
     </head>
     <body>
-        <header>
-            <ul>
-                <li><a href="https://github.com/kubernetes/test-infra" class="logo"><img src="/logo.svg" alt="kubernetes logo" class="logo"></img></a><a href="/"><h1>Prow Status</h1></a></li>
-                <li><a href="/plugin-help.html" class="current"><h1>Plugin Help</h1></a></li>
-                <li><a href="/tide.html"><h1>Tide Status</h1></a></li>
-            </ul>
-        </header>
-        <aside>
-        <div>
-            <ul class="noBullets">
-                <li>Plugin help for</li>
-                <li><select id="repo" onchange="redraw();"><option>all plugins</option></select></li>
-                <li>(click a plugin below to expand/hide help)</li>
-            </ul>
+        <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+            <header class="mdl-layout__header">
+                <div class="mdl-layout__header-row">
+                    <a href="https://github.com/kubernetes/test-infra" class="logo"><img src="/logo.svg" alt="kubernetes logo" class="logo"/></a>
+                    <span class="mdl-layout-title header-title">Plugin Help</span>
+                </div>
+            </header>
+            <div class="mdl-layout__drawer">
+                <span class="mdl-layout-title">Prow Dashboard</span>
+                <nav class="mdl-navigation">
+                    <a class="mdl-navigation__link" href="/">Prow Status</a>
+                    <a class="mdl-navigation__link mdl-navigation__link--current" href="/plugin-help.html">Plugin Help</a>
+                    <a class="mdl-navigation__link" href="/tide.html">Tide Status</a>
+                </nav>
+            </div>
+            <main class="mdl-layout__content">
+                <aside>
+                    <div class="card-box">
+                        <ul class="noBullets">
+                            <li>Plugin help for</li>
+                            <li><select id="repo" onchange="redraw();"><option>all plugins</option></select></li>
+                            <li>(click a plugin below to expand/hide help)</li>
+                        </ul>
+                    </div>
+                </aside>
+                <article id="normal-plugins">
+                    <table class="headered">
+                        <thead>
+                        <tr>
+                            <th class="plugins-header">Normal Plugins</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                </article>
+                <article id="external-plugins">
+                    <table class="headered">
+                        <thead>
+                        <tr>
+                            <th class="plugins-header">External Plugins</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                </article>
+            </main>
         </div>
-        </aside>
-        <article id="normal-plugins">
-        <table class="headered">
-            <thead>
-                <tr>
-                    <th><h2>Normal Plugins</h2></th>
-                </tr>
-            </thead>
-            <tbody>
-            </tbody>
-        </table>
-        </article>
-        <article id="external-plugins">
-        <table class="headered">
-            <thead>
-                <tr>
-                    <th><h2>External Plugins</h2></th>
-                </tr>
-            </thead>
-            <tbody>
-            </tbody>
-        </table>
-        </article>
     </body>
 </html>
