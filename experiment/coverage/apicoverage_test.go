@@ -133,6 +133,40 @@ I0919 15:34:14.943642    6611 round_trippers.go:414] GET https://k8s-api/api/v1/
 	}
 }
 
+func TestGetTestedAPIs(t *testing.T) {
+	testCases := []struct {
+		apisOpenapi apiArray
+		apisLogs    apiArray
+		Expected    apiArray
+	}{
+		{
+			apisOpenapi: apiArray{
+				{Method: "GET", URL: "/api/v1/foo"},
+				{Method: "POST", URL: "/api/v1/foo"},
+				{Method: "GET", URL: "/api/v1/bar"},
+				{Method: "POST", URL: "/api/v1/bar"},
+			},
+			apisLogs: apiArray{
+				{Method: "GET", URL: "/api/v1/foo"},
+				{Method: "GET", URL: "/api/v1/bar"},
+				{Method: "GET", URL: "/api/v1/foo"},
+			},
+			Expected: apiArray{
+				{Method: "GET", URL: "/api/v1/foo"},
+				{Method: "GET", URL: "/api/v1/bar"},
+			},
+		},
+	}
+	for _, test := range testCases {
+		res := getTestedAPIs(test.apisOpenapi, test.apisLogs)
+		if !equalAPIArray(res, test.Expected) {
+			t.Errorf("APILog did not match expected for test")
+			t.Errorf("Actual: %#v", res)
+			t.Errorf("Expected: %#v", test.Expected)
+		}
+	}
+}
+
 func TestGetTestedAPIsByLevel(t *testing.T) {
 	testCases := []struct {
 		Negative       bool
