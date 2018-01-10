@@ -24,6 +24,12 @@ go_register_toolchains(
     go_version = "1.9.2",
 )
 
+git_repository(
+    name = "io_bazel_rules_k8s",
+    remote = "https://github.com/bazelbuild/rules_k8s.git",
+    commit = "3756369d4920033c32c12d16207e8ee14fee1b18",
+)
+
 http_archive(
     name = "io_bazel_rules_docker",
     sha256 = "c919051945ab388c8440ea92d7ceb429fdbbf0a53639e6e0159b231881ceed02",
