@@ -34,6 +34,7 @@ from google.appengine.ext import testbed
 import handlers
 import main
 import models
+import secrets
 
 app = webtest.TestApp(main.app)
 
@@ -52,7 +53,7 @@ class AppTest(TestBase):
     def setUp(self):
         self.init_stubs()
         self.taskqueue = self.testbed.get_stub(testbed.TASKQUEUE_SERVICE_NAME)
-        handlers._webhook_secret = 'asdf'  # pylint: disable=protected-access
+        secrets.put('github_webhook_secret', 'some_secret', per_host=False)
 
     def get_response(self, event, body):
         if isinstance(body, dict):
