@@ -107,6 +107,10 @@ table.pr td {
     padding: 5px;
     max-width: 30vw;
 }
+table.pr th {
+    cursor: pointer;
+    user-select: none;
+}
 .build-success {
     background-color: lightgreen;
 }
