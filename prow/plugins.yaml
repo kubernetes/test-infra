@@ -13,6 +13,10 @@ triggers:
   - GoogleCloudPlatform/k8s-multicluster-ingress
   trusted_org: kubernetes
   join_org_url: "https://git.k8s.io/community/community-membership.md#member"
+- repos:
+  - containerd/cri-containerd
+  trusted_org: containerd
+  join_org_url: "https://github.com/containerd/containerd/blob/master/MAINTAINERS"
 
 approve:
 - repos:
@@ -196,7 +200,13 @@ plugins:
   - lifecycle
   - size
 
-  kubernetes-incubator/cri-containerd:
+  containerd/cri-containerd:
+  - assign
+  - cla
+  - label
+  - lgtm
+  - lifecycle
+  - size
   - trigger
 
   kubernetes-security/kubernetes:
