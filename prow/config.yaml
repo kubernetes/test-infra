@@ -38,6 +38,7 @@ tide:
     - kubernetes/cluster-registry
     - kubernetes/community
     - kubernetes/contrib
+    - kubernetes/dashboard
     - kubernetes/features
     - kubernetes/federation
     - kubernetes/ingress-nginx
