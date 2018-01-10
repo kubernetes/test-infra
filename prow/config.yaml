@@ -42,6 +42,7 @@ tide:
     - kubernetes/federation
     - kubernetes/kops
     - kubernetes/kubernetes-template-project
+    - kubernetes/minikube
     - kubernetes/sig-release
     - kubernetes/steering
     - kubernetes/test-infra
