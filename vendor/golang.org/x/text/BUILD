@@ -4,13 +4,17 @@ go_library(
     name = "go_default_library",
     srcs = ["doc.go"],
     importpath = "golang.org/x/text",
+    tags = ["manual"],
     visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "package-srcs",
     srcs = glob(["**"]),
-    tags = ["automanaged"],
+    tags = [
+        "automanaged",
+        "manual",
+    ],
     visibility = ["//visibility:private"],
 )
 
@@ -23,6 +27,9 @@ filegroup(
         "//vendor/golang.org/x/text/unicode:all-srcs",
         "//vendor/golang.org/x/text/width:all-srcs",
     ],
-    tags = ["automanaged"],
+    tags = [
+        "automanaged",
+        "manual",
+    ],
     visibility = ["//visibility:public"],
 )

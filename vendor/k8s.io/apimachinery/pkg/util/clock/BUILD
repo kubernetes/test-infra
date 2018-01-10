@@ -9,17 +9,24 @@ go_library(
     name = "go_default_library",
     srcs = ["clock.go"],
     importpath = "k8s.io/apimachinery/pkg/util/clock",
+    tags = ["manual"],
 )
 
 filegroup(
     name = "package-srcs",
     srcs = glob(["**"]),
-    tags = ["automanaged"],
+    tags = [
+        "automanaged",
+        "manual",
+    ],
     visibility = ["//visibility:private"],
 )
 
 filegroup(
     name = "all-srcs",
     srcs = [":package-srcs"],
-    tags = ["automanaged"],
+    tags = [
+        "automanaged",
+        "manual",
+    ],
 )

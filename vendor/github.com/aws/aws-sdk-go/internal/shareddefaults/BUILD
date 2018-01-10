@@ -4,19 +4,26 @@ go_library(
     name = "go_default_library",
     srcs = ["shared_config.go"],
     importpath = "github.com/aws/aws-sdk-go/internal/shareddefaults",
+    tags = ["manual"],
     visibility = ["//vendor/github.com/aws/aws-sdk-go:__subpackages__"],
 )
 
 filegroup(
     name = "package-srcs",
     srcs = glob(["**"]),
-    tags = ["automanaged"],
+    tags = [
+        "automanaged",
+        "manual",
+    ],
     visibility = ["//visibility:private"],
 )
 
 filegroup(
     name = "all-srcs",
     srcs = [":package-srcs"],
-    tags = ["automanaged"],
+    tags = [
+        "automanaged",
+        "manual",
+    ],
     visibility = ["//visibility:public"],
 )

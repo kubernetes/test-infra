@@ -30,6 +30,7 @@ go_library(
         "utils.go",
     ],
     importpath = "github.com/jinzhu/gorm",
+    tags = ["manual"],
     visibility = ["//visibility:public"],
     deps = ["//vendor/github.com/jinzhu/inflection:go_default_library"],
 )
@@ -37,7 +38,10 @@ go_library(
 filegroup(
     name = "package-srcs",
     srcs = glob(["**"]),
-    tags = ["automanaged"],
+    tags = [
+        "automanaged",
+        "manual",
+    ],
     visibility = ["//visibility:private"],
 )
 
@@ -48,6 +52,9 @@ filegroup(
         "//vendor/github.com/jinzhu/gorm/dialects/mysql:all-srcs",
         "//vendor/github.com/jinzhu/gorm/dialects/sqlite:all-srcs",
     ],
-    tags = ["automanaged"],
+    tags = [
+        "automanaged",
+        "manual",
+    ],
     visibility = ["//visibility:public"],
 )

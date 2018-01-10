@@ -11,6 +11,7 @@ go_library(
         "text_parse.go",
     ],
     importpath = "github.com/prometheus/common/expfmt",
+    tags = ["manual"],
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/bitbucket.org/ww/goautoneg:go_default_library",
@@ -24,13 +25,19 @@ go_library(
 filegroup(
     name = "package-srcs",
     srcs = glob(["**"]),
-    tags = ["automanaged"],
+    tags = [
+        "automanaged",
+        "manual",
+    ],
     visibility = ["//visibility:private"],
 )
 
 filegroup(
     name = "all-srcs",
     srcs = [":package-srcs"],
-    tags = ["automanaged"],
+    tags = [
+        "automanaged",
+        "manual",
+    ],
     visibility = ["//visibility:public"],
 )

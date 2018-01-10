@@ -8,6 +8,7 @@ go_library(
         "tables.go",
     ],
     importpath = "golang.org/x/text/internal",
+    tags = ["manual"],
     visibility = ["//visibility:public"],
     deps = ["//vendor/golang.org/x/text/language:go_default_library"],
 )
@@ -15,7 +16,10 @@ go_library(
 filegroup(
     name = "package-srcs",
     srcs = glob(["**"]),
-    tags = ["automanaged"],
+    tags = [
+        "automanaged",
+        "manual",
+    ],
     visibility = ["//visibility:private"],
 )
 
@@ -27,6 +31,9 @@ filegroup(
         "//vendor/golang.org/x/text/internal/triegen:all-srcs",
         "//vendor/golang.org/x/text/internal/ucd:all-srcs",
     ],
-    tags = ["automanaged"],
+    tags = [
+        "automanaged",
+        "manual",
+    ],
     visibility = ["//visibility:public"],
 )

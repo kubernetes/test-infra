@@ -9,6 +9,7 @@ go_library(
         "scalar.go",
     ],
     importpath = "github.com/shurcooL/graphql",
+    tags = ["manual"],
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/shurcooL/go/ctxhttp:go_default_library",
@@ -20,7 +21,10 @@ go_library(
 filegroup(
     name = "package-srcs",
     srcs = glob(["**"]),
-    tags = ["automanaged"],
+    tags = [
+        "automanaged",
+        "manual",
+    ],
     visibility = ["//visibility:private"],
 )
 
@@ -31,6 +35,9 @@ filegroup(
         "//vendor/github.com/shurcooL/graphql/ident:all-srcs",
         "//vendor/github.com/shurcooL/graphql/internal/jsonutil:all-srcs",
     ],
-    tags = ["automanaged"],
+    tags = [
+        "automanaged",
+        "manual",
+    ],
     visibility = ["//visibility:public"],
 )

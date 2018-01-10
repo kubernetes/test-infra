@@ -4,6 +4,7 @@ go_library(
     name = "go_default_library",
     srcs = ["influxdb.go"],
     importpath = "github.com/influxdata/influxdb/client",
+    tags = ["manual"],
     visibility = ["//visibility:public"],
     deps = ["//vendor/github.com/influxdata/influxdb/models:go_default_library"],
 )
@@ -11,7 +12,10 @@ go_library(
 filegroup(
     name = "package-srcs",
     srcs = glob(["**"]),
-    tags = ["automanaged"],
+    tags = [
+        "automanaged",
+        "manual",
+    ],
     visibility = ["//visibility:private"],
 )
 
@@ -21,6 +25,9 @@ filegroup(
         ":package-srcs",
         "//vendor/github.com/influxdata/influxdb/client/v2:all-srcs",
     ],
-    tags = ["automanaged"],
+    tags = [
+        "automanaged",
+        "manual",
+    ],
     visibility = ["//visibility:public"],
 )

@@ -15,6 +15,7 @@ go_library(
         "transaction.go",
     ],
     importpath = "google.golang.org/appengine/internal",
+    tags = ["manual"],
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/golang/protobuf/proto:go_default_library",
@@ -29,7 +30,10 @@ go_library(
 filegroup(
     name = "package-srcs",
     srcs = glob(["**"]),
-    tags = ["automanaged"],
+    tags = [
+        "automanaged",
+        "manual",
+    ],
     visibility = ["//visibility:private"],
 )
 
@@ -45,6 +49,9 @@ filegroup(
         "//vendor/google.golang.org/appengine/internal/remote_api:all-srcs",
         "//vendor/google.golang.org/appengine/internal/urlfetch:all-srcs",
     ],
-    tags = ["automanaged"],
+    tags = [
+        "automanaged",
+        "manual",
+    ],
     visibility = ["//visibility:public"],
 )

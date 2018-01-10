@@ -1,7 +1,10 @@
 filegroup(
     name = "package-srcs",
     srcs = glob(["**"]),
-    tags = ["automanaged"],
+    tags = [
+        "automanaged",
+        "manual",
+    ],
     visibility = ["//visibility:private"],
 )
 
@@ -73,6 +76,9 @@ filegroup(
         "//vendor/k8s.io/apiserver/pkg/util/flag:all-srcs",
         "//vendor/k8s.io/contrib/test-utils/utils:all-srcs",
     ],
-    tags = ["automanaged"],
+    tags = [
+        "automanaged",
+        "manual",
+    ],
     visibility = ["//visibility:public"],
 )

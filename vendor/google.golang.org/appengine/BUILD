@@ -11,6 +11,7 @@ go_library(
         "timeout.go",
     ],
     importpath = "google.golang.org/appengine",
+    tags = ["manual"],
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/golang/protobuf/proto:go_default_library",
@@ -24,7 +25,10 @@ go_library(
 filegroup(
     name = "package-srcs",
     srcs = glob(["**"]),
-    tags = ["automanaged"],
+    tags = [
+        "automanaged",
+        "manual",
+    ],
     visibility = ["//visibility:private"],
 )
 
@@ -35,6 +39,9 @@ filegroup(
         "//vendor/google.golang.org/appengine/internal:all-srcs",
         "//vendor/google.golang.org/appengine/urlfetch:all-srcs",
     ],
-    tags = ["automanaged"],
+    tags = [
+        "automanaged",
+        "manual",
+    ],
     visibility = ["//visibility:public"],
 )

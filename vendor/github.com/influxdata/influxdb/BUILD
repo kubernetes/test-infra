@@ -8,13 +8,17 @@ go_library(
         "node.go",
     ],
     importpath = "github.com/influxdata/influxdb",
+    tags = ["manual"],
     visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "package-srcs",
     srcs = glob(["**"]),
-    tags = ["automanaged"],
+    tags = [
+        "automanaged",
+        "manual",
+    ],
     visibility = ["//visibility:private"],
 )
 
@@ -26,6 +30,9 @@ filegroup(
         "//vendor/github.com/influxdata/influxdb/models:all-srcs",
         "//vendor/github.com/influxdata/influxdb/pkg/escape:all-srcs",
     ],
-    tags = ["automanaged"],
+    tags = [
+        "automanaged",
+        "manual",
+    ],
     visibility = ["//visibility:public"],
 )

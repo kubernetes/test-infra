@@ -4,6 +4,7 @@ load("@io_bazel_rules_go//proto:def.bzl", "go_proto_library")
 proto_library(
     name = "base_proto",
     srcs = ["api_base.proto"],
+    tags = ["manual"],
     visibility = ["//vendor/google.golang.org/appengine:__subpackages__"],
 )
 
@@ -11,6 +12,7 @@ go_proto_library(
     name = "base_go_proto",
     importpath = "google.golang.org/appengine/internal/base",
     proto = ":base_proto",
+    tags = ["manual"],
     visibility = ["//vendor/google.golang.org/appengine:__subpackages__"],
 )
 
@@ -18,19 +20,26 @@ go_library(
     name = "go_default_library",
     embed = [":base_go_proto"],
     importpath = "google.golang.org/appengine/internal/base",
+    tags = ["manual"],
     visibility = ["//vendor/google.golang.org/appengine:__subpackages__"],
 )
 
 filegroup(
     name = "package-srcs",
     srcs = glob(["**"]),
-    tags = ["automanaged"],
+    tags = [
+        "automanaged",
+        "manual",
+    ],
     visibility = ["//visibility:private"],
 )
 
 filegroup(
     name = "all-srcs",
     srcs = [":package-srcs"],
-    tags = ["automanaged"],
+    tags = [
+        "automanaged",
+        "manual",
+    ],
     visibility = ["//visibility:public"],
 )
