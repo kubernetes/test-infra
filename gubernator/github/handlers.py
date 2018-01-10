@@ -29,7 +29,7 @@ from google.appengine.ext import deferred
 
 import classifier
 import models
-from .. import secrets  # erick-lint: disable=relative-import purely for pylint
+import secrets
 
 
 _webhook_secret = None
