@@ -22,6 +22,15 @@ prowjob_namespace: default
 pod_namespace: test-pods
 log_level: info
 
+branch-protection:
+  orgs:
+    kubernetes:
+      repos:
+        kubernetes/test-infra:
+          protect: true
+          # Contexts: inherited from presubmits
+          # Pushers: only admins
+
 tide:
   queries:
   - repos:
