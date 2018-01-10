@@ -29,17 +29,23 @@ from google.appengine.ext import deferred
 
 import classifier
 import models
+from .. import secrets  # erick-lint: disable=relative-import purely for pylint
 
 
-try:
-    WEBHOOK_SECRET = open('webhook_secret').read().strip()
-except IOError:
-    logging.warning('unable to load webhook secret')
-    WEBHOOK_SECRET = 'default'
+_webhook_secret = None
+def get_webhook_secret():
+    global _webhook_secret  # pylint: disable=global-statement
+    if not _webhook_secret:
+        try:
+            _webhook_secret = secrets.get('github_webhook_secret', per_host=False)
+        except KeyError:
+            logging.exception('unable to load webhook secret')
+            return ''
+    return _webhook_secret
 
 
 def make_signature(body):
-    hmac_instance = hmac.HMAC(WEBHOOK_SECRET, body, hashlib.sha1)
+    hmac_instance = hmac.HMAC(get_webhook_secret(), body, hashlib.sha1)
     return 'sha1=' + hmac_instance.hexdigest()
 
 

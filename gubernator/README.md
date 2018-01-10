@@ -29,22 +29,8 @@ only updates after the webhook is added will be shown on the dashboard.
 
 # Deployment
 
-- Get the "Gubernator Github Webhook Secret" (ask test-infra for help) and write
-  it to `github/webhook_secret`.
-- Set up `secrets.json` to support Github [OAuth logins](https://github.com/settings/applications).
-  The skeleton might look like:
-
-```json
-    {
-        "k8s-gubernator.appspot.com": {
-            "session": "(128+  bits of entropy for signing secure cookies)",
-            "github_client": {
-                "id": "(client_id for the oauth application)",
-                "secret": "(client_secret for the oauth application)"
-            }
-        }
-    }
-```
+- Visit /config on the new deployment to configure Github [OAuth logins](https://github.com/settings/applications)
+  and webhook secrets.
 
 # GCS Layout
 
@@ -115,3 +101,8 @@ the different types of jobs:
                 └── job_name         # all builds for the job for this pr live here
                     └── build_number # contains job artifacts, as above
 ```
+
+# Migrations
+
+1. 2018-01-09: Github webhook and oauth secrets must be reconfigured. Visit
+   /config on your deployment to enter the new values.

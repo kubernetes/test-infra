@@ -24,7 +24,9 @@ import webapp2
 from google.appengine.api import urlfetch
 from google.appengine.api import memcache
 from webapp2_extras import sessions
+from webapp2_extras import security
 
+import secrets
 import filters as jinja_filters
 
 JINJA_ENVIRONMENT = jinja2.Environment(
@@ -34,6 +36,17 @@ JINJA_ENVIRONMENT = jinja2.Environment(
     autoescape=True)
 JINJA_ENVIRONMENT.line_statement_prefix = '%'
 jinja_filters.register(JINJA_ENVIRONMENT.filters)
+
+
+def get_session_secret():
+    try:
+        return str(secrets.get('session'))
+    except KeyError:
+        # Make a new session key -- only happens once per hostname!
+        logging.warning('creating new session key!')
+        session_key = security.generate_random_string(entropy=256)
+        secrets.put('session', session_key)
+        return session_key
 
 
 class BaseHandler(webapp2.RequestHandler):
@@ -48,6 +61,12 @@ class BaseHandler(webapp2.RequestHandler):
     # http://webapp2.readthedocs.io/en/latest/api/webapp2_extras/sessions.html
     def dispatch(self):
         # pylint: disable=attribute-defined-outside-init
+
+        # maybe initialize secrets (first request)
+        sessions_config = self.app.config['webapp2_extras.sessions']
+        if not sessions_config['secret_key']:
+            sessions_config['secret_key'] = get_session_secret()
+
         # Get a session store for this request.
         self.session_store = sessions.get_store(request=self.request)
 

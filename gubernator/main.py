@@ -14,55 +14,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import json
-import logging
-import os
-
 import yaml
 import webapp2
-from webapp2_extras import security
 
-from google.appengine.api import app_identity
-from google.appengine.api import modules
+from google.appengine.api import users
 
 import github_auth
 import view_base
 import view_build
 import view_logs
 import view_pr
+import secrets
 
 
-hostname = app_identity.get_default_version_hostname()
-if 'testbed' not in os.environ.get('SERVER_SOFTWARE', 'testbed'):
-    current_version = modules.modules.get_current_version_name()
-    if modules.modules.get_default_version() != current_version:
-        hostname = '%s-dot-%s' % (current_version, hostname)
-
-def get_secret(key):
-    data = json.load(open('secrets.json'))
-    return data[hostname][key]
-
-
-def get_session_secret():
-    try:
-        return str(get_secret('session'))
-    except (IOError, KeyError):
-        if hostname:  # no scary error messages when testing
-            logging.error(
-                'unable to load secret key! sessions WILL NOT persist!')
-        # This fallback is enough for testing, but in production
-        # will end up invalidating sessions whenever a different instance
-        # is created.
-        return security.generate_random_string(entropy=256)
-
-
-def get_github_client():
-    try:
-        return get_secret('github_client')
-    except (IOError, KeyError):
-        if hostname:
-            logging.warning('no github client id found')
-        return None
+hostname = secrets.get_hostname()
 
 
 def get_app_config():
@@ -71,14 +36,14 @@ def get_app_config():
 
 config = {
     'webapp2_extras.sessions': {
-        'secret_key': get_session_secret(),
+        'secret_key': None,  # filled in on the first request
         'cookie_args': {
             # we don't have SSL For local development
             'secure': hostname and 'appspot.com' in hostname,
             'httponly': True,
         },
     },
-    'github_client': get_github_client(),
+    'github_client': None,  # filled in the first time auth is needed
 }
 
 config.update(get_app_config())
@@ -87,9 +52,40 @@ class Warmup(webapp2.RequestHandler):
     """Warms up gubernator."""
     def get(self):
         """Receives the warmup request."""
-        # TODO(fejta): warmup something useful
+        self.app.config['github_client'] = secrets.get('github_client')
+
         self.response.headers['Content-Type'] = 'text/plain'
         self.response.write('Warmup successful')
+
+
+class ConfigHandler(view_base.BaseHandler):
+    """Handles admin config of gubernator."""
+    def get(self):
+        self.render('config.html', {'hostname': hostname})
+
+    def post(self):
+        if users.is_current_user_admin():
+            oauth_set = False
+            webhook_set = False
+
+            github_id = self.request.get('github_id')
+            github_secret = self.request.get('github_secret')
+            if github_id and github_secret:
+                value = {'id': github_id, 'secret': github_secret}
+                secrets.put('github_client', value)
+                app.config['github_client'] = value
+                oauth_set = True
+            github_webhook_secret = self.request.get('github_webhook_secret')
+            if github_webhook_secret:
+                secrets.put('github_webhook_secret',
+                            github_webhook_secret,
+                            per_host=False)
+                webhook_set = True
+            self.render('config.html',
+                        {'hostname': hostname, 'oauth_set': oauth_set, 'webhook_set': webhook_set})
+        else:
+            self.abort(403)
+
 
 app = webapp2.WSGIApplication([
     ('/_ah/warmup', Warmup),
@@ -102,5 +98,6 @@ app = webapp2.WSGIApplication([
     (r'/pr/?', view_pr.PRDashboard),
     (r'/pr/([-\w]+)', view_pr.PRDashboard),
     (r'/pr/(.*/build-log.txt)', view_pr.PRBuildLogHandler),
-    (r'/github_auth(.*)', github_auth.Endpoint)
+    (r'/github_auth(.*)', github_auth.Endpoint),
+    (r'/config', ConfigHandler),
 ], debug=True, config=config)
