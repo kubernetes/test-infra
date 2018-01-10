@@ -277,6 +277,19 @@ class BuildTest(main_test.TestBase):
             'kubernetes-jenkins/pr-logs/pull/google_cadvisor/296',
             ('296', 'google/cadvisor/', 'google/cadvisor'))
 
+    def test_github_commit_links(self):
+        def check(build_dir, result):
+            init_build(build_dir)
+            response = app.get('/build' + build_dir)
+            self.assertIn(result, response)
+
+        check('/kubernetes-jenkins/logs/ci-kubernetes-e2e/2/',
+               'github.com/kubernetes/kubernetes/commit/')
+        check('/kubernetes-jenkins/pr-logs/pull/charts/123/e2e/40/',
+               'github.com/kubernetes/charts/commit/')
+        check('/kubernetes-jenkins/pr-logs/pull/google_cadvisor/432/e2e/296/',
+               'github.com/google/cadvisor/commit/')
+
     def test_build_pr_link(self):
         """ The build page for a PR build links to the PR results."""
         build_dir = '/kubernetes-jenkins/pr-logs/pull/123/e2e/567/'
