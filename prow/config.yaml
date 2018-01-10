@@ -513,7 +513,7 @@ presubmits:
       - name: cache-ssd
         hostPath:
           path: /mnt/disks/ssd0
-  kubernetes-incubator/cri-containerd:
+  containerd/cri-containerd:
   - name: pull-cri-containerd-build
     agent: kubernetes
     always_run: true
@@ -565,7 +565,7 @@ presubmits:
           - "--upload=gs://kubernetes-jenkins/pr-logs"
           - "--timeout=90"
           - "--"
-          - "--node-args=--image-config-file=test/e2e_node/image-config.yaml --image-config-dir=$GOPATH/src/github.com/kubernetes-incubator/cri-containerd --node-env=PULL_REFS=$(PULL_REFS)"
+          - "--node-args=--image-config-file=test/e2e_node/image-config.yaml --image-config-dir=$GOPATH/src/github.com/containerd/cri-containerd --node-env=PULL_REFS=$(PULL_REFS)"
           env:
           - name: GOOGLE_APPLICATION_CREDENTIALS
             value: /etc/service-account/service-account.json
@@ -1351,7 +1351,7 @@ presubmits:
         - --root=/go/src
         - --repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)
         - --repo=k8s.io/release
-        - --repo=github.com/kubernetes-incubator/cri-containerd
+        - --repo=github.com/containerd/cri-containerd
         - --upload=gs://kubernetes-jenkins/pr-logs
         - --git-cache=/root/.cache/git
         - --clean
@@ -2820,7 +2820,7 @@ presubmits:
         - "--git-cache=/root/.cache/git"
         - "--job=$(JOB_NAME)"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--repo=github.com/kubernetes-incubator/cri-containerd"
+        - "--repo=github.com/containerd/cri-containerd"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--timeout=90"
@@ -3761,7 +3761,7 @@ presubmits:
         - --root=/go/src
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --repo=k8s.io/release
-        - --repo=github.com/kubernetes-incubator/cri-containerd
+        - --repo=github.com/containerd/cri-containerd
         - --upload=gs://kubernetes-security-jenkins/pr-logs
         - --git-cache=/root/.cache/git
         - --clean
@@ -5230,7 +5230,7 @@ presubmits:
         - "--git-cache=/root/.cache/git"
         - "--job=$(JOB_NAME)"
         - "--repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)"
-        - "--repo=github.com/kubernetes-incubator/cri-containerd"
+        - "--repo=github.com/containerd/cri-containerd"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-security-jenkins/pr-logs"
         - "--timeout=90"
@@ -6543,7 +6543,7 @@ periodics:
     containers:
     - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
       args:
-      - "--repo=github.com/kubernetes-incubator/cri-containerd=master"
+      - "--repo=github.com/containerd/cri-containerd=master"
       - "--root=/go/src"
       - "--upload=gs://kubernetes-jenkins/logs"
       env:
@@ -6564,7 +6564,7 @@ periodics:
   spec:
     containers:
     - args:
-      - "--repo=github.com/kubernetes-incubator/cri-containerd=master"
+      - "--repo=github.com/containerd/cri-containerd=master"
       - "--timeout=70"
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -6598,7 +6598,7 @@ periodics:
   spec:
     containers:
     - args:
-      - "--repo=github.com/kubernetes-incubator/cri-containerd=master"
+      - "--repo=github.com/containerd/cri-containerd=master"
       - "--timeout=70"
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -6635,10 +6635,10 @@ periodics:
       args:
       - --root=/go/src
       - --repo=k8s.io/kubernetes
-      - --repo=github.com/kubernetes-incubator/cri-containerd=master
+      - --repo=github.com/containerd/cri-containerd=master
       - --timeout=90
       - --
-      - "--node-args=--image-config-file=test/e2e_node/image-config.yaml --image-config-dir=$GOPATH/src/github.com/kubernetes-incubator/cri-containerd"
+      - "--node-args=--image-config-file=test/e2e_node/image-config.yaml --image-config-dir=$GOPATH/src/github.com/containerd/cri-containerd"
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
         value: /etc/service-account/service-account.json
@@ -6675,10 +6675,10 @@ periodics:
       args:
       - --root=/go/src
       - --repo=k8s.io/kubernetes
-      - --repo=github.com/kubernetes-incubator/cri-containerd=master
+      - --repo=github.com/containerd/cri-containerd=master
       - --timeout=120
       - --
-      - "--node-args=--image-config-file=test/e2e_node/image-config.yaml --image-config-dir=$GOPATH/src/github.com/kubernetes-incubator/cri-containerd"
+      - "--node-args=--image-config-file=test/e2e_node/image-config.yaml --image-config-dir=$GOPATH/src/github.com/containerd/cri-containerd"
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
         value: /etc/service-account/service-account.json
@@ -6715,10 +6715,10 @@ periodics:
       args:
       - --root=/go/src
       - --repo=k8s.io/kubernetes
-      - --repo=github.com/kubernetes-incubator/cri-containerd=master
+      - --repo=github.com/containerd/cri-containerd=master
       - --timeout=240
       - --
-      - "--node-args=--image-config-file=test/e2e_node/image-config.yaml --image-config-dir=$GOPATH/src/github.com/kubernetes-incubator/cri-containerd"
+      - "--node-args=--image-config-file=test/e2e_node/image-config.yaml --image-config-dir=$GOPATH/src/github.com/containerd/cri-containerd"
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
         value: /etc/service-account/service-account.json
