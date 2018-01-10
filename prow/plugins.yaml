@@ -19,6 +19,7 @@ approve:
   - kubernetes/charts
   - kubernetes/cluster-registry
   - kubernetes/community
+  - kubernetes/dashboard
   - kubernetes/features
   - kubernetes/ingress-nginx
   - kubernetes/kubectl
@@ -121,6 +122,9 @@ plugins:
   kubernetes/contrib:
   - approve
   - blunderbuss
+
+  kubernetes/dashboard:
+  - approve
 
   kubernetes/dns:
   - trigger
