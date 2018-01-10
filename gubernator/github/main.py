@@ -22,8 +22,8 @@ class Warmup(webapp2.RequestHandler):
     """Warms up gubernator."""
     def get(self):
         """Receives the warmup request."""
-        # TODO(fejta): warmup something useful
         self.response.headers['Content-Type'] = 'text/plain'
+        handlers.make_signature('load the secret!')
         self.response.write('Warmup successful')
 
 
