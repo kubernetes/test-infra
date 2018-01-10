@@ -24,6 +24,7 @@ import (
 	"io/ioutil"
 
 	"github.com/sirupsen/logrus"
+
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/pod-utils/clone"
