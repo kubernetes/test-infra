@@ -5475,9 +5475,9 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--" # end bootstrap args, scenario args below
-        - "--build=//..."
+        - "--build=//... -//vendor/..."
         - "--install=gubernator/test_requirements.txt"
-        - "--test=//..."
+        - "--test=//... //hack:verify-all -//vendor/..."
         - "--test-args=--test_output=errors"
         env:
         - name: TEST_TMPDIR
