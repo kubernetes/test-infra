@@ -20,6 +20,7 @@ approve:
   - kubernetes/cluster-registry
   - kubernetes/community
   - kubernetes/features
+  - kubernetes/ingress-nginx
   - kubernetes/kubectl
   - kubernetes/sig-release
   - kubernetes/steering
@@ -128,6 +129,9 @@ plugins:
 
   kubernetes/ingress-gce:
   - trigger
+
+  kubernetes/ingress-nginx:
+  - approve
 
   kubernetes/federation:
   - trigger
