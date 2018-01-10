@@ -3,14 +3,17 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 go_library(
     name = "go_default_library",
     srcs = [
-        "byte.go",
         "doc.go",
-        "empty.go",
-        "int.go",
-        "int64.go",
-        "string.go",
+        "fs.go",
+        "ipvs.go",
+        "mdstat.go",
+        "proc.go",
+        "proc_io.go",
+        "proc_limits.go",
+        "proc_stat.go",
+        "stat.go",
     ],
-    importpath = "k8s.io/apimachinery/pkg/util/sets",
+    importpath = "github.com/prometheus/procfs",
     visibility = ["//visibility:public"],
 )
 

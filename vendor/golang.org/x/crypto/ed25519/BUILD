@@ -2,16 +2,10 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
-    srcs = [
-        "byte.go",
-        "doc.go",
-        "empty.go",
-        "int.go",
-        "int64.go",
-        "string.go",
-    ],
-    importpath = "k8s.io/apimachinery/pkg/util/sets",
+    srcs = ["ed25519.go"],
+    importpath = "golang.org/x/crypto/ed25519",
     visibility = ["//visibility:public"],
+    deps = ["//vendor/golang.org/x/crypto/ed25519/internal/edwards25519:go_default_library"],
 )
 
 filegroup(
@@ -23,7 +17,10 @@ filegroup(
 
 filegroup(
     name = "all-srcs",
-    srcs = [":package-srcs"],
+    srcs = [
+        ":package-srcs",
+        "//vendor/golang.org/x/crypto/ed25519/internal/edwards25519:all-srcs",
+    ],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],
 )

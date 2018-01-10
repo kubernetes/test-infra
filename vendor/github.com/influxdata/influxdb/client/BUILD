@@ -2,16 +2,10 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
-    srcs = [
-        "byte.go",
-        "doc.go",
-        "empty.go",
-        "int.go",
-        "int64.go",
-        "string.go",
-    ],
-    importpath = "k8s.io/apimachinery/pkg/util/sets",
+    srcs = ["influxdb.go"],
+    importpath = "github.com/influxdata/influxdb/client",
     visibility = ["//visibility:public"],
+    deps = ["//vendor/github.com/influxdata/influxdb/models:go_default_library"],
 )
 
 filegroup(
@@ -23,7 +17,10 @@ filegroup(
 
 filegroup(
     name = "all-srcs",
-    srcs = [":package-srcs"],
+    srcs = [
+        ":package-srcs",
+        "//vendor/github.com/influxdata/influxdb/client/v2:all-srcs",
+    ],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],
 )

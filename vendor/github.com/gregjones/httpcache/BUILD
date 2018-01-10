@@ -2,15 +2,8 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
-    srcs = [
-        "byte.go",
-        "doc.go",
-        "empty.go",
-        "int.go",
-        "int64.go",
-        "string.go",
-    ],
-    importpath = "k8s.io/apimachinery/pkg/util/sets",
+    srcs = ["httpcache.go"],
+    importpath = "github.com/gregjones/httpcache",
     visibility = ["//visibility:public"],
 )
 
@@ -23,7 +16,10 @@ filegroup(
 
 filegroup(
     name = "all-srcs",
-    srcs = [":package-srcs"],
+    srcs = [
+        ":package-srcs",
+        "//vendor/github.com/gregjones/httpcache/diskcache:all-srcs",
+    ],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],
 )

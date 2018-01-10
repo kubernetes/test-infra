@@ -3,15 +3,15 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 go_library(
     name = "go_default_library",
     srcs = [
-        "byte.go",
         "doc.go",
-        "empty.go",
-        "int.go",
-        "int64.go",
-        "string.go",
+        "enum.go",
+        "githubql.go",
+        "input.go",
+        "scalar.go",
     ],
-    importpath = "k8s.io/apimachinery/pkg/util/sets",
+    importpath = "github.com/shurcooL/githubql",
     visibility = ["//visibility:public"],
+    deps = ["//vendor/github.com/shurcooL/graphql:go_default_library"],
 )
 
 filegroup(

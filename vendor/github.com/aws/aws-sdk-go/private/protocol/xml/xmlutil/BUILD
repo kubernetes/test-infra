@@ -3,15 +3,13 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 go_library(
     name = "go_default_library",
     srcs = [
-        "byte.go",
-        "doc.go",
-        "empty.go",
-        "int.go",
-        "int64.go",
-        "string.go",
+        "build.go",
+        "unmarshal.go",
+        "xml_to_struct.go",
     ],
-    importpath = "k8s.io/apimachinery/pkg/util/sets",
+    importpath = "github.com/aws/aws-sdk-go/private/protocol/xml/xmlutil",
     visibility = ["//visibility:public"],
+    deps = ["//vendor/github.com/aws/aws-sdk-go/private/protocol:go_default_library"],
 )
 
 filegroup(

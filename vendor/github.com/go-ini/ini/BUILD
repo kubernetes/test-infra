@@ -3,14 +3,15 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 go_library(
     name = "go_default_library",
     srcs = [
-        "byte.go",
-        "doc.go",
-        "empty.go",
-        "int.go",
-        "int64.go",
-        "string.go",
+        "error.go",
+        "file.go",
+        "ini.go",
+        "key.go",
+        "parser.go",
+        "section.go",
+        "struct.go",
     ],
-    importpath = "k8s.io/apimachinery/pkg/util/sets",
+    importpath = "github.com/go-ini/ini",
     visibility = ["//visibility:public"],
 )
 

@@ -3,15 +3,12 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 go_library(
     name = "go_default_library",
     srcs = [
-        "byte.go",
-        "doc.go",
-        "empty.go",
-        "int.go",
-        "int64.go",
-        "string.go",
+        "gcexportdata.go",
+        "importer.go",
     ],
-    importpath = "k8s.io/apimachinery/pkg/util/sets",
+    importpath = "golang.org/x/tools/go/gcexportdata",
     visibility = ["//visibility:public"],
+    deps = ["//vendor/golang.org/x/tools/go/gcimporter15:go_default_library"],
 )
 
 filegroup(

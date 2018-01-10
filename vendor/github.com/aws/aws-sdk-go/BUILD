@@ -2,15 +2,8 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
-    srcs = [
-        "byte.go",
-        "doc.go",
-        "empty.go",
-        "int.go",
-        "int64.go",
-        "string.go",
-    ],
-    importpath = "k8s.io/apimachinery/pkg/util/sets",
+    srcs = ["doc.go"],
+    importpath = "github.com/aws/aws-sdk-go",
     visibility = ["//visibility:public"],
 )
 
@@ -23,7 +16,13 @@ filegroup(
 
 filegroup(
     name = "all-srcs",
-    srcs = [":package-srcs"],
+    srcs = [
+        ":package-srcs",
+        "//vendor/github.com/aws/aws-sdk-go/aws:all-srcs",
+        "//vendor/github.com/aws/aws-sdk-go/internal/shareddefaults:all-srcs",
+        "//vendor/github.com/aws/aws-sdk-go/private/protocol:all-srcs",
+        "//vendor/github.com/aws/aws-sdk-go/service:all-srcs",
+    ],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],
 )

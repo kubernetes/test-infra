@@ -3,14 +3,16 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 go_library(
     name = "go_default_library",
     srcs = [
-        "byte.go",
-        "doc.go",
-        "empty.go",
-        "int.go",
-        "int64.go",
-        "string.go",
+        "api.go",
+        "astnodetype_string.go",
+        "functions.go",
+        "interpreter.go",
+        "lexer.go",
+        "parser.go",
+        "toktype_string.go",
+        "util.go",
     ],
-    importpath = "k8s.io/apimachinery/pkg/util/sets",
+    importpath = "github.com/jmespath/go-jmespath",
     visibility = ["//visibility:public"],
 )
 

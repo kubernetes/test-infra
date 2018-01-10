@@ -3,15 +3,13 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 go_library(
     name = "go_default_library",
     srcs = [
-        "byte.go",
+        "decode.go",
         "doc.go",
-        "empty.go",
-        "int.go",
-        "int64.go",
-        "string.go",
+        "encode.go",
     ],
-    importpath = "k8s.io/apimachinery/pkg/util/sets",
+    importpath = "github.com/matttproud/golang_protobuf_extensions/pbutil",
     visibility = ["//visibility:public"],
+    deps = ["//vendor/github.com/golang/protobuf/proto:go_default_library"],
 )
 
 filegroup(

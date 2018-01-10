@@ -2,16 +2,14 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
-    srcs = [
-        "byte.go",
-        "doc.go",
-        "empty.go",
-        "int.go",
-        "int64.go",
-        "string.go",
-    ],
-    importpath = "k8s.io/apimachinery/pkg/util/sets",
+    srcs = ["push.go"],
+    importpath = "github.com/prometheus/client_golang/prometheus/push",
     visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/github.com/prometheus/client_golang/prometheus:go_default_library",
+        "//vendor/github.com/prometheus/common/expfmt:go_default_library",
+        "//vendor/github.com/prometheus/common/model:go_default_library",
+    ],
 )
 
 filegroup(

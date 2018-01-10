@@ -1,14 +1,10 @@
-package(default_visibility = ["//visibility:public"])
-
-load(
-    "@io_bazel_rules_go//go:def.bzl",
-    "go_library",
-)
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
-    srcs = ["clock.go"],
-    importpath = "k8s.io/apimachinery/pkg/util/clock",
+    srcs = ["ident.go"],
+    importpath = "github.com/shurcooL/graphql/ident",
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -22,4 +18,5 @@ filegroup(
     name = "all-srcs",
     srcs = [":package-srcs"],
     tags = ["automanaged"],
+    visibility = ["//visibility:public"],
 )

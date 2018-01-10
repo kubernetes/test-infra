@@ -3,15 +3,12 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 go_library(
     name = "go_default_library",
     srcs = [
-        "byte.go",
-        "doc.go",
-        "empty.go",
-        "int.go",
-        "int64.go",
-        "string.go",
+        "fields.go",
+        "yaml.go",
     ],
-    importpath = "k8s.io/apimachinery/pkg/util/sets",
+    importpath = "github.com/ghodss/yaml",
     visibility = ["//visibility:public"],
+    deps = ["//vendor/gopkg.in/yaml.v2:go_default_library"],
 )
 
 filegroup(

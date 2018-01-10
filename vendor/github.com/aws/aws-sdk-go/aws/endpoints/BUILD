@@ -3,15 +3,15 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 go_library(
     name = "go_default_library",
     srcs = [
-        "byte.go",
+        "decode.go",
+        "defaults.go",
         "doc.go",
-        "empty.go",
-        "int.go",
-        "int64.go",
-        "string.go",
+        "endpoints.go",
+        "v3model.go",
     ],
-    importpath = "k8s.io/apimachinery/pkg/util/sets",
+    importpath = "github.com/aws/aws-sdk-go/aws/endpoints",
     visibility = ["//visibility:public"],
+    deps = ["//vendor/github.com/aws/aws-sdk-go/aws/awserr:go_default_library"],
 )
 
 filegroup(
