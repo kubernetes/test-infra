@@ -183,13 +183,13 @@ presubmits:
         hostPath:
           path: /mnt/disks/ssd0
   kubernetes/ingress-gce:
-  - name: pull-ingress-gce-e2e
+  - name: pull-ingress-gce-test
     agent: kubernetes
-    context: pull-ingress-gce-e2e
+    context: pull-ingress-gce-test
     branches:
     - master
-    rerun_command: "/test pull-ingress-gce-e2e"
-    trigger: "(?m)^/test( all| pull-ingress-gce-e2e),?(\\s+|$)"
+    rerun_command: "/test pull-ingress-gce-test"
+    trigger: "(?m)^/test( all| pull-ingress-gce-test),?(\\s+|$)"
     always_run: true
     spec:
       containers:
@@ -204,19 +204,12 @@ presubmits:
           value: true
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: /etc/service-account/service-account.json
-        - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
-          value: /etc/ssh-key-secret/ssh-private
-        - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
-          value: /etc/ssh-key-secret/ssh-public
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
         volumeMounts:
         - name: service
           mountPath: /etc/service-account
-          readOnly: true
-        - mountPath: /etc/ssh-key-secret
-          name: ssh
           readOnly: true
         - name: docker-graph
           mountPath: /docker-graph
@@ -227,10 +220,6 @@ presubmits:
       - name: service
         secret:
           secretName: service-account
-      - name: ssh
-        secret:
-          defaultMode: 256
-          secretName: ssh-key-secret
       - name: docker-graph
         hostPath:
           path: /mnt/disks/ssd0/docker-graph
