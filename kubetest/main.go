@@ -53,7 +53,6 @@ var (
 type options struct {
 	build               buildStrategy
 	buildFederation     buildFederationStrategy
-	buildIngressGCE     buildIngressGCEStrategy
 	charts              bool
 	checkLeaks          bool
 	checkSkew           bool
@@ -111,7 +110,6 @@ type options struct {
 func defineFlags() *options {
 	o := options{}
 	flag.Var(&o.build, "build", "Rebuild k8s binaries, optionally forcing (release|quick|bazel) strategy")
-	flag.Var(&o.buildIngressGCE, "build-ingressgce", "Build ingress-gce binaries")
 	flag.Var(&o.buildFederation, "build-federation", "Rebuild federation binaries, optionally forcing (release|quick|bazel) strategy")
 	flag.BoolVar(&o.charts, "charts", false, "If true, run charts tests")
 	flag.BoolVar(&o.checkSkew, "check-version-skew", true, "Verify client and server versions match")
@@ -369,9 +367,6 @@ func complete(o *options) error {
 		}
 	}
 
-	if err := acquireIngressGCE(o); err != nil {
-		return fmt.Errorf("failed to acquire ingress-gce binaries: %v", err)
-	}
 	if err := acquireKubernetes(o); err != nil {
 		return fmt.Errorf("failed to acquire k8s binaries: %v", err)
 	}
@@ -509,20 +504,6 @@ func acquireFederation(o *options) error {
 			return o.extractFederation.Extract(o.gcpProject, o.gcpZone)
 		})
 		return err
-	}
-	return nil
-}
-
-func acquireIngressGCE(o *options) error {
-	// Potentially build ingress-GCE
-	if o.buildIngressGCE.Enabled() {
-		err := xmlWrap("BuildIngressGCE", o.buildIngressGCE.Build)
-		if o.flushMemAfterBuild {
-			flushMem()
-		}
-		if err != nil {
-			return err
-		}
 	}
 	return nil
 }

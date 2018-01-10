@@ -170,10 +170,19 @@
       "sig-multicluster"
     ]
   },
+  "ci-ingress-gce-downgrade-e2e": {
+    "args": [
+      "true"
+    ],
+    "scenario": "execute",
+    "sigOwners": [
+      "sig-network"
+    ]
+  },
   "ci-ingress-gce-e2e": {
     "args": [
-      "--build-ingressgce",
       "--cluster=",
+      "--env=GCE_GLBC_IMAGE=gcr.io/e2e-ingress-gce/ingress-gce-e2e-glbc-amd64:latest",
       "--extract=ci/latest",
       "--gcp-project=e2e-ingress-gce",
       "--gcp-zone=us-central1-f",
@@ -183,6 +192,25 @@
       "--timeout=320m"
     ],
     "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-network"
+    ]
+  },
+  "ci-ingress-gce-image-push": {
+    "args": [
+      "make",
+      "push-e2e"
+    ],
+    "scenario": "execute",
+    "sigOwners": [
+      "sig-network"
+    ]
+  },
+  "ci-ingress-gce-upgrade-e2e": {
+    "args": [
+      "true"
+    ],
+    "scenario": "execute",
     "sigOwners": [
       "sig-network"
     ]
