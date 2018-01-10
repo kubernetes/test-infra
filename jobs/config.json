@@ -816,12 +816,11 @@
       "--cluster=canary-e2e",
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-gci-gce.env",
-      "--extract=ci/latest-1.7",
-      "--extract=ci/latest-1.6",
+      "--extract=ci/k8s-stable1",
+      "--extract=ci/latest",
       "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
       "--gcp-zone=us-central1-f",
       "--provider=gce",
-      "--publish=gs://kubernetes-release-dev/ci/latest-canarygreen.txt",
       "--test_args=--ginkgo.focus=Variable.Expansion --kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8",
       "--timeout=40m"
     ],
@@ -4356,6 +4355,7 @@
       "--gcp-zone=us-central1-f",
       "--ginkgo-parallel=30",
       "--provider=gce",
+      "--publish=gs://kubernetes-release-dev/ci/latest-green.txt",
       "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
       "--timeout=50m"
     ],
