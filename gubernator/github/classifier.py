@@ -40,12 +40,12 @@ def classify_issue(repo, number):
         last_event_timestamp: the timestamp of the most recent event.
     """
     ancestor = models.GithubResource.make_key(repo, number)
-    logging.debug('finding webhooks for %s %s', repo, number)
+    logging.info('finding webhooks for %s %s', repo, number)
     event_keys = list(models.GithubWebhookRaw.query(ancestor=ancestor)
         .order(models.GithubWebhookRaw.timestamp)
         .fetch(keys_only=True))
 
-    logging.debug('classifying %s %s (%d events)', repo, number, len(event_keys))
+    logging.info('classifying %s %s (%d events)', repo, number, len(event_keys))
     last_event_timestamp = [datetime.datetime(2000, 1, 1)]
 
     def events_iterator():
@@ -200,7 +200,6 @@ def classify_from_iterator(events_iterator, status_fetcher=None):
 
 
 def _classify_internal(merged, labels, comments, reviewers, distilled_events, status_fetcher):
-
     approvers = get_approvers(comments)
 
     is_pr = 'head' in merged or 'pull_request' in merged

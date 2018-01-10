@@ -17,11 +17,12 @@ import cPickle as pickle
 import logging
 import os
 
+import webapp2
+
 from google.appengine.api import urlfetch
 from google.appengine.ext import deferred
 from google.appengine.ext import ndb
 
-import webapp2
 import models
 import handlers
 
