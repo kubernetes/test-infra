@@ -10954,19 +10954,12 @@
       "sig-instrumentation"
     ]
   },
-  "pull-ingress-gce-e2e": {
+  "pull-ingress-gce-test": {
     "args": [
-      "--build-ingressgce",
-      "--cluster=",
-      "--extract=ci/latest",
-      "--gcp-project=e2e-ingress-gce",
-      "--gcp-zone=us-central1-f",
-      "--ginkgo-parallel",
-      "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[Feature:Ingress\\]",
-      "--timeout=90m"
+      "make",
+      "test"
     ],
-    "scenario": "kubernetes_e2e",
+    "scenario": "execute",
     "sigOwners": [
       "sig-network"
     ]
