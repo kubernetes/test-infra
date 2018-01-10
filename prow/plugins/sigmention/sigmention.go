@@ -60,22 +60,21 @@ func init() {
 func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
 	// Only the Description field is specified because this plugin is not triggered with commands and is not configurable.
 	return &pluginhelp.PluginHelp{
-			Description: fmt.Sprintf(`The sigmention plugin responds to SIG (Special Interest Group) Github team mentions like '@%s/sig-testing-bugs'. The plugin responds in two ways:
+			Description: `The sigmention plugin responds to SIG (Special Interest Group) Github team mentions like '@kubernetes/sig-testing-bugs'. The plugin responds in two ways:
 <ol><li> The appropriate 'sig/*' and 'kind/*' labels are applied to the issue or pull request. In this case 'sig/testing' and 'kind/bug'.</li>
 <li> If the user who mentioned the Github team is not a member of the organization that owns the repository the bot will create a comment that repeats the mention. This is necessary because non-member mentions do not trigger Github notifications.</li></ol>`,
-				config.SigMention.OwningOrg),
 			Config: map[string]string{
-				"": fmt.Sprintf("Labels added by the plugin are triggered by mentions of Github teams owned by this org: %s", config.SigMention.OwningOrg),
+				"": fmt.Sprintf("Labels added by the plugin are triggered by mentions of Github teams matching the following regexp:\n%s", config.SigMention.Regexp),
 			},
 		},
 		nil
 }
 
 func handleGenericComment(pc plugins.PluginClient, e github.GenericCommentEvent) error {
-	return handle(pc.GitHubClient, pc.Logger, &e, pc.PluginConfig.SigMention.OwningOrg)
+	return handle(pc.GitHubClient, pc.Logger, &e, pc.PluginConfig.SigMention.Re)
 }
 
-func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, owningOrg string) error {
+func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, re *regexp.Regexp) error {
 	// Ignore bot comments and comments that aren't new.
 	botName, err := gc.BotName()
 	if err != nil {
@@ -88,12 +87,7 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, o
 		return nil
 	}
 
-	re := fmt.Sprintf(`(?m)@%s/sig-([\w-]*)-(misc|test-failures|bugs|feature-requests|proposals|pr-reviews|api-reviews)`, owningOrg)
-	cRe, err := regexp.Compile(re)
-	if err != nil {
-		return err
-	}
-	sigMatches := cRe.FindAllStringSubmatch(e.Body, -1)
+	sigMatches := re.FindAllStringSubmatch(e.Body, -1)
 	if len(sigMatches) == 0 {
 		return nil
 	}
@@ -128,9 +122,11 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, o
 			}
 		}
 
-		if kindLabel, ok := kindMap[sigMatch[2]]; ok && !github.HasLabel(kindLabel, labels) {
-			if err := gc.AddLabel(org, repo, e.Number, kindLabel); err != nil {
-				log.WithError(err).Errorf("Github failed to add the following label: %s", kindLabel)
+		if len(sigMatch) > 2 {
+			if kindLabel, ok := kindMap[sigMatch[2]]; ok && !github.HasLabel(kindLabel, labels) {
+				if err := gc.AddLabel(org, repo, e.Number, kindLabel); err != nil {
+					log.WithError(err).Errorf("Github failed to add the following label: %s", kindLabel)
+				}
 			}
 		}
 

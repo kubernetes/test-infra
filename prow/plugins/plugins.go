@@ -19,6 +19,7 @@ package plugins
 import (
 	"fmt"
 	"io/ioutil"
+	"regexp"
 	"strings"
 	"sync"
 	"time"
@@ -222,11 +223,25 @@ type RequireSIG struct {
 	GroupListURL string `json:"group_list_url,omitempty"`
 }
 
+// SigMention specifies configuration for the sigmention plugin.
 type SigMention struct {
-	// OwningOrg is the org whose teams will map to SIG labels.
-	// Mentions of owning_org teams (@owning_org/sig-team-name) will trigger
-	// labeling of issues/PRs.
-	OwningOrg string `json:"owning_org,omitempty"`
+	// Regexp parses comments and should return matches to team mentions.
+	// These mentions enable labeling issues or PRs with sig/team labels.
+	// Furthermore, teams with the following suffixes will be mapped to
+	// kind/* labels:
+	//
+	// * @org/team-bugs             --maps to--> kind/bug
+	// * @org/team-feature-requests --maps to--> kind/feature
+	// * @org/team-api-reviews      --maps to--> kind/api-change
+	// * @org/team-proposals        --maps to--> kind/design
+	//
+	// Note that you need to make sure your regexp covers the above
+	// mentions if you want to use the extra labeling. Defaults to:
+	// (?m)@kubernetes/sig-([\w-]*)-(misc|test-failures|bugs|feature-requests|proposals|pr-reviews|api-reviews)
+	//
+	// Compiles into Re during config load.
+	Regexp string         `json:"regexp,omitempty"`
+	Re     *regexp.Regexp `json:"-"`
 }
 
 /*
@@ -373,8 +388,8 @@ func (c *Configuration) setDefaults() {
 		}
 		c.Triggers[i].JoinOrgURL = fmt.Sprintf("https://github.com/orgs/%s/people", trigger.TrustedOrg)
 	}
-	if c.SigMention.OwningOrg == "" {
-		c.SigMention.OwningOrg = "kubernetes"
+	if c.SigMention.Regexp == "" {
+		c.SigMention.Regexp = `(?m)@kubernetes/sig-([\w-]*)-(misc|test-failures|bugs|feature-requests|proposals|pr-reviews|api-reviews)`
 	}
 }
 
@@ -400,6 +415,10 @@ func (pa *PluginAgent) Load(path string) error {
 		return err
 	}
 	if err := validateExternalPlugins(np.ExternalPlugins); err != nil {
+		return err
+	}
+	// regexp compilation should run after defaulting
+	if err := compileRegexps(np); err != nil {
 		return err
 	}
 
@@ -479,6 +498,15 @@ func validateExternalPlugins(pluginMap map[string][]ExternalPlugin) error {
 	if len(errors) > 0 {
 		return fmt.Errorf("invalid plugin configuration:\n\t%v", strings.Join(errors, "\n\t"))
 	}
+	return nil
+}
+
+func compileRegexps(pc *Configuration) error {
+	cRe, err := regexp.Compile(pc.SigMention.Regexp)
+	if err != nil {
+		return err
+	}
+	pc.SigMention.Re = cRe
 	return nil
 }
 
