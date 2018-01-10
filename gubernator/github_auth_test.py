@@ -30,6 +30,7 @@ main.app.config['github_client'] = {
     'id': CLIENT_ID,
     'secret': CLIENT_SECRET,
 }
+main.app.config['webapp2_extras.sessions']['secret_key'] = 'abcd'
 
 app = webtest.TestApp(main.app)
 

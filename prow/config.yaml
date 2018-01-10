@@ -22,6 +22,15 @@ prowjob_namespace: default
 pod_namespace: test-pods
 log_level: info
 
+branch-protection:
+  orgs:
+    kubernetes:
+      repos:
+        kubernetes/test-infra:
+          protect: true
+          # Contexts: inherited from presubmits
+          # Pushers: only admins
+
 tide:
   queries:
   - repos:
@@ -360,7 +369,12 @@ presubmits:
     trigger: "(?m)^/test pull-heapster-e2e-prow,?(\\s+|$)"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/heapster-test:0.8
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180102-0e2b24a0b-master
+        args:
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--root=/go/src"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--clean"
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: /etc/service-account/service-account.json
@@ -6824,7 +6838,52 @@ periodics:
         secretName: ssh-key-secret
     - name: var-lib-docker
       emptyDir: {}
-
+- name: ci-ingress-gce-e2e
+  agent: kubernetes
+  interval: 60m
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180108-bf63630a9-master
+      args:
+      - "--repo=k8s.io/ingress-gce=master"
+      - "--root=/go/src/"
+      - "--clean"
+      - "--timeout=320"
+      env:
+      - name: DOCKER_IN_DOCKER_ENABLED
+        value: true
+      - name: GOOGLE_APPLICATION_CREDENTIALS
+        value: /etc/service-account/service-account.json
+      - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-private
+      - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-public
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+      volumeMounts:
+      - name: service
+        mountPath: /etc/service-account
+        readOnly: true
+      - mountPath: /etc/ssh-key-secret
+        name: ssh
+        readOnly: true
+      - name: docker-graph
+        mountPath: /docker-graph
+      ports:
+      - containerPort: 9999
+        hostPort: 9999
+    volumes:
+    - name: service
+      secret:
+        secretName: service-account
+    - name: ssh
+      secret:
+        defaultMode: 256
+        secretName: ssh-key-secret
+    - name: docker-graph
+      hostPath:
+        path: /mnt/disks/ssd0/docker-graph
 - name: ci-kubernetes-bazel-build
   interval: 6h
   agent: kubernetes
@@ -24521,6 +24580,8 @@ periodics:
 
         Review the [full test history](https://k8s-gubernator.appspot.com/pr/{{.Number}}) for this PR.
 
+        Silence the bot with an `/lgtm cancel` comment for consistent failures.
+
       - --template
       - --ceiling=1
       - --confirm
@@ -24726,4 +24787,3 @@ periodics:
     - name: service
       secret:
         secretName: service-account
-

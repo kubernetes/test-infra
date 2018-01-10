@@ -215,7 +215,9 @@ class BuildHandler(view_base.BaseHandler):
             want_build_log = True
             build_log = get_build_log(build_dir)
 
-        pr, pr_path, pr_digest, repo = None, None, None, None
+        pr, pr_path, pr_digest = None, None, None
+        repo = '%s/%s' % (self.app.config['default_org'],
+                          self.app.config['default_repo'])
         external_config = get_build_config(prefix, self.app.config)
         if external_config is not None:
             if '/pull/' in prefix:

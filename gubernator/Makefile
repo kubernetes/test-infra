@@ -6,15 +6,7 @@ PROJECT ?= k8s-gubernator
 .PHONY: migrate versions deploy all
 all: versions
 
-github/webhook_secret:
-	@echo TODO(kubernetes/test-infra/3884): deploy without needing this file
-	@echo Ask Google GKE EngProd how to create this file.
-
-secrets.json:
-	@echo TODO(kubernetes/test-infra/3884): deploy without needing this file
-	@echo Ask Google GKE EngProd how to create this file.
-
-deploy: github/webhook_secret secrets.json
+deploy:
 	gcloud app deploy --version="$(VERSION)" --project="$(PROJECT)" --no-promote --quiet
 	cd github && gcloud app deploy --version="$(VERSION)" --project="$(PROJECT)" --no-promote --quiet
 

@@ -52,6 +52,7 @@ class AppTest(TestBase):
     def setUp(self):
         self.init_stubs()
         self.taskqueue = self.testbed.get_stub(testbed.TASKQUEUE_SERVICE_NAME)
+        handlers._webhook_secret = 'asdf'  # pylint: disable=protected-access
 
     def get_response(self, event, body):
         if isinstance(body, dict):

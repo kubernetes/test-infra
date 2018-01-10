@@ -1,0 +1,22 @@
+% extends 'base.html'
+% block header
+<h1>Gubernator Admin Config Page</h1>
+% endblock
+% block content
+<form method="post">
+<p>These values come from the <a href="https://github.com/settings/developers">OAuth Apps Tab</a> on Github.
+<p>New apps should be registered with "Homepage URL" set to https://{{hostname}} and "Authorization callback URL" set to https://{{hostname}}/github_auth.
+<p>GitHub OAuth Client Id: <input type="text" name="github_id"><br>
+GitHub OAuth Client Secret: <input type="text" name="github_secret"><br>
+<hr>
+<p>This value must match whatever is entered on GitHub when registering hooks to receive.
+<p>GitHub Webhook Secret: <input type="text" name="github_webhook_secret"><br>
+<input type="submit" value="Submit">
+</form>
+% if oauth_set
+<h2>OAuth secrets set!</h2>
+% endif
+% if webhook_set
+<h2>Github Webhook secret set!</h2>
+% endif
+% endblock

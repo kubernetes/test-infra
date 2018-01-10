@@ -25,6 +25,10 @@ handlers:
   static_dir: static
   application_readable: true
 
+- url: /config
+  script: main.app
+  login: admin
+
 - url: .*
   script: main.app
   secure: always
