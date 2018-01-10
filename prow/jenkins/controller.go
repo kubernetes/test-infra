@@ -21,7 +21,6 @@ import (
 	"fmt"
 	"strconv"
 	"sync"
-	"time"
 
 	"github.com/sirupsen/logrus"
 
@@ -265,7 +264,7 @@ func (c *Controller) terminateDupes(pjs []kube.ProwJob, jbs map[string]JenkinsBu
 				}
 			}
 		}
-		toCancel.Status.CompletionTime = time.Now()
+		toCancel.SetComplete()
 		prevState := toCancel.Status.State
 		toCancel.Status.State = kube.AbortedState
 		c.log.WithFields(pjutil.ProwJobFields(&toCancel)).
@@ -315,7 +314,7 @@ func (c *Controller) syncPendingJob(pj kube.ProwJob, reports chan<- kube.ProwJob
 
 	jb, jbExists := jbs[pj.Metadata.Name]
 	if !jbExists {
-		pj.Status.CompletionTime = time.Now()
+		pj.SetComplete()
 		pj.Status.State = kube.ErrorState
 		pj.Status.URL = testInfra
 		pj.Status.Description = "Error finding Jenkins job."
@@ -336,7 +335,7 @@ func (c *Controller) syncPendingJob(pj kube.ProwJob, reports chan<- kube.ProwJob
 
 		case jb.IsSuccess():
 			// Build is complete.
-			pj.Status.CompletionTime = time.Now()
+			pj.SetComplete()
 			pj.Status.State = kube.SuccessState
 			pj.Status.Description = "Jenkins job succeeded."
 			for _, nj := range pj.Spec.RunAfterSuccess {
@@ -350,12 +349,12 @@ func (c *Controller) syncPendingJob(pj kube.ProwJob, reports chan<- kube.ProwJob
 			}
 
 		case jb.IsFailure():
-			pj.Status.CompletionTime = time.Now()
+			pj.SetComplete()
 			pj.Status.State = kube.FailureState
 			pj.Status.Description = "Jenkins job failed."
 
 		case jb.IsAborted():
-			pj.Status.CompletionTime = time.Now()
+			pj.SetComplete()
 			pj.Status.State = kube.AbortedState
 			pj.Status.Description = "Jenkins job aborted."
 		}
@@ -391,7 +390,7 @@ func (c *Controller) syncTriggeredJob(pj kube.ProwJob, reports chan<- kube.ProwJ
 		// Start the Jenkins job.
 		if err := c.jc.Build(&pj); err != nil {
 			c.log.WithError(err).WithFields(pjutil.ProwJobFields(&pj)).Warn("Cannot start Jenkins build")
-			pj.Status.CompletionTime = time.Now()
+			pj.SetComplete()
 			pj.Status.State = kube.ErrorState
 			pj.Status.URL = testInfra
 			pj.Status.Description = "Error starting Jenkins job."

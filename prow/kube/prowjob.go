@@ -94,7 +94,7 @@ type ProwJobSpec struct {
 
 type ProwJobStatus struct {
 	StartTime      time.Time    `json:"startTime,omitempty"`
-	CompletionTime time.Time    `json:"completionTime,omitempty"`
+	CompletionTime *time.Time   `json:"completionTime,omitempty"`
 	State          ProwJobState `json:"state,omitempty"`
 	Description    string       `json:"description,omitempty"`
 	URL            string       `json:"url,omitempty"`
@@ -103,7 +103,12 @@ type ProwJobStatus struct {
 }
 
 func (j *ProwJob) Complete() bool {
-	return !j.Status.CompletionTime.IsZero()
+	return j.Status.CompletionTime != nil
+}
+
+func (j *ProwJob) SetComplete() {
+	j.Status.CompletionTime = new(time.Time)
+	*j.Status.CompletionTime = time.Now()
 }
 
 func (j *ProwJob) ClusterAlias() string {
