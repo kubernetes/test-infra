@@ -18,7 +18,6 @@ package main
 
 import (
 	"fmt"
-	"os"
 	"os/exec"
 )
 
@@ -118,32 +117,4 @@ func (b *buildFederationStrategy) Build() error {
 	}
 
 	return finishRunning(exec.Command("make", "-C", k8s("federation"), target))
-}
-
-func (b *buildIngressGCEStrategy) Build() error {
-	// Currently, this is the only strategy.
-	target := "push-e2e"
-
-	// Make sure we are in the ingress-gce repo before getting the image tag.
-	err := os.Chdir(k8s("ingress-gce"))
-	if err != nil {
-		return fmt.Errorf("error during ingress-gce build: %v", err)
-	}
-	// Get image tag (git command is how ingress-gce Makefile generates the tag).
-	c := exec.Command("git", "describe", "--tags", "--always", "--dirty")
-	o, err := c.Output()
-	if err != nil {
-		return fmt.Errorf("error during ingress-gce build: %v", err)
-	}
-	// Make sure that kube-up uses the correct glbc image by exporting as
-	// environment variable
-	e := fmt.Sprintf("gcr.io/e2e-ingress-gce/ingress-gce-e2e-glbc-amd64:%s", o)
-	os.Setenv("GCE_GLBC_IMAGE", e)
-	// Ensure we are back in /go/src/k8s.io so that k8s binaries are acquired properly.
-	err = os.Chdir(k8s())
-	if err != nil {
-		return fmt.Errorf("error during ingress-gce build: %v", err)
-	}
-
-	return finishRunning(exec.Command("make", "-C", k8s("ingress-gce"), target))
 }

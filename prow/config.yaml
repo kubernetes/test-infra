@@ -200,29 +200,16 @@ presubmits:
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--clean"
         env:
-        - name: DOCKER_IN_DOCKER_ENABLED
-          value: true
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: /etc/service-account/service-account.json
-        # docker-in-docker needs privileged mode
-        securityContext:
-          privileged: true
         volumeMounts:
         - name: service
           mountPath: /etc/service-account
           readOnly: true
-        - name: docker-graph
-          mountPath: /docker-graph
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
       volumes:
       - name: service
         secret:
           secretName: service-account
-      - name: docker-graph
-        hostPath:
-          path: /mnt/disks/ssd0/docker-graph
   GoogleCloudPlatform/k8s-multicluster-ingress:
   - name: pull-kubernetes-multicluster-ingress-test
     agent: kubernetes
@@ -6828,9 +6815,71 @@ periodics:
         secretName: ssh-key-secret
     - name: var-lib-docker
       emptyDir: {}
+  # TODO(rramkumar): Job does nothing yet.
+- name: ci-ingress-gce-downgrade-e2e
+  agent: kubernetes
+  interval: 24h
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180108-bf63630a9-master
+      args:
+      - "--timeout=320"
+      env:
+      - name: GOOGLE_APPLICATION_CREDENTIALS
+        value: /etc/service-account/service-account.json
+      - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-private
+      - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-public
+      volumeMounts:
+      - name: service
+        mountPath: /etc/service-account
+        readOnly: true
+      - mountPath: /etc/ssh-key-secret
+        name: ssh
+        readOnly: true
+    volumes:
+    - name: service
+      secret:
+        secretName: service-account
+    - name: ssh
+      secret:
+        defaultMode: 256
+        secretName: ssh-key-secret
 - name: ci-ingress-gce-e2e
   agent: kubernetes
   interval: 60m
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180108-bf63630a9-master
+      args:
+      - "--timeout=320"
+      env:
+      - name: GOOGLE_APPLICATION_CREDENTIALS
+        value: /etc/service-account/service-account.json
+      - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-private
+      - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-public
+      volumeMounts:
+      - name: service
+        mountPath: /etc/service-account
+        readOnly: true
+      - mountPath: /etc/ssh-key-secret
+        name: ssh
+        readOnly: true
+    volumes:
+    - name: service
+      secret:
+        secretName: service-account
+    - name: ssh
+      secret:
+        defaultMode: 256
+        secretName: ssh-key-secret
+  # Pushes new image of ingress-gce from HEAD for use by other CI jobs.
+- name: ci-ingress-gce-image-push
+  agent: kubernetes
+  interval: 45m
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180108-bf63630a9-master
@@ -6844,19 +6893,12 @@ periodics:
         value: true
       - name: GOOGLE_APPLICATION_CREDENTIALS
         value: /etc/service-account/service-account.json
-      - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
-        value: /etc/ssh-key-secret/ssh-private
-      - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
-        value: /etc/ssh-key-secret/ssh-public
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
       volumeMounts:
       - name: service
         mountPath: /etc/service-account
-        readOnly: true
-      - mountPath: /etc/ssh-key-secret
-        name: ssh
         readOnly: true
       - name: docker-graph
         mountPath: /docker-graph
@@ -6867,13 +6909,40 @@ periodics:
     - name: service
       secret:
         secretName: service-account
+    - name: docker-graph
+      hostPath:
+        path: /mnt/disks/ssd0/docker-graph
+  # TODO(rramkumar): Job does nothing yet.
+- name: ci-ingress-gce-upgrade-e2e
+  agent: kubernetes
+  interval: 24h
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180108-bf63630a9-master
+      args:
+      - "--timeout=320"
+      env:
+      - name: GOOGLE_APPLICATION_CREDENTIALS
+        value: /etc/service-account/service-account.json
+      - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-private
+      - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-public
+      volumeMounts:
+      - name: service
+        mountPath: /etc/service-account
+        readOnly: true
+      - mountPath: /etc/ssh-key-secret
+        name: ssh
+        readOnly: true
+    volumes:
+    - name: service
+      secret:
+        secretName: service-account
     - name: ssh
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
-    - name: docker-graph
-      hostPath:
-        path: /mnt/disks/ssd0/docker-graph
 - name: ci-kubernetes-bazel-build
   interval: 6h
   agent: kubernetes
@@ -16418,7 +16487,7 @@ periodics:
 
 - interval: 2h
   agent: kubernetes
-  name: ci-kubernetes-e2e-gke-cos-oldetcd-default # TODO(krzyzacy) this job is temporary, remove once we verify it works 
+  name: ci-kubernetes-e2e-gke-cos-oldetcd-default # TODO(krzyzacy) this job is temporary, remove once we verify it works
   spec:
     containers:
     - args:
@@ -16452,7 +16521,7 @@ periodics:
 
 - interval: 2h
   agent: kubernetes
-  name: ci-kubernetes-e2e-gke-cos-oldetcd-serial # TODO(krzyzacy) this job is temporary, remove once we verify it works 
+  name: ci-kubernetes-e2e-gke-cos-oldetcd-serial # TODO(krzyzacy) this job is temporary, remove once we verify it works
   spec:
     containers:
     - args:
@@ -16486,7 +16555,7 @@ periodics:
 
 - interval: 2h
   agent: kubernetes
-  name: ci-kubernetes-e2e-gke-cos-oldetcd-slow # TODO(krzyzacy) this job is temporary, remove once we verify it works 
+  name: ci-kubernetes-e2e-gke-cos-oldetcd-slow # TODO(krzyzacy) this job is temporary, remove once we verify it works
   spec:
     containers:
     - args:
