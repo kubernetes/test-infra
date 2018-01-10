@@ -22,6 +22,7 @@ approve:
   - kubernetes/features
   - kubernetes/ingress-nginx
   - kubernetes/kubectl
+  - kubernetes/minikube
   - kubernetes/sig-release
   - kubernetes/steering
   - kubernetes/test-infra
@@ -156,6 +157,9 @@ plugins:
   - trigger
 
   kubernetes/kubernetes-template-project:
+  - approve
+
+  kubernetes/minikube:
   - approve
 
   kubernetes/sig-release:
