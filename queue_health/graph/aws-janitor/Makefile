@@ -12,10 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM gcr.io/k8s-testimages/gcloud-in-go:0.4
-LABEL maintainer="zml@google.com"
+IMAGE ?= gcr.io/k8s-test-infra-aws/aws-janitor
+VERSION ?= 0.3
 
-RUN apt-get install ca-certificates && update-ca-certificates
+image:
+	CGO_ENABLED=0 go build k8s.io/test-infra/queue_health/graph/aws-janitor
+	docker build -t "$(IMAGE):$(VERSION)" .
 
-COPY aws_janitor /aws_janitor
-ENTRYPOINT ["/bin/bash", "/runner"]
+push: image
+	docker tag "$(IMAGE):$(VERSION)" "$(IMAGE):latest"
+	gcloud docker -- push "$(IMAGE):$(VERSION)"
+	gcloud docker -- push "$(IMAGE):latest"
+
+.PHONY: image push
