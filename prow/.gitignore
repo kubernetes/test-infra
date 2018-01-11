@@ -10,3 +10,4 @@ cmd/horologium/horologium
 cmd/plank/plank
 cmd/jenkins-operator/jenkins-operator
 cmd/tide/tide
+cmd/clonerefs/clonerefs
