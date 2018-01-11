@@ -5,6 +5,7 @@ window.onload = function() {
 };
 
 function redraw() {
+    configure();
     redrawQueries();
     redrawPools();
 }
