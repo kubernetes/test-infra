@@ -63,6 +63,7 @@ function applicablePlugins(repoSel, repoPlugins) {
 function addSection(div, section, elem) {
     var h4 = document.createElement("h4");
     h4.appendChild(document.createTextNode(section));
+    h4.className = "plugin-section-header";
     div.appendChild(h4);
     elem.className = "indented";
     div.appendChild(elem);
@@ -113,6 +114,7 @@ function redrawHelpTable(repo, names, helpMap, tableParent) {
 
         var div = document.createElement("div");
         div.style.display = "none";
+        div.className = "plugin-description";
         if (help) {
             addTextSection(div, "Description", help.Description);
             addTextSection(div, "Who can use", help.WhoCanUse);
@@ -138,13 +140,14 @@ function redrawHelpTable(repo, names, helpMap, tableParent) {
             div.appendChild(p);
         }
 
-        var pluginHeader = document.createElement("h3");
-        pluginHeader.className = "plugin";
+        var pluginHeader = document.createElement("div");
+        pluginHeader.className = "plugin-header";
         pluginHeader.appendChild(document.createTextNode(closedArrow + name));
         pluginHeader.addEventListener("click", clickHandler(div), true);
         var outerDiv = document.createElement("div");
         outerDiv.appendChild(pluginHeader);
         outerDiv.appendChild(div);
+        outerDiv.className = "plugin-help-row";
         var tr = document.createElement("tr");
         tr.appendChild(outerDiv);
         tr.id = "plugin-" + name;

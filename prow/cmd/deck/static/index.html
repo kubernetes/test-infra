@@ -6,52 +6,68 @@
         <link rel="stylesheet" type="text/css" href="style.css?reload-me-please=1513905648">
         <link rel="stylesheet" type="text/css" href="extensions/style.css">
         <link href="https://fonts.googleapis.com/css?family=Roboto:400,700" rel="stylesheet">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+        <link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.indigo-pink.min.css">
         <script type="text/javascript" src="script.js"></script>
         <script type="text/javascript" src="data.js?var=allBuilds"></script>
         <script type="text/javascript" src="extensions/script.js"></script>
+        <script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>
     </head>
     <body>
-        <header>
-            <ul>
-                <li><a href="https://github.com/kubernetes/test-infra" class="logo"><img src="/logo.svg" alt="kubernetes logo" class="logo"></img></a><a href="/" class="current"><h1>Prow Status</h1></a></li>
-                <li><a href="/plugin-help.html"><h1>Plugin Help</h1></a></li>
-                <li><a href="/tide.html"><h1>Tide Status</h1></a></li>
-            </ul>
-        </header>
-        <aside>
-        <div>
-            <ul class="noBullets">
-                <li>Filter</li>
-                <li><select id="type" onchange="redraw();"><option>all job types</option></select></li>
-                <li><select id="repo" onchange="redraw();"><option>all repositories</option></select></li>
-                &gt;&gt;
-                <li><select id="pull" onchange="redraw();"><option>all pull requests</option></select></li>
-                <li><select id="author" onchange="redraw();"><option>all authors</option></select></li>
-                <li><select id="job" onchange="redraw();"><option>all jobs</option></select></li>
-                <li><select id="state" onchange="redraw();"><option>all states</option></select></li>
-            </ul>
-        </div>
-        </aside>
-        <article>
-        <table id="builds">
-            <thead>
-                <tr>
-                    <th></th>
-                    <th></th>
-                    <th></th>
-                    <th>Repository</th>
-                    <th>Revision</th>
-                    <th>Job</th>
-                    <th>Started</th>
-                    <th>Duration</th>
-                </tr>
-            </thead>
-            <tbody>
-            </tbody>
-        </table>
-        </article>
-        <div id="rerun">
-            <div id="rerun-content"></div>
+        <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+            <header class="mdl-layout__header">
+                <div class="mdl-layout__header-row">
+                    <a href="https://github.com/kubernetes/test-infra" class="logo"><img src="/logo.svg" alt="kubernetes logo" class="logo"/></a>
+                    <span class="mdl-layout-title header-title">Prow Status</span>
+                </div>
+            </header>
+            <div class="mdl-layout__drawer">
+                <span class="mdl-layout-title">Prow Dashboard</span>
+                <nav class="mdl-navigation">
+                    <a class="mdl-navigation__link mdl-navigation__link--current" href="/">Prow Status</a>
+                    <a class="mdl-navigation__link" href="/plugin-help.html">Plugin Help</a>
+                    <a class="mdl-navigation__link" href="/tide.html">Tide Status</a>
+                </nav>
+            </div>
+            <main class="mdl-layout__content">
+                <div class="page-content">
+                    <aside>
+                        <div class="card-box">
+                            <ul class="noBullets">
+                                <li>Filter</li>
+                                <li><select id="type" onchange="redraw();"><option>all job types</option></select></li>
+                                <li><select id="repo" onchange="redraw();"><option>all repositories</option></select></li>
+                                &gt;&gt;
+                                <li><select id="pull" onchange="redraw();"><option>all pull requests</option></select></li>
+                                <li><select id="author" onchange="redraw();"><option>all authors</option></select></li>
+                                <li><select id="job" onchange="redraw();"><option>all jobs</option></select></li>
+                                <li><select id="state" onchange="redraw();"><option>all states</option></select></li>
+                            </ul>
+                        </div>
+                    </aside>
+                    <article>
+                        <table id="builds">
+                            <thead>
+                            <tr>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th>Repository</th>
+                                <th>Revision</th>
+                                <th>Job</th>
+                                <th>Started</th>
+                                <th>Duration</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </article>
+                    <div id="rerun">
+                        <div id="rerun-content"></div>
+                    </div>
+                </div>
+            </main>
         </div>
     </body>
 </html>
