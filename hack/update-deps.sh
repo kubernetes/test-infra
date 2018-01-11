@@ -24,6 +24,7 @@ set -o errexit
 set -o pipefail
 set -o xtrace
 
+# Remove //foo:something references from bar/BUILD
 # Remove //vendor/golang.org/x/text/internal:go_default_library deps
 #
 # Unused text/gen.go file imports text/internal, which prevents dep prune from
@@ -36,13 +37,13 @@ set -o xtrace
 #
 # Usage:
 #   remove-text-internal
-patch-text-internal() {
+drop-dep() {
   local path
-  path="$(dirname "${BASH_SOURCE}")/../vendor/golang.org/x/text/internal/BUILD"
+  path="$(dirname "${BASH_SOURCE}")/../$2/BUILD"
   if [[ ! -f ${path} ]]; then
     return 0
   fi
-  sed -i -e "\|//vendor/golang.org/x/text/language:go_default_library|d" "$path"
+  sed -i -e "\|//$1:go_default_library|d" "$path"
 }
 
 main() {
@@ -50,7 +51,10 @@ main() {
   dep ensure
   dep prune
   hack/update-bazel.sh
-  patch-text-internal  # TODO(fejta): fix dep prune instead
+  drop-dep vendor/golang.org/x/text/language vendor/golang.org/x/text/internal
+  drop-dep vendor/google.golang.org/api/transport/grpc vendor/google.golang.org/api/transport
+  drop-dep vendor/github.com/golang/protobuf/protoc-gen-go/grpc vendor/github.com/golang/protobuf/protoc-gen-go
+  drop-dep vendor/github.com/golang/protobuf/protoc-gen-go/generator vendor/github.com/golang/protobuf/protoc-gen-go
   hack/prune-libraries.sh --fix
   hack/update-bazel.sh  # Update child :all-srcs in case parent was deleted
 }
