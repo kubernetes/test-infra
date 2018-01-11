@@ -48,7 +48,7 @@ def get_required_jobs():
 class JobTest(unittest.TestCase):
 
     excludes = [
-        'BUILD',  # For bazel
+        'BUILD.bazel',  # For bazel
         'config.json',  # For --json mode
         'validOwners.json', # Contains a list of current sigs; sigs are allowed to own jobs
         'config_sort.py', # Tool script to sort config.json
