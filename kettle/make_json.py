@@ -52,7 +52,7 @@ def parse_junit(xml):
     # Knowing that a given build could have ran a test but didn't for some reason
     # isn't very interesting.
     if tree.tag == 'testsuite':
-        for child in tree:
+        for child in tree.findall('testcase'):
             name = child.attrib['name']
             time = float(child.attrib['time'] or 0)
             failure_text = None

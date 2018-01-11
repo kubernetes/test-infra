@@ -68,6 +68,7 @@ class MakeJsonTest(unittest.TestCase):
                metadata=[{'key': 'pull', 'value': 'asdf'}, {'key': 'repo', 'value': 'ignored'}])
         expect(path, None, None, ['''
                    <testsuite>
+                    <properties><property name="test" value="don't crash!"></property></properties>
                     <testcase name="t1" time="1.0"><failure>stacktrace</failure></testcase>
                     <testcase name="t2" time="2.0"></testcase>
                     <testcase name="t2#1" time="2.0"></testcase>
