@@ -234,13 +234,13 @@ class BuildHandler(view_base.BaseHandler):
         issues = list(models.GHIssueDigest.find_xrefs(build_dir))
 
         refs = []
-        if started and 'pull' in started:
+        if started and started.get('pull'):
             for ref in started['pull'].split(','):
                 x = ref.split(':', 1)
                 if len(x) == 2:
                     refs.append((x[0], x[1]))
                 else:
-                    refs.append((x[1], ''))
+                    refs.append((x[0], ''))
 
         self.render('build.html', dict(
             job_dir=job_dir, build_dir=build_dir, job=job, build=build,
