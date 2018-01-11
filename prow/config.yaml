@@ -5454,9 +5454,9 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--" # end bootstrap args, scenario args below
-        - "--build=//... -//vendor/..."
+        - "--build=//..."
         - "--install=gubernator/test_requirements.txt"
-        - "--test=//... //hack:verify-all -//vendor/..."
+        - "--test=//..."
         - "--test-args=--test_output=errors"
         env:
         - name: TEST_TMPDIR
@@ -5503,9 +5503,9 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--" # end bootstrap args, scenario args below
-        - "--build=//... -//vendor/..."
+        - "--build=//..."
         - "--install=gubernator/test_requirements.txt"
-        - "--test=//... //hack:verify-all -//vendor/..."
+        - "--test=//..."
         - "--test-args=--test_output=errors"
         env:
         - name: TEST_TMPDIR
@@ -6405,9 +6405,9 @@ postsubmits:
         - "--upload=gs://kubernetes-jenkins/logs"
         - "--" # end bootstrap args, scenario args below
         - "--batch" # mitigation for https://github.com/bazelbuild/bazel/issues/4311
-        - "--build=//... -//vendor/..."
+        - "--build=//..."
         - "--install=gubernator/test_requirements.txt"
-        - "--test=//... //hack:verify-all -//vendor/..."
+        - "--test=//..."
         - "--test-args=--test_output=errors"
         env:
         - name: TEST_TMPDIR
@@ -23715,9 +23715,9 @@ periodics:
       - "--upload=gs://kubernetes-jenkins/logs"
       - "--" # end bootstrap args, scenario args below
       - "--batch" # mitigation for https://github.com/bazelbuild/bazel/issues/4311
-      - "--build=//... -//vendor/..."
+      - "--build=//..."
       - "--install=gubernator/test_requirements.txt"
-      - "--test=//... //hack:verify-all -//vendor/..."
+      - "--test=//..."
       - "--test-args=--test_output=errors"
       env:
       - name: TEST_TMPDIR
