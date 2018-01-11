@@ -167,12 +167,6 @@
   revision = "fc2b8d3a73c4867e51861bbdd5ae3c1f0869dd6a"
 
 [[projects]]
-  branch = "master"
-  name = "github.com/petar/GoLLRB"
-  packages = ["llrb"]
-  revision = "53be0d36a84c2a886ca057d34b6aa4468df9ccb4"
-
-[[projects]]
   name = "github.com/peterbourgon/diskv"
   packages = ["."]
   revision = "5dfcb07a075adbaaa4094cddfd160b1e1c77a043"
