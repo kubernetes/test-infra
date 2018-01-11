@@ -124,7 +124,7 @@ def memcache_memoize(prefix, expires=60 * 60, neg_expires=60):
                 serialized_length = len(pickle.dumps(data, pickle.HIGHEST_PROTOCOL))
                 if serialized_length > 1000000:
                     logging.warning('data too large to fit in memcache: %s > 1MB',
-                                    len(serialized_length))
+                                    serialized_length)
                     return data
                 try:
                     if data:
