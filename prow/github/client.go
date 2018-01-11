@@ -1468,3 +1468,21 @@ func (c *Client) IsMergeable(org, repo string, number int, sha string) (bool, er
 	}
 	return false, fmt.Errorf("reached maximum number of retries (%d) checking mergeability", maxTries)
 }
+
+// ClearMilestone clears the milestone from the specified issue
+func (c *Client) ClearMilestone(org, repo string, num int) error {
+	c.log("ClearMilestone", org, repo, num)
+
+	issue := &struct {
+		// Clearing the milestone requires providing a null value, and
+		// interface{} will serialize to null.
+		Milestone interface{} `json:"milestone"`
+	}{}
+	_, err := c.request(&request{
+		method:      http.MethodPatch,
+		path:        fmt.Sprintf("%s/repos/%v/%v/issues/%d", c.base, org, repo, num),
+		requestBody: &issue,
+		exitCodes:   []int{200},
+	}, nil)
+	return err
+}
