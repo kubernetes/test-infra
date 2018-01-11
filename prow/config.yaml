@@ -513,7 +513,7 @@ presubmits:
       containers:
       - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
         args:
-        - "--repo=github.com/kubernetes-incubator/$(REPO_NAME)=$(PULL_REFS)"
+        - "--repo=github.com/containerd/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         env:
@@ -547,7 +547,7 @@ presubmits:
           - "--git-cache=/root/.cache/git"
           - "--job=$(JOB_NAME)"
           - "--repo=k8s.io/kubernetes"
-          - "--repo=github.com/kubernetes-incubator/$(REPO_NAME)=$(PULL_REFS)"
+          - "--repo=github.com/containerd/$(REPO_NAME)=$(PULL_REFS)"
           - "--service-account=/etc/service-account/service-account.json"
           - "--upload=gs://kubernetes-jenkins/pr-logs"
           - "--timeout=90"
@@ -597,7 +597,7 @@ presubmits:
       containers:
       - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
         args:
-        - "--repo=github.com/kubernetes-incubator/$(REPO_NAME)=$(PULL_REFS)"
+        - "--repo=github.com/containerd/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         env:
