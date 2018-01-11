@@ -1271,7 +1271,8 @@ func (c *Client) GetFile(org, repo, filepath, commit string) ([]byte, error) {
 
 // Query runs a GraphQL query using shurcooL/githubql's client.
 func (c *Client) Query(ctx context.Context, q interface{}, vars map[string]interface{}) error {
-	c.log("Query", q, vars)
+	// Don't log query here because Query is typically called multiple times to get all pages.
+	// Instead log once per search and include total search cost.
 	return c.gqlc.Query(ctx, q, vars)
 }
 
