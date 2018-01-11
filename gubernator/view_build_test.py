@@ -175,7 +175,7 @@ class BuildTest(main_test.TestBase):
                 'version': 'v1+56',
                 'timestamp': 1406535800,
                 'jenkins-node': 'agent-light-7',
-                'pull': 'master:1234,35:abcd',
+                'pull': 'master:1234,35:abcd,72814',
                 'metadata': {
                     'master-version': 'm12'
                 }
@@ -195,6 +195,7 @@ class BuildTest(main_test.TestBase):
         self.assertIn('<td>skew-version<td>m11', response)
         self.assertIn('1234', response)
         self.assertIn('abcd', response)
+        self.assertIn('72814', response)
 
     def test_build_show_log(self):
         """Test that builds that failed with no failures show the build log."""
