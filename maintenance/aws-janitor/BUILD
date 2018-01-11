@@ -3,7 +3,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
 go_library(
     name = "go_default_library",
     srcs = ["main.go"],
-    importpath = "k8s.io/test-infra/jenkins/aws_janitor",
+    importpath = "k8s.io/test-infra/maintenance/aws-janitor",
     visibility = ["//visibility:private"],
     deps = [
         "//vendor/github.com/aws/aws-sdk-go/aws:go_default_library",
@@ -18,9 +18,9 @@ go_library(
 )
 
 go_binary(
-    name = "aws_janitor",
+    name = "aws-janitor",
     embed = [":go_default_library"],
-    importpath = "k8s.io/test-infra/jenkins/aws_janitor",
+    importpath = "k8s.io/test-infra/maintenance/aws-janitor",
     visibility = ["//visibility:public"],
 )
 
