@@ -59,7 +59,13 @@ target-sources() {
 }
 
 sources() {
+  local t
   for j in $(target-sources "${@}"); do
+    case "$(target-name "$j")" in
+      LICENSE*|PATENTS*|*.md)  # Keep these files
+        continue
+        ;;
+    esac
     echo $(package-name "${j:2}")/$(target-name $j)
   done
 }
