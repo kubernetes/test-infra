@@ -30,7 +30,7 @@ TREE="$(dirname ${BASH_SOURCE[0]})/.."
 
 DATE="$(date +v%Y%m%d)"
 TAG="${DATE}-$(git describe --tags --always --dirty)"
-pushd "${TREE}/jenkins/e2e-image"
+pushd "${TREE}/images/kubekins-e2e"
 make push
 K8S=1.8 make push
 K8S=1.7 make push
