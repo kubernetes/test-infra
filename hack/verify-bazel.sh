@@ -30,10 +30,9 @@ TMP_GOPATH=$(mktemp -d)
   eaa1e87d2a3ca716780ca6650ef5b9b9663b8773 \
   "${TMP_GOPATH}"
 
-touch "${TESTINFRA_ROOT}/vendor/BUILD"
+touch "${TESTINFRA_ROOT}/vendor/BUILD.bazel"
 
 gazelle_diff=$("${TMP_GOPATH}/bin/gazelle" fix \
-  -build_file_name=BUILD,BUILD.bazel \
   -external=vendored \
   -mode=diff \
   -repo_root="${TESTINFRA_ROOT}")

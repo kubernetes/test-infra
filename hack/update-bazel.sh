@@ -37,10 +37,9 @@ rm -f ${TESTINFRA_ROOT}/vendor/k8s.io/apimachinery/pkg/util/sets/BUILD
   eaa1e87d2a3ca716780ca6650ef5b9b9663b8773 \
   "${TMP_GOPATH}"
 
-touch "${TESTINFRA_ROOT}/vendor/BUILD"
+touch "${TESTINFRA_ROOT}/vendor/BUILD.bazel"
 
 "${TMP_GOPATH}/bin/gazelle" fix \
-  -build_file_name=BUILD,BUILD.bazel \
   -external=vendored \
   -mode=fix \
   -repo_root="${TESTINFRA_ROOT}"
