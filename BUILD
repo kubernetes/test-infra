@@ -40,6 +40,7 @@ filegroup(
         "//kubetest:all-srcs",
         "//label_sync:all-srcs",
         "//logexporter/cmd:all-srcs",
+        "//maintenance/aws-janitor:all-srcs",
         "//maintenance/migratestatus:all-srcs",
         "//metrics:all-srcs",
         "//mungegithub:all-srcs",
