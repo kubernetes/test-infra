@@ -76,10 +76,11 @@ type ProwJob struct {
 }
 
 type ProwJobSpec struct {
-	Type  ProwJobType  `json:"type,omitempty"`
-	Agent ProwJobAgent `json:"agent,omitempty"`
-	Job   string       `json:"job,omitempty"`
-	Refs  Refs         `json:"refs,omitempty"`
+	Type    ProwJobType  `json:"type,omitempty"`
+	Agent   ProwJobAgent `json:"agent,omitempty"`
+	Cluster string       `json:"cluster,omitempty"`
+	Job     string       `json:"job,omitempty"`
+	Refs    Refs         `json:"refs,omitempty"`
 
 	Report         bool   `json:"report,omitempty"`
 	Context        string `json:"context,omitempty"`
@@ -103,6 +104,13 @@ type ProwJobStatus struct {
 
 func (j *ProwJob) Complete() bool {
 	return !j.Status.CompletionTime.IsZero()
+}
+
+func (j *ProwJob) ClusterAlias() string {
+	if j.Spec.Cluster == "" {
+		return DefaultClusterAlias
+	}
+	return j.Spec.Cluster
 }
 
 type Pull struct {

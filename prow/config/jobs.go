@@ -45,6 +45,8 @@ type Presubmit struct {
 	MaxConcurrency int `json:"max_concurrency"`
 	// Agent that will take care of running this job.
 	Agent string `json:"agent"`
+	// Cluster is the alias of the cluster to run this job in. (Default: kube.DefaultClusterAlias)
+	Cluster string `json:"cluster"`
 	// Kubernetes pod spec.
 	Spec *kube.PodSpec `json:"spec,omitempty"`
 	// Run these jobs after successfully running this one.
@@ -64,6 +66,8 @@ type Postsubmit struct {
 	Labels map[string]string `json:"labels"`
 	// Agent that will take care of running this job.
 	Agent string `json:"agent"`
+	// Cluster is the alias of the cluster to run this job in. (Default: kube.DefaultClusterAlias)
+	Cluster string `json:"cluster"`
 	// Kubernetes pod spec.
 	Spec *kube.PodSpec `json:"spec,omitempty"`
 	// Maximum number of this job running concurrently, 0 implies no limit.
@@ -81,6 +85,8 @@ type Periodic struct {
 	Labels map[string]string `json:"labels"`
 	// Agent that will take care of running this job.
 	Agent string `json:"agent"`
+	// Cluster is the alias of the cluster to run this job in. (Default: kube.DefaultClusterAlias)
+	Cluster string `json:"cluster"`
 	// Kubernetes pod spec.
 	Spec *kube.PodSpec `json:"spec,omitempty"`
 	// (deprecated)Interval to wait between two runs of the job.

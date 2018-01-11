@@ -41,9 +41,9 @@ type configAgent interface {
 }
 
 var (
-	runOnce    = flag.Bool("run-once", false, "If true, run only once then quit.")
-	configPath = flag.String("config-path", "/etc/config/config", "Path to config.yaml.")
-	cluster    = flag.String("build-cluster", "", "Path to kube.Cluster YAML file. If empty, uses the local cluster.")
+	runOnce      = flag.Bool("run-once", false, "If true, run only once then quit.")
+	configPath   = flag.String("config-path", "/etc/config/config", "Path to config.yaml.")
+	buildCluster = flag.String("build-cluster", "", "Path to kube.Cluster YAML file. If empty, uses the local cluster.")
 )
 
 func main() {
@@ -62,20 +62,26 @@ func main() {
 		return
 	}
 
-	var pkc *kube.Client
-	if *cluster == "" {
-		pkc = kc.Namespace(configAgent.Config().PodNamespace)
+	var pkcs map[string]*kube.Client
+	if *buildCluster == "" {
+		pkcs = map[string]*kube.Client{
+			kube.DefaultClusterAlias: kc.Namespace(configAgent.Config().PodNamespace),
+		}
 	} else {
-		pkc, err = kube.NewClientFromFile(*cluster, configAgent.Config().PodNamespace)
+		pkcs, err = kube.ClientMapFromFile(*buildCluster, configAgent.Config().PodNamespace)
 		if err != nil {
-			logger.WithError(err).Fatal("Error getting kube client.")
+			logger.WithError(err).Fatal("Error getting kube client(s).")
 		}
 	}
 
+	kubeClients := map[string]kubeClient{}
+	for alias, client := range pkcs {
+		kubeClients[alias] = kubeClient(client)
+	}
 	c := controller{
 		logger:      logger,
 		kc:          kc,
-		pkc:         pkc,
+		pkcs:        kubeClients,
 		configAgent: configAgent,
 	}
 
@@ -94,7 +100,7 @@ func main() {
 type controller struct {
 	logger      *logrus.Entry
 	kc          kubeClient
-	pkc         kubeClient
+	pkcs        map[string]kubeClient
 	configAgent configAgent
 }
 
@@ -165,25 +171,27 @@ func (c *controller) clean() {
 
 	// Now clean up old pods.
 	selector := fmt.Sprintf("%s = %s", kube.CreatedByProw, "true")
-	pods, err := c.pkc.ListPods(selector)
-	if err != nil {
-		c.logger.WithError(err).Error("Error listing pods.")
-		return
-	}
-	maxPodAge := c.configAgent.Config().Sinker.MaxPodAge
-	for _, pod := range pods {
-		if _, ok := isFinished[pod.Metadata.Name]; !ok {
-			// prowjob is not marked as completed yet
-			// deleting the pod now will result in plank creating a brand new pod
-			continue
+	for _, client := range c.pkcs {
+		pods, err := client.ListPods(selector)
+		if err != nil {
+			c.logger.WithError(err).Error("Error listing pods.")
+			return
 		}
-		if (pod.Status.Phase == kube.PodSucceeded || pod.Status.Phase == kube.PodFailed) &&
-			time.Since(pod.Status.StartTime) > maxPodAge {
-			// Delete old completed pods. Don't quit if we fail to delete one.
-			if err := c.pkc.DeletePod(pod.Metadata.Name); err == nil {
-				c.logger.WithField("pod", pod.Metadata.Name).Info("Deleted old completed pod.")
-			} else {
-				c.logger.WithField("pod", pod.Metadata.Name).WithError(err).Error("Error deleting pod.")
+		maxPodAge := c.configAgent.Config().Sinker.MaxPodAge
+		for _, pod := range pods {
+			if _, ok := isFinished[pod.Metadata.Name]; !ok {
+				// prowjob is not marked as completed yet
+				// deleting the pod now will result in plank creating a brand new pod
+				continue
+			}
+			if (pod.Status.Phase == kube.PodSucceeded || pod.Status.Phase == kube.PodFailed) &&
+				time.Since(pod.Status.StartTime) > maxPodAge {
+				// Delete old completed pods. Don't quit if we fail to delete one.
+				if err := client.DeletePod(pod.Metadata.Name); err == nil {
+					c.logger.WithField("pod", pod.Metadata.Name).Info("Deleted old completed pod.")
+				} else {
+					c.logger.WithField("pod", pod.Metadata.Name).WithError(err).Error("Error deleting pod.")
+				}
 			}
 		}
 	}
