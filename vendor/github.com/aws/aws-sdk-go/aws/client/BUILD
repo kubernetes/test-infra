@@ -8,6 +8,7 @@ go_library(
         "logger.go",
     ],
     importpath = "github.com/aws/aws-sdk-go/aws/client",
+    tags = ["manual"],
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/aws/aws-sdk-go/aws:go_default_library",
@@ -19,7 +20,10 @@ go_library(
 filegroup(
     name = "package-srcs",
     srcs = glob(["**"]),
-    tags = ["automanaged"],
+    tags = [
+        "automanaged",
+        "manual",
+    ],
     visibility = ["//visibility:private"],
 )
 
@@ -29,6 +33,9 @@ filegroup(
         ":package-srcs",
         "//vendor/github.com/aws/aws-sdk-go/aws/client/metadata:all-srcs",
     ],
-    tags = ["automanaged"],
+    tags = [
+        "automanaged",
+        "manual",
+    ],
     visibility = ["//visibility:public"],
 )

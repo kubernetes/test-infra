@@ -4,13 +4,17 @@ go_library(
     name = "go_default_library",
     srcs = ["httpcache.go"],
     importpath = "github.com/gregjones/httpcache",
+    tags = ["manual"],
     visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "package-srcs",
     srcs = glob(["**"]),
-    tags = ["automanaged"],
+    tags = [
+        "automanaged",
+        "manual",
+    ],
     visibility = ["//visibility:private"],
 )
 
@@ -20,6 +24,9 @@ filegroup(
         ":package-srcs",
         "//vendor/github.com/gregjones/httpcache/diskcache:all-srcs",
     ],
-    tags = ["automanaged"],
+    tags = [
+        "automanaged",
+        "manual",
+    ],
     visibility = ["//visibility:public"],
 )

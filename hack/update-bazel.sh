@@ -52,3 +52,14 @@ touch "${TESTINFRA_ROOT}/vendor/BUILD"
   -repo_root="${TESTINFRA_ROOT}"
 
 "${TMP_GOPATH}/bin/kazel" -root="${TESTINFRA_ROOT}"
+
+# TODO(bentheelder): vendor this instead?
+"${TESTINFRA_ROOT}/hack/go_install_from_commit.sh" \
+  github.com/bazelbuild/buildtools/buildozer \
+  1109504869e067d5424514fac4d6d94cddfe98e8 \
+  "${TMP_GOPATH}"
+
+# make vendor/* not match bazel wildcard targets
+# NOTE: the query matches :go_default_library.cgo_embed in go-sqlite3 which is
+# not a real target so we filter this out with grep :shrug:
+bazel query //vendor/... | grep -v go_default_library\.cgo_embed | xargs buildozer 'add tags manual'

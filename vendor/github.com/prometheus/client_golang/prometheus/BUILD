@@ -22,6 +22,7 @@ go_library(
         "vec.go",
     ],
     importpath = "github.com/prometheus/client_golang/prometheus",
+    tags = ["manual"],
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/beorn7/perks/quantile:go_default_library",
@@ -36,7 +37,10 @@ go_library(
 filegroup(
     name = "package-srcs",
     srcs = glob(["**"]),
-    tags = ["automanaged"],
+    tags = [
+        "automanaged",
+        "manual",
+    ],
     visibility = ["//visibility:private"],
 )
 
@@ -47,6 +51,9 @@ filegroup(
         "//vendor/github.com/prometheus/client_golang/prometheus/promhttp:all-srcs",
         "//vendor/github.com/prometheus/client_golang/prometheus/push:all-srcs",
     ],
-    tags = ["automanaged"],
+    tags = [
+        "automanaged",
+        "manual",
+    ],
     visibility = ["//visibility:public"],
 )

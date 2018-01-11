@@ -4,6 +4,7 @@ go_library(
     name = "go_default_library",
     srcs = ["lint.go"],
     importpath = "github.com/golang/lint",
+    tags = ["manual"],
     visibility = ["//visibility:public"],
     deps = ["//vendor/golang.org/x/tools/go/gcexportdata:go_default_library"],
 )
@@ -11,13 +12,19 @@ go_library(
 filegroup(
     name = "package-srcs",
     srcs = glob(["**"]),
-    tags = ["automanaged"],
+    tags = [
+        "automanaged",
+        "manual",
+    ],
     visibility = ["//visibility:private"],
 )
 
 filegroup(
     name = "all-srcs",
     srcs = [":package-srcs"],
-    tags = ["automanaged"],
+    tags = [
+        "automanaged",
+        "manual",
+    ],
     visibility = ["//visibility:public"],
 )

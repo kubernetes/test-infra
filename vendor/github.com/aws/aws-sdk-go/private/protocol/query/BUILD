@@ -8,6 +8,7 @@ go_library(
         "unmarshal_error.go",
     ],
     importpath = "github.com/aws/aws-sdk-go/private/protocol/query",
+    tags = ["manual"],
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/aws/aws-sdk-go/aws/awserr:go_default_library",
@@ -20,7 +21,10 @@ go_library(
 filegroup(
     name = "package-srcs",
     srcs = glob(["**"]),
-    tags = ["automanaged"],
+    tags = [
+        "automanaged",
+        "manual",
+    ],
     visibility = ["//visibility:private"],
 )
 
@@ -30,6 +34,9 @@ filegroup(
         ":package-srcs",
         "//vendor/github.com/aws/aws-sdk-go/private/protocol/query/queryutil:all-srcs",
     ],
-    tags = ["automanaged"],
+    tags = [
+        "automanaged",
+        "manual",
+    ],
     visibility = ["//visibility:public"],
 )

@@ -10,6 +10,7 @@ go_library(
         "static_provider.go",
     ],
     importpath = "github.com/aws/aws-sdk-go/aws/credentials",
+    tags = ["manual"],
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/aws/aws-sdk-go/aws/awserr:go_default_library",
@@ -21,7 +22,10 @@ go_library(
 filegroup(
     name = "package-srcs",
     srcs = glob(["**"]),
-    tags = ["automanaged"],
+    tags = [
+        "automanaged",
+        "manual",
+    ],
     visibility = ["//visibility:private"],
 )
 
@@ -33,6 +37,9 @@ filegroup(
         "//vendor/github.com/aws/aws-sdk-go/aws/credentials/endpointcreds:all-srcs",
         "//vendor/github.com/aws/aws-sdk-go/aws/credentials/stscreds:all-srcs",
     ],
-    tags = ["automanaged"],
+    tags = [
+        "automanaged",
+        "manual",
+    ],
     visibility = ["//visibility:public"],
 )

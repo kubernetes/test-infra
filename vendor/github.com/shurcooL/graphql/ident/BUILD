@@ -4,19 +4,26 @@ go_library(
     name = "go_default_library",
     srcs = ["ident.go"],
     importpath = "github.com/shurcooL/graphql/ident",
+    tags = ["manual"],
     visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "package-srcs",
     srcs = glob(["**"]),
-    tags = ["automanaged"],
+    tags = [
+        "automanaged",
+        "manual",
+    ],
     visibility = ["//visibility:private"],
 )
 
 filegroup(
     name = "all-srcs",
     srcs = [":package-srcs"],
-    tags = ["automanaged"],
+    tags = [
+        "automanaged",
+        "manual",
+    ],
     visibility = ["//visibility:public"],
 )

@@ -10,19 +10,26 @@ go_library(
         "spec.go",
     ],
     importpath = "gopkg.in/robfig/cron.v2",
+    tags = ["manual"],
     visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "package-srcs",
     srcs = glob(["**"]),
-    tags = ["automanaged"],
+    tags = [
+        "automanaged",
+        "manual",
+    ],
     visibility = ["//visibility:private"],
 )
 
 filegroup(
     name = "all-srcs",
     srcs = [":package-srcs"],
-    tags = ["automanaged"],
+    tags = [
+        "automanaged",
+        "manual",
+    ],
     visibility = ["//visibility:public"],
 )

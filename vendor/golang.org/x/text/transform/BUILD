@@ -4,19 +4,26 @@ go_library(
     name = "go_default_library",
     srcs = ["transform.go"],
     importpath = "golang.org/x/text/transform",
+    tags = ["manual"],
     visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "package-srcs",
     srcs = glob(["**"]),
-    tags = ["automanaged"],
+    tags = [
+        "automanaged",
+        "manual",
+    ],
     visibility = ["//visibility:private"],
 )
 
 filegroup(
     name = "all-srcs",
     srcs = [":package-srcs"],
-    tags = ["automanaged"],
+    tags = [
+        "automanaged",
+        "manual",
+    ],
     visibility = ["//visibility:public"],
 )

@@ -4,6 +4,7 @@ go_library(
     name = "go_default_library",
     srcs = ["ed25519.go"],
     importpath = "golang.org/x/crypto/ed25519",
+    tags = ["manual"],
     visibility = ["//visibility:public"],
     deps = ["//vendor/golang.org/x/crypto/ed25519/internal/edwards25519:go_default_library"],
 )
@@ -11,7 +12,10 @@ go_library(
 filegroup(
     name = "package-srcs",
     srcs = glob(["**"]),
-    tags = ["automanaged"],
+    tags = [
+        "automanaged",
+        "manual",
+    ],
     visibility = ["//visibility:private"],
 )
 
@@ -21,6 +25,9 @@ filegroup(
         ":package-srcs",
         "//vendor/golang.org/x/crypto/ed25519/internal/edwards25519:all-srcs",
     ],
-    tags = ["automanaged"],
+    tags = [
+        "automanaged",
+        "manual",
+    ],
     visibility = ["//visibility:public"],
 )

@@ -4,6 +4,7 @@ load("@io_bazel_rules_go//proto:def.bzl", "go_grpc_library")
 proto_library(
     name = "remote_api_proto",
     srcs = ["remote_api.proto"],
+    tags = ["manual"],
     visibility = ["//vendor/google.golang.org/appengine:__subpackages__"],
 )
 
@@ -11,6 +12,7 @@ go_grpc_library(
     name = "remote_api_go_proto",
     importpath = "google.golang.org/appengine/internal/remote_api",
     proto = ":remote_api_proto",
+    tags = ["manual"],
     visibility = ["//vendor/google.golang.org/appengine:__subpackages__"],
 )
 
@@ -18,19 +20,26 @@ go_library(
     name = "go_default_library",
     embed = [":remote_api_go_proto"],
     importpath = "google.golang.org/appengine/internal/remote_api",
+    tags = ["manual"],
     visibility = ["//vendor/google.golang.org/appengine:__subpackages__"],
 )
 
 filegroup(
     name = "package-srcs",
     srcs = glob(["**"]),
-    tags = ["automanaged"],
+    tags = [
+        "automanaged",
+        "manual",
+    ],
     visibility = ["//visibility:private"],
 )
 
 filegroup(
     name = "all-srcs",
     srcs = [":package-srcs"],
-    tags = ["automanaged"],
+    tags = [
+        "automanaged",
+        "manual",
+    ],
     visibility = ["//visibility:public"],
 )

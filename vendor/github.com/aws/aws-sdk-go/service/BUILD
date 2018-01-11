@@ -4,13 +4,17 @@ go_library(
     name = "go_default_library",
     srcs = ["generate.go"],
     importpath = "github.com/aws/aws-sdk-go/service",
+    tags = ["manual"],
     visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "package-srcs",
     srcs = glob(["**"]),
-    tags = ["automanaged"],
+    tags = [
+        "automanaged",
+        "manual",
+    ],
     visibility = ["//visibility:private"],
 )
 
@@ -24,6 +28,9 @@ filegroup(
         "//vendor/github.com/aws/aws-sdk-go/service/s3:all-srcs",
         "//vendor/github.com/aws/aws-sdk-go/service/sts:all-srcs",
     ],
-    tags = ["automanaged"],
+    tags = [
+        "automanaged",
+        "manual",
+    ],
     visibility = ["//visibility:public"],
 )
