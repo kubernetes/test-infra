@@ -20,14 +20,11 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"reflect"
 	"regexp"
 	"strings"
 	"testing"
-
-	"github.com/ghodss/yaml"
 
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
@@ -149,33 +146,6 @@ func findRequired(t *testing.T, presubmits []Presubmit) []string {
 		required = append(required, p.Context)
 	}
 	return required
-}
-
-func TestRequiredRetestContextsMatch(t *testing.T) {
-	b, err := ioutil.ReadFile("../../mungegithub/submit-queue/deployment/kubernetes/configmap.yaml")
-	if err != nil {
-		t.Fatalf("Could not load submit queue configmap: %v", err)
-	}
-	sqc := &SubmitQueueConfig{}
-	if err = yaml.Unmarshal(b, sqc); err != nil {
-		t.Fatalf("Could not parse submit queue configmap: %v", err)
-	}
-	required := strings.Split(sqc.RequiredRetestContexts, ",")
-
-	running := findRequired(t, c.Presubmits["kubernetes/kubernetes"])
-
-	for _, r := range required {
-		found := false
-		for _, s := range running {
-			if s == r {
-				found = true
-				break
-			}
-		}
-		if !found {
-			t.Errorf("Required context: %s does not always run: %s", r, running)
-		}
-	}
 }
 
 func TestConfigSecurityJobsMatch(t *testing.T) {
