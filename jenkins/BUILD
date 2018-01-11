@@ -36,6 +36,7 @@ filegroup(
     name = "all-srcs",
     srcs = [
         ":package-srcs",
+        "//jenkins/aws_janitor:all-srcs",
         "//jenkins/job-configs:all-srcs",
     ],
     tags = ["automanaged"],
