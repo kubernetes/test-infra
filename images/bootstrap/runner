@@ -19,7 +19,7 @@ set -o pipefail
 
 cleanup_dind() {
     # run custom docker data root cleanup binary
-    prune-docker || true
+    barnacle || true
     # list what images and volumes remain
     echo "Remaining docker images and volumes are:"
     docker images --all || true

@@ -116,7 +116,7 @@ RUN echo 'DOCKER_OPTS="${DOCKER_OPTS} --data-root=/docker-graph"' | \
 RUN mkdir /docker-graph
 
 # add custom docker cleanup binary
-ADD ["prune-docker", "/usr/local/bin"]
+ADD ["./barnacle/barnacle", "/usr/local/bin"]
 
 #
 # END: DOCKER IN DOCKER SETUP
