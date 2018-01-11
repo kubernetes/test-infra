@@ -17,5 +17,5 @@ LABEL maintainer="zml@google.com"
 
 RUN apt-get install ca-certificates && update-ca-certificates
 
-COPY aws-janitor /aws-janitor
+COPY aws_janitor /aws_janitor
 ENTRYPOINT ["/bin/bash", "/runner"]

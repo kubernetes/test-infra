@@ -16,7 +16,7 @@ IMAGE ?= gcr.io/k8s-test-infra-aws/aws-janitor
 VERSION ?= 0.3
 
 image:
-	CGO_ENABLED=0 go build k8s.io/test-infra/jenkins/aws-janitor
+	CGO_ENABLED=0 go build k8s.io/test-infra/jenkins/aws_janitor
 	docker build -t "$(IMAGE):$(VERSION)" .
 
 push: image
