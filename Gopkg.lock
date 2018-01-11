@@ -265,11 +265,6 @@
   revision = "1f0f7f68c993a0ff4e0fe1793c08cdd14cc243cb"
 
 [[projects]]
-  name = "google.golang.org/appengine"
-  packages = [".","internal","internal/app_identity","internal/base","internal/datastore","internal/log","internal/modules","internal/remote_api","internal/urlfetch","urlfetch"]
-  revision = "78199dcb0669fc381c22e919e1e97eba879e8f60"
-
-[[projects]]
   branch = "v2"
   name = "gopkg.in/robfig/cron.v2"
   packages = ["."]
