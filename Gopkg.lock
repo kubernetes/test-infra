@@ -7,6 +7,12 @@
   revision = "'75cd24fc2f2c2a2088577d12123ddee5f54e0675'"
 
 [[projects]]
+  name = "github.com/Microsoft/go-winio"
+  packages = ["."]
+  revision = "b7c3cf0d1286c7b62b140ed960a00b154c1b6fcc"
+  version = "v0.4.6"
+
+[[projects]]
   name = "github.com/NYTimes/gziphandler"
   packages = ["."]
   revision = "63027b26b87e2ae2ce3810393d4b81021cfd3a35"
@@ -38,6 +44,30 @@
   name = "github.com/bwmarrin/snowflake"
   packages = ["."]
   revision = "02cc386c183a1bf89dcac8c8008bb465f69d3340"
+
+[[projects]]
+  name = "github.com/docker/distribution"
+  packages = ["digest","reference"]
+  revision = "48294d928ced5dd9b378f7fd7c6f5da3ff3f2c89"
+  version = "v2.6.2"
+
+[[projects]]
+  name = "github.com/docker/docker"
+  packages = ["api/types","api/types/blkiodev","api/types/container","api/types/events","api/types/filters","api/types/mount","api/types/network","api/types/reference","api/types/registry","api/types/strslice","api/types/swarm","api/types/time","api/types/versions","api/types/volume","client","pkg/tlsconfig"]
+  revision = "092cba3727bb9b4a2f0e922cd6c0f93ea270e363"
+  version = "v1.13.1"
+
+[[projects]]
+  name = "github.com/docker/go-connections"
+  packages = ["nat","sockets","tlsconfig"]
+  revision = "3ede32e2033de7505e6500d6c868c2b9ed9f169d"
+  version = "v0.3.0"
+
+[[projects]]
+  name = "github.com/docker/go-units"
+  packages = ["."]
+  revision = "0dadbb0345b35ec7ef35e228dabb8de89a65bf52"
+  version = "v0.3.2"
 
 [[projects]]
   name = "github.com/ghodss/yaml"
@@ -167,9 +197,21 @@
   revision = "fc2b8d3a73c4867e51861bbdd5ae3c1f0869dd6a"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/petar/GoLLRB"
+  packages = ["llrb"]
+  revision = "53be0d36a84c2a886ca057d34b6aa4468df9ccb4"
+
+[[projects]]
   name = "github.com/peterbourgon/diskv"
   packages = ["."]
   revision = "5dfcb07a075adbaaa4094cddfd160b1e1c77a043"
+
+[[projects]]
+  name = "github.com/pkg/errors"
+  packages = ["."]
+  revision = "645ef00459ed84a119197bfb8d8205042c6df63d"
+  version = "v0.8.0"
 
 [[projects]]
   name = "github.com/prometheus/client_golang"
@@ -234,7 +276,7 @@
 
 [[projects]]
   name = "golang.org/x/net"
-  packages = ["context","idna"]
+  packages = ["context","context/ctxhttp","idna","proxy"]
   revision = "f2499483f923065a842d38eb4c7f1927e6fc6e6d"
 
 [[projects]]
@@ -244,7 +286,7 @@
 
 [[projects]]
   name = "golang.org/x/sys"
-  packages = ["unix"]
+  packages = ["unix","windows"]
   revision = "a646d33e2ee3172a661fc09bca23bb4889a41bc8"
 
 [[projects]]
@@ -257,6 +299,12 @@
   name = "golang.org/x/tools"
   packages = ["go/gcexportdata","go/gcimporter15"]
   revision = "1f0f7f68c993a0ff4e0fe1793c08cdd14cc243cb"
+
+[[projects]]
+  name = "google.golang.org/appengine"
+  packages = [".","internal","internal/app_identity","internal/base","internal/datastore","internal/log","internal/modules","internal/remote_api","internal/urlfetch","urlfetch"]
+  revision = "150dc57a1b433e64154302bdc40b6bb8aefa313a"
+  version = "v1.0.0"
 
 [[projects]]
   branch = "v2"
@@ -289,6 +337,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "4736ffdf067b57c414b5ca23f45af1021f140295e4f79230c06b14d1806eb2ed"
+  inputs-digest = "d7794d0609ca7c7f2743b4b86be731a2e7f485a895c829eaf6220da647edc475"
   solver-name = "gps-cdcl"
   solver-version = 1
