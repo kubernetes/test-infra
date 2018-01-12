@@ -1166,6 +1166,9 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-perf-tests-e2e-gce-clusterloader
 - name: ci-perf-tests-kubemark-100-benchmark
   gcs_prefix: kubernetes-jenkins/logs/ci-perf-tests-kubemark-100-benchmark
+# benchmarks
+- name: ci-benchmark-scheduler-master
+  gcs_prefix: kubernetes-jenkins/logs/ci-benchmark-scheduler-master
 # 1.6-master upgrade jobs
 - name: ci-kubernetes-e2e-gce-1-6-1-7-upgrade-cluster
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-1-6-1-7-upgrade-cluster
@@ -4353,6 +4356,11 @@ dashboards:
     test_group_name: ci-perf-tests-kubemark-100-benchmark
   - name: cluster-loader
     test_group_name: ci-perf-tests-e2e-gce-clusterloader
+
+- name: sig-scalability-benchmarks
+  dashboard_tab:
+  - name: scheduler
+    test_group_name: ci-benchmark-scheduler-master
 
 - name: sig-scalability-manual
   dashboard_tab:
