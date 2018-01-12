@@ -25,6 +25,8 @@ import (
 	"testing"
 	"time"
 
+	"k8s.io/apimachinery/pkg/util/sets"
+
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/kube"
 )
@@ -282,9 +284,10 @@ func TestCompletedJobs(t *testing.T) {
 
 func TestRequiredPresubmits(t *testing.T) {
 	tests := []struct {
-		name     string
-		possible []config.Presubmit
-		required []string
+		name       string
+		possible   []config.Presubmit
+		required   []string
+		overridden sets.String
 	}{
 		{
 			name: "basic",
@@ -302,14 +305,19 @@ func TestRequiredPresubmits(t *testing.T) {
 					AlwaysRun:  true,
 					SkipReport: true,
 				},
+				{
+					Name:      "optional_but_overridden",
+					AlwaysRun: false,
+				},
 			},
-			required: []string{"always"},
+			required:   []string{"always", "optional_but_overridden"},
+			overridden: sets.NewString("optional_but_overridden"),
 		},
 	}
 
 	for _, tc := range tests {
 		var names []string
-		for _, job := range requiredPresubmits(tc.possible) {
+		for _, job := range requiredPresubmits(tc.possible, tc.overridden) {
 			names = append(names, job.Name)
 		}
 		expectEqual(t, tc.name, names, tc.required)
@@ -388,7 +396,7 @@ func TestNeededPresubmits(t *testing.T) {
 
 	for _, tc := range tests {
 		var names []string
-		for _, job := range neededPresubmits(tc.possible, tc.current, tc.refs) {
+		for _, job := range neededPresubmits(tc.possible, tc.current, tc.refs, sets.String{}) {
 			names = append(names, job.Name)
 		}
 		expectEqual(t, tc.name, names, tc.required)

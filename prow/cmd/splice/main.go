@@ -29,6 +29,8 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
+	"k8s.io/apimachinery/pkg/util/sets"
+
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pjutil"
@@ -41,6 +43,7 @@ var (
 	repoName       = flag.String("repo", "kubernetes", "Repo name")
 	configPath     = flag.String("config-path", "/etc/config/config", "Path to config.yaml.")
 	maxBatchSize   = flag.Int("batch-size", 5, "Maximum batch size")
+	alwaysRun      = flag.String("always-run", "", "Job names that should be treated as always_run: true in Splice")
 )
 
 // Call a binary and return its output and success status.
@@ -228,10 +231,10 @@ func completedJobs(currentJobs []kube.ProwJob, refs kube.Refs) []kube.ProwJob {
 }
 
 // Filters to the list of required presubmits that report
-func requiredPresubmits(presubmits []config.Presubmit) []config.Presubmit {
+func requiredPresubmits(presubmits []config.Presubmit, alwaysRunOverride sets.String) []config.Presubmit {
 	var out []config.Presubmit
 	for _, job := range presubmits {
-		if !job.AlwaysRun { // Ignore manual jobs as these do not block
+		if !job.AlwaysRun && !alwaysRunOverride.Has(job.Name) { // Ignore manual jobs as these do not block
 			continue
 		}
 		if job.SkipReport { // Ignore silent jobs as these do not block
@@ -246,14 +249,14 @@ func requiredPresubmits(presubmits []config.Presubmit) []config.Presubmit {
 }
 
 // Filters to the list of required presubmit which have not already passed this commit
-func neededPresubmits(presubmits []config.Presubmit, currentJobs []kube.ProwJob, refs kube.Refs) []config.Presubmit {
+func neededPresubmits(presubmits []config.Presubmit, currentJobs []kube.ProwJob, refs kube.Refs, alwaysRunOverride sets.String) []config.Presubmit {
 	skippable := make(map[string]bool)
 	for _, job := range completedJobs(currentJobs, refs) {
 		skippable[job.Spec.Context] = true
 	}
 
 	var needed []config.Presubmit
-	for _, job := range requiredPresubmits(presubmits) {
+	for _, job := range requiredPresubmits(presubmits, alwaysRunOverride) {
 		if skippable[job.Context] {
 			continue
 		}
@@ -281,6 +284,9 @@ func main() {
 	if err != nil {
 		log.WithError(err).Fatal("Error getting kube client.")
 	}
+
+	// get overridden always_run jobs
+	alwaysRunOverride := sets.NewString(strings.Split(*alwaysRun, ",")...)
 
 	cooldown := 0
 	// Loop endlessly, sleeping a minute between iterations
@@ -340,7 +346,7 @@ func main() {
 		log.Infof("Starting a batch for the following PRs: %v", batchPRs)
 		refs := splicer.makeBuildRefs(*orgName, *repoName, batchPRs)
 		presubmits := configAgent.Config().Presubmits[fmt.Sprintf("%s/%s", *orgName, *repoName)]
-		for _, job := range neededPresubmits(presubmits, currentJobs, refs) {
+		for _, job := range neededPresubmits(presubmits, currentJobs, refs, alwaysRunOverride) {
 			if _, err := kc.CreateProwJob(pjutil.NewProwJob(pjutil.BatchSpec(job, refs), job.Labels)); err != nil {
 				log.WithError(err).WithField("job", job.Name).Error("Error starting batch job.")
 			}
