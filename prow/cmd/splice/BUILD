@@ -31,6 +31,7 @@ go_test(
     deps = [
         "//prow/config:go_default_library",
         "//prow/kube:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
     ],
 )
 
@@ -43,6 +44,7 @@ go_library(
         "//prow/kube:go_default_library",
         "//prow/pjutil:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
     ],
 )
 

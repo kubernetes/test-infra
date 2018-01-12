@@ -26,7 +26,7 @@ SINKER_VERSION           ?= 0.27
 # DECK_VERSION is the version of the deck image
 DECK_VERSION             ?= 0.79
 # SPLICE_VERSION is the version of the splice image
-SPLICE_VERSION           ?= 0.34
+SPLICE_VERSION           ?= 0.35
 # TOT_VERSION is the version of the tot image
 TOT_VERSION              ?= 0.6
 # HOROLOGIUM_VERSION is the version of the horologium image
