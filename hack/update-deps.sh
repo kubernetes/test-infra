@@ -48,8 +48,8 @@ drop-dep() {
 
 main() {
   pushd "$(dirname "${BASH_SOURCE}")/.."
-  dep ensure
-  dep prune
+  dep ensure -v
+  dep prune -v
   hack/update-bazel.sh
   drop-dep vendor/golang.org/x/text/language vendor/golang.org/x/text/internal
   drop-dep vendor/google.golang.org/api/transport/grpc vendor/google.golang.org/api/transport
