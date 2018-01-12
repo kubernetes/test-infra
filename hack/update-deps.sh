@@ -46,21 +46,15 @@ drop-dep() {
   sed -i -e "\|//$1:go_default_library|d" "$path"
 }
 
-main() {
-  pushd "$(dirname "${BASH_SOURCE}")/.."
-  dep ensure -v
-  dep prune -v
-  hack/update-bazel.sh
-  drop-dep vendor/golang.org/x/text/language vendor/golang.org/x/text/internal
-  drop-dep vendor/google.golang.org/api/transport/grpc vendor/google.golang.org/api/transport
-  drop-dep vendor/github.com/golang/protobuf/protoc-gen-go/grpc vendor/github.com/golang/protobuf/protoc-gen-go
-  drop-dep vendor/github.com/golang/protobuf/protoc-gen-go/generator vendor/github.com/golang/protobuf/protoc-gen-go
-  hack/prune-libraries.sh --fix
-  hack/update-bazel.sh  # Update child :all-srcs in case parent was deleted
-}
-
-if ! main; then
-  echo FAILED >&2
-  exit 1
-fi
+trap 'echo "FAILED" >&2' ERR
+pushd "$(dirname "${BASH_SOURCE}")/.."
+dep ensure -v
+dep prune -v
+hack/update-bazel.sh
+drop-dep vendor/golang.org/x/text/language vendor/golang.org/x/text/internal
+drop-dep vendor/google.golang.org/api/transport/grpc vendor/google.golang.org/api/transport
+drop-dep vendor/github.com/golang/protobuf/protoc-gen-go/grpc vendor/github.com/golang/protobuf/protoc-gen-go
+drop-dep vendor/github.com/golang/protobuf/protoc-gen-go/generator vendor/github.com/golang/protobuf/protoc-gen-go
+hack/prune-libraries.sh --fix
+hack/update-bazel.sh  # Update child :all-srcs in case parent was deleted
 echo SUCCESS
