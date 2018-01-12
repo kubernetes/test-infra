@@ -21264,7 +21264,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180102-0e2b24a0b-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171220-29cb083c9-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -21303,7 +21303,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180102-0e2b24a0b-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171220-29cb083c9-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -21342,7 +21342,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180102-0e2b24a0b-1.8
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171218-a18c352b4-1.8
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -21381,7 +21381,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180102-0e2b24a0b-1.8
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171218-a18c352b4-1.8
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -21420,7 +21420,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180102-0e2b24a0b-1.7
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171218-a18c352b4-1.7
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -21459,7 +21459,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180102-0e2b24a0b-1.7
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171218-a18c352b4-1.7
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -21498,7 +21498,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180102-0e2b24a0b-1.6
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171218-a18c352b4-1.6
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -21537,7 +21537,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180102-0e2b24a0b-1.6
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171218-a18c352b4-1.6
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -21654,7 +21654,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180102-0e2b24a0b-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171220-29cb083c9-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -21693,7 +21693,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180102-0e2b24a0b-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171220-29cb083c9-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -21732,7 +21732,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180102-0e2b24a0b-1.8
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171218-a18c352b4-1.8
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -21771,7 +21771,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180102-0e2b24a0b-1.8
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171218-a18c352b4-1.8
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -21810,7 +21810,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180102-0e2b24a0b-1.7
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171218-a18c352b4-1.7
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -21849,7 +21849,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180102-0e2b24a0b-1.7
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171218-a18c352b4-1.7
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -21888,7 +21888,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180102-0e2b24a0b-1.6
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171218-a18c352b4-1.6
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -21927,7 +21927,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180102-0e2b24a0b-1.6
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171218-a18c352b4-1.6
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -21966,7 +21966,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180102-0e2b24a0b-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171220-29cb083c9-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -22005,7 +22005,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180102-0e2b24a0b-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171220-29cb083c9-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -22044,7 +22044,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180102-0e2b24a0b-1.8
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171218-a18c352b4-1.8
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -22083,7 +22083,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180102-0e2b24a0b-1.8
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171218-a18c352b4-1.8
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -22122,7 +22122,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180102-0e2b24a0b-1.7
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171218-a18c352b4-1.7
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -22161,7 +22161,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180102-0e2b24a0b-1.7
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171218-a18c352b4-1.7
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -22278,7 +22278,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180102-0e2b24a0b-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171220-29cb083c9-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -22317,7 +22317,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180102-0e2b24a0b-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171220-29cb083c9-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -22356,7 +22356,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180102-0e2b24a0b-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171220-29cb083c9-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -22395,7 +22395,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180102-0e2b24a0b-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171220-29cb083c9-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -22434,7 +22434,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180102-0e2b24a0b-1.8
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171218-a18c352b4-1.8
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -22473,7 +22473,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180102-0e2b24a0b-1.8
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171218-a18c352b4-1.8
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -22512,7 +22512,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180102-0e2b24a0b-1.7
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171218-a18c352b4-1.7
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -22551,7 +22551,7 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       - name: GOPATH
         value: /go
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180102-0e2b24a0b-1.7
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20171218-a18c352b4-1.7
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
