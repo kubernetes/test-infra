@@ -279,6 +279,8 @@ func NewClientInCluster(namespace string) (*Client, error) {
 
 // Cluster represents the information necessary to talk to a Kubernetes
 // master endpoint.
+// NOTE: if your cluster runs on GKE you can use the following command to get these credentials:
+// gcloud --project <gcp_project> container clusters describe --zone <zone> <cluster_name>
 type Cluster struct {
 	// The IP address of the cluster's master endpoint.
 	Endpoint string `yaml:"endpoint"`
