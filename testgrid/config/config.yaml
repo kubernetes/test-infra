@@ -44,6 +44,9 @@ default_dashboard_tab:
   num_columns_recent: 10
   code_search_url_template: # The URL template to visit when searching for changelists
     url: https://github.com/kubernetes/kubernetes/compare/<start-custom-0>...<end-custom-0>
+  alert_options:
+    num_failures_to_alert: 3 # Consider a test failed if it has 3 or more consecutive failures.
+    num_passes_to_disable_alert: 1 # Consider a failing test passing if it has 1 or more consecutive passes.
 
 #
 # Start testgroups
