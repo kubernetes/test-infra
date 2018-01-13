@@ -44,6 +44,7 @@ tide:
     - kubernetes/ingress-nginx
     - kubernetes/kops
     - kubernetes/kubernetes-template-project
+    - kubernetes/kube-deploy
     - kubernetes/minikube
     - kubernetes/sig-release
     - kubernetes/steering
