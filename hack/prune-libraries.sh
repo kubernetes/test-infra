@@ -51,52 +51,63 @@ filter-to-unused() {
   done
 }
 
-# Output sources used by target
+# Output this:source.go that:file.txt sources of //this //that targets
 target-sources() {
-  for i in "$@"; do
+  (for i in "$@"; do
     bazel query "kind(\"source file\", deps(\"$(package-name "$i"):package-srcs\", 1))"
+  done) | sort -u
+}
+
+sources() {
+  local t
+  for j in $(target-sources "${@}"); do
+    case "$(target-name "$j")" in
+      LICENSE*|PATENTS*|*.md)  # Keep these files
+        continue
+        ;;
+    esac
+    echo $(package-name "${j:2}")/$(target-name $j)
   done
 }
 
-# Convert //foo/bar:stuff to //foo/bar
+# Convert //foo:and/bar:stuff to //foo:and/bar
 package-name() {
-  echo $1 | cut -d : -f 1
+  echo ${1%:*}
+}
+
+# Convert //foo:and/bar:stuff to stuff
+target-name() {
+  echo ${1##*:}
 }
 
 # Find every package that directly depends on //foo:all-srcs
 all-srcs-refs() {
-  build-files $(for i in "$@"; do
-    local package
-    package="$(dirname "$i")"
-    bazel query "rdeps(//..., \"${package}:all-srcs\", 1)"
+  packages $(for i in "$@"; do
+    bazel query "rdeps(//..., \"${i}:all-srcs\", 1)"
   done)
 }
 
-# Convert //foo/bar:stuff to //foo/bar/BUILD
-build-files() {
+# Convert //foo/bar:stuff //this //foo/bar:stuff to //foo/bar //this
+packages() {
   (for i in "$@"; do
-    echo $(package-name "$i")/BUILD
+    echo $(package-name "${i}")
   done) | sort -u
 }
+
+# Convert //foo //bar to foo/BUILD bar/BUILD
+builds() {
+  for i in "${@}"; do
+    echo ${i:2}/BUILD
+  done
+}
+
 
 # Remove lines with //something:all-srcs from files
 # Usage:
 #   remove-all-srcs <targets-to-remove> <remove-from-packages>
 remove-all-srcs() {
   for b in $1; do
-    sed -i -e "\|$(dirname "$b"):all-srcs|d" $(to-path $2)
-  done
-}
-
-# For each arg //foo/bar:whatever.sh becomes foo/bar/whatever.sh
-to-path() {
-  for i in "$@"; do
-    # Format is //foo/bar:whatever.sh
-    # Output foo/bar/whatever.sh
-    local base dir
-    base=$(basename $i)
-    dir=$(dirname $i)
-    echo "${dir:2}/${base/:/\/}"
+    sed -i -e "\|${b}:all-srcs|d" $(builds $2)
   done
 }
 
@@ -120,15 +131,15 @@ remove-unused-go-libraries() {
   else
     echo Cleaning up unused dependencies... >&2
   fi
-  local builds files ref_builds
-  builds=$(build-files $deps)
-  files=$(target-sources $deps)
-  ref_builds=$(all-srcs-refs $builds)
+  local unused_packs unused_files all_srcs_packs
+  unused_packs=$(packages $deps)
+  unused_files=$(sources $deps)
+  # Packages with //unused-package:all-srcs references
+  all_srcs_packs=$(all-srcs-refs $unused_packs)
 
   pushd "$(dirname ${BASH_SOURCE})/.."
-  remove-all-srcs "$builds" "$ref_builds"
-  git rm $(to-path $files | sort -u)
-  git rm -f $(to-path $builds | sort -u)
+  remove-all-srcs "$unused_packs" "$all_srcs_packs"
+  rm -f $unused_files $(builds $unused_packs)
   popd
 }
 

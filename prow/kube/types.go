@@ -87,7 +87,7 @@ type Volume struct {
 // Only one of its members may be specified.
 type VolumeSource struct {
 	HostPath    *HostPathSource       `json:"hostPath,omitempty"`
-	EmptyDir    *EmptyDirVolumeSource `json:"emptyDir,omitemtpy"`
+	EmptyDir    *EmptyDirVolumeSource `json:"emptyDir,omitempty"`
 	Secret      *SecretSource         `json:"secret,omitempty"`
 	DownwardAPI *DownwardAPISource    `json:"downwardAPI,omitempty"`
 	ConfigMap   *ConfigMapSource      `json:"configMap,omitempty"`
@@ -103,7 +103,7 @@ type SecretSource struct {
 }
 
 type EmptyDirVolumeSource struct {
-	// NOTE: fields omitted here as Prow does not currently use them
+	Medium string `json:"medium,omitempty"`
 }
 
 type ConfigMapSource struct {

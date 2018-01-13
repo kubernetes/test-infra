@@ -145,7 +145,9 @@ func TestAccumulateBatch(t *testing.T) {
 		var pulls []PullRequest
 		for _, p := range test.pulls {
 			pr := PullRequest{Number: githubql.Int(p.number)}
-			pr.HeadRef.Target.OID = githubql.String(p.sha)
+			pr.Commits.Nodes = []struct {
+				Commit Commit
+			}{{Commit: Commit{OID: githubql.String(p.sha)}}}
 			pulls = append(pulls, pr)
 		}
 		var pjs []kube.ProwJob
@@ -678,12 +680,11 @@ func TestPickBatch(t *testing.T) {
 		pr.Number = githubql.Int(i)
 		pr.Commits.Nodes = []struct {
 			Commit Commit
-		}{{}}
+		}{{Commit: Commit{OID: githubql.String(fmt.Sprintf("origin/pr-%d", i))}}}
 		pr.Commits.Nodes[0].Commit.Status.Contexts = append(pr.Commits.Nodes[0].Commit.Status.Contexts, Context{State: githubql.StatusStateSuccess})
 		if !testpr.success {
 			pr.Commits.Nodes[0].Commit.Status.Contexts[0].State = githubql.StatusStateFailure
 		}
-		pr.HeadRef.Target.OID = githubql.String(fmt.Sprintf("origin/pr-%d", i))
 		sp.prs = append(sp.prs, pr)
 	}
 	c := &Controller{
@@ -892,8 +893,7 @@ func TestTakeAction(t *testing.T) {
 				pr.Number = githubql.Int(i)
 				pr.Commits.Nodes = []struct {
 					Commit Commit
-				}{{}}
-				pr.HeadRef.Target.OID = githubql.String(fmt.Sprintf("origin/pr-%d", i))
+				}{{Commit: Commit{OID: githubql.String(fmt.Sprintf("origin/pr-%d", i))}}}
 				sp.prs = append(sp.prs, pr)
 				prs = append(prs, pr)
 			}

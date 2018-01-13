@@ -3,80 +3,25 @@ body {
     line-height: 1.4;
     background: #f4f4f4;
     color: #444;
-    padding: 0;
-    margin: 0;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-}
-
-header {
-    background-color: #3f51b5;
-    color: white;
-    padding: .1em;
-    box-shadow: 0px 0px .5em #666;
-}
-
-header a {
-    color: inherit !important;
-}
-
-header a.logo {
-    height: 2.5em;
-    padding: 0;
-    margin: 0;
-    margin-top: .2em;
 }
 
 a.current {
     text-decoration: underline !important;
 }
 
-img.logo {
-    height: inherit;
+.header-title {
+    margin-left: 24px;
 }
 
-header ul {
-    list-style-type: none;
-    overflow: auto;
-    width: 100%;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: space-between;
+.logo {
+    height: 48px;
+    width: 48px;
 }
-
-header ul li {
-    display: inline;
-    list-style-type: none;
-    padding-left: .5em;
-    padding-right: .5em;
-    list-style: none;
-    display: inline-block;
-}
-
-header ul li:first-child {
-    margin: 0;
-    padding-left: .25em;
-    padding-right: .25em;
-    display: flex;
-}
-
-header ul li:first-child a:first-child {
-   padding-right: .5em;
-}
-
 
 h1 {
     font-weight: normal;
     font-size: 2em;
     margin: 2px;
-}
-
-h2, h3 {
-    font-weight: bold;
-    margin: 0;
 }
 
 h4 {
@@ -93,23 +38,6 @@ p, pre, ul, ol {
 
 ul.indented {
     margin-left: 0;
-}
-
-div {
-    padding-left: 20px;
-}
-
-h3.plugin {
-    color: blue;
-    cursor: pointer;
-}
-
-div {
-    background: #fff;
-    padding: 8px;
-    border-radius: 2px;
-    box-shadow: 0 0 4px #e0e0e0;
-    margin-top: 8px;
 }
 
 aside {
@@ -265,6 +193,49 @@ span.label:hover {
     font-weight: bold;
 }
 
+.plugin-details {
+    margin: 8px 24px;
+}
+
+.plugin-header {
+    color: blue;
+    cursor: pointer;
+    margin: 0 8px;
+}
+
+.plugins-header {
+    font-weight: bold;
+    font-size: 24px;
+    padding: 24px 0;
+}
+
+.plugin-help-row {
+    background-color: #fff;
+    font-size: 18px;
+    font-weight: bold;
+    margin: 4px 0;
+    padding: 12px 0;
+}
+
+.plugin-description {
+    border-radius: 2px;
+    box-shadow: 0 0 4px #e0e0e0;
+    margin: 8px;
+    padding: 8px;
+}
+
+.plugin-section-header {
+    font-size: 16px;
+    font-weight: bold;
+    margin: 0;
+}
+
+.card-box {
+    background-color: white;
+    border-radius: 2px;
+    box-shadow: 0 0 4px #e0e0e0;
+    padding: 8px 8px;
+}
 
 /* Known GitHub Labels, can be overriden in extensions/style.css */
 /* NOTE: spaces must be stripped from the label name */

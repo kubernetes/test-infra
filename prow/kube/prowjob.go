@@ -76,10 +76,11 @@ type ProwJob struct {
 }
 
 type ProwJobSpec struct {
-	Type  ProwJobType  `json:"type,omitempty"`
-	Agent ProwJobAgent `json:"agent,omitempty"`
-	Job   string       `json:"job,omitempty"`
-	Refs  Refs         `json:"refs,omitempty"`
+	Type    ProwJobType  `json:"type,omitempty"`
+	Agent   ProwJobAgent `json:"agent,omitempty"`
+	Cluster string       `json:"cluster,omitempty"`
+	Job     string       `json:"job,omitempty"`
+	Refs    Refs         `json:"refs,omitempty"`
 
 	Report         bool   `json:"report,omitempty"`
 	Context        string `json:"context,omitempty"`
@@ -93,7 +94,7 @@ type ProwJobSpec struct {
 
 type ProwJobStatus struct {
 	StartTime      time.Time    `json:"startTime,omitempty"`
-	CompletionTime time.Time    `json:"completionTime,omitempty"`
+	CompletionTime *time.Time   `json:"completionTime,omitempty"`
 	State          ProwJobState `json:"state,omitempty"`
 	Description    string       `json:"description,omitempty"`
 	URL            string       `json:"url,omitempty"`
@@ -102,7 +103,19 @@ type ProwJobStatus struct {
 }
 
 func (j *ProwJob) Complete() bool {
-	return !j.Status.CompletionTime.IsZero()
+	return j.Status.CompletionTime != nil
+}
+
+func (j *ProwJob) SetComplete() {
+	j.Status.CompletionTime = new(time.Time)
+	*j.Status.CompletionTime = time.Now()
+}
+
+func (j *ProwJob) ClusterAlias() string {
+	if j.Spec.Cluster == "" {
+		return DefaultClusterAlias
+	}
+	return j.Spec.Cluster
 }
 
 type Pull struct {

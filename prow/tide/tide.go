@@ -150,7 +150,7 @@ func (c *Controller) setStatuses(all, pool []PullRequest) {
 			if err := c.ghc.CreateStatus(
 				string(pr.Repository.Owner.Login),
 				string(pr.Repository.Name),
-				string(pr.HeadRef.Target.OID),
+				string(pr.Commits.Nodes[0].Commit.OID),
 				github.Status{
 					Context:     statusContext,
 					State:       wantState,
@@ -162,7 +162,7 @@ func (c *Controller) setStatuses(all, pool []PullRequest) {
 					string(pr.Repository.Owner.Login),
 					string(pr.Repository.Name),
 					int(pr.Number),
-					string(pr.HeadRef.Target.OID),
+					string(pr.Commits.Nodes[0].Commit.OID),
 				)
 			}
 		}
@@ -313,7 +313,7 @@ func accumulateBatch(presubmits []string, prs []PullRequest, pjs []kube.ProwJob)
 				validPulls: true,
 			}
 			for _, pull := range pj.Spec.Refs.Pulls {
-				if pr, ok := prNums[pull.Number]; ok && string(pr.HeadRef.Target.OID) == pull.SHA {
+				if pr, ok := prNums[pull.Number]; ok && string(pr.Commits.Nodes[0].Commit.OID) == pull.SHA {
 					states[ref].prs = append(states[ref].prs, pr)
 				} else {
 					states[ref].validPulls = false
@@ -424,7 +424,7 @@ func (c *Controller) pickBatch(sp subpool) ([]PullRequest, error) {
 		if !isPassingTests(pr) {
 			continue
 		}
-		if ok, err := r.Merge(string(pr.HeadRef.Target.OID)); err != nil {
+		if ok, err := r.Merge(string(pr.Commits.Nodes[0].Commit.OID)); err != nil {
 			return nil, err
 		} else if ok {
 			res = append(res, pr)
@@ -436,7 +436,7 @@ func (c *Controller) pickBatch(sp subpool) ([]PullRequest, error) {
 func (c *Controller) mergePRs(sp subpool, prs []PullRequest) error {
 	for _, pr := range prs {
 		if err := c.ghc.Merge(sp.org, sp.repo, int(pr.Number), github.MergeDetails{
-			SHA:         string(pr.HeadRef.Target.OID),
+			SHA:         string(pr.Commits.Nodes[0].Commit.OID),
 			MergeMethod: string(c.ca.Config().Tide.MergeMethod(sp.org, sp.repo)),
 		}); err != nil {
 			if _, ok := err.(github.ModifiedHeadError); ok {
@@ -474,7 +474,7 @@ func (c *Controller) trigger(sp subpool, prs []PullRequest) error {
 				kube.Pull{
 					Number: int(pr.Number),
 					Author: string(pr.Author.Login),
-					SHA:    string(pr.HeadRef.Target.OID),
+					SHA:    string(pr.Commits.Nodes[0].Commit.OID),
 				},
 			)
 		}
@@ -650,11 +650,6 @@ type PullRequest struct {
 			Login githubql.String
 		}
 	}
-	HeadRef struct {
-		Target struct {
-			OID githubql.String `graphql:"oid"`
-		}
-	}
 	Commits struct {
 		Nodes []struct {
 			Commit Commit
@@ -666,6 +661,7 @@ type Commit struct {
 	Status struct {
 		Contexts []Context
 	}
+	OID githubql.String `graphql:"oid"`
 }
 
 type Context struct {

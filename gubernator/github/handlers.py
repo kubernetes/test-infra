@@ -37,10 +37,9 @@ def get_webhook_secret():
     global _webhook_secret  # pylint: disable=global-statement
     if not _webhook_secret:
         try:
-            _webhook_secret = secrets.get('github_webhook_secret', per_host=False)
+            _webhook_secret = str(secrets.get('github_webhook_secret', per_host=False))
         except KeyError:
             logging.exception('unable to load webhook secret')
-            return ''
     return _webhook_secret
 
 
