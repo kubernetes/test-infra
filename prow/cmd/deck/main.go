@@ -98,6 +98,7 @@ func main() {
 	mux.Handle("/log", gziphandler.GzipHandler(handleLog(ja)))
 	mux.Handle("/rerun", gziphandler.GzipHandler(handleRerun(kc)))
 	mux.Handle("/config", gziphandler.GzipHandler(handleConfig(configAgent)))
+	mux.Handle("/branding.js", gziphandler.GzipHandler(handleBranding(configAgent)))
 
 	if *hookURL != "" {
 		mux.Handle("/plugin-help.js", gziphandler.GzipHandler(handlePluginHelp(newHelpAgent(*hookURL))))
@@ -388,6 +389,32 @@ func handleConfig(ca configAgent) http.HandlerFunc {
 		if err != nil {
 			logrus.WithError(err).Error("Error writing config.")
 			http.Error(w, "Failed to write config.", http.StatusInternalServerError)
+		}
+	}
+}
+
+func handleBranding(ca configAgent) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Cache-Control", "no-cache")
+		config := ca.Config()
+		b, err := json.Marshal(config.Deck.Branding)
+		if err != nil {
+			logrus.WithError(err).Error("Error marshaling branding config.")
+			http.Error(w, "Failed to marhshal branding config.", http.StatusInternalServerError)
+			return
+		}
+		buff := bytes.NewBuffer(b)
+		_, err = buff.WriteTo(w)
+		if err != nil {
+			logrus.WithError(err).Error("Error writing branding config.")
+			http.Error(w, "Failed to write branding config.", http.StatusInternalServerError)
+		}
+		// If we have a "var" query, then write out "var value = [...];".
+		// Otherwise, just write out the JSON.
+		if v := r.URL.Query().Get("var"); v != "" {
+			fmt.Fprintf(w, "var %s = %s;", v, string(b))
+		} else {
+			fmt.Fprint(w, string(b))
 		}
 	}
 }
