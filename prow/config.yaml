@@ -3027,6 +3027,7 @@ presubmits:
 
   kubernetes-security/kubernetes:
   - name: pull-security-kubernetes-bazel-build
+    cluster: security
     agent: kubernetes
     context: pull-security-kubernetes-bazel-build
     always_run: true
@@ -3045,6 +3046,7 @@ presubmits:
         - "--job=$(JOB_NAME)"
         - "--repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
+        - "--ssh=/etc/ssh-security/ssh-security"
         - "--upload=gs://kubernetes-security-jenkins/pr-logs"
         - "--" # end bootstrap args, scenario args below
         - "--build=//... -//vendor/..."
@@ -3056,6 +3058,8 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
+        - name: ssh-security
+          mountPath: /etc/ssh-security
         - name: service
           mountPath: /etc/service-account
           readOnly: true
@@ -3068,14 +3072,20 @@ presubmits:
           requests:
             memory: "6Gi"
       volumes:
+      - name: ssh-security
+        secret:
+          secretName: ssh-security
+          defaultMode: 0400
       - name: service
         secret:
           secretName: service-account
       - name: cache-ssd
         hostPath:
           path: /mnt/disks/ssd0
+
     run_after_success:
     - name: pull-security-kubernetes-e2e-kubeadm-gce
+      cluster: security
       agent: kubernetes
       context: pull-security-kubernetes-e2e-kubeadm-gce
       max_concurrency: 8
@@ -3094,6 +3104,7 @@ presubmits:
           - "--repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)"
           - "--upload=gs://kubernetes-security-jenkins/pr-logs"
           - "--git-cache=/root/.cache/git"
+          - "--ssh=/etc/ssh-security/ssh-security"
           - "--timeout=75"
           - "--clean"
           env:
@@ -3108,6 +3119,8 @@ presubmits:
           - name: SKIP_RELEASE_VALIDATION # See: https://github.com/kubernetes/kubernetes/pull/50391
             value: true
           volumeMounts:
+          - name: ssh-security
+            mountPath: /etc/ssh-security
           - name: service
             mountPath: /etc/service-account
             readOnly: true
@@ -3120,6 +3133,10 @@ presubmits:
           - containerPort: 9999
             hostPort: 9999
         volumes:
+        - name: ssh-security
+          secret:
+            secretName: ssh-security
+            defaultMode: 0400
         - name: service
           secret:
             secretName: service-account
@@ -3131,6 +3148,7 @@ presubmits:
           hostPath:
             path: /mnt/disks/ssd0
   - name: pull-security-kubernetes-bazel-build
+    cluster: security
     agent: kubernetes
     context: pull-security-kubernetes-bazel-build
     always_run: true
@@ -3148,6 +3166,7 @@ presubmits:
         - "--job=$(JOB_NAME)"
         - "--repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
+        - "--ssh=/etc/ssh-security/ssh-security"
         - "--upload=gs://kubernetes-security-jenkins/pr-logs"
         - "--" # end bootstrap args, scenario args below
         - "--build=//cmd/... //pkg/... //federation/... //plugin/... //third_party/... //examples/... //test/... //vendor/k8s.io/..."
@@ -3159,6 +3178,8 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
+        - name: ssh-security
+          mountPath: /etc/ssh-security
         - name: service
           mountPath: /etc/service-account
           readOnly: true
@@ -3171,6 +3192,10 @@ presubmits:
           requests:
             memory: "6Gi"
       volumes:
+      - name: ssh-security
+        secret:
+          secretName: ssh-security
+          defaultMode: 0400
       - name: service
         secret:
           secretName: service-account
@@ -3179,6 +3204,7 @@ presubmits:
           path: /mnt/disks/ssd0
     run_after_success:
     - name: pull-security-kubernetes-e2e-kubeadm-gce
+      cluster: security
       agent: kubernetes
       context: pull-security-kubernetes-e2e-kubeadm-gce
       max_concurrency: 8
@@ -3196,6 +3222,7 @@ presubmits:
           - "--repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)"
           - "--upload=gs://kubernetes-security-jenkins/pr-logs"
           - "--git-cache=/root/.cache/git"
+          - "--ssh=/etc/ssh-security/ssh-security"
           - "--timeout=75"
           - "--clean"
           env:
@@ -3210,6 +3237,8 @@ presubmits:
           - name: SKIP_RELEASE_VALIDATION # See: https://github.com/kubernetes/kubernetes/pull/50391
             value: true
           volumeMounts:
+          - name: ssh-security
+            mountPath: /etc/ssh-security
           - name: service
             mountPath: /etc/service-account
             readOnly: true
@@ -3222,6 +3251,10 @@ presubmits:
           - containerPort: 9999
             hostPort: 9999
         volumes:
+        - name: ssh-security
+          secret:
+            secretName: ssh-security
+            defaultMode: 0400
         - name: service
           secret:
             secretName: service-account
@@ -3233,6 +3266,7 @@ presubmits:
           hostPath:
             path: /mnt/disks/ssd0
   - name: pull-security-kubernetes-bazel-build
+    cluster: security
     agent: kubernetes
     context: pull-security-kubernetes-bazel-build
     always_run: true
@@ -3249,6 +3283,7 @@ presubmits:
         - "--job=$(JOB_NAME)"
         - "--repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
+        - "--ssh=/etc/ssh-security/ssh-security"
         - "--upload=gs://kubernetes-security-jenkins/pr-logs"
         - "--" # end bootstrap args, scenario args below
         - "--build=//cmd/... //pkg/... //federation/... //plugin/... //third_party/... //examples/... //test/..."
@@ -3260,6 +3295,8 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
+        - name: ssh-security
+          mountPath: /etc/ssh-security
         - name: service
           mountPath: /etc/service-account
           readOnly: true
@@ -3272,6 +3309,10 @@ presubmits:
           requests:
             memory: "6Gi"
       volumes:
+      - name: ssh-security
+        secret:
+          secretName: ssh-security
+          defaultMode: 0400
       - name: service
         secret:
           secretName: service-account
@@ -3280,6 +3321,7 @@ presubmits:
           path: /mnt/disks/ssd0
     run_after_success:
     - name: pull-security-kubernetes-e2e-kubeadm-gce
+      cluster: security
       agent: kubernetes
       context: pull-security-kubernetes-e2e-kubeadm-gce
       max_concurrency: 8
@@ -3296,6 +3338,7 @@ presubmits:
           - "--repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)"
           - "--upload=gs://kubernetes-security-jenkins/pr-logs"
           - "--git-cache=/root/.cache/git"
+          - "--ssh=/etc/ssh-security/ssh-security"
           - "--timeout=75"
           - "--clean"
           env:
@@ -3310,6 +3353,8 @@ presubmits:
           - name: SKIP_RELEASE_VALIDATION # See: https://github.com/kubernetes/kubernetes/pull/50391
             value: true
           volumeMounts:
+          - name: ssh-security
+            mountPath: /etc/ssh-security
           - name: service
             mountPath: /etc/service-account
             readOnly: true
@@ -3322,6 +3367,10 @@ presubmits:
           - containerPort: 9999
             hostPort: 9999
         volumes:
+        - name: ssh-security
+          secret:
+            secretName: ssh-security
+            defaultMode: 0400
         - name: service
           secret:
             secretName: service-account
@@ -3333,6 +3382,7 @@ presubmits:
           hostPath:
             path: /mnt/disks/ssd0
   - name: pull-security-kubernetes-bazel-build-canary
+    cluster: security
     agent: kubernetes
     context: pull-security-kubernetes-bazel-build-canary
     always_run: false
@@ -3349,6 +3399,7 @@ presubmits:
         - "--job=$(JOB_NAME)"
         - "--repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
+        - "--ssh=/etc/ssh-security/ssh-security"
         - "--upload=gs://kubernetes-security-jenkins/pr-logs"
         - "--" # end bootstrap args, scenario args below
         - "--batch" # mitigation for https://github.com/bazelbuild/bazel/issues/4311
@@ -3361,6 +3412,8 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
+        - name: ssh-security
+          mountPath: /etc/ssh-security
         - name: service
           mountPath: /etc/service-account
           readOnly: true
@@ -3370,6 +3423,10 @@ presubmits:
           requests:
             memory: "6Gi"
       volumes:
+      - name: ssh-security
+        secret:
+          secretName: ssh-security
+          defaultMode: 0400
       - name: service
         secret:
           secretName: service-account
@@ -3377,6 +3434,7 @@ presubmits:
         emtpyDir: {}
     run_after_success:
     - name: pull-security-kubernetes-e2e-kubeadm-gce-canary
+      cluster: security
       agent: kubernetes
       context: pull-security-kubernetes-e2e-kubeadm-gce-canary
       max_concurrency: 8
@@ -3393,6 +3451,7 @@ presubmits:
           - "--repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)"
           - "--upload=gs://kubernetes-security-jenkins/pr-logs"
           - "--git-cache=/root/.cache/git"
+          - "--ssh=/etc/ssh-security/ssh-security"
           - "--timeout=75"
           - "--clean"
           env:
@@ -3407,6 +3466,8 @@ presubmits:
           - name: SKIP_RELEASE_VALIDATION # See: https://github.com/kubernetes/kubernetes/pull/50391
             value: true
           volumeMounts:
+          - name: ssh-security
+            mountPath: /etc/ssh-security
           - name: service
             mountPath: /etc/service-account
             readOnly: true
@@ -3419,6 +3480,10 @@ presubmits:
           - containerPort: 9999
             hostPort: 9999
         volumes:
+        - name: ssh-security
+          secret:
+            secretName: ssh-security
+            defaultMode: 0400
         - name: service
           secret:
             secretName: service-account
@@ -3430,6 +3495,7 @@ presubmits:
           hostPath:
             path: /mnt/disks/ssd0
   - name: pull-security-kubernetes-bazel-test
+    cluster: security
     agent: kubernetes
     context: pull-security-kubernetes-bazel-test
     always_run: true
@@ -3448,6 +3514,7 @@ presubmits:
         - "--job=$(JOB_NAME)"
         - "--repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
+        - "--ssh=/etc/ssh-security/ssh-security"
         - "--upload=gs://kubernetes-security-jenkins/pr-logs"
         - "--" # end bootstrap args, scenario args below
         - "--test=//... -//build/... -//vendor/..."
@@ -3462,6 +3529,8 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
+        - name: ssh-security
+          mountPath: /etc/ssh-security
         - name: service
           mountPath: /etc/service-account
           readOnly: true
@@ -3474,6 +3543,10 @@ presubmits:
           requests:
             memory: "6Gi"
       volumes:
+      - name: ssh-security
+        secret:
+          secretName: ssh-security
+          defaultMode: 0400
       - name: service
         secret:
           secretName: service-account
@@ -3481,6 +3554,7 @@ presubmits:
         hostPath:
           path: /mnt/disks/ssd0
   - name: pull-security-kubernetes-bazel-test
+    cluster: security
     agent: kubernetes
     context: pull-security-kubernetes-bazel-test
     always_run: true
@@ -3498,6 +3572,7 @@ presubmits:
         - "--job=$(JOB_NAME)"
         - "--repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
+        - "--ssh=/etc/ssh-security/ssh-security"
         - "--upload=gs://kubernetes-security-jenkins/pr-logs"
         - "--" # end bootstrap args, scenario args below
         - "--test=//cmd/... //pkg/... //federation/... //plugin/... //third_party/... //hack/... //vendor/k8s.io/..."
@@ -3511,6 +3586,8 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
+        - name: ssh-security
+          mountPath: /etc/ssh-security
         - name: service
           mountPath: /etc/service-account
           readOnly: true
@@ -3523,6 +3600,10 @@ presubmits:
           requests:
             memory: "6Gi"
       volumes:
+      - name: ssh-security
+        secret:
+          secretName: ssh-security
+          defaultMode: 0400
       - name: service
         secret:
           secretName: service-account
@@ -3530,6 +3611,7 @@ presubmits:
         hostPath:
           path: /mnt/disks/ssd0
   - name: pull-security-kubernetes-bazel-test
+    cluster: security
     agent: kubernetes
     context: pull-security-kubernetes-bazel-test
     always_run: true
@@ -3546,6 +3628,7 @@ presubmits:
         - "--job=$(JOB_NAME)"
         - "--repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
+        - "--ssh=/etc/ssh-security/ssh-security"
         - "--upload=gs://kubernetes-security-jenkins/pr-logs"
         - "--" # end bootstrap args, scenario args below
         # -//pkg/kubelet/config:go_default_test because: https://github.com/kubernetes/kubernetes/issues/53016
@@ -3560,6 +3643,8 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
+        - name: ssh-security
+          mountPath: /etc/ssh-security
         - name: service
           mountPath: /etc/service-account
           readOnly: true
@@ -3572,6 +3657,10 @@ presubmits:
           requests:
             memory: "6Gi"
       volumes:
+      - name: ssh-security
+        secret:
+          secretName: ssh-security
+          defaultMode: 0400
       - name: service
         secret:
           secretName: service-account
@@ -3579,6 +3668,7 @@ presubmits:
         hostPath:
           path: /mnt/disks/ssd0
   - name: pull-security-kubernetes-bazel-test-canary
+    cluster: security
     agent: kubernetes
     context: pull-security-kubernetes-bazel-test-canary
     always_run: false
@@ -3596,6 +3686,7 @@ presubmits:
         - "--job=$(JOB_NAME)"
         - "--repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
+        - "--ssh=/etc/ssh-security/ssh-security"
         - "--upload=gs://kubernetes-security-jenkins/pr-logs"
         - "--" # end bootstrap args, scenario args below
         - "--batch" # mitigation for https://github.com/bazelbuild/bazel/issues/4311
@@ -3611,6 +3702,8 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
+        - name: ssh-security
+          mountPath: /etc/ssh-security
         - name: service
           mountPath: /etc/service-account
           readOnly: true
@@ -3623,6 +3716,10 @@ presubmits:
           requests:
             memory: "6Gi"
       volumes:
+      - name: ssh-security
+        secret:
+          secretName: ssh-security
+          defaultMode: 0400
       - name: service
         secret:
           secretName: service-account
@@ -3631,6 +3728,7 @@ presubmits:
           path: /mnt/disks/ssd0
 
   - name: pull-security-kubernetes-cross
+    cluster: security
     agent: kubernetes
     context: pull-security-kubernetes-cross
     rerun_command: "/test pull-security-kubernetes-cross"
@@ -3645,6 +3743,7 @@ presubmits:
         - "--job=$(JOB_NAME)"
         - "--repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
+        - "--ssh=/etc/ssh-security/ssh-security"
         - "--upload=gs://kubernetes-security-jenkins/pr-logs"
         - "--timeout=90"
         env:
@@ -3656,6 +3755,8 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
+        - name: ssh-security
+          mountPath: /etc/ssh-security
         - name: service
           mountPath: /etc/service-account
           readOnly: true
@@ -3673,6 +3774,10 @@ presubmits:
             cpu: 6
             memory: "15Gi"
       volumes:
+      - name: ssh-security
+        secret:
+          secretName: ssh-security
+          defaultMode: 0400
       - name: service
         secret:
           secretName: service-account
@@ -3685,6 +3790,7 @@ presubmits:
       - name: var-lib-docker
         emptyDir: {}
   - name: pull-security-kubernetes-cross-prow
+    cluster: security
     agent: kubernetes
     context: pull-security-kubernetes-cross-prow
     rerun_command: "/test pull-security-kubernetes-cross-prow"
@@ -3700,6 +3806,7 @@ presubmits:
         - "--job=$(JOB_NAME)"
         - "--repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
+        - "--ssh=/etc/ssh-security/ssh-security"
         - "--upload=gs://kubernetes-security-jenkins/pr-logs"
         - "--timeout=90"
         env:
@@ -3711,6 +3818,8 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
+        - name: ssh-security
+          mountPath: /etc/ssh-security
         - name: service
           mountPath: /etc/service-account
           readOnly: true
@@ -3726,6 +3835,10 @@ presubmits:
             cpu: 6
             memory: "15Gi"
       volumes:
+      - name: ssh-security
+        secret:
+          secretName: ssh-security
+          defaultMode: 0400
       - name: service
         secret:
           secretName: service-account
@@ -3736,6 +3849,7 @@ presubmits:
         hostPath:
           path: /mnt/disks/ssd0/docker-graph
   - name: pull-security-kubernetes-e2e-containerd-gce
+    cluster: security
     agent: kubernetes
     context: pull-security-kubernetes-e2e-containerd-gce
     rerun_command: "/test pull-security-kubernetes-e2e-containerd-gce"
@@ -3751,6 +3865,7 @@ presubmits:
         - --repo=k8s.io/release
         - --repo=github.com/containerd/cri-containerd
         - --upload=gs://kubernetes-security-jenkins/pr-logs
+        - --ssh=/etc/ssh-security/ssh-security
         - --git-cache=/root/.cache/git
         - --clean
         - --timeout=90
@@ -3772,6 +3887,8 @@ presubmits:
           value: /root/.cache/bazel
         image: gcr.io/k8s-testimages/kubekins-e2e:v20180102-0e2b24a0b-master
         volumeMounts:
+        - name: ssh-security
+          mountPath: /etc/ssh-security
         - mountPath: /etc/service-account
           name: service
           readOnly: true
@@ -3784,6 +3901,10 @@ presubmits:
         - containerPort: 9999
           hostPort: 9999
       volumes:
+      - name: ssh-security
+        secret:
+          secretName: ssh-security
+          defaultMode: 0400
       - name: service
         secret:
           secretName: service-account
@@ -3795,6 +3916,7 @@ presubmits:
           path: /mnt/disks/ssd0
         name: cache-ssd
   - name: pull-security-kubernetes-e2e-gce
+    cluster: security
     agent: kubernetes
     context: pull-security-kubernetes-e2e-gce
     rerun_command: "/test pull-security-kubernetes-e2e-gce"
@@ -3816,6 +3938,7 @@ presubmits:
         - --git-cache=/root/.cache/git
         - --clean
         - --timeout=90
+        - --ssh=/etc/ssh-security/ssh-security
          # the release-1.6 version of this job uses Jenkins, so here we override
         # some args for jobs on Prow
         - --
@@ -3841,6 +3964,8 @@ presubmits:
           value: /root/.cache/bazel
         image: gcr.io/k8s-testimages/kubekins-e2e:v20180102-0e2b24a0b-master
         volumeMounts:
+        - name: ssh-security
+          mountPath: /etc/ssh-security
         - mountPath: /etc/service-account
           name: service
           readOnly: true
@@ -3856,6 +3981,10 @@ presubmits:
           requests:
             memory: "6Gi"
       volumes:
+      - name: ssh-security
+        secret:
+          secretName: ssh-security
+          defaultMode: 0400
       - name: service
         secret:
           secretName: service-account
@@ -3867,6 +3996,7 @@ presubmits:
           path: /mnt/disks/ssd0
         name: cache-ssd
   - name: pull-security-kubernetes-e2e-gce
+    cluster: security
     agent: kubernetes
     context: pull-security-kubernetes-e2e-gce
     rerun_command: "/test pull-security-kubernetes-e2e-gce"
@@ -3884,6 +4014,7 @@ presubmits:
         - --git-cache=/root/.cache/git
         - --clean
         - --timeout=90
+        - --ssh=/etc/ssh-security/ssh-security
         # the release-1.6 version of this job uses Jenkins, so here we override
         # some args for jobs on Prow
         - --
@@ -3909,6 +4040,8 @@ presubmits:
           value: /root/.cache/bazel
         image: gcr.io/k8s-testimages/kubekins-e2e:v20180102-0e2b24a0b-1.8
         volumeMounts:
+        - name: ssh-security
+          mountPath: /etc/ssh-security
         - mountPath: /etc/service-account
           name: service
           readOnly: true
@@ -3924,6 +4057,10 @@ presubmits:
           requests:
             memory: "6Gi"
       volumes:
+      - name: ssh-security
+        secret:
+          secretName: ssh-security
+          defaultMode: 0400
       - name: service
         secret:
           secretName: service-account
@@ -3935,6 +4072,7 @@ presubmits:
           path: /mnt/disks/ssd0
         name: cache-ssd
   - name: pull-security-kubernetes-e2e-gce
+    cluster: security
     agent: kubernetes
     context: pull-security-kubernetes-e2e-gce
     rerun_command: "/test pull-security-kubernetes-e2e-gce"
@@ -3952,6 +4090,7 @@ presubmits:
         - --git-cache=/root/.cache/git
         - --clean
         - --timeout=90
+        - --ssh=/etc/ssh-security/ssh-security
         # the release-1.6 version of this job uses Jenkins, so here we override
         # some args for jobs on Prow
         - --
@@ -3977,6 +4116,8 @@ presubmits:
           value: /root/.cache/bazel
         image: gcr.io/k8s-testimages/kubekins-e2e:v20180102-0e2b24a0b-1.7
         volumeMounts:
+        - name: ssh-security
+          mountPath: /etc/ssh-security
         - mountPath: /etc/service-account
           name: service
           readOnly: true
@@ -3992,6 +4133,10 @@ presubmits:
           requests:
             memory: "6Gi"
       volumes:
+      - name: ssh-security
+        secret:
+          secretName: ssh-security
+          defaultMode: 0400
       - name: service
         secret:
           secretName: service-account
@@ -4013,6 +4158,7 @@ presubmits:
     - release-1.6
 
   - name: pull-security-kubernetes-e2e-gce-device-plugin-gpu
+    cluster: security
     agent: kubernetes
     skip_branches:
     - release-1.6  # not supported
@@ -4037,6 +4183,7 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-security-jenkins/pr-logs"
         - "--timeout=90"
+        - --ssh=/etc/ssh-security/ssh-security
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: /etc/service-account/service-account.json
@@ -4052,6 +4199,8 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
+        - name: ssh-security
+          mountPath: /etc/ssh-security
         - mountPath: /etc/service-account
           name: service
           readOnly: true
@@ -4067,6 +4216,10 @@ presubmits:
           requests:
             memory: "6Gi"
       volumes:
+      - name: ssh-security
+        secret:
+          secretName: ssh-security
+          defaultMode: 0400
       - name: service
         secret:
           secretName: service-account
@@ -4078,6 +4231,7 @@ presubmits:
         hostPath:
           path: /mnt/disks/ssd0
   - name: pull-security-kubernetes-e2e-gce-device-plugin-gpu
+    cluster: security
     agent: kubernetes
     branches:
     - release-1.8
@@ -4100,6 +4254,7 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-security-jenkins/pr-logs"
         - "--timeout=90"
+        - --ssh=/etc/ssh-security/ssh-security
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: /etc/service-account/service-account.json
@@ -4115,6 +4270,8 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
+        - name: ssh-security
+          mountPath: /etc/ssh-security
         - mountPath: /etc/service-account
           name: service
           readOnly: true
@@ -4130,6 +4287,10 @@ presubmits:
           requests:
             memory: "6Gi"
       volumes:
+      - name: ssh-security
+        secret:
+          secretName: ssh-security
+          defaultMode: 0400
       - name: service
         secret:
           secretName: service-account
@@ -4142,6 +4303,7 @@ presubmits:
           path: /mnt/disks/ssd0
 
   - name: pull-security-kubernetes-e2e-gke-device-plugin-gpu
+    cluster: security
     agent: kubernetes
     skip_branches:
     - release-1.6  # not supported
@@ -4166,6 +4328,7 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-security-jenkins/pr-logs"
         - "--timeout=90"
+        - --ssh=/etc/ssh-security/ssh-security
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: /etc/service-account/service-account.json
@@ -4181,6 +4344,8 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
+        - name: ssh-security
+          mountPath: /etc/ssh-security
         - mountPath: /etc/service-account
           name: service
           readOnly: true
@@ -4196,6 +4361,10 @@ presubmits:
           requests:
             memory: "6Gi"
       volumes:
+      - name: ssh-security
+        secret:
+          secretName: ssh-security
+          defaultMode: 0400
       - name: service
         secret:
           secretName: service-account
@@ -4207,6 +4376,7 @@ presubmits:
         hostPath:
           path: /mnt/disks/ssd0
   - name: pull-security-kubernetes-e2e-gke-device-plugin-gpu
+    cluster: security
     agent: kubernetes
     branches:
     - release-1.8  # per-release image
@@ -4229,6 +4399,7 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-security-jenkins/pr-logs"
         - "--timeout=90"
+        - --ssh=/etc/ssh-security/ssh-security
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: /etc/service-account/service-account.json
@@ -4244,6 +4415,8 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
+        - name: ssh-security
+          mountPath: /etc/ssh-security
         - mountPath: /etc/service-account
           name: service
           readOnly: true
@@ -4259,6 +4432,10 @@ presubmits:
           requests:
             memory: "6Gi"
       volumes:
+      - name: ssh-security
+        secret:
+          secretName: ssh-security
+          defaultMode: 0400
       - name: service
         secret:
           secretName: service-account
@@ -4277,6 +4454,7 @@ presubmits:
     trigger: "(?m)^/test pull-security-kubernetes-e2e-gke-gci,?(\\s+|$)"
     run_if_changed: '^(cluster/gce|cluster/addons).*$'
   - name: pull-security-kubernetes-e2e-kops-aws
+    cluster: security
     agent: kubernetes
     skip_branches:
     - release-1.6  # runs on Jenkins?
@@ -4300,6 +4478,7 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-security-jenkins/pr-logs"
         - "--timeout=75"
+        - --ssh=/etc/ssh-security/ssh-security
         # the release-1.6 version of this job uses Jenkins, so here we override
         # some args for jobs on Prow
         - --
@@ -4322,6 +4501,8 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
+        - name: ssh-security
+          mountPath: /etc/ssh-security
         - mountPath: /etc/service-account
           name: service
           readOnly: true
@@ -4340,6 +4521,10 @@ presubmits:
           requests:
             memory: "6Gi"
       volumes:
+      - name: ssh-security
+        secret:
+          secretName: ssh-security
+          defaultMode: 0400
       - name: service
         secret:
           secretName: service-account
@@ -4355,6 +4540,7 @@ presubmits:
         hostPath:
           path: /mnt/disks/ssd0
   - name: pull-security-kubernetes-e2e-kops-aws
+    cluster: security
     agent: kubernetes
     branches:
     - release-1.8
@@ -4376,6 +4562,7 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-security-jenkins/pr-logs"
         - "--timeout=75"
+        - --ssh=/etc/ssh-security/ssh-security
         # the release-1.6 version of this job uses Jenkins, so here we override
         # some args for jobs on Prow
         - --
@@ -4398,6 +4585,8 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
+        - name: ssh-security
+          mountPath: /etc/ssh-security
         - mountPath: /etc/service-account
           name: service
           readOnly: true
@@ -4416,6 +4605,10 @@ presubmits:
           requests:
             memory: "6Gi"
       volumes:
+      - name: ssh-security
+        secret:
+          secretName: ssh-security
+          defaultMode: 0400
       - name: service
         secret:
           secretName: service-account
@@ -4431,6 +4624,7 @@ presubmits:
         hostPath:
           path: /mnt/disks/ssd0
   - name: pull-security-kubernetes-e2e-kops-aws
+    cluster: security
     agent: kubernetes
     branches:
     - release-1.7
@@ -4452,6 +4646,7 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-security-jenkins/pr-logs"
         - "--timeout=75"
+        - --ssh=/etc/ssh-security/ssh-security
         # the release-1.6 version of this job uses Jenkins, so here we override
         # some args for jobs on Prow
         - --
@@ -4474,6 +4669,8 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
+        - name: ssh-security
+          mountPath: /etc/ssh-security
         - mountPath: /etc/service-account
           name: service
           readOnly: true
@@ -4492,6 +4689,10 @@ presubmits:
           requests:
             memory: "6Gi"
       volumes:
+      - name: ssh-security
+        secret:
+          secretName: ssh-security
+          defaultMode: 0400
       - name: service
         secret:
           secretName: service-account
@@ -4516,6 +4717,7 @@ presubmits:
     rerun_command: "/test pull-security-kubernetes-e2e-kops-aws"
     trigger: "(?m)^/test( all| pull-security-kubernetes-e2e-kops-aws),?(\\s+|$)"
   - name: pull-security-kubernetes-kubemark-e2e-gce
+    cluster: security
     agent: kubernetes
     always_run: true
     max_concurrency: 12
@@ -4539,6 +4741,7 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-security-jenkins/pr-logs"
         - "--timeout=110"
+        - --ssh=/etc/ssh-security/ssh-security
         # the release-1.6 version of this job uses Jenkins, so here we override
         # some args for jobs on Prow
         - --
@@ -4564,6 +4767,8 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
+        - name: ssh-security
+          mountPath: /etc/ssh-security
         - mountPath: /etc/service-account
           name: service
           readOnly: true
@@ -4579,6 +4784,10 @@ presubmits:
           requests:
             memory: "6Gi"
       volumes:
+      - name: ssh-security
+        secret:
+          secretName: ssh-security
+          defaultMode: 0400
       - name: service
         secret:
           secretName: service-account
@@ -4593,6 +4802,7 @@ presubmits:
         hostPath:
           path: /mnt/disks/ssd0/docker-graph
   - name: pull-security-kubernetes-kubemark-e2e-gce
+    cluster: security
     agent: kubernetes
     always_run: true
     max_concurrency: 12
@@ -4614,6 +4824,7 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-security-jenkins/pr-logs"
         - "--timeout=110"
+        - --ssh=/etc/ssh-security/ssh-security
         # the release-1.6 version of this job uses Jenkins, so here we override
         # some args for jobs on Prow
         - --
@@ -4639,6 +4850,8 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
+        - name: ssh-security
+          mountPath: /etc/ssh-security
         - mountPath: /etc/service-account
           name: service
           readOnly: true
@@ -4654,6 +4867,10 @@ presubmits:
           requests:
             memory: "6Gi"
       volumes:
+      - name: ssh-security
+        secret:
+          secretName: ssh-security
+          defaultMode: 0400
       - name: service
         secret:
           secretName: service-account
@@ -4668,6 +4885,7 @@ presubmits:
         hostPath:
           path: /mnt/disks/ssd0/docker-graph
   - name: pull-security-kubernetes-kubemark-e2e-gce
+    cluster: security
     agent: kubernetes
     always_run: true
     max_concurrency: 12
@@ -4689,6 +4907,7 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-security-jenkins/pr-logs"
         - "--timeout=110"
+        - --ssh=/etc/ssh-security/ssh-security
         # the release-1.6 version of this job uses Jenkins, so here we override
         # some args for jobs on Prow
         - --
@@ -4714,6 +4933,8 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
+        - name: ssh-security
+          mountPath: /etc/ssh-security
         - mountPath: /etc/service-account
           name: service
           readOnly: true
@@ -4729,6 +4950,10 @@ presubmits:
           requests:
             memory: "6Gi"
       volumes:
+      - name: ssh-security
+        secret:
+          secretName: ssh-security
+          defaultMode: 0400
       - name: service
         secret:
           secretName: service-account
@@ -4753,6 +4978,7 @@ presubmits:
     - release-1.6
 
   - name: pull-security-kubernetes-kubemark-e2e-gce-big
+    cluster: security
     agent: kubernetes
     always_run: false
     max_concurrency: 12
@@ -4776,6 +5002,7 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-security-jenkins/pr-logs"
         - "--timeout=110"
+        - --ssh=/etc/ssh-security/ssh-security
         env:
         # TODO(krzyzacy): Figure out bazel built kubemark image
         # - name: KUBEMARK_BAZEL_BUILD
@@ -4796,6 +5023,8 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
+        - name: ssh-security
+          mountPath: /etc/ssh-security
         - mountPath: /etc/service-account
           name: service
           readOnly: true
@@ -4811,6 +5040,10 @@ presubmits:
           requests:
             memory: "6Gi"
       volumes:
+      - name: ssh-security
+        secret:
+          secretName: ssh-security
+          defaultMode: 0400
       - name: service
         secret:
           secretName: service-account
@@ -4825,6 +5058,7 @@ presubmits:
         hostPath:
           path: /mnt/disks/ssd0/docker-graph
   - name: pull-security-kubernetes-kubemark-e2e-gce-big
+    cluster: security
     agent: kubernetes
     always_run: false
     max_concurrency: 12
@@ -4846,6 +5080,7 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-security-jenkins/pr-logs"
         - "--timeout=110"
+        - --ssh=/etc/ssh-security/ssh-security
         env:
         # TODO(krzyzacy): Figure out bazel built kubemark image
         # - name: KUBEMARK_BAZEL_BUILD
@@ -4866,6 +5101,8 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
+        - name: ssh-security
+          mountPath: /etc/ssh-security
         - mountPath: /etc/service-account
           name: service
           readOnly: true
@@ -4881,6 +5118,10 @@ presubmits:
           requests:
             memory: "6Gi"
       volumes:
+      - name: ssh-security
+        secret:
+          secretName: ssh-security
+          defaultMode: 0400
       - name: service
         secret:
           secretName: service-account
@@ -4895,6 +5136,7 @@ presubmits:
         hostPath:
           path: /mnt/disks/ssd0/docker-graph
   - name: pull-security-kubernetes-kubemark-e2e-gce-big
+    cluster: security
     agent: kubernetes
     always_run: false
     max_concurrency: 12
@@ -4916,6 +5158,7 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-security-jenkins/pr-logs"
         - "--timeout=110"
+        - --ssh=/etc/ssh-security/ssh-security
         env:
         # TODO(krzyzacy): Figure out bazel built kubemark image
         # - name: KUBEMARK_BAZEL_BUILD
@@ -4936,6 +5179,8 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
+        - name: ssh-security
+          mountPath: /etc/ssh-security
         - mountPath: /etc/service-account
           name: service
           readOnly: true
@@ -4951,6 +5196,10 @@ presubmits:
           requests:
             memory: "6Gi"
       volumes:
+      - name: ssh-security
+        secret:
+          secretName: ssh-security
+          defaultMode: 0400
       - name: service
         secret:
           secretName: service-account
@@ -4966,6 +5215,7 @@ presubmits:
           path: /mnt/disks/ssd0/docker-graph
 
   - name: pull-security-kubernetes-node-e2e
+    cluster: security
     agent: kubernetes
     skip_branches:
     - release-1.6  # per-release image
@@ -4988,6 +5238,7 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-security-jenkins/pr-logs"
         - "--timeout=90"
+        - --ssh=/etc/ssh-security/ssh-security
         - "--" # end bootstrap args, scenario args below
         - "--node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml"
         env:
@@ -5000,6 +5251,8 @@ presubmits:
         - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
           value: /etc/ssh-key-secret/ssh-public
         volumeMounts:
+        - name: ssh-security
+          mountPath: /etc/ssh-security
         - mountPath: /etc/service-account
           name: service
           readOnly: true
@@ -5015,6 +5268,10 @@ presubmits:
           requests:
             memory: "6Gi"
       volumes:
+      - name: ssh-security
+        secret:
+          secretName: ssh-security
+          defaultMode: 0400
       - name: service
         secret:
           secretName: service-account
@@ -5026,6 +5283,7 @@ presubmits:
         hostPath:
           path: /mnt/disks/ssd0
   - name: pull-security-kubernetes-node-e2e
+    cluster: security
     agent: kubernetes
     branches:
     - release-1.8
@@ -5046,6 +5304,7 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-security-jenkins/pr-logs"
         - "--timeout=90"
+        - --ssh=/etc/ssh-security/ssh-security
         - "--" # end bootstrap args, scenario args below
         - "--node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml"
         env:
@@ -5058,6 +5317,8 @@ presubmits:
         - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
           value: /etc/ssh-key-secret/ssh-public
         volumeMounts:
+        - name: ssh-security
+          mountPath: /etc/ssh-security
         - mountPath: /etc/service-account
           name: service
           readOnly: true
@@ -5073,6 +5334,10 @@ presubmits:
           requests:
             memory: "6Gi"
       volumes:
+      - name: ssh-security
+        secret:
+          secretName: ssh-security
+          defaultMode: 0400
       - name: service
         secret:
           secretName: service-account
@@ -5084,6 +5349,7 @@ presubmits:
         hostPath:
           path: /mnt/disks/ssd0
   - name: pull-security-kubernetes-node-e2e
+    cluster: security
     agent: kubernetes
     branches:
     - release-1.7
@@ -5104,6 +5370,7 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-security-jenkins/pr-logs"
         - "--timeout=90"
+        - --ssh=/etc/ssh-security/ssh-security
         - "--" # end bootstrap args, scenario args below
         - "--node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config-1-7.yaml"
         env:
@@ -5116,6 +5383,8 @@ presubmits:
         - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
           value: /etc/ssh-key-secret/ssh-public
         volumeMounts:
+        - name: ssh-security
+          mountPath: /etc/ssh-security
         - mountPath: /etc/service-account
           name: service
           readOnly: true
@@ -5131,6 +5400,10 @@ presubmits:
           requests:
             memory: "6Gi"
       volumes:
+      - name: ssh-security
+        secret:
+          secretName: ssh-security
+          defaultMode: 0400
       - name: service
         secret:
           secretName: service-account
@@ -5142,6 +5415,7 @@ presubmits:
         hostPath:
           path: /mnt/disks/ssd0
   - name: pull-security-kubernetes-node-e2e
+    cluster: security
     agent: kubernetes
     branches:
     - release-1.6
@@ -5162,6 +5436,7 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-security-jenkins/pr-logs"
         - "--timeout=90"
+        - --ssh=/etc/ssh-security/ssh-security
         - "--" # end bootstrap args, scenario args below
         - "--node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config-1-6.yaml"
         env:
@@ -5174,6 +5449,8 @@ presubmits:
         - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
           value: /etc/ssh-key-secret/ssh-public
         volumeMounts:
+        - name: ssh-security
+          mountPath: /etc/ssh-security
         - mountPath: /etc/service-account
           name: service
           readOnly: true
@@ -5189,6 +5466,10 @@ presubmits:
           requests:
             memory: "6Gi"
       volumes:
+      - name: ssh-security
+        secret:
+          secretName: ssh-security
+          defaultMode: 0400
       - name: service
         secret:
           secretName: service-account
@@ -5201,6 +5482,7 @@ presubmits:
           path: /mnt/disks/ssd0
 
   - name: pull-security-kubernetes-node-e2e-containerd
+    cluster: security
     agent: kubernetes
     branches:
     - master
@@ -5222,6 +5504,7 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-security-jenkins/pr-logs"
         - "--timeout=90"
+        - --ssh=/etc/ssh-security/ssh-security
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: /etc/service-account/service-account.json
@@ -5232,6 +5515,8 @@ presubmits:
         - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
           value: /etc/ssh-key-secret/ssh-public
         volumeMounts:
+        - name: ssh-security
+          mountPath: /etc/ssh-security
         - mountPath: /etc/service-account
           name: service
           readOnly: true
@@ -5244,6 +5529,10 @@ presubmits:
         - containerPort: 9999
           hostPort: 9999
       volumes:
+      - name: ssh-security
+        secret:
+          secretName: ssh-security
+          defaultMode: 0400
       - name: service
         secret:
           secretName: service-account
@@ -5255,6 +5544,7 @@ presubmits:
         hostPath:
           path: /mnt/disks/ssd0
   - name: pull-security-kubernetes-unit
+    cluster: security
     agent: kubernetes
     always_run: true
     context: pull-security-kubernetes-unit
@@ -5270,6 +5560,7 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-security-jenkins/pr-logs"
         - "--timeout=60"
+        - --ssh=/etc/ssh-security/ssh-security
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
           value: true
@@ -5279,6 +5570,8 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
+        - name: ssh-security
+          mountPath: /etc/ssh-security
         - name: service
           mountPath: /etc/service-account
           readOnly: true
@@ -5291,6 +5584,10 @@ presubmits:
           requests:
             cpu: 4
       volumes:
+      - name: ssh-security
+        secret:
+          secretName: ssh-security
+          defaultMode: 0400
       - name: service
         secret:
           secretName: service-account
@@ -5298,6 +5595,7 @@ presubmits:
         hostPath:
           path: /mnt/disks/ssd0/docker-graph
   - name: pull-security-kubernetes-unit-prow
+    cluster: security
     agent: kubernetes
     always_run: false
     context: pull-security-kubernetes-unit-prow
@@ -5315,6 +5613,7 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-security-jenkins/pr-logs"
         - "--timeout=60"
+        - --ssh=/etc/ssh-security/ssh-security
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
           value: true
@@ -5324,6 +5623,8 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
+        - name: ssh-security
+          mountPath: /etc/ssh-security
         - name: service
           mountPath: /etc/service-account
           readOnly: true
@@ -5338,6 +5639,10 @@ presubmits:
           requests:
             cpu: 4
       volumes:
+      - name: ssh-security
+        secret:
+          secretName: ssh-security
+          defaultMode: 0400
       - name: service
         secret:
           secretName: service-account
@@ -5348,6 +5653,7 @@ presubmits:
         hostPath:
           path: /mnt/disks/ssd0/docker-graph
   - name: pull-security-kubernetes-verify
+    cluster: security
     agent: kubernetes
     always_run: true
     context: pull-security-kubernetes-verify
@@ -5363,6 +5669,7 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-security-jenkins/pr-logs"
         - "--timeout=75"
+        - --ssh=/etc/ssh-security/ssh-security
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
           value: true
@@ -5372,6 +5679,8 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
+        - name: ssh-security
+          mountPath: /etc/ssh-security
         - name: service
           mountPath: /etc/service-account
           readOnly: true
@@ -5384,6 +5693,10 @@ presubmits:
           requests:
             cpu: 4
       volumes:
+      - name: ssh-security
+        secret:
+          secretName: ssh-security
+          defaultMode: 0400
       - name: service
         secret:
           secretName: service-account
@@ -5391,6 +5704,7 @@ presubmits:
         hostPath:
           path: /mnt/disks/ssd0/docker-graph
   - name: pull-security-kubernetes-verify-prow
+    cluster: security
     agent: kubernetes
     always_run: false
     context: pull-security-kubernetes-verify-prow
@@ -5407,6 +5721,7 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-security-jenkins/pr-logs"
         - "--timeout=75"
+        - --ssh=/etc/ssh-security/ssh-security
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
           value: true
@@ -5416,6 +5731,8 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
+        - name: ssh-security
+          mountPath: /etc/ssh-security
         - name: service
           mountPath: /etc/service-account
           readOnly: true
@@ -5428,6 +5745,10 @@ presubmits:
           requests:
             cpu: 4
       volumes:
+      - name: ssh-security
+        secret:
+          secretName: ssh-security
+          defaultMode: 0400
       - name: service
         secret:
           secretName: service-account
