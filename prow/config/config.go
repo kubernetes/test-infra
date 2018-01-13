@@ -158,6 +158,8 @@ type Deck struct {
 	// ExternalAgentLogs ensures external agents can expose
 	// their logs in prow.
 	ExternalAgentLogs []ExternalAgentLog `json:"external_agent_logs,omitempty"`
+	// Branding of the frontend
+	Branding Branding `json:"branding,omitempty"`
 }
 
 // ExternalAgentLog ensures an external agent like Jenkins can expose
@@ -178,6 +180,18 @@ type ExternalAgentLog struct {
 	// will be passed a kube.ProwJob and the generated URL should provide
 	// logs for the ProwJob.
 	URLTemplate *template.Template `json:"-"`
+}
+
+// Branding holds branding configuration for deck.
+type Branding struct {
+	// Logo is the location of the logo that will be loaded in deck.
+	Logo string `json:"logo,omitempty"`
+	// Favicon is the location of the favicon that will be loaded in deck.
+	Favicon string `json:"favicon,omitempty"`
+	// BackgroundColor is the color of the background.
+	BackgroundColor string `json:"background_color,omitempty"`
+	// HeaderColor is the color of the header.
+	HeaderColor string `json:"header_color,omitempty"`
 }
 
 // Load loads and parses the config at path.

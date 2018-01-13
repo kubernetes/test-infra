@@ -20,10 +20,10 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"reflect"
 	"regexp"
+	"sort"
 	"strings"
 	"testing"
 
@@ -57,6 +57,7 @@ func replace(j *Presubmit, ks *Presubmit) error {
 	j.Context = strings.Replace(j.Context, "pull-kubernetes", "pull-security-kubernetes", -1)
 
 	if j.Agent == "kubernetes" {
+		j.Cluster = "security"
 		if len(j.Spec.Containers) != 1 {
 			return fmt.Errorf("expected a single container for %s", name)
 		}
@@ -70,6 +71,33 @@ func replace(j *Presubmit, ks *Presubmit) error {
 				j.Spec.Containers[0].Args[i] = "--upload=gs://kubernetes-security-jenkins/pr-logs"
 			}
 		}
+		j.Spec.Containers[0].Args = append(j.Spec.Containers[0].Args, "--ssh=/etc/ssh-security/ssh-security")
+		sort.Strings(j.Spec.Containers[0].Args)
+		sort.Strings(ks.Spec.Containers[0].Args)
+		j.Spec.Containers[0].VolumeMounts = append(
+			[]kube.VolumeMount{
+				{
+					Name:      "ssh-security",
+					MountPath: "/etc/ssh-security",
+				},
+			},
+			j.Spec.Containers[0].VolumeMounts...,
+		)
+		j.Spec.Volumes = append(
+			[]kube.Volume{
+				{
+					Name: "ssh-security",
+					VolumeSource: kube.VolumeSource{
+						Secret: &kube.SecretSource{
+							Name:        "ssh-security",
+							DefaultMode: 0400,
+						},
+					},
+				},
+			},
+			j.Spec.Volumes...,
+		)
+
 	}
 
 	j.re = ks.re
@@ -151,33 +179,6 @@ func findRequired(t *testing.T, presubmits []Presubmit) []string {
 	return required
 }
 
-func TestRequiredRetestContextsMatch(t *testing.T) {
-	b, err := ioutil.ReadFile("../../mungegithub/submit-queue/deployment/kubernetes/configmap.yaml")
-	if err != nil {
-		t.Fatalf("Could not load submit queue configmap: %v", err)
-	}
-	sqc := &SubmitQueueConfig{}
-	if err = yaml.Unmarshal(b, sqc); err != nil {
-		t.Fatalf("Could not parse submit queue configmap: %v", err)
-	}
-	required := strings.Split(sqc.RequiredRetestContexts, ",")
-
-	running := findRequired(t, c.Presubmits["kubernetes/kubernetes"])
-
-	for _, r := range required {
-		found := false
-		for _, s := range running {
-			if s == r {
-				found = true
-				break
-			}
-		}
-		if !found {
-			t.Errorf("Required context: %s does not always run: %s", r, running)
-		}
-	}
-}
-
 func TestConfigSecurityJobsMatch(t *testing.T) {
 	conf, err := Load("../config.yaml")
 	if err != nil {
@@ -194,7 +195,11 @@ func TestConfigSecurityJobsMatch(t *testing.T) {
 		}
 
 		if !reflect.DeepEqual(j, sp[i]) {
-			t.Fatalf("kubernetes/kubernetes prow config jobs do not match kubernetes-security/kubernetes jobs:\n%#v\nshould match: %#v", j, sp[i])
+
+			b1, _ := yaml.Marshal(j)
+			b2, _ := yaml.Marshal(sp[i])
+
+			t.Fatalf("kubernetes/kubernetes prow config jobs do not match kubernetes-security/kubernetes jobs:\n%s\nshould match: %s", b1, b2)
 		}
 	}
 }

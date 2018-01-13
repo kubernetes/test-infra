@@ -1,19 +1,17 @@
-http_archive(
-    name = "io_kubernetes_build",
-    sha256 = "8e49ac066fbaadd475bd63762caa90f81cd1880eba4cc25faa93355ef5fa2739",
-    strip_prefix = "repo-infra-e26fc85d14a1d3dc25569831acc06919673c545a",
-    urls = ["https://github.com/kubernetes/repo-infra/archive/e26fc85d14a1d3dc25569831acc06919673c545a.tar.gz"],
+git_repository(
+    name = "bazel_skylib",
+    commit = "2169ae1c374aab4a09aa90e65efe1a3aad4e279b",
+    remote = "https://github.com/bazelbuild/bazel-skylib.git",
 )
 
-load("@io_kubernetes_build//defs:bazel_version.bzl", "check_version")
+load("@bazel_skylib//:lib.bzl", "versions")
 
-# Ensure minimum supported bazel version
-check_version("0.8.0")
+versions.check(minimum_bazel_version = "0.8.0")
 
 git_repository(
     name = "io_bazel_rules_go",
+    commit = "93fbdfae183f24c1bea4dc6f776188523ba3a2be",  # 0.9.0
     remote = "https://github.com/bazelbuild/rules_go.git",
-    tag = "0.8.1",
 )
 
 load("@io_bazel_rules_go//go:def.bzl", "go_rules_dependencies", "go_register_toolchains")

@@ -1032,15 +1032,14 @@ nodeTestSuites:
     args:
     - --timeout=70m
     - --test_args=--nodes=8 --skip="\[Flaky\]|\[Serial\]"
-    - --node-test-args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
+    - --node-test-args=--feature-gates=KubeletConfigFile=true --generate-kubelet-config-file=true
   gkespec:
     args:
     - --node-args=--system-spec-name=gke
     - --timeout=60m
     - --test_args=--nodes=8 --skip="\[Flaky\]|\[Serial\]"
-    - --node-test-args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/"
   serial:
     args:
     - --timeout=180m
     - --test_args=--nodes=1 --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]"
-    - --node-test-args=--kubelet-flags="--cgroups-per-qos=true --cgroup-root=/" --feature-gates=DynamicKubeletConfig=true
+    - --node-test-args=--feature-gates=DynamicKubeletConfig=true,KubeletConfigFile=true --generate-kubelet-config-file=true

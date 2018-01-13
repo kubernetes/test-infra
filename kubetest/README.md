@@ -212,6 +212,6 @@ right path, the command below does the same as above:
 [e2e testing]: https://git.k8s.io/community/contributors/devel/e2e-tests.md
 [extract.go]: /kubetest/extract.go
 [ginkgo]: https://github.com/onsi/ginkgo
-[kubekins-e2e]: /jenkins/e2e-image
+[kubekins-e2e]: /images/kubekins-e2e
 [kubekins-e2e-prow]: /images/e2e-prow
 [prow]: /prow

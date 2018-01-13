@@ -80,11 +80,12 @@ func main() {
 	oauthSecret := string(bytes.TrimSpace(oauthSecretRaw))
 
 	var ghc *github.Client
-	var kc, pkc *kube.Client
+	var kc *kube.Client
+	var pkcs map[string]*kube.Client
 	if *dryRun {
 		ghc = github.NewDryRunClient(oauthSecret, *githubEndpoint)
 		kc = kube.NewFakeClient(*deckURL)
-		pkc = kc
+		pkcs = map[string]*kube.Client{kube.DefaultClusterAlias: kc}
 	} else {
 		ghc = github.NewClient(oauthSecret, *githubEndpoint)
 		if *cluster == "" {
@@ -99,19 +100,20 @@ func main() {
 			}
 		}
 		if *buildCluster == "" {
-			pkc, err = kube.NewClientInCluster(configAgent.Config().PodNamespace)
+			pkc, err := kube.NewClientInCluster(configAgent.Config().PodNamespace)
 			if err != nil {
 				logger.WithError(err).Fatal("Error getting kube client.")
 			}
+			pkcs = map[string]*kube.Client{kube.DefaultClusterAlias: pkc}
 		} else {
-			pkc, err = kube.NewClientFromFile(*buildCluster, configAgent.Config().PodNamespace)
+			pkcs, err = kube.ClientMapFromFile(*buildCluster, configAgent.Config().PodNamespace)
 			if err != nil {
 				logger.WithError(err).Fatal("Error getting kube client to build cluster.")
 			}
 		}
 	}
 
-	c, err := plank.NewController(kc, pkc, ghc, logger, configAgent, *totURL, *selector)
+	c, err := plank.NewController(kc, pkcs, ghc, logger, configAgent, *totURL, *selector)
 	if err != nil {
 		logger.WithError(err).Fatal("Error creating plank controller.")
 	}

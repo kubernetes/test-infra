@@ -11,3 +11,7 @@
 [[constraint]]
   name = "k8s.io/apimachinery"
   branch = "release-1.9"
+
+[[constraint]]
+  name = "github.com/docker/docker"
+  version = "1.13.1"

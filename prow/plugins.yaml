@@ -13,14 +13,22 @@ triggers:
   - GoogleCloudPlatform/k8s-multicluster-ingress
   trusted_org: kubernetes
   join_org_url: "https://git.k8s.io/community/community-membership.md#member"
+- repos:
+  - containerd/cri-containerd
+  trusted_org: containerd
+  join_org_url: "https://github.com/containerd/containerd/blob/master/MAINTAINERS"
 
 approve:
 - repos:
   - kubernetes/charts
   - kubernetes/cluster-registry
   - kubernetes/community
+  - kubernetes/dashboard
   - kubernetes/features
+  - kubernetes/ingress-nginx
+  - kubernetes/kube-deploy
   - kubernetes/kubectl
+  - kubernetes/minikube
   - kubernetes/sig-release
   - kubernetes/steering
   - kubernetes/test-infra
@@ -120,6 +128,9 @@ plugins:
   - approve
   - blunderbuss
 
+  kubernetes/dashboard:
+  - approve
+
   kubernetes/dns:
   - trigger
 
@@ -128,6 +139,9 @@ plugins:
 
   kubernetes/ingress-gce:
   - trigger
+
+  kubernetes/ingress-nginx:
+  - approve
 
   kubernetes/federation:
   - trigger
@@ -139,6 +153,10 @@ plugins:
   kubernetes/kops:
   - trigger
   - approve
+
+  kubernetes/kube-deploy:
+  - approve
+  - blunderbuss
 
   kubernetes/kubectl:
   - approve
@@ -152,6 +170,9 @@ plugins:
   - trigger
 
   kubernetes/kubernetes-template-project:
+  - approve
+
+  kubernetes/minikube:
   - approve
 
   kubernetes/sig-release:
@@ -192,7 +213,13 @@ plugins:
   - lifecycle
   - size
 
-  kubernetes-incubator/cri-containerd:
+  containerd/cri-containerd:
+  - assign
+  - cla
+  - label
+  - lgtm
+  - lifecycle
+  - size
   - trigger
 
   kubernetes-security/kubernetes:

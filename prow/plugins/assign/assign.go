@@ -176,7 +176,7 @@ type handler struct {
 func newAssignHandler(e github.GenericCommentEvent, gc githubClient, log *logrus.Entry) *handler {
 	org := e.Repo.Owner.Login
 	addFailureResponse := func(mu github.MissingUsers) string {
-		return fmt.Sprintf("GitHub didn't allow me to assign the following users: %s.\n\nNote that only [%s members](https://github.com/orgs/%s/people) can be assigned.", strings.Join(mu.Users, ", "), org, org)
+		return fmt.Sprintf("GitHub didn't allow me to assign the following users: %s.\n\nNote that only [%s members](https://github.com/orgs/%s/people) and repo collaborators can be assigned.", strings.Join(mu.Users, ", "), org, org)
 	}
 
 	return &handler{
@@ -194,7 +194,7 @@ func newAssignHandler(e github.GenericCommentEvent, gc githubClient, log *logrus
 func newReviewHandler(e github.GenericCommentEvent, gc githubClient, log *logrus.Entry) *handler {
 	org := e.Repo.Owner.Login
 	addFailureResponse := func(mu github.MissingUsers) string {
-		return fmt.Sprintf("GitHub didn't allow me to request PR reviews from the following users: %s.\n\nNote that only [%s members](https://github.com/orgs/%s/people) can review this PR, and authors cannot review their own PRs.", strings.Join(mu.Users, ", "), org, org)
+		return fmt.Sprintf("GitHub didn't allow me to request PR reviews from the following users: %s.\n\nNote that only [%s members](https://github.com/orgs/%s/people) and repo collaborators can review this PR, and authors cannot review their own PRs.", strings.Join(mu.Users, ", "), org, org)
 	}
 
 	return &handler{

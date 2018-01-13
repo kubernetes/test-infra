@@ -18,7 +18,9 @@ package pjutil
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
+	"os"
 	"strconv"
 
 	"k8s.io/test-infra/prow/kube"
@@ -91,4 +93,20 @@ func EnvForSpec(spec JobSpec) (map[string]string, error) {
 	env["PULL_NUMBER"] = strconv.Itoa(spec.Refs.Pulls[0].Number)
 	env["PULL_PULL_SHA"] = spec.Refs.Pulls[0].SHA
 	return env, nil
+}
+
+// ResolveSpecFromEnv will determine the Refs being
+// tested in by parsing Prow environment variable contents
+func ResolveSpecFromEnv() (*JobSpec, error) {
+	specEnv, ok := os.LookupEnv("JOB_SPEC")
+	if !ok {
+		return nil, errors.New("$JOB_SPEC unset")
+	}
+
+	spec := &JobSpec{}
+	if err := json.Unmarshal([]byte(specEnv), spec); err != nil {
+		return nil, fmt.Errorf("malformed $JOB_SPEC: %v", err)
+	}
+
+	return spec, nil
 }

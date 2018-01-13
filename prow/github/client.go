@@ -1271,7 +1271,8 @@ func (c *Client) GetFile(org, repo, filepath, commit string) ([]byte, error) {
 
 // Query runs a GraphQL query using shurcooL/githubql's client.
 func (c *Client) Query(ctx context.Context, q interface{}, vars map[string]interface{}) error {
-	c.log("Query", q, vars)
+	// Don't log query here because Query is typically called multiple times to get all pages.
+	// Instead log once per search and include total search cost.
 	return c.gqlc.Query(ctx, q, vars)
 }
 
@@ -1467,4 +1468,22 @@ func (c *Client) IsMergeable(org, repo string, number int, sha string) (bool, er
 		}
 	}
 	return false, fmt.Errorf("reached maximum number of retries (%d) checking mergeability", maxTries)
+}
+
+// ClearMilestone clears the milestone from the specified issue
+func (c *Client) ClearMilestone(org, repo string, num int) error {
+	c.log("ClearMilestone", org, repo, num)
+
+	issue := &struct {
+		// Clearing the milestone requires providing a null value, and
+		// interface{} will serialize to null.
+		Milestone interface{} `json:"milestone"`
+	}{}
+	_, err := c.request(&request{
+		method:      http.MethodPatch,
+		path:        fmt.Sprintf("%s/repos/%v/%v/issues/%d", c.base, org, repo, num),
+		requestBody: &issue,
+		exitCodes:   []int{200},
+	}, nil)
+	return err
 }

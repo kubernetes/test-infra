@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import cPickle as pickle
 import functools
 import logging
 import os
@@ -120,6 +121,11 @@ def memcache_memoize(prefix, expires=60 * 60, neg_expires=60):
                 return data
             else:
                 data = func(*args)
+                serialized_length = len(pickle.dumps(data, pickle.HIGHEST_PROTOCOL))
+                if serialized_length > 1000000:
+                    logging.warning('data too large to fit in memcache: %s > 1MB',
+                                    serialized_length)
+                    return data
                 try:
                     if data:
                         memcache.add(key, data, expires, namespace=namespace)
