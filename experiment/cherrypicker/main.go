@@ -39,6 +39,7 @@ var (
 	githubTokenFile   = flag.String("github-token-file", "/etc/github/oauth", "Path to the file containing the GitHub OAuth secret.")
 	webhookSecretFile = flag.String("hmac-secret-file", "/etc/webhook/hmac", "Path to the file containing the GitHub HMAC secret.")
 	prowAssignments   = flag.Bool("use-prow-assignments", true, "Use prow commands to assign cherrypicked PRs.")
+	allowAll          = flag.Bool("allow-all", false, "Allow anybody to use automated cherrypicks by skipping Github organization membership checks.")
 )
 
 func main() {
@@ -97,7 +98,16 @@ func main() {
 		logrus.WithError(err).Fatal("Error listing bot repositories.")
 	}
 
-	server := NewServer(botName, email, webhookSecret, gitClient, githubClient, repos, *prowAssignments)
+	server := NewServer(
+		botName,
+		email,
+		webhookSecret,
+		gitClient,
+		githubClient,
+		repos,
+		*prowAssignments,
+		*allowAll,
+	)
 
 	http.Handle("/", server)
 	logrus.Fatal(http.ListenAndServe(":"+strconv.Itoa(*port), nil))
