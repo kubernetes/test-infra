@@ -5,7 +5,7 @@ project: kubernetes
 pr-mungers: submit-queue
 state: open
 token-file: /etc/secret-volume/token
-period: 1m
+period: 2m
 github-key-file: /etc/hook-secret-volume/secret
 
 # status context options.
