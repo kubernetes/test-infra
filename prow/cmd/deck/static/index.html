@@ -41,7 +41,12 @@
                                 &gt;&gt;
                                 <li><select id="pull" onchange="redraw();"><option>all pull requests</option></select></li>
                                 <li><select id="author" onchange="redraw();"><option>all authors</option></select></li>
-                                <li><select id="job" onchange="redraw();"><option>all jobs</option></select></li>
+                                <li>
+                                    <div class="fuzzy-search" id="job">
+                                        <input class="fuzzy-search-input" placeholder="Search job name" type="text" id="job-input">
+                                        <ul id="job-list" class="fuzzy-search-list"></ul>
+                                    </div>
+                                </li>
                                 <li><select id="state" onchange="redraw();"><option>all states</option></select></li>
                             </ul>
                         </div>
