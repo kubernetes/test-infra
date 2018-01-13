@@ -168,6 +168,7 @@ function clickHandler(div) {
 }
 
 function redraw() {
+    configure();
     var normals = document.getElementById("normal-plugins");
     var externals = document.getElementById("external-plugins");
 
