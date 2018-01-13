@@ -94,7 +94,6 @@ func main() {
 	mux.Handle("/log", gziphandler.GzipHandler(handleLog(ja)))
 	mux.Handle("/rerun", gziphandler.GzipHandler(handleRerun(kc)))
 	mux.Handle("/config", gziphandler.GzipHandler(handleConfig(configAgent)))
-	mux.Handle("/config.js", gziphandler.GzipHandler(handleJSONConfig(configAgent)))
 
 	if *hookURL != "" {
 		mux.Handle("/plugin-help.js", gziphandler.GzipHandler(handlePluginHelp(newHelpAgent(*hookURL))))
@@ -385,33 +384,6 @@ func handleConfig(ca configAgent) http.HandlerFunc {
 		if err != nil {
 			logrus.WithError(err).Error("Error writing config.")
 			http.Error(w, "Failed to write config.", http.StatusInternalServerError)
-		}
-	}
-}
-
-func handleJSONConfig(ca configAgent) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		// TODO(bentheelder): add the ability to query for portions of the config?
-		w.Header().Set("Cache-Control", "no-cache")
-		config := ca.Config()
-		b, err := json.Marshal(config)
-		if err != nil {
-			logrus.WithError(err).Error("Error marshaling config.")
-			http.Error(w, "Failed to marhshal config.", http.StatusInternalServerError)
-			return
-		}
-		buff := bytes.NewBuffer(b)
-		_, err = buff.WriteTo(w)
-		if err != nil {
-			logrus.WithError(err).Error("Error writing config.")
-			http.Error(w, "Failed to write config.", http.StatusInternalServerError)
-		}
-		// If we have a "var" query, then write out "var value = [...];".
-		// Otherwise, just write out the JSON.
-		if v := r.URL.Query().Get("var"); v != "" {
-			fmt.Fprintf(w, "var %s = %s;", v, string(b))
-		} else {
-			fmt.Fprint(w, string(b))
 		}
 	}
 }
