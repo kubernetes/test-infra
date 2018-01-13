@@ -26,6 +26,7 @@ approve:
   - kubernetes/dashboard
   - kubernetes/features
   - kubernetes/ingress-nginx
+  - kubernetes/kube-deploy
   - kubernetes/kubectl
   - kubernetes/minikube
   - kubernetes/sig-release
@@ -152,6 +153,10 @@ plugins:
   kubernetes/kops:
   - trigger
   - approve
+
+  kubernetes/kube-deploy:
+  - approve
+  - blunderbuss
 
   kubernetes/kubectl:
   - approve
