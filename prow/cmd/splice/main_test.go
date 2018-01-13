@@ -23,7 +23,6 @@ import (
 	"net/http/httptest"
 	"reflect"
 	"testing"
-	"time"
 
 	"k8s.io/apimachinery/pkg/util/sets"
 
@@ -195,7 +194,7 @@ func fakeProwJob(context string, jobType kube.ProwJobType, completed bool, state
 		},
 	}
 	if completed {
-		pj.Status.CompletionTime = time.Now()
+		pj.SetComplete()
 	}
 	return pj
 }

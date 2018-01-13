@@ -130,8 +130,9 @@ func TestSync(t *testing.T) {
 					StartTime: now.Add(-tc.jobStartTimeAgo),
 				},
 			}}
+			complete := now.Add(-time.Millisecond)
 			if tc.jobComplete {
-				jobs[0].Status.CompletionTime = now.Add(-time.Millisecond)
+				jobs[0].Status.CompletionTime = &complete
 			}
 		}
 		kc := &fakeKube{jobs: jobs}
@@ -193,8 +194,9 @@ func TestSyncCron(t *testing.T) {
 					StartTime: now.Add(-time.Hour),
 				},
 			}}
+			complete := now.Add(-time.Millisecond)
 			if tc.jobComplete {
-				jobs[0].Status.CompletionTime = now.Add(-time.Millisecond)
+				jobs[0].Status.CompletionTime = &complete
 			}
 		}
 		kc := &fakeKube{jobs: jobs}

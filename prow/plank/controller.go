@@ -270,7 +270,7 @@ func (c *Controller) terminateDupes(pjs []kube.ProwJob, pm map[string]kube.Pod) 
 				}
 			}
 		}
-		toCancel.Status.CompletionTime = time.Now()
+		toCancel.SetComplete()
 		prevState := toCancel.Status.State
 		toCancel.Status.State = kube.AbortedState
 		c.log.WithFields(pjutil.ProwJobFields(&toCancel)).
@@ -331,7 +331,7 @@ func (c *Controller) syncPendingJob(pj kube.ProwJob, pm map[string]kube.Pod, rep
 				return fmt.Errorf("error starting pod: %v", err)
 			}
 			pj.Status.State = kube.ErrorState
-			pj.Status.CompletionTime = time.Now()
+			pj.SetComplete()
 			pj.Status.Description = "Job cannot be processed."
 			c.log.WithFields(pjutil.ProwJobFields(&pj)).WithError(err).Warning("Unprocessable pod.")
 		} else {
@@ -354,7 +354,7 @@ func (c *Controller) syncPendingJob(pj kube.ProwJob, pm map[string]kube.Pod, rep
 
 		case kube.PodSucceeded:
 			// Pod succeeded. Update ProwJob, talk to GitHub, and start next jobs.
-			pj.Status.CompletionTime = time.Now()
+			pj.SetComplete()
 			pj.Status.State = kube.SuccessState
 			pj.Status.Description = "Job succeeded."
 			for _, nj := range pj.Spec.RunAfterSuccess {
@@ -378,7 +378,7 @@ func (c *Controller) syncPendingJob(pj kube.ProwJob, pm map[string]kube.Pod, rep
 				return client.DeletePod(pj.Metadata.Name)
 			}
 			// Pod failed. Update ProwJob, talk to GitHub.
-			pj.Status.CompletionTime = time.Now()
+			pj.SetComplete()
 			pj.Status.State = kube.FailureState
 			pj.Status.Description = "Job failed."
 
@@ -428,7 +428,7 @@ func (c *Controller) syncTriggeredJob(pj kube.ProwJob, pm map[string]kube.Pod, r
 				return fmt.Errorf("error starting pod: %v", err)
 			}
 			pj.Status.State = kube.ErrorState
-			pj.Status.CompletionTime = time.Now()
+			pj.SetComplete()
 			pj.Status.Description = "Job cannot be processed."
 			logrus.WithField("job", pj.Spec.Job).WithError(err).Warning("Unprocessable pod.")
 		}

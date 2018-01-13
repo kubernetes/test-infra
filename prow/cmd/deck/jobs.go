@@ -200,6 +200,10 @@ func (ja *JobAgent) update() error {
 	njsMap := make(map[string]Job)
 	njsIDMap := make(map[string]map[string]kube.ProwJob)
 	for _, j := range pjs {
+		ft := time.Time{}
+		if j.Status.CompletionTime != nil {
+			ft = *j.Status.CompletionTime
+		}
 		buildID := j.Status.BuildID
 		nj := Job{
 			Type:    string(j.Spec.Type),
@@ -220,7 +224,7 @@ func (ja *JobAgent) update() error {
 			URL:         j.Status.URL,
 
 			st: j.Status.StartTime,
-			ft: j.Status.CompletionTime,
+			ft: ft,
 		}
 		if !nj.ft.IsZero() {
 			nj.Finished = nj.ft.Format(time.RFC3339Nano)

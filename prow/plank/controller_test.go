@@ -175,6 +175,9 @@ func (f *fghc) EditComment(org, repo string, ID int, comment string) error      
 
 func TestTerminateDupes(t *testing.T) {
 	now := time.Now()
+	nowFn := func() *time.Time {
+		return &now
+	}
 	var testcases = []struct {
 		name string
 
@@ -231,7 +234,7 @@ func TestTerminateDupes(t *testing.T) {
 					},
 					Status: kube.ProwJobStatus{
 						StartTime:      now.Add(-3 * time.Hour),
-						CompletionTime: now,
+						CompletionTime: nowFn(),
 					},
 				},
 				{

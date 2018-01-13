@@ -860,6 +860,10 @@ func TestMaxConcurrencyWithNewlyTriggeredJobs(t *testing.T) {
 }
 
 func TestGetJenkinsJobs(t *testing.T) {
+	now := func() *time.Time {
+		n := time.Now()
+		return &n
+	}
 	tests := []struct {
 		name     string
 		pjs      []kube.ProwJob
@@ -873,7 +877,7 @@ func TestGetJenkinsJobs(t *testing.T) {
 						Job: "coolio",
 					},
 					Status: kube.ProwJobStatus{
-						CompletionTime: time.Now(),
+						CompletionTime: now(),
 					},
 				},
 				{
@@ -893,7 +897,7 @@ func TestGetJenkinsJobs(t *testing.T) {
 						Job: "coolio",
 					},
 					Status: kube.ProwJobStatus{
-						CompletionTime: time.Now(),
+						CompletionTime: now(),
 					},
 				},
 				{
@@ -901,7 +905,7 @@ func TestGetJenkinsJobs(t *testing.T) {
 						Job: "maradona",
 					},
 					Status: kube.ProwJobStatus{
-						CompletionTime: time.Now(),
+						CompletionTime: now(),
 					},
 				},
 			},

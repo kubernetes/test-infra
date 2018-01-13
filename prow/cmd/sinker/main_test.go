@@ -203,6 +203,10 @@ func TestClean(t *testing.T) {
 		"old-failed",
 		"old-succeeded",
 	}
+	setComplete := func(d time.Duration) *time.Time {
+		completed := time.Now().Add(d)
+		return &completed
+	}
 	prowJobs := []kube.ProwJob{
 		{
 			Metadata: kube.ObjectMeta{
@@ -210,7 +214,7 @@ func TestClean(t *testing.T) {
 			},
 			Status: kube.ProwJobStatus{
 				StartTime:      time.Now().Add(-maxProwJobAge).Add(-time.Second),
-				CompletionTime: time.Now().Add(-time.Second),
+				CompletionTime: setComplete(-time.Second),
 			},
 		},
 		{
@@ -219,7 +223,7 @@ func TestClean(t *testing.T) {
 			},
 			Status: kube.ProwJobStatus{
 				StartTime:      time.Now().Add(-maxProwJobAge).Add(-time.Second),
-				CompletionTime: time.Now().Add(-time.Second),
+				CompletionTime: setComplete(-time.Second),
 			},
 		},
 		{
@@ -236,7 +240,7 @@ func TestClean(t *testing.T) {
 			},
 			Status: kube.ProwJobStatus{
 				StartTime:      time.Now().Add(-maxProwJobAge).Add(-time.Second),
-				CompletionTime: time.Now().Add(-time.Second),
+				CompletionTime: setComplete(-time.Second),
 			},
 		},
 		{
@@ -265,7 +269,7 @@ func TestClean(t *testing.T) {
 			},
 			Status: kube.ProwJobStatus{
 				StartTime:      time.Now().Add(-maxProwJobAge).Add(-time.Second),
-				CompletionTime: time.Now().Add(-time.Second),
+				CompletionTime: setComplete(-time.Second),
 			},
 		},
 		{
@@ -278,7 +282,7 @@ func TestClean(t *testing.T) {
 			},
 			Status: kube.ProwJobStatus{
 				StartTime:      time.Now().Add(-maxProwJobAge).Add(-time.Minute),
-				CompletionTime: time.Now().Add(-time.Minute),
+				CompletionTime: setComplete(-time.Minute),
 			},
 		},
 		{
@@ -291,7 +295,7 @@ func TestClean(t *testing.T) {
 			},
 			Status: kube.ProwJobStatus{
 				StartTime:      time.Now().Add(-maxProwJobAge).Add(-time.Hour),
-				CompletionTime: time.Now().Add(-time.Hour),
+				CompletionTime: setComplete(-time.Hour),
 			},
 		},
 		{
@@ -300,7 +304,7 @@ func TestClean(t *testing.T) {
 			},
 			Status: kube.ProwJobStatus{
 				StartTime:      time.Now().Add(-maxProwJobAge).Add(-time.Second),
-				CompletionTime: time.Now().Add(-time.Second),
+				CompletionTime: setComplete(-time.Second),
 			},
 		},
 	}
