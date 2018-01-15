@@ -52,12 +52,9 @@ dep ensure -v
 dep prune -v
 hack/update-bazel.sh
 drop-dep vendor/golang.org/x/text/language vendor/golang.org/x/text/internal
-drop-dep vendor/google.golang.org/api/transport/grpc vendor/google.golang.org/api/transport
-drop-dep vendor/github.com/golang/protobuf/protoc-gen-go/grpc vendor/github.com/golang/protobuf/protoc-gen-go
 drop-dep vendor/github.com/golang/protobuf/protoc-gen-go/generator vendor/github.com/golang/protobuf/protoc-gen-go
 drop-dep vendor/github.com/docker/docker/pkg/ioutils vendor/github.com/docker/docker/api
 drop-dep vendor/github.com/docker/docker/pkg/system vendor/github.com/docker/docker/api
-drop-dep vendor/github.com/docker/libtrust vendor/github.com/docker/docker/api
 drop-dep vendor/github.com/docker/distribution/context vendor/github.com/docker/distribution
 hack/prune-libraries.sh --fix
 hack/update-bazel.sh  # Update child :all-srcs in case parent was deleted
