@@ -7161,7 +7161,7 @@ periodics:
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180102-0e2b24a0b-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180116-3dbe0c2d4-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
@@ -7203,7 +7203,7 @@ periodics:
       # docker-in-docker needs privileged mode
       securityContext:
         privileged: true
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180102-0e2b24a0b-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180116-3dbe0c2d4-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
