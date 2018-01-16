@@ -18,6 +18,17 @@ limitations under the License.
 // These structs are used by sub-packages 'hook' and 'externalplugins'.
 package pluginhelp
 
+// Command is a serializable representation of the command information for a single command.
+type Command struct {
+ 	  // Frequency suggests how often a command is used. Value ranges from 0 to 2, the SMALLER the
+	  // number is, the more often the command is used.
+    Frequency int
+    // Description is a short description about what does the command do.
+    Description string
+    // Examples is a list of usage example for the command.
+    Examples []string
+}
+
 // PluginHelp is a serializable representation of the help information for a single plugin.
 // This includes repo specific configuration for every repo that the plugin is enabled for.
 type PluginHelp struct {
@@ -30,10 +41,8 @@ type PluginHelp struct {
 	// This field may include HTML.
 	WhoCanUse string
 	// Usage is a usage string for the plugin. Leave empty if not applicable.
-	// TODO(qhuynh96): this field is being removed when plugins adapt to new struct.
 	Usage string
 	// Examples is a list of usage examples for the plugin. Leave empty if not applicable.
-	// TODO(qhuynh96): this field is being removed when plugins adapt to new struct.
 	Examples []string
 	// Config is a map from org/repo strings to a string describing the configuration for that repo.
 	// The key "" should map to a string describing configuration that applies to all repos if any.
@@ -44,13 +53,7 @@ type PluginHelp struct {
 	// NOTE: Plugins do not need to populate this. Hook populates it on their behalf.
 	Events []string
 	// Commands maps a command name to a struct of its properties.
-	Commands map[string]struct {
-	  // Frequency suggests how often a command is used. Value ranges from 0 to 2, the SMALLER the
-	  // number is, the more often the command is used.
-    Frequency int
-    // Examples is a list of usage example for the command.
-    Examples []string
-  }
+	Commands map[string] Command
 }
 
 // Help is a serializable representation of all plugin help information.
@@ -66,4 +69,8 @@ type Help struct {
 	// PluginHelp is maps plugin names to their help info.
 	PluginHelp         map[string]PluginHelp
 	ExternalPluginHelp map[string]PluginHelp
+}
+
+func (pluginHelp *PluginHelp) addCommand(name string, command Command) {
+  pluginHelp.Commands[name] = command
 }
