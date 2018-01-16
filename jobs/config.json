@@ -1,4 +1,15 @@
 {
+  "ci-benchmark-scheduler-master": {
+    "args": [
+      "--branch=master",
+      "--force",
+      "--script='./hack/jenkins/benchmark-dockerized.sh ./test/integration/scheduler_perf'"
+    ],
+    "scenario": "kubernetes_verify",
+    "sigOwners": [
+      "sig-scheduling"
+    ]
+  },
   "ci-cadvisor-canarypush": {
     "args": [
       "--file=deploy/canary/Dockerfile",

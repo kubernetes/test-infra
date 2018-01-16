@@ -6845,6 +6845,32 @@ postsubmits:
           secretName: service-account
 
 periodics:
+- name: ci-benchmark-scheduler-master
+  interval: 1h
+  agent: kubernetes
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180102-0e2b24a0b-master
+      args:
+      - --repo=k8s.io/kubernetes=master
+      - --timeout=40
+      - --root=/go/src
+      env:
+      - name: GOOGLE_APPLICATION_CREDENTIALS
+        value: /etc/service-account/service-account.json
+      - name: USER
+        value: prow
+      - name: GOPATH
+        value: /go
+      volumeMounts:
+      - name: service
+        mountPath: /etc/service-account
+        readOnly: true
+    volumes:
+    - name: service
+      secret:
+        secretName: service-account
+
 - name: ci-cri-containerd-build
   interval: 30m
   agent: kubernetes
