@@ -34,7 +34,7 @@ HOROLOGIUM_VERSION       ?= 0.21
 # PLANK_VERSION is the version of the plank image
 PLANK_VERSION            ?= 0.65
 # JENKINS-OPERATOR_VERSION is the version of the jenkins-operator image
-JENKINS-OPERATOR_VERSION ?= 0.61
+JENKINS-OPERATOR_VERSION ?= 0.62
 # TIDE_VERSION is the version of the tide image
 TIDE_VERSION             ?= 0.20
 # CLONEREFS_VERSION is the version of the clonerefs image
