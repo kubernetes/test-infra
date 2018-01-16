@@ -35,7 +35,7 @@ rm -f ${TESTINFRA_ROOT}/vendor/k8s.io/apimachinery/pkg/util/sets/BUILD
 
 "${TESTINFRA_ROOT}/hack/go_install_from_commit.sh" \
   github.com/kubernetes/repo-infra/kazel \
-  e26fc85d14a1d3dc25569831acc06919673c545a \
+  2a736b4fba317cf3038e3cbd06899b544b875fae \
   "${TMP_GOPATH}"
 
 "${TESTINFRA_ROOT}/hack/go_install_from_commit.sh" \
