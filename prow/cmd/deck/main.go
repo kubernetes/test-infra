@@ -403,12 +403,6 @@ func handleBranding(ca configAgent) http.HandlerFunc {
 			http.Error(w, "Failed to marhshal branding config.", http.StatusInternalServerError)
 			return
 		}
-		buff := bytes.NewBuffer(b)
-		_, err = buff.WriteTo(w)
-		if err != nil {
-			logrus.WithError(err).Error("Error writing branding config.")
-			http.Error(w, "Failed to write branding config.", http.StatusInternalServerError)
-		}
 		// If we have a "var" query, then write out "var value = [...];".
 		// Otherwise, just write out the JSON.
 		if v := r.URL.Query().Get("var"); v != "" {
