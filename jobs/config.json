@@ -8510,7 +8510,7 @@
   "ci-kubernetes-e2e-kops-aws": {
     "args": [
       "--aws",
-      "--cluster=e2e-kops-aws.test-aws.k8s.io",
+      "--cluster=e2e-kops-aws.test-cncf-aws.k8s.io",
       "--env-file=jobs/platform/kops_aws.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-kops-aws.env",
       "--extract=ci/latest",
@@ -8527,7 +8527,7 @@
   "ci-kubernetes-e2e-kops-aws-beta": {
     "args": [
       "--aws",
-      "--cluster=e2e-kops-aws-stable1.test-aws.k8s.io",
+      "--cluster=e2e-kops-aws-stable1.test-cncf-aws.k8s.io",
       "--env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release-dev/ci/k8s-beta.txt",
       "--env=KOPS_PUBLISH_GREEN_PATH=gs://kops-ci/bin/latest-1.9-ci-green.txt",
       "--env-file=jobs/platform/kops_aws.env",
@@ -8545,7 +8545,7 @@
   "ci-kubernetes-e2e-kops-aws-canary": {
     "args": [
       "--aws",
-      "--aws-cluster-domain=test-aws.k8s.io",
+      "--aws-cluster-domain=test-cncf-aws.k8s.io",
       "--cluster=e2e-kops-aws-canary",
       "--env-file=jobs/platform/kops_aws.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-kops-aws-canary.env",
@@ -8569,7 +8569,6 @@
       "--env-file=jobs/env/ci-kubernetes-e2e-kops-aws-canary.env",
       "--extract=ci/latest",
       "--ginkgo-parallel",
-      "--kops-state=s3://k8s-kops-prow/",
       "--kops-zones=us-west-2c",
       "--provider=aws",
       "--test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]|\\[HPA\\]|Dashboard|Services.*functioning.*NodePort",
@@ -8588,7 +8587,6 @@
       "--extract=ci/latest",
       "--ginkgo-parallel",
       "--kops-args=--node-size=m5.large --master-size=m5.large --channel=alpha",
-      "--kops-state=s3://k8s-kops-prow/",
       "--kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci.txt",
       "--kops-zones=us-west-2a",
       "--provider=aws",
@@ -8607,7 +8605,6 @@
       "--env-file=jobs/platform/kops_aws.env",
       "--extract=ci/latest",
       "--ginkgo-parallel",
-      "--kops-state=s3://k8s-kops-prow/",
       "--kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci.txt",
       "--provider=aws",
       "--test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]|\\[HPA\\]|Dashboard|Services.*functioning.*NodePort",
@@ -8626,7 +8623,6 @@
       "--env-file=jobs/env/ci-kubernetes-e2e-kops-aws-release-1-6.env",
       "--extract=ci/latest-1.6",
       "--ginkgo-parallel",
-      "--kops-state=s3://k8s-kops-prow/",
       "--provider=aws",
       "--test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]|\\[HPA\\]|Dashboard|Services.*functioning.*NodePort",
       "--timeout=120m"
@@ -8644,7 +8640,6 @@
       "--env-file=jobs/env/ci-kubernetes-e2e-kops-aws-release-1-7.env",
       "--extract=ci/latest-1.7",
       "--ginkgo-parallel",
-      "--kops-state=s3://k8s-kops-prow/",
       "--provider=aws",
       "--test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]|\\[HPA\\]|Dashboard|Services.*functioning.*NodePort",
       "--timeout=120m"
@@ -8661,7 +8656,6 @@
       "--env-file=jobs/platform/kops_aws.env",
       "--extract=ci/latest",
       "--ginkgo-parallel",
-      "--kops-state=s3://k8s-kops-prow/",
       "--provider=aws",
       "--test_args=--ginkgo.flakeAttempts=2 --ginkgo.focus=\\[sig-cli\\] --ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]|\\[HPA\\]|Dashboard|Services.*functioning.*NodePort",
       "--timeout=120m"
@@ -8680,7 +8674,6 @@
       "--env-file=jobs/platform/kops_aws.env",
       "--extract=ci/k8s-stable1",
       "--ginkgo-parallel",
-      "--kops-state=s3://k8s-kops-prow/",
       "--provider=aws",
       "--test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]|\\[HPA\\]|Dashboard|Services.*functioning.*NodePort",
       "--timeout=120m"
@@ -8718,7 +8711,6 @@
       "--extract=ci/latest",
       "--ginkgo-parallel",
       "--kops-args=--networking=weave",
-      "--kops-state=s3://k8s-kops-prow/",
       "--provider=aws",
       "--test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]|\\[HPA\\]|Dashboard|Services.*functioning.*NodePort"
     ],
@@ -11205,7 +11197,7 @@
     "_comment3": "Args for 1.7+ should go in prow/config.yaml after the `--` !",
     "args": [
       "--aws",
-      "--aws-cluster-domain=test-aws.k8s.io",
+      "--aws-cluster-domain=test-cncf-aws.k8s.io",
       "--build",
       "--check-leaked-resources=false",
       "--cluster=",

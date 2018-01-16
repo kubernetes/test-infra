@@ -492,7 +492,7 @@ class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-method
         self.assertIn('kops-e2e-runner.sh', lastcall)
         self.assertIn('--kops-cluster=foo.test-aws.k8s.io', lastcall)
         self.assertIn('--kops-zones', lastcall)
-        self.assertIn('--kops-state=s3://k8s-kops-jenkins/', lastcall)
+        self.assertIn('--kops-state=s3://k8s-kops-prow/', lastcall)
         self.assertIn('--kops-nodes=4', lastcall)
         self.assertIn('--kops-ssh-key', lastcall)
 
@@ -525,7 +525,7 @@ class ScenarioTest(unittest.TestCase):  # pylint: disable=too-many-public-method
         self.assertIn('--deployment=kops', lastcall)
         self.assertIn('--kops-cluster=foo.example.com', lastcall)
         self.assertIn('--kops-zones', lastcall)
-        self.assertIn('--kops-state=s3://k8s-kops-jenkins/', lastcall)
+        self.assertIn('--kops-state=s3://k8s-kops-prow/', lastcall)
         self.assertIn('--kops-nodes=4', lastcall)
         self.assertIn('--kops-ssh-key', lastcall)
         self.assertIn('kubetest', lastcall)
