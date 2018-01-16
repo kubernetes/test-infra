@@ -203,16 +203,29 @@ presubmits:
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--clean"
         env:
+        - name: DOCKER_IN_DOCKER_ENABLED
+          value: true
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: /etc/service-account/service-account.json
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
         volumeMounts:
         - name: service
           mountPath: /etc/service-account
           readOnly: true
+        - name: docker-graph
+          mountPath: /docker-graph
+        ports:
+        - containerPort: 9999
+          hostPort: 9999
       volumes:
       - name: service
         secret:
           secretName: service-account
+      - name: docker-graph
+        hostPath:
+          path: /mnt/disks/ssd0/docker-graph
   GoogleCloudPlatform/k8s-multicluster-ingress:
   - name: pull-kubernetes-multicluster-ingress-test
     agent: kubernetes
