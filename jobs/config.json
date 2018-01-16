@@ -129,7 +129,7 @@
   "ci-federation-build": {
     "args": [
       "--fast",
-      "--release=kubernetes-federation-release",
+      "--release=kubernetes-federation-dev",
       "--release-kind=federation"
     ],
     "scenario": "kubernetes_build",

@@ -198,7 +198,7 @@ var getFederation = func(url, version string) error {
 func setFederationReleaseFromGcs(ci bool, suffix string) error {
 	var prefix string
 	if ci {
-		prefix = "kubernetes-federation-release/ci"
+		prefix = "kubernetes-federation-dev/ci"
 	} else {
 		prefix = "kubernetes-federation-release/release"
 	}
@@ -240,7 +240,7 @@ func (e extractFederationStrategy) Extract(project, zone string) error {
 		var url string
 		release := e.option
 		if strings.Contains(release, "+") {
-			url = "https://storage.googleapis.com/kubernetes-federation-release/ci"
+			url = "https://storage.googleapis.com/kubernetes-federation-dev/ci"
 		} else {
 			url = "https://storage.googleapis.com/kubernetes-federation-release/release"
 		}
