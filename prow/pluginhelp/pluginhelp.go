@@ -30,8 +30,10 @@ type PluginHelp struct {
 	// This field may include HTML.
 	WhoCanUse string
 	// Usage is a usage string for the plugin. Leave empty if not applicable.
+	// TODO(qhuynh96): this field is being removed when plugins adapt to new struct.
 	Usage string
 	// Examples is a list of usage examples for the plugin. Leave empty if not applicable.
+	// TODO(qhuynh96): this field is being removed when plugins adapt to new struct.
 	Examples []string
 	// Config is a map from org/repo strings to a string describing the configuration for that repo.
 	// The key "" should map to a string describing configuration that applies to all repos if any.
@@ -41,6 +43,14 @@ type PluginHelp struct {
 	// Events is a slice containing the events that are handled by the plugin.
 	// NOTE: Plugins do not need to populate this. Hook populates it on their behalf.
 	Events []string
+	// Commands maps a command name to a struct of its properties.
+	Commands map[string]struct {
+	  // Frequency suggests how often a command is used. Value ranges from 0 to 2, the SMALLER the
+	  // number is, the more often the command is used.
+    Frequency int
+    // Examples is a list of usage example for the command.
+    Examples []string
+  }
 }
 
 // Help is a serializable representation of all plugin help information.
