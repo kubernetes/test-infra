@@ -253,7 +253,7 @@ func TestHandleIssueComment(t *testing.T) {
 			StartsExactly: "pull-jib",
 		},
 		{
-			name:   "Rerun of run_if_changed job that has passed",
+			name:   "/test of run_if_changed job that has passed",
 			Author: "t",
 			Body:   "/test jub",
 			State:  "open",
@@ -359,6 +359,44 @@ func TestHandleIssueComment(t *testing.T) {
 				},
 			},
 			ShouldReport: true,
+		},
+		{
+			name: "/retest of RunIfChanged job that doesn't need to run and hasn't run",
+
+			Author: "t",
+			Body:   "/retest",
+			State:  "open",
+			IsPR:   true,
+			Presubmits: map[string][]config.Presubmit{
+				"org/repo": {
+					{
+						Name:         "jeb",
+						RunIfChanged: "CHANGED2",
+						Context:      "pull-jeb",
+						Trigger:      `/test all`,
+					},
+				},
+			},
+			ShouldReport: true,
+		},
+		{
+			name: "explicit /test for RunIfChanged job that doesn't need to run",
+
+			Author: "t",
+			Body:   "/test pull-jeb",
+			State:  "open",
+			IsPR:   true,
+			Presubmits: map[string][]config.Presubmit{
+				"org/repo": {
+					{
+						Name:         "jeb",
+						RunIfChanged: "CHANGED2",
+						Context:      "pull-jib",
+						Trigger:      `/test (all|pull-jeb)`,
+					},
+				},
+			},
+			ShouldBuild: true,
 		},
 	}
 	for _, tc := range testcases {
