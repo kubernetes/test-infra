@@ -7,6 +7,7 @@ triggers:
   - kubernetes
   - kubernetes-incubator
   - kubernetes-security
+  - kubernetes-sig-testing
   - google/cadvisor
   - google/kubeflow
   - tensorflow/k8s
@@ -36,6 +37,9 @@ approve:
   - kubernetes/sig-release
   - kubernetes/steering
   - kubernetes/test-infra
+  implicit_self_approve: true
+- repos:
+  - kubernetes-sig-testing
   implicit_self_approve: true
 - repos:
   - kubernetes/kubernetes
@@ -216,6 +220,23 @@ plugins:
   - lgtm
   - lifecycle
   - size
+
+  kubernetes-sig-testing:
+  - assign
+  - approve
+  - blunderbuss
+  - cla
+  - heart
+  - help
+  - hold
+  - label
+  - lgtm
+  - lifecycle
+  - shrug
+  - size
+  - skip
+  - wip
+  - yuks
 
   containerd/cri-containerd:
   - assign

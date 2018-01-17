@@ -70,6 +70,16 @@ tide:
     - do-not-merge/hold
     - do-not-merge/work-in-progress
     reviewApprovedRequired: true
+  - repos:
+    - kubernetes-sig-testing/frameworks
+    labels:
+    - lgtm
+    - approved
+    - "cncf-cla: yes"
+    missingLabels:
+    - do-not-merge/hold
+    - do-not-merge/work-in-progress
+    - needs-ok-to-test
   merge_method:
     kubernetes/charts: squash
   target_url: https://prow.k8s.io/tide.html
