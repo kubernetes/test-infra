@@ -20,9 +20,10 @@ package pluginhelp
 
 // Command is a serializable representation of the command information for a single command.
 type Command struct {
-	// Frequency suggests how often a command is used. Value ranges from 0 to 2, the SMALLER the
-	// number is, the more often the command is used.
-	Frequency int
+	// Usage is a usage string for the command.
+	Usage string
+	// Featured is a flag for featured/highlight plugins.
+	Featured bool
 	// Description is a short description about what does the command do.
 	Description string
 	// Examples is a list of usage example for the command.
@@ -57,8 +58,8 @@ type PluginHelp struct {
 	// Events is a slice containing the events that are handled by the plugin.
 	// NOTE: Plugins do not need to populate this. Hook populates it on their behalf.
 	Events []string
-	// Commands maps a command name to a struct of its properties.
-	Commands map[string]Command
+	// Commands is a list of available commands of the plugin.
+	Commands []Command
 }
 
 // Help is a serializable representation of all plugin help information.
@@ -76,6 +77,6 @@ type Help struct {
 	ExternalPluginHelp map[string]PluginHelp
 }
 
-func (pluginHelp *PluginHelp) addCommand(name string, command Command) {
-	pluginHelp.Commands[name] = command
+func (pluginHelp *PluginHelp) AddCommand(command Command) {
+	pluginHelp.Commands.append(command)
 }
