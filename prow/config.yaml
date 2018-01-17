@@ -77,11 +77,39 @@ tide:
 presubmits:
   google/cadvisor:
   - name: pull-cadvisor-e2e
-    agent: jenkins
+    agent: kubernetes
     always_run: true
     context: pull-cadvisor-e2e
     rerun_command: "/test pull-cadvisor-e2e"
     trigger: "(?m)^/test( all| pull-cadvisor-e2e),?(\\s+|$)"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/bootstrap:v20180108-a65d3dd32
+        args:
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--timeout=90"
+        env:
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /etc/service-account/service-account.json
+        - name: CADVISOR_APPLICATION_CREDENTIALS
+          value: /etc/cadvisor-service-account/service-account.json
+        volumeMounts:
+        - name: service
+          mountPath: /etc/service-account
+          readOnly: true
+        - name: cadvisor-service
+          mountPath: /etc/cadvisor-service-account
+          readOnly: true
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
+      - name: cadvisor-service
+        secret:
+          secretName: cadvisor-service-account
   google/kubeflow:
   - name: kubeflow-presubmit
     context: kubeflow-presubmit
