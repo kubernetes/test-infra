@@ -78,5 +78,5 @@ type Help struct {
 }
 
 func (pluginHelp *PluginHelp) AddCommand(command Command) {
-	pluginHelp.Commands.append(command)
+	pluginHelp.Commands = append(pluginHelp.Commands, command)
 }
