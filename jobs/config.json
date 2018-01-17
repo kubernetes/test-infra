@@ -11441,7 +11441,6 @@
   "pull-test-infra-testgrid": {
     "args": [
       "bazel",
-      "--",
       "run",
       "//testgrid/prow_verify:prow_verify",
       "--",
