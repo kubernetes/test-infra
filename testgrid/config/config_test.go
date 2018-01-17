@@ -109,10 +109,10 @@ func TestConfig(t *testing.T) {
 			}
 		}
 
-		// All PR testgroup has num_recent_column equals 20
+		// All PR testgroup has num_columns_recent equals 20
 		if strings.HasPrefix(testgroup.GcsPrefix, "kubernetes-jenkins/pr-logs/directory/") {
 			if testgroup.NumColumnsRecent < 20 {
-				t.Errorf("Testgroup %v: num_recent_column must be greater than 20 for presubmit jobs!", testgroup.Name)
+				t.Errorf("Testgroup %v: num_columns_recent: must be greater than 20 for presubmit jobs!", testgroup.Name)
 			}
 		}
 	}

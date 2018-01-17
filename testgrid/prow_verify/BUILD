@@ -7,15 +7,15 @@ load(
 )
 
 go_binary(
-    name = "jenkins_verify",
+    name = "prow_verify",
     embed = [":go_default_library"],
-    importpath = "k8s.io/test-infra/testgrid/jenkins_verify",
+    importpath = "k8s.io/test-infra/testgrid/prow_verify",
 )
 
 go_library(
     name = "go_default_library",
-    srcs = ["jenkins_validate.go"],
-    importpath = "k8s.io/test-infra/testgrid/jenkins_verify",
+    srcs = ["prow_validate.go"],
+    importpath = "k8s.io/test-infra/testgrid/prow_verify",
     deps = [
         "//prow/config:go_default_library",
         "//testgrid/config/yaml2proto:go_default_library",
