@@ -4558,6 +4558,21 @@
       "sig-network"
     ]
   },
+  "ci-kubernetes-e2e-gci-gce-ingress-manual-network": {
+    "args": [
+      "--env=CREATE_CUSTOM_NETWORK=true",
+      "--extract=ci/latest",
+      "--gcp-node-image=gci",
+      "--gcp-zone=us-central1-f",
+      "--provider=gce",
+      "--test_args=--ginkgo.focus=\\[Feature:Ingress\\] --minStartupPods=8",
+      "--timeout=90m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-network"
+    ]
+  },
   "ci-kubernetes-e2e-gci-gce-ip-alias": {
     "args": [
       "--check-leaked-resources",
