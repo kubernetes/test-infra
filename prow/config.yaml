@@ -2016,7 +2016,7 @@ presubmits:
       - name: aws-cred
         secret:
           defaultMode: 256
-          secretName: aws-cred
+          secretName: aws-cred-new
       - name: cache-ssd
         hostPath:
           path: /mnt/disks/ssd0
@@ -2092,7 +2092,7 @@ presubmits:
       - name: aws-cred
         secret:
           defaultMode: 256
-          secretName: aws-cred
+          secretName: aws-cred-new
       - name: cache-ssd
         hostPath:
           path: /mnt/disks/ssd0
@@ -4628,7 +4628,7 @@ presubmits:
       - name: aws-cred
         secret:
           defaultMode: 256
-          secretName: aws-cred
+          secretName: aws-cred-new
       - hostPath:
           path: /mnt/disks/ssd0
         name: cache-ssd
@@ -4711,7 +4711,7 @@ presubmits:
       - name: aws-cred
         secret:
           defaultMode: 256
-          secretName: aws-cred
+          secretName: aws-cred-new
       - hostPath:
           path: /mnt/disks/ssd0
         name: cache-ssd
