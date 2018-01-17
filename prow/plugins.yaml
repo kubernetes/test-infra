@@ -18,6 +18,10 @@ triggers:
   trusted_org: containerd
   join_org_url: "https://github.com/containerd/containerd/blob/master/MAINTAINERS"
 
+owners:
+  mdyamlrepos:
+  - kubernetes/website
+
 approve:
 - repos:
   - kubernetes/charts
@@ -168,6 +172,7 @@ plugins:
   kubernetes/kubernetes:
   - approve
   - blockade
+  - blunderbuss
   - docs-no-retest
   - release-note
   - require-sig
@@ -189,6 +194,9 @@ plugins:
   - trigger
   - config-updater
   - approve
+
+  kubernetes/website:
+  - blunderbuss
 
   kubernetes:
   - assign
