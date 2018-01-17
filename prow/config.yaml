@@ -542,6 +542,35 @@ presubmits:
       - name: cache-ssd
         hostPath:
           path: /mnt/disks/ssd0
+  - name: pull-cluster-registry-verify-gosrc
+    agent: kubernetes
+    context: pull-cluster-registry-verify-gosrc
+    always_run: true
+    rerun_command: "/test pull-cluster-registry-verify-gosrc"
+    trigger: "(?m)^/test( all| pull-cluster-registry-verify-gosrc),?(\\s+|$)"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/bazelbuild:v20171214-ae38d82af-0.8.1
+        args:
+        - "--clean"
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--service-account=/etc/service-account/service-account.json"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        # Bazel needs privileged mode in order to sandbox builds.
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: service
+          mountPath: /etc/service-account
+          readOnly: true
+        resources:
+          requests:
+            memory: "2Gi"
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
   containerd/cri-containerd:
   - name: pull-cri-containerd-build
     agent: kubernetes
