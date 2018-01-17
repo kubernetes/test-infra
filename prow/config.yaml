@@ -5913,35 +5913,6 @@ presubmits:
         hostPath:
           path: /mnt/disks/ssd0
 
-  - name: pull-test-infra-testgrid
-    agent: kubernetes
-    context: pull-test-infra-testgrid
-    branches:
-    - master
-    always_run: false
-    rerun_command: "/test pull-test-infra-testgrid"
-    trigger: "(?m)^/test pull-test-infra-testgrid,?(\\s+|$)"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171214-ae38d82af-0.8.1
-        args:
-        - --clean
-        - --job=$(JOB_NAME)
-        - --repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)
-        - --upload=gs://kubernetes-jenkins/pr-logs
-        - --service-account=/etc/service-account/service-account.json
-        volumeMounts:
-        - name: service
-          mountPath: /etc/service-account
-          readOnly: true
-        resources:
-          requests:
-            memory: "1Gi"
-      volumes:
-      - name: service
-        secret:
-          secretName: service-account
-
   - name: pull-test-infra-verify-bazel
     agent: kubernetes
     context: pull-test-infra-verify-bazel

@@ -17,11 +17,16 @@ limitations under the License.
 package main
 
 import (
+	"bufio"
+	"fmt"
 	"io/ioutil"
+	"os"
 	"strings"
 	"testing"
 
 	"gopkg.in/yaml.v2"
+	prow_config "k8s.io/test-infra/prow/config"
+	config_pb "k8s.io/test-infra/testgrid/config/pb"
 	"k8s.io/test-infra/testgrid/config/yaml2proto"
 	"path/filepath"
 )
@@ -48,24 +53,33 @@ var (
 	prefixes = [][]string{orgs, companies}
 )
 
-func TestConfig(t *testing.T) {
+// Shared testgrid config, loaded at TestMain.
+var config *config_pb.Configuration
+
+func TestMain(m *testing.M) {
+	//make sure we can parse config.yaml
 	yamlData, err := ioutil.ReadFile("config.yaml")
 	if err != nil {
-		t.Errorf("IO Error : Cannot Open File config.yaml")
+		fmt.Printf("IO Error : Cannot Open File config.yaml")
+		os.Exit(1)
 	}
 
 	c := yaml2proto.Config{}
 	if err := c.Update(yamlData); err != nil {
-		t.Errorf("Yaml2Proto - Conversion Error %v", err)
+		fmt.Printf("Yaml2Proto - Conversion Error %v", err)
+		os.Exit(1)
 	}
 
-	config, err := c.Raw()
+	config, err = c.Raw()
 	if err != nil {
-		t.Errorf("Error validating config: %v", err)
+		fmt.Printf("Error validating config: %v", err)
+		os.Exit(1)
 	}
 
-	// Validate config.yaml -
+	os.Exit(m.Run())
+}
 
+func TestConfig(t *testing.T) {
 	// testgroup - occurrence map, validate testgroups
 	testgroupMap := make(map[string]int32)
 
@@ -323,5 +337,123 @@ func TestConfig(t *testing.T) {
 		if !found {
 			t.Errorf("Err : %v not found in testgrid config", sqJob)
 		}
+	}
+}
+
+func TestJobsTestgridEntryMatch(t *testing.T) {
+	jenkinsPath := "../../jenkins/job-configs"
+	prowPath := "../../prow/config.yaml"
+
+	jobs := make(map[string]bool)
+	// TODO(krzyzacy): delete all the Jenkins stuff here after kill Jenkins
+	// workaround for special jenkins jobs does not follow job-name: pattern:
+	jobs["maintenance-all-hourly"] = false
+	jobs["maintenance-all-daily"] = false
+	jobs["kubernetes-update-jenkins-jobs"] = false
+
+	if fi, err := filepath.EvalSymlinks(jenkinsPath); err != nil {
+		t.Fatalf("Failed parsing Jenkins path %v", err)
+	} else {
+		jenkinsPath = fi
+	}
+
+	if err := filepath.Walk(jenkinsPath, func(path string, file os.FileInfo, err error) error {
+		if !file.IsDir() {
+			file, err := os.Open(path)
+			defer file.Close()
+
+			if err != nil {
+				return err
+			}
+			scanner := bufio.NewScanner(file)
+			for scanner.Scan() {
+				if strings.Contains(scanner.Text(), "job-name:") {
+					job := strings.TrimPrefix(strings.TrimSpace(scanner.Text()), "job-name: ")
+					jobs[job] = false
+				}
+			}
+		}
+		return nil
+	}); err != nil {
+		t.Fatalf("Failed parsing Jenkins config %v\n", err)
+	}
+
+	prowConfig, err := prow_config.Load(prowPath)
+	if err != nil {
+		t.Fatalf("Could not load prow configs: %v\n", err)
+	}
+
+	// Also check k/k presubmit, prow postsubmit and periodic jobs
+	for _, job := range prowConfig.AllPresubmits([]string{
+		"google/kubeflow",
+		"google/cadvisor",
+		"kubernetes/kubernetes",
+		"kubernetes/test-infra",
+		"kubernetes/cluster-registry",
+		"kubernetes/federation",
+		"tensorflow/k8s",
+	}) {
+		jobs[job.Name] = false
+	}
+
+	for _, job := range prowConfig.AllPostsubmits([]string{}) {
+		jobs[job.Name] = false
+	}
+
+	for _, job := range prowConfig.AllPeriodics() {
+		jobs[job.Name] = false
+	}
+
+	// For now anything outsite k8s-jenkins/(pr-)logs are considered to be fine
+	testgroups := make(map[string]bool)
+	for _, testgroup := range config.TestGroups {
+		if strings.Contains(testgroup.GcsPrefix, "kubernetes-jenkins/logs/") {
+			// The convention is that the job name is the final part of the GcsPrefix
+			job := filepath.Base(testgroup.GcsPrefix)
+			testgroups[job] = false
+		}
+
+		if strings.Contains(testgroup.GcsPrefix, "kubernetes-jenkins/pr-logs/directory/") {
+			job := strings.TrimPrefix(testgroup.GcsPrefix, "kubernetes-jenkins/pr-logs/directory/")
+			testgroups[job] = false
+		}
+	}
+
+	// Cross check
+	// -- Each job need to have a match testgrid group
+	for job := range jobs {
+		if _, ok := testgroups[job]; ok {
+			testgroups[job] = true
+			jobs[job] = true
+		}
+	}
+
+	// Conclusion
+	badjobs := []string{}
+	for job, valid := range jobs {
+		if !valid {
+			badjobs = append(badjobs, job)
+			fmt.Printf("Job %v does not have a matching testgrid testgroup\n", job)
+		}
+	}
+
+	badconfigs := []string{}
+	for testgroup, valid := range testgroups {
+		if !valid {
+			badconfigs = append(badconfigs, testgroup)
+			fmt.Printf("Testgrid group %v does not have a matching jenkins or prow job\n", testgroup)
+		}
+	}
+
+	if len(badconfigs) > 0 {
+		fmt.Printf("Total bad config(s) - %v\n", len(badconfigs))
+	}
+
+	if len(badjobs) > 0 {
+		fmt.Printf("Total bad job(s) - %v\n", len(badjobs))
+	}
+
+	if len(badconfigs) > 0 || len(badjobs) > 0 {
+		t.Fatal("Failed with invalid config or job entries")
 	}
 }
