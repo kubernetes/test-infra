@@ -36,7 +36,7 @@ const pluginName = "hold"
 var (
 	label         = "do-not-merge/hold"
 	labelRe       = regexp.MustCompile(`(?mi)^/hold\s*$`)
-	labelCancelRe = regexp.MustCompile(`(?mi)^/hold cancel\s*$`)
+	labelCancelRe = regexp.MustCompile(`(?mi)^/(hold cancel|unh..d)\s*$`)
 )
 
 type hasLabelFunc func(label string, issueLabels []github.Label) bool
@@ -50,8 +50,8 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 	return &pluginhelp.PluginHelp{
 			Description: "The hold plugin allows anyone to add or remove the '" + label + "' label from a pull request in order to temporarily prevent the PR from merging without withholding approval.",
 			WhoCanUse:   "Anyone can use the /hold command to add or remove the '" + label + "' label.",
-			Usage:       "/hold [cancel]",
-			Examples:    []string{"/hold", "/hold cancel"},
+			Usage:       "/hold [cancel] | /unhold",
+			Examples:    []string{"/hold", "/hold cancel", "/unhold"},
 		},
 		nil
 }
