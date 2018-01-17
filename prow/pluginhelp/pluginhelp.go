@@ -45,10 +45,13 @@ type PluginHelp struct {
 	// This is usually specified as a github permissions, but it can also be a github team, an
 	// OWNERS file alias, etc.
 	// This field may include HTML.
+	// TODO(qhuynh96): This field is about to be deprecated. WhoCanUse is now under the scope of Command.
 	WhoCanUse string
 	// Usage is a usage string for the plugin. Leave empty if not applicable.
+	// TODO(qhuynh96): This field is about to be deprecated. Usage is now under the scope of Command.
 	Usage string
 	// Examples is a list of usage examples for the plugin. Leave empty if not applicable.
+	// TODO(qhuynh96): This field is about to be deprecated. Examples is now under the scope of Command
 	Examples []string
 	// Config is a map from org/repo strings to a string describing the configuration for that repo.
 	// The key "" should map to a string describing configuration that applies to all repos if any.
