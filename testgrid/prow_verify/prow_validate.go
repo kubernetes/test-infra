@@ -17,6 +17,8 @@ limitations under the License.
 package main
 
 import (
+	"bufio"
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -27,33 +29,44 @@ import (
 	"k8s.io/test-infra/testgrid/config/yaml2proto"
 )
 
+var jenkinsPath = flag.String("jenkins-config", "jenkins/job-configs", "path to jenkins config dir")
+var prowPath = flag.String("prow-config", "prow/config.yaml", "path to prow config file")
+var configPath = flag.String("testgrid-config", "testgrid/config/config.yaml", "path to testgrid config file")
+
 func main() {
-	args := os.Args[1:]
-
-	if len(args) != 3 {
-		fmt.Println("Missing args - usage: go run jenkins_validate.go <path/to/job_collection> <path/to/prow> <path/to/testgrid_config>")
-		os.Exit(1)
-	}
-
-	jobPath := args[0]
-	prowPath := args[1]
-	configPath := args[2]
-
+	flag.Parse()
 	jobs := make(map[string]bool)
-	files, err := filepath.Glob(jobPath + "/*")
-	if err != nil {
-		fmt.Println("Failed to collect outputs.")
+	// TODO(krzyzacy): delete all the Jenkins stuff here after kill Jenkins
+	// workaround for special jenkins jobs does not follow job-name: pattern:
+	jobs["maintenance-all-hourly"] = false
+	jobs["maintenance-all-daily"] = false
+	jobs["kubernetes-update-jenkins-jobs"] = false
+
+	if err := filepath.Walk(*jenkinsPath, func(path string, file os.FileInfo, err error) error {
+		if !file.IsDir() {
+			file, err := os.Open(path)
+			defer file.Close()
+
+			if err != nil {
+				return err
+			}
+			scanner := bufio.NewScanner(file)
+			for scanner.Scan() {
+				if strings.Contains(scanner.Text(), "job-name:") {
+					job := strings.TrimPrefix(strings.TrimSpace(scanner.Text()), "job-name: ")
+					jobs[job] = false
+				}
+			}
+		}
+		return nil
+	}); err != nil {
+		fmt.Printf("Failed parsing Jenkins config %v\n", err)
 		os.Exit(1)
 	}
 
-	for _, file := range files {
-		file = strings.TrimPrefix(file, jobPath+"/")
-		jobs[file] = false
-	}
-
-	data, err := ioutil.ReadFile(configPath)
+	data, err := ioutil.ReadFile(*configPath)
 	if err != nil {
-		fmt.Printf("Failed reading %v\n", configPath)
+		fmt.Printf("Failed reading %v : %v\n", *configPath, err)
 		os.Exit(1)
 	}
 
@@ -69,7 +82,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	prowConfig, err := prow_config.Load(prowPath + "/config.yaml")
+	prowConfig, err := prow_config.Load(*prowPath)
 	if err != nil {
 		fmt.Printf("Could not load prow configs: %v\n", err)
 		os.Exit(1)
@@ -88,15 +101,11 @@ func main() {
 	}
 
 	for _, job := range prowConfig.AllPostsubmits([]string{}) {
-		if job.Agent != "jenkins" {
-			jobs[job.Name] = false
-		}
+		jobs[job.Name] = false
 	}
 
 	for _, job := range prowConfig.AllPeriodics() {
-		if job.Agent != "jenkins" {
-			jobs[job.Name] = false
-		}
+		jobs[job.Name] = false
 	}
 
 	// For now anything outsite k8s-jenkins/(pr-)logs are considered to be fine

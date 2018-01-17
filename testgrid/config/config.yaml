@@ -2056,6 +2056,21 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos-oldetcd-serial
 - name: ci-kubernetes-e2e-gke-cos-oldetcd-slow
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos-oldetcd-slow
+- name: pull-kops-e2e-kubernetes-aws
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kops-e2e-kubernetes-aws
+  num_columns_recent: 20
+- name: pull-heapster-e2e
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-heapster-e2e
+  num_columns_recent: 20
+- name: pull-charts-e2e
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-charts-e2e
+  num_columns_recent: 20
+- name: pull-cadvisor-e2e
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cadvisor-e2e
+  num_columns_recent: 20
+- name: pull-test-infra-testgrid
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-test-infra-testgrid
+  num_columns_recent: 20
 
 # Add New Testgroups Here
 
@@ -5165,6 +5180,9 @@ dashboards:
   - name: verify-gofmt
     test_group_name: pull-test-infra-verify-gofmt
     base_options: 'width=10'
+  - name: testgrid
+    test_group_name: pull-test-infra-testgrid
+    base_options: 'width=10'
 
 - name: presubmits-cluster-registry
   dashboard_tab:
@@ -5189,6 +5207,17 @@ dashboards:
   - name: verify
     test_group_name: pull-federation-verify
     base_options: 'width=10'
+
+- name: presubmits-misc
+  dashboard_tab:
+  - name: heapster
+    test_group_name: pull-heapster-e2e
+  - name: kops
+    test_group_name: pull-kops-e2e-kubernetes-aws
+  - name: charts
+    test_group_name: pull-charts-e2e
+  - name: cadvisor
+    test_group_name: pull-cadvisor-e2e
 
 - name: istio
   dashboard_tab:
@@ -5249,6 +5278,7 @@ dashboard_groups:
   - presubmits-kubernetes-blocking
   - presubmits-kubernetes-nonblocking
   - presubmits-test-infra
+  - presubmits-misc
 
 - name: sig-cli
   dashboard_names:
