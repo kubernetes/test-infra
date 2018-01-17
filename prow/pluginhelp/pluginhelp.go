@@ -27,6 +27,11 @@ type Command struct {
 	Description string
 	// Examples is a list of usage example for the command.
 	Examples []string
+	// WhoCanUse is a description of the permissions/role/authorization required to use the command.
+	// This is usually specified as a github permissions, but it can also be a github team, an
+	// OWNERS file alias, etc.
+	// This field may include HTML.
+	WhoCanUse string
 }
 
 // PluginHelp is a serializable representation of the help information for a single plugin.
