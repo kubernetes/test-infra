@@ -6125,6 +6125,43 @@ postsubmits:
       - name: service
         secret:
           secretName: service-account
+  kubernetes/ingress-gce:
+  - name: ci-ingress-gce-image-push
+    agent: kubernetes
+    branches:
+    - master
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180108-bf63630a9-master
+        args:
+        - "--repo=k8s.io/ingress-gce=master"
+        - "--root=/go/src/"
+        - "--clean"
+        - "--timeout=320"
+        env:
+        - name: DOCKER_IN_DOCKER_ENABLED
+          value: true
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /etc/service-account/service-account.json
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: service
+          mountPath: /etc/service-account
+          readOnly: true
+        - name: docker-graph
+          mountPath: /docker-graph
+        ports:
+        - containerPort: 9999
+          hostPort: 9999
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
+      - name: docker-graph
+        hostPath:
+          path: /mnt/disks/ssd0/docker-graph
   kubernetes/kubernetes:
   - name: ci-kubernetes-bazel-build
     agent: kubernetes
@@ -7314,42 +7351,6 @@ periodics:
       secret:
         defaultMode: 256
         secretName: ssh-key-secret
-  # Pushes new image of ingress-gce from HEAD for use by other CI jobs.
-- name: ci-ingress-gce-image-push
-  agent: kubernetes
-  interval: 45m
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180108-bf63630a9-master
-      args:
-      - "--repo=k8s.io/ingress-gce=master"
-      - "--root=/go/src/"
-      - "--clean"
-      - "--timeout=320"
-      env:
-      - name: DOCKER_IN_DOCKER_ENABLED
-        value: true
-      - name: GOOGLE_APPLICATION_CREDENTIALS
-        value: /etc/service-account/service-account.json
-      # docker-in-docker needs privileged mode
-      securityContext:
-        privileged: true
-      volumeMounts:
-      - name: service
-        mountPath: /etc/service-account
-        readOnly: true
-      - name: docker-graph
-        mountPath: /docker-graph
-      ports:
-      - containerPort: 9999
-        hostPort: 9999
-    volumes:
-    - name: service
-      secret:
-        secretName: service-account
-    - name: docker-graph
-      hostPath:
-        path: /mnt/disks/ssd0/docker-graph
   # TODO(rramkumar): Job does nothing yet.
 - name: ci-ingress-gce-upgrade-e2e
   agent: kubernetes
