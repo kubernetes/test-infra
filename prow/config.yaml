@@ -84,7 +84,7 @@ presubmits:
     trigger: "(?m)^/test( all| pull-cadvisor-e2e),?(\\s+|$)"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bootstrap:v20180108-a65d3dd32
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180108-bf63630a9-master
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=github.com/$(REPO_OWNER)/$(REPO_NAME)=$(PULL_REFS)"
