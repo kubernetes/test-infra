@@ -32,7 +32,8 @@ const pluginName = "assign"
 
 var (
 	assignRe = regexp.MustCompile(`(?mi)^/(un)?assign(( @?[-\w]+?)*)\s*$`)
-	ccRe     = regexp.MustCompile(`(?mi)^/(un)?cc(( +@?[-\w]+?)*)\s*$`)
+
+	CCRegexp = regexp.MustCompile(`(?mi)^/(un)?cc(( +@?[-\w]+?)*)\s*$`)
 )
 
 func init() {
@@ -202,7 +203,7 @@ func newReviewHandler(e github.GenericCommentEvent, gc githubClient, log *logrus
 		remove:             gc.UnrequestReview,
 		add:                gc.RequestReview,
 		event:              &e,
-		regexp:             ccRe,
+		regexp:             CCRegexp,
 		gc:                 gc,
 		log:                log,
 		userType:           "reviewer(s)",
