@@ -23,11 +23,15 @@ approve:
   - kubernetes/charts
   - kubernetes/cluster-registry
   - kubernetes/community
+  - kubernetes/contrib
   - kubernetes/dashboard
   - kubernetes/features
+  - kubernetes/federation
   - kubernetes/ingress-nginx
+  - kubernetes/kops
   - kubernetes/kube-deploy
   - kubernetes/kubectl
+  - kubernetes/kubernetes-template-project
   - kubernetes/minikube
   - kubernetes/sig-release
   - kubernetes/steering
