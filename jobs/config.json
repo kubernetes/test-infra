@@ -11029,7 +11029,6 @@
       "--extract=ci/latest",
       "--ginkgo-parallel",
       "--kops-build",
-      "--mode=docker",
       "--provider=aws",
       "--test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]|\\[HPA\\]|Dashboard|Services.*functioning.*NodePort",
       "--timeout=55m"
