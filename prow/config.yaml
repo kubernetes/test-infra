@@ -565,13 +565,17 @@ presubmits:
     trigger: "(?m)^/test( all| pull-cluster-registry-verify-gosrc),?(\\s+|$)"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171214-ae38d82af-0.8.1
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180102-0e2b24a0b-1.8
         args:
         - "--clean"
         - "--job=$(JOB_NAME)"
+        - "--root=/go/src"
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
+        env:
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /etc/service-account/service-account.json
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
