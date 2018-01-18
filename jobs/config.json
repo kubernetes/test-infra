@@ -11478,6 +11478,15 @@
       "sig-testing"
     ]
   },
+  "pull-test-infra-verify-config": {
+    "args": [
+      "./hack/verify-config.sh"
+    ],
+    "scenario": "execute",
+    "sigOwners": [
+      "sig-testing"
+    ]
+  },
   "random_job": {
     "scenario": "execute",
     "sigOwners": [

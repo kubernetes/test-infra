@@ -6083,18 +6083,10 @@ presubmits:
         - name: service
           mountPath: /etc/service-account
           readOnly: true
-        - name: cache-ssd
-          mountPath: /root/.cache
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
       volumes:
       - name: service
         secret:
           secretName: service-account
-      - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0
 
   - name: pull-test-infra-verify-gofmt
     agent: kubernetes
@@ -6119,18 +6111,10 @@ presubmits:
         - name: service
           mountPath: /etc/service-account
           readOnly: true
-        - name: cache-ssd
-          mountPath: /root/.cache
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
       volumes:
       - name: service
         secret:
           secretName: service-account
-      - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0
 
   - name: pull-test-infra-verify-govet
     agent: kubernetes
@@ -6155,18 +6139,49 @@ presubmits:
         - name: service
           mountPath: /etc/service-account
           readOnly: true
-        - name: cache-ssd
-          mountPath: /root/.cache
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
       volumes:
       - name: service
         secret:
           secretName: service-account
-      - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0
+
+  - name: pull-test-infra-verify-config
+    agent: kubernetes
+    context: pull-test-infra-verify-config
+    branches:
+    - master
+    rerun_command: "/test pull-test-infra-verify-config"
+    trigger: "/test pull-test-infra-verify-config"
+    run_if_changed: '^prow/config.yaml$'
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/bazelbuild:v20171214-ae38d82af-0.8.1
+        args:
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--clean"
+        - --service-account=/etc/service-account/service-account.json
+        env:
+        - name: TEST_TMPDIR
+          value: /scratch/.cache/bazel
+        # Bazel needs privileged mode in order to sandbox builds.
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: service
+          mountPath: /etc/service-account
+          readOnly: true
+        - name: bazel-scratch
+          mountPath: /scratch/.cache
+        resources:
+          requests:
+            memory: "2Gi"
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
+      - name: bazel-scratch
+        emptyDir: {}
 
   tensorflow/k8s:
   - name: tf-k8s-presubmit

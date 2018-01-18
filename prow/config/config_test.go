@@ -21,13 +21,9 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"reflect"
 	"regexp"
-	"sort"
 	"strings"
 	"testing"
-
-	"github.com/ghodss/yaml"
 
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
@@ -44,69 +40,6 @@ func TestMain(m *testing.M) {
 	}
 	c = conf
 	os.Exit(m.Run())
-}
-
-func replace(j *Presubmit, ks *Presubmit) error {
-	name := strings.Replace(j.Name, "pull-kubernetes", "pull-security-kubernetes", -1)
-	if name != ks.Name {
-		return fmt.Errorf("%s should match %s", name, ks.Name)
-	}
-	j.Name = name
-	j.RerunCommand = strings.Replace(j.RerunCommand, "pull-kubernetes", "pull-security-kubernetes", -1)
-	j.Trigger = strings.Replace(j.Trigger, "pull-kubernetes", "pull-security-kubernetes", -1)
-	j.Context = strings.Replace(j.Context, "pull-kubernetes", "pull-security-kubernetes", -1)
-
-	if j.Agent == "kubernetes" {
-		j.Cluster = "security"
-		if len(j.Spec.Containers) != 1 {
-			return fmt.Errorf("expected a single container for %s", name)
-		}
-		for i, arg := range j.Spec.Containers[0].Args {
-			// handle --repo substitution for main repo
-			if strings.HasPrefix(arg, "--repo=k8s.io/kubernetes") || strings.HasPrefix(arg, "--repo=k8s.io/$(REPO_NAME)") {
-				j.Spec.Containers[0].Args[i] = strings.Replace(arg, "k8s.io/", "github.com/kubernetes-security/", 1)
-
-				// handle upload bucket
-			} else if strings.HasPrefix(arg, "--upload=") {
-				j.Spec.Containers[0].Args[i] = "--upload=gs://kubernetes-security-jenkins/pr-logs"
-			}
-		}
-		j.Spec.Containers[0].Args = append(j.Spec.Containers[0].Args, "--ssh=/etc/ssh-security/ssh-security")
-		sort.Strings(j.Spec.Containers[0].Args)
-		sort.Strings(ks.Spec.Containers[0].Args)
-		j.Spec.Containers[0].VolumeMounts = append(
-			j.Spec.Containers[0].VolumeMounts,
-			kube.VolumeMount{
-				Name:      "ssh-security",
-				MountPath: "/etc/ssh-security",
-			},
-		)
-		j.Spec.Volumes = append(
-			j.Spec.Volumes,
-			kube.Volume{
-				Name: "ssh-security",
-				VolumeSource: kube.VolumeSource{
-					Secret: &kube.SecretSource{
-						Name:        "ssh-security",
-						DefaultMode: 0400,
-					},
-				},
-			},
-		)
-	}
-
-	j.re = ks.re
-	if len(j.RunAfterSuccess) != len(ks.RunAfterSuccess) {
-		return fmt.Errorf("length of RunAfterSuccess should match. - %s", name)
-	}
-
-	for i := range j.RunAfterSuccess {
-		if err := replace(&j.RunAfterSuccess[i], &ks.RunAfterSuccess[i]); err != nil {
-			return err
-		}
-	}
-
-	return nil
 }
 
 func checkContext(t *testing.T, repo string, p Presubmit) {
@@ -175,27 +108,10 @@ func findRequired(t *testing.T, presubmits []Presubmit) []string {
 }
 
 func TestConfigSecurityJobsMatch(t *testing.T) {
-	conf, err := Load("../config.yaml")
-	if err != nil {
-		t.Fatalf("fail to load config for TestConfigSecurityJobsMatch : %v", err)
-	}
-	kp := conf.Presubmits["kubernetes/kubernetes"]
-	sp := conf.Presubmits["kubernetes-security/kubernetes"]
+	kp := c.Presubmits["kubernetes/kubernetes"]
+	sp := c.Presubmits["kubernetes-security/kubernetes"]
 	if len(kp) != len(sp) {
 		t.Fatalf("length of kubernetes/kubernetes presubmits %d does not equal length of kubernetes-security/kubernetes presubmits %d", len(kp), len(sp))
-	}
-	for i, j := range kp {
-		if err := replace(&j, &sp[i]); err != nil {
-			t.Fatalf("[replace] : %v", err)
-		}
-
-		if !reflect.DeepEqual(j, sp[i]) {
-
-			b1, _ := yaml.Marshal(j)
-			b2, _ := yaml.Marshal(sp[i])
-
-			t.Fatalf("kubernetes/kubernetes prow config jobs do not match kubernetes-security/kubernetes jobs:\n%s\nshould match: %s", b1, b2)
-		}
 	}
 }
 
