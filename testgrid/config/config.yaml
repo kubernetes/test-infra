@@ -265,6 +265,9 @@ test_groups:
 - name: ci-kubernetes-e2e-gci-gce-ingress
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-ingress
   alert_stale_results_hours: 24
+- name: ci-kubernetes-e2e-gci-gce-ingress-manual-network
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-ingress-manual-network
+  alert_stale_results_hours: 24
 - name: ci-kubernetes-e2e-gce-multizone
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-multizone
 - name: ci-kubernetes-e2e-gci-gce-statefulset
@@ -1166,6 +1169,9 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-perf-tests-e2e-gce-clusterloader
 - name: ci-perf-tests-kubemark-100-benchmark
   gcs_prefix: kubernetes-jenkins/logs/ci-perf-tests-kubemark-100-benchmark
+# benchmarks
+- name: ci-benchmark-scheduler-master
+  gcs_prefix: kubernetes-jenkins/logs/ci-benchmark-scheduler-master
 # 1.6-master upgrade jobs
 - name: ci-kubernetes-e2e-gce-1-6-1-7-upgrade-cluster
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-1-6-1-7-upgrade-cluster
@@ -1952,6 +1958,10 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-registry-verify-gensrc
   days_of_results: 1
   num_columns_recent: 20
+- name: pull-cluster-registry-verify-gosrc
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-registry-verify-gosrc
+  days_of_results: 1
+  num_columns_recent: 20
 - name: pull-cluster-registry-bazel
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-registry-bazel
   days_of_results: 1
@@ -2053,6 +2063,18 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos-oldetcd-serial
 - name: ci-kubernetes-e2e-gke-cos-oldetcd-slow
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos-oldetcd-slow
+- name: pull-kops-e2e-kubernetes-aws
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kops-e2e-kubernetes-aws
+  num_columns_recent: 20
+- name: pull-heapster-e2e
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-heapster-e2e
+  num_columns_recent: 20
+- name: pull-charts-e2e
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-charts-e2e
+  num_columns_recent: 20
+- name: pull-cadvisor-e2e
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cadvisor-e2e
+  num_columns_recent: 20
 
 # Add New Testgroups Here
 
@@ -3894,6 +3916,10 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gci-gce-ingress
     alert_options:
       alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
+  - name: gce-ingress-manual-network
+    test_group_name: ci-kubernetes-e2e-gci-gce-ingress-manual-network
+    alert_options:
+      alert_mail_to_addresses: 'kubernetes-sig-network-test-failures@googlegroups.com'
   - name: ingress-gce-e2e
     test_group_name: ci-ingress-gce-e2e
     alert_options:
@@ -4353,6 +4379,11 @@ dashboards:
     test_group_name: ci-perf-tests-kubemark-100-benchmark
   - name: cluster-loader
     test_group_name: ci-perf-tests-e2e-gce-clusterloader
+
+- name: sig-scalability-benchmarks
+  dashboard_tab:
+  - name: scheduler
+    test_group_name: ci-benchmark-scheduler-master
 
 - name: sig-scalability-manual
   dashboard_tab:
@@ -5169,6 +5200,9 @@ dashboards:
   - name: verify-gensrc
     test_group_name: pull-cluster-registry-verify-gensrc
     base_options: 'width=10'
+  - name: verify-gosrc
+    test_group_name: pull-cluster-registry-verify-gosrc
+    base_options: 'width=10'
 
 - name: presubmits-federation
   dashboard_tab:
@@ -5181,6 +5215,17 @@ dashboards:
   - name: verify
     test_group_name: pull-federation-verify
     base_options: 'width=10'
+
+- name: presubmits-misc
+  dashboard_tab:
+  - name: heapster
+    test_group_name: pull-heapster-e2e
+  - name: kops
+    test_group_name: pull-kops-e2e-kubernetes-aws
+  - name: charts
+    test_group_name: pull-charts-e2e
+  - name: cadvisor
+    test_group_name: pull-cadvisor-e2e
 
 - name: istio
   dashboard_tab:
@@ -5241,6 +5286,7 @@ dashboard_groups:
   - presubmits-kubernetes-blocking
   - presubmits-kubernetes-nonblocking
   - presubmits-test-infra
+  - presubmits-misc
 
 - name: sig-cli
   dashboard_names:
@@ -5300,6 +5346,7 @@ dashboard_groups:
   - sig-scalability-gke
   - sig-scalability-kubemark
   - sig-scalability-perf-tests
+  - sig-scalability-benchmarks
   - sig-scalability-manual
 
 - name: sig-testing

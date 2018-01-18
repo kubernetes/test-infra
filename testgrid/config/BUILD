@@ -36,11 +36,15 @@ go_test(
     srcs = ["config_test.go"],
     data = [
         "config.yaml",
+        "//jenkins/job-configs:all-srcs",
         "//mungegithub:submit-queue/deployment/kubernetes/configmap.yaml",
+        "//prow:config.yaml",
     ],
     embed = [":go_default_library"],
     importpath = "k8s.io/test-infra/testgrid/config",
     deps = [
+        "//prow/config:go_default_library",
+        "//testgrid/config/pb:go_default_library",
         "//testgrid/config/yaml2proto:go_default_library",
         "//vendor/gopkg.in/yaml.v2:go_default_library",
     ],

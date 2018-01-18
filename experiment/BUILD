@@ -1,7 +1,7 @@
 py_binary(
     name = "flakedetector",
     srcs = ["flakedetector.py"],
-    deps = ["@requests//:requests"],
+    deps = ["@requests"],
 )
 
 py_binary(

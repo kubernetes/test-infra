@@ -33,11 +33,11 @@ py_binary(
         ":k8": ["@jq_linux//file"],
     }),
     deps = [
-        "@dateutil//:dateutil",
-        "@influxdb//:influxdb",
-        "@pytz//:pytz",
-        "@requests//:requests",
-        "@yaml//:yaml",
+        "@dateutil",
+        "@influxdb",
+        "@pytz",
+        "@requests",
+        "@yaml",
     ],
 )
 
@@ -56,10 +56,10 @@ py_test(
         ":darwin": ["@jq_osx//file"],
     }),
     deps = [
-        "@dateutil//:dateutil",
-        "@influxdb//:influxdb",
-        "@pytz//:pytz",
-        "@requests//:requests",
-        "@yaml//:yaml",
+        "@dateutil",
+        "@influxdb",
+        "@pytz",
+        "@requests",
+        "@yaml",
     ],
 )

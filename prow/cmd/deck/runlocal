@@ -14,8 +14,12 @@
 # limitations under the License.
 
 cd static
-curl "https://prow.k8s.io/data.js?var=allBuilds" > data.js
-curl "https://prow.k8s.io/tide.js?var=tideData" > tide.js
-curl "https://prow.k8s.io/plugin-help.js?var=allHelp" > plugin-help.js
-curl "https://prow.k8s.io/branding.js?var=branding" > branding.js
+HOST="https://prow.k8s.io"
+if [[ $1 == "openshift" ]]; then
+	HOST="https://deck-ci.svc.ci.openshift.org"
+fi
+curl "$HOST/data.js?var=allBuilds" > data.js
+curl "$HOST/tide.js?var=tideData" > tide.js
+curl "$HOST/plugin-help.js?var=allHelp" > plugin-help.js
+curl "$HOST/branding.js?var=branding" > branding.js
 python3 -m http.server

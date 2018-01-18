@@ -28,12 +28,12 @@ py_binary(
     srcs = ["pylint_bin.py"],
     # NOTE: this should only contain direct third party imports and pylint
     deps = [
-        "@influxdb//:influxdb",
-        "@pylint//:pylint",
-        "@pytz//:pytz",
-        "@requests//:requests",  # TODO(fejta): figure out a better solution
+        "@influxdb",
+        "@pylint",
+        "@pytz",
+        "@requests",  # TODO(fejta): figure out a better solution
         "@ruamel_yaml//ruamel/yaml:ruamel.yaml",
-        "@yaml//:yaml",
+        "@yaml",
     ],
 )
 

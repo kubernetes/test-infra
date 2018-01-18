@@ -20,6 +20,8 @@ import (
 	"fmt"
 	"regexp"
 
+	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pjutil"
@@ -54,29 +56,10 @@ func handleIC(c client, trustedOrg string, ic github.IssueCommentEvent) error {
 		return nil
 	}
 
-	var changedFiles []string
-	files := func() ([]string, error) {
-		if changedFiles != nil {
-			return changedFiles, nil
-		}
-		changes, err := c.GitHubClient.GetPullRequestChanges(org, repo, number)
-		if err != nil {
-			return nil, err
-		}
-		changedFiles = []string{}
-		for _, change := range changes {
-			changedFiles = append(changedFiles, change.Filename)
-		}
-		return changedFiles, nil
-	}
-
 	// Which jobs does the comment want us to run?
 	testAll := okToTest.MatchString(ic.Comment.Body)
 	shouldRetestFailed := retest.MatchString(ic.Comment.Body)
-	requestedJobs, err := c.Config.MatchingPresubmits(ic.Repo.FullName, ic.Comment.Body, testAll, files)
-	if err != nil {
-		return err
-	}
+	requestedJobs := c.Config.MatchingPresubmits(ic.Repo.FullName, ic.Comment.Body, testAll)
 	if !shouldRetestFailed && len(requestedJobs) == 0 {
 		// Check for the presence of the needs-ok-to-test label and remove it
 		// if a trusted member has commented "/ok-to-test".
@@ -97,25 +80,23 @@ func handleIC(c client, trustedOrg string, ic github.IssueCommentEvent) error {
 		return err
 	}
 
+	var forceRunContexts map[string]bool
 	if shouldRetestFailed {
 		combinedStatus, err := c.GitHubClient.GetCombinedStatus(org, repo, pr.Head.SHA)
 		if err != nil {
 			return err
 		}
-		skipContexts := make(map[string]bool) // these succeeded or are running
-		runContexts := make(map[string]bool)  // these failed and should be re-run
+		skipContexts := make(map[string]bool)    // these succeeded or are running
+		forceRunContexts = make(map[string]bool) // these failed and should be re-run
 		for _, status := range combinedStatus.Statuses {
 			state := status.State
 			if state == github.StatusSuccess || state == github.StatusPending {
 				skipContexts[status.Context] = true
 			} else if state == github.StatusError || state == github.StatusFailure {
-				runContexts[status.Context] = true
+				forceRunContexts[status.Context] = true
 			}
 		}
-		retests, err := c.Config.RetestPresubmits(ic.Repo.FullName, skipContexts, runContexts, files)
-		if err != nil {
-			return err
-		}
+		retests := c.Config.RetestPresubmits(ic.Repo.FullName, skipContexts, forceRunContexts)
 		requestedJobs = append(requestedJobs, retests...)
 	}
 
@@ -155,40 +136,70 @@ func handleIC(c client, trustedOrg string, ic github.IssueCommentEvent) error {
 		}
 	}
 
-	ref, err := c.GitHubClient.GetRef(org, repo, "heads/"+pr.Base.Ref)
+	baseRef, err := c.GitHubClient.GetRef(org, repo, "heads/"+pr.Base.Ref)
 	if err != nil {
 		return err
 	}
 
-	// Determine if any branch-shard of a given job runs against the base branch.
-	anyShardRunsAgainstBranch := map[string]bool{}
+	var changedFiles []string
+	// shouldRun indicates if a job should actually run.
+	shouldRun := func(j config.Presubmit) (bool, error) {
+		if !j.RunsAgainstBranch(pr.Base.Ref) {
+			return false, nil
+		}
+		if forceRunContexts[j.Context] || j.TriggerMatches(ic.Comment.Body) || j.RunIfChanged == "" {
+			return true, nil
+		}
+		// Fetch the changed files from github at most once.
+		if changedFiles == nil {
+			changes, err := c.GitHubClient.GetPullRequestChanges(org, repo, number)
+			if err != nil {
+				return false, fmt.Errorf("error getting pull request changes: %v", err)
+			}
+			changedFiles = []string{}
+			for _, change := range changes {
+				changedFiles = append(changedFiles, change.Filename)
+			}
+		}
+		return j.RunsAgainstChanges(changedFiles), nil
+	}
+
+	// For each job determine if any sharded version of the job runs.
+	// This in turn determines which jobs to run and which contexts to mark as "Skipped".
+	var toRunJobs []config.Presubmit
+	toRun := sets.NewString()
+	toSkip := sets.NewString()
 	for _, job := range requestedJobs {
-		if job.RunsAgainstBranch(pr.Base.Ref) {
-			anyShardRunsAgainstBranch[job.Context] = true
+		runs, err := shouldRun(job)
+		if err != nil {
+			return err
+		}
+		if runs {
+			toRunJobs = append(toRunJobs, job)
+			toRun.Insert(job.Context)
+		} else if !job.SkipReport {
+			toSkip.Insert(job.Context)
+		}
+	}
+	// 'Skip' any context that is required, but doesn't have a job shard run for it.
+	for _, context := range toSkip.Difference(toRun).List() {
+		if err := c.GitHubClient.CreateStatus(org, repo, pr.Head.SHA, github.Status{
+			State:       github.StatusSuccess,
+			Context:     context,
+			Description: "Skipped",
+		}); err != nil {
+			return err
 		}
 	}
 
 	var errors []error
-	for _, job := range requestedJobs {
-		if !job.RunsAgainstBranch(pr.Base.Ref) {
-			if !job.SkipReport && !anyShardRunsAgainstBranch[job.Context] {
-				if err := c.GitHubClient.CreateStatus(org, repo, pr.Head.SHA, github.Status{
-					State:       github.StatusSuccess,
-					Context:     job.Context,
-					Description: "Skipped",
-				}); err != nil {
-					return err
-				}
-			}
-			continue
-		}
-
+	for _, job := range toRunJobs {
 		c.Logger.Infof("Starting %s build.", job.Name)
 		kr := kube.Refs{
 			Org:     org,
 			Repo:    repo,
 			BaseRef: pr.Base.Ref,
-			BaseSHA: ref,
+			BaseSHA: baseRef,
 			Pulls: []kube.Pull{
 				{
 					Number: number,

@@ -26,11 +26,7 @@ import (
 	"testing"
 )
 
-var (
-	podRe = regexp.MustCompile(`^[a-z0-9]([-a-z0-9]*[a-z0-9])?$`)
-
-	noChangesProvider = func() ([]string, error) { return nil, nil }
-)
+var podRe = regexp.MustCompile(`^[a-z0-9]([-a-z0-9]*[a-z0-9])?$`)
 
 const (
 	testThis   = "/test all"
@@ -265,7 +261,7 @@ func TestCommentBodyMatches(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
-		actualJobs, _ := c.MatchingPresubmits(tc.repo, tc.body, regexp.MustCompile(`/ok-to-test`).MatchString(tc.body), noChangesProvider)
+		actualJobs := c.MatchingPresubmits(tc.repo, tc.body, regexp.MustCompile(`/ok-to-test`).MatchString(tc.body))
 		match := true
 		if len(actualJobs) != len(tc.expectedJobs) {
 			match = false
@@ -351,7 +347,7 @@ func TestRetestPresubmits(t *testing.T) {
 		},
 	}
 	for _, tc := range testcases {
-		actualContexts, _ := c.RetestPresubmits("org/repo", tc.skipContexts, tc.runContexts, noChangesProvider)
+		actualContexts := c.RetestPresubmits("org/repo", tc.skipContexts, tc.runContexts)
 		match := true
 		if len(actualContexts) != len(tc.expectedContexts) {
 			match = false

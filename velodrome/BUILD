@@ -8,7 +8,7 @@ py_test(
     ],
     main = "config.py",
     deps = [
-        "@yaml//:yaml",
+        "@yaml",
     ],
 )
 

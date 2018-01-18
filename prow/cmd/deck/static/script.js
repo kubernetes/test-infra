@@ -67,6 +67,28 @@ window.onload = function() {
     redraw();
 };
 
+document.addEventListener("DOMContentLoaded", function(event) {
+   configure();
+});
+
+function configure() {
+    if(typeof branding === undefined){
+        return;
+    }
+    if (branding.logo !== '') {
+        document.getElementById('img').src = branding.logo;
+    }
+    if (branding.favicon !== '') {
+        document.getElementById('favicon').href = branding.favicon;
+    }
+    if (branding.background_color !== '') {
+        document.body.style.background = branding.background_color;
+    }
+    if (branding.header_color !== '') {
+        document.getElementsByTagName('header')[0].style.backgroundColor = branding.header_color;
+    }
+}
+
 function addOptions(s, p) {
     var sel = document.getElementById(p);
     while (sel.length > 1)
@@ -94,26 +116,7 @@ function groupKey(build) {
     return build.repo + " " + build.number + " " + build.refs;
 }
 
-function configure() {
-    if(typeof branding === 'undefined'){
-        return;
-    }
-    if (branding.logo !== '') {
-        document.getElementById("img").src = branding.logo;
-    }
-    if (branding.favicon !== '') {
-        document.getElementById("favicon").href = branding.favicon;
-    }
-    if (branding.background_color !== '') {
-        document.body.style.background = branding.background_color;
-    }
-    if (branding.header_color !== '') {
-        document.getElementsByTagName('header')[0].style.backgroundColor = branding.header_color;
-    }
-}
-
 function redraw() {
-    configure();
     var modal = document.getElementById('rerun');
     var rerun_command = document.getElementById('rerun-content');
     window.onclick = function(event) {
