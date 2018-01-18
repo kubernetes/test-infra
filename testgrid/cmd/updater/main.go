@@ -24,6 +24,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/url"
+	"path"
 	"regexp"
 	"time"
 
@@ -60,12 +61,21 @@ type Metadata struct {
 	InfraCommit string `json:"infra-commit"`
 }
 
+type JunitSuites struct {
+	XMLName xml.Name     `xml:"testsuites"`
+	Suites  []JunitSuite `xml:"testsuite"`
+}
+
 type JunitSuite struct {
 	XMLName  xml.Name      `xml:"testsuite"`
+	Name     string        `xml:"name,attr"`
 	Time     float64       `xml:"time,attr"`
 	Failures int           `xml:"failures,attr"`
 	Tests    int           `xml:"tests,attr"`
 	Results  []JunitResult `xml:"testcase"`
+	/*
+	* <properties><property name="go.version" value="go1.8.3"/></properties>
+	 */
 }
 
 type JunitResult struct {
@@ -77,15 +87,91 @@ type JunitResult struct {
 	Skipped   *string `xml:"skipped"`
 }
 
+func (jr JunitResult) RowResult() state.Row_Result {
+	switch {
+	case jr.Failure != nil:
+		return state.Row_FAIL
+	case jr.Skipped != nil:
+		return state.Row_PASS_WITH_SKIPS
+	}
+	return state.Row_PASS
+}
+
 type BuildResult struct {
+	Id       string
 	Started  int64
 	Finished int64
 	Passed   bool
 	Results  map[string]state.Row_Result
 }
 
+func (br BuildResult) Overall() state.Row_Result {
+	switch {
+	case br.Finished > 0:
+		// Completed
+		if br.Passed {
+			return state.Row_PASS
+		}
+		return state.Row_FAIL
+	case time.Now().Add(-24*time.Hour).Unix() > br.Started:
+		// Timed out
+		return state.Row_FAIL
+	default:
+		return state.Row_RUNNING
+	}
+}
+
+func AppendResult(row *state.Row, result state.Row_Result, count int) {
+	latest := int32(result)
+	n := len(row.Results)
+	switch {
+	case n == 0, row.Results[n-2] != latest:
+		row.Results = append(row.Results, latest, int32(count))
+	default:
+		row.Results[n-1] += int32(count)
+	}
+}
+
+func AppendColumn(grid *state.Grid, rows map[string]*state.Row, build BuildResult) {
+	c := state.Column{
+		Build:   build.Id,
+		Started: float64(build.Started * 1000),
+	}
+	grid.Columns = append(grid.Columns, &c)
+
+	missing := map[string]*state.Row{}
+	for name, row := range rows {
+		missing[name] = row
+	}
+
+	for name, result := range build.Results {
+		delete(missing, name)
+		r, ok := rows[name]
+		if !ok {
+			r = &state.Row{
+				Name: name,
+				Id:   name,
+			}
+			rows[name] = r
+			grid.Rows = append(grid.Rows, r)
+			if n := len(grid.Columns); n > 0 {
+				// Add missing entries for later builds
+				AppendResult(r, state.Row_NO_RESULT, n-1)
+			}
+		}
+
+		AppendResult(r, result, 1)
+	}
+
+	for _, row := range missing {
+		AppendResult(row, state.Row_NO_RESULT, 1)
+	}
+}
+
 func ReadBuild(build Build) (*BuildResult, error) {
-	br := BuildResult{}
+	br := BuildResult{
+		Id: path.Base(build.Prefix),
+	}
 	s := build.Bucket.Object(build.Prefix + "started.json")
 	sr, err := s.NewReader(build.Context)
 	if err != nil {
@@ -129,6 +215,9 @@ func ReadBuild(build Build) (*BuildResult, error) {
 		}
 		artifacts = append(artifacts, a.Name)
 	}
+	br.Results = map[string]state.Row_Result{
+		"Overall": br.Overall(),
+	}
 	for _, ap := range artifacts {
 		ar, err := build.Bucket.Object(ap).NewReader(build.Context)
 		if err != nil {
@@ -142,38 +231,36 @@ func ReadBuild(build Build) (*BuildResult, error) {
 			return nil, fmt.Errorf("failed to read all of %s: %v", ap, err)
 		}
 
-		var suite JunitSuite
-		err = xml.Unmarshal(buf, &suite)
+		var suites JunitSuites
+		err = xml.Unmarshal(buf, &suites)
 		if err != nil {
-			return nil, fmt.Errorf("failed to parse %s: %v", ap, err)
+			suites.Suites = append([]JunitSuite(nil), JunitSuite{})
+			ie := xml.Unmarshal(buf, &suites.Suites[0])
+			if ie != nil {
+				return nil, fmt.Errorf("failed to parse %s: %v and %v", ap, err, ie)
+			}
 		}
-		for _, s := range suite.Results {
-			if s.Skipped != nil && len(*s.Skipped) == 0 {
-				continue
-			}
-
-			n := s.Name
-			i := 0
-			if br.Results == nil {
-				br.Results = make(map[string]state.Row_Result)
-			}
-			for {
-				_, ok := br.Results[n]
-				if !ok {
-					break
+		for _, suite := range suites.Suites {
+			for _, sr := range suite.Results {
+				if sr.Skipped != nil && len(*sr.Skipped) == 0 {
+					continue
 				}
-				i++
-				n = fmt.Sprintf("%s [%d]", s.Name, i)
-			}
-			switch {
-			case s.Failure != nil:
-				// TODO: extract failure reason
-				br.Results[n] = state.Row_FAIL
-			case s.Skipped != nil:
-				// TODO: extract skip reason
-				br.Results[n] = state.Row_PASS_WITH_SKIPS
-			default:
-				br.Results[n] = state.Row_PASS
+
+				prefix := sr.Name
+				if len(suite.Name) > 0 {
+					prefix = suite.Name + "." + prefix
+				}
+				n := prefix
+				i := 0
+				for {
+					_, ok := br.Results[n]
+					if !ok {
+						break
+					}
+					i++
+					n = fmt.Sprintf("%s [%d]", prefix, i)
+				}
+				br.Results[n] = sr.RowResult()
 			}
 		}
 	}
@@ -205,6 +292,7 @@ func ListBuilds(client *storage.Client, ctx context.Context, path string, builds
 		Prefix:    p,
 	})
 	fmt.Println("Looking in ", u, b, p)
+	var backwards []Build
 	for {
 		objAttrs, err := it.Next()
 		if err == iterator.Done {
@@ -217,23 +305,28 @@ func ListBuilds(client *storage.Client, ctx context.Context, path string, builds
 			continue
 		}
 
-		fmt.Println("Found name:", objAttrs.Name, "prefix:", objAttrs.Prefix, objAttrs.Updated)
-		builds <- Build{
+		//fmt.Println("Found name:", objAttrs.Name, "prefix:", objAttrs.Prefix)
+		backwards = append(backwards, Build{
 			Bucket:  bkt,
 			Context: ctx,
 			Prefix:  objAttrs.Prefix,
-		}
+		})
+	}
+	for i := len(backwards) - 1; i >= 0; i-- {
+		builds <- backwards[i]
 	}
 	return nil
 }
 
-func ReadBuilds(builds chan Build, max int, dur time.Duration) {
+func ReadBuilds(builds chan Build, max int, dur time.Duration) state.Grid {
 	log.Println("Reading builds...")
 	i := 0
 	var stop time.Time
 	if dur != 0 {
 		stop = time.Now().Add(-dur)
 	}
+	grid := &state.Grid{}
+	rows := map[string]*state.Row{}
 	for b := range builds {
 		i++
 		if max > 0 && i > max {
@@ -245,6 +338,7 @@ func ReadBuilds(builds chan Build, max int, dur time.Duration) {
 			log.Printf("FAIL %s: %v", b.Prefix, err)
 			continue
 		}
+		AppendColumn(grid, rows, *br)
 		log.Printf("found! %+v", br)
 		if br.Started < stop.Unix() {
 			log.Printf("Latest result before %s", stop)
@@ -252,8 +346,9 @@ func ReadBuilds(builds chan Build, max int, dur time.Duration) {
 		}
 	}
 	log.Println("Finished reading builds.")
-	for _ = range builds {
+	for range builds {
 	}
+	return *grid
 }
 
 func Days(d int) time.Duration {
@@ -276,11 +371,17 @@ func main() {
 	g.Columns = append(g.Columns, &state.Column{Build: "first", Started: 1})
 	fmt.Println(g)
 	builds := make(chan Build)
-	go ReadBuilds(builds, 10, Days(30))
-	if err = ListBuilds(client, ctx, "gs://kubernetes-jenkins/pr-logs/pull-ingress-gce-e2e", builds); err != nil {
-		log.Fatalf("Failed to list builds: %v", err)
-	}
-	close(builds)
-	log.Println("Sleep")
-	time.Sleep(10 * time.Second)
+	uPR := "gs://kubernetes-jenkins/pr-logs/pull-ingress-gce-e2e"
+	uCI := "gs://kubernetes-jenkins/logs/ci-kubernetes-test-go"
+	_ = uCI
+	_ = uPR
+	u := uCI
+	go func() {
+		if err = ListBuilds(client, ctx, u, builds); err != nil {
+			log.Fatalf("Failed to list builds: %v", err)
+		}
+		close(builds)
+	}()
+	grid := ReadBuilds(builds, 1000, Days(1))
+	log.Printf("Grid: %v", grid)
 }
