@@ -2075,9 +2075,6 @@ test_groups:
 - name: pull-cadvisor-e2e
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cadvisor-e2e
   num_columns_recent: 20
-- name: pull-test-infra-testgrid
-  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-test-infra-testgrid
-  num_columns_recent: 20
 
 # Add New Testgroups Here
 
@@ -5190,9 +5187,6 @@ dashboards:
     base_options: 'width=10'
   - name: verify-gofmt
     test_group_name: pull-test-infra-verify-gofmt
-    base_options: 'width=10'
-  - name: testgrid
-    test_group_name: pull-test-infra-testgrid
     base_options: 'width=10'
 
 - name: presubmits-cluster-registry

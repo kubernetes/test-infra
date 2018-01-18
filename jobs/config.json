@@ -11447,21 +11447,6 @@
       "sig-testing"
     ]
   },
-  "pull-test-infra-testgrid": {
-    "args": [
-      "bazel",
-      "run",
-      "//testgrid/prow_verify:prow_verify",
-      "--",
-      "--jenkins-config=jenkins/job-configs",
-      "--prow-config=prow/config.yaml",
-      "--testgrid-config=testgrid/config/config.yaml"
-    ],
-    "scenario": "execute",
-    "sigOwners": [
-      "sig-testing"
-    ]
-  },
   "pull-test-infra-verify-bazel": {
     "args": [
       "./hack/verify-bazel.sh"
