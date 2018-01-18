@@ -450,7 +450,7 @@ presubmits:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180108-bf63630a9-master
         args:
         - --root=/go/src
-        - --clean"
+        - --clean
         - --job=$(JOB_NAME)
         - --repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)
         - --service-account=/etc/service-account/service-account.json
