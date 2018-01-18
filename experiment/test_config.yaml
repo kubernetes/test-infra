@@ -1004,7 +1004,7 @@ nodeImages:
     - --node-args=--instance-metadata=user-data<test/e2e_node/jenkins/gci-init.yaml,gci-update-strategy=update_disabled
   ubuntudev:
     args:
-    - --node-args=--images=ubuntu-gke-1604-xenial-v20171215
+    - --node-args=--images=ubuntu-gke-1604-xenial-v20180117
     - --node-args=--image-project=ubuntu-os-gke-cloud-devel
   ubuntudev2:
     args:
