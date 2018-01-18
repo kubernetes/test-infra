@@ -3,6 +3,7 @@
     "args": [
       "--branch=master",
       "--force",
+      "--prow",
       "--script='./hack/jenkins/benchmark-dockerized.sh ./test/integration/scheduler_perf'"
     ],
     "scenario": "kubernetes_verify",

@@ -6988,7 +6988,7 @@ postsubmits:
 
 periodics:
 - name: ci-benchmark-scheduler-master
-  interval: 1h
+  interval: 6h
   agent: kubernetes
   spec:
     containers:
@@ -6998,20 +6998,34 @@ periodics:
       - --timeout=40
       - --root=/go/src
       env:
+      # This job runs k8s integration test thus need dind
+      - name: DOCKER_IN_DOCKER_ENABLED
+        value: true
       - name: GOOGLE_APPLICATION_CREDENTIALS
         value: /etc/service-account/service-account.json
       - name: USER
         value: prow
       - name: GOPATH
         value: /go
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
       volumeMounts:
       - name: service
         mountPath: /etc/service-account
         readOnly: true
+      - name: docker-graph
+        mountPath: /docker-graph
+      ports:
+      - containerPort: 9999
+        hostPort: 9999
     volumes:
     - name: service
       secret:
         secretName: service-account
+    - name: docker-graph
+      hostPath:
+        path: /mnt/disks/ssd0/docker-graph
 
 - name: ci-cri-containerd-build
   interval: 30m
