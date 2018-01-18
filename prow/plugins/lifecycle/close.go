@@ -37,9 +37,6 @@ func closeHelp(config *plugins.Configuration, enabledRepos []string) (*pluginhel
 	// The Config field is omitted because this plugin is not configurable.
 	return &pluginhelp.PluginHelp{
 		Description: "Deprecated! Please use the lifecycle plugin instead of close.",
-		WhoCanUse:   "Authors and assignees of the pull request or issue.",
-		Usage:       "/close",
-		Examples:    []string{"/close"},
 	}, nil
 }
 
