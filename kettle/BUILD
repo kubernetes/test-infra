@@ -10,8 +10,8 @@ py_test(
     # https://github.com/bazelbuild/bazel/issues/2056
     local = True,
     deps = [
-        "@requests//:requests",
-        "@yaml//:yaml",
+        "@requests",
+        "@yaml",
     ],
 )
 
@@ -41,7 +41,7 @@ py_test(
     ],
     data = ["schema.json"],
     deps = [
-        "@requests//:requests",
+        "@requests",
     ],
 )
 
@@ -56,7 +56,7 @@ py_test(
     data = ["//:buckets"],
     # idem
     local = True,
-    deps = ["@yaml//:yaml"],
+    deps = ["@yaml"],
 )
 
 filegroup(

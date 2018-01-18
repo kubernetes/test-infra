@@ -67,6 +67,8 @@ type Server struct {
 
 	// Use prow to assign users to cherrypicked PRs.
 	prowAssignments bool
+	// Allow anybody to do cherrypicks.
+	allowAll bool
 
 	bare     *http.Client
 	patchURL string
@@ -75,7 +77,16 @@ type Server struct {
 	repos    []github.Repo
 }
 
-func NewServer(name, email string, hmac []byte, gc *git.Client, ghc *github.Client, repos []github.Repo, prowAssignments bool) *Server {
+func NewServer(
+	name string,
+	email string,
+	hmac []byte,
+	gc *git.Client,
+	ghc *github.Client,
+	repos []github.Repo,
+	prowAssignments bool,
+	allowAll bool,
+) *Server {
 	return &Server{
 		hmacSecret: hmac,
 		botName:    name,
@@ -86,6 +97,7 @@ func NewServer(name, email string, hmac []byte, gc *git.Client, ghc *github.Clie
 		log: logrus.StandardLogger().WithField("plugin", pluginName),
 
 		prowAssignments: prowAssignments,
+		allowAll:        allowAll,
 
 		bare:     &http.Client{},
 		patchURL: "https://patch-diff.githubusercontent.com",
@@ -165,15 +177,17 @@ func (s *Server) handleIssueComment(l *logrus.Entry, ic github.IssueCommentEvent
 	targetBranch := cherryPickMatches[0][1]
 
 	if ic.Issue.State != "closed" {
-		// Only members should be able to do cherry-picks.
-		ok, err := s.ghc.IsMember(org, commentAuthor)
-		if err != nil {
-			return err
-		}
-		if !ok {
-			resp := fmt.Sprintf("only [%s](https://github.com/orgs/%s/people) org members may request cherry picks. You can still do the cherry-pick manually.", org, org)
-			s.log.WithFields(l.Data).Info(resp)
-			return s.ghc.CreateComment(org, repo, num, plugins.FormatICResponse(ic.Comment, resp))
+		if !s.allowAll {
+			// Only members should be able to do cherry-picks.
+			ok, err := s.ghc.IsMember(org, commentAuthor)
+			if err != nil {
+				return err
+			}
+			if !ok {
+				resp := fmt.Sprintf("only [%s](https://github.com/orgs/%s/people) org members may request cherry picks. You can still do the cherry-pick manually.", org, org)
+				s.log.WithFields(l.Data).Info(resp)
+				return s.ghc.CreateComment(org, repo, num, plugins.FormatICResponse(ic.Comment, resp))
+			}
 		}
 		resp := fmt.Sprintf("once the present PR merges, I will cherry-pick it on top of %s in a new PR and assign it to you.", targetBranch)
 		s.log.WithFields(l.Data).Info(resp)
@@ -254,16 +268,18 @@ func (s *Server) handle(l *logrus.Entry, comment github.IssueComment, org, repo,
 		return s.ghc.CreateComment(org, repo, num, plugins.FormatICResponse(comment, resp))
 	}
 
-	// Only members should be able to do cherry-picks.
 	commentAuthor := comment.User.Login
-	ok, err := s.ghc.IsMember(org, commentAuthor)
-	if err != nil {
-		return err
-	}
-	if !ok {
-		resp := fmt.Sprintf("only [%s](https://github.com/orgs/%s/people) org members may request cherry picks. You can still do the cherry-pick manually.", org, org)
-		s.log.WithFields(l.Data).Info(resp)
-		return s.ghc.CreateComment(org, repo, num, plugins.FormatICResponse(comment, resp))
+	if !s.allowAll {
+		// Only org members should be able to do cherry-picks.
+		ok, err := s.ghc.IsMember(org, commentAuthor)
+		if err != nil {
+			return err
+		}
+		if !ok {
+			resp := fmt.Sprintf("only [%s](https://github.com/orgs/%s/people) org members may request cherry picks. You can still do the cherry-pick manually.", org, org)
+			s.log.WithFields(l.Data).Info(resp)
+			return s.ghc.CreateComment(org, repo, num, plugins.FormatICResponse(comment, resp))
+		}
 	}
 
 	if err := s.ensureForkExists(org, repo); err != nil {

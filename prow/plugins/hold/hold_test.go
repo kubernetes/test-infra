@@ -63,6 +63,13 @@ func TestHandle(t *testing.T) {
 			shouldUnlabel: true,
 		},
 		{
+			name:          "requested unhold",
+			body:          "/unhold",
+			hasLabel:      true,
+			shouldLabel:   false,
+			shouldUnlabel: true,
+		},
+		{
 			name:          "requested hold cancel, label already gone",
 			body:          "/hold cancel",
 			hasLabel:      false,

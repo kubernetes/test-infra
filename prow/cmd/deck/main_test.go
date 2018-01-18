@@ -299,7 +299,7 @@ func TestHelp(t *testing.T) {
 			t.Fatalf("Error unmarshaling: %v", err)
 		}
 		if !reflect.DeepEqual(help, res) {
-			t.Errorf("Invalid plugin help. Got %q, expected %q", res, help)
+			t.Errorf("Invalid plugin help. Got %v, expected %v", res, help)
 		}
 		if hitCount != 1 {
 			t.Errorf("Expected fake hook endpoint to be hit once, but endpoint was hit %d times.", hitCount)

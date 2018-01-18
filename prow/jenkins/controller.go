@@ -144,6 +144,11 @@ func (c *Controller) Sync() error {
 	if err != nil {
 		return fmt.Errorf("error listing prow jobs: %v", err)
 	}
+	// Share what we have for gathering metrics.
+	c.pjLock.Lock()
+	c.pjs = pjs
+	c.pjLock.Unlock()
+
 	// TODO: Replace the following filtering with a field selector once CRDs support field selectors.
 	// https://github.com/kubernetes/kubernetes/issues/53459
 	var jenkinsJobs []kube.ProwJob
@@ -162,11 +167,6 @@ func (c *Controller) Sync() error {
 	if err := c.terminateDupes(pjs, jbs); err != nil {
 		syncErrs = append(syncErrs, err)
 	}
-
-	// Share what we have for gathering metrics.
-	c.pjLock.Lock()
-	c.pjs = pjs
-	c.pjLock.Unlock()
 
 	pendingCh, triggeredCh := pjutil.PartitionActive(pjs)
 	errCh := make(chan error, len(pjs))

@@ -817,7 +817,7 @@ def create_parser():
     parser.add_argument(
         '--kops-nodes', default=4, type=int, help='Number of nodes to start')
     parser.add_argument(
-        '--kops-state', default='s3://k8s-kops-jenkins/',
+        '--kops-state', default='s3://k8s-kops-prow/',
         help='Name of the aws state storage')
     parser.add_argument(
         '--kops-state-gce', default='gs://k8s-kops-gce/',

@@ -27,6 +27,7 @@ import (
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
+	"k8s.io/test-infra/prow/plugins/assign"
 )
 
 const (
@@ -52,9 +53,6 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 		nil
 }
 
-// weightMap is a map of user to a weight for that user.
-type weightMap map[string]int64
-
 type ownersClient interface {
 	FindReviewersOwnersForPath(path string) string
 	Reviewers(path string) sets.String
@@ -67,7 +65,7 @@ type githubClient interface {
 }
 
 func handlePullRequest(pc plugins.PluginClient, pre github.PullRequestEvent) error {
-	if pre.Action != github.PullRequestActionOpened {
+	if pre.Action != github.PullRequestActionOpened || assign.CCRegexp.MatchString(pre.PullRequest.Body) {
 		return nil
 	}
 

@@ -20,7 +20,7 @@ ALPINE_VERSION           ?= 0.1
 # GIT_VERSION is the version of the alpine+git image
 GIT_VERSION              ?= 0.1
 # HOOK_VERSION is the version of the hook image
-HOOK_VERSION             ?= 0.194
+HOOK_VERSION             ?= 0.196
 # SINKER_VERSION is the version of the sinker image
 SINKER_VERSION           ?= 0.27
 # DECK_VERSION is the version of the deck image
@@ -34,7 +34,7 @@ HOROLOGIUM_VERSION       ?= 0.21
 # PLANK_VERSION is the version of the plank image
 PLANK_VERSION            ?= 0.65
 # JENKINS-OPERATOR_VERSION is the version of the jenkins-operator image
-JENKINS-OPERATOR_VERSION ?= 0.61
+JENKINS-OPERATOR_VERSION ?= 0.62
 # TIDE_VERSION is the version of the tide image
 TIDE_VERSION             ?= 0.20
 # CLONEREFS_VERSION is the version of the clonerefs image

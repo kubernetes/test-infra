@@ -75,29 +75,24 @@ func replace(j *Presubmit, ks *Presubmit) error {
 		sort.Strings(j.Spec.Containers[0].Args)
 		sort.Strings(ks.Spec.Containers[0].Args)
 		j.Spec.Containers[0].VolumeMounts = append(
-			[]kube.VolumeMount{
-				{
-					Name:      "ssh-security",
-					MountPath: "/etc/ssh-security",
-				},
+			j.Spec.Containers[0].VolumeMounts,
+			kube.VolumeMount{
+				Name:      "ssh-security",
+				MountPath: "/etc/ssh-security",
 			},
-			j.Spec.Containers[0].VolumeMounts...,
 		)
 		j.Spec.Volumes = append(
-			[]kube.Volume{
-				{
-					Name: "ssh-security",
-					VolumeSource: kube.VolumeSource{
-						Secret: &kube.SecretSource{
-							Name:        "ssh-security",
-							DefaultMode: 0400,
-						},
+			j.Spec.Volumes,
+			kube.Volume{
+				Name: "ssh-security",
+				VolumeSource: kube.VolumeSource{
+					Secret: &kube.SecretSource{
+						Name:        "ssh-security",
+						DefaultMode: 0400,
 					},
 				},
 			},
-			j.Spec.Volumes...,
 		)
-
 	}
 
 	j.re = ks.re
