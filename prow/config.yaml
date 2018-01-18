@@ -426,11 +426,71 @@ presubmits:
           path: /mnt/disks/ssd0
   kubernetes/kops:
   - name: pull-kops-e2e-kubernetes-aws
-    agent: jenkins
+    agent: kubernetes
     always_run: true
     context: pull-kops-e2e-kubernetes-aws
     rerun_command: "/test pull-kops-e2e-kubernetes-aws"
     trigger: "(?m)^/test( all| pull-kops-e2e-kubernetes-aws),?(\\s+|$)"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180108-bf63630a9-master
+        args:
+        - --root=/go/src
+        - --clean"
+        - --job=$(JOB_NAME)
+        - --repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)
+        - --service-account=/etc/service-account/service-account.json
+        - --upload=gs://kubernetes-jenkins/pr-logs
+        - --timeout=90
+        env:
+        - name: DOCKER_IN_DOCKER_ENABLED
+          value: true
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /etc/service-account/service-account.json
+        - name: USER
+          value: prow
+        - name: JENKINS_AWS_CREDENTIALS_FILE
+          value: /etc/aws-cred/credentials
+        - name: JENKINS_AWS_SSH_PRIVATE_KEY_FILE
+          value: /etc/aws-ssh/aws-ssh-private
+        - name: JENKINS_AWS_SSH_PUBLIC_KEY_FILE
+          value: /etc/aws-ssh/aws-ssh-public
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: service
+          mountPath: /etc/service-account
+          readOnly: true
+        - name: docker-graph
+          mountPath: /docker-graph
+        - mountPath: /etc/aws-ssh
+          name: aws-ssh
+          readOnly: true
+        - mountPath: /etc/aws-cred
+          name: aws-cred
+          readOnly: true
+        ports:
+        - containerPort: 9999
+          hostPort: 9999
+        resources:
+          requests:
+            memory: "6Gi"
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
+      - name: docker-graph
+        hostPath:
+          path: /mnt/disks/ssd0/docker-graph
+      - name: aws-ssh
+        secret:
+          defaultMode: 256
+          secretName: aws-ssh-key-secret
+      - name: aws-cred
+        secret:
+          defaultMode: 256
+          secretName: aws-cred-new
   kubernetes/cluster-registry:
   - name: pull-cluster-registry-bazel
     agent: kubernetes
