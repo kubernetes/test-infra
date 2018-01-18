@@ -18,6 +18,7 @@ package requiresig
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 
 	"k8s.io/test-infra/prow/github"
@@ -29,6 +30,8 @@ import (
 
 var (
 	labelPrefixes = []string{"sig/", "committee/", "wg/"}
+
+	sigCommandRe = regexp.MustCompile(`(?m)^/sig\s*(.*)$`)
 )
 
 const (
@@ -86,7 +89,7 @@ func helpProvider(config *plugins.Configuration, _ []string) (*pluginhelp.Plugin
 }
 
 func handleIssue(pc plugins.PluginClient, ie github.IssueEvent) error {
-	return handle(pc.Logger, pc.GitHubClient, pc.CommentPruner, &ie)
+	return handle(pc.Logger, pc.GitHubClient, pc.CommentPruner, &ie, pc.PluginConfig.SigMention.Re)
 }
 
 func isSigLabel(label string) bool {
@@ -116,9 +119,14 @@ func hasSigLabel(labels []github.Label) bool {
 // (5) if the issue has none of the labels, add the needs-sig label and comment
 // (6) if the issue has only the sig label, do nothing
 // (7) if the issue has only the needs-sig label, do nothing
-func handle(log *logrus.Entry, ghc githubClient, cp commentPruner, ie *github.IssueEvent) error {
+func handle(log *logrus.Entry, ghc githubClient, cp commentPruner, ie *github.IssueEvent, mentionRe *regexp.Regexp) error {
 	if ie.Issue.IsPullRequest() || ie.Issue.State == "closed" ||
 		(ie.Action != github.IssueActionOpened && ie.Action != github.IssueActionLabeled && ie.Action != github.IssueActionUnlabeled) {
+		return nil
+	}
+
+	// Check if the issue is being opened with a sig specified in the issue body (if so abort).
+	if ie.Action == github.IssueActionOpened && (mentionRe.MatchString(ie.Issue.Body) || sigCommandRe.MatchString(ie.Issue.Body)) {
 		return nil
 	}
 
