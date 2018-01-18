@@ -97,12 +97,21 @@ presubmits:
           value: /etc/service-account/service-account.json
         - name: CADVISOR_APPLICATION_CREDENTIALS
           value: /etc/cadvisor-service-account/service-account.json
+        - name: USER
+          value: prow
+        - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+          value: /etc/ssh-key-secret/ssh-private
+        - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+          value: /etc/ssh-key-secret/ssh-public
         volumeMounts:
         - name: service
           mountPath: /etc/service-account
           readOnly: true
         - name: cadvisor-service
           mountPath: /etc/cadvisor-service-account
+          readOnly: true
+        - name: ssh
+          mountPath: /etc/ssh-key-secret
           readOnly: true
       volumes:
       - name: service
@@ -111,6 +120,11 @@ presubmits:
       - name: cadvisor-service
         secret:
           secretName: cadvisor-service-account
+      - name: ssh
+        secret:
+          defaultMode: 256
+          secretName: ssh-key-secret
+
   google/kubeflow:
   - name: kubeflow-presubmit
     context: kubeflow-presubmit
