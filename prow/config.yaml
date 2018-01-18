@@ -46,6 +46,7 @@ tide:
     - kubernetes/kubernetes-template-project
     - kubernetes/kube-deploy
     - kubernetes/minikube
+    - kubernetes/repo-infra
     - kubernetes/sig-release
     - kubernetes/steering
     - kubernetes/test-infra
