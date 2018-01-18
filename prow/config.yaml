@@ -88,6 +88,7 @@ presubmits:
         args:
         - "--job=$(JOB_NAME)"
         - "--repo=github.com/$(REPO_OWNER)/$(REPO_NAME)=$(PULL_REFS)"
+        - "--root=/go/src"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--timeout=90"
