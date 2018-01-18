@@ -33,8 +33,8 @@ type fakeKubeClient struct {
 }
 
 func (c *fakeKubeClient) ReplaceConfigMap(name string, config kube.ConfigMap) (kube.ConfigMap, error) {
-	if config.Metadata.Name != name {
-		return kube.ConfigMap{}, fmt.Errorf("name %s does not match configmap name %s", name, config.Metadata.Name)
+	if config.ObjectMeta.Name != name {
+		return kube.ConfigMap{}, fmt.Errorf("name %s does not match configmap name %s", name, config.ObjectMeta.Name)
 	}
 	c.maps[name] = config
 	return c.maps[name], nil

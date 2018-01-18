@@ -166,7 +166,7 @@ func (s *Server) handleIssueComment(l *logrus.Entry, ic github.IssueCommentEvent
 	jenkinsReport := s.configAgent.Config().JenkinsOperator.ReportTemplate
 	kubeReport := s.configAgent.Config().Plank.ReportTemplate
 	for _, pj := range pjutil.GetLatestProwJobs(presubmits, kube.PresubmitJob) {
-		s.log.WithFields(l.Data).Infof("Refreshing the status of job %q (pj: %s)", pj.Spec.Job, pj.Metadata.Name)
+		s.log.WithFields(l.Data).Infof("Refreshing the status of job %q (pj: %s)", pj.Spec.Job, pj.ObjectMeta.Name)
 		reportTemplate := jenkinsReport
 		if pj.Spec.Agent == "kubernetes" {
 			reportTemplate = kubeReport

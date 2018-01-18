@@ -674,7 +674,7 @@ func TestURLTemplate(t *testing.T) {
 
 	for _, tc := range testcases {
 		var pj = kube.ProwJob{
-			Metadata: kube.ObjectMeta{Name: tc.name},
+			ObjectMeta: kube.ObjectMeta{Name: tc.name},
 			Spec: kube.ProwJobSpec{
 				Type: tc.jobType,
 				Job:  tc.job,

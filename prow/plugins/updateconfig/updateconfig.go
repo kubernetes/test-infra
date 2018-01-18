@@ -77,7 +77,7 @@ func handleConfig(gc githubClient, kc kubeClient, org, repo, commit, configFile 
 	}
 
 	c := kube.ConfigMap{
-		Metadata: kube.ObjectMeta{
+		ObjectMeta: kube.ObjectMeta{
 			Name: "config",
 		},
 		Data: map[string]string{
@@ -96,7 +96,7 @@ func handlePlugin(gc githubClient, kc kubeClient, org, repo, commit, pluginFile 
 	}
 
 	c := kube.ConfigMap{
-		Metadata: kube.ObjectMeta{
+		ObjectMeta: kube.ObjectMeta{
 			Name: "plugins",
 		},
 		Data: map[string]string{

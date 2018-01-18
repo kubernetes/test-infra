@@ -44,7 +44,7 @@ func (c *fakeClient) ListPods(selector string) ([]kube.Pod, error) {
 	}
 	pl := make([]kube.Pod, 0, len(c.Pods))
 	for _, p := range c.Pods {
-		if s.Matches(labels.Set(p.Metadata.Labels)) {
+		if s.Matches(labels.Set(p.ObjectMeta.Labels)) {
 			pl = append(pl, p)
 		}
 	}
@@ -58,7 +58,7 @@ func (c *fakeClient) ListProwJobs(selector string) ([]kube.ProwJob, error) {
 	}
 	jl := make([]kube.ProwJob, 0, len(c.ProwJobs))
 	for _, j := range c.ProwJobs {
-		if s.Matches(labels.Set(j.Metadata.Labels)) {
+		if s.Matches(labels.Set(j.ObjectMeta.Labels)) {
 			jl = append(jl, j)
 		}
 	}
@@ -67,7 +67,7 @@ func (c *fakeClient) ListProwJobs(selector string) ([]kube.ProwJob, error) {
 
 func (c *fakeClient) DeleteProwJob(name string) error {
 	for i, j := range c.ProwJobs {
-		if j.Metadata.Name == name {
+		if j.ObjectMeta.Name == name {
 			c.ProwJobs = append(c.ProwJobs[:i], c.ProwJobs[i+1:]...)
 			c.DeletedProwJobs = append(c.DeletedProwJobs, j)
 			return nil
@@ -78,7 +78,7 @@ func (c *fakeClient) DeleteProwJob(name string) error {
 
 func (c *fakeClient) DeletePod(name string) error {
 	for i, p := range c.Pods {
-		if p.Metadata.Name == name {
+		if p.ObjectMeta.Name == name {
 			c.Pods = append(c.Pods[:i], c.Pods[i+1:]...)
 			c.DeletedPods = append(c.DeletedPods, p)
 			return nil
@@ -118,7 +118,7 @@ func (f *fca) Config() *config.Config {
 func TestClean(t *testing.T) {
 	pods := []kube.Pod{
 		{
-			Metadata: kube.ObjectMeta{
+			ObjectMeta: kube.ObjectMeta{
 				Name: "old-failed",
 				Labels: map[string]string{
 					kube.CreatedByProw: "true",
@@ -130,7 +130,7 @@ func TestClean(t *testing.T) {
 			},
 		},
 		{
-			Metadata: kube.ObjectMeta{
+			ObjectMeta: kube.ObjectMeta{
 				Name: "old-succeeded",
 				Labels: map[string]string{
 					kube.CreatedByProw: "true",
@@ -142,7 +142,7 @@ func TestClean(t *testing.T) {
 			},
 		},
 		{
-			Metadata: kube.ObjectMeta{
+			ObjectMeta: kube.ObjectMeta{
 				Name: "old-just-complete",
 				Labels: map[string]string{
 					kube.CreatedByProw: "true",
@@ -154,7 +154,7 @@ func TestClean(t *testing.T) {
 			},
 		},
 		{
-			Metadata: kube.ObjectMeta{
+			ObjectMeta: kube.ObjectMeta{
 				Name: "new-failed",
 				Labels: map[string]string{
 					kube.CreatedByProw: "true",
@@ -166,7 +166,7 @@ func TestClean(t *testing.T) {
 			},
 		},
 		{
-			Metadata: kube.ObjectMeta{
+			ObjectMeta: kube.ObjectMeta{
 				Name: "old-running",
 				Labels: map[string]string{
 					kube.CreatedByProw: "true",
@@ -178,7 +178,7 @@ func TestClean(t *testing.T) {
 			},
 		},
 		{
-			Metadata: kube.ObjectMeta{
+			ObjectMeta: kube.ObjectMeta{
 				Name: "unrelated-failed",
 				Labels: map[string]string{
 					kube.CreatedByProw: "not really",
@@ -190,7 +190,7 @@ func TestClean(t *testing.T) {
 			},
 		},
 		{
-			Metadata: kube.ObjectMeta{
+			ObjectMeta: kube.ObjectMeta{
 				Name: "unrelated-complete",
 			},
 			Status: kube.PodStatus{
@@ -209,7 +209,7 @@ func TestClean(t *testing.T) {
 	}
 	prowJobs := []kube.ProwJob{
 		{
-			Metadata: kube.ObjectMeta{
+			ObjectMeta: kube.ObjectMeta{
 				Name: "old-failed",
 			},
 			Status: kube.ProwJobStatus{
@@ -218,7 +218,7 @@ func TestClean(t *testing.T) {
 			},
 		},
 		{
-			Metadata: kube.ObjectMeta{
+			ObjectMeta: kube.ObjectMeta{
 				Name: "old-succeeded",
 			},
 			Status: kube.ProwJobStatus{
@@ -227,7 +227,7 @@ func TestClean(t *testing.T) {
 			},
 		},
 		{
-			Metadata: kube.ObjectMeta{
+			ObjectMeta: kube.ObjectMeta{
 				Name: "old-just-complete",
 			},
 			Status: kube.ProwJobStatus{
@@ -235,7 +235,7 @@ func TestClean(t *testing.T) {
 			},
 		},
 		{
-			Metadata: kube.ObjectMeta{
+			ObjectMeta: kube.ObjectMeta{
 				Name: "old-complete",
 			},
 			Status: kube.ProwJobStatus{
@@ -244,7 +244,7 @@ func TestClean(t *testing.T) {
 			},
 		},
 		{
-			Metadata: kube.ObjectMeta{
+			ObjectMeta: kube.ObjectMeta{
 				Name: "old-incomplete",
 			},
 			Status: kube.ProwJobStatus{
@@ -252,7 +252,7 @@ func TestClean(t *testing.T) {
 			},
 		},
 		{
-			Metadata: kube.ObjectMeta{
+			ObjectMeta: kube.ObjectMeta{
 				Name: "new",
 			},
 			Status: kube.ProwJobStatus{
@@ -260,7 +260,7 @@ func TestClean(t *testing.T) {
 			},
 		},
 		{
-			Metadata: kube.ObjectMeta{
+			ObjectMeta: kube.ObjectMeta{
 				Name: "newer-periodic",
 			},
 			Spec: kube.ProwJobSpec{
@@ -273,7 +273,7 @@ func TestClean(t *testing.T) {
 			},
 		},
 		{
-			Metadata: kube.ObjectMeta{
+			ObjectMeta: kube.ObjectMeta{
 				Name: "older-periodic",
 			},
 			Spec: kube.ProwJobSpec{
@@ -286,7 +286,7 @@ func TestClean(t *testing.T) {
 			},
 		},
 		{
-			Metadata: kube.ObjectMeta{
+			ObjectMeta: kube.ObjectMeta{
 				Name: "oldest-periodic",
 			},
 			Spec: kube.ProwJobSpec{
@@ -299,7 +299,7 @@ func TestClean(t *testing.T) {
 			},
 		},
 		{
-			Metadata: kube.ObjectMeta{
+			ObjectMeta: kube.ObjectMeta{
 				Name: "old-failed-trusted",
 			},
 			Status: kube.ProwJobStatus{
@@ -318,7 +318,7 @@ func TestClean(t *testing.T) {
 	}
 	podsTrusted := []kube.Pod{
 		{
-			Metadata: kube.ObjectMeta{
+			ObjectMeta: kube.ObjectMeta{
 				Name: "old-failed-trusted",
 				Labels: map[string]string{
 					kube.CreatedByProw: "true",
@@ -353,7 +353,7 @@ func TestClean(t *testing.T) {
 		if len(deletedPods) != len(kc.DeletedPods) {
 			var got []string
 			for _, pj := range kc.DeletedPods {
-				got = append(got, pj.Metadata.Name)
+				got = append(got, pj.ObjectMeta.Name)
 			}
 			t.Errorf("Deleted wrong number of pods: got %d (%v), expected %d (%v)",
 				len(got), strings.Join(got, ", "), len(deletedPods), strings.Join(deletedPods, ", "))
@@ -361,7 +361,7 @@ func TestClean(t *testing.T) {
 		for _, n := range deletedPods {
 			found := false
 			for _, p := range kc.DeletedPods {
-				if p.Metadata.Name == n {
+				if p.ObjectMeta.Name == n {
 					found = true
 				}
 			}
@@ -372,7 +372,7 @@ func TestClean(t *testing.T) {
 		if len(deletedProwJobs) != len(kc.DeletedProwJobs) {
 			var got []string
 			for _, pj := range kc.DeletedProwJobs {
-				got = append(got, pj.Metadata.Name)
+				got = append(got, pj.ObjectMeta.Name)
 			}
 			t.Errorf("Deleted wrong number of prowjobs: got %d (%s), expected %d (%s)",
 				len(got), strings.Join(got, ", "), len(deletedProwJobs), strings.Join(deletedProwJobs, ", "))
@@ -380,7 +380,7 @@ func TestClean(t *testing.T) {
 		for _, n := range deletedProwJobs {
 			found := false
 			for _, j := range kc.DeletedProwJobs {
-				if j.Metadata.Name == n {
+				if j.ObjectMeta.Name == n {
 					found = true
 				}
 			}
