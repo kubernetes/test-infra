@@ -193,6 +193,7 @@
   },
   "ci-ingress-gce-e2e": {
     "args": [
+      "--check-leaked-resources",
       "--cluster=",
       "--env=GCE_GLBC_IMAGE=gcr.io/e2e-ingress-gce/ingress-gce-e2e-glbc-amd64:latest",
       "--extract=ci/latest",
@@ -4546,6 +4547,7 @@
   },
   "ci-kubernetes-e2e-gci-gce-ingress": {
     "args": [
+      "--check-leaked-resources",
       "--env-file=jobs/platform/gce.env",
       "--extract=ci/latest",
       "--gcp-node-image=gci",
@@ -4561,6 +4563,7 @@
   },
   "ci-kubernetes-e2e-gci-gce-ingress-manual-network": {
     "args": [
+      "--check-leaked-resources",
       "--env=CREATE_CUSTOM_NETWORK=true",
       "--extract=ci/latest",
       "--gcp-node-image=gci",
@@ -4912,6 +4915,7 @@
   },
   "ci-kubernetes-e2e-gci-gke-ingress": {
     "args": [
+      "--check-leaked-resources",
       "--cluster=",
       "--deployment=gke",
       "--extract=ci/latest",
