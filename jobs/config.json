@@ -11022,7 +11022,7 @@
   "pull-kops-e2e-kubernetes-aws": {
     "args": [
       "--aws",
-      "--aws-cluster-domain=test-aws.k8s.io",
+      "--aws-cluster-domain=test-cncf-aws.k8s.io",
       "--check-leaked-resources=false",
       "--cluster=",
       "--env-file=jobs/platform/kops_aws.env",
