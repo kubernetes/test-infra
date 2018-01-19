@@ -27,7 +27,7 @@ TMP_GOPATH=$(mktemp -d)
 
 "${TESTINFRA_ROOT}/hack/go_install_from_commit.sh" \
   github.com/bazelbuild/bazel-gazelle/cmd/gazelle \
-  0.8 \
+  eaa1e87d2a3ca716780ca6650ef5b9b9663b8773 \
   "${TMP_GOPATH}"
 
 touch "${TESTINFRA_ROOT}/vendor/BUILD"
