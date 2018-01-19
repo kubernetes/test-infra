@@ -31,19 +31,19 @@ type ObjectMeta struct {
 }
 
 type Secret struct {
-	Metadata ObjectMeta        `json:"metadata,omitempty"`
-	Data     map[string]string `json:"data,omitempty"`
+	ObjectMeta ObjectMeta        `json:"metadata,omitempty"`
+	Data       map[string]string `json:"data,omitempty"`
 }
 
 type PodTemplateSpec struct {
-	Metadata ObjectMeta `json:"metadata,omitempty"`
-	Spec     PodSpec    `json:"spec,omitempty"`
+	ObjectMeta ObjectMeta `json:"metadata,omitempty"`
+	Spec       PodSpec    `json:"spec,omitempty"`
 }
 
 type Pod struct {
-	Metadata ObjectMeta `json:"metadata,omitempty"`
-	Spec     PodSpec    `json:"spec,omitempty"`
-	Status   PodStatus  `json:"status,omitempty"`
+	ObjectMeta ObjectMeta `json:"metadata,omitempty"`
+	Spec       PodSpec    `json:"spec,omitempty"`
+	Status     PodStatus  `json:"status,omitempty"`
 }
 
 type PodSpec struct {
@@ -200,8 +200,8 @@ type VolumeMount struct {
 }
 
 type ConfigMap struct {
-	Metadata ObjectMeta        `json:"metadata,omitempty"`
-	Data     map[string]string `json:"data,omitempty"`
+	ObjectMeta ObjectMeta        `json:"metadata,omitempty"`
+	Data       map[string]string `json:"data,omitempty"`
 }
 
 type Toleration struct {

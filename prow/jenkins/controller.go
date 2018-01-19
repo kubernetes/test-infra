@@ -252,7 +252,7 @@ func (c *Controller) terminateDupes(pjs []kube.ProwJob, jbs map[string]JenkinsBu
 		// Allow aborting presubmit jobs for commits that have been superseded by
 		// newer commits in Github pull requests.
 		if c.ca.Config().JenkinsOperator.AllowCancellations {
-			build, buildExists := jbs[toCancel.Metadata.Name]
+			build, buildExists := jbs[toCancel.ObjectMeta.Name]
 			// Avoid cancelling enqueued builds.
 			if buildExists && build.IsEnqueued() {
 				continue
@@ -270,7 +270,7 @@ func (c *Controller) terminateDupes(pjs []kube.ProwJob, jbs map[string]JenkinsBu
 		c.log.WithFields(pjutil.ProwJobFields(&toCancel)).
 			WithField("from", prevState).
 			WithField("to", toCancel.Status.State).Info("Transitioning states.")
-		npj, err := c.kc.ReplaceProwJob(toCancel.Metadata.Name, toCancel)
+		npj, err := c.kc.ReplaceProwJob(toCancel.ObjectMeta.Name, toCancel)
 		if err != nil {
 			return err
 		}
@@ -312,7 +312,7 @@ func (c *Controller) syncPendingJob(pj kube.ProwJob, reports chan<- kube.ProwJob
 	// Record last known state so we can log state transitions.
 	prevState := pj.Status.State
 
-	jb, jbExists := jbs[pj.Metadata.Name]
+	jb, jbExists := jbs[pj.ObjectMeta.Name]
 	if !jbExists {
 		pj.SetComplete()
 		pj.Status.State = kube.ErrorState
@@ -339,11 +339,11 @@ func (c *Controller) syncPendingJob(pj kube.ProwJob, reports chan<- kube.ProwJob
 			pj.Status.State = kube.SuccessState
 			pj.Status.Description = "Jenkins job succeeded."
 			for _, nj := range pj.Spec.RunAfterSuccess {
-				child := pjutil.NewProwJob(nj, pj.Metadata.Labels)
+				child := pjutil.NewProwJob(nj, pj.ObjectMeta.Labels)
 				if !c.RunAfterSuccessCanRun(&pj, &child, c.ca, c.ghc) {
 					continue
 				}
-				if _, err := c.kc.CreateProwJob(pjutil.NewProwJob(nj, pj.Metadata.Labels)); err != nil {
+				if _, err := c.kc.CreateProwJob(pjutil.NewProwJob(nj, pj.ObjectMeta.Labels)); err != nil {
 					return fmt.Errorf("error starting next prowjob: %v", err)
 				}
 			}
@@ -374,7 +374,7 @@ func (c *Controller) syncPendingJob(pj kube.ProwJob, reports chan<- kube.ProwJob
 			WithField("from", prevState).
 			WithField("to", pj.Status.State).Info("Transitioning states.")
 	}
-	_, err := c.kc.ReplaceProwJob(pj.Metadata.Name, pj)
+	_, err := c.kc.ReplaceProwJob(pj.ObjectMeta.Name, pj)
 	return err
 }
 
@@ -382,7 +382,7 @@ func (c *Controller) syncTriggeredJob(pj kube.ProwJob, reports chan<- kube.ProwJ
 	// Record last known state so we can log state transitions.
 	prevState := pj.Status.State
 
-	if _, jbExists := jbs[pj.Metadata.Name]; !jbExists {
+	if _, jbExists := jbs[pj.ObjectMeta.Name]; !jbExists {
 		// Do not start more jobs than specified.
 		if !c.canExecuteConcurrently(&pj) {
 			return nil
@@ -412,7 +412,7 @@ func (c *Controller) syncTriggeredJob(pj kube.ProwJob, reports chan<- kube.ProwJ
 			WithField("from", prevState).
 			WithField("to", pj.Status.State).Info("Transitioning states.")
 	}
-	_, err := c.kc.ReplaceProwJob(pj.Metadata.Name, pj)
+	_, err := c.kc.ReplaceProwJob(pj.ObjectMeta.Name, pj)
 	return err
 }
 

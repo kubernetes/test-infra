@@ -124,11 +124,11 @@ func (c *controller) clean() {
 		if !prowJob.Complete() {
 			continue
 		}
-		isFinished[prowJob.Metadata.Name] = true
+		isFinished[prowJob.ObjectMeta.Name] = true
 		if time.Since(prowJob.Status.StartTime) <= maxProwJobAge {
 			continue
 		}
-		if err := c.kc.DeleteProwJob(prowJob.Metadata.Name); err == nil {
+		if err := c.kc.DeleteProwJob(prowJob.ObjectMeta.Name); err == nil {
 			c.logger.WithFields(pjutil.ProwJobFields(&prowJob)).Info("Deleted prowjob.")
 		} else {
 			c.logger.WithFields(pjutil.ProwJobFields(&prowJob)).WithError(err).Error("Error deleting prowjob.")
@@ -151,18 +151,18 @@ func (c *controller) clean() {
 		}
 
 		latestPJ := latestPeriodics[prowJob.Spec.Job]
-		if isActivePeriodic[prowJob.Spec.Job] && prowJob.Metadata.Name == latestPJ.Metadata.Name {
+		if isActivePeriodic[prowJob.Spec.Job] && prowJob.ObjectMeta.Name == latestPJ.ObjectMeta.Name {
 			// Ignore deleting this one.
 			continue
 		}
 		if !prowJob.Complete() {
 			continue
 		}
-		isFinished[prowJob.Metadata.Name] = true
+		isFinished[prowJob.ObjectMeta.Name] = true
 		if time.Since(prowJob.Status.StartTime) <= maxProwJobAge {
 			continue
 		}
-		if err := c.kc.DeleteProwJob(prowJob.Metadata.Name); err == nil {
+		if err := c.kc.DeleteProwJob(prowJob.ObjectMeta.Name); err == nil {
 			c.logger.WithFields(pjutil.ProwJobFields(&prowJob)).Info("Deleted prowjob.")
 		} else {
 			c.logger.WithFields(pjutil.ProwJobFields(&prowJob)).WithError(err).Error("Error deleting prowjob.")
@@ -179,7 +179,7 @@ func (c *controller) clean() {
 		}
 		maxPodAge := c.configAgent.Config().Sinker.MaxPodAge
 		for _, pod := range pods {
-			if _, ok := isFinished[pod.Metadata.Name]; !ok {
+			if _, ok := isFinished[pod.ObjectMeta.Name]; !ok {
 				// prowjob is not marked as completed yet
 				// deleting the pod now will result in plank creating a brand new pod
 				continue
@@ -187,10 +187,10 @@ func (c *controller) clean() {
 			if (pod.Status.Phase == kube.PodSucceeded || pod.Status.Phase == kube.PodFailed) &&
 				time.Since(pod.Status.StartTime) > maxPodAge {
 				// Delete old completed pods. Don't quit if we fail to delete one.
-				if err := client.DeletePod(pod.Metadata.Name); err == nil {
-					c.logger.WithField("pod", pod.Metadata.Name).Info("Deleted old completed pod.")
+				if err := client.DeletePod(pod.ObjectMeta.Name); err == nil {
+					c.logger.WithField("pod", pod.ObjectMeta.Name).Info("Deleted old completed pod.")
 				} else {
-					c.logger.WithField("pod", pod.Metadata.Name).WithError(err).Error("Error deleting pod.")
+					c.logger.WithField("pod", pod.ObjectMeta.Name).WithError(err).Error("Error deleting pod.")
 				}
 			}
 		}

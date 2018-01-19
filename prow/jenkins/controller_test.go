@@ -110,7 +110,7 @@ func (f *fkc) ReplaceProwJob(name string, job kube.ProwJob) (kube.ProwJob, error
 	f.Lock()
 	defer f.Unlock()
 	for i := range f.prowjobs {
-		if f.prowjobs[i].Metadata.Name == name {
+		if f.prowjobs[i].ObjectMeta.Name == name {
 			f.prowjobs[i] = job
 			return job, nil
 		}
@@ -362,7 +362,7 @@ func TestSyncPendingJobs(t *testing.T) {
 		{
 			name: "enqueued",
 			pj: kube.ProwJob{
-				Metadata: kube.ObjectMeta{
+				ObjectMeta: kube.ObjectMeta{
 					Name: "foofoo",
 				},
 				Spec: kube.ProwJobSpec{
@@ -382,7 +382,7 @@ func TestSyncPendingJobs(t *testing.T) {
 		{
 			name: "finished queue",
 			pj: kube.ProwJob{
-				Metadata: kube.ObjectMeta{
+				ObjectMeta: kube.ObjectMeta{
 					Name: "boing",
 				},
 				Spec: kube.ProwJobSpec{
@@ -404,7 +404,7 @@ func TestSyncPendingJobs(t *testing.T) {
 		{
 			name: "building",
 			pj: kube.ProwJob{
-				Metadata: kube.ObjectMeta{
+				ObjectMeta: kube.ObjectMeta{
 					Name: "firstoutthetrenches",
 				},
 				Spec: kube.ProwJobSpec{
@@ -424,7 +424,7 @@ func TestSyncPendingJobs(t *testing.T) {
 		{
 			name: "missing build",
 			pj: kube.ProwJob{
-				Metadata: kube.ObjectMeta{
+				ObjectMeta: kube.ObjectMeta{
 					Name: "blabla",
 				},
 				Spec: kube.ProwJobSpec{
@@ -454,7 +454,7 @@ func TestSyncPendingJobs(t *testing.T) {
 		{
 			name: "finished, success",
 			pj: kube.ProwJob{
-				Metadata: kube.ObjectMeta{
+				ObjectMeta: kube.ObjectMeta{
 					Name: "winwin",
 				},
 				Spec: kube.ProwJobSpec{
@@ -475,7 +475,7 @@ func TestSyncPendingJobs(t *testing.T) {
 		{
 			name: "finished, failed",
 			pj: kube.ProwJob{
-				Metadata: kube.ObjectMeta{
+				ObjectMeta: kube.ObjectMeta{
 					Name: "whatapity",
 				},
 				Spec: kube.ProwJobSpec{
@@ -581,7 +581,7 @@ func TestBatch(t *testing.T) {
 			},
 		},
 	}), nil)
-	pj.Metadata.Name = "known_name"
+	pj.ObjectMeta.Name = "known_name"
 	fc := &fkc{
 		prowjobs: []kube.ProwJob{pj},
 	}
