@@ -228,7 +228,16 @@ func newGKE(provider, project, zone, region, network, image, cluster string, tes
 	*testArgs = strings.Join(setFieldDefault(strings.Fields(*testArgs), "--num-nodes", numNodes), " ")
 
 	if *upgradeArgs != "" {
-		*upgradeArgs = strings.Join(setFieldDefault(strings.Fields(*upgradeArgs), "--num-nodes", numNodes), " ")
+		fields, val, exist := extractField(strings.Fields(*upgradeArgs), "--upgrade-target")
+		if exist {
+			if val == "gke-latest" {
+				if val, err = getLatestGKEVersion(project, zone); err != nil {
+					return nil, fmt.Errorf("fail to get latest gke version : %v", err)
+				}
+			}
+			fields = setFieldDefault(fields, "--upgrade-target", val)
+		}
+		*upgradeArgs = strings.Join(setFieldDefault(fields, "--num-nodes", numNodes), " ")
 	}
 
 	return g, nil

@@ -561,3 +561,17 @@ func flushMem() {
 		log.Printf("flushMem error (page cache): %v", err)
 	}
 }
+
+// getLatestGKEVersion will return newest validMasterVersions
+// only works in gke environment
+func getLatestGKEVersion(project, zone string) (string, error) {
+	res, err := output(exec.Command("gcloud", "container", "get-server-config", fmt.Sprintf("--project=%v", project), fmt.Sprintf("--zone=%v", zone), "--format=value(validMasterVersions)"))
+	if err != nil {
+		return "", err
+	}
+	versions := strings.Split(string(res), ";")
+	if len(versions) == 0 {
+		return "", fmt.Errorf("invalid gke master version string: %s", string(res))
+	}
+	return "v" + versions[0], nil
+}
