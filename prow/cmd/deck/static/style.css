@@ -1,5 +1,4 @@
 body {
-    font-family: "Roboto", "Arial", sans-serif;
     line-height: 1.4;
     background: #f4f4f4;
     color: #444;
@@ -55,10 +54,6 @@ ul.noBullets li {
     display: inline-block;
 }
 
-ul, ul li {
-    list-style-type: circle;
-}
-
 select {
     height: 1.4em;
     border: none;
@@ -77,10 +72,6 @@ table {
     box-shadow: 0 0 4px #e0e0e0;
     border-collapse: collapse;
     width: 100%;
-}
-
-table.headered {
-    background: initial;
 }
 
 tr {
@@ -161,11 +152,6 @@ a:link {
     text-align: center;
 }
 
-#plugin-shrug {
-    display: none;
-}
-
-
 #queries li {
     padding: .5em .35em;
     line-height: 1.75;
@@ -202,48 +188,52 @@ span.label:hover {
     font-weight: bold;
 }
 
-.plugin-details {
-    margin: 8px 24px;
-}
-
-.plugin-header {
-    color: blue;
-    cursor: pointer;
-    margin: 0 8px;
-}
-
-.plugins-header {
-    font-weight: bold;
-    font-size: 24px;
-    padding: 24px 0;
-}
-
-.plugin-help-row {
-    background-color: #fff;
-    font-size: 18px;
-    font-weight: bold;
-    margin: 4px 0;
-    padding: 12px 0;
-}
-
-.plugin-description {
-    border-radius: 2px;
-    box-shadow: 0 0 4px #e0e0e0;
-    margin: 8px;
-    padding: 8px;
-}
-
-.plugin-section-header {
-    font-size: 16px;
-    font-weight: bold;
-    margin: 0;
-}
-
 .card-box {
     background-color: white;
     border-radius: 2px;
     box-shadow: 0 0 4px #e0e0e0;
     padding: 8px 8px;
+}
+
+.plugin-table {
+    margin: 8px;
+    display: none;
+    font-family: "Roboto", "Arial", sans-serif;
+}
+
+.command-examples {
+    background-color: #e5e5e5;
+    border-radius: 2px;
+    box-shadow: 1px 1px 2px #ededed;
+    display: inline-block;
+    font-size: 14px;
+    margin: 4px 0;
+    padding: 2px 8px;
+}
+
+.command-example-list {
+  list-style-type: none;
+  padding: 0;
+}
+
+.table-cell {
+  white-space: pre-wrap; /* css-3 */
+  white-space: -moz-pre-wrap; /* Mozilla, since 1999 */
+  white-space: -o-pre-wrap; /* Opera 7 */
+  word-wrap: break-word; /* Internet Explorer 5.5+ */
+}
+
+.command-desc-text {
+    font-size: 14px;
+    overflow-wrap: break-word;
+}
+
+#dialog {
+  width: 500px;
+}
+
+.dialog-section-title {
+  font-weight: bold;
 }
 
 .fuzzy-search {
@@ -282,6 +272,14 @@ span.label:hover {
 
 .active-fuzzy-search {
     display: block;
+}
+
+.featured-icon {
+    color: #FDD835;
+}
+
+.external-icon {
+    color: #78909C;
 }
 
 /* Known GitHub Labels, can be overriden in extensions/style.css */

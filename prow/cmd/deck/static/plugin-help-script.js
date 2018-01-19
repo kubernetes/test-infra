@@ -1,41 +1,44 @@
 "use strict";
 
-const closedArrow = "\u25b6 ";
-const openedArrow = "\u25bc ";
-
 function getParameterByName(name) {  // http://stackoverflow.com/a/5158301/3694
-    var match = RegExp('[?&]' + name + '=([^&/]*)').exec(window.location.search);
+    const match = new RegExp('[?&]' + name + '=([^&/]*)').exec(window.location.search);
     return match && decodeURIComponent(match[1].replace(/\+/g, ' '));
 }
 
 function redrawOptions() {
-    var rs = allHelp.AllRepos.sort();
-    var sel = document.getElementById("repo");
-    while (sel.length > 1)
+    const rs = allHelp.AllRepos.sort();
+    const sel = document.getElementById("repo");
+    while (sel.length > 1) {
         sel.removeChild(sel.lastChild);
-    var param = getParameterByName("repo");
-    for (var i = 0; i < rs.length; i++) {
-        var o = document.createElement("option");
-        o.text = rs[i];
-        if (param && rs[i] === param) {
-            o.selected = true;
-        }
-        sel.appendChild(o);
     }
-};
+    const param = getParameterByName("repo");
+    rs.forEach((opt) => {
+        const o = document.createElement("option");
+        o.text = opt;
+        o.selected = (param && opt === param);
+        sel.appendChild(o);
+    });
+}
 
-window.onload = function() {
+window.onload = function () {
     // set dropdown based on options from query string
     redrawOptions();
     redraw();
+
+    // Register dialog
+    const dialog = document.querySelector('dialog');
+    dialogPolyfill.registerDialog(dialog);
+    dialog.querySelector('.close').addEventListener('click', () => {
+        dialog.close();
+    });
 };
 
-document.addEventListener("DOMContentLoaded", function(event) {
-   configure();
+document.addEventListener("DOMContentLoaded", () => {
+    configure();
 });
 
 function configure() {
-    if(!branding){
+    if (!branding) {
         return;
     }
     if (branding.logo) {
@@ -53,166 +56,307 @@ function configure() {
 }
 
 function selectionText(sel) {
-    return sel.selectedIndex == 0 ? "" : sel.options[sel.selectedIndex].text;
+    return sel.selectedIndex === 0 ? "" : sel.options[sel.selectedIndex].text;
 }
 
-// applicablePlugins takes an org/repo string and a repo to plugin map and returns the plugins that apply to the repo.
+/**
+ * Takes an org/repo string and a repo to plugin map and returns the plugins
+ * that apply to the repo.
+ * @param {string} repoSel repo name
+ * @param {Map<string, PluginHelp>} repoPlugins maps plugin name to plugin
+ * @return {Array<string>}
+ */
 function applicablePlugins(repoSel, repoPlugins) {
-    if (repoSel == "") {
-        var all = repoPlugins[""];
+    if (repoSel === "") {
+        const all = repoPlugins[""];
         if (all) {
             return all.sort();
         }
         return [];
     }
-    var parts = repoSel.split("/")
-    var plugins = [];
-    var byOrg = repoPlugins[parts[0]];
-    if (byOrg && byOrg != []) {
+    const parts = repoSel.split("/");
+    const byOrg = repoPlugins[parts[0]];
+    let plugins = [];
+    if (byOrg && byOrg !== []) {
         plugins = plugins.concat(byOrg);
     }
-    var byRepo = repoPlugins[repoSel];
-    if (byRepo) {
-        for (var i = 0; i < byRepo.length; i ++) {
-            if (!plugins.includes(byRepo[i])) {
-                plugins.push(byRepo[i]);
+    const pluginNames = repoPlugins[repoSel];
+    if (!pluginNames) {
+        return [];
+    }
+    pluginNames.forEach((pluginNames) => {
+        if (!plugins.includes(pluginNames)) {
+            plugins.push(pluginNames);
+        }
+    });
+    return plugins.sort();
+}
+
+/**
+ * Returns a normal cell for the command row.
+ * @param {Array<string>|string} data content of the cell
+ * @param {Array<string>} styles a list of styles applied to the cell.
+ * @param {boolean} noWrap true if the content of the cell should be wrap.
+ * @return {Element}
+ */
+function createCommandCell(data, styles = [], noWrap = false) {
+    const cell = document.createElement("TD");
+    cell.classList.add("mdl-data-table__cell--non-numeric");
+    if (!noWrap) {
+        cell.classList.add("table-cell");
+    }
+    let content;
+    if (Array.isArray((data))) {
+        content = document.createElement("UL");
+        content.classList = "command-example-list";
+
+        data.forEach((item) => {
+            const itemContainer = document.createElement("LI");
+            const span = document.createElement("SPAN");
+            span.innerHTML = item;
+            span.classList.add(...styles);
+            itemContainer.appendChild(span);
+            content.appendChild(itemContainer);
+        });
+    } else {
+        content = document.createElement("DIV");
+        content.classList.add(...styles);
+        content.innerHTML = data;
+    }
+
+    cell.appendChild(content);
+
+    return cell;
+}
+
+/**
+ * Returns an icon element.
+ * @param {number} no no. command
+ * @param {string} iconString icon name
+ * @param {?Array<string>}styles list of styles of the icon
+ * @param {string} tooltip tooltip string
+ * @return {Element}
+ */
+function createIcon(no, iconString, styles = [], tooltip = "") {
+    const icon = document.createElement("I");
+    icon.id = "icon-" + iconString + "-" + no;
+    icon.classList.add("material-icons");
+    icon.classList.add(...styles);
+    icon.innerHTML = iconString;
+
+    if (tooltip === "") {
+        return icon;
+    }
+
+    const container = document.createElement("DIV");
+    const tooltipEl = document.createElement("DIV");
+    tooltipEl.setAttribute("for", icon.id);
+    tooltipEl.classList.add("mdl-tooltip");
+    tooltipEl.innerHTML = tooltip;
+
+    container.appendChild(icon);
+    container.appendChild(tooltipEl);
+
+    return container;
+}
+
+/**
+ * Returns the feature cell for the command row.
+ * @param {boolean} isFeatured true if the command is featured.
+ * @param {boolean} isExternal true if the command is external.
+ * @param {number} no no. command.
+ * @return {Element}
+ */
+function commandStatus(isFeatured, isExternal, no) {
+    const status = document.createElement("TD");
+    status.classList.add("mdl-data-table__cell--non-numeric");
+    if (isFeatured) {
+        status.appendChild(
+            createIcon(no, "stars", ["featured-icon"], "Featured command"));
+    }
+    if (isExternal) {
+        status.appendChild(
+            createIcon(no, "link", ["external-icon"], "External plugin"));
+    }
+    return status;
+}
+
+/**
+ * Returns a section to the content of the dialog
+ * @param title title of the section
+ * @param body body of the section
+ * @return {Element}
+ */
+function addDialogSection(title, body) {
+    const container = document.createElement("DIV");
+    const sectionTitle = document.createElement("h5");
+    const sectionBody = document.createElement("p");
+
+    sectionBody.classList.add("dialog-section-body");
+    sectionBody.innerHTML = body;
+
+    sectionTitle.classList.add("dialog-section-title");
+    sectionTitle.innerHTML = title;
+
+    container.classList.add("dialog-section");
+    container.appendChild(sectionTitle);
+    container.appendChild(sectionBody);
+
+    return container;
+}
+
+/**
+ * Returns a cell for the Plugin column.
+ * @param {string}repo repo name
+ * @param {string} pluginName plugin name.
+ * @param {PluginHelp} plugin the plugin to which the command belong to
+ * @return {Element}
+ */
+function createPluginCell(repo, pluginName, plugin) {
+    const pluginCell = document.createElement("TD");
+    const button = document.createElement("button");
+    pluginCell.classList.add("mdl-data-table__cell--non-numeric");
+    button.classList.add("mdl-button", "mdl-button--js", "mdl-button--primary");
+    button.innerHTML = pluginName;
+
+    // Attach Event Hanlders.
+    const dialog = document.querySelector('dialog');
+    button.addEventListener('click', (event) => {
+        const title = dialog.querySelector(".mdl-dialog__title");
+        const content = dialog.querySelector(".mdl-dialog__content");
+
+        while (content.firstChild) {
+            content.removeChild(content.firstChild);
+        }
+
+        title.innerHTML = pluginName;
+        if (plugin.Description) {
+            content.appendChild(addDialogSection("Description", plugin.Description));
+        }
+        if (plugin.Events) {
+            const sectionContent = "[" + plugin.Events.sort().join(", ") + "]";
+            content.appendChild(addDialogSection("Events handled", sectionContent));
+        }
+        if (plugin.Config) {
+            let sectionContent = plugin.Config ? plugin.Config[repo] : "";
+            let sectionTitle =
+                repo === "" ? "Configuration(global)" : "Configuration(" + repo + ")";
+            if (sectionContent && sectionContent !== "") {
+                content.appendChild(addDialogSection(sectionTitle, sectionContent));
             }
         }
-    }
-    return plugins.sort()
+        dialog.showModal();
+    });
+
+    pluginCell.appendChild(button);
+    return pluginCell;
 }
 
-function addSection(div, section, elem) {
-    var h4 = document.createElement("h4");
-    h4.appendChild(document.createTextNode(section));
-    h4.className = "plugin-section-header";
-    div.appendChild(h4);
-    elem.className = "indented";
-    div.appendChild(elem);
+/**
+ * Creates a row for the Command table.
+ * @param {string} repo repo name.
+ * @param {string} pluginName plugin name.
+ * @param {PluginHelp} plugin the plugin to which the command belongs.
+ * @param {Command} command the command.
+ * @param {boolean} isExternal true if the command belongs to an external
+ * @param {number} no no. command
+ * @return {Element}
+ */
+function createCommandRow(repo, pluginName, plugin, command, isExternal, no) {
+    const row = document.createElement("TR");
+    row.appendChild(commandStatus(command.Featured, isExternal, no));
+    row.appendChild(
+        createCommandCell(command.Examples, ["command-examples"], true));
+    row.appendChild(
+        createCommandCell(command.Description, ["command-desc-text"]));
+    row.appendChild(createCommandCell(command.WhoCanUse, ["command-desc-text"]));
+    row.appendChild(createPluginCell(repo, pluginName, plugin));
+
+    return row;
 }
 
-function addTextSection(div, section, content) {
-    if (!content) {
+/**
+ * Redraw a plugin table.
+ * @param {string} repo repo name.
+ * @param {Map<string, Object>} helpMap maps a plugin name to a plugin.
+ */
+function redrawHelpTable(repo, helpMap) {
+    const table = document.getElementById("command-table");
+    const tableBody = document.querySelector("TBODY");
+    if (helpMap.size === 0) {
+        table.style.display = "none";
         return;
     }
-
-    var p = document.createElement("p");
-    p.innerHTML = content
-    addSection(div, section, p);
-}
-
-function newPreElem(content) {
-    var pre = document.createElement("pre");
-    pre.appendChild(document.createTextNode(content));
-    return pre;
-}
-
-function ulFromElemList(list) {
-    var ul = document.createElement("ul");
-    for (var i = 0; i < list.length; i++) {
-        var li = document.createElement("li");
-        li.appendChild(list[i]);
-        ul.appendChild(li);
+    table.style.display = "table";
+    while (tableBody.childElementCount !== 0) {
+        tableBody.removeChild(tableBody.firstChild);
     }
-    return ul;
+    const names = helpMap.keys();
+    const commandsWithPluginName = [];
+    for (let name of names) {
+        helpMap.get(name).plugin.Commands.forEach((command) => {
+            commandsWithPluginName.push({
+                pluginName: name,
+                command: command
+            });
+        });
+    }
+    commandsWithPluginName
+        .sort((command1, command2) => {
+            return command1.command.Featured ? -1 : command2.command.Featured ? 1 : 0;
+        })
+        .forEach((command, index) => {
+            const pluginName = command.pluginName;
+            const {isExternal, plugin} = helpMap.get(pluginName);
+            const commandRow = createCommandRow(
+                repo,
+                pluginName,
+                plugin,
+                command.command,
+                isExternal,
+                index);
+            tableBody.appendChild(commandRow);
+        });
 }
 
-function redrawHelpTable(repo, names, helpMap, tableParent) {
-    var table = tableParent.getElementsByTagName("table")[0];
-    if (!names || names.length == 0) {
-        tableParent.style.display = "none";
-        return
-    } else {
-        tableParent.style.display = "block";
-    }
-
-    var tbody = table.getElementsByTagName("tbody")[0];
-    while (tbody.firstChild)
-        tbody.removeChild(tbody.firstChild);
-
-    for (var i = 0; i < names.length; i++) {
-        var name = names[i];
-        var help = helpMap[name];
-
-        var div = document.createElement("div");
-        div.style.display = "none";
-        div.className = "plugin-description";
-        if (help) {
-            addTextSection(div, "Description", help.Description);
-            addTextSection(div, "Who can use", help.WhoCanUse);
-            if (help.Usage) {
-                addSection(div, "Usage", newPreElem(help.Usage));
-            }
-            if (help.Examples && help.Examples != []) {
-                addSection(div, "Examples", ulFromElemList(help.Examples.map(newPreElem)));
-            }
-
-            if (repo != "") {
-                addTextSection(div, "Configuration (" + repo + ")", help.Config ? help.Config[repo] : "");
-            }
-            addTextSection(div, "Configuration (global)", help.Config ? help.Config[""] : "");
-            var content = ""
-            if (help.Events && help.Events != []) {
-                content = "[" + help.Events.sort().join(", ") + "]"
-            }
-            addTextSection(div, "Events handled", content);
-        } else {
-            var p = document.createElement("p");
-            p.appendChild(document.createTextNode("Failed to retrieve help information for this plugin."));
-            div.appendChild(p);
-        }
-
-        var pluginHeader = document.createElement("div");
-        pluginHeader.className = "plugin-header";
-        pluginHeader.appendChild(document.createTextNode(closedArrow + name));
-        pluginHeader.addEventListener("click", clickHandler(div), true);
-        var outerDiv = document.createElement("div");
-        outerDiv.appendChild(pluginHeader);
-        outerDiv.appendChild(div);
-        outerDiv.className = "plugin-help-row";
-        var tr = document.createElement("tr");
-        tr.appendChild(outerDiv);
-        tr.id = "plugin-" + name;
-        tbody.appendChild(tr);
-    }
-}
-
-function clickHandler(div) {
-    return function(event) {
-        if (div.style.display == "none") {
-            div.style.display = "block";
-            event.target.textContent = openedArrow + event.target.textContent.slice(2);
-        } else {
-            div.style.display = "none";
-            event.target.textContent = closedArrow + event.target.textContent.slice(2);
-        }
-    }
-}
-
+/**
+ * Redraws the content of the page.
+ */
 function redraw() {
-    var normals = document.getElementById("normal-plugins");
-    var externals = document.getElementById("external-plugins");
-
-    var repoSel = selectionText(document.getElementById("repo"));
+    const repoSel = selectionText(document.getElementById("repo"));
     if (window.history && window.history.replaceState !== undefined) {
         if (repoSel !== "") {
-            history.replaceState(null, "", "/plugin-help.html?repo=" + encodeURIComponent(repoSel));
+            history.replaceState(null, "", "/plugin-help.html?repo="
+                + encodeURIComponent(repoSel));
         } else {
             history.replaceState(null, "", "/plugin-help.html")
         }
     }
     redrawOptions();
 
-    redrawHelpTable(
-        repoSel,
-        applicablePlugins(repoSel, allHelp.RepoPlugins),
-        allHelp.PluginHelp,
-        normals,
-    );
-    redrawHelpTable(
-        repoSel,
-        applicablePlugins(repoSel, allHelp.RepoExternalPlugins),
-        allHelp.ExternalPluginHelp,
-        externals,
-    );
+    const pluginsWithCommands = new Map();
+    applicablePlugins(repoSel, allHelp.RepoPlugins)
+        .forEach((name) => {
+            if (allHelp.PluginHelp[name] && allHelp.PluginHelp[name].Commands) {
+                pluginsWithCommands.set(
+                    name,
+                    {
+                        isExternal: false,
+                        plugin: allHelp.PluginHelp[name]
+                    });
+            }
+        });
+    applicablePlugins(repoSel, allHelp.RepoExternalPlugins)
+        .forEach((name) => {
+            if (allHelp.ExternalPluginHelp[name]
+                && allHelp.ExternalPluginHelp[name].Commands) {
+                pluginsWithCommands.set(
+                    name,
+                    {
+                        isExternal: true,
+                        plugin: allHelp.ExternalPluginHelp[name]
+                    });
+            }
+        });
+    redrawHelpTable(repoSel, pluginsWithCommands);
 }
