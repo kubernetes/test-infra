@@ -20,8 +20,11 @@ set -o pipefail
 git_commit="$(git describe --tags --always --dirty)"
 build_date="$(date -u '+%Y%m%d')"
 docker_tag="v${build_date}-${git_commit}"
+# TODO(fejta): retire STABLE_PROW_REPO
 cat <<EOF
 STABLE_DOCKER_REPO ${DOCKER_REPO_OVERRIDE:-gcr.io/k8s-testimages}
+STABLE_PROW_REPO ${PROW_REPO_OVERRIDE:-gcr.io/k8s-prow}
+STABLE_PROW_CLUSTER gke_k8s-prow_us-central1-f_prow
 STABLE_BUILD_GIT_COMMIT ${git_commit}
 DOCKER_TAG ${docker_tag}
 EOF
