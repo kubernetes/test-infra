@@ -14,4 +14,6 @@
 
 [[constraint]]
   name = "github.com/docker/docker"
-  version = "1.13.1"
+  # https://github.com/docker/docker-ce/blob/17.12/components/cli/vendor.conf
+  # to update this check https://github.com/docker/docker-ce/blob/<tag>/components/cli/vendor.conf 
+  revision = "5e5fadb3c0201553929d4a6ea8dc8f9d8a1e56fe"

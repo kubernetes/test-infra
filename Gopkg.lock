@@ -47,15 +47,13 @@
 
 [[projects]]
   name = "github.com/docker/distribution"
-  packages = ["digest","reference"]
-  revision = "48294d928ced5dd9b378f7fd7c6f5da3ff3f2c89"
-  version = "v2.6.2"
+  packages = ["digestset","reference"]
+  revision = "edc3ab29cdff8694dd6feb85cfeb4b5f1b38ed9c"
 
 [[projects]]
   name = "github.com/docker/docker"
-  packages = ["api/types","api/types/blkiodev","api/types/container","api/types/events","api/types/filters","api/types/mount","api/types/network","api/types/reference","api/types/registry","api/types/strslice","api/types/swarm","api/types/time","api/types/versions","api/types/volume","client","pkg/tlsconfig"]
-  revision = "092cba3727bb9b4a2f0e922cd6c0f93ea270e363"
-  version = "v1.13.1"
+  packages = ["api","api/types","api/types/blkiodev","api/types/container","api/types/events","api/types/filters","api/types/image","api/types/mount","api/types/network","api/types/registry","api/types/strslice","api/types/swarm","api/types/swarm/runtime","api/types/time","api/types/versions","api/types/volume","client"]
+  revision = "5e5fadb3c0201553929d4a6ea8dc8f9d8a1e56fe"
 
 [[projects]]
   name = "github.com/docker/go-connections"
@@ -108,6 +106,12 @@
   name = "github.com/go-sql-driver/mysql"
   packages = ["."]
   revision = "7ebe0a500653eeb1859664bed5e48dec1e164e73"
+
+[[projects]]
+  name = "github.com/gogo/protobuf"
+  packages = ["proto"]
+  revision = "342cbe0a04158f6dcb03ca0079991a51a4248c02"
+  version = "v0.5"
 
 [[projects]]
   name = "github.com/golang/glog"
@@ -195,6 +199,18 @@
   name = "github.com/matttproud/golang_protobuf_extensions"
   packages = ["pbutil"]
   revision = "fc2b8d3a73c4867e51861bbdd5ae3c1f0869dd6a"
+
+[[projects]]
+  name = "github.com/opencontainers/go-digest"
+  packages = ["."]
+  revision = "279bed98673dd5bef374d3b6e4b09e2af76183bf"
+  version = "v1.0.0-rc1"
+
+[[projects]]
+  name = "github.com/opencontainers/image-spec"
+  packages = ["specs-go","specs-go/v1"]
+  revision = "d60099175f88c47cd379c4738d158884749ed235"
+  version = "v1.0.1"
 
 [[projects]]
   branch = "master"
@@ -337,6 +353,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "d7794d0609ca7c7f2743b4b86be731a2e7f485a895c829eaf6220da647edc475"
+  inputs-digest = "8369f1d8f8b3b3a8130ce454b1d0337f41312b0f460632ea53a3a90896e0371f"
   solver-name = "gps-cdcl"
   solver-version = 1
