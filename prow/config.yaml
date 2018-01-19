@@ -442,6 +442,8 @@ presubmits:
         - name: ssh
           mountPath: /etc/ssh-key-secret
           readOnly: true
+        securityContext:
+          privileged: true
         ports:
         - containerPort: 9999
           hostPort: 9999
