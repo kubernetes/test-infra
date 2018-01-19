@@ -68,7 +68,7 @@ func reportStatus(ghc GithubClient, pj kube.ProwJob, childDescription string) er
 	// Updating Children
 	if pj.Status.State != kube.SuccessState {
 		for _, nj := range pj.Spec.RunAfterSuccess {
-			cpj := pjutil.NewProwJob(nj, pj.Metadata.Labels)
+			cpj := pjutil.NewProwJob(nj, pj.ObjectMeta.Labels)
 			cpj.Status.State = pj.Status.State
 			cpj.Status.Description = childDescription
 			cpj.Spec.Refs = refs
@@ -88,7 +88,7 @@ func Report(ghc GithubClient, reportTemplate *template.Template, pj kube.ProwJob
 	}
 	refs := pj.Spec.Refs
 	if len(refs.Pulls) != 1 {
-		return fmt.Errorf("prowjob %s has %d pulls, not 1", pj.Metadata.Name, len(refs.Pulls))
+		return fmt.Errorf("prowjob %s has %d pulls, not 1", pj.ObjectMeta.Name, len(refs.Pulls))
 	}
 	childDescription := fmt.Sprintf("Waiting on: %s", pj.Spec.Context)
 	if err := reportStatus(ghc, pj, childDescription); err != nil {

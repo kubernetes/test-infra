@@ -19,6 +19,7 @@ package tide
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -334,6 +335,9 @@ func (f *fgc) Query(ctx context.Context, q interface{}, vars map[string]interfac
 }
 
 func (f *fgc) Merge(org, repo string, number int, details github.MergeDetails) error {
+	if details.SHA == "uh oh" {
+		return errors.New("invalid sha")
+	}
 	f.merged++
 	return nil
 }
@@ -891,9 +895,10 @@ func TestTakeAction(t *testing.T) {
 				}
 				var pr PullRequest
 				pr.Number = githubql.Int(i)
+				pr.HeadRef.Target.OID = githubql.String(fmt.Sprintf("origin/pr-%d", i))
 				pr.Commits.Nodes = []struct {
 					Commit Commit
-				}{{Commit: Commit{OID: githubql.String(fmt.Sprintf("origin/pr-%d", i))}}}
+				}{{Commit: Commit{OID: githubql.String("uh oh")}}}
 				sp.prs = append(sp.prs, pr)
 				prs = append(prs, pr)
 			}

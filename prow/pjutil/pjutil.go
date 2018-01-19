@@ -34,7 +34,7 @@ func NewProwJob(spec kube.ProwJobSpec, labels map[string]string) kube.ProwJob {
 	return kube.ProwJob{
 		APIVersion: "prow.k8s.io/v1",
 		Kind:       "ProwJob",
-		Metadata: kube.ObjectMeta{
+		ObjectMeta: kube.ObjectMeta{
 			Name:   uuid.NewV1().String(),
 			Labels: labels,
 		},
@@ -152,18 +152,18 @@ func ProwJobToPod(pj kube.ProwJob, buildID string) (*kube.Pod, error) {
 	spec.Containers = []kube.Container{}
 	for i := range pj.Spec.PodSpec.Containers {
 		spec.Containers = append(spec.Containers, pj.Spec.PodSpec.Containers[i])
-		spec.Containers[i].Name = fmt.Sprintf("%s-%d", pj.Metadata.Name, i)
+		spec.Containers[i].Name = fmt.Sprintf("%s-%d", pj.ObjectMeta.Name, i)
 		spec.Containers[i].Env = append(spec.Containers[i].Env, kubeEnv(env)...)
 	}
 	podLabels := make(map[string]string)
-	for k, v := range pj.Metadata.Labels {
+	for k, v := range pj.ObjectMeta.Labels {
 		podLabels[k] = v
 	}
 	podLabels[kube.CreatedByProw] = "true"
 	podLabels[kube.ProwJobTypeLabel] = string(pj.Spec.Type)
 	return &kube.Pod{
-		Metadata: kube.ObjectMeta{
-			Name:   pj.Metadata.Name,
+		ObjectMeta: kube.ObjectMeta{
+			Name:   pj.ObjectMeta.Name,
 			Labels: podLabels,
 			Annotations: map[string]string{
 				kube.ProwJobAnnotation: pj.Spec.Job,
@@ -239,11 +239,11 @@ func GetLatestProwJobs(pjs []kube.ProwJob, jobType kube.ProwJobType) map[string]
 // ProwJobFields extracts logrus fields from a prowjob useful for logging.
 func ProwJobFields(pj *kube.ProwJob) logrus.Fields {
 	fields := make(logrus.Fields)
-	fields["name"] = pj.Metadata.Name
+	fields["name"] = pj.ObjectMeta.Name
 	fields["job"] = pj.Spec.Job
 	fields["type"] = pj.Spec.Type
-	if len(pj.Metadata.Labels[github.EventGUID]) > 0 {
-		fields[github.EventGUID] = pj.Metadata.Labels[github.EventGUID]
+	if len(pj.ObjectMeta.Labels[github.EventGUID]) > 0 {
+		fields[github.EventGUID] = pj.ObjectMeta.Labels[github.EventGUID]
 	}
 	if len(pj.Spec.Refs.Pulls) == 1 {
 		fields[github.PrLogField] = pj.Spec.Refs.Pulls[0].Number

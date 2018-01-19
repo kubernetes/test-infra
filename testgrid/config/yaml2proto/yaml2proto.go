@@ -65,6 +65,13 @@ func ReconcileTestGroup(currentTestGroup *config.TestGroup, defaultTestGroup *co
 		currentTestGroup.AlertStaleResultsHours = defaultTestGroup.AlertStaleResultsHours
 	}
 
+	if currentTestGroup.NumFailuresToAlert == 0 {
+		currentTestGroup.NumFailuresToAlert = defaultTestGroup.NumFailuresToAlert
+	}
+
+	if currentTestGroup.NumPassesToDisableAlert == 0 {
+		currentTestGroup.NumPassesToDisableAlert = defaultTestGroup.NumPassesToDisableAlert
+	}
 	// is_external and user_kubernetes_client should always be true
 	currentTestGroup.IsExternal = true
 	currentTestGroup.UseKubernetesClient = true

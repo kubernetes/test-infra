@@ -37,9 +37,6 @@ func reopenHelp(config *plugins.Configuration, enabledRepos []string) (*pluginhe
 	// The Config field is omitted because this plugin is not configurable.
 	return &pluginhelp.PluginHelp{
 			Description: "Deprecated! Please use the lifecycle plugin instead of reopen.",
-			WhoCanUse:   "Authors and assignees of the pull request or issue.",
-			Usage:       "/reopen",
-			Examples:    []string{"/reopen"},
 		},
 		nil
 }

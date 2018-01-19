@@ -193,6 +193,7 @@
   },
   "ci-ingress-gce-e2e": {
     "args": [
+      "--check-leaked-resources",
       "--cluster=",
       "--env=GCE_GLBC_IMAGE=gcr.io/e2e-ingress-gce/ingress-gce-e2e-glbc-amd64:latest",
       "--extract=ci/latest",
@@ -4413,7 +4414,7 @@
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
       "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[Feature:(Audit|LocalPersistentVolumes|PodPreset|MountPropagation|PVCProtection)\\]|Networking --ginkgo.skip=Networking-Performance|IPv6 --minStartupPods=8",
+      "--test_args=--ginkgo.focus=\\[Feature:(Audit|LocalPersistentVolumes|PodPreset|MountPropagation|PVCProtection|ExpandPersistentVolumes)\\]|Networking --ginkgo.skip=Networking-Performance|IPv6 --minStartupPods=8",
       "--timeout=180m"
     ],
     "scenario": "kubernetes_e2e",
@@ -4546,6 +4547,7 @@
   },
   "ci-kubernetes-e2e-gci-gce-ingress": {
     "args": [
+      "--check-leaked-resources",
       "--env-file=jobs/platform/gce.env",
       "--extract=ci/latest",
       "--gcp-node-image=gci",
@@ -4561,6 +4563,7 @@
   },
   "ci-kubernetes-e2e-gci-gce-ingress-manual-network": {
     "args": [
+      "--check-leaked-resources",
       "--env=CREATE_CUSTOM_NETWORK=true",
       "--extract=ci/latest",
       "--gcp-node-image=gci",
@@ -4912,6 +4915,7 @@
   },
   "ci-kubernetes-e2e-gci-gke-ingress": {
     "args": [
+      "--check-leaked-resources",
       "--cluster=",
       "--deployment=gke",
       "--extract=ci/latest",
@@ -9469,7 +9473,7 @@
       "--deployment=node",
       "--gcp-project=ubuntu-image-validation",
       "--gcp-zone=us-central1-f",
-      "--node-args=--images=ubuntu-gke-1604-xenial-v20171215 --image-project=ubuntu-os-gke-cloud-devel --system-spec-name=gke",
+      "--node-args=--images=ubuntu-gke-1604-xenial-v20180117 --image-project=ubuntu-os-gke-cloud-devel --system-spec-name=gke",
       "--node-test-args=--feature-gates=KubeletConfigFile=true --generate-kubelet-config-file=true",
       "--node-tests=true",
       "--provider=gce",
@@ -9490,7 +9494,7 @@
       "--deployment=node",
       "--gcp-project=ubuntu-image-validation",
       "--gcp-zone=us-central1-f",
-      "--node-args=--images=ubuntu-gke-1604-xenial-v20171215 --image-project=ubuntu-os-gke-cloud-devel",
+      "--node-args=--images=ubuntu-gke-1604-xenial-v20180117 --image-project=ubuntu-os-gke-cloud-devel",
       "--node-test-args=--feature-gates=DynamicKubeletConfig=true,KubeletConfigFile=true --generate-kubelet-config-file=true",
       "--node-tests=true",
       "--provider=gce",
@@ -9511,7 +9515,7 @@
       "--deployment=node",
       "--gcp-project=ubuntu-image-validation",
       "--gcp-zone=us-central1-f",
-      "--node-args=--images=ubuntu-gke-1604-xenial-v20171215 --image-project=ubuntu-os-gke-cloud-devel --system-spec-name=gke",
+      "--node-args=--images=ubuntu-gke-1604-xenial-v20180117 --image-project=ubuntu-os-gke-cloud-devel --system-spec-name=gke",
       "--node-tests=true",
       "--provider=gce",
       "--test_args=--nodes=8 --skip=\"\\[Flaky\\]|\\[Serial\\]\"",
@@ -9531,7 +9535,7 @@
       "--deployment=node",
       "--gcp-project=ubuntu-image-validation",
       "--gcp-zone=us-central1-f",
-      "--node-args=--images=ubuntu-gke-1604-xenial-v20171215 --image-project=ubuntu-os-gke-cloud-devel",
+      "--node-args=--images=ubuntu-gke-1604-xenial-v20180117 --image-project=ubuntu-os-gke-cloud-devel",
       "--node-test-args=--feature-gates=DynamicKubeletConfig=true,KubeletConfigFile=true",
       "--node-tests=true",
       "--provider=gce",
@@ -9552,7 +9556,7 @@
       "--deployment=node",
       "--gcp-project=ubuntu-image-validation",
       "--gcp-zone=us-central1-f",
-      "--node-args=--images=ubuntu-gke-1604-xenial-v20171215 --image-project=ubuntu-os-gke-cloud-devel --system-spec-name=gke",
+      "--node-args=--images=ubuntu-gke-1604-xenial-v20180117 --image-project=ubuntu-os-gke-cloud-devel --system-spec-name=gke",
       "--node-tests=true",
       "--provider=gce",
       "--test_args=--nodes=8 --skip=\"\\[Flaky\\]|\\[Serial\\]\"",
@@ -9572,7 +9576,7 @@
       "--deployment=node",
       "--gcp-project=ubuntu-image-validation",
       "--gcp-zone=us-central1-f",
-      "--node-args=--images=ubuntu-gke-1604-xenial-v20171215 --image-project=ubuntu-os-gke-cloud-devel",
+      "--node-args=--images=ubuntu-gke-1604-xenial-v20180117 --image-project=ubuntu-os-gke-cloud-devel",
       "--node-test-args=--feature-gates=DynamicKubeletConfig=true,KubeletConfigFile=true",
       "--node-tests=true",
       "--provider=gce",
@@ -11018,14 +11022,13 @@
   "pull-kops-e2e-kubernetes-aws": {
     "args": [
       "--aws",
-      "--aws-cluster-domain=test-aws.k8s.io",
+      "--aws-cluster-domain=test-cncf-aws.k8s.io",
       "--check-leaked-resources=false",
       "--cluster=",
       "--env-file=jobs/platform/kops_aws.env",
       "--extract=ci/latest",
       "--ginkgo-parallel",
       "--kops-build",
-      "--mode=docker",
       "--provider=aws",
       "--test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]|\\[HPA\\]|Dashboard|Services.*functioning.*NodePort",
       "--timeout=55m"
@@ -11451,6 +11454,15 @@
   "pull-test-infra-verify-bazel": {
     "args": [
       "./hack/verify-bazel.sh"
+    ],
+    "scenario": "execute",
+    "sigOwners": [
+      "sig-testing"
+    ]
+  },
+  "pull-test-infra-verify-config": {
+    "args": [
+      "./hack/verify-config.sh"
     ],
     "scenario": "execute",
     "sigOwners": [

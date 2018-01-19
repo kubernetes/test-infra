@@ -162,7 +162,7 @@ func getPods(selector string, kc *kube.Client) ([]kube.Pod, error) {
 	for _, pod := range pods {
 		if pod.Status.Phase != kube.PodRunning {
 			logrus.Warnf("Ignoring pod %q: not in %s phase (phase: %s, reason: %s)",
-				pod.Metadata.Name, kube.PodRunning, pod.Status.Phase, pod.Status.Reason)
+				pod.ObjectMeta.Name, kube.PodRunning, pod.Status.Phase, pod.Status.Reason)
 			continue
 		}
 		targets = append(targets, pod)
@@ -186,7 +186,7 @@ func getPodLogs(kc *kube.Client, targets []kube.Pod, r *http.Request) linesByTim
 			lock.Lock()
 			log = append(log, podLog...)
 			lock.Unlock()
-		}(pod.Metadata.Name)
+		}(pod.ObjectMeta.Name)
 	}
 	wg.Wait()
 	return log

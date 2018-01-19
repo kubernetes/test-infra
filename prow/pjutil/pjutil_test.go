@@ -64,7 +64,7 @@ func TestProwJobToPod(t *testing.T) {
 			},
 
 			expected: &kube.Pod{
-				Metadata: kube.ObjectMeta{
+				ObjectMeta: kube.ObjectMeta{
 					Name: "pod",
 					Labels: map[string]string{
 						kube.CreatedByProw:    "true",
@@ -105,7 +105,7 @@ func TestProwJobToPod(t *testing.T) {
 
 	for i, test := range tests {
 		t.Logf("test run #%d", i)
-		pj := kube.ProwJob{Metadata: kube.ObjectMeta{Name: test.podName, Labels: test.labels}, Spec: test.pjSpec}
+		pj := kube.ProwJob{ObjectMeta: kube.ObjectMeta{Name: test.podName, Labels: test.labels}, Spec: test.pjSpec}
 		got, err := ProwJobToPod(pj, test.buildID)
 		if err != nil {
 			t.Errorf("unexpected error: %v", err)
@@ -117,7 +117,7 @@ func TestProwJobToPod(t *testing.T) {
 		//	 t.Errorf("got pod:\n%#v\n\nexpected pod:\n%#v\n", got, test.expected)
 		// }
 		var foundCreatedByLabel, foundTypeLabel, foundJobAnnotation bool
-		for key, value := range got.Metadata.Labels {
+		for key, value := range got.ObjectMeta.Labels {
 			if key == kube.CreatedByProw && value == "true" {
 				foundCreatedByLabel = true
 			}
@@ -125,29 +125,29 @@ func TestProwJobToPod(t *testing.T) {
 				foundTypeLabel = true
 			}
 			var match bool
-			for k, v := range test.expected.Metadata.Labels {
+			for k, v := range test.expected.ObjectMeta.Labels {
 				if k == key && v == value {
 					match = true
 					break
 				}
 			}
 			if !match {
-				t.Errorf("expected labels: %v, got: %v", test.expected.Metadata.Labels, got.Metadata.Labels)
+				t.Errorf("expected labels: %v, got: %v", test.expected.ObjectMeta.Labels, got.ObjectMeta.Labels)
 			}
 		}
-		for key, value := range got.Metadata.Annotations {
+		for key, value := range got.ObjectMeta.Annotations {
 			if key == kube.ProwJobAnnotation && value == pj.Spec.Job {
 				foundJobAnnotation = true
 			}
 		}
 		if !foundCreatedByLabel {
-			t.Errorf("expected a created-by-prow=true label in %v", got.Metadata.Labels)
+			t.Errorf("expected a created-by-prow=true label in %v", got.ObjectMeta.Labels)
 		}
 		if !foundTypeLabel {
-			t.Errorf("expected a %s=%s label in %v", kube.ProwJobTypeLabel, pj.Spec.Type, got.Metadata.Labels)
+			t.Errorf("expected a %s=%s label in %v", kube.ProwJobTypeLabel, pj.Spec.Type, got.ObjectMeta.Labels)
 		}
 		if !foundJobAnnotation {
-			t.Errorf("expected a %s=%s annotation in %v", kube.ProwJobAnnotation, pj.Spec.Job, got.Metadata.Annotations)
+			t.Errorf("expected a %s=%s annotation in %v", kube.ProwJobAnnotation, pj.Spec.Job, got.ObjectMeta.Annotations)
 		}
 
 		expectedContainer := test.expected.Spec.Containers[i]
@@ -189,7 +189,7 @@ func TestPartitionActive(t *testing.T) {
 		{
 			pjs: []kube.ProwJob{
 				{
-					Metadata: kube.ObjectMeta{
+					ObjectMeta: kube.ObjectMeta{
 						Name: "foo",
 					},
 					Status: kube.ProwJobStatus{
@@ -197,7 +197,7 @@ func TestPartitionActive(t *testing.T) {
 					},
 				},
 				{
-					Metadata: kube.ObjectMeta{
+					ObjectMeta: kube.ObjectMeta{
 						Name: "bar",
 					},
 					Status: kube.ProwJobStatus{
@@ -205,7 +205,7 @@ func TestPartitionActive(t *testing.T) {
 					},
 				},
 				{
-					Metadata: kube.ObjectMeta{
+					ObjectMeta: kube.ObjectMeta{
 						Name: "baz",
 					},
 					Status: kube.ProwJobStatus{
@@ -213,7 +213,7 @@ func TestPartitionActive(t *testing.T) {
 					},
 				},
 				{
-					Metadata: kube.ObjectMeta{
+					ObjectMeta: kube.ObjectMeta{
 						Name: "error",
 					},
 					Status: kube.ProwJobStatus{
@@ -221,7 +221,7 @@ func TestPartitionActive(t *testing.T) {
 					},
 				},
 				{
-					Metadata: kube.ObjectMeta{
+					ObjectMeta: kube.ObjectMeta{
 						Name: "bak",
 					},
 					Status: kube.ProwJobStatus{
@@ -242,12 +242,12 @@ func TestPartitionActive(t *testing.T) {
 		t.Logf("test run #%d", i)
 		pendingCh, triggeredCh := PartitionActive(test.pjs)
 		for job := range pendingCh {
-			if _, ok := test.pending[job.Metadata.Name]; !ok {
+			if _, ok := test.pending[job.ObjectMeta.Name]; !ok {
 				t.Errorf("didn't find pending job %#v", job)
 			}
 		}
 		for job := range triggeredCh {
-			if _, ok := test.triggered[job.Metadata.Name]; !ok {
+			if _, ok := test.triggered[job.ObjectMeta.Name]; !ok {
 				t.Errorf("didn't find triggered job %#v", job)
 			}
 		}
@@ -266,7 +266,7 @@ func TestGetLatestProwJobs(t *testing.T) {
 		{
 			pjs: []kube.ProwJob{
 				{
-					Metadata: kube.ObjectMeta{
+					ObjectMeta: kube.ObjectMeta{
 						Name: "831c7df0-baa4-11e7-a1a4-0a58ac10134a",
 					},
 					Spec: kube.ProwJobSpec{
@@ -300,7 +300,7 @@ func TestGetLatestProwJobs(t *testing.T) {
 					},
 				},
 				{
-					Metadata: kube.ObjectMeta{
+					ObjectMeta: kube.ObjectMeta{
 						Name: "0079d4d3-ba25-11e7-ae3f-0a58ac10123b",
 					},
 					Spec: kube.ProwJobSpec{

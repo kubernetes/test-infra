@@ -40,6 +40,8 @@ import (
 	"github.com/ghodss/yaml"
 	flag "github.com/spf13/pflag"
 
+	"k8s.io/apimachinery/pkg/util/sets"
+
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/kube"
 )
@@ -80,6 +82,112 @@ func getSecurityRepoJobsIndex(configBytes []byte) (start, end int, err error) {
 	return start, end, nil
 }
 
+// strip cache ssd related settings
+func stripCache(j *config.Presubmit) {
+	container := &j.Spec.Containers[0]
+	// strip cache disk related args etc
+	filteredArgs := []string{}
+	for _, arg := range container.Args {
+		if strings.HasPrefix(arg, "--git-cache") {
+			continue
+		}
+		filteredArgs = append(filteredArgs, arg)
+	}
+	container.Args = filteredArgs
+	// filter cache related env
+	filteredEnv := []kube.EnvVar{}
+	for _, env := range container.Env {
+		// don't keep bazel cache directory env
+		if env.Name == "TEST_TMPDIR" {
+			continue
+		}
+		filteredEnv = append(filteredEnv, env)
+	}
+	container.Env = filteredEnv
+	// filter cache disk volumes, swap DIND volume for
+	filteredVolumes := []kube.Volume{}
+	removedVolumeNames := sets.String{}
+	for _, volume := range j.Spec.Volumes {
+		if volume.VolumeSource.HostPath != nil &&
+			strings.HasPrefix(volume.VolumeSource.HostPath.Path, "/mnt/disks/ssd0") {
+			removedVolumeNames.Insert(volume.Name)
+			continue
+		}
+		filteredVolumes = append(filteredVolumes, volume)
+	}
+	j.Spec.Volumes = filteredVolumes
+	// filter out mounts for filtered out volumes
+	filteredVolumeMounts := []kube.VolumeMount{}
+	for _, volumeMount := range container.VolumeMounts {
+		if removedVolumeNames.Has(volumeMount.Name) {
+			continue
+		}
+		filteredVolumeMounts = append(filteredVolumeMounts, volumeMount)
+	}
+	container.VolumeMounts = filteredVolumeMounts
+	// remove """cache port"""
+	container.Ports = []kube.Port{}
+}
+
+// run after stripCache to make sure we still at least mount an emptyDir to
+// /docker-graph for dind enabled jobs
+func ensureDockerGraphVolume(j *config.Presubmit) {
+	// make sure this is a docker-in-docker job first
+	dindEnabled := false
+	container := &j.Spec.Containers[0]
+	for _, env := range container.Env {
+		if env.Name == "DOCKER_IN_DOCKER_ENABLED" && env.Value == "true" {
+			dindEnabled = true
+			break
+		}
+	}
+	if !dindEnabled {
+		return
+	}
+
+	// filter out old /docker-graph volume mounts of any sort
+	const dockerGraphMountPath = "/docker-graph"
+	oldDockerGraphVolumeMount := ""
+	removedVolumeNames := sets.String{}
+	filteredVolumeMounts := []kube.VolumeMount{}
+	for _, volumeMount := range container.VolumeMounts {
+		if volumeMount.MountPath == dockerGraphMountPath {
+			removedVolumeNames.Insert(volumeMount.Name)
+			continue
+		}
+		filteredVolumeMounts = append(filteredVolumeMounts, volumeMount)
+	}
+	container.VolumeMounts = filteredVolumeMounts
+
+	// remove old volumes associated with old mounts if any
+	if removedVolumeNames.Len() > 0 {
+		filteredVolumes := []kube.Volume{}
+		for _, volume := range j.Spec.Volumes {
+			if volume.Name == oldDockerGraphVolumeMount {
+				continue
+			}
+			filteredVolumes = append(filteredVolumes, volume)
+		}
+		j.Spec.Volumes = filteredVolumes
+	}
+
+	// add new auto generated volume mount
+	const dockerGraphVolumeMount = "auto-generated-docker-graph-volume-mount"
+	container.VolumeMounts = append(container.VolumeMounts, kube.VolumeMount{
+		Name:      dockerGraphVolumeMount,
+		MountPath: dockerGraphMountPath,
+	})
+
+	// add matching auto generated emptyDir volume
+	volumeSource := kube.VolumeSource{}
+	volumeSource.EmptyDir = &kube.EmptyDirVolumeSource{}
+	volume := kube.Volume{
+		Name:         dockerGraphVolumeMount,
+		VolumeSource: volumeSource,
+	}
+	j.Spec.Volumes = append(j.Spec.Volumes, volume)
+}
+
 // convert a kubernetes/kubernetes job to a kubernetes-security/kubernetes job
 // xref: prow/config/config_test.go replace(...)
 func convertJobToSecurityJob(j *config.Presubmit) {
@@ -91,19 +199,20 @@ func convertJobToSecurityJob(j *config.Presubmit) {
 	// handle k8s job args, volumes etc
 	if j.Agent == "kubernetes" {
 		j.Cluster = "security"
-		for i, arg := range j.Spec.Containers[0].Args {
+		container := &j.Spec.Containers[0]
+		for i, arg := range container.Args {
 			// handle --repo substitution for main repo
 			if strings.HasPrefix(arg, "--repo=k8s.io/kubernetes") || strings.HasPrefix(arg, "--repo=k8s.io/$(REPO_NAME)") {
-				j.Spec.Containers[0].Args[i] = strings.Replace(arg, "k8s.io/", "github.com/kubernetes-security/", 1)
+				container.Args[i] = strings.Replace(arg, "k8s.io/", "github.com/kubernetes-security/", 1)
 
 				// handle upload bucket
 			} else if strings.HasPrefix(arg, "--upload=") {
-				j.Spec.Containers[0].Args[i] = "--upload=gs://kubernetes-security-jenkins/pr-logs"
+				container.Args[i] = "--upload=gs://kubernetes-security-jenkins/pr-logs"
 			}
 		}
-		j.Spec.Containers[0].Args = append(j.Spec.Containers[0].Args, "--ssh=/etc/ssh-security/ssh-security")
-		j.Spec.Containers[0].VolumeMounts = append(
-			j.Spec.Containers[0].VolumeMounts,
+		container.Args = append(container.Args, "--ssh=/etc/ssh-security/ssh-security")
+		container.VolumeMounts = append(
+			container.VolumeMounts,
 			kube.VolumeMount{
 				Name:      "ssh-security",
 				MountPath: "/etc/ssh-security",
@@ -121,6 +230,11 @@ func convertJobToSecurityJob(j *config.Presubmit) {
 				},
 			},
 		)
+		// remove cache-ssd related args
+		stripCache(j)
+		// strip cache may remove the /docker-graph mount if it is on the cache
+		// ssd, make sure we still have an emptyDir instead for dind jobs
+		ensureDockerGraphVolume(j)
 	}
 	// done with this job, check for run_after_success
 	for i := range j.RunAfterSuccess {
@@ -152,6 +266,26 @@ func yamlBytesToEntry(yamlBytes []byte, indent int) []byte {
 	return buff.Bytes()
 }
 
+func copyFile(srcPath, destPath string) error {
+	// fallback to copying the file instead
+	src, err := os.Open(srcPath)
+	if err != nil {
+		return err
+	}
+	dst, err := os.OpenFile(destPath, os.O_WRONLY, 0666)
+	if err != nil {
+		return err
+	}
+	_, err = io.Copy(dst, src)
+	if err != nil {
+		return err
+	}
+	dst.Sync()
+	dst.Close()
+	src.Close()
+	return nil
+}
+
 func main() {
 	flag.Parse()
 	// default to $PWD/prow/config.yaml
@@ -178,6 +312,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to create temp file: %v", err)
 	}
+	defer os.Remove(f.Name())
 
 	// write the original bytes before the security repo section
 	_, err = f.Write(originalBytes[:securityRepoStart])
@@ -207,10 +342,14 @@ func main() {
 	}
 	f.Sync()
 
-	// copy file to replace original
+	// move file to replace original
 	f.Close()
 	err = os.Rename(f.Name(), *configPath)
 	if err != nil {
-		log.Fatalf("Failed to replace config with updated version: %v", err)
+		// fallback to copying the file instead
+		err = copyFile(f.Name(), *configPath)
+		if err != nil {
+			log.Fatalf("Failed to replace config with updated version: %v", err)
+		}
 	}
 }

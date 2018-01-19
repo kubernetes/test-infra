@@ -49,13 +49,21 @@ func init() {
 }
 
 func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
-	return &pluginhelp.PluginHelp{
-			Description: "The skip plugin allows users to clean up Github stale commit statuses for non-blocking jobs on a PR.",
-			WhoCanUse:   "Anyone can trigger this plugin on a PR.",
-			Usage:       "/skip",
-			Examples:    []string{"/skip"},
-		},
-		nil
+	// TODO(qhuynh96): Removes all the fields of pluginHelp except Description.
+	pluginHelp := &pluginhelp.PluginHelp{
+		Description: "The skip plugin allows users to clean up Github stale commit statuses for non-blocking jobs on a PR.",
+		WhoCanUse:   "Anyone can trigger this plugin on a PR.",
+		Usage:       "/skip",
+		Examples:    []string{"/skip"},
+	}
+	pluginHelp.AddCommand(pluginhelp.Command{
+		Usage:       "/skip",
+		Description: "Cleans up Github stale commit statuses for non-blocking jobs on a PR.",
+		Featured:    false,
+		WhoCanUse:   "Anyone can trigger this command on a PR.",
+		Examples:    []string{"/skip"},
+	})
+	return pluginHelp, nil
 }
 
 func handleGenericComment(pc plugins.PluginClient, e github.GenericCommentEvent) error {

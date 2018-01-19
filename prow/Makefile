@@ -36,7 +36,7 @@ PLANK_VERSION            ?= 0.65
 # JENKINS-OPERATOR_VERSION is the version of the jenkins-operator image
 JENKINS-OPERATOR_VERSION ?= 0.62
 # TIDE_VERSION is the version of the tide image
-TIDE_VERSION             ?= 0.20
+TIDE_VERSION             ?= 0.21
 # CLONEREFS_VERSION is the version of the clonerefs image
 CLONEREFS_VERSION        ?=0.1
 
@@ -79,6 +79,17 @@ alpine-image:
 git-image: alpine-image
 	docker build -t "$(REGISTRY)/$(PROJECT)/git:$(GIT_VERSION)" $(DOCKER_LABELS) cmd/images/git
 	$(PUSH) "$(REGISTRY)/$(PROJECT)/git:$(GIT_VERSION)"
+
+.PHONY: alpine-image git-image
+
+branchprotector-image:
+	bazel run //prow/cmd/branchprotector:push
+
+branchprotector-cronjob: get-cluster-credentials
+	@echo Consider bazel run //prow/cluster:branchprotector_cronjob.apply instead
+	kubectl apply -f cluster/branchprotector_cronjob.yaml
+
+.PHONY: branchprotector-image branchprotector-cronjob
 
 hook-image: git-image
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o cmd/hook/hook k8s.io/test-infra/prow/cmd/hook
