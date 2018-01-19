@@ -31,6 +31,7 @@ import (
 	"regexp"
 	"time"
 
+	"k8s.io/test-infra/testgrid/config"
 	"k8s.io/test-infra/testgrid/state"
 
 	"cloud.google.com/go/storage"
@@ -59,10 +60,27 @@ type Finished struct {
 	Metadata   Metadata `json:"metadata"`
 }
 
-type Metadata struct {
-	Repo        string `json:"repo"` // First repo
-	RepoCommit  string `json:"repo-commit"`
-	InfraCommit string `json:"infra-commit"`
+// infra-commit, repos, repo, repo-commit, others
+type Metadata map[string]interface{}
+
+func (m Metadata) String(name string) (*string, bool) {
+	if v, ok := m[name]; !ok {
+		return nil, false
+	} else if t, good := v.(string); !good {
+		return nil, true
+	} else {
+		return &t, true
+	}
+}
+
+func (m Metadata) Meta(name string) (*Metadata, bool) {
+	if v, ok := m[name]; !ok {
+		return nil, true
+	} else if t, good := v.(Metadata); !good {
+		return nil, false
+	} else {
+		return &t, true
+	}
 }
 
 type JunitSuites struct {
@@ -146,6 +164,7 @@ type BuildResult struct {
 	Finished int64
 	Passed   bool
 	Results  map[string]state.Row_Result
+	Metadata Metadata
 }
 
 func (br BuildResult) Overall() state.Row_Result {
@@ -176,15 +195,43 @@ func AppendResult(row *state.Row, result state.Row_Result, count int) {
 		row.Results[n-1] += int32(count)
 	}
 	for i := 0; i < count; i++ {
-		row.CellId = append(row.CellId, string(uniq))
+		row.CellId = append(row.CellId, fmt.Sprintf("%d", uniq))
+		row.Text = append(row.Text, fmt.Sprintf("messsage %d", uniq))
+		row.Annotations = append(row.Annotations, string(int('A')+uniq%26))
 		uniq++
 	}
 }
 
-func AppendColumn(grid *state.Grid, rows map[string]*state.Row, build BuildResult) {
+func AppendColumn(headers []string, grid *state.Grid, rows map[string]*state.Row, build BuildResult) {
 	c := state.Column{
 		Build:   build.Id,
 		Started: float64(build.Started * 1000),
+	}
+	for _, h := range headers {
+		if build.Finished == 0 {
+			c.Extra = append(c.Extra, "")
+			continue
+		}
+		trunc := 0
+		if h == "Commit" { // TODO(fejta): fix
+			h = "repo-commit"
+			trunc = 9
+		}
+		var v string
+		p, ok := build.Metadata.String(h)
+		if !ok {
+			log.Printf("%s metadata missing %s", c.Build, h)
+			v = "missing"
+		} else if p == nil {
+			log.Printf("%s metadata has malformed %s", c.Build, h)
+			v = "malformed"
+		} else {
+			v = *p
+		}
+		if trunc > 0 && trunc < len(v) {
+			v = v[0:trunc]
+		}
+		c.Extra = append(c.Extra, v)
 	}
 	grid.Columns = append(grid.Columns, &c)
 
@@ -231,10 +278,12 @@ func ReadBuild(build Build) (*BuildResult, error) {
 		return nil, fmt.Errorf("could not decode started.json: %v", err)
 	}
 	br.Started = started.Timestamp
+	br.Results = map[string]state.Row_Result{}
 
 	f := build.Bucket.Object(build.Prefix + "finished.json")
 	fr, err := f.NewReader(build.Context)
 	if err == storage.ErrObjectNotExist {
+		br.Results["Overall"] = br.Overall()
 		return &br, nil
 	}
 
@@ -244,7 +293,10 @@ func ReadBuild(build Build) (*BuildResult, error) {
 	}
 
 	br.Finished = finished.Timestamp
+	br.Metadata = finished.Metadata
 	br.Passed = finished.Passed
+
+	br.Results["Overall"] = br.Overall()
 
 	re := regexp.MustCompile(`.+/junit_.+\.xml$`)
 
@@ -263,9 +315,6 @@ func ReadBuild(build Build) (*BuildResult, error) {
 			continue
 		}
 		artifacts = append(artifacts, a.Name)
-	}
-	br.Results = map[string]state.Row_Result{
-		"Overall": br.Overall(),
 	}
 	for _, ap := range artifacts {
 		ar, err := build.Bucket.Object(ap).NewReader(build.Context)
@@ -338,13 +387,22 @@ func ListBuilds(client *storage.Client, ctx context.Context, path string, builds
 	return nil
 }
 
-func ReadBuilds(builds chan Build, max int, dur time.Duration) state.Grid {
+func Headers(group config.TestGroup) []string {
+	var extra []string
+	for _, h := range group.ColumnHeader {
+		extra = append(extra, h.ConfigurationValue)
+	}
+	return extra
+}
+
+func ReadBuilds(group config.TestGroup, builds chan Build, max int, dur time.Duration) state.Grid {
 	i := 0
 	var stop time.Time
 	if dur != 0 {
 		stop = time.Now().Add(-dur)
 	}
 	grid := &state.Grid{}
+	h := Headers(group)
 	rows := map[string]*state.Row{}
 	log.Printf("Reading builds after %s (%d)", stop, stop.Unix())
 	for b := range builds {
@@ -358,7 +416,7 @@ func ReadBuilds(builds chan Build, max int, dur time.Duration) state.Grid {
 			log.Printf("FAIL %s: %v", b.Prefix, err)
 			continue
 		}
-		AppendColumn(grid, rows, *br)
+		AppendColumn(h, grid, rows, *br)
 		log.Printf("found: %s pass:%t %d-%d: %d results", br.Id, br.Passed, br.Started, br.Finished, len(br.Results))
 		if br.Started < stop.Unix() {
 			log.Printf("Latest result before %s", stop)
@@ -372,15 +430,54 @@ func ReadBuilds(builds chan Build, max int, dur time.Duration) state.Grid {
 }
 
 func Days(d float64) time.Duration {
-	return time.Duration(24 * d) * time.Hour // Close enough
+	return time.Duration(24*d) * time.Hour // Close enough
+}
+
+func ReadConfig(obj *storage.ObjectHandle, ctx context.Context) (*config.Configuration, error) {
+	r, err := obj.NewReader(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to open config: %v", err)
+	}
+	buf, err := ioutil.ReadAll(r)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read config: %v", err)
+	}
+	var cfg config.Configuration
+	if err = proto.Unmarshal(buf, &cfg); err != nil {
+		return nil, fmt.Errorf("failed to parse: %v", err)
+	}
+	return &cfg, nil
+}
+
+func Group(cfg config.Configuration, name string) (*config.TestGroup, bool) {
+	for _, g := range cfg.TestGroups {
+		if g.Name == name {
+			return g, true
+		}
+	}
+	return nil, false
 }
 
 func main() {
+	b := "fejternetes"
+	o := "ci-kubernetes-test-go"
+
 	ctx := context.Background()
 	client, err := storage.NewClient(ctx)
 	if err != nil {
 		log.Fatalf("Failed to create storage client: %v", err)
 	}
+
+	cfg, err := ReadConfig(client.Bucket(b).Object("config"), ctx)
+	if err != nil {
+		log.Fatalf("Failed to read gs://%s/config: %v", b, err)
+	}
+	tg, ok := Group(*cfg, o)
+	if !ok {
+		log.Fatalf("Failed to find %s in gs://%s/config", o, b)
+	}
+	log.Println(tg)
+
 	bkt := client.Bucket("kubernetes-jenkins")
 	attrs, err := bkt.Attrs(ctx)
 	if err != nil {
@@ -402,16 +499,11 @@ func main() {
 		}
 		close(builds)
 	}()
-	grid := ReadBuilds(builds, 1000, Days(0.25))
+	grid := ReadBuilds(*tg, builds, 1000, Days(0.25))
 	log.Printf("Grid: %d %s", len(grid.Columns), grid.String())
 	buf, err := proto.Marshal(&grid)
 	if err != nil {
 		log.Fatalf("Failed to encode grid: %v", err)
-	}
-	b := "fejternetes"
-	o := "ci-kubernetes-test-go"
-	if b == "k8s-testgrid" {
-		log.Fatalf("do not change prod")
 	}
 	var zbuf bytes.Buffer
 	zw := zlib.NewWriter(&zbuf)
@@ -421,9 +513,12 @@ func main() {
 	if err = zw.Close(); err != nil {
 		log.Fatalf("Failed to close zlib gs://%s/%s buffer: %v", b, o, err)
 	}
-	buf = zbuf.Bytes()
+	if b == "k8s-testgrid" {
+		log.Fatalf("do not change prod")
+	}
 	w := client.Bucket(b).Object(o).NewWriter(ctx)
 	w.SendCRC32C = true
+	buf = zbuf.Bytes()
 	w.ObjectAttrs.CRC32C = crc32.Checksum(buf, crc32.MakeTable(crc32.Castagnoli))
 	w.ProgressFunc = func(bytes int64) {
 		log.Printf("Uploading gs://%s/%s: %d/%d...", b, o, bytes, len(buf))
