@@ -150,7 +150,7 @@ func (c *Controller) setStatuses(all, pool []PullRequest) {
 			if err := c.ghc.CreateStatus(
 				string(pr.Repository.Owner.Login),
 				string(pr.Repository.Name),
-				string(pr.Commits.Nodes[0].Commit.OID),
+				pr.SHA(),
 				github.Status{
 					Context:     statusContext,
 					State:       wantState,
@@ -162,7 +162,7 @@ func (c *Controller) setStatuses(all, pool []PullRequest) {
 					string(pr.Repository.Owner.Login),
 					string(pr.Repository.Name),
 					int(pr.Number),
-					string(pr.Commits.Nodes[0].Commit.OID),
+					pr.SHA(),
 				)
 			}
 		}
@@ -313,7 +313,7 @@ func accumulateBatch(presubmits []string, prs []PullRequest, pjs []kube.ProwJob)
 				validPulls: true,
 			}
 			for _, pull := range pj.Spec.Refs.Pulls {
-				if pr, ok := prNums[pull.Number]; ok && string(pr.Commits.Nodes[0].Commit.OID) == pull.SHA {
+				if pr, ok := prNums[pull.Number]; ok && pr.SHA() == pull.SHA {
 					states[ref].prs = append(states[ref].prs, pr)
 				} else {
 					states[ref].validPulls = false
@@ -424,7 +424,7 @@ func (c *Controller) pickBatch(sp subpool) ([]PullRequest, error) {
 		if !isPassingTests(pr) {
 			continue
 		}
-		if ok, err := r.Merge(string(pr.Commits.Nodes[0].Commit.OID)); err != nil {
+		if ok, err := r.Merge(pr.SHA()); err != nil {
 			return nil, err
 		} else if ok {
 			res = append(res, pr)
@@ -436,7 +436,7 @@ func (c *Controller) pickBatch(sp subpool) ([]PullRequest, error) {
 func (c *Controller) mergePRs(sp subpool, prs []PullRequest) error {
 	for _, pr := range prs {
 		if err := c.ghc.Merge(sp.org, sp.repo, int(pr.Number), github.MergeDetails{
-			SHA:         string(pr.Commits.Nodes[0].Commit.OID),
+			SHA:         pr.SHA(),
 			MergeMethod: string(c.ca.Config().Tide.MergeMethod(sp.org, sp.repo)),
 		}); err != nil {
 			if _, ok := err.(github.ModifiedHeadError); ok {
@@ -474,7 +474,7 @@ func (c *Controller) trigger(sp subpool, prs []PullRequest) error {
 				kube.Pull{
 					Number: int(pr.Number),
 					Author: string(pr.Author.Login),
-					SHA:    string(pr.Commits.Nodes[0].Commit.OID),
+					SHA:    pr.SHA(),
 				},
 			)
 		}
@@ -643,6 +643,11 @@ type PullRequest struct {
 		Name   githubql.String
 		Prefix githubql.String
 	}
+	HeadRef struct {
+		Target struct {
+			OID githubql.String `graphql:"oid"`
+		}
+	}
 	Repository struct {
 		Name          githubql.String
 		NameWithOwner githubql.String
@@ -684,4 +689,21 @@ type searchQuery struct {
 			PullRequest PullRequest `graphql:"... on PullRequest"`
 		}
 	} `graphql:"search(type: ISSUE, first: 100, after: $searchCursor, query: $query)"`
+}
+
+// SHA tries to return the sha of the PR's head commit.
+//
+// Previously Tide got the sha from HeadRef.Target.OID field, but we cannot read
+// this field if the forked repo has been deleted so we switched to using the
+// 'last' commit. Unfortunately the 'last' commit is determined by author date
+// not commit date so if commits are reordered non-chronologically, tide tests
+// the wrong commit and fails to merge the PR.
+// This function uses the HeadRef if it exists and falls back to the potentially
+// mis-ordered commits if it doesn't. This should only return the wrong sha on
+// PRs with mis-ordered commits where the forked repo has been deleted.
+func (pr *PullRequest) SHA() string {
+	if oid := strings.TrimSpace(string(pr.HeadRef.Target.OID)); oid != "" {
+		return oid
+	}
+	return string(pr.Commits.Nodes[0].Commit.OID)
 }
