@@ -47,13 +47,21 @@ func init() {
 
 func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
 	// The Config field is omitted because this plugin is not configurable.
-	return &pluginhelp.PluginHelp{
-			Description: "The yuks plugin comments with jokes in response to the `/joke` command.",
-			WhoCanUse:   "Anyone can use the `/joke` command.",
-			Usage:       "/joke",
-			Examples:    []string{"/joke"},
-		},
-		nil
+	// TODO(qhuynh96): Removes all the fields of pluginHelp except Description.
+	pluginHelp := &pluginhelp.PluginHelp{
+		Description: "The yuks plugin comments with jokes in response to the `/joke` command.",
+		WhoCanUse:   "Anyone can use the `/joke` command.",
+		Usage:       "/joke",
+		Examples:    []string{"/joke"},
+	}
+	pluginHelp.AddCommand(pluginhelp.Command{
+		Usage:       "/joke",
+		Description: "Tells a joke.",
+		Featured:    false,
+		WhoCanUse:   "Anyone can use the `/joke` command.",
+		Examples:    []string{"/joke"},
+	})
+	return pluginHelp, nil
 }
 
 type githubClient interface {

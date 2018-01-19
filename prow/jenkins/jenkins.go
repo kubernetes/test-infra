@@ -269,7 +269,7 @@ func (c *Client) doRequest(method, path string) (*http.Response, error) {
 // us track the build before it's scheduled by Jenkins.
 func (c *Client) Build(pj *kube.ProwJob) error {
 	c.logger.WithFields(pjutil.ProwJobFields(pj)).Info("Build")
-	return c.BuildFromSpec(&pj.Spec, pj.Metadata.Name)
+	return c.BuildFromSpec(&pj.Spec, pj.ObjectMeta.Name)
 }
 
 // BuildFromSpec triggers a Jenkins build for the provided ProwJobSpec.

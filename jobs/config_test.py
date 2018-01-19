@@ -97,7 +97,8 @@ class JobTest(unittest.TestCase):
                           '`bazel run //jobs:config_sort`')
         with open(config_sort.test_infra('prow/config.yaml')) as fp:
             original = fp.read()
-            expect = config_sort.sorted_prow_config().getvalue()
+            expect = config_sort.sorted_prow_config(
+                config_sort.test_infra('prow/config.yaml')).getvalue()
             if original != expect:
                 self.fail('prow/config.yaml is not sorted, please run '
                           '`bazel run //jobs:config_sort`')

@@ -391,6 +391,7 @@ func TestJobsTestgridEntryMatch(t *testing.T) {
 		"kubernetes/test-infra",
 		"kubernetes/cluster-registry",
 		"kubernetes/federation",
+		"kubernetes/kops",
 		"tensorflow/k8s",
 	}) {
 		jobs[job.Name] = false

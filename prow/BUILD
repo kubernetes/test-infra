@@ -16,6 +16,7 @@ filegroup(
     name = "all-srcs",
     srcs = [
         ":package-srcs",
+        "//prow/cluster:all-srcs",
         "//prow/cmd/branchprotector:all-srcs",
         "//prow/cmd/clonerefs:all-srcs",
         "//prow/cmd/config:all-srcs",
