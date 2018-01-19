@@ -34,6 +34,7 @@ approve:
   - kubernetes/kubectl
   - kubernetes/kubernetes-template-project
   - kubernetes/minikube
+  - kubernetes/repo-infra
   - kubernetes/sig-release
   - kubernetes/steering
   - kubernetes/test-infra
@@ -111,7 +112,7 @@ plugins:
   google/cadvisor:
   - trigger
 
-  google/kubeflow:  
+  google/kubeflow:
   - lgtm
   - size
   - trigger
@@ -181,6 +182,9 @@ plugins:
   - approve
 
   kubernetes/minikube:
+  - approve
+
+  kubernetes/repo-infra:
   - approve
 
   kubernetes/sig-release:
