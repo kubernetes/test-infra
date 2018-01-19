@@ -9,6 +9,7 @@ go_library(
     deps = [
         "//testgrid:state",
         "//vendor/cloud.google.com/go/storage:go_default_library",
+        "//vendor/github.com/golang/protobuf/proto:go_default_library",
         "//vendor/google.golang.org/api/iterator:go_default_library",
     ],
 )

@@ -17,10 +17,13 @@ limitations under the License.
 package main
 
 import (
+	"bytes"
+	"compress/zlib"
 	"context"
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
+	"hash/crc32"
 	"io/ioutil"
 	"log"
 	"net/url"
@@ -31,6 +34,7 @@ import (
 	"k8s.io/test-infra/testgrid/state"
 
 	"cloud.google.com/go/storage"
+	"github.com/golang/protobuf/proto"
 	"google.golang.org/api/iterator"
 )
 
@@ -160,6 +164,8 @@ func (br BuildResult) Overall() state.Row_Result {
 	}
 }
 
+var uniq int
+
 func AppendResult(row *state.Row, result state.Row_Result, count int) {
 	latest := int32(result)
 	n := len(row.Results)
@@ -168,6 +174,10 @@ func AppendResult(row *state.Row, result state.Row_Result, count int) {
 		row.Results = append(row.Results, latest, int32(count))
 	default:
 		row.Results[n-1] += int32(count)
+	}
+	for i := 0; i < count; i++ {
+		row.CellId = append(row.CellId, string(uniq))
+		uniq++
 	}
 }
 
@@ -329,7 +339,6 @@ func ListBuilds(client *storage.Client, ctx context.Context, path string, builds
 }
 
 func ReadBuilds(builds chan Build, max int, dur time.Duration) state.Grid {
-	log.Println("Reading builds...")
 	i := 0
 	var stop time.Time
 	if dur != 0 {
@@ -337,6 +346,7 @@ func ReadBuilds(builds chan Build, max int, dur time.Duration) state.Grid {
 	}
 	grid := &state.Grid{}
 	rows := map[string]*state.Row{}
+	log.Printf("Reading builds after %s (%d)", stop, stop.Unix())
 	for b := range builds {
 		i++
 		if max > 0 && i > max {
@@ -349,7 +359,7 @@ func ReadBuilds(builds chan Build, max int, dur time.Duration) state.Grid {
 			continue
 		}
 		AppendColumn(grid, rows, *br)
-		log.Printf("found! %+v", br)
+		log.Printf("found: %s pass:%t %d-%d: %d results", br.Id, br.Passed, br.Started, br.Finished, len(br.Results))
 		if br.Started < stop.Unix() {
 			log.Printf("Latest result before %s", stop)
 			break
@@ -361,8 +371,8 @@ func ReadBuilds(builds chan Build, max int, dur time.Duration) state.Grid {
 	return *grid
 }
 
-func Days(d int) time.Duration {
-	return 24 * time.Duration(d) * time.Hour // Close enough
+func Days(d float64) time.Duration {
+	return time.Duration(24 * d) * time.Hour // Close enough
 }
 
 func main() {
@@ -392,6 +402,39 @@ func main() {
 		}
 		close(builds)
 	}()
-	grid := ReadBuilds(builds, 1000, Days(1))
-	log.Printf("Grid: %v", grid)
+	grid := ReadBuilds(builds, 1000, Days(0.25))
+	log.Printf("Grid: %d %s", len(grid.Columns), grid.String())
+	buf, err := proto.Marshal(&grid)
+	if err != nil {
+		log.Fatalf("Failed to encode grid: %v", err)
+	}
+	b := "fejternetes"
+	o := "ci-kubernetes-test-go"
+	if b == "k8s-testgrid" {
+		log.Fatalf("do not change prod")
+	}
+	var zbuf bytes.Buffer
+	zw := zlib.NewWriter(&zbuf)
+	if _, err = zw.Write(buf); err != nil {
+		log.Fatalf("Failed to compress gs://%s/%s: %v", b, o, err)
+	}
+	if err = zw.Close(); err != nil {
+		log.Fatalf("Failed to close zlib gs://%s/%s buffer: %v", b, o, err)
+	}
+	buf = zbuf.Bytes()
+	w := client.Bucket(b).Object(o).NewWriter(ctx)
+	w.SendCRC32C = true
+	w.ObjectAttrs.CRC32C = crc32.Checksum(buf, crc32.MakeTable(crc32.Castagnoli))
+	w.ProgressFunc = func(bytes int64) {
+		log.Printf("Uploading gs://%s/%s: %d/%d...", b, o, bytes, len(buf))
+	}
+	if n, err := w.Write(buf); err != nil {
+		log.Fatalf("Failed to write gs://%s/%s: %v", b, o, err)
+	} else if n != len(buf) {
+		log.Fatalf("Partial gs://%s/%s write: %d < %d", b, o, n, len(buf))
+	}
+	if err = w.Close(); err != nil {
+		log.Fatalf("Failed to close write to gs://%s/%s: %v", b, o, err)
+	}
+	log.Print("Success!")
 }
