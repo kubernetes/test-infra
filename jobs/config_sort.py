@@ -83,9 +83,9 @@ def sort_boskos_config():
     output.close()
 
 
-def sorted_prow_config():
+def sorted_prow_config(prow_config_path=None):
     """Get the sorted Prow configuration."""
-    with open(test_infra('prow/config.yaml'), 'r') as fp:
+    with open(prow_config_path, 'r') as fp:
         configs = yaml.round_trip_load(fp, preserve_quotes=True)
     configs['periodics'] = sorted_seq(configs['periodics'])
     configs['presubmits'] = sorted_map(configs['presubmits'])
@@ -96,19 +96,30 @@ def sorted_prow_config():
     return output
 
 
-def sort_prow_config():
+def sort_prow_config(prow_config_path=None):
     """Sort test jobs in Prow configuration alphabetically."""
-    output = sorted_prow_config()
-    with open(test_infra('prow/config.yaml'), 'w+') as fp:
+    output = sorted_prow_config(prow_config_path)
+    with open(prow_config_path, 'w+') as fp:
         fp.write(output.getvalue())
     output.close()
 
 
-if __name__ == '__main__':
-    PARSER = argparse.ArgumentParser(
+def main():
+    parser = argparse.ArgumentParser(
         description='Sort config.json and prow/config.yaml alphabetically')
-    ARGS = PARSER.parse_args()
+    parser.add_argument('--prow-config', default=None, help='path to prow config')
+    parser.add_argument('--only-prow', default=False,
+                        help='only sort prow config', action='store_true')
+    args = parser.parse_args()
+    # default to known relative path
+    prow_config_path = args.prow_config
+    if args.prow_config is None:
+        prow_config_path = test_infra('prow/config.yaml')
+    # actually sort
+    sort_prow_config(prow_config_path)
+    if not args.only_prow:
+        sort_job_config()
+        sort_boskos_config()
 
-    sort_job_config()
-    sort_prow_config()
-    sort_boskos_config()
+if __name__ == '__main__':
+    main()

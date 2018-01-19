@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Copyright 2017 The Kubernetes Authors.
+# Copyright 2018 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,8 +16,19 @@
 set -o errexit
 set -o nounset
 set -o pipefail
+set -o xtrace
 
 TESTINFRA_ROOT=$(git rev-parse --show-toplevel)
-${TESTINFRA_ROOT}/hack/update-bazel.sh
-${TESTINFRA_ROOT}/hack/update-gofmt.sh
-${TESTINFRA_ROOT}/hack/update-config.sh
+
+PROW_CONFIG="${TESTINFRA_ROOT}/prow/config.yaml"
+TMP_CONFIG=$(mktemp)
+trap "rm $TMP_CONFIG" EXIT
+cp "${PROW_CONFIG}" "${TMP_CONFIG}"
+bazel run //maintenance/fixconfig:fixconfig -- --config=${TMP_CONFIG} && \
+bazel run //jobs:config_sort -- --prow-config=${TMP_CONFIG} --only-prow
+
+DIFF=$(diff "${TMP_CONFIG}" "${PROW_CONFIG}")
+if [ ! -z "$DIFF"]; then
+    echo "config is not correct, please run `hack/update-config.sh`"
+    exit 1
+fi

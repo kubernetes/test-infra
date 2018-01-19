@@ -11460,6 +11460,15 @@
       "sig-testing"
     ]
   },
+  "pull-test-infra-verify-config": {
+    "args": [
+      "./hack/verify-config.sh"
+    ],
+    "scenario": "execute",
+    "sigOwners": [
+      "sig-testing"
+    ]
+  },
   "pull-test-infra-verify-gofmt": {
     "args": [
       "./hack/verify-gofmt.sh"

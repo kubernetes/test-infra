@@ -24,7 +24,6 @@ go_test(
     deps = [
         "//prow/github:go_default_library",
         "//prow/kube:go_default_library",
-        "//vendor/github.com/ghodss/yaml:go_default_library",
     ],
 )
 
