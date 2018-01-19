@@ -28,8 +28,9 @@ import (
 	"k8s.io/test-infra/prow/plugins"
 )
 
-var okToTest = regexp.MustCompile(`(?m)^/ok-to-test\s*$`)
-var retest = regexp.MustCompile(`(?m)^/retest\s*$`)
+var okToTestRe = regexp.MustCompile(`(?m)^/ok-to-test\s*$`)
+var testAllRe = regexp.MustCompile(`(?m)^/test all\s*$`)
+var retestRe = regexp.MustCompile(`(?m)^/retest\s*$`)
 
 func handleIC(c client, trustedOrg string, ic github.IssueCommentEvent) error {
 	org := ic.Repo.Owner.Login
@@ -57,13 +58,14 @@ func handleIC(c client, trustedOrg string, ic github.IssueCommentEvent) error {
 	}
 
 	// Which jobs does the comment want us to run?
-	testAll := okToTest.MatchString(ic.Comment.Body)
-	shouldRetestFailed := retest.MatchString(ic.Comment.Body)
+	okToTest := okToTestRe.MatchString(ic.Comment.Body)
+	testAll := okToTest || testAllRe.MatchString(ic.Comment.Body)
+	shouldRetestFailed := retestRe.MatchString(ic.Comment.Body)
 	requestedJobs := c.Config.MatchingPresubmits(ic.Repo.FullName, ic.Comment.Body, testAll)
 	if !shouldRetestFailed && len(requestedJobs) == 0 {
 		// Check for the presence of the needs-ok-to-test label and remove it
 		// if a trusted member has commented "/ok-to-test".
-		if testAll && ic.Issue.HasLabel(needsOkToTest) {
+		if okToTest && ic.Issue.HasLabel(needsOkToTest) {
 			orgMember, err := isUserTrusted(c.GitHubClient, commentAuthor, trustedOrg, org)
 			if err != nil {
 				return err
@@ -126,7 +128,7 @@ func handleIC(c client, trustedOrg string, ic github.IssueCommentEvent) error {
 		}
 	}
 
-	if testAll && ic.Issue.HasLabel(needsOkToTest) {
+	if okToTest && ic.Issue.HasLabel(needsOkToTest) {
 		if err := c.GitHubClient.RemoveLabel(ic.Repo.Owner.Login, ic.Repo.Name, ic.Issue.Number, needsOkToTest); err != nil {
 			c.Logger.WithError(err).Errorf("Failed at removing %s label", needsOkToTest)
 		}
