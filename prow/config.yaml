@@ -3212,7 +3212,6 @@ presubmits:
         - args:
           - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
           - --upload=gs://kubernetes-security-jenkins/pr-logs
-          - --git-cache=/root/.cache/git
           - --timeout=75
           - --clean
           - --ssh=/etc/ssh-security/ssh-security
@@ -3228,9 +3227,6 @@ presubmits:
           - name: SKIP_RELEASE_VALIDATION
             value: "true"
           image: gcr.io/k8s-testimages/e2e-kubeadm:v20180102-d372fdd96
-          ports:
-          - containerPort: 9999
-            hostPort: 9999
           resources: {}
           volumeMounts:
           - mountPath: /etc/service-account
@@ -3239,8 +3235,6 @@ presubmits:
           - mountPath: /etc/ssh-key-secret
             name: ssh
             readOnly: true
-          - mountPath: /root/.cache
-            name: cache-ssd
           - mountPath: /etc/ssh-security
             name: ssh-security
         volumes:
@@ -3251,9 +3245,6 @@ presubmits:
           secret:
             defaultMode: 256
             secretName: ssh-key-secret
-        - hostPath:
-            path: /mnt/disks/ssd0
-          name: cache-ssd
         - name: ssh-security
           secret:
             defaultMode: 256
@@ -3269,7 +3260,6 @@ presubmits:
       containers:
       - args:
         - --clean
-        - --git-cache=/root/.cache/git
         - --job=$(JOB_NAME)
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --service-account=/etc/service-account/service-account.json
@@ -3278,13 +3268,7 @@ presubmits:
         - --build=//... -//vendor/...
         - --release=//build/release-tars
         - --ssh=/etc/ssh-security/ssh-security
-        env:
-        - name: TEST_TMPDIR
-          value: /root/.cache/bazel
         image: gcr.io/k8s-testimages/bazelbuild:v20171214-ae38d82af-0.8.1
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
         resources:
           requests:
             memory: 6Gi
@@ -3294,17 +3278,12 @@ presubmits:
         - mountPath: /etc/service-account
           name: service
           readOnly: true
-        - mountPath: /root/.cache
-          name: cache-ssd
         - mountPath: /etc/ssh-security
           name: ssh-security
       volumes:
       - name: service
         secret:
           secretName: service-account
-      - hostPath:
-          path: /mnt/disks/ssd0
-        name: cache-ssd
       - name: ssh-security
         secret:
           defaultMode: 256
@@ -3338,7 +3317,6 @@ presubmits:
         - args:
           - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
           - --upload=gs://kubernetes-security-jenkins/pr-logs
-          - --git-cache=/root/.cache/git
           - --timeout=75
           - --clean
           - --ssh=/etc/ssh-security/ssh-security
@@ -3354,9 +3332,6 @@ presubmits:
           - name: SKIP_RELEASE_VALIDATION
             value: "true"
           image: gcr.io/k8s-testimages/e2e-kubeadm:v20180102-d372fdd96
-          ports:
-          - containerPort: 9999
-            hostPort: 9999
           resources: {}
           volumeMounts:
           - mountPath: /etc/service-account
@@ -3365,8 +3340,6 @@ presubmits:
           - mountPath: /etc/ssh-key-secret
             name: ssh
             readOnly: true
-          - mountPath: /root/.cache
-            name: cache-ssd
           - mountPath: /etc/ssh-security
             name: ssh-security
         volumes:
@@ -3377,9 +3350,6 @@ presubmits:
           secret:
             defaultMode: 256
             secretName: ssh-key-secret
-        - hostPath:
-            path: /mnt/disks/ssd0
-          name: cache-ssd
         - name: ssh-security
           secret:
             defaultMode: 256
@@ -3391,7 +3361,6 @@ presubmits:
       containers:
       - args:
         - --clean
-        - --git-cache=/root/.cache/git
         - --job=$(JOB_NAME)
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --service-account=/etc/service-account/service-account.json
@@ -3400,13 +3369,7 @@ presubmits:
         - --build=//cmd/... //pkg/... //federation/... //plugin/... //third_party/... //examples/... //test/... //vendor/k8s.io/...
         - --release=//build/release-tars
         - --ssh=/etc/ssh-security/ssh-security
-        env:
-        - name: TEST_TMPDIR
-          value: /root/.cache/bazel
         image: gcr.io/k8s-testimages/bazelbuild:v20171214-ae38d82af-0.6.1
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
         resources:
           requests:
             memory: 6Gi
@@ -3416,17 +3379,12 @@ presubmits:
         - mountPath: /etc/service-account
           name: service
           readOnly: true
-        - mountPath: /root/.cache
-          name: cache-ssd
         - mountPath: /etc/ssh-security
           name: ssh-security
       volumes:
       - name: service
         secret:
           secretName: service-account
-      - hostPath:
-          path: /mnt/disks/ssd0
-        name: cache-ssd
       - name: ssh-security
         secret:
           defaultMode: 256
@@ -3458,7 +3416,6 @@ presubmits:
         - args:
           - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
           - --upload=gs://kubernetes-security-jenkins/pr-logs
-          - --git-cache=/root/.cache/git
           - --timeout=75
           - --clean
           - --ssh=/etc/ssh-security/ssh-security
@@ -3474,9 +3431,6 @@ presubmits:
           - name: SKIP_RELEASE_VALIDATION
             value: "true"
           image: gcr.io/k8s-testimages/e2e-kubeadm:v20180102-d372fdd96
-          ports:
-          - containerPort: 9999
-            hostPort: 9999
           resources: {}
           volumeMounts:
           - mountPath: /etc/service-account
@@ -3485,8 +3439,6 @@ presubmits:
           - mountPath: /etc/ssh-key-secret
             name: ssh
             readOnly: true
-          - mountPath: /root/.cache
-            name: cache-ssd
           - mountPath: /etc/ssh-security
             name: ssh-security
         volumes:
@@ -3497,9 +3449,6 @@ presubmits:
           secret:
             defaultMode: 256
             secretName: ssh-key-secret
-        - hostPath:
-            path: /mnt/disks/ssd0
-          name: cache-ssd
         - name: ssh-security
           secret:
             defaultMode: 256
@@ -3511,7 +3460,6 @@ presubmits:
       containers:
       - args:
         - --clean
-        - --git-cache=/root/.cache/git
         - --job=$(JOB_NAME)
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --service-account=/etc/service-account/service-account.json
@@ -3520,13 +3468,7 @@ presubmits:
         - --build=//cmd/... //pkg/... //federation/... //plugin/... //third_party/... //examples/... //test/...
         - --release=//build/release-tars
         - --ssh=/etc/ssh-security/ssh-security
-        env:
-        - name: TEST_TMPDIR
-          value: /root/.cache/bazel
         image: gcr.io/k8s-testimages/bazelbuild:v20171214-ae38d82af-0.5.2
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
         resources:
           requests:
             memory: 6Gi
@@ -3536,17 +3478,12 @@ presubmits:
         - mountPath: /etc/service-account
           name: service
           readOnly: true
-        - mountPath: /root/.cache
-          name: cache-ssd
         - mountPath: /etc/ssh-security
           name: ssh-security
       volumes:
       - name: service
         secret:
           secretName: service-account
-      - hostPath:
-          path: /mnt/disks/ssd0
-        name: cache-ssd
       - name: ssh-security
         secret:
           defaultMode: 256
@@ -3576,7 +3513,6 @@ presubmits:
         - args:
           - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
           - --upload=gs://kubernetes-security-jenkins/pr-logs
-          - --git-cache=/root/.cache/git
           - --timeout=75
           - --clean
           - --ssh=/etc/ssh-security/ssh-security
@@ -3592,9 +3528,6 @@ presubmits:
           - name: SKIP_RELEASE_VALIDATION
             value: "true"
           image: gcr.io/k8s-testimages/e2e-kubeadm:v20180102-d372fdd96
-          ports:
-          - containerPort: 9999
-            hostPort: 9999
           resources: {}
           volumeMounts:
           - mountPath: /etc/service-account
@@ -3603,8 +3536,6 @@ presubmits:
           - mountPath: /etc/ssh-key-secret
             name: ssh
             readOnly: true
-          - mountPath: /root/.cache
-            name: cache-ssd
           - mountPath: /etc/ssh-security
             name: ssh-security
         volumes:
@@ -3615,9 +3546,6 @@ presubmits:
           secret:
             defaultMode: 256
             secretName: ssh-key-secret
-        - hostPath:
-            path: /mnt/disks/ssd0
-          name: cache-ssd
         - name: ssh-security
           secret:
             defaultMode: 256
@@ -3638,9 +3566,6 @@ presubmits:
         - --build=//... -//vendor/...
         - --release=//build/release-tars
         - --ssh=/etc/ssh-security/ssh-security
-        env:
-        - name: TEST_TMPDIR
-          value: /scratch/.cache/bazel
         image: gcr.io/k8s-testimages/bazelbuild:latest-latest
         imagePullPolicy: Always
         resources:
@@ -3683,7 +3608,6 @@ presubmits:
       containers:
       - args:
         - --clean
-        - --git-cache=/root/.cache/git
         - --job=$(JOB_NAME)
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --service-account=/etc/service-account/service-account.json
@@ -3695,13 +3619,7 @@ presubmits:
         - --test-args=--test_tag_filters=-e2e,-integration
         - --test-args=--flaky_test_attempts=3
         - --ssh=/etc/ssh-security/ssh-security
-        env:
-        - name: TEST_TMPDIR
-          value: /root/.cache/bazel
         image: gcr.io/k8s-testimages/bazelbuild:v20171214-ae38d82af-0.8.1
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
         resources:
           requests:
             memory: 6Gi
@@ -3711,17 +3629,12 @@ presubmits:
         - mountPath: /etc/service-account
           name: service
           readOnly: true
-        - mountPath: /root/.cache
-          name: cache-ssd
         - mountPath: /etc/ssh-security
           name: ssh-security
       volumes:
       - name: service
         secret:
           secretName: service-account
-      - hostPath:
-          path: /mnt/disks/ssd0
-        name: cache-ssd
       - name: ssh-security
         secret:
           defaultMode: 256
@@ -3743,7 +3656,6 @@ presubmits:
       containers:
       - args:
         - --clean
-        - --git-cache=/root/.cache/git
         - --job=$(JOB_NAME)
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --service-account=/etc/service-account/service-account.json
@@ -3754,13 +3666,7 @@ presubmits:
         - --test-args=--test_tag_filters=-integration
         - --test-args=--flaky_test_attempts=3
         - --ssh=/etc/ssh-security/ssh-security
-        env:
-        - name: TEST_TMPDIR
-          value: /root/.cache/bazel
         image: gcr.io/k8s-testimages/bazelbuild:v20171214-ae38d82af-0.6.1
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
         resources:
           requests:
             memory: 6Gi
@@ -3770,17 +3676,12 @@ presubmits:
         - mountPath: /etc/service-account
           name: service
           readOnly: true
-        - mountPath: /root/.cache
-          name: cache-ssd
         - mountPath: /etc/ssh-security
           name: ssh-security
       volumes:
       - name: service
         secret:
           secretName: service-account
-      - hostPath:
-          path: /mnt/disks/ssd0
-        name: cache-ssd
       - name: ssh-security
         secret:
           defaultMode: 256
@@ -3801,7 +3702,6 @@ presubmits:
       containers:
       - args:
         - --clean
-        - --git-cache=/root/.cache/git
         - --job=$(JOB_NAME)
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --service-account=/etc/service-account/service-account.json
@@ -3812,13 +3712,7 @@ presubmits:
         - --test-args=--test_tag_filters=-integration
         - --test-args=--flaky_test_attempts=3
         - --ssh=/etc/ssh-security/ssh-security
-        env:
-        - name: TEST_TMPDIR
-          value: /root/.cache/bazel
         image: gcr.io/k8s-testimages/bazelbuild:v20171214-ae38d82af-0.5.2
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
         resources:
           requests:
             memory: 6Gi
@@ -3828,17 +3722,12 @@ presubmits:
         - mountPath: /etc/service-account
           name: service
           readOnly: true
-        - mountPath: /root/.cache
-          name: cache-ssd
         - mountPath: /etc/ssh-security
           name: ssh-security
       volumes:
       - name: service
         secret:
           secretName: service-account
-      - hostPath:
-          path: /mnt/disks/ssd0
-        name: cache-ssd
       - name: ssh-security
         secret:
           defaultMode: 256
@@ -3859,7 +3748,6 @@ presubmits:
       containers:
       - args:
         - --clean
-        - --git-cache=/root/.cache/git
         - --job=$(JOB_NAME)
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --service-account=/etc/service-account/service-account.json
@@ -3872,14 +3760,8 @@ presubmits:
         - --test-args=--test_tag_filters=-e2e
         - --test-args=--flaky_test_attempts=3
         - --ssh=/etc/ssh-security/ssh-security
-        env:
-        - name: TEST_TMPDIR
-          value: /root/.cache/bazel
         image: gcr.io/k8s-testimages/bazelbuild:latest-latest
         imagePullPolicy: Always
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
         resources:
           requests:
             memory: 6Gi
@@ -3889,17 +3771,12 @@ presubmits:
         - mountPath: /etc/service-account
           name: service
           readOnly: true
-        - mountPath: /root/.cache
-          name: cache-ssd
         - mountPath: /etc/ssh-security
           name: ssh-security
       volumes:
       - name: service
         secret:
           secretName: service-account
-      - hostPath:
-          path: /mnt/disks/ssd0
-        name: cache-ssd
       - name: ssh-security
         secret:
           defaultMode: 256
@@ -3918,7 +3795,6 @@ presubmits:
       containers:
       - args:
         - --clean
-        - --git-cache=/root/.cache/git
         - --job=$(JOB_NAME)
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --service-account=/etc/service-account/service-account.json
@@ -3931,9 +3807,6 @@ presubmits:
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: /etc/service-account/service-account.json
         image: gcr.io/k8s-testimages/bootstrap:v20180108-a65d3dd32
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
         resources:
           requests:
             cpu: "6"
@@ -3944,30 +3817,24 @@ presubmits:
         - mountPath: /etc/service-account
           name: service
           readOnly: true
-        - mountPath: /root/.cache
-          name: cache-ssd
-        - mountPath: /docker-graph
-          name: docker-graph
         - mountPath: /var/lib/docker
           name: var-lib-docker
         - mountPath: /etc/ssh-security
           name: ssh-security
+        - mountPath: /docker-graph
+          name: auto-generated-docker-graph-volume-mount
       volumes:
       - name: service
         secret:
           secretName: service-account
-      - hostPath:
-          path: /mnt/disks/ssd0
-        name: cache-ssd
-      - hostPath:
-          path: /mnt/disks/ssd0/docker-graph
-        name: docker-graph
       - emptyDir: {}
         name: var-lib-docker
       - name: ssh-security
         secret:
           defaultMode: 256
           secretName: ssh-security
+      - emptyDir: {}
+        name: auto-generated-docker-graph-volume-mount
     trigger: (?m)^/test pull-security-kubernetes-cross,?(\s+|$)
   - agent: kubernetes
     always_run: false
@@ -3982,7 +3849,6 @@ presubmits:
       containers:
       - args:
         - --clean
-        - --git-cache=/root/.cache/git
         - --job=$(JOB_NAME)
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --service-account=/etc/service-account/service-account.json
@@ -3996,9 +3862,6 @@ presubmits:
           value: /etc/service-account/service-account.json
         image: gcr.io/k8s-testimages/bootstrap:latest
         imagePullPolicy: Always
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
         resources:
           requests:
             cpu: "6"
@@ -4009,26 +3872,20 @@ presubmits:
         - mountPath: /etc/service-account
           name: service
           readOnly: true
-        - mountPath: /root/.cache
-          name: cache-ssd
-        - mountPath: /docker-graph
-          name: docker-graph
         - mountPath: /etc/ssh-security
           name: ssh-security
+        - mountPath: /docker-graph
+          name: auto-generated-docker-graph-volume-mount
       volumes:
       - name: service
         secret:
           secretName: service-account
-      - hostPath:
-          path: /mnt/disks/ssd0
-        name: cache-ssd
-      - hostPath:
-          path: /mnt/disks/ssd0/docker-graph
-        name: docker-graph
       - name: ssh-security
         secret:
           defaultMode: 256
           secretName: ssh-security
+      - emptyDir: {}
+        name: auto-generated-docker-graph-volume-mount
     trigger: (?m)^/test pull-security-kubernetes-cross-prow,?(\s+|$)
   - agent: kubernetes
     always_run: false
@@ -4049,7 +3906,6 @@ presubmits:
         - --repo=k8s.io/release
         - --repo=github.com/containerd/cri-containerd
         - --upload=gs://kubernetes-security-jenkins/pr-logs
-        - --git-cache=/root/.cache/git
         - --clean
         - --timeout=90
         - --ssh=/etc/ssh-security/ssh-security
@@ -4062,12 +3918,7 @@ presubmits:
           value: /etc/ssh-key-secret/ssh-private
         - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
           value: /etc/ssh-key-secret/ssh-public
-        - name: TEST_TMPDIR
-          value: /root/.cache/bazel
         image: gcr.io/k8s-testimages/kubekins-e2e:v20180102-0e2b24a0b-master
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
         resources: {}
         securityContext:
           privileged: true
@@ -4078,8 +3929,6 @@ presubmits:
         - mountPath: /etc/ssh-key-secret
           name: ssh
           readOnly: true
-        - mountPath: /root/.cache
-          name: cache-ssd
         - mountPath: /etc/ssh-security
           name: ssh-security
       volumes:
@@ -4090,9 +3939,6 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-key-secret
-      - hostPath:
-          path: /mnt/disks/ssd0
-        name: cache-ssd
       - name: ssh-security
         secret:
           defaultMode: 256
@@ -4118,7 +3964,6 @@ presubmits:
         - --repo=github.com/kubernetes-security/kubernetes=$(PULL_REFS)
         - --repo=k8s.io/release
         - --upload=gs://kubernetes-security-jenkins/pr-logs
-        - --git-cache=/root/.cache/git
         - --clean
         - --timeout=90
         - --
@@ -4135,12 +3980,7 @@ presubmits:
           value: /etc/ssh-key-secret/ssh-private
         - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
           value: /etc/ssh-key-secret/ssh-public
-        - name: TEST_TMPDIR
-          value: /root/.cache/bazel
         image: gcr.io/k8s-testimages/kubekins-e2e:v20180102-0e2b24a0b-master
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
         resources:
           requests:
             memory: 6Gi
@@ -4153,8 +3993,6 @@ presubmits:
         - mountPath: /etc/ssh-key-secret
           name: ssh
           readOnly: true
-        - mountPath: /root/.cache
-          name: cache-ssd
         - mountPath: /etc/ssh-security
           name: ssh-security
       volumes:
@@ -4165,9 +4003,6 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-key-secret
-      - hostPath:
-          path: /mnt/disks/ssd0
-        name: cache-ssd
       - name: ssh-security
         secret:
           defaultMode: 256
@@ -4191,7 +4026,6 @@ presubmits:
         - --repo=github.com/kubernetes-security/kubernetes=$(PULL_REFS)
         - --repo=k8s.io/release
         - --upload=gs://kubernetes-security-jenkins/pr-logs
-        - --git-cache=/root/.cache/git
         - --clean
         - --timeout=90
         - --
@@ -4208,12 +4042,7 @@ presubmits:
           value: /etc/ssh-key-secret/ssh-private
         - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
           value: /etc/ssh-key-secret/ssh-public
-        - name: TEST_TMPDIR
-          value: /root/.cache/bazel
         image: gcr.io/k8s-testimages/kubekins-e2e:v20180102-0e2b24a0b-1.8
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
         resources:
           requests:
             memory: 6Gi
@@ -4226,8 +4055,6 @@ presubmits:
         - mountPath: /etc/ssh-key-secret
           name: ssh
           readOnly: true
-        - mountPath: /root/.cache
-          name: cache-ssd
         - mountPath: /etc/ssh-security
           name: ssh-security
       volumes:
@@ -4238,9 +4065,6 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-key-secret
-      - hostPath:
-          path: /mnt/disks/ssd0
-        name: cache-ssd
       - name: ssh-security
         secret:
           defaultMode: 256
@@ -4264,7 +4088,6 @@ presubmits:
         - --repo=github.com/kubernetes-security/kubernetes=$(PULL_REFS)
         - --repo=k8s.io/release
         - --upload=gs://kubernetes-security-jenkins/pr-logs
-        - --git-cache=/root/.cache/git
         - --clean
         - --timeout=90
         - --
@@ -4281,12 +4104,7 @@ presubmits:
           value: /etc/ssh-key-secret/ssh-private
         - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
           value: /etc/ssh-key-secret/ssh-public
-        - name: TEST_TMPDIR
-          value: /root/.cache/bazel
         image: gcr.io/k8s-testimages/kubekins-e2e:v20180102-0e2b24a0b-1.7
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
         resources:
           requests:
             memory: 6Gi
@@ -4299,8 +4117,6 @@ presubmits:
         - mountPath: /etc/ssh-key-secret
           name: ssh
           readOnly: true
-        - mountPath: /root/.cache
-          name: cache-ssd
         - mountPath: /etc/ssh-security
           name: ssh-security
       volumes:
@@ -4311,9 +4127,6 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-key-secret
-      - hostPath:
-          path: /mnt/disks/ssd0
-        name: cache-ssd
       - name: ssh-security
         secret:
           defaultMode: 256
@@ -4349,7 +4162,6 @@ presubmits:
       - args:
         - --root=/go/src
         - --clean
-        - --git-cache=/root/.cache/git
         - --job=$(JOB_NAME)
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --repo=k8s.io/release
@@ -4366,12 +4178,7 @@ presubmits:
           value: /etc/ssh-key-secret/ssh-private
         - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
           value: /etc/ssh-key-secret/ssh-public
-        - name: TEST_TMPDIR
-          value: /root/.cache/bazel
         image: gcr.io/k8s-testimages/kubekins-e2e:v20180102-0e2b24a0b-master
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
         resources:
           requests:
             memory: 6Gi
@@ -4384,8 +4191,6 @@ presubmits:
         - mountPath: /etc/ssh-key-secret
           name: ssh
           readOnly: true
-        - mountPath: /root/.cache
-          name: cache-ssd
         - mountPath: /etc/ssh-security
           name: ssh-security
       volumes:
@@ -4396,9 +4201,6 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-key-secret
-      - hostPath:
-          path: /mnt/disks/ssd0
-        name: cache-ssd
       - name: ssh-security
         secret:
           defaultMode: 256
@@ -4420,7 +4222,6 @@ presubmits:
       - args:
         - --root=/go/src
         - --clean
-        - --git-cache=/root/.cache/git
         - --job=$(JOB_NAME)
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --repo=k8s.io/release
@@ -4437,12 +4238,7 @@ presubmits:
           value: /etc/ssh-key-secret/ssh-private
         - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
           value: /etc/ssh-key-secret/ssh-public
-        - name: TEST_TMPDIR
-          value: /root/.cache/bazel
         image: gcr.io/k8s-testimages/kubekins-e2e:v20180102-0e2b24a0b-1.8
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
         resources:
           requests:
             memory: 6Gi
@@ -4455,8 +4251,6 @@ presubmits:
         - mountPath: /etc/ssh-key-secret
           name: ssh
           readOnly: true
-        - mountPath: /root/.cache
-          name: cache-ssd
         - mountPath: /etc/ssh-security
           name: ssh-security
       volumes:
@@ -4467,9 +4261,6 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-key-secret
-      - hostPath:
-          path: /mnt/disks/ssd0
-        name: cache-ssd
       - name: ssh-security
         secret:
           defaultMode: 256
@@ -4493,7 +4284,6 @@ presubmits:
       - args:
         - --root=/go/src
         - --clean
-        - --git-cache=/root/.cache/git
         - --job=$(JOB_NAME)
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --repo=k8s.io/release
@@ -4510,12 +4300,7 @@ presubmits:
           value: /etc/ssh-key-secret/ssh-private
         - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
           value: /etc/ssh-key-secret/ssh-public
-        - name: TEST_TMPDIR
-          value: /root/.cache/bazel
         image: gcr.io/k8s-testimages/kubekins-e2e:v20180102-0e2b24a0b-master
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
         resources:
           requests:
             memory: 6Gi
@@ -4528,8 +4313,6 @@ presubmits:
         - mountPath: /etc/ssh-key-secret
           name: ssh
           readOnly: true
-        - mountPath: /root/.cache
-          name: cache-ssd
         - mountPath: /etc/ssh-security
           name: ssh-security
       volumes:
@@ -4540,9 +4323,6 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-key-secret
-      - hostPath:
-          path: /mnt/disks/ssd0
-        name: cache-ssd
       - name: ssh-security
         secret:
           defaultMode: 256
@@ -4564,7 +4344,6 @@ presubmits:
       - args:
         - --root=/go/src
         - --clean
-        - --git-cache=/root/.cache/git
         - --job=$(JOB_NAME)
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --repo=k8s.io/release
@@ -4581,12 +4360,7 @@ presubmits:
           value: /etc/ssh-key-secret/ssh-private
         - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
           value: /etc/ssh-key-secret/ssh-public
-        - name: TEST_TMPDIR
-          value: /root/.cache/bazel
         image: gcr.io/k8s-testimages/kubekins-e2e:v20180102-0e2b24a0b-1.8
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
         resources:
           requests:
             memory: 6Gi
@@ -4599,8 +4373,6 @@ presubmits:
         - mountPath: /etc/ssh-key-secret
           name: ssh
           readOnly: true
-        - mountPath: /root/.cache
-          name: cache-ssd
         - mountPath: /etc/ssh-security
           name: ssh-security
       volumes:
@@ -4611,9 +4383,6 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-key-secret
-      - hostPath:
-          path: /mnt/disks/ssd0
-        name: cache-ssd
       - name: ssh-security
         secret:
           defaultMode: 256
@@ -4647,7 +4416,6 @@ presubmits:
       - args:
         - --root=/go/src
         - --clean
-        - --git-cache=/root/.cache/git
         - --job=$(JOB_NAME)
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --repo=k8s.io/release
@@ -4669,12 +4437,7 @@ presubmits:
           value: /etc/aws-ssh/aws-ssh-private
         - name: JENKINS_AWS_SSH_PUBLIC_KEY_FILE
           value: /etc/aws-ssh/aws-ssh-public
-        - name: TEST_TMPDIR
-          value: /root/.cache/bazel
         image: gcr.io/k8s-testimages/kubekins-e2e:v20180102-0e2b24a0b-master
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
         resources:
           requests:
             memory: 6Gi
@@ -4690,8 +4453,6 @@ presubmits:
         - mountPath: /etc/aws-cred
           name: aws-cred
           readOnly: true
-        - mountPath: /root/.cache
-          name: cache-ssd
         - mountPath: /etc/ssh-security
           name: ssh-security
       volumes:
@@ -4706,9 +4467,6 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: aws-cred-new
-      - hostPath:
-          path: /mnt/disks/ssd0
-        name: cache-ssd
       - name: ssh-security
         secret:
           defaultMode: 256
@@ -4730,7 +4488,6 @@ presubmits:
       - args:
         - --root=/go/src
         - --clean
-        - --git-cache=/root/.cache/git
         - --job=$(JOB_NAME)
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --repo=k8s.io/release
@@ -4752,12 +4509,7 @@ presubmits:
           value: /etc/aws-ssh/aws-ssh-private
         - name: JENKINS_AWS_SSH_PUBLIC_KEY_FILE
           value: /etc/aws-ssh/aws-ssh-public
-        - name: TEST_TMPDIR
-          value: /root/.cache/bazel
         image: gcr.io/k8s-testimages/kubekins-e2e:v20180102-0e2b24a0b-1.8
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
         resources:
           requests:
             memory: 6Gi
@@ -4773,8 +4525,6 @@ presubmits:
         - mountPath: /etc/aws-cred
           name: aws-cred
           readOnly: true
-        - mountPath: /root/.cache
-          name: cache-ssd
         - mountPath: /etc/ssh-security
           name: ssh-security
       volumes:
@@ -4789,9 +4539,6 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: aws-cred-new
-      - hostPath:
-          path: /mnt/disks/ssd0
-        name: cache-ssd
       - name: ssh-security
         secret:
           defaultMode: 256
@@ -4813,7 +4560,6 @@ presubmits:
       - args:
         - --root=/go/src
         - --clean
-        - --git-cache=/root/.cache/git
         - --job=$(JOB_NAME)
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --repo=k8s.io/release
@@ -4835,12 +4581,7 @@ presubmits:
           value: /etc/aws-ssh/aws-ssh-private
         - name: JENKINS_AWS_SSH_PUBLIC_KEY_FILE
           value: /etc/aws-ssh/aws-ssh-public
-        - name: TEST_TMPDIR
-          value: /root/.cache/bazel
         image: gcr.io/k8s-testimages/kubekins-e2e:v20180102-0e2b24a0b-1.7
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
         resources:
           requests:
             memory: 6Gi
@@ -4856,8 +4597,6 @@ presubmits:
         - mountPath: /etc/aws-cred
           name: aws-cred
           readOnly: true
-        - mountPath: /root/.cache
-          name: cache-ssd
         - mountPath: /etc/ssh-security
           name: ssh-security
       volumes:
@@ -4872,9 +4611,6 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: aws-cred-new
-      - hostPath:
-          path: /mnt/disks/ssd0
-        name: cache-ssd
       - name: ssh-security
         secret:
           defaultMode: 256
@@ -4910,7 +4646,6 @@ presubmits:
       - args:
         - --root=/go/src
         - --clean
-        - --git-cache=/root/.cache/git
         - --job=$(JOB_NAME)
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --repo=k8s.io/release
@@ -4932,12 +4667,7 @@ presubmits:
           value: /etc/ssh-key-secret/ssh-private
         - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
           value: /etc/ssh-key-secret/ssh-public
-        - name: TEST_TMPDIR
-          value: /root/.cache/bazel
         image: gcr.io/k8s-testimages/kubekins-e2e:v20180102-0e2b24a0b-master
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
         resources:
           requests:
             memory: 6Gi
@@ -4950,10 +4680,10 @@ presubmits:
         - mountPath: /etc/ssh-key-secret
           name: ssh
           readOnly: true
-        - mountPath: /root/.cache
-          name: cache-ssd
         - mountPath: /etc/ssh-security
           name: ssh-security
+        - mountPath: /docker-graph
+          name: auto-generated-docker-graph-volume-mount
       volumes:
       - name: service
         secret:
@@ -4962,16 +4692,12 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-key-secret
-      - hostPath:
-          path: /mnt/disks/ssd0
-        name: cache-ssd
-      - hostPath:
-          path: /mnt/disks/ssd0/docker-graph
-        name: docker-graph
       - name: ssh-security
         secret:
           defaultMode: 256
           secretName: ssh-security
+      - emptyDir: {}
+        name: auto-generated-docker-graph-volume-mount
     trigger: (?m)^/test( all| pull-security-kubernetes-kubemark-e2e-gce),?(\s+|$)
   - agent: kubernetes
     always_run: true
@@ -4989,7 +4715,6 @@ presubmits:
       - args:
         - --root=/go/src
         - --clean
-        - --git-cache=/root/.cache/git
         - --job=$(JOB_NAME)
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --repo=k8s.io/release
@@ -5011,12 +4736,7 @@ presubmits:
           value: /etc/ssh-key-secret/ssh-private
         - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
           value: /etc/ssh-key-secret/ssh-public
-        - name: TEST_TMPDIR
-          value: /root/.cache/bazel
         image: gcr.io/k8s-testimages/kubekins-e2e:v20180102-0e2b24a0b-1.8
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
         resources:
           requests:
             memory: 6Gi
@@ -5029,10 +4749,10 @@ presubmits:
         - mountPath: /etc/ssh-key-secret
           name: ssh
           readOnly: true
-        - mountPath: /root/.cache
-          name: cache-ssd
         - mountPath: /etc/ssh-security
           name: ssh-security
+        - mountPath: /docker-graph
+          name: auto-generated-docker-graph-volume-mount
       volumes:
       - name: service
         secret:
@@ -5041,16 +4761,12 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-key-secret
-      - hostPath:
-          path: /mnt/disks/ssd0
-        name: cache-ssd
-      - hostPath:
-          path: /mnt/disks/ssd0/docker-graph
-        name: docker-graph
       - name: ssh-security
         secret:
           defaultMode: 256
           secretName: ssh-security
+      - emptyDir: {}
+        name: auto-generated-docker-graph-volume-mount
     trigger: (?m)^/test( all| pull-security-kubernetes-kubemark-e2e-gce),?(\s+|$)
   - agent: kubernetes
     always_run: true
@@ -5068,7 +4784,6 @@ presubmits:
       - args:
         - --root=/go/src
         - --clean
-        - --git-cache=/root/.cache/git
         - --job=$(JOB_NAME)
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --repo=k8s.io/release
@@ -5090,12 +4805,7 @@ presubmits:
           value: /etc/ssh-key-secret/ssh-private
         - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
           value: /etc/ssh-key-secret/ssh-public
-        - name: TEST_TMPDIR
-          value: /root/.cache/bazel
         image: gcr.io/k8s-testimages/kubekins-e2e:v20180102-0e2b24a0b-1.7
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
         resources:
           requests:
             memory: 6Gi
@@ -5108,10 +4818,10 @@ presubmits:
         - mountPath: /etc/ssh-key-secret
           name: ssh
           readOnly: true
-        - mountPath: /root/.cache
-          name: cache-ssd
         - mountPath: /etc/ssh-security
           name: ssh-security
+        - mountPath: /docker-graph
+          name: auto-generated-docker-graph-volume-mount
       volumes:
       - name: service
         secret:
@@ -5120,16 +4830,12 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-key-secret
-      - hostPath:
-          path: /mnt/disks/ssd0
-        name: cache-ssd
-      - hostPath:
-          path: /mnt/disks/ssd0/docker-graph
-        name: docker-graph
       - name: ssh-security
         secret:
           defaultMode: 256
           secretName: ssh-security
+      - emptyDir: {}
+        name: auto-generated-docker-graph-volume-mount
     trigger: (?m)^/test( all| pull-security-kubernetes-kubemark-e2e-gce),?(\s+|$)
   - agent: jenkins
     always_run: true
@@ -5161,7 +4867,6 @@ presubmits:
       - args:
         - --root=/go/src
         - --clean
-        - --git-cache=/root/.cache/git
         - --job=$(JOB_NAME)
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --repo=k8s.io/release
@@ -5180,12 +4885,7 @@ presubmits:
           value: /etc/ssh-key-secret/ssh-private
         - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
           value: /etc/ssh-key-secret/ssh-public
-        - name: TEST_TMPDIR
-          value: /root/.cache/bazel
         image: gcr.io/k8s-testimages/kubekins-e2e:v20180102-0e2b24a0b-master
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
         resources:
           requests:
             memory: 6Gi
@@ -5198,10 +4898,10 @@ presubmits:
         - mountPath: /etc/ssh-key-secret
           name: ssh
           readOnly: true
-        - mountPath: /root/.cache
-          name: cache-ssd
         - mountPath: /etc/ssh-security
           name: ssh-security
+        - mountPath: /docker-graph
+          name: auto-generated-docker-graph-volume-mount
       volumes:
       - name: service
         secret:
@@ -5210,16 +4910,12 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-key-secret
-      - hostPath:
-          path: /mnt/disks/ssd0
-        name: cache-ssd
-      - hostPath:
-          path: /mnt/disks/ssd0/docker-graph
-        name: docker-graph
       - name: ssh-security
         secret:
           defaultMode: 256
           secretName: ssh-security
+      - emptyDir: {}
+        name: auto-generated-docker-graph-volume-mount
     trigger: (?m)^/test pull-security-kubernetes-kubemark-e2e-gce-big,?(\s+|$)
   - agent: kubernetes
     always_run: false
@@ -5237,7 +4933,6 @@ presubmits:
       - args:
         - --root=/go/src
         - --clean
-        - --git-cache=/root/.cache/git
         - --job=$(JOB_NAME)
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --repo=k8s.io/release
@@ -5256,12 +4951,7 @@ presubmits:
           value: /etc/ssh-key-secret/ssh-private
         - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
           value: /etc/ssh-key-secret/ssh-public
-        - name: TEST_TMPDIR
-          value: /root/.cache/bazel
         image: gcr.io/k8s-testimages/kubekins-e2e:v20180102-0e2b24a0b-1.8
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
         resources:
           requests:
             memory: 6Gi
@@ -5274,10 +4964,10 @@ presubmits:
         - mountPath: /etc/ssh-key-secret
           name: ssh
           readOnly: true
-        - mountPath: /root/.cache
-          name: cache-ssd
         - mountPath: /etc/ssh-security
           name: ssh-security
+        - mountPath: /docker-graph
+          name: auto-generated-docker-graph-volume-mount
       volumes:
       - name: service
         secret:
@@ -5286,16 +4976,12 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-key-secret
-      - hostPath:
-          path: /mnt/disks/ssd0
-        name: cache-ssd
-      - hostPath:
-          path: /mnt/disks/ssd0/docker-graph
-        name: docker-graph
       - name: ssh-security
         secret:
           defaultMode: 256
           secretName: ssh-security
+      - emptyDir: {}
+        name: auto-generated-docker-graph-volume-mount
     trigger: (?m)^/test pull-security-kubernetes-kubemark-e2e-gce-big,?(\s+|$)
   - agent: kubernetes
     always_run: false
@@ -5313,7 +4999,6 @@ presubmits:
       - args:
         - --root=/go/src
         - --clean
-        - --git-cache=/root/.cache/git
         - --job=$(JOB_NAME)
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --repo=k8s.io/release
@@ -5332,12 +5017,7 @@ presubmits:
           value: /etc/ssh-key-secret/ssh-private
         - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
           value: /etc/ssh-key-secret/ssh-public
-        - name: TEST_TMPDIR
-          value: /root/.cache/bazel
         image: gcr.io/k8s-testimages/kubekins-e2e:v20180102-0e2b24a0b-1.7
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
         resources:
           requests:
             memory: 6Gi
@@ -5350,10 +5030,10 @@ presubmits:
         - mountPath: /etc/ssh-key-secret
           name: ssh
           readOnly: true
-        - mountPath: /root/.cache
-          name: cache-ssd
         - mountPath: /etc/ssh-security
           name: ssh-security
+        - mountPath: /docker-graph
+          name: auto-generated-docker-graph-volume-mount
       volumes:
       - name: service
         secret:
@@ -5362,16 +5042,12 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-key-secret
-      - hostPath:
-          path: /mnt/disks/ssd0
-        name: cache-ssd
-      - hostPath:
-          path: /mnt/disks/ssd0/docker-graph
-        name: docker-graph
       - name: ssh-security
         secret:
           defaultMode: 256
           secretName: ssh-security
+      - emptyDir: {}
+        name: auto-generated-docker-graph-volume-mount
     trigger: (?m)^/test pull-security-kubernetes-kubemark-e2e-gce-big,?(\s+|$)
   - agent: kubernetes
     always_run: true
@@ -5391,7 +5067,6 @@ presubmits:
       - args:
         - --root=/go/src
         - --clean
-        - --git-cache=/root/.cache/git
         - --job=$(JOB_NAME)
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --service-account=/etc/service-account/service-account.json
@@ -5410,9 +5085,6 @@ presubmits:
         - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
           value: /etc/ssh-key-secret/ssh-public
         image: gcr.io/k8s-testimages/kubekins-e2e:v20180102-0e2b24a0b-master
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
         resources:
           requests:
             memory: 6Gi
@@ -5423,8 +5095,6 @@ presubmits:
         - mountPath: /etc/ssh-key-secret
           name: ssh
           readOnly: true
-        - mountPath: /root/.cache
-          name: cache-ssd
         - mountPath: /etc/ssh-security
           name: ssh-security
       volumes:
@@ -5435,9 +5105,6 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-key-secret
-      - hostPath:
-          path: /mnt/disks/ssd0
-        name: cache-ssd
       - name: ssh-security
         secret:
           defaultMode: 256
@@ -5459,7 +5126,6 @@ presubmits:
       - args:
         - --root=/go/src
         - --clean
-        - --git-cache=/root/.cache/git
         - --job=$(JOB_NAME)
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --service-account=/etc/service-account/service-account.json
@@ -5478,9 +5144,6 @@ presubmits:
         - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
           value: /etc/ssh-key-secret/ssh-public
         image: gcr.io/k8s-testimages/kubekins-e2e:v20180102-0e2b24a0b-1.8
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
         resources:
           requests:
             memory: 6Gi
@@ -5491,8 +5154,6 @@ presubmits:
         - mountPath: /etc/ssh-key-secret
           name: ssh
           readOnly: true
-        - mountPath: /root/.cache
-          name: cache-ssd
         - mountPath: /etc/ssh-security
           name: ssh-security
       volumes:
@@ -5503,9 +5164,6 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-key-secret
-      - hostPath:
-          path: /mnt/disks/ssd0
-        name: cache-ssd
       - name: ssh-security
         secret:
           defaultMode: 256
@@ -5527,7 +5185,6 @@ presubmits:
       - args:
         - --root=/go/src
         - --clean
-        - --git-cache=/root/.cache/git
         - --job=$(JOB_NAME)
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --service-account=/etc/service-account/service-account.json
@@ -5546,9 +5203,6 @@ presubmits:
         - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
           value: /etc/ssh-key-secret/ssh-public
         image: gcr.io/k8s-testimages/kubekins-e2e:v20180102-0e2b24a0b-1.7
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
         resources:
           requests:
             memory: 6Gi
@@ -5559,8 +5213,6 @@ presubmits:
         - mountPath: /etc/ssh-key-secret
           name: ssh
           readOnly: true
-        - mountPath: /root/.cache
-          name: cache-ssd
         - mountPath: /etc/ssh-security
           name: ssh-security
       volumes:
@@ -5571,9 +5223,6 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-key-secret
-      - hostPath:
-          path: /mnt/disks/ssd0
-        name: cache-ssd
       - name: ssh-security
         secret:
           defaultMode: 256
@@ -5595,7 +5244,6 @@ presubmits:
       - args:
         - --root=/go/src
         - --clean
-        - --git-cache=/root/.cache/git
         - --job=$(JOB_NAME)
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --service-account=/etc/service-account/service-account.json
@@ -5614,9 +5262,6 @@ presubmits:
         - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
           value: /etc/ssh-key-secret/ssh-public
         image: gcr.io/k8s-testimages/kubekins-e2e:v20180102-0e2b24a0b-1.6
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
         resources:
           requests:
             memory: 6Gi
@@ -5627,8 +5272,6 @@ presubmits:
         - mountPath: /etc/ssh-key-secret
           name: ssh
           readOnly: true
-        - mountPath: /root/.cache
-          name: cache-ssd
         - mountPath: /etc/ssh-security
           name: ssh-security
       volumes:
@@ -5639,9 +5282,6 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-key-secret
-      - hostPath:
-          path: /mnt/disks/ssd0
-        name: cache-ssd
       - name: ssh-security
         secret:
           defaultMode: 256
@@ -5663,7 +5303,6 @@ presubmits:
       - args:
         - --root=/go/src
         - --clean
-        - --git-cache=/root/.cache/git
         - --job=$(JOB_NAME)
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --repo=github.com/containerd/cri-containerd
@@ -5681,9 +5320,6 @@ presubmits:
         - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
           value: /etc/ssh-key-secret/ssh-public
         image: gcr.io/k8s-testimages/kubekins-e2e:v20180102-0e2b24a0b-master
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
         resources: {}
         volumeMounts:
         - mountPath: /etc/service-account
@@ -5692,8 +5328,6 @@ presubmits:
         - mountPath: /etc/ssh-key-secret
           name: ssh
           readOnly: true
-        - mountPath: /root/.cache
-          name: cache-ssd
         - mountPath: /etc/ssh-security
           name: ssh-security
       volumes:
@@ -5704,9 +5338,6 @@ presubmits:
         secret:
           defaultMode: 256
           secretName: ssh-key-secret
-      - hostPath:
-          path: /mnt/disks/ssd0
-        name: cache-ssd
       - name: ssh-security
         secret:
           defaultMode: 256
@@ -5737,9 +5368,6 @@ presubmits:
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: /etc/service-account/service-account.json
         image: gcr.io/k8s-testimages/bootstrap:v20180108-a65d3dd32
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
         resources:
           requests:
             cpu: "4"
@@ -5749,21 +5377,20 @@ presubmits:
         - mountPath: /etc/service-account
           name: service
           readOnly: true
-        - mountPath: /docker-graph
-          name: docker-graph
         - mountPath: /etc/ssh-security
           name: ssh-security
+        - mountPath: /docker-graph
+          name: auto-generated-docker-graph-volume-mount
       volumes:
       - name: service
         secret:
           secretName: service-account
-      - hostPath:
-          path: /mnt/disks/ssd0/docker-graph
-        name: docker-graph
       - name: ssh-security
         secret:
           defaultMode: 256
           secretName: ssh-security
+      - emptyDir: {}
+        name: auto-generated-docker-graph-volume-mount
     trigger: (?m)^/test( all| pull-security-kubernetes-unit),?(\s+|$)
   - agent: kubernetes
     always_run: false
@@ -5778,7 +5405,6 @@ presubmits:
       containers:
       - args:
         - --clean
-        - --git-cache=/root/.cache/git
         - --job=$(JOB_NAME)
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --service-account=/etc/service-account/service-account.json
@@ -5792,9 +5418,6 @@ presubmits:
           value: /etc/service-account/service-account.json
         image: gcr.io/k8s-testimages/bootstrap:latest
         imagePullPolicy: Always
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
         resources:
           requests:
             cpu: "4"
@@ -5804,26 +5427,20 @@ presubmits:
         - mountPath: /etc/service-account
           name: service
           readOnly: true
-        - mountPath: /root/.cache
-          name: cache-ssd
-        - mountPath: /docker-graph
-          name: docker-graph
         - mountPath: /etc/ssh-security
           name: ssh-security
+        - mountPath: /docker-graph
+          name: auto-generated-docker-graph-volume-mount
       volumes:
       - name: service
         secret:
           secretName: service-account
-      - hostPath:
-          path: /mnt/disks/ssd0
-        name: cache-ssd
-      - hostPath:
-          path: /mnt/disks/ssd0/docker-graph
-        name: docker-graph
       - name: ssh-security
         secret:
           defaultMode: 256
           secretName: ssh-security
+      - emptyDir: {}
+        name: auto-generated-docker-graph-volume-mount
     trigger: (?m)^/test pull-security-kubernetes-unit-prow,?(\s+|$)
   - agent: kubernetes
     always_run: true
@@ -5850,9 +5467,6 @@ presubmits:
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: /etc/service-account/service-account.json
         image: gcr.io/k8s-testimages/bootstrap:v20180108-a65d3dd32
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
         resources:
           requests:
             cpu: "4"
@@ -5862,21 +5476,20 @@ presubmits:
         - mountPath: /etc/service-account
           name: service
           readOnly: true
-        - mountPath: /docker-graph
-          name: docker-graph
         - mountPath: /etc/ssh-security
           name: ssh-security
+        - mountPath: /docker-graph
+          name: auto-generated-docker-graph-volume-mount
       volumes:
       - name: service
         secret:
           secretName: service-account
-      - hostPath:
-          path: /mnt/disks/ssd0/docker-graph
-        name: docker-graph
       - name: ssh-security
         secret:
           defaultMode: 256
           secretName: ssh-security
+      - emptyDir: {}
+        name: auto-generated-docker-graph-volume-mount
     trigger: (?m)^/test( all| pull-security-kubernetes-verify),?(\s+|$)
   - agent: kubernetes
     always_run: false
@@ -5904,9 +5517,6 @@ presubmits:
           value: /etc/service-account/service-account.json
         image: gcr.io/k8s-testimages/bootstrap:latest
         imagePullPolicy: Always
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
         resources:
           requests:
             cpu: "4"
@@ -5916,21 +5526,20 @@ presubmits:
         - mountPath: /etc/service-account
           name: service
           readOnly: true
-        - mountPath: /docker-graph
-          name: docker-graph
         - mountPath: /etc/ssh-security
           name: ssh-security
+        - mountPath: /docker-graph
+          name: auto-generated-docker-graph-volume-mount
       volumes:
       - name: service
         secret:
           secretName: service-account
-      - hostPath:
-          path: /mnt/disks/ssd0/docker-graph
-        name: docker-graph
       - name: ssh-security
         secret:
           defaultMode: 256
           secretName: ssh-security
+      - emptyDir: {}
+        name: auto-generated-docker-graph-volume-mount
     trigger: (?m)^/test pull-security-kubernetes-verify-prow,?(\s+|$)
   kubernetes/test-infra:
   - name: pull-test-infra-bazel
@@ -6088,6 +5697,45 @@ presubmits:
         secret:
           secretName: service-account
 
+  - name: pull-test-infra-verify-config
+    agent: kubernetes
+    context: pull-test-infra-verify-config
+    branches:
+    - master
+    rerun_command: "/test pull-test-infra-verify-config"
+    trigger: "/test pull-test-infra-verify-config"
+    run_if_changed: '^prow/config.yaml$'
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/bazelbuild:v20171214-ae38d82af-0.8.1
+        args:
+        - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--clean"
+        - --service-account=/etc/service-account/service-account.json
+        env:
+        - name: TEST_TMPDIR
+          value: /scratch/.cache/bazel
+        # Bazel needs privileged mode in order to sandbox builds.
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: service
+          mountPath: /etc/service-account
+          readOnly: true
+        - name: bazel-scratch
+          mountPath: /scratch/.cache
+        resources:
+          requests:
+            memory: "2Gi"
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
+      - name: bazel-scratch
+        emptyDir: {}
+
   - name: pull-test-infra-verify-gofmt
     agent: kubernetes
     context: pull-test-infra-verify-gofmt
@@ -6143,45 +5791,6 @@ presubmits:
       - name: service
         secret:
           secretName: service-account
-
-  - name: pull-test-infra-verify-config
-    agent: kubernetes
-    context: pull-test-infra-verify-config
-    branches:
-    - master
-    rerun_command: "/test pull-test-infra-verify-config"
-    trigger: "/test pull-test-infra-verify-config"
-    run_if_changed: '^prow/config.yaml$'
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171214-ae38d82af-0.8.1
-        args:
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--clean"
-        - --service-account=/etc/service-account/service-account.json
-        env:
-        - name: TEST_TMPDIR
-          value: /scratch/.cache/bazel
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
-        volumeMounts:
-        - name: service
-          mountPath: /etc/service-account
-          readOnly: true
-        - name: bazel-scratch
-          mountPath: /scratch/.cache
-        resources:
-          requests:
-            memory: "2Gi"
-      volumes:
-      - name: service
-        secret:
-          secretName: service-account
-      - name: bazel-scratch
-        emptyDir: {}
 
   tensorflow/k8s:
   - name: tf-k8s-presubmit
