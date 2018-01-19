@@ -416,7 +416,7 @@ presubmits:
     trigger: "(?m)^/test pull-heapster-e2e-prow,?(\\s+|$)"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180102-0e2b24a0b-master
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180108-bf63630a9-master
         args:
         - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
@@ -439,6 +439,9 @@ presubmits:
           readOnly: true
         - name: docker-graph
           mountPath: /docker-graph
+        - name: ssh
+          mountPath: /etc/ssh-key-secret
+          readOnly: true
         ports:
         - containerPort: 9999
           hostPort: 9999
@@ -449,6 +452,10 @@ presubmits:
       - name: docker-graph
         hostPath:
           path: /mnt/disks/ssd0/docker-graph
+      - name: ssh
+        secret:
+          secretName: ssh-key-secret
+          defaultMode: 0400
   kubernetes/kops:
   - name: pull-kops-e2e-kubernetes-aws
     agent: kubernetes
