@@ -160,7 +160,7 @@ var (
 
 	milestoneStateConfigs = map[milestoneState]milestoneStateConfig{
 		milestoneCurrent: {
-			title: "Milestone %s **Current**",
+			title: "Milestone %s: **Up-to-date for process**",
 		},
 		milestoneNeedsLabeling: {
 			title:          "Milestone %s Labels **Incomplete**",
