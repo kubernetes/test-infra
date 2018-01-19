@@ -423,6 +423,8 @@ presubmits:
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--clean"
         env:
+        - name: DOCKER_IN_DOCKER_ENABLED
+          value: true
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: /etc/service-account/service-account.json
         - name: USER
@@ -431,14 +433,12 @@ presubmits:
           value: /etc/ssh-key-secret/ssh-private
         - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
           value: /etc/ssh-key-secret/ssh-public
-        - name: PROJECT
-          value: kubernetes-jenkins-pull
         volumeMounts:
         - name: service
           mountPath: /etc/service-account
           readOnly: true
-        - name: cache-ssd
-          mountPath: /root/.cache
+        - name: docker-graph
+          mountPath: /docker-graph
         ports:
         - containerPort: 9999
           hostPort: 9999
@@ -446,9 +446,9 @@ presubmits:
       - name: service
         secret:
           secretName: service-account
-      - name: cache-ssd
+      - name: docker-graph
         hostPath:
-          path: /mnt/disks/ssd0
+          path: /mnt/disks/ssd0/docker-graph
   kubernetes/kops:
   - name: pull-kops-e2e-kubernetes-aws
     agent: kubernetes

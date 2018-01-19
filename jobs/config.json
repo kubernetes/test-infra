@@ -10999,12 +10999,7 @@
     ]
   },
   "pull-heapster-e2e-prow": {
-    "args": [
-      "make",
-      "test-unit",
-      "test-integration"
-    ],
-    "scenario": "execute",
+    "scenario": "kubernetes_heapster",
     "sigOwners": [
       "sig-instrumentation"
     ]
