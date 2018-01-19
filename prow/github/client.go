@@ -294,11 +294,15 @@ func (c *Client) requestRaw(r *request) (int, []byte, error) {
 
 // Retry on transport failures. Retries on 500s, retries after sleep on
 // ratelimit exceeded, and retries 404s a couple times.
+// This function closes the response body iff it also returns an error.
 func (c *Client) requestRetry(method, path, accept string, body interface{}) (*http.Response, error) {
 	var resp *http.Response
 	var err error
 	backoff := initialDelay
 	for retries := 0; retries < maxRetries; retries++ {
+		if retries > 0 {
+			resp.Body.Close()
+		}
 		resp, err = c.doRequest(method, path, accept, body)
 		if err == nil {
 			if resp.StatusCode == 404 && retries < max404Retries {
@@ -308,7 +312,6 @@ func (c *Client) requestRetry(method, path, accept string, body interface{}) (*h
 				// retry more than a couple times in this case, because a 404 may
 				// be caused by a bad API call and we'll just burn through API
 				// tokens.
-				resp.Body.Close()
 				c.time.Sleep(backoff)
 				backoff *= 2
 			} else if resp.StatusCode == 403 {
@@ -320,23 +323,28 @@ func (c *Client) requestRetry(method, path, accept string, body interface{}) (*h
 						// Sleep an extra second plus how long GitHub wants us to
 						// sleep. If it's going to take too long, then break.
 						sleepTime := c.time.Until(time.Unix(int64(t), 0)) + time.Second
-						if sleepTime > 0 && sleepTime < maxSleepTime {
+						if sleepTime < maxSleepTime {
 							c.time.Sleep(sleepTime)
 						} else {
+							err = fmt.Errorf("sleep time for token reset exceeds max sleep time (%v > %v)", sleepTime, maxSleepTime)
+							resp.Body.Close()
 							break
 						}
+					} else {
+						err = fmt.Errorf("failed to parse rate limit reset unix time %q: %v", resp.Header.Get("X-RateLimit-Reset"), err)
+						resp.Body.Close()
+						break
 					}
 				} else if oauthScopes := resp.Header.Get("X-Accepted-OAuth-Scopes"); len(oauthScopes) > 0 {
 					err = fmt.Errorf("is the account using at least one of the following oauth scopes?: %s", oauthScopes)
+					resp.Body.Close()
 					break
 				}
-				resp.Body.Close()
 			} else if resp.StatusCode < 500 {
 				// Normal, happy case.
 				break
 			} else {
 				// Retry 500 after a break.
-				resp.Body.Close()
 				c.time.Sleep(backoff)
 				backoff *= 2
 			}
