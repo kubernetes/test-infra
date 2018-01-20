@@ -10998,12 +10998,6 @@
       "sig-instrumentation"
     ]
   },
-  "pull-heapster-e2e-prow": {
-    "scenario": "kubernetes_heapster",
-    "sigOwners": [
-      "sig-instrumentation"
-    ]
-  },
   "pull-ingress-gce-test": {
     "args": [
       "make",

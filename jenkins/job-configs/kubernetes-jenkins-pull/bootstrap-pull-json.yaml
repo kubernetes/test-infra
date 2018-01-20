@@ -85,11 +85,6 @@
         max-total: 5
         repo-name: 'k8s.io/charts'
         timeout: 10
-    - heapster-e2e:  # owner: pszczesniak@google.com
-        job-name: pull-heapster-e2e
-        max-total: 5
-        repo-name: 'k8s.io/heapster'
-        timeout: 40
     - kubernetes-cross:
         max-total: 12
         job-name: pull-kubernetes-cross

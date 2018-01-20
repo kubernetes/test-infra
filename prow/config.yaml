@@ -403,17 +403,11 @@ presubmits:
           path: /mnt/disks/ssd0
   kubernetes/heapster:
   - name: pull-heapster-e2e
-    agent: jenkins
+    agent: kubernetes
     always_run: true
     context: pull-heapster-e2e
     rerun_command: "/test pull-heapster-e2e"
     trigger: "(?m)^/test( all| pull-heapster-e2e),?(\\s+|$)"
-  - name: pull-heapster-e2e-prow
-    agent: kubernetes
-    always_run: false
-    context: pull-heapster-e2e-prow
-    rerun_command: "/test pull-heapster-e2e-prow"
-    trigger: "(?m)^/test pull-heapster-e2e-prow,?(\\s+|$)"
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180108-bf63630a9-master
