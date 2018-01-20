@@ -143,6 +143,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-weave
 - name: ci-kubernetes-e2e-kops-gce
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-gce
+- name: ci-kubernetes-e2e-kops-gce-ha
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-gce-ha
 - name: ci-kubernetes-e2e-gce-canary
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-canary
 - name: ci-kubernetes-e2e-gce-device-plugin-gpu
@@ -2326,6 +2328,8 @@ dashboards:
   dashboard_tab:
   - name: kops-gce
     test_group_name: ci-kubernetes-e2e-kops-gce
+  - name: kops-gce-ha
+    test_group_name: ci-kubernetes-e2e-kops-gce-ha
 
 # "google-gci-dev" is a tab for tests that are used for GCI(aka COS) image
 # development and qualification. It should not be confused with the "google-gci"
