@@ -24,6 +24,7 @@ go_test(
     deps = [
         "//prow/github:go_default_library",
         "//prow/kube:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
     ],
 )
 

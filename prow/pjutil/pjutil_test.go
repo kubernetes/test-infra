@@ -20,6 +20,8 @@ import (
 	"testing"
 	"time"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
 	"k8s.io/test-infra/prow/kube"
 )
 
@@ -105,7 +107,7 @@ func TestProwJobToPod(t *testing.T) {
 
 	for i, test := range tests {
 		t.Logf("test run #%d", i)
-		pj := kube.ProwJob{ObjectMeta: kube.ObjectMeta{Name: test.podName, Labels: test.labels}, Spec: test.pjSpec}
+		pj := kube.ProwJob{ObjectMeta: metav1.ObjectMeta{Name: test.podName, Labels: test.labels}, Spec: test.pjSpec}
 		got, err := ProwJobToPod(pj, test.buildID)
 		if err != nil {
 			t.Errorf("unexpected error: %v", err)
@@ -189,7 +191,7 @@ func TestPartitionActive(t *testing.T) {
 		{
 			pjs: []kube.ProwJob{
 				{
-					ObjectMeta: kube.ObjectMeta{
+					ObjectMeta: metav1.ObjectMeta{
 						Name: "foo",
 					},
 					Status: kube.ProwJobStatus{
@@ -197,7 +199,7 @@ func TestPartitionActive(t *testing.T) {
 					},
 				},
 				{
-					ObjectMeta: kube.ObjectMeta{
+					ObjectMeta: metav1.ObjectMeta{
 						Name: "bar",
 					},
 					Status: kube.ProwJobStatus{
@@ -205,7 +207,7 @@ func TestPartitionActive(t *testing.T) {
 					},
 				},
 				{
-					ObjectMeta: kube.ObjectMeta{
+					ObjectMeta: metav1.ObjectMeta{
 						Name: "baz",
 					},
 					Status: kube.ProwJobStatus{
@@ -213,7 +215,7 @@ func TestPartitionActive(t *testing.T) {
 					},
 				},
 				{
-					ObjectMeta: kube.ObjectMeta{
+					ObjectMeta: metav1.ObjectMeta{
 						Name: "error",
 					},
 					Status: kube.ProwJobStatus{
@@ -221,7 +223,7 @@ func TestPartitionActive(t *testing.T) {
 					},
 				},
 				{
-					ObjectMeta: kube.ObjectMeta{
+					ObjectMeta: metav1.ObjectMeta{
 						Name: "bak",
 					},
 					Status: kube.ProwJobStatus{
@@ -266,7 +268,7 @@ func TestGetLatestProwJobs(t *testing.T) {
 		{
 			pjs: []kube.ProwJob{
 				{
-					ObjectMeta: kube.ObjectMeta{
+					ObjectMeta: metav1.ObjectMeta{
 						Name: "831c7df0-baa4-11e7-a1a4-0a58ac10134a",
 					},
 					Spec: kube.ProwJobSpec{
@@ -300,7 +302,7 @@ func TestGetLatestProwJobs(t *testing.T) {
 					},
 				},
 				{
-					ObjectMeta: kube.ObjectMeta{
+					ObjectMeta: metav1.ObjectMeta{
 						Name: "0079d4d3-ba25-11e7-ae3f-0a58ac10123b",
 					},
 					Spec: kube.ProwJobSpec{

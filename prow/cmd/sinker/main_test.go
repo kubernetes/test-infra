@@ -23,6 +23,7 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/kube"
@@ -209,7 +210,7 @@ func TestClean(t *testing.T) {
 	}
 	prowJobs := []kube.ProwJob{
 		{
-			ObjectMeta: kube.ObjectMeta{
+			ObjectMeta: metav1.ObjectMeta{
 				Name: "old-failed",
 			},
 			Status: kube.ProwJobStatus{
@@ -218,7 +219,7 @@ func TestClean(t *testing.T) {
 			},
 		},
 		{
-			ObjectMeta: kube.ObjectMeta{
+			ObjectMeta: metav1.ObjectMeta{
 				Name: "old-succeeded",
 			},
 			Status: kube.ProwJobStatus{
@@ -227,7 +228,7 @@ func TestClean(t *testing.T) {
 			},
 		},
 		{
-			ObjectMeta: kube.ObjectMeta{
+			ObjectMeta: metav1.ObjectMeta{
 				Name: "old-just-complete",
 			},
 			Status: kube.ProwJobStatus{
@@ -235,7 +236,7 @@ func TestClean(t *testing.T) {
 			},
 		},
 		{
-			ObjectMeta: kube.ObjectMeta{
+			ObjectMeta: metav1.ObjectMeta{
 				Name: "old-complete",
 			},
 			Status: kube.ProwJobStatus{
@@ -244,7 +245,7 @@ func TestClean(t *testing.T) {
 			},
 		},
 		{
-			ObjectMeta: kube.ObjectMeta{
+			ObjectMeta: metav1.ObjectMeta{
 				Name: "old-incomplete",
 			},
 			Status: kube.ProwJobStatus{
@@ -252,7 +253,7 @@ func TestClean(t *testing.T) {
 			},
 		},
 		{
-			ObjectMeta: kube.ObjectMeta{
+			ObjectMeta: metav1.ObjectMeta{
 				Name: "new",
 			},
 			Status: kube.ProwJobStatus{
@@ -260,7 +261,7 @@ func TestClean(t *testing.T) {
 			},
 		},
 		{
-			ObjectMeta: kube.ObjectMeta{
+			ObjectMeta: metav1.ObjectMeta{
 				Name: "newer-periodic",
 			},
 			Spec: kube.ProwJobSpec{
@@ -273,7 +274,7 @@ func TestClean(t *testing.T) {
 			},
 		},
 		{
-			ObjectMeta: kube.ObjectMeta{
+			ObjectMeta: metav1.ObjectMeta{
 				Name: "older-periodic",
 			},
 			Spec: kube.ProwJobSpec{
@@ -286,7 +287,7 @@ func TestClean(t *testing.T) {
 			},
 		},
 		{
-			ObjectMeta: kube.ObjectMeta{
+			ObjectMeta: metav1.ObjectMeta{
 				Name: "oldest-periodic",
 			},
 			Spec: kube.ProwJobSpec{
@@ -299,7 +300,7 @@ func TestClean(t *testing.T) {
 			},
 		},
 		{
-			ObjectMeta: kube.ObjectMeta{
+			ObjectMeta: metav1.ObjectMeta{
 				Name: "old-failed-trusted",
 			},
 			Status: kube.ProwJobStatus{
