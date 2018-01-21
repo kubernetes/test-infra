@@ -1008,7 +1008,7 @@ nodeImages:
     - --node-args=--image-project=ubuntu-os-gke-cloud-devel
   ubuntudev2:
     args:
-    - --node-args=--images=ubuntu-gke-1604-xenial-v201712121
+    - --node-args=--images=ubuntu-gke-1604-xenial-v20180117-1
     - --node-args=--image-project=ubuntu-os-gke-cloud-devel
   ubuntustable1:
     args:
