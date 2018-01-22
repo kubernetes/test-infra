@@ -247,7 +247,7 @@ func TestCherryPickPR(t *testing.T) {
 				User: github.User{
 					Login: "approver",
 				},
-				Body: "/cherrypick release-1.5",
+				Body: "/cherrypick release-1.5\r",
 			},
 			{
 				User: github.User{
