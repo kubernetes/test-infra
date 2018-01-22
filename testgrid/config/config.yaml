@@ -1206,6 +1206,8 @@ test_groups:
   - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-kops-aws-ena-nvme
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-ena-nvme
+- name: ci-kubernetes-e2e-kops-aws-imageubuntu1604
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-imageubuntu1604
 - name: ci-kubernetes-e2e-kops-aws-newrunner
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-newrunner
 - name: ci-kubernetes-e2e-kops-aws-release-1-7
@@ -2249,6 +2251,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-kops-aws-ena-nvme
   - name: kops-aws-newrunner
     test_group_name: ci-kubernetes-e2e-kops-aws-newrunner
+  - name: kops-aws-imageubuntu1604
+    test_group_name: ci-kubernetes-e2e-kops-aws-imageubuntu1604
 
 - name: google-docker
   dashboard_tab:
