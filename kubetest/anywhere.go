@@ -263,7 +263,7 @@ func (k *kubernetesAnywhere) Up() error {
 		return err
 	}
 
-	return waitForReadyNodes(k.NumNodes+1, *kubernetesAnywhereUpTimeout)
+	return waitForReadyNodes(k.NumNodes+1, *kubernetesAnywhereUpTimeout, 1)
 }
 
 func (k *kubernetesAnywhere) IsUp() error {

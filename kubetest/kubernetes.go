@@ -51,19 +51,43 @@ func isReady(node *node) bool {
 }
 
 // waitForReadyNodes polls the nodes until we see at least desiredCount that are Ready
-func waitForReadyNodes(desiredCount int, timeout time.Duration) error {
-	for stop := time.Now().Add(timeout); time.Now().Before(stop); time.Sleep(30 * time.Second) {
+// We can also pass requiredConsecutiveSuccesses to require that we see this N times in a row
+func waitForReadyNodes(desiredCount int, timeout time.Duration, requiredConsecutiveSuccesses int) error {
+	stop := time.Now().Add(timeout)
+
+	consecutiveSuccesses := 0
+	for {
+		if time.Now().After(stop) {
+			break
+		}
+
 		nodes, err := kubectlGetNodes()
 		if err != nil {
 			log.Printf("kubectl get nodes failed, sleeping: %v", err)
+			consecutiveSuccesses = 0
+			time.Sleep(30 * time.Second)
 			continue
 		}
 		readyNodes := countReadyNodes(nodes)
 		if readyNodes >= desiredCount {
-			return nil
+			consecutiveSuccesses++
+			if consecutiveSuccesses >= requiredConsecutiveSuccesses {
+				log.Printf("%d ready nodes found, %d sequential successes - cluster is ready",
+					readyNodes,
+					consecutiveSuccesses)
+				return nil
+			} else {
+				log.Printf("%d ready nodes found, waiting for %d sequential successes (success count = %d)",
+					readyNodes,
+					requiredConsecutiveSuccesses,
+					consecutiveSuccesses)
+				time.Sleep(2 * time.Second)
+			}
+		} else {
+			consecutiveSuccesses = 0
+			log.Printf("%d (ready nodes) < %d (requested instances), sleeping", readyNodes, desiredCount)
+			time.Sleep(30 * time.Second)
 		}
-
-		log.Printf("%d (ready nodes) < %d (requested instances), sleeping", readyNodes, desiredCount)
 	}
 	return fmt.Errorf("waiting for ready nodes timed out")
 }
