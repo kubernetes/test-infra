@@ -50,6 +50,7 @@ tide:
     - kubernetes/sig-release
     - kubernetes/steering
     - kubernetes/test-infra
+    - kubernetes/website
     labels:
     - lgtm
     - approved
