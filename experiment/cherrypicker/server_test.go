@@ -37,6 +37,7 @@ type fghc struct {
 	prs        []string
 	prComments []github.IssueComment
 	createdNum int
+	orgMembers []github.TeamMember
 }
 
 func (f *fghc) AssignIssue(org, repo string, number int, logins []string) error {
@@ -86,7 +87,15 @@ func (f *fghc) CreatePullRequest(org, repo, title, body, head, base string, canM
 }
 
 func (f *fghc) ListIssueComments(org, repo string, number int) ([]github.IssueComment, error) {
+	f.Lock()
+	defer f.Unlock()
 	return f.prComments, nil
+}
+
+func (f *fghc) ListOrgMembers(org string) ([]github.TeamMember, error) {
+	f.Lock()
+	defer f.Unlock()
+	return f.orgMembers, nil
 }
 
 func (f *fghc) CreateFork(org, repo string) error {
@@ -234,8 +243,16 @@ func TestCherryPickPR(t *testing.T) {
 	if err := lg.CheckoutNewBranch("foo", "bar", "release-1.5"); err != nil {
 		t.Fatalf("Checking out pull branch: %v", err)
 	}
+	if err := lg.CheckoutNewBranch("foo", "bar", "release-1.6"); err != nil {
+		t.Fatalf("Checking out pull branch: %v", err)
+	}
 
 	ghc := &fghc{
+		orgMembers: []github.TeamMember{
+			{
+				Login: "approver",
+			},
+		},
 		prComments: []github.IssueComment{
 			{
 				User: github.User{
@@ -248,6 +265,12 @@ func TestCherryPickPR(t *testing.T) {
 					Login: "approver",
 				},
 				Body: "/cherrypick release-1.5\r",
+			},
+			{
+				User: github.User{
+					Login: "approver",
+				},
+				Body: "/cherrypick release-1.6",
 			},
 			{
 				User: github.User{
@@ -304,5 +327,12 @@ func TestCherryPickPR(t *testing.T) {
 	}
 	if ghc.prs[0] != expected {
 		t.Errorf("Expected (%d):\n%s\nGot (%d):\n%+v\n", len(expected), expected, len(ghc.prs[0]), ghc.prs[0])
+	}
+	expectedTitle = "[release-1.6] This is a fix for Y"
+	expectedBase = "release-1.6"
+	expectedHead = fmt.Sprintf(botName+":"+cherryPickBranchFmt, 2, expectedBase)
+	expected = fmt.Sprintf(expectedFmt, expectedRepo, expectedTitle, expectedBody, expectedHead, expectedBase, true)
+	if ghc.prs[1] != expected {
+		t.Errorf("Expected (%d):\n%s\nGot (%d):\n%+v\n", len(expected), expected, len(ghc.prs[1]), ghc.prs[1])
 	}
 }
