@@ -4,10 +4,13 @@ go_library(
     name = "go_default_library",
     srcs = [
         "config.go",
+        "container_changes.go",
         "container_create.go",
+        "container_top.go",
         "container_update.go",
         "container_wait.go",
         "host_config.go",
+        "waitcondition.go",
     ] + select({
         "@io_bazel_rules_go//go/platform:android": [
             "hostconfig_unix.go",
