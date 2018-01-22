@@ -87,6 +87,12 @@ heart:
 slack:
   mergewarnings:
   - repos:
+    - kubernetes/community
+    channels:
+    - sig-contribex
+    whitelist:
+    - k8s-ci-robot
+  - repos:
     - kubernetes/kubernetes
     channels:
     - kubernetes-dev
