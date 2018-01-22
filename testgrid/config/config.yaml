@@ -143,6 +143,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-weave
 - name: ci-kubernetes-e2e-kops-gce
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-gce
+- name: ci-kubernetes-e2e-kops-gce-channelalpha
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-gce-channelalpha
 - name: ci-kubernetes-e2e-kops-gce-ha
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-gce-ha
 - name: ci-kubernetes-e2e-gce-canary
@@ -1204,6 +1206,8 @@ test_groups:
   - configuration_value: node_os_image
   - configuration_value: Commit
   - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-kops-aws-channelalpha
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-channelalpha
 - name: ci-kubernetes-e2e-kops-aws-ena-nvme
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-ena-nvme
 - name: ci-kubernetes-e2e-kops-aws-imageubuntu1604
@@ -2247,6 +2251,8 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-kops-aws-updown
   - name: kops-aws-weave
     test_group_name: ci-kubernetes-e2e-kops-aws-weave
+  - name: kops-aws-channelalpha
+    test_group_name: ci-kubernetes-e2e-kops-aws-channelalpha
   - name: kops-aws-ena-nvme
     test_group_name: ci-kubernetes-e2e-kops-aws-ena-nvme
   - name: kops-aws-newrunner
@@ -2332,6 +2338,8 @@ dashboards:
   dashboard_tab:
   - name: kops-gce
     test_group_name: ci-kubernetes-e2e-kops-gce
+  - name: kops-gce-channelalpha
+    test_group_name: ci-kubernetes-e2e-kops-gce-channelalpha
   - name: kops-gce-ha
     test_group_name: ci-kubernetes-e2e-kops-gce-ha
 
