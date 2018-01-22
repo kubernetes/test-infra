@@ -11559,6 +11559,7 @@
   "spark-periodic-default-gke": {
     "args": [
       "--check-leaked-resources",
+      "--cluster=",
       "--deployment=gke",
       "--extract=gke",
       "--gcp-node-image=gci",
@@ -11578,6 +11579,7 @@
   "spark-periodic-latest-gke": {
     "args": [
       "--check-leaked-resources",
+      "--cluster=",
       "--deployment=gke",
       "--extract=gke-latest",
       "--gcp-node-image=gci",
