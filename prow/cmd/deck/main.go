@@ -92,7 +92,7 @@ func main() {
 
 	mux := http.NewServeMux()
 
-	mux.Handle("/", gziphandler.GzipHandler(http.FileServer(http.Dir("/static"))))
+	mux.Handle("/", gziphandler.GzipHandler(handleCached(http.FileServer(http.Dir("/static")))))
 	mux.Handle("/data.js", gziphandler.GzipHandler(handleData(ja)))
 	mux.Handle("/prowjobs.js", gziphandler.GzipHandler(handleProwJobs(ja)))
 	mux.Handle("/log", gziphandler.GzipHandler(handleLog(ja)))
@@ -147,9 +147,33 @@ func loadToken(file string) (string, error) {
 	return string(bytes.TrimSpace(raw)), nil
 }
 
+func handleCached(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// This looks ridiculous but actually no-cache means "revalidate" and
+		// "max-age=0" just means there is no time in which it can skip
+		// revalidation. We also need to set must-revalidate because no-cache
+		// doesn't imply must-revalidate when using the back button
+		// https://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.9.1
+		// TODO(bentheelder): consider setting a longer max-age
+		// setting it this way means the content is always revalidated
+		w.Header().Set("Cache-Control", "public, max-age=0, no-cache, must-revalidate")
+		next.ServeHTTP(w, r)
+	})
+}
+
+func setHeadersNoCaching(w http.ResponseWriter) {
+	// Note that we need to set both no-cache and no-store because only some
+	// broswers decided to (incorrectly) treat no-cache as "never store"
+	// IE "no-store". for good measure to cover older browsers we also set
+	// expires and pragma: https://stackoverflow.com/a/2068407
+	w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
+	w.Header().Set("Pragma", "no-cache")
+	w.Header().Set("Expires", "0")
+}
+
 func handleProwJobs(ja *JobAgent) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Cache-Control", "no-cache")
+		setHeadersNoCaching(w)
 		jobs := ja.ProwJobs()
 		jd, err := json.Marshal(struct {
 			Items []kube.ProwJob `json:"items"`
@@ -170,7 +194,7 @@ func handleProwJobs(ja *JobAgent) http.HandlerFunc {
 
 func handleData(ja *JobAgent) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Cache-Control", "no-cache")
+		setHeadersNoCaching(w)
 		jobs := ja.Jobs()
 		jd, err := json.Marshal(jobs)
 		if err != nil {
@@ -189,7 +213,7 @@ func handleData(ja *JobAgent) http.HandlerFunc {
 
 func handleTide(ca *config.Agent, ta *tideAgent) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Cache-Control", "no-cache")
+		setHeadersNoCaching(w)
 		queryConfigs := ca.Config().Tide.Queries
 		queries := make([]string, 0, len(queryConfigs))
 		for _, qc := range queryConfigs {
@@ -221,7 +245,7 @@ func handleTide(ca *config.Agent, ta *tideAgent) http.HandlerFunc {
 
 func handlePluginHelp(ha *helpAgent) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Cache-Control", "no-cache")
+		setHeadersNoCaching(w)
 		help, err := ha.getHelp()
 		if err != nil {
 			logrus.WithError(err).Error("Getting plugin help from hook.")
@@ -284,7 +308,7 @@ func getOptions(values url.Values) map[string]string {
 // TODO(spxtr): Cache, rate limit.
 func handleLog(lc logClient) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Cache-Control", "no-cache")
+		setHeadersNoCaching(w)
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		job := r.URL.Query().Get("job")
 		id := r.URL.Query().Get("id")
@@ -376,7 +400,7 @@ func handleRerun(kc pjClient) http.HandlerFunc {
 func handleConfig(ca configAgent) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// TODO(bentheelder): add the ability to query for portions of the config?
-		w.Header().Set("Cache-Control", "no-cache")
+		setHeadersNoCaching(w)
 		config := ca.Config()
 		b, err := yaml.Marshal(config)
 		if err != nil {
@@ -395,7 +419,7 @@ func handleConfig(ca configAgent) http.HandlerFunc {
 
 func handleBranding(ca configAgent) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Cache-Control", "no-cache")
+		setHeadersNoCaching(w)
 		config := ca.Config()
 		b, err := json.Marshal(config.Deck.Branding)
 		if err != nil {
