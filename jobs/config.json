@@ -2564,23 +2564,6 @@
       "sig-cluster-lifecycle"
     ]
   },
-  "ci-kubernetes-e2e-gce-gci-qa-m61": {
-    "args": [
-      "--check-leaked-resources",
-      "--env-file=jobs/platform/gce.env",
-      "--extract=gci/gci-61",
-      "--gcp-project-type=gci-qa-project",
-      "--gcp-zone=us-central1-f",
-      "--ginkgo-parallel=25",
-      "--provider=gce",
-      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
-      "--timeout=50m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-gcp"
-    ]
-  },
   "ci-kubernetes-e2e-gce-gci-qa-m62": {
     "args": [
       "--check-leaked-resources",
@@ -2632,11 +2615,11 @@
       "sig-gcp"
     ]
   },
-  "ci-kubernetes-e2e-gce-gci-qa-master": {
+  "ci-kubernetes-e2e-gce-gci-qa-m65": {
     "args": [
       "--check-leaked-resources",
       "--env-file=jobs/platform/gce.env",
-      "--extract=gci/gci-canary",
+      "--extract=gci/gci-65",
       "--gcp-project-type=gci-qa-project",
       "--gcp-zone=us-central1-f",
       "--ginkgo-parallel=25",
@@ -2649,16 +2632,17 @@
       "sig-gcp"
     ]
   },
-  "ci-kubernetes-e2e-gce-gci-qa-serial-m61": {
+  "ci-kubernetes-e2e-gce-gci-qa-master": {
     "args": [
       "--check-leaked-resources",
       "--env-file=jobs/platform/gce.env",
-      "--extract=gci/gci-61",
+      "--extract=gci/gci-canary",
       "--gcp-project-type=gci-qa-project",
       "--gcp-zone=us-central1-f",
+      "--ginkgo-parallel=25",
       "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[Serial\\]|\\[Disruptive\\] --ginkgo.skip=\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
-      "--timeout=300m"
+      "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
+      "--timeout=50m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -2713,11 +2697,11 @@
       "sig-gcp"
     ]
   },
-  "ci-kubernetes-e2e-gce-gci-qa-serial-master": {
+  "ci-kubernetes-e2e-gce-gci-qa-serial-m65": {
     "args": [
       "--check-leaked-resources",
       "--env-file=jobs/platform/gce.env",
-      "--extract=gci/gci-canary",
+      "--extract=gci/gci-65",
       "--gcp-project-type=gci-qa-project",
       "--gcp-zone=us-central1-f",
       "--provider=gce",
@@ -2729,17 +2713,16 @@
       "sig-gcp"
     ]
   },
-  "ci-kubernetes-e2e-gce-gci-qa-slow-m61": {
+  "ci-kubernetes-e2e-gce-gci-qa-serial-master": {
     "args": [
       "--check-leaked-resources",
       "--env-file=jobs/platform/gce.env",
-      "--extract=gci/gci-61",
+      "--extract=gci/gci-canary",
       "--gcp-project-type=gci-qa-project",
       "--gcp-zone=us-central1-f",
-      "--ginkgo-parallel=25",
       "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[Slow\\] --ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
-      "--timeout=150m"
+      "--test_args=--ginkgo.focus=\\[Serial\\]|\\[Disruptive\\] --ginkgo.skip=\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
+      "--timeout=300m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
@@ -2785,6 +2768,23 @@
       "--check-leaked-resources",
       "--env-file=jobs/platform/gce.env",
       "--extract=gci/gci-64",
+      "--gcp-project-type=gci-qa-project",
+      "--gcp-zone=us-central1-f",
+      "--ginkgo-parallel=25",
+      "--provider=gce",
+      "--test_args=--ginkgo.focus=\\[Slow\\] --ginkgo.skip=\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
+      "--timeout=150m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-gcp"
+    ]
+  },
+  "ci-kubernetes-e2e-gce-gci-qa-slow-m65": {
+    "args": [
+      "--check-leaked-resources",
+      "--env-file=jobs/platform/gce.env",
+      "--extract=gci/gci-65",
       "--gcp-project-type=gci-qa-project",
       "--gcp-zone=us-central1-f",
       "--ginkgo-parallel=25",
