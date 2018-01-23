@@ -10721,6 +10721,27 @@
       "sig-testing"
     ]
   },
+  "istio-periodic-e2e-gke-addon": {
+    "args": [
+      "--check-leaked-resources",
+      "--cluster=",
+      "--deployment=gke",
+      "--extract=ci/latest-1.9",
+      "--gcp-node-image=gci",
+      "--gcp-zone=us-central1-f",
+      "--gke-create-command=container clusters create --quiet --num-nodes=4 --enable-kubernetes-alpha --no-enable-legacy-authorization",
+      "--gke-environment=test",
+      "--provider=gke",
+      "--test=false",
+      "--test-cmd=../tests/e2e_istio_preinstalled.sh",
+      "--test-cmd-name=istio-addon",
+      "--timeout=60m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-gcp"
+    ]
+  },
   "maintenance-boskos-config-upload": {
     "args": [
       "./boskos/update_prow_config.sh"

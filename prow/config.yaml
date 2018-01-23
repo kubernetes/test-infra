@@ -24413,6 +24413,28 @@ periodics:
     - name: token
       secret:
         secretName: fejta-bot-token
+- interval: 2h
+  agent: kubernetes
+  name: istio-periodic-e2e-gke-addon
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
+      args:
+      - "--clean"
+      - "--repo=github.com/istio/istio=master"
+      - "--timeout=90"
+      env:
+      - name: GOOGLE_APPLICATION_CREDENTIALS
+        value: /etc/service-account/service-account.json
+      volumeMounts:
+      - name: service
+        mountPath: /etc/service-account
+        readOnly: true
+    volumes:
+    - name: service
+      secret:
+        secretName: service-account
+
 - name: kubeflow-periodic
   interval: 8h
   agent: kubernetes
