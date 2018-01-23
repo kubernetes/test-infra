@@ -131,8 +131,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws
 - name: ci-kubernetes-e2e-kops-aws-canary
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-canary
-- name: ci-kubernetes-e2e-kops-aws-cncf-canary
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-cncf-canary
 - name: ci-kubernetes-e2e-kops-aws-sig-cli
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-sig-cli
 - name: ci-kubernetes-e2e-kops-aws-release-1-6
@@ -4640,10 +4638,6 @@ dashboards:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
   - name: kops-aws-canary
     test_group_name: ci-kubernetes-e2e-kops-aws-canary
-    code_search_url_template:
-      url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
-  - name: kops-aws-cncf-canary
-    test_group_name: ci-kubernetes-e2e-kops-aws-cncf-canary
     code_search_url_template:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
   - name: prow-canary
