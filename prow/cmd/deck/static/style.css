@@ -246,6 +246,44 @@ span.label:hover {
     padding: 8px 8px;
 }
 
+.fuzzy-search {
+    position: relative;
+}
+
+.fuzzy-search-input {
+    border-width: 0 0 2px 0;
+}
+
+.fuzzy-search, .fuzzy-search-input {
+    font-size: 14px;
+    width: 500px;
+}
+
+#job-list li {
+    display: block;
+    margin: 0;
+    padding: 8px 8px;
+}
+
+.job-selected {
+    background-color: #e5e5e5;
+}
+
+.fuzzy-search-list {
+    background-color: #fff;
+    box-shadow: 0 0 4px #e0e0e0;
+    display: none;
+    height: 300px;
+    left: 0;
+    overflow-y: scroll;
+    padding: 0;
+    position: absolute;
+}
+
+.active-fuzzy-search {
+    display: block;
+}
+
 /* Known GitHub Labels, can be overriden in extensions/style.css */
 /* NOTE: spaces must be stripped from the label name */
 .label.lgtm {
