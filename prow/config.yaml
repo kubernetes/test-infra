@@ -84,6 +84,7 @@ tide:
     - needs-ok-to-test
   merge_method:
     kubernetes/charts: squash
+    kubernetes/website: squash
   target_url: https://prow.k8s.io/tide.html
 
 presubmits:
