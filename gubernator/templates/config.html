@@ -11,6 +11,10 @@ GitHub OAuth Client Secret: <input type="text" name="github_secret"><br>
 <hr>
 <p>This value must match whatever is entered on GitHub when registering hooks to receive.
 <p>GitHub Webhook Secret: <input type="text" name="github_webhook_secret"><br>
+<hr>
+<p>This Token is used to periodically synchronize PR status stored in the database with GitHub.
+<p>This prevents dropped hooks and other bugs from causing stale PRs to linger in users' dashboards.
+<p>GitHub Token: <input type="text" name="github_token"><br>
 <input type="submit" value="Submit">
 </form>
 % if oauth_set
@@ -18,5 +22,8 @@ GitHub OAuth Client Secret: <input type="text" name="github_secret"><br>
 % endif
 % if webhook_set
 <h2>Github Webhook secret set!</h2>
+% endif
+% if token_set
+<h2>Github Token set!</h2>
 % endif
 % endblock
