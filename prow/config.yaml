@@ -1391,7 +1391,7 @@ presubmits:
     run_if_changed: '^(build\/|hack\/lib\/)|(Makefile)|(.*_(windows|linux|osx|unsupported)(_test)?\.go)$'
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bootstrap:v20180108-a65d3dd32
+      - image: gcr.io/k8s-testimages/bootstrap:v20180122-6fd3aef1a
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -3015,7 +3015,7 @@ presubmits:
     trigger: "(?m)^/test( all| pull-kubernetes-unit),?(\\s+|$)"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bootstrap:v20180108-a65d3dd32
+      - image: gcr.io/k8s-testimages/bootstrap:v20180122-6fd3aef1a
         args:
         - "--clean"
         - "--job=$(JOB_NAME)"
@@ -3108,7 +3108,7 @@ presubmits:
     trigger: "(?m)^/test( all| pull-kubernetes-verify),?(\\s+|$)"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bootstrap:v20180108-a65d3dd32
+      - image: gcr.io/k8s-testimages/bootstrap:v20180122-6fd3aef1a
         args:
         - "--clean"
         - "--job=$(JOB_NAME)"
@@ -3809,7 +3809,7 @@ presubmits:
           value: "true"
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: /etc/service-account/service-account.json
-        image: gcr.io/k8s-testimages/bootstrap:v20180108-a65d3dd32
+        image: gcr.io/k8s-testimages/bootstrap:v20180122-6fd3aef1a
         resources:
           requests:
             cpu: "6"
@@ -5370,7 +5370,7 @@ presubmits:
           value: "true"
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: /etc/service-account/service-account.json
-        image: gcr.io/k8s-testimages/bootstrap:v20180108-a65d3dd32
+        image: gcr.io/k8s-testimages/bootstrap:v20180122-6fd3aef1a
         resources:
           requests:
             cpu: "4"
@@ -5469,7 +5469,7 @@ presubmits:
           value: "true"
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: /etc/service-account/service-account.json
-        image: gcr.io/k8s-testimages/bootstrap:v20180108-a65d3dd32
+        image: gcr.io/k8s-testimages/bootstrap:v20180122-6fd3aef1a
         resources:
           requests:
             cpu: "4"
