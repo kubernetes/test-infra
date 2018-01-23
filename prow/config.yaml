@@ -30,6 +30,13 @@ branch-protection:
           protect: true
           # Contexts: inherited from presubmits
           # Pushers: only admins
+    kubernetes-sig-testing:
+      repos:
+        frameworks:
+          protect: true
+          require-contexts:
+          - continuous-integration/travis-ci
+          - cla/linuxfoundation
 
 tide:
   queries:
