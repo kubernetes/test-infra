@@ -64,6 +64,7 @@ class ConfigHandler(view_base.BaseHandler):
         self.render('config.html', {'hostname': hostname})
 
     def post(self):
+        self.check_csrf()
         if users.is_current_user_admin():
             oauth_set = False
             webhook_set = False

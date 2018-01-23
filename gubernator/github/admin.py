@@ -91,7 +91,6 @@ class AdminDash(webapp2.RequestHandler):
         #     #Checking_The_Referer_Header
         origin = self.request.headers.get('origin') + '/'
         expected = self.request.host_url + '/'
-        print expected
         if not (origin and origin == expected):
             logging.error('csrf check failed for %s, origin: %r', self.request.url, origin)
             self.abort(403)
