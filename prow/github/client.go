@@ -450,6 +450,34 @@ func (c *Client) IsMember(org, user string) (bool, error) {
 	return false, fmt.Errorf("unexpected status: %d", code)
 }
 
+// ListOrgMembers list all users who are members of an organization. If the authenticated
+// user is also a member of this organization then both concealed and public members
+// will be returned.
+//
+// https://developer.github.com/v3/orgs/members/#members-list
+func (c *Client) ListOrgMembers(org string) ([]TeamMember, error) {
+	c.log("ListOrgMembers", org)
+	if c.fake {
+		return nil, nil
+	}
+	path := fmt.Sprintf("/orgs/%s/members", org)
+	var teamMembers []TeamMember
+	err := c.readPaginatedResults(
+		path,
+		"",
+		func() interface{} {
+			return &[]TeamMember{}
+		},
+		func(obj interface{}) {
+			teamMembers = append(teamMembers, *(obj.(*[]TeamMember))...)
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+	return teamMembers, nil
+}
+
 // CreateComment creates a comment on the issue.
 func (c *Client) CreateComment(org, repo string, number int, comment string) error {
 	c.log("CreateComment", org, repo, number, comment)

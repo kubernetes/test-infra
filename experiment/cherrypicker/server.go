@@ -42,14 +42,15 @@ var cherryPickRe = regexp.MustCompile(`(?m)^/cherrypick\s+(.+)$`)
 
 type githubClient interface {
 	AssignIssue(org, repo string, number int, logins []string) error
+	CreateComment(org, repo string, number int, comment string) error
+	CreateFork(org, repo string) error
+	CreatePullRequest(org, repo, title, body, head, base string, canModify bool) (int, error)
 	GetPullRequest(org, repo string, number int) (*github.PullRequest, error)
 	GetPullRequestPatch(org, repo string, number int) ([]byte, error)
-	CreateComment(org, repo string, number int, comment string) error
-	IsMember(org, user string) (bool, error)
-	CreatePullRequest(org, repo, title, body, head, base string, canModify bool) (int, error)
-	ListIssueComments(org, repo string, number int) ([]github.IssueComment, error)
-	CreateFork(org, repo string) error
 	GetRepo(owner, name string) (github.Repo, error)
+	IsMember(org, user string) (bool, error)
+	ListIssueComments(org, repo string, number int) ([]github.IssueComment, error)
+	ListOrgMembers(org string) ([]github.TeamMember, error)
 }
 
 // Server implements http.Handler. It validates incoming GitHub webhooks and
@@ -208,7 +209,27 @@ func (s *Server) handleIssueComment(l *logrus.Entry, ic github.IssueCommentEvent
 		return s.ghc.CreateComment(org, repo, num, plugins.FormatICResponse(ic.Comment, resp))
 	}
 
-	return s.handle(l, ic.Comment, org, repo, baseBranch, targetBranch, title, num)
+	// TODO: Use a whitelist for allowed base and target branches.
+	if baseBranch == targetBranch {
+		resp := fmt.Sprintf("base branch (%s) needs to differ from target branch (%s)", baseBranch, targetBranch)
+		s.log.WithFields(l.Data).Info(resp)
+		return s.ghc.CreateComment(org, repo, num, plugins.FormatICResponse(ic.Comment, resp))
+	}
+
+	if !s.allowAll {
+		// Only org members should be able to do cherry-picks.
+		ok, err := s.ghc.IsMember(org, commentAuthor)
+		if err != nil {
+			return err
+		}
+		if !ok {
+			resp := fmt.Sprintf("only [%s](https://github.com/orgs/%s/people) org members may request cherry picks. You can still do the cherry-pick manually.", org, org)
+			s.log.WithFields(l.Data).Info(resp)
+			return s.ghc.CreateComment(org, repo, num, plugins.FormatICResponse(ic.Comment, resp))
+		}
+	}
+
+	return s.handle(l, ic.Comment, org, repo, targetBranch, title, num)
 }
 
 func (s *Server) handlePullRequest(l *logrus.Entry, pre github.PullRequestEvent) error {
@@ -239,49 +260,70 @@ func (s *Server) handlePullRequest(l *logrus.Entry, pre github.PullRequestEvent)
 		return err
 	}
 
-	var targetBranch string
-	var ic *github.IssueComment
+	// requestor -> target branch -> issue comment
+	requestorToComments := make(map[string]map[string]*github.IssueComment)
 	for _, c := range comments {
 		cherryPickMatches := cherryPickRe.FindAllStringSubmatch(c.Body, -1)
 		if len(cherryPickMatches) == 0 || len(cherryPickMatches[0]) != 2 {
 			continue
 		}
-		// TODO: Collect all "/cherrypick" comments and figure out if any
-		// comes from an org member?
-		targetBranch = strings.TrimSpace(cherryPickMatches[0][1])
-		ic = &c
-		break
+		// TODO: Support comments with multiple cherrypick invocations.
+		targetBranch := strings.TrimSpace(cherryPickMatches[0][1])
+		if requestorToComments[c.User.Login] == nil {
+			requestorToComments[c.User.Login] = make(map[string]*github.IssueComment)
+		}
+		requestorToComments[c.User.Login][targetBranch] = &c
 	}
-	if targetBranch == "" || ic == nil {
+	if len(requestorToComments) == 0 {
 		return nil
 	}
-	return s.handle(l, *ic, org, repo, baseBranch, targetBranch, title, num)
+	// Figure out membership.
+	if !s.allowAll {
+		// TODO: Possibly cache this.
+		members, err := s.ghc.ListOrgMembers(org)
+		if err != nil {
+			return err
+		}
+		for requestor := range requestorToComments {
+			isMember := false
+			for _, m := range members {
+				if requestor == m.Login {
+					isMember = true
+					break
+				}
+			}
+			if !isMember {
+				delete(requestorToComments, requestor)
+			}
+		}
+	}
+
+	// Handle multiple comments serially. Make sure to filter out
+	// comments targetting the same branch.
+	handledBranches := make(map[string]bool)
+	for _, branches := range requestorToComments {
+		for targetBranch, ic := range branches {
+			if targetBranch == baseBranch {
+				// TODO: Comment back.
+				continue
+			}
+			if handledBranches[targetBranch] {
+				// Branch already handled. Skip.
+				continue
+			}
+			handledBranches[targetBranch] = true
+			err := s.handle(l, *ic, org, repo, targetBranch, title, num)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }
 
 var cherryPickBranchFmt = "cherry-pick-%d-to-%s"
 
-func (s *Server) handle(l *logrus.Entry, comment github.IssueComment, org, repo, baseBranch, targetBranch, title string, num int) error {
-	// TODO: Use a whitelist for allowed base and target branches.
-	if baseBranch == targetBranch {
-		resp := fmt.Sprintf("base branch (%s) needs to differ from target branch (%s)", baseBranch, targetBranch)
-		s.log.WithFields(l.Data).Info(resp)
-		return s.ghc.CreateComment(org, repo, num, plugins.FormatICResponse(comment, resp))
-	}
-
-	commentAuthor := comment.User.Login
-	if !s.allowAll {
-		// Only org members should be able to do cherry-picks.
-		ok, err := s.ghc.IsMember(org, commentAuthor)
-		if err != nil {
-			return err
-		}
-		if !ok {
-			resp := fmt.Sprintf("only [%s](https://github.com/orgs/%s/people) org members may request cherry picks. You can still do the cherry-pick manually.", org, org)
-			s.log.WithFields(l.Data).Info(resp)
-			return s.ghc.CreateComment(org, repo, num, plugins.FormatICResponse(comment, resp))
-		}
-	}
-
+func (s *Server) handle(l *logrus.Entry, comment github.IssueComment, org, repo, targetBranch, title string, num int) error {
 	if err := s.ensureForkExists(org, repo); err != nil {
 		return err
 	}
@@ -349,7 +391,7 @@ func (s *Server) handle(l *logrus.Entry, comment github.IssueComment, org, repo,
 	title = fmt.Sprintf("[%s] %s", targetBranch, title)
 	body := fmt.Sprintf("This is an automated cherry-pick of #%d", num)
 	if s.prowAssignments {
-		body = fmt.Sprintf("%s\n\n/assign %s", body, commentAuthor)
+		body = fmt.Sprintf("%s\n\n/assign %s", body, comment.User.Login)
 	}
 	head := fmt.Sprintf("%s:%s", s.botName, newBranch)
 	createdNum, err := s.ghc.CreatePullRequest(org, repo, title, body, head, targetBranch, true)
@@ -364,8 +406,12 @@ func (s *Server) handle(l *logrus.Entry, comment github.IssueComment, org, repo,
 		return err
 	}
 	if !s.prowAssignments {
-		if err := s.ghc.AssignIssue(org, repo, createdNum, []string{commentAuthor}); err != nil {
-			return err
+		if err := s.ghc.AssignIssue(org, repo, createdNum, []string{comment.User.Login}); err != nil {
+			s.log.WithFields(l.Data).Warningf("Cannot assign to new PR: %v", err)
+			// Ignore returning errors on failure to assign as this is most likely
+			// due to users not being members of the org so that they can be assigned
+			// in PRs.
+			return nil
 		}
 	}
 	return nil
