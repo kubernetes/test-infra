@@ -210,10 +210,14 @@ func run(deploy deployer, o options) error {
 	}
 
 	if o.testCmd != "" {
-		errs = appendError(errs, xmlWrap(o.testCmdName, func() error {
-			cmdLine := os.ExpandEnv(o.testCmd)
-			return finishRunning(exec.Command(cmdLine))
-		}))
+		if err := xmlWrap("test setup", deploy.TestSetup); err != nil {
+			errs = appendError(errs, err)
+		} else {
+			errs = appendError(errs, xmlWrap(o.testCmdName, func() error {
+				cmdLine := os.ExpandEnv(o.testCmd)
+				return finishRunning(exec.Command(cmdLine))
+			}))
+		}
 	}
 
 	// TODO(bentheelder): consider remapping charts, etc to testCmd
