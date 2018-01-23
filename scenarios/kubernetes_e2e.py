@@ -38,6 +38,54 @@ ORIG_CWD = os.getcwd()  # Checkout changes cwd
 # Note: This variable is managed by experiment/bump_e2e_image.sh.
 DEFAULT_KUBEKINS_TAG = 'v20180102-0e2b24a0b-master'
 
+# The zones below are the zones available in the CNCF account (in theory, zones vary by account)
+# We comment out zones below because we want to stay proportional to the limits
+# We do one zone for every 10 t2.medium instances allowed
+DEFAULT_AWS_ZONES = [
+    #'ap-northeast-1a',
+    #'ap-northeast-1c',
+    #'ap-northeast-2a',
+    #'ap-northeast-2b',
+    'ap-south-1a',
+    'ap-south-1b',
+    #'ap-southeast-1a',
+    #'ap-southeast-1b',
+    #'ap-southeast-1c',
+    #'ap-southeast-2a',
+    #'ap-southeast-2b',
+    #'ap-southeast-2c',
+    #'ca-central-1a',
+    #'ca-central-1b',
+    #'eu-central-1a',
+    #'eu-central-1b',
+    #'eu-central-1c',
+    #'eu-west-1a',
+    #'eu-west-1b',
+    #'eu-west-1c',
+    #'eu-west-2a',
+    #'eu-west-2b',
+    #'eu-west-2c',
+    #'eu-west-3a',
+    #'eu-west-3b',
+    #'eu-west-3c',
+    #'sa-east-1a',
+    #'sa-east-1c'
+    'us-east-1a',
+    'us-east-1b',
+    #'us-east-1c',
+    #'us-east-1d',
+    #'us-east-1e',
+    #'us-east-1f',
+    'us-east-2a',
+    'us-east-2b',
+    #'us-east-2c',
+    'us-west-1a',
+    'us-west-1b',
+    'us-west-2a',
+    'us-west-2b',
+    #'us-west-2c'
+]
+
 def test_infra(*paths):
     """Return path relative to root of test-infra repo."""
     return os.path.join(ORIG_CWD, os.path.dirname(__file__), '..', *paths)
@@ -443,16 +491,7 @@ def set_up_kops_aws(workspace, args, mode, cluster, runner_args):
     if args.aws_role_arn:
         profile = mode.add_aws_role(profile, args.aws_role_arn)
 
-    zones = args.kops_zones or random.choice([
-        'us-west-1a',
-        #'us-west-1c', Some accounts have b but not c, some c but not b
-        'us-west-2a',
-        'us-west-2b',
-        'us-east-1a',
-        'us-east-1d',
-        'us-east-2a',
-        'us-east-2b',
-    ])
+    zones = args.kops_zones or random.choice(DEFAULT_AWS_ZONES)
     regions = ','.join([zone[:-1] for zone in zones.split(',')])
 
     mode.add_environment(
@@ -486,16 +525,7 @@ def set_up_aws(workspace, args, mode, cluster, runner_args):
     if args.aws_role_arn:
         profile = mode.add_aws_role(profile, args.aws_role_arn)
 
-    zones = args.kops_zones or random.choice([
-        'us-west-1a',
-        #'us-west-1c', Some accounts have b but not c, some c but not b
-        'us-west-2a',
-        'us-west-2b',
-        'us-east-1a',
-        'us-east-1d',
-        'us-east-2a',
-        'us-east-2b',
-    ])
+    zones = args.kops_zones or random.choice(DEFAULT_AWS_ZONES)
     regions = ','.join([zone[:-1] for zone in zones.split(',')])
 
     mode.add_environment(
