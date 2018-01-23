@@ -39,6 +39,7 @@ import (
 	"k8s.io/test-infra/prow/plugins"
 	"k8s.io/test-infra/prow/repoowners"
 	"k8s.io/test-infra/prow/slack"
+	"k8s.io/test-infra/prow/userdashboard"
 )
 
 var (
@@ -170,6 +171,8 @@ func main() {
 	http.Handle("/hook", server)
 	// Serve plugin help information from /plugin-help.
 	http.Handle("/plugin-help", pluginhelp.NewHelpAgent(pluginAgent, githubClient))
+	// Serve plugin help information from /plugin-help.
+	// http.Handle("/user-dashboard", &userdashboard.DashboardAgent{&userdashboard.UserData{"Hello World!"}})
 
 	logger.Fatal(http.ListenAndServe(":"+strconv.Itoa(*port), nil))
 }

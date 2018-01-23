@@ -43,6 +43,7 @@ spec:
         - --tide-url=http://tide/
         - --hook-url=http://hook:8888/plugin-help
         - --redirect-http-to=prow.k8s.io
+        - --user-url=http://hook:8888/user-dashboard
         volumeMounts:
         - mountPath: /etc/cluster
           name: cluster

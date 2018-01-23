@@ -39,6 +39,7 @@ import (
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/pluginhelp"
+	"k8s.io/test-infra/prow/userdashboard"
 )
 
 var (
@@ -46,6 +47,7 @@ var (
 	buildCluster = flag.String("build-cluster", "", "Path to file containing a YAML-marshalled kube.Cluster object. If empty, uses the local cluster.")
 	tideURL      = flag.String("tide-url", "", "Path to tide. If empty, do not serve tide data.")
 	hookURL      = flag.String("hook-url", "", "Path to hook plugin help endpoint.")
+	userUrl      = flag.String("user-url", "", "Path to hook user dashboard endpoint.")
 	// use when behind a load balancer
 	redirectHTTPTo = flag.String("redirect-http-to", "", "host to redirect http->https to based on x-forwarded-proto == http.")
 )
@@ -112,6 +114,13 @@ func main() {
 		}
 		ta.start()
 		mux.Handle("/tide.js", gziphandler.GzipHandler(handleTide(configAgent, ta)))
+	}
+
+	if *userUrl != "" {
+		ua := &userAgent {
+			path: *userUrl,
+		}
+		mux.Handle("/user-data.js", gziphandler.GzipHandler(handleUserDashboard(ua)))
 	}
 
 	// optionally inject http->https redirect handler when behind loadbalancer
@@ -262,6 +271,27 @@ func handlePluginHelp(ha *helpAgent) http.HandlerFunc {
 			fmt.Fprintf(w, "var %s = %s;", v, string(b))
 		} else {
 			fmt.Fprint(w, string(b))
+		}
+	}
+}
+
+func handleUserDashboard(ua *userAgent) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Cache-Control", "no-cache")
+		userData, err := ua.getData()
+		if err != nil {
+			logrus.WithError(err).Error("Getting data from hook")
+			userData = &userdashboard.Data{}
+		}
+		marshalData, err := json.Marshal(*userData)
+		if err != nil {
+			logrus.WithError(err).Error("Marshaling user data")
+			marshalData = []byte("[]")
+		}
+		if v := r.URL.Query().Get("var"); v != "" {
+			fmt.Fprintf(w, "var %s = %s;", v, string(marshalData))
+		} else {
+			fmt.Fprint(w, string(marshalData))
 		}
 	}
 }
