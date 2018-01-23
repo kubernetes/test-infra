@@ -839,7 +839,7 @@ presubmits:
       - release-1.8 # different target set
       spec:
         containers:
-        - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180102-d372fdd96
+        - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180123-fe0e523d9
           args:
           - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
           - "--upload=gs://kubernetes-jenkins/pr-logs"
@@ -941,7 +941,7 @@ presubmits:
       - release-1.8
       spec:
         containers:
-        - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180102-d372fdd96
+        - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180123-fe0e523d9
           args:
           - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
           - "--upload=gs://kubernetes-jenkins/pr-logs"
@@ -1041,7 +1041,7 @@ presubmits:
       - release-1.6
       spec:
         containers:
-        - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180102-d372fdd96
+        - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180123-fe0e523d9
           args:
           - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
           - "--upload=gs://kubernetes-jenkins/pr-logs"
@@ -1139,7 +1139,7 @@ presubmits:
       trigger: "(?m)^/test pull-kubernetes-e2e-kubeadm-gce-canary,?(\\s+|$)"
       spec:
         containers:
-        - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180102-d372fdd96
+        - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180123-fe0e523d9
           args:
           - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
           - "--upload=gs://kubernetes-jenkins/pr-logs"
@@ -3229,7 +3229,7 @@ presubmits:
             value: /etc/ssh-key-secret/ssh-public
           - name: SKIP_RELEASE_VALIDATION
             value: "true"
-          image: gcr.io/k8s-testimages/e2e-kubeadm:v20180102-d372fdd96
+          image: gcr.io/k8s-testimages/e2e-kubeadm:v20180123-fe0e523d9
           resources: {}
           volumeMounts:
           - mountPath: /etc/service-account
@@ -3334,7 +3334,7 @@ presubmits:
             value: /etc/ssh-key-secret/ssh-public
           - name: SKIP_RELEASE_VALIDATION
             value: "true"
-          image: gcr.io/k8s-testimages/e2e-kubeadm:v20180102-d372fdd96
+          image: gcr.io/k8s-testimages/e2e-kubeadm:v20180123-fe0e523d9
           resources: {}
           volumeMounts:
           - mountPath: /etc/service-account
@@ -3433,7 +3433,7 @@ presubmits:
             value: /etc/ssh-key-secret/ssh-public
           - name: SKIP_RELEASE_VALIDATION
             value: "true"
-          image: gcr.io/k8s-testimages/e2e-kubeadm:v20180102-d372fdd96
+          image: gcr.io/k8s-testimages/e2e-kubeadm:v20180123-fe0e523d9
           resources: {}
           volumeMounts:
           - mountPath: /etc/service-account
@@ -3530,7 +3530,7 @@ presubmits:
             value: /etc/ssh-key-secret/ssh-public
           - name: SKIP_RELEASE_VALIDATION
             value: "true"
-          image: gcr.io/k8s-testimages/e2e-kubeadm:v20180102-d372fdd96
+          image: gcr.io/k8s-testimages/e2e-kubeadm:v20180123-fe0e523d9
           resources: {}
           volumeMounts:
           - mountPath: /etc/service-account
@@ -6046,7 +6046,7 @@ postsubmits:
       agent: kubernetes
       spec:
         containers:
-        - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180102-d372fdd96
+        - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180123-fe0e523d9
           args:
           - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
           - "--clean"
@@ -6170,7 +6170,7 @@ postsubmits:
       agent: kubernetes
       spec:
         containers:
-        - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180102-d372fdd96
+        - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180123-fe0e523d9
           args:
           - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
           - "--clean"
@@ -6213,7 +6213,7 @@ postsubmits:
       agent: kubernetes
       spec:
         containers:
-        - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180102-d372fdd96
+        - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180123-fe0e523d9
           args:
           - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
           - "--clean"
@@ -6337,7 +6337,7 @@ postsubmits:
       agent: kubernetes
       spec:
         containers:
-        - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180102-d372fdd96
+        - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180123-fe0e523d9
           args:
           - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
           - "--clean"
@@ -6380,7 +6380,7 @@ postsubmits:
       agent: kubernetes
       spec:
         containers:
-        - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180102-d372fdd96
+        - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180123-fe0e523d9
           args:
           - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
           - "--clean"
@@ -6509,7 +6509,7 @@ postsubmits:
       agent: kubernetes
       spec:
         containers:
-        - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180102-d372fdd96
+        - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180123-fe0e523d9
           args:
           - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
           - "--clean"
@@ -7160,7 +7160,7 @@ periodics:
     agent: kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180102-d372fdd96
+      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180123-fe0e523d9
         args:
         - "--repo=k8s.io/kubernetes=master"
         - "--clean"
@@ -7203,7 +7203,7 @@ periodics:
     agent: kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180102-d372fdd96
+      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180123-fe0e523d9
         args:
         - "--repo=k8s.io/kubernetes=master"
         - "--clean"
@@ -7237,7 +7237,7 @@ periodics:
     agent: kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180102-d372fdd96
+      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180123-fe0e523d9
         args:
         - "--repo=k8s.io/kubernetes=master"
         - "--clean"
@@ -7280,7 +7280,7 @@ periodics:
     agent: kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180102-d372fdd96
+      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180123-fe0e523d9
         args:
         - "--repo=k8s.io/kubernetes=master"
         - "--clean"
@@ -7323,7 +7323,7 @@ periodics:
     agent: kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180102-d372fdd96
+      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180123-fe0e523d9
         args:
         - "--repo=k8s.io/kubernetes=master"
         - "--clean"
@@ -7366,7 +7366,7 @@ periodics:
     agent: kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180102-d372fdd96
+      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180123-fe0e523d9
         args:
         - "--repo=k8s.io/kubernetes=master"
         - "--clean"
@@ -7409,7 +7409,7 @@ periodics:
     agent: kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180102-d372fdd96
+      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180123-fe0e523d9
         args:
         - "--repo=k8s.io/kubernetes=master"
         - "--clean"
@@ -7452,7 +7452,7 @@ periodics:
     agent: kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180102-d372fdd96
+      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180123-fe0e523d9
         args:
         - "--repo=k8s.io/kubernetes=master"
         - "--clean"
@@ -21567,7 +21567,7 @@ periodics:
   agent: kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180102-d372fdd96
+    - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180123-fe0e523d9
       args:
       - "--repo=k8s.io/kubernetes=release-1.7"
       - "--clean"
@@ -24545,7 +24545,7 @@ periodics:
     agent: kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180102-d372fdd96
+      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180123-fe0e523d9
         args:
         - "--repo=k8s.io/kubernetes=release-1.6"
         - "--clean"
@@ -24670,7 +24670,7 @@ periodics:
     agent: kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180102-d372fdd96
+      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180123-fe0e523d9
         args:
         - "--repo=k8s.io/kubernetes=release-1.7"
         - "--clean"
@@ -24715,7 +24715,7 @@ periodics:
     agent: kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180102-d372fdd96
+      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180123-fe0e523d9
         args:
         - "--repo=k8s.io/kubernetes=release-1.7"
         - "--clean"
@@ -24838,7 +24838,7 @@ periodics:
     agent: kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180102-d372fdd96
+      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180123-fe0e523d9
         args:
         - "--repo=k8s.io/kubernetes=release-1.8"
         - "--clean"
@@ -24883,7 +24883,7 @@ periodics:
     agent: kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180102-d372fdd96
+      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180123-fe0e523d9
         args:
         - "--repo=k8s.io/kubernetes=release-1.8"
         - "--clean"
@@ -25013,7 +25013,7 @@ periodics:
     agent: kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180102-d372fdd96
+      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180123-fe0e523d9
         args:
         - "--repo=k8s.io/kubernetes=release-1.9"
         - "--clean"
@@ -25056,7 +25056,7 @@ periodics:
     agent: kubernetes
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180102-d372fdd96
+      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180123-fe0e523d9
         args:
         - "--repo=k8s.io/kubernetes=release-1.9"
         - "--clean"
