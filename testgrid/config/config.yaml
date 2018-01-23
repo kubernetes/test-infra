@@ -2075,6 +2075,20 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos-oldetcd-serial
 - name: ci-kubernetes-e2e-gke-cos-oldetcd-slow
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos-oldetcd-slow
+# gke 1.7-1.8; 1.8-1.9 staging upgrade
+# TODO(krzyzacy): don't pin version here, try let the version flow
+- name: ci-kubernetes-e2e-gke-staging-1-7-1-8-upgrade-master
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-1-7-1-8-upgrade-master
+- name: ci-kubernetes-e2e-gke-staging-1-7-1-8-upgrade-cluster
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-1-7-1-8-upgrade-cluster
+- name: ci-kubernetes-e2e-gke-staging-1-7-1-8-upgrade-cluster-new
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-1-7-1-8-upgrade-cluster-new
+- name: ci-kubernetes-e2e-gke-staging-1-8-1-9-upgrade-master
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-1-8-1-9-upgrade-master
+- name: ci-kubernetes-e2e-gke-staging-1-8-1-9-upgrade-cluster
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-1-8-1-9-upgrade-cluster
+- name: ci-kubernetes-e2e-gke-staging-1-8-1-9-upgrade-cluster-new
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-1-8-1-9-upgrade-cluster-new
 - name: pull-kops-e2e-kubernetes-aws
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kops-e2e-kubernetes-aws
   num_columns_recent: 20
@@ -2555,6 +2569,18 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-staging-default-latest-upgrade-cluster-new
   - name: gke-staging-latest-device-plugin-gpu
     test_group_name: ci-kubernetes-e2e-gke-staging-latest-device-plugin-gpu
+  - name: gke-staging-1-7-1-8-upgrade-master
+    test_group_name: ci-kubernetes-e2e-gke-staging-1-7-1-8-upgrade-master
+  - name: gke-staging-1-7-1-8-upgrade-cluster
+    test_group_name: ci-kubernetes-e2e-gke-staging-1-7-1-8-upgrade-cluster
+  - name: gke-staging-1-7-1-8-upgrade-cluster-new
+    test_group_name: ci-kubernetes-e2e-gke-staging-1-7-1-8-upgrade-cluster-new
+  - name: gke-staging-1-8-1-9-upgrade-master
+    test_group_name: ci-kubernetes-e2e-gke-staging-1-8-1-9-upgrade-master
+  - name: gke-staging-1-8-1-9-upgrade-cluster
+    test_group_name: ci-kubernetes-e2e-gke-staging-1-8-1-9-upgrade-cluster
+  - name: gke-staging-1-8-1-9-upgrade-cluster-new
+    test_group_name: ci-kubernetes-e2e-gke-staging-1-8-1-9-upgrade-cluster-new
 
 - name: google-gke-1.9-oldetcd
   dashboard_tab:
