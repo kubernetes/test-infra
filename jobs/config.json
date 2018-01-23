@@ -11151,7 +11151,6 @@
       "--gcp-project=k8s-jkns-pr-bldr-e2e-gce-fdrtn",
       "--gcp-zone=us-central1-f",
       "--ginkgo-parallel=30",
-      "--mode=docker",
       "--multiple-federations",
       "--provider=gce",
       "--stage-federation=gs://kubernetes-release-pull/ci/pull-federation-e2e-gce",

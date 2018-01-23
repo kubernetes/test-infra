@@ -162,11 +162,43 @@ presubmits:
           secretName: service-account
   kubernetes/charts:
   - name: pull-charts-e2e
-    agent: jenkins
+    agent: kubernetes
     always_run: true
     context: pull-charts-e2e
     rerun_command: "/test pull-charts-e2e"
     trigger: "(?m)^/test( all| pull-charts-e2e),?(\\s+|$)"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180108-bf63630a9-master
+        args:
+        - "--repo=k8s.io/charts=$(PULL_REFS)"
+        - "--root=/go/src/"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--clean"
+        env:
+        - name: DOCKER_IN_DOCKER_ENABLED
+          value: true
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /etc/service-account/service-account.json
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: service
+          mountPath: /etc/service-account
+          readOnly: true
+        - name: docker-graph
+          mountPath: /docker-graph
+        ports:
+        - containerPort: 9999
+          hostPort: 9999
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
+      - name: docker-graph
+        hostPath:
+          path: /mnt/disks/ssd0/docker-graph
   kubernetes/community:
   - name: pull-community-verify
     agent: kubernetes
@@ -363,11 +395,56 @@ presubmits:
         hostPath:
           path: /mnt/disks/ssd0
   - name: pull-federation-e2e-gce
-    agent: jenkins
+    agent: kubernetes
     always_run: true
     context: pull-federation-e2e-gce
     rerun_command: "/test pull-federation-e2e-gce"
     trigger: "(?m)^/test( all| pull-federation-e2e-gce),?(\\s+|$)"
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180108-bf63630a9-master
+        args:
+        - "--repo=k8s.io/federation=$(PULL_REFS)"
+        - "--root=/go/src/"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--clean"
+        env:
+        - name: DOCKER_IN_DOCKER_ENABLED
+          value: true
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /etc/service-account/service-account.json
+        - name: USER
+          value: prow
+        - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+          value: /etc/ssh-key-secret/ssh-private
+        - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+          value: /etc/ssh-key-secret/ssh-public
+        # docker-in-docker needs privileged mode
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: service
+          mountPath: /etc/service-account
+          readOnly: true
+        - name: docker-graph
+          mountPath: /docker-graph
+        - name: ssh
+          mountPath: /etc/ssh-key-secret
+          readOnly: true
+        ports:
+        - containerPort: 9999
+          hostPort: 9999
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
+      - name: docker-graph
+        hostPath:
+          path: /mnt/disks/ssd0/docker-graph
+      - name: ssh
+        secret:
+          secretName: ssh-key-secret
+          defaultMode: 0400
   - name: pull-federation-verify
     agent: kubernetes
     context: pull-federation-verify
