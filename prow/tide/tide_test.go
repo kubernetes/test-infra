@@ -145,10 +145,10 @@ func TestAccumulateBatch(t *testing.T) {
 	for _, test := range tests {
 		var pulls []PullRequest
 		for _, p := range test.pulls {
-			pr := PullRequest{Number: githubql.Int(p.number)}
-			pr.Commits.Nodes = []struct {
-				Commit Commit
-			}{{Commit: Commit{OID: githubql.String(p.sha)}}}
+			pr := PullRequest{
+				Number:     githubql.Int(p.number),
+				HeadRefOID: githubql.String(p.sha),
+			}
 			pulls = append(pulls, pr)
 		}
 		var pjs []kube.ProwJob
@@ -324,6 +324,8 @@ type fgc struct {
 	refs      map[string]string
 	merged    int
 	setStatus bool
+
+	expectedSHA string
 }
 
 func (f *fgc) GetRef(o, r, ref string) (string, error) {
@@ -349,6 +351,18 @@ func (f *fgc) CreateStatus(org, repo, ref string, s github.Status) error {
 		return nil
 	}
 	return fmt.Errorf("invalid 'state' value: %q", s.State)
+}
+
+func (f *fgc) GetCombinedStatus(org, repo, ref string) (*github.CombinedStatus, error) {
+	if f.expectedSHA != ref {
+		return nil, errors.New("bad combined status request: incorrect sha")
+	}
+	return &github.CombinedStatus{
+			Statuses: []github.Status{
+				{Context: "win"},
+			},
+		},
+		nil
 }
 
 func TestSetStatuses(t *testing.T) {
@@ -680,11 +694,13 @@ func TestPickBatch(t *testing.T) {
 		if err := lg.Checkout("o", "r", "master"); err != nil {
 			t.Fatalf("Error checking out master: %v", err)
 		}
+		oid := githubql.String(fmt.Sprintf("origin/pr-%d", i))
 		var pr PullRequest
 		pr.Number = githubql.Int(i)
+		pr.HeadRefOID = oid
 		pr.Commits.Nodes = []struct {
 			Commit Commit
-		}{{Commit: Commit{OID: githubql.String(fmt.Sprintf("origin/pr-%d", i))}}}
+		}{{Commit: Commit{OID: oid}}}
 		pr.Commits.Nodes[0].Commit.Status.Contexts = append(pr.Commits.Nodes[0].Commit.Status.Contexts, Context{State: githubql.StatusStateSuccess})
 		if !testpr.success {
 			pr.Commits.Nodes[0].Commit.Status.Contexts[0].State = githubql.StatusStateFailure
@@ -692,7 +708,8 @@ func TestPickBatch(t *testing.T) {
 		sp.prs = append(sp.prs, pr)
 	}
 	c := &Controller{
-		gc: gc,
+		logger: logrus.WithField("component", "tide"),
+		gc:     gc,
 	}
 	prs, err := c.pickBatch(sp)
 	if err != nil {
@@ -893,12 +910,13 @@ func TestTakeAction(t *testing.T) {
 				if err := lg.Checkout("o", "r", "master"); err != nil {
 					t.Fatalf("Error checking out master: %v", err)
 				}
+				oid := githubql.String(fmt.Sprintf("origin/pr-%d", i))
 				var pr PullRequest
 				pr.Number = githubql.Int(i)
-				pr.HeadRef.Target.OID = githubql.String(fmt.Sprintf("origin/pr-%d", i))
+				pr.HeadRefOID = oid
 				pr.Commits.Nodes = []struct {
 					Commit Commit
-				}{{Commit: Commit{OID: githubql.String("uh oh")}}}
+				}{{Commit: Commit{OID: oid}}}
 				sp.prs = append(sp.prs, pr)
 				prs = append(prs, pr)
 			}
@@ -970,5 +988,77 @@ func TestServeHTTP(t *testing.T) {
 	}
 	if pools[0].Action != Merge {
 		t.Errorf("Wrong action. Got %v, want %v.", pools[0].Action, Merge)
+	}
+}
+
+func TestHeadContexts(t *testing.T) {
+	type commitContext struct { // one context per commit for testing
+		context string
+		sha     string
+	}
+
+	win := "win"
+	lose := "lose"
+	headSHA := "head"
+	testCases := []struct {
+		name           string
+		commitContexts []commitContext
+		expectAPICall  bool
+	}{
+		{
+			name: "first commit is head",
+			commitContexts: []commitContext{
+				{context: win, sha: headSHA},
+				{context: lose, sha: "other"},
+				{context: lose, sha: "sha"},
+			},
+		},
+		{
+			name: "last commit is head",
+			commitContexts: []commitContext{
+				{context: lose, sha: "shaaa"},
+				{context: lose, sha: "other"},
+				{context: win, sha: headSHA},
+			},
+		},
+		{
+			name: "no commit is head",
+			commitContexts: []commitContext{
+				{context: lose, sha: "shaaa"},
+				{context: lose, sha: "other"},
+				{context: lose, sha: "sha"},
+			},
+			expectAPICall: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Logf("Running test case %q", tc.name)
+		fgc := &fgc{}
+		if tc.expectAPICall {
+			fgc.expectedSHA = headSHA
+		}
+		pr := &PullRequest{HeadRefOID: githubql.String(headSHA)}
+		for _, ctx := range tc.commitContexts {
+			commit := Commit{
+				Status: struct{ Contexts []Context }{
+					Contexts: []Context{
+						{
+							Context: githubql.String(ctx.context),
+						},
+					},
+				},
+				OID: githubql.String(ctx.sha),
+			}
+			pr.Commits.Nodes = append(pr.Commits.Nodes, struct{ Commit Commit }{commit})
+		}
+
+		contexts, err := headContexts(logrus.WithField("component", "tide"), fgc, pr)
+		if err != nil {
+			t.Fatalf("Unexpected error from headContexts: %v", err)
+		}
+		if len(contexts) != 1 || string(contexts[0].Context) != win {
+			t.Errorf("Expected exactly 1 %q context, but got: %#v", win, contexts)
+		}
 	}
 }
