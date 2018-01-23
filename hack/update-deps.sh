@@ -55,6 +55,7 @@ drop-dep vendor/golang.org/x/text/language vendor/golang.org/x/text/internal
 drop-dep vendor/google.golang.org/api/transport/grpc vendor/google.golang.org/api/transport
 drop-dep vendor/github.com/golang/protobuf/protoc-gen-go/grpc vendor/github.com/golang/protobuf/protoc-gen-go
 drop-dep vendor/github.com/golang/protobuf/protoc-gen-go/generator vendor/github.com/golang/protobuf/protoc-gen-go
+drop-dep vendor/github.com/golang/protobuf/protoc-gen-go vendor/github.com/golang/protobuf/protoc-gen-go
 drop-dep vendor/github.com/docker/distribution/context vendor/github.com/docker/distribution
 drop-dep vendor/github.com/docker/docker/pkg/term vendor/github.com/docker/docker/cli
 hack/prune-libraries.sh --fix

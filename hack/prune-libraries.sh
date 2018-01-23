@@ -35,7 +35,7 @@ find-go-libraries() {
 # Output the target if it has only one dependency (itself)
 is-unused() {
   local n
-  n="$(bazel query "rdeps(//..., \"$1\", 1)" | wc -l)"
+  n="$(bazel query "rdeps(//..., '$1', 1) - kind('go_binary rule', //vendor/...)" | wc -l)"
   if [[ "$n" -gt "1" ]]; then  # Always counts itself
     echo "LIVE: $1" >&2
     return 0
