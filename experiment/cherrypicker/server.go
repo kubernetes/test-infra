@@ -174,7 +174,7 @@ func (s *Server) handleIssueComment(l *logrus.Entry, ic github.IssueCommentEvent
 	if len(cherryPickMatches) == 0 || len(cherryPickMatches[0]) != 2 {
 		return nil
 	}
-	targetBranch := cherryPickMatches[0][1]
+	targetBranch := strings.TrimSpace(cherryPickMatches[0][1])
 
 	if ic.Issue.State != "closed" {
 		if !s.allowAll {
@@ -248,7 +248,7 @@ func (s *Server) handlePullRequest(l *logrus.Entry, pre github.PullRequestEvent)
 		}
 		// TODO: Collect all "/cherrypick" comments and figure out if any
 		// comes from an org member?
-		targetBranch = cherryPickMatches[0][1]
+		targetBranch = strings.TrimSpace(cherryPickMatches[0][1])
 		ic = &c
 		break
 	}
