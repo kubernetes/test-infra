@@ -35,7 +35,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
 });
 
 function configure() {
-    if(typeof branding === 'undefined'){
+    if(!branding){
         return;
     }
     if (branding.logo) {
