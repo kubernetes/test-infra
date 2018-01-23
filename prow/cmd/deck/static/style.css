@@ -108,6 +108,10 @@ th {
     color: #333;
 }
 
+.hidden {
+    display: none;
+}
+
 .triggered, .pending, .success, .failure, .error, .aborted {
     font-weight: bold;
 }
@@ -167,6 +171,11 @@ a:link {
     line-height: 1.75;
     color: black;
     list-style-type: disc;
+}
+
+#info-div h4 {
+    cursor: pointer;
+    margin-top: 0.6em;
 }
 
 
