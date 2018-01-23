@@ -22,6 +22,7 @@ go_library(
         "//prow/kube:go_default_library",
         "//vendor/github.com/satori/go.uuid:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
     ],
 )
 
@@ -47,5 +48,8 @@ go_test(
     embed = [":go_default_library"],
     importpath = "k8s.io/test-infra/prow/pjutil",
     tags = ["automanaged"],
-    deps = ["//prow/kube:go_default_library"],
+    deps = [
+        "//prow/kube:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
+    ],
 )

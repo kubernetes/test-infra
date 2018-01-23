@@ -20,6 +20,8 @@ import (
 	"fmt"
 	"strings"
 	"time"
+
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 type ProwJobType string
@@ -68,11 +70,12 @@ const (
 )
 
 type ProwJob struct {
-	APIVersion string        `json:"apiVersion,omitempty"`
-	Kind       string        `json:"kind,omitempty"`
-	ObjectMeta ObjectMeta    `json:"metadata,omitempty"`
-	Spec       ProwJobSpec   `json:"spec,omitempty"`
-	Status     ProwJobStatus `json:"status,omitempty"`
+	APIVersion        string `json:"apiVersion,omitempty"`
+	Kind              string `json:"kind,omitempty"`
+	metav1.ObjectMeta `json:"metadata,omitempty"`
+
+	Spec   ProwJobSpec   `json:"spec,omitempty"`
+	Status ProwJobStatus `json:"status,omitempty"`
 }
 
 type ProwJobSpec struct {

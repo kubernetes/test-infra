@@ -23,6 +23,7 @@ import (
 
 	uuid "github.com/satori/go.uuid"
 	"github.com/sirupsen/logrus"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
@@ -34,7 +35,7 @@ func NewProwJob(spec kube.ProwJobSpec, labels map[string]string) kube.ProwJob {
 	return kube.ProwJob{
 		APIVersion: "prow.k8s.io/v1",
 		Kind:       "ProwJob",
-		ObjectMeta: kube.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:   uuid.NewV1().String(),
 			Labels: labels,
 		},

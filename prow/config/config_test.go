@@ -25,6 +25,8 @@ import (
 	"strings"
 	"testing"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
 )
@@ -590,7 +592,7 @@ func TestURLTemplate(t *testing.T) {
 
 	for _, tc := range testcases {
 		var pj = kube.ProwJob{
-			ObjectMeta: kube.ObjectMeta{Name: tc.name},
+			ObjectMeta: metav1.ObjectMeta{Name: tc.name},
 			Spec: kube.ProwJobSpec{
 				Type: tc.jobType,
 				Job:  tc.job,

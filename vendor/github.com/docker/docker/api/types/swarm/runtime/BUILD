@@ -1,25 +1,14 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_library")
-load("@io_bazel_rules_go//proto:def.bzl", "go_proto_library")
-
-proto_library(
-    name = "runtime_proto",
-    srcs = ["plugin.proto"],
-    visibility = ["//visibility:public"],
-)
-
-go_proto_library(
-    name = "runtime_go_proto",
-    importpath = "github.com/docker/docker/api/types/swarm/runtime",
-    proto = ":runtime_proto",
-    visibility = ["//visibility:public"],
-)
 
 go_library(
     name = "go_default_library",
-    srcs = ["gen.go"],
-    embed = [":runtime_go_proto"],
+    srcs = [
+        "gen.go",
+        "plugin.pb.go",
+    ],
     importpath = "github.com/docker/docker/api/types/swarm/runtime",
     visibility = ["//visibility:public"],
+    deps = ["//vendor/github.com/gogo/protobuf/proto:go_default_library"],
 )
 
 filegroup(

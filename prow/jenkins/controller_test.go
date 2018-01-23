@@ -25,6 +25,7 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
@@ -362,7 +363,7 @@ func TestSyncPendingJobs(t *testing.T) {
 		{
 			name: "enqueued",
 			pj: kube.ProwJob{
-				ObjectMeta: kube.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Name: "foofoo",
 				},
 				Spec: kube.ProwJobSpec{
@@ -382,7 +383,7 @@ func TestSyncPendingJobs(t *testing.T) {
 		{
 			name: "finished queue",
 			pj: kube.ProwJob{
-				ObjectMeta: kube.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Name: "boing",
 				},
 				Spec: kube.ProwJobSpec{
@@ -404,7 +405,7 @@ func TestSyncPendingJobs(t *testing.T) {
 		{
 			name: "building",
 			pj: kube.ProwJob{
-				ObjectMeta: kube.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Name: "firstoutthetrenches",
 				},
 				Spec: kube.ProwJobSpec{
@@ -424,7 +425,7 @@ func TestSyncPendingJobs(t *testing.T) {
 		{
 			name: "missing build",
 			pj: kube.ProwJob{
-				ObjectMeta: kube.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Name: "blabla",
 				},
 				Spec: kube.ProwJobSpec{
@@ -454,7 +455,7 @@ func TestSyncPendingJobs(t *testing.T) {
 		{
 			name: "finished, success",
 			pj: kube.ProwJob{
-				ObjectMeta: kube.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Name: "winwin",
 				},
 				Spec: kube.ProwJobSpec{
@@ -475,7 +476,7 @@ func TestSyncPendingJobs(t *testing.T) {
 		{
 			name: "finished, failed",
 			pj: kube.ProwJob{
-				ObjectMeta: kube.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Name: "whatapity",
 				},
 				Spec: kube.ProwJobSpec{
