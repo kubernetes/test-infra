@@ -42,6 +42,7 @@ approve:
   - kubernetes/sig-release
   - kubernetes/steering
   - kubernetes/test-infra
+  - kubernetes/website
   implicit_self_approve: true
 - repos:
   - kubernetes-sig-testing
@@ -210,6 +211,7 @@ plugins:
   - approve
 
   kubernetes/website:
+  - approve
   - blunderbuss
 
   kubernetes:

@@ -57,6 +57,7 @@ tide:
     - kubernetes/sig-release
     - kubernetes/steering
     - kubernetes/test-infra
+    - kubernetes/website
     labels:
     - lgtm
     - approved
@@ -90,6 +91,7 @@ tide:
     - needs-ok-to-test
   merge_method:
     kubernetes/charts: squash
+    kubernetes/website: squash
   target_url: https://prow.k8s.io/tide.html
 
 presubmits:
