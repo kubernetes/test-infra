@@ -221,9 +221,17 @@
   },
   "ci-ingress-gce-upgrade-e2e": {
     "args": [
-      "true"
+      "--check-leaked-resources",
+      "--cluster=",
+      "--extract=ci/latest",
+      "--gcp-project-type=ingress-project",
+      "--gcp-zone=us-central1-f",
+      "--ginkgo-parallel",
+      "--provider=gce",
+      "--test_args=--ginkgo.focus=\\[Feature:IngressUpgrade\\]",
+      "--timeout=320m"
     ],
-    "scenario": "execute",
+    "scenario": "kubernetes_e2e",
     "sigOwners": [
       "sig-network"
     ]
