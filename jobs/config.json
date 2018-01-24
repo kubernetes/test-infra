@@ -11048,7 +11048,7 @@
   "pull-cadvisor-e2e": {
     "args": [
       "--env=BUILDER=true",
-      "./build/jenkins_e2e.sh"
+      "./build/prow_e2e.sh"
     ],
     "scenario": "execute",
     "sigOwners": [
