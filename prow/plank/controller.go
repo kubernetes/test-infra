@@ -27,6 +27,7 @@ import (
 
 	"github.com/bwmarrin/snowflake"
 	"github.com/sirupsen/logrus"
+	"k8s.io/api/core/v1"
 
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
@@ -44,7 +45,7 @@ type kubeClient interface {
 	ListProwJobs(string) ([]kube.ProwJob, error)
 	ReplaceProwJob(string, kube.ProwJob) (kube.ProwJob, error)
 
-	CreatePod(kube.Pod) (kube.Pod, error)
+	CreatePod(v1.Pod) (kube.Pod, error)
 	ListPods(string) ([]kube.Pod, error)
 	DeletePod(string) error
 }
@@ -254,7 +255,7 @@ func (c *Controller) terminateDupes(pjs []kube.ProwJob, pm map[string]kube.Pod) 
 			continue
 		}
 		cancelIndex := i
-		if pjs[prev].Status.StartTime.Before(pj.Status.StartTime) {
+		if (&pjs[prev].Status.StartTime).Before(&pj.Status.StartTime) {
 			cancelIndex = prev
 			dupes[n] = i
 		}

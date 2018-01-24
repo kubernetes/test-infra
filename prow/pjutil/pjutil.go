@@ -19,10 +19,10 @@ package pjutil
 
 import (
 	"fmt"
-	"time"
 
 	uuid "github.com/satori/go.uuid"
 	"github.com/sirupsen/logrus"
+	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"k8s.io/test-infra/prow/config"
@@ -41,7 +41,7 @@ func NewProwJob(spec kube.ProwJobSpec, labels map[string]string) kube.ProwJob {
 		},
 		Spec: spec,
 		Status: kube.ProwJobStatus{
-			StartTime: time.Now(),
+			StartTime: metav1.Now(),
 			State:     kube.TriggeredState,
 		},
 	}
@@ -138,7 +138,7 @@ func BatchSpec(p config.Presubmit, refs kube.Refs) kube.ProwJobSpec {
 }
 
 // ProwJobToPod converts a ProwJob to a Pod that will run the tests.
-func ProwJobToPod(pj kube.ProwJob, buildID string) (*kube.Pod, error) {
+func ProwJobToPod(pj kube.ProwJob, buildID string) (*v1.Pod, error) {
 	env, err := EnvForSpec(NewJobSpec(pj.Spec, buildID))
 	if err != nil {
 		return nil, err
@@ -150,7 +150,7 @@ func ProwJobToPod(pj kube.ProwJob, buildID string) (*kube.Pod, error) {
 	// Set environment variables in each container in the pod spec. We don't
 	// want to update the spec in place, since that will update the ProwJob
 	// spec. Instead, create a copy.
-	spec.Containers = []kube.Container{}
+	spec.Containers = []v1.Container{}
 	for i := range pj.Spec.PodSpec.Containers {
 		spec.Containers = append(spec.Containers, pj.Spec.PodSpec.Containers[i])
 		spec.Containers[i].Name = fmt.Sprintf("%s-%d", pj.ObjectMeta.Name, i)
@@ -162,8 +162,8 @@ func ProwJobToPod(pj kube.ProwJob, buildID string) (*kube.Pod, error) {
 	}
 	podLabels[kube.CreatedByProw] = "true"
 	podLabels[kube.ProwJobTypeLabel] = string(pj.Spec.Type)
-	return &kube.Pod{
-		ObjectMeta: kube.ObjectMeta{
+	return &v1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:   pj.ObjectMeta.Name,
 			Labels: podLabels,
 			Annotations: map[string]string{
@@ -176,10 +176,10 @@ func ProwJobToPod(pj kube.ProwJob, buildID string) (*kube.Pod, error) {
 
 // kubeEnv transforms a mapping of environment variables
 // into their serialized form for a PodSpec
-func kubeEnv(environment map[string]string) []kube.EnvVar {
-	var kubeEnvironment []kube.EnvVar
+func kubeEnv(environment map[string]string) []v1.EnvVar {
+	var kubeEnvironment []v1.EnvVar
 	for key, value := range environment {
-		kubeEnvironment = append(kubeEnvironment, kube.EnvVar{
+		kubeEnvironment = append(kubeEnvironment, v1.EnvVar{
 			Name:  key,
 			Value: value,
 		})
@@ -230,7 +230,7 @@ func GetLatestProwJobs(pjs []kube.ProwJob, jobType kube.ProwJobType) map[string]
 			continue
 		}
 		name := j.Spec.Job
-		if j.Status.StartTime.After(latestJobs[name].Status.StartTime) {
+		if j.Status.StartTime.After(latestJobs[name].Status.StartTime.Time) {
 			latestJobs[name] = j
 		}
 	}

@@ -20,6 +20,8 @@ import (
 	"testing"
 	"time"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/kube"
 )
@@ -127,10 +129,10 @@ func TestSync(t *testing.T) {
 					Job:  tc.jobName,
 				},
 				Status: kube.ProwJobStatus{
-					StartTime: now.Add(-tc.jobStartTimeAgo),
+					StartTime: metav1.NewTime(now.Add(-tc.jobStartTimeAgo)),
 				},
 			}}
-			complete := now.Add(-time.Millisecond)
+			complete := metav1.NewTime(now.Add(-time.Millisecond))
 			if tc.jobComplete {
 				jobs[0].Status.CompletionTime = &complete
 			}
@@ -191,10 +193,10 @@ func TestSyncCron(t *testing.T) {
 					Job:  tc.jobName,
 				},
 				Status: kube.ProwJobStatus{
-					StartTime: now.Add(-time.Hour),
+					StartTime: metav1.NewTime(now.Add(-time.Hour)),
 				},
 			}}
-			complete := now.Add(-time.Millisecond)
+			complete := metav1.NewTime(now.Add(-time.Millisecond))
 			if tc.jobComplete {
 				jobs[0].Status.CompletionTime = &complete
 			}
