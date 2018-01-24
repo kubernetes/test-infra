@@ -346,6 +346,12 @@
   revision = "a83829b6f1293c91addabc89d0571c246397bbf4"
 
 [[projects]]
+  branch = "master"
+  name = "k8s.io/api"
+  packages = ["core/v1"]
+  revision = "fbe336854453ac8e27bffe14e1964555245cbd05"
+
+[[projects]]
   branch = "release-1.9"
   name = "k8s.io/apimachinery"
   packages = ["pkg/api/resource","pkg/apis/meta/v1","pkg/conversion","pkg/conversion/queryparams","pkg/fields","pkg/labels","pkg/runtime","pkg/runtime/schema","pkg/selection","pkg/types","pkg/util/clock","pkg/util/errors","pkg/util/intstr","pkg/util/json","pkg/util/net","pkg/util/runtime","pkg/util/sets","pkg/util/validation","pkg/util/validation/field","pkg/util/wait","pkg/util/yaml","pkg/watch","third_party/forked/golang/reflect"]
@@ -371,6 +377,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "95baadaa0a78721fde136774c2a9595c70d300dbc7f6727991bd4764a71a7b46"
+  inputs-digest = "98df8c0609f66f2834f893f5a97ace24eab3ee4eabe57833dbb67447cdb5d812"
   solver-name = "gps-cdcl"
   solver-version = 1
