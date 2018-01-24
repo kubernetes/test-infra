@@ -127,7 +127,7 @@ func (fr fakeRepo) Approvers(path string) sets.String {
 func (fr fakeRepo) LeafApprovers(path string) sets.String {
 	return fr.leafApprovers[path]
 }
-func (fr fakeRepo) FindApproverOwnersForPath(path string) string {
+func (fr fakeRepo) FindApproverOwnersForFile(path string) string {
 	return fr.approverOwners[path]
 }
 func (fr fakeRepo) IsNoParentOwners(path string) bool {

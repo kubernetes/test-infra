@@ -82,7 +82,7 @@ func (foc *fakeOwnersClient) LeafReviewers(path string) sets.String {
 	return foc.leafReviewers[path]
 }
 
-func (foc *fakeOwnersClient) FindReviewersOwnersForPath(path string) string {
+func (foc *fakeOwnersClient) FindReviewersOwnersForFile(path string) string {
 	return foc.owners[path]
 }
 
