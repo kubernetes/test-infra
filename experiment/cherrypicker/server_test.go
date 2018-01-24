@@ -303,13 +303,6 @@ func TestCherryPickPR(t *testing.T) {
 	}
 
 	botName := "ci-robot"
-	expectedRepo := "foo/bar"
-	expectedTitle := "[release-1.5] This is a fix for Y"
-	expectedBody := "This is an automated cherry-pick of #2"
-	expectedBase := "release-1.5"
-	expectedHead := fmt.Sprintf(botName+":"+cherryPickBranchFmt, 2, expectedBase)
-	expected := fmt.Sprintf(expectedFmt, expectedRepo, expectedTitle, expectedBody, expectedHead, expectedBase, true)
-
 	s := &Server{
 		botName:    botName,
 		gc:         c,
@@ -325,14 +318,33 @@ func TestCherryPickPR(t *testing.T) {
 	if err := s.handlePullRequest(logrus.NewEntry(logrus.StandardLogger()), pr); err != nil {
 		t.Errorf("unexpected error: %v", err)
 	}
-	if ghc.prs[0] != expected {
-		t.Errorf("Expected (%d):\n%s\nGot (%d):\n%+v\n", len(expected), expected, len(ghc.prs[0]), ghc.prs[0])
+
+	var expectedFn = func(branch string) string {
+		expectedRepo := "foo/bar"
+		expectedTitle := fmt.Sprintf("[%s] This is a fix for Y", branch)
+		expectedBody := "This is an automated cherry-pick of #2"
+		expectedHead := fmt.Sprintf(botName+":"+cherryPickBranchFmt, 2, branch)
+		return fmt.Sprintf(expectedFmt, expectedRepo, expectedTitle, expectedBody, expectedHead, branch, true)
 	}
-	expectedTitle = "[release-1.6] This is a fix for Y"
-	expectedBase = "release-1.6"
-	expectedHead = fmt.Sprintf(botName+":"+cherryPickBranchFmt, 2, expectedBase)
-	expected = fmt.Sprintf(expectedFmt, expectedRepo, expectedTitle, expectedBody, expectedHead, expectedBase, true)
-	if ghc.prs[1] != expected {
-		t.Errorf("Expected (%d):\n%s\nGot (%d):\n%+v\n", len(expected), expected, len(ghc.prs[1]), ghc.prs[1])
+
+	if len(ghc.prs) != 2 {
+		t.Fatalf("Expected %d PRs, got %d", 2, len(ghc.prs))
+	}
+
+	expectedBranches := []string{"release-1.5", "release-1.6"}
+	seenBranches := make(map[string]struct{})
+	for _, pr := range ghc.prs {
+		if pr != expectedFn("release-1.5") && pr != expectedFn("release-1.6") {
+			t.Errorf("Unexpected PR:\n%s\nExpected to target one of the following branches: %v", pr, expectedBranches)
+		}
+		if pr == expectedFn("release-1.5") {
+			seenBranches["release-1.5"] = struct{}{}
+		}
+		if pr == expectedFn("release-1.6") {
+			seenBranches["release-1.6"] = struct{}{}
+		}
+	}
+	if len(seenBranches) != 2 {
+		t.Fatalf("Expected to see PRs for %d branches, got %d (%v)", 2, len(seenBranches), seenBranches)
 	}
 }
