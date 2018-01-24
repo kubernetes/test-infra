@@ -14,6 +14,7 @@ go_test(
     ],
     embed = [":go_default_library"],
     importpath = "k8s.io/test-infra/prow/kube",
+    deps = ["//vendor/k8s.io/api/core/v1:go_default_library"],
 )
 
 go_library(
