@@ -19,6 +19,10 @@ triggers:
   trusted_org: containerd
   join_org_url: "https://github.com/containerd/containerd/blob/master/MAINTAINERS"
 
+owners:
+  mdyamlrepos:
+  - kubernetes/website
+
 approve:
 - repos:
   - kubernetes/charts
@@ -34,9 +38,11 @@ approve:
   - kubernetes/kubectl
   - kubernetes/kubernetes-template-project
   - kubernetes/minikube
+  - kubernetes/repo-infra
   - kubernetes/sig-release
   - kubernetes/steering
   - kubernetes/test-infra
+  - kubernetes/website
   implicit_self_approve: true
 - repos:
   - kubernetes-sig-testing
@@ -82,6 +88,12 @@ heart:
 slack:
   mergewarnings:
   - repos:
+    - kubernetes/community
+    channels:
+    - sig-contribex
+    whitelist:
+    - k8s-ci-robot
+  - repos:
     - kubernetes/kubernetes
     channels:
     - kubernetes-dev
@@ -111,7 +123,7 @@ plugins:
   google/cadvisor:
   - trigger
 
-  google/kubeflow:  
+  google/kubeflow:
   - lgtm
   - size
   - trigger
@@ -172,6 +184,7 @@ plugins:
   kubernetes/kubernetes:
   - approve
   - blockade
+  - blunderbuss
   - docs-no-retest
   - release-note
   - require-sig
@@ -181,6 +194,9 @@ plugins:
   - approve
 
   kubernetes/minikube:
+  - approve
+
+  kubernetes/repo-infra:
   - approve
 
   kubernetes/sig-release:
@@ -193,6 +209,10 @@ plugins:
   - trigger
   - config-updater
   - approve
+
+  kubernetes/website:
+  - approve
+  - blunderbuss
 
   kubernetes:
   - assign

@@ -24,31 +24,10 @@ set -o nounset
 set -o errexit
 set -o pipefail
 
-# Output every go_library rule in the repo
-find-go-libraries() {
-  # Excluding generated //foo:go_default_library~library~
-  bazel query \
-    'kind("go_library rule", //...)' \
-    except 'attr("name", ".*~library~", //...)'
-}
-
-# Output the target if it has only one dependency (itself)
-is-unused() {
-  local n
-  n="$(bazel query "rdeps(//..., \"$1\", 1)" | wc -l)"
-  if [[ "$n" -gt "1" ]]; then  # Always counts itself
-    echo "LIVE: $1" >&2
-    return 0
-  fi
-  echo "DEAD: $1" >&2
-  echo "$1"
-}
-
-# Filter down to unused targets
-filter-to-unused() {
-  for i in "$@"; do
-    is-unused "$i"
-  done
+unused-go-libraries() {
+  # Find all the go_library rules in vendor except those that something outside
+  # of vendor eventually depends on.
+  bazel query 'kind("go_library rule", //vendor/... -deps(//... -//vendor/...))'
 }
 
 # Output this:source.go that:file.txt sources of //this //that targets
@@ -101,7 +80,6 @@ builds() {
   done
 }
 
-
 # Remove lines with //something:all-srcs from files
 # Usage:
 #   remove-all-srcs <targets-to-remove> <remove-from-packages>
@@ -116,17 +94,18 @@ remove_unused_go_libraries_finished=
 # Remove every go_library() target from workspace with no one depending on it.
 remove-unused-go-libraries() {
   local libraries deps
-  libraries="$(find-go-libraries | sort -u)"
-  deps="$(filter-to-unused $libraries)"
+  deps="$(unused-go-libraries)"
   if [[ -z "$deps" ]]; then
     echo "All remaining go libraries are alive" >&2
     remove_unused_go_libraries_finished=true
     return 0
-  elif [[ "$1" == "--check" || "$1" != "--fix" ]]; then
-    echo "Found unused libraries:" >&2
-    for d in $deps; do
-      echo $d
-    done
+  fi
+  echo "Unused libraries:" >&2
+  for d in $deps; do
+    echo "  DEAD: $d" >&2
+  done
+  if [[ "$1" == "--check" || "$1" != "--fix" ]]; then
+    echo "Correct with $0 --fix" >&2
     exit 1
   else
     echo Cleaning up unused dependencies... >&2

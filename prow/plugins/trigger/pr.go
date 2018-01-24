@@ -158,7 +158,7 @@ func trustedPullRequest(ghc githubClient, pr github.PullRequest, trustedOrg stri
 	for _, comment := range comments {
 		commentAuthor := comment.User.Login
 		// Skip comments: by the PR author, or by bot, or not matching "/ok-to-test".
-		if commentAuthor == author || commentAuthor == botName || !okToTest.MatchString(comment.Body) {
+		if commentAuthor == author || commentAuthor == botName || !okToTestRe.MatchString(comment.Body) {
 			continue
 		}
 		// Ensure that the commenter is in the org.

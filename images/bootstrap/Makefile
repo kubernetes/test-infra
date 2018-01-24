@@ -18,7 +18,8 @@ TAG = $(shell date +v%Y%m%d)-$(shell git describe --tags --always --dirty)
 all: build
 
 build:
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o ./barnacle/barnacle ./barnacle/
+	bazel build //images/bootstrap/barnacle:barnacle
+	cp ./../../bazel-bin/images/bootstrap/barnacle/linux_amd64_stripped/barnacle ./barnacle/barnacle
 	docker build --build-arg IMAGE_ARG=$(IMG):$(TAG) -t $(IMG):$(TAG) .
 	rm ./barnacle/barnacle
 	docker tag $(IMG):$(TAG) $(IMG):latest

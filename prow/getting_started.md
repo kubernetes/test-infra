@@ -36,10 +36,13 @@ kubectl create secret generic hmac-token --from-file=hmac=/path/to/hook/secret
 kubectl create secret generic oauth-token --from-file=oauth=/path/to/oauth/secret
 ```
 
-Note that Github events triggered by the account above are ignored by some
-prow plugins. It is prudent to use a different bot account for performing
-merges or rerunning tests, whether the deployment that drives the second
-account is `tide` or the `submit-queue` munger.
+#### Bot account
+
+The bot account used by prow must be granted owner level access to the Github
+orgs that prow will operate on. Note that events triggered by this account are
+ignored by some prow plugins. It is prudent to use a different bot account for
+other Github automation that prow should interact with to prevent events from
+being ignored unjustly.
 
 ## Run the prow components in the cluster
 

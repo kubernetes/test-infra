@@ -1,6 +1,10 @@
 "use strict";
 
 window.onload = function() {
+    var infoDiv = document.getElementById("info-div");
+    var infoH2 = infoDiv.getElementsByTagName("h4")[0];
+    infoH2.addEventListener("click", infoToggle(infoDiv.getElementsByTagName("span")[0]), true);
+
     redraw();
 };
 
@@ -9,20 +13,32 @@ document.addEventListener("DOMContentLoaded", function(event) {
 });
 
 function configure() {
-    if(typeof branding === undefined){
+    if(!branding){
         return;
     }
-    if (branding.logo !== '') {
+    if (branding.logo) {
         document.getElementById('img').src = branding.logo;
     }
-    if (branding.favicon !== '') {
+    if (branding.favicon) {
         document.getElementById('favicon').href = branding.favicon;
     }
-    if (branding.background_color !== '') {
+    if (branding.background_color) {
         document.body.style.background = branding.background_color;
     }
-    if (branding.header_color !== '') {
+    if (branding.header_color) {
         document.getElementsByTagName('header')[0].style.backgroundColor = branding.header_color;
+    }
+}
+
+function infoToggle(toToggle) {
+    return function(event) {
+        if (toToggle.className == "hidden") {
+            toToggle.className = "";
+            event.target.textContent = "Merge Requirements: (click to collapse)";
+        } else {
+            toToggle.className = "hidden";
+            event.target.textContent = "Merge Requirements: (click to expand)";
+        }
     }
 }
 

@@ -235,7 +235,7 @@ that matches `trigger` will suffice. This is useful if you want to make one
 command that reruns all jobs.
 
 
-### Job Evironment Variables
+### Job Environment Variables
 
 Prow will expose the following environment variables to your job. If the job
 runs on Kubernetes, the variables will be injected into every container in

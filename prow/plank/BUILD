@@ -18,6 +18,7 @@ go_test(
         "//prow/pjutil:go_default_library",
         "//vendor/github.com/bwmarrin/snowflake:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
     ],
 )
 

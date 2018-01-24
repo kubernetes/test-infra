@@ -943,6 +943,7 @@ testSuites:
     - --test_args=--ginkgo.focus=\[Flaky\] --ginkgo.skip=\[Feature:.+\] --minStartupPods=8
   ingress:
     args:
+    - --gcp-project-type=ingress-project
     - --timeout=90m
     - --test_args=--ginkgo.focus=\[Feature:Ingress\] --minStartupPods=8
   reboot:
@@ -1008,7 +1009,7 @@ nodeImages:
     - --node-args=--image-project=ubuntu-os-gke-cloud-devel
   ubuntudev2:
     args:
-    - --node-args=--images=ubuntu-gke-1604-xenial-v201712121
+    - --node-args=--images=ubuntu-gke-1604-xenial-v20180117-1
     - --node-args=--image-project=ubuntu-os-gke-cloud-devel
   ubuntustable1:
     args:
@@ -1019,7 +1020,7 @@ nodeK8sVersions:
   dev:
     args:
     - --repo=k8s.io/kubernetes=master
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20171220-29cb083c9-master
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
   beta:
     args:
     - --repo=k8s.io/kubernetes=release-1.9
@@ -1027,15 +1028,15 @@ nodeK8sVersions:
   stable1:
     args:
     - --repo=k8s.io/kubernetes=release-1.8
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20171218-a18c352b4-1.8
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-1.8
   stable2:
     args:
     - --repo=k8s.io/kubernetes=release-1.7
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20171218-a18c352b4-1.7
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-1.7
   stable3:
     args:
     - --repo=k8s.io/kubernetes=release-1.6
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20171218-a18c352b4-1.6
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-1.6
 
 nodeTestSuites:
   default:

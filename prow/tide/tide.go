@@ -49,10 +49,11 @@ type kubeClient interface {
 }
 
 type githubClient interface {
-	GetRef(string, string, string) (string, error)
 	CreateStatus(string, string, string, github.Status) error
-	Query(context.Context, interface{}, map[string]interface{}) error
+	GetCombinedStatus(org, repo, ref string) (*github.CombinedStatus, error)
+	GetRef(string, string, string) (string, error)
 	Merge(string, string, int, github.MergeDetails) error
+	Query(context.Context, interface{}, map[string]interface{}) error
 }
 
 // Controller knows how to sync PRs and PJs.
@@ -137,10 +138,18 @@ func expectedStatus(pr PullRequest, pool map[string]map[int]PullRequest) (string
 func (c *Controller) setStatuses(all, pool []PullRequest) {
 	poolM := byRepoAndNumber(pool)
 	for _, pr := range all {
+		log := c.logger.WithFields(pr.logFields())
+
+		contexts, err := headContexts(log, c.ghc, &pr)
+		if err != nil {
+			log.WithError(err).Error("Getting head commit status contexts, skipping...")
+			continue
+		}
+
 		wantState, wantDesc := expectedStatus(pr, poolM)
 		var actualState githubql.StatusState
 		var actualDesc string
-		for _, ctx := range pr.Commits.Nodes[0].Commit.Status.Contexts {
+		for _, ctx := range contexts {
 			if string(ctx.Context) == statusContext {
 				actualState = ctx.State
 				actualDesc = string(ctx.Description)
@@ -150,19 +159,17 @@ func (c *Controller) setStatuses(all, pool []PullRequest) {
 			if err := c.ghc.CreateStatus(
 				string(pr.Repository.Owner.Login),
 				string(pr.Repository.Name),
-				pr.SHA(),
+				string(pr.HeadRefOID),
 				github.Status{
 					Context:     statusContext,
 					State:       wantState,
 					Description: wantDesc,
 					TargetURL:   c.ca.Config().Tide.TargetURL,
 				}); err != nil {
-				c.logger.WithError(err).Errorf(
-					"Failed to set status context for %s/%s#%d sha: %s.",
-					string(pr.Repository.Owner.Login),
-					string(pr.Repository.Name),
-					int(pr.Number),
-					pr.SHA(),
+				log.WithError(err).Errorf(
+					"Failed to set status context from %q to %q.",
+					string(actualState),
+					wantState,
 				)
 			}
 		}
@@ -246,8 +253,15 @@ func toSimpleState(s kube.ProwJobState) simpleState {
 
 // isPassingTests returns whether or not all contexts set on the PR except for
 // the tide pool context are passing.
-func isPassingTests(pr PullRequest) bool {
-	for _, ctx := range pr.Commits.Nodes[0].Commit.Status.Contexts {
+func isPassingTests(log *logrus.Entry, ghc githubClient, pr PullRequest) bool {
+	log = log.WithFields(pr.logFields())
+	contexts, err := headContexts(log, ghc, &pr)
+	if err != nil {
+		log.WithError(err).Error("Getting head commit status contexts.")
+		// If we can't get the status of the commit, assume that it is failing.
+		return false
+	}
+	for _, ctx := range contexts {
 		if string(ctx.Context) == statusContext {
 			continue
 		}
@@ -258,7 +272,7 @@ func isPassingTests(pr PullRequest) bool {
 	return true
 }
 
-func pickSmallestPassingNumber(prs []PullRequest) (bool, PullRequest) {
+func pickSmallestPassingNumber(log *logrus.Entry, ghc githubClient, prs []PullRequest) (bool, PullRequest) {
 	smallestNumber := -1
 	var smallestPR PullRequest
 	for _, pr := range prs {
@@ -268,7 +282,7 @@ func pickSmallestPassingNumber(prs []PullRequest) (bool, PullRequest) {
 		if len(pr.Commits.Nodes) < 1 {
 			continue
 		}
-		if !isPassingTests(pr) {
+		if !isPassingTests(log, ghc, pr) {
 			continue
 		}
 		smallestNumber = int(pr.Number)
@@ -313,7 +327,7 @@ func accumulateBatch(presubmits []string, prs []PullRequest, pjs []kube.ProwJob)
 				validPulls: true,
 			}
 			for _, pull := range pj.Spec.Refs.Pulls {
-				if pr, ok := prNums[pull.Number]; ok && pr.SHA() == pull.SHA {
+				if pr, ok := prNums[pull.Number]; ok && string(pr.HeadRefOID) == pull.SHA {
 					states[ref].prs = append(states[ref].prs, pr)
 				} else {
 					states[ref].validPulls = false
@@ -421,10 +435,10 @@ func (c *Controller) pickBatch(sp subpool) ([]PullRequest, error) {
 		if i == 5 {
 			break
 		}
-		if !isPassingTests(pr) {
+		if !isPassingTests(c.logger, c.ghc, pr) {
 			continue
 		}
-		if ok, err := r.Merge(pr.SHA()); err != nil {
+		if ok, err := r.Merge(string(pr.HeadRefOID)); err != nil {
 			return nil, err
 		} else if ok {
 			res = append(res, pr)
@@ -436,7 +450,7 @@ func (c *Controller) pickBatch(sp subpool) ([]PullRequest, error) {
 func (c *Controller) mergePRs(sp subpool, prs []PullRequest) error {
 	for _, pr := range prs {
 		if err := c.ghc.Merge(sp.org, sp.repo, int(pr.Number), github.MergeDetails{
-			SHA:         pr.SHA(),
+			SHA:         string(pr.HeadRefOID),
 			MergeMethod: string(c.ca.Config().Tide.MergeMethod(sp.org, sp.repo)),
 		}); err != nil {
 			if _, ok := err.(github.ModifiedHeadError); ok {
@@ -474,7 +488,7 @@ func (c *Controller) trigger(sp subpool, prs []PullRequest) error {
 				kube.Pull{
 					Number: int(pr.Number),
 					Author: string(pr.Author.Login),
-					SHA:    pr.SHA(),
+					SHA:    string(pr.HeadRefOID),
 				},
 			)
 		}
@@ -499,13 +513,13 @@ func (c *Controller) takeAction(sp subpool, batchPending, successes, pendings, n
 	// Do not merge PRs while waiting for a batch to complete. We don't want to
 	// invalidate the old batch result.
 	if len(successes) > 0 && len(batchPending) == 0 {
-		if ok, pr := pickSmallestPassingNumber(successes); ok {
+		if ok, pr := pickSmallestPassingNumber(c.logger, c.ghc, successes); ok {
 			return Merge, []PullRequest{pr}, c.mergePRs(sp, []PullRequest{pr})
 		}
 	}
 	// If we have no serial jobs pending or successful, trigger one.
 	if len(nones) > 0 && len(pendings) == 0 && len(successes) == 0 {
-		if ok, pr := pickSmallestPassingNumber(nones); ok {
+		if ok, pr := pickSmallestPassingNumber(c.logger, c.ghc, nones); ok {
 			return Trigger, []PullRequest{pr}, c.trigger(sp, []PullRequest{pr})
 		}
 	}
@@ -643,11 +657,7 @@ type PullRequest struct {
 		Name   githubql.String
 		Prefix githubql.String
 	}
-	HeadRef struct {
-		Target struct {
-			OID githubql.String `graphql:"oid"`
-		}
-	}
+	HeadRefOID githubql.String `graphql:"headRefOid"`
 	Repository struct {
 		Name          githubql.String
 		NameWithOwner githubql.String
@@ -659,7 +669,12 @@ type PullRequest struct {
 		Nodes []struct {
 			Commit Commit
 		}
-	} `graphql:"commits(last: 1)"`
+		// Request the 'last' 4 commits hoping that one of them is the logically 'last'
+		// commit with OID matching HeadRefOID. If we don't find it we have to use an
+		// an additional API token. (see the 'headContexts' func for details)
+		// We can't raise this too much or we could hit the limit of 50,000 nodes
+		// per query: https://developer.github.com/v4/guides/resource-limitations/#node-limit
+	} `graphql:"commits(last: 4)"`
 }
 
 type Commit struct {
@@ -691,19 +706,52 @@ type searchQuery struct {
 	} `graphql:"search(type: ISSUE, first: 100, after: $searchCursor, query: $query)"`
 }
 
-// SHA tries to return the sha of the PR's head commit.
-//
-// Previously Tide got the sha from HeadRef.Target.OID field, but we cannot read
-// this field if the forked repo has been deleted so we switched to using the
-// 'last' commit. Unfortunately the 'last' commit is determined by author date
-// not commit date so if commits are reordered non-chronologically, tide tests
-// the wrong commit and fails to merge the PR.
-// This function uses the HeadRef if it exists and falls back to the potentially
-// mis-ordered commits if it doesn't. This should only return the wrong sha on
-// PRs with mis-ordered commits where the forked repo has been deleted.
-func (pr *PullRequest) SHA() string {
-	if oid := strings.TrimSpace(string(pr.HeadRef.Target.OID)); oid != "" {
-		return oid
+func (pr *PullRequest) logFields() logrus.Fields {
+	return logrus.Fields{
+		"org":  string(pr.Repository.Owner.Login),
+		"repo": string(pr.Repository.Name),
+		"pr":   int(pr.Number),
+		"sha":  string(pr.HeadRefOID),
 	}
-	return string(pr.Commits.Nodes[0].Commit.OID)
+}
+
+// headContexts gets the status contexts for the commit with OID == pr.HeadRefOID
+//
+// First, we try to get this value from the commits we got with the PR query.
+// Unfortunately the 'last' commit ordering is determined by author date
+// not commit date so if commits are reordered non-chronologically on the PR
+// branch the 'last' commit isn't necessarily the logically last commit.
+// We list multiple commits with the query to increase our chance of success,
+// but if we don't find the head commit we have to ask Github for it
+// specifically (this costs an API token).
+func headContexts(log *logrus.Entry, ghc githubClient, pr *PullRequest) ([]Context, error) {
+	for _, node := range pr.Commits.Nodes {
+		if node.Commit.OID == pr.HeadRefOID {
+			return node.Commit.Status.Contexts, nil
+		}
+	}
+	// We didn't get the head commit from the query (the commits must not be
+	// logically ordered) so we need to specifically ask Github for the status
+	// and coerce it to a graphql type.
+	org := string(pr.Repository.Owner.Login)
+	repo := string(pr.Repository.Name)
+	// Log this event so we can tune the number of commits we list to minimize this.
+	log.Warnf("'last' %d commits didn't contain logical last commit. Querying Github...", len(pr.Commits.Nodes))
+	combined, err := ghc.GetCombinedStatus(org, repo, string(pr.HeadRefOID))
+	if err != nil {
+		return nil, fmt.Errorf("failed to get the combined status: %v", err)
+	}
+
+	contexts := make([]Context, 0, len(combined.Statuses))
+	for _, status := range combined.Statuses {
+		contexts = append(
+			contexts,
+			Context{
+				Context:     githubql.String(status.Context),
+				Description: githubql.String(status.Description),
+				State:       githubql.StatusState(strings.ToUpper(status.State)),
+			},
+		)
+	}
+	return contexts, nil
 }

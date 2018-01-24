@@ -25,6 +25,8 @@ import (
 	"strings"
 	"testing"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
 )
@@ -112,6 +114,47 @@ func TestConfigSecurityJobsMatch(t *testing.T) {
 	sp := c.Presubmits["kubernetes-security/kubernetes"]
 	if len(kp) != len(sp) {
 		t.Fatalf("length of kubernetes/kubernetes presubmits %d does not equal length of kubernetes-security/kubernetes presubmits %d", len(kp), len(sp))
+	}
+}
+
+// Unit test jobs outside kubernetes-security do not use the security cluster
+// and that jobs inside kubernetes-security DO
+func TestConfigSecurityClusterRestricted(t *testing.T) {
+	for repo, jobs := range c.Presubmits {
+		if strings.HasPrefix(repo, "kubernetes-security/") {
+			for _, job := range jobs {
+				if job.Agent != "jenkins" && job.Cluster != "security" {
+					t.Fatalf("Jobs in kubernetes-security/* should use the security cluster! %s", job.Name)
+				}
+			}
+		} else {
+			for _, job := range jobs {
+				if job.Cluster == "security" {
+					t.Fatalf("Jobs not in kubernetes-security/* should not use the security cluster! %s", job.Name)
+				}
+			}
+		}
+	}
+	for repo, jobs := range c.Postsubmits {
+		if strings.HasPrefix(repo, "kubernetes-security/") {
+			for _, job := range jobs {
+				if job.Agent != "jenkins" && job.Cluster != "security" {
+					t.Fatalf("Jobs in kubernetes-security/* should use the security cluster! %s", job.Name)
+				}
+			}
+		} else {
+			for _, job := range jobs {
+				if job.Cluster == "security" {
+					t.Fatalf("Jobs not in kubernetes-security/* should not use the security cluster! %s", job.Name)
+				}
+			}
+		}
+	}
+	// TODO(bentheelder): this will need to be more complex if we ever add k-s periodic
+	for _, job := range c.AllPeriodics() {
+		if job.Cluster == "security" {
+			t.Fatalf("Jobs not in kubernetes-security/* should not use the security cluster! %s", job.Name)
+		}
 	}
 }
 
@@ -590,7 +633,7 @@ func TestURLTemplate(t *testing.T) {
 
 	for _, tc := range testcases {
 		var pj = kube.ProwJob{
-			ObjectMeta: kube.ObjectMeta{Name: tc.name},
+			ObjectMeta: metav1.ObjectMeta{Name: tc.name},
 			Spec: kube.ProwJobSpec{
 				Type: tc.jobType,
 				Job:  tc.job,

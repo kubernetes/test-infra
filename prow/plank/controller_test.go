@@ -28,6 +28,7 @@ import (
 
 	"github.com/bwmarrin/snowflake"
 	"github.com/sirupsen/logrus"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
@@ -193,7 +194,7 @@ func TestTerminateDupes(t *testing.T) {
 
 			pjs: []kube.ProwJob{
 				{
-					ObjectMeta: kube.ObjectMeta{Name: "newest"},
+					ObjectMeta: metav1.ObjectMeta{Name: "newest"},
 					Spec: kube.ProwJobSpec{
 						Type: kube.PresubmitJob,
 						Job:  "j1",
@@ -204,7 +205,7 @@ func TestTerminateDupes(t *testing.T) {
 					},
 				},
 				{
-					ObjectMeta: kube.ObjectMeta{Name: "old"},
+					ObjectMeta: metav1.ObjectMeta{Name: "old"},
 					Spec: kube.ProwJobSpec{
 						Type: kube.PresubmitJob,
 						Job:  "j1",
@@ -215,7 +216,7 @@ func TestTerminateDupes(t *testing.T) {
 					},
 				},
 				{
-					ObjectMeta: kube.ObjectMeta{Name: "older"},
+					ObjectMeta: metav1.ObjectMeta{Name: "older"},
 					Spec: kube.ProwJobSpec{
 						Type: kube.PresubmitJob,
 						Job:  "j1",
@@ -226,7 +227,7 @@ func TestTerminateDupes(t *testing.T) {
 					},
 				},
 				{
-					ObjectMeta: kube.ObjectMeta{Name: "complete"},
+					ObjectMeta: metav1.ObjectMeta{Name: "complete"},
 					Spec: kube.ProwJobSpec{
 						Type: kube.PresubmitJob,
 						Job:  "j1",
@@ -238,7 +239,7 @@ func TestTerminateDupes(t *testing.T) {
 					},
 				},
 				{
-					ObjectMeta: kube.ObjectMeta{Name: "newest_j2"},
+					ObjectMeta: metav1.ObjectMeta{Name: "newest_j2"},
 					Spec: kube.ProwJobSpec{
 						Type: kube.PresubmitJob,
 						Job:  "j2",
@@ -249,7 +250,7 @@ func TestTerminateDupes(t *testing.T) {
 					},
 				},
 				{
-					ObjectMeta: kube.ObjectMeta{Name: "old_j2"},
+					ObjectMeta: metav1.ObjectMeta{Name: "old_j2"},
 					Spec: kube.ProwJobSpec{
 						Type: kube.PresubmitJob,
 						Job:  "j2",
@@ -260,7 +261,7 @@ func TestTerminateDupes(t *testing.T) {
 					},
 				},
 				{
-					ObjectMeta: kube.ObjectMeta{Name: "old_j3"},
+					ObjectMeta: metav1.ObjectMeta{Name: "old_j3"},
 					Spec: kube.ProwJobSpec{
 						Type: kube.PresubmitJob,
 						Job:  "j3",
@@ -271,7 +272,7 @@ func TestTerminateDupes(t *testing.T) {
 					},
 				},
 				{
-					ObjectMeta: kube.ObjectMeta{Name: "new_j3"},
+					ObjectMeta: metav1.ObjectMeta{Name: "new_j3"},
 					Spec: kube.ProwJobSpec{
 						Type: kube.PresubmitJob,
 						Job:  "j3",
@@ -293,7 +294,7 @@ func TestTerminateDupes(t *testing.T) {
 			allowCancellations: true,
 			pjs: []kube.ProwJob{
 				{
-					ObjectMeta: kube.ObjectMeta{Name: "newest"},
+					ObjectMeta: metav1.ObjectMeta{Name: "newest"},
 					Spec: kube.ProwJobSpec{
 						Type: kube.PresubmitJob,
 						Job:  "j1",
@@ -304,7 +305,7 @@ func TestTerminateDupes(t *testing.T) {
 					},
 				},
 				{
-					ObjectMeta: kube.ObjectMeta{Name: "old"},
+					ObjectMeta: metav1.ObjectMeta{Name: "old"},
 					Spec: kube.ProwJobSpec{
 						Type: kube.PresubmitJob,
 						Job:  "j1",
@@ -410,7 +411,7 @@ func TestSyncTriggeredJobs(t *testing.T) {
 		{
 			name: "start new pod",
 			pj: kube.ProwJob{
-				ObjectMeta: kube.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Name: "blabla",
 				},
 				Spec: kube.ProwJobSpec{
@@ -492,7 +493,7 @@ func TestSyncTriggeredJobs(t *testing.T) {
 		{
 			name: "trusted pod with a max concurrency of 1 (can start)",
 			pj: kube.ProwJob{
-				ObjectMeta: kube.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Name: "some",
 				},
 				Spec: kube.ProwJobSpec{
@@ -527,7 +528,7 @@ func TestSyncTriggeredJobs(t *testing.T) {
 		{
 			name: "do not exceed global maxconcurrency",
 			pj: kube.ProwJob{
-				ObjectMeta: kube.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Name: "beer",
 				},
 				Spec: kube.ProwJobSpec{
@@ -545,7 +546,7 @@ func TestSyncTriggeredJobs(t *testing.T) {
 		{
 			name: "global maxconcurrency allows new jobs when possible",
 			pj: kube.ProwJob{
-				ObjectMeta: kube.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Name: "beer",
 				},
 				Spec: kube.ProwJobSpec{
@@ -614,7 +615,7 @@ func TestSyncTriggeredJobs(t *testing.T) {
 		{
 			name: "running pod, failed prowjob update",
 			pj: kube.ProwJob{
-				ObjectMeta: kube.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Name: "foo",
 				},
 				Spec: kube.ProwJobSpec{
@@ -753,7 +754,7 @@ func TestSyncPendingJob(t *testing.T) {
 		{
 			name: "reset when pod goes missing",
 			pj: kube.ProwJob{
-				ObjectMeta: kube.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Name: "boop-41",
 				},
 				Spec: kube.ProwJobSpec{
@@ -772,7 +773,7 @@ func TestSyncPendingJob(t *testing.T) {
 		{
 			name: "delete pod in unknown state",
 			pj: kube.ProwJob{
-				ObjectMeta: kube.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Name: "boop-41",
 				},
 				Status: kube.ProwJobStatus{
@@ -796,7 +797,7 @@ func TestSyncPendingJob(t *testing.T) {
 		{
 			name: "succeeded pod",
 			pj: kube.ProwJob{
-				ObjectMeta: kube.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Name: "boop-42",
 				},
 				Spec: kube.ProwJobSpec{
@@ -828,7 +829,7 @@ func TestSyncPendingJob(t *testing.T) {
 		{
 			name: "failed pod",
 			pj: kube.ProwJob{
-				ObjectMeta: kube.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Name: "boop-42",
 				},
 				Spec: kube.ProwJobSpec{
@@ -864,7 +865,7 @@ func TestSyncPendingJob(t *testing.T) {
 		{
 			name: "delete evicted pod",
 			pj: kube.ProwJob{
-				ObjectMeta: kube.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Name: "boop-42",
 				},
 				Status: kube.ProwJobStatus{
@@ -890,7 +891,7 @@ func TestSyncPendingJob(t *testing.T) {
 		{
 			name: "running pod",
 			pj: kube.ProwJob{
-				ObjectMeta: kube.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Name: "boop-42",
 				},
 				Spec: kube.ProwJobSpec{
@@ -917,7 +918,7 @@ func TestSyncPendingJob(t *testing.T) {
 		{
 			name: "pod changes url status",
 			pj: kube.ProwJob{
-				ObjectMeta: kube.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Name: "boop-42",
 				},
 				Spec: kube.ProwJobSpec{
@@ -949,7 +950,7 @@ func TestSyncPendingJob(t *testing.T) {
 		{
 			name: "unprocessable prow job",
 			pj: kube.ProwJob{
-				ObjectMeta: kube.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Name: "jose",
 				},
 				Spec: kube.ProwJobSpec{

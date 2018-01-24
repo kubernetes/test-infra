@@ -17,4 +17,4 @@ spec:
       - name: boskos-reaper
         image: gcr.io/k8s-testimages/reaper:v20170913-73a0e4da
         args:
-        - --resource-type=gce-project,gke-project,gci-qa-project,gpu-project
+        - --resource-type=gce-project,gke-project,gci-qa-project,gpu-project,ingress-project
