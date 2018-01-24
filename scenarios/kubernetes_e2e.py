@@ -42,48 +42,48 @@ DEFAULT_KUBEKINS_TAG = 'v20180123-1260ba9fc-master'
 # We comment out zones below because we want to stay proportional to the limits
 # We do one zone for every 10 t2.medium instances allowed
 DEFAULT_AWS_ZONES = [
-    #'ap-northeast-1a',
-    #'ap-northeast-1c',
-    #'ap-northeast-2a',
-    #'ap-northeast-2b',
-    'ap-south-1a',
-    'ap-south-1b',
-    #'ap-southeast-1a',
-    #'ap-southeast-1b',
-    #'ap-southeast-1c',
-    #'ap-southeast-2a',
-    #'ap-southeast-2b',
-    #'ap-southeast-2c',
-    #'ca-central-1a',
-    #'ca-central-1b',
-    #'eu-central-1a',
-    #'eu-central-1b',
-    #'eu-central-1c',
-    #'eu-west-1a',
-    #'eu-west-1b',
-    #'eu-west-1c',
-    #'eu-west-2a',
-    #'eu-west-2b',
-    #'eu-west-2c',
-    #'eu-west-3a',
-    #'eu-west-3b',
-    #'eu-west-3c',
-    #'sa-east-1a',
-    #'sa-east-1c'
+    #'ap-northeast-1a', # insufficient quota
+    #'ap-northeast-1c', # insufficient quota
+    #'ap-northeast-2a', # insufficient quota
+    #'ap-northeast-2b', # insufficient quota
+    #'ap-south-1a', # no c4.large instances available
+    #'ap-south-1b', # no c4.large instances available
+    #'ap-southeast-1a', # insufficient quota
+    #'ap-southeast-1b', # insufficient quota
+    #'ap-southeast-1c', # insufficient quota
+    #'ap-southeast-2a', # insufficient quota
+    #'ap-southeast-2b', # insufficient quota
+    #'ap-southeast-2c', # insufficient quota
+    #'ca-central-1a', # insufficient quota
+    #'ca-central-1b', # insufficient quota
+    #'eu-central-1a', # insufficient quota
+    #'eu-central-1b', # insufficient quota
+    #'eu-central-1c', # insufficient quota
+    #'eu-west-1a', # insufficient quota
+    #'eu-west-1b', # insufficient quota
+    #'eu-west-1c', # insufficient quota
+    #'eu-west-2a', # insufficient quota
+    #'eu-west-2b', # insufficient quota
+    #'eu-west-2c', # insufficient quota
+    #'eu-west-3a', # insufficient quota
+    #'eu-west-3b', # insufficient quota
+    #'eu-west-3c', # insufficient quota
+    #'sa-east-1a', # insufficient quota
+    #'sa-east-1c' # insufficient quota
     'us-east-1a',
     'us-east-1b',
-    #'us-east-1c',
-    #'us-east-1d',
-    #'us-east-1e',
-    #'us-east-1f',
-    'us-east-2a',
-    'us-east-2b',
-    #'us-east-2c',
+    #'us-east-1c', # limiting to 2 zones to not overallocate
+    #'us-east-1d', # limiting to 2 zones to not overallocate
+    #'us-east-1e', # limiting to 2 zones to not overallocate
+    #'us-east-1f', # limiting to 2 zones to not overallocate
+    #'us-east-2a', # no c4.large instances available
+    #'us-east-2b', # no c4.large instances available
+    #'us-east-2c', # no c4.large instances available
     'us-west-1a',
-    'us-west-1b',
+    #'us-west-1b', # overall limit is 10 instances
     'us-west-2a',
     'us-west-2b',
-    #'us-west-2c'
+    #'us-west-2c' # limiting to 2 zones to not overallocate
 ]
 
 def test_infra(*paths):
