@@ -1981,6 +1981,228 @@ presubmits:
         hostPath:
           path: /mnt/disks/ssd0
 
+  - name: pull-kubernetes-e2e-gke
+    agent: kubernetes
+    context: pull-kubernetes-e2e-gke
+    rerun_command: "/test pull-kubernetes-e2e-gke"
+    trigger: "(?m)^/test pull-kubernetes-e2e-gke,?(\\s+|$)"
+    always_run: false
+    run_if_changed: '^(cluster/gce|cluster/addons).*$'
+    # TODO(bentheelder): enforce this pattern (skip all releases) or implement
+    # something better like https://github.com/kubernetes/test-infra/pull/4918
+    skip_branches:
+    - release-1.6 # per-release image
+    - release-1.7 # per-release image
+    - release-1.8 # per-release image
+    spec:
+      containers:
+      - args:
+        - --root=/go/src
+        - --repo=k8s.io/kubernetes=$(PULL_REFS)
+        - --repo=k8s.io/release
+        - --upload=gs://kubernetes-jenkins/pr-logs
+        - --git-cache=/root/.cache/git
+        - --clean
+        - --timeout=90
+        # the release-1.6 version of this job uses Jenkins, so here we override
+        # some args for jobs on Prow
+        - --
+        - --build=bazel
+        - --mode=local
+        # this only works for 1.7+
+        - --runtime-config=batch/v2alpha1=true,admissionregistration.k8s.io/v1alpha1=true
+        # Bazel needs privileged mode in order to sandbox builds.
+        securityContext:
+          privileged: true
+        env:
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /etc/service-account/service-account.json
+        - name: USER
+          value: prow
+        - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+          value: /etc/ssh-key-secret/ssh-private
+        - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+          value: /etc/ssh-key-secret/ssh-public
+        # Make Bazel use shared cache for its root
+        # https://docs.bazel.build/versions/master/output_directories.html#documentation-of-the-current-bazel-output-directory-layout
+        - name: TEST_TMPDIR
+          value: /root/.cache/bazel
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
+        volumeMounts:
+        - mountPath: /etc/service-account
+          name: service
+          readOnly: true
+        - mountPath: /etc/ssh-key-secret
+          name: ssh
+          readOnly: true
+        - mountPath: /root/.cache
+          name: cache-ssd
+        ports:
+        - containerPort: 9999
+          hostPort: 9999
+        resources:
+          requests:
+            memory: "6Gi"
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
+      - name: ssh
+        secret:
+          defaultMode: 256
+          secretName: ssh-key-secret
+      - hostPath:
+          path: /mnt/disks/ssd0
+        name: cache-ssd
+  - name: pull-kubernetes-e2e-gke
+    agent: kubernetes
+    context: pull-kubernetes-e2e-gke
+    rerun_command: "/test pull-kubernetes-e2e-gke"
+    trigger: "(?m)^/test pull-kubernetes-e2e-gke,?(\\s+|$)"
+    always_run: false
+    run_if_changed: '^(cluster/gce|cluster/addons).*$'
+    branches:
+    - release-1.8
+    spec:
+      containers:
+      - args:
+        - --root=/go/src
+        - --repo=k8s.io/kubernetes=$(PULL_REFS)
+        - --repo=k8s.io/release
+        - --upload=gs://kubernetes-jenkins/pr-logs
+        - --git-cache=/root/.cache/git
+        - --clean
+        - --timeout=90
+        # the release-1.6 version of this job uses Jenkins, so here we override
+        # some args for jobs on Prow
+        - --
+        - --build=bazel
+        - --mode=local
+        # this only works for 1.7+
+        - --runtime-config=batch/v2alpha1=true,admissionregistration.k8s.io/v1alpha1=true
+        # Bazel needs privileged mode in order to sandbox builds.
+        securityContext:
+          privileged: true
+        env:
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /etc/service-account/service-account.json
+        - name: USER
+          value: prow
+        - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+          value: /etc/ssh-key-secret/ssh-private
+        - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+          value: /etc/ssh-key-secret/ssh-public
+        # Make Bazel use shared cache for its root
+        # https://docs.bazel.build/versions/master/output_directories.html#documentation-of-the-current-bazel-output-directory-layout
+        - name: TEST_TMPDIR
+          value: /root/.cache/bazel
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-1.8
+        volumeMounts:
+        - mountPath: /etc/service-account
+          name: service
+          readOnly: true
+        - mountPath: /etc/ssh-key-secret
+          name: ssh
+          readOnly: true
+        - mountPath: /root/.cache
+          name: cache-ssd
+        ports:
+        - containerPort: 9999
+          hostPort: 9999
+        resources:
+          requests:
+            memory: "6Gi"
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
+      - name: ssh
+        secret:
+          defaultMode: 256
+          secretName: ssh-key-secret
+      - hostPath:
+          path: /mnt/disks/ssd0
+        name: cache-ssd
+  - name: pull-kubernetes-e2e-gke
+    agent: kubernetes
+    context: pull-kubernetes-e2e-gke
+    rerun_command: "/test pull-kubernetes-e2e-gke"
+    trigger: "(?m)^/test pull-kubernetes-e2e-gke,?(\\s+|$)"
+    always_run: false
+    run_if_changed: '^(cluster/gce|cluster/addons).*$'
+    branches:
+    - release-1.7
+    spec:
+      containers:
+      - args:
+        - --root=/go/src
+        - --repo=k8s.io/kubernetes=$(PULL_REFS)
+        - --repo=k8s.io/release
+        - --upload=gs://kubernetes-jenkins/pr-logs
+        - --git-cache=/root/.cache/git
+        - --clean
+        - --timeout=90
+        # the release-1.6 version of this job uses Jenkins, so here we override
+        # some args for jobs on Prow
+        - --
+        - --build=bazel
+        - --mode=local
+        # this only works for 1.7+
+        - --runtime-config=batch/v2alpha1=true,admissionregistration.k8s.io/v1alpha1=true
+        # Bazel needs privileged mode in order to sandbox builds.
+        securityContext:
+          privileged: true
+        env:
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /etc/service-account/service-account.json
+        - name: USER
+          value: prow
+        - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+          value: /etc/ssh-key-secret/ssh-private
+        - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+          value: /etc/ssh-key-secret/ssh-public
+        # Make Bazel use shared cache for its root
+        # https://docs.bazel.build/versions/master/output_directories.html#documentation-of-the-current-bazel-output-directory-layout
+        - name: TEST_TMPDIR
+          value: /root/.cache/bazel
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-1.7
+        volumeMounts:
+        - mountPath: /etc/service-account
+          name: service
+          readOnly: true
+        - mountPath: /etc/ssh-key-secret
+          name: ssh
+          readOnly: true
+        - mountPath: /root/.cache
+          name: cache-ssd
+        ports:
+        - containerPort: 9999
+          hostPort: 9999
+        resources:
+          requests:
+            memory: "6Gi"
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
+      - name: ssh
+        secret:
+          defaultMode: 256
+          secretName: ssh-key-secret
+      - hostPath:
+          path: /mnt/disks/ssd0
+        name: cache-ssd
+  # bazel build works for 1.6 but not bazel-release :-(
+  - name: pull-kubernetes-e2e-gke
+    agent: jenkins
+    context: pull-kubernetes-e2e-gke
+    rerun_command: "/test pull-kubernetes-e2e-gke"
+    trigger: "(?m)^/test pull-kubernetes-e2e-gke,?(\\s+|$)"
+    always_run: false
+    run_if_changed: '^(cluster/gce|cluster/addons).*$'
+    branches:
+    - release-1.6
+
   - name: pull-kubernetes-e2e-gke-device-plugin-gpu
     agent: kubernetes
     skip_branches:
@@ -2110,12 +2332,6 @@ presubmits:
         hostPath:
           path: /mnt/disks/ssd0
 
-  - name: pull-kubernetes-e2e-gke-gci
-    agent: jenkins
-    context: pull-kubernetes-e2e-gke-gci
-    rerun_command: "/test pull-kubernetes-e2e-gke-gci"
-    trigger: "(?m)^/test pull-kubernetes-e2e-gke-gci,?(\\s+|$)"
-    run_if_changed: '^(cluster/gce|cluster/addons).*$'
   - name: pull-kubernetes-e2e-kops-aws
     agent: kubernetes
     skip_branches:
@@ -4359,6 +4575,206 @@ presubmits:
   - agent: kubernetes
     always_run: false
     cluster: security
+    context: pull-security-kubernetes-e2e-gke
+    max_concurrency: 0
+    name: pull-security-kubernetes-e2e-gke
+    rerun_command: /test pull-security-kubernetes-e2e-gke
+    run_if_changed: ^(cluster/gce|cluster/addons).*$
+    skip_branches:
+    - release-1.6
+    - release-1.7
+    - release-1.8
+    skip_report: false
+    spec:
+      containers:
+      - args:
+        - --root=/go/src
+        - --repo=github.com/kubernetes-security/kubernetes=$(PULL_REFS)
+        - --repo=k8s.io/release
+        - --upload=gs://kubernetes-security-jenkins/pr-logs
+        - --clean
+        - --timeout=90
+        - --
+        - --build=bazel
+        - --mode=local
+        - --runtime-config=batch/v2alpha1=true,admissionregistration.k8s.io/v1alpha1=true
+        - --ssh=/etc/ssh-security/ssh-security
+        env:
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /etc/service-account/service-account.json
+        - name: USER
+          value: prow
+        - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+          value: /etc/ssh-key-secret/ssh-private
+        - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+          value: /etc/ssh-key-secret/ssh-public
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
+        resources:
+          requests:
+            memory: 6Gi
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - mountPath: /etc/service-account
+          name: service
+          readOnly: true
+        - mountPath: /etc/ssh-key-secret
+          name: ssh
+          readOnly: true
+        - mountPath: /etc/ssh-security
+          name: ssh-security
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
+      - name: ssh
+        secret:
+          defaultMode: 256
+          secretName: ssh-key-secret
+      - name: ssh-security
+        secret:
+          defaultMode: 256
+          secretName: ssh-security
+    trigger: (?m)^/test pull-security-kubernetes-e2e-gke,?(\s+|$)
+  - agent: kubernetes
+    always_run: false
+    branches:
+    - release-1.8
+    cluster: security
+    context: pull-security-kubernetes-e2e-gke
+    max_concurrency: 0
+    name: pull-security-kubernetes-e2e-gke
+    rerun_command: /test pull-security-kubernetes-e2e-gke
+    run_if_changed: ^(cluster/gce|cluster/addons).*$
+    skip_report: false
+    spec:
+      containers:
+      - args:
+        - --root=/go/src
+        - --repo=github.com/kubernetes-security/kubernetes=$(PULL_REFS)
+        - --repo=k8s.io/release
+        - --upload=gs://kubernetes-security-jenkins/pr-logs
+        - --clean
+        - --timeout=90
+        - --
+        - --build=bazel
+        - --mode=local
+        - --runtime-config=batch/v2alpha1=true,admissionregistration.k8s.io/v1alpha1=true
+        - --ssh=/etc/ssh-security/ssh-security
+        env:
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /etc/service-account/service-account.json
+        - name: USER
+          value: prow
+        - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+          value: /etc/ssh-key-secret/ssh-private
+        - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+          value: /etc/ssh-key-secret/ssh-public
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-1.8
+        resources:
+          requests:
+            memory: 6Gi
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - mountPath: /etc/service-account
+          name: service
+          readOnly: true
+        - mountPath: /etc/ssh-key-secret
+          name: ssh
+          readOnly: true
+        - mountPath: /etc/ssh-security
+          name: ssh-security
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
+      - name: ssh
+        secret:
+          defaultMode: 256
+          secretName: ssh-key-secret
+      - name: ssh-security
+        secret:
+          defaultMode: 256
+          secretName: ssh-security
+    trigger: (?m)^/test pull-security-kubernetes-e2e-gke,?(\s+|$)
+  - agent: kubernetes
+    always_run: false
+    branches:
+    - release-1.7
+    cluster: security
+    context: pull-security-kubernetes-e2e-gke
+    max_concurrency: 0
+    name: pull-security-kubernetes-e2e-gke
+    rerun_command: /test pull-security-kubernetes-e2e-gke
+    run_if_changed: ^(cluster/gce|cluster/addons).*$
+    skip_report: false
+    spec:
+      containers:
+      - args:
+        - --root=/go/src
+        - --repo=github.com/kubernetes-security/kubernetes=$(PULL_REFS)
+        - --repo=k8s.io/release
+        - --upload=gs://kubernetes-security-jenkins/pr-logs
+        - --clean
+        - --timeout=90
+        - --
+        - --build=bazel
+        - --mode=local
+        - --runtime-config=batch/v2alpha1=true,admissionregistration.k8s.io/v1alpha1=true
+        - --ssh=/etc/ssh-security/ssh-security
+        env:
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /etc/service-account/service-account.json
+        - name: USER
+          value: prow
+        - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+          value: /etc/ssh-key-secret/ssh-private
+        - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+          value: /etc/ssh-key-secret/ssh-public
+        image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-1.7
+        resources:
+          requests:
+            memory: 6Gi
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - mountPath: /etc/service-account
+          name: service
+          readOnly: true
+        - mountPath: /etc/ssh-key-secret
+          name: ssh
+          readOnly: true
+        - mountPath: /etc/ssh-security
+          name: ssh-security
+      volumes:
+      - name: service
+        secret:
+          secretName: service-account
+      - name: ssh
+        secret:
+          defaultMode: 256
+          secretName: ssh-key-secret
+      - name: ssh-security
+        secret:
+          defaultMode: 256
+          secretName: ssh-security
+    trigger: (?m)^/test pull-security-kubernetes-e2e-gke,?(\s+|$)
+  - agent: jenkins
+    always_run: false
+    branches:
+    - release-1.6
+    cluster: ""
+    context: pull-security-kubernetes-e2e-gke
+    max_concurrency: 0
+    name: pull-security-kubernetes-e2e-gke
+    rerun_command: /test pull-security-kubernetes-e2e-gke
+    run_if_changed: ^(cluster/gce|cluster/addons).*$
+    skip_report: false
+    trigger: (?m)^/test pull-security-kubernetes-e2e-gke,?(\s+|$)
+  - agent: kubernetes
+    always_run: false
+    cluster: security
     context: pull-security-kubernetes-e2e-gke-device-plugin-gpu
     max_concurrency: 1
     name: pull-security-kubernetes-e2e-gke-device-plugin-gpu
@@ -4478,16 +4894,6 @@ presubmits:
           defaultMode: 256
           secretName: ssh-security
     trigger: (?m)^/test pull-security-kubernetes-e2e-gke-device-plugin-gpu,?(\s+|$)
-  - agent: jenkins
-    always_run: false
-    cluster: ""
-    context: pull-security-kubernetes-e2e-gke-gci
-    max_concurrency: 0
-    name: pull-security-kubernetes-e2e-gke-gci
-    rerun_command: /test pull-security-kubernetes-e2e-gke-gci
-    run_if_changed: ^(cluster/gce|cluster/addons).*$
-    skip_report: false
-    trigger: (?m)^/test pull-security-kubernetes-e2e-gke-gci,?(\s+|$)
   - agent: kubernetes
     always_run: true
     cluster: security
