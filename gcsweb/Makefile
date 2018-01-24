@@ -25,7 +25,7 @@ REGISTRY ?= staging-k8s.gcr.io
 ARCH ?= amd64
 
 # The version string.
-VERSION := v1.0.5
+VERSION := v1.0.6
 
 ###
 ### These variables should not need tweaking.

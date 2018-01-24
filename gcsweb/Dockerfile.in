@@ -19,7 +19,8 @@ MAINTAINER Tim Hockin <thockin@google.com>
 RUN apk update --no-cache && apk add ca-certificates
 ADD bin/ARG_ARCH/ARG_BIN /ARG_BIN
 ADD icons /icons
-RUN chmod -R go+r /icons
+ADD styles /styles
+RUN chmod -R go+r /icons /styles
 
 USER nobody:nobody
 ENTRYPOINT ["/ARG_BIN"]
