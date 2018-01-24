@@ -64,13 +64,13 @@ go_library(
     deps = [
         "//prow/config:go_default_library",
         "//prow/kube:go_default_library",
-        "//prow/kube/labels:go_default_library",
         "//prow/pjutil:go_default_library",
         "//prow/pluginhelp:go_default_library",
         "//prow/tide:go_default_library",
         "//vendor/github.com/NYTimes/gziphandler:go_default_library",
         "//vendor/github.com/ghodss/yaml:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/labels:go_default_library",
     ],
 )
 

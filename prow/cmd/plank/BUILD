@@ -30,11 +30,11 @@ go_library(
         "//prow/config:go_default_library",
         "//prow/github:go_default_library",
         "//prow/kube:go_default_library",
-        "//prow/kube/labels:go_default_library",
         "//prow/metrics:go_default_library",
         "//prow/plank:go_default_library",
         "//vendor/github.com/prometheus/client_golang/prometheus/promhttp:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/labels:go_default_library",
     ],
 )
 
