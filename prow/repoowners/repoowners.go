@@ -46,11 +46,24 @@ type dirOptions struct {
 	NoParentOwners bool `json:"no_parent_owners,omitempty"`
 }
 
-type ownersConfig struct {
-	Options   dirOptions `json:"options,omitempty"`
-	Approvers []string   `json:"approvers,omitempty"`
-	Reviewers []string   `json:"reviewers,omitempty"`
-	Labels    []string   `json:"labels,omitempty"`
+type Config struct {
+	Approvers []string `json:"approvers,omitempty"`
+	Reviewers []string `json:"reviewers,omitempty"`
+	Labels    []string `json:"labels,omitempty"`
+}
+
+type simpleConfig struct {
+	Options dirOptions `json:"options,omitempty"`
+	Config  `json:",inline"`
+}
+
+func (s *simpleConfig) Empty() bool {
+	return len(s.Approvers) == 0 && len(s.Reviewers) == 0 && len(s.Labels) == 0
+}
+
+type fullConfig struct {
+	Options dirOptions        `json:"options,omitempty"`
+	Filters map[string]Config `json:"filters,omitempty"`
 }
 
 type githubClient interface {
@@ -91,9 +104,9 @@ type RepoAliases map[string]sets.String
 type RepoOwners struct {
 	RepoAliases
 
-	approvers map[string]sets.String
-	reviewers map[string]sets.String
-	labels    map[string]sets.String
+	approvers map[string]map[*regexp.Regexp]sets.String
+	reviewers map[string]map[*regexp.Regexp]sets.String
+	labels    map[string]map[*regexp.Regexp]sets.String
 	options   map[string]dirOptions
 
 	baseDir      string
@@ -231,9 +244,9 @@ func loadOwnersFrom(baseDir string, mdYaml bool, aliases RepoAliases, log *logru
 		enableMDYAML: mdYaml,
 		log:          log,
 
-		approvers: make(map[string]sets.String),
-		reviewers: make(map[string]sets.String),
-		labels:    make(map[string]sets.String),
+		approvers: make(map[string]map[*regexp.Regexp]sets.String),
+		reviewers: make(map[string]map[*regexp.Regexp]sets.String),
+		labels:    make(map[string]map[*regexp.Regexp]sets.String),
 		options:   make(map[string]dirOptions),
 	}
 
@@ -264,23 +277,24 @@ func (o *RepoOwners) walkFunc(path string, info os.FileInfo, err error) error {
 		return nil
 	}
 
-	c := &ownersConfig{}
 	// '.md' files may contain assignees at the top of the file in a yaml header
 	// Note that these assignees only apply to the file itself.
 	if o.enableMDYAML && filename != ownersFileName && strings.HasSuffix(filename, "md") {
 		// Parse the yaml header from the file if it exists and marshal into the config
-		if err := decodeOwnersMdConfig(path, c); err != nil {
+		simple := &simpleConfig{}
+		if err := decodeOwnersMdConfig(path, simple); err != nil {
 			log.WithError(err).Error("Error decoding OWNERS config from '*.md' file.")
 			return nil
 		}
 
-		// Set assignees for this file (not the directory) using the relative path if they were found
+		// Set owners for this file (not the directory) using the relative path if they were found
 		relPath, err := filepath.Rel(o.baseDir, path)
 		if err != nil {
 			log.WithError(err).Errorf("Unable to find relative path between baseDir: %q and path.", o.baseDir)
 			return err
 		}
-		o.applyConfigToPath(relPath, c)
+		o.applyConfigToPath(relPath, nil, &simple.Config)
+		o.applyOptionsToPath(relPath, simple.Options)
 		return nil
 	}
 
@@ -294,27 +308,44 @@ func (o *RepoOwners) walkFunc(path string, info os.FileInfo, err error) error {
 		return nil
 	}
 
-	if err := yaml.Unmarshal(b, c); err != nil {
-		log.WithError(err).Errorf("Failed to unmarshal file contents.")
-		return nil
-	}
-
 	relPath, err := filepath.Rel(o.baseDir, path)
 	if err != nil {
 		log.WithError(err).Errorf("Unable to find relative path between baseDir: %q and path.", o.baseDir)
 		return err
 	}
 	relPathDir := canonicalize(filepath.Dir(relPath))
-	o.applyConfigToPath(relPathDir, c)
+
+	simple := &simpleConfig{}
+	if err := yaml.Unmarshal(b, simple); err == nil && !simple.Empty() {
+		o.applyConfigToPath(relPathDir, nil, &simple.Config)
+		o.applyOptionsToPath(relPathDir, simple.Options)
+		return nil
+	}
+	c := &fullConfig{}
+	if err = yaml.Unmarshal(b, c); err != nil {
+		log.WithError(err).Errorf("Failed to unmarshal file contents.")
+		return nil
+	}
+	for pattern, config := range c.Filters {
+		var re *regexp.Regexp
+		if pattern != ".*" {
+			if re, err = regexp.Compile(pattern); err != nil {
+				log.WithError(err).Errorf("Invalid regexp %q.", pattern)
+				continue
+			}
+		}
+		o.applyConfigToPath(relPathDir, re, &config)
+	}
+	o.applyOptionsToPath(relPathDir, c.Options)
 	return nil
 }
 
 var mdStructuredHeaderRegex = regexp.MustCompile("^---\n(.|\n)*\n---")
 
-// decodeOwnersMdConfig will parse the yaml header if it exists and unmarshal it into an ownersConfig.
+// decodeOwnersMdConfig will parse the yaml header if it exists and unmarshal it into a singleOwnersConfig.
 // If no yaml header is found, do nothing
 // Returns an error if the file cannot be read or the yaml header is found but cannot be unmarshalled.
-func decodeOwnersMdConfig(path string, config *ownersConfig) error {
+func decodeOwnersMdConfig(path string, config *simpleConfig) error {
 	fileBytes, err := ioutil.ReadFile(path)
 	if err != nil {
 		return err
@@ -336,18 +367,30 @@ func normLogins(logins []string) sets.String {
 
 var defaultDirOptions = dirOptions{}
 
-func (o *RepoOwners) applyConfigToPath(path string, config *ownersConfig) {
+func (o *RepoOwners) applyConfigToPath(path string, re *regexp.Regexp, config *Config) {
 	if len(config.Approvers) > 0 {
-		o.approvers[path] = o.ExpandAliases(normLogins(config.Approvers))
+		if o.approvers[path] == nil {
+			o.approvers[path] = make(map[*regexp.Regexp]sets.String)
+		}
+		o.approvers[path][re] = o.ExpandAliases(normLogins(config.Approvers))
 	}
 	if len(config.Reviewers) > 0 {
-		o.reviewers[path] = o.ExpandAliases(normLogins(config.Reviewers))
+		if o.reviewers[path] == nil {
+			o.reviewers[path] = make(map[*regexp.Regexp]sets.String)
+		}
+		o.reviewers[path][re] = o.ExpandAliases(normLogins(config.Reviewers))
 	}
 	if len(config.Labels) > 0 {
-		o.labels[path] = sets.NewString(config.Labels...)
+		if o.labels[path] == nil {
+			o.labels[path] = make(map[*regexp.Regexp]sets.String)
+		}
+		o.labels[path][re] = sets.NewString(config.Labels...)
 	}
-	if config.Options != defaultDirOptions {
-		o.options[path] = config.Options
+}
+
+func (o *RepoOwners) applyOptionsToPath(path string, opts dirOptions) {
+	if opts != defaultDirOptions {
+		o.options[path] = opts
 	}
 }
 
@@ -357,10 +400,13 @@ func (o *RepoOwners) filterCollaborators(toKeep []github.User) *RepoOwners {
 		collabs.Insert(github.NormLogin(keeper.Login))
 	}
 
-	filter := func(ownerMap map[string]sets.String) map[string]sets.String {
-		filtered := make(map[string]sets.String)
-		for path, unfiltered := range ownerMap {
-			filtered[path] = unfiltered.Intersection(collabs)
+	filter := func(ownerMap map[string]map[*regexp.Regexp]sets.String) map[string]map[*regexp.Regexp]sets.String {
+		filtered := make(map[string]map[*regexp.Regexp]sets.String)
+		for path, reMap := range ownerMap {
+			filtered[path] = make(map[*regexp.Regexp]sets.String)
+			for re, unfiltered := range reMap {
+				filtered[path][re] = unfiltered.Intersection(collabs)
+			}
 		}
 		return filtered
 	}
@@ -371,41 +417,45 @@ func (o *RepoOwners) filterCollaborators(toKeep []github.User) *RepoOwners {
 	return &result
 }
 
-// findOwnersForPath returns the OWNERS file path furthest down the tree for a specified file
+// findOwnersForFile returns the OWNERS file path furthest down the tree for a specified file
 // using ownerMap to check for entries
-func findOwnersForPath(path string, ownerMap map[string]sets.String) string {
+func findOwnersForFile(log *logrus.Entry, path string, ownerMap map[string]map[*regexp.Regexp]sets.String) string {
 	d := path
 
-	for {
-		n, ok := ownerMap[d]
-		if ok && len(n) != 0 {
-			return d
+	for ; d != baseDirConvention; d = canonicalize(filepath.Dir(d)) {
+		relative, err := filepath.Rel(d, path)
+		if err != nil {
+			log.WithError(err).WithField("path", path).Errorf("Unable to find relative path between %q and path.", d)
+			return ""
 		}
-		if d == baseDirConvention {
-			break
+		for re, n := range ownerMap[d] {
+			if re != nil && !re.MatchString(relative) {
+				continue
+			}
+			if len(n) != 0 {
+				return d
+			}
 		}
-		d = filepath.Dir(d)
-		d = canonicalize(d)
 	}
 	return ""
 }
 
-// FindApproversOwnersForPath returns the OWNERS file path furthest down the tree for a specified file
+// FindApproversOwnersForFile returns the OWNERS file path furthest down the tree for a specified file
 // that contains an approvers section
-func (o *RepoOwners) FindApproverOwnersForPath(path string) string {
-	return findOwnersForPath(path, o.approvers)
+func (o *RepoOwners) FindApproverOwnersForFile(path string) string {
+	return findOwnersForFile(o.log, path, o.approvers)
 }
 
-// FindReviewersOwnersForPath returns the OWNERS file path furthest down the tree for a specified file
+// FindReviewersOwnersForFile returns the OWNERS file path furthest down the tree for a specified file
 // that contains a reviewers section
-func (o *RepoOwners) FindReviewersOwnersForPath(path string) string {
-	return findOwnersForPath(path, o.reviewers)
+func (o *RepoOwners) FindReviewersOwnersForFile(path string) string {
+	return findOwnersForFile(o.log, path, o.reviewers)
 }
 
-// FindLabelsForPath returns a set of labels which should be applied to PRs
+// FindLabelsForFile returns a set of labels which should be applied to PRs
 // modifying files under the given path.
-func (o *RepoOwners) FindLabelsForPath(path string) sets.String {
-	return entriesForPath(path, o.labels, o.options, false, o.enableMDYAML)
+func (o *RepoOwners) FindLabelsForFile(path string) sets.String {
+	return o.entriesForFile(path, o.labels, false)
 }
 
 // IsNoParentOwners checks if an OWNERS file path refers to an OWNERS file with NoParentOwners enabled.
@@ -413,14 +463,14 @@ func (o *RepoOwners) IsNoParentOwners(path string) bool {
 	return o.options[path].NoParentOwners
 }
 
-// entriesForPath returns a set of users who are assignees to the
+// entriesForFile returns a set of users who are assignees to the
 // requested file. The path variable should be a full path to a filename
 // and not directory as the final directory will be discounted if enableMDYAML is true
 // leafOnly indicates whether only the OWNERS deepest in the tree (closest to the file)
 // should be returned or if all OWNERS in filepath should be returned
-func entriesForPath(path string, people map[string]sets.String, options map[string]dirOptions, leafOnly bool, enableMDYAML bool) sets.String {
+func (o *RepoOwners) entriesForFile(path string, people map[string]map[*regexp.Regexp]sets.String, leafOnly bool) sets.String {
 	d := path
-	if !enableMDYAML || !strings.HasSuffix(path, ".md") {
+	if !o.enableMDYAML || !strings.HasSuffix(path, ".md") {
 		// if path is a directory, this will remove the leaf directory, and returns "." for topmost dir
 		d = filepath.Dir(d)
 		d = canonicalize(path)
@@ -428,16 +478,23 @@ func entriesForPath(path string, people map[string]sets.String, options map[stri
 
 	out := sets.NewString()
 	for {
-		if s, ok := people[d]; ok {
-			out = out.Union(s)
-			if leafOnly && out.Len() > 0 {
-				break
+		relative, err := filepath.Rel(d, path)
+		if err != nil {
+			o.log.WithError(err).WithField("path", path).Errorf("Unable to find relative path between %q and path.", d)
+			return nil
+		}
+		for re, s := range people[d] {
+			if re == nil || re.MatchString(relative) {
+				out.Insert(s.List()...)
 			}
+		}
+		if leafOnly && out.Len() > 0 {
+			break
 		}
 		if d == baseDirConvention {
 			break
 		}
-		if op, ok := options[d]; ok && op.NoParentOwners {
+		if o.options[d].NoParentOwners {
 			break
 		}
 		d = filepath.Dir(d)
@@ -450,7 +507,7 @@ func entriesForPath(path string, people map[string]sets.String, options map[stri
 // requested file. If pkg/OWNERS has user1 and pkg/util/OWNERS has user2 this
 // will only return user2 for the path pkg/util/sets/file.go
 func (o *RepoOwners) LeafApprovers(path string) sets.String {
-	return entriesForPath(path, o.approvers, o.options, true, o.enableMDYAML)
+	return o.entriesForFile(path, o.approvers, true)
 }
 
 // Approvers returns ALL of the users who are approvers for the
@@ -458,14 +515,14 @@ func (o *RepoOwners) LeafApprovers(path string) sets.String {
 // If pkg/OWNERS has user1 and pkg/util/OWNERS has user2 this
 // will return both user1 and user2 for the path pkg/util/sets/file.go
 func (o *RepoOwners) Approvers(path string) sets.String {
-	return entriesForPath(path, o.approvers, o.options, false, o.enableMDYAML)
+	return o.entriesForFile(path, o.approvers, false)
 }
 
 // LeafReviewers returns a set of users who are the closest reviewers to the
 // requested file. If pkg/OWNERS has user1 and pkg/util/OWNERS has user2 this
 // will only return user2 for the path pkg/util/sets/file.go
 func (o *RepoOwners) LeafReviewers(path string) sets.String {
-	return entriesForPath(path, o.reviewers, o.options, true, o.enableMDYAML)
+	return o.entriesForFile(path, o.reviewers, true)
 }
 
 // Reviewers returns ALL of the users who are reviewers for the
@@ -473,5 +530,5 @@ func (o *RepoOwners) LeafReviewers(path string) sets.String {
 // If pkg/OWNERS has user1 and pkg/util/OWNERS has user2 this
 // will return both user1 and user2 for the path pkg/util/sets/file.go
 func (o *RepoOwners) Reviewers(path string) sets.String {
-	return entriesForPath(path, o.reviewers, o.options, false, o.enableMDYAML)
+	return o.entriesForFile(path, o.reviewers, false)
 }

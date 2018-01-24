@@ -20,11 +20,11 @@ ALPINE_VERSION           ?= 0.1
 # GIT_VERSION is the version of the alpine+git image
 GIT_VERSION              ?= 0.1
 # HOOK_VERSION is the version of the hook image
-HOOK_VERSION             ?= 0.196
+HOOK_VERSION             ?= 0.197
 # SINKER_VERSION is the version of the sinker image
 SINKER_VERSION           ?= 0.27
 # DECK_VERSION is the version of the deck image
-DECK_VERSION             ?= 0.79
+DECK_VERSION             ?= 0.80
 # SPLICE_VERSION is the version of the splice image
 SPLICE_VERSION           ?= 0.35
 # TOT_VERSION is the version of the tot image

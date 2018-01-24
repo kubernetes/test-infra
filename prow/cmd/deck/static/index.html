@@ -3,12 +3,12 @@
     <head>
         <title>Prow Status</title>
         <link id="favicon" rel="icon" type="image/png" href="favicon.ico">
-        <link rel="stylesheet" type="text/css" href="style.css?reload-me-please=1513905648">
+        <link rel="stylesheet" type="text/css" href="style.css">
         <link rel="stylesheet" type="text/css" href="extensions/style.css">
         <link href="https://fonts.googleapis.com/css?family=Roboto:400,700" rel="stylesheet">
         <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
         <link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.indigo-pink.min.css">
-        <script type="text/javascript" src="script.js"></script>
+        <script type="text/javascript" src="script.js?reload-me-please=1516734418"></script>
         <script type="text/javascript" src="data.js?var=allBuilds"></script>
         <script type="text/javascript" src="extensions/script.js"></script>
         <script type="text/javascript" src="branding.js?var=branding"></script>
@@ -41,7 +41,12 @@
                                 &gt;&gt;
                                 <li><select id="pull" onchange="redraw();"><option>all pull requests</option></select></li>
                                 <li><select id="author" onchange="redraw();"><option>all authors</option></select></li>
-                                <li><select id="job" onchange="redraw();"><option>all jobs</option></select></li>
+                                <li>
+                                    <div class="fuzzy-search" id="job">
+                                        <input class="fuzzy-search-input" placeholder="Search job name" type="text" id="job-input">
+                                        <ul id="job-list" class="fuzzy-search-list"></ul>
+                                    </div>
+                                </li>
                                 <li><select id="state" onchange="redraw();"><option>all states</option></select></li>
                             </ul>
                         </div>

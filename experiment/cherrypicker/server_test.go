@@ -37,6 +37,7 @@ type fghc struct {
 	prs        []string
 	prComments []github.IssueComment
 	createdNum int
+	orgMembers []github.TeamMember
 }
 
 func (f *fghc) AssignIssue(org, repo string, number int, logins []string) error {
@@ -86,7 +87,15 @@ func (f *fghc) CreatePullRequest(org, repo, title, body, head, base string, canM
 }
 
 func (f *fghc) ListIssueComments(org, repo string, number int) ([]github.IssueComment, error) {
+	f.Lock()
+	defer f.Unlock()
 	return f.prComments, nil
+}
+
+func (f *fghc) ListOrgMembers(org string) ([]github.TeamMember, error) {
+	f.Lock()
+	defer f.Unlock()
+	return f.orgMembers, nil
 }
 
 func (f *fghc) CreateFork(org, repo string) error {
@@ -234,8 +243,16 @@ func TestCherryPickPR(t *testing.T) {
 	if err := lg.CheckoutNewBranch("foo", "bar", "release-1.5"); err != nil {
 		t.Fatalf("Checking out pull branch: %v", err)
 	}
+	if err := lg.CheckoutNewBranch("foo", "bar", "release-1.6"); err != nil {
+		t.Fatalf("Checking out pull branch: %v", err)
+	}
 
 	ghc := &fghc{
+		orgMembers: []github.TeamMember{
+			{
+				Login: "approver",
+			},
+		},
 		prComments: []github.IssueComment{
 			{
 				User: github.User{
@@ -247,7 +264,13 @@ func TestCherryPickPR(t *testing.T) {
 				User: github.User{
 					Login: "approver",
 				},
-				Body: "/cherrypick release-1.5",
+				Body: "/cherrypick release-1.5\r",
+			},
+			{
+				User: github.User{
+					Login: "approver",
+				},
+				Body: "/cherrypick release-1.6",
 			},
 			{
 				User: github.User{
@@ -280,13 +303,6 @@ func TestCherryPickPR(t *testing.T) {
 	}
 
 	botName := "ci-robot"
-	expectedRepo := "foo/bar"
-	expectedTitle := "[release-1.5] This is a fix for Y"
-	expectedBody := "This is an automated cherry-pick of #2"
-	expectedBase := "release-1.5"
-	expectedHead := fmt.Sprintf(botName+":"+cherryPickBranchFmt, 2, expectedBase)
-	expected := fmt.Sprintf(expectedFmt, expectedRepo, expectedTitle, expectedBody, expectedHead, expectedBase, true)
-
 	s := &Server{
 		botName:    botName,
 		gc:         c,
@@ -302,7 +318,33 @@ func TestCherryPickPR(t *testing.T) {
 	if err := s.handlePullRequest(logrus.NewEntry(logrus.StandardLogger()), pr); err != nil {
 		t.Errorf("unexpected error: %v", err)
 	}
-	if ghc.prs[0] != expected {
-		t.Errorf("Expected (%d):\n%s\nGot (%d):\n%+v\n", len(expected), expected, len(ghc.prs[0]), ghc.prs[0])
+
+	var expectedFn = func(branch string) string {
+		expectedRepo := "foo/bar"
+		expectedTitle := fmt.Sprintf("[%s] This is a fix for Y", branch)
+		expectedBody := "This is an automated cherry-pick of #2"
+		expectedHead := fmt.Sprintf(botName+":"+cherryPickBranchFmt, 2, branch)
+		return fmt.Sprintf(expectedFmt, expectedRepo, expectedTitle, expectedBody, expectedHead, branch, true)
+	}
+
+	if len(ghc.prs) != 2 {
+		t.Fatalf("Expected %d PRs, got %d", 2, len(ghc.prs))
+	}
+
+	expectedBranches := []string{"release-1.5", "release-1.6"}
+	seenBranches := make(map[string]struct{})
+	for _, pr := range ghc.prs {
+		if pr != expectedFn("release-1.5") && pr != expectedFn("release-1.6") {
+			t.Errorf("Unexpected PR:\n%s\nExpected to target one of the following branches: %v", pr, expectedBranches)
+		}
+		if pr == expectedFn("release-1.5") {
+			seenBranches["release-1.5"] = struct{}{}
+		}
+		if pr == expectedFn("release-1.6") {
+			seenBranches["release-1.6"] = struct{}{}
+		}
+	}
+	if len(seenBranches) != 2 {
+		t.Fatalf("Expected to see PRs for %d branches, got %d (%v)", 2, len(seenBranches), seenBranches)
 	}
 }

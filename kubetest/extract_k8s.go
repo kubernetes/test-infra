@@ -397,15 +397,11 @@ func (e extractStrategy) Extract(project, zone string, extractSrc bool) error {
 		}
 		if e.option == "latest" {
 			// get latest supported master version
-			res, err := output(exec.Command("gcloud", "container", "get-server-config", fmt.Sprintf("--project=%v", project), fmt.Sprintf("--zone=%v", zone), "--format=value(validMasterVersions)"))
+			version, err := getLatestGKEVersion(project, zone)
 			if err != nil {
-				return err
+				return fmt.Errorf("failed to get latest gke version: %s", err)
 			}
-			versions := strings.Split(string(res), ";")
-			if len(versions) == 0 {
-				return fmt.Errorf("invalid gke master version string: %s", string(res))
-			}
-			return getKube("https://storage.googleapis.com/kubernetes-release-gke/release", "v"+versions[0], extractSrc)
+			return getKube("https://storage.googleapis.com/kubernetes-release-gke/release", version, extractSrc)
 		}
 
 		// get default cluster version for default extract strategy

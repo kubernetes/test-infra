@@ -8,6 +8,7 @@ go_library(
     ],
     importpath = "github.com/docker/docker/api/types/registry",
     visibility = ["//visibility:public"],
+    deps = ["//vendor/github.com/opencontainers/image-spec/specs-go/v1:go_default_library"],
 )
 
 filegroup(
