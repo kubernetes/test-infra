@@ -31,7 +31,37 @@
 
 [[projects]]
   name = "github.com/aws/aws-sdk-go"
-  packages = ["aws","aws/awserr","aws/awsutil","aws/client","aws/client/metadata","aws/corehandlers","aws/credentials","aws/credentials/ec2rolecreds","aws/credentials/endpointcreds","aws/credentials/stscreds","aws/defaults","aws/ec2metadata","aws/endpoints","aws/request","aws/session","aws/signer/v4","internal/shareddefaults","private/protocol","private/protocol/ec2query","private/protocol/query","private/protocol/query/queryutil","private/protocol/rest","private/protocol/restxml","private/protocol/xml/xmlutil","service/autoscaling","service/ec2","service/iam","service/s3","service/sts"]
+  packages = [
+    "aws",
+    "aws/awserr",
+    "aws/awsutil",
+    "aws/client",
+    "aws/client/metadata",
+    "aws/corehandlers",
+    "aws/credentials",
+    "aws/credentials/ec2rolecreds",
+    "aws/credentials/endpointcreds",
+    "aws/credentials/stscreds",
+    "aws/defaults",
+    "aws/ec2metadata",
+    "aws/endpoints",
+    "aws/request",
+    "aws/session",
+    "aws/signer/v4",
+    "internal/shareddefaults",
+    "private/protocol",
+    "private/protocol/ec2query",
+    "private/protocol/query",
+    "private/protocol/query/queryutil",
+    "private/protocol/rest",
+    "private/protocol/restxml",
+    "private/protocol/xml/xmlutil",
+    "service/autoscaling",
+    "service/ec2",
+    "service/iam",
+    "service/s3",
+    "service/sts"
+  ]
   revision = "82ad808f2307df0776c038bfd7ea85440a35c02e"
   version = "v1.12.53"
 
@@ -47,17 +77,42 @@
 
 [[projects]]
   name = "github.com/docker/distribution"
-  packages = ["digestset","reference"]
+  packages = [
+    "digestset",
+    "reference"
+  ]
   revision = "edc3ab29cdff8694dd6feb85cfeb4b5f1b38ed9c"
 
 [[projects]]
   name = "github.com/docker/docker"
-  packages = ["api","api/types","api/types/blkiodev","api/types/container","api/types/events","api/types/filters","api/types/image","api/types/mount","api/types/network","api/types/registry","api/types/strslice","api/types/swarm","api/types/swarm/runtime","api/types/time","api/types/versions","api/types/volume","client"]
+  packages = [
+    "api",
+    "api/types",
+    "api/types/blkiodev",
+    "api/types/container",
+    "api/types/events",
+    "api/types/filters",
+    "api/types/image",
+    "api/types/mount",
+    "api/types/network",
+    "api/types/registry",
+    "api/types/strslice",
+    "api/types/swarm",
+    "api/types/swarm/runtime",
+    "api/types/time",
+    "api/types/versions",
+    "api/types/volume",
+    "client"
+  ]
   revision = "5e5fadb3c0201553929d4a6ea8dc8f9d8a1e56fe"
 
 [[projects]]
   name = "github.com/docker/go-connections"
-  packages = ["nat","sockets","tlsconfig"]
+  packages = [
+    "nat",
+    "sockets",
+    "tlsconfig"
+  ]
   revision = "3ede32e2033de7505e6500d6c868c2b9ed9f169d"
   version = "v0.3.0"
 
@@ -69,14 +124,18 @@
 
 [[projects]]
   name = "github.com/emicklei/go-restful"
-  packages = [".","log"]
+  packages = [
+    ".",
+    "log"
+  ]
   revision = "2dd44038f0b95ae693b266c5f87593b5d2fdd78d"
   version = "v2.5.0"
 
 [[projects]]
   name = "github.com/ghodss/yaml"
   packages = ["."]
-  revision = "73d445a93680fa1a78ae23a5839bad48f32ba1ee"
+  revision = "0ca9ea5df5451ffdf184b4428c902747c2c11cd7"
+  version = "v1.0.0"
 
 [[projects]]
   name = "github.com/go-ini/ini"
@@ -115,7 +174,10 @@
 
 [[projects]]
   name = "github.com/gogo/protobuf"
-  packages = ["proto","sortkeys"]
+  packages = [
+    "proto",
+    "sortkeys"
+  ]
   revision = "342cbe0a04158f6dcb03ca0079991a51a4248c02"
   version = "v0.5"
 
@@ -161,7 +223,10 @@
 
 [[projects]]
   name = "github.com/gregjones/httpcache"
-  packages = [".","diskcache"]
+  packages = [
+    ".",
+    "diskcache"
+  ]
   revision = "16db777d8ebea60a3e746a7e0703eaaa53f85f7f"
 
 [[projects]]
@@ -172,12 +237,20 @@
 
 [[projects]]
   name = "github.com/influxdata/influxdb"
-  packages = ["client/v2","models","pkg/escape"]
+  packages = [
+    "client/v2",
+    "models",
+    "pkg/escape"
+  ]
   revision = "049f9b42e9a5ca4c0bcb4439a9f33fd83b485077"
 
 [[projects]]
   name = "github.com/jinzhu/gorm"
-  packages = [".","dialects/mysql","dialects/sqlite"]
+  packages = [
+    ".",
+    "dialects/mysql",
+    "dialects/sqlite"
+  ]
   revision = "572d0a0ab1eb75410a2729e96239152d1da7a91f"
 
 [[projects]]
@@ -193,7 +266,11 @@
 [[projects]]
   branch = "master"
   name = "github.com/mailru/easyjson"
-  packages = ["buffer","jlexer","jwriter"]
+  packages = [
+    "buffer",
+    "jlexer",
+    "jwriter"
+  ]
   revision = "32fa128f234d041f196a9f3e0fea5ac9772c08e1"
 
 [[projects]]
@@ -214,7 +291,10 @@
 
 [[projects]]
   name = "github.com/opencontainers/image-spec"
-  packages = ["specs-go","specs-go/v1"]
+  packages = [
+    "specs-go",
+    "specs-go/v1"
+  ]
   revision = "d60099175f88c47cd379c4738d158884749ed235"
   version = "v1.0.1"
 
@@ -237,7 +317,11 @@
 
 [[projects]]
   name = "github.com/prometheus/client_golang"
-  packages = ["prometheus","prometheus/promhttp","prometheus/push"]
+  packages = [
+    "prometheus",
+    "prometheus/promhttp",
+    "prometheus/push"
+  ]
   revision = "c5b7fccd204277076155f10851dad72b76a49317"
   version = "v0.8.0"
 
@@ -248,7 +332,10 @@
 
 [[projects]]
   name = "github.com/prometheus/common"
-  packages = ["expfmt","model"]
+  packages = [
+    "expfmt",
+    "model"
+  ]
   revision = "ffe929a3f4c4faeaa10f2b9535c2b1be3ad15650"
 
 [[projects]]
@@ -273,7 +360,11 @@
 
 [[projects]]
   name = "github.com/shurcooL/graphql"
-  packages = [".","ident","internal/jsonutil"]
+  packages = [
+    ".",
+    "ident",
+    "internal/jsonutil"
+  ]
   revision = "68e5b1b3ab56633e42939506bc61f0b9fb2b7a79"
 
 [[projects]]
@@ -293,38 +384,79 @@
 
 [[projects]]
   name = "golang.org/x/crypto"
-  packages = ["curve25519","ed25519","ed25519/internal/edwards25519","ssh"]
+  packages = [
+    "curve25519",
+    "ed25519",
+    "ed25519/internal/edwards25519",
+    "ssh"
+  ]
   revision = "81e90905daefcd6fd217b62423c0908922eadb30"
 
 [[projects]]
   name = "golang.org/x/net"
-  packages = ["context","context/ctxhttp","http2","http2/hpack","idna","lex/httplex","proxy"]
+  packages = [
+    "context",
+    "context/ctxhttp",
+    "http2",
+    "http2/hpack",
+    "idna",
+    "lex/httplex",
+    "proxy"
+  ]
   revision = "f2499483f923065a842d38eb4c7f1927e6fc6e6d"
 
 [[projects]]
   name = "golang.org/x/oauth2"
-  packages = [".","internal"]
+  packages = [
+    ".",
+    "internal"
+  ]
   revision = "3c3a985cb79f52a3190fbc056984415ca6763d01"
 
 [[projects]]
   name = "golang.org/x/sys"
-  packages = ["unix","windows"]
+  packages = [
+    "unix",
+    "windows"
+  ]
   revision = "a646d33e2ee3172a661fc09bca23bb4889a41bc8"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/text"
-  packages = ["internal/gen","internal/triegen","internal/ucd","transform","unicode/cldr","unicode/norm","width"]
+  packages = [
+    "internal/gen",
+    "internal/triegen",
+    "internal/ucd",
+    "transform",
+    "unicode/cldr",
+    "unicode/norm",
+    "width"
+  ]
   revision = "eb22672bea55af56d225d4e35405f4d2e9f062a0"
 
 [[projects]]
   name = "golang.org/x/tools"
-  packages = ["go/gcexportdata","go/gcimporter15"]
+  packages = [
+    "go/gcexportdata",
+    "go/gcimporter15"
+  ]
   revision = "1f0f7f68c993a0ff4e0fe1793c08cdd14cc243cb"
 
 [[projects]]
   name = "google.golang.org/appengine"
-  packages = [".","internal","internal/app_identity","internal/base","internal/datastore","internal/log","internal/modules","internal/remote_api","internal/urlfetch","urlfetch"]
+  packages = [
+    ".",
+    "internal",
+    "internal/app_identity",
+    "internal/base",
+    "internal/datastore",
+    "internal/log",
+    "internal/modules",
+    "internal/remote_api",
+    "internal/urlfetch",
+    "urlfetch"
+  ]
   revision = "150dc57a1b433e64154302bdc40b6bb8aefa313a"
   version = "v1.0.0"
 
@@ -348,7 +480,31 @@
 [[projects]]
   branch = "release-1.9"
   name = "k8s.io/apimachinery"
-  packages = ["pkg/api/resource","pkg/apis/meta/v1","pkg/conversion","pkg/conversion/queryparams","pkg/fields","pkg/labels","pkg/runtime","pkg/runtime/schema","pkg/selection","pkg/types","pkg/util/clock","pkg/util/errors","pkg/util/intstr","pkg/util/json","pkg/util/net","pkg/util/runtime","pkg/util/sets","pkg/util/validation","pkg/util/validation/field","pkg/util/wait","pkg/util/yaml","pkg/watch","third_party/forked/golang/reflect"]
+  packages = [
+    "pkg/api/resource",
+    "pkg/apis/meta/v1",
+    "pkg/conversion",
+    "pkg/conversion/queryparams",
+    "pkg/fields",
+    "pkg/labels",
+    "pkg/runtime",
+    "pkg/runtime/schema",
+    "pkg/selection",
+    "pkg/types",
+    "pkg/util/clock",
+    "pkg/util/errors",
+    "pkg/util/intstr",
+    "pkg/util/json",
+    "pkg/util/net",
+    "pkg/util/runtime",
+    "pkg/util/sets",
+    "pkg/util/validation",
+    "pkg/util/validation/field",
+    "pkg/util/wait",
+    "pkg/util/yaml",
+    "pkg/watch",
+    "third_party/forked/golang/reflect"
+  ]
   revision = "180eddb345a5be3a157cea1c624700ad5bd27b8f"
 
 [[projects]]
