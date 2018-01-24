@@ -25341,7 +25341,7 @@ periodics:
   name: spark-periodic-default-gke
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-1.8
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-e55a886b4-master
       args:
       - "--clean"
       - "--job=$(JOB_NAME)"
@@ -25393,7 +25393,7 @@ periodics:
   name: spark-periodic-latest-gke
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-1.8
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-e55a886b4-master
       args:
       - "--clean"
       - "--job=$(JOB_NAME)"
