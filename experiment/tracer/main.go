@@ -24,9 +24,9 @@ import (
 
 	"github.com/NYTimes/gziphandler"
 	"github.com/sirupsen/logrus"
+	"k8s.io/apimachinery/pkg/labels"
 
 	"k8s.io/test-infra/prow/kube"
-	"k8s.io/test-infra/prow/kube/labels"
 )
 
 var (

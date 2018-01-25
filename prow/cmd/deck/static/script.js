@@ -256,7 +256,7 @@ function registerFuzzySearchHandler(id, inputId, listId, data) {
         return;
     }
 
-    input.addEventListener("keydown", function () {
+    input.addEventListener("keydown", function (event) {
         if (event.keyCode === 13) {
             // If enter key is hit, selects the first job in the list.
             handleEnterKeyDown(inputId, listId);
