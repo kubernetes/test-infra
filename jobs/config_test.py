@@ -567,6 +567,8 @@ class JobTest(unittest.TestCase):
 
                     if shared_builds or node_e2e:
                         expected = 0
+                    elif 'ingress' in job:
+                        expected = 1
                     elif any(s in job for s in [
                             'upgrade', 'skew', 'downgrade', 'rollback',
                             'ci-kubernetes-e2e-gce-canary',
