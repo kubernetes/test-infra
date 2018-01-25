@@ -8787,7 +8787,6 @@
     "args": [
       "--cluster=e2e-kops-aws-newrunner.test-cncf-aws.k8s.io",
       "--deployment=kops",
-      "--env-file=jobs/platform/kops_aws.env",
       "--extract=ci/latest",
       "--ginkgo-parallel",
       "--kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci.txt",
