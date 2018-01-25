@@ -26,14 +26,14 @@ branch-protection:
   orgs:
     kubernetes:
       repos:
-        test-infra:
-          protect-by-default: true
-          require-contexts:
-          - cla/linuxfoundation
+        kubernetes/test-infra:
+          protect: true
+          # Contexts: inherited from presubmits
+          # Pushers: only admins
     kubernetes-sig-testing:
       repos:
         frameworks:
-          protect-by-default: true
+          protect: true
           require-contexts:
           - continuous-integration/travis-ci
           - cla/linuxfoundation

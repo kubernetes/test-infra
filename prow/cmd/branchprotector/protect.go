@@ -17,7 +17,6 @@ limitations under the License.
 package main
 
 import (
-	"errors"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -218,25 +217,13 @@ func (p *Protector) UpdateOrg(orgName string, org config.Org, protect *bool, con
 	op := append([]string(nil), pushers...)
 	op = append(op, org.Pushers...)
 
-	var repos []string
-	if protect != nil {
-		// Strongly opinionated org, configure every repo in the org.
-		rs, err := p.client.GetRepos(orgName, false)
-		if err != nil {
-			return fmt.Errorf("GetRepos(%s) failed: %v", orgName, err)
-		}
-		for _, r := range rs {
-			repos = append(repos, r.Name)
-		}
-	} else {
-		// Unopinionated org, just set explicitly defined repos
-		for r := range org.Repos {
-			repos = append(repos, r)
-		}
+	repos, err := p.client.GetRepos(orgName, false)
+	if err != nil {
+		return fmt.Errorf("GetRepos(%s) failed: %v", orgName, err)
 	}
-
-	for _, repoName := range repos {
-		err := p.UpdateRepo(orgName, repoName, org.Repos[repoName], protect, oc, op)
+	for _, repo := range repos {
+		repoName := repo.Name
+		err := p.UpdateRepo(orgName, repoName, org.Repos[orgName+"/"+repoName], protect, oc, op)
 		if err != nil {
 			return err
 		}
@@ -259,31 +246,19 @@ func (p *Protector) UpdateRepo(orgName string, repo string, repoDefaults config.
 
 	rc = append(rc, repoRequirements(orgName, repo, *p.cfg)...)
 
-	var branches []string
-	if protect != nil {
-		bs, err := p.client.GetBranches(orgName, repo)
-		if err != nil {
-			return fmt.Errorf("GetBranches(%s, %s) failed: %v", orgName, repo, err)
-		}
-		for _, branch := range bs {
-			branches = append(branches, branch.Name)
-		}
-	} else {
-		for b := range repoDefaults.Branches {
-			branches = append(branches, b)
-		}
+	branches, err := p.client.GetBranches(orgName, repo)
+	if err != nil {
+		return fmt.Errorf("GetBranches(%s, %s) failed: %v", orgName, repo, err)
 	}
-
-	for _, branchName := range branches {
-		if err := p.UpdateBranch(orgName, repo, branchName, repoDefaults.Branches[branchName], protect, rc, rp); err != nil {
-			return fmt.Errorf("UpdateBranch(%s, %s, %s, ...) failed: %v", orgName, repo, branchName, err)
-		}
+	for _, branch := range branches {
+		branchName := branch.Name
+		p.UpdateBranch(orgName, repo, branchName, repoDefaults.Branches[branchName], protect, rc, rp)
 	}
 	return nil
 }
 
 // Update the branch with the specified configuration
-func (p *Protector) UpdateBranch(orgName, repo string, branchName string, branchDefaults config.Branch, protect *bool, contexts, pushers []string) error {
+func (p *Protector) UpdateBranch(orgName, repo string, branchName string, branchDefaults config.Branch, protect *bool, contexts, pushers []string) {
 	bc := append([]string(nil), contexts...)
 	bpush := append([]string(nil), pushers...)
 	if branchDefaults.Protect != nil {
@@ -292,16 +267,12 @@ func (p *Protector) UpdateBranch(orgName, repo string, branchName string, branch
 	bc = append(bc, branchDefaults.Contexts...)
 	bpush = append(bpush, branchDefaults.Pushers...)
 
-	if protect == nil {
-		return errors.New("protect should not be nil")
+	var prot bool
+	if protect != nil {
+		prot = *protect
 	}
-
-	prot := *protect
-
-	if len(bc) > 0 || len(bpush) > 0 {
-		if !prot {
-			return errors.New("setting pushers or contexts requires protection")
-		}
+	if len(bc) != 0 || len(bpush) != 0 {
+		prot = true
 	}
 
 	p.updates <- Requirements{
@@ -312,5 +283,4 @@ func (p *Protector) UpdateBranch(orgName, repo string, branchName string, branch
 		Contexts: bc,
 		Pushers:  bpush,
 	}
-	return nil
 }
