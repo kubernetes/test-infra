@@ -96,7 +96,7 @@ spec:
       terminationGracePeriodSeconds: 180
       containers:
       - name: hook
-        image: gcr.io/k8s-prow/hook:0.198
+        image: gcr.io/k8s-prow/hook:v20180125-b72c696dc
         imagePullPolicy: Always
         args:
         - --dry-run=false
@@ -156,7 +156,7 @@ spec:
     spec:
       containers:
       - name: plank
-        image: gcr.io/k8s-prow/plank:0.65
+        image: gcr.io/k8s-prow/plank:v20180125-b72c696dc
         args:
         - --dry-run=false
         volumeMounts:
@@ -189,7 +189,7 @@ spec:
     spec:
       containers:
       - name: sinker
-        image: gcr.io/k8s-prow/sinker:0.27
+        image: gcr.io/k8s-prow/sinker:v20180125-b72c696dc
         volumeMounts:
         - name: config
           mountPath: /etc/config
@@ -220,7 +220,7 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: deck
-        image: gcr.io/k8s-prow/deck:0.80
+        image: gcr.io/k8s-prow/deck:v20180125-b72c696dc
         args:
         - --hook-url=http://hook:8888/plugin-help
         ports:
@@ -263,7 +263,7 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
       - name: horologium
-        image: gcr.io/k8s-prow/horologium:0.21
+        image: gcr.io/k8s-prow/horologium:v20180125-b72c696dc
         volumeMounts:
         - name: config
           mountPath: /etc/config
