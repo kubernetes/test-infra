@@ -55,6 +55,9 @@ RUN INSTALLER="bazel-${BAZEL_VERSION}-installer-linux-x86_64.sh"; \
 ARG IMAGE_ARG
 ENV IMAGE=${IMAGE_ARG}
 
+# preinstall this for kops tests xref kubetest prepareAws(...)
+RUN pip install awscli
+
 ADD ["e2e-runner.sh", \
     "kops-e2e-runner.sh", \
     "kubetest", \

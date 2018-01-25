@@ -567,6 +567,8 @@ class JobTest(unittest.TestCase):
 
                     if shared_builds or node_e2e:
                         expected = 0
+                    elif 'ingress' in job:
+                        expected = 1
                     elif any(s in job for s in [
                             'upgrade', 'skew', 'downgrade', 'rollback',
                             'ci-kubernetes-e2e-gce-canary',
@@ -594,10 +596,7 @@ class JobTest(unittest.TestCase):
                                   'both set or unset: %s' % job)
 
                     if job.startswith('pull-kubernetes-') and not node_e2e:
-                        if 'gke' in job:
-                            stage = 'gs://kubernetes-release-dev/ci'
-                            suffix = True
-                        elif 'kubeadm' in job:
+                        if 'kubeadm' in job:
                             # kubeadm-based jobs use out-of-band .deb artifacts,
                             # not the --stage flag.
                             continue

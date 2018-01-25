@@ -27,9 +27,9 @@ import (
 	"github.com/ghodss/yaml"
 	"github.com/sirupsen/logrus"
 	cron "gopkg.in/robfig/cron.v2"
+	"k8s.io/apimachinery/pkg/labels"
 
 	"k8s.io/test-infra/prow/kube"
-	"k8s.io/test-infra/prow/kube/labels"
 )
 
 // Config is a read-only snapshot of the config.

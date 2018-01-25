@@ -8,29 +8,25 @@ load(
 
 go_test(
     name = "go_default_test",
-    srcs = [
-        "client_test.go",
-        "prowjob_test.go",
-    ],
+    srcs = ["cat_test.go"],
     embed = [":go_default_library"],
-    importpath = "k8s.io/test-infra/prow/kube",
+    importpath = "k8s.io/test-infra/prow/plugins/yuks",
+    deps = [
+        "//prow/github:go_default_library",
+        "//prow/github/fakegithub:go_default_library",
+        "//vendor/github.com/sirupsen/logrus:go_default_library",
+    ],
 )
 
 go_library(
     name = "go_default_library",
-    srcs = [
-        "client.go",
-        "metrics.go",
-        "prowjob.go",
-        "types.go",
-    ],
-    importpath = "k8s.io/test-infra/prow/kube",
+    srcs = ["cat.go"],
+    importpath = "k8s.io/test-infra/prow/plugins/cat",
     deps = [
-        "//vendor/github.com/ghodss/yaml:go_default_library",
-        "//vendor/github.com/prometheus/client_golang/prometheus:go_default_library",
+        "//prow/github:go_default_library",
+        "//prow/pluginhelp:go_default_library",
+        "//prow/plugins:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
-        "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
-        "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
     ],
 )
 
