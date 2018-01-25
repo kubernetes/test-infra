@@ -24,40 +24,10 @@ set -o errexit
 set -o pipefail
 set -o xtrace
 
-# Remove //foo:something references from bar/BUILD
-# Remove //vendor/golang.org/x/text/internal:go_default_library deps
-#
-# Unused text/gen.go file imports text/internal, which prevents dep prune from
-# removing it. However text/internal package references a text/language package
-# which has been pruned.
-#
-# Fix by deleting this dependency. The target won't build correctly, but it
-# won't anyway because text/language doesn't exist, and it will get pruned by
-# hack/prune-libraries.sh
-#
-# Usage:
-#   remove-text-internal
-drop-dep() {
-  local path
-  path="$(dirname "${BASH_SOURCE}")/../$2/BUILD"
-  if [[ ! -f ${path} ]]; then
-    return 0
-  fi
-  sed -i -e "\|//$1:go_default_library|d" "$path"
-}
-
 trap 'echo "FAILED" >&2' ERR
 pushd "$(dirname "${BASH_SOURCE}")/.."
 dep ensure -v
-dep prune -v
 hack/update-bazel.sh
-drop-dep vendor/golang.org/x/text/language vendor/golang.org/x/text/internal
-drop-dep vendor/google.golang.org/api/transport/grpc vendor/google.golang.org/api/transport
-drop-dep vendor/github.com/golang/protobuf/protoc-gen-go/grpc vendor/github.com/golang/protobuf/protoc-gen-go
-drop-dep vendor/github.com/golang/protobuf/protoc-gen-go/generator vendor/github.com/golang/protobuf/protoc-gen-go
-drop-dep vendor/github.com/golang/protobuf/protoc-gen-go vendor/github.com/golang/protobuf/protoc-gen-go
-drop-dep vendor/github.com/docker/distribution/context vendor/github.com/docker/distribution
-drop-dep vendor/github.com/docker/docker/pkg/term vendor/github.com/docker/docker/cli
 hack/prune-libraries.sh --fix
 hack/update-bazel.sh  # Update child :all-srcs in case parent was deleted
 echo SUCCESS
