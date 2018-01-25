@@ -30,6 +30,10 @@ branch-protection:
           protect: true
           # Contexts: inherited from presubmits
           # Pushers: only admins
+        kubernetes/kubernetes:
+          protect: true
+          # Contexts: inherited from presubmits
+          # Pushers: only admins
     kubernetes-sig-testing:
       repos:
         frameworks:
@@ -50,6 +54,7 @@ tide:
     - kubernetes/federation
     - kubernetes/ingress-nginx
     - kubernetes/kops
+    - kubernetes/kubernetes
     - kubernetes/kubernetes-template-project
     - kubernetes/kube-deploy
     - kubernetes/minikube
