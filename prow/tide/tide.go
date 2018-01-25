@@ -26,6 +26,7 @@ import (
 	"net/http"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/shurcooL/githubql"
 	"github.com/sirupsen/logrus"
@@ -448,21 +449,50 @@ func (c *Controller) pickBatch(sp subpool) ([]PullRequest, error) {
 }
 
 func (c *Controller) mergePRs(sp subpool, prs []PullRequest) error {
-	for _, pr := range prs {
-		if err := c.ghc.Merge(sp.org, sp.repo, int(pr.Number), github.MergeDetails{
-			SHA:         string(pr.HeadRefOID),
-			MergeMethod: string(c.ca.Config().Tide.MergeMethod(sp.org, sp.repo)),
-		}); err != nil {
-			if _, ok := err.(github.ModifiedHeadError); ok {
-				// This is a possible source of incorrect behavior. If someone
-				// modifies their PR as we try to merge it in a batch then we
-				// end up in an untested state. This is unlikely to cause any
-				// real problems.
-				c.logger.WithError(err).Info("Merge failed: PR was modified.")
-			} else if _, ok = err.(github.UnmergablePRError); ok {
-				c.logger.WithError(err).Warning("Merge failed: PR is unmergable. How did it pass tests?!")
+	maxRetries := 3
+	for i, pr := range prs {
+		backoff := time.Second * 4
+		log := c.logger.WithFields(pr.logFields())
+		for retry := 0; retry < maxRetries; retry++ {
+			if err := c.ghc.Merge(sp.org, sp.repo, int(pr.Number), github.MergeDetails{
+				SHA:         string(pr.HeadRefOID),
+				MergeMethod: string(c.ca.Config().Tide.MergeMethod(sp.org, sp.repo)),
+			}); err != nil {
+				if _, ok := err.(github.ModifiedHeadError); ok {
+					// This is a possible source of incorrect behavior. If someone
+					// modifies their PR as we try to merge it in a batch then we
+					// end up in an untested state. This is unlikely to cause any
+					// real problems.
+					log.WithError(err).Warning("Merge failed: PR was modified.")
+					break
+				} else if _, ok = err.(github.UnmergablePRBaseChangedError); ok {
+					// Github complained that the base branch was modified. This is a
+					// strange error because the API doesn't even allow the request to
+					// specify the base branch sha, only the head sha.
+					// We suspect that github is complaining because we are making the
+					// merge requests too rapidly and it cannot recompute mergability
+					// in time. https://github.com/kubernetes/test-infra/issues/5171
+					// We handle this by sleeping for a few seconds before trying to
+					// merge again.
+					log.WithError(err).Warning("Merge failed: Base branch was modified.")
+					if retry+1 < maxRetries {
+						time.Sleep(backoff)
+						backoff *= 2
+					}
+				} else if _, ok = err.(github.UnmergablePRError); ok {
+					log.WithError(err).Warning("Merge failed: PR is unmergable. How did it pass tests?!")
+					break
+				} else {
+					return err
+				}
 			} else {
-				return err
+				log.Info("Merged.")
+				// If we have more PRs to merge, sleep to give Github time to recalculate
+				// mergeability.
+				if i+1 < len(prs) {
+					time.Sleep(time.Second * 3)
+				}
+				break
 			}
 		}
 	}
