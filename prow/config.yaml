@@ -7508,6 +7508,8 @@ periodics:
       - "--timeout=320"
       - "--bare"
       env:
+      - name: USER
+        value: prow
       - name: GOOGLE_APPLICATION_CREDENTIALS
         value: /etc/service-account/service-account.json
       - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
@@ -7570,6 +7572,8 @@ periodics:
       - "--timeout=320"
       - "--bare"
       env:
+      - name: USER
+        value: prow
       - name: GOOGLE_APPLICATION_CREDENTIALS
         value: /etc/service-account/service-account.json
       - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
