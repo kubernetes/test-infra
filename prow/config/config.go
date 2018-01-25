@@ -34,6 +34,8 @@ import (
 
 // Config is a read-only snapshot of the config.
 type Config struct {
+	// Presets apply to all job types.
+	Presets []Preset `json:"presets,omitempty"`
 	// Full repo name (such as "kubernetes/kubernetes") -> list of jobs.
 	Presubmits  map[string][]Presubmit  `json:"presubmits,omitempty"`
 	Postsubmits map[string][]Postsubmit `json:"postsubmits,omitempty"`
@@ -241,6 +243,11 @@ func parseConfig(c *Config) error {
 		if v.MaxConcurrency < 0 {
 			return fmt.Errorf("job %s jas invalid max_concurrency (%d), it needs to be a non-negative number", name, v.MaxConcurrency)
 		}
+		for _, preset := range c.Presets {
+			if err := mergePreset(preset, v.Labels, v.Spec); err != nil {
+				return fmt.Errorf("could not merge preset: %v", err)
+			}
+		}
 	}
 
 	// Validate postsubmits.
@@ -265,6 +272,11 @@ func parseConfig(c *Config) error {
 		if j.MaxConcurrency < 0 {
 			return fmt.Errorf("job %s jas invalid max_concurrency (%d), it needs to be a non-negative number", name, j.MaxConcurrency)
 		}
+		for _, preset := range c.Presets {
+			if err := mergePreset(preset, j.Labels, j.Spec); err != nil {
+				return fmt.Errorf("could not merge preset: %v", err)
+			}
+		}
 	}
 
 	// Ensure that the periodic durations are valid and specs exist.
@@ -283,6 +295,11 @@ func parseConfig(c *Config) error {
 		if agent != string(kube.KubernetesAgent) && agent != string(kube.JenkinsAgent) {
 			return fmt.Errorf("job %s has invalid agent (%s), it needs to be one of the following: %s %s",
 				name, agent, kube.KubernetesAgent, kube.JenkinsAgent)
+		}
+		for _, preset := range c.Presets {
+			if err := mergePreset(preset, p.Labels, p.Spec); err != nil {
+				return fmt.Errorf("could not merge preset: %v", err)
+			}
 		}
 	}
 	// Set the interval on the periodic jobs. It doesn't make sense to do this
