@@ -44,6 +44,11 @@ type Tide struct {
 	// We can consider allowing this to be set separately for separate repos, or
 	// allowing it to be a template.
 	TargetURL string `json:"target_url,omitempty"`
+
+	// MaxGoroutines is the maximum number of goroutines spawned inside the
+	// controller to handle org/repo:branch pools. Defaults to 20. Needs to be a
+	// positive number.
+	MaxGoroutines int `json:"max_goroutines,omitempty"`
 }
 
 // MergeMethod returns the merge method to use for a repo. The default of merge is

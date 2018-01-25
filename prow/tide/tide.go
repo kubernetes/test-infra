@@ -210,13 +210,32 @@ func (c *Controller) Sync() error {
 		return err
 	}
 
+	goroutines := c.ca.Config().Tide.MaxGoroutines
+	if goroutines > len(sps) {
+		goroutines = len(sps)
+	}
+	wg := &sync.WaitGroup{}
+	wg.Add(goroutines)
+	c.logger.Debugf("Firing up %d goroutines", goroutines)
+	poolChan := make(chan Pool, len(sps))
+	for i := 0; i < goroutines; i++ {
+		go func() {
+			defer wg.Done()
+			for sp := range sps {
+				if pool, err := c.syncSubpool(sp); err != nil {
+					c.logger.WithError(err).Errorf("Syncing subpool %s/%s:%s.", sp.org, sp.repo, sp.branch)
+				} else {
+					poolChan <- pool
+				}
+			}
+		}()
+	}
+	wg.Wait()
+	close(poolChan)
+
 	pools := make([]Pool, 0, len(sps))
-	for _, sp := range sps {
-		if pool, err := c.syncSubpool(sp); err != nil {
-			c.logger.WithError(err).Errorf("Syncing subpool %s/%s:%s.", sp.org, sp.repo, sp.branch)
-		} else {
-			pools = append(pools, pool)
-		}
+	for pool := range poolChan {
+		pools = append(pools, pool)
 	}
 	c.m.Lock()
 	defer c.m.Unlock()
@@ -612,7 +631,7 @@ type subpool struct {
 
 // dividePool splits up the list of pull requests and prow jobs into a group
 // per repo and branch. It only keeps ProwJobs that match the latest branch.
-func (c *Controller) dividePool(pool []PullRequest, pjs []kube.ProwJob) ([]subpool, error) {
+func (c *Controller) dividePool(pool []PullRequest, pjs []kube.ProwJob) (chan subpool, error) {
 	sps := make(map[string]*subpool)
 	for _, pr := range pool {
 		org := string(pr.Repository.Owner.Login)
@@ -644,10 +663,11 @@ func (c *Controller) dividePool(pool []PullRequest, pjs []kube.ProwJob) ([]subpo
 		}
 		sps[fn].pjs = append(sps[fn].pjs, pj)
 	}
-	var ret []subpool
+	ret := make(chan subpool, len(sps))
 	for _, sp := range sps {
-		ret = append(ret, *sp)
+		ret <- *sp
 	}
+	close(ret)
 	return ret, nil
 }
 
