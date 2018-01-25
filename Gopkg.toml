@@ -1,5 +1,10 @@
 # Gopkg.toml for k8s.io/test-infra
 
+# Updating this list likely also requires updating hack/prune-libraries.sh.
+required = [
+  "github.com/golang/dep/cmd/dep"
+]
+
 [[constraint]]
   name = "github.com/prometheus/client_golang"
   version = "0.8.0"
@@ -17,6 +22,10 @@
   # https://github.com/docker/docker-ce/blob/17.12/components/cli/vendor.conf
   # to update this check https://github.com/docker/docker-ce/blob/<tag>/components/cli/vendor.conf 
   revision = "5e5fadb3c0201553929d4a6ea8dc8f9d8a1e56fe"
+
+[[constraint]]
+  name = "github.com/golang/dep"
+  version = "v0.4.1"
 
 [prune]
   unused-packages = true

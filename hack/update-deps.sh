@@ -27,6 +27,11 @@ set -o xtrace
 trap 'echo "FAILED" >&2' ERR
 pushd "$(dirname "${BASH_SOURCE}")/.."
 dep ensure -v
+# dep itself has a problematic testdata directory with infinite symlinks which
+# makes bazel sad: https://github.com/golang/dep/pull/1412
+# dep should probably be removing it, but it doesn't:
+# https://github.com/golang/dep/issues/1580
+rm -rf vendor/github.com/golang/dep/internal/fs/testdata
 hack/update-bazel.sh
 hack/prune-libraries.sh --fix
 hack/update-bazel.sh  # Update child :all-srcs in case parent was deleted
