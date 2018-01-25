@@ -8869,16 +8869,14 @@
   },
   "ci-kubernetes-e2e-kops-aws-updown": {
     "args": [
-      "--aws",
-      "--aws-role-arn=arn:aws:iam::660757973107:role/job-kops-aws-updown",
-      "--cluster=e2e.kops-aws-updown.test-aws.k8s.io",
+      "--cluster=e2e-kops-aws-updown.test-cncf-aws.k8s.io",
+      "--deployment=kops",
       "--env-file=jobs/platform/kops_aws.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-kops-aws-updown.env",
       "--extract=ci/latest",
       "--ginkgo-parallel",
-      "--kops-state=s3://kops-aws-updown-store",
-      "--kops-zones=us-west-1b",
+      "--kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci.txt",
       "--provider=aws",
+      "--publish=gs://kops-ci/bin/latest-ci-updown-green.txt",
       "--test_args=--ginkgo.flakeAttempts=2 --ginkgo.focus=\\[k8s.io\\]\\sNetworking.*\\[Conformance\\]",
       "--timeout=30m"
     ],
