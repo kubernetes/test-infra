@@ -13,8 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-if [ "$#" -ne 1 ]; then
-  echo "usage: $0 [program]"
+if [ "$#" -lt 1 ]; then
+  echo "usage: $0 <program> [program ...]"
   exit 1
 fi
 
@@ -30,13 +30,14 @@ fi
 
 cd $(dirname $0)
 
-makefile_version_re="^\(${1}_VERSION.*=\s*\)"
-version=$($SED -n "s/$makefile_version_re//Ip" Makefile)
-new_version=$(awk -F. '{print $1 "." $2+1}' <<< $version)
+new_version="v$(date -u '+%Y%m%d')-$(git describe --tags --always --dirty)"
+for i in "$@"; do
+  makefile_version_re="^\(${i}_VERSION.*=\s*\)"
+  version=$($SED -n "s/$makefile_version_re//Ip" Makefile)
+  echo "program: $i"
+  echo "old version: $version"
+  echo "new version: $new_version"
 
-echo "program: $1"
-echo "old version: $version"
-echo "new version: $new_version"
-
-$SED -i "s/$makefile_version_re.*/\1$new_version/I" Makefile
-$SED -i "s/\(${1}:\)[0-9]\+\.[0-9]\+/\1$new_version/I" cluster/*.yaml
+  $SED -i "s/$makefile_version_re.*/\1$new_version/I" Makefile
+  $SED -i "s/\(${i}:\)[0-9]\+\.[0-9]\+/\1$new_version/I" cluster/*.yaml
+done
