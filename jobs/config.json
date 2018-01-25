@@ -8772,7 +8772,7 @@
       "--env-file=jobs/platform/kops_aws.env",
       "--extract=ci/latest",
       "--ginkgo-parallel",
-      "--kops-args=--image=099720109477/ubuntu/images/hvm-instance/ubuntu-xenial-16.04-amd64-server-20180109",
+      "--kops-args=--image=099720109477/ubuntu/images/hvm-ssd/ubuntu-xenial-16.04-amd64-server-20180122",
       "--kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci.txt",
       "--provider=aws",
       "--test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]|\\[HPA\\]|Dashboard|Services.*functioning.*NodePort",
