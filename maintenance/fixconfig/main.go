@@ -218,14 +218,15 @@ func convertJobToSecurityJob(j *config.Presubmit) {
 				MountPath: "/etc/ssh-security",
 			},
 		)
+		defaultMode := int32(0400)
 		j.Spec.Volumes = append(
 			j.Spec.Volumes,
 			kube.Volume{
 				Name: "ssh-security",
 				VolumeSource: kube.VolumeSource{
 					Secret: &kube.SecretSource{
-						Name:        "ssh-security",
-						DefaultMode: 0400,
+						SecretName:  "ssh-security",
+						DefaultMode: &defaultMode,
 					},
 				},
 			},
