@@ -25210,7 +25210,7 @@ periodics:
         Reopen the issue with `/reopen`.
         Mark the issue as fresh with `/remove-lifecycle rotten`.
 
-        Send feedback to sig-testing, kubernetes/test-infra and/or `@fejta`.
+        Send feedback to sig-testing, kubernetes/test-infra and/or [fejta](https://github.com/fejta).
         /close
       - --template
       - --ceiling=10
@@ -25248,7 +25248,7 @@ periodics:
       - --token=/etc/token/bot-github-token
       - |-
         --comment=/retest
-        This bot automatically retries jobs that failed/flaked on approved PRs (send feedback to `@fejta`).
+        This bot automatically retries jobs that failed/flaked on approved PRs (send feedback to [fejta](https://github.com/fejta)).
 
         Review the [full test history](https://k8s-gubernator.appspot.com/pr/{{.Number}}) for this PR.
 
@@ -25286,7 +25286,7 @@ periodics:
 
         If this issue is safe to close now please do so with `/close`.
 
-        Send feedback to sig-testing, kubernetes/test-infra and/or `@fejta`.
+        Send feedback to sig-testing, kubernetes/test-infra and/or [fejta](https://github.com/fejta).
         /lifecycle rotten
         /remove-lifecycle stale
       - --template
@@ -25319,11 +25319,9 @@ periodics:
         Mark the issue as fresh with `/remove-lifecycle stale`.
         Stale issues rot after an additional 30d of inactivity and eventually close.
 
-        Prevent issues from auto-closing with an `/lifecycle frozen` comment.
-
         If this issue is safe to close now please do so with `/close`.
 
-        Send feedback to sig-testing, kubernetes/test-infra and/or `@fejta`.
+        Send feedback to sig-testing, kubernetes/test-infra and/or [fejta](https://github.com/fejta).
         /lifecycle stale
       - --template
       - --ceiling=10
