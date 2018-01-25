@@ -53,6 +53,7 @@ filegroup(
         "//prow/plugins/assign:all-srcs",
         "//prow/plugins/blockade:all-srcs",
         "//prow/plugins/blunderbuss:all-srcs",
+        "//prow/plugins/cat:all-srcs",
         "//prow/plugins/cla:all-srcs",
         "//prow/plugins/docs-no-retest:all-srcs",
         "//prow/plugins/golint:all-srcs",
