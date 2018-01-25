@@ -219,6 +219,7 @@ func TestProtect(t *testing.T) {
 			name: "unknown org",
 			config: config.Config{
 				BranchProtection: config.BranchProtection{
+					Protect: &yes,
 					Orgs: map[string]config.Org{
 						"unknown": {},
 					},
@@ -286,6 +287,54 @@ func TestProtect(t *testing.T) {
 			},
 		},
 		{
+			name:     "require a defined branch to make a protection decision",
+			branches: []string{"org/repo=branch"},
+			config: config.Config{
+				BranchProtection: config.BranchProtection{
+					Orgs: map[string]config.Org{
+						"org": {
+							Repos: map[string]config.Repo{
+								"repo": {
+									Branches: map[string]config.Branch{
+										"branch": {},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			errors: 1,
+		},
+		{
+			name:     "require pushers to set protection",
+			branches: []string{"org/repo=push"},
+			config: config.Config{
+				BranchProtection: config.BranchProtection{
+					Protect: &no,
+					Pushers: []string{"oncall"},
+					Orgs: map[string]config.Org{
+						"org": {},
+					},
+				},
+			},
+			errors: 1,
+		},
+		{
+			name:     "require requiring contexts to set protection",
+			branches: []string{"org/repo=context"},
+			config: config.Config{
+				BranchProtection: config.BranchProtection{
+					Protect:  &no,
+					Contexts: []string{"test-foo"},
+					Orgs: map[string]config.Org{
+						"org": {},
+					},
+				},
+			},
+			errors: 1,
+		},
+		{
 			name:     "protect org but skip a repo",
 			branches: []string{"org/repo1=master", "org/repo1=branch", "org/skip=master"},
 			config: config.Config{
@@ -295,7 +344,7 @@ func TestProtect(t *testing.T) {
 						"org": {
 							Protect: &yes,
 							Repos: map[string]config.Repo{
-								"org/skip": {
+								"skip": {
 									Protect: &no,
 								},
 							},
@@ -335,7 +384,7 @@ func TestProtect(t *testing.T) {
 						"org": {
 							Contexts: []string{"org-presubmit"},
 							Repos: map[string]config.Repo{
-								"org/repo": {
+								"repo": {
 									Contexts: []string{"repo-presubmit"},
 									Branches: map[string]config.Branch{
 										"master": {
@@ -369,7 +418,7 @@ func TestProtect(t *testing.T) {
 						"org": {
 							Pushers: []string{"org-team"},
 							Repos: map[string]config.Repo{
-								"org/repo": {
+								"repo": {
 									Pushers: []string{"repo-team"},
 									Branches: map[string]config.Branch{
 										"master": {
@@ -416,7 +465,7 @@ func TestProtect(t *testing.T) {
 		}
 		for org, r := range repos {
 			for rname := range r {
-				fc.repos[org] = append(fc.repos[org], github.Repo{Name: rname})
+				fc.repos[org] = append(fc.repos[org], github.Repo{Name: rname, FullName: org + "/" + rname})
 			}
 		}
 
