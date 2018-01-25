@@ -295,7 +295,7 @@ func TestProtect(t *testing.T) {
 						"org": {
 							Protect: &yes,
 							Repos: map[string]config.Repo{
-								"org/skip": {
+								"skip": {
 									Protect: &no,
 								},
 							},
@@ -335,7 +335,7 @@ func TestProtect(t *testing.T) {
 						"org": {
 							Contexts: []string{"org-presubmit"},
 							Repos: map[string]config.Repo{
-								"org/repo": {
+								"repo": {
 									Contexts: []string{"repo-presubmit"},
 									Branches: map[string]config.Branch{
 										"master": {
@@ -369,7 +369,7 @@ func TestProtect(t *testing.T) {
 						"org": {
 							Pushers: []string{"org-team"},
 							Repos: map[string]config.Repo{
-								"org/repo": {
+								"repo": {
 									Pushers: []string{"repo-team"},
 									Branches: map[string]config.Branch{
 										"master": {

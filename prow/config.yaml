@@ -26,7 +26,7 @@ branch-protection:
   orgs:
     kubernetes:
       repos:
-        kubernetes/test-infra:
+        test-infra:
           protect: true
           # Contexts: inherited from presubmits
           # Pushers: only admins

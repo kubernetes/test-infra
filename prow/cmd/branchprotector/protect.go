@@ -223,7 +223,7 @@ func (p *Protector) UpdateOrg(orgName string, org config.Org, protect *bool, con
 	}
 	for _, repo := range repos {
 		repoName := repo.Name
-		err := p.UpdateRepo(orgName, repoName, org.Repos[orgName+"/"+repoName], protect, oc, op)
+		err := p.UpdateRepo(orgName, repoName, org.Repos[repoName], protect, oc, op)
 		if err != nil {
 			return err
 		}
