@@ -1020,5 +1020,5 @@ func publish(pub string) error {
 		return err
 	}
 	log.Printf("Set %s version to %s", pub, string(v))
-	return finishRunning(exec.Command("gsutil", "cp", "version", pub))
+	return gcsWrite(pub, v)
 }

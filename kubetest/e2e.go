@@ -315,7 +315,7 @@ func run(deploy deployer, o options) error {
 				return err
 			}
 			log.Printf("Set %s version to %s", o.publish, string(v))
-			return finishRunning(exec.Command("gsutil", "cp", "version", o.publish))
+			return gcsWrite(o.publish, v)
 		}))
 	}
 
