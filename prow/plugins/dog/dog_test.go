@@ -130,6 +130,12 @@ func TestHttpResponse(t *testing.T) {
 			response: `{"url": "not a url.."}`,
 			isValid:  false,
 		},
+		{
+			name:     "mp4 doggo unsupported :(",
+			path:     "/mp4-doggo",
+			response: `{"url": "http://example/doggo.mp4"}`,
+			isValid:  false,
+		},
 	}
 
 	// setup handler for test-cases
