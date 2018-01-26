@@ -207,7 +207,7 @@ def _classify_internal(merged, labels, comments, reviewers, distilled_events, st
     is_open = merged['state'] != 'closed'
     author = merged['user']['login']
     assignees = sorted({assignee['login'] for assignee in merged['assignees']} | reviewers)
-    involved = sorted(set([author] + assignees + approvers))
+    involved = sorted(u.lower() for u in set([author] + assignees + approvers))
 
     payload = {
         'author': author,
