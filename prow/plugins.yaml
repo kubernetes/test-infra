@@ -36,6 +36,7 @@ approve:
   - kubernetes/kops
   - kubernetes/kube-deploy
   - kubernetes/kubectl
+  - kubernetes/kubernetes
   - kubernetes/kubernetes-template-project
   - kubernetes/minikube
   - kubernetes/repo-infra
@@ -47,10 +48,6 @@ approve:
 - repos:
   - kubernetes-sig-testing
   implicit_self_approve: true
-- repos:
-  - kubernetes/kubernetes
-  implicit_self_approve: true
-  issue_required: true
 
 blockades:
 - repos:
