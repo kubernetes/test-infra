@@ -24,6 +24,7 @@ go_test(
     deps = [
         "//prow/github:go_default_library",
         "//prow/kube:go_default_library",
+        "//vendor/k8s.io/api/core/v1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
     ],
 )
@@ -44,6 +45,7 @@ go_library(
         "//vendor/github.com/ghodss/yaml:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
         "//vendor/gopkg.in/robfig/cron.v2:go_default_library",
+        "//vendor/k8s.io/api/core/v1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/labels:go_default_library",
     ],
 )

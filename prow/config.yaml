@@ -26,14 +26,14 @@ branch-protection:
   orgs:
     kubernetes:
       repos:
-        kubernetes/test-infra:
-          protect: true
-          # Contexts: inherited from presubmits
-          # Pushers: only admins
+        test-infra:
+          protect-by-default: true
+          require-contexts:
+          - cla/linuxfoundation
     kubernetes-sig-testing:
       repos:
         frameworks:
-          protect: true
+          protect-by-default: true
           require-contexts:
           - continuous-integration/travis-ci
           - cla/linuxfoundation
@@ -685,7 +685,7 @@ presubmits:
     trigger: "(?m)^/test( all| pull-cluster-registry-verify-gensrc),?(\\s+|$)"
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171214-ae38d82af-0.8.1
+      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -694,6 +694,8 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         env:
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /etc/service-account/service-account.json
         - name: TEST_TMPDIR
           value: /root/.cache/bazel
         # Bazel needs privileged mode in order to sandbox builds.
@@ -7506,6 +7508,8 @@ periodics:
       - "--timeout=320"
       - "--bare"
       env:
+      - name: USER
+        value: prow
       - name: GOOGLE_APPLICATION_CREDENTIALS
         value: /etc/service-account/service-account.json
       - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
@@ -7568,6 +7572,8 @@ periodics:
       - "--timeout=320"
       - "--bare"
       env:
+      - name: USER
+        value: prow
       - name: GOOGLE_APPLICATION_CREDENTIALS
         value: /etc/service-account/service-account.json
       - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE

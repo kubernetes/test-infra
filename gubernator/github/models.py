@@ -159,6 +159,18 @@ class GHIssueDigest(ndb.Model):
     def find_xrefs(xref):
         return GHIssueDigest.query(GHIssueDigest.xref == xref)
 
+    @staticmethod
+    def find_open_prs():
+        # pylint: disable=singleton-comparison
+        return GHIssueDigest.query(GHIssueDigest.is_pr == True,
+                                   GHIssueDigest.is_open == True)
+
+    @staticmethod
+    def find_open_prs_for_repo(repo):
+        return (GHIssueDigest.find_open_prs()
+            .filter(GHIssueDigest.key > GHIssueDigest.make_key(repo, ''),
+                    GHIssueDigest.key < GHIssueDigest.make_key(repo, '~')))
+
 
 class GHUserState(ndb.Model):
     # Key: {github username}

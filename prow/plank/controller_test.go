@@ -28,6 +28,7 @@ import (
 
 	"github.com/bwmarrin/snowflake"
 	"github.com/sirupsen/logrus"
+	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"k8s.io/test-infra/prow/config"
@@ -176,8 +177,9 @@ func (f *fghc) EditComment(org, repo string, ID int, comment string) error      
 
 func TestTerminateDupes(t *testing.T) {
 	now := time.Now()
-	nowFn := func() *time.Time {
-		return &now
+	nowFn := func() *metav1.Time {
+		reallyNow := metav1.NewTime(now)
+		return &reallyNow
 	}
 	var testcases = []struct {
 		name string
@@ -201,7 +203,7 @@ func TestTerminateDupes(t *testing.T) {
 						Refs: kube.Refs{Pulls: []kube.Pull{{}}},
 					},
 					Status: kube.ProwJobStatus{
-						StartTime: now.Add(-time.Minute),
+						StartTime: metav1.NewTime(now.Add(-time.Minute)),
 					},
 				},
 				{
@@ -212,7 +214,7 @@ func TestTerminateDupes(t *testing.T) {
 						Refs: kube.Refs{Pulls: []kube.Pull{{}}},
 					},
 					Status: kube.ProwJobStatus{
-						StartTime: now.Add(-time.Hour),
+						StartTime: metav1.NewTime(now.Add(-time.Hour)),
 					},
 				},
 				{
@@ -223,7 +225,7 @@ func TestTerminateDupes(t *testing.T) {
 						Refs: kube.Refs{Pulls: []kube.Pull{{}}},
 					},
 					Status: kube.ProwJobStatus{
-						StartTime: now.Add(-2 * time.Hour),
+						StartTime: metav1.NewTime(now.Add(-2 * time.Hour)),
 					},
 				},
 				{
@@ -234,7 +236,7 @@ func TestTerminateDupes(t *testing.T) {
 						Refs: kube.Refs{Pulls: []kube.Pull{{}}},
 					},
 					Status: kube.ProwJobStatus{
-						StartTime:      now.Add(-3 * time.Hour),
+						StartTime:      metav1.NewTime(now.Add(-3 * time.Hour)),
 						CompletionTime: nowFn(),
 					},
 				},
@@ -246,7 +248,7 @@ func TestTerminateDupes(t *testing.T) {
 						Refs: kube.Refs{Pulls: []kube.Pull{{}}},
 					},
 					Status: kube.ProwJobStatus{
-						StartTime: now.Add(-time.Minute),
+						StartTime: metav1.NewTime(now.Add(-time.Minute)),
 					},
 				},
 				{
@@ -257,7 +259,7 @@ func TestTerminateDupes(t *testing.T) {
 						Refs: kube.Refs{Pulls: []kube.Pull{{}}},
 					},
 					Status: kube.ProwJobStatus{
-						StartTime: now.Add(-time.Hour),
+						StartTime: metav1.NewTime(now.Add(-time.Hour)),
 					},
 				},
 				{
@@ -268,7 +270,7 @@ func TestTerminateDupes(t *testing.T) {
 						Refs: kube.Refs{Pulls: []kube.Pull{{}}},
 					},
 					Status: kube.ProwJobStatus{
-						StartTime: now.Add(-time.Hour),
+						StartTime: metav1.NewTime(now.Add(-time.Hour)),
 					},
 				},
 				{
@@ -279,7 +281,7 @@ func TestTerminateDupes(t *testing.T) {
 						Refs: kube.Refs{Pulls: []kube.Pull{{}}},
 					},
 					Status: kube.ProwJobStatus{
-						StartTime: now.Add(-time.Minute),
+						StartTime: metav1.NewTime(now.Add(-time.Minute)),
 					},
 				},
 			},
@@ -301,7 +303,7 @@ func TestTerminateDupes(t *testing.T) {
 						Refs: kube.Refs{Pulls: []kube.Pull{{}}},
 					},
 					Status: kube.ProwJobStatus{
-						StartTime: now.Add(-time.Minute),
+						StartTime: metav1.NewTime(now.Add(-time.Minute)),
 					},
 				},
 				{
@@ -312,13 +314,13 @@ func TestTerminateDupes(t *testing.T) {
 						Refs: kube.Refs{Pulls: []kube.Pull{{}}},
 					},
 					Status: kube.ProwJobStatus{
-						StartTime: now.Add(-time.Hour),
+						StartTime: metav1.NewTime(now.Add(-time.Hour)),
 					},
 				},
 			},
 			pm: map[string]kube.Pod{
-				"newest": {ObjectMeta: kube.ObjectMeta{Name: "newest"}},
-				"old":    {ObjectMeta: kube.ObjectMeta{Name: "old"}},
+				"newest": {ObjectMeta: metav1.ObjectMeta{Name: "newest"}},
+				"old":    {ObjectMeta: metav1.ObjectMeta{Name: "old"}},
 			},
 
 			terminatedPJs: map[string]struct{}{
@@ -447,10 +449,10 @@ func TestSyncTriggeredJobs(t *testing.T) {
 			pods: map[string][]kube.Pod{
 				"default": {
 					{
-						ObjectMeta: kube.ObjectMeta{
+						ObjectMeta: metav1.ObjectMeta{
 							Name: "same-42",
 						},
-						Status: kube.PodStatus{
+						Status: v1.PodStatus{
 							Phase: kube.PodRunning,
 						},
 					},
@@ -478,7 +480,7 @@ func TestSyncTriggeredJobs(t *testing.T) {
 			pods: map[string][]kube.Pod{
 				"trusted": {
 					{
-						ObjectMeta: kube.ObjectMeta{
+						ObjectMeta: metav1.ObjectMeta{
 							Name: "same-42",
 						},
 						Status: kube.PodStatus{
@@ -509,7 +511,7 @@ func TestSyncTriggeredJobs(t *testing.T) {
 			pods: map[string][]kube.Pod{
 				"default": {
 					{
-						ObjectMeta: kube.ObjectMeta{
+						ObjectMeta: metav1.ObjectMeta{
 							Name: "other-42",
 						},
 						Status: kube.PodStatus{
@@ -629,13 +631,13 @@ func TestSyncTriggeredJobs(t *testing.T) {
 			pods: map[string][]kube.Pod{
 				"default": {
 					{
-						ObjectMeta: kube.ObjectMeta{
+						ObjectMeta: metav1.ObjectMeta{
 							Name: "foo",
 						},
 						Spec: kube.PodSpec{
-							Containers: []kube.Container{
+							Containers: []v1.Container{
 								{
-									Env: []kube.EnvVar{
+									Env: []v1.EnvVar{
 										{
 											Name:  "BUILD_NUMBER",
 											Value: "0987654321",
@@ -783,7 +785,7 @@ func TestSyncPendingJob(t *testing.T) {
 			},
 			pods: []kube.Pod{
 				{
-					ObjectMeta: kube.ObjectMeta{
+					ObjectMeta: metav1.ObjectMeta{
 						Name: "boop-41",
 					},
 					Status: kube.PodStatus{
@@ -811,7 +813,7 @@ func TestSyncPendingJob(t *testing.T) {
 			},
 			pods: []kube.Pod{
 				{
-					ObjectMeta: kube.ObjectMeta{
+					ObjectMeta: metav1.ObjectMeta{
 						Name: "boop-42",
 					},
 					Status: kube.PodStatus{
@@ -848,7 +850,7 @@ func TestSyncPendingJob(t *testing.T) {
 			},
 			pods: []kube.Pod{
 				{
-					ObjectMeta: kube.ObjectMeta{
+					ObjectMeta: metav1.ObjectMeta{
 						Name: "boop-42",
 					},
 					Status: kube.PodStatus{
@@ -875,7 +877,7 @@ func TestSyncPendingJob(t *testing.T) {
 			},
 			pods: []kube.Pod{
 				{
-					ObjectMeta: kube.ObjectMeta{
+					ObjectMeta: metav1.ObjectMeta{
 						Name: "boop-42",
 					},
 					Status: kube.PodStatus{
@@ -904,7 +906,7 @@ func TestSyncPendingJob(t *testing.T) {
 			},
 			pods: []kube.Pod{
 				{
-					ObjectMeta: kube.ObjectMeta{
+					ObjectMeta: metav1.ObjectMeta{
 						Name: "boop-42",
 					},
 					Status: kube.PodStatus{
@@ -932,7 +934,7 @@ func TestSyncPendingJob(t *testing.T) {
 			},
 			pods: []kube.Pod{
 				{
-					ObjectMeta: kube.ObjectMeta{
+					ObjectMeta: metav1.ObjectMeta{
 						Name: "boop-42",
 					},
 					Status: kube.PodStatus{
@@ -1034,7 +1036,7 @@ func TestPeriodic(t *testing.T) {
 		Agent:   "kubernetes",
 		Cluster: "trusted",
 		Spec: &kube.PodSpec{
-			Containers: []kube.Container{{}},
+			Containers: []v1.Container{{}},
 		},
 		RunAfterSuccess: []config.Periodic{
 			{

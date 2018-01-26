@@ -125,7 +125,7 @@ func (c *controller) clean() {
 			continue
 		}
 		isFinished[prowJob.ObjectMeta.Name] = true
-		if time.Since(prowJob.Status.StartTime) <= maxProwJobAge {
+		if time.Since(prowJob.Status.StartTime.Time) <= maxProwJobAge {
 			continue
 		}
 		if err := c.kc.DeleteProwJob(prowJob.ObjectMeta.Name); err == nil {
@@ -159,7 +159,7 @@ func (c *controller) clean() {
 			continue
 		}
 		isFinished[prowJob.ObjectMeta.Name] = true
-		if time.Since(prowJob.Status.StartTime) <= maxProwJobAge {
+		if time.Since(prowJob.Status.StartTime.Time) <= maxProwJobAge {
 			continue
 		}
 		if err := c.kc.DeleteProwJob(prowJob.ObjectMeta.Name); err == nil {
@@ -185,7 +185,7 @@ func (c *controller) clean() {
 				continue
 			}
 			if (pod.Status.Phase == kube.PodSucceeded || pod.Status.Phase == kube.PodFailed) &&
-				time.Since(pod.Status.StartTime) > maxPodAge {
+				time.Since(pod.Status.StartTime.Time) > maxPodAge {
 				// Delete old completed pods. Don't quit if we fail to delete one.
 				if err := client.DeletePod(pod.ObjectMeta.Name); err == nil {
 					c.logger.WithField("pod", pod.ObjectMeta.Name).Info("Deleted old completed pod.")

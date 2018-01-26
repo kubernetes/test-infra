@@ -32,6 +32,7 @@ import (
 
 	"github.com/ghodss/yaml"
 	"github.com/sirupsen/logrus"
+	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 )
 
@@ -492,7 +493,7 @@ func (c *Client) ReplaceProwJob(name string, job ProwJob) (ProwJob, error) {
 	return retJob, err
 }
 
-func (c *Client) CreatePod(p Pod) (Pod, error) {
+func (c *Client) CreatePod(p v1.Pod) (Pod, error) {
 	c.log("CreatePod", p)
 	var retPod Pod
 	err := c.request(&request{

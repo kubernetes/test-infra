@@ -244,7 +244,7 @@ func (c *Controller) terminateDupes(pjs []kube.ProwJob, jbs map[string]JenkinsBu
 			continue
 		}
 		cancelIndex := i
-		if pjs[prev].Status.StartTime.Before(pj.Status.StartTime) {
+		if (&pjs[prev].Status.StartTime).Before(&pj.Status.StartTime) {
 			cancelIndex = prev
 			dupes[n] = i
 		}

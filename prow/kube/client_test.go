@@ -34,6 +34,8 @@ import (
 	"reflect"
 	"testing"
 	"time"
+
+	"k8s.io/api/core/v1"
 )
 
 func getClient(url string) *Client {
@@ -189,7 +191,7 @@ func TestCreatePod(t *testing.T) {
 	}))
 	defer ts.Close()
 	c := getClient(ts.URL)
-	po, err := c.CreatePod(Pod{})
+	po, err := c.CreatePod(v1.Pod{})
 	if err != nil {
 		t.Errorf("Didn't expect error: %v", err)
 	}

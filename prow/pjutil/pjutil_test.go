@@ -20,6 +20,7 @@ import (
 	"testing"
 	"time"
 
+	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"k8s.io/test-infra/prow/kube"
@@ -32,7 +33,7 @@ func TestProwJobToPod(t *testing.T) {
 		labels  map[string]string
 		pjSpec  kube.ProwJobSpec
 
-		expected *kube.Pod
+		expected *v1.Pod
 	}{
 		{
 			podName: "pod",
@@ -53,11 +54,11 @@ func TestProwJobToPod(t *testing.T) {
 						SHA:    "pull-sha",
 					}},
 				},
-				PodSpec: kube.PodSpec{
-					Containers: []kube.Container{
+				PodSpec: v1.PodSpec{
+					Containers: []v1.Container{
 						{
 							Image: "tester",
-							Env: []kube.EnvVar{
+							Env: []v1.EnvVar{
 								{Name: "MY_ENV", Value: "rocks"},
 							},
 						},
@@ -65,8 +66,8 @@ func TestProwJobToPod(t *testing.T) {
 				},
 			},
 
-			expected: &kube.Pod{
-				ObjectMeta: kube.ObjectMeta{
+			expected: &v1.Pod{
+				ObjectMeta: metav1.ObjectMeta{
 					Name: "pod",
 					Labels: map[string]string{
 						kube.CreatedByProw:    "true",
@@ -77,13 +78,13 @@ func TestProwJobToPod(t *testing.T) {
 						kube.ProwJobAnnotation: "job-name",
 					},
 				},
-				Spec: kube.PodSpec{
+				Spec: v1.PodSpec{
 					RestartPolicy: "Never",
-					Containers: []kube.Container{
+					Containers: []v1.Container{
 						{
 							Name:  "pod-0",
 							Image: "tester",
-							Env: []kube.EnvVar{
+							Env: []v1.EnvVar{
 								{Name: "MY_ENV", Value: "rocks"},
 								{Name: "BUILD_NUMBER", Value: "blabla"},
 								{Name: "JOB_NAME", Value: "job-name"},
@@ -293,7 +294,7 @@ func TestGetLatestProwJobs(t *testing.T) {
 						RerunCommand: "/test extended_networking_minimal",
 					},
 					Status: kube.ProwJobStatus{
-						StartTime:   time.Date(2017, time.October, 26, 23, 22, 19, 0, time.UTC),
+						StartTime:   metav1.Date(2017, time.October, 26, 23, 22, 19, 0, time.UTC),
 						State:       kube.FailureState,
 						Description: "Jenkins job failed.",
 						URL:         "https://openshift-gce-devel.appspot.com/build/origin-ci-test/pr-logs/pull/17061/test_pull_request_origin_extended_networking_minimal/9756/",
@@ -327,7 +328,7 @@ func TestGetLatestProwJobs(t *testing.T) {
 						RerunCommand: "/test extended_networking_minimal",
 					},
 					Status: kube.ProwJobStatus{
-						StartTime:   time.Date(2017, time.October, 26, 22, 22, 19, 0, time.UTC),
+						StartTime:   metav1.Date(2017, time.October, 26, 22, 22, 19, 0, time.UTC),
 						State:       kube.FailureState,
 						Description: "Jenkins job failed.",
 						URL:         "https://openshift-gce-devel.appspot.com/build/origin-ci-test/pr-logs/pull/17061/test_pull_request_origin_extended_networking_minimal/9755/",

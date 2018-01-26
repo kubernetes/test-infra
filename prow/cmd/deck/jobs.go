@@ -202,7 +202,7 @@ func (ja *JobAgent) update() error {
 	for _, j := range pjs {
 		ft := time.Time{}
 		if j.Status.CompletionTime != nil {
-			ft = *j.Status.CompletionTime
+			ft = j.Status.CompletionTime.Time
 		}
 		buildID := j.Status.BuildID
 		nj := Job{
@@ -223,7 +223,7 @@ func (ja *JobAgent) update() error {
 			PodName:     j.Status.PodName,
 			URL:         j.Status.URL,
 
-			st: j.Status.StartTime,
+			st: j.Status.StartTime.Time,
 			ft: ft,
 		}
 		if !nj.ft.IsZero() {
