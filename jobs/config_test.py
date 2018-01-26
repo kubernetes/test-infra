@@ -61,8 +61,6 @@ class JobTest(unittest.TestCase):
 
     yaml_suffix = {
         'jenkins/job-configs/bootstrap-maintenance.yaml' : 'suffix',
-        'jenkins/job-configs/kubernetes-jenkins-pull/bootstrap-pull-json.yaml' : 'jsonsuffix',
-        'jenkins/job-configs/kubernetes-jenkins-pull/bootstrap-security-pull.yaml' : 'suffix',
         'jenkins/job-configs/kubernetes-jenkins/bootstrap-ci-commit.yaml' : 'commit-suffix',
         'jenkins/job-configs/kubernetes-jenkins/bootstrap-ci-repo.yaml' : 'repo-suffix',
         'jenkins/job-configs/kubernetes-jenkins/bootstrap-ci-soak.yaml' : 'soak-suffix',
@@ -126,49 +124,6 @@ class JobTest(unittest.TestCase):
             return job_name
 
         self.check_bootstrap_yaml('jenkins/job-configs/bootstrap-maintenance.yaml', check)
-
-    def test_bootstrap_pull_json_yaml(self):
-        def check(job, name):
-            job_name = 'pull-%s' % name
-            self.assertIn('max-total', job)
-            self.assertIn('repo-name', job)
-            self.assertIn('.', job['repo-name'])  # Has domain
-            self.assertIn('timeout', job)
-            self.assertNotIn('json', job)
-            self.assertGreater(job['timeout'], 0)
-            return job_name
-
-        self.check_bootstrap_yaml(
-            'jenkins/job-configs/kubernetes-jenkins-pull/bootstrap-pull-json.yaml', check)
-
-    def test_bootstrap_security_pull(self):
-        def check(job, name):
-            job_name = 'pull-%s' % name
-            self.assertIn('max-total', job)
-            self.assertIn('repo-name', job)
-            self.assertIn('.', job['repo-name'])  # Has domain
-            self.assertIn('timeout', job)
-            self.assertNotIn('json', job)
-            self.assertGreater(job['timeout'], 0)
-            return job_name
-
-        self.check_bootstrap_yaml(
-            'jenkins/job-configs/kubernetes-jenkins-pull/bootstrap-security-pull.yaml', check)
-
-    def test_bootstrap_security_match(self):
-        json_jobs = self.load_bootstrap_yaml(
-            'jenkins/job-configs/kubernetes-jenkins-pull/bootstrap-pull-json.yaml')
-
-        sec_jobs = self.load_bootstrap_yaml(
-            'jenkins/job-configs/kubernetes-jenkins-pull/bootstrap-security-pull.yaml')
-        for name, job in sec_jobs.iteritems():
-            self.assertIn(name, json_jobs)
-            job2 = json_jobs[name]
-            for attr in job:
-                if attr == 'repo-name':
-                    continue
-                self.assertEquals(job[attr], job2[attr])
-
 
     def test_bootstrap_ci_commit_yaml(self):
         def check(job, name):
