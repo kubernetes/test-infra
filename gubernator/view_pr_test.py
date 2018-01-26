@@ -163,6 +163,14 @@ class TestDashboard(main_test.TestBase):
         resp = app.get('/pr/user')
         self.assertIn('123', resp)
 
+    def test_case_insensitive(self):
+        "Individual PR pages are case insensitive."
+        make_pr(123, ['user'], {'attn': {'User': 'fix tests'}})
+        resp = app.get('/pr/UseR')
+        self.assertIn('123', resp)
+        self.assertIn('Needs Attention (1)', resp)
+
+
     @staticmethod
     def make_session(**kwargs):
         # set the session cookie directly (easier than the full login flow)
