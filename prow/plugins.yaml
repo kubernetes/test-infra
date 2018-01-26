@@ -215,6 +215,7 @@ plugins:
   - assign
   - cat
   - cla
+  - dog
   - golint
   - heart
   - help
@@ -245,6 +246,7 @@ plugins:
   - blunderbuss
   - cat
   - cla
+  - dog
   - heart
   - help
   - hold
