@@ -65,7 +65,7 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 	}
 	pluginHelp.AddCommand(pluginhelp.Command{
 		Usage:       "/status (approved-for-milestone|in-progress|in-review)",
-		Description: "Applies the ‘status/’ label to a PR.",
+		Description: "Applies the 'status/' label to a PR.",
 		Featured:    false,
 		WhoCanUse:   "Members of the milestone maintainers Github team can use the '/status' command. This team is specified in the config by providing the Github team's ID.",
 		Examples:    []string{"/status approved-for-milestone", "/status in-progress", "/status in-review"},
