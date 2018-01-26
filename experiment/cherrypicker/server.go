@@ -229,7 +229,11 @@ func (s *Server) handleIssueComment(l *logrus.Entry, ic github.IssueCommentEvent
 		}
 	}
 
-	return s.handle(l, ic.Comment, org, repo, targetBranch, title, num)
+	s.log.WithFields(l.Data).
+		WithField("requestor", ic.Comment.User.Login).
+		WithField("target_branch", targetBranch).
+		Debug("Cherrypick request.")
+	return s.handle(l, ic.Comment.User.Login, ic.Comment, org, repo, targetBranch, title, num)
 }
 
 func (s *Server) handlePullRequest(l *logrus.Entry, pre github.PullRequestEvent) error {
@@ -262,7 +266,8 @@ func (s *Server) handlePullRequest(l *logrus.Entry, pre github.PullRequestEvent)
 
 	// requestor -> target branch -> issue comment
 	requestorToComments := make(map[string]map[string]*github.IssueComment)
-	for _, c := range comments {
+	for i := range comments {
+		c := comments[i]
 		cherryPickMatches := cherryPickRe.FindAllStringSubmatch(c.Body, -1)
 		if len(cherryPickMatches) == 0 || len(cherryPickMatches[0]) != 2 {
 			continue
@@ -301,7 +306,7 @@ func (s *Server) handlePullRequest(l *logrus.Entry, pre github.PullRequestEvent)
 	// Handle multiple comments serially. Make sure to filter out
 	// comments targetting the same branch.
 	handledBranches := make(map[string]bool)
-	for _, branches := range requestorToComments {
+	for requestor, branches := range requestorToComments {
 		for targetBranch, ic := range branches {
 			if targetBranch == baseBranch {
 				// TODO: Comment back.
@@ -312,7 +317,11 @@ func (s *Server) handlePullRequest(l *logrus.Entry, pre github.PullRequestEvent)
 				continue
 			}
 			handledBranches[targetBranch] = true
-			err := s.handle(l, *ic, org, repo, targetBranch, title, num)
+			s.log.WithFields(l.Data).
+				WithField("requestor", requestor).
+				WithField("target_branch", targetBranch).
+				Debug("Cherrypick request.")
+			err := s.handle(l, requestor, *ic, org, repo, targetBranch, title, num)
 			if err != nil {
 				return err
 			}
@@ -323,7 +332,7 @@ func (s *Server) handlePullRequest(l *logrus.Entry, pre github.PullRequestEvent)
 
 var cherryPickBranchFmt = "cherry-pick-%d-to-%s"
 
-func (s *Server) handle(l *logrus.Entry, comment github.IssueComment, org, repo, targetBranch, title string, num int) error {
+func (s *Server) handle(l *logrus.Entry, requestor string, comment github.IssueComment, org, repo, targetBranch, title string, num int) error {
 	if err := s.ensureForkExists(org, repo); err != nil {
 		return err
 	}
@@ -391,7 +400,7 @@ func (s *Server) handle(l *logrus.Entry, comment github.IssueComment, org, repo,
 	title = fmt.Sprintf("[%s] %s", targetBranch, title)
 	body := fmt.Sprintf("This is an automated cherry-pick of #%d", num)
 	if s.prowAssignments {
-		body = fmt.Sprintf("%s\n\n/assign %s", body, comment.User.Login)
+		body = fmt.Sprintf("%s\n\n/assign %s", body, requestor)
 	}
 	head := fmt.Sprintf("%s:%s", s.botName, newBranch)
 	createdNum, err := s.ghc.CreatePullRequest(org, repo, title, body, head, targetBranch, true)
