@@ -216,6 +216,7 @@ plugins:
 
   kubernetes:
   - assign
+  - cat
   - cla
   - golint
   - heart
@@ -245,6 +246,7 @@ plugins:
   - assign
   - approve
   - blunderbuss
+  - cat
   - cla
   - heart
   - help
