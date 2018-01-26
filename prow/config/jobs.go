@@ -20,7 +20,7 @@ import (
 	"regexp"
 	"time"
 
-	"k8s.io/test-infra/prow/kube"
+	"k8s.io/api/core/v1"
 )
 
 // Presubmit is the job-specific trigger info.
@@ -48,7 +48,7 @@ type Presubmit struct {
 	// Cluster is the alias of the cluster to run this job in. (Default: kube.DefaultClusterAlias)
 	Cluster string `json:"cluster"`
 	// Kubernetes pod spec.
-	Spec *kube.PodSpec `json:"spec,omitempty"`
+	Spec *v1.PodSpec `json:"spec,omitempty"`
 	// Run these jobs after successfully running this one.
 	RunAfterSuccess []Presubmit `json:"run_after_success"`
 
@@ -69,7 +69,7 @@ type Postsubmit struct {
 	// Cluster is the alias of the cluster to run this job in. (Default: kube.DefaultClusterAlias)
 	Cluster string `json:"cluster"`
 	// Kubernetes pod spec.
-	Spec *kube.PodSpec `json:"spec,omitempty"`
+	Spec *v1.PodSpec `json:"spec,omitempty"`
 	// Maximum number of this job running concurrently, 0 implies no limit.
 	MaxConcurrency int `json:"max_concurrency"`
 
@@ -88,7 +88,7 @@ type Periodic struct {
 	// Cluster is the alias of the cluster to run this job in. (Default: kube.DefaultClusterAlias)
 	Cluster string `json:"cluster"`
 	// Kubernetes pod spec.
-	Spec *kube.PodSpec `json:"spec,omitempty"`
+	Spec *v1.PodSpec `json:"spec,omitempty"`
 	// (deprecated)Interval to wait between two runs of the job.
 	Interval string `json:"interval"`
 	// Cron representation of job trigger time

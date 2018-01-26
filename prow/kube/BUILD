@@ -14,6 +14,7 @@ go_test(
     ],
     embed = [":go_default_library"],
     importpath = "k8s.io/test-infra/prow/kube",
+    deps = ["//vendor/k8s.io/api/core/v1:go_default_library"],
 )
 
 go_library(
@@ -29,6 +30,7 @@ go_library(
         "//vendor/github.com/ghodss/yaml:go_default_library",
         "//vendor/github.com/prometheus/client_golang/prometheus:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
+        "//vendor/k8s.io/api/core/v1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
     ],

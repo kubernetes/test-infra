@@ -90,7 +90,7 @@ func sync(kc kubeClient, cfg *config.Config, cr cronClient, now time.Time) error
 		j, ok := latestJobs[p.Name]
 
 		if p.Cron == "" {
-			if !ok || (j.Complete() && now.Sub(j.Status.StartTime) > p.GetInterval()) {
+			if !ok || (j.Complete() && now.Sub(j.Status.StartTime.Time) > p.GetInterval()) {
 				if _, err := kc.CreateProwJob(pjutil.NewProwJob(pjutil.PeriodicSpec(p), p.Labels)); err != nil {
 					errs = append(errs, err)
 				}

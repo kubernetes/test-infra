@@ -22,7 +22,6 @@ import (
 	"sync"
 	"testing"
 	"text/template"
-	"time"
 
 	"github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -861,8 +860,8 @@ func TestMaxConcurrencyWithNewlyTriggeredJobs(t *testing.T) {
 }
 
 func TestGetJenkinsJobs(t *testing.T) {
-	now := func() *time.Time {
-		n := time.Now()
+	now := func() *metav1.Time {
+		n := metav1.Now()
 		return &n
 	}
 	tests := []struct {

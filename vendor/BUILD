@@ -98,6 +98,7 @@ filegroup(
         "//vendor/gopkg.in/inf.v0:all-srcs",
         "//vendor/gopkg.in/robfig/cron.v2:all-srcs",
         "//vendor/gopkg.in/yaml.v2:all-srcs",
+        "//vendor/k8s.io/api/core/v1:all-srcs",
         "//vendor/k8s.io/apimachinery/pkg/api/resource:all-srcs",
         "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:all-srcs",
         "//vendor/k8s.io/apimachinery/pkg/conversion:all-srcs",

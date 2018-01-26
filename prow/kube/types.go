@@ -17,201 +17,41 @@ limitations under the License.
 package kube
 
 import (
-	"time"
+	"k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-type ObjectMeta struct {
-	Name        string            `json:"name,omitempty"`
-	Namespace   string            `json:"namespace,omitempty"`
-	Labels      map[string]string `json:"labels,omitempty"`
-	Annotations map[string]string `json:"annotations,omitempty"`
+// TODO: Drop all of these
 
-	ResourceVersion string `json:"resourceVersion,omitempty"`
-	UID             string `json:"uid,omitempty"`
-}
+type ObjectMeta = metav1.ObjectMeta
 
-type Secret struct {
-	ObjectMeta ObjectMeta        `json:"metadata,omitempty"`
-	Data       map[string]string `json:"data,omitempty"`
-}
-
-type PodTemplateSpec struct {
-	ObjectMeta ObjectMeta `json:"metadata,omitempty"`
-	Spec       PodSpec    `json:"spec,omitempty"`
-}
-
-type Pod struct {
-	ObjectMeta ObjectMeta `json:"metadata,omitempty"`
-	Spec       PodSpec    `json:"spec,omitempty"`
-	Status     PodStatus  `json:"status,omitempty"`
-}
-
-type PodSpec struct {
-	HostNetwork        bool              `json:"hostNetwork,omitempty"`
-	Volumes            []Volume          `json:"volumes,omitempty"`
-	InitContainers     []Container       `json:"initContainers,omitempty"`
-	Containers         []Container       `json:"containers,omitempty"`
-	RestartPolicy      string            `json:"restartPolicy,omitempty"`
-	ServiceAccountName string            `json:"serviceAccountName,omitempty"`
-	Tolerations        []Toleration      `json:"tolerations,omitempty"`
-	NodeSelector       map[string]string `json:"nodeSelector,omitempty"`
-}
-
-type PodPhase string
+type Pod = v1.Pod
+type PodTemplateSpec = v1.PodTemplateSpec
+type PodSpec = v1.PodSpec
+type PodStatus = v1.PodStatus
 
 const (
-	PodPending   PodPhase = "Pending"
-	PodRunning   PodPhase = "Running"
-	PodSucceeded PodPhase = "Succeeded"
-	PodFailed    PodPhase = "Failed"
-	PodUnknown   PodPhase = "Unknown"
+	PodPending   = v1.PodPending
+	PodRunning   = v1.PodRunning
+	PodSucceeded = v1.PodSucceeded
+	PodFailed    = v1.PodFailed
+	PodUnknown   = v1.PodUnknown
 )
 
 const (
 	Evicted = "Evicted"
 )
 
-type PodStatus struct {
-	Phase     PodPhase  `json:"phase,omitempty"`
-	Message   string    `json:"message,omitempty"`
-	Reason    string    `json:"reason,omitempty"`
-	StartTime time.Time `json:"startTime,omitempty"`
-}
+type Container = v1.Container
+type Port = v1.ContainerPort
+type EnvVar = v1.EnvVar
 
-type Volume struct {
-	Name         string `json:"name,omitempty"`
-	VolumeSource `json:",inline"`
-}
+type Volume = v1.Volume
+type VolumeMount = v1.VolumeMount
+type VolumeSource = v1.VolumeSource
+type EmptyDirVolumeSource = v1.EmptyDirVolumeSource
+type SecretSource = v1.SecretVolumeSource
+type ConfigMapSource = v1.ConfigMapVolumeSource
 
-// VolumeSource represents the source location of a volume to mount.
-// Only one of its members may be specified.
-type VolumeSource struct {
-	HostPath    *HostPathSource       `json:"hostPath,omitempty"`
-	EmptyDir    *EmptyDirVolumeSource `json:"emptyDir,omitempty"`
-	Secret      *SecretSource         `json:"secret,omitempty"`
-	DownwardAPI *DownwardAPISource    `json:"downwardAPI,omitempty"`
-	ConfigMap   *ConfigMapSource      `json:"configMap,omitempty"`
-}
-
-type HostPathSource struct {
-	Path string `json:"path,omitempty"`
-}
-
-type SecretSource struct {
-	Name        string `json:"secretName,omitempty"`
-	DefaultMode int32  `json:"defaultMode,omitempty"`
-}
-
-type EmptyDirVolumeSource struct {
-	Medium string `json:"medium,omitempty"`
-}
-
-type ConfigMapSource struct {
-	Name string `json:"name,omitempty"`
-}
-
-type DownwardAPISource struct {
-	Items []DownwardAPIFile `json:"items,omitempty"`
-}
-
-type DownwardAPIFile struct {
-	Path  string              `json:"path"`
-	Field ObjectFieldSelector `json:"fieldRef,omitempty"`
-}
-
-type ObjectFieldSelector struct {
-	FieldPath string `json:"fieldPath"`
-}
-
-type Container struct {
-	Name            string   `json:"name,omitempty"`
-	Image           string   `json:"image,omitempty"`
-	ImagePullPolicy string   `json:"imagePullPolicy,omitempty"`
-	Command         []string `json:"command,omitempty"`
-	Args            []string `json:"args,omitempty"`
-	WorkDir         string   `json:"workingDir,omitempty"`
-	Env             []EnvVar `json:"env,omitempty"`
-	Ports           []Port   `json:"ports,omitempty"`
-
-	Resources       Resources        `json:"resources,omitempty"`
-	SecurityContext *SecurityContext `json:"securityContext,omitempty"`
-	VolumeMounts    []VolumeMount    `json:"volumeMounts,omitempty"`
-	Lifecycle       *Lifecycle       `json:"lifecycle,omitempty"`
-}
-
-// Lifecycle describes actions that the management system should take in response to container lifecycle
-// events. For the PostStart and PreStop lifecycle handlers, management of the container blocks
-// until the action is complete, unless the container process fails, in which case the handler is aborted.
-type Lifecycle struct {
-	PostStart *Handler `json:"postStart,omitempty"`
-	PreStop   *Handler `json:"preStop,omitempty"`
-}
-
-// Handler defines a specific action that should be taken
-// TODO: pass structured data to these actions, and document that data here.
-type Handler struct {
-	// Exec specifies the action to take.
-	Exec *ExecAction `json:"exec,omitempty"`
-}
-
-// ExecAction describes a "run in container" action.
-type ExecAction struct {
-	Command []string `json:"command,omitempty"`
-}
-
-type Port struct {
-	ContainerPort int `json:"containerPort,omitempty"`
-	HostPort      int `json:"hostPort,omitempty"`
-}
-
-type EnvVar struct {
-	Name      string        `json:"name,omitempty"`
-	Value     string        `json:"value,omitempty"`
-	ValueFrom *EnvVarSource `json:"valueFrom,omitempty"`
-}
-
-type EnvVarSource struct {
-	ConfigMap ConfigMapKeySelector `json:"configMapKeyRef,omitempty"`
-}
-
-type ConfigMapKeySelector struct {
-	Name string `json:"name,omitempty"`
-	Key  string `json:"key,omitempty"`
-}
-
-type Resources struct {
-	Requests *ResourceRequest `json:"requests,omitempty"`
-	Limits   *ResourceRequest `json:"limits,omitempty"`
-}
-
-type ResourceRequest struct {
-	CPU    string `json:"cpu,omitempty"`
-	Memory string `json:"memory,omitempty"`
-}
-
-type SecurityContext struct {
-	Privileged bool `json:"privileged,omitempty"`
-}
-
-type VolumeMount struct {
-	Name      string `json:"name,omitempty"`
-	ReadOnly  bool   `json:"readOnly,omitempty"`
-	MountPath string `json:"mountPath,omitempty"`
-}
-
-type ConfigMap struct {
-	ObjectMeta ObjectMeta        `json:"metadata,omitempty"`
-	Data       map[string]string `json:"data,omitempty"`
-}
-
-type Toleration struct {
-	Key               string             `json:"key,omitempty"`
-	Operator          TolerationOperator `json:"operator,omitempty"`
-	Value             string             `json:"value,omitempty"`
-	Effect            TaintEffect        `json:"effect,omitempty"`
-	TolerationSeconds *int64             `json:"tolerationSeconds,omitempty"`
-}
-
-type TaintEffect string
-
-type TolerationOperator string
+type ConfigMap = v1.ConfigMap
+type Secret = v1.Secret
