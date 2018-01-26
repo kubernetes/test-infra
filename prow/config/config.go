@@ -388,6 +388,13 @@ func parseConfig(c *Config) error {
 		c.Tide.SyncPeriod = period
 	}
 
+	if c.Tide.MaxGoroutines == 0 {
+		c.Tide.MaxGoroutines = 20
+	}
+	if c.Tide.MaxGoroutines <= 0 {
+		return fmt.Errorf("tide has invalid max_goroutines (%d), it needs to be a positive number", c.Tide.MaxGoroutines)
+	}
+
 	if c.ProwJobNamespace == "" {
 		c.ProwJobNamespace = "default"
 	}
