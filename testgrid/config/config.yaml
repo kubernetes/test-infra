@@ -88,6 +88,38 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-e2e-gci-gce
 - name: ci-cri-containerd-e2e-ubuntu-gce
   gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-e2e-ubuntu-gce
+- name: ci-cri-containerd-e2e-gci-gce-reboot
+  gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-e2e-gci-gce-reboot
+- name: ci-cri-containerd-e2e-gci-gce-etcd3
+  gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-e2e-gci-gce-etcd3
+- name: ci-cri-containerd-e2e-gci-gce-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-e2e-gci-gce-serial
+- name: ci-cri-containerd-e2e-gci-gce-slow
+  gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-e2e-gci-gce-slow
+- name: ci-cri-containerd-e2e-gci-gce-flaky
+  gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-e2e-gci-gce-flaky
+- name: ci-cri-containerd-e2e-gci-gce-alpha-features
+  gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-e2e-gci-gce-alpha-features
+- name: ci-cri-containerd-e2e-gci-gce-statefulset
+  gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-e2e-gci-gce-statefulset
+- name: ci-cri-containerd-e2e-gci-gce-proto
+  gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-e2e-gci-gce-proto
+- name: ci-cri-containerd-e2e-gce-device-plugin-gpu
+  gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-e2e-gce-device-plugin-gpu
+- name: ci-cri-containerd-e2e-gce-alpha-api
+  gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-e2e-gce-alpha-api
+- name: ci-cri-containerd-e2e-gci-gce-ingress
+  gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-e2e-gci-gce-ingress
+- name: ci-cri-containerd-e2e-gce-multizone
+  gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-e2e-gce-multizone
+- name: ci-cri-containerd-e2e-gci-gce-sd-logging
+  gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-e2e-gci-gce-sd-logging
+- name: ci-cri-containerd-e2e-gci-gce-es-logging
+  gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-e2e-gci-gce-es-logging
+- name: ci-cri-containerd-e2e-gce-stackdriver
+  gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-e2e-gce-stackdriver
+- name: ci-cri-containerd-e2e-gci-gce-ip-alias
+  gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-e2e-gci-gce-ip-alias
 - name: ci-cri-containerd-node-e2e
   gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-node-e2e
   test_name_config:
@@ -3567,6 +3599,8 @@ dashboards:
     test_group_name: ci-kubernetes-node-kubelet-serial-cpu-manager
     alert_options:
       alert_mail_to_addresses: 'balaji.warft@gmail.com, connor.p.d@gmail.com'
+  - name: cri-containerd-device-plugin-gpu
+    test_group_name: ci-cri-containerd-e2e-gce-device-plugin-gpu
 
 - name: sig-api-machinery
   dashboard_tab:
@@ -4142,6 +4176,38 @@ dashboards:
     test_group_name: ci-cri-containerd-e2e-gci-gce
   - name: e2e-ubuntu
     test_group_name: ci-cri-containerd-e2e-ubuntu-gce
+  - name: e2e-gci-etcd3
+    test_group_name: ci-cri-containerd-e2e-gci-gce-etcd3
+  - name: e2e-gci-reboot
+    test_group_name: ci-cri-containerd-e2e-gci-gce-reboot
+  - name: e2e-gci-serial
+    test_group_name: ci-cri-containerd-e2e-gci-gce-serial
+  - name: e2e-gci-slow
+    test_group_name: ci-cri-containerd-e2e-gci-gce-slow
+  - name: e2e-gci-flaky
+    test_group_name: ci-cri-containerd-e2e-gci-gce-flaky
+  - name: e2e-gci-alpha-features
+    test_group_name: ci-cri-containerd-e2e-gci-gce-alpha-features
+  - name: e2e-gci-statefulset
+    test_group_name: ci-cri-containerd-e2e-gci-gce-statefulset
+  - name: e2e-gci-proto
+    test_group_name: ci-cri-containerd-e2e-gci-gce-proto
+  - name: e2e-gci-device-plugin-gpu
+    test_group_name: ci-cri-containerd-e2e-gce-device-plugin-gpu
+  - name: e2e-gci-alpha-api
+    test_group_name: ci-cri-containerd-e2e-gce-alpha-api
+  - name: e2e-gci-ingress
+    test_group_name: ci-cri-containerd-e2e-gci-gce-ingress
+  - name: e2e-gci-multizone
+    test_group_name: ci-cri-containerd-e2e-gce-multizone
+  - name: e2e-gci-sd-logging
+    test_group_name: ci-cri-containerd-e2e-gci-gce-sd-logging
+  - name: e2e-gci-es-logging
+    test_group_name: ci-cri-containerd-e2e-gci-gce-es-logging
+  - name: e2e-gci-stackdriver
+    test_group_name: ci-cri-containerd-e2e-gce-stackdriver
+  - name: e2e-gci-ip-alias
+    test_group_name: ci-cri-containerd-e2e-gci-gce-ip-alias
   - name: node-e2e-serial
     test_group_name: ci-cri-containerd-node-e2e-serial
   - name: node-e2e-flaky
