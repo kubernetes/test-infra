@@ -257,6 +257,12 @@ type deployer interface {
 	GetClusterCreated(gcpProject string) (time.Time, error)
 }
 
+// publisher is implemented by deployers that want to publish status on success
+type publisher interface {
+	// Publish is called when the tests were successful; the deployer should publish a success file
+	Publish() error
+}
+
 func getDeployer(o *options) (deployer, error) {
 	switch o.deployment {
 	case "bash":

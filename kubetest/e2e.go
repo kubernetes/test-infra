@@ -302,6 +302,11 @@ func run(deploy deployer, o options) error {
 			}))
 		}
 	}
+	if len(errs) == 0 {
+		if pub, ok := deploy.(publisher); ok {
+			errs = appendError(errs, pub.Publish())
+		}
+	}
 	if len(errs) == 0 && o.publish != "" {
 		errs = appendError(errs, xmlWrap("Publish version", func() error {
 			// Use plaintext version file packaged with kubernetes.tar.gz

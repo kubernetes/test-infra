@@ -53,6 +53,7 @@ var (
 	kopsBaseURL      = flag.String("kops-base-url", "", "Base URL for a prebuilt version of kops")
 	kopsVersion      = flag.String("kops-version", "", "URL to a file containing a valid kops-base-url")
 	kopsDiskSize     = flag.Int("kops-disk-size", 48, "Disk size to use for nodes and masters")
+	kopsPublish      = flag.String("kops-publish", "", "Publish kops version to the specified gs:// path on success")
 )
 
 type kops struct {
@@ -79,6 +80,12 @@ type kops struct {
 
 	// Cloud provider in use (gce, aws)
 	provider string
+
+	// kopsVersion is the version of kops we are running (used for publishing)
+	kopsVersion string
+
+	// kopsPublish is the path where we will publish kopsVersion, after a successful test
+	kopsPublish string
 }
 
 var _ deployer = kops{}
@@ -243,6 +250,8 @@ func newKops(provider, gcpProject, cluster string) (*kops, error) {
 		provider:      provider,
 		gcpProject:    gcpProject,
 		diskSize:      *kopsDiskSize,
+		kopsVersion:   *kopsBaseURL,
+		kopsPublish:   *kopsPublish,
 	}, nil
 }
 
@@ -486,4 +495,49 @@ func (k *kops) runKopsDump() (*kopsDump, error) {
 	}
 
 	return dump, nil
+}
+
+// kops deployer implements publisher
+var _ publisher = &kops{}
+
+// Publish will publish a success file, it is called if the tests were successful
+func (k kops) Publish() error {
+	if k.kopsPublish == "" {
+		// No publish destination set
+		return nil
+	}
+
+	if k.kopsVersion == "" {
+		return errors.New("kops-version not set; cannot publish")
+	}
+
+	return xmlWrap("Publish kops version", func() error {
+		log.Printf("Set %s version to %s", k.kopsPublish, k.kopsVersion)
+		return gcsWrite(k.kopsVersion, []byte(k.kopsPublish))
+	})
+}
+
+// gcsWrite uploads contents to the dest location in GCS.
+// It currently shells out to gsutil, but this could change in future.
+func gcsWrite(dest string, contents []byte) error {
+	f, err := ioutil.TempFile("", "")
+	if err != nil {
+		return fmt.Errorf("error creating temp file: %v", err)
+	}
+
+	defer func() {
+		if err := os.Remove(f.Name()); err != nil {
+			log.Printf("error removing temp file: %v", err)
+		}
+	}()
+
+	if _, err := f.Write(contents); err != nil {
+		return fmt.Errorf("error writing temp file: %v", err)
+	}
+
+	if err := f.Close(); err != nil {
+		return fmt.Errorf("error closing temp file: %v", err)
+	}
+
+	return finishRunning(exec.Command("gsutil", "cp", f.Name(), dest))
 }
