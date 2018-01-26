@@ -5,3 +5,4 @@ cron:
 - description: sync PR state
   url: /sync
   schedule: every 8 hours
+  target: github
