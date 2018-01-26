@@ -25,6 +25,8 @@ log_level: info
 branch-protection:
   orgs:
     kubernetes:
+      require-contexts:
+      - cla/linuxfoundation
       repos:
         kubernetes/test-infra:
           protect: true
