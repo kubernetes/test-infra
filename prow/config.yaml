@@ -7920,6 +7920,47 @@ periodics:
         secretName: ssh-key-secret
         defaultMode: 0400
 
+- name: ci-cri-containerd-node-e2e-benchmark
+  interval: 2h
+  agent: kubernetes
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
+      args:
+      - --root=/go/src
+      - --repo=k8s.io/kubernetes
+      - --repo=github.com/containerd/cri-containerd=master
+      - --timeout=90
+      - --
+      - "--node-args=--image-config-file=test/e2e_node/benchmark-config.yaml --image-config-dir=$GOPATH/src/github.com/containerd/cri-containerd"
+      env:
+      - name: GOOGLE_APPLICATION_CREDENTIALS
+        value: /etc/service-account/service-account.json
+      - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-private
+      - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+        value: /etc/ssh-key-secret/ssh-public
+      - name: USER
+        value: prow
+      - name: GOPATH
+        value: /go
+      volumeMounts:
+      - name: service
+        mountPath: /etc/service-account
+        readOnly: true
+      - name: ssh
+        mountPath: /etc/ssh-key-secret
+        readOnly: true
+    volumes:
+    - name: service
+      secret:
+        secretName: service-account
+    - name: ssh
+      secret:
+        secretName: ssh-key-secret
+        defaultMode: 0400
+
+
 - name: ci-cri-containerd-node-e2e-flaky
   interval: 2h
   agent: kubernetes
