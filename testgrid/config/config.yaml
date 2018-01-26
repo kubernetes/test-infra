@@ -141,6 +141,13 @@ test_groups:
     - target_config: Tests name
     - target_config: Context
     name_format: '%s [%s]'
+- name: ci-cri-containerd-node-e2e-benchmark
+  gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-node-e2e-benchmark
+  test_name_config:
+    name_elements:
+    - target_config: Tests name
+    - target_config: Context
+    name_format: '%s [%s]'
 - name: ci-ingress-gce-image-push
   gcs_prefix: kubernetes-jenkins/logs/ci-ingress-gce-image-push
 - name: ci-ingress-gce-e2e
@@ -4212,6 +4219,8 @@ dashboards:
     test_group_name: ci-cri-containerd-node-e2e-serial
   - name: node-e2e-flaky
     test_group_name: ci-cri-containerd-node-e2e-flaky
+  - name: node-e2e-benchmark
+    test_group_name: ci-cri-containerd-node-e2e-benchmark
   - name: pull-node-e2e
     test_group_name: pull-kubernetes-node-e2e-containerd
     base_options: 'width=10'

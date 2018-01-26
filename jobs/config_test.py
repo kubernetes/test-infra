@@ -795,6 +795,7 @@ class JobTest(unittest.TestCase):
             'ci-cri-containerd-node-e2e': 'cri-containerd-node-e2e-*',
             'ci-cri-containerd-node-e2e-serial': 'cri-containerd-node-e2e-*',
             'ci-cri-containerd-node-e2e-flaky': 'cri-containerd-node-e2e-*',
+            'ci-cri-containerd-node-e2e-benchmark': 'cri-containerd-node-e2e-*',
             # ci-cri-containerd-e2e-gce-alpha-api intentionally share projects with
             # ci-kubernetes-e2e-gce-alpha-api.
             'ci-kubernetes-e2e-gce-alpha-api': 'k8s-e2e-gce-alpha-api-access',
