@@ -24,9 +24,14 @@ set -o errexit
 set -o pipefail
 set -o xtrace
 
+TESTINFRA_ROOT=$(git rev-parse --show-toplevel)
+cd "${TESTINFRA_ROOT}"
+
 trap 'echo "FAILED" >&2' ERR
-pushd "$(dirname "${BASH_SOURCE}")/.."
-dep ensure -v
+# bazel runs the command under its runfiles directory, rather than the workspace
+# root. This is a somewhat hacky way of getting back to the root.
+bazel run --run_under="cd ${TESTINFRA_ROOT} &&" \
+  //vendor/github.com/golang/dep/cmd/dep -- ensure -v
 # dep itself has a problematic testdata directory with infinite symlinks which
 # makes bazel sad: https://github.com/golang/dep/pull/1412
 # dep should probably be removing it, but it doesn't:
