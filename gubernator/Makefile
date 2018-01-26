@@ -3,12 +3,16 @@ PROJECT ?= k8s-gubernator
 
 # TODO(fejta): convert these to bazel rules
 
-.PHONY: migrate versions deploy all
+.PHONY: migrate versions deploy cron all
 all: versions
 
-deploy:
+deploy: cron
 	gcloud app deploy --version="$(VERSION)" --project="$(PROJECT)" --no-promote --quiet
 	cd github && gcloud app deploy --version="$(VERSION)" --project="$(PROJECT)" --no-promote --quiet
+
+# This is a weird one. It's a global setting that's *not* versioned.
+cron:
+	gcloud app deploy --project="$(PROJECT)" cron.yaml
 
 versions:
 	gcloud app versions list --project="$(PROJECT)"
