@@ -64,12 +64,15 @@ class ConfigHandler(view_base.BaseHandler):
         self.render('config.html', {'hostname': hostname})
 
     def post(self):
+        self.check_csrf()
         if users.is_current_user_admin():
             oauth_set = False
             webhook_set = False
+            token_set = False
 
             github_id = self.request.get('github_id')
             github_secret = self.request.get('github_secret')
+            github_token = self.request.get('github_token')
             if github_id and github_secret:
                 value = {'id': github_id, 'secret': github_secret}
                 secrets.put('github_client', value)
@@ -81,8 +84,14 @@ class ConfigHandler(view_base.BaseHandler):
                             github_webhook_secret,
                             per_host=False)
                 webhook_set = True
+            if github_token:
+                secrets.put('github_token', github_token, per_host=False)
+                token_set = True
             self.render('config.html',
-                        {'hostname': hostname, 'oauth_set': oauth_set, 'webhook_set': webhook_set})
+                        dict(hostname=hostname,
+                             oauth_set=oauth_set,
+                             webhook_set=webhook_set,
+                             token_set=token_set))
         else:
             self.abort(403)
 

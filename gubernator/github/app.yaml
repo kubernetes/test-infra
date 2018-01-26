@@ -16,6 +16,9 @@ handlers:
 - url: /admin.*
   script: admin.app
   login: admin
+- url: /sync
+  script: periodic_sync.app
+  login: admin
 - url: .*
   script: main.app
 
