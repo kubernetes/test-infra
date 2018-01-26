@@ -60,6 +60,8 @@ labels:
     name: lifecycle/rotten
   - color: "795548"
     name: lifecycle/stale
+    previously:
+      - name: stale
   - color: b60205
     name: needs-ok-to-test
   - color: BDBDBD

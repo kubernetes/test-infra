@@ -25,6 +25,7 @@ import (
 	"strings"
 	"testing"
 
+	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"k8s.io/test-infra/prow/github"
@@ -160,7 +161,7 @@ func TestConfigSecurityClusterRestricted(t *testing.T) {
 
 // checkDockerSocketVolumes returns an error if any volume uses a hostpath
 // to the docker socket. we do not want to allow this
-func checkDockerSocketVolumes(volumes []kube.Volume) error {
+func checkDockerSocketVolumes(volumes []v1.Volume) error {
 	for _, volume := range volumes {
 		if volume.HostPath != nil && volume.HostPath.Path == "/var/run/docker.sock" {
 			return errors.New("job uses HostPath with docker socket")
@@ -200,7 +201,7 @@ func TestJobDoesNotHaveDockerSocket(t *testing.T) {
 	}
 }
 
-func checkBazelPortContainer(c kube.Container, cache bool) error {
+func checkBazelPortContainer(c v1.Container, cache bool) error {
 	if !cache {
 		if len(c.Ports) != 0 {
 			return errors.New("job does not use --cache-ssd and so should not set ports in spec")
@@ -379,7 +380,7 @@ func allJobs() ([]Presubmit, []Postsubmit, []Periodic, error) {
 //   * Prow injected vars like REPO_NAME, PULL_REFS, etc are only used on non-periodic jobs
 //   * Deprecated --branch, --pull flags are not used
 //   * Required --service-account, --upload, --job, --clean flags are present
-func checkBazelbuildSpec(t *testing.T, name string, spec *kube.PodSpec, periodic bool) map[string]int {
+func checkBazelbuildSpec(t *testing.T, name string, spec *v1.PodSpec, periodic bool) map[string]int {
 	img := "gcr.io/k8s-testimages/bazelbuild"
 	tags := map[string]int{}
 	if spec == nil {
@@ -772,7 +773,7 @@ func TestPullKubernetesCross(t *testing.T) {
 
 // checkLatestUsesImagePullPolicy returns an error if an image is a `latest-.*` tag,
 // but doesn't have imagePullPolicy: Always
-func checkLatestUsesImagePullPolicy(spec *kube.PodSpec) error {
+func checkLatestUsesImagePullPolicy(spec *v1.PodSpec) error {
 	for _, container := range spec.Containers {
 		if strings.Contains(container.Image, ":latest-") {
 			// If the job doesn't specify imagePullPolicy: Always,

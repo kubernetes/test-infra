@@ -17,11 +17,12 @@ import cPickle as pickle
 import logging
 import os
 
+import webapp2
+
 from google.appengine.api import urlfetch
 from google.appengine.ext import deferred
 from google.appengine.ext import ndb
 
-import webapp2
 import models
 import handlers
 
@@ -91,7 +92,6 @@ class AdminDash(webapp2.RequestHandler):
         #     #Checking_The_Referer_Header
         origin = self.request.headers.get('origin') + '/'
         expected = self.request.host_url + '/'
-        print expected
         if not (origin and origin == expected):
             logging.error('csrf check failed for %s, origin: %r', self.request.url, origin)
             self.abort(403)
