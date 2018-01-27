@@ -294,7 +294,7 @@ span.label:hover {
 /* NOTE: spaces must be stripped from the label name */
 .label.lgtm {
     background-color: #15dd18;
-    color: #ffffff;
+    color: #000000;
 }
 .label.approved {
     background-color: #0ffa16;
@@ -302,7 +302,7 @@ span.label:hover {
 }
 .label.cncf-cla\:yes {
     background-color: #bfe5bf;
-    color: black;
+    color: #000000;
 }
 .label.needs-ok-to-test {
     background-color: #b60205;
