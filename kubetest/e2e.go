@@ -215,7 +215,7 @@ func run(deploy deployer, o options) error {
 		} else {
 			errs = appendError(errs, xmlWrap(o.testCmdName, func() error {
 				cmdLine := os.ExpandEnv(o.testCmd)
-				return finishRunning(exec.Command(cmdLine))
+				return finishRunning(exec.Command(cmdLine, o.testCmdArgs...))
 			}))
 		}
 	}
