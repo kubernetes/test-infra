@@ -337,6 +337,10 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-device-plugin-gpu-beta
   alert_stale_results_hours: 24
   num_failures_to_alert: 12 # Runs every 2h. Alert when it's been failing for a day.
+- name: ci-kubernetes-e2e-gke-device-plugin-gpu-monitoring
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-device-plugin-gpu-monitoring
+  alert_stale_results_hours: 24
+  num_failures_to_alert: 8 # Runs every 3h. Alert when it's been failing for a day.
 - name: ci-kubernetes-e2e-gke-gpu-1-7
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gpu-1-7
   alert_stale_results_hours: 36
@@ -3593,6 +3597,10 @@ dashboards:
       alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
   - name: gke-staging-latest-device-plugin-gpu
     test_group_name: ci-kubernetes-e2e-gke-staging-latest-device-plugin-gpu
+    alert_options:
+      alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
+  - name: gke-device-plugin-gpu-monitoring
+    test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-monitoring
     alert_options:
       alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
   - name: gke-gpu-1.7
