@@ -294,11 +294,11 @@ span.label:hover {
 /* NOTE: spaces must be stripped from the label name */
 .label.lgtm {
     background-color: #15dd18;
-    color: #fff;
+    color: #ffffff;
 }
 .label.approved {
     background-color: #0ffa16;
-    color: #033304;
+    color: #000000;
 }
 .label.cncf-cla\:yes {
     background-color: #bfe5bf;
@@ -306,7 +306,7 @@ span.label:hover {
 }
 .label.needs-ok-to-test {
     background-color: #b60205;
-    color: white;
+    color: #ffffff;
 }
 .label.do-not-merge,
 .label.do-not-merge\/hold,
@@ -315,9 +315,9 @@ span.label:hover {
 .label.do-not-merge\/cherry-pick-not-approved,
 .label.do-not-merge\/blocked-paths {
     background-color: #e11d21;
-    color: #fff;
+    color: #ffffff;
 }
 .label.needs-rebase {
     background-color: #BDBDBD;
-    color: #333333;
+    color: #000000;
 }
