@@ -3557,36 +3557,36 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-device-plugin-gpu
     alert_options:
       alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
-  - name: gce-device-plugin-gpu-1.8
-    test_group_name: ci-kubernetes-e2e-gce-device-plugin-gpu-stable1
-    alert_options:
-      alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
   - name: gce-device-plugin-gpu-1.9
     test_group_name: ci-kubernetes-e2e-gce-device-plugin-gpu-beta
+    alert_options:
+      alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
+  - name: gce-device-plugin-gpu-1.8
+    test_group_name: ci-kubernetes-e2e-gce-device-plugin-gpu-stable1
     alert_options:
       alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
   - name: gce-gpu
     test_group_name: ci-kubernetes-e2e-gce-gpu
     alert_options:
       alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
-  - name: gce-gpu-1.8
-    test_group_name: ci-kubernetes-e2e-gce-gpu-stable1
-    alert_options:
-      alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
   - name: gce-gpu-1.9
     test_group_name: ci-kubernetes-e2e-gce-gpu-beta
+    alert_options:
+      alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
+  - name: gce-gpu-1.8
+    test_group_name: ci-kubernetes-e2e-gce-gpu-stable1
     alert_options:
       alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
   - name: gke-device-plugin-gpu
     test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu
     alert_options:
       alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
-  - name: gke-device-plugin-gpu-1.8
-    test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-stable1
-    alert_options:
-      alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
   - name: gke-device-plugin-gpu-1.9
     test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-beta
+    alert_options:
+      alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
+  - name: gke-device-plugin-gpu-1.8
+    test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-stable1
     alert_options:
       alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
   - name: gke-device-plugin-gpu-p100
