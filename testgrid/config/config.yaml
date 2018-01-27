@@ -106,8 +106,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-e2e-gci-gce-proto
 - name: ci-cri-containerd-e2e-gce-device-plugin-gpu
   gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-e2e-gce-device-plugin-gpu
-- name: ci-cri-containerd-e2e-gce-alpha-api
-  gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-e2e-gce-alpha-api
 - name: ci-cri-containerd-e2e-gci-gce-ingress
   gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-e2e-gci-gce-ingress
 - name: ci-cri-containerd-e2e-gce-multizone
@@ -4201,8 +4199,6 @@ dashboards:
     test_group_name: ci-cri-containerd-e2e-gci-gce-proto
   - name: e2e-gci-device-plugin-gpu
     test_group_name: ci-cri-containerd-e2e-gce-device-plugin-gpu
-  - name: e2e-gci-alpha-api
-    test_group_name: ci-cri-containerd-e2e-gce-alpha-api
   - name: e2e-gci-ingress
     test_group_name: ci-cri-containerd-e2e-gci-gce-ingress
   - name: e2e-gci-multizone

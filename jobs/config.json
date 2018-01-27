@@ -38,27 +38,6 @@
       "sig-node"
     ]
   },
-  "ci-cri-containerd-e2e-gce-alpha-api": {
-    "args": [
-      "--check-leaked-resources",
-      "--cluster=",
-      "--env-file=jobs/platform/gce.env",
-      "--env-file=jobs/env/ci-kubernetes-e2e-gce-alpha-api.env",
-      "--env-file=jobs/env/ci-cri-containerd-e2e-gce.env",
-      "--extract=ci/latest",
-      "--gcp-node-image=gci",
-      "--gcp-project=k8s-e2e-gce-alpha-api-access",
-      "--gcp-zone=us-central1-f",
-      "--ginkgo-parallel=30",
-      "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[Feature:GCEAlphaFeature\\] --minStartupPods=8",
-      "--timeout=60m"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-node"
-    ]
-  },
   "ci-cri-containerd-e2e-gce-device-plugin-gpu": {
     "args": [
       "--check-leaked-resources",
@@ -235,7 +214,6 @@
       "--env-file=jobs/env/ci-cri-containerd-e2e-gce.env",
       "--extract=ci/latest",
       "--gcp-node-image=gci",
-      "--gcp-project=k8s-jenkins-gce-gci-ip-aliases",
       "--gcp-zone=us-central1-f",
       "--ginkgo-parallel=30",
       "--provider=gce",

@@ -796,10 +796,6 @@ class JobTest(unittest.TestCase):
             'ci-cri-containerd-node-e2e-serial': 'cri-containerd-node-e2e-*',
             'ci-cri-containerd-node-e2e-flaky': 'cri-containerd-node-e2e-*',
             'ci-cri-containerd-node-e2e-benchmark': 'cri-containerd-node-e2e-*',
-            # ci-cri-containerd-e2e-gce-alpha-api intentionally share projects with
-            # ci-kubernetes-e2e-gce-alpha-api.
-            'ci-kubernetes-e2e-gce-alpha-api': 'k8s-e2e-gce-alpha-api-access',
-            'ci-cri-containerd-e2e-gce-alpha-api': 'k8s-e2e-gce-alpha-api-access',
             # ci-cri-containerd-e2e-gce-multizone intentionally share projects with
             # ci-kubernetes-e2e-gce-multizone.
             'ci-kubernetes-e2e-gce-multizone': 'k8s-jkns-e2e-gce-ubelite',
@@ -808,10 +804,6 @@ class JobTest(unittest.TestCase):
             # ci-kubernetes-e2e-gce-stackdriver.
             'ci-kubernetes-e2e-gce-stackdriver': 'k8s-jkns-e2e-gce-stackdriver',
             'ci-cri-containerd-e2e-gce-stackdriver': 'k8s-jkns-e2e-gce-stackdriver',
-            # ci-cri-containerd-e2e-gci-gce-ip-alias intentionally share projects with
-            # ci-kubernetes-e2e-gci-gce-ip-alias.
-            'ci-kubernetes-e2e-gci-gce-ip-alias': 'k8s-jenkins-gce-gci-ip-aliases',
-            'ci-cri-containerd-e2e-gci-gce-ip-alias': 'k8s-jenkins-gce-gci-ip-aliases',
             # ingress-GCE e2e jobs
             'pull-ingress-gce-e2e': 'e2e-ingress-gce',
             'ci-ingress-gce-e2e': 'e2e-ingress-gce',
