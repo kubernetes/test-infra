@@ -24,6 +24,7 @@ import (
 	"net/http"
 	"net/url"
 	"regexp"
+	"strings"
 
 	"github.com/sirupsen/logrus"
 
@@ -107,7 +108,10 @@ func (u realPack) readDog() (string, error) {
 	if err = json.NewDecoder(resp.Body).Decode(&a); err != nil {
 		return "", err
 	}
-
+	// GitHub doesn't support videos :(
+	if strings.HasSuffix(a.URL, ".mp4") {
+		return "", errors.New("unsupported doggo :( github doesn't support .mp4")
+	}
 	return a.Format()
 }
 
@@ -130,7 +134,7 @@ func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, p
 	repo := e.Repo.Name
 	number := e.Number
 
-	for i := 0; i < 3; i++ {
+	for i := 0; i < 5; i++ {
 		resp, err := p.readDog()
 		if err != nil {
 			log.WithError(err).Println("Failed to get dog img")
