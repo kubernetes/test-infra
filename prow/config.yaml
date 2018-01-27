@@ -7269,7 +7269,7 @@ periodics:
         secretName: service-account
 
 - name: ci-cri-containerd-e2e-gce-device-plugin-gpu
-  interval: 2h
+  interval: 3h
   agent: kubernetes
   spec:
     containers:

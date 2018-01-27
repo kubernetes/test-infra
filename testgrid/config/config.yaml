@@ -106,6 +106,8 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-e2e-gci-gce-proto
 - name: ci-cri-containerd-e2e-gce-device-plugin-gpu
   gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-e2e-gce-device-plugin-gpu
+  alert_stale_results_hours: 24
+  num_failures_to_alert: 8 # Runs every 3h. Alert when it's been failing for a day.
 - name: ci-cri-containerd-e2e-gci-gce-ingress
   gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-e2e-gci-gce-ingress
 - name: ci-cri-containerd-e2e-gce-multizone
@@ -3603,6 +3605,10 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-monitoring
     alert_options:
       alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
+  - name: gke-device-plugin-gpu-cri-containerd
+    test_group_name: ci-cri-containerd-e2e-gce-device-plugin-gpu
+    alert_options:
+      alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
   - name: gke-gpu-1.7
     test_group_name: ci-kubernetes-e2e-gke-gpu-1-7
     alert_options:
@@ -3614,8 +3620,6 @@ dashboards:
     test_group_name: ci-kubernetes-node-kubelet-serial-cpu-manager
     alert_options:
       alert_mail_to_addresses: 'balaji.warft@gmail.com, connor.p.d@gmail.com'
-  - name: cri-containerd-device-plugin-gpu
-    test_group_name: ci-cri-containerd-e2e-gce-device-plugin-gpu
 
 - name: sig-api-machinery
   dashboard_tab:
