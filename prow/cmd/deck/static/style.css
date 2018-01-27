@@ -199,6 +199,8 @@ span.label:hover {
     margin: 8px;
     display: none;
     font-family: "Roboto", "Arial", sans-serif;
+    max-width: 100%;
+    width: auto;
 }
 
 .command-examples {
@@ -209,6 +211,12 @@ span.label:hover {
     font-size: 14px;
     margin: 4px 0;
     padding: 2px 8px;
+}
+
+.command-usage {
+    color: #757575;
+    font-size: 16px;
+    font-weight: bolder;
 }
 
 .command-example-list {

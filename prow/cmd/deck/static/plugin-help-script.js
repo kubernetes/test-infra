@@ -265,6 +265,7 @@ function createPluginCell(repo, pluginName, plugin) {
 function createCommandRow(repo, pluginName, plugin, command, isExternal, no) {
     const row = document.createElement("TR");
     row.appendChild(commandStatus(command.Featured, isExternal, no));
+    row.appendChild(createCommandCell(command.Usage, ["command-usage"]));
     row.appendChild(
         createCommandCell(command.Examples, ["command-examples"], true));
     row.appendChild(
