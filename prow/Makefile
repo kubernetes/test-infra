@@ -24,7 +24,7 @@ HOOK_VERSION             ?= v20180126-11ec8c92e
 # SINKER_VERSION is the version of the sinker image
 SINKER_VERSION           ?= v20180125-b72c696dc
 # DECK_VERSION is the version of the deck image
-DECK_VERSION             ?= v20180126-81ec7e09c
+DECK_VERSION             ?= v20180127-f2ebdaaae
 # SPLICE_VERSION is the version of the splice image
 SPLICE_VERSION           ?= v20180125-b72c696dc
 # TOT_VERSION is the version of the tot image
