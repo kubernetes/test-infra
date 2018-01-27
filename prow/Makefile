@@ -58,6 +58,11 @@ update-config: get-cluster-credentials
 update-plugins: get-cluster-credentials
 	kubectl create configmap plugins --from-file=plugins=plugins.yaml --dry-run -o yaml | kubectl replace configmap plugins -f -
 
+update-cat-api-key: get-cluster-credentials
+	kubectl create configmap cat-api-key --from-file=api-key=plugins/cat/api-key --dry-run -o yaml | kubectl replace configmap cat-api-key -f -
+
+.PHONY: update-config update-plugins update-cat-api-key
+
 get-cluster-credentials:
 	gcloud container clusters get-credentials "$(CLUSTER)" --project="$(PROJECT)" --zone="$(ZONE)"
 
@@ -70,7 +75,7 @@ build:
 test:
 	go test -race -cover $$(go list ./... | grep -v "\/vendor\/")
 
-.PHONY: update-config update-plugins build test get-cluster-credentials
+.PHONY: build test get-cluster-credentials
 
 alpine-image:
 	docker build -t "$(REGISTRY)/$(PROJECT)/alpine:$(ALPINE_VERSION)" $(DOCKER_LABELS) cmd/images/alpine

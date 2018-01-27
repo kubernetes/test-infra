@@ -78,6 +78,8 @@ blockades:
   - ^events/elections/2017
   explanation: "These files are historical, and from events that have already occurred."
 
+cat:
+  key_path: /etc/cat-api/api-key
 heart:
   adorees:
   - k8s-merge-robot
