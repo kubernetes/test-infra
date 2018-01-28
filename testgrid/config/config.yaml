@@ -1683,8 +1683,6 @@ test_groups:
   - configuration_value: Commit
   - configuration_value: infra-commit
 # master-2 to master
-- name: ci-kubernetes-e2e-gke-cvm-stable-gci-master-upgrade-master
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cvm-stable-gci-master-upgrade-master
 - name: ci-kubernetes-e2e-gke-gci-stable-gci-master-upgrade-master
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-stable-gci-master-upgrade-master
 # master-1 to master
@@ -2734,9 +2732,6 @@ dashboards:
 
 - name: sig-release-master-upgrade-optional
   dashboard_tab:
-  - name: gke-cvm-1.7-gci-master-upgrade-master
-    test_group_name: ci-kubernetes-e2e-gke-cvm-stable-gci-master-upgrade-master
-    description: 'Upgrade master only, in gke, from container_vm 1.6 to gci master'
   - name: gke-gci-1.7-gci-master-upgrade-master
     test_group_name: ci-kubernetes-e2e-gke-gci-stable-gci-master-upgrade-master
     description: 'Upgrade master only, in gke, from gci 1.6 to gci master'
