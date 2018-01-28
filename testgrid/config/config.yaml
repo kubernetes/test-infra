@@ -1216,10 +1216,6 @@ test_groups:
 - name: ci-benchmark-scheduler-master
   gcs_prefix: kubernetes-jenkins/logs/ci-benchmark-scheduler-master
 # 1.6-master upgrade jobs
-- name: ci-kubernetes-e2e-gce-1-6-1-7-upgrade-cluster
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-1-6-1-7-upgrade-cluster
-- name: ci-kubernetes-e2e-gce-1-6-1-7-upgrade-master
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-1-6-1-7-upgrade-master
 - name: ci-kubernetes-e2e-gce-1-6-1-7-upgrade-cluster-new
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-1-6-1-7-upgrade-cluster-new
 - name: ci-kubernetes-e2e-gke-gci-1-6-gci-1-7-upgrade-cluster
@@ -3393,10 +3389,6 @@ dashboards:
 
 - name: sig-cluster-lifecycle-1.6-1.7-upgrade
   dashboard_tab:
-  - name: gce-upgrade-cluster
-    test_group_name: ci-kubernetes-e2e-gce-1-6-1-7-upgrade-cluster
-  - name: gce-upgrade-master
-    test_group_name: ci-kubernetes-e2e-gce-1-6-1-7-upgrade-master
   - name: gce-upgrade-cluster-new
     test_group_name: ci-kubernetes-e2e-gce-1-6-1-7-upgrade-cluster-new
   - name: gke-gci-upgrade-cluster
