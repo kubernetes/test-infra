@@ -5,16 +5,16 @@ var logger = {
   message: '',
   options: {
     request: {
-      endpoint: 'https://' + window.location.hostname + '/trace?',
+      endpoint: 'https://' + window.location.hostname + '?',
       params: '',
       config: {}
     },
     messages: {
       invalidInput: 'Invalid input. Please pass a link from a PR or PR comment and profit',
-      invalidHost: 'Invalid host. Host needs to be github.com',
-      invalidParams: 'Invalid params in the URL. Need either "pr", "repo", and "org", or  "issuecomment" to be specified',
-      invalidUrl: 'Invalid link provided. Failed to construct \'URL\'',
-      requestError: 'Fetch error: Status is not 2xx',
+      invalidHost: '{value} is an invalid host. Host needs to be github.com',
+      invalidParams: 'The following {value} provided as params. Need either "pr", "repo", and "org", or  "issuecomment" to be specified',
+      invalidUrl: '{value} is an invalid link. Failed to construct \'URL\'',
+      requestError: 'Fetch error: Status is: {value}',
       requestLoading: 'Loading..',
       emptyLogs: 'No logs to display'
     }
@@ -22,25 +22,24 @@ var logger = {
 
   // the actual fetch
   request: function(endpoint) {
-    generateView.toggleLoader(true);
+    generateView.toggleElement(generateView.loader, true);
     fetch(endpoint).then(
         function(response) {
 
           if (response.status !== 200) {
-            generateView.toggleLoader(false);
-            controller.setMessage(logger.options.messages.requestError);
-            return;
+            return Promise.reject(response.status);
+          } else {
+            generateView.toggleElement(generateView.messageHolder, false);
           }
 
           response.json().then(function(data) {
-            generateView.toggleLoader(false);
             controller.setData(data);
           });
         }
     ).catch(function(err) {
-      console.log('Fetch Error', err);
-      generateView.toggleLoader(false);
-      controller.setMessage(err);
+      controller.setMessage(logger.options.messages.requestError, err);
+    }).finally(function(){
+      generateView.toggleElement(generateView.loader, false);
     });
 
   }
@@ -68,8 +67,9 @@ var controller = {
     return logger.options.request.endpoint + encodeURI(logger.options.request.params);
   },
 
-  setMessage: function(msg) {
-    logger.message = msg;
+  setMessage: function(msg, value) {
+    generateView.toggleElement(generateView.messageHolder, true);
+    logger.message = msg.replace('{value}', value);
     generateView.updateMsg();
   },
 
@@ -93,7 +93,7 @@ var controller = {
     try {
       var url = new URL(userValue);
     } catch(err) {
-      this.setMessage(logger.options.messages.invalidUrl);
+      this.setMessage(logger.options.messages.invalidUrl, userValue);
       return;
     }
 
@@ -101,12 +101,12 @@ var controller = {
         urlParser = url.pathname.split('/');
 
     if (host !== 'github.com') {
-      this.setMessage(logger.options.messages.invalidHost);
+      this.setMessage(logger.options.messages.invalidHost, userValue);
       return;
     }
 
-    if (urlParser.length > 5) {
-      this.setMessage(logger.options.messages.invalidParams);
+    if (urlParser.length != 5) {
+      this.setMessage(logger.options.messages.invalidParams, urlParser);
       return;
     }
 
@@ -262,8 +262,8 @@ var generateView = {
     this.messageHolder.innerText = controller.getMessage();
   },
 
-  toggleLoader: function(show) {
-    show? this.loader.classList.remove("hide") : this.loader.classList.add("hide");
+  toggleElement: function(elem, show) {
+    show? elem.classList.remove("hide") : elem.classList.add("hide");
   }
 };
 
