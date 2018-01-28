@@ -25,6 +25,7 @@ py_test(
     deps = [
         ":config_sort",
         ":env_gc",
+        "@yaml",
     ],
 )
 

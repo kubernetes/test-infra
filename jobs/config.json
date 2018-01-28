@@ -6778,27 +6778,6 @@
       "sig-cluster-lifecycle"
     ]
   },
-  "ci-kubernetes-e2e-gke-cvm-stable-gci-master-upgrade-master": {
-    "args": [
-      "--check-leaked-resources",
-      "--check-version-skew=false",
-      "--deployment=gke",
-      "--extract=ci/latest",
-      "--extract=v1.7.5",
-      "--gcp-cloud-sdk=gs://cloud-sdk-testing/ci/staging",
-      "--gcp-node-image=container_vm",
-      "--gcp-zone=us-central1-f",
-      "--gke-environment=test",
-      "--provider=gke",
-      "--test_args=--kubectl-path=../../../../kubernetes_skew/cluster/kubectl.sh --minStartupPods=8",
-      "--timeout=900m",
-      "--upgrade_args=--ginkgo.focus=\\[Feature:MasterUpgrade\\] --upgrade-target=ci/latest --upgrade-image=gci"
-    ],
-    "scenario": "kubernetes_e2e",
-    "sigOwners": [
-      "sig-cluster-lifecycle"
-    ]
-  },
   "ci-kubernetes-e2e-gke-device-plugin-gpu": {
     "args": [
       "--check-leaked-resources",
