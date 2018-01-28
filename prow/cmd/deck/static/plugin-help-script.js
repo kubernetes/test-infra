@@ -297,7 +297,7 @@ function createCommandLink(name, no) {
         document.body.removeChild(tempInput);
 
         const toast = document.body.querySelector("#toast");
-        toast.MaterialSnackbar.showSnackbar({message: "Copied command link to clipboard"});
+        toast.MaterialSnackbar.showSnackbar({message: "Copied to clipboard"});
     });
 
     link.appendChild(iconButton);
