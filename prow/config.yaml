@@ -94,6 +94,21 @@ tide:
     kubernetes/website: squash
   target_url: https://prow.k8s.io/tide.html
 
+presets:
+- labels:
+    preset: service-account
+  env:
+  - name: GOOGLE_APPLICATION_CREDENTIALS
+    value: /etc/service-account/service-account.json
+  volumes:
+  - name: service
+    secret:
+      secretName: service-account
+  volumeMounts:
+  - name: service
+    mountPath: /etc/service-account
+    readOnly: true
+
 presubmits:
   google/cadvisor:
   - name: pull-cadvisor-e2e
@@ -6144,6 +6159,8 @@ presubmits:
     always_run: true
     rerun_command: "/test pull-test-infra-bazel"
     trigger: "(?m)^/test( all| pull-test-infra-bazel),?(\\s+|$)"
+    labels:
+      preset: service-account
     spec:
       containers:
       - image: gcr.io/k8s-testimages/bazelbuild:v20171214-ae38d82af-0.8.1
@@ -6166,9 +6183,6 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
-        - name: service
-          mountPath: /etc/service-account
-          readOnly: true
         - name: cache-ssd
           mountPath: /root/.cache
         ports:
@@ -6178,9 +6192,6 @@ presubmits:
           requests:
             memory: "2Gi"
       volumes:
-      - name: service
-        secret:
-          secretName: service-account
       - name: cache-ssd
         hostPath:
           path: /mnt/disks/ssd0
@@ -6193,6 +6204,8 @@ presubmits:
     always_run: false
     rerun_command: "/test pull-test-infra-bazel-canary"
     trigger: "(?m)^/test pull-test-infra-bazel-canary,?(\\s+|$)"
+    labels:
+      preset: service-account
     spec:
       containers:
       - image: gcr.io/k8s-testimages/bazelbuild:latest-latest
@@ -6215,18 +6228,12 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
-        - name: service
-          mountPath: /etc/service-account
-          readOnly: true
         - name: bazel-scratch
           mountPath: /scratch/.cache
         resources:
           requests:
             memory: "2Gi"
       volumes:
-      - name: service
-        secret:
-          secretName: service-account
       - name: bazel-scratch
         emptyDir: {}
 
@@ -6238,6 +6245,8 @@ presubmits:
     rerun_command: "/test pull-test-infra-gubernator"
     trigger: "(?m)^/test pull-test-infra-gubernator,?(\\s+|$)"
     run_if_changed: 'gubernator|prow/config.yaml'
+    labels:
+      preset: service-account
     spec:
       containers:
       - image: gcr.io/k8s-testimages/gubernator:0.4
@@ -6247,18 +6256,12 @@ presubmits:
         - --upload=gs://kubernetes-jenkins/pr-logs
         - --service-account=/etc/service-account/service-account.json
         volumeMounts:
-        - name: service
-          mountPath: /etc/service-account
-          readOnly: true
         - name: cache-ssd
           mountPath: /root/.cache
         ports:
         - containerPort: 9999
           hostPort: 9999
       volumes:
-      - name: service
-        secret:
-          secretName: service-account
       - name: cache-ssd
         hostPath:
           path: /mnt/disks/ssd0
@@ -6271,6 +6274,8 @@ presubmits:
     rerun_command: "/test pull-test-infra-verify-bazel"
     trigger: "(?m)^/test( all| pull-test-infra-verify-bazel),?(\\s+|$)"
     always_run: true
+    labels:
+      preset: service-account
     spec:
       containers:
       - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
@@ -6279,17 +6284,6 @@ presubmits:
         - "--root=/go/src"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--clean"
-        env:
-        - name: GOOGLE_APPLICATION_CREDENTIALS
-          value: /etc/service-account/service-account.json
-        volumeMounts:
-        - name: service
-          mountPath: /etc/service-account
-          readOnly: true
-      volumes:
-      - name: service
-        secret:
-          secretName: service-account
 
   - name: pull-test-infra-verify-config
     agent: kubernetes
@@ -6299,6 +6293,8 @@ presubmits:
     rerun_command: "/test pull-test-infra-verify-config"
     trigger: "/test pull-test-infra-verify-config"
     run_if_changed: '^prow/config.yaml$'
+    labels:
+      preset: service-account
     spec:
       containers:
       - image: gcr.io/k8s-testimages/bazelbuild:v20171214-ae38d82af-0.8.1
@@ -6315,18 +6311,12 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
-        - name: service
-          mountPath: /etc/service-account
-          readOnly: true
         - name: bazel-scratch
           mountPath: /scratch/.cache
         resources:
           requests:
             memory: "2Gi"
       volumes:
-      - name: service
-        secret:
-          secretName: service-account
       - name: bazel-scratch
         emptyDir: {}
 
@@ -6338,6 +6328,8 @@ presubmits:
     rerun_command: "/test pull-test-infra-verify-gofmt"
     trigger: "/test( all| pull-test-infra-verify-gofmt)"
     always_run: true
+    labels:
+      preset: service-account
     spec:
       containers:
       - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
@@ -6346,17 +6338,6 @@ presubmits:
         - "--root=/go/src"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--clean"
-        env:
-        - name: GOOGLE_APPLICATION_CREDENTIALS
-          value: /etc/service-account/service-account.json
-        volumeMounts:
-        - name: service
-          mountPath: /etc/service-account
-          readOnly: true
-      volumes:
-      - name: service
-        secret:
-          secretName: service-account
 
   - name: pull-test-infra-verify-govet
     agent: kubernetes
@@ -6366,6 +6347,8 @@ presubmits:
     rerun_command: "/test pull-test-infra-verify-govet"
     trigger: "/test( all| pull-test-infra-verify-govet)"
     always_run: true
+    labels:
+      preset: service-account
     spec:
       containers:
       - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
@@ -6374,17 +6357,6 @@ presubmits:
         - "--root=/go/src"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--clean"
-        env:
-        - name: GOOGLE_APPLICATION_CREDENTIALS
-          value: /etc/service-account/service-account.json
-        volumeMounts:
-        - name: service
-          mountPath: /etc/service-account
-          readOnly: true
-      volumes:
-      - name: service
-        secret:
-          secretName: service-account
 
   tensorflow/k8s:
   - name: tf-k8s-presubmit
