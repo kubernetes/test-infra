@@ -11765,11 +11765,8 @@
     ]
   },
   "pull-kubernetes-e2e-gce": {
-    "_comment1": "NOTE: THESE ARE THE JENKINS ARGS / COMMON ARGS (!)",
-    "_comment2": "PLEASE PUT ARGS THAT WILL WORK FOR 1.6 HERE",
-    "_comment3": "Args for 1.7+ should go in prow/config.yaml after the `--` !",
     "args": [
-      "--build",
+      "--build=bazel",
       "--cluster=",
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/pull-kubernetes-e2e.env",
@@ -11779,8 +11776,8 @@
       "--gcp-project=k8s-jkns-pr-gce-etcd3",
       "--gcp-zone=us-central1-f",
       "--ginkgo-parallel=30",
-      "--mode=docker",
       "--provider=gce",
+      "--runtime-config=batch/v2alpha1=true,admissionregistration.k8s.io/v1alpha1=true",
       "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gce",
       "--test_args=--ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
       "--timeout=65m"
@@ -11813,11 +11810,8 @@
     ]
   },
   "pull-kubernetes-e2e-gke": {
-    "_comment1": "NOTE: THESE ARE THE JENKINS ARGS / COMMON ARGS (!)",
-    "_comment2": "PLEASE PUT ARGS THAT WILL WORK FOR 1.6 HERE",
-    "_comment3": "Args for 1.7+ should go in prow/config.yaml after the `--` !",
     "args": [
-      "--build",
+      "--build=bazel",
       "--cluster=",
       "--deployment=gke",
       "--extract=local",
@@ -11828,7 +11822,6 @@
       "--ginkgo-parallel=30",
       "--gke-environment=test",
       "--gke-shape={\"default\":{\"Nodes\":4,\"MachineType\":\"n1-standard-2\"}}",
-      "--mode=docker",
       "--provider=gke",
       "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gke",
       "--test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
@@ -11863,20 +11856,16 @@
     ]
   },
   "pull-kubernetes-e2e-kops-aws": {
-    "_comment1": "NOTE: THESE ARE THE JENKINS ARGS / COMMON ARGS (!)",
-    "_comment2": "PLEASE PUT ARGS THAT WILL WORK FOR 1.6 HERE",
-    "_comment3": "Args for 1.7+ should go in prow/config.yaml after the `--` !",
     "args": [
       "--aws",
       "--aws-cluster-domain=test-cncf-aws.k8s.io",
-      "--build",
+      "--build=bazel",
       "--check-leaked-resources=false",
       "--cluster=",
       "--env-file=jobs/platform/kops_aws.env",
       "--env-file=jobs/env/pull-kubernetes-e2e-kops-aws.env",
       "--extract=local",
       "--ginkgo-parallel",
-      "--mode=docker",
       "--provider=aws",
       "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-kops-aws",
       "--test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]|\\[HPA\\]|Dashboard|Services.*functioning.*NodePort",
@@ -11928,11 +11917,8 @@
     ]
   },
   "pull-kubernetes-kubemark-e2e-gce": {
-    "_comment1": "NOTE: THESE ARE THE JENKINS ARGS / COMMON ARGS (!)",
-    "_comment2": "PLEASE PUT ARGS THAT WILL WORK FOR 1.6 HERE",
-    "_comment3": "Args for 1.7+ should go in prow/config.yaml after the `--` !",
     "args": [
-      "--build",
+      "--build=bazel",
       "--cluster=",
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/pull-kubernetes-kubemark-e2e-gce.env",
@@ -11942,7 +11928,6 @@
       "--gcp-zone=us-central1-f",
       "--kubemark",
       "--kubemark-nodes=5",
-      "--mode=docker",
       "--provider=gce",
       "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-kubemark-e2e-gce",
       "--test=false",
