@@ -11658,6 +11658,15 @@
       "sig-testing"
     ]
   },
+  "pull-test-infra-verify-deps": {
+    "args": [
+      "./hack/verify-deps.sh"
+    ],
+    "scenario": "execute",
+    "sigOwners": [
+      "sig-testing"
+    ]
+  },
   "pull-test-infra-verify-gofmt": {
     "args": [
       "./hack/verify-gofmt.sh"
