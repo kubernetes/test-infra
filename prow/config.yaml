@@ -145,7 +145,7 @@ presubmits:
           defaultMode: 256
           secretName: ssh-key-secret
 
-  google/kubeflow:
+  kubeflow/kubeflow:
   - name: kubeflow-presubmit
     context: kubeflow-presubmit
     agent: kubernetes
@@ -6498,7 +6498,7 @@ presubmits:
           secretName: service-account
 
 postsubmits:
-  google/kubeflow:
+  kubeflow/kubeflow:
   - name: kubeflow-postsubmit
     agent: kubernetes
     branches:

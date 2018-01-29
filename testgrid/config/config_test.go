@@ -384,9 +384,9 @@ func TestJobsTestgridEntryMatch(t *testing.T) {
 	}
 
 	// Also check k/k presubmit, prow postsubmit and periodic jobs
-	for _, job := range prowConfig.AllPresubmits([]string{
-		"google/kubeflow",
+	for _, job := range prowConfig.AllPresubmits([]string{		
 		"google/cadvisor",
+		"kubeflow/kubeflow",
 		"kubernetes/kubernetes",
 		"kubernetes/test-infra",
 		"kubernetes/cluster-registry",
