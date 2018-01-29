@@ -169,7 +169,7 @@ class PRDashboard(view_base.BaseHandler):
             qs.append(ghm.GHIssueDigest.is_open == True)
         if user:
             qs.append(ghm.GHIssueDigest.involved == user.lower())
-        prs = list(ghm.GHIssueDigest.query(*qs))
+        prs = list(ghm.GHIssueDigest.query(*qs).fetch(batch_size=200))
         prs.sort(key=lambda x: x.updated_at, reverse=True)
 
         acks = None
