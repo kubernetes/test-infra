@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+set -o errexit
+
 if [ "$#" -lt 1 ]; then
   echo "usage: $0 <program> [program ...]"
   exit 1
@@ -34,6 +36,7 @@ new_version="v$(date -u '+%Y%m%d')-$(git describe --tags --always --dirty)"
 for i in "$@"; do
   echo "program: $i"
   echo "new version: $new_version"
+  gcloud docker -- pull "${PREFIX:-gcr.io/k8s-prow}/${i}:${new_version}"
 
   $SED -i "s/\(${i}:\)v[a-f0-9-]\+/\1$new_version/I" cluster/*.yaml
 done
