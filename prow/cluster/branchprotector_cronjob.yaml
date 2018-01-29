@@ -26,12 +26,11 @@ spec:
             - name: config
               mountPath: /etc/config
               readOnly: true
-        restartPolicy: Never
-        volumes:
-        - name: oauth
-          secret:
-            secretName: oauth-token
-        - name: config
-          configMap:
-            name: config
-
+          restartPolicy: Never
+          volumes:
+          - name: oauth
+            secret:
+              secretName: oauth-token
+          - name: config
+            configMap:
+              name: config
