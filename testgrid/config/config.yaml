@@ -2431,7 +2431,7 @@ dashboards:
 
 - name: google-gce-compute-image-tools
   dashboard_tab:
-    - name: daisy-e2e
+    - name: ci-daisy-e2e
       test_group_name: ci-daisy-e2e
       open_test_template:
         url: https://storage.googleapis.com/<gcs_prefix>/<changelist>/artifacts/log-<test-id>.txt
@@ -2439,7 +2439,7 @@ dashboards:
         url: https://github.com/GoogleCloudPlatform/compute-image-tools/issues/new
         options:
         - key: title
-          value: 'E2E: <test-name>'
+          value: 'ci-daisy-e2e issue: <test-name>'
         - key: body
           value: <test-url>
 
