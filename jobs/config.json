@@ -9348,9 +9348,9 @@
       "--env-file=jobs/platform/kops_aws.env",
       "--extract=ci/latest",
       "--ginkgo-parallel",
+      "--kops-publish=gs://kops-ci/bin/latest-ci-updown-green.txt",
       "--kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci.txt",
       "--provider=aws",
-      "--publish=gs://kops-ci/bin/latest-ci-updown-green.txt",
       "--test_args=--ginkgo.flakeAttempts=2 --ginkgo.focus=\\[k8s.io\\]\\sNetworking.*\\[Conformance\\]",
       "--timeout=30m"
     ],

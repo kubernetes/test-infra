@@ -21,6 +21,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
@@ -574,4 +575,29 @@ func getLatestGKEVersion(project, zone string) (string, error) {
 		return "", fmt.Errorf("invalid gke master version string: %s", string(res))
 	}
 	return "v" + versions[0], nil
+}
+
+// gcsWrite uploads contents to the dest location in GCS.
+// It currently shells out to gsutil, but this could change in future.
+func gcsWrite(dest string, contents []byte) error {
+	f, err := ioutil.TempFile("", "")
+	if err != nil {
+		return fmt.Errorf("error creating temp file: %v", err)
+	}
+
+	defer func() {
+		if err := os.Remove(f.Name()); err != nil {
+			log.Printf("error removing temp file: %v", err)
+		}
+	}()
+
+	if _, err := f.Write(contents); err != nil {
+		return fmt.Errorf("error writing temp file: %v", err)
+	}
+
+	if err := f.Close(); err != nil {
+		return fmt.Errorf("error closing temp file: %v", err)
+	}
+
+	return finishRunning(exec.Command("gsutil", "cp", f.Name(), dest))
 }
