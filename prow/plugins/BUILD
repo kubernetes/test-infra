@@ -65,6 +65,7 @@ filegroup(
         "//prow/plugins/lgtm:all-srcs",
         "//prow/plugins/lifecycle:all-srcs",
         "//prow/plugins/milestonestatus:all-srcs",
+        "//prow/plugins/owners-label:all-srcs",
         "//prow/plugins/releasenote:all-srcs",
         "//prow/plugins/requiresig:all-srcs",
         "//prow/plugins/shrug:all-srcs",
