@@ -28,8 +28,8 @@ gs://canonical-kubernetes-tests/logs-gke/:
 gs://kubernetes-multiarch-e2e-results/logs/:
   contact: "luxas"
   prefix: "luxas:"
-gs://gce-daisy-test/logs/:
-  contact: "crunk1"
+gs://compute-image-tools-test/logs/:
+  contact: "zmarano"
   prefix: ""
 gs://origin-federated-results/pr-logs/directory/:
   contact: "lsm5"
