@@ -12011,6 +12011,28 @@
       "sig-scalability"
     ]
   },
+  "pull-kubernetes-kubemark-e2e-gce-scale": {
+    "args": [
+      "--build",
+      "--cluster=",
+      "--env-file=jobs/platform/gce.env",
+      "--env-file=jobs/env/ci-kubernetes-kubemark-gce-scale.env",
+      "--extract=local",
+      "--gcp-project=k8s-scale-testing",
+      "--gcp-zone=us-east1-b",
+      "--kubemark",
+      "--kubemark-nodes=5000",
+      "--provider=gce",
+      "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-kubemark-e2e-gce-scale",
+      "--test=false",
+      "--test_args=--ginkgo.focus=\\[Feature:Performance\\] --gather-resource-usage=true --gather-metrics-at-teardown=true --output-print-type=json",
+      "--timeout=1200m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-scalability"
+    ]
+  },
   "pull-kubernetes-multicluster-ingress-test": {
     "args": [
       "make",
