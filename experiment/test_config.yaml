@@ -433,6 +433,33 @@ jobs:
   ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-updown:
     interval: 2h
     sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-alphafeatures:
+    interval: 2h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-autoscaling:
+    interval: 2h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-default:
+    interval: 2h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-flaky:
+    interval: 2h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-ingress:
+    interval: 2h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-reboot:
+    interval: 2h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-serial:
+    interval: 2h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-slow:
+    interval: 2h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-updown:
+    interval: 2h
+    sigOwners: ['sig-gcp']
   ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-alphafeatures:
     interval: 2h
     sigOwners: ['sig-gcp']
@@ -900,6 +927,11 @@ images:
   ubuntustable1:
     args:
     - --image-family=ubuntu-gke-1604-lts
+    - --image-project=ubuntu-os-gke-cloud
+    - --gcp-node-image=ubuntu
+  ubuntustable2:
+    args:
+    - --image-family=ubuntu-gke-1604-lts-2
     - --image-project=ubuntu-os-gke-cloud
     - --gcp-node-image=ubuntu
   cos:
