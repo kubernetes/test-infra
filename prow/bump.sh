@@ -32,12 +32,8 @@ cd $(dirname $0)
 
 new_version="v$(date -u '+%Y%m%d')-$(git describe --tags --always --dirty)"
 for i in "$@"; do
-  makefile_version_re="^\(${i}_VERSION.*=\s*\)"
-  version=$($SED -n "s/$makefile_version_re//Ip" Makefile)
   echo "program: $i"
-  echo "old version: $version"
   echo "new version: $new_version"
 
-  $SED -i "s/$makefile_version_re.*/\1$new_version/I" Makefile
-  $SED -i "s/\(${i}:\)[0-9]\+\.[0-9]\+/\1$new_version/I" cluster/*.yaml
+  $SED -i "s/\(${i}:\)v[a-f0-9-]\+/\1$new_version/I" cluster/*.yaml
 done

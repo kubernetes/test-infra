@@ -19,26 +19,29 @@ all: build test
 ALPINE_VERSION           ?= 0.1
 # GIT_VERSION is the version of the alpine+git image
 GIT_VERSION              ?= 0.1
+
+# YYYYmmdd-commitish
+TAG = $(shell date +v%Y%m%d)-$(shell git describe --tags --always --dirty)
 # HOOK_VERSION is the version of the hook image
-HOOK_VERSION             ?= v20180126-11ec8c92e
+HOOK_VERSION             ?= $(TAG)
 # SINKER_VERSION is the version of the sinker image
-SINKER_VERSION           ?= v20180125-b72c696dc
+SINKER_VERSION           ?= $(TAG)
 # DECK_VERSION is the version of the deck image
-DECK_VERSION             ?= v20180127-f2ebdaaae
+DECK_VERSION             ?= $(TAG)
 # SPLICE_VERSION is the version of the splice image
-SPLICE_VERSION           ?= v20180125-b72c696dc
+SPLICE_VERSION           ?= $(TAG)
 # TOT_VERSION is the version of the tot image
-TOT_VERSION              ?= v20180125-b72c696dc
+TOT_VERSION              ?= $(TAG)
 # HOROLOGIUM_VERSION is the version of the horologium image
-HOROLOGIUM_VERSION       ?= v20180125-b72c696dc
+HOROLOGIUM_VERSION       ?= $(TAG)
 # PLANK_VERSION is the version of the plank image
-PLANK_VERSION            ?= v20180125-b72c696dc
+PLANK_VERSION            ?= $(TAG)
 # JENKINS-OPERATOR_VERSION is the version of the jenkins-operator image
-JENKINS-OPERATOR_VERSION ?= v20180125-b72c696dc
+JENKINS-OPERATOR_VERSION ?= $(TAG)
 # TIDE_VERSION is the version of the tide image
-TIDE_VERSION             ?= v20180125-b72c696dc
+TIDE_VERSION             ?= $(TAG)
 # CLONEREFS_VERSION is the version of the clonerefs image
-CLONEREFS_VERSION        ?=v20180125-b72c696dc
+CLONEREFS_VERSION        ?= $(TAG)
 
 # These are the usual GKE variables.
 PROJECT       ?= k8s-prow
