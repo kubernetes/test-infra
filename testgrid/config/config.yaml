@@ -428,10 +428,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-latest-device-plugin-gpu
   alert_stale_results_hours: 24
   num_failures_to_alert: 4 # Runs every 2h. Alert when it's been failing for 8 hours.
-- name: ci-kubernetes-e2e-gke-test
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-test
-- name: ci-kubernetes-e2e-gci-gke-test
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-test
 - name: ci-kubernetes-e2e-gke-updown
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-updown
 - name: ci-kubernetes-e2e-gci-gke-updown
@@ -2531,10 +2527,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-regional
   - name: gci-gke-reboot
     test_group_name: ci-kubernetes-e2e-gci-gke-reboot
-  - name: gke-test
-    test_group_name: ci-kubernetes-e2e-gke-test
-  - name: gci-gke-test
-    test_group_name: ci-kubernetes-e2e-gci-gke-test
   - name: gke-updown
     test_group_name: ci-kubernetes-e2e-gke-updown
   - name: gci-gke-updown
@@ -4879,12 +4871,6 @@ dashboards:
     - configuration_value: infra-commit
   - name: gci-gke-reboot
     test_group_name: ci-kubernetes-e2e-gci-gke-reboot
-    column_header:
-    - configuration_value: node_os_image
-    - configuration_value: Commit
-    - configuration_value: infra-commit
-  - name: gci-gke-test
-    test_group_name: ci-kubernetes-e2e-gci-gke-test
     column_header:
     - configuration_value: node_os_image
     - configuration_value: Commit
