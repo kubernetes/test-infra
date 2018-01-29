@@ -27,13 +27,13 @@ import (
 // Preset is intended to match the k8s' PodPreset feature, and may be removed
 // if that feature goes beta.
 type Preset struct {
-	Labels       map[string]string  `json:"labels"`
-	Env          []kube.EnvVar      `json:"env"`
-	Volumes      []kube.Volume      `json:"volumes"`
-	VolumeMounts []kube.VolumeMount `json:"volumeMounts"`
+	Labels       map[string]string `json:"labels"`
+	Env          []v1.EnvVar       `json:"env"`
+	Volumes      []v1.Volume       `json:"volumes"`
+	VolumeMounts []v1.VolumeMount  `json:"volumeMounts"`
 }
 
-func mergePreset(preset Preset, labels map[string]string, pod *kube.PodSpec) error {
+func mergePreset(preset Preset, labels map[string]string, pod *v1.PodSpec) error {
 	if pod == nil {
 		return nil
 	}
