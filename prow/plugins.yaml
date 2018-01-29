@@ -18,7 +18,7 @@ triggers:
   trusted_org: containerd
   join_org_url: "https://github.com/containerd/containerd/blob/master/MAINTAINERS"
 - repos:
-  - kubeflow/kubeflow
+  - kubeflow
   trusted_org: kubeflow
   join_org_url: https://github.com/kubeflow/kubeflow/blob/master/CONTRIBUTING.md
 owners:
