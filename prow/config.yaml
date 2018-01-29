@@ -25817,7 +25817,7 @@ periodics:
   name: istio-periodic-e2e-gke-addon
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180129-9bc72b9fb-master
       args:
       - "--clean"
       - "--repo=github.com/istio/istio=master"
