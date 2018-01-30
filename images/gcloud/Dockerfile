@@ -13,7 +13,7 @@
 # limitations under the License.
 
 # Includes go and gcloud
-FROM golang:1.9
+FROM golang:1.9.3
 LABEL maintainer="senlu@google.com"
 
 # add env we can debug with the image name:tag
