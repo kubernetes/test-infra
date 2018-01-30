@@ -22,6 +22,7 @@ function redrawOptions() {
 
 window.onload = function () {
     // set dropdown based on options from query string
+    const hash = window.location.hash;
     redrawOptions();
     redraw();
 
@@ -31,6 +32,17 @@ window.onload = function () {
     dialog.querySelector('.close').addEventListener('click', () => {
         dialog.close();
     });
+
+    if (hash !== "") {
+        const el = document.body.querySelector(hash);
+        const mainContainer = document.body.querySelector(".mdl-layout__content");
+        if (el && mainContainer) {
+            setTimeout(() => {
+                mainContainer.scrollTop = el.getBoundingClientRect().top;
+                window.location.hash = hash;
+            }, 32);
+        }
+    }
 };
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -133,28 +145,32 @@ function createCommandCell(data, styles = [], noWrap = false) {
  * Returns an icon element.
  * @param {number} no no. command
  * @param {string} iconString icon name
- * @param {?Array<string>}styles list of styles of the icon
+ * @param {?Array<string>} styles list of styles of the icon
  * @param {string} tooltip tooltip string
+ * @param {boolean} isButton true if icon is a button
  * @return {Element}
  */
-function createIcon(no, iconString, styles = [], tooltip = "") {
+function createIcon(no, iconString, styles = [], tooltip = "", isButton = false) {
     const icon = document.createElement("I");
     icon.id = "icon-" + iconString + "-" + no;
     icon.classList.add("material-icons");
     icon.classList.add(...styles);
     icon.innerHTML = iconString;
 
-    if (tooltip === "") {
-        return icon;
+    const container = isButton ? document.createElement("BUTTON") : document.createElement("DIV");
+    container.appendChild(icon);
+    if (isButton) {
+        container.classList.add(...["mdl-button", "mdl-js-button", "mdl-button--icon"]);
     }
 
-    const container = document.createElement("DIV");
+    if (tooltip === "") {
+        return container;
+    }
+
     const tooltipEl = document.createElement("DIV");
     tooltipEl.setAttribute("for", icon.id);
     tooltipEl.classList.add("mdl-tooltip");
     tooltipEl.innerHTML = tooltip;
-
-    container.appendChild(icon);
     container.appendChild(tooltipEl);
 
     return container;
@@ -176,7 +192,7 @@ function commandStatus(isFeatured, isExternal, no) {
     }
     if (isExternal) {
         status.appendChild(
-            createIcon(no, "link", ["external-icon"], "External plugin"));
+            createIcon(no, "open_in_new", ["external-icon"], "External plugin"));
     }
     return status;
 }
@@ -253,6 +269,45 @@ function createPluginCell(repo, pluginName, plugin) {
 }
 
 /**
+ * Creates a link that links to the command.
+ * @param name
+ * @param no
+ * @return {Element}
+ */
+function createCommandLink(name, no) {
+    const link = document.createElement("TD");
+    const iconButton = createIcon(no, "link", ["link-icon"], "", true);
+
+    iconButton.addEventListener("click", () => {
+        const tempInput = document.createElement("INPUT");
+        let url = window.location.href;
+        const hashIndex = url.indexOf("#");
+        if (hashIndex !== -1) {
+            url = url.slice(0, hashIndex);
+        }
+
+        url += "#" + name;
+        tempInput.style.zIndex = "-99999";
+        tempInput.style.background = "transparent";
+        tempInput.value = url;
+
+        document.body.appendChild(tempInput);
+        tempInput.select();
+        document.execCommand("copy");
+        document.body.removeChild(tempInput);
+
+        const toast = document.body.querySelector("#toast");
+        toast.MaterialSnackbar.showSnackbar({message: "Copied to clipboard"});
+    });
+
+    link.appendChild(iconButton);
+    link.classList.add("mdl-data-table__cell--non-numeric");
+
+    return link;
+}
+
+
+/**
  * Creates a row for the Command table.
  * @param {string} repo repo name.
  * @param {string} pluginName plugin name.
@@ -264,6 +319,9 @@ function createPluginCell(repo, pluginName, plugin) {
  */
 function createCommandRow(repo, pluginName, plugin, command, isExternal, no) {
     const row = document.createElement("TR");
+    const name = extractCommandName(command.Examples[0]);
+    row.id = name;
+
     row.appendChild(commandStatus(command.Featured, isExternal, no));
     row.appendChild(createCommandCell(command.Usage, ["command-usage"]));
     row.appendChild(
@@ -272,6 +330,7 @@ function createCommandRow(repo, pluginName, plugin, command, isExternal, no) {
         createCommandCell(command.Description, ["command-desc-text"]));
     row.appendChild(createCommandCell(command.WhoCanUse, ["command-desc-text"]));
     row.appendChild(createPluginCell(repo, pluginName, plugin));
+    row.appendChild(createCommandLink(name, no));
 
     return row;
 }
@@ -360,4 +419,20 @@ function redraw() {
             }
         });
     redrawHelpTable(repoSel, pluginsWithCommands);
+}
+
+
+/**
+ * Extracts a command name from a command example. It takes the first example,
+ * with out the slash, as the name for the command. Also, any '-' character is
+ * replaced by '_' to make the name valid in the address.
+ * @param {string} commandExample
+ * @return {string}
+ */
+function extractCommandName(commandExample) {
+    const command = commandExample.split(" ");
+    if (!command || command.length === 0) {
+        throw new Error("Cannot extract command name.");
+    }
+    return command[0].slice(1).split("-").join("_");
 }
