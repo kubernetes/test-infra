@@ -71,14 +71,14 @@ docker_pull(
 )
 
 git_repository(
-    name = "org_dropbox_rules_node",
-    commit = "4fe6494f3f8d1a272d47d32ecc66698f6c43ed09",
-    remote = "https://github.com/dropbox/rules_node.git",
+    name = "build_bazel_rules_nodejs",
+    remote = "https://github.com/bazelbuild/rules_nodejs.git",
+    tag = "0.4.0",
 )
 
-load("@org_dropbox_rules_node//node:defs.bzl", "node_repositories")
+load("@build_bazel_rules_nodejs//:defs.bzl", "node_repositories", "npm_install")
 
-node_repositories()
+node_repositories(package_json = ["//triage:package.json"])
 
 load(":test_infra.bzl", "http_archive_with_pkg_path")
 
