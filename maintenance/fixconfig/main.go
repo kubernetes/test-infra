@@ -61,6 +61,8 @@ func readConfig(path string) (raw []byte, parsed *config.Config, err error) {
 	return raw, parsed, nil
 }
 
+// get the start/end byte indexes of the security repo presubmits
+// in the raw config.yaml bytes
 func getSecurityRepoJobsIndex(configBytes []byte) (start, end int, err error) {
 	// find security-repo config begining
 	// first find presubmits
@@ -80,6 +82,10 @@ func getSecurityRepoJobsIndex(configBytes []byte) (start, end int, err error) {
 	// loc[0] is the beginning of the match
 	end = start + loc[0]
 	return start, end, nil
+}
+
+func volumeIsCacheSSD(v *kube.Volume) bool {
+	return v.HostPath != nil && strings.HasPrefix(v.HostPath.Path, "/mnt/disks/ssd0")
 }
 
 // strip cache ssd related settings
@@ -108,8 +114,7 @@ func stripCache(j *config.Presubmit) {
 	filteredVolumes := []kube.Volume{}
 	removedVolumeNames := sets.String{}
 	for _, volume := range j.Spec.Volumes {
-		if volume.VolumeSource.HostPath != nil &&
-			strings.HasPrefix(volume.VolumeSource.HostPath.Path, "/mnt/disks/ssd0") {
+		if volumeIsCacheSSD(&volume) {
 			removedVolumeNames.Insert(volume.Name)
 			continue
 		}
@@ -188,9 +193,37 @@ func ensureDockerGraphVolume(j *config.Presubmit) {
 	j.Spec.Volumes = append(j.Spec.Volumes, volume)
 }
 
+// returns all of the labels for presets that mount the cache SSD volume
+// as "key: v"
+func getCacheSSDPresetLabels(c *config.Config) (labels sets.String) {
+	labels = sets.NewString()
+	for _, preset := range c.Presets {
+		for _, volume := range preset.Volumes {
+			if volumeIsCacheSSD(&volume) {
+				for k, v := range preset.Labels {
+					labels.Insert(fmt.Sprintf("%s: %s", k, v))
+				}
+				break
+			}
+		}
+	}
+	return labels
+}
+
 // convert a kubernetes/kubernetes job to a kubernetes-security/kubernetes job
+// dropLabels should be a set of "k: v" strings
 // xref: prow/config/config_test.go replace(...)
-func convertJobToSecurityJob(j *config.Presubmit) {
+func convertJobToSecurityJob(j *config.Presubmit, dropLabels sets.String) {
+	// filter out the unwanted labels
+	if len(j.Labels) > 0 {
+		filteredLabels := make(map[string]string)
+		for k, v := range j.Labels {
+			if !dropLabels.Has(fmt.Sprintf("%s: %s", k, v)) {
+				filteredLabels[k] = v
+			}
+		}
+		j.Labels = filteredLabels
+	}
 	// fix name and triggers for all jobs
 	j.Name = strings.Replace(j.Name, "pull-kubernetes", "pull-security-kubernetes", -1)
 	j.RerunCommand = strings.Replace(j.RerunCommand, "pull-kubernetes", "pull-security-kubernetes", -1)
@@ -239,7 +272,7 @@ func convertJobToSecurityJob(j *config.Presubmit) {
 	}
 	// done with this job, check for run_after_success
 	for i := range j.RunAfterSuccess {
-		convertJobToSecurityJob(&j.RunAfterSuccess[i])
+		convertJobToSecurityJob(&j.RunAfterSuccess[i], dropLabels)
 	}
 }
 
@@ -325,8 +358,9 @@ func main() {
 
 	// convert each kubernetes/kubernetes presubmit to a
 	// kubernetes-security/kubernetes presubmit and write to the file
+	cacheLabels := getCacheSSDPresetLabels(parsed)
 	for _, job := range parsed.Presubmits["kubernetes/kubernetes"] {
-		convertJobToSecurityJob(&job)
+		convertJobToSecurityJob(&job, cacheLabels)
 		jobBytes, err := yaml.Marshal(job)
 		if err != nil {
 			log.Fatalf("Failed to marshal job: %v", err)
