@@ -386,10 +386,10 @@ function redraw() {
     const repoSel = selectionText(document.getElementById("repo"));
     if (window.history && window.history.replaceState !== undefined) {
         if (repoSel !== "") {
-            history.replaceState(null, "", "/plugin-help.html?repo="
+            history.replaceState(null, "", "/command-help.html?repo="
                 + encodeURIComponent(repoSel));
         } else {
-            history.replaceState(null, "", "/plugin-help.html")
+            history.replaceState(null, "", "/command-help.html")
         }
     }
     redrawOptions();
