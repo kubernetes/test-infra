@@ -22720,7 +22720,7 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-private
       - name: JENKINS_AWS_SSH_PUBLIC_KEY_FILE
         value: /etc/aws-ssh/aws-ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180129-657d15217-master
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180130-eed26a9c1-master
       volumeMounts:
       - mountPath: /etc/service-account
         name: service
