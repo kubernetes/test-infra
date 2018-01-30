@@ -107,7 +107,10 @@ def file_passes(filename, refs, regexs):  # pylint: disable=too-many-locals
 def file_extension(filename):
     return os.path.splitext(filename)[1].split(".")[-1].lower()
 
-SKIPPED_DIRS = ['Godeps', 'third_party', '_gopath', '_output', '.git', 'vendor', '__init__.py']
+SKIPPED_DIRS = [
+    'Godeps', 'third_party', '_gopath', '_output',
+    '.git', 'vendor', '__init__.py', 'node_modules'
+]
 
 def normalize_files(files):
     newfiles = []
