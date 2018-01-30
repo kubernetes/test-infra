@@ -24,8 +24,8 @@ go_register_toolchains(
 
 git_repository(
     name = "io_bazel_rules_k8s",
-    remote = "https://github.com/bazelbuild/rules_k8s.git",
     commit = "3756369d4920033c32c12d16207e8ee14fee1b18",
+    remote = "https://github.com/bazelbuild/rules_k8s.git",
 )
 
 http_archive(
@@ -33,6 +33,12 @@ http_archive(
     sha256 = "c919051945ab388c8440ea92d7ceb429fdbbf0a53639e6e0159b231881ceed02",
     strip_prefix = "rules_docker-3caf72f166f8b6b0e529442477a74871ad4d35e9",
     urls = ["https://github.com/bazelbuild/rules_docker/archive/3caf72f166f8b6b0e529442477a74871ad4d35e9.tar.gz"],
+)
+
+git_repository(
+    name = "io_kubernetes_build",
+    commit = "4ce715fbe67d8fbed05ec2bb47a148e754100a4b",
+    remote = "https://github.com/kubernetes/repo-infra.git",
 )
 
 load("@io_bazel_rules_docker//docker:docker.bzl", "docker_repositories", "docker_pull")

@@ -1,0 +1,115 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "bridge.go",
+        "cmd.go",
+        "constraints.go",
+        "deduce.go",
+        "discovery.go",
+        "filesystem.go",
+        "hash.go",
+        "identifier.go",
+        "lock.go",
+        "lockdiff.go",
+        "manifest.go",
+        "maybe_source.go",
+        "metrics.go",
+        "prune.go",
+        "rootdata.go",
+        "satisfy.go",
+        "selection.go",
+        "solution.go",
+        "solve_failures.go",
+        "solver.go",
+        "source.go",
+        "source_cache.go",
+        "source_cache_bolt.go",
+        "source_cache_bolt_encode.go",
+        "source_cache_multi.go",
+        "source_errors.go",
+        "source_manager.go",
+        "strings.go",
+        "trace.go",
+        "typed_radix.go",
+        "vcs_repo.go",
+        "vcs_source.go",
+        "vcs_version.go",
+        "version.go",
+        "version_queue.go",
+        "version_unifier.go",
+    ] + select({
+        "@io_bazel_rules_go//go/platform:android": [
+            "cmd_unix.go",
+        ],
+        "@io_bazel_rules_go//go/platform:darwin": [
+            "cmd_unix.go",
+        ],
+        "@io_bazel_rules_go//go/platform:dragonfly": [
+            "cmd_unix.go",
+        ],
+        "@io_bazel_rules_go//go/platform:freebsd": [
+            "cmd_unix.go",
+        ],
+        "@io_bazel_rules_go//go/platform:linux": [
+            "cmd_unix.go",
+        ],
+        "@io_bazel_rules_go//go/platform:nacl": [
+            "cmd_unix.go",
+        ],
+        "@io_bazel_rules_go//go/platform:netbsd": [
+            "cmd_unix.go",
+        ],
+        "@io_bazel_rules_go//go/platform:openbsd": [
+            "cmd_unix.go",
+        ],
+        "@io_bazel_rules_go//go/platform:plan9": [
+            "cmd_unix.go",
+        ],
+        "@io_bazel_rules_go//go/platform:solaris": [
+            "cmd_unix.go",
+        ],
+        "@io_bazel_rules_go//go/platform:windows": [
+            "cmd_windows.go",
+        ],
+        "//conditions:default": [],
+    }),
+    importpath = "github.com/golang/dep/gps",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/github.com/Masterminds/semver:go_default_library",
+        "//vendor/github.com/Masterminds/vcs:go_default_library",
+        "//vendor/github.com/armon/go-radix:go_default_library",
+        "//vendor/github.com/boltdb/bolt:go_default_library",
+        "//vendor/github.com/golang/dep/gps/internal/pb:go_default_library",
+        "//vendor/github.com/golang/dep/gps/paths:go_default_library",
+        "//vendor/github.com/golang/dep/gps/pkgtree:go_default_library",
+        "//vendor/github.com/golang/dep/internal/fs:go_default_library",
+        "//vendor/github.com/golang/protobuf/proto:go_default_library",
+        "//vendor/github.com/jmank88/nuts:go_default_library",
+        "//vendor/github.com/nightlyone/lockfile:go_default_library",
+        "//vendor/github.com/pkg/errors:go_default_library",
+        "//vendor/github.com/sdboyer/constext:go_default_library",
+        "//vendor/golang.org/x/sync/errgroup:go_default_library",
+    ],
+)
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [
+        ":package-srcs",
+        "//vendor/github.com/golang/dep/gps/internal/pb:all-srcs",
+        "//vendor/github.com/golang/dep/gps/paths:all-srcs",
+        "//vendor/github.com/golang/dep/gps/pkgtree:all-srcs",
+    ],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)
