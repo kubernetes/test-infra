@@ -423,7 +423,9 @@ function redraw() {
 
 
 /**
- * Extracts a command name from a command example.
+ * Extracts a command name from a command example. It takes the first example,
+ * with out the slash, as the name for the command. Also, any '-' character is
+ * replaced by '_' to make the name valid in the address.
  * @param {string} commandExample
  * @return {string}
  */
