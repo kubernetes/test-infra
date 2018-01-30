@@ -19,26 +19,29 @@ all: build test
 ALPINE_VERSION           ?= 0.1
 # GIT_VERSION is the version of the alpine+git image
 GIT_VERSION              ?= 0.1
+
+# YYYYmmdd-commitish
+TAG = $(shell date +v%Y%m%d)-$(shell git describe --tags --always --dirty)
 # HOOK_VERSION is the version of the hook image
-HOOK_VERSION             ?= v20180125-b72c696dc
+HOOK_VERSION             ?= $(TAG)
 # SINKER_VERSION is the version of the sinker image
-SINKER_VERSION           ?= v20180125-b72c696dc
+SINKER_VERSION           ?= $(TAG)
 # DECK_VERSION is the version of the deck image
-DECK_VERSION             ?= v20180125-b72c696dc
+DECK_VERSION             ?= $(TAG)
 # SPLICE_VERSION is the version of the splice image
-SPLICE_VERSION           ?= v20180125-b72c696dc
+SPLICE_VERSION           ?= $(TAG)
 # TOT_VERSION is the version of the tot image
-TOT_VERSION              ?= v20180125-b72c696dc
+TOT_VERSION              ?= $(TAG)
 # HOROLOGIUM_VERSION is the version of the horologium image
-HOROLOGIUM_VERSION       ?= v20180125-b72c696dc
+HOROLOGIUM_VERSION       ?= $(TAG)
 # PLANK_VERSION is the version of the plank image
-PLANK_VERSION            ?= v20180125-b72c696dc
+PLANK_VERSION            ?= $(TAG)
 # JENKINS-OPERATOR_VERSION is the version of the jenkins-operator image
-JENKINS-OPERATOR_VERSION ?= v20180125-b72c696dc
+JENKINS-OPERATOR_VERSION ?= $(TAG)
 # TIDE_VERSION is the version of the tide image
-TIDE_VERSION             ?= v20180125-b72c696dc
+TIDE_VERSION             ?= $(TAG)
 # CLONEREFS_VERSION is the version of the clonerefs image
-CLONEREFS_VERSION        ?=v20180125-b72c696dc
+CLONEREFS_VERSION        ?= $(TAG)
 
 # These are the usual GKE variables.
 PROJECT       ?= k8s-prow
@@ -58,6 +61,11 @@ update-config: get-cluster-credentials
 update-plugins: get-cluster-credentials
 	kubectl create configmap plugins --from-file=plugins=plugins.yaml --dry-run -o yaml | kubectl replace configmap plugins -f -
 
+update-cat-api-key: get-cluster-credentials
+	kubectl create configmap cat-api-key --from-file=api-key=plugins/cat/api-key --dry-run -o yaml | kubectl replace configmap cat-api-key -f -
+
+.PHONY: update-config update-plugins update-cat-api-key
+
 get-cluster-credentials:
 	gcloud container clusters get-credentials "$(CLUSTER)" --project="$(PROJECT)" --zone="$(ZONE)"
 
@@ -70,7 +78,7 @@ build:
 test:
 	go test -race -cover $$(go list ./... | grep -v "\/vendor\/")
 
-.PHONY: update-config update-plugins build test get-cluster-credentials
+.PHONY: build test get-cluster-credentials
 
 alpine-image:
 	docker build -t "$(REGISTRY)/$(PROJECT)/alpine:$(ALPINE_VERSION)" $(DOCKER_LABELS) cmd/images/alpine

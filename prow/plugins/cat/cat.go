@@ -21,9 +21,13 @@ import (
 	"encoding/xml"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 	"regexp"
+	"strings"
+	"sync"
+	"time"
 
 	"github.com/sirupsen/logrus"
 
@@ -33,11 +37,16 @@ import (
 )
 
 var (
-	match = regexp.MustCompile(`(?mi)^/meow( .+)?\s*$`)
+	match  = regexp.MustCompile(`(?mi)^/meow( .+)?\s*$`)
+	key    string
+	lock   = sync.RWMutex{}
+	update time.Time
+	meow   = &realClowder{
+		url: "http://thecatapi.com/api/images/get?format=xml&results_per_page=1",
+	}
 )
 
 const (
-	catURL     = realClowder("http://thecatapi.com/api/images/get?format=xml&results_per_page=1")
 	pluginName = "cat"
 )
 
@@ -72,7 +81,36 @@ type clowder interface {
 	readCat(string) (string, error)
 }
 
-type realClowder string
+type realClowder struct {
+	url     string
+	lock    sync.RWMutex
+	update  time.Time
+	key     string
+	keyPath string
+}
+
+func (c *realClowder) setKey(keyPath string, log *logrus.Entry) {
+	if !time.Now().After(c.update) {
+		return
+	}
+	lock.Lock()
+	defer lock.Unlock()
+	if !time.Now().After(c.update) { // Might have changed while waiting for lock
+		return
+	}
+	c.update = time.Now().Add(1 * time.Minute)
+	if keyPath == "" {
+		c.key = ""
+		return
+	}
+	b, err := ioutil.ReadFile(keyPath)
+	if err == nil {
+		c.key = strings.TrimSpace(string(b))
+		return
+	}
+	log.WithError(err).Printf("failed to read key at %s", keyPath)
+	c.key = ""
+}
 
 var client = http.Client{}
 
@@ -100,12 +138,22 @@ func (cr catResult) Format() (string, error) {
 	return fmt.Sprintf("[![cat image](%s)](%s)", img, src), nil
 }
 
-func (u realClowder) readCat(category string) (string, error) {
-	uri := string(u)
+func (r *realClowder) Url(category string) string {
+	lock.RLock()
+	defer lock.RUnlock()
+	uri := string(r.url)
 	if category != "" {
 		uri += "&category=" + url.QueryEscape(category)
 	}
-	req, err := http.NewRequest("GET", string(uri), nil)
+	if r.key != "" {
+		uri += "&api_key=" + url.QueryEscape(r.key)
+	}
+	return uri
+}
+
+func (r *realClowder) readCat(category string) (string, error) {
+	uri := r.Url(category)
+	req, err := http.NewRequest("GET", uri, nil)
 	if err != nil {
 		return "", fmt.Errorf("could not create request %s: %v", uri, err)
 	}
@@ -124,7 +172,8 @@ func (u realClowder) readCat(category string) (string, error) {
 }
 
 func handleGenericComment(pc plugins.PluginClient, e github.GenericCommentEvent) error {
-	return handle(pc.GitHubClient, pc.Logger, &e, catURL)
+	meow.setKey(pc.PluginConfig.Cat.KeyPath, pc.Logger)
+	return handle(pc.GitHubClient, pc.Logger, &e, meow)
 }
 
 func handle(gc githubClient, log *logrus.Entry, e *github.GenericCommentEvent, c clowder) error {

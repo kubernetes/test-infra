@@ -608,7 +608,7 @@ func TestDividePool(t *testing.T) {
 	if len(sps) == 0 {
 		t.Error("No subpools.")
 	}
-	for _, sp := range sps {
+	for sp := range sps {
 		name := fmt.Sprintf("%s/%s %s", sp.org, sp.repo, sp.branch)
 		sha := fc.refs[sp.org+"/"+sp.repo+" heads/"+sp.branch]
 		if sp.sha != sha {

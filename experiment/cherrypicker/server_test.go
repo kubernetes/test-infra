@@ -252,6 +252,9 @@ func TestCherryPickPR(t *testing.T) {
 			{
 				Login: "approver",
 			},
+			{
+				Login: "merge-bot",
+			},
 		},
 		prComments: []github.IssueComment{
 			{
@@ -274,9 +277,21 @@ func TestCherryPickPR(t *testing.T) {
 			},
 			{
 				User: github.User{
+					Login: "fan",
+				},
+				Body: "/cherrypick release-1.7",
+			},
+			{
+				User: github.User{
 					Login: "approver",
 				},
 				Body: "/approve",
+			},
+			{
+				User: github.User{
+					Login: "merge-bot",
+				},
+				Body: "Automatic merge from submit-queue.",
 			},
 		},
 		isMember:   true,

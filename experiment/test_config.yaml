@@ -433,6 +433,33 @@ jobs:
   ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-updown:
     interval: 2h
     sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-alphafeatures:
+    interval: 2h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-autoscaling:
+    interval: 2h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-default:
+    interval: 2h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-flaky:
+    interval: 2h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-ingress:
+    interval: 2h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-reboot:
+    interval: 2h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-serial:
+    interval: 2h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-slow:
+    interval: 2h
+    sigOwners: ['sig-gcp']
+  ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-updown:
+    interval: 2h
+    sigOwners: ['sig-gcp']
   ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-alphafeatures:
     interval: 2h
     sigOwners: ['sig-gcp']
@@ -501,13 +528,13 @@ jobs:
     interval: 2h
     args:
     - --gcp-project=cos-image-validation
-    - --node-test-args=--feature-gates=KubeletConfigFile=true --generate-kubelet-config-file=true
+    - --node-test-args=--generate-kubelet-config-file=true
     sigOwners: ['sig-node']
   ci-kubernetes-e2enode-cosbeta-k8sdev-serial:
     interval: 2h
     args:
     - --gcp-project=cos-image-validation
-    - --node-test-args=--feature-gates=DynamicKubeletConfig=true,KubeletConfigFile=true --generate-kubelet-config-file=true
+    - --node-test-args=--feature-gates=DynamicKubeletConfig=true --generate-kubelet-config-file=true
     sigOwners: ['sig-node']
   ci-kubernetes-e2enode-cosbeta-k8sbeta-default:
     interval: 2h
@@ -553,13 +580,13 @@ jobs:
     interval: 2h
     args:
     - --gcp-project=k8s-test-63a7f7788a
-    - --node-test-args=--feature-gates=KubeletConfigFile=true --generate-kubelet-config-file=true
+    - --node-test-args=--generate-kubelet-config-file=true
     sigOwners: ['sig-node']
   ci-kubernetes-e2enode-cosstable1-k8sdev-serial:
     interval: 2h
     args:
     - --gcp-project=k8s-test-39a894cbd4
-    - --node-test-args=--feature-gates=DynamicKubeletConfig=true,KubeletConfigFile=true --generate-kubelet-config-file=true
+    - --node-test-args=--feature-gates=DynamicKubeletConfig=true --generate-kubelet-config-file=true
     sigOwners: ['sig-node']
   ci-kubernetes-e2enode-cosstable1-k8sbeta-default:
     interval: 2h
@@ -606,13 +633,13 @@ jobs:
     interval: 2h
     args:
     - --gcp-project=ubuntu-image-validation
-    - --node-test-args=--feature-gates=KubeletConfigFile=true --generate-kubelet-config-file=true
+    - --node-test-args=--generate-kubelet-config-file=true
     sigOwners: ['sig-node']
   ci-kubernetes-e2enode-ubuntudev-k8sdev-serial:
     interval: 2h
     args:
     - --gcp-project=ubuntu-image-validation
-    - --node-test-args=--feature-gates=DynamicKubeletConfig=true,KubeletConfigFile=true --generate-kubelet-config-file=true
+    - --node-test-args=--feature-gates=DynamicKubeletConfig=true --generate-kubelet-config-file=true
     sigOwners: ['sig-node']
   ci-kubernetes-e2enode-ubuntudev-k8sstable1-gkespec:
     interval: 2h
@@ -639,13 +666,13 @@ jobs:
     interval: 2h
     args:
     - --gcp-project=ubuntu-image-validation
-    - --node-test-args=--feature-gates=KubeletConfigFile=true --generate-kubelet-config-file=true
+    - --node-test-args=--generate-kubelet-config-file=true
     sigOwners: ['sig-node']
   ci-kubernetes-e2enode-ubuntudev2-k8sdev-serial:
     interval: 2h
     args:
     - --gcp-project=ubuntu-image-validation
-    - --node-test-args=--feature-gates=DynamicKubeletConfig=true,KubeletConfigFile=true --generate-kubelet-config-file=true
+    - --node-test-args=--feature-gates=DynamicKubeletConfig=true --generate-kubelet-config-file=true
     sigOwners: ['sig-node']
   ci-kubernetes-e2enode-ubuntudev2-k8sbeta-gkespec:
     interval: 2h
@@ -662,13 +689,13 @@ jobs:
     interval: 2h
     args:
     - --gcp-project=ubuntu-image-validation
-    - --node-test-args=--feature-gates=KubeletConfigFile=true --generate-kubelet-config-file=true
+    - --node-test-args=--generate-kubelet-config-file=true
     sigOwners: ['sig-node']
   ci-kubernetes-e2enode-ubuntustable1-k8sdev-serial:
     interval: 2h
     args:
     - --gcp-project=ubuntu-image-validation
-    - --node-test-args=--feature-gates=DynamicKubeletConfig=true,KubeletConfigFile=true --generate-kubelet-config-file=true
+    - --node-test-args=--feature-gates=DynamicKubeletConfig=true --generate-kubelet-config-file=true
     sigOwners: ['sig-node']
   ci-kubernetes-e2enode-ubuntustable1-k8sstable1-gkespec:
     interval: 2h
@@ -902,6 +929,11 @@ images:
     - --image-family=ubuntu-gke-1604-lts
     - --image-project=ubuntu-os-gke-cloud
     - --gcp-node-image=ubuntu
+  ubuntustable2:
+    args:
+    - --image-family=ubuntu-gke-1604-lts-2
+    - --image-project=ubuntu-os-gke-cloud
+    - --gcp-node-image=ubuntu
   cos:
     args:
     - --gcp-node-image=gci
@@ -1043,7 +1075,6 @@ nodeTestSuites:
     args:
     - --timeout=70m
     - --test_args=--nodes=8 --skip="\[Flaky\]|\[Serial\]"
-    - --node-test-args=--feature-gates=KubeletConfigFile=true
   gkespec:
     args:
     - --node-args=--system-spec-name=gke
@@ -1053,4 +1084,4 @@ nodeTestSuites:
     args:
     - --timeout=180m
     - --test_args=--nodes=1 --focus="\[Serial\]" --skip="\[Flaky\]|\[Benchmark\]"
-    - --node-test-args=--feature-gates=DynamicKubeletConfig=true,KubeletConfigFile=true
+    - --node-test-args=--feature-gates=DynamicKubeletConfig=true

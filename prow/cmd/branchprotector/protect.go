@@ -40,10 +40,14 @@ type options struct {
 func jobRequirements(jobs []config.Presubmit, after bool) []string {
 	var required []string
 	for _, j := range jobs {
-		if !after && (!j.AlwaysRun || j.SkipReport) {
-			continue
+		// Does this job require a context or have kids that might need one?
+		if !after && !j.AlwaysRun && j.RunIfChanged == "" {
+			continue // No
 		}
-		required = append(required, j.Context)
+		if !j.SkipReport { // This job needs a context
+			required = append(required, j.Context)
+		}
+		// Check which children require contexts
 		required = append(required, jobRequirements(j.RunAfterSuccess, true)...)
 	}
 	return required

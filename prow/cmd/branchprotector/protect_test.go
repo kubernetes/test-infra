@@ -27,6 +27,113 @@ import (
 	"k8s.io/test-infra/prow/github"
 )
 
+func TestJobRequirements(t *testing.T) {
+	cases := []struct {
+		name     string
+		config   []config.Presubmit
+		expected []string
+	}{
+		{
+			name: "basic",
+			config: []config.Presubmit{
+				{
+					Context:    "always-run",
+					AlwaysRun:  true,
+					SkipReport: false,
+				},
+				{
+					Context:      "run-if-changed",
+					RunIfChanged: "foo",
+					AlwaysRun:    false,
+					SkipReport:   false,
+				},
+				{
+					Context:    "optional",
+					AlwaysRun:  false,
+					SkipReport: false,
+				},
+			},
+			expected: []string{"always-run", "run-if-changed"},
+		},
+		{
+			name: "children",
+			config: []config.Presubmit{
+				{
+					Context:    "always-run",
+					AlwaysRun:  true,
+					SkipReport: false,
+					RunAfterSuccess: []config.Presubmit{
+						{
+							Context: "include-me",
+						},
+					},
+				},
+				{
+					Context:      "run-if-changed",
+					RunIfChanged: "foo",
+					SkipReport:   true,
+					AlwaysRun:    false,
+					RunAfterSuccess: []config.Presubmit{
+						{
+							Context: "me2",
+						},
+					},
+				},
+				{
+					Context:    "run-and-skip",
+					AlwaysRun:  true,
+					SkipReport: true,
+					RunAfterSuccess: []config.Presubmit{
+						{
+							Context: "also-me-3",
+						},
+					},
+				},
+				{
+					Context:    "optional",
+					AlwaysRun:  false,
+					SkipReport: false,
+					RunAfterSuccess: []config.Presubmit{
+						{
+							Context: "no thanks",
+						},
+					},
+				},
+				{
+					Context:    "hidden-grandpa",
+					AlwaysRun:  true,
+					SkipReport: true,
+					RunAfterSuccess: []config.Presubmit{
+						{
+							Context:    "hidden-parent",
+							SkipReport: true,
+							AlwaysRun:  false,
+							RunAfterSuccess: []config.Presubmit{
+								{
+									Context: "visible-kid",
+								},
+							},
+						},
+					},
+				},
+			},
+			expected: []string{
+				"always-run", "include-me",
+				"me2",
+				"also-me-3",
+				"visible-kid",
+			},
+		},
+	}
+
+	for _, tc := range cases {
+		actual := jobRequirements(tc.config, false)
+		if !reflect.DeepEqual(actual, tc.expected) {
+			t.Errorf("%s: actual %v != expected %v", tc.name, actual, tc.expected)
+		}
+	}
+}
+
 type FakeClient struct {
 	repos    map[string][]github.Repo
 	branches map[string][]github.Branch

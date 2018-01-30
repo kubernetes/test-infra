@@ -783,6 +783,8 @@ def job_script(job, extra_job_args):
     """Return path to script for job."""
     with open(test_infra('jobs/config.json')) as fp:
         config = json.loads(fp.read())
+    if job.startswith('pull-security-kubernetes-'):
+        job = job.replace('pull-security-kubernetes-', 'pull-kubernetes-', 1)
     job_config = config[job]
     cmd = test_infra('scenarios/%s.py' % job_config['scenario'])
     return [cmd] + job_args(job_config.get('args', []) + extra_job_args)
@@ -802,6 +804,13 @@ def choose_ssh_key(ssh):
     if not ssh:  # Nothing to do
         yield
         return
+
+    try:
+        os.makedirs(os.path.join(os.environ[HOME_ENV], '.ssh'))
+    except OSError as exc:
+        logging.info('cannot create $HOME/.ssh, continue : %s', exc)
+    except KeyError as exc:
+        logging.info('$%s does not exist, continue : %s', HOME_ENV, exc)
 
     # Create a script for use with GIT_SSH, which defines the program git uses
     # during git fetch. In the future change this to GIT_SSH_COMMAND

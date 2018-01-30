@@ -1383,6 +1383,10 @@ type UnmergablePRError string
 
 func (e UnmergablePRError) Error() string { return string(e) }
 
+type UnmergablePRBaseChangedError string
+
+func (e UnmergablePRBaseChangedError) Error() string { return string(e) }
+
 // Merge merges a PR.
 func (c *Client) Merge(org, repo string, pr int, details MergeDetails) error {
 	c.log("Merge", org, repo, pr, details)
@@ -1399,6 +1403,9 @@ func (c *Client) Merge(org, repo string, pr int, details MergeDetails) error {
 		return err
 	}
 	if ec == 405 {
+		if strings.Contains(res.Message, "Base branch was modified") {
+			return UnmergablePRBaseChangedError(res.Message)
+		}
 		return UnmergablePRError(res.Message)
 	} else if ec == 409 {
 		return ModifiedHeadError(res.Message)
