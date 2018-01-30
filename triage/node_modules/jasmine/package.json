@@ -1,0 +1,33 @@
+{
+  "name": "jasmine",
+  "description": "Command line jasmine",
+  "homepage": "http://jasmine.github.io/",
+  "keywords": [
+    "test",
+    "jasmine",
+    "tdd",
+    "bdd"
+  ],
+  "license": "MIT",
+  "version": "2.8.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jasmine/jasmine-npm"
+  },
+  "scripts": {
+    "test": "./node_modules/.bin/grunt && ./bin/jasmine.js"
+  },
+  "dependencies": {
+    "exit": "^0.1.2",
+    "glob": "^7.0.6",
+    "jasmine-core": "~2.8.0"
+  },
+  "bin": "./bin/jasmine.js",
+  "main": "./lib/jasmine.js",
+  "devDependencies": {
+    "grunt": "^0.4.2",
+    "grunt-cli": "^0.1.13",
+    "grunt-contrib-jshint": "^0.11.0",
+    "shelljs": "^0.3.0"
+  }
+}

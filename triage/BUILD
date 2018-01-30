@@ -1,4 +1,4 @@
-load("@org_dropbox_rules_node//node:defs.bzl", "mocha_test")
+load("@build_bazel_rules_nodejs//:defs.bzl", "jasmine_node_test")
 
 py_test(
     name = "summarize_test",
@@ -17,10 +17,17 @@ py_test(
     ],
 )
 
-mocha_test(
+filegroup(
+    name = "node_modules",
+    srcs = glob(["node_modules/**/*"]),
+    visibility = ["//visibility:public"],
+)
+
+jasmine_node_test(
     name = "script_test",
     srcs = ["script_test.js"],
     data = ["js-srcs"],
+    node_modules = ":node_modules",
 )
 
 filegroup(
