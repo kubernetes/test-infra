@@ -513,6 +513,6 @@ func (k kops) Publish() error {
 
 	return xmlWrap("Publish kops version", func() error {
 		log.Printf("Set %s version to %s", k.kopsPublish, k.kopsVersion)
-		return gcsWrite(k.kopsVersion, []byte(k.kopsPublish))
+		return gcsWrite(k.kopsPublish, []byte(k.kopsVersion))
 	})
 }
