@@ -11161,6 +11161,7 @@
       "--check-leaked-resources",
       "--cluster=",
       "--deployment=gke",
+      "--env=TAG=5f346f6ec7082ec6517f6ae6e6a4054b68f8f540",
       "--extract=ci/latest-1.9",
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
