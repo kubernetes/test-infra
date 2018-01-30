@@ -272,7 +272,8 @@ Periodic Job:
 
 Postsubmit Job:
 ```json
-{"type":"postsubmit","job":"job-name","buildid":"0","refs":{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha"}}```
+{"type":"postsubmit","job":"job-name","buildid":"0","refs":{"org":"org-name","repo":"repo-name","base_ref":"base-ref","base_sha":"base-sha"}}
+```
 
 Presubmit Job:
 ```json
