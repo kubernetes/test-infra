@@ -1086,106 +1086,6 @@ presubmits:
         - name: cache-ssd
           hostPath:
             path: /mnt/disks/ssd0
-  - name: pull-kubernetes-bazel-build
-    agent: kubernetes
-    context: pull-kubernetes-bazel-build
-    always_run: true
-    rerun_command: "/test pull-kubernetes-bazel-build"
-    trigger: "(?m)^/test( all| pull-kubernetes-bazel-build),?(\\s+|$)"
-    branches:
-    - release-1.6
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171214-ae38d82af-0.5.2
-        args:
-        - "--clean"
-        - "--git-cache=/root/.cache/git"
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--" # end bootstrap args, scenario args below
-        - "--build=//cmd/... //pkg/... //federation/... //plugin/... //third_party/... //examples/... //test/..."
-        - "--release=//build/release-tars"
-        env:
-        - name: TEST_TMPDIR
-          value: /root/.cache/bazel
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
-        volumeMounts:
-        - name: service
-          mountPath: /etc/service-account
-          readOnly: true
-        - name: cache-ssd
-          mountPath: /root/.cache
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
-        resources:
-          requests:
-            memory: "6Gi"
-      volumes:
-      - name: service
-        secret:
-          secretName: service-account
-      - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0
-    run_after_success:
-    - name: pull-kubernetes-e2e-kubeadm-gce
-      agent: kubernetes
-      context: pull-kubernetes-e2e-kubeadm-gce
-      max_concurrency: 8
-      skip_report: true
-      run_if_changed: '^(cmd/kubeadm|build/debs).*$'
-      rerun_command: "/test pull-kubernetes-e2e-kubeadm-gce"
-      trigger: "(?m)^/test pull-kubernetes-e2e-kubeadm-gce,?(\\s+|$)"
-      branches:
-      - release-1.6
-      spec:
-        containers:
-        - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180123-fe0e523d9
-          args:
-          - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-          - "--upload=gs://kubernetes-jenkins/pr-logs"
-          - "--git-cache=/root/.cache/git"
-          - "--timeout=75"
-          - "--clean"
-          env:
-          - name: USER
-            value: prow
-          - name: GOOGLE_APPLICATION_CREDENTIALS
-            value: /etc/service-account/service-account.json
-          - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
-            value: /etc/ssh-key-secret/ssh-private
-          - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
-            value: /etc/ssh-key-secret/ssh-public
-          - name: SKIP_RELEASE_VALIDATION # See: https://github.com/kubernetes/kubernetes/pull/50391
-            value: true
-          volumeMounts:
-          - name: service
-            mountPath: /etc/service-account
-            readOnly: true
-          - name: ssh
-            mountPath: /etc/ssh-key-secret
-            readOnly: true
-          - name: cache-ssd
-            mountPath: /root/.cache
-          ports:
-          - containerPort: 9999
-            hostPort: 9999
-        volumes:
-        - name: service
-          secret:
-            secretName: service-account
-        - name: ssh
-          secret:
-            secretName: ssh-key-secret
-            defaultMode: 0400
-        - name: cache-ssd
-          hostPath:
-            path: /mnt/disks/ssd0
 
   - name: pull-kubernetes-bazel-build-canary
     agent: kubernetes
@@ -1357,55 +1257,6 @@ presubmits:
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--" # end bootstrap args, scenario args below
         - "--test=//cmd/... //pkg/... //federation/... //plugin/... //third_party/... //hack/... //vendor/k8s.io/..."
-        - "--manual-test=//hack:verify-all"
-        - "--test-args=--test_tag_filters=-integration"
-        - "--test-args=--flaky_test_attempts=3"
-        env:
-        - name: TEST_TMPDIR
-          value: /root/.cache/bazel
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
-        volumeMounts:
-        - name: service
-          mountPath: /etc/service-account
-          readOnly: true
-        - name: cache-ssd
-          mountPath: /root/.cache
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
-        resources:
-          requests:
-            memory: "6Gi"
-      volumes:
-      - name: service
-        secret:
-          secretName: service-account
-      - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0
-  - name: pull-kubernetes-bazel-test
-    agent: kubernetes
-    context: pull-kubernetes-bazel-test
-    always_run: true
-    rerun_command: "/test pull-kubernetes-bazel-test"
-    trigger: "(?m)^/test( all| pull-kubernetes-bazel-test),?(\\s+|$)"
-    branches:
-    - release-1.6
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171214-ae38d82af-0.5.2
-        args:
-        - "--clean"
-        - "--git-cache=/root/.cache/git"
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--" # end bootstrap args, scenario args below
-        # -//pkg/kubelet/config:go_default_test because: https://github.com/kubernetes/kubernetes/issues/53016
-        - "--test=//cmd/... //pkg/... //federation/... //plugin/... //third_party/... //hack/... -//pkg/kubelet/config:go_default_test"
         - "--manual-test=//hack:verify-all"
         - "--test-args=--test_tag_filters=-integration"
         - "--test-args=--flaky_test_attempts=3"
@@ -1673,13 +1524,6 @@ presubmits:
         - --git-cache=/root/.cache/git
         - --clean
         - --timeout=90
-        # the release-1.6 version of this job uses Jenkins, so here we override
-        # some args for jobs on Prow
-        - --
-        - --build=bazel
-        - --mode=local
-        # this only works for 1.7+
-        - --runtime-config=batch/v2alpha1=true,admissionregistration.k8s.io/v1alpha1=true
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
@@ -1741,13 +1585,6 @@ presubmits:
         - --git-cache=/root/.cache/git
         - --clean
         - --timeout=90
-        # the release-1.6 version of this job uses Jenkins, so here we override
-        # some args for jobs on Prow
-        - --
-        - --build=bazel
-        - --mode=local
-        # this only works for 1.7+
-        - --runtime-config=batch/v2alpha1=true,admissionregistration.k8s.io/v1alpha1=true
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
@@ -1809,13 +1646,6 @@ presubmits:
         - --git-cache=/root/.cache/git
         - --clean
         - --timeout=90
-        # the release-1.6 version of this job uses Jenkins, so here we override
-        # some args for jobs on Prow
-        - --
-        - --build=bazel
-        - --mode=local
-        # this only works for 1.7+
-        - --runtime-config=batch/v2alpha1=true,admissionregistration.k8s.io/v1alpha1=true
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
@@ -2012,13 +1842,6 @@ presubmits:
         - --git-cache=/root/.cache/git
         - --clean
         - --timeout=90
-        # the release-1.6 version of this job uses Jenkins, so here we override
-        # some args for jobs on Prow
-        - --
-        - --build=bazel
-        - --mode=local
-        # this only works for 1.7+
-        - --runtime-config=batch/v2alpha1=true,admissionregistration.k8s.io/v1alpha1=true
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
@@ -2081,13 +1904,6 @@ presubmits:
         - --git-cache=/root/.cache/git
         - --clean
         - --timeout=90
-        # the release-1.6 version of this job uses Jenkins, so here we override
-        # some args for jobs on Prow
-        - --
-        - --build=bazel
-        - --mode=local
-        # this only works for 1.7+
-        - --runtime-config=batch/v2alpha1=true,admissionregistration.k8s.io/v1alpha1=true
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
@@ -2150,13 +1966,6 @@ presubmits:
         - --git-cache=/root/.cache/git
         - --clean
         - --timeout=90
-        # the release-1.6 version of this job uses Jenkins, so here we override
-        # some args for jobs on Prow
-        - --
-        - --build=bazel
-        - --mode=local
-        # this only works for 1.7+
-        - --runtime-config=batch/v2alpha1=true,admissionregistration.k8s.io/v1alpha1=true
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
@@ -2354,11 +2163,6 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--timeout=75"
-        # the release-1.6 version of this job uses Jenkins, so here we override
-        # some args for jobs on Prow
-        - --
-        - --build=bazel
-        - --mode=local
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: /etc/service-account/service-account.json
@@ -2430,11 +2234,6 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--timeout=75"
-        # the release-1.6 version of this job uses Jenkins, so here we override
-        # some args for jobs on Prow
-        - --
-        - --build=bazel
-        - --mode=local
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: /etc/service-account/service-account.json
@@ -2506,11 +2305,6 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--timeout=75"
-        # the release-1.6 version of this job uses Jenkins, so here we override
-        # some args for jobs on Prow
-        - --
-        - --build=bazel
-        - --mode=local
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
           value: /etc/service-account/service-account.json
@@ -2584,11 +2378,6 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--timeout=110"
-        # the release-1.6 version of this job uses Jenkins, so here we override
-        # some args for jobs on Prow
-        - --
-        - --build=bazel
-        - --mode=local
         env:
         # TODO(krzyzacy): Figure out bazel built kubemark image
         # - name: KUBEMARK_BAZEL_BUILD
@@ -2659,11 +2448,6 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--timeout=110"
-        # the release-1.6 version of this job uses Jenkins, so here we override
-        # some args for jobs on Prow
-        - --
-        - --build=bazel
-        - --mode=local
         env:
         # TODO(krzyzacy): Figure out bazel built kubemark image
         # - name: KUBEMARK_BAZEL_BUILD
@@ -2734,11 +2518,6 @@ presubmits:
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--timeout=110"
-        # the release-1.6 version of this job uses Jenkins, so here we override
-        # some args for jobs on Prow
-        - --
-        - --build=bazel
-        - --mode=local
         env:
         # TODO(krzyzacy): Figure out bazel built kubemark image
         # - name: KUBEMARK_BAZEL_BUILD
@@ -3248,64 +3027,6 @@ presubmits:
       - name: cache-ssd
         hostPath:
           path: /mnt/disks/ssd0
-  - name: pull-kubernetes-node-e2e
-    agent: kubernetes
-    branches:
-    - release-1.6
-    always_run: true
-    max_concurrency: 12
-    context: pull-kubernetes-node-e2e
-    rerun_command: "/test pull-kubernetes-node-e2e"
-    trigger: "(?m)^/test( all| pull-kubernetes-node-e2e),?(\\s+|$)"
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-1.6
-        args:
-        - --root=/go/src
-        - "--clean"
-        - "--git-cache=/root/.cache/git"
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/pr-logs"
-        - "--timeout=90"
-        - "--" # end bootstrap args, scenario args below
-        - "--node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config-1-6.yaml"
-        env:
-        - name: GOOGLE_APPLICATION_CREDENTIALS
-          value: /etc/service-account/service-account.json
-        - name: USER
-          value: prow
-        - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
-          value: /etc/ssh-key-secret/ssh-private
-        - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
-          value: /etc/ssh-key-secret/ssh-public
-        volumeMounts:
-        - mountPath: /etc/service-account
-          name: service
-          readOnly: true
-        - mountPath: /etc/ssh-key-secret
-          name: ssh
-          readOnly: true
-        - name: cache-ssd
-          mountPath: /root/.cache
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
-        resources:
-          requests:
-            memory: "6Gi"
-      volumes:
-      - name: service
-        secret:
-          secretName: service-account
-      - name: ssh
-        secret:
-          defaultMode: 256
-          secretName: ssh-key-secret
-      - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0
 
   - name: pull-kubernetes-node-e2e-containerd
     agent: kubernetes
@@ -3752,107 +3473,6 @@ presubmits:
           secretName: ssh-security
     trigger: (?m)^/test( all| pull-security-kubernetes-bazel-build),?(\s+|$)
   - agent: kubernetes
-    always_run: true
-    branches:
-    - release-1.6
-    cluster: security
-    context: pull-security-kubernetes-bazel-build
-    max_concurrency: 0
-    name: pull-security-kubernetes-bazel-build
-    rerun_command: /test pull-security-kubernetes-bazel-build
-    run_after_success:
-    - agent: kubernetes
-      always_run: false
-      branches:
-      - release-1.6
-      cluster: security
-      context: pull-security-kubernetes-e2e-kubeadm-gce
-      max_concurrency: 8
-      name: pull-security-kubernetes-e2e-kubeadm-gce
-      rerun_command: /test pull-security-kubernetes-e2e-kubeadm-gce
-      run_if_changed: ^(cmd/kubeadm|build/debs).*$
-      skip_report: true
-      spec:
-        containers:
-        - args:
-          - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
-          - --upload=gs://kubernetes-security-jenkins/pr-logs
-          - --timeout=75
-          - --clean
-          - --ssh=/etc/ssh-security/ssh-security
-          env:
-          - name: USER
-            value: prow
-          - name: GOOGLE_APPLICATION_CREDENTIALS
-            value: /etc/service-account/service-account.json
-          - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
-            value: /etc/ssh-key-secret/ssh-private
-          - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
-            value: /etc/ssh-key-secret/ssh-public
-          - name: SKIP_RELEASE_VALIDATION
-            value: "true"
-          image: gcr.io/k8s-testimages/e2e-kubeadm:v20180123-fe0e523d9
-          name: ""
-          resources: {}
-          volumeMounts:
-          - mountPath: /etc/service-account
-            name: service
-            readOnly: true
-          - mountPath: /etc/ssh-key-secret
-            name: ssh
-            readOnly: true
-          - mountPath: /etc/ssh-security
-            name: ssh-security
-        volumes:
-        - name: service
-          secret:
-            secretName: service-account
-        - name: ssh
-          secret:
-            defaultMode: 256
-            secretName: ssh-key-secret
-        - name: ssh-security
-          secret:
-            defaultMode: 256
-            secretName: ssh-security
-      trigger: (?m)^/test pull-security-kubernetes-e2e-kubeadm-gce,?(\s+|$)
-    run_if_changed: ""
-    skip_report: false
-    spec:
-      containers:
-      - args:
-        - --clean
-        - --job=$(JOB_NAME)
-        - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
-        - --service-account=/etc/service-account/service-account.json
-        - --upload=gs://kubernetes-security-jenkins/pr-logs
-        - --
-        - --build=//cmd/... //pkg/... //federation/... //plugin/... //third_party/... //examples/... //test/...
-        - --release=//build/release-tars
-        - --ssh=/etc/ssh-security/ssh-security
-        image: gcr.io/k8s-testimages/bazelbuild:v20171214-ae38d82af-0.5.2
-        name: ""
-        resources:
-          requests:
-            memory: 6Gi
-        securityContext:
-          privileged: true
-        volumeMounts:
-        - mountPath: /etc/service-account
-          name: service
-          readOnly: true
-        - mountPath: /etc/ssh-security
-          name: ssh-security
-      volumes:
-      - name: service
-        secret:
-          secretName: service-account
-      - name: ssh-security
-        secret:
-          defaultMode: 256
-          secretName: ssh-security
-    trigger: (?m)^/test( all| pull-security-kubernetes-bazel-build),?(\s+|$)
-  - agent: kubernetes
     always_run: false
     branches:
     - master
@@ -4033,53 +3653,6 @@ presubmits:
         - --test-args=--flaky_test_attempts=3
         - --ssh=/etc/ssh-security/ssh-security
         image: gcr.io/k8s-testimages/bazelbuild:v20171214-ae38d82af-0.6.1
-        name: ""
-        resources:
-          requests:
-            memory: 6Gi
-        securityContext:
-          privileged: true
-        volumeMounts:
-        - mountPath: /etc/service-account
-          name: service
-          readOnly: true
-        - mountPath: /etc/ssh-security
-          name: ssh-security
-      volumes:
-      - name: service
-        secret:
-          secretName: service-account
-      - name: ssh-security
-        secret:
-          defaultMode: 256
-          secretName: ssh-security
-    trigger: (?m)^/test( all| pull-security-kubernetes-bazel-test),?(\s+|$)
-  - agent: kubernetes
-    always_run: true
-    branches:
-    - release-1.6
-    cluster: security
-    context: pull-security-kubernetes-bazel-test
-    max_concurrency: 0
-    name: pull-security-kubernetes-bazel-test
-    rerun_command: /test pull-security-kubernetes-bazel-test
-    run_if_changed: ""
-    skip_report: false
-    spec:
-      containers:
-      - args:
-        - --clean
-        - --job=$(JOB_NAME)
-        - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
-        - --service-account=/etc/service-account/service-account.json
-        - --upload=gs://kubernetes-security-jenkins/pr-logs
-        - --
-        - --test=//cmd/... //pkg/... //federation/... //plugin/... //third_party/... //hack/... -//pkg/kubelet/config:go_default_test
-        - --manual-test=//hack:verify-all
-        - --test-args=--test_tag_filters=-integration
-        - --test-args=--flaky_test_attempts=3
-        - --ssh=/etc/ssh-security/ssh-security
-        image: gcr.io/k8s-testimages/bazelbuild:v20171214-ae38d82af-0.5.2
         name: ""
         resources:
           requests:
@@ -4338,10 +3911,6 @@ presubmits:
         - --upload=gs://kubernetes-security-jenkins/pr-logs
         - --clean
         - --timeout=90
-        - --
-        - --build=bazel
-        - --mode=local
-        - --runtime-config=batch/v2alpha1=true,admissionregistration.k8s.io/v1alpha1=true
         - --ssh=/etc/ssh-security/ssh-security
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -4401,10 +3970,6 @@ presubmits:
         - --upload=gs://kubernetes-security-jenkins/pr-logs
         - --clean
         - --timeout=90
-        - --
-        - --build=bazel
-        - --mode=local
-        - --runtime-config=batch/v2alpha1=true,admissionregistration.k8s.io/v1alpha1=true
         - --ssh=/etc/ssh-security/ssh-security
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -4464,10 +4029,6 @@ presubmits:
         - --upload=gs://kubernetes-security-jenkins/pr-logs
         - --clean
         - --timeout=90
-        - --
-        - --build=bazel
-        - --mode=local
-        - --runtime-config=batch/v2alpha1=true,admissionregistration.k8s.io/v1alpha1=true
         - --ssh=/etc/ssh-security/ssh-security
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -4653,10 +4214,6 @@ presubmits:
         - --upload=gs://kubernetes-security-jenkins/pr-logs
         - --clean
         - --timeout=90
-        - --
-        - --build=bazel
-        - --mode=local
-        - --runtime-config=batch/v2alpha1=true,admissionregistration.k8s.io/v1alpha1=true
         - --ssh=/etc/ssh-security/ssh-security
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -4716,10 +4273,6 @@ presubmits:
         - --upload=gs://kubernetes-security-jenkins/pr-logs
         - --clean
         - --timeout=90
-        - --
-        - --build=bazel
-        - --mode=local
-        - --runtime-config=batch/v2alpha1=true,admissionregistration.k8s.io/v1alpha1=true
         - --ssh=/etc/ssh-security/ssh-security
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -4779,10 +4332,6 @@ presubmits:
         - --upload=gs://kubernetes-security-jenkins/pr-logs
         - --clean
         - --timeout=90
-        - --
-        - --build=bazel
-        - --mode=local
-        - --runtime-config=batch/v2alpha1=true,admissionregistration.k8s.io/v1alpha1=true
         - --ssh=/etc/ssh-security/ssh-security
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -4970,9 +4519,6 @@ presubmits:
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-security-jenkins/pr-logs
         - --timeout=75
-        - --
-        - --build=bazel
-        - --mode=local
         - --ssh=/etc/ssh-security/ssh-security
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -5043,9 +4589,6 @@ presubmits:
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-security-jenkins/pr-logs
         - --timeout=75
-        - --
-        - --build=bazel
-        - --mode=local
         - --ssh=/etc/ssh-security/ssh-security
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -5116,9 +4659,6 @@ presubmits:
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-security-jenkins/pr-logs
         - --timeout=75
-        - --
-        - --build=bazel
-        - --mode=local
         - --ssh=/etc/ssh-security/ssh-security
         env:
         - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -5191,9 +4731,6 @@ presubmits:
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-security-jenkins/pr-logs
         - --timeout=110
-        - --
-        - --build=bazel
-        - --mode=local
         - --ssh=/etc/ssh-security/ssh-security
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
@@ -5261,9 +4798,6 @@ presubmits:
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-security-jenkins/pr-logs
         - --timeout=110
-        - --
-        - --build=bazel
-        - --mode=local
         - --ssh=/etc/ssh-security/ssh-security
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
@@ -5331,9 +4865,6 @@ presubmits:
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-security-jenkins/pr-logs
         - --timeout=110
-        - --
-        - --build=bazel
-        - --mode=local
         - --ssh=/etc/ssh-security/ssh-security
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
@@ -5805,66 +5336,6 @@ presubmits:
         - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
           value: /etc/ssh-key-secret/ssh-public
         image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-1.7
-        name: ""
-        resources:
-          requests:
-            memory: 6Gi
-        volumeMounts:
-        - mountPath: /etc/service-account
-          name: service
-          readOnly: true
-        - mountPath: /etc/ssh-key-secret
-          name: ssh
-          readOnly: true
-        - mountPath: /etc/ssh-security
-          name: ssh-security
-      volumes:
-      - name: service
-        secret:
-          secretName: service-account
-      - name: ssh
-        secret:
-          defaultMode: 256
-          secretName: ssh-key-secret
-      - name: ssh-security
-        secret:
-          defaultMode: 256
-          secretName: ssh-security
-    trigger: (?m)^/test( all| pull-security-kubernetes-node-e2e),?(\s+|$)
-  - agent: kubernetes
-    always_run: true
-    branches:
-    - release-1.6
-    cluster: security
-    context: pull-security-kubernetes-node-e2e
-    max_concurrency: 12
-    name: pull-security-kubernetes-node-e2e
-    rerun_command: /test pull-security-kubernetes-node-e2e
-    run_if_changed: ""
-    skip_report: false
-    spec:
-      containers:
-      - args:
-        - --root=/go/src
-        - --clean
-        - --job=$(JOB_NAME)
-        - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
-        - --service-account=/etc/service-account/service-account.json
-        - --upload=gs://kubernetes-security-jenkins/pr-logs
-        - --timeout=90
-        - --
-        - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config-1-6.yaml
-        - --ssh=/etc/ssh-security/ssh-security
-        env:
-        - name: GOOGLE_APPLICATION_CREDENTIALS
-          value: /etc/service-account/service-account.json
-        - name: USER
-          value: prow
-        - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
-          value: /etc/ssh-key-secret/ssh-private
-        - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
-          value: /etc/ssh-key-secret/ssh-public
-        image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-1.6
         name: ""
         resources:
           requests:
@@ -6525,126 +5996,6 @@ postsubmits:
         - name: service
           secret:
             secretName: service-account
-        - name: cache-ssd
-          hostPath:
-            path: /mnt/disks/ssd0
-
-  - name: ci-kubernetes-bazel-build-1-6
-    agent: kubernetes
-    branches:
-    - release-1.6
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171214-ae38d82af-0.5.2  # https://github.com/kubernetes/kubernetes/issues/51571
-        args:
-        - "--clean"
-        - "--git-cache=/root/.cache/git"
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/logs"
-        env:
-        - name: TEST_TMPDIR
-          value: /root/.cache/bazel
-        # Bazel needs privileged mode in order to sandbox builds.
-        securityContext:
-          privileged: true
-        volumeMounts:
-        - name: service
-          mountPath: /etc/service-account
-          readOnly: true
-        - name: cache-ssd
-          mountPath: /root/.cache
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
-        resources:
-          requests:
-            memory: "6Gi"
-      volumes:
-      - name: service
-        secret:
-          secretName: service-account
-      - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0
-    run_after_success:
-    - name: ci-kubernetes-bazel-test-1-6
-      agent: kubernetes
-      spec:
-        containers:
-        - image: gcr.io/k8s-testimages/bazelbuild:v20171214-ae38d82af-0.5.2  # https://github.com/kubernetes/kubernetes/issues/51571
-          args:
-          - "--clean"
-          - "--git-cache=/root/.cache/git"
-          - "--job=$(JOB_NAME)"
-          - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-          - "--service-account=/etc/service-account/service-account.json"
-          - "--upload=gs://kubernetes-jenkins/logs"
-          env:
-          - name: TEST_TMPDIR
-            value: /root/.cache/bazel
-          securityContext:
-            privileged: true
-          volumeMounts:
-          - name: service
-            mountPath: /etc/service-account
-            readOnly: true
-          - name: cache-ssd
-            mountPath: /root/.cache
-          ports:
-          - containerPort: 9999
-            hostPort: 9999
-          resources:
-            requests:
-              memory: "6Gi"
-        volumes:
-        - name: service
-          secret:
-            secretName: service-account
-        - name: cache-ssd
-          hostPath:
-            path: /mnt/disks/ssd0
-    - name: ci-kubernetes-e2e-kubeadm-gce-1-6
-      agent: kubernetes
-      spec:
-        containers:
-        - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180123-fe0e523d9
-          args:
-          - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
-          - "--clean"
-          - "--git-cache=/root/.cache/git"
-          - "--timeout=320"
-          - "--upload=gs://kubernetes-jenkins/logs"
-          env:
-          - name: USER
-            value: prow
-          - name: GOOGLE_APPLICATION_CREDENTIALS
-            value: /etc/service-account/service-account.json
-          - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
-            value: /etc/ssh-key-secret/ssh-private
-          - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
-            value: /etc/ssh-key-secret/ssh-public
-          volumeMounts:
-          - name: service
-            mountPath: /etc/service-account
-            readOnly: true
-          - name: ssh
-            mountPath: /etc/ssh-key-secret
-            readOnly: true
-          - name: cache-ssd
-            mountPath: /root/.cache
-          ports:
-          - containerPort: 9999
-            hostPort: 9999
-        volumes:
-        - name: service
-          secret:
-            secretName: service-account
-        - name: ssh
-          secret:
-            secretName: ssh-key-secret
-            defaultMode: 0400
         - name: cache-ssd
           hostPath:
             path: /mnt/disks/ssd0
@@ -9068,40 +8419,6 @@ periodics:
         defaultMode: 256
         secretName: ssh-key-secret
 
-- interval: 24h
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gce-alpha-features-release-1-6
-  spec:
-    containers:
-    - args:
-      - --timeout=200
-      - --bare
-      env:
-      - name: GOOGLE_APPLICATION_CREDENTIALS
-        value: /etc/service-account/service-account.json
-      - name: USER
-        value: prow
-      - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
-        value: /etc/ssh-key-secret/ssh-private
-      - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
-        value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
-      volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
-      - mountPath: /etc/ssh-key-secret
-        name: ssh
-        readOnly: true
-    volumes:
-    - name: service
-      secret:
-        secretName: service-account
-    - name: ssh
-      secret:
-        defaultMode: 256
-        secretName: ssh-key-secret
-
 - interval: 2h
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-alpha-features-release-1-7
@@ -9309,7 +8626,7 @@ periodics:
 
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 1h
+  interval: 48h
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-cos-k8sbeta-alphafeatures
   spec:
@@ -9345,7 +8662,7 @@ periodics:
 
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 1h
+  interval: 48h
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-cos-k8sbeta-default
   spec:
@@ -9381,7 +8698,7 @@ periodics:
 
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 1h
+  interval: 48h
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-cos-k8sbeta-ingress
   spec:
@@ -9417,7 +8734,7 @@ periodics:
 
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 1h
+  interval: 48h
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-cos-k8sbeta-reboot
   spec:
@@ -9453,7 +8770,7 @@ periodics:
 
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 1h
+  interval: 48h
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-cos-k8sbeta-serial
   spec:
@@ -9489,7 +8806,7 @@ periodics:
 
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 1h
+  interval: 48h
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-cos-k8sbeta-slow
   spec:
@@ -11713,40 +11030,6 @@ periodics:
         defaultMode: 256
         secretName: ssh-key-secret
 
-- interval: 24h
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gce-etcd2-release-1-6
-  spec:
-    containers:
-    - args:
-      - --timeout=70
-      - --bare
-      env:
-      - name: GOOGLE_APPLICATION_CREDENTIALS
-        value: /etc/service-account/service-account.json
-      - name: USER
-        value: prow
-      - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
-        value: /etc/ssh-key-secret/ssh-private
-      - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
-        value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
-      volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
-      - mountPath: /etc/ssh-key-secret
-        name: ssh
-        readOnly: true
-    volumes:
-    - name: service
-      secret:
-        secretName: service-account
-    - name: ssh
-      secret:
-        defaultMode: 256
-        secretName: ssh-key-secret
-
 - interval: 1h
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-federation-release-1-7
@@ -13221,40 +12504,6 @@ periodics:
         defaultMode: 256
         secretName: ssh-key-secret
 
-- interval: 24h
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gce-reboot-release-1-6
-  spec:
-    containers:
-    - args:
-      - --timeout=200
-      - --bare
-      env:
-      - name: GOOGLE_APPLICATION_CREDENTIALS
-        value: /etc/service-account/service-account.json
-      - name: USER
-        value: prow
-      - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
-        value: /etc/ssh-key-secret/ssh-private
-      - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
-        value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
-      volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
-      - mountPath: /etc/ssh-key-secret
-        name: ssh
-        readOnly: true
-    volumes:
-    - name: service
-      secret:
-        secretName: service-account
-    - name: ssh
-      secret:
-        defaultMode: 256
-        secretName: ssh-key-secret
-
 - interval: 6h
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-reboot-release-1-7
@@ -13262,40 +12511,6 @@ periodics:
     containers:
     - args:
       - --timeout=200
-      - --bare
-      env:
-      - name: GOOGLE_APPLICATION_CREDENTIALS
-        value: /etc/service-account/service-account.json
-      - name: USER
-        value: prow
-      - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
-        value: /etc/ssh-key-secret/ssh-private
-      - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
-        value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
-      volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
-      - mountPath: /etc/ssh-key-secret
-        name: ssh
-        readOnly: true
-    volumes:
-    - name: service
-      secret:
-        secretName: service-account
-    - name: ssh
-      secret:
-        defaultMode: 256
-        secretName: ssh-key-secret
-
-- interval: 24h
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gce-release-1-6
-  spec:
-    containers:
-    - args:
-      - --timeout=70
       - --bare
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -13470,40 +12685,6 @@ periodics:
         defaultMode: 256
         secretName: ssh-key-secret
 
-- interval: 24h
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gce-serial-release-1-6
-  spec:
-    containers:
-    - args:
-      - --timeout=320
-      - --bare
-      env:
-      - name: GOOGLE_APPLICATION_CREDENTIALS
-        value: /etc/service-account/service-account.json
-      - name: USER
-        value: prow
-      - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
-        value: /etc/ssh-key-secret/ssh-private
-      - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
-        value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
-      volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
-      - mountPath: /etc/ssh-key-secret
-        name: ssh
-        readOnly: true
-    volumes:
-    - name: service
-      secret:
-        secretName: service-account
-    - name: ssh
-      secret:
-        defaultMode: 256
-        secretName: ssh-key-secret
-
 - interval: 6h
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-serial-release-1-7
@@ -13511,40 +12692,6 @@ periodics:
     containers:
     - args:
       - --timeout=520
-      - --bare
-      env:
-      - name: GOOGLE_APPLICATION_CREDENTIALS
-        value: /etc/service-account/service-account.json
-      - name: USER
-        value: prow
-      - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
-        value: /etc/ssh-key-secret/ssh-private
-      - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
-        value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
-      volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
-      - mountPath: /etc/ssh-key-secret
-        name: ssh
-        readOnly: true
-    volumes:
-    - name: service
-      secret:
-        secretName: service-account
-    - name: ssh
-      secret:
-        defaultMode: 256
-        secretName: ssh-key-secret
-
-- interval: 24h
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gce-slow-release-1-6
-  spec:
-    containers:
-    - args:
-      - --timeout=170
       - --bare
       env:
       - name: GOOGLE_APPLICATION_CREDENTIALS
@@ -16729,40 +15876,6 @@ periodics:
         defaultMode: 256
         secretName: ssh-key-secret
 
-- interval: 6h
-  agent: kubernetes
-  name: ci-kubernetes-e2e-gke-alpha-features-release-1-6
-  spec:
-    containers:
-    - args:
-      - --timeout=200
-      - --bare
-      env:
-      - name: GOOGLE_APPLICATION_CREDENTIALS
-        value: /etc/service-account/service-account.json
-      - name: USER
-        value: prow
-      - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
-        value: /etc/ssh-key-secret/ssh-private
-      - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
-        value: /etc/ssh-key-secret/ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
-      volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
-      - mountPath: /etc/ssh-key-secret
-        name: ssh
-        readOnly: true
-    volumes:
-    - name: service
-      secret:
-        secretName: service-account
-    - name: ssh
-      secret:
-        defaultMode: 256
-        secretName: ssh-key-secret
-
 - interval: 2h
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-alpha-features-release-1-7
@@ -16970,7 +16083,7 @@ periodics:
 
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 1h
+  interval: 48h
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-cos-k8sbeta-default
   spec:
@@ -17006,7 +16119,7 @@ periodics:
 
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 1h
+  interval: 48h
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-cos-k8sbeta-ingress
   spec:
@@ -17042,7 +16155,7 @@ periodics:
 
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 1h
+  interval: 48h
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-cos-k8sbeta-reboot
   spec:
@@ -17078,7 +16191,7 @@ periodics:
 
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 1h
+  interval: 48h
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-cos-k8sbeta-serial
   spec:
@@ -17114,7 +16227,7 @@ periodics:
 
 - tags:
   - generated   # AUTO-GENERATED by experiment/generate_tests.py - DO NOT EDIT!
-  interval: 1h
+  interval: 48h
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-cos-k8sbeta-slow
   spec:
@@ -22490,48 +21603,6 @@ periodics:
         defaultMode: 256
         secretName: aws-cred-new
 
-- interval: 24h
-  agent: kubernetes
-  name: ci-kubernetes-e2e-kops-aws-release-1-6
-  spec:
-    containers:
-    - args:
-      - --timeout=140
-      - --bare
-      env:
-      - name: GOOGLE_APPLICATION_CREDENTIALS
-        value: /etc/service-account/service-account.json
-      - name: USER
-        value: prow
-      - name: JENKINS_AWS_CREDENTIALS_FILE
-        value: /etc/aws-cred/credentials
-      - name: JENKINS_AWS_SSH_PRIVATE_KEY_FILE
-        value: /etc/aws-ssh/aws-ssh-private
-      - name: JENKINS_AWS_SSH_PUBLIC_KEY_FILE
-        value: /etc/aws-ssh/aws-ssh-public
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
-      volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
-      - mountPath: /etc/aws-ssh
-        name: aws-ssh
-        readOnly: true
-      - mountPath: /etc/aws-cred
-        name: aws-cred
-        readOnly: true
-    volumes:
-    - name: service
-      secret:
-        secretName: service-account
-    - name: aws-ssh
-      secret:
-        defaultMode: 256
-        secretName: aws-ssh-key-secret
-    - name: aws-cred
-      secret:
-        defaultMode: 256
-        secretName: aws-cred-new
 
 - interval: 6h
   agent: kubernetes
@@ -24831,13 +23902,13 @@ periodics:
         defaultMode: 0400
 
 - name: ci-kubernetes-node-kubelet-beta
-  interval: 1h
+  interval: 48h
   agent: kubernetes
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       args:
-      - --repo=k8s.io/kubernetes=release-1.9
+      - --repo=k8s.io/kubernetes=release-1.10
       - --timeout=90
       - --root=/go/src
       env:
@@ -24912,43 +23983,6 @@ periodics:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       args:
       - --repo=k8s.io/kubernetes=master
-      - --timeout=90
-      - --root=/go/src
-      env:
-      - name: GOOGLE_APPLICATION_CREDENTIALS
-        value: /etc/service-account/service-account.json
-      - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
-        value: /etc/ssh-key-secret/ssh-private
-      - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
-        value: /etc/ssh-key-secret/ssh-public
-      - name: USER
-        value: prow
-      - name: GOPATH
-        value: /go
-      volumeMounts:
-      - name: service
-        mountPath: /etc/service-account
-        readOnly: true
-      - name: ssh
-        mountPath: /etc/ssh-key-secret
-        readOnly: true
-    volumes:
-    - name: service
-      secret:
-        secretName: service-account
-    - name: ssh
-      secret:
-        secretName: ssh-key-secret
-        defaultMode: 0400
-
-- name: ci-kubernetes-node-kubelet-non-cri-1-6
-  interval: 6h
-  agent: kubernetes
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-1.6
-      args:
-      - --repo=k8s.io/kubernetes=release-1.6
       - --timeout=90
       - --root=/go/src
       env:
@@ -25057,9 +24091,9 @@ periodics:
   agent: kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-1.8
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-1.9
       args:
-      - --repo=k8s.io/kubernetes=release-1.8
+      - --repo=k8s.io/kubernetes=release-1.9
       - --timeout=90
       - --root=/go/src
       env:
@@ -25094,9 +24128,9 @@ periodics:
   agent: kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-1.7
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-1.8
       args:
-      - --repo=k8s.io/kubernetes=release-1.7
+      - --repo=k8s.io/kubernetes=release-1.8
       - --timeout=90
       - --root=/go/src
       env:
@@ -25131,9 +24165,9 @@ periodics:
   agent: kubernetes
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-1.6
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-1.7
       args:
-      - --repo=k8s.io/kubernetes=release-1.6
+      - --repo=k8s.io/kubernetes=release-1.7
       - --timeout=90
       - --root=/go/src
       env:
@@ -25788,127 +24822,6 @@ periodics:
     - name: influxdb
       secret:
         secretName: velodrome-influxdb
-
-- name: periodic-kubernetes-bazel-build-1-6
-  interval: 24h
-  agent: kubernetes
-  spec:
-    containers:
-    - image: gcr.io/k8s-testimages/bazelbuild:v20171214-ae38d82af-0.5.2  # https://github.com/kubernetes/kubernetes/issues/51571
-      args:
-      - "--clean"
-      - "--git-cache=/root/.cache/git"
-      - "--job=$(JOB_NAME)"
-      - "--repo=k8s.io/kubernetes=release-1.6"
-      - "--service-account=/etc/service-account/service-account.json"
-      - "--upload=gs://kubernetes-jenkins/logs"
-      env:
-      - name: TEST_TMPDIR
-        value: /root/.cache/bazel
-      # Bazel needs privileged mode in order to sandbox builds.
-      securityContext:
-        privileged: true
-      volumeMounts:
-      - name: service
-        mountPath: /etc/service-account
-        readOnly: true
-      - name: cache-ssd
-        mountPath: /root/.cache
-      resources:
-        requests:
-          memory: "6Gi"
-      ports:
-      - containerPort: 9999
-        hostPort: 9999
-    volumes:
-    - name: service
-      secret:
-        secretName: service-account
-    - name: cache-ssd
-      hostPath:
-        path: /mnt/disks/ssd0
-  run_after_success:
-  - name: periodic-kubernetes-bazel-test-1-6
-    agent: kubernetes
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20171214-ae38d82af-0.5.2  # https://github.com/kubernetes/kubernetes/issues/51571
-        args:
-        - "--clean"
-        - "--git-cache=/root/.cache/git"
-        - "--job=$(JOB_NAME)"
-        - "--repo=k8s.io/kubernetes=release-1.6"
-        - "--service-account=/etc/service-account/service-account.json"
-        - "--upload=gs://kubernetes-jenkins/logs"
-        env:
-        - name: TEST_TMPDIR
-          value: /root/.cache/bazel
-        securityContext:
-          privileged: true
-        volumeMounts:
-        - name: service
-          mountPath: /etc/service-account
-          readOnly: true
-        - name: cache-ssd
-          mountPath: /root/.cache
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
-        resources:
-          requests:
-            memory: "6Gi"
-      volumes:
-      - name: service
-        secret:
-          secretName: service-account
-      - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0
-  - name: periodic-kubernetes-e2e-kubeadm-gce-1-6
-    agent: kubernetes
-    spec:
-      containers:
-      - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180123-fe0e523d9
-        args:
-        - "--repo=k8s.io/kubernetes=release-1.6"
-        - "--clean"
-        - "--git-cache=/root/.cache/git"
-        - "--timeout=320"
-        - "--upload=gs://kubernetes-jenkins/logs"
-        env:
-        - name: USER
-          value: prow
-        - name: REPO_NAME
-          value: kubernetes=release-1.6
-        - name: GOOGLE_APPLICATION_CREDENTIALS
-          value: /etc/service-account/service-account.json
-        - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
-          value: /etc/ssh-key-secret/ssh-private
-        - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
-          value: /etc/ssh-key-secret/ssh-public
-        volumeMounts:
-        - name: service
-          mountPath: /etc/service-account
-          readOnly: true
-        - name: ssh
-          mountPath: /etc/ssh-key-secret
-          readOnly: true
-        - name: cache-ssd
-          mountPath: /root/.cache
-        ports:
-        - containerPort: 9999
-          hostPort: 9999
-      volumes:
-      - name: service
-        secret:
-          secretName: service-account
-      - name: ssh
-        secret:
-          secretName: ssh-key-secret
-          defaultMode: 0400
-      - name: cache-ssd
-        hostPath:
-          path: /mnt/disks/ssd0
 
 - name: periodic-kubernetes-bazel-build-1-7
   interval: 12h

@@ -76,12 +76,6 @@
         job-name: ci-kubernetes-verify-release-1.7
         repo-name: k8s.io/kubernetes
         timeout: 80
-    - kubernetes-verify-release-1.6:
-        branch: release-1.6
-        frequency: 'H H/3 * * *'
-        job-name: ci-kubernetes-verify-release-1.6
-        repo-name: k8s.io/kubernetes
-        timeout: 80
 
 
     - kubernetes-test-go:
@@ -106,11 +100,5 @@
         branch: release-1.7
         frequency: 'H/5 * * * *'
         job-name: ci-kubernetes-test-go-release-1.7
-        repo-name: k8s.io/kubernetes
-        timeout: 100
-    - kubernetes-test-go-release-1.6:
-        branch: release-1.6
-        frequency: 'H H/3 * * *'
-        job-name: ci-kubernetes-test-go-release-1.6
         repo-name: k8s.io/kubernetes
         timeout: 100
