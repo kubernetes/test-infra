@@ -61,8 +61,6 @@ class JobTest(unittest.TestCase):
 
     yaml_suffix = {
         'jenkins/job-configs/bootstrap-maintenance.yaml' : 'suffix',
-        'jenkins/job-configs/kubernetes-jenkins-pull/bootstrap-pull-json.yaml' : 'jsonsuffix',
-        'jenkins/job-configs/kubernetes-jenkins-pull/bootstrap-security-pull.yaml' : 'suffix',
         'jenkins/job-configs/kubernetes-jenkins/bootstrap-ci-commit.yaml' : 'commit-suffix',
         'jenkins/job-configs/kubernetes-jenkins/bootstrap-ci-repo.yaml' : 'repo-suffix',
         'jenkins/job-configs/kubernetes-jenkins/bootstrap-ci-soak.yaml' : 'soak-suffix',
@@ -126,49 +124,6 @@ class JobTest(unittest.TestCase):
             return job_name
 
         self.check_bootstrap_yaml('jenkins/job-configs/bootstrap-maintenance.yaml', check)
-
-    def test_bootstrap_pull_json_yaml(self):
-        def check(job, name):
-            job_name = 'pull-%s' % name
-            self.assertIn('max-total', job)
-            self.assertIn('repo-name', job)
-            self.assertIn('.', job['repo-name'])  # Has domain
-            self.assertIn('timeout', job)
-            self.assertNotIn('json', job)
-            self.assertGreater(job['timeout'], 0)
-            return job_name
-
-        self.check_bootstrap_yaml(
-            'jenkins/job-configs/kubernetes-jenkins-pull/bootstrap-pull-json.yaml', check)
-
-    def test_bootstrap_security_pull(self):
-        def check(job, name):
-            job_name = 'pull-%s' % name
-            self.assertIn('max-total', job)
-            self.assertIn('repo-name', job)
-            self.assertIn('.', job['repo-name'])  # Has domain
-            self.assertIn('timeout', job)
-            self.assertNotIn('json', job)
-            self.assertGreater(job['timeout'], 0)
-            return job_name
-
-        self.check_bootstrap_yaml(
-            'jenkins/job-configs/kubernetes-jenkins-pull/bootstrap-security-pull.yaml', check)
-
-    def test_bootstrap_security_match(self):
-        json_jobs = self.load_bootstrap_yaml(
-            'jenkins/job-configs/kubernetes-jenkins-pull/bootstrap-pull-json.yaml')
-
-        sec_jobs = self.load_bootstrap_yaml(
-            'jenkins/job-configs/kubernetes-jenkins-pull/bootstrap-security-pull.yaml')
-        for name, job in sec_jobs.iteritems():
-            self.assertIn(name, json_jobs)
-            job2 = json_jobs[name]
-            for attr in job:
-                if attr == 'repo-name':
-                    continue
-                self.assertEquals(job[attr], job2[attr])
-
 
     def test_bootstrap_ci_commit_yaml(self):
         def check(job, name):
@@ -765,6 +720,7 @@ class JobTest(unittest.TestCase):
             'ci-kubernetes-kubemark-high-density-100-gce': 'ci-kubernetes-kubemark-*',
             'ci-kubernetes-kubemark-gce-scale': 'ci-kubernetes-scale-*',
             'pull-kubernetes-kubemark-e2e-gce-big': 'ci-kubernetes-scale-*',
+            'pull-kubernetes-kubemark-e2e-gce-scale': 'ci-kubernetes-scale-*',
             'ci-kubernetes-e2e-gce-large-manual-up': 'ci-kubernetes-scale-*',
             'ci-kubernetes-e2e-gce-large-manual-down': 'ci-kubernetes-scale-*',
             'ci-kubernetes-e2e-gce-large-correctness': 'ci-kubernetes-scale-*',
@@ -795,6 +751,11 @@ class JobTest(unittest.TestCase):
             'ci-cri-containerd-node-e2e': 'cri-containerd-node-e2e-*',
             'ci-cri-containerd-node-e2e-serial': 'cri-containerd-node-e2e-*',
             'ci-cri-containerd-node-e2e-flaky': 'cri-containerd-node-e2e-*',
+            'ci-cri-containerd-node-e2e-benchmark': 'cri-containerd-node-e2e-*',
+            # ci-cri-containerd-e2e-gce-stackdriver intentionally share projects with
+            # ci-kubernetes-e2e-gce-stackdriver.
+            'ci-kubernetes-e2e-gce-stackdriver': 'k8s-jkns-e2e-gce-stackdriver',
+            'ci-cri-containerd-e2e-gce-stackdriver': 'k8s-jkns-e2e-gce-stackdriver',
             # ingress-GCE e2e jobs
             'pull-ingress-gce-e2e': 'e2e-ingress-gce',
             'ci-ingress-gce-e2e': 'e2e-ingress-gce',

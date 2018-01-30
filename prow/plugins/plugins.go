@@ -166,6 +166,7 @@ type Configuration struct {
 	Blunderbuss     Blunderbuss     `json:"blunderbuss,omitempty"`
 	RequireSIG      RequireSIG      `json:"requiresig,omitempty"`
 	SigMention      SigMention      `json:"sigmention,omitempty"`
+	Cat             Cat             `json:"cat,omitempty"`
 }
 
 // ExternalPlugin holds configuration for registering an external
@@ -289,6 +290,11 @@ type Approve struct {
 	// ImplicitSelfApprove indicates if authors implicitly approve their own PRs
 	// in the specified repos.
 	ImplicitSelfApprove bool `json:"implicit_self_approve,omitempty"`
+}
+
+type Cat struct {
+	// Path to file containing an api key for thecatapi.com
+	KeyPath string `json:"key_path,omitempty"`
 }
 
 type Trigger struct {

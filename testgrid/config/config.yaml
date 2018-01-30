@@ -88,6 +88,38 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-e2e-gci-gce
 - name: ci-cri-containerd-e2e-ubuntu-gce
   gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-e2e-ubuntu-gce
+- name: ci-cri-containerd-e2e-gci-gce-reboot
+  gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-e2e-gci-gce-reboot
+- name: ci-cri-containerd-e2e-gci-gce-etcd3
+  gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-e2e-gci-gce-etcd3
+- name: ci-cri-containerd-e2e-gci-gce-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-e2e-gci-gce-serial
+- name: ci-cri-containerd-e2e-gci-gce-slow
+  gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-e2e-gci-gce-slow
+- name: ci-cri-containerd-e2e-gci-gce-flaky
+  gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-e2e-gci-gce-flaky
+- name: ci-cri-containerd-e2e-gci-gce-alpha-features
+  gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-e2e-gci-gce-alpha-features
+- name: ci-cri-containerd-e2e-gci-gce-statefulset
+  gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-e2e-gci-gce-statefulset
+- name: ci-cri-containerd-e2e-gci-gce-proto
+  gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-e2e-gci-gce-proto
+- name: ci-cri-containerd-e2e-gce-device-plugin-gpu
+  gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-e2e-gce-device-plugin-gpu
+  alert_stale_results_hours: 24
+  num_failures_to_alert: 8 # Runs every 3h. Alert when it's been failing for a day.
+- name: ci-cri-containerd-e2e-gci-gce-ingress
+  gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-e2e-gci-gce-ingress
+- name: ci-cri-containerd-e2e-gce-multizone
+  gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-e2e-gce-multizone
+- name: ci-cri-containerd-e2e-gci-gce-sd-logging
+  gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-e2e-gci-gce-sd-logging
+- name: ci-cri-containerd-e2e-gci-gce-es-logging
+  gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-e2e-gci-gce-es-logging
+- name: ci-cri-containerd-e2e-gce-stackdriver
+  gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-e2e-gce-stackdriver
+- name: ci-cri-containerd-e2e-gci-gce-ip-alias
+  gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-e2e-gci-gce-ip-alias
 - name: ci-cri-containerd-node-e2e
   gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-node-e2e
   test_name_config:
@@ -104,6 +136,13 @@ test_groups:
     name_format: '%s [%s]'
 - name: ci-cri-containerd-node-e2e-flaky
   gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-node-e2e-flaky
+  test_name_config:
+    name_elements:
+    - target_config: Tests name
+    - target_config: Context
+    name_format: '%s [%s]'
+- name: ci-cri-containerd-node-e2e-benchmark
+  gcs_prefix: kubernetes-jenkins/logs/ci-cri-containerd-node-e2e-benchmark
   test_name_config:
     name_elements:
     - target_config: Tests name
@@ -154,7 +193,7 @@ test_groups:
 - name: ci-kubernetes-e2e-gce-device-plugin-gpu-stable1
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-device-plugin-gpu-stable1
   alert_stale_results_hours: 24
-  num_failures_to_alert: 12 # Runs every 2h. Alert when it's been failing for a day.
+  num_failures_to_alert: 4 # Runs every 6h. Alert when it's been failing for a day.
 - name: ci-kubernetes-e2e-gce-device-plugin-gpu-beta
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-device-plugin-gpu-beta
   alert_stale_results_hours: 24
@@ -166,7 +205,7 @@ test_groups:
 - name: ci-kubernetes-e2e-gce-gpu-stable1
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gpu-stable1
   alert_stale_results_hours: 24
-  num_failures_to_alert: 12 # Runs every 2h. Alert when it's been failing for a day.
+  num_failures_to_alert: 4 # Runs every 6h. Alert when it's been failing for a day.
 - name: ci-kubernetes-e2e-gce-gpu-beta
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-gpu-beta
   alert_stale_results_hours: 24
@@ -295,11 +334,15 @@ test_groups:
 - name: ci-kubernetes-e2e-gke-device-plugin-gpu-stable1
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-device-plugin-gpu-stable1
   alert_stale_results_hours: 24
-  num_failures_to_alert: 12 # Runs every 2h. Alert when it's been failing for a day.
+  num_failures_to_alert: 4 # Runs every 6h. Alert when it's been failing for a day.
 - name: ci-kubernetes-e2e-gke-device-plugin-gpu-beta
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-device-plugin-gpu-beta
   alert_stale_results_hours: 24
   num_failures_to_alert: 12 # Runs every 2h. Alert when it's been failing for a day.
+- name: ci-kubernetes-e2e-gke-device-plugin-gpu-monitoring
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-device-plugin-gpu-monitoring
+  alert_stale_results_hours: 24
+  num_failures_to_alert: 8 # Runs every 3h. Alert when it's been failing for a day.
 - name: ci-kubernetes-e2e-gke-gpu-1-7
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gpu-1-7
   alert_stale_results_hours: 36
@@ -384,11 +427,7 @@ test_groups:
 - name: ci-kubernetes-e2e-gke-staging-latest-device-plugin-gpu
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-staging-latest-device-plugin-gpu
   alert_stale_results_hours: 24
-  num_failures_to_alert: 12 # Runs every 2h. Alert when it's been failing for a day.
-- name: ci-kubernetes-e2e-gke-test
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-test
-- name: ci-kubernetes-e2e-gci-gke-test
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gke-test
+  num_failures_to_alert: 4 # Runs every 2h. Alert when it's been failing for 8 hours.
 - name: ci-kubernetes-e2e-gke-updown
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-updown
 - name: ci-kubernetes-e2e-gci-gke-updown
@@ -938,6 +977,60 @@ test_groups:
   - configuration_value: node_os_image
   - configuration_value: Commit
   - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-alphafeatures
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-alphafeatures
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-autoscaling
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-autoscaling
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-default
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-default
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-flaky
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-flaky
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-ingress
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-ingress
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-reboot
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-reboot
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-serial
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-serial
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-slow
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-slow
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
+- name: ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-updown
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-updown
+  column_header:
+  - configuration_value: node_os_image
+  - configuration_value: Commit
+  - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-alphafeatures
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-alphafeatures
   column_header:
@@ -1175,10 +1268,6 @@ test_groups:
 - name: ci-benchmark-scheduler-master
   gcs_prefix: kubernetes-jenkins/logs/ci-benchmark-scheduler-master
 # 1.6-master upgrade jobs
-- name: ci-kubernetes-e2e-gce-1-6-1-7-upgrade-cluster
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-1-6-1-7-upgrade-cluster
-- name: ci-kubernetes-e2e-gce-1-6-1-7-upgrade-master
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-1-6-1-7-upgrade-master
 - name: ci-kubernetes-e2e-gce-1-6-1-7-upgrade-cluster-new
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-1-6-1-7-upgrade-cluster-new
 - name: ci-kubernetes-e2e-gke-gci-1-6-gci-1-7-upgrade-cluster
@@ -1642,8 +1731,6 @@ test_groups:
   - configuration_value: Commit
   - configuration_value: infra-commit
 # master-2 to master
-- name: ci-kubernetes-e2e-gke-cvm-stable-gci-master-upgrade-master
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cvm-stable-gci-master-upgrade-master
 - name: ci-kubernetes-e2e-gke-gci-stable-gci-master-upgrade-master
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-gci-stable-gci-master-upgrade-master
 # master-1 to master
@@ -1779,6 +1866,10 @@ test_groups:
 - name: pull-kubernetes-kubemark-e2e-gce-big
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-kubemark-e2e-gce-big
   days_of_results: 1
+  num_columns_recent: 20
+- name: pull-kubernetes-kubemark-e2e-gce-scale
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-kubemark-e2e-gce-scale
+  days_of_results: 30
   num_columns_recent: 20
 - name: pull-kubernetes-node-e2e
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-node-e2e
@@ -1958,7 +2049,7 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-federation-e2e-gce-serial
 # GCE Guest compute-image-tools
 - name: ci-daisy-e2e
-  gcs_prefix: gce-daisy-test/logs/ci-daisy-e2e
+  gcs_prefix: compute-image-tools-test/logs/ci-daisy-e2e
 # Cluster registry
 - name: pull-cluster-registry-verify-bazel
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-cluster-registry-verify-bazel
@@ -2066,6 +2157,8 @@ test_groups:
 - name: istio-e2e-cluster_wide-auth
   gcs_prefix: istio-prow/e2e-cluster_wide-auth
   num_failures_to_alert: 1
+- name: istio-periodic-e2e-gke-addon
+  gcs_prefix: kubernetes-jenkins/logs/istio-periodic-e2e-gke-addon
 # gke 1.9.1 vs old etcd
 - name: ci-kubernetes-e2e-gke-cos-oldetcd-default
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos-oldetcd-default
@@ -2334,7 +2427,7 @@ dashboards:
 
 - name: google-gce-compute-image-tools
   dashboard_tab:
-    - name: daisy-e2e
+    - name: ci-daisy-e2e
       test_group_name: ci-daisy-e2e
       open_test_template:
         url: https://storage.googleapis.com/<gcs_prefix>/<changelist>/artifacts/log-<test-id>.txt
@@ -2342,7 +2435,7 @@ dashboards:
         url: https://github.com/GoogleCloudPlatform/compute-image-tools/issues/new
         options:
         - key: title
-          value: 'E2E: <test-name>'
+          value: 'ci-daisy-e2e issue: <test-name>'
         - key: body
           value: <test-url>
 
@@ -2434,10 +2527,6 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-regional
   - name: gci-gke-reboot
     test_group_name: ci-kubernetes-e2e-gci-gke-reboot
-  - name: gke-test
-    test_group_name: ci-kubernetes-e2e-gke-test
-  - name: gci-gke-test
-    test_group_name: ci-kubernetes-e2e-gci-gke-test
   - name: gke-updown
     test_group_name: ci-kubernetes-e2e-gke-updown
   - name: gci-gke-updown
@@ -2495,6 +2584,24 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-slow
   - name: gke-ubuntustable1-k8sdev-updown
     test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-updown
+  - name: gke-ubuntustable2-k8sbeta-alphafeatures
+    test_group_name: ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-alphafeatures
+  - name: gke-ubuntustable2-k8sbeta-autoscaling
+    test_group_name: ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-autoscaling
+  - name: gke-ubuntustable2-k8sbeta-default
+    test_group_name: ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-default
+  - name: gke-ubuntustable2-k8sbeta-flaky
+    test_group_name: ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-flaky
+  - name: gke-ubuntustable2-k8sbeta-ingress
+    test_group_name: ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-ingress
+  - name: gke-ubuntustable2-k8sbeta-reboot
+    test_group_name: ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-reboot
+  - name: gke-ubuntustable2-k8sbeta-serial
+    test_group_name: ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-serial
+  - name: gke-ubuntustable2-k8sbeta-slow
+    test_group_name: ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-slow
+  - name: gke-ubuntustable2-k8sbeta-updown
+    test_group_name: ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-updown
   - name: gke-ubuntustable1-k8sstable1-alphafeatures
     test_group_name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-alphafeatures
   - name: gke-ubuntustable1-k8sstable1-autoscaling
@@ -2691,9 +2798,6 @@ dashboards:
 
 - name: sig-release-master-upgrade-optional
   dashboard_tab:
-  - name: gke-cvm-1.7-gci-master-upgrade-master
-    test_group_name: ci-kubernetes-e2e-gke-cvm-stable-gci-master-upgrade-master
-    description: 'Upgrade master only, in gke, from container_vm 1.6 to gci master'
   - name: gke-gci-1.7-gci-master-upgrade-master
     test_group_name: ci-kubernetes-e2e-gke-gci-stable-gci-master-upgrade-master
     description: 'Upgrade master only, in gke, from gci 1.6 to gci master'
@@ -3350,10 +3454,6 @@ dashboards:
 
 - name: sig-cluster-lifecycle-1.6-1.7-upgrade
   dashboard_tab:
-  - name: gce-upgrade-cluster
-    test_group_name: ci-kubernetes-e2e-gce-1-6-1-7-upgrade-cluster
-  - name: gce-upgrade-master
-    test_group_name: ci-kubernetes-e2e-gce-1-6-1-7-upgrade-master
   - name: gce-upgrade-cluster-new
     test_group_name: ci-kubernetes-e2e-gce-1-6-1-7-upgrade-cluster-new
   - name: gke-gci-upgrade-cluster
@@ -3512,36 +3612,36 @@ dashboards:
     test_group_name: ci-kubernetes-e2e-gce-device-plugin-gpu
     alert_options:
       alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
-  - name: gce-device-plugin-gpu-1.8
-    test_group_name: ci-kubernetes-e2e-gce-device-plugin-gpu-stable1
-    alert_options:
-      alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
   - name: gce-device-plugin-gpu-1.9
     test_group_name: ci-kubernetes-e2e-gce-device-plugin-gpu-beta
+    alert_options:
+      alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
+  - name: gce-device-plugin-gpu-1.8
+    test_group_name: ci-kubernetes-e2e-gce-device-plugin-gpu-stable1
     alert_options:
       alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
   - name: gce-gpu
     test_group_name: ci-kubernetes-e2e-gce-gpu
     alert_options:
       alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
-  - name: gce-gpu-1.8
-    test_group_name: ci-kubernetes-e2e-gce-gpu-stable1
-    alert_options:
-      alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
   - name: gce-gpu-1.9
     test_group_name: ci-kubernetes-e2e-gce-gpu-beta
+    alert_options:
+      alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
+  - name: gce-gpu-1.8
+    test_group_name: ci-kubernetes-e2e-gce-gpu-stable1
     alert_options:
       alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
   - name: gke-device-plugin-gpu
     test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu
     alert_options:
       alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
-  - name: gke-device-plugin-gpu-1.8
-    test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-stable1
-    alert_options:
-      alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
   - name: gke-device-plugin-gpu-1.9
     test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-beta
+    alert_options:
+      alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
+  - name: gke-device-plugin-gpu-1.8
+    test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-stable1
     alert_options:
       alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
   - name: gke-device-plugin-gpu-p100
@@ -3554,6 +3654,14 @@ dashboards:
       alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
   - name: gke-staging-latest-device-plugin-gpu
     test_group_name: ci-kubernetes-e2e-gke-staging-latest-device-plugin-gpu
+    alert_options:
+      alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
+  - name: gke-device-plugin-gpu-monitoring
+    test_group_name: ci-kubernetes-e2e-gke-device-plugin-gpu-monitoring
+    alert_options:
+      alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
+  - name: gke-device-plugin-gpu-cri-containerd
+    test_group_name: ci-cri-containerd-e2e-gce-device-plugin-gpu
     alert_options:
       alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
   - name: gke-gpu-1.7
@@ -4142,10 +4250,42 @@ dashboards:
     test_group_name: ci-cri-containerd-e2e-gci-gce
   - name: e2e-ubuntu
     test_group_name: ci-cri-containerd-e2e-ubuntu-gce
+  - name: e2e-gci-etcd3
+    test_group_name: ci-cri-containerd-e2e-gci-gce-etcd3
+  - name: e2e-gci-reboot
+    test_group_name: ci-cri-containerd-e2e-gci-gce-reboot
+  - name: e2e-gci-serial
+    test_group_name: ci-cri-containerd-e2e-gci-gce-serial
+  - name: e2e-gci-slow
+    test_group_name: ci-cri-containerd-e2e-gci-gce-slow
+  - name: e2e-gci-flaky
+    test_group_name: ci-cri-containerd-e2e-gci-gce-flaky
+  - name: e2e-gci-alpha-features
+    test_group_name: ci-cri-containerd-e2e-gci-gce-alpha-features
+  - name: e2e-gci-statefulset
+    test_group_name: ci-cri-containerd-e2e-gci-gce-statefulset
+  - name: e2e-gci-proto
+    test_group_name: ci-cri-containerd-e2e-gci-gce-proto
+  - name: e2e-gci-device-plugin-gpu
+    test_group_name: ci-cri-containerd-e2e-gce-device-plugin-gpu
+  - name: e2e-gci-ingress
+    test_group_name: ci-cri-containerd-e2e-gci-gce-ingress
+  - name: e2e-gci-multizone
+    test_group_name: ci-cri-containerd-e2e-gce-multizone
+  - name: e2e-gci-sd-logging
+    test_group_name: ci-cri-containerd-e2e-gci-gce-sd-logging
+  - name: e2e-gci-es-logging
+    test_group_name: ci-cri-containerd-e2e-gci-gce-es-logging
+  - name: e2e-gci-stackdriver
+    test_group_name: ci-cri-containerd-e2e-gce-stackdriver
+  - name: e2e-gci-ip-alias
+    test_group_name: ci-cri-containerd-e2e-gci-gce-ip-alias
   - name: node-e2e-serial
     test_group_name: ci-cri-containerd-node-e2e-serial
   - name: node-e2e-flaky
     test_group_name: ci-cri-containerd-node-e2e-flaky
+  - name: node-e2e-benchmark
+    test_group_name: ci-cri-containerd-node-e2e-benchmark
   - name: pull-node-e2e
     test_group_name: pull-kubernetes-node-e2e-containerd
     base_options: 'width=10'
@@ -4735,12 +4875,6 @@ dashboards:
     - configuration_value: node_os_image
     - configuration_value: Commit
     - configuration_value: infra-commit
-  - name: gci-gke-test
-    test_group_name: ci-kubernetes-e2e-gci-gke-test
-    column_header:
-    - configuration_value: node_os_image
-    - configuration_value: Commit
-    - configuration_value: infra-commit
   - name: gci-gke-updown
     test_group_name: ci-kubernetes-e2e-gci-gke-updown
     column_header:
@@ -5205,6 +5339,9 @@ dashboards:
   - name: pull-kubernetes-kubemark-e2e-gce-big
     test_group_name: pull-kubernetes-kubemark-e2e-gce-big
     base_options: 'width=10'
+  - name: pull-kubernetes-kubemark-e2e-gce-scale
+    test_group_name: pull-kubernetes-kubemark-e2e-gce-scale
+    base_options: 'width=10'
 
 - name: presubmits-test-infra
   dashboard_tab:
@@ -5288,6 +5425,8 @@ dashboards:
     test_group_name: istio-e2e-cluster_wide-auth
     alert_options:
       alert_mail_to_addresses: 'istio-oncall@googlegroups.com,michelle.192837@gmail.com,bentheelder@google.com,yutongz@google.com'
+  - name: istio-gke-addon
+    test_group_name: istio-periodic-e2e-gke-addon
 
 #
 # Start dashboard groups

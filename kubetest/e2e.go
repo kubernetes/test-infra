@@ -215,7 +215,7 @@ func run(deploy deployer, o options) error {
 		} else {
 			errs = appendError(errs, xmlWrap(o.testCmdName, func() error {
 				cmdLine := os.ExpandEnv(o.testCmd)
-				return finishRunning(exec.Command(cmdLine))
+				return finishRunning(exec.Command(cmdLine, o.testCmdArgs...))
 			}))
 		}
 	}
@@ -302,6 +302,11 @@ func run(deploy deployer, o options) error {
 			}))
 		}
 	}
+	if len(errs) == 0 {
+		if pub, ok := deploy.(publisher); ok {
+			errs = appendError(errs, pub.Publish())
+		}
+	}
 	if len(errs) == 0 && o.publish != "" {
 		errs = appendError(errs, xmlWrap("Publish version", func() error {
 			// Use plaintext version file packaged with kubernetes.tar.gz
@@ -310,7 +315,7 @@ func run(deploy deployer, o options) error {
 				return err
 			}
 			log.Printf("Set %s version to %s", o.publish, string(v))
-			return finishRunning(exec.Command("gsutil", "cp", "version", o.publish))
+			return gcsWrite(o.publish, v)
 		}))
 	}
 

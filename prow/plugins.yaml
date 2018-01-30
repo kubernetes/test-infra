@@ -8,8 +8,7 @@ triggers:
   - kubernetes-incubator
   - kubernetes-security
   - kubernetes-sig-testing
-  - google/cadvisor
-  - google/kubeflow
+  - google/cadvisor  
   - tensorflow/k8s
   - GoogleCloudPlatform/k8s-multicluster-ingress
   trusted_org: kubernetes
@@ -18,7 +17,10 @@ triggers:
   - containerd/cri-containerd
   trusted_org: containerd
   join_org_url: "https://github.com/containerd/containerd/blob/master/MAINTAINERS"
-
+- repos:
+  - kubeflow
+  trusted_org: kubeflow
+  join_org_url: https://github.com/kubeflow/kubeflow/blob/master/CONTRIBUTING.md
 owners:
   mdyamlrepos:
   - kubernetes/website
@@ -36,6 +38,7 @@ approve:
   - kubernetes/kops
   - kubernetes/kube-deploy
   - kubernetes/kubectl
+  - kubernetes/kubernetes
   - kubernetes/kubernetes-template-project
   - kubernetes/minikube
   - kubernetes/repo-infra
@@ -47,10 +50,6 @@ approve:
 - repos:
   - kubernetes-sig-testing
   implicit_self_approve: true
-- repos:
-  - kubernetes/kubernetes
-  implicit_self_approve: true
-  issue_required: true
 
 blockades:
 - repos:
@@ -81,6 +80,8 @@ blockades:
   - ^events/elections/2017
   explanation: "These files are historical, and from events that have already occurred."
 
+cat:
+  key_path: /etc/cat-api/api-key
 heart:
   adorees:
   - k8s-merge-robot
@@ -123,7 +124,7 @@ plugins:
   google/cadvisor:
   - trigger
 
-  google/kubeflow:
+  kubeflow/kubeflow:
   - lgtm
   - size
   - trigger
@@ -218,6 +219,7 @@ plugins:
   - assign
   - cat
   - cla
+  - dog
   - golint
   - heart
   - help
@@ -248,6 +250,7 @@ plugins:
   - blunderbuss
   - cat
   - cla
+  - dog
   - heart
   - help
   - hold

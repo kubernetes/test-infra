@@ -141,6 +141,17 @@ def get_acks(login, prs):
     return acks
 
 
+class InsensitiveString(str):
+    """A string that uses str.lower() to compare itself to others.
+
+    Does not override __in__ (that uses hash()) or sorting."""
+    def __eq__(self, other):
+        try:
+            return other.lower() == self.lower()
+        except AttributeError:
+            return str.__eq__(self, other)
+
+
 class PRDashboard(view_base.BaseHandler):
     def get(self, user=None):
         # pylint: disable=singleton-comparison
@@ -157,8 +168,8 @@ class PRDashboard(view_base.BaseHandler):
         if not self.request.get('all', False):
             qs.append(ghm.GHIssueDigest.is_open == True)
         if user:
-            qs.append(ghm.GHIssueDigest.involved == user)
-        prs = list(ghm.GHIssueDigest.query(*qs))
+            qs.append(ghm.GHIssueDigest.involved == user.lower())
+        prs = list(ghm.GHIssueDigest.query(*qs).fetch(batch_size=200))
         prs.sort(key=lambda x: x.updated_at, reverse=True)
 
         acks = None
@@ -179,6 +190,7 @@ class PRDashboard(view_base.BaseHandler):
             self.response.write(json.dumps(prs, sort_keys=True, default=serial))
         elif fmt == 'html':
             if user:
+                user = InsensitiveString(user)
                 def acked(p):
                     if 'lgtm' in p.payload.get('labels', {}):
                         return True  # LGTM is an implicit Ack
@@ -186,7 +198,8 @@ class PRDashboard(view_base.BaseHandler):
                         return False
                     return filters.do_get_latest(p.payload, user) <= acks.get(p.key.id(), 0)
                 cats = [
-                    ('Needs Attention', lambda p: user in p.payload['attn'] and not acked(p), ''),
+                    ('Needs Attention', lambda p: any(user == u for u in p.payload['attn'])
+                                                  and not acked(p), ''),
                     ('Approvable', lambda p: user in p.payload.get('approvers', []),
                      'is:open is:pr ("additional approvers: {0}" ' +
                      'OR "additional approver: {0}")'.format(user)),

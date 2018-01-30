@@ -60,6 +60,11 @@ def get_prs_from_github(token, repo):
     while True:
         logging.info('fetching %s', url)
         response = urlfetch.fetch(url, headers=headers)
+        if response.status_code == 404:
+            logging.warning('repo was deleted?')
+            # Returning no open PRs will make us fake a close event for each of
+            # them, which is appropriate.
+            return []
         if response.status_code != 200:
             raise urlfetch.Error('status code %s' % response.status_code)
         prs += json.loads(response.content)
