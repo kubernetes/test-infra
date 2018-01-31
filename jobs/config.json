@@ -10365,7 +10365,7 @@
       "/aws-janitor",
       "--",
       "--ttl=2h30m",
-      "--path=s3://janitor-jenkins/objs.json"
+      "--path=s3://k8s-kops-prow/objs.json"
     ],
     "scenario": "execute",
     "sigOwners": [
