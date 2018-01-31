@@ -2919,6 +2919,8 @@ presubmits:
     always_run: true
     cluster: security
     context: pull-security-kubernetes-bazel-build
+    labels:
+      preset: service-account
     max_concurrency: 0
     name: pull-security-kubernetes-bazel-build
     rerun_command: /test pull-security-kubernetes-bazel-build
@@ -2927,6 +2929,8 @@ presubmits:
       always_run: false
       cluster: security
       context: pull-security-kubernetes-e2e-kubeadm-gce
+      labels:
+        preset: service-account
       max_concurrency: 8
       name: pull-security-kubernetes-e2e-kubeadm-gce
       rerun_command: /test pull-security-kubernetes-e2e-kubeadm-gce
@@ -11170,6 +11174,8 @@ periodics:
 - interval: 30m
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-taint-evict
+  labels:
+    preset: service-account
   spec:
     containers:
     - args:
