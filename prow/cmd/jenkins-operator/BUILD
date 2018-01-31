@@ -25,7 +25,6 @@ go_library(
     ],
     importpath = "k8s.io/test-infra/prow/cmd/jenkins-operator",
     deps = [
-        "//prow/config:go_default_library",
         "//prow/github:go_default_library",
         "//prow/jenkins:go_default_library",
         "//prow/kube:go_default_library",

@@ -9,6 +9,7 @@ load(
 go_library(
     name = "go_default_library",
     srcs = [
+        "config.go",
         "controller.go",
         "doc.go",
         "jenkins.go",
@@ -22,6 +23,7 @@ go_library(
         "//prow/kube:go_default_library",
         "//prow/pjutil:go_default_library",
         "//prow/report:go_default_library",
+        "//vendor/github.com/ghodss/yaml:go_default_library",
         "//vendor/github.com/prometheus/client_golang/prometheus:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
     ],

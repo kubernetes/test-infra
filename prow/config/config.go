@@ -49,9 +49,6 @@ type Config struct {
 	Deck             Deck             `json:"deck,omitempty"`
 	BranchProtection BranchProtection `json:"branch-protection,omitempty"`
 
-	// TODO: Move this out of the main config.
-	JenkinsOperator JenkinsOperator `json:"jenkins_operator,omitempty"`
-
 	// ProwJobNamespace is the namespace in the cluster that prow
 	// components will use for looking up ProwJobs. The namespace
 	// needs to exist and will not be created by prow.
@@ -122,11 +119,6 @@ type Controller struct {
 
 // Plank is config for the plank controller.
 type Plank struct {
-	Controller `json:",inline"`
-}
-
-// JenkinsOperator is config for the jenkins-operator controller.
-type JenkinsOperator struct {
 	Controller `json:",inline"`
 }
 
@@ -206,13 +198,13 @@ func Load(path string) (*Config, error) {
 	if err := yaml.Unmarshal(b, nc); err != nil {
 		return nil, fmt.Errorf("error unmarshaling %s: %v", path, err)
 	}
-	if err := parseConfig(nc); err != nil {
+	if err := ParseConfig(nc); err != nil {
 		return nil, err
 	}
 	return nc, nil
 }
 
-func parseConfig(c *Config) error {
+func ParseConfig(c *Config) error {
 	// Ensure that presubmit regexes are valid.
 	for _, vs := range c.Presubmits {
 		if err := SetRegexes(vs); err != nil {
@@ -324,10 +316,6 @@ func parseConfig(c *Config) error {
 
 	if err := ValidateController(&c.Plank.Controller); err != nil {
 		return fmt.Errorf("validating plank config: %v", err)
-	}
-
-	if err := ValidateController(&c.JenkinsOperator.Controller); err != nil {
-		return fmt.Errorf("validating jenkins-operator config: %v", err)
 	}
 
 	for i, agentToTmpl := range c.Deck.ExternalAgentLogs {

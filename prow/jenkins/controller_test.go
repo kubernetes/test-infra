@@ -34,7 +34,7 @@ import (
 
 type fca struct {
 	sync.Mutex
-	c *config.Config
+	c *Config
 }
 
 func newFakeConfigAgent(t *testing.T, maxConcurrency int) *fca {
@@ -68,21 +68,23 @@ func newFakeConfigAgent(t *testing.T, maxConcurrency int) *fca {
 	}
 
 	return &fca{
-		c: &config.Config{
-			JenkinsOperator: config.JenkinsOperator{
+		c: &Config{
+			JenkinsOperator: JenkinsOperator{
 				Controller: config.Controller{
 					JobURLTemplate: template.Must(template.New("test").Parse("{{.Status.PodName}}/{{.Status.State}}")),
 					MaxConcurrency: maxConcurrency,
 					MaxGoroutines:  20,
 				},
 			},
-			Presubmits: presubmitMap,
+			Config: config.Config{
+				Presubmits: presubmitMap,
+			},
 		},
 	}
 
 }
 
-func (f *fca) Config() *config.Config {
+func (f *fca) Config() *Config {
 	f.Lock()
 	defer f.Unlock()
 	return f.c

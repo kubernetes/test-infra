@@ -24,7 +24,6 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pjutil"
@@ -58,7 +57,7 @@ type githubClient interface {
 }
 
 type configAgent interface {
-	Config() *config.Config
+	Config() *Config
 }
 
 type syncFn func(kube.ProwJob, chan<- kube.ProwJob, map[string]JenkinsBuild) error
@@ -84,7 +83,7 @@ type Controller struct {
 }
 
 // NewController creates a new Controller from the provided clients.
-func NewController(kc *kube.Client, jc *Client, ghc *github.Client, logger *logrus.Entry, ca *config.Agent, selector string) *Controller {
+func NewController(kc *kube.Client, jc *Client, ghc *github.Client, logger *logrus.Entry, ca *Agent, selector string) *Controller {
 	if logger == nil {
 		logger = logrus.NewEntry(logrus.StandardLogger())
 	}
