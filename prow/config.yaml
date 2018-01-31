@@ -3008,8 +3008,6 @@ presubmits:
       - release-1.7
       - release-1.8
       skip_report: true
-      label:
-        preset: service-account
       spec:
         containers:
         - args:
@@ -3031,9 +3029,6 @@ presubmits:
           name: ""
           resources: {}
           volumeMounts:
-          - mountPath: /etc/service-account
-            name: service
-            readOnly: true
           - mountPath: /etc/ssh-key-secret
             name: ssh
             readOnly: true
@@ -3055,8 +3050,6 @@ presubmits:
     - release-1.7
     - release-1.8
     skip_report: false
-    label:
-      preset: service-account
     spec:
       containers:
       - args:
@@ -3077,9 +3070,6 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: /etc/service-account
-          name: service
-          readOnly: true
         - mountPath: /etc/ssh-security
           name: ssh-security
       volumes:
@@ -3111,8 +3101,6 @@ presubmits:
       rerun_command: /test pull-security-kubernetes-e2e-kubeadm-gce
       run_if_changed: ^(cmd/kubeadm|build/debs).*$
       skip_report: true
-      label:
-        preset: service-account
       spec:
         containers:
         - args:
@@ -3134,9 +3122,6 @@ presubmits:
           name: ""
           resources: {}
           volumeMounts:
-          - mountPath: /etc/service-account
-            name: service
-            readOnly: true
           - mountPath: /etc/ssh-key-secret
             name: ssh
             readOnly: true
@@ -3154,8 +3139,6 @@ presubmits:
       trigger: (?m)^/test pull-security-kubernetes-e2e-kubeadm-gce,?(\s+|$)
     run_if_changed: ""
     skip_report: false
-    label:
-      preset: service-account
     spec:
       containers:
       - args:
@@ -3176,9 +3159,6 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: /etc/service-account
-          name: service
-          readOnly: true
         - mountPath: /etc/ssh-security
           name: ssh-security
       volumes:
@@ -3206,8 +3186,6 @@ presubmits:
       rerun_command: /test pull-security-kubernetes-e2e-kubeadm-gce-canary
       run_if_changed: ^(build\/|hack\/lib\/)|(Makefile)|(.*_(windows|linux|osx|unsupported)(_test)?\.go)$
       skip_report: false
-      label:
-        preset: service-account
       spec:
         containers:
         - args:
@@ -3229,9 +3207,6 @@ presubmits:
           name: ""
           resources: {}
           volumeMounts:
-          - mountPath: /etc/service-account
-            name: service
-            readOnly: true
           - mountPath: /etc/ssh-key-secret
             name: ssh
             readOnly: true
@@ -3249,8 +3224,6 @@ presubmits:
       trigger: (?m)^/test pull-security-kubernetes-e2e-kubeadm-gce-canary,?(\s+|$)
     run_if_changed: ""
     skip_report: false
-    label:
-      preset: service-account
     spec:
       containers:
       - args:
@@ -3273,9 +3246,6 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: /etc/service-account
-          name: service
-          readOnly: true
         - mountPath: /scratch/.cache
           name: bazel-scratch
         - mountPath: /etc/ssh-security
@@ -3300,8 +3270,6 @@ presubmits:
     - release-1.7
     - release-1.8
     skip_report: false
-    label:
-      preset: service-account
     spec:
       containers:
       - args:
@@ -3325,9 +3293,6 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: /etc/service-account
-          name: service
-          readOnly: true
         - mountPath: /etc/ssh-security
           name: ssh-security
       volumes:
@@ -3348,8 +3313,6 @@ presubmits:
     rerun_command: /test pull-security-kubernetes-bazel-test
     run_if_changed: ""
     skip_report: false
-    label:
-      preset: service-account
     spec:
       containers:
       - args:
@@ -3372,9 +3335,6 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: /etc/service-account
-          name: service
-          readOnly: true
         - mountPath: /etc/ssh-security
           name: ssh-security
       volumes:
@@ -3394,8 +3354,6 @@ presubmits:
     rerun_command: /test pull-security-kubernetes-bazel-test-canary
     run_if_changed: ""
     skip_report: false
-    label:
-      preset: service-account
     spec:
       containers:
       - args:
@@ -3421,9 +3379,6 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: /etc/service-account
-          name: service
-          readOnly: true
         - mountPath: /etc/ssh-security
           name: ssh-security
       volumes:
@@ -3441,8 +3396,6 @@ presubmits:
     rerun_command: /test pull-security-kubernetes-cross
     run_if_changed: ^(build\/|hack\/lib\/)|(Makefile)|(.*_(windows|linux|osx|unsupported)(_test)?\.go)$
     skip_report: false
-    label:
-      preset: service-account
     spec:
       containers:
       - args:
@@ -3465,9 +3418,6 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: /etc/service-account
-          name: service
-          readOnly: true
         - mountPath: /var/lib/docker
           name: var-lib-docker
         - mountPath: /etc/ssh-security
@@ -3493,8 +3443,6 @@ presubmits:
     rerun_command: /test pull-security-kubernetes-cross-prow
     run_if_changed: ""
     skip_report: false
-    label:
-      preset: service-account
     spec:
       containers:
       - args:
@@ -3518,9 +3466,6 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: /etc/service-account
-          name: service
-          readOnly: true
         - mountPath: /etc/ssh-security
           name: ssh-security
         - mountPath: /docker-graph
@@ -3544,8 +3489,6 @@ presubmits:
     rerun_command: /test pull-security-kubernetes-e2e-containerd-gce
     run_if_changed: ""
     skip_report: false
-    label:
-      preset: service-account
     spec:
       containers:
       - args:
@@ -3601,8 +3544,6 @@ presubmits:
     - release-1.7
     - release-1.8
     skip_report: false
-    label:
-      preset: service-account
     spec:
       containers:
       - args:
@@ -3657,8 +3598,6 @@ presubmits:
     rerun_command: /test pull-security-kubernetes-e2e-gce
     run_if_changed: ""
     skip_report: false
-    label:
-      preset: service-account
     spec:
       containers:
       - args:
@@ -3713,8 +3652,6 @@ presubmits:
     rerun_command: /test pull-security-kubernetes-e2e-gce
     run_if_changed: ""
     skip_report: false
-    label:
-      preset: service-account
     spec:
       containers:
       - args:
@@ -3771,8 +3708,6 @@ presubmits:
     - release-1.7
     - release-1.8
     skip_report: false
-    label:
-      preset: service-account
     spec:
       containers:
       - args:
@@ -3829,8 +3764,6 @@ presubmits:
     rerun_command: /test pull-security-kubernetes-e2e-gce-device-plugin-gpu
     run_if_changed: ""
     skip_report: false
-    label:
-      preset: service-account
     spec:
       containers:
       - args:
@@ -3889,8 +3822,6 @@ presubmits:
     - release-1.7
     - release-1.8
     skip_report: false
-    label:
-      preset: service-account
     spec:
       containers:
       - args:
@@ -3945,8 +3876,6 @@ presubmits:
     rerun_command: /test pull-security-kubernetes-e2e-gke
     run_if_changed: ^(cluster/gce|cluster/addons).*$
     skip_report: false
-    label:
-      preset: service-account
     spec:
       containers:
       - args:
@@ -4001,8 +3930,6 @@ presubmits:
     rerun_command: /test pull-security-kubernetes-e2e-gke
     run_if_changed: ^(cluster/gce|cluster/addons).*$
     skip_report: false
-    label:
-      preset: service-account
     spec:
       containers:
       - args:
@@ -4059,8 +3986,6 @@ presubmits:
     - release-1.7
     - release-1.8
     skip_report: false
-    label:
-      preset: service-account
     spec:
       containers:
       - args:
@@ -4117,8 +4042,6 @@ presubmits:
     rerun_command: /test pull-security-kubernetes-e2e-gke-device-plugin-gpu
     run_if_changed: ""
     skip_report: false
-    label:
-      preset: service-account
     spec:
       containers:
       - args:
@@ -4177,8 +4100,6 @@ presubmits:
     - release-1.7
     - release-1.8
     skip_report: false
-    label:
-      preset: service-account
     spec:
       containers:
       - args:
@@ -4244,8 +4165,6 @@ presubmits:
     rerun_command: /test pull-security-kubernetes-e2e-kops-aws
     run_if_changed: ""
     skip_report: false
-    label:
-      preset: service-account
     spec:
       containers:
       - args:
@@ -4311,8 +4230,6 @@ presubmits:
     rerun_command: /test pull-security-kubernetes-e2e-kops-aws
     run_if_changed: ""
     skip_report: false
-    label:
-      preset: service-account
     spec:
       containers:
       - args:
@@ -4380,8 +4297,6 @@ presubmits:
     - release-1.7
     - release-1.8
     skip_report: false
-    label:
-      preset: service-account
     spec:
       containers:
       - args:
@@ -4444,8 +4359,6 @@ presubmits:
     rerun_command: /test pull-security-kubernetes-kubemark-e2e-gce
     run_if_changed: ""
     skip_report: false
-    label:
-      preset: service-account
     spec:
       containers:
       - args:
@@ -4508,8 +4421,6 @@ presubmits:
     rerun_command: /test pull-security-kubernetes-kubemark-e2e-gce
     run_if_changed: ""
     skip_report: false
-    label:
-      preset: service-account
     spec:
       containers:
       - args:
@@ -4574,8 +4485,6 @@ presubmits:
     - release-1.7
     - release-1.8
     skip_report: false
-    label:
-      preset: service-account
     spec:
       containers:
       - args:
@@ -4638,8 +4547,6 @@ presubmits:
     rerun_command: /test pull-security-kubernetes-kubemark-e2e-gce-big
     run_if_changed: ""
     skip_report: false
-    label:
-      preset: service-account
     spec:
       containers:
       - args:
@@ -4702,8 +4609,6 @@ presubmits:
     rerun_command: /test pull-security-kubernetes-kubemark-e2e-gce-big
     run_if_changed: ""
     skip_report: false
-    label:
-      preset: service-account
     spec:
       containers:
       - args:
@@ -4766,8 +4671,6 @@ presubmits:
     rerun_command: /test pull-security-kubernetes-kubemark-e2e-gce-scale
     run_if_changed: ""
     skip_report: false
-    label:
-      preset: service-account
     spec:
       containers:
       - args:
@@ -4832,8 +4735,6 @@ presubmits:
     - release-1.7
     - release-1.8
     skip_report: false
-    label:
-      preset: service-account
     spec:
       containers:
       - args:
@@ -4889,8 +4790,6 @@ presubmits:
     rerun_command: /test pull-security-kubernetes-node-e2e
     run_if_changed: ""
     skip_report: false
-    label:
-      preset: service-account
     spec:
       containers:
       - args:
@@ -4946,8 +4845,6 @@ presubmits:
     rerun_command: /test pull-security-kubernetes-node-e2e
     run_if_changed: ""
     skip_report: false
-    label:
-      preset: service-account
     spec:
       containers:
       - args:
@@ -5003,8 +4900,6 @@ presubmits:
     rerun_command: /test pull-security-kubernetes-node-e2e-containerd
     run_if_changed: ""
     skip_report: false
-    label:
-      preset: service-account
     spec:
       containers:
       - args:
@@ -5055,8 +4950,6 @@ presubmits:
     rerun_command: /test pull-security-kubernetes-unit
     run_if_changed: ""
     skip_report: false
-    label:
-      preset: service-account
     spec:
       containers:
       - args:
@@ -5078,9 +4971,6 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: /etc/service-account
-          name: service
-          readOnly: true
         - mountPath: /etc/ssh-security
           name: ssh-security
         - mountPath: /docker-graph
@@ -5102,8 +4992,6 @@ presubmits:
     rerun_command: /test pull-security-kubernetes-unit-prow
     run_if_changed: ""
     skip_report: false
-    label:
-      preset: service-account
     spec:
       containers:
       - args:
@@ -5126,9 +5014,6 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: /etc/service-account
-          name: service
-          readOnly: true
         - mountPath: /etc/ssh-security
           name: ssh-security
         - mountPath: /docker-graph
@@ -5150,8 +5035,6 @@ presubmits:
     rerun_command: /test pull-security-kubernetes-verify
     run_if_changed: ""
     skip_report: false
-    label:
-      preset: service-account
     spec:
       containers:
       - args:
@@ -5173,9 +5056,6 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: /etc/service-account
-          name: service
-          readOnly: true
         - mountPath: /etc/ssh-security
           name: ssh-security
         - mountPath: /docker-graph
@@ -5197,8 +5077,6 @@ presubmits:
     rerun_command: /test pull-security-kubernetes-verify-prow
     run_if_changed: ""
     skip_report: false
-    label:
-      preset: service-account
     spec:
       containers:
       - args:
@@ -5221,9 +5099,6 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: /etc/service-account
-          name: service
-          readOnly: true
         - mountPath: /etc/ssh-security
           name: ssh-security
         - mountPath: /docker-graph
@@ -21590,7 +21465,6 @@ periodics:
         name: service
         readOnly: true
     volumes:
-
 - interval: 1h
   agent: kubernetes
   name: maintenance-pull-janitor
@@ -21610,7 +21484,6 @@ periodics:
         name: service
         readOnly: true
     volumes:
-
 - name: metrics-bigquery
   interval: 24h
   agent: kubernetes
