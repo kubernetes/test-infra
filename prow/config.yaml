@@ -25,11 +25,13 @@ log_level: info
 branch-protection:
   orgs:
     kubernetes:
+      require-contexts:
+      - cla/linuxfoundation
       repos:
+        community:
+          protect-by-default: true
         test-infra:
           protect-by-default: true
-          require-contexts:
-          - cla/linuxfoundation
     kubernetes-sig-testing:
       repos:
         frameworks:
