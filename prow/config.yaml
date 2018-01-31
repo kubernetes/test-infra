@@ -724,9 +724,6 @@ presubmits:
           - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
             value: /etc/ssh-key-secret/ssh-public
           volumeMounts:
-          - mountPath: /etc/service-account
-            name: service
-            readOnly: true
           - mountPath: /etc/ssh-key-secret
             name: ssh
             readOnly: true
@@ -1304,9 +1301,6 @@ presubmits:
           value: /root/.cache/bazel
         image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
         volumeMounts:
-        - mountPath: /etc/service-account
-          name: service
-          readOnly: true
         - mountPath: /etc/ssh-key-secret
           name: ssh
           readOnly: true
@@ -1363,9 +1357,6 @@ presubmits:
           value: /root/.cache/bazel
         image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
         volumeMounts:
-        - mountPath: /etc/service-account
-          name: service
-          readOnly: true
         - mountPath: /etc/ssh-key-secret
           name: ssh
           readOnly: true
@@ -1421,9 +1412,6 @@ presubmits:
           value: /root/.cache/bazel
         image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-1.8
         volumeMounts:
-        - mountPath: /etc/service-account
-          name: service
-          readOnly: true
         - mountPath: /etc/ssh-key-secret
           name: ssh
           readOnly: true
@@ -1479,9 +1467,6 @@ presubmits:
           value: /root/.cache/bazel
         image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-1.7
         volumeMounts:
-        - mountPath: /etc/service-account
-          name: service
-          readOnly: true
         - mountPath: /etc/ssh-key-secret
           name: ssh
           readOnly: true
@@ -1542,9 +1527,6 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: /etc/service-account
-          name: service
-          readOnly: true
         - mountPath: /etc/ssh-key-secret
           name: ssh
           readOnly: true
@@ -1602,9 +1584,6 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: /etc/service-account
-          name: service
-          readOnly: true
         - mountPath: /etc/ssh-key-secret
           name: ssh
           readOnly: true
@@ -1666,9 +1645,6 @@ presubmits:
           value: /root/.cache/bazel
         image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
         volumeMounts:
-        - mountPath: /etc/service-account
-          name: service
-          readOnly: true
         - mountPath: /etc/ssh-key-secret
           name: ssh
           readOnly: true
@@ -1725,9 +1701,6 @@ presubmits:
           value: /root/.cache/bazel
         image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-1.8
         volumeMounts:
-        - mountPath: /etc/service-account
-          name: service
-          readOnly: true
         - mountPath: /etc/ssh-key-secret
           name: ssh
           readOnly: true
@@ -1784,9 +1757,6 @@ presubmits:
           value: /root/.cache/bazel
         image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-1.7
         volumeMounts:
-        - mountPath: /etc/service-account
-          name: service
-          readOnly: true
         - mountPath: /etc/ssh-key-secret
           name: ssh
           readOnly: true
@@ -1847,9 +1817,6 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: /etc/service-account
-          name: service
-          readOnly: true
         - mountPath: /etc/ssh-key-secret
           name: ssh
           readOnly: true
@@ -1907,9 +1874,6 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: /etc/service-account
-          name: service
-          readOnly: true
         - mountPath: /etc/ssh-key-secret
           name: ssh
           readOnly: true
@@ -1971,9 +1935,6 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: /etc/service-account
-          name: service
-          readOnly: true
         - mountPath: /etc/aws-ssh
           name: aws-ssh
           readOnly: true
@@ -2039,9 +2000,6 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: /etc/service-account
-          name: service
-          readOnly: true
         - mountPath: /etc/aws-ssh
           name: aws-ssh
           readOnly: true
@@ -2107,9 +2065,6 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: /etc/service-account
-          name: service
-          readOnly: true
         - mountPath: /etc/aws-ssh
           name: aws-ssh
           readOnly: true
@@ -2180,9 +2135,6 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: /etc/service-account
-          name: service
-          readOnly: true
         - mountPath: /etc/ssh-key-secret
           name: ssh
           readOnly: true
@@ -2247,9 +2199,6 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: /etc/service-account
-          name: service
-          readOnly: true
         - mountPath: /etc/ssh-key-secret
           name: ssh
           readOnly: true
@@ -2314,9 +2263,6 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: /etc/service-account
-          name: service
-          readOnly: true
         - mountPath: /etc/ssh-key-secret
           name: ssh
           readOnly: true
@@ -2384,9 +2330,6 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: /etc/service-account
-          name: service
-          readOnly: true
         - mountPath: /etc/ssh-key-secret
           name: ssh
           readOnly: true
@@ -2451,9 +2394,6 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: /etc/service-account
-          name: service
-          readOnly: true
         - mountPath: /etc/ssh-key-secret
           name: ssh
           readOnly: true
@@ -2518,9 +2458,6 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: /etc/service-account
-          name: service
-          readOnly: true
         - mountPath: /etc/ssh-key-secret
           name: ssh
           readOnly: true
@@ -2586,9 +2523,6 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: /etc/service-account
-          name: service
-          readOnly: true
         - mountPath: /etc/ssh-key-secret
           name: ssh
           readOnly: true
@@ -2647,9 +2581,6 @@ presubmits:
         - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
           value: /etc/ssh-key-secret/ssh-public
         volumeMounts:
-        - mountPath: /etc/service-account
-          name: service
-          readOnly: true
         - mountPath: /etc/ssh-key-secret
           name: ssh
           readOnly: true
@@ -2702,9 +2633,6 @@ presubmits:
         - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
           value: /etc/ssh-key-secret/ssh-public
         volumeMounts:
-        - mountPath: /etc/service-account
-          name: service
-          readOnly: true
         - mountPath: /etc/ssh-key-secret
           name: ssh
           readOnly: true
@@ -2757,9 +2685,6 @@ presubmits:
         - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
           value: /etc/ssh-key-secret/ssh-public
         volumeMounts:
-        - mountPath: /etc/service-account
-          name: service
-          readOnly: true
         - mountPath: /etc/ssh-key-secret
           name: ssh
           readOnly: true
@@ -2812,9 +2737,6 @@ presubmits:
         - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
           value: /etc/ssh-key-secret/ssh-public
         volumeMounts:
-        - mountPath: /etc/service-account
-          name: service
-          readOnly: true
         - mountPath: /etc/ssh-key-secret
           name: ssh
           readOnly: true
@@ -3535,9 +3457,6 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: /etc/service-account
-          name: service
-          readOnly: true
         - mountPath: /etc/ssh-key-secret
           name: ssh
           readOnly: true
@@ -3593,9 +3512,6 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: /etc/service-account
-          name: service
-          readOnly: true
         - mountPath: /etc/ssh-key-secret
           name: ssh
           readOnly: true
@@ -3649,9 +3565,6 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: /etc/service-account
-          name: service
-          readOnly: true
         - mountPath: /etc/ssh-key-secret
           name: ssh
           readOnly: true
@@ -3705,9 +3618,6 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: /etc/service-account
-          name: service
-          readOnly: true
         - mountPath: /etc/ssh-key-secret
           name: ssh
           readOnly: true
@@ -3765,9 +3675,6 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: /etc/service-account
-          name: service
-          readOnly: true
         - mountPath: /etc/ssh-key-secret
           name: ssh
           readOnly: true
@@ -3823,9 +3730,6 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: /etc/service-account
-          name: service
-          readOnly: true
         - mountPath: /etc/ssh-key-secret
           name: ssh
           readOnly: true
@@ -3881,9 +3785,6 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: /etc/service-account
-          name: service
-          readOnly: true
         - mountPath: /etc/ssh-key-secret
           name: ssh
           readOnly: true
@@ -3937,9 +3838,6 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: /etc/service-account
-          name: service
-          readOnly: true
         - mountPath: /etc/ssh-key-secret
           name: ssh
           readOnly: true
@@ -3993,9 +3891,6 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: /etc/service-account
-          name: service
-          readOnly: true
         - mountPath: /etc/ssh-key-secret
           name: ssh
           readOnly: true
@@ -4053,9 +3948,6 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: /etc/service-account
-          name: service
-          readOnly: true
         - mountPath: /etc/ssh-key-secret
           name: ssh
           readOnly: true
@@ -4111,9 +4003,6 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: /etc/service-account
-          name: service
-          readOnly: true
         - mountPath: /etc/ssh-key-secret
           name: ssh
           readOnly: true
@@ -4173,9 +4062,6 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: /etc/service-account
-          name: service
-          readOnly: true
         - mountPath: /etc/aws-ssh
           name: aws-ssh
           readOnly: true
@@ -4240,9 +4126,6 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: /etc/service-account
-          name: service
-          readOnly: true
         - mountPath: /etc/aws-ssh
           name: aws-ssh
           readOnly: true
@@ -4307,9 +4190,6 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: /etc/service-account
-          name: service
-          readOnly: true
         - mountPath: /etc/aws-ssh
           name: aws-ssh
           readOnly: true
@@ -4376,9 +4256,6 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: /etc/service-account
-          name: service
-          readOnly: true
         - mountPath: /etc/ssh-key-secret
           name: ssh
           readOnly: true
@@ -4440,9 +4317,6 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: /etc/service-account
-          name: service
-          readOnly: true
         - mountPath: /etc/ssh-key-secret
           name: ssh
           readOnly: true
@@ -4504,9 +4378,6 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: /etc/service-account
-          name: service
-          readOnly: true
         - mountPath: /etc/ssh-key-secret
           name: ssh
           readOnly: true
@@ -4570,9 +4441,6 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: /etc/service-account
-          name: service
-          readOnly: true
         - mountPath: /etc/ssh-key-secret
           name: ssh
           readOnly: true
@@ -4634,9 +4502,6 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: /etc/service-account
-          name: service
-          readOnly: true
         - mountPath: /etc/ssh-key-secret
           name: ssh
           readOnly: true
@@ -4698,9 +4563,6 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: /etc/service-account
-          name: service
-          readOnly: true
         - mountPath: /etc/ssh-key-secret
           name: ssh
           readOnly: true
@@ -4762,9 +4624,6 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: /etc/service-account
-          name: service
-          readOnly: true
         - mountPath: /etc/ssh-key-secret
           name: ssh
           readOnly: true
@@ -4825,9 +4684,6 @@ presubmits:
           requests:
             memory: 6Gi
         volumeMounts:
-        - mountPath: /etc/service-account
-          name: service
-          readOnly: true
         - mountPath: /etc/ssh-key-secret
           name: ssh
           readOnly: true
@@ -4882,9 +4738,6 @@ presubmits:
           requests:
             memory: 6Gi
         volumeMounts:
-        - mountPath: /etc/service-account
-          name: service
-          readOnly: true
         - mountPath: /etc/ssh-key-secret
           name: ssh
           readOnly: true
@@ -4939,9 +4792,6 @@ presubmits:
           requests:
             memory: 6Gi
         volumeMounts:
-        - mountPath: /etc/service-account
-          name: service
-          readOnly: true
         - mountPath: /etc/ssh-key-secret
           name: ssh
           readOnly: true
@@ -4993,9 +4843,6 @@ presubmits:
         name: ""
         resources: {}
         volumeMounts:
-        - mountPath: /etc/service-account
-          name: service
-          readOnly: true
         - mountPath: /etc/ssh-key-secret
           name: ssh
           readOnly: true
@@ -6101,9 +5948,6 @@ periodics:
         value: prow
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -6130,9 +5974,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -6161,9 +6002,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -6192,9 +6030,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -6223,9 +6058,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -6252,9 +6084,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -6283,9 +6112,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -6314,9 +6140,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -6345,9 +6168,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -6376,9 +6196,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -6407,9 +6224,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -6436,9 +6250,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -6465,9 +6276,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -6496,9 +6304,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -6527,9 +6332,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -6556,9 +6358,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -6587,9 +6386,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -6760,9 +6556,6 @@ periodics:
         privileged: true
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -6799,9 +6592,6 @@ periodics:
         privileged: true
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -7240,9 +7030,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -7271,9 +7058,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -7302,9 +7086,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -7333,9 +7114,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -7364,9 +7142,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -7395,9 +7170,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -7426,9 +7198,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -7457,9 +7226,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -7488,9 +7254,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -7519,9 +7282,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -7551,9 +7311,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
       imagePullPolicy: Always
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -7584,9 +7341,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -7615,9 +7369,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -7648,9 +7399,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -7679,9 +7427,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -7712,9 +7457,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -7745,9 +7487,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -7778,9 +7517,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -7809,9 +7545,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -7842,9 +7575,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -7873,9 +7603,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -7906,9 +7633,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -7939,9 +7663,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -7972,9 +7693,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -8003,9 +7721,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -8036,9 +7751,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -8067,9 +7779,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -8100,9 +7809,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -8133,9 +7839,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -8166,9 +7869,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -8197,9 +7897,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -8230,9 +7927,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -8261,9 +7955,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -8294,9 +7985,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -8327,9 +8015,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -8358,9 +8043,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -8391,9 +8073,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -8424,9 +8103,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -8455,9 +8131,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -8486,9 +8159,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -8519,9 +8189,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -8552,9 +8219,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -8583,9 +8247,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -8616,9 +8277,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -8649,9 +8307,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -8680,9 +8335,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -8713,9 +8365,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -8746,9 +8395,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -8777,9 +8423,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -8810,9 +8453,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -8843,9 +8483,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -8874,9 +8511,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -8907,9 +8541,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -8940,9 +8571,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -8971,9 +8599,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -9004,9 +8629,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -9037,9 +8659,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -9068,9 +8687,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -9101,9 +8717,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -9134,9 +8747,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -9165,9 +8775,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -9198,9 +8805,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -9231,9 +8835,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -9262,9 +8863,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -9295,9 +8893,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -9328,9 +8923,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -9359,9 +8951,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -9392,9 +8981,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -9425,9 +9011,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -9456,9 +9039,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -9489,9 +9069,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -9522,9 +9099,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -9553,9 +9127,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -9586,9 +9157,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -9619,9 +9187,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -9650,9 +9215,6 @@ periodics:
         value: prow
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -9681,9 +9243,6 @@ periodics:
         value: prow
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -9712,9 +9271,6 @@ periodics:
         value: prow
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -9743,9 +9299,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -9774,9 +9327,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -9805,9 +9355,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -9836,9 +9383,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -9867,9 +9411,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -9898,9 +9439,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -9929,9 +9467,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -9960,9 +9495,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -9991,9 +9523,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -10022,9 +9551,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -10053,9 +9579,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -10084,9 +9607,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -10115,9 +9635,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -10146,9 +9663,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -10177,9 +9691,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -10208,9 +9719,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -10239,9 +9747,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -10270,9 +9775,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -10301,9 +9803,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -10332,9 +9831,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -10363,9 +9859,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -10394,9 +9887,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -10425,9 +9915,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -10456,9 +9943,6 @@ periodics:
         value: prow
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -10487,9 +9971,6 @@ periodics:
         value: prow
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -10518,9 +9999,6 @@ periodics:
         value: prow
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -10549,9 +10027,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -10580,9 +10055,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -10616,9 +10088,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
       imagePullPolicy: Always
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -10648,9 +10117,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
       imagePullPolicy: Always
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -10681,9 +10147,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -10716,9 +10179,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -10747,9 +10207,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -10778,9 +10235,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -10809,9 +10263,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -10838,9 +10289,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -10867,9 +10315,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -10898,9 +10343,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -10929,9 +10371,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -10960,9 +10399,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -10991,9 +10427,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -11022,9 +10455,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -11053,9 +10483,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -11084,9 +10511,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -11115,9 +10539,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -11147,9 +10568,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
       imagePullPolicy: Always
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -11178,9 +10596,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -11215,9 +10630,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -11250,9 +10662,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -11281,9 +10690,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -11312,9 +10718,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -11343,9 +10746,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -11374,9 +10774,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -11405,9 +10802,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -11436,9 +10830,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -11467,9 +10858,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -11498,9 +10886,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -11529,9 +10914,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -11560,9 +10942,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -11591,9 +10970,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -11622,9 +10998,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -11653,9 +11026,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -11684,9 +11054,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -11715,9 +11082,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -11746,9 +11110,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -11775,9 +11136,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -11806,9 +11164,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -11839,9 +11194,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -11872,9 +11224,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -11903,9 +11252,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -11936,9 +11282,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -11969,9 +11312,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -12000,9 +11340,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -12033,9 +11370,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -12066,9 +11400,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -12097,9 +11428,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -12130,9 +11458,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -12163,9 +11488,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -12194,9 +11516,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -12227,9 +11546,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -12260,9 +11576,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -12291,9 +11604,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -12324,9 +11634,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -12357,9 +11664,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -12388,9 +11692,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -12421,9 +11722,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -12454,9 +11752,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -12485,9 +11780,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -12518,9 +11810,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -12551,9 +11840,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -12582,9 +11868,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -12615,9 +11898,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -12648,9 +11928,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -12679,9 +11956,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -12710,9 +11984,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -12739,9 +12010,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -12770,9 +12038,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -12799,9 +12064,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -12830,9 +12092,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -12861,9 +12120,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -12892,9 +12148,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -12923,9 +12176,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -12954,9 +12204,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -12985,9 +12232,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -13016,9 +12260,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -13047,9 +12288,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -13078,9 +12316,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -13109,9 +12344,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -13138,9 +12370,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -13171,9 +12400,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -13205,9 +12431,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
       imagePullPolicy: Always
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -13238,9 +12461,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -13271,9 +12491,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -13300,9 +12517,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -13331,9 +12545,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -13362,9 +12573,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -13393,9 +12601,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -13422,9 +12627,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -13453,9 +12655,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -13484,9 +12683,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -13515,9 +12711,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -13549,9 +12742,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -13580,9 +12770,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -13609,9 +12796,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -13640,9 +12824,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -13671,9 +12852,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -13702,9 +12880,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -13731,9 +12906,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -13762,9 +12934,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -13793,9 +12962,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -13824,9 +12990,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -13855,9 +13018,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -13886,9 +13046,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -13917,9 +13074,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -13948,9 +13102,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -13979,9 +13130,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -14010,9 +13158,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -14042,9 +13187,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
       imagePullPolicy: Always
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -14073,9 +13215,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -14106,9 +13245,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -14137,9 +13273,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -14170,9 +13303,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -14203,9 +13333,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -14234,9 +13361,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -14267,9 +13391,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -14298,9 +13419,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -14331,9 +13449,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -14364,9 +13479,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -14395,9 +13507,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -14428,9 +13537,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -14459,9 +13565,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -14492,9 +13595,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -14525,9 +13625,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -14556,9 +13653,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -14589,9 +13683,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -14620,9 +13711,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -14653,9 +13741,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -14686,9 +13771,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -14717,9 +13799,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -14748,9 +13827,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -14779,9 +13855,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -14812,9 +13885,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -14845,9 +13915,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -14878,9 +13945,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -14911,9 +13975,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -14944,9 +14005,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -14977,9 +14035,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -15010,9 +14065,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -15043,9 +14095,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -15076,9 +14125,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -15109,9 +14155,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -15140,9 +14183,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -15171,9 +14211,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -15202,9 +14239,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -15233,9 +14267,6 @@ periodics:
         value: prow
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -15264,9 +14295,6 @@ periodics:
         value: prow
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -15295,9 +14323,6 @@ periodics:
         value: prow
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -15326,9 +14351,6 @@ periodics:
         value: prow
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -15357,9 +14379,6 @@ periodics:
         value: prow
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -15388,9 +14407,6 @@ periodics:
         value: prow
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -15419,9 +14435,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -15451,9 +14464,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -15482,9 +14492,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -15513,9 +14520,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -15544,9 +14548,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -15575,9 +14576,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -15606,9 +14604,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -15637,9 +14632,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -15668,9 +14660,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -15699,9 +14688,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -15730,9 +14716,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -15761,9 +14744,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -15792,9 +14772,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -15823,9 +14800,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -15854,9 +14828,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -15885,9 +14856,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -15916,9 +14884,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -15947,9 +14912,6 @@ periodics:
         value: prow
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -15978,9 +14940,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -16014,9 +14973,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
       imagePullPolicy: Always
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -16047,9 +15003,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -16083,9 +15036,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
       imagePullPolicy: Always
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -16114,9 +15064,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -16145,9 +15092,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -16176,9 +15120,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -16207,9 +15148,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -16238,9 +15176,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -16269,9 +15204,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -16300,9 +15232,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -16331,9 +15260,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -16365,9 +15291,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -16400,9 +15323,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -16429,9 +15349,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -16460,9 +15377,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -16491,9 +15405,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -16520,9 +15431,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -16551,9 +15459,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -16582,9 +15487,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -16613,9 +15515,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -16644,9 +15543,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -16675,9 +15571,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -16706,9 +15599,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -16737,9 +15627,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -16768,9 +15655,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -16799,9 +15683,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -16830,9 +15711,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -16861,9 +15739,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -16892,9 +15767,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -16923,9 +15795,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -16954,9 +15823,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -16985,9 +15851,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -17016,9 +15879,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -17047,9 +15907,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -17078,9 +15935,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -17109,9 +15963,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -17140,9 +15991,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -17171,9 +16019,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -17202,9 +16047,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -17233,9 +16075,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -17264,9 +16103,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -17295,9 +16131,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -17328,9 +16161,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -17359,9 +16189,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -17390,9 +16217,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -17423,9 +16247,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -17456,9 +16277,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -17487,9 +16305,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -17520,9 +16335,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -17553,9 +16365,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -17586,9 +16395,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -17619,9 +16425,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -17650,9 +16453,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -17681,9 +16481,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -17715,9 +16512,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -17748,9 +16542,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -17779,9 +16570,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -17812,9 +16600,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -17845,9 +16630,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -17878,9 +16660,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -17911,9 +16690,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -17942,9 +16718,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -17973,9 +16746,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -18006,9 +16776,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -18039,9 +16806,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -18070,9 +16834,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -18103,9 +16864,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -18136,9 +16894,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -18169,9 +16924,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -18202,9 +16954,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -18233,9 +16982,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -18264,9 +17010,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -18297,9 +17040,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -18330,9 +17070,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -18361,9 +17098,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -18394,9 +17128,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -18427,9 +17158,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -18460,9 +17188,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -18491,9 +17216,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -18524,9 +17246,6 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/aws-ssh
         name: aws-ssh
         readOnly: true
@@ -18564,9 +17283,6 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/aws-ssh
         name: aws-ssh
         readOnly: true
@@ -18605,9 +17321,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
       imagePullPolicy: Always
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/aws-ssh
         name: aws-ssh
         readOnly: true
@@ -18646,9 +17359,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
       imagePullPolicy: Always
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/aws-ssh
         name: aws-ssh
         readOnly: true
@@ -18687,9 +17397,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
       imagePullPolicy: Always
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/aws-ssh
         name: aws-ssh
         readOnly: true
@@ -18728,9 +17435,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
       imagePullPolicy: Always
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/aws-ssh
         name: aws-ssh
         readOnly: true
@@ -18769,9 +17473,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
       imagePullPolicy: Always
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/aws-ssh
         name: aws-ssh
         readOnly: true
@@ -18810,9 +17511,6 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/aws-ssh
         name: aws-ssh
         readOnly: true
@@ -18850,9 +17548,6 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/aws-ssh
         name: aws-ssh
         readOnly: true
@@ -18890,9 +17585,6 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/aws-ssh
         name: aws-ssh
         readOnly: true
@@ -18930,9 +17622,6 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180130-eed26a9c1-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/aws-ssh
         name: aws-ssh
         readOnly: true
@@ -18970,9 +17659,6 @@ periodics:
         value: /etc/aws-ssh/aws-ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/aws-ssh
         name: aws-ssh
         readOnly: true
@@ -19008,9 +17694,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -19039,9 +17722,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -19070,9 +17750,6 @@ periodics:
         value: /etc/ssh-key-secret/ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -19165,9 +17842,6 @@ periodics:
         value: /go
       image: gcr.io/k8s-testimages/kubekins-e2e:v20171220-29cb083c9-1.10
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -19201,9 +17875,6 @@ periodics:
         value: /go
       image: gcr.io/k8s-testimages/kubekins-e2e:v20171220-29cb083c9-1.10
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -19235,9 +17906,6 @@ periodics:
         value: /go
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -19271,9 +17939,6 @@ periodics:
         value: /go
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -19305,9 +17970,6 @@ periodics:
         value: /go
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-1.9
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -19341,9 +18003,6 @@ periodics:
         value: /go
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-1.9
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -19375,9 +18034,6 @@ periodics:
         value: /go
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-1.8
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -19411,9 +18067,6 @@ periodics:
         value: /go
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-1.8
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -19445,9 +18098,6 @@ periodics:
         value: /go
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-1.7
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -19481,9 +18131,6 @@ periodics:
         value: /go
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-1.7
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -19515,9 +18162,6 @@ periodics:
         value: /go
       image: gcr.io/k8s-testimages/kubekins-e2e:v20171220-29cb083c9-1.10
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -19551,9 +18195,6 @@ periodics:
         value: /go
       image: gcr.io/k8s-testimages/kubekins-e2e:v20171220-29cb083c9-1.10
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -19585,9 +18226,6 @@ periodics:
         value: /go
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -19621,9 +18259,6 @@ periodics:
         value: /go
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -19655,9 +18290,6 @@ periodics:
         value: /go
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-1.9
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -19691,9 +18323,6 @@ periodics:
         value: /go
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-1.9
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -19725,9 +18354,6 @@ periodics:
         value: /go
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-1.8
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -19761,9 +18387,6 @@ periodics:
         value: /go
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-1.8
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -19795,9 +18418,6 @@ periodics:
         value: /go
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-1.7
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -19831,9 +18451,6 @@ periodics:
         value: /go
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-1.7
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -19867,9 +18484,6 @@ periodics:
         value: /go
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -19903,9 +18517,6 @@ periodics:
         value: /go
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -19939,9 +18550,6 @@ periodics:
         value: /go
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-1.9
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -19975,9 +18583,6 @@ periodics:
         value: /go
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-1.9
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -20011,9 +18616,6 @@ periodics:
         value: /go
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-1.8
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -20047,9 +18649,6 @@ periodics:
         value: /go
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-1.8
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -20083,9 +18682,6 @@ periodics:
         value: /go
       image: gcr.io/k8s-testimages/kubekins-e2e:v20171220-29cb083c9-1.10
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -20119,9 +18715,6 @@ periodics:
         value: /go
       image: gcr.io/k8s-testimages/kubekins-e2e:v20171220-29cb083c9-1.10
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -20155,9 +18748,6 @@ periodics:
         value: /go
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -20191,9 +18781,6 @@ periodics:
         value: /go
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -20227,9 +18814,6 @@ periodics:
         value: /go
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -20263,9 +18847,6 @@ periodics:
         value: /go
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -20299,9 +18880,6 @@ periodics:
         value: /go
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-1.9
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -20335,9 +18913,6 @@ periodics:
         value: /go
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-1.9
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -20371,9 +18946,6 @@ periodics:
         value: /go
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-1.8
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -20407,9 +18979,6 @@ periodics:
         value: /go
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-1.8
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -21085,9 +19654,6 @@ periodics:
       # TODO(krzyzacy): use stable tag once verify it works
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -21117,9 +19683,6 @@ periodics:
       # TODO(krzyzacy): use stable tag once verify it works
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -21149,9 +19712,6 @@ periodics:
       # TODO(krzyzacy): use stable tag once verify it works
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -21181,9 +19741,6 @@ periodics:
       # TODO(krzyzacy): use stable tag once verify it works
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -21213,9 +19770,6 @@ periodics:
       # TODO(krzyzacy): use stable tag once verify it works
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -21245,9 +19799,6 @@ periodics:
       # TODO(krzyzacy): use stable tag once verify it works
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -21277,9 +19828,6 @@ periodics:
       # TODO(krzyzacy): use stable tag once verify it works
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
@@ -21511,9 +20059,6 @@ periodics:
         value: /workspace/.aws/credentials
       image: gcr.io/k8s-test-infra-aws/aws-janitor:0.3
       volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
       - mountPath: /workspace/.aws
         name: aws-cred
         readOnly: true
@@ -21537,11 +20082,7 @@ periodics:
       - --upload=gs://kubernetes-jenkins/logs
       env:
       image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
-      volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
-    volumes:
+
 - interval: 1h
   agent: kubernetes
   name: maintenance-pull-janitor
@@ -21556,11 +20097,7 @@ periodics:
       - --upload=gs://kubernetes-jenkins/logs
       env:
       image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
-      volumeMounts:
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
-    volumes:
+
 - name: metrics-bigquery
   interval: 24h
   agent: kubernetes
