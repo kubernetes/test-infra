@@ -1,3 +1,27 @@
+load("@io_bazel_rules_docker//docker:docker.bzl", "docker_bundle")
+load("@io_bazel_rules_docker//contrib:push-all.bzl", "docker_push")
+load("@io_bazel_rules_docker//go:image.bzl", "go_image")
+
+docker_bundle(
+    name = "bundle",
+    images = {
+        "{STABLE_PROW_REPO}/needs-rebase:{DOCKER_TAG}": ":needs-rebase-image",
+        "{STABLE_PROW_REPO}/needs-rebase:latest": ":needs-rebase-image",
+        "{STABLE_PROW_REPO}/needs-rebase:latest-{BUILD_USER}": ":needs-rebase-image",
+    },
+    stamp = True,
+)
+
+docker_push(
+    name = "push",
+    bundle = ":bundle",
+)
+
+go_image(
+    name = "needs-rebase-image",
+    binary = ":needs-rebase",
+)
+
 load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
 
 go_library(
