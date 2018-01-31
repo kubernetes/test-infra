@@ -824,3 +824,57 @@ func TestLatestUsesImagePullPolicy(t *testing.T) {
 		}
 	}
 }
+
+// checkKubekinsPresets returns an error if a spec references to kubekins-e2e|bootstrap image,
+// but doesn't use service preset
+func checkKubekinsPresets(spec *v1.PodSpec, labels map[string]string) error {
+	ok := true
+	for _, container := range spec.Containers {
+		if strings.Contains(container.Image, "kubekins-e2e") || strings.Contains(container.Image, "bootstrap") {
+			ok = false
+			for key, val := range labels {
+				if (key == "preset" && val == "service-account") ||
+					(key == "preset-gke-alpha-service" && val == "true") {
+					ok = true
+				}
+			}
+		}
+	}
+
+	if !ok {
+		return fmt.Errorf("cannot find service account preset")
+	}
+
+	return nil
+}
+
+// TestKubekinsPresets makes sure jobs that uses kubekins-e2e image has the right service account preset
+func TestKubekinsPresets(t *testing.T) {
+	for _, pres := range c.Presubmits {
+		for _, presubmit := range pres {
+			if presubmit.Spec != nil {
+				if err := checkKubekinsPresets(presubmit.Spec, presubmit.Labels); err != nil {
+					t.Errorf("Error in presubmit %q: %v", presubmit.Name, err)
+				}
+			}
+		}
+	}
+
+	for _, posts := range c.Postsubmits {
+		for _, postsubmit := range posts {
+			if postsubmit.Spec != nil {
+				if err := checkKubekinsPresets(postsubmit.Spec, postsubmit.Labels); err != nil {
+					t.Errorf("Error in postsubmit %q: %v", postsubmit.Name, err)
+				}
+			}
+		}
+	}
+
+	for _, periodic := range c.Periodics {
+		if periodic.Spec != nil {
+			if err := checkKubekinsPresets(periodic.Spec, periodic.Labels); err != nil {
+				t.Errorf("Error in periodic %q: %v", periodic.Name, err)
+			}
+		}
+	}
+}

@@ -111,6 +111,19 @@ presets:
     mountPath: /etc/service-account
     readOnly: true
 - labels:
+    preset-gke-alpha-service: true
+  env:
+  - name: GOOGLE_APPLICATION_CREDENTIALS
+    value: /etc/service-account/service-account.json
+  volumes:
+  - name: service
+    secret:
+      secretName: gke-alpha-service-account
+  volumeMounts:
+  - name: service
+    mountPath: /etc/service-account
+    readOnly: true
+- labels:
     ssh-preset: k8s-ssh
   env:
   - name: USER
@@ -5974,6 +5987,8 @@ periodics:
 - interval: 2h
   agent: kubernetes
   name: ci-cri-containerd-e2e-gce-multizone
+  labels:
+    preset: service-account
   spec:
     containers:
     - args:
@@ -6084,6 +6099,8 @@ periodics:
 - interval: 2h
   agent: kubernetes
   name: ci-cri-containerd-e2e-gci-gce-es-logging
+  labels:
+    preset: service-account
   spec:
     containers:
     - args:
@@ -6362,6 +6379,8 @@ periodics:
 - interval: 2h
   agent: kubernetes
   name: ci-cri-containerd-e2e-gci-gce-statefulset
+  labels:
+    preset: service-account
   spec:
     containers:
     - args:
@@ -9377,6 +9396,8 @@ periodics:
 - interval: 24h
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-min-node-permissions
+  labels:
+    preset: service-account
   spec:
     containers:
     - args:
@@ -9403,6 +9424,8 @@ periodics:
 - interval: 30m
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-multizone
+  labels:
+    preset: service-account
   spec:
     containers:
     - args:
@@ -10713,6 +10736,8 @@ periodics:
 - interval: 30m
   agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-autoscaling
+  labels:
+    preset: service-account
   spec:
     containers:
     - args:
@@ -10767,6 +10792,8 @@ periodics:
 - interval: 30m
   agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-es-logging
+  labels:
+    preset: service-account
   spec:
     containers:
     - args:
@@ -11073,6 +11100,8 @@ periodics:
 - interval: 30m
   agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-reboot
+  labels:
+    preset: service-account
   spec:
     containers:
     - args:
@@ -11220,6 +11249,8 @@ periodics:
 - interval: 30m
   agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-sd-logging
+  labels:
+    preset: service-account
   spec:
     containers:
     - args:
@@ -11414,14 +11445,14 @@ periodics:
 - interval: 30m
   agent: kubernetes
   name: ci-kubernetes-e2e-gci-gke-autoscaling
+  labels:
+    preset-gke-alpha-service: true
   spec:
     containers:
     - args:
       - --timeout=420
       - --bare
       env:
-      - name: GOOGLE_APPLICATION_CREDENTIALS
-        value: /etc/service-account/service-account.json
       - name: USER
         value: prow
       - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
@@ -11433,13 +11464,7 @@ periodics:
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
     volumes:
-    - name: service
-      secret:
-        secretName: gke-alpha-service-account
     - name: ssh
       secret:
         defaultMode: 256
@@ -11504,6 +11529,8 @@ periodics:
 - interval: 30m
   agent: kubernetes
   name: ci-kubernetes-e2e-gci-gke-multizone
+  labels:
+    preset: service-account
   spec:
     containers:
     - args:
@@ -11614,6 +11641,8 @@ periodics:
 - interval: 30m
   agent: kubernetes
   name: ci-kubernetes-e2e-gci-gke-reboot
+  labels:
+    preset: service-account
   spec:
     containers:
     - args:
@@ -13532,14 +13561,14 @@ periodics:
 - interval: 1h
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-regional
+  labels:
+    preset-gke-alpha-service: true
   spec:
     containers:
     - args:
       - --timeout=170
       - --bare
       env:
-      - name: GOOGLE_APPLICATION_CREDENTIALS
-        value: /etc/service-account/service-account.json
       - name: USER
         value: prow
       - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
@@ -13551,13 +13580,7 @@ periodics:
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
-      - mountPath: /etc/service-account
-        name: service
-        readOnly: true
     volumes:
-    - name: service
-      secret:
-        secretName: gke-alpha-service-account
     - name: ssh
       secret:
         defaultMode: 256
