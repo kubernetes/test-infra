@@ -48,6 +48,7 @@ var (
 	gkeCreateArgs                  = flag.String("gke-create-args", "", "(gke only) (deprecated, use a modified --gke-create-command') Additional arguments passed directly to 'gcloud container clusters create'")
 	gkeCommandGroup                = flag.String("gke-command-group", "", "(gke only) Use a different gcloud track (e.g. 'alpha') for all 'gcloud container' commands. Note: This is added to --gke-create-command on create. You should only use --gke-command-group if you need to change the gcloud track for *every* gcloud container command.")
 	gkeCreateCommand               = flag.String("gke-create-command", defaultCreate, "(gke only) gcloud subcommand used to create a cluster. Modify if you need to pass arbitrary arguments to create.")
+	gkeCustomSubnet                = flag.String("gke-custom-subnet", "", "(gke only) if specified, we create a custom subnet with the specified options and use it for the gke cluster. The format should be '<subnet-name> --region=<subnet-gcp-region> --range=<subnet-cidr> <any other optional params>'.")
 	gkeSingleZoneNodeInstanceGroup = flag.Bool("gke-single-zone-node-instance-group", true, "(gke only) Add instance groups from a single zone to the NODE_INSTANCE_GROUP env variable.")
 
 	// poolRe matches instance group URLs of the form `https://www.googleapis.com/compute/v1/projects/some-project/zones/a-zone/instanceGroupManagers/gke-some-cluster-some-pool-90fcb815-grp`. Match meaning:
@@ -74,6 +75,8 @@ type gkeDeployer struct {
 	cluster                     string
 	shape                       map[string]gkeNodePool
 	network                     string
+	subnetwork                  string
+	subnetworkRegion            string
 	image                       string
 	commandGroup                []string
 	createCommand               []string
@@ -259,6 +262,18 @@ func (g *gkeDeployer) Up() error {
 			return err
 		}
 	}
+	// Create a custom subnet in that network if it was asked for.
+	if *gkeCustomSubnet != "" {
+		customSubnetFields := strings.Fields(*gkeCustomSubnet)
+		createSubnetCommand := []string{"compute", "networks", "subnets", "create"}
+		createSubnetCommand = append(createSubnetCommand, "--project="+g.project, "--network="+g.network)
+		createSubnetCommand = append(createSubnetCommand, customSubnetFields...)
+		if err := finishRunning(exec.Command("gcloud", createSubnetCommand...)); err != nil {
+			return err
+		}
+		g.subnetwork = customSubnetFields[0]
+		g.subnetworkRegion = customSubnetFields[1]
+	}
 
 	def := g.shape[defaultPool]
 	args := make([]string, len(g.createCommand))
@@ -271,6 +286,9 @@ func (g *gkeDeployer) Up() error {
 		"--num-nodes="+strconv.Itoa(def.Nodes),
 		"--network="+g.network,
 	)
+	if g.subnetwork != "" {
+		args = append(args, "--subnetwork="+g.subnetwork)
+	}
 	if g.additionalZones != "" {
 		args = append(args, "--additional-zones="+g.additionalZones)
 		if err := os.Setenv("MULTIZONE", "true"); err != nil {
@@ -514,6 +532,11 @@ func (g *gkeDeployer) Down() error {
 			g.location)...))
 	errFirewall := finishRunning(exec.Command("gcloud", "compute", "firewall-rules", "delete", "-q", firewall,
 		"--project="+g.project))
+	var errSubnet error
+	if g.subnetwork != "" {
+		errSubnet = finishRunning(exec.Command("gcloud", "compute", "networks", "subnets", "delete", "-q", g.subnetwork,
+			g.subnetworkRegion, "--project="+g.project))
+	}
 	errNetwork := finishRunning(exec.Command("gcloud", "compute", "networks", "delete", "-q", g.network,
 		"--project="+g.project))
 	if errCluster != nil {
@@ -521,6 +544,9 @@ func (g *gkeDeployer) Down() error {
 	}
 	if errFirewall != nil {
 		return fmt.Errorf("error deleting firewall: %v", errFirewall)
+	}
+	if errSubnet != nil {
+		return fmt.Errorf("error deleting subnetwork: %v", errSubnet)
 	}
 	if errNetwork != nil {
 		return fmt.Errorf("error deleting network: %v", errNetwork)
