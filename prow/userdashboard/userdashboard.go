@@ -20,7 +20,6 @@ import (
 	"github.com/sirupsen/logrus"
 	"net/http"
 	"k8s.io/test-infra/prow/config"
-	"github.com/gorilla/sessions"
 	"golang.org/x/oauth2"
 	"context"
 	"k8s.io/test-infra/prow/github"
@@ -42,8 +41,7 @@ type UserData struct {
 }
 
 type DashboardAgent struct {
-	cookieStore *sessions.CookieStore
-	gitConfig *config.GitAuthConfig
+	gitConfig *config.GitOAuthConfig
 
 	log *logrus.Entry
 }
@@ -86,10 +84,9 @@ type PullRequestQuery struct {
 	}
 }
 
-func NewDashboardAgent(cookieStore *sessions.CookieStore, config *config.GitAuthConfig, log *logrus.Entry) *DashboardAgent {
+func NewDashboardAgent(config *config.GitOAuthConfig, log *logrus.Entry) *DashboardAgent {
 	return &DashboardAgent{
 		gitConfig: config,
-		cookieStore: cookieStore,
 		log:  log,
 	}
 }
@@ -101,7 +98,7 @@ func (da *DashboardAgent) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, msg, http.StatusInternalServerError)
 	}
 
-	session, err := da.cookieStore.Get(r, da.gitConfig.GitTokenSession)
+	session, err := da.gitConfig.CookieStore.Get(r, da.gitConfig.GitTokenSession)
 	if err != nil {
 		serverError("Error with getting git token session.", err)
 		return

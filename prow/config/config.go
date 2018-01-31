@@ -77,6 +77,8 @@ type Config struct {
 
 	// PushGateway is a prometheus push gateway.
 	PushGateway PushGateway `json:"push_gateway,omitempty"`
+
+	GitOAuthConfig GitOAuthConfig `json:"git_oauth_config,omitempty"`
 }
 
 // PushGateway is a prometheus push gateway.

@@ -40,6 +40,9 @@ import (
 	"k8s.io/test-infra/prow/repoowners"
 	"k8s.io/test-infra/prow/slack"
 	"k8s.io/test-infra/prow/userdashboard"
+	"k8s.io/test-infra/prow/gitoauth"
+	"github.com/gorilla/sessions"
+	"crypto/rand"
 )
 
 var (
@@ -171,8 +174,35 @@ func main() {
 	http.Handle("/hook", server)
 	// Serve plugin help information from /plugin-help.
 	http.Handle("/plugin-help", pluginhelp.NewHelpAgent(pluginAgent, githubClient))
-	// Serve plugin help information from /plugin-help.
-	// http.Handle("/user-dashboard", &userdashboard.DashboardAgent{&userdashboard.UserData{"Hello World!"}})
+
+	secretKey, err := randomSecretKey(64)
+	if err != nil {
+		logger.WithError(err).Fatal("Error random secret key.")
+		return;
+	}
+	cookie := sessions.NewCookieStore(secretKey)
+
+	gitOAuthConfig := &configAgent.Config().GitOAuthConfig
+	gitOAuthConfig.InitGitOAuthConfig(cookie)
+
+	goa := gitoauth.NewGitOAuthAgent(gitOAuthConfig)
+
+	http.Handle("/user-dashboard", userdashboard.NewDashboardAgent(gitOAuthConfig, logrus.WithField("component", "user-dashboard")))
+	// Handles Login Request
+	http.HandleFunc("/user-dashboard/login", goa.HandleLogin);
+	// Handles Login Request
+	http.HandleFunc("/user-dashboard/redirect", goa.HandleRedirect);
 
 	logger.Fatal(http.ListenAndServe(":"+strconv.Itoa(*port), nil))
+}
+
+func randomSecretKey(numBytes int) ([]byte, error) {
+	result := make([]byte, numBytes)
+	_, err := rand.Read(result)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
 }
