@@ -34,9 +34,15 @@ import (
 )
 
 const (
+	// Maximum retries for a request to Jenkins.
+	// Retries on transport failures and 500s.
 	maxRetries = 5
+	// Backoff delay used after a request retry.
+	// Doubles on every retry.
 	retryDelay = 100 * time.Millisecond
-	buildID    = "buildId"
+	// Deprecated: Key for unique build number across Jenkins builds.
+	buildID = "buildId"
+	// Key for unique build number across Jenkins builds.
 	newBuildID = "BUILD_ID"
 )
 
@@ -134,7 +140,10 @@ type Client struct {
 // AuthConfig configures how we auth with Jenkins.
 // Only one of the fields will be non-nil.
 type AuthConfig struct {
-	Basic       *BasicAuthConfig
+	// Basic is used for doing basic auth with Jenkins.
+	Basic *BasicAuthConfig
+	// BearerToken is used for doing oauth-based authentication
+	// with Jenkins. Works ootb with the Openshift Jenkins image.
 	BearerToken *BearerTokenAuthConfig
 }
 
