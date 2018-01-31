@@ -30,3 +30,7 @@ required = [
 [prune]
   unused-packages = true
   go-tests = true
+
+[[constraint]]
+  name = "cloud.google.com/go"
+  version = "0.17.0"
