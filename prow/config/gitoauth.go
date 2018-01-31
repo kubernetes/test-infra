@@ -22,29 +22,33 @@ import (
 	"github.com/gorilla/sessions"
 )
 
-type GitOAuthConfig struct {
-	ClientId string `json:"client_id,omitempty"`
+type Client struct {
+	ClientId string `json:"client_secret,omitempty"`
 	ClientSecret string `json:"client_secret,omitempty"`
+}
 
+type GitOAuthConfig struct {
 	RedirectURL string `json:"redirect_url,omitempty"`
-	Scope []string `json:"scope,omitempty"`
+	Scopes []string `json:"scopes,omitempty"`
 
 	FinalRedirectURL string `json:"final_redirect_url,omitempty"`
 
 	GitTokenSession string `json:"token_session,omitempty"`
 	GitTokenKey string `json:"token_key,omitempty"`
 
+	Client *Client
 	OAuthClient *oauth2.Config
 	CookieStore *sessions.CookieStore
 }
 
-func (gac *GitOAuthConfig) InitGitOAuthConfig(cookie *sessions.CookieStore) {
+func (gac *GitOAuthConfig) InitGitOAuthConfig(client *Client, cookie *sessions.CookieStore) {
+	gac.Client = client
 	gac.CookieStore = cookie
 	gac.OAuthClient = &oauth2.Config{
-			ClientID: gac.ClientId,
-			ClientSecret: gac.ClientSecret,
+			ClientID: gac.Client.ClientId,
+			ClientSecret: gac.Client.ClientSecret,
 			RedirectURL: gac.RedirectURL,
-			Scopes: gac.Scope,
+			Scopes: gac.Scopes,
 			Endpoint: github.Endpoint,
 		}
 }

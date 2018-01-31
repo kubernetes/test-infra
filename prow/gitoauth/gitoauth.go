@@ -41,7 +41,7 @@ func NewGitOAuthAgent(config *config.GitOAuthConfig, logger *logrus.Entry) (*Git
 }
 
 func (ga *GitOAuthAgent) HandleLogin(w http.ResponseWriter, r *http.Request) {
-	sessionId := xsrftoken.Generate(ga.gc.ClientSecret, "","")
+	sessionId := xsrftoken.Generate(ga.gc.Client.ClientSecret, "","")
 
 	oauthSession, err := ga.gc.CookieStore.New(r, sessionId)
 	oauthSession.Options.MaxAge = 10 * 60
@@ -64,7 +64,7 @@ func (ga *GitOAuthAgent) HandleLogin(w http.ResponseWriter, r *http.Request) {
 
 func (ga *GitOAuthAgent) HandleRedirect(w http.ResponseWriter, r *http.Request) {
 	sessionId := r.FormValue("state")
-	if !xsrftoken.Valid(sessionId, ga.gc.ClientSecret, "", "") {
+	if !xsrftoken.Valid(sessionId, ga.gc.Client.ClientSecret, "", "") {
 		ga.serverError(w, "Get session token", error("State token expired"))
 		return
 	}

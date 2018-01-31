@@ -43,6 +43,7 @@ import (
 	"k8s.io/test-infra/prow/gitoauth"
 	"github.com/gorilla/sessions"
 	"crypto/rand"
+	"encoding/json"
 )
 
 var (
@@ -60,6 +61,8 @@ var (
 
 	webhookSecretFile = flag.String("hmac-secret-file", "/etc/webhook/hmac", "Path to the file containing the GitHub HMAC secret.")
 	slackTokenFile    = flag.String("slack-token-file", "", "Path to the file containing the Slack token to use.")
+
+	gitAppClientFile = flag.String("gitapp-client-file", "/ect/github/app", "Path to the file containing the Git App Client secret.")
 )
 
 func main() {
@@ -88,6 +91,13 @@ func main() {
 		logger.WithError(err).Fatal("Could not read oauth secret file.")
 	}
 	oauthSecret := string(bytes.TrimSpace(oauthSecretRaw))
+
+	gitAppClientRaw, err := ioutil.ReadFile(*gitAppClientFile)
+	if err != nil {
+		logger.WithError(err).Fatal("Could not read git app client file.")
+	}
+	var appClient *config.Client
+	json.Unmarshal(bytes.TrimSpace(gitAppClientRaw), appClient)
 
 	var teamToken string
 	if *slackTokenFile != "" {
@@ -183,9 +193,9 @@ func main() {
 	cookie := sessions.NewCookieStore(secretKey)
 
 	gitOAuthConfig := &configAgent.Config().GitOAuthConfig
-	gitOAuthConfig.InitGitOAuthConfig(cookie)
+	gitOAuthConfig.InitGitOAuthConfig(appClient, cookie)
 
-	goa := gitoauth.NewGitOAuthAgent(gitOAuthConfig)
+	goa := gitoauth.NewGitOAuthAgent(gitOAuthConfig, logrus.WithField("component",  "gitoauth"))
 
 	http.Handle("/user-dashboard", userdashboard.NewDashboardAgent(gitOAuthConfig, logrus.WithField("component", "user-dashboard")))
 	// Handles Login Request
