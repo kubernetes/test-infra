@@ -57,6 +57,7 @@ filegroup(
         "//robots/issue-creator:all-srcs",
         "//scenarios:all-srcs",
         "//testgrid/config:all-srcs",
+        "//testgrid/updater:all-srcs",
         "//triage:all-srcs",
         "//velodrome:all-srcs",
         "//vendor:all-srcs",
