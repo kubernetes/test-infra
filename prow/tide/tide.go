@@ -446,6 +446,9 @@ func (c *Controller) pickBatch(sp subpool) ([]PullRequest, error) {
 	if err := r.Config("user.email", "prow@localhost"); err != nil {
 		return nil, err
 	}
+	if err := r.Config("commit.gpgsign", "false"); err != nil {
+		c.logger.Warningf("Cannot set gpgsign=false in gitconfig: %v", err)
+	}
 	if err := r.Checkout(sp.sha); err != nil {
 		return nil, err
 	}
