@@ -6244,6 +6244,8 @@ periodics:
 - interval: 1h
   agent: kubernetes
   name: ci-cri-containerd-e2e-gci-gce-reboot
+  labels:
+    preset: service-account
   spec:
     containers:
     - args:
@@ -6270,6 +6272,8 @@ periodics:
 - interval: 2h
   agent: kubernetes
   name: ci-cri-containerd-e2e-gci-gce-sd-logging
+  labels:
+    preset: service-account
   spec:
     containers:
     - args:
@@ -12685,6 +12689,8 @@ periodics:
 - interval: 30m
   agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-statefulset
+  labels:
+    preset: service-account
   spec:
     containers:
     - args:
@@ -12785,6 +12791,9 @@ periodics:
       volumeMounts:
       - mountPath: /etc/ssh-key-secret
         name: ssh
+        readOnly: true
+      - mountPath: /etc/service-account
+        name: service
         readOnly: true
     volumes:
     - name: service
@@ -15351,6 +15360,9 @@ periodics:
       - mountPath: /etc/ssh-key-secret
         name: ssh
         readOnly: true
+      - mountPath: /etc/service-account
+        name: service
+        readOnly: true
     volumes:
     - name: service
       secret:
@@ -15423,6 +15435,8 @@ periodics:
 - interval: 30m
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-sd-logging-gci-latest
+  labels:
+    preset: service-account
   spec:
     containers:
     - args:
@@ -15505,6 +15519,8 @@ periodics:
 - interval: 30m
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-sd-logging-ubuntu-latest
+  labels:
+    preset: service-account
   spec:
     containers:
     - args:
@@ -20726,18 +20742,18 @@ periodics:
       args:
       - |-
         --query=is:pr
-        -labels:do-not-merge
-        -labels:do-not-merge/blocked-paths
-        -labels:do-not-merge/cherry-pick-not-approved
-        -labels:do-not-merge/hold
-        -labels:do-not-merge/release-note-label-needed
-        -labels:do-not-merge/work-in-progress
-        labels:lgtm
-        labels:approved
+        -label:do-not-merge
+        -label:do-not-merge/blocked-paths
+        -label:do-not-merge/cherry-pick-not-approved
+        -label:do-not-merge/hold
+        -label:do-not-merge/release-note-label-needed
+        -label:do-not-merge/work-in-progress
+        label:lgtm
+        label:approved
         status:failure
-        -labels:needs-rebase
-        -labels:needs-ok-to-test
-        -labels:"cncf-cla: no"
+        -label:needs-rebase
+        -label:needs-ok-to-test
+        -label:"cncf-cla: no"
         repo:kubernetes/kubernetes
       - --token=/etc/token/bot-github-token
       - |-
