@@ -17,6 +17,7 @@ limitations under the License.
 package jenkins
 
 import (
+	"crypto/tls"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -146,11 +147,11 @@ type BearerTokenAuthConfig struct {
 	Token string
 }
 
-func NewClient(url string, authConfig *AuthConfig, logger *logrus.Entry, metrics *ClientMetrics) *Client {
+func NewClient(url string, tlsConfig *tls.Config, authConfig *AuthConfig, logger *logrus.Entry, metrics *ClientMetrics) *Client {
 	if logger == nil {
 		logger = logrus.NewEntry(logrus.StandardLogger())
 	}
-	return &Client{
+	c := &Client{
 		logger:     logger.WithField("client", "jenkins"),
 		baseURL:    url,
 		authConfig: authConfig,
@@ -159,6 +160,10 @@ func NewClient(url string, authConfig *AuthConfig, logger *logrus.Entry, metrics
 		},
 		metrics: metrics,
 	}
+	if tlsConfig != nil {
+		c.client.Transport = &http.Transport{TLSClientConfig: tlsConfig}
+	}
+	return c
 }
 
 // measure records metrics about the provided method, path, and code.
