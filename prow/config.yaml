@@ -110,6 +110,24 @@ presets:
   - name: service
     mountPath: /etc/service-account
     readOnly: true
+- labels:
+    ssh-preset: k8s-ssh
+  env:
+  - name: USER
+    value: prow
+  - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
+    value: /etc/ssh-key-secret/ssh-private
+  - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
+    value: /etc/ssh-key-secret/ssh-public
+  volumes:
+  - name: ssh
+    secret:
+      defaultMode: 256
+      secretName: ssh-key-secret
+  volumeMounts:
+  - name: ssh
+    mountPath: /etc/ssh-key-secret
+    readOnly: true
 
 presubmits:
   google/cadvisor:
@@ -121,6 +139,7 @@ presubmits:
     trigger: "(?m)^/test( all| pull-cadvisor-e2e),?(\\s+|$)"
     labels:
       preset: service-account
+      ssh-preset: k8s-ssh
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
@@ -134,27 +153,14 @@ presubmits:
         env:
         - name: CADVISOR_APPLICATION_CREDENTIALS
           value: /etc/cadvisor-service-account/service-account.json
-        - name: USER
-          value: prow
-        - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
-          value: /etc/ssh-key-secret/ssh-private
-        - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
-          value: /etc/ssh-key-secret/ssh-public
         volumeMounts:
         - name: cadvisor-service
           mountPath: /etc/cadvisor-service-account
-          readOnly: true
-        - name: ssh
-          mountPath: /etc/ssh-key-secret
           readOnly: true
       volumes:
       - name: cadvisor-service
         secret:
           secretName: cadvisor-service-account
-      - name: ssh
-        secret:
-          defaultMode: 256
-          secretName: ssh-key-secret
 
   kubeflow/kubeflow:
   - name: kubeflow-presubmit
