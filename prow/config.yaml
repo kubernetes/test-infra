@@ -8229,10 +8229,9 @@ periodics:
         secretName: ssh-key-secret
     - name: var-lib-docker
       emptyDir: {}
-  # TODO(rramkumar): Job does nothing yet.
 - name: ci-ingress-gce-downgrade-e2e
   agent: kubernetes
-  interval: 24h
+  interval: 60m
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
