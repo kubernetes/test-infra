@@ -243,7 +243,8 @@ func convertJobToSecurityJob(j *config.Presubmit, dropLabels sets.String) {
 				container.Args[i] = "--upload=gs://kubernetes-security-prow/pr-logs"
 			}
 		}
-		container.Args = append(container.Args, "--ssh=/etc/ssh-security/ssh-security")
+		// NOTE: this needs to be before the bare -- and then bootstrap args so we prepend it
+		container.Args = append([]string{"--ssh=/etc/ssh-security/ssh-security"}, container.Args...)
 		container.VolumeMounts = append(
 			container.VolumeMounts,
 			kube.VolumeMount{

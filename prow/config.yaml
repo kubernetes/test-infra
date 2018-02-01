@@ -2957,11 +2957,11 @@ presubmits:
       spec:
         containers:
         - args:
+          - --ssh=/etc/ssh-security/ssh-security
           - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
           - --upload=gs://kubernetes-security-prow/pr-logs
           - --timeout=75
           - --clean
-          - --ssh=/etc/ssh-security/ssh-security
           env:
           - name: USER
             value: prow
@@ -2999,6 +2999,7 @@ presubmits:
     spec:
       containers:
       - args:
+        - --ssh=/etc/ssh-security/ssh-security
         - --clean
         - --job=$(JOB_NAME)
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
@@ -3007,7 +3008,6 @@ presubmits:
         - --
         - --build=//... -//vendor/...
         - --release=//build/release-tars
-        - --ssh=/etc/ssh-security/ssh-security
         image: gcr.io/k8s-testimages/bazelbuild:v20171214-ae38d82af-0.8.1
         name: ""
         resources:
@@ -3054,11 +3054,11 @@ presubmits:
       spec:
         containers:
         - args:
+          - --ssh=/etc/ssh-security/ssh-security
           - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
           - --upload=gs://kubernetes-security-prow/pr-logs
           - --timeout=75
           - --clean
-          - --ssh=/etc/ssh-security/ssh-security
           env:
           - name: USER
             value: prow
@@ -3092,6 +3092,7 @@ presubmits:
     spec:
       containers:
       - args:
+        - --ssh=/etc/ssh-security/ssh-security
         - --clean
         - --job=$(JOB_NAME)
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
@@ -3100,7 +3101,6 @@ presubmits:
         - --
         - --build=//cmd/... //pkg/... //federation/... //plugin/... //third_party/... //examples/... //test/... //vendor/k8s.io/...
         - --release=//build/release-tars
-        - --ssh=/etc/ssh-security/ssh-security
         image: gcr.io/k8s-testimages/bazelbuild:v20171214-ae38d82af-0.6.1
         name: ""
         resources:
@@ -3143,11 +3143,11 @@ presubmits:
       spec:
         containers:
         - args:
+          - --ssh=/etc/ssh-security/ssh-security
           - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
           - --upload=gs://kubernetes-security-prow/pr-logs
           - --timeout=75
           - --clean
-          - --ssh=/etc/ssh-security/ssh-security
           env:
           - name: USER
             value: prow
@@ -3181,6 +3181,7 @@ presubmits:
     spec:
       containers:
       - args:
+        - --ssh=/etc/ssh-security/ssh-security
         - --clean
         - --job=$(JOB_NAME)
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
@@ -3190,7 +3191,6 @@ presubmits:
         - --batch
         - --build=//... -//vendor/...
         - --release=//build/release-tars
-        - --ssh=/etc/ssh-security/ssh-security
         image: gcr.io/k8s-testimages/bazelbuild:latest-latest
         imagePullPolicy: Always
         name: ""
@@ -3229,6 +3229,7 @@ presubmits:
     spec:
       containers:
       - args:
+        - --ssh=/etc/ssh-security/ssh-security
         - --clean
         - --job=$(JOB_NAME)
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
@@ -3240,7 +3241,6 @@ presubmits:
         - --test-args=--build_tag_filters=-e2e,-integration
         - --test-args=--test_tag_filters=-e2e,-integration
         - --test-args=--flaky_test_attempts=3
-        - --ssh=/etc/ssh-security/ssh-security
         image: gcr.io/k8s-testimages/bazelbuild:v20171214-ae38d82af-0.8.1
         name: ""
         resources:
@@ -3274,6 +3274,7 @@ presubmits:
     spec:
       containers:
       - args:
+        - --ssh=/etc/ssh-security/ssh-security
         - --clean
         - --job=$(JOB_NAME)
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
@@ -3284,7 +3285,6 @@ presubmits:
         - --manual-test=//hack:verify-all
         - --test-args=--test_tag_filters=-integration
         - --test-args=--flaky_test_attempts=3
-        - --ssh=/etc/ssh-security/ssh-security
         image: gcr.io/k8s-testimages/bazelbuild:v20171214-ae38d82af-0.6.1
         name: ""
         resources:
@@ -3317,6 +3317,7 @@ presubmits:
     spec:
       containers:
       - args:
+        - --ssh=/etc/ssh-security/ssh-security
         - --clean
         - --job=$(JOB_NAME)
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
@@ -3329,7 +3330,6 @@ presubmits:
         - --test-args=--build_tag_filters=-e2e
         - --test-args=--test_tag_filters=-e2e
         - --test-args=--flaky_test_attempts=3
-        - --ssh=/etc/ssh-security/ssh-security
         image: gcr.io/k8s-testimages/bazelbuild:latest-latest
         imagePullPolicy: Always
         name: ""
@@ -3361,13 +3361,13 @@ presubmits:
     spec:
       containers:
       - args:
+        - --ssh=/etc/ssh-security/ssh-security
         - --clean
         - --job=$(JOB_NAME)
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-security-prow/pr-logs
         - --timeout=90
-        - --ssh=/etc/ssh-security/ssh-security
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
           value: "true"
@@ -3410,13 +3410,13 @@ presubmits:
     spec:
       containers:
       - args:
+        - --ssh=/etc/ssh-security/ssh-security
         - --clean
         - --job=$(JOB_NAME)
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-security-prow/pr-logs
         - --timeout=90
-        - --ssh=/etc/ssh-security/ssh-security
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
           value: "true"
@@ -3458,6 +3458,7 @@ presubmits:
     spec:
       containers:
       - args:
+        - --ssh=/etc/ssh-security/ssh-security
         - --root=/go/src
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --repo=k8s.io/release
@@ -3465,7 +3466,6 @@ presubmits:
         - --upload=gs://kubernetes-security-prow/pr-logs
         - --clean
         - --timeout=90
-        - --ssh=/etc/ssh-security/ssh-security
         env:
         - name: USER
           value: prow
@@ -3512,13 +3512,13 @@ presubmits:
     spec:
       containers:
       - args:
+        - --ssh=/etc/ssh-security/ssh-security
         - --root=/go/src
         - --repo=github.com/kubernetes-security/kubernetes=$(PULL_REFS)
         - --repo=k8s.io/release
         - --upload=gs://kubernetes-security-prow/pr-logs
         - --clean
         - --timeout=90
-        - --ssh=/etc/ssh-security/ssh-security
         env:
         - name: USER
           value: prow
@@ -3565,13 +3565,13 @@ presubmits:
     spec:
       containers:
       - args:
+        - --ssh=/etc/ssh-security/ssh-security
         - --root=/go/src
         - --repo=github.com/kubernetes-security/kubernetes=$(PULL_REFS)
         - --repo=k8s.io/release
         - --upload=gs://kubernetes-security-prow/pr-logs
         - --clean
         - --timeout=90
-        - --ssh=/etc/ssh-security/ssh-security
         env:
         - name: USER
           value: prow
@@ -3618,13 +3618,13 @@ presubmits:
     spec:
       containers:
       - args:
+        - --ssh=/etc/ssh-security/ssh-security
         - --root=/go/src
         - --repo=github.com/kubernetes-security/kubernetes=$(PULL_REFS)
         - --repo=k8s.io/release
         - --upload=gs://kubernetes-security-prow/pr-logs
         - --clean
         - --timeout=90
-        - --ssh=/etc/ssh-security/ssh-security
         env:
         - name: USER
           value: prow
@@ -3673,6 +3673,7 @@ presubmits:
     spec:
       containers:
       - args:
+        - --ssh=/etc/ssh-security/ssh-security
         - --root=/go/src
         - --clean
         - --job=$(JOB_NAME)
@@ -3681,7 +3682,6 @@ presubmits:
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-security-prow/pr-logs
         - --timeout=90
-        - --ssh=/etc/ssh-security/ssh-security
         env:
         - name: USER
           value: prow
@@ -3728,6 +3728,7 @@ presubmits:
     spec:
       containers:
       - args:
+        - --ssh=/etc/ssh-security/ssh-security
         - --root=/go/src
         - --clean
         - --job=$(JOB_NAME)
@@ -3736,7 +3737,6 @@ presubmits:
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-security-prow/pr-logs
         - --timeout=90
-        - --ssh=/etc/ssh-security/ssh-security
         env:
         - name: USER
           value: prow
@@ -3785,13 +3785,13 @@ presubmits:
     spec:
       containers:
       - args:
+        - --ssh=/etc/ssh-security/ssh-security
         - --root=/go/src
         - --repo=github.com/kubernetes-security/kubernetes=$(PULL_REFS)
         - --repo=k8s.io/release
         - --upload=gs://kubernetes-security-prow/pr-logs
         - --clean
         - --timeout=90
-        - --ssh=/etc/ssh-security/ssh-security
         env:
         - name: USER
           value: prow
@@ -3838,13 +3838,13 @@ presubmits:
     spec:
       containers:
       - args:
+        - --ssh=/etc/ssh-security/ssh-security
         - --root=/go/src
         - --repo=github.com/kubernetes-security/kubernetes=$(PULL_REFS)
         - --repo=k8s.io/release
         - --upload=gs://kubernetes-security-prow/pr-logs
         - --clean
         - --timeout=90
-        - --ssh=/etc/ssh-security/ssh-security
         env:
         - name: USER
           value: prow
@@ -3891,13 +3891,13 @@ presubmits:
     spec:
       containers:
       - args:
+        - --ssh=/etc/ssh-security/ssh-security
         - --root=/go/src
         - --repo=github.com/kubernetes-security/kubernetes=$(PULL_REFS)
         - --repo=k8s.io/release
         - --upload=gs://kubernetes-security-prow/pr-logs
         - --clean
         - --timeout=90
-        - --ssh=/etc/ssh-security/ssh-security
         env:
         - name: USER
           value: prow
@@ -3946,6 +3946,7 @@ presubmits:
     spec:
       containers:
       - args:
+        - --ssh=/etc/ssh-security/ssh-security
         - --root=/go/src
         - --clean
         - --job=$(JOB_NAME)
@@ -3954,7 +3955,6 @@ presubmits:
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-security-prow/pr-logs
         - --timeout=90
-        - --ssh=/etc/ssh-security/ssh-security
         env:
         - name: USER
           value: prow
@@ -4001,6 +4001,7 @@ presubmits:
     spec:
       containers:
       - args:
+        - --ssh=/etc/ssh-security/ssh-security
         - --root=/go/src
         - --clean
         - --job=$(JOB_NAME)
@@ -4009,7 +4010,6 @@ presubmits:
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-security-prow/pr-logs
         - --timeout=90
-        - --ssh=/etc/ssh-security/ssh-security
         env:
         - name: USER
           value: prow
@@ -4058,6 +4058,7 @@ presubmits:
     spec:
       containers:
       - args:
+        - --ssh=/etc/ssh-security/ssh-security
         - --root=/go/src
         - --clean
         - --job=$(JOB_NAME)
@@ -4066,7 +4067,6 @@ presubmits:
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-security-prow/pr-logs
         - --timeout=75
-        - --ssh=/etc/ssh-security/ssh-security
         env:
         - name: USER
           value: prow
@@ -4122,6 +4122,7 @@ presubmits:
     spec:
       containers:
       - args:
+        - --ssh=/etc/ssh-security/ssh-security
         - --root=/go/src
         - --clean
         - --job=$(JOB_NAME)
@@ -4130,7 +4131,6 @@ presubmits:
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-security-prow/pr-logs
         - --timeout=75
-        - --ssh=/etc/ssh-security/ssh-security
         env:
         - name: USER
           value: prow
@@ -4186,6 +4186,7 @@ presubmits:
     spec:
       containers:
       - args:
+        - --ssh=/etc/ssh-security/ssh-security
         - --root=/go/src
         - --clean
         - --job=$(JOB_NAME)
@@ -4194,7 +4195,6 @@ presubmits:
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-security-prow/pr-logs
         - --timeout=75
-        - --ssh=/etc/ssh-security/ssh-security
         env:
         - name: USER
           value: prow
@@ -4252,6 +4252,7 @@ presubmits:
     spec:
       containers:
       - args:
+        - --ssh=/etc/ssh-security/ssh-security
         - --root=/go/src
         - --clean
         - --job=$(JOB_NAME)
@@ -4260,7 +4261,6 @@ presubmits:
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-security-prow/pr-logs
         - --timeout=110
-        - --ssh=/etc/ssh-security/ssh-security
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
           value: "true"
@@ -4313,6 +4313,7 @@ presubmits:
     spec:
       containers:
       - args:
+        - --ssh=/etc/ssh-security/ssh-security
         - --root=/go/src
         - --clean
         - --job=$(JOB_NAME)
@@ -4321,7 +4322,6 @@ presubmits:
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-security-prow/pr-logs
         - --timeout=110
-        - --ssh=/etc/ssh-security/ssh-security
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
           value: "true"
@@ -4374,6 +4374,7 @@ presubmits:
     spec:
       containers:
       - args:
+        - --ssh=/etc/ssh-security/ssh-security
         - --root=/go/src
         - --clean
         - --job=$(JOB_NAME)
@@ -4382,7 +4383,6 @@ presubmits:
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-security-prow/pr-logs
         - --timeout=110
-        - --ssh=/etc/ssh-security/ssh-security
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
           value: "true"
@@ -4437,6 +4437,7 @@ presubmits:
     spec:
       containers:
       - args:
+        - --ssh=/etc/ssh-security/ssh-security
         - --root=/go/src
         - --clean
         - --job=$(JOB_NAME)
@@ -4445,7 +4446,6 @@ presubmits:
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-security-prow/pr-logs
         - --timeout=110
-        - --ssh=/etc/ssh-security/ssh-security
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
           value: "true"
@@ -4498,6 +4498,7 @@ presubmits:
     spec:
       containers:
       - args:
+        - --ssh=/etc/ssh-security/ssh-security
         - --root=/go/src
         - --clean
         - --job=$(JOB_NAME)
@@ -4506,7 +4507,6 @@ presubmits:
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-security-prow/pr-logs
         - --timeout=110
-        - --ssh=/etc/ssh-security/ssh-security
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
           value: "true"
@@ -4559,6 +4559,7 @@ presubmits:
     spec:
       containers:
       - args:
+        - --ssh=/etc/ssh-security/ssh-security
         - --root=/go/src
         - --clean
         - --job=$(JOB_NAME)
@@ -4567,7 +4568,6 @@ presubmits:
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-security-prow/pr-logs
         - --timeout=110
-        - --ssh=/etc/ssh-security/ssh-security
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
           value: "true"
@@ -4620,6 +4620,7 @@ presubmits:
     spec:
       containers:
       - args:
+        - --ssh=/etc/ssh-security/ssh-security
         - --root=/go/src
         - --clean
         - --job=$(JOB_NAME)
@@ -4628,7 +4629,6 @@ presubmits:
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-security-prow/pr-logs
         - --timeout=1220
-        - --ssh=/etc/ssh-security/ssh-security
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
           value: "true"
@@ -4683,6 +4683,7 @@ presubmits:
     spec:
       containers:
       - args:
+        - --ssh=/etc/ssh-security/ssh-security
         - --root=/go/src
         - --clean
         - --job=$(JOB_NAME)
@@ -4692,7 +4693,6 @@ presubmits:
         - --timeout=90
         - --
         - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml
-        - --ssh=/etc/ssh-security/ssh-security
         env:
         - name: USER
           value: prow
@@ -4737,6 +4737,7 @@ presubmits:
     spec:
       containers:
       - args:
+        - --ssh=/etc/ssh-security/ssh-security
         - --root=/go/src
         - --clean
         - --job=$(JOB_NAME)
@@ -4746,7 +4747,6 @@ presubmits:
         - --timeout=90
         - --
         - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml
-        - --ssh=/etc/ssh-security/ssh-security
         env:
         - name: USER
           value: prow
@@ -4791,6 +4791,7 @@ presubmits:
     spec:
       containers:
       - args:
+        - --ssh=/etc/ssh-security/ssh-security
         - --root=/go/src
         - --clean
         - --job=$(JOB_NAME)
@@ -4800,7 +4801,6 @@ presubmits:
         - --timeout=90
         - --
         - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config-1-7.yaml
-        - --ssh=/etc/ssh-security/ssh-security
         env:
         - name: USER
           value: prow
@@ -4845,6 +4845,7 @@ presubmits:
     spec:
       containers:
       - args:
+        - --ssh=/etc/ssh-security/ssh-security
         - --root=/go/src
         - --clean
         - --job=$(JOB_NAME)
@@ -4853,7 +4854,6 @@ presubmits:
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-security-prow/pr-logs
         - --timeout=90
-        - --ssh=/etc/ssh-security/ssh-security
         env:
         - name: USER
           value: prow
@@ -4894,13 +4894,13 @@ presubmits:
     spec:
       containers:
       - args:
+        - --ssh=/etc/ssh-security/ssh-security
         - --clean
         - --job=$(JOB_NAME)
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-security-prow/pr-logs
         - --timeout=60
-        - --ssh=/etc/ssh-security/ssh-security
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
           value: "true"
@@ -4938,13 +4938,13 @@ presubmits:
     spec:
       containers:
       - args:
+        - --ssh=/etc/ssh-security/ssh-security
         - --clean
         - --job=$(JOB_NAME)
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-security-prow/pr-logs
         - --timeout=60
-        - --ssh=/etc/ssh-security/ssh-security
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
           value: "true"
@@ -4983,13 +4983,13 @@ presubmits:
     spec:
       containers:
       - args:
+        - --ssh=/etc/ssh-security/ssh-security
         - --clean
         - --job=$(JOB_NAME)
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-security-prow/pr-logs
         - --timeout=75
-        - --ssh=/etc/ssh-security/ssh-security
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
           value: "true"
@@ -5027,13 +5027,13 @@ presubmits:
     spec:
       containers:
       - args:
+        - --ssh=/etc/ssh-security/ssh-security
         - --clean
         - --job=$(JOB_NAME)
         - --repo=github.com/kubernetes-security/$(REPO_NAME)=$(PULL_REFS)
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-security-prow/pr-logs
         - --timeout=75
-        - --ssh=/etc/ssh-security/ssh-security
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
           value: "true"
