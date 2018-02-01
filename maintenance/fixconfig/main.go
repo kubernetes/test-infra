@@ -240,7 +240,7 @@ func convertJobToSecurityJob(j *config.Presubmit, dropLabels sets.String) {
 
 				// handle upload bucket
 			} else if strings.HasPrefix(arg, "--upload=") {
-				container.Args[i] = "--upload=gs://kubernetes-security-jenkins/pr-logs"
+				container.Args[i] = "--upload=gs://kubernetes-security-prow/pr-logs"
 			}
 		}
 		container.Args = append(container.Args, "--ssh=/etc/ssh-security/ssh-security")
