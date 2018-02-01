@@ -856,7 +856,7 @@ def setup_root(call, root, repos, ssh, git_cache, clean):
             # prow checkout support remapping checkouts and kill this monstrosity
             repo_path = repo
             if repo == "github.com/kubernetes-security/kubernetes":
-                repo = "k8s.io/kubernetes"
+                repo_path = "k8s.io/kubernetes"
             logging.info(
                 'Checkout: %s %s to %s',
                 os.path.join(root_dir, repo),
