@@ -5,8 +5,10 @@ TAG = 0.11
 
 PROJ = google_containers
 
-perfdash: perfdash.go parser.go config.go downloader.go google-gcs-downloader.go
-	CGO_ENABLED=0 GOOS=linux godep go build -a -installsuffix cgo -ldflags '-w' -o perfdash
+.PHONY: perfdash
+perfdash:
+	cd .. && bazel build perfdash
+	cp ../bazel-bin/perfdash/linux_amd64_stripped/perfdash .
 
 container: perfdash
 	docker build --pull -t gcr.io/$(PROJ)/perfdash:$(TAG) .
