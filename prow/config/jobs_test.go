@@ -789,7 +789,7 @@ func TestMergePreset(t *testing.T) {
 				},
 			},
 		}
-		if err := parseConfig(conf); err == nil && tc.shouldError {
+		if err := ParseConfig(conf); err == nil && tc.shouldError {
 			t.Fatalf("For test \"%s\": expected error but got none.", tc.name)
 		} else if err != nil && !tc.shouldError {
 			t.Fatalf("For test \"%s\": expected no error but got %v.", tc.name, err)

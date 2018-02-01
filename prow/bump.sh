@@ -32,11 +32,16 @@ fi
 
 cd $(dirname $0)
 
+if [[ -z $PULL ]]; then
+  PULL="true"
+fi
 new_version="v$(date -u '+%Y%m%d')-$(git describe --tags --always --dirty)"
 for i in "$@"; do
   echo "program: $i"
   echo "new version: $new_version"
-  gcloud docker -- pull "${PREFIX:-gcr.io/k8s-prow}/${i}:${new_version}"
+  if [[ "$PULL" == "true" ]]; then
+    gcloud docker -- pull "${PREFIX:-gcr.io/k8s-prow}/${i}:${new_version}"
+  fi
 
   $SED -i "s/\(${i}:\)v[a-f0-9-]\+/\1$new_version/I" cluster/*.yaml
 done

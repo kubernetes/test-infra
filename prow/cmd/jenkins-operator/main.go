@@ -33,7 +33,6 @@ import (
 	"github.com/sirupsen/logrus"
 	"k8s.io/apimachinery/pkg/labels"
 
-	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/jenkins"
 	"k8s.io/test-infra/prow/kube"
@@ -63,7 +62,7 @@ func main() {
 		logger.WithError(err).Fatal("Error parsing label selector.")
 	}
 
-	configAgent := &config.Agent{}
+	configAgent := &jenkins.Agent{}
 	if err := configAgent.Start(*configPath); err != nil {
 		logger.WithError(err).Fatal("Error starting config agent.")
 	}
