@@ -14,10 +14,12 @@
 # limitations under the License.
 
 
-# Identifies go_library() bazel targets in the workspace with no dependencies.
-# Deletes the target and its files. Cleans up any :all-srcs references
-
-# By default just checks for extra libraries, run with --fix to make changes.
+# Run dep ensure, generate bazel rules and do additional pruning.
+#
+# Usage:
+#   update-dep.sh <ARGS>
+#
+# The args are sent to dep ensure -v <ARGS>
 
 set -o nounset
 set -o errexit
@@ -28,11 +30,12 @@ TESTINFRA_ROOT=$(git rev-parse --show-toplevel)
 cd "${TESTINFRA_ROOT}"
 
 trap 'echo "FAILED" >&2' ERR
-bazel run //:dep -- ensure -v
 # dep itself has a problematic testdata directory with infinite symlinks which
 # makes bazel sad: https://github.com/golang/dep/pull/1412
 # dep should probably be removing it, but it doesn't:
 # https://github.com/golang/dep/issues/1580
+rm -rf vendor/github.com/golang/dep/internal/fs/testdata
+bazel run //:dep -- ensure -v "$@"
 rm -rf vendor/github.com/golang/dep/internal/fs/testdata
 hack/update-bazel.sh
 hack/prune-libraries.sh --fix
