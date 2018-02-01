@@ -10600,10 +10600,15 @@
   },
   "pull-cadvisor-e2e": {
     "args": [
-      "--env=BUILDER=true",
-      "./build/prow_e2e.sh"
+      "--deployment=node",
+      "--gcp-project=cadvisor-e2e",
+      "--gcp-zone=us-central1-f",
+      "--node-tests=true",
+      "--provider=gce",
+      "--test_args=--nodes=1--flakeAttempts=2",
+      "--timeout=10m"
     ],
-    "scenario": "execute",
+    "scenario": "kubernetes_e2e",
     "sigOwners": [
       "sig-node"
     ]

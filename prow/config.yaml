@@ -158,22 +158,26 @@ presubmits:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
         args:
         - "--job=$(JOB_NAME)"
+        - "--repo=k8s.io/kubernetes"
         - "--repo=github.com/$(REPO_OWNER)/$(REPO_NAME)=$(PULL_REFS)"
         - "--root=/go/src"
         - "--service-account=/etc/service-account/service-account.json"
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--timeout=90"
-        env:
-        - name: CADVISOR_APPLICATION_CREDENTIALS
-          value: /etc/cadvisor-service-account/service-account.json
+        - "--clean"
+        - "--git-cache=/root/.cache/git"
+        - "--"
+        - "--node-args=--image-config-file=test/e2e_node/image-config.yaml"
         volumeMounts:
-        - name: cadvisor-service
-          mountPath: /etc/cadvisor-service-account
-          readOnly: true
+        - name: cache-ssd
+          mountPath: /root/.cache
+        ports:
+        - containerPort: 9999
+          hostPort: 9999
       volumes:
-      - name: cadvisor-service
-        secret:
-          secretName: cadvisor-service-account
+      - name: cache-ssd
+        hostPath:
+          path: /mnt/disks/ssd0
 
   kubeflow/kubeflow:
   - name: kubeflow-presubmit
