@@ -37,6 +37,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     zip \
     zlib1g-dev \
     && apt-get clean && \
+    python -m pip install --upgrade pip setuptools wheel && \
     pip install pylint pyyaml
 
 SHELL ["/bin/bash", "-c"]
