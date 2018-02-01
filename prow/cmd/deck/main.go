@@ -121,6 +121,8 @@ func main() {
 			path: *userUrl,
 		}
 		mux.Handle("/user-data.js", gziphandler.GzipHandler(handleUserDashboard(ua)))
+	} else {
+		logger.Info(userUrl)
 	}
 
 	// optionally inject http->https redirect handler when behind loadbalancer
@@ -281,7 +283,7 @@ func handleUserDashboard(ua *userAgent) http.HandlerFunc {
 		userData, err := ua.getData()
 		if err != nil {
 			logrus.WithError(err).Error("Getting data from hook")
-			userData = &userdashboard.Data{}
+			userData = &userdashboard.UserData{}
 		}
 		marshalData, err := json.Marshal(*userData)
 		if err != nil {

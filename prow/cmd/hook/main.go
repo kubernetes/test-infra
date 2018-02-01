@@ -29,9 +29,14 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
 
+	"crypto/rand"
+
+	"github.com/ghodss/yaml"
+	"github.com/gorilla/sessions"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/git"
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/gitoauth"
 	"k8s.io/test-infra/prow/hook"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/metrics"
@@ -40,10 +45,6 @@ import (
 	"k8s.io/test-infra/prow/repoowners"
 	"k8s.io/test-infra/prow/slack"
 	"k8s.io/test-infra/prow/userdashboard"
-	"k8s.io/test-infra/prow/gitoauth"
-	"github.com/gorilla/sessions"
-	"crypto/rand"
-	"encoding/json"
 )
 
 var (
@@ -96,8 +97,6 @@ func main() {
 	if err != nil {
 		logger.WithError(err).Fatal("Could not read git app client file.")
 	}
-	var appClient *config.Client
-	json.Unmarshal(bytes.TrimSpace(gitAppClientRaw), appClient)
 
 	var teamToken string
 	if *slackTokenFile != "" {
@@ -185,28 +184,31 @@ func main() {
 	// Serve plugin help information from /plugin-help.
 	http.Handle("/plugin-help", pluginhelp.NewHelpAgent(pluginAgent, githubClient))
 
-	secretKey, err := randomSecretKey(64)
+	var appClient config.Client
+	yaml.Unmarshal(bytes.TrimSpace(gitAppClientRaw), &appClient)
+
+	secretKey, err := generateSecretBytes(64)
 	if err != nil {
 		logger.WithError(err).Fatal("Error random secret key.")
-		return;
+		return
 	}
 	cookie := sessions.NewCookieStore(secretKey)
 
 	gitOAuthConfig := &configAgent.Config().GitOAuthConfig
-	gitOAuthConfig.InitGitOAuthConfig(appClient, cookie)
+	gitOAuthConfig.InitGitOAuthConfig(&appClient, cookie)
 
-	goa := gitoauth.NewGitOAuthAgent(gitOAuthConfig, logrus.WithField("component",  "gitoauth"))
+	goa := gitoauth.NewGitOAuthAgent(gitOAuthConfig, logrus.WithField("component", "gitoauth"))
 
 	http.Handle("/user-dashboard", userdashboard.NewDashboardAgent(gitOAuthConfig, logrus.WithField("component", "user-dashboard")))
 	// Handles Login Request
-	http.HandleFunc("/user-dashboard/login", goa.HandleLogin);
+	http.HandleFunc("/user-dashboard/login", goa.HandleLogin)
 	// Handles Login Request
-	http.HandleFunc("/user-dashboard/redirect", goa.HandleRedirect);
+	http.HandleFunc("/user-dashboard/redirect", goa.HandleRedirect)
 
 	logger.Fatal(http.ListenAndServe(":"+strconv.Itoa(*port), nil))
 }
 
-func randomSecretKey(numBytes int) ([]byte, error) {
+func generateSecretBytes(numBytes int) ([]byte, error) {
 	result := make([]byte, numBytes)
 	_, err := rand.Read(result)
 

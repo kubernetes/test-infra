@@ -17,67 +17,71 @@ limitations under the License.
 package gitoauth
 
 import (
-	"k8s.io/test-infra/prow/config"
-	"net/http"
-	"golang.org/x/net/xsrftoken"
+	"errors"
 	"fmt"
+	"net/http"
+
 	"github.com/sirupsen/logrus"
-	"golang.org/x/oauth2"
 	"golang.org/x/net/context"
+	"golang.org/x/net/xsrftoken"
+	"golang.org/x/oauth2"
+	"k8s.io/test-infra/prow/config"
 )
 
-const redirectURLKey = "redirect-url"
+const (
+	redirectURLKey     = "redirect-url"
+	oauthSessionCookie = "oauth-session"
+	stateKey           = "state"
+)
 
 type GitOAuthAgent struct {
-	gc *config.GitOAuthConfig
+	gc     *config.GitOAuthConfig
 	logger *logrus.Entry
 }
 
-func NewGitOAuthAgent(config *config.GitOAuthConfig, logger *logrus.Entry) (*GitOAuthAgent){
+func NewGitOAuthAgent(config *config.GitOAuthConfig, logger *logrus.Entry) *GitOAuthAgent {
 	return &GitOAuthAgent{
-		gc: config,
+		gc:     config,
 		logger: logger,
 	}
 }
 
 func (ga *GitOAuthAgent) HandleLogin(w http.ResponseWriter, r *http.Request) {
-	sessionId := xsrftoken.Generate(ga.gc.Client.ClientSecret, "","")
+	state := xsrftoken.Generate(ga.gc.Client.ClientSecret, "", "")
 
-	oauthSession, err := ga.gc.CookieStore.New(r, sessionId)
+	oauthSession, err := ga.gc.CookieStore.New(r, oauthSessionCookie)
 	oauthSession.Options.MaxAge = 10 * 60
 
-	if  err != nil {
+	if err != nil {
 		ga.serverError(w, "Create new oauth session", err)
 		return
 	}
 
-	oauthSession.Values[redirectURLKey] = ga.gc.FinalRedirectURL
+	oauthSession.Values[stateKey] = state
 
 	if err := oauthSession.Save(r, w); err != nil {
 		ga.serverError(w, "Save oauth session", err)
 		return
 	}
 
-	redirectURL := ga.gc.OAuthClient.AuthCodeURL(sessionId, oauth2.ApprovalForce, oauth2.AccessTypeOnline)
+	redirectURL := ga.gc.OAuthClient.AuthCodeURL(state, oauth2.ApprovalForce, oauth2.AccessTypeOnline)
 	http.Redirect(w, r, redirectURL, http.StatusFound)
 }
 
 func (ga *GitOAuthAgent) HandleRedirect(w http.ResponseWriter, r *http.Request) {
-	sessionId := r.FormValue("state")
-	if !xsrftoken.Valid(sessionId, ga.gc.Client.ClientSecret, "", "") {
-		ga.serverError(w, "Get session token", error("State token expired"))
-		return
+	state := r.FormValue("state")
+	if !xsrftoken.Valid(state, ga.gc.Client.ClientSecret, "", "") {
+		ga.serverError(w, "Validate state", errors.New("State token has expired"))
 	}
 
-	oauthSession, err := ga.gc.CookieStore.Get(r, r.FormValue("state"))
+	oauthSession, err := ga.gc.CookieStore.Get(r, oauthSessionCookie)
 	if err != nil {
-		ga.serverError(w, "Validate state parameter", err)
+		ga.serverError(w, "Get cookie", err)
 		return
 	}
 
-	finalRedirectUrl := oauthSession.Values[redirectURLKey].(string)
-	if finalRedirectUrl != ga.gc.FinalRedirectURL {
-		ga.serverError(w, "Validate OAuth session", error("Invalid OAuth session"))
+	if state == "" || state != oauthSession.Values[stateKey].(string) {
+		ga.serverError(w, "Validate state", errors.New("Invalid state"))
 		return
 	}
 
@@ -99,7 +103,7 @@ func (ga *GitOAuthAgent) HandleRedirect(w http.ResponseWriter, r *http.Request) 
 		ga.serverError(w, "Save session", err)
 		return
 	}
-	http.Redirect(w, r, finalRedirectUrl, http.StatusFound)
+	http.Redirect(w, r, ga.gc.FinalRedirectURL, http.StatusFound)
 }
 
 func (ga *GitOAuthAgent) serverError(w http.ResponseWriter, action string, err error) {
@@ -107,4 +111,3 @@ func (ga *GitOAuthAgent) serverError(w http.ResponseWriter, action string, err e
 	msg := fmt.Sprintf("500 Internal server error %s: %v", action, err)
 	http.Error(w, msg, http.StatusInternalServerError)
 }
-

@@ -48,8 +48,8 @@ git_oauth_config:
   client:
     client_id:
     client_secret:
-  redirect_url: https://prow.k8s.io/user-dashboard/redirect
-  final_redirect_url: https://prow.k8s.io/user-dashboard
+  redirect_url: http://localhost:8888/user-dashboard/redirect
+  final_redirect_url: http://localhost:8888/user.html
   token_session: token_session
   token_key: token_key
   scopes:

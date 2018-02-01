@@ -17,38 +17,41 @@ limitations under the License.
 package config
 
 import (
+	"encoding/gob"
+
+	"github.com/gorilla/sessions"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/github"
-	"github.com/gorilla/sessions"
 )
 
 type Client struct {
-	ClientId string `json:"client_secret,omitempty"`
+	ClientId     string `json:"client_id,omitempty"`
 	ClientSecret string `json:"client_secret,omitempty"`
 }
 
 type GitOAuthConfig struct {
-	RedirectURL string `json:"redirect_url,omitempty"`
-	Scopes []string `json:"scopes,omitempty"`
+	RedirectURL string   `json:"redirect_url,omitempty"`
+	Scopes      []string `json:"scopes,omitempty"`
 
 	FinalRedirectURL string `json:"final_redirect_url,omitempty"`
 
 	GitTokenSession string `json:"token_session,omitempty"`
-	GitTokenKey string `json:"token_key,omitempty"`
+	GitTokenKey     string `json:"token_key,omitempty"`
 
-	Client *Client
+	Client      *Client
 	OAuthClient *oauth2.Config
 	CookieStore *sessions.CookieStore
 }
 
 func (gac *GitOAuthConfig) InitGitOAuthConfig(client *Client, cookie *sessions.CookieStore) {
+	gob.Register(&oauth2.Token{})
 	gac.Client = client
 	gac.CookieStore = cookie
 	gac.OAuthClient = &oauth2.Config{
-			ClientID: gac.Client.ClientId,
-			ClientSecret: gac.Client.ClientSecret,
-			RedirectURL: gac.RedirectURL,
-			Scopes: gac.Scopes,
-			Endpoint: github.Endpoint,
-		}
+		ClientID:     client.ClientId,
+		ClientSecret: client.ClientSecret,
+		RedirectURL:  gac.RedirectURL,
+		Scopes:       gac.Scopes,
+		Endpoint:     github.Endpoint,
+	}
 }

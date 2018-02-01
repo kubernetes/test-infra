@@ -17,26 +17,26 @@ limitations under the License.
 package userdashboard
 
 import (
-	"github.com/sirupsen/logrus"
-	"net/http"
-	"k8s.io/test-infra/prow/config"
-	"golang.org/x/oauth2"
 	"context"
-	"k8s.io/test-infra/prow/github"
-	"github.com/shurcooL/githubql"
 	"encoding/json"
 	"fmt"
+	"net/http"
+
+	"github.com/shurcooL/githubql"
+	"github.com/sirupsen/logrus"
+	"golang.org/x/oauth2"
+	"k8s.io/test-infra/prow/config"
+	"k8s.io/test-infra/prow/github"
 )
 
 const githubEndpoint = "https://api.github.com"
-
 
 type githubClient interface {
 	Query(context.Context, interface{}, map[string]interface{}) error
 }
 
 type UserData struct {
-	Login bool
+	Login        bool
 	PullRequests []PullRequest
 }
 
@@ -47,11 +47,11 @@ type DashboardAgent struct {
 }
 
 type Label struct {
-	Id githubql.ID
+	Id   githubql.ID
 	name githubql.String
 }
 
-type PullRequest struct{
+type PullRequest struct {
 	Number githubql.Int
 	Author struct {
 		Login githubql.String
@@ -65,29 +65,29 @@ type PullRequest struct{
 	}
 	Labels struct {
 		Nodes []struct {
-			Label Label
+			Label `graphql:"... on Label"`
 		}
 	} `graphql:"labels(first: 100)"`
 }
 
 type PullRequestQuery struct {
-	User struct {
+	Viewer struct {
 		PullRequests struct {
 			PageInfo struct {
 				HasNextPage githubql.Boolean
-				EndCursor githubql.String
+				EndCursor   githubql.String
 			}
 			Nodes []struct {
-				PullRequest PullRequest
+				PullRequest `graphql:"... on PullRequest"`
 			}
-		} `graphql:"pullRequests(first: 100, after: $prsCursor, state: $prsStates)"`
+		} `graphql:"pullRequests(first: 100, after: $prsCursor, states: $prsStates)"`
 	}
 }
 
 func NewDashboardAgent(config *config.GitOAuthConfig, log *logrus.Entry) *DashboardAgent {
 	return &DashboardAgent{
 		gitConfig: config,
-		log:  log,
+		log:       log,
 	}
 }
 
@@ -105,7 +105,6 @@ func (da *DashboardAgent) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	token, ok := session.Values[da.gitConfig.GitTokenKey].(*oauth2.Token)
 	data := UserData{}
-
 	if !ok || !token.Valid() {
 		data.Login = false
 	} else {
@@ -128,29 +127,25 @@ func (da *DashboardAgent) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Write(marshaledData)
 }
 
-func search(ctx context.Context, ghc githubClient) ([]PullRequest, error){
+func search(ctx context.Context, ghc githubClient) ([]PullRequest, error) {
 	var prs = []PullRequest{}
 	vars := map[string]interface{}{
-		"$prsStates":         githubql.PullRequestStateOpen,
-		"$prsCursor": 				(*githubql.String)(nil),
+		"prsStates": []githubql.PullRequestState {githubql.PullRequestStateOpen},
+		"prsCursor": (*githubql.String)(nil),
 	}
 	for {
 		pq := PullRequestQuery{}
 		if err := ghc.Query(ctx, &pq, vars); err != nil {
 			return nil, err
 		}
-		for _, n := range pq.User.PullRequests.Nodes {
+		for _, n := range pq.Viewer.PullRequests.Nodes {
 			prs = append(prs, n.PullRequest)
 		}
-		if !pq.User.PullRequests.PageInfo.HasNextPage {
+		if !pq.Viewer.PullRequests.PageInfo.HasNextPage {
 			break
 		}
-		vars["prsCursor"] = githubql.NewString(pq.User.PullRequests.PageInfo.EndCursor)
+		vars["prsCursor"] = githubql.NewString(pq.Viewer.PullRequests.PageInfo.EndCursor)
 	}
 
 	return prs, nil
 }
-
-
-
-

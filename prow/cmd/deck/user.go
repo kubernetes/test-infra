@@ -42,7 +42,6 @@ func (ua *userAgent) getData() (*userdashboard.UserData, error) {
 	if time.Now().Before(ua.expiry) {
 		return ua.data, nil
 	}
-
 	var data userdashboard.UserData
 	resp, err := http.Get(ua.path)
 	if err != nil {
