@@ -210,8 +210,11 @@ def random_sleep(attempt):
     time.sleep(random.random() + attempt ** 2)
 
 
-def checkout(call, repo, branch, pull, ssh='', git_cache='', clean=False):
-    """Fetch and checkout the repository at the specified branch/pull."""
+def checkout(call, repo, repo_path, branch, pull, ssh='', git_cache='', clean=False):
+    """Fetch and checkout the repository at the specified branch/pull.
+
+    Note that repo and repo_path should usually be the same, but repo_path can
+    be set to a different relative path where repo should be checked out."""
     # pylint: disable=too-many-locals
     if bool(branch) == bool(pull):
         raise ValueError('Must specify one of --branch or --pull')
@@ -228,11 +231,11 @@ def checkout(call, repo, branch, pull, ssh='', git_cache='', clean=False):
             os.makedirs(cache_dir)
         except OSError:
             pass
-        call([git, 'init', repo, '--separate-git-dir=%s' % cache_dir])
+        call([git, 'init', repo_path, '--separate-git-dir=%s' % cache_dir])
         call(['rm', '-f', '%s/index.lock' % cache_dir])
     else:
-        call([git, 'init', repo])
-    os.chdir(repo)
+        call([git, 'init', repo_path])
+    os.chdir(repo_path)
 
     if clean:
         call([git, 'clean', '-dfx'])
@@ -841,14 +844,29 @@ def setup_root(call, root, repos, ssh, git_cache, clean):
     os.chdir(root_dir)
     logging.info('cd to %s', root_dir)
 
+    # we want to checkout the correct repo for k-s/k but *everything*
+    # under the sun assumes $GOPATH/src/k8s.io/kubernetes so... :(
+    # after this method is called we've already computed the upload paths
+    # etc. so we can just swap it out for the desired path on disk
     with choose_ssh_key(ssh):
         for repo, (branch, pull) in repos.items():
             os.chdir(root_dir)
+            # for k-s/k these are different, for the rest they are the same
+            # TODO(bentheelder,cjwagner,stevekuznetsov): in the integrated
+            # prow checkout support remapping checkouts and kill this monstrosity
+            repo_path = repo
+            if repo == "github.com/kubernetes-security/kubernetes":
+                repo = "k8s.io/kubernetes"
             logging.info(
-                'Checkout: %s %s',
+                'Checkout: %s %s to %s',
                 os.path.join(root_dir, repo),
-                pull and pull or branch)
-            checkout(call, repo, branch, pull, ssh, git_cache, clean)
+                pull and pull or branch,
+                os.path.join(root_dir, repo_path))
+            checkout(call, repo, repo_path, branch, pull, ssh, git_cache, clean)
+    # switch out the main repo for the actual path on disk if we are k-s/k
+    # from this point forward this is the path we want to use for everything
+    if repos.main == "github.com/kubernetes-security/kubernetes":
+        repos["k8s.io/kubernetes"], repos.main = repos[repos.main], "k8s.io/kubernetes"
     if len(repos) > 1:  # cd back into the primary repo
         os.chdir(root_dir)
         os.chdir(repos.main)
