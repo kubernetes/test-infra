@@ -3441,7 +3441,7 @@ dashboards:
       alert_mail_to_addresses: 'gke-kubernetes-accelerators-bugs@google.com'
   - name: kubelet-serial-gce-e2e
     test_group_name: ci-kubernetes-node-kubelet-serial
-    base_options: 'include-filter-by-regex=GPU'
+    base_options: 'include-filter-by-regex=GPU|DevicePlugin'
   - name: kubelet-serial-gce-e2e-cpu-manager
     test_group_name: ci-kubernetes-node-kubelet-serial-cpu-manager
     alert_options:
