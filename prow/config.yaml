@@ -98,7 +98,7 @@ tide:
 
 presets:
 - labels:
-    preset: service-account
+    preset-service-account: true
   env:
   - name: GOOGLE_APPLICATION_CREDENTIALS
     value: /etc/service-account/service-account.json
@@ -124,7 +124,7 @@ presets:
     mountPath: /etc/service-account
     readOnly: true
 - labels:
-    ssh-preset: k8s-ssh
+    preset-k8s-ssh: true
   env:
   - name: USER
     value: prow
@@ -151,8 +151,8 @@ presubmits:
     rerun_command: "/test pull-cadvisor-e2e"
     trigger: "(?m)^/test( all| pull-cadvisor-e2e),?(\\s+|$)"
     labels:
-      preset: service-account
-      ssh-preset: k8s-ssh
+      preset-service-account: true
+      preset-k8s-ssh: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
@@ -185,7 +185,7 @@ presubmits:
     branches:
     - master
     labels:
-      preset: service-account
+      preset-service-account: true
     spec:
       containers:
       - image: gcr.io/mlkube-testing/kubeflow-testing:latest
@@ -199,7 +199,7 @@ presubmits:
     rerun_command: "/test pull-charts-e2e"
     trigger: "(?m)^/test( all| pull-charts-e2e),?(\\s+|$)"
     labels:
-      preset: service-account
+      preset-service-account: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180108-bf63630a9-master
@@ -234,7 +234,7 @@ presubmits:
     trigger: "(?m)^/test( all| pull-community-verify),?(\\s+|$)"
     always_run: true
     labels:
-      preset: service-account
+      preset-service-account: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
@@ -263,7 +263,7 @@ presubmits:
     trigger: "(?m)^/test( all| pull-kubernetes-dns-test),?(\\s+|$)"
     always_run: true
     labels:
-      preset: service-account
+      preset-service-account: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
@@ -292,7 +292,7 @@ presubmits:
     trigger: "(?m)^/test( all| pull-ingress-gce-test),?(\\s+|$)"
     always_run: true
     labels:
-      preset: service-account
+      preset-service-account: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
@@ -327,7 +327,7 @@ presubmits:
     trigger: "(?m)^/test( all| pull-kubernetes-multicluster-ingress-test),?(\\s+|$)"
     always_run: true
     labels:
-      preset: service-account
+      preset-service-account: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
@@ -352,7 +352,7 @@ presubmits:
     rerun_command: "/test pull-federation-bazel-test"
     trigger: "(?m)^/test( all| pull-federation-bazel-test),?(\\s+|$)"
     labels:
-      preset: service-account
+      preset-service-account: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/bazelbuild:v20171214-ae38d82af-0.8.1
@@ -395,7 +395,7 @@ presubmits:
     rerun_command: "/test pull-federation-e2e-gce"
     trigger: "(?m)^/test( all| pull-federation-e2e-gce),?(\\s+|$)"
     labels:
-      preset: service-account
+      preset-service-account: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180108-bf63630a9-master
@@ -441,7 +441,7 @@ presubmits:
     trigger: "/test( all| pull-federation-verify)"
     always_run: true
     labels:
-      preset: service-account
+      preset-service-account: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
@@ -468,7 +468,7 @@ presubmits:
     rerun_command: "/test pull-heapster-e2e"
     trigger: "(?m)^/test( all| pull-heapster-e2e),?(\\s+|$)"
     labels:
-      preset: service-account
+      preset-service-account: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
@@ -513,7 +513,7 @@ presubmits:
     rerun_command: "/test pull-kops-e2e-kubernetes-aws"
     trigger: "(?m)^/test( all| pull-kops-e2e-kubernetes-aws),?(\\s+|$)"
     labels:
-      preset: service-account
+      preset-service-account: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
@@ -574,7 +574,7 @@ presubmits:
     rerun_command: "/test pull-cluster-registry-bazel"
     trigger: "(?m)^/test( all| pull-cluster-registry-bazel),?(\\s+|$)"
     labels:
-      preset: service-account
+      preset-service-account: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/bazelbuild:v20171214-ae38d82af-0.8.1
@@ -611,7 +611,7 @@ presubmits:
     rerun_command: "/test pull-cluster-registry-verify-bazel"
     trigger: "(?m)^/test( all| pull-cluster-registry-verify-bazel),?(\\s+|$)"
     labels:
-      preset: service-account
+      preset-service-account: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/bazelbuild:v20171214-ae38d82af-0.8.1
@@ -634,7 +634,7 @@ presubmits:
     rerun_command: "/test pull-cluster-registry-verify-gensrc"
     trigger: "(?m)^/test( all| pull-cluster-registry-verify-gensrc),?(\\s+|$)"
     labels:
-      preset: service-account
+      preset-service-account: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
@@ -671,7 +671,7 @@ presubmits:
     rerun_command: "/test pull-cluster-registry-verify-gosrc"
     trigger: "(?m)^/test( all| pull-cluster-registry-verify-gosrc),?(\\s+|$)"
     labels:
-      preset: service-account
+      preset-service-account: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-1.8
@@ -699,7 +699,7 @@ presubmits:
     branches:
     - master
     labels:
-      preset: service-account
+      preset-service-account: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
@@ -719,7 +719,7 @@ presubmits:
       rerun_command: "/test pull-cri-containerd-node-e2e"
       trigger: "(?m)^/test( all| pull-cri-containerd-node-e2e),?(\\s+|$)"
       labels:
-        preset: service-account
+        preset-service-account: true
       spec:
         containers:
         - image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
@@ -768,7 +768,7 @@ presubmits:
     branches:
     - master
     labels:
-      preset: service-account
+      preset-service-account: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
@@ -789,7 +789,7 @@ presubmits:
     - release-1.7 # different target set
     - release-1.8 # different target set
     labels:
-      preset: service-account
+      preset-service-account: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/bazelbuild:v20171214-ae38d82af-0.8.1
@@ -836,7 +836,7 @@ presubmits:
       - release-1.7 # different target set
       - release-1.8 # different target set
       labels:
-        preset: service-account
+        preset-service-account: true
       spec:
         containers:
         - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180123-fe0e523d9
@@ -882,7 +882,7 @@ presubmits:
     - release-1.7
     - release-1.8
     labels:
-      preset: service-account
+      preset-service-account: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/bazelbuild:v20171214-ae38d82af-0.6.1
@@ -928,7 +928,7 @@ presubmits:
       - release-1.7
       - release-1.8
       labels:
-        preset: service-account
+        preset-service-account: true
       spec:
         containers:
         - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180123-fe0e523d9
@@ -974,7 +974,7 @@ presubmits:
     branches:
     - master
     labels:
-      preset: service-account
+      preset-service-account: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/bazelbuild:latest-latest
@@ -1016,7 +1016,7 @@ presubmits:
       rerun_command: "/test pull-kubernetes-e2e-kubeadm-gce-canary"
       trigger: "(?m)^/test pull-kubernetes-e2e-kubeadm-gce-canary,?(\\s+|$)"
       labels:
-        preset: service-account
+        preset-service-account: true
       spec:
         containers:
         - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180123-fe0e523d9
@@ -1064,7 +1064,7 @@ presubmits:
     - release-1.7 # different set of targets
     - release-1.8 # different set of targets
     labels:
-      preset: service-account
+      preset-service-account: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/bazelbuild:v20171214-ae38d82af-0.8.1
@@ -1110,7 +1110,7 @@ presubmits:
     - release-1.7
     - release-1.8
     labels:
-      preset: service-account
+      preset-service-account: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/bazelbuild:v20171214-ae38d82af-0.6.1
@@ -1155,7 +1155,7 @@ presubmits:
     branches:
     - master
     labels:
-      preset: service-account
+      preset-service-account: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/bazelbuild:latest-latest
@@ -1201,7 +1201,7 @@ presubmits:
     trigger: "(?m)^/test pull-kubernetes-cross,?(\\s+|$)"
     run_if_changed: '^(build\/|hack\/lib\/)|(Makefile)|(.*_(windows|linux|osx|unsupported)(_test)?\.go)$'
     labels:
-      preset: service-account
+      preset-service-account: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/bootstrap:v20180122-6fd3aef1a
@@ -1249,7 +1249,7 @@ presubmits:
     trigger: "(?m)^/test pull-kubernetes-cross-prow,?(\\s+|$)"
     always_run: false
     labels:
-      preset: service-account
+      preset-service-account: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/bootstrap:latest
@@ -1296,7 +1296,7 @@ presubmits:
     branches:
     - master
     labels:
-      preset: service-account
+      preset-service-account: true
     spec:
       containers:
       - args:
@@ -1353,7 +1353,7 @@ presubmits:
     - release-1.7 # per-release image
     - release-1.8 # per-release image
     labels:
-      preset: service-account
+      preset-service-account: true
     spec:
       containers:
       - args:
@@ -1408,7 +1408,7 @@ presubmits:
     branches:
     - release-1.8
     labels:
-      preset: service-account
+      preset-service-account: true
     spec:
       containers:
       - args:
@@ -1463,7 +1463,7 @@ presubmits:
     branches:
     - release-1.7
     labels:
-      preset: service-account
+      preset-service-account: true
     spec:
       containers:
       - args:
@@ -1523,7 +1523,7 @@ presubmits:
     rerun_command: "/test pull-kubernetes-e2e-gce-device-plugin-gpu"
     trigger: "(?m)^/test( all| pull-kubernetes-e2e-gce-device-plugin-gpu),?(\\s+|$)"
     labels:
-      preset: service-account
+      preset-service-account: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
@@ -1580,7 +1580,7 @@ presubmits:
     rerun_command: "/test pull-kubernetes-e2e-gce-device-plugin-gpu"
     trigger: "(?m)^/test( all| pull-kubernetes-e2e-gce-device-plugin-gpu),?(\\s+|$)"
     labels:
-      preset: service-account
+      preset-service-account: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-1.8
@@ -1641,7 +1641,7 @@ presubmits:
     - release-1.7 # per-release image
     - release-1.8 # per-release image
     labels:
-      preset: service-account
+      preset-service-account: true
     spec:
       containers:
       - args:
@@ -1697,7 +1697,7 @@ presubmits:
     branches:
     - release-1.8
     labels:
-      preset: service-account
+      preset-service-account: true
     spec:
       containers:
       - args:
@@ -1753,7 +1753,7 @@ presubmits:
     branches:
     - release-1.7
     labels:
-      preset: service-account
+      preset-service-account: true
     spec:
       containers:
       - args:
@@ -1813,7 +1813,7 @@ presubmits:
     rerun_command: "/test pull-kubernetes-e2e-gke-device-plugin-gpu"
     trigger: "(?m)^/test pull-kubernetes-e2e-gke-device-plugin-gpu,?(\\s+|$)"
     labels:
-      preset: service-account
+      preset-service-account: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
@@ -1870,7 +1870,7 @@ presubmits:
     rerun_command: "/test pull-kubernetes-e2e-gke-device-plugin-gpu"
     trigger: "(?m)^/test pull-kubernetes-e2e-gke-device-plugin-gpu,?(\\s+|$)"
     labels:
-      preset: service-account
+      preset-service-account: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-1.8
@@ -1929,7 +1929,7 @@ presubmits:
     rerun_command: "/test pull-kubernetes-e2e-kops-aws"
     trigger: "(?m)^/test( all| pull-kubernetes-e2e-kops-aws),?(\\s+|$)"
     labels:
-      preset: service-account
+      preset-service-account: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
@@ -1994,7 +1994,7 @@ presubmits:
     rerun_command: "/test pull-kubernetes-e2e-kops-aws"
     trigger: "(?m)^/test( all| pull-kubernetes-e2e-kops-aws),?(\\s+|$)"
     labels:
-      preset: service-account
+      preset-service-account: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-1.8
@@ -2059,7 +2059,7 @@ presubmits:
     rerun_command: "/test pull-kubernetes-e2e-kops-aws"
     trigger: "(?m)^/test( all| pull-kubernetes-e2e-kops-aws),?(\\s+|$)"
     labels:
-      preset: service-account
+      preset-service-account: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-1.7
@@ -2126,7 +2126,7 @@ presubmits:
     rerun_command: "/test pull-kubernetes-kubemark-e2e-gce"
     trigger: "(?m)^/test( all| pull-kubernetes-kubemark-e2e-gce),?(\\s+|$)"
     labels:
-      preset: service-account
+      preset-service-account: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
@@ -2190,7 +2190,7 @@ presubmits:
     rerun_command: "/test pull-kubernetes-kubemark-e2e-gce"
     trigger: "(?m)^/test( all| pull-kubernetes-kubemark-e2e-gce),?(\\s+|$)"
     labels:
-      preset: service-account
+      preset-service-account: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-1.8
@@ -2254,7 +2254,7 @@ presubmits:
     rerun_command: "/test pull-kubernetes-kubemark-e2e-gce"
     trigger: "(?m)^/test( all| pull-kubernetes-kubemark-e2e-gce),?(\\s+|$)"
     labels:
-      preset: service-account
+      preset-service-account: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-1.7
@@ -2321,7 +2321,7 @@ presubmits:
     rerun_command: "/test pull-kubernetes-kubemark-e2e-gce-big"
     trigger: "(?m)^/test pull-kubernetes-kubemark-e2e-gce-big,?(\\s+|$)"
     labels:
-      preset: service-account
+      preset-service-account: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
@@ -2385,7 +2385,7 @@ presubmits:
     rerun_command: "/test pull-kubernetes-kubemark-e2e-gce-big"
     trigger: "(?m)^/test pull-kubernetes-kubemark-e2e-gce-big,?(\\s+|$)"
     labels:
-      preset: service-account
+      preset-service-account: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-1.8
@@ -2449,7 +2449,7 @@ presubmits:
     rerun_command: "/test pull-kubernetes-kubemark-e2e-gce-big"
     trigger: "(?m)^/test pull-kubernetes-kubemark-e2e-gce-big,?(\\s+|$)"
     labels:
-      preset: service-account
+      preset-service-account: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-1.7
@@ -2514,7 +2514,7 @@ presubmits:
     rerun_command: "/test pull-kubernetes-kubemark-e2e-gce-scale"
     trigger: "(?m)^/test pull-kubernetes-kubemark-e2e-gce-scale,?(\\s+|$)"
     labels:
-      preset: service-account
+      preset-service-account: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
@@ -2581,7 +2581,7 @@ presubmits:
     rerun_command: "/test pull-kubernetes-node-e2e"
     trigger: "(?m)^/test( all| pull-kubernetes-node-e2e),?(\\s+|$)"
     labels:
-      preset: service-account
+      preset-service-account: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
@@ -2633,7 +2633,7 @@ presubmits:
     rerun_command: "/test pull-kubernetes-node-e2e"
     trigger: "(?m)^/test( all| pull-kubernetes-node-e2e),?(\\s+|$)"
     labels:
-      preset: service-account
+      preset-service-account: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-1.8
@@ -2685,7 +2685,7 @@ presubmits:
     rerun_command: "/test pull-kubernetes-node-e2e"
     trigger: "(?m)^/test( all| pull-kubernetes-node-e2e),?(\\s+|$)"
     labels:
-      preset: service-account
+      preset-service-account: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-1.7
@@ -2738,7 +2738,7 @@ presubmits:
     rerun_command: "/test pull-kubernetes-node-e2e-containerd"
     trigger: "(?m)^/test pull-kubernetes-node-e2e-containerd,?(\\s+|$)"
     labels:
-      preset: service-account
+      preset-service-account: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
@@ -2783,7 +2783,7 @@ presubmits:
     rerun_command: "/test pull-kubernetes-unit"
     trigger: "(?m)^/test( all| pull-kubernetes-unit),?(\\s+|$)"
     labels:
-      preset: service-account
+      preset-service-account: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/bootstrap:v20180122-6fd3aef1a
@@ -2820,7 +2820,7 @@ presubmits:
     rerun_command: "/test pull-kubernetes-unit-prow"
     trigger: "(?m)^/test pull-kubernetes-unit-prow,?(\\s+|$)"
     labels:
-      preset: service-account
+      preset-service-account: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/bootstrap:latest
@@ -2864,7 +2864,7 @@ presubmits:
     rerun_command: "/test pull-kubernetes-verify"
     trigger: "(?m)^/test( all| pull-kubernetes-verify),?(\\s+|$)"
     labels:
-      preset: service-account
+      preset-service-account: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/bootstrap:v20180122-6fd3aef1a
@@ -2901,7 +2901,7 @@ presubmits:
     rerun_command: "/test pull-kubernetes-verify-prow"
     trigger: "(?m)^/test pull-kubernetes-verify-prow,?(\\s+|$)"
     labels:
-      preset: service-account
+      preset-service-account: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/bootstrap:latest
@@ -2939,7 +2939,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-bazel-build
     labels:
-      preset: service-account
+      preset-service-account: "true"
     max_concurrency: 0
     name: pull-security-kubernetes-bazel-build
     rerun_command: /test pull-security-kubernetes-bazel-build
@@ -2949,7 +2949,7 @@ presubmits:
       cluster: security
       context: pull-security-kubernetes-e2e-kubeadm-gce
       labels:
-        preset: service-account
+        preset-service-account: "true"
       max_concurrency: 8
       name: pull-security-kubernetes-e2e-kubeadm-gce
       rerun_command: /test pull-security-kubernetes-e2e-kubeadm-gce
@@ -3037,7 +3037,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-bazel-build
     labels:
-      preset: service-account
+      preset-service-account: "true"
     max_concurrency: 0
     name: pull-security-kubernetes-bazel-build
     rerun_command: /test pull-security-kubernetes-bazel-build
@@ -3050,7 +3050,7 @@ presubmits:
       cluster: security
       context: pull-security-kubernetes-e2e-kubeadm-gce
       labels:
-        preset: service-account
+        preset-service-account: "true"
       max_concurrency: 8
       name: pull-security-kubernetes-e2e-kubeadm-gce
       rerun_command: /test pull-security-kubernetes-e2e-kubeadm-gce
@@ -3129,7 +3129,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-bazel-build-canary
     labels:
-      preset: service-account
+      preset-service-account: "true"
     max_concurrency: 0
     name: pull-security-kubernetes-bazel-build-canary
     rerun_command: /test pull-security-kubernetes-bazel-build-canary
@@ -3139,7 +3139,7 @@ presubmits:
       cluster: security
       context: pull-security-kubernetes-e2e-kubeadm-gce-canary
       labels:
-        preset: service-account
+        preset-service-account: "true"
       max_concurrency: 8
       name: pull-security-kubernetes-e2e-kubeadm-gce-canary
       rerun_command: /test pull-security-kubernetes-e2e-kubeadm-gce-canary
@@ -3221,7 +3221,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-bazel-test
     labels:
-      preset: service-account
+      preset-service-account: "true"
     max_concurrency: 0
     name: pull-security-kubernetes-bazel-test
     rerun_command: /test pull-security-kubernetes-bazel-test
@@ -3270,7 +3270,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-bazel-test
     labels:
-      preset: service-account
+      preset-service-account: "true"
     max_concurrency: 0
     name: pull-security-kubernetes-bazel-test
     rerun_command: /test pull-security-kubernetes-bazel-test
@@ -3313,7 +3313,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-bazel-test-canary
     labels:
-      preset: service-account
+      preset-service-account: "true"
     max_concurrency: 0
     name: pull-security-kubernetes-bazel-test-canary
     rerun_command: /test pull-security-kubernetes-bazel-test-canary
@@ -3357,7 +3357,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-cross
     labels:
-      preset: service-account
+      preset-service-account: "true"
     max_concurrency: 0
     name: pull-security-kubernetes-cross
     rerun_command: /test pull-security-kubernetes-cross
@@ -3406,7 +3406,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-cross-prow
     labels:
-      preset: service-account
+      preset-service-account: "true"
     max_concurrency: 0
     name: pull-security-kubernetes-cross-prow
     rerun_command: /test pull-security-kubernetes-cross-prow
@@ -3454,7 +3454,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-e2e-containerd-gce
     labels:
-      preset: service-account
+      preset-service-account: "true"
     max_concurrency: 0
     name: pull-security-kubernetes-e2e-containerd-gce
     rerun_command: /test pull-security-kubernetes-e2e-containerd-gce
@@ -3504,7 +3504,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-e2e-gce
     labels:
-      preset: service-account
+      preset-service-account: "true"
     max_concurrency: 0
     name: pull-security-kubernetes-e2e-gce
     rerun_command: /test pull-security-kubernetes-e2e-gce
@@ -3561,7 +3561,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-e2e-gce
     labels:
-      preset: service-account
+      preset-service-account: "true"
     max_concurrency: 0
     name: pull-security-kubernetes-e2e-gce
     rerun_command: /test pull-security-kubernetes-e2e-gce
@@ -3614,7 +3614,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-e2e-gce
     labels:
-      preset: service-account
+      preset-service-account: "true"
     max_concurrency: 0
     name: pull-security-kubernetes-e2e-gce
     rerun_command: /test pull-security-kubernetes-e2e-gce
@@ -3665,7 +3665,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-e2e-gce-device-plugin-gpu
     labels:
-      preset: service-account
+      preset-service-account: "true"
     max_concurrency: 12
     name: pull-security-kubernetes-e2e-gce-device-plugin-gpu
     rerun_command: /test pull-security-kubernetes-e2e-gce-device-plugin-gpu
@@ -3724,7 +3724,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-e2e-gce-device-plugin-gpu
     labels:
-      preset: service-account
+      preset-service-account: "true"
     max_concurrency: 12
     name: pull-security-kubernetes-e2e-gce-device-plugin-gpu
     rerun_command: /test pull-security-kubernetes-e2e-gce-device-plugin-gpu
@@ -3777,7 +3777,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-e2e-gke
     labels:
-      preset: service-account
+      preset-service-account: "true"
     max_concurrency: 0
     name: pull-security-kubernetes-e2e-gke
     rerun_command: /test pull-security-kubernetes-e2e-gke
@@ -3834,7 +3834,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-e2e-gke
     labels:
-      preset: service-account
+      preset-service-account: "true"
     max_concurrency: 0
     name: pull-security-kubernetes-e2e-gke
     rerun_command: /test pull-security-kubernetes-e2e-gke
@@ -3887,7 +3887,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-e2e-gke
     labels:
-      preset: service-account
+      preset-service-account: "true"
     max_concurrency: 0
     name: pull-security-kubernetes-e2e-gke
     rerun_command: /test pull-security-kubernetes-e2e-gke
@@ -3938,7 +3938,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-e2e-gke-device-plugin-gpu
     labels:
-      preset: service-account
+      preset-service-account: "true"
     max_concurrency: 1
     name: pull-security-kubernetes-e2e-gke-device-plugin-gpu
     rerun_command: /test pull-security-kubernetes-e2e-gke-device-plugin-gpu
@@ -3997,7 +3997,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-e2e-gke-device-plugin-gpu
     labels:
-      preset: service-account
+      preset-service-account: "true"
     max_concurrency: 1
     name: pull-security-kubernetes-e2e-gke-device-plugin-gpu
     rerun_command: /test pull-security-kubernetes-e2e-gke-device-plugin-gpu
@@ -4050,7 +4050,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-e2e-kops-aws
     labels:
-      preset: service-account
+      preset-service-account: "true"
     max_concurrency: 12
     name: pull-security-kubernetes-e2e-kops-aws
     rerun_command: /test pull-security-kubernetes-e2e-kops-aws
@@ -4118,7 +4118,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-e2e-kops-aws
     labels:
-      preset: service-account
+      preset-service-account: "true"
     max_concurrency: 12
     name: pull-security-kubernetes-e2e-kops-aws
     rerun_command: /test pull-security-kubernetes-e2e-kops-aws
@@ -4182,7 +4182,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-e2e-kops-aws
     labels:
-      preset: service-account
+      preset-service-account: "true"
     max_concurrency: 12
     name: pull-security-kubernetes-e2e-kops-aws
     rerun_command: /test pull-security-kubernetes-e2e-kops-aws
@@ -4244,7 +4244,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-kubemark-e2e-gce
     labels:
-      preset: service-account
+      preset-service-account: "true"
     max_concurrency: 12
     name: pull-security-kubernetes-kubemark-e2e-gce
     rerun_command: /test pull-security-kubernetes-kubemark-e2e-gce
@@ -4309,7 +4309,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-kubemark-e2e-gce
     labels:
-      preset: service-account
+      preset-service-account: "true"
     max_concurrency: 12
     name: pull-security-kubernetes-kubemark-e2e-gce
     rerun_command: /test pull-security-kubernetes-kubemark-e2e-gce
@@ -4370,7 +4370,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-kubemark-e2e-gce
     labels:
-      preset: service-account
+      preset-service-account: "true"
     max_concurrency: 12
     name: pull-security-kubernetes-kubemark-e2e-gce
     rerun_command: /test pull-security-kubernetes-kubemark-e2e-gce
@@ -4429,7 +4429,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-kubemark-e2e-gce-big
     labels:
-      preset: service-account
+      preset-service-account: "true"
     max_concurrency: 12
     name: pull-security-kubernetes-kubemark-e2e-gce-big
     rerun_command: /test pull-security-kubernetes-kubemark-e2e-gce-big
@@ -4494,7 +4494,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-kubemark-e2e-gce-big
     labels:
-      preset: service-account
+      preset-service-account: "true"
     max_concurrency: 12
     name: pull-security-kubernetes-kubemark-e2e-gce-big
     rerun_command: /test pull-security-kubernetes-kubemark-e2e-gce-big
@@ -4555,7 +4555,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-kubemark-e2e-gce-big
     labels:
-      preset: service-account
+      preset-service-account: "true"
     max_concurrency: 12
     name: pull-security-kubernetes-kubemark-e2e-gce-big
     rerun_command: /test pull-security-kubernetes-kubemark-e2e-gce-big
@@ -4616,7 +4616,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-kubemark-e2e-gce-scale
     labels:
-      preset: service-account
+      preset-service-account: "true"
     max_concurrency: 1
     name: pull-security-kubernetes-kubemark-e2e-gce-scale
     rerun_command: /test pull-security-kubernetes-kubemark-e2e-gce-scale
@@ -4675,7 +4675,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-node-e2e
     labels:
-      preset: service-account
+      preset-service-account: "true"
     max_concurrency: 12
     name: pull-security-kubernetes-node-e2e
     rerun_command: /test pull-security-kubernetes-node-e2e
@@ -4733,7 +4733,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-node-e2e
     labels:
-      preset: service-account
+      preset-service-account: "true"
     max_concurrency: 12
     name: pull-security-kubernetes-node-e2e
     rerun_command: /test pull-security-kubernetes-node-e2e
@@ -4787,7 +4787,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-node-e2e
     labels:
-      preset: service-account
+      preset-service-account: "true"
     max_concurrency: 12
     name: pull-security-kubernetes-node-e2e
     rerun_command: /test pull-security-kubernetes-node-e2e
@@ -4841,7 +4841,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-node-e2e-containerd
     labels:
-      preset: service-account
+      preset-service-account: "true"
     max_concurrency: 8
     name: pull-security-kubernetes-node-e2e-containerd
     rerun_command: /test pull-security-kubernetes-node-e2e-containerd
@@ -4890,7 +4890,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-unit
     labels:
-      preset: service-account
+      preset-service-account: "true"
     max_concurrency: 0
     name: pull-security-kubernetes-unit
     rerun_command: /test pull-security-kubernetes-unit
@@ -4934,7 +4934,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-unit-prow
     labels:
-      preset: service-account
+      preset-service-account: "true"
     max_concurrency: 0
     name: pull-security-kubernetes-unit-prow
     rerun_command: /test pull-security-kubernetes-unit-prow
@@ -4979,7 +4979,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-verify
     labels:
-      preset: service-account
+      preset-service-account: "true"
     max_concurrency: 0
     name: pull-security-kubernetes-verify
     rerun_command: /test pull-security-kubernetes-verify
@@ -5023,7 +5023,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-verify-prow
     labels:
-      preset: service-account
+      preset-service-account: "true"
     max_concurrency: 0
     name: pull-security-kubernetes-verify-prow
     rerun_command: /test pull-security-kubernetes-verify-prow
@@ -5073,7 +5073,7 @@ presubmits:
     rerun_command: "/test pull-test-infra-bazel"
     trigger: "(?m)^/test( all| pull-test-infra-bazel),?(\\s+|$)"
     labels:
-      preset: service-account
+      preset-service-account: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/bazelbuild:v20171214-ae38d82af-0.8.1
@@ -5118,7 +5118,7 @@ presubmits:
     rerun_command: "/test pull-test-infra-bazel-canary"
     trigger: "(?m)^/test pull-test-infra-bazel-canary,?(\\s+|$)"
     labels:
-      preset: service-account
+      preset-service-account: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/bazelbuild:latest-latest
@@ -5159,7 +5159,7 @@ presubmits:
     trigger: "(?m)^/test pull-test-infra-gubernator,?(\\s+|$)"
     run_if_changed: 'gubernator|prow/config.yaml'
     labels:
-      preset: service-account
+      preset-service-account: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/gubernator:0.4
@@ -5188,7 +5188,7 @@ presubmits:
     trigger: "(?m)^/test( all| pull-test-infra-verify-bazel),?(\\s+|$)"
     always_run: true
     labels:
-      preset: service-account
+      preset-service-account: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
@@ -5207,7 +5207,7 @@ presubmits:
     trigger: "/test pull-test-infra-verify-config"
     run_if_changed: '^prow/config.yaml$'
     labels:
-      preset: service-account
+      preset-service-account: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/bazelbuild:v20171214-ae38d82af-0.8.1
@@ -5242,7 +5242,7 @@ presubmits:
     trigger: "/test pull-test-infra-verify-deps"
     run_if_changed: '^(Gopkg\.|^vendor/).*$'
     labels:
-      preset: service-account
+      preset-service-account: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/bazelbuild:v20171214-ae38d82af-0.8.1
@@ -5277,7 +5277,7 @@ presubmits:
     trigger: "/test( all| pull-test-infra-verify-gofmt)"
     always_run: true
     labels:
-      preset: service-account
+      preset-service-account: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
@@ -5296,7 +5296,7 @@ presubmits:
     trigger: "/test( all| pull-test-infra-verify-govet)"
     always_run: true
     labels:
-      preset: service-account
+      preset-service-account: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
@@ -5316,7 +5316,7 @@ presubmits:
     branches:
     - master
     labels:
-      preset: service-account
+      preset-service-account: true
     spec:
       containers:
       # TODO(jlewi): Replace latest with a specific tag once the images stabilize.
@@ -5330,7 +5330,7 @@ postsubmits:
     branches:
     - master
     labels:
-      preset: service-account
+      preset-service-account: true
     spec:
       containers:
       - image: gcr.io/mlkube-testing/kubeflow-testing:latest
@@ -5342,7 +5342,7 @@ postsubmits:
     branches:
     - master
     labels:
-      preset: service-account
+      preset-service-account: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
@@ -5373,7 +5373,7 @@ postsubmits:
     branches:
     - master
     labels:
-      preset: service-account
+      preset-service-account: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/bazelbuild:v20171214-ae38d82af-0.8.1
@@ -5410,7 +5410,7 @@ postsubmits:
     - name: ci-kubernetes-bazel-test
       agent: kubernetes
       labels:
-        preset: service-account
+        preset-service-account: true
       spec:
         containers:
         - image: gcr.io/k8s-testimages/bazelbuild:v20171214-ae38d82af-0.8.1
@@ -5451,7 +5451,7 @@ postsubmits:
     branches:
     - release-1.7
     labels:
-      preset: service-account
+      preset-service-account: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/bazelbuild:v20171214-ae38d82af-0.6.1
@@ -5487,7 +5487,7 @@ postsubmits:
     - name: ci-kubernetes-bazel-test-1-7
       agent: kubernetes
       labels:
-        preset: service-account
+        preset-service-account: true
       spec:
         containers:
         - image: gcr.io/k8s-testimages/bazelbuild:v20171214-ae38d82af-0.6.1
@@ -5521,7 +5521,7 @@ postsubmits:
     - name: ci-kubernetes-e2e-kubeadm-gce-1-7
       agent: kubernetes
       labels:
-        preset: service-account
+        preset-service-account: true
       spec:
         containers:
         - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180123-fe0e523d9
@@ -5561,7 +5561,7 @@ postsubmits:
     branches:
     - release-1.8
     labels:
-      preset: service-account
+      preset-service-account: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/bazelbuild:v20171214-ae38d82af-0.6.1
@@ -5597,7 +5597,7 @@ postsubmits:
     - name: ci-kubernetes-bazel-test-1-8
       agent: kubernetes
       labels:
-        preset: service-account
+        preset-service-account: true
       spec:
         containers:
         - image: gcr.io/k8s-testimages/bazelbuild:v20171214-ae38d82af-0.6.1
@@ -5631,7 +5631,7 @@ postsubmits:
     - name: ci-kubernetes-e2e-kubeadm-gce-1-8
       agent: kubernetes
       labels:
-        preset: service-account
+        preset-service-account: true
       spec:
         containers:
         - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180123-fe0e523d9
@@ -5668,7 +5668,7 @@ postsubmits:
     - name: ci-kubernetes-e2e-kubeadm-gce-1-7-on-1-8
       agent: kubernetes
       labels:
-        preset: service-account
+        preset-service-account: true
       spec:
         containers:
         - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180123-fe0e523d9
@@ -5708,7 +5708,7 @@ postsubmits:
     branches:
     - release-1.9
     labels:
-      preset: service-account
+      preset-service-account: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/bazelbuild:v20171214-ae38d82af-0.8.1
@@ -5745,7 +5745,7 @@ postsubmits:
     - name: ci-kubernetes-bazel-test-1-9
       agent: kubernetes
       labels:
-        preset: service-account
+        preset-service-account: true
       spec:
         containers:
         - image: gcr.io/k8s-testimages/bazelbuild:v20171214-ae38d82af-0.8.1
@@ -5783,7 +5783,7 @@ postsubmits:
     - name: ci-kubernetes-e2e-kubeadm-gce-1-8-on-1-9
       agent: kubernetes
       labels:
-        preset: service-account
+        preset-service-account: true
       spec:
         containers:
         - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180123-fe0e523d9
@@ -5825,7 +5825,7 @@ postsubmits:
     branches:
     - master
     labels:
-      preset: service-account
+      preset-service-account: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/bazelbuild:v20171214-ae38d82af-0.8.1
@@ -5867,7 +5867,7 @@ postsubmits:
     branches:
     - master
     labels:
-      preset: service-account
+      preset-service-account: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
@@ -5895,7 +5895,7 @@ postsubmits:
     branches:
     - master
     labels:
-      preset: service-account
+      preset-service-account: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/bazelbuild:v20171214-ae38d82af-0.8.1
@@ -5919,7 +5919,7 @@ postsubmits:
     branches:
     - master
     labels:
-      preset: service-account
+      preset-service-account: true
     spec:
       containers:
       # TODO(jlewi): Replace latest with a specific tag once the images stabilize.
@@ -5931,7 +5931,7 @@ periodics:
   interval: 1h
   agent: kubernetes
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
@@ -5947,7 +5947,7 @@ periodics:
   interval: 30m
   agent: kubernetes
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
@@ -5960,7 +5960,7 @@ periodics:
   interval: 3h
   agent: kubernetes
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -5988,7 +5988,7 @@ periodics:
   agent: kubernetes
   name: ci-cri-containerd-e2e-gce-multizone
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -6016,7 +6016,7 @@ periodics:
   agent: kubernetes
   name: ci-cri-containerd-e2e-gce-stackdriver
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -6044,7 +6044,7 @@ periodics:
   agent: kubernetes
   name: ci-cri-containerd-e2e-gci-gce
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -6072,7 +6072,7 @@ periodics:
   agent: kubernetes
   name: ci-cri-containerd-e2e-gci-gce-alpha-features
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -6100,7 +6100,7 @@ periodics:
   agent: kubernetes
   name: ci-cri-containerd-e2e-gci-gce-es-logging
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -6128,7 +6128,7 @@ periodics:
   agent: kubernetes
   name: ci-cri-containerd-e2e-gci-gce-etcd3
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -6156,7 +6156,7 @@ periodics:
   agent: kubernetes
   name: ci-cri-containerd-e2e-gci-gce-flaky
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -6184,7 +6184,7 @@ periodics:
   agent: kubernetes
   name: ci-cri-containerd-e2e-gci-gce-ingress
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -6212,7 +6212,7 @@ periodics:
   agent: kubernetes
   name: ci-cri-containerd-e2e-gci-gce-ip-alias
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -6240,7 +6240,7 @@ periodics:
   agent: kubernetes
   name: ci-cri-containerd-e2e-gci-gce-proto
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -6268,7 +6268,7 @@ periodics:
   agent: kubernetes
   name: ci-cri-containerd-e2e-gci-gce-reboot
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -6296,7 +6296,7 @@ periodics:
   agent: kubernetes
   name: ci-cri-containerd-e2e-gci-gce-sd-logging
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -6324,7 +6324,7 @@ periodics:
   agent: kubernetes
   name: ci-cri-containerd-e2e-gci-gce-serial
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -6352,7 +6352,7 @@ periodics:
   agent: kubernetes
   name: ci-cri-containerd-e2e-gci-gce-slow
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -6380,7 +6380,7 @@ periodics:
   agent: kubernetes
   name: ci-cri-containerd-e2e-gci-gce-statefulset
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -6408,7 +6408,7 @@ periodics:
   agent: kubernetes
   name: ci-cri-containerd-e2e-ubuntu-gce
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -6436,7 +6436,7 @@ periodics:
   interval: 1h
   agent: kubernetes
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
@@ -6470,7 +6470,7 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
@@ -6505,7 +6505,7 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
@@ -6539,7 +6539,7 @@ periodics:
   interval: 4h
   agent: kubernetes
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
@@ -6573,7 +6573,7 @@ periodics:
   agent: kubernetes
   name: ci-federation-e2e-gce
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -6609,7 +6609,7 @@ periodics:
   agent: kubernetes
   name: ci-federation-e2e-gce-serial
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -6645,7 +6645,7 @@ periodics:
   agent: kubernetes
   interval: 60m
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
@@ -6672,7 +6672,7 @@ periodics:
   agent: kubernetes
   interval: 60m
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
@@ -6699,7 +6699,7 @@ periodics:
   agent: kubernetes
   interval: 60m
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
@@ -6726,7 +6726,7 @@ periodics:
   interval: 6h
   agent: kubernetes
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - image: gcr.io/k8s-testimages/bazelbuild:v20171214-ae38d82af-0.8.1
@@ -6763,7 +6763,7 @@ periodics:
   - name: ci-kubernetes-e2e-kubeadm-gce
     agent: kubernetes
     labels:
-      preset: service-account
+      preset-service-account: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180123-fe0e523d9
@@ -6800,7 +6800,7 @@ periodics:
   - name: ci-kubernetes-e2e-kubeadm-gce-ipvs
     agent: kubernetes
     labels:
-      preset: service-account
+      preset-service-account: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180123-fe0e523d9
@@ -6828,7 +6828,7 @@ periodics:
   - name: periodic-kubernetes-e2e-kubeadm-gce-selfhosting
     agent: kubernetes
     labels:
-      preset: service-account
+      preset-service-account: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180123-fe0e523d9
@@ -6865,7 +6865,7 @@ periodics:
   - name: ci-kubernetes-e2e-kubeadm-gce-stable-on-master
     agent: kubernetes
     labels:
-      preset: service-account
+      preset-service-account: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180123-fe0e523d9
@@ -6902,7 +6902,7 @@ periodics:
   - name: ci-kubernetes-e2e-kubeadm-gce-upgrade-stable-master
     agent: kubernetes
     labels:
-      preset: service-account
+      preset-service-account: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180123-fe0e523d9
@@ -6939,7 +6939,7 @@ periodics:
   - name: ci-kubernetes-e2e-kubeadm-gce-cni-calico
     agent: kubernetes
     labels:
-      preset: service-account
+      preset-service-account: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180123-fe0e523d9
@@ -6976,7 +6976,7 @@ periodics:
   - name: ci-kubernetes-e2e-kubeadm-gce-cni-flannel
     agent: kubernetes
     labels:
-      preset: service-account
+      preset-service-account: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180123-fe0e523d9
@@ -7013,7 +7013,7 @@ periodics:
   - name: ci-kubernetes-e2e-kubeadm-gce-dns-coredns
     agent: kubernetes
     labels:
-      preset: service-account
+      preset-service-account: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180123-fe0e523d9
@@ -7051,7 +7051,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-charts-gce
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -7080,7 +7080,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-cos-docker-validation
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -7108,7 +7108,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-cos-docker-validation-serial
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -7136,7 +7136,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-cos-docker-validation-slow
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -7164,7 +7164,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-alpha-api
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -7192,7 +7192,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-alpha-features-release-1-7
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -7220,7 +7220,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-beta-stable1-downgrade-cluster
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -7248,7 +7248,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-beta-stable1-downgrade-cluster-parallel
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -7276,7 +7276,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-beta-stable1-gci-kubectl-skew
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -7304,7 +7304,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-beta-stable1-gci-kubectl-skew-serial
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -7332,7 +7332,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-canary
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -7362,8 +7362,8 @@ periodics:
   interval: 48h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gce-cos-k8sbeta-alphafeatures
   spec:
     containers:
@@ -7377,8 +7377,8 @@ periodics:
   interval: 48h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gce-cos-k8sbeta-default
   spec:
     containers:
@@ -7392,8 +7392,8 @@ periodics:
   interval: 48h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gce-cos-k8sbeta-ingress
   spec:
     containers:
@@ -7407,8 +7407,8 @@ periodics:
   interval: 48h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gce-cos-k8sbeta-reboot
   spec:
     containers:
@@ -7422,8 +7422,8 @@ periodics:
   interval: 48h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gce-cos-k8sbeta-serial
   spec:
     containers:
@@ -7437,8 +7437,8 @@ periodics:
   interval: 48h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gce-cos-k8sbeta-slow
   spec:
     containers:
@@ -7452,8 +7452,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gce-cos-k8sstable1-alphafeatures
   spec:
     containers:
@@ -7467,8 +7467,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gce-cos-k8sstable1-default
   spec:
     containers:
@@ -7482,8 +7482,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gce-cos-k8sstable1-ingress
   spec:
     containers:
@@ -7497,8 +7497,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gce-cos-k8sstable1-reboot
   spec:
     containers:
@@ -7512,8 +7512,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gce-cos-k8sstable1-serial
   spec:
     containers:
@@ -7527,8 +7527,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gce-cos-k8sstable1-slow
   spec:
     containers:
@@ -7542,8 +7542,8 @@ periodics:
   interval: 6h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gce-cos-k8sstable2-alphafeatures
   spec:
     containers:
@@ -7557,8 +7557,8 @@ periodics:
   interval: 6h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gce-cos-k8sstable2-default
   spec:
     containers:
@@ -7572,8 +7572,8 @@ periodics:
   interval: 6h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gce-cos-k8sstable2-ingress
   spec:
     containers:
@@ -7587,8 +7587,8 @@ periodics:
   interval: 6h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gce-cos-k8sstable2-reboot
   spec:
     containers:
@@ -7602,8 +7602,8 @@ periodics:
   interval: 6h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gce-cos-k8sstable2-serial
   spec:
     containers:
@@ -7617,8 +7617,8 @@ periodics:
   interval: 6h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gce-cos-k8sstable2-slow
   spec:
     containers:
@@ -7632,8 +7632,8 @@ periodics:
   interval: 24h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gce-cos-k8sstable3-alphafeatures
   spec:
     containers:
@@ -7647,8 +7647,8 @@ periodics:
   interval: 24h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gce-cos-k8sstable3-default
   spec:
     containers:
@@ -7662,8 +7662,8 @@ periodics:
   interval: 24h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gce-cos-k8sstable3-ingress
   spec:
     containers:
@@ -7677,8 +7677,8 @@ periodics:
   interval: 24h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gce-cos-k8sstable3-reboot
   spec:
     containers:
@@ -7692,8 +7692,8 @@ periodics:
   interval: 24h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gce-cos-k8sstable3-serial
   spec:
     containers:
@@ -7707,8 +7707,8 @@ periodics:
   interval: 24h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gce-cos-k8sstable3-slow
   spec:
     containers:
@@ -7722,8 +7722,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gce-cosbeta-k8sbeta-default
   spec:
     containers:
@@ -7737,8 +7737,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gce-cosbeta-k8sbeta-serial
   spec:
     containers:
@@ -7752,8 +7752,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gce-cosbeta-k8sbeta-slow
   spec:
     containers:
@@ -7767,8 +7767,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gce-cosbeta-k8sdev-default
   spec:
     containers:
@@ -7782,8 +7782,8 @@ periodics:
   interval: 24h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gce-cosbeta-k8sdev-nosnat
   spec:
     containers:
@@ -7797,8 +7797,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gce-cosbeta-k8sdev-serial
   spec:
     containers:
@@ -7812,8 +7812,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gce-cosbeta-k8sdev-slow
   spec:
     containers:
@@ -7827,8 +7827,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gce-cosbeta-k8sstable1-default
   spec:
     containers:
@@ -7842,8 +7842,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gce-cosbeta-k8sstable1-serial
   spec:
     containers:
@@ -7857,8 +7857,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gce-cosbeta-k8sstable1-slow
   spec:
     containers:
@@ -7872,8 +7872,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gce-cosbeta-k8sstable2-default
   spec:
     containers:
@@ -7887,8 +7887,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gce-cosbeta-k8sstable2-serial
   spec:
     containers:
@@ -7902,8 +7902,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gce-cosbeta-k8sstable2-slow
   spec:
     containers:
@@ -7917,8 +7917,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gce-cosbeta-k8sstable3-default
   spec:
     containers:
@@ -7932,8 +7932,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gce-cosbeta-k8sstable3-serial
   spec:
     containers:
@@ -7947,8 +7947,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gce-cosbeta-k8sstable3-slow
   spec:
     containers:
@@ -7962,8 +7962,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gce-cosdev-k8sbeta-default
   spec:
     containers:
@@ -7977,8 +7977,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gce-cosdev-k8sbeta-serial
   spec:
     containers:
@@ -7992,8 +7992,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gce-cosdev-k8sbeta-slow
   spec:
     containers:
@@ -8007,8 +8007,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gce-cosdev-k8sdev-default
   spec:
     containers:
@@ -8022,8 +8022,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gce-cosdev-k8sdev-serial
   spec:
     containers:
@@ -8037,8 +8037,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gce-cosdev-k8sdev-slow
   spec:
     containers:
@@ -8052,8 +8052,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gce-cosdev-k8sstable1-default
   spec:
     containers:
@@ -8067,8 +8067,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gce-cosdev-k8sstable1-serial
   spec:
     containers:
@@ -8082,8 +8082,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gce-cosdev-k8sstable1-slow
   spec:
     containers:
@@ -8097,8 +8097,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gce-cosstable1-k8sbeta-default
   spec:
     containers:
@@ -8112,8 +8112,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gce-cosstable1-k8sbeta-serial
   spec:
     containers:
@@ -8127,8 +8127,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gce-cosstable1-k8sbeta-slow
   spec:
     containers:
@@ -8142,8 +8142,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gce-cosstable1-k8sdev-default
   spec:
     containers:
@@ -8157,8 +8157,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gce-cosstable1-k8sdev-serial
   spec:
     containers:
@@ -8172,8 +8172,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gce-cosstable1-k8sdev-slow
   spec:
     containers:
@@ -8187,8 +8187,8 @@ periodics:
   interval: 6h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gce-cosstable1-k8sstable1-default
   spec:
     containers:
@@ -8202,8 +8202,8 @@ periodics:
   interval: 6h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gce-cosstable1-k8sstable1-serial
   spec:
     containers:
@@ -8217,8 +8217,8 @@ periodics:
   interval: 6h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gce-cosstable1-k8sstable1-slow
   spec:
     containers:
@@ -8232,8 +8232,8 @@ periodics:
   interval: 6h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gce-cosstable1-k8sstable2-default
   spec:
     containers:
@@ -8247,8 +8247,8 @@ periodics:
   interval: 6h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gce-cosstable1-k8sstable2-serial
   spec:
     containers:
@@ -8262,8 +8262,8 @@ periodics:
   interval: 6h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gce-cosstable1-k8sstable2-slow
   spec:
     containers:
@@ -8277,8 +8277,8 @@ periodics:
   interval: 6h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gce-cosstable1-k8sstable3-default
   spec:
     containers:
@@ -8292,8 +8292,8 @@ periodics:
   interval: 6h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gce-cosstable1-k8sstable3-serial
   spec:
     containers:
@@ -8307,8 +8307,8 @@ periodics:
   interval: 6h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gce-cosstable1-k8sstable3-slow
   spec:
     containers:
@@ -8321,7 +8321,7 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -8349,7 +8349,7 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -8377,7 +8377,7 @@ periodics:
   interval: 6h
   agent: kubernetes
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -8405,7 +8405,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-federation-release-1-7
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -8433,7 +8433,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-federation-release-1-8
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -8461,7 +8461,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-gci-ci-master
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -8489,7 +8489,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-gci-ci-serial-master
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -8517,7 +8517,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-gci-ci-slow-master
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -8545,7 +8545,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-gci-latest-rollback-etcd
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -8573,7 +8573,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-gci-latest-upgrade-etcd
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -8601,7 +8601,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-gci-qa-m62
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -8629,7 +8629,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-gci-qa-m63
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -8657,7 +8657,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-gci-qa-m64
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -8685,7 +8685,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-gci-qa-m65
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -8713,7 +8713,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-gci-qa-master
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -8741,7 +8741,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-gci-qa-serial-m62
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -8769,7 +8769,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-gci-qa-serial-m63
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -8797,7 +8797,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-gci-qa-serial-m64
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -8825,7 +8825,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-gci-qa-serial-m65
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -8853,7 +8853,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-gci-qa-serial-master
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -8881,7 +8881,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-gci-qa-slow-m62
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -8909,7 +8909,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-gci-qa-slow-m63
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -8937,7 +8937,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-gci-qa-slow-m64
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -8965,7 +8965,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-gci-qa-slow-m65
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -8993,7 +8993,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-gci-qa-slow-master
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -9021,7 +9021,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-gci-serial-sig-cli
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -9049,7 +9049,7 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -9077,7 +9077,7 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -9105,7 +9105,7 @@ periodics:
   interval: 6h
   agent: kubernetes
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -9133,7 +9133,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-ha-master
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -9161,7 +9161,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-large-correctness
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -9193,7 +9193,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-large-manual-down
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -9222,7 +9222,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-large-manual-up
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -9253,7 +9253,7 @@ periodics:
   tags:
   - "perfDashPrefix: gce-2kNodes-master"
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -9285,7 +9285,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-master-new-downgrade-cluster
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -9313,7 +9313,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-master-new-downgrade-cluster-parallel
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -9341,7 +9341,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-master-new-gci-kubectl-skew
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -9369,7 +9369,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-master-new-gci-kubectl-skew-serial
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -9397,7 +9397,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-min-node-permissions
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -9425,7 +9425,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-multizone
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -9453,7 +9453,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-new-master-gci-kubectl-skew
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -9481,7 +9481,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-new-master-gci-kubectl-skew-serial
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -9509,7 +9509,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-new-master-upgrade-cluster
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -9537,7 +9537,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-new-master-upgrade-cluster-new
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -9565,7 +9565,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-new-master-upgrade-cluster-parallel
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -9593,7 +9593,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-new-master-upgrade-master
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -9621,7 +9621,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-reboot-release-1-7
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -9649,7 +9649,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-release-1-7
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -9677,7 +9677,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-scalability-canary
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -9706,7 +9706,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-scale-correctness
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -9740,7 +9740,7 @@ periodics:
   tags:
   - "perfDashPrefix: gce-5kNodes-master"
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -9772,7 +9772,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-serial-release-1-7
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -9800,7 +9800,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-slow-release-1-7
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -9828,7 +9828,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-stable1-beta-gci-kubectl-skew
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -9856,7 +9856,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-stable1-beta-gci-kubectl-skew-serial
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -9884,7 +9884,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-stable1-beta-upgrade-cluster
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -9912,7 +9912,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-stable1-beta-upgrade-cluster-new
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -9940,7 +9940,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-stable1-beta-upgrade-master
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -9968,7 +9968,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-stable1-stable2-downgrade-cluster
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -9996,7 +9996,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-stable1-stable2-downgrade-cluster-parallel
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -10024,7 +10024,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-stable1-stable2-gci-kubectl-skew
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -10052,7 +10052,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-stable1-stable2-gci-kubectl-skew-serial
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -10080,7 +10080,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-stable2-stable1-gci-kubectl-skew
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -10108,7 +10108,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-stable2-stable1-gci-kubectl-skew-serial
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -10136,7 +10136,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-stable2-stable1-upgrade-cluster
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -10164,7 +10164,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-stable2-stable1-upgrade-cluster-new
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -10192,7 +10192,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-stable2-stable1-upgrade-master
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -10220,7 +10220,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-stackdriver
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -10248,7 +10248,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gce-taint-evict
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -10277,8 +10277,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gce-ubuntudev-k8sbeta-default
   spec:
     containers:
@@ -10292,8 +10292,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gce-ubuntudev-k8sbeta-serial
   spec:
     containers:
@@ -10307,8 +10307,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gce-ubuntudev-k8sbeta-slow
   spec:
     containers:
@@ -10322,8 +10322,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gce-ubuntudev-k8sdev-default
   spec:
     containers:
@@ -10337,8 +10337,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gce-ubuntudev-k8sdev-serial
   spec:
     containers:
@@ -10352,8 +10352,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gce-ubuntudev-k8sdev-slow
   spec:
     containers:
@@ -10367,8 +10367,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gce-ubuntudev-k8sstable1-default
   spec:
     containers:
@@ -10382,8 +10382,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gce-ubuntudev-k8sstable1-serial
   spec:
     containers:
@@ -10397,8 +10397,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gce-ubuntudev-k8sstable1-slow
   spec:
     containers:
@@ -10412,8 +10412,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gce-ubuntudev-k8sstable2-default
   spec:
     containers:
@@ -10427,8 +10427,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gce-ubuntudev-k8sstable2-serial
   spec:
     containers:
@@ -10442,8 +10442,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gce-ubuntudev-k8sstable2-slow
   spec:
     containers:
@@ -10457,8 +10457,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gce-ubuntudev2-k8sbeta-default
   spec:
     containers:
@@ -10472,8 +10472,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gce-ubuntudev2-k8sbeta-serial
   spec:
     containers:
@@ -10487,8 +10487,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gce-ubuntudev2-k8sbeta-slow
   spec:
     containers:
@@ -10502,8 +10502,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gce-ubuntudev2-k8sdev-default
   spec:
     containers:
@@ -10517,8 +10517,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gce-ubuntudev2-k8sdev-serial
   spec:
     containers:
@@ -10532,8 +10532,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gce-ubuntudev2-k8sdev-slow
   spec:
     containers:
@@ -10547,8 +10547,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gce-ubuntustable1-k8sdev-default
   spec:
     containers:
@@ -10562,8 +10562,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gce-ubuntustable1-k8sdev-serial
   spec:
     containers:
@@ -10577,8 +10577,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gce-ubuntustable1-k8sdev-slow
   spec:
     containers:
@@ -10592,8 +10592,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gce-ubuntustable1-k8sstable1-default
   spec:
     containers:
@@ -10607,8 +10607,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gce-ubuntustable1-k8sstable1-serial
   spec:
     containers:
@@ -10622,8 +10622,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gce-ubuntustable1-k8sstable1-slow
   spec:
     containers:
@@ -10637,8 +10637,8 @@ periodics:
   interval: 6h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gce-ubuntustable1-k8sstable2-default
   spec:
     containers:
@@ -10652,8 +10652,8 @@ periodics:
   interval: 6h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gce-ubuntustable1-k8sstable2-serial
   spec:
     containers:
@@ -10667,8 +10667,8 @@ periodics:
   interval: 6h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gce-ubuntustable1-k8sstable2-slow
   spec:
     containers:
@@ -10681,7 +10681,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -10709,7 +10709,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-alpha-features
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -10737,7 +10737,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-autoscaling
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -10765,7 +10765,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-autoscaling-migs
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -10793,7 +10793,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-es-logging
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -10821,7 +10821,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-etcd3
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -10849,7 +10849,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-etcd3-sig-cli
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -10877,7 +10877,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-flaky
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -10905,7 +10905,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-garbage
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -10933,7 +10933,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-ingress
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -10961,7 +10961,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-ingress-manual-network
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -10989,7 +10989,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-ip-alias
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -11017,7 +11017,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-latest-downgrade-kube-proxy-ds
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -11045,7 +11045,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-latest-upgrade-kube-proxy-ds
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -11073,7 +11073,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-proto
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -11101,7 +11101,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-reboot
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -11131,7 +11131,7 @@ periodics:
   tags:
   - "perfDashPrefix: gce-100Nodes-master"
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -11161,7 +11161,7 @@ periodics:
   tags:
   - "perfDashPrefix: gce-100Nodes-1.9"
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -11192,7 +11192,7 @@ periodics:
   tags:
   - "perfDashPrefix: gce-100Nodes-1.7"
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -11222,7 +11222,7 @@ periodics:
   tags:
   - "perfDashPrefix: gce-100Nodes-1.8"
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -11250,7 +11250,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-sd-logging
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -11278,7 +11278,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-serial
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -11306,7 +11306,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-sig-cli
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -11334,7 +11334,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-slow
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -11362,7 +11362,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gci-gce-statefulset
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -11390,7 +11390,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gci-gke
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -11418,7 +11418,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gci-gke-alpha-features
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -11474,7 +11474,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gci-gke-flaky
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -11502,7 +11502,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gci-gke-ingress
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -11530,7 +11530,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gci-gke-multizone
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -11558,7 +11558,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gci-gke-prod
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -11586,7 +11586,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gci-gke-prod-parallel
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -11614,7 +11614,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gci-gke-prod-smoke
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -11642,7 +11642,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gci-gke-reboot
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -11670,7 +11670,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gci-gke-serial
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -11698,7 +11698,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gci-gke-sig-cli
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -11726,7 +11726,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gci-gke-slow
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -11754,7 +11754,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gci-gke-updown
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -11782,7 +11782,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-alpha-features-release-1-7
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -11810,7 +11810,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-beta-stable1-downgrade-cluster
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -11838,7 +11838,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-beta-stable1-downgrade-cluster-parallel
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -11866,7 +11866,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-beta-stable1-gci-kubectl-skew
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -11894,7 +11894,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-beta-stable1-gci-kubectl-skew-serial
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -11922,7 +11922,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-canary
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -11952,8 +11952,8 @@ periodics:
   interval: 48h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gke-cos-k8sbeta-default
   spec:
     containers:
@@ -11967,8 +11967,8 @@ periodics:
   interval: 48h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gke-cos-k8sbeta-ingress
   spec:
     containers:
@@ -11982,8 +11982,8 @@ periodics:
   interval: 48h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gke-cos-k8sbeta-reboot
   spec:
     containers:
@@ -11997,8 +11997,8 @@ periodics:
   interval: 48h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gke-cos-k8sbeta-serial
   spec:
     containers:
@@ -12012,8 +12012,8 @@ periodics:
   interval: 48h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gke-cos-k8sbeta-slow
   spec:
     containers:
@@ -12027,8 +12027,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gke-cos-k8sstable1-default
   spec:
     containers:
@@ -12042,8 +12042,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gke-cos-k8sstable1-ingress
   spec:
     containers:
@@ -12057,8 +12057,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gke-cos-k8sstable1-reboot
   spec:
     containers:
@@ -12072,8 +12072,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gke-cos-k8sstable1-serial
   spec:
     containers:
@@ -12087,8 +12087,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gke-cos-k8sstable1-slow
   spec:
     containers:
@@ -12102,8 +12102,8 @@ periodics:
   interval: 6h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gke-cos-k8sstable2-default
   spec:
     containers:
@@ -12117,8 +12117,8 @@ periodics:
   interval: 6h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gke-cos-k8sstable2-ingress
   spec:
     containers:
@@ -12132,8 +12132,8 @@ periodics:
   interval: 6h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gke-cos-k8sstable2-reboot
   spec:
     containers:
@@ -12147,8 +12147,8 @@ periodics:
   interval: 6h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gke-cos-k8sstable2-serial
   spec:
     containers:
@@ -12162,8 +12162,8 @@ periodics:
   interval: 6h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gke-cos-k8sstable2-slow
   spec:
     containers:
@@ -12177,8 +12177,8 @@ periodics:
   interval: 6h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gke-cos-k8sstable3-default
   spec:
     containers:
@@ -12192,8 +12192,8 @@ periodics:
   interval: 6h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gke-cos-k8sstable3-ingress
   spec:
     containers:
@@ -12207,8 +12207,8 @@ periodics:
   interval: 6h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gke-cos-k8sstable3-reboot
   spec:
     containers:
@@ -12222,8 +12222,8 @@ periodics:
   interval: 6h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gke-cos-k8sstable3-serial
   spec:
     containers:
@@ -12237,8 +12237,8 @@ periodics:
   interval: 6h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gke-cos-k8sstable3-slow
   spec:
     containers:
@@ -12251,7 +12251,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-cos-oldetcd-default # TODO(krzyzacy) this job is temporary, remove once we verify it works
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -12279,7 +12279,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-cos-oldetcd-serial # TODO(krzyzacy) this job is temporary, remove once we verify it works
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -12307,7 +12307,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-cos-oldetcd-slow # TODO(krzyzacy) this job is temporary, remove once we verify it works
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -12336,8 +12336,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gke-cosbeta-k8sbeta-soak
   spec:
     containers:
@@ -12351,8 +12351,8 @@ periodics:
   interval: 3h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gke-cosbeta-k8sbeta-stackdriver
   spec:
     containers:
@@ -12366,8 +12366,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gke-cosbeta-k8sdev-soak
   spec:
     containers:
@@ -12381,8 +12381,8 @@ periodics:
   interval: 3h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gke-cosbeta-k8sdev-stackdriver
   spec:
     containers:
@@ -12396,8 +12396,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gke-cosbeta-k8sstable1-soak
   spec:
     containers:
@@ -12411,8 +12411,8 @@ periodics:
   interval: 3h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gke-cosbeta-k8sstable1-stackdriver
   spec:
     containers:
@@ -12426,8 +12426,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gke-cosbeta-k8sstable2-soak
   spec:
     containers:
@@ -12441,8 +12441,8 @@ periodics:
   interval: 3h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gke-cosbeta-k8sstable2-stackdriver
   spec:
     containers:
@@ -12456,8 +12456,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gke-cosbeta-k8sstable3-soak
   spec:
     containers:
@@ -12471,8 +12471,8 @@ periodics:
   interval: 3h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gke-cosbeta-k8sstable3-stackdriver
   spec:
     containers:
@@ -12485,7 +12485,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-cvm-1-7-gci-1-8-upgrade-cluster
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -12513,7 +12513,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-cvm-1-7-gci-1-8-upgrade-cluster-new
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -12541,7 +12541,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-cvm-1-7-gci-1-8-upgrade-master
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -12569,7 +12569,7 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -12597,7 +12597,7 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -12625,7 +12625,7 @@ periodics:
   interval: 3h
   agent: kubernetes
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -12653,7 +12653,7 @@ periodics:
   interval: 12h #expensive test
   agent: kubernetes
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -12681,7 +12681,7 @@ periodics:
   interval: 12h #expensive test
   agent: kubernetes
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -12709,7 +12709,7 @@ periodics:
   interval: 6h
   agent: kubernetes
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -12737,7 +12737,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-gci-ci-master
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -12766,7 +12766,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-gci-master-gci-new-downgrade-cluster
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -12794,7 +12794,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-gci-master-gci-new-downgrade-cluster-parallel
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -12822,7 +12822,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -12850,7 +12850,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster-new
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -12878,7 +12878,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-cluster-parallel
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -12906,7 +12906,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-gci-new-gci-master-upgrade-master
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -12934,7 +12934,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-gci-serial-sig-cli
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -12962,7 +12962,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-gci-stable-gci-master-upgrade-master
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -12990,7 +12990,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-gci-stable1-gci-stable2-downgrade-cluster
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -13018,7 +13018,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-gci-stable1-gci-stable2-downgrade-cluster-parallel
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -13046,7 +13046,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-gci-stable2-gci-stable1-upgrade-cluster
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -13074,7 +13074,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-gci-stable2-gci-stable1-upgrade-cluster-new
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -13102,7 +13102,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-gci-stable2-gci-stable1-upgrade-master
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -13130,7 +13130,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-gci-stable3-gci-stable1-upgrade-cluster
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -13158,7 +13158,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-gci-stable3-gci-stable1-upgrade-cluster-new
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -13186,7 +13186,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-gci-stable3-gci-stable1-upgrade-master
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -13214,7 +13214,7 @@ periodics:
   interval: 12h
   agent: kubernetes
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -13242,7 +13242,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-large-correctness
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -13274,7 +13274,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-large-deploy
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -13305,7 +13305,7 @@ periodics:
   tags:
   - "perfDashPrefix: gke-2kNodes-master"
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -13337,7 +13337,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-large-teardown
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -13366,7 +13366,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-master-new-gci-kubectl-skew
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -13394,7 +13394,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-master-new-gci-kubectl-skew-serial
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -13422,7 +13422,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-new-master-gci-kubectl-skew
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -13450,7 +13450,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-new-master-gci-kubectl-skew-serial
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -13478,7 +13478,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-prod
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -13506,7 +13506,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-prod-parallel
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -13534,7 +13534,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-prod-smoke
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -13590,7 +13590,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-scale-correctness
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -13622,7 +13622,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-sd-logging-gci-beta
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -13650,7 +13650,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-sd-logging-gci-latest
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -13678,7 +13678,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-sd-logging-gci-stable1
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -13706,7 +13706,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-sd-logging-ubuntu-beta
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -13734,7 +13734,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-sd-logging-ubuntu-latest
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -13762,7 +13762,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-sd-logging-ubuntu-stable1
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -13790,7 +13790,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-stable1-beta-gci-kubectl-skew
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -13818,7 +13818,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-stable1-beta-gci-kubectl-skew-serial
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -13846,7 +13846,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-stable1-beta-upgrade-cluster
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -13874,7 +13874,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-stable1-beta-upgrade-cluster-new
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -13902,7 +13902,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-stable1-beta-upgrade-master
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -13930,7 +13930,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-stable1-stable2-gci-kubectl-skew
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -13958,7 +13958,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-stable1-stable2-gci-kubectl-skew-serial
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -13986,7 +13986,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-stable2-stable1-gci-kubectl-skew
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -14014,7 +14014,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-stable2-stable1-gci-kubectl-skew-serial
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -14042,7 +14042,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-stackdriver
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -14070,7 +14070,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-staging-1-7-1-8-upgrade-cluster
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -14098,7 +14098,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-staging-1-7-1-8-upgrade-cluster-new
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -14126,7 +14126,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-staging-1-7-1-8-upgrade-master
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -14154,7 +14154,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-staging-1-8-1-9-upgrade-cluster
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -14182,7 +14182,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-staging-1-8-1-9-upgrade-cluster-new
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -14210,7 +14210,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-staging-1-8-1-9-upgrade-master
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -14238,7 +14238,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-staging-default-latest-upgrade-cluster
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -14266,7 +14266,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-staging-default-latest-upgrade-cluster-new
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -14294,7 +14294,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-staging-default-latest-upgrade-master
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -14322,7 +14322,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-staging-default-parallel
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -14350,7 +14350,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-staging-default-serial
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -14378,7 +14378,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-staging-latest-device-plugin-gpu
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -14406,7 +14406,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-staging-latest-parallel
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -14434,7 +14434,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-staging-latest-serial
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -14463,8 +14463,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-alphafeatures
   spec:
     containers:
@@ -14478,8 +14478,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-autoscaling
   spec:
     containers:
@@ -14493,8 +14493,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-default
   spec:
     containers:
@@ -14508,8 +14508,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-flaky
   spec:
     containers:
@@ -14523,8 +14523,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-ingress
   spec:
     containers:
@@ -14538,8 +14538,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-reboot
   spec:
     containers:
@@ -14553,8 +14553,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-serial
   spec:
     containers:
@@ -14568,8 +14568,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-slow
   spec:
     containers:
@@ -14583,8 +14583,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gke-ubuntustable1-k8sdev-updown
   spec:
     containers:
@@ -14598,8 +14598,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-alphafeatures
   spec:
     containers:
@@ -14613,8 +14613,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-autoscaling
   spec:
     containers:
@@ -14628,8 +14628,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-default
   spec:
     containers:
@@ -14644,8 +14644,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-flaky
   spec:
     containers:
@@ -14659,8 +14659,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-ingress
   spec:
     containers:
@@ -14674,8 +14674,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-reboot
   spec:
     containers:
@@ -14689,8 +14689,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-serial
   spec:
     containers:
@@ -14704,8 +14704,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-slow
   spec:
     containers:
@@ -14719,8 +14719,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable1-updown
   spec:
     containers:
@@ -14734,8 +14734,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-alphafeatures
   spec:
     containers:
@@ -14749,8 +14749,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-autoscaling
   spec:
     containers:
@@ -14764,8 +14764,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-default
   spec:
     containers:
@@ -14779,8 +14779,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-flaky
   spec:
     containers:
@@ -14794,8 +14794,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-ingress
   spec:
     containers:
@@ -14809,8 +14809,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-reboot
   spec:
     containers:
@@ -14824,8 +14824,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-serial
   spec:
     containers:
@@ -14839,8 +14839,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-slow
   spec:
     containers:
@@ -14854,8 +14854,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gke-ubuntustable1-k8sstable2-updown
   spec:
     containers:
@@ -14869,8 +14869,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-alphafeatures
   spec:
     containers:
@@ -14884,8 +14884,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-autoscaling
   spec:
     containers:
@@ -14899,8 +14899,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-default
   spec:
     containers:
@@ -14914,8 +14914,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-flaky
   spec:
     containers:
@@ -14929,8 +14929,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-ingress
   spec:
     containers:
@@ -14944,8 +14944,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-reboot
   spec:
     containers:
@@ -14959,8 +14959,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-serial
   spec:
     containers:
@@ -14974,8 +14974,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-slow
   spec:
     containers:
@@ -14989,8 +14989,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2e-gke-ubuntustable2-k8sbeta-updown
   spec:
     containers:
@@ -15003,7 +15003,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-updown
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -15031,7 +15031,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-kops-aws
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -15068,7 +15068,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-kops-aws-beta
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -15105,7 +15105,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-kops-aws-canary
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -15143,7 +15143,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-kops-aws-channelalpha
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -15181,7 +15181,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-kops-aws-ena-nvme
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -15219,7 +15219,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-kops-aws-imageubuntu1604
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -15257,7 +15257,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-kops-aws-newrunner
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -15296,7 +15296,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-kops-aws-release-1-7
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -15333,7 +15333,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-kops-aws-sig-cli
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -15370,7 +15370,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-kops-aws-stable1
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -15407,7 +15407,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-kops-aws-updown
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -15444,7 +15444,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-kops-aws-weave
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -15481,7 +15481,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-kops-gce
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -15509,7 +15509,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-kops-gce-channelalpha
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -15537,7 +15537,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-e2e-kops-gce-ha
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -15565,7 +15565,7 @@ periodics:
   interval: 1h
   agent: kubernetes
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
@@ -15597,7 +15597,7 @@ periodics:
   interval: 1h
   agent: kubernetes
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
@@ -15627,8 +15627,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2enode-cosbeta-k8sbeta-default
   spec:
     containers:
@@ -15645,8 +15645,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2enode-cosbeta-k8sbeta-serial
   spec:
     containers:
@@ -15663,8 +15663,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2enode-cosbeta-k8sdev-default
   spec:
     containers:
@@ -15681,8 +15681,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2enode-cosbeta-k8sdev-serial
   spec:
     containers:
@@ -15699,8 +15699,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2enode-cosbeta-k8sstable1-default
   spec:
     containers:
@@ -15717,8 +15717,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2enode-cosbeta-k8sstable1-serial
   spec:
     containers:
@@ -15735,8 +15735,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2enode-cosbeta-k8sstable2-default
   spec:
     containers:
@@ -15753,8 +15753,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2enode-cosbeta-k8sstable2-serial
   spec:
     containers:
@@ -15771,8 +15771,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2enode-cosbeta-k8sstable3-default
   spec:
     containers:
@@ -15789,8 +15789,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2enode-cosbeta-k8sstable3-serial
   spec:
     containers:
@@ -15807,8 +15807,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2enode-cosstable1-k8sbeta-default
   spec:
     containers:
@@ -15825,8 +15825,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2enode-cosstable1-k8sbeta-serial
   spec:
     containers:
@@ -15843,8 +15843,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2enode-cosstable1-k8sdev-default
   spec:
     containers:
@@ -15861,8 +15861,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2enode-cosstable1-k8sdev-serial
   spec:
     containers:
@@ -15879,8 +15879,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2enode-cosstable1-k8sstable1-default
   spec:
     containers:
@@ -15897,8 +15897,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2enode-cosstable1-k8sstable1-serial
   spec:
     containers:
@@ -15915,8 +15915,8 @@ periodics:
   interval: 6h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2enode-cosstable1-k8sstable2-default
   spec:
     containers:
@@ -15933,8 +15933,8 @@ periodics:
   interval: 6h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2enode-cosstable1-k8sstable2-serial
   spec:
     containers:
@@ -15951,8 +15951,8 @@ periodics:
   interval: 6h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2enode-cosstable1-k8sstable3-default
   spec:
     containers:
@@ -15969,8 +15969,8 @@ periodics:
   interval: 6h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2enode-cosstable1-k8sstable3-serial
   spec:
     containers:
@@ -15987,8 +15987,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2enode-ubuntudev-k8sdev-gkespec
   spec:
     containers:
@@ -16005,8 +16005,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2enode-ubuntudev-k8sdev-serial
   spec:
     containers:
@@ -16023,8 +16023,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2enode-ubuntudev-k8sstable1-gkespec
   spec:
     containers:
@@ -16041,8 +16041,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2enode-ubuntudev-k8sstable1-serial
   spec:
     containers:
@@ -16059,8 +16059,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2enode-ubuntudev-k8sstable2-gkespec
   spec:
     containers:
@@ -16077,8 +16077,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2enode-ubuntudev-k8sstable2-serial
   spec:
     containers:
@@ -16095,8 +16095,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2enode-ubuntudev2-k8sbeta-gkespec
   spec:
     containers:
@@ -16113,8 +16113,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2enode-ubuntudev2-k8sbeta-serial
   spec:
     containers:
@@ -16131,8 +16131,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2enode-ubuntudev2-k8sdev-gkespec
   spec:
     containers:
@@ -16149,8 +16149,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2enode-ubuntudev2-k8sdev-serial
   spec:
     containers:
@@ -16167,8 +16167,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2enode-ubuntustable1-k8sdev-gkespec
   spec:
     containers:
@@ -16185,8 +16185,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2enode-ubuntustable1-k8sdev-serial
   spec:
     containers:
@@ -16203,8 +16203,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2enode-ubuntustable1-k8sstable1-gkespec
   spec:
     containers:
@@ -16221,8 +16221,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2enode-ubuntustable1-k8sstable1-serial
   spec:
     containers:
@@ -16239,8 +16239,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2enode-ubuntustable1-k8sstable2-gkespec
   spec:
     containers:
@@ -16257,8 +16257,8 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
-    ssh-preset: k8s-ssh
+    preset-service-account: true
+    preset-k8s-ssh: true
   name: ci-kubernetes-e2enode-ubuntustable1-k8sstable2-serial
   spec:
     containers:
@@ -16274,7 +16274,7 @@ periodics:
   interval: 1h
   agent: kubernetes
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
@@ -16318,7 +16318,7 @@ periodics:
   interval: 3h
   agent: kubernetes
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
@@ -16360,7 +16360,7 @@ periodics:
   interval: 30m
   agent: kubernetes
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
@@ -16402,7 +16402,7 @@ periodics:
   interval: 30m
   agent: kubernetes
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
@@ -16444,7 +16444,7 @@ periodics:
   cron: "0 * * * *"
   agent: kubernetes
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
@@ -16480,7 +16480,7 @@ periodics:
   interval: 1h
   agent: kubernetes
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
@@ -16524,7 +16524,7 @@ periodics:
   interval: 12h
   agent: kubernetes
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
@@ -16568,7 +16568,7 @@ periodics:
   interval: 24h
   agent: kubernetes
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
@@ -16610,7 +16610,7 @@ periodics:
   interval: 1h
   agent: kubernetes
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
@@ -16641,7 +16641,7 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
@@ -16672,7 +16672,7 @@ periodics:
   interval: 48h
   agent: kubernetes
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
@@ -16703,7 +16703,7 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
@@ -16734,7 +16734,7 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
@@ -16765,7 +16765,7 @@ periodics:
   interval: 4h
   agent: kubernetes
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
@@ -16796,7 +16796,7 @@ periodics:
   interval: 4h
   agent: kubernetes
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
@@ -16827,7 +16827,7 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-1.9
@@ -16858,7 +16858,7 @@ periodics:
   interval: 6h
   agent: kubernetes
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-1.8
@@ -16889,7 +16889,7 @@ periodics:
   interval: 24h
   agent: kubernetes
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-1.7
@@ -16920,7 +16920,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-soak-cos-docker-validation
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -16949,7 +16949,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-soak-gce-1-7
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -16978,7 +16978,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-soak-gce-gci
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -17007,7 +17007,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-soak-gci-gce-stable1
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -17036,7 +17036,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-soak-gci-gce-stable2
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -17065,7 +17065,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-soak-gci-gce-stable3
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -17094,7 +17094,7 @@ periodics:
   agent: kubernetes
   name: ci-kubernetes-soak-gke-gci
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -17124,7 +17124,7 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
@@ -17154,7 +17154,7 @@ periodics:
   interval: 2h
   agent: kubernetes
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
@@ -17170,7 +17170,7 @@ periodics:
   interval: 1h
   agent: kubernetes
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - image: gcr.io/k8s-testimages/bazelbuild:v20171214-ae38d82af-0.8.1
@@ -17230,7 +17230,7 @@ periodics:
   agent: kubernetes
   name: cluster-registry-nightly
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - image: gcr.io/k8s-testimages/bazelbuild:v20171214-ae38d82af-0.8.1
@@ -17264,7 +17264,7 @@ periodics:
   agent: kubernetes
   interval: 24h
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - image: gcr.io/k8s-testimages/issue-creator:v20170907-5240cca5
@@ -17289,7 +17289,7 @@ periodics:
   agent: kubernetes
   name: istio-periodic-e2e-gke-addon
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180129-9bc72b9fb-master
@@ -17318,7 +17318,7 @@ periodics:
   interval: 8h
   agent: kubernetes
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - image: gcr.io/mlkube-testing/kubeflow-testing:latest
@@ -17328,7 +17328,7 @@ periodics:
   agent: kubernetes
   name: maintenance-ci-aws-janitor
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -17354,7 +17354,7 @@ periodics:
   agent: kubernetes
   name: maintenance-ci-janitor
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -17369,7 +17369,7 @@ periodics:
   agent: kubernetes
   name: maintenance-pull-janitor
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -17410,7 +17410,7 @@ periodics:
   interval: 12h
   agent: kubernetes
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - image: gcr.io/k8s-testimages/bazelbuild:v20171214-ae38d82af-0.6.1
@@ -17446,7 +17446,7 @@ periodics:
   - name: periodic-kubernetes-bazel-test-1-7
     agent: kubernetes
     labels:
-      preset: service-account
+      preset-service-account: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/bazelbuild:v20171214-ae38d82af-0.6.1
@@ -17480,7 +17480,7 @@ periodics:
   - name: periodic-kubernetes-e2e-kubeadm-gce-1-7
     agent: kubernetes
     labels:
-      preset: service-account
+      preset-service-account: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180123-fe0e523d9
@@ -17521,7 +17521,7 @@ periodics:
   interval: 6h
   agent: kubernetes
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - image: gcr.io/k8s-testimages/bazelbuild:v20171214-ae38d82af-0.6.1
@@ -17557,7 +17557,7 @@ periodics:
   - name: periodic-kubernetes-bazel-test-1-8
     agent: kubernetes
     labels:
-      preset: service-account
+      preset-service-account: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/bazelbuild:v20171214-ae38d82af-0.6.1
@@ -17591,7 +17591,7 @@ periodics:
   - name: periodic-kubernetes-e2e-kubeadm-gce-1-8
     agent: kubernetes
     labels:
-      preset: service-account
+      preset-service-account: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180123-fe0e523d9
@@ -17630,7 +17630,7 @@ periodics:
   - name: periodic-kubernetes-e2e-kubeadm-gce-upgrade-1-7-1-8
     agent: kubernetes
     labels:
-      preset: service-account
+      preset-service-account: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180123-fe0e523d9
@@ -17671,7 +17671,7 @@ periodics:
   branches:
   - master
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - image: gcr.io/k8s-testimages/bazelbuild:v20171214-ae38d82af-0.8.1
@@ -17708,7 +17708,7 @@ periodics:
   - name: periodic-kubernetes-bazel-test-1-9
     agent: kubernetes
     labels:
-      preset: service-account
+      preset-service-account: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/bazelbuild:v20171214-ae38d82af-0.8.1
@@ -17746,7 +17746,7 @@ periodics:
   - name: periodic-kubernetes-e2e-kubeadm-gce-1-9
     agent: kubernetes
     labels:
-      preset: service-account
+      preset-service-account: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180123-fe0e523d9
@@ -17783,7 +17783,7 @@ periodics:
   - name: periodic-kubernetes-e2e-kubeadm-gce-upgrade-1-8-1-9
     agent: kubernetes
     labels:
-      preset: service-account
+      preset-service-account: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/e2e-kubeadm:v20180123-fe0e523d9
@@ -17824,7 +17824,7 @@ periodics:
   agent: kubernetes
   name: periodic-kubernetes-e2e-debs-pushed
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - args:
@@ -17982,7 +17982,7 @@ periodics:
   agent: kubernetes
   name: spark-periodic-default-gke
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-e55a886b4-master
@@ -18030,7 +18030,7 @@ periodics:
   agent: kubernetes
   name: spark-periodic-latest-gke
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-e55a886b4-master
@@ -18078,7 +18078,7 @@ periodics:
   agent: kubernetes
   name: tf-k8s-periodic
   labels:
-    preset: service-account
+    preset-service-account: true
   spec:
     containers:
     # TODO(jlewi): Replace latest with a specific tag once the images stabilize.
