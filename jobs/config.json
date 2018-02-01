@@ -10924,7 +10924,8 @@
       "--gke-environment=test",
       "--gke-shape={\"default\":{\"Nodes\":4,\"MachineType\":\"n1-standard-2\"}}",
       "--provider=gke",
-      "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gke",
+      "--stage=gs://kubernetes-release-dev/ci",
+      "--stage-suffix=pull-kubernetes-e2e-gke",
       "--test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\] --minStartupPods=8",
       "--timeout=65m"
     ],
@@ -10947,7 +10948,8 @@
       "--gke-create-command=alpha container clusters create --quiet --enable-kubernetes-alpha --accelerator=type=nvidia-tesla-k80,count=2",
       "--gke-environment=test",
       "--provider=gke",
-      "--stage=gs://kubernetes-release-pull/ci/pull-kubernetes-e2e-gke-device-plugin-gpu",
+      "--stage=gs://kubernetes-release-dev/ci",
+      "--stage-suffix=pull-kubernetes-e2e-gke-device-plugin-gpu",
       "--test_args=--ginkgo.focus=\\[Feature:GPUDevicePlugin\\] --minStartupPods=8",
       "--timeout=60m"
     ],
