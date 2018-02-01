@@ -279,7 +279,7 @@ func handlePluginHelp(ha *helpAgent) http.HandlerFunc {
 
 func handleUserDashboard(ua *userAgent) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Cache-Control", "no-cache")
+		setHeadersNoCaching(w)
 		userData, err := ua.getData()
 		if err != nil {
 			logrus.WithError(err).Error("Getting data from hook")

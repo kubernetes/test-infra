@@ -45,14 +45,14 @@ func (ua *userAgent) getData() (*userdashboard.UserData, error) {
 	var data userdashboard.UserData
 	resp, err := http.Get(ua.path)
 	if err != nil {
-		return nil, fmt.Errorf("error GETing plugin help: %v", err)
+		return nil, fmt.Errorf("error GETing user dashboard data: %v", err)
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode < 200 || resp.StatusCode > 299 {
 		return nil, fmt.Errorf("response has status code %d", resp.StatusCode)
 	}
 	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
-		return nil, fmt.Errorf("error decoding json plugin help: %v", err)
+		return nil, fmt.Errorf("error decoding json user dashboard data: %v", err)
 	}
 
 	ua.data = &data
