@@ -12,6 +12,7 @@ go_library(
         "//prow/config:go_default_library",
         "//prow/github:go_default_library",
         "//prow/hook:go_default_library",
+        "//prow/jenkins:go_default_library",
         "//prow/kube:go_default_library",
         "//prow/pjutil:go_default_library",
         "//prow/report:go_default_library",

@@ -25,9 +25,9 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/hook"
+	"k8s.io/test-infra/prow/jenkins"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pjutil"
 	"k8s.io/test-infra/prow/report"
@@ -41,12 +41,12 @@ type Server struct {
 	hmacSecret  []byte
 	credentials string
 	prowURL     string
-	configAgent *config.Agent
+	configAgent *jenkins.Agent
 	ghc         *github.Client
 	log         *logrus.Entry
 }
 
-func NewServer(creds string, hmac []byte, ghc *github.Client, prowURL string, configAgent *config.Agent) *Server {
+func NewServer(creds string, hmac []byte, ghc *github.Client, prowURL string, configAgent *jenkins.Agent) *Server {
 	return &Server{
 		hmacSecret:  hmac,
 		credentials: creds,

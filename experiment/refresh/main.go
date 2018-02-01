@@ -30,8 +30,8 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/jenkins"
 )
 
 var (
@@ -65,7 +65,9 @@ func main() {
 		logrus.WithError(err).Fatal("Error validating flags.")
 	}
 
-	configAgent := &config.Agent{}
+	// TODO: Make it so that this plugin can read every report template
+	// in the config.
+	configAgent := &jenkins.Agent{}
 	if err := configAgent.Start(*configPath); err != nil {
 		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
