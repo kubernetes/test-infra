@@ -152,6 +152,7 @@ presubmits:
     trigger: "(?m)^/test( all| pull-cadvisor-e2e),?(\\s+|$)"
     labels:
       preset: service-account
+      ssh-preset: k8s-ssh
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
@@ -167,27 +168,13 @@ presubmits:
         - "--git-cache=/root/.cache/git"
         - "--"
         - "--node-args=--image-config-file=test/e2e_node/image-config.yaml"
-        env:
-        - name: USER
-          value: prow
-        - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
-          value: /etc/ssh-key-secret/ssh-private
-        - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
-          value: /etc/ssh-key-secret/ssh-public
         volumeMounts:
-        - mountPath: /etc/ssh-key-secret
-          name: ssh
-          readOnly: true
         - name: cache-ssd
           mountPath: /root/.cache
         ports:
         - containerPort: 9999
           hostPort: 9999
       volumes:
-      - name: ssh
-        secret:
-          defaultMode: 256
-          secretName: ssh-key-secret
       - name: cache-ssd
         hostPath:
           path: /mnt/disks/ssd0
