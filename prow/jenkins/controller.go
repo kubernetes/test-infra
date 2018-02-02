@@ -99,13 +99,29 @@ func NewController(kc *kube.Client, jc *Client, ghc *github.Client, logger *logr
 	}
 }
 
+func (c *Controller) config() config.Controller {
+	operators := c.ca.Config().JenkinsOperators
+	if len(operators) == 1 {
+		return operators[0].Controller
+	}
+	for _, cfg := range operators {
+		if cfg.LabelSelectorString == c.selector {
+			return cfg.Controller
+		}
+	}
+	// Default to something if no config exists.
+	// TODO: Disallow empty config during validation
+	// once jenkins-operator has its own config agent.
+	return config.Controller{MaxGoroutines: 20}
+}
+
 // canExecuteConcurrently checks whether the provided ProwJob can
 // be executed concurrently.
 func (c *Controller) canExecuteConcurrently(pj *kube.ProwJob) bool {
 	c.lock.Lock()
 	defer c.lock.Unlock()
 
-	if max := c.ca.Config().JenkinsOperator.MaxConcurrency; max > 0 {
+	if max := c.config().MaxConcurrency; max > 0 {
 		var running int
 		for _, num := range c.pendingJobs {
 			running += num
@@ -177,7 +193,7 @@ func (c *Controller) Sync() error {
 	c.pendingJobs = make(map[string]int)
 	// Sync pending jobs first so we can determine what is the maximum
 	// number of new jobs we can trigger when syncing the non-pendings.
-	maxSyncRoutines := c.ca.Config().JenkinsOperator.MaxGoroutines
+	maxSyncRoutines := c.config().MaxGoroutines
 	c.log.Debugf("Handling %d pending prowjobs", len(pendingCh))
 	syncProwJobs(c.log, c.syncPendingJob, maxSyncRoutines, pendingCh, reportCh, errCh, jbs)
 	c.log.Debugf("Handling %d triggered prowjobs", len(triggeredCh))
@@ -191,7 +207,7 @@ func (c *Controller) Sync() error {
 	}
 
 	var reportErrs []error
-	reportTemplate := c.ca.Config().JenkinsOperator.ReportTemplate
+	reportTemplate := c.config().ReportTemplate
 	for report := range reportCh {
 		if err := reportlib.Report(c.ghc, reportTemplate, report); err != nil {
 			reportErrs = append(reportErrs, err)
@@ -251,7 +267,7 @@ func (c *Controller) terminateDupes(pjs []kube.ProwJob, jbs map[string]JenkinsBu
 		toCancel := pjs[cancelIndex]
 		// Allow aborting presubmit jobs for commits that have been superseded by
 		// newer commits in Github pull requests.
-		if c.ca.Config().JenkinsOperator.AllowCancellations {
+		if c.config().AllowCancellations {
 			build, buildExists := jbs[toCancel.ObjectMeta.Name]
 			// Avoid cancelling enqueued builds.
 			if buildExists && build.IsEnqueued() {
@@ -362,7 +378,7 @@ func (c *Controller) syncPendingJob(pj kube.ProwJob, reports chan<- kube.ProwJob
 		pj.Status.PodName = fmt.Sprintf("%s-%d", pj.Spec.Job, jb.Number)
 		pj.Status.BuildID = strconv.Itoa(jb.Number)
 		var b bytes.Buffer
-		if err := c.ca.Config().JenkinsOperator.JobURLTemplate.Execute(&b, &pj); err != nil {
+		if err := c.config().JobURLTemplate.Execute(&b, &pj); err != nil {
 			return fmt.Errorf("error executing URL template: %v", err)
 		}
 		pj.Status.URL = b.String()
