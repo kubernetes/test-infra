@@ -27,6 +27,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"path"
 	"regexp"
 	"strconv"
 	"time"
@@ -94,7 +95,8 @@ func main() {
 
 	mux := http.NewServeMux()
 
-	mux.Handle("/", gziphandler.GzipHandler(handleCached(http.FileServer(http.Dir("/static")))))
+	mux.Handle("/", defaultExtension(".html",
+		gziphandler.GzipHandler(handleCached(http.FileServer(http.Dir("/static"))))))
 	mux.Handle("/data.js", gziphandler.GzipHandler(handleData(ja)))
 	mux.Handle("/prowjobs.js", gziphandler.GzipHandler(handleProwJobs(ja)))
 	mux.Handle("/log", gziphandler.GzipHandler(handleLog(ja)))
@@ -147,6 +149,30 @@ func loadToken(file string) (string, error) {
 		return "", err
 	}
 	return string(bytes.TrimSpace(raw)), nil
+}
+
+// copy a http.Request
+// see: https://go-review.googlesource.com/c/go/+/36483/3/src/net/http/server.go
+func dupeRequest(original *http.Request) *http.Request {
+	r2 := new(http.Request)
+	*r2 = *original
+	r2.URL = new(url.URL)
+	*r2.URL = *original.URL
+	return r2
+}
+
+// serve with handler but map extensionless URLs to to the default
+func defaultExtension(extension string, h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if len(r.URL.Path) > 0 &&
+			r.URL.Path[len(r.URL.Path)-1] != '/' && path.Ext(r.URL.Path) == "" {
+			r2 := dupeRequest(r)
+			r2.URL.Path = r.URL.Path + extension
+			h.ServeHTTP(w, r2)
+		} else {
+			h.ServeHTTP(w, r)
+		}
+	})
 }
 
 func handleCached(next http.Handler) http.Handler {
