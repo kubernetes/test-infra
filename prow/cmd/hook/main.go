@@ -199,7 +199,8 @@ func main() {
 
 	goa := gitoauth.NewGitOAuthAgent(gitOAuthConfig, logrus.WithField("component", "gitoauth"))
 
-	http.Handle("/user-dashboard", userdashboard.NewDashboardAgent(gitOAuthConfig, logrus.WithField("component", "user-dashboard")))
+	userDashboardAgent := userdashboard.NewDashboardAgent(gitOAuthConfig, logrus.WithField("component", "user-dashboard"))
+	http.Handle("/user-dashboard", userDashboardAgent.HandleUserDashboard(userDashboardAgent))
 	// Handles Login Request
 	http.HandleFunc("/user-dashboard/login", goa.HandleLogin)
 	// Handles Login Request

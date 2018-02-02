@@ -35,6 +35,10 @@ type githubClient interface {
 	Query(context.Context, interface{}, map[string]interface{}) error
 }
 
+type PullRequestQueryHandler interface {
+	Query(context.Context, githubClient) ([]PullRequest, error)
+}
+
 type UserData struct {
 	Login        bool
 	PullRequests []PullRequest
@@ -91,43 +95,45 @@ func NewDashboardAgent(config *config.GitOAuthConfig, log *logrus.Entry) *Dashbo
 	}
 }
 
-func (da *DashboardAgent) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	serverError := func(action string, err error) {
-		da.log.WithError(err).Errorf("Error %s.", action)
-		msg := fmt.Sprintf("500 Internal server error %s: %v", action, err)
-		http.Error(w, msg, http.StatusInternalServerError)
-	}
-
-	session, err := da.gitConfig.CookieStore.Get(r, da.gitConfig.GitTokenSession)
-	if err != nil {
-		serverError("Error with getting git token session.", err)
-		return
-	}
-	token, ok := session.Values[da.gitConfig.GitTokenKey].(*oauth2.Token)
-	data := UserData{}
-	if !ok || !token.Valid() {
-		data.Login = false
-	} else {
-		data.Login = true
-		ghc := github.NewClient(token.AccessToken, githubEndpoint)
-		pullRequests, err := da.search(context.Background(), ghc)
-		if err != nil {
-			serverError("Error with querying user data.", err)
-			return
-		} else {
-			data.PullRequests = pullRequests
+func (da *DashboardAgent) HandleUserDashboard(queryHandler PullRequestQueryHandler) http.HandlerFunc {
+  return func(w http.ResponseWriter, r *http.Request) {
+		serverError := func(action string, err error) {
+			da.log.WithError(err).Errorf("Error %s.", action)
+			msg := fmt.Sprintf("500 Internal server error %s: %v", action, err)
+			http.Error(w, msg, http.StatusInternalServerError)
 		}
-	}
 
-	marshaledData, err := json.Marshal(data)
-	if err != nil {
-		da.log.WithError(err).Error("Error with marshalling user data.")
-	}
+		session, err := da.gitConfig.CookieStore.Get(r, da.gitConfig.GitTokenSession)
+		if err != nil {
+			serverError("Error with getting git token session.", err)
+			return
+		}
+		token, ok := session.Values[da.gitConfig.GitTokenKey].(*oauth2.Token)
+		data := UserData{}
+		if !ok || !token.Valid() {
+			data.Login = false
+		} else {
+			data.Login = true
+			ghc := github.NewClient(token.AccessToken, githubEndpoint)
+			pullRequests, err := queryHandler.Query(context.Background(), ghc)
+			if err != nil {
+				serverError("Error with querying user data.", err)
+				return
+			} else {
+				data.PullRequests = pullRequests
+			}
+		}
 
-	w.Write(marshaledData)
+		marshaledData, err := json.Marshal(data)
+		if err != nil {
+			da.log.WithError(err).Error("Error with marshalling user data.")
+		}
+
+		w.Write(marshaledData)
+	}
 }
 
-func (da *DashboardAgent) search(ctx context.Context, ghc githubClient) ([]PullRequest, error) {
+func (da *DashboardAgent) Query(ctx context.Context, ghc githubClient) ([]PullRequest, error) {
 	var prs = []PullRequest{}
 	vars := map[string]interface{}{
 		"prsStates": []githubql.PullRequestState {githubql.PullRequestStateOpen},

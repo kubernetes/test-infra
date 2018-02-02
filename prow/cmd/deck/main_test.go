@@ -409,6 +409,7 @@ func generateMockUserData() (userdashboard.UserData) {
 	}
 
 	return userdashboard.UserData{
+		Login: true,
 		PullRequests: prs,
 	}
 }
