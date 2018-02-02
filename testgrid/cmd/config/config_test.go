@@ -26,8 +26,8 @@ import (
 
 	"github.com/ghodss/yaml"
 	prow_config "k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/testgrid/config/config_pb"
-	"k8s.io/test-infra/testgrid/config/yaml2proto"
+	config_pb "k8s.io/test-infra/testgrid/config"
+	"k8s.io/test-infra/testgrid/yaml2proto"
 	"path/filepath"
 )
 
@@ -58,7 +58,7 @@ var config *config_pb.Configuration
 
 func TestMain(m *testing.M) {
 	//make sure we can parse config.yaml
-	yamlData, err := ioutil.ReadFile("config.yaml")
+	yamlData, err := ioutil.ReadFile("../../config.yaml")
 	if err != nil {
 		fmt.Printf("IO Error : Cannot Open File config.yaml")
 		os.Exit(1)
@@ -305,7 +305,7 @@ func TestConfig(t *testing.T) {
 		}
 	}
 
-	sqConfigPath := "../../mungegithub/submit-queue/deployment/kubernetes/configmap.yaml"
+	sqConfigPath := "../../../mungegithub/submit-queue/deployment/kubernetes/configmap.yaml"
 	configData, err := ioutil.ReadFile(sqConfigPath)
 	if err != nil {
 		t.Errorf("Read Buffer Error for SQ Data : %v", err)
@@ -341,8 +341,8 @@ func TestConfig(t *testing.T) {
 }
 
 func TestJobsTestgridEntryMatch(t *testing.T) {
-	jenkinsPath := "../../jenkins/job-configs"
-	prowPath := "../../prow/config.yaml"
+	jenkinsPath := "../../../jenkins/job-configs"
+	prowPath := "../../../prow/config.yaml"
 
 	jobs := make(map[string]bool)
 	// TODO(krzyzacy): delete all the Jenkins stuff here after kill Jenkins

@@ -23,7 +23,7 @@ import (
 	"os"
 	"strings"
 
-	"k8s.io/test-infra/testgrid/config/yaml2proto"
+	"k8s.io/test-infra/testgrid/yaml2proto"
 )
 
 var (
