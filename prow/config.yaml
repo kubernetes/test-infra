@@ -5376,6 +5376,20 @@ presubmits:
       - image: gcr.io/mlkube-testing/builder:latest
         imagePullPolicy: Always
 
+  tensorflow/minigo:
+  - name: tf-minigo-presubmit
+    context: tf-minigo-presubmit
+    agent: kubernetes
+    always_run: true         # Run for every PR, or only when requested.
+    branches:
+    - master
+    labels:
+      preset-service-account: true
+    spec:
+      containers:
+      - image: gcr.io/minigo-testing/minigo-testing:latest
+        imagePullPolicy: Always
+
 postsubmits:
   kubeflow/kubeflow:
   - name: kubeflow-postsubmit
@@ -5977,6 +5991,18 @@ postsubmits:
       containers:
       # TODO(jlewi): Replace latest with a specific tag once the images stabilize.
       - image: gcr.io/mlkube-testing/builder:latest
+        imagePullPolicy: Always
+
+  tensorflow/minigo:
+  - name: tf-minigo-presubmit
+    agent: kubernetes
+    branches:
+    - master
+    labels:
+      preset-service-account: true
+    spec:
+      containers:
+      - image: gcr.io/minigo-testing/minigo-testing:latest
         imagePullPolicy: Always
 
 periodics:

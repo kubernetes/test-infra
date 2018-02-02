@@ -279,6 +279,11 @@ plugins:
   tensorflow/k8s:
   - trigger
 
+  tensorflow/minigo:
+  - trigger
+  - lgtm
+  - size
+
   spxtr/envoy:
   - assign
   - lgtm
