@@ -329,13 +329,13 @@ func convertJobToSecurityJob(j *config.Presubmit, dropLabels sets.String, jobsCo
 			container.Args = append(container.Args, "--")
 		}
 		if needGCSFlag {
-			container.Args = append(container.Args, "--gcs=gs://kubernetes-security-prow/staging/"+j.Name)
+			container.Args = append(container.Args, "--gcs=gs://kubernetes-security-prow/ci/"+j.Name)
 		}
 		if needGCSSharedFlag {
 			container.Args = append(container.Args, "--gcs-shared=gs://kubernetes-security-prow/bazel")
 		}
 		if needStagingFlag {
-			container.Args = append(container.Args, "--stage=gs://kubernetes-security-prow/staging/"+j.Name)
+			container.Args = append(container.Args, "--stage=gs://kubernetes-security-prow/ci/"+j.Name)
 		}
 
 		// add ssh key volume / mount
