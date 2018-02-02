@@ -167,7 +167,7 @@ presubmits:
         - "--clean"
         - "--git-cache=/root/.cache/git"
         - "--"
-        - "--node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml,--test-suite=cadvisor"
+        - "--node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml --test-suite=cadvisor"
         volumeMounts:
         - name: cache-ssd
           mountPath: /root/.cache
