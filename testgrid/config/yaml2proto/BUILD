@@ -18,9 +18,9 @@ go_library(
     srcs = ["yaml2proto.go"],
     importpath = "k8s.io/test-infra/testgrid/config/yaml2proto",
     deps = [
-        "//testgrid/config/pb:go_default_library",
+        "//testgrid/config:config_pb",
+        "//vendor/github.com/ghodss/yaml:go_default_library",
         "//vendor/github.com/golang/protobuf/proto:go_default_library",
-        "//vendor/gopkg.in/yaml.v2:go_default_library",
     ],
 )
 

@@ -24,9 +24,9 @@ import (
 	"strings"
 	"testing"
 
-	"gopkg.in/yaml.v2"
+	"github.com/ghodss/yaml"
 	prow_config "k8s.io/test-infra/prow/config"
-	config_pb "k8s.io/test-infra/testgrid/config/pb"
+	"k8s.io/test-infra/testgrid/config/config_pb"
 	"k8s.io/test-infra/testgrid/config/yaml2proto"
 	"path/filepath"
 )
