@@ -3581,7 +3581,9 @@ dashboards:
   - name: tf-minigo-postsubmit
     description: Postsubmit tests for Minigo.
     test_group_name: tf-minigo-postsubmit
-
+  - name: tf-minigo-presubmit
+    description: Presumbit tests for Minigo.
+    test_group_name: tf-minigo-presubmit
 
 - name: sig-autoscaling
   dashboard_tab:
