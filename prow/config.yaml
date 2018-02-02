@@ -5381,6 +5381,8 @@ presubmits:
     context: tf-minigo-presubmit
     agent: kubernetes
     always_run: true         # Run for every PR, or only when requested.
+    rerun_command: "/test tf-minigo-presubmit"
+    trigger: "(?m)^/test( all| tf-minigo-presubmit),?(\\s+|$)"
     branches:
     - master
     labels:
