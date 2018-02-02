@@ -708,6 +708,8 @@ func TestGetMessage(t *testing.T) {
 	want := `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
 This pull-request has been approved by: *<a href="REFERENCE" title="Approved">Bill</a>*
+To fully approve this pull request, please assign additional approvers. Any member of the organization can review and `+"`/lgtm`"+` a pull request, 
+and can be assigned to this PR, but in order for the pull request to be merged, it additionally has to be approved by a code owner listed in the OWNERS file for this repository(details below).
 We suggest the following additional approver: **alice**
 
 Assign the PR to them by writing ` + "`/assign @alice`" + ` in a comment when ready.
@@ -791,6 +793,8 @@ func TestGetMessageNoneApproved(t *testing.T) {
 	want := `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
 This pull-request has been approved by: *<a href="REFERENCE" title="Author self-approved">John</a>*
+To fully approve this pull request, please assign additional approvers. Any member of the organization can review and `+"`/lgtm`"+` a pull request, 
+and can be assigned to this PR, but in order for the pull request to be merged, it additionally has to be approved by a code owner listed in the OWNERS file for this repository(details below).
 We suggest the following additional approvers: **alice**, **bill**
 
 Assign the PR to them by writing ` + "`/assign @alice @bill`" + ` in a comment when ready.
