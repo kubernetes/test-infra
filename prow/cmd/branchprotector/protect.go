@@ -288,8 +288,8 @@ func (p *Protector) UpdateRepo(orgName string, repo string, repoDefaults config.
 
 // Update the branch with the specified configuration
 func (p *Protector) UpdateBranch(orgName, repo string, branchName string, branchDefaults config.Branch, protect *bool, contexts, pushers []string) error {
-	bc := append([]string(nil), contexts...)
-	bpush := append([]string(nil), pushers...)
+	bc := append([]string{}, contexts...)
+	bpush := append([]string{}, pushers...)
 	if branchDefaults.Protect != nil {
 		protect = branchDefaults.Protect
 	}

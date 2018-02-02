@@ -78,7 +78,7 @@ a release `--extract=release/stable` or `--extract=ci/latest-1.8`.
 Note that you can extract 1 or 2 versions. Using 2 versions is useful for skew
 and upgrade testing.
 
-See [extract.go] for further details.
+See [extract_k8s.go] for further details.
 
 
 ## Cluster-lifecycle
@@ -216,7 +216,7 @@ right path, the command below does the same as above:
 [bootstrap.py]: /jenkins/bootstrap.py
 [boskos]: /boskos
 [e2e testing]: https://git.k8s.io/community/contributors/devel/e2e-tests.md
-[extract.go]: /kubetest/extract.go
+[extract_k8s.go]: /kubetest/extract_k8s.go
 [ginkgo]: https://github.com/onsi/ginkgo
 [kubekins-e2e]: /images/kubekins-e2e
 [kubekins-e2e-prow]: /images/e2e-prow

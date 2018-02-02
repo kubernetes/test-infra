@@ -22,12 +22,6 @@ TESTINFRA_ROOT=$(git rev-parse --show-toplevel)
 cd ${TESTINFRA_ROOT}
 TMP_GOPATH=$(mktemp -d)
 
-# no unit tests in vendor
-# previously we used godeps which did this, but `dep` does not handle this
-# properly yet. some of these tests don't build well. see:
-# ref: https://github.com/kubernetes/test-infra/pull/5411
-find ${TESTINFRA_ROOT}/vendor/ -name "*_test.go" -delete
-
 # manually remove BUILD file for k8s.io/apimachinery/pkg/util/sets/BUILD if it
 # exists; there is a specific set-gen rule that breaks importing
 # ref: https://github.com/kubernetes/kubernetes/blob/4e2f5e2212b05a305435ef96f4b49dc0932e1264/staging/src/k8s.io/apimachinery/pkg/util/sets/BUILD#L23-L49

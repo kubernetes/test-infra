@@ -606,13 +606,12 @@ func TestProtect(t *testing.T) {
 				for _, e := range tc.expected {
 					if e.Org == a.Org && e.Repo == a.Repo && e.Branch == a.Branch {
 						found = true
-						if e.Protect != a.Protect {
+						switch {
+						case e.Protect != a.Protect:
 							t.Errorf("%s: %s/%s=%s actual protect %t != expected %t", tc.name, e.Org, e.Repo, e.Branch, a.Protect, e.Protect)
-						}
-						if !reflect.DeepEqual(e.Contexts, a.Contexts) {
+						case len(e.Contexts) != len(a.Contexts), len(e.Contexts) > 0 && !reflect.DeepEqual(e.Contexts, a.Contexts):
 							t.Errorf("%s: %s/%s=%s actual contexts %v != expected %v", tc.name, e.Org, e.Repo, e.Branch, a.Contexts, e.Contexts)
-						}
-						if !reflect.DeepEqual(e.Pushers, a.Pushers) {
+						case len(e.Pushers) != len(a.Pushers), len(e.Pushers) > 0 && !reflect.DeepEqual(e.Pushers, a.Pushers):
 							t.Errorf("%s: %s/%s=%s actual pushers %v != expected %v", tc.name, e.Org, e.Repo, e.Branch, a.Pushers, e.Pushers)
 						}
 						break

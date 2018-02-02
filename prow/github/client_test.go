@@ -1200,37 +1200,111 @@ func TestRemoveBranchProtection(t *testing.T) {
 }
 
 func TestUpdateBranchProtection(t *testing.T) {
-	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodPut {
-			t.Errorf("Bad method: %s", r.Method)
+	cases := []struct {
+		name     string
+		contexts []string
+		pushers  []string
+		err      bool
+	}{
+		{
+			name:     "both",
+			contexts: []string{"foo-pr-test", "other"},
+			pushers:  []string{"movers", "awesome-team", "shakers"},
+			err:      false,
+		},
+		{
+			name:     "empty contexts",
+			contexts: []string{"foo-pr-test", "other"},
+			pushers:  []string{},
+			err:      false,
+		},
+		{
+			name:     "empty pushers",
+			contexts: []string{},
+			pushers:  []string{"movers", "awesome-team", "shakers"},
+			err:      false,
+		},
+		{
+			name:     "nil contexts",
+			contexts: nil,
+			pushers:  []string{"movers", "awesome-team", "shakers"},
+			err:      true,
+		},
+		{
+			name:     "nil pushers",
+			contexts: []string{"foo-pr-test", "other"},
+			pushers:  nil,
+			err:      true,
+		},
+		{
+			name:     "nil both",
+			contexts: nil,
+			pushers:  nil,
+			err:      true,
+		},
+	}
+
+	for _, tc := range cases {
+		ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if r.Method != http.MethodPut {
+				t.Errorf("Bad method: %s", r.Method)
+			}
+			if r.URL.Path != "/repos/org/repo/branches/master/protection" {
+				t.Errorf("Bad request path: %s", r.URL.Path)
+			}
+			b, err := ioutil.ReadAll(r.Body)
+			if err != nil {
+				t.Fatalf("Could not read request body: %v", err)
+			}
+			var bpr BranchProtectionRequest
+			if err := json.Unmarshal(b, &bpr); err != nil {
+				t.Errorf("Could not unmarshal request: %v", err)
+			}
+			switch {
+			case len(bpr.RequiredStatusChecks.Contexts) != len(tc.contexts):
+				t.Errorf("Bad contexts: %v", bpr.RequiredStatusChecks.Contexts)
+			case len(bpr.Restrictions.Teams) != len(tc.pushers):
+				t.Errorf("Bad teams: %v", bpr.Restrictions.Teams)
+			default:
+				mc := map[string]bool{}
+				for _, k := range tc.contexts {
+					mc[k] = true
+				}
+				var missing []string
+				for _, k := range bpr.RequiredStatusChecks.Contexts {
+					if mc[k] != true {
+						missing = append(missing, k)
+					}
+				}
+				if n := len(missing); n > 0 {
+					t.Errorf("%s: missing %d required contexts: %v", tc.name, n, missing)
+				}
+				mp := map[string]bool{}
+				for _, k := range tc.pushers {
+					mp[k] = true
+				}
+				missing = nil
+				for _, k := range bpr.Restrictions.Teams {
+					if mp[k] != true {
+						missing = append(missing, k)
+					}
+				}
+				if n := len(missing); n > 0 {
+					t.Errorf("%s: missing %d pushers: %v", tc.name, n, missing)
+				}
+			}
+			http.Error(w, "200 OK", http.StatusOK)
+		}))
+		defer ts.Close()
+		c := getClient(ts.URL)
+
+		err := c.UpdateBranchProtection("org", "repo", "master", tc.contexts, tc.pushers)
+		if tc.err && err == nil {
+			t.Errorf("%s: expected error failed to occur", tc.name)
 		}
-		if r.URL.Path != "/repos/org/repo/branches/master/protection" {
-			t.Errorf("Bad request path: %s", r.URL.Path)
+		if !tc.err && err != nil {
+			t.Errorf("%s: received unexpected error: %v", tc.name, err)
 		}
-		b, err := ioutil.ReadAll(r.Body)
-		if err != nil {
-			t.Fatalf("Could not read request body: %v", err)
-		}
-		var bpr BranchProtectionRequest
-		if err := json.Unmarshal(b, &bpr); err != nil {
-			t.Errorf("Could not unmarshal request: %v", err)
-		}
-		switch {
-		case len(bpr.RequiredStatusChecks.Contexts) != 2:
-			t.Errorf("Bad contexts: %v", bpr.RequiredStatusChecks.Contexts)
-		case bpr.RequiredStatusChecks.Contexts[0] != "foo-pr-test":
-			t.Errorf("Bad context name: %v", bpr.RequiredStatusChecks.Contexts)
-		case len(bpr.Restrictions.Teams) != 3:
-			t.Errorf("Bad teams: %v", bpr.Restrictions.Teams)
-		case bpr.Restrictions.Teams[1] != "awesome-team":
-			t.Errorf("Bad team: %v", bpr.Restrictions.Teams)
-		}
-		http.Error(w, "200 OK", http.StatusOK)
-	}))
-	defer ts.Close()
-	c := getClient(ts.URL)
-	if err := c.UpdateBranchProtection("org", "repo", "master", []string{"foo-pr-test", "other"}, []string{"movers", "awesome-team", "shakers"}); err != nil {
-		t.Errorf("Unexpected error: %v", err)
 	}
 }
 

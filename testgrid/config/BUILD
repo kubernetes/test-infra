@@ -6,11 +6,18 @@
 
 package(default_visibility = ["//visibility:public"])
 
-load(
-    "@io_bazel_rules_go//go:def.bzl",
-    "go_binary",
-    "go_library",
-    "go_test",
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library", "go_test")
+load("@io_bazel_rules_go//proto:def.bzl", "go_proto_library")
+
+proto_library(
+    name = "config_proto",
+    srcs = ["config.proto"],
+)
+
+go_proto_library(
+    name = "config_pb",
+    importpath = "k8s.io/test-infra/testgrid/config/config_pb",
+    proto = ":config_proto",
 )
 
 genrule(
@@ -43,10 +50,10 @@ go_test(
     embed = [":go_default_library"],
     importpath = "k8s.io/test-infra/testgrid/config",
     deps = [
+        ":config_pb",
         "//prow/config:go_default_library",
-        "//testgrid/config/pb:go_default_library",
         "//testgrid/config/yaml2proto:go_default_library",
-        "//vendor/gopkg.in/yaml.v2:go_default_library",
+        "//vendor/github.com/ghodss/yaml:go_default_library",
     ],
 )
 
@@ -68,7 +75,6 @@ filegroup(
     name = "all-srcs",
     srcs = [
         ":package-srcs",
-        "//testgrid/config/pb:all-srcs",
         "//testgrid/config/yaml2proto:all-srcs",
     ],
     tags = ["automanaged"],

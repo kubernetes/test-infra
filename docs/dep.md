@@ -1,33 +1,32 @@
 # kubernetes/test-infra dependency management
 
-test-infra uses [`dep`](https://github.com/golang/dep) for Go dependency
-management. `dep` is a prototype dependency management tool for Go. It requires
-Go 1.8 or newer to compile.
+test-infra uses [`dep`] for Go dependency
+management. Usage requires [bazel], which can be accessed
+through [`planter`] if not locally installed.
 
+## Usage
 
-## Setup
+Run [`hack/update-deps.sh`] whenever vendored dependencies change. This will
+take around 5m to complete.
 
-You can follow the [setup instructions](https://github.com/golang/dep#setup) to
-set up `dep` in your local environment.
+### Advanced usage
 
-
-## Changing dependencies
-
-You can use the `dep` instructions for [adding](https://github.com/golang/dep#adding-a-dependency),
-[updating](https://github.com/golang/dep#updating-dependencies) or
-[removing](https://github.com/golang/dep#removing-dependencies) a dependency.
-
-Once you've updated, make sure to run:
-```
-dep prune
-hack/update-bazel.sh
-```
-
-To prune unneeded deps, and then update all the bazel files that `dep` blows away.
+* [add] - Run `hack/update-deps.sh --add cloud.google.com/go/storage@v0.17.0 [...]` to pin a dependency at a particular version
+* [update] - Run `hack/update-deps.sh --update golang.org/x/net [...]` to update an existing dependency
+* [remove] - Edit `Gopkg.toml` and run `hack/update-deps.sh` to remove or unpin dependencies
 
 ## Tips
 
 If `dep ensure` doesn't come back and freezes, please make sure `hg` command is
 installed on your environment. `dep ensure` requires `hg` command for getting
 bitbucket.org/ww/goautoneg , but `dep ensure` doesn't output such error message
-and just freezes. [reference](https://github.com/kubernetes/test-infra/issues/5987)
+and just [freezes].
+
+[add]: https://golang.github.io/dep/docs/daily-dep.html#adding-a-new-dependency
+[bazel]: https://bazelbuild/
+[`dep`]: https://github.com/golang/dep
+[freezes]: https://github.com/kubernetes/test-infra/issues/5987
+[`hack/update-deps.sh`]: /hack/update-deps.sh
+[`planter`]: /planter
+[remove]: https://github.com/golang/dep/blob/master/docs/daily-dep.md#rule-changes-in-gopkgtoml
+[update]: https://golang.github.io/dep/docs/daily-dep.html#updating-dependencies

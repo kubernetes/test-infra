@@ -719,41 +719,41 @@ jobs:
     sigOwners: ['sig-node']
 
   # release branch jobs - cos only (cvm is deprecated at 1.8)
-  # beta release
+  # beta release (inactive)
   ci-kubernetes-e2e-gce-cos-k8sbeta-reboot:
-    interval: 1h
+    interval: 48h
     sigOwners: ['sig-gcp']
   ci-kubernetes-e2e-gce-cos-k8sbeta-ingress:
-    interval: 1h
+    interval: 48h
     sigOwners: ['sig-gcp']
   ci-kubernetes-e2e-gce-cos-k8sbeta-default:
     args:
     - --env=ENABLE_POD_SECURITY_POLICY=true
-    interval: 1h
+    interval: 48h
     sigOwners: ['sig-gcp']
   ci-kubernetes-e2e-gce-cos-k8sbeta-serial:
-    interval: 1h
+    interval: 48h
     sigOwners: ['sig-gcp']
   ci-kubernetes-e2e-gce-cos-k8sbeta-slow:
-    interval: 1h
+    interval: 48h
     sigOwners: ['sig-gcp']
   ci-kubernetes-e2e-gke-cos-k8sbeta-ingress:
-    interval: 1h
+    interval: 48h
     sigOwners: ['sig-gcp']
   ci-kubernetes-e2e-gke-cos-k8sbeta-reboot:
-    interval: 1h
+    interval: 48h
     sigOwners: ['sig-gcp']
   ci-kubernetes-e2e-gke-cos-k8sbeta-default:
-    interval: 1h
+    interval: 48h
     sigOwners: ['sig-gcp']
   ci-kubernetes-e2e-gke-cos-k8sbeta-serial:
-    interval: 1h
+    interval: 48h
     sigOwners: ['sig-gcp']
   ci-kubernetes-e2e-gke-cos-k8sbeta-slow:
-    interval: 1h
+    interval: 48h
     sigOwners: ['sig-gcp']
   ci-kubernetes-e2e-gce-cos-k8sbeta-alphafeatures:
-    interval: 1h
+    interval: 48h
     args:
     - --env=KUBE_PROXY_DAEMONSET=true
     - --env=ENABLE_POD_PRIORITY=true
@@ -835,6 +835,8 @@ jobs:
   ci-kubernetes-e2e-gce-cos-k8sstable2-alphafeatures:
     interval: 6h
     args:
+    - --env=KUBE_PROXY_DAEMONSET=true
+    - --env=ENABLE_POD_PRIORITY=true
     - --env=KUBE_FEATURE_GATES=AllAlpha=true
     sigOwners: ['sig-gcp']
 
@@ -905,9 +907,8 @@ images:
     - --gcp-node-image=gci
   cosbeta:
     args:
-    - --env=KUBE_GCE_NODE_IMAGE=cos-stable-63-10032-71-0-p
-    - --env=KUBE_GCE_NODE_PROJECT=gke-node-images
-    - --env=DISABLE_DOCKER_LIVE_RESTORE=true
+    - --image-family=cos-beta
+    - --image-project=cos-cloud
     - --gcp-node-image=gci
   cosstable1:
     args:
@@ -1027,7 +1028,7 @@ nodeCommon:
 nodeImages:
   cosbeta:
     args:
-    - --node-args=--images=cos-stable-63-10032-71-0-p
+    - --node-args=--images=cos-beta-64-10176-60-0
     - --node-args=--image-project=gke-node-images
     - --node-args=--instance-metadata=user-data<test/e2e_node/jenkins/cos-init-disable-live-restore.yaml,gci-update-strategy=update_disabled
   cosstable1:
@@ -1052,23 +1053,23 @@ nodeK8sVersions:
   dev:
     args:
     - --repo=k8s.io/kubernetes=master
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180202-1036088f2-master
   beta:
     args:
-    - --repo=k8s.io/kubernetes=release-1.9
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20171220-29cb083c9-1.9
+    - --repo=k8s.io/kubernetes=release-1.10
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180202-1036088f2-1.10
   stable1:
     args:
-    - --repo=k8s.io/kubernetes=release-1.8
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-1.8
+    - --repo=k8s.io/kubernetes=release-1.9
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180202-1036088f2-1.9
   stable2:
     args:
-    - --repo=k8s.io/kubernetes=release-1.7
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-1.7
+    - --repo=k8s.io/kubernetes=release-1.8
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180202-1036088f2-1.8
   stable3:
     args:
-    - --repo=k8s.io/kubernetes=release-1.6
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-1.6
+    - --repo=k8s.io/kubernetes=release-1.7
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180202-1036088f2-1.7
 
 nodeTestSuites:
   default:
