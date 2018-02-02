@@ -19,5 +19,6 @@ set -o pipefail
 
 TESTINFRA_ROOT=$(git rev-parse --show-toplevel)
 
-bazel run //maintenance/fixconfig:fixconfig -- --config=${TESTINFRA_ROOT}/prow/config.yaml && \
+bazel run //maintenance/fixconfig:fixconfig -- \
+--config=${TESTINFRA_ROOT}/prow/config.yaml --config-json=${TESTINFRA_ROOT}/jobs/config.json && \
 bazel run //jobs:config_sort

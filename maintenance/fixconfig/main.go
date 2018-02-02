@@ -47,6 +47,40 @@ import (
 )
 
 var configPath = flag.String("config", "", "path to prow/config.yaml, defaults to $PWD/prow/config.yaml")
+var configJSONPath = flag.String("config-json", "", "path to jobs/config.json, defaults to $PWD/jobs/config.json")
+
+// config.json is the worst but contains useful information :-(
+type configJSON map[string]map[string]interface{}
+
+func (c configJSON) ScenarioForJob(jobName string) string {
+	if scenario, ok := c[jobName]["scenario"]; ok {
+		return scenario.(string)
+	}
+	return ""
+}
+
+func (c configJSON) ArgsForJob(jobName string) []string {
+	res := []string{}
+	if args, ok := c[jobName]["args"]; ok {
+		for _, arg := range args.([]interface{}) {
+			res = append(res, arg.(string))
+		}
+	}
+	return res
+}
+
+func readConfigJSON(path string) (config configJSON, err error) {
+	raw, err := ioutil.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+	config = configJSON{}
+	err = yaml.Unmarshal(raw, &config)
+	if err != nil {
+		return nil, err
+	}
+	return config, nil
+}
 
 func readConfig(path string) (raw []byte, parsed *config.Config, err error) {
 	raw, err = ioutil.ReadFile(path)
@@ -213,7 +247,7 @@ func getCacheSSDPresetLabels(c *config.Config) (labels sets.String) {
 // convert a kubernetes/kubernetes job to a kubernetes-security/kubernetes job
 // dropLabels should be a set of "k: v" strings
 // xref: prow/config/config_test.go replace(...)
-func convertJobToSecurityJob(j *config.Presubmit, dropLabels sets.String) {
+func convertJobToSecurityJob(j *config.Presubmit, dropLabels sets.String, jobsConfig configJSON) {
 	// filter out the unwanted labels
 	if len(j.Labels) > 0 {
 		filteredLabels := make(map[string]string)
@@ -224,27 +258,87 @@ func convertJobToSecurityJob(j *config.Presubmit, dropLabels sets.String) {
 		}
 		j.Labels = filteredLabels
 	}
+
+	originalName := j.Name
+
 	// fix name and triggers for all jobs
-	j.Name = strings.Replace(j.Name, "pull-kubernetes", "pull-security-kubernetes", -1)
+	j.Name = strings.Replace(originalName, "pull-kubernetes", "pull-security-kubernetes", -1)
 	j.RerunCommand = strings.Replace(j.RerunCommand, "pull-kubernetes", "pull-security-kubernetes", -1)
 	j.Trigger = strings.Replace(j.Trigger, "pull-kubernetes", "pull-security-kubernetes", -1)
 	j.Context = strings.Replace(j.Context, "pull-kubernetes", "pull-security-kubernetes", -1)
+
 	// handle k8s job args, volumes etc
 	if j.Agent == "kubernetes" {
 		j.Cluster = "security"
 		container := &j.Spec.Containers[0]
+		// check for args that need hijacking
+		endsWithScenarioArgs := false
+		needGCSFlag := false
+		needGCSSharedFlag := false
+		needStagingFlag := false
 		for i, arg := range container.Args {
-			// handle --repo substitution for main repo
-			if strings.HasPrefix(arg, "--repo=k8s.io/kubernetes") || strings.HasPrefix(arg, "--repo=k8s.io/$(REPO_NAME)") {
+			if arg == "--" {
+				endsWithScenarioArgs = true
+
+				// handle --repo substitution for main repo
+			} else if strings.HasPrefix(arg, "--repo=k8s.io/kubernetes") || strings.HasPrefix(arg, "--repo=k8s.io/$(REPO_NAME)") {
 				container.Args[i] = strings.Replace(arg, "k8s.io/", "github.com/kubernetes-security/", 1)
 
 				// handle upload bucket
 			} else if strings.HasPrefix(arg, "--upload=") {
 				container.Args[i] = "--upload=gs://kubernetes-security-prow/pr-logs"
+				// check if we need to change staging artifact location for bazel-build and e2es
+			} else if strings.HasPrefix(arg, "--release") {
+				needGCSFlag = true
+				needGCSSharedFlag = true
+			} else if strings.HasPrefix(arg, "--stage") {
+				needStagingFlag = true
+			} else if strings.HasPrefix(arg, "--use-shared-build") {
+				needGCSSharedFlag = true
 			}
 		}
 		// NOTE: this needs to be before the bare -- and then bootstrap args so we prepend it
 		container.Args = append([]string{"--ssh=/etc/ssh-security/ssh-security"}, container.Args...)
+
+		// check for scenario specific tweaks
+		// NOTE: jobs are remapped to their original name in bootstrap to de-dupe config
+
+		// check if we need to change staging artifact location for bazel-build and e2es
+		if jobsConfig.ScenarioForJob(originalName) == "kubernetes_bazel" {
+			for _, arg := range jobsConfig.ArgsForJob(originalName) {
+				if strings.HasPrefix(arg, "--release") {
+					needGCSFlag = true
+					needGCSSharedFlag = true
+					break
+				}
+			}
+		}
+
+		if jobsConfig.ScenarioForJob(originalName) == "kubernetes_e2e" {
+			for _, arg := range jobsConfig.ArgsForJob(originalName) {
+				if strings.HasPrefix(arg, "--stage") {
+					needStagingFlag = true
+				} else if strings.HasPrefix(arg, "--use-shared-build") {
+					needGCSSharedFlag = true
+				}
+			}
+		}
+
+		// NOTE: these needs to be at the end and after a -- if there is none (it's a scenario arg)
+		if !endsWithScenarioArgs && (needGCSFlag || needGCSSharedFlag || needStagingFlag) {
+			container.Args = append(container.Args, "--")
+		}
+		if needGCSFlag {
+			container.Args = append(container.Args, "--gcs=gs://kubernetes-security-prow/staging/"+j.Name)
+		}
+		if needGCSSharedFlag {
+			container.Args = append(container.Args, "--gcs-shared=gs://kubernetes-security-prow/bazel")
+		}
+		if needStagingFlag {
+			container.Args = append(container.Args, "--stage=gs://kubernetes-security-prow/staging/"+j.Name)
+		}
+
+		// add ssh key volume / mount
 		container.VolumeMounts = append(
 			container.VolumeMounts,
 			kube.VolumeMount{
@@ -273,7 +367,7 @@ func convertJobToSecurityJob(j *config.Presubmit, dropLabels sets.String) {
 	}
 	// done with this job, check for run_after_success
 	for i := range j.RunAfterSuccess {
-		convertJobToSecurityJob(&j.RunAfterSuccess[i], dropLabels)
+		convertJobToSecurityJob(&j.RunAfterSuccess[i], dropLabels, jobsConfig)
 	}
 }
 
@@ -324,18 +418,23 @@ func copyFile(srcPath, destPath string) error {
 func main() {
 	flag.Parse()
 	// default to $PWD/prow/config.yaml
+	pwd, err := os.Getwd()
+	if err != nil {
+		log.Fatalf("Failed to get $PWD: %v", err)
+	}
 	if *configPath == "" {
-		pwd, err := os.Getwd()
-		if err != nil {
-			log.Fatalf("Failed to get $PWD: %v", err)
-		}
 		*configPath = pwd + "/prow/config.yaml"
+	}
+	if *configJSONPath == "" {
+		*configJSONPath = pwd + "/jobs/config.json"
 	}
 	// read in current prow config
 	originalBytes, parsed, err := readConfig(*configPath)
 	if err != nil {
 		log.Fatalf("Failed to read config file: %v", err)
 	}
+	// read in jobs config
+	jobsConfig, err := readConfigJSON(*configJSONPath)
 	// find security repo section
 	securityRepoStart, securityRepoEnd, err := getSecurityRepoJobsIndex(originalBytes)
 	if err != nil {
@@ -361,7 +460,7 @@ func main() {
 	// kubernetes-security/kubernetes presubmit and write to the file
 	cacheLabels := getCacheSSDPresetLabels(parsed)
 	for _, job := range parsed.Presubmits["kubernetes/kubernetes"] {
-		convertJobToSecurityJob(&job, cacheLabels)
+		convertJobToSecurityJob(&job, cacheLabels, jobsConfig)
 		jobBytes, err := yaml.Marshal(job)
 		if err != nil {
 			log.Fatalf("Failed to marshal job: %v", err)
