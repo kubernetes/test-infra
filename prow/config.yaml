@@ -204,6 +204,7 @@ presubmits:
     trigger: "(?m)^/test( all| pull-charts-e2e),?(\\s+|$)"
     labels:
       preset-service-account: true
+      preset-k8s-ssh: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180108-bf63630a9-master
@@ -297,6 +298,7 @@ presubmits:
     always_run: true
     labels:
       preset-service-account: true
+      preset-k8s-ssh: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
@@ -615,6 +617,7 @@ presubmits:
     trigger: "(?m)^/test( all| pull-cluster-registry-verify-gensrc),?(\\s+|$)"
     labels:
       preset-service-account: true
+      preset-k8s-ssh: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
@@ -647,6 +650,7 @@ presubmits:
     trigger: "(?m)^/test( all| pull-cluster-registry-verify-gosrc),?(\\s+|$)"
     labels:
       preset-service-account: true
+      preset-k8s-ssh: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-1.8
@@ -4740,6 +4744,7 @@ postsubmits:
     - master
     labels:
       preset-service-account: true
+      preset-k8s-ssh: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
@@ -5277,6 +5282,7 @@ periodics:
   agent: kubernetes
   labels:
     preset-service-account: true
+    preset-k8s-ssh: true
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
@@ -12313,6 +12319,7 @@ periodics:
   agent: kubernetes
   labels:
     preset-service-account: true
+    preset-k8s-ssh: true
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
@@ -12509,6 +12516,7 @@ periodics:
   name: ci-kubernetes-soak-gce-gci
   labels:
     preset-service-account: true
+    preset-k8s-ssh: true
   spec:
     containers:
     - args:
@@ -12534,6 +12542,7 @@ periodics:
   name: ci-kubernetes-soak-gci-gce-stable2
   labels:
     preset-service-account: true
+    preset-k8s-ssh: true
   spec:
     containers:
     - args:
@@ -12546,6 +12555,7 @@ periodics:
   name: ci-kubernetes-soak-gci-gce-stable3
   labels:
     preset-service-account: true
+    preset-k8s-ssh: true
   spec:
     containers:
     - args:
@@ -12558,6 +12568,7 @@ periodics:
   name: ci-kubernetes-soak-gke-gci
   labels:
     preset-service-account: true
+    preset-k8s-ssh: true
   spec:
     containers:
     - args:
@@ -12585,6 +12596,7 @@ periodics:
   agent: kubernetes
   labels:
     preset-service-account: true
+    preset-k8s-ssh: true
   spec:
     containers:
     - image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
@@ -12592,9 +12604,6 @@ periodics:
       - "--repo=k8s.io/perf-tests=master"
       - "--root=/go/src"
       - "--timeout=10"
-      env:
-      - name: USER
-        value: prow
 
 - name: ci-test-infra-bazel
   interval: 1h
@@ -13175,14 +13184,12 @@ periodics:
   name: periodic-kubernetes-e2e-debs-pushed
   labels:
     preset-service-account: true
+    preset-k8s-ssh: true
   spec:
     containers:
     - args:
       - --timeout=60
       - --repo=k8s.io/kubeadm=master
-      env:
-      - name: USER
-        value: prow
       image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
       imagePullPolicy: Always
 
