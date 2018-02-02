@@ -23,6 +23,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"reflect"
 	"testing"
 
 	"github.com/shurcooL/githubql"
@@ -321,6 +322,7 @@ func TestAccumulate(t *testing.T) {
 }
 
 type fgc struct {
+	prs       []PullRequest
 	refs      map[string]string
 	merged    int
 	setStatus bool
@@ -333,6 +335,18 @@ func (f *fgc) GetRef(o, r, ref string) (string, error) {
 }
 
 func (f *fgc) Query(ctx context.Context, q interface{}, vars map[string]interface{}) error {
+	sq, ok := q.(*searchQuery)
+	if !ok {
+		return errors.New("unexpected query type")
+	}
+	for _, pr := range f.prs {
+		sq.Search.Nodes = append(
+			sq.Search.Nodes,
+			struct {
+				PullRequest PullRequest `graphql:"... on PullRequest"`
+			}{PullRequest: pr},
+		)
+	}
 	return nil
 }
 
@@ -1059,6 +1073,141 @@ func TestHeadContexts(t *testing.T) {
 		}
 		if len(contexts) != 1 || string(contexts[0].Context) != win {
 			t.Errorf("Expected exactly 1 %q context, but got: %#v", win, contexts)
+		}
+	}
+}
+
+func testPR(org, repo, branch string, number int, mergeable githubql.MergeableState) PullRequest {
+	pr := PullRequest{
+		Number:     5,
+		Mergeable:  mergeable,
+		HeadRefOID: githubql.String("SHA"),
+	}
+	pr.Repository.Owner.Login = githubql.String(org)
+	pr.Repository.Name = githubql.String(repo)
+	pr.Repository.NameWithOwner = githubql.String(fmt.Sprintf("%s/%s", org, repo))
+	pr.BaseRef.Name = githubql.String(branch)
+
+	pr.Commits.Nodes = append(pr.Commits.Nodes, struct{ Commit Commit }{
+		Commit{
+			Status: struct{ Contexts []Context }{
+				Contexts: []Context{
+					{
+						Context: githubql.String("context"),
+						State:   githubql.StatusStateSuccess,
+					},
+				},
+			},
+			OID: githubql.String("SHA"),
+		},
+	})
+	return pr
+}
+
+func TestSync(t *testing.T) {
+	mergeableA := testPR("org", "repo", "A", 5, githubql.MergeableStateMergeable)
+	unmergeableA := testPR("org", "repo", "A", 6, githubql.MergeableStateConflicting)
+	unmergeableB := testPR("org", "repo", "B", 7, githubql.MergeableStateConflicting)
+	unknownA := testPR("org", "repo", "A", 8, githubql.MergeableStateUnknown)
+
+	testcases := []struct {
+		name string
+		prs  []PullRequest
+
+		expectedPools []Pool
+	}{
+		{
+			name:          "no PRs",
+			prs:           []PullRequest{},
+			expectedPools: []Pool{},
+		},
+		{
+			name: "1 mergeable PR",
+			prs:  []PullRequest{mergeableA},
+			expectedPools: []Pool{{
+				Org:        "org",
+				Repo:       "repo",
+				Branch:     "A",
+				SuccessPRs: []PullRequest{mergeableA},
+				Action:     Merge,
+				Target:     []PullRequest{mergeableA},
+			}},
+		},
+		{
+			name:          "1 unmergeable PR",
+			prs:           []PullRequest{unmergeableA},
+			expectedPools: []Pool{},
+		},
+		{
+			name: "1 unknown PR",
+			prs:  []PullRequest{unknownA},
+			expectedPools: []Pool{{
+				Org:        "org",
+				Repo:       "repo",
+				Branch:     "A",
+				SuccessPRs: []PullRequest{unknownA},
+				Action:     Merge,
+				Target:     []PullRequest{unknownA},
+			}},
+		},
+		{
+			name: "1 mergeable, 1 unmergeable (different pools)",
+			prs:  []PullRequest{mergeableA, unmergeableB},
+			expectedPools: []Pool{{
+				Org:        "org",
+				Repo:       "repo",
+				Branch:     "A",
+				SuccessPRs: []PullRequest{mergeableA},
+				Action:     Merge,
+				Target:     []PullRequest{mergeableA},
+			}},
+		},
+		{
+			name: "1 mergeable, 1 unmergeable (same pool)",
+			prs:  []PullRequest{mergeableA, unmergeableA},
+			expectedPools: []Pool{{
+				Org:        "org",
+				Repo:       "repo",
+				Branch:     "A",
+				SuccessPRs: []PullRequest{mergeableA},
+				Action:     Merge,
+				Target:     []PullRequest{mergeableA},
+			}},
+		},
+	}
+
+	for _, tc := range testcases {
+		fgc := &fgc{prs: tc.prs}
+		fkc := &fkc{}
+		ca := &config.Agent{}
+		ca.Set(&config.Config{Tide: config.Tide{Queries: []config.TideQuery{{}}, MaxGoroutines: 4}})
+		c := &Controller{
+			ca:     ca,
+			ghc:    fgc,
+			kc:     fkc,
+			logger: logrus.WithField("component", "tide"),
+		}
+
+		if err := c.Sync(); err != nil {
+			t.Errorf("Unexpected error from 'Sync()': %v.", err)
+			continue
+		}
+		if len(tc.expectedPools) != len(c.pools) {
+			t.Errorf("Tide pools did not match expected. Got %#v, expected %#v.", c.pools, tc.expectedPools)
+			continue
+		}
+		for _, expected := range tc.expectedPools {
+			var match *Pool
+			for i, actual := range c.pools {
+				if expected.Org == actual.Org && expected.Repo == actual.Repo && expected.Branch == actual.Branch {
+					match = &c.pools[i]
+				}
+			}
+			if match == nil {
+				t.Errorf("Failed to find expected pool %s/%s %s.", expected.Org, expected.Repo, expected.Branch)
+			} else if !reflect.DeepEqual(*match, expected) {
+				t.Errorf("Expected pool %#v does not match actual pool %#v.", expected, *match)
+			}
 		}
 	}
 }
