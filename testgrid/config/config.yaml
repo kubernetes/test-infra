@@ -1677,8 +1677,15 @@ test_groups:
   num_columns_recent: 30
 - name: tf-k8s-postsubmit
   gcs_prefix: kubernetes-jenkins/logs/tensorflow_k8s/tf-k8s-postsubmit
+- name: tf-minigo-periodic
+  gcs_prefix: kubernetes-jenkins/logs/tf-minigo-periodic
+- name: tf-minigo-presubmit
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/tf-minigo-presubmit
+  num_columns_recent: 30
 - name: tf-minigo-postsubmit
-  gcs_prefix: kubernetes-jenkins/logs/tensorflow_minigo/tf-k8s-minigo
+  gcs_prefix: kubernetes-jenkins/logs/tensorflow_minigo/tf-minigo-postsubmit
+- name: tf-minigo-postsubmit
+  gcs_prefix: kubernetes-jenkins/logs/tensorflow_minigo/tf-minigo-postsubmit
 - name: spark-periodic-default-gke
   gcs_prefix: kubernetes-jenkins/logs/spark-periodic-default-gke
 - name: spark-periodic-latest-gke
