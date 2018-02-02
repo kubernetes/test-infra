@@ -181,8 +181,8 @@ Needs approval from an approver in each of these OWNERS Files:
 
 - ~~[c/OWNERS](https://github.com/org/repo/blob/master/c/OWNERS)~~ [cjwagner]
 
-OWNER approvers can indicate their approval by writing `+"`/approve`"+` in a comment
-OWNER approvers can cancel approval by writing `+"`/approve cancel`"+` in a comment
+OWNER approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
+OWNER approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
 A PR needs both /approve and /lgtm to be merged by the bot. An OWNER approver's /lgtm automatically implies an /approve.
 </details>
 <!-- META={"approvers":[]} -->`,
@@ -201,7 +201,7 @@ A PR needs both /approve and /lgtm to be merged by the bot. An OWNER approver's 
 			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
 This pull-request has been approved by: 
-To fully approve this pull request, please assign additional approvers. Any member of the organization can review and `+"`/lgtm`"+` a pull request, 
+To fully approve this pull request, please assign additional approvers. Any member of the organization can review and ` + "`/lgtm`" + ` a pull request, 
 and can be assigned to this PR, but in order for the pull request to be merged, it additionally has to be approved by a code owner listed in the OWNERS file for this repository(details below).
 We suggest the following additional approver: **cjwagner**
 
@@ -214,8 +214,8 @@ Needs approval from an approver in each of these OWNERS Files:
 
 - **[c/OWNERS](https://github.com/org/repo/blob/master/c/OWNERS)**
 
-OWNER approvers can indicate their approval by writing `+"`/approve`"+` in a comment
-OWNER approvers can cancel approval by writing `+"`/approve cancel`"+` in a comment
+OWNER approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
+OWNER approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
 A PR needs both /approve and /lgtm to be merged by the bot. An OWNER approver's /lgtm automatically implies an /approve.
 </details>
 <!-- META={"approvers":["cjwagner"]} -->`,
@@ -244,8 +244,8 @@ Needs approval from an approver in each of these OWNERS Files:
 
 - ~~[a/OWNERS](https://github.com/org/repo/blob/master/a/OWNERS)~~ [Alice]
 
-OWNER approvers can indicate their approval by writing `+"`/approve`"+` in a comment
-OWNER approvers can cancel approval by writing `+"`/approve cancel`"+` in a comment
+OWNER approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
+OWNER approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
 A PR needs both /approve and /lgtm to be merged by the bot. An OWNER approver's /lgtm automatically implies an /approve.
 </details>
 <!-- META={"approvers":[]} -->`,
@@ -275,8 +275,8 @@ Needs approval from an approver in each of these OWNERS Files:
 
 - ~~[a/OWNERS](https://github.com/org/repo/blob/master/a/OWNERS)~~ [Alice]
 
-OWNER approvers can indicate their approval by writing `+"`/approve`"+` in a comment
-OWNER approvers can cancel approval by writing `+"`/approve cancel`"+` in a comment
+OWNER approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
+OWNER approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
 A PR needs both /approve and /lgtm to be merged by the bot. An OWNER approver's /lgtm automatically implies an /approve.
 </details>
 <!-- META={"approvers":[]} -->`,
@@ -348,7 +348,7 @@ A PR needs both /approve and /lgtm to be merged by the bot. An OWNER approver's 
 			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
 This pull-request has been approved by: *<a href="#" title="Author self-approved">cjwagner</a>*
-To fully approve this pull request, please assign additional approvers. Any member of the organization can review and `+"`/lgtm`"+` a pull request, 
+To fully approve this pull request, please assign additional approvers. Any member of the organization can review and ` + "`/lgtm`" + ` a pull request, 
 and can be assigned to this PR, but in order for the pull request to be merged, it additionally has to be approved by a code owner listed in the OWNERS file for this repository(details below).
 We suggest the following additional approver: **alice**
 
@@ -363,8 +363,8 @@ Needs approval from an approver in each of these OWNERS Files:
 
 - **[a/OWNERS](https://github.com/org/repo/blob/master/a/OWNERS)**
 
-OWNER approvers can indicate their approval by writing `+"`/approve`"+` in a comment
-OWNER approvers can cancel approval by writing `+"`/approve cancel`"+` in a comment
+OWNER approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
+OWNER approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
 A PR needs both /approve and /lgtm to be merged by the bot. An OWNER approver's /lgtm automatically implies an /approve.
 </details>
 <!-- META={"approvers":["alice"]} -->`,
@@ -493,8 +493,8 @@ Needs approval from an approver in each of these OWNERS Files:
 
 - **[a/OWNERS](https://github.com/org/repo/blob/master/a/OWNERS)**
 
-OWNER approvers can indicate their approval by writing `+"`/approve`"+` in a comment
-OWNER approvers can cancel approval by writing `+"`/approve cancel`"+` in a comment
+OWNER approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
+OWNER approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
 A PR needs both /approve and /lgtm to be merged by the bot. An OWNER approver's /lgtm automatically implies an /approve.
 </details>
 <!-- META={"approvers":["alice"]} -->`,
