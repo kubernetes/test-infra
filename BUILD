@@ -1,4 +1,5 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_prefix")
+load("@io_kubernetes_build//defs:run_in_workspace.bzl", "workspace_binary")
 
 go_prefix("k8s.io/test-infra")
 
@@ -20,6 +21,11 @@ filegroup(
     name = "buckets",
     srcs = ["buckets.yaml"],
     visibility = ["//:__subpackages__"],
+)
+
+workspace_binary(
+    name = "dep",
+    cmd = "//vendor/github.com/golang/dep/cmd/dep",
 )
 
 filegroup(
@@ -51,6 +57,7 @@ filegroup(
         "//robots/issue-creator:all-srcs",
         "//scenarios:all-srcs",
         "//testgrid/config:all-srcs",
+        "//testgrid/updater:all-srcs",
         "//triage:all-srcs",
         "//velodrome:all-srcs",
         "//vendor:all-srcs",

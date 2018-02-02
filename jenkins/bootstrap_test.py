@@ -320,7 +320,7 @@ class CheckoutTest(unittest.TestCase):
         """checkout cleans and resets if asked to."""
         fake = FakeSubprocess()
         with Stub(os, 'chdir', Pass):
-            bootstrap.checkout(fake, REPO, None, PULL, clean=True)
+            bootstrap.checkout(fake, REPO, REPO, None, PULL, clean=True)
 
         self.assertTrue(any(
             'clean' in cmd for cmd, _, _ in fake.calls if 'git' in cmd))
@@ -338,14 +338,14 @@ class CheckoutTest(unittest.TestCase):
                 raise subprocess.CalledProcessError(128, cmd, None)
         with Stub(os, 'chdir', Pass):
             with Stub(time, 'sleep', Pass):
-                bootstrap.checkout(third_time_charm, REPO, None, PULL)
+                bootstrap.checkout(third_time_charm, REPO, REPO, None, PULL)
         self.assertEquals(expected_attempts, self.tries)
 
     def test_pull_ref(self):
         """checkout fetches the right ref for a pull."""
         fake = FakeSubprocess()
         with Stub(os, 'chdir', Pass):
-            bootstrap.checkout(fake, REPO, None, PULL)
+            bootstrap.checkout(fake, REPO, REPO, None, PULL)
 
         expected_ref = bootstrap.pull_ref(PULL)[0][0]
         self.assertTrue(any(
@@ -355,7 +355,7 @@ class CheckoutTest(unittest.TestCase):
         """checkout fetches the right ref for a branch."""
         fake = FakeSubprocess()
         with Stub(os, 'chdir', Pass):
-            bootstrap.checkout(fake, REPO, BRANCH, None)
+            bootstrap.checkout(fake, REPO, REPO, BRANCH, None)
 
         expected_ref = BRANCH
         self.assertTrue(any(
@@ -365,7 +365,7 @@ class CheckoutTest(unittest.TestCase):
         """checkout initializes and fetches the right repo."""
         fake = FakeSubprocess()
         with Stub(os, 'chdir', Pass):
-            bootstrap.checkout(fake, REPO, BRANCH, None)
+            bootstrap.checkout(fake, REPO, REPO, BRANCH, None)
 
         expected_uri = 'https://%s' % REPO
         self.assertTrue(any(
@@ -375,21 +375,35 @@ class CheckoutTest(unittest.TestCase):
         """Either branch or pull specified, not both."""
         with Stub(os, 'chdir', Bomb):
             with self.assertRaises(ValueError):
-                bootstrap.checkout(Bomb, REPO, None, None)
+                bootstrap.checkout(Bomb, REPO, REPO, None, None)
             with self.assertRaises(ValueError):
-                bootstrap.checkout(Bomb, REPO, BRANCH, PULL)
+                bootstrap.checkout(Bomb, REPO, REPO, BRANCH, PULL)
 
     def test_happy(self):
         """checkout sanity check."""
         fake = FakeSubprocess()
         with Stub(os, 'chdir', Pass):
-            bootstrap.checkout(fake, REPO, BRANCH, None)
+            bootstrap.checkout(fake, REPO, REPO, BRANCH, None)
 
         self.assertTrue(any(
             '--tags' in cmd for cmd, _, _ in fake.calls if 'fetch' in cmd))
         self.assertTrue(any(
             'FETCH_HEAD' in cmd for cmd, _, _ in fake.calls
             if 'checkout' in cmd))
+
+    def test_repo_path(self):
+        """checkout repo to different local path."""
+        fake = FakeSubprocess()
+        repo_path = "foo/bar"
+        with Stub(os, 'chdir', Pass):
+            bootstrap.checkout(fake, REPO, repo_path, BRANCH, None)
+
+        expected_uri = 'https://%s' % REPO
+        self.assertTrue(any(
+            expected_uri in cmd for cmd, _, _ in fake.calls if 'fetch' in cmd))
+
+        self.assertTrue(any(
+            repo_path in cmd for cmd, _, _ in fake.calls if 'init' in cmd))
 
 class ParseReposTest(unittest.TestCase):
     def test_bare(self):

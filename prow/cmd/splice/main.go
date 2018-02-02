@@ -108,6 +108,7 @@ func makeSplicer() (*splicer, error) {
 		{"init"},
 		{"config", "--local", "user.name", "K8S Prow Splice"},
 		{"config", "--local", "user.email", "splice@localhost"},
+		{"config", "--local", "commit.gpgsign", "false"},
 	})
 	if err != nil {
 		s.cleanup()

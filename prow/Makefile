@@ -42,6 +42,8 @@ JENKINS-OPERATOR_VERSION ?= $(TAG)
 TIDE_VERSION             ?= $(TAG)
 # CLONEREFS_VERSION is the version of the clonerefs image
 CLONEREFS_VERSION        ?= $(TAG)
+# INITUPLOAD_VERSION is the version of the initupload image
+INITUPLOAD_VERSION       ?= $(TAG)
 
 # These are the usual GKE variables.
 PROJECT       ?= k8s-prow
@@ -191,4 +193,9 @@ clonerefs-image: git-image
 	docker build -t "$(REGISTRY)/$(PROJECT)/clonerefs:$(CLONEREFS_VERSION)" $(DOCKER_LABELS) cmd/clonerefs
 	$(PUSH) "$(REGISTRY)/$(PROJECT)/clonerefs:$(CLONEREFS_VERSION)"
 
-.PHONY: hook-image hook-deployment hook-service sinker-image sinker-deployment deck-image deck-deployment deck-service splice-image splice-deployment tot-image tot-service tot-deployment horologium-image horologium-deployment plank-image plank-deployment jenkins-operator-image jenkins-operator-deployment tide-image tide-deployment mem-range-deployment clonerefs-image
+initupload-image: alpine-image
+	CGO_ENABLED=0 go build -o cmd/initupload/initupload k8s.io/test-infra/prow/cmd/initupload
+	docker build -t "$(REGISTRY)/$(PROJECT)/initupload:$(INITUPLOAD_VERSION)" $(DOCKER_LABELS) cmd/initupload
+	$(PUSH) "$(REGISTRY)/$(PROJECT)/initupload:$(INITUPLOAD_VERSION)"
+
+.PHONY: hook-image hook-deployment hook-service sinker-image sinker-deployment deck-image deck-deployment deck-service splice-image splice-deployment tot-image tot-service tot-deployment horologium-image horologium-deployment plank-image plank-deployment jenkins-operator-image jenkins-operator-deployment tide-image tide-deployment mem-range-deployment clonerefs-image iniupload-image

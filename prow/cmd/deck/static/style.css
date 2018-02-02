@@ -286,7 +286,7 @@ span.label:hover {
     color: #FDD835;
 }
 
-.external-icon {
+.external-icon, .link-icon {
     color: #78909C;
 }
 

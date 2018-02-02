@@ -21,9 +21,9 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/ghodss/yaml"
 	"github.com/golang/protobuf/proto"
-	"gopkg.in/yaml.v2"
-	"k8s.io/test-infra/testgrid/config/pb"
+	config "k8s.io/test-infra/testgrid/config/config_pb"
 )
 
 type Config struct {

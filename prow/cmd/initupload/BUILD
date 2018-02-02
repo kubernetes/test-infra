@@ -1,0 +1,43 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library", "go_test")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["main.go"],
+    importpath = "k8s.io/test-infra/prow/cmd/initupload",
+    visibility = ["//visibility:private"],
+    deps = [
+        "//prow/pjutil:go_default_library",
+        "//prow/pod-utils/clone:go_default_library",
+        "//prow/pod-utils/gcs:go_default_library",
+        "//vendor/cloud.google.com/go/storage:go_default_library",
+        "//vendor/github.com/sirupsen/logrus:go_default_library",
+        "//vendor/google.golang.org/api/option:go_default_library",
+    ],
+)
+
+go_binary(
+    name = "initupload",
+    embed = [":go_default_library"],
+    importpath = "k8s.io/test-infra/prow/cmd/initupload",
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [":package-srcs"],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = ["main_test.go"],
+    embed = [":go_default_library"],
+)

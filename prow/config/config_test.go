@@ -824,3 +824,104 @@ func TestLatestUsesImagePullPolicy(t *testing.T) {
 		}
 	}
 }
+
+// checkKubekinsPresets returns an error if a spec references to kubekins-e2e|bootstrap image,
+// but doesn't use service preset or ssh preset
+func checkKubekinsPresets(spec *v1.PodSpec, labels, validLabels map[string]string) error {
+	service := true
+	ssh := true
+	for _, container := range spec.Containers {
+		if strings.Contains(container.Image, "kubekins-e2e") || strings.Contains(container.Image, "bootstrap") {
+			service = false
+			for key, val := range labels {
+				if (key == "preset-gke-alpha-service" || key == "preset-service-account") && val == "true" {
+					service = true
+				}
+			}
+		}
+
+		if strings.Contains(container.Image, "kubekins-e2e") {
+			ssh = false
+			for key, val := range labels {
+				if key == "preset-k8s-ssh" && val == "true" {
+					ssh = true
+				}
+			}
+
+			if !ssh {
+				// TODO(krzyzacy): convert that to a preset
+				for _, volume := range spec.Volumes {
+					if volume.Name == "aws-ssh" {
+						ssh = true
+					}
+				}
+			}
+		}
+	}
+
+	if !service {
+		return fmt.Errorf("cannot find service account preset")
+	}
+
+	if !ssh {
+		return fmt.Errorf("cannot find ssh preset")
+	}
+
+	for key, val := range labels {
+		if validVal, ok := validLabels[key]; !ok {
+			return fmt.Errorf("Label %s is not a valid preset label", key)
+		} else if validVal != val {
+			return fmt.Errorf("Label %s does not have valid value, have %s, expect %s", key, val, validVal)
+		}
+	}
+
+	return nil
+}
+
+// TestValidPresets makes sure all presets name starts with 'preset-', all job presets are valid,
+// and jobs that uses kubekins-e2e image has the right service account preset
+func TestValidPresets(t *testing.T) {
+	validLabels := map[string]string{}
+	for _, preset := range c.Presets {
+		for label, val := range preset.Labels {
+			if !strings.HasPrefix(label, "preset-") {
+				t.Errorf("Preset label %s - label name should start with 'preset-'", label)
+			} else if val != "true" {
+				t.Errorf("Preset label %s - label value should be true", label)
+			}
+			if _, ok := validLabels[label]; ok {
+				t.Errorf("Duplicated preset label : %s", label)
+			} else {
+				validLabels[label] = val
+			}
+		}
+	}
+
+	for _, pres := range c.Presubmits {
+		for _, presubmit := range pres {
+			if presubmit.Spec != nil {
+				if err := checkKubekinsPresets(presubmit.Spec, presubmit.Labels, validLabels); err != nil {
+					t.Errorf("Error in presubmit %q: %v", presubmit.Name, err)
+				}
+			}
+		}
+	}
+
+	for _, posts := range c.Postsubmits {
+		for _, postsubmit := range posts {
+			if postsubmit.Spec != nil {
+				if err := checkKubekinsPresets(postsubmit.Spec, postsubmit.Labels, validLabels); err != nil {
+					t.Errorf("Error in postsubmit %q: %v", postsubmit.Name, err)
+				}
+			}
+		}
+	}
+
+	for _, periodic := range c.Periodics {
+		if periodic.Spec != nil {
+			if err := checkKubekinsPresets(periodic.Spec, periodic.Labels, validLabels); err != nil {
+				t.Errorf("Error in periodic %q: %v", periodic.Name, err)
+			}
+		}
+	}
+}

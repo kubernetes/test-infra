@@ -14,50 +14,30 @@
 # limitations under the License.
 
 
-# Identifies go_library() bazel targets in the workspace with no dependencies.
-# Deletes the target and its files. Cleans up any :all-srcs references
-
-# By default just checks for extra libraries, run with --fix to make changes.
+# Run dep ensure, generate bazel rules and do additional pruning.
+#
+# Usage:
+#   update-dep.sh <ARGS>
+#
+# The args are sent to dep ensure -v <ARGS>
 
 set -o nounset
 set -o errexit
 set -o pipefail
 set -o xtrace
 
-# Remove //foo:something references from bar/BUILD
-# Remove //vendor/golang.org/x/text/internal:go_default_library deps
-#
-# Unused text/gen.go file imports text/internal, which prevents dep prune from
-# removing it. However text/internal package references a text/language package
-# which has been pruned.
-#
-# Fix by deleting this dependency. The target won't build correctly, but it
-# won't anyway because text/language doesn't exist, and it will get pruned by
-# hack/prune-libraries.sh
-#
-# Usage:
-#   remove-text-internal
-drop-dep() {
-  local path
-  path="$(dirname "${BASH_SOURCE}")/../$2/BUILD"
-  if [[ ! -f ${path} ]]; then
-    return 0
-  fi
-  sed -i -e "\|//$1:go_default_library|d" "$path"
-}
+TESTINFRA_ROOT=$(git rev-parse --show-toplevel)
+cd "${TESTINFRA_ROOT}"
 
 trap 'echo "FAILED" >&2' ERR
-pushd "$(dirname "${BASH_SOURCE}")/.."
-dep ensure -v
-dep prune -v
+# dep itself has a problematic testdata directory with infinite symlinks which
+# makes bazel sad: https://github.com/golang/dep/pull/1412
+# dep should probably be removing it, but it doesn't:
+# https://github.com/golang/dep/issues/1580
+rm -rf vendor/github.com/golang/dep/internal/fs/testdata
+bazel run //:dep -- ensure -v "$@"
+rm -rf vendor/github.com/golang/dep/internal/fs/testdata
 hack/update-bazel.sh
-drop-dep vendor/golang.org/x/text/language vendor/golang.org/x/text/internal
-drop-dep vendor/google.golang.org/api/transport/grpc vendor/google.golang.org/api/transport
-drop-dep vendor/github.com/golang/protobuf/protoc-gen-go/grpc vendor/github.com/golang/protobuf/protoc-gen-go
-drop-dep vendor/github.com/golang/protobuf/protoc-gen-go/generator vendor/github.com/golang/protobuf/protoc-gen-go
-drop-dep vendor/github.com/golang/protobuf/protoc-gen-go vendor/github.com/golang/protobuf/protoc-gen-go
-drop-dep vendor/github.com/docker/distribution/context vendor/github.com/docker/distribution
-drop-dep vendor/github.com/docker/docker/pkg/term vendor/github.com/docker/docker/cli
 hack/prune-libraries.sh --fix
 hack/update-bazel.sh  # Update child :all-srcs in case parent was deleted
 echo SUCCESS

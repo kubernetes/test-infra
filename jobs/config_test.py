@@ -551,7 +551,10 @@ class JobTest(unittest.TestCase):
                                   'both set or unset: %s' % job)
 
                     if job.startswith('pull-kubernetes-') and not node_e2e:
-                        if 'kubeadm' in job:
+                        if 'gke' in job:
+                            stage = 'gs://kubernetes-release-dev/ci'
+                            suffix = True
+                        elif 'kubeadm' in job:
                             # kubeadm-based jobs use out-of-band .deb artifacts,
                             # not the --stage flag.
                             continue

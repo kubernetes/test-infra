@@ -56,7 +56,7 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 		Examples:    []string{"/woof", "/bark"},
 	}
 	pluginHelp.AddCommand(pluginhelp.Command{
-		Usage:       "/woof | /bark",
+		Usage:       "/(woof|bark)",
 		Description: "Add a dog image to the issue",
 		Featured:    false,
 		WhoCanUse:   "Anyone",

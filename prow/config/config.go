@@ -117,7 +117,7 @@ type Controller struct {
 
 	// AllowCancellations enables aborting presubmit jobs for commits that
 	// have been superseded by newer commits in Github pull requests.
-	AllowCancellations bool `json:"allow_cancellations"`
+	AllowCancellations bool `json:"allow_cancellations,omitempty"`
 }
 
 // Plank is config for the plank controller.
@@ -161,7 +161,7 @@ type Deck struct {
 	// their logs in prow.
 	ExternalAgentLogs []ExternalAgentLog `json:"external_agent_logs,omitempty"`
 	// Branding of the frontend
-	Branding Branding `json:"branding,omitempty"`
+	Branding *Branding `json:"branding,omitempty"`
 }
 
 // ExternalAgentLog ensures an external agent like Jenkins can expose

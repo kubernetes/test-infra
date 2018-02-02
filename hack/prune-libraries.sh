@@ -24,10 +24,18 @@ set -o nounset
 set -o errexit
 set -o pipefail
 
+# This list is used for rules in vendor/ which may not have any explicit
+# dependencies outside of vendor, e.g. helper commands we have vendored.
+# It should probably match the list in Gopkg.toml.
+REQUIRED=(
+  //vendor/github.com/golang/dep/cmd/dep:dep
+)
+
 unused-go-libraries() {
   # Find all the go_library rules in vendor except those that something outside
   # of vendor eventually depends on.
-  bazel query 'kind("go_library rule", //vendor/... -deps(//... -//vendor/...))'
+  required_items=( "${REQUIRED[@]/#/+ }" )
+  bazel query "kind('go_library rule', //vendor/... -deps(//... -//vendor/... ${required_items[@]}))"
 }
 
 # Output this:source.go that:file.txt sources of //this //that targets
