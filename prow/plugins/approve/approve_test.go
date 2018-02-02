@@ -181,8 +181,9 @@ Needs approval from an approver in each of these OWNERS Files:
 
 - ~~[c/OWNERS](https://github.com/org/repo/blob/master/c/OWNERS)~~ [cjwagner]
 
-You can indicate your approval by writing ` + "`/approve`" + ` in a comment
-You can cancel your approval by writing ` + "`/approve cancel`" + ` in a comment
+OWNER approvers can indicate their approval by writing `+"`/approve`"+` in a comment
+OWNER approvers can cancel approval by writing `+"`/approve cancel`"+` in a comment
+A PR needs both /approve and /lgtm to be merged by the bot. An OWNER approver's /lgtm automatically implies an /approve.
 </details>
 <!-- META={"approvers":[]} -->`,
 		},
@@ -200,6 +201,8 @@ You can cancel your approval by writing ` + "`/approve cancel`" + ` in a comment
 			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
 This pull-request has been approved by: 
+To fully approve this pull request, please assign additional approvers. Any member of the organization can review and `+"`/lgtm`"+` a pull request, 
+and can be assigned to this PR, but in order for the pull request to be merged, it additionally has to be approved by a code owner listed in the OWNERS file for this repository(details below).
 We suggest the following additional approver: **cjwagner**
 
 Assign the PR to them by writing ` + "`/assign @cjwagner`" + ` in a comment when ready.
@@ -211,8 +214,9 @@ Needs approval from an approver in each of these OWNERS Files:
 
 - **[c/OWNERS](https://github.com/org/repo/blob/master/c/OWNERS)**
 
-You can indicate your approval by writing ` + "`/approve`" + ` in a comment
-You can cancel your approval by writing ` + "`/approve cancel`" + ` in a comment
+OWNER approvers can indicate their approval by writing `+"`/approve`"+` in a comment
+OWNER approvers can cancel approval by writing `+"`/approve cancel`"+` in a comment
+A PR needs both /approve and /lgtm to be merged by the bot. An OWNER approver's /lgtm automatically implies an /approve.
 </details>
 <!-- META={"approvers":["cjwagner"]} -->`,
 		},
@@ -240,8 +244,9 @@ Needs approval from an approver in each of these OWNERS Files:
 
 - ~~[a/OWNERS](https://github.com/org/repo/blob/master/a/OWNERS)~~ [Alice]
 
-You can indicate your approval by writing ` + "`/approve`" + ` in a comment
-You can cancel your approval by writing ` + "`/approve cancel`" + ` in a comment
+OWNER approvers can indicate their approval by writing `+"`/approve`"+` in a comment
+OWNER approvers can cancel approval by writing `+"`/approve cancel`"+` in a comment
+A PR needs both /approve and /lgtm to be merged by the bot. An OWNER approver's /lgtm automatically implies an /approve.
 </details>
 <!-- META={"approvers":[]} -->`,
 		},
@@ -270,8 +275,9 @@ Needs approval from an approver in each of these OWNERS Files:
 
 - ~~[a/OWNERS](https://github.com/org/repo/blob/master/a/OWNERS)~~ [Alice]
 
-You can indicate your approval by writing ` + "`/approve`" + ` in a comment
-You can cancel your approval by writing ` + "`/approve cancel`" + ` in a comment
+OWNER approvers can indicate their approval by writing `+"`/approve`"+` in a comment
+OWNER approvers can cancel approval by writing `+"`/approve cancel`"+` in a comment
+A PR needs both /approve and /lgtm to be merged by the bot. An OWNER approver's /lgtm automatically implies an /approve.
 </details>
 <!-- META={"approvers":[]} -->`,
 		},
@@ -311,8 +317,9 @@ Needs approval from an approver in each of these OWNERS Files:
 - ~~[a/OWNERS](https://github.com/org/repo/blob/master/a/OWNERS)~~ [ALIcE]
 - ~~[c/OWNERS](https://github.com/org/repo/blob/master/c/OWNERS)~~ [cjwagner]
 
-You can indicate your approval by writing `+"`/approve`"+` in a comment
-You can cancel your approval by writing `+"`/approve cancel`"+` in a comment
+OWNER approvers can indicate their approval by writing `+"`/approve`"+` in a comment
+OWNER approvers can cancel approval by writing `+"`/approve cancel`"+` in a comment
+A PR needs both /approve and /lgtm to be merged by the bot. An OWNER approver's /lgtm automatically implies an /approve.
 </details>
 <!-- META={"approvers":[]} -->`),
 			},
@@ -341,6 +348,8 @@ You can cancel your approval by writing `+"`/approve cancel`"+` in a comment
 			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
 This pull-request has been approved by: *<a href="#" title="Author self-approved">cjwagner</a>*
+To fully approve this pull request, please assign additional approvers. Any member of the organization can review and `+"`/lgtm`"+` a pull request, 
+and can be assigned to this PR, but in order for the pull request to be merged, it additionally has to be approved by a code owner listed in the OWNERS file for this repository(details below).
 We suggest the following additional approver: **alice**
 
 Assign the PR to them by writing ` + "`/assign @alice`" + ` in a comment when ready.
@@ -354,8 +363,9 @@ Needs approval from an approver in each of these OWNERS Files:
 
 - **[a/OWNERS](https://github.com/org/repo/blob/master/a/OWNERS)**
 
-You can indicate your approval by writing ` + "`/approve`" + ` in a comment
-You can cancel your approval by writing ` + "`/approve cancel`" + ` in a comment
+OWNER approvers can indicate their approval by writing `+"`/approve`"+` in a comment
+OWNER approvers can cancel approval by writing `+"`/approve cancel`"+` in a comment
+A PR needs both /approve and /lgtm to be merged by the bot. An OWNER approver's /lgtm automatically implies an /approve.
 </details>
 <!-- META={"approvers":["alice"]} -->`,
 		},
@@ -427,8 +437,9 @@ Needs approval from an approver in each of these OWNERS Files:
 
 - ~~[a/OWNERS](https://github.com/org/repo/blob/master/a/OWNERS)~~ [alice]
 
-You can indicate your approval by writing `+"`/approve`"+` in a comment
-You can cancel your approval by writing `+"`/approve cancel`"+` in a comment
+OWNER approvers can indicate their approval by writing `+"`/approve`"+` in a comment
+OWNER approvers can cancel approval by writing `+"`/approve cancel`"+` in a comment
+A PR needs both /approve and /lgtm to be merged by the bot. An OWNER approver's /lgtm automatically implies an /approve.
 </details>
 <!-- META={"approvers":[]} -->`),
 			},
@@ -482,8 +493,9 @@ Needs approval from an approver in each of these OWNERS Files:
 
 - **[a/OWNERS](https://github.com/org/repo/blob/master/a/OWNERS)**
 
-You can indicate your approval by writing ` + "`/approve`" + ` in a comment
-You can cancel your approval by writing ` + "`/approve cancel`" + ` in a comment
+OWNER approvers can indicate their approval by writing `+"`/approve`"+` in a comment
+OWNER approvers can cancel approval by writing `+"`/approve cancel`"+` in a comment
+A PR needs both /approve and /lgtm to be merged by the bot. An OWNER approver's /lgtm automatically implies an /approve.
 </details>
 <!-- META={"approvers":["alice"]} -->`,
 		},
