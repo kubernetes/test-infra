@@ -2966,6 +2966,8 @@ presubmits:
           - --upload=gs://kubernetes-security-prow/pr-logs
           - --timeout=75
           - --clean
+          - --
+          - --gcs-shared=gs://kubernetes-security-prow/bazel
           env:
           - name: USER
             value: prow
@@ -3012,6 +3014,8 @@ presubmits:
         - --
         - --build=//... -//vendor/...
         - --release=//build/release-tars
+        - --gcs=gs://kubernetes-security-prow/staging/pull-security-kubernetes-bazel-build
+        - --gcs-shared=gs://kubernetes-security-prow/bazel
         image: gcr.io/k8s-testimages/bazelbuild:v20180201-0184a54dc-0.8.1
         name: ""
         resources:
@@ -3063,6 +3067,8 @@ presubmits:
           - --upload=gs://kubernetes-security-prow/pr-logs
           - --timeout=75
           - --clean
+          - --
+          - --gcs-shared=gs://kubernetes-security-prow/bazel
           env:
           - name: USER
             value: prow
@@ -3105,6 +3111,8 @@ presubmits:
         - --
         - --build=//cmd/... //pkg/... //federation/... //plugin/... //third_party/... //examples/... //test/... //vendor/k8s.io/...
         - --release=//build/release-tars
+        - --gcs=gs://kubernetes-security-prow/staging/pull-security-kubernetes-bazel-build
+        - --gcs-shared=gs://kubernetes-security-prow/bazel
         image: gcr.io/k8s-testimages/bazelbuild:v20180201-0184a54dc-0.6.1
         name: ""
         resources:
@@ -3152,6 +3160,8 @@ presubmits:
           - --upload=gs://kubernetes-security-prow/pr-logs
           - --timeout=75
           - --clean
+          - --
+          - --gcs-shared=gs://kubernetes-security-prow/bazel
           env:
           - name: USER
             value: prow
@@ -3195,6 +3205,8 @@ presubmits:
         - --batch
         - --build=//... -//vendor/...
         - --release=//build/release-tars
+        - --gcs=gs://kubernetes-security-prow/staging/pull-security-kubernetes-bazel-build-canary
+        - --gcs-shared=gs://kubernetes-security-prow/bazel
         image: gcr.io/k8s-testimages/bazelbuild:latest-latest
         imagePullPolicy: Always
         name: ""
@@ -3470,6 +3482,8 @@ presubmits:
         - --upload=gs://kubernetes-security-prow/pr-logs
         - --clean
         - --timeout=90
+        - --
+        - --stage=gs://kubernetes-security-prow/staging/pull-security-kubernetes-e2e-containerd-gce
         env:
         - name: USER
           value: prow
@@ -3523,6 +3537,8 @@ presubmits:
         - --upload=gs://kubernetes-security-prow/pr-logs
         - --clean
         - --timeout=90
+        - --
+        - --stage=gs://kubernetes-security-prow/staging/pull-security-kubernetes-e2e-gce
         env:
         - name: USER
           value: prow
@@ -3576,6 +3592,8 @@ presubmits:
         - --upload=gs://kubernetes-security-prow/pr-logs
         - --clean
         - --timeout=90
+        - --
+        - --stage=gs://kubernetes-security-prow/staging/pull-security-kubernetes-e2e-gce
         env:
         - name: USER
           value: prow
@@ -3629,6 +3647,8 @@ presubmits:
         - --upload=gs://kubernetes-security-prow/pr-logs
         - --clean
         - --timeout=90
+        - --
+        - --stage=gs://kubernetes-security-prow/staging/pull-security-kubernetes-e2e-gce
         env:
         - name: USER
           value: prow
@@ -3686,6 +3706,8 @@ presubmits:
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-security-prow/pr-logs
         - --timeout=90
+        - --
+        - --stage=gs://kubernetes-security-prow/staging/pull-security-kubernetes-e2e-gce-device-plugin-gpu
         env:
         - name: USER
           value: prow
@@ -3741,6 +3763,8 @@ presubmits:
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-security-prow/pr-logs
         - --timeout=90
+        - --
+        - --stage=gs://kubernetes-security-prow/staging/pull-security-kubernetes-e2e-gce-device-plugin-gpu
         env:
         - name: USER
           value: prow
@@ -3796,6 +3820,8 @@ presubmits:
         - --upload=gs://kubernetes-security-prow/pr-logs
         - --clean
         - --timeout=90
+        - --
+        - --stage=gs://kubernetes-security-prow/staging/pull-security-kubernetes-e2e-gke
         env:
         - name: USER
           value: prow
@@ -3849,6 +3875,8 @@ presubmits:
         - --upload=gs://kubernetes-security-prow/pr-logs
         - --clean
         - --timeout=90
+        - --
+        - --stage=gs://kubernetes-security-prow/staging/pull-security-kubernetes-e2e-gke
         env:
         - name: USER
           value: prow
@@ -3902,6 +3930,8 @@ presubmits:
         - --upload=gs://kubernetes-security-prow/pr-logs
         - --clean
         - --timeout=90
+        - --
+        - --stage=gs://kubernetes-security-prow/staging/pull-security-kubernetes-e2e-gke
         env:
         - name: USER
           value: prow
@@ -3959,6 +3989,8 @@ presubmits:
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-security-prow/pr-logs
         - --timeout=90
+        - --
+        - --stage=gs://kubernetes-security-prow/staging/pull-security-kubernetes-e2e-gke-device-plugin-gpu
         env:
         - name: USER
           value: prow
@@ -4014,6 +4046,8 @@ presubmits:
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-security-prow/pr-logs
         - --timeout=90
+        - --
+        - --stage=gs://kubernetes-security-prow/staging/pull-security-kubernetes-e2e-gke-device-plugin-gpu
         env:
         - name: USER
           value: prow
@@ -4071,6 +4105,8 @@ presubmits:
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-security-prow/pr-logs
         - --timeout=75
+        - --
+        - --stage=gs://kubernetes-security-prow/staging/pull-security-kubernetes-e2e-kops-aws
         env:
         - name: USER
           value: prow
@@ -4135,6 +4171,8 @@ presubmits:
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-security-prow/pr-logs
         - --timeout=75
+        - --
+        - --stage=gs://kubernetes-security-prow/staging/pull-security-kubernetes-e2e-kops-aws
         env:
         - name: USER
           value: prow
@@ -4199,6 +4237,8 @@ presubmits:
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-security-prow/pr-logs
         - --timeout=75
+        - --
+        - --stage=gs://kubernetes-security-prow/staging/pull-security-kubernetes-e2e-kops-aws
         env:
         - name: USER
           value: prow
@@ -4265,6 +4305,8 @@ presubmits:
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-security-prow/pr-logs
         - --timeout=110
+        - --
+        - --stage=gs://kubernetes-security-prow/staging/pull-security-kubernetes-kubemark-e2e-gce
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
           value: "true"
@@ -4326,6 +4368,8 @@ presubmits:
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-security-prow/pr-logs
         - --timeout=110
+        - --
+        - --stage=gs://kubernetes-security-prow/staging/pull-security-kubernetes-kubemark-e2e-gce
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
           value: "true"
@@ -4387,6 +4431,8 @@ presubmits:
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-security-prow/pr-logs
         - --timeout=110
+        - --
+        - --stage=gs://kubernetes-security-prow/staging/pull-security-kubernetes-kubemark-e2e-gce
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
           value: "true"
@@ -4450,6 +4496,8 @@ presubmits:
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-security-prow/pr-logs
         - --timeout=110
+        - --
+        - --stage=gs://kubernetes-security-prow/staging/pull-security-kubernetes-kubemark-e2e-gce-big
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
           value: "true"
@@ -4511,6 +4559,8 @@ presubmits:
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-security-prow/pr-logs
         - --timeout=110
+        - --
+        - --stage=gs://kubernetes-security-prow/staging/pull-security-kubernetes-kubemark-e2e-gce-big
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
           value: "true"
@@ -4572,6 +4622,8 @@ presubmits:
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-security-prow/pr-logs
         - --timeout=110
+        - --
+        - --stage=gs://kubernetes-security-prow/staging/pull-security-kubernetes-kubemark-e2e-gce-big
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
           value: "true"
@@ -4633,6 +4685,8 @@ presubmits:
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-security-prow/pr-logs
         - --timeout=1220
+        - --
+        - --stage=gs://kubernetes-security-prow/staging/pull-security-kubernetes-kubemark-e2e-gce-scale
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
           value: "true"

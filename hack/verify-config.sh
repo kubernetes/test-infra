@@ -21,10 +21,11 @@ set -o xtrace
 TESTINFRA_ROOT=$(git rev-parse --show-toplevel)
 
 PROW_CONFIG="${TESTINFRA_ROOT}/prow/config.yaml"
+JOBS_CONFIG="${TESTINFRA_ROOT}/jobs/config.json"
 TMP_CONFIG=$(mktemp)
 trap "rm $TMP_CONFIG" EXIT
 cp "${PROW_CONFIG}" "${TMP_CONFIG}"
-bazel run //maintenance/fixconfig:fixconfig -- --config=${TMP_CONFIG} && \
+bazel run //maintenance/fixconfig:fixconfig -- --config=${TMP_CONFIG} --config-json=${JOBS_CONFIG} && \
 bazel run //jobs:config_sort -- --prow-config=${TMP_CONFIG} --only-prow
 
 DIFF=$(diff "${TMP_CONFIG}" "${PROW_CONFIG}")
