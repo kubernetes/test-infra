@@ -1,4 +1,4 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library")
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 
 go_library(
     name = "go_default_library",
@@ -7,8 +7,10 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//prow/config:go_default_library",
-        "//prow/gitoauth:go_default_library",
+        "//prow/github:go_default_library",
+        "//vendor/github.com/shurcooL/githubql:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
+        "//vendor/golang.org/x/oauth2:go_default_library",
     ],
 )
 
@@ -24,4 +26,17 @@ filegroup(
     srcs = [":package-srcs"],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = ["userdashboard_test.go"],
+    embed = [":go_default_library"],
+    deps = [
+        "//prow/config:go_default_library",
+        "//vendor/github.com/ghodss/yaml:go_default_library",
+        "//vendor/github.com/gorilla/sessions:go_default_library",
+        "//vendor/github.com/shurcooL/githubql:go_default_library",
+        "//vendor/github.com/sirupsen/logrus:go_default_library",
+    ],
 )

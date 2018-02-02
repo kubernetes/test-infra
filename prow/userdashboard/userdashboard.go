@@ -107,7 +107,7 @@ func NewDashboardAgent(config *config.GitOAuthConfig, log *logrus.Entry) *Dashbo
 // of the user and serve the data in return. The Query handler is passed to the method so as it
 // can be mocked in the unit test..
 func (da *DashboardAgent) HandleUserDashboard(queryHandler PullRequestQueryHandler) http.HandlerFunc {
-  return func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
 		serverError := func(action string, err error) {
 			da.log.WithError(err).Errorf("Error %s.", action)
 			msg := fmt.Sprintf("500 Internal server error %s: %v", action, err)
@@ -149,7 +149,7 @@ func (da *DashboardAgent) HandleUserDashboard(queryHandler PullRequestQueryHandl
 func (da *DashboardAgent) Query(ctx context.Context, ghc githubClient) ([]PullRequest, error) {
 	var prs = []PullRequest{}
 	vars := map[string]interface{}{
-		"prsStates": []githubql.PullRequestState {githubql.PullRequestStateOpen},
+		"prsStates": []githubql.PullRequestState{githubql.PullRequestStateOpen},
 		"prsCursor": (*githubql.String)(nil),
 	}
 	for {

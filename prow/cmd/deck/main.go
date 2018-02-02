@@ -117,7 +117,7 @@ func main() {
 	}
 
 	if *userUrl != "" {
-		ua := &userAgent {
+		ua := &userAgent{
 			path: *userUrl,
 		}
 		mux.Handle("/user-data.js", gziphandler.GzipHandler(handleUserDashboard(ua)))

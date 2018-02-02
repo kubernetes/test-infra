@@ -304,6 +304,24 @@
   version = "v2.0.0"
 
 [[projects]]
+  name = "github.com/gorilla/context"
+  packages = ["."]
+  revision = "1ea25387ff6f684839d82767c1733ff4d4d15d0a"
+  version = "v1.1"
+
+[[projects]]
+  name = "github.com/gorilla/securecookie"
+  packages = ["."]
+  revision = "667fe4e3466a040b780561fe9b51a83a3753eefc"
+  version = "v1.1"
+
+[[projects]]
+  name = "github.com/gorilla/sessions"
+  packages = ["."]
+  revision = "ca9ada44574153444b00d3fd9c8559e4cc95f896"
+  version = "v1.1"
+
+[[projects]]
   name = "github.com/gregjones/httpcache"
   packages = [
     ".",
@@ -510,7 +528,8 @@
     "internal/timeseries",
     "lex/httplex",
     "proxy",
-    "trace"
+    "trace",
+    "xsrftoken"
   ]
   revision = "0ed95abb35c445290478a5348a7b38bb154135fd"
 
@@ -519,6 +538,7 @@
   name = "golang.org/x/oauth2"
   packages = [
     ".",
+    "github",
     "google",
     "internal",
     "jws",
@@ -715,6 +735,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "63d5f8d9680977e4c44ccd74e0395506ba6937a7e663eed3226ae3e3852fcda5"
+  inputs-digest = "973fad3b6a163d30027eacff7020fe0277dfe5f6ccea29e2af921cc91205fed8"
   solver-name = "gps-cdcl"
   solver-version = 1

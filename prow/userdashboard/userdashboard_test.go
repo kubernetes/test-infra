@@ -17,52 +17,52 @@ limitations under the License.
 package userdashboard
 
 import (
-	"testing"
-	"net/http/httptest"
-	"net/http"
-	"io/ioutil"
-	"reflect"
+	"context"
+	"fmt"
 	"github.com/ghodss/yaml"
 	"github.com/gorilla/sessions"
-	"github.com/sirupsen/logrus"
 	"github.com/shurcooL/githubql"
-	"fmt"
+	"github.com/sirupsen/logrus"
+	"io/ioutil"
 	"k8s.io/test-infra/prow/config"
-	"context"
+	"net/http"
+	"net/http/httptest"
+	"reflect"
+	"testing"
 )
 
 type MockQueryHandler struct {
 	prs []PullRequest
 }
 
-func (mh *MockQueryHandler) Query(ctx context.Context, ghc githubClient) ([]PullRequest, error){
+func (mh *MockQueryHandler) Query(ctx context.Context, ghc githubClient) ([]PullRequest, error) {
 	return mh.prs, nil
 }
 
-func newMockQueryHandler(prs []PullRequest) (*MockQueryHandler){
-	return &MockQueryHandler {
+func newMockQueryHandler(prs []PullRequest) *MockQueryHandler {
+	return &MockQueryHandler{
 		prs: prs,
 	}
 }
 
-func createMockAgent(config *config.GitOAuthConfig) (*DashboardAgent) {
+func createMockAgent(config *config.GitOAuthConfig) *DashboardAgent {
 	return &DashboardAgent{
 		gitConfig: config,
-		log: logrus.WithField("unit-test", "dashboard-agent"),
+		log:       logrus.WithField("unit-test", "dashboard-agent"),
 	}
 }
 
 func TestServeHTTPWithoutLogin(t *testing.T) {
 	mockCookieStore := sessions.NewCookieStore([]byte("secret-key"))
 	mockConfig := &config.GitOAuthConfig{
-		CookieStore: mockCookieStore,
-		GitTokenKey: "mock-token-key",
+		CookieStore:     mockCookieStore,
+		GitTokenKey:     "mock-token-key",
 		GitTokenSession: "mock-token-session",
 	}
 
 	mockAgent := createMockAgent(mockConfig)
-	mockData := UserData {
-		Login: false,
+	mockData := UserData{
+		Login:        false,
 		PullRequests: nil,
 	}
 
@@ -98,8 +98,8 @@ func TestServeHTTPWithoutLogin(t *testing.T) {
 func TestServeHTTPWithLogin(t *testing.T) {
 	mockCookieStore := sessions.NewCookieStore([]byte("secret-key"))
 	mockConfig := &config.GitOAuthConfig{
-		CookieStore: mockCookieStore,
-		GitTokenKey: "mock-token-key",
+		CookieStore:     mockCookieStore,
+		GitTokenKey:     "mock-token-key",
 		GitTokenSession: "mock-token-session",
 	}
 
@@ -137,10 +137,10 @@ func TestServeHTTPWithLogin(t *testing.T) {
 	}
 }
 
-func generateMockPullRequest(numPr int) (PullRequest) {
-	authorName :=  (githubql.String)(fmt.Sprintf("mock_user_login_%d", numPr))
+func generateMockPullRequest(numPr int) PullRequest {
+	authorName := (githubql.String)(fmt.Sprintf("mock_user_login_%d", numPr))
 	repoName := fmt.Sprintf("repo_%d", numPr)
-	return PullRequest {
+	return PullRequest{
 		Number: 1,
 		Author: struct {
 			Login githubql.String
@@ -148,17 +148,17 @@ func generateMockPullRequest(numPr int) (PullRequest) {
 			Login: authorName,
 		},
 		Repository: struct {
-			Name githubql.String
-			NameWithOwner  githubql.String
-			Owner struct {
+			Name          githubql.String
+			NameWithOwner githubql.String
+			Owner         struct {
 				Login githubql.String
-		  }
+			}
 		}{
-			Name: (githubql.String)(repoName),
+			Name:          (githubql.String)(repoName),
 			NameWithOwner: (githubql.String)(fmt.Sprintf("%v_%v", repoName, authorName)),
 			Owner: struct {
 				Login githubql.String
-			}	{
+			}{
 				Login: authorName,
 			},
 		},
@@ -166,13 +166,13 @@ func generateMockPullRequest(numPr int) (PullRequest) {
 			Nodes []struct {
 				Label Label
 			}
-		} {
+		}{
 			Nodes: []struct {
 				Label Label
-			} {
+			}{
 				{
 					Label: Label{
-						Id: (githubql.ID)(1),
+						Id:   (githubql.ID)(1),
 						Name: (githubql.String)("label1"),
 					},
 				},
@@ -187,14 +187,14 @@ func generateMockPullRequest(numPr int) (PullRequest) {
 	}
 }
 
-func generateMockUserData() (UserData) {
+func generateMockUserData() UserData {
 	prs := []PullRequest{}
-	for numPr := 0; numPr < 5; numPr ++ {
+	for numPr := 0; numPr < 5; numPr++ {
 		prs = append(prs, generateMockPullRequest(numPr))
 	}
 
 	return UserData{
-		Login: true,
+		Login:        true,
 		PullRequests: prs,
 	}
 }

@@ -30,7 +30,7 @@ type userAgent struct {
 	path string
 
 	sync.Mutex
-	data   *userdashboard.UserData
+	data *userdashboard.UserData
 }
 
 func (ua *userAgent) getData() (*userdashboard.UserData, error) {

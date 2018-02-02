@@ -38,6 +38,7 @@ filegroup(
         "//prow/genfiles:all-srcs",
         "//prow/git:all-srcs",
         "//prow/github:all-srcs",
+        "//prow/gitoauth:all-srcs",
         "//prow/hook:all-srcs",
         "//prow/jenkins:all-srcs",
         "//prow/kube:all-srcs",
@@ -53,6 +54,7 @@ filegroup(
         "//prow/report:all-srcs",
         "//prow/slack:all-srcs",
         "//prow/tide:all-srcs",
+        "//prow/userdashboard:all-srcs",
     ],
     tags = ["automanaged"],
 )
