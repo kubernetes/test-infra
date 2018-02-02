@@ -1,9 +1,3 @@
-# gazelle:proto legacy
-# Gazelle gets confused by the config.proto file here, since it is in the same directory
-# but a different package from main.go.
-# Also, we can't even use the default proto rules, since we apply nonstandard tags to the
-# generated code to support YAML.
-
 package(default_visibility = ["//visibility:public"])
 
 load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library", "go_test")
