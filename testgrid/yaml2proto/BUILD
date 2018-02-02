@@ -10,15 +10,15 @@ go_test(
     name = "go_default_test",
     srcs = ["yaml2proto_test.go"],
     embed = [":go_default_library"],
-    importpath = "k8s.io/test-infra/testgrid/config/yaml2proto",
+    importpath = "k8s.io/test-infra/testgrid/yaml2proto",
 )
 
 go_library(
     name = "go_default_library",
     srcs = ["yaml2proto.go"],
-    importpath = "k8s.io/test-infra/testgrid/config/yaml2proto",
+    importpath = "k8s.io/test-infra/testgrid/yaml2proto",
     deps = [
-        "//testgrid/config:config_pb",
+        "//testgrid:config",
         "//vendor/github.com/ghodss/yaml:go_default_library",
         "//vendor/github.com/golang/protobuf/proto:go_default_library",
     ],
