@@ -2607,6 +2607,7 @@ presubmits:
       cluster: security
       context: pull-security-kubernetes-e2e-kubeadm-gce
       labels:
+        preset-k8s-ssh: "true"
         preset-service-account: "true"
       max_concurrency: 8
       name: pull-security-kubernetes-e2e-kubeadm-gce
@@ -2628,28 +2629,15 @@ presubmits:
           - --
           - --gcs-shared=gs://kubernetes-security-prow/bazel
           env:
-          - name: USER
-            value: prow
-          - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
-            value: /etc/ssh-key-secret/ssh-private
-          - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
-            value: /etc/ssh-key-secret/ssh-public
           - name: SKIP_RELEASE_VALIDATION
             value: "true"
           image: gcr.io/k8s-testimages/e2e-kubeadm:v20180123-fe0e523d9
           name: ""
           resources: {}
           volumeMounts:
-          - mountPath: /etc/ssh-key-secret
-            name: ssh
-            readOnly: true
           - mountPath: /etc/ssh-security
             name: ssh-security
         volumes:
-        - name: ssh
-          secret:
-            defaultMode: 256
-            secretName: ssh-key-secret
         - name: ssh-security
           secret:
             defaultMode: 256
@@ -2712,6 +2700,7 @@ presubmits:
       cluster: security
       context: pull-security-kubernetes-e2e-kubeadm-gce
       labels:
+        preset-k8s-ssh: "true"
         preset-service-account: "true"
       max_concurrency: 8
       name: pull-security-kubernetes-e2e-kubeadm-gce
@@ -2729,28 +2718,15 @@ presubmits:
           - --
           - --gcs-shared=gs://kubernetes-security-prow/bazel
           env:
-          - name: USER
-            value: prow
-          - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
-            value: /etc/ssh-key-secret/ssh-private
-          - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
-            value: /etc/ssh-key-secret/ssh-public
           - name: SKIP_RELEASE_VALIDATION
             value: "true"
           image: gcr.io/k8s-testimages/e2e-kubeadm:v20180123-fe0e523d9
           name: ""
           resources: {}
           volumeMounts:
-          - mountPath: /etc/ssh-key-secret
-            name: ssh
-            readOnly: true
           - mountPath: /etc/ssh-security
             name: ssh-security
         volumes:
-        - name: ssh
-          secret:
-            defaultMode: 256
-            secretName: ssh-key-secret
         - name: ssh-security
           secret:
             defaultMode: 256
@@ -2805,6 +2781,7 @@ presubmits:
       cluster: security
       context: pull-security-kubernetes-e2e-kubeadm-gce-canary
       labels:
+        preset-k8s-ssh: "true"
         preset-service-account: "true"
       max_concurrency: 8
       name: pull-security-kubernetes-e2e-kubeadm-gce-canary
@@ -2822,28 +2799,15 @@ presubmits:
           - --
           - --gcs-shared=gs://kubernetes-security-prow/bazel
           env:
-          - name: USER
-            value: prow
-          - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
-            value: /etc/ssh-key-secret/ssh-private
-          - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
-            value: /etc/ssh-key-secret/ssh-public
           - name: SKIP_RELEASE_VALIDATION
             value: "true"
           image: gcr.io/k8s-testimages/e2e-kubeadm:v20180123-fe0e523d9
           name: ""
           resources: {}
           volumeMounts:
-          - mountPath: /etc/ssh-key-secret
-            name: ssh
-            readOnly: true
           - mountPath: /etc/ssh-security
             name: ssh-security
         volumes:
-        - name: ssh
-          secret:
-            defaultMode: 256
-            secretName: ssh-key-secret
         - name: ssh-security
           secret:
             defaultMode: 256
@@ -3124,6 +3088,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-e2e-containerd-gce
     labels:
+      preset-k8s-ssh: "true"
       preset-service-account: "true"
     max_concurrency: 0
     name: pull-security-kubernetes-e2e-containerd-gce
@@ -3143,29 +3108,15 @@ presubmits:
         - --timeout=90
         - --
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-containerd-gce
-        env:
-        - name: USER
-          value: prow
-        - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
-          value: /etc/ssh-key-secret/ssh-private
-        - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
-          value: /etc/ssh-key-secret/ssh-public
         image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
         name: ""
         resources: {}
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: /etc/ssh-key-secret
-          name: ssh
-          readOnly: true
         - mountPath: /etc/ssh-security
           name: ssh-security
       volumes:
-      - name: ssh
-        secret:
-          defaultMode: 256
-          secretName: ssh-key-secret
       - name: ssh-security
         secret:
           defaultMode: 256
@@ -3176,6 +3127,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-e2e-gce
     labels:
+      preset-k8s-ssh: "true"
       preset-service-account: "true"
     max_concurrency: 0
     name: pull-security-kubernetes-e2e-gce
@@ -3198,13 +3150,6 @@ presubmits:
         - --timeout=90
         - --
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gce
-        env:
-        - name: USER
-          value: prow
-        - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
-          value: /etc/ssh-key-secret/ssh-private
-        - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
-          value: /etc/ssh-key-secret/ssh-public
         image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
         name: ""
         resources:
@@ -3213,16 +3158,9 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: /etc/ssh-key-secret
-          name: ssh
-          readOnly: true
         - mountPath: /etc/ssh-security
           name: ssh-security
       volumes:
-      - name: ssh
-        secret:
-          defaultMode: 256
-          secretName: ssh-key-secret
       - name: ssh-security
         secret:
           defaultMode: 256
@@ -3235,6 +3173,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-e2e-gce
     labels:
+      preset-k8s-ssh: "true"
       preset-service-account: "true"
     max_concurrency: 0
     name: pull-security-kubernetes-e2e-gce
@@ -3253,13 +3192,6 @@ presubmits:
         - --timeout=90
         - --
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gce
-        env:
-        - name: USER
-          value: prow
-        - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
-          value: /etc/ssh-key-secret/ssh-private
-        - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
-          value: /etc/ssh-key-secret/ssh-public
         image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-1.8
         name: ""
         resources:
@@ -3268,16 +3200,9 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: /etc/ssh-key-secret
-          name: ssh
-          readOnly: true
         - mountPath: /etc/ssh-security
           name: ssh-security
       volumes:
-      - name: ssh
-        secret:
-          defaultMode: 256
-          secretName: ssh-key-secret
       - name: ssh-security
         secret:
           defaultMode: 256
@@ -3290,6 +3215,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-e2e-gce
     labels:
+      preset-k8s-ssh: "true"
       preset-service-account: "true"
     max_concurrency: 0
     name: pull-security-kubernetes-e2e-gce
@@ -3308,13 +3234,6 @@ presubmits:
         - --timeout=90
         - --
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gce
-        env:
-        - name: USER
-          value: prow
-        - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
-          value: /etc/ssh-key-secret/ssh-private
-        - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
-          value: /etc/ssh-key-secret/ssh-public
         image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-1.7
         name: ""
         resources:
@@ -3323,16 +3242,9 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: /etc/ssh-key-secret
-          name: ssh
-          readOnly: true
         - mountPath: /etc/ssh-security
           name: ssh-security
       volumes:
-      - name: ssh
-        secret:
-          defaultMode: 256
-          secretName: ssh-key-secret
       - name: ssh-security
         secret:
           defaultMode: 256
@@ -3343,6 +3255,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-e2e-gce-device-plugin-gpu
     labels:
+      preset-k8s-ssh: "true"
       preset-service-account: "true"
     max_concurrency: 12
     name: pull-security-kubernetes-e2e-gce-device-plugin-gpu
@@ -3367,13 +3280,6 @@ presubmits:
         - --timeout=90
         - --
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gce-device-plugin-gpu
-        env:
-        - name: USER
-          value: prow
-        - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
-          value: /etc/ssh-key-secret/ssh-private
-        - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
-          value: /etc/ssh-key-secret/ssh-public
         image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
         name: ""
         resources:
@@ -3382,16 +3288,9 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: /etc/ssh-key-secret
-          name: ssh
-          readOnly: true
         - mountPath: /etc/ssh-security
           name: ssh-security
       volumes:
-      - name: ssh
-        secret:
-          defaultMode: 256
-          secretName: ssh-key-secret
       - name: ssh-security
         secret:
           defaultMode: 256
@@ -3404,6 +3303,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-e2e-gce-device-plugin-gpu
     labels:
+      preset-k8s-ssh: "true"
       preset-service-account: "true"
     max_concurrency: 12
     name: pull-security-kubernetes-e2e-gce-device-plugin-gpu
@@ -3424,13 +3324,6 @@ presubmits:
         - --timeout=90
         - --
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gce-device-plugin-gpu
-        env:
-        - name: USER
-          value: prow
-        - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
-          value: /etc/ssh-key-secret/ssh-private
-        - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
-          value: /etc/ssh-key-secret/ssh-public
         image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-1.8
         name: ""
         resources:
@@ -3439,16 +3332,9 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: /etc/ssh-key-secret
-          name: ssh
-          readOnly: true
         - mountPath: /etc/ssh-security
           name: ssh-security
       volumes:
-      - name: ssh
-        secret:
-          defaultMode: 256
-          secretName: ssh-key-secret
       - name: ssh-security
         secret:
           defaultMode: 256
@@ -3459,6 +3345,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-e2e-gke
     labels:
+      preset-k8s-ssh: "true"
       preset-service-account: "true"
     max_concurrency: 0
     name: pull-security-kubernetes-e2e-gke
@@ -3481,13 +3368,6 @@ presubmits:
         - --timeout=90
         - --
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gke
-        env:
-        - name: USER
-          value: prow
-        - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
-          value: /etc/ssh-key-secret/ssh-private
-        - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
-          value: /etc/ssh-key-secret/ssh-public
         image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
         name: ""
         resources:
@@ -3496,16 +3376,9 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: /etc/ssh-key-secret
-          name: ssh
-          readOnly: true
         - mountPath: /etc/ssh-security
           name: ssh-security
       volumes:
-      - name: ssh
-        secret:
-          defaultMode: 256
-          secretName: ssh-key-secret
       - name: ssh-security
         secret:
           defaultMode: 256
@@ -3518,6 +3391,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-e2e-gke
     labels:
+      preset-k8s-ssh: "true"
       preset-service-account: "true"
     max_concurrency: 0
     name: pull-security-kubernetes-e2e-gke
@@ -3536,13 +3410,6 @@ presubmits:
         - --timeout=90
         - --
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gke
-        env:
-        - name: USER
-          value: prow
-        - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
-          value: /etc/ssh-key-secret/ssh-private
-        - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
-          value: /etc/ssh-key-secret/ssh-public
         image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-1.8
         name: ""
         resources:
@@ -3551,16 +3418,9 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: /etc/ssh-key-secret
-          name: ssh
-          readOnly: true
         - mountPath: /etc/ssh-security
           name: ssh-security
       volumes:
-      - name: ssh
-        secret:
-          defaultMode: 256
-          secretName: ssh-key-secret
       - name: ssh-security
         secret:
           defaultMode: 256
@@ -3573,6 +3433,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-e2e-gke
     labels:
+      preset-k8s-ssh: "true"
       preset-service-account: "true"
     max_concurrency: 0
     name: pull-security-kubernetes-e2e-gke
@@ -3591,13 +3452,6 @@ presubmits:
         - --timeout=90
         - --
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gke
-        env:
-        - name: USER
-          value: prow
-        - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
-          value: /etc/ssh-key-secret/ssh-private
-        - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
-          value: /etc/ssh-key-secret/ssh-public
         image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-1.7
         name: ""
         resources:
@@ -3606,16 +3460,9 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: /etc/ssh-key-secret
-          name: ssh
-          readOnly: true
         - mountPath: /etc/ssh-security
           name: ssh-security
       volumes:
-      - name: ssh
-        secret:
-          defaultMode: 256
-          secretName: ssh-key-secret
       - name: ssh-security
         secret:
           defaultMode: 256
@@ -3626,6 +3473,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-e2e-gke-device-plugin-gpu
     labels:
+      preset-k8s-ssh: "true"
       preset-service-account: "true"
     max_concurrency: 1
     name: pull-security-kubernetes-e2e-gke-device-plugin-gpu
@@ -3650,13 +3498,6 @@ presubmits:
         - --timeout=90
         - --
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gke-device-plugin-gpu
-        env:
-        - name: USER
-          value: prow
-        - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
-          value: /etc/ssh-key-secret/ssh-private
-        - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
-          value: /etc/ssh-key-secret/ssh-public
         image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
         name: ""
         resources:
@@ -3665,16 +3506,9 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: /etc/ssh-key-secret
-          name: ssh
-          readOnly: true
         - mountPath: /etc/ssh-security
           name: ssh-security
       volumes:
-      - name: ssh
-        secret:
-          defaultMode: 256
-          secretName: ssh-key-secret
       - name: ssh-security
         secret:
           defaultMode: 256
@@ -3687,6 +3521,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-e2e-gke-device-plugin-gpu
     labels:
+      preset-k8s-ssh: "true"
       preset-service-account: "true"
     max_concurrency: 1
     name: pull-security-kubernetes-e2e-gke-device-plugin-gpu
@@ -3707,13 +3542,6 @@ presubmits:
         - --timeout=90
         - --
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-gke-device-plugin-gpu
-        env:
-        - name: USER
-          value: prow
-        - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
-          value: /etc/ssh-key-secret/ssh-private
-        - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
-          value: /etc/ssh-key-secret/ssh-public
         image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-1.8
         name: ""
         resources:
@@ -3722,16 +3550,9 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: /etc/ssh-key-secret
-          name: ssh
-          readOnly: true
         - mountPath: /etc/ssh-security
           name: ssh-security
       volumes:
-      - name: ssh
-        secret:
-          defaultMode: 256
-          secretName: ssh-key-secret
       - name: ssh-security
         secret:
           defaultMode: 256
@@ -3942,6 +3763,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-kubemark-e2e-gce
     labels:
+      preset-k8s-ssh: "true"
       preset-service-account: "true"
     max_concurrency: 12
     name: pull-security-kubernetes-kubemark-e2e-gce
@@ -3969,12 +3791,6 @@ presubmits:
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
           value: "true"
-        - name: USER
-          value: prow
-        - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
-          value: /etc/ssh-key-secret/ssh-private
-        - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
-          value: /etc/ssh-key-secret/ssh-public
         image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
         name: ""
         resources:
@@ -3983,18 +3799,11 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: /etc/ssh-key-secret
-          name: ssh
-          readOnly: true
         - mountPath: /etc/ssh-security
           name: ssh-security
         - mountPath: /docker-graph
           name: auto-generated-docker-graph-volume-mount
       volumes:
-      - name: ssh
-        secret:
-          defaultMode: 256
-          secretName: ssh-key-secret
       - name: ssh-security
         secret:
           defaultMode: 256
@@ -4009,6 +3818,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-kubemark-e2e-gce
     labels:
+      preset-k8s-ssh: "true"
       preset-service-account: "true"
     max_concurrency: 12
     name: pull-security-kubernetes-kubemark-e2e-gce
@@ -4032,12 +3842,6 @@ presubmits:
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
           value: "true"
-        - name: USER
-          value: prow
-        - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
-          value: /etc/ssh-key-secret/ssh-private
-        - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
-          value: /etc/ssh-key-secret/ssh-public
         image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-1.8
         name: ""
         resources:
@@ -4046,18 +3850,11 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: /etc/ssh-key-secret
-          name: ssh
-          readOnly: true
         - mountPath: /etc/ssh-security
           name: ssh-security
         - mountPath: /docker-graph
           name: auto-generated-docker-graph-volume-mount
       volumes:
-      - name: ssh
-        secret:
-          defaultMode: 256
-          secretName: ssh-key-secret
       - name: ssh-security
         secret:
           defaultMode: 256
@@ -4072,6 +3869,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-kubemark-e2e-gce
     labels:
+      preset-k8s-ssh: "true"
       preset-service-account: "true"
     max_concurrency: 12
     name: pull-security-kubernetes-kubemark-e2e-gce
@@ -4095,12 +3893,6 @@ presubmits:
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
           value: "true"
-        - name: USER
-          value: prow
-        - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
-          value: /etc/ssh-key-secret/ssh-private
-        - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
-          value: /etc/ssh-key-secret/ssh-public
         image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-1.7
         name: ""
         resources:
@@ -4109,18 +3901,11 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: /etc/ssh-key-secret
-          name: ssh
-          readOnly: true
         - mountPath: /etc/ssh-security
           name: ssh-security
         - mountPath: /docker-graph
           name: auto-generated-docker-graph-volume-mount
       volumes:
-      - name: ssh
-        secret:
-          defaultMode: 256
-          secretName: ssh-key-secret
       - name: ssh-security
         secret:
           defaultMode: 256
@@ -4133,6 +3918,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-kubemark-e2e-gce-big
     labels:
+      preset-k8s-ssh: "true"
       preset-service-account: "true"
     max_concurrency: 12
     name: pull-security-kubernetes-kubemark-e2e-gce-big
@@ -4160,12 +3946,6 @@ presubmits:
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
           value: "true"
-        - name: USER
-          value: prow
-        - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
-          value: /etc/ssh-key-secret/ssh-private
-        - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
-          value: /etc/ssh-key-secret/ssh-public
         image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
         name: ""
         resources:
@@ -4174,18 +3954,11 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: /etc/ssh-key-secret
-          name: ssh
-          readOnly: true
         - mountPath: /etc/ssh-security
           name: ssh-security
         - mountPath: /docker-graph
           name: auto-generated-docker-graph-volume-mount
       volumes:
-      - name: ssh
-        secret:
-          defaultMode: 256
-          secretName: ssh-key-secret
       - name: ssh-security
         secret:
           defaultMode: 256
@@ -4200,6 +3973,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-kubemark-e2e-gce-big
     labels:
+      preset-k8s-ssh: "true"
       preset-service-account: "true"
     max_concurrency: 12
     name: pull-security-kubernetes-kubemark-e2e-gce-big
@@ -4223,12 +3997,6 @@ presubmits:
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
           value: "true"
-        - name: USER
-          value: prow
-        - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
-          value: /etc/ssh-key-secret/ssh-private
-        - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
-          value: /etc/ssh-key-secret/ssh-public
         image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-1.8
         name: ""
         resources:
@@ -4237,18 +4005,11 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: /etc/ssh-key-secret
-          name: ssh
-          readOnly: true
         - mountPath: /etc/ssh-security
           name: ssh-security
         - mountPath: /docker-graph
           name: auto-generated-docker-graph-volume-mount
       volumes:
-      - name: ssh
-        secret:
-          defaultMode: 256
-          secretName: ssh-key-secret
       - name: ssh-security
         secret:
           defaultMode: 256
@@ -4263,6 +4024,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-kubemark-e2e-gce-big
     labels:
+      preset-k8s-ssh: "true"
       preset-service-account: "true"
     max_concurrency: 12
     name: pull-security-kubernetes-kubemark-e2e-gce-big
@@ -4286,12 +4048,6 @@ presubmits:
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
           value: "true"
-        - name: USER
-          value: prow
-        - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
-          value: /etc/ssh-key-secret/ssh-private
-        - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
-          value: /etc/ssh-key-secret/ssh-public
         image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-1.7
         name: ""
         resources:
@@ -4300,18 +4056,11 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: /etc/ssh-key-secret
-          name: ssh
-          readOnly: true
         - mountPath: /etc/ssh-security
           name: ssh-security
         - mountPath: /docker-graph
           name: auto-generated-docker-graph-volume-mount
       volumes:
-      - name: ssh
-        secret:
-          defaultMode: 256
-          secretName: ssh-key-secret
       - name: ssh-security
         secret:
           defaultMode: 256
@@ -4326,6 +4075,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-kubemark-e2e-gce-scale
     labels:
+      preset-k8s-ssh: "true"
       preset-service-account: "true"
     max_concurrency: 1
     name: pull-security-kubernetes-kubemark-e2e-gce-scale
@@ -4349,12 +4099,6 @@ presubmits:
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
           value: "true"
-        - name: USER
-          value: prow
-        - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
-          value: /etc/ssh-key-secret/ssh-private
-        - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
-          value: /etc/ssh-key-secret/ssh-public
         image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
         name: ""
         resources:
@@ -4363,18 +4107,11 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: /etc/ssh-key-secret
-          name: ssh
-          readOnly: true
         - mountPath: /etc/ssh-security
           name: ssh-security
         - mountPath: /docker-graph
           name: auto-generated-docker-graph-volume-mount
       volumes:
-      - name: ssh
-        secret:
-          defaultMode: 256
-          secretName: ssh-key-secret
       - name: ssh-security
         secret:
           defaultMode: 256
@@ -4387,6 +4124,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-node-e2e
     labels:
+      preset-k8s-ssh: "true"
       preset-service-account: "true"
     max_concurrency: 12
     name: pull-security-kubernetes-node-e2e
@@ -4410,29 +4148,15 @@ presubmits:
         - --timeout=90
         - --
         - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml
-        env:
-        - name: USER
-          value: prow
-        - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
-          value: /etc/ssh-key-secret/ssh-private
-        - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
-          value: /etc/ssh-key-secret/ssh-public
         image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
         name: ""
         resources:
           requests:
             memory: 6Gi
         volumeMounts:
-        - mountPath: /etc/ssh-key-secret
-          name: ssh
-          readOnly: true
         - mountPath: /etc/ssh-security
           name: ssh-security
       volumes:
-      - name: ssh
-        secret:
-          defaultMode: 256
-          secretName: ssh-key-secret
       - name: ssh-security
         secret:
           defaultMode: 256
@@ -4445,6 +4169,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-node-e2e
     labels:
+      preset-k8s-ssh: "true"
       preset-service-account: "true"
     max_concurrency: 12
     name: pull-security-kubernetes-node-e2e
@@ -4464,29 +4189,15 @@ presubmits:
         - --timeout=90
         - --
         - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml
-        env:
-        - name: USER
-          value: prow
-        - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
-          value: /etc/ssh-key-secret/ssh-private
-        - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
-          value: /etc/ssh-key-secret/ssh-public
         image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-1.8
         name: ""
         resources:
           requests:
             memory: 6Gi
         volumeMounts:
-        - mountPath: /etc/ssh-key-secret
-          name: ssh
-          readOnly: true
         - mountPath: /etc/ssh-security
           name: ssh-security
       volumes:
-      - name: ssh
-        secret:
-          defaultMode: 256
-          secretName: ssh-key-secret
       - name: ssh-security
         secret:
           defaultMode: 256
@@ -4499,6 +4210,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-node-e2e
     labels:
+      preset-k8s-ssh: "true"
       preset-service-account: "true"
     max_concurrency: 12
     name: pull-security-kubernetes-node-e2e
@@ -4518,29 +4230,15 @@ presubmits:
         - --timeout=90
         - --
         - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config-1-7.yaml
-        env:
-        - name: USER
-          value: prow
-        - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
-          value: /etc/ssh-key-secret/ssh-private
-        - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
-          value: /etc/ssh-key-secret/ssh-public
         image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-1.7
         name: ""
         resources:
           requests:
             memory: 6Gi
         volumeMounts:
-        - mountPath: /etc/ssh-key-secret
-          name: ssh
-          readOnly: true
         - mountPath: /etc/ssh-security
           name: ssh-security
       volumes:
-      - name: ssh
-        secret:
-          defaultMode: 256
-          secretName: ssh-key-secret
       - name: ssh-security
         secret:
           defaultMode: 256
@@ -4553,6 +4251,7 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-node-e2e-containerd
     labels:
+      preset-k8s-ssh: "true"
       preset-service-account: "true"
     max_concurrency: 8
     name: pull-security-kubernetes-node-e2e-containerd
@@ -4571,27 +4270,13 @@ presubmits:
         - --service-account=/etc/service-account/service-account.json
         - --upload=gs://kubernetes-security-prow/pr-logs
         - --timeout=90
-        env:
-        - name: USER
-          value: prow
-        - name: JENKINS_GCE_SSH_PRIVATE_KEY_FILE
-          value: /etc/ssh-key-secret/ssh-private
-        - name: JENKINS_GCE_SSH_PUBLIC_KEY_FILE
-          value: /etc/ssh-key-secret/ssh-public
         image: gcr.io/k8s-testimages/kubekins-e2e:v20180123-1260ba9fc-master
         name: ""
         resources: {}
         volumeMounts:
-        - mountPath: /etc/ssh-key-secret
-          name: ssh
-          readOnly: true
         - mountPath: /etc/ssh-security
           name: ssh-security
       volumes:
-      - name: ssh
-        secret:
-          defaultMode: 256
-          secretName: ssh-key-secret
       - name: ssh-security
         secret:
           defaultMode: 256
@@ -13484,8 +13169,6 @@ periodics:
       - name: cache-ssd
         hostPath:
           path: /mnt/disks/ssd0
-
-
 
 - interval: 24h
   agent: kubernetes
