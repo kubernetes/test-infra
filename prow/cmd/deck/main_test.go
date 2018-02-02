@@ -38,6 +38,8 @@ import (
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/tide"
+	"k8s.io/test-infra/prow/userdashboard"
+	"github.com/shurcooL/githubql"
 )
 
 type flc int
@@ -307,4 +309,106 @@ func TestHelp(t *testing.T) {
 	}
 	handleAndCheck()
 	handleAndCheck()
+}
+
+func TestUser(t *testing.T) {
+  mockUserData := generateMockUserData()
+	mockEndPoint := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		marshaledData, err := json.Marshal(mockUserData)
+		if err != nil {
+			t.Fatalf("Marshaling: %v", err)
+		}
+		fmt.Fprintf(w, string(marshaledData))
+	}))
+	defer mockEndPoint.Close()
+
+	mockUserAgent := &userAgent{
+		path: mockEndPoint.URL,
+	}
+
+	testHandler := handleUserDashboard(mockUserAgent)
+	mockRequest, err := http.NewRequest(http.MethodGet, "/user-data.js", nil)
+	if err != nil {
+		t.Fatalf("Error making request: %v", err)
+	}
+	rr := httptest.NewRecorder()
+	testHandler.ServeHTTP(rr, mockRequest)
+	if rr.Code != http.StatusOK {
+		t.Fatalf("Bad error code: %d", rr.Code)
+	}
+
+	response := rr.Result()
+	defer response.Body.Close()
+	body, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		t.Fatalf("Error reading response body: %v", err)
+	}
+	var dataReturned userdashboard.UserData
+	if err := yaml.Unmarshal(body, &dataReturned); err != nil {
+		t.Fatalf("Error unmarshaling: %v", err)
+	}
+	if !reflect.DeepEqual(mockUserData, dataReturned) {
+		t.Errorf("Invalid user data. Got %v, expected %v", dataReturned, mockUserData)
+	}
+}
+
+func generateMockPullRequest(numPr int) (userdashboard.PullRequest) {
+	authorName :=  (githubql.String)(fmt.Sprintf("mock_user_login_%d", numPr))
+	repoName := fmt.Sprintf("repo_%d", numPr)
+	return userdashboard.PullRequest {
+		Number: 1,
+		Author: struct {
+			Login githubql.String
+		}{
+			Login: authorName,
+		},
+		Repository: struct {
+			Name githubql.String
+			NameWithOwner  githubql.String
+			Owner struct {
+				Login githubql.String
+		  }
+		}{
+			Name: (githubql.String)(repoName),
+			NameWithOwner: (githubql.String)(fmt.Sprintf("%v_%v", repoName, authorName)),
+			Owner: struct {
+				Login githubql.String
+			}	{
+				Login: authorName,
+			},
+		},
+		Labels: struct {
+			Nodes []struct {
+				Label userdashboard.Label
+			}
+		} {
+			Nodes: []struct {
+				Label userdashboard.Label
+			} {
+				{
+					Label: userdashboard.Label{
+						Id: (githubql.ID)(1),
+						Name: (githubql.String)("label1"),
+					},
+				},
+				{
+					Label: userdashboard.Label{
+						Id:   (githubql.ID)(2),
+						Name: (githubql.String)("label2"),
+					},
+				},
+			},
+		},
+	}
+}
+
+func generateMockUserData() (userdashboard.UserData) {
+	prs := []userdashboard.PullRequest{}
+	for numPr := 0; numPr < 5; numPr ++ {
+		prs = append(prs, generateMockPullRequest(numPr))
+	}
+
+	return userdashboard.UserData{
+		PullRequests: prs,
+	}
 }

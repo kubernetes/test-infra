@@ -29,7 +29,6 @@ import (
 )
 
 const (
-	redirectURLKey     = "redirect-url"
 	oauthSessionCookie = "oauth-session"
 	stateKey           = "state"
 )

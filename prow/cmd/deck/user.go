@@ -26,22 +26,17 @@ import (
 	"k8s.io/test-infra/prow/userdashboard"
 )
 
-const dataCacheLife = time.Minute
-
 type userAgent struct {
 	path string
 
 	sync.Mutex
 	data   *userdashboard.UserData
-	expiry time.Time
 }
 
 func (ua *userAgent) getData() (*userdashboard.UserData, error) {
 	ua.Lock()
 	defer ua.Unlock()
-	if time.Now().Before(ua.expiry) {
-		return ua.data, nil
-	}
+
 	var data userdashboard.UserData
 	resp, err := http.Get(ua.path)
 	if err != nil {
@@ -56,6 +51,5 @@ func (ua *userAgent) getData() (*userdashboard.UserData, error) {
 	}
 
 	ua.data = &data
-	ua.expiry = time.Now().Add(dataCacheLife)
 	return ua.data, nil
 }

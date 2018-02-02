@@ -48,7 +48,7 @@ type DashboardAgent struct {
 
 type Label struct {
 	Id   githubql.ID
-	name githubql.String
+	Name githubql.String
 }
 
 type PullRequest struct {
@@ -65,7 +65,7 @@ type PullRequest struct {
 	}
 	Labels struct {
 		Nodes []struct {
-			Label `graphql:"... on Label"`
+			Label Label `graphql:"... on Label"`
 		}
 	} `graphql:"labels(first: 100)"`
 }
@@ -78,7 +78,7 @@ type PullRequestQuery struct {
 				EndCursor   githubql.String
 			}
 			Nodes []struct {
-				PullRequest `graphql:"... on PullRequest"`
+				PullRequest PullRequest `graphql:"... on PullRequest"`
 			}
 		} `graphql:"pullRequests(first: 100, after: $prsCursor, states: $prsStates)"`
 	}
@@ -110,7 +110,7 @@ func (da *DashboardAgent) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	} else {
 		data.Login = true
 		ghc := github.NewClient(token.AccessToken, githubEndpoint)
-		pullRequests, err := search(context.Background(), ghc)
+		pullRequests, err := da.search(context.Background(), ghc)
 		if err != nil {
 			serverError("Error with querying user data.", err)
 			return
@@ -127,7 +127,7 @@ func (da *DashboardAgent) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Write(marshaledData)
 }
 
-func search(ctx context.Context, ghc githubClient) ([]PullRequest, error) {
+func (da *DashboardAgent) search(ctx context.Context, ghc githubClient) ([]PullRequest, error) {
 	var prs = []PullRequest{}
 	vars := map[string]interface{}{
 		"prsStates": []githubql.PullRequestState {githubql.PullRequestStateOpen},
