@@ -35,15 +35,21 @@ type githubClient interface {
 	Query(context.Context, interface{}, map[string]interface{}) error
 }
 
+// PullRequestQueryHandler defines an interface that query handlers should implement.
 type PullRequestQueryHandler interface {
 	Query(context.Context, githubClient) ([]PullRequest, error)
 }
 
+// UserData represents data returned to client request to the endpoint. It has a flag that indicates
+// whether the user has logged in his github or not and list of open pull requests owned by the
+// user.
 type UserData struct {
 	Login        bool
 	PullRequests []PullRequest
 }
 
+// Dashboard Agent is responsible for handling request to /user-dashboard endpoint. I will serve
+// list of open pull requests owned by the user.
 type DashboardAgent struct {
 	gitConfig *config.GitOAuthConfig
 
@@ -88,6 +94,7 @@ type PullRequestQuery struct {
 	}
 }
 
+// Returns new user dashboard agent.
 func NewDashboardAgent(config *config.GitOAuthConfig, log *logrus.Entry) *DashboardAgent {
 	return &DashboardAgent{
 		gitConfig: config,
@@ -95,6 +102,10 @@ func NewDashboardAgent(config *config.GitOAuthConfig, log *logrus.Entry) *Dashbo
 	}
 }
 
+// HandleUserDashboard returns a http handler function that handles request to /user-dashboard
+// endpoint. The handler takes user access token stored in the cookie to query to Github on behalf
+// of the user and serve the data in return. The Query handler is passed to the method so as it
+// can be mocked in the unit test..
 func (da *DashboardAgent) HandleUserDashboard(queryHandler PullRequestQueryHandler) http.HandlerFunc {
   return func(w http.ResponseWriter, r *http.Request) {
 		serverError := func(action string, err error) {
@@ -133,6 +144,8 @@ func (da *DashboardAgent) HandleUserDashboard(queryHandler PullRequestQueryHandl
 	}
 }
 
+// Query function that returns a list of open pull requests owned by the user whose access token
+// is consumed by the github client.
 func (da *DashboardAgent) Query(ctx context.Context, ghc githubClient) ([]PullRequest, error) {
 	var prs = []PullRequest{}
 	vars := map[string]interface{}{

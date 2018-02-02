@@ -201,9 +201,9 @@ func main() {
 
 	userDashboardAgent := userdashboard.NewDashboardAgent(gitOAuthConfig, logrus.WithField("component", "user-dashboard"))
 	http.Handle("/user-dashboard", userDashboardAgent.HandleUserDashboard(userDashboardAgent))
-	// Handles Login Request
+	// Handles login request.
 	http.HandleFunc("/user-dashboard/login", goa.HandleLogin)
-	// Handles Login Request
+	// Handles redirect from Github OAuth server.
 	http.HandleFunc("/user-dashboard/redirect", goa.HandleRedirect)
 
 	logger.Fatal(http.ListenAndServe(":"+strconv.Itoa(*port), nil))

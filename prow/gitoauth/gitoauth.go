@@ -33,11 +33,14 @@ const (
 	stateKey           = "state"
 )
 
+// GitOAuth Agent represents an agent that takes care Github authentication process such as handles
+// login request from users or handles redirection from Github OAuth server.
 type GitOAuthAgent struct {
 	gc     *config.GitOAuthConfig
 	logger *logrus.Entry
 }
 
+// Returns new GitOAUth Agent.
 func NewGitOAuthAgent(config *config.GitOAuthConfig, logger *logrus.Entry) *GitOAuthAgent {
 	return &GitOAuthAgent{
 		gc:     config,
@@ -45,6 +48,8 @@ func NewGitOAuthAgent(config *config.GitOAuthConfig, logger *logrus.Entry) *GitO
 	}
 }
 
+// HandleLogin handles Github login request from front-end. It starts a new git oauth session and
+// redirect user to Github OAuth end-point for authentication.
 func (ga *GitOAuthAgent) HandleLogin(w http.ResponseWriter, r *http.Request) {
 	state := xsrftoken.Generate(ga.gc.Client.ClientSecret, "", "")
 
@@ -67,8 +72,12 @@ func (ga *GitOAuthAgent) HandleLogin(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, redirectURL, http.StatusFound)
 }
 
+// HandleRedirect handles the redirection from Github. It exchanges the code from redirect URL for
+// user access token. The access token is then saved to the cookie and the page is redirected to
+// the final destination in the config, which should be the front-end.
 func (ga *GitOAuthAgent) HandleRedirect(w http.ResponseWriter, r *http.Request) {
 	state := r.FormValue("state")
+	// Check if the state token is still valid or not.
 	if !xsrftoken.Valid(state, ga.gc.Client.ClientSecret, "", "") {
 		ga.serverError(w, "Validate state", errors.New("State token has expired"))
 	}
@@ -78,12 +87,13 @@ func (ga *GitOAuthAgent) HandleRedirect(w http.ResponseWriter, r *http.Request) 
 		ga.serverError(w, "Get cookie", err)
 		return
 	}
-
+	// Validate the state parameter to prevent cross-site attack.
 	if state == "" || state != oauthSession.Values[stateKey].(string) {
 		ga.serverError(w, "Validate state", errors.New("Invalid state"))
 		return
 	}
 
+	// Exchanges the code for user access token.
 	code := r.FormValue("code")
 	token, err := ga.gc.OAuthClient.Exchange(context.Background(), code)
 	if err != nil {
@@ -91,6 +101,7 @@ func (ga *GitOAuthAgent) HandleRedirect(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
+	// New session that stores the token.
 	session, err := ga.gc.CookieStore.New(r, ga.gc.GitTokenSession)
 	if err != nil {
 		ga.serverError(w, "Create new session", err)
@@ -105,6 +116,7 @@ func (ga *GitOAuthAgent) HandleRedirect(w http.ResponseWriter, r *http.Request) 
 	http.Redirect(w, r, ga.gc.FinalRedirectURL, http.StatusFound)
 }
 
+// Handles server errors.
 func (ga *GitOAuthAgent) serverError(w http.ResponseWriter, action string, err error) {
 	ga.logger.WithError(err).Errorf("Error %s.", action)
 	msg := fmt.Sprintf("500 Internal server error %s: %v", action, err)

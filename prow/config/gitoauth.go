@@ -24,11 +24,15 @@ import (
 	"golang.org/x/oauth2/github"
 )
 
+// Client holds client id and client secret for the git app, using in deck, which query pull
+// requests on behave of users.
 type Client struct {
 	ClientId     string `json:"client_id,omitempty"`
 	ClientSecret string `json:"client_secret,omitempty"`
 }
 
+// GitOAuthConfig is a config for requesting users access tokens from Github API. It also has
+// a Cookie Store that retains user credentials deriving from Github API.
 type GitOAuthConfig struct {
 	RedirectURL string   `json:"redirect_url,omitempty"`
 	Scopes      []string `json:"scopes,omitempty"`
@@ -43,6 +47,8 @@ type GitOAuthConfig struct {
 	CookieStore *sessions.CookieStore
 }
 
+// Initialise a GitOAuthConfig. It creates a OAuthClient using GitOAuth config and a Cookie Store
+// to retain user credentials.
 func (gac *GitOAuthConfig) InitGitOAuthConfig(client *Client, cookie *sessions.CookieStore) {
 	gob.Register(&oauth2.Token{})
 	gac.Client = client

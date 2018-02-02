@@ -321,7 +321,3 @@ span.label:hover {
     background-color: #BDBDBD;
     color: #000000;
 }
-
-#login-button {
-    visibility: hidden;
-}
