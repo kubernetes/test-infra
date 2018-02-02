@@ -591,8 +591,9 @@ The full list of commands accepted by this bot can be found [here](https://go.k8
 Needs approval from an approver in each of these OWNERS Files:
 
 {{range .ap.GetFiles .org .project}}{{.}}{{end}}
-You can indicate your approval by writing `+"`/approve`"+` in a comment
-You can cancel your approval by writing `+"`/approve cancel`"+` in a comment
+OWNER approvers can indicate their approval by writing `+"`/approve`"+` in a comment
+OWNER approvers can cancel approval by writing `+"`/approve cancel`"+` in a comment
+A PR needs both /approve and /lgtm to be merged by the bot. An OWNER approver's /lgtm automatically implies an /approve.
 </details>`, "message", map[string]interface{}{"ap": ap, "org": org, "project": project})
 	if err != nil {
 		ap.owners.log.WithError(err).Errorf("Error generating message.")

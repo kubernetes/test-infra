@@ -722,8 +722,9 @@ Needs approval from an approver in each of these OWNERS Files:
 - **[a/OWNERS](https://github.com/org/project/blob/master/a/OWNERS)**
 - ~~[b/OWNERS](https://github.com/org/project/blob/master/b/OWNERS)~~ [Bill]
 
-You can indicate your approval by writing ` + "`/approve`" + ` in a comment
-You can cancel your approval by writing ` + "`/approve cancel`" + ` in a comment
+OWNER approvers can indicate their approval by writing `+"`/approve`"+` in a comment
+OWNER approvers can cancel approval by writing `+"`/approve cancel`"+` in a comment
+A PR needs both /approve and /lgtm to be merged by the bot. An OWNER approver's /lgtm automatically implies an /approve.
 </details>
 <!-- META={"approvers":["alice"]} -->`
 	if got := GetMessage(ap, "org", "project"); got == nil {
@@ -762,8 +763,9 @@ Needs approval from an approver in each of these OWNERS Files:
 - ~~[a/OWNERS](https://github.com/org/project/blob/master/a/OWNERS)~~ [Alice]
 - ~~[b/OWNERS](https://github.com/org/project/blob/master/b/OWNERS)~~ [Bill]
 
-You can indicate your approval by writing ` + "`/approve`" + ` in a comment
-You can cancel your approval by writing ` + "`/approve cancel`" + ` in a comment
+OWNER approvers can indicate their approval by writing `+"`/approve`"+` in a comment
+OWNER approvers can cancel approval by writing `+"`/approve cancel`"+` in a comment
+A PR needs both /approve and /lgtm to be merged by the bot. An OWNER approver's /lgtm automatically implies an /approve.
 </details>
 <!-- META={"approvers":[]} -->`
 	if got := GetMessage(ap, "org", "project"); got == nil {
@@ -803,8 +805,9 @@ Needs approval from an approver in each of these OWNERS Files:
 - **[a/OWNERS](https://github.com/org/project/blob/master/a/OWNERS)**
 - **[b/OWNERS](https://github.com/org/project/blob/master/b/OWNERS)**
 
-You can indicate your approval by writing ` + "`/approve`" + ` in a comment
-You can cancel your approval by writing ` + "`/approve cancel`" + ` in a comment
+OWNER approvers can indicate their approval by writing `+"`/approve`"+` in a comment
+OWNER approvers can cancel approval by writing `+"`/approve cancel`"+` in a comment
+A PR needs both /approve and /lgtm to be merged by the bot. An OWNER approver's /lgtm automatically implies an /approve.
 </details>
 <!-- META={"approvers":["alice","bill"]} -->`
 	if got := GetMessage(ap, "org", "project"); got == nil {
@@ -845,8 +848,9 @@ Needs approval from an approver in each of these OWNERS Files:
 - ~~[a/OWNERS](https://github.com/org/project/blob/master/a/OWNERS)~~ [Alice]
 - ~~[b/OWNERS](https://github.com/org/project/blob/master/b/OWNERS)~~ [Bill]
 
-You can indicate your approval by writing ` + "`/approve`" + ` in a comment
-You can cancel your approval by writing ` + "`/approve cancel`" + ` in a comment
+OWNER approvers can indicate their approval by writing `+"`/approve`"+` in a comment
+OWNER approvers can cancel approval by writing `+"`/approve cancel`"+` in a comment
+A PR needs both /approve and /lgtm to be merged by the bot. An OWNER approver's /lgtm automatically implies an /approve.
 </details>
 <!-- META={"approvers":[]} -->`
 	if got := GetMessage(ap, "org", "project"); got == nil {
@@ -886,8 +890,9 @@ Needs approval from an approver in each of these OWNERS Files:
 - ~~[a/OWNERS](https://github.com/org/project/blob/master/a/OWNERS)~~ [Alice]
 - ~~[b/OWNERS](https://github.com/org/project/blob/master/b/OWNERS)~~ [Bill]
 
-You can indicate your approval by writing ` + "`/approve`" + ` in a comment
-You can cancel your approval by writing ` + "`/approve cancel`" + ` in a comment
+OWNER approvers can indicate their approval by writing `+"`/approve`"+` in a comment
+OWNER approvers can cancel approval by writing `+"`/approve cancel`"+` in a comment
+A PR needs both /approve and /lgtm to be merged by the bot. An OWNER approver's /lgtm automatically implies an /approve.
 </details>
 <!-- META={"approvers":[]} -->`
 	if got := GetMessage(ap, "org", "project"); got == nil {
