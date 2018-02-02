@@ -1082,8 +1082,6 @@ presubmits:
     always_run: false
     rerun_command: "/test pull-kubernetes-bazel-test-canary"
     trigger: "(?m)^/test pull-kubernetes-bazel-test-canary,?(\\s+|$)"
-    branches:
-    - master
     labels:
       preset-service-account: true
     spec:
@@ -1101,8 +1099,8 @@ presubmits:
         - "--batch" # mitigation for https://github.com/bazelbuild/bazel/issues/4311
         - "--test=//... -//build/... -//vendor/..."
         - "--manual-test=//hack:verify-all"
-        - "--test-args=--build_tag_filters=-e2e"
-        - "--test-args=--test_tag_filters=-e2e"
+        - "--test-args=--build_tag_filters=-e2e,-integration"
+        - "--test-args=--test_tag_filters=-e2e,-integration"
         - "--test-args=--flaky_test_attempts=3"
         env:
         - name: TEST_TMPDIR
@@ -2946,8 +2944,6 @@ presubmits:
     trigger: (?m)^/test( all| pull-security-kubernetes-bazel-test),?(\s+|$)
   - agent: kubernetes
     always_run: false
-    branches:
-    - master
     cluster: security
     context: pull-security-kubernetes-bazel-test-canary
     labels:
@@ -2970,8 +2966,8 @@ presubmits:
         - --batch
         - --test=//... -//build/... -//vendor/...
         - --manual-test=//hack:verify-all
-        - --test-args=--build_tag_filters=-e2e
-        - --test-args=--test_tag_filters=-e2e
+        - --test-args=--build_tag_filters=-e2e,-integration
+        - --test-args=--test_tag_filters=-e2e,-integration
         - --test-args=--flaky_test_attempts=3
         image: gcr.io/k8s-testimages/bazelbuild:latest-latest
         imagePullPolicy: Always
