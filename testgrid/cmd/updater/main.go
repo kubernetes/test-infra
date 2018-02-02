@@ -21,7 +21,7 @@ import (
 	"fmt"
 	"log"
 
-	"k8s.io/test-infra/testgrid/updater/state"
+	"k8s.io/test-infra/testgrid/updater"
 
 	"cloud.google.com/go/storage"
 )
@@ -38,7 +38,7 @@ func main() {
 		log.Fatalf("Failed to access bucket: %v", err)
 	}
 	fmt.Printf("bucket %s, attrs %v", bkt, attrs)
-	g := state.Grid{}
-	g.Columns = append(g.Columns, &state.Column{Build: "first", Started: 1})
+	g := updater.Grid{}
+	g.Columns = append(g.Columns, &updater.Column{Build: "first", Started: 1})
 	fmt.Println(g)
 }

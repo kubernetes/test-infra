@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main
+package config_test
 
 import (
 	"bufio"
@@ -26,7 +26,7 @@ import (
 
 	"github.com/ghodss/yaml"
 	prow_config "k8s.io/test-infra/prow/config"
-	"k8s.io/test-infra/testgrid/config/config_pb"
+	config_pkg "k8s.io/test-infra/testgrid/config"
 	"k8s.io/test-infra/testgrid/config/yaml2proto"
 	"path/filepath"
 )
@@ -54,7 +54,7 @@ var (
 )
 
 // Shared testgrid config, loaded at TestMain.
-var config *config_pb.Configuration
+var config *config_pkg.Configuration
 
 func TestMain(m *testing.M) {
 	//make sure we can parse config.yaml
