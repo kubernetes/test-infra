@@ -3575,6 +3575,12 @@ dashboards:
   - name: spark-periodic-latest-gke
     description: Periodic builds and testing of Apache Spark running on the newest stable GKE.
     test_group_name: spark-periodic-latest-gke
+  - name: tf-minigo-periodic
+    description: Periodic testing of Minigo.
+    test_group_name: tf-minigo-periodic
+  - name: tf-minigo-postsubmit
+    description: Postsubmit tests for Minigo.
+    test_group_name: tf-minigo-postsubmit
 
 
 - name: sig-autoscaling
