@@ -2062,6 +2062,8 @@ test_groups:
   num_failures_to_alert: 1
 - name: istio-periodic-e2e-gke-addon
   gcs_prefix: kubernetes-jenkins/logs/istio-periodic-e2e-gke-addon
+- name: istio-periodic-e2e-gce-addon
+  gcs_prefix: kubernetes-jenkins/logs/istio-periodic-e2e-gce-addon
 # gke 1.9.1 vs old etcd
 - name: ci-kubernetes-e2e-gke-cos-oldetcd-default
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-cos-oldetcd-default
@@ -5114,6 +5116,8 @@ dashboards:
       alert_mail_to_addresses: 'istio-oncall@googlegroups.com,michelle.192837@gmail.com,bentheelder@google.com,yutongz@google.com'
   - name: istio-gke-addon
     test_group_name: istio-periodic-e2e-gke-addon
+  - name: istio-gce-addon
+    test_group_name: istio-periodic-e2e-gce-addon
 
 #
 # Start dashboard groups

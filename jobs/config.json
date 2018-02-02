@@ -10313,13 +10313,33 @@
       "sig-testing"
     ]
   },
+  "istio-periodic-e2e-gce-addon": {
+    "args": [
+      "--check-leaked-resources",
+      "--cluster=",
+      "--env=ENABLE_ISTIO=true",
+      "--env-file=jobs/platform/gce.env",
+      "--extract=ci/latest",
+      "--gcp-node-image=gci",
+      "--gcp-zone=us-central1-f",
+      "--provider=gce",
+      "--test=false",
+      "--test-cmd=../tests/e2e_istio_preinstalled.sh",
+      "--test-cmd-args=simple",
+      "--test-cmd-name=istio-addon",
+      "--timeout=60m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-gcp"
+    ]
+  },
   "istio-periodic-e2e-gke-addon": {
     "args": [
       "--check-leaked-resources",
       "--cluster=",
       "--deployment=gke",
-      "--env=TAG=5f346f6ec7082ec6517f6ae6e6a4054b68f8f540",
-      "--extract=ci/latest-1.9",
+      "--extract=ci/latest",
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
       "--gke-create-command=container clusters create --quiet --num-nodes=4 --enable-kubernetes-alpha --no-enable-legacy-authorization",

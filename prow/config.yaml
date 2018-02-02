@@ -12333,6 +12333,19 @@ periodics:
         secretName: fejta-bot-token
 - interval: 2h
   agent: kubernetes
+  name: istio-periodic-e2e-gce-addon
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180202-1036088f2-master
+      args:
+      - "--clean"
+      - "--repo=github.com/istio/istio=master"
+      - "--timeout=90"
+- interval: 2h
+  agent: kubernetes
   name: istio-periodic-e2e-gke-addon
   labels:
     preset-service-account: true
