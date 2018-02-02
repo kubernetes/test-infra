@@ -4473,7 +4473,7 @@ presubmits:
       preset-service-account: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20180201-0184a54dc-0.8.1
+      - image: gcr.io/k8s-testimages/bazelbuild:v20180201-0184a54dc-0.10.0
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -5174,7 +5174,7 @@ postsubmits:
       preset-service-account: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20180201-0184a54dc-0.8.1
+      - image: gcr.io/k8s-testimages/bazelbuild:v20180201-0184a54dc-0.10.0
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -5244,7 +5244,7 @@ postsubmits:
       preset-service-account: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20180201-0184a54dc-0.8.1
+      - image: gcr.io/k8s-testimages/bazelbuild:v20180201-0184a54dc-0.10.0
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -12607,7 +12607,7 @@ periodics:
     preset-service-account: true
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bazelbuild:v20180201-0184a54dc-0.8.1
+    - image: gcr.io/k8s-testimages/bazelbuild:v20180201-0184a54dc-0.10.0
       args:
       - "--clean"
       - "--git-cache=/root/.cache/git"
