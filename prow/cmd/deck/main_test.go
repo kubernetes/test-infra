@@ -34,13 +34,13 @@ import (
 
 	"github.com/ghodss/yaml"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/shurcooL/githubql"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/tide"
 	"k8s.io/test-infra/prow/userdashboard"
-	"github.com/google/go-cmp/cmp"
 )
 
 type flc int

@@ -21,6 +21,7 @@ import (
 	"encoding/gob"
 	"fmt"
 	"github.com/ghodss/yaml"
+	"github.com/google/go-cmp/cmp"
 	"github.com/gorilla/sessions"
 	"github.com/shurcooL/githubql"
 	"github.com/sirupsen/logrus"
@@ -32,7 +33,6 @@ import (
 	"reflect"
 	"testing"
 	"time"
-	"github.com/google/go-cmp/cmp"
 )
 
 type MockQueryHandler struct {
