@@ -121,12 +121,9 @@ milestonestatus:
 
 config_updater:
   maps:
-    label_sync/labels.yaml: label-sync
+    label_sync/labels.yaml: label-config
     prow/config.yaml: config
     prow/plugins.yaml: plugins
-  # Following two fields are deprecated
-  config_file: prow/config.yaml
-  plugin_file: prow/plugins.yaml
 
 plugins:
   google/cadvisor:
