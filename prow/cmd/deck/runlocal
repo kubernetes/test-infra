@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+cd $DIR
 cd static
 HOST="https://prow.k8s.io"
 if [[ $1 == "openshift" ]]; then
@@ -22,4 +24,4 @@ curl "$HOST/data.js?var=allBuilds" > data.js
 curl "$HOST/tide.js?var=tideData" > tide.js
 curl "$HOST/plugin-help.js?var=allHelp" > plugin-help.js
 curl "$HOST/branding.js?var=branding" > branding.js
-python3 -m http.server
+bazel run --run_under="cd $DIR && " //prow/cmd/deck:deck -- --run-local

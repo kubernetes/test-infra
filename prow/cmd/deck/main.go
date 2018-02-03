@@ -51,16 +51,41 @@ var (
 	redirectHTTPTo = flag.String("redirect-http-to", "", "host to redirect http->https to based on x-forwarded-proto == http.")
 	// use when behind an oauth proxy
 	hiddenOnly = flag.Bool("hidden-only", false, "Show only hidden jobs. Useful for serving hidden jobs behind an oauth proxy.")
+	runLocal   = flag.Bool("run-local", false, "serve a local copy of the UI, used by the prow/cmd/deck/runlocal script")
 )
 
 // Matches letters, numbers, hyphens, and underscores.
 var objReg = regexp.MustCompile(`^[\w-]+$`)
 
 func main() {
+	// common setup
 	flag.Parse()
+
 	logrus.SetFormatter(&logrus.JSONFormatter{})
 	logger := logrus.WithField("component", "deck")
 
+	mux := http.NewServeMux()
+
+	staticHandlerFromDir := func(dir string) http.Handler {
+		return defaultExtension(".html",
+			gziphandler.GzipHandler(handleCached(http.FileServer(http.Dir(dir)))))
+	}
+
+	// locally just serve from ./static, otherwise do the full main
+	if *runLocal {
+		mux.Handle("/", staticHandlerFromDir("./static"))
+	} else {
+		mux.Handle("/", staticHandlerFromDir("/static"))
+		prodOnlyMain(logger, mux)
+	}
+
+	// setup done, actually start the server
+	logger.WithError(http.ListenAndServe(":8080", mux)).Fatal("ListenAndServe returned.")
+}
+
+// prodOnlyMain contains logic only used when running deployed, not locally
+func prodOnlyMain(logger *logrus.Entry, mux *http.ServeMux) {
+	// setup config agent, pod log clients etc.
 	configAgent := &config.Agent{}
 	if err := configAgent.Start(*configPath); err != nil {
 		logger.WithError(err).Fatal("Error starting config agent.")
@@ -93,10 +118,7 @@ func main() {
 	}
 	ja.Start()
 
-	mux := http.NewServeMux()
-
-	mux.Handle("/", defaultExtension(".html",
-		gziphandler.GzipHandler(handleCached(http.FileServer(http.Dir("/static"))))))
+	// setup prod only handlers
 	mux.Handle("/data.js", gziphandler.GzipHandler(handleData(ja)))
 	mux.Handle("/prowjobs.js", gziphandler.GzipHandler(handleProwJobs(ja)))
 	mux.Handle("/log", gziphandler.GzipHandler(handleLog(ja)))
@@ -105,14 +127,17 @@ func main() {
 	mux.Handle("/branding.js", gziphandler.GzipHandler(handleBranding(configAgent)))
 
 	if *hookURL != "" {
-		mux.Handle("/plugin-help.js", gziphandler.GzipHandler(handlePluginHelp(newHelpAgent(*hookURL))))
+		mux.Handle("/plugin-help.js",
+			gziphandler.GzipHandler(handlePluginHelp(newHelpAgent(*hookURL))))
 	}
 
 	if *tideURL != "" {
 		ta := &tideAgent{
-			log:          logger.WithField("agent", "tide"),
-			path:         *tideURL,
-			updatePeriod: func() time.Duration { return configAgent.Config().Deck.TideUpdatePeriod },
+			log:  logger.WithField("agent", "tide"),
+			path: *tideURL,
+			updatePeriod: func() time.Duration {
+				return configAgent.Config().Deck.TideUpdatePeriod
+			},
 		}
 		ta.start()
 		mux.Handle("/tide.js", gziphandler.GzipHandler(handleTide(configAgent, ta)))
@@ -140,7 +165,6 @@ func main() {
 		}(mux, *redirectHTTPTo))
 		mux = redirectMux
 	}
-	logger.WithError(http.ListenAndServe(":8080", mux)).Fatal("ListenAndServe returned.")
 }
 
 func loadToken(file string) (string, error) {
