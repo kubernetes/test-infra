@@ -941,7 +941,7 @@ def bootstrap(args):
     build = build_name(started)
 
     if upload:
-        if repos and repos[repos.main][1]:  # merging commits, a pr
+        if any(repos[repo][1] for repo in repos):
             paths = pr_paths(upload, repos, job, build)
         else:
             paths = ci_paths(upload, job, build)
