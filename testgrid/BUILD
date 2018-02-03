@@ -55,7 +55,6 @@ filegroup(
         ":package-srcs",
         "//testgrid/cmd/config:all-srcs",
         "//testgrid/cmd/updater:all-srcs",
-        "//testgrid/yaml2proto:all-srcs",
     ],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],
