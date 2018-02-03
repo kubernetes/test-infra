@@ -112,6 +112,8 @@ hook-deployment: get-cluster-credentials
 hook-service: get-cluster-credentials
 	kubectl apply -f cluster/hook_service.yaml
 
+.PHONY: hook-image hook-deployment hook-service
+
 sinker-image: alpine-image
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o cmd/sinker/sinker k8s.io/test-infra/prow/cmd/sinker
 	docker build -t "$(REGISTRY)/$(PROJECT)/sinker:$(SINKER_VERSION)" $(DOCKER_LABELS) cmd/sinker
@@ -119,6 +121,8 @@ sinker-image: alpine-image
 
 sinker-deployment: get-cluster-credentials
 	kubectl apply -f cluster/sinker_deployment.yaml
+
+.PHONY: sinker-image sinker-deployment
 
 deck-image: alpine-image
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o cmd/deck/deck k8s.io/test-infra/prow/cmd/deck
@@ -131,6 +135,8 @@ deck-deployment: get-cluster-credentials
 deck-service: get-cluster-credentials
 	kubectl apply -f cluster/deck_service.yaml
 
+.PHONY: deck-image deck-deployment deck-service
+
 splice-image: git-image
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o cmd/splice/splice k8s.io/test-infra/prow/cmd/splice
 	docker build -t "$(REGISTRY)/$(PROJECT)/splice:$(SPLICE_VERSION)" $(DOCKER_LABELS) cmd/splice
@@ -138,6 +144,8 @@ splice-image: git-image
 
 splice-deployment: get-cluster-credentials
 	kubectl apply -f cluster/splice_deployment.yaml
+
+.PHONY: splice-image splice-deployment
 
 tot-image: alpine-image
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o cmd/tot/tot k8s.io/test-infra/prow/cmd/tot
@@ -150,6 +158,8 @@ tot-deployment: get-cluster-credentials
 tot-service: get-cluster-credentials
 	kubectl apply -f cluster/tot_service.yaml
 
+.PHONY: tot-image tot-deployment
+
 horologium-image: alpine-image
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o cmd/horologium/horologium k8s.io/test-infra/prow/cmd/horologium
 	docker build -t "$(REGISTRY)/$(PROJECT)/horologium:$(HOROLOGIUM_VERSION)" $(DOCKER_LABELS) cmd/horologium
@@ -158,6 +168,8 @@ horologium-image: alpine-image
 horologium-deployment: get-cluster-credentials
 	kubectl apply -f cluster/horologium_deployment.yaml
 
+.PHONY: horologium-image horologium-deployment
+
 plank-image: alpine-image
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o cmd/plank/plank k8s.io/test-infra/prow/cmd/plank
 	docker build -t "$(REGISTRY)/$(PROJECT)/plank:$(PLANK_VERSION)" $(DOCKER_LABELS) cmd/plank
@@ -165,6 +177,8 @@ plank-image: alpine-image
 
 plank-deployment: get-cluster-credentials
 	kubectl apply -f cluster/plank_deployment.yaml
+
+.PHONY: plank-image plank-deployment
 
 jenkins-operator-image: alpine-image
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o cmd/jenkins-operator/jenkins-operator k8s.io/test-infra/prow/cmd/jenkins-operator
@@ -177,6 +191,8 @@ jenkins-operator-deployment: get-cluster-credentials
 push-gateway-deploy: get-cluster-credentials
 	kubectl apply -f cluster/push_gateway.yaml
 
+.PHONY: jenkins-operator-image jenkins-operator-deployment push-gateway-deploy
+
 tide-image: git-image
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o cmd/tide/tide k8s.io/test-infra/prow/cmd/tide
 	docker build -t "$(REGISTRY)/$(PROJECT)/tide:$(TIDE_VERSION)" $(DOCKER_LABELS) cmd/tide
@@ -188,6 +204,8 @@ tide-deployment: get-cluster-credentials
 mem-range-deployment: get-build-cluster-credentials
 	kubectl apply -f cluster/mem_limit_range.yaml
 
+.PHONY: tide-image tide-deployment mem-range-deployment
+
 clonerefs-image: git-image
 	CGO_ENABLED=0 go build -o cmd/clonerefs/clonerefs k8s.io/test-infra/prow/cmd/clonerefs
 	docker build -t "$(REGISTRY)/$(PROJECT)/clonerefs:$(CLONEREFS_VERSION)" $(DOCKER_LABELS) cmd/clonerefs
@@ -198,4 +216,4 @@ initupload-image: alpine-image
 	docker build -t "$(REGISTRY)/$(PROJECT)/initupload:$(INITUPLOAD_VERSION)" $(DOCKER_LABELS) cmd/initupload
 	$(PUSH) "$(REGISTRY)/$(PROJECT)/initupload:$(INITUPLOAD_VERSION)"
 
-.PHONY: hook-image hook-deployment hook-service sinker-image sinker-deployment deck-image deck-deployment deck-service splice-image splice-deployment tot-image tot-service tot-deployment horologium-image horologium-deployment plank-image plank-deployment jenkins-operator-image jenkins-operator-deployment tide-image tide-deployment mem-range-deployment clonerefs-image iniupload-image
+.PHONY: clonerefs-image initupload-image
