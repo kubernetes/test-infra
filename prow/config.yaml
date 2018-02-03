@@ -5179,6 +5179,29 @@ periodics:
       - name: GOPATH
         value: /go
 
+- name: ci-cadvisor-e2e
+  interval: 8h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180202-1036088f2-master
+      args:
+      - --job=$(JOB_NAME)
+      - --root=/go/src
+      - --repo=k8s.io/kubernetes
+      - --repo=github.com/google/cadvisor=master
+      - --service-account=/etc/service-account/service-account.json
+      - --timeout=90
+      - --upload=gs://kubernetes-jenkins/logs
+      - --
+      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml --test-suite=cadvisor
+      env:
+      - name: GOPATH
+        value: /go
+
 - name: ci-cri-containerd-build
   interval: 30m
   agent: kubernetes

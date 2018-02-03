@@ -52,8 +52,8 @@ default_dashboard_tab:
 test_groups:
 - name: ci-cadvisor-canarypush
   gcs_prefix: kubernetes-jenkins/logs/ci-cadvisor-canarypush
-- name: ci-cadvisor-node-kubelet
-  gcs_prefix: kubernetes-jenkins/logs/ci-cadvisor-node-kubelet
+- name: ci-cadvisor-e2e
+  gcs_prefix: kubernetes-jenkins/logs/ci-cadvisor-e2e
 - name: ci-kubernetes-node-kubelet-benchmark
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-node-kubelet-benchmark
   test_name_config:
@@ -4046,8 +4046,8 @@ dashboards:
   dashboard_tab:
   - name: cadvisor-push
     test_group_name: ci-cadvisor-canarypush
-  - name: cadvisor-kubelet
-    test_group_name: ci-cadvisor-node-kubelet
+  - name: cadvisor-e2e
+    test_group_name: ci-cadvisor-e2e
 
 - name: sig-node-cos-image
   dashboard_tab:
