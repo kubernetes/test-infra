@@ -50,6 +50,7 @@ go_test(
         "//prow/tide:go_default_library",
         "//prow/userdashboard:go_default_library",
         "//vendor/github.com/ghodss/yaml:go_default_library",
+        "//vendor/github.com/google/go-cmp/cmp:go_default_library",
         "//vendor/github.com/shurcooL/githubql:go_default_library",
     ],
 )

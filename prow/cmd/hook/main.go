@@ -29,9 +29,8 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
 
-	"crypto/rand"
-
 	"github.com/ghodss/yaml"
+	"github.com/gorilla/securecookie"
 	"github.com/gorilla/sessions"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/git"
@@ -186,13 +185,7 @@ func main() {
 
 	var appClient config.Client
 	yaml.Unmarshal(bytes.TrimSpace(gitAppClientRaw), &appClient)
-
-	secretKey, err := generateSecretBytes(64)
-	if err != nil {
-		logger.WithError(err).Fatal("Error random secret key.")
-		return
-	}
-	cookie := sessions.NewCookieStore(secretKey)
+	cookie := sessions.NewCookieStore(securecookie.GenerateRandomKey(64))
 
 	gitOAuthConfig := &configAgent.Config().GitOAuthConfig
 	gitOAuthConfig.InitGitOAuthConfig(&appClient, cookie)
@@ -207,15 +200,4 @@ func main() {
 	http.HandleFunc("/user-dashboard/redirect", goa.HandleRedirect)
 
 	logger.Fatal(http.ListenAndServe(":"+strconv.Itoa(*port), nil))
-}
-
-func generateSecretBytes(numBytes int) ([]byte, error) {
-	result := make([]byte, numBytes)
-	_, err := rand.Read(result)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return result, nil
 }

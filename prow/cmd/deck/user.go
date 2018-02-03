@@ -21,7 +21,6 @@ import (
 	"fmt"
 	"net/http"
 	"sync"
-	"time"
 
 	"k8s.io/test-infra/prow/userdashboard"
 )

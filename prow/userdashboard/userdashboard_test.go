@@ -18,17 +18,21 @@ package userdashboard
 
 import (
 	"context"
+	"encoding/gob"
 	"fmt"
 	"github.com/ghodss/yaml"
 	"github.com/gorilla/sessions"
 	"github.com/shurcooL/githubql"
 	"github.com/sirupsen/logrus"
+	"golang.org/x/oauth2"
 	"io/ioutil"
 	"k8s.io/test-infra/prow/config"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
 	"testing"
+	"time"
+	"github.com/google/go-cmp/cmp"
 )
 
 type MockQueryHandler struct {
@@ -108,14 +112,14 @@ func TestServeHTTPWithLogin(t *testing.T) {
 
 	rr := httptest.NewRecorder()
 	request := httptest.NewRequest(http.MethodGet, "/user-dashboard", nil)
-	mockSession, err := mockCookieStore.New(request, mockConfig.GitTokenSession)
-	mockSession.Values[mockConfig.GitTokenKey] = "mock-access-token"
+	mockSession, err := sessions.GetRegistry(request).Get(mockCookieStore, mockConfig.GitTokenSession)
 	if err != nil {
 		t.Errorf("Error with creating mock session: %v", err)
 	}
-	if err := mockSession.Save(request, rr); err != nil {
-		t.Fatalf("Error with saving mock session: %v", err)
-	}
+	gob.Register(oauth2.Token{})
+	token := &oauth2.Token{AccessToken: "secret-token", Expiry: time.Now().Add(time.Duration(24*365) * time.Hour)}
+	mockSession.Values[mockConfig.GitTokenKey] = token
+
 	mockQueryHandler := newMockQueryHandler(mockUserData.PullRequests)
 	udHandler := mockAgent.HandleUserDashboard(mockQueryHandler)
 	udHandler.ServeHTTP(rr, request)
@@ -132,8 +136,8 @@ func TestServeHTTPWithLogin(t *testing.T) {
 	if err := yaml.Unmarshal(body, &dataReturned); err != nil {
 		t.Errorf("Error with unmarshaling response: %v", err)
 	}
-	if !reflect.DeepEqual(dataReturned, mockUserData) {
-		t.Errorf("Invalid user data. Got %v, expected %v", dataReturned, mockUserData)
+	if cmp.Equal(dataReturned, mockUserData) {
+		t.Errorf("Invalid user data. Got %v, expected %v.", dataReturned, mockUserData)
 	}
 }
 
@@ -141,7 +145,7 @@ func generateMockPullRequest(numPr int) PullRequest {
 	authorName := (githubql.String)(fmt.Sprintf("mock_user_login_%d", numPr))
 	repoName := fmt.Sprintf("repo_%d", numPr)
 	return PullRequest{
-		Number: 1,
+		Number: (githubql.Int)(numPr),
 		Author: struct {
 			Login githubql.String
 		}{
@@ -164,11 +168,11 @@ func generateMockPullRequest(numPr int) PullRequest {
 		},
 		Labels: struct {
 			Nodes []struct {
-				Label Label
+				Label Label `graphql:"... on Label"`
 			}
 		}{
 			Nodes: []struct {
-				Label Label
+				Label Label `graphql:"... on Label"`
 			}{
 				{
 					Label: Label{
@@ -188,7 +192,7 @@ func generateMockPullRequest(numPr int) PullRequest {
 }
 
 func generateMockUserData() UserData {
-	prs := []PullRequest{}
+	var prs []PullRequest
 	for numPr := 0; numPr < 5; numPr++ {
 		prs = append(prs, generateMockPullRequest(numPr))
 	}

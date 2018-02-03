@@ -40,6 +40,7 @@ import (
 	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/tide"
 	"k8s.io/test-infra/prow/userdashboard"
+	"github.com/google/go-cmp/cmp"
 )
 
 type flc int
@@ -347,8 +348,8 @@ func TestUser(t *testing.T) {
 	if err := yaml.Unmarshal(body, &dataReturned); err != nil {
 		t.Fatalf("Error unmarshaling: %v", err)
 	}
-	if !reflect.DeepEqual(mockUserData, dataReturned) {
-		t.Errorf("Invalid user data. Got %v, expected %v", dataReturned, mockUserData)
+	if cmp.Equal(mockUserData, dataReturned) {
+		t.Errorf("Invalid user data. Got %v, expected %v.", dataReturned, mockUserData)
 	}
 }
 
@@ -356,7 +357,7 @@ func generateMockPullRequest(numPr int) userdashboard.PullRequest {
 	authorName := (githubql.String)(fmt.Sprintf("mock_user_login_%d", numPr))
 	repoName := fmt.Sprintf("repo_%d", numPr)
 	return userdashboard.PullRequest{
-		Number: 1,
+		Number: (githubql.Int)(numPr),
 		Author: struct {
 			Login githubql.String
 		}{
@@ -379,11 +380,11 @@ func generateMockPullRequest(numPr int) userdashboard.PullRequest {
 		},
 		Labels: struct {
 			Nodes []struct {
-				Label userdashboard.Label
+				Label userdashboard.Label `graphql:"... on Label"`
 			}
 		}{
 			Nodes: []struct {
-				Label userdashboard.Label
+				Label userdashboard.Label `graphql:"... on Label"`
 			}{
 				{
 					Label: userdashboard.Label{
