@@ -37,6 +37,32 @@ type options struct {
 	endpoint string
 }
 
+func (o *options) Validate() error {
+	if o.config == "" {
+		return errors.New("empty --config")
+	}
+
+	if o.token == "" {
+		return errors.New("empty --github-token-path")
+	}
+
+	if _, err := url.Parse(o.endpoint); err != nil {
+		return fmt.Errorf("invalid --endpoint URL: %v", err)
+	}
+
+	return nil
+}
+
+func gatherOptions() options {
+	o := options{}
+	flag.StringVar(&o.config, "config-path", "", "Path to prow config.yaml")
+	flag.BoolVar(&o.confirm, "confirm", false, "Mutate github if set")
+	flag.StringVar(&o.endpoint, "github-endpoint", "https://api.github.com", "Github api endpoint, may differ for enterprise")
+	flag.StringVar(&o.token, "github-token-path", "", "Path to github token")
+	flag.Parse()
+	return o
+}
+
 func jobRequirements(jobs []config.Presubmit, after bool) []string {
 	var required []string
 	for _, j := range jobs {
@@ -61,16 +87,6 @@ func repoRequirements(org, repo string, cfg config.Config) []string {
 	return jobRequirements(p, false)
 }
 
-func flagOptions() options {
-	o := options{}
-	flag.StringVar(&o.config, "config-path", "", "Path to prow config.yaml")
-	flag.BoolVar(&o.confirm, "confirm", false, "Mutate github if set")
-	flag.StringVar(&o.endpoint, "github-endpoint", "https://api.github.com", "Github api endpoint, may differ for enterprise")
-	flag.StringVar(&o.token, "github-token-path", "", "Path to github token")
-	flag.Parse()
-	return o
-}
-
 type Requirements struct {
 	Org      string
 	Repo     string
@@ -93,9 +109,9 @@ func (e *Errors) add(err error) {
 }
 
 func main() {
-	o := flagOptions()
-	if o.config == "" {
-		log.Fatal("empty --config")
+	o := gatherOptions()
+	if err := o.Validate(); err != nil {
+		log.Fatal(err)
 	}
 
 	cfg, err := config.Load(o.config)
@@ -103,16 +119,9 @@ func main() {
 		log.Fatalf("Failed to load --config=%s: %v", o.config, err)
 	}
 
-	if o.token == "" {
-		log.Fatal("empty --token")
-	}
 	b, err := ioutil.ReadFile(o.token)
 	if err != nil {
 		log.Fatalf("cannot read --token: %v", err)
-	}
-	_, err = url.Parse(o.endpoint)
-	if err != nil {
-		log.Fatalf("Must specify valid --endpoint URL: %v", err)
 	}
 
 	var c *github.Client
