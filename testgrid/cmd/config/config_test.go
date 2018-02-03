@@ -27,7 +27,6 @@ import (
 	"github.com/ghodss/yaml"
 	prow_config "k8s.io/test-infra/prow/config"
 	config_pb "k8s.io/test-infra/testgrid/config"
-	"k8s.io/test-infra/testgrid/yaml2proto"
 	"path/filepath"
 )
 
@@ -54,7 +53,7 @@ var (
 )
 
 // Shared testgrid config, loaded at TestMain.
-var config *config_pb.Configuration
+var cfg *config_pb.Configuration
 
 func TestMain(m *testing.M) {
 	//make sure we can parse config.yaml
@@ -64,13 +63,13 @@ func TestMain(m *testing.M) {
 		os.Exit(1)
 	}
 
-	c := yaml2proto.Config{}
+	c := Config{}
 	if err := c.Update(yamlData); err != nil {
 		fmt.Printf("Yaml2Proto - Conversion Error %v", err)
 		os.Exit(1)
 	}
 
-	config, err = c.Raw()
+	cfg, err = c.Raw()
 	if err != nil {
 		fmt.Printf("Error validating config: %v", err)
 		os.Exit(1)
@@ -83,7 +82,7 @@ func TestConfig(t *testing.T) {
 	// testgroup - occurrence map, validate testgroups
 	testgroupMap := make(map[string]int32)
 
-	for testgroupidx, testgroup := range config.TestGroups {
+	for testgroupidx, testgroup := range cfg.TestGroups {
 		// All testgroup must have a name and a query
 		if testgroup.Name == "" || testgroup.GcsPrefix == "" {
 			t.Errorf("Testgroup %v: - Must have a name and query", testgroupidx)
@@ -134,7 +133,7 @@ func TestConfig(t *testing.T) {
 	// dashboard name set
 	dashboardmap := make(map[string]bool)
 
-	for dashboardidx, dashboard := range config.Dashboards {
+	for dashboardidx, dashboard := range cfg.Dashboards {
 		// All dashboard must have a name
 		if dashboard.Name == "" {
 			t.Errorf("Dashboard %v: - Must have a name", dashboardidx)
@@ -203,7 +202,7 @@ func TestConfig(t *testing.T) {
 			}
 
 			if dashboardtab.AlertOptions != nil && (dashboardtab.AlertOptions.AlertStaleResultsHours != 0 || dashboardtab.AlertOptions.NumFailuresToAlert != 0) {
-				for _, testgroup := range config.TestGroups {
+				for _, testgroup := range cfg.TestGroups {
 					// Disallow alert options in tab but not group.
 					// Disallow different alert options in tab vs. group.
 					if testgroup.Name == dashboardtab.TestGroupName {
@@ -229,7 +228,7 @@ func TestConfig(t *testing.T) {
 	groups := make(map[string]bool)
 	tabs := make(map[string]string)
 
-	for idx, dashboardGroup := range config.DashboardGroups {
+	for idx, dashboardGroup := range cfg.DashboardGroups {
 		// All dashboard must have a name
 		if dashboardGroup.Name == "" {
 			t.Errorf("DashboardGroup %v: - DashboardGroup must have a name", idx)
@@ -289,13 +288,13 @@ func TestConfig(t *testing.T) {
 
 	// make sure items in sq-blocking dashboard matches sq configmap
 	sqJobPool := []string{}
-	for _, d := range config.Dashboards {
+	for _, d := range cfg.Dashboards {
 		if d.Name != "sq-blocking" {
 			continue
 		}
 
 		for _, tab := range d.DashboardTab {
-			for _, t := range config.TestGroups {
+			for _, t := range cfg.TestGroups {
 				if t.Name == tab.TestGroupName {
 					job := strings.TrimPrefix(t.GcsPrefix, "kubernetes-jenkins/logs/")
 					sqJobPool = append(sqJobPool, job)
@@ -327,7 +326,7 @@ func TestConfig(t *testing.T) {
 			continue
 		}
 		found := false
-		for _, testgroup := range config.TestGroups {
+		for _, testgroup := range cfg.TestGroups {
 			if testgroup.Name == sqJob {
 				found = true
 				break
@@ -409,7 +408,7 @@ func TestJobsTestgridEntryMatch(t *testing.T) {
 
 	// For now anything outsite k8s-jenkins/(pr-)logs are considered to be fine
 	testgroups := make(map[string]bool)
-	for _, testgroup := range config.TestGroups {
+	for _, testgroup := range cfg.TestGroups {
 		if strings.Contains(testgroup.GcsPrefix, "kubernetes-jenkins/logs/") {
 			// The convention is that the job name is the final part of the GcsPrefix
 			job := filepath.Base(testgroup.GcsPrefix)

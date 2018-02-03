@@ -22,8 +22,6 @@ import (
 	"io/ioutil"
 	"os"
 	"strings"
-
-	"k8s.io/test-infra/testgrid/yaml2proto"
 )
 
 var (
@@ -51,7 +49,7 @@ func main() {
 		errExit("Cannot set both --print-text and --output\n")
 	}
 
-	var c yaml2proto.Config
+	var c Config
 	for _, file := range yamlFiles {
 		b, err := ioutil.ReadFile(file)
 		if err != nil {
