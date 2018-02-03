@@ -21,7 +21,7 @@ ALPINE_VERSION           ?= 0.1
 GIT_VERSION              ?= 0.1
 
 # YYYYmmdd-commitish
-TAG = $(shell date +v%Y%m%d)-$(shell git describe --tags --always --dirty)
+TAG = $(shell date -u +v%Y%m%d)-$(shell git describe --tags --always --dirty)
 # HOOK_VERSION is the version of the hook image
 HOOK_VERSION             ?= $(TAG)
 # SINKER_VERSION is the version of the sinker image
@@ -53,7 +53,7 @@ CLUSTER       ?= prow
 
 # Build and push specific variables.
 REGISTRY ?= gcr.io
-PUSH     ?= gcloud docker -- push
+PUSH     ?= docker push
 
 DOCKER_LABELS=--label io.k8s.prow.git-describe="$(shell git describe --tags --always --dirty)"
 
