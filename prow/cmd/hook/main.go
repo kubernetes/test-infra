@@ -29,9 +29,13 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/sirupsen/logrus"
 
+	"github.com/ghodss/yaml"
+	"github.com/gorilla/securecookie"
+	"github.com/gorilla/sessions"
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/git"
 	"k8s.io/test-infra/prow/github"
+	"k8s.io/test-infra/prow/gitoauth"
 	"k8s.io/test-infra/prow/hook"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/metrics"
@@ -39,6 +43,7 @@ import (
 	"k8s.io/test-infra/prow/plugins"
 	"k8s.io/test-infra/prow/repoowners"
 	"k8s.io/test-infra/prow/slack"
+	"k8s.io/test-infra/prow/userdashboard"
 )
 
 var (
@@ -56,6 +61,8 @@ var (
 
 	webhookSecretFile = flag.String("hmac-secret-file", "/etc/webhook/hmac", "Path to the file containing the GitHub HMAC secret.")
 	slackTokenFile    = flag.String("slack-token-file", "", "Path to the file containing the Slack token to use.")
+
+	gitAppClientFile = flag.String("gitapp-client-file", "/ect/github/app", "Path to the file containing the Git App Client secret.")
 )
 
 func main() {
@@ -84,6 +91,11 @@ func main() {
 		logger.WithError(err).Fatal("Could not read oauth secret file.")
 	}
 	oauthSecret := string(bytes.TrimSpace(oauthSecretRaw))
+
+	gitAppClientRaw, err := ioutil.ReadFile(*gitAppClientFile)
+	if err != nil {
+		logger.WithError(err).Fatal("Could not read git app client file.")
+	}
 
 	var teamToken string
 	if *slackTokenFile != "" {
@@ -170,6 +182,22 @@ func main() {
 	http.Handle("/hook", server)
 	// Serve plugin help information from /plugin-help.
 	http.Handle("/plugin-help", pluginhelp.NewHelpAgent(pluginAgent, githubClient))
+
+	var appClient config.Client
+	yaml.Unmarshal(bytes.TrimSpace(gitAppClientRaw), &appClient)
+	cookie := sessions.NewCookieStore(securecookie.GenerateRandomKey(64))
+
+	gitOAuthConfig := &configAgent.Config().GitOAuthConfig
+	gitOAuthConfig.InitGitOAuthConfig(&appClient, cookie)
+
+	goa := gitoauth.NewGitOAuthAgent(gitOAuthConfig, logrus.WithField("component", "gitoauth"))
+
+	userDashboardAgent := userdashboard.NewDashboardAgent(gitOAuthConfig, logrus.WithField("component", "user-dashboard"))
+	http.Handle("/user-dashboard", userDashboardAgent.HandleUserDashboard(userDashboardAgent))
+	// Handles login request.
+	http.HandleFunc("/user-dashboard/login", goa.HandleLogin)
+	// Handles redirect from Github OAuth server.
+	http.HandleFunc("/user-dashboard/redirect", goa.HandleRedirect)
 
 	logger.Fatal(http.ListenAndServe(":"+strconv.Itoa(*port), nil))
 }

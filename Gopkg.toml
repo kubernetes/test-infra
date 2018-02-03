@@ -34,3 +34,7 @@ required = [
 [[constraint]]
   name = "cloud.google.com/go"
   version = "0.17.0"
+
+[[constraint]]
+  name = "github.com/google/go-cmp"
+  version = "0.1.0"

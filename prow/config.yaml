@@ -44,6 +44,16 @@ branch-protection:
           - continuous-integration/travis-ci
           - cla/linuxfoundation
 
+git_oauth_config:
+  client:
+    client_id:
+    client_secret:
+  redirect_url: http://localhost:8888/user-dashboard/redirect
+  final_redirect_url: http://localhost:8888/user.html
+  token_session: token_session
+  token_key: token_key
+  scopes:
+
 tide:
   queries:
   - repos:

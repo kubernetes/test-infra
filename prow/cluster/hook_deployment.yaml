@@ -50,6 +50,9 @@ spec:
         - name: oauth
           mountPath: /etc/github
           readOnly: true
+        - name: app
+          mountPath: /ect/github
+          readOnly: true
         - name: config
           mountPath: /etc/config
           readOnly: true
@@ -69,6 +72,9 @@ spec:
       - name: oauth
         secret:
           secretName: oauth-token
+      - name: app
+        secret:
+          secretName: gitapp-client
       - name: config
         configMap:
           name: config
