@@ -8586,14 +8586,15 @@
   },
   "ci-kubernetes-e2e-kops-aws-weave": {
     "args": [
-      "--aws",
       "--cluster=e2e-kops-aws-weave.test-cncf-aws.k8s.io",
-      "--env-file=jobs/platform/kops_aws.env",
+      "--deployment=kops",
+      "--env=KUBE_SSH_USER=admin",
       "--extract=ci/latest",
       "--ginkgo-parallel",
       "--kops-args=--networking=weave",
       "--provider=aws",
-      "--test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]|\\[HPA\\]|Dashboard|Services.*functioning.*NodePort"
+      "--test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]|\\[HPA\\]|Dashboard|Services.*functioning.*NodePort",
+      "--timeout=120m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [
