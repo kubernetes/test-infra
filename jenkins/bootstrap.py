@@ -941,8 +941,13 @@ def bootstrap(args):
     build = build_name(started)
 
     if upload:
-        if any(repos[repo][1] for repo in repos):
+        # TODO(bentheelder, cjwager, stevekuznetsov): support the workspace
+        # repo not matching the upload repo in the shiny new init container
+        pull_ref_repos = [repo for repo in repos if repos[repo][1]]
+        if pull_ref_repos:
+            workspace_main, repos.main = repos.main, pull_ref_repos[0]
             paths = pr_paths(upload, repos, job, build)
+            repos.main = workspace_main
         else:
             paths = ci_paths(upload, job, build)
         logging.info('Gubernator results at %s', gubernator_uri(paths))
