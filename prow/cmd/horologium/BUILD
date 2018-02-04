@@ -11,9 +11,7 @@ load(
 go_image(
     name = "image",
     base = "@alpine-base//image",
-    embed = [":go_default_library"],
-    importpath = "k8s.io/test-infra/prow/cmd/horologium",
-    pure = "on",
+    binary = ":horologium",
 )
 
 go_binary(

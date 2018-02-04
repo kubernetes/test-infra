@@ -8,9 +8,7 @@ load(
 go_image(
     name = "image",
     base = "@git-base//image",
-    embed = [":go_default_library"],
-    importpath = "k8s.io/test-infra/prow/cmd/tide",
-    pure = "on",
+    binary = ":tide",
     visibility = ["//visibility:public"],
 )
 

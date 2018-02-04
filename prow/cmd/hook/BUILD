@@ -1,22 +1,12 @@
 package(default_visibility = ["//visibility:public"])
 
 load("@io_bazel_rules_docker//go:image.bzl", "go_image")
-load(
-    "@io_bazel_rules_go//go:def.bzl",
-    "go_binary",
-    "go_library",
-    "go_test",
-)
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library", "go_test")
 
 go_image(
     name = "image",
     base = "@git-base//image",
-    data = [
-        "//prow:configs",
-    ],
-    embed = [":go_default_library"],
-    importpath = "k8s.io/test-infra/prow/cmd/hook",
-    pure = "on",
+    binary = ":hook",
 )
 
 go_binary(

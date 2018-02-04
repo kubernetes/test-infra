@@ -12,9 +12,7 @@ load(
 go_image(
     name = "image",
     base = "@alpine-base//image",
-    embed = [":go_default_library"],
-    importpath = "k8s.io/test-infra/prow/cmd/jenkins-operator",
-    pure = "on",
+    binary = ":jenkins-operator",
 )
 
 go_library(
