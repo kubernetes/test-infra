@@ -50,15 +50,11 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 		trusted, _ := trustedOrgForRepo(config, parts[0], parts[1])
 		configInfo[repo] = fmt.Sprintf("The trusted Github organization for this repository is %q.", trusted)
 	}
-	// TODO(qhuynh96): Removes all the fields of pluginHelp except Description.
 	pluginHelp := &pluginhelp.PluginHelp{
 		Description: `The trigger plugin starts tests in reaction to commands and pull request events. It is responsible for ensuring that test jobs are only run on trusted PRs. A PR is considered trusted if the author is a member of the 'trusted organization' for the repository or if such a member has left an '/ok-to-test' command on the PR.
 <br>Trigger starts jobs automatically when a new trusted PR is created or when an untrusted PR becomes trusted, but it can also be used to start jobs manually via the '/test' command.
 <br>The '/retest' command can be used to rerun jobs that have reported failure.`,
-		WhoCanUse: "Anyone can use the '/test' and '/retest' commands on a trusted PR.<br>Members of the trusted organization for the repo can use the '/ok-to-test' command to mark an untrusted PR as trusted.",
-		Usage:     "/ok-to-test\n/test (<job name>|all)\n/retest",
-		Examples:  []string{"/ok-to-test", "/test all", "/test pull-bazel-test", "/retest"},
-		Config:    configInfo,
+		Config: configInfo,
 	}
 	pluginHelp.AddCommand(pluginhelp.Command{
 		Usage:       "/ok-to-test",

@@ -51,12 +51,8 @@ func init() {
 
 func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
 	// The Config field is omitted because this plugin is not configurable.
-	// TODO(qhuynh96): Removes all the fields of pluginHelp except Description.
 	pluginHelp := &pluginhelp.PluginHelp{
 		Description: "The help plugin provides commands that add or remove the '" + helpLabel + "' label from issues.",
-		WhoCanUse:   "Anyone can trigger this plugin on a PR.",
-		Usage:       "/[remove-]help",
-		Examples:    []string{"/help", "/remove-help"},
 	}
 	pluginHelp.AddCommand(pluginhelp.Command{
 		Usage:       "/[remove-]help",

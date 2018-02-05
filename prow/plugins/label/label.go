@@ -42,12 +42,8 @@ func init() {
 
 func helpProvider(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
 	// The Config field is omitted because this plugin is not configurable.
-	// TODO(qhuynh96): Removes all the fields of pluginHelp except Description.
 	pluginHelp := &pluginhelp.PluginHelp{
 		Description: "The label plugin provides commands that add or remove certain types of labels. Labels of the following types can be manipulated: 'area/*', 'committee/*', 'kind/*', 'priority/*' and 'sig/*'.",
-		WhoCanUse:   "Anyone can trigger this plugin on a PR.",
-		Usage:       "/[remove-](area|committee|kind|priority|sig) <target>",
-		Examples:    []string{"/kind bug", "/remove-area prow", "/sig testing"},
 	}
 	pluginHelp.AddCommand(pluginhelp.Command{
 		Usage:       "/[remove-](area|committee|kind|priority|sig) <target>",
