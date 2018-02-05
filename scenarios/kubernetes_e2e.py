@@ -36,7 +36,7 @@ import time
 ORIG_CWD = os.getcwd()  # Checkout changes cwd
 
 # Note: This variable is managed by experiment/bump_e2e_image.sh.
-DEFAULT_KUBEKINS_TAG = 'v20180202-1036088f2-master'
+DEFAULT_KUBEKINS_TAG = 'v20180205-d99d9c246-master'
 
 # The zones below are the zones available in the CNCF account (in theory, zones vary by account)
 # We comment out zones below because we want to stay proportional to the limits
