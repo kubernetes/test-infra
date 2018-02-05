@@ -717,6 +717,8 @@ Assign the PR to them by writing ` + "`/assign @alice`" + ` in a comment when re
 
 The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
 
+The pull request process is described [here](https://git.k8s.io/community/contributors/devel/owners.md#the-code-review-process)
+
 <details open>
 Needs approval from an approver in each of these OWNERS Files:
 
@@ -756,6 +758,8 @@ This pull-request has been approved by: *<a href="REFERENCE" title="Approved">Al
 *No associated issue*. Update pull-request body to add a reference to an issue, or get approval with ` + "`/approve no-issue`" + `
 
 The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
+
+The pull request process is described [here](https://git.k8s.io/community/contributors/devel/owners.md#the-code-review-process)
 
 <details >
 Needs approval from an approver in each of these OWNERS Files:
@@ -799,6 +803,8 @@ Assign the PR to them by writing ` + "`/assign @alice @bill`" + ` in a comment w
 
 The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
 
+The pull request process is described [here](https://git.k8s.io/community/contributors/devel/owners.md#the-code-review-process)
+
 <details open>
 Needs approval from an approver in each of these OWNERS Files:
 
@@ -841,6 +847,8 @@ Associated issue: *#12345*
 
 The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
 
+The pull request process is described [here](https://git.k8s.io/community/contributors/devel/owners.md#the-code-review-process)
+
 <details >
 Needs approval from an approver in each of these OWNERS Files:
 
@@ -881,6 +889,8 @@ This pull-request has been approved by: *<a href="REFERENCE" title="Approved">Al
 Associated issue requirement bypassed by: *<a href="REFERENCE" title="Approved">Alice</a>*, *<a href="REFERENCE" title="Approved">Bill</a>*
 
 The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
+
+The pull request process is described [here](https://git.k8s.io/community/contributors/devel/owners.md#the-code-review-process)
 
 <details >
 Needs approval from an approver in each of these OWNERS Files:
