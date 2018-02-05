@@ -224,7 +224,7 @@ if __name__ == '__main__':
     PARSER.add_argument(
         '--testgrid',
         help='Path to testgrid config',
-        default='testgrid/config/config.yaml')
+        default='testgrid/config.yaml')
     PARSER.add_argument(
         '--testgrid-dashboard',
         help='which dashboard to add in testgrid config')

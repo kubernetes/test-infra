@@ -16,6 +16,7 @@ go_binary(
     name = "barnacle",
     embed = [":go_default_library"],
     importpath = "k8s.io/test-infra/images/bootstrap/barnacle",
+    pure = "on",
     visibility = ["//visibility:public"],
 )
 

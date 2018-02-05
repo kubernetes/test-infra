@@ -32,6 +32,10 @@ branch-protection:
           protect-by-default: true
         test-infra:
           protect-by-default: true
+    kubernetes-sigs:
+      protect-by-default: true
+      require-contexts:
+      - cla/linuxfoundation
     kubernetes-sig-testing:
       repos:
         frameworks:
@@ -141,6 +145,38 @@ presets:
   - name: ssh
     mountPath: /etc/ssh-key-secret
     readOnly: true
+- labels:
+    preset-aws-ssh: true
+  env:
+  - name: USER
+    value: prow
+  - name: JENKINS_AWS_SSH_PRIVATE_KEY_FILE
+    value: /etc/aws-ssh/aws-ssh-private
+  - name: JENKINS_AWS_SSH_PUBLIC_KEY_FILE
+    value: /etc/aws-ssh/aws-ssh-public
+  volumes:
+  - name: aws-ssh
+    secret:
+      defaultMode: 0400
+      secretName: aws-ssh-key-secret
+  volumeMounts:
+  - name: aws-ssh
+    mountPath: /etc/aws-ssh
+    readOnly: true
+- labels:
+    preset-aws-credential: true
+  env:
+  - name: JENKINS_AWS_CREDENTIALS_FILE
+    value: /etc/aws-cred/credentials
+  volumes:
+  - name: aws-cred
+    secret:
+      defaultMode: 0400
+      secretName: aws-cred-new
+  volumeMounts:
+  - name: aws-cred
+    mountPath: /etc/aws-cred
+    readOnly: true
 
 presubmits:
   google/cadvisor:
@@ -167,7 +203,7 @@ presubmits:
         - "--clean"
         - "--git-cache=/root/.cache/git"
         - "--"
-        - "--node-args=--image-config-file=test/e2e_node/image-config.yaml"
+        - "--node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml --test-suite=cadvisor"
         volumeMounts:
         - name: cache-ssd
           mountPath: /root/.cache
@@ -496,6 +532,8 @@ presubmits:
     trigger: "(?m)^/test( all| pull-kops-e2e-kubernetes-aws),?(\\s+|$)"
     labels:
       preset-service-account: true
+      preset-aws-ssh: true
+      preset-aws-credential: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180202-1036088f2-master
@@ -510,26 +548,12 @@ presubmits:
         env:
         - name: DOCKER_IN_DOCKER_ENABLED
           value: true
-        - name: USER
-          value: prow
-        - name: JENKINS_AWS_CREDENTIALS_FILE
-          value: /etc/aws-cred/credentials
-        - name: JENKINS_AWS_SSH_PRIVATE_KEY_FILE
-          value: /etc/aws-ssh/aws-ssh-private
-        - name: JENKINS_AWS_SSH_PUBLIC_KEY_FILE
-          value: /etc/aws-ssh/aws-ssh-public
         # docker-in-docker needs privileged mode
         securityContext:
           privileged: true
         volumeMounts:
         - name: docker-graph
           mountPath: /docker-graph
-        - mountPath: /etc/aws-ssh
-          name: aws-ssh
-          readOnly: true
-        - mountPath: /etc/aws-cred
-          name: aws-cred
-          readOnly: true
         ports:
         - containerPort: 9999
           hostPort: 9999
@@ -540,14 +564,6 @@ presubmits:
       - name: docker-graph
         hostPath:
           path: /mnt/disks/ssd0/docker-graph
-      - name: aws-ssh
-        secret:
-          defaultMode: 256
-          secretName: aws-ssh-key-secret
-      - name: aws-cred
-        secret:
-          defaultMode: 256
-          secretName: aws-cred-new
   kubernetes/cluster-registry:
   - name: pull-cluster-registry-bazel
     agent: kubernetes
@@ -1082,8 +1098,6 @@ presubmits:
     always_run: false
     rerun_command: "/test pull-kubernetes-bazel-test-canary"
     trigger: "(?m)^/test pull-kubernetes-bazel-test-canary,?(\\s+|$)"
-    branches:
-    - master
     labels:
       preset-service-account: true
     spec:
@@ -1101,8 +1115,8 @@ presubmits:
         - "--batch" # mitigation for https://github.com/bazelbuild/bazel/issues/4311
         - "--test=//... -//build/... -//vendor/..."
         - "--manual-test=//hack:verify-all"
-        - "--test-args=--build_tag_filters=-e2e"
-        - "--test-args=--test_tag_filters=-e2e"
+        - "--test-args=--build_tag_filters=-e2e,-integration"
+        - "--test-args=--test_tag_filters=-e2e,-integration"
         - "--test-args=--flaky_test_attempts=3"
         env:
         - name: TEST_TMPDIR
@@ -1728,6 +1742,8 @@ presubmits:
     trigger: "(?m)^/test( all| pull-kubernetes-e2e-kops-aws),?(\\s+|$)"
     labels:
       preset-service-account: true
+      preset-aws-ssh: true
+      preset-aws-credential: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180202-1036088f2-master
@@ -1742,26 +1758,12 @@ presubmits:
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--timeout=75"
         env:
-        - name: USER
-          value: prow
-        - name: JENKINS_AWS_CREDENTIALS_FILE
-          value: /etc/aws-cred/credentials
-        - name: JENKINS_AWS_SSH_PRIVATE_KEY_FILE
-          value: /etc/aws-ssh/aws-ssh-private
-        - name: JENKINS_AWS_SSH_PUBLIC_KEY_FILE
-          value: /etc/aws-ssh/aws-ssh-public
         - name: TEST_TMPDIR
           value: /root/.cache/bazel
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: /etc/aws-ssh
-          name: aws-ssh
-          readOnly: true
-        - mountPath: /etc/aws-cred
-          name: aws-cred
-          readOnly: true
         - name: cache-ssd
           mountPath: /root/.cache
         ports:
@@ -1771,14 +1773,6 @@ presubmits:
           requests:
             memory: "6Gi"
       volumes:
-      - name: aws-ssh
-        secret:
-          defaultMode: 256
-          secretName: aws-ssh-key-secret
-      - name: aws-cred
-        secret:
-          defaultMode: 256
-          secretName: aws-cred-new
       - name: cache-ssd
         hostPath:
           path: /mnt/disks/ssd0
@@ -1793,6 +1787,8 @@ presubmits:
     trigger: "(?m)^/test( all| pull-kubernetes-e2e-kops-aws),?(\\s+|$)"
     labels:
       preset-service-account: true
+      preset-aws-ssh: true
+      preset-aws-credential: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180202-1036088f2-1.8
@@ -1807,26 +1803,12 @@ presubmits:
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--timeout=75"
         env:
-        - name: USER
-          value: prow
-        - name: JENKINS_AWS_CREDENTIALS_FILE
-          value: /etc/aws-cred/credentials
-        - name: JENKINS_AWS_SSH_PRIVATE_KEY_FILE
-          value: /etc/aws-ssh/aws-ssh-private
-        - name: JENKINS_AWS_SSH_PUBLIC_KEY_FILE
-          value: /etc/aws-ssh/aws-ssh-public
         - name: TEST_TMPDIR
           value: /root/.cache/bazel
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: /etc/aws-ssh
-          name: aws-ssh
-          readOnly: true
-        - mountPath: /etc/aws-cred
-          name: aws-cred
-          readOnly: true
         - name: cache-ssd
           mountPath: /root/.cache
         ports:
@@ -1836,14 +1818,6 @@ presubmits:
           requests:
             memory: "6Gi"
       volumes:
-      - name: aws-ssh
-        secret:
-          defaultMode: 256
-          secretName: aws-ssh-key-secret
-      - name: aws-cred
-        secret:
-          defaultMode: 256
-          secretName: aws-cred-new
       - name: cache-ssd
         hostPath:
           path: /mnt/disks/ssd0
@@ -1858,6 +1832,8 @@ presubmits:
     trigger: "(?m)^/test( all| pull-kubernetes-e2e-kops-aws),?(\\s+|$)"
     labels:
       preset-service-account: true
+      preset-aws-ssh: true
+      preset-aws-credential: true
     spec:
       containers:
       - image: gcr.io/k8s-testimages/kubekins-e2e:v20180202-1036088f2-1.7
@@ -1872,26 +1848,12 @@ presubmits:
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--timeout=75"
         env:
-        - name: USER
-          value: prow
-        - name: JENKINS_AWS_CREDENTIALS_FILE
-          value: /etc/aws-cred/credentials
-        - name: JENKINS_AWS_SSH_PRIVATE_KEY_FILE
-          value: /etc/aws-ssh/aws-ssh-private
-        - name: JENKINS_AWS_SSH_PUBLIC_KEY_FILE
-          value: /etc/aws-ssh/aws-ssh-public
         - name: TEST_TMPDIR
           value: /root/.cache/bazel
         # Bazel needs privileged mode in order to sandbox builds.
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: /etc/aws-ssh
-          name: aws-ssh
-          readOnly: true
-        - mountPath: /etc/aws-cred
-          name: aws-cred
-          readOnly: true
         - name: cache-ssd
           mountPath: /root/.cache
         ports:
@@ -1901,14 +1863,6 @@ presubmits:
           requests:
             memory: "6Gi"
       volumes:
-      - name: aws-ssh
-        secret:
-          defaultMode: 256
-          secretName: aws-ssh-key-secret
-      - name: aws-cred
-        secret:
-          defaultMode: 256
-          secretName: aws-cred-new
       - name: cache-ssd
         hostPath:
           path: /mnt/disks/ssd0
@@ -2946,8 +2900,6 @@ presubmits:
     trigger: (?m)^/test( all| pull-security-kubernetes-bazel-test),?(\s+|$)
   - agent: kubernetes
     always_run: false
-    branches:
-    - master
     cluster: security
     context: pull-security-kubernetes-bazel-test-canary
     labels:
@@ -2970,8 +2922,8 @@ presubmits:
         - --batch
         - --test=//... -//build/... -//vendor/...
         - --manual-test=//hack:verify-all
-        - --test-args=--build_tag_filters=-e2e
-        - --test-args=--test_tag_filters=-e2e
+        - --test-args=--build_tag_filters=-e2e,-integration
+        - --test-args=--test_tag_filters=-e2e,-integration
         - --test-args=--flaky_test_attempts=3
         image: gcr.io/k8s-testimages/bazelbuild:latest-latest
         imagePullPolicy: Always
@@ -3567,6 +3519,8 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-e2e-kops-aws
     labels:
+      preset-aws-credential: "true"
+      preset-aws-ssh: "true"
       preset-service-account: "true"
     max_concurrency: 12
     name: pull-security-kubernetes-e2e-kops-aws
@@ -3591,15 +3545,6 @@ presubmits:
         - --timeout=75
         - --
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-kops-aws
-        env:
-        - name: USER
-          value: prow
-        - name: JENKINS_AWS_CREDENTIALS_FILE
-          value: /etc/aws-cred/credentials
-        - name: JENKINS_AWS_SSH_PRIVATE_KEY_FILE
-          value: /etc/aws-ssh/aws-ssh-private
-        - name: JENKINS_AWS_SSH_PUBLIC_KEY_FILE
-          value: /etc/aws-ssh/aws-ssh-public
         image: gcr.io/k8s-testimages/kubekins-e2e:v20180202-1036088f2-master
         name: ""
         resources:
@@ -3608,23 +3553,9 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: /etc/aws-ssh
-          name: aws-ssh
-          readOnly: true
-        - mountPath: /etc/aws-cred
-          name: aws-cred
-          readOnly: true
         - mountPath: /etc/ssh-security
           name: ssh-security
       volumes:
-      - name: aws-ssh
-        secret:
-          defaultMode: 256
-          secretName: aws-ssh-key-secret
-      - name: aws-cred
-        secret:
-          defaultMode: 256
-          secretName: aws-cred-new
       - name: ssh-security
         secret:
           defaultMode: 256
@@ -3637,6 +3568,8 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-e2e-kops-aws
     labels:
+      preset-aws-credential: "true"
+      preset-aws-ssh: "true"
       preset-service-account: "true"
     max_concurrency: 12
     name: pull-security-kubernetes-e2e-kops-aws
@@ -3657,15 +3590,6 @@ presubmits:
         - --timeout=75
         - --
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-kops-aws
-        env:
-        - name: USER
-          value: prow
-        - name: JENKINS_AWS_CREDENTIALS_FILE
-          value: /etc/aws-cred/credentials
-        - name: JENKINS_AWS_SSH_PRIVATE_KEY_FILE
-          value: /etc/aws-ssh/aws-ssh-private
-        - name: JENKINS_AWS_SSH_PUBLIC_KEY_FILE
-          value: /etc/aws-ssh/aws-ssh-public
         image: gcr.io/k8s-testimages/kubekins-e2e:v20180202-1036088f2-1.8
         name: ""
         resources:
@@ -3674,23 +3598,9 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: /etc/aws-ssh
-          name: aws-ssh
-          readOnly: true
-        - mountPath: /etc/aws-cred
-          name: aws-cred
-          readOnly: true
         - mountPath: /etc/ssh-security
           name: ssh-security
       volumes:
-      - name: aws-ssh
-        secret:
-          defaultMode: 256
-          secretName: aws-ssh-key-secret
-      - name: aws-cred
-        secret:
-          defaultMode: 256
-          secretName: aws-cred-new
       - name: ssh-security
         secret:
           defaultMode: 256
@@ -3703,6 +3613,8 @@ presubmits:
     cluster: security
     context: pull-security-kubernetes-e2e-kops-aws
     labels:
+      preset-aws-credential: "true"
+      preset-aws-ssh: "true"
       preset-service-account: "true"
     max_concurrency: 12
     name: pull-security-kubernetes-e2e-kops-aws
@@ -3723,15 +3635,6 @@ presubmits:
         - --timeout=75
         - --
         - --stage=gs://kubernetes-security-prow/ci/pull-security-kubernetes-e2e-kops-aws
-        env:
-        - name: USER
-          value: prow
-        - name: JENKINS_AWS_CREDENTIALS_FILE
-          value: /etc/aws-cred/credentials
-        - name: JENKINS_AWS_SSH_PRIVATE_KEY_FILE
-          value: /etc/aws-ssh/aws-ssh-private
-        - name: JENKINS_AWS_SSH_PUBLIC_KEY_FILE
-          value: /etc/aws-ssh/aws-ssh-public
         image: gcr.io/k8s-testimages/kubekins-e2e:v20180202-1036088f2-1.7
         name: ""
         resources:
@@ -3740,23 +3643,9 @@ presubmits:
         securityContext:
           privileged: true
         volumeMounts:
-        - mountPath: /etc/aws-ssh
-          name: aws-ssh
-          readOnly: true
-        - mountPath: /etc/aws-cred
-          name: aws-cred
-          readOnly: true
         - mountPath: /etc/ssh-security
           name: ssh-security
       volumes:
-      - name: aws-ssh
-        secret:
-          defaultMode: 256
-          secretName: aws-ssh-key-secret
-      - name: aws-cred
-        secret:
-          defaultMode: 256
-          secretName: aws-cred-new
       - name: ssh-security
         secret:
           defaultMode: 256
@@ -4477,7 +4366,7 @@ presubmits:
       preset-service-account: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20180201-0184a54dc-0.8.1
+      - image: gcr.io/k8s-testimages/bazelbuild:v20180201-0184a54dc-0.10.0
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -5178,7 +5067,7 @@ postsubmits:
       preset-service-account: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20180201-0184a54dc-0.8.1
+      - image: gcr.io/k8s-testimages/bazelbuild:v20180201-0184a54dc-0.10.0
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -5248,7 +5137,7 @@ postsubmits:
       preset-service-account: true
     spec:
       containers:
-      - image: gcr.io/k8s-testimages/bazelbuild:v20180201-0184a54dc-0.8.1
+      - image: gcr.io/k8s-testimages/bazelbuild:v20180201-0184a54dc-0.10.0
         args:
         - "--clean"
         - "--git-cache=/root/.cache/git"
@@ -5290,6 +5179,29 @@ periodics:
       - --repo=k8s.io/kubernetes=master
       - --timeout=40
       - --root=/go/src
+      env:
+      - name: GOPATH
+        value: /go
+
+- name: ci-cadvisor-e2e
+  interval: 8h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180202-1036088f2-master
+      args:
+      - --job=$(JOB_NAME)
+      - --root=/go/src
+      - --repo=k8s.io/kubernetes
+      - --repo=github.com/google/cadvisor=master
+      - --service-account=/etc/service-account/service-account.json
+      - --timeout=90
+      - --upload=gs://kubernetes-jenkins/logs
+      - --
+      - --node-args=--image-config-file=/workspace/test-infra/jobs/e2e_node/image-config.yaml --test-suite=cadvisor
       env:
       - name: GOPATH
         value: /go
@@ -10911,450 +10823,173 @@ periodics:
   name: ci-kubernetes-e2e-kops-aws
   labels:
     preset-service-account: true
+    preset-aws-ssh: true
+    preset-aws-credential: true
   spec:
     containers:
     - args:
       - --timeout=140
       - --bare
-      env:
-      - name: USER
-        value: prow
-      - name: JENKINS_AWS_CREDENTIALS_FILE
-        value: /etc/aws-cred/credentials
-      - name: JENKINS_AWS_SSH_PRIVATE_KEY_FILE
-        value: /etc/aws-ssh/aws-ssh-private
-      - name: JENKINS_AWS_SSH_PUBLIC_KEY_FILE
-        value: /etc/aws-ssh/aws-ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180202-1036088f2-master
-      volumeMounts:
-      - mountPath: /etc/aws-ssh
-        name: aws-ssh
-        readOnly: true
-      - mountPath: /etc/aws-cred
-        name: aws-cred
-        readOnly: true
-    volumes:
-    - name: aws-ssh
-      secret:
-        defaultMode: 256
-        secretName: aws-ssh-key-secret
-    - name: aws-cred
-      secret:
-        defaultMode: 256
-        secretName: aws-cred-new
 
 - interval: 1h
   agent: kubernetes
   name: ci-kubernetes-e2e-kops-aws-beta
   labels:
     preset-service-account: true
+    preset-aws-ssh: true
+    preset-aws-credential: true
   spec:
     containers:
     - args:
       - --timeout=140
       - --bare
-      env:
-      - name: USER
-        value: prow
-      - name: JENKINS_AWS_CREDENTIALS_FILE
-        value: /etc/aws-cred/credentials
-      - name: JENKINS_AWS_SSH_PRIVATE_KEY_FILE
-        value: /etc/aws-ssh/aws-ssh-private
-      - name: JENKINS_AWS_SSH_PUBLIC_KEY_FILE
-        value: /etc/aws-ssh/aws-ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180202-1036088f2-master
-      volumeMounts:
-      - mountPath: /etc/aws-ssh
-        name: aws-ssh
-        readOnly: true
-      - mountPath: /etc/aws-cred
-        name: aws-cred
-        readOnly: true
-    volumes:
-    - name: aws-ssh
-      secret:
-        defaultMode: 256
-        secretName: aws-ssh-key-secret
-    - name: aws-cred
-      secret:
-        defaultMode: 256
-        secretName: aws-cred-new
 
 - interval: 1h
   agent: kubernetes
   name: ci-kubernetes-e2e-kops-aws-canary
   labels:
     preset-service-account: true
+    preset-aws-ssh: true
+    preset-aws-credential: true
   spec:
     containers:
     - args:
       - --timeout=140
       - --bare
-      env:
-      - name: USER
-        value: prow
-      - name: JENKINS_AWS_CREDENTIALS_FILE
-        value: /etc/aws-cred/credentials
-      - name: JENKINS_AWS_SSH_PRIVATE_KEY_FILE
-        value: /etc/aws-ssh/aws-ssh-private
-      - name: JENKINS_AWS_SSH_PUBLIC_KEY_FILE
-        value: /etc/aws-ssh/aws-ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
       imagePullPolicy: Always
-      volumeMounts:
-      - mountPath: /etc/aws-ssh
-        name: aws-ssh
-        readOnly: true
-      - mountPath: /etc/aws-cred
-        name: aws-cred
-        readOnly: true
-    volumes:
-    - name: aws-ssh
-      secret:
-        defaultMode: 256
-        secretName: aws-ssh-key-secret
-    - name: aws-cred
-      secret:
-        defaultMode: 256
-        secretName: aws-cred-new
 
 - interval: 1h
   agent: kubernetes
   name: ci-kubernetes-e2e-kops-aws-channelalpha
   labels:
     preset-service-account: true
+    preset-aws-ssh: true
+    preset-aws-credential: true
   spec:
     containers:
     - args:
       - --timeout=140
       - --bare
-      env:
-      - name: USER
-        value: prow
-      - name: JENKINS_AWS_CREDENTIALS_FILE
-        value: /etc/aws-cred/credentials
-      - name: JENKINS_AWS_SSH_PRIVATE_KEY_FILE
-        value: /etc/aws-ssh/aws-ssh-private
-      - name: JENKINS_AWS_SSH_PUBLIC_KEY_FILE
-        value: /etc/aws-ssh/aws-ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
       imagePullPolicy: Always
-      volumeMounts:
-      - mountPath: /etc/aws-ssh
-        name: aws-ssh
-        readOnly: true
-      - mountPath: /etc/aws-cred
-        name: aws-cred
-        readOnly: true
-    volumes:
-    - name: aws-ssh
-      secret:
-        defaultMode: 256
-        secretName: aws-ssh-key-secret
-    - name: aws-cred
-      secret:
-        defaultMode: 256
-        secretName: aws-cred-new
 
 - interval: 1h
   agent: kubernetes
   name: ci-kubernetes-e2e-kops-aws-ena-nvme
   labels:
     preset-service-account: true
+    preset-aws-ssh: true
+    preset-aws-credential: true
   spec:
     containers:
     - args:
       - --timeout=140
       - --bare
-      env:
-      - name: USER
-        value: prow
-      - name: JENKINS_AWS_CREDENTIALS_FILE
-        value: /etc/aws-cred/credentials
-      - name: JENKINS_AWS_SSH_PRIVATE_KEY_FILE
-        value: /etc/aws-ssh/aws-ssh-private
-      - name: JENKINS_AWS_SSH_PUBLIC_KEY_FILE
-        value: /etc/aws-ssh/aws-ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
       imagePullPolicy: Always
-      volumeMounts:
-      - mountPath: /etc/aws-ssh
-        name: aws-ssh
-        readOnly: true
-      - mountPath: /etc/aws-cred
-        name: aws-cred
-        readOnly: true
-    volumes:
-    - name: aws-ssh
-      secret:
-        defaultMode: 256
-        secretName: aws-ssh-key-secret
-    - name: aws-cred
-      secret:
-        defaultMode: 256
-        secretName: aws-cred-new
 
 - interval: 1h
   agent: kubernetes
   name: ci-kubernetes-e2e-kops-aws-imageubuntu1604
   labels:
     preset-service-account: true
+    preset-aws-ssh: true
+    preset-aws-credential: true
   spec:
     containers:
     - args:
       - --timeout=140
       - --bare
-      env:
-      - name: USER
-        value: prow
-      - name: JENKINS_AWS_CREDENTIALS_FILE
-        value: /etc/aws-cred/credentials
-      - name: JENKINS_AWS_SSH_PRIVATE_KEY_FILE
-        value: /etc/aws-ssh/aws-ssh-private
-      - name: JENKINS_AWS_SSH_PUBLIC_KEY_FILE
-        value: /etc/aws-ssh/aws-ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
       imagePullPolicy: Always
-      volumeMounts:
-      - mountPath: /etc/aws-ssh
-        name: aws-ssh
-        readOnly: true
-      - mountPath: /etc/aws-cred
-        name: aws-cred
-        readOnly: true
-    volumes:
-    - name: aws-ssh
-      secret:
-        defaultMode: 256
-        secretName: aws-ssh-key-secret
-    - name: aws-cred
-      secret:
-        defaultMode: 256
-        secretName: aws-cred-new
 
 - interval: 1h
   agent: kubernetes
   name: ci-kubernetes-e2e-kops-aws-newrunner
   labels:
     preset-service-account: true
+    preset-aws-ssh: true
+    preset-aws-credential: true
   spec:
     containers:
     - args:
       - --timeout=140
       - --bare
-      env:
-      - name: USER
-        value: prow
-      - name: JENKINS_AWS_CREDENTIALS_FILE
-        value: /etc/aws-cred/credentials
-      - name: JENKINS_AWS_SSH_PRIVATE_KEY_FILE
-        value: /etc/aws-ssh/aws-ssh-private
-      - name: JENKINS_AWS_SSH_PUBLIC_KEY_FILE
-        value: /etc/aws-ssh/aws-ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
       imagePullPolicy: Always
-      volumeMounts:
-      - mountPath: /etc/aws-ssh
-        name: aws-ssh
-        readOnly: true
-      - mountPath: /etc/aws-cred
-        name: aws-cred
-        readOnly: true
-    volumes:
-    - name: aws-ssh
-      secret:
-        defaultMode: 256
-        secretName: aws-ssh-key-secret
-    - name: aws-cred
-      secret:
-        defaultMode: 256
-        secretName: aws-cred-new
-
 
 - interval: 6h
   agent: kubernetes
   name: ci-kubernetes-e2e-kops-aws-release-1-7
   labels:
     preset-service-account: true
+    preset-aws-ssh: true
+    preset-aws-credential: true
   spec:
     containers:
     - args:
       - --timeout=140
       - --bare
-      env:
-      - name: USER
-        value: prow
-      - name: JENKINS_AWS_CREDENTIALS_FILE
-        value: /etc/aws-cred/credentials
-      - name: JENKINS_AWS_SSH_PRIVATE_KEY_FILE
-        value: /etc/aws-ssh/aws-ssh-private
-      - name: JENKINS_AWS_SSH_PUBLIC_KEY_FILE
-        value: /etc/aws-ssh/aws-ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180202-1036088f2-master
-      volumeMounts:
-      - mountPath: /etc/aws-ssh
-        name: aws-ssh
-        readOnly: true
-      - mountPath: /etc/aws-cred
-        name: aws-cred
-        readOnly: true
-    volumes:
-    - name: aws-ssh
-      secret:
-        defaultMode: 256
-        secretName: aws-ssh-key-secret
-    - name: aws-cred
-      secret:
-        defaultMode: 256
-        secretName: aws-cred-new
 
 - interval: 2h
   agent: kubernetes
   name: ci-kubernetes-e2e-kops-aws-sig-cli
   labels:
     preset-service-account: true
+    preset-aws-ssh: true
+    preset-aws-credential: true
   spec:
     containers:
     - args:
       - --timeout=140
       - --bare
-      env:
-      - name: USER
-        value: prow
-      - name: JENKINS_AWS_CREDENTIALS_FILE
-        value: /etc/aws-cred/credentials
-      - name: JENKINS_AWS_SSH_PRIVATE_KEY_FILE
-        value: /etc/aws-ssh/aws-ssh-private
-      - name: JENKINS_AWS_SSH_PUBLIC_KEY_FILE
-        value: /etc/aws-ssh/aws-ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180202-1036088f2-master
-      volumeMounts:
-      - mountPath: /etc/aws-ssh
-        name: aws-ssh
-        readOnly: true
-      - mountPath: /etc/aws-cred
-        name: aws-cred
-        readOnly: true
-    volumes:
-    - name: aws-ssh
-      secret:
-        defaultMode: 256
-        secretName: aws-ssh-key-secret
-    - name: aws-cred
-      secret:
-        defaultMode: 256
-        secretName: aws-cred-new
 
 - interval: 2h
   agent: kubernetes
   name: ci-kubernetes-e2e-kops-aws-stable1
   labels:
     preset-service-account: true
+    preset-aws-ssh: true
+    preset-aws-credential: true
   spec:
     containers:
     - args:
       - --timeout=140
       - --bare
-      env:
-      - name: USER
-        value: prow
-      - name: JENKINS_AWS_CREDENTIALS_FILE
-        value: /etc/aws-cred/credentials
-      - name: JENKINS_AWS_SSH_PRIVATE_KEY_FILE
-        value: /etc/aws-ssh/aws-ssh-private
-      - name: JENKINS_AWS_SSH_PUBLIC_KEY_FILE
-        value: /etc/aws-ssh/aws-ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180202-1036088f2-master
-      volumeMounts:
-      - mountPath: /etc/aws-ssh
-        name: aws-ssh
-        readOnly: true
-      - mountPath: /etc/aws-cred
-        name: aws-cred
-        readOnly: true
-    volumes:
-    - name: aws-ssh
-      secret:
-        defaultMode: 256
-        secretName: aws-ssh-key-secret
-    - name: aws-cred
-      secret:
-        defaultMode: 256
-        secretName: aws-cred-new
 
 - interval: 1h
   agent: kubernetes
   name: ci-kubernetes-e2e-kops-aws-updown
   labels:
     preset-service-account: true
+    preset-aws-ssh: true
+    preset-aws-credential: true
   spec:
     containers:
     - args:
       - --timeout=50
       - --bare
-      env:
-      - name: USER
-        value: prow
-      - name: JENKINS_AWS_CREDENTIALS_FILE
-        value: /etc/aws-cred/credentials
-      - name: JENKINS_AWS_SSH_PRIVATE_KEY_FILE
-        value: /etc/aws-ssh/aws-ssh-private
-      - name: JENKINS_AWS_SSH_PUBLIC_KEY_FILE
-        value: /etc/aws-ssh/aws-ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180202-1036088f2-master
-      volumeMounts:
-      - mountPath: /etc/aws-ssh
-        name: aws-ssh
-        readOnly: true
-      - mountPath: /etc/aws-cred
-        name: aws-cred
-        readOnly: true
-    volumes:
-    - name: aws-ssh
-      secret:
-        defaultMode: 256
-        secretName: aws-ssh-key-secret
-    - name: aws-cred
-      secret:
-        defaultMode: 256
-        secretName: aws-cred-new
 
 - interval: 24h
   agent: kubernetes
   name: ci-kubernetes-e2e-kops-aws-weave
   labels:
     preset-service-account: true
+    preset-aws-ssh: true
+    preset-aws-credential: true
   spec:
     containers:
     - args:
       - --timeout=140
       - --bare
-      env:
-      - name: USER
-        value: prow
-      - name: JENKINS_AWS_CREDENTIALS_FILE
-        value: /etc/aws-cred/credentials
-      - name: JENKINS_AWS_SSH_PRIVATE_KEY_FILE
-        value: /etc/aws-ssh/aws-ssh-private
-      - name: JENKINS_AWS_SSH_PUBLIC_KEY_FILE
-        value: /etc/aws-ssh/aws-ssh-public
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180202-1036088f2-master
-      volumeMounts:
-      - mountPath: /etc/aws-ssh
-        name: aws-ssh
-        readOnly: true
-      - mountPath: /etc/aws-cred
-        name: aws-cred
-        readOnly: true
-    volumes:
-    - name: aws-ssh
-      secret:
-        defaultMode: 256
-        secretName: aws-ssh-key-secret
-    - name: aws-cred
-      secret:
-        defaultMode: 256
-        secretName: aws-cred-new
 
 - interval: 30m
   agent: kubernetes
@@ -12611,7 +12246,7 @@ periodics:
     preset-service-account: true
   spec:
     containers:
-    - image: gcr.io/k8s-testimages/bazelbuild:v20180201-0184a54dc-0.8.1
+    - image: gcr.io/k8s-testimages/bazelbuild:v20180201-0184a54dc-0.10.0
       args:
       - "--clean"
       - "--git-cache=/root/.cache/git"

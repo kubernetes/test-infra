@@ -154,6 +154,99 @@ func TestValidateExternalPlugins(t *testing.T) {
 	}
 }
 
+func TestSetDefault_Maps(t *testing.T) {
+	cases := []struct {
+		name     string
+		config   ConfigUpdater
+		expected map[string]string
+	}{
+		{
+			name: "nothing",
+			expected: map[string]string{
+				"prow/config.yaml":  "config",
+				"prow/plugins.yaml": "plugins",
+			},
+		},
+		{
+			name: "basic",
+			config: ConfigUpdater{
+				Maps: map[string]string{
+					"hello.yaml": "my-cm",
+					"world.yaml": "you-cm",
+				},
+			},
+			expected: map[string]string{
+				"hello.yaml": "my-cm",
+				"world.yaml": "you-cm",
+			},
+		},
+		{
+			name: "deprecated config",
+			config: ConfigUpdater{
+				ConfigFile: "foo.yaml",
+			},
+			expected: map[string]string{
+				"foo.yaml":          "config",
+				"prow/plugins.yaml": "plugins",
+			},
+		},
+		{
+			name: "deprecated plugins",
+			config: ConfigUpdater{
+				PluginFile: "bar.yaml",
+			},
+			expected: map[string]string{
+				"bar.yaml":         "plugins",
+				"prow/config.yaml": "config",
+			},
+		},
+		{
+			name: "deprecated both",
+			config: ConfigUpdater{
+				ConfigFile: "foo.yaml",
+				PluginFile: "bar.yaml",
+			},
+			expected: map[string]string{
+				"foo.yaml": "config",
+				"bar.yaml": "plugins",
+			},
+		},
+		{
+			name: "both current and deprecated",
+			config: ConfigUpdater{
+				Maps: map[string]string{
+					"config.yaml":        "overwrite-config",
+					"plugins.yaml":       "overwrite-plugins",
+					"unconflicting.yaml": "ignored",
+				},
+				ConfigFile: "config.yaml",
+				PluginFile: "plugins.yaml",
+			},
+			expected: map[string]string{
+				"config.yaml":        "overwrite-config",
+				"plugins.yaml":       "overwrite-plugins",
+				"unconflicting.yaml": "ignored",
+			},
+		},
+	}
+	for _, tc := range cases {
+		cfg := Configuration{
+			ConfigUpdater: tc.config,
+		}
+		cfg.setDefaults()
+		actual := cfg.ConfigUpdater.Maps
+		if len(actual) != len(tc.expected) {
+			t.Errorf("%s: actual and expected have different keys: %v %v", tc.name, actual, tc.expected)
+			continue
+		}
+		for k, n := range tc.expected {
+			if an := actual[k]; an != n {
+				t.Errorf("%s - %s: expected %s != actual %s", tc.name, k, n, an)
+			}
+		}
+	}
+}
+
 func TestSetDefaults(t *testing.T) {
 	tests := []struct {
 		name string

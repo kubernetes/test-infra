@@ -83,8 +83,8 @@ func TestPush(t *testing.T) {
 			name:    "If PR merged manually by a user we send message to sig-contribex and kubernetes-dev.",
 			pushReq: pushEvManual,
 			expectedMessages: map[string][]string{
-				"sig-contribex":  {"Warning: <@tester> manually merged https://github.com/kubernetes/kubernetes/compare/d73a75b4b1dd...045a6dca0784"},
-				"kubernetes-dev": {"Warning: <@tester> manually merged https://github.com/kubernetes/kubernetes/compare/d73a75b4b1dd...045a6dca0784"}},
+				"sig-contribex":  {"*Warning:* tester (@tester) manually merged https://github.com/kubernetes/kubernetes/compare/d73a75b4b1dd...045a6dca0784"},
+				"kubernetes-dev": {"*Warning:* tester (@tester) manually merged https://github.com/kubernetes/kubernetes/compare/d73a75b4b1dd...045a6dca0784"}},
 		},
 		{
 			name:             "If PR merged by k8s merge bot we should NOT send message to sig-contribex and kubernetes-dev.",

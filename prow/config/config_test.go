@@ -843,17 +843,8 @@ func checkKubekinsPresets(spec *v1.PodSpec, labels, validLabels map[string]strin
 		if strings.Contains(container.Image, "kubekins-e2e") {
 			ssh = false
 			for key, val := range labels {
-				if key == "preset-k8s-ssh" && val == "true" {
+				if (key == "preset-k8s-ssh" || key == "preset-aws-ssh") && val == "true" {
 					ssh = true
-				}
-			}
-
-			if !ssh {
-				// TODO(krzyzacy): convert that to a preset
-				for _, volume := range spec.Volumes {
-					if volume.Name == "aws-ssh" {
-						ssh = true
-					}
 				}
 			}
 		}

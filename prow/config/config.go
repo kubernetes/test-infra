@@ -18,6 +18,7 @@ limitations under the License.
 package config
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"regexp"
@@ -50,7 +51,8 @@ type Config struct {
 	BranchProtection BranchProtection `json:"branch-protection,omitempty"`
 
 	// TODO: Move this out of the main config.
-	JenkinsOperator JenkinsOperator `json:"jenkins_operator,omitempty"`
+	JenkinsOperator  *JenkinsOperator  `json:"jenkins_operator,omitempty"`
+	JenkinsOperators []JenkinsOperator `json:"jenkins_operators,omitempty"`
 
 	// ProwJobNamespace is the namespace in the cluster that prow
 	// components will use for looking up ProwJobs. The namespace
@@ -128,6 +130,17 @@ type Plank struct {
 // JenkinsOperator is config for the jenkins-operator controller.
 type JenkinsOperator struct {
 	Controller `json:",inline"`
+	// LabelSelectorString compiles into LabelSelector at load time.
+	// If set, this option needs to match --label-selector used by
+	// the desired jenkins-operator. This option is considered
+	// invalid when provided with a single jenkins-operator config.
+	//
+	// For label selector syntax, see below:
+	// https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors
+	LabelSelectorString string `json:"label_selector,omitempty"`
+	// LabelSelector is used so different jenkins-operator replicas
+	// can use their own configuration.
+	LabelSelector labels.Selector `json:"-"`
 }
 
 // Sinker is config for the sinker controller.
@@ -326,8 +339,31 @@ func parseConfig(c *Config) error {
 		return fmt.Errorf("validating plank config: %v", err)
 	}
 
-	if err := ValidateController(&c.JenkinsOperator.Controller); err != nil {
-		return fmt.Errorf("validating jenkins-operator config: %v", err)
+	if c.JenkinsOperator != nil && len(c.JenkinsOperators) > 0 {
+		return fmt.Errorf("invalid config: use one of jenkins_operator and jenkins_operators")
+	}
+	if c.JenkinsOperator != nil {
+		// Maintain backwards-compatibility - remove JenkinsOperator in the future.
+		logrus.Warning("jenkins_operator is deprecated, please switch to the jenkins_operators option!")
+		c.JenkinsOperators = make([]JenkinsOperator, 0, 1)
+		c.JenkinsOperators = append(c.JenkinsOperators, *c.JenkinsOperator)
+	}
+	if len(c.JenkinsOperators) == 1 {
+		if c.JenkinsOperators[0].LabelSelectorString != "" {
+			return errors.New("label_selector is invalid when used for a single jenkins-operator")
+		}
+	}
+	for i := range c.JenkinsOperators {
+		config := c.JenkinsOperators[i]
+		if err := ValidateController(&config.Controller); err != nil {
+			return fmt.Errorf("validating jenkins_operators config: %v", err)
+		}
+		sel, err := labels.Parse(config.LabelSelectorString)
+		if err != nil {
+			return fmt.Errorf("invalid jenkins_operators.label_selector option: %v", err)
+		}
+		c.JenkinsOperators[i].LabelSelector = sel
+		// TODO: Invalidate overlapping selectors
 	}
 
 	for i, agentToTmpl := range c.Deck.ExternalAgentLogs {

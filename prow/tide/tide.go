@@ -188,7 +188,12 @@ func (c *Controller) Sync() error {
 		if err != nil {
 			return err
 		}
-		pool = append(pool, poolPRs...)
+		for _, pr := range poolPRs {
+			// Only keep PRs that are mergeable or haven't had mergeability computed.
+			if pr.Mergeable != githubql.MergeableStateConflicting {
+				pool = append(pool, pr)
+			}
+		}
 		allPRs, err := c.search(ctx, q.AllPRs())
 		if err != nil {
 			return err
@@ -711,6 +716,7 @@ type PullRequest struct {
 		Prefix githubql.String
 	}
 	HeadRefOID githubql.String `graphql:"headRefOid"`
+	Mergeable  githubql.MergeableState
 	Repository struct {
 		Name          githubql.String
 		NameWithOwner githubql.String
