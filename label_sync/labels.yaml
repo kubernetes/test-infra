@@ -49,13 +49,16 @@ labels:
     name: kind/documentation
   - color: c7def8
     name: kind/feature
+  - color: f7c6c7
+    name: kind/failing-test
+    previously:
+    - name: priority/failing-test
   - color: 15dd18
     name: lgtm
   - color: d3e2f0
     name: lifecycle/frozen
     previously:
-    - color: fbca04
-      name: keep-open
+    - name: keep-open
   - color: "604460"
     name: lifecycle/rotten
   - color: "795548"
@@ -76,8 +79,6 @@ labels:
     name: priority/backlog
   - color: e11d21
     name: priority/critical-urgent
-  - color: e11d21
-    name: priority/failing-test
   - color: eb6420
     name: priority/important-longterm
   - color: eb6420
