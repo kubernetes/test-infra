@@ -20,11 +20,17 @@
       "sig-node"
     ]
   },
-  "ci-cadvisor-node-kubelet": {
+  "ci-cadvisor-e2e": {
     "args": [
-      "./build/jenkins_e2e.sh"
+      "--deployment=node",
+      "--gcp-project=ci-cadvisor-e2e",
+      "--gcp-zone=us-central1-f",
+      "--node-tests=true",
+      "--provider=gce",
+      "--test_args=--nodes=1--flakeAttempts=2",
+      "--timeout=10m"
     ],
-    "scenario": "execute",
+    "scenario": "kubernetes_e2e",
     "sigOwners": [
       "sig-node"
     ]
@@ -6570,6 +6576,7 @@
       "--gcp-project=kubernetes-scale",
       "--gcp-zone=us-east1-a",
       "--ginkgo-parallel=30",
+      "--gke-custom-subnet=gke-scale-cluster-custom-subnet --region=us-east1 --range=10.0.0.0/19",
       "--gke-environment=staging",
       "--gke-shape={\"default\":{\"Nodes\":2000,\"MachineType\":\"g1-small\"},\"heapster-pool\":{\"Nodes\":1,\"MachineType\":\"n1-standard-4\"}}",
       "--provider=gke",
@@ -8579,14 +8586,16 @@
   },
   "ci-kubernetes-e2e-kops-aws-weave": {
     "args": [
-      "--aws",
       "--cluster=e2e-kops-aws-weave.test-cncf-aws.k8s.io",
-      "--env-file=jobs/platform/kops_aws.env",
+      "--deployment=kops",
+      "--env=KUBE_SSH_USER=admin",
       "--extract=ci/latest",
       "--ginkgo-parallel",
       "--kops-args=--networking=weave",
+      "--kops-version=https://storage.googleapis.com/kops-ci/bin/latest-ci.txt",
       "--provider=aws",
-      "--test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]|\\[HPA\\]|Dashboard|Services.*functioning.*NodePort"
+      "--test_args=--ginkgo.flakeAttempts=2 --ginkgo.skip=\\[Slow\\]|\\[Serial\\]|\\[Disruptive\\]|\\[Flaky\\]|\\[Feature:.+\\]|\\[HPA\\]|Dashboard|Services.*functioning.*NodePort",
+      "--timeout=120m"
     ],
     "scenario": "kubernetes_e2e",
     "sigOwners": [

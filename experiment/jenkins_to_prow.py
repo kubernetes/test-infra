@@ -144,7 +144,7 @@ def main(job, jenkins_path, suffix, prow_path, config_path, delete):
     for old_name in job_names:
         if '.' in old_name:
             new_name = old_name.replace('.', '-')
-            files = ['jobs/config.json', 'testgrid/config/config.yaml', 'prow/config.yaml']
+            files = ['jobs/config.json', 'testgrid/config.yaml', 'prow/config.yaml']
             for fname in files:
                 with open(fname) as fp:
                     content = fp.read()

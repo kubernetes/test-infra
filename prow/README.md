@@ -24,6 +24,7 @@ See also: [Life of a Prow Job](./architecture.md)
 
 New features added to each components:
 
+ - *February 1, 2018* `updateconfig` will now update any configmap on merge
  - *November 14, 2017* `jenkins-operator:0.58` exposes prometheus metrics.
  - *November 8, 2017* `horologium:0.14` prow periodic job now support cron
    triggers. See https://godoc.org/gopkg.in/robfig/cron.v2 for doc to the 
@@ -36,6 +37,9 @@ Note: versions specified in these announcements may not include bug fixes made
 in more recent versions so it is recommended that the most recent versions are
 used when updating deployments.
 
+ - *February 1, 2018* The `config_updater` section in `plugins.yaml`
+ now uses a `maps` object instead of `config_file`, `plugin_file` strings.
+ Please switch over before July.
  - *November 30, 2017* If you use tide, you'll need to switch your query format
  and bump all prow component versions to reflect the changes in #5754.
  - *November 14, 2017* `horologium:0.17` fixes cron job not being scheduled.

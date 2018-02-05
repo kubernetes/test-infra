@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package yaml2proto
+package main
 
 import (
 	"errors"
@@ -23,7 +23,7 @@ import (
 
 	"github.com/ghodss/yaml"
 	"github.com/golang/protobuf/proto"
-	config "k8s.io/test-infra/testgrid/config/config_pb"
+	"k8s.io/test-infra/testgrid/config"
 )
 
 type Config struct {

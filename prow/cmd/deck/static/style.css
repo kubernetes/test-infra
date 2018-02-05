@@ -199,8 +199,7 @@ span.label:hover {
     margin: 8px;
     display: none;
     font-family: "Roboto", "Arial", sans-serif;
-    max-width: 100%;
-    width: auto;
+    width: calc(100% - 16px);
 }
 
 .command-examples {

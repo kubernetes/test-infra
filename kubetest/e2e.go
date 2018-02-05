@@ -514,8 +514,7 @@ func dumpFederationLogs(location string) error {
 
 func perfTest() error {
 	// Run perf tests
-	// TODO(fejta): GOPATH may be split by :
-	cmdline := fmt.Sprintf("%s/src/k8s.io/perf-tests/clusterloader/run-e2e.sh", os.Getenv("GOPATH"))
+	cmdline := k8s("perf-tests", "clusterloader", "run-e2e.sh")
 	if err := finishRunning(exec.Command(cmdline)); err != nil {
 		return err
 	}
@@ -524,7 +523,7 @@ func perfTest() error {
 
 func chartsTest() error {
 	// Run helm tests.
-	cmdline := fmt.Sprintf("%s/src/k8s.io/charts/test/helm-test-e2e.sh", os.Getenv("GOPATH"))
+	cmdline := k8s("charts", "test", "helm-test-e2e.sh")
 	return finishRunning(exec.Command(cmdline))
 }
 
@@ -543,7 +542,7 @@ func nodeTest(nodeArgs []string, testArgs, nodeTestArgs, project, zone string) e
 	// prep node args
 	runner := []string{
 		"run",
-		fmt.Sprintf("%s/src/k8s.io/kubernetes/test/e2e_node/runner/remote/run_remote.go", os.Getenv("GOPATH")),
+		k8s("kubernetes", "test", "e2e_node", "runner", "remote", "run_remote.go"),
 		"--cleanup",
 		"--logtostderr",
 		"--vmodule=*=4",

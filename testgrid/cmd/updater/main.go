@@ -21,7 +21,7 @@ import (
 	"fmt"
 	"log"
 
-	"k8s.io/test-infra/testgrid/updater/state"
+	"k8s.io/test-infra/testgrid/state"
 
 	"cloud.google.com/go/storage"
 )

@@ -19,6 +19,6 @@ set -o pipefail
 set -o xtrace
 
 bazel clean --expunge
-bazel build //testgrid/config:testgrid-config
-gsutil cp bazel-genfiles/testgrid/config/testgrid-config gs://k8s-testgrid/config
-gsutil cp bazel-genfiles/testgrid/config/testgrid-config gs://k8s-testgrid-canary/config
+bazel build //testgrid:testgrid-config
+gsutil cp bazel-genfiles/testgrid/testgrid-config gs://k8s-testgrid/config
+gsutil cp bazel-genfiles/testgrid/testgrid-config gs://k8s-testgrid-canary/config

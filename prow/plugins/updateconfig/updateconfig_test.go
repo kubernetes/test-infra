@@ -187,7 +187,12 @@ func TestUpdateConfig(t *testing.T) {
 			maps: map[string]kube.ConfigMap{},
 		}
 
-		if err := handle(fgc, fkc, log, event, "prow/config.yaml", "prow/plugins.yaml"); err != nil {
+		m := map[string]string{
+			"prow/config.yaml":  "config",
+			"prow/plugins.yaml": "plugins",
+		}
+
+		if err := handle(fgc, fkc, log, event, m); err != nil {
 			t.Fatal(err)
 		}
 
@@ -197,12 +202,14 @@ func TestUpdateConfig(t *testing.T) {
 			}
 
 			comment := fgc.IssueComments[basicPR.Number][0].Body
-			if tc.configUpdate && !strings.Contains(comment, "I updated Prow config for you!") {
-				t.Fatalf("tc %s : Expect comment %s to contain 'I updated Prow config for you!'", comment, fgc.IssueComments[basicPR.Number][0].Body)
+			if !strings.Contains(comment, "Updated the") {
+				t.Errorf("%s: missing Updated the from %s", tc.name, comment)
 			}
-
-			if tc.pluginsUpdate && !strings.Contains(comment, "I updated Prow plugins config for you!") {
-				t.Fatalf("tc %s : Expect comment %s to contain 'I updated Prow plugins config for you!'", comment, fgc.IssueComments[basicPR.Number][0].Body)
+			if tc.configUpdate && !strings.Contains(comment, "config") {
+				t.Errorf("%s: missing config from %s", tc.name, comment)
+			}
+			if tc.pluginsUpdate && !strings.Contains(comment, "plugins") {
+				t.Errorf("%s: missing plugins from %s", tc.name, comment)
 			}
 		}
 

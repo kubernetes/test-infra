@@ -16,6 +16,7 @@ go_library(
         "//prow/pjutil:go_default_library",
         "//prow/report:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/labels:go_default_library",
     ],
 )
 

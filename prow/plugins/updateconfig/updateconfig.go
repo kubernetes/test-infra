@@ -18,6 +18,7 @@ package updateconfig
 
 import (
 	"fmt"
+	"path"
 
 	"github.com/sirupsen/logrus"
 
@@ -65,52 +66,45 @@ type kubeClient interface {
 }
 
 func handlePullRequest(pc plugins.PluginClient, pre github.PullRequestEvent) error {
-	configFile := pc.PluginConfig.ConfigUpdater.ConfigFile
-	pluginFile := pc.PluginConfig.ConfigUpdater.PluginFile
-	return handle(pc.GitHubClient, pc.KubeClient, pc.Logger, pre, configFile, pluginFile)
+	return handle(pc.GitHubClient, pc.KubeClient, pc.Logger, pre, maps(pc))
 }
 
-func handleConfig(gc githubClient, kc kubeClient, org, repo, commit, configFile string) error {
-	content, err := gc.GetFile(org, repo, configFile, commit)
+func maps(pc plugins.PluginClient) map[string]string {
+	return pc.PluginConfig.ConfigUpdater.Maps
+}
+
+func update(gc githubClient, kc kubeClient, org, repo, commit, filename, name string) error {
+	content, err := gc.GetFile(org, repo, filename, commit)
 	if err != nil {
-		return err
+		return fmt.Errorf("get file err: %v", err)
 	}
 
-	c := kube.ConfigMap{
+	c := string(content)
+
+	cm := kube.ConfigMap{
 		ObjectMeta: kube.ObjectMeta{
-			Name: "config",
+			Name: name,
 		},
 		Data: map[string]string{
-			"config": string(content),
+			name:                c,
+			path.Base(filename): c,
 		},
 	}
 
-	_, err = kc.ReplaceConfigMap("config", c)
-	return err
-}
-
-func handlePlugin(gc githubClient, kc kubeClient, org, repo, commit, pluginFile string) error {
-	content, err := gc.GetFile(org, repo, pluginFile, commit)
+	_, err = kc.ReplaceConfigMap(name, cm)
 	if err != nil {
-		return err
+		return fmt.Errorf("replace config map err: %v", err)
 	}
-
-	c := kube.ConfigMap{
-		ObjectMeta: kube.ObjectMeta{
-			Name: "plugins",
-		},
-		Data: map[string]string{
-			"plugins": string(content),
-		},
-	}
-
-	_, err = kc.ReplaceConfigMap("plugins", c)
-	return err
+	return nil
 }
 
-func handle(gc githubClient, kc kubeClient, log *logrus.Entry, pre github.PullRequestEvent, configFile, pluginFile string) error {
+func handle(gc githubClient, kc kubeClient, log *logrus.Entry, pre github.PullRequestEvent, configMaps map[string]string) error {
 	// Only consider newly merged PRs
 	if pre.Action != github.PullRequestActionClosed {
+		return nil
+	}
+
+	if len(configMaps) == 0 { // Nothing to update
 		return nil
 	}
 
@@ -122,39 +116,41 @@ func handle(gc githubClient, kc kubeClient, log *logrus.Entry, pre github.PullRe
 	org := pr.Base.Repo.Owner.Login
 	repo := pr.Base.Repo.Name
 
-	// Process change to prow/config.yaml and prow/plugin.yaml
+	// Which files changed in this PR?
 	changes, err := gc.GetPullRequestChanges(org, repo, pr.Number)
 	if err != nil {
 		return err
 	}
 
-	var msg string
+	// Are any of the changes files ones that define a configmap we want to update?
+	var updated []string
 	for _, change := range changes {
-		if change.Filename == configFile {
-			if err := handleConfig(gc, kc, org, repo, *pr.MergeSHA, configFile); err != nil {
-				return err
-			}
+		cm, ok := configMaps[change.Filename]
+		if !ok {
+			continue // This file does not define a configmap
+		}
+		// Yes, update the configmap with the contents of this file
+		if err := update(gc, kc, org, repo, *pr.MergeSHA, change.Filename, cm); err != nil {
+			return err
+		}
+		updated = append(updated, cm)
+	}
 
-			msg += fmt.Sprintf("I updated Prow config for you!")
-
-		} else if change.Filename == pluginFile {
-			if err := handlePlugin(gc, kc, org, repo, *pr.MergeSHA, pluginFile); err != nil {
-				return err
-			}
-
-			if msg != "" {
-				msg += "\n--------------------------\n"
-			}
-
-			msg += fmt.Sprintf("I updated Prow plugins config for you!")
+	var msg string
+	switch n := len(updated); n {
+	case 0:
+		return nil
+	case 1:
+		msg = fmt.Sprintf("Updated the %s configmap", updated[0])
+	default:
+		msg = fmt.Sprintf("Updated the following %d configmaps:\n", n)
+		for _, cm := range updated {
+			msg += fmt.Sprintf("  * %s\n", cm)
 		}
 	}
 
-	if msg != "" {
-		if err := gc.CreateComment(org, repo, pr.Number, plugins.FormatResponseRaw(pr.Body, pr.HTMLURL, pr.User.Login, msg)); err != nil {
-			return fmt.Errorf("comment err: %v", err)
-		}
+	if err := gc.CreateComment(org, repo, pr.Number, plugins.FormatResponseRaw(pr.Body, pr.HTMLURL, pr.User.Login, msg)); err != nil {
+		return fmt.Errorf("comment err: %v", err)
 	}
-
 	return nil
 }

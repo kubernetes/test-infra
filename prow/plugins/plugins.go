@@ -330,6 +330,11 @@ type Slack struct {
 }
 
 type ConfigUpdater struct {
+	// A map of filename => configmap name.
+	// Whenever a commit changes filename, prow will update the corresponding configmap.
+	// map[string]string{ "/my/path.yaml": "foo" } will result in
+	// replacing the foo configmap whenever path.yaml changes
+	Maps map[string]string `json:"maps,omitempty"`
 	// The location of the prow configuration file inside the repository
 	// where the config-updater plugin is enabled. This needs to be relative
 	// to the root of the repository, eg. "prow/config.yaml" will match
@@ -371,11 +376,23 @@ func (c *Configuration) TriggerFor(org, repo string) *Trigger {
 }
 
 func (c *Configuration) setDefaults() {
-	if c.ConfigUpdater.ConfigFile == "" {
-		c.ConfigUpdater.ConfigFile = "prow/config.yaml"
-	}
-	if c.ConfigUpdater.PluginFile == "" {
-		c.ConfigUpdater.PluginFile = "prow/plugins.yaml"
+	if len(c.ConfigUpdater.Maps) == 0 {
+		cf := c.ConfigUpdater.ConfigFile
+		if cf == "" {
+			cf = "prow/config.yaml"
+		} else {
+			logrus.Warnf(`config_file is deprecated, please switch to "maps": {"%s": "config"} before July 2018`, cf)
+		}
+		pf := c.ConfigUpdater.PluginFile
+		if pf == "" {
+			pf = "prow/plugins.yaml"
+		} else {
+			logrus.Warnf(`plugin_file is deprecated, please switch to "maps": {"%s": "plugins"} before July 2018`, pf)
+		}
+		c.ConfigUpdater.Maps = map[string]string{
+			cf: "config",
+			pf: "plugins",
+		}
 	}
 	for repo, plugins := range c.ExternalPlugins {
 		for i, p := range plugins {

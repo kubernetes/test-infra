@@ -45,13 +45,6 @@
     - 'ci-{repo-suffix}'
     name: bootstrap-ci-repo
     repo-suffix:
-    - cadvisor-node-kubelet:  # dawnchen
-        branch: master
-        frequency: 'H/30 * * * *'
-        job-name: ci-cadvisor-node-kubelet
-        repo-name: github.com/google/cadvisor
-        timeout: 90
-
     - kubernetes-verify-master:
         branch: master
         frequency: 'H/5 * * * *'
