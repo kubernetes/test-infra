@@ -48,6 +48,8 @@ var (
 	hookURL      = flag.String("hook-url", "", "Path to hook plugin help endpoint.")
 	// use when behind a load balancer
 	redirectHTTPTo = flag.String("redirect-http-to", "", "host to redirect http->https to based on x-forwarded-proto == http.")
+	// use when behind an oauth proxy
+	hiddenOnly = flag.Bool("hidden-only", false, "Show only hidden jobs. Useful for serving hidden jobs behind an oauth proxy.")
 )
 
 // Matches letters, numbers, hyphens, and underscores.
@@ -67,7 +69,7 @@ func main() {
 	if err != nil {
 		logger.WithError(err).Fatal("Error getting client.")
 	}
-	kc.SetHiddenReposProvider(func() []string { return configAgent.Config().Deck.HiddenRepos })
+	kc.SetHiddenReposProvider(func() []string { return configAgent.Config().Deck.HiddenRepos }, *hiddenOnly)
 
 	var pkcs map[string]*kube.Client
 	if *buildCluster == "" {
