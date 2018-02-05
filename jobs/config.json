@@ -3246,7 +3246,7 @@
   },
   "ci-kubernetes-e2e-gce-scalability-canary": {
     "args": [
-      "--cluster=e2e-scale-canary",
+      "--cluster=e2e-big-canary",
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-gci-gce-scalability.env",
       "--extract=ci/latest",
@@ -4610,7 +4610,7 @@
   },
   "ci-kubernetes-e2e-gci-gce-scalability": {
     "args": [
-      "--cluster=e2e-scalability",
+      "--cluster=e2e-big",
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-gci-gce-scalability.env",
       "--extract=ci/latest",
@@ -4629,7 +4629,7 @@
   },
   "ci-kubernetes-e2e-gci-gce-scalability-beta": {
     "args": [
-      "--cluster=e2e-scalability-beta",
+      "--cluster=e2e-big-beta",
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-gci-gce-scalability-beta.env",
       "--extract=ci/k8s-beta",
@@ -4647,7 +4647,7 @@
   },
   "ci-kubernetes-e2e-gci-gce-scalability-release-1-7": {
     "args": [
-      "--cluster=e2e-scalability-1-7",
+      "--cluster=e2e-big-1-7",
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-gci-gce-scalability-release-1-7.env",
       "--extract=ci/latest-1.7",
@@ -4665,7 +4665,7 @@
   },
   "ci-kubernetes-e2e-gci-gce-scalability-stable1": {
     "args": [
-      "--cluster=e2e-scalability-stable1",
+      "--cluster=e2e-big-stable1",
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-gci-gce-scalability-stable1.env",
       "--extract=ci/k8s-stable1",
