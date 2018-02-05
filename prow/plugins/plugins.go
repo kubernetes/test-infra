@@ -17,6 +17,7 @@ limitations under the License.
 package plugins
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"regexp"
@@ -184,9 +185,14 @@ type ExternalPlugin struct {
 }
 
 type Blunderbuss struct {
-	// ReviewerCount is the number of reviewers to request reviews from.
-	// A value of 0 will default to requesting reviews from 2 reviewers.
-	ReviewerCount int `json:"request_count,omitempty"`
+	// ReviewerCount is the minimum number of reviewers to request
+	// reviews from. Defaults to requesting reviews from 2 reviewers
+	// if none of the given options is set.
+	ReviewerCount *int `json:"request_count,omitempty"`
+	// FileWeightCount is the maximum number of reviewers to request
+	// reviews from. Selects reviewers based on file weighting.
+	// This and request_count are mutually exclusive options.
+	FileWeightCount *int `json:"file_weight_count,omitempty"`
 }
 
 // Owners contains configuration related to handling OWNERS files.
@@ -402,8 +408,9 @@ func (c *Configuration) setDefaults() {
 			c.ExternalPlugins[repo][i].Endpoint = fmt.Sprintf("http://%s", p.Name)
 		}
 	}
-	if c.Blunderbuss.ReviewerCount == 0 {
-		c.Blunderbuss.ReviewerCount = defaultBlunderbussReviewerCount
+	if c.Blunderbuss.ReviewerCount == nil && c.Blunderbuss.FileWeightCount == nil {
+		c.Blunderbuss.ReviewerCount = new(int)
+		*c.Blunderbuss.ReviewerCount = defaultBlunderbussReviewerCount
 	}
 	for i, trigger := range c.Triggers {
 		if trigger.TrustedOrg == "" || trigger.JoinOrgURL != "" {
@@ -438,6 +445,9 @@ func (pa *PluginAgent) Load(path string) error {
 		return err
 	}
 	if err := validateExternalPlugins(np.ExternalPlugins); err != nil {
+		return err
+	}
+	if err := validateBlunderbuss(&np.Blunderbuss); err != nil {
 		return err
 	}
 	// regexp compilation should run after defaulting
@@ -520,6 +530,19 @@ func validateExternalPlugins(pluginMap map[string][]ExternalPlugin) error {
 
 	if len(errors) > 0 {
 		return fmt.Errorf("invalid plugin configuration:\n\t%v", strings.Join(errors, "\n\t"))
+	}
+	return nil
+}
+
+func validateBlunderbuss(b *Blunderbuss) error {
+	if b.ReviewerCount != nil && b.FileWeightCount != nil {
+		return errors.New("cannot use both request_count and file_weight_count in blunderbuss")
+	}
+	if b.ReviewerCount != nil && *b.ReviewerCount < 1 {
+		return fmt.Errorf("invalid request_count: %v (needs to be positive)", *b.ReviewerCount)
+	}
+	if b.FileWeightCount != nil && *b.FileWeightCount < 1 {
+		return fmt.Errorf("invalid file_weight_count: %v (needs to be positive)", *b.FileWeightCount)
 	}
 	return nil
 }

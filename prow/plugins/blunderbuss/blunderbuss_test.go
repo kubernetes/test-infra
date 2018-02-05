@@ -181,7 +181,7 @@ func TestHandle(t *testing.T) {
 			PullRequest: github.PullRequest{User: github.User{Login: "author"}},
 			Repo:        github.Repo{Owner: github.User{Login: "org"}, Name: "repo"},
 		}
-		if err := handle(fghc, foc, logrus.WithField("plugin", pluginName), tc.reviewerCount, pre); err != nil {
+		if err := handle(fghc, foc, logrus.WithField("plugin", pluginName), &tc.reviewerCount, nil, pre); err != nil {
 			t.Errorf("[%s] unexpected error from handle: %v", tc.name, err)
 			continue
 		}
@@ -196,6 +196,90 @@ func TestHandle(t *testing.T) {
 				}
 				continue
 			}
+			t.Errorf("[%s] expected the requested reviewers to be %q, but got %q.", tc.name, tc.expectedRequested, fghc.requested)
+		}
+	}
+}
+
+func TestHandleOld(t *testing.T) {
+	foc := &fakeOwnersClient{
+		reviewers: map[string]sets.String{
+			"c.go": sets.NewString("charles"),
+			"d.go": sets.NewString("dan"),
+			"e.go": sets.NewString("erick", "evan"),
+		},
+		leafReviewers: map[string]sets.String{
+			"a.go": sets.NewString("alice"),
+			"b.go": sets.NewString("bob"),
+			"c.go": sets.NewString("cole", "carl", "chad"),
+			"e.go": sets.NewString("erick"),
+		},
+	}
+
+	var testcases = []struct {
+		name              string
+		filesChanged      []string
+		reviewerCount     int
+		expectedRequested []string
+	}{
+		{
+			name:              "one file, 3 leaf reviewers, request 3",
+			filesChanged:      []string{"c.go"},
+			reviewerCount:     3,
+			expectedRequested: []string{"cole", "carl", "chad"},
+		},
+		{
+			name:              "one file, 3 leaf reviewers, 1 parent reviewer, request 4",
+			filesChanged:      []string{"c.go"},
+			reviewerCount:     4,
+			expectedRequested: []string{"cole", "carl", "chad", "charles"},
+		},
+		{
+			name:              "two files, 2 leaf reviewers, request 2",
+			filesChanged:      []string{"a.go", "b.go"},
+			reviewerCount:     2,
+			expectedRequested: []string{"alice", "bob"},
+		},
+		{
+			name:              "one files, 1 leaf reviewers, request 1",
+			filesChanged:      []string{"a.go"},
+			reviewerCount:     1,
+			expectedRequested: []string{"alice"},
+		},
+		{
+			name:              "one file, 0 leaf reviewers, 1 parent reviewer, request 1",
+			filesChanged:      []string{"d.go"},
+			reviewerCount:     1,
+			expectedRequested: []string{"dan"},
+		},
+		{
+			name:              "one file, 0 leaf reviewers, 1 parent reviewer, request 2",
+			filesChanged:      []string{"d.go"},
+			reviewerCount:     2,
+			expectedRequested: []string{"dan"},
+		},
+		{
+			name:              "one file, 1 leaf reviewers, 2 parent reviewers (1 dup), request 2",
+			filesChanged:      []string{"e.go"},
+			reviewerCount:     2,
+			expectedRequested: []string{"erick", "evan"},
+		},
+	}
+	for _, tc := range testcases {
+		fghc := newFakeGithubClient(tc.filesChanged)
+		pre := &github.PullRequestEvent{
+			Number:      5,
+			PullRequest: github.PullRequest{User: github.User{Login: "author"}},
+			Repo:        github.Repo{Owner: github.User{Login: "org"}, Name: "repo"},
+		}
+		if err := handle(fghc, foc, logrus.WithField("plugin", pluginName), nil, &tc.reviewerCount, pre); err != nil {
+			t.Errorf("[%s] unexpected error from handle: %v", tc.name, err)
+			continue
+		}
+
+		sort.Strings(fghc.requested)
+		sort.Strings(tc.expectedRequested)
+		if !reflect.DeepEqual(fghc.requested, tc.expectedRequested) {
 			t.Errorf("[%s] expected the requested reviewers to be %q, but got %q.", tc.name, tc.expectedRequested, fghc.requested)
 		}
 	}
