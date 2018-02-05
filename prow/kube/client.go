@@ -67,13 +67,15 @@ type Client struct {
 	fake      bool
 
 	hiddenReposProvider func() []string
+	hiddenOnly          bool
 }
 
 // SetHiddenRepoProvider takes a continuation that fetches a list of orgs and repos for
 // which PJs should not be returned.
 // NOTE: This function is not thread safe and should be called before the client is in use.
-func (c *Client) SetHiddenReposProvider(p func() []string) {
+func (c *Client) SetHiddenReposProvider(p func() []string, hiddenOnly bool) {
 	c.hiddenReposProvider = p
+	c.hiddenOnly = hiddenOnly
 }
 
 // Namespace returns a copy of the client pointing at the specified namespace.
@@ -431,8 +433,12 @@ func (c *Client) getHiddenRepos() sets.String {
 	return sets.NewString(c.hiddenReposProvider()...)
 }
 
-func shouldHide(pj *ProwJob, hiddenRepos sets.String) bool {
-	return hiddenRepos.HasAny(fmt.Sprintf("%s/%s", pj.Spec.Refs.Org, pj.Spec.Refs.Repo), pj.Spec.Refs.Org)
+func shouldHide(pj *ProwJob, hiddenRepos sets.String, showHiddenOnly bool) bool {
+	shouldHide := hiddenRepos.HasAny(fmt.Sprintf("%s/%s", pj.Spec.Refs.Org, pj.Spec.Refs.Repo), pj.Spec.Refs.Org)
+	if showHiddenOnly {
+		return !shouldHide
+	}
+	return shouldHide
 }
 
 func (c *Client) GetProwJob(name string) (ProwJob, error) {
@@ -441,7 +447,7 @@ func (c *Client) GetProwJob(name string) (ProwJob, error) {
 	err := c.request(&request{
 		path: fmt.Sprintf("/apis/prow.k8s.io/v1/namespaces/%s/prowjobs/%s", c.namespace, name),
 	}, &pj)
-	if err == nil && shouldHide(&pj, c.getHiddenRepos()) {
+	if err == nil && shouldHide(&pj, c.getHiddenRepos(), c.hiddenOnly) {
 		pj = ProwJob{}
 		// Revealing the existence of this prow job is ok because the the pj name cannot be used to
 		// retrieve the pj itself. Furthermore, a timing attack could differentiate true 404s from
@@ -465,7 +471,7 @@ func (c *Client) ListProwJobs(selector string) ([]ProwJob, error) {
 		hidden := c.getHiddenRepos()
 		var pjs []ProwJob
 		for _, pj := range jl.Items {
-			if !shouldHide(&pj, hidden) {
+			if !shouldHide(&pj, hidden, c.hiddenOnly) {
 				pjs = append(pjs, pj)
 			}
 		}
