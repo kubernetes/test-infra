@@ -27,8 +27,8 @@ New features added to each components:
  - *February 1, 2018* `updateconfig` will now update any configmap on merge
  - *November 14, 2017* `jenkins-operator:0.58` exposes prometheus metrics.
  - *November 8, 2017* `horologium:0.14` prow periodic job now support cron
-   triggers. See https://godoc.org/gopkg.in/robfig/cron.v2 for doc to the 
-   cron library we are using. 
+   triggers. See https://godoc.org/gopkg.in/robfig/cron.v2 for doc to the
+   cron library we are using.
 
 Breaking changes to external APIs (labels, GitHub interactions, configuration
 or deployment) will be documented in this section. Prow is in a pre-release
@@ -145,8 +145,7 @@ types in `plugins`. In that package's `init` function, call
 empty import so that your plugin is included. If you forget this step then a
 unit test will fail when you try to add it to `plugins.yaml`. Don't add a brand
 new plugin to the main `kubernetes/kubernetes` repo right away, start with
-somewhere smaller and make sure it is well-behaved. If you add a command,
-document it in [commands.md](../commands.md).
+somewhere smaller and make sure it is well-behaved.
 
 The LGTM plugin is a good place to start if you're looking for an example
 plugin to mimic.
