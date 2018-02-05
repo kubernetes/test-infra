@@ -11966,6 +11966,135 @@ periodics:
       - name: GOPATH
         value: /go
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180205-d99d9c246-1.8
+
+- interval: 1h
+  name: ci-kubernetes-integration-master
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/bootstrap:v20180122-6fd3aef1a
+      args:
+      - "--clean"
+      - "--repo=k8s.io/kubernetes"
+      - "--timeout=100"
+      env:
+      - name: DOCKER_IN_DOCKER_ENABLED
+        value: true
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+      volumeMounts:
+      - name: docker-graph
+        mountPath: /docker-graph
+      ports:
+      - containerPort: 9999
+        hostPort: 9999
+      resources:
+        requests:
+          cpu: 4
+    volumes:
+    - name: docker-graph
+      hostPath:
+        path: /mnt/disks/ssd0/docker-graph
+
+- interval: 2h
+  name: ci-kubernetes-integration-stable1
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/bootstrap:v20180122-6fd3aef1a
+      args:
+      - "--clean"
+      - "--repo=k8s.io/kubernetes"
+      - "--timeout=100"
+      env:
+      - name: DOCKER_IN_DOCKER_ENABLED
+        value: true
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+      volumeMounts:
+      - name: docker-graph
+        mountPath: /docker-graph
+      ports:
+      - containerPort: 9999
+        hostPort: 9999
+      resources:
+        requests:
+          cpu: 4
+    volumes:
+    - name: docker-graph
+      hostPath:
+        path: /mnt/disks/ssd0/docker-graph
+
+- interval: 6h
+  name: ci-kubernetes-integration-stable2
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/bootstrap:v20180122-6fd3aef1a
+      args:
+      - "--clean"
+      - "--repo=k8s.io/kubernetes"
+      - "--timeout=100"
+      env:
+      - name: DOCKER_IN_DOCKER_ENABLED
+        value: true
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+      volumeMounts:
+      - name: docker-graph
+        mountPath: /docker-graph
+      ports:
+      - containerPort: 9999
+        hostPort: 9999
+      resources:
+        requests:
+          cpu: 4
+    volumes:
+    - name: docker-graph
+      hostPath:
+        path: /mnt/disks/ssd0/docker-graph
+
+- interval: 24h
+  name: ci-kubernetes-integration-stable3
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/bootstrap:v20180122-6fd3aef1a
+      args:
+      - "--clean"
+      - "--repo=k8s.io/kubernetes"
+      - "--timeout=100"
+      env:
+      - name: DOCKER_IN_DOCKER_ENABLED
+        value: true
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+      volumeMounts:
+      - name: docker-graph
+        mountPath: /docker-graph
+      ports:
+      - containerPort: 9999
+        hostPort: 9999
+      resources:
+        requests:
+          cpu: 4
+    volumes:
+    - name: docker-graph
+      hostPath:
+        path: /mnt/disks/ssd0/docker-graph
+
 - name: ci-kubernetes-kubemark-100-canary
   interval: 1h
   agent: kubernetes
@@ -12465,6 +12594,134 @@ periodics:
       - --timeout=620
       - --bare
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180205-d99d9c246-master
+
+- interval: 1h
+  name: ci-kubernetes-verify-master
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/bootstrap:v20180122-6fd3aef1a
+      args:
+      - "--clean"
+      - "--repo=k8s.io/kubernetes"
+      - "--timeout=75"
+      env:
+      - name: DOCKER_IN_DOCKER_ENABLED
+        value: true
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+      volumeMounts:
+      - name: docker-graph
+        mountPath: /docker-graph
+      ports:
+      - containerPort: 9999
+        hostPort: 9999
+      resources:
+        requests:
+          cpu: 4
+    volumes:
+    - name: docker-graph
+      hostPath:
+        path: /mnt/disks/ssd0/docker-graph
+
+- interval: 2h
+  name: ci-kubernetes-verify-stable1
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/bootstrap:v20180122-6fd3aef1a
+      args:
+      - "--clean"
+      - "--repo=k8s.io/kubernetes=release-1.9"
+      - "--timeout=75"
+      env:
+      - name: DOCKER_IN_DOCKER_ENABLED
+        value: true
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+      volumeMounts:
+      - name: docker-graph
+        mountPath: /docker-graph
+      ports:
+      - containerPort: 9999
+        hostPort: 9999
+      resources:
+        requests:
+          cpu: 4
+    volumes:
+    - name: docker-graph
+      hostPath:
+        path: /mnt/disks/ssd0/docker-graph
+
+- interval: 6h
+  name: ci-kubernetes-verify-stable2
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/bootstrap:v20180122-6fd3aef1a
+      args:
+      - "--clean"
+      - "--repo=k8s.io/kubernetes=release-1.8"
+      - "--timeout=75"
+      env:
+      - name: DOCKER_IN_DOCKER_ENABLED
+        value: true
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+      volumeMounts:
+      - name: docker-graph
+        mountPath: /docker-graph
+      ports:
+      - containerPort: 9999
+        hostPort: 9999
+      resources:
+        requests:
+          cpu: 4
+    volumes:
+    - name: docker-graph
+      hostPath:
+        path: /mnt/disks/ssd0/docker-graph
+
+- interval: 24h
+  name: ci-kubernetes-verify-stable3
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/bootstrap:v20180122-6fd3aef1a
+      args:
+      - "--clean"
+      - "--repo=k8s.io/kubernetes=release-1.7"
+      - "--timeout=75"
+      env:
+      - name: DOCKER_IN_DOCKER_ENABLED
+        value: true
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+      volumeMounts:
+      - name: docker-graph
+        mountPath: /docker-graph
+      ports:
+      - containerPort: 9999
+        hostPort: 9999
+      resources:
+        requests:
+          cpu: 4
+    volumes:
+    - name: docker-graph
+      hostPath:
+        path: /mnt/disks/ssd0/docker-graph
 
 - name: ci-perf-tests-e2e-gce-clusterloader
   interval: 2h
@@ -13307,3 +13564,4 @@ periodics:
     # TODO(jlewi): Replace latest with a specific tag once the images stabilize.
     - image: gcr.io/mlkube-testing/builder:latest
       imagePullPolicy: Always
+
