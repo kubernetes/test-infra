@@ -506,7 +506,6 @@
   },
   {
     "names": [
-      "k8s-ingress-boskos-01",
       "k8s-ingress-boskos-02",
       "k8s-ingress-boskos-03",
       "k8s-ingress-boskos-04",
