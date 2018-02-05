@@ -101,16 +101,12 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 		opts := optionsForRepo(config, parts[0], parts[1])
 		approveConfig[repo] = fmt.Sprintf("Pull requests %srequire an associated issue.<br>Pull request authors %simplicitly approve their own PRs.", doNot(opts.IssueRequired), doNot(opts.ImplicitSelfApprove))
 	}
-	// TODO(qhuynh96): Removes all the fields of pluginHelp except Description.
 	pluginHelp := &pluginhelp.PluginHelp{
 		Description: `The approve plugin implements a pull request approval process that manages the '` + approvedLabel + `' label and an approval notification comment. Approval is achieved when the set of users that have approved the PR is capable of approving every file changed by the PR. A user is able to approve a file if their username or an alias they belong to is listed in the 'approvers' section of an OWNERS file in the directory of the file or higher in the directory tree.
 <br>
 <br>Per-repo configuration may be used to require that PRs link to an associated issue before approval is granted. It may also be used to specify that the PR authors implicitly approve their own PRs.
 <br>For more information see <a href="https://git.k8s.io/test-infra/prow/plugins/approve/approvers/README.md">here</a>.`,
-		WhoCanUse: "Users listed as 'approvers' in appropriate OWNERS files.",
-		Usage:     "/(approve|lgtm) [no-issue|cancel]",
-		Examples:  []string{"/approve", "/approve no-issue", "/lgtm", "/lgtm cancel"},
-		Config:    approveConfig,
+		Config: approveConfig,
 	}
 	pluginHelp.AddCommand(pluginhelp.Command{
 		Usage:       "/(approve|lgtm) [no-issue|cancel]",
