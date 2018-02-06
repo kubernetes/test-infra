@@ -1,4 +1,3 @@
-# gazelle:exclude parse.y.go
 load("@io_bazel_rules_go//go:def.bzl", "go_library")
 load(":build_defs.bzl", "genfile_check_test", "go_yacc")
 
@@ -15,6 +14,7 @@ genfile_check_test(
     gen = "parse.y.baz.go",
 )
 
+# gazelle:exclude parse.y.go
 go_library(
     name = "go_default_library",
     srcs = [

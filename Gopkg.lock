@@ -100,7 +100,10 @@
 [[projects]]
   branch = "master"
   name = "github.com/bazelbuild/buildtools"
-  packages = ["build","tables"]
+  packages = [
+    "build",
+    "tables"
+  ]
   revision = "6e6c419fb3240a6469f69981b1d2e70e685bea11"
 
 [[projects]]
@@ -721,6 +724,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "63d5f8d9680977e4c44ccd74e0395506ba6937a7e663eed3226ae3e3852fcda5"
+  inputs-digest = "79a32804f9743f7da3bf3ecba0a0346a55ff4dccd5f29e91715f54a7fdb00213"
   solver-name = "gps-cdcl"
   solver-version = 1
