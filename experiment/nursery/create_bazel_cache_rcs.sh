@@ -17,7 +17,7 @@
 # Once this moves out of experiment/ we will create these files in the bazel
 # images instead (!)
 # TODO(bentheelder): verify that this works and move it into the images
-CACHE_HOST="http://bazel-cache:8080"
+CACHE_HOST="http://bazel-cache.default:8080"
 
 make_bazel_rc () {
     echo "startup --host_jvm_args=-Dbazel.DigestFunction=sha256" >> $1
@@ -25,6 +25,7 @@ make_bazel_rc () {
     echo "build --strategy=Javac=remote" >> $1
     echo "build --genrule_strategy=remote" >> $1
     echo "build --remote_rest_cache=${CACHE_HOST}" >> $1
+    echo "build --remote_local_fallback" >> $1
 }
 
 # https://docs.bazel.build/versions/master/user-manual.html#bazelrc
