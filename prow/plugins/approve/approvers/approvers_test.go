@@ -708,6 +708,7 @@ func TestGetMessage(t *testing.T) {
 	want := `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
 This pull-request has been approved by: *<a href="REFERENCE" title="Approved">Bill</a>*
+To fully approve this pull request, please assign additional approvers.
 We suggest the following additional approver: **alice**
 
 Assign the PR to them by writing ` + "`/assign @alice`" + ` in a comment when ready.
@@ -716,14 +717,16 @@ Assign the PR to them by writing ` + "`/assign @alice`" + ` in a comment when re
 
 The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
 
+The pull request process is described [here](https://git.k8s.io/community/contributors/devel/owners.md#the-code-review-process)
+
 <details open>
 Needs approval from an approver in each of these OWNERS Files:
 
 - **[a/OWNERS](https://github.com/org/project/blob/master/a/OWNERS)**
 - ~~[b/OWNERS](https://github.com/org/project/blob/master/b/OWNERS)~~ [Bill]
 
-You can indicate your approval by writing ` + "`/approve`" + ` in a comment
-You can cancel your approval by writing ` + "`/approve cancel`" + ` in a comment
+Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
+Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
 </details>
 <!-- META={"approvers":["alice"]} -->`
 	if got := GetMessage(ap, "org", "project"); got == nil {
@@ -756,14 +759,16 @@ This pull-request has been approved by: *<a href="REFERENCE" title="Approved">Al
 
 The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
 
+The pull request process is described [here](https://git.k8s.io/community/contributors/devel/owners.md#the-code-review-process)
+
 <details >
 Needs approval from an approver in each of these OWNERS Files:
 
 - ~~[a/OWNERS](https://github.com/org/project/blob/master/a/OWNERS)~~ [Alice]
 - ~~[b/OWNERS](https://github.com/org/project/blob/master/b/OWNERS)~~ [Bill]
 
-You can indicate your approval by writing ` + "`/approve`" + ` in a comment
-You can cancel your approval by writing ` + "`/approve cancel`" + ` in a comment
+Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
+Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
 </details>
 <!-- META={"approvers":[]} -->`
 	if got := GetMessage(ap, "org", "project"); got == nil {
@@ -789,6 +794,7 @@ func TestGetMessageNoneApproved(t *testing.T) {
 	want := `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
 This pull-request has been approved by: *<a href="REFERENCE" title="Author self-approved">John</a>*
+To fully approve this pull request, please assign additional approvers.
 We suggest the following additional approvers: **alice**, **bill**
 
 Assign the PR to them by writing ` + "`/assign @alice @bill`" + ` in a comment when ready.
@@ -797,14 +803,16 @@ Assign the PR to them by writing ` + "`/assign @alice @bill`" + ` in a comment w
 
 The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
 
+The pull request process is described [here](https://git.k8s.io/community/contributors/devel/owners.md#the-code-review-process)
+
 <details open>
 Needs approval from an approver in each of these OWNERS Files:
 
 - **[a/OWNERS](https://github.com/org/project/blob/master/a/OWNERS)**
 - **[b/OWNERS](https://github.com/org/project/blob/master/b/OWNERS)**
 
-You can indicate your approval by writing ` + "`/approve`" + ` in a comment
-You can cancel your approval by writing ` + "`/approve cancel`" + ` in a comment
+Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
+Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
 </details>
 <!-- META={"approvers":["alice","bill"]} -->`
 	if got := GetMessage(ap, "org", "project"); got == nil {
@@ -839,14 +847,16 @@ Associated issue: *#12345*
 
 The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
 
+The pull request process is described [here](https://git.k8s.io/community/contributors/devel/owners.md#the-code-review-process)
+
 <details >
 Needs approval from an approver in each of these OWNERS Files:
 
 - ~~[a/OWNERS](https://github.com/org/project/blob/master/a/OWNERS)~~ [Alice]
 - ~~[b/OWNERS](https://github.com/org/project/blob/master/b/OWNERS)~~ [Bill]
 
-You can indicate your approval by writing ` + "`/approve`" + ` in a comment
-You can cancel your approval by writing ` + "`/approve cancel`" + ` in a comment
+Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
+Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
 </details>
 <!-- META={"approvers":[]} -->`
 	if got := GetMessage(ap, "org", "project"); got == nil {
@@ -880,14 +890,16 @@ Associated issue requirement bypassed by: *<a href="REFERENCE" title="Approved">
 
 The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
 
+The pull request process is described [here](https://git.k8s.io/community/contributors/devel/owners.md#the-code-review-process)
+
 <details >
 Needs approval from an approver in each of these OWNERS Files:
 
 - ~~[a/OWNERS](https://github.com/org/project/blob/master/a/OWNERS)~~ [Alice]
 - ~~[b/OWNERS](https://github.com/org/project/blob/master/b/OWNERS)~~ [Bill]
 
-You can indicate your approval by writing ` + "`/approve`" + ` in a comment
-You can cancel your approval by writing ` + "`/approve cancel`" + ` in a comment
+Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
+Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
 </details>
 <!-- META={"approvers":[]} -->`
 	if got := GetMessage(ap, "org", "project"); got == nil {
