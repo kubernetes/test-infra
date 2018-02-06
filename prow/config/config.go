@@ -354,11 +354,10 @@ func parseConfig(c *Config) error {
 		}
 	}
 	for i := range c.JenkinsOperators {
-		config := c.JenkinsOperators[i]
-		if err := ValidateController(&config.Controller); err != nil {
+		if err := ValidateController(&c.JenkinsOperators[i].Controller); err != nil {
 			return fmt.Errorf("validating jenkins_operators config: %v", err)
 		}
-		sel, err := labels.Parse(config.LabelSelectorString)
+		sel, err := labels.Parse(c.JenkinsOperators[i].LabelSelectorString)
 		if err != nil {
 			return fmt.Errorf("invalid jenkins_operators.label_selector option: %v", err)
 		}

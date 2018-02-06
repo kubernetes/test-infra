@@ -26,7 +26,7 @@ jobs:
   - ci-kubernetes-e2e-gci-gke-slow
   - ci-kubernetes-kubemark-500-gce
   - ci-kubernetes-node-kubelet
-  - ci-kubernetes-test-go
+  - ci-kubernetes-integration-master
   - ci-kubernetes-verify-master
   - kubernetes-build
   - kubernetes-e2e-kops-aws

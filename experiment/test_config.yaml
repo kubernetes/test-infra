@@ -528,13 +528,12 @@ jobs:
     interval: 2h
     args:
     - --gcp-project=cos-image-validation
-    - --node-test-args=--generate-kubelet-config-file=true
     sigOwners: ['sig-node']
   ci-kubernetes-e2enode-cosbeta-k8sdev-serial:
     interval: 2h
     args:
     - --gcp-project=cos-image-validation
-    - --node-test-args=--feature-gates=DynamicKubeletConfig=true --generate-kubelet-config-file=true
+    - --node-test-args=--feature-gates=DynamicKubeletConfig=true
     sigOwners: ['sig-node']
   ci-kubernetes-e2enode-cosbeta-k8sbeta-default:
     interval: 2h
@@ -580,13 +579,12 @@ jobs:
     interval: 2h
     args:
     - --gcp-project=k8s-test-63a7f7788a
-    - --node-test-args=--generate-kubelet-config-file=true
     sigOwners: ['sig-node']
   ci-kubernetes-e2enode-cosstable1-k8sdev-serial:
     interval: 2h
     args:
     - --gcp-project=k8s-test-39a894cbd4
-    - --node-test-args=--feature-gates=DynamicKubeletConfig=true --generate-kubelet-config-file=true
+    - --node-test-args=--feature-gates=DynamicKubeletConfig=true
     sigOwners: ['sig-node']
   ci-kubernetes-e2enode-cosstable1-k8sbeta-default:
     interval: 2h
@@ -633,13 +631,12 @@ jobs:
     interval: 2h
     args:
     - --gcp-project=ubuntu-image-validation
-    - --node-test-args=--generate-kubelet-config-file=true
     sigOwners: ['sig-node']
   ci-kubernetes-e2enode-ubuntudev-k8sdev-serial:
     interval: 2h
     args:
     - --gcp-project=ubuntu-image-validation
-    - --node-test-args=--feature-gates=DynamicKubeletConfig=true --generate-kubelet-config-file=true
+    - --node-test-args=--feature-gates=DynamicKubeletConfig=true
     sigOwners: ['sig-node']
   ci-kubernetes-e2enode-ubuntudev-k8sstable1-gkespec:
     interval: 2h
@@ -666,13 +663,12 @@ jobs:
     interval: 2h
     args:
     - --gcp-project=ubuntu-image-validation
-    - --node-test-args=--generate-kubelet-config-file=true
     sigOwners: ['sig-node']
   ci-kubernetes-e2enode-ubuntudev2-k8sdev-serial:
     interval: 2h
     args:
     - --gcp-project=ubuntu-image-validation
-    - --node-test-args=--feature-gates=DynamicKubeletConfig=true --generate-kubelet-config-file=true
+    - --node-test-args=--feature-gates=DynamicKubeletConfig=true
     sigOwners: ['sig-node']
   ci-kubernetes-e2enode-ubuntudev2-k8sbeta-gkespec:
     interval: 2h
@@ -689,13 +685,12 @@ jobs:
     interval: 2h
     args:
     - --gcp-project=ubuntu-image-validation
-    - --node-test-args=--generate-kubelet-config-file=true
     sigOwners: ['sig-node']
   ci-kubernetes-e2enode-ubuntustable1-k8sdev-serial:
     interval: 2h
     args:
     - --gcp-project=ubuntu-image-validation
-    - --node-test-args=--feature-gates=DynamicKubeletConfig=true --generate-kubelet-config-file=true
+    - --node-test-args=--feature-gates=DynamicKubeletConfig=true
     sigOwners: ['sig-node']
   ci-kubernetes-e2enode-ubuntustable1-k8sstable1-gkespec:
     interval: 2h
@@ -758,6 +753,7 @@ jobs:
     - --env=KUBE_PROXY_DAEMONSET=true
     - --env=ENABLE_POD_PRIORITY=true
     - --env=KUBE_FEATURE_GATES=AllAlpha=true
+    - --test_args=--ginkgo.focus=\[Feature:(Audit|LocalPersistentVolumes|PodPreset|MountPropagation|PVCProtection|ExpandPersistentVolumes)\]|Networking --ginkgo.skip=Networking-Performance|IPv6 --minStartupPods=8
     sigOwners: ['sig-gcp']
 
   # stable1
@@ -799,6 +795,7 @@ jobs:
     - --env=KUBE_PROXY_DAEMONSET=true
     - --env=ENABLE_POD_PRIORITY=true
     - --env=KUBE_FEATURE_GATES=AllAlpha=true
+    - --test_args=--ginkgo.focus=\[Feature:(Audit|LocalPersistentVolumes|PodPreset|MountPropagation|PVCProtection|ExpandPersistentVolumes)\]|Networking --ginkgo.skip=Networking-Performance|IPv6 --minStartupPods=8
     sigOwners: ['sig-gcp']
 
   # stable2
@@ -1053,23 +1050,23 @@ nodeK8sVersions:
   dev:
     args:
     - --repo=k8s.io/kubernetes=master
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180202-1036088f2-master
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180205-d99d9c246-master
   beta:
     args:
     - --repo=k8s.io/kubernetes=release-1.10
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180202-1036088f2-1.10
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180205-d99d9c246-1.10
   stable1:
     args:
     - --repo=k8s.io/kubernetes=release-1.9
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180202-1036088f2-1.9
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180205-d99d9c246-1.9
   stable2:
     args:
     - --repo=k8s.io/kubernetes=release-1.8
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180202-1036088f2-1.8
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180205-d99d9c246-1.8
   stable3:
     args:
     - --repo=k8s.io/kubernetes=release-1.7
-    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180202-1036088f2-1.7
+    prowImage: gcr.io/k8s-testimages/kubekins-e2e:v20180205-d99d9c246-1.7
 
 nodeTestSuites:
   default:

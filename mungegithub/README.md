@@ -25,7 +25,7 @@ A Github oauth token is required, even in readonly/test mode. For production, we
 After successfully running the local binary one may build, test, and deploy in readonly mode to a real kube cluster. To do so, one must make sure that one's kubeconfig file is set up for the test/read-only cluster by running any necessary `kubectl config` commands by hand. One may also need a container repository with read & write access. It is just as easy to create a new dockerhub account, and a public repository named `submit-queue` within that. We will refer to the repository as `docker.io/$USERNAME` where `$USERNAME` is a placeholder. The steps required to deploy on a real cluster for the submit-queue application are as follows. The instructions to run the cherrypick application are along the same lines. Below, we explain the steps to run on the kubernetes main repository. Running on other repositories is similar, except that the corresponding YAML files are in a directory for that repository.
 
 First store your personal access token in a plain text file named (token) in the mungegithub directory. If the app you are deploying uses github webhooks, store the github secret key in file named (hook-secret) in the mungegithub directory just like the access token.
- 
+
 Also create a persistent disk named `<reponame>-cache` on the mungegithub cluster for every repo that a submit-queue will target.
 
 If you are deploying for the first time to a new cluster run `APP=submit-queue TARGET=<reponame> make first_time_deploy` to create and upload a persistent volume and persistent volume claim, a new service, a new `<reponame>-github-token` secret, a configmap, and the actual deployment. If you are updating a deployment or if setup is partially complete, see the step-by-step instructions for deployment below.
@@ -114,7 +114,3 @@ APP=submit-queue TARGET=<TARGET> make push_secret
 * Create the service which is of type NodePort using `APP=submit-queue TARGET=<TARGET> make push_service`.
 * Finally, update the ingress.yaml with the new URL and the new service to point to.
 * Apply changes to the running ingress instance.
-
-## Communicating with the Bot
-
-The bot understands the commands in [k8s-ci-robot Commands](../commands.md).

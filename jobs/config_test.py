@@ -62,7 +62,6 @@ class JobTest(unittest.TestCase):
     yaml_suffix = {
         'jenkins/job-configs/bootstrap-maintenance.yaml' : 'suffix',
         'jenkins/job-configs/kubernetes-jenkins/bootstrap-ci-commit.yaml' : 'commit-suffix',
-        'jenkins/job-configs/kubernetes-jenkins/bootstrap-ci-repo.yaml' : 'repo-suffix',
         'jenkins/job-configs/kubernetes-jenkins/bootstrap-ci-soak.yaml' : 'soak-suffix',
         'jenkins/job-configs/kubernetes-jenkins/bootstrap-ci-dockerpush.yaml' : 'dockerpush-suffix'
     }
@@ -140,22 +139,6 @@ class JobTest(unittest.TestCase):
 
         self.check_bootstrap_yaml(
             'jenkins/job-configs/kubernetes-jenkins/bootstrap-ci-commit.yaml',
-            check)
-
-    def test_bootstrap_ci_repo_yaml(self):
-        def check(job, name):
-            job_name = 'ci-%s' % name
-            self.assertIn('branch', job)
-            self.assertIn('frequency', job)
-            self.assertIn('repo-name', job)
-            self.assertIn('timeout', job)
-            self.assertNotIn('json', job)
-            self.assertNotIn('use-logexporter', job)
-            self.assertGreater(job['timeout'], 0, name)
-            return job_name
-
-        self.check_bootstrap_yaml(
-            'jenkins/job-configs/kubernetes-jenkins/bootstrap-ci-repo.yaml',
             check)
 
     def test_bootstrap_ci_dockerpush(self):

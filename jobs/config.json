@@ -908,7 +908,7 @@
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
       "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[Feature:(ExternalTrafficLocalOnly|DynamicKubeletConfig)\\] --minStartupPods=8",
+      "--test_args=--ginkgo.focus=\\[Feature:(Audit|LocalPersistentVolumes|PodPreset|MountPropagation|PVCProtection|ExpandPersistentVolumes)\\]|Networking --ginkgo.skip=Networking-Performance|IPv6 --minStartupPods=8",
       "--timeout=180m"
     ],
     "scenario": "kubernetes_e2e",
@@ -1038,7 +1038,7 @@
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
       "--provider=gce",
-      "--test_args=--ginkgo.focus=\\[Feature:(ExternalTrafficLocalOnly|DynamicKubeletConfig)\\] --minStartupPods=8",
+      "--test_args=--ginkgo.focus=\\[Feature:(Audit|LocalPersistentVolumes|PodPreset|MountPropagation|PVCProtection|ExpandPersistentVolumes)\\]|Networking --ginkgo.skip=Networking-Performance|IPv6 --minStartupPods=8",
       "--timeout=180m"
     ],
     "scenario": "kubernetes_e2e",
@@ -3246,7 +3246,7 @@
   },
   "ci-kubernetes-e2e-gce-scalability-canary": {
     "args": [
-      "--cluster=e2e-scale-canary",
+      "--cluster=e2e-big-canary",
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-gci-gce-scalability.env",
       "--extract=ci/latest",
@@ -4610,7 +4610,7 @@
   },
   "ci-kubernetes-e2e-gci-gce-scalability": {
     "args": [
-      "--cluster=e2e-scalability",
+      "--cluster=e2e-big",
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-gci-gce-scalability.env",
       "--extract=ci/latest",
@@ -4629,7 +4629,7 @@
   },
   "ci-kubernetes-e2e-gci-gce-scalability-beta": {
     "args": [
-      "--cluster=e2e-scalability-beta",
+      "--cluster=e2e-big-beta",
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-gci-gce-scalability-beta.env",
       "--extract=ci/k8s-beta",
@@ -4647,7 +4647,7 @@
   },
   "ci-kubernetes-e2e-gci-gce-scalability-release-1-7": {
     "args": [
-      "--cluster=e2e-scalability-1-7",
+      "--cluster=e2e-big-1-7",
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-gci-gce-scalability-release-1-7.env",
       "--extract=ci/latest-1.7",
@@ -4665,7 +4665,7 @@
   },
   "ci-kubernetes-e2e-gci-gce-scalability-stable1": {
     "args": [
-      "--cluster=e2e-scalability-stable1",
+      "--cluster=e2e-big-stable1",
       "--env-file=jobs/platform/gce.env",
       "--env-file=jobs/env/ci-kubernetes-e2e-gci-gce-scalability-stable1.env",
       "--extract=ci/k8s-stable1",
@@ -8958,7 +8958,6 @@
       "--gcp-project=cos-image-validation",
       "--gcp-zone=us-central1-f",
       "--node-args=--images=cos-beta-64-10176-60-0 --image-project=gke-node-images --instance-metadata=user-data<test/e2e_node/jenkins/cos-init-disable-live-restore.yaml,gci-update-strategy=update_disabled",
-      "--node-test-args=--generate-kubelet-config-file=true",
       "--node-tests=true",
       "--provider=gce",
       "--test_args=--nodes=8 --skip=\"\\[Flaky\\]|\\[Serial\\]\"",
@@ -8979,7 +8978,7 @@
       "--gcp-project=cos-image-validation",
       "--gcp-zone=us-central1-f",
       "--node-args=--images=cos-beta-64-10176-60-0 --image-project=gke-node-images --instance-metadata=user-data<test/e2e_node/jenkins/cos-init-disable-live-restore.yaml,gci-update-strategy=update_disabled",
-      "--node-test-args=--feature-gates=DynamicKubeletConfig=true --generate-kubelet-config-file=true",
+      "--node-test-args=--feature-gates=DynamicKubeletConfig=true",
       "--node-tests=true",
       "--provider=gce",
       "--test_args=--nodes=1 --focus=\"\\[Serial\\]\" --skip=\"\\[Flaky\\]|\\[Benchmark\\]\"",
@@ -9164,7 +9163,6 @@
       "--gcp-project=k8s-test-63a7f7788a",
       "--gcp-zone=us-central1-f",
       "--node-args=--images=cos-stable-63-10032-71-0 --image-project=cos-cloud --instance-metadata=user-data<test/e2e_node/jenkins/gci-init.yaml,gci-update-strategy=update_disabled",
-      "--node-test-args=--generate-kubelet-config-file=true",
       "--node-tests=true",
       "--provider=gce",
       "--test_args=--nodes=8 --skip=\"\\[Flaky\\]|\\[Serial\\]\"",
@@ -9185,7 +9183,7 @@
       "--gcp-project=k8s-test-39a894cbd4",
       "--gcp-zone=us-central1-f",
       "--node-args=--images=cos-stable-63-10032-71-0 --image-project=cos-cloud --instance-metadata=user-data<test/e2e_node/jenkins/gci-init.yaml,gci-update-strategy=update_disabled",
-      "--node-test-args=--feature-gates=DynamicKubeletConfig=true --generate-kubelet-config-file=true",
+      "--node-test-args=--feature-gates=DynamicKubeletConfig=true",
       "--node-tests=true",
       "--provider=gce",
       "--test_args=--nodes=1 --focus=\"\\[Serial\\]\" --skip=\"\\[Flaky\\]|\\[Benchmark\\]\"",
@@ -9329,7 +9327,6 @@
       "--gcp-project=ubuntu-image-validation",
       "--gcp-zone=us-central1-f",
       "--node-args=--images=ubuntu-gke-1604-xenial-v20180122 --image-project=ubuntu-os-gke-cloud-devel --system-spec-name=gke",
-      "--node-test-args=--generate-kubelet-config-file=true",
       "--node-tests=true",
       "--provider=gce",
       "--test_args=--nodes=8 --skip=\"\\[Flaky\\]|\\[Serial\\]\"",
@@ -9350,7 +9347,7 @@
       "--gcp-project=ubuntu-image-validation",
       "--gcp-zone=us-central1-f",
       "--node-args=--images=ubuntu-gke-1604-xenial-v20180122 --image-project=ubuntu-os-gke-cloud-devel",
-      "--node-test-args=--feature-gates=DynamicKubeletConfig=true --generate-kubelet-config-file=true",
+      "--node-test-args=--feature-gates=DynamicKubeletConfig=true",
       "--node-tests=true",
       "--provider=gce",
       "--test_args=--nodes=1 --focus=\"\\[Serial\\]\" --skip=\"\\[Flaky\\]|\\[Benchmark\\]\"",
@@ -9494,7 +9491,6 @@
       "--gcp-project=ubuntu-image-validation",
       "--gcp-zone=us-central1-f",
       "--node-args=--images=ubuntu-gke-1604-xenial-v20180122-1 --image-project=ubuntu-os-gke-cloud-devel --system-spec-name=gke",
-      "--node-test-args=--generate-kubelet-config-file=true",
       "--node-tests=true",
       "--provider=gce",
       "--test_args=--nodes=8 --skip=\"\\[Flaky\\]|\\[Serial\\]\"",
@@ -9515,7 +9511,7 @@
       "--gcp-project=ubuntu-image-validation",
       "--gcp-zone=us-central1-f",
       "--node-args=--images=ubuntu-gke-1604-xenial-v20180122-1 --image-project=ubuntu-os-gke-cloud-devel",
-      "--node-test-args=--feature-gates=DynamicKubeletConfig=true --generate-kubelet-config-file=true",
+      "--node-test-args=--feature-gates=DynamicKubeletConfig=true",
       "--node-tests=true",
       "--provider=gce",
       "--test_args=--nodes=1 --focus=\"\\[Serial\\]\" --skip=\"\\[Flaky\\]|\\[Benchmark\\]\"",
@@ -9536,7 +9532,6 @@
       "--gcp-project=ubuntu-image-validation",
       "--gcp-zone=us-central1-f",
       "--node-args=--images=ubuntu-gke-1604-xenial-v20170816-1 --image-project=ubuntu-os-gke-cloud --system-spec-name=gke",
-      "--node-test-args=--generate-kubelet-config-file=true",
       "--node-tests=true",
       "--provider=gce",
       "--test_args=--nodes=8 --skip=\"\\[Flaky\\]|\\[Serial\\]\"",
@@ -9557,7 +9552,7 @@
       "--gcp-project=ubuntu-image-validation",
       "--gcp-zone=us-central1-f",
       "--node-args=--images=ubuntu-gke-1604-xenial-v20170816-1 --image-project=ubuntu-os-gke-cloud",
-      "--node-test-args=--feature-gates=DynamicKubeletConfig=true --generate-kubelet-config-file=true",
+      "--node-test-args=--feature-gates=DynamicKubeletConfig=true",
       "--node-tests=true",
       "--provider=gce",
       "--test_args=--nodes=1 --focus=\"\\[Serial\\]\" --skip=\"\\[Flaky\\]|\\[Benchmark\\]\"",
@@ -9673,6 +9668,46 @@
     "scenario": "kubernetes_build",
     "sigOwners": [
       "sig-multicluster"
+    ]
+  },
+  "ci-kubernetes-integration-master": {
+    "args": [
+      "--branch=master",
+      "--force"
+    ],
+    "scenario": "kubernetes_verify",
+    "sigOwners": [
+      "sig-testing"
+    ]
+  },
+  "ci-kubernetes-integration-stable1": {
+    "args": [
+      "--branch=release-1.9",
+      "--force"
+    ],
+    "scenario": "kubernetes_verify",
+    "sigOwners": [
+      "sig-testing"
+    ]
+  },
+  "ci-kubernetes-integration-stable2": {
+    "args": [
+      "--branch=release-1.8",
+      "--force"
+    ],
+    "scenario": "kubernetes_verify",
+    "sigOwners": [
+      "sig-testing"
+    ]
+  },
+  "ci-kubernetes-integration-stable3": {
+    "args": [
+      "--branch=release-1.7",
+      "--force"
+    ],
+    "scenario": "kubernetes_verify",
+    "sigOwners": [
+      "sig-testing"
     ]
   },
   "ci-kubernetes-kubemark-100-canary": {
@@ -10167,46 +10202,6 @@
       "sig-gcp"
     ]
   },
-  "ci-kubernetes-test-go": {
-    "args": [
-      "--branch=master",
-      "--force"
-    ],
-    "scenario": "kubernetes_verify",
-    "sigOwners": [
-      "sig-testing"
-    ]
-  },
-  "ci-kubernetes-test-go-release-1.7": {
-    "args": [
-      "--branch=release-1.7",
-      "--force"
-    ],
-    "scenario": "kubernetes_verify",
-    "sigOwners": [
-      "sig-testing"
-    ]
-  },
-  "ci-kubernetes-test-go-release-1.8": {
-    "args": [
-      "--branch=release-1.8",
-      "--force"
-    ],
-    "scenario": "kubernetes_verify",
-    "sigOwners": [
-      "sig-testing"
-    ]
-  },
-  "ci-kubernetes-test-go-release-1.9": {
-    "args": [
-      "--branch=release-1.9",
-      "--force"
-    ],
-    "scenario": "kubernetes_verify",
-    "sigOwners": [
-      "sig-testing"
-    ]
-  },
   "ci-kubernetes-verify-master": {
     "args": [
       "--branch=master",
@@ -10218,9 +10213,9 @@
       "sig-testing"
     ]
   },
-  "ci-kubernetes-verify-release-1.7": {
+  "ci-kubernetes-verify-stable1": {
     "args": [
-      "--branch=release-1.7",
+      "--branch=release-1.9",
       "--force",
       "--script=./hack/jenkins/verify-dockerized.sh"
     ],
@@ -10229,7 +10224,7 @@
       "sig-testing"
     ]
   },
-  "ci-kubernetes-verify-release-1.8": {
+  "ci-kubernetes-verify-stable2": {
     "args": [
       "--branch=release-1.8",
       "--force",
@@ -10240,9 +10235,9 @@
       "sig-testing"
     ]
   },
-  "ci-kubernetes-verify-release-1.9": {
+  "ci-kubernetes-verify-stable3": {
     "args": [
-      "--branch=release-1.9",
+      "--branch=release-1.7",
       "--force",
       "--script=./hack/jenkins/verify-dockerized.sh"
     ],
