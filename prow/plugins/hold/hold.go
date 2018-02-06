@@ -36,7 +36,7 @@ const pluginName = "hold"
 var (
 	label         = "do-not-merge/hold"
 	labelRe       = regexp.MustCompile(`(?mi)^/hold\s*$`)
-	labelCancelRe = regexp.MustCompile(`(?mi)^/(hold cancel|unh..d)\s*$`)
+	labelCancelRe = regexp.MustCompile(`(?mi)^/(hold cancel|unhold)\s*$`)
 )
 
 type hasLabelFunc func(label string, issueLabels []github.Label) bool
