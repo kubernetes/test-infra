@@ -916,3 +916,16 @@ func TestValidPresets(t *testing.T) {
 		}
 	}
 }
+
+// TODO: Remove when k8s/test-infra stops using Jenkins.
+//       OR even better create a dummy config that uses
+//       jenkins_operators.
+func TestOperatorConfig(t *testing.T) {
+	if len(c.JenkinsOperators) != 1 {
+		t.Fatalf("expected config for a Jenkins operator")
+	}
+	if c.JenkinsOperators[0].JobURLTemplate == nil ||
+		c.JenkinsOperators[0].ReportTemplate == nil {
+		t.Fatalf("expected job URL and report templates to be non-nil")
+	}
+}
