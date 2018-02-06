@@ -30,10 +30,11 @@ import (
 var (
 	bufferSize     = 1 // Maximum holding resources
 	serviceAccount = flag.String("service-account", "", "Path to projects service account")
+	rTypes         common.ResTypes
+	poolSize       int
+	janitorPath    = flag.String("janitor-path", "/bin/janitor.py", "Path to janitor binary path")
+	boskosURL      = flag.String("boskos-url", "http://boskos", "Boskos URL")
 )
-
-var rTypes common.ResTypes
-var poolSize int
 
 func init() {
 	flag.Var(&rTypes, "resource-type", "comma-separated list of resources need to be cleaned up")
@@ -41,12 +42,13 @@ func init() {
 }
 
 func main() {
-	logrus.SetFormatter(&logrus.JSONFormatter{})
-	boskos := client.NewClient("Janitor", "http://boskos")
-	logrus.Info("Initialized boskos client!")
-
 	// Activate service account
 	flag.Parse()
+
+	logrus.SetFormatter(&logrus.JSONFormatter{})
+	boskos := client.NewClient("Janitor", *boskosURL)
+	logrus.Info("Initialized boskos client!")
+
 	if *serviceAccount == "" {
 		logrus.Fatal("--service-account cannot be empty!")
 	}
@@ -72,7 +74,7 @@ type clean func(string) error
 
 // Clean by janitor script
 func janitorClean(proj string) error {
-	cmd := exec.Command("/bin/janitor.py", fmt.Sprintf("--project=%s", proj), "--hour=0")
+	cmd := exec.Command(*janitorPath, fmt.Sprintf("--project=%s", proj), "--hour=0")
 	err := cmd.Run()
 	if err != nil {
 		logrus.WithError(err).Errorf("failed to clean up project %s", proj)
@@ -83,7 +85,7 @@ func janitorClean(proj string) error {
 }
 
 type boskosClient interface {
-	Acquire(rtype string, state string, dest string) (string, error)
+	Acquire(rtype string, state string, dest string) (*common.Resource, error)
 	ReleaseOne(name string, dest string) error
 }
 
@@ -104,15 +106,18 @@ func run(c boskosClient, buffer chan string, rtypes []string) int {
 
 	for {
 		for r := range res {
-			if proj, err := c.Acquire(r, "dirty", "cleaning"); err != nil {
+			if projRes, err := c.Acquire(r, common.Dirty, common.Cleaning); err != nil {
 				logrus.WithError(err).Error("boskos acquire failed!")
 				totalAcquire += res[r]
 				delete(res, r)
-			} else if proj == "" {
+			} else if projRes == nil {
+				// To Sen: I don t understand why this would happen
+				logrus.Warning("received nil resource")
 				totalAcquire += res[r]
 				delete(res, r)
 			} else {
-				buffer <- proj // will block until buffer has a free slot
+				logrus.Infof("Acquired resources %s of type %s", projRes.Name, projRes.Type)
+				buffer <- projRes.Name // will block until buffer has a free slot
 				res[r]++
 			}
 		}
@@ -130,10 +135,10 @@ func janitor(c boskosClient, buffer chan string, fn clean) {
 	for {
 		proj := <-buffer
 
-		dest := "free"
+		dest := common.Free
 		if err := fn(proj); err != nil {
 			logrus.WithError(err).Error("janitor.py failed!")
-			dest = "dirty"
+			dest = common.Dirty
 		}
 
 		if err := c.ReleaseOne(proj, dest); err != nil {

@@ -3,12 +3,17 @@ package(default_visibility = ["//visibility:public"])
 load(
     "@io_bazel_rules_go//go:def.bzl",
     "go_library",
+    "go_test",
 )
 
 go_library(
     name = "go_default_library",
-    srcs = ["common.go"],
+    srcs = [
+        "common.go",
+        "mason_config.go",
+    ],
     importpath = "k8s.io/test-infra/boskos/common",
+    deps = ["//vendor/gopkg.in/yaml.v2:go_default_library"],
 )
 
 filegroup(
@@ -22,4 +27,11 @@ filegroup(
     name = "all-srcs",
     srcs = [":package-srcs"],
     tags = ["automanaged"],
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = ["common_test.go"],
+    embed = [":go_default_library"],
+    importpath = "k8s.io/test-infra/boskos/common",
 )

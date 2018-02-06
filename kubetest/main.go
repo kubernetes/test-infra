@@ -739,18 +739,18 @@ func prepareGcp(o *options) error {
 			return fmt.Errorf("--provider=%s boskos failed to acquire project: %v", o.provider, err)
 		}
 
-		if p == "" {
+		if p == nil {
 			return fmt.Errorf("boskos does not have a free %s at the moment", resType)
 		}
 
 		go func(c *client.Client, proj string) {
 			for range time.Tick(time.Minute * 5) {
-				if err := c.UpdateOne(p, "busy"); err != nil {
+				if err := c.UpdateOne(p.Name, "busy", nil); err != nil {
 					log.Printf("[Boskos] Update %s failed with %v", p, err)
 				}
 			}
-		}(boskos, p)
-		o.gcpProject = p
+		}(boskos, p.Name)
+		o.gcpProject = p.Name
 	}
 
 	if err := os.Setenv("CLOUDSDK_CORE_PRINT_UNHANDLED_TRACEBACKS", "1"); err != nil {

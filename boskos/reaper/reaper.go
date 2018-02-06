@@ -25,7 +25,10 @@ import (
 	"k8s.io/test-infra/boskos/common"
 )
 
-var rTypes common.ResTypes
+var (
+	rTypes    common.ResTypes
+	boskosURL = flag.String("boskos-url", "http://boskos", "Boskos URL")
+)
 
 func init() {
 	flag.Var(&rTypes, "resource-type", "comma-separated list of resources need to be cleaned up")
@@ -33,7 +36,7 @@ func init() {
 
 func main() {
 	logrus.SetFormatter(&logrus.JSONFormatter{})
-	boskos := client.NewClient("Reaper", "http://boskos")
+	boskos := client.NewClient("Reaper", *boskosURL)
 	logrus.Infof("Initialzied boskos client!")
 	flag.Parse()
 
@@ -50,16 +53,23 @@ func main() {
 
 func sync(c *client.Client, res string) {
 	// kubetest busted
-	if owners, err := c.Reset(res, "busy", 30*time.Minute, "dirty"); err != nil {
+	if owners, err := c.Reset(res, common.Busy, 30*time.Minute, common.Dirty); err != nil {
 		logrus.WithError(err).Error("Reset busy failed!")
 	} else {
 		logrus.Infof("Reset busy to dirty! Proj-owner: %v", owners)
 	}
 
-	// janitor busted
-	if owners, err := c.Reset(res, "cleaning", 30*time.Minute, "dirty"); err != nil {
+	// janitor, mason busted
+	if owners, err := c.Reset(res, common.Cleaning, 30*time.Minute, common.Dirty); err != nil {
 		logrus.WithError(err).Error("Reset cleaning failed!")
 	} else {
 		logrus.Infof("Reset cleaning to dirty! Proj-owner: %v", owners)
+	}
+
+	// mason busted
+	if owners, err := c.Reset(res, common.Leased, 30*time.Minute, common.Dirty); err != nil {
+		logrus.WithError(err).Error("Reset busy failed!")
+	} else {
+		logrus.Infof("Reset leased to dirty! Proj-owner: %v", owners)
 	}
 }
