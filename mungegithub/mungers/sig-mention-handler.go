@@ -121,7 +121,7 @@ func (s *SigMentionHandler) Munge(obj *github.MungeObject) {
 		}
 
 		msg := fmt.Sprintf(`@%s
-There are no sig labels on this issue. Please [add a sig label](https://github.com/kubernetes/test-infra/blob/master/commands.md) by:
+There are no sig labels on this issue. Please [add a sig label](https://go.k8s.io/bot-commands) by:
 
 1. mentioning a sig: `+"`@kubernetes/sig-<group-name>-<group-suffix>`"+`
     e.g., `+"`@kubernetes/sig-contributor-experience-<group-suffix>`"+` to notify the contributor experience sig, OR
@@ -129,7 +129,7 @@ There are no sig labels on this issue. Please [add a sig label](https://github.c
 2. specifying the label manually: `+"`/sig <label>`"+`
     e.g., `+"`/sig scalability`"+` to apply the `+"`sig/scalability`"+` label
 
-Note: Method 1 will trigger an email to the group. See the [group list](https://github.com/kubernetes/community/blob/master/sig-list.md) and [label list](https://github.com/kubernetes/kubernetes/labels).
+Note: Method 1 will trigger an email to the group. See the [group list](https://git.k8s.io/community/sig-list.md) and [label list](https://github.com/kubernetes/kubernetes/labels).
 The `+"`<group-suffix>`"+` in the method 1 has to be replaced with one of these: _**bugs, feature-requests, pr-reviews, test-failures, proposals**_`, *obj.Issue.User.Login)
 
 		if err := obj.WriteComment(msg); err != nil {

@@ -15,7 +15,7 @@ the different services interact.
   - [Gubernator](https://k8s-gubernator.appspot.com/) formats the output of each run
 * [PR Dashboard](https://k8s-gubernator.appspot.com/pr) finds PRs that need your attention
 * [Prow](https://prow.k8s.io) schedules testing and updates issues
-  - Prow responds to GitHub events, timers and [manual commands](commands.md)
+  - Prow responds to GitHub events, timers and [manual commands](https://go.k8s.io/bot-commands)
     given in GitHub comments.
   - The [prow dashboard](https://prow.k8s.io/) shows what it is currently testing
   - Configure prow to run new tests at [prow/config.yaml](prow/config.yaml)
@@ -83,7 +83,7 @@ $GOPATH/src/k8s.io/test-infra/jenkins/bootstrap.py \
 
 #### Release branch jobs & Image validation jobs
 
-Release branch jobs and image validation jobs are defined in [test_config.yaml](experiment/test_config.yaml). 
+Release branch jobs and image validation jobs are defined in [test_config.yaml](experiment/test_config.yaml).
 We test different master/node image versions against multiple k8s branches on different features.
 
 Those jobs are using channel based versions, current supported testing map is:
