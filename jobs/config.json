@@ -9670,6 +9670,46 @@
       "sig-multicluster"
     ]
   },
+  "ci-kubernetes-integration-master": {
+    "args": [
+      "--branch=master",
+      "--force"
+    ],
+    "scenario": "kubernetes_verify",
+    "sigOwners": [
+      "sig-testing"
+    ]
+  },
+  "ci-kubernetes-integration-stable1": {
+    "args": [
+      "--branch=release-1.9",
+      "--force"
+    ],
+    "scenario": "kubernetes_verify",
+    "sigOwners": [
+      "sig-testing"
+    ]
+  },
+  "ci-kubernetes-integration-stable2": {
+    "args": [
+      "--branch=release-1.8",
+      "--force"
+    ],
+    "scenario": "kubernetes_verify",
+    "sigOwners": [
+      "sig-testing"
+    ]
+  },
+  "ci-kubernetes-integration-stable3": {
+    "args": [
+      "--branch=release-1.7",
+      "--force"
+    ],
+    "scenario": "kubernetes_verify",
+    "sigOwners": [
+      "sig-testing"
+    ]
+  },
   "ci-kubernetes-kubemark-100-canary": {
     "args": [
       "--cluster=kubemark-100-canary",
@@ -10162,46 +10202,6 @@
       "sig-gcp"
     ]
   },
-  "ci-kubernetes-test-go": {
-    "args": [
-      "--branch=master",
-      "--force"
-    ],
-    "scenario": "kubernetes_verify",
-    "sigOwners": [
-      "sig-testing"
-    ]
-  },
-  "ci-kubernetes-test-go-release-1.7": {
-    "args": [
-      "--branch=release-1.7",
-      "--force"
-    ],
-    "scenario": "kubernetes_verify",
-    "sigOwners": [
-      "sig-testing"
-    ]
-  },
-  "ci-kubernetes-test-go-release-1.8": {
-    "args": [
-      "--branch=release-1.8",
-      "--force"
-    ],
-    "scenario": "kubernetes_verify",
-    "sigOwners": [
-      "sig-testing"
-    ]
-  },
-  "ci-kubernetes-test-go-release-1.9": {
-    "args": [
-      "--branch=release-1.9",
-      "--force"
-    ],
-    "scenario": "kubernetes_verify",
-    "sigOwners": [
-      "sig-testing"
-    ]
-  },
   "ci-kubernetes-verify-master": {
     "args": [
       "--branch=master",
@@ -10213,9 +10213,9 @@
       "sig-testing"
     ]
   },
-  "ci-kubernetes-verify-release-1.7": {
+  "ci-kubernetes-verify-stable1": {
     "args": [
-      "--branch=release-1.7",
+      "--branch=release-1.9",
       "--force",
       "--script=./hack/jenkins/verify-dockerized.sh"
     ],
@@ -10224,7 +10224,7 @@
       "sig-testing"
     ]
   },
-  "ci-kubernetes-verify-release-1.8": {
+  "ci-kubernetes-verify-stable2": {
     "args": [
       "--branch=release-1.8",
       "--force",
@@ -10235,9 +10235,9 @@
       "sig-testing"
     ]
   },
-  "ci-kubernetes-verify-release-1.9": {
+  "ci-kubernetes-verify-stable3": {
     "args": [
-      "--branch=release-1.9",
+      "--branch=release-1.7",
       "--force",
       "--script=./hack/jenkins/verify-dockerized.sh"
     ],
