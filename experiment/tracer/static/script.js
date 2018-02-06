@@ -1,5 +1,8 @@
 'use strict';
 
+const PARAMS = 5;
+const HOST = 'github.com';
+
 var logger = {
   data: [],
   message: '',
@@ -100,12 +103,17 @@ var controller = {
     var host = url.host,
         urlParser = url.pathname.split('/');
 
-    if (host !== 'github.com') {
+    if (host !== HOST) {
       this.setMessage(logger.options.messages.invalidHost, userValue);
       return;
     }
 
-    if (urlParser.length != 5) {
+    /* 
+      A valid PR link has 4 params. The params are: org, repo, pr number and pull 
+      Although the length of urlParser is 5 because of split('/'). 
+      It splits the url into an array of params with the seperator "/" so it retuns 5.
+    */
+    if (urlParser.length !== PARAMS) {
       this.setMessage(logger.options.messages.invalidParams, urlParser);
       return;
     }
