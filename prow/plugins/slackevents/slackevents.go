@@ -98,7 +98,7 @@ func notifyOnSlackIfManualMerge(pc client, pe github.PushEvent) error {
 	if mw := getMergeWarning(pc.SlackConfig.MergeWarnings, pe.Repo.Owner.Login, pe.Repo.Name); mw != nil {
 		//If the MergeWarning whitelist has the merge user then no need to send a message.
 		if !stringInArray(pe.Pusher.Name, mw.WhiteList) && !stringInArray(pe.Sender.Login, mw.WhiteList) {
-			message := fmt.Sprintf("*Warning:* %s (@%s) manually merged %s", pe.Sender.Login, pe.Sender.Login, pe.Compare)
+			message := fmt.Sprintf("*Warning:* %s (<@%s>) manually merged %s", pe.Sender.Login, pe.Sender.Login, pe.Compare)
 			for _, channel := range mw.Channels {
 				if err := pc.SlackClient.WriteMessage(message, channel); err != nil {
 					return err
@@ -156,7 +156,7 @@ func echoToSlack(pc client, e github.GenericCommentEvent) error {
 			continue
 		}
 
-		msg := fmt.Sprintf("%s was mentioned by %s (@%s) on Github. (%s)\n>>>%s", sig, e.User.Login, e.User.Login, e.HTMLURL, e.Body)
+		msg := fmt.Sprintf("%s was mentioned by %s (<@%s>) on Github. (%s)\n>>>%s", sig, e.User.Login, e.User.Login, e.HTMLURL, e.Body)
 		if err := pc.SlackClient.WriteMessage(msg, sig); err != nil {
 			return fmt.Errorf("Failed to send message on slack channel: %q with message %q. Err: %v", sig, msg, err)
 		}
