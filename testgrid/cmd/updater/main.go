@@ -41,7 +41,7 @@ type Build struct {
 }
 
 type Started struct {
-	Timestamp   int64             `json:"timestamp"` // python time.time()
+	Timestamp   int64             `json:"timestamp"` // epoch seconds
 	RepoVersion string            `json:"repo-version"`
 	Node        string            `json:"node"`
 	Pull        string            `json:"pull"`
@@ -49,7 +49,7 @@ type Started struct {
 }
 
 type Finished struct {
-	Timestamp  int64    `json:"timestamp"` // python time.time()
+	Timestamp  int64    `json:"timestamp"` // epoch seconds
 	Passed     bool     `json:"passed"`
 	JobVersion string   `json:"job-version"`
 	Metadata   Metadata `json:"metadata"`
@@ -95,6 +95,45 @@ func (jr JunitResult) RowResult() state.Row_Result {
 		return state.Row_PASS_WITH_SKIPS
 	}
 	return state.Row_PASS
+}
+
+func extractRows(buf []byte, results map[string]state.Row_Result) error {
+	var suites JunitSuites
+	// Try to parse it as a <testsuites/> object
+	err := xml.Unmarshal(buf, &suites)
+	if err != nil {
+		// Maybe it is a <testsuite/> object instead
+		suites.Suites = append([]JunitSuite(nil), JunitSuite{})
+		ie := xml.Unmarshal(buf, &suites.Suites[0])
+		if ie != nil {
+			// Nope, it just doesn't parse
+			return fmt.Errorf("not valid testsuites: %v nor testsuite: %v", err, ie)
+		}
+	}
+	for _, suite := range suites.Suites {
+		for _, sr := range suite.Results {
+			if sr.Skipped != nil && len(*sr.Skipped) == 0 {
+				continue
+			}
+
+			prefix := sr.Name
+			if len(suite.Name) > 0 {
+				prefix = suite.Name + "." + prefix
+			}
+			n := prefix
+			i := 0
+			for {
+				_, ok := results[n]
+				if !ok {
+					break
+				}
+				i++
+				n = fmt.Sprintf("%s [%d]", prefix, i)
+			}
+			results[n] = sr.RowResult()
+		}
+	}
+	return nil
 }
 
 type BuildResult struct {
@@ -231,37 +270,8 @@ func ReadBuild(build Build) (*BuildResult, error) {
 			return nil, fmt.Errorf("failed to read all of %s: %v", ap, err)
 		}
 
-		var suites JunitSuites
-		err = xml.Unmarshal(buf, &suites)
-		if err != nil {
-			suites.Suites = append([]JunitSuite(nil), JunitSuite{})
-			ie := xml.Unmarshal(buf, &suites.Suites[0])
-			if ie != nil {
-				return nil, fmt.Errorf("failed to parse %s: %v and %v", ap, err, ie)
-			}
-		}
-		for _, suite := range suites.Suites {
-			for _, sr := range suite.Results {
-				if sr.Skipped != nil && len(*sr.Skipped) == 0 {
-					continue
-				}
-
-				prefix := sr.Name
-				if len(suite.Name) > 0 {
-					prefix = suite.Name + "." + prefix
-				}
-				n := prefix
-				i := 0
-				for {
-					_, ok := br.Results[n]
-					if !ok {
-						break
-					}
-					i++
-					n = fmt.Sprintf("%s [%d]", prefix, i)
-				}
-				br.Results[n] = sr.RowResult()
-			}
+		if err = extractRows(buf, br.Results); err != nil {
+			return nil, fmt.Errorf("failed to parse %s: %v", ap, err)
 		}
 	}
 	return &br, nil
