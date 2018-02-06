@@ -54,7 +54,11 @@ func TestAllPRsSince(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error parsing test time string: %v.", err)
 	}
-	q := " " + testQuery.AllPRsSince(testTime) + " "
+	testTimeOld, err := time.Parse(time.UnixDate, "Sat Mar  7 11:06:39 PST 1915")
+	if err != nil {
+		t.Fatalf("Error parsing test time string: %v.", err)
+	}
+	var q string
 	checkTok := func(tok string, shouldExist bool) {
 		if shouldExist == strings.Contains(q, " "+tok+" ") {
 			return
@@ -66,6 +70,7 @@ func TestAllPRsSince(t *testing.T) {
 		}
 	}
 
+	q = " " + testQuery.AllPRsSince(testTime) + " "
 	checkTok("is:pr", true)
 	checkTok("state:open", true)
 	checkTok("repo:\"k/k\"", true)
@@ -75,6 +80,13 @@ func TestAllPRsSince(t *testing.T) {
 	checkTok("-label:\"foo\"", false)
 	checkTok("review:approved", false)
 	checkTok("updated:>=2015-03-07T11:06:39Z", true)
+
+	// Test that if time is the zero time value, the token is not included.
+	q = " " + testQuery.AllPRsSince(time.Time{}) + " "
+	checkTok("updated:>=0001-01-01T00:00:00Z", false)
+	// Test that if time is before 1970, the token is not included.
+	q = " " + testQuery.AllPRsSince(testTimeOld) + " "
+	checkTok("updated:>=1915-03-07T11:06:39Z", false)
 }
 
 func TestMergeMethod(t *testing.T) {

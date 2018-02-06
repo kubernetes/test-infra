@@ -107,6 +107,11 @@ func (tq *TideQuery) AllPRsSince(t time.Time) string {
 	for _, r := range tq.Repos {
 		toks = append(toks, fmt.Sprintf("repo:\"%s\"", r))
 	}
-	toks = append(toks, fmt.Sprintf("updated:>=%s", t.Format(timeFormatISO8601)))
+	// Github's GraphQL API silently fails if you provide it with an invalid time
+	// string.
+	// Dates before 1970 are considered invalid.
+	if t.Year() >= 1970 {
+		toks = append(toks, fmt.Sprintf("updated:>=%s", t.Format(timeFormatISO8601)))
+	}
 	return strings.Join(toks, " ")
 }
