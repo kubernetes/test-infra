@@ -5440,6 +5440,37 @@ periodics:
       - name: GOPATH
         value: /go
 
+- interval: 24h
+  name: ci-cadvisor-canarypush
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/bootstrap:v20180122-6fd3aef1a
+      args:
+      - --clean
+      - --repo=github.com/google/cadvisor
+      - --root=/go/src
+      - --timeout=30
+      env:
+      - name: DOCKER_IN_DOCKER_ENABLED
+        value: true
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+      volumeMounts:
+      - name: docker-graph
+        mountPath: /docker-graph
+      ports:
+      - containerPort: 9999
+        hostPort: 9999
+    volumes:
+    - name: docker-graph
+      hostPath:
+        path: /mnt/disks/ssd0/docker-graph
+
+
 - name: ci-cadvisor-e2e
   interval: 8h
   agent: kubernetes
@@ -5778,6 +5809,47 @@ periodics:
       - name: GOPATH
         value: /go
 
+- interval: 1h
+  name: ci-federation-build
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/bootstrap:v20180122-6fd3aef1a
+      args:
+      - --clean
+      - --git-cache=/root/.cache/git
+      - --repo=k8s.io/kubernetes=master
+      - --repo=k8s.io/release
+      - --root=/go/src
+      - --timeout=50
+      env:
+      - name: DOCKER_IN_DOCKER_ENABLED
+        value: true
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+      volumeMounts:
+      - name: cache-ssd
+        mountPath: /root/.cache
+      - name: docker-graph
+        mountPath: /docker-graph
+      ports:
+      - containerPort: 9999
+        hostPort: 9999
+      resources:
+        requests:
+          cpu: 4
+          memory: "8Gi"
+    volumes:
+    - name: cache-ssd
+      hostPath:
+        path: /mnt/disks/ssd0
+    - name: docker-graph
+      hostPath:
+        path: /mnt/disks/ssd0/docker-graph
+
 - interval: 30m
   agent: kubernetes
   name: ci-federation-e2e-gce
@@ -5862,6 +5934,43 @@ periodics:
       args:
       - "--timeout=320"
       - "--bare"
+- interval: 30m
+  name: ci-kops-build
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/bootstrap:v20180122-6fd3aef1a
+      args:
+      - --clean
+      - --git-cache=/root/.cache/git
+      - --repo=k8s.io/kops
+      - --repo=k8s.io/release
+      - --root=/go/src
+      - --timeout=30
+      env:
+      - name: DOCKER_IN_DOCKER_ENABLED
+        value: true
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+      volumeMounts:
+      - name: cache-ssd
+        mountPath: /root/.cache
+      - name: docker-graph
+        mountPath: /docker-graph
+      ports:
+      - containerPort: 9999
+        hostPort: 9999
+    volumes:
+    - name: cache-ssd
+      hostPath:
+        path: /mnt/disks/ssd0
+    - name: docker-graph
+      hostPath:
+        path: /mnt/disks/ssd0/docker-graph
+
 - name: ci-kubernetes-bazel-build
   interval: 6h
   agent: kubernetes
@@ -6081,6 +6190,210 @@ periodics:
       - name: cache-ssd
         hostPath:
           path: /mnt/disks/ssd0
+- interval: 5m
+  name: ci-kubernetes-build
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/bootstrap:v20180122-6fd3aef1a
+      args:
+      - --clean
+      - --git-cache=/root/.cache/git
+      - --repo=k8s.io/kubernetes
+      - --repo=k8s.io/release
+      - --root=/go/src
+      - --timeout=30
+      env:
+      - name: DOCKER_IN_DOCKER_ENABLED
+        value: true
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+      volumeMounts:
+      - name: cache-ssd
+        mountPath: /root/.cache
+      - name: docker-graph
+        mountPath: /docker-graph
+      ports:
+      - containerPort: 9999
+        hostPort: 9999
+      resources:
+        requests:
+          cpu: 4
+          memory: "8Gi"
+    volumes:
+    - name: cache-ssd
+      hostPath:
+        path: /mnt/disks/ssd0
+    - name: docker-graph
+      hostPath:
+        path: /mnt/disks/ssd0/docker-graph
+
+- interval: 2h
+  name: ci-kubernetes-build-debian-unstable
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/bootstrap:v20180122-6fd3aef1a
+      args:
+      - --clean
+      - --git-cache=/root/.cache/git
+      - --repo=k8s.io/release
+      - --root=/go/src
+      - --timeout=50
+      env:
+      - name: DOCKER_IN_DOCKER_ENABLED
+        value: true
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+      volumeMounts:
+      - name: cache-ssd
+        mountPath: /root/.cache
+      - name: docker-graph
+        mountPath: /docker-graph
+      ports:
+      - containerPort: 9999
+        hostPort: 9999
+      resources:
+        requests:
+          cpu: 4
+          memory: "8Gi"
+    volumes:
+    - name: cache-ssd
+      hostPath:
+        path: /mnt/disks/ssd0
+    - name: docker-graph
+      hostPath:
+        path: /mnt/disks/ssd0/docker-graph
+
+- interval: 30m
+  name: ci-kubernetes-build-stable1
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/bootstrap:v20180122-6fd3aef1a
+      args:
+      - --clean
+      - --git-cache=/root/.cache/git
+      - --repo=k8s.io/kubernetes=release-1.9
+      - --repo=k8s.io/release
+      - --root=/go/src
+      - --timeout=120
+      env:
+      - name: DOCKER_IN_DOCKER_ENABLED
+        value: true
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+      volumeMounts:
+      - name: cache-ssd
+        mountPath: /root/.cache
+      - name: docker-graph
+        mountPath: /docker-graph
+      ports:
+      - containerPort: 9999
+        hostPort: 9999
+      resources:
+        requests:
+          cpu: 4
+          memory: "8Gi"
+    volumes:
+    - name: cache-ssd
+      hostPath:
+        path: /mnt/disks/ssd0
+    - name: docker-graph
+      hostPath:
+        path: /mnt/disks/ssd0/docker-graph
+
+- interval: 1h
+  name: ci-kubernetes-build-stable2
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/bootstrap:v20180122-6fd3aef1a
+      args:
+      - --clean
+      - --git-cache=/root/.cache/git
+      - --repo=k8s.io/kubernetes=release-1.8
+      - --repo=k8s.io/release
+      - --root=/go/src
+      - --timeout=120
+      env:
+      - name: DOCKER_IN_DOCKER_ENABLED
+        value: true
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+      volumeMounts:
+      - name: cache-ssd
+        mountPath: /root/.cache
+      - name: docker-graph
+        mountPath: /docker-graph
+      ports:
+      - containerPort: 9999
+        hostPort: 9999
+      resources:
+        requests:
+          cpu: 4
+          memory: "8Gi"
+    volumes:
+    - name: cache-ssd
+      hostPath:
+        path: /mnt/disks/ssd0
+    - name: docker-graph
+      hostPath:
+        path: /mnt/disks/ssd0/docker-graph
+
+- interval: 2h
+  name: ci-kubernetes-build-stable3
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/bootstrap:v20180122-6fd3aef1a
+      args:
+      - --clean
+      - --git-cache=/root/.cache/git
+      - --repo=k8s.io/kubernetes=release-1.7
+      - --repo=k8s.io/release
+      - --root=/go/src
+      - --timeout=100
+      env:
+      - name: DOCKER_IN_DOCKER_ENABLED
+        value: true
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+      volumeMounts:
+      - name: cache-ssd
+        mountPath: /root/.cache
+      - name: docker-graph
+        mountPath: /docker-graph
+      ports:
+      - containerPort: 9999
+        hostPort: 9999
+      resources:
+        requests:
+          cpu: 4
+          memory: "8Gi"
+    volumes:
+    - name: cache-ssd
+      hostPath:
+        path: /mnt/disks/ssd0
+    - name: docker-graph
+      hostPath:
+        path: /mnt/disks/ssd0/docker-graph
+
 - interval: 1h
   agent: kubernetes
   name: ci-kubernetes-charts-gce
@@ -6094,6 +6407,47 @@ periodics:
       - --repo=k8s.io/charts
       - --root=/go/src
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180205-d99d9c246-master
+
+- interval: 1h
+  name: ci-kubernetes-cross-build
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/bootstrap:v20180122-6fd3aef1a
+      args:
+      - --clean
+      - --git-cache=/root/.cache/git
+      - --repo=k8s.io/kubernetes
+      - --repo=k8s.io/release
+      - --root=/go/src
+      - --timeout=120
+      env:
+      - name: DOCKER_IN_DOCKER_ENABLED
+        value: true
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+      volumeMounts:
+      - name: cache-ssd
+        mountPath: /root/.cache
+      - name: docker-graph
+        mountPath: /docker-graph
+      ports:
+      - containerPort: 9999
+        hostPort: 9999
+      resources:
+        requests:
+          cpu: 6
+          memory: "15Gi"
+    volumes:
+    - name: cache-ssd
+      hostPath:
+        path: /mnt/disks/ssd0
+    - name: docker-graph
+      hostPath:
+        path: /mnt/disks/ssd0/docker-graph
 
 - interval: 1h
   agent: kubernetes
@@ -11967,6 +12321,88 @@ periodics:
       - name: GOPATH
         value: /go
       image: gcr.io/k8s-testimages/kubekins-e2e:v20180205-d99d9c246-1.8
+
+- interval: 6h
+  name: ci-kubernetes-federation-build-1-7
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/bootstrap:v20180122-6fd3aef1a
+      args:
+      - --clean
+      - --git-cache=/root/.cache/git
+      - --repo=k8s.io/kubernetes=release-1.7
+      - --repo=k8s.io/release
+      - --root=/go/src
+      - --timeout=50
+      env:
+      - name: DOCKER_IN_DOCKER_ENABLED
+        value: true
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+      volumeMounts:
+      - name: cache-ssd
+        mountPath: /root/.cache
+      - name: docker-graph
+        mountPath: /docker-graph
+      ports:
+      - containerPort: 9999
+        hostPort: 9999
+      resources:
+        requests:
+          cpu: 4
+          memory: "8Gi"
+    volumes:
+    - name: cache-ssd
+      hostPath:
+        path: /mnt/disks/ssd0
+    - name: docker-graph
+      hostPath:
+        path: /mnt/disks/ssd0/docker-graph
+
+- interval: 2h
+  name: ci-kubernetes-federation-build-1-8
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/bootstrap:v20180122-6fd3aef1a
+      args:
+      - --clean
+      - --git-cache=/root/.cache/git
+      - --repo=k8s.io/kubernetes=release-1.8
+      - --repo=k8s.io/release
+      - --root=/go/src
+      - --timeout=50
+      env:
+      - name: DOCKER_IN_DOCKER_ENABLED
+        value: true
+      # docker-in-docker needs privileged mode
+      securityContext:
+        privileged: true
+      volumeMounts:
+      - name: cache-ssd
+        mountPath: /root/.cache
+      - name: docker-graph
+        mountPath: /docker-graph
+      ports:
+      - containerPort: 9999
+        hostPort: 9999
+      resources:
+        requests:
+          cpu: 4
+          memory: "8Gi"
+    volumes:
+    - name: cache-ssd
+      hostPath:
+        path: /mnt/disks/ssd0
+    - name: docker-graph
+      hostPath:
+        path: /mnt/disks/ssd0/docker-graph
 
 - interval: 1h
   name: ci-kubernetes-integration-master

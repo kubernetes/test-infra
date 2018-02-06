@@ -156,14 +156,14 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-ingress-gce-upgrade-e2e
 - name: ci-ingress-gce-downgrade-e2e
   gcs_prefix: kubernetes-jenkins/logs/ci-ingress-gce-downgrade-e2e
-- name: ci-kubernetes-build-1.9
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-build-1.9
 - name: ci-kubernetes-build
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-build
-- name: ci-kubernetes-build-1.8
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-build-1.8
-- name: ci-kubernetes-build-1.7
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-build-1.7
+- name: ci-kubernetes-build-stable1
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-build-stable1
+- name: ci-kubernetes-build-stable2
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-build-stable2
+- name: ci-kubernetes-build-stable3
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-build-stable3
 - name: ci-kubernetes-e2e-kops-aws
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws
 - name: ci-kubernetes-e2e-kops-aws-canary
@@ -236,10 +236,10 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-sd-logging
 - name: ci-kubernetes-e2e-gci-gce-etcd3
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-etcd3
-- name: ci-kubernetes-federation-build-1.7
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-federation-build-1.7
-- name: ci-kubernetes-federation-build-1.8
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-federation-build-1.8
+- name: ci-kubernetes-federation-build-1-7
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-federation-build-1-7
+- name: ci-kubernetes-federation-build-1-8
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-federation-build-1-8
 - name: ci-kubernetes-e2e-gci-gce-flaky
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-flaky
 - name: ci-kubernetes-e2e-gci-gce
@@ -553,12 +553,8 @@ test_groups:
 - name: maintenance-ci-testgrid-config-upload
   gcs_prefix: kubernetes-jenkins/logs/maintenance-ci-testgrid-config-upload
   num_failures_to_alert: 1
-- name: maintenance-daily
-  gcs_prefix: kubernetes-jenkins/logs/maintenance-daily
 - name: maintenance-all-daily
   gcs_prefix: kubernetes-jenkins/logs/maintenance-all-daily
-- name: maintenance-hourly
-  gcs_prefix: kubernetes-jenkins/logs/maintenance-hourly
 - name: maintenance-all-hourly
   gcs_prefix: kubernetes-jenkins/logs/maintenance-all-hourly
 - name: maintenance-ci-aws-janitor
@@ -2622,9 +2618,11 @@ dashboards:
   - name: build
     test_group_name: ci-kubernetes-build
   - name: build-1.7
-    test_group_name: ci-kubernetes-build-1.7
+    test_group_name: ci-kubernetes-build-stable3
   - name: build-1.8
-    test_group_name: ci-kubernetes-build-1.8
+    test_group_name: ci-kubernetes-build-stable2
+  - name: build-1.9
+    test_group_name: ci-kubernetes-build-stable1
   - name: bazel-build
     test_group_name: ci-kubernetes-bazel-build
   - name: bazel-build-1.7
@@ -2917,7 +2915,7 @@ dashboards:
 - name: sig-release-1.9-all
   dashboard_tab:
   - name: build-1.9
-    test_group_name: ci-kubernetes-build-1.9
+    test_group_name: ci-kubernetes-build-stable1
   - name: verify-1.9
     test_group_name: ci-kubernetes-verify-stable1
   - name: integration-1.9
@@ -3012,7 +3010,7 @@ dashboards:
 - name: sig-release-1.9-blocking
   dashboard_tab:
   - name: build-1.9
-    test_group_name: ci-kubernetes-build-1.9
+    test_group_name: ci-kubernetes-build-stable1
   - name: verify-1.9
     test_group_name: ci-kubernetes-verify-stable1
   - name: integration-1.9
@@ -3131,7 +3129,7 @@ dashboards:
 - name: sig-release-1.8-all
   dashboard_tab:
   - name: build-1.8
-    test_group_name: ci-kubernetes-build-1.8
+    test_group_name: ci-kubernetes-build-stable2
   - name: verify-1.8
     test_group_name: ci-kubernetes-verify-stable2
   - name: integration-1.8
@@ -3149,7 +3147,7 @@ dashboards:
   - name: periodic-kubernetes-e2e-kubeadm-gce-upgrade-1.7-1.8
     test_group_name: periodic-kubernetes-e2e-kubeadm-gce-upgrade-1-7-1-8
   - name: federation-build-1.8
-    test_group_name: ci-kubernetes-federation-build-1.8
+    test_group_name: ci-kubernetes-federation-build-1-8
   - name: federation-test-1.8
     test_group_name: ci-kubernetes-e2e-gce-federation-release-1-8
   - name: gke-cvm-1.7-gci-1.8-upgrade-master
@@ -3193,7 +3191,7 @@ dashboards:
 - name: sig-release-1.8-blocking
   dashboard_tab:
   - name: build-1.8
-    test_group_name: ci-kubernetes-build-1.8
+    test_group_name: ci-kubernetes-build-stable2
   - name: verify-1.8
     test_group_name: ci-kubernetes-verify-stable2
   - name: integration-1.8
@@ -3203,7 +3201,7 @@ dashboards:
   - name: periodic-gce-kubeadm-1.8
     test_group_name: periodic-kubernetes-e2e-kubeadm-gce-1-8
   - name: federation-build-1.8
-    test_group_name: ci-kubernetes-federation-build-1.8
+    test_group_name: ci-kubernetes-federation-build-1-8
   - name: federation-test-1.8
     test_group_name: ci-kubernetes-e2e-gce-federation-release-1-8
   - name: kubelet-1.8
@@ -3234,13 +3232,13 @@ dashboards:
 - name: sig-release-1.7-all
   dashboard_tab:
   - name: build-1.7
-    test_group_name: ci-kubernetes-build-1.7
+    test_group_name: ci-kubernetes-build-stable3
   - name: verify-1.7
     test_group_name: ci-kubernetes-verify-stable3
   - name: integration-1.7
     test_group_name: ci-kubernetes-integration-stable3
   - name: federation-build-1.7
-    test_group_name: ci-kubernetes-federation-build-1.7
+    test_group_name: ci-kubernetes-federation-build-1-7
   - name: gce-release-1.7
     test_group_name: ci-kubernetes-e2e-gce-release-1-7
   - name: kops-aws-release-1.7
@@ -3317,7 +3315,7 @@ dashboards:
 - name: sig-release-1.7-blocking
   dashboard_tab:
   - name: build-1.7
-    test_group_name: ci-kubernetes-build-1.7
+    test_group_name: ci-kubernetes-build-stable3
   - name: verify-1.7
     test_group_name: ci-kubernetes-verify-stable3
   - name: integration-1.7
@@ -3713,9 +3711,9 @@ dashboards:
   - name: gce-1.8
     test_group_name: ci-kubernetes-e2e-gce-federation-release-1-8
   - name: build-1.7
-    test_group_name: ci-kubernetes-federation-build-1.7
+    test_group_name: ci-kubernetes-federation-build-1-7
   - name: build-1.8
-    test_group_name: ci-kubernetes-federation-build-1.8
+    test_group_name: ci-kubernetes-federation-build-1-8
 
 - name: sig-multicluster-federation-gce
   dashboard_tab:
@@ -4447,19 +4445,9 @@ dashboards:
     test_group_name: metrics-bigquery
     code_search_url_template:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
-  - name: daily
-    description: Completes daily maintenance on an agent
-    test_group_name: maintenance-daily
-    code_search_url_template:
-      url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
   - name: all-daily
     description: Schedules daily maintenance on all attached agents
     test_group_name: maintenance-all-daily
-    code_search_url_template:
-      url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
-  - name: hourly
-    description: Completes hourly maintenance on an agent
-    test_group_name: maintenance-hourly
     code_search_url_template:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
   - name: all-hourly
