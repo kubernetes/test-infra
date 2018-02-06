@@ -11,9 +11,7 @@ load(
 go_image(
     name = "image",
     base = "@git-base//image",
-    embed = [":go_default_library"],
-    importpath = "k8s.io/test-infra/prow/cmd/splice",
-    pure = "on",
+    binary = ":splice",
 )
 
 go_binary(

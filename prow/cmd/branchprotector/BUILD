@@ -1,40 +1,26 @@
 # Usage:
 #   bazel run :dev-job.{create,delete,describe}
 load("@io_bazel_rules_k8s//k8s:object.bzl", "k8s_object")
+load(
+    "//prow:prow.bzl",
+    prow_tags = "tags",
+)
 
 k8s_object(
     name = "oneshot",
-    cluster = "{STABLE_PROW_CLUSTER}",  # Run make :get-cluster-credentials
+    cluster = "{STABLE_PROW_CLUSTER}",
     image_chroot = "{STABLE_DOCKER_REPO}",
-    images = {
-        "gcr.io/k8s-testimages/branchprotector:latest": ":branchprotector-image",
-    },
+    images = prow_tags("branchprotector"),
     kind = "Job",
     template = ":oneshot-job.yaml",
 )
 
-load("@io_bazel_rules_docker//docker:docker.bzl", "docker_bundle")
-load("@io_bazel_rules_docker//contrib:push-all.bzl", "docker_push")
 load("@io_bazel_rules_docker//go:image.bzl", "go_image")
 
-docker_bundle(
-    name = "bundle",
-    images = {
-        "{STABLE_PROW_REPO}/branchprotector:{DOCKER_TAG}": ":branchprotector-image",
-        "{STABLE_PROW_REPO}/branchprotector:latest": ":branchprotector-image",
-        "{STABLE_PROW_REPO}/branchprotector:latest-{BUILD_USER}": ":branchprotector-image",
-    },
-    stamp = True,
-)
-
-docker_push(
-    name = "push",
-    bundle = ":bundle",
-)
-
 go_image(
-    name = "branchprotector-image",
+    name = "image",
     binary = ":branchprotector",
+    visibility = ["//prow:__subpackages__"],
 )
 
 load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library", "go_test")

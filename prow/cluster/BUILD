@@ -1,17 +1,28 @@
-load("@io_bazel_rules_k8s//k8s:object.bzl", "k8s_object")
+load("//prow:prow.bzl", "release", "component", "MULTI_KIND")
 
 # Usage:
 #   bazel run //prow/cluster:foo.apply
 
-# TODO(fejta): consider k8s_deploy alias
-# https://github.com/bazelbuild/rules_k8s#aliasing-eg-k8s_deploy
-
-k8s_object(
-    name = "branchprotector_cronjob",
-    cluster = "{STABLE_PROW_CLUSTER}",  # Run make :get-cluster-credentials
-    kind = "CronJob",
-    template = ":branchprotector_cronjob.yaml",
+release(
+    "production",
+    component("branchprotector", "cronjob"),
+    component("deck", "service", "deployment"),
+    component("hook", "service", "deployment"),
+    component("horologium", "deployment"),
+    component("jenkins", "deployment", "service"),
+    component("lego", "deployment"),
+    component("mem-limit-range", "limitrange"),
+    component("plank", "deployment"),
+    component("prowjob", "customresourcedefinition"),
+    component("pushgateway", "deployment"),
+    component("sinker", "deployment"),
+    component("splice", "deployment"),
+    component("tide", "service", "deployment"),
+    component("tls-ing", "ingress"),
+    component("tot", "service", "deployment"),
 )
+
+component("starter", MULTI_KIND)
 
 filegroup(
     name = "package-srcs",

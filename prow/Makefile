@@ -188,10 +188,10 @@ jenkins-operator-image: alpine-image
 jenkins-operator-deployment: get-cluster-credentials
 	kubectl apply -f cluster/jenkins_deployment.yaml
 
-push-gateway-deploy: get-cluster-credentials
-	kubectl apply -f cluster/push_gateway.yaml
+pushgateway-deploy: get-cluster-credentials
+	kubectl apply -f cluster/pushgateway_deployment.yaml
 
-.PHONY: jenkins-operator-image jenkins-operator-deployment push-gateway-deploy
+.PHONY: jenkins-operator-image jenkins-operator-deployment pushgateway-deploy
 
 tide-image: git-image
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o cmd/tide/tide k8s.io/test-infra/prow/cmd/tide

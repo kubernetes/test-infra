@@ -1,3 +1,4 @@
+load("@io_bazel_rules_docker//go:image.bzl", "go_image")
 load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
 
 go_library(
@@ -11,6 +12,13 @@ go_library(
         "//prow/pod-utils/clone:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
     ],
+)
+
+go_image(
+    name = "image",
+    base = "@git-base//image",
+    binary = ":clonerefs",
+    visibility = ["//visibility:public"],
 )
 
 go_binary(
