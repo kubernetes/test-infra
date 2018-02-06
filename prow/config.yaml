@@ -4680,6 +4680,7 @@ presubmits:
         - "--install=gubernator/test_requirements.txt"
         - "--test=//..."
         - "--test-args=--test_output=errors"
+        - "--experimental-add-caching-configs"
         env:
         - name: TEST_TMPDIR
           value: /scratch/.cache/bazel
