@@ -1,14 +1,16 @@
 # Usage:
 #   bazel run :dev-job.{create,delete,describe}
 load("@io_bazel_rules_k8s//k8s:object.bzl", "k8s_object")
+load(
+    "//prow:prow.bzl",
+    prow_tags = "tags",
+)
 
 k8s_object(
     name = "oneshot",
     cluster = "{STABLE_PROW_CLUSTER}",
     image_chroot = "{STABLE_DOCKER_REPO}",
-    images = {
-        "gcr.io/k8s-testimages/branchprotector:latest": ":image",
-    },
+    images = prow_tags("branchprotector"),
     kind = "Job",
     template = ":oneshot-job.yaml",
 )
@@ -18,6 +20,7 @@ load("@io_bazel_rules_docker//go:image.bzl", "go_image")
 go_image(
     name = "image",
     binary = ":branchprotector",
+    visibility = ["//prow:__subpackages__"],
 )
 
 load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library", "go_test")
