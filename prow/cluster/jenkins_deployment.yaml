@@ -25,7 +25,7 @@ spec:
     spec:
       containers:
       - name: jenkins-operator
-        image: gcr.io/k8s-prow/jenkins-operator:v20180129-3123648b4
+        image: gcr.io/k8s-prow/jenkins-operator:v20180206-c747c05d6
         ports:
         - name: logs
           containerPort: 8080
