@@ -484,8 +484,8 @@ func TestSetStatuses(t *testing.T) {
 			t.Fatalf("Failed to get log output before testing: %v", err)
 		}
 
-		c := &Controller{ghc: fc, ca: ca, logger: log}
-		c.setStatuses([]PullRequest{pr}, pool)
+		sc := &statusController{ghc: fc, ca: ca, logger: log}
+		sc.setStatuses([]PullRequest{pr}, pool)
 		if str, err := log.String(); err != nil {
 			t.Fatalf("For case %s: failed to get log output: %v", tc.name, err)
 		} else if str != initialLog {
@@ -1181,11 +1181,20 @@ func TestSync(t *testing.T) {
 		fkc := &fkc{}
 		ca := &config.Agent{}
 		ca.Set(&config.Config{Tide: config.Tide{Queries: []config.TideQuery{{}}, MaxGoroutines: 4}})
+		sc := &statusController{
+			logger:         logrus.WithField("controller", "status-update"),
+			ghc:            fgc,
+			ca:             ca,
+			newPoolPending: make(chan bool, 1),
+		}
+		go sc.run()
+		defer close(sc.newPoolPending)
 		c := &Controller{
 			ca:     ca,
 			ghc:    fgc,
 			kc:     fkc,
-			logger: logrus.WithField("component", "tide"),
+			logger: logrus.WithField("controller", "sync"),
+			sc:     sc,
 		}
 
 		if err := c.Sync(); err != nil {

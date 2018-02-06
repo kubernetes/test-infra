@@ -13,6 +13,7 @@ go_library(
         "//prow/pjutil:go_default_library",
         "//vendor/github.com/shurcooL/githubql:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
     ],
 )
 
