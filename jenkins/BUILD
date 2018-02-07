@@ -5,9 +5,6 @@ py_test(
         "bootstrap_test.py",
     ],
     data = [
-        "//jenkins/job-configs:configs",
-        "//jenkins/job-configs/kubernetes-jenkins:configs",
-        "//jenkins/job-configs/kubernetes-jenkins-pull:configs",
         "//jobs",
         "//prow:config.yaml",
     ],
@@ -22,19 +19,8 @@ filegroup(
 )
 
 filegroup(
-    name = "configs",
-    srcs = glob([
-        "**/*.yaml",
-    ]),
-    visibility = ["//visibility:public"],
-)
-
-filegroup(
     name = "all-srcs",
-    srcs = [
-        ":package-srcs",
-        "//jenkins/job-configs:all-srcs",
-    ],
+    srcs = [":package-srcs"],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],
 )

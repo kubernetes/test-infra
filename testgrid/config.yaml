@@ -553,10 +553,6 @@ test_groups:
 - name: maintenance-ci-testgrid-config-upload
   gcs_prefix: kubernetes-jenkins/logs/maintenance-ci-testgrid-config-upload
   num_failures_to_alert: 1
-- name: maintenance-all-daily
-  gcs_prefix: kubernetes-jenkins/logs/maintenance-all-daily
-- name: maintenance-all-hourly
-  gcs_prefix: kubernetes-jenkins/logs/maintenance-all-hourly
 - name: maintenance-ci-aws-janitor
   gcs_prefix: kubernetes-jenkins/logs/maintenance-ci-aws-janitor
 - name: maintenance-ci-janitor
@@ -567,8 +563,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-build-debian-unstable
 - name: ci-kubernetes-e2e-gke-large-teardown
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-large-teardown
-- name: kubernetes-update-jenkins-jobs
-  gcs_prefix: kubernetes-jenkins/logs/kubernetes-update-jenkins-jobs
 - name: ci-kubernetes-e2e-gce-taint-evict
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-taint-evict
 # stable3 (1.7) e2e
@@ -4445,16 +4439,6 @@ dashboards:
     test_group_name: metrics-bigquery
     code_search_url_template:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
-  - name: all-daily
-    description: Schedules daily maintenance on all attached agents
-    test_group_name: maintenance-all-daily
-    code_search_url_template:
-      url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
-  - name: all-hourly
-    description: Schedules hourly maintenance on all attached agents
-    test_group_name: maintenance-all-hourly
-    code_search_url_template:
-      url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
   - name: maintenance-aws-janitor
     description: Deletes old resources from AWS projects
     test_group_name: maintenance-ci-aws-janitor
@@ -4489,8 +4473,6 @@ dashboards:
     test_group_name: issue-creator
     code_search_url_template:
       url: https://github.com/kubernetes/test-infra/compare/<start-custom-0>...<end-custom-0>
-  - name: update-jenkins-jobs
-    test_group_name: kubernetes-update-jenkins-jobs
 
 - name: sig-testing-canaries
   dashboard_tab:
