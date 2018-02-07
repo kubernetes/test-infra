@@ -124,17 +124,17 @@ type Pool struct {
 }
 
 // NewController makes a Controller out of the given clients.
-func NewController(ghc *github.Client, kc *kube.Client, ca *config.Agent, gc *git.Client, logger *logrus.Entry) *Controller {
+func NewController(ghcSync, ghcStatus *github.Client, kc *kube.Client, ca *config.Agent, gc *git.Client, logger *logrus.Entry) *Controller {
 	sc := &statusController{
 		logger:         logger.WithField("controller", "status-update"),
-		ghc:            ghc,
+		ghc:            ghcStatus,
 		ca:             ca,
 		newPoolPending: make(chan bool, 1),
 	}
 	go sc.run()
 	return &Controller{
 		logger: logger.WithField("controller", "sync"),
-		ghc:    ghc,
+		ghc:    ghcSync,
 		kc:     kc,
 		ca:     ca,
 		gc:     gc,

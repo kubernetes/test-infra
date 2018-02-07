@@ -69,13 +69,15 @@ func main() {
 		logger.WithError(err).Fatalf("Must specify a valid --github-endpoint URL.")
 	}
 
-	var ghc *github.Client
+	var ghcSync, ghcStatus *github.Client
 	var kc *kube.Client
 	if *dryRun {
-		ghc = github.NewDryRunClient(oauthSecret, *githubEndpoint)
+		ghcSync = github.NewDryRunClient(oauthSecret, *githubEndpoint)
+		ghcStatus = github.NewDryRunClient(oauthSecret, *githubEndpoint)
 		kc = kube.NewFakeClient(*deckURL)
 	} else {
-		ghc = github.NewClient(oauthSecret, *githubEndpoint)
+		ghcSync = github.NewClient(oauthSecret, *githubEndpoint)
+		ghcStatus = github.NewClient(oauthSecret, *githubEndpoint)
 		if *cluster == "" {
 			kc, err = kube.NewClientInCluster(configAgent.Config().ProwJobNamespace)
 			if err != nil {
@@ -88,7 +90,14 @@ func main() {
 			}
 		}
 	}
-	ghc.Throttle(1000, 1000)
+	// The sync loop should be allowed more tokens than the status loop because
+	// it has to list all PRs in the pool every loop while the status loop only
+	// has to list changed PRs every loop.
+	// The sync loop should have a much lower burst allowance than the status
+	// loop which may need to update many statuses upon restarting Tide after
+	// changing the context format or starting Tide on a new repo.
+	ghcSync.Throttle(800, 20)
+	ghcStatus.Throttle(400, 200)
 
 	gc, err := git.NewClient()
 	if err != nil {
@@ -96,7 +105,7 @@ func main() {
 	}
 	defer gc.Clean()
 
-	c := tide.NewController(ghc, kc, configAgent, gc, logger)
+	c := tide.NewController(ghcSync, ghcStatus, kc, configAgent, gc, logger)
 
 	start := time.Now()
 	sync(c)
