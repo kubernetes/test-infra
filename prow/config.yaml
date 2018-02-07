@@ -1305,8 +1305,8 @@ presubmits:
           hostPort: 9999
         resources:
           requests:
-            cpu: 6
-            memory: "15Gi"
+            cpu: 7
+            memory: "41Gi"
       volumes:
       - name: cache-ssd
         hostPath:
@@ -1352,8 +1352,8 @@ presubmits:
           hostPort: 9999
         resources:
           requests:
-            cpu: 6
-            memory: "15Gi"
+            cpu: 7
+            memory: "41Gi"
       volumes:
       - name: cache-ssd
         hostPath:
@@ -3234,8 +3234,8 @@ presubmits:
         name: ""
         resources:
           requests:
-            cpu: "6"
-            memory: 15Gi
+            cpu: "7"
+            memory: 41Gi
         securityContext:
           privileged: true
         volumeMounts:
@@ -3284,8 +3284,8 @@ presubmits:
         name: ""
         resources:
           requests:
-            cpu: "6"
-            memory: 15Gi
+            cpu: "7"
+            memory: 41Gi
         securityContext:
           privileged: true
         volumeMounts:
@@ -6448,8 +6448,8 @@ periodics:
         hostPort: 9999
       resources:
         requests:
-          cpu: 6
-          memory: "15Gi"
+          cpu: 7
+          memory: "41Gi"
     volumes:
     - name: cache-ssd
       hostPath:
