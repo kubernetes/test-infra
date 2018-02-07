@@ -1851,6 +1851,12 @@ test_groups:
   - configuration_value: infra-commit
 - name: ci-kubernetes-e2e-kops-aws-stable1
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-stable1
+- name: ci-kubernetes-e2e-kops-aws-stable2
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-stable2
+- name: ci-kubernetes-e2e-kops-aws-stable3
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-stable3
+- name: ci-kubernetes-e2e-kops-aws-beta
+  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-beta
 - name: ci-kubernetes-e2e-gce-cos-k8sstable1-slow
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-cos-k8sstable1-slow
 - name: ci-kubernetes-e2e-gke-cos-k8sstable1-slow
@@ -2021,8 +2027,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-stable1-beta-gci-kubectl-skew
 - name: ci-kubernetes-e2e-gke-stable1-beta-gci-kubectl-skew-serial
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gke-stable1-beta-gci-kubectl-skew-serial
-- name: ci-kubernetes-e2e-kops-aws-beta
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-beta
 - name: ci-kubernetes-e2e-gci-gce-scalability-beta
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gci-gce-scalability-beta
   num_failures_to_alert: 1
@@ -2238,10 +2242,12 @@ dashboards:
   - name: kops-aws-canary
     test_group_name: ci-kubernetes-e2e-kops-aws-canary
   - name: kops-aws-1.7
-    test_group_name: ci-kubernetes-e2e-kops-aws-release-1-7
+    test_group_name: ci-kubernetes-e2e-kops-aws-stable3
   - name: kops-aws-1.8
-    test_group_name: ci-kubernetes-e2e-kops-aws-stable1
+    test_group_name: ci-kubernetes-e2e-kops-aws-stable2
   - name: kops-aws-1.9
+    test_group_name: ci-kubernetes-e2e-kops-aws-stable1
+  - name: kops-aws-beta
     test_group_name: ci-kubernetes-e2e-kops-aws-beta
   - name: kops-aws-updown
     test_group_name: ci-kubernetes-e2e-kops-aws-updown
