@@ -48,10 +48,10 @@ var (
 	tideURL      = flag.String("tide-url", "", "Path to tide. If empty, do not serve tide data.")
 	hookURL      = flag.String("hook-url", "", "Path to hook plugin help endpoint.")
 	// use when behind a load balancer
-	redirectHTTPTo = flag.String("redirect-http-to", "", "host to redirect http->https to based on x-forwarded-proto == http.")
+	redirectHTTPTo = flag.String("redirect-http-to", "", "Host to redirect http->https to based on x-forwarded-proto == http.")
 	// use when behind an oauth proxy
 	hiddenOnly = flag.Bool("hidden-only", false, "Show only hidden jobs. Useful for serving hidden jobs behind an oauth proxy.")
-	runLocal   = flag.Bool("run-local", false, "serve a local copy of the UI, used by the prow/cmd/deck/runlocal script")
+	runLocal   = flag.Bool("run-local", false, "Serve a local copy of the UI, used by the prow/cmd/deck/runlocal script")
 )
 
 // Matches letters, numbers, hyphens, and underscores.
