@@ -51,3 +51,5 @@ spec:
         operator: "Equal"
         value: "bazel-cache"
         effect: "NoSchedule"
+      nodeSelector:
+        dedicated: "bazel-cache"
