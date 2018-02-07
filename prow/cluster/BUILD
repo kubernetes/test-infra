@@ -9,7 +9,6 @@ release(
     component("deck", "service", "deployment"),
     component("hook", "service", "deployment"),
     component("horologium", "deployment"),
-    component("jenkins", "deployment", "service"),
     component("lego", "deployment"),
     component(
         "mem-limit-range",
