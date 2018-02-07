@@ -8411,9 +8411,8 @@
   "ci-kubernetes-e2e-kops-aws-beta": {
     "args": [
       "--aws",
-      "--cluster=e2e-kops-aws-stable1.test-cncf-aws.k8s.io",
+      "--cluster=e2e-kops-aws-beta.test-cncf-aws.k8s.io",
       "--env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release-dev/ci/k8s-beta.txt",
-      "--env=KOPS_PUBLISH_GREEN_PATH=gs://kops-ci/bin/latest-1.9-ci-green.txt",
       "--env-file=jobs/platform/kops_aws.env",
       "--extract=ci/k8s-beta",
       "--ginkgo-parallel",
@@ -8553,7 +8552,7 @@
       "--aws",
       "--cluster=e2e-kops-aws-stable1.test-cncf-aws.k8s.io",
       "--env=KOPS_DEPLOY_LATEST_URL=https://storage.googleapis.com/kubernetes-release-dev/ci/k8s-stable1.txt",
-      "--env=KOPS_PUBLISH_GREEN_PATH=gs://kops-ci/bin/latest-1.8-ci-green.txt",
+      "--env=KOPS_PUBLISH_GREEN_PATH=gs://kops-ci/bin/latest-1.9-ci-green.txt",
       "--env-file=jobs/platform/kops_aws.env",
       "--extract=ci/k8s-stable1",
       "--ginkgo-parallel",
