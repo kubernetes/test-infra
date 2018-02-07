@@ -65,6 +65,8 @@ def main(args):
         env['KUBE_BUILD_HYPERKUBE'] = 'y'
     if args.extra_publish_file:
         push_build_args.append('--extra-publish-file=%s' % args.extra_publish_file)
+    if args.allow_dup:
+        push_build_args.append('--allow-dup')
 
     for key, value in env.items():
         os.environ[key] = value
@@ -96,5 +98,7 @@ if __name__ == '__main__':
         '--hyperkube', action='store_true', help='Build hyperkube image')
     PARSER.add_argument(
         '--extra-publish-file', help='Additional version file uploads to')
+    PARSER.add_argument(
+        '--allow-dup', help='Allow overwriting if the build exists on gcs')
     ARGS = PARSER.parse_args()
     main(ARGS)
