@@ -18,6 +18,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 package build
 
 import (
+	"path"
 	"regexp"
 	"sort"
 	"strings"
@@ -160,8 +161,9 @@ func keepSorted(x Expr) bool {
 // First, it joins labels written as string addition, turning
 // "//x" + ":y" (usually split across multiple lines) into "//x:y".
 //
-// Second, it removes redundant target qualifiers, turning
-// "//third_party/m4:m4" into "//third_party/m4".
+// Second, it removes redundant target qualifiers, turning labels like
+// "//third_party/m4:m4" into "//third_party/m4" as well as ones like
+// "@foo//:foo" into "@foo".
 //
 func fixLabels(f *File, info *RewriteInfo) {
 	joinLabel := func(p *Expr) {
@@ -194,22 +196,52 @@ func fixLabels(f *File, info *RewriteInfo) {
 		*p = str1
 	}
 
-	// labelRE matches label strings //x/y/z:abc.
-	// $1 is //x/y/z, $2 is x/y/, $3 is z, $4 is :abc, and $5 is abc.
-	labelRE := regexp.MustCompile(`^(//(.*/)?([^:]+))(:([^:]+))?$`)
+	labelPrefix := "//"
+	if tables.StripLabelLeadingSlashes {
+		labelPrefix = ""
+	}
+	// labelRE matches label strings, e.g. @r//x/y/z:abc
+	// where $1 is @r//x/y/z, $2 is @r//, $3 is r, $4 is z, $5 is abc.
+	labelRE := regexp.MustCompile(`^(((?:@(\w+))?//|` + labelPrefix + `)(?:.+/)?([^:]*))(?::([^:]+))?$`)
 
 	shortenLabel := func(v Expr) {
 		str, ok := v.(*StringExpr)
 		if !ok {
 			return
 		}
+		editPerformed := false
+
+		if tables.StripLabelLeadingSlashes && strings.HasPrefix(str.Value, "//") {
+			if path.Dir(f.Path) == "." || !strings.HasPrefix(str.Value, "//:") {
+				editPerformed = true
+				str.Value = str.Value[2:]
+			}
+		}
+
+		if tables.ShortenAbsoluteLabelsToRelative {
+			thisPackage := labelPrefix + path.Dir(f.Path)
+			if str.Value == thisPackage {
+				editPerformed = true
+				str.Value = ":" + path.Base(str.Value)
+			} else if strings.HasPrefix(str.Value, thisPackage+":") {
+				editPerformed = true
+				str.Value = str.Value[len(thisPackage):]
+			}
+		}
+
 		m := labelRE.FindStringSubmatch(str.Value)
 		if m == nil {
 			return
 		}
-		if m[3] == m[5] {
-			info.EditLabel++
+		if m[4] != "" && m[4] == m[5] { // e.g. //foo:foo
+			editPerformed = true
 			str.Value = m[1]
+		} else if m[3] != "" && m[4] == "" && m[3] == m[5] { // e.g. @foo//:foo
+			editPerformed = true
+			str.Value = "@" + m[3]
+		}
+		if editPerformed {
+			info.EditLabel++
 		}
 	}
 
@@ -568,7 +600,7 @@ func makeSortKey(index int, x *StringExpr) stringSortKey {
 	switch {
 	case strings.HasPrefix(x.Value, ":"):
 		key.phase = 1
-	case strings.HasPrefix(x.Value, "//"):
+	case strings.HasPrefix(x.Value, "//") || (tables.StripLabelLeadingSlashes && !strings.HasPrefix(x.Value, "@")):
 		key.phase = 2
 	case strings.HasPrefix(x.Value, "@"):
 		key.phase = 3

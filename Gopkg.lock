@@ -98,13 +98,12 @@
   version = "v1.12.53"
 
 [[projects]]
-  branch = "master"
   name = "github.com/bazelbuild/buildtools"
   packages = [
     "build",
     "tables"
   ]
-  revision = "6e6c419fb3240a6469f69981b1d2e70e685bea11"
+  revision = "0e53062d74ecbdd699b007d74c996b6c73039c7f"
 
 [[projects]]
   name = "github.com/beorn7/perks"
@@ -724,6 +723,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "79a32804f9743f7da3bf3ecba0a0346a55ff4dccd5f29e91715f54a7fdb00213"
+  inputs-digest = "55a5e07cebdd4d6b3c6539e42ff0183417a945369810a995bdda7d3e0166bb36"
   solver-name = "gps-cdcl"
   solver-version = 1
