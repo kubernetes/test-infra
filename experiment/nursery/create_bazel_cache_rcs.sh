@@ -24,7 +24,7 @@ make_bazel_rc () {
     # since this is the only hash our cache supports
     echo "startup --host_jvm_args=-Dbazel.DigestFunction=sha256" >> $1
     # use remote caching for all the things
-    echo "--experimental_remote_spawn_cache" >> $1
+    echo "build --experimental_remote_spawn_cache" >> $1
     # point it at our http cache ...
     echo "build --remote_http_cache=${CACHE_HOST}" >> $1
     # don't fail if the cache is unavailable
