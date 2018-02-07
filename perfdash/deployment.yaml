@@ -1,0 +1,44 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: perfdash
+  namespace: default
+  labels:
+    app: perfdash
+    version: "0.11"
+spec:
+  selector:
+    matchLabels:
+      app: perfdash
+  template:
+    metadata:
+      labels:
+        app: perfdash
+    spec:
+      containers:
+      - name: perfdash
+        image: gcr.io/google_containers/perfdash:0.11
+        command:
+          - /perfdash
+          -   --www=true
+          -   --dir=/www
+          -   --address=0.0.0.0:8080
+          -   --builds=100
+        imagePullPolicy: Always
+        ports:
+        - name: status
+          containerPort: 8080
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 8080
+          initialDelaySeconds: 10
+          timeoutSeconds: 1
+        resources:
+          requests:
+            cpu: 600m
+            memory: 1200Mi
+          limits:
+            cpu: 600m
+            memory: 1200Mi
+      restartPolicy: Always
