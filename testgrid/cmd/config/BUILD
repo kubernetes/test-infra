@@ -14,7 +14,6 @@ go_test(
         "yaml2proto_test.go",
     ],
     data = [
-        "//jenkins/job-configs:all-srcs",
         "//mungegithub:submit-queue/deployment/kubernetes/configmap.yaml",
         "//prow:config.yaml",
         "//testgrid:config-yaml",
