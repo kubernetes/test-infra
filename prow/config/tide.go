@@ -24,6 +24,8 @@ import (
 	"k8s.io/test-infra/prow/github"
 )
 
+const timeFormatISO8601 = "2006-01-02T15:04:05Z"
+
 // Tide is config for the tide pool.
 type Tide struct {
 	// SyncPeriodString compiles into SyncPeriod at load time.
@@ -98,11 +100,18 @@ func (tq *TideQuery) Query() string {
 	return strings.Join(toks, " ")
 }
 
-// AllPRs returns all open PRs in the repos covered by the query.
-func (tq *TideQuery) AllPRs() string {
+// AllPRsSince returns all open PRs in the repos covered by the query that
+// have changed since time t.
+func (tq *TideQuery) AllPRsSince(t time.Time) string {
 	toks := []string{"is:pr", "state:open"}
 	for _, r := range tq.Repos {
 		toks = append(toks, fmt.Sprintf("repo:\"%s\"", r))
+	}
+	// Github's GraphQL API silently fails if you provide it with an invalid time
+	// string.
+	// Dates before 1970 are considered invalid.
+	if t.Year() >= 1970 {
+		toks = append(toks, fmt.Sprintf("updated:>=%s", t.Format(timeFormatISO8601)))
 	}
 	return strings.Join(toks, " ")
 }

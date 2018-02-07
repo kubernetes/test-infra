@@ -65,6 +65,10 @@ type Controller struct {
 	kc     kubeClient
 	gc     *git.Client
 
+	// lastSyncStartTime is used to only list PRs that have changed since we last
+	// checked in order to make status context updates cheaper.
+	lastSyncStartTime time.Time
+
 	m     sync.Mutex
 	pools []Pool
 }
@@ -180,6 +184,7 @@ func (c *Controller) setStatuses(all, pool []PullRequest) {
 // Sync runs one sync iteration.
 func (c *Controller) Sync() error {
 	ctx := context.Background()
+	syncStartTime := time.Now()
 	c.logger.Info("Building tide pool.")
 	var pool []PullRequest
 	var all []PullRequest
@@ -194,12 +199,14 @@ func (c *Controller) Sync() error {
 				pool = append(pool, pr)
 			}
 		}
-		allPRs, err := c.search(ctx, q.AllPRs())
+		allPRs, err := c.search(ctx, q.AllPRsSince(c.lastSyncStartTime))
 		if err != nil {
 			return err
 		}
 		all = append(all, allPRs...)
 	}
+	// We were able to find all open PRs so update the last sync time.
+	c.lastSyncStartTime = syncStartTime
 	c.setStatuses(all, pool)
 
 	var pjs []kube.ProwJob
