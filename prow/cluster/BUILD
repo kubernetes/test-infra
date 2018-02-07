@@ -1,4 +1,4 @@
-load("//prow:prow.bzl", "release", "component", "MULTI_KIND")
+load("//prow:prow.bzl", "release", "component", "MULTI_KIND", "BUILD_CLUSTER")
 
 # Usage:
 #   bazel run //prow/cluster:foo.apply
@@ -11,7 +11,11 @@ release(
     component("horologium", "deployment"),
     component("jenkins", "deployment", "service"),
     component("lego", "deployment"),
-    component("mem-limit-range", "limitrange"),
+    component(
+        "mem-limit-range",
+        "limitrange",
+        cluster = BUILD_CLUSTER,
+    ),
     component("plank", "deployment"),
     component("prowjob", "customresourcedefinition"),
     component("pushgateway", "deployment"),
