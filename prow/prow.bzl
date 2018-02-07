@@ -2,6 +2,11 @@ load("@io_bazel_rules_k8s//k8s:object.bzl", "k8s_object")
 load("@io_bazel_rules_k8s//k8s:objects.bzl", "k8s_objects")
 load("//:image.bzl", docker_tags = "tags")
 
+MULTI_KIND = None
+CORE_CLUSTER = "{STABLE_PROW_CLUSTER}"  # For components like hook
+BUILD_CLUSTER = "{STABLE_BUILD_CLUSTER}"  # For untrusted test code
+
+
 # image returns the image prefix for the command.
 #
 # Concretely, image("foo") returns "{STABLE_PROW_REPO}/foo"
@@ -35,14 +40,12 @@ def tags(*cmds):
   return docker_tags(**{prefix(cmd): target(cmd) for cmd in cmds})
 
 
-def object(name, cluster='{STABLE_PROW_CLUSTER}', **kwargs):
+def object(name, cluster=CORE_CLUSTER, **kwargs):
   k8s_object(
       name = name,
       cluster = cluster,
       **kwargs
   )
-
-MULTI_KIND = None
 
 # component generates k8s_object rules and returns a {kind: [targets]} map.
 #
@@ -59,18 +62,17 @@ MULTI_KIND = None
 #     "service": [":hook_service"],
 #     "deployment": [":hook_deployment"],
 #   }
-def component(cmd, *kinds):
+def component(cmd, *kinds, **kwargs):
   targets = {}
   for k in kinds:
       if k == MULTI_KIND:
         n = cmd
       else:
         n = "%s_%s" % (cmd, k)
-      object(
-          name = n,
-          kind = k,
-          template = ":%s.yaml" % n,
-      )
+      kwargs["name"] = n
+      kwargs["kind"] = k
+      kwargs["template"] = ":%s.yaml" % n
+      object(**kwargs)
       if k != MULTI_KIND:
         targets.setdefault(cmd,[]).append(":%s" % n)
         targets.setdefault(k,[]).append(":%s" % n)
