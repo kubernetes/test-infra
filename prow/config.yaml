@@ -1027,6 +1027,7 @@ presubmits:
         - "--batch" # mitigation for https://github.com/bazelbuild/bazel/issues/4311
         - "--build=//... -//vendor/..."
         - "--release=//build/release-tars"
+        - "--experimental-add-caching-configs"
         env:
         - name: TEST_TMPDIR
           value: /scratch/.cache/bazel
@@ -1246,6 +1247,7 @@ presubmits:
         - "--test-args=--build_tag_filters=-e2e,-integration"
         - "--test-args=--test_tag_filters=-e2e,-integration"
         - "--test-args=--flaky_test_attempts=3"
+        - "--experimental-add-caching-configs"
         env:
         - name: TEST_TMPDIR
           value: /root/.cache/bazel
@@ -2999,6 +3001,7 @@ presubmits:
         - --batch
         - --build=//... -//vendor/...
         - --release=//build/release-tars
+        - --experimental-add-caching-configs
         - --gcs=gs://kubernetes-security-prow/ci/pull-security-kubernetes-bazel-build-canary
         - --gcs-shared=gs://kubernetes-security-prow/bazel
         image: gcr.io/k8s-testimages/bazelbuild:latest-latest
@@ -3185,6 +3188,7 @@ presubmits:
         - --test-args=--build_tag_filters=-e2e,-integration
         - --test-args=--test_tag_filters=-e2e,-integration
         - --test-args=--flaky_test_attempts=3
+        - --experimental-add-caching-configs
         image: gcr.io/k8s-testimages/bazelbuild:latest-latest
         imagePullPolicy: Always
         name: ""

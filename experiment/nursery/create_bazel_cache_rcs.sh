@@ -20,11 +20,14 @@
 CACHE_HOST="http://bazel-cache.default:8080"
 
 make_bazel_rc () {
+    # this is the default for recent releases but we set it explicitly
+    # since this is the only hash our cache supports
     echo "startup --host_jvm_args=-Dbazel.DigestFunction=sha256" >> $1
-    echo "build --spawn_strategy=remote" >> $1
-    echo "build --strategy=Javac=remote" >> $1
-    echo "build --genrule_strategy=remote" >> $1
-    echo "build --remote_rest_cache=${CACHE_HOST}" >> $1
+    # use remote caching for all the things
+    echo "--experimental_remote_spawn_cache" >> $1
+    # point it at our http cache ...
+    echo "build --remote_http_cache=${CACHE_HOST}" >> $1
+    # don't fail if the cache is unavailable
     echo "build --remote_local_fallback" >> $1
 }
 
