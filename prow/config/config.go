@@ -439,6 +439,15 @@ func parseConfig(c *Config) error {
 		}
 		c.Tide.SyncPeriod = period
 	}
+	if c.Tide.StatusUpdatePeriodString == "" {
+		c.Tide.StatusUpdatePeriod = c.Tide.SyncPeriod
+	} else {
+		period, err := time.ParseDuration(c.Tide.StatusUpdatePeriodString)
+		if err != nil {
+			return fmt.Errorf("cannot parse duration for tide.status_update_period: %v", err)
+		}
+		c.Tide.StatusUpdatePeriod = period
+	}
 
 	if c.Tide.MaxGoroutines == 0 {
 		c.Tide.MaxGoroutines = 20

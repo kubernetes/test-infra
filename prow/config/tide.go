@@ -32,6 +32,11 @@ type Tide struct {
 	SyncPeriodString string `json:"sync_period,omitempty"`
 	// SyncPeriod specifies how often Tide will sync jobs with Github. Defaults to 1m.
 	SyncPeriod time.Duration `json:"-"`
+	// StatusUpdatePeriodString compiles into StatusUpdatePeriod at load time.
+	StatusUpdatePeriodString string `json:"status_update_period,omitempty"`
+	// StatusUpdatePeriod specifies how often Tide will update Github status contexts.
+	// Defaults to the value of SyncPeriod.
+	StatusUpdatePeriod time.Duration `json:"-"`
 	// Queries must not overlap. It must be impossible for any two queries to
 	// ever return the same PR.
 	// TODO: This will only be possible when we allow specifying orgs. At that
