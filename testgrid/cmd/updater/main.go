@@ -17,10 +17,13 @@ limitations under the License.
 package main
 
 import (
+	"bytes"
+	"compress/zlib"
 	"context"
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
+	"hash/crc32"
 	"io/ioutil"
 	"log"
 	"net/url"
@@ -28,9 +31,11 @@ import (
 	"regexp"
 	"time"
 
+	"k8s.io/test-infra/testgrid/config"
 	"k8s.io/test-infra/testgrid/state"
 
 	"cloud.google.com/go/storage"
+	"github.com/golang/protobuf/proto"
 	"google.golang.org/api/iterator"
 )
 
@@ -55,10 +60,27 @@ type Finished struct {
 	Metadata   Metadata `json:"metadata"`
 }
 
-type Metadata struct {
-	Repo        string `json:"repo"` // First repo
-	RepoCommit  string `json:"repo-commit"`
-	InfraCommit string `json:"infra-commit"`
+// infra-commit, repos, repo, repo-commit, others
+type Metadata map[string]interface{}
+
+func (m Metadata) String(name string) (*string, bool) {
+	if v, ok := m[name]; !ok {
+		return nil, false
+	} else if t, good := v.(string); !good {
+		return nil, true
+	} else {
+		return &t, true
+	}
+}
+
+func (m Metadata) Meta(name string) (*Metadata, bool) {
+	if v, ok := m[name]; !ok {
+		return nil, true
+	} else if t, good := v.(Metadata); !good {
+		return nil, false
+	} else {
+		return &t, true
+	}
 }
 
 type JunitSuites struct {
@@ -69,7 +91,7 @@ type JunitSuites struct {
 type JunitSuite struct {
 	XMLName  xml.Name      `xml:"testsuite"`
 	Name     string        `xml:"name,attr"`
-	Time     float64       `xml:"time,attr"`
+	Time     float64       `xml:"time,attr"` // Seconds
 	Failures int           `xml:"failures,attr"`
 	Tests    int           `xml:"tests,attr"`
 	Results  []JunitResult `xml:"testcase"`
@@ -97,7 +119,7 @@ func (jr JunitResult) RowResult() state.Row_Result {
 	return state.Row_PASS
 }
 
-func extractRows(buf []byte, results map[string]state.Row_Result) error {
+func extractRows(buf []byte, results map[string]state.Row_Result, metrics map[string]map[string]float64) error {
 	var suites JunitSuites
 	// Try to parse it as a <testsuites/> object
 	err := xml.Unmarshal(buf, &suites)
@@ -131,6 +153,11 @@ func extractRows(buf []byte, results map[string]state.Row_Result) error {
 				n = fmt.Sprintf("%s [%d]", prefix, i)
 			}
 			results[n] = sr.RowResult()
+			if sr.Time > 0 {
+				metrics[n] = map[string]float64{
+					elapsedKey: sr.Time,
+				}
+			}
 		}
 	}
 	return nil
@@ -142,6 +169,8 @@ type BuildResult struct {
 	Finished int64
 	Passed   bool
 	Results  map[string]state.Row_Result
+	Metrics  map[string]map[string]float64
+	Metadata Metadata
 }
 
 func (br BuildResult) Overall() state.Row_Result {
@@ -160,6 +189,28 @@ func (br BuildResult) Overall() state.Row_Result {
 	}
 }
 
+var uniq int
+
+func AppendMetric(metric *state.Metric, idx int32, value float64) {
+	if l := int32(len(metric.Indices)); l == 0 || metric.Indices[l-2]+metric.Indices[l-1] != idx {
+		// If we append V to idx 9 and metric.Indices = [3, 4] then the last filled index is 3+4-1=7
+		// So that means we have holes in idx 7 and 8, so start a new group.
+		metric.Indices = append(metric.Indices, idx, 1)
+	} else {
+		metric.Indices[l-1]++ // Expand the length of the current filled list
+	}
+	metric.Values = append(metric.Values, value)
+}
+
+func FindMetric(row *state.Row, name string) *state.Metric {
+	for _, m := range row.Metrics {
+		if m.Name == name {
+			return m
+		}
+	}
+	return nil
+}
+
 func AppendResult(row *state.Row, result state.Row_Result, count int) {
 	latest := int32(result)
 	n := len(row.Results)
@@ -169,12 +220,44 @@ func AppendResult(row *state.Row, result state.Row_Result, count int) {
 	default:
 		row.Results[n-1] += int32(count)
 	}
+	for i := 0; i < count; i++ {
+		row.CellIds = append(row.CellIds, fmt.Sprintf("%d", uniq))
+		row.Messages = append(row.Messages, fmt.Sprintf("messsage %d", uniq))
+		row.Icons = append(row.Icons, string(int('A')+uniq%26))
+		uniq++
+	}
 }
 
-func AppendColumn(grid *state.Grid, rows map[string]*state.Row, build BuildResult) {
+func AppendColumn(headers []string, grid *state.Grid, rows map[string]*state.Row, build BuildResult) {
 	c := state.Column{
 		Build:   build.Id,
 		Started: float64(build.Started * 1000),
+	}
+	for _, h := range headers {
+		if build.Finished == 0 {
+			c.Extra = append(c.Extra, "")
+			continue
+		}
+		trunc := 0
+		if h == "Commit" { // TODO(fejta): fix
+			h = "repo-commit"
+			trunc = 9
+		}
+		var v string
+		p, ok := build.Metadata.String(h)
+		if !ok {
+			log.Printf("%s metadata missing %s", c.Build, h)
+			v = "missing"
+		} else if p == nil {
+			log.Printf("%s metadata has malformed %s", c.Build, h)
+			v = "malformed"
+		} else {
+			v = *p
+		}
+		if trunc > 0 && trunc < len(v) {
+			v = v[0:trunc]
+		}
+		c.Extra = append(c.Extra, v)
 	}
 	grid.Columns = append(grid.Columns, &c)
 
@@ -200,12 +283,22 @@ func AppendColumn(grid *state.Grid, rows map[string]*state.Row, build BuildResul
 		}
 
 		AppendResult(r, result, 1)
+		for k, v := range build.Metrics[name] {
+			m := FindMetric(r, k)
+			if m == nil {
+				m = &state.Metric{Name: k}
+				r.Metrics = append(r.Metrics, m)
+			}
+			AppendMetric(m, int32(len(r.Messages)), v)
+		}
 	}
 
 	for _, row := range missing {
 		AppendResult(row, state.Row_NO_RESULT, 1)
 	}
 }
+
+const elapsedKey = "seconds-elapsed"
 
 func ReadBuild(build Build) (*BuildResult, error) {
 	br := BuildResult{
@@ -221,10 +314,13 @@ func ReadBuild(build Build) (*BuildResult, error) {
 		return nil, fmt.Errorf("could not decode started.json: %v", err)
 	}
 	br.Started = started.Timestamp
+	br.Results = map[string]state.Row_Result{}
+	br.Metrics = map[string]map[string]float64{}
 
 	f := build.Bucket.Object(build.Prefix + "finished.json")
 	fr, err := f.NewReader(build.Context)
 	if err == storage.ErrObjectNotExist {
+		br.Results["Overall"] = br.Overall()
 		return &br, nil
 	}
 
@@ -234,7 +330,13 @@ func ReadBuild(build Build) (*BuildResult, error) {
 	}
 
 	br.Finished = finished.Timestamp
+	br.Metadata = finished.Metadata
 	br.Passed = finished.Passed
+
+	br.Results["Overall"] = br.Overall()
+	br.Metrics["Overall"] = map[string]float64{
+		elapsedKey: float64(br.Finished - br.Started),
+	}
 
 	re := regexp.MustCompile(`.+/junit_.+\.xml$`)
 
@@ -254,9 +356,6 @@ func ReadBuild(build Build) (*BuildResult, error) {
 		}
 		artifacts = append(artifacts, a.Name)
 	}
-	br.Results = map[string]state.Row_Result{
-		"Overall": br.Overall(),
-	}
 	for _, ap := range artifacts {
 		ar, err := build.Bucket.Object(ap).NewReader(build.Context)
 		if err != nil {
@@ -270,7 +369,7 @@ func ReadBuild(build Build) (*BuildResult, error) {
 			return nil, fmt.Errorf("failed to read all of %s: %v", ap, err)
 		}
 
-		if err = extractRows(buf, br.Results); err != nil {
+		if err = extractRows(buf, br.Results, br.Metrics); err != nil {
 			return nil, fmt.Errorf("failed to parse %s: %v", ap, err)
 		}
 	}
@@ -328,15 +427,24 @@ func ListBuilds(client *storage.Client, ctx context.Context, path string, builds
 	return nil
 }
 
-func ReadBuilds(builds chan Build, max int, dur time.Duration) state.Grid {
-	log.Println("Reading builds...")
+func Headers(group config.TestGroup) []string {
+	var extra []string
+	for _, h := range group.ColumnHeader {
+		extra = append(extra, h.ConfigurationValue)
+	}
+	return extra
+}
+
+func ReadBuilds(group config.TestGroup, builds chan Build, max int, dur time.Duration) state.Grid {
 	i := 0
 	var stop time.Time
 	if dur != 0 {
 		stop = time.Now().Add(-dur)
 	}
 	grid := &state.Grid{}
+	h := Headers(group)
 	rows := map[string]*state.Row{}
+	log.Printf("Reading builds after %s (%d)", stop, stop.Unix())
 	for b := range builds {
 		i++
 		if max > 0 && i > max {
@@ -348,8 +456,8 @@ func ReadBuilds(builds chan Build, max int, dur time.Duration) state.Grid {
 			log.Printf("FAIL %s: %v", b.Prefix, err)
 			continue
 		}
-		AppendColumn(grid, rows, *br)
-		log.Printf("found! %+v", br)
+		AppendColumn(h, grid, rows, *br)
+		log.Printf("found: %s pass:%t %d-%d: %d results", br.Id, br.Passed, br.Started, br.Finished, len(br.Results))
 		if br.Started < stop.Unix() {
 			log.Printf("Latest result before %s", stop)
 			break
@@ -361,16 +469,55 @@ func ReadBuilds(builds chan Build, max int, dur time.Duration) state.Grid {
 	return *grid
 }
 
-func Days(d int) time.Duration {
-	return 24 * time.Duration(d) * time.Hour // Close enough
+func Days(d float64) time.Duration {
+	return time.Duration(24*d) * time.Hour // Close enough
+}
+
+func ReadConfig(obj *storage.ObjectHandle, ctx context.Context) (*config.Configuration, error) {
+	r, err := obj.NewReader(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to open config: %v", err)
+	}
+	buf, err := ioutil.ReadAll(r)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read config: %v", err)
+	}
+	var cfg config.Configuration
+	if err = proto.Unmarshal(buf, &cfg); err != nil {
+		return nil, fmt.Errorf("failed to parse: %v", err)
+	}
+	return &cfg, nil
+}
+
+func Group(cfg config.Configuration, name string) (*config.TestGroup, bool) {
+	for _, g := range cfg.TestGroups {
+		if g.Name == name {
+			return g, true
+		}
+	}
+	return nil, false
 }
 
 func main() {
+	b := "fejternetes"
+	o := "ci-kubernetes-test-go"
+
 	ctx := context.Background()
 	client, err := storage.NewClient(ctx)
 	if err != nil {
 		log.Fatalf("Failed to create storage client: %v", err)
 	}
+
+	cfg, err := ReadConfig(client.Bucket(b).Object("config"), ctx)
+	if err != nil {
+		log.Fatalf("Failed to read gs://%s/config: %v", b, err)
+	}
+	tg, ok := Group(*cfg, o)
+	if !ok {
+		log.Fatalf("Failed to find %s in gs://%s/config", o, b)
+	}
+	log.Println(tg)
+
 	bkt := client.Bucket("kubernetes-jenkins")
 	attrs, err := bkt.Attrs(ctx)
 	if err != nil {
@@ -392,6 +539,40 @@ func main() {
 		}
 		close(builds)
 	}()
-	grid := ReadBuilds(builds, 1000, Days(1))
-	log.Printf("Grid: %v", grid)
+	grid := ReadBuilds(*tg, builds, 1000, Days(0.25))
+	log.Printf("Grid: %d %s", len(grid.Columns), grid.String())
+	buf, err := proto.Marshal(&grid)
+	if err != nil {
+		log.Fatalf("Failed to encode grid: %v", err)
+	}
+	var zbuf bytes.Buffer
+	zw := zlib.NewWriter(&zbuf)
+	if _, err = zw.Write(buf); err != nil {
+		log.Fatalf("Failed to compress gs://%s/%s: %v", b, o, err)
+	}
+	if err = zw.Close(); err != nil {
+		log.Fatalf("Failed to close zlib gs://%s/%s buffer: %v", b, o, err)
+	}
+	if b == "k8s-testgrid" {
+		log.Fatalf("do not change prod")
+	}
+	w := client.Bucket(b).Object(o).NewWriter(ctx)
+	w.SendCRC32C = true
+	buf = zbuf.Bytes()
+	// Send our CRC32 to ensure google received the same data we sent.
+	// See checksum example at:
+	// https://godoc.org/cloud.google.com/go/storage#Writer.Write
+	w.ObjectAttrs.CRC32C = crc32.Checksum(buf, crc32.MakeTable(crc32.Castagnoli))
+	w.ProgressFunc = func(bytes int64) {
+		log.Printf("Uploading gs://%s/%s: %d/%d...", b, o, bytes, len(buf))
+	}
+	if n, err := w.Write(buf); err != nil {
+		log.Fatalf("Failed to write gs://%s/%s: %v", b, o, err)
+	} else if n != len(buf) {
+		log.Fatalf("Partial gs://%s/%s write: %d < %d", b, o, n, len(buf))
+	}
+	if err = w.Close(); err != nil {
+		log.Fatalf("Failed to close write to gs://%s/%s: %v", b, o, err)
+	}
+	log.Print("Success!")
 }
