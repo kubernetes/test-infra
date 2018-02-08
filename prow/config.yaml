@@ -5441,7 +5441,7 @@ postsubmits:
         imagePullPolicy: Always
 
   tensorflow/minigo:
-  - name: tf-minigo-presubmit
+  - name: tf-minigo-postsubmit
     agent: kubernetes
     branches:
     - master
@@ -13374,6 +13374,16 @@ periodics:
   spec:
     containers:
     - image: gcr.io/mlkube-testing/kubeflow-testing:latest
+      imagePullPolicy: Always
+
+- name: tf-minigo-periodic
+  interval: 8h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+  spec:
+    containers:
+    - image: gcr.io/minigo-testing/minigo-testing:latest
       imagePullPolicy: Always
 
 - interval: 1h
