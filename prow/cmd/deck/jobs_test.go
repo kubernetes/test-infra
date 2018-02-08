@@ -90,13 +90,13 @@ func TestGetLog(t *testing.T) {
 	if res, err := ja.GetJobLog("job", "123"); err != nil {
 		t.Fatalf("Failed to get log: %v", err)
 	} else if got, expect := string(res), "clusterA"; got != expect {
-		t.Errorf("Unexpected result geting logs for job 'job'. Expected %q, but got %q.", expect, got)
+		t.Errorf("Unexpected result getting logs for job 'job'. Expected %q, but got %q.", expect, got)
 	}
 
 	if res, err := ja.GetJobLog("jib", "123"); err != nil {
 		t.Fatalf("Failed to get log: %v", err)
 	} else if got, expect := string(res), "clusterB"; got != expect {
-		t.Errorf("Unexpected result geting logs for job 'job'. Expected %q, but got %q.", expect, got)
+		t.Errorf("Unexpected result getting logs for job 'job'. Expected %q, but got %q.", expect, got)
 	}
 }
 
