@@ -42,7 +42,7 @@ func (c fakeClowder) readCat(category string) (string, error) {
 	if category == "error" {
 		return "", errors.New(string(c))
 	}
-	return string(c), nil
+	return fmt.Sprintf("![fake cat image](%s)", c), nil
 }
 
 func TestRealCat(t *testing.T) {
@@ -266,7 +266,7 @@ func TestCats(t *testing.T) {
 			state:         "open",
 			action:        github.GenericCommentActionCreated,
 			body:          "/meow error",
-			shouldComment: false,
+			shouldComment: true,
 			shouldError:   true,
 		},
 	}
@@ -283,16 +283,25 @@ func TestCats(t *testing.T) {
 		}
 		err := handle(fc, logrus.WithField("plugin", pluginName), e, fakeClowder("tubbs"))
 		if !tc.shouldError && err != nil {
-			t.Errorf("For case %s, didn't expect error: %v", tc.name, err)
+			t.Errorf("%s: didn't expect error: %v", tc.name, err)
 			continue
 		} else if tc.shouldError && err == nil {
-			t.Errorf("For case %s, expected an error to occur", tc.name)
+			t.Errorf("%s: expected an error to occur", tc.name)
 			continue
 		}
 		if tc.shouldComment && len(fc.IssueComments[5]) != 1 {
-			t.Errorf("For case %s, should have commented.", tc.name)
+			t.Errorf("%s: should have commented.", tc.name)
+		} else if tc.shouldComment {
+			shouldImage := !tc.shouldError
+			body := fc.IssueComments[5][0].Body
+			hasImage := strings.Contains(body, "![")
+			if hasImage && !shouldImage {
+				t.Errorf("%s: unexpected image in %s", tc.name, body)
+			} else if !hasImage && shouldImage {
+				t.Errorf("%s: no image in %s", tc.name, body)
+			}
 		} else if !tc.shouldComment && len(fc.IssueComments[5]) != 0 {
-			t.Errorf("For case %s, should not have commented.", tc.name)
+			t.Errorf("%s: should not have commented.", tc.name)
 		}
 	}
 }
