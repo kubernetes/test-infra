@@ -99,6 +99,6 @@ if __name__ == '__main__':
     PARSER.add_argument(
         '--extra-publish-file', help='Additional version file uploads to')
     PARSER.add_argument(
-        '--allow-dup', help='Allow overwriting if the build exists on gcs')
+        '--allow-dup', action='store_true', help='Allow overwriting if the build exists on gcs')
     ARGS = PARSER.parse_args()
     main(ARGS)
