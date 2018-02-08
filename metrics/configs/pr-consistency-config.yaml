@@ -32,7 +32,7 @@ query: |
           cast(date(started) as date) day
         FROM [k8s-gubernator:build.all]
         where
-          /* Select results that have occured on or after the day of <LAST_DATA_TIME> (those results were
+          /* Select results that have occurred on or after the day of <LAST_DATA_TIME> (those results were
              for the day before), but don't include results from today, only return results for complete days. */
           cast(date(started) as date) >= cast(date(sec_to_timestamp(<LAST_DATA_TIME>)) as date)
           and cast(date(started) as date) < cast(current_date() as date) /* Drop results from partial day */
