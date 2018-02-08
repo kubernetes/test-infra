@@ -9667,6 +9667,7 @@
   },
   "ci-kubernetes-federation-build-1-7": {
     "args": [
+      "--allow-dup",
       "--fast",
       "--federation=k8s-jkns-e2e-gce-f8n-1-7",
       "--release=kubernetes-federation-release-1-7"
@@ -9678,6 +9679,7 @@
   },
   "ci-kubernetes-federation-build-1-8": {
     "args": [
+      "--allow-dup",
       "--fast",
       "--federation=k8s-jkns-e2e-gce-f8n-1-8",
       "--release=kubernetes-federation-release-1-8"
