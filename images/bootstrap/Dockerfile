@@ -38,6 +38,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     openssh-client \
     pkg-config \
     python \
+    python-dev \
     python-openssl \
     python-pip \
     rsync \
@@ -46,7 +47,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     xz-utils \
     zip \
     zlib1g-dev \
-    && apt-get clean
+    && apt-get clean \
+    && python -m pip install --upgrade pip setuptools wheel
 
 # Install gcloud
 
