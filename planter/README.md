@@ -36,7 +36,7 @@ Planter repects the following environment variables:
 
 Currently, SELinux is disabled for the container that runs the bazel
 environment, which allows for the rest of the host system to leave SELinux
-enabled. Automatic relabeling is not done to avoid inadvertantly causing issues
+enabled. Automatic relabeling is not done to avoid inadvertently causing issues
 with the host system.
 
 
