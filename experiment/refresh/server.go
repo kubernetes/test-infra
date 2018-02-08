@@ -32,12 +32,26 @@ import (
 	"k8s.io/test-infra/prow/hook"
 	"k8s.io/test-infra/prow/kube"
 	"k8s.io/test-infra/prow/pjutil"
+	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/report"
 )
 
 const pluginName = "refresh"
 
 var refreshRe = regexp.MustCompile(`(?mi)^/refresh\s*$`)
+
+func HelpProvider(enabledRepos []string) (*pluginhelp.PluginHelp, error) {
+	pluginHelp := &pluginhelp.PluginHelp{
+		Description: `The refresh plugin is used for refreshing status contexts in PRs. Useful in case Github breaks down.`,
+	}
+	pluginHelp.AddCommand(pluginhelp.Command{
+		Usage:       "/refresh",
+		Description: "Refresh status contexts on a PR.",
+		WhoCanUse:   "Anyone",
+		Examples:    []string{"/refresh"},
+	})
+	return pluginHelp, nil
+}
 
 type Server struct {
 	hmacSecret  []byte
@@ -46,17 +60,6 @@ type Server struct {
 	configAgent *config.Agent
 	ghc         *github.Client
 	log         *logrus.Entry
-}
-
-func NewServer(creds string, hmac []byte, ghc *github.Client, prowURL string, configAgent *config.Agent) *Server {
-	return &Server{
-		hmacSecret:  hmac,
-		credentials: creds,
-		prowURL:     prowURL,
-		configAgent: configAgent,
-		ghc:         ghc,
-		log:         logrus.StandardLogger().WithField("plugin", pluginName),
-	}
 }
 
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {

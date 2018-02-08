@@ -33,6 +33,7 @@ import (
 	"k8s.io/test-infra/prow/git"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/hook"
+	"k8s.io/test-infra/prow/pluginhelp"
 	"k8s.io/test-infra/prow/plugins"
 )
 
@@ -51,6 +52,21 @@ type githubClient interface {
 	IsMember(org, user string) (bool, error)
 	ListIssueComments(org, repo string, number int) ([]github.IssueComment, error)
 	ListOrgMembers(org string) ([]github.TeamMember, error)
+}
+
+func HelpProvider(enabledRepos []string) (*pluginhelp.PluginHelp, error) {
+	pluginHelp := &pluginhelp.PluginHelp{
+		Description: `The cherrypick plugin is used for cherrypicking PRs across branches. For every successful cherrypick invocation a new PR is opened against the target branch and assigned to the requester.`,
+	}
+	pluginHelp.AddCommand(pluginhelp.Command{
+		Usage:       "/cherrypick [branch]",
+		Description: "Cherrypick a PR to a different branch. This command works both in merged PRs (the cherrypick PR is opened immediately) and open PRs (the cherrypick PR opens as soon as the original PR merges).",
+		Featured:    true,
+		// depends on how the cherrypick server runs; needs auth by default (--allow-all=false)
+		WhoCanUse: "Members of the trusted organization for the repo.",
+		Examples:  []string{"/cherrypick release-3.9"},
+	})
+	return pluginHelp, nil
 }
 
 // Server implements http.Handler. It validates incoming GitHub webhooks and
@@ -76,35 +92,6 @@ type Server struct {
 
 	repoLock sync.Mutex
 	repos    []github.Repo
-}
-
-func NewServer(
-	name string,
-	email string,
-	hmac []byte,
-	gc *git.Client,
-	ghc *github.Client,
-	repos []github.Repo,
-	prowAssignments bool,
-	allowAll bool,
-) *Server {
-	return &Server{
-		hmacSecret: hmac,
-		botName:    name,
-		email:      email,
-
-		gc:  gc,
-		ghc: ghc,
-		log: logrus.StandardLogger().WithField("plugin", pluginName),
-
-		prowAssignments: prowAssignments,
-		allowAll:        allowAll,
-
-		bare:     &http.Client{},
-		patchURL: "https://patch-diff.githubusercontent.com",
-
-		repos: repos,
-	}
 }
 
 // ServeHTTP validates an incoming webhook and puts it into the event channel.
