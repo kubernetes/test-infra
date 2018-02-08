@@ -66,6 +66,7 @@ filegroup(
         "//prow/commentpruner:all-srcs",
         "//prow/config:all-srcs",
         "//prow/cron:all-srcs",
+        "//prow/external-plugins/needs-rebase:all-srcs",
         "//prow/genfiles:all-srcs",
         "//prow/git:all-srcs",
         "//prow/github:all-srcs",
