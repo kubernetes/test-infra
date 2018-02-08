@@ -11256,6 +11256,23 @@
       "sig-testing"
     ]
   },
+  "ci-kubernetes-e2e-autoscaling-vpa-recommender": {
+    "args": [
+      "--check-leaked-resources",
+      "--env-file=jobs/platform/gce.env",
+      "--extract=ci/latest",
+      "--gcp-node-image=gci",
+      "--gcp-zone=us-central1-f",
+      "--autoscaler-vpa-tests=recommender",
+      "--provider=gce",
+      "--test=false",
+      "--timeout=60m"
+    ],
+    "scenario": "kubernetes_e2e",
+    "sigOwners": [
+      "sig-autoscaling"
+    ]
+  },
   "spark-periodic-default-gke": {
     "args": [
       "--check-leaked-resources",
