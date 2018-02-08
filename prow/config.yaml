@@ -4884,7 +4884,7 @@ presubmits:
       preset-service-account: true
     spec:
       containers:
-      - image: gcr.io/minigo-testing/minigo-testing:latest
+      - image: gcr.io/minigo-testing/minigo-prow-harness:latest
         imagePullPolicy: Always
 
 postsubmits:
@@ -5449,7 +5449,7 @@ postsubmits:
       preset-service-account: true
     spec:
       containers:
-      - image: gcr.io/minigo-testing/minigo-testing:latest
+      - image: gcr.io/minigo-testing/minigo-prow-harness:latest
         imagePullPolicy: Always
 
 periodics:
@@ -14053,6 +14053,6 @@ periodics:
     preset-service-account: true
   spec:
     containers:
-    - image: gcr.io/minigo-testing/minigo-testing:latest
+    - image: gcr.io/minigo-testing/minigo-prow-harness:latest
       imagePullPolicy: Always
 
