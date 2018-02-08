@@ -1196,8 +1196,6 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-imageubuntu1604
 - name: ci-kubernetes-e2e-kops-aws-newrunner
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-newrunner
-- name: ci-kubernetes-e2e-kops-aws-release-1-7
-  gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-kops-aws-release-1-7
 - name: ci-kubernetes-e2e-gce-slow-release-1-7
   gcs_prefix: kubernetes-jenkins/logs/ci-kubernetes-e2e-gce-slow-release-1-7
 - name: ci-kubernetes-e2e-gce-cos-k8sstable2-slow
@@ -3242,7 +3240,7 @@ dashboards:
   - name: gce-release-1.7
     test_group_name: ci-kubernetes-e2e-gce-release-1-7
   - name: kops-aws-release-1.7
-    test_group_name: ci-kubernetes-e2e-kops-aws-release-1-7
+    test_group_name: ci-kubernetes-e2e-kops-aws-stable3
   - name: gce-slow-release-1.7
     test_group_name: ci-kubernetes-e2e-gce-slow-release-1-7
   - name: gce-serial-release-1.7
@@ -3369,7 +3367,7 @@ dashboards:
   - name: gci-gce-scalability-release-1.7
     test_group_name: ci-kubernetes-e2e-gci-gce-scalability-release-1-7
   - name: aws-release-1.7
-    test_group_name: ci-kubernetes-e2e-kops-aws-release-1-7
+    test_group_name: ci-kubernetes-e2e-kops-aws-stable3
   - name: gce-alpha-features-release-1.7
     test_group_name: ci-kubernetes-e2e-gce-alpha-features-release-1-7
   - name: gce-federation-release-1.7
