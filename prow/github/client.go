@@ -82,7 +82,7 @@ type httpClient interface {
 	Do(req *http.Request) (*http.Response, error)
 }
 
-// Inteface for how prow interacts with the graphql client, which we may throttle.
+// Interface for how prow interacts with the graphql client, which we may throttle.
 type gqlClient interface {
 	Query(ctx context.Context, q interface{}, vars map[string]interface{}) error
 }

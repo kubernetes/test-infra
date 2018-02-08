@@ -147,7 +147,7 @@ func main() {
 	close(p.updates)
 	errors := <-p.done
 	if len(errors) > 0 {
-		log.Fatalf("Encountered %d errrors protecting branches: %v", len(errors), errors)
+		log.Fatalf("Encountered %d errors protecting branches: %v", len(errors), errors)
 	}
 }
 

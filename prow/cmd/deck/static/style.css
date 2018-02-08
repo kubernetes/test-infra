@@ -289,7 +289,7 @@ span.label:hover {
     color: #78909C;
 }
 
-/* Known GitHub Labels, can be overriden in extensions/style.css */
+/* Known GitHub Labels, can be overridden in extensions/style.css */
 /* NOTE: spaces must be stripped from the label name */
 .label.lgtm {
     background-color: #15dd18;

@@ -78,7 +78,7 @@ def component(cmd, *kinds, **kwargs):
         targets.setdefault(k,[]).append(":%s" % n)
   return targets
 
-# release packages mulitple components into a release.
+# release packages multiple components into a release.
 #
 # Generates a k8s_objects() rule for each component and kind, as well as an
 # target which includes everything.
