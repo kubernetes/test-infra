@@ -491,7 +491,7 @@ func TestMigrateOptions(t *testing.T) {
 			expectedOption: ov,
 		},
 		{
-			name:           "flag and no env, push overwites env",
+			name:           "flag and no env, push overwrites env",
 			setOption:      true,
 			push:           true,
 			expectedEnv:    &ov,
