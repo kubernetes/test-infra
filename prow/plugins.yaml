@@ -7,6 +7,7 @@ triggers:
   - kubernetes
   - kubernetes-incubator
   - kubernetes-security
+  - kubernetes-sigs
   - kubernetes-sig-testing
   - google/cadvisor  
   - tensorflow/k8s
@@ -48,6 +49,7 @@ approve:
   - kubernetes/website
   implicit_self_approve: true
 - repos:
+  - kubernetes-sigs
   - kubernetes-sig-testing
   implicit_self_approve: true
 
@@ -118,8 +120,10 @@ milestonestatus:
   maintainers_id: 2460384
 
 config_updater:
-  config_file: prow/config.yaml
-  plugin_file: prow/plugins.yaml
+  maps:
+    label_sync/labels.yaml: label-config
+    prow/config.yaml: config
+    prow/plugins.yaml: plugins
 
 plugins:
   google/cadvisor:
@@ -244,6 +248,24 @@ plugins:
   - lgtm
   - lifecycle
   - size
+
+  kubernetes-sigs:
+  - assign
+  - blunderbuss
+  - cat
+  - cla
+  - dog
+  - heart
+  - help
+  - hold
+  - label
+  - lgtm
+  - lifecycle
+  - shrug
+  - size
+  - skip
+  - wip
+  - yuks
 
   kubernetes-sig-testing:
   - assign

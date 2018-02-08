@@ -1,5 +1,36 @@
 package(default_visibility = ["//visibility:public"])
 
+load("@io_bazel_rules_docker//docker:docker.bzl", "docker_bundle")
+load("@io_bazel_rules_docker//contrib:push-all.bzl", "docker_push")
+load(
+    ":prow.bzl",
+    prow_tags = "tags",
+)
+
+docker_bundle(
+    name = "release",
+    images = prow_tags(
+        "branchprotector",
+        "clonerefs",
+        "deck",
+        "hook",
+        "horologium",
+        "initupload",
+        "jenkins-operator",
+        "plank",
+        "sinker",
+        "splice",
+        "tide",
+        "tot",
+    ),
+    stamp = True,
+)
+
+docker_push(
+    name = "release-push",
+    bundle = ":release",
+)
+
 filegroup(
     name = "configs",
     srcs = glob(["*.yaml"]),

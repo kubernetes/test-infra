@@ -20,6 +20,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"go/build"
 	"io"
 	"io/ioutil"
 	"log"
@@ -64,11 +65,26 @@ func init() {
 }
 
 // Returns $GOPATH/src/k8s.io/...
-func k8s(parts ...string) string {
-	p := []string{os.Getenv("GOPATH"), "src", "k8s.io"}
-	for _, a := range parts {
-		p = append(p, a)
+func k8s(topdir string, parts ...string) string {
+	gopathList := filepath.SplitList(build.Default.GOPATH)
+	found := false
+	var kubedir string
+	for _, gopath := range gopathList {
+		kubedir = filepath.Join(gopath, "src", "k8s.io", topdir)
+		if _, err := os.Stat(kubedir); !os.IsNotExist(err) {
+			found = true
+			break
+		}
 	}
+	if !found {
+		// Default to the first item in GOPATH list.
+		kubedir = filepath.Join(gopathList[0], "src", "k8s.io", topdir)
+		log.Printf(
+			"Warning: Couldn't find directory src/k8s.io/%s under any of GOPATH %s, defaulting to %s",
+			topdir, build.Default.GOPATH, kubedir)
+	}
+	p := []string{kubedir}
+	p = append(p, parts...)
 	return filepath.Join(p...)
 }
 

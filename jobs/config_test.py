@@ -59,14 +59,6 @@ class JobTest(unittest.TestCase):
     # also exclude .pyc
     excludes.extend(e + 'c' for e in excludes if e.endswith('.py'))
 
-    yaml_suffix = {
-        'jenkins/job-configs/bootstrap-maintenance.yaml' : 'suffix',
-        'jenkins/job-configs/kubernetes-jenkins/bootstrap-ci-commit.yaml' : 'commit-suffix',
-        'jenkins/job-configs/kubernetes-jenkins/bootstrap-ci-repo.yaml' : 'repo-suffix',
-        'jenkins/job-configs/kubernetes-jenkins/bootstrap-ci-soak.yaml' : 'soak-suffix',
-        'jenkins/job-configs/kubernetes-jenkins/bootstrap-ci-dockerpush.yaml' : 'dockerpush-suffix'
-    }
-
     prow_config = '../prow/config.yaml'
 
     realjobs = {}
@@ -113,65 +105,6 @@ class JobTest(unittest.TestCase):
             self.fail('the following .env files are not referenced ' +
                       'in config.json, please run `bazel run //jobs:env_gc: ' +
                       ' '.join(orphans))
-
-    def test_bootstrap_maintenance_yaml(self):
-        def check(job, name):
-            job_name = 'maintenance-%s' % name
-            self.assertIn('frequency', job)
-            self.assertIn('repo-name', job)
-            self.assertIn('.', job['repo-name'])  # Has domain
-            self.assertGreater(job['timeout'], 0)
-            return job_name
-
-        self.check_bootstrap_yaml('jenkins/job-configs/bootstrap-maintenance.yaml', check)
-
-    def test_bootstrap_ci_commit_yaml(self):
-        def check(job, name):
-            job_name = 'ci-%s' % name
-            self.assertIn('branch', job)
-            self.assertIn('commit-frequency', job)
-            self.assertIn('giturl', job)
-            self.assertIn('repo-name', job)
-            self.assertIn('timeout', job)
-            self.assertNotIn('use-logexporter', job)
-            self.assertGreater(job['timeout'], 0, job)
-
-            return job_name
-
-        self.check_bootstrap_yaml(
-            'jenkins/job-configs/kubernetes-jenkins/bootstrap-ci-commit.yaml',
-            check)
-
-    def test_bootstrap_ci_repo_yaml(self):
-        def check(job, name):
-            job_name = 'ci-%s' % name
-            self.assertIn('branch', job)
-            self.assertIn('frequency', job)
-            self.assertIn('repo-name', job)
-            self.assertIn('timeout', job)
-            self.assertNotIn('json', job)
-            self.assertNotIn('use-logexporter', job)
-            self.assertGreater(job['timeout'], 0, name)
-            return job_name
-
-        self.check_bootstrap_yaml(
-            'jenkins/job-configs/kubernetes-jenkins/bootstrap-ci-repo.yaml',
-            check)
-
-    def test_bootstrap_ci_dockerpush(self):
-        def check(job, name):
-            job_name = 'ci-%s' % name
-            self.assertIn('branch', job)
-            self.assertIn('frequency', job)
-            self.assertIn('repo-name', job)
-            self.assertIn('timeout', job)
-            self.assertNotIn('use-logexporter', job)
-            self.assertGreater(job['timeout'], 0, name)
-            return job_name
-
-        self.check_bootstrap_yaml(
-            'jenkins/job-configs/kubernetes-jenkins/bootstrap-ci-dockerpush.yaml',
-            check)
 
     def check_job_template(self, tmpl):
         builders = tmpl.get('builders')
@@ -242,74 +175,9 @@ class JobTest(unittest.TestCase):
             for job in joblist:
                 self.add_prow_job(job)
 
-    def load_bootstrap_yaml(self, path):
-        with open(config_sort.test_infra(path)) as fp:
-            doc = yaml.safe_load(fp)
-
-        project = None
-        defined_templates = set()
-        for item in doc:
-            if not isinstance(item, dict):
-                continue
-            if isinstance(item.get('job-template'), dict):
-                defined_templates.add(item['job-template']['name'])
-                self.check_job_template(item['job-template'])
-            if not isinstance(item.get('project'), dict):
-                continue
-            project = item['project']
-            self.assertIn('bootstrap-', project.get('name'))
-            break
-        else:
-            self.fail('Could not find bootstrap-pull-jobs project')
-
-        self.assertIn('jobs', project)
-        used_templates = {j for j in project['jobs']}
-        msg = '\nMissing templates: %s\nUnused templates: %s' % (
-            ','.join(used_templates - defined_templates),
-            ','.join(defined_templates - used_templates))
-        self.assertEquals(defined_templates, used_templates, msg)
-
-        self.assertIn(path, self.yaml_suffix)
-        jobs = project.get(self.yaml_suffix[path])
-        if not jobs or not isinstance(jobs, list):
-            self.fail('Could not find suffix list in %s' % (project))
-
-        real_jobs = {}
-        for job in jobs:
-            # Things to check on all bootstrap jobs
-            if not isinstance(job, dict):
-                self.fail('suffix items should be dicts: %s' % jobs)
-            self.assertEquals(1, len(job), job)
-            name = job.keys()[0]
-            real_job = job[name]
-            self.assertNotIn(name, real_jobs, 'duplicate job: %s' % name)
-            real_jobs[name] = real_job
-            real_name = real_job.get('job-name', 'unset-%s' % name)
-            if real_name not in self.realjobs:
-                self.realjobs[real_name] = real_job
-        return real_jobs
-
-    def check_bootstrap_yaml(self, path, check):
-        for name, real_job in self.load_bootstrap_yaml(path).iteritems():
-            # Things to check on all bootstrap jobs
-
-            for key, value in real_job.items():
-                if not isinstance(value, (basestring, int)):
-                    self.fail('Jobs may not contain child objects %s: %s' % (
-                        key, value))
-                if '{' in str(value):
-                    self.fail('Jobs may not contain {expansions} - %s: %s' % (
-                        key, value))  # Use simple strings
-            # Things to check on specific flavors.
-            job_name = check(real_job, name)
-            self.assertTrue(job_name)
-            self.assertEquals(job_name, real_job.get('job-name'))
-
     def get_real_bootstrap_job(self, job):
         key = os.path.splitext(job.strip())[0]
         if not key in self.realjobs:
-            for yamlf in self.yaml_suffix:
-                self.load_bootstrap_yaml(yamlf)
             self.load_prow_yaml(self.prow_config)
         self.assertIn(key, sorted(self.realjobs))  # sorted for clearer error message
         return self.realjobs.get(key)
@@ -551,7 +419,10 @@ class JobTest(unittest.TestCase):
                                   'both set or unset: %s' % job)
 
                     if job.startswith('pull-kubernetes-') and not node_e2e:
-                        if 'kubeadm' in job:
+                        if 'gke' in job:
+                            stage = 'gs://kubernetes-release-dev/ci'
+                            suffix = True
+                        elif 'kubeadm' in job:
                             # kubeadm-based jobs use out-of-band .deb artifacts,
                             # not the --stage flag.
                             continue

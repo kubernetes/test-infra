@@ -176,13 +176,15 @@ This pull-request has been approved by: *<a href="#" title="Author self-approved
 
 The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
 
+The pull request process is described [here](https://git.k8s.io/community/contributors/devel/owners.md#the-code-review-process)
+
 <details >
 Needs approval from an approver in each of these OWNERS Files:
 
 - ~~[c/OWNERS](https://github.com/org/repo/blob/master/c/OWNERS)~~ [cjwagner]
 
-You can indicate your approval by writing ` + "`/approve`" + ` in a comment
-You can cancel your approval by writing ` + "`/approve cancel`" + ` in a comment
+Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
+Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
 </details>
 <!-- META={"approvers":[]} -->`,
 		},
@@ -200,19 +202,22 @@ You can cancel your approval by writing ` + "`/approve cancel`" + ` in a comment
 			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
 This pull-request has been approved by: 
+To fully approve this pull request, please assign additional approvers.
 We suggest the following additional approver: **cjwagner**
 
 Assign the PR to them by writing ` + "`/assign @cjwagner`" + ` in a comment when ready.
 
 The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
 
+The pull request process is described [here](https://git.k8s.io/community/contributors/devel/owners.md#the-code-review-process)
+
 <details open>
 Needs approval from an approver in each of these OWNERS Files:
 
 - **[c/OWNERS](https://github.com/org/repo/blob/master/c/OWNERS)**
 
-You can indicate your approval by writing ` + "`/approve`" + ` in a comment
-You can cancel your approval by writing ` + "`/approve cancel`" + ` in a comment
+Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
+Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
 </details>
 <!-- META={"approvers":["cjwagner"]} -->`,
 		},
@@ -235,13 +240,15 @@ Associated issue requirement bypassed by: *<a href="" title="Approved">Alice</a>
 
 The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
 
+The pull request process is described [here](https://git.k8s.io/community/contributors/devel/owners.md#the-code-review-process)
+
 <details >
 Needs approval from an approver in each of these OWNERS Files:
 
 - ~~[a/OWNERS](https://github.com/org/repo/blob/master/a/OWNERS)~~ [Alice]
 
-You can indicate your approval by writing ` + "`/approve`" + ` in a comment
-You can cancel your approval by writing ` + "`/approve cancel`" + ` in a comment
+Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
+Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
 </details>
 <!-- META={"approvers":[]} -->`,
 		},
@@ -265,13 +272,15 @@ Associated issue: *#42*
 
 The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
 
+The pull request process is described [here](https://git.k8s.io/community/contributors/devel/owners.md#the-code-review-process)
+
 <details >
 Needs approval from an approver in each of these OWNERS Files:
 
 - ~~[a/OWNERS](https://github.com/org/repo/blob/master/a/OWNERS)~~ [Alice]
 
-You can indicate your approval by writing ` + "`/approve`" + ` in a comment
-You can cancel your approval by writing ` + "`/approve cancel`" + ` in a comment
+Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
+Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
 </details>
 <!-- META={"approvers":[]} -->`,
 		},
@@ -305,14 +314,16 @@ This pull-request has been approved by: *<a href="" title="Approved">ALIcE</a>*,
 
 The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
 
+The pull request process is described [here](https://git.k8s.io/community/contributors/devel/owners.md#the-code-review-process)
+
 <details >
 Needs approval from an approver in each of these OWNERS Files:
 
 - ~~[a/OWNERS](https://github.com/org/repo/blob/master/a/OWNERS)~~ [ALIcE]
 - ~~[c/OWNERS](https://github.com/org/repo/blob/master/c/OWNERS)~~ [cjwagner]
 
-You can indicate your approval by writing `+"`/approve`"+` in a comment
-You can cancel your approval by writing `+"`/approve cancel`"+` in a comment
+Approvers can indicate their approval by writing `+"`/approve`"+` in a comment
+Approvers can cancel approval by writing `+"`/approve cancel`"+` in a comment
 </details>
 <!-- META={"approvers":[]} -->`),
 			},
@@ -341,6 +352,7 @@ You can cancel your approval by writing `+"`/approve cancel`"+` in a comment
 			expectedComment: `[APPROVALNOTIFIER] This PR is **NOT APPROVED**
 
 This pull-request has been approved by: *<a href="#" title="Author self-approved">cjwagner</a>*
+To fully approve this pull request, please assign additional approvers.
 We suggest the following additional approver: **alice**
 
 Assign the PR to them by writing ` + "`/assign @alice`" + ` in a comment when ready.
@@ -349,13 +361,15 @@ Assign the PR to them by writing ` + "`/assign @alice`" + ` in a comment when re
 
 The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
 
+The pull request process is described [here](https://git.k8s.io/community/contributors/devel/owners.md#the-code-review-process)
+
 <details open>
 Needs approval from an approver in each of these OWNERS Files:
 
 - **[a/OWNERS](https://github.com/org/repo/blob/master/a/OWNERS)**
 
-You can indicate your approval by writing ` + "`/approve`" + ` in a comment
-You can cancel your approval by writing ` + "`/approve cancel`" + ` in a comment
+Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
+Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
 </details>
 <!-- META={"approvers":["alice"]} -->`,
 		},
@@ -422,13 +436,15 @@ Associated issue: *#1*
 
 The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
 
+The pull request process is described [here](https://git.k8s.io/community/contributors/devel/owners.md#the-code-review-process)
+
 <details >
 Needs approval from an approver in each of these OWNERS Files:
 
 - ~~[a/OWNERS](https://github.com/org/repo/blob/master/a/OWNERS)~~ [alice]
 
-You can indicate your approval by writing `+"`/approve`"+` in a comment
-You can cancel your approval by writing `+"`/approve cancel`"+` in a comment
+Approvers can indicate their approval by writing `+"`/approve`"+` in a comment
+Approvers can cancel approval by writing `+"`/approve cancel`"+` in a comment
 </details>
 <!-- META={"approvers":[]} -->`),
 			},
@@ -477,13 +493,15 @@ This pull-request has been approved by:
 
 The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
 
+The pull request process is described [here](https://git.k8s.io/community/contributors/devel/owners.md#the-code-review-process)
+
 <details >
 Needs approval from an approver in each of these OWNERS Files:
 
 - **[a/OWNERS](https://github.com/org/repo/blob/master/a/OWNERS)**
 
-You can indicate your approval by writing ` + "`/approve`" + ` in a comment
-You can cancel your approval by writing ` + "`/approve cancel`" + ` in a comment
+Approvers can indicate their approval by writing ` + "`/approve`" + ` in a comment
+Approvers can cancel approval by writing ` + "`/approve cancel`" + ` in a comment
 </details>
 <!-- META={"approvers":["alice"]} -->`,
 		},

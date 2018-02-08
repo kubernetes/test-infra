@@ -19,6 +19,7 @@ package jenkins
 import (
 	"errors"
 	"fmt"
+	"reflect"
 	"sync"
 	"testing"
 	"text/template"
@@ -37,7 +38,7 @@ type fca struct {
 	c *config.Config
 }
 
-func newFakeConfigAgent(t *testing.T, maxConcurrency int) *fca {
+func newFakeConfigAgent(t *testing.T, maxConcurrency int, operators []config.JenkinsOperator) *fca {
 	presubmits := []config.Presubmit{
 		{
 			Name: "test-bazel-build",
@@ -67,19 +68,24 @@ func newFakeConfigAgent(t *testing.T, maxConcurrency int) *fca {
 		"kubernetes/kubernetes": presubmits,
 	}
 
-	return &fca{
+	ca := &fca{
 		c: &config.Config{
-			JenkinsOperator: config.JenkinsOperator{
-				Controller: config.Controller{
-					JobURLTemplate: template.Must(template.New("test").Parse("{{.Status.PodName}}/{{.Status.State}}")),
-					MaxConcurrency: maxConcurrency,
-					MaxGoroutines:  20,
+			JenkinsOperators: []config.JenkinsOperator{
+				{
+					Controller: config.Controller{
+						JobURLTemplate: template.Must(template.New("test").Parse("{{.Status.PodName}}/{{.Status.State}}")),
+						MaxConcurrency: maxConcurrency,
+						MaxGoroutines:  20,
+					},
 				},
 			},
 			Presubmits: presubmitMap,
 		},
 	}
-
+	if len(operators) > 0 {
+		ca.c.JenkinsOperators = operators
+	}
+	return ca
 }
 
 func (f *fca) Config() *config.Config {
@@ -296,7 +302,7 @@ func TestSyncTriggeredJobs(t *testing.T) {
 			kc:          fkc,
 			jc:          fjc,
 			log:         logrus.NewEntry(logrus.StandardLogger()),
-			ca:          newFakeConfigAgent(t, tc.maxConcurrency),
+			ca:          newFakeConfigAgent(t, tc.maxConcurrency, nil),
 			lock:        sync.RWMutex{},
 			pendingJobs: make(map[string]int),
 		}
@@ -507,7 +513,7 @@ func TestSyncPendingJobs(t *testing.T) {
 			kc:          fkc,
 			jc:          fjc,
 			log:         logrus.NewEntry(logrus.StandardLogger()),
-			ca:          newFakeConfigAgent(t, 0),
+			ca:          newFakeConfigAgent(t, 0, nil),
 			lock:        sync.RWMutex{},
 			pendingJobs: make(map[string]int),
 		}
@@ -594,7 +600,7 @@ func TestBatch(t *testing.T) {
 		kc:          fc,
 		jc:          jc,
 		log:         logrus.NewEntry(logrus.StandardLogger()),
-		ca:          newFakeConfigAgent(t, 0),
+		ca:          newFakeConfigAgent(t, 0, nil),
 		pendingJobs: make(map[string]int),
 		lock:        sync.RWMutex{},
 	}
@@ -733,7 +739,7 @@ func TestRunAfterSuccessCanRun(t *testing.T) {
 
 		c := Controller{log: logrus.NewEntry(logrus.StandardLogger())}
 
-		got := c.RunAfterSuccessCanRun(test.parent, test.child, newFakeConfigAgent(t, 0), fakeGH)
+		got := c.RunAfterSuccessCanRun(test.parent, test.child, newFakeConfigAgent(t, 0, nil), fakeGH)
 		if got != test.expected {
 			t.Errorf("expected to run: %t, got: %t", test.expected, got)
 		}
@@ -845,7 +851,7 @@ func TestMaxConcurrencyWithNewlyTriggeredJobs(t *testing.T) {
 			kc:          fc,
 			jc:          fjc,
 			log:         logrus.NewEntry(logrus.StandardLogger()),
-			ca:          newFakeConfigAgent(t, 0),
+			ca:          newFakeConfigAgent(t, 0, nil),
 			pendingJobs: test.pendingJobs,
 		}
 
@@ -949,6 +955,109 @@ func TestGetJenkinsJobs(t *testing.T) {
 			if !found {
 				t.Errorf("expected jobs: %v\ngot: %v", test.expected, got)
 			}
+		}
+	}
+}
+
+func TestOperatorConfig(t *testing.T) {
+	tests := []struct {
+		name string
+
+		operators     []config.JenkinsOperator
+		labelSelector string
+
+		expected config.Controller
+	}{
+		{
+			name: "single operator config",
+
+			operators:     nil, // defaults to a single operator
+			labelSelector: "",
+
+			expected: config.Controller{
+				JobURLTemplate: template.Must(template.New("test").Parse("{{.Status.PodName}}/{{.Status.State}}")),
+				MaxConcurrency: 10,
+				MaxGoroutines:  20,
+			},
+		},
+		{
+			name: "single operator config, --label-selector used",
+
+			operators:     nil, // defaults to a single operator
+			labelSelector: "master=ci.jenkins.org",
+
+			expected: config.Controller{
+				JobURLTemplate: template.Must(template.New("test").Parse("{{.Status.PodName}}/{{.Status.State}}")),
+				MaxConcurrency: 10,
+				MaxGoroutines:  20,
+			},
+		},
+		{
+			name: "multiple operator config",
+
+			operators: []config.JenkinsOperator{
+				{
+					Controller: config.Controller{
+						JobURLTemplate: template.Must(template.New("test").Parse("{{.Status.PodName}}/{{.Status.State}}")),
+						MaxConcurrency: 5,
+						MaxGoroutines:  10,
+					},
+					LabelSelectorString: "master=ci.openshift.org",
+				},
+				{
+					Controller: config.Controller{
+						MaxConcurrency: 100,
+						MaxGoroutines:  100,
+					},
+					LabelSelectorString: "master=ci.jenkins.org",
+				},
+			},
+			labelSelector: "master=ci.jenkins.org",
+
+			expected: config.Controller{
+				MaxConcurrency: 100,
+				MaxGoroutines:  100,
+			},
+		},
+		{
+			name: "multiple operator config, none is matching",
+
+			operators: []config.JenkinsOperator{
+				{
+					Controller: config.Controller{
+						JobURLTemplate: template.Must(template.New("test").Parse("{{.Status.PodName}}/{{.Status.State}}")),
+						MaxConcurrency: 5,
+						MaxGoroutines:  10,
+					},
+					LabelSelectorString: "master=ci.openshift.org",
+				},
+				{
+					Controller: config.Controller{
+						MaxConcurrency: 100,
+						MaxGoroutines:  100,
+					},
+					LabelSelectorString: "master=ci.jenkins.org",
+				},
+			},
+			labelSelector: "master=ci.kubernetes.org",
+
+			expected: config.Controller{
+				MaxGoroutines: 20,
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Logf("scenario %q", test.name)
+
+		c := Controller{
+			ca:       newFakeConfigAgent(t, 10, test.operators),
+			selector: test.labelSelector,
+		}
+
+		got := c.config()
+		if !reflect.DeepEqual(got, test.expected) {
+			t.Errorf("expected controller:\n%#v\ngot controller:\n%#v\n", test.expected, got)
 		}
 	}
 }

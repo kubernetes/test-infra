@@ -826,22 +826,36 @@ func TestLatestUsesImagePullPolicy(t *testing.T) {
 }
 
 // checkKubekinsPresets returns an error if a spec references to kubekins-e2e|bootstrap image,
-// but doesn't use service preset
+// but doesn't use service preset or ssh preset
 func checkKubekinsPresets(spec *v1.PodSpec, labels, validLabels map[string]string) error {
-	ok := true
+	service := true
+	ssh := true
 	for _, container := range spec.Containers {
 		if strings.Contains(container.Image, "kubekins-e2e") || strings.Contains(container.Image, "bootstrap") {
-			ok = false
+			service = false
 			for key, val := range labels {
 				if (key == "preset-gke-alpha-service" || key == "preset-service-account") && val == "true" {
-					ok = true
+					service = true
+				}
+			}
+		}
+
+		if strings.Contains(container.Image, "kubekins-e2e") {
+			ssh = false
+			for key, val := range labels {
+				if (key == "preset-k8s-ssh" || key == "preset-aws-ssh") && val == "true" {
+					ssh = true
 				}
 			}
 		}
 	}
 
-	if !ok {
+	if !service {
 		return fmt.Errorf("cannot find service account preset")
+	}
+
+	if !ssh {
+		return fmt.Errorf("cannot find ssh preset")
 	}
 
 	for key, val := range labels {

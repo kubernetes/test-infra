@@ -102,7 +102,7 @@ config:
     ci-kubernetes-soak-gke-gci-deploy,\
     ci-kubernetes-soak-gke-gci-test,\
     ci-kubernetes-soak-gke-test,\
-    ci-kubernetes-test-go"
+    ci-kubernetes-integration-master"
   do-not-merge-milestones: ""
   admin-port: 9999
   chart-url: https://storage.googleapis.com/kubernetes-test-history/k8s-queue-health.svg

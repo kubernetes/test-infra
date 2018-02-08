@@ -1,0 +1,55 @@
+# Copyright 2018 The Kubernetes Authors All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: bazel-cache
+  labels:
+    app: bazel-cache
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: bazel-cache
+    spec:
+      containers:
+      - name: bazel-cache
+        # https://github.com/buchgr/bazel-remote
+        image: buchgr/bazel-remote-cache
+        imagePullPolicy: Always
+        ports:
+        - name: cache
+          containerPort: 8080
+        args:
+        # local ssd is 375 GB
+        - --max_size=370
+        - --dir=/data
+      # mount the local ssd
+        volumeMounts:
+        - name: cache
+          mountPath: /data
+      volumes:
+      - name: cache
+        hostPath:
+          path: /mnt/disks/ssd0/cache
+      # run on our dedicated node
+      tolerations:
+      - key: "dedicated"
+        operator: "Equal"
+        value: "bazel-cache"
+        effect: "NoSchedule"
+      nodeSelector:
+        dedicated: "bazel-cache"

@@ -13,11 +13,11 @@ The process is as follows:
 - Run e2e tests (we recommend using [kubetest](/kubetest/README.md))
 - Store test results in accordance with [Gubernator's GCS Layout](/gubernator/README.md#gcs-layout)
   - Unfortunately this part is currently left as an exercise to the reader. We use
-    [bootstrap](/bootstrap/README.md) to facilitate this and are in the midst of
+    [bootstrap](/jenkins/bootstrap.py) to facilitate this and are in the midst of
     rewriting it to better support external usage.
 - Add the GCS bucket info to [buckets.yaml](/buckets.yaml) via a PR (use the
   previously designated github handle for the `contact` field)
-- Add jobs and dashboards to [testgrid's config](/testgrid/config/config.yaml) via
+- Add jobs and dashboards to the [testgrid config](/testgrid/config.yaml) via
   a PR (use the previously designated point of contact info in a comment next to
   added `test_group`s, or even better in the `description` field for added
   `dashboard_tab`s)

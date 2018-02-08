@@ -15,10 +15,23 @@
 
 set -o errexit
 
-if [ "$#" -lt 1 ]; then
-  echo "usage: $0 <program> [program ...]"
-  exit 1
-fi
+# See https://misc.flogisoft.com/bash/tip_colors_and_formatting
+
+color-image() {  # Bold blue
+  echo -e "\e[1;35m${@}\e[0m"
+}
+
+color-version() {  # Bold magenta
+  echo -e "\e[1;34m${@}\e[0m"
+}
+
+color-error() { # Light red
+  echo -e "\e[91m${@}\e[0m"
+}
+
+color-target() { # Bold cyan
+  echo -e "\e[1;33m${@}\e[0m"
+}
 
 # darwin is great
 SED=sed
@@ -26,17 +39,39 @@ if which gsed &>/dev/null; then
   SED=gsed
 fi
 if ! ($SED --version 2>&1 | grep -q GNU); then
-  echo "!!! GNU sed is required.  If on OS X, use 'brew install gnu-sed'."
+  echo "!!! GNU sed is required.  If on OS X, use 'brew install gnu-sed'." >&2
   exit 1
 fi
 
-cd $(dirname $0)
-
 new_version="v$(date -u '+%Y%m%d')-$(git describe --tags --always --dirty)"
-for i in "$@"; do
-  echo "program: $i"
-  echo "new version: $new_version"
-  gcloud docker -- pull "${PREFIX:-gcr.io/k8s-prow}/${i}:${new_version}"
+echo -e "version: $(color-version ${new_version})" >&2
+if [[ "${new_version}" == *-dirty ]]; then
+  echo -e "$(color-error ERROR): uncommitted changes to repo" >&2
+  echo "  Fix with git commit" >&2
+  exit 1
+fi
 
-  $SED -i "s/\(${i}:\)v[a-f0-9-]\+/\1$new_version/I" cluster/*.yaml
+cd "$(dirname "${BASH_SOURCE}")"
+
+# Determine what images we need to update
+echo -n "images: " >&2
+images=("$@")
+if [[ "${#images[@]}" == 0 ]]; then
+  echo "querying bazel for $(color-target :image) targets under $(color-target //prow/...)..." >&2
+  images=($(bazel query 'filter(".*:image", //prow/...)' | cut -d : -f 1 | xargs -n 1 basename))
+  echo -n "images: " >&2
+fi
+echo -e "\e[1;35m${images[@]}\e[0m" >&2
+
+echo -e "Pushing $(color-version ${new_version}) via $(color-target //prow:release-push)..." >&2
+bazel run //prow:release-push
+
+echo -e "Bumping: $(color-image ${images[@]}) to $(color-version ${new_version})..." >&2
+
+for i in "${images[@]}"; do
+  echo -e "  $(color-image $i): $(color-version $new_version)" >&2
+  $SED -i "s/\(${i}:\)v[a-f0-9-]\+/\1${new_version}/I" cluster/*.yaml
 done
+
+echo "Deploy with:" >&2
+echo -e "  $(color-target bazel run //prow/cluster:production.apply)"

@@ -51,6 +51,9 @@ const (
 	channelsList = apiURL + "channels.list"
 
 	chatPostMessage = apiURL + "chat.postMessage"
+
+	botName      = "prow"
+	botIconEmoji = ":prow:"
 )
 
 type APIResponse struct {
@@ -162,6 +165,8 @@ func (sl *Client) VerifyAuth() (bool, error) {
 
 func (sl *Client) urlValues() *url.Values {
 	uv := url.Values{}
+	uv.Add("username", botName)
+	uv.Add("icon_emoji", botIconEmoji)
 	uv.Add("token", sl.token)
 	return &uv
 }

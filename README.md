@@ -11,11 +11,11 @@ the different services interact.
 ## Viewing test results
 
 * The [Kubernetes TestGrid](https://k8s-testgrid.appspot.com/) shows historical test results
-  - Configure your own testgrid dashboard at [testgrid/config/config.yaml](testgrid/config/config.yaml)
+  - Configure your own testgrid dashboard at [testgrid/config.yaml](testgrid/config.yaml)
   - [Gubernator](https://k8s-gubernator.appspot.com/) formats the output of each run
 * [PR Dashboard](https://k8s-gubernator.appspot.com/pr) finds PRs that need your attention
 * [Prow](https://prow.k8s.io) schedules testing and updates issues
-  - Prow responds to GitHub events, timers and [manual commands](commands.md)
+  - Prow responds to GitHub events, timers and [manual commands](https://go.k8s.io/bot-commands)
     given in GitHub comments.
   - The [prow dashboard](https://prow.k8s.io/) shows what it is currently testing
   - Configure prow to run new tests at [prow/config.yaml](prow/config.yaml)
@@ -58,7 +58,7 @@ you'll need to do the following:
   - If this is a kubetest job create the corresponding `jobs/env/FOO.env` file
   - It will pick a free project from [boskos](/boskos) pool by default, or
   - You can also set --gcp-project=foo in [`jobs/config.json`] for a dedicated project, make sure the project has the right [IAM grants](jenkins/check_projects.py)
-* Add the job name to the `test_groups` list in [`testgrid/config/config.yaml`](testgrid/config/config.yaml)
+* Add the job name to the `test_groups` list in [`testgrid/config.yaml`](testgrid/config.yaml)
   - Also the group to at least one `dashboard_tab`
 * Add the job to the appropriate section in [`prow/config.yaml`](prow/config.yaml)
   - Presubmit jobs run on unmerged code in PRs
@@ -83,7 +83,7 @@ $GOPATH/src/k8s.io/test-infra/jenkins/bootstrap.py \
 
 #### Release branch jobs & Image validation jobs
 
-Release branch jobs and image validation jobs are defined in [test_config.yaml](experiment/test_config.yaml). 
+Release branch jobs and image validation jobs are defined in [test_config.yaml](experiment/test_config.yaml).
 We test different master/node image versions against multiple k8s branches on different features.
 
 Those jobs are using channel based versions, current supported testing map is:
@@ -121,12 +121,12 @@ the kubetest jobs this typically means editing the `jobs/FOO.env` files it uses.
 Update when a job runs by changing its definition in [`prow/config.yaml`].
 The [test-infra oncall] must push prow changes (`make -C prow update-config`).
 
-Update where the job appears on testgrid by changing [`testgrid/config/config.yaml`].
+Update where the job appears on testgrid by changing [`testgrid/config.yaml`].
 
 ### Delete a job
 
 The reverse of creating a new job: delete the appropriate entries in
-[`jobs/config.json`], [`prow/config.yaml`] and [`testgrid/config/config.yaml`].
+[`jobs/config.json`], [`prow/config.yaml`] and [`testgrid/config.yaml`].
 
 Merge your PR and @k8s-ci-robot will deploy your change automatically.
 
@@ -150,5 +150,5 @@ how to contribute test results, see [Contributing Test Results](docs/contributin
 
 [`jobs/config.json`]: /jobs/config.json
 [`prow/config.yaml`]: /prow/config.yaml
-[`testgrid/config/config.yaml`]: /testgrid/config/config.yaml
+[`testgrid/config.yaml`]: /testgrid/config.yaml
 [test-infra oncall]: https://go.k8s.io/oncall

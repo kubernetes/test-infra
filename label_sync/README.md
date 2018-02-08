@@ -1,55 +1,71 @@
-You can run it locally with repositories and labels data fetched into YAML files:
+# label_sync
 
-Run (with go):
-`go run label_sync/main.go -help` (for help)
-`go run label_sync/main.go -labels-path label_sync/labels.yaml -local -repos label_sync/repos.yaml -repo-labels label_sync/repo_labels.yaml`
+Update or migrate github labels on repos in a github org based on a YAML file
 
-Test (with go):
-`go test k8s.io/test-infra/label_sync`
-`make test`
+## Configuration
 
-Bazel test:
-`bazel test //label_sync/...`
+A typical labels.yaml file looks like:
 
-Bazel build:
-`bazel build //label_sync/...`
+```yaml
+---
+labels:
+  - color: 00ff00
+    name: lgtm
+  - color: ff0000
+    name: priority/P0
+    previously:
+    - color: 0000ff
+      name: P0
+  - name: dead-label
+    color: cccccc
+    deleteAfter: 2017-01-01T13:00:00Z
+```
 
-Bazel run:
-`./bazel-bin/label_sync/label_sync -labels-path bazel-test-infra/label_sync/labels.yaml -local -repos bazel-test-infra/label_sync/repos.yaml -repo-labels bazel-test-infra/label_sync/repo_labels.yaml`
+This will ensure that:
 
-Build static binary:
-`make compile-static`
+- there is a green `lgtm` label
+- there is a red `priority/P0` label, and previous labels should be migrated to it:
+  - if a `P0` label exists:
+    - if `priority/P0` does not, modify the existing `P0` label
+    - if `priority/P0` exists, `P0` labels will be deleted, `priority/P0` labels will be added
+- if there is a `dead-label` label, it will be deleted after 2017-01-01T13:00:00Z
 
-You can run on Your own repository set (by passing special `user:user_name` to `-org` flag) and save repository data in local files, and then run program in local mode using those saved files.
-Assuming You have Your oauth github file in `/etc/github/oauth` or You can pass it with `-github-token-file /your/path/to/oauth/file`:
-`go run label_sync/main.go -labels-path label_sync/labels.yaml -org user:your_github_user_name -dump-repos your_repos.yaml -dump-repo-labels your_labels.yaml`
+## Usage
 
-It will save Your repositories and their labels in two YAML files, next time You can run/debug/test in `-local` mode:
-`go run label_sync.main.go -labels-path label_sync/labels.yaml -local -repos your_repos.yaml -repo-labels your_labels.yaml`
-This will allow debuging algorithms to sync labels.
+```sh
+# test
+bazel test //label_sync/...
 
-Actual label updates cannot be done in `-dry-run` or `-local` mode because it updates real repository labels.
-You can update list of labels from given repo by running:
-`go run label_sync/main.go -debug -dry-run -labels-path label_sync/labels_example.yaml -org kubernetes -github-token-file /etc/github/oauth -repos label_sync/single_repo_example.yaml -dump-repo-labels label_sync/kubernetes_labels.yaml`
-Parameters meaning:
-- `-debug`: to see more debugging info while doing so
-- `-dry-run`: not to try to update repo, but do actuall read calls on this repo
-- `-org` and `-github-token-file`: to allow You to use GitHub API calls
-- `-labels-path`: to provide required labels file to sync (it won't be used in `-dry-run` mode)
-- `-repos`: to provide list of repository (even single) to get labels from (You can manually put only kubernetes/kubernetes here)
-- `-dump-repo-labels`: to save them in the file
+# add or migrate labels on all repos in the kubernetes org
+bazel run //label_sync -- \
+  --config $(pwd)/labels.yaml \
+  --token /path/to/github_oauth_token \
+  --org kubernetes
+  # actually you need to pass the --confirm flag too, it will
+  # run in dry-run mode by default so you avoid doing something
+  # too hastily, hence why this copy-pasta isn't including it
 
-You can tweak required labels `label_sync/labels.yaml` file and Your `-repos` and `-repo-labels` files to make it try to update single label on Your own repo etc.
-Real run should have all required files in default plases and should just go without parameters (`/etc/config/labels.yaml` for `-labels-path` and `/etc/github/oauth` for `-github-token-file`):
-`go run label_sync/main.go`
+# add or migrate labels on all repos except helm in the kubernetes org
+bazel run //label_sync -- \
+  --config $(pwd)/labels.yaml \
+  --token /path/to/github_oauth_token \
+  --org kubernetes \
+  --skip kubernetes/helm
+  # see above
 
-If You want to build docker image manually and only locally, You need to build static binary for docker first:
-`make compile-static`
+# add or migrate labels on the community and steering repos in the kubernetes org
+bazel run //label_sync -- \
+  --config $(pwd)/labels.yaml \
+  --token /path/to/github_oauth_token \
+  --org kubernetes \
+  --only kubernetes/community,kubernetes/steering
+  # see above
+```
 
-You can specify to build docker image with (from `test-infra` root directory):
-From `label_sync` directory:
-`docker build -t label_sync .`
-And then run docker image via:
-`docker run label_sync` (eventuallu change entry point to `/bin/sh` and add `-ti` options for interactive shell)
-Currently this is an equivalent to: `go run label_sync/main.go -help` from Your local development (see `Dockerfile`) because I don't know yet how to put Github OAuth secret in that image (and have no access to real GitHub OAuth token for kubernetes repo).
+## Our Deployment
 
+We run this as a [`CronJob`](./cluster/label_sync_cron_job.yaml) on a kubernetes cluster managed by [test-infra oncall](https://go.k8s.io/oncall), and can also schedule it as a [`Job`](./cluster/label_sync_cron_job.yaml) for one-shot usage.
+
+These pods read [`labels.yaml`](./labels.yaml) from a ConfigMap that is updated by the [prow updateconfig plugin](/prow/plugins/updateconfig).
+
+To update the `labels.yaml` file, simply open a pull request against it.

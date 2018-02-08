@@ -23,9 +23,7 @@ container_image(
 go_image(
     name = "image",
     base = ":asset-base",
-    embed = [":go_default_library"],
-    importpath = "k8s.io/test-infra/prow/cmd/deck",
-    pure = "on",
+    binary = ":deck",
 )
 
 go_binary(

@@ -565,6 +565,7 @@ Approval requirements bypassed by manually added approval.
 This pull-request has been approved by: {{range $index, $approval := .ap.ListApprovals}}{{if $index}}, {{end}}{{$approval}}{{end}}
 
 {{- if (and (not .ap.AreFilesApproved) (not (call .ap.ManuallyApproved))) }}
+To fully approve this pull request, please assign additional approvers.
 We suggest the following additional approver{{if ne 1 (len .ap.GetCCs)}}s{{end}}: {{range $index, $cc := .ap.GetCCs}}{{if $index}}, {{end}}**{{$cc}}**{{end}}
 
 Assign the PR to them by writing `+"`/assign {{range $index, $cc := .ap.GetCCs}}{{if $index}} {{end}}@{{$cc}}{{end}}`"+` in a comment when ready.
@@ -587,12 +588,14 @@ Associated issue requirement bypassed by: {{range $index, $approval := .ap.ListN
 
 The full list of commands accepted by this bot can be found [here](https://go.k8s.io/bot-commands).
 
+The pull request process is described [here](https://git.k8s.io/community/contributors/devel/owners.md#the-code-review-process)
+
 <details {{if (and (not .ap.AreFilesApproved) (not (call .ap.ManuallyApproved))) }}open{{end}}>
 Needs approval from an approver in each of these OWNERS Files:
 
 {{range .ap.GetFiles .org .project}}{{.}}{{end}}
-You can indicate your approval by writing `+"`/approve`"+` in a comment
-You can cancel your approval by writing `+"`/approve cancel`"+` in a comment
+Approvers can indicate their approval by writing `+"`/approve`"+` in a comment
+Approvers can cancel approval by writing `+"`/approve cancel`"+` in a comment
 </details>`, "message", map[string]interface{}{"ap": ap, "org": org, "project": project})
 	if err != nil {
 		ap.owners.log.WithError(err).Errorf("Error generating message.")

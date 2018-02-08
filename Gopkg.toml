@@ -34,3 +34,7 @@ required = [
 [[constraint]]
   name = "cloud.google.com/go"
   version = "0.17.0"
+
+[[constraint]]
+  name = "github.com/bazelbuild/buildtools"
+  revision = "0e53062d74ecbdd699b007d74c996b6c73039c7f"

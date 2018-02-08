@@ -41,12 +41,8 @@ func init() {
 }
 
 func help(config *plugins.Configuration, enabledRepos []string) (*pluginhelp.PluginHelp, error) {
-	// TODO(qhuynh96): Removes all the fields of pluginHelp except Description.
 	pluginHelp := &pluginhelp.PluginHelp{
 		Description: "Close, reopen, flag and/or unflag an issue or PR as stale/putrid/rotten/frozen",
-		WhoCanUse:   "Authors and assignees can close/reopen. Anyone can flag/unflag",
-		Usage:       "/close\n/reopen\n/lifecycle <frozen|stale|putrid|rotten>\n/remove-lifecycle <frozen|stale|putrid|rotten",
-		Examples:    []string{"/close", "/reopen", "/lifecycle frozen", "/remove-lifecycle stale"},
 	}
 	pluginHelp.AddCommand(pluginhelp.Command{
 		Usage:       "/close",

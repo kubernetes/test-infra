@@ -86,8 +86,7 @@ func helpProvider(config *plugins.Configuration, enabledRepos []string) (*plugin
 <ol><li>PRs with a normal release note in the 'releasenote' block are given the label '` + releaseNote + `'.</li>
 <li>PRs that have a release note of 'none' in the block are given the label '` + releaseNoteNone + `' to indicate that the PR does not warrant a release note.</li>
 <li>PRs that contain 'action required' in their 'releasenote' block are given the label '` + releaseNoteActionRequired + `' to indicate that the PR introduces potentially breaking changes that necessitate user action before upgrading to the release.</li></ol>
-To support old behavior, this plugin also provides a '/release-note-none' command that can be used by organization members to specify that no release note is needed for the PR as an alternative to setting the 'releasenote' block contents to 'none'.`,
-			Usage: "In the pull request body text:\n\n```releasenote\n<release note content>\n```",
+To support old behavior, this plugin also provides a '/release-note-none' command that can be used by organization members to specify that no release note is needed for the PR as an alternative to setting the 'releasenote' block contents to 'none'.` + "To use the plugin, in the pull request body text:\n\n```releasenote\n<release note content>\n```",
 		},
 		nil
 }

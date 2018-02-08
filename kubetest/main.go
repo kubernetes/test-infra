@@ -207,14 +207,6 @@ func validWorkingDirectory() error {
 	return nil
 }
 
-func validGoEnv() error {
-	gp := os.Getenv("GOPATH")
-	if gp == "" {
-		return fmt.Errorf("GOPATH not set, please check your golang env setting.")
-	}
-	return nil
-}
-
 func writeXML(dump string, start time.Time) {
 	// Note whether timeout occurred
 	c := testCase{
@@ -386,10 +378,6 @@ func complete(o *options) error {
 	}
 	if err := validWorkingDirectory(); err != nil {
 		return fmt.Errorf("called from invalid working directory: %v", err)
-	}
-
-	if err := validGoEnv(); err != nil {
-		return fmt.Errorf("invalid Go Env: %v", err)
 	}
 
 	if o.down {
