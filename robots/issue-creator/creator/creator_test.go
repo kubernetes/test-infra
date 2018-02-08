@@ -198,7 +198,7 @@ func TestIssueCreator(t *testing.T) {
 		t.Errorf("Second sync of i1 was not idempotent.\n")
 	}
 
-	// Test that issues with empty bodies dont get synced.
+	// Test that issues with empty bodies don't get synced.
 	i2 := &fakeIssue{
 		title:    "title2",
 		body:     "", // Indicates issue should not be synced.
