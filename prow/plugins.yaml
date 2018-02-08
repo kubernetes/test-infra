@@ -9,8 +9,9 @@ triggers:
   - kubernetes-security
   - kubernetes-sigs
   - kubernetes-sig-testing
-  - google/cadvisor  
+  - google/cadvisor
   - tensorflow/k8s
+  - tensorflow/minigo
   - GoogleCloudPlatform/k8s-multicluster-ingress
   trusted_org: kubernetes
   join_org_url: "https://git.k8s.io/community/community-membership.md#member"

@@ -13376,16 +13376,6 @@ periodics:
     - image: gcr.io/mlkube-testing/kubeflow-testing:latest
       imagePullPolicy: Always
 
-- name: tf-minigo-periodic
-  interval: 8h
-  agent: kubernetes
-  labels:
-    preset-service-account: true
-  spec:
-    containers:
-    - image: gcr.io/minigo-testing/minigo-testing:latest
-      imagePullPolicy: Always
-
 - interval: 1h
   agent: kubernetes
   name: maintenance-ci-aws-janitor
@@ -14054,5 +14044,15 @@ periodics:
     containers:
     # TODO(jlewi): Replace latest with a specific tag once the images stabilize.
     - image: gcr.io/mlkube-testing/builder:latest
+      imagePullPolicy: Always
+
+- name: tf-minigo-periodic
+  interval: 8h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+  spec:
+    containers:
+    - image: gcr.io/minigo-testing/minigo-testing:latest
       imagePullPolicy: Always
 
