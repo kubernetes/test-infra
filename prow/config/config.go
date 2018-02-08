@@ -362,7 +362,10 @@ func parseConfig(c *Config) error {
 			return fmt.Errorf("invalid jenkins_operators.label_selector option: %v", err)
 		}
 		c.JenkinsOperators[i].LabelSelector = sel
-		// TODO: Invalidate overlapping selectors
+		// TODO: Invalidate overlapping selectors more
+		if len(c.JenkinsOperators) > 1 && c.JenkinsOperators[i].LabelSelectorString == "" {
+			return errors.New("selector overlap: cannot use an empty label_selector with multiple selectors")
+		}
 	}
 
 	for i, agentToTmpl := range c.Deck.ExternalAgentLogs {
