@@ -9693,7 +9693,8 @@
   "ci-kubernetes-integration-master": {
     "args": [
       "--branch=master",
-      "--force"
+      "--force",
+      "--prow"
     ],
     "scenario": "kubernetes_verify",
     "sigOwners": [
@@ -9703,7 +9704,8 @@
   "ci-kubernetes-integration-stable1": {
     "args": [
       "--branch=release-1.9",
-      "--force"
+      "--force",
+      "--prow"
     ],
     "scenario": "kubernetes_verify",
     "sigOwners": [
@@ -9713,7 +9715,8 @@
   "ci-kubernetes-integration-stable2": {
     "args": [
       "--branch=release-1.8",
-      "--force"
+      "--force",
+      "--prow"
     ],
     "scenario": "kubernetes_verify",
     "sigOwners": [
@@ -9723,7 +9726,8 @@
   "ci-kubernetes-integration-stable3": {
     "args": [
       "--branch=release-1.7",
-      "--force"
+      "--force",
+      "--prow"
     ],
     "scenario": "kubernetes_verify",
     "sigOwners": [
