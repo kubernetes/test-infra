@@ -395,9 +395,13 @@ func (e extractStrategy) Extract(project, zone string, extractSrc bool) error {
 		if e.value == "gke" {
 			log.Print("*** --extract=gke is deprecated, migrate to --extract=gke-default ***")
 		}
-		if e.option == "latest" {
+		if strings.HasPrefix(e.option, "latest") {
 			// get latest supported master version
-			version, err := getLatestGKEVersion(project, zone)
+			releasePrefix := ""
+			if strings.HasPrefix(e.option, "latest-") {
+				releasePrefix = strings.TrimPrefix(e.option, "latest-")
+			}
+			version, err := getLatestGKEVersion(project, zone, releasePrefix)
 			if err != nil {
 				return fmt.Errorf("failed to get latest gke version: %s", err)
 			}

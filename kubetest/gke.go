@@ -233,10 +233,19 @@ func newGKE(provider, project, zone, region, network, image, cluster string, tes
 	*testArgs = strings.Join(setFieldDefault(strings.Fields(*testArgs), "--num-nodes", numNodes), " ")
 
 	if *upgradeArgs != "" {
+		// --upgrade-target will be passed to e2e upgrade framework to get a valid update version.
+		// See usage from https://github.com/kubernetes/kubernetes/blob/master/hack/get-build.sh for supported targets.
+		// Here we special case for gke-latest and will extract an actual valid gke version.
+		// - gke-latest will be resolved to the latest gke version, and
+		// - gke-latest-1.7 will be resolved to the latest 1.7 patch version supported on gke.
 		fields, val, exist := extractField(strings.Fields(*upgradeArgs), "--upgrade-target")
 		if exist {
-			if val == "gke-latest" {
-				if val, err = getLatestGKEVersion(project, zone); err != nil {
+			if strings.HasPrefix(val, "gke-latest") {
+				releasePrefix := ""
+				if strings.HasPrefix(val, "gke-latest-") {
+					releasePrefix = strings.TrimPrefix(val, "gke-latest-")
+				}
+				if val, err = getLatestGKEVersion(project, zone, releasePrefix); err != nil {
 					return nil, fmt.Errorf("fail to get latest gke version : %v", err)
 				}
 			}

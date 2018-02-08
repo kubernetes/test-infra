@@ -579,18 +579,27 @@ func flushMem() {
 	}
 }
 
-// getLatestGKEVersion will return newest validMasterVersions
-// only works in gke environment
-func getLatestGKEVersion(project, zone string) (string, error) {
+// (only works on gke)
+// getLatestGKEVersion will return newest validMasterVersions.
+// Pass in releasePrefix to get latest valid version of a specific release.
+// Empty releasePrefix means use latest across all available releases.
+func getLatestGKEVersion(project, zone, releasePrefix string) (string, error) {
 	res, err := output(exec.Command("gcloud", "container", "get-server-config", fmt.Sprintf("--project=%v", project), fmt.Sprintf("--zone=%v", zone), "--format=value(validMasterVersions)"))
 	if err != nil {
 		return "", err
 	}
 	versions := strings.Split(string(res), ";")
-	if len(versions) == 0 {
-		return "", fmt.Errorf("invalid gke master version string: %s", string(res))
+	latestValid := ""
+	for _, version := range versions {
+		if strings.HasPrefix(version, releasePrefix) {
+			latestValid = version
+			break
+		}
 	}
-	return "v" + versions[0], nil
+	if latestValid == "" {
+		return "", fmt.Errorf("cannot find valid gke release %s version from: %s", releasePrefix, string(res))
+	}
+	return "v" + latestValid, nil
 }
 
 // gcsWrite uploads contents to the dest location in GCS.
