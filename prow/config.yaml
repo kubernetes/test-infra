@@ -12462,7 +12462,7 @@ periodics:
     - image: gcr.io/k8s-testimages/bootstrap:v20180122-6fd3aef1a
       args:
       - "--clean"
-      - "--repo=k8s.io/kubernetes"
+      - "--repo=k8s.io/kubernetes=release-1.9"
       - "--timeout=100"
       env:
       - name: DOCKER_IN_DOCKER_ENABLED
@@ -12494,7 +12494,7 @@ periodics:
     - image: gcr.io/k8s-testimages/bootstrap:v20180122-6fd3aef1a
       args:
       - "--clean"
-      - "--repo=k8s.io/kubernetes"
+      - "--repo=k8s.io/kubernetes=release-1.8"
       - "--timeout=100"
       env:
       - name: DOCKER_IN_DOCKER_ENABLED
@@ -12526,7 +12526,7 @@ periodics:
     - image: gcr.io/k8s-testimages/bootstrap:v20180122-6fd3aef1a
       args:
       - "--clean"
-      - "--repo=k8s.io/kubernetes"
+      - "--repo=k8s.io/kubernetes=release-1.7"
       - "--timeout=100"
       env:
       - name: DOCKER_IN_DOCKER_ENABLED
