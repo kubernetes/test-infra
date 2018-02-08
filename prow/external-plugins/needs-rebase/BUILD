@@ -1,0 +1,64 @@
+load("@io_bazel_rules_docker//docker:docker.bzl", "docker_bundle")
+load("@io_bazel_rules_docker//contrib:push-all.bzl", "docker_push")
+load("@io_bazel_rules_docker//go:image.bzl", "go_image")
+
+docker_bundle(
+    name = "bundle",
+    images = {
+        "{STABLE_PROW_REPO}/needs-rebase:{DOCKER_TAG}": ":needs-rebase-image",
+        "{STABLE_PROW_REPO}/needs-rebase:latest": ":needs-rebase-image",
+        "{STABLE_PROW_REPO}/needs-rebase:latest-{BUILD_USER}": ":needs-rebase-image",
+    },
+    stamp = True,
+)
+
+docker_push(
+    name = "push",
+    bundle = ":bundle",
+)
+
+go_image(
+    name = "needs-rebase-image",
+    binary = ":needs-rebase",
+)
+
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["main.go"],
+    importpath = "k8s.io/test-infra/prow/external-plugins/needs-rebase",
+    visibility = ["//visibility:private"],
+    deps = [
+        "//prow/external-plugins/needs-rebase/plugin:go_default_library",
+        "//prow/github:go_default_library",
+        "//prow/hook:go_default_library",
+        "//prow/pluginhelp/externalplugins:go_default_library",
+        "//prow/plugins:go_default_library",
+        "//vendor/github.com/sirupsen/logrus:go_default_library",
+    ],
+)
+
+go_binary(
+    name = "needs-rebase",
+    embed = [":go_default_library"],
+    importpath = "k8s.io/test-infra/prow/external-plugins/needs-rebase",
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [
+        ":package-srcs",
+        "//prow/external-plugins/needs-rebase/plugin:all-srcs",
+    ],
+    tags = ["automanaged"],
+    visibility = ["//visibility:public"],
+)

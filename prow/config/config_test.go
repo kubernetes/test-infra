@@ -18,8 +18,10 @@ package config
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"regexp"
 	"strings"
@@ -32,8 +34,31 @@ import (
 	"k8s.io/test-infra/prow/kube"
 )
 
+// config.json is the worst but contains useful information :-(
+type configJSON map[string]map[string]interface{}
+
+func (c configJSON) ScenarioForJob(jobName string) string {
+	if scenario, ok := c[jobName]["scenario"]; ok {
+		return scenario.(string)
+	}
+	return ""
+}
+func readConfigJSON(path string) (config configJSON, err error) {
+	raw, err := ioutil.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+	config = configJSON{}
+	err = json.Unmarshal(raw, &config)
+	if err != nil {
+		return nil, err
+	}
+	return config, nil
+}
+
 // Loaded at TestMain.
 var c *Config
+var cj configJSON
 
 func TestMain(m *testing.M) {
 	conf, err := Load("../config.yaml")
@@ -42,6 +67,13 @@ func TestMain(m *testing.M) {
 		os.Exit(1)
 	}
 	c = conf
+
+	cj, err = readConfigJSON("../../jobs/config.json")
+	if err != nil {
+		fmt.Printf("Could not load jobs config: %v", err)
+		os.Exit(1)
+	}
+
 	os.Exit(m.Run())
 }
 
@@ -827,7 +859,7 @@ func TestLatestUsesImagePullPolicy(t *testing.T) {
 
 // checkKubekinsPresets returns an error if a spec references to kubekins-e2e|bootstrap image,
 // but doesn't use service preset or ssh preset
-func checkKubekinsPresets(spec *v1.PodSpec, labels, validLabels map[string]string) error {
+func checkKubekinsPresets(jobName string, spec *v1.PodSpec, labels, validLabels map[string]string) error {
 	service := true
 	ssh := true
 	for _, container := range spec.Containers {
@@ -840,7 +872,8 @@ func checkKubekinsPresets(spec *v1.PodSpec, labels, validLabels map[string]strin
 			}
 		}
 
-		if strings.Contains(container.Image, "kubekins-e2e") {
+		configJSONJobName := strings.Replace(jobName, "pull-kubernetes", "pull-security-kubernetes", -1)
+		if cj.ScenarioForJob(configJSONJobName) == "kubenetes_e2e" {
 			ssh = false
 			for key, val := range labels {
 				if (key == "preset-k8s-ssh" || key == "preset-aws-ssh") && val == "true" {
@@ -888,12 +921,10 @@ func TestValidPresets(t *testing.T) {
 		}
 	}
 
-	for _, pres := range c.Presubmits {
-		for _, presubmit := range pres {
-			if presubmit.Spec != nil {
-				if err := checkKubekinsPresets(presubmit.Spec, presubmit.Labels, validLabels); err != nil {
-					t.Errorf("Error in presubmit %q: %v", presubmit.Name, err)
-				}
+	for _, presubmit := range c.AllPresubmits(nil) {
+		if presubmit.Spec != nil {
+			if err := checkKubekinsPresets(presubmit.Name, presubmit.Spec, presubmit.Labels, validLabels); err != nil {
+				t.Errorf("Error in presubmit %q: %v", presubmit.Name, err)
 			}
 		}
 	}
@@ -901,7 +932,7 @@ func TestValidPresets(t *testing.T) {
 	for _, posts := range c.Postsubmits {
 		for _, postsubmit := range posts {
 			if postsubmit.Spec != nil {
-				if err := checkKubekinsPresets(postsubmit.Spec, postsubmit.Labels, validLabels); err != nil {
+				if err := checkKubekinsPresets(postsubmit.Name, postsubmit.Spec, postsubmit.Labels, validLabels); err != nil {
 					t.Errorf("Error in postsubmit %q: %v", postsubmit.Name, err)
 				}
 			}
@@ -910,7 +941,7 @@ func TestValidPresets(t *testing.T) {
 
 	for _, periodic := range c.Periodics {
 		if periodic.Spec != nil {
-			if err := checkKubekinsPresets(periodic.Spec, periodic.Labels, validLabels); err != nil {
+			if err := checkKubekinsPresets(periodic.Name, periodic.Spec, periodic.Labels, validLabels); err != nil {
 				t.Errorf("Error in periodic %q: %v", periodic.Name, err)
 			}
 		}

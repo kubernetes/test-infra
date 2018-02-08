@@ -1019,32 +1019,6 @@ func TestOperatorConfig(t *testing.T) {
 				MaxGoroutines:  100,
 			},
 		},
-		{
-			name: "multiple operator config, none is matching",
-
-			operators: []config.JenkinsOperator{
-				{
-					Controller: config.Controller{
-						JobURLTemplate: template.Must(template.New("test").Parse("{{.Status.PodName}}/{{.Status.State}}")),
-						MaxConcurrency: 5,
-						MaxGoroutines:  10,
-					},
-					LabelSelectorString: "master=ci.openshift.org",
-				},
-				{
-					Controller: config.Controller{
-						MaxConcurrency: 100,
-						MaxGoroutines:  100,
-					},
-					LabelSelectorString: "master=ci.jenkins.org",
-				},
-			},
-			labelSelector: "master=ci.kubernetes.org",
-
-			expected: config.Controller{
-				MaxGoroutines: 20,
-			},
-		},
 	}
 
 	for _, test := range tests {

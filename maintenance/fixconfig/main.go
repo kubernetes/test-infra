@@ -29,6 +29,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -75,7 +76,7 @@ func readConfigJSON(path string) (config configJSON, err error) {
 		return nil, err
 	}
 	config = configJSON{}
-	err = yaml.Unmarshal(raw, &config)
+	err = json.Unmarshal(raw, &config)
 	if err != nil {
 		return nil, err
 	}

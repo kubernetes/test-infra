@@ -1,6 +1,15 @@
 package(default_visibility = ["//visibility:public"])
 
 py_test(
+    name = "coalesce_test",
+    size = "small",
+    srcs = [
+        "coalesce.py",
+        "coalesce_test.py",
+    ],
+)
+
+py_test(
     name = "verify_boilerplate",
     srcs = ["verify_boilerplate.py"],
     data = ["//:all-srcs"],

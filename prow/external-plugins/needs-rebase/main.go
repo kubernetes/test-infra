@@ -31,7 +31,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"k8s.io/test-infra/experiment/needs-rebase/plugin"
+	"k8s.io/test-infra/prow/external-plugins/needs-rebase/plugin"
 	"k8s.io/test-infra/prow/github"
 	"k8s.io/test-infra/prow/hook"
 	"k8s.io/test-infra/prow/pluginhelp/externalplugins"

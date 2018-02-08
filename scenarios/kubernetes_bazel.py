@@ -215,7 +215,7 @@ def main(args):
                 res = exp.returncode
 
     # Coalesce test results into one file for upload.
-    check(test_infra('images/bazelbuild/coalesce.py'))
+    check(test_infra('hack/coalesce.py'))
 
     echo_result(res)
     if res != 0:

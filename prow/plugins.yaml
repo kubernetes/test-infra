@@ -314,3 +314,17 @@ plugins:
 
   GoogleCloudPlatform/k8s-multicluster-ingress:
   - trigger
+
+external_plugins:
+  kubernetes/community:
+  - name: needs-rebase
+    events:
+      - pull_request
+  kubernetes/contrib:
+  - name: needs-rebase
+    events:
+      - pull_request
+  kubernetes/kops:
+  - name: needs-rebase
+    events:
+      - pull_request

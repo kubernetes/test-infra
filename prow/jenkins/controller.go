@@ -104,15 +104,19 @@ func (c *Controller) config() config.Controller {
 	if len(operators) == 1 {
 		return operators[0].Controller
 	}
+	configured := make([]string, 0, len(operators))
 	for _, cfg := range operators {
 		if cfg.LabelSelectorString == c.selector {
 			return cfg.Controller
 		}
+		configured = append(configured, cfg.LabelSelectorString)
 	}
-	// Default to something if no config exists.
-	// TODO: Disallow empty config during validation
-	// once jenkins-operator has its own config agent.
-	return config.Controller{MaxGoroutines: 20}
+	if len(c.selector) == 0 {
+		c.log.Panicf("You need to specify a non-empty --label-selector (existing selectors: %v).", configured)
+	} else {
+		c.log.Panicf("No config exists for --label-selector=%s.", c.selector)
+	}
+	return config.Controller{}
 }
 
 // canExecuteConcurrently checks whether the provided ProwJob can

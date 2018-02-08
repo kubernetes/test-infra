@@ -96,7 +96,7 @@ func TestFormat(t *testing.T) {
 // Medium integration test (depends on ability to open a TCP port)
 func TestHttpResponse(t *testing.T) {
 	// setup a stock valid request
-	url := "http://localhost"
+	url := "http://localhost/dog.jpg"
 	b, err := json.Marshal(&dogResult{
 		URL: url,
 	})
