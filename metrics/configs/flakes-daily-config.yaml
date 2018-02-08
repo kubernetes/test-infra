@@ -54,7 +54,7 @@ query: |
             date_trunc(date(started), DAY) day
           FROM `k8s-gubernator.build.all` as t
           where
-            /* Select results that have occured on or after the day of <LAST_DATA_TIME> (those results were
+            /* Select results that have occurred on or after the day of <LAST_DATA_TIME> (those results were
                for the day before), but don't include results from today, only return results for complete days. */
             datetime(started) >= datetime_trunc(parse_datetime("%s", cast(<LAST_DATA_TIME> as string)), DAY)
             and datetime(started) < datetime_trunc(current_datetime(), DAY) /* Drop results from partial day */
