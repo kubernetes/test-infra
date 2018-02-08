@@ -292,7 +292,7 @@ class JobTest(unittest.TestCase):
                     self.assertTrue(job in self.prowjobs or job in self.realjobs,
                                     '%s must have a matching jenkins/prow entry' % job)
 
-                # onwership assertions
+                # ownership assertions
                 self.assertIn('sigOwners', config[job], job)
                 self.assertIsInstance(config[job]['sigOwners'], list, job)
                 self.assertTrue(config[job]['sigOwners'], job) # non-empty
@@ -777,7 +777,7 @@ class JobTest(unittest.TestCase):
                     'GINKGO_TEST_ARGS=',
                     'KUBERNETES_PROVIDER=',
             ]:
-                continue  # TOOD(fejta): migrate kops jobs
+                continue  # TODO(fejta): migrate kops jobs
             if setting.startswith(env):
                 self.fail('[%s]: Env %s: Convert %s to use %s in jobs/config.json' % (
                     job, setting, env, fix))

@@ -16,7 +16,7 @@
 #
 # Use like: ./planter/planter.sh bazel build //cmd/...
 #
-# - $TAG can be overriden to choose a bazel version eg `TAG=0.8.0 planter.sh ...`
+# - $TAG can be overridden to choose a bazel version eg `TAG=0.8.0 planter.sh ...`
 # - $DOCKER_EXTRA can be set to supply extra args in the docker call
 # - $DRY_RUN will trigger echoing the docker call instead of running it
 # - planter will always `docker pull $IMAGE` before running it, see below

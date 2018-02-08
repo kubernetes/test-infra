@@ -1324,7 +1324,7 @@ function UtilFactory($document, $timeout, $compile, $rootScope, $$mdAnimate, $in
 
     /**
      * Processes a template and replaces the start/end symbols if the application has
-     * overriden them.
+     * overridden them.
      *
      * @param template The template to process whose start/end tags may be replaced.
      * @returns {*}
@@ -1890,7 +1890,7 @@ function MdGesture($$MdGestureHandler, $$rAF, $timeout) {
      * The drag handler dispatches a drag event if the user holds and moves his finger greater than
      * <minDistance> px in the x or y direction, depending on options.horizontal.
      * The drag will be cancelled if the user moves his finger greater than <minDistance>*<cancelMultiplier> in
-     * the perpindicular direction. Eg if the drag is horizontal and the user moves his finger <minDistance>*<cancelMultiplier>
+     * the perpendicular direction. Eg if the drag is horizontal and the user moves his finger <minDistance>*<cancelMultiplier>
      * pixels vertically, this handler won't consider the move part of a drag.
      */
     .handler('drag', {
@@ -6414,7 +6414,7 @@ function MdBottomSheetProvider($$interimElementProvider) {
         backdrop = $mdUtil.createBackdrop(scope, "_md-bottom-sheet-backdrop md-opaque");
 
         // Prevent mouse focus on backdrop; ONLY programatic focus allowed.
-        // This allows clicks on backdrop to propogate to the $rootElement and
+        // This allows clicks on backdrop to propagate to the $rootElement and
         // ESC key events to be detected properly.
         
         backdrop[0].tabIndex = -1;
@@ -7127,7 +7127,7 @@ angular.module('material.components.chips', [
     /**
      * The date that is currently focused or showing in the calendar. This will initially be set
      * to the ng-model value if set, otherwise to today. It will be updated as the user navigates
-     * to other months. The cell corresponding to the displayDate does not necesarily always have
+     * to other months. The cell corresponding to the displayDate does not necessarily always have
      * focus in the document (such as for cases when the user is scrolling the calendar).
      * @type {Date}
      */
@@ -7259,7 +7259,7 @@ angular.module('material.components.chips', [
         return;
       }
 
-      // Selection isn't occuring, so the key event is either navigation or nothing.
+      // Selection isn't occurring, so the key event is either navigation or nothing.
       var date = self.getFocusDateFromKeyEvent(event);
       if (date) {
         date = self.boundDateByMinAndMax(date);
@@ -8775,7 +8775,7 @@ angular.module('material.components.chips', [
     }
 
     /**
-     * Gets whether two dates are the same day (not not necesarily the same time).
+     * Gets whether two dates are the same day (not not necessarily the same time).
      * @param {Date} d1
      * @param {Date} d2
      * @returns {boolean}
@@ -12053,7 +12053,7 @@ function inputTextareaDirective($mdUtil, $window, $mdAria) {
 
       var min_rows = NaN;
       var lineHeight = null;
-      // can't check if height was or not explicity set,
+      // can't check if height was or not explicitly set,
       // so rows attribute will take precedence if present
       if (node.hasAttribute('rows')) {
         min_rows = parseInt(node.getAttribute('rows'));
@@ -19322,7 +19322,7 @@ function MdAutocompleteCtrl ($scope, $element, $mdUtil, $mdConstant, $mdTheming,
    */
   function clearValue () {
     // Set the loading to true so we don't see flashes of content.
-    // The flashing will only occour when an async request is running.
+    // The flashing will only occur when an async request is running.
     // So the loading process will stop when the results had been retrieved.
     setLoading(true);
 
@@ -23318,7 +23318,7 @@ MenuBarController.prototype.getOpenMenuIndex = function() {
  * @restrict E
  * @description
  *
- * Menu bars are containers that hold multiple menus. They change the behavior and appearence
+ * Menu bars are containers that hold multiple menus. They change the behavior and appearance
  * of the `md-menu` directive to behave similar to an operating system provided menu.
  *
  * @usage

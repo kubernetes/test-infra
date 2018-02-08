@@ -99,7 +99,7 @@ func readConfig(path string) (raw []byte, parsed *config.Config, err error) {
 // get the start/end byte indexes of the security repo presubmits
 // in the raw config.yaml bytes
 func getSecurityRepoJobsIndex(configBytes []byte) (start, end int, err error) {
-	// find security-repo config begining
+	// find security-repo config beginning
 	// first find presubmits
 	presubmitIdx := bytes.Index(configBytes, ([]byte)("presubmits:"))
 	// then find k-s/k:
