@@ -57,5 +57,5 @@ RUN INSTALLER="bazel-${BAZEL_VERSION}-installer-linux-x86_64.sh"; \
     chmod +x "${INSTALLER}" && "./${INSTALLER}" && rm "${INSTALLER}"
 
 WORKDIR /workspace
-COPY runner coalesce.py /usr/local/bin/
+COPY runner /usr/local/bin/
 ENTRYPOINT ["/bin/bash", "/usr/local/bin/runner"]

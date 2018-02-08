@@ -1,12 +1,3 @@
-py_test(
-    name = "coalesce_test",
-    size = "small",
-    srcs = [
-        "coalesce.py",
-        "coalesce_test.py",
-    ],
-)
-
 filegroup(
     name = "package-srcs",
     srcs = glob(["**"]),
