@@ -236,13 +236,10 @@ func createComment(reportTemplate *template.Template, pj kube.ProwJob, entries [
 	}
 	lines = append(lines, entries...)
 	if reportTemplate != nil {
-		lines = append(lines, []string{
-			"",
-			b.String(),
-			"",
-		}...)
+		lines = append(lines, "", b.String())
 	}
 	lines = append(lines, []string{
+		"",
 		"<details>",
 		"",
 		plugins.AboutThisBot,
