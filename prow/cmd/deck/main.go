@@ -138,6 +138,8 @@ func prodOnlyMain(logger *logrus.Entry, mux *http.ServeMux) {
 			updatePeriod: func() time.Duration {
 				return configAgent.Config().Deck.TideUpdatePeriod
 			},
+			hiddenRepos: configAgent.Config().Deck.HiddenRepos,
+			hiddenOnly:  *hiddenOnly,
 		}
 		ta.start()
 		mux.Handle("/tide.js", gziphandler.GzipHandler(handleTide(configAgent, ta)))
@@ -267,17 +269,20 @@ func handleTide(ca *config.Agent, ta *tideAgent) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		setHeadersNoCaching(w)
 		queryConfigs := ca.Config().Tide.Queries
+
+		ta.Lock()
+		defer ta.Unlock()
+		pools := ta.pools
+		queryConfigs, pools = ta.filterHidden(queryConfigs, pools)
 		queries := make([]string, 0, len(queryConfigs))
 		for _, qc := range queryConfigs {
 			queries = append(queries, qc.Query())
 		}
 
-		ta.Lock()
-		defer ta.Unlock()
 		payload := tideData{
 			Queries:     queries,
 			TideQueries: queryConfigs,
-			Pools:       ta.pools,
+			Pools:       pools,
 		}
 		pd, err := json.Marshal(payload)
 		if err != nil {
