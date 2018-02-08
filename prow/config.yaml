@@ -11504,7 +11504,7 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
       imagePullPolicy: Always
 
-- interval: 1h
+- interval: 4h
   agent: kubernetes
   name: ci-kubernetes-e2e-kops-aws-imageubuntu1604
   labels:
@@ -11534,20 +11534,6 @@ periodics:
       image: gcr.io/k8s-testimages/kubekins-e2e:latest-master
       imagePullPolicy: Always
 
-- interval: 6h
-  agent: kubernetes
-  name: ci-kubernetes-e2e-kops-aws-release-1-7
-  labels:
-    preset-service-account: true
-    preset-aws-ssh: true
-    preset-aws-credential: true
-  spec:
-    containers:
-    - args:
-      - --timeout=140
-      - --bare
-      image: gcr.io/k8s-testimages/kubekins-e2e:v20180205-d99d9c246-master
-
 - interval: 2h
   agent: kubernetes
   name: ci-kubernetes-e2e-kops-aws-sig-cli
@@ -11565,6 +11551,34 @@ periodics:
 - interval: 2h
   agent: kubernetes
   name: ci-kubernetes-e2e-kops-aws-stable1
+  labels:
+    preset-service-account: true
+    preset-aws-ssh: true
+    preset-aws-credential: true
+  spec:
+    containers:
+    - args:
+      - --timeout=140
+      - --bare
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180205-d99d9c246-master
+
+- interval: 4h
+  agent: kubernetes
+  name: ci-kubernetes-e2e-kops-aws-stable2
+  labels:
+    preset-service-account: true
+    preset-aws-ssh: true
+    preset-aws-credential: true
+  spec:
+    containers:
+    - args:
+      - --timeout=140
+      - --bare
+      image: gcr.io/k8s-testimages/kubekins-e2e:v20180205-d99d9c246-master
+
+- interval: 6h
+  agent: kubernetes
+  name: ci-kubernetes-e2e-kops-aws-stable3
   labels:
     preset-service-account: true
     preset-aws-ssh: true
