@@ -34,6 +34,7 @@ filegroup(
         "//vendor/github.com/beorn7/perks/quantile:all-srcs",
         "//vendor/github.com/boltdb/bolt:all-srcs",
         "//vendor/github.com/bwmarrin/snowflake:all-srcs",
+        "//vendor/github.com/client9/misspell:all-srcs",
         "//vendor/github.com/docker/distribution/digestset:all-srcs",
         "//vendor/github.com/docker/distribution/reference:all-srcs",
         "//vendor/github.com/docker/docker/api:all-srcs",

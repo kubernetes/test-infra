@@ -29,6 +29,7 @@ set -o pipefail
 # It should probably match the list in Gopkg.toml.
 REQUIRED=(
   //vendor/github.com/golang/dep/cmd/dep:dep
+  //vendor/github.com/client9/misspell/cmd/misspell:misspell
 )
 
 unused-go-libraries() {

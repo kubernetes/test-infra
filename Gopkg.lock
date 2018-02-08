@@ -122,6 +122,14 @@
   revision = "02cc386c183a1bf89dcac8c8008bb465f69d3340"
 
 [[projects]]
+  name = "github.com/client9/misspell"
+  packages = [
+    ".",
+    "cmd/misspell"
+  ]
+  revision = "9ce5d979ffdaca6385988d7ad1079a33ec942d20"
+
+[[projects]]
   name = "github.com/docker/distribution"
   packages = [
     "digestset",
@@ -723,6 +731,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "55a5e07cebdd4d6b3c6539e42ff0183417a945369810a995bdda7d3e0166bb36"
+  inputs-digest = "ff569144508193ad47470a4ba68edee6979b51caafb748f9c7ec799943300158"
   solver-name = "gps-cdcl"
   solver-version = 1
