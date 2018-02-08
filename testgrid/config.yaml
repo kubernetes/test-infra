@@ -1816,6 +1816,10 @@ test_groups:
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-test-infra-verify-govet
   days_of_results: 1
   num_columns_recent: 20
+- name: pull-test-infra-verify-spelling
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-test-infra-verify-spelling
+  days_of_results: 1
+  num_columns_recent: 20
 - name: pull-test-infra-verify-gofmt
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-test-infra-verify-gofmt
   days_of_results: 1
@@ -5015,6 +5019,9 @@ dashboards:
     base_options: 'width=10'
   - name: verify-govet
     test_group_name: pull-test-infra-verify-govet
+    base_options: 'width=10'
+  - name: verify-spelling
+    test_group_name: pull-test-infra-verify-spelling
     base_options: 'width=10'
   - name: verify-gofmt
     test_group_name: pull-test-infra-verify-gofmt

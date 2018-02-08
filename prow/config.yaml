@@ -4854,6 +4854,25 @@ presubmits:
         - "--upload=gs://kubernetes-jenkins/pr-logs"
         - "--clean"
 
+  - name: pull-test-infra-verify-spelling
+    agent: kubernetes
+    context: pull-test-infra-verify-spelling
+    branches:
+    - master
+    rerun_command: "/test pull-test-infra-verify-spelling"
+    trigger: "/test( all| pull-test-infra-verify-spelling)"
+    always_run: true
+    labels:
+      preset-service-account: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
+        args:
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--root=/go/src"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--clean"
+
   tensorflow/k8s:
   - name: tf-k8s-presubmit
     context: tf-k8s-presubmit
