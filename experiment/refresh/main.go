@@ -32,7 +32,6 @@ import (
 
 	"k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/github"
-	"k8s.io/test-infra/prow/pluginhelp/externalplugins"
 )
 
 var (
@@ -56,9 +55,6 @@ func validateFlags() error {
 func main() {
 	flag.Parse()
 	logrus.SetFormatter(&logrus.JSONFormatter{})
-	// TODO: Use global option from the prow config.
-	logrus.SetLevel(logrus.DebugLevel)
-	log := logrus.StandardLogger().WithField("plugin", "refresh")
 
 	// Ignore SIGTERM so that we don't drop hooks when the pod is removed.
 	// We'll get SIGTERM first and then SIGKILL after our graceful termination
@@ -66,23 +62,23 @@ func main() {
 	signal.Ignore(syscall.SIGTERM)
 
 	if err := validateFlags(); err != nil {
-		log.WithError(err).Fatal("Error validating flags.")
+		logrus.WithError(err).Fatal("Error validating flags.")
 	}
 
 	configAgent := &config.Agent{}
 	if err := configAgent.Start(*configPath); err != nil {
-		log.WithError(err).Fatal("Error starting config agent.")
+		logrus.WithError(err).Fatal("Error starting config agent.")
 	}
 
 	webhookSecretRaw, err := ioutil.ReadFile(*webhookSecretFile)
 	if err != nil {
-		log.WithError(err).Fatal("Could not read webhook secret file.")
+		logrus.WithError(err).Fatal("Could not read webhook secret file.")
 	}
 	webhookSecret := bytes.TrimSpace(webhookSecretRaw)
 
 	oauthSecretRaw, err := ioutil.ReadFile(*githubTokenFile)
 	if err != nil {
-		log.WithError(err).Fatal("Could not read oauth secret file.")
+		logrus.WithError(err).Fatal("Could not read oauth secret file.")
 	}
 	oauthSecret := string(bytes.TrimSpace(oauthSecretRaw))
 
@@ -91,16 +87,8 @@ func main() {
 		ghc = github.NewDryRunClient(oauthSecret, *githubEndpoint)
 	}
 
-	server := &Server{
-		hmacSecret:  webhookSecret,
-		credentials: oauthSecret,
-		prowURL:     *prowURL,
-		configAgent: configAgent,
-		ghc:         ghc,
-		log:         log,
-	}
+	server := NewServer(oauthSecret, webhookSecret, ghc, *prowURL, configAgent)
 
 	http.Handle("/", server)
-	externalplugins.ServeExternalPluginHelp(http.DefaultServeMux, log, HelpProvider)
-	log.Fatal(http.ListenAndServe(":"+strconv.Itoa(*port), nil))
+	logrus.Fatal(http.ListenAndServe(":"+strconv.Itoa(*port), nil))
 }

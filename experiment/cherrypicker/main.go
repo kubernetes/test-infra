@@ -30,7 +30,6 @@ import (
 
 	"k8s.io/test-infra/prow/git"
 	"k8s.io/test-infra/prow/github"
-	"k8s.io/test-infra/prow/pluginhelp/externalplugins"
 )
 
 var (
@@ -46,10 +45,6 @@ var (
 func main() {
 	flag.Parse()
 	logrus.SetFormatter(&logrus.JSONFormatter{})
-	// TODO: Use global option from the prow config.
-	logrus.SetLevel(logrus.DebugLevel)
-	log := logrus.StandardLogger().WithField("plugin", "cherrypick")
-
 	// Ignore SIGTERM so that we don't drop hooks when the pod is removed.
 	// We'll get SIGTERM first and then SIGKILL after our graceful termination
 	// deadline.
@@ -57,19 +52,19 @@ func main() {
 
 	webhookSecretRaw, err := ioutil.ReadFile(*webhookSecretFile)
 	if err != nil {
-		log.WithError(err).Fatal("Could not read webhook secret file.")
+		logrus.WithError(err).Fatal("Could not read webhook secret file.")
 	}
 	webhookSecret := bytes.TrimSpace(webhookSecretRaw)
 
 	oauthSecretRaw, err := ioutil.ReadFile(*githubTokenFile)
 	if err != nil {
-		log.WithError(err).Fatal("Could not read oauth secret file.")
+		logrus.WithError(err).Fatal("Could not read oauth secret file.")
 	}
 	oauthSecret := string(bytes.TrimSpace(oauthSecretRaw))
 
 	_, err = url.Parse(*githubEndpoint)
 	if err != nil {
-		log.WithError(err).Fatal("Must specify a valid --github-endpoint URL.")
+		logrus.WithError(err).Fatal("Must specify a valid --github-endpoint URL.")
 	}
 
 	githubClient := github.NewClient(oauthSecret, *githubEndpoint)
@@ -79,17 +74,20 @@ func main() {
 
 	gitClient, err := git.NewClient()
 	if err != nil {
-		log.WithError(err).Fatal("Error getting git client.")
+		logrus.WithError(err).Fatal("Error getting git client.")
 	}
+
+	// TODO: Use global option from the prow config.
+	logrus.SetLevel(logrus.DebugLevel)
 
 	// The bot name is used to determine to what fork we can push cherry-pick branches.
 	botName, err := githubClient.BotName()
 	if err != nil {
-		log.WithError(err).Fatal("Error getting bot name.")
+		logrus.WithError(err).Fatal("Error getting bot name.")
 	}
 	email, err := githubClient.Email()
 	if err != nil {
-		log.WithError(err).Fatal("Error getting bot e-mail.")
+		logrus.WithError(err).Fatal("Error getting bot e-mail.")
 	}
 	// The bot needs to be able to push to its own Github fork and potentially pull
 	// from private repos.
@@ -97,28 +95,20 @@ func main() {
 
 	repos, err := githubClient.GetRepos(botName, true)
 	if err != nil {
-		log.WithError(err).Fatal("Error listing bot repositories.")
+		logrus.WithError(err).Fatal("Error listing bot repositories.")
 	}
 
-	server := &Server{
-		hmacSecret: webhookSecret,
-		botName:    botName,
-		email:      email,
-
-		gc:  gitClient,
-		ghc: githubClient,
-		log: log,
-
-		prowAssignments: *prowAssignments,
-		allowAll:        *allowAll,
-
-		bare:     &http.Client{},
-		patchURL: "https://patch-diff.githubusercontent.com",
-
-		repos: repos,
-	}
+	server := NewServer(
+		botName,
+		email,
+		webhookSecret,
+		gitClient,
+		githubClient,
+		repos,
+		*prowAssignments,
+		*allowAll,
+	)
 
 	http.Handle("/", server)
-	externalplugins.ServeExternalPluginHelp(http.DefaultServeMux, log, HelpProvider)
 	logrus.Fatal(http.ListenAndServe(":"+strconv.Itoa(*port), nil))
 }

@@ -14,8 +14,6 @@ go_library(
         "//prow/hook:go_default_library",
         "//prow/kube:go_default_library",
         "//prow/pjutil:go_default_library",
-        "//prow/pluginhelp:go_default_library",
-        "//prow/pluginhelp/externalplugins:go_default_library",
         "//prow/report:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/labels:go_default_library",
