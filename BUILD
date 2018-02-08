@@ -38,7 +38,6 @@ filegroup(
         "//gcsweb/pkg/version:all-srcs",
         "//ghclient:all-srcs",
         "//hack:all-srcs",
-        "//images/bazelbuild:all-srcs",
         "//images/bootstrap/barnacle:all-srcs",
         "//jenkins:all-srcs",
         "//jobs:all-srcs",
