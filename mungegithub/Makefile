@@ -127,7 +127,7 @@ ifneq ("", "$(and $(wildcard $(APP)/pv.yaml), $(wildcard $(APP)/pvc.yaml))")
 	@sleep 4
 endif
 
-# Deploys after completeing first time setup such as creating the volume and volume claim, and creating the token secret, and service.
+# Deploys after completing first time setup such as creating the volume and volume claim, and creating the token secret, and service.
 first_time_deploy: push_volume push_secret push_service push_config deploy
 
 clean:

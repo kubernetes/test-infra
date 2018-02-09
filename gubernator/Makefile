@@ -17,7 +17,7 @@ cron:
 versions:
 	gcloud app versions list --project="$(PROJECT)"
 
-# TOOD(fejta): consider the following default:
+# TODO(fejta): consider the following default:
 # gcloud app versions list --sort-by=~LAST_DEPLOYED --limit=1 --format='value(id)'
 migrate: SHELL:=/bin/bash
 migrate: versions

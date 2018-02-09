@@ -4,8 +4,8 @@
 # The name of the test job in this file must satisfy a predefined format, which
 # consists of several dimensions, such as cloud provider, OS image name,
 # Kubernetes version and test suites. The definition of each dimension is
-# provided separately from the job defintion. A tool can automatically generate
-# the test defintion and Prow configuration from the test name by pulling the
+# provided separately from the job definition. A tool can automatically generate
+# the test definition and Prow configuration from the test name by pulling the
 # configs of each dimension in the test name and assembling them together.
 #
 # E.g., for test "ci-kubernetes-e2e-gce-ubuntustable1-k8sdev-serial", its

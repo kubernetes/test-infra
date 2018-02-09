@@ -85,7 +85,7 @@ func TestParseOpenAPI(t *testing.T) {
 				"get": {"description": "get available resources"},
 				"post": {"description": "create resource"}},
 			"/foo": {
-				"get": {"description": "get avaiable foo"},
+				"get": {"description": "get available foo"},
 				"post": {"description": "create foo"},
 				"parameters": [{"type": "string", "description": "This should be ignored", "name": "bar", "in": "query"}]}}}`),
 			Expected: apiArray{

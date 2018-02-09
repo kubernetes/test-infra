@@ -208,14 +208,14 @@ function createLinkCell(text, url, title) {
 
 function createActionCell(pool) {
     var action = pool.Action;
-    var targetted = pool.Target && pool.Target.length
+    var targeted = pool.Target && pool.Target.length
     var c = document.createElement("td");
 
-    if (targetted) {
+    if (targeted) {
         action += ": "
     }
     c.appendChild(document.createTextNode(action));
-    if (targetted) {
+    if (targeted) {
         addPRsToElem(c, pool, pool.Target)
     }
     return c;

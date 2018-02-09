@@ -1,5 +1,5 @@
 /**
- * @fileoverview Polls and recieves alerts from TestGrid server for data on
+ * @fileoverview Polls and receives alerts from TestGrid server for data on
  * dashboards, tabs, and alerts and stores user config data.
  *
  * TODO(carolinemoore) switch to Tango notifications.

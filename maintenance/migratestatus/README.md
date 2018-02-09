@@ -1,6 +1,6 @@
 # Status Context Migrator
 The migratestatus tool is a maintenance utility used to safely switch a repo from one status context to another.
-For example if there is a context named "CI tests" that needs to be moved by "CI tests v2" this tool can be used to copy every "CI tests" status into a "CI tests v2" status context and then mark every "CI tests" context as passing and retired. This ensures that no PRs are ever passing when they shouldn't be and doesn't block PRs that should be passing. The copy and retire phases can be run seperately or together at once in move mode.
+For example if there is a context named "CI tests" that needs to be moved by "CI tests v2" this tool can be used to copy every "CI tests" status into a "CI tests v2" status context and then mark every "CI tests" context as passing and retired. This ensures that no PRs are ever passing when they shouldn't be and doesn't block PRs that should be passing. The copy and retire phases can be run separately or together at once in move mode.
 
 ### Usage
 ###### Modes

@@ -291,7 +291,7 @@ func (s *Server) handlePullRequest(l *logrus.Entry, pre github.PullRequestEvent)
 	}
 
 	// Handle multiple comments serially. Make sure to filter out
-	// comments targetting the same branch.
+	// comments targeting the same branch.
 	handledBranches := make(map[string]bool)
 	for requestor, branches := range requestorToComments {
 		for targetBranch, ic := range branches {
