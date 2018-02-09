@@ -9,8 +9,9 @@ triggers:
   - kubernetes-security
   - kubernetes-sigs
   - kubernetes-sig-testing
-  - google/cadvisor  
+  - google/cadvisor
   - tensorflow/k8s
+  - tensorflow/minigo
   - GoogleCloudPlatform/k8s-multicluster-ingress
   trusted_org: kubernetes
   join_org_url: "https://git.k8s.io/community/community-membership.md#member"
@@ -22,6 +23,10 @@ triggers:
   - kubeflow
   trusted_org: kubeflow
   join_org_url: https://github.com/kubeflow/kubeflow/blob/master/CONTRIBUTING.md
+- repos:
+  - tensorflow/minigo
+  trusted_org: tensorflow
+  join_org_url: https://github.com/tensorflow/minigo/blob/master/CONTRIBUTING.md
 owners:
   mdyamlrepos:
   - kubernetes/website
@@ -300,6 +305,11 @@ plugins:
 
   tensorflow/k8s:
   - trigger
+
+  tensorflow/minigo:
+  - trigger
+  - lgtm
+  - size
 
   spxtr/envoy:
   - assign
