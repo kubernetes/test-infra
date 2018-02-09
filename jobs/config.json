@@ -11263,9 +11263,10 @@
       "--extract=ci/latest",
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-f",
-      "--autoscaler-vpa-tests=recommender",
       "--provider=gce",
       "--test=false",
+      "--test-cmd=../vertical-pod-autoscaler/hack/run-e2e.sh",
+      "--test-cmd-args=recommender",
       "--timeout=60m"
     ],
     "scenario": "kubernetes_e2e",

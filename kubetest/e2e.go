@@ -236,13 +236,6 @@ func run(deploy deployer, o options) error {
 		errs = appendError(errs, xmlWrap("Perf Tests", perfTest))
 	}
 
-	switch o.autoscalerVPATests {
-	case "recommender", "updater", "addmission-controller", "all":
-		vpaTestName := fmt.Sprintf("Autoscaler VPA %s Tests", o.autoscalerVPATests)
-		vpaTestFunction := func() error { return autoscalerVPATest(o.autoscalerVPATests) }
-		errs = appendError(errs, xmlWrap(vpaTestName, vpaTestFunction))
-	}
-
 	if dump != "" {
 		errs = appendError(errs, xmlWrap("DumpClusterLogs", func() error {
 			return deploy.DumpClusterLogs(dump, o.logexporterGCSPath)
@@ -526,12 +519,6 @@ func perfTest() error {
 		return err
 	}
 	return nil
-}
-
-func autoscalerVPATest(component string) error {
-	// Run autoscaler vpa tests
-	cmdline := k8s("autoscaler", "vertical-pod-autoscaler", "hack", "run-e2e.sh")
-	return finishRunning(exec.Command(cmdline, component))
 }
 
 func chartsTest() error {
