@@ -23,6 +23,10 @@ triggers:
   - kubeflow
   trusted_org: kubeflow
   join_org_url: https://github.com/kubeflow/kubeflow/blob/master/CONTRIBUTING.md
+- repos:
+  - tensorflow/minigo
+  trusted_org: tensorflow
+  join_org_url: https://github.com/tensorflow/minigo/blob/master/CONTRIBUTING.md
 owners:
   mdyamlrepos:
   - kubernetes/website
