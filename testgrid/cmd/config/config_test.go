@@ -84,7 +84,8 @@ func TestConfig(t *testing.T) {
 	for testgroupidx, testgroup := range cfg.TestGroups {
 		// All testgroup must have a name and a query
 		if testgroup.Name == "" || testgroup.GcsPrefix == "" {
-			t.Errorf("Testgroup %v: - Must have a name and query", testgroupidx)
+			t.Errorf("Testgroup #%v (Name: '%v', Query: '%v'): - Must have a name and query",
+				testgroupidx, testgroup.Name, testgroup.GcsPrefix)
 		}
 
 		// All testgroup must not have duplicated names
