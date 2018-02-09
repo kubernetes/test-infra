@@ -247,18 +247,15 @@ func (sc *statusController) run() {
 func (sc *statusController) sync(pool []PullRequest) {
 	ctx := context.Background()
 	syncStartTime := time.Now()
-	var all []PullRequest
-	for _, q := range sc.ca.Config().Tide.Queries {
-		allPRs, err := search(sc.ghc, sc.logger, ctx, q.AllPRsSince(sc.lastSyncStartTime))
-		if err != nil {
-			sc.logger.WithError(err).Errorf("Searching for open PRs.")
-			return
-		}
-		all = append(all, allPRs...)
+	query := sc.ca.Config().Tide.Queries.AllPRsSince(sc.lastSyncStartTime)
+	allPRs, err := search(sc.ghc, sc.logger, ctx, query)
+	if err != nil {
+		sc.logger.WithError(err).Errorf("Searching for open PRs.")
+		return
 	}
 	// We were able to find all open PRs so update the last sync time.
 	sc.lastSyncStartTime = syncStartTime
-	sc.setStatuses(all, pool)
+	sc.setStatuses(allPRs, pool)
 }
 
 // Sync runs one sync iteration.

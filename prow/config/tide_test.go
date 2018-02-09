@@ -24,7 +24,7 @@ import (
 	"k8s.io/test-infra/prow/github"
 )
 
-var testQuery = &TideQuery{
+var testQuery = TideQuery{
 	Repos:                  []string{"k/k", "k/t-i"},
 	Labels:                 []string{"lgtm", "approved"},
 	MissingLabels:          []string{"foo"},
@@ -70,22 +70,31 @@ func TestAllPRsSince(t *testing.T) {
 		}
 	}
 
-	q = " " + testQuery.AllPRsSince(testTime) + " "
+	queries := TideQueries([]TideQuery{
+		testQuery,
+		{
+			Repos:  []string{"k/foo"},
+			Labels: []string{"lgtm", "mergeable"},
+		},
+	})
+	q = " " + queries.AllPRsSince(testTime) + " "
 	checkTok("is:pr", true)
 	checkTok("state:open", true)
 	checkTok("repo:\"k/k\"", true)
 	checkTok("repo:\"k/t-i\"", true)
+	checkTok("repo:\"k/foo\"", true)
 	checkTok("label:\"lgtm\"", false)
 	checkTok("label:\"approved\"", false)
+	checkTok("label:\"mergeable\"", false)
 	checkTok("-label:\"foo\"", false)
 	checkTok("review:approved", false)
 	checkTok("updated:>=2015-03-07T11:06:39Z", true)
 
 	// Test that if time is the zero time value, the token is not included.
-	q = " " + testQuery.AllPRsSince(time.Time{}) + " "
+	q = " " + queries.AllPRsSince(time.Time{}) + " "
 	checkTok("updated:>=0001-01-01T00:00:00Z", false)
 	// Test that if time is before 1970, the token is not included.
-	q = " " + testQuery.AllPRsSince(testTimeOld) + " "
+	q = " " + queries.AllPRsSince(testTimeOld) + " "
 	checkTok("updated:>=1915-03-07T11:06:39Z", false)
 }
 
