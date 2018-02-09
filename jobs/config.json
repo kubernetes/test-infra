@@ -527,6 +527,7 @@
     "args": [
       "--check-leaked-resources",
       "--cluster=",
+      "--env=GCE_GLBC_IMAGE=gcr.io/google_containers/glbc:0.9.7",
       "--extract=ci/latest",
       "--gcp-project-type=ingress-project",
       "--gcp-zone=us-central1-f",
