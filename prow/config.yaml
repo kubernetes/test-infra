@@ -10319,7 +10319,7 @@ periodics:
           cpu: 6
           memory: "16Gi"
 
-- interval: 20m
+- interval: 1h
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-large-deploy
   labels:
