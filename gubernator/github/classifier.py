@@ -134,7 +134,7 @@ def get_skip_comments(events, skip_users=None):
         events: a list of (event_type str, event_body dict, timestamp).
     Returns:
         comment_ids: a set of comment ids that were deleted or made by
-            users that should be skiped.
+            users that should be skipped.
     """
     skip_users = skip_users or []
     skip_comments = set()
