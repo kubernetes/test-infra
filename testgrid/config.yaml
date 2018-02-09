@@ -1682,6 +1682,12 @@ test_groups:
 - name: ppc64le-unit
   gcs_prefix: ppc64le-kubernetes/logs/ci-unit-kubernetes
 #presubmits
+- name: pull-kube-deploy-build
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kube-deploy-build
+  num_columns_recent: 20
+- name: pull-kube-deploy-test
+  gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kube-deploy-test
+  num_columns_recent: 20
 - name: pull-kubernetes-bazel-build
   gcs_prefix: kubernetes-jenkins/pr-logs/directory/pull-kubernetes-bazel-build
   days_of_results: 1
@@ -3700,6 +3706,12 @@ dashboards:
   - name: periodic-kubeadm-packet-arm64
     test_group_name: periodic-multi-platform-kubeadm-packet-arm64
 
+- name: sig-cluster-lifecycle-cluster-api
+  dashboard_tab:
+  - name: pr-build
+    test_group_name: pull-kube-deploy-build
+  - name: pr-test
+    test_group_name: pull-kube-deploy-test
 
 - name: sig-multicluster-cluster-registry
   dashboard_tab:
@@ -5147,6 +5159,7 @@ dashboard_groups:
   - sig-cluster-lifecycle-all
   - sig-cluster-lifecycle-upgrade-skew
   - sig-cluster-lifecycle-multi-platform
+  - sig-cluster-lifecycle-cluster-api
 
 - name: sig-multicluster
   dashboard_names:

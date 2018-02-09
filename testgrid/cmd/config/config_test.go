@@ -23,10 +23,11 @@ import (
 	"strings"
 	"testing"
 
+	"path/filepath"
+
 	"github.com/ghodss/yaml"
 	prow_config "k8s.io/test-infra/prow/config"
 	config_pb "k8s.io/test-infra/testgrid/config"
-	"path/filepath"
 )
 
 type SQConfig struct {
@@ -359,6 +360,7 @@ func TestJobsTestgridEntryMatch(t *testing.T) {
 		"kubernetes/kops",
 		"kubernetes/heapster",
 		"kubernetes/charts",
+		"kubernetes/kube-deploy",
 		"tensorflow/k8s",
 	}) {
 		jobs[job.Name] = false

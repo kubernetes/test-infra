@@ -10791,6 +10791,24 @@
       "sig-aws"
     ]
   },
+  "pull-kube-deploy-build": {
+    "args": [
+      "./scripts/ci-build.sh"
+    ],
+    "scenario": "execute",
+    "sigOwners": [
+      "sig-cluster-lifecycle"
+    ]
+  },
+  "pull-kube-deploy-test": {
+    "args": [
+      "./scripts/ci-test.sh"
+    ],
+    "scenario": "execute",
+    "sigOwners": [
+      "sig-cluster-lifecycle"
+    ]
+  },
   "pull-kubernetes-bazel-build": {
     "_comment": "NOTE: args for this are in prow/config.yaml after the `--` !",
     "args": [],
