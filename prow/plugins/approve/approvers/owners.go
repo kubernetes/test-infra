@@ -528,12 +528,18 @@ type UnapprovedFile struct {
 
 func (a ApprovedFile) String() string {
 	fullOwnersPath := filepath.Join(a.filepath, ownersFileName)
+	if strings.HasSuffix(a.filepath, ".md") {
+		fullOwnersPath = a.filepath
+	}
 	link := fmt.Sprintf("https://github.com/%s/%s/blob/master/%v", a.org, a.project, fullOwnersPath)
 	return fmt.Sprintf("- ~~[%s](%s)~~ [%v]\n", fullOwnersPath, link, strings.Join(a.approvers.List(), ","))
 }
 
 func (ua UnapprovedFile) String() string {
 	fullOwnersPath := filepath.Join(ua.filepath, ownersFileName)
+	if strings.HasSuffix(ua.filepath, ".md") {
+		fullOwnersPath = ua.filepath
+	}
 	link := fmt.Sprintf("https://github.com/%s/%s/blob/master/%v", ua.org, ua.project, fullOwnersPath)
 	return fmt.Sprintf("- **[%s](%s)**\n", fullOwnersPath, link)
 }
