@@ -10319,7 +10319,7 @@ periodics:
           cpu: 6
           memory: "16Gi"
 
-- cron: "0 0 31 2 *" # manual job, set to Feb.31st so it will never be triggered
+- interval: 20m
   agent: kubernetes
   name: ci-kubernetes-e2e-gke-large-deploy
   labels:
