@@ -29,12 +29,12 @@ import (
 
 func main() {
 	var tokenFile, org, repo, copyContext, moveContext, retireContext, destContext string
-	var modify, continueOnError bool
+	var continueOnError, dryRun bool
 
 	flag.StringVar(&tokenFile, "tokenfile", "", "The file containing the token to use for authentication.")
 	flag.StringVar(&org, "org", "", "The organization that owns the repo.")
 	flag.StringVar(&repo, "repo", "", "The repo needing status migration.")
-	flag.BoolVar(&modify, "modify", false, "Perform modifying actions when set, otherwise dry-run.")
+	flag.BoolVar(&dryRun, "dry-run", true, "Run in dry-run mode, performing no modifying actions.")
 	flag.BoolVar(&continueOnError, "continue-on-error", false, "Indicates that the migration should continue if context migration fails for an individual PR.")
 
 	flag.StringVar(&copyContext, "copy", "", "Indicates copy mode and specifies the context to copy.")
@@ -84,7 +84,6 @@ func main() {
 
 	// Note that continueOnError is false by default so that errors can be addressed when they occur
 	// instead of blindly continuing to the next PR, possibly continuing to error.
-	dryRun := !modify
 	m := migrator.New(*mode, strings.TrimSpace(string(tokenData)), org, repo, dryRun, continueOnError)
 
 	prOptions := &github.PullRequestListOptions{}
