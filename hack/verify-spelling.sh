@@ -16,14 +16,34 @@
 set -o errexit
 set -o nounset
 set -o pipefail
-set -o xtrace
 
-go install ./vendor/github.com/client9/misspell/cmd/misspell
-if ! which misspell >/dev/null 2>&1; then
+misspell=
+while getopts "m:" opt; do
+  case "${opt}" in
+    m)
+      misspell="${OPTARG}"
+      ;;
+  esac
+done
+
+if [[ -z "${misspell}" ]]; then
+  # Legacy non-Bazel mode. Maybe remove at some point?
+  go install ./vendor/github.com/client9/misspell/cmd/misspell
+  if ! which misspell >/dev/null 2>&1; then
     echo "Can't find misspell - is your GOPATH 'bin' in your PATH?"
     echo "  GOPATH: ${GOPATH}"
     echo "  PATH:   ${PATH}"
     exit 1
+  fi
+
+  git ls-files | grep -v -e vendor -e static -e third_party | xargs misspell -error
+  exit
 fi
 
-git ls-files | grep -v -e vendor -e static -e third_party | xargs misspell -error
+find -L . -type f -not \( \
+  \( \
+    -path '*/vendor/*' \
+    -o -path '*/static/*' \
+    -o -path '*/third_party/*' \
+    \) -prune \
+  \) | xargs "${misspell}" -error
