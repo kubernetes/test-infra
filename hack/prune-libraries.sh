@@ -46,6 +46,7 @@ unused-go-libraries() {
   # Find all the go_library rules in vendor except those that something outside
   # of vendor eventually depends on.
   required_items=( "${REQUIRED[@]/#/+ }" )
+  echo "Looking for //vendor targets that no one outside of //vendor depends on..." >&2
   bazel query "kind('go_library rule', //vendor/... -deps(//... -//vendor/... ${required_items[@]}))"
 }
 
