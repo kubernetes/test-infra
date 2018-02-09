@@ -24,6 +24,16 @@ sh_test(
     ],
 )
 
+sh_test(
+    name = "verify-spelling",
+    srcs = ["verify-spelling.sh"],
+    args = ["-m $(location //vendor/github.com/client9/misspell/cmd/misspell)"],
+    data = [
+        "//:all-srcs",
+        "//vendor/github.com/client9/misspell/cmd/misspell",
+    ],
+)
+
 test_suite(
     name = "verify-all",
     tests = [
