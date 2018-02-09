@@ -59,8 +59,8 @@ build: kubetest
 	@echo Built $(IMG):$(TAG)-$(K8S) and tagged with latest-$(K8S)
 
 push: build
-	gcloud docker -- push $(IMG):$(TAG)-$(K8S)
-	gcloud docker -- push $(IMG):latest-$(K8S)
+	docker push $(IMG):$(TAG)-$(K8S)
+	docker push $(IMG):latest-$(K8S)
 	@echo Pushed $(IMG) with :latest-$(K8S) and :$(TAG)-$(K8S) tags
 
 .PHONY: all kubetest build push help

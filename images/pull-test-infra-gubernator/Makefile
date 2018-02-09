@@ -18,6 +18,6 @@ image:
 	docker build -t "gcr.io/k8s-testimages/gubernator:$(VERSION)" .
 
 push: image
-	gcloud docker -- push "gcr.io/k8s-testimages/gubernator:$(VERSION)"
+	docker push "gcr.io/k8s-testimages/gubernator:$(VERSION)"
 
 .PHONY: image push

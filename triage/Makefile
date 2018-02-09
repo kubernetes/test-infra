@@ -21,8 +21,8 @@ build:
 	echo Built $(IMG):$(TAG) and tagged with $(IMG):latest ;
 
 push:
-	gcloud docker -- push $(IMG):$(TAG)
-	gcloud docker -- push $(IMG):latest
+	docker push $(IMG):$(TAG)
+	docker push $(IMG):latest
 	echo Pushed $(IMG):latest and $(IMG):$(TAG)
 
 push_static:
