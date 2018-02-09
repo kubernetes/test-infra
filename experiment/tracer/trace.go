@@ -89,7 +89,7 @@ func (pl linesByTimestamp) String() string {
 // issuecomment-#id
 //
 // We use #id in order to figure out the event-GUID for a
-// comment and trace commments across prow.
+// comment and trace comments across prow.
 const ic = "issuecomment"
 
 func handleTrace(selector string, kc *kube.Client) http.HandlerFunc {
