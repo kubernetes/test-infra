@@ -145,6 +145,16 @@ type AuthConfig struct {
 	// BearerToken is used for doing oauth-based authentication
 	// with Jenkins. Works ootb with the Openshift Jenkins image.
 	BearerToken *BearerTokenAuthConfig
+	// CSRFProtect ensures the client will acquire a CSRF protection
+	// token from Jenkins to use it in mutating requests. Required
+	// for masters that prevent cross site request forgery exploits.
+	CSRFProtect bool
+	// csrfToken is the token acquired from Jenkins for CSRF protection.
+	// Needs to be used as the header value in subsequent mutating requests.
+	csrfToken string
+	// csrfRequestField is a key acquired from Jenkins for CSRF protection.
+	// Needs to be used as the header key in subsequent mutating requests.
+	csrfRequestField string
 }
 
 type BasicAuthConfig struct {
@@ -156,7 +166,7 @@ type BearerTokenAuthConfig struct {
 	Token string
 }
 
-func NewClient(url string, tlsConfig *tls.Config, authConfig *AuthConfig, logger *logrus.Entry, metrics *ClientMetrics) *Client {
+func NewClient(url string, tlsConfig *tls.Config, authConfig *AuthConfig, logger *logrus.Entry, metrics *ClientMetrics) (*Client, error) {
 	if logger == nil {
 		logger = logrus.NewEntry(logrus.StandardLogger())
 	}
@@ -172,7 +182,36 @@ func NewClient(url string, tlsConfig *tls.Config, authConfig *AuthConfig, logger
 	if tlsConfig != nil {
 		c.client.Transport = &http.Transport{TLSClientConfig: tlsConfig}
 	}
-	return c
+	if c.authConfig.CSRFProtect {
+		if err := c.CrumbRequest(); err != nil {
+			return nil, fmt.Errorf("cannot get Jenkins crumb: %v", err)
+		}
+	}
+	return c, nil
+}
+
+// CrumbRequest requests a CSRF protection token from Jenkins to
+// use it in subsequent requests. Required for Jenkins masters that
+// prevent cross site request forgery exploits.
+func (c *Client) CrumbRequest() error {
+	if c.authConfig.csrfToken != "" && c.authConfig.csrfRequestField != "" {
+		return nil
+	}
+	c.logger.Debug("CrumbRequest")
+	data, err := c.GetSkipMetrics("/crumbIssuer/api/json")
+	if err != nil {
+		return err
+	}
+	crumbResp := struct {
+		Crumb             string `json:"crumb"`
+		CrumbRequestField string `json:"crumbRequestField"`
+	}{}
+	if err := json.Unmarshal(data, &crumbResp); err != nil {
+		return fmt.Errorf("cannot unmarshal crumb response: %v", err)
+	}
+	c.authConfig.csrfToken = crumbResp.Crumb
+	c.authConfig.csrfRequestField = crumbResp.CrumbRequestField
+	return nil
 }
 
 // measure records metrics about the provided method, path, and code.
@@ -273,6 +312,9 @@ func (c *Client) doRequest(method, path string) (*http.Response, error) {
 		}
 		if c.authConfig.BearerToken != nil {
 			req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.authConfig.BearerToken.Token))
+		}
+		if c.authConfig.CSRFProtect && c.authConfig.csrfRequestField != "" && c.authConfig.csrfToken != "" {
+			req.Header.Set(c.authConfig.csrfRequestField, c.authConfig.csrfToken)
 		}
 	}
 	return c.client.Do(req)

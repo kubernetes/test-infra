@@ -53,6 +53,7 @@ var (
 	certFile               = flag.String("cert-file", "", "Path to a PEM-encoded certificate file.")
 	keyFile                = flag.String("key-file", "", "Path to a PEM-encoded key file.")
 	caCertFile             = flag.String("ca-cert-file", "", "Path to a PEM-encoded CA certificate file.")
+	csrfProtect            = flag.Bool("csrf-protect", false, "Request a CSRF protection token from Jenkins that will be used in all subsequent requests to Jenkins.")
 
 	githubEndpoint  = flag.String("github-endpoint", "https://api.github.com", "GitHub's API endpoint.")
 	githubTokenFile = flag.String("github-token-file", "/etc/github/oauth", "Path to the file containing the GitHub OAuth token.")
@@ -78,7 +79,9 @@ func main() {
 		logger.WithError(err).Fatal("Error getting kube client.")
 	}
 
-	ac := &jenkins.AuthConfig{}
+	ac := &jenkins.AuthConfig{
+		CSRFProtect: *csrfProtect,
+	}
 	if *jenkinsTokenFile != "" {
 		token, err := loadToken(*jenkinsTokenFile)
 		if err != nil {
@@ -108,7 +111,10 @@ func main() {
 		tlsConfig = config
 	}
 	metrics := jenkins.NewMetrics()
-	jc := jenkins.NewClient(*jenkinsURL, tlsConfig, ac, logger, metrics.ClientMetrics)
+	jc, err := jenkins.NewClient(*jenkinsURL, tlsConfig, ac, logger, metrics.ClientMetrics)
+	if err != nil {
+		logger.WithError(err).Fatalf("Could not setup Jenkins client.")
+	}
 
 	oauthSecretRaw, err := ioutil.ReadFile(*githubTokenFile)
 	if err != nil {
