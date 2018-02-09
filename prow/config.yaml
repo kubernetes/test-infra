@@ -5924,6 +5924,18 @@ periodics:
       args:
       - "--timeout=320"
       - "--bare"
+- name: ci-ingress-gce-e2e-scale
+  agent: kubernetes
+  interval: 6h
+  labels:
+    preset-service-account: true
+    preset-k8s-ssh: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/kubekins-e2e:v20180205-d99d9c246-master
+      args:
+      - "--timeout=340"
+      - "--bare"
 - name: ci-ingress-gce-upgrade-e2e
   agent: kubernetes
   interval: 60m
