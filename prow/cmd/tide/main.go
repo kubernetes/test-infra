@@ -19,6 +19,7 @@ package main
 import (
 	"bytes"
 	"flag"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -108,7 +109,7 @@ func main() {
 	c := tide.NewController(ghcSync, ghcStatus, kc, configAgent, gc, logger)
 
 	start := time.Now()
-	sync(c)
+	sync(logger, c)
 	if *runOnce {
 		return
 	}
@@ -116,16 +117,16 @@ func main() {
 		for {
 			time.Sleep(time.Until(start.Add(configAgent.Config().Tide.SyncPeriod)))
 			start = time.Now()
-			sync(c)
+			sync(logger, c)
 		}
 	}()
 	logger.Fatal(http.ListenAndServe(":"+strconv.Itoa(*port), c))
 }
 
-func sync(c *tide.Controller) {
+func sync(logger *logrus.Entry, c *tide.Controller) {
 	start := time.Now()
 	if err := c.Sync(); err != nil {
 		logrus.WithError(err).Error("Error syncing.")
 	}
-	logrus.Infof("Sync time: %v", time.Since(start))
+	logger.WithField("duration", fmt.Sprintf("%v", time.Since(start))).Info("Synced")
 }

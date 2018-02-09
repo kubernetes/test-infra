@@ -313,7 +313,7 @@ func (c *Controller) Sync() error {
 			defer wg.Done()
 			for sp := range sps {
 				if pool, err := c.syncSubpool(sp); err != nil {
-					c.logger.WithError(err).Errorf("Syncing subpool %s/%s:%s.", sp.org, sp.repo, sp.branch)
+					sp.log.WithError(err).Errorf("Syncing subpool.")
 				} else {
 					poolChan <- pool
 				}
@@ -537,7 +537,7 @@ func (c *Controller) pickBatch(sp subpool) ([]PullRequest, error) {
 		return nil, err
 	}
 	if err := r.Config("commit.gpgsign", "false"); err != nil {
-		c.logger.Warningf("Cannot set gpgsign=false in gitconfig: %v", err)
+		sp.log.Warningf("Cannot set gpgsign=false in gitconfig: %v", err)
 	}
 	if err := r.Checkout(sp.sha); err != nil {
 		return nil, err
@@ -548,7 +548,7 @@ func (c *Controller) pickBatch(sp subpool) ([]PullRequest, error) {
 		if i == 5 {
 			break
 		}
-		if !isPassingTests(c.logger, c.ghc, pr) {
+		if !isPassingTests(sp.log, c.ghc, pr) {
 			continue
 		}
 		if ok, err := r.Merge(string(pr.HeadRefOID)); err != nil {
@@ -564,7 +564,7 @@ func (c *Controller) mergePRs(sp subpool, prs []PullRequest) error {
 	maxRetries := 3
 	for i, pr := range prs {
 		backoff := time.Second * 4
-		log := c.logger.WithFields(pr.logFields())
+		log := sp.log.WithFields(pr.logFields())
 		for retry := 0; retry < maxRetries; retry++ {
 			if err := c.ghc.Merge(sp.org, sp.repo, int(pr.Number), github.MergeDetails{
 				SHA:         string(pr.HeadRefOID),
@@ -592,7 +592,7 @@ func (c *Controller) mergePRs(sp subpool, prs []PullRequest) error {
 						backoff *= 2
 					}
 				} else if _, ok = err.(github.UnmergablePRError); ok {
-					log.WithError(err).Warning("Merge failed: PR is unmergable. How did it pass tests?!")
+					log.WithError(err).Error("Merge failed: PR is unmergable. How did it pass tests?!")
 					break
 				} else {
 					return err
@@ -655,13 +655,13 @@ func (c *Controller) takeAction(sp subpool, batchPending, successes, pendings, n
 	// Do not merge PRs while waiting for a batch to complete. We don't want to
 	// invalidate the old batch result.
 	if len(successes) > 0 && len(batchPending) == 0 {
-		if ok, pr := pickSmallestPassingNumber(c.logger, c.ghc, successes); ok {
+		if ok, pr := pickSmallestPassingNumber(sp.log, c.ghc, successes); ok {
 			return Merge, []PullRequest{pr}, c.mergePRs(sp, []PullRequest{pr})
 		}
 	}
 	// If we have no serial jobs pending or successful, trigger one.
 	if len(nones) > 0 && len(pendings) == 0 && len(successes) == 0 {
-		if ok, pr := pickSmallestPassingNumber(c.logger, c.ghc, nones); ok {
+		if ok, pr := pickSmallestPassingNumber(sp.log, c.ghc, nones); ok {
 			return Trigger, []PullRequest{pr}, c.trigger(sp, []PullRequest{pr})
 		}
 	}
@@ -679,7 +679,7 @@ func (c *Controller) takeAction(sp subpool, batchPending, successes, pendings, n
 }
 
 func (c *Controller) syncSubpool(sp subpool) (Pool, error) {
-	c.logger.Infof("%s/%s %s: %d PRs, %d PJs.", sp.org, sp.repo, sp.branch, len(sp.prs), len(sp.pjs))
+	sp.log.Infof("Syncing subpool: %d PRs, %d PJs.", len(sp.prs), len(sp.pjs))
 	var presubmits []string
 	for _, ps := range c.ca.Config().Presubmits[sp.org+"/"+sp.repo] {
 		if ps.SkipReport || !ps.AlwaysRun || !ps.RunsAgainstBranch(sp.branch) {
@@ -689,13 +689,18 @@ func (c *Controller) syncSubpool(sp subpool) (Pool, error) {
 	}
 	successes, pendings, nones := accumulate(presubmits, sp.prs, sp.pjs)
 	batchMerge, batchPending := accumulateBatch(presubmits, sp.prs, sp.pjs)
-	c.logger.Infof("Passing PRs: %v", prNumbers(successes))
-	c.logger.Infof("Pending PRs: %v", prNumbers(pendings))
-	c.logger.Infof("Missing PRs: %v", prNumbers(nones))
-	c.logger.Infof("Passing batch: %v", prNumbers(batchMerge))
-	c.logger.Infof("Pending batch: %v", prNumbers(batchPending))
+	sp.log.WithFields(logrus.Fields{
+		"prs-passing":   prNumbers(successes),
+		"prs-pending":   prNumbers(pendings),
+		"prs-missing":   prNumbers(nones),
+		"batch-passing": prNumbers(batchMerge),
+		"batch-pending": prNumbers(batchPending),
+	}).Info("Subpool accumulated.")
 	act, targets, err := c.takeAction(sp, batchPending, successes, pendings, nones, batchMerge)
-	c.logger.Infof("Action: %v, Targets: %v", act, targets)
+	sp.log.WithFields(logrus.Fields{
+		"action":  string(act),
+		"targets": prNumbers(targets),
+	}).Info("Subpool synced.")
 	return Pool{
 			Org:    sp.org,
 			Repo:   sp.repo,
@@ -714,6 +719,7 @@ func (c *Controller) syncSubpool(sp subpool) (Pool, error) {
 }
 
 type subpool struct {
+	log    *logrus.Entry
 	org    string
 	repo   string
 	branch string
@@ -738,6 +744,12 @@ func (c *Controller) dividePool(pool []PullRequest, pjs []kube.ProwJob) (chan su
 				return nil, err
 			}
 			sps[fn] = &subpool{
+				log: c.logger.WithFields(logrus.Fields{
+					"org":      org,
+					"repo":     repo,
+					"branch":   branch,
+					"base-sha": sha,
+				}),
 				org:    org,
 				repo:   repo,
 				branch: branch,
