@@ -48,7 +48,7 @@ container: mungegithub
 # push the container
 push: container
 ifneq (,$(findstring gcr.io,$(REPO)))
-	gcloud docker -- push $(CONTAINER)
+	docker push $(CONTAINER)
 else
 	docker push $(CONTAINER)
 endif

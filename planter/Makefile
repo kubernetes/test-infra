@@ -22,6 +22,6 @@ image:
 	docker build --build-arg BAZEL_VERSION=$(BAZEL_VERSION) -t "$(IMAGE_NAME):$(TAG)" . --pull
 
 push: image
-	gcloud docker -- push "$(IMAGE_NAME):$(TAG)"
+	docker push "$(IMAGE_NAME):$(TAG)"
 
 .PHONY: image push

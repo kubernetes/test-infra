@@ -20,6 +20,6 @@ image:
 	docker build --no-cache -t "$(IMG):$(VERSION)" --build-arg "IMAGE_ARG=$(IMG):$(VERSION)" .
 
 push: image
-	gcloud docker -- push "$(IMG):$(VERSION)"
+	docker push "$(IMG):$(VERSION)"
 
 .PHONY: image push

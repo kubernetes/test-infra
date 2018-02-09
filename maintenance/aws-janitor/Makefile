@@ -21,7 +21,7 @@ image:
 
 push: image
 	docker tag "$(IMAGE):$(VERSION)" "$(IMAGE):latest"
-	gcloud docker -- push "$(IMAGE):$(VERSION)"
-	gcloud docker -- push "$(IMAGE):latest"
+	docker push "$(IMAGE):$(VERSION)"
+	docker push "$(IMAGE):latest"
 
 .PHONY: image push
