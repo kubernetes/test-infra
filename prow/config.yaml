@@ -5822,7 +5822,7 @@ periodics:
       args:
       - --clean
       - --git-cache=/root/.cache/git
-      - --repo=k8s.io/kubernetes=master
+      - --repo=k8s.io/federation=master
       - --repo=k8s.io/release
       - --root=/go/src
       - --timeout=50
