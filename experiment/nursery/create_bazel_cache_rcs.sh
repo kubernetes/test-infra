@@ -17,7 +17,8 @@
 # Once this moves out of experiment/ we will create these files in the bazel
 # images instead (!)
 # TODO(bentheelder): verify that this works and move it into the images
-CACHE_HOST="http://bazel-cache.default:8080"
+CACHE_HOST="bazel-cache.default"
+CACHE_PORT="8080"
 
 # get the installed version of a debian package
 package_to_version () {
@@ -26,15 +27,37 @@ package_to_version () {
 
 # look up a binary with which and return the debian package it belongs to
 command_to_package () {
-    BINARY_PATH=$(readlink -f $(which $1))
+    local BINARY_PATH=$(readlink -f $(which $1))
     # `dpkg -S $package` spits out lines with the format: "package: file"
-    dpkg -S $1 | grep $BINARY_PATH | cut -d':' -f1
+    dpkg -S $1 | grep "${BINARY_PATH}" | cut -d':' -f1
 }
 
 # get the installed package version relating to a binary
 command_to_version () {
-    PACKAGE=$(command_to_package $1)
-    package_to_version $PACKAGE
+    local PACKAGE=$(command_to_package $1)
+    package_to_version "${PACKAGE}"
+}
+
+hash_toolchains () {
+    # if $CC is set bazel will use this to detect c/c++ toolchains, otherwise gcc
+    # https://blog.bazel.build/2016/03/31/autoconfiguration.html
+    local CC="${CC:-gcc}"
+    local CC_VERSION=$(command_to_version $CC)
+    # NOTE: IIRC some rules call python internally, this can't hurt
+    local PYTHON_VERSION=$(command_to_version python)
+    # combine all tool versions into a hash
+    # NOTE(bentheelder): if we change the set of tools considered we should
+    # consider prepending the hash with a """schema version""" for completeness
+    local TOOL_VERSIONS="CC:${CC_VERSION},PY:{PYTHON_VERSION}"
+    echo "${TOOL_VERSIONS}" | md5sum | cut -d" " -f1
+}
+
+get_workspace () {
+    if [[ -n "${REPO_NAME}" ]]; then
+        echo "${REPO_NAME}"
+    else
+        echo "$(basename $(dirname $PWD))/$(basename $PWD)"
+    fi
 }
 
 make_bazel_rc () {
@@ -43,20 +66,14 @@ make_bazel_rc () {
     echo "startup --host_jvm_args=-Dbazel.DigestFunction=sha256"
     # use remote caching for all the things
     echo "build --experimental_remote_spawn_cache"
-    # point it at our http cache ...
-    echo "build --remote_http_cache=${CACHE_HOST}"
     # don't fail if the cache is unavailable
     echo "build --remote_local_fallback"
-    # make sure the cache considers host toolchain versions
-    # NOTE: these assume nobody installs new host toolchains afterwards
-    # if $CC is set bazel will use this to detect c/c++ toolchains, otherwise gcc
-    # https://blog.bazel.build/2016/03/31/autoconfiguration.html
-    CC="${CC:-gcc}"
-    CC_VERSION=$(command_to_version $CC)
-    echo "build --action_env=CACHE_GCC_VERSION=${CC_VERSION}"
-    # NOTE: IIRC some rules call python internally, this can't hurt
-    PYTHON_VERSION=$(command_to_version python)
-    echo "build --action_env=CACHE_PYTHON_VERSION=${PYTHON_VERSION}"
+    # point bazel at our http cache ...
+    # NOTE our caches are versioned by all path segments up until the last two
+    # IE PUT /foo/bar/baz/cas/asdf -> is in cache "/foo/bar/baz"
+    local CACHE_ID="$(get_workspace),$(hash_toolchains)"
+    local CACHE_URL="http://${CACHE_HOST}:${CACHE_PORT}/${CACHE_ID}"
+    echo "build --remote_http_cache=${CACHE_URL}"
 }
 
 # https://docs.bazel.build/versions/master/user-manual.html#bazelrc
