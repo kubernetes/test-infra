@@ -226,9 +226,10 @@ function redrawPlugin(repo, helpMap) {
         container.removeChild(container.firstChild);
     }
     const names = helpMap.keys();
-    for (let name of names) {
+    const nameArray = Array.from(names).sort();
+    nameArray.forEach(name => {
         container.appendChild(createPlugin(repo, name, helpMap.get(name)))
-    }
+    });
 }
 
 /**
@@ -238,10 +239,10 @@ function redraw() {
     const repoSel = selectionText(document.getElementById("repo"));
     if (window.history && window.history.replaceState !== undefined) {
         if (repoSel !== "") {
-            history.replaceState(null, "", "/plugin-help?repo="
+            history.replaceState(null, "", "/plugins?repo="
                 + encodeURIComponent(repoSel));
         } else {
-            history.replaceState(null, "", "/plugin-help")
+            history.replaceState(null, "", "/plugins")
         }
     }
     redrawOptions();
