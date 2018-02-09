@@ -22,7 +22,7 @@ migrate() {
     exit 1
   fi
   bazel-bin/maintenance/migratestatus/migratestatus \
-    --modify --alsologtostderr \
+    --dry-run=false --alsologtostderr \
     --org=kubernetes \
     --repo=kubernetes \
     --tokenfile ~/github-token \
