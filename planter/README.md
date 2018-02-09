@@ -20,7 +20,7 @@ Then from `$GOPATH/src/k8s.io/kubernetes/` run:
 
 ## Options
 
-Planter repects the following environment variables:
+Planter respects the following environment variables:
 
  - `TAG`: The Planter image tag. This will default to the current stable
    version used to build Kubernetes, but you may override it with EG
