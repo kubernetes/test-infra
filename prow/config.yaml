@@ -532,6 +532,40 @@ presubmits:
       - name: docker-graph
         hostPath:
           path: /mnt/disks/ssd0/docker-graph
+  kubernetes/kube-deploy:
+  - name: pull-kube-deploy-build
+    agent: kubernetes
+    always_run: true
+    context: pull-kube-deploy-build
+    rerun_command: "/test pull-kube-deploy-build"
+    trigger: "/test( all| pull-kube-deploy-build)"
+    labels:
+      preset-service-account: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
+        args:
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--root=/go/src"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--clean"
+  - name: pull-kube-deploy-test
+    agent: kubernetes
+    always_run: true
+    skip_report: true
+    context: pull-kube-deploy-test
+    rerun_command: "/test pull-kube-deploy-test"
+    trigger: "/test( all| pull-kube-deploy-test)"
+    labels:
+      preset-service-account: true
+    spec:
+      containers:
+      - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
+        args:
+        - "--repo=k8s.io/$(REPO_NAME)=$(PULL_REFS)"
+        - "--root=/go/src"
+        - "--upload=gs://kubernetes-jenkins/pr-logs"
+        - "--clean"
   kubernetes/kops:
   - name: pull-kops-e2e-kubernetes-aws
     agent: kubernetes
@@ -6028,6 +6062,33 @@ periodics:
     - name: docker-graph
       hostPath:
         path: /mnt/disks/ssd0/docker-graph
+
+- name: ci-kube-deploy-build
+  interval: 1h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
+      args:
+      - "--repo=k8s.io/kube-deploy"
+      - "--root=/go/src"
+      - "--upload=gs://kubernetes-jenkins/logs"
+      - "--clean"
+- name: ci-kube-deploy-test
+  interval: 1h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
+      args:
+      - "--repo=k8s.io/kube-deploy"
+      - "--root=/go/src"
+      - "--upload=gs://kubernetes-jenkins/logs"
+      - "--clean"
 
 - name: ci-kubernetes-bazel-build
   interval: 6h
