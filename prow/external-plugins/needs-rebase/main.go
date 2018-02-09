@@ -152,9 +152,11 @@ func (s *Server) handleEvent(eventType, eventGUID string, payload []byte) error 
 
 func periodicUpdate(log *logrus.Entry, pa *plugins.PluginAgent, ghc *github.Client, period time.Duration) {
 	update := func() {
+		start := time.Now()
 		if err := plugin.HandleAll(log, ghc, pa.Config()); err != nil {
 			log.WithError(err).Error("Error during periodic update of all PRs.")
 		}
+		log.WithField("duration", fmt.Sprintf("%v", time.Since(start))).Info("Periodic update complete.")
 	}
 
 	update()

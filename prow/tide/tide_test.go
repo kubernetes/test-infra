@@ -590,7 +590,8 @@ func TestDividePool(t *testing.T) {
 		refs: map[string]string{"k/t-i heads/master": "123"},
 	}
 	c := &Controller{
-		ghc: fc,
+		ghc:    fc,
+		logger: logrus.WithField("component", "tide"),
 	}
 	var pulls []PullRequest
 	for _, p := range testPulls {
@@ -693,6 +694,7 @@ func TestPickBatch(t *testing.T) {
 		},
 	}
 	sp := subpool{
+		log:    logrus.WithField("component", "tide"),
 		org:    "o",
 		repo:   "r",
 		branch: "master",
@@ -907,6 +909,7 @@ func TestTakeAction(t *testing.T) {
 		}
 
 		sp := subpool{
+			log:    logrus.WithField("component", "tide"),
 			org:    "o",
 			repo:   "r",
 			branch: "master",
