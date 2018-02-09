@@ -5163,7 +5163,7 @@
       "--check-leaked-resources",
       "--cluster=",
       "--deployment=gke",
-      "--extract=gke-latest",
+      "--extract=gke-latest-1.8",
       "--gcp-node-image=gci",
       "--gcp-zone=us-central1-b",
       "--ginkgo-parallel",
