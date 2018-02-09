@@ -8,6 +8,10 @@ a.current {
     text-decoration: underline !important;
 }
 
+a:link {
+    text-decoration: none;
+}
+
 .header-title {
     margin-left: 24px;
 }
@@ -121,11 +125,6 @@ th {
 
 .error, .aborted {
     color: #888888;
-}
-
-a:link {
-    text-decoration: none;
-    color: blue;
 }
 
 #rerun {
@@ -319,4 +318,45 @@ span.label:hover {
 .label.needs-rebase {
     background-color: #BDBDBD;
     color: #000000;
+}
+
+/*
+Plugin Help style
+ */
+#plugin-container {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.plugin-help-card.mdl-card {
+    justify-content: space-between;
+    margin: 8px;
+    min-height: 0;
+    width: 400px;
+}
+
+.plugin-help-card > .mdl-card__supporting-text {
+    font-size: 15px;
+}
+
+.plugin-help-card > .mdl-card__title, .mdl-dialog__title {
+    color: #3f51b5;
+}
+
+.plugin-help-card.deprecated > .mdl-card__title {
+    color: #e57373;
+}
+
+.plugin-help-command-link {
+    background-color: #e5e5e5;
+    border-radius: 2px;
+    box-shadow: 1px 1px 2px #ededed;
+    color: #757575;
+    display: inline-block;
+    font-size: 15px;
+    font-weight: bold;
+    margin: 0 8px;
+    padding: 8px 16px;
 }
