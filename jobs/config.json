@@ -11258,15 +11258,6 @@
       "sig-testing"
     ]
   },
-  "pull-test-infra-verify-spelling": {
-    "args": [
-      "./hack/verify-spelling.sh"
-    ],
-    "scenario": "execute",
-    "sigOwners": [
-      "sig-testing"
-    ]
-  },
   "random_job": {
     "scenario": "execute",
     "sigOwners": [
