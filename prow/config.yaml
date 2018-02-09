@@ -6026,6 +6026,33 @@ periodics:
       hostPath:
         path: /mnt/disks/ssd0/docker-graph
 
+- name: ci-kube-deploy-build
+  interval: 1h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
+      args:
+      - "--repo=k8s.io/kube-deploy"
+      - "--root=/go/src"
+      - "--upload=gs://kubernetes-jenkins/logs"
+      - "--clean"
+- name: ci-kube-deploy-test
+  interval: 1h
+  agent: kubernetes
+  labels:
+    preset-service-account: true
+  spec:
+    containers:
+    - image: gcr.io/k8s-testimages/gcloud-in-go:v20171113-192bec25
+      args:
+      - "--repo=k8s.io/kube-deploy"
+      - "--root=/go/src"
+      - "--upload=gs://kubernetes-jenkins/logs"
+      - "--clean"
+
 - name: ci-kubernetes-bazel-build
   interval: 6h
   agent: kubernetes
