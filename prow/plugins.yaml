@@ -183,6 +183,7 @@ plugins:
   kubernetes/kube-deploy:
   - approve
   - blunderbuss
+  - trigger
 
   kubernetes/kubectl:
   - approve
