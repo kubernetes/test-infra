@@ -1,6 +1,5 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library", "go_test")
 load("@io_bazel_rules_docker//go:image.bzl", "go_image")
-load("@io_bazel_rules_go//proto:def.bzl", "go_proto_library")
 
 go_library(
     name = "go_default_library",
@@ -13,6 +12,7 @@ go_library(
         "//vendor/cloud.google.com/go/storage:go_default_library",
         "//vendor/github.com/golang/protobuf/proto:go_default_library",
         "//vendor/google.golang.org/api/iterator:go_default_library",
+        "//vendor/vbom.ml/util/sortorder:go_default_library",
     ],
 )
 
