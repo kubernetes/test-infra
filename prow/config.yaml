@@ -170,6 +170,22 @@ presets:
   - name: aws-cred
     mountPath: /etc/aws-cred
     readOnly: true
+- labels:
+    preset-cadvisor-docker-credential: true
+  env:
+  - name: DOCKER_USER
+    value: /etc/cadvisor-cred/username
+  - name: DOCKER_PASSWORD
+    value: /etc/cadvisor-cred/password
+  volumes:
+  - name: cadvisor-cred
+    secret:
+      defaultMode: 0400
+      secretName: cadvisor-docker-credential
+  volumeMounts:
+  - name: cadvisor-cred
+    mountPath: /etc/cadvisor-cred
+    readOnly: true
 
 presubmits:
   google/cadvisor:
@@ -5475,6 +5491,7 @@ periodics:
   agent: kubernetes
   labels:
     preset-service-account: true
+    preset-cadvisor-docker-credential: true
   spec:
     containers:
     - image: gcr.io/k8s-testimages/bootstrap:v20180122-6fd3aef1a
@@ -5499,7 +5516,6 @@ periodics:
     - name: docker-graph
       hostPath:
         path: /mnt/disks/ssd0/docker-graph
-
 
 - name: ci-cadvisor-e2e
   interval: 8h
