@@ -597,7 +597,7 @@ The full list of commands accepted by this bot can be found [here](https://go.k8
 The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
 
 <details {{if (and (not .ap.AreFilesApproved) (not (call .ap.ManuallyApproved))) }}open{{end}}>
-Needs approval from an approver in each of these OWNERS Files:
+Needs approval from an approver in each of these files:
 
 {{range .ap.GetFiles .org .project}}{{.}}{{end}}
 Approvers can indicate their approval by writing `+"`/approve`"+` in a comment

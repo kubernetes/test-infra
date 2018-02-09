@@ -720,7 +720,7 @@ The full list of commands accepted by this bot can be found [here](https://go.k8
 The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
 
 <details open>
-Needs approval from an approver in each of these OWNERS Files:
+Needs approval from an approver in each of these files:
 
 - **[a/OWNERS](https://github.com/org/project/blob/master/a/OWNERS)**
 - ~~[b/OWNERS](https://github.com/org/project/blob/master/b/OWNERS)~~ [Bill]
@@ -762,7 +762,7 @@ The full list of commands accepted by this bot can be found [here](https://go.k8
 The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
 
 <details >
-Needs approval from an approver in each of these OWNERS Files:
+Needs approval from an approver in each of these files:
 
 - ~~[a/OWNERS](https://github.com/org/project/blob/master/a/OWNERS)~~ [Alice]
 - ~~[b/OWNERS](https://github.com/org/project/blob/master/b/OWNERS)~~ [Bill]
@@ -806,7 +806,7 @@ The full list of commands accepted by this bot can be found [here](https://go.k8
 The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
 
 <details open>
-Needs approval from an approver in each of these OWNERS Files:
+Needs approval from an approver in each of these files:
 
 - **[a/OWNERS](https://github.com/org/project/blob/master/a/OWNERS)**
 - **[b/OWNERS](https://github.com/org/project/blob/master/b/OWNERS)**
@@ -850,7 +850,7 @@ The full list of commands accepted by this bot can be found [here](https://go.k8
 The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
 
 <details >
-Needs approval from an approver in each of these OWNERS Files:
+Needs approval from an approver in each of these files:
 
 - ~~[a/OWNERS](https://github.com/org/project/blob/master/a/OWNERS)~~ [Alice]
 - ~~[b/OWNERS](https://github.com/org/project/blob/master/b/OWNERS)~~ [Bill]
@@ -893,7 +893,7 @@ The full list of commands accepted by this bot can be found [here](https://go.k8
 The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
 
 <details >
-Needs approval from an approver in each of these OWNERS Files:
+Needs approval from an approver in each of these files:
 
 - ~~[a/OWNERS](https://github.com/org/project/blob/master/a/OWNERS)~~ [Alice]
 - ~~[b/OWNERS](https://github.com/org/project/blob/master/b/OWNERS)~~ [Bill]
@@ -938,7 +938,7 @@ The full list of commands accepted by this bot can be found [here](https://go.k8
 The pull request process is described [here](https://git.k8s.io/community/contributors/guide/owners.md#the-code-review-process)
 
 <details open>
-Needs approval from an approver in each of these OWNERS Files:
+Needs approval from an approver in each of these files:
 
 - **[a/OWNERS](https://github.com/org/project/blob/master/a/OWNERS)**
 - **[b/README.md](https://github.com/org/project/blob/master/b/README.md)**
