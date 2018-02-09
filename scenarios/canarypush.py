@@ -50,8 +50,19 @@ def main(target, buildfile):
     )
     check_with_log('docker', 'inspect', target)
 
-    user = os.environ.get('DOCKER_USER')
-    pwd = os.environ.get('DOCKER_PASSWORD')
+    user = None
+    if os.path.exists(os.environ.get('DOCKER_USER')):
+        with open(os.environ.get('DOCKER_USER'), 'r') as content_file:
+            user = content_file.read()
+
+    pwd = None
+    if os.path.exists(os.environ.get('DOCKER_PASSWORD')):
+        with open(os.environ.get('DOCKER_PASSWORD'), 'r') as content_file:
+            pwd = content_file.read()
+
+    if not user or not pwd:
+        print >>sys.stderr, 'Logging info not exist'
+        sys.exit(1)
     print >>sys.stderr, 'Logging in as %r' % user
     check_no_log('docker', 'login', '--username=%s' % user, '--password=%s' % pwd)
 
