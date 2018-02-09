@@ -22,7 +22,7 @@ import regex
 
 def parse(lines, highlight_words, filters, objref_dict):
     """
-    Given filters returns indeces of wanted lines from log
+    Given filters returns indices of wanted lines from log
 
     Args:
         lines: array of log lines
@@ -31,7 +31,7 @@ def parse(lines, highlight_words, filters, objref_dict):
         objref_dict: a dictionary where the keys are possible filters
         and the values are the words to be highlighted
     Returns:
-        matched_lines: ordered array of indeces of lines to display
+        matched_lines: ordered array of indices of lines to display
         highlight_words: updated highlight_words
     """
     matched_lines = []
