@@ -30,8 +30,10 @@ import (
 	"net/url"
 	"path"
 	"regexp"
+	"runtime"
 	"sort"
 	"strings"
+	"sync"
 	"time"
 
 	"k8s.io/test-infra/testgrid/config"
@@ -46,19 +48,23 @@ import (
 
 // options configures the updater
 type options struct {
-	config  gcsPath // gs://path/to/config/proto
-	creds   string  // TODO(fejta): implement
-	confirm bool    // TODO(fejta): implement
+	config           gcsPath // gs://path/to/config/proto
+	creds            string  // TODO(fejta): implement
+	confirm          bool    // TODO(fejta): implement
+	group            string
+	groupConcurrency uint
 }
 
 // validate ensures sane options
 func (o *options) validate() error {
 	if o.config.String() == "" {
-		return o.config.Set("gs://fejternetes/config")
-		// return errors.New("empty --config")
+		return errors.New("empty --config")
 	}
 	if o.config.bucket() == "k8s-testgrid" { // TODO(fejta): remove
 		return fmt.Errorf("--config=%s cannot start with gs://k8s-testgrid", o.config)
+	}
+	if o.groupConcurrency == 0 {
+		o.groupConcurrency = uint(4 * runtime.NumCPU())
 	}
 
 	return nil
@@ -70,6 +76,8 @@ func gatherOptions() options {
 	flag.Var(&o.config, "config", "gs://path/to/config.pb")
 	flag.StringVar(&o.creds, "gcp-service-account", "", "/path/to/gcp/creds (use local creds if empty")
 	flag.BoolVar(&o.confirm, "confirm", false, "Upload data if set")
+	flag.StringVar(&o.group, "test-group", "", "Only update named group if set")
+	flag.UintVar(&o.groupConcurrency, "group-concurrency", 0, "Manually define the number of groups to concurrently update if non-zero")
 	flag.Parse()
 	return o
 }
@@ -123,7 +131,7 @@ func (g gcsPath) object() string {
 // testGroup() returns the path to a test_group proto given this proto
 func (g gcsPath) testGroup(name string) gcsPath {
 	newG := g
-	newG.url.Path = path.Join(path.Dir(g.object()), name)
+	newG.url.Path = path.Join(path.Dir(g.url.Path), name)
 	return newG
 }
 
@@ -712,11 +720,6 @@ func main() {
 	}
 	// opt.confirm
 
-	o := "ci-kubernetes-test-go"
-	// gs://kubernetes-jenkins/logs/ci-kubernetes-test-go
-	// gs://kubernetes-jenkins/pr-logs/pull-ingress-gce-e2e
-	o = "ci-kubernetes-node-kubelet-stable3"
-
 	ctx := context.Background()
 	client, err := storage.NewClient(ctx)
 	if err != nil {
@@ -727,66 +730,104 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to read %s: %v", opt.config, err)
 	}
-	tg, ok := Group(*cfg, o)
-	if !ok {
-		log.Fatalf("Failed to find %s in %s", o, opt.config)
+
+	groups := make(chan config.TestGroup)
+	var wg sync.WaitGroup
+
+	for i := uint(0); i < opt.groupConcurrency; i++ {
+		wg.Add(1)
+		go func() {
+			for tg := range groups {
+				if err := updateGroup(client, ctx, tg, opt.config.testGroup(tg.Name), opt.confirm); err != nil {
+					log.Printf("Update failed: %v", err)
+				}
+			}
+			wg.Done()
+		}()
 	}
-	log.Println(tg)
+
+	if opt.group != "" { // Just a specific group
+		// o := "ci-kubernetes-test-go"
+		// o = "ci-kubernetes-node-kubelet-stable3"
+		// gs://kubernetes-jenkins/logs/ci-kubernetes-test-go
+		// gs://kubernetes-jenkins/pr-logs/pull-ingress-gce-e2e
+		o := opt.group
+		if tg, ok := Group(*cfg, o); !ok {
+			log.Fatalf("Failed to find %s in %s", o, opt.config)
+		} else {
+			groups <- *tg
+		}
+	} else { // All groups
+		for _, tg := range cfg.TestGroups {
+			log.Println(tg)
+			groups <- *tg
+		}
+	}
+	close(groups)
+	wg.Wait()
+}
+
+func updateGroup(client *storage.Client, ctx context.Context, tg config.TestGroup, gridPath gcsPath, write bool) error {
+	o := tg.Name
 
 	var tgPath gcsPath
 	if err := tgPath.Set("gs://" + tg.GcsPrefix); err != nil {
-		log.Fatalf("Group %s has invalid gcs_prefix %s: %v", o, tg.GcsPrefix, err)
+		return fmt.Errorf("group %s has an invalid gcs_prefix %s: %v", o, tg.GcsPrefix, err)
 	}
 	log.Println(tgPath)
 
 	g := state.Grid{}
 	g.Columns = append(g.Columns, &state.Column{Build: "first", Started: 1})
-	fmt.Println(g)
-	builds := make(chan Build)
-	go func() {
-		if err = listBuilds(client, ctx, tgPath, builds); err != nil {
-			log.Fatalf("Failed to list builds: %v", err)
-		}
-		close(builds)
-	}()
-	grid := ReadBuilds(*tg, builds, 3, Days(3))
-	buf, crc, err := marshalGrid(grid)
+	builds, err := listBuilds(client, ctx, tgPath)
 	if err != nil {
-		log.Fatalf("Failed to marshal grid: %v", err)
+		return fmt.Errorf("failed to list %s builds: %v", o, err)
 	}
-	tgp := opt.config.testGroup(o)
-	if !opt.confirm {
+	grid, err := ReadBuilds(ctx, tg, builds, 50, Days(7), concurrency)
+	if err != nil {
+		return err
+	}
+	buf, err := marshalGrid(*grid)
+	if err != nil {
+		return fmt.Errorf("failed to marhsal %s grid: %v", o, err)
+	}
+	tgp := gridPath
+	if !write {
 		log.Printf("Grid: %d %s", len(grid.Columns), grid.String())
 		log.Printf("Not writing %s (%d bytes) to %s", o, len(buf), tgp)
 	} else {
-		log.Printf("Uploading %s (%d bytes) to %s", o, len(buf), tgp)
-		if err := uploadBytes(client, ctx, tgp, buf, crc); err != nil {
-			log.Fatalf("Upload failed: %v", err)
+		log.Printf("  Writing %s (%d bytes) to %s", o, len(buf), tgp)
+		if err := uploadBytes(client, ctx, tgp, buf); err != nil {
+			return fmt.Errorf("upload %s to %s failed: %v", o, tgp, err)
 		}
 	}
 	log.Print("Success!")
+	return nil
 }
 
 // marhshalGrid serializes a state proto into zlib-compressed bytes and its crc32 checksum.
-func marshalGrid(grid state.Grid) ([]byte, uint32, error) {
+func marshalGrid(grid state.Grid) ([]byte, error) {
 	buf, err := proto.Marshal(&grid)
 	if err != nil {
-		return nil, 0, fmt.Errorf("proto encoding failed: %v", err)
+		return nil, fmt.Errorf("proto encoding failed: %v", err)
 	}
 	var zbuf bytes.Buffer
 	zw := zlib.NewWriter(&zbuf)
 	if _, err = zw.Write(buf); err != nil {
-		return nil, 0, fmt.Errorf("zlib compression failed: %v", err)
+		return nil, fmt.Errorf("zlib compression failed: %v", err)
 	}
 	if err = zw.Close(); err != nil {
-		return nil, 0, fmt.Errorf("zlib closing failed: %v", err)
+		return nil, fmt.Errorf("zlib closing failed: %v", err)
 	}
-	buf = zbuf.Bytes()
-	return buf, crc32.Checksum(buf, crc32.MakeTable(crc32.Castagnoli)), nil
+	return zbuf.Bytes(), nil
+}
+
+func calcCRC(buf []byte) uint32 {
+	return crc32.Checksum(buf, crc32.MakeTable(crc32.Castagnoli))
 }
 
 // uploadBytes writes bytes to the specified gcsPath
-func uploadBytes(client *storage.Client, ctx context.Context, path gcsPath, buf []byte, crc uint32) error {
+func uploadBytes(client *storage.Client, ctx context.Context, path gcsPath, buf []byte) error {
+	crc := calcCRC(buf)
 	w := client.Bucket(path.bucket()).Object(path.object()).NewWriter(ctx)
 	w.SendCRC32C = true
 	// Send our CRC32 to ensure google received the same data we sent.

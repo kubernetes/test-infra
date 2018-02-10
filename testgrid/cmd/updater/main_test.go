@@ -378,17 +378,22 @@ func Test_MarshalGrid(t *testing.T) {
 		},
 	}
 
-	b1, c1, e1 := marshalGrid(g1)
-	b2, c2, e2 := marshalGrid(g2)
-	b1a, c1a, e1a := marshalGrid(g1)
+	b1, e1 := marshalGrid(g1)
+	b2, e2 := marshalGrid(g2)
+	b1a, e1a := marshalGrid(g1)
 
 	switch {
 	case e1 != nil, e2 != nil, e1a != nil:
 		t.Errorf("unexpected error %v %v %v", e1, e2, e1a)
+	}
+
+	c1 := calcCRC(b1)
+	c2 := calcCRC(b2)
+	c1a := calcCRC(b1a)
+
+	switch {
 	case c1 == c2:
 		t.Errorf("g1 crc %d should not equal g2 crc %d", c1, c2)
-	case c1 == 0, c2 == 0:
-		t.Errorf("empty crc %d %d", c1, c2)
 	case len(b1) == 0, len(b2) == 0:
 		t.Errorf("empty b1 b2 %s %s", b1, b2)
 	case len(b1) != len(b1a), c1 != c1a:
