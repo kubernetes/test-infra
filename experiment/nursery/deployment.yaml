@@ -27,15 +27,12 @@ spec:
     spec:
       containers:
       - name: bazel-cache
-        # https://github.com/buchgr/bazel-remote
-        image: buchgr/bazel-remote-cache
+        image: gcr.io/k8s-testimages/nursery:latest
         imagePullPolicy: Always
         ports:
         - name: cache
           containerPort: 8080
         args:
-        # local ssd is 375 GB
-        - --max_size=370
         - --dir=/data
       # mount the local ssd
         volumeMounts:

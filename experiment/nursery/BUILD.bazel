@@ -1,3 +1,5 @@
+load("@io_bazel_rules_docker//go:image.bzl", "go_image")
+load("@io_bazel_rules_k8s//k8s:object.bzl", "k8s_object")
 load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
 
 go_library(
@@ -32,4 +34,20 @@ filegroup(
     ],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],
+)
+
+go_image(
+    name = "image",
+    binary = ":nursery",
+    visibility = ["//visibility:public"],
+)
+
+k8s_object(
+    name = "production",
+    cluster = "{STABLE_BUILD_CLUSTER}",
+    images = {
+        "gcr.io/k8s-testimages/nursery:latest": ":image",
+    },
+    kind = "deployment",
+    template = ":deployment.yaml",
 )
