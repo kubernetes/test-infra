@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"regexp"
+	"strings"
 	"text/template"
 	"time"
 
@@ -457,6 +458,13 @@ func parseConfig(c *Config) error {
 	}
 	if c.Tide.MaxGoroutines <= 0 {
 		return fmt.Errorf("tide has invalid max_goroutines (%d), it needs to be a positive number", c.Tide.MaxGoroutines)
+	}
+	for i, q := range c.Tide.Queries {
+		for _, repo := range q.Repos {
+			if parts := strings.Split(repo, "/"); len(parts) != 2 {
+				return fmt.Errorf("invalid org/repo provided in tide.queries[%d].repos: %s", i, repo)
+			}
+		}
 	}
 
 	if c.ProwJobNamespace == "" {
