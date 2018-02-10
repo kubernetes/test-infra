@@ -33,7 +33,7 @@
                     <a class="mdl-navigation__link" href="/plugins">Plugins</a>
                 </nav>
             </div>
-            <main class="mdl-layout__content">
+            <main id="command-help" class="mdl-layout__content">
                 <aside>
                     <div class="card-box">
                         <ul class="noBullets">
@@ -42,14 +42,14 @@
                         </ul>
                     </div>
                 </aside>
-                <table id="command-table" class="mdl-data-table mdl-js-data-table mdl-shadow--2dp plugin-table">
+                <table id="command-table" class="mdl-data-table mdl-js-data-table mdl-shadow--2dp">
                     <thead>
                     <tr>
                         <th></th>
                         <th class="mdl-data-table__cell--non-numeric">Command</th>
                         <th class="mdl-data-table__cell--non-numeric">Example</th>
                         <th class="mdl-data-table__cell--non-numeric">Description</th>
-                        <th class="mdl-data-table__cell--non-numeric">Who Can Use</th>
+                        <th id="usage-col" class="mdl-data-table__cell--non-numeric">Who Can Use</th>
                         <th class="mdl-data-table__cell--non-numeric">Plugin</th>
                         <th></th>
                     </tr>
