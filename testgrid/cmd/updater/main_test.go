@@ -363,3 +363,36 @@ func Test_ExtractRows(t *testing.T) {
 		}
 	}
 }
+
+func Test_MarshalGrid(t *testing.T) {
+	g1 := state.Grid{
+		Columns: []*state.Column{
+			{Build: "alpha"},
+			{Build: "second"},
+		},
+	}
+	g2 := state.Grid{
+		Columns: []*state.Column{
+			{Build: "first"},
+			{Build: "second"},
+		},
+	}
+
+	b1, c1, e1 := marshalGrid(g1)
+	b2, c2, e2 := marshalGrid(g2)
+	b1a, c1a, e1a := marshalGrid(g1)
+
+	switch {
+	case e1 != nil, e2 != nil, e1a != nil:
+		t.Errorf("unexpected error %v %v %v", e1, e2, e1a)
+	case c1 == c2:
+		t.Errorf("g1 crc %d should not equal g2 crc %d", c1, c2)
+	case c1 == 0, c2 == 0:
+		t.Errorf("empty crc %d %d", c1, c2)
+	case len(b1) == 0, len(b2) == 0:
+		t.Errorf("empty b1 b2 %s %s", b1, b2)
+	case len(b1) != len(b1a), c1 != c1a:
+		t.Errorf("different results: %s %d != %s %d", b1, c1, b1a, c1a)
+	}
+
+}
